@@ -1,4 +1,3 @@
-require 'httpclient'
 require 'json'
 
 module NodeAgent
@@ -9,6 +8,10 @@ module NodeAgent
     data = {"key" => "value"}
 
     cli = HTTPClient.new
-    cli.post(url, data.to_json)
+    begin
+      cli.post(url, data.to_json)
+    rescue Exception => e
+      Chef::Log.error("Error in sending ohai data: #{e.message}")
+    end
   end
 end
