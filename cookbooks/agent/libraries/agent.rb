@@ -5,7 +5,16 @@ module NodeAgent
     url = node["admin"]["URL"]
     Chef::Log.debug("Sending ohai data to REST service at #{url}...")
 
-    data = {"key" => "value"}
+    interfaces = node["network"]["interfaces"].inject([]) do |result, elm|
+      result << { :name => elm[0], :addresses => elm[1]["addresses"] }
+    end
+
+    data = { :fqdn => node["fqdn"],
+             :block_device => node["block_device"].to_hash,
+             :interfaces => interfaces,
+             :cpu => node["cpu"].to_hash,
+             :memory => node["memory"].to_hash
+           }
 
     cli = HTTPClient.new
     begin
