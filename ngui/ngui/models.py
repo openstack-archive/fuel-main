@@ -10,5 +10,5 @@ class Environment(models.Model):
 class Node(models.Model):
     
     environment = models.ForeignKey(Environment, related_name='nodes')
-    name = models.CharField(max_length=255)
+    name = models.CharField(max_length=255, primary_key=True)
     metadata = JSONField()

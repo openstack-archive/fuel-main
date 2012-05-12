@@ -9,5 +9,5 @@ urlpatterns = patterns('',
     url(r'^environments/?$', environment_handler),
     url(r'^environments/(?P<environment_id>\d+)$', environment_handler),
     url(r'^environments/(?P<environment_id>\d+)/nodes/?$', node_handler),
-    url(r'^environments/(?P<environment_id>\d+)/nodes/(?P<node_id>\d+)$', node_handler),
+    url(r'^environments/(?P<environment_id>\d+)/nodes/(?P<name>[\w\.\-]+)$', node_handler),
 )

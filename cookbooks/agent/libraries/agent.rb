@@ -2,7 +2,7 @@ require 'json'
 
 module NodeAgent
   def send_ohai()
-    url = "#{node['admin']['URL']}/api/environments/1/nodes"
+    url = "#{node['admin']['URL']}/api/environments/1/nodes/#{node['fqdn']}"
     Chef::Log.debug("Sending ohai data to REST service at #{url}...")
 
     interfaces = node["network"]["interfaces"].inject([]) do |result, elm|
