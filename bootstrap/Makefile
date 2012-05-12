@@ -6,7 +6,7 @@ DEBOOTSTRAP_MIRROR = http://us.archive.ubuntu.com/ubuntu/
 endif
 
 ifndef DEBOOTSTRAP_INCLUDE
-DEBOOTSTRAP_INCLUDE = less,vim,zsh,bash
+DEBOOTSTRAP_INCLUDE = less,vim,bash,net-tools,isc-dhcp-client,rsyslog
 endif
 
 ifndef DEBOOTSTRAP_EXCLUDE
@@ -35,7 +35,7 @@ endif
 
 INITRD = $(BUILD_BASEDIR)/initrd_$(SUITE)_$(ARCH)
 INITRDGZ = $(BUILD_BASEDIR)/initrd_$(SUITE)_$(ARCH).gz
-INITRD_SIZE = 307200 #kilobytes
+INITRD_SIZE = 614400 #kilobytes
 
 
 
@@ -45,6 +45,7 @@ INITRD_SIZE = 307200 #kilobytes
 
 build: $(INITRDGZ)
 
+initrd: $(INITRD)
 
 cleanall: clean clean_cache
 
