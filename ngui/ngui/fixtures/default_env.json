@@ -1,0 +1,9 @@
+[
+  {
+    "model": "ngui.environment",
+    "pk": 1,
+    "fields": {
+      "name": "Default Environment"
+    }
+  }
+]
