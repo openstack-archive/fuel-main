@@ -1,2 +1,9 @@
 *.pyc
 *.db
+
+# vim swap files
+.*.swp
+
+# services' runtime files
+*.log
+*.pid
