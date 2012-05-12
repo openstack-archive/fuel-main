@@ -97,6 +97,9 @@ MIDDLEWARE_CLASSES = (
     'django.contrib.messages.middleware.MessageMiddleware',
 )
 
+if DEBUG: MIDDLEWARE_CLASSES += ('ngui.middleware.ExceptionLoggingMiddleware',)
+
+
 ROOT_URLCONF = 'ngui.urls'
 
 # Python dotted path to the WSGI application used by Django's runserver.
