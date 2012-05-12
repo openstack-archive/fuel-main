@@ -1,6 +1,6 @@
 {
   "admin": {
-    "URL": "http://localhost:4567/test"
+    "URL": "http://localhost:8000"
   },
     "recipes": [ "agent::default" ]
 }

@@ -1,5 +1,6 @@
 from django.db import models
 from django.contrib.auth.models import User
+from jsonfield import JSONField
 
 class Environment(models.Model):
     
@@ -10,5 +11,4 @@ class Node(models.Model):
     
     environment = models.ForeignKey(Environment, related_name='nodes')
     name = models.CharField(max_length=255)
-
-    
+    metadata = JSONField()
