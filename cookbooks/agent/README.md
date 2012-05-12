@@ -1,5 +1,12 @@
 Agent library sends ohai data to REST service.
 
+Requirements
+============
+* node["admin"]["URL"] variable defined, which is used as
+  target REST service for publishing ohai data.
+* Packages: chef-solo
+* Gems: httplib
+
 License
 =======
 Licensed under the Apache License, Version 2.0 (the "License");
