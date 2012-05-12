@@ -116,6 +116,7 @@ INSTALLED_APPS = (
     'django.contrib.sites',
     'django.contrib.messages',
     'django.contrib.staticfiles',
+    'djcelery',
     'ngui',
     # Uncomment the next line to enable the admin:
     # 'django.contrib.admin',
@@ -151,3 +152,13 @@ LOGGING = {
         },
     }
 }
+
+# Celery settings
+import djcelery
+
+djcelery.setup_loader()
+
+BROKER_URL = "redis://localhost:6379/0"
+CELERY_RESULT_BACKEND = "redis"
+CELERY_IMPORTS = ("tasks",)
+
