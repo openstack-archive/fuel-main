@@ -9,7 +9,6 @@ MODULES=
 help:
 	@echo 'Available targets:'
 	@echo '  all - build product'
-	@echo '  install-prerequisites - install all external prerequisistes'
 
 all:
 
@@ -19,5 +18,4 @@ clean:
 include $(addsuffix /module.mk,$(MODULES))
 
 include rules.mk
-include prerequisites.mk
 
