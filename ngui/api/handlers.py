@@ -3,7 +3,9 @@ import simplejson as json
 from piston.handler import BaseHandler
 from piston.utils import rc
 from django.core.exceptions import ObjectDoesNotExist
+
 from ngui.models import Environment, Node
+
 
 class EnvironmentHandler(BaseHandler):
     
@@ -19,6 +21,7 @@ class EnvironmentHandler(BaseHandler):
                 return rc.NOT_FOUND
         else:
             return Environment.objects.all()
+
 
 class NodeHandler(BaseHandler):
     
