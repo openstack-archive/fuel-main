@@ -40,9 +40,9 @@ class NodeHandler(BaseHandler):
 
     def update(self, request, environment_id, name=None):
         # TODO: use another exception. Check if request contains valid data
-        # It also fales if there is no name
+        # It also fails if there is no name
         try:
-            data = json.loads(request.raw_post_data)
+            data = json.loads(request.body)
             node = Node(name=name,
                         environment_id=environment_id,
                         metadata=data)
