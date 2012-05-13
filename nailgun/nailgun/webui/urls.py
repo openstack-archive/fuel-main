@@ -1,5 +1,5 @@
 from django.conf.urls import patterns, include, url
-from ngui.views import index
+from nailgun.webui.views import index
 
 # Uncomment the next two lines to enable the admin:
 # from django.contrib import admin
@@ -7,5 +7,4 @@ from ngui.views import index
 
 urlpatterns = patterns('',
     url(r'^$', index, name='index'),
-    (r'^api/', include('api.urls')),
 )

@@ -1,6 +1,6 @@
 [
   {
-    "model": "ngui.environment",
+    "model": "nailgun.environment",
     "pk": 1,
     "fields": {
       "name": "Default Environment"

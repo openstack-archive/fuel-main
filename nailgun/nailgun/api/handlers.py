@@ -3,8 +3,7 @@ import simplejson as json
 from piston.handler import BaseHandler
 from piston.utils import rc
 from django.core.exceptions import ObjectDoesNotExist
-
-from ngui.models import Environment, Node
+from nailgun.models import Environment, Node
 
 
 class EnvironmentHandler(BaseHandler):
