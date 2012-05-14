@@ -1,4 +1,4 @@
-# Django settings for ngui project.
+# Django settings for nailgun project.
 import os.path
 
 SITE_ROOT = os.path.dirname(os.path.realpath(__file__))
@@ -15,7 +15,7 @@ MANAGERS = ADMINS
 DATABASES = {
     'default': {
         'ENGINE': 'django.db.backends.sqlite3', # Add 'postgresql_psycopg2', 'mysql', 'sqlite3' or 'oracle'.
-        'NAME': os.path.dirname(SITE_ROOT) + '/nailgun.sqlite',  # Or path to database file if using sqlite3.
+        'NAME': os.path.join(SITE_ROOT, 'nailgun.sqlite'),  # Or path to database file if using sqlite3.
         'USER': '',                      # Not used with sqlite3.
         'PASSWORD': '',                  # Not used with sqlite3.
         'HOST': '',                      # Set to empty string for localhost. Not used with sqlite3.
@@ -70,7 +70,7 @@ STATIC_URL = '/static/'
 
 # Additional locations of static files
 STATICFILES_DIRS = (
-    os.path.abspath(os.path.join(SITE_ROOT, '..', 'static')),
+    os.path.abspath(os.path.join(SITE_ROOT, 'static')),
 )
 
 # List of finder classes that know how to find static files in
@@ -106,7 +106,7 @@ ROOT_URLCONF = 'nailgun.urls'
 WSGI_APPLICATION = 'nailgun.wsgi.application'
 
 TEMPLATE_DIRS = (
-    os.path.abspath(os.path.join(SITE_ROOT, '..', 'templates')),
+    os.path.abspath(os.path.join(SITE_ROOT, 'templates')),
 )
 
 INSTALLED_APPS = (
