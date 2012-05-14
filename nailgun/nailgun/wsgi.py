@@ -17,6 +17,9 @@ import os
 
 os.environ.setdefault("DJANGO_SETTINGS_MODULE", "nailgun.settings")
 
+import monitor
+monitor.start(interval=1.0)
+
 # This application object is used by any WSGI server configured to use this
 # file. This includes Django's development server, if the WSGI_APPLICATION
 # setting points here.
