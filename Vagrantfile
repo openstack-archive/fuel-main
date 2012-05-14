@@ -3,7 +3,7 @@
 
 Vagrant::Config.run do |config|
   config.vm.box = "ubuntu-12.04-server-amd64"
-  # config.vm.box_url = "http://domain.com/path/to/above.box"
+  config.vm.box_url = "http://mc0n1-srt.srt.mirantis.net/ubuntu-12.04-server-amd64.box"
 
   config.vm.forward_port 80, 8080
   # config.vm.forward_port 8000, 8000
