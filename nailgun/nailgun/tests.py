@@ -2,8 +2,8 @@ import simplejson as json
 from django.test import TestCase
 from django import http
 
-from ngui.models import Node
-from api.handlers import NodeHandler
+from nailgun.models import Node
+from nailgun.api.handlers import NodeHandler
 
 
 class NodeModelTest(TestCase):
