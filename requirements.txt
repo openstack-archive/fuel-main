@@ -1,0 +1,4 @@
+Django==1.4
+django-piston==0.2.3
+django-celery-with-redis==2.5
+jsonfield==0.9

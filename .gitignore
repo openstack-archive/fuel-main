@@ -1,0 +1,12 @@
+*.pyc
+*.sqlite
+
+# vim swap files
+.*.swp
+
+# services' runtime files
+*.log
+*.pid
+
+# Vagrant housekeeping file
+/.vagrant

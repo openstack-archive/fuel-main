@@ -1,0 +1,196 @@
+body {
+	font-family: 'PT Sans',arial,sans-serif;
+    font-size: 13px;
+}
+
+#header-box {
+/*
+	background-color: #afdde9;
+	border-bottom: 20px solid #5fbcd3;
+	box-shadow: 0 5px 10px #AAAAAA;
+	margin-bottom: 15px;*/
+}
+
+header h1 {
+	color: white;
+	font-size: 32px;
+	margin: 0;
+	line-height: 1.8em;
+}
+
+nav {
+	margin-bottom: 10px;
+}
+
+nav a {
+	font-size: larger;
+	text-decoration: underline;
+	cursor: pointer;
+	margin-right: 10px;
+	line-height: 2em;
+	vertical-align: middle;
+}
+
+nav a.active {
+	text-decoration: none;
+	font-size: x-large;
+	cursor: normal;
+	margin-right: 20px;
+	border-bottom: 1px dashed;
+}
+
+nav a#add {
+	padding-left: 16px;
+	font-size: small;
+	background-image: url('../img/add.png');
+}
+
+#update {
+	font-size: small;
+}
+
+#update p {
+	margin: 11px auto;
+}
+
+#viewprefs {
+	text-align: right;
+}
+
+#nodes {
+	margin: 0;
+}
+
+#nodes-box {
+	text-align: center;
+}
+
+.node {
+	display: inline-block;
+	margin: 0 20px 20px 0;
+	vertical-align: top;
+}
+
+.node .icon {
+	width: 128px;
+	height: 128px;
+	background-repeat: none;
+	background-position: center top;
+}
+
+.node .roles {
+	margin: 0;
+}
+
+.node.online .icon {
+	background-image: url('../img/osa_server_online.svg');
+}
+
+.node.busy .icon {
+	background-image: url('../img/osa_server_busy.svg');	
+}
+
+.node.offline .icon {
+	background-image: url('../img/osa_server_offline.svg');	
+}
+
+.node.online .icon .status {
+	background-image: url('../img/flag-green.png');
+}
+
+.node.busy .icon .status {
+	background-image: url('../img/flag-orange.png');
+}
+
+.node.offline .icon .status {
+	background-image: url('../img/flag-red.png');
+}
+
+.node .icon .status {
+	display: none;
+	float: left;
+	width: 18px;
+	height: 18px;
+	background-repeat: no-repeat;
+}
+
+.node .icon .status span {
+	display: none;
+}
+
+.node .label {
+	text-align: center;
+	margin-bottom: 10px;
+}
+
+.node .label a {
+	font-size: larger;
+	border-bottom: 1px dashed;
+	cursor: pointer;
+}
+
+.node .roles li {
+	margin: 0 0 3px 0;
+	list-style-type: none;
+	padding-left: 18px;
+	text-align: left;
+	background-repeat: no-repeat;
+	background-position: left middle;
+}
+
+.node .roles li.db {
+	background-image: url('../img/database.png');
+}
+
+.node .roles li.manager {
+	background-image: url('../img/monitor.png');
+}
+
+.node .roles li.stats {
+	background-image: url('../img/chart-bar.png');
+}
+
+.node .roles li.control {
+	background-image: url('../img/calculator.png');
+}
+
+.node .roles li.swift {
+	background-image: url('../img/drive.png');
+}
+
+.node .roles li.glance {
+	background-image: url('../img/disk.png');
+}
+
+.node .roles li.compute {
+	background-image: url('../img/lightning.png');
+}
+
+.node .roles li.api {
+	background-image: url('../img/cog.png');
+}
+
+#update-dialog h1 {
+	font-size: 16px;
+	margin-bottom: 5px;
+}
+
+.whatsnew {
+	font-size: small;
+	border: 1px solid silver;
+}
+
+.whatsnew h1 {
+	font-size: small;
+	padding: 5px;
+	margin-bottom: 5px;
+}
+
+#update-dialog .whatsnew {
+	overflow: auto;
+	margin-bottom: 10px;
+}
+
+#update-dialog .footer {
+	text-align: center;
+}

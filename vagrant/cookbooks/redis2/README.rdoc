@@ -1,0 +1,30 @@
+= DESCRIPTION:
+This cookbooks installs Redis 2 key-value datastore server. Redis can be installed from packages (where available) or source.
+
+= REQUIREMENTS:
+For compiling from source: build-essential
+
+= ATTRIBUTES: 
+["redis2"]["install_from"] - _package_ to install from distro packages, any other value to install from source.
+["redis2"]["instances"]["default"]  - default attributes for all redis instances, will be merged with per instance attributes
+["redis2"]["instances"][instance_name] - per instance configuration attributes tree
+
+= USAGE:
+This cookbook implements redis instances as a definition. If you plan to run only one instance, use the +redis::default_instance+ recipe which call a "redis_default" +redis_instance+.
+To spawn instances of redis, use the +redis_instance+ definition, usage is pretty straight forward:
+<tt>
+redis_instance "datastore" do
+  port 8866
+  data_dir "/mnt/redis/datastore"
+  master master_node
+end
+</tt>
+
+_port_, <em>data_dir</em> and _master_ are the only attributes directly configurable using the definition syntax. Other attributes can be configured using the normal attribute interface under the <tt>node["redis2"]["instances"][<em>instance_name</em>]</tt> scope. Missing attributes will be merged from <tt>node["redis2"]["instances"]["default"]</tt>
+
+The _master_ attribute will set up redis as a slave of a the same redis instance on another server. It will not set node["redis2"]["instances"][<em>instance_name</em>]["replication"]["role"]</tt> (which can be _slave_ or _master_), because redis can be both at the same time (e.g. chained masters).
+
+== Recipes
+* redis2::auto - automagically call redis_instance for every instance defined in the node["redis2"]["instances"] tree.
+* redis2::default_instance - use this if you want a simple recipe with a single redis instance
+It's generally not a good idea to use the redis2::default_instance recipe. If you want a single redis instance, either use redis_instance definition or redis2::auto and define your instance in the attributes tree.

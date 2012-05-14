@@ -1,0 +1,7 @@
+{
+  "admin": {
+    "URL": "http://localhost:8000"
+  },
+    "recipes": [ "agent::default" ]
+}
+
