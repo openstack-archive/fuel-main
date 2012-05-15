@@ -6,7 +6,7 @@ DEBOOTSTRAP_MIRROR = http://us.archive.ubuntu.com/ubuntu/
 endif
 
 ifndef DEBOOTSTRAP_INCLUDE
-DEBOOTSTRAP_INCLUDE = less,vim,bash,net-tools,isc-dhcp-client,rsyslog,cron,iputils-ping,traceroute
+DEBOOTSTRAP_INCLUDE = less,vim,bash,net-tools,isc-dhcp-client,rsyslog,cron,iputils-ping
 endif
 
 ifndef DEBOOTSTRAP_EXCLUDE
