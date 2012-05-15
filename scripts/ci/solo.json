@@ -1,0 +1,4 @@
+{
+    "recipes": [ "nailgun::deps" ]
+}
+

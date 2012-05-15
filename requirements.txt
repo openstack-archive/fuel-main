@@ -1,6 +1,2 @@
-Django==1.4
-django-piston==0.2.3
-django-celery-with-redis==2.5
-jsonfield==0.9
-django-nose==1.0
-simplejson==2.5.2
+# Provide requirements to vagrant/cookbooks/nailgun/recipes/deps.rb
+# To install it, see scripts/ci/solo.rb

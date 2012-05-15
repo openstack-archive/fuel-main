@@ -1,16 +1,6 @@
 
 include_recipe 'django'
-
-{ 'django-piston' => '0.2.3',
-  'django-celery' => '2.5.5',
-  'redis' => '2.4.12',
-  'jsonfield' => '0.9'
-}.each do |package, version|
-  python_pip package do
-    version version
-    action :install
-  end
-end
+include_recipe 'nailgun::deps'
 
 execute 'Preseed Nailgun database' do
   command 'python manage.py loaddata nailgun/fixtures/default_env.json'
