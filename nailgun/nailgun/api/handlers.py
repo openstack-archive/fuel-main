@@ -37,14 +37,11 @@ class NodeHandler(BaseHandler):
         except ObjectDoesNotExist:
             return rc.NOT_FOUND
 
-    def update(self, request, environment_id, name=None):
-        # TODO: use another exception. Check if request contains valid data
-        # It also fails if there is no name
-        try:
-            data = json.loads(request.body)
-            node = Node(name=name,
-                        environment_id=environment_id,
-                        metadata=data)
-            node.save()
-        except ObjectDoesNotExist:
-            return rc.NOT_FOUND
+    def update(self, request, environment_id, name):
+        if request.content_type != "application/json":
+            return rc.BAD_REQUEST
+        data = json.loads(request.body)
+        node = Node(name=name,
+                    environment_id=environment_id,
+                    metadata=data)
+        node.save()
