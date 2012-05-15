@@ -6,7 +6,7 @@ from nailgun.models import Node
 from nailgun.api.handlers import NodeHandler
 
 
-class HandlersTest(TestCase):
+class TestHandlers(TestCase):
 
     def test_node_metadata_gets_updated(self):
         self.request = http.HttpRequest()

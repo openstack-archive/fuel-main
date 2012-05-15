@@ -3,7 +3,7 @@ from django.test import TestCase
 from nailgun.models import Node
 
 
-class NodeModelTest(TestCase):
+class TestNodeModel(TestCase):
 
     def test_creating_new_node_and_save_to_db(self):
         node = Node()
