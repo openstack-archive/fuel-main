@@ -43,7 +43,7 @@ INITRD_SIZE = 614400 #kilobytes
 , := ,
 
 
-build: $(INITRDGZ)
+build: $(INITRD)
 
 initrd: $(INITRD)
 
