@@ -5,7 +5,7 @@
 
 INITRD_LOOP=/var/tmp/build_basedir/loop_precise_i386
 INITRD=/var/tmp/build_basedir/initrd_precise_i386
-MIRROR=http://us.archive.ubuntu.com/ubuntu
+[ -z ${MIRROR} ] && MIRROR=http://us.archive.ubuntu.com/ubuntu
 SUITE=precise
 
 echo "Mounting initrd as loop directory ..."
