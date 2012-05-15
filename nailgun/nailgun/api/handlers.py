@@ -40,7 +40,17 @@ class NodeHandler(BaseHandler):
     def update(self, request, environment_id, name):
         if request.content_type != "application/json":
             return rc.BAD_REQUEST
+
         data = json.loads(request.body)
+        if not 'block_device' in data:
+            return rc.BAD_REQUEST
+        if not 'interfaces' in data:
+            return rc.BAD_REQUEST
+        if not 'cpu' in data:
+            return rc.BAD_REQUEST
+        if not 'memory' in data:
+            return rc.BAD_REQUEST
+
         node = Node(name=name,
                     environment_id=environment_id,
                     metadata=data)
