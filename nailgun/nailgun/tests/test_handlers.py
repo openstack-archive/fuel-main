@@ -32,6 +32,16 @@ class TestHandlers(TestCase):
     def tearDown(self):
         self.node.delete()
 
+    def test_create_new_entry_for_node(self):
+        url = '/api/environments/1/nodes/new-node.test.com'
+        resp = self.client.put(url, json.dumps(self.new_meta), "application/json")
+        self.assertEquals(resp.status_code, 200)
+
+        nodes_from_db = Node.objects.filter(environment_id=1,
+                                            name='new-node.test.com')
+        self.assertEquals(len(nodes_from_db), 1)
+        self.assertEquals(nodes_from_db[0].metadata, self.new_meta)
+
     def test_node_valid_metadata_gets_updated(self):
         resp = self.client.put(self.node_url, json.dumps(self.new_meta), "application/json")
         self.assertEquals(resp.status_code, 200)
