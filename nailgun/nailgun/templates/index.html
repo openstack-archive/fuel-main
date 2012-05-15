@@ -1,4 +1,9 @@
 {% extends "base.html" %}
 {% block content %}
-	index
+	<div id="content">
+		<div id="loading">Loading...</div>
+	</div>
+	<div class="templates">
+		{% include "tpl_env_list.html" %}
+	</div>
 {% endblock %}

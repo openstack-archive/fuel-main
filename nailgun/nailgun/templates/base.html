@@ -14,41 +14,21 @@
     {% block js %}
         <script src="{{ STATIC_URL }}jquery-ui/js/jquery-1.7.1.min.js" type="text/javascript"></script>
         <script src="{{ STATIC_URL }}jquery-ui/js/jquery-ui-1.8.18.custom.min.js" type="text/javascript"></script>
-        <script src="{{ STATIC_URL }}js/dashboard.js"></script>
+        <script src="{{ STATIC_URL }}js/libs/underscore-min.js"></script>
+        <script src="{{ STATIC_URL }}js/libs/backbone-min.js"></script>
+        <script src="{{ STATIC_URL }}js/libs/backbone-relational.js"></script>
+        <script src="{{ STATIC_URL }}js/models.js"></script>
+        <script src="{{ STATIC_URL }}js/main.js"></script>
     {% endblock %}
 </head>
 <body>
-
-<div id="header-box" class="ui-widget-header">
-	<header class="container_12">
-		<h1 class="grid_12">NailGun Dashboard</h1>
-	</header>
-</div>
-
-{% block environments %}
-<div id="dashboard" class="container_12">
-<nav class="grid_12">
-	<a class="active">Cluster 1</a>
-	<a href="#cluster2">Cluster 2</a>
-	<a href="#cluster3">Cluster 3</a>
-	<a id="add"> </a>
-</nav>
-<div class="clear"></div> 
-{% endblock %}
-
-{% block update %}
-    <div id="update" class="ui-widget" class="grid_12">
-        <div style="padding: 0 .7em;" class="ui-state-highlight ui-corner-all"> 
-            <p><span style="float: left; margin-right: .3em;" class="ui-icon ui-icon-info"></span>
-            This NailGun cluster can be updated to <strong>version 0.1.5</strong>&nbsp;<a href="#update" id="show-update-dialog">Review &amp; Apply</a></p>
-        </div>
+    <div id="header-box" class="ui-widget-header">
+        <header class="container_12">
+            <h1 class="grid_12">NailGun Dashboard</h1>
+        </header>
     </div>
-    <div class="clear"></div> 
-{% endblock %}
-
-{% block content %}
-{% endblock %}
-</div>
-
+    <div id="dashboard" class="container_12">
+        {% block content %}{% endblock %}
+    </div>
 </body>
 </html> 

@@ -11,6 +11,15 @@ body {
 	margin-bottom: 15px;*/
 }
 
+#loading {
+	margin-top: 20px;
+	text-align: center;
+}
+
+.templates {
+	display: none;
+}
+
 header h1 {
 	color: white;
 	font-size: 32px;
@@ -168,29 +177,4 @@ nav a#add {
 
 .node .roles li.api {
 	background-image: url('../img/cog.png');
-}
-
-#update-dialog h1 {
-	font-size: 16px;
-	margin-bottom: 5px;
-}
-
-.whatsnew {
-	font-size: small;
-	border: 1px solid silver;
-}
-
-.whatsnew h1 {
-	font-size: small;
-	padding: 5px;
-	margin-bottom: 5px;
-}
-
-#update-dialog .whatsnew {
-	overflow: auto;
-	margin-bottom: 10px;
-}
-
-#update-dialog .footer {
-	text-align: center;
 }
