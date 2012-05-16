@@ -2,7 +2,7 @@ import simplejson as json
 from django import http
 from django.test import TestCase
 
-from nailgun.models import Node
+from nailgun.models import Node, Role
 
 
 class TestHandlers(TestCase):
@@ -19,6 +19,12 @@ class TestHandlers(TestCase):
         self.node = Node(environment_id=1,
                     name=self.node_name,
                     metadata=self.old_meta)
+        self.node.save()
+        role1 = Role()
+        role1.name = "myrole"
+        role1.save()
+        
+        self.node.roles = [role1]
         self.node.save()
         self.node_url = '/api/environments/1/nodes/' + self.node_name
 
@@ -107,4 +113,11 @@ class TestHandlers(TestCase):
                                             name=self.node_name)
         self.assertEquals(len(nodes_from_db), 1)
         self.assertEquals(nodes_from_db[0].metadata, self.old_meta)
+
+    def test_put_does_not_modify_roles_list(self):
+        resp = self.client.put(self.node_url, json.dumps(self.new_meta), "application/json")
+
+        nodes_from_db = Node.objects.filter(environment_id=1,
+                                            name=self.node_name)
+        self.assertEquals(nodes_from_db[0].roles.all()[0].name, "myrole")
 
