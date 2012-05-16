@@ -5,6 +5,14 @@ set -x
 [ X`whoami` = X'root' ] || { echo "You must be root."; exit 1; }
 
 genmac(){
+    if [ -x `which md5sum` ]; then
+	MD5=`which md5sum`
+    elif [ -x `which md5` ]; then
+	MD5=`which md5`
+    else
+	echo "There is MD5 candidates"
+	exit 1
+    fi
     local prefix=$1
     [[ -z $prefix ]] && prefix="52:54:00:00"
     echo $prefix`dd if=/dev/urandom count=1 2>/dev/null | md5sum | sed 's/^\(..\)\(..\).*$/\1:\2/'`
@@ -31,7 +39,7 @@ mkdir -p ${BASE_DIR}/${DOMAIN_NAME}
 
 if [ -z ${DOMAIN_BASE_DISK} ]; then
     echo "Creating domain disk ..."
-    kvm-img create -f qcow2 ${BASE_DIR}/${DOMAIN_NAME}/disk.qcow2 32G
+    qemu-img create -f qcow2 ${BASE_DIR}/${DOMAIN_NAME}/disk.qcow2 32G
 else
     # if ${DOMAIN_BASE_DISK} begins with http we will try to download it
     # ${DOMAIN_BASE_DISK} must have bootloader on it
