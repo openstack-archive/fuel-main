@@ -7,16 +7,17 @@ set -x
 SCRIPT_BASE_DIR=`dirname $0`
 BASE_DIR=/var/lib/ci_libvirt/domains
 
-CONFIG_FILE=$1
-[ -z ${CONFIG_FILE} ] && { echo "CONFIG_FILE not set."; exit 1; }
+CONFIG_DIR=$1
+[ -z ${CONFIG_DIR} ] && { echo "CONFIG_DIR not set."; exit 1; }
 
-. ${CONFIG_FILE}
+. ${CONFIG_DIR}/domain.conf
 
 [ -z ${DOMAIN_NAME} ] && { echo "DOMAIN_NAME not set."; exit 1; } 
 [ -z ${PURGE_AFTER_DESTROY} ] && PURGE_AFTER_DESTROY=false 
 
 echo "Destroying domain ..."
 virsh destroy ${DOMAIN_NAME}
+virsh undefine ${DOMAIN_NAME}
 
 if [ X${PURGE_AFTER_DESTROY} = Xtrue ]; then
     echo "Purging domain ..."
