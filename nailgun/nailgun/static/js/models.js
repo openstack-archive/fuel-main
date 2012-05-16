@@ -4,7 +4,8 @@ var Collection = {}
 Model.Environment = Backbone.RelationalModel.extend({
     urlRoot: '/api/environments',
     defaults: {
-        name: null
+        name: null,
+        active: false
     },
     relations: [{
         type: Backbone.HasMany,

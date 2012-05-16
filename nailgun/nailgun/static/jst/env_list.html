@@ -1,6 +1,8 @@
-<nav class="grid_12">
-	<% environments.each(function(environment) { %>
-        <a class="active"><%= environment.get('name') %></a>
-	<% }) %>
-    <a id="add"> </a>
-</nav>
+<% if (environments.length) { %>
+    <nav class="grid_12" id="env-list">
+        <a id="add"> </a>
+    </nav>
+<% } else { %>
+    This is no environments. <a id="add" href="#"> Add one</a>.
+<% } %>
+<div class="clear"></div> 
