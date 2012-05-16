@@ -12,7 +12,7 @@ var AppRouter = Backbone.Router.extend({
                 activeEnvironment.set('active', false);
             }
             
-            if (id) {
+            if (id && this.environments.get(id)) {
                 this.environments.get(id).set('active', true);
             } else {
                 this.environments.at(0).set('active', true)
@@ -33,7 +33,7 @@ var AppRouter = Backbone.Router.extend({
         }
     },
     unknown: function() {
-        Backbone.history.navigate('', {replace: true});
+        Backbone.history.navigate('', {replace: true, trigger: true});
     }
 });
 
