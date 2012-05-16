@@ -30,7 +30,7 @@ var View = {}
 
 $(document).ready(function() {
     View.EnvironmentList = Backbone.View.extend({
-        template: _.template($('#tpl-env-list').html()),
+        template: _.template($('#tpl_env_list').html()),
         render: function() {
             $(this.el).html(this.template({environments: this.model}));
             return this;
