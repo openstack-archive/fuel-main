@@ -1,0 +1,32 @@
+# Create libvirt bridges
+
+cd /etc/libvirt/qemu/networks
+
+cat > product1.xml <<EOF
+<network>
+  <name>product0</name>
+  <forward mode='nat'/>
+  <bridge name='product0' stp='off' delay='0' />
+  <ip address='10.12.0.1' netmask='255.255.255.0'>
+  </ip>
+</network>
+EOF
+
+cat > product1.xml <<EOF
+<network>
+  <name>product1</name>
+  <bridge name='product1' stp='off' delay='0' />
+</network>
+EOF
+
+virsh net-define product0.xml
+virsh net-define product1.xml
+virsh net-start product0
+virsh net-start product1
+virsh net-autostart product0
+virsh net-autostart product1
+
+
+
+
+
