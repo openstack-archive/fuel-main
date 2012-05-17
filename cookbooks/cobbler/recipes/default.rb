@@ -2,7 +2,6 @@
 
 package "cobbler" do
   action :install
-  options "-y"
 end
 
 package "cobbler-web" do
@@ -11,12 +10,10 @@ end
 
 package "tftpd-hpa" do
   action :install
-  options "-y"
 end
 
 package "dnsmasq" do
   action :install
-  options "-y"
 end
 
 
@@ -51,7 +48,6 @@ template "/etc/cobbler/dnsmasq.template" do
   notifies :run, "execute[cobbler_sync]", :immediately 
 end
 
-
 template "/etc/cobbler/pxe/pxedefault.template" do
   source "pxedefault.template.erb"
   mode 0644
@@ -78,6 +74,24 @@ directory node["cobbler"]["bootstrap_ks_mirror_dir"] do
   action :create
 end
 
+service "dnsmasq" do
+  supports :restart => true 
+  pattern "dnsmasq"
+  action :nothing
+end
+
+
+# FIXME
+# maybe separate recipe only needed for development to resolv mirantis private names
+
+file "/etc/dnsmasq.d/mirantis.net.conf" do
+  action :create
+  content "server=/mirantis.net/172.18.16.4"
+  mode 0644
+  notifies :restart, "service[dnsmasq]", :immediately 
+end
+
+
 
 # Syncing bootstrap kernel
 
@@ -94,7 +108,7 @@ http_request "HEAD #{node["cobbler"]["bootstrap_kernel_url"]}" do
   if File.exists?("#{node["cobbler"]["bootstrap_ks_mirror_dir"]}/linux")
     headers "If-Modified-Since" => File.mtime("#{node["cobbler"]["bootstrap_ks_mirror_dir"]}/linux").httpdate
   end
-  notifies :create, resources(:remote_file => "#{node["cobbler"]["bootstrap_ks_mirror_dir"]}/linux"), :immediately
+  notifies :create, "remote_file[#{node["cobbler"]["bootstrap_ks_mirror_dir"]}/linux]", :immediately
 end
 
 
@@ -113,7 +127,7 @@ http_request "HEAD #{node["cobbler"]["bootstrap_initrd_url"]}" do
   if File.exists?("#{node["cobbler"]["bootstrap_ks_mirror_dir"]}/initrd.gz")
     headers "If-Modified-Since" => File.mtime("#{node["cobbler"]["bootstrap_ks_mirror_dir"]}/initrd.gz").httpdate
   end
-  notifies :create, resources(:remote_file => "#{node["cobbler"]["bootstrap_ks_mirror_dir"]}/initrd.gz"), :immediately
+  notifies :create, "remote_file[#{node["cobbler"]["bootstrap_ks_mirror_dir"]}/initrd.gz]", :immediately
 end
 
 
@@ -188,6 +202,7 @@ execute "edit_bootstrap_system" do
   action :run
   only_if "test ! -z `cobbler profile find --name default`"
 end
+
 
 
 
