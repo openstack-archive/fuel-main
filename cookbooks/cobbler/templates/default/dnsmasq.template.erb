@@ -1,0 +1,20 @@
+# Cobbler generated configuration file for dnsmasq
+# $date 
+#
+
+# resolve.conf .. ?
+#no-poll
+#enable-dbus
+read-ethers
+addn-hosts = /var/lib/cobbler/cobbler_hosts
+domain=test.mirantis.com
+
+dhcp-range=<%= @dhcp_range %>
+dhcp-option=3,<%= @gateway %>
+dhcp-lease-max=1000
+dhcp-authoritative
+dhcp-boot=pxelinux.0
+dhcp-boot=net:normalarch,pxelinux.0
+dhcp-boot=net:ia64,$elilo
+
+$insert_cobbler_system_definitions
