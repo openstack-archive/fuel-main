@@ -3,7 +3,7 @@
   <memory>${domain_memory}</memory>
   <os>
     <type arch='x86_64'>hvm</type>
-    <boot dev='${domain_boot_dev}'>
+    <boot dev='${domain_boot_dev}'/>
   </os>
   <features>
     <acpi/>
