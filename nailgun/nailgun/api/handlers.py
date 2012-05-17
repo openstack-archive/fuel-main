@@ -3,7 +3,7 @@ import simplejson as json
 from piston.handler import BaseHandler
 from piston.utils import rc
 from django.core.exceptions import ObjectDoesNotExist
-from nailgun.models import Environment, Node
+from nailgun.models import Environment, Node, Role
 
 
 class EnvironmentHandler(BaseHandler):
@@ -54,4 +54,47 @@ class NodeHandler(BaseHandler):
         node = Node(name=name,
                     environment_id=environment_id,
                     metadata=data)
+        node.save()
+
+
+class RoleHandler(BaseHandler):
+
+    model = Role
+
+    def read(self, request, environment_id, name):
+        node = Node.objects.filter(environment_id=environment_id,
+                name=name)[0]
+        return node.roles.all()
+
+    def update(self, request, environment_id, name):
+        if request.content_type != "application/json":
+            return rc.BAD_REQUEST
+
+        try:
+            node = Node.objects.get(name=name, environment__id=environment_id)
+        except ObjectDoesNotExist:
+            return rc.NOT_FOUND
+
+
+        roles = json.loads(request.body)
+        # TODO: use filter to check if all passed have 'name' attr. If not - return BAD REQUEST
+        try:
+            [r['name'] for r in roles]
+        except:
+            return rc.BAD_REQUEST
+
+        #node.roles = []
+        for r in roles:
+            if not 'name' in r:
+                return rc.BAD_REQUEST
+            # What if it exists already?
+            # need to make it uniq or name for role should be pk
+            # Another thing is it would be better to do role saving transactionally,
+            #   i.e. save all or none in case of any error, as well as node update
+            role_in_db = Role(name=r['name'])
+            role_in_db.save()
+
+            node.roles.add(role_in_db)
+
+        # It looks like we don't need to save now - do we?
         node.save()

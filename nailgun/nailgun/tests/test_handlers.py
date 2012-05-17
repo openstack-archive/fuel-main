@@ -20,11 +20,11 @@ class TestHandlers(TestCase):
                     name=self.node_name,
                     metadata=self.old_meta)
         self.node.save()
-        role1 = Role()
-        role1.name = "myrole"
-        role1.save()
+        self.role = Role()
+        self.role.name = "myrole"
+        self.role.save()
         
-        self.node.roles = [role1]
+        self.node.roles = [self.role]
         self.node.save()
         self.node_url = '/api/environments/1/nodes/' + self.node_name
 
@@ -37,6 +37,7 @@ class TestHandlers(TestCase):
 
     def tearDown(self):
         self.node.delete()
+        self.role.delete()
 
     def test_create_new_entry_for_node(self):
         url = '/api/environments/1/nodes/new-node.test.com'
@@ -114,10 +115,31 @@ class TestHandlers(TestCase):
         self.assertEquals(len(nodes_from_db), 1)
         self.assertEquals(nodes_from_db[0].metadata, self.old_meta)
 
-    def test_put_does_not_modify_roles_list(self):
-        resp = self.client.put(self.node_url, json.dumps(self.new_meta), "application/json")
+    def test_put_on_nodes_does_not_modify_roles_list(self):
+        resp = self.client.put(self.node_url, json.dumps(self.new_meta),
+                "application/json")
 
         nodes_from_db = Node.objects.filter(environment_id=1,
                                             name=self.node_name)
         self.assertEquals(nodes_from_db[0].roles.all()[0].name, "myrole")
 
+
+    # Tests for RoleHandler
+    def test_can_get_list_of_roles_for_node(self):
+        resp = self.client.get(self.node_url + '/roles')
+        self.assertEquals(json.loads(resp.content)[0]['name'], 'myrole')
+
+    def test_list_of_roles_gets_updated_via_put_on_roles(self):
+        roles = [{'name': 'role1'}, {'name': 'role2'}]
+        resp = self.client.put(self.node_url + '/roles', json.dumps(roles),
+                "application/json")
+
+        roles_from_db = Role.objects.all()
+        self.assertEquals(roles_from_db[1].name, 'role1')
+        self.assertEquals(roles_from_db[2].name, 'role2')
+
+        nodes_from_db = Node.objects.filter(environment_id=1,
+                                            name=self.node_name)
+        self.assertEquals(nodes_from_db[0].roles.all()[0].name, "myrole")
+        self.assertEquals(nodes_from_db[0].roles.all()[1].name, "role1")
+        self.assertEquals(nodes_from_db[0].roles.all()[2].name, "role2")
