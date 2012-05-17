@@ -26,6 +26,11 @@ auto eth0
 iface eth0 inet dhcp
 EOF
 
+echo "Configuring /etc/network/interfaces ..."
+cat > ${INITRD_LOOP}/etc/hostname <<EOF
+bootstrap
+EOF
+
 echo "Setting default password for root into r00tme ..." 
 sed -i -e '/^root/c\root:$6$oC7haQNQ$LtVf6AI.QKn9Jb89r83PtQN9fBqpHT9bAFLzy.YVxTLiFgsoqlPY3awKvbuSgtxYHx4RUcpUqMotp.WZ0Hwoj.:15441:0:99999:7:::' ${INITRD_LOOP}/etc/shadow
 
