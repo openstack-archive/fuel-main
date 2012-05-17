@@ -20,6 +20,7 @@ end
 template "/etc/cobbler/modules.conf" do
   source "modules.conf.erb"
   mode 0644
+  notifies :restart, "service[cobbler]", :immediately
 end
 
 template "/etc/cobbler/settings" do
@@ -29,6 +30,7 @@ template "/etc/cobbler/settings" do
             :next_server => node["cobbler"]["next_server"],
             :cobbler_server => node["cobbler"]["cobbler_server"]
   )
+  notifies :restart, "service[cobbler]", :immediately
 end
 
 
@@ -74,9 +76,13 @@ directory node["cobbler"]["bootstrap_ks_mirror_dir"] do
   action :create
 end
 
+service "cobbler" do
+  supports :restart => true 
+  action :nothing
+end
+
 service "dnsmasq" do
   supports :restart => true 
-  pattern "dnsmasq"
   action :nothing
 end
 
