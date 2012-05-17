@@ -80,7 +80,7 @@ cp -r ../scripts ${INITRD_LOOP}/root
 
 echo "Injecting crontab job to launch chef-solo ..."
 cat > ${INITRD_LOOP}/etc/cron.d/chef-solo <<EOF
-* * * * * root flock -w 0 /var/lock/chef-solo.lock /usr/bin/chef-solo -l debug -c /root/scripts/solo.rb -j /root/scripts/solo.json
+*/5 * * * * root flock -w 0 /var/lock/chef-solo.lock /usr/bin/chef-solo -l debug -c /root/scripts/solo.rb -j /root/scripts/solo.json
 EOF
 
 

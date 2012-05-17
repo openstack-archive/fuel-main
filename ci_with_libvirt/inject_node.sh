@@ -21,10 +21,11 @@ qemu-img info ${BASE_DIR}/${DOMAIN_NAME}/disk.qcow2 | grep "^file format" | grep
 echo "Connecting to nbd device ..."
 modprobe nbd max_part=63
 qemu-nbd -c /dev/nbd0 ${BASE_DIR}/${DOMAIN_NAME}/disk.qcow2 || { echo "Error occured while connecting disk to nbd device"; exit 1; }
+sleep 3
 
 echo "Mounting nbd into loop dir ..."
 LOOP_DIR=`mktemp -d`
-mount /dev/nbd0p1 ${LOOP_DIR}
+mount /dev/nbd0p1 ${LOOP_DIR} || { echo "Error occured while mounting nbd device."; qemu-nbd -d /dev/nbd0; exit 1; }
 
 
 echo "Injecting cookbooks ..."
@@ -43,6 +44,7 @@ exit 0
 EOF
 
 echo "Unmounting loop dir ..."
+sync
 umount ${LOOP_DIR} 
 
 
