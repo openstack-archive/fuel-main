@@ -28,6 +28,7 @@ CONFIG_DIR=$1
 
 [ -z ${DOMAIN_NAME} ] && { echo "DOMAIN_NAME not set."; exit 1; } 
 [ -z ${DOMAIN_MEMORY} ] && DOMAIN_MEMORY=1048576
+[ -z ${DOMAIN_BOOT_DEV} ] && DOMAIN_BOOT_DEV=network
 [ -z ${DOMAIN_BRIDGE0} ] && { echo "DOMAIN_BRIDGE0 not set"; exit 1; }
 [ -z ${DOMAIN_BRIDGE1} ] && { echo "DOMAIN_BRIDGE1 not set"; exit 1; }
 [ -z ${DOMAIN_MAC0} ] && DOMAIN_MAC0=`genmac 52:54:00:00:`
@@ -55,13 +56,13 @@ echo "Templating domain.xml"
 sed -e "
 s/\${domain_name}/${DOMAIN_NAME}/g
 s/\${domain_memory}/${DOMAIN_MEMORY}/g
+s/\${domain_boot_dev}/${DOMAIN_BOOT_DEV}/g
 s#\${domain_disk}#${BASE_DIR}/${DOMAIN_NAME}/disk.qcow2#g
 s/\${domain_mac0}/${DOMAIN_MAC0}/g
 s/\${domain_mac1}/${DOMAIN_MAC1}/g
 s/\${domain_bridge0}/${DOMAIN_BRIDGE0}/g
 s/\${domain_bridge1}/${DOMAIN_BRIDGE1}/g
 " ${SCRIPT_BASE_DIR}/domain.xml.template > ${BASE_DIR}/${DOMAIN_NAME}/domain.xml
-
 
 
 
