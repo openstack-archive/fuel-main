@@ -20,7 +20,8 @@ var AppRouter = Backbone.Router.extend({
         } else {
             this.environments = new Collection.Environment;
             this.environmentListView = new View.EnvironmentList({
-                model: this.environments
+                model: this.environments,
+                el: $('#content')
             });
             this.environments.fetch({
                 success: _.bind(function() {
@@ -44,7 +45,22 @@ $(document).ready(function() {
         tagName: 'span',
         template: _.template($('#tpl_env').html()),
         initialize: function() {
-            this.model.bind('change:active', this.render, this);
+            this.model.bind('change:active', function() {
+                this.render();
+                
+                var container = $('#nodes');
+                
+                if (this.model.get('active')) {
+                    if (this.model.get('nodes').length) {
+                        new View.NodeList({
+                            model: this.model.get('nodes'),
+                            el: container
+                        }).render();
+                    } else {
+                        container.html('This environment has no nodes');
+                    }
+                }
+            }, this);
         },
         render: function() {
             this.$el.html(this.template({environment: this.model}));
@@ -53,7 +69,6 @@ $(document).ready(function() {
     });
     
     View.EnvironmentList = Backbone.View.extend({
-        el: $('#content'),
         template: _.template($('#tpl_env_list').html()),
         events: {
             'click #add': 'addEnvironment'
@@ -63,15 +78,40 @@ $(document).ready(function() {
         },
         initialize: function() {
             this.model.bind('reset', this.render, this);
+            this.model.bind('add', this.render, this);
         },
         render: function() {
             this.$el.html(this.template({environments: this.model}));
             
             var environments = [];
-            this.model.each(_.bind(function(environment) {
+            this.model.each(function(environment) {
                 environments.push(new View.Environment({model: environment}).render().el);
-            }, this));
+            });
             $('#env-list').prepend(environments);
+            
+            return this;
+        }
+    });
+    
+    View.Node = Backbone.View.extend({
+        tagName: 'li',
+        className: 'node online',
+        template: _.template($('#tpl_node').html()),
+        initialize: function() {
+            this.model.bind('change', this.render, this);
+        },
+        render: function() {
+            this.$el.html(this.template({node: this.model}));
+            return this;
+        }
+    });
+    
+    View.NodeList = Backbone.View.extend({
+        render: function() {
+            this.$el.html('');
+            this.model.each(_.bind(function(node) {
+                this.$el.append(new View.Node({model: node}).render().el);
+            }, this));
             
             return this;
         }
