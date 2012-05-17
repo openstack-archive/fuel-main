@@ -4,11 +4,13 @@ from piston.handler import BaseHandler
 from piston.utils import rc
 from django.core.exceptions import ObjectDoesNotExist
 from nailgun.models import Environment, Node, Role
+from validators import validate_json
+from forms import EnvironmentForm
 
 
 class EnvironmentHandler(BaseHandler):
     
-    allowed_methods = ('GET',)
+    allowed_methods = ('GET', 'POST')
     model = Environment
     fields = ('id', 'name', ('nodes', ()))
     
@@ -20,6 +22,13 @@ class EnvironmentHandler(BaseHandler):
                 return rc.NOT_FOUND
         else:
             return Environment.objects.all()
+    
+    @validate_json(EnvironmentForm)
+    def create(self, request):
+        environment = Environment()
+        environment.name = request.form.cleaned_data['name']
+        environment.save()
+        return rc.CREATED
 
 
 class NodeHandler(BaseHandler):
