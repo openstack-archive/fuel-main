@@ -55,17 +55,23 @@ class TestHandlers(TestCase):
         self.assertEquals(len(nodes_from_db), 1)
         self.assertEquals(nodes_from_db[0].metadata, self.new_meta)
 
+    def test_node_valid_status_gets_updated(self):
+        params = {'status': 'offline'}
+        resp = self.client.put(self.node_url, json.dumps(params), "application/json")
+        self.assertEquals(resp.status_code, 200)
+        
     def test_put_returns_400_if_no_body(self):
         resp = self.client.put(self.node_url, None, "application/json")
         self.assertEquals(resp.status_code, 400)
 
     def test_put_returns_400_if_wrong_content_type(self):
-        resp = self.client.put(self.node_url, self.meta_json, "plain/text")
+        params = {'metadata': self.meta_json}
+        resp = self.client.put(self.node_url, json.dumps(params), "plain/text")
         self.assertEquals(resp.status_code, 400)
 
-    def test_put_returns_400_if_no_name(self):
-        url = '/api/environments/1/nodes/'
-        resp = self.client.put(url, self.meta_json, "application/json")
+    def test_put_returns_400_if_wrong_status(self):
+        params = {'status': 'invalid_status'}
+        resp = self.client.put(self.node_url, json.dumps(params), "application/json")
         self.assertEquals(resp.status_code, 400)
 
     def test_put_returns_400_if_no_block_device_attr(self):

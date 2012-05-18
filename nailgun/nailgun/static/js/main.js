@@ -95,12 +95,13 @@ $(document).ready(function() {
     
     View.Node = Backbone.View.extend({
         tagName: 'li',
-        className: 'node online',
+        className: 'node',
         template: _.template($('#tpl_node').html()),
         initialize: function() {
             this.model.bind('change', this.render, this);
         },
         render: function() {
+            this.$el.addClass(this.model.get('status'));
             this.$el.html(this.template({node: this.model}));
             return this;
         }
