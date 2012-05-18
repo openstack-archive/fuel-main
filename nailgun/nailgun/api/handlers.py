@@ -36,7 +36,7 @@ class EnvironmentHandler(BaseHandler):
 
 class ConfigHandler(BaseHandler):
 
-    allowed_methods = ('POST')
+    allowed_methods = ('POST',)
 
     """ Creates JSON files for chef-solo. This should be moved to the queue. """
     def create(self, request, environment_id):
@@ -53,7 +53,7 @@ class ConfigHandler(BaseHandler):
         for r in roles:
             # Find nodes that have this role. Filter nodes by env_id
             nodes_per_role[r.name] = \
-                    [x.name for x in r.node_set.filter(environment__id=env_id)]
+                    [x.name for x in r.nodes.filter(environment__id=env_id)]
 
         solo_json = {}
         # Extend solo_json for each node by specifying role
