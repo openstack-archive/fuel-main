@@ -143,3 +143,8 @@ class TestHandlers(TestCase):
         self.assertEquals(nodes_from_db[0].roles.all()[0].name, "myrole")
         self.assertEquals(nodes_from_db[0].roles.all()[1].name, "role1")
         self.assertEquals(nodes_from_db[0].roles.all()[2].name, "role2")
+
+    #def test_jsons_created_for_chef_solo(self):
+        #resp = self.client.post('/api/environments/1/chef-config/')
+        #print resp.content
+        #raise
