@@ -8,7 +8,7 @@ from django.conf import settings
 
 from nailgun.models import Environment, Node, Role
 from validators import validate_json
-from forms import EnvironmentForm
+from forms import EnvironmentForm, NodeForm
 
 
 class EnvironmentHandler(BaseHandler):
@@ -31,7 +31,7 @@ class EnvironmentHandler(BaseHandler):
         environment = Environment()
         environment.name = request.form.cleaned_data['name']
         environment.save()
-        return rc.CREATED
+        return environment
 
 
 class ConfigHandler(BaseHandler):
@@ -71,77 +71,66 @@ class ConfigHandler(BaseHandler):
 
 class NodeHandler(BaseHandler):
     
-    allowed_methods = ('GET', 'PUT',)
+    allowed_methods = ('GET', 'PUT')
     model = Node
-    fields = ('name', 'metadata')
+    fields = ('name', 'metadata', 'status', ('roles', ()))
     
-    def read(self, request, environment_id, name=None):
+    def read(self, request, environment_id, node_name=None):
         try:
-            if name:
-                return Node.objects.get(name=name, environment__id=environment_id)
+            if node_name:
+                return Node.objects.get(name=node_name, environment__id=environment_id)
             else:
                 return Node.objects.filter(environment__id=environment_id)
         except ObjectDoesNotExist:
             return rc.NOT_FOUND
-
-    def update(self, request, environment_id, name):
-        if request.content_type != "application/json":
-            return rc.BAD_REQUEST
-
-        data = json.loads(request.body)
-        if not 'block_device' in data:
-            return rc.BAD_REQUEST
-        if not 'interfaces' in data:
-            return rc.BAD_REQUEST
-        if not 'cpu' in data:
-            return rc.BAD_REQUEST
-        if not 'memory' in data:
-            return rc.BAD_REQUEST
-
-        node = Node(name=name,
-                    environment_id=environment_id,
-                    metadata=data)
-        node.save()
-
-
-class RoleHandler(BaseHandler):
-
-    model = Role
-
-    def read(self, request, environment_id, name):
-        node = Node.objects.filter(environment_id=environment_id,
-                name=name)[0]
-        return node.roles.all()
-
-    def update(self, request, environment_id, name):
-        if request.content_type != "application/json":
-            return rc.BAD_REQUEST
-
+    
+    @validate_json(NodeForm)
+    def update(self, request, environment_id, node_name):
         try:
-            node = Node.objects.get(name=name, environment__id=environment_id)
+            node = Node.objects.get(name=node_name, environment__id=environment_id)
+            for key, value in request.form.cleaned_data.items():
+                if key in request.form.data: # check if parameter is really passed by client
+                    setattr(node, key, value)
+            node.save()
+            return node
         except ObjectDoesNotExist:
             return rc.NOT_FOUND
 
 
-        roles = json.loads(request.body)
-        # TODO: use filter to check if all passed have 'name' attr. If not - return BAD REQUEST
+class RoleHandler(BaseHandler):
+
+    allowed_methods = ('GET', 'POST', 'DELETE')
+    model = Role
+    fields = ('name',)
+
+    def read(self, request, environment_id, node_name, role_name=None):
         try:
-            [r['name'] for r in roles]
-        except:
-            return rc.BAD_REQUEST
+            if role_name:
+                return Role.objects.get(nodes__environment__id=environment_id, nodes__name=node_name, name=role_name)
+            else:
+                return Role.objects.filter(nodes__environment__id=environment_id, nodes__name=node_name)
+        except ObjectDoesNotExist:
+            return rc.NOT_FOUND
 
-        #node.roles = []
-        for r in roles:
-            if not 'name' in r:
-                return rc.BAD_REQUEST
-            # What if it exists already?
-            # need to make it uniq or name for role should be pk
-            # Another thing is it would be better to do role saving transactionally,
-            #   i.e. save all or none in case of any error, as well as node update
-            role_in_db = Role(name=r['name'])
-            role_in_db.save()
-
-            node.roles.add(role_in_db)
-
-        # It looks like we don't need to save now - do we?
-        node.save()
+    def create(self, request, environment_id, node_name, role_name):
+        try:
+            print environment_id, node_name, role_name
+            node = Node.objects.get(environment__id=environment_id, name=node_name)
+            role = Role.objects.get(name=role_name)
+            
+            if role in node.roles.all():
+                return rc.DUPLICATE_ENTRY
+            
+            node.roles.add(role)
+            return role
+        except ObjectDoesNotExist:
+            return rc.NOT_FOUND
+    
+    def delete(self, request, environment_id, node_name, role_name):
+        try:
+            node = Node.objects.get(environment__id=environment_id, name=node_name)
+            role = Role.objects.get(name=role_name)
+            node.roles.remove(role)
+            return rc.DELETED
+        except ObjectDoesNotExist:
+            return rc.NOT_FOUND

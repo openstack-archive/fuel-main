@@ -1,0 +1,42 @@
+[
+  {
+    "model": "nailgun.role",
+    "pk": "db",
+    "fields": {}
+  },
+  {
+    "model": "nailgun.role",
+    "pk": "manager",
+    "fields": {}
+  },
+  {
+    "model": "nailgun.role",
+    "pk": "stats",
+    "fields": {}
+  },
+  {
+    "model": "nailgun.role",
+    "pk": "control",
+    "fields": {}
+  },
+  {
+    "model": "nailgun.role",
+    "pk": "swift",
+    "fields": {}
+  },
+  {
+    "model": "nailgun.role",
+    "pk": "glance",
+    "fields": {}
+  },
+  {
+    "model": "nailgun.role",
+    "pk": "compute",
+    "fields": {}
+  },
+  {
+    "model": "nailgun.role",
+    "pk": "api",
+    "fields": {}
+  }
+]

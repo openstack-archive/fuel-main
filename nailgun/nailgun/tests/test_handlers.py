@@ -20,9 +20,14 @@ class TestHandlers(TestCase):
                     name=self.node_name,
                     metadata=self.old_meta)
         self.node.save()
+        
         self.role = Role()
         self.role.name = "myrole"
         self.role.save()
+        
+        self.another_role = Role()
+        self.another_role.name = "myrole2"
+        self.another_role.save()
         
         self.node.roles = [self.role]
         self.node.save()
@@ -39,18 +44,10 @@ class TestHandlers(TestCase):
         self.node.delete()
         self.role.delete()
 
-    def test_create_new_entry_for_node(self):
-        url = '/api/environments/1/nodes/new-node.test.com'
-        resp = self.client.put(url, json.dumps(self.new_meta), "application/json")
-        self.assertEquals(resp.status_code, 200)
-
-        nodes_from_db = Node.objects.filter(environment_id=1,
-                                            name='new-node.test.com')
-        self.assertEquals(len(nodes_from_db), 1)
-        self.assertEquals(nodes_from_db[0].metadata, self.new_meta)
-
     def test_node_valid_metadata_gets_updated(self):
-        resp = self.client.put(self.node_url, json.dumps(self.new_meta), "application/json")
+        resp = self.client.put(self.node_url,
+                               json.dumps({'metadata': self.new_meta}),
+                               "application/json")
         self.assertEquals(resp.status_code, 200)
 
         nodes_from_db = Node.objects.filter(environment_id=1,
@@ -74,7 +71,9 @@ class TestHandlers(TestCase):
     def test_put_returns_400_if_no_block_device_attr(self):
         meta = self.new_meta.copy()
         del meta['block_device']
-        resp = self.client.put(self.node_url, json.dumps(meta), "application/json")
+        resp = self.client.put(self.node_url,
+                               json.dumps({'metadata': meta}),
+                               "application/json")
         self.assertEquals(resp.status_code, 400)
 
         nodes_from_db = Node.objects.filter(environment_id=1,
@@ -85,7 +84,9 @@ class TestHandlers(TestCase):
     def test_put_returns_400_if_no_interfaces_attr(self):
         meta = self.new_meta.copy()
         del meta['interfaces']
-        resp = self.client.put(self.node_url, json.dumps(meta), "application/json")
+        resp = self.client.put(self.node_url,
+                               json.dumps({'metadata': meta}),
+                               "application/json")
         self.assertEquals(resp.status_code, 400)
 
         nodes_from_db = Node.objects.filter(environment_id=1,
@@ -96,7 +97,9 @@ class TestHandlers(TestCase):
     def test_put_returns_400_if_no_cpu_attr(self):
         meta = self.new_meta.copy()
         del meta['cpu']
-        resp = self.client.put(self.node_url, json.dumps(meta), "application/json")
+        resp = self.client.put(self.node_url,
+                               json.dumps({'metadata': meta}),
+                               "application/json")
         self.assertEquals(resp.status_code, 400)
 
         nodes_from_db = Node.objects.filter(environment_id=1,
@@ -107,7 +110,9 @@ class TestHandlers(TestCase):
     def test_put_returns_400_if_no_memory_attr(self):
         meta = self.new_meta.copy()
         del meta['memory']
-        resp = self.client.put(self.node_url, json.dumps(meta), "application/json")
+        resp = self.client.put(self.node_url,
+                               json.dumps({'metadata': meta}),
+                               "application/json")
         self.assertEquals(resp.status_code, 400)
 
         nodes_from_db = Node.objects.filter(environment_id=1,
@@ -129,20 +134,19 @@ class TestHandlers(TestCase):
         resp = self.client.get(self.node_url + '/roles')
         self.assertEquals(json.loads(resp.content)[0]['name'], 'myrole')
 
-    def test_list_of_roles_gets_updated_via_put_on_roles(self):
-        roles = [{'name': 'role1'}, {'name': 'role2'}]
-        resp = self.client.put(self.node_url + '/roles', json.dumps(roles),
-                "application/json")
+    def test_list_of_roles_gets_updated_via_post(self):
+        url = self.node_url + '/roles/' + self.another_role.name
+        resp = self.client.post(url, '', "plain/text")
+        self.assertEquals(resp.status_code, 200)
 
+        resp = self.client.post(url, '', "plain/text")
+        self.assertEquals(resp.status_code, 409)
+        
         roles_from_db = Role.objects.all()
-        self.assertEquals(roles_from_db[1].name, 'role1')
-        self.assertEquals(roles_from_db[2].name, 'role2')
-
         nodes_from_db = Node.objects.filter(environment_id=1,
                                             name=self.node_name)
-        self.assertEquals(nodes_from_db[0].roles.all()[0].name, "myrole")
-        self.assertEquals(nodes_from_db[0].roles.all()[1].name, "role1")
-        self.assertEquals(nodes_from_db[0].roles.all()[2].name, "role2")
+        self.assertEquals(nodes_from_db[0].roles.all()[0].name, self.role.name)
+        self.assertEquals(nodes_from_db[0].roles.all()[1].name, self.another_role.name)
 
     #def test_jsons_created_for_chef_solo(self):
         #resp = self.client.post('/api/environments/1/chef-config/')

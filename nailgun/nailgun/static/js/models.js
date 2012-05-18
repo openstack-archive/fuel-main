@@ -13,7 +13,8 @@ Model.Environment = Backbone.RelationalModel.extend({
         relatedModel: 'Model.Node',
         collectionType: 'Collection.Node',
         reverseRelation: {
-            key: 'environment'
+            key: 'environment',
+            includeInJSON: false
         }
     }]
 });

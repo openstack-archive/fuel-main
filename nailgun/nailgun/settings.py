@@ -4,8 +4,6 @@ import os.path
 SITE_ROOT = os.path.dirname(os.path.realpath(__file__))
 PROJECT_ROOT = os.path.dirname(SITE_ROOT)
 
-API_URL = 'http://127.0.0.1:8000/'
-
 DEBUG = True
 TEMPLATE_DEBUG = DEBUG
 
@@ -101,7 +99,6 @@ MIDDLEWARE_CLASSES = (
 )
 
 if DEBUG: MIDDLEWARE_CLASSES += ('nailgun.middleware.ExceptionLoggingMiddleware',)
-
 
 ROOT_URLCONF = 'nailgun.urls'
 
