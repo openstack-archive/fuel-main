@@ -57,9 +57,10 @@ class TestHandlers(TestCase):
 
     def test_node_valid_status_gets_updated(self):
         params = {'status': 'offline'}
-        resp = self.client.put(self.node_url, json.dumps(params), "application/json")
+        resp = self.client.put(self.node_url, json.dumps(params),
+                "application/json")
         self.assertEquals(resp.status_code, 200)
-        
+
     def test_put_returns_400_if_no_body(self):
         resp = self.client.put(self.node_url, None, "application/json")
         self.assertEquals(resp.status_code, 400)
@@ -71,7 +72,8 @@ class TestHandlers(TestCase):
 
     def test_put_returns_400_if_wrong_status(self):
         params = {'status': 'invalid_status'}
-        resp = self.client.put(self.node_url, json.dumps(params), "application/json")
+        resp = self.client.put(self.node_url, json.dumps(params),
+                "application/json")
         self.assertEquals(resp.status_code, 400)
 
     def test_put_returns_400_if_no_block_device_attr(self):
