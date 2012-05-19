@@ -45,6 +45,6 @@ class TestRolesNodesAssociation(TestCase):
         node1.roles.add(role2)
         self.assertEquals(len(node1.roles.all()), 2)
 
-        self.assertEquals(Node.objects.filter(roles__name__startswith="myr")[0].name,
+        self.assertEquals(Node.objects.filter(
+            roles__name__startswith="myr")[0].name,
                 "test.example.com")
-

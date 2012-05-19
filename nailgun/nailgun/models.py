@@ -20,7 +20,7 @@ class Node(models.Model):
     )
     environment = models.ForeignKey(Environment, related_name='nodes')
     name = models.CharField(max_length=100, primary_key=True)
-    status = models.CharField(max_length=30, choices=NODE_STATUSES, default='online')
+    status = models.CharField(max_length=30, choices=NODE_STATUSES,
+            default='online')
     metadata = JSONField()
     roles = models.ManyToManyField(Role, related_name='nodes')
-

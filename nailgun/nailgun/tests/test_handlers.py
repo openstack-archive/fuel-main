@@ -20,15 +20,15 @@ class TestHandlers(TestCase):
                     name=self.node_name,
                     metadata=self.old_meta)
         self.node.save()
-        
+
         self.role = Role()
         self.role.name = "myrole"
         self.role.save()
-        
+
         self.another_role = Role()
         self.another_role.name = "myrole2"
         self.another_role.save()
-        
+
         self.node.roles = [self.role]
         self.node.save()
         self.node_url = '/api/environments/1/nodes/' + self.node_name
@@ -134,7 +134,6 @@ class TestHandlers(TestCase):
                                             name=self.node_name)
         self.assertEquals(nodes_from_db[0].roles.all()[0].name, "myrole")
 
-
     # Tests for RoleHandler
     def test_can_get_list_of_roles_for_node(self):
         resp = self.client.get(self.node_url + '/roles')
@@ -147,12 +146,14 @@ class TestHandlers(TestCase):
 
         resp = self.client.post(url, '', "plain/text")
         self.assertEquals(resp.status_code, 409)
-        
+
         roles_from_db = Role.objects.all()
         nodes_from_db = Node.objects.filter(environment_id=1,
                                             name=self.node_name)
-        self.assertEquals(nodes_from_db[0].roles.all()[0].name, self.role.name)
-        self.assertEquals(nodes_from_db[0].roles.all()[1].name, self.another_role.name)
+        self.assertEquals(nodes_from_db[0].roles.all()[0].name,
+                self.role.name)
+        self.assertEquals(nodes_from_db[0].roles.all()[1].name,
+                self.another_role.name)
 
     #def test_jsons_created_for_chef_solo(self):
         #resp = self.client.post('/api/environments/1/chef-config/')

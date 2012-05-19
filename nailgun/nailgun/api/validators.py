@@ -2,6 +2,7 @@ import json
 from piston.utils import FormValidationError, HttpStatusCode, rc
 from piston.decorator import decorator
 
+
 def validate_json(v_form):
     @decorator
     def wrap(f, self, request, *a, **kwa):
@@ -10,9 +11,9 @@ def validate_json(v_form):
             response = rc.BAD_REQUEST
             response.content = "Invalid content type, must be application/json"
             raise HttpStatusCode(response)
-        
+
         form = v_form(json.loads(request.body), request.FILES)
-        
+
         if form.is_valid():
             setattr(request, 'form', form)
             return f(self, request, *a, **kwa)

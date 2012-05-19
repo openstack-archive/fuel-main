@@ -12,11 +12,11 @@ from forms import EnvironmentForm, NodeForm
 
 
 class EnvironmentHandler(BaseHandler):
-    
+
     allowed_methods = ('GET', 'POST', 'PUT')
     model = Environment
     fields = ('id', 'name', ('nodes', ()))
-    
+
     def read(self, request, environment_id=None):
         if environment_id:
             try:
@@ -25,7 +25,7 @@ class EnvironmentHandler(BaseHandler):
                 return rc.NOT_FOUND
         else:
             return Environment.objects.all()
-    
+
     @validate_json(EnvironmentForm)
     def create(self, request):
         environment = Environment()
@@ -38,7 +38,7 @@ class ConfigHandler(BaseHandler):
 
     allowed_methods = ('POST',)
 
-    """ Creates JSON files for chef-solo. This should be moved to the queue. """
+    """ Creates JSON files for chef-solo. This should be moved to the queue """
     def create(self, request, environment_id):
         env_id = environment_id
         nodes = Node.objects.filter(environment__id=env_id)
@@ -63,33 +63,37 @@ class ConfigHandler(BaseHandler):
                     ["role[" + x.name + "]" for x in n.roles.all()]
             solo_json['all_roles'] = nodes_per_role
 
-            filepath = os.path.join(settings.CHEF_CONF_FOLDER, n.name + '.json')
+            filepath = os.path.join(settings.CHEF_CONF_FOLDER,
+                    n.name + '.json')
             f = open(filepath, 'w')
             f.write(json.dumps(solo_json))
             f.close()
 
 
 class NodeHandler(BaseHandler):
-    
+
     allowed_methods = ('GET', 'PUT')
     model = Node
     fields = ('name', 'metadata', 'status', ('roles', ()))
-    
+
     def read(self, request, environment_id, node_name=None):
         try:
             if node_name:
-                return Node.objects.get(name=node_name, environment__id=environment_id)
+                return Node.objects.get(name=node_name,
+                        environment__id=environment_id)
             else:
                 return Node.objects.filter(environment__id=environment_id)
         except ObjectDoesNotExist:
             return rc.NOT_FOUND
-    
+
     @validate_json(NodeForm)
     def update(self, request, environment_id, node_name):
         try:
-            node = Node.objects.get(name=node_name, environment__id=environment_id)
+            node = Node.objects.get(name=node_name,
+                    environment__id=environment_id)
             for key, value in request.form.cleaned_data.items():
-                if key in request.form.data: # check if parameter is really passed by client
+                # check if parameter is really passed by client
+                if key in request.form.data:
                     setattr(node, key, value)
             node.save()
             return node
@@ -106,29 +110,34 @@ class RoleHandler(BaseHandler):
     def read(self, request, environment_id, node_name, role_name=None):
         try:
             if role_name:
-                return Role.objects.get(nodes__environment__id=environment_id, nodes__name=node_name, name=role_name)
+                return Role.objects.get(nodes__environment__id=environment_id,
+                        nodes__name=node_name, name=role_name)
             else:
-                return Role.objects.filter(nodes__environment__id=environment_id, nodes__name=node_name)
+                return Role.objects.filter(
+                        nodes__environment__id=environment_id,
+                        nodes__name=node_name)
         except ObjectDoesNotExist:
             return rc.NOT_FOUND
 
     def create(self, request, environment_id, node_name, role_name):
         try:
             print environment_id, node_name, role_name
-            node = Node.objects.get(environment__id=environment_id, name=node_name)
+            node = Node.objects.get(environment__id=environment_id,
+                    name=node_name)
             role = Role.objects.get(name=role_name)
-            
+
             if role in node.roles.all():
                 return rc.DUPLICATE_ENTRY
-            
+
             node.roles.add(role)
             return role
         except ObjectDoesNotExist:
             return rc.NOT_FOUND
-    
+
     def delete(self, request, environment_id, node_name, role_name):
         try:
-            node = Node.objects.get(environment__id=environment_id, name=node_name)
+            node = Node.objects.get(environment__id=environment_id,
+                    name=node_name)
             role = Role.objects.get(name=role_name)
             node.roles.remove(role)
             return rc.DELETED
