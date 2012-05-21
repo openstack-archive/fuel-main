@@ -11,7 +11,7 @@ def load(stream):
     if not data.has_key('nodes'):
         raise ConfigError, "No nodes defined"
 
-    environment = Environment()
+    environment = Environment('default')
 
     if data.has_key('networks'):
         for network_data in data['networks']:

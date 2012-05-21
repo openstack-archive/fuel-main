@@ -1,7 +1,8 @@
 
 
 class Environment:
-    def __init__(self):
+    def __init__(self, name):
+        self.name = name
         self.networks = []
         self.nodes = []
 
@@ -11,17 +12,20 @@ class Network:
         self.kind = kind
 
 class Node:
-    def __init__(self, name, cpu=1, memory=512):
+    def __init__(self, name, cpu=1, memory=512, arch='x86_64'):
         self.name = name
 
         self.cpu = cpu
         self.memory = memory
+        self.arch = arch
         self.interfaces = []
         self.disks = []
+        self.boot = []
 
 class Disk:
-    def __init__(self, size):
+    def __init__(self, size, format='qcow2'):
         self.size = size
+        self.format = format
 
 class Interface:
     def __init__(self, network):
