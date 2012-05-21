@@ -12,6 +12,8 @@ Vagrant::Config.run do |config|
     chef.cookbooks_path = "vagrant/cookbooks"
 
     chef.add_recipe 'nailgun::server'
+    chef.add_recipe 'libvirt::server'
+    chef.add_recipe 'devops::deps'
 
     chef.json = {
       :celery => { :create_user => true }
