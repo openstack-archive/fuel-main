@@ -10,6 +10,11 @@ service 'saslauthd' do
   action :start
 end
 
+group 'libvirtd' do
+  members ['vagrant']
+  action :modify
+end
+
 template '/etc/libvirt/libvirtd.conf' do
   source 'libvirtd.conf.erb'
   mode 0644
