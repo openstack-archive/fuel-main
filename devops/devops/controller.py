@@ -11,12 +11,11 @@ class Controller:
         if not os.path.exists(self.home_dir):
             os.system("mkdir -p '%s'" % self.home_dir)
 
+        self.env_dir = tempfile.mkdtemp(prefix=os.path.join(self.home_dir, 'environments')+'/', suffix='-'+self.environment.name)
+
     def build_environment(self):
         if not os.path.exists(os.path.join(self.home_dir, 'environments')):
             os.system("mkdir -p '%s'" % os.path.join(self.home_dir, 'environments'))
-
-        self.env_dir = tempfile.mkdtemp(prefix=os.path.join(self.home_dir, 'environments')+'/', suffix='-'+self.environment.name)
-        self.environment.id = os.path.basename(self.env_dir)
 
         for network in self.environment.networks:
             self._build_network(network)
@@ -36,11 +35,23 @@ class Controller:
 
     def start(self, o):
         if isinstance(o, Node):
-            self.driver.start_node(o)
+            self.start_node(o)
         elif isinstance(o, Network):
             self.driver.start_network(o)
         else:
             raise "Unknown object %s" % o
+
+    def start_node(self, node):
+        if type(node) == str:
+            for n in self.environment.nodes:
+                if n.name == node:
+                    node = n
+                    break
+
+        if not isinstance(node, Node):
+            raise "Unknown node %s" % node
+
+        self.driver.start_node(node)
 
     def stop(self, o):
         if isinstance(o, Node):
@@ -50,20 +61,26 @@ class Controller:
         else:
             raise "Unknown object %s" % o
 
-    def _build_network(self, network):
-        network.id = "%s-%s" % (self.environment.id, network.name)
+    def stop_node(self, node):
+        if type(node) == str:
+            for n in self.environment.nodes:
+                if n.name == node:
+                    node = n
+                    break
 
+        if not isinstance(node, Node):
+            raise "Unknown node %s" % node
+
+        self.driver.stop_node(node)
+
+    def _build_network(self, network):
         self.driver.create_network(network)
 
     def _build_node(self, node):
-        node.id = "%s-%s" % (self.environment.id, node.name)
-
-        disk_count = 0
         for disk in node.disks:
             if disk.path is None:
-                disc_count += 1
-                disk.path = os.path.join(self.env_dir, "%s-%d" % (node.id, disc_count))
-            print("Creating disk for node %s (id=%s), size=%s" % (node.name, node.id, disk.size))
+                fd, disk.path = tempfile.mkstemp(prefix=self.env_dir+'/', suffix='.' + disk.format)
+                os.close(fd)
             self.driver.create_disk(disk)
 
         self.driver.create_node(node)

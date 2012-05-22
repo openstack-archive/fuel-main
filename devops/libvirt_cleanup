@@ -1,0 +1,8 @@
+#!/bin/sh
+
+virsh list --all | tail -n +3 | awk '$3=="running" {print $2}' | xargs -n 1 virsh destroy
+virsh list --all | tail -n +3 | awk '{print $2}' | xargs -n 1 virsh undefine
+
+virsh net-list --all | tail -n +3 | awk '$2=="active" {print $1}' | grep -v default | xargs -n 1 virsh net-destroy
+virsh net-list --all | tail -n +3 | awk '{print $1}' | grep -v default | xargs -n 1 virsh net-undefine
+

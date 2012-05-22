@@ -1,7 +1,7 @@
 
 import yaml
 import re
-from model import Environment, Network, Node
+from model import Environment, Network, Node, Disk, Interface
 
 class ConfigError(Exception): pass
 
@@ -11,11 +11,13 @@ def load(stream):
     if not data.has_key('nodes'):
         raise ConfigError, "No nodes defined"
 
+    name = 'default'
+    if data.has_key('name'):
+        name = data['name']
     environment = Environment('default')
 
-    if data.has_key('networks'):
-        for network_data in data['networks']:
-            parse_network(environment, network_data)
+    for network_data in (data.get('networks') or []):
+        parse_network(environment, network_data)
 
     for node_data in data['nodes']:
         parse_node(environment, node_data)
@@ -36,6 +38,7 @@ def parse_network(environment, data):
 
     network = Network(name)
     network.kind = 'hostonly'
+
     if data.has_key('type'):
         kind = data['type']
         if not kind in ['hostonly', 'bridged']:
@@ -66,9 +69,9 @@ def parse_node(environment, data):
         node.memory = data['memory']
 
     if data.has_key('disk'):
-        disk_data = data['disk']
-        if type(disk_data) != list:
-            disk_data = list(disk_data)
+        disks_data = data['disk']
+        if type(disks_data) != list:
+            disks_data = (disks_data,)
 
         for disk_data in disks_data:
             if type(disk_data) == str:
@@ -77,10 +80,10 @@ def parse_node(environment, data):
             else:
                 raise ConfigError, "Disk customization is unsupported"
 
-    if data.has_key('network'):
-        networks_data = data['network']
+    if data.has_key('networks'):
+        networks_data = data['networks']
         if type(networks_data) != list:
-            networks_data = list(networks_data)
+            networks_data = (networks_data,)
 
         for network_data in networks_data:
             if type(network_data) == str:
@@ -90,9 +93,17 @@ def parse_node(environment, data):
                         network = n
                         break
 
-                if network is None:
-                    network = parse_network(environment, {'name': network_data})
+                # Inline networks
+                # if network is None:
+                #     network = parse_network(environment, {'name': network_data})
+                #     self.networks.append(network)
 
+            # TODO: add support for specifying additional network interface params (e.g. mac address)
+
+            if network is None:
+                raise ConfigError, "Unknown network %s" % network_data
+
+            node.interfaces.append(Interface(network))
 
     if data.has_key('boot'):
         boot_data = data['boot']
@@ -115,21 +126,21 @@ def parse_node(environment, data):
 
 
 
-SIZE_RE = re.compile('\d+\s*(|k|kb|m|mb|g|gb)')
+SIZE_RE = re.compile('^(\d+)\s*(|kb|k|mb|m|gb|g)$')
 
 def parse_size(s):
-    m = SIZE_RE.match(s)
+    m = SIZE_RE.match(s.lower())
     if not m:
         raise ValueError, "Invalid size format: %s" % s
 
-    value = int(m[1])
-    units = m[2].lower()
+    value = int(m.group(1))
+    units = m.group(2)
     if   units in ['k', 'kb']: multiplier=1024
-    elif untis in ['m', 'mb']: multiplier=1024**2
+    elif units in ['m', 'mb']: multiplier=1024**2
     elif units in ['g', 'gb']: multiplier=1024**3
     elif units in ['t', 'tb']: multiplier=1024**4
     elif units == '': multiplier=1
-    else: raise ValueError, "Invalid size format: %s" % s
+    else: raise ValueError, "Invalid size format: %s" % units
 
     return value * multiplier
 

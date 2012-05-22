@@ -23,9 +23,11 @@ class Node:
         self.boot = []
 
 class Disk:
-    def __init__(self, size, format='qcow2'):
+    def __init__(self, size, format='qcow2', bus='ide'):
         self.size = size
         self.format = format
+        self.bus = bus
+        self.path = None
 
 class Interface:
     def __init__(self, network):

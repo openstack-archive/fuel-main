@@ -2,6 +2,8 @@
 
 import os
 import tempfile
+import time
+from collections import deque
 from devops import xml
 from xmlbuilder import XMLBuilder
 
@@ -10,7 +12,8 @@ def find(p, seq):
         if p(item): return item
 
 class DeploymentSpec:
-    pass
+    def __repr__(self):
+        return "<DeploymentSpec arch=\"%s\" os_type=\"%s\" hypervisor=\"%s\" emulator=\"%s\">" % (self.arch, self.os_type, self.hypervisor, self.emulator)
 
 class LibvirtXMLBuilder:
 
@@ -21,21 +24,22 @@ class LibvirtXMLBuilder:
         return str(network_xml)
 
     def build_node_xml(self, node, spec):
-        # node_xml = XMLBuilder("domain", type="kvm")
         node_xml = XMLBuilder("domain", type=spec.hypervisor)
         node_xml.name(node.id)
+        node_xml.vcpu(str(node.cpu))
         node_xml.memory(str(node.memory))
 
         with node_xml.os:
-            node_xml.type("hvm", arch=node.arch)
+            node_xml.type(spec.os_type, arch=node.arch)
             for boot_dev in node.boot:
                 if boot_dev == 'disk':
                     node_xml.boot(dev="hd")
                 else:
                     node_xml.boot(dev=boot_dev)
 
+        disk_dev_names = deque(['sd'+c for c in list('abcdefghijklmnopqrstuvwxyz')])
+
         with node_xml.devices:
-            # node_xml.emulator("/usr/bin/kvm")
             node_xml.emulator(spec.emulator)
 
             if len(node.disks) > 0:
@@ -45,6 +49,7 @@ class LibvirtXMLBuilder:
                 with node_xml.disk(type="file", device="disk"):
                     node_xml.driver(name="qemu", type=disk.format)
                     node_xml.source(file=disk.path)
+                    node_xml.target(dev=disk_dev_names.popleft(), bus=disk.bus)
 
             for interface in node.interfaces:
                 with node_xml.interface(type="network"):
@@ -59,15 +64,14 @@ class Libvirt:
         self._init_capabilities()
 
     def node_exists(self, node_name):
-        return os.system("virsh dominfo '%s'" % node_name) == 0
+        return self._system("virsh dominfo '%s'" % node_name) == 0
 
     def network_exists(self, network_name):
-        return os.system("virsh net-info '%s'" % network_name) == 0
+        return self._system("virsh net-info '%s'" % network_name) == 0
 
     def create_network(self, network):
-        network.bridge_name = network.id
-        if len(network.bridge_name) > 15:
-          network.bridge_name = network.bridge_name[0:15]
+        if not hasattr(network, 'id') or network.id is None:
+            network.id = self._generate_network_id(network.name)
 
         with tempfile.NamedTemporaryFile(delete=True) as xml_file:
             xml_file.write(self.xml_builder.build_network_xml(network))
@@ -77,7 +81,7 @@ class Libvirt:
         with os.popen("virsh net-dumpxml '%s'" % network.id) as f:
             network_element = xml.parse_stream(f)
 
-        # network.bridge_name = network_element.find('bridge/@name')
+        network.bridge_name = network_element.find('bridge/@name')
         network.mac_address = network_element.find('mac/@address')
 
     def delete_network(self, network):
@@ -90,9 +94,12 @@ class Libvirt:
         self._virsh("net-destroy '%s'", network.id)
 
     def create_node(self, node):
-        spec = DeploymentSpec()
-        spec.hypervisor = "qemu"
-        spec.emulator = "/usr/bin/qemu-system-x86_64"
+        spec = find(lambda s: s.arch == node.arch, self.specs)
+        if spec is None:
+            raise "Can't create node %s: insufficient capabilities" % node.name
+
+        if not hasattr(node, 'id') or node.id is None:
+            node.id = self._generate_node_id(node.name)
 
         with tempfile.NamedTemporaryFile(delete=True) as xml_file:
             xml_file.write(self.xml_builder.build_node_xml(node, spec))
@@ -134,7 +141,7 @@ class Libvirt:
         f, disk.path = tempfile.mkstemp(prefix='disk-', suffix=(".%s" % disk.format))
         os.close(f)
 
-        os.execute("qemu-img create -f '%s' '%s' '%s'" % (disk.format, disk.path, disk.size))
+        self._system("qemu-img create -f '%s' '%s' '%s' >/dev/null 2>&1" % (disk.format, disk.path, disk.size))
 
     def delete_disk(self, disk):
         if disk.path is None: return
@@ -142,13 +149,41 @@ class Libvirt:
         os.unlink(disk.path)
 
     def _virsh(self, format, *args):
-        command = ("virsh " + format + " 1>/dev/null 2>&1") % args
-        os.system(command)
+        command = ("virsh " + format) % args
+        return self._system(command)
 
     def _init_capabilities(self):
         with os.popen("virsh capabilities") as f:
             capabilities = xml.parse_stream(f)
         
-        # for guest in doc.xpath('guest'):
-        #     os_type = guest.find('os_type').text
+        self.specs = []
+
+        for guest in capabilities.find_all('guest'):
+            for arch in guest.find_all('arch'):
+                for domain in arch.find_all('domain'):
+                    spec = DeploymentSpec()
+                    spec.arch = arch['name']
+                    spec.os_type = guest.find('os_type/text()')
+                    spec.hypervisor = domain['type']
+                    spec.emulator = (domain.find('emulator') or arch.find('emulator')).text
+
+                    self.specs.append(spec)
+
+    def _generate_network_id(self, name='net'):
+        while True:
+            id = name + '-' + str(int(time.time()*100))
+            if self._virsh("net-dumpxml '%s'", id) != 0:
+                return id
             
+    def _generate_node_id(self, name='node'):
+        while True:
+            id = name + '-' + str(int(time.time()*100))
+            if self._virsh("dumpxml '%s'", id) != 0:
+                return id
+
+    def _system(self, command):
+        if not os.environ.has_key('VERBOSE') or os.environ['VERBOSE'] == '':
+            command += " 1>/dev/null 2>&1"
+
+        return os.system(command)
+
