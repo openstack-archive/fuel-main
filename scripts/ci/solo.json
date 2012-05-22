@@ -1,4 +1,4 @@
 {
-    "recipes": [ "nailgun::deps" ]
+    "recipes": [ "nailgun::deps", "devops::deps" ]
 }
 
