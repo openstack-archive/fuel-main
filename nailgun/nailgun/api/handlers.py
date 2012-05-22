@@ -105,13 +105,13 @@ class RoleHandler(BaseHandler):
 
     allowed_methods = ('GET', 'POST', 'DELETE')
     model = Role
-    fields = ('name',)
+    fields = ('id', 'name')
 
-    def read(self, request, environment_id, node_name, role_name=None):
+    def read(self, request, environment_id, node_name, role_id=None):
         try:
-            if role_name:
+            if role_id:
                 return Role.objects.get(nodes__environment__id=environment_id,
-                        nodes__name=node_name, name=role_name)
+                        nodes__name=node_name, id=role_id)
             else:
                 return Role.objects.filter(
                         nodes__environment__id=environment_id,
@@ -119,12 +119,11 @@ class RoleHandler(BaseHandler):
         except ObjectDoesNotExist:
             return rc.NOT_FOUND
 
-    def create(self, request, environment_id, node_name, role_name):
+    def create(self, request, environment_id, node_name, role_id):
         try:
-            print environment_id, node_name, role_name
             node = Node.objects.get(environment__id=environment_id,
                     name=node_name)
-            role = Role.objects.get(name=role_name)
+            role = Role.objects.get(id=role_id)
 
             if role in node.roles.all():
                 return rc.DUPLICATE_ENTRY
@@ -134,11 +133,11 @@ class RoleHandler(BaseHandler):
         except ObjectDoesNotExist:
             return rc.NOT_FOUND
 
-    def delete(self, request, environment_id, node_name, role_name):
+    def delete(self, request, environment_id, node_name, role_id):
         try:
             node = Node.objects.get(environment__id=environment_id,
                     name=node_name)
-            role = Role.objects.get(name=role_name)
+            role = Role.objects.get(id=role_id)
             node.roles.remove(role)
             return rc.DELETED
         except ObjectDoesNotExist:

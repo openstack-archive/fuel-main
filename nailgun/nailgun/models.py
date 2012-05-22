@@ -9,7 +9,8 @@ class Environment(models.Model):
 
 
 class Role(models.Model):
-    name = models.CharField(max_length=30, primary_key=True)
+    id = models.CharField(max_length=30, primary_key=True)
+    name = models.CharField(max_length=50)
 
 
 class Node(models.Model):

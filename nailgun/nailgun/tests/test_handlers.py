@@ -22,11 +22,13 @@ class TestHandlers(TestCase):
         self.node.save()
 
         self.role = Role()
-        self.role.name = "myrole"
+        self.role.id = "myrole"
+        self.role.name = "My role"
         self.role.save()
 
         self.another_role = Role()
-        self.another_role.name = "myrole2"
+        self.another_role.id = "myrole2"
+        self.another_role.name = "My role 2"
         self.another_role.save()
 
         self.node.roles = [self.role]
@@ -134,15 +136,15 @@ class TestHandlers(TestCase):
 
         nodes_from_db = Node.objects.filter(environment_id=1,
                                             name=self.node_name)
-        self.assertEquals(nodes_from_db[0].roles.all()[0].name, "myrole")
+        self.assertEquals(nodes_from_db[0].roles.all()[0].id, "myrole")
 
     # Tests for RoleHandler
     def test_can_get_list_of_roles_for_node(self):
         resp = self.client.get(self.node_url + '/roles')
-        self.assertEquals(json.loads(resp.content)[0]['name'], 'myrole')
+        self.assertEquals(json.loads(resp.content)[0]['id'], 'myrole')
 
     def test_list_of_roles_gets_updated_via_post(self):
-        url = self.node_url + '/roles/' + self.another_role.name
+        url = self.node_url + '/roles/' + self.another_role.id
         resp = self.client.post(url, '', "plain/text")
         self.assertEquals(resp.status_code, 200)
 
@@ -152,10 +154,10 @@ class TestHandlers(TestCase):
         roles_from_db = Role.objects.all()
         nodes_from_db = Node.objects.filter(environment_id=1,
                                             name=self.node_name)
-        self.assertEquals(nodes_from_db[0].roles.all()[0].name,
-                self.role.name)
-        self.assertEquals(nodes_from_db[0].roles.all()[1].name,
-                self.another_role.name)
+        self.assertEquals(nodes_from_db[0].roles.all()[0].id,
+                self.role.id)
+        self.assertEquals(nodes_from_db[0].roles.all()[1].id,
+                self.another_role.id)
 
     #def test_jsons_created_for_chef_solo(self):
         #resp = self.client.post('/api/environments/1/chef-config/')

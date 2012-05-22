@@ -26,5 +26,5 @@ urlpatterns = patterns('',
     url(r'^environments/(?P<environment_id>\d+)/nodes/'
         r'(?P<node_name>[\w\.\-]+)/roles/?$', role_handler),
     url(r'^environments/(?P<environment_id>\d+)/nodes/'
-        r'(?P<node_name>[\w\.\-]+)/roles/(?P<role_name>\w+)/?$', role_handler),
+        r'(?P<node_name>[\w\.\-]+)/roles/(?P<role_id>\w+)/?$', role_handler),
 )

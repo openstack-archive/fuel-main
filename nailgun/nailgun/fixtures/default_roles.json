@@ -2,41 +2,57 @@
   {
     "model": "nailgun.role",
     "pk": "db",
-    "fields": {}
+    "fields": {
+      "name": "Database"
+    }
   },
   {
     "model": "nailgun.role",
     "pk": "manager",
-    "fields": {}
+    "fields": {
+      "name": "Manager"
+    }
   },
   {
     "model": "nailgun.role",
     "pk": "stats",
-    "fields": {}
+    "fields": {
+      "name": "Statistics"
+    }
   },
   {
     "model": "nailgun.role",
     "pk": "control",
-    "fields": {}
+    "fields": {
+      "name": "Control"
+    }
   },
   {
     "model": "nailgun.role",
     "pk": "swift",
-    "fields": {}
+    "fields": {
+      "name": "Swift"
+    }
   },
   {
     "model": "nailgun.role",
     "pk": "glance",
-    "fields": {}
+    "fields": {
+      "name": "Glance"
+    }
   },
   {
     "model": "nailgun.role",
     "pk": "compute",
-    "fields": {}
+    "fields": {
+      "name": "Compute"
+    }
   },
   {
     "model": "nailgun.role",
     "pk": "api",
-    "fields": {}
+    "fields": {
+      "name": "API"
+    }
   }
 ]

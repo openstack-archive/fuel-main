@@ -11,7 +11,7 @@ var AppRouter = Backbone.Router.extend({
             if (activeEnvironment) {
                 activeEnvironment.set('active', false);
             }
-            
+
             if (id && this.environments.get(id)) {
                 this.environments.get(id).set('active', true);
             } else {
@@ -47,9 +47,9 @@ $(document).ready(function() {
         initialize: function() {
             this.model.bind('change:active', function() {
                 this.render();
-                
+
                 var container = $('#nodes');
-                
+
                 if (this.model.get('active')) {
                     if (this.model.get('nodes').length) {
                         new View.NodeList({
@@ -67,7 +67,7 @@ $(document).ready(function() {
             return this;
         }
     });
-    
+
     View.EnvironmentList = Backbone.View.extend({
         template: _.template($('#tpl_env_list').html()),
         events: {
@@ -82,17 +82,17 @@ $(document).ready(function() {
         },
         render: function() {
             this.$el.html(this.template({environments: this.model}));
-            
+
             var environments = [];
             this.model.each(function(environment) {
                 environments.push(new View.Environment({model: environment}).render().el);
             });
             $('#env-list').prepend(environments);
-            
+
             return this;
         }
     });
-    
+
     View.Node = Backbone.View.extend({
         tagName: 'li',
         className: 'node',
@@ -103,21 +103,53 @@ $(document).ready(function() {
         render: function() {
             this.$el.addClass(this.model.get('status'));
             this.$el.html(this.template({node: this.model}));
+            if (this.model.get('roles').length) {
+                this.$el.append(new View.RoleList({
+                    model: this.model.get('roles')
+                }).render().el);
+            }
             return this;
         }
     });
-    
+
     View.NodeList = Backbone.View.extend({
         render: function() {
             this.$el.html('');
             this.model.each(_.bind(function(node) {
                 this.$el.append(new View.Node({model: node}).render().el);
             }, this));
-            
             return this;
         }
     });
-    
+
+    View.Role = Backbone.View.extend({
+        tagName: 'li',
+        initialize: function() {
+            this.model.bind('change', this.render, this);
+        },
+        render: function() {
+            this.$el.addClass(this.model.id);
+            this.$el.text(this.model.get('name'));
+            return this;
+        }
+    });
+
+    View.RoleList = Backbone.View.extend({
+        tagName: 'ul',
+        className: 'roles',
+        initialize: function() {
+            this.model.bind('change', this.render, this);
+            this.model.bind('add', this.render, this);
+        },
+        render: function() {
+            this.$el.html('');
+            this.model.each(_.bind(function(role) {
+                this.$el.append(new View.Role({model: role}).render().el);
+            }, this));
+            return this;
+        }
+    });
+
     window.app = new AppRouter();
     Backbone.history.start();
 });

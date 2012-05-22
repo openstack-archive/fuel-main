@@ -29,9 +29,32 @@ Model.Node = Backbone.RelationalModel.extend({
     idAttribute: 'name',
     urlRoot: function() {
         return this.get('environment').url() + '/nodes'
-    }
+    },
+    defaults: {
+
+    },
+    relations: [{
+        type: Backbone.HasMany,
+        key: 'roles',
+        relatedModel: 'Model.Role',
+        collectionType: 'Collection.Role',
+        reverseRelation: {
+            key: 'node',
+            includeInJSON: false
+        }
+    }]
 });
 
 Collection.Node = Backbone.Collection.extend({
     model: Model.Node
+});
+
+Model.Role = Backbone.RelationalModel.extend({
+    urlRoot: function() {
+        return this.get('node').url() + '/roles'
+    }
+});
+
+Collection.Role = Backbone.Collection.extend({
+    model: Model.Role
 });

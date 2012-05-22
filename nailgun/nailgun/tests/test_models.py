@@ -27,10 +27,12 @@ class TestRolesNodesAssociation(TestCase):
 
     def test_roles_nodes_association(self):
         role1 = Role()
-        role1.name = "myrole"
+        role1.id = "myrole"
+        role1.name = "My role"
         role1.save()
         role2 = Role()
-        role2.name = "role2"
+        role2.id = "myrole2"
+        role2.name = "My role 2"
         role2.save()
 
         node1 = Node()
@@ -39,12 +41,12 @@ class TestRolesNodesAssociation(TestCase):
         node1.save()
         node1.roles = [role1]
         node1.save()
-        self.assertEquals(node1.roles.all()[0].name, "myrole")
+        self.assertEquals(node1.roles.all()[0].id, "myrole")
         self.assertEquals(role1.nodes.all()[0].name, "test.example.com")
 
         node1.roles.add(role2)
         self.assertEquals(len(node1.roles.all()), 2)
 
         self.assertEquals(Node.objects.filter(
-            roles__name__startswith="myr")[0].name,
+            roles__id__startswith="myr")[0].name,
                 "test.example.com")
