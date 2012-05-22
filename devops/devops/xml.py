@@ -4,6 +4,7 @@ class Element:
     def __init__(self, element):
         self.element = element
         self.tag = self.element.tag
+        self.text = self.element.text
 
     def __getitem__(self, name, default=None):
         return self.element.get(name, default)

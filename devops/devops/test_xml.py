@@ -30,3 +30,12 @@ class TestXml(unittest.TestCase):
         nodes = d.find_all('/a/b')
         self.assertEquals(2, len(nodes))
 
+    def test_getting_node_text(self):
+        d = xml.parse_string("<a><b>foo</b></a>")
+        e = d.find('b')
+        self.assertEquals('foo', e.text)
+
+    def test_finding_node_text(self):
+        d = xml.parse_string("<a><b>foo</b></a>")
+        self.assertEquals('foo', d.find('b/text()'))
+
