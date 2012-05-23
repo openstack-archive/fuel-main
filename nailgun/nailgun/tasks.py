@@ -4,15 +4,13 @@ from django.conf import settings
 from celery.task import task
 from nailgun.models import Environment, Node, Role
 
-@task
+@task(ignore_result=True)
 def create_chef_config(environment_id):
     env_id = environment_id
     nodes = Node.objects.filter(environment__id=env_id)
     roles = Role.objects.all()
     if not (nodes and roles):
-        resp = rc.NOT_FOUND
-        resp.write("Roles or Nodes list is empty")
-        return resp
+        raise Exception("Roles or Nodes list is empty")
 
     nodes_per_role = {}
     # For each role in the system
