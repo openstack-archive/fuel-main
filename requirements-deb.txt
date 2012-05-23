@@ -1,0 +1,3 @@
+cobbler
+dnsmasq
+tftpd-hpa

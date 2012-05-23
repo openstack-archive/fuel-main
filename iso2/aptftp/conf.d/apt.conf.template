@@ -1,0 +1,7 @@
+APT::FTPArchive::Release::Codename: "${RELEASE}";
+APT::FTPArchive::Release::Suite: "stable";
+APT::FTPArchive::Release::Version: "${VERSION}";
+APT::FTPArchive::Release::Components: "main restricted extras";
+APT::FTPArchive::Release::Origin: "Mirantis";
+APT::FTPArchive::Release::Label: "Mirantis";
+APT::FTPArchive::Release::Architectures: "i386 amd64";
