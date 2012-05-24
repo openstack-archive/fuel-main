@@ -83,7 +83,7 @@ rm -rf ${KEYRING}
 # STAGING
 ###########################
 
-gmkdir -p ${ORIG}
+mkdir -p ${ORIG}
 mkdir -p ${NEW}
 
 echo "Mounting original iso image ..."

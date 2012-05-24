@@ -27,6 +27,7 @@ rsync -a ${TEMPDIR}/ ${BUILDDIR} && chmod -R u+w ${BUILDDIR} && \
 umount ${TEMPDIR}
 
 
+
 echo "Editing install menu ..."
 cat > ${BUILDDIR}/isolinux/txt.cfg <<EOF 
 default install
@@ -52,6 +53,8 @@ en
 EOF
 
 cp ${REPODIR}/iso/mirantis-nailgun.seed ${BUILDDIR}/preseed
+
+exit 0
 
 echo "Creating repo ..."
 BUILDDIR=${BUILDDIR} REPODIR=${REPODIR} ${SCRIPTDIR}/repo.sh

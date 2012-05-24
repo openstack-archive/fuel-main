@@ -58,6 +58,7 @@ d-i passwd/user-default-groups	   string adm cdrom dialout lpadmin plugdev samba
 d-i pkgsel/include string openssh-server
 d-i pkgsel/language-packs multiselect en
 d-i pkgsel/update-policy select none
+d-i pkgsel/upgrade select none
 d-i pkgsel/updatedb boolean true
 
 

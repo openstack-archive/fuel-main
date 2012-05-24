@@ -84,8 +84,8 @@ mkdir -p ${DISTS}/precise/main/binary-amd64
 mkdir -p ${DISTS}/precise/main/binary-i386  
 mkdir -p ${DISTS}/precise/main/debian-installer/binary-amd64  
 
-(cd ${DISTS} && ln -s ./precise stable)
-(cd ${DISTS} && ln -s ./precise unstable)
+(cd ${DISTS} && ln -s precise stable)
+(cd ${DISTS} && ln -s precise unstable)
 
 (cd ${BUILDDIR} && dpkg-scanpackages -m -a amd64 -tdeb pool | gzip -9c > dists/precise/main/binary-amd64/Packages.gz)
 cat > ${DISTS}/precise/main/binary-amd64/Release <<EOF
