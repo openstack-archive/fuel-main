@@ -10,6 +10,7 @@ set -e
 ###########################
 # VARIABLES
 ###########################
+STAMP=`date +%Y%m%d%H%M%S`
 
 SCRIPT=`readlink -f "$0"`
 SCRIPTDIR=`dirname ${SCRIPT}`
@@ -45,13 +46,33 @@ GPGKEYPHRASE="naMu7aej"
 ###########################
 # CLEANING
 ###########################
-# echo "Cleaning ..."
-# if (mount | grep -q ${ORIG}); then
-#     echo "Umounting ${ORIG} ..."
-#     umount ${ORIG}
-# fi
+echo "Cleaning ..."
+if (mount | grep -q ${ORIG}); then
+    echo "Umounting ${ORIG} ..."
+    umount ${ORIG}
+fi
+
 # echo "Removing ${BASEDIR} ..."
 # rm -rf ${BASEDIR}
+
+echo "Removing ${ORIG} ..."
+rm -rf ${ORIG}
+
+echo "Removing ${NEW} ..."
+rm -rf ${NEW}
+
+# echo "Removing ${EXTRAS} ..."
+# rm -rf ${EXTRAS}
+
+echo "Removing ${TMPGNUPG} ..."
+rm -rf ${TMPGNUPG}
+
+echo "Removing ${APTFTP} ..."
+rm -rf ${APTFTP}
+
+echo "Removing ${KEYRING} ..."
+rm -rf ${KEYRING}
+
 # echo "Removing ${NEWISO}"
 # rm -f ${NEWISO}
 
@@ -92,6 +113,11 @@ echo "deb ${MIRROR} precise main restricted universe multiverse" > ${EXTRAS}/etc
 echo "deb-src ${MIRROR} precise main restricted universe multiverse" >> ${EXTRAS}/etc/sources.list
 
 
+# possible apt configs
+# Install-Recommends "true";
+# Install-Suggests "true";
+
+
 cat > ${EXTRAS}/etc/apt.conf <<EOF
 APT
 {
@@ -122,186 +148,158 @@ cd ${EXTRAS}/archives
 find -name "*.deb" -exec cp {} ${NEW}/pool/extras \;
 
 
-###########################
-# REBUILDING KEYRING
-###########################
-mkdir -p ${KEYRING}
-cp -rp ${GNUPG} ${TMPGNUPG}
-chmod 700 ${TMPGNUPG}
-chmod 600 ${TMPGNUPG}/*
+# ###########################
+# # REBUILDING KEYRING
+# ###########################
+# mkdir -p ${KEYRING}
+# cp -rp ${GNUPG} ${TMPGNUPG}
+# chmod 700 ${TMPGNUPG}
+# chmod 600 ${TMPGNUPG}/*
 
-cd ${KEYRING}
-apt-get -c=${EXTRAS}/etc/apt.conf source ubuntu-keyring
-KEYRING_PACKAGE=`find -maxdepth 1 -name "ubuntu-keyring*" -type d -print`
-if [ -z ${KEYRING_PACKAGE} ]; then
-    echo "Cannot grab keyring source! Exiting."
-    exit 1
-fi
+# cd ${KEYRING}
+# apt-get -c=${EXTRAS}/etc/apt.conf source ubuntu-keyring
+# KEYRING_PACKAGE=`find -maxdepth 1 -name "ubuntu-keyring*" -type d -print`
+# if [ -z ${KEYRING_PACKAGE} ]; then
+#     echo "Cannot grab keyring source! Exiting."
+#     exit 1
+# fi
 
-cd ${KEYRING}/${KEYRING_PACKAGE}/keyrings
-GNUPGHOME=${TMPGNUPG} gpg --import < ubuntu-archive-keyring.gpg
-rm -f ubuntu-archive-keyring.gpg
-GNUPGHOME=${TMPGNUPG} gpg --export --output ubuntu-archive-keyring.gpg FBB75451 437D05B5 ${GPGKEYID}
-cd ${KEYRING}/${KEYRING_PACKAGE}
-dpkg-buildpackage -rfakeroot -m"${GPGKEY}" -k"${GPGKEYID}" -uc -us
-rm -f ${NEW}/pool/main/u/ubuntu-keyring/*
-cp ${KEYRING}/ubuntu-keyring*deb ${NEW}/pool/main/u/ubuntu-keyring/
+# cd ${KEYRING}/${KEYRING_PACKAGE}/keyrings
+# GNUPGHOME=${TMPGNUPG} gpg --import < ubuntu-archive-keyring.gpg
+# rm -f ubuntu-archive-keyring.gpg
+# GNUPGHOME=${TMPGNUPG} gpg --export --output ubuntu-archive-keyring.gpg FBB75451 437D05B5 ${GPGKEYID}
+# cd ${KEYRING}/${KEYRING_PACKAGE}
+# dpkg-buildpackage -rfakeroot -m"${GPGKEY}" -k"${GPGKEYID}" -uc -us
+# rm -f ${NEW}/pool/main/u/ubuntu-keyring/*
+# cp ${KEYRING}/ubuntu-keyring*deb ${NEW}/pool/main/u/ubuntu-keyring/
 
 
-###########################
-# UPDATING REPO
-###########################
-mkdir -p ${APTFTP}/conf.d
-mkdir -p ${APTFTP}/indices
+# ###########################
+# # UPDATING REPO
+# ###########################
+# mkdir -p ${APTFTP}/conf.d
+# mkdir -p ${APTFTP}/indices
+# mkdir -p ${APTFTP}/cache
 
-for suffix in \
-    extra.main \
-    main \
-    main.debian-installer \
-    restricted \
-    restricted.debian-installer; do
+# ARCHITECTURES="i386 amd64"
+# SECTIONS="main restricted extras"
+
+# for s in ${SECTIONS}; do
+#     for a in ${ARCHITECTURES}; do
+# 	mkdir -p ${NEW}/dists/${RELEASE}/${s}/binary-${a}
+# 	cat > ${NEW}/dists/${RELEASE}/${s}/binary-${a}/Release <<EOF
+# Archive: ${RELEASE}
+# Version: ${VERSION}
+# Component: ${s}
+# Origin: Mirantis
+# Label: Mirantis
+# Architecture: ${a}
+# EOF
+#     done
+#     mkdir -p ${NEW}/dists/${RELEASE}/${s}/debian-installer/binary-amd64
+# done
+
+# for suffix in \
+#     extra.main \
+#     main \
+#     main.debian-installer \
+#     restricted \
+#     restricted.debian-installer; do
     
-    wget -qO- ${MIRROR}/indices/override.${RELEASE}.${suffix} > \
-	${APTFTP}/indices/override.${RELEASE}.${suffix}
-done
-
-cat > ${APTFTP}/conf.d/release.conf <<EOF
-APT::FTPArchive::Release::Codename: "${RELEASE}";
-APT::FTPArchive::Release::Suite: "stable";
-APT::FTPArchive::Release::Version: "${VERSION}";
-APT::FTPArchive::Release::Components: "main restricted extras";
-APT::FTPArchive::Release::Origin: "Mirantis";
-APT::FTPArchive::Release::Label: "Mirantis";
-APT::FTPArchive::Release::Architectures: "i386 amd64";
-APT::FTPArchive::Release::Description "Mirantis Repo";
-EOF
+#     wget -qO- ${MIRROR}/indices/override.${RELEASE}.${suffix} > \
+# 	${APTFTP}/indices/override.${RELEASE}.${suffix}
+# done
 
 
-for arch in i386 amd64; do
+# cat > ${APTFTP}/conf.d/apt-ftparchive-deb.conf <<EOF
+# Dir {
+#   ArchiveDir "${NEW}";
+#   CacheDir "${APTFTP}/cache";
+#   OverrideDir "${APTFTP}/indices";
+# };
 
-    cat > ${APTFTP}/conf.d/apt-ftparchive-deb-${arch}.conf <<EOF
-Dir {
-  ArchiveDir "${NEW}";
-};
+# Tree "dists/${RELEASE}" {
+#   Architectures "${ARCHITECTURES}";
+#   Sections "${SECTIONS}";
+#   BinOverride "override.${RELEASE}.\$(SECTION)";
+#   ExtraOverride "override.${RELEASE}.extra.\$(SECTION)";
+# };
 
-Tree {
-  Architectures "${arch}";
-};
+# TreeDefault {
+#   Directory "pool/\$(SECTION)";
+#   Packages "\$(DIST)/\$(SECTION)/binary-\$(ARCH)/Packages";
+#   Contents "\$(DIST)/Contents-\$(ARCH)";
+# };
 
-TreeDefault {
-  Directory "pool/";
-};
-
-BinDirectory "pool/main" {
-  Packages "dists/${RELEASE}/main/binary-${arch}/Packages";
-  BinOverride "${APTFTP}/indices/override.${RELEASE}.main";
-  ExtraOverride "${APTFTP}/indices/override.${RELEASE}.extra2.main";
-};
-
-BinDirectory "pool/restricted" {
-  Packages "dists/${RELEASE}/restricted/binary-${arch}/Packages";
-  BinOverride "${APTFTP}/indices/override.${RELEASE}.restricted";
-};
-
-Default {
-  Packages {
-    Extensions ".deb";
-    Compress ". gzip";
-  };
-};
-
-Contents {
-  Compress "gzip";
-};
-EOF
-
-
-    cat > ${APTFTP}/conf.d/apt-ftparchive-extras-${arch}.conf <<EOF
-Dir {
-  ArchiveDir "${NEW}";
-};
-
-TreeDefault {
-  Directory "pool/";
-};
-
-BinDirectory "pool/extras" {
-  Packages "dists/${RELEASE}/extras/binary-${arch}/Packages";
-  BinOverride "${APTFTP}/indices/override.${RELEASE}.main";
-};
-
-Default {
-  Packages {
-    Extensions ".deb";
-    Compress ". gzip";
-  };
-};
-
-Contents {
-  Compress "gzip";
-};
-EOF
+# Default {
+#   Packages {
+#     Extensions ".deb";
+#     Compress ". gzip";
+#   };
+#   Contents {
+#     Compress "gzip";
+#   };
+# };
+# EOF
 
 
 
-done
+# cat > ${APTFTP}/conf.d/apt-ftparchive-udeb.conf <<EOF
+# Dir {
+#   ArchiveDir "${NEW}";
+#   CacheDir "${APTFTP}/cache";
+#   OverrideDir "${APTFTP}/indices";
+# };
 
-cat > ${APTFTP}/conf.d/apt-ftparchive-udeb.conf <<EOF
-Dir {
-  ArchiveDir "${NEW}";
-};
+# Tree "dists/${RELEASE}" {
+#   Architectures "amd64";
+#   Sections "main restricted";
+#   BinOverride "override.${RELEASE}.\$(SECTION).debian-installer";
+# };
 
-TreeDefault {
-  Directory "pool/";
-};
+# TreeDefault {
+#   Directory "pool/\$(SECTION)";
+#   Packages "\$(DIST)/\$(SECTION)/debian-installer/binary-\$(ARCH)/Packages";
+#   Contents "\$(DIST)/Contents-debian-installer-\$(ARCH)";
+# };
 
-BinDirectory "pool/main" {
-  Packages "dists/${RELEASE}/main/debian-installer/binary-amd64/Packages";
-  BinOverride "${APTFTP}/indices/override.${RELEASE}.main.debian-installer";
-};
-
-BinDirectory "pool/restricted" {
-  Packages "dists/${RELEASE}/restricted/debian-installer/binary-amd64/Packages";
-  BinOverride "${APTFTP}/indices/override.${RELEASE}.restricted.debian-installer";
-};
-
-Default {
-  Packages {
-    Extensions ".deb";
-    Compress ". gzip";
-  };
-};
-
-Contents {
-  Compress "gzip";
-};
-EOF
+# Default {
+#   Packages {
+#     Extensions ".udeb";
+#     Compress ". gzip";
+#   };
+#   Contents {
+#     Compress "gzip";
+#   };
+# };
+# EOF
 
 
+# cp ${SCRIPTDIR}/aptftp/extraoverride.pl ${APTFTP}/conf.d/extraoverride.pl
+# gunzip -c ${NEW}/dists/${RELEASE}/main/binary-amd64/Packages.gz > \
+#     ${NEW}/dists/${RELEASE}/main/binary-amd64/Packages
 
+# ${APTFTP}/conf.d/extraoverride.pl \
+#     ${NEW}/dists/${RELEASE}/main/binary-amd64/Packages >> \
+#     ${APTFTP}/indices/override.${RELEASE}.extra.main
 
+# apt-ftparchive generate ${APTFTP}/conf.d/apt-ftparchive-deb.conf
+# apt-ftparchive generate ${APTFTP}/conf.d/apt-ftparchive-udeb.conf
 
-cp ${SCRIPTDIR}/aptftp/extraoverride.pl ${APTFTP}/conf.d/extraoverride.pl
-gunzip -c ${NEW}/dists/${RELEASE}/main/binary-amd64/Packages.gz > \
-    ${NEW}/dists/${RELEASE}/main/binary-amd64/Packages
+# cat > ${APTFTP}/conf.d/release.conf <<EOF
+# APT::FTPArchive::Release::Origin "Mirantis";
+# APT::FTPArchive::Release::Label "Mirantis";
+# APT::FTPArchive::Release::Suite "${RELEASE}";
+# APT::FTPArchive::Release::Version "${VERSION}";
+# APT::FTPArchive::Release::Codename "${RELEASE}";
+# APT::FTPArchive::Release::Architectures "${ARCHITECTURES}";
+# APT::FTPArchive::Release::Components "${SECTIONS}";
+# APT::FTPArchive::Release::Description "Mirantis Nailgun Repo";
+# EOF
 
-${APTFTP}/conf.d/extraoverride.pl \
-    ${NEW}/dists/${RELEASE}/main/binary-amd64/Packages > \
-    ${APTFTP}/indices/override.${RELEASE}.extra2.main
+# apt-ftparchive -c ${APTFTP}/conf.d/release.conf release ${NEW}/dists/${RELEASE} > ${NEW}/dists/${RELEASE}/Release
 
-apt-ftparchive --arch amd64 generate ${APTFTP}/conf.d/apt-ftparchive-deb-amd64.conf
-apt-ftparchive --arch i386 generate ${APTFTP}/conf.d/apt-ftparchive-deb-i386.conf
-
-mkdir -p ${NEW}/dists/${RELEASE}/extras/binary-amd64
-mkdir -p ${NEW}/dists/${RELEASE}/extras/binary-i386
-apt-ftparchive --arch amd64 generate ${APTFTP}/conf.d/apt-ftparchive-extras-amd64.conf
-apt-ftparchive --arch i386 generate ${APTFTP}/conf.d/apt-ftparchive-extras-i386.conf
-
-
-apt-ftparchive --arch amd64 generate ${APTFTP}/conf.d/apt-ftparchive-udeb.conf
-
-apt-ftparchive -c ${APTFTP}/conf.d/release.conf release ${NEW}/dists/${RELEASE} > ${NEW}/dists/${RELEASE}/Release
-
+# GNUPGHOME=${TMPGNUPG} gpg --yes --passphrase-file ${TMPGNUPG}/keyphrase --output ${NEW}/dists/${RELEASE}/Release.gpg -ba ${NEW}/dists/${RELEASE}/Release
 
 
 
@@ -328,4 +326,8 @@ mkisofs -r -V "Mirantis Nailgun" \
     -boot-load-size 4 -boot-info-table \
     -o ${NEWISO} ${NEW}/
 
+
+mv ${NEWISO} ${NEWISO}.${STAMP}
+rm -f ${NEWISO}.last
+ln -s ${NEWISO}.${STAMP} ${NEWISO}.last 
 

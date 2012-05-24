@@ -74,12 +74,17 @@ d-i cdrom-detect/eject boolean true
 d-i debian-installer/exit/halt boolean false
 d-i debian-installer/exit/poweroff boolean false
 
+# d-i preseed/late_command string true && \
+# mkdir -p /target/var/lib/mirror/ubuntu && \
+# cp -r /cdrom/dists /target/var/lib/mirror/ubuntu && \
+# cp -r /cdrom/pool /target/var/lib/mirror/ubuntu && \
+# echo "deb file:/var/lib/mirror/ubuntu" > /target/etc/apt/sources.list.d/local.list && \
+# true
+
 d-i preseed/late_command string true && \
 mkdir -p /target/var/lib/mirror/ubuntu && \
-cp -r /cdrom/dists /target/var/lib/mirror/ubuntu && \
 cp -r /cdrom/pool /target/var/lib/mirror/ubuntu && \
-echo "deb file:/var/lib/mirror/ubuntu" > /target/etc/apt/sources.list.d/local.list && \
+echo "deb file:/var/lib/mirror/ubuntu precise main restricted extras" > /target/etc/apt/sources.list.d/local.list && \
 true
-
 
 
