@@ -22,7 +22,9 @@ RELEASE=precise
 VERSION=12.04
 
 ORIGISO=/var/tmp/ubuntu-12.04-server-amd64.iso
-NEWISO=/var/tmp/mirantis-nailgun-ubuntu-12.04-amd64.iso
+NEWISONAME=nailgun-ubuntu-${VERSION}-amd64
+[ -z ${NEWISODIR} ] && NEWISODIR=/var/tmp
+
 MIRROR="http://ru.archive.ubuntu.com/ubuntu"
 REQDEB=`cat ${REPO}/requirements-deb.txt | grep -v "^\s*$" | grep -v "^\s*#"`
 
@@ -73,8 +75,6 @@ rm -rf ${APTFTP}
 echo "Removing ${KEYRING} ..."
 rm -rf ${KEYRING}
 
-# echo "Removing ${NEWISO}"
-# rm -f ${NEWISO}
 
 
 
@@ -324,10 +324,10 @@ mkisofs -r -V "Mirantis Nailgun" \
     -J -l -b isolinux/isolinux.bin \
     -c isolinux/boot.cat -no-emul-boot \
     -boot-load-size 4 -boot-info-table \
-    -o ${NEWISO} ${NEW}/
+    -o ${NEWISODIR}/${NEWISONAME}.${STAMP}.iso ${NEW}/
 
 
-mv ${NEWISO} ${NEWISO}.${STAMP}
-rm -f ${NEWISO}.last
-ln -s ${NEWISO}.${STAMP} ${NEWISO}.last 
+rm -f ${NEWISODIR}/${NEWISONAME}.last.iso
+cd ${NEWISODIR}
+ln -s ${NEWISONAME}.${STAMP}.iso ${NEWISONAME}.last.iso
 
