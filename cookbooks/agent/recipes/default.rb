@@ -1,14 +1,8 @@
-r = gem_package "httpclient" do
-  action :nothing
-end
-
-r.run_action(:install)
-Gem.clear_paths
+chef_gem 'httpclient'
 
 require 'httpclient'
 
-class Chef::Recipe
-  include NodeAgent
+ruby_block 'update_node_info' do
+  block { NodeAgent.update(node) }
 end
 
-send_ohai()

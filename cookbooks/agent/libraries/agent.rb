@@ -1,9 +1,9 @@
 require 'json'
 
 module NodeAgent
-  def send_ohai()
+  def self.update(node)
     url = "#{node['admin']['URL']}/api/environments/1/nodes/#{node['fqdn']}"
-    Chef::Log.debug("Sending ohai data to REST service at #{url}...")
+    Chef::Log.debug("Sending node info to REST service at #{url}...")
 
     interfaces = node["network"]["interfaces"].inject([]) do |result, elm|
       result << { :name => elm[0], :addresses => elm[1]["addresses"] }
@@ -24,7 +24,7 @@ module NodeAgent
         Chef::Log.error("HTTP PUT failed: #{res.inspect}")
       end
     rescue Exception => e
-      Chef::Log.error("Error in sending ohai data: #{e.message}")
+      Chef::Log.error("Error in sending node info: #{e.message}")
     end
   end
 end
