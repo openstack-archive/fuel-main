@@ -27,7 +27,7 @@ class LibvirtXMLBuilder:
         node_xml = XMLBuilder("domain", type=spec.hypervisor)
         node_xml.name(node.id)
         node_xml.vcpu(str(node.cpu))
-        node_xml.memory(str(node.memory), unit='MiB')
+        node_xml.memory(str(node.memory*1024), unit='KiB')
 
         with node_xml.os:
             node_xml.type(spec.os_type, arch=node.arch)
