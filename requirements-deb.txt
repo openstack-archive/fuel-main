@@ -1,3 +1,4 @@
 cobbler
 dnsmasq
 tftpd-hpa
+apt-utils

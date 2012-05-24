@@ -12,12 +12,13 @@ class Network:
         self.kind = kind
 
 class Node:
-    def __init__(self, name, cpu=1, memory=512, arch='x86_64'):
+    def __init__(self, name, cpu=1, memory=512, arch='x86_64', vnc=False):
         self.name = name
 
         self.cpu = cpu
         self.memory = memory
         self.arch = arch
+        self.vnc = vnc
         self.interfaces = []
         self.disks = []
         self.boot = []

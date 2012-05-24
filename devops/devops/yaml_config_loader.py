@@ -68,6 +68,10 @@ def parse_node(environment, data):
     if data.has_key('memory'):
         node.memory = data['memory']
 
+    vnc = str(data.get('vnc', 'false')).lower()
+    if vnc in ('true', '1', 'yes', 'on'):
+        node.vnc = True
+
     if data.has_key('disk'):
         disks_data = data['disk']
         if type(disks_data) != list:
