@@ -82,7 +82,8 @@ rm -rf ${KEYRING}
 ###########################
 # STAGING
 ###########################
-mkdir -p ${ORIG}
+
+gmkdir -p ${ORIG}
 mkdir -p ${NEW}
 
 echo "Mounting original iso image ..."
@@ -147,6 +148,10 @@ mkdir -p ${NEW}/pool/extras
 cd ${EXTRAS}/archives
 find -name "*.deb" -exec cp {} ${NEW}/pool/extras \;
 
+
+# FIXME
+# move this actions to chef
+# debian-installer is very sensitive to chages in cdrom repository
 
 # ###########################
 # # REBUILDING KEYRING
@@ -302,6 +307,13 @@ find -name "*.deb" -exec cp {} ${NEW}/pool/extras \;
 # GNUPGHOME=${TMPGNUPG} gpg --yes --passphrase-file ${TMPGNUPG}/keyphrase --output ${NEW}/dists/${RELEASE}/Release.gpg -ba ${NEW}/dists/${RELEASE}/Release
 
 
+###########################
+# INJECT EXTRA FILES
+###########################
+mkdir -p ${NEW}/inject
+cp -r ${REPO}/cookbooks ${NEW}/inject
+cp -r ${REPO}/scripts ${NEW}/inject
+
 
 
 ###########################
@@ -328,6 +340,7 @@ mkisofs -r -V "Mirantis Nailgun" \
 
 
 rm -f ${NEWISODIR}/${NEWISONAME}.last.iso
-cd ${NEWISODIR}
-ln -s ${NEWISONAME}.${STAMP}.iso ${NEWISONAME}.last.iso
-
+(
+    cd ${NEWISODIR}
+    ln -s ${NEWISONAME}.${STAMP}.iso ${NEWISONAME}.last.iso
+)
