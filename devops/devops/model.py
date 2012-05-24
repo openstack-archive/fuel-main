@@ -22,6 +22,12 @@ class Node:
         self.interfaces = []
         self.disks = []
         self.boot = []
+        self.cdrom = None
+
+class Cdrom:
+    def __init__(self, isopath=None, bus='ide'):
+        self.isopath = isopath
+        self.bus = bus
 
 class Disk:
     def __init__(self, size, format='qcow2', bus='ide'):

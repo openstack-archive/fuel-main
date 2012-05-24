@@ -37,7 +37,15 @@ class LibvirtXMLBuilder:
                 else:
                     node_xml.boot(dev=boot_dev)
 
-        disk_dev_names = deque(['sd'+c for c in list('abcdefghijklmnopqrstuvwxyz')])
+        ide_disk_names = deque(['hd'+c for c in list('abcdefghijklmnopqrstuvwxyz')])
+        serial_disk_names = deque(['sd'+c for c in list('abcdefghijklmnopqrstuvwxyz')])
+
+        
+        def disk_name(bus='ide'):
+            if str(bus) == 'ide':
+                return ide_disk_names.popleft()
+            return serial_disk_names.popleft()
+        
 
         with node_xml.devices:
             node_xml.emulator(spec.emulator)
@@ -49,7 +57,13 @@ class LibvirtXMLBuilder:
                 with node_xml.disk(type="file", device="disk"):
                     node_xml.driver(name="qemu", type=disk.format)
                     node_xml.source(file=disk.path)
-                    node_xml.target(dev=disk_dev_names.popleft(), bus=disk.bus)
+                    node_xml.target(dev=disk_name(disk.bus), bus=disk.bus)
+
+            if node.cdrom:
+                with node_xml.disk(type="file", device="cdrom"):
+                    node_xml.driver(name="qemu", type="raw")
+                    node_xml.source(file=node.cdrom.isopath)
+                    node_xml.target(dev=disk_name(node.cdrom.bus), bus=node.cdrom.bus)
 
             for interface in node.interfaces:
                 with node_xml.interface(type="network"):
@@ -57,7 +71,7 @@ class LibvirtXMLBuilder:
             
             if node.vnc:
                 node_xml.graphics(type='vnc', autoport='yes')
-        
+
         return str(node_xml)
 
 

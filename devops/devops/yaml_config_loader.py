@@ -1,7 +1,7 @@
-
+import os.path
 import yaml
 import re
-from model import Environment, Network, Node, Disk, Interface
+from model import Environment, Network, Node, Disk, Interface, Cdrom
 
 class ConfigError(Exception): pass
 
@@ -72,6 +72,17 @@ def parse_node(environment, data):
     if vnc in ('true', '1', 'yes', 'on'):
         node.vnc = True
 
+    if data.has_key('cdrom'):
+        isopath = data['cdrom']
+        if not isinstance(isopath, (str,)):
+            raise ConfigError, "It must be string containing path to iso image file"
+        
+        if not os.path.exists(os.path.abspath(isopath)):
+            raise ConfigError, "File does not exist"
+
+        node.cdrom = Cdrom(isopath)
+
+
     if data.has_key('disk'):
         disks_data = data['disk']
         if type(disks_data) != list:
@@ -115,7 +126,7 @@ def parse_node(environment, data):
             boot_data = list(boot_data)
 
         for boot in boot_data:
-            if not boot in ['disk', 'network']:
+            if not boot in ('disk', 'network', 'cdrom'):
                 raise ConfigError, "Unknown boot option: %s" % boot
             node.boot.append(boot)
     else:
