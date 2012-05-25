@@ -26,3 +26,5 @@ execute 'set vagrant sasl2 password' do
   command "echo vagrant | saslpasswd2 -a libvirt vagrant"
 end
 
+package 'qemu'
+
