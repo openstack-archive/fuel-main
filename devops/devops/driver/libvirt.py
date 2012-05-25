@@ -15,6 +15,9 @@ class DeploymentSpec:
     def __repr__(self):
         return "<DeploymentSpec arch=\"%s\" os_type=\"%s\" hypervisor=\"%s\" emulator=\"%s\">" % (self.arch, self.os_type, self.hypervisor, self.emulator)
 
+
+class LibvirtException(Exception): pass
+
 class LibvirtXMLBuilder:
 
     def build_network_xml(self, network):
@@ -113,7 +116,7 @@ class Libvirt:
     def create_node(self, node):
         spec = find(lambda s: s.arch == node.arch, self.specs)
         if spec is None:
-            raise "Can't create node %s: insufficient capabilities" % node.name
+            raise LibvirtException, "Can't create node %s: insufficient capabilities" % node.name
 
         if not hasattr(node, 'id') or node.id is None:
             node.id = self._generate_node_id(node.name)
