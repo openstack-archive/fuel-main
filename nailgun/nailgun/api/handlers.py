@@ -14,7 +14,7 @@ import celery
 from nailgun.tasks import create_chef_config
 
 
-class TaskHandler(BaseHandler):
+class TaskCollectionHandler(BaseHandler):
 
     allowed_methods = ('GET',)
 
@@ -36,7 +36,7 @@ class TaskHandler(BaseHandler):
 
     def read(self, request, task_id):
         task = celery.result.AsyncResult(task_id)
-        return TaskHandler.render_task(task)
+        return TaskCollectionHandler.render_task(task)
 
 
 class ConfigHandler(BaseHandler):
@@ -47,24 +47,18 @@ class ConfigHandler(BaseHandler):
         task = create_chef_config.delay(environment_id)
 
         response = rc.ACCEPTED
-        response.content = TaskHandler.render_task(task)
+        response.content = TaskCollectionHandler.render_task(task)
         return response
 
 
-class EnvironmentHandler(BaseHandler):
+class EnvironmentCollectionHandler(BaseHandler):
 
-    allowed_methods = ('GET', 'POST', 'PUT')
+    allowed_methods = ('GET', 'POST')
     model = Environment
     fields = ('id', 'name', ('nodes', ()))
 
-    def read(self, request, environment_id=None):
-        if environment_id:
-            try:
-                return Environment.objects.get(pk=environment_id)
-            except ObjectDoesNotExist:
-                return rc.NOT_FOUND
-        else:
-            return Environment.objects.all()
+    def read(self, request):
+        return Environment.objects.all()
 
     @validate_json(EnvironmentForm)
     def create(self, request):
@@ -74,20 +68,28 @@ class EnvironmentHandler(BaseHandler):
 
         return environment
 
+class EnvironmentHandler(BaseHandler):
 
-class NodeHandler(BaseHandler):
+    allowed_methods = ('GET',)
+    model = Environment
+    fields = ('id', 'name', ('nodes', ()))
 
-    allowed_methods = ('GET', 'POST', 'PUT')
+    def read(self, request, environment_id):
+        try:
+            return Environment.objects.get(pk=environment_id)
+        except ObjectDoesNotExist:
+            return rc.NOT_FOUND
+
+
+class NodeCollectionHandler(BaseHandler):
+
+    allowed_methods = ('GET', 'POST')
     model = Node
     fields = ('name', 'metadata', 'status', ('roles', ()))
 
-    def read(self, request, environment_id, node_name=None):
+    def read(self, request, environment_id):
         try:
-            if node_name:
-                return Node.objects.get(name=node_name,
-                        environment__id=environment_id)
-            else:
-                return Node.objects.filter(environment__id=environment_id)
+            return Node.objects.filter(environment__id=environment_id)
         except ObjectDoesNotExist:
             return rc.NOT_FOUND
 
@@ -101,6 +103,19 @@ class NodeHandler(BaseHandler):
 
             node.save()
             return node
+        except ObjectDoesNotExist:
+            return rc.NOT_FOUND
+
+class NodeHandler(BaseHandler):
+
+    allowed_methods = ('GET', 'PUT')
+    model = Node
+    fields = ('name', 'metadata', 'status', ('roles', ()))
+
+    def read(self, request, environment_id, node_name):
+        try:
+            return Node.objects.get(name=node_name,
+                    environment__id=environment_id)
         except ObjectDoesNotExist:
             return rc.NOT_FOUND
 
@@ -124,21 +139,30 @@ class NodeHandler(BaseHandler):
             return rc.NOT_FOUND
 
 
+class RoleCollectionHandler(BaseHandler):
+
+    allowed_methods = ('GET',)
+    model = Role
+    fields = ('id', 'name')
+
+    def read(self, request, environment_id, node_name):
+        try:
+            return Role.objects.filter(
+                    nodes__environment__id=environment_id,
+                    nodes__name=node_name)
+        except ObjectDoesNotExist:
+            return rc.NOT_FOUND
+
 class RoleHandler(BaseHandler):
 
     allowed_methods = ('GET', 'POST', 'DELETE')
     model = Role
     fields = ('id', 'name')
 
-    def read(self, request, environment_id, node_name, role_id=None):
+    def read(self, request, environment_id, node_name, role_id):
         try:
-            if role_id:
-                return Role.objects.get(nodes__environment__id=environment_id,
-                        nodes__name=node_name, id=role_id)
-            else:
-                return Role.objects.filter(
-                        nodes__environment__id=environment_id,
-                        nodes__name=node_name)
+            return Role.objects.get(nodes__environment__id=environment_id,
+                    nodes__name=node_name, id=role_id)
         except ObjectDoesNotExist:
             return rc.NOT_FOUND
 
