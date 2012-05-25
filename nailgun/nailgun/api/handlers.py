@@ -14,7 +14,7 @@ import celery
 from nailgun.tasks import create_chef_config
 
 
-class TaskCollectionHandler(BaseHandler):
+class TaskHandler(BaseHandler):
 
     allowed_methods = ('GET',)
 
@@ -47,7 +47,7 @@ class ConfigHandler(BaseHandler):
         task = create_chef_config.delay(environment_id)
 
         response = rc.ACCEPTED
-        response.content = TaskCollectionHandler.render_task(task)
+        response.content = TaskHandler.render_task(task)
         return response
 
 
@@ -72,7 +72,7 @@ class EnvironmentHandler(BaseHandler):
 
     allowed_methods = ('GET',)
     model = Environment
-    fields = ('id', 'name', ('nodes', ()))
+    fields = EnvironmentCollectionHandler.fields
 
     def read(self, request, environment_id):
         try:
@@ -85,18 +85,15 @@ class NodeCollectionHandler(BaseHandler):
 
     allowed_methods = ('GET', 'POST')
     model = Node
-    fields = ('name', 'metadata', 'status', ('roles', ()))
+    fields = ('name', 'environment_id', 'metadata', 'status', ('roles', ()))
 
-    def read(self, request, environment_id):
-        try:
-            return Node.objects.filter(environment__id=environment_id)
-        except ObjectDoesNotExist:
-            return rc.NOT_FOUND
+    def read(self, request):
+        return Node.objects.all()
 
     @validate_json(NodeCreationForm)
-    def create(self, request, environment_id):
+    def create(self, request):
         try:
-            node = Node(environment_id=environment_id)
+            node = Node()
             for key, value in request.form.cleaned_data.items():
                 if key in request.form.data:
                     setattr(node, key, value)
@@ -110,20 +107,18 @@ class NodeHandler(BaseHandler):
 
     allowed_methods = ('GET', 'PUT')
     model = Node
-    fields = ('name', 'metadata', 'status', ('roles', ()))
+    fields = NodeCollectionHandler.fields
 
-    def read(self, request, environment_id, node_name):
+    def read(self, request, node_name):
         try:
-            return Node.objects.get(name=node_name,
-                    environment__id=environment_id)
+            return Node.objects.get(name=node_name)
         except ObjectDoesNotExist:
             return rc.NOT_FOUND
 
     @validate_json(NodeUpdateForm)
-    def update(self, request, environment_id, node_name):
+    def update(self, request, node_name):
         try:
-            node = Node.objects.get(name=node_name,
-                    environment__id=environment_id)
+            node = Node.objects.get(name=node_name)
             for key, value in request.form.cleaned_data.items():
                 if key in request.form.data:
                     if key == 'environment_id' and value is not None and \
@@ -145,11 +140,9 @@ class RoleCollectionHandler(BaseHandler):
     model = Role
     fields = ('id', 'name')
 
-    def read(self, request, environment_id, node_name):
+    def read(self, request, node_name):
         try:
-            return Role.objects.filter(
-                    nodes__environment__id=environment_id,
-                    nodes__name=node_name)
+            return Role.objects.filter(nodes__name=node_name)
         except ObjectDoesNotExist:
             return rc.NOT_FOUND
 
@@ -157,19 +150,17 @@ class RoleHandler(BaseHandler):
 
     allowed_methods = ('GET', 'POST', 'DELETE')
     model = Role
-    fields = ('id', 'name')
+    fields = RoleCollectionHandler.fields
 
-    def read(self, request, environment_id, node_name, role_id):
+    def read(self, request, node_name, role_id):
         try:
-            return Role.objects.get(nodes__environment__id=environment_id,
-                    nodes__name=node_name, id=role_id)
+            return Role.objects.get(nodes__name=node_name, id=role_id)
         except ObjectDoesNotExist:
             return rc.NOT_FOUND
 
-    def create(self, request, environment_id, node_name, role_id):
+    def create(self, request, node_name, role_id):
         try:
-            node = Node.objects.get(environment__id=environment_id,
-                    name=node_name)
+            node = Node.objects.get(name=node_name)
             role = Role.objects.get(id=role_id)
 
             if role in node.roles.all():
@@ -181,10 +172,9 @@ class RoleHandler(BaseHandler):
         except ObjectDoesNotExist:
             return rc.NOT_FOUND
 
-    def delete(self, request, environment_id, node_name, role_id):
+    def delete(self, request, node_name, role_id):
         try:
-            node = Node.objects.get(environment__id=environment_id,
-                    name=node_name)
+            node = Node.objects.get(name=node_name)
             role = Role.objects.get(id=role_id)
             node.roles.remove(role)
             return rc.DELETED

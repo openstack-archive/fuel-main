@@ -5,7 +5,7 @@ from handlers import EnvironmentCollectionHandler, EnvironmentHandler, \
                      NodeCollectionHandler, NodeHandler, \
                      RoleCollectionHandler, RoleHandler, \
                      ConfigHandler, \
-                     TaskCollectionHandler
+                     TaskHandler
 
 
 class JsonResource(Resource):
@@ -14,26 +14,28 @@ class JsonResource(Resource):
 
 
 urlpatterns = patterns('',
-    url(r'^environments/?$', JsonResource(EnvironmentCollectionHandler)),
+    url(r'^environments/?$',
+        JsonResource(EnvironmentCollectionHandler),
+        name='environment_collection_handler'),
     url(r'^environments/(?P<environment_id>\d+)/?$',
-        JsonResource(EnvironmentHandler)),
-    url(r'^environments/(?P<environment_id>\d+)/chef-config/?$',
-        JsonResource(ConfigHandler)),
-    url(r'^environments/(?P<environment_id>\d+)/nodes/?$',
-        JsonResource(NodeCollectionHandler)),
-    url(r'^environments/(?P<environment_id>\d+)/nodes/'
-        r'(?P<node_name>[\w\.\-]+)/?$',
-        JsonResource(NodeHandler)),
+        JsonResource(EnvironmentHandler),
+        name='environment_handler'),
     url(r'^nodes/?$',
-        JsonResource(NodeCollectionHandler), {'environment_id': None}),
+        JsonResource(NodeCollectionHandler),
+        name='node_collection_handler'),
     url(r'^nodes/(?P<node_name>[\w\.\-]+)/?$',
-        JsonResource(NodeHandler), {'environment_id': None}),
-    url(r'^environments/(?P<environment_id>\d+)/nodes/'
-        r'(?P<node_name>[\w\.\-]+)/roles/?$',
-        JsonResource(RoleCollectionHandler)),
-    url(r'^environments/(?P<environment_id>\d+)/nodes/'
-        r'(?P<node_name>[\w\.\-]+)/roles/(?P<role_id>\w+)/?$',
-        JsonResource(RoleHandler)),
+        JsonResource(NodeHandler),
+        name='node_handler'),
+    url(r'^nodes/(?P<node_name>[\w\.\-]+)/roles/?$',
+        JsonResource(RoleCollectionHandler),
+        name='role_collection_handler'),
+    url(r'^nodes/(?P<node_name>[\w\.\-]+)/roles/(?P<role_id>\w+)/?$',
+        JsonResource(RoleHandler),
+        name='role_handler'),
+    url(r'^environments/(?P<environment_id>\d+)/chef-config/?$',
+        JsonResource(ConfigHandler),
+        name='config_handler'),
     url(r'^tasks/(?P<task_id>[\da-f\-]{36})/?$',
-        JsonResource(TaskCollectionHandler)),
+        JsonResource(TaskHandler),
+        name='task_handler'),
 )

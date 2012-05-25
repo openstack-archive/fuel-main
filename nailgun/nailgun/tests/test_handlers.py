@@ -1,6 +1,7 @@
 import simplejson as json
 from django import http
 from django.test import TestCase
+from django.core.urlresolvers import reverse
 
 from nailgun.models import Environment, Node, Role
 
@@ -36,7 +37,8 @@ class TestHandlers(TestCase):
 
         self.node.roles = [self.role]
         self.node.save()
-        self.node_url = '/api/environments/1/nodes/' + self.node_name
+        self.node_url = reverse('node_handler',
+                                kwargs={'node_name': self.node_name})
 
         self.new_meta = {'block_device': 'new-val',
                          'interfaces': 'd',
@@ -54,7 +56,7 @@ class TestHandlers(TestCase):
     def test_environment_creation(self):
         yet_another_environment_name = 'Yet another environment'
         resp = self.client.post(
-            '/api/environments',
+            reverse('environment_collection_handler'),
             json.dumps({'name': yet_another_environment_name}),
             "application/json"
         )
@@ -70,13 +72,16 @@ class TestHandlers(TestCase):
         node_without_env_name = 'node-without-environment'
 
         resp = self.client.post(
-            '/api/environments/1/nodes',
-            json.dumps({'name': node_with_env_name}),
+            reverse('node_collection_handler'),
+            json.dumps({
+                'name': node_with_env_name,
+                'environment_id': 1,
+            }),
             "application/json")
         self.assertEquals(resp.status_code, 200)
 
         resp = self.client.post(
-            '/api/nodes',
+            reverse('node_collection_handler'),
             json.dumps({'name': node_without_env_name}),
             "application/json")
         self.assertEquals(resp.status_code, 200)
@@ -87,19 +92,19 @@ class TestHandlers(TestCase):
 
     def test_node_environment_update(self):
         resp = self.client.put(
-            '/api/environments/1/nodes/' + self.node.name,
+            reverse('node_handler', kwargs={'node_name': self.node.name}),
             json.dumps({'environment_id': 2}),
             "application/json")
         self.assertEquals(resp.status_code, 400)
 
         resp = self.client.put(
-            '/api/environments/1/nodes/' + self.node.name,
+            reverse('node_handler', kwargs={'node_name': self.node.name}),
             json.dumps({'environment_id': None}),
             "application/json")
         self.assertEquals(resp.status_code, 200)
 
         resp = self.client.put(
-            '/api/nodes/' + self.node.name,
+            reverse('node_handler', kwargs={'node_name': self.node.name}),
             json.dumps({'environment_id': 1}),
             "application/json")
         self.assertEquals(resp.status_code, 200)

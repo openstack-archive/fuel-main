@@ -24,8 +24,8 @@ class NodeForm(forms.Form):
     metadata = Field(required=False, validators=[validate_node_metadata])
     status = ChoiceField(required=False, choices=Node.NODE_STATUSES)
 
-class NodeCreationForm(NodeForm):
-    name = CharField(max_length=100)
-
 class NodeUpdateForm(NodeForm):
     environment_id = IntegerField(required=False)
+
+class NodeCreationForm(NodeUpdateForm):
+    name = CharField(max_length=100)
