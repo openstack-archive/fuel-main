@@ -40,12 +40,12 @@ if [ $xunit -eq 1 ]; then
 fi
 
 function run_pep8 {
-  pep8 --show-source --show-pep8 --count .
+  pep8 --show-source --show-pep8 --count . || return 1
   echo "PEP8 check passed successfully."
 }
 
 if [ $just_pep8 -eq 1 ]; then
-    run_pep8
+    run_pep8 || exit 1
     exit
 fi
 
@@ -63,4 +63,3 @@ if [ -z "$noseargs" ]; then
     run_pep8
   fi
 fi
-
