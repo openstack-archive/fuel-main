@@ -2,7 +2,7 @@ import simplejson as json
 from django import http
 from django.test import TestCase
 
-from nailgun.models import Node, Role
+from nailgun.models import Environment, Node, Role
 
 
 class TestHandlers(TestCase):
@@ -45,6 +45,16 @@ class TestHandlers(TestCase):
     def tearDown(self):
         self.node.delete()
         self.role.delete()
+
+    def test_environment_creation(self):
+        another_env_name = 'Another Environment'
+        resp = self.client.post('/api/environments',
+                               json.dumps({'name': another_env_name}),
+                               "application/json")
+        self.assertEquals(resp.status_code, 201)
+
+        environments_from_db = Environment.objects.filter(name=another_env_name)
+        self.assertEquals(len(environments_from_db), 1)
 
     def test_node_valid_metadata_gets_updated(self):
         resp = self.client.put(self.node_url,
@@ -146,7 +156,7 @@ class TestHandlers(TestCase):
     def test_list_of_roles_gets_updated_via_post(self):
         url = self.node_url + '/roles/' + self.another_role.id
         resp = self.client.post(url, '', "plain/text")
-        self.assertEquals(resp.status_code, 200)
+        self.assertEquals(resp.status_code, 201)
 
         resp = self.client.post(url, '', "plain/text")
         self.assertEquals(resp.status_code, 409)

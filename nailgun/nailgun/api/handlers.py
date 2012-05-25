@@ -71,7 +71,10 @@ class EnvironmentHandler(BaseHandler):
         environment = Environment()
         environment.name = request.form.cleaned_data['name']
         environment.save()
-        return environment
+
+        response = rc.CREATED
+        response.content = environment
+        return response
 
 
 class NodeHandler(BaseHandler):
@@ -133,7 +136,10 @@ class RoleHandler(BaseHandler):
                 return rc.DUPLICATE_ENTRY
 
             node.roles.add(role)
-            return role
+
+            response = rc.CREATED
+            response.content = role
+            return response
         except ObjectDoesNotExist:
             return rc.NOT_FOUND
 
