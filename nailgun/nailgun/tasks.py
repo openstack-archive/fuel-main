@@ -4,7 +4,7 @@ from django.conf import settings
 from celery.task import task
 from nailgun.models import Environment, Node, Role
 
-@task(ignore_result=True)
+@task
 def create_chef_config(environment_id):
     env_id = environment_id
     nodes = Node.objects.filter(environment__id=env_id)
@@ -32,3 +32,5 @@ def create_chef_config(environment_id):
         f = open(filepath, 'w')
         f.write(json.dumps(solo_json))
         f.close()
+
+    return True

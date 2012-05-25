@@ -10,7 +10,45 @@ from nailgun.models import Environment, Node, Role
 from validators import validate_json
 from forms import EnvironmentForm, NodeForm
 
+import celery
 from nailgun.tasks import create_chef_config
+
+
+class TaskHandler(BaseHandler):
+
+    allowed_methods = ('GET',)
+
+    @classmethod
+    def render_task(cls, task):
+        # TODO show meta?
+        repr = {
+            "task_id": task.task_id,
+            "status": task.state,
+        }
+
+        if task.state == celery.states.SUCCESS:
+            repr['result'] = task.result
+        elif task.state == celery.states.FAILURE:
+            # return string representation of the exception if failed
+            repr['result'] = str(task.result)
+
+        return repr
+
+    def read(self, request, task_id):
+        task = celery.result.AsyncResult(task_id)
+        return TaskHandler.render_task(task)
+
+
+class ConfigHandler(BaseHandler):
+
+    allowed_methods = ('POST',)
+
+    def create(self, request, environment_id):
+        task = create_chef_config.delay(environment_id)
+
+        response = rc.ACCEPTED
+        response.content = TaskHandler.render_task(task)
+        return response
 
 
 class EnvironmentHandler(BaseHandler):
@@ -34,15 +72,6 @@ class EnvironmentHandler(BaseHandler):
         environment.name = request.form.cleaned_data['name']
         environment.save()
         return environment
-
-
-class ConfigHandler(BaseHandler):
-
-    allowed_methods = ('POST',)
-
-    def create(self, request, environment_id):
-        create_chef_config.delay(environment_id)
-        return rc.ACCEPTED
 
 
 class NodeHandler(BaseHandler):

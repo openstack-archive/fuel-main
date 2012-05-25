@@ -1,8 +1,8 @@
 from django.conf.urls import patterns, include, url
 from piston.resource import Resource
 
-from handlers import EnvironmentHandler, NodeHandler
-from handlers import RoleHandler, ConfigHandler
+from handlers import EnvironmentHandler, NodeHandler, RoleHandler, \
+                     ConfigHandler, TaskHandler
 
 
 class JsonResource(Resource):
@@ -14,6 +14,7 @@ environment_handler = JsonResource(EnvironmentHandler)
 node_handler = JsonResource(NodeHandler)
 role_handler = JsonResource(RoleHandler)
 config_handler = JsonResource(ConfigHandler)
+task_handler = JsonResource(TaskHandler)
 
 urlpatterns = patterns('',
     url(r'^environments/?$', environment_handler),
@@ -27,4 +28,5 @@ urlpatterns = patterns('',
         r'(?P<node_name>[\w\.\-]+)/roles/?$', role_handler),
     url(r'^environments/(?P<environment_id>\d+)/nodes/'
         r'(?P<node_name>[\w\.\-]+)/roles/(?P<role_id>\w+)/?$', role_handler),
+    url(r'^tasks/(?P<task_id>[\da-f\-]{36})/?$', task_handler),
 )
