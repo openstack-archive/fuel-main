@@ -4,6 +4,7 @@ from django.conf import settings
 from celery.task import task
 from nailgun.models import Environment, Node, Role
 
+
 @task
 def create_chef_config(environment_id):
     env_id = environment_id

@@ -15,7 +15,8 @@ class TestHandlers(TestCase):
                          'cpu': 'asf',
                          'memory': 'sd'
                         }
-        self.another_environment = Environment(id=2, name='Another environment')
+        self.another_environment = Environment(id=2,
+                name='Another environment')
         self.another_environment.save()
 
         self.node_name = "test.server.com"

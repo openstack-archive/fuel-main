@@ -7,8 +7,8 @@ from django.core.exceptions import ObjectDoesNotExist
 from django.conf import settings
 
 from nailgun.models import Environment, Node, Role
-from validators import validate_json
-from forms import EnvironmentForm, NodeCreationForm, NodeUpdateForm
+from nailgun.api.validators import validate_json
+from nailgun.api.forms import EnvironmentForm, NodeCreationForm, NodeUpdateForm
 
 import celery
 from nailgun.tasks import create_chef_config
@@ -68,6 +68,7 @@ class EnvironmentCollectionHandler(BaseHandler):
 
         return environment
 
+
 class EnvironmentHandler(BaseHandler):
 
     allowed_methods = ('GET',)
@@ -103,6 +104,7 @@ class NodeCollectionHandler(BaseHandler):
         except ObjectDoesNotExist:
             return rc.NOT_FOUND
 
+
 class NodeHandler(BaseHandler):
 
     allowed_methods = ('GET', 'PUT')
@@ -124,7 +126,8 @@ class NodeHandler(BaseHandler):
                     if key == 'environment_id' and value is not None and \
                             node.environment_id is not None:
                         response = rc.BAD_REQUEST
-                        response.content = 'Changing environment is not allowed'
+                        response.content = \
+                                'Changing environment is not allowed'
                         return response
                     setattr(node, key, value)
 
@@ -145,6 +148,7 @@ class RoleCollectionHandler(BaseHandler):
             return Role.objects.filter(nodes__name=node_name)
         except ObjectDoesNotExist:
             return rc.NOT_FOUND
+
 
 class RoleHandler(BaseHandler):
 
