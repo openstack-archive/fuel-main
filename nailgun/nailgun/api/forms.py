@@ -1,6 +1,6 @@
 from django.core.exceptions import ValidationError
 from django import forms
-from django.forms.fields import Field, CharField, ChoiceField
+from django.forms.fields import Field, IntegerField, CharField, ChoiceField
 from nailgun.models import Environment, Node, Role
 
 
@@ -23,3 +23,9 @@ def validate_node_metadata(value):
 class NodeForm(forms.Form):
     metadata = Field(required=False, validators=[validate_node_metadata])
     status = ChoiceField(required=False, choices=Node.NODE_STATUSES)
+
+class NodeCreationForm(NodeForm):
+    name = CharField(max_length=100)
+
+class NodeUpdateForm(NodeForm):
+    environment_id = IntegerField(required=False)

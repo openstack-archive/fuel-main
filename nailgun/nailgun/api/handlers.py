@@ -8,7 +8,7 @@ from django.conf import settings
 
 from nailgun.models import Environment, Node, Role
 from validators import validate_json
-from forms import EnvironmentForm, NodeForm
+from forms import EnvironmentForm, NodeCreationForm, NodeUpdateForm
 
 import celery
 from nailgun.tasks import create_chef_config
@@ -72,14 +72,12 @@ class EnvironmentHandler(BaseHandler):
         environment.name = request.form.cleaned_data['name']
         environment.save()
 
-        response = rc.CREATED
-        response.content = environment
-        return response
+        return environment
 
 
 class NodeHandler(BaseHandler):
 
-    allowed_methods = ('GET', 'PUT')
+    allowed_methods = ('GET', 'POST', 'PUT')
     model = Node
     fields = ('name', 'metadata', 'status', ('roles', ()))
 
@@ -93,15 +91,33 @@ class NodeHandler(BaseHandler):
         except ObjectDoesNotExist:
             return rc.NOT_FOUND
 
-    @validate_json(NodeForm)
+    @validate_json(NodeCreationForm)
+    def create(self, request, environment_id):
+        try:
+            node = Node(environment_id=environment_id)
+            for key, value in request.form.cleaned_data.items():
+                if key in request.form.data:
+                    setattr(node, key, value)
+
+            node.save()
+            return node
+        except ObjectDoesNotExist:
+            return rc.NOT_FOUND
+
+    @validate_json(NodeUpdateForm)
     def update(self, request, environment_id, node_name):
         try:
             node = Node.objects.get(name=node_name,
                     environment__id=environment_id)
             for key, value in request.form.cleaned_data.items():
-                # check if parameter is really passed by client
                 if key in request.form.data:
+                    if key == 'environment_id' and value is not None and \
+                            node.environment_id is not None:
+                        response = rc.BAD_REQUEST
+                        response.content = 'Changing environment is not allowed'
+                        return response
                     setattr(node, key, value)
+
             node.save()
             return node
         except ObjectDoesNotExist:
@@ -137,9 +153,7 @@ class RoleHandler(BaseHandler):
 
             node.roles.add(role)
 
-            response = rc.CREATED
-            response.content = role
-            return response
+            return role
         except ObjectDoesNotExist:
             return rc.NOT_FOUND
 

@@ -14,6 +14,9 @@ class TestHandlers(TestCase):
                          'cpu': 'asf',
                          'memory': 'sd'
                         }
+        self.another_environment = Environment(id=2, name='Another environment')
+        self.another_environment.save()
+
         self.node_name = "test.server.com"
 
         self.node = Node(environment_id=1,
@@ -43,18 +46,63 @@ class TestHandlers(TestCase):
         self.meta_json = json.dumps(self.new_meta)
 
     def tearDown(self):
+        self.another_environment.delete()
         self.node.delete()
         self.role.delete()
+        self.another_role.delete()
 
     def test_environment_creation(self):
-        another_env_name = 'Another Environment'
-        resp = self.client.post('/api/environments',
-                               json.dumps({'name': another_env_name}),
-                               "application/json")
-        self.assertEquals(resp.status_code, 201)
+        yet_another_environment_name = 'Yet another environment'
+        resp = self.client.post(
+            '/api/environments',
+            json.dumps({'name': yet_another_environment_name}),
+            "application/json"
+        )
+        self.assertEquals(resp.status_code, 200)
 
-        environments_from_db = Environment.objects.filter(name=another_env_name)
+        environments_from_db = Environment.objects.filter(
+            name=yet_another_environment_name
+        )
         self.assertEquals(len(environments_from_db), 1)
+
+    def test_node_creation(self):
+        node_with_env_name = 'node-with-environment'
+        node_without_env_name = 'node-without-environment'
+
+        resp = self.client.post(
+            '/api/environments/1/nodes',
+            json.dumps({'name': node_with_env_name}),
+            "application/json")
+        self.assertEquals(resp.status_code, 200)
+
+        resp = self.client.post(
+            '/api/nodes',
+            json.dumps({'name': node_without_env_name}),
+            "application/json")
+        self.assertEquals(resp.status_code, 200)
+
+        nodes_from_db = Node.objects.filter(name__in=[node_with_env_name,
+                                                      node_without_env_name])
+        self.assertEquals(len(nodes_from_db), 2)
+
+    def test_node_environment_update(self):
+        resp = self.client.put(
+            '/api/environments/1/nodes/' + self.node.name,
+            json.dumps({'environment_id': 2}),
+            "application/json")
+        self.assertEquals(resp.status_code, 400)
+
+        resp = self.client.put(
+            '/api/environments/1/nodes/' + self.node.name,
+            json.dumps({'environment_id': None}),
+            "application/json")
+        self.assertEquals(resp.status_code, 200)
+
+        resp = self.client.put(
+            '/api/nodes/' + self.node.name,
+            json.dumps({'environment_id': 1}),
+            "application/json")
+        self.assertEquals(resp.status_code, 200)
 
     def test_node_valid_metadata_gets_updated(self):
         resp = self.client.put(self.node_url,
@@ -156,7 +204,7 @@ class TestHandlers(TestCase):
     def test_list_of_roles_gets_updated_via_post(self):
         url = self.node_url + '/roles/' + self.another_role.id
         resp = self.client.post(url, '', "plain/text")
-        self.assertEquals(resp.status_code, 201)
+        self.assertEquals(resp.status_code, 200)
 
         resp = self.client.post(url, '', "plain/text")
         self.assertEquals(resp.status_code, 409)

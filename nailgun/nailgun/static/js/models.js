@@ -28,7 +28,8 @@ Collection.Environment = Backbone.Collection.extend({
 Model.Node = Backbone.RelationalModel.extend({
     idAttribute: 'name',
     urlRoot: function() {
-        return this.get('environment').url() + '/nodes'
+        var environment = this.get('environment');
+        return (environment ? environment.url() : '') + '/nodes'
     },
     defaults: {
 
