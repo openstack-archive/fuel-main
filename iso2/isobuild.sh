@@ -1,10 +1,9 @@
 #!/bin/bash
 
-set -x
+#set -x
 set -e
 
 [ X`whoami` = X'root' ] || { echo "You must be root to run this script."; exit 1; }
-
 
 
 ###########################
@@ -137,6 +136,8 @@ Dir
   
   Etc "${EXTRAS}/etc";
 };
+
+Debug::NoLocking "true";
 EOF
 
 apt-get -c=${EXTRAS}/etc/apt.conf update
@@ -153,68 +154,130 @@ find -name "*.deb" -exec cp {} ${NEW}/pool/extras \;
 # move this actions to chef
 # debian-installer is very sensitive to chages in cdrom repository
 
-# ###########################
-# # REBUILDING KEYRING
-# ###########################
-# mkdir -p ${KEYRING}
-# cp -rp ${GNUPG} ${TMPGNUPG}
-# chmod 700 ${TMPGNUPG}
-# chmod 600 ${TMPGNUPG}/*
+###########################
+# REBUILDING KEYRING
+###########################
+mkdir -p ${KEYRING}
+cp -rp ${GNUPG} ${TMPGNUPG}
+chmod 700 ${TMPGNUPG}
+chmod 600 ${TMPGNUPG}/*
 
-# cd ${KEYRING}
-# apt-get -c=${EXTRAS}/etc/apt.conf source ubuntu-keyring
-# KEYRING_PACKAGE=`find -maxdepth 1 -name "ubuntu-keyring*" -type d -print`
-# if [ -z ${KEYRING_PACKAGE} ]; then
-#     echo "Cannot grab keyring source! Exiting."
-#     exit 1
-# fi
+cd ${KEYRING}
+apt-get -c=${EXTRAS}/etc/apt.conf source ubuntu-keyring
+KEYRING_PACKAGE=`find -maxdepth 1 -name "ubuntu-keyring*" -type d -print`
+if [ -z ${KEYRING_PACKAGE} ]; then
+    echo "Cannot grab keyring source! Exiting."
+    exit 1
+fi
 
-# cd ${KEYRING}/${KEYRING_PACKAGE}/keyrings
-# GNUPGHOME=${TMPGNUPG} gpg --import < ubuntu-archive-keyring.gpg
-# rm -f ubuntu-archive-keyring.gpg
-# GNUPGHOME=${TMPGNUPG} gpg --export --output ubuntu-archive-keyring.gpg FBB75451 437D05B5 ${GPGKEYID}
-# cd ${KEYRING}/${KEYRING_PACKAGE}
-# dpkg-buildpackage -rfakeroot -m"${GPGKEY}" -k"${GPGKEYID}" -uc -us
-# rm -f ${NEW}/pool/main/u/ubuntu-keyring/*
-# cp ${KEYRING}/ubuntu-keyring*deb ${NEW}/pool/main/u/ubuntu-keyring/
+cd ${KEYRING}/${KEYRING_PACKAGE}/keyrings
+GNUPGHOME=${TMPGNUPG} gpg --import < ubuntu-archive-keyring.gpg
+rm -f ubuntu-archive-keyring.gpg
+GNUPGHOME=${TMPGNUPG} gpg --export --output ubuntu-archive-keyring.gpg FBB75451 437D05B5 ${GPGKEYID}
+cd ${KEYRING}/${KEYRING_PACKAGE}
+dpkg-buildpackage -rfakeroot -m"${GPGKEY}" -k"${GPGKEYID}" -uc -us
+rm -f ${NEW}/pool/main/u/ubuntu-keyring/*
+cp ${KEYRING}/ubuntu-keyring*deb ${NEW}/pool/main/u/ubuntu-keyring/
 
 
-# ###########################
-# # UPDATING REPO
-# ###########################
-# mkdir -p ${APTFTP}/conf.d
-# mkdir -p ${APTFTP}/indices
-# mkdir -p ${APTFTP}/cache
+###########################
+# UPDATING REPO
+###########################
+mkdir -p ${APTFTP}/conf.d
+mkdir -p ${APTFTP}/indices
+mkdir -p ${APTFTP}/cache
 
-# ARCHITECTURES="i386 amd64"
-# SECTIONS="main restricted extras"
+ARCHITECTURES="i386 amd64"
+SECTIONS="main restricted extras"
 
-# for s in ${SECTIONS}; do
-#     for a in ${ARCHITECTURES}; do
-# 	mkdir -p ${NEW}/dists/${RELEASE}/${s}/binary-${a}
-# 	cat > ${NEW}/dists/${RELEASE}/${s}/binary-${a}/Release <<EOF
-# Archive: ${RELEASE}
-# Version: ${VERSION}
-# Component: ${s}
-# Origin: Mirantis
-# Label: Mirantis
-# Architecture: ${a}
-# EOF
-#     done
-#     mkdir -p ${NEW}/dists/${RELEASE}/${s}/debian-installer/binary-amd64
-# done
+for s in ${SECTIONS}; do
+    for a in ${ARCHITECTURES}; do
+	mkdir -p ${NEW}/dists/${RELEASE}/${s}/binary-${a}
+	cat > ${NEW}/dists/${RELEASE}/${s}/binary-${a}/Release <<EOF
+Archive: ${RELEASE}
+Version: ${VERSION}
+Component: ${s}
+Origin: Mirantis
+Label: Mirantis
+Architecture: ${a}
+EOF
+    done
+    mkdir -p ${NEW}/dists/${RELEASE}/${s}/debian-installer/binary-amd64
+done
 
-# for suffix in \
-#     extra.main \
-#     main \
-#     main.debian-installer \
-#     restricted \
-#     restricted.debian-installer; do
+for suffix in \
+    extra.main \
+    main \
+    main.debian-installer \
+    restricted \
+    restricted.debian-installer; do
     
-#     wget -qO- ${MIRROR}/indices/override.${RELEASE}.${suffix} > \
-# 	${APTFTP}/indices/override.${RELEASE}.${suffix}
-# done
+    wget -qO- ${MIRROR}/indices/override.${RELEASE}.${suffix} > \
+	${APTFTP}/indices/override.${RELEASE}.${suffix}
+done
 
+gunzip -c ${NEW}/dists/${RELEASE}/main/binary-amd64/Packages.gz | \
+    ${SCRIPTDIR}/aptftp/extraoverride.pl >> \
+    ${APTFTP}/indices/override.${RELEASE}.extra.main
+
+for s in ${SECTIONS}; do
+    for a in ${ARCHITECTURES}; do
+
+	[ -r ${APTFTP}/indices/override.${RELEASE}.${s} ] && \
+	    override=${APTFTP}/indices/override.${RELEASE}.${s} || \
+	    unset override
+	[ -r ${APTFTP}/indices/override.${RELEASE}.extra.${s} ] && \
+	    extraoverride="-e ${APTFTP}/indices/override.${RELEASE}.extra.${s}" || \
+	    unset extraoverride
+
+	echo ">>> DEB"
+	echo ">>> section: ${s}"
+	echo ">>> arch: ${a}"
+	echo ">>> override: ${override}"
+	echo ">>> extraoverride: ${extraoverride}"
+
+
+	if [ -d ${NEW}/pool/${s} ]; then
+
+
+	    (
+		cd ${NEW} && dpkg-scanpackages -a ${a} -tdeb ${extraoverride} \
+		    pool/${s} \
+		    ${override} > \
+		    ${NEW}/dists/${RELEASE}/${s}/binary-${a}/Packages
+	    )
+
+	    gzip -c ${NEW}/dists/${RELEASE}/${s}/binary-${a}/Packages > \
+		${NEW}/dists/${RELEASE}/${s}/binary-${a}/Packages.gz
+	fi
+    done
+
+    [ -r ${APTFTP}/indices/override.${RELEASE}.${s}.debian-installer ] && \
+	override=${APTFTP}/indices/override.${RELEASE}.${s}.debian-installer || \
+	unset override
+
+    echo ">>> UDEB"
+    echo ">>> section: ${s}"
+    echo ">>> override: ${override}"
+
+    if [ -d ${NEW}/pool/${s} ]; then
+	
+	echo ">>> ${NEW}/pool/${s} exists"
+	
+	(
+	    cd ${NEW} && dpkg-scanpackages -a amd64 -tudeb \
+		pool/${s} \
+		${override} > \
+		${NEW}/dists/${RELEASE}/${s}/debian-installer/binary-amd64/Packages
+	)
+
+	gzip -c ${NEW}/dists/${RELEASE}/${s}/debian-installer/binary-amd64/Packages > \
+	    ${NEW}/dists/${RELEASE}/${s}/debian-installer/binary-amd64/Packages.gz
+    fi
+done
+
+#!!!!! NEVER NEVER USE apt-ftparchive FOR SCANNING PACKAGES
+#!!!!! IT IS BUGGGGGGGGGY
 
 # cat > ${APTFTP}/conf.d/apt-ftparchive-deb.conf <<EOF
 # Dir {
@@ -279,32 +342,23 @@ find -name "*.deb" -exec cp {} ${NEW}/pool/extras \;
 # };
 # EOF
 
-
-# cp ${SCRIPTDIR}/aptftp/extraoverride.pl ${APTFTP}/conf.d/extraoverride.pl
-# gunzip -c ${NEW}/dists/${RELEASE}/main/binary-amd64/Packages.gz > \
-#     ${NEW}/dists/${RELEASE}/main/binary-amd64/Packages
-
-# ${APTFTP}/conf.d/extraoverride.pl \
-#     ${NEW}/dists/${RELEASE}/main/binary-amd64/Packages >> \
-#     ${APTFTP}/indices/override.${RELEASE}.extra.main
-
 # apt-ftparchive generate ${APTFTP}/conf.d/apt-ftparchive-deb.conf
 # apt-ftparchive generate ${APTFTP}/conf.d/apt-ftparchive-udeb.conf
 
-# cat > ${APTFTP}/conf.d/release.conf <<EOF
-# APT::FTPArchive::Release::Origin "Mirantis";
-# APT::FTPArchive::Release::Label "Mirantis";
-# APT::FTPArchive::Release::Suite "${RELEASE}";
-# APT::FTPArchive::Release::Version "${VERSION}";
-# APT::FTPArchive::Release::Codename "${RELEASE}";
-# APT::FTPArchive::Release::Architectures "${ARCHITECTURES}";
-# APT::FTPArchive::Release::Components "${SECTIONS}";
-# APT::FTPArchive::Release::Description "Mirantis Nailgun Repo";
-# EOF
+cat > ${APTFTP}/conf.d/release.conf <<EOF
+APT::FTPArchive::Release::Origin "Mirantis";
+APT::FTPArchive::Release::Label "Mirantis";
+APT::FTPArchive::Release::Suite "${RELEASE}";
+APT::FTPArchive::Release::Version "${VERSION}";
+APT::FTPArchive::Release::Codename "${RELEASE}";
+APT::FTPArchive::Release::Architectures "${ARCHITECTURES}";
+APT::FTPArchive::Release::Components "${SECTIONS}";
+APT::FTPArchive::Release::Description "Mirantis Nailgun Repo";
+EOF
 
-# apt-ftparchive -c ${APTFTP}/conf.d/release.conf release ${NEW}/dists/${RELEASE} > ${NEW}/dists/${RELEASE}/Release
+apt-ftparchive -c ${APTFTP}/conf.d/release.conf release ${NEW}/dists/${RELEASE} > ${NEW}/dists/${RELEASE}/Release
 
-# GNUPGHOME=${TMPGNUPG} gpg --yes --passphrase-file ${TMPGNUPG}/keyphrase --output ${NEW}/dists/${RELEASE}/Release.gpg -ba ${NEW}/dists/${RELEASE}/Release
+GNUPGHOME=${TMPGNUPG} gpg --default-key F8AF89DD --yes --passphrase-file ${TMPGNUPG}/keyphrase --output ${NEW}/dists/${RELEASE}/Release.gpg -ba ${NEW}/dists/${RELEASE}/Release
 
 
 ###########################
