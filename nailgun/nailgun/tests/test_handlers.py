@@ -27,13 +27,20 @@ class TestHandlers(TestCase):
                     metadata=self.old_meta)
         self.node.save()
 
+        self.cook = Cookbook()
+        self.cook.name = 'cookbook'
+        self.cook.version = '1.01.1'
+        self.cook.save()
+
         self.role = Role()
         self.role.id = "myrole"
+        self.role.cookbook = self.cook
         self.role.name = "My role"
         self.role.save()
 
         self.another_role = Role()
         self.another_role.id = "myrole2"
+        self.another_role.cookbook = self.cook
         self.another_role.name = "My role 2"
         self.another_role.save()
 
@@ -54,6 +61,7 @@ class TestHandlers(TestCase):
         self.node.delete()
         self.role.delete()
         self.another_role.delete()
+        self.cook.delete()
 
     def test_environment_creation(self):
         yet_another_environment_name = 'Yet another environment'

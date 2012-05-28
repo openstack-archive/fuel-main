@@ -1,6 +1,6 @@
 from django.test import TestCase
 
-from nailgun.models import Node, Role
+from nailgun.models import Node, Role, Cookbook
 
 
 class TestNodeModel(TestCase):
@@ -27,12 +27,19 @@ class TestNodeModel(TestCase):
 class TestRolesNodesAssociation(TestCase):
 
     def test_roles_nodes_association(self):
+        cook = Cookbook()
+        cook.name = 'cookbook'
+        cook.version = '1.01.1'
+        cook.save()
+
         role1 = Role()
         role1.id = "myrole"
+        role1.cookbook = cook
         role1.name = "My role"
         role1.save()
         role2 = Role()
         role2.id = "myrole2"
+        role2.cookbook = cook
         role2.name = "My role 2"
         role2.save()
 
