@@ -75,6 +75,26 @@ class TestHandlers(TestCase):
         )
         self.assertEquals(len(environments_from_db), 1)
 
+    def test_environment_update(self):
+        updated_name = 'Updated environment'
+        environments_before = len(Environment.objects.all())
+
+        resp = self.client.put(
+            reverse('environment_handler',
+                    kwargs={'environment_id': self.another_environment.id}),
+            json.dumps({'name': updated_name}),
+            "application/json"
+        )
+        self.assertEquals(resp.status_code, 200)
+
+        environments_from_db = Environment.objects.filter(name=updated_name)
+        self.assertEquals(len(environments_from_db), 1)
+        self.assertEquals(environments_from_db[0].name, updated_name)
+
+        environments_after = len(Environment.objects.all())
+        self.assertEquals(environments_before, environments_after)
+
+
     def test_node_creation(self):
         node_with_env_id = '080000000002'
         node_without_env_id = '080000000003'

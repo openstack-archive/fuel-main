@@ -1,17 +1,18 @@
+import re
 from django.core.exceptions import ValidationError
 from django import forms
 from django.forms.fields import Field, IntegerField, CharField, ChoiceField
+from django.core.validators import RegexValidator
 from nailgun.models import Environment, Node, Cookbook, Role
-
-
-class EnvironmentForm(forms.ModelForm):
-    class Meta:
-        model = Environment
 
 
 class CookbookForm(forms.ModelForm):
     class Meta:
         model = Cookbook
+
+
+class EnvironmentForm(forms.Form):
+    name = CharField(max_length=100, required=False)
 
 
 def validate_node_metadata(value):
@@ -25,6 +26,9 @@ def validate_node_metadata(value):
             raise ValidationError('Node metadata must be a dictionary')
 
 
+validate_node_id = RegexValidator(regex=re.compile('^[\dA-F]{12}$'))
+
+
 class NodeForm(forms.Form):
     metadata = Field(required=False, validators=[validate_node_metadata])
     status = ChoiceField(required=False, choices=Node.NODE_STATUSES)
@@ -36,4 +40,4 @@ class NodeUpdateForm(NodeForm):
 
 
 class NodeCreationForm(NodeUpdateForm):
-    id = CharField(max_length=12)
+    id = CharField(validators=[validate_node_id])

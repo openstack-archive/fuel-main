@@ -82,7 +82,9 @@ class EnvironmentCollectionHandler(BaseHandler):
     @validate_json(EnvironmentForm)
     def create(self, request):
         environment = Environment()
-        environment.name = request.form.cleaned_data['name']
+        for key, value in request.form.cleaned_data.items():
+            if key in request.form.data:
+                setattr(environment, key, value)
         environment.save()
 
         return environment
@@ -90,15 +92,25 @@ class EnvironmentCollectionHandler(BaseHandler):
 
 class EnvironmentHandler(BaseHandler):
 
-    allowed_methods = ('GET',)
+    allowed_methods = ('GET', 'PUT')
     model = Environment
     fields = EnvironmentCollectionHandler.fields
 
     def read(self, request, environment_id):
         try:
-            return Environment.objects.get(pk=environment_id)
+            return Environment.objects.get(id=environment_id)
         except ObjectDoesNotExist:
             return rc.NOT_FOUND
+
+    @validate_json(EnvironmentForm)
+    def update(self, request, environment_id):
+        environment, is_created = Environment.objects.get_or_create(id=environment_id)
+        for key, value in request.form.cleaned_data.items():
+            if key in request.form.data:
+                setattr(environment, key, value)
+
+        environment.save()
+        return environment
 
 
 class NodeCollectionHandler(BaseHandler):
