@@ -46,7 +46,7 @@ class ConfigHandler(BaseHandler):
     def create(self, request, environment_id):
         task = create_chef_config.delay(environment_id)
 
-        response = rc.ACCEPTED
+        response = rc.ALL_OK
         response.content = TaskHandler.render_task(task)
         return response
 

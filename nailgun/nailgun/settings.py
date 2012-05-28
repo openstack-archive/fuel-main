@@ -128,7 +128,7 @@ INSTALLED_APPS = (
     # 'django.contrib.admindocs',
 )
 
-TEST_RUNNER = 'django_nose.NoseTestSuiteRunner'
+TEST_RUNNER = 'nailgun.testrunner.MyRunner'
 
 # A sample logging configuration. The only tangible logging
 # performed by this configuration is to send an email to

@@ -4,6 +4,7 @@ from django.test import TestCase
 from django.core.urlresolvers import reverse
 
 from nailgun.models import Environment, Node, Cookbook, Role
+from nailgun.tasks import create_chef_config
 
 
 class TestHandlers(TestCase):
@@ -270,8 +271,9 @@ class TestHandlers(TestCase):
         self.assertEquals(len(cooks_from_db), 1)
         self.assertEquals(cooks_from_db[0].version, cook_ver)
 
-
-    #def test_jsons_created_for_chef_solo(self):
-        #resp = self.client.post('/api/environments/1/chef-config/')
-        #print resp.content
-        #raise
+    def test_jsons_created_for_chef_solo(self):
+        url = reverse('config_handler', kwargs={'environment_id': 1})
+        resp = self.client.post(url)
+        self.assertEquals(resp.status_code, 200)
+        resp_json = json.loads(resp.content)
+        self.assertEquals(len(resp_json['task_id']), 36)

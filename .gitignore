@@ -10,3 +10,6 @@
 
 # Vagrant housekeeping file
 /.vagrant
+
+# artifact from config handler
+test.server.com.json
