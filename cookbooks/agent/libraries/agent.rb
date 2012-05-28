@@ -2,7 +2,8 @@ require 'json'
 
 module NodeAgent
   def self.update(node)
-    url = "#{node['admin']['URL']}/api/environments/1/nodes/#{node['fqdn']}"
+    mac = node['macaddress'].gsub(':', '')
+    url = "#{node['admin']['URL']}/api/nodes/#{mac}"
     Chef::Log.debug("Sending node info to REST service at #{url}...")
 
     interfaces = node["network"]["interfaces"].inject([]) do |result, elm|

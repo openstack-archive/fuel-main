@@ -7,4 +7,7 @@
     version version
     action :install
   end
+
+  # httpclient is for node agent
+  gem_package "httpclient"
 end
