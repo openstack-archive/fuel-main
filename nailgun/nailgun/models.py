@@ -14,7 +14,6 @@ class Cookbook(models.Model):
 
 
 class Role(models.Model):
-    id = models.CharField(max_length=30, primary_key=True)
     name = models.CharField(max_length=50)
     cookbook = models.ForeignKey(Cookbook, related_name='roles')
 

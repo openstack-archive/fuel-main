@@ -33,13 +33,11 @@ class TestHandlers(TestCase):
         self.cook.save()
 
         self.role = Role()
-        self.role.id = "myrole"
         self.role.cookbook = self.cook
         self.role.name = "My role"
         self.role.save()
 
         self.another_role = Role()
-        self.another_role.id = "myrole2"
         self.another_role.cookbook = self.cook
         self.another_role.name = "My role 2"
         self.another_role.save()
@@ -203,15 +201,15 @@ class TestHandlers(TestCase):
                 "application/json")
 
         nodes_from_db = Node.objects.filter(id=self.node.id)
-        self.assertEquals(nodes_from_db[0].roles.all()[0].id, "myrole")
+        self.assertEquals(nodes_from_db[0].roles.all()[0].id, 1)
 
     # Tests for RoleHandler
     def test_can_get_list_of_roles_for_node(self):
         resp = self.client.get(self.node_url + '/roles')
-        self.assertEquals(json.loads(resp.content)[0]['id'], 'myrole')
+        self.assertEquals(json.loads(resp.content)[0]['id'], 1)
 
     def test_list_of_roles_gets_updated_via_post(self):
-        url = self.node_url + '/roles/' + self.another_role.id
+        url = self.node_url + '/roles/' + str(self.another_role.id)
         resp = self.client.post(url, '', "plain/text")
         self.assertEquals(resp.status_code, 200)
 
@@ -240,6 +238,7 @@ class TestHandlers(TestCase):
         )
         self.assertEquals(len(cooks_from_db), 1)
         self.assertEquals(cooks_from_db[0].version, cook_ver)
+
 
     #def test_jsons_created_for_chef_solo(self):
         #resp = self.client.post('/api/environments/1/chef-config/')

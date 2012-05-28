@@ -33,12 +33,10 @@ class TestRolesNodesAssociation(TestCase):
         cook.save()
 
         role1 = Role()
-        role1.id = "myrole"
         role1.cookbook = cook
         role1.name = "My role"
         role1.save()
         role2 = Role()
-        role2.id = "myrole2"
         role2.cookbook = cook
         role2.name = "My role 2"
         role2.save()
@@ -50,7 +48,7 @@ class TestRolesNodesAssociation(TestCase):
         node1.save()
         node1.roles = [role1]
         node1.save()
-        self.assertEquals(node1.roles.all()[0].id, "myrole")
+        self.assertEquals(node1.roles.all()[0].id, 1)
         self.assertEquals(role1.nodes.all()[0].id, "080000000001")
         self.assertEquals(role1.nodes.all()[0].name, "test.example.com")
 
@@ -58,5 +56,5 @@ class TestRolesNodesAssociation(TestCase):
         self.assertEquals(len(node1.roles.all()), 2)
 
         self.assertEquals(Node.objects.filter(
-            roles__id__startswith="myr")[0].id,
+            roles__name__startswith="My r")[0].id,
                 "080000000001")
