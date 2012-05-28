@@ -7,17 +7,22 @@ d-i console-setup/layoutcode        string us
 d-i console-setup/variantcode       string
 
 
-# do not use this line because netcfg segfault
+# !!!! do not use this line because of netcfg segfault
 # d-i netcfg/enable boolean false
 
 d-i netcfg/choose_interface select auto
-d-i netcfg/disable_autoconfig boolean true
 
-d-i netcfg/get_nameservers string 192.168.1.1
-d-i netcfg/get_ipaddress string 192.168.1.2
-d-i netcfg/get_netmask string 255.255.255.0
-d-i netcfg/get_gateway string 192.168.1.1
-d-i netcfg/confirm_static boolean true
+d-i netcfg/dhcp_timeout string 5
+d-i netcfg/dhcp_failed note
+d-i netcfg/dhcp_options select Configure network manually
+
+#d-i netcfg/disable_autoconfig boolean true
+#d-i netcfg/get_nameservers string 192.168.1.1
+#d-i netcfg/get_ipaddress string 192.168.1.2
+#d-i netcfg/get_netmask string 255.255.255.0
+#d-i netcfg/get_gateway string 192.168.1.1
+#d-i netcfg/confirm_static boolean true
+
 d-i netcfg/get_hostname string nailgun-admin
 d-i netcfg/get_domain string example.com
 
@@ -55,7 +60,7 @@ d-i passwd/user-uid	    string
 d-i passwd/user-default-groups	   string adm cdrom dialout lpadmin plugdev sambashare
 
 
-d-i pkgsel/include string openssh-server
+d-i pkgsel/include string openssh-server chef
 d-i pkgsel/language-packs multiselect en
 d-i pkgsel/update-policy select none
 d-i pkgsel/upgrade select none
@@ -74,17 +79,7 @@ d-i cdrom-detect/eject boolean true
 d-i debian-installer/exit/halt boolean false
 d-i debian-installer/exit/poweroff boolean false
 
-# d-i preseed/late_command string true && \
-# mkdir -p /target/var/lib/mirror/ubuntu && \
-# cp -r /cdrom/dists /target/var/lib/mirror/ubuntu && \
-# cp -r /cdrom/pool /target/var/lib/mirror/ubuntu && \
-# echo "deb file:/var/lib/mirror/ubuntu" > /target/etc/apt/sources.list.d/local.list && \
-# true
 
-d-i preseed/late_command string true && \
-mkdir -p /target/var/lib/mirror/ubuntu && \
-cp -r /cdrom/pool /target/var/lib/mirror/ubuntu && \
-echo "deb file:/var/lib/mirror/ubuntu precise main restricted extras" > /target/etc/apt/sources.list.d/local.list && \
-true
+d-i preseed/include string late.seed
 
 

@@ -109,8 +109,17 @@ mkdir -p ${EXTRAS}/cache
 
 mkdir -p ${EXTRAS}/etc/preferences.d
 mkdir -p ${EXTRAS}/etc/apt.conf.d
-echo "deb ${MIRROR} precise main restricted universe multiverse" > ${EXTRAS}/etc/sources.list
-echo "deb-src ${MIRROR} precise main restricted universe multiverse" >> ${EXTRAS}/etc/sources.list
+cat > ${EXTRAS}/etc/sources.list <<EOF
+deb ${MIRROR} precise main restricted universe multiverse
+deb-src ${MIRROR} precise main restricted universe multiverse
+deb http://apt.opscode.com ${RELEASE}-0.10 main
+EOF
+
+cat > ${EXTRAS}/etc/preferences.d/opscode <<EOF
+Package: *
+Pin: origin "apt.opscode.com"
+Pin-Priority: 999
+EOF
 
 
 # possible apt configs
@@ -358,7 +367,7 @@ EOF
 
 apt-ftparchive -c ${APTFTP}/conf.d/release.conf release ${NEW}/dists/${RELEASE} > ${NEW}/dists/${RELEASE}/Release
 
-GNUPGHOME=${TMPGNUPG} gpg --default-key F8AF89DD --yes --passphrase-file ${TMPGNUPG}/keyphrase --output ${NEW}/dists/${RELEASE}/Release.gpg -ba ${NEW}/dists/${RELEASE}/Release
+GNUPGHOME=${TMPGNUPG} gpg --default-key ${GPGKEYID} --yes --passphrase-file ${TMPGNUPG}/keyphrase --output ${NEW}/dists/${RELEASE}/Release.gpg -ba ${NEW}/dists/${RELEASE}/Release
 
 
 ###########################
