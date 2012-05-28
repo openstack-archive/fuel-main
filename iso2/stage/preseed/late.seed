@@ -9,7 +9,7 @@ echo "deb file:/var/lib/mirror/ubuntu precise main restricted extras" > /target/
 # chef 
 cp -r /cdrom/inject/cookbooks /target/root && \
 mkdir -p /target/root/scripts && \
-cp /cdrom/inject/scripts/solo-admin.json /target/root/scripts/solo.json && \
+cp /cdrom/inject/scripts/solo.json /target/root/scripts/solo.json && \
 cp /cdrom/inject/scripts/solo.rb /target/root/scripts/solo.rb && \
 cp /cdrom/inject/scripts/solo.rc.local /target/etc/rc.local && \
 cp /cdrom/inject/scripts/solo.cron /target/etc/cron.d/chef-solo && \

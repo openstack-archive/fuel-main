@@ -168,6 +168,7 @@ find -name "*.deb" -exec cp {} ${NEW}/pool/extras \;
 ###########################
 mkdir -p ${KEYRING}
 cp -rp ${GNUPG} ${TMPGNUPG}
+chown -R root:root ${TMPGNUPG}
 chmod 700 ${TMPGNUPG}
 chmod 600 ${TMPGNUPG}/*
 
@@ -255,10 +256,11 @@ for s in ${SECTIONS}; do
 		    ${override} > \
 		    ${NEW}/dists/${RELEASE}/${s}/binary-${a}/Packages
 	    )
-
-	    gzip -c ${NEW}/dists/${RELEASE}/${s}/binary-${a}/Packages > \
-		${NEW}/dists/${RELEASE}/${s}/binary-${a}/Packages.gz
+	else
+	    echo > ${NEW}/dists/${RELEASE}/${s}/binary-${a}/Packages
 	fi
+	gzip -c ${NEW}/dists/${RELEASE}/${s}/binary-${a}/Packages > \
+	    ${NEW}/dists/${RELEASE}/${s}/binary-${a}/Packages.gz
     done
 
     [ -r ${APTFTP}/indices/override.${RELEASE}.${s}.debian-installer ] && \
@@ -279,10 +281,11 @@ for s in ${SECTIONS}; do
 		${override} > \
 		${NEW}/dists/${RELEASE}/${s}/debian-installer/binary-amd64/Packages
 	)
-
-	gzip -c ${NEW}/dists/${RELEASE}/${s}/debian-installer/binary-amd64/Packages > \
-	    ${NEW}/dists/${RELEASE}/${s}/debian-installer/binary-amd64/Packages.gz
+    else
+	echo > ${NEW}/dists/${RELEASE}/${s}/debian-installer/binary-amd64/Packages
     fi
+    gzip -c ${NEW}/dists/${RELEASE}/${s}/debian-installer/binary-amd64/Packages > \
+	${NEW}/dists/${RELEASE}/${s}/debian-installer/binary-amd64/Packages.gz
 done
 
 #!!!!! NEVER NEVER USE apt-ftparchive FOR SCANNING PACKAGES
@@ -354,6 +357,8 @@ done
 # apt-ftparchive generate ${APTFTP}/conf.d/apt-ftparchive-deb.conf
 # apt-ftparchive generate ${APTFTP}/conf.d/apt-ftparchive-udeb.conf
 
+echo "Creating main Release file in cdrom repo"
+
 cat > ${APTFTP}/conf.d/release.conf <<EOF
 APT::FTPArchive::Release::Origin "Mirantis";
 APT::FTPArchive::Release::Label "Mirantis";
@@ -365,19 +370,24 @@ APT::FTPArchive::Release::Components "${SECTIONS}";
 APT::FTPArchive::Release::Description "Mirantis Nailgun Repo";
 EOF
 
+
 apt-ftparchive -c ${APTFTP}/conf.d/release.conf release ${NEW}/dists/${RELEASE} > ${NEW}/dists/${RELEASE}/Release
 
-GNUPGHOME=${TMPGNUPG} gpg --default-key ${GPGKEYID} --yes --passphrase-file ${TMPGNUPG}/keyphrase --output ${NEW}/dists/${RELEASE}/Release.gpg -ba ${NEW}/dists/${RELEASE}/Release
+
+echo "Signing main Release file in cdrom repo ..."
+GNUPGHOME=${TMPGNUPG} gpg --no-tty --default-key ${GPGKEYID} --yes --passphrase-file ${TMPGNUPG}/keyphrase --output ${NEW}/dists/${RELEASE}/Release.gpg -ba ${NEW}/dists/${RELEASE}/Release
 
 
 ###########################
 # INJECT EXTRA FILES
 ###########################
-mkdir -p ${NEW}/inject
+echo "Injecting some files into iso ..."
+mkdir -p ${NEW}/inject/scripts
 cp -r ${REPO}/cookbooks ${NEW}/inject
-cp -r ${REPO}/scripts ${NEW}/inject
-
-
+cp ${REPO}/scripts/solo-admin.json ${NEW}/inject/scripts/solo.json
+cp ${REPO}/scripts/solo.rb ${NEW}/inject/scripts
+cp ${REPO}/scripts/solo.cron ${NEW}/inject/scripts
+cp ${REPO}/scripts/solo.rc.local ${NEW}/inject/scripts
 
 ###########################
 # MAKE NEW ISO
