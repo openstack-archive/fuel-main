@@ -76,8 +76,8 @@ class TestHandlers(TestCase):
         self.assertEquals(len(environments_from_db), 1)
 
     def test_node_creation(self):
-        node_with_env_id = '080000000001'
-        node_without_env_id = '080000000002'
+        node_with_env_id = '080000000002'
+        node_without_env_id = '080000000003'
 
         resp = self.client.post(
             reverse('node_collection_handler'),
@@ -97,6 +97,18 @@ class TestHandlers(TestCase):
         nodes_from_db = Node.objects.filter(id__in=[node_with_env_id,
                                                       node_without_env_id])
         self.assertEquals(len(nodes_from_db), 2)
+
+    def test_node_creation_using_put(self):
+        node_id = '080000000002'
+
+        resp = self.client.put(
+            reverse('node_handler', kwargs={'node_id': node_id}),
+            json.dumps({}),
+            "application/json")
+        self.assertEquals(resp.status_code, 200)
+
+        nodes_from_db = Node.objects.filter(id=node_id)
+        self.assertEquals(len(nodes_from_db), 1)
 
     def test_node_environment_update(self):
         resp = self.client.put(

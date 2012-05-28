@@ -136,22 +136,19 @@ class NodeHandler(BaseHandler):
 
     @validate_json(NodeUpdateForm)
     def update(self, request, node_id):
-        try:
-            node = Node.objects.get(id=node_id)
-            for key, value in request.form.cleaned_data.items():
-                if key in request.form.data:
-                    if key == 'environment_id' and value is not None and \
-                            node.environment_id is not None:
-                        response = rc.BAD_REQUEST
-                        response.content = \
-                                'Changing environment is not allowed'
-                        return response
-                    setattr(node, key, value)
+        node, is_created = Node.objects.get_or_create(id=node_id)
+        for key, value in request.form.cleaned_data.items():
+            if key in request.form.data:
+                if key == 'environment_id' and value is not None and \
+                        node.environment_id is not None:
+                    response = rc.BAD_REQUEST
+                    response.content = \
+                            'Changing environment is not allowed'
+                    return response
+                setattr(node, key, value)
 
-            node.save()
-            return node
-        except ObjectDoesNotExist:
-            return rc.NOT_FOUND
+        node.save()
+        return node
 
 
 class RoleCollectionHandler(BaseHandler):
