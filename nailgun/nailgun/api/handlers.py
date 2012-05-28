@@ -86,23 +86,21 @@ class NodeCollectionHandler(BaseHandler):
 
     allowed_methods = ('GET', 'POST')
     model = Node
-    fields = ('name', 'environment_id', 'metadata', 'status', ('roles', ()))
+    fields = ('id', 'name', 'environment_id', 'metadata',
+              'status', ('roles', ()))
 
     def read(self, request):
         return Node.objects.all()
 
     @validate_json(NodeCreationForm)
     def create(self, request):
-        try:
-            node = Node()
-            for key, value in request.form.cleaned_data.items():
-                if key in request.form.data:
-                    setattr(node, key, value)
+        node = Node()
+        for key, value in request.form.cleaned_data.items():
+            if key in request.form.data:
+                setattr(node, key, value)
 
-            node.save()
-            return node
-        except ObjectDoesNotExist:
-            return rc.NOT_FOUND
+        node.save()
+        return node
 
 
 class NodeHandler(BaseHandler):
@@ -111,16 +109,16 @@ class NodeHandler(BaseHandler):
     model = Node
     fields = NodeCollectionHandler.fields
 
-    def read(self, request, node_name):
+    def read(self, request, node_id):
         try:
-            return Node.objects.get(name=node_name)
+            return Node.objects.get(id=node_id)
         except ObjectDoesNotExist:
             return rc.NOT_FOUND
 
     @validate_json(NodeUpdateForm)
-    def update(self, request, node_name):
+    def update(self, request, node_id):
         try:
-            node = Node.objects.get(name=node_name)
+            node = Node.objects.get(id=node_id)
             for key, value in request.form.cleaned_data.items():
                 if key in request.form.data:
                     if key == 'environment_id' and value is not None and \
@@ -143,9 +141,9 @@ class RoleCollectionHandler(BaseHandler):
     model = Role
     fields = ('id', 'name')
 
-    def read(self, request, node_name):
+    def read(self, request, node_id):
         try:
-            return Role.objects.filter(nodes__name=node_name)
+            return Role.objects.filter(nodes__id=node_id)
         except ObjectDoesNotExist:
             return rc.NOT_FOUND
 
@@ -156,15 +154,15 @@ class RoleHandler(BaseHandler):
     model = Role
     fields = RoleCollectionHandler.fields
 
-    def read(self, request, node_name, role_id):
+    def read(self, request, node_id, role_id):
         try:
-            return Role.objects.get(nodes__name=node_name, id=role_id)
+            return Role.objects.get(nodes__id=node_id, id=role_id)
         except ObjectDoesNotExist:
             return rc.NOT_FOUND
 
-    def create(self, request, node_name, role_id):
+    def create(self, request, node_id, role_id):
         try:
-            node = Node.objects.get(name=node_name)
+            node = Node.objects.get(id=node_id)
             role = Role.objects.get(id=role_id)
 
             if role in node.roles.all():
@@ -176,9 +174,9 @@ class RoleHandler(BaseHandler):
         except ObjectDoesNotExist:
             return rc.NOT_FOUND
 
-    def delete(self, request, node_name, role_id):
+    def delete(self, request, node_id, role_id):
         try:
-            node = Node.objects.get(name=node_name)
+            node = Node.objects.get(id=node_id)
             role = Role.objects.get(id=role_id)
             node.roles.remove(role)
             return rc.DELETED

@@ -23,6 +23,7 @@ def validate_node_metadata(value):
 class NodeForm(forms.Form):
     metadata = Field(required=False, validators=[validate_node_metadata])
     status = ChoiceField(required=False, choices=Node.NODE_STATUSES)
+    name = CharField(max_length=100, required=False)
 
 
 class NodeUpdateForm(NodeForm):
@@ -30,4 +31,4 @@ class NodeUpdateForm(NodeForm):
 
 
 class NodeCreationForm(NodeUpdateForm):
-    name = CharField(max_length=100)
+    id = CharField(max_length=12)

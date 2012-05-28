@@ -21,7 +21,8 @@ class TestHandlers(TestCase):
 
         self.node_name = "test.server.com"
 
-        self.node = Node(environment_id=1,
+        self.node = Node(id="080000000001",
+                    environment_id=1,
                     name=self.node_name,
                     metadata=self.old_meta)
         self.node.save()
@@ -39,7 +40,7 @@ class TestHandlers(TestCase):
         self.node.roles = [self.role]
         self.node.save()
         self.node_url = reverse('node_handler',
-                                kwargs={'node_name': self.node_name})
+                                kwargs={'node_id': self.node.id})
 
         self.new_meta = {'block_device': 'new-val',
                          'interfaces': 'd',
@@ -69,13 +70,13 @@ class TestHandlers(TestCase):
         self.assertEquals(len(environments_from_db), 1)
 
     def test_node_creation(self):
-        node_with_env_name = 'node-with-environment'
-        node_without_env_name = 'node-without-environment'
+        node_with_env_id = '080000000001'
+        node_without_env_id = '080000000002'
 
         resp = self.client.post(
             reverse('node_collection_handler'),
             json.dumps({
-                'name': node_with_env_name,
+                'id': node_with_env_id,
                 'environment_id': 1,
             }),
             "application/json")
@@ -83,29 +84,29 @@ class TestHandlers(TestCase):
 
         resp = self.client.post(
             reverse('node_collection_handler'),
-            json.dumps({'name': node_without_env_name}),
+            json.dumps({'id': node_without_env_id}),
             "application/json")
         self.assertEquals(resp.status_code, 200)
 
-        nodes_from_db = Node.objects.filter(name__in=[node_with_env_name,
-                                                      node_without_env_name])
+        nodes_from_db = Node.objects.filter(id__in=[node_with_env_id,
+                                                      node_without_env_id])
         self.assertEquals(len(nodes_from_db), 2)
 
     def test_node_environment_update(self):
         resp = self.client.put(
-            reverse('node_handler', kwargs={'node_name': self.node.name}),
+            reverse('node_handler', kwargs={'node_id': self.node.id}),
             json.dumps({'environment_id': 2}),
             "application/json")
         self.assertEquals(resp.status_code, 400)
 
         resp = self.client.put(
-            reverse('node_handler', kwargs={'node_name': self.node.name}),
+            reverse('node_handler', kwargs={'node_id': self.node.id}),
             json.dumps({'environment_id': None}),
             "application/json")
         self.assertEquals(resp.status_code, 200)
 
         resp = self.client.put(
-            reverse('node_handler', kwargs={'node_name': self.node.name}),
+            reverse('node_handler', kwargs={'node_id': self.node.id}),
             json.dumps({'environment_id': 1}),
             "application/json")
         self.assertEquals(resp.status_code, 200)
@@ -116,8 +117,7 @@ class TestHandlers(TestCase):
                                "application/json")
         self.assertEquals(resp.status_code, 200)
 
-        nodes_from_db = Node.objects.filter(environment_id=1,
-                                            name=self.node_name)
+        nodes_from_db = Node.objects.filter(id=self.node.id)
         self.assertEquals(len(nodes_from_db), 1)
         self.assertEquals(nodes_from_db[0].metadata, self.new_meta)
 
@@ -150,8 +150,7 @@ class TestHandlers(TestCase):
                                "application/json")
         self.assertEquals(resp.status_code, 400)
 
-        nodes_from_db = Node.objects.filter(environment_id=1,
-                                            name=self.node_name)
+        nodes_from_db = Node.objects.filter(id=self.node.id)
         self.assertEquals(len(nodes_from_db), 1)
         self.assertEquals(nodes_from_db[0].metadata, self.old_meta)
 
@@ -163,8 +162,7 @@ class TestHandlers(TestCase):
                                "application/json")
         self.assertEquals(resp.status_code, 400)
 
-        nodes_from_db = Node.objects.filter(environment_id=1,
-                                            name=self.node_name)
+        nodes_from_db = Node.objects.filter(id=self.node.id)
         self.assertEquals(len(nodes_from_db), 1)
         self.assertEquals(nodes_from_db[0].metadata, self.old_meta)
 
@@ -176,8 +174,7 @@ class TestHandlers(TestCase):
                                "application/json")
         self.assertEquals(resp.status_code, 400)
 
-        nodes_from_db = Node.objects.filter(environment_id=1,
-                                            name=self.node_name)
+        nodes_from_db = Node.objects.filter(id=self.node.id)
         self.assertEquals(len(nodes_from_db), 1)
         self.assertEquals(nodes_from_db[0].metadata, self.old_meta)
 
@@ -189,8 +186,7 @@ class TestHandlers(TestCase):
                                "application/json")
         self.assertEquals(resp.status_code, 400)
 
-        nodes_from_db = Node.objects.filter(environment_id=1,
-                                            name=self.node_name)
+        nodes_from_db = Node.objects.filter(id=self.node.id)
         self.assertEquals(len(nodes_from_db), 1)
         self.assertEquals(nodes_from_db[0].metadata, self.old_meta)
 
@@ -198,8 +194,7 @@ class TestHandlers(TestCase):
         resp = self.client.put(self.node_url, json.dumps(self.new_meta),
                 "application/json")
 
-        nodes_from_db = Node.objects.filter(environment_id=1,
-                                            name=self.node_name)
+        nodes_from_db = Node.objects.filter(id=self.node.id)
         self.assertEquals(nodes_from_db[0].roles.all()[0].id, "myrole")
 
     # Tests for RoleHandler
@@ -216,8 +211,7 @@ class TestHandlers(TestCase):
         self.assertEquals(resp.status_code, 409)
 
         roles_from_db = Role.objects.all()
-        nodes_from_db = Node.objects.filter(environment_id=1,
-                                            name=self.node_name)
+        nodes_from_db = Node.objects.filter(id=self.node.id)
         self.assertEquals(nodes_from_db[0].roles.all()[0].id,
                 self.role.id)
         self.assertEquals(nodes_from_db[0].roles.all()[1].id,

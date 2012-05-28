@@ -19,9 +19,10 @@ class Node(models.Model):
         ('offline', 'offline'),
         ('busy', 'busy'),
     )
+    id = models.CharField(max_length=12, primary_key=True)
     environment = models.ForeignKey(Environment, related_name='nodes',
         null=True, blank=True, on_delete=models.SET_NULL)
-    name = models.CharField(max_length=100, primary_key=True)
+    name = models.CharField(max_length=100, null=True, blank=True)
     status = models.CharField(max_length=30, choices=NODE_STATUSES,
             default='online')
     metadata = JSONField()

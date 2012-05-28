@@ -26,7 +26,6 @@ Collection.Environment = Backbone.Collection.extend({
 
 
 Model.Node = Backbone.RelationalModel.extend({
-    idAttribute: 'name',
     urlRoot: function() {
         return '/api/nodes'
     },
