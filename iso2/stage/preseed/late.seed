@@ -14,7 +14,9 @@ cp /cdrom/inject/scripts/solo.rb /target/root/scripts/solo.rb && \
 cp /cdrom/inject/scripts/solo.rc.local /target/etc/rc.local && \
 cp /cdrom/inject/scripts/solo.cron /target/etc/cron.d/chef-solo && \
 # commands
+cp -r /cdrom/inject/indices /target/root && \
 in-target update-rc.d chef-client disable && \
+in-target apt-get update && \
 true
 
 

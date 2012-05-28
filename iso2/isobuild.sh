@@ -154,9 +154,21 @@ for package in ${REQDEB}; do
     apt-get -c=${EXTRAS}/etc/apt.conf -d -y install ${package}
 done
 
-mkdir -p ${NEW}/pool/extras
-cd ${EXTRAS}/archives
-find -name "*.deb" -exec cp {} ${NEW}/pool/extras \;
+(
+    cd ${EXTRAS}/archives
+
+    find -name "*.deb" -o -name "*.udeb" | while read debfile; do
+	pack=`basename ${debfile} | awk -F_ '{print $1}'`
+	if (echo ${packname} | grep -q "^lib"); then
+	    directory=lib`echo ${packname} | cut -c4`/${packname}
+	else
+	    directory=`echo ${packname} | cut -c1`/${packname}
+	fi
+	
+	mkdir -p ${NEW}/pool/${directory}
+	cp ${debfile} ${NEW}/pool/${directory}
+    done
+)
 
 
 # FIXME
@@ -198,7 +210,7 @@ mkdir -p ${APTFTP}/indices
 mkdir -p ${APTFTP}/cache
 
 ARCHITECTURES="i386 amd64"
-SECTIONS="main restricted extras"
+SECTIONS="main restricted universe multiverse"
 
 for s in ${SECTIONS}; do
     for a in ${ARCHITECTURES}; do
@@ -215,15 +227,27 @@ EOF
     mkdir -p ${NEW}/dists/${RELEASE}/${s}/debian-installer/binary-amd64
 done
 
-for suffix in \
-    extra.main \
-    main \
-    main.debian-installer \
-    restricted \
-    restricted.debian-installer; do
+# for suffix in \
+#     extra.main \
+#     main \
+#     main.debian-installer \
+#     restricted \
+#     restricted.debian-installer; do
     
-    wget -qO- ${MIRROR}/indices/override.${RELEASE}.${suffix} > \
-	${APTFTP}/indices/override.${RELEASE}.${suffix}
+#     wget -qO- ${MIRROR}/indices/override.${RELEASE}.${suffix} > \
+# 	${APTFTP}/indices/override.${RELEASE}.${suffix}
+# done
+
+echo "Downloading indices ..."
+for s in ${SECTIONS}; do
+    wget -qO- ${MIRROR}/indices/override.${RELEASE}.${s}.debian-installer > \
+	${APTFTP}/indices/override.${RELEASE}.${s}.debian-installer
+    
+    wget -qO- ${MIRROR}/indices/override.${RELEASE}.${s} > \
+	${APTFTP}/indices/override.${RELEASE}.${s}
+    
+    wget -qO- ${MIRROR}/indices/override.${RELEASE}.extra.${s} > \
+	${APTFTP}/indices/override.${RELEASE}.extra.${s}
 done
 
 gunzip -c ${NEW}/dists/${RELEASE}/main/binary-amd64/Packages.gz | \
@@ -257,7 +281,7 @@ for s in ${SECTIONS}; do
 		    ${NEW}/dists/${RELEASE}/${s}/binary-${a}/Packages
 	    )
 	else
-	    echo > ${NEW}/dists/${RELEASE}/${s}/binary-${a}/Packages
+	    echo -n > ${NEW}/dists/${RELEASE}/${s}/binary-${a}/Packages
 	fi
 	gzip -c ${NEW}/dists/${RELEASE}/${s}/binary-${a}/Packages > \
 	    ${NEW}/dists/${RELEASE}/${s}/binary-${a}/Packages.gz
@@ -282,7 +306,7 @@ for s in ${SECTIONS}; do
 		${NEW}/dists/${RELEASE}/${s}/debian-installer/binary-amd64/Packages
 	)
     else
-	echo > ${NEW}/dists/${RELEASE}/${s}/debian-installer/binary-amd64/Packages
+	echo -n > ${NEW}/dists/${RELEASE}/${s}/debian-installer/binary-amd64/Packages
     fi
     gzip -c ${NEW}/dists/${RELEASE}/${s}/debian-installer/binary-amd64/Packages > \
 	${NEW}/dists/${RELEASE}/${s}/debian-installer/binary-amd64/Packages.gz
@@ -383,6 +407,7 @@ GNUPGHOME=${TMPGNUPG} gpg --no-tty --default-key ${GPGKEYID} --yes --passphrase-
 ###########################
 echo "Injecting some files into iso ..."
 mkdir -p ${NEW}/inject/scripts
+cp -r ${APTFTP}/indices ${NEW}/inject
 cp -r ${REPO}/cookbooks ${NEW}/inject
 cp ${REPO}/scripts/solo-admin.json ${NEW}/inject/scripts/solo.json
 cp ${REPO}/scripts/solo.rb ${NEW}/inject/scripts
