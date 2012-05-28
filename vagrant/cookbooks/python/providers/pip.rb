@@ -146,11 +146,11 @@ end
 
 def upgrade_package(name, version, timeout)
   v = "==#{version}" unless version.eql?('latest')
-  shell_out!("#{pip_cmd(@new_resource)} install --upgrade#{expand_options(@new_resource.options)} #{@new_resource.name}#{v}", :timeout => timeout)
+  shell_out!("#{pip_cmd(@new_resource)} install --upgrade#{expand_options(@new_resource.options)} #{name}#{v}", :timeout => timeout)
 end
 
 def remove_package(name, version, timeout)
-  shell_out!("#{pip_cmd(@new_resource)} uninstall -y#{expand_options(@new_resource.options)} #{@new_resource.name}", :timeout => timeout)
+  shell_out!("#{pip_cmd(@new_resource)} uninstall -y#{expand_options(@new_resource.options)} #{name}", :timeout => timeout)
 end
 
 # TODO remove when provider is moved into Chef core
