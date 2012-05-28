@@ -1,8 +1,10 @@
 from django.conf.urls import patterns, include, url
 from piston.resource import Resource
 
-from handlers import EnvironmentCollectionHandler, EnvironmentHandler, \
+from nailgun.api.handlers import EnvironmentCollectionHandler, \
+                     EnvironmentHandler, \
                      NodeCollectionHandler, NodeHandler, \
+                     CookbookCollectionHandler, \
                      RoleCollectionHandler, RoleHandler, \
                      ConfigHandler, \
                      TaskHandler
@@ -38,4 +40,7 @@ urlpatterns = patterns('',
     url(r'^tasks/(?P<task_id>[\da-f\-]{36})/?$',
         JsonResource(TaskHandler),
         name='task_handler'),
+    url(r'^cookbooks/?$',
+        JsonResource(CookbookCollectionHandler),
+        name='cookbook_collection_handler'),
 )

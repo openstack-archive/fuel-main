@@ -1,16 +1,16 @@
 import os
 
+import celery
 import simplejson as json
 from piston.handler import BaseHandler
 from piston.utils import rc
 from django.core.exceptions import ObjectDoesNotExist
 from django.conf import settings
 
-from nailgun.models import Environment, Node, Role
+from nailgun.models import Environment, Node, Cookbook, Role
 from nailgun.api.validators import validate_json
-from nailgun.api.forms import EnvironmentForm, NodeCreationForm, NodeUpdateForm
-
-import celery
+from nailgun.api.forms import EnvironmentForm, CookbookForm, \
+        NodeCreationForm, NodeUpdateForm
 from nailgun.tasks import create_chef_config
 
 
@@ -49,6 +49,25 @@ class ConfigHandler(BaseHandler):
         response = rc.ACCEPTED
         response.content = TaskHandler.render_task(task)
         return response
+
+
+class CookbookCollectionHandler(BaseHandler):
+
+    allowed_methods = ('GET', 'POST')
+    model = Cookbook
+    fields = ('id', 'name', 'version')
+
+    def read(self, request):
+        return Cookbook.objects.all()
+
+    @validate_json(CookbookForm)
+    def create(self, request):
+        cookbook = Cookbook()
+        cookbook.name = request.form.cleaned_data['name']
+        cookbook.version = request.form.cleaned_data['version']
+        cookbook.save()
+
+        return cookbook
 
 
 class EnvironmentCollectionHandler(BaseHandler):

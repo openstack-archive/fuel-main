@@ -3,7 +3,7 @@ from django import http
 from django.test import TestCase
 from django.core.urlresolvers import reverse
 
-from nailgun.models import Environment, Node, Role
+from nailgun.models import Environment, Node, Cookbook, Role
 
 
 class TestHandlers(TestCase):
@@ -216,6 +216,22 @@ class TestHandlers(TestCase):
                 self.role.id)
         self.assertEquals(nodes_from_db[0].roles.all()[1].id,
                 self.another_role.id)
+
+    def test_cookbook_create(self):
+        cook_name = 'new cookbook'
+        cook_ver = '0.1.0'
+        resp = self.client.post(
+            reverse('cookbook_collection_handler'),
+            json.dumps({'name': cook_name, 'version': cook_ver}),
+            "application/json"
+        )
+        self.assertEquals(resp.status_code, 200)
+
+        cooks_from_db = Cookbook.objects.filter(
+            name=cook_name
+        )
+        self.assertEquals(len(cooks_from_db), 1)
+        self.assertEquals(cooks_from_db[0].version, cook_ver)
 
     #def test_jsons_created_for_chef_solo(self):
         #resp = self.client.post('/api/environments/1/chef-config/')

@@ -8,9 +8,15 @@ class Environment(models.Model):
     name = models.CharField(max_length=100)
 
 
+class Cookbook(models.Model):
+    name = models.CharField(max_length=50)
+    version = models.CharField(max_length=30)
+
+
 class Role(models.Model):
     id = models.CharField(max_length=30, primary_key=True)
     name = models.CharField(max_length=50)
+    #cookbook = models.ForeignKey(Cookbook, related_name='roles')
 
 
 class Node(models.Model):

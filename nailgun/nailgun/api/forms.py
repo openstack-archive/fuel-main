@@ -1,12 +1,17 @@
 from django.core.exceptions import ValidationError
 from django import forms
 from django.forms.fields import Field, IntegerField, CharField, ChoiceField
-from nailgun.models import Environment, Node, Role
+from nailgun.models import Environment, Node, Cookbook, Role
 
 
 class EnvironmentForm(forms.ModelForm):
     class Meta:
         model = Environment
+
+
+class CookbookForm(forms.ModelForm):
+    class Meta:
+        model = Cookbook
 
 
 def validate_node_metadata(value):
