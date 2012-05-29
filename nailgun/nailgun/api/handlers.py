@@ -129,7 +129,12 @@ class NodeCollectionHandler(BaseHandler):
         node = Node()
         for key, value in request.form.cleaned_data.items():
             if key in request.form.data:
-                setattr(node, key, value)
+                if key == 'roles':
+                    new_roles = Role.objects.filter(id__in=value)
+                    node.roles.clear()
+                    node.roles.add(*new_roles)
+                else:
+                    setattr(node, key, value)
 
         node.save()
         return node
@@ -158,7 +163,12 @@ class NodeHandler(BaseHandler):
                     response.content = \
                             'Changing environment is not allowed'
                     return response
-                setattr(node, key, value)
+                elif key == 'roles':
+                    new_roles = Role.objects.filter(id__in=value)
+                    node.roles.clear()
+                    node.roles.add(*new_roles)
+                else:
+                    setattr(node, key, value)
 
         node.save()
         return node

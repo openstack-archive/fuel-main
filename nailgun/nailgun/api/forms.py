@@ -26,6 +26,13 @@ def validate_node_metadata(value):
             raise ValidationError('Node metadata must be a dictionary')
 
 
+def validate_node_roles(value):
+    if not isinstance(value, list) or \
+        not all(map(lambda i: isinstance(i, int), value)):
+            raise ValidationError('Role list must be a list of integers')
+
+
+
 validate_node_id = RegexValidator(regex=re.compile('^[\dA-F]{12}$'))
 
 
@@ -33,6 +40,7 @@ class NodeForm(forms.Form):
     metadata = Field(required=False, validators=[validate_node_metadata])
     status = ChoiceField(required=False, choices=Node.NODE_STATUSES)
     name = CharField(max_length=100, required=False)
+    roles = Field(required=False, validators=[validate_node_roles])
 
 
 class NodeUpdateForm(NodeForm):

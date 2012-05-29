@@ -165,6 +165,16 @@ class TestHandlers(TestCase):
                 "application/json")
         self.assertEquals(resp.status_code, 200)
 
+    def test_node_valid_list_of_roles_gets_updated(self):
+        resp = self.client.put(self.node_url,
+            json.dumps({'roles': [self.another_role.id]}),
+            "application/json")
+        self.assertEquals(resp.status_code, 200)
+
+        node_from_db = Node.objects.get(id=self.node.id)
+        self.assertEquals(len(node_from_db.roles.all()), 1)
+        self.assertEquals(node_from_db.roles.all()[0].id, self.another_role.id)
+
     def test_put_returns_400_if_no_body(self):
         resp = self.client.put(self.node_url, None, "application/json")
         self.assertEquals(resp.status_code, 400)
@@ -227,33 +237,6 @@ class TestHandlers(TestCase):
         nodes_from_db = Node.objects.filter(id=self.node.id)
         self.assertEquals(len(nodes_from_db), 1)
         self.assertEquals(nodes_from_db[0].metadata, self.old_meta)
-
-    def test_put_on_nodes_does_not_modify_roles_list(self):
-        resp = self.client.put(self.node_url, json.dumps(self.new_meta),
-                "application/json")
-
-        nodes_from_db = Node.objects.filter(id=self.node.id)
-        self.assertEquals(nodes_from_db[0].roles.all()[0].id, 1)
-
-    # Tests for RoleHandler
-    def test_can_get_list_of_roles_for_node(self):
-        resp = self.client.get(self.node_url + '/roles')
-        self.assertEquals(json.loads(resp.content)[0]['id'], 1)
-
-    def test_list_of_roles_gets_updated_via_post(self):
-        url = self.node_url + '/roles/' + str(self.another_role.id)
-        resp = self.client.post(url, '', "plain/text")
-        self.assertEquals(resp.status_code, 200)
-
-        resp = self.client.post(url, '', "plain/text")
-        self.assertEquals(resp.status_code, 409)
-
-        roles_from_db = Role.objects.all()
-        nodes_from_db = Node.objects.filter(id=self.node.id)
-        self.assertEquals(nodes_from_db[0].roles.all()[0].id,
-                self.role.id)
-        self.assertEquals(nodes_from_db[0].roles.all()[1].id,
-                self.another_role.id)
 
     def test_cookbook_create(self):
         cook_name = 'new cookbook'
