@@ -4,82 +4,49 @@ import tempfile
 from model import Node, Network
 
 class Controller:
-    def __init__(self, environment, driver):
-        self.environment = environment
+    def __init__(self, driver):
         self.driver = driver
         self.home_dir = os.environ.get('DEVOPS_HOME') or os.path.join(os.environ['HOME'], ".devops")
         if not os.path.exists(self.home_dir):
             os.system("mkdir -p '%s'" % self.home_dir)
 
-        self.env_dir = tempfile.mkdtemp(prefix=os.path.join(self.home_dir, 'environments')+'/', suffix='-'+self.environment.name)
+    def build_environment(self, environment):
+        environment.work_dir = tempfile.mkdtemp(prefix=os.path.join(self.home_dir, 'environments', environment.name)+'-')
 
-    def build_environment(self):
-        if not os.path.exists(os.path.join(self.home_dir, 'environments')):
-            os.system("mkdir -p '%s'" % os.path.join(self.home_dir, 'environments'))
+        if not os.path.exists(environment.work_dir):
+            os.system("mkdir -p '%s'" % environment.work_dir)
 
-        for network in self.environment.networks:
-            self._build_network(network)
-            self.driver.start_network(network)
+        environment.driver = self.driver
 
-        for node in self.environment.nodes:
-            self._build_node(node)
+        for network in environment.networks:
+            self._build_network(environment, network)
+            network.driver = self.driver
+            network.start()
 
-    def destroy_environment(self):
-        for node in self.environment.nodes:
-            self.driver.stop_node(node)
+        for node in environment.nodes:
+            self._build_node(environment, node)
+            node.driver = self.driver
+
+    def destroy_environment(self, environment):
+        for node in environment.nodes:
+            node.stop()
             self.driver.delete_node(node)
+            del node.driver
 
-        for network in self.environment.networks:
-            self.driver.stop_network(network)
+        for network in environment.networks:
+            network.stop()
             self.driver.delete_network(network)
+            del network.driver
 
-    def start(self, o):
-        if isinstance(o, Node):
-            self.start_node(o)
-        elif isinstance(o, Network):
-            self.driver.start_network(o)
-        else:
-            raise "Unknown object %s" % o
+        del environment.driver
 
-    def start_node(self, node):
-        if type(node) == str:
-            for n in self.environment.nodes:
-                if n.name == node:
-                    node = n
-                    break
-
-        if not isinstance(node, Node):
-            raise "Unknown node %s" % node
-
-        self.driver.start_node(node)
-
-    def stop(self, o):
-        if isinstance(o, Node):
-            self.driver.stop_node(o)
-        elif isinstance(o. Network):
-            self.driver.stop_network(o)
-        else:
-            raise "Unknown object %s" % o
-
-    def stop_node(self, node):
-        if type(node) == str:
-            for n in self.environment.nodes:
-                if n.name == node:
-                    node = n
-                    break
-
-        if not isinstance(node, Node):
-            raise "Unknown node %s" % node
-
-        self.driver.stop_node(node)
-
-    def _build_network(self, network):
+    def _build_network(self, environment, network):
         self.driver.create_network(network)
 
-    def _build_node(self, node):
+    def _build_node(self, environment, node):
         for disk in node.disks:
             if disk.path is None:
-                fd, disk.path = tempfile.mkstemp(prefix=self.env_dir+'/', suffix='.' + disk.format)
+                fd, disk.path = tempfile.mkstemp(prefix=environment.work_dir+'/', suffix='.' + disk.format)
                 os.close(fd)
             self.driver.create_disk(disk)
 

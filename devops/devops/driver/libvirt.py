@@ -138,7 +138,6 @@ class Libvirt:
 
             interface.mac_address = interface_element.find('mac/@address')
 
-
     def delete_node(self, node):
         self._virsh("undefine '%s'", node.id)
 

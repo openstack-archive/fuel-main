@@ -7,7 +7,7 @@ from devops.driver.libvirt import Libvirt
 
 from devops import yaml_config_loader
 
-e = yaml_config_loader.load("""
+env = yaml_config_loader.load("""
 name: 'Sample environment'
 networks:
   - network: internal
@@ -30,19 +30,19 @@ nodes:
 # e.networks.append(network)
 # e.nodes.append(node)
 
-controller = Controller(e, Libvirt())
-controller.build_environment()
+controller = Controller(Libvirt())
+controller.build_environment(env)
 
 print("Environment created")
 
-controller.start_node('gateway')
+env.node['gateway'].start()
 
 print("Node started")
 
 print("Sleeping 5 seconds")
 time.sleep(5)
 
-controller.destroy_environment()
+controller.destroy_environment(env)
 
 print("Environment destroyed")
 
