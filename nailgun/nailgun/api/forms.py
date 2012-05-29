@@ -32,7 +32,6 @@ def validate_node_roles(value):
             raise ValidationError('Role list must be a list of integers')
 
 
-
 validate_node_id = RegexValidator(regex=re.compile('^[\dA-F]{12}$'))
 
 
