@@ -104,7 +104,8 @@ class EnvironmentHandler(BaseHandler):
 
     @validate_json(EnvironmentForm)
     def update(self, request, environment_id):
-        environment, is_created = Environment.objects.get_or_create(id=environment_id)
+        environment, is_created = \
+            Environment.objects.get_or_create(id=environment_id)
         for key, value in request.form.cleaned_data.items():
             if key in request.form.data:
                 setattr(environment, key, value)

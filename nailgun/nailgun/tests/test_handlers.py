@@ -94,7 +94,6 @@ class TestHandlers(TestCase):
         environments_after = len(Environment.objects.all())
         self.assertEquals(environments_before, environments_after)
 
-
     def test_node_creation(self):
         node_with_env_id = '080000000002'
         node_without_env_id = '080000000003'
