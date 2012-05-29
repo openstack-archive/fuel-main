@@ -34,6 +34,7 @@ NEW=${BASEDIR}/new
 EXTRAS=${BASEDIR}/extras
 APTFTP=${BASEDIR}/aptftp
 KEYRING=${BASEDIR}/keyring
+INDICES=${BASEDIR}/indices
 
 TMPGNUPG=${BASEDIR}/gnupg
 GPGKEYID=F8AF89DD
@@ -42,6 +43,8 @@ GPGKEYEMAIL="<product@mirantis.com>"
 GPGKEY="${GPGKEYNAME} ${GPGKEYEMAIL}"
 GPGKEYPHRASE="naMu7aej"
 
+ARCHITECTURES="i386 amd64"
+SECTIONS="main restricted universe multiverse"
 
 
 ###########################
@@ -61,6 +64,9 @@ rm -rf ${ORIG}
 
 echo "Removing ${NEW} ..."
 rm -rf ${NEW}
+
+# echo "Removing ${INDICES} ..."
+# rm -rf ${INDICES}
 
 # echo "Removing ${EXTRAS} ..."
 # rm -rf ${EXTRAS}
@@ -95,6 +101,25 @@ chmod -R u+w ${NEW}
 
 echo "Syncing stage directory to new iso ..."
 rsync -a ${STAGE}/ ${NEW}
+
+
+###########################
+# DOWNLOADING INDICES
+###########################
+echo "Downloading indices ..."
+mkdir -p ${INDICES}
+
+for s in ${SECTIONS}; do
+    wget -qO- ${MIRROR}/indices/override.${RELEASE}.${s}.debian-installer > \
+	${INDICES}/override.${RELEASE}.${s}.debian-installer
+    
+    wget -qO- ${MIRROR}/indices/override.${RELEASE}.${s} > \
+	${INDICES}/override.${RELEASE}.${s}
+    
+    wget -qO- ${MIRROR}/indices/override.${RELEASE}.extra.${s} > \
+	${INDICES}/override.${RELEASE}.extra.${s}
+done
+
 
 
 ###########################
@@ -158,14 +183,31 @@ done
     cd ${EXTRAS}/archives
 
     find -name "*.deb" -o -name "*.udeb" | while read debfile; do
-	pack=`basename ${debfile} | awk -F_ '{print $1}'`
+	
+	debbase=`basename ${debfile}`
+
+	if test -n "`find ${NEW}/pool -name ${debbase}`"; then
+	    echo "File ${debbase} already in pool"
+	    #echo ${debbase} >> /var/tmp/debs
+	    continue  
+	fi
+	    
+	packname=`echo ${debbase} | awk -F_ '{print $1}'`
+
+	section=`grep "^${packname}\s" ${INDICES}/* | \
+	    grep -v extra | head -1 | awk -F: '{print $1}' | \
+	    awk -F. '{print $3}'`
+
+	test -z ${section} && section=main
+
 	if (echo ${packname} | grep -q "^lib"); then
-	    directory=lib`echo ${packname} | cut -c4`/${packname}
+	    directory=${section}/lib`echo ${packname} | cut -c4`/${packname}
 	else
-	    directory=`echo ${packname} | cut -c1`/${packname}
+	    directory=${section}/`echo ${packname} | cut -c1`/${packname}
 	fi
 	
 	mkdir -p ${NEW}/pool/${directory}
+	echo "Copying ${debfile} ${NEW}/pool/${directory} ..."
 	cp ${debfile} ${NEW}/pool/${directory}
     done
 )
@@ -209,8 +251,7 @@ mkdir -p ${APTFTP}/conf.d
 mkdir -p ${APTFTP}/indices
 mkdir -p ${APTFTP}/cache
 
-ARCHITECTURES="i386 amd64"
-SECTIONS="main restricted universe multiverse"
+cp ${INDICES}/* ${APTFTP}/indices
 
 for s in ${SECTIONS}; do
     for a in ${ARCHITECTURES}; do
@@ -238,18 +279,6 @@ done
 # 	${APTFTP}/indices/override.${RELEASE}.${suffix}
 # done
 
-echo "Downloading indices ..."
-for s in ${SECTIONS}; do
-    wget -qO- ${MIRROR}/indices/override.${RELEASE}.${s}.debian-installer > \
-	${APTFTP}/indices/override.${RELEASE}.${s}.debian-installer
-    
-    wget -qO- ${MIRROR}/indices/override.${RELEASE}.${s} > \
-	${APTFTP}/indices/override.${RELEASE}.${s}
-    
-    wget -qO- ${MIRROR}/indices/override.${RELEASE}.extra.${s} > \
-	${APTFTP}/indices/override.${RELEASE}.extra.${s}
-done
-
 gunzip -c ${NEW}/dists/${RELEASE}/main/binary-amd64/Packages.gz | \
     ${SCRIPTDIR}/aptftp/extraoverride.pl >> \
     ${APTFTP}/indices/override.${RELEASE}.extra.main
@@ -275,7 +304,7 @@ for s in ${SECTIONS}; do
 
 
 	    (
-		cd ${NEW} && dpkg-scanpackages -a ${a} -tdeb ${extraoverride} \
+		cd ${NEW} && dpkg-scanpackages -m -a ${a} -tdeb ${extraoverride} \
 		    pool/${s} \
 		    ${override} > \
 		    ${NEW}/dists/${RELEASE}/${s}/binary-${a}/Packages
@@ -300,7 +329,7 @@ for s in ${SECTIONS}; do
 	echo ">>> ${NEW}/pool/${s} exists"
 	
 	(
-	    cd ${NEW} && dpkg-scanpackages -a amd64 -tudeb \
+	    cd ${NEW} && dpkg-scanpackages -m -a amd64 -tudeb \
 		pool/${s} \
 		${override} > \
 		${NEW}/dists/${RELEASE}/${s}/debian-installer/binary-amd64/Packages
