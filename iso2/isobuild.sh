@@ -65,8 +65,8 @@ rm -rf ${ORIG}
 echo "Removing ${NEW} ..."
 rm -rf ${NEW}
 
-# echo "Removing ${INDICES} ..."
-# rm -rf ${INDICES}
+echo "Removing ${INDICES} ..."
+rm -rf ${INDICES}
 
 echo "Removing ${EXTRAS} ..."
 rm -rf ${EXTRAS}
@@ -102,6 +102,23 @@ chmod -R u+w ${NEW}
 echo "Syncing stage directory to new iso ..."
 rsync -a ${STAGE}/ ${NEW}
 
+###########################
+# DOWNLOADING INDICES
+###########################
+echo "Downloading indices ..."
+mkdir -p ${INDICES}
+
+for s in ${SECTIONS}; do
+    wget -qO- ${MIRROR}/indices/override.${RELEASE}.${s}.debian-installer > \
+	${INDICES}/override.${RELEASE}.${s}.debian-installer
+    
+    wget -qO- ${MIRROR}/indices/override.${RELEASE}.${s} > \
+	${INDICES}/override.${RELEASE}.${s}
+    
+    wget -qO- ${MIRROR}/indices/override.${RELEASE}.extra.${s} > \
+	${INDICES}/override.${RELEASE}.extra.${s}
+done
+
 
 ###########################
 # REORGANIZE POOL
@@ -121,25 +138,6 @@ echo "Reorganizing pool ..."
     done
 )
 rm -fr ${NEW}/pool
-
-
-###########################
-# DOWNLOADING INDICES
-###########################
-echo "Downloading indices ..."
-mkdir -p ${INDICES}
-
-for s in ${SECTIONS}; do
-    wget -qO- ${MIRROR}/indices/override.${RELEASE}.${s}.debian-installer > \
-	${INDICES}/override.${RELEASE}.${s}.debian-installer
-    
-    wget -qO- ${MIRROR}/indices/override.${RELEASE}.${s} > \
-	${INDICES}/override.${RELEASE}.${s}
-    
-    wget -qO- ${MIRROR}/indices/override.${RELEASE}.extra.${s} > \
-	${INDICES}/override.${RELEASE}.extra.${s}
-done
-
 
 
 ###########################
