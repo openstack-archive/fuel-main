@@ -11,7 +11,8 @@ from nailgun.models import Environment, Node, Cookbook, Role
 from nailgun.api.validators import validate_json
 from nailgun.api.forms import EnvironmentForm, CookbookForm, RoleForm, \
         NodeCreationForm, NodeUpdateForm
-from nailgun.tasks import create_chef_config
+#from nailgun.tasks import create_chef_config
+from nailgun.tasks import deploy_env
 
 
 class TaskHandler(BaseHandler):
@@ -44,7 +45,8 @@ class ConfigHandler(BaseHandler):
     allowed_methods = ('POST',)
 
     def create(self, request, environment_id):
-        task = create_chef_config.delay(environment_id)
+        #task = create_chef_config.delay(environment_id)
+        task = deploy_env.delay(environment_id)
 
         response = rc.ACCEPTED
         response.content = TaskHandler.render_task(task)
