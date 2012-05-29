@@ -1,11 +1,11 @@
 d-i preseed/late_command string true && \
 # deb repo
 mkdir -p /target/var/lib/mirror/ubuntu && \
-cp -r /cdrom/pool /target/var/lib/mirror/ubuntu && \
+cp -r /cdrom/pools /target/var/lib/mirror/ubuntu && \
 cp -r /cdrom/dists /target/var/lib/mirror/ubuntu && \
 mkdir -p /target/etc/apt/sources.list.d && \
 rm -f /target/etc/apt/sources.list && \
-echo "deb file:/var/lib/mirror/ubuntu precise main restricted extras" > /target/etc/apt/sources.list.d/local.list && \
+echo "deb file:/var/lib/mirror/ubuntu precise main restricted universe multiverse" > /target/etc/apt/sources.list.d/local.list && \
 # chef 
 cp -r /cdrom/inject/cookbooks /target/root && \
 mkdir -p /target/root/scripts && \

@@ -68,8 +68,8 @@ rm -rf ${NEW}
 # echo "Removing ${INDICES} ..."
 # rm -rf ${INDICES}
 
-# echo "Removing ${EXTRAS} ..."
-# rm -rf ${EXTRAS}
+echo "Removing ${EXTRAS} ..."
+rm -rf ${EXTRAS}
 
 echo "Removing ${TMPGNUPG} ..."
 rm -rf ${TMPGNUPG}
@@ -104,6 +104,26 @@ rsync -a ${STAGE}/ ${NEW}
 
 
 ###########################
+# REORGANIZE POOL
+###########################
+echo "Reorganizing pool ..."
+(
+    cd ${NEW}/pool
+    find -type f \( -name "*.deb" -o -name "*.udeb" \) | while read debfile; do
+	debbase=`basename ${debfile}`
+	packname=`echo ${debbase} | awk -F_ '{print $1}'`
+	section=`grep "^${packname}\s" ${INDICES}/* | \
+	    grep -v extra | head -1 | awk -F: '{print $1}' | \
+	    awk -F. '{print $3}'`
+	test -z ${section} && section=main
+	mkdir -p ${NEW}/pools/${RELEASE}/${section}
+	mv ${debfile} ${NEW}/pools/${RELEASE}/${section}
+    done
+)
+rm -fr ${NEW}/pool
+
+
+###########################
 # DOWNLOADING INDICES
 ###########################
 echo "Downloading indices ..."
@@ -131,7 +151,6 @@ touch ${EXTRAS}/state/status
 mkdir -p ${EXTRAS}/archives
 mkdir -p ${EXTRAS}/cache
 
-
 mkdir -p ${EXTRAS}/etc/preferences.d
 mkdir -p ${EXTRAS}/etc/apt.conf.d
 cat > ${EXTRAS}/etc/sources.list <<EOF
@@ -150,7 +169,6 @@ EOF
 # possible apt configs
 # Install-Recommends "true";
 # Install-Suggests "true";
-
 
 cat > ${EXTRAS}/etc/apt.conf <<EOF
 APT
@@ -174,48 +192,29 @@ Dir
 Debug::NoLocking "true";
 EOF
 
+echo "Linking files that already in pool ..."
+find ${NEW}/pools/${RELEASE} -name "*.deb" -o -name "*.udeb" | while read debfile; do
+    debbase=`basename ${debfile}`
+    ln -sf  ${debfile} ${EXTRAS}/archives/${debbase}
+done
+
+echo "Downloading requied packages ..."
 apt-get -c=${EXTRAS}/etc/apt.conf update
 for package in ${REQDEB}; do
     apt-get -c=${EXTRAS}/etc/apt.conf -d -y install ${package}
 done
 
-(
-    cd ${EXTRAS}/archives
+find ${EXTRAS}/archives -type f \( -name "*.deb" -o -name "*.udeb" \) | while read debfile; do
+    debbase=`basename ${debfile}`
+    packname=`echo ${debbase} | awk -F_ '{print $1}'`
+    section=`grep "^${packname}\s" ${INDICES}/* | \
+	grep -v extra | head -1 | awk -F: '{print $1}' | \
+	awk -F. '{print $3}'`
+    test -z ${section} && section=main
+    mkdir -p ${NEW}/pools/${RELEASE}/${section}
+    cp ${debfile} ${NEW}/pools/${RELEASE}/${section}
+done
 
-    find -name "*.deb" -o -name "*.udeb" | while read debfile; do
-	
-	debbase=`basename ${debfile}`
-
-	if test -n "`find ${NEW}/pool -name ${debbase}`"; then
-	    echo "File ${debbase} already in pool"
-	    #echo ${debbase} >> /var/tmp/debs
-	    continue  
-	fi
-	    
-	packname=`echo ${debbase} | awk -F_ '{print $1}'`
-
-	section=`grep "^${packname}\s" ${INDICES}/* | \
-	    grep -v extra | head -1 | awk -F: '{print $1}' | \
-	    awk -F. '{print $3}'`
-
-	test -z ${section} && section=main
-
-	if (echo ${packname} | grep -q "^lib"); then
-	    directory=${section}/lib`echo ${packname} | cut -c4`/${packname}
-	else
-	    directory=${section}/`echo ${packname} | cut -c1`/${packname}
-	fi
-	
-	mkdir -p ${NEW}/pool/${directory}
-	echo "Copying ${debfile} ${NEW}/pool/${directory} ..."
-	cp ${debfile} ${NEW}/pool/${directory}
-    done
-)
-
-
-# FIXME
-# move this actions to chef
-# debian-installer is very sensitive to chages in cdrom repository
 
 ###########################
 # REBUILDING KEYRING
@@ -240,8 +239,8 @@ rm -f ubuntu-archive-keyring.gpg
 GNUPGHOME=${TMPGNUPG} gpg --export --output ubuntu-archive-keyring.gpg FBB75451 437D05B5 ${GPGKEYID}
 cd ${KEYRING}/${KEYRING_PACKAGE}
 dpkg-buildpackage -rfakeroot -m"${GPGKEY}" -k"${GPGKEYID}" -uc -us
-rm -f ${NEW}/pool/main/u/ubuntu-keyring/*
-cp ${KEYRING}/ubuntu-keyring*deb ${NEW}/pool/main/u/ubuntu-keyring/
+rm -f ${NEW}/pools/${RELEASE}/main/ubuntu-keyring*deb
+cp ${KEYRING}/ubuntu-keyring*deb ${NEW}/pools/${RELEASE}/main
 
 
 ###########################
@@ -255,8 +254,12 @@ cp ${INDICES}/* ${APTFTP}/indices
 
 for s in ${SECTIONS}; do
     for a in ${ARCHITECTURES}; do
-	mkdir -p ${NEW}/dists/${RELEASE}/${s}/binary-${a}
-	cat > ${NEW}/dists/${RELEASE}/${s}/binary-${a}/Release <<EOF
+	for t in deb udeb; do
+	    [ X${t} = Xudeb ] && di="/debian-installer" || di=""
+	    mkdir -p ${NEW}/dists/${RELEASE}/${s}${di}/binary-${a}
+
+	    if [ X${t} = Xdeb ]; then
+		cat > ${NEW}/dists/${RELEASE}/${s}/binary-${a}/Release <<EOF
 Archive: ${RELEASE}
 Version: ${VERSION}
 Component: ${s}
@@ -264,20 +267,10 @@ Origin: Mirantis
 Label: Mirantis
 Architecture: ${a}
 EOF
+	    fi
+	done
     done
-    mkdir -p ${NEW}/dists/${RELEASE}/${s}/debian-installer/binary-amd64
 done
-
-# for suffix in \
-#     extra.main \
-#     main \
-#     main.debian-installer \
-#     restricted \
-#     restricted.debian-installer; do
-    
-#     wget -qO- ${MIRROR}/indices/override.${RELEASE}.${suffix} > \
-# 	${APTFTP}/indices/override.${RELEASE}.${suffix}
-# done
 
 gunzip -c ${NEW}/dists/${RELEASE}/main/binary-amd64/Packages.gz | \
     ${SCRIPTDIR}/aptftp/extraoverride.pl >> \
@@ -285,130 +278,32 @@ gunzip -c ${NEW}/dists/${RELEASE}/main/binary-amd64/Packages.gz | \
 
 for s in ${SECTIONS}; do
     for a in ${ARCHITECTURES}; do
+	for t in deb udeb; do
+	    echo "Scanning section=${s} arch=${a} type=${t} ..."
 
-	[ -r ${APTFTP}/indices/override.${RELEASE}.${s} ] && \
-	    override=${APTFTP}/indices/override.${RELEASE}.${s} || \
-	    unset override
-	[ -r ${APTFTP}/indices/override.${RELEASE}.extra.${s} ] && \
-	    extraoverride="-e ${APTFTP}/indices/override.${RELEASE}.extra.${s}" || \
-	    unset extraoverride
+	    [ X${t} = Xudeb ] && di="/debian-installer" || di=""
+	    
+	    [ -r ${APTFTP}/indices/override.${RELEASE}.${s} ] && \
+		override=${APTFTP}/indices/override.${RELEASE}.${s} || \
+		unset override
+	    [ -r ${APTFTP}/indices/override.${RELEASE}.extra.${s} ] && \
+		extraoverride="-e ${APTFTP}/indices/override.${RELEASE}.extra.${s}" || \
+		unset extraoverride
 
-	echo ">>> DEB"
-	echo ">>> section: ${s}"
-	echo ">>> arch: ${a}"
-	echo ">>> override: ${override}"
-	echo ">>> extraoverride: ${extraoverride}"
-
-
-	if [ -d ${NEW}/pool/${s} ]; then
-
+	    mkdir -p ${NEW}/pools/${RELEASE}/${s}
 
 	    (
-		cd ${NEW} && dpkg-scanpackages -m -a ${a} -tdeb ${extraoverride} \
-		    pool/${s} \
+		cd ${NEW} && dpkg-scanpackages -m -a${a} -t${t} ${extraoverride} \
+		    pools/${RELEASE}/${s} \
 		    ${override} > \
-		    ${NEW}/dists/${RELEASE}/${s}/binary-${a}/Packages
+		    ${NEW}/dists/${RELEASE}/${s}${di}/binary-${a}/Packages
 	    )
-	else
-	    echo -n > ${NEW}/dists/${RELEASE}/${s}/binary-${a}/Packages
-	fi
-	gzip -c ${NEW}/dists/${RELEASE}/${s}/binary-${a}/Packages > \
-	    ${NEW}/dists/${RELEASE}/${s}/binary-${a}/Packages.gz
+
+	    gzip -c ${NEW}/dists/${RELEASE}/${s}${di}/binary-${a}/Packages > \
+		${NEW}/dists/${RELEASE}/${s}${di}/binary-${a}/Packages.gz
+	done
     done
-
-    [ -r ${APTFTP}/indices/override.${RELEASE}.${s}.debian-installer ] && \
-	override=${APTFTP}/indices/override.${RELEASE}.${s}.debian-installer || \
-	unset override
-
-    echo ">>> UDEB"
-    echo ">>> section: ${s}"
-    echo ">>> override: ${override}"
-
-    if [ -d ${NEW}/pool/${s} ]; then
-	
-	echo ">>> ${NEW}/pool/${s} exists"
-	
-	(
-	    cd ${NEW} && dpkg-scanpackages -m -a amd64 -tudeb \
-		pool/${s} \
-		${override} > \
-		${NEW}/dists/${RELEASE}/${s}/debian-installer/binary-amd64/Packages
-	)
-    else
-	echo -n > ${NEW}/dists/${RELEASE}/${s}/debian-installer/binary-amd64/Packages
-    fi
-    gzip -c ${NEW}/dists/${RELEASE}/${s}/debian-installer/binary-amd64/Packages > \
-	${NEW}/dists/${RELEASE}/${s}/debian-installer/binary-amd64/Packages.gz
 done
-
-#!!!!! NEVER NEVER USE apt-ftparchive FOR SCANNING PACKAGES
-#!!!!! IT IS BUGGGGGGGGGY
-
-# cat > ${APTFTP}/conf.d/apt-ftparchive-deb.conf <<EOF
-# Dir {
-#   ArchiveDir "${NEW}";
-#   CacheDir "${APTFTP}/cache";
-#   OverrideDir "${APTFTP}/indices";
-# };
-
-# Tree "dists/${RELEASE}" {
-#   Architectures "${ARCHITECTURES}";
-#   Sections "${SECTIONS}";
-#   BinOverride "override.${RELEASE}.\$(SECTION)";
-#   ExtraOverride "override.${RELEASE}.extra.\$(SECTION)";
-# };
-
-# TreeDefault {
-#   Directory "pool/\$(SECTION)";
-#   Packages "\$(DIST)/\$(SECTION)/binary-\$(ARCH)/Packages";
-#   Contents "\$(DIST)/Contents-\$(ARCH)";
-# };
-
-# Default {
-#   Packages {
-#     Extensions ".deb";
-#     Compress ". gzip";
-#   };
-#   Contents {
-#     Compress "gzip";
-#   };
-# };
-# EOF
-
-
-
-# cat > ${APTFTP}/conf.d/apt-ftparchive-udeb.conf <<EOF
-# Dir {
-#   ArchiveDir "${NEW}";
-#   CacheDir "${APTFTP}/cache";
-#   OverrideDir "${APTFTP}/indices";
-# };
-
-# Tree "dists/${RELEASE}" {
-#   Architectures "amd64";
-#   Sections "main restricted";
-#   BinOverride "override.${RELEASE}.\$(SECTION).debian-installer";
-# };
-
-# TreeDefault {
-#   Directory "pool/\$(SECTION)";
-#   Packages "\$(DIST)/\$(SECTION)/debian-installer/binary-\$(ARCH)/Packages";
-#   Contents "\$(DIST)/Contents-debian-installer-\$(ARCH)";
-# };
-
-# Default {
-#   Packages {
-#     Extensions ".udeb";
-#     Compress ". gzip";
-#   };
-#   Contents {
-#     Compress "gzip";
-#   };
-# };
-# EOF
-
-# apt-ftparchive generate ${APTFTP}/conf.d/apt-ftparchive-deb.conf
-# apt-ftparchive generate ${APTFTP}/conf.d/apt-ftparchive-udeb.conf
 
 echo "Creating main Release file in cdrom repo"
 
