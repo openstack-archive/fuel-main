@@ -6,6 +6,7 @@ import time
 from collections import deque
 from devops import xml
 from xmlbuilder import XMLBuilder
+import ipaddr
 
 def find(p, seq):
     for item in seq:
@@ -15,15 +16,46 @@ class DeploymentSpec:
     def __repr__(self):
         return "<DeploymentSpec arch=\"%s\" os_type=\"%s\" hypervisor=\"%s\" emulator=\"%s\">" % (self.arch, self.os_type, self.hypervisor, self.emulator)
 
-
 class LibvirtException(Exception): pass
 
+class NetworkAllocator:
+    netprefix = 26
+    network_defaults = [ '10.0.0.0/8', '172.16.0.0/16', '192.168.0.0/16' ]
+    def __init__(self, netprefix=None, nets=None):
+        if netprefix is not None:
+            self.netprefix = netprefix
+        if nets is None:
+            nets = self.network_defaults
+        self.netranges = [ ipaddr.IPv4Network(ip) for ip in nets ]
+        self.netranges.sort()
+        self.nets = {}
+        self.maxip = ipaddr.IPv4Address('0.0.0.0')
+    def allocate(self, num):
+        foruse = num + 3
+        while foruse > 2**(32 - self.netprefix):
+            self.netprefix -= 1
+        for n1 in self.netranges:
+            for n2 in n1.iter_subnets(new_prefix=self.netprefix):
+                if n2.ip <= self.maxip:
+                    continue
+                self.maxip = n2.broadcast
+                return n2
+
 class LibvirtXMLBuilder:
+    network_allocator = NetworkAllocator()
 
     def build_network_xml(self, network):
         network_xml = XMLBuilder('network')
         network_xml.name(network.id)
-
+        dhcp = network_xml.dhcp()
+        # XXX: FIX THIS
+        NETWORKS_FROM_CONFIGURATION = 100
+        alloc = self.network_allocator.allocate(NETWORKS_FROM_CONFIGURATION)
+        hosts = list(alloc.iterhosts())
+        mainip = str(hosts[0])
+        start = str(hosts[1])
+        end = str(hosts[-1])
+        dhcp.range(start=start, end=end)
         return str(network_xml)
 
     def build_node_xml(self, node, spec):
