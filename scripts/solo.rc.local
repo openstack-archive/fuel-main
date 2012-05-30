@@ -1,5 +1,7 @@
 #!/bin/sh -e
 
+apt-get update
+
 flock -w 0 /var/lock/chef-solo.lock /usr/bin/chef-solo -l debug -c /root/scripts/solo.rb -j /root/scripts/solo.json || true
 
 exit 0

@@ -1,1 +1,1 @@
-*/5 * * * * root flock -w 0 /var/lock/chef-solo.lock /usr/bin/chef-solo -l debug -c /root/scripts/solo.rb -j /root/scripts/solo.json
+*/5 * * * * root flock -w 0 /var/lock/chef-solo.lock {apt-get update; /usr/bin/chef-solo -l debug -c /root/scripts/solo.rb -j /root/scripts/solo.json}
