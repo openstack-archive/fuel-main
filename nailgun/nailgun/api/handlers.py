@@ -9,7 +9,7 @@ from django.conf import settings
 
 from nailgun.models import Environment, Node, Cookbook, Role
 from nailgun.api.validators import validate_json
-from nailgun.api.forms import EnvironmentForm, CookbookForm, \
+from nailgun.api.forms import EnvironmentForm, CookbookForm, RoleForm, \
         NodeCreationForm, NodeUpdateForm
 from nailgun.tasks import create_chef_config
 
@@ -51,25 +51,6 @@ class ConfigHandler(BaseHandler):
         return response
 
 
-class CookbookCollectionHandler(BaseHandler):
-
-    allowed_methods = ('GET', 'POST')
-    model = Cookbook
-    fields = ('id', 'name', 'version')
-
-    def read(self, request):
-        return Cookbook.objects.all()
-
-    @validate_json(CookbookForm)
-    def create(self, request):
-        cookbook = Cookbook()
-        cookbook.name = request.form.cleaned_data['name']
-        cookbook.version = request.form.cleaned_data['version']
-        cookbook.save()
-
-        return cookbook
-
-
 class EnvironmentCollectionHandler(BaseHandler):
 
     allowed_methods = ('GET', 'POST')
@@ -104,14 +85,16 @@ class EnvironmentHandler(BaseHandler):
 
     @validate_json(EnvironmentForm)
     def update(self, request, environment_id):
-        environment, is_created = \
-            Environment.objects.get_or_create(id=environment_id)
-        for key, value in request.form.cleaned_data.items():
-            if key in request.form.data:
-                setattr(environment, key, value)
+        try:
+            environment = Environment.objects.get(id=environment_id)
+            for key, value in request.form.cleaned_data.items():
+                if key in request.form.data:
+                    setattr(environment, key, value)
 
-        environment.save()
-        return environment
+            environment.save()
+            return environment
+        except ObjectDoesNotExist:
+            return rc.NOT_FOUND
 
 
 class NodeCollectionHandler(BaseHandler):
@@ -174,50 +157,67 @@ class NodeHandler(BaseHandler):
         return node
 
 
-class RoleCollectionHandler(BaseHandler):
+class CookbookCollectionHandler(BaseHandler):
+
+    allowed_methods = ('GET', 'POST')
+    model = Cookbook
+    fields = ('id', 'name', 'version', ('roles', ()))
+
+    def read(self, request):
+        return Cookbook.objects.all()
+
+    @validate_json(CookbookForm)
+    def create(self, request):
+        cookbook = Cookbook()
+        for key, value in request.form.cleaned_data.items():
+            if key in request.form.data:
+                setattr(cookbook, key, value)
+        cookbook.save()
+
+        return cookbook
+
+
+class CookbookHandler(BaseHandler):
 
     allowed_methods = ('GET',)
+    model = Cookbook
+    fields = CookbookCollectionHandler.fields
+
+    def read(self, request, cookbook_id):
+        try:
+            return Cookbook.objects.get(id=cookbook_id)
+        except ObjectDoesNotExist:
+            return rc.NOT_FOUND
+
+
+class RoleCollectionHandler(BaseHandler):
+
+    allowed_methods = ('GET', 'POST')
     model = Role
     fields = ('id', 'name')
 
-    def read(self, request, node_id):
-        try:
-            return Role.objects.filter(nodes__id=node_id)
-        except ObjectDoesNotExist:
-            return rc.NOT_FOUND
+    def read(self, request):
+        return Role.objects.all()
+
+    @validate_json(RoleForm)
+    def create(self, request):
+        role = Role()
+        for key, value in request.form.cleaned_data.items():
+            if key in request.form.data:
+                setattr(role, key, value)
+        role.save()
+
+        return role
 
 
 class RoleHandler(BaseHandler):
 
-    allowed_methods = ('GET', 'POST', 'DELETE')
+    allowed_methods = ('GET',)
     model = Role
     fields = RoleCollectionHandler.fields
 
-    def read(self, request, node_id, role_id):
+    def read(self, request, role_id):
         try:
-            return Role.objects.get(nodes__id=node_id, id=role_id)
-        except ObjectDoesNotExist:
-            return rc.NOT_FOUND
-
-    def create(self, request, node_id, role_id):
-        try:
-            node = Node.objects.get(id=node_id)
-            role = Role.objects.get(id=role_id)
-
-            if role in node.roles.all():
-                return rc.DUPLICATE_ENTRY
-
-            node.roles.add(role)
-
-            return role
-        except ObjectDoesNotExist:
-            return rc.NOT_FOUND
-
-    def delete(self, request, node_id, role_id):
-        try:
-            node = Node.objects.get(id=node_id)
-            role = Role.objects.get(id=role_id)
-            node.roles.remove(role)
-            return rc.DELETED
+            return Role.objects.get(id=role_id)
         except ObjectDoesNotExist:
             return rc.NOT_FOUND

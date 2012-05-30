@@ -248,11 +248,23 @@ class TestHandlers(TestCase):
         )
         self.assertEquals(resp.status_code, 200)
 
-        cooks_from_db = Cookbook.objects.filter(
-            name=cook_name
-        )
+        cooks_from_db = Cookbook.objects.filter(name=cook_name)
         self.assertEquals(len(cooks_from_db), 1)
         self.assertEquals(cooks_from_db[0].version, cook_ver)
+
+    def test_role_create(self):
+        role_name = 'My role 3'
+
+        resp = self.client.post(
+            reverse('role_collection_handler'),
+            json.dumps({'name': role_name, 'cookbook_id': self.cook.id}),
+            "application/json"
+        )
+        self.assertEquals(resp.status_code, 200)
+
+        roles_from_db = Role.objects.filter(name=role_name)
+        self.assertEquals(len(roles_from_db), 1)
+        self.assertEquals(roles_from_db[0].cookbook.id, self.cook.id)
 
     def test_jsons_created_for_chef_solo(self):
         url = reverse('config_handler', kwargs={'environment_id': 1})

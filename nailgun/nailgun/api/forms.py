@@ -11,6 +11,11 @@ class CookbookForm(forms.ModelForm):
         model = Cookbook
 
 
+class RoleForm(forms.Form):
+    name = CharField(max_length=50)
+    cookbook_id = IntegerField()
+
+
 class EnvironmentForm(forms.Form):
     name = CharField(max_length=100, required=False)
 
@@ -35,14 +40,11 @@ def validate_node_roles(value):
 validate_node_id = RegexValidator(regex=re.compile('^[\dA-F]{12}$'))
 
 
-class NodeForm(forms.Form):
+class NodeUpdateForm(forms.Form):
     metadata = Field(required=False, validators=[validate_node_metadata])
     status = ChoiceField(required=False, choices=Node.NODE_STATUSES)
     name = CharField(max_length=100, required=False)
     roles = Field(required=False, validators=[validate_node_roles])
-
-
-class NodeUpdateForm(NodeForm):
     environment_id = IntegerField(required=False)
 
 

@@ -4,7 +4,7 @@ from piston.resource import Resource
 from nailgun.api.handlers import EnvironmentCollectionHandler, \
                      EnvironmentHandler, \
                      NodeCollectionHandler, NodeHandler, \
-                     CookbookCollectionHandler, \
+                     CookbookCollectionHandler, CookbookHandler, \
                      RoleCollectionHandler, RoleHandler, \
                      ConfigHandler, \
                      TaskHandler
@@ -28,12 +28,6 @@ urlpatterns = patterns('',
     url(r'^nodes/(?P<node_id>[\dA-F]{12})/?$',
         JsonResource(NodeHandler),
         name='node_handler'),
-    url(r'^nodes/(?P<node_id>[\dA-F]{12})/roles/?$',
-        JsonResource(RoleCollectionHandler),
-        name='role_collection_handler'),
-    url(r'^nodes/(?P<node_id>[\dA-F]{12})/roles/(?P<role_id>\w+)/?$',
-        JsonResource(RoleHandler),
-        name='role_handler'),
     url(r'^environments/(?P<environment_id>\d+)/chef-config/?$',
         JsonResource(ConfigHandler),
         name='config_handler'),
@@ -43,4 +37,13 @@ urlpatterns = patterns('',
     url(r'^cookbooks/?$',
         JsonResource(CookbookCollectionHandler),
         name='cookbook_collection_handler'),
+    url(r'^cookbooks/(?P<cookbook_id>\d+)?$',
+        JsonResource(CookbookHandler),
+        name='cookbook_handler'),
+    url(r'^roles/?$',
+        JsonResource(RoleCollectionHandler),
+        name='role_collection_handler'),
+    url(r'^roles/(?P<role_id>\d+)/?$',
+        JsonResource(RoleHandler),
+        name='role_handler'),
 )

@@ -15,7 +15,8 @@ class Cookbook(models.Model):
 
 class Role(models.Model):
     name = models.CharField(max_length=50)
-    cookbook = models.ForeignKey(Cookbook, related_name='roles')
+    cookbook = models.ForeignKey(Cookbook, related_name='roles',
+                                 on_delete=models.CASCADE)
 
 
 class Node(models.Model):

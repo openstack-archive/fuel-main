@@ -26,11 +26,11 @@ Collection.Environment = Backbone.Collection.extend({
 
 
 Model.Node = Backbone.RelationalModel.extend({
-    urlRoot: function() {
-        return '/api/nodes'
-    },
+    urlRoot: '/api/nodes',
     defaults: {
-
+        name: null,
+        status: null,
+        metadata: null
     },
     relations: [{
         type: Backbone.HasMany,
@@ -48,9 +48,32 @@ Collection.Node = Backbone.Collection.extend({
     model: Model.Node
 });
 
+Model.Cookbook = Backbone.RelationalModel.extend({
+    urlRoot: '/api/cookbooks',
+    defaults: {
+        name: null,
+        version: null
+    },
+    relations: [{
+        type: Backbone.HasMany,
+        key: 'roles',
+        relatedModel: 'Model.Role',
+        collectionType: 'Collection.Role',
+        reverseRelation: {
+            key: 'cookbook',
+            includeInJSON: false
+        }
+    }]
+});
+
+Collection.Cookbook = Backbone.Collection.extend({
+    model: Model.Cookbook
+});
+
 Model.Role = Backbone.RelationalModel.extend({
-    urlRoot: function() {
-        return this.get('node').url() + '/roles'
+    urlRoot: '/api/roles',
+    defaults: {
+        name: null
     }
 });
 
