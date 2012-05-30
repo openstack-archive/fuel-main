@@ -6,24 +6,10 @@ d-i console-setup/ask_detect        boolean false
 d-i console-setup/layoutcode        string us
 d-i console-setup/variantcode       string
 
-
 # !!!! do not use this line because of netcfg segfault
 # d-i netcfg/enable boolean false
-
 d-i netcfg/choose_interface select auto
-
-d-i netcfg/dhcp_timeout string 5
-d-i netcfg/dhcp_failed note
-d-i netcfg/dhcp_options select Configure network manually
-
-#d-i netcfg/disable_autoconfig boolean true
-#d-i netcfg/get_nameservers string 192.168.1.1
-#d-i netcfg/get_ipaddress string 192.168.1.2
-#d-i netcfg/get_netmask string 255.255.255.0
-#d-i netcfg/get_gateway string 192.168.1.1
-#d-i netcfg/confirm_static boolean true
-
-d-i netcfg/get_hostname string nailgun-admin
+d-i netcfg/get_hostname string nailgun
 d-i netcfg/get_domain string example.com
 
 d-i hw-detect/load_firmware boolean true
@@ -79,7 +65,4 @@ d-i cdrom-detect/eject boolean true
 d-i debian-installer/exit/halt boolean false
 d-i debian-installer/exit/poweroff boolean false
 
-
 d-i preseed/include string late.seed
-
-

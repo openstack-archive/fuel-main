@@ -1,0 +1,296 @@
+#!/bin/bash
+
+set -e
+
+[ X`whoami` = X'root' ] || { echo "You must be root to run this script."; exit 1; }
+
+lock(){
+    exec 200>$1
+    flock -w 0 -x 200 || return 1
+    return 0
+} 
+
+lock /var/lock/update-repo.lock || \
+    { echo "Another instance of update.sh is running. Try later." 1>&2 ; exit 1; }
+
+
+
+TMPDIR=`mktemp -d`
+STAMP=`date +%Y%m%d%H%M%S`
+MIRROR=<%= @mirror %>
+RELEASE=<%= @release %>
+VERSION=<%= @version %>
+REPOROOT=<%= @reporoot %>
+ARCH=<%= @arch %>
+REQDEB=<%= @reqdebs %>
+GNUPGHOME=<%= @gnupghome %>
+GPGKEYID=<%= @gnupgkeyid %>
+GPGPASSWDFILE=<%= @gnupgpasswdfile %>
+
+APTDIR=${TMPDIR}
+INDICES=${TMPDIR}/indices
+KEYRING=${TMPDIR}/keyring
+TMPGNUPGHOME=${TMPDIR}/gnupg
+
+SECTIONS="main restricted universe multiverse"
+ARCHITECTURES="amd64 i386"
+
+
+
+GNUPGHOME=${GNUPGHOME} gpg --no-tty --list-keys ${GPGKEYID} > /dev/null 2>&1 || \
+    { echo "There is no key ${GPGKEYID} in ${GNUPGHOME}."; exit 1; }
+mkdir -p ${REPOROOT}/dists
+mkdir -p ${REPOROOT}/pools
+
+###########################
+# DOWNLOADING INDICES
+###########################
+echo "Downloading indices ..."
+mkdir -p ${INDICES}
+
+for s in ${SECTIONS}; do
+    wget -qO- ${MIRROR}/indices/override.${RELEASE}.${s}.debian-installer > \
+	${INDICES}/override.${RELEASE}.${s}.debian-installer
+    
+    wget -qO- ${MIRROR}/indices/override.${RELEASE}.${s} > \
+	${INDICES}/override.${RELEASE}.${s}
+    
+    wget -qO- ${MIRROR}/indices/override.${RELEASE}.extra.${s} > \
+	${INDICES}/override.${RELEASE}.extra.${s}
+done
+
+
+###########################
+# DOWNLOADING REQUIRED DEBS
+###########################
+
+echo "Preparing aptdir ..."
+mkdir -p ${APTDIR}/state
+touch ${APTDIR}/state/status
+mkdir -p ${APTDIR}/archives
+mkdir -p ${APTDIR}/cache
+mkdir -p ${APTDIR}/etc/preferences.d
+mkdir -p ${APTDIR}/etc/apt.conf.d
+
+cat > ${APTDIR}/etc/sources.list <<EOF
+deb ${MIRROR} precise main restricted universe multiverse
+deb-src ${MIRROR} precise main restricted universe multiverse
+deb http://apt.opscode.com ${RELEASE}-0.10 main
+EOF
+
+cat > ${APTDIR}/etc/preferences <<EOF
+Package: *
+Pin: origin "apt.opscode.com"
+Pin-Priority: 999
+EOF
+
+cat > ${APTDIR}/etc/apt.conf <<EOF
+APT
+{
+  Architecture "${ARCH}";
+  Default-Release "${RELEASE}";
+  Get::AllowUnauthenticated "true";
+};
+
+Dir
+{
+  State "${APTDIR}/state";
+  State::status "status";
+  
+  Cache::archives "${APTDIR}/archives";
+  Cache "${APTDIR}/cache";
+  
+  Etc "${APTDIR}/etc";
+};
+
+Debug::NoLocking "true";
+EOF
+
+echo "Linking files that already in pool ..."
+find ${REPOROOT}/pools/${RELEASE} -name "*.deb" -o -name "*.udeb" | while read debfile; do
+    debbase=`basename ${debfile}`
+    ln -sf  ${debfile} ${APTDIR}/archives/${debbase}
+done
+
+echo "Downloading requied packages ..."
+apt-get -c=${APTDIR}/etc/apt.conf update
+for package in ${REQDEB}; do
+    apt-get -c=${APTDIR}/etc/apt.conf -d -y install ${package}
+done
+
+find ${APTDIR}/archives -type f \( -name "*.deb" -o -name "*.udeb" \) | while read debfile; do
+    debbase=`basename ${debfile}`
+    packname=`echo ${debbase} | awk -F_ '{print $1}'`
+    section=`grep "^${packname}\s" ${INDICES}/* | \
+	grep -v extra | head -1 | awk -F: '{print $1}' | \
+	awk -F. '{print $3}'`
+    test -z ${section} && section=main
+    mkdir -p ${REPOROOT}/pools/${RELEASE}/${section}
+    cp ${debfile} ${REPOROOT}/pools/${RELEASE}/${section}
+done
+
+
+###########################
+# REBUILDING KEYRING
+###########################
+echo "Rebuilding ubuntu-keyring packages ..."
+
+mkdir -p ${KEYRING}
+
+(
+    cd ${KEYRING} && apt-get -c=${APTDIR}/etc/apt.conf source ubuntu-keyring
+) 
+
+KEYRING_PACKAGE=`find ${KEYRING} -maxdepth 1 \
+    -name "ubuntu-keyring*" -type d -print | xargs basename`
+if [ -z ${KEYRING_PACKAGE} ]; then
+    echo "Cannot grab keyring source! Exiting."
+    exit 1
+fi
+
+cp -rp ${GNUPGHOME} ${TMPGNUPGHOME} 
+chown -R root:root ${TMPGNUPGHOME}
+chmod 700 ${TMPGNUPGHOME}
+chmod 600 ${TMPGNUPGHOME}/*
+
+GNUPGHOME=${TMPGNUPGHOME} gpg --import < \
+    ${KEYRING}/${KEYRING_PACKAGE}/keyrings/ubuntu-archive-keyring.gpg
+
+GNUPGHOME=${TMPGNUPGHOME} gpg --yes --export \
+    --output ${KEYRING}/${KEYRING_PACKAGE}/keyrings/ubuntu-archive-keyring.gpg \
+    FBB75451 437D05B5 ${GPGKEYID}
+
+(
+    cd ${KEYRING}/${KEYRING_PACKAGE} && \
+	dpkg-buildpackage -m"Mirantis Nailgun" -k"${GPGKEYID}" -uc -us
+)
+
+rm -f ${REPOROOT}/pools/${RELEASE}/main/ubuntu-keyring*deb
+cp ${KEYRING}/ubuntu-keyring*deb ${REPOROOT}/pools/${RELEASE}/main || \
+    { echo "Error occured while moving rebuilded ubuntu-keyring packages into pool"; exit 1; }
+
+
+###########################
+# UPDATING REPO
+###########################
+echo "Updating repo ..."
+
+echo "> Creating temporary dists directory structure ..."
+DISTNEW=${TMPDIR}/dists/${RELEASE}
+mkdir -p ${DISTNEW}
+
+for s in ${SECTIONS}; do
+    for a in ${ARCHITECTURES}; do
+	for t in deb udeb; do
+	    [ X${t} = Xudeb ] && di="/debian-installer" || di=""
+	    mkdir -p ${DISTNEW}/${s}${di}/binary-${a}
+
+	    if [ X${t} = Xdeb ]; then
+		cat > ${DISTNEW}/${s}/binary-${a}/Release <<EOF
+Archive: ${RELEASE}
+Version: ${VERSION}
+Component: ${s}
+Origin: Mirantis
+Label: Mirantis
+Architecture: ${a}
+EOF
+	    fi
+	done
+    done
+done
+
+cat > ${TMPDIR}/extraoverride.pl <<EOF
+#!/usr/bin/env perl
+while (<>) {
+  chomp; next if /^ /;
+  if (/^\$/ && defined(\$task)) {
+    print "\$package Task \$task\n";
+    undef \$package;
+    undef \$task;
+  } 
+  (\$key, \$value) = split /: /, \$_, 2;
+  if (\$key eq 'Package') {
+    \$package = \$value;
+  } 
+  if (\$key eq 'Task') {
+    \$task = \$value;
+  }
+}
+EOF
+chmod +x ${BASEDIR}/extraoverride.pl
+
+echo "> Adding tasks to extra main ..."
+gunzip -c ${REPOROOT}/dists/${RELEASE}/main/binary-amd64/Packages.gz | \
+    ${TMPDIR}/extraoverride.pl >> \
+    ${INDICES}/override.${RELEASE}.extra.main
+
+echo "> Scanning packages ..."
+for s in ${SECTIONS}; do
+    for a in ${ARCHITECTURES}; do
+	for t in deb udeb; do
+	    echo "> Scanning section=${s} arch=${a} type=${t} ..."
+
+	    if [ X${t} = Xudeb ]; then
+		di="/debian-installer"
+		diover=".debian-installer"
+	    else
+		di=""
+		diover=""
+	    fi
+
+	    [ -r ${INDICES}/override.${RELEASE}.${s}${diover} ] && \
+		override=${INDICES}/override.${RELEASE}.${s}${diover} || \
+		unset override
+	    [ -r ${INDICES}/override.${RELEASE}.extra.${s} ] && \
+		extraoverride="-e ${INDICES}/override.${RELEASE}.extra.${s}" || \
+		unset extraoverride
+
+	    mkdir -p ${REPOROOT}/pools/${RELEASE}/${s}
+
+	    (
+		cd ${REPOROOT} && dpkg-scanpackages -m -a${a} -t${t} ${extraoverride} \
+		    pools/${RELEASE}/${s} \
+		    ${override} > \
+		    ${DISTNEW}/${s}${di}/binary-${a}/Packages
+	    )
+
+	    gzip -c ${DISTNEW}/${s}${di}/binary-${a}/Packages > \
+		${DISTNEW}/${s}${di}/binary-${a}/Packages.gz
+	done
+    done
+done
+
+echo "> Creating root Release file ..."
+
+cat > ${TMPDIR}/release.conf <<EOF
+APT::FTPArchive::Release::Origin "Mirantis";
+APT::FTPArchive::Release::Label "Mirantis";
+APT::FTPArchive::Release::Suite "${RELEASE}";
+APT::FTPArchive::Release::Version "${VERSION}";
+APT::FTPArchive::Release::Codename "${RELEASE}";
+APT::FTPArchive::Release::Architectures "${ARCHITECTURES}";
+APT::FTPArchive::Release::Components "${SECTIONS}";
+APT::FTPArchive::Release::Description "Mirantis Nailgun Repo";
+EOF
+
+apt-ftparchive -c ${TMPDIR}/release.conf release ${DISTNEW} > ${DISTNEW}/Release
+
+echo "> Signing root Release file ..."
+GNUPGHOME=${TMPGNUPGHOME} gpg --yes --no-tty --default-key ${GPGKEYID} \
+    --passphrase-file ${GPGPASSWDFILE} --output ${DISTNEW}/Release.gpg \
+    -ba ${DISTNEW}/Release || \
+    { echo "Error occured while signing root Release file."; exit 1; }
+
+
+echo "> Backing up old dists directory ..."
+mkdir -p /var/backups/dists-${STAMP}/${RELEASE}
+rsync -a ${REPOROOT}/dists/${RELEASE}/ /var/backups/dists-${STAMP}/${RELEASE} || \
+    { echo "Error occured while backing up dists directory."; exit 1; }
+
+echo "> Syncing new dists directory ..."
+rsync -a --delete ${DISTNEW}/ ${REPOROOT}/dists/${RELEASE} || \
+    { echo "Error occured while syncing dists directory."; \
+    rm -rf ${REPOROOT}/dists/${RELEASE} && \
+    cp -rp /var/backups/dists-${STAMP}/${RELEASE} ${REPOROOT}/dists; }
+
+

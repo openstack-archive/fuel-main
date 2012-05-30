@@ -1,4 +1,7 @@
+chef
 cobbler
+cobbler-web
 dnsmasq
 tftpd-hpa
 apt-utils
+rsync

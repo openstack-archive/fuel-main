@@ -1,0 +1,2 @@
+d-i netcfg/disable_autoconfig boolean true
+d-i preseed/include string common.seed
