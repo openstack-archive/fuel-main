@@ -32,7 +32,6 @@ BASEDIR=/var/tmp/build_iso2
 ORIG=${BASEDIR}/orig
 NEW=${BASEDIR}/new
 EXTRAS=${BASEDIR}/extras
-APTFTP=${BASEDIR}/aptftp
 KEYRING=${BASEDIR}/keyring
 INDICES=${BASEDIR}/indices
 
@@ -41,7 +40,7 @@ GPGKEYID=F8AF89DD
 GPGKEYNAME="Mirantis Product"
 GPGKEYEMAIL="<product@mirantis.com>"
 GPGKEY="${GPGKEYNAME} ${GPGKEYEMAIL}"
-GPGKEYPHRASE="naMu7aej"
+GPGPASSWDFILE=${TMPGNUPG}/keyphrase
 
 ARCHITECTURES="i386 amd64"
 SECTIONS="main restricted universe multiverse"
@@ -56,8 +55,8 @@ if (mount | grep -q ${ORIG}); then
     umount ${ORIG}
 fi
 
-# echo "Removing ${BASEDIR} ..."
-# rm -rf ${BASEDIR}
+echo "Removing ${BASEDIR} ..."
+rm -rf ${BASEDIR}
 
 echo "Removing ${ORIG} ..."
 rm -rf ${ORIG}
@@ -73,9 +72,6 @@ rm -rf ${EXTRAS}
 
 echo "Removing ${TMPGNUPG} ..."
 rm -rf ${TMPGNUPG}
-
-echo "Removing ${APTFTP} ..."
-rm -rf ${APTFTP}
 
 echo "Removing ${KEYRING} ..."
 rm -rf ${KEYRING}
@@ -217,38 +213,46 @@ done
 ###########################
 # REBUILDING KEYRING
 ###########################
-mkdir -p ${KEYRING}
-cp -rp ${GNUPG} ${TMPGNUPG}
-chown -R root:root ${TMPGNUPG}
-chmod 700 ${TMPGNUPG}
-chmod 600 ${TMPGNUPG}/*
+echo "Rebuilding ubuntu-keyring packages ..."
 
-cd ${KEYRING}
-apt-get -c=${EXTRAS}/etc/apt.conf source ubuntu-keyring
-KEYRING_PACKAGE=`find -maxdepth 1 -name "ubuntu-keyring*" -type d -print`
+mkdir -p ${KEYRING}
+
+(
+    cd ${KEYRING} && apt-get -c=${EXTRAS}/etc/apt.conf source ubuntu-keyring
+)
+
+KEYRING_PACKAGE=`find ${KEYRING} -maxdepth 1 \
+    -name "ubuntu-keyring*" -type d -print | xargs basename`
 if [ -z ${KEYRING_PACKAGE} ]; then
     echo "Cannot grab keyring source! Exiting."
     exit 1
 fi
 
-cd ${KEYRING}/${KEYRING_PACKAGE}/keyrings
-GNUPGHOME=${TMPGNUPG} gpg --import < ubuntu-archive-keyring.gpg
-rm -f ubuntu-archive-keyring.gpg
-GNUPGHOME=${TMPGNUPG} gpg --export --output ubuntu-archive-keyring.gpg FBB75451 437D05B5 ${GPGKEYID}
-cd ${KEYRING}/${KEYRING_PACKAGE}
-dpkg-buildpackage -rfakeroot -m"${GPGKEY}" -k"${GPGKEYID}" -uc -us
+cp -rp ${GNUPG} ${TMPGNUPG}
+chown -R root:root ${TMPGNUPG}
+chmod 700 ${TMPGNUPG}
+chmod 600 ${TMPGNUPG}/*
+
+GNUPGHOME=${TMPGNUPG} gpg --import < \
+    ${KEYRING}/${KEYRING_PACKAGE}/keyrings/ubuntu-archive-keyring.gpg
+
+GNUPGHOME=${TMPGNUPG} gpg --yes --export \
+    --output ${KEYRING}/${KEYRING_PACKAGE}/keyrings/ubuntu-archive-keyring.gpg \
+    FBB75451 437D05B5 ${GPGKEYID}
+
+(
+    cd ${KEYRING}/${KEYRING_PACKAGE} && \
+	dpkg-buildpackage -m"Mirantis Nailgun" -k"${GPGKEYID}" -uc -us
+)
+
 rm -f ${NEW}/pools/${RELEASE}/main/ubuntu-keyring*deb
-cp ${KEYRING}/ubuntu-keyring*deb ${NEW}/pools/${RELEASE}/main
+cp ${KEYRING}/ubuntu-keyring*deb ${NEW}/pools/${RELEASE}/main || \
+    { echo "Error occured while moving rebuilded ubuntu-keyring packages into pool"; exit 1; }
 
 
 ###########################
 # UPDATING REPO
 ###########################
-mkdir -p ${APTFTP}/conf.d
-mkdir -p ${APTFTP}/indices
-mkdir -p ${APTFTP}/cache
-
-cp ${INDICES}/* ${APTFTP}/indices
 
 for s in ${SECTIONS}; do
     for a in ${ARCHITECTURES}; do
@@ -270,22 +274,48 @@ EOF
     done
 done
 
+cat > ${BASEDIR}/extraoverride.pl <<EOF
+#!/usr/bin/env perl
+while (<>) {
+  chomp; next if /^ /;
+  if (/^\$/ && defined(\$task)) {
+    print "\$package Task \$task\n";
+    undef \$package;
+    undef \$task;
+  } 
+  (\$key, \$value) = split /: /, \$_, 2;
+  if (\$key eq 'Package') {
+    \$package = \$value;
+  } 
+  if (\$key eq 'Task') {
+    \$task = \$value;
+  }
+}
+EOF
+chmod +x ${BASEDIR}/extraoverride.pl
+
 gunzip -c ${NEW}/dists/${RELEASE}/main/binary-amd64/Packages.gz | \
-    ${SCRIPTDIR}/aptftp/extraoverride.pl >> \
-    ${APTFTP}/indices/override.${RELEASE}.extra.main
+    ${BASEDIR}/extraoverride.pl >> \
+    ${INDICES}/override.${RELEASE}.extra.main
 
 for s in ${SECTIONS}; do
     for a in ${ARCHITECTURES}; do
 	for t in deb udeb; do
 	    echo "Scanning section=${s} arch=${a} type=${t} ..."
 
-	    [ X${t} = Xudeb ] && di="/debian-installer" || di=""
-	    
-	    [ -r ${APTFTP}/indices/override.${RELEASE}.${s} ] && \
-		override=${APTFTP}/indices/override.${RELEASE}.${s} || \
+	    if [ X${t} = Xudeb ]; then
+		di="/debian-installer"
+		diover=".debian-installer"
+	    else
+		di=""
+		diover=""
+	    fi
+
+	    [ -r ${INDICES}/override.${RELEASE}.${s}${diover} ] && \
+		override=${INDICES}/override.${RELEASE}.${s}${diover} || \
 		unset override
-	    [ -r ${APTFTP}/indices/override.${RELEASE}.extra.${s} ] && \
-		extraoverride="-e ${APTFTP}/indices/override.${RELEASE}.extra.${s}" || \
+	    [ -r ${INDICES}/override.${RELEASE}.extra.${s} ] && \
+		extraoverride="-e ${INDICES}/override.${RELEASE}.extra.${s}" || \
 		unset extraoverride
 
 	    mkdir -p ${NEW}/pools/${RELEASE}/${s}
@@ -305,7 +335,7 @@ done
 
 echo "Creating main Release file in cdrom repo"
 
-cat > ${APTFTP}/conf.d/release.conf <<EOF
+cat > ${BASEDIR}/release.conf <<EOF
 APT::FTPArchive::Release::Origin "Mirantis";
 APT::FTPArchive::Release::Label "Mirantis";
 APT::FTPArchive::Release::Suite "${RELEASE}";
@@ -317,11 +347,14 @@ APT::FTPArchive::Release::Description "Mirantis Nailgun Repo";
 EOF
 
 
-apt-ftparchive -c ${APTFTP}/conf.d/release.conf release ${NEW}/dists/${RELEASE} > ${NEW}/dists/${RELEASE}/Release
+apt-ftparchive -c ${BASEDIR}/release.conf release ${NEW}/dists/${RELEASE} > \
+    ${NEW}/dists/${RELEASE}/Release
 
 
 echo "Signing main Release file in cdrom repo ..."
-GNUPGHOME=${TMPGNUPG} gpg --no-tty --default-key ${GPGKEYID} --yes --passphrase-file ${TMPGNUPG}/keyphrase --output ${NEW}/dists/${RELEASE}/Release.gpg -ba ${NEW}/dists/${RELEASE}/Release
+GNUPGHOME=${TMPGNUPG} gpg --yes --no-tty --default-key ${GPGKEYID} \
+    --passphrase-file ${GPGPASSWDFILE} --output ${NEW}/dists/${RELEASE}/Release.gpg \
+    -ba ${NEW}/dists/${RELEASE}/Release
 
 
 ###########################
@@ -329,12 +362,14 @@ GNUPGHOME=${TMPGNUPG} gpg --no-tty --default-key ${GPGKEYID} --yes --passphrase-
 ###########################
 echo "Injecting some files into iso ..."
 mkdir -p ${NEW}/inject/scripts
-cp -r ${APTFTP}/indices ${NEW}/inject
+mkdir -p ${NEW}/indices
+cp -r ${INDICES}/* ${NEW}/indices
 cp -r ${REPO}/cookbooks ${NEW}/inject
 cp ${REPO}/scripts/solo-admin.json ${NEW}/inject/scripts/solo.json
 cp ${REPO}/scripts/solo.rb ${NEW}/inject/scripts
 cp ${REPO}/scripts/solo.cron ${NEW}/inject/scripts
 cp ${REPO}/scripts/solo.rc.local ${NEW}/inject/scripts
+cp -r ${REPO}/gnupg ${NEW}/inject/gnupg
 
 ###########################
 # MAKE NEW ISO
