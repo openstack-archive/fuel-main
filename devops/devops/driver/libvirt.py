@@ -5,6 +5,7 @@ import tempfile
 import time
 from collections import deque
 from devops import xml
+from devops import scancodes
 from xmlbuilder import XMLBuilder
 import ipaddr
 
@@ -187,6 +188,11 @@ class Libvirt:
 
     def shutdown_node(self, node):
         self._virsh("stop '%s'", node.id)
+
+    def send_keys_to_node(self, keys):
+        keys = scancodes.from_string(str(keys))
+        # TODO: split very long scancode sequences into multiple send-key commands
+        self._virsh("send-key '%s' %s", node.id, keys.join(' '))
 
     def create_disk(self, disk):
         f, disk.path = tempfile.mkstemp(prefix='disk-', suffix=(".%s" % disk.format))
