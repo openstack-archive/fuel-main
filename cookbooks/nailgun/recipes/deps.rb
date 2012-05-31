@@ -1,4 +1,3 @@
-p run_context.definitions
 cookbook_python_pip 'django-piston' do
   version '0.2.3-20120528'
 end
