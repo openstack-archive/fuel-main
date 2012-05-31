@@ -131,6 +131,7 @@ def parse_node(environment, data):
             node.boot.append(boot)
     else:
         if len(node.disks)      > 0: node.boot.append('disk')
+        if node.cdrom              : node.boot.append('cdrom')
         if len(node.interfaces) > 0: node.boot.append('network')
 
     for existing_node in environment.nodes:
