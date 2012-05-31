@@ -9,9 +9,15 @@ from devops import scancodes
 from xmlbuilder import XMLBuilder
 import ipaddr
 
+def index(p, seq):
+    for i in xrange(len(seq)):
+        if p(seq[i]): return i
+    return -1
+
 def find(p, seq):
     for item in seq:
         if p(item): return item
+    return None
 
 class DeploymentSpec:
     def __repr__(self):
@@ -189,10 +195,24 @@ class Libvirt:
     def shutdown_node(self, node):
         self._virsh("stop '%s'", node.id)
 
-    def send_keys_to_node(self, keys):
+    def send_keys_to_node(self, node, keys):
         keys = scancodes.from_string(str(keys))
-        # TODO: split very long scancode sequences into multiple send-key commands
-        self._virsh("send-key '%s' %s", node.id, keys.join(' '))
+        while len(keys) > 0:
+            if isinstance(keys[0], str):
+                if keys[0] == 'wait':
+                    time.sleep(1)
+
+                keys = keys[1:]
+                continue
+
+            key_batch = keys[:10]
+            special_pos = index(lambda x: isinstance(x, str), key_batch)
+            if special_pos != -1:
+                key_batch = key_batch[:special_pos]
+
+            keys = keys[len(key_batch):]
+
+            self._virsh("send-key '%s' %s", node.id, ' '.join(map(lambda x: str(x), key_batch)))
 
     def create_disk(self, disk):
         f, disk.path = tempfile.mkstemp(prefix='disk-', suffix=(".%s" % disk.format))
@@ -241,6 +261,8 @@ class Libvirt:
     def _system(self, command):
         if not os.environ.has_key('VERBOSE') or os.environ['VERBOSE'] == '':
             command += " 1>/dev/null 2>&1"
+        else:
+            print("Executing '%s'" % command)
 
         return os.system(command)
 

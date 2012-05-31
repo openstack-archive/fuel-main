@@ -84,6 +84,9 @@ class Node(ManagedObject):
     def shutdown(self):
         self.driver.shutdown_node(self)
 
+    def send_keys(self, keys):
+        self.driver.send_keys_to_node(self, keys)
+
 class Cdrom(object):
     def __init__(self, isopath=None, bus='ide'):
         self.isopath = isopath
