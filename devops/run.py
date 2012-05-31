@@ -8,7 +8,7 @@ from devops.driver.libvirt import Libvirt
 
 from devops import yaml_config_loader
 
-INSTALLATION_ISO = "/vagrant/install.iso"
+INSTALLATION_ISO = os.path.abspath(os.path.join(os.path.dirname(__file__), '..', 'install.iso'))
 INSTALLATION_ISO_URL = "http://mc0n1-srt.srt.mirantis.net/nailgun-ubuntu-12.04-amd64.last.iso"
 
 if not os.path.exists(INSTALLATION_ISO):
