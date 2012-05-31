@@ -158,7 +158,9 @@ def from_string(s):
 
             codes = SCANCODES.get(key)
             
-        scancodes += iterable(codes)
+        codes = iterable(codes)
+        if len(codes) > 0:
+            scancodes.append(codes)
 
     return scancodes
 

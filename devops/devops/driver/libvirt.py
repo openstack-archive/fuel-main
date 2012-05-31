@@ -197,22 +197,14 @@ class Libvirt:
 
     def send_keys_to_node(self, node, keys):
         keys = scancodes.from_string(str(keys))
-        while len(keys) > 0:
-            if isinstance(keys[0], str):
-                if keys[0] == 'wait':
+        for key_codes in keys:
+            if isinstance(key_codes[0], str):
+                if key_codes[0] == 'wait':
                     time.sleep(1)
 
-                keys = keys[1:]
                 continue
 
-            key_batch = keys[:10]
-            special_pos = index(lambda x: isinstance(x, str), key_batch)
-            if special_pos != -1:
-                key_batch = key_batch[:special_pos]
-
-            keys = keys[len(key_batch):]
-
-            self._virsh("send-key '%s' %s", node.id, ' '.join(map(lambda x: str(x), key_batch)))
+            self._virsh("send-key '%s' %s", node.id, ' '.join(map(lambda x: str(x), key_codes)))
 
     def create_disk(self, disk):
         f, disk.path = tempfile.mkstemp(prefix='disk-', suffix=(".%s" % disk.format))
