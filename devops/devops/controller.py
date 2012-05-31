@@ -56,7 +56,7 @@ class Controller:
         for disk in node.disks:
             if disk.path is None:
                 fd, disk.path = tempfile.mkstemp(
-                    prefix=self.env_dir + '/',
+                    prefix=environment.work_dir + '/',
                     suffix='.' + disk.format
                 )
                 os.close(fd)
