@@ -90,7 +90,7 @@ def parse_node(environment, data):
 
         for disk_data in disks_data:
             if type(disk_data) == str:
-                size = parse_size(disk_data) / 1048576
+                size = parse_size(disk_data)
                 node.disks.append(Disk(size))
             else:
                 raise ConfigError, "Disk customization is unsupported"
