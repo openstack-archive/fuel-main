@@ -37,14 +37,9 @@ def parse_network(environment, data):
         raise ConfigError, "Unnamed network"
 
     network = Network(name)
-    network.kind = 'hostonly'
 
-    if data.has_key('type'):
-        kind = data['type']
-        if not kind in ['hostonly', 'bridged']:
-            raise ConfigError, "Unknown network type: %s" % t
-
-        network.kind = kind
+    if data.has_key('dhcp_server'):
+        network.dhcp_server = data['dhcp_server']
 
     for existing_network in environment.networks:
         if existing_network.name == network.name:

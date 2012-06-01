@@ -42,11 +42,11 @@ class Environment(ManagedObject):
         return name2network
 
 class Network(ManagedObject):
-    def __init__(self, name, kind='hostonly'):
+    def __init__(self, name, dhcp_server=False):
         super(Network, self).__init__()
 
         self.name = name
-        self.kind = kind
+        self.dhcp_server = dhcp_server
 
     def start(self):
         self.driver.start_network(self)

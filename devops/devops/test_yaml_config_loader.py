@@ -33,6 +33,19 @@ nodes:
         self.assertEqual("net1", env.networks[0].name)
         self.assertEqual("net2", env.networks[1].name)
 
+    def test_network_dhcp_server(self):
+        doc = """
+networks:
+  - name: managed
+    dhcp_server: True
+  - name: unmanaged
+nodes:
+  - name: foo
+        """
+        env = self.load(doc)
+        self.assertTrue(env.networks[0].dhcp_server)
+        self.assertFalse(env.networks[1].dhcp_server)
+
     def load(self, data):
         return yaml_config_loader.load(data)
 
