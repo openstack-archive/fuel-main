@@ -15,6 +15,7 @@
 # E.g.
 #   foo-0.1.1.tar.gz
 #
+
 define :cookbook_python_pip, :version => nil do
   package_file = params[:name]
   package_file += "-#{params[:version]}" if params[:version]
@@ -27,6 +28,21 @@ define :cookbook_python_pip, :version => nil do
 
   python_pip params[:name] do
     package_name "file:///tmp/#{package_file}"
+    version 'latest'
+  end
+end
+
+
+define :local_python_pip, :version => nil do
+  package_file = params[:name]
+  package_file += "-#{params[:version]}" if params[:version]
+  package_file += '.tar.gz'
+
+  fromdir = params[:fromdir]
+
+  python_pip params[:name] do
+    package_name "#{package_file}"
+    options "-f file://#{fromdir}"
     version 'latest'
   end
 end

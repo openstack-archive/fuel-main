@@ -1,5 +1,6 @@
-cookbook_python_pip 'django-piston' do
+local_python_pip 'django-piston' do
   version '0.2.3-20120528'
+  fromdir node[:nailgun][:eggsdir]
 end
 
 {
@@ -9,8 +10,9 @@ end
   'django-nose' => '1.0',
   'simplejson' => '2.5.2'
 }.each do |package, version|
-  python_pip package do
+  local_python_pip package do
     version version
+    fromdir node[:nailgun][:eggsdir]
   end
 end
 

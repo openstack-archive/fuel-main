@@ -8,7 +8,7 @@ recipe           "server", "Include Nailgun daemon install/configuration"
 
 supports "ubuntu" # It should work on debian too, but not tested yet
 
-%w{celery redis django python}.each do |cookbook|
+%w{celery redis2 django python}.each do |cookbook|
   depends cookbook
 end
 
