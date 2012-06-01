@@ -2,15 +2,14 @@ import os
 import sys
 import tempfile
 
-from model import Node, Network
+from devops.model import Node, Network
+from devops.network import IpNetworksPool
 
 class Controller:
     def __init__(self, driver):
         self.driver = driver
-        self.networks = []
-        self._init_environment()
+        self.networks_pool = IpNetworksPool()
 
-    def _init_environment(self):
         self.home_dir = os.environ.get('DEVOPS_HOME') or os.path.join(os.environ['HOME'], ".devops")
         try:
             os.makedirs(os.path.join(self.home_dir, 'environments'), 0755)
@@ -50,6 +49,8 @@ class Controller:
         del environment.driver
 
     def _build_network(self, environment, network):
+        network.ip_addresses = self.networks_pool.get()
+
         self.driver.create_network(network)
 
     def _build_node(self, environment, node):
