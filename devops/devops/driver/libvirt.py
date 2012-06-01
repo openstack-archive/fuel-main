@@ -152,6 +152,10 @@ class Libvirt:
     def stop_network(self, network):
         self._virsh("net-destroy '%s'", network.id)
 
+    def _get_node_xml(self, node):
+        with os.popen("virsh dumpxml '%s'" % node.id) as f:
+            return xml.parse_stream(f)
+
     def create_node(self, node):
         spec = find(lambda s: s.arch == node.arch, self.specs)
         if spec is None:
@@ -165,8 +169,7 @@ class Libvirt:
             xml_file.flush()
             self._virsh("define '%s'", xml_file.name)
 
-        with os.popen("virsh dumpxml '%s'" % node.id) as f:
-            domain = xml.parse_stream(f)
+        domain = self._get_node_xml(node)
 
         for interface_element in domain.find_all('devices/interface[@type="network"]'):
             network_id = interface_element.find('source/@network')
@@ -182,6 +185,12 @@ class Libvirt:
 
     def start_node(self, node):
         self._virsh("start '%s'", node.id)
+
+        if node.vnc:
+            domain = self._get_node_xml(node)
+
+            port_text = domain.find('devices/graphics[@type="vnc"]/@port')
+            if port_text: node.vnc_port = int(port_text)
 
     def stop_node(self, node):
         self._virsh("destroy '%s'", node.id)
