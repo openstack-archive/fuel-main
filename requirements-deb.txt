@@ -5,3 +5,7 @@ dnsmasq
 tftpd-hpa
 apt-utils
 rsync
+apache2
+python-django
+libapache2-svn
+python-ipaddr
