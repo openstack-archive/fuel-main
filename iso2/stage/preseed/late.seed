@@ -7,6 +7,10 @@ cp -r /cdrom/indices /target/var/lib/mirror/ubuntu && \
 mkdir -p /target/etc/apt/sources.list.d && \
 rm -f /target/etc/apt/sources.list && \
 echo "deb file:/var/lib/mirror/ubuntu precise main restricted universe multiverse" > /target/etc/apt/sources.list.d/local.list && \
+# bootstrap
+mkdir -p /target/var/lib/mirror/bootstrap && \
+cp /cdrom/bootstrap/linux /target/var/lib/mirror/bootstrap/linux && \
+cp /cdrom/bootstrap/initrd.gz /target/var/lib/mirror/bootstrap/initrd.gz && \
 # chef 
 cp -r /cdrom/inject/cookbooks /target/root && \
 mkdir -p /target/root/scripts && \

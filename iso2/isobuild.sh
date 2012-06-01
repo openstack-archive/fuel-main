@@ -46,6 +46,12 @@ ARCHITECTURES="i386 amd64"
 SECTIONS="main restricted universe multiverse"
 
 
+[ -z ${BOOTSTRAP_KERNEL_URL} ] && \
+    BOOTSTRAP_KERNEL_URL='http://mc0n1-srt.srt.mirantis.net/nailgun_bootstrap/linux'
+[ -z ${BOOTSTRAP_INITRD_URL} ] && \
+    BOOTSTRAP_INITRD_URL='http://mc0n1-srt.srt.mirantis.net/nailgun_bootstrap/initrd.gz'
+BOOTSTRAPDIR=${BASEDIR}/bootstrap
+
 ###########################
 # CLEANING
 ###########################
@@ -358,6 +364,14 @@ GNUPGHOME=${TMPGNUPG} gpg --yes --no-tty --default-key ${GPGKEYID} \
 
 
 ###########################
+# DOWNLOADING BOOTSTRAP
+###########################
+echo "Downloading bootstrap kernel and miniroot ..."
+wget -qO- ${BOOTSTRAP_KERNEL_URL} > ${BOOTSTRAPDIR}/linux
+wget -qO- ${BOOTSTRAP_INITRD_URL} > ${BOOTSTRAPDIR}/initrd.gz
+
+
+###########################
 # INJECT EXTRA FILES
 ###########################
 echo "Injecting some files into iso ..."
@@ -370,6 +384,10 @@ cp ${REPO}/scripts/solo.rb ${NEW}/inject/scripts
 cp ${REPO}/scripts/solo.cron ${NEW}/inject/scripts
 cp ${REPO}/scripts/solo.rc.local ${NEW}/inject/scripts
 cp -r ${REPO}/gnupg ${NEW}/inject/gnupg
+mkdir -p ${NEW}/bootstrap
+cp ${BOOTSTRAPDIR}/linux ${NEW}/bootstrap/linux
+cp ${BOOTSTRAPDIR}/initrd.gz ${NEW}/bootstrap/initrd.gz
+
 
 ###########################
 # MAKE NEW ISO
