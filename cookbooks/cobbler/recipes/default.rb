@@ -92,55 +92,25 @@ end
 
 file "/etc/dnsmasq.d/mirantis.net.conf" do
   action :create
-  content "server=/mirantis.net/172.18.16.4"
+  content "server=/mirantis.net/#{node["cobbler"]["updns"]}"
   mode 0644
   notifies :restart, "service[dnsmasq]", :immediately 
 end
 
 
-
-# Syncing bootstrap kernel
-
-remote_file "#{node["cobbler"]["bootstrap_ks_mirror_dir"]}/linux" do
-  source "#{node["cobbler"]["bootstrap_kernel_url"]}"
-  mode 0644
-  action :nothing
-end
- 
-http_request "HEAD #{node["cobbler"]["bootstrap_kernel_url"]}" do
-  message ""
-  url node["cobbler"]["bootstrap_kernel_url"]
-  action :head
-  if File.exists?("#{node["cobbler"]["bootstrap_ks_mirror_dir"]}/linux")
-    headers "If-Modified-Since" => File.mtime("#{node["cobbler"]["bootstrap_ks_mirror_dir"]}/linux").httpdate
-  end
-  notifies :create, "remote_file[#{node["cobbler"]["bootstrap_ks_mirror_dir"]}/linux]", :immediately
+link "#{node["cobbler"]["bootstrap_ks_mirror_dir"]}/linux" do
+  to node["cobbler"]["bootstrap_kernel"]
+  owner "root"
+  group "root"
 end
 
-
-# Syncing bootstrap initrd
-
-remote_file "#{node["cobbler"]["bootstrap_ks_mirror_dir"]}/initrd.gz" do
-  source "#{node["cobbler"]["bootstrap_initrd_url"]}"
-  mode 0644
-  action :nothing
+link "#{node["cobbler"]["bootstrap_ks_mirror_dir"]}/initrd.gz" do
+  to node["cobbler"]["bootstrap_initrd"]
+  owner "root"
+  group "root"
 end
- 
-http_request "HEAD #{node["cobbler"]["bootstrap_initrd_url"]}" do
-  message ""
-  url node["cobbler"]["bootstrap_initrd_url"]
-  action :head
-  if File.exists?("#{node["cobbler"]["bootstrap_ks_mirror_dir"]}/initrd.gz")
-    headers "If-Modified-Since" => File.mtime("#{node["cobbler"]["bootstrap_ks_mirror_dir"]}/initrd.gz").httpdate
-  end
-  notifies :create, "remote_file[#{node["cobbler"]["bootstrap_ks_mirror_dir"]}/initrd.gz]", :immediately
-end
-
-
-
 
 # FIXME 
- 
 
 execute "add_bootstrap_distro" do 
   command "cobbler distro add \
