@@ -4,11 +4,13 @@ import socket
 import paramiko
 
 
+logger = logging.getLogger(__name__)
+
+
 class SshConnect(object):
 
     def __init__(self, host, user, keyfile):
         try:
-            print "ya v ssh init"
             self.host = host
             self.t = paramiko.Transport((host, 22))
             self.t.connect(username=user,

@@ -1,25 +1,29 @@
 import os
+import logging
 
 import json
 import paramiko
 from django.conf import settings
 from celery.task import task
 from celery.task import subtask
+from celery.task import group
 
 from nailgun.models import Environment, Node, Role
 from nailgun.helpers import SshConnect
 
 
+logger = logging.getLogger(__name__)
+
+
 @task
 def deploy_env(environment_id):
-    print "i'm in deploy_enc"
-    create_chef_config.delay(environment_id, callback=subtask(run_chef_solo))
+    create_chef_config.delay(environment_id, callback=run_chef_solo)
+    # TODO(mihgen): return info about subtasks
     return True
 
 
 @task
 def create_chef_config(environment_id, callback=None):
-    print "i'm in chef_config"
     env_id = environment_id
     nodes = Node.objects.filter(environment__id=env_id)
     roles = Role.objects.all()
@@ -41,6 +45,7 @@ def create_chef_config(environment_id, callback=None):
                 ["role[" + x.name + "]" for x in n.roles.all()]
         solo_json['all_roles'] = nodes_per_role
 
+        # FIXME!! change name to MAC address!
         filepath = os.path.join(settings.CHEF_CONF_FOLDER,
                 n.name + '.json')
         f = open(filepath, 'w')
@@ -48,27 +53,26 @@ def create_chef_config(environment_id, callback=None):
         f.close()
 
     if callback:
-        # (mihgen): should I use celery groups here?
-        for n in nodes:
-            # (mihgen): how can we check result of subtask per ip?
-            # FIXME!! change name to IP address!
-            subtask(callback).delay(n.name)
+        # FIXME!! change name to IP address!
+        job = group(subtask(callback, args=(n.name, )) for n in nodes)
+        result = job.apply_async()
+        return True
     return True
 
 
 @task
-def run_chef_solo(ip):
+def run_chef_solo(host):
     try:
-        ssh = SshConnect(ip, 'root', 'keyfile')
+        ssh = SshConnect(host, 'root', settings.PATH_TO_SSH_KEY)
         # Returns True if succeeded
         ssh.run("id")
     except (paramiko.AuthenticationException,
             paramiko.PasswordRequiredException,
             paramiko.SSHException):
-        #logger.exception("Can't connect to host %s.", host, exc_info=True)
+        logger.exception("Can't connect to host %s.", host)
         return False   # TODO(mihgen): set status FAILURE ?
     except Exception:
-        #logger.exception("Error in deployment of %s.", host, exc_info=True)
+        logger.exception("Error in deployment of %s.", host)
         return False   # TODO(mihgen): set status FAILURE ?
     #finally:
         #ssh.close()

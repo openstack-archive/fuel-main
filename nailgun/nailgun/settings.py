@@ -169,5 +169,6 @@ CELERY_RESULT_BACKEND = "redis"
 CELERY_IMPORTS = ("nailgun.tasks",)
 
 CHEF_CONF_FOLDER = "."
+PATH_TO_SSH_KEY = "id_rsa"
 
 PISTON_IGNORE_DUPE_MODELS = True
