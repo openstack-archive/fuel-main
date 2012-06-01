@@ -8,9 +8,10 @@ end
   'redis' => '2.4.12',
   'jsonfield' => '0.9',
   'django-nose' => '1.0',
-  'simplejson' => '2.5.2'
-}.each do |package, version|
+  'simplejson' => '2.5.2',
+  'paramiko' => '1.7.7.2'
   python_pip package do
+}.each do |package, version|
     version version
   end
 end
