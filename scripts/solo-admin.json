@@ -1,4 +1,14 @@
 {
-    "recipes": [ "cobbler::default" ]
+    "cobbler":{
+	"updns":"172.18.16.4",
+	"next_server":"10.20.0.2",
+	"cobbler_server":"10.20.0.2",
+	"dhcp_range":"10.20.0.151,10.20.0.200",
+	"gateway":"10.20.0.2"
+    }
+    "recipes": [ 
+	"cobbler::default",
+	"nailgun::server"
+     ]
 }
 
