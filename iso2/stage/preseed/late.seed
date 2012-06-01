@@ -11,6 +11,8 @@ echo "deb file:/var/lib/mirror/ubuntu precise main restricted universe multivers
 mkdir -p /target/var/lib/mirror/bootstrap && \
 cp /cdrom/bootstrap/linux /target/var/lib/mirror/bootstrap/linux && \
 cp /cdrom/bootstrap/initrd.gz /target/var/lib/mirror/bootstrap/initrd.gz && \
+# eggs
+cp -r /cdrom/eggs /target/var/lib/mirror && \
 # chef 
 cp -r /cdrom/inject/cookbooks /target/root && \
 mkdir -p /target/root/scripts && \

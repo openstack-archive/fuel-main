@@ -52,6 +52,9 @@ SECTIONS="main restricted universe multiverse"
     BOOTSTRAP_INITRD_URL='http://mc0n1-srt.srt.mirantis.net/nailgun_bootstrap/initrd.gz'
 BOOTSTRAPDIR=${BASEDIR}/bootstrap
 
+EGGSDIR=${BASEDIR}/eggs
+
+
 ###########################
 # CLEANING
 ###########################
@@ -367,8 +370,20 @@ GNUPGHOME=${TMPGNUPG} gpg --yes --no-tty --default-key ${GPGKEYID} \
 # DOWNLOADING BOOTSTRAP
 ###########################
 echo "Downloading bootstrap kernel and miniroot ..."
+mkdir -p ${BOOTSTRAPDIR}
 wget -qO- ${BOOTSTRAP_KERNEL_URL} > ${BOOTSTRAPDIR}/linux
 wget -qO- ${BOOTSTRAP_INITRD_URL} > ${BOOTSTRAPDIR}/initrd.gz
+
+
+###########################
+# DOWNLOADING PYTHON EGGS
+###########################
+echo "Downloading python eggs ..."
+# FIXME:
+# It is very ugly to just copy directory with eggs into disk
+# It is nice to have beautiful way to download eggs with there dependencies
+mkdir -p ${EGGSDIR}
+cp /var/tmp/eggs/* ${EGGSDIR}
 
 
 ###########################
@@ -387,7 +402,8 @@ cp -r ${REPO}/gnupg ${NEW}/inject/gnupg
 mkdir -p ${NEW}/bootstrap
 cp ${BOOTSTRAPDIR}/linux ${NEW}/bootstrap/linux
 cp ${BOOTSTRAPDIR}/initrd.gz ${NEW}/bootstrap/initrd.gz
-
+mkdir -p ${NEW}/eggs
+cp ${EGGSDIR}/* ${NEW}/eggs
 
 ###########################
 # MAKE NEW ISO
