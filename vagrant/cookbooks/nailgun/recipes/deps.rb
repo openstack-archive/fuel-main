@@ -1,4 +1,3 @@
-p run_context.definitions
 cookbook_python_pip 'django-piston' do
   version '0.2.3-20120528'
 end
@@ -10,8 +9,8 @@ end
   'django-nose' => '1.0',
   'simplejson' => '2.5.2',
   'paramiko' => '1.7.7.2'
-  python_pip package do
 }.each do |package, version|
+  python_pip package do
     version version
   end
 end
