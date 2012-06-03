@@ -1,5 +1,10 @@
-from ipaddr import IPv4Network
+import ipaddr
 from itertools import chain
+
+IPv4Address = ipaddr.IPv4Address
+IPv4Network = ipaddr.IPv4Network
+
+class NetworkPoolException(Exception): pass
 
 class IpNetworksPool:
     def __init__(self, net_addresses=['192.168.0.0/16'], prefix=24):
@@ -22,7 +27,7 @@ class IpNetworksPool:
         "put(net_address) - return network address to pool"
         x = network
         if x not in self._allocated_networks:
-            raise ValueError, "Network address '%s' wasn't previously allocated" % str(net_address)
+            raise NetworkPoolException, "Network address '%s' wasn't previously allocated" % str(network)
 
         self._allocated_networks.remove(x)
         self._available_networks.add(x)

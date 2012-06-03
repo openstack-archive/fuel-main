@@ -3,7 +3,8 @@ import re
 from ipaddr import IPv4Network
 from devops import xml
 from devops.model import Network, Node, Disk, Cdrom
-from devops.driver.libvirt import Libvirt, LibvirtXMLBuilder, DeploymentSpec, NetworkAllocator
+from devops.network import IPv4Network
+from devops.driver.libvirt import Libvirt, LibvirtXMLBuilder, DeploymentSpec
 
 class TestLibvirtXMLBuilder(unittest.TestCase):
     node_spec = DeploymentSpec()
@@ -32,6 +33,7 @@ class TestLibvirtXMLBuilder(unittest.TestCase):
     def test_network_ip(self):
         network = Network('net1')
         network.id = 'net1'
+        network.ip_addresses = IPv4Network('10.0.0.0/24')
         doc_xml = self.builder.build_network_xml(network)
 
         doc = xml.parse_string(doc_xml)
@@ -46,6 +48,7 @@ class TestLibvirtXMLBuilder(unittest.TestCase):
     def test_network_dhcp(self):
         network = Network('net1')
         network.id = 'net1'
+        network.ip_addresses = IPv4Network('10.0.0.0/24')
         network.dhcp_server = True
 
         doc_xml = self.builder.build_network_xml(network)
@@ -105,18 +108,6 @@ class TestLibvirtXMLBuilder(unittest.TestCase):
 
     def assertValidIp(self, s):
         self.assertIsNotNone(self.IPV4_RE.match(s), "'%s' is not a valid IPv4 address" % s)
-
-class TestNetworkAllocator(unittest.TestCase):
-
-    def test_network_allocator(self):
-        n = NetworkAllocator(netprefix=28, nets=[ '172.18.0.0/24' ])
-
-        self.assertEqual(IPv4Network('172.18.0.0/28'),  n.allocate(5))
-        self.assertEqual(IPv4Network('172.18.0.16/28'), n.allocate(10))
-        self.assertEqual(IPv4Network('172.18.0.32/27'), n.allocate(20))
-        self.assertEqual(IPv4Network('172.18.0.64/26'), n.allocate(30))
-
-        self.assertEqual(IPv4Network('172.18.0.128/26'), n.allocate(10))
 
 if __name__ == '__main__':
     unittest.main()
