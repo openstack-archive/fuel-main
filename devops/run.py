@@ -57,8 +57,12 @@ def main():
     print("VNC is available on vnc://localhost:%d" % gateway.vnc_port)
 
     print("Waiting node to boot")
-    time.sleep(10)
+    time.sleep(15)
+
     print("Sending user input")
+
+    ip = external_network.ip_addresses
+
     gateway.send_keys("""<Esc><Enter>
 <Wait>
 /install/vmlinuz initrd=/install/initrd.gz
@@ -66,12 +70,12 @@ def main():
  locale=en_US
  file=/cdrom/preseed/manual.seed
  vga=788
- netcfg/get_ipaddress=10.12.0.2
- netcfg/get_netmask=255.255.255.0
- netcfg/get_gateway=10.12.0.1
- netcfg/get_nameservers=10.12.0.1
+ netcfg/get_ipaddress=%s
+ netcfg/get_netmask=%s
+ netcfg/get_gateway=%s
+ netcfg/get_nameservers=%s
  netcfg/confirm_static=true
- <Enter>""")
+ <Enter>""" % (ip[2], ip.netmask, ip[1], ip[1]))
     print("Finished sending user input")
 
 if __name__ == '__main__':
