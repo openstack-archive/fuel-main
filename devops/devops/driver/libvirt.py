@@ -201,8 +201,9 @@ class Libvirt:
             self._virsh("send-key '%s' %s", node.id, ' '.join(map(lambda x: str(x), key_codes)))
 
     def create_disk(self, disk):
-        f, disk.path = tempfile.mkstemp(prefix='disk-', suffix=(".%s" % disk.format))
-        os.close(f)
+        if not disk.path:
+            f, disk.path = tempfile.mkstemp(prefix='disk-', suffix=(".%s" % disk.format))
+            os.close(f)
 
         self._system("qemu-img create -f '%s' '%s' '%s' >/dev/null 2>&1" % (disk.format, disk.path, disk.size))
 

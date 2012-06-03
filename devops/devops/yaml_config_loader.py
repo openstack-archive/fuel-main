@@ -85,8 +85,12 @@ def parse_node(environment, data):
 
         for disk_data in disks_data:
             if type(disk_data) == str:
-                size = parse_size(disk_data)
-                node.disks.append(Disk(size))
+                try:
+                    size = parse_size(disk_data)
+                    node.disks.append(Disk(size=size))
+                except ValueError:
+                    path = disk_data
+                    node.disks.append(Disk(path=path))
             else:
                 raise ConfigError, "Disk customization is unsupported"
 

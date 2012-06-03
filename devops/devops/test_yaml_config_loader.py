@@ -46,6 +46,32 @@ nodes:
         self.assertTrue(env.networks[0].dhcp_server)
         self.assertFalse(env.networks[1].dhcp_server)
 
+    def test_disk_size(self):
+        doc = """
+nodes:
+  - name: foo
+    disk: 8Gb
+        """
+        env = self.load(doc)
+
+        self.assertEqual(1, len(env.nodes[0].disks))
+        disk = env.nodes[0].disks[0]
+        self.assertEqual(8*1024**3, disk.size)
+        self.assertIsNone(disk.path)
+
+    def test_disk_path(self):
+        doc = """
+nodes:
+  - name: foo
+    disk: /tmp/foo.qcow2
+        """
+        env = self.load(doc)
+
+        self.assertEqual(1, len(env.nodes[0].disks))
+        disk = env.nodes[0].disks[0]
+        self.assertEqual('/tmp/foo.qcow2', disk.path)
+        self.assertIsNone(disk.size)
+
     def load(self, data):
         return yaml_config_loader.load(data)
 

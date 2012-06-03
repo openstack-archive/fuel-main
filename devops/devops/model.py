@@ -93,11 +93,11 @@ class Cdrom(object):
         self.bus = bus
 
 class Disk(object):
-    def __init__(self, size, format='qcow2', bus='ide'):
+    def __init__(self, size=None, path=None, format='qcow2', bus='ide'):
         self.size = size
         self.format = format
         self.bus = bus
-        self.path = None
+        self.path = path
 
 class Interface(object):
     def __init__(self, network):

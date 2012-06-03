@@ -1,5 +1,6 @@
 import os
 import sys
+import stat
 import tempfile
 
 from devops.model import Node, Network
@@ -18,11 +19,7 @@ class Controller:
 
     def build_environment(self, environment):
         environment.work_dir = tempfile.mkdtemp(prefix=os.path.join(self.home_dir, 'environments', environment.name)+'-')
-
-        try:
-            os.makedirs(os.path.join(self.home_dir, 'environments'), 0755)
-        except OSError:
-            sys.exc_clear()
+        os.chmod(environment.work_dir, stat.S_IRWXU | stat.S_IRWXG | stat.S_IRWXO)
 
         environment.driver = self.driver
 
@@ -48,19 +45,21 @@ class Controller:
 
         del environment.driver
 
+        shutil.rmtree(environment.work_dir)
+
     def _build_network(self, environment, network):
         network.ip_addresses = self.networks_pool.get()
 
         self.driver.create_network(network)
 
     def _build_node(self, environment, node):
-        for disk in node.disks:
-            if disk.path is None:
-                fd, disk.path = tempfile.mkstemp(
-                    prefix=environment.work_dir + '/',
-                    suffix='.' + disk.format
-                )
-                os.close(fd)
+        for disk in filter(lambda d: d.path is None, node.disks):
+            fd, disk.path = tempfile.mkstemp(
+                prefix=environment.work_dir + '/disk',
+                suffix='.' + disk.format
+            )
+            os.close(fd)
             self.driver.create_disk(disk)
+
         self.driver.create_node(node)
 
