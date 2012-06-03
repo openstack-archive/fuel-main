@@ -1,0 +1,29 @@
+#!/usr/bin/env ruby
+
+# Copyright 2012, Mirantis
+
+require 'rubygems'
+require 'json'
+require 'httpclient'
+
+if ARGV[0].nil?
+  puts "Provide path to release file for uploading" 
+  exit 1
+end
+
+data = JSON.parse(File.read(File.expand_path(ARGV[0])))
+
+url = "http://127.0.0.1:8000/api/releases"
+
+headers = {"Content-Type" => "application/json"}
+
+cli = HTTPClient.new
+begin
+  res = cli.post(url, data.to_json, headers)
+  if res.status < 200 or res.status >= 300
+    puts "Error in creating release: #{res.inspect}"
+  end
+rescue Exception => e
+  puts "Unknown error: #{e.message}"
+end
+
