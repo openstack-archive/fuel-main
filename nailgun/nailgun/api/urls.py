@@ -16,7 +16,8 @@ class JsonResource(Resource):
 
 
 urlpatterns = patterns('',
-    url(r'^validators/node_role_available/(?P<node_id>[\dA-F]{12})/(?P<role_id>\d+)/?$',
+    url(r'^validators/node_role_available/\
+(?P<node_id>[\dA-F]{12})/(?P<role_id>\d+)/?$',
         JsonResource(NodeRoleAvailable),
         name='node_role_available'),
     url(r'^environments/?$',

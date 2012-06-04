@@ -274,6 +274,9 @@ class TestHandlers(TestCase):
         self.assertEquals(len(resp_json['task_id']), 36)
 
     def test_validate_node_role_available(self):
-        url = reverse('node_role_available', kwargs={'node_id': '080000000001', 'role_id': '1'})
+        url = reverse('node_role_available', kwargs={
+            'node_id': '080000000001',
+            'role_id': '1'
+        })
         resp = self.client.get(url)
         self.assertEquals(resp.status_code, 200)
