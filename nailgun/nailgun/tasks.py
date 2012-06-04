@@ -35,7 +35,7 @@ def create_chef_config(environment_id, callback=None):
     for r in roles:
         # Find nodes that have this role. Filter nodes by env_id
         nodes_per_role[r.name] = \
-                [x.name for x in r.nodes.filter(environment__id=env_id)]
+                [x.name for x in r.node_set.filter(environment__id=env_id)]
 
     solo_json = {}
     # Extend solo_json for each node by specifying role

@@ -15,8 +15,9 @@ class Cookbook(models.Model):
 
 class Role(models.Model):
     name = models.CharField(max_length=50)
-    cookbook = models.ForeignKey(Cookbook, related_name='roles',
-                                 on_delete=models.CASCADE)
+    # NOTE(mihgen): Usage of related_name may lead to following exception:
+    #   'RuntimeError: Circular reference detected while emitting response'
+    cookbook = models.ForeignKey(Cookbook)
 
 
 class Node(models.Model):
@@ -35,4 +36,4 @@ class Node(models.Model):
     mac = models.CharField(max_length=17)
     ip = models.CharField(max_length=15)
     fqdn = models.CharField(max_length=255)
-    roles = models.ManyToManyField(Role, related_name='nodes')
+    roles = models.ManyToManyField(Role)
