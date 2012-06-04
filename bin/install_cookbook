@@ -22,9 +22,15 @@ def create_cookbook(metafile)
 
   cook_name = md.name.empty? ? File.basename(src) : md.name
 
+  recipes_dir = File.join(File.dirname(metafile), "recipes")
+  Dir.chdir(recipes_dir)
+  recipes = Dir.glob("*.rb").map {|x| File.basename(x, '.rb') }
+
   cooks_url = "#{ADMIN_URL}/cookbooks"
 
-  cook_data = {'name' => cook_name, 'version' => md.version }
+  cook_data = {'name' => cook_name, 'version' => md.version,
+               'recipes' => recipes }
+
   headers = {"Content-Type" => "application/json"}
 
   cli = HTTPClient.new
@@ -58,7 +64,7 @@ ARGV.each do |src|
       src = File.expand_path(src)
       system "tar xzf \"#{src}\" -C \"#{tmpdir}\""
 
-      folder = File.basename(src).gsub(/(.*)\.tar\.gz$/, "\\1")
+      folder = File.basename(src, '.tar.gz')
       metafile = File.join(tmpdir, folder, "metadata.rb")
       if File.exists?(metafile)
         create_cookbook(metafile)
