@@ -28,7 +28,8 @@ class Controller:
         environment.driver = self.driver
 
         for network in environment.networks:
-            self._build_network(environment, network)
+            network.ip_addresses = self.networks_pool.get()
+            self.driver.create_network(network)
             network.driver = self.driver
             network.start()
 
@@ -46,6 +47,7 @@ class Controller:
             network.stop()
             self.driver.delete_network(network)
             del network.driver
+            self.networks_pool.put(network.ip_addresses)
 
         del environment.driver
 
