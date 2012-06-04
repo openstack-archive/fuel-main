@@ -1,82 +1,79 @@
-var Model = {}
-var Collection = {}
+define(function() {
+    var models = {};
+    var collections = {};
 
-Model.Environment = Backbone.RelationalModel.extend({
-    urlRoot: '/api/environments',
-    defaults: {
-        name: null,
-        active: false
-    },
-    relations: [{
-        type: Backbone.HasMany,
-        key: 'nodes',
-        relatedModel: 'Model.Node',
-        collectionType: 'Collection.Node',
-        reverseRelation: {
-            key: 'environment',
-            includeInJSON: false
+    models.Environment = Backbone.Model.extend({
+        urlRoot: '/api/environments',
+        defaults: {
+            name: null,
+            active: false
+        },
+        initialize: function(attrs) {
+            if (_.isObject(attrs) && _.isArray(attrs.nodes)) {
+                this.set('nodes', new models.Nodes(attrs.nodes));
+                this.get('nodes').each(function(node) {
+                    node.set('environment', this);
+                }, this);
+            }
         }
-    }]
-});
+    });
 
-Collection.Environment = Backbone.Collection.extend({
-    model: Model.Environment,
-    url: '/api/environments'
-});
+    models.Environments = Backbone.Collection.extend({
+        model: models.Environment,
+        url: '/api/environments'
+    });
 
-
-Model.Node = Backbone.RelationalModel.extend({
-    urlRoot: '/api/nodes',
-    defaults: {
-        name: null,
-        status: null,
-        metadata: null
-    },
-    relations: [{
-        type: Backbone.HasMany,
-        key: 'roles',
-        relatedModel: 'Model.Role',
-        collectionType: 'Collection.Role',
-        reverseRelation: {
-            key: 'node',
-            includeInJSON: false
+    models.Node = Backbone.Model.extend({
+        urlRoot: '/api/nodes',
+        defaults: {
+            name: null,
+            status: null,
+            metadata: null
+        },
+        initialize: function(attrs) {
+            if (_.isObject(attrs) && _.isArray(attrs.roles)) {
+                this.set('roles', new models.Roles(attrs.roles));
+                this.get('roles').each(function(role) {
+                    role.set('node', this);
+                }, this);
+            }
         }
-    }]
-});
+    });
 
-Collection.Node = Backbone.Collection.extend({
-    model: Model.Node
-});
+    models.Nodes = Backbone.Collection.extend({
+        model: models.Node
+    });
 
-Model.Cookbook = Backbone.RelationalModel.extend({
-    urlRoot: '/api/cookbooks',
-    defaults: {
-        name: null,
-        version: null
-    },
-    relations: [{
-        type: Backbone.HasMany,
-        key: 'roles',
-        relatedModel: 'Model.Role',
-        collectionType: 'Collection.Role',
-        reverseRelation: {
-            key: 'cookbook',
-            includeInJSON: false
+    models.Cookbook = Backbone.Model.extend({
+        urlRoot: '/api/cookbooks',
+        defaults: {
+            name: null,
+            version: null
+        },
+        initialize: function(attrs) {
+            if (_.isObject(attrs) && _.isArray(attrs.roles)) {
+                this.set('roles', new models.Roles(attrs.roles));
+                this.get('roles').each(function(role) {
+                    role.set('cookbook', this);
+                }, this);
+            }
         }
-    }]
-});
+    });
 
-Collection.Cookbook = Backbone.Collection.extend({
-    model: Model.Cookbook
-});
+    models.Cookbooks = Backbone.Collection.extend({
+        model: models.Cookbook
+    });
 
-Model.Role = Backbone.RelationalModel.extend({
-    urlRoot: '/api/roles',
-    defaults: {
-        name: null
-    }
-});
+    models.Role = Backbone.Model.extend({
+        urlRoot: '/api/roles',
+        defaults: {
+            name: null
+        }
+    });
 
-Collection.Role = Backbone.Collection.extend({
-    model: Model.Role
+    models.Roles = Backbone.Collection.extend({
+        model: models.Role
+    });
+
+    return models;
 });
