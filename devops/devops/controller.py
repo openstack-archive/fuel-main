@@ -2,6 +2,8 @@ import os
 import sys
 import stat
 import tempfile
+import shutil
+import ipaddr
 
 from devops.model import Node, Network
 from devops.network import IpNetworksPool
@@ -9,7 +11,9 @@ from devops.network import IpNetworksPool
 class Controller:
     def __init__(self, driver):
         self.driver = driver
+
         self.networks_pool = IpNetworksPool()
+        self._reserve_networks()
 
         self.home_dir = os.environ.get('DEVOPS_HOME') or os.path.join(os.environ['HOME'], ".devops")
         try:
@@ -46,6 +50,17 @@ class Controller:
         del environment.driver
 
         shutil.rmtree(environment.work_dir)
+
+    def _reserve_networks(self):
+        with os.popen("ip route") as f:
+            for line in f:
+                words = line.split()
+                if len(words) == 0:
+                    continue
+                if words[0] == 'default':
+                    continue
+                address = ipaddr.IPv4Network(words[0])
+                self.networks_pool.reserve(address)
 
     def _build_network(self, environment, network):
         network.ip_addresses = self.networks_pool.get()

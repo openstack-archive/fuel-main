@@ -7,7 +7,7 @@ IPv4Network = ipaddr.IPv4Network
 class NetworkPoolException(Exception): pass
 
 class IpNetworksPool:
-    def __init__(self, net_addresses=['192.168.0.0/16'], prefix=24):
+    def __init__(self, net_addresses=['10.0.0.0/8'], prefix=24):
         networks = []
         for address in net_addresses:
             if not isinstance(address, IPv4Network):
@@ -16,6 +16,9 @@ class IpNetworksPool:
 
         self._available_networks = set(chain(*[net_address.iter_subnets(new_prefix=prefix) for net_address in networks]))
         self._allocated_networks = set()
+
+    def reserve(self, network):
+        self._available_networks = filter(lambda n: not n.overlaps(network), self._available_networks)
 
     def get(self):
         "get() - allocates and returns network address"
