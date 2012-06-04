@@ -76,6 +76,7 @@ class Controller:
                 suffix='.' + disk.format
             )
             os.close(fd)
+            os.chmod(disk.path, stat.S_IRUSR | stat.S_IWUSR | stat.S_IRGRP | stat.S_IWGRP | stat.S_IROTH)
             self.driver.create_disk(disk)
 
         self.driver.create_node(node)
