@@ -18,7 +18,8 @@ class IpNetworksPool:
         self._allocated_networks = set()
 
     def reserve(self, network):
-        self._available_networks = filter(lambda n: not n.overlaps(network), self._available_networks)
+        for overlaping_network in filter(lambda n: n.overlaps(network), self._available_networks):
+            self._available_networks.remove(overlaping_network)
 
     def get(self):
         "get() - allocates and returns network address"
