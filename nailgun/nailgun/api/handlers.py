@@ -124,6 +124,16 @@ class NodeCollectionHandler(BaseHandler):
         node.save()
         return node
 
+class NodeRoleAvailable(BaseHandler):
+
+    allowed_methods = ('GET',)
+    model = Role
+
+    def read(self, request, node_id, role_id):
+        # TODO: it's a stub!
+        return {'available': True, 'error': None}
+
+
 
 class NodeHandler(BaseHandler):
 
