@@ -1,9 +1,15 @@
-define(function() {
+define(
+    [
+        'text!jst/env.html',
+        'text!jst/env_list.html',
+        'text!jst/node.html'
+    ],
+    function(envTemplate, envListTemplate, nodeTemplate) {
     var views = {}
 
     views.Environment = Backbone.View.extend({
         tagName: 'span',
-        template: _.template($('#tpl_env').html()),
+        template: _.template(envTemplate),
         initialize: function() {
             this.model.bind('change:active', function() {
                 this.render();
@@ -29,7 +35,7 @@ define(function() {
     });
 
     views.EnvironmentList = Backbone.View.extend({
-        template: _.template($('#tpl_env_list').html()),
+        template: _.template(envListTemplate),
         events: {
             'click #add': 'addEnvironment'
         },
@@ -56,7 +62,7 @@ define(function() {
     views.Node = Backbone.View.extend({
         tagName: 'li',
         className: 'node',
-        template: _.template($('#tpl_node').html()),
+        template: _.template(nodeTemplate),
         initialize: function() {
             this.model.bind('change', this.render, this);
         },
