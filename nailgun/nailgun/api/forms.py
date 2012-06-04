@@ -23,8 +23,9 @@ class EnvironmentForm(forms.Form):
 def validate_node_metadata(value):
     if value is not None:
         if isinstance(value, dict):
-            for field in ('block_device', 'interfaces', 'cpu', 'memory'):
-                if not field in value:
+            for field in ('block_device', 'interfaces', 'cpu', 'memory', \
+                    'fqdn', 'ip', 'mac'):
+                if not field in value or value[field] == "":
                     raise ValidationError("Node metadata '%s' \
                             field is required" % field)
         else:
@@ -44,6 +45,9 @@ class NodeUpdateForm(forms.Form):
     metadata = Field(required=False, validators=[validate_node_metadata])
     status = ChoiceField(required=False, choices=Node.NODE_STATUSES)
     name = CharField(max_length=100, required=False)
+    fqdn = CharField(max_length=255, required=False)
+    ip = CharField(max_length=15, required=False)
+    mac = CharField(max_length=17, required=False)
     roles = Field(required=False, validators=[validate_node_roles])
     environment_id = IntegerField(required=False)
 

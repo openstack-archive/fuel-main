@@ -11,6 +11,8 @@ module NodeAgent
     end
 
     data = { :fqdn => node["fqdn"],
+             :mac => node["macaddress"],
+             :ip  => node["ipaddress"],
              :block_device => node["block_device"].to_hash,
              :interfaces => interfaces,
              :cpu => node["cpu"].to_hash,

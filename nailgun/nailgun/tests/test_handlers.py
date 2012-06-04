@@ -14,7 +14,10 @@ class TestHandlers(TestCase):
         self.old_meta = {'block_device': 'value',
                          'interfaces': 'val2',
                          'cpu': 'asf',
-                         'memory': 'sd'
+                         'memory': 'sd',
+                         'ip': '192.168.124.185',
+                         'mac': '08:00:27:99:8F:33',
+                         'fqdn': 'test.server.com'
                         }
         self.another_environment = Environment(id=2,
                 name='Another environment')
@@ -51,7 +54,10 @@ class TestHandlers(TestCase):
         self.new_meta = {'block_device': 'new-val',
                          'interfaces': 'd',
                          'cpu': 'u',
-                         'memory': 'a'
+                         'memory': 'a',
+                         'ip': '10.1.1.1',
+                         'mac': '09:02:FB:AA:AB:AC',
+                         'fqdn': 'new.com'
                         }
         self.meta_json = json.dumps(self.new_meta)
 
@@ -153,6 +159,7 @@ class TestHandlers(TestCase):
         resp = self.client.put(self.node_url,
                                json.dumps({'metadata': self.new_meta}),
                                "application/json")
+        print resp.content
         self.assertEquals(resp.status_code, 200)
 
         nodes_from_db = Node.objects.filter(id=self.node.id)
@@ -205,6 +212,18 @@ class TestHandlers(TestCase):
     def test_put_returns_400_if_no_interfaces_attr(self):
         meta = self.new_meta.copy()
         del meta['interfaces']
+        resp = self.client.put(self.node_url,
+                               json.dumps({'metadata': meta}),
+                               "application/json")
+        self.assertEquals(resp.status_code, 400)
+
+        nodes_from_db = Node.objects.filter(id=self.node.id)
+        self.assertEquals(len(nodes_from_db), 1)
+        self.assertEquals(nodes_from_db[0].metadata, self.old_meta)
+
+    def test_put_returns_400_if_ipaddress_empty(self):
+        meta = self.new_meta.copy()
+        meta['ip'] = ""
         resp = self.client.put(self.node_url,
                                json.dumps({'metadata': meta}),
                                "application/json")

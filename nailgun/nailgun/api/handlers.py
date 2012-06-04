@@ -104,7 +104,7 @@ class NodeCollectionHandler(BaseHandler):
     allowed_methods = ('GET', 'POST')
     model = Node
     fields = ('id', 'name', 'environment_id', 'metadata',
-              'status', ('roles', ()))
+              'status', 'mac', 'fqdn', 'ip', ('roles', ()))
 
     def read(self, request):
         return Node.objects.all()
