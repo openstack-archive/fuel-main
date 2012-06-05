@@ -13,6 +13,25 @@ middleware here, or combine a Django application with an application of another
 framework.
 
 """
+
+
+import nailgun.venv
+import sys
+import site
+
+
+if VENV: 
+    prev_sys_path = list(sys.path)
+    site.addsitedir(VENV)
+
+    new_sys_path = [] 
+    for item in list(sys.path): 
+        if item not in prev_sys_path: 
+            new_sys_path.append(item) 
+            sys.path.remove(item) 
+    sys.path[:0] = new_sys_path 
+
+
 import os
 
 os.environ.setdefault("DJANGO_SETTINGS_MODULE", "nailgun.settings")
