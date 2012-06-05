@@ -13,6 +13,11 @@ cp /cdrom/bootstrap/linux /target/var/lib/mirror/bootstrap/linux && \
 cp /cdrom/bootstrap/initrd.gz /target/var/lib/mirror/bootstrap/initrd.gz && \
 # eggs
 cp -r /cdrom/eggs /target/var/lib/mirror && \
+# gems
+cp -r /cdrom/gems /target/var/lib/mirror && \
+# nailgun
+mkdir -p /target/opt && \
+cp -r /cdrom/inject/nailgun /target/opt && \
 # chef 
 cp -r /cdrom/inject/cookbooks /target/root && \
 mkdir -p /target/root/scripts && \

@@ -53,6 +53,7 @@ SECTIONS="main restricted universe multiverse"
 BOOTSTRAPDIR=${BASEDIR}/bootstrap
 
 EGGSDIR=${BASEDIR}/eggs
+GEMSDIR=${BASEDIR}/gems
 
 
 ###########################
@@ -76,8 +77,8 @@ rm -rf ${NEW}
 echo "Removing ${INDICES} ..."
 rm -rf ${INDICES}
 
-echo "Removing ${EXTRAS} ..."
-rm -rf ${EXTRAS}
+#echo "Removing ${EXTRAS} ..."
+#rm -rf ${EXTRAS}
 
 echo "Removing ${TMPGNUPG} ..."
 rm -rf ${TMPGNUPG}
@@ -370,6 +371,8 @@ GNUPGHOME=${TMPGNUPG} gpg --yes --no-tty --default-key ${GPGKEYID} \
 # DOWNLOADING BOOTSTRAP
 ###########################
 echo "Downloading bootstrap kernel and miniroot ..."
+echo "BOOTSTRAP_KERNEL_URL=${BOOTSTRAP_KERNEL_URL}"
+echo "BOOTSTRAP_INITRD_URL=${BOOTSTRAP_INITRD_URL}"
 mkdir -p ${BOOTSTRAPDIR}
 wget -qO- ${BOOTSTRAP_KERNEL_URL} > ${BOOTSTRAPDIR}/linux
 wget -qO- ${BOOTSTRAP_INITRD_URL} > ${BOOTSTRAPDIR}/initrd.gz
@@ -383,7 +386,18 @@ echo "Downloading python eggs ..."
 # It is very ugly to just copy directory with eggs into disk
 # It is nice to have beautiful way to download eggs with there dependencies
 mkdir -p ${EGGSDIR}
-cp /var/tmp/eggs/* ${EGGSDIR}
+rsync -av /var/tmp/eggs/ ${EGGSDIR}
+
+###########################
+# DOWNLOADING RUBY GEMS
+###########################
+echo "Downloading ruby gems ..."
+# FIXME:
+# It is very ugly to just copy directory with gems into disk
+# It is nice to have beautiful way to download gems with there dependencies
+mkdir -p ${GEMSDIR}
+rsync -av /var/tmp/gems/ ${GEMSDIR}
+
 
 
 ###########################
@@ -399,11 +413,15 @@ cp ${REPO}/scripts/solo.rb ${NEW}/inject/scripts
 cp ${REPO}/scripts/solo.cron ${NEW}/inject/scripts
 cp ${REPO}/scripts/solo.rc.local ${NEW}/inject/scripts
 cp -r ${REPO}/gnupg ${NEW}/inject/gnupg
+cp -r ${REPO}/nailgun ${NEW}/inject
 mkdir -p ${NEW}/bootstrap
 cp ${BOOTSTRAPDIR}/linux ${NEW}/bootstrap/linux
 cp ${BOOTSTRAPDIR}/initrd.gz ${NEW}/bootstrap/initrd.gz
 mkdir -p ${NEW}/eggs
-cp ${EGGSDIR}/* ${NEW}/eggs
+rsync -av ${EGGSDIR}/ ${NEW}/eggs
+mkdir -p ${NEW}/gems
+rsync -av ${GEMSDIR}/ ${NEW}/gems
+
 
 ###########################
 # MAKE NEW ISO
