@@ -2,6 +2,7 @@
 
 package "cobbler" do
   action :install
+  response_file "cobbler.seed"
 end
 
 package "cobbler-web" do
@@ -97,17 +98,12 @@ file "/etc/dnsmasq.d/mirantis.net.conf" do
   notifies :restart, "service[dnsmasq]", :immediately 
 end
 
-
 link "#{node["cobbler"]["bootstrap_ks_mirror_dir"]}/linux" do
-  to node["cobbler"]["bootstrap_kernel"]
-  owner "root"
-  group "root"
+  to "#{node["cobbler"]["bootstrap_kernel"]}"
 end
 
 link "#{node["cobbler"]["bootstrap_ks_mirror_dir"]}/initrd.gz" do
-  to node["cobbler"]["bootstrap_initrd"]
-  owner "root"
-  group "root"
+  to "#{node["cobbler"]["bootstrap_initrd"]}"
 end
 
 # FIXME 

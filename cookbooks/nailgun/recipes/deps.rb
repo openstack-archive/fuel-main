@@ -1,9 +1,9 @@
-local_python_pip 'django-piston' do
-  version '0.2.3-20120528'
-  fromdir node[:nailgun][:eggsdir]
+virtualenv "#{node[:nailgun][:venv]}" do
+  site_packages false
 end
 
 {
+  'django-piston' => '0.2.3-20120528',
   'django-celery' => '2.5.5',
   'redis' => '2.4.12',
   'jsonfield' => '0.9',
@@ -12,7 +12,13 @@ end
 }.each do |package, version|
   local_python_pip package do
     version version
-    fromdir node[:nailgun][:eggsdir]
+    virtualenv node.nailgun.venv
+  end
+end
+
+['python-paramiko'].each do |deb|
+  package deb do
+    action :install
   end
 end
 

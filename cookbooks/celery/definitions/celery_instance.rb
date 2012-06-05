@@ -1,9 +1,11 @@
-define :celery_instance do
+define :celery_instance, :virtualenv => false do
+  
+  node.set[:celery][:venv] = params[:virtualenv] if params[:virtualenv]
   include_recipe 'celery'
 
   name = params[:name]
 
-  params[:user] ||= 'vagrant'
+  params[:user] ||= node.celery.user
   # validate :cwd, :kind_of => String, :required => true
   # validate :log_file, :kind_of => String
   # validate :pid_file, :kind_of => String

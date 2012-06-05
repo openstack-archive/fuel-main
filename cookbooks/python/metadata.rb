@@ -1,17 +1,9 @@
-maintainer        "Opscode, Inc."
-maintainer_email  "cookbooks@opscode.com"
-license           "Apache 2.0"
-description       "Installs Python, pip and virtualenv. Includes LWRPs for managing Python packages with `pip` and `virtualenv` isolated Python environments."
-version           "1.0.6"
+maintainer       "Mirantis Inc."
+maintainer_email "product@mirantis.com"
+license          "Apache 2.0"
+description      "Installs python"
+long_description IO.read(File.join(File.dirname(__FILE__), 'README.rdoc'))
+version          "0.0.1"
+supports         "ubuntu", "= 12.04"
+recipe           "python", "Installs python itself"
 
-depends           "build-essential"
-
-recipe "python", "Installs python, pip, and virtualenv"
-recipe "python::package", "Installs python using packages."
-recipe "python::source", "Installs python from source."
-recipe "python::pip", "Installs pip from source."
-recipe "python::virtualenv", "Installs virtualenv using the python_pip resource."
-
-%w{ debian ubuntu centos redhat fedora freebsd }.each do |os|
-  supports os
-end
