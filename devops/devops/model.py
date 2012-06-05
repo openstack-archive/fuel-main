@@ -95,6 +95,13 @@ class Node(ManagedObject):
             addresses += interface.ip_addresses
         return addresses
 
+    @property
+    def ip_address(self):
+        x = self.ip_addresses
+        if len(x) == 0:
+            return None
+        return x[0]
+
     @ManagedObject.driver.setter
     def driver(self, driver):
         ManagedObject.driver.fset(self, driver)
