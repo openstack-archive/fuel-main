@@ -20,9 +20,9 @@ import sys
 import site
 
 
-if VENV: 
+if nailgun.venv.VENV: 
     prev_sys_path = list(sys.path)
-    site.addsitedir(VENV)
+    site.addsitedir(nailgun.venv.VENV)
 
     new_sys_path = [] 
     for item in list(sys.path): 
