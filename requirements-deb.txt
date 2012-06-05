@@ -6,6 +6,16 @@ tftpd-hpa
 apt-utils
 rsync
 apache2
+libapache2-mod-wsgi
+python-dev
 python-django
 libapache2-svn
 python-ipaddr
+debconf-utils
+libhttpclient-ruby
+libjson-ruby
+runit
+redis-server
+python-pip
+python-paramiko
+python-virtualenv
