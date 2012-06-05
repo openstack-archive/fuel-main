@@ -3,6 +3,8 @@ import sys
 import stat
 import tempfile
 import shutil
+import yaml
+import urllib
 import ipaddr
 
 from devops.model import Node, Network
@@ -26,6 +28,14 @@ class Controller:
         os.chmod(environment.work_dir, stat.S_IRWXU | stat.S_IRWXG | stat.S_IRWXO)
 
         environment.driver = self.driver
+
+        for node in environment.nodes:
+            if node.cdrom:
+                path = node.cdrom.isopath
+                if path.index('://') == -1 or path.startswith('file://'):
+                    continue
+
+                node.cdrom.isopath = self._cache_file(node.cdrom.isopath)
 
         for network in environment.networks:
             network.ip_addresses = self.networks_pool.get()
@@ -80,4 +90,31 @@ class Controller:
             self.driver.create_disk(disk)
 
         self.driver.create_node(node)
+
+    def _cache_file(self, url):
+        cache_dir = os.path.join(self.home_dir, 'cache')
+        if not os.path.exists(cache_dir):
+            os.makedirs(cache_dir, 0755)
+
+        cache_log_path = os.path.join(cache_dir, 'entries')
+        if os.path.exists(cache_log_path):
+            with file(cache_log_path) as f:
+                cache_entries = yaml.load(f.read())
+        else:
+            cache_entries = dict()
+
+        if cache_entries.has_key(url):
+            return cache_entries[url]
+
+        fd, cached_path = tempfile.mkstemp(prefix=cache_dir+'/')
+        os.close(fd)
+
+        urllib.urlretrieve(url, cached_path)
+
+        cache_entries[url] = cached_path
+
+        with file(cache_log_path, 'w') as f:
+            f.write(yaml.dump(cache_entries))
+
+        return cached_path
 

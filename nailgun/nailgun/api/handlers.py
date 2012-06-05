@@ -6,12 +6,12 @@ from piston.utils import rc
 from django.core.exceptions import ObjectDoesNotExist
 from django.conf import settings
 
-from nailgun.models import Environment, Node, Recipe, Role, Release
+from nailgun.models import Cluster, Node, Recipe, Role, Release
 from nailgun.api.validators import validate_json
-from nailgun.api.forms import EnvironmentForm, RecipeForm, RoleForm, \
+from nailgun.api.forms import ClusterForm, RecipeForm, RoleForm, \
         NodeCreationForm, NodeUpdateForm, ReleaseCreationForm
 #from nailgun.tasks import create_chef_config
-from nailgun.tasks import deploy_env
+from nailgun.tasks import deploy_cluster
 
 
 class TaskHandler(BaseHandler):
@@ -43,57 +43,57 @@ class ConfigHandler(BaseHandler):
 
     allowed_methods = ('POST',)
 
-    def create(self, request, environment_id):
-        #task = create_chef_config.delay(environment_id)
-        task = deploy_env.delay(environment_id)
+    def create(self, request, cluster_id):
+        #task = create_chef_config.delay(cluster_id)
+        task = deploy_cluster.delay(cluster_id)
 
         response = rc.ACCEPTED
         response.content = TaskHandler.render_task(task)
         return response
 
 
-class EnvironmentCollectionHandler(BaseHandler):
+class ClusterCollectionHandler(BaseHandler):
 
     allowed_methods = ('GET', 'POST')
-    model = Environment
+    model = Cluster
     fields = ('id', 'name', ('nodes', ()))
 
     def read(self, request):
-        return Environment.objects.all()
+        return Cluster.objects.all()
 
-    @validate_json(EnvironmentForm)
+    @validate_json(ClusterForm)
     def create(self, request):
-        environment = Environment()
+        cluster = Cluster()
         for key, value in request.form.cleaned_data.items():
             if key in request.form.data:
-                setattr(environment, key, value)
-        environment.save()
+                setattr(cluster, key, value)
+        cluster.save()
 
-        return environment
+        return cluster
 
 
-class EnvironmentHandler(BaseHandler):
+class ClusterHandler(BaseHandler):
 
     allowed_methods = ('GET', 'PUT')
-    model = Environment
-    fields = EnvironmentCollectionHandler.fields
+    model = Cluster
+    fields = ClusterCollectionHandler.fields
 
-    def read(self, request, environment_id):
+    def read(self, request, cluster_id):
         try:
-            return Environment.objects.get(id=environment_id)
+            return Cluster.objects.get(id=cluster_id)
         except ObjectDoesNotExist:
             return rc.NOT_FOUND
 
-    @validate_json(EnvironmentForm)
-    def update(self, request, environment_id):
+    @validate_json(ClusterForm)
+    def update(self, request, cluster_id):
         try:
-            environment = Environment.objects.get(id=environment_id)
+            cluster = Cluster.objects.get(id=cluster_id)
             for key, value in request.form.cleaned_data.items():
                 if key in request.form.data:
-                    setattr(environment, key, value)
+                    setattr(cluster, key, value)
 
-            environment.save()
-            return environment
+            cluster.save()
+            return cluster
         except ObjectDoesNotExist:
             return rc.NOT_FOUND
 
@@ -102,7 +102,7 @@ class NodeCollectionHandler(BaseHandler):
 
     allowed_methods = ('GET', 'POST')
     model = Node
-    fields = ('id', 'name', 'environment_id', 'metadata',
+    fields = ('id', 'name', 'cluster_id', 'metadata',
               'status', 'mac', 'fqdn', 'ip', ('roles', ()))
 
     def read(self, request):
@@ -151,11 +151,11 @@ class NodeHandler(BaseHandler):
         node, is_created = Node.objects.get_or_create(id=node_id)
         for key, value in request.form.cleaned_data.items():
             if key in request.form.data:
-                if key == 'environment_id' and value is not None and \
-                        node.environment_id is not None:
+                if key == 'cluster_id' and value is not None and \
+                        node.cluster_id is not None:
                     response = rc.BAD_REQUEST
                     response.content = \
-                            'Changing environment is not allowed'
+                            'Changing cluster is not allowed'
                     return response
                 elif key == 'roles':
                     new_roles = Role.objects.filter(id__in=value)

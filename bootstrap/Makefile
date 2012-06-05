@@ -6,7 +6,7 @@ DEBOOTSTRAP_MIRROR = http://us.archive.ubuntu.com/ubuntu/
 endif
 
 ifndef DEBOOTSTRAP_INCLUDE
-DEBOOTSTRAP_INCLUDE = less,vim,bash,net-tools,isc-dhcp-client,rsyslog,cron,iputils-ping,openssh-server,ruby-httpclient
+DEBOOTSTRAP_INCLUDE = less,vim,bash,net-tools,isc-dhcp-client,rsyslog,cron,iputils-ping,openssh-server,libhttpclient-ruby
 endif
 
 ifndef DEBOOTSTRAP_EXCLUDE
@@ -70,7 +70,7 @@ $(INITRD_MODULES): $(INITRD_CACHE)
 
 $(INITRD_CACHE):
 	@echo "Creating debootstrap cache arch=$(ARCH) suite=$(SUITE)"
-	debootstrap --download-only --variant=minbase \
+	debootstrap --download-only --components=main,restricted,universe,multiverse --variant=minbase \
 --include=linux-image-generic,linux-firmware$(if $(DEBOOTSTRAP_INCLUDE),$(,)$(DEBOOTSTRAP_INCLUDE)) \
 --arch=$(ARCH) $(SUITE) $(INITRD_CACHE) $(DEBOOTSTRAP_MIRROR)
 
@@ -88,7 +88,7 @@ $(INITRD): $(INITRD_CACHE) $(INITRD_MODULES)
 	@echo "Copying deb packages from cache to $(INITRD_LOOP) ..."
 	cp -r $(INITRD_CACHE)/var/cache/apt/archives/*.deb $(INITRD_LOOP)/var/cache/apt/archives
 	@echo "Debootstraping ..."
-	debootstrap --variant=minbase \
+	debootstrap --variant=minbase --components=main,restricted,universe,multiverse \
 $(if $(DEBOOTSTRAP_INCLUDE),--include=$(DEBOOTSTRAP_INCLUDE)) \
 $(if $(DEBOOTSTRAP_EXCLUDE),--exclude=$(DEBOOTSTRAP_EXCLUDE)) \
 --arch=$(ARCH) $(SUITE) $(INITRD_LOOP) $(DEBOOTSTRAP_MIRROR)

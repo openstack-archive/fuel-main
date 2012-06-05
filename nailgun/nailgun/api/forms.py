@@ -4,8 +4,8 @@ from django.core.exceptions import ValidationError
 from django import forms
 from django.forms.fields import Field, IntegerField, CharField, ChoiceField
 from django.core.validators import RegexValidator
-from nailgun.models import Environment, Node, Recipe, Role, Release
-from nailgun.api.fields import RecipeListFormField
+
+from nailgun.models import Cluster, Node, Recipe, Role, Release
 
 
 class RecipeForm(forms.ModelForm):
@@ -35,7 +35,7 @@ class RoleForm(forms.ModelForm):
         model = Role
 
 
-class EnvironmentForm(forms.Form):
+class ClusterForm(forms.Form):
     name = CharField(max_length=100, required=False)
 
 
@@ -85,7 +85,7 @@ class NodeUpdateForm(forms.Form):
     ip = CharField(max_length=15, required=False)
     mac = CharField(max_length=17, required=False)
     roles = Field(required=False, validators=[validate_node_roles])
-    environment_id = IntegerField(required=False)
+    cluster_id = IntegerField(required=False)
 
 
 class NodeCreationForm(NodeUpdateForm):

@@ -3,7 +3,7 @@ from django import http
 from django.test import TestCase
 from django.core.urlresolvers import reverse
 
-from nailgun.models import Environment, Node, Recipe, Role, Release
+from nailgun.models import Cluster, Node, Recipe, Role, Release
 from nailgun.tasks import create_chef_config
 
 
@@ -16,14 +16,14 @@ class TestHandlers(TestCase):
                          'cpu': 'asf',
                          'memory': 'sd'
                         }
-        self.another_environment = Environment(id=2,
-                name='Another environment')
-        self.another_environment.save()
+        self.another_cluster = Cluster(id=2,
+                name='Another cluster')
+        self.another_cluster.save()
 
         self.node_name = "test.server.com"
 
         self.node = Node(id="080000000001",
-                    environment_id=1,
+                    cluster_id=1,
                     name=self.node_name,
                     metadata=self.old_meta)
         self.node.save()
@@ -63,66 +63,66 @@ class TestHandlers(TestCase):
         self.meta_json = json.dumps(self.new_meta)
 
     def tearDown(self):
-        self.another_environment.delete()
+        self.another_cluster.delete()
         self.node.delete()
         self.role.delete()
         self.another_role.delete()
         self.recipe.delete()
 
-    def test_environment_creation(self):
-        yet_another_environment_name = 'Yet another environment'
+    def test_cluster_creation(self):
+        yet_another_cluster_name = 'Yet another cluster'
         resp = self.client.post(
-            reverse('environment_collection_handler'),
-            json.dumps({'name': yet_another_environment_name}),
+            reverse('cluster_collection_handler'),
+            json.dumps({'name': yet_another_cluster_name}),
             "application/json"
         )
         self.assertEquals(resp.status_code, 200)
 
-        environments_from_db = Environment.objects.filter(
-            name=yet_another_environment_name
+        clusters_from_db = Cluster.objects.filter(
+            name=yet_another_cluster_name
         )
-        self.assertEquals(len(environments_from_db), 1)
+        self.assertEquals(len(clusters_from_db), 1)
 
-    def test_environment_update(self):
-        updated_name = 'Updated environment'
-        environments_before = len(Environment.objects.all())
+    def test_cluster_update(self):
+        updated_name = 'Updated cluster'
+        clusters_before = len(Cluster.objects.all())
 
         resp = self.client.put(
-            reverse('environment_handler',
-                    kwargs={'environment_id': self.another_environment.id}),
+            reverse('cluster_handler',
+                    kwargs={'cluster_id': self.another_cluster.id}),
             json.dumps({'name': updated_name}),
             "application/json"
         )
         self.assertEquals(resp.status_code, 200)
 
-        environments_from_db = Environment.objects.filter(name=updated_name)
-        self.assertEquals(len(environments_from_db), 1)
-        self.assertEquals(environments_from_db[0].name, updated_name)
+        clusters_from_db = Cluster.objects.filter(name=updated_name)
+        self.assertEquals(len(clusters_from_db), 1)
+        self.assertEquals(clusters_from_db[0].name, updated_name)
 
-        environments_after = len(Environment.objects.all())
-        self.assertEquals(environments_before, environments_after)
+        clusters_after = len(Cluster.objects.all())
+        self.assertEquals(clusters_before, clusters_after)
 
     def test_node_creation(self):
-        node_with_env_id = '080000000002'
-        node_without_env_id = '080000000003'
+        node_with_cluster_id = '080000000002'
+        node_without_cluster_id = '080000000003'
 
         resp = self.client.post(
             reverse('node_collection_handler'),
             json.dumps({
-                'id': node_with_env_id,
-                'environment_id': 1,
+                'id': node_with_cluster_id,
+                'cluster_id': 1,
             }),
             "application/json")
         self.assertEquals(resp.status_code, 200)
 
         resp = self.client.post(
             reverse('node_collection_handler'),
-            json.dumps({'id': node_without_env_id}),
+            json.dumps({'id': node_without_cluster_id}),
             "application/json")
         self.assertEquals(resp.status_code, 200)
 
-        nodes_from_db = Node.objects.filter(id__in=[node_with_env_id,
-                                                      node_without_env_id])
+        nodes_from_db = Node.objects.filter(id__in=[node_with_cluster_id,
+                                                      node_without_cluster_id])
         self.assertEquals(len(nodes_from_db), 2)
 
     def test_node_creation_using_put(self):
@@ -137,22 +137,22 @@ class TestHandlers(TestCase):
         nodes_from_db = Node.objects.filter(id=node_id)
         self.assertEquals(len(nodes_from_db), 1)
 
-    def test_node_environment_update(self):
+    def test_node_cluster_update(self):
         resp = self.client.put(
             reverse('node_handler', kwargs={'node_id': self.node.id}),
-            json.dumps({'environment_id': 2}),
+            json.dumps({'cluster_id': 2}),
             "application/json")
         self.assertEquals(resp.status_code, 400)
 
         resp = self.client.put(
             reverse('node_handler', kwargs={'node_id': self.node.id}),
-            json.dumps({'environment_id': None}),
+            json.dumps({'cluster_id': None}),
             "application/json")
         self.assertEquals(resp.status_code, 200)
 
         resp = self.client.put(
             reverse('node_handler', kwargs={'node_id': self.node.id}),
-            json.dumps({'environment_id': 1}),
+            json.dumps({'cluster_id': 1}),
             "application/json")
         self.assertEquals(resp.status_code, 200)
 
@@ -294,7 +294,7 @@ class TestHandlers(TestCase):
         self.assertEquals(set(role_recipes), set(recipes))
 
     def test_jsons_created_for_chef_solo(self):
-        url = reverse('config_handler', kwargs={'environment_id': 1})
+        url = reverse('config_handler', kwargs={'cluster_id': 1})
         resp = self.client.post(url)
         self.assertEquals(resp.status_code, 202)
         resp_json = json.loads(resp.content)

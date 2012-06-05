@@ -2,8 +2,8 @@ define(function() {
     var models = {};
     var collections = {};
 
-    models.Environment = Backbone.Model.extend({
-        urlRoot: '/api/environments',
+    models.Cluster = Backbone.Model.extend({
+        urlRoot: '/api/clusters',
         defaults: {
             name: null,
             active: false
@@ -12,15 +12,15 @@ define(function() {
             if (_.isObject(attrs) && _.isArray(attrs.nodes)) {
                 this.set('nodes', new models.Nodes(attrs.nodes));
                 this.get('nodes').each(function(node) {
-                    node.set('environment', this);
+                    node.set('cluster', this);
                 }, this);
             }
         }
     });
 
-    models.Environments = Backbone.Collection.extend({
-        model: models.Environment,
-        url: '/api/environments'
+    models.Clusters = Backbone.Collection.extend({
+        model: models.Cluster,
+        url: '/api/clusters'
     });
 
     models.Node = Backbone.Model.extend({

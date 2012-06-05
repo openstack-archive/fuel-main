@@ -212,6 +212,11 @@ class Libvirt:
         
         os.unlink(disk.path)
 
+    def get_interface_addresses(self, interface):
+        command = "arp -an | awk '$4 == \"%(mac)s\" && $7 == \"%(interface)s\" {print substr($2, 2, length($2)-2)}'" % { 'mac': interface.mac_address, 'interface': interface.network.bridge_name}
+        with os.popen(command) as f:
+            return [ipaddr.IPv4Address(s) for s in f.read().split()]
+
     def _virsh(self, format, *args):
         command = ("virsh " + format) % args
         return self._system(command)

@@ -2,32 +2,32 @@ define(['models', 'views'], function(models, views) {
     var AppRouter = Backbone.Router.extend({
         routes: {
             ':hash': 'unknown',
-            '': 'environment',
-            'env/:id': 'environment'
+            '': 'cluster',
+            'cluster/:id': 'cluster'
         },
-        environment: function(id) {
-            if (this.environments) {
-                var activeEnvironment = this.environments.where({active: true})[0]
-                if (activeEnvironment) {
-                    activeEnvironment.set('active', false);
+        cluster: function(id) {
+            if (this.clusters) {
+                var activeCluster = this.clusters.where({active: true})[0]
+                if (activeCluster) {
+                    activeCluster.set('active', false);
                 }
-                if (id && this.environments.get(id)) {
-                    this.environments.get(id).set('active', true);
+                if (id && this.clusters.get(id)) {
+                    this.clusters.get(id).set('active', true);
                 } else {
-                    this.environments.at(0).set('active', true)
+                    this.clusters.at(0).set('active', true)
                 }
             } else {
-                this.environments = new models.Environments;
-                this.environmentListView = new views.EnvironmentList({
-                    model: this.environments,
+                this.clusters = new models.Clusters;
+                this.clusterListView = new views.ClusterList({
+                    model: this.clusters,
                     el: $('#content')
                 });
-                this.environments.fetch({
+                this.clusters.fetch({
                     success: _.bind(function() {
-                        this.environment(id);
+                        this.cluster(id);
                     }, this),
                     error: function() {
-                        $('#content').html("Error loading environments");
+                        $('#content').html("Error loading clusters");
                     }
                 });
             }
