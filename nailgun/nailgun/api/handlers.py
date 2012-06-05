@@ -1,16 +1,15 @@
 import os
 
 import celery
-import simplejson as json
 from piston.handler import BaseHandler
 from piston.utils import rc
 from django.core.exceptions import ObjectDoesNotExist
 from django.conf import settings
 
-from nailgun.models import Environment, Node, Cookbook, Role
+from nailgun.models import Environment, Node, Cookbook, Role, Release
 from nailgun.api.validators import validate_json
 from nailgun.api.forms import EnvironmentForm, CookbookForm, RoleForm, \
-        NodeCreationForm, NodeUpdateForm
+        NodeCreationForm, NodeUpdateForm, ReleaseCreationForm
 #from nailgun.tasks import create_chef_config
 from nailgun.tasks import deploy_env
 
@@ -104,7 +103,7 @@ class NodeCollectionHandler(BaseHandler):
     allowed_methods = ('GET', 'POST')
     model = Node
     fields = ('id', 'name', 'environment_id', 'metadata',
-              'status', ('roles', ()))
+              'status', 'mac', 'fqdn', 'ip', ('roles', ()))
 
     def read(self, request):
         return Node.objects.all()
@@ -123,6 +122,16 @@ class NodeCollectionHandler(BaseHandler):
 
         node.save()
         return node
+
+
+class NodeRoleAvailable(BaseHandler):
+
+    allowed_methods = ('GET',)
+    model = Role
+
+    def read(self, request, node_id, role_id):
+        # TODO: it's a stub!
+        return {'available': True, 'error': None}
 
 
 class NodeHandler(BaseHandler):
@@ -221,5 +230,40 @@ class RoleHandler(BaseHandler):
     def read(self, request, role_id):
         try:
             return Role.objects.get(id=role_id)
+        except ObjectDoesNotExist:
+            return rc.NOT_FOUND
+
+
+class ReleaseCollectionHandler(BaseHandler):
+
+    allowed_methods = ('GET', 'POST')
+    model = Release
+
+    def read(self, request, release_id):
+        return Release.objects.all()
+
+    @validate_json(ReleaseCreationForm)
+    def create(self, request):
+        data = request.form.cleaned_data
+        release = Release(
+            name=data["name"],
+            version=data["version"],
+            description=data["description"]
+        )
+        release.save()
+        role_names = [role["name"] for role in data["roles"]]
+        map(release.roles.add, Role.objects.filter(name__in=role_names))
+        release.save()
+        return release
+
+
+class ReleaseHandler(BaseHandler):
+
+    allowed_methods = ('GET',)
+    model = Release
+
+    def read(self, request, release_id):
+        try:
+            return Release.objects.get(id=release_id)
         except ObjectDoesNotExist:
             return rc.NOT_FOUND

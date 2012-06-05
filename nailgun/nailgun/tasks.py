@@ -35,7 +35,7 @@ def create_chef_config(environment_id, callback=None):
     for r in roles:
         # Find nodes that have this role. Filter nodes by env_id
         nodes_per_role[r.name] = \
-                [x.name for x in r.nodes.filter(environment__id=env_id)]
+                [x.name for x in r.node_set.filter(environment__id=env_id)]
 
     solo_json = {}
     # Extend solo_json for each node by specifying role
@@ -45,16 +45,14 @@ def create_chef_config(environment_id, callback=None):
                 ["role[" + x.name + "]" for x in n.roles.all()]
         solo_json['all_roles'] = nodes_per_role
 
-        # FIXME!! change name to MAC address!
         filepath = os.path.join(settings.CHEF_CONF_FOLDER,
-                n.name + '.json')
+                n.id + '.json')
         f = open(filepath, 'w')
         f.write(json.dumps(solo_json))
         f.close()
 
     if callback:
-        # FIXME!! change name to IP address!
-        job = group(subtask(callback, args=(n.name, )) for n in nodes)
+        job = group(subtask(callback, args=(n.ip, )) for n in nodes)
         result = job.apply_async()
         return True
     return True

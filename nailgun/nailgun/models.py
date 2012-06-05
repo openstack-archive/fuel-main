@@ -11,12 +11,14 @@ class Environment(models.Model):
 class Cookbook(models.Model):
     name = models.CharField(max_length=50)
     version = models.CharField(max_length=30)
+    recipes = JSONField(null=True, blank=True)
 
 
 class Role(models.Model):
     name = models.CharField(max_length=50)
-    cookbook = models.ForeignKey(Cookbook, related_name='roles',
-                                 on_delete=models.CASCADE)
+    # NOTE(mihgen): Usage of related_name may lead to following exception:
+    #   'RuntimeError: Circular reference detected while emitting response'
+    cookbook = models.ForeignKey(Cookbook)
 
 
 class Node(models.Model):
@@ -32,4 +34,17 @@ class Node(models.Model):
     status = models.CharField(max_length=30, choices=NODE_STATUSES,
             default='online')
     metadata = JSONField()
-    roles = models.ManyToManyField(Role, related_name='nodes')
+    mac = models.CharField(max_length=17)
+    ip = models.CharField(max_length=15)
+    fqdn = models.CharField(max_length=255)
+    roles = models.ManyToManyField(Role)
+
+
+class Release(models.Model):
+    name = models.CharField(max_length=100)
+    version = models.CharField(max_length=30)
+    description = models.TextField()
+    roles = models.ManyToManyField(Role, related_name='releases')
+
+    class Meta:
+        unique_together = ("name", "version")

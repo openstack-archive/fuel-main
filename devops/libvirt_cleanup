@@ -1,8 +1,11 @@
-#!/bin/sh
+#!/bin/bash
 
-virsh list --all | tail -n +3 | awk '$3=="running" {print $2}' | xargs -n 1 virsh destroy
-virsh list --all | tail -n +3 | awk '{print $2}' | xargs -n 1 virsh undefine
+function virsh { command virsh "$@" | tail -n +3; }
+function foreach { xargs --no-run-if-empty -n 1 "$@"; }
 
-virsh net-list --all | tail -n +3 | awk '$2=="active" {print $1}' | grep -v default | xargs -n 1 virsh net-destroy
-virsh net-list --all | tail -n +3 | awk '{print $1}' | grep -v default | xargs -n 1 virsh net-undefine
+virsh list --all | awk '{print $2}' | foreach virsh destroy
+virsh list --all | awk '{print $2}' | foreach virsh undefine
+
+virsh net-list --all | awk '{print $1}' | foreach virsh net-destroy
+virsh net-list --all | awk '{print $1}' | foreach virsh net-undefine
 

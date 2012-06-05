@@ -3,9 +3,10 @@ from piston.resource import Resource
 
 from nailgun.api.handlers import EnvironmentCollectionHandler, \
                      EnvironmentHandler, \
-                     NodeCollectionHandler, NodeHandler, \
+                     NodeCollectionHandler, NodeHandler, NodeRoleAvailable, \
                      CookbookCollectionHandler, CookbookHandler, \
                      RoleCollectionHandler, RoleHandler, \
+                     ReleaseCollectionHandler, ReleaseHandler, \
                      ConfigHandler, \
                      TaskHandler
 
@@ -16,6 +17,10 @@ class JsonResource(Resource):
 
 
 urlpatterns = patterns('',
+    url(r'^validators/node_role_available/\
+(?P<node_id>[\dA-F]{12})/(?P<role_id>\d+)/?$',
+        JsonResource(NodeRoleAvailable),
+        name='node_role_available'),
     url(r'^environments/?$',
         JsonResource(EnvironmentCollectionHandler),
         name='environment_collection_handler'),
@@ -46,4 +51,10 @@ urlpatterns = patterns('',
     url(r'^roles/(?P<role_id>\d+)/?$',
         JsonResource(RoleHandler),
         name='role_handler'),
+    url(r'^releases/?$',
+        JsonResource(ReleaseCollectionHandler),
+        name='release_collection_handler'),
+    url(r'^releases/(?P<release_id>\d+)/?$',
+        JsonResource(ReleaseHandler),
+        name='release_handler'),
 )

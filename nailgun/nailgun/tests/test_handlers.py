@@ -3,7 +3,7 @@ from django import http
 from django.test import TestCase
 from django.core.urlresolvers import reverse
 
-from nailgun.models import Environment, Node, Cookbook, Role
+from nailgun.models import Environment, Node, Cookbook, Role, Release
 from nailgun.tasks import create_chef_config
 
 
@@ -153,6 +153,7 @@ class TestHandlers(TestCase):
         resp = self.client.put(self.node_url,
                                json.dumps({'metadata': self.new_meta}),
                                "application/json")
+        print resp.content
         self.assertEquals(resp.status_code, 200)
 
         nodes_from_db = Node.objects.filter(id=self.node.id)
@@ -214,6 +215,18 @@ class TestHandlers(TestCase):
         self.assertEquals(len(nodes_from_db), 1)
         self.assertEquals(nodes_from_db[0].metadata, self.old_meta)
 
+    def test_put_returns_400_if_interfaces_empty(self):
+        meta = self.new_meta.copy()
+        meta['interfaces'] = ""
+        resp = self.client.put(self.node_url,
+                               json.dumps({'metadata': meta}),
+                               "application/json")
+        self.assertEquals(resp.status_code, 400)
+
+        nodes_from_db = Node.objects.filter(id=self.node.id)
+        self.assertEquals(len(nodes_from_db), 1)
+        self.assertEquals(nodes_from_db[0].metadata, self.old_meta)
+
     def test_put_returns_400_if_no_cpu_attr(self):
         meta = self.new_meta.copy()
         del meta['cpu']
@@ -241,9 +254,14 @@ class TestHandlers(TestCase):
     def test_cookbook_create(self):
         cook_name = 'new cookbook'
         cook_ver = '0.1.0'
+        cook_recipes = ['compute']
         resp = self.client.post(
             reverse('cookbook_collection_handler'),
-            json.dumps({'name': cook_name, 'version': cook_ver}),
+            json.dumps({
+                'name': cook_name,
+                'version': cook_ver,
+                'recipes': json.dumps(cook_recipes)
+            }),
             "application/json"
         )
         self.assertEquals(resp.status_code, 200)
@@ -272,3 +290,74 @@ class TestHandlers(TestCase):
         self.assertEquals(resp.status_code, 202)
         resp_json = json.loads(resp.content)
         self.assertEquals(len(resp_json['task_id']), 36)
+
+    def test_validate_node_role_available(self):
+        url = reverse('node_role_available', kwargs={
+            'node_id': '080000000001',
+            'role_id': '1'
+        })
+        resp = self.client.get(url)
+        self.assertEquals(resp.status_code, 200)
+
+    def test_release_create(self):
+        cook_name = 'nova'
+        cook_ver = '0.1.1'
+        cook_recipes = ['compute', 'monitor']
+        resp = self.client.post(
+            reverse('cookbook_collection_handler'),
+            json.dumps({
+                'name': cook_name,
+                'version': cook_ver,
+                'recipes': json.dumps(cook_recipes)
+            }),
+            "application/json"
+        )
+        self.assertEquals(resp.status_code, 200)
+
+        cook_name = 'other_cookbook'
+        cook_ver = '2.4.2'
+        cook_recipes = ['api']
+        resp = self.client.post(
+            reverse('cookbook_collection_handler'),
+            json.dumps({
+                'name': cook_name,
+                'version': cook_ver,
+                'recipes': json.dumps(cook_recipes)
+            }),
+            "application/json"
+        )
+        self.assertEquals(resp.status_code, 200)
+
+        release_name = "OpenStack"
+        release_version = "1.0.0"
+        release_description = "This is test release"
+        release_roles = [{
+            "name": "compute",
+            "recipes": [
+                "nova@0.1.1::compute",
+                "nova@0.1.1::monitor"
+            ]
+          }, {
+            "name": "controller",
+            "recipes": [
+                "other_cookbook@2.4.2::api"
+            ]
+          }
+        ]
+        resp = self.client.post(
+            reverse('release_collection_handler'),
+            json.dumps({
+                'name': release_name,
+                'version': release_version,
+                'description': release_description,
+                'roles': release_roles
+            }),
+            "application/json"
+        )
+        self.assertEquals(resp.status_code, 200)
+        release_from_db = Release.objects.filter(
+            name=release_name,
+            version=release_version,
+            description=release_description
+        )
+        self.assertEquals(len(release_from_db), 1)

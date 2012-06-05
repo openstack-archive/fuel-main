@@ -1,10 +1,14 @@
 from django.conf.urls import patterns, include, url
-from nailgun.webui.views import index
+from django.conf import settings
 
 # Uncomment the next two lines to enable the admin:
 # from django.contrib import admin
 # admin.autodiscover()
 
 urlpatterns = patterns('',
-    url(r'^$', index, name='index'),
+    url(r'^$', 'django.views.static.serve',
+        {
+            'document_root': settings.STATIC_DOC_ROOT,
+            'path': 'index.html'
+        }, name='index'),
 )

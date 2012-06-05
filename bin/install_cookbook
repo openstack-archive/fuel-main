@@ -4,41 +4,85 @@
 
 require 'rubygems'
 require 'tmpdir'
+require 'fileutils'
 require 'json'
 require 'httpclient'
 require 'chef'
 
+HTTP_DIR = "/var/www"
+ADMIN_URL = "http://127.0.0.1:8000/api"
+
 puts "Provide path to cookbook for uploading" if ARGV.length == 0
+
+def create_cookbook(metafile)
+  puts "Processing '#{metafile}' metadata file..."
+  metafile = File.expand_path(metafile)
+  md = Chef::Cookbook::Metadata.new
+  md.from_file(metafile)
+
+  cook_name = md.name.empty? ? File.basename(src) : md.name
+
+  recipes_dir = File.join(File.dirname(metafile), "recipes")
+  Dir.chdir(recipes_dir)
+  recipes = Dir.glob("*.rb").map {|x| File.basename(x, '.rb') }
+
+  cooks_url = "#{ADMIN_URL}/cookbooks"
+
+  cook_data = {'name' => cook_name, 'version' => md.version,
+               'recipes' => recipes }
+
+  headers = {"Content-Type" => "application/json"}
+
+  cli = HTTPClient.new
+  begin
+    res = cli.post(cooks_url, cook_data.to_json, headers)
+    if res.status < 200 or res.status >= 300
+      puts "Error uploading cookbook metadata: #{res.inspect}"
+    else
+      puts "Cookbook '#{cook_name}' uploaded."
+    end
+  rescue Exception => e
+    puts "Unknown error: #{e.message}"
+    return false
+  end
+
+  Dir.mktmpdir do |dir|
+    cook_dir = File.join(dir, cook_name)
+    tar_name = "#{cook_name}_#{md.version}.tar.gz"
+    FileUtils.cp_r(File.dirname(metafile), cook_dir)
+    system "cd \"#{dir}\" && tar czf \"#{tar_name}\" \"#{cook_name}\""
+    FileUtils.mv(File.join(dir, "#{tar_name}"), HTTP_DIR)
+  end
+  return true
+end
 
 ARGV.each do |src|
   case
-  #when /tar\.gz$/ =~ src
-    ## Could be cookbook
-    #tmpdir = Dir.mktmpdir
-    #src=File.expand_path(src)
-    #system "tar xzf \"#{src}\" -C \"#{tmpdir}\""
-  when File.exists?(File.join(src, "metadata.rb"))
-    # It's cookbook folder
-    md = Chef::Cookbook::Metadata.new
-    md.from_file(File.expand_path(File.join(src, "metadata.rb")))
+  when /tar\.gz$/ =~ src
+    # Could be cookbook
+    Dir.mktmpdir do |tmpdir|
+      src = File.expand_path(src)
+      system "tar xzf \"#{src}\" -C \"#{tmpdir}\""
 
-    cook_name = md.name.empty? ? File.basename(src) : md.name
-
-    base_url = "http://127.0.0.1:8000/api"
-    cooks_url = "#{base_url}/cookbooks"
-
-    cook_data = {'name' => cook_name, 'version' => md.version }
-    headers = {"Content-Type" => "application/json"}
-
-    cli = HTTPClient.new
-    begin
-      res = cli.post(cooks_url, cook_data.to_json, headers)
-      if res.status < 200 or res.status >= 300
-        puts "Error uploading cookbook metadata: #{res.inspect}"
+      folder = File.basename(src, '.tar.gz')
+      metafile = File.join(tmpdir, folder, "metadata.rb")
+      if File.exists?(metafile)
+        create_cookbook(metafile)
+      else
+        puts "Error: File #{metafile} not found."
+        puts "We suspect that '#{src}' contains '#{folder}' folder. Skipping."
       end
-    rescue Exception => e
-      puts "Unknown error: #{e.message}"
     end
 
+  when File.exists?(File.join(src, "metadata.rb"))
+    create_cookbook(File.join(src, "metadata.rb"))
+
+  when File.basename(src) == "metadata.rb"
+    create_cookbook(src)
+
+  else
+    puts "'#{src}' is not valid cookbook folder or not a valid cookbook archive. Skipping."
+    puts "Valid cookbook archive should contain <folder>/metadata.rb file."
+    next
   end
 end

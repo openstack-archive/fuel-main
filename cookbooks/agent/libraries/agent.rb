@@ -9,13 +9,19 @@ module NodeAgent
     interfaces = node["network"]["interfaces"].inject([]) do |result, elm|
       result << { :name => elm[0], :addresses => elm[1]["addresses"] }
     end
-
-    data = { :fqdn => node["fqdn"],
+    metadata = {
              :block_device => node["block_device"].to_hash,
              :interfaces => interfaces,
              :cpu => node["cpu"].to_hash,
              :memory => node["memory"].to_hash
-           }
+    }
+
+    data = { :fqdn => node["fqdn"],
+             :mac => node["macaddress"],
+             :ip  => node["ipaddress"],
+             :metadata => metadata
+    }
+
     headers = {"Content-Type" => "application/json"}
 
     cli = HTTPClient.new
