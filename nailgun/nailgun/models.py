@@ -3,8 +3,8 @@ from django.contrib.auth.models import User
 from jsonfield import JSONField
 
 
-class Environment(models.Model):
-    #user = models.ForeignKey(User, related_name='environments')
+class Cluster(models.Model):
+    #user = models.ForeignKey(User, related_name='clusters')
     name = models.CharField(max_length=100)
 
 
@@ -28,7 +28,7 @@ class Node(models.Model):
         ('busy', 'busy'),
     )
     id = models.CharField(max_length=12, primary_key=True)
-    environment = models.ForeignKey(Environment, related_name='nodes',
+    cluster = models.ForeignKey(Cluster, related_name='nodes',
         null=True, blank=True, on_delete=models.SET_NULL)
     name = models.CharField(max_length=100, null=True, blank=True)
     status = models.CharField(max_length=30, choices=NODE_STATUSES,

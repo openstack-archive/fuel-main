@@ -8,7 +8,7 @@ class TestNodeModel(TestCase):
     def test_creating_new_node_and_save_to_db(self):
         node = Node()
         node.id = "080000000001"
-        node.environment_id = 1
+        node.cluster_id = 1
         node.name = "0-test_server.name.com"
         node.metadata = {'metakey': 'metavalue'}
 
@@ -19,7 +19,7 @@ class TestNodeModel(TestCase):
         self.assertEquals(all_nodes[0], node)
 
         self.assertEquals(all_nodes[0].name, "0-test_server.name.com")
-        self.assertEquals(all_nodes[0].environment_id, 1)
+        self.assertEquals(all_nodes[0].cluster_id, 1)
         self.assertEquals(all_nodes[0].metadata,
                 {'metakey': 'metavalue'})
 
@@ -43,7 +43,7 @@ class TestRolesNodesAssociation(TestCase):
 
         node1 = Node()
         node1.id = "080000000001"
-        node1.environment_id = 1
+        node1.cluster_id = 1
         node1.name = "test.example.com"
         node1.save()
         node1.roles = [role1]

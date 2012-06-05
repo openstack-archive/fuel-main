@@ -8,7 +8,7 @@ from celery.task import task
 from celery.task import subtask
 from celery.task import group
 
-from nailgun.models import Environment, Node, Role
+from nailgun.models import Cluster, Node, Role
 from nailgun.helpers import SshConnect
 
 
@@ -16,16 +16,15 @@ logger = logging.getLogger(__name__)
 
 
 @task
-def deploy_env(environment_id):
-    create_chef_config.delay(environment_id, callback=run_chef_solo)
+def deploy_cluster(cluster_id):
+    create_chef_config.delay(cluster_id, callback=run_chef_solo)
     # TODO(mihgen): return info about subtasks
     return True
 
 
 @task
-def create_chef_config(environment_id, callback=None):
-    env_id = environment_id
-    nodes = Node.objects.filter(environment__id=env_id)
+def create_chef_config(cluster_id, callback=None):
+    nodes = Node.objects.filter(cluster__id=cluster_id)
     roles = Role.objects.all()
     if not (nodes and roles):
         raise Exception("Roles or Nodes list is empty")
@@ -33,9 +32,9 @@ def create_chef_config(environment_id, callback=None):
     nodes_per_role = {}
     # For each role in the system
     for r in roles:
-        # Find nodes that have this role. Filter nodes by env_id
+        # Find nodes that have this role. Filter nodes by cluster_id
         nodes_per_role[r.name] = \
-                [x.name for x in r.node_set.filter(environment__id=env_id)]
+                [x.name for x in r.node_set.filter(cluster__id=cluster_id)]
 
     solo_json = {}
     # Extend solo_json for each node by specifying role

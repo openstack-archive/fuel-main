@@ -1,15 +1,15 @@
 define(
     [
-        'text!jst/env.html',
-        'text!jst/env_list.html',
+        'text!jst/cluster.html',
+        'text!jst/cluster_list.html',
         'text!jst/node.html'
     ],
-    function(envTemplate, envListTemplate, nodeTemplate) {
+    function(clusterTemplate, clusterListTemplate, nodeTemplate) {
     var views = {}
 
-    views.Environment = Backbone.View.extend({
+    views.Cluster = Backbone.View.extend({
         tagName: 'span',
-        template: _.template(envTemplate),
+        template: _.template(clusterTemplate),
         initialize: function() {
             this.model.bind('change:active', function() {
                 this.render();
@@ -23,23 +23,23 @@ define(
                             el: container
                         }).render();
                     } else {
-                        container.html('This environment has no nodes');
+                        container.html('This cluster has no nodes');
                     }
                 }
             }, this);
         },
         render: function() {
-            this.$el.html(this.template({environment: this.model}));
+            this.$el.html(this.template({cluster: this.model}));
             return this;
         }
     });
 
-    views.EnvironmentList = Backbone.View.extend({
-        template: _.template(envListTemplate),
+    views.ClusterList = Backbone.View.extend({
+        template: _.template(clusterListTemplate),
         events: {
-            'click #add': 'addEnvironment'
+            'click #add': 'addCluster'
         },
-        addEnvironment: function() {
+        addCluster: function() {
             alert('TBD')
         },
         initialize: function() {
@@ -47,13 +47,13 @@ define(
             this.model.bind('add', this.render, this);
         },
         render: function() {
-            this.$el.html(this.template({environments: this.model}));
+            this.$el.html(this.template({clusters: this.model}));
 
-            var environments = [];
-            this.model.each(function(environment) {
-                environments.push(new views.Environment({model: environment}).render().el);
+            var clusters = [];
+            this.model.each(function(cluster) {
+                clusters.push(new views.Cluster({model: cluster}).render().el);
             });
-            $('#env-list').prepend(environments);
+            $('#cluster-list').prepend(clusters);
 
             return this;
         }
