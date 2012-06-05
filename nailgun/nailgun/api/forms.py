@@ -24,8 +24,9 @@ class EnvironmentForm(forms.Form):
 def validate_node_metadata(value):
     if value is not None:
         if isinstance(value, dict):
-            for field in ('block_device', 'interfaces', 'cpu', 'memory', \
-                    'fqdn', 'ip', 'mac'):
+            for field in ('block_device', 'interfaces', 'cpu', 'memory'):
+                # TODO(mihgen): We need more comprehensive checks here
+                # For example, now, it's possible to store value[field] = []
                 if not field in value or value[field] == "":
                     raise ValidationError("Node metadata '%s' \
                             field is required" % field)

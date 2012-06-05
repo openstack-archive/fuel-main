@@ -14,10 +14,7 @@ class TestHandlers(TestCase):
         self.old_meta = {'block_device': 'value',
                          'interfaces': 'val2',
                          'cpu': 'asf',
-                         'memory': 'sd',
-                         'ip': '192.168.124.185',
-                         'mac': '08:00:27:99:8F:33',
-                         'fqdn': 'test.server.com'
+                         'memory': 'sd'
                         }
         self.another_environment = Environment(id=2,
                 name='Another environment')
@@ -54,10 +51,7 @@ class TestHandlers(TestCase):
         self.new_meta = {'block_device': 'new-val',
                          'interfaces': 'd',
                          'cpu': 'u',
-                         'memory': 'a',
-                         'ip': '10.1.1.1',
-                         'mac': '09:02:FB:AA:AB:AC',
-                         'fqdn': 'new.com'
+                         'memory': 'a'
                         }
         self.meta_json = json.dumps(self.new_meta)
 
@@ -221,9 +215,9 @@ class TestHandlers(TestCase):
         self.assertEquals(len(nodes_from_db), 1)
         self.assertEquals(nodes_from_db[0].metadata, self.old_meta)
 
-    def test_put_returns_400_if_ipaddress_empty(self):
+    def test_put_returns_400_if_interfaces_empty(self):
         meta = self.new_meta.copy()
-        meta['ip'] = ""
+        meta['interfaces'] = ""
         resp = self.client.put(self.node_url,
                                json.dumps({'metadata': meta}),
                                "application/json")
