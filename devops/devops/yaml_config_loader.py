@@ -70,9 +70,6 @@ def parse_node(environment, data):
         isopath = data['cdrom']
         if not isinstance(isopath, (str,)):
             raise ConfigError, "It must be string containing path to iso image file"
-        
-        if not os.path.exists(os.path.abspath(isopath)):
-            raise ConfigError, "File does not exist"
 
         node.cdrom = Cdrom(isopath)
 
