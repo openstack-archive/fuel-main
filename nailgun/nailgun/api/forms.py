@@ -4,7 +4,7 @@ from django.core.exceptions import ValidationError
 from django import forms
 from django.forms.fields import Field, IntegerField, CharField, ChoiceField
 from django.core.validators import RegexValidator
-from nailgun.models import Environment, Node, Cookbook, Role, Release
+from nailgun.models import Cluster, Node, Cookbook, Role, Release
 
 
 class CookbookForm(forms.ModelForm):
@@ -17,7 +17,7 @@ class RoleForm(forms.Form):
     cookbook_id = IntegerField()
 
 
-class EnvironmentForm(forms.Form):
+class ClusterForm(forms.Form):
     name = CharField(max_length=100, required=False)
 
 
@@ -75,7 +75,7 @@ class NodeUpdateForm(forms.Form):
     ip = CharField(max_length=15, required=False)
     mac = CharField(max_length=17, required=False)
     roles = Field(required=False, validators=[validate_node_roles])
-    environment_id = IntegerField(required=False)
+    cluster_id = IntegerField(required=False)
 
 
 class NodeCreationForm(NodeUpdateForm):

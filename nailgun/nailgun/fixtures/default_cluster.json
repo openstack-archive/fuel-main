@@ -1,0 +1,9 @@
+[
+  {
+    "model": "nailgun.cluster",
+    "pk": 1,
+    "fields": {
+      "name": "Default Cluster"
+    }
+  }
+]

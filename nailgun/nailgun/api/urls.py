@@ -1,8 +1,7 @@
 from django.conf.urls import patterns, include, url
 from piston.resource import Resource
 
-from nailgun.api.handlers import EnvironmentCollectionHandler, \
-                     EnvironmentHandler, \
+from nailgun.api.handlers import ClusterCollectionHandler, ClusterHandler, \
                      NodeCollectionHandler, NodeHandler, NodeRoleAvailable, \
                      CookbookCollectionHandler, CookbookHandler, \
                      RoleCollectionHandler, RoleHandler, \
@@ -21,19 +20,19 @@ urlpatterns = patterns('',
 (?P<node_id>[\dA-F]{12})/(?P<role_id>\d+)/?$',
         JsonResource(NodeRoleAvailable),
         name='node_role_available'),
-    url(r'^environments/?$',
-        JsonResource(EnvironmentCollectionHandler),
-        name='environment_collection_handler'),
-    url(r'^environments/(?P<environment_id>\d+)/?$',
-        JsonResource(EnvironmentHandler),
-        name='environment_handler'),
+    url(r'^clusters/?$',
+        JsonResource(ClusterCollectionHandler),
+        name='cluster_collection_handler'),
+    url(r'^clusters/(?P<cluster_id>\d+)/?$',
+        JsonResource(ClusterHandler),
+        name='cluster_handler'),
     url(r'^nodes/?$',
         JsonResource(NodeCollectionHandler),
         name='node_collection_handler'),
     url(r'^nodes/(?P<node_id>[\dA-F]{12})/?$',
         JsonResource(NodeHandler),
         name='node_handler'),
-    url(r'^environments/(?P<environment_id>\d+)/chef-config/?$',
+    url(r'^clusters/(?P<cluster_id>\d+)/chef-config/?$',
         JsonResource(ConfigHandler),
         name='config_handler'),
     url(r'^tasks/(?P<task_id>[\da-f\-]{36})/?$',
