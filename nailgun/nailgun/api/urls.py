@@ -4,7 +4,7 @@ from piston.resource import Resource
 from nailgun.api.handlers import EnvironmentCollectionHandler, \
                      EnvironmentHandler, \
                      NodeCollectionHandler, NodeHandler, NodeRoleAvailable, \
-                     CookbookCollectionHandler, CookbookHandler, \
+                     RecipeCollectionHandler, RecipeHandler, \
                      RoleCollectionHandler, RoleHandler, \
                      ReleaseCollectionHandler, ReleaseHandler, \
                      ConfigHandler, \
@@ -39,12 +39,12 @@ urlpatterns = patterns('',
     url(r'^tasks/(?P<task_id>[\da-f\-]{36})/?$',
         JsonResource(TaskHandler),
         name='task_handler'),
-    url(r'^cookbooks/?$',
-        JsonResource(CookbookCollectionHandler),
-        name='cookbook_collection_handler'),
-    url(r'^cookbooks/(?P<cookbook_id>\d+)?$',
-        JsonResource(CookbookHandler),
-        name='cookbook_handler'),
+    url(r'^recipes/?$',
+        JsonResource(RecipeCollectionHandler),
+        name='recipe_collection_handler'),
+    url(r'^recipe/(?P<recipe_id>\d+)?$',
+        JsonResource(RecipeHandler),
+        name='recipe_handler'),
     url(r'^roles/?$',
         JsonResource(RoleCollectionHandler),
         name='role_collection_handler'),

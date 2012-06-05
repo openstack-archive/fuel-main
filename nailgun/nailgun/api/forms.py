@@ -4,17 +4,35 @@ from django.core.exceptions import ValidationError
 from django import forms
 from django.forms.fields import Field, IntegerField, CharField, ChoiceField
 from django.core.validators import RegexValidator
-from nailgun.models import Environment, Node, Cookbook, Role, Release
+from nailgun.models import Environment, Node, Recipe, Role, Release
+from nailgun.api.fields import RecipeListFormField
 
 
-class CookbookForm(forms.ModelForm):
+class RecipeForm(forms.ModelForm):
+
     class Meta:
-        model = Cookbook
+        model = Recipe
 
 
-class RoleForm(forms.Form):
-    name = CharField(max_length=50)
-    cookbook_id = IntegerField()
+def validate_role_recipes(value):
+    if value and isinstance(value, list):
+        if not any([re.match(r'\w+@[\w\.]+::\w+', i) for i in value]):
+            raise ValidationError('Recipe should be in \
+cookbook@version::recipe format')
+        for i in value:
+            try:
+                rec_exist = Recipe.objects.get(recipe=i)
+            except Recipe.DoesNotExist:
+                raise ValidationError('Recipe %s does not exist' % i)
+    else:
+        raise ValidationError('Invalid recipe list')
+
+
+class RoleForm(forms.ModelForm):
+    recipes = Field(validators=[validate_role_recipes])
+
+    class Meta:
+        model = Role
 
 
 class EnvironmentForm(forms.Form):
@@ -50,18 +68,10 @@ def validate_release_node_roles(data):
             if not re.match(r'\w+@[\w\.]+::\w+', recipe):
                 raise ValidationError('Recipe should be in a \
 cook_name@cook_version::recipe_name format')
-            cookbook, version, recipe_name = re.split(r'@|::', recipe)
             try:
-                cb_exists = Cookbook.objects.get(
-                    name=cookbook,
-                    version=version
-                )
-            except Cookbook.DoesNotExist:
-                raise ValidationError('Cookbook %s doesn\'t exist' % cookbook)
-            if recipe_name not in cb_exists.recipes:
-                raise ValidationError('Recipe %s doesn\'t exist in %s' % (
-                    recipe, cookbook)
-                )
+                rec_exists = Recipe.objects.get(recipe=recipe)
+            except Recipe.DoesNotExist:
+                raise ValidationError('Recipe %s doesn\'t exist' % recipe)
 
 
 validate_node_id = RegexValidator(regex=re.compile('^[\dA-F]{12}$'))

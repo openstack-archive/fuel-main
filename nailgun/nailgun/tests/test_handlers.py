@@ -3,7 +3,7 @@ from django import http
 from django.test import TestCase
 from django.core.urlresolvers import reverse
 
-from nailgun.models import Environment, Node, Cookbook, Role, Release
+from nailgun.models import Environment, Node, Recipe, Role, Release
 from nailgun.tasks import create_chef_config
 
 
@@ -28,18 +28,25 @@ class TestHandlers(TestCase):
                     metadata=self.old_meta)
         self.node.save()
 
-        self.cook = Cookbook()
-        self.cook.name = 'cookbook'
-        self.cook.version = '1.01.1'
-        self.cook.save()
+        self.recipe = Recipe()
+        self.recipe.recipe = 'cookbook@version::recipe'
+        self.recipe.save()
+        self.recipe = Recipe()
+        self.recipe.recipe = 'nova@0.1.0::compute'
+        self.recipe.save()
+        self.recipe = Recipe()
+        self.recipe.recipe = 'nova@0.1.0::monitor'
+        self.recipe.save()
 
         self.role = Role()
-        self.role.cookbook = self.cook
+        self.role.save()
+        self.role.recipes.add(self.recipe)
         self.role.name = "My role"
         self.role.save()
 
         self.another_role = Role()
-        self.another_role.cookbook = self.cook
+        self.another_role.save()
+        self.another_role.recipes.add(self.recipe)
         self.another_role.name = "My role 2"
         self.another_role.save()
 
@@ -60,7 +67,7 @@ class TestHandlers(TestCase):
         self.node.delete()
         self.role.delete()
         self.another_role.delete()
-        self.cook.delete()
+        self.recipe.delete()
 
     def test_environment_creation(self):
         yet_another_environment_name = 'Yet another environment'
@@ -251,38 +258,40 @@ class TestHandlers(TestCase):
         self.assertEquals(len(nodes_from_db), 1)
         self.assertEquals(nodes_from_db[0].metadata, self.old_meta)
 
-    def test_cookbook_create(self):
-        cook_name = 'new cookbook'
-        cook_ver = '0.1.0'
-        cook_recipes = ['compute']
+    def test_recipe_create(self):
+        recipe = 'cookbook@0.1.0::recipe'
         resp = self.client.post(
-            reverse('cookbook_collection_handler'),
+            reverse('recipe_collection_handler'),
             json.dumps({
-                'name': cook_name,
-                'version': cook_ver,
-                'recipes': json.dumps(cook_recipes)
+                'recipe': recipe
             }),
             "application/json"
         )
         self.assertEquals(resp.status_code, 200)
 
-        cooks_from_db = Cookbook.objects.filter(name=cook_name)
-        self.assertEquals(len(cooks_from_db), 1)
-        self.assertEquals(cooks_from_db[0].version, cook_ver)
+        recipe_from_db = Recipe.objects.filter(recipe=recipe)
+        self.assertEquals(len(recipe_from_db), 1)
 
     def test_role_create(self):
         role_name = 'My role 3'
-
+        role_recipes = [
+            'nova@0.1.0::compute',
+            'nova@0.1.0::monitor'
+        ]
         resp = self.client.post(
             reverse('role_collection_handler'),
-            json.dumps({'name': role_name, 'cookbook_id': self.cook.id}),
+            json.dumps({
+                'name': role_name,
+                'recipes': role_recipes
+            }),
             "application/json"
         )
         self.assertEquals(resp.status_code, 200)
 
         roles_from_db = Role.objects.filter(name=role_name)
         self.assertEquals(len(roles_from_db), 1)
-        self.assertEquals(roles_from_db[0].cookbook.id, self.cook.id)
+        recipes = [r.recipe for r in roles_from_db[0].recipes.all()]
+        self.assertEquals(set(role_recipes), set(recipes))
 
     def test_jsons_created_for_chef_solo(self):
         url = reverse('config_handler', kwargs={'environment_id': 1})
@@ -300,29 +309,29 @@ class TestHandlers(TestCase):
         self.assertEquals(resp.status_code, 200)
 
     def test_release_create(self):
-        cook_name = 'nova'
-        cook_ver = '0.1.1'
-        cook_recipes = ['compute', 'monitor']
+        role_name = 'Compute role'
+        role_recipes = [
+            'nova@0.1.0::compute',
+            'cookbook@version::recipe'
+        ]
         resp = self.client.post(
-            reverse('cookbook_collection_handler'),
+            reverse('role_collection_handler'),
             json.dumps({
-                'name': cook_name,
-                'version': cook_ver,
-                'recipes': json.dumps(cook_recipes)
+                'name': role_name,
+                'recipes': role_recipes
             }),
             "application/json"
         )
         self.assertEquals(resp.status_code, 200)
-
-        cook_name = 'other_cookbook'
-        cook_ver = '2.4.2'
-        cook_recipes = ['api']
+        role_name = 'Monitor role'
+        role_recipes = [
+            'nova@0.1.0::monitor'
+        ]
         resp = self.client.post(
-            reverse('cookbook_collection_handler'),
+            reverse('role_collection_handler'),
             json.dumps({
-                'name': cook_name,
-                'version': cook_ver,
-                'recipes': json.dumps(cook_recipes)
+                'name': role_name,
+                'recipes': role_recipes
             }),
             "application/json"
         )
@@ -334,13 +343,13 @@ class TestHandlers(TestCase):
         release_roles = [{
             "name": "compute",
             "recipes": [
-                "nova@0.1.1::compute",
-                "nova@0.1.1::monitor"
+                "nova@0.1.0::compute",
+                "nova@0.1.0::monitor"
             ]
           }, {
             "name": "controller",
             "recipes": [
-                "other_cookbook@2.4.2::api"
+                "cookbook@version::recipe"
             ]
           }
         ]
@@ -354,6 +363,7 @@ class TestHandlers(TestCase):
             }),
             "application/json"
         )
+
         self.assertEquals(resp.status_code, 200)
         release_from_db = Release.objects.filter(
             name=release_name,

@@ -6,9 +6,9 @@ from piston.utils import rc
 from django.core.exceptions import ObjectDoesNotExist
 from django.conf import settings
 
-from nailgun.models import Environment, Node, Cookbook, Role, Release
+from nailgun.models import Environment, Node, Recipe, Role, Release
 from nailgun.api.validators import validate_json
-from nailgun.api.forms import EnvironmentForm, CookbookForm, RoleForm, \
+from nailgun.api.forms import EnvironmentForm, RecipeForm, RoleForm, \
         NodeCreationForm, NodeUpdateForm, ReleaseCreationForm
 #from nailgun.tasks import create_chef_config
 from nailgun.tasks import deploy_env
@@ -168,35 +168,35 @@ class NodeHandler(BaseHandler):
         return node
 
 
-class CookbookCollectionHandler(BaseHandler):
+class RecipeCollectionHandler(BaseHandler):
 
     allowed_methods = ('GET', 'POST')
-    model = Cookbook
-    fields = ('id', 'name', 'version', ('roles', ()))
+    model = Recipe
+    #fields = ('id', 'name', 'version', ('roles', ()))
 
     def read(self, request):
-        return Cookbook.objects.all()
+        return Recipe.objects.all()
 
-    @validate_json(CookbookForm)
+    @validate_json(RecipeForm)
     def create(self, request):
-        cookbook = Cookbook()
+        recipe = Recipe()
         for key, value in request.form.cleaned_data.items():
             if key in request.form.data:
-                setattr(cookbook, key, value)
-        cookbook.save()
+                setattr(recipe, key, value)
+        recipe.save()
 
-        return cookbook
+        return recipe
 
 
-class CookbookHandler(BaseHandler):
+class RecipeHandler(BaseHandler):
 
     allowed_methods = ('GET',)
-    model = Cookbook
-    fields = CookbookCollectionHandler.fields
+    model = Recipe
+    fields = RecipeCollectionHandler.fields
 
-    def read(self, request, cookbook_id):
+    def read(self, request, recipe_id):
         try:
-            return Cookbook.objects.get(id=cookbook_id)
+            return Recipe.objects.get(id=recipe_id)
         except ObjectDoesNotExist:
             return rc.NOT_FOUND
 
@@ -212,10 +212,11 @@ class RoleCollectionHandler(BaseHandler):
 
     @validate_json(RoleForm)
     def create(self, request):
-        role = Role()
-        for key, value in request.form.cleaned_data.items():
-            if key in request.form.data:
-                setattr(role, key, value)
+        data = request.form.cleaned_data
+        recipes = Recipe.objects.filter(recipe__in=data['recipes'])
+        role = Role(name=data["name"])
+        role.save()
+        map(role.recipes.add, recipes)
         role.save()
 
         return role
@@ -245,6 +246,7 @@ class ReleaseCollectionHandler(BaseHandler):
     @validate_json(ReleaseCreationForm)
     def create(self, request):
         data = request.form.cleaned_data
+        print data
         release = Release(
             name=data["name"],
             version=data["version"],

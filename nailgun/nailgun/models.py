@@ -1,6 +1,7 @@
 from django.db import models
 from django.contrib.auth.models import User
 from jsonfield import JSONField
+from api.fields import RecipeField
 
 
 class Environment(models.Model):
@@ -8,17 +9,13 @@ class Environment(models.Model):
     name = models.CharField(max_length=100)
 
 
-class Cookbook(models.Model):
-    name = models.CharField(max_length=50)
-    version = models.CharField(max_length=30)
-    recipes = JSONField(null=True, blank=True)
+class Recipe(models.Model):
+    recipe = RecipeField(max_length=100)
 
 
 class Role(models.Model):
     name = models.CharField(max_length=50)
-    # NOTE(mihgen): Usage of related_name may lead to following exception:
-    #   'RuntimeError: Circular reference detected while emitting response'
-    cookbook = models.ForeignKey(Cookbook)
+    recipes = models.ManyToManyField(Recipe, related_name="roles")
 
 
 class Node(models.Model):
