@@ -1,3 +1,4 @@
+from itertools import chain
 
 class ManagedObject(object):
     def __init__(self):
@@ -7,7 +8,7 @@ class ManagedObject(object):
     @property
     def driver(self):
         if self._driver is None:
-            raise EnvironmentException, "Network '%s' wasn't built yet" % self.name
+            raise EnvironmentException, "Object '%s' wasn't built yet" % self.name
         return self._driver
 
     @driver.setter
@@ -87,6 +88,19 @@ class Node(ManagedObject):
     def send_keys(self, keys):
         self.driver.send_keys_to_node(self, keys)
 
+    @property
+    def ip_addresses(self):
+        addresses = []
+        for interface in self.interfaces:
+            addresses += interface.ip_addresses
+        return addresses
+
+    @ManagedObject.driver.setter
+    def driver(self, driver):
+        ManagedObject.driver.fset(self, driver)
+        for interface in self.interfaces:
+            interface.driver = driver
+
 class Cdrom(object):
     def __init__(self, isopath=None, bus='ide'):
         self.isopath = isopath
@@ -99,7 +113,11 @@ class Disk(object):
         self.bus = bus
         self.path = path
 
-class Interface(object):
+class Interface(ManagedObject):
     def __init__(self, network):
         self.network = network
+    
+    @property
+    def ip_addresses(self):
+        return self.driver.get_interface_addresses(self)
 
