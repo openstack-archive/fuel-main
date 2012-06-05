@@ -17,6 +17,15 @@ package "dnsmasq" do
   action :install
 end
 
+service "cobbler" do
+  supports :restart => true 
+  action :start
+end
+
+service "dnsmasq" do
+  supports :restart => true 
+  action :start
+end
 
 template "/etc/cobbler/modules.conf" do
   source "modules.conf.erb"
@@ -34,12 +43,11 @@ template "/etc/cobbler/settings" do
   notifies :restart, "service[cobbler]"
 end
 
-
 execute "cobbler_sync" do
   command "cobbler sync"
+  returns [0,155]
   action :nothing
 end
-
 
 template "/etc/cobbler/dnsmasq.template" do
   source "dnsmasq.template.erb"
@@ -60,7 +68,6 @@ template "/etc/cobbler/pxe/pxedefault.template" do
   notifies :run, "execute[cobbler_sync]" 
 end
 
-
 directory node["cobbler"]["bootstrap_images_dir"] do
   owner "root"
   group "root"
@@ -77,15 +84,6 @@ directory node["cobbler"]["bootstrap_ks_mirror_dir"] do
   action :create
 end
 
-service "cobbler" do
-  supports :restart => true 
-  action :nothing
-end
-
-service "dnsmasq" do
-  supports :restart => true 
-  action :nothing
-end
 
 
 # FIXME
