@@ -1,6 +1,6 @@
 from django.test import TestCase
 
-from nailgun.models import Node, Role
+from nailgun.models import Node, Role, Recipe
 
 
 class TestNodeModel(TestCase):
@@ -23,21 +23,23 @@ class TestNodeModel(TestCase):
         self.assertEquals(all_nodes[0].metadata,
                 {'metakey': 'metavalue'})
 
-"""
+
 class TestRolesNodesAssociation(TestCase):
 
     def test_roles_nodes_association(self):
-        cook = Cookbook()
-        cook.name = 'cookbook'
-        cook.version = '1.01.1'
-        cook.save()
+        recipe = Recipe()
+        recipe.recipe = 'cookbook@version::recipe'
+        recipe.save()
 
         role1 = Role()
-        role1.cookbook = cook
+        role1.save()
+        role1.recipes.add(recipe)
         role1.name = "My role"
         role1.save()
+
         role2 = Role()
-        role2.cookbook = cook
+        role2.save()
+        role2.recipes.add(recipe)
         role2.name = "My role 2"
         role2.save()
 
@@ -58,4 +60,3 @@ class TestRolesNodesAssociation(TestCase):
         self.assertEquals(Node.objects.filter(
             roles__name__startswith="My r")[0].id,
                 "080000000001")
-"""
