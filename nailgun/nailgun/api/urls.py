@@ -6,6 +6,7 @@ from nailgun.api.handlers import EnvironmentCollectionHandler, \
                      NodeCollectionHandler, NodeHandler, NodeRoleAvailable, \
                      CookbookCollectionHandler, CookbookHandler, \
                      RoleCollectionHandler, RoleHandler, \
+                     ReleaseCollectionHandler, ReleaseHandler, \
                      ConfigHandler, \
                      TaskHandler
 
@@ -50,4 +51,10 @@ urlpatterns = patterns('',
     url(r'^roles/(?P<role_id>\d+)/?$',
         JsonResource(RoleHandler),
         name='role_handler'),
+    url(r'^releases/?$',
+        JsonResource(ReleaseCollectionHandler),
+        name='release_collection_handler'),
+    url(r'^releases/(?P<release_id>\d+)/?$',
+        JsonResource(ReleaseHandler),
+        name='release_handler'),
 )

@@ -11,6 +11,7 @@ class Environment(models.Model):
 class Cookbook(models.Model):
     name = models.CharField(max_length=50)
     version = models.CharField(max_length=30)
+    recipes = JSONField(null=True, blank=True)
 
 
 class Role(models.Model):
@@ -37,3 +38,13 @@ class Node(models.Model):
     ip = models.CharField(max_length=15)
     fqdn = models.CharField(max_length=255)
     roles = models.ManyToManyField(Role)
+
+
+class Release(models.Model):
+    name = models.CharField(max_length=100)
+    version = models.CharField(max_length=30)
+    description = models.TextField()
+    roles = models.ManyToManyField(Role, related_name='releases')
+
+    class Meta:
+        unique_together = ("name", "version")
