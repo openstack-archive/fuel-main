@@ -5,7 +5,11 @@
 	"cobbler_server":"10.20.0.2",
 	"dhcp_range":"10.20.0.151,10.20.0.200",
 	"gateway":"10.20.0.2"
-    }
+    },
+    "nailgun":{
+        "root":"/opt/nailgun",
+	"user":"nailgun"
+    },
     "recipes": [ 
 	"cobbler::default",
 	"nailgun::server"
