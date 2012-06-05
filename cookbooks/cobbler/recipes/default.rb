@@ -21,7 +21,7 @@ end
 template "/etc/cobbler/modules.conf" do
   source "modules.conf.erb"
   mode 0644
-  notifies :restart, "service[cobbler]", :immediately
+  notifies :restart, "service[cobbler]"
 end
 
 template "/etc/cobbler/settings" do
@@ -31,7 +31,7 @@ template "/etc/cobbler/settings" do
             :next_server => node["cobbler"]["next_server"],
             :cobbler_server => node["cobbler"]["cobbler_server"]
   )
-  notifies :restart, "service[cobbler]", :immediately
+  notifies :restart, "service[cobbler]"
 end
 
 
@@ -48,7 +48,7 @@ template "/etc/cobbler/dnsmasq.template" do
             :dhcp_range => node["cobbler"]["dhcp_range"],
             :gateway => node["cobbler"]["gateway"]
             )
-  notifies :run, "execute[cobbler_sync]", :immediately 
+  notifies :run, "execute[cobbler_sync]"
 end
 
 template "/etc/cobbler/pxe/pxedefault.template" do
@@ -57,7 +57,7 @@ template "/etc/cobbler/pxe/pxedefault.template" do
   variables(
             :pxetimeout => node["cobbler"]["pxetimeout"]
             )
-  notifies :run, "execute[cobbler_sync]", :immediately 
+  notifies :run, "execute[cobbler_sync]" 
 end
 
 
@@ -95,7 +95,7 @@ file "/etc/dnsmasq.d/mirantis.net.conf" do
   action :create
   content "server=/mirantis.net/#{node["cobbler"]["updns"]}"
   mode 0644
-  notifies :restart, "service[dnsmasq]", :immediately 
+  notifies :restart, "service[dnsmasq]"
 end
 
 link "#{node["cobbler"]["bootstrap_ks_mirror_dir"]}/linux" do

@@ -18,43 +18,51 @@ user node.nailgun.user do
 end
 
 file "#{node[:nailgun][:root]}/nailgun/venv.py" do
-  content "VENV = #{node.nailgun.venv}/local/lib/python2.7/site-packages"
+  content "VENV = '#{node[:nailgun][:venv]}/local/lib/python2.7/site-packages'
+"
   owner node.nailgun.user
   group node.nailgun.group
   mode 644
 end
 
 # it is assumed that nailgun files already installed into nailgun.root
-execute 'chown #{node[:nailgun][:root]}' do
-  command "chown -R #{node.nailgun.user}:#{node.nailgun.group} #{node.nailgun.root}"
+execute 'chown nailgun root' do
+  command "chown -R #{node[:nailgun][:user]}:#{node[:nailgun][:group]} #{node[:nailgun][:root]}"
 end
 
-execute 'chmod #{node[:nailgun][:root]}' do
-  command "chmod -R u+w #{node.nailgun.root}"
+execute 'chmod nailgun root' do
+  command "chmod -R u+w #{node[:nailgun][:root]}"
 end
-
-
-
 
 execute 'Preseed Nailgun database' do
-  command '#{node.nailgun.python} manage.py loaddata nailgun/fixtures/default_env.json'
+  command "#{node[:nailgun][:python]} manage.py loaddata nailgun/fixtures/default_env.json"
   cwd node.nailgun.root
   user node.nailgun.user
   action :nothing
 end
 
 execute 'Sync Nailgun database' do
-  command '#{node.nailgun.python} manage.py syncdb --noinput'
+  command "#{node[:nailgun][:python]} manage.py syncdb --noinput"
   cwd node.nailgun.root
   user node.nailgun.user
   notifies :run, resources('execute[Preseed Nailgun database]')
-  not_if "test -e #{node.nailgun.root}/nailgun.sqlite"
+  not_if "test -e #{node[:nailgun][:root]}/nailgun.sqlite"
 end
+
+execute 'Sync Nailgun database2' do
+  command "echo #{node[:nailgun][:python]} manage.py syncdb --noinput > /root/2"
+  not_if "test -e #{node[:nailgun][:root]}/nailgun.sqlite"
+end
+
+execute 'Sync Nailgun database3' do
+  command "echo #{node[:nailgun][:python]} manage.py syncdb --noinput > /root/3"
+end
+
 
 redis_instance 'nailgun'
 
 celery_instance 'nailgun-jobserver' do
-  command '#{node.nailgun.python} manage.py celeryd_multi'
+  command "#{node[:nailgun][:python]} manage.py celeryd_multi"
   cwd node.nailgun.root
   events true
   user node.nailgun.user
