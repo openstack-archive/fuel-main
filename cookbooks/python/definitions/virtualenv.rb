@@ -15,5 +15,6 @@ define :virtualenv, :site_packages => false do
 
   execute "virtualenv #{venvpath}" do
     command "virtualenv #{site_packages} #{venvpath}"
+    not_if "test -d #{venvpath}"
   end
 end
