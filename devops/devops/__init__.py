@@ -1,9 +1,12 @@
+import logging
 
 from devops import yaml_config_loader
 from devops.controller import Controller
 from devops.driver.libvirt import Libvirt
 
-__all__ = ['build', 'destroy', 'load']
+__all__ = ['logger', 'build', 'destroy', 'load']
+
+logger = logging.getLogger('devops')
 
 controller = Controller(Libvirt())
 

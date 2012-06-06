@@ -3,11 +3,15 @@
 import os
 import tempfile
 import time
+import subprocess, shlex
 from collections import deque
 from devops import xml
 from devops import scancodes
 from xmlbuilder import XMLBuilder
 import ipaddr
+
+import logging
+logger = logging.getLogger('devops.libvirt')
 
 def index(p, seq):
     for i in xrange(len(seq)):
@@ -115,7 +119,9 @@ class Libvirt:
             network.id = self._generate_network_id(network.name)
 
         with tempfile.NamedTemporaryFile(delete=True) as xml_file:
-            xml_file.write(self.xml_builder.build_network_xml(network))
+            network_xml = self.xml_builder.build_network_xml(network)
+            logger.debug("libvirt: Building network with following XML:\n%s" % network_xml)
+            xml_file.write(network_xml)
             xml_file.flush()
             self._virsh("net-define '%s'", xml_file.name)
 
@@ -150,7 +156,9 @@ class Libvirt:
             node.id = self._generate_node_id(node.name)
 
         with tempfile.NamedTemporaryFile(delete=True) as xml_file:
-            xml_file.write(self.xml_builder.build_node_xml(node, spec))
+            node_xml = self.xml_builder.build_node_xml(node, spec)
+            logger.debug("libvirt: Building node with following XML:\n%s" % node_xml)
+            xml_file.write(node_xml)
             xml_file.flush()
             self._virsh("define '%s'", xml_file.name)
 
@@ -219,7 +227,12 @@ class Libvirt:
 
     def _virsh(self, format, *args):
         command = ("virsh " + format) % args
-        return self._system(command)
+        logger.debug("libvirt: Running '%s'" % command)
+        process = subprocess.Popen(shlex.split(command), stdout=subprocess.PIPE, stderr=subprocess.PIPE)
+        process.wait()
+        if process.returncode != 0:
+            logger.error("libvirt: command '%s' returned code %d:\n%s" % (command, process.returncode, process.stderr.read()))
+            raise LibvirtException, "Failed to execute command '%s'" % command
 
     def _init_capabilities(self):
         with os.popen("virsh capabilities") as f:
@@ -241,20 +254,19 @@ class Libvirt:
     def _generate_network_id(self, name='net'):
         while True:
             id = name + '-' + str(int(time.time()*100))
-            if self._virsh("net-dumpxml '%s'", id) != 0:
+            if not self.network_exists(id):
                 return id
             
     def _generate_node_id(self, name='node'):
         while True:
             id = name + '-' + str(int(time.time()*100))
-            if self._virsh("dumpxml '%s'", id) != 0:
+            if not self.node_exists(id):
                 return id
 
     def _system(self, command):
-        if not os.environ.has_key('VERBOSE') or os.environ['VERBOSE'] == '':
-            command += " 1>/dev/null 2>&1"
-        else:
-            print("Executing '%s'" % command)
-
-        return os.system(command)
+        logger.debug("libvirt: Running '%s'" % command)
+        process = subprocess.Popen(shlex.split(command), stdout=subprocess.PIPE, stderr=subprocess.PIPE)
+        process.wait()
+        logger.debug("libvirt: Command '%s' returned %d" % (command, process.returncode))
+        return process.returncode
 
