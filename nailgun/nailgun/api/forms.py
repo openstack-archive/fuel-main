@@ -1,4 +1,5 @@
 import re
+
 import simplejson as json
 from django.core.exceptions import ValidationError
 from django import forms
@@ -16,9 +17,10 @@ class RecipeForm(forms.ModelForm):
 
 def validate_role_recipes(value):
     if value and isinstance(value, list):
-        if not any([re.match(r'\w+@[\w\.]+::\w+', i) for i in value]):
+        if not any([re.match(r'^[^\]]+::([^\]]+)@[0-9]+(\.[0-9]+){1,2}$', i) \
+                for i in value]):
             raise ValidationError('Recipe should be in \
-cookbook@version::recipe format')
+cookbook::recipe@version format')
         for i in value:
             try:
                 rec_exist = Recipe.objects.get(recipe=i)
@@ -65,9 +67,10 @@ def validate_release_node_roles(data):
         raise ValidationError('Role name is empty')
     for role in data:
         for recipe in role['recipes']:
-            if not re.match(r'\w+@[\w\.]+::\w+', recipe):
+            if not re.match(r'^[^\]]+::([^\]]+)@[0-9]+(\.[0-9]+){1,2}$', \
+                    recipe):
                 raise ValidationError('Recipe should be in a \
-cook_name@cook_version::recipe_name format')
+cook_name::recipe_name@cook_version format')
             try:
                 rec_exists = Recipe.objects.get(recipe=recipe)
             except Recipe.DoesNotExist:

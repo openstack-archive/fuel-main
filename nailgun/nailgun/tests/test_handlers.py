@@ -29,13 +29,13 @@ class TestHandlers(TestCase):
         self.node.save()
 
         self.recipe = Recipe()
-        self.recipe.recipe = 'cookbook@version::recipe'
+        self.recipe.recipe = 'cookbook::recipe@2.1'
         self.recipe.save()
         self.second_recipe = Recipe()
-        self.second_recipe.recipe = 'nova@0.1.0::compute'
+        self.second_recipe.recipe = 'nova::compute@0.1.0'
         self.second_recipe.save()
         self.third_recipe = Recipe()
-        self.third_recipe.recipe = 'nova@0.1.0::monitor'
+        self.third_recipe.recipe = 'nova::monitor@0.1.0'
         self.third_recipe.save()
 
         self.role = Role()
@@ -162,7 +162,6 @@ class TestHandlers(TestCase):
         resp = self.client.put(self.node_url,
                                json.dumps({'metadata': self.new_meta}),
                                "application/json")
-        print resp.content
         self.assertEquals(resp.status_code, 200)
 
         nodes_from_db = Node.objects.filter(id=self.node.id)
@@ -261,7 +260,7 @@ class TestHandlers(TestCase):
         self.assertEquals(nodes_from_db[0].metadata, self.old_meta)
 
     def test_recipe_create(self):
-        recipe = 'cookbook@0.1.0::recipe'
+        recipe = 'cookbook::recipe@0.1.0'
         resp = self.client.post(
             reverse('recipe_collection_handler'),
             json.dumps({
@@ -277,8 +276,8 @@ class TestHandlers(TestCase):
     def test_role_create(self):
         role_name = 'My role 3'
         role_recipes = [
-            'nova@0.1.0::compute',
-            'nova@0.1.0::monitor'
+            'nova::compute@0.1.0',
+            'nova::monitor@0.1.0'
         ]
         resp = self.client.post(
             reverse('role_collection_handler'),
@@ -313,8 +312,8 @@ class TestHandlers(TestCase):
     def test_release_create(self):
         role_name = 'Compute role'
         role_recipes = [
-            'nova@0.1.0::compute',
-            'cookbook@version::recipe'
+            'nova::compute@0.1.0',
+            'cookbook::recipe@2.1'
         ]
         resp = self.client.post(
             reverse('role_collection_handler'),
@@ -327,7 +326,7 @@ class TestHandlers(TestCase):
         self.assertEquals(resp.status_code, 200)
         role_name = 'Monitor role'
         role_recipes = [
-            'nova@0.1.0::monitor'
+            'nova::monitor@0.1.0'
         ]
         resp = self.client.post(
             reverse('role_collection_handler'),
@@ -345,13 +344,13 @@ class TestHandlers(TestCase):
         release_roles = [{
             "name": "compute",
             "recipes": [
-                "nova@0.1.0::compute",
-                "nova@0.1.0::monitor"
+                "nova::compute@0.1.0",
+                "nova::monitor@0.1.0"
             ]
           }, {
             "name": "controller",
             "recipes": [
-                "cookbook@version::recipe"
+                "cookbook::recipe@2.1"
             ]
           }
         ]
