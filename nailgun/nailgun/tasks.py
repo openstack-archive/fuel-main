@@ -40,8 +40,11 @@ def create_chef_config(cluster_id, callback=None):
     # Extend solo_json for each node by specifying role
     #    assignment for this particular node
     for n in nodes:
-        solo_json['run_list'] = \
-                ["role[" + x.name + "]" for x in n.roles.all()]
+        solo_json['run_list'] = []
+        for role in n.roles.all():
+            for rcp in role.recipes.all():
+                solo_json['run_list'] += ["recipe[%s]" % rcp.recipe]
+
         solo_json['all_roles'] = nodes_per_role
 
         filepath = os.path.join(settings.CHEF_CONF_FOLDER,
