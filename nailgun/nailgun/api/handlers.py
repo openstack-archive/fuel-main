@@ -19,7 +19,7 @@ class TaskHandler(BaseHandler):
     allowed_methods = ('GET',)
 
     @classmethod
-    def render_task(cls, task):
+    def render(cls, task):
         # TODO show meta?
         repr = {
             "task_id": task.task_id,
@@ -36,7 +36,7 @@ class TaskHandler(BaseHandler):
 
     def read(self, request, task_id):
         task = celery.result.AsyncResult(task_id)
-        return TaskCollectionHandler.render_task(task)
+        return TaskHandler.render(task)
 
 
 class ConfigHandler(BaseHandler):
@@ -48,7 +48,7 @@ class ConfigHandler(BaseHandler):
         task = deploy_cluster.delay(cluster_id)
 
         response = rc.ACCEPTED
-        response.content = TaskHandler.render_task(task)
+        response.content = TaskHandler.render(task)
         return response
 
 
