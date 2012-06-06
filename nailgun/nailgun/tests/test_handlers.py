@@ -367,6 +367,19 @@ class TestHandlers(TestCase):
         )
 
         self.assertEquals(resp.status_code, 200)
+        # test duplicate
+        resp = self.client.post(
+            reverse('release_collection_handler'),
+            json.dumps({
+                'name': release_name,
+                'version': release_version,
+                'description': release_description,
+                'roles': release_roles
+            }),
+            "application/json"
+        )
+        self.assertEquals(resp.status_code, 409)
+
         release_from_db = Release.objects.filter(
             name=release_name,
             version=release_version,

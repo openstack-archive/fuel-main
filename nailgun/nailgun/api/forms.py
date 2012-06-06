@@ -99,10 +99,4 @@ class ReleaseCreationForm(forms.ModelForm):
         model = Release
 
     def clean(self):
-        name, version = self.cleaned_data['name'], self.cleaned_data['version']
-        try:
-            release = Release.objects.get(name=name, version=version)
-            raise ValidationError('Release already exists')
-        except Release.DoesNotExist:
-            pass
         return self.cleaned_data

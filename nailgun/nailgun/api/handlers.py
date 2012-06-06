@@ -246,6 +246,16 @@ class ReleaseCollectionHandler(BaseHandler):
     @validate_json(ReleaseCreationForm)
     def create(self, request):
         data = request.form.cleaned_data
+
+        try:
+            release = Release.objects.get(
+                name=data['name'],
+                version=data['version']
+            )
+            return rc.DUPLICATE_ENTRY
+        except Release.DoesNotExist:
+            pass
+
         release = Release(
             name=data["name"],
             version=data["version"],
