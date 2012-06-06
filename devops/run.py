@@ -1,69 +1,61 @@
-
 import time
-import os
 
-from devops.model import Environment, Node, Network, Interface
-from devops.controller import Controller
-from devops.driver.libvirt import Libvirt
+import devops
+from devops.helpers import wait, tcp_ping
 
-from devops import yaml_config_loader
-
-INSTALLATION_ISO = os.path.abspath(os.path.join(os.path.dirname(__file__), '..', 'install.iso'))
-INSTALLATION_ISO_URL = "http://mc0n1-srt.srt.mirantis.net/nailgun-ubuntu-12.04-amd64.last.iso"
+import logging
 
 MASTER_AND_SLAVE_CONFIG = """
-name: 'Sample environment'
-networks:
-  - network: internal
-  - network: external
-    type: bridged
-nodes:
-  - node: gateway
-    disk: '5Gb'
-    cdrom: '%s'
-    networks: ['external', 'internal']
-  - node: slug
-    networks: ['internal']
-""" % (INSTALLATION_ISO,)
-
-
-def download_iso():
-    if not os.path.exists(INSTALLATION_ISO):
-        print("Downloading installation iso")
-        os.system("wget -O '%s' -c '%s'" % (INSTALLATION_ISO, INSTALLATION_ISO_URL))
-        print("Finished downloading installation iso")
+    name: 'Sample environment'
+    networks:
+      - network: internal
+      - network: external
+    nodes:
+      - node: master
+        disk: '5Gb'
+        cdrom: http://mc0n1-srt.srt.mirantis.net/nailgun-ubuntu-12.04-amd64.last.iso
+        networks: ['external', 'internal']
+        vnc: True
+      - node: slave
+        networks: ['internal']
+        vnc: True
+"""
 
 
 def main():
-    download_iso()
+    logging.basicConfig(level=logging.WARN)
+    logger = logging.getLogger('test.integration')
+    logger.setLevel(logging.INFO)
 
-    environment = yaml_config_loader.load(MASTER_AND_SLAVE_CONFIG)
+    environment = devops.load(MASTER_AND_SLAVE_CONFIG)
+
+    logger.info("Building environment")
+
+    devops.build(environment)
+
+    logger.info("Environment ready")
 
     external_network = environment.network['external']
 
-    gateway = environment.node['gateway']
-    gateway.vnc = True
+    master_node = environment.node['master']
+    slave_node  = environment.node['slave']
 
-    print("Creating environment")
+    logger.info("Starting master node")
+    master_node.start()
 
-    controller = Controller(Libvirt())
-    controller.build_environment(environment)
+    logger.info("VNC to master is available on %d" % master_node.vnc_port)
 
-    print("Environment created")
-
-    print("Starting node")
-    gateway.start()
-
-    print("VNC is available on vnc://localhost:%d" % gateway.vnc_port)
-
-    print("Waiting node to boot")
+    logger.info("Waiting master node to boot")
     time.sleep(15)
 
-    print("Sending user input")
+    logger.info("Sending user input")
 
     ip = external_network.ip_addresses
+    host_ip   = ip[1]
+    master_ip = ip[2]
+    netmask   = ip.netmask
 
-    gateway.send_keys("""<Esc><Enter>
+    master_node.send_keys("""<Esc><Enter>
 <Wait>
 /install/vmlinuz initrd=/install/initrd.gz
  priority=critical
@@ -75,8 +67,24 @@ def main():
  netcfg/get_gateway=%s
  netcfg/get_nameservers=%s
  netcfg/confirm_static=true
- <Enter>""" % (ip[2], ip.netmask, ip[1], ip[1]))
-    print("Finished sending user input")
+ <Enter>""" % (master_ip, netmask, host_ip, host_ip))
+    logger.info("Finished sending user input")
+
+    logger.info("Waiting master node to install")
+    wait(lambda: tcp_ping(master_ip, 22))
+
+    logger.info("Starting slave node")
+
+    slave_node.start()
+
+    logger.info("VNC to slave node at port %d" % slave_node.vnc_port)
+
+    logger.info("Waiting slave node to configure network")
+
+    wait(lambda: len(slave_node.ip_addresses) > 0, timeout=120)
+
+    logger.info("Slave node has IP address %s" % slave_node.ip_addresses[0])
+
 
 if __name__ == '__main__':
     main()
