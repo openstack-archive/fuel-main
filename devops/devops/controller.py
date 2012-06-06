@@ -33,6 +33,7 @@ class Controller:
 
         environment.work_dir = tempfile.mkdtemp(prefix=os.path.join(self.home_dir, 'environments', environment.name)+'-')
         os.chmod(environment.work_dir, stat.S_IRWXU | stat.S_IRWXG | stat.S_IRWXO)
+        environment.id = os.path.basename(environment.work_dir)
 
         environment.driver = self.driver
 
