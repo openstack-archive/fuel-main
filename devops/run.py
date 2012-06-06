@@ -35,27 +35,28 @@ def main():
 
     logger.info("Environment ready")
 
-    external_network = environment.network['external']
+    try:
+        external_network = environment.network['external']
 
-    master_node = environment.node['master']
-    slave_node  = environment.node['slave']
+        master_node = environment.node['master']
+        slave_node  = environment.node['slave']
 
-    logger.info("Starting master node")
-    master_node.start()
+        logger.info("Starting master node")
+        master_node.start()
 
-    logger.info("VNC to master is available on %d" % master_node.vnc_port)
+        logger.info("VNC to master is available on %d" % master_node.vnc_port)
 
-    logger.info("Waiting master node to boot")
-    time.sleep(15)
+        logger.info("Waiting master node to boot")
+        time.sleep(15)
 
-    logger.info("Sending user input")
+        logger.info("Sending user input")
 
-    ip = external_network.ip_addresses
-    host_ip   = ip[1]
-    master_ip = ip[2]
-    netmask   = ip.netmask
+        ip = external_network.ip_addresses
+        host_ip   = ip[1]
+        master_ip = ip[2]
+        netmask   = ip.netmask
 
-    master_node.send_keys("""<Esc><Enter>
+        master_node.send_keys("""<Esc><Enter>
 <Wait>
 /install/vmlinuz initrd=/install/initrd.gz
  priority=critical
@@ -68,22 +69,26 @@ def main():
  netcfg/get_nameservers=%s
  netcfg/confirm_static=true
  <Enter>""" % (master_ip, netmask, host_ip, host_ip))
-    logger.info("Finished sending user input")
+        logger.info("Finished sending user input")
 
-    logger.info("Waiting master node to install")
-    wait(lambda: tcp_ping(master_ip, 22))
+        logger.info("Waiting master node to install")
+        wait(lambda: tcp_ping(master_ip, 22))
 
-    logger.info("Starting slave node")
+        logger.info("Starting slave node")
 
-    slave_node.start()
+        slave_node.start()
 
-    logger.info("VNC to slave node at port %d" % slave_node.vnc_port)
+        logger.info("VNC to slave node at port %d" % slave_node.vnc_port)
 
-    logger.info("Waiting slave node to configure network")
+        logger.info("Waiting slave node to configure network")
 
-    wait(lambda: len(slave_node.ip_addresses) > 0, timeout=120)
+        wait(lambda: len(slave_node.ip_addresses) > 0, timeout=120)
 
-    logger.info("Slave node has IP address %s" % slave_node.ip_addresses[0])
+        logger.info("Slave node has IP address %s" % slave_node.ip_addresses[0])
+    except:
+        devops.save(environment)
+        logger.warn("Environment has been saved as %s" % environment.id)
+        raise
 
 
 if __name__ == '__main__':
