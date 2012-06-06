@@ -246,15 +246,20 @@ class ReleaseCollectionHandler(BaseHandler):
     @validate_json(ReleaseCreationForm)
     def create(self, request):
         data = request.form.cleaned_data
-        print data
         release = Release(
             name=data["name"],
             version=data["version"],
             description=data["description"]
         )
         release.save()
-        role_names = [role["name"] for role in data["roles"]]
-        map(release.roles.add, Role.objects.filter(name__in=role_names))
+        for role in data["roles"]:
+            rl = Role(name=role["name"])
+            rl.save()
+            recipes = Recipe.objects.filter(recipe__in=role["recipes"])
+            map(rl.recipes.add, recipes)
+            rl.save()
+            release.roles.add(rl)
+
         release.save()
         return release
 

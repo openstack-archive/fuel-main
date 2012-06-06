@@ -31,12 +31,12 @@ class TestHandlers(TestCase):
         self.recipe = Recipe()
         self.recipe.recipe = 'cookbook@version::recipe'
         self.recipe.save()
-        self.recipe = Recipe()
-        self.recipe.recipe = 'nova@0.1.0::compute'
-        self.recipe.save()
-        self.recipe = Recipe()
-        self.recipe.recipe = 'nova@0.1.0::monitor'
-        self.recipe.save()
+        self.second_recipe = Recipe()
+        self.second_recipe.recipe = 'nova@0.1.0::compute'
+        self.second_recipe.save()
+        self.third_recipe = Recipe()
+        self.third_recipe.recipe = 'nova@0.1.0::monitor'
+        self.third_recipe.save()
 
         self.role = Role()
         self.role.save()
@@ -68,6 +68,8 @@ class TestHandlers(TestCase):
         self.role.delete()
         self.another_role.delete()
         self.recipe.delete()
+        self.second_recipe.delete()
+        self.third_recipe.delete()
 
     def test_cluster_creation(self):
         yet_another_cluster_name = 'Yet another cluster'
@@ -371,3 +373,12 @@ class TestHandlers(TestCase):
             description=release_description
         )
         self.assertEquals(len(release_from_db), 1)
+
+        roles = []
+        for rl in release_from_db[0].roles.all():
+            roles.append({
+                'name': rl.name,
+                'recipes': [i.recipe for i in rl.recipes.all()]
+            })
+        for a, b in zip(sorted(roles), sorted(release_roles)):
+            self.assertEquals(a, b)
