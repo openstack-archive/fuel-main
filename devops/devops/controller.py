@@ -6,9 +6,11 @@ import shutil
 import yaml
 import urllib
 import ipaddr
+import glob
 
 from devops.model import Node, Network
 from devops.network import IpNetworksPool
+from devops.error import DevopsError
 
 import logging
 logger = logging.getLogger('devops.controller')
@@ -83,6 +85,32 @@ class Controller:
         shutil.rmtree(environment.work_dir)
 
         logger.info("Finished destroying environment %s" % environment.name)
+
+    def load_environment(self, environment_name):
+        env_work_dir = os.path.join(self.home_dir, 'environments', environment_name)
+        env_config_file = os.path.join(env_work_dir, 'config')
+        if not os.path.exists(env_config_file):
+            raise DevopsError, "Environment '%s' couldn't be found" % environment_name
+
+        with file(env_config_file) as f:
+            data = f.read()
+
+        environment = yaml.load(data)
+
+        return environment
+
+    def save_environment(self, environment):
+        data = yaml.dump(environment)
+        with file(os.path.join(environment.work_dir, 'config'), 'w') as f:
+            f.write(data)
+
+    @property
+    def saved_environments(self):
+        saved_environments = []
+        for path in glob.glob(os.path.join(self.home_dir, 'environments', '*')):
+            if os.path.exists(os.path.join(path, 'config')):
+                saved_environments.append(os.path.basename(path))
+        return saved_environments
 
     def _reserve_networks(self):
         logger.debug("Scanning for ip networks that are already taken")
