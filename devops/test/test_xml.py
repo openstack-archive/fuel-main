@@ -1,5 +1,5 @@
 
-from . import xml
+from devops import xml
 import unittest
 
 class TestXml(unittest.TestCase):
