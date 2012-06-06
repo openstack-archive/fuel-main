@@ -1,0 +1,55 @@
+#!/usr/bin/env ruby
+
+# This utility downloads cookbooks, json files and runs chef-solo
+#
+# Copyright 2012, Mirantis
+
+require 'rubygems'
+require 'ohai'
+require 'json'
+
+URL = "http://127.0.0.1"
+COOKS_DIR = "/tmp/cookbooks"
+
+ohai = Ohai::System.new
+ohai.require_plugin("network")
+ohai.require_plugin("linux/network")
+
+ohai_data = ohai.data
+
+host_id = ohai.data["macaddress"].gsub(':', '')
+
+# Downloading host-specific json
+solo_json_file = "#{host_id}.json"
+system("wget -c -T 7 --tries=7 -a wget.log #{URL}/#{solo_json_file}")
+
+solo_json = JSON.parse(File.read(solo_json_file))
+
+cooks = solo_json["run_list"].map do |recipe| 
+  cook_ver = recipe.match(/recipe\[(\S+)::\S+@(\S+)\]/)
+  cook, version = cook_ver[1], cook_ver[2]
+
+  {cook => version}
+end.uniq
+
+Dir.mkdir(COOKS_DIR) unless File.exists?(COOKS_DIR)
+
+cooks.each do |cb|
+  filename = "#{cb.keys[0]}_#{cb.values[0]}.tar.gz"
+  system("wget -c -T 7 --tries=7 -a wget.log #{URL}/#{filename}")
+  system("tar xzf \"#{filename}\" -C #{COOKS_DIR}")
+end
+
+solo_rb = %{
+log_location "/var/log/chef/solo.log"
+file_cache_path "/tmp/chef"
+cookbook_path "#{COOKS_DIR}"
+log_level :debug
+verbose_logging true
+}  
+
+solo_rb_file = File.join(COOKS_DIR, 'solo.rb')
+
+File.open(solo_rb_file, 'w') {|f| f.write(solo_rb) }
+
+system("/usr/bin/chef-solo -c #{File.expand_path(solo_rb_file)} -j #{solo_json_file}")
