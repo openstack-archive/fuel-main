@@ -1,0 +1,2 @@
+class DevopsError(Exception): pass
+
