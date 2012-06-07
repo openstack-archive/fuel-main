@@ -57,7 +57,10 @@ class TaskHandler(BaseHandler):
         return json_data
 
     def read(self, request, task_id):
-        task = celery.result.AsyncResult(task_id)
+        try:
+            task = celery.result.AsyncResult(task_id)
+        except:
+            return rc.NOT_FOUND
         return TaskHandler.render(task)
 
 
