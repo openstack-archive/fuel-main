@@ -324,9 +324,9 @@ class ReleaseCollectionHandler(BaseHandler):
     allowed_methods = ('GET', 'POST')
     model = Release
 
-    def read(self, request, release_id):
+    def read(self, request):
         return map(
-            ReleaseCollectionHandler.render,
+            ReleaseHandler.render,
             Release.objects.all()
         )
 
