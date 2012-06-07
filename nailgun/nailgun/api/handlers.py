@@ -15,6 +15,9 @@ from nailgun.tasks import deploy_cluster
 
 
 class JSONHandler(BaseHandler):
+    """
+    Basic JSON handler
+    """
     fields = None
     special_fields = None
 
@@ -33,22 +36,24 @@ class JSONHandler(BaseHandler):
 class TaskHandler(BaseHandler):
 
     allowed_methods = ('GET',)
+    fields = ('task_id', 'status')
+    special_fields = ('result',)
 
     @classmethod
     def render(cls, task):
         # TODO show meta?
-        repr = {
+        json_data = {
             "task_id": task.task_id,
             "status": task.state,
         }
 
         if task.state == celery.states.SUCCESS:
-            repr['result'] = task.result
+            json_data['result'] = task.result
         elif task.state == celery.states.FAILURE:
             # return string representation of the exception if failed
-            repr['result'] = str(task.result)
+            json_data['result'] = str(task.result)
 
-        return repr
+        return json_data
 
     def read(self, request, task_id):
         task = celery.result.AsyncResult(task_id)
@@ -68,28 +73,14 @@ class ConfigHandler(BaseHandler):
         return response
 
 
-class ClusterCollectionHandler(JSONHandler):
+class ClusterCollectionHandler(BaseHandler):
 
     allowed_methods = ('GET', 'POST')
     model = Cluster
-    #fields = ('id', 'name', ('nodes', ()))
-    fields = ('id', 'name')
-    special_fields = ('nodes',)
-
-    @classmethod
-    def render(cls, cluster, fields=None):
-        json_data = JSONHandler.render(cluster, fields=fields or cls.fields)
-        for field in cls.special_fields:
-            if field in ('nodes',):
-                json_data[field] = map(
-                    NodeCollectionHandler.render,
-                    cluster.nodes.all()
-                )
-        return json_data
 
     def read(self, request):
         json_data = map(
-            ClusterCollectionHandler.render,
+            ClusterHandler.render,
             Cluster.objects.all()
         )
         return json_data
@@ -102,18 +93,31 @@ class ClusterCollectionHandler(JSONHandler):
                 setattr(cluster, key, value)
         cluster.save()
 
-        return ClusterCollectionHandler.render(cluster)
+        return ClusterHandler.render(cluster)
 
 
-class ClusterHandler(BaseHandler):
+class ClusterHandler(JSONHandler):
 
     allowed_methods = ('GET', 'PUT')
     model = Cluster
+    fields = ('id', 'name')
+    special_fields = ('nodes',)
+
+    @classmethod
+    def render(cls, cluster, fields=None):
+        json_data = JSONHandler.render(cluster, fields=fields or cls.fields)
+        for field in cls.special_fields:
+            if field in ('nodes',):
+                json_data[field] = map(
+                    NodeHandler.render,
+                    cluster.nodes.all()
+                )
+        return json_data
 
     def read(self, request, cluster_id):
         try:
             cluster = Cluster.objects.get(id=cluster_id)
-            return ClusterCollectionHandler.render(cluster)
+            return ClusterHandler.render(cluster)
         except ObjectDoesNotExist:
             return rc.NOT_FOUND
 
@@ -126,33 +130,19 @@ class ClusterHandler(BaseHandler):
                     setattr(cluster, key, value)
 
             cluster.save()
-            return ClusterCollectionHandler.render(cluster)
+            return ClusterHandler.render(cluster)
         except ObjectDoesNotExist:
             return rc.NOT_FOUND
 
 
-class NodeCollectionHandler(JSONHandler):
+class NodeCollectionHandler(BaseHandler):
 
     allowed_methods = ('GET', 'POST')
     model = Node
-    fields = ('id', 'name', 'cluster_id', 'metadata',
-            'status', 'mac', 'fqdn', 'ip')
-    special_fields = 'roles'
-
-    @classmethod
-    def render(cls, node, fields=None):
-        json_data = JSONHandler.render(node, fields=fields or cls.fields)
-        for field in cls.special_fields:
-            if field in ('roles',):
-                json_data[field] = map(
-                    RoleCollectionHandler.render,
-                    node.roles.all()
-                )
-        return json_data
 
     def read(self, request):
         return map(
-            NodeCollectionHandler.render,
+            NodeHandler.render,
             Node.objects.all()
         )
 
@@ -169,28 +159,32 @@ class NodeCollectionHandler(JSONHandler):
                     setattr(node, key, value)
 
         node.save()
-        return NodeCollectionHandler.render(node)
+        return NodeHandler.render(node)
 
 
-class NodeRoleAvailable(BaseHandler):
-
-    allowed_methods = ('GET',)
-    model = Role
-
-    def read(self, request, node_id, role_id):
-        # TODO: it's a stub!
-        return {'available': True, 'error': None}
-
-
-class NodeHandler(BaseHandler):
+class NodeHandler(JSONHandler):
 
     allowed_methods = ('GET', 'PUT')
     model = Node
+    fields = ('id', 'name', 'cluster_id', 'metadata',
+            'status', 'mac', 'fqdn', 'ip')
+    special_fields = ('roles',)
+
+    @classmethod
+    def render(cls, node, fields=None):
+        json_data = JSONHandler.render(node, fields=fields or cls.fields)
+        for field in cls.special_fields:
+            if field in ('roles',):
+                json_data[field] = map(
+                    RoleHandler.render,
+                    node.roles.all()
+                )
+        return json_data
 
     def read(self, request, node_id):
         try:
             node = Node.objects.get(id=node_id)
-            return NodeCollectionHandler.render(node)
+            return NodeHandler.render(node)
         except ObjectDoesNotExist:
             return rc.NOT_FOUND
 
@@ -213,51 +207,68 @@ class NodeHandler(BaseHandler):
                     setattr(node, key, value)
 
         node.save()
-        return NodeCollectionHandler.render(node)
+        return NodeHandler.render(node)
 
 
-class RecipeCollectionHandler(JSONHandler):
+class NodeRoleAvailable(BaseHandler):
+
+    allowed_methods = ('GET',)
+    model = Role
+
+    def read(self, request, node_id, role_id):
+        # TODO: it's a stub!
+        return {'available': True, 'error': None}
+
+
+class RecipeCollectionHandler(BaseHandler):
 
     allowed_methods = ('GET', 'POST')
     model = Recipe
-    fields = ('recipe',)
 
     def read(self, request):
         return map(
-            RecipeCollectionHandler.render,
+            RecipeHandler.render,
             Recipe.objects.all()
         )
 
     @validate_json(RecipeForm)
     def create(self, request):
+        data = request.form.cleaned_data
+        try:
+            release = Recipe.objects.get(
+                recipe=data['recipe']
+            )
+            return rc.DUPLICATE_ENTRY
+        except Recipe.DoesNotExist:
+            pass
+
         recipe = Recipe()
-        for key, value in request.form.cleaned_data.items():
+        for key, value in data.items():
             if key in request.form.data:
                 setattr(recipe, key, value)
         recipe.save()
 
-        return RecipeCollectionHandler.render(recipe)
+        return RecipeHandler.render(recipe)
 
 
-class RecipeHandler(BaseHandler):
+class RecipeHandler(JSONHandler):
 
     allowed_methods = ('GET',)
     model = Recipe
-    fields = RecipeCollectionHandler.fields
+    fields = ('recipe',)
 
     def read(self, request, recipe_id):
         try:
             recipe = Recipe.objects.get(id=recipe_id)
-            return RecipeCollectionHandler.render(recipe)
+            return RecipeHandler.render(recipe)
         except ObjectDoesNotExist:
             return rc.NOT_FOUND
 
 
-class RoleCollectionHandler(JSONHandler):
+class RoleCollectionHandler(BaseHandler):
 
     allowed_methods = ('GET', 'POST')
     model = Role
-    fields = ('id', 'name')
 
     def read(self, request):
         return map(
@@ -274,13 +285,26 @@ class RoleCollectionHandler(JSONHandler):
         map(role.recipes.add, recipes)
         role.save()
 
-        return RoleCollectionHandler.render(role)
+        return RoleHandler.render(role)
 
 
-class RoleHandler(BaseHandler):
+class RoleHandler(JSONHandler):
 
     allowed_methods = ('GET',)
     model = Role
+    fields = ('id', 'name')
+    special_fields = ('recipes',)
+
+    @classmethod
+    def render(cls, role, fields=None):
+        json_data = JSONHandler.render(role, fields=fields or cls.fields)
+        for field in cls.special_fields:
+            if field in ('recipes',):
+                json_data[field] = map(
+                    RecipeHandler.render,
+                    role.recipes.all()
+                )
+        return json_data
 
     def read(self, request, role_id):
         try:
@@ -290,11 +314,10 @@ class RoleHandler(BaseHandler):
             return rc.NOT_FOUND
 
 
-class ReleaseCollectionHandler(JSONHandler):
+class ReleaseCollectionHandler(BaseHandler):
 
     allowed_methods = ('GET', 'POST')
     model = Release
-    fields = ('name', 'version', 'description')
 
     def read(self, request, release_id):
         return map(
@@ -330,13 +353,14 @@ class ReleaseCollectionHandler(JSONHandler):
             release.roles.add(rl)
 
         release.save()
-        return ReleaseCollectionHandler.render(release)
+        return ReleaseHandler.render(release)
 
 
-class ReleaseHandler(BaseHandler):
+class ReleaseHandler(JSONHandler):
 
     allowed_methods = ('GET',)
     model = Release
+    fields = ('name', 'version', 'description')
 
     def read(self, request, release_id):
         try:

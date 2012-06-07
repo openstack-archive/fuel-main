@@ -283,6 +283,15 @@ class TestHandlers(TestCase):
             "application/json"
         )
         self.assertEquals(resp.status_code, 200)
+        # test duplicate
+        resp = self.client.post(
+            reverse('recipe_collection_handler'),
+            json.dumps({
+                'recipe': recipe
+            }),
+            "application/json"
+        )
+        self.assertEquals(resp.status_code, 409)
 
         recipe_from_db = Recipe.objects.filter(recipe=recipe)
         self.assertEquals(len(recipe_from_db), 1)
@@ -313,6 +322,7 @@ class TestHandlers(TestCase):
         resp = self.client.post(url)
         self.assertEquals(resp.status_code, 202)
         resp_json = json.loads(resp.content)
+        print resp_json
         self.assertEquals(len(resp_json['task_id']), 36)
 
     def test_validate_node_role_available(self):

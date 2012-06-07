@@ -14,6 +14,9 @@ class RecipeForm(forms.ModelForm):
     class Meta:
         model = Recipe
 
+    def clean(self):
+        return self.cleaned_data
+
 
 def validate_role_recipes(value):
     if value and isinstance(value, list):
