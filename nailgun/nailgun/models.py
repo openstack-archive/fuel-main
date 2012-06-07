@@ -40,7 +40,7 @@ class Node(models.Model):
 class Release(models.Model):
     name = models.CharField(max_length=100)
     version = models.CharField(max_length=30)
-    description = models.TextField()
+    description = models.TextField(null=True, blank=True)
     roles = models.ManyToManyField(Role, related_name='releases')
 
     class Meta:

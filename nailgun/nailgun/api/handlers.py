@@ -28,9 +28,8 @@ class JSONHandler(BaseHandler):
         if not use_fields:
             raise ValueError("No fields for serialize")
         for field in use_fields:
-            if cls.special_fields and field not in cls.special_fields:
-                json_data[field] = getattr(item, field)
-            elif cls is JSONHandler:
+            if cls is JSONHandler or cls.special_fields and \
+                field not in cls.special_fields:
                 json_data[field] = getattr(item, field)
         return json_data
 
