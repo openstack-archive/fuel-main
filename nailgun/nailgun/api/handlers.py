@@ -10,7 +10,6 @@ from nailgun.models import Cluster, Node, Recipe, Role, Release
 from nailgun.api.validators import validate_json
 from nailgun.api.forms import ClusterForm, RecipeForm, RoleForm, \
         NodeCreationForm, NodeUpdateForm, ReleaseCreationForm
-#from nailgun.tasks import create_chef_config
 from nailgun.tasks import deploy_cluster
 
 
@@ -48,11 +47,8 @@ class TaskHandler(BaseHandler):
             "status": task.state,
         }
 
-        if task.state == celery.states.SUCCESS:
-            json_data['result'] = task.result
-        elif task.state == celery.states.FAILURE:
-            # return string representation of the exception if failed
-            json_data['result'] = str(task.result)
+        # return string representation of the exception if failed
+        json_data['results'] = [str(t.result) for t in task.result.results]
 
         return json_data
 
@@ -69,7 +65,6 @@ class ConfigHandler(BaseHandler):
     allowed_methods = ('POST',)
 
     def create(self, request, cluster_id):
-        #task = create_chef_config.delay(cluster_id)
         task = deploy_cluster.delay(cluster_id)
 
         response = rc.ACCEPTED

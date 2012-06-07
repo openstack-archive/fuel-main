@@ -7,7 +7,6 @@ from django.core.urlresolvers import reverse, NoReverseMatch
 from piston.emitters import Emitter
 
 from nailgun.models import Cluster, Node, Recipe, Role, Release
-from nailgun.tasks import create_chef_config
 from nailgun.api import urls as api_urls
 
 
@@ -40,6 +39,7 @@ class TestHandlers(TestCase):
         self.node = Node(id="080000000001",
                     cluster_id=1,
                     name=self.node_name,
+                    ip="127.0.0.1",
                     metadata=self.old_meta)
         self.node.save()
 
@@ -367,7 +367,6 @@ class TestHandlers(TestCase):
         resp = self.client.post(url)
         self.assertEquals(resp.status_code, 202)
         resp_json = json.loads(resp.content)
-        print resp_json
         self.assertEquals(len(resp_json['task_id']), 36)
 
     def test_validate_node_role_available(self):

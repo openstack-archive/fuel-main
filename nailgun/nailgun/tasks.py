@@ -17,13 +17,6 @@ logger = logging.getLogger(__name__)
 
 @task
 def deploy_cluster(cluster_id):
-    create_chef_config.delay(cluster_id, callback=run_chef_solo)
-    # TODO(mihgen): return info about subtasks
-    return True
-
-
-@task
-def create_chef_config(cluster_id, callback=None):
     nodes = Node.objects.filter(cluster__id=cluster_id)
     roles = Role.objects.all()
     if not (nodes and roles):
@@ -53,11 +46,9 @@ def create_chef_config(cluster_id, callback=None):
         f.write(json.dumps(solo_json))
         f.close()
 
-    if callback:
-        job = group(subtask(callback, args=(n.ip, )) for n in nodes)
-        result = job.apply_async()
-        return True
-    return True
+    job = group(subtask(run_chef_solo, args=(n.ip, )) for n in nodes)
+    result = job.apply_async()
+    return result
 
 
 @task
@@ -70,11 +61,10 @@ def run_chef_solo(host):
             paramiko.PasswordRequiredException,
             paramiko.SSHException):
         logger.exception("Can't connect to host %s.", host)
-        return False   # TODO(mihgen): set status FAILURE ?
+        return {host: False}
     except Exception:
         logger.exception("Error in deployment of %s.", host)
-        return False   # TODO(mihgen): set status FAILURE ?
+        return {host: False}
     #finally:
         #ssh.close()
-
-    return True
+    return {host: True}

@@ -168,6 +168,7 @@ djcelery.setup_loader()
 BROKER_URL = "redis://localhost:6379/0"
 CELERY_RESULT_BACKEND = "redis"
 CELERY_IMPORTS = ("nailgun.tasks",)
+CELERY_DISABLE_RATE_LIMITS = True
 
 CHEF_CONF_FOLDER = "."
 PATH_TO_SSH_KEY = "id_rsa"
