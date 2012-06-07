@@ -322,16 +322,6 @@ class TestHandlers(TestCase):
             "application/json"
         )
         self.assertEquals(resp.status_code, 200)
-        # test duplicate role
-        resp = self.client.post(
-            reverse('role_collection_handler'),
-            json.dumps({
-                'name': role_name,
-                'recipes': role_recipes
-            }),
-            "application/json"
-        )
-        self.assertEquals(resp.status_code, 409)
 
         roles_from_db = Role.objects.filter(name=role_name)
         self.assertEquals(len(roles_from_db), 1)
@@ -391,20 +381,6 @@ class TestHandlers(TestCase):
                 'version': release_version,
                 'description': release_description,
                 'roles': release_roles
-            }),
-            "application/json"
-        )
-        self.assertEquals(resp.status_code, 409)
-
-        # test duplicate role
-        resp = self.client.post(
-            reverse('role_collection_handler'),
-            json.dumps({
-                'name': 'compute',
-                'recipes': [
-                    'nova::compute@0.1.0',
-                    'cookbook::recipe@2.1'
-                ]
             }),
             "application/json"
         )

@@ -24,8 +24,8 @@ class RecipeForm(forms.ModelForm):
 
 def validate_recipe(value):
     if not re.match(r'^[^\]]+::([^\]]+)@[0-9]+(\.[0-9]+){1,2}$', value):
-        raise ValidationError('Recipe should be in \
-cookbook::recipe@version format')
+        raise ValidationError('Recipe should be in a \
+"cookbook::recipe@version" format')
 
 
 def validate_role_recipes(value):
@@ -72,10 +72,13 @@ def validate_node_roles(value):
 
 def validate_release_node_roles(data):
     if not data or not isinstance(data, list):
-        raise ValidationError('Empty roles list')
+        raise ValidationError('Invalid roles list')
     if not all(map(lambda i: 'name' in i, data)):
         raise ValidationError('Role name is empty')
     for role in data:
+        if 'recipes' not in role or not role['recipes']:
+            raise ValidationError('Recipes list for role "%s" \
+should not be empty' % role['name'])
         for recipe in role['recipes']:
             validate_recipe(recipe)
             try:

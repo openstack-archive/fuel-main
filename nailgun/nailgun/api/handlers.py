@@ -30,6 +30,8 @@ class JSONHandler(BaseHandler):
         for field in use_fields:
             if cls.special_fields and field not in cls.special_fields:
                 json_data[field] = getattr(item, field)
+            elif cls is JSONHandler:
+                json_data[field] = getattr(item, field)
         return json_data
 
 
@@ -255,7 +257,11 @@ class RecipeHandler(JSONHandler):
 
     allowed_methods = ('GET',)
     model = Recipe
-    fields = ('recipe',)
+    special_fields = ('recipe',)
+
+    @classmethod
+    def render(cls, recipe, fields=None):
+        return getattr(recipe, 'recipe')
 
     def read(self, request, recipe_id):
         try:
@@ -279,14 +285,6 @@ class RoleCollectionHandler(BaseHandler):
     @validate_json(RoleForm)
     def create(self, request):
         data = request.form.cleaned_data
-        print data
-        try:
-            rl = Role.objects.get(
-                name=data['name'],
-            )
-            return rc.DUPLICATE_ENTRY
-        except Role.DoesNotExist:
-            pass
         recipes = Recipe.objects.filter(recipe__in=data['recipes'])
         role = Role(name=data["name"])
         role.save()
@@ -352,6 +350,7 @@ class ReleaseCollectionHandler(BaseHandler):
             description=data["description"]
         )
         release.save()
+
         for role in data["roles"]:
             rl = Role(name=role["name"])
             rl.save()
@@ -369,6 +368,18 @@ class ReleaseHandler(JSONHandler):
     allowed_methods = ('GET',)
     model = Release
     fields = ('name', 'version', 'description')
+    special_fields = ('roles',)
+
+    @classmethod
+    def render(cls, release, fields=None):
+        json_data = JSONHandler.render(release, fields=fields or cls.fields)
+        for field in cls.special_fields:
+            if field in ('roles',):
+                json_data[field] = map(
+                    RoleHandler.render,
+                    release.roles.all()
+                )
+        return json_data
 
     def read(self, request, release_id):
         try:
