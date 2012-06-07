@@ -1,6 +1,11 @@
 import os
 import socket
 import time
+import httplib
+import xmlrpclib
+
+class TimeoutError(Exception): pass
+class AuthenticationError(Exception): pass
 
 def icmp_ping(host, timeout=1):
     "icmp_ping(host, timeout=1) - returns True if host is pingable; False - otherwise."
@@ -15,8 +20,6 @@ def tcp_ping(host, port):
         return False
     s.close()
     return True
-
-class TimeoutError(Exception): pass
 
 def wait(predicate, interval=5, timeout=None):
     """
@@ -35,3 +38,26 @@ def wait(predicate, interval=5, timeout=None):
             seconds_to_sleep = max(0, min(seconds_to_sleep, start_time + timeout - time.time()))
         time.sleep(seconds_to_sleep)
 
+def http(host='localhost', port=80, method='GET', url='/', waited_code=200):
+    conn = httplib.HTTPConnection(host, port)
+    conn.request(method, url)
+    res = conn.getresponse()
+    
+    if res.status == waited_code:
+        return True
+    return False
+
+def xmlrpctoken(uri, login, password):
+    server = xmlrpclib.Server(uri)
+    try:
+        return server.login(login, password)
+    except:
+        raise AuthenticationError, "Error occured while login process"
+
+def xmlrpcmethod(uri, method):
+    server = xmlrpclib.Server(uri)
+    try:
+        return getattr(server, method)
+    except:
+        raise AttributeError, "Error occured while getting server method"
+        
