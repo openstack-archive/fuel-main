@@ -277,7 +277,7 @@ class RoleCollectionHandler(BaseHandler):
 
     def read(self, request):
         return map(
-            RoleCollectionHandler.render,
+            RoleHandler.render,
             Role.objects.all()
         )
 
@@ -314,7 +314,7 @@ class RoleHandler(JSONHandler):
     def read(self, request, role_id):
         try:
             role = Role.objects.get(id=role_id)
-            RoleCollectionHandler.render(role)
+            RoleHandler.render(role)
         except ObjectDoesNotExist:
             return rc.NOT_FOUND
 
