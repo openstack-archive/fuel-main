@@ -1,10 +1,24 @@
 import simplejson as json
 from django import http
 from django.test import TestCase
+from django.db.models import Model
 from django.core.urlresolvers import reverse
+
+from piston.emitters import Emitter
 
 from nailgun.models import Cluster, Node, Recipe, Role, Release
 from nailgun.tasks import create_chef_config
+
+
+# monkey patch!
+def _construct_monkey(func):
+    def wrapped(self=None, *args, **kwargs):
+        if isinstance(self.data, Model):
+            raise NotImplementedError("Don't return model from handler!")
+        return func(self, *args, **kwargs)
+    return wrapped
+
+Emitter.construct = _construct_monkey(Emitter.construct)
 
 
 class TestHandlers(TestCase):
