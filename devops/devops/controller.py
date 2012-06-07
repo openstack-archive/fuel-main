@@ -40,7 +40,7 @@ class Controller:
         for node in environment.nodes:
             if node.cdrom:
                 path = node.cdrom.isopath
-                if path.index('://') == -1 or path.startswith('file://'):
+                if path.find('://') == -1:
                     continue
 
                 node.cdrom.isopath = self._cache_file(node.cdrom.isopath)
@@ -175,7 +175,7 @@ class Controller:
         with file(cache_log_path, 'w') as f:
             f.write(yaml.dump(cache_entries))
 
-        logger.debug("Cached '%s' to '%s'" % (url, cahed_path))
+        logger.debug("Cached '%s' to '%s'" % (url, cached_path))
 
         return cached_path
 
