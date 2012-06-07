@@ -56,7 +56,7 @@ def run_chef_solo(host):
     try:
         ssh = SshConnect(host, 'root', settings.PATH_TO_SSH_KEY)
         # Returns True if succeeded
-        ssh.run("id")
+        exit_code = ssh.run("/opt/nailgun/bin/deploy")
     except (paramiko.AuthenticationException,
             paramiko.PasswordRequiredException,
             paramiko.SSHException):
@@ -67,4 +67,4 @@ def run_chef_solo(host):
         return {host: False}
     #finally:
         #ssh.close()
-    return {host: True}
+    return {host: exit_code}

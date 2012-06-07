@@ -1,5 +1,5 @@
 # Django settings for nailgun project.
-import os.path
+import os
 
 SITE_ROOT = os.path.dirname(os.path.realpath(__file__))
 PROJECT_ROOT = os.path.dirname(SITE_ROOT)
@@ -170,7 +170,7 @@ CELERY_RESULT_BACKEND = "redis"
 CELERY_IMPORTS = ("nailgun.tasks",)
 CELERY_DISABLE_RATE_LIMITS = True
 
-CHEF_CONF_FOLDER = "."
-PATH_TO_SSH_KEY = "id_rsa"
+CHEF_CONF_FOLDER = "/var/www"
+PATH_TO_SSH_KEY = os.path.join(os.getenv("HOME"), ".ssh/id_rsa")
 
 PISTON_IGNORE_DUPE_MODELS = True
