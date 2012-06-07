@@ -2,12 +2,13 @@ import simplejson as json
 from django import http
 from django.test import TestCase
 from django.db.models import Model
-from django.core.urlresolvers import reverse
+from django.core.urlresolvers import reverse, NoReverseMatch
 
 from piston.emitters import Emitter
 
 from nailgun.models import Cluster, Node, Recipe, Role, Release
 from nailgun.tasks import create_chef_config
+from nailgun.api import urls as api_urls
 
 
 # monkey patch!
@@ -84,6 +85,32 @@ class TestHandlers(TestCase):
         self.recipe.delete()
         self.second_recipe.delete()
         self.third_recipe.delete()
+
+    def test_all_api_urls_500(self):
+        test_urls = {}
+        for pattern in api_urls.urlpatterns:
+            test_urls[pattern.name] = pattern.callback.handler.allowed_methods
+
+        url_ids = {
+            'cluster_handler': {'cluster_id': 1},
+            'node_handler': {'node_id': 'A' * 12},
+            'task_handler': {'task_id': 'a' * 36},
+            'release_handler': {'release_id': 1},
+            'role_handler': {'role_id': 1},
+            'node_role_available': {'node_id': 'A' * 12, 'role_id': 1},
+            'recipe_handler': {'recipe_id': 1}
+        }
+
+        for url, methods in test_urls.iteritems():
+            kw = {}
+            if url in url_ids:
+                kw = url_ids[url]
+
+            if 'GET' in methods:
+                test_url = reverse(url, kwargs=kw)
+                resp = self.client.get(test_url)
+                print test_url
+                self.assertNotEqual(str(resp.status_code)[0], '5')
 
     def test_cluster_creation(self):
         yet_another_cluster_name = 'Yet another cluster'

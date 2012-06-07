@@ -382,6 +382,7 @@ class ReleaseHandler(JSONHandler):
 
     def read(self, request, release_id):
         try:
-            return Release.objects.get(id=release_id)
+            release = Release.objects.get(id=release_id)
+            return ReleaseHandler.render(release)
         except ObjectDoesNotExist:
             return rc.NOT_FOUND
