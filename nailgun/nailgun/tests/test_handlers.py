@@ -334,34 +334,6 @@ class TestHandlers(TestCase):
         self.assertEquals(resp.status_code, 200)
 
     def test_release_create(self):
-        role_name = 'Compute role'
-        role_recipes = [
-            'nova::compute@0.1.0',
-            'cookbook::recipe@2.1'
-        ]
-        resp = self.client.post(
-            reverse('role_collection_handler'),
-            json.dumps({
-                'name': role_name,
-                'recipes': role_recipes
-            }),
-            "application/json"
-        )
-        self.assertEquals(resp.status_code, 200)
-        role_name = 'Monitor role'
-        role_recipes = [
-            'nova::monitor@0.1.0'
-        ]
-        resp = self.client.post(
-            reverse('role_collection_handler'),
-            json.dumps({
-                'name': role_name,
-                'recipes': role_recipes
-            }),
-            "application/json"
-        )
-        self.assertEquals(resp.status_code, 200)
-
         release_name = "OpenStack"
         release_version = "1.0.0"
         release_description = "This is test release"
