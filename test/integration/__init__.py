@@ -5,7 +5,7 @@ from devops.driver.libvirt import Libvirt
 from devops.helpers import tcp_ping, wait
 
 class Ci:
-    def __init__(self):
+    def __init__(self, iso='http://mc0n1-srt.srt.mirantis.net/nailgun-ubuntu-12.04-amd64.last.iso'):
         self.environment = Environment('test')
 
         self.default_network = Network('default')
@@ -13,7 +13,7 @@ class Ci:
         self.admin_node = Node('admin')
         self.admin_node.memory = 1024
         self.admin_node.vnc = True
-        self.admin_node.cdrom = Cdrom(isopath='/var/www/local/nailgun-ubuntu-12.04-amd64.last.iso')
+        self.admin_node.cdrom = Cdrom(isopath=iso)
         self.admin_node.disks.append(Disk(size=30*1024**3))
         self.admin_node.interfaces.append(Interface(self.default_network))
         self.admin_node.boot = ['disk', 'cdrom']
@@ -27,6 +27,8 @@ class Ci:
 
         self.default_ip = self.default_network.ip_addresses
 
+    def set_iso(iso):
+        self.admin_node.cdrom = Cdrom(isopath=iso)
 
 ci = Ci()
 
