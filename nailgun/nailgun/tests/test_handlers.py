@@ -110,6 +110,7 @@ class TestHandlers(TestCase):
                 test_url = reverse(url, kwargs=kw)
                 resp = self.client.get(test_url)
                 print test_url
+                print resp.content
                 self.assertNotEqual(str(resp.status_code)[0], '5')
 
     def test_cluster_creation(self):
