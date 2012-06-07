@@ -1,17 +1,17 @@
 {
-    "name": "OpenStack",
+    "name": "Sample release",
     "version": "1.0.0",
-    "description": "The openstack default release",
+    "description": "Description for Release",
     "roles": [{
-        "name": "compute",
+        "name": "role1",
         "recipes": [
-            "nova@0.1.1::compute",
-            "nova@0.1.1::monitor"
+            "sample-cook::compute@0.3.0",
+            "sample-cook::monitor@0.3.0"
         ]
       },{
-        "name": "controller",
+        "name": "role2",
         "recipes": [
-            "other_cookbook@2.4.2::api"
+            "sample-cook::default@0.3.0"
         ]
       }
     ]

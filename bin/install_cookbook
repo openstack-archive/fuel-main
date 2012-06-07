@@ -26,20 +26,20 @@ def create_cookbook(metafile)
   Dir.chdir(recipes_dir)
   recipes = Dir.glob("*.rb").map {|x| File.basename(x, '.rb') }
 
-  cooks_url = "#{ADMIN_URL}/cookbooks"
-
-  cook_data = {'name' => cook_name, 'version' => md.version,
-               'recipes' => recipes }
+  recipes_url = "#{ADMIN_URL}/recipes"
 
   headers = {"Content-Type" => "application/json"}
 
   cli = HTTPClient.new
   begin
-    res = cli.post(cooks_url, cook_data.to_json, headers)
-    if res.status < 200 or res.status >= 300
-      puts "Error uploading cookbook metadata: #{res.inspect}"
-    else
-      puts "Cookbook '#{cook_name}' uploaded."
+    recipes.each do |recipe|
+      recipe_full = "#{cook_name}::#{recipe}@#{md.version}"
+      res = cli.post(recipes_url, {'recipe' => recipe_full}.to_json, headers)
+      if res.status < 200 or res.status >= 300
+        puts "Error uploading cookbook metadata: #{res.inspect}"
+      else
+        puts "Recipe '#{recipe_full}' created."
+      end
     end
   rescue Exception => e
     puts "Unknown error: #{e.message}"
