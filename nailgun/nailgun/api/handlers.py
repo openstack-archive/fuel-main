@@ -279,6 +279,14 @@ class RoleCollectionHandler(BaseHandler):
     @validate_json(RoleForm)
     def create(self, request):
         data = request.form.cleaned_data
+        print data
+        try:
+            rl = Role.objects.get(
+                name=data['name'],
+            )
+            return rc.DUPLICATE_ENTRY
+        except Role.DoesNotExist:
+            pass
         recipes = Recipe.objects.filter(recipe__in=data['recipes'])
         role = Role(name=data["name"])
         role.save()

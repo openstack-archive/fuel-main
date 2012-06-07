@@ -283,6 +283,7 @@ class TestHandlers(TestCase):
             "application/json"
         )
         self.assertEquals(resp.status_code, 200)
+
         # test duplicate
         resp = self.client.post(
             reverse('recipe_collection_handler'),
@@ -292,6 +293,16 @@ class TestHandlers(TestCase):
             "application/json"
         )
         self.assertEquals(resp.status_code, 409)
+
+        # test wrong format
+        resp = self.client.post(
+            reverse('recipe_collection_handler'),
+            json.dumps({
+                'recipe': 'ololo::onotole'
+            }),
+            "application/json"
+        )
+        self.assertEquals(resp.status_code, 400)
 
         recipe_from_db = Recipe.objects.filter(recipe=recipe)
         self.assertEquals(len(recipe_from_db), 1)
@@ -311,6 +322,16 @@ class TestHandlers(TestCase):
             "application/json"
         )
         self.assertEquals(resp.status_code, 200)
+        # test duplicate role
+        resp = self.client.post(
+            reverse('role_collection_handler'),
+            json.dumps({
+                'name': role_name,
+                'recipes': role_recipes
+            }),
+            "application/json"
+        )
+        self.assertEquals(resp.status_code, 409)
 
         roles_from_db = Role.objects.filter(name=role_name)
         self.assertEquals(len(roles_from_db), 1)
@@ -360,9 +381,9 @@ class TestHandlers(TestCase):
             }),
             "application/json"
         )
-
         self.assertEquals(resp.status_code, 200)
-        # test duplicate
+
+        # test duplicate release
         resp = self.client.post(
             reverse('release_collection_handler'),
             json.dumps({
@@ -370,6 +391,20 @@ class TestHandlers(TestCase):
                 'version': release_version,
                 'description': release_description,
                 'roles': release_roles
+            }),
+            "application/json"
+        )
+        self.assertEquals(resp.status_code, 409)
+
+        # test duplicate role
+        resp = self.client.post(
+            reverse('role_collection_handler'),
+            json.dumps({
+                'name': 'compute',
+                'recipes': [
+                    'nova::compute@0.1.0',
+                    'cookbook::recipe@2.1'
+                ]
             }),
             "application/json"
         )

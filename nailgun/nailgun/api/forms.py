@@ -17,13 +17,20 @@ class RecipeForm(forms.ModelForm):
     def clean(self):
         return self.cleaned_data
 
+    def clean_recipe(self):
+        validate_recipe(self.cleaned_data['recipe'])
+        return self.cleaned_data['recipe']
+
+
+def validate_recipe(value):
+    if not re.match(r'^[^\]]+::([^\]]+)@[0-9]+(\.[0-9]+){1,2}$', value):
+        raise ValidationError('Recipe should be in \
+cookbook::recipe@version format')
+
 
 def validate_role_recipes(value):
     if value and isinstance(value, list):
-        if not any([re.match(r'^[^\]]+::([^\]]+)@[0-9]+(\.[0-9]+){1,2}$', i) \
-                for i in value]):
-            raise ValidationError('Recipe should be in \
-cookbook::recipe@version format')
+        map(validate_recipe, value)
         for i in value:
             try:
                 rec_exist = Recipe.objects.get(recipe=i)
@@ -70,10 +77,7 @@ def validate_release_node_roles(data):
         raise ValidationError('Role name is empty')
     for role in data:
         for recipe in role['recipes']:
-            if not re.match(r'^[^\]]+::([^\]]+)@[0-9]+(\.[0-9]+){1,2}$', \
-                    recipe):
-                raise ValidationError('Recipe should be in a \
-cook_name::recipe_name@cook_version format')
+            validate_recipe(recipe)
             try:
                 rec_exists = Recipe.objects.get(recipe=recipe)
             except Recipe.DoesNotExist:
