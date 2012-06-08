@@ -2,6 +2,9 @@
 
 [ X`whoami` = X'root' ] || { echo "You must be root"; exit 1; }
 
+SCRIPT=`readlink -f "$0"`
+SCRIPTDIR=`dirname ${SCRIPT}`
+REPO=${SCRIPTDIR}/..
 
 INITRD_LOOP=/var/tmp/build_basedir/loop_precise_i386
 INITRD=/var/tmp/build_basedir/initrd_precise_i386
@@ -88,7 +91,9 @@ cat > ${INITRD_LOOP}/etc/cron.d/chef-solo <<EOF
 */5 * * * * root flock -w 0 /var/lock/chef-solo.lock /usr/bin/chef-solo -l debug -c /root/scripts/solo.rb -j /root/scripts/solo.json
 EOF
 
-
+echo "Injecting bootstrap ssh key ..."
+mkdir -p ${INITRD_LOOP}/root/.ssh
+cp ${REPO}/bootstrap/ssh/id_rsa.pub ${INITRD_LOOP}/root/.ssh/authorized_keys 
 
 
 
