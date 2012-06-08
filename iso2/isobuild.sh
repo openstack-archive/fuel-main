@@ -13,6 +13,8 @@ STAMP=`date +%Y%m%d%H%M%S`
 
 SCRIPT=`readlink -f "$0"`
 SCRIPTDIR=`dirname ${SCRIPT}`
+SOLO=${SCRIPTDIR}/solo
+SYNC=${SCRIPTDIR}/sync
 REPO=${SCRIPTDIR}/..
 GNUPG=${REPO}/gnupg
 STAGE=${SCRIPTDIR}/stage
@@ -133,15 +135,15 @@ echo "Reorganizing pool ..."
 (
     cd ${NEW}/pool
     find -type f \( -name "*.deb" -o -name "*.udeb" \) | while read debfile; do
-	debbase=`basename ${debfile}`
-	packname=`echo ${debbase} | awk -F_ '{print $1}'`
-	section=`grep "^${packname}\s" ${INDICES}/* | \
-	    grep -v extra | head -1 | awk -F: '{print $1}' | \
-	    awk -F. '{print $3}'`
-	test -z ${section} && section=main
-	mkdir -p ${NEW}/pools/${RELEASE}/${section}
-	mv ${debfile} ${NEW}/pools/${RELEASE}/${section}
-    done
+	    debbase=`basename ${debfile}`
+	    packname=`echo ${debbase} | awk -F_ '{print $1}'`
+	    section=`grep "^${packname}\s" ${INDICES}/* | \
+		grep -v extra | head -1 | awk -F: '{print $1}' | \
+		awk -F. '{print $3}'`
+	    test -z ${section} && section=main
+	    mkdir -p ${NEW}/pools/${RELEASE}/${section}
+	    mv ${debfile} ${NEW}/pools/${RELEASE}/${section}
+	done
 )
 rm -fr ${NEW}/pool
 
@@ -403,22 +405,46 @@ rsync -av /var/tmp/gems/ ${GEMSDIR}
 ###########################
 # INJECT EXTRA FILES
 ###########################
-echo "Injecting some files into iso ..."
-mkdir -p ${NEW}/inject/scripts
+echo "Injecting files ..."
+
+echo ">>> Syncing system ..."
+rsync -a ${SYNC}/ ${NEW}/sync
+
+echo ">>> Injecting repo indices ..."
 mkdir -p ${NEW}/indices
 cp -r ${INDICES}/* ${NEW}/indices
-cp -r ${REPO}/cookbooks ${NEW}/inject
-cp ${REPO}/scripts/solo-admin.json ${NEW}/inject/scripts/solo.json
-cp ${REPO}/scripts/solo.rb ${NEW}/inject/scripts
-cp ${REPO}/scripts/solo.cron ${NEW}/inject/scripts
-cp ${REPO}/scripts/solo.rc.local ${NEW}/inject/scripts
-cp -r ${REPO}/gnupg ${NEW}/inject/gnupg
-cp -r ${REPO}/nailgun ${NEW}/inject
+
+echo ">>> Injecting gnupg ..."
+mkdir ${NEW}/gnupg
+cp -r ${REPO}/gnupg ${NEW}/gnupg
+
+echo ">>> Injecting bootstrap files ..."
 mkdir -p ${NEW}/bootstrap
 cp ${BOOTSTRAPDIR}/linux ${NEW}/bootstrap/linux
 cp ${BOOTSTRAPDIR}/initrd.gz ${NEW}/bootstrap/initrd.gz
+cp ${BOOTSTRAPDIR}/ssh/id_rsa ${NEW}/bootstrap/bootstrap.rsa
+
+echo ">>> Injecting nailgun webapp ..."
+cp -r ${REPO}/nailgun ${NEW}
+
+echo ">>> Injecting cookbooks ..."
+cp -r ${REPO}/cookbooks ${NEW}/nailgun
+
+echo ">>> Injecting scripts ..."
+mkdir -p ${NEW}/nailgun/bin
+cp ${REPO}/bin/create_release ${NEW}/nailgun/bin/create_release
+cp ${REPO}/bin/install_cookbook ${NEW}/nailgun/bin/install_cookbook
+
+echo ">>> Injecting solo auxiliary files ..."
+mkdir -p ${NEW}/nailgun/solo
+cp ${SOLO}/solo.json ${NEW}/nailgun/solo/solo.json
+cp ${SOLO}/solo.rb ${NEW}/nailgun/solo/solo.rb
+
+echo ">>> Injecting eggs ..."
 mkdir -p ${NEW}/eggs
 rsync -av ${EGGSDIR}/ ${NEW}/eggs
+
+echo ">>> Injecting gems ..."
 mkdir -p ${NEW}/gems
 rsync -av ${GEMSDIR}/ ${NEW}/gems
 

@@ -1,0 +1,7 @@
+#!/bin/sh -e
+
+apt-get update
+
+flock -w 0 /var/lock/chef-solo.lock /usr/bin/chef-solo -l debug -c /opt/nailgun/solo/solo.rb -j /opt/nailgun/solo/solo.json || true
+
+exit 0
