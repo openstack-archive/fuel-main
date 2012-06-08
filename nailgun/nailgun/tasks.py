@@ -46,25 +46,33 @@ def deploy_cluster(cluster_id):
         f.write(json.dumps(solo_json))
         f.close()
 
-    job = group(subtask(run_chef_solo, args=(n.ip, )) for n in nodes)
+    job = group(subtask(bootstrap_node, args=(n.id, )) for n in nodes)
     result = job.apply_async()
     return result
 
 
 @task
-def run_chef_solo(host):
+def bootstrap_node(node_id):
+    _provision_node(node_id)
+
+    node = Node.objects.get(id__exact=node_id)
     try:
-        ssh = SshConnect(host, 'root', settings.PATH_TO_SSH_KEY)
+        ssh = SshConnect(node.ip, 'root', settings.PATH_TO_SSH_KEY)
         # Returns True if succeeded
-        exit_code = ssh.run("/opt/nailgun/bin/deploy")
+        exit_status = ssh.run("/opt/nailgun/bin/deploy")
     except (paramiko.AuthenticationException,
             paramiko.PasswordRequiredException,
             paramiko.SSHException):
-        logger.exception("Can't connect to host %s.", host)
-        return {host: False}
+        logger.exception("Can't connect to %s, ip=%s", node.id, node.ip)
+        return {node.id: False}
     except Exception:
-        logger.exception("Error in deployment of %s.", host)
-        return {host: False}
+        logger.exception("Error in deployment of %s, ip=%s", node.id, node.ip)
+        return {node.id: False}
     #finally:
         #ssh.close()
-    return {host: exit_code}
+    return {node.id: exit_status}
+
+
+# Call to Cobbler to make node ready.
+def _provision_node(node_id):
+    pass
