@@ -365,6 +365,7 @@ class TestHandlers(TestCase):
     def test_jsons_created_for_chef_solo(self):
         url = reverse('config_handler', kwargs={'cluster_id': 1})
         resp = self.client.post(url)
+        print resp.content
         self.assertEquals(resp.status_code, 202)
         resp_json = json.loads(resp.content)
         self.assertEquals(len(resp_json['task_id']), 36)

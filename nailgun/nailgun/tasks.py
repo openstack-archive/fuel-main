@@ -11,40 +11,48 @@ from celery.task import group
 from nailgun.models import Cluster, Node, Role
 from nailgun.helpers import SshConnect
 
-
 logger = logging.getLogger(__name__)
 
 
 @task
 def deploy_cluster(cluster_id):
+    databag = os.path.join(
+        settings.CHEF_CONF_FOLDER,
+        settings.CHEF_NODES_DATABAG_NAME
+    )
+
     nodes = Node.objects.filter(cluster__id=cluster_id)
-    roles = Role.objects.all()
-    if not (nodes and roles):
-        raise Exception("Roles or Nodes list is empty")
+    if not nodes:
+        raise Exception("Nodes list is empty")
 
-    nodes_per_role = {}
-    # For each role in the system
-    for r in roles:
-        # Find nodes that have this role. Filter nodes by cluster_id
-        nodes_per_role[r.name] = \
-                [x.name for x in r.node_set.filter(cluster__id=cluster_id)]
+    for node in nodes:
+        node_json = {}
 
-    solo_json = {}
-    # Extend solo_json for each node by specifying role
-    #    assignment for this particular node
-    for n in nodes:
-        solo_json['run_list'] = []
-        for role in n.roles.all():
-            for rcp in role.recipes.all():
-                solo_json['run_list'] += ["recipe[%s]" % rcp.recipe]
+        roles_for_node = node.roles.all()
+        if not roles_for_node:
+            raise Exception("Roles list for node %s is empty" % node.id)
 
-        solo_json['all_roles'] = nodes_per_role
+        for f in node._meta.fields:
+            if f.name == 'cluster':
+                node_json['cluster_id'] = node.cluster_id
+            else:
+                node_json[f.name] = getattr(node, f.name)
 
-        filepath = os.path.join(settings.CHEF_CONF_FOLDER,
-                n.id + '.json')
-        f = open(filepath, 'w')
-        f.write(json.dumps(solo_json))
-        f.close()
+        node_json['roles'] = []
+        for role in roles_for_node:
+            node_json['roles'].append({
+                "name": role.name,
+                "recipes": [r.recipe for r in role.recipes.all()]
+            })
+
+        if not os.path.exists(databag):
+            os.mkdir(databag)
+
+        with open(
+            os.path.join(databag, "".join([node.id, ".json"])),
+            "w"
+        ) as entity:
+            entity.write(json.dumps(node_json))
 
     job = group(subtask(bootstrap_node, args=(n.id, )) for n in nodes)
     result = job.apply_async()

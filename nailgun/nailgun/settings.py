@@ -171,6 +171,7 @@ CELERY_IMPORTS = ("nailgun.tasks",)
 CELERY_DISABLE_RATE_LIMITS = True
 
 CHEF_CONF_FOLDER = "/var/www"
+CHEF_NODES_DATABAG_NAME = "nodes"
 PATH_TO_SSH_KEY = os.path.join(os.getenv("HOME"), ".ssh/id_rsa")
 
 PISTON_IGNORE_DUPE_MODELS = True
