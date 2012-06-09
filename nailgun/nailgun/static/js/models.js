@@ -5,8 +5,7 @@ define(function() {
     models.Cluster = Backbone.Model.extend({
         urlRoot: '/api/clusters',
         defaults: {
-            name: null,
-            active: false
+            name: null
         },
         initialize: function(attrs) {
             if (_.isObject(attrs) && _.isArray(attrs.nodes)) {

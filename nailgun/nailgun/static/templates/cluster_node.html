@@ -1,0 +1,21 @@
+<div class="node <%= node.get('status') == 'offline' ? 'off' : 'on' %>">
+  <img src="/static/img/node_<%= node.get('status') %>.png" width="210" height="75">
+    <h4><a href="#"><i class="icon-pencil"></i><%= node.get('name') || node.get('id') %></a></h4>
+    <div class="roles">
+      <a href="#">
+        <ul>
+          <% if (node.get('roles').length) { %>
+            <% node.get('roles').each(function(role) { %>
+              <li><%= role.get('name') %></li>
+            <% }) %>
+          <% } else { %>
+              <li>(No Roles)</li>
+          <% } %>
+        </ul>
+      </a>
+    </div>
+    <hr>
+    <div class="status_bar">
+      Some info
+    </div>
+</div>

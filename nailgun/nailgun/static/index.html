@@ -1,24 +1,65 @@
-<!DOCTYPE HTML>
-<html>
-<head>
-    <title>NailGun Dashboard</title>
-    <link rel="stylesheet" href="/static/css/reset.css" />
-    <link rel="stylesheet" href="/static/css/text.css" />
-    <link rel="stylesheet" href="/static/css/960.css" />
-    <link rel="stylesheet" href="/static/css/global.css" />
-    <link type="text/css" href="/static/jquery-ui/css/redmond/jquery-ui-1.8.18.custom.css" rel="stylesheet" />
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+    <title>Nailgun Dashboard</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="description" content="">
+    <meta name="author" content="">
+    <!-- Le styles -->
+    <link href="/static/css/main.css" rel="stylesheet">
+    <link href="/static/css/overlap.css" rel="stylesheet">
+    <link href="/static/css/buttons.css" rel="stylesheet">
+    <!-- Le HTML5 shim, for IE6-8 support of HTML5 elements -->
+    <!--[if lt IE 9]>
+      <script src="http://html5shim.googlecode.com/svn/trunk/html5.js"></script>
+    <![endif]-->
     <script data-main="/static/js/main" src="/static/js/libs/require.js"></script>
-</head>
-<body>
-    <div id="header-box" class="ui-widget-header">
-        <header class="container_12">
-            <h1 class="grid_12">NailGun Dashboard</h1>
-        </header>
-    </div>
-    <div id="dashboard" class="container_12">
-        <div id="content">
-            <div id="loading">Loading...</div>
+  </head>
+  <body>
+    <!-- Container On -->
+    <div class="container">
+      <!-- Top Info Panel On -->
+      <div class="row">
+        <div class="span8"><p>Sample Text Here</p></div>
+        <div class="span4"><p class="pull-right">Current Version: 0.3b</p></div>
+      </div>
+      <!-- Top Info Panel Off -->
+      <!-- Navigation On -->
+      <div class="navbar">
+        <div class="navbar-inner">
+          <div class="container">
+          <ul class="nav">
+            <li class="active"><a href="#clusters">Clusters</a></li>
+                <li><a href="#">Updates</a></li>
+                <li><a href="#">Subscription</a></li>
+                <li><a href="#">Available Releases</a></li>
+                <li><a href="#">Report a problem</a></li>
+            </ul>
+          </div>
         </div>
+      </div>
+      <!-- Navigation Off -->
+      <!-- Breadcrumbs On -->
+      <ul class="breadcrumb">
+        <li>
+          <a href="#">Home</a> <span class="divider">/</span>
+        </li>
+        <li>
+          <a href="#">Clusters</a> <span class="divider">/</span>
+        </li>
+        <li class="active">Cluster Name</li>
+      </ul>
+      <!-- Breadcrumbs Off -->
+
+      <div id="content" class="row">
+        <div class="loading span4 offset4">
+          <div class="progress progress-striped active">
+            <div class="bar" style="width: 100%"></div>
+          </div>
+        </div>
+      </div>
     </div>
-</body>
+    <!-- Container Off -->
+  </body>
 </html>

@@ -1,0 +1,15 @@
+<div class="row">
+    <div class="span10"><h1>Clusters</h1></div>
+    <div class="span2"><a href="#" class="btn btn-success pull-right"><i class="icon-plus-sign icon-white"></i>Add Cluster</a></div>
+</div>
+<% if (clusters.length) { %>
+    <% clusters.each(function(cluster) { %>
+        <div class="row">
+            <div class="span12">
+                <h2><a href="#cluster/<%= cluster.id %>"><%= cluster.get('name') %></a></h2>
+            </div>
+        </div>
+    <% }) %>
+<% } else { %>
+    <div class="alert">There are no clusters.</div>
+<% } %>
