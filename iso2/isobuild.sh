@@ -422,7 +422,7 @@ echo ">>> Injecting bootstrap files ..."
 mkdir -p ${NEW}/bootstrap
 cp ${BOOTSTRAPDIR}/linux ${NEW}/bootstrap/linux
 cp ${BOOTSTRAPDIR}/initrd.gz ${NEW}/bootstrap/initrd.gz
-cp ${BOOTSTRAPDIR}/ssh/id_rsa ${NEW}/bootstrap/bootstrap.rsa
+cp ${REPO}/bootstrap/ssh/id_rsa ${NEW}/bootstrap/bootstrap.rsa
 
 echo ">>> Injecting nailgun webapp ..."
 cp -r ${REPO}/nailgun ${NEW}
