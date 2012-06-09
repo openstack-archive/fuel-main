@@ -49,16 +49,6 @@ execute 'Sync Nailgun database' do
   not_if "test -e #{node[:nailgun][:root]}/nailgun.sqlite"
 end
 
-execute 'Sync Nailgun database2' do
-  command "echo #{node[:nailgun][:python]} manage.py syncdb --noinput > /root/2"
-  not_if "test -e #{node[:nailgun][:root]}/nailgun.sqlite"
-end
-
-execute 'Sync Nailgun database3' do
-  command "echo #{node[:nailgun][:python]} manage.py syncdb --noinput > /root/3"
-end
-
-
 redis_instance 'nailgun'
 
 celery_instance 'nailgun-jobserver' do
