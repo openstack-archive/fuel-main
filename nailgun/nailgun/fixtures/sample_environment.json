@@ -1,0 +1,130 @@
+[
+    {
+        "pk": 1,
+        "model": "nailgun.cluster",
+        "fields": {
+            "name": "Default Cluster"
+        }
+    },
+    {
+        "pk": 2,
+        "model": "nailgun.cluster",
+        "fields": {
+            "name": "Empty Cluster"
+        }
+    },
+    {
+        "pk": 1,
+        "model": "nailgun.role",
+        "fields": {
+            "recipes": [],
+            "name": "Sample role"
+        }
+    },
+    {
+        "pk": 2,
+        "model": "nailgun.role",
+        "fields": {
+            "recipes": [],
+            "name": "Another role"
+        }
+    },
+    {
+        "pk": "111111111111",
+        "model": "nailgun.node",
+        "fields": {
+            "status": "online",
+            "name": null,
+            "roles": [
+                1
+            ],
+            "ip": "",
+            "fqdn": "",
+            "cluster": 1,
+            "mac": ""
+        }
+    },
+    {
+        "pk": "222222222222",
+        "model": "nailgun.node",
+        "fields": {
+            "status": "busy",
+            "name": null,
+            "roles": [
+                1,
+                2
+            ],
+            "ip": "",
+            "fqdn": "",
+            "cluster": 1,
+            "mac": ""
+        }
+    },
+    {
+        "pk": "333333333333",
+        "model": "nailgun.node",
+        "fields": {
+            "status": "online",
+            "name": null,
+            "roles": [
+                2
+            ],
+            "ip": "",
+            "fqdn": "",
+            "cluster": 1,
+            "mac": ""
+        }
+    },
+    {
+        "pk": "444444444444",
+        "model": "nailgun.node",
+        "fields": {
+            "status": "offline",
+            "name": null,
+            "roles": [],
+            "ip": "",
+            "fqdn": "",
+            "cluster": 1,
+            "mac": ""
+        }
+    },
+    {
+        "pk": "555555555555",
+        "model": "nailgun.node",
+        "fields": {
+            "status": "online",
+            "name": "Node with name",
+            "roles": [],
+            "ip": "",
+            "fqdn": "",
+            "cluster": 1,
+            "mac": ""
+        }
+    },
+    {
+        "pk": "000000000000",
+        "model": "nailgun.node",
+        "fields": {
+            "status": "online",
+            "name": "Node without cluster",
+            "roles": [],
+            "ip": "",
+            "fqdn": "",
+            "cluster": null,
+            "mac": ""
+        }
+    },
+    {
+        "pk": "000000000001",
+        "model": "nailgun.node",
+        "fields": {
+            "status": "online",
+            "name": "Another node without cluster",
+            "roles": [],
+            "ip": "",
+            "fqdn": "",
+            "cluster": null,
+            "mac": ""
+        }
+    }
+]
