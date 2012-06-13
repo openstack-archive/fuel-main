@@ -83,8 +83,8 @@ EOF
 
 
 echo "Injecting cookbooks and configs for chef-solo ..."
-cp -r ../cookbooks ${INITRD_LOOP}/root
-cp -r ../scripts ${INITRD_LOOP}/root
+cp -r ${REPO}/cookbooks ${INITRD_LOOP}/root
+cp -r ${REPO}/scripts ${INITRD_LOOP}/root
 
 echo "Injecting crontab job to launch chef-solo ..."
 cat > ${INITRD_LOOP}/etc/cron.d/chef-solo <<EOF
@@ -94,9 +94,5 @@ EOF
 echo "Injecting bootstrap ssh key ..."
 mkdir -p ${INITRD_LOOP}/root/.ssh
 cp ${REPO}/bootstrap/ssh/id_rsa.pub ${INITRD_LOOP}/root/.ssh/authorized_keys 
-
-
-
- 
 
 
