@@ -5,10 +5,15 @@ define(['models', 'views'], function(models, views) {
             'cluster/:id': 'showClusterInfo',
             '*default': 'listClusters'
         },
+        initialize: function() {
+            this.breadcrumb = new views.Breadcrumb;
+            $('#content').before(this.breadcrumb.render().el);
+        },
         showClusterInfo: function(id) {
             if (this.clusters) {
                 var cluster;
                 if (id && (cluster = this.clusters.get(id))) {
+                    this.breadcrumb.setPath(['Home', '#'], ['Clusters', '#clusters'], cluster.get('name'));
                     $('#content').html(new views.ClusterInfo({model: cluster}).render().el);
                 } else {
                     this.listClusters();
@@ -21,6 +26,7 @@ define(['models', 'views'], function(models, views) {
         },
         listClusters: function() {
             this.navigate('#clusters', {replace: true});
+            this.breadcrumb.setPath(['Home', '#'], 'Clusters');
 
             if (this.clusters) {
                 $('#content').html(new views.ClusterList({model: this.clusters}).render().el);
