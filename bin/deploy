@@ -10,6 +10,8 @@ require 'json'
 
 URL = "http://127.0.0.1"
 COOKS_DIR = "/tmp/cookbooks"
+DATABAG_DIR = "/tmp/databags"
+DATABAG_NAME = "nodes.tar.gz"
 
 ohai = Ohai::System.new
 ohai.require_plugin("network")
@@ -21,7 +23,7 @@ host_id = ohai.data["macaddress"].gsub(':', '')
 
 # Downloading host-specific json
 solo_json_file = "#{host_id}.json"
-system("wget -c -T 7 --tries=7 -a wget.log #{URL}/#{solo_json_file}")
+system("wget -N -T 7 --tries=7 -a wget.log #{URL}/#{solo_json_file}")
 
 solo_json = JSON.parse(File.read(solo_json_file))
 
@@ -33,10 +35,15 @@ cooks = solo_json["run_list"].map do |recipe|
 end.uniq
 
 Dir.mkdir(COOKS_DIR) unless File.exists?(COOKS_DIR)
+Dir.mkdir(DATABAG_DIR) unless File.exists?(DATABAG_DIR)
+cluster_id = solo_json["cluster_id"]
+system("wget -N -T 7 --tries=7 -a wget.log #{URL}/cluster_#{cluster_id}/#{DATABAG_NAME}")
+system("tar xzf \"#{DATABAG_NAME}\" -C #{DATABAG_DIR}")
+
 
 cooks.each do |cb|
   filename = "#{cb.keys[0]}_#{cb.values[0]}.tar.gz"
-  system("wget -c -T 7 --tries=7 -a wget.log #{URL}/#{filename}")
+  system("wget -N -T 7 --tries=7 -a wget.log #{URL}/#{filename}")
   system("tar xzf \"#{filename}\" -C #{COOKS_DIR}")
 end
 
