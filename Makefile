@@ -1,14 +1,14 @@
 
 BUILD_DIR:=build
-/:=$(BUILD_DIR)/
 
-MODULES=
+MODULES=gnupg iso2
 
 .PHONY: all clean help
 
 help:
 	@echo 'Available targets:'
 	@echo '  all - build product'
+	@echo '  iso - build nailgun iso'
 
 all:
 
