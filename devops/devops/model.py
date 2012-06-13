@@ -27,6 +27,7 @@ class Environment(ManagedObject):
         self.name = name
         self.networks = []
         self.nodes = []
+        self.built = False
 
     @property
     def node(self):

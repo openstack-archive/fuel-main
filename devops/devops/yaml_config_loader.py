@@ -14,7 +14,7 @@ def load(stream):
     name = 'default'
     if data.has_key('name'):
         name = data['name']
-    environment = Environment('default')
+    environment = Environment(name)
 
     for network_data in (data.get('networks') or []):
         parse_network(environment, network_data)

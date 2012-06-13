@@ -7,6 +7,9 @@ import yaml
 import urllib
 import ipaddr
 import glob
+import random
+import string
+import re
 
 from devops.model import Node, Network
 from devops.network import IpNetworksPool
@@ -14,6 +17,10 @@ from devops.error import DevopsError
 
 import logging
 logger = logging.getLogger('devops.controller')
+
+def randstr(length=8):
+    return ''.join(random.choice(string.ascii_letters) for i in xrange(length))
+
 
 class Controller:
     def __init__(self, driver):
@@ -31,9 +38,13 @@ class Controller:
     def build_environment(self, environment):
         logger.info("Building environment %s" % environment.name)
 
-        environment.work_dir = tempfile.mkdtemp(prefix=os.path.join(self.home_dir, 'environments', environment.name)+'-')
-        os.chmod(environment.work_dir, stat.S_IRWXU | stat.S_IRWXG | stat.S_IRWXO)
-        environment.id = os.path.basename(environment.work_dir)
+        env_id = getattr(environment, 'id', '-'.join([environment.name, randstr()]))
+        environment.id = env_id
+
+        logger.debug("Creating environment working directory for %s environment" % environment.name)
+        environment.work_dir = os.path.join(self.home_dir, 'environments', environment.id)
+        os.mkdir(environment.work_dir, stat.S_IRWXU | stat.S_IRWXG | stat.S_IRWXO)
+        logger.debug("Environment working directory has been created: %s" % environment.work_dir)
 
         environment.driver = self.driver
 
@@ -42,7 +53,7 @@ class Controller:
                 path = node.cdrom.isopath
                 if path.find('://') == -1:
                     continue
-
+                logger.debug("Caching iso file for node %s from %s" % (node.name, node.cdrom.isopath))
                 node.cdrom.isopath = self._cache_file(node.cdrom.isopath)
 
         for network in environment.networks:
@@ -59,6 +70,7 @@ class Controller:
             self._build_node(environment, node)
             node.driver = self.driver
 
+        environment.built = True
         logger.info("Finished building environment %s" % environment.name)
 
     def destroy_environment(self, environment):
@@ -77,7 +89,12 @@ class Controller:
             network.stop()
             self.driver.delete_network(network)
             del network.driver
-            self.networks_pool.put(network.ip_addresses)
+            
+            # FIXME
+            try:
+                self.networks_pool.put(network.ip_addresses)
+            except:
+                pass
 
         del environment.driver
 
@@ -87,11 +104,11 @@ class Controller:
 
         logger.info("Finished destroying environment %s" % environment.name)
 
-    def load_environment(self, environment_name):
-        env_work_dir = os.path.join(self.home_dir, 'environments', environment_name)
+    def load_environment(self, environment_id):
+        env_work_dir = os.path.join(self.home_dir, 'environments', environment_id)
         env_config_file = os.path.join(env_work_dir, 'config')
         if not os.path.exists(env_config_file):
-            raise DevopsError, "Environment '%s' couldn't be found" % environment_name
+            raise DevopsError, "Environment '%s' couldn't be found" % environment_id
 
         with file(env_config_file) as f:
             data = f.read()
@@ -102,8 +119,19 @@ class Controller:
 
     def save_environment(self, environment):
         data = yaml.dump(environment)
+        if not environment.built:
+            raise DevopsError, "Environment has not been built yet."
         with file(os.path.join(environment.work_dir, 'config'), 'w') as f:
             f.write(data)
+
+    def search_environments(self, environment_name):
+        found = []
+        for env in self.saved_environments:
+            logger.debug("Found %s environment" % env)
+            if re.search(ur'%s' % environment_name, env):
+                logger.debug("Matched %s  %s" % (env, environment_name))
+                found.append(env)
+        return found
 
     @property
     def saved_environments(self):

@@ -3,6 +3,8 @@ import socket
 import time
 import httplib
 import xmlrpclib
+import paramiko
+import string
 
 class TimeoutError(Exception): pass
 class AuthenticationError(Exception): pass
@@ -47,6 +49,65 @@ def http(host='localhost', port=80, method='GET', url='/', waited_code=200):
         return True
     return False
 
+
+class KeyPolicy(paramiko.WarningPolicy):
+    def missing_host_key(self, client, hostname, key):
+        return
+    
+class Ssh:
+    def __init__(self, hostname, port=22, username=None, 
+                 password=None, pkey=None, 
+                 key_filename=None, timeout=None):
+
+        self.hostname = hostname
+        self.port = port
+        self.username = username
+        self.password = password
+        self.pkey = pkey
+        self.key_filename = key_filename
+        self.timeout = timeout
+
+        self.ssh = paramiko.SSHClient()
+        self.ssh.set_missing_host_key_policy(KeyPolicy())
+        
+    def connect(self):
+        self.ssh.connect(self.hostname, port=self.port, username=self.username, 
+                         password=self.password, pkey=self.pkey, 
+                         key_filename=self.key_filename, timeout=self.timeout)
+
+    def __enter__(self):
+        self.connect()
+        return self.ssh
+
+    def __exit__(self, type, value, traceback):
+        self.ssh.close()
+
+
+def ssh(hostname, command, port=22, username=None, 
+        password=None, pkey=None, key_filename=None, timeout=None, outerr=False):
+
+    rsout = []
+    rserr = []
+
+    with Ssh(hostname, port=port, username=username, 
+             password=password, pkey=pkey, 
+             key_filename=key_filename, timeout=timeout) as s:
+        if outerr:
+            (sin, sout, sout) = s.exec_command(command)
+        else:
+            (sin, sout, serr) = s.exec_command(command)
+
+            for line in serr.readlines():
+                line = string.strip(line)
+                rserr.append(line)
+
+        for line in sout.readlines():
+            line = string.strip(line)
+            rsout.append(line)
+
+    return {'out':rsout, 'err':rserr}
+
+
 def xmlrpctoken(uri, login, password):
     server = xmlrpclib.Server(uri)
     try:
@@ -61,3 +122,4 @@ def xmlrpcmethod(uri, method):
     except:
         raise AttributeError, "Error occured while getting server method"
         
+

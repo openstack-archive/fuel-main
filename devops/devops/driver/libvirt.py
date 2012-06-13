@@ -9,6 +9,7 @@ from devops import xml
 from devops import scancodes
 from xmlbuilder import XMLBuilder
 import ipaddr
+import re
 
 import logging
 logger = logging.getLogger('devops.libvirt')
@@ -132,13 +133,20 @@ class Libvirt:
         network.mac_address = network_element.find('mac/@address')
 
     def delete_network(self, network):
-        self._virsh("net-undefine '%s'", network.id)
+        if self.is_network_defined(network):
+            logger.debug("Network %s is defined. Undefining.")
+            self._virsh("net-undefine '%s'", network.id)
+
 
     def start_network(self, network):
-        self._virsh("net-start '%s'", network.id)
+        if not self.is_network_running(network):
+            logger.debug("Network %s is not running. Starting.")
+            self._virsh("net-start '%s'", network.id)
 
     def stop_network(self, network):
-        self._virsh("net-destroy '%s'", network.id)
+        if self.is_network_running(network):
+            logger.debug("Network %s is running. Stopping.")
+            self._virsh("net-destroy '%s'", network.id)
 
     def _get_node_xml(self, node):
         with os.popen("virsh dumpxml '%s'" % node.id) as f:
@@ -174,10 +182,14 @@ class Libvirt:
             interface.mac_address = interface_element.find('mac/@address')
 
     def delete_node(self, node):
-        self._virsh("undefine '%s'", node.id)
+        if self.is_node_defined(node):
+            logger.debug("Node %s defined. Undefining." % node.id)
+            self._virsh("undefine '%s'", node.id)
 
     def start_node(self, node):
-        self._virsh("start '%s'", node.id)
+        if not self.is_node_running(node):
+            logger.debug("Node %s is not running at the moment. Starting." % node.id)
+            self._virsh("start '%s'", node.id)
 
         if node.vnc:
             domain = self._get_node_xml(node)
@@ -185,8 +197,12 @@ class Libvirt:
             port_text = domain.find('devices/graphics[@type="vnc"]/@port')
             if port_text: node.vnc_port = int(port_text)
 
+
     def stop_node(self, node):
-        self._virsh("destroy '%s'", node.id)
+        if self.is_node_running(node):
+            logger.debug("Node %s is running at the moment. Stopping." % node.id)
+            self._virsh("destroy '%s'", node.id)
+            
 
     def reset_node(self, node):
         self._virsh("reset '%s'", node.id)
@@ -263,10 +279,53 @@ class Libvirt:
             if not self.node_exists(id):
                 return id
 
+
+    def is_node_defined(self, node):
+        return self._system2("virsh list --all | grep -q ' %s '" % node.id) == 0
+
+    def is_node_running(self, node):
+        return self._system2("virsh list | grep -q ' %s '" % node.id) == 0
+
+    def is_network_defined(self, network):
+        return self._system2("virsh net-list --all | grep -q '%s '" % network.id) == 0
+
+    def is_network_running(self, network):
+        return self._system2("virsh net-list | grep -q '%s '" % network.id) == 0
+
+    def _system2(self, command):
+        logger.debug("libvirt: Running %s" % command)
+
+        commands = [ i.strip() for i in re.split(ur'\|', command)]
+        process = []
+        serr = []
+
+        count = 0
+        for c in commands:
+            if count > 0:
+                stdin = process[count-1].stdout
+            else:
+                stdin = None
+                
+            process.append(subprocess.Popen(shlex.split(c), stdin=stdin, 
+                                            stdout=subprocess.PIPE, stderr=subprocess.PIPE))
+            count += 1
+
+        process[count-1].wait()
+
+        for p in process:
+            serr += [ err.strip() for err in p.stderr.readlines() ]
+
+        logger.debug("libvirt: Command '%s' returned %d" % (command, process[count-1].returncode))
+        logger.error("libvirt: Command '%s' stderr: %s" % (command, '\n'.join(serr)))
+        return process[count-1].returncode
+
     def _system(self, command):
         logger.debug("libvirt: Running '%s'" % command)
+        serr = []
         process = subprocess.Popen(shlex.split(command), stdout=subprocess.PIPE, stderr=subprocess.PIPE)
         process.wait()
+        serr += [ err.strip() for err in process.stderr.readlines() ]
         logger.debug("libvirt: Command '%s' returned %d" % (command, process.returncode))
+        logger.error("libvirt: Command '%s' stderr: %s" % (command, '\n'.join(serr)))
         return process.returncode
 
