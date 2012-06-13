@@ -155,8 +155,7 @@ $/ubuntu-keyring.deb: $/ubuntu-keyring/keyrings/ubuntu-archive-keyring.gpg $/ubu
 
 $/isoroot-misc.done: $(ISO_IMAGE) | $(BUILD_DIR)/ubuntu
 	mkdir -p $(ISOROOT)
-	rsync -a --exclude=pool $(BUILD_DIR)/ubuntu/ $(ISOROOT)
-	chmod -R u+w $(ISOROOT)
+	rsync --recursive --links --perms --chmod=u+w --exclude=pool $(BUILD_DIR)/ubuntu/ $(ISOROOT)
 	touch $@
 
 $/isoroot-pool.done: $/apt-cache.done
