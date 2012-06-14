@@ -59,7 +59,8 @@ define(function() {
     });
 
     models.Nodes = Backbone.Collection.extend({
-        model: models.Node
+        model: models.Node,
+        url: '/api/nodes'
     });
 
     models.Cookbook = Backbone.Model.extend({

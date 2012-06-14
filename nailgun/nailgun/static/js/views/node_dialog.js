@@ -1,9 +1,10 @@
 define(
 [
+    'models',
     'text!templates/node_dialog/dialog.html',
     'text!templates/node_dialog/dialog_node_list.html'
 ],
-function(nodeDialogTemplate, nodeDialogNodeListTemplate) {
+function(models, nodeDialogTemplate, nodeDialogNodeListTemplate) {
     var views = {}
 
     views.nodeDialog = Backbone.View.extend({
@@ -18,9 +19,17 @@ function(nodeDialogTemplate, nodeDialogNodeListTemplate) {
         },
         render: function() {
             this.$el.html(this.template());
-            this.$('.cluster-nodes').html(new views.nodeDialogNodeList({model: this.model.get('nodes')}).render().el);
             this.$el.on('hidden', function() {$(this).remove()});
             this.$el.modal();
+
+            this.$('.cluster-nodes').html(new views.nodeDialogNodeList({model: this.model.get('nodes')}).render().el);
+            this.availableNodes = new models.Nodes;
+            this.availableNodes.fetch({
+                data: {cluster_id: ''},
+                success: _.bind(function() {
+                    this.$('.available-nodes').html(new views.nodeDialogNodeList({model: this.availableNodes}).render().el);
+                }, this)
+            });
             return this;
         }
     });

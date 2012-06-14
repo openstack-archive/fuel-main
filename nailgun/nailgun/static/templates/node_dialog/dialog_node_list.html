@@ -3,7 +3,7 @@
   <div class="row-fluid">
     <% nodes.each(function(node) { %>
       <div class="span3">
-        <div class="node_check">
+        <div class="<%= node.get('cluster_id') ? 'node_check' : 'node_uncheck' %>">
           <i class="icon-ok icon-white"></i>
           <div class="article"><%= node.get('id') %></div>
           <ul>

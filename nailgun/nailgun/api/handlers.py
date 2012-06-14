@@ -2,7 +2,7 @@ import os
 
 import celery
 from piston.handler import BaseHandler
-from piston.utils import rc
+from piston.utils import rc, validate
 from django.core.exceptions import ObjectDoesNotExist
 from django.conf import settings
 
@@ -139,11 +139,12 @@ class NodeCollectionHandler(BaseHandler):
     allowed_methods = ('GET', 'POST')
     model = Node
 
+    @validate(NodeUpdateForm, 'GET')
     def read(self, request):
-        return map(
-            NodeHandler.render,
-            Node.objects.all()
-        )
+        nodes = Node.objects.all()
+        if 'cluster_id' in request.form.data:
+            nodes = nodes.filter(cluster_id=request.form.cleaned_data['cluster_id'])
+        return map(NodeHandler.render, nodes)
 
     @validate_json(NodeCreationForm)
     def create(self, request):
