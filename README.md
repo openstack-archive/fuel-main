@@ -1,5 +1,28 @@
-product-and-community
-=====================
+NAILGUN
+=======
+
+How to run Nailgun app from fixtures
+------------------------------------
+
+Remove old DB:
+
+`cd nailgun`
+`rm -f nailgun.sqlite`
+
+Sync DB:
+
+`./manage.py syncdb --noinput`
+
+Load data from fixtures:
+
+`./manage.py loaddata sample_environment`
+
+Run application:
+
+`./manage.py runserver`
+
+Access Web UI at http://localhost:8000/
+
 
 Deploying virtual environment
 -----------------------------
