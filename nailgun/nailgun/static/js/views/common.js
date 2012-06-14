@@ -13,7 +13,7 @@ function(navbarTemplate, breadcrumbTemplate) {
             this.elements = _.isArray(options.elements) ? options.elements : [];
         },
         setActive: function(element) {
-            this.$('.nav > li').removeClass('active');
+            this.$('.nav > li.active').removeClass('active');
             this.$('a[href="#' + element + '"]').parent().addClass('active');
         },
         render: function() {

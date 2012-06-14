@@ -1,11 +1,11 @@
 define(
 [
-    'text!templates/cluster/add_remove_nodes_dialog.html',
+    'views/node_dialog',
     'text!templates/cluster/list.html',
     'text!templates/cluster/info.html',
     'text!templates/cluster/node.html'
 ],
-function(addRemoveNodesDialogTemplate, clusterListTemplate, clusterInfoTemplate, clusterNodeTemplate) {
+function(nodeDialogViews, clusterListTemplate, clusterInfoTemplate, clusterNodeTemplate) {
     var views = {}
 
     views.ClusterInfo = Backbone.View.extend({
@@ -15,12 +15,8 @@ function(addRemoveNodesDialogTemplate, clusterListTemplate, clusterInfoTemplate,
             'click .js-add-nodes': 'addRemoveNodes'
         },
         addRemoveNodes: function(e) {
-            e.preventDefault();
-            var dialog = $(_.template(addRemoveNodesDialogTemplate)({header: 'Test'}));
-            dialog.on('hidden', function() {
-                $(this).remove();
-            });
-            dialog.modal();
+            e && e.preventDefault();
+            (new nodeDialogViews.nodeDialog({model: this.model})).render();
         },
         initialize: function() {
             this.model.bind('change', this.render, this);

@@ -35,7 +35,6 @@ behavior: url(css/pie.htc);
 
 .roles {
   display: block;
-  max-height: 74px;
   height: 74px;
   overflow: auto;
   overflow-y: none;
