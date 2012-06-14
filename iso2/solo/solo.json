@@ -1,6 +1,6 @@
 {
     "cobbler":{
-	"updns":"8.8.8.8",
+	"updns":"8.8.8.8"
     },
     "nailgun":{
         "root":"/opt/nailgun",
