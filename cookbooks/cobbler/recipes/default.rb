@@ -38,7 +38,7 @@ template "/etc/cobbler/settings" do
   mode 0644
   variables(
             :next_server => node["cobbler"]["next_server"],
-            :cobbler_server => node["cobbler"]["cobbler_server"]
+            :server => node["cobbler"]["server"]
   )
   notifies :restart, "service[cobbler]"
 end
