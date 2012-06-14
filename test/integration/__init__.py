@@ -10,14 +10,30 @@ logger = logging.getLogger('integration.ci')
 class Ci:
 
     envname = 'ci'
+    hostname = 'nailgun'
+    domain = 'mirantis.com'
     iso = None
     
     def __init__(self):
-        self.teardown = self.destroy
         self.controller = Controller(Libvirt())
         
+    def setUp(self):
+        logger.debug("Preparing devops environment")
+        self.devops_env()
+        logger.debug("Starting admin node")
+        self.environment.node['admin'].start()
+        if not self.is_admin_installed(timeout=30):
+            logger.debug("Admin node seems not installed")
+            self.admin_install()
+        logger.info("Waiting for completion of admin node installation")
+        self.is_admin_installed()
+        logger.info("Admin node seems installed")
 
-    def env(self):
+    def tearDown(self):
+        logger.debug("Destroying devops environment")
+        self.destroy()
+
+    def devops_env(self):
         found = self.controller.search_environments(self.envname)
         if found:
             environment = self.controller.load_environment(found[0])
@@ -51,9 +67,9 @@ class Ci:
         return True
         
     def admin_install(self):
-        if not self.is_admin_installed(timeout=40):
-            logger.info("Admin node is not installed. Trying to install.")
-            self.environment.node['admin'].send_keys("""<Esc><Enter>
+        logger.info("Installing admin node.")
+        logger.info("Sending keys to install admin node.")
+        self.environment.node['admin'].send_keys("""<Esc><Enter>
 <Wait>
 /install/vmlinuz initrd=/install/initrd.gz
  priority=critical
@@ -65,12 +81,14 @@ class Ci:
  netcfg/get_gateway=%(gw)s
  netcfg/get_nameservers=%(gw)s
  netcfg/confirm_static=true
- netcfg/get_hostname=nailgun
- netcfg/get_domai=mirantis.com
+ netcfg/get_hostname=%(hostname)s
+ netcfg/get_domai=%(domain)s
  <Enter>
 """ % { 'ip': self.environment.network['default'].ip_addresses[2], 
         'mask': self.environment.network['default'].ip_addresses.netmask, 
-        'gw': self.environment.network['default'].ip_addresses[1] }) 
+        'gw': self.environment.network['default'].ip_addresses[1],
+        'hostname': self.hostname,
+        'domain': self.domain}) 
 
     def destroy(self):
         ens = self.controller.search_environments(self.envname)
@@ -80,12 +98,11 @@ class Ci:
             env = self.controller.load_environment(en)
             self.controller.destroy_environment(env)
 
+
 ci = None
 
 def setUp():
-    ci.environment.node['admin'].start()
-    ci.admin_install()
-    ci.is_admin_installed()
+    ci.setUp()
 
 def tearDown():
-    ci.teardown()
+    ci.tearDown()
