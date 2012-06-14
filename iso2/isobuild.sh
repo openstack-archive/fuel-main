@@ -407,6 +407,55 @@ rsync -av /var/tmp/gems/ ${GEMSDIR}
 ###########################
 echo "Injecting files ..."
 
+echo ">>> Injecting late script ..."
+mkdir -p ${NEW}/bin
+cat > ${NEW}/bin/late <<EOF
+#!/bin/sh
+# THIS SCRIPT IS FOR USING BY DEBIAN-INSTALLER ONLY
+
+set -e
+
+# repo
+mkdir -p /target/var/lib/mirror/ubuntu
+cp -r /cdrom/pools /target/var/lib/mirror/ubuntu
+cp -r /cdrom/dists /target/var/lib/mirror/ubuntu
+cp -r /cdrom/indices /target/var/lib/mirror/ubuntu
+mkdir -p /target/etc/apt/sources.list.d
+rm -f /target/etc/apt/sources.list
+echo "deb file:/var/lib/mirror/ubuntu precise main restricted universe multiverse" > /target/etc/apt/sources.list.d/local.list
+
+# gnupg
+cp -r /cdrom/gnupg /target/root/.gnupg
+chown -R root:root /target/root/.gnupg
+chmod 700 /target/root/.gnupg
+chmod 600 /target/root/.gnupg/*
+
+# bootstrap
+mkdir -p /target/var/lib/mirror/bootstrap
+cp /cdrom/bootstrap/linux /target/var/lib/mirror/bootstrap/linux
+cp /cdrom/bootstrap/initrd.gz /target/var/lib/mirror/bootstrap/initrd.gz
+mkdir -p /target/root/.ssh
+chmod 700 /target/root/.ssh
+cp /cdrom/bootstrap/bootstrap.rsa /target/root/.ssh/bootstrap.rsa
+chmod 600 /target/root/.ssh/bootstrap.rsa
+
+# nailgun
+mkdir -p /target/opt
+cp -r /cdrom/nailgun /target/opt
+
+#system
+cp -r /cdrom/sync/* /target/
+in-target update-rc.d chef-client disable
+
+# eggs
+cp -r /cdrom/eggs /target/var/lib/mirror
+
+# gems
+cp -r /cdrom/gems /target/var/lib/mirror
+
+EOF
+chmod +x ${NEW}/bin/late
+
 echo ">>> Syncing system ..."
 rsync -a ${SYNC}/ ${NEW}/sync
 
