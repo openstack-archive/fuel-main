@@ -1,0 +1,9 @@
+<div class="navbar-inner">
+  <div class="container">
+    <ul class="nav">
+      <% _.each(elements, function(element) { %>
+        <li><a href="<%= element[1] %>"><%= element[0] %></a></li>
+      <% }) %>
+    </ul>
+  </div>
+</div>

@@ -13,6 +13,11 @@ define(
             '*default': 'listClusters'
         },
         initialize: function() {
+            this.navbar = new commonViews.Navbar({elements: [
+                ['Clusters', '#clusters'],
+                ['Available Releases', '#releases'],
+            ]});
+            $('#content').before(this.navbar.render().el);
             this.breadcrumb = new commonViews.Breadcrumb;
             $('#content').before(this.breadcrumb.render().el);
         },
@@ -20,6 +25,7 @@ define(
             if (this.clusters) {
                 var cluster;
                 if (id && (cluster = this.clusters.get(id))) {
+                    this.navbar.setActive('clusters');
                     this.breadcrumb.setPath(['Home', '#'], ['Clusters', '#clusters'], cluster.get('name'));
                     $('#content').html(new clusterViews.ClusterInfo({model: cluster}).render().el);
                 } else {
@@ -33,6 +39,7 @@ define(
         },
         listClusters: function() {
             this.navigate('#clusters', {replace: true});
+            this.navbar.setActive('clusters');
             this.breadcrumb.setPath(['Home', '#'], 'Clusters');
 
             if (this.clusters) {
@@ -42,6 +49,7 @@ define(
             }
         },
         listReleases: function() {
+            this.navbar.setActive('releases');
             this.breadcrumb.setPath(['Home', '#'], 'Releases');
 
             if (this.releases) {

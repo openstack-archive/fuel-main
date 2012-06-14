@@ -1,9 +1,26 @@
 define(
 [
+    'text!templates/common/navbar.html',
     'text!templates/common/breadcrumb.html'
 ],
-function(breadcrumbTemplate) {
+function(navbarTemplate, breadcrumbTemplate) {
     var views = {}
+
+    views.Navbar = Backbone.View.extend({
+        className: 'navbar',
+        template: _.template(navbarTemplate),
+        initialize: function(options) {
+            this.elements = _.isArray(options.elements) ? options.elements : [];
+        },
+        setActive: function(element) {
+            this.$('.nav > li').removeClass('active');
+            this.$('a[href="#' + element + '"]').parent().addClass('active');
+        },
+        render: function() {
+            this.$el.html(this.template({elements: this.elements}));
+            return this;
+        }
+    });
 
     views.Breadcrumb = Backbone.View.extend({
         tagName: 'ul',
