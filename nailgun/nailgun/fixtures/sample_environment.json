@@ -1,6 +1,15 @@
 [
     {
         "pk": 1,
+        "model": "nailgun.release",
+        "fields": {
+            "name": "Essex",
+            "version": "1.2.3",
+            "description": "Essex release description"
+        }
+    },
+    {
+        "pk": 1,
         "model": "nailgun.cluster",
         "fields": {
             "name": "Default Cluster"

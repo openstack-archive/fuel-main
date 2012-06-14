@@ -1,28 +1,12 @@
 define(
 [
-    'text!templates/breadcrumb.html',
-    'text!templates/add_remove_nodes_dialog.html',
-    'text!templates/cluster_list.html',
-    'text!templates/cluster_info.html',
-    'text!templates/cluster_node.html'
+    'text!templates/cluster/add_remove_nodes_dialog.html',
+    'text!templates/cluster/list.html',
+    'text!templates/cluster/info.html',
+    'text!templates/cluster/node.html'
 ],
-function(breadcrumbTemplate, addRemoveNodesDialogTemplate, clusterListTemplate, clusterInfoTemplate, clusterNodeTemplate) {
+function(addRemoveNodesDialogTemplate, clusterListTemplate, clusterInfoTemplate, clusterNodeTemplate) {
     var views = {}
-
-    views.Breadcrumb = Backbone.View.extend({
-        tagName: 'ul',
-        className: 'breadcrumb',
-        template: _.template(breadcrumbTemplate),
-        path: [],
-        setPath: function() {
-            this.path = arguments;
-            this.render();
-        },
-        render: function() {
-            this.$el.html(this.template({path: this.path}));
-            return this;
-        }
-    });
 
     views.ClusterInfo = Backbone.View.extend({
         className: 'span12',

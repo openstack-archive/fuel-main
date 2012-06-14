@@ -1,12 +1,19 @@
-define(['models', 'views'], function(models, views) {
+define(
+[
+    'models',
+    'views/common',
+    'views/cluster',
+    'views/release',
+], function(models, commonViews, clusterViews, releaseViews) {
     var AppRouter = Backbone.Router.extend({
         routes: {
             'clusters': 'listClusters',
             'cluster/:id': 'showClusterInfo',
+            'releases': 'listReleases',
             '*default': 'listClusters'
         },
         initialize: function() {
-            this.breadcrumb = new views.Breadcrumb;
+            this.breadcrumb = new commonViews.Breadcrumb;
             $('#content').before(this.breadcrumb.render().el);
         },
         showClusterInfo: function(id) {
@@ -14,7 +21,7 @@ define(['models', 'views'], function(models, views) {
                 var cluster;
                 if (id && (cluster = this.clusters.get(id))) {
                     this.breadcrumb.setPath(['Home', '#'], ['Clusters', '#clusters'], cluster.get('name'));
-                    $('#content').html(new views.ClusterInfo({model: cluster}).render().el);
+                    $('#content').html(new clusterViews.ClusterInfo({model: cluster}).render().el);
                 } else {
                     this.listClusters();
                 }
@@ -29,9 +36,21 @@ define(['models', 'views'], function(models, views) {
             this.breadcrumb.setPath(['Home', '#'], 'Clusters');
 
             if (this.clusters) {
-                $('#content').html(new views.ClusterList({model: this.clusters}).render().el);
+                $('#content').html(new clusterViews.ClusterList({model: this.clusters}).render().el);
             } else {
                 this.loadClusters(this.listClusters);
+            }
+        },
+        listReleases: function() {
+            this.breadcrumb.setPath(['Home', '#'], 'Releases');
+
+            if (this.releases) {
+                $('#content').html(new releaseViews.ReleaseList({model: this.releases}).render().el);
+            } else {
+                this.releases = new models.Releases;
+                this.releases.fetch({
+                    success: _.bind(this.listReleases, this)
+                });
             }
         },
         loadClusters: function(callback) {

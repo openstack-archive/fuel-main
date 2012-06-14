@@ -2,6 +2,25 @@ define(function() {
     var models = {};
     var collections = {};
 
+    models.Release = Backbone.Model.extend({
+        urlRoot: '/api/releases',
+        defaults: {
+            name: null,
+            version: null,
+            description: null
+        },
+        initialize: function(attrs) {
+            if (_.isObject(attrs) && _.isArray(attrs.roles)) {
+                this.set('roles', new models.Roles(attrs.roles));
+            }
+        }
+    });
+
+    models.Releases = Backbone.Collection.extend({
+        model: models.Release,
+        url: '/api/releases'
+    });
+
     models.Cluster = Backbone.Model.extend({
         urlRoot: '/api/clusters',
         defaults: {
