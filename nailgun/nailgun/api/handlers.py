@@ -47,8 +47,7 @@ class TaskHandler(BaseHandler):
             "status": task.state,
         }
 
-        # return string representation of the exception if failed
-        json_data['results'] = [str(t.result) for t in task.result.results]
+        json_data['results'] = [t.result for t in task.result.results]
 
         return json_data
 

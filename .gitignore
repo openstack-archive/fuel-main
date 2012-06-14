@@ -10,6 +10,3 @@
 
 # Vagrant housekeeping file
 /.vagrant
-
-# artifact from config handler
-080000000001.json

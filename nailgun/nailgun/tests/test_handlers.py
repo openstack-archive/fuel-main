@@ -1,4 +1,5 @@
 import simplejson as json
+import mock
 from django import http
 from django.test import TestCase
 from django.db.models import Model
@@ -392,13 +393,17 @@ class TestHandlers(TestCase):
         recipes = [r.recipe for r in roles_from_db[0].recipes.all()]
         self.assertEquals(set(role_recipes), set(recipes))
 
-    def test_jsons_created_for_chef_solo(self):
+    @mock.patch('nailgun.tasks.SshConnect')
+    def test_jsons_created_for_chef_solo(self, ssh_mock):
         url = reverse('config_handler', kwargs={'cluster_id': 1})
+        ssh = ssh_mock.return_value
+        ssh.run.return_value = True
         resp = self.client.post(url)
-        print resp.content
         self.assertEquals(resp.status_code, 202)
         resp_json = json.loads(resp.content)
         self.assertEquals(len(resp_json['task_id']), 36)
+        for node in resp_json['results']:
+            self.assertEquals(node.values()[0], True)
 
     def test_validate_node_role_available(self):
         url = reverse('node_role_available', kwargs={
