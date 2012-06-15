@@ -4,11 +4,6 @@ from jsonfield import JSONField
 from api.fields import RecipeField
 
 
-class Cluster(models.Model):
-    #user = models.ForeignKey(User, related_name='clusters')
-    name = models.CharField(max_length=100)
-
-
 class Recipe(models.Model):
     recipe = RecipeField(max_length=100)
 
@@ -16,6 +11,21 @@ class Recipe(models.Model):
 class Role(models.Model):
     name = models.CharField(max_length=50)
     recipes = models.ManyToManyField(Recipe, related_name="roles")
+
+
+class Release(models.Model):
+    name = models.CharField(max_length=100)
+    version = models.CharField(max_length=30)
+    description = models.TextField(null=True, blank=True)
+    roles = models.ManyToManyField(Role, related_name='releases')
+
+    class Meta:
+        unique_together = ("name", "version")
+
+
+class Cluster(models.Model):
+    name = models.CharField(max_length=100)
+    release = models.ForeignKey(Release, related_name='clusters')
 
 
 class Node(models.Model):
@@ -36,13 +46,3 @@ class Node(models.Model):
     ip = models.CharField(max_length=15)
     fqdn = models.CharField(max_length=255)
     roles = models.ManyToManyField(Role)
-
-
-class Release(models.Model):
-    name = models.CharField(max_length=100)
-    version = models.CharField(max_length=30)
-    description = models.TextField(null=True, blank=True)
-    roles = models.ManyToManyField(Role, related_name='releases')
-
-    class Meta:
-        unique_together = ("name", "version")

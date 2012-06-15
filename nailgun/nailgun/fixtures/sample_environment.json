@@ -12,14 +12,16 @@
         "pk": 1,
         "model": "nailgun.cluster",
         "fields": {
-            "name": "Default Cluster"
+            "name": "Default Cluster",
+            "release": 1
         }
     },
     {
         "pk": 2,
         "model": "nailgun.cluster",
         "fields": {
-            "name": "Empty Cluster"
+            "name": "Empty Cluster",
+            "release": 1
         }
     },
     {

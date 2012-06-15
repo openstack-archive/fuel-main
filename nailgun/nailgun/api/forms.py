@@ -63,6 +63,11 @@ class ClusterForm(forms.Form):
     nodes = Field(required=False, validators=[validate_node_ids])
 
 
+class ClusterCreationForm(forms.ModelForm):
+    class Meta:
+        model = Cluster
+
+
 def validate_node_metadata(value):
     if value is not None:
         if isinstance(value, dict):
@@ -107,11 +112,14 @@ class NodeForm(forms.Form):
     ip = CharField(max_length=15, required=False)
     mac = CharField(max_length=17, required=False)
     roles = Field(required=False, validators=[validate_node_roles])
-    cluster_id = IntegerField(required=False)
 
 
 class NodeCreationForm(NodeForm):
     id = CharField(validators=[validate_node_id])
+
+
+class NodeFilterForm(forms.Form):
+    cluster_id = IntegerField(required=False)
 
 
 class ReleaseCreationForm(forms.ModelForm):

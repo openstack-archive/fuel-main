@@ -8,8 +8,9 @@ from django.conf import settings
 
 from nailgun.models import Cluster, Node, Recipe, Role, Release
 from nailgun.api.validators import validate_json
-from nailgun.api.forms import ClusterForm, RecipeForm, RoleForm, \
-        NodeCreationForm, NodeForm, ReleaseCreationForm
+from nailgun.api.forms import ClusterForm, ClusterCreationForm, RecipeForm, \
+        RoleForm, NodeCreationForm, NodeFilterForm, NodeForm, \
+        ReleaseCreationForm
 from nailgun.tasks import deploy_cluster
 
 
@@ -93,7 +94,7 @@ class ClusterCollectionHandler(BaseHandler):
         )
         return json_data
 
-    @validate_json(ClusterForm)
+    @validate_json(ClusterCreationForm)
     def create(self, request):
         cluster = Cluster()
         for key, value in request.form.cleaned_data.items():
@@ -109,7 +110,7 @@ class ClusterHandler(JSONHandler):
     allowed_methods = ('GET', 'PUT')
     model = Cluster
     fields = ('id', 'name')
-    special_fields = ('nodes',)
+    special_fields = ('nodes', 'release')
 
     @classmethod
     def render(cls, cluster, fields=None):
@@ -120,6 +121,9 @@ class ClusterHandler(JSONHandler):
                     NodeHandler.render,
                     cluster.nodes.all()
                 )
+            elif field in ('release',):
+                json_data[field] = ReleaseHandler.render(cluster.release)
+
         return json_data
 
     def read(self, request, cluster_id):
@@ -153,7 +157,7 @@ class NodeCollectionHandler(BaseHandler):
     allowed_methods = ('GET', 'POST')
     model = Node
 
-    @validate(NodeForm, 'GET')
+    @validate(NodeFilterForm, 'GET')
     def read(self, request):
         nodes = Node.objects.all()
         if 'cluster_id' in request.form.data:
@@ -181,8 +185,7 @@ class NodeHandler(JSONHandler):
 
     allowed_methods = ('GET', 'PUT')
     model = Node
-    fields = ('id', 'name', 'cluster_id', 'metadata',
-            'status', 'mac', 'fqdn', 'ip')
+    fields = ('id', 'name', 'metadata', 'status', 'mac', 'fqdn', 'ip')
     special_fields = ('roles',)
 
     @classmethod
@@ -208,13 +211,7 @@ class NodeHandler(JSONHandler):
         node, is_created = Node.objects.get_or_create(id=node_id)
         for key, value in request.form.cleaned_data.items():
             if key in request.form.data:
-                if key == 'cluster_id' and value is not None and \
-                        node.cluster_id is not None:
-                    response = rc.BAD_REQUEST
-                    response.content = \
-                            'Changing cluster is not allowed'
-                    return response
-                elif key == 'roles':
+                if key == 'roles':
                     new_roles = Role.objects.filter(id__in=value)
                     node.roles.clear()
                     node.roles.add(*new_roles)
@@ -380,7 +377,7 @@ class ReleaseHandler(JSONHandler):
 
     allowed_methods = ('GET',)
     model = Release
-    fields = ('name', 'version', 'description')
+    fields = ('id', 'name', 'version', 'description')
     special_fields = ('roles',)
 
     @classmethod

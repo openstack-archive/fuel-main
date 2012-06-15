@@ -34,6 +34,7 @@ class TestHandlers(TestCase):
                          'memory': 'sd'
                         }
         self.another_cluster = Cluster(id=2,
+                release_id=1,
                 name='Another cluster')
         self.another_cluster.save()
 
@@ -131,7 +132,7 @@ class TestHandlers(TestCase):
         yet_another_cluster_name = 'Yet another cluster'
         resp = self.client.post(
             reverse('cluster_collection_handler'),
-            json.dumps({'name': yet_another_cluster_name}),
+            json.dumps({'name': yet_another_cluster_name, 'release': 1}),
             "application/json"
         )
         self.assertEquals(resp.status_code, 200)
@@ -182,27 +183,16 @@ class TestHandlers(TestCase):
         self.assertEquals(nodes_from_db[0].id, self.another_node.id)
 
     def test_node_creation(self):
-        node_with_cluster_id = '080000000002'
-        node_without_cluster_id = '080000000003'
+        node_id = '080000000003'
 
         resp = self.client.post(
             reverse('node_collection_handler'),
-            json.dumps({
-                'id': node_with_cluster_id,
-                'cluster_id': 1,
-            }),
+            json.dumps({'id': node_id}),
             "application/json")
         self.assertEquals(resp.status_code, 200)
 
-        resp = self.client.post(
-            reverse('node_collection_handler'),
-            json.dumps({'id': node_without_cluster_id}),
-            "application/json")
-        self.assertEquals(resp.status_code, 200)
-
-        nodes_from_db = Node.objects.filter(id__in=[node_with_cluster_id,
-                                                      node_without_cluster_id])
-        self.assertEquals(len(nodes_from_db), 2)
+        nodes_from_db = Node.objects.filter(id=node_id)
+        self.assertEquals(len(nodes_from_db), 1)
 
     def test_node_creation_using_put(self):
         node_id = '080000000002'
@@ -215,25 +205,6 @@ class TestHandlers(TestCase):
 
         nodes_from_db = Node.objects.filter(id=node_id)
         self.assertEquals(len(nodes_from_db), 1)
-
-    def test_node_cluster_update(self):
-        resp = self.client.put(
-            reverse('node_handler', kwargs={'node_id': self.node.id}),
-            json.dumps({'cluster_id': 2}),
-            "application/json")
-        self.assertEquals(resp.status_code, 400)
-
-        resp = self.client.put(
-            reverse('node_handler', kwargs={'node_id': self.node.id}),
-            json.dumps({'cluster_id': None}),
-            "application/json")
-        self.assertEquals(resp.status_code, 200)
-
-        resp = self.client.put(
-            reverse('node_handler', kwargs={'node_id': self.node.id}),
-            json.dumps({'cluster_id': 1}),
-            "application/json")
-        self.assertEquals(resp.status_code, 200)
 
     def test_node_valid_metadata_gets_updated(self):
         resp = self.client.put(self.node_url,

@@ -1,9 +1,17 @@
 [
   {
+    "model": "nailgun.release",
+    "pk": 1,
+    "fields": {
+      "name": "Default Release"
+    }
+  },
+  {
     "model": "nailgun.cluster",
     "pk": 1,
     "fields": {
-      "name": "Default Cluster"
+      "name": "Default Cluster",
+      "release": 1
     }
   }
 ]
