@@ -131,34 +131,7 @@ INSTALLED_APPS = (
 
 TEST_RUNNER = 'nailgun.testrunner.MyRunner'
 
-# A sample logging configuration. The only tangible logging
-# performed by this configuration is to send an email to
-# the site admins on every HTTP 500 error when DEBUG=False.
-# See http://docs.djangoproject.com/en/dev/topics/logging for
-# more details on how to customize your logging configuration.
-LOGGING = {
-    'version': 1,
-    'disable_existing_loggers': False,
-    'filters': {
-        'require_debug_false': {
-            '()': 'django.utils.log.RequireDebugFalse'
-        }
-    },
-    'handlers': {
-        'mail_admins': {
-            'level': 'ERROR',
-            'filters': ['require_debug_false'],
-            'class': 'django.utils.log.AdminEmailHandler'
-        }
-    },
-    'loggers': {
-        'django.request': {
-            'handlers': ['mail_admins'],
-            'level': 'ERROR',
-            'propagate': True,
-        },
-    }
-}
+import nailgun.extrasettings
 
 # Celery settings
 import djcelery
@@ -173,6 +146,5 @@ CELERY_EAGER_PROPAGATES_EXCEPTIONS = False
 
 CHEF_CONF_FOLDER = "/var/www"
 CHEF_NODES_DATABAG_NAME = "nodes"
-PATH_TO_SSH_KEY = os.path.join(os.getenv("HOME"), ".ssh/id_rsa")
 
 PISTON_IGNORE_DUPE_MODELS = True
