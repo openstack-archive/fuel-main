@@ -29,10 +29,13 @@ define(function() {
         initialize: function(attrs) {
             if (_.isObject(attrs) && _.isArray(attrs.nodes)) {
                 this.set('nodes', new models.Nodes(attrs.nodes));
-                this.get('nodes').each(function(node) {
-                    node.set('cluster', this);
-                }, this);
             }
+        },
+        parse: function(response) {
+            if (_.isObject(response) && _.isArray(response.nodes)) {
+                response.nodes = new models.Nodes(response.nodes);
+            }
+            return response;
         }
     });
 
@@ -51,16 +54,16 @@ define(function() {
         initialize: function(attrs) {
             if (_.isObject(attrs) && _.isArray(attrs.roles)) {
                 this.set('roles', new models.Roles(attrs.roles));
-                this.get('roles').each(function(role) {
-                    role.set('node', this);
-                }, this);
             }
         }
     });
 
     models.Nodes = Backbone.Collection.extend({
         model: models.Node,
-        url: '/api/nodes'
+        url: '/api/nodes',
+        toJSON: function(options) {
+            return this.pluck('id');
+        }
     });
 
     models.Cookbook = Backbone.Model.extend({
@@ -72,9 +75,6 @@ define(function() {
         initialize: function(attrs) {
             if (_.isObject(attrs) && _.isArray(attrs.roles)) {
                 this.set('roles', new models.Roles(attrs.roles));
-                this.get('roles').each(function(role) {
-                    role.set('cookbook', this);
-                }, this);
             }
         }
     });
@@ -91,7 +91,8 @@ define(function() {
     });
 
     models.Roles = Backbone.Collection.extend({
-        model: models.Role
+        model: models.Role,
+        url: '/api/roles'
     });
 
     return models;

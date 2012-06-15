@@ -17,7 +17,7 @@ function(models, nodeDialogTemplate, nodeDialogNodeListTemplate) {
         saveChanges: function(e) {
             e.preventDefault();
             var nodes = this.$('.node_check').map(function(){return $(this).attr('data-node-id')}).get();
-            //console.log(nodes);
+            this.model.update({nodes: nodes});
             this.$el.modal('hide');
         },
         toggleNode: function(e) {
@@ -28,12 +28,12 @@ function(models, nodeDialogTemplate, nodeDialogNodeListTemplate) {
             this.$el.on('hidden', function() {$(this).remove()});
             this.$el.modal();
 
-            this.$('.cluster-nodes').html(new views.nodeDialogNodeList({model: this.model.get('nodes')}).render().el);
+            this.$('.cluster-nodes').html(new views.nodeDialogNodeList({model: this.model.get('nodes'), checked: true}).render().el);
             this.availableNodes = new models.Nodes;
             this.availableNodes.fetch({
                 data: {cluster_id: ''},
                 success: _.bind(function() {
-                    this.$('.available-nodes').html(new views.nodeDialogNodeList({model: this.availableNodes}).render().el);
+                    this.$('.available-nodes').html(new views.nodeDialogNodeList({model: this.availableNodes, checked: false}).render().el);
                 }, this)
             });
             return this;
@@ -42,8 +42,11 @@ function(models, nodeDialogTemplate, nodeDialogNodeListTemplate) {
 
     views.nodeDialogNodeList = Backbone.View.extend({
         template: _.template(nodeDialogNodeListTemplate),
+        initialize: function(options) {
+            this.checked = options.checked;
+        },
         render: function() {
-            this.$el.html(this.template({nodes: this.model}));
+            this.$el.html(this.template({nodes: this.model, checked: this.checked}));
             return this;
         }
     });
