@@ -22,7 +22,7 @@ define :local_python_pip, :virtualenv => nil, :version => nil, :fromdir => nil d
   end
 
   execute "#{pip} install #{package_name}" do
-    command "#{pip} install -f file://#{fromdir} #{package_name}#{package_version}"
+    command "#{pip} install --no-index -f file://#{fromdir} #{package_name}#{package_version}"
     only_if "which #{pip}" 
   end
 end

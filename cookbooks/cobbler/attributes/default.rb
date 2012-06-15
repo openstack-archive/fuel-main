@@ -1,6 +1,5 @@
 default_conf = Cobbler.default_conf(node)
 
-default["cobbler"]["updns"] = "8.8.8.8"
 default["cobbler"]["next_server"] = default_conf[:next_server]
 default["cobbler"]["server"] = default_conf[:server]
 default["cobbler"]["bootstrap_kernel"] = "/var/lib/mirror/bootstrap/linux"

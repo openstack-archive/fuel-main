@@ -1,4 +1,9 @@
-WSGIScriptAlias "/<%= @application_name %>" "<%= node.nailgun.root %>/nailgun/wsgi.py"
-WSGIPythonPath "<%= node.nailgun.root %>"
-WSGIProcessGroup nailgun
-WSGIDaemonProcess nailgun user=<%= node.nailgun.user %> group=<%= node.nailgun.group %>
+Listen 8000
+<VirtualHost *:8000>
+  WSGIProcessGroup nailgun
+  WSGIDaemonProcess nailgun user=<%= node.nailgun.user %> group=<%= node.nailgun.group %> python-path=<%= node.nailgun.root %>
+  WSGIScriptAlias /<%= @application_name %> <%= node.nailgun.root %>/nailgun/wsgi.py
+
+  LogLevel debug
+</VirtualHost>
+

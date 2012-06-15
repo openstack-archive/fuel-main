@@ -89,12 +89,12 @@ end
 # FIXME
 # maybe separate recipe only needed for development to resolv mirantis private names
 
-file "/etc/dnsmasq.d/mirantis.net.conf" do
-  action :create
-  content "server=/mirantis.net/#{node["cobbler"]["updns"]}"
-  mode 0644
-  notifies :restart, "service[dnsmasq]"
-end
+# file "/etc/dnsmasq.d/mirantis.net.conf" do
+#   action :create
+#   content "server=/mirantis.net/#{node["cobbler"]["updns"]}"
+#   mode 0644
+#   notifies :restart, "service[dnsmasq]"
+# end
 
 link "#{node["cobbler"]["bootstrap_ks_mirror_dir"]}/linux" do
   to "#{node["cobbler"]["bootstrap_kernel"]}"
