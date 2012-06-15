@@ -47,8 +47,19 @@ class RoleForm(forms.ModelForm):
         model = Role
 
 
+validate_node_id = RegexValidator(regex=re.compile('^[\dA-F]{12}$'))
+
+def validate_node_ids(value):
+    if isinstance(value, list):
+        for node_id in value:
+            validate_node_id(node_id)
+    else:
+        raise ValidationError('Node list must be a list of node IDs')
+
+
 class ClusterForm(forms.Form):
     name = CharField(max_length=100, required=False)
+    nodes = Field(required=False, validators=[validate_node_ids])
 
 
 def validate_node_metadata(value):
@@ -87,10 +98,7 @@ should not be empty' % role['name'])
                 raise ValidationError('Recipe %s doesn\'t exist' % recipe)
 
 
-validate_node_id = RegexValidator(regex=re.compile('^[\dA-F]{12}$'))
-
-
-class NodeUpdateForm(forms.Form):
+class NodeForm(forms.Form):
     metadata = Field(required=False, validators=[validate_node_metadata])
     status = ChoiceField(required=False, choices=Node.NODE_STATUSES)
     name = CharField(max_length=100, required=False)
@@ -101,7 +109,7 @@ class NodeUpdateForm(forms.Form):
     cluster_id = IntegerField(required=False)
 
 
-class NodeCreationForm(NodeUpdateForm):
+class NodeCreationForm(NodeForm):
     id = CharField(validators=[validate_node_id])
 
 

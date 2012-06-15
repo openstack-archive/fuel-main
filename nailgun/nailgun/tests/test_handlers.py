@@ -23,6 +23,8 @@ Emitter.construct = _construct_monkey(Emitter.construct)
 
 class TestHandlers(TestCase):
 
+    fixtures = ['default_cluster']
+
     def setUp(self):
         self.request = http.HttpRequest()
         self.old_meta = {'block_device': 'value',
@@ -42,6 +44,13 @@ class TestHandlers(TestCase):
                     ip="127.0.0.1",
                     metadata=self.old_meta)
         self.node.save()
+
+        self.another_node = Node(
+                    id="080000000000",
+                    name="test2.server.com",
+                    ip="127.0.0.2",
+                    metadata=self.old_meta)
+        self.another_node.save()
 
         self.recipe = Recipe()
         self.recipe.recipe = 'cookbook::recipe@2.1'
@@ -151,6 +160,27 @@ class TestHandlers(TestCase):
 
         clusters_after = len(Cluster.objects.all())
         self.assertEquals(clusters_before, clusters_after)
+
+    def test_cluster_node_list_update(self):
+        resp = self.client.put(
+            reverse('cluster_handler', kwargs={'cluster_id': 1}),
+            json.dumps({'nodes': [self.node.id]}),
+            "application/json"
+        )
+        self.assertEquals(resp.status_code, 200)
+        nodes_from_db = Node.objects.filter(cluster_id=1)
+        self.assertEquals(len(nodes_from_db), 1)
+        self.assertEquals(nodes_from_db[0].id, self.node.id)
+
+        resp = self.client.put(
+            reverse('cluster_handler', kwargs={'cluster_id': 1}),
+            json.dumps({'nodes': [self.another_node.id]}),
+            "application/json"
+        )
+        self.assertEquals(resp.status_code, 200)
+        nodes_from_db = Node.objects.filter(cluster_id=1)
+        self.assertEquals(len(nodes_from_db), 1)
+        self.assertEquals(nodes_from_db[0].id, self.another_node.id)
 
     def test_node_creation(self):
         node_with_cluster_id = '080000000002'

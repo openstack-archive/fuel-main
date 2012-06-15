@@ -9,7 +9,7 @@ from django.conf import settings
 from nailgun.models import Cluster, Node, Recipe, Role, Release
 from nailgun.api.validators import validate_json
 from nailgun.api.forms import ClusterForm, RecipeForm, RoleForm, \
-        NodeCreationForm, NodeUpdateForm, ReleaseCreationForm
+        NodeCreationForm, NodeForm, ReleaseCreationForm
 from nailgun.tasks import deploy_cluster
 
 
@@ -126,7 +126,12 @@ class ClusterHandler(JSONHandler):
             cluster = Cluster.objects.get(id=cluster_id)
             for key, value in request.form.cleaned_data.items():
                 if key in request.form.data:
-                    setattr(cluster, key, value)
+                    if key == 'nodes':
+                        new_nodes = Node.objects.filter(id__in=value)
+                        cluster.nodes.clear()
+                        cluster.nodes.add(*new_nodes)
+                    else:
+                        setattr(cluster, key, value)
 
             cluster.save()
             return ClusterHandler.render(cluster)
@@ -139,7 +144,7 @@ class NodeCollectionHandler(BaseHandler):
     allowed_methods = ('GET', 'POST')
     model = Node
 
-    @validate(NodeUpdateForm, 'GET')
+    @validate(NodeForm, 'GET')
     def read(self, request):
         nodes = Node.objects.all()
         if 'cluster_id' in request.form.data:
@@ -188,7 +193,7 @@ class NodeHandler(JSONHandler):
         except ObjectDoesNotExist:
             return rc.NOT_FOUND
 
-    @validate_json(NodeUpdateForm)
+    @validate_json(NodeForm)
     def update(self, request, node_id):
         node, is_created = Node.objects.get_or_create(id=node_id)
         for key, value in request.form.cleaned_data.items():
