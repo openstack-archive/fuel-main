@@ -5,7 +5,11 @@
         "fields": {
             "name": "Essex",
             "version": "1.2.3",
-            "description": "Essex release description"
+            "description": "Essex release description",
+            "roles": [
+                1,
+                2
+            ]
         }
     },
     {

@@ -10,9 +10,7 @@ define(function() {
             description: null
         },
         initialize: function(attrs) {
-            if (_.isObject(attrs) && _.isArray(attrs.roles)) {
-                this.set('roles', new models.Roles(attrs.roles));
-            }
+            this.set('roles', new models.Roles(attrs.roles));
         }
     });
 
@@ -26,15 +24,9 @@ define(function() {
         defaults: {
             name: null
         },
-        initialize: function(attrs) {
-            if (_.isObject(attrs) && _.isArray(attrs.nodes)) {
-                this.set('nodes', new models.Nodes(attrs.nodes));
-            }
-        },
         parse: function(response) {
-            if (_.isObject(response) && _.isArray(response.nodes)) {
-                response.nodes = new models.Nodes(response.nodes);
-            }
+            response.nodes = new models.Nodes(response.nodes);
+            response.release = new models.Release(response.release);
             return response;
         }
     });
@@ -52,9 +44,7 @@ define(function() {
             metadata: null
         },
         initialize: function(attrs) {
-            if (_.isObject(attrs) && _.isArray(attrs.roles)) {
-                this.set('roles', new models.Roles(attrs.roles));
-            }
+            this.set('roles', new models.Roles(attrs.roles));
         }
     });
 
@@ -73,9 +63,7 @@ define(function() {
             version: null
         },
         initialize: function(attrs) {
-            if (_.isObject(attrs) && _.isArray(attrs.roles)) {
-                this.set('roles', new models.Roles(attrs.roles));
-            }
+            this.set('roles', new models.Roles(attrs.roles));
         }
     });
 
