@@ -10,3 +10,5 @@
 
 # Vagrant housekeeping file
 /.vagrant
+
+/build
