@@ -35,7 +35,7 @@ class TaskError(Exception):
             Exception.__init__(self, self.message)
             logger.error(self.message)
             if node_id:
-                node = Node.objects.get(id__exact=node_id)
+                node = Node.objects.get(id=node_id)
                 node.status = "error"
                 node.save()
         except:
@@ -118,7 +118,7 @@ def deploy_cluster(cluster_id):
 
 @task
 def bootstrap_node(node_id):
-    node = Node.objects.get(id__exact=node_id)
+    node = Node.objects.get(id=node_id)
     node.status = "deploying"
     node.save()
 

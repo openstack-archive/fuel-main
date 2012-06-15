@@ -405,10 +405,11 @@ class TestHandlers(TestCase):
 
         def check_status(task):
             self.assertEquals(task['status'], "SUCCESS")
-            for t in task['subtasks']:
-                self.assertEquals(t['status'], "SUCCESS")
-                if t['subtasks']:
-                    check_status(t['subtasks'])
+            if task['subtasks']:
+                for t in task['subtasks']:
+                    self.assertEquals(t['status'], "SUCCESS")
+                    if t['subtasks']:
+                        check_status(t['subtasks'])
         check_status(resp_json)
 
     def test_validate_node_role_available(self):

@@ -20,6 +20,7 @@ class Role(models.Model):
 
 class Node(models.Model):
     NODE_STATUSES = (
+        ('offline', 'offline'),
         ('ready', 'ready'),
         ('deploying', 'deploying'),
         ('error', 'error'),
