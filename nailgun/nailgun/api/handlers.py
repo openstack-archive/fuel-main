@@ -148,7 +148,8 @@ class NodeCollectionHandler(BaseHandler):
     def read(self, request):
         nodes = Node.objects.all()
         if 'cluster_id' in request.form.data:
-            nodes = nodes.filter(cluster_id=request.form.cleaned_data['cluster_id'])
+            nodes = nodes.filter(
+                cluster_id=request.form.cleaned_data['cluster_id'])
         return map(NodeHandler.render, nodes)
 
     @validate_json(NodeCreationForm)

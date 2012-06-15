@@ -49,6 +49,7 @@ class RoleForm(forms.ModelForm):
 
 validate_node_id = RegexValidator(regex=re.compile('^[\dA-F]{12}$'))
 
+
 def validate_node_ids(value):
     if isinstance(value, list):
         for node_id in value:
