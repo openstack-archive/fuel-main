@@ -3,9 +3,9 @@
   <div class="row-fluid">
     <% nodes.each(function(node) { %>
       <div class="span3">
-        <div class="<%= node.get('cluster_id') ? 'node_check' : 'node_uncheck' %>">
+        <div class="dialog-node <%= node.get('cluster_id') ? 'node_check' : 'node_uncheck' %>" data-node-id="<%= node.id %>">
           <i class="icon-ok icon-white"></i>
-          <div class="article"><%= node.get('id') %></div>
+          <div class="article"><%= node.id %></div>
           <ul>
             <li>CPU: X</li>
             <li>HDD: X TB</li>

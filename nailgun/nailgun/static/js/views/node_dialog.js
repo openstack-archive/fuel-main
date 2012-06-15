@@ -11,11 +11,17 @@ function(models, nodeDialogTemplate, nodeDialogNodeListTemplate) {
         className: 'modal fade',
         template: _.template(nodeDialogTemplate),
         events: {
-            'click .js-save-changes': 'saveChanges'
+            'click .js-save-changes': 'saveChanges',
+            'click .dialog-node': 'toggleNode'
         },
         saveChanges: function(e) {
-            e && e.preventDefault();
+            e.preventDefault();
+            var nodes = this.$('.node_check').map(function(){return $(this).attr('data-node-id')}).get();
+            //console.log(nodes);
             this.$el.modal('hide');
+        },
+        toggleNode: function(e) {
+            $(e.currentTarget).toggleClass('node_check').toggleClass('node_uncheck');
         },
         render: function() {
             this.$el.html(this.template());

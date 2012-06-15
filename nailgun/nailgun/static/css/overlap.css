@@ -161,6 +161,10 @@ behavior: url(css/pie.htc);
 .breadcrumb .active a {
   color: #333333;
 }
+
+.dialog-node {
+  cursor: pointer !important;
+}
 .node_uncheck {border: 1px solid #a9a9a9; background-color: #dbdbdb;
                 background-image: -ms-linear-gradient(top, #e3e3e3, #d4d4d4);
                 background-image: -webkit-gradient(linear, 0 0, 0 100%, from(#e3e3e3), to(#d4d4d4));
