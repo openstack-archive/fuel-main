@@ -42,7 +42,7 @@
         "pk": "111111111111",
         "model": "nailgun.node",
         "fields": {
-            "status": "online",
+            "status": "ready",
             "name": null,
             "roles": [
                 1
@@ -57,7 +57,7 @@
         "pk": "222222222222",
         "model": "nailgun.node",
         "fields": {
-            "status": "busy",
+            "status": "error",
             "name": null,
             "roles": [
                 1,
@@ -73,7 +73,7 @@
         "pk": "333333333333",
         "model": "nailgun.node",
         "fields": {
-            "status": "online",
+            "status": "deploying",
             "name": null,
             "roles": [
                 2
@@ -101,7 +101,7 @@
         "pk": "555555555555",
         "model": "nailgun.node",
         "fields": {
-            "status": "online",
+            "status": "ready",
             "name": "Node with name",
             "roles": [],
             "ip": "",
@@ -114,7 +114,7 @@
         "pk": "000000000000",
         "model": "nailgun.node",
         "fields": {
-            "status": "online",
+            "status": "ready",
             "name": "Node without cluster",
             "roles": [],
             "ip": "",
@@ -127,7 +127,7 @@
         "pk": "000000000001",
         "model": "nailgun.node",
         "fields": {
-            "status": "online",
+            "status": "ready",
             "name": "Another node without cluster",
             "roles": [],
             "ip": "",
