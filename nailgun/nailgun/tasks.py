@@ -16,6 +16,35 @@ from nailgun.helpers import SshConnect
 logger = logging.getLogger(__name__)
 
 
+class TaskError(Exception):
+
+    def __init__(self, task_id, error, cluster_id=None, node_id=None):
+        self.message = ""
+        node_msg = ""
+        cluster_msg = ""
+
+        if node_id:
+            node_msg = ", node_id='%s'" % (node_id)
+        if cluster_id:
+            cluster_msg = ", cluster_id='%s'" % (cluster_id)
+
+        self.message = "Error in task='%s'%s%s. Error message: '%s'" % (
+                    task_id, cluster_msg, node_msg, error)
+
+        try:
+            Exception.__init__(self, self.message)
+            logger.error(self.message)
+            if node_id:
+                node = Node.objects.get(id__exact=node_id)
+                node.status = "error"
+                node.save()
+        except:
+            logger.exception("Exception in exception handler occured")
+
+    def __str__(self):
+        return repr(self.message)
+
+
 @task
 def deploy_cluster(cluster_id):
     databag = os.path.join(
@@ -26,7 +55,8 @@ def deploy_cluster(cluster_id):
 
     nodes = Node.objects.filter(cluster__id=cluster_id)
     if not nodes:
-        raise Exception("Nodes list is empty")
+        raise TaskError(deploy_cluster.request.id,
+                "Nodes list is empty.", cluster_id=cluster_id)
 
     for node in nodes:
         node_json = {}
@@ -37,7 +67,9 @@ def deploy_cluster(cluster_id):
 
         roles_for_node = node.roles.all()
         if not roles_for_node:
-            raise Exception("Roles list for node %s is empty" % node.id)
+            raise TaskError(deploy_cluster.request.id,
+                    "Roles list for node %s is empty" % node.id,
+                    cluster_id=cluster_id)
 
         node_json['cluster_id'] = cluster_id
         for f in node._meta.fields:
@@ -86,9 +118,12 @@ def deploy_cluster(cluster_id):
 
 @task
 def bootstrap_node(node_id):
+    node = Node.objects.get(id__exact=node_id)
+    node.status = "deploying"
+    node.save()
+
     _provision_node(node_id)
 
-    node = Node.objects.get(id__exact=node_id)
     try:
         ssh = SshConnect(node.ip, 'root', settings.PATH_TO_SSH_KEY)
         # Returns True if succeeded
@@ -96,14 +131,24 @@ def bootstrap_node(node_id):
     except (paramiko.AuthenticationException,
             paramiko.PasswordRequiredException,
             paramiko.SSHException):
-        logger.exception("Can't connect to %s, ip=%s", node.id, node.ip)
-        return {node.id: False}
+        raise TaskError(bootstrap_node.request.id,
+                "Can't connect to IP=%s" % node.ip, node_id=node.id)
     except Exception:
-        logger.exception("Error in deployment of %s, ip=%s", node.id, node.ip)
-        return {node.id: False}
+        raise TaskError(bootstrap_node.request.id,
+                "Unknown error during ssh/deploy IP=%s" % node.ip,
+                node_id=node.id)
+    # FIXME(mihgen): If uncomment, it fails in case if SshConnect.__init__
+    #                failed. But we need to close ssh in other cases
     #finally:
         #ssh.close()
-    return {node.id: exit_status}
+    #ssh.close()
+    if not exit_status:
+        raise TaskError(bootstrap_node.request.id,
+                "Deployment exited with non-zero exit code. IP=%s" % node.ip,
+                node_id=node.id)
+    node.status = "ready"
+    node.save()
+    return exit_status
 
 
 # Call to Cobbler to make node ready.

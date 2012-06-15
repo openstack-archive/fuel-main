@@ -41,13 +41,23 @@ class TaskHandler(BaseHandler):
 
     @classmethod
     def render(cls, task):
-        # TODO show meta?
         json_data = {
             "task_id": task.task_id,
             "status": task.state,
+            "subtasks": None,
+            "result": None,
+            "error": None,
+            "traceback": None,
         }
 
-        json_data['results'] = [t.result for t in task.result.results]
+        if isinstance(task.result, celery.result.ResultSet):
+            json_data['subtasks'] = [TaskHandler.render(t) for t in \
+                    task.result.results]
+        elif isinstance(task.result, Exception):
+            json_data['error'] = task.result
+            json_data['traceback'] = task.traceback
+        else:
+            json_data['result'] = task.result
 
         return json_data
 

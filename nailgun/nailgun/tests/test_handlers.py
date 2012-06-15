@@ -125,8 +125,6 @@ class TestHandlers(TestCase):
             if 'GET' in methods:
                 test_url = reverse(url, kwargs=kw)
                 resp = self.client.get(test_url)
-                print test_url
-                print resp.content
                 self.assertNotEqual(str(resp.status_code)[0], '5')
 
     def test_cluster_creation(self):
@@ -248,7 +246,7 @@ class TestHandlers(TestCase):
         self.assertEquals(nodes_from_db[0].metadata, self.new_meta)
 
     def test_node_valid_status_gets_updated(self):
-        params = {'status': 'offline'}
+        params = {'status': 'error'}
         resp = self.client.put(self.node_url, json.dumps(params),
                 "application/json")
         self.assertEquals(resp.status_code, 200)
@@ -400,10 +398,18 @@ class TestHandlers(TestCase):
         ssh.run.return_value = True
         resp = self.client.post(url)
         self.assertEquals(resp.status_code, 202)
+
         resp_json = json.loads(resp.content)
         self.assertEquals(len(resp_json['task_id']), 36)
-        for node in resp_json['results']:
-            self.assertEquals(node.values()[0], True)
+        self.assertEquals(resp_json['status'], "SUCCESS")
+
+        def check_status(task):
+            self.assertEquals(task['status'], "SUCCESS")
+            for t in task['subtasks']:
+                self.assertEquals(t['status'], "SUCCESS")
+                if t['subtasks']:
+                    check_status(t['subtasks'])
+        check_status(resp_json)
 
     def test_validate_node_role_available(self):
         url = reverse('node_role_available', kwargs={

@@ -20,9 +20,9 @@ class Role(models.Model):
 
 class Node(models.Model):
     NODE_STATUSES = (
-        ('online', 'online'),
-        ('offline', 'offline'),
-        ('busy', 'busy'),
+        ('ready', 'ready'),
+        ('deploying', 'deploying'),
+        ('error', 'error'),
     )
     id = models.CharField(max_length=12, primary_key=True)
     cluster = models.ForeignKey(Cluster, related_name='nodes',
