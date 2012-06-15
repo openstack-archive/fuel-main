@@ -2,13 +2,20 @@
 /:=$(BUILD_DIR)/iso/
 
 .PHONY: iso
+all: iso
 iso: $/nailgun-ubuntu-12.04-amd64.iso
 
-$(if $(BINARIES_DIR),,$(error BINARIES_DIR variable is not defined))
+ifndef BINARIES_DIR
+$/%:
+	$(error BINARIES_DIR variable is not defined)
+else
+
+APT-GET:=echo apt-get
+
 $(if $(gnupg.home),,$(error gnupg.home variable is not defined))
 
-GEMS:=$(shell cd $(BINARIES_DIR)/gems && ls)
-EGGS:=$(shell cd $(BINARIES_DIR)/eggs && ls)
+find-files=$(shell test -d $1 && cd $1 && find * -type f 2> /dev/null)
+
 EXTRA_PACKAGES:=$(shell grep -v ^\\s*\# requirements-deb.txt)
 CACHED_EXTRA_PACKAGES:=$(shell cd $(BINARIES_DIR)/ubuntu/precise/extra && ls *.deb)
 
@@ -95,8 +102,7 @@ $/apt/etc/preferences.d/opscode: | $/apt/etc/preferences.d/.dir
 
 
 $/apt/state/status: | $/apt/state/.dir
-	@mkdir -p $(@D)
-	touch $@
+	$(ACTION.TOUCH)
 
 $/apt-cache-infra.done: \
 	  $/apt/etc/apt.conf \
@@ -105,58 +111,63 @@ $/apt-cache-infra.done: \
 	  $/apt/archives/.dir \
 		| $/apt/cache/.dir \
 		  $/apt/state/status
-	touch $@
+	$(ACTION.TOUCH)
 
 $/apt-cache-iso.done: $(ISO_IMAGE) | $(BUILD_DIR)/ubuntu/pool $/apt/archives/.dir
 	find $(abspath $(BUILD_DIR)/ubuntu/pool) -type f \( -name '*.deb' -o -name '*.udeb' \) -exec ln -sf {} $/apt/archives \;
-	touch $@
+	$(ACTION.TOUCH)
 
-$/apt-cache-index.done: $/apt-cache-infra.done
-	apt-get -c=$/apt/etc/apt.conf update
-	touch $@
+$/apt-cache-index.done: \
+	  $/apt-cache-infra.done \
+	  $(addprefix $/apt/state/,$(call find-files,$(BINARIES_DIR)/ubuntu/precise/state))
+	$(APT-GET) -c=$/apt/etc/apt.conf update
+	$(ACTION.TOUCH)
 
-$/apt-cache-extra.done: $/apt-cache-index.done $/apt-cache-iso.done requirements-deb.txt | $(addprefix $/apt/archives/,$(CACHED_EXTRA_PACKAGES))
-	apt-get -c=$/apt/etc/apt.conf -d -y install $(EXTRA_PACKAGES)
-	touch $@
+$/apt-cache-extra.done: \
+	  $/apt-cache-index.done \
+		$/apt-cache-iso.done \
+		$(addprefix $/apt/archives/,$(call find-files,$(BINARIES_DIR)/ubuntu/precise/extra)) \
+		requirements-deb.txt
+	$(APT-GET) -c=$/apt/etc/apt.conf -d -y install $(EXTRA_PACKAGES)
+	$(ACTION.TOUCH)
 
 $/apt/archives/%.deb: $(BINARIES_DIR)/ubuntu/$(ISO_RELEASE)/extra/%.deb
 	ln -sf $(abspath $<) $@
 
 $/apt-cache.done: $/apt-cache-extra.done
+	$(ACTION.TOUCH)
 
 
 # UBUNTU KEYRING RULES
 
-$/ubuntu-keyring/keyrings/ubuntu-archive-keyring.gpg: $/apt-cache-index.done
-	mkdir -p $/sources
-	cd $/sources && \
-		apt-get -c=$(abspath $/apt/etc/apt.conf) source ubuntu-keyring
-	rm -rf $/ubuntu-keyring
-	mv -T $$(find $/sources -name 'ubuntu-keyring*' -type d -maxdepth 1 | head -1) $/ubuntu-keyring
-	rm -rf $/sources
+$/ubuntu-mirantis-gnupg/%: $(gnupg.home)/% ; $(ACTION.COPY)
 
-$/ubuntu-mirantis-gnupg/%: $(gnupg.home)/%
-	@mkdir -p $(@D)
-	cp $< $@
-
-$/ubuntu-mirantis-gnupg.done: $/ubuntu-keyring/keyrings/ubuntu-archive-keyring.gpg $/ubuntu-mirantis-gnupg/pubring.gpg $/ubuntu-mirantis-gnupg/secring.gpg
+$/ubuntu-mirantis-gnupg/.done: \
+	  $/debian/ubuntu-keyring/keyrings/ubuntu-archive-keyring.gpg \
+		$/ubuntu-mirantis-gnupg/pubring.gpg \
+		$/ubuntu-mirantis-gnupg/secring.gpg
 	GNUPGHOME=$/ubuntu-mirantis-gnupg gpg --import < $<
 	GNUPGHOME=$/ubuntu-mirantis-gnupg gpg --yes --export --output $< $(UBUNTU_GPG_KEY1) $(UBUNTU_GPG_KEY2) $(gnupg.default-key-id)
-	touch $@
+	$(ACTION.TOUCH)
 
-$/ubuntu-keyring.deb: $/ubuntu-keyring/keyrings/ubuntu-archive-keyring.gpg $/ubuntu-mirantis-gnupg.done
-	cd $/ubuntu-keyring && \
-		dpkg-buildpackage -m"Mirantis Nailgun" -k"$(gnupg.default-key-id)" -uc -us
-	cp $$(find $/ -name 'ubuntu-keyring_*.deb' | head -1) $@
+$/debian/ubuntu-keyring/keyrings/ubuntu-archive-keyring.gpg: $(BINARIES_DIR)/ubuntu/precise/ubuntu-keyring.tar.gz
+	rm -rf $/debian/ubuntu-keyring
+	mkdir -p $/debian/ubuntu-keyring
+	tar -xf $< --strip-components=1 -C $/debian/ubuntu-keyring
+
+$/debian/ubuntu-keyring/.done: $/debian/ubuntu-keyring/keyrings/ubuntu-archive-keyring.gpg $/ubuntu-mirantis-gnupg/.done
+	cd $/debian/ubuntu-keyring && \
+		dpkg-buildpackage -b -m"Mirantis Nailgun" -k"$(gnupg.default-key-id)" -uc -us
+	$(ACTION.TOUCH)
 
 
 
 # ISO ROOT RULES
 
-$/isoroot-misc.done: $(ISO_IMAGE) | $(BUILD_DIR)/ubuntu
+$/isoroot-infra.done: $(ISO_IMAGE) | $(BUILD_DIR)/ubuntu
 	mkdir -p $(ISOROOT)
 	rsync --recursive --links --perms --chmod=u+w --exclude=pool $(BUILD_DIR)/ubuntu/ $(ISOROOT)
-	touch $@
+	$(ACTION.TOUCH)
 
 $/isoroot-pool.done: $/apt-cache.done
 	mkdir -p $(ISOROOT)/pools/$(ISO_RELEASE)
@@ -168,12 +179,24 @@ $/isoroot-pool.done: $/apt-cache.done
     mkdir -p $(ISOROOT)/pools/$(ISO_RELEASE)/$${section} ; \
     cp -n $${debfile} $(ISOROOT)/pools/$(ISO_RELEASE)/$${section}/ ; \
   done
-	touch $@
+	$(ACTION.TOUCH)
 
+$/isoroot-keyring.done: $/isoroot-pool.done $/debian/ubuntu-keyring/.done
+	rm -rf $(ISOROOT)/pools/$(ISO_RELEASE)/main/ubuntu-keyring*deb
+	cp $/debian/ubuntu-keyring*deb $(ISOROOT)/pools/$(ISO_RELEASE)/main/
+	$(ACTION.TOUCH)
+
+$/isoroot-packages.done: $/isoroot-pool.done $/isoroot-keyring.done
+	$(ACTION.TOUCH)
+
+$/isoroot-isolinux.done: $/isoroot-infra.done $(addprefix iso2/stage/,$(call find-files,iso2/stage))
+	rsync -a iso2/stage/ $(ISOROOT)
+	$(ACTION.TOUCH)
 
 $/isoroot.done: \
-	  $/isoroot-misc.done \
-		$/isoroot-pool.done \
+	  $/isoroot-infra.done \
+	  $/isoroot-packages.done \
+		$/isoroot-isolinux.done \
 		$(foreach arch,$(ISO_ARCHS),\
 		  $(foreach section,$(ISO_SECTIONS),\
 			  $(ISOROOT)/dists/$(ISO_RELEASE)/$(section)/binary-$(arch)/Packages.gz \
@@ -181,16 +204,24 @@ $/isoroot.done: \
 		$(foreach arch,$(ISO_ARCHS),\
 		  $(foreach section,$(ISO_SECTIONS),\
 			  $(ISOROOT)/dists/$(ISO_RELEASE)/$(section)/binary-$(arch)/Release)) \
-		$(ISOROOT)/dists/$(ISO_RELEASE)/Release \
 		$(ISOROOT)/bootstrap/linux \
 		$(ISOROOT)/bootstrap/initrd.gz \
-		$(addprefix $(ISOROOT)/gems/,$(GEMS)) \
-		$(addprefix $(ISOROOT)/eggs/,$(EGGS))
-		# $(ISOROOT)/dists/$(ISO_RELEASE)/Release.gpg \
-	touch $@
+		$(ISOROOT)/bootstrap/bootstrap.rsa \
+		$(addprefix $(ISOROOT)/gnupg/,$(call find-files,gnupg)) \
+		$(addprefix $(ISOROOT)/sync/,$(call find-files,iso2/sync)) \
+		$(addprefix $(ISOROOT)/indices/,$(call find-files,$(BINARIES_DIR)/ubuntu/$(ISO_RELEASE)/indices)) \
+		$(addprefix $(ISOROOT)/nailgun/,$(call find-files,nailgun)) \
+		$(addprefix $(ISOROOT)/nailgun/bin/,create_release install_cookbook) \
+		$(addprefix $(ISOROOT)/nailgun/solo/,solo.rb solo.json) \
+		$(addprefix $(ISOROOT)/nailgun/cookbooks/,$(call find-files,cookbooks)) \
+		$(addprefix $(ISOROOT)/gems/,$(call find-files,$(BINARIES_DIR)/gems)) \
+		$(addprefix $(ISOROOT)/eggs/,$(call find-files,$(BINARIES_DIR)/eggs)) \
+		$(ISOROOT)/dists/$(ISO_RELEASE)/Release \
+		$(ISOROOT)/dists/$(ISO_RELEASE)/Release.gpg
+	$(ACTION.TOUCH)
 
 $(ISOROOT)/md5sum.txt: $/isoroot.done
-	cd $(@D) && find . -type f -print0 | \
+	cd $(@D) && find * -type f -print0 | \
 	  xargs -0 md5sum | \
 		grep -v "boot.cat" | \
 		grep -v "md5sum.txt" > $(@F)
@@ -200,28 +231,52 @@ $(addprefix $(ISOROOT)/pools/$(ISO_RELEASE)/,$(ISO_SECTIONS)):
 
 # Arguments:
 #   1 - section (e.g. main, restricted, etc.)
-#   2 - arch
-#   3 - (optional) section subdirectory (empty or "/debian-installer")
+#   2 - arch (e.g. i386, amd64)
+#   3 - override path
+#   4 - extra override path
 define packages-build-rule-template
-$(ISOROOT)/dists/$(ISO_RELEASE)/$1$3/binary-$2/Packages.gz: \
-	  $/isoroot-pool.done \
-	 	$(BINARIES_DIR)/ubuntu/$(ISO_RELEASE)/indices/override.$(ISO_RELEASE).$1
+$(ISOROOT)/dists/$(ISO_RELEASE)/$1/binary-$2/Packages.gz: \
+	  $/isoroot-packages.done \
+		$3 \
+		$4
 	mkdir -p $$(@D)
 	cd $(ISOROOT) && \
-		dpkg-scanpackages -m -a$2 \
-			-t $(BINARIES_DIR)/ubuntu/$(ISO_RELEASE)/indices/override.$(ISO_RELEASE).$1$(3:/=.) \
-			-e $(BINARIES_DIR)/ubuntu/$(ISO_RELEASE)/indices/override.$(ISO_RELEASE).extra.$1 \
-			pools/$(ISO_RELEASE)/$1 \
-			$(BINARIES_DIR)/ubuntu/$(ISO_RELEASE)/indices/override.$(ISO_RELEASE).$1 | gzip > $$(abspath $$@)
+		dpkg-scanpackages --multiversion --arch $2 --type deb \
+			--extra-override $(abspath $4) pools/$(ISO_RELEASE)/$1 $(abspath $3) | gzip > $$(abspath $$@)
+	
+$(ISOROOT)/dists/$(ISO_RELEASE)/$1/debian-installer/binary-$2/Packages.gz: \
+	  $/isoroot-packages.done \
+		$3.debian-installer \
+		$4
+	mkdir -p $$(@D)
+	cd $(ISOROOT) && \
+		dpkg-scanpackages --multiversion --arch $2 --type udeb \
+			--extra-override $(abspath $4) pools/$(ISO_RELEASE)/$1 $(abspath $3.debian-installer) | gzip > $$(abspath $$@)
 endef
 
-packages-build-rule = $(eval $(call packages-build-rule-template,$1,$2,$3))
+packages-build-rule = $(eval $(call packages-build-rule-template,$1,$2,$3,$4))
 
 # Generate rules for building Packages index for all supported architectures
-$(foreach section,$(ISO_SECTIONS),\
+#
+# NOTE: section=main -- special case
+INDICES_DIR:=$(BINARIES_DIR)/ubuntu/$(ISO_RELEASE)/indices
+
+$(foreach section,$(filter-out main,$(ISO_SECTIONS)),\
 	$(foreach arch,$(ISO_ARCHS),\
-    $(call packages-build-rule,$(section),$(arch),) \
-    $(call packages-build-rule,$(section),$(arch),/debian-installer)))
+    $(call packages-build-rule,$(section),$(arch),\
+      $(INDICES_DIR)/override.$(ISO_RELEASE).$(section),\
+			$(INDICES_DIR)/override.$(ISO_RELEASE).extra.$(section))))
+
+$(foreach arch,$(ISO_ARCHS),\
+	$(call packages-build-rule,main,$(arch),\
+	  $(INDICES_DIR)/override.$(ISO_RELEASE).main,\
+		$/override.$(ISO_RELEASE).extra.main))
+
+$/override.$(ISO_RELEASE).extra.main: \
+	  $(INDICES_DIR)/override.$(ISO_RELEASE).extra.main \
+		$(BUILD_DIR)/ubuntu/dists/$(ISO_RELEASE)/main/binary-amd64/Packages.gz
+	$(ACTION.COPY)
+	gunzip -c $(filter %/Packages.gz,$^) | awk -F ": *" '$$1=="Package" {package=$$2} $$1=="Task" {print package " Task " $$2}' >> $@
 
 # Arguments:
 #   1 - section (e.g. main, restricted, etc.)
@@ -259,7 +314,26 @@ $(ISOROOT)/dists/$(ISO_RELEASE)/Release: $/release.conf
 	apt-ftparchive -c $< release $(ISOROOT)/dists/$(ISO_RELEASE) > $@
 
 $(ISOROOT)/dists/$(ISO_RELEASE)/Release.gpg: $(ISOROOT)/dists/$(ISO_RELEASE)/Release
-	GNUPGHOME=$(gnupg.home) gpg --yes --no-tty --default-key $(gnupg.default-key-id) --passphrase-file $(gnupg.keyphrase_file) --output $@ -ba $<
+	GNUPGHOME=$(gnupg.home) gpg --yes --no-tty --default-key $(gnupg.default-key-id) --passphrase-file $(gnupg.keyphrase-file) --output $@ -ba $<
+
+
+
+
+$/apt/state/%: $(BINARIES_DIR)/ubuntu/precise/state/% ; $(ACTION.COPY)
+
+$(ISOROOT)/bootstrap/bootstrap.rsa: bootstrap/ssh/id_rsa ; $(ACTION.COPY)
+$(ISOROOT)/bootstrap/%: $(BINARIES_DIR)/bootstrap/% ; $(ACTION.COPY)
+$(ISOROOT)/gnupg/%: gnupg/% ; $(ACTION.COPY)
+$(ISOROOT)/sync/%: iso2/sync/% ; $(ACTION.COPY)
+$(ISOROOT)/indices/override.$(ISO_RELEASE).extra.main: $/override.$(ISO_RELEASE).extra.main ; $(ACTION.COPY)
+$(ISOROOT)/indices/%: $(BINARIES_DIR)/ubuntu/$(ISO_RELEASE)/indices/% ; $(ACTION.COPY)
+$(ISOROOT)/nailgun/cookbooks/%: cookbooks/% ; $(ACTION.COPY)
+$(ISOROOT)/nailgun/solo/%: iso2/solo/% ; $(ACTION.COPY)
+$(ISOROOT)/nailgun/bin/%: bin/% ; $(ACTION.COPY)
+$(ISOROOT)/nailgun/%: nailgun/% ; $(ACTION.COPY)
+$(ISOROOT)/eggs/%: $(BINARIES_DIR)/eggs/% ; $(ACTION.COPY)
+$(ISOROOT)/gems/%: $(BINARIES_DIR)/gems/% ; $(ACTION.COPY)
+
 
 
 # MAIN ISO RULE
@@ -272,7 +346,5 @@ $/nailgun-ubuntu-12.04-amd64.iso: $/isoroot.done $(ISOROOT)/md5sum.txt
 		-boot-load-size 4 -boot-info-table \
 		-o $@ $(ISOROOT)
 
-$(ISOROOT)/%: $(BINARIES_DIR)/%
-	@mkdir -p $(@D)
-	cp $< $@
+endif
 
