@@ -83,16 +83,18 @@ EOF
 
 
 echo "Injecting cookbooks and configs for chef-solo ..."
-cp -r ${REPO}/cookbooks ${INITRD_LOOP}/root
-cp -r ${REPO}/scripts ${INITRD_LOOP}/root
+NAILGUN_DIR=${INITRD_LOOP}/opt/nailgun
+mkdir -p ${NAILGUN_DIR}
+cp ${REPO}/bootstrap/solo.json ${NAILGUN_DIR}
+cp ${REPO}/bootstrap/solo.rb ${NAILGUN_DIR}
+mkdir -p ${NAILGUN_DIR}/cookbooks
+cp -r ${REPO}/cookbooks/agent ${NAILGUN_DIR}/cookbooks
 
 echo "Injecting crontab job to launch chef-solo ..."
 cat > ${INITRD_LOOP}/etc/cron.d/chef-solo <<EOF
-*/5 * * * * root flock -w 0 /var/lock/chef-solo.lock /usr/bin/chef-solo -l debug -c /root/scripts/solo.rb -j /root/scripts/solo.json
+*/5 * * * * root flock -w 0 /var/lock/chef-solo.lock /usr/bin/chef-solo -l debug -c /opt/nailgun/solo.rb -j /opt/nailgun/solo.json
 EOF
 
 echo "Injecting bootstrap ssh key ..."
 mkdir -p ${INITRD_LOOP}/root/.ssh
 cp ${REPO}/bootstrap/ssh/id_rsa.pub ${INITRD_LOOP}/root/.ssh/authorized_keys 
-
-
