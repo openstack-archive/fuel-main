@@ -3,7 +3,20 @@ require 'json'
 module NodeAgent
   def self.update(node)
     mac = node['macaddress'].gsub(':', '')
-    url = "#{node['admin']['URL']}/api/nodes/#{mac}"
+
+    # Node is booted via PXE from admin node, so we can get IP address
+    # of admin node from url= param
+    begin
+      cmdline = File.read("/proc/cmdline")
+      admin_ip = cmdline.match(/url=http:\/\/((\d{1,3}\.){3}\d{1,3})/)[1]
+      Chef::Log.info("Found IP address of Nailgun application: #{admin_ip}")
+      url = "http://#{admin_ip}:8000/api/nodes/#{mac}"
+    rescue
+      # If we can't get IP from /proc/cmdline, just set it to localhost for easy testing
+      Chef::Log.error("Didn't find IP address of Nailgun application, using localhost instead..")
+      url = "http://localhost:8000/api/nodes/#{mac}"
+    end
+
     Chef::Log.debug("Sending node info to REST service at #{url}...")
 
     interfaces = node["network"]["interfaces"].inject([]) do |result, elm|
