@@ -1,23 +1,4 @@
-LOGGING = {
-    'version': 1,
-    'disable_existing_loggers': False,
-    'formatters':{
-        'simple':{
-            'format': '%(asctime)s - %(name)s - %(levelname)s - %(message)s',
-            },
-        },
-    'handlers': {
-        'file': {    
-            'class': 'logging.FileHandler',
-            'filename': '<%= @filename %>',
-            'formatter': 'simple',
-            },
-        },
-    'root':{
-        'level': '<%= @level %>',
-        'handlers': ['file'],
-        },
-}
+LOGFILE = "<%= @filename %>"
+LOGLEVEL = "<%= @level %>"
 
 PATH_TO_SSH_KEY = "<%= @sshkey %>"
-

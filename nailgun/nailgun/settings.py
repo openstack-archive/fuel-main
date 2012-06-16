@@ -1,5 +1,6 @@
-# Django settings for nailgun project.
 import os
+
+from nailgun.extrasettings import *
 
 SITE_ROOT = os.path.dirname(os.path.realpath(__file__))
 PROJECT_ROOT = os.path.dirname(SITE_ROOT)
@@ -131,7 +132,26 @@ INSTALLED_APPS = (
 
 TEST_RUNNER = 'nailgun.testrunner.MyRunner'
 
-import nailgun.extrasettings
+LOGGING = {
+    'version': 1,
+    'disable_existing_loggers': False,
+    'formatters': {
+        'simple': {
+            'format': '%(asctime)s - %(name)s - %(levelname)s - %(message)s',
+        },
+     },
+    'handlers': {
+        'file': {
+            'class': 'logging.FileHandler',
+            'filename': LOGFILE,
+            'formatter': 'simple',
+        },
+    },
+    'root': {
+        'level': LOGLEVEL,
+        'handlers': ['file'],
+    },
+}
 
 # Celery settings
 import djcelery
