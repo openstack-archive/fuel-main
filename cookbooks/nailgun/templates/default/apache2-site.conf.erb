@@ -2,7 +2,14 @@ Listen 8000
 <VirtualHost *:8000>
   WSGIProcessGroup nailgun
   WSGIDaemonProcess nailgun user=<%= node.nailgun.user %> group=<%= node.nailgun.group %> python-path=<%= node.nailgun.root %>
-  WSGIScriptAlias /<%= @application_name %> <%= node.nailgun.root %>/nailgun/wsgi.py
+  Alias /static/ <%= node.nailgun.root %>/nailgun/static/
+
+  <Directory <%= node.nailgun.root %>/nailgun/static>
+    Order deny,allow
+    Allow from all
+  </Directory>
+
+  WSGIScriptAlias / <%= node.nailgun.root %>/nailgun/wsgi.py
 
   LogLevel debug
 </VirtualHost>
