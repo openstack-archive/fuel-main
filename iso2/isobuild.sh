@@ -512,13 +512,14 @@ rm ${NEW}/md5sum.txt
 )
 
 
+ISONAME_W_STAMP="${NEWISONAME}.${STAMP}.iso"
 echo "Building iso image ..."
 mkisofs -r -V "Mirantis Nailgun" \
     -cache-inodes \
     -J -l -b isolinux/isolinux.bin \
     -c isolinux/boot.cat -no-emul-boot \
     -boot-load-size 4 -boot-info-table \
-    -o ${NEWISODIR}/${NEWISONAME}.${STAMP}.iso ${NEW}/
+    -o ${NEWISODIR}/${ISONAME_W_STAMP} ${NEW}/
 
 
 rm -f ${NEWISODIR}/${NEWISONAME}.last.iso
@@ -526,3 +527,5 @@ rm -f ${NEWISODIR}/${NEWISONAME}.last.iso
     cd ${NEWISODIR}
     ln -s ${NEWISONAME}.${STAMP}.iso ${NEWISONAME}.last.iso
 )
+
+echo "ISO image ${ISONAME_W_STAMP} has been successfully built."
