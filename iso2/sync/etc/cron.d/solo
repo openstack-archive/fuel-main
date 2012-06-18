@@ -1,1 +1,1 @@
-*/5 * * * * root flock -w 0 /var/lock/chef-solo.lock -c "apt-get update; /usr/bin/chef-solo -l debug -c /opt/nailgun/solo/solo.rb -j /opt/nailgun/solo/solo.json"
+*/5 * * * * root flock -w 0 -o /var/lock/chef-solo.lock -c "apt-get update; /usr/bin/chef-solo -l debug -c /opt/nailgun/solo/solo.rb -j /opt/nailgun/solo/solo.json"

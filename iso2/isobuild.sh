@@ -49,9 +49,9 @@ SECTIONS="main restricted universe multiverse"
 
 
 [ -z ${BOOTSTRAP_KERNEL_URL} ] && \
-    BOOTSTRAP_KERNEL_URL='http://mc0n1-srt.srt.mirantis.net/nailgun_bootstrap/linux'
+    BOOTSTRAP_KERNEL_URL='http://mc0n1-srt.srt.mirantis.net/bootstrap-linux.last'
 [ -z ${BOOTSTRAP_INITRD_URL} ] && \
-    BOOTSTRAP_INITRD_URL='http://mc0n1-srt.srt.mirantis.net/nailgun_bootstrap/initrd.gz'
+    BOOTSTRAP_INITRD_URL='http://mc0n1-srt.srt.mirantis.net/bootstrap-initrd.gz.last'
 BOOTSTRAPDIR=${BASEDIR}/bootstrap
 
 EGGSDIR=${BASEDIR}/eggs
@@ -457,7 +457,8 @@ EOF
 chmod +x ${NEW}/bin/late
 
 echo ">>> Syncing system ..."
-rsync -a ${SYNC}/ ${NEW}/sync
+mkdir -p ${NEW}/sync
+rsync -rltp ${SYNC}/ ${NEW}/sync
 
 echo ">>> Injecting repo indices ..."
 mkdir -p ${NEW}/indices
