@@ -423,9 +423,6 @@ done
 # CONFIGURING SYSTEM
 ###########################
 
-echo "Syncing system ..."
-rsync -a ${SYNC}/ ${INITRD_LOOP}
-
 echo "Setting default password for root into r00tme ..." 
 sed -i -e '/^root/c\root:$6$oC7haQNQ$LtVf6AI.QKn9Jb89r83PtQN9fBqpHT9bAFLzy.YVxTLiFgsoqlPY3awKvbuSgtxYHx4RUcpUqMotp.WZ0Hwoj.:15441:0:99999:7:::' ${INITRD_LOOP}/etc/shadow
 
@@ -435,6 +432,9 @@ sed -i -e '/exec/c\exec /sbin/getty -8 -l /usr/bin/autologin 38400 tty1' ${INITR
 ###########################
 # INJECTING ESTRA FILES
 ###########################
+echo "Syncing system ..."
+cp -r ${SYNC}/* ${INITRD_LOOP}
+
 echo "Injecting cookbooks and configs for chef-solo ..."
 NAILGUN_DIR=${INITRD_LOOP}/opt/nailgun
 
