@@ -132,7 +132,11 @@ class TestHandlers(TestCase):
         yet_another_cluster_name = 'Yet another cluster'
         resp = self.client.post(
             reverse('cluster_collection_handler'),
-            json.dumps({'name': yet_another_cluster_name, 'release': 1}),
+            json.dumps({
+                'name': yet_another_cluster_name,
+                'release': 1,
+                'nodes': [self.another_node.id],
+            }),
             "application/json"
         )
         self.assertEquals(resp.status_code, 200)
@@ -141,6 +145,8 @@ class TestHandlers(TestCase):
             name=yet_another_cluster_name
         )
         self.assertEquals(len(clusters_from_db), 1)
+        self.assertEquals(clusters_from_db[0].nodes.all()[0].id,
+                          self.another_node.id)
 
     def test_cluster_update(self):
         updated_name = 'Updated cluster'

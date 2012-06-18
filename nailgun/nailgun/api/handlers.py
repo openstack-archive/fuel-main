@@ -99,8 +99,16 @@ class ClusterCollectionHandler(BaseHandler):
         cluster = Cluster()
         for key, value in request.form.cleaned_data.items():
             if key in request.form.data:
-                setattr(cluster, key, value)
+                if key != 'nodes':
+                    setattr(cluster, key, value)
+
         cluster.save()
+
+        if 'nodes' in request.form.data:
+            nodes = Node.objects.filter(
+                id__in=request.form.cleaned_data['nodes']
+            )
+            cluster.nodes.add(*nodes)
 
         return ClusterHandler.render(cluster)
 

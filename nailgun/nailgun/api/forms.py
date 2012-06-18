@@ -64,6 +64,8 @@ class ClusterForm(forms.Form):
 
 
 class ClusterCreationForm(forms.ModelForm):
+    nodes = Field(required=False, validators=[validate_node_ids])
+
     class Meta:
         model = Cluster
 
