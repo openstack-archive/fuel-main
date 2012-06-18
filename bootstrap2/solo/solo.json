@@ -1,0 +1,4 @@
+{
+    "recipes": [ "agent::default" ]
+}
+
