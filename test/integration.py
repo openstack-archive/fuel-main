@@ -31,6 +31,8 @@ if __name__ == "__main__":
     parser.add_argument("-l", "--level", dest="log_level", type=str,
                       help="log level", choices=["DEBUG", "INFO", "WARNING", "ERROR"],
                       default="ERROR", metavar="LEVEL")
+    parser.add_argument("-p", "--prefix", dest="ci_prefix", type=str, metavar="PREFIX",
+                      help="use this prefix when creating ci environment", default="ci")
     parser.add_argument("-d", "--destroy-after", dest="destroy_after", action="store_true",
                       help="destroy environment after testing", default=False)
     parser.add_argument("-c", "--destroy-before", dest="destroy_before", action="store_true",
@@ -47,6 +49,7 @@ if __name__ == "__main__":
         logger.debug("Parsed option: %s = %s" % (o, v))
 
     ci = integration.Ci()
+    ci.envname = namespace.ci_prefix
 
     if namespace.destroy_before:
         ci.destroy()
