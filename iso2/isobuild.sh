@@ -12,7 +12,7 @@ set -e
 STAMP=`date +%Y%m%d%H%M%S`
 
 SCRIPT=`readlink -f "$0"`
-SCRIPTDIR=`dirname ${SCRIPT}`
+SCRIPTDIR=`dirname "${SCRIPT}"`
 SOLO=${SCRIPTDIR}/solo
 SYNC=${SCRIPTDIR}/sync
 REPO=${SCRIPTDIR}/..
