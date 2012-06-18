@@ -50,6 +50,13 @@ def copy_folder(sftp, local_path, remote_path):
                 os.path.join(curdir, fl)
             )
 
+def check_tasks(task):
+    if task['status'] != 'SUCCESS':
+        raise Exception("Subtask %s failed!" % task['task_id'])
+    if 'subtasks' in task and task['subtasks']:
+        for subtask in task['subtasks']:
+            check_tasks(subtask)
+
 # TODO: create basic class for implementing HTTP client in tests
 class TestNode(TestCase):
     def test_node(self):
@@ -126,6 +133,7 @@ class TestNode(TestCase):
             "cp %s/deploy /opt/nailgun/bin" % SAMPLE_REMOTE_PATH,
             "chmod 775 /opt/nailgun/bin/deploy",
             "chown nailgun:nailgun /opt/nailgun/bin/deploy",
+            "rm /tmp/chef_success",
             "chef-solo -l debug -c %s -j %s" % (
                 os.path.join(SAMPLE_REMOTE_PATH, "solo", "config", "solo.rb"),
                 os.path.join(SAMPLE_REMOTE_PATH, "solo", "config", "solo.json")
@@ -144,7 +152,7 @@ class TestNode(TestCase):
             chan.send(cmd+"\n")
             #with open("log.html", "a+") as l:
             #    read_until(chan, "# ", log=l)
-            read_until(chan, "# ", log=sys.stdout)
+            read_until(chan, "# ")
 
         req = urllib2.Request("http://%s:8000/api/clusters" % host,
                 data='{ "name": "MyOwnPrivateCluster", "release": 1 }')
@@ -186,7 +194,11 @@ class TestNode(TestCase):
 
         req = urllib2.Request("http://%s:8000/api/tasks/%s/" % (host, task_id))
         resp = json.loads(opener.open(req).read())
+        check_tasks(resp)
 
-        print resp
+        chan.send("test -f /tmp/chef_success && echo 'SUCCESS'\n")
+        ret = read_until(chan, "# ")
+        if not "SUCCESS" in ret:
+            raise Exception("Recipe failed to execute")
 
         ssh.close()
