@@ -1,0 +1,28 @@
+<div class="modal-header">
+  <button type="button" class="close" data-dismiss="modal">×</button>
+  <h3>Create Cluster</h3>
+</div>
+<div class="modal-body">
+  <form>
+    <label>Cluster name</label>
+    <input type="text" class="span4" name="name">
+    <label>Openstack Release</label>
+    <select class="span4" name="release"></select>
+  </form>
+  <hr>
+  <h3>Available Nodes</h3>
+  <div class="available-nodes">
+    <div class="row-fluid">
+      <div class="span4"></div>
+      <div class="span4">
+        <div class="progress progress-striped progress-success active">
+          <div class="bar" style="width: 100%"></div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+<div class="modal-footer">
+  <a href="#" class="btn" data-dismiss="modal">Cancel</a>
+  <a href="#" class="btn btn-success js-create-cluster">Create Cluster</a>
+</div>

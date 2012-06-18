@@ -1,12 +1,12 @@
 define(
 [
-    'views/node_dialog',
+    'views/dialogs',
     'text!templates/cluster/list.html',
     'text!templates/cluster/info.html',
     'text!templates/cluster/node.html',
     'text!templates/cluster/role_chooser.html'
 ],
-function(nodeDialogViews, clusterListTemplate, clusterInfoTemplate, clusterNodeTemplate, roleChooserTemplate) {
+function(dialogViews, clusterListTemplate, clusterInfoTemplate, clusterNodeTemplate, roleChooserTemplate) {
     var views = {}
 
     views.Info = Backbone.View.extend({
@@ -17,7 +17,7 @@ function(nodeDialogViews, clusterListTemplate, clusterInfoTemplate, clusterNodeT
         },
         addRemoveNodes: function(e) {
             e.preventDefault();
-            (new nodeDialogViews.nodeDialog({model: this.model})).render();
+            (new dialogViews.addRemoveNodesDialog({model: this.model})).render();
         },
         initialize: function() {
             this.model.bind('change', this.render, this);
@@ -32,6 +32,13 @@ function(nodeDialogViews, clusterListTemplate, clusterInfoTemplate, clusterNodeT
     views.List = Backbone.View.extend({
         className: 'span12',
         template: _.template(clusterListTemplate),
+        events: {
+            'click .js-create-cluster': 'createCluster'
+        },
+        createCluster: function(e) {
+            e.preventDefault();
+            (new dialogViews.createClusterDialog()).render();
+        },
         initialize: function() {
             this.model.bind('reset', this.render, this);
             this.model.bind('add', this.render, this);
