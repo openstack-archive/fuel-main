@@ -15,9 +15,10 @@ import paramiko
 
 logging.basicConfig(format=':%(lineno)d: %(asctime)s %(message)s', level=logging.DEBUG)
 
-SOLO_PATH = os.path.join("..", "scripts")
+SOLO_PATH = os.path.join("..", "scripts", "agent")
+DEPLOY_PATH = os.path.join("..", "bin", "deploy")
 COOKBOOKS_PATH = os.path.join("..", "cookbooks")
-SAMPLE_PATH = os.path.join(SOLO_PATH, "ci")
+SAMPLE_PATH = os.path.join("..", "scripts", "ci")
 SAMPLE_REMOTE_PATH = "/home/ubuntu"
 
 
@@ -84,14 +85,21 @@ class TestNode(TestCase):
         sftp.mkdir(
             os.path.join(SAMPLE_REMOTE_PATH, "solo")
         )
+        sftp.mkdir(
+            os.path.join(SAMPLE_REMOTE_PATH, "solo/config")
+        )
 
         sftp.put(
+            DEPLOY_PATH,
+            os.path.join(SAMPLE_REMOTE_PATH, "deploy")
+        )
+        sftp.put(
             os.path.join(SOLO_PATH, "solo.json"),
-            os.path.join(SAMPLE_REMOTE_PATH, "solo","solo.json")
+            os.path.join(SAMPLE_REMOTE_PATH, "solo", "config", "solo.json")
         )
         sftp.put(
             os.path.join(SOLO_PATH, "solo.rb"),
-            os.path.join(SAMPLE_REMOTE_PATH, "solo", "solo.rb")
+            os.path.join(SAMPLE_REMOTE_PATH, "solo", "config", "solo.rb")
         )
 
         copy_folder(sftp,
@@ -110,13 +118,17 @@ class TestNode(TestCase):
             "source /opt/nailgun-venv/bin/activate",
             "python /opt/nailgun/manage.py syncdb --noinput",
             "deactivate",
+            "cat /opt/nailgun/.ssh/id_rsa.pub > /root/.ssh/authorized_keys",
+            "chmod 600 /root/.ssh/authorized_keys",
             "chown nailgun:nailgun /opt/nailgun/nailgun.sqlite",
             "/opt/nailgun/bin/install_cookbook %s" % cookbook_remote_path,
             "/opt/nailgun/bin/create_release %s" % release_remote_path,
-            # ...
+            "cp %s/deploy /opt/nailgun/bin" % SAMPLE_REMOTE_PATH,
+            "chmod 775 /opt/nailgun/bin/deploy",
+            "chown nailgun:nailgun /opt/nailgun/bin/deploy",
             "chef-solo -l debug -c %s -j %s" % (
-                os.path.join(SAMPLE_REMOTE_PATH, "solo", "solo.rb"),
-                os.path.join(SAMPLE_REMOTE_PATH, "solo", "solo.json")
+                os.path.join(SAMPLE_REMOTE_PATH, "solo", "config", "solo.rb"),
+                os.path.join(SAMPLE_REMOTE_PATH, "solo", "config", "solo.json")
             ),
         ]
 

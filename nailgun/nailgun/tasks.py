@@ -78,7 +78,7 @@ def deploy_cluster(cluster_id):
 
         node_json['roles'] = []
         for role in roles_for_node:
-            rc = [r.recipe for r in role.recipes.all()]
+            rc = ["recipe[%s]" % r.recipe for r in role.recipes.all()]
             node_solo["run_list"].extend(rc)
             node_json["roles"].append({
                 "name": role.name,
