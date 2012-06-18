@@ -8,7 +8,7 @@ module NodeAgent
     # of admin node from url= param
     begin
       cmdline = File.read("/proc/cmdline")
-      admin_ip = cmdline.match(/url=http:\/\/((\d{1,3}\.){3}\d{1,3})/)[1]
+      admin_ip = cmdline.match(/\burl=http:\/\/((\d{1,3}\.){3}\d{1,3})/)[1]
       Chef::Log.info("Found IP address of Nailgun application: #{admin_ip}")
       url = "http://#{admin_ip}:8000/api/nodes/#{mac}"
     rescue
