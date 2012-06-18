@@ -289,6 +289,7 @@ section {margin-bottom: 40px;}
 .dropdown-menu .check a i {margin-left: -7px; margin-right: 7px; visibility: visible;}
 .dropdown-menu .applybtn {padding: 0px 20px 10px 20px;}
 .dropdown-menu .applybtn .btn-success {color: #ffffff;}
+.dropdown-menu .noroles {text-align: center; padding: 15px;}
 
 .loading {
   text-align: center;

@@ -1,0 +1,13 @@
+<li class="dropdown open" style="top: -200px; left: 80px;">
+  <ul class="dropdown-menu">
+    <% if (roles.length) { %>
+      <% roles.each(function(role) { %>
+        <li class="check"><a href="#" data-role-id="<%= role.id %>"><i class="icon-ok"></i><%= role.get('name') %></a></li>
+      <% }) %>
+      <li class="divider"></li>
+      <li class="applybtn"><a href="#" class="btn btn-success">Apply Roles</a></li>
+    <% } else { %>
+      <li class="noroles">(No Available Roles)</li>
+    <% } %>
+  </ul>
+</li>
