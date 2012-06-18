@@ -13,7 +13,7 @@ set -e
 STAMP=`date +%Y%m%d%H%M%S`
 
 SCRIPT=`readlink -f "$0"`
-SCRIPTDIR=`dirname ${SCRIPT}`
+SCRIPTDIR=`dirname "${SCRIPT}"`
 REPO=${SCRIPTDIR}/..
 SOLO=${SCRIPTDIR}/solo
 SYNC=${SCRIPTDIR}/sync
@@ -407,7 +407,7 @@ ${DEBOOTSTRAP_EXCLUDE_OPTION} \
 
 echo "Extracting modules and firmware from packages ..."
 mkdir -p ${INITRD_MODULES}
-find ${NEW}/pools/${RELEASE} \( -name "linux-image-generic*.deb" -o -name "linux-firmware*.deb" \) -exec dpkg -x {} ${INITRD_MODULES} \;
+find ${NEW}/pools/${RELEASE} \( -name "linux-image*.deb" -o -name "linux-firmware*.deb" \) -exec dpkg -x {} ${INITRD_MODULES} \;
 
 echo "Copying modules and firmware ..."
 cp -r ${INITRD_MODULES}/lib/modules/* ${INITRD_LOOP}/lib/modules
@@ -418,8 +418,6 @@ echo  "Updating modules.dep in order to fix modprobe errors ..."
 for version in `ls -1 ${INITRD_LOOP}/lib/modules`; do
     depmod -b ${INITRD_LOOP} $version
 done
-
-
 
 ###########################
 # CONFIGURING SYSTEM
