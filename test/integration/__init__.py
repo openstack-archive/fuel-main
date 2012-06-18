@@ -61,7 +61,8 @@ class Ci:
     def is_admin_installed(self, timeout=None):
         try:
             logger.info("Checking if admin node already installed")
-            wait(lambda: tcp_ping(self.environment.node['admin'].ip_address, 22), timeout=timeout)
+            admin_node = self.environment.node['admin']
+            wait(lambda: logger.info("Node IP address is %s", admin_node.ip_address) or tcp_ping(admin_node.ip_address, 22), timeout=timeout)
         except TimeoutError as e:
             return False
         return True

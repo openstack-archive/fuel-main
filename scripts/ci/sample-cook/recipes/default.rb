@@ -1,0 +1,1 @@
+File.open('/tmp/chef_success', 'w') {|f| f.write("SUCCESS!") }
