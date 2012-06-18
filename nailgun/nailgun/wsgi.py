@@ -16,11 +16,11 @@ framework.
 import os
 import sys
 import site
-from nailgun.venv import VENV
+import nailgun.venv
 
-if VENV:
+if nailgun.venv.VENV:
     prev_sys_path = list(sys.path)
-    site.addsitedir(VENV)
+    site.addsitedir(nailgun.venv.VENV)
 
     new_sys_path = []
     for item in list(sys.path):
