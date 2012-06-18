@@ -30,7 +30,7 @@ end
 template "/etc/cobbler/modules.conf" do
   source "modules.conf.erb"
   mode 0644
-  notifies :restart, "service[cobbler]"
+  notifies :restart, ["service[cobbler]", "service[dnsmasq]"]
 end
 
 template "/etc/cobbler/settings" do
@@ -98,36 +98,38 @@ end
 
 link "#{node["cobbler"]["bootstrap_ks_mirror_dir"]}/linux" do
   to "#{node["cobbler"]["bootstrap_kernel"]}"
+  link_type :hard
 end
 
 link "#{node["cobbler"]["bootstrap_ks_mirror_dir"]}/initrd.gz" do
   to "#{node["cobbler"]["bootstrap_initrd"]}"
+  link_type :hard
 end
 
 # FIXME 
 
 execute "add_bootstrap_distro" do 
   command "cobbler distro add \
---name=bootstrap-precise-i386 \
+--name=bootstrap \
 --kernel=#{node["cobbler"]["bootstrap_ks_mirror_dir"]}/linux \
 --initrd=#{node["cobbler"]["bootstrap_ks_mirror_dir"]}/initrd.gz \
---arch=i386 \
+--arch=x86_64 \
 --breed=ubuntu \
 --os-version=precise"
   action :run
-  only_if "test -z `cobbler distro find --name bootstrap-precise-i386`"
+  only_if "test -z `cobbler distro find --name bootstrap`"
 end
 
 execute "edit_bootstrap_distro" do 
   command "cobbler distro edit \
---name=bootstrap-precise-i386 \
+--name=bootstrap \
 --kernel=#{node["cobbler"]["bootstrap_ks_mirror_dir"]}/linux \
 --initrd=#{node["cobbler"]["bootstrap_ks_mirror_dir"]}/initrd.gz \
---arch=i386 \
+--arch=x86_64 \
 --breed=ubuntu \
 --os-version=precise"
   action :run
-  only_if "test ! -z `cobbler distro find --name bootstrap-precise-i386`"
+  only_if "test ! -z `cobbler distro find --name bootstrap`"
 end
 
 
@@ -135,22 +137,22 @@ end
 
 execute "add_bootstrap_profile" do
   command "cobbler profile add \
---name=bootstrap-precise-i386 \
---distro=bootstrap-precise-i386 \
+--name=bootstrap \
+--distro=bootstrap \
 --enable-menu=True \
 --kopts=\"root=/dev/ram0 rw ramdisk_size=614400\""
   action :run
-  only_if "test -z `cobbler profile find --name bootstrap-precise-i386`"
+  only_if "test -z `cobbler profile find --name bootstrap`"
 end
 
 execute "edit_bootstrap_profile" do
   command "cobbler profile edit \
---name=bootstrap-precise-i386 \
---distro=bootstrap-precise-i386 \
+--name=bootstrap \
+--distro=bootstrap \
 --enable-menu=True \
 --kopts=\"root=/dev/ram0 rw ramdisk_size=614400\""
   action :run
-  only_if "test ! -z `cobbler profile find --name bootstrap-precise-i386`"
+  only_if "test ! -z `cobbler profile find --name bootstrap`"
 end
 
 # FIXME
@@ -158,7 +160,7 @@ end
 execute "add_bootstrap_system" do
   command "cobbler system add \
 --name=default \
---profile=bootstrap-precise-i386 \
+--profile=bootstrap \
 --netboot-enabled=1"
   action :run
   only_if "test -z `cobbler profile find --name default`"
@@ -167,7 +169,7 @@ end
 execute "edit_bootstrap_system" do
   command "cobbler system edit \
 --name=default \
---profile=bootstrap-precise-i386 \
+--profile=bootstrap \
 --netboot-enabled=1"
   action :run
   only_if "test ! -z `cobbler profile find --name default`"
