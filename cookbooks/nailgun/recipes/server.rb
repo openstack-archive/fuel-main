@@ -20,13 +20,13 @@ end
 directory node.nailgun.root do
   user node.nailgun.user
   group node.nailgun.group
-  mode '775'
+  mode '755'
 end
 
 directory "/var/log/nailgun" do
   owner node.nailgun.user
   group node.nailgun.group
-  mode '775'
+  mode '755'
   recursive true
 end
 
@@ -34,7 +34,7 @@ template "#{node.nailgun.root}/nailgun/extrasettings.py" do
   source 'extrasettings.py.erb'
   owner node.nailgun.user
   group node.nailgun.group
-  mode '664'
+  mode '644'
   variables(
             :level => "DEBUG",
             :filename => "/var/log/nailgun/nailgun.log",
@@ -54,7 +54,7 @@ file "#{node[:nailgun][:root]}/nailgun/venv.py" do
 "
   owner node.nailgun.user
   group node.nailgun.group
-  mode '664'
+  mode '644'
 end
 
 # it is assumed that nailgun files already installed into nailgun.root
@@ -63,7 +63,7 @@ execute 'chown nailgun root' do
 end
 
 execute 'chmod nailgun root' do
-  command "chmod -R ug+w #{node[:nailgun][:root]}"
+  command "chmod -R u+w #{node[:nailgun][:root]}"
 end
 
 # execute 'Preseed Nailgun database' do
