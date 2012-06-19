@@ -95,17 +95,21 @@ function(dialogViews, clusterListTemplate, clusterInfoTemplate, clusterNodeTempl
         className: 'role-chooser',
         template: _.template(roleChooserTemplate),
         events: {
+            'click .close': 'close'
+        },
+        close: function() {
+            $('html').off(this.eventNamespace);
+            this.remove();
         },
         initialize: function() {
             this.handledFirstClick = false;
+            this.eventNamespace = 'click.chooseroles' + this.model.id;
         },
         render: function() {
             this.$el.html(this.template({roles: this.model.get('roles')}));
-            var eventNamespace = 'click.chooseroles' + this.model.id;
-            $('html').on(eventNamespace, _.bind(function(e) {
+            $('html').on(this.eventNamespace, _.bind(function(e) {
                 if (this.handledFirstClick && !$(e.target).closest(this.$el).length) {
-                    $('html').off(eventNamespace);
-                    this.remove();
+                    this.close();
                 } else {
                     this.handledFirstClick = true;
                 }

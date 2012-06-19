@@ -287,6 +287,8 @@ section {margin-bottom: 40px;}
 
 .dropdown-menu .uncheck a i {margin-left: -7px; margin-right: 7px; visibility: hidden;}
 .dropdown-menu .check a i {margin-left: -7px; margin-right: 7px; visibility: visible;}
+.dropdown-menu h4 {margin-left: -20px; margin-top: 10px;}
+.dropdown-menu .close {line-height: 30px; margin-right: 10px;}
 .dropdown-menu .applybtn {padding: 0px 20px 10px 20px;}
 .dropdown-menu .applybtn .btn-success {color: #ffffff;}
 .dropdown-menu .noroles {text-align: center; padding: 15px;}
@@ -294,4 +296,25 @@ section {margin-bottom: 40px;}
 .loading {
   text-align: center;
   margin-top: 20px;
+}
+
+.progress-success .bar {
+  background-color: #8fb84e;
+  background-image: -moz-linear-gradient(top, #8fb84e, #5c8328);
+  background-image: -ms-linear-gradient(top, #8fb84e, #5c8328);
+  background-image: -webkit-gradient(linear, 0 0, 0 100%, from(#8fb84e), to(#5c8328));
+  background-image: -webkit-linear-gradient(top, #8fb84e, #5c8328);
+  background-image: -o-linear-gradient(top, #8fb84e, #5c8328);
+  background-image: linear-gradient(top, #8fb84e, #5c8328);
+  background-repeat: repeat-x;
+}
+
+.progress-success.progress-striped .bar {
+  background-color: #8fb84e;
+  background-image: -webkit-gradient(linear, 0 100%, 100% 0, color-stop(0.25, rgba(255, 255, 255, 0.15)), color-stop(0.25, transparent), color-stop(0.5, transparent), color-stop(0.5, rgba(255, 255, 255, 0.15)), color-stop(0.75, rgba(255, 255, 255, 0.15)), color-stop(0.75, transparent), to(transparent));
+  background-image: -webkit-linear-gradient(-45deg, rgba(255, 255, 255, 0.15) 25%, transparent 25%, transparent 50%, rgba(255, 255, 255, 0.15) 50%, rgba(255, 255, 255, 0.15) 75%, transparent 75%, transparent);
+  background-image: -moz-linear-gradient(-45deg, rgba(255, 255, 255, 0.15) 25%, transparent 25%, transparent 50%, rgba(255, 255, 255, 0.15) 50%, rgba(255, 255, 255, 0.15) 75%, transparent 75%, transparent);
+  background-image: -ms-linear-gradient(-45deg, rgba(255, 255, 255, 0.15) 25%, transparent 25%, transparent 50%, rgba(255, 255, 255, 0.15) 50%, rgba(255, 255, 255, 0.15) 75%, transparent 75%, transparent);
+  background-image: -o-linear-gradient(-45deg, rgba(255, 255, 255, 0.15) 25%, transparent 25%, transparent 50%, rgba(255, 255, 255, 0.15) 50%, rgba(255, 255, 255, 0.15) 75%, transparent 75%, transparent);
+  background-image: linear-gradient(-45deg, rgba(255, 255, 255, 0.15) 25%, transparent 25%, transparent 50%, rgba(255, 255, 255, 0.15) 50%, rgba(255, 255, 255, 0.15) 75%, transparent 75%, transparent);
 }
