@@ -8,12 +8,18 @@ require 'httpclient'
 
 if ARGV[0].nil?
   puts "Provide path to release file for uploading" 
+  puts "You can also provide Nailgun app endpoint as a second argument, if it's not localhost(which is by default)"
   exit 1
 end
 
 data = JSON.parse(File.read(File.expand_path(ARGV[0])))
 
 url = "http://127.0.0.1:8000/api/releases"
+if not ARGV[1].nil?
+  url = "#{ARGV[1]}/api/releases"
+end
+
+puts "Using #{url} url for relase uploading..."
 
 headers = {"Content-Type" => "application/json"}
 
