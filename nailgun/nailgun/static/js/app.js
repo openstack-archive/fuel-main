@@ -27,7 +27,7 @@ define(
                 if (id && (cluster = this.clusters.get(id))) {
                     this.navbar.setActive('clusters');
                     this.breadcrumb.setPath(['Home', '#'], ['Clusters', '#clusters'], cluster.get('name'));
-                    $('#content').html(new clusterViews.Info({model: cluster}).render().el);
+                    $('#content').html(new clusterViews.ClusterInfoPage({model: cluster}).render().el);
                 } else {
                     this.listClusters();
                 }
@@ -43,7 +43,7 @@ define(
             this.breadcrumb.setPath(['Home', '#'], 'Clusters');
 
             if (this.clusters) {
-                $('#content').html(new clusterViews.List({model: this.clusters}).render().el);
+                $('#content').html(new clusterViews.ClusterListPage({model: this.clusters}).render().el);
             } else {
                 this.loadClusters(this.listClusters);
             }
