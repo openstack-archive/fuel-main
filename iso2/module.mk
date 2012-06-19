@@ -5,6 +5,13 @@
 all: iso
 iso: $/nailgun-ubuntu-12.04-amd64.iso
 
+clean: umount_ubuntu_image
+
+.PHONY: umount_ubuntu_image
+umount_ubuntu_image:
+	-fusermount -u $(BUILD_DIR)/ubuntu
+
+
 ifndef BINARIES_DIR
 $/%:
 	$(error BINARIES_DIR variable is not defined)
@@ -41,12 +48,6 @@ $(BUILD_DIR)/ubuntu: $(BUILD_DIR)/ubuntu/md5sum.txt
 $(BUILD_DIR)/ubuntu/%:
 	mkdir -p $(@D)
 	fuseiso $(ISO_IMAGE) $(@D)
-
-clean: umount_ubuntu_image
-
-.PHONY: umount_ubuntu_image
-umount_ubuntu_image:
-	-fusermount -u $(BUILD_DIR)/ubuntu
 
 
 # DEBIAN PACKET CACHE RULES
@@ -140,12 +141,15 @@ $/apt-cache.done: $/apt-cache-extra.done
 
 # UBUNTU KEYRING RULES
 
-$/ubuntu-mirantis-gnupg/%: $(gnupg.home)/% ; $(ACTION.COPY)
+$/ubuntu-mirantis-gnupg/%: $(gnupg.home)/%
+	$(ACTION.COPY)
+	chmod 600 $@
 
 $/ubuntu-mirantis-gnupg/.done: \
 	  $/debian/ubuntu-keyring/keyrings/ubuntu-archive-keyring.gpg \
 		$/ubuntu-mirantis-gnupg/pubring.gpg \
 		$/ubuntu-mirantis-gnupg/secring.gpg
+	chmod 700 $(@D)
 	GNUPGHOME=$/ubuntu-mirantis-gnupg gpg --import < $<
 	GNUPGHOME=$/ubuntu-mirantis-gnupg gpg --yes --export --output $< $(UBUNTU_GPG_KEY1) $(UBUNTU_GPG_KEY2) $(gnupg.default-key-id)
 	$(ACTION.TOUCH)
@@ -197,24 +201,22 @@ $/isoroot.done: \
 	  $/isoroot-infra.done \
 	  $/isoroot-packages.done \
 		$/isoroot-isolinux.done \
-		$(foreach arch,$(ISO_ARCHS),\
-		  $(foreach section,$(ISO_SECTIONS),\
-			  $(ISOROOT)/dists/$(ISO_RELEASE)/$(section)/binary-$(arch)/Packages.gz \
-				$(ISOROOT)/dists/$(ISO_RELEASE)/$(section)/debian-installer/binary-$(arch)/Packages.gz)) \
-		$(foreach arch,$(ISO_ARCHS),\
-		  $(foreach section,$(ISO_SECTIONS),\
-			  $(ISOROOT)/dists/$(ISO_RELEASE)/$(section)/binary-$(arch)/Release)) \
 		$(ISOROOT)/bootstrap/linux \
 		$(ISOROOT)/bootstrap/initrd.gz \
 		$(ISOROOT)/bootstrap/bootstrap.rsa \
+		$(ISOROOT)/bin/late \
+		$(ISOROOT)/gnupg \
 		$(addprefix $(ISOROOT)/gnupg/,$(call find-files,gnupg)) \
+		$(ISOROOT)/sync \
 		$(addprefix $(ISOROOT)/sync/,$(call find-files,iso2/sync)) \
 		$(addprefix $(ISOROOT)/indices/,$(call find-files,$(BINARIES_DIR)/ubuntu/$(ISO_RELEASE)/indices)) \
 		$(addprefix $(ISOROOT)/nailgun/,$(call find-files,nailgun)) \
 		$(addprefix $(ISOROOT)/nailgun/bin/,create_release install_cookbook) \
 		$(addprefix $(ISOROOT)/nailgun/solo/,solo.rb solo.json) \
 		$(addprefix $(ISOROOT)/nailgun/cookbooks/,$(call find-files,cookbooks)) \
+		$(ISOROOT)/gems \
 		$(addprefix $(ISOROOT)/gems/,$(call find-files,$(BINARIES_DIR)/gems)) \
+		$(ISOROOT)/eggs \
 		$(addprefix $(ISOROOT)/eggs/,$(call find-files,$(BINARIES_DIR)/eggs)) \
 		$(ISOROOT)/dists/$(ISO_RELEASE)/Release \
 		$(ISOROOT)/dists/$(ISO_RELEASE)/Release.gpg
@@ -226,32 +228,31 @@ $(ISOROOT)/md5sum.txt: $/isoroot.done
 		grep -v "boot.cat" | \
 		grep -v "md5sum.txt" > $(@F)
 
-$(addprefix $(ISOROOT)/pools/$(ISO_RELEASE)/,$(ISO_SECTIONS)):
-	mkdir -p $@
-
 # Arguments:
 #   1 - section (e.g. main, restricted, etc.)
 #   2 - arch (e.g. i386, amd64)
 #   3 - override path
 #   4 - extra override path
 define packages-build-rule-template
-$(ISOROOT)/dists/$(ISO_RELEASE)/$1/binary-$2/Packages.gz: \
+$(ISOROOT)/dists/$(ISO_RELEASE)/$1/binary-$2/Packages: \
 	  $/isoroot-packages.done \
+		$(ISOROOT)/pools/$(ISO_RELEASE)/$1 \
 		$3 \
 		$4
 	mkdir -p $$(@D)
 	cd $(ISOROOT) && \
 		dpkg-scanpackages --multiversion --arch $2 --type deb \
-			--extra-override $(abspath $4) pools/$(ISO_RELEASE)/$1 $(abspath $3) | gzip > $$(abspath $$@)
-	
-$(ISOROOT)/dists/$(ISO_RELEASE)/$1/debian-installer/binary-$2/Packages.gz: \
+			--extra-override $(abspath $4) pools/$(ISO_RELEASE)/$1 $(abspath $3) > $$(abspath $$@)
+
+$(ISOROOT)/dists/$(ISO_RELEASE)/$1/debian-installer/binary-$2/Packages: \
 	  $/isoroot-packages.done \
+		$(ISOROOT)/pools/$(ISO_RELEASE)/$1 \
 		$3.debian-installer \
 		$4
 	mkdir -p $$(@D)
 	cd $(ISOROOT) && \
 		dpkg-scanpackages --multiversion --arch $2 --type udeb \
-			--extra-override $(abspath $4) pools/$(ISO_RELEASE)/$1 $(abspath $3.debian-installer) | gzip > $$(abspath $$@)
+			--extra-override $(abspath $4) pools/$(ISO_RELEASE)/$1 $(abspath $3.debian-installer) > $$(abspath $$@)
 endef
 
 packages-build-rule = $(eval $(call packages-build-rule-template,$1,$2,$3,$4))
@@ -310,12 +311,77 @@ $/release.conf:
 	echo "$${contents}" > $@
 
 
-$(ISOROOT)/dists/$(ISO_RELEASE)/Release: $/release.conf
+$(addprefix $(ISOROOT)/pools/$(ISO_RELEASE)/,$(ISO_SECTIONS)):
+	mkdir -p $@
+
+$(ISOROOT)/dists/%.gz: $(ISOROOT)/dists/%
+	gzip -c $< > $@
+	
+$(ISOROOT)/dists/$(ISO_RELEASE)/Release: \
+	  $/release.conf \
+		$(foreach arch,$(ISO_ARCHS),\
+		  $(foreach section,$(ISO_SECTIONS),\
+			  $(ISOROOT)/dists/$(ISO_RELEASE)/$(section)/binary-$(arch)/Packages \
+			  $(ISOROOT)/dists/$(ISO_RELEASE)/$(section)/binary-$(arch)/Packages.gz \
+				$(ISOROOT)/dists/$(ISO_RELEASE)/$(section)/debian-installer/binary-$(arch)/Packages \
+				$(ISOROOT)/dists/$(ISO_RELEASE)/$(section)/debian-installer/binary-$(arch)/Packages.gz \
+			  $(ISOROOT)/dists/$(ISO_RELEASE)/$(section)/binary-$(arch)/Release))
 	apt-ftparchive -c $< release $(ISOROOT)/dists/$(ISO_RELEASE) > $@
 
 $(ISOROOT)/dists/$(ISO_RELEASE)/Release.gpg: $(ISOROOT)/dists/$(ISO_RELEASE)/Release
 	GNUPGHOME=$(gnupg.home) gpg --yes --no-tty --default-key $(gnupg.default-key-id) --passphrase-file $(gnupg.keyphrase-file) --output $@ -ba $<
 
+define late_contents
+#!/bin/sh
+# THIS SCRIPT IS FOR USING BY DEBIAN-INSTALLER ONLY
+
+set -e
+
+# repo
+mkdir -p /target/var/lib/mirror/ubuntu
+cp -r /cdrom/pools /target/var/lib/mirror/ubuntu
+cp -r /cdrom/dists /target/var/lib/mirror/ubuntu
+cp -r /cdrom/indices /target/var/lib/mirror/ubuntu
+mkdir -p /target/etc/apt/sources.list.d
+rm -f /target/etc/apt/sources.list
+echo "deb file:/var/lib/mirror/ubuntu precise main restricted universe multiverse" > /target/etc/apt/sources.list.d/local.list
+
+# gnupg
+cp -r /cdrom/gnupg /target/root/.gnupg
+chown -R root:root /target/root/.gnupg
+chmod 700 /target/root/.gnupg
+chmod 600 /target/root/.gnupg/*
+
+# bootstrap
+mkdir -p /target/var/lib/mirror/bootstrap
+cp /cdrom/bootstrap/linux /target/var/lib/mirror/bootstrap/linux
+cp /cdrom/bootstrap/initrd.gz /target/var/lib/mirror/bootstrap/initrd.gz
+mkdir -p /target/root/.ssh
+chmod 700 /target/root/.ssh
+cp /cdrom/bootstrap/bootstrap.rsa /target/root/.ssh/bootstrap.rsa
+chmod 600 /target/root/.ssh/bootstrap.rsa
+
+# nailgun
+mkdir -p /target/opt
+cp -r /cdrom/nailgun /target/opt
+
+#system
+cp -r /cdrom/sync/* /target/
+in-target update-rc.d chef-client disable
+
+# eggs
+cp -r /cdrom/eggs /target/var/lib/mirror
+
+# gems
+cp -r /cdrom/gems /target/var/lib/mirror
+
+endef
+
+$(ISOROOT)/bin/late: export contents:=$(late_contents)
+$(ISOROOT)/bin/late:
+	@mkdir -p $(@D)
+	echo "$${contents}" > $@
+	chmod +x $@
 
 
 
@@ -323,7 +389,11 @@ $/apt/state/%: $(BINARIES_DIR)/ubuntu/precise/state/% ; $(ACTION.COPY)
 
 $(ISOROOT)/bootstrap/bootstrap.rsa: bootstrap/ssh/id_rsa ; $(ACTION.COPY)
 $(ISOROOT)/bootstrap/%: $(BINARIES_DIR)/bootstrap/% ; $(ACTION.COPY)
+$(ISOROOT)/gnupg:
+	mkdir -p $@
 $(ISOROOT)/gnupg/%: gnupg/% ; $(ACTION.COPY)
+$(ISOROOT)/sync:
+	mkdir -p $@
 $(ISOROOT)/sync/%: iso2/sync/% ; $(ACTION.COPY)
 $(ISOROOT)/indices/override.$(ISO_RELEASE).extra.main: $/override.$(ISO_RELEASE).extra.main ; $(ACTION.COPY)
 $(ISOROOT)/indices/%: $(BINARIES_DIR)/ubuntu/$(ISO_RELEASE)/indices/% ; $(ACTION.COPY)
@@ -331,7 +401,11 @@ $(ISOROOT)/nailgun/cookbooks/%: cookbooks/% ; $(ACTION.COPY)
 $(ISOROOT)/nailgun/solo/%: iso2/solo/% ; $(ACTION.COPY)
 $(ISOROOT)/nailgun/bin/%: bin/% ; $(ACTION.COPY)
 $(ISOROOT)/nailgun/%: nailgun/% ; $(ACTION.COPY)
+$(ISOROOT)/eggs:
+	mkdir -p $@
 $(ISOROOT)/eggs/%: $(BINARIES_DIR)/eggs/% ; $(ACTION.COPY)
+$(ISOROOT)/gems:
+	mkdir -p $@
 $(ISOROOT)/gems/%: $(BINARIES_DIR)/gems/% ; $(ACTION.COPY)
 
 
@@ -339,6 +413,7 @@ $(ISOROOT)/gems/%: $(BINARIES_DIR)/gems/% ; $(ACTION.COPY)
 # MAIN ISO RULE
 
 $/nailgun-ubuntu-12.04-amd64.iso: $/isoroot.done $(ISOROOT)/md5sum.txt
+	rm -f $@
 	mkisofs -r -V "Mirantis Nailgun" \
 		-cache-inodes \
 		-J -l -b isolinux/isolinux.bin \
