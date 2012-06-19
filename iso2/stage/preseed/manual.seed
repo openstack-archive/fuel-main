@@ -43,7 +43,7 @@ d-i passwd/user-uid	    string
 d-i passwd/user-default-groups	   string adm cdrom dialout lpadmin plugdev sambashare
 
 
-d-i pkgsel/include string openssh-server chef debconf-utils
+d-i pkgsel/include string openssh-server chef debconf-utils ruby-httpclient
 d-i pkgsel/language-packs multiselect en
 d-i pkgsel/update-policy select none
 d-i pkgsel/upgrade select none
