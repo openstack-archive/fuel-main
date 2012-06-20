@@ -1,12 +1,12 @@
 import os.path
-import yaml
+from devops import my_yaml
 import re
 from model import Environment, Network, Node, Disk, Interface, Cdrom
 
 class ConfigError(Exception): pass
 
 def load(stream):
-    data = yaml.load(stream)
+    data = my_yaml.load(stream)
 
     if not data.has_key('nodes'):
         raise ConfigError, "No nodes defined"

@@ -3,7 +3,6 @@ import sys
 import stat
 import tempfile
 import shutil
-import yaml
 import urllib
 import ipaddr
 import glob
@@ -14,6 +13,7 @@ import re
 from devops.model import Node, Network
 from devops.network import IpNetworksPool
 from devops.error import DevopsError
+from devops import my_yaml
 
 import logging
 logger = logging.getLogger('devops.controller')
@@ -113,12 +113,12 @@ class Controller:
         with file(env_config_file) as f:
             data = f.read()
 
-        environment = yaml.load(data)
+        environment = my_yaml.load(data)
 
         return environment
 
     def save_environment(self, environment):
-        data = yaml.dump(environment)
+        data = my_yaml.dump(environment)
         if not environment.built:
             raise DevopsError, "Environment has not been built yet."
         with file(os.path.join(environment.work_dir, 'config'), 'w') as f:
@@ -183,7 +183,7 @@ class Controller:
         cache_log_path = os.path.join(cache_dir, 'entries')
         if os.path.exists(cache_log_path):
             with file(cache_log_path) as f:
-                cache_entries = yaml.load(f.read())
+                cache_entries = my_yaml.load(f.read())
         else:
             cache_entries = dict()
 
@@ -201,7 +201,7 @@ class Controller:
         cache_entries[url] = cached_path
 
         with file(cache_log_path, 'w') as f:
-            f.write(yaml.dump(cache_entries))
+            f.write(my_yaml.dump(cache_entries))
 
         logger.debug("Cached '%s' to '%s'" % (url, cached_path))
 
