@@ -122,10 +122,21 @@ class Disk(object):
         self.path = path
 
 class Interface(ManagedObject):
-    def __init__(self, network):
+    def __init__(self, network, ip_addresses='detect'):
         self.network = network
+        if ip_addresses != 'detect' and not isinstance(ip_addresses, (list, tuple)):
+            ip_addresses = (ip_addresses,)
+        self._ip_addresses = ip_addresses
     
     @property
     def ip_addresses(self):
-        return self.driver.get_interface_addresses(self)
+        if self._ip_addresses == 'detect':
+            return self.driver.get_interface_addresses(self)
+        return self._ip_addresses
+
+    @ip_addresses.setter
+    def ip_addresses(self, value):
+        if not isinstance(value, (list, tuple)):
+            value = (value,)
+        self._ip_addresses = value
 
