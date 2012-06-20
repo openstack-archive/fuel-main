@@ -43,13 +43,16 @@ def wait(predicate, interval=5, timeout=None):
     return timeout + start_time - time.time() if timeout else 0
 
 def http(host='localhost', port=80, method='GET', url='/', waited_code=200):
-    conn = httplib.HTTPConnection(host, port)
-    conn.request(method, url)
-    res = conn.getresponse()
-    
-    if res.status == waited_code:
-        return True
-    return False
+    try:
+        conn = httplib.HTTPConnection(str(host), int(port))
+        conn.request(method, url)
+        res = conn.getresponse()
+        
+        if res.status == waited_code:
+            return True
+        return False
+    except:
+        return False
 
 
 class KeyPolicy(paramiko.WarningPolicy):
