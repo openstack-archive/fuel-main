@@ -19,6 +19,8 @@ class Element:
             if hasattr(e, 'xpath'):
                 # wrap element nodes with our class
                 e = Element(e)
+            else:
+                e = str(e)
             results.append(e)
         return results
 
