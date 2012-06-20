@@ -94,7 +94,7 @@ def ssh(hostname, command, port=22, username=None,
     rsout = []
     rserr = []
 
-    with Ssh(hostname, port=port, username=username, 
+    with Ssh(str(hostname), port=int(port), username=username, 
              password=password, pkey=pkey, 
              key_filename=key_filename, timeout=timeout) as s:
         if outerr:
