@@ -9,7 +9,7 @@ define ACTION.TOUCH
 touch $@
 endef
 
-$/%/.dir:
+$(BUILD_DIR)/%/.dir:
 	mkdir -p $(@D)
 	@touch $@
 
