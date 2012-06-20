@@ -25,7 +25,7 @@ def tcp_ping(host, port):
 
 def wait(predicate, interval=5, timeout=None):
     """
-      wait(predicate, interval=5, timeout=None) - wait until predicate will become True.
+      wait(predicate, interval=5, timeout=None) - wait until predicate will become True. Returns number of seconds that is left or 0 if timeout is None.
       Options:
         interval - seconds between checks.
         timeout  - raise TimeoutError if predicate won't become True after this amount of seconds. 'None' disables timeout.
@@ -39,6 +39,8 @@ def wait(predicate, interval=5, timeout=None):
         if timeout:
             seconds_to_sleep = max(0, min(seconds_to_sleep, start_time + timeout - time.time()))
         time.sleep(seconds_to_sleep)
+
+    return timeout + start_time - time.time() if timeout else 0
 
 def http(host='localhost', port=80, method='GET', url='/', waited_code=200):
     conn = httplib.HTTPConnection(host, port)
