@@ -124,15 +124,6 @@ class Controller:
         with file(os.path.join(environment.work_dir, 'config'), 'w') as f:
             f.write(data)
 
-    def search_environments(self, environment_name):
-        found = []
-        for env in self.saved_environments:
-            logger.debug("Found %s environment" % env)
-            if re.search(ur'%s' % environment_name, env):
-                logger.debug("Matched %s  %s" % (env, environment_name))
-                found.append(env)
-        return found
-
     @property
     def saved_environments(self):
         saved_environments = []

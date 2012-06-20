@@ -19,7 +19,7 @@ else
 
 APT-GET:=echo apt-get
 
-$(if $(gnupg.home),,$(error gnupg.home variable is not defined))
+$(call assert-variable,gnupg.home)
 
 find-files=$(shell test -d $1 && cd $1 && find * -type f 2> /dev/null)
 

@@ -1,44 +1,42 @@
-import time
+import time, os
+import devops
 from devops.model import Environment, Network, Node, Disk, Cdrom, Interface
 from devops.controller import Controller
 from devops.driver.libvirt import Libvirt
 from devops.helpers import tcp_ping, wait, TimeoutError
+import traceback
 
 import logging
-logger = logging.getLogger('integration.ci')
+logger = logging.getLogger('integration')
 
 class Ci:
-
-    envname = 'ci'
     hostname = 'nailgun'
     domain = 'mirantis.com'
-    iso = None
     
-    def __init__(self):
-        self.controller = Controller(Libvirt())
+    def __init__(self, cache_file=None, iso=None):
+        self.environment_cache_file = cache_file
+        self.iso = iso
+        self.environment = None
+        if self.environment_cache_file and os.path.exists(self.environment_cache_file):
+            logger.info("Loading existing integration environment...")
+            with file(self.environment_cache_file) as f:
+                environment_id = f.read()
+
+            try:
+                self.environment = devops.load(environment_id)
+                logger.info("Successfully loaded existing environment")
+            except Exception, e:
+                logger.error("Failed to load existing integration environment: " + str(e) + "\n" + traceback.format_exc())
+                pass
         
-    def setUp(self):
-        logger.debug("Preparing devops environment")
-        self.devops_env()
-        logger.debug("Starting admin node")
-        self.environment.node['admin'].start()
-        if not self.is_admin_installed(timeout=30):
-            logger.debug("Admin node seems not installed")
-            self.admin_install()
-        logger.info("Waiting for completion of admin node installation")
-        self.is_admin_installed()
-        logger.info("Admin node seems installed")
+    def setup_environment(self):
+        if self.environment:
+            return
 
-    def tearDown(self):
-        logger.debug("Destroying devops environment")
-        self.destroy()
+        logger.info("Building integration environment")
 
-    def devops_env(self):
-        found = self.controller.search_environments(self.envname)
-        if found:
-            environment = self.controller.load_environment(found[0])
-        else:
-            environment = Environment(self.envname)
+        try:
+            environment = Environment('integration')
             
             network = Network('default')
             environment.networks.append(network)
@@ -53,24 +51,24 @@ class Ci:
             node.boot = ['disk', 'cdrom']
             environment.nodes.append(node)
         
-            self.controller.build_environment(environment)
-            self.controller.save_environment(environment)
+            devops.build(environment)
+        except Exception, e:
+            logger.error("Failed to build environment: %s\n%s" % (str(e), traceback.format_exc()))
+            return False
 
         self.environment = environment
 
-    def is_admin_installed(self, timeout=None):
         try:
-            logger.info("Checking if admin node already installed")
-            admin_node = self.environment.node['admin']
-            wait(lambda: logger.info("Node IP address is %s", admin_node.ip_address) or tcp_ping(admin_node.ip_address, 22), timeout=timeout)
-        except TimeoutError as e:
-            return False
-        return True
-        
-    def admin_install(self):
-        logger.info("Installing admin node.")
-        logger.info("Sending keys to install admin node.")
-        self.environment.node['admin'].send_keys("""<Esc><Enter>
+            node.interfaces[0].ip_addresses = network.ip_addresses[2]
+
+            logger.info("Starting admin node")
+            node.start()
+
+            logger.info("Waiting admin node installation software to boot")
+            time.sleep(10)
+
+            logger.info("Executing admin node software installation")
+            node.send_keys("""<Esc><Enter>
 <Wait>
 /install/vmlinuz initrd=/install/initrd.gz
  priority=critical
@@ -85,25 +83,48 @@ class Ci:
  netcfg/get_hostname=%(hostname)s
  netcfg/get_domai=%(domain)s
  <Enter>
-""" % { 'ip': self.environment.network['default'].ip_addresses[2], 
-        'mask': self.environment.network['default'].ip_addresses.netmask, 
-        'gw': self.environment.network['default'].ip_addresses[1],
+""" % { 'ip': node.ip_address, 
+        'mask': network.ip_addresses.netmask, 
+        'gw': network.ip_addresses[1],
         'hostname': self.hostname,
         'domain': self.domain}) 
 
-    def destroy(self):
-        ens = self.controller.search_environments(self.envname)
-        logger.debug("Found environments %s" % str(ens))
-        for en in ens:
-            logger.debug("Destroying %s" % en)
-            env = self.controller.load_environment(en)
-            self.controller.destroy_environment(env)
+            logger.info("Waiting for completion of admin node software installation")
+            wait(lambda: tcp_ping(node.ip_address, 22), timeout=1800)
+
+            logger.info("Got SSH access to admin node, waiting for ports 80 and 8000 to open")
+            wait(lambda: tcp_ping(node.ip_address, 80) and tcp_ping(node.ip_address, 8000), timeout=600)
+
+            logger.info("Admin node software is installed and ready for use")
+
+            devops.save(self.environment)
+            with file(self.environment_cache_file, 'w') as f:
+                f.write(self.environment.id)
+
+            logger.info("Environment has been saved")
+        except Exception, e:
+            devops.save(self.environment)
+
+            cache_file = self.environment_cache_file + '.candidate'
+            with file(cache_file, 'w') as f:
+                f.write(self.environment.id)
+            logger.error("Failed to build environment. Candidate environment cache file is %s" % cache_file)
+            return False
+
+        return True
+
+    def destroy_environment(self):
+        if self.environment:
+            devops.destroy(env)
+        return True
 
 
 ci = None
 
 def setUp():
-    ci.setUp()
+    ci.setup_environment()
 
 def tearDown():
-    ci.tearDown()
+    if not ci.environment_cache_file:
+        ci.destroy_environment()
+
