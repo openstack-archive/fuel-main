@@ -110,10 +110,10 @@ class Libvirt:
         self._init_capabilities()
 
     def node_exists(self, node_name):
-        return self._system("virsh dominfo '%s'" % node_name) == 0
+        return self._system("virsh dominfo '%s'" % node_name, expected_resultcodes=(0, 1)) == 0
 
     def network_exists(self, network_name):
-        return self._system("virsh net-info '%s'" % network_name) == 0
+        return self._system("virsh net-info '%s' 2>/dev/null" % network_name, expected_resultcodes=(0, 1)) == 0
 
     def create_network(self, network):
         if not hasattr(network, 'id') or network.id is None:
@@ -281,51 +281,55 @@ class Libvirt:
 
 
     def is_node_defined(self, node):
-        return self._system2("virsh list --all | grep -q ' %s '" % node.id) == 0
+        return self._system2("virsh list --all | grep -q ' %s '" % node.id, expected_resultcodes=(0, 1)) == 0
 
     def is_node_running(self, node):
-        return self._system2("virsh list | grep -q ' %s '" % node.id) == 0
+        return self._system2("virsh list | grep -q ' %s '" % node.id, expected_resultcodes=(0, 1)) == 0
 
     def is_network_defined(self, network):
-        return self._system2("virsh net-list --all | grep -q '%s '" % network.id) == 0
+        return self._system2("virsh net-list --all | grep -q '%s '" % network.id, expected_resultcodes=(0, 1)) == 0
 
     def is_network_running(self, network):
-        return self._system2("virsh net-list | grep -q '%s '" % network.id) == 0
+        return self._system2("virsh net-list | grep -q '%s '" % network.id, expected_resultcodes=(0, 1)) == 0
 
-    def _system2(self, command):
+    def _system2(self, command, expected_resultcodes=(0,)):
         logger.debug("libvirt: Running %s" % command)
 
         commands = [ i.strip() for i in re.split(ur'\|', command)]
-        process = []
         serr = []
 
-        count = 0
-        for c in commands:
-            if count > 0:
-                stdin = process[count-1].stdout
-            else:
-                stdin = None
-                
-            process.append(subprocess.Popen(shlex.split(c), stdin=stdin, 
+        process = []
+        process.append(subprocess.Popen(shlex.split(commands[0]), stdin=None, 
+                                        stdout=subprocess.PIPE, stderr=subprocess.PIPE))
+        for c in commands[1:]:
+            process.append(subprocess.Popen(shlex.split(c), stdin=process[-1].stdout, 
                                             stdout=subprocess.PIPE, stderr=subprocess.PIPE))
-            count += 1
 
-        process[count-1].wait()
+        process[-1].wait()
 
         for p in process:
             serr += [ err.strip() for err in p.stderr.readlines() ]
 
-        logger.debug("libvirt: Command '%s' returned %d" % (command, process[count-1].returncode))
-        logger.error("libvirt: Command '%s' stderr: %s" % (command, '\n'.join(serr)))
-        return process[count-1].returncode
+        returncode = process[-1].returncode
 
-    def _system(self, command):
+        if expected_resultcodes and not returncode in expected_resultcodes:
+            logger.error("libvirt: Command '%s' returned %d, stderr: %s" % (command, returncode, '\n'.join(serr)))
+        else:
+            logger.debug("libvirt: Command '%s' returned %d" % (command, returncode))
+
+        return returncode
+
+    def _system(self, command, expected_resultcodes=(0,)):
         logger.debug("libvirt: Running '%s'" % command)
         serr = []
         process = subprocess.Popen(shlex.split(command), stdout=subprocess.PIPE, stderr=subprocess.PIPE)
         process.wait()
         serr += [ err.strip() for err in process.stderr.readlines() ]
-        logger.debug("libvirt: Command '%s' returned %d" % (command, process.returncode))
-        logger.error("libvirt: Command '%s' stderr: %s" % (command, '\n'.join(serr)))
+
+        if expected_resultcodes and not process.returncode in expected_resultcodes:
+            logger.error("libvirt: Command '%s' returned %d, stderr: %s" % (command, process.returncode, '\n'.join(serr)))
+        else:
+            logger.debug("libvirt: Command '%s' returned %d" % (command, process.returncode))
+
         return process.returncode
 
