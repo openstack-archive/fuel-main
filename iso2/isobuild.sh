@@ -3,7 +3,8 @@
 #set -x
 set -e
 
-[ X`whoami` = X'root' ] || { echo "You must be root to run this script."; exit 1; }
+# [ X`whoami` = X'root' ] || { echo "You must be root to run this script."; exit 1; }
+[ -n "$BINARIES_DIR" ] || { echo "BINARIES_DIR variable should be defined."; exit 1; }
 
 
 ###########################
@@ -22,7 +23,7 @@ STAGE=${SCRIPTDIR}/stage
 RELEASE=precise
 VERSION=12.04
 
-ORIGISO=/var/tmp/ubuntu-12.04-server-amd64.iso
+ORIGISO=$BINARIES_DIR/ubuntu-12.04-server-amd64.iso
 NEWISONAME=nailgun-ubuntu-${VERSION}-amd64
 [ -z ${NEWISODIR} ] && NEWISODIR=/var/tmp
 
@@ -64,7 +65,7 @@ GEMSDIR=${BASEDIR}/gems
 echo "Cleaning ..."
 if (mount | grep -q ${ORIG}); then
     echo "Umounting ${ORIG} ..."
-    umount ${ORIG}
+    fusermount -u ${ORIG}
 fi
 
 echo "Removing ${BASEDIR} ..."
@@ -100,8 +101,7 @@ mkdir -p ${ORIG}
 mkdir -p ${NEW}
 
 echo "Mounting original iso image ..."
-mount | grep -q ${ORIG} && umount ${ORIG}
-mount -o loop ${ORIGISO} ${ORIG}
+fuseiso ${ORIGISO} ${ORIG}
 
 echo "Syncing original iso to new iso ..."
 rsync -a ${ORIG}/ ${NEW}
@@ -116,16 +116,17 @@ rsync -a ${STAGE}/ ${NEW}
 echo "Downloading indices ..."
 mkdir -p ${INDICES}
 
-for s in ${SECTIONS}; do
-    wget -qO- ${MIRROR}/indices/override.${RELEASE}.${s}.debian-installer > \
-	${INDICES}/override.${RELEASE}.${s}.debian-installer
-    
-    wget -qO- ${MIRROR}/indices/override.${RELEASE}.${s} > \
-	${INDICES}/override.${RELEASE}.${s}
-    
-    wget -qO- ${MIRROR}/indices/override.${RELEASE}.extra.${s} > \
-	${INDICES}/override.${RELEASE}.extra.${s}
-done
+# for s in ${SECTIONS}; do
+#     wget -qO- ${MIRROR}/indices/override.${RELEASE}.${s}.debian-installer > \
+# 	${INDICES}/override.${RELEASE}.${s}.debian-installer
+#     
+#     wget -qO- ${MIRROR}/indices/override.${RELEASE}.${s} > \
+# 	${INDICES}/override.${RELEASE}.${s}
+#     
+#     wget -qO- ${MIRROR}/indices/override.${RELEASE}.extra.${s} > \
+# 	${INDICES}/override.${RELEASE}.extra.${s}
+# done
+cp $BINARIES_DIR/ubuntu/precise/indices/* ${INDICES}
 
 
 ###########################
@@ -206,9 +207,7 @@ done
 
 echo "Downloading requied packages ..."
 apt-get -c=${EXTRAS}/etc/apt.conf update
-for package in ${REQDEB}; do
-    apt-get -c=${EXTRAS}/etc/apt.conf -d -y install ${package}
-done
+apt-get -c=${EXTRAS}/etc/apt.conf -d -y install ${REQDEB}
 
 find ${EXTRAS}/archives -type f \( -name "*.deb" -o -name "*.udeb" \) | while read debfile; do
     debbase=`basename ${debfile}`
@@ -241,7 +240,7 @@ if [ -z ${KEYRING_PACKAGE} ]; then
 fi
 
 cp -rp ${GNUPG} ${TMPGNUPG}
-chown -R root:root ${TMPGNUPG}
+# chown -R root:root ${TMPGNUPG}
 chmod 700 ${TMPGNUPG}
 chmod 600 ${TMPGNUPG}/*
 
@@ -376,8 +375,10 @@ echo "Downloading bootstrap kernel and miniroot ..."
 echo "BOOTSTRAP_KERNEL_URL=${BOOTSTRAP_KERNEL_URL}"
 echo "BOOTSTRAP_INITRD_URL=${BOOTSTRAP_INITRD_URL}"
 mkdir -p ${BOOTSTRAPDIR}
-wget -qO- ${BOOTSTRAP_KERNEL_URL} > ${BOOTSTRAPDIR}/linux
-wget -qO- ${BOOTSTRAP_INITRD_URL} > ${BOOTSTRAPDIR}/initrd.gz
+# wget -qO- ${BOOTSTRAP_KERNEL_URL} > ${BOOTSTRAPDIR}/linux
+# wget -qO- ${BOOTSTRAP_INITRD_URL} > ${BOOTSTRAPDIR}/initrd.gz
+cp $BINARIES_DIR/bootstrap/linux     $BOOTSTRAPDIR/
+cp $BINARIES_DIR/bootstrap/initrd.gz $BOOTSTRAPDIR/initrd.gz
 
 
 ###########################
@@ -388,7 +389,7 @@ echo "Downloading python eggs ..."
 # It is very ugly to just copy directory with eggs into disk
 # It is nice to have beautiful way to download eggs with there dependencies
 mkdir -p ${EGGSDIR}
-rsync -av /var/tmp/eggs/ ${EGGSDIR}
+rsync -av $BINARIES_DIR/eggs/ ${EGGSDIR}
 
 ###########################
 # DOWNLOADING RUBY GEMS
@@ -398,7 +399,7 @@ echo "Downloading ruby gems ..."
 # It is very ugly to just copy directory with gems into disk
 # It is nice to have beautiful way to download gems with there dependencies
 mkdir -p ${GEMSDIR}
-rsync -av /var/tmp/gems/ ${GEMSDIR}
+rsync -av $BINARIES_DIR/gems/ ${GEMSDIR}
 
 
 
