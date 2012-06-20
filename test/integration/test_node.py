@@ -52,7 +52,9 @@ def copy_folder(sftp, local_path, remote_path):
 
 def check_tasks(task):
     if task['status'] != 'SUCCESS':
-        raise Exception("Subtask %s failed!" % task['task_id'])
+        raise Exception("Task %s failed!\n %s" % 
+                (task['task_id'], str(task)),
+        )
     if 'subtasks' in task and task['subtasks']:
         for subtask in task['subtasks']:
             check_tasks(subtask)

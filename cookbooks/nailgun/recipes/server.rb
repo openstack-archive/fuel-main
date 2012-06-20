@@ -17,10 +17,21 @@ user node.nailgun.user do
   system true
 end
 
+group 'www-data' do
+  members [node.nailgun.user]
+  append true
+  system true
+end
+
 directory node.nailgun.root do
   user node.nailgun.user
   group node.nailgun.group
   mode '755'
+end
+
+directory '/var/www' do
+  group 'www-data'
+  mode '775'
 end
 
 directory "/var/log/nailgun" do
