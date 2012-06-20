@@ -15,10 +15,10 @@ import paramiko
 
 logging.basicConfig(format=':%(lineno)d: %(asctime)s %(message)s', level=logging.DEBUG)
 
-SOLO_PATH = os.path.join("..", "scripts", "agent")
-DEPLOY_PATH = os.path.join("..", "bin", "deploy")
-COOKBOOKS_PATH = os.path.join("..", "cookbooks")
-SAMPLE_PATH = os.path.join("..", "scripts", "ci")
+SOLO_PATH = os.path.join(os.path.dirname(__file__), "..", "..", "scripts", "agent")
+DEPLOY_PATH = os.path.join(os.path.dirname(__file__), "..", "..", "bin", "deploy")
+COOKBOOKS_PATH = os.path.join(os.path.dirname(__file__), "..", "..", "cookbooks")
+SAMPLE_PATH = os.path.join(os.path.dirname(__file__), "..", "..", "scripts", "ci")
 SAMPLE_REMOTE_PATH = "/home/ubuntu"
 
 
