@@ -1,0 +1,3 @@
+[submodule "binaries"]
+	path = binaries
+	url = ssh://git@mc0n1-srt.srt.mirantis.net/repositories/product_binaries

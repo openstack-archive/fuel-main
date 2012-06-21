@@ -18,9 +18,9 @@ test:
 clean:
 	rm -rf $(BUILD_DIR)
 
-iso.path:=$(BUILD_DIR)/iso/nailgun-ubuntu-12.04-amd64.iso
-
 assert-variable=$(if $($1),,$(error Variable $1 need to be defined))
+
+include config.mk
 
 include $(addsuffix /module.mk,$(MODULES))
 
