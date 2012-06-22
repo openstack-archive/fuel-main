@@ -1,13 +1,14 @@
 
 BUILD_DIR:=build
 
-MODULES=gnupg iso2 test
+MODULES=gnupg bootstrap iso2 test
 
 .PHONY: all clean test help
 
 help:
 	@echo 'Available targets:'
 	@echo '  all  - build product'
+	@echo '  bootstrap  - build nailgun bootstrap'
 	@echo '  iso  - build nailgun iso'
 	@echo '  test - run tests'
 

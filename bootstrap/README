@@ -1,2 +1,0 @@
-# to boot initrd as real root filesystem use following kernel parameters
-# initrd=/path/to/initrd.gz root=/dev/ram0 rw ramdisk_size=614400

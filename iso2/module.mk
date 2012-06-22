@@ -5,10 +5,10 @@
 all: iso
 iso: $/nailgun-ubuntu-12.04-amd64.iso
 
-clean: umount_ubuntu_image
+clean: $/umount_ubuntu_image
 
-.PHONY: umount_ubuntu_image
-umount_ubuntu_image:
+.PHONY: $/umount_ubuntu_image
+$/umount_ubuntu_image:
 	-fusermount -u $(BUILD_DIR)/ubuntu
 
 
@@ -204,6 +204,7 @@ $/isoroot.done: \
 		$(ISOROOT)/bootstrap/linux \
 		$(ISOROOT)/bootstrap/initrd.gz \
 		$(ISOROOT)/bootstrap/bootstrap.rsa \
+		$(addprefix $(ISOROOT)/netinst/,$(call find-files,$(BINARIES_DIR)/netinst)) \
 		$(ISOROOT)/bin/late \
 		$(ISOROOT)/gnupg \
 		$(addprefix $(ISOROOT)/gnupg/,$(call find-files,gnupg)) \
@@ -316,7 +317,7 @@ $(addprefix $(ISOROOT)/pools/$(ISO_RELEASE)/,$(ISO_SECTIONS)):
 
 $(ISOROOT)/dists/%.gz: $(ISOROOT)/dists/%
 	gzip -c $< > $@
-	
+
 $(ISOROOT)/dists/$(ISO_RELEASE)/Release: \
 	  $/release.conf \
 		$(foreach arch,$(ISO_ARCHS),\
@@ -361,6 +362,10 @@ chmod 700 /target/root/.ssh
 cp /cdrom/bootstrap/bootstrap.rsa /target/root/.ssh/bootstrap.rsa
 chmod 600 /target/root/.ssh/bootstrap.rsa
 
+# netinst
+mkdir -p /target/var/lib/mirror/netinst
+cp /cdrom/netinst/precise-x86_64.iso /target/var/lib/mirror/netinst
+
 # nailgun
 mkdir -p /target/opt
 cp -r /cdrom/nailgun /target/opt
@@ -388,7 +393,13 @@ $(ISOROOT)/bin/late:
 $/apt/state/%: $(BINARIES_DIR)/ubuntu/precise/state/% ; $(ACTION.COPY)
 
 $(ISOROOT)/bootstrap/bootstrap.rsa: bootstrap/ssh/id_rsa ; $(ACTION.COPY)
+ifeq ($(BOOTSTRAP_REBUILD),1)
+$(ISOROOT)/bootstrap/%: $(BUILD_DIR)/bootstrap/% ; $(ACTION.COPY)
+else
 $(ISOROOT)/bootstrap/%: $(BINARIES_DIR)/bootstrap/% ; $(ACTION.COPY)
+endif
+$(ISOROOT)/netinst/%: $(BINARIES_DIR)/netinst/% ; $(ACTION.COPY)
+
 $(ISOROOT)/gnupg:
 	mkdir -p $@
 $(ISOROOT)/gnupg/%: gnupg/% ; $(ACTION.COPY)

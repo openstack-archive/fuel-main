@@ -4,7 +4,8 @@
 set -e
 
 [ X`whoami` = X'root' ] || { echo "You must be root to run this script."; exit 1; }
-
+[ -n "$BINARIES_DIR" ] || { echo "BINARIES_DIR variable should be defined."; exit 1; }
+[ -n "$BASEDIR" ] || { echo "BASEDIR variable should be defined."; exit 1; }
 
 
 ###########################
@@ -24,19 +25,17 @@ GNUPG=${REPO}/gnupg
 RELEASE=precise
 VERSION=12.04
 
-ORIGISO=/var/tmp/ubuntu-12.04-server-amd64.iso
-BOOTSTRAPNAME=bootstrap
-[ -z ${BOOTSTRAPDIR} ] && BOOTSTRAPDIR=/var/tmp
+ORIGISO=${BINARIES_DIR}/ubuntu-12.04-server-amd64.iso
+BOOTSTRAPNAME=""
+BOOTSTRAPDIR=${BASEDIR}
 
-INITRD=${BOOTSTRAPNAME}-initrd
+INITRD=${BOOTSTRAPNAME}initrd
 INITRDGZ=${INITRD}.gz
 INITRD_SIZE=614400 #kilobytes
-LINUX=${BOOTSTRAPNAME}-linux
+LINUX=${BOOTSTRAPNAME}linux
 
 MIRROR="http://ru.archive.ubuntu.com/ubuntu"
 REQDEB=`cat ${REPO}/requirements-deb.txt | grep -v "^\s*$" | grep -v "^\s*#"`
-
-BASEDIR=/var/tmp/build_bootstrap2
 
 INITRD_FS=${BASEDIR}/initrd-fs
 INITRD_LOOP=${BASEDIR}/initrd-loop
@@ -105,7 +104,6 @@ mkdir -p ${ORIG}
 mkdir -p ${NEW}
 
 echo "Mounting original iso image ..."
-mount | grep -q ${ORIG} && umount ${ORIG}
 mount -o loop ${ORIGISO} ${ORIG}
 
 echo "Syncing original iso to new iso ..."
@@ -384,7 +382,6 @@ mkdir -p ${INITRD_LOOP}
 echo "Mounting ${INITRD_FS} to ${INITRD_LOOP}"
 mount -o loop -t ext2 ${INITRD_FS} ${INITRD_LOOP}
 
-
 ###########################
 # DEBOOTSTRAPING 
 ###########################
@@ -471,18 +468,22 @@ fi
 # LINKING 
 ###########################
 echo "Gzipping initrd ..."
-gzip -9 -c ${INITRD_FS} > ${BOOTSTRAPDIR}/${INITRDGZ}.${STAMP}
-chmod 644 ${BOOTSTRAPDIR}/${INITRDGZ}.${STAMP}
+# gzip -9 -c ${INITRD_FS} > ${BOOTSTRAPDIR}/${INITRDGZ}.${STAMP}
+# chmod 644 ${BOOTSTRAPDIR}/${INITRDGZ}.${STAMP}
+gzip -9 -c ${INITRD_FS} > ${BOOTSTRAPDIR}/${INITRDGZ}
+chmod 644 ${BOOTSTRAPDIR}/${INITRDGZ}
 
 echo "Coping linux ..."
 linuxfile=`ls -1 ${INITRD_MODULES}/boot/vmlinuz*generic | head -1`
-cp ${linuxfile} ${BOOTSTRAPDIR}/${LINUX}.${STAMP}
-chmod 644 ${BOOTSTRAPDIR}/${LINUX}.${STAMP}
+# cp ${linuxfile} ${BOOTSTRAPDIR}/${LINUX}.${STAMP}
+# chmod 644 ${BOOTSTRAPDIR}/${LINUX}.${STAMP}
+cp ${linuxfile} ${BOOTSTRAPDIR}/${LINUX}
+chmod 644 ${BOOTSTRAPDIR}/${LINUX}
 
-rm -f ${BOOTSTRAPDIR}/${INITRDGZ}.last
-rm -f ${BOOTSTRAPDIR}/${LINUX}.last
-(
-    cd ${BOOTSTRAPDIR}
-    ln -s ${INITRDGZ}.${STAMP} ${INITRDGZ}.last
-    ln -s ${LINUX}.${STAMP} ${LINUX}.last
-)
+# rm -f ${BOOTSTRAPDIR}/${INITRDGZ}.last
+# rm -f ${BOOTSTRAPDIR}/${LINUX}.last
+# (
+#     cd ${BOOTSTRAPDIR}
+#     ln -s ${INITRDGZ}.${STAMP} ${INITRDGZ}.last
+#     ln -s ${LINUX}.${STAMP} ${LINUX}.last
+# )
