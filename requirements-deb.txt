@@ -20,3 +20,5 @@ python-pip
 python-paramiko
 python-virtualenv
 python-dev
+libxml2-dev
+cloud-init
