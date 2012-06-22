@@ -10,7 +10,7 @@ from subprocess import Popen, PIPE
 
 from . import ci
 from devops.helpers import wait, tcp_ping, http
-from integration.helpers import HTTPTestCase, SSHTestCase
+from integration.helpers import HTTPClient, SSHClient
 
 import paramiko
 
@@ -25,49 +25,54 @@ SAMPLE_REMOTE_PATH = "/home/ubuntu"
 class StillPendingException(Exception):
     pass
 
-class TestNode(HTTPTestCase, SSHTestCase):
+class TestNode(TestCase):
+    def __init__(self, *args, **kwargs):
+        super(TestNode, self).__init__(*args, **kwargs)
+        self.client = HTTPClient()
+        self.remote = SSHClient()
+
     def test_node(self):
         cookbook_remote_path = os.path.join(SAMPLE_REMOTE_PATH, "sample-cook")
         release_remote_path = os.path.join(SAMPLE_REMOTE_PATH, "sample-release.json")
 
         host = str(ci.environment.node['admin'].ip_address)
-        self.connect_ssh(host, "ubuntu", "r00tme")
+        self.remote.connect_ssh(host, "ubuntu", "r00tme")
 
-        self.rmdir(cookbook_remote_path)
-        self.rmdir(os.path.join(SAMPLE_REMOTE_PATH, "cookbooks"))
-        self.rmdir(os.path.join(SAMPLE_REMOTE_PATH, "solo"))
-        
-        self.scp(
+        self.remote.rmdir(cookbook_remote_path)
+        self.remote.rmdir(os.path.join(SAMPLE_REMOTE_PATH, "cookbooks"))
+        self.remote.rmdir(os.path.join(SAMPLE_REMOTE_PATH, "solo"))
+
+        self.remote.scp(
             os.path.join(SAMPLE_PATH, "sample-release.json"),
             release_remote_path
         )
 
-        self.mkdir(os.path.join(SAMPLE_REMOTE_PATH, "solo"))
-        self.mkdir(os.path.join(SAMPLE_REMOTE_PATH, "solo/config"))        
+        self.remote.mkdir(os.path.join(SAMPLE_REMOTE_PATH, "solo"))
+        self.remote.mkdir(os.path.join(SAMPLE_REMOTE_PATH, "solo/config"))
 
-        self.scp(
+        self.remote.scp(
             DEPLOY_PATH,
             os.path.join(SAMPLE_REMOTE_PATH, "deploy")
         )
-        self.scp(
+        self.remote.scp(
             os.path.join(SOLO_PATH, "solo.json"),
             os.path.join(SAMPLE_REMOTE_PATH, "solo", "config", "solo.json")
         )
-        self.scp(
+        self.remote.scp(
             os.path.join(SOLO_PATH, "solo.rb"),
             os.path.join(SAMPLE_REMOTE_PATH, "solo", "config", "solo.rb")
         )
 
-        self.scp_d(
+        self.remote.scp_d(
             os.path.join(SAMPLE_PATH, "sample-cook"),
             SAMPLE_REMOTE_PATH
         )
-        self.scp_d(
+        self.remote.scp_d(
             COOKBOOKS_PATH,
             SAMPLE_REMOTE_PATH
         )
 
-        self.aquire_sudo()
+        self.remote.aquire_sudo()
 
         commands = [
             "rm -rf /opt/nailgun/nailgun.sqlite",
@@ -90,7 +95,7 @@ class TestNode(HTTPTestCase, SSHTestCase):
         ]
 
         for cmd in commands:
-            self.exec_cmd(cmd)
+            self.remote.exec_cmd(cmd)
 
         cluster = json.loads(self.client.post(
             "http://%s:8000/api/clusters" % host,
@@ -139,11 +144,11 @@ class TestNode(HTTPTestCase, SSHTestCase):
             except StillPendingException:
                 pass
 
-        ret = self.exec_cmd("test -f /tmp/chef_success && echo 'SUCCESS'")
+        ret = self.remote.exec_cmd("test -f /tmp/chef_success && echo 'SUCCESS'")
         if not "SUCCESS" in ret:
             raise Exception("Recipe failed to execute")
 
-        self.disconnect()
+        self.remote.disconnect()
 
     def check_tasks(self, task):
         if task['status'] != 'SUCCESS':

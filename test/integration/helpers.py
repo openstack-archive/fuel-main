@@ -25,21 +25,9 @@ class HTTPClient(object):
         req.get_method = lambda: 'PUT'
         return self.opener.open(req).read()
 
+class SSHClient(object):
 
-class HTTPTestCase(TestCase):
-    """
-    Test case with HTTP
-    """
-    def __init__(self, *args, **kwargs):
-        super(HTTPTestCase, self).__init__(*args, **kwargs)
-        self.client = HTTPClient()
-
-class SSHTestCase(TestCase):
-    """
-    Test case with SSH
-    """
-    def __init__(self, *args, **kwargs):
-        super(SSHTestCase, self).__init__(*args, **kwargs)
+    def __init__(self):
         self.channel = None
         self.sudo = False
 
@@ -98,7 +86,7 @@ class SSHTestCase(TestCase):
             self.open_channel()
             self.aquire_sudo()
             self.channel.send("rm -rf %s\n" % path)
-            self._recv_until("# ")          
+            self._recv_until("# ")
 
     def scp(self, frm, to):
         logging.info("Copying file: %s -> %s" % (frm, to))
