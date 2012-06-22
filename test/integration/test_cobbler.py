@@ -16,7 +16,7 @@ class TestCobbler:
         token = server.login('cobbler', 'cobbler')
         found = server.find_system({'name':'default'}, token)
         assert found[0]['name'] == 'default'
-           
+ 
     def test_cobbler_alive(self):
         assert True
 

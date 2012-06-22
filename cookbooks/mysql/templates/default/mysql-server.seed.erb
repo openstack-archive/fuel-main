@@ -1,0 +1,9 @@
+mysql-server-5.1	mysql-server/root_password_again	password	<%= node[:mysql][:server_root_password] %>
+mysql-server-5.1	mysql-server/root_password	password	<%= node[:mysql][:server_root_password] %>
+mysql-server-5.1	mysql-server/error_setting_password	error	
+mysql-server-5.1	mysql-server-5.1/nis_warning	note	
+mysql-server-5.1	mysql-server-5.1/really_downgrade	boolean	false
+mysql-server-5.1	mysql-server-5.1/start_on_boot	boolean	true
+mysql-server-5.1	mysql-server-5.1/postrm_remove_databases	boolean	false
+mysql-server-5.1	mysql-server/password_mismatch	error	
+mysql-server-5.1	mysql-server/no_upgrade_when_using_ndb	error
