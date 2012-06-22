@@ -1,8 +1,10 @@
+include_recipe "python"
+
 virtualenv "#{node[:nailgun][:venv]}" do
   site_packages false
 end
 
-['python-dev', 'python-paramiko', 'ruby-httpclient'].each do |deb|
+['libxml2-dev', 'python-dev', 'python-paramiko', 'ruby-httpclient'].each do |deb|
   package deb do
     action :install
   end
