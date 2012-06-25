@@ -2,7 +2,7 @@ from django.conf.urls import patterns, include, url
 from piston.resource import Resource
 
 from nailgun.api.handlers import ClusterCollectionHandler, ClusterHandler, \
-                     NodeCollectionHandler, NodeHandler, NodeRoleAvailable, \
+                     NodeCollectionHandler, NodeHandler, \
                      RecipeCollectionHandler, RecipeHandler, \
                      RoleCollectionHandler, RoleHandler, \
                      ReleaseCollectionHandler, ReleaseHandler, \
@@ -16,10 +16,6 @@ class JsonResource(Resource):
 
 
 urlpatterns = patterns('',
-    url(r'^validators/node_role_available/\
-(?P<node_id>[\dA-F]{12})/(?P<role_id>\d+)/?$',
-        JsonResource(NodeRoleAvailable),
-        name='node_role_available'),
     url(r'^clusters/?$',
         JsonResource(ClusterCollectionHandler),
         name='cluster_collection_handler'),

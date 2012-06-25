@@ -9,7 +9,7 @@ from django.conf import settings
 from nailgun.models import Cluster, Node, Recipe, Role, Release
 from nailgun.api.validators import validate_json
 from nailgun.api.forms import ClusterForm, ClusterCreationForm, RecipeForm, \
-        RoleForm, NodeCreationForm, NodeFilterForm, NodeForm, \
+        RoleForm, RoleFilterForm, NodeCreationForm, NodeFilterForm, NodeForm, \
         ReleaseCreationForm
 from nailgun.tasks import deploy_cluster
 
@@ -230,16 +230,6 @@ class NodeHandler(JSONHandler):
         return NodeHandler.render(node)
 
 
-class NodeRoleAvailable(BaseHandler):
-
-    allowed_methods = ('GET',)
-    model = Role
-
-    def read(self, request, node_id, role_id):
-        # TODO: it's a stub!
-        return {'available': True, 'error': None}
-
-
 class RecipeCollectionHandler(BaseHandler):
 
     allowed_methods = ('GET', 'POST')
@@ -294,11 +284,25 @@ class RoleCollectionHandler(BaseHandler):
     allowed_methods = ('GET', 'POST')
     model = Role
 
+    @validate(RoleFilterForm, 'GET')
     def read(self, request):
-        return map(
-            RoleHandler.render,
-            Role.objects.all()
-        )
+        roles = Role.objects.all()
+        if 'node_id' in request.form.data:
+            result = []
+            for role in roles:
+                # TODO role filtering
+                # use request.form.cleaned_data['node_id'] to filter roles
+                if False:
+                    continue
+                # if the role is suitable for the node, set 'available' field
+                # to True. If it is not, set it to False and also describe the
+                # reason in 'reason' field of rendered_role
+                rendered_role = RoleHandler.render(role)
+                rendered_role['available'] = True
+                result.append(rendered_role)
+            return result
+        else:
+            return map(RoleHandler.render, roles)
 
     @validate_json(RoleForm)
     def create(self, request):

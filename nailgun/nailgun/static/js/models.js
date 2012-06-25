@@ -45,6 +45,10 @@ define(function() {
         },
         initialize: function(attrs) {
             this.set('roles', new models.Roles(attrs.roles));
+        },
+        parse: function(response) {
+            response.roles = new models.Roles(response.roles);
+            return response;
         }
     });
 

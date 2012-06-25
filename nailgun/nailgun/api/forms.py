@@ -40,13 +40,6 @@ def validate_role_recipes(value):
         raise ValidationError('Invalid recipe list')
 
 
-class RoleForm(forms.ModelForm):
-    recipes = Field(validators=[validate_role_recipes])
-
-    class Meta:
-        model = Role
-
-
 validate_node_id = RegexValidator(regex=re.compile('^[\dA-F]{12}$'))
 
 
@@ -56,6 +49,17 @@ def validate_node_ids(value):
             validate_node_id(node_id)
     else:
         raise ValidationError('Node list must be a list of node IDs')
+
+
+class RoleForm(forms.ModelForm):
+    recipes = Field(validators=[validate_role_recipes])
+
+    class Meta:
+        model = Role
+
+
+class RoleFilterForm(forms.Form):
+    node_id = Field(required=False, validators=[validate_node_id])
 
 
 class ClusterForm(forms.Form):

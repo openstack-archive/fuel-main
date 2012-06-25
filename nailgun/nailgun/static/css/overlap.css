@@ -280,10 +280,9 @@ section {margin-bottom: 40px;}
           background-clip: padding-box;
 }
 
-.dropdown-menu li > a:hover,
-.dropdown-menu .active > a,
-.dropdown-menu .active > a:hover {
-  color: #666666;
+.dropdown-menu .role a:hover {
+  color: #333333;
+  cursor: pointer;
   text-decoration: none;
   background-color: #78c754;
   -webkit-box-shadow: none;
@@ -291,13 +290,13 @@ section {margin-bottom: 40px;}
           box-shadow: none;
 }
 
-.dropdown-menu .uncheck a i {margin-left: -7px; margin-right: 7px; visibility: hidden;}
-.dropdown-menu .check a i {margin-left: -7px; margin-right: 7px; visibility: visible;}
+.dropdown-menu .role a i {margin-left: -7px; margin-right: 7px;}
+.dropdown-menu .role.unchecked a i {visibility: hidden;}
 .dropdown-menu h4 {margin-left: -20px; margin-top: 10px;}
 .dropdown-menu .close {line-height: 30px; margin-right: 10px;}
-.dropdown-menu .applybtn {padding: 0px 20px 10px 20px;}
-.dropdown-menu .applybtn .btn-success {color: #ffffff;}
-.dropdown-menu .noroles {text-align: center; padding: 15px;}
+.dropdown-menu .applybtn {padding: 0px 20px 10px 20px}
+.dropdown-menu .applybtn button {color: #ffffff; width: 100%}
+.dropdown-menu .noroles {text-align: center; padding: 5px 15px 0;}
 
 .loading {
   text-align: center;

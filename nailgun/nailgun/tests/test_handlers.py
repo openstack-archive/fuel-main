@@ -389,14 +389,6 @@ class TestHandlers(TestCase):
                         check_status(t['subtasks'])
         check_status(resp_json)
 
-    def test_validate_node_role_available(self):
-        url = reverse('node_role_available', kwargs={
-            'node_id': '080000000001',
-            'role_id': '1'
-        })
-        resp = self.client.get(url)
-        self.assertEquals(resp.status_code, 200)
-
     def test_release_create(self):
         release_name = "OpenStack"
         release_version = "1.0.0"

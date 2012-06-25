@@ -1,5 +1,6 @@
 define(
 [
+    'models',
     'views/dialogs',
     'text!templates/cluster/list.html',
     'text!templates/cluster/info.html',
@@ -7,7 +8,7 @@ define(
     'text!templates/cluster/node.html',
     'text!templates/cluster/role_chooser.html'
 ],
-function(dialogViews, clusterListTemplate, clusterInfoTemplate, clusterTemplate, clusterNodeTemplate, roleChooserTemplate) {
+function(models, dialogViews, clusterListTemplate, clusterInfoTemplate, clusterTemplate, clusterNodeTemplate, roleChooserTemplate) {
     var views = {}
 
     views.ClusterListPage = Backbone.View.extend({
@@ -128,18 +129,28 @@ function(dialogViews, clusterListTemplate, clusterInfoTemplate, clusterTemplate,
         className: 'role-chooser',
         template: _.template(roleChooserTemplate),
         events: {
-            'click .close': 'close'
+            'click .close': 'close',
+            'click .role': 'toggleRole',
+            'click .applybtn button:not(.disabled)': 'applyRoles'
         },
         close: function() {
             $('html').off(this.eventNamespace);
             this.remove();
         },
+        toggleRole: function(e) {
+            e.preventDefault();
+            if ($(e.currentTarget).is('.unavailable')) return;
+            $(e.currentTarget).toggleClass('checked').toggleClass('unchecked');
+            this.$('.applybtn button.disabled').removeClass('disabled');
+        },
+        applyRoles: function() {
+            var roles = this.$('.role.checked').map(function(){return parseInt($(this).attr('data-role-id'), 10)}).get();
+            this.model.update({roles: roles});
+            this.close();
+        },
         initialize: function() {
             this.handledFirstClick = false;
             this.eventNamespace = 'click.chooseroles' + this.model.id;
-        },
-        render: function() {
-            this.$el.html(this.template({roles: this.model.get('roles')}));
             $('html').on(this.eventNamespace, _.bind(function(e) {
                 if (this.handledFirstClick && !$(e.target).closest(this.$el).length) {
                     this.close();
@@ -147,6 +158,14 @@ function(dialogViews, clusterListTemplate, clusterInfoTemplate, clusterTemplate,
                     this.handledFirstClick = true;
                 }
             }, this));
+            this.availableRoles = new models.Roles;
+            this.availableRoles.fetch({
+                data: {node_id: this.model.id},
+                success: _.bind(this.render, this)
+            });
+        },
+        render: function() {
+            this.$el.html(this.template({availableRoles: this.availableRoles, nodeRoles: this.model.get('roles')}));
             return this;
         }
     });
