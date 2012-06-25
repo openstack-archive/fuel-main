@@ -118,7 +118,7 @@ class Ci:
 
     def destroy_environment(self):
         if self.environment:
-            devops.destroy(env)
+            devops.destroy(self.environment)
 
         if self.environment_cache_file and os.path.exists(self.environment_cache_file):
             os.remove(self.environment_cache_file)
