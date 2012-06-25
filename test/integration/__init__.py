@@ -101,6 +101,7 @@ class Ci:
             logger.info("Admin node software is installed and ready for use")
 
             devops.save(self.environment)
+            os.makedirs(os.path.dirname(self.environment_cache_file))
             with file(self.environment_cache_file, 'w') as f:
                 f.write(self.environment.id)
 
@@ -109,6 +110,7 @@ class Ci:
             devops.save(self.environment)
 
             cache_file = self.environment_cache_file + '.candidate'
+            os.makedirs(os.path.dirname(cache_file))
             with file(cache_file, 'w') as f:
                 f.write(self.environment.id)
             logger.error("Failed to build environment. Candidate environment cache file is %s" % cache_file)
