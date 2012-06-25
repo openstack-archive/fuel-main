@@ -3,7 +3,7 @@ BUILD_DIR:=build
 
 MODULES=gnupg bootstrap iso2 test
 
-.PHONY: all clean test help
+.PHONY: all clean test help FORCE
 
 help:
 	@echo 'Available targets:'
@@ -15,6 +15,9 @@ help:
 all:
 
 test:
+
+# target to force rebuild of other targets
+FORCE:
 
 clean:
 	rm -rf $(BUILD_DIR)

@@ -33,6 +33,10 @@ class Ci:
         if self.environment:
             return
 
+        if not self.iso:
+            logger.critical("ISO path missing while trying to build integration environment")
+            return False
+
         logger.info("Building integration environment")
 
         try:
@@ -46,8 +50,7 @@ class Ci:
             node.vnc = True
             node.disks.append(Disk(size=30*1024**3))
             node.interfaces.append(Interface(network))
-            if self.iso:
-                node.cdrom = Cdrom(isopath=self.iso)
+            node.cdrom = Cdrom(isopath=self.iso)
             node.boot = ['disk', 'cdrom']
             environment.nodes.append(node)
         
@@ -116,13 +119,18 @@ class Ci:
     def destroy_environment(self):
         if self.environment:
             devops.destroy(env)
+
+        if self.environment_cache_file and os.path.exists(self.environment_cache_file):
+            os.remove(self.environment_cache_file)
+
         return True
 
 
 ci = None
 
 def setUp():
-    ci.setup_environment()
+    if not ci.setup_environment():
+        raise Exception, "Failed to setup integration environment"
 
 def tearDown():
     if not ci.environment_cache_file:
