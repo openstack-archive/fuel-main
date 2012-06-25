@@ -42,7 +42,7 @@ def main():
 
         nc = nose.config.Config()
         nc.verbosity = 3
-        nose.main(module=integration, config=nc, argv=[__file__])
+        nose.main(module=integration, config=nc, argv=[__file__, "--with-xunit"])
         result = True
     else:
         print("Unknown command '%s'" % params.command)
