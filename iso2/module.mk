@@ -158,6 +158,7 @@ $/debian/ubuntu-keyring/keyrings/ubuntu-archive-keyring.gpg: $(BINARIES_DIR)/ubu
 	rm -rf $/debian/ubuntu-keyring
 	mkdir -p $/debian/ubuntu-keyring
 	tar -xf $< --strip-components=1 -C $/debian/ubuntu-keyring
+	find $/debian/ubuntu-keyring/ -type f -exec touch {} \;
 
 $/debian/ubuntu-keyring/.done: $/debian/ubuntu-keyring/keyrings/ubuntu-archive-keyring.gpg $/ubuntu-mirantis-gnupg/.done
 	cd $/debian/ubuntu-keyring && \
