@@ -3,11 +3,23 @@
   <h3>Create Cluster</h3>
 </div>
 <div class="modal-body">
-  <form>
-    <label>Cluster name</label>
-    <input type="text" class="span4" name="name">
-    <label>Openstack Release</label>
-    <select class="span4" name="release"></select>
+  <form class="form-horizontal" onsubmit="return false">
+    <fieldset>
+      <div class="control-group">
+        <label class="control-label">Cluster name</label>
+        <div class="controls">
+          <input type="text" class="span4" name="name">
+          <span class="help-inline"></span>
+        </div>
+      </div>
+      <div class="control-group">
+        <label class="control-label">Openstack Release</label>
+        <div class="controls">
+          <select class="span4" name="release"></select>
+          <span class="help-inline"></span>
+        </div>
+      </div>
+    </fieldset>
   </form>
   <hr>
   <h3>Available Nodes</h3>

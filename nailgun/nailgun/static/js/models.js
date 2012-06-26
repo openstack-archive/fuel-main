@@ -24,6 +24,18 @@ define(function() {
         defaults: {
             name: null
         },
+        validate: function(attrs) {
+            var errors = {};
+            if (!attrs.name || attrs.name.length == 0) {
+                errors.name = 'Cluster name cannot be empty';
+            } else if (attrs.name.length > 100) {
+                errors.name = 'Cluster name is too long';
+            }
+            if (!attrs.release) {
+                errors.release = 'Please choose OpenStack release';
+            }
+            return _.isEmpty(errors) ? null : errors;
+        },
         parse: function(response) {
             response.nodes = new models.Nodes(response.nodes);
             response.release = new models.Release(response.release);

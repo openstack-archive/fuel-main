@@ -50,16 +50,27 @@ function(models, addRemoveNodesDialogTemplate, createClusterDialogTemplate, node
         },
         createCluster: function(e) {
             e.preventDefault();
+            this.$('.help-inline').text('');
+            this.$('.control-group').removeClass('error');
             var nodes = this.$('.node_check').map(function(){return $(this).attr('data-node-id')}).get();
-            var cluster = new models.Cluster({
+            var cluster = new models.Cluster();
+            cluster.on('error', function(model, error) {
+                _.each(error, function(message, field) {
+                    this.$('*[name=' + field + '] ~ .help-inline').text(message);
+                    this.$('*[name=' + field + ']').closest('.control-group').addClass('error');
+                }, this);
+            }, this);
+            cluster.set({
                 name: this.$('input[name=name]').attr('value'),
                 release: this.$('select[name=release]').attr('value'),
                 nodes: nodes
             });
-            cluster.save({}, {success: function() {
-                app.clusters.add(cluster);
-            }});
-            this.$el.modal('hide');
+            if (cluster.isValid()) {
+                cluster.save({}, {success: function() {
+                    app.clusters.add(cluster);
+                }});
+                this.$el.modal('hide');
+            }
         },
         toggleNode: function(e) {
             $(e.currentTarget).toggleClass('node_check').toggleClass('node_uncheck');
