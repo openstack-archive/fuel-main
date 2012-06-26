@@ -8,11 +8,11 @@ $/%: /:=$/
 
 test: test-integration
 
-clean: clean-integration-test-cache-file
+clean: $/clean-integration-test-cache-file
 
 
-.PHONY: clean-integration-test-cache-file
-clean-integration-test-environment:
+.PHONY: $/clean-integration-test-cache-file
+$/clean-integration-test-environment:
 	test -f $/environment-id && \
 		python test/integration.py -l INFO --cache-file $(abspath $/environment-id) destroy
 
