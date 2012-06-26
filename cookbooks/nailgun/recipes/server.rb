@@ -60,6 +60,13 @@ ssh_keygen "Nailgun ssh-keygen" do
   keytype 'rsa'
 end
 
+ssh_keygen "Root ssh-keygen" do
+  homedir "/root"
+  username "root"
+  groupname "root"
+  keytype 'rsa'
+end
+
 file "#{node[:nailgun][:root]}/nailgun/venv.py" do
   content "VENV = '#{node[:nailgun][:venv]}/local/lib/python2.7/site-packages'
 "
