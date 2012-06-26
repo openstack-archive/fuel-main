@@ -1,8 +1,8 @@
 {
     "recipes": [ 
     	"repo::http",
-	"cobbler::default",
-	"nailgun::server"
+	"nailgun::server",
+	"cobbler::default"
      ]
 }
 

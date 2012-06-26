@@ -17,7 +17,7 @@ $/%:
 	$(error BINARIES_DIR variable is not defined)
 else
 
-APT-GET:=echo apt-get
+APT-GET:=apt-get
 
 $(call assert-variable,gnupg.home)
 
@@ -129,7 +129,9 @@ $/apt-cache-extra.done: \
 		$/apt-cache-iso.done \
 		$(addprefix $/apt/archives/,$(call find-files,$(BINARIES_DIR)/ubuntu/precise/extra)) \
 		requirements-deb.txt
-	$(APT-GET) -c=$/apt/etc/apt.conf -d -y install $(EXTRA_PACKAGES)
+	for p in $(EXTRA_PACKAGES); do \
+	$(APT-GET) -c=$/apt/etc/apt.conf -d -y install $$p; \
+	done
 	$(ACTION.TOUCH)
 
 $/apt/archives/%.deb: $(BINARIES_DIR)/ubuntu/$(ISO_RELEASE)/extra/%.deb
@@ -213,7 +215,7 @@ $/isoroot.done: \
 		$(addprefix $(ISOROOT)/sync/,$(call find-files,iso2/sync)) \
 		$(addprefix $(ISOROOT)/indices/,$(call find-files,$(BINARIES_DIR)/ubuntu/$(ISO_RELEASE)/indices)) \
 		$(addprefix $(ISOROOT)/nailgun/,$(call find-files,nailgun)) \
-		$(addprefix $(ISOROOT)/nailgun/bin/,create_release install_cookbook) \
+		$(addprefix $(ISOROOT)/nailgun/bin/,create_release install_cookbook deploy) \
 		$(addprefix $(ISOROOT)/nailgun/solo/,solo.rb solo.json) \
 		$(addprefix $(ISOROOT)/nailgun/cookbooks/,$(call find-files,cookbooks)) \
 		$(ISOROOT)/gems \
