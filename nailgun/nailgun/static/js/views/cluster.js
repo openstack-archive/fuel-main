@@ -141,15 +141,23 @@ function(models, dialogViews, clusterListTemplate, clusterInfoTemplate, clusterT
             e.preventDefault();
             if ($(e.currentTarget).is('.unavailable')) return;
             $(e.currentTarget).toggleClass('checked').toggleClass('unchecked');
-            this.$('.applybtn button.disabled').removeClass('disabled');
+            if (_.isEqual(this.getChosenRoles(), this.originalRoles)) {
+                this.$('.applybtn button').addClass('disabled');
+            } else {
+                this.$('.applybtn button').removeClass('disabled');
+            }
         },
         applyRoles: function() {
-            var roles = this.$('.role.checked').map(function(){return parseInt($(this).attr('data-role-id'), 10)}).get();
+            var roles = this.getChosenRoles();
             this.model.update({roles: roles});
             this.close();
         },
+        getChosenRoles: function() {
+            return this.$('.role.checked').map(function() {return parseInt($(this).attr('data-role-id'), 10)}).get();
+        },
         initialize: function() {
             this.handledFirstClick = false;
+            this.originalRoles = this.model.get('roles').pluck('id');
             this.eventNamespace = 'click.chooseroles' + this.model.id;
             $('html').on(this.eventNamespace, _.bind(function(e) {
                 if (this.handledFirstClick && !$(e.target).closest(this.$el).length) {
