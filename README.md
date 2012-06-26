@@ -75,17 +75,14 @@ Layout
         create_release - upload a release json file to nailgun (see e.g. scripts/ci/sample-release.json)
         deploy - invoked on a node to deploy; downloads and executes recipes
         install_cookbook - uploads cookbooks to nailgun admin API
-    bootstrap/ - creating a bootstrap image for nodes (initrd, configuration files, packages etc)
-    bootstrap2/ - same, another version?
-    ci\_with\_libvirt - libvirt-based CI tests
+    bootstrap/ - creating a bootstrap image (aka crowbar sledgehammer) for nodes (initrd, configuration files, packages etc) It needed to be refactored to use clear make without calling additional shell scripts.
     cookbooks/ - chef cookbooks to be used by nodes.
         agent/ - node agent. Sends ohai data to admin node.
         nailgun/ - nailgun server (not slave node!)
         others obvious
     devops/ - Mirantis CI framework, used by integration tests (./test/integration/). Installed on the master, not slave.
     gnupg/
-    iso2/ - creating a bootstrap ISO for nodes [TODO How does it differ from bootstrap/ and bootstrap2/ ?]
-    lib/provision/cobbler - apparently unfinished
+    iso2/ - creating a main iso to install admin node (isobuild.sh is obsolete, but it is still convenient to use it from time to time to look how some things work), bootstrap images is included into main iso [TODO How does it differ from bootstrap/ and bootstrap2/ ?]
     nailgun/ - server
         manage.py, run_tests.sh - django standard
         monitor.py - restart server when django conf files change
@@ -106,6 +103,6 @@ Layout
     test/ - integration tests [TODO figure out more]
     vagrant/ - cookbooks for use by the vagrant vm
     requirements-deb.txt - debian packages needed on nailgun server
-    requirements.txt - ?
-    rules.mk - ?
+    requirements.txt - here was the list of python eggs installed via pip, it was moved into cookbooks/nailgun/recipes/deps.rb, but we are not absolutely sure that this file will not be needed in the future
+    rules.mk - it is just some make macroses
 
