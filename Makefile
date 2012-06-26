@@ -1,7 +1,7 @@
 
 BUILD_DIR:=build
 
-MODULES=gnupg bootstrap iso2 test
+MODULES=gnupg bootstrap iso test
 
 .PHONY: all clean test help FORCE
 

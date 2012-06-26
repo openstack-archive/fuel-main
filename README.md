@@ -82,7 +82,7 @@ Layout
         others obvious
     devops/ - Mirantis CI framework, used by integration tests (./test/integration/). Installed on the master, not slave.
     gnupg/
-    iso2/ - creating a main iso to install admin node (isobuild.sh is obsolete, but it is still convenient to use it from time to time to look how some things work), bootstrap images is included into main iso [TODO How does it differ from bootstrap/ and bootstrap2/ ?]
+    iso/ - creating a main iso to install admin node (isobuild.sh is obsolete, but it is still convenient to use it from time to time to look how some things work), bootstrap images is included into main iso [TODO How does it differ from bootstrap/ and bootstrap2/ ?]
     nailgun/ - server
         manage.py, run_tests.sh - django standard
         monitor.py - restart server when django conf files change

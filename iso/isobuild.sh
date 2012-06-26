@@ -30,7 +30,7 @@ NEWISONAME=nailgun-ubuntu-${VERSION}-amd64
 MIRROR="http://ru.archive.ubuntu.com/ubuntu"
 REQDEB=`cat ${REPO}/requirements-deb.txt | grep -v "^\s*$" | grep -v "^\s*#"`
 
-BASEDIR=/var/tmp/build_iso2
+BASEDIR=/var/tmp/build_iso
 
 ORIG=${BASEDIR}/orig
 NEW=${BASEDIR}/new

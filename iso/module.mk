@@ -196,8 +196,8 @@ $/isoroot-keyring.done: $/isoroot-pool.done $/debian/ubuntu-keyring/.done
 $/isoroot-packages.done: $/isoroot-pool.done $/isoroot-keyring.done
 	$(ACTION.TOUCH)
 
-$/isoroot-isolinux.done: $/isoroot-infra.done $(addprefix iso2/stage/,$(call find-files,iso2/stage))
-	rsync -a iso2/stage/ $(ISOROOT)
+$/isoroot-isolinux.done: $/isoroot-infra.done $(addprefix iso/stage/,$(call find-files,iso/stage))
+	rsync -a iso/stage/ $(ISOROOT)
 	$(ACTION.TOUCH)
 
 $/isoroot.done: \
@@ -212,7 +212,7 @@ $/isoroot.done: \
 		$(ISOROOT)/gnupg \
 		$(addprefix $(ISOROOT)/gnupg/,$(call find-files,gnupg)) \
 		$(ISOROOT)/sync \
-		$(addprefix $(ISOROOT)/sync/,$(call find-files,iso2/sync)) \
+		$(addprefix $(ISOROOT)/sync/,$(call find-files,iso/sync)) \
 		$(addprefix $(ISOROOT)/indices/,$(call find-files,$(BINARIES_DIR)/ubuntu/$(ISO_RELEASE)/indices)) \
 		$(addprefix $(ISOROOT)/nailgun/,$(call find-files,nailgun)) \
 		$(addprefix $(ISOROOT)/nailgun/bin/,create_release install_cookbook deploy) \
@@ -408,11 +408,11 @@ $(ISOROOT)/gnupg:
 $(ISOROOT)/gnupg/%: gnupg/% ; $(ACTION.COPY)
 $(ISOROOT)/sync:
 	mkdir -p $@
-$(ISOROOT)/sync/%: iso2/sync/% ; $(ACTION.COPY)
+$(ISOROOT)/sync/%: iso/sync/% ; $(ACTION.COPY)
 $(ISOROOT)/indices/override.$(ISO_RELEASE).extra.main: $/override.$(ISO_RELEASE).extra.main ; $(ACTION.COPY)
 $(ISOROOT)/indices/%: $(BINARIES_DIR)/ubuntu/$(ISO_RELEASE)/indices/% ; $(ACTION.COPY)
 $(ISOROOT)/nailgun/cookbooks/%: cookbooks/% ; $(ACTION.COPY)
-$(ISOROOT)/nailgun/solo/%: iso2/solo/% ; $(ACTION.COPY)
+$(ISOROOT)/nailgun/solo/%: iso/solo/% ; $(ACTION.COPY)
 $(ISOROOT)/nailgun/bin/%: bin/% ; $(ACTION.COPY)
 $(ISOROOT)/nailgun/%: nailgun/% ; $(ACTION.COPY)
 $(ISOROOT)/eggs:
