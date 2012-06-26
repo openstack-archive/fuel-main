@@ -1,27 +1,33 @@
 # This recipe requires ubuntu netinst image installed 
-# into node.cobbler.precise-x86_64_iso
+# into node["cobbler"]["precise-x86_64_iso"]
+# it requires also ssh key generated in /root/.ssh
+
 
 template "#{node.cobbler.preseed_dir}/precise-x86_64.seed" do
   source "precise-x86_64.seed"
   owner "root"
   group "root"
   mode "0644"
+  variables(
+            :late_authorized_keys => LateFile.new("/root/.ssh/id_rsa.pub"),
+            :late_deploy => LateFile.new("/opt/nailgun/bin/deploy")
+            )
 end
 
-directory "#{node.cobbler.precise-x86_64_mnt}" do
+directory "#{node["cobbler"]["precise-x86_64_mnt"]}" do
   recursive true
   owner "root"
   group "root"
   mode "0755"
 end
 
-mount "#{node.cobbler.precise-x86_64_mnt}" do
+mount "#{node["cobbler"]["precise-x86_64_mnt"]}" do
   options "loop"
-  device "#{node.cobbler.precise-x86_64_iso}"
+  device "#{node["cobbler"]["precise-x86_64_iso"]}"
 end
 
 link "#{node.cobbler.ks_mirror_dir}/precise-x86_64" do
-  to #{node.cobbler.precise-x86_64_mnt}
+  to #{node["cobbler"]["precise-x86_64_mnt"]}
 end
 
 distro "precise-x86_64" do
