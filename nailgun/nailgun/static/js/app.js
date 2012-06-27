@@ -3,8 +3,9 @@ define(
     'models',
     'views/common',
     'views/cluster',
+    'views/clusters',
     'views/release',
-], function(models, commonViews, clusterViews, releaseViews) {
+], function(models, commonViews, clusterViews, clustersViews, releaseViews) {
     var AppRouter = Backbone.Router.extend({
         routes: {
             'clusters': 'listClusters',
@@ -27,7 +28,7 @@ define(
                 if (id && (cluster = this.clusters.get(id))) {
                     this.navbar.setActive('clusters');
                     this.breadcrumb.setPath(['Home', '#'], ['Clusters', '#clusters'], cluster.get('name'));
-                    $('#content').html(new clusterViews.ClusterInfoPage({model: cluster}).render().el);
+                    $('#content').html(new clusterViews.ClusterPage({model: cluster}).render().el);
                 } else {
                     this.listClusters();
                 }
@@ -43,7 +44,7 @@ define(
             this.breadcrumb.setPath(['Home', '#'], 'Clusters');
 
             if (this.clusters) {
-                $('#content').html(new clusterViews.ClusterListPage({model: this.clusters}).render().el);
+                $('#content').html(new clustersViews.ClustersPage({model: this.clusters}).render().el);
             } else {
                 this.loadClusters(this.listClusters);
             }
