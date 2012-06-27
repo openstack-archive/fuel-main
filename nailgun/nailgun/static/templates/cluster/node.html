@@ -4,7 +4,7 @@
   <div class="roles">
     <a href="#">
       <ul>
-        <% if (node.get('roles').length) { %>
+        <% if (node.get('roles').length || node.get('new_roles').length) { %>
           <% if (node.get('redeployment_needed')) { %>
             <% var commonRoles = node.get('roles').filter(function(role) {return node.get('new_roles').get(role.id)}) %>
             <% var deletedRoles = node.get('roles').filter(function(role) {return !node.get('new_roles').get(role.id)}) %>

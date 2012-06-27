@@ -28,7 +28,8 @@ define(
                 if (id && (cluster = this.clusters.get(id))) {
                     this.navbar.setActive('clusters');
                     this.breadcrumb.setPath(['Home', '#'], ['Clusters', '#clusters'], cluster.get('name'));
-                    $('#content').html(new clusterViews.ClusterPage({model: cluster}).render().el);
+                    this.page = new clusterViews.ClusterPage({model: cluster});
+                    $('#content').html(this.page.render().el);
                 } else {
                     this.listClusters();
                 }
@@ -44,7 +45,8 @@ define(
             this.breadcrumb.setPath(['Home', '#'], 'Clusters');
 
             if (this.clusters) {
-                $('#content').html(new clustersViews.ClustersPage({model: this.clusters}).render().el);
+                this.page = new clustersViews.ClustersPage({model: this.clusters});
+                $('#content').html(this.page.render().el);
             } else {
                 this.loadClusters(this.listClusters);
             }
@@ -54,7 +56,8 @@ define(
             this.breadcrumb.setPath(['Home', '#'], 'Releases');
 
             if (this.releases) {
-                $('#content').html(new releaseViews.ReleaseList({model: this.releases}).render().el);
+                this.page = new releaseViews.ReleasesPage({model: this.releases});
+                $('#content').html(this.page.render().el);
             } else {
                 this.releases = new models.Releases;
                 this.releases.fetch({
