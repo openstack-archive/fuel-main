@@ -5,9 +5,24 @@
     <a href="#">
       <ul>
         <% if (node.get('roles').length) { %>
-          <% node.get('roles').each(function(role) { %>
-            <li><%= role.get('name') %></li>
-          <% }) %>
+          <% if (node.get('redeployment_needed')) { %>
+            <% var commonRoles = node.get('roles').filter(function(role) {return node.get('new_roles').get(role.id)}) %>
+            <% var deletedRoles = node.get('roles').filter(function(role) {return !node.get('new_roles').get(role.id)}) %>
+            <% var addedRoles = node.get('new_roles').filter(function(role) {return !node.get('roles').get(role.id)}) %>
+            <% _.each(deletedRoles, function(role) { %>
+              <li style="text-decoration: line-through; color: red"><%= role.get('name') %></li>
+            <% }) %>
+            <% _.each(commonRoles, function(role) { %>
+              <li><%= role.get('name') %></li>
+            <% }) %>
+            <% _.each(addedRoles, function(role) { %>
+              <li style="color: green"><%= role.get('name') %></li>
+            <% }) %>
+          <% } else { %>
+            <% node.get('roles').each(function(role) { %>
+              <li><%= role.get('name') %></li>
+            <% }) %>
+          <% } %>
         <% } else { %>
             <li>(No Roles)</li>
         <% } %>
