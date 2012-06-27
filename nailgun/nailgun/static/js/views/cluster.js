@@ -141,15 +141,16 @@ function(models, dialogViews, clusterListTemplate, clusterInfoTemplate, clusterT
             e.preventDefault();
             if ($(e.currentTarget).is('.unavailable')) return;
             $(e.currentTarget).toggleClass('checked').toggleClass('unchecked');
-            if (_.isEqual(this.getChosenRoles(), this.originalRoles)) {
+            if (_.isEqual(this.getChosenRoles(), this.originalRoles.pluck('id'))) {
                 this.$('.applybtn button').addClass('disabled');
             } else {
                 this.$('.applybtn button').removeClass('disabled');
             }
         },
         applyRoles: function() {
-            var roles = this.getChosenRoles();
-            this.model.update({new_roles: roles, redeployment_needed: true});
+            var new_roles = this.getChosenRoles();
+            var redeployment_needed = !_.isEqual(this.model.get('roles').pluck('id'), new_roles);
+            this.model.update({new_roles: new_roles, redeployment_needed: redeployment_needed});
             this.close();
         },
         getChosenRoles: function() {
@@ -157,7 +158,7 @@ function(models, dialogViews, clusterListTemplate, clusterInfoTemplate, clusterT
         },
         initialize: function() {
             this.handledFirstClick = false;
-            this.originalRoles = this.model.get('roles').pluck('id');
+            this.originalRoles = this.model.get('redeployment_needed') ? this.model.get('new_roles') : this.model.get('roles');
             this.eventNamespace = 'click.chooseroles' + this.model.id;
             $('html').on(this.eventNamespace, _.bind(function(e) {
                 if (this.handledFirstClick && !$(e.target).closest(this.$el).length) {
@@ -173,7 +174,7 @@ function(models, dialogViews, clusterListTemplate, clusterInfoTemplate, clusterT
             });
         },
         render: function() {
-            this.$el.html(this.template({availableRoles: this.availableRoles, nodeRoles: this.model.get('roles')}));
+            this.$el.html(this.template({availableRoles: this.availableRoles, nodeRoles: this.originalRoles}));
             return this;
         }
     });

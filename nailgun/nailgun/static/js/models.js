@@ -4,11 +4,6 @@ define(function() {
 
     models.Release = Backbone.Model.extend({
         urlRoot: '/api/releases',
-        defaults: {
-            name: null,
-            version: null,
-            description: null
-        },
         initialize: function(attrs) {
             this.set('roles', new models.Roles(attrs.roles));
         }
@@ -21,9 +16,6 @@ define(function() {
 
     models.Cluster = Backbone.Model.extend({
         urlRoot: '/api/clusters',
-        defaults: {
-            name: null
-        },
         validate: function(attrs) {
             var errors = {};
             if (!attrs.name || attrs.name.length == 0) {
@@ -50,16 +42,13 @@ define(function() {
 
     models.Node = Backbone.Model.extend({
         urlRoot: '/api/nodes',
-        defaults: {
-            name: null,
-            status: null,
-            metadata: null
-        },
         initialize: function(attrs) {
             this.set('roles', new models.Roles(attrs.roles));
+            this.set('new_roles', new models.Roles(attrs.new_roles));
         },
         parse: function(response) {
             response.roles = new models.Roles(response.roles);
+            response.new_roles = new models.Roles(response.new_roles);
             return response;
         }
     });
@@ -74,10 +63,6 @@ define(function() {
 
     models.Cookbook = Backbone.Model.extend({
         urlRoot: '/api/cookbooks',
-        defaults: {
-            name: null,
-            version: null
-        },
         initialize: function(attrs) {
             this.set('roles', new models.Roles(attrs.roles));
         }
@@ -88,10 +73,7 @@ define(function() {
     });
 
     models.Role = Backbone.Model.extend({
-        urlRoot: '/api/roles',
-        defaults: {
-            name: null
-        }
+        urlRoot: '/api/roles'
     });
 
     models.Roles = Backbone.Collection.extend({
