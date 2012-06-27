@@ -51,8 +51,8 @@ class TestRolesNodesAssociation(TestCase):
         node1.roles = [role1]
         node1.save()
         self.assertEquals(node1.roles.all()[0].id, 1)
-        self.assertEquals(role1.node_set.all()[0].id, "080000000001")
-        self.assertEquals(role1.node_set.all()[0].name, "test.example.com")
+        self.assertEquals(role1.nodes.all()[0].id, "080000000001")
+        self.assertEquals(role1.nodes.all()[0].name, "test.example.com")
 
         node1.roles.add(role2)
         self.assertEquals(len(node1.roles.all()), 2)

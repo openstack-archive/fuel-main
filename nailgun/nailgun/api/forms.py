@@ -3,7 +3,8 @@ import re
 import simplejson as json
 from django.core.exceptions import ValidationError
 from django import forms
-from django.forms.fields import Field, IntegerField, CharField, ChoiceField
+from django.forms.fields import Field, IntegerField, CharField, ChoiceField, \
+                                BooleanField
 from django.core.validators import RegexValidator
 
 from nailgun.models import Cluster, Node, Recipe, Role, Release
@@ -110,6 +111,10 @@ should not be empty' % role['name'])
                 raise ValidationError('Recipe %s doesn\'t exist' % recipe)
 
 
+def forbid_modifying_roles(value):
+    raise ValidationError('Role list cannot be modified directly')
+
+
 class NodeForm(forms.Form):
     metadata = Field(required=False, validators=[validate_node_metadata])
     status = ChoiceField(required=False, choices=Node.NODE_STATUSES)
@@ -117,7 +122,9 @@ class NodeForm(forms.Form):
     fqdn = CharField(max_length=255, required=False)
     ip = CharField(max_length=15, required=False)
     mac = CharField(max_length=17, required=False)
-    roles = Field(required=False, validators=[validate_node_roles])
+    roles = Field(required=False, validators=[forbid_modifying_roles])
+    new_roles = Field(required=False, validators=[validate_node_roles])
+    redeployment_needed = BooleanField(required=False)
 
 
 class NodeCreationForm(NodeForm):

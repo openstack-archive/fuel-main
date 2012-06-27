@@ -178,11 +178,7 @@ class NodeCollectionHandler(BaseHandler):
         node = Node()
         for key, value in request.form.cleaned_data.items():
             if key in request.form.data:
-                if key == 'roles':
-                    new_roles = Role.objects.filter(id__in=value)
-                    node.roles.clear()
-                    node.roles.add(*new_roles)
-                else:
+                if key != 'new_roles':
                     setattr(node, key, value)
 
         node.save()
@@ -193,17 +189,18 @@ class NodeHandler(JSONHandler):
 
     allowed_methods = ('GET', 'PUT')
     model = Node
-    fields = ('id', 'name', 'metadata', 'status', 'mac', 'fqdn', 'ip')
-    special_fields = ('roles',)
+    fields = ('id', 'name', 'metadata', 'status', 'mac', 'fqdn', 'ip',
+              'redeployment_needed')
+    special_fields = ('roles', 'new_roles')
 
     @classmethod
     def render(cls, node, fields=None):
         json_data = JSONHandler.render(node, fields=fields or cls.fields)
         for field in cls.special_fields:
-            if field in ('roles',):
+            if field in ('roles', 'new_roles'):
                 json_data[field] = map(
                     RoleHandler.render,
-                    node.roles.all()
+                    getattr(node, field).all()
                 )
         return json_data
 
@@ -219,10 +216,10 @@ class NodeHandler(JSONHandler):
         node, is_created = Node.objects.get_or_create(id=node_id)
         for key, value in request.form.cleaned_data.items():
             if key in request.form.data:
-                if key == 'roles':
+                if key == 'new_roles':
                     new_roles = Role.objects.filter(id__in=value)
-                    node.roles.clear()
-                    node.roles.add(*new_roles)
+                    node.new_roles.clear()
+                    node.new_roles.add(*new_roles)
                 else:
                     setattr(node, key, value)
 

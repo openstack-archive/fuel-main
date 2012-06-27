@@ -228,15 +228,21 @@ class TestHandlers(TestCase):
                 "application/json")
         self.assertEquals(resp.status_code, 200)
 
-    def test_node_valid_list_of_roles_gets_updated(self):
+    def test_node_valid_list_of_new_roles_gets_updated(self):
         resp = self.client.put(self.node_url,
-            json.dumps({'roles': [self.another_role.id]}),
-            "application/json")
+            json.dumps({
+                'new_roles': [self.another_role.id],
+                'redeployment_needed': True
+            }), "application/json"
+        )
         self.assertEquals(resp.status_code, 200)
 
         node_from_db = Node.objects.get(id=self.node.id)
+        self.assertEquals(node_from_db.redeployment_needed, True)
         self.assertEquals(len(node_from_db.roles.all()), 1)
-        self.assertEquals(node_from_db.roles.all()[0].id, self.another_role.id)
+        self.assertEquals(len(node_from_db.new_roles.all()), 1)
+        self.assertEquals(node_from_db.new_roles.all()[0].id,
+                          self.another_role.id)
 
     def test_put_returns_400_if_no_body(self):
         resp = self.client.put(self.node_url, None, "application/json")

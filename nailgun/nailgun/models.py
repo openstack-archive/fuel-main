@@ -45,4 +45,6 @@ class Node(models.Model):
     mac = models.CharField(max_length=17)
     ip = models.CharField(max_length=15)
     fqdn = models.CharField(max_length=255)
-    roles = models.ManyToManyField(Role)
+    roles = models.ManyToManyField(Role, related_name='nodes')
+    new_roles = models.ManyToManyField(Role, related_name='+')
+    redeployment_needed = models.BooleanField(default=False)

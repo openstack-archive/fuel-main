@@ -149,7 +149,7 @@ function(models, dialogViews, clusterListTemplate, clusterInfoTemplate, clusterT
         },
         applyRoles: function() {
             var roles = this.getChosenRoles();
-            this.model.update({roles: roles});
+            this.model.update({new_roles: roles, redeployment_needed: true});
             this.close();
         },
         getChosenRoles: function() {
