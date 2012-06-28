@@ -14,4 +14,8 @@
   end
   # httpclient is for node agent
   gem_package "httpclient"
+  package "redis-server"
+  service "redis-server" do
+    action :start
+  end
 end
