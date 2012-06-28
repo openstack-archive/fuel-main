@@ -1,24 +1,72 @@
-from celery.task import task, chord, TaskSet
+import logging
 from functools import wraps
 
+from celery.task import task, chord, TaskSet
 
-# Example: graph = {1: [4], 2: [], 3: [2,6], 4:[2,3], 5: [], 6: [2]}
-# 1 depends on 4, 3 depends on 2 and 6, etc.
+logger = logging.getLogger(__name__)
+
+
+class TaskError(Exception):
+
+    def __init__(self, task_id, error, cluster_id=None, node_id=None):
+        self.message = ""
+        node_msg = ""
+        cluster_msg = ""
+
+        if node_id:
+            node_msg = ", node_id='%s'" % (node_id)
+        if cluster_id:
+            cluster_msg = ", cluster_id='%s'" % (cluster_id)
+
+        self.message = "Error in task='%s'%s%s. Error message: '%s'" % (
+                    task_id, cluster_msg, node_msg, error)
+
+        try:
+            Exception.__init__(self, self.message)
+            logger.error(self.message)
+            if node_id:
+                node = Node.objects.get(id=node_id)
+                node.status = "error"
+                node.save()
+        except:
+            logger.exception("Exception in exception handler occured")
+
+    def __str__(self):
+        return repr(self.message)
+
+
 def topol_sort(graph):
-    # NOTE(mihgen): Installation components dependency resolution
-    # From nodes.roles.recipes we know recipes that needs to be applied
-    # We have to apply them in an order according to specified dependencies
-    # To sort in an order, we use DFS(Depth First Traversal) over DAG graph
-    # Exception is raised if there is a cycle
+    """ Depth First Traversal algorithm for sorting DAG graph.
+
+    Example graph: 1 depends on 4; 3 depends on 2 and 6; etc.
+    Example code:
+
+    .. code-block:: python
+
+        >>> graph = {1: [4], 2: [], 3: [2,6], 4:[2,3], 5: [], 6: [2]}
+        >>> topol_sort(graph)
+        [2, 6, 3, 4, 1, 5]
+
+    Exception is raised if there is a cycle:
+
+    .. code-block:: python
+
+        >>> graph = {1: [4], 2: [], 3: [2,6], 4:[2,3,1], 5: [], 6: [2]}
+        >>> topol_sort(graph)
+        ...
+        Exception: Graph contains cycles, processed 4 depends on 1
+
+    """
+
     def dfs(v):
         color[v] = "gray"
         for w in graph[v]:
             if color[w] == "black":
                 continue
             elif color[w] == "gray":
-                raise TaskError(deploy_cluster.request.id,
-                        "Graph contains cycles, processed %s depends on %s" \
-                                % (v, w), cluster_id=cluster_id)
+                raise Exception(
+                        "Graph contains cycles, processed %s depends on %s" % \
+                                (v, w))
             dfs(w)
         color[v] = "black"
         _sorted.append(v)

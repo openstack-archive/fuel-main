@@ -10,37 +10,9 @@ from django.conf import settings
 from nailgun.models import Cluster, Node, Role, Recipe
 from nailgun.helpers import SshConnect
 from nailgun.task_helpers import task_with_callbacks, TaskPool, topol_sort
+from nailgun.task_helpers import TaskError
 
 logger = logging.getLogger(__name__)
-
-
-class TaskError(Exception):
-
-    def __init__(self, task_id, error, cluster_id=None, node_id=None):
-        self.message = ""
-        node_msg = ""
-        cluster_msg = ""
-
-        if node_id:
-            node_msg = ", node_id='%s'" % (node_id)
-        if cluster_id:
-            cluster_msg = ", cluster_id='%s'" % (cluster_id)
-
-        self.message = "Error in task='%s'%s%s. Error message: '%s'" % (
-                    task_id, cluster_msg, node_msg, error)
-
-        try:
-            Exception.__init__(self, self.message)
-            logger.error(self.message)
-            if node_id:
-                node = Node.objects.get(id=node_id)
-                node.status = "error"
-                node.save()
-        except:
-            logger.exception("Exception in exception handler occured")
-
-    def __str__(self):
-        return repr(self.message)
 
 
 @task_with_callbacks
@@ -74,8 +46,9 @@ def deploy_cluster(cluster_id):
 
         node_json['roles'] = []
         for role in roles_for_node:
-            rc = ["recipe[%s]" % r.recipe for r in role.recipes.all()]
-            use_recipes.extend(rc)
+            recipes = role.recipes.all()
+            rc = ["recipe[%s]" % r.recipe for r in recipes]
+            use_recipes.extend(recipes)
             node_json["roles"].append({
                 "name": role.name,
                 "recipes": rc
@@ -101,11 +74,14 @@ def deploy_cluster(cluster_id):
     shutil.rmtree(databag)
 
     graph = {}
-    # FIXME(mihgen):!!!!! all_recipes only for our cluster_id !!!!!!!
-    all_recipes = Recipe.objects.all()
-    for recipe in all_recipes:
+    for recipe in use_recipes:
+        # FIXME(mihgen): we have to create graph of dependencies here
         graph[recipe] = []
 
+    # NOTE(mihgen): Installation components dependency resolution
+    # From nodes.roles.recipes we know recipes that needs to be applied
+    # We have to apply them in an order according to specified dependencies
+    # To sort in an order, we use DFS(Depth First Traversal) over DAG graph
     sorted_recipes = topol_sort(graph)
     tree = TaskPool()
     # first element in sorted_recipes is the first recipe we have to apply
