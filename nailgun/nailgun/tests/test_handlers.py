@@ -390,9 +390,7 @@ class TestHandlers(TestCase):
             self.assertEquals(task['status'], "SUCCESS")
             if task['subtasks']:
                 for t in task['subtasks']:
-                    self.assertEquals(t['status'], "SUCCESS")
-                    if t['subtasks']:
-                        check_status(t['subtasks'])
+                    check_status(t)
         check_status(resp_json)
 
     def test_release_create(self):

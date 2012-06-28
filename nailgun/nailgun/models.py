@@ -6,6 +6,8 @@ from api.fields import RecipeField
 
 class Recipe(models.Model):
     recipe = RecipeField(max_length=100)
+    # FIXME(mihgen): depends should be recipe objects
+    depends = models.CharField(max_length=100, blank=True)
 
 
 class Role(models.Model):

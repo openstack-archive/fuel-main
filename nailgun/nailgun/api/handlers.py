@@ -11,7 +11,7 @@ from nailgun.api.validators import validate_json
 from nailgun.api.forms import ClusterForm, ClusterCreationForm, RecipeForm, \
         RoleForm, RoleFilterForm, NodeCreationForm, NodeFilterForm, NodeForm, \
         ReleaseCreationForm
-from nailgun.tasks import deploy_cluster
+from nailgun import tasks
 
 
 class JSONHandler(BaseHandler):
@@ -54,6 +54,8 @@ class TaskHandler(BaseHandler):
         if isinstance(task.result, celery.result.ResultSet):
             json_data['subtasks'] = [TaskHandler.render(t) for t in \
                     task.result.results]
+        elif isinstance(task.result, celery.result.AsyncResult):
+            json_data['subtasks'] = [TaskHandler.render(task.result)]
         elif isinstance(task.result, Exception):
             json_data['error'] = task.result
             json_data['traceback'] = task.traceback
@@ -80,7 +82,7 @@ class ConfigHandler(BaseHandler):
         except ObjectDoesNotExist:
             return rc.NOT_FOUND
 
-        task = deploy_cluster.delay(cluster_id)
+        task = tasks.deploy_cluster.delay(cluster_id)
 
         # FIXME: move to task?
         for node in cluster.nodes.all():

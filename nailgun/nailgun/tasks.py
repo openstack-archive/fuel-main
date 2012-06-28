@@ -6,12 +6,10 @@ import paramiko
 import tarfile
 import shutil
 from django.conf import settings
-from celery.task import task
-from celery.task import subtask
-from celery.task import group
 
-from nailgun.models import Cluster, Node, Role
+from nailgun.models import Cluster, Node, Role, Recipe
 from nailgun.helpers import SshConnect
+from nailgun.task_helpers import task_with_callbacks, TaskPool, topol_sort
 
 logger = logging.getLogger(__name__)
 
@@ -45,7 +43,7 @@ class TaskError(Exception):
         return repr(self.message)
 
 
-@task
+@task_with_callbacks
 def deploy_cluster(cluster_id):
     databag = os.path.join(
         settings.CHEF_CONF_FOLDER,
@@ -58,14 +56,12 @@ def deploy_cluster(cluster_id):
         raise TaskError(deploy_cluster.request.id,
                 "Nodes list is empty.", cluster_id=cluster_id)
 
+    use_recipes = []
     for node in nodes:
         node_json = {}
-        node_solo = {
-            "cluster_id": cluster_id,
-            "run_list": []
-        }
 
         roles_for_node = node.roles.all()
+        # TODO(mihgen): It should be possible to have node w/o role assigned
         if not roles_for_node:
             raise TaskError(deploy_cluster.request.id,
                     "Roles list for node %s is empty" % node.id,
@@ -79,7 +75,7 @@ def deploy_cluster(cluster_id):
         node_json['roles'] = []
         for role in roles_for_node:
             rc = ["recipe[%s]" % r.recipe for r in role.recipes.all()]
-            node_solo["run_list"].extend(rc)
+            use_recipes.extend(rc)
             node_json["roles"].append({
                 "name": role.name,
                 "recipes": rc
@@ -87,16 +83,6 @@ def deploy_cluster(cluster_id):
 
         if not os.path.exists(databag):
             os.makedirs(databag)
-
-        # writing to solo
-        with open(
-            os.path.join(
-                settings.CHEF_CONF_FOLDER,
-                "".join([node.id, ".json"])
-            ),
-            "w"
-        ) as entity:
-            entity.write(json.dumps(node_solo))
 
         # writing to databag
         with open(
@@ -111,12 +97,83 @@ def deploy_cluster(cluster_id):
     # removing databag - it's already packed
     shutil.rmtree(databag)
 
-    job = group(subtask(bootstrap_node, args=(n.id, )) for n in nodes)
-    result = job.apply_async()
-    return result
+    graph = {}
+    # FIXME(mihgen):!!!!! all_recipes only for our cluster_id !!!!!!!
+    all_recipes = Recipe.objects.all()
+    for recipe in all_recipes:
+        graph[recipe] = []
+
+    sorted_recipes = topol_sort(graph)
+    tree = TaskPool()
+    # first element in sorted_recipes is the first recipe we have to apply
+    for recipe in sorted_recipes:
+        # We need to find nodes with these recipes
+        roles = recipe.roles.all()
+        nodes = Node.objects.filter(roles__in=roles)
+
+        # TODO(mihgen): What if there are no nodes with required role?
+        #   we need to raise an exception if there are any roles dependend
+
+        taskset = []
+        for node in nodes:
+            taskset.append({'func': bootstrap_node, 'args': (node.id,),
+                    'kwargs': {}})
+
+        tree.push_task(create_solo, (cluster_id, recipe.id))
+        # FIXME(mihgen): it there are no taskset items,
+        #   we included recipes which are not applied on nodes.
+        #   We have to include only recipes which are assigned to nodes
+        if taskset:
+            tree.push_task(taskset)
+    tree.push_task(update_cluster_status, (cluster_id,))
+    res = tree.apply_async()
+    return res
 
 
-@task
+@task_with_callbacks
+def update_cluster_status(*args):
+    # FIXME(mihgen):
+    # We have to do this ugly trick because chord precedes first argument
+    if isinstance(args[0], list):
+        args = args[1:]
+    cluster_id = args[0]
+
+    # TODO(mihgen): update status of cluster deployment as done
+    return cluster_id
+
+
+@task_with_callbacks
+def create_solo(*args):
+    # FIXME(mihgen):
+    # We have to do this ugly trick because chord precedes first argument
+    if isinstance(args[0], list):
+        args = args[1:]
+    cluster_id, recipe = args[0], Recipe.objects.get(id=args[1])
+
+    # We need to find nodes with these recipes
+    roles = recipe.roles.all()
+    nodes = Node.objects.filter(roles__in=roles)
+
+    for node in nodes:
+        node_solo = {
+            "cluster_id": cluster_id,
+            "run_list": recipe.recipe
+        }
+
+        # writing to solo
+        with open(
+            os.path.join(
+                settings.CHEF_CONF_FOLDER,
+                "".join([node.id, ".json"])
+            ),
+            "w"
+        ) as entity:
+            entity.write(json.dumps(node_solo))
+
+    return True
+
+
+@task_with_callbacks
 def bootstrap_node(node_id):
     node = Node.objects.get(id=node_id)
     node.status = "deploying"
