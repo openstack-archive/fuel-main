@@ -168,3 +168,8 @@ CHEF_CONF_FOLDER = "/var/www"
 CHEF_NODES_DATABAG_NAME = "nodes"
 
 PISTON_IGNORE_DUPE_MODELS = True
+
+NETWORK_POOLS = {
+    'public': ['172.18.0.0/16'],
+    'private': ['10.0.0.0/8']
+}

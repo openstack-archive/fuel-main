@@ -3,6 +3,7 @@ from piston.resource import Resource
 
 from nailgun.api.handlers import ClusterCollectionHandler, ClusterHandler, \
                      NodeCollectionHandler, NodeHandler, \
+                     NetworkHandler, NetworkCollectionHandler, \
                      RecipeCollectionHandler, RecipeHandler, \
                      RoleCollectionHandler, RoleHandler, \
                      ReleaseCollectionHandler, ReleaseHandler, \
@@ -28,6 +29,12 @@ urlpatterns = patterns('',
     url(r'^nodes/(?P<node_id>[\dA-F]{12})/?$',
         JsonResource(NodeHandler),
         name='node_handler'),
+    url(r'^networks/?$',
+        JsonResource(NetworkCollectionHandler),
+        name='network_collection_handler'),
+    url(r'^networks/(?P<network_id>\d+)/?$',
+        JsonResource(NetworkHandler),
+        name='network_handler'),
     url(r'^clusters/(?P<cluster_id>\d+)/chef-config/?$',
         JsonResource(ConfigHandler),
         name='config_handler'),

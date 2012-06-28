@@ -1,12 +1,13 @@
 import os
 
 import celery
+import ipaddr
 from piston.handler import BaseHandler
 from piston.utils import rc, validate
 from django.core.exceptions import ObjectDoesNotExist
 from django.conf import settings
 
-from nailgun.models import Cluster, Node, Recipe, Role, Release
+from nailgun.models import Cluster, Node, Recipe, Role, Release, Network
 from nailgun.api.validators import validate_json
 from nailgun.api.forms import ClusterForm, ClusterCreationForm, RecipeForm, \
         RoleForm, RoleFilterForm, NodeCreationForm, NodeFilterForm, NodeForm, \
@@ -77,6 +78,7 @@ class ConfigHandler(BaseHandler):
     allowed_methods = ('POST',)
 
     def create(self, request, cluster_id):
+
         try:
             cluster = Cluster.objects.get(id=cluster_id)
         except ObjectDoesNotExist:
@@ -89,6 +91,12 @@ class ConfigHandler(BaseHandler):
             node.new_roles.clear()
             node.redeployment_needed = False
             node.save()
+
+        for nw in cluster.release.networks.all():
+            for node in cluster.nodes.all():
+                nw.update_node_network_info(node)
+
+        task = deploy_cluster.delay(cluster_id)
 
         response = rc.ACCEPTED
         response.content = TaskHandler.render(task)
@@ -116,6 +124,45 @@ class ClusterCollectionHandler(BaseHandler):
                     setattr(cluster, key, value)
 
         cluster.save()
+
+        # TODO: solve vlan issues
+        vlan_ids = {
+            'storage': 200,
+            'public': 300,
+            'floating': 300,
+            'fixed': 500,
+            'management': 100
+        }
+
+        for network in cluster.release.networks_metadata:
+            access = network['access']
+            if access not in settings.NETWORK_POOLS:
+                raise Exception("Incorrect access mode for network")
+
+            for nw_pool in settings.NETWORK_POOLS[access]:
+                nw_ip = ipaddr.IPv4Network(nw_pool)
+                new_network = None
+                for net in nw_ip.iter_subnets(new_prefix=24):
+                    try:
+                        nw_exist = Network.objects.get(network=net)
+                    except Network.DoesNotExist:
+                        new_network = net
+                        break
+
+                if new_network:
+                    break
+
+            nw = Network(
+                release=cluster.release,
+                name=network['name'],
+                access=access,
+                network=str(new_network),
+                gateway=str(new_network[1]),
+                range_l=str(new_network[2]),
+                range_h=str(new_network[-1]),
+                vlan_id=vlan_ids[network['name']]
+            )
+            nw.save()
 
         if 'nodes' in request.form.data:
             nodes = Node.objects.filter(
@@ -377,7 +424,8 @@ class ReleaseCollectionHandler(BaseHandler):
         release = Release(
             name=data["name"],
             version=data["version"],
-            description=data["description"]
+            description=data["description"],
+            networks_metadata=data["networks_metadata"]
         )
         release.save()
 
@@ -390,6 +438,7 @@ class ReleaseCollectionHandler(BaseHandler):
             release.roles.add(rl)
 
         release.save()
+
         return ReleaseHandler.render(release)
 
 
@@ -397,7 +446,7 @@ class ReleaseHandler(JSONHandler):
 
     allowed_methods = ('GET',)
     model = Release
-    fields = ('id', 'name', 'version', 'description')
+    fields = ('id', 'name', 'version', 'description', 'networks_metadata')
     special_fields = ('roles',)
 
     @classmethod
@@ -417,3 +466,37 @@ class ReleaseHandler(JSONHandler):
             return ReleaseHandler.render(release)
         except ObjectDoesNotExist:
             return rc.NOT_FOUND
+
+
+class NetworkHandler(JSONHandler):
+
+    allowed_methods = ('GET',)
+    model = Network
+    fields = ('id', 'network')
+    special_fields = ('release', 'nodes')
+
+    @classmethod
+    def render(cls, network, fields=None):
+        json_data = JSONHandler.render(network, fields=fields or cls.fields)
+        for field in cls.special_fields:
+            if field == 'release':
+                json_data['release_id'] = network.release_id
+            elif field == 'nodes':
+                json_data[field] = map(
+                    NodeHandler.render,
+                    network.nodes.all()
+                )
+        return json_data
+
+    def read(self, request, network_id):
+        try:
+            network = Network.objects.get(id=network_id)
+            return NetworkHandler.render(network)
+        except Network.DoesNotExist:
+            return rc.NOT_FOUND
+
+class NetworkCollectionHandler(BaseHandler):
+
+    allowed_methods = ('GET', 'POST')
+    model = Network
+

@@ -135,11 +135,24 @@ class NodeFilterForm(forms.Form):
     cluster_id = IntegerField(required=False)
 
 
+def validate_networks_metadata(data):
+    if not isinstance(data, list):
+        raise ValidationError("There should be a list of network names")
+
 class ReleaseCreationForm(forms.ModelForm):
     roles = Field(validators=[validate_release_node_roles])
+    networks_metadata = Field(validators=[validate_networks_metadata])
 
     class Meta:
         model = Release
 
     def clean(self):
         return self.cleaned_data
+
+
+def validate_network(data):
+    pass
+
+
+class NetworkCreationForm(forms.Form):
+    network = Field(validators=[validate_network])

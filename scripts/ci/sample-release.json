@@ -2,6 +2,13 @@
     "name": "Sample release",
     "version": "1.0.0",
     "description": "Description for Release",
+    "networks_metadata": [
+        {"name": "floating", "access": "public"},
+        {"name": "fixed", "access": "private"},
+        {"name": "management", "access": "private"},
+        {"name": "public", "access": "public"},
+        {"name": "storage", "access": "private"}
+    ],
     "roles": [{
         "name": "role1",
         "recipes": [
