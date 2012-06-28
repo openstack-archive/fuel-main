@@ -75,7 +75,18 @@ class ConfigHandler(BaseHandler):
     allowed_methods = ('POST',)
 
     def create(self, request, cluster_id):
+        try:
+            cluster = Cluster.objects.get(id=cluster_id)
+        except ObjectDoesNotExist:
+            return rc.NOT_FOUND
+
         task = deploy_cluster.delay(cluster_id)
+
+        # FIXME: move to task?
+        for node in cluster.nodes.all():
+            node.new_roles.clear()
+            node.redeployment_needed = False
+            node.save()
 
         response = rc.ACCEPTED
         response.content = TaskHandler.render(task)

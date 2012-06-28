@@ -2,6 +2,11 @@ define(function() {
     var models = {};
     var collections = {};
 
+    models.Task = Backbone.Model.extend({
+        urlRoot: '/api/tasks',
+        idAttribute: 'task_id'
+    });
+
     models.Release = Backbone.Model.extend({
         urlRoot: '/api/releases',
         initialize: function(attrs) {

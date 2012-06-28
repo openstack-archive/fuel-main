@@ -4,9 +4,10 @@ define(
     'views/dialogs',
     'text!templates/cluster/page.html',
     'text!templates/cluster/node.html',
+    'text!templates/cluster/deployment_control.html',
     'text!templates/cluster/role_chooser.html'
 ],
-function(models, dialogViews, clusterPageTemplate, clusterNodeTemplate, roleChooserTemplate) {
+function(models, dialogViews, clusterPageTemplate, clusterNodeTemplate, deploymentControlTemplate, roleChooserTemplate) {
     var views = {}
 
     views.ClusterPage = Backbone.View.extend({
@@ -24,7 +25,43 @@ function(models, dialogViews, clusterPageTemplate, clusterNodeTemplate, roleChoo
         },
         render: function() {
             this.$el.html(this.template({cluster: this.model}));
-            this.$('.node_list').html(new views.NodeList({model: this.model.get('nodes')}).render().el);
+            this.deploymentControl = new views.DeploymentControl({model: this.model});
+            this.$('.deployment-control').html(this.deploymentControl.render().el);
+            this.$('.node-list').html(new views.NodeList({model: this.model.get('nodes')}).render().el);
+            return this;
+        }
+    });
+
+    views.DeploymentControl = Backbone.View.extend({
+        template: _.template(deploymentControlTemplate),
+        events: {
+            'click .apply-changes:not(.disabled)': 'applyChanges',
+            'click .discard-changes:not(.disabled)': 'discardChanges'
+        },
+        applyChanges: function() {
+            var task = new models.Task();
+            task.save({}, {
+                url: '/api/clusters/' + this.model.id + '/chef-config',
+                success: _.bind(function() {
+                    if (task.get('status') == 'PENDING') {
+                        this.model.fetch();
+                    }
+                }, this)
+            });
+            this.disabled = true;
+            this.render();
+        },
+        discardChanges: function() {
+        },
+        initialize: function() {
+            this.disabled = false;
+        },
+        render: function() {
+            if (this.model.get('nodes').where({redeployment_needed: true}).length) {
+                this.$el.html(this.template({disabled: this.disabled}));
+            } else {
+                this.$el.html('');
+            }
             return this;
         }
     });
@@ -63,6 +100,7 @@ function(models, dialogViews, clusterPageTemplate, clusterNodeTemplate, roleChoo
         },
         initialize: function() {
             this.model.bind('change', this.render, this);
+            this.model.bind('change:redeployment_needed', app.page.deploymentControl.render, app.page.deploymentControl);
         },
         render: function() {
             this.$el.html(this.template({node: this.model}));
