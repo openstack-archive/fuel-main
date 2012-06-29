@@ -85,7 +85,9 @@ class ConfigHandler(BaseHandler):
         task = tasks.deploy_cluster.delay(cluster_id)
 
         # FIXME: move to task?
-        for node in cluster.nodes.all():
+        for node in cluster.nodes.filter(redeployment_needed=True):
+            node.roles.clear()
+            node.roles.add(*node.new_roles.all())
             node.new_roles.clear()
             node.redeployment_needed = False
             node.save()
