@@ -5,12 +5,15 @@
 all: iso
 iso: $/nailgun-ubuntu-12.04-amd64.iso
 
-clean: $/umount_ubuntu_image
+clean: $/umount_ubuntu_image $/umount_centos_image
 
 .PHONY: $/umount_ubuntu_image
 $/umount_ubuntu_image:
 	-fusermount -u $(BUILD_DIR)/ubuntu
 
+.PHONY: $/umount_centos_image
+$/umount_centos_image:
+	-fusermount -u $(BUILD_DIR)/centos
 
 ifndef BINARIES_DIR
 $/%:
@@ -26,12 +29,19 @@ find-files=$(shell test -d $1 && cd $1 && find * -type f 2> /dev/null)
 EXTRA_PACKAGES:=$(shell grep -v ^\\s*\# requirements-deb.txt)
 CACHED_EXTRA_PACKAGES:=$(shell cd $(BINARIES_DIR)/ubuntu/precise/extra && ls *.deb)
 
+CENTOSEXTRA_PACKAGES:=$(shell grep -v ^\\s*\# requirements-rpm.txt)
+
 ISOROOT:=$/isoroot
 ISO_IMAGE:=$(BINARIES_DIR)/ubuntu-12.04-server-amd64.iso
 ISO_RELEASE:=precise
 ISO_VERSION:=12.04
 ISO_ARCHS:=i386 amd64
 ISO_SECTIONS:=main restricted universe multiverse
+
+CENTOSISO:=$(BINARIES_DIR)/CentOS-6.2-x86_64-minimal.iso
+CENTOSRELEASE:=6.2
+CENTOSARCH:=x86_64
+CENTOSMIRROR:=http://mirror.yandex.ru/centos
 
 UBUNTU_MIRROR:=http://ru.archive.ubuntu.com/ubuntu
 OPSCODE_UBUNTU_MIRROR:=http://apt.opscode.com
@@ -49,6 +59,10 @@ $(BUILD_DIR)/ubuntu/%:
 	mkdir -p $(@D)
 	fuseiso $(ISO_IMAGE) $(@D)
 
+$(BUILD_DIR)/centos: | $(BUILD_DIR)/centos/Packages
+$(BUILD_DIR)/centos/%:
+	mkdir -p $(@D)
+	fuseiso $(CENTOSISO) $(@D)
 
 # DEBIAN PACKET CACHE RULES
 
@@ -127,7 +141,7 @@ $/apt-cache-index.done: \
 $/apt-cache-extra.done: \
 	  $/apt-cache-index.done \
 		$/apt-cache-iso.done \
-		$(addprefix $/apt/archives/,$(call find-files,$(BINARIES_DIR)/ubuntu/precise/extra)) \
+		$(addprefix $/apt/archives/,$(call find-files,$(BINARIES_DIR)/ubuntu/$(ISO_RELEASE)/extra)) \
 		requirements-deb.txt
 	for p in $(EXTRA_PACKAGES); do \
 	$(APT-GET) -c=$/apt/etc/apt.conf -d -y install $$p; \
@@ -167,6 +181,88 @@ $/debian/ubuntu-keyring/.done: $/debian/ubuntu-keyring/keyrings/ubuntu-archive-k
 		dpkg-buildpackage -b -m"Mirantis Nailgun" -k"$(gnupg.default-key-id)" -uc -us
 	$(ACTION.TOUCH)
 
+# RPM PACKAGE CACHE RULES
+
+define yum_conf
+[main]
+cachedir=$/rpm/cache
+keepcache=0
+debuglevel=6
+logfile=$/rpm/yum.log
+exactarch=1
+obsoletes=1
+gpgcheck=0
+plugins=0
+reposdir=$/rpm/etc/yum.repos.d
+endef
+
+$/rpm/etc/yum.conf: export contents:=$(yum_conf)
+$/rpm/etc/yum.conf: | $/rpm/etc/.dir
+	@mkdir -p $(@D)
+	echo "$${contents}" > $@
+
+define yum_base_repo
+[base]
+name=CentOS $(CENTOSRELEASE) - Base
+baseurl=$(CENTOSMIRROR)/$(CENTOSRELEASE)/os/$(CENTOSARCH)
+gpgcheck=0
+enabled=1
+
+[updates]
+name=CentOS $(CENTOSRELEASE) - Updates
+baseurl=$(CENTOSMIRROR)/$(CENTOSRELEASE)/updates/$(CENTOSARCH)
+gpgcheck=0
+enabled=1
+
+[extras]
+name=CentOS $(CENTOSRELEASE) - Extras
+baseurl=$(CENTOSMIRROR)/$(CENTOSRELEASE)/extras/$(CENTOSARCH)
+gpgcheck=0
+enabled=1
+
+[centosplus]
+name=CentOS $(CENTOSRELEASE) - Plus
+baseurl=$(CENTOSMIRROR)/$(CENTOSRELEASE)/centosplus/$(CENTOSARCH)
+gpgcheck=0
+enabled=1
+
+[contrib]
+name=CentOS $(CENTOSRELEASE) - Contrib
+baseurl=$(CENTOSMIRROR)/$(CENTOSRELEASE)/contrib/$(CENTOSARCH)
+gpgcheck=0
+enabled=1
+endef
+
+$/rpm/etc/yum.repos.d/base.repo: export contents:=$(yum_base_repo)
+$/rpm/etc/yum.repos.d/base.repo: | $/rpm/etc/yum.repos.d/.dir
+	@mkdir -p $(@D)
+	echo "$${contents}" > $@
+
+
+$/rpm-cache-infra.done: \
+	  $/rpm/etc/yum.conf \
+	  $/rpm/etc/yum.repos.d/base.repo
+	$(ACTION.TOUCH)
+
+$/rpm-cache-iso.done: $(CENTOSISO) | $(BUILD_DIR)/centos/Packages $/rpm/Packages/.dir
+	find $(abspath $(BUILD_DIR)/centos/Packages) -type f \( -name '*.rpm' \) -exec ln -sf {} $/rpm/Packages \;
+	$(ACTION.TOUCH)
+
+$/rpm-cache-extra.done: \
+	  $/rpm-cache-infra.done \
+	  $/rpm-cache-iso.done \
+	  $(addprefix $/rpm/Packages/,$(call find-files,$(BINARIES_DIR)/centos/$(CENTOSRELEASE)/Packages)) \
+	  requirements-rpm.txt
+	for p in $(CENTOSEXTRA_PACKAGES); do \
+	repotrack -c $/rpm/etc/yum.conf -p $/rpm/Packages -a $(CENTOSARCH) $$p; \
+	done
+	$(ACTION.TOUCH)
+
+$/rpm/Packages/%.rpm: $(BINARIES_DIR)/centos/$(CENTOSRELEASE)/Packages/%.rpm
+	ln -sf $(abspath $<) $@
+
+$/rpm-cache.done: $/rpm-cache-extra.done
+	$(ACTION.TOUCH)
 
 
 # ISO ROOT RULES
@@ -188,6 +284,14 @@ $/isoroot-pool.done: $/apt-cache.done
   done
 	$(ACTION.TOUCH)
 
+$/isoroot-rpm.done: $/rpm-cache.done
+	mkdir -p $(ISOROOT)/centos/$(CENTOSRELEASE)/Packages
+	find $/rpm/Packages -name '*.rpm' | while read rpmfile; do \
+	cp -n $${rpmfile} $(ISOROOT)/centos/$(CENTOSRELEASE)/Packages/ ; \
+	done
+	createrepo -o $(ISOROOT)/centos/$(CENTOSRELEASE) $(ISOROOT)/centos/$(CENTOSRELEASE)/Packages
+	$(ACTION.TOUCH)
+
 $/isoroot-keyring.done: $/isoroot-pool.done $/debian/ubuntu-keyring/.done
 	rm -rf $(ISOROOT)/pools/$(ISO_RELEASE)/main/ubuntu-keyring*deb
 	cp $/debian/ubuntu-keyring*deb $(ISOROOT)/pools/$(ISO_RELEASE)/main/
@@ -203,6 +307,7 @@ $/isoroot-isolinux.done: $/isoroot-infra.done $(addprefix iso/stage/,$(call find
 $/isoroot.done: \
 	  $/isoroot-infra.done \
 	  $/isoroot-packages.done \
+	  $/isoroot-rpm.done \
 		$/isoroot-isolinux.done \
 		$(ISOROOT)/bootstrap/linux \
 		$(ISOROOT)/bootstrap/initrd.gz \
@@ -351,6 +456,10 @@ mkdir -p /target/etc/apt/sources.list.d
 rm -f /target/etc/apt/sources.list
 echo "deb file:/var/lib/mirror/ubuntu precise main restricted universe multiverse" > /target/etc/apt/sources.list.d/local.list
 
+# rpm
+mkdir -p /target/var/lib/mirror
+cp -r /cdrom/centos /target/var/lib/mirror
+
 # gnupg
 cp -r /cdrom/gnupg /target/root/.gnupg
 chown -R root:root /target/root/.gnupg
@@ -368,7 +477,7 @@ chmod 600 /target/root/.ssh/bootstrap.rsa
 
 # netinst
 mkdir -p /target/var/lib/mirror/netinst
-cp /cdrom/netinst/precise-x86_64.iso /target/var/lib/mirror/netinst
+cp /cdrom/netinst/* /target/var/lib/mirror/netinst
 
 # nailgun
 mkdir -p /target/opt
