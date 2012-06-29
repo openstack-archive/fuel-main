@@ -1,0 +1,13 @@
+ruby
+ruby-devel
+ruby-ri
+ruby-rdoc
+ruby-shadow
+gcc
+gcc-c++
+automake
+autoconf
+make
+curl
+dmidecode
+rubygems
