@@ -381,10 +381,10 @@ class TestHandlers(TestCase):
 
     @mock.patch('nailgun.tasks.SshConnect')
     def test_jsons_created_for_chef_solo(self, ssh_mock):
-        url = reverse('config_handler', kwargs={'cluster_id': 1})
+        url = reverse('cluster_changes_handler', kwargs={'cluster_id': 1})
         ssh = ssh_mock.return_value
         ssh.run.return_value = True
-        resp = self.client.post(url)
+        resp = self.client.put(url)
         self.assertEquals(resp.status_code, 202)
 
         resp_json = json.loads(resp.content)

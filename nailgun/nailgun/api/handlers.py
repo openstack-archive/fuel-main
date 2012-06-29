@@ -73,12 +73,11 @@ class TaskHandler(BaseHandler):
         return TaskHandler.render(task)
 
 
-class ConfigHandler(BaseHandler):
+class ClusterChangesHandler(BaseHandler):
 
-    allowed_methods = ('POST',)
+    allowed_methods = ('PUT', 'DELETE')
 
-    def create(self, request, cluster_id):
-
+    def update(self, request, cluster_id):
         try:
             cluster = Cluster.objects.get(id=cluster_id)
         except ObjectDoesNotExist:
@@ -101,6 +100,19 @@ class ConfigHandler(BaseHandler):
         response = rc.ACCEPTED
         response.content = TaskHandler.render(task)
         return response
+
+    def delete(self, request, cluster_id):
+        try:
+            cluster = Cluster.objects.get(id=cluster_id)
+        except ObjectDoesNotExist:
+            return rc.NOT_FOUND
+
+        for node in cluster.nodes.filter(redeployment_needed=True):
+            node.new_roles.clear()
+            node.redeployment_needed = False
+            node.save()
+
+        return rc.DELETED
 
 
 class ClusterCollectionHandler(BaseHandler):

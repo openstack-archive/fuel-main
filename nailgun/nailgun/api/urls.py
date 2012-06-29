@@ -7,7 +7,7 @@ from nailgun.api.handlers import ClusterCollectionHandler, ClusterHandler, \
                      RecipeCollectionHandler, RecipeHandler, \
                      RoleCollectionHandler, RoleHandler, \
                      ReleaseCollectionHandler, ReleaseHandler, \
-                     ConfigHandler, \
+                     ClusterChangesHandler, \
                      TaskHandler
 
 
@@ -35,9 +35,9 @@ urlpatterns = patterns('',
     url(r'^networks/(?P<network_id>\d+)/?$',
         JsonResource(NetworkHandler),
         name='network_handler'),
-    url(r'^clusters/(?P<cluster_id>\d+)/chef-config/?$',
-        JsonResource(ConfigHandler),
-        name='config_handler'),
+    url(r'^clusters/(?P<cluster_id>\d+)/changes/?$',
+        JsonResource(ClusterChangesHandler),
+        name='cluster_changes_handler'),
     url(r'^tasks/(?P<task_id>[\da-f\-]{36})/?$',
         JsonResource(TaskHandler),
         name='task_handler'),

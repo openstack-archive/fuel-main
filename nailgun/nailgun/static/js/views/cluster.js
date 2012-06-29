@@ -41,7 +41,8 @@ function(models, dialogViews, clusterPageTemplate, clusterNodeTemplate, deployme
         applyChanges: function() {
             var task = new models.Task();
             task.save({}, {
-                url: '/api/clusters/' + this.model.id + '/chef-config',
+                type: 'PUT',
+                url: '/api/clusters/' + this.model.id + '/changes',
                 success: _.bind(function() {
                     if (task.get('status') == 'PENDING') {
                         this.model.fetch();
@@ -52,6 +53,14 @@ function(models, dialogViews, clusterPageTemplate, clusterNodeTemplate, deployme
             this.render();
         },
         discardChanges: function() {
+            var cluster = this.model;
+            $.ajax({
+                type: 'DELETE',
+                url: '/api/clusters/' + this.model.id + '/changes',
+                success: _.bind(this.model.fetch, this.model)
+            });
+            this.disabled = true;
+            this.render();
         },
         initialize: function() {
             this.disabled = false;
