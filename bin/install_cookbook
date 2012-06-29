@@ -20,7 +20,7 @@ def create_cookbook(metafile)
   md = Chef::Cookbook::Metadata.new
   md.from_file(metafile)
 
-  cook_name = md.name.empty? ? File.basename(src) : md.name
+  cook_name = md.name.empty? ? File.dirname(metafile) : md.name
 
   recipes_dir = File.join(File.dirname(metafile), "recipes")
   Dir.chdir(recipes_dir)
