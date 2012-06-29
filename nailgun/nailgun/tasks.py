@@ -81,6 +81,9 @@ def deploy_cluster(cluster_id):
                 "recipes": rc
             })
 
+        if 'network' in node.metadata:
+            node_json['network'] = node.metadata['network']
+
         if not os.path.exists(databag):
             os.makedirs(databag)
 

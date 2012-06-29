@@ -96,7 +96,7 @@ class ConfigHandler(BaseHandler):
             for node in cluster.nodes.all():
                 nw.update_node_network_info(node)
 
-        task = deploy_cluster.delay(cluster_id)
+        task = tasks.deploy_cluster.delay(cluster_id)
 
         response = rc.ACCEPTED
         response.content = TaskHandler.render(task)
