@@ -33,10 +33,6 @@ class TestHandlers(TestCase):
                          'cpu': 'asf',
                          'memory': 'sd'
                         }
-        self.another_cluster = Cluster(id=2,
-                release_id=1,
-                name='Another cluster')
-        self.another_cluster.save()
 
         self.node_name = "test.server.com"
 
@@ -86,6 +82,12 @@ class TestHandlers(TestCase):
                          'cpu': 'u',
                          'memory': 'a'
                         }
+
+        self.another_cluster = Cluster(id=2,
+                release_id=1,
+                name='Another cluster')
+        self.another_cluster.save()
+
         self.meta_json = json.dumps(self.new_meta)
 
     def tearDown(self):
@@ -106,6 +108,7 @@ class TestHandlers(TestCase):
             'cluster_handler': {'cluster_id': 1},
             'node_handler': {'node_id': 'A' * 12},
             #'task_handler': {'task_id': 'a' * 36},
+            'network_handler': {'network_id': 1},
             'release_handler': {'release_id': 1},
             'role_handler': {'role_id': 1},
             'node_role_available': {'node_id': 'A' * 12, 'role_id': 1},
@@ -147,6 +150,8 @@ class TestHandlers(TestCase):
         self.assertEquals(len(clusters_from_db), 1)
         self.assertEquals(clusters_from_db[0].nodes.all()[0].id,
                           self.another_node.id)
+        cluster = clusters_from_db[0]
+        self.assertEquals(len(cluster.release.networks.all()), 3)
 
     def test_cluster_update(self):
         updated_name = 'Updated cluster'
@@ -416,7 +421,12 @@ class TestHandlers(TestCase):
                 'name': release_name,
                 'version': release_version,
                 'description': release_description,
-                'roles': release_roles
+                'roles': release_roles,
+                'networks_metadata': [
+                    {"name": "floating", "access": "public"},
+                    {"name": "fixed", "access": "private"},
+                    {"name": "storage", "access": "private"}
+                ]
             }),
             "application/json"
         )
@@ -429,7 +439,10 @@ class TestHandlers(TestCase):
                 'name': release_name,
                 'version': release_version,
                 'description': release_description,
-                'roles': release_roles
+                'roles': release_roles,
+                'networks_metadata': [
+                    {"name": "fixed", "access": "private"}
+                ]
             }),
             "application/json"
         )
@@ -450,3 +463,34 @@ class TestHandlers(TestCase):
             })
         for a, b in zip(sorted(roles), sorted(release_roles)):
             self.assertEquals(a, b)
+
+    def test_network_create(self):
+        network_data = {
+            "name": "test_network",
+            "network": "10.0.0.0/24",
+            "range_l": "10.0.0.5",
+            "range_h": "10.0.0.10",
+            "gateway": "10.0.0.1",
+            "vlan_id": 100,
+            "release": 1,
+            "access": "public"
+        }
+        resp = self.client.post(
+            reverse('network_collection_handler'),
+            json.dumps(network_data),
+            "application/json"
+        )
+        self.assertEquals(resp.status_code, 200)
+        resp = self.client.post(
+            reverse('network_collection_handler'),
+            json.dumps(network_data),
+            "application/json"
+        )
+        self.assertEquals(resp.status_code, 409)
+        network_data["network"] = "test_fail"
+        resp = self.client.post(
+            reverse('network_collection_handler'),
+            json.dumps(network_data),
+            "application/json"
+        )
+        self.assertEqual(resp.status_code, 400)

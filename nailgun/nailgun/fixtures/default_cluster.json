@@ -3,7 +3,12 @@
     "model": "nailgun.release",
     "pk": 1,
     "fields": {
-      "name": "Default Release"
+      "name": "Default Release",
+      "networks_metadata": [
+        {"name": "floating", "access": "public"},
+        {"name": "fixed", "access": "private"},
+        {"name": "management", "access": "private"}
+      ]
     }
   },
   {

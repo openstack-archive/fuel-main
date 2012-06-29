@@ -11,7 +11,7 @@ from nailgun.models import Cluster, Node, Recipe, Role, Release, Network
 from nailgun.api.validators import validate_json
 from nailgun.api.forms import ClusterForm, ClusterCreationForm, RecipeForm, \
         RoleForm, RoleFilterForm, NodeCreationForm, NodeFilterForm, NodeForm, \
-        ReleaseCreationForm
+        ReleaseCreationForm, NetworkCreationForm
 from nailgun import tasks
 
 
@@ -472,7 +472,8 @@ class NetworkHandler(JSONHandler):
 
     allowed_methods = ('GET',)
     model = Network
-    fields = ('id', 'network')
+    fields = ('id', 'network', 'name', 'access',
+            'vlan_id', 'range_l', 'range_h', 'gateway')
     special_fields = ('release', 'nodes')
 
     @classmethod
@@ -495,8 +496,41 @@ class NetworkHandler(JSONHandler):
         except Network.DoesNotExist:
             return rc.NOT_FOUND
 
+
 class NetworkCollectionHandler(BaseHandler):
 
     allowed_methods = ('GET', 'POST')
     model = Network
 
+    @validate_json(NetworkCreationForm)
+    def create(self, request):
+        data = request.form.cleaned_data
+
+        try:
+            release = Network.objects.get(
+                name=data['name'],
+                network=data['network']
+            )
+            return rc.DUPLICATE_ENTRY
+        except Network.DoesNotExist:
+            pass
+
+        nw = Network(
+            name=data['name'],
+            network=data['network'],
+            release=data['release'],
+            access=data['access'],
+            range_l=data['range_l'],
+            range_h=data['range_h'],
+            gateway=data['gateway'],
+            vlan_id=data['vlan_id']
+        )
+        nw.save()
+
+        return NetworkHandler.render(nw)
+
+    def read(self, request):
+        return map(
+            NetworkHandler.render,
+            Network.objects.all()
+        )

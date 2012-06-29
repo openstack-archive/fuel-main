@@ -71,7 +71,7 @@ class Network(models.Model):
     range_l = models.CharField(max_length=25)
     range_h = models.CharField(max_length=25)
     gateway = models.CharField(max_length=25)
-    nodes = models.ManyToManyField(Node, through=IPAddr)
+    nodes = models.ManyToManyField(Node, through=IPAddr, null=True, blank=True)
 
     @property
     def netmask(self):

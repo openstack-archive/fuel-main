@@ -1,4 +1,5 @@
 import re
+import ipaddr
 
 import simplejson as json
 from django.core.exceptions import ValidationError
@@ -7,7 +8,7 @@ from django.forms.fields import Field, IntegerField, CharField, ChoiceField, \
                                 BooleanField
 from django.core.validators import RegexValidator
 
-from nailgun.models import Cluster, Node, Recipe, Role, Release
+from nailgun.models import Cluster, Node, Recipe, Role, Release, Network
 
 
 class RecipeForm(forms.ModelForm):
@@ -139,6 +140,7 @@ def validate_networks_metadata(data):
     if not isinstance(data, list):
         raise ValidationError("There should be a list of network names")
 
+
 class ReleaseCreationForm(forms.ModelForm):
     roles = Field(validators=[validate_release_node_roles])
     networks_metadata = Field(validators=[validate_networks_metadata])
@@ -151,8 +153,37 @@ class ReleaseCreationForm(forms.ModelForm):
 
 
 def validate_network(data):
-    pass
+    try:
+        a = ipaddr.IPv4Network(data)
+    except:
+        raise ValidationError("Invalid network format!")
 
 
-class NetworkCreationForm(forms.Form):
-    network = Field(validators=[validate_network])
+def validate_ip(data):
+    try:
+        a = ipaddr.IPv4Address(data)
+    except:
+        raise ValidationError("Invalid IP address format!")
+
+
+class NetworkCreationForm(forms.ModelForm):
+    release = CharField()
+    network = CharField(validators=[validate_network])
+    range_l = CharField(validators=[validate_ip])
+    range_h = CharField(validators=[validate_ip])
+    gateway = CharField(validators=[validate_ip])
+
+    class Meta:
+        model = Network
+
+    def clean_release(self):
+        release_id = self.cleaned_data["release"]
+        if not release_id:
+            raise ValidationError("Release id not specified!")
+        try:
+            r = Release.objects.get(id=release_id)
+        except Release.DoesNotExist:
+            raise ValidationError("Invalid release id!")
+
+        #self.instance.release = r
+        return r

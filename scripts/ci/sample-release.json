@@ -4,9 +4,7 @@
     "description": "Description for Release",
     "networks_metadata": [
         {"name": "floating", "access": "public"},
-        {"name": "fixed", "access": "private"},
         {"name": "management", "access": "private"},
-        {"name": "public", "access": "public"},
         {"name": "storage", "access": "private"}
     ],
     "roles": [{
