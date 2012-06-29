@@ -1,7 +1,15 @@
 Alias /ubuntu <%= node.repo.ubuntu.root %>
 
 <Directory <%= node.repo.ubuntu.root %>>
+  Options Indexes FollowSymLinks MultiViews
   Order deny,allow
   Allow from all
 </Directory>
 
+Alias /centos <%= node.repo.centos.root %>
+
+<Directory <%= node.repo.centos.root %>>
+  Options Indexes FollowSymLinks MultiViews
+  Order deny,allow
+  Allow from all
+</Directory>
