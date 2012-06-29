@@ -101,7 +101,12 @@ class Ci:
             logger.info("Admin node software is installed and ready for use")
 
             devops.save(self.environment)
-            os.makedirs(os.path.dirname(self.environment_cache_file))
+
+            try:
+                os.makedirs(os.path.dirname(self.environment_cache_file))
+            except OSError as e:
+                logger.warning("Error occured while creating directory: %s", os.path.dirname(self.environment_cache_file))
+
             with file(self.environment_cache_file, 'w') as f:
                 f.write(self.environment.id)
 
