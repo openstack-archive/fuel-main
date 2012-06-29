@@ -75,8 +75,7 @@ def deploy_cluster(cluster_id):
 
     graph = {}
     for recipe in use_recipes:
-        # FIXME(mihgen): we have to create graph of dependencies here
-        graph[recipe] = []
+        graph[recipe] = recipe.depends.all()
 
     # NOTE(mihgen): Installation components dependency resolution
     # From nodes.roles.recipes we know recipes that needs to be applied
