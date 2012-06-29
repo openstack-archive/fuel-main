@@ -84,10 +84,8 @@ class ConfigHandler(BaseHandler):
 
         task = tasks.deploy_cluster.delay(cluster_id)
 
-        # FIXME: move to task?
         for node in cluster.nodes.filter(redeployment_needed=True):
-            node.roles.clear()
-            node.roles.add(*node.new_roles.all())
+            node.roles = node.new_roles.all()
             node.new_roles.clear()
             node.redeployment_needed = False
             node.save()
@@ -123,7 +121,7 @@ class ClusterCollectionHandler(BaseHandler):
             nodes = Node.objects.filter(
                 id__in=request.form.cleaned_data['nodes']
             )
-            cluster.nodes.add(*nodes)
+            cluster.nodes = nodes
 
         return ClusterHandler.render(cluster)
 
@@ -164,8 +162,7 @@ class ClusterHandler(JSONHandler):
                 if key in request.form.data:
                     if key == 'nodes':
                         new_nodes = Node.objects.filter(id__in=value)
-                        cluster.nodes.clear()
-                        cluster.nodes.add(*new_nodes)
+                        cluster.nodes = new_nodes
                     else:
                         setattr(cluster, key, value)
 
@@ -233,8 +230,7 @@ class NodeHandler(JSONHandler):
             if key in request.form.data:
                 if key == 'new_roles':
                     new_roles = Role.objects.filter(id__in=value)
-                    node.new_roles.clear()
-                    node.new_roles.add(*new_roles)
+                    node.new_roles = new_roles
                 else:
                     setattr(node, key, value)
 
