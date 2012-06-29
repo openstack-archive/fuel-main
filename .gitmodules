@@ -1,3 +1,6 @@
 [submodule "binaries"]
 	path = binaries
 	url = ssh://git@mc0n1-srt.srt.mirantis.net/repositories/product_binaries
+[submodule "cooks"]
+	path = cooks
+	url = https://github.com/Mirantis/product-cookbooks.git
