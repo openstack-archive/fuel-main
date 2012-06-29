@@ -1,4 +1,4 @@
-define :profile, :menu => true, :kickstart => nil do
+define :cobbler_profile, :menu => true, :kickstart => nil do
   name = params[:name]
   kopts = params[:kopts]
   distro = params[:distro]

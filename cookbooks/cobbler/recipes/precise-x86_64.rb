@@ -19,6 +19,7 @@ directory "#{node["cobbler"]["precise-x86_64_mnt"]}" do
   owner "root"
   group "root"
   mode "0755"
+  not_if "test -d #{node["cobbler"]["precise-x86_64_mnt"]}"
 end
 
 mount "#{node["cobbler"]["precise-x86_64_mnt"]}" do
@@ -27,10 +28,10 @@ mount "#{node["cobbler"]["precise-x86_64_mnt"]}" do
 end
 
 link "#{node.cobbler.ks_mirror_dir}/precise-x86_64" do
-  to #{node["cobbler"]["precise-x86_64_mnt"]}
+  to "#{node["cobbler"]["precise-x86_64_mnt"]}"
 end
 
-distro "precise-x86_64" do
+cobbler_distro "precise-x86_64" do
   kernel "#{node.cobbler.ks_mirror_dir}/precise-x86_64/linux"
   initrd "#{node.cobbler.ks_mirror_dir}/precise-x86_64/initrd.gz"
   arch "x86_64"
@@ -38,7 +39,7 @@ distro "precise-x86_64" do
   osversion "precise"
 end
 
-profile "precise-x86_64" do
+cobbler_profile "precise-x86_64" do
   kickstart "#{node.cobbler.preseed_dir}/precise-x86_64.seed"
   kopts "priority=critical locale=en_US netcfg/choose_interface=auto"
   distro "precise-x86_64"

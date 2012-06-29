@@ -1,4 +1,4 @@
-define :distro do
+define :cobbler_distro do
   name = params[:name]
   kernel = params[:kernel]
   initrd = params[:initrd]
