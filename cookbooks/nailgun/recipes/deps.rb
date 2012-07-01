@@ -19,7 +19,8 @@ end
   'django-nose' => '1.0',
   'simplejson' => '2.5.2',
   'paramiko' => '1.7.7.2',
-  'pycrypto' => '2.6'
+  'pycrypto' => '2.6',
+  'ipaddr' => '2.1.20',
 }.each do |package, version|
   local_python_pip package do
     version version
