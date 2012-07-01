@@ -14,7 +14,14 @@
   end
   # httpclient is for node agent
   gem_package "httpclient"
-  package "redis-server"
+
+  [
+    'redis-server',
+    'yum-utils',
+  ].each do |pkg|
+    package pkg
+  end
+
   service "redis-server" do
     action :start
   end
