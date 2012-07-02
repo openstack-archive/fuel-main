@@ -26,10 +26,14 @@ headers = {"Content-Type" => "application/json"}
 cli = HTTPClient.new
 begin
   res = cli.post(url, data.to_json, headers)
-  if res.status < 200 or res.status >= 300
-    puts "Error in creating release: #{res.inspect}"
-  end
 rescue Exception => e
   puts "Unknown error: #{e.message}"
 end
-
+if res.status == 200
+  puts "Release '#{data['name']}' has been successfully created."
+elsif res.status == 409
+  puts "Release '#{data['name']}' already exists."
+elsif res.status < 200 or res.status >= 300
+  puts "Error in creating release: #{res.inspect}"
+  exit 1
+end

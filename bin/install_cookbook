@@ -44,23 +44,30 @@ def create_cookbook(metafile)
   cli = HTTPClient.new
   begin
       res = cli.put(recipes_tree_url, recipe_tree.to_json, headers)
-      if res.status < 200 or res.status >= 300
-        puts "Error uploading cookbook metadata: #{res.inspect}"
-      else
-        puts "Recipe tree created."
-      end
   rescue Exception => e
     puts "Unknown error: #{e.message}"
     return false
   end
-
-  Dir.mktmpdir do |dir|
-    cook_dir = File.join(dir, cook_name)
-    tar_name = "#{cook_name}_#{md.version}.tar.gz"
-    FileUtils.cp_r(File.dirname(metafile), cook_dir)
-    system "cd \"#{dir}\" && tar czf \"#{tar_name}\" \"#{cook_name}\""
-    FileUtils.mv(File.join(dir, "#{tar_name}"), HTTP_DIR)
+  if res.status < 200 or res.status >= 300
+    puts "Error uploading cookbook metadata: #{res.inspect}"
+    return false
+  else
+    puts "Recipe tree created."
   end
+
+  begin
+    Dir.mktmpdir do |dir|
+      cook_dir = File.join(dir, cook_name)
+      tar_name = "#{cook_name}_#{md.version}.tar.gz"
+      FileUtils.cp_r(File.dirname(metafile), cook_dir)
+      system "cd \"#{dir}\" && tar czf \"#{tar_name}\" \"#{cook_name}\""
+      FileUtils.mv(File.join(dir, "#{tar_name}"), HTTP_DIR)
+    end
+  rescue Exception => e
+    puts "Unknown error: #{e.message}"
+    return false
+  end
+  puts "Cookbook successfully moved to #{HTTP_DIR}"
   return true
 end
 
