@@ -31,7 +31,7 @@ class Ci:
         
     def setup_environment(self):
         if self.environment:
-            return
+            return True
 
         if not self.iso:
             logger.critical("ISO path missing while trying to build integration environment")
