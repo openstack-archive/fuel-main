@@ -8,11 +8,11 @@ $/%: /:=$/
 
 test: test-integration
 
-clean: $/clean-integration-test-cache-file
+clean: clean-integration-test
 
 
-.PHONY: $/clean-integration-test-cache-file
-$/clean-integration-test-environment:
+.PHONY: clean-integration-test
+clean-integration-test:
 	test -f $/environment-id.candidate && \
 		python test/integration.py -l INFO --cache-file $(abspath $/environment-id.candidate) destroy
 	test -f $/environment-id && \
@@ -27,6 +27,3 @@ $/environment-id: | $(iso.path)
 	python test/integration.py -l INFO --cache-file $(abspath $@) destroy
 	python test/integration.py -l INFO --cache-file $(abspath $@) --iso $(abspath $(iso.path)) setup
 
-ifdef FORCE_INTEGRATION_ENVIRONMENT
-$/environment-id: FORCE
-endif
