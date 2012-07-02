@@ -102,9 +102,12 @@ class Network(models.Model):
         if not "networks" in node.metadata:
             node.metadata["networks"] = {}
 
+        # FIXME: populate real value
+        device = node.metadata['network']['default_interface'] or 'eth0'
+
         node.metadata["networks"][self.name] = {
             "access": self.access,
-            "device": (node.metadata['network']['default_interface'] or 'eth0'), # FIXME: populate real value
+            "device": device, 
             "vlan_id": self.vlan_id,
             "address": str(new_ip),
             "netmask": self.netmask,
