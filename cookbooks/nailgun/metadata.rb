@@ -5,6 +5,7 @@ description      "Installs/Configures nailgun"
 long_description IO.read(File.join(File.dirname(__FILE__), 'README.md'))
 version          "0.0.1"
 recipe           "server", "Include Nailgun daemon install/configuration"
+recipe           "network", "Setup network configuration based on node's 'networks' attribute"
 recipe           "deps", "Installs nailgun deps"
 
 supports "ubuntu" # It should work on debian too, but not tested yet
@@ -22,4 +23,8 @@ attribute "nailgun/user",
   :display_name => "Nailgun user",
   :description  => "Nailgun daemon user",
   :default      => "nailgun"
+
+attribute "networks",
+  :display_name => "Networks' definition",
+  :description  => "Node networks' definition"
 
