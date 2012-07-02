@@ -20,7 +20,7 @@ end
   'simplejson' => '2.5.2',
   'paramiko' => '1.7.7.2',
   'pycrypto' => '2.6',
-  'ipaddr' => '2.1.20',
+  'ipaddr' => '2.1.10',
 }.each do |package, version|
   local_python_pip package do
     version version
