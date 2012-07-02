@@ -99,16 +99,18 @@ class Network(models.Model):
         new_ip_obj = IPAddr(network=self, ip_addr=new_ip, node=node)
         new_ip_obj.save()
 
-        network_metadata = {
+        if not "networks" in node.metadata:
+            node.metadata["networks"] = {}
+
+        node.metadata["networks"][self.name] = {
             "access": self.access,
+            "device": (node.metadata['network']['default_interface'] or 'eth0'), # FIXME: populate real value
             "vlan_id": self.vlan_id,
+            "address": str(new_ip),
             "netmask": self.netmask,
-            "broascast": self.broadcast,
-            "gateway": self.gateway,
-            "ip_addr": str(new_ip)
+            # FIXME: do we need those?
+            # "broascast": self.broadcast,
+            # "gateway": self.gateway,
         }
-        if "network" in node.metadata:
-            node.metadata["network"][self.name] = (network_metadata)
-        else:
-            node.metadata["network"] = {self.name: network_metadata}
+
         node.save()
