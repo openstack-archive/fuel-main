@@ -8,7 +8,11 @@ from api.fields import RecipeField
 
 class Recipe(models.Model):
     recipe = RecipeField(max_length=100)
-    depends = models.ManyToManyField("Recipe", related_name="recipe_deps")
+    depends = models.ManyToManyField("Recipe",
+        related_name="recipe_deps",
+        null=True,
+        blank=True
+    )
 
 
 class Role(models.Model):

@@ -2,6 +2,7 @@ import os
 
 import celery
 import ipaddr
+import json
 from piston.handler import BaseHandler
 from piston.utils import rc, validate
 from django.core.exceptions import ObjectDoesNotExist
@@ -13,6 +14,7 @@ from nailgun.api.forms import ClusterForm, ClusterCreationForm, RecipeForm, \
         RoleForm, RoleFilterForm, NodeCreationForm, NodeFilterForm, NodeForm, \
         ReleaseCreationForm, NetworkCreationForm
 from nailgun import tasks
+import nailgun.api.validators as vld
 
 
 class JSONHandler(BaseHandler):
@@ -319,16 +321,39 @@ class RecipeCollectionHandler(BaseHandler):
         except Recipe.DoesNotExist:
             pass
 
-        recipe = Recipe()
+        recipe = Recipe(recipe=data['recipe'])
+        recipe.save()
         for key, value in data.items():
-            if key in request.form.data:
-                setattr(recipe, key, value)
+            setattr(recipe, key, value)
         recipe.save()
 
         return RecipeHandler.render(recipe)
 
     @validate_json_list(RecipeForm)
     def update(self, request):
+        try:
+            recipe_list = json.loads(request.body)
+            vld.validate_recipes_tree(recipe_list)
+        except:
+            return rc.BAD_REQUEST
+        for recipe in recipe_list:
+            create_depends = []
+            for depend in recipe["depends"]:
+                try:
+                    d = Recipe.objects.get(recipe=depend)
+                except Recipe.DoesNotExist:
+                    d = Recipe(recipe=depend)
+                    d.save()
+                create_depends.append(d)
+            try:
+                r = Recipe.objects.get(recipe=recipe["recipe"])
+                r.depends = create_depends
+                r.save()
+            except Recipe.DoesNotExist:
+                r = Recipe(recipe=recipe["recipe"])
+                r.save()
+                r.depends = create_depends
+                r.save()
         return rc.CREATED
 
 

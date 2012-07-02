@@ -329,17 +329,24 @@ class TestHandlers(TestCase):
         resp = self.client.post(
             reverse('recipe_collection_handler'),
             json.dumps({
-                'recipe': recipe
+                'recipe': recipe,
+                'depends': [
+                    'cookbook2::depend@0.0.1',
+                    'cookbook3::other_depend@0.1.0'
+                ]
             }),
             "application/json"
         )
+        print resp.content
         self.assertEquals(resp.status_code, 200)
+        print Recipe.objects.all().value()
 
         # test duplicate
         resp = self.client.post(
             reverse('recipe_collection_handler'),
             json.dumps({
-                'recipe': recipe
+                'recipe': recipe,
+                'depends': []
             }),
             "application/json"
         )
@@ -349,7 +356,8 @@ class TestHandlers(TestCase):
         resp = self.client.post(
             reverse('recipe_collection_handler'),
             json.dumps({
-                'recipe': 'ololo::onotole'
+                'recipe': 'ololo::onotole',
+                'depends': []
             }),
             "application/json"
         )
@@ -389,6 +397,7 @@ class TestHandlers(TestCase):
 
         resp_json = json.loads(resp.content)
         self.assertEquals(len(resp_json['task_id']), 36)
+        print resp.content
         self.assertEquals(resp_json['status'], "SUCCESS")
 
         def check_status(task):
