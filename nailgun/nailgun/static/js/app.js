@@ -23,52 +23,40 @@ define(
             $('#content').before(this.breadcrumb.render().el);
         },
         showClusterInfo: function(id) {
-            if (this.clusters) {
-                var cluster;
-                if (id && (cluster = this.clusters.get(id))) {
+            var cluster = new models.Cluster({id: id});
+            cluster.fetch({
+                success: _.bind(function() {
                     this.navbar.setActive('clusters');
                     this.breadcrumb.setPath(['Home', '#'], ['Clusters', '#clusters'], cluster.get('name'));
                     this.page = new clusterViews.ClusterPage({model: cluster});
                     $('#content').html(this.page.render().el);
-                } else {
+                }, this),
+                error: _.bind(function() {
                     this.listClusters();
-                }
-            } else {
-                this.loadClusters(function() {
-                    this.showClusterInfo(id);
-                });
-            }
+                }, this)
+            });
         },
         listClusters: function() {
             this.navigate('#clusters', {replace: true});
-            this.navbar.setActive('clusters');
-            this.breadcrumb.setPath(['Home', '#'], 'Clusters');
-
-            if (this.clusters) {
-                this.page = new clustersViews.ClustersPage({model: this.clusters});
-                $('#content').html(this.page.render().el);
-            } else {
-                this.loadClusters(this.listClusters);
-            }
+            var clusters = new models.Clusters;
+            clusters.fetch({
+                success: _.bind(function() {
+                    this.navbar.setActive('clusters');
+                    this.breadcrumb.setPath(['Home', '#'], 'Clusters');
+                    this.page = new clustersViews.ClustersPage({model: clusters});
+                    $('#content').html(this.page.render().el);
+                }, this)
+            });
         },
         listReleases: function() {
-            this.navbar.setActive('releases');
-            this.breadcrumb.setPath(['Home', '#'], 'Releases');
-
-            if (this.releases) {
-                this.page = new releaseViews.ReleasesPage({model: this.releases});
-                $('#content').html(this.page.render().el);
-            } else {
-                this.releases = new models.Releases;
-                this.releases.fetch({
-                    success: _.bind(this.listReleases, this)
-                });
-            }
-        },
-        loadClusters: function(callback) {
-            this.clusters = new models.Clusters;
-            this.clusters.fetch({
-                success: _.bind(callback, this)
+            var releases = new models.Releases;
+            releases.fetch({
+                success: _.bind(function() {
+                    this.navbar.setActive('releases');
+                    this.breadcrumb.setPath(['Home', '#'], 'Releases');
+                    this.page = new releaseViews.ReleasesPage({model: releases});
+                    $('#content').html(this.page.render().el);
+                }, this)
             });
         }
     });
