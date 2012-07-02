@@ -12,13 +12,18 @@ import nailgun.api.validators as vld
 
 
 class RecipeForm(forms.ModelForm):
+    depends = Field(required=False)
 
     class Meta:
         model = Recipe
 
     def clean(self):
-        print self.cleaned_data
         return self.cleaned_data
+
+    def clean_depends(self):
+        for depend in self.cleaned_data['depends']:
+            vld.validate_recipe(depend)
+        return self.cleaned_data['depends']
 
     def clean_recipe(self):
         vld.validate_recipe(self.cleaned_data['recipe'])

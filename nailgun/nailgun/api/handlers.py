@@ -324,21 +324,24 @@ class RecipeCollectionHandler(BaseHandler):
         recipe = Recipe(recipe=data['recipe'])
         recipe.save()
         for key, value in data.items():
-            setattr(recipe, key, value)
+            if key == 'depends':
+                for dep in value:
+                    try:
+                        d = Recipe.objects.get(recipe=dep)
+                    except Recipe.DoesNotExist:
+                        d = Recipe(recipe=dep)
+                        d.save()
+            else:
+                setattr(recipe, key, value)
         recipe.save()
 
         return RecipeHandler.render(recipe)
 
     @validate_json_list(RecipeForm)
     def update(self, request):
-        try:
-            recipe_list = json.loads(request.body)
-            vld.validate_recipes_tree(recipe_list)
-        except:
-            return rc.BAD_REQUEST
-        for recipe in recipe_list:
+        for form in request.forms:
             create_depends = []
-            for depend in recipe["depends"]:
+            for depend in form.cleaned_data["depends"]:
                 try:
                     d = Recipe.objects.get(recipe=depend)
                 except Recipe.DoesNotExist:
@@ -346,11 +349,11 @@ class RecipeCollectionHandler(BaseHandler):
                     d.save()
                 create_depends.append(d)
             try:
-                r = Recipe.objects.get(recipe=recipe["recipe"])
+                r = Recipe.objects.get(recipe=form.cleaned_data["recipe"])
                 r.depends = create_depends
                 r.save()
             except Recipe.DoesNotExist:
-                r = Recipe(recipe=recipe["recipe"])
+                r = Recipe(recipe=form.cleaned_data["recipe"])
                 r.save()
                 r.depends = create_depends
                 r.save()

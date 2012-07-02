@@ -171,8 +171,3 @@ def validate_ip(data):
         a = ipaddr.IPv4Address(data)
     except:
         raise ValidationError("Invalid IP address format!")
-
-
-def validate_recipes_tree(data):
-    # TODO: validate tree json
-    pass

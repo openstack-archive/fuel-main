@@ -326,20 +326,21 @@ class TestHandlers(TestCase):
 
     def test_recipe_create(self):
         recipe = 'cookbook::recipe@0.1.0'
+        recipe_depends = [
+            'cookbook2::depend@0.0.1',
+            'cookbook3::other_depend@0.1.0'
+        ]
         resp = self.client.post(
             reverse('recipe_collection_handler'),
             json.dumps({
                 'recipe': recipe,
-                'depends': [
-                    'cookbook2::depend@0.0.1',
-                    'cookbook3::other_depend@0.1.0'
-                ]
+                'depends': recipe_depends
             }),
             "application/json"
         )
-        print resp.content
         self.assertEquals(resp.status_code, 200)
-        print Recipe.objects.all().value()
+        test_deps = Recipe.objects.filter(recipe__in=recipe_depends)
+        self.assertEquals(len(test_deps), len(recipe_depends))
 
         # test duplicate
         resp = self.client.post(
