@@ -8,7 +8,7 @@ from django.core.exceptions import ObjectDoesNotExist
 from django.conf import settings
 
 from nailgun.models import Cluster, Node, Recipe, Role, Release, Network
-from nailgun.api.validators import validate_json
+from nailgun.api.validators import validate_json, validate_json_list
 from nailgun.api.forms import ClusterForm, ClusterCreationForm, RecipeForm, \
         RoleForm, RoleFilterForm, NodeCreationForm, NodeFilterForm, NodeForm, \
         ReleaseCreationForm, NetworkCreationForm
@@ -299,7 +299,7 @@ class NodeHandler(JSONHandler):
 
 class RecipeCollectionHandler(BaseHandler):
 
-    allowed_methods = ('GET', 'POST')
+    allowed_methods = ('GET', 'POST', 'PUT')
     model = Recipe
 
     def read(self, request):
@@ -326,6 +326,10 @@ class RecipeCollectionHandler(BaseHandler):
         recipe.save()
 
         return RecipeHandler.render(recipe)
+
+    @validate_json_list(RecipeForm)
+    def update(self, request):
+        return rc.CREATED
 
 
 class RecipeHandler(JSONHandler):
