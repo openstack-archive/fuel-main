@@ -13,6 +13,8 @@ clean: $/clean-integration-test-cache-file
 
 .PHONY: $/clean-integration-test-cache-file
 $/clean-integration-test-environment:
+	test -f $/environment-id.candidate && \
+		python test/integration.py -l INFO --cache-file $(abspath $/environment-id.candidate) destroy
 	test -f $/environment-id && \
 		python test/integration.py -l INFO --cache-file $(abspath $/environment-id) destroy
 
