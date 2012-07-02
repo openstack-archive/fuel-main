@@ -111,7 +111,7 @@ class Network(models.Model):
 
         node.metadata["networks"][self.name] = {
             "access": self.access,
-            "device": device, 
+            "device": device,
             "vlan_id": self.vlan_id,
             "address": str(new_ip),
             "netmask": self.netmask,
