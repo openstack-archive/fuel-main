@@ -45,8 +45,8 @@ class TaskHandler(BaseHandler):
     def render(cls, task):
         json_data = {
             "task_id": task.task_id,
-            "name": task.task_name,
             "status": task.state,
+            "name": getattr(task, 'task_name', None),
             "subtasks": None,
             "result": None,
             "error": None,
