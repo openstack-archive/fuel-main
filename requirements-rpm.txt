@@ -11,3 +11,4 @@ make
 curl
 dmidecode
 rubygems
+rabbitmq-server
