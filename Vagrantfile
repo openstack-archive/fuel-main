@@ -4,7 +4,7 @@
 UBUNTU_BOX_NAME = "ubuntu-12.04-server-amd64-002"
 UBUNTU_BOX_URL  = "http://mc0n1-srt.srt.mirantis.net/#{UBUNTU_BOX_NAME}.box"
 
-CENTOS_BOX_NAME = "centos-6.2-server-amd64"
+CENTOS_BOX_NAME = "centos-6.2-server-amd64-002"
 CENTOS_BOX_URL  = "http://mc0n1-srt.srt.mirantis.net/#{CENTOS_BOX_NAME}.box"
 
 ENVIRONMENT_SETUP_SCRIPT = <<-EOS
