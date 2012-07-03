@@ -122,7 +122,7 @@ class TestNode(TestCase):
 
         resp = json.loads(self.client.put(
             "http://%s:8000/api/nodes/%s" % (host, node_id),
-            data='{ "roles": [1, 2] }'
+            data='{ "new_roles": [1, 2] }'
         ))
         if len(resp["roles"]) == 0:
             raise ValueError("Failed to assign roles to node")
