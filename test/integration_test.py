@@ -3,6 +3,8 @@ import os
 import sys
 import logging
 import argparse
+from nose.plugins.xunit import Xunit
+from nose.plugins.manager import PluginManager
 
 paths = [
     os.path.join(os.path.dirname(os.path.dirname(os.path.abspath(__file__))), 'devops'),
@@ -42,7 +44,12 @@ def main():
 
         nc = nose.config.Config()
         nc.verbosity = 3
-        nose.main(module=integration, config=nc, argv=[__file__, "--with-xunit"])
+        nc.plugins = PluginManager(plugins=[Xunit()])
+        nose.main(module=integration, config=nc, argv=[
+            __file__,
+            "--with-xunit",
+            "--xunit-file=test/nosetests.xml"
+        ])
         result = True
     else:
         print("Unknown command '%s'" % params.command)

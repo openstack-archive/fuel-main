@@ -15,16 +15,16 @@ clean: clean-integration-test
 clean-integration-test: /:=$/
 clean-integration-test:
 	test -f $/environment-id.candidate && \
-		python test/integration.py -l INFO --cache-file $(abspath $/environment-id.candidate) destroy || true
+		python test/integration_test.py -l INFO --cache-file $(abspath $/environment-id.candidate) destroy || true
 	test -f $/environment-id && \
-		python test/integration.py -l INFO --cache-file $(abspath $/environment-id) destroy || true
+		python test/integration_test.py -l INFO --cache-file $(abspath $/environment-id) destroy || true
 
 .PHONY: test-integration
 test-integration: $/environment-id
-	python test/integration.py -l INFO --cache-file $(abspath $<) --iso $(abspath $(iso.path)) test
+	python test/integration_test.py -l INFO --cache-file $(abspath $<) --iso $(abspath $(iso.path)) test
 
 $/environment-id: | $(iso.path)
 	@mkdir -p $(@D)
-	python test/integration.py -l INFO --cache-file $(abspath $@) destroy
-	python test/integration.py -l INFO --cache-file $(abspath $@) --iso $(abspath $(iso.path)) setup
+	python test/integration_test.py -l INFO --cache-file $(abspath $@) destroy
+	python test/integration_test.py -l INFO --cache-file $(abspath $@) --iso $(abspath $(iso.path)) setup
 
