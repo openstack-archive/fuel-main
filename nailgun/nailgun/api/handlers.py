@@ -40,13 +40,12 @@ class JSONHandler(BaseHandler):
 class TaskHandler(BaseHandler):
 
     allowed_methods = ('GET',)
-    fields = ('task_id', 'status')
-    special_fields = ('result',)
 
     @classmethod
     def render(cls, task):
         json_data = {
             "task_id": task.task_id,
+            "name": task.task_name,
             "status": task.state,
             "subtasks": None,
             "result": None,
@@ -84,8 +83,6 @@ class ClusterChangesHandler(BaseHandler):
             cluster = Cluster.objects.get(id=cluster_id)
         except ObjectDoesNotExist:
             return rc.NOT_FOUND
-
-        task = tasks.deploy_cluster.delay(cluster_id)
 
         for node in cluster.nodes.filter(redeployment_needed=True):
             node.roles = node.new_roles.all()
