@@ -39,32 +39,51 @@ class Cobbler(Provision):
             return systems[0]
         return None
 
-    def add_system(self, name, profile, kopts=""):
+    # FIXME
+    # IT NEEDED TO BE IMPLEMENTED AS ONLY METHOD FOR ADD AND EDIT
+    def add_system(self, name, mac, profile, kopts=""):
         if self.system_by_name(name):
             self.logger.error("Trying to add system that already exists: %s" % name)
             raise ProvisionAlreadyExists, "System with name %s already exists. Try to edit it." % name
         system_id = self.server.new_system(self.token)
         self.server.modify_system(system_id, 'name', name, self.token)
-        self.server.modify_system(system_id, 'profile', profile)
+        self.server.modify_system(system_id, 'profile', profile, self.token)
+        self.server.modify_system(system_id, 'kopts', kopts, self.token)
+        self.server.modify_system(system_id, 'modify_interface', {
+                "macaddress-eth0": mac,
+                }, self.token)
         self.server.save_system(system_id, self.token)
         return self.system_by_name(name)
 
-    def edit_system(self, name, profile, kopts=""):
+    def edit_system(self, name, mac, profile, kopts=""):
         if not self.system_by_name(name):
             self.logger.error("Trying to edit system that does not exist: %s" % name)
             raise ProvisionDoesNotExist, "System with name %s does not exist. Try to edit it." % name
-        system_id = self.server.new_system(self.token)
-        self.server.modify_system(system_id, 'name', name, self.token)
-        self.server.modify_system(system_id, 'profile', profile)
+        system_id = self.server.get_system_handle(name, self.token)
+        self.server.modify_system(system_id, 'profile', profile, self.token)
+        self.server.modify_system(system_id, 'kopts', kopts, self.token)
+        self.server.modify_system(system_id, 'modify_interface', {
+                "macaddress-eth0": mac,
+                }, self.token)
         self.server.save_system(system_id, self.token)
         return self.system_by_name(name)
 
-    def handle_system(self, name, profile, kopts=""):
+    def power_system(self, name, power):
+        if not self.system_by_name(name):
+            self.logger.error("Trying to power system that does not exist: %s" % name)
+            raise ProvisionDoesNotExist, "System with name %s does not exist. Try to edit it." % name
+        if power not in ('on', 'off', 'reboot'):
+            raise ValueError, "Power has invalid value"
+        system_id = self.server.get_system_handle(name, self.token)
+        self.server.power_system(system_handle, power=power, token)
+        return self.system_by_name(name)
+
+    def handle_system(self, name, mac, profile, kopts=""):
         try:
-            self.edit_system(name, profile, kopts)
+            self.edit_system(name, mac, profile, kopts)
             self.logger.info("Edited system: %s" % name)
         except ProvisionDoesNotExist:
-            self.add_system(name, profile, kopts)
+            self.add_system(name, mac, profile, kopts)
             self.logger.info("Added system: %s" % name)
 
 
@@ -85,6 +104,8 @@ class Cobbler(Provision):
             return profiles[0]
         return None
 
+    # FIXME
+    # IT NEEDED TO BE IMPLEMENTED AS ONLY METHOD FOR ADD AND EDIT
     def add_profile(self, name, distro, kickstart):
         if self.profile_by_name(name):
             self.logger.error("Trying to add profile that already exists: %s" % name)
@@ -92,7 +113,7 @@ class Cobbler(Provision):
         profile_id = self.server.new_profile(self.token)
         self.server.modify_profile(profile_id, 'name', name, self.token)
         self.server.modify_profile(profile_id, 'distro', distro, self.token)
-        self.server.modify_profile(profile_id, 'kickstart_file', kickstart, self.token)
+        self.server.modify_profile(profile_id, 'kickstart', kickstart, self.token)
         self.server.save_profile(profile_id, self.token)
         return self.profile_by_name(name)
 
@@ -101,9 +122,8 @@ class Cobbler(Provision):
             self.logger.error("Trying to edit profile that does not exist: %s" % name)
             raise ProvisionDoesNotExist, "Profile with name %s does not exist. Try to add it." % name
         profile_id = self.server.get_profile_handle(name, self.token)
-        self.server.modify_profile(profile_id, 'name', name, self.token)
         self.server.modify_profile(profile_id, 'distro', distro, self.token)
-        self.server.modify_profile(profile_id, 'kickstart_file', kickstart, self.token)
+        self.server.modify_profile(profile_id, 'kickstart', kickstart, self.token)
         self.server.save_profile(profile_id, self.token)
         return self.profile_by_name(name)
 
@@ -132,6 +152,8 @@ class Cobbler(Provision):
             return distros[0]
         return None
 
+    # FIXME
+    # IT NEEDED TO BE IMPLEMENTED AS ONLY METHOD FOR ADD AND EDIT
     def add_distro(self, name, kernel, initrd, arch, breed, osversion):
         if self.distro_by_name(name):
             self.logger.error("Trying to add distro that already exists: %s" % name)
@@ -179,18 +201,29 @@ class Cobbler(Provision):
     # API
 
     def save_profile(self, profile):
-        name = profile.name
-        arch = profile.arch
-        os = profile.os
-        osversion = profile.osversion
-        kernel = profile.kernel
-        initrd = profile.initrd
-        seed = profile.seed
-
-        self.handle_distro(name, kernel, initrd, arch, os, osversion)
-        self.handle_profile(name, name, seed)
+        self.handle_distro(profile.name, 
+                           profile.kernel, 
+                           profile.initrd, 
+                           profile.arch, 
+                           profile.os, 
+                           profile.osversion)
+        self.handle_profile(profile.name, 
+                            profile.name, 
+                            profile.seed)
 
 
     def save_node(self, node):
-        raise NotImplementedError
+        self.handle_system(node.name,
+                           node.mac,
+                           node.profile.name,
+                           node.kopts)
+
+    def power_on(self, node):
+        self.power_system(node.name, 'on')
+
+    def power_off(self, node):
+        self.power_system(node.name, 'off')
+
+    def reboot(self, node):
+        self.power_system(node.name, 'reboot')
 
