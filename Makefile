@@ -1,20 +1,24 @@
 
 BUILD_DIR:=build
 
-MODULES=gnupg bootstrap iso test
+MODULES=gnupg bootstrap iso nailgun test
 
-.PHONY: all clean test help FORCE
+.PHONY: all clean test test-unit help FORCE
 
 help:
 	@echo 'Available targets:'
 	@echo '  all  - build product'
 	@echo '  bootstrap  - build nailgun bootstrap'
 	@echo '  iso  - build nailgun iso'
-	@echo '  test - run tests'
+	@echo '  test - run all tests'
+	@echo '  test-unit - run unit tests'
+	@echo '  test-integration - run integration tests'
 
 all:
 
-test:
+test: test-unit
+
+test-unit:
 
 # target to force rebuild of other targets
 FORCE:
