@@ -32,7 +32,7 @@ class LateFile
   end
 
   def late_file(destfile, mode="644")
-    "sh -c 'file=$1; shift; echo $0 | base64 --decode > $file && chmod #{mode} $file' #{content64} #{destfile}"
+    "sh -c 'filename=${1}; shift; echo ${0} | base64 --decode > ${filename} && chmod #{mode} ${filename}' #{content64} #{destfile}"
   end
 
 
