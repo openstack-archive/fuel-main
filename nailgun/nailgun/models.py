@@ -39,6 +39,8 @@ class Release(models.Model):
 class Cluster(models.Model):
     name = models.CharField(max_length=100)
     release = models.ForeignKey(Release, related_name='clusters')
+    current_task = models.CharField(max_length=36, null=True)
+    last_task = models.CharField(max_length=36, null=True)
 
 
 class Node(models.Model):

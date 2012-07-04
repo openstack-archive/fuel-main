@@ -118,6 +118,9 @@ def deploy_cluster(cluster_id):
     return res
 
 
+# FIXME(vkramskikh):
+# This subtask must be run always at the end of every task, even if an error
+# occured, or we lock a cluster forever
 @task_with_callbacks
 def update_cluster_status(*args):
     # FIXME(mihgen):
@@ -126,7 +129,11 @@ def update_cluster_status(*args):
         args = args[1:]
     cluster_id = args[0]
 
-    # TODO(mihgen): update status of cluster deployment as done
+    cluster = Cluster.objects.get(id=cluster_id)
+    cluster.last_task = cluster.current_task
+    cluster.current_task = None
+    cluster.save()
+
     return cluster_id
 
 

@@ -52,10 +52,16 @@ class RoleFilterForm(forms.Form):
 class ClusterForm(forms.Form):
     name = CharField(max_length=100, required=False)
     nodes = Field(required=False, validators=[vld.validate_node_ids])
+    current_task = Field(required=False,
+                         validators=[vld.forbid_modifying_tasks])
+    last_task = Field(required=False, validators=[vld.forbid_modifying_tasks])
 
 
 class ClusterCreationForm(forms.ModelForm):
     nodes = Field(required=False, validators=[vld.validate_node_ids])
+    current_task = Field(required=False,
+                         validators=[vld.forbid_modifying_tasks])
+    last_task = Field(required=False, validators=[vld.forbid_modifying_tasks])
 
     class Meta:
         model = Cluster

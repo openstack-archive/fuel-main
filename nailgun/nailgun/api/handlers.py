@@ -68,10 +68,7 @@ class TaskHandler(BaseHandler):
         return json_data
 
     def read(self, request, task_id):
-        try:
-            task = celery.result.AsyncResult(task_id)
-        except:
-            return rc.NOT_FOUND
+        task = celery.result.AsyncResult(task_id)
         return TaskHandler.render(task)
 
 
@@ -85,6 +82,11 @@ class ClusterChangesHandler(BaseHandler):
         except ObjectDoesNotExist:
             return rc.NOT_FOUND
 
+        if cluster.current_task:
+            response = rc.CONFLICT
+            response.content = "Another task is running"
+            return response
+
         for node in cluster.nodes.filter(redeployment_needed=True):
             node.roles = node.new_roles.all()
             node.new_roles.clear()
@@ -96,6 +98,9 @@ class ClusterChangesHandler(BaseHandler):
                 nw.update_node_network_info(node)
 
         task = tasks.deploy_cluster.delay(cluster_id)
+
+        cluster.current_task = task.task_id
+        cluster.save()
 
         response = rc.ACCEPTED
         response.content = TaskHandler.render(task)
@@ -190,7 +195,7 @@ class ClusterHandler(JSONHandler):
     allowed_methods = ('GET', 'PUT')
     model = Cluster
     fields = ('id', 'name')
-    special_fields = ('nodes', 'release')
+    special_fields = ('nodes', 'release', 'current_task', 'last_task')
 
     @classmethod
     def render(cls, cluster, fields=None):
@@ -203,6 +208,10 @@ class ClusterHandler(JSONHandler):
                 )
             elif field in ('release',):
                 json_data[field] = ReleaseHandler.render(cluster.release)
+            elif field in ('current_task', 'last_task'):
+                task_id = getattr(cluster, field)
+                json_data[field] = \
+                    task_id and celery.result.AsyncResult(task_id) or None
 
         return json_data
 

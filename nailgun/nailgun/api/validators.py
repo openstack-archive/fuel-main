@@ -176,3 +176,7 @@ def validate_ip(data):
         a = ipaddr.IPv4Address(data)
     except:
         raise ValidationError("Invalid IP address format!")
+
+
+def forbid_modifying_tasks(value):
+    raise ValidationError("Tasks cannot be modified directly")
