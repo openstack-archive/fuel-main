@@ -112,7 +112,10 @@ class Network(models.Model):
             node.metadata["networks"] = {}
 
         # FIXME: populate real value
-        device = node.metadata['network']['default_interface'] or 'eth0'
+        if 'default_interface' in node.metadata['interfaces']:
+            device = node.metadata['interfaces']['default_interface']
+        else:
+            device = 'eth0'
 
         node.metadata["networks"][self.name] = {
             "access": self.access,

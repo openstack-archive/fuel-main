@@ -10,20 +10,31 @@ class HTTPClient(object):
     def __init__(self):
         self.opener = urllib2.build_opener(urllib2.HTTPHandler)
 
-    def get(self, url):
+    def get(self, url, log=False):
         req = urllib2.Request(url)
-        return self.opener.open(req).read()
+        return self._open(req, log)
 
-    def post(self, url, data="{}", content_type="application/json"):
+    def post(self, url, data="{}", content_type="application/json", log=False):
         req = urllib2.Request(url, data=data)
         req.add_header('Content-Type', content_type)
-        return self.opener.open(req).read()
+        return self._open(req, log)
 
-    def put(self, url, data="{}", content_type="application/json"):
+    def put(self, url, data="{}", content_type="application/json", log=False):
         req = urllib2.Request(url, data=data)
         req.add_header('Content-Type', content_type)
         req.get_method = lambda: 'PUT'
-        return self.opener.open(req).read()
+        return self._open(req, log)
+
+    def _open(self, req, log):
+        try:
+            resp = self.opener.open(req)
+            content = resp.read()
+        except urllib2.HTTPError, error:
+            content = error.read()
+        if log:
+            logging.debug(content)
+        return content
+
 
 class SSHClient(object):
 

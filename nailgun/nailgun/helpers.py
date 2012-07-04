@@ -9,11 +9,14 @@ logger = logging.getLogger(__name__)
 
 class SshConnect(object):
 
-    def __init__(self, host, user, keyfile):
+    def __init__(self, host, user, keyfile=None, password=None):
         try:
             self.host = host
             self.t = paramiko.Transport((host, 22))
-            self.t.connect(username=user,
+            if password:
+                self.t.connect(username=user, password=password)
+            elif keyfile:
+                self.t.connect(username=user,
                     pkey=paramiko.RSAKey.from_private_key_file(keyfile))
 
         except:

@@ -99,7 +99,8 @@ class TestNode(TestCase):
 
         cluster = json.loads(self.client.post(
             "http://%s:8000/api/clusters" % host,
-            data='{ "name": "MyOwnPrivateCluster", "release": 1 }'
+            data='{ "name": "MyOwnPrivateCluster", "release": 1 }',
+            log=True
         ))
 
         nodes = json.loads(self.client.get(
@@ -122,23 +123,24 @@ class TestNode(TestCase):
 
         resp = json.loads(self.client.put(
             "http://%s:8000/api/nodes/%s" % (host, node_id),
-            data='{ "new_roles": [1, 2] }'
+            data='{ "new_roles": [1, 2], "redeployment_needed": true }'
         ))
-        if len(resp["roles"]) == 0:
+        if len(resp["new_roles"]) == 0:
             raise ValueError("Failed to assign roles to node")
 
-        task = json.loads(self.client.post(
-            "http://%s:8000/api/clusters/1/chef-config/" % host
+        task = json.loads(self.client.put(
+            "http://%s:8000/api/clusters/1/changes/" % host,
+            log=True
         ))
         task_id = task['task_id']
 
         time.sleep(2)
 
-        task = json.loads(self.client.get(
-            "http://%s:8000/api/tasks/%s/" % (host, task_id)
-        ))
         while True:
             try:
+                task = json.loads(self.client.get(
+                    "http://%s:8000/api/tasks/%s/" % (host, task_id)
+                ))
                 self.check_tasks(task)
                 break
             except StillPendingException:

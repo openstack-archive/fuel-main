@@ -22,6 +22,9 @@ module NodeAgent
     interfaces = node["network"]["interfaces"].inject([]) do |result, elm|
       result << { :name => elm[0], :addresses => elm[1]["addresses"] }
     end
+    interfaces << { "default_interface" => node["network"]["default_interface"] }
+    interfaces << { "default_gateway" => node["network"]["default_gateway"] }
+
     metadata = {
              :block_device => node["block_device"].to_hash,
              :interfaces => interfaces,

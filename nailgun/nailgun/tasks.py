@@ -15,6 +15,14 @@ from nailgun.task_helpers import TaskError
 logger = logging.getLogger(__name__)
 
 
+def resolve_recipe_deps(graph, recipe):
+    if recipe.recipe not in graph:
+        graph[recipe.recipe] = []
+    for r in recipe.depends.all():
+        graph[recipe.recipe].append(r.recipe)
+        resolve_recipe_deps(graph, r)
+
+
 @task_with_callbacks
 def deploy_cluster(cluster_id):
     databag = os.path.join(
@@ -48,7 +56,7 @@ def deploy_cluster(cluster_id):
         for role in roles_for_node:
             recipes = role.recipes.all()
             rc = ["recipe[%s]" % r.recipe for r in recipes]
-            use_recipes.extend(recipes)
+            use_recipes.extend([r.recipe for r in recipes])
             node_json["roles"].append({
                 "name": role.name,
                 "recipes": rc
@@ -74,8 +82,9 @@ def deploy_cluster(cluster_id):
     shutil.rmtree(databag)
 
     graph = {}
-    for recipe in use_recipes:
-        graph[recipe] = recipe.depends.all()
+    for recipe in Recipe.objects.filter(recipe__in=use_recipes):
+        resolve_recipe_deps(graph, recipe)
+        #graph[recipe.recipe] = [r.recipe for r in recipe.depends.all()]
 
     # NOTE(mihgen): Installation components dependency resolution
     # From nodes.roles.recipes we know recipes that needs to be applied
@@ -84,7 +93,8 @@ def deploy_cluster(cluster_id):
     sorted_recipes = topol_sort(graph)
     tree = TaskPool()
     # first element in sorted_recipes is the first recipe we have to apply
-    for recipe in sorted_recipes:
+    for r in sorted_recipes:
+        recipe = Recipe.objects.get(recipe=r)
         # We need to find nodes with these recipes
         roles = recipe.roles.all()
         nodes = Node.objects.filter(roles__in=roles)
@@ -96,13 +106,13 @@ def deploy_cluster(cluster_id):
         for node in nodes:
             taskset.append({'func': bootstrap_node, 'args': (node.id,),
                     'kwargs': {}})
-
         tree.push_task(create_solo, (cluster_id, recipe.id))
         # FIXME(mihgen): it there are no taskset items,
         #   we included recipes which are not applied on nodes.
         #   We have to include only recipes which are assigned to nodes
         if taskset:
             tree.push_task(taskset)
+
     tree.push_task(update_cluster_status, (cluster_id,))
     res = tree.apply_async()
     return res
@@ -122,6 +132,7 @@ def update_cluster_status(*args):
 
 @task_with_callbacks
 def create_solo(*args):
+    logger = create_solo.get_logger()
     # FIXME(mihgen):
     # We have to do this ugly trick because chord precedes first argument
     if isinstance(args[0], list):
@@ -135,7 +146,7 @@ def create_solo(*args):
     for node in nodes:
         node_solo = {
             "cluster_id": cluster_id,
-            "run_list": recipe.recipe
+            "run_list": ["recipe[%s]" % recipe.recipe]
         }
 
         # writing to solo
@@ -153,6 +164,7 @@ def create_solo(*args):
 
 @task_with_callbacks
 def bootstrap_node(node_id):
+    logger = bootstrap_node.get_logger()
     node = Node.objects.get(id=node_id)
     node.status = "deploying"
     node.save()

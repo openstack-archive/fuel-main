@@ -2,6 +2,7 @@ import logging
 from functools import wraps
 
 from celery.task import task, chord, TaskSet
+from nailgun.models import Node
 
 logger = logging.getLogger(__name__)
 
