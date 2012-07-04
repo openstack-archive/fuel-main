@@ -7,7 +7,8 @@ from django.forms.fields import Field, IntegerField, CharField, ChoiceField, \
                                 BooleanField
 from django.core.validators import RegexValidator
 
-from nailgun.models import Cluster, Node, Recipe, Role, Release, Network
+from nailgun.models import Cluster, Node, Recipe, Role, Release, Network, \
+        Attribute
 import nailgun.api.validators as vld
 
 
@@ -35,6 +36,13 @@ class RoleForm(forms.ModelForm):
 
     class Meta:
         model = Role
+
+
+class AttributeForm(forms.ModelForm):
+    attribute = Field(validators=[vld.validate_attribute])
+
+    class Meta:
+        model = Attribute
 
 
 class RoleFilterForm(forms.Form):

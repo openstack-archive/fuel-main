@@ -7,7 +7,7 @@ from django.core.urlresolvers import reverse, NoReverseMatch
 
 from piston.emitters import Emitter
 
-from nailgun.models import Cluster, Node, Recipe, Role, Release
+from nailgun.models import Cluster, Node, Recipe, Role, Release, Attribute
 from nailgun.api import urls as api_urls
 
 
@@ -107,12 +107,13 @@ class TestHandlers(TestCase):
         url_ids = {
             'cluster_handler': {'cluster_id': 1},
             'node_handler': {'node_id': 'A' * 12},
-            #'task_handler': {'task_id': 'a' * 36},
+            'task_handler': {'task_id': 'a' * 36},
             'network_handler': {'network_id': 1},
             'release_handler': {'release_id': 1},
             'role_handler': {'role_id': 1},
             'node_role_available': {'node_id': 'A' * 12, 'role_id': 1},
-            'recipe_handler': {'recipe_id': 1}
+            'recipe_handler': {'recipe_id': 1},
+            'attribute_handler': {'attribute_id': 1},
         }
 
         skip_urls = [
@@ -324,6 +325,43 @@ class TestHandlers(TestCase):
         self.assertEquals(len(nodes_from_db), 1)
         self.assertEquals(nodes_from_db[0].metadata, self.old_meta)
 
+    def test_attribute_create(self):
+        resp = self.client.put(
+            reverse('attribute_collection_handler'),
+            json.dumps({
+                'attribute': {'a': 'av'},
+                'cookbook': 'cook_name',
+                'version': '0.1',
+            }), "application/json"
+        )
+        self.assertEquals(resp.status_code, 200)
+        self.assertEquals(resp.content, '1')
+
+    def test_attribute_update(self):
+        resp = self.client.put(
+            reverse('attribute_collection_handler'),
+            json.dumps({
+                'attribute': {'a': 'b'},
+                'cookbook': 'cook',
+                'version': '0.1',
+            }), "application/json"
+        )
+        self.assertEquals(resp.status_code, 200)
+        self.assertEquals(resp.content, '1')
+        resp = self.client.put(
+            reverse('attribute_collection_handler'),
+            json.dumps({
+                'attribute': {'a': 'new'},
+                'cookbook': 'cook',
+                'version': '0.1',
+            }), "application/json"
+        )
+        self.assertEquals(resp.status_code, 200)
+        self.assertEquals(resp.content, '1')
+        attrs = Attribute.objects.all()
+        self.assertEquals(len(attrs), 1)
+        self.assertEquals(attrs[0].attribute, {'a': 'new'})
+
     def test_recipe_create(self):
         recipe = 'cookbook::recipe@0.1.0'
         recipe_depends = [
@@ -334,7 +372,8 @@ class TestHandlers(TestCase):
             reverse('recipe_collection_handler'),
             json.dumps({
                 'recipe': recipe,
-                'depends': recipe_depends
+                'depends': recipe_depends,
+                'attribute': None,
             }),
             "application/json"
         )
@@ -347,7 +386,7 @@ class TestHandlers(TestCase):
             reverse('recipe_collection_handler'),
             json.dumps({
                 'recipe': recipe,
-                'depends': []
+                'depends': [],
             }),
             "application/json"
         )

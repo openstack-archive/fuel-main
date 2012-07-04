@@ -8,11 +8,12 @@ from piston.utils import rc, validate
 from django.core.exceptions import ObjectDoesNotExist
 from django.conf import settings
 
-from nailgun.models import Cluster, Node, Recipe, Role, Release, Network
+from nailgun.models import Cluster, Node, Recipe, Role, Release, Network, \
+        Attribute
 from nailgun.api.validators import validate_json, validate_json_list
 from nailgun.api.forms import ClusterForm, ClusterCreationForm, RecipeForm, \
         RoleForm, RoleFilterForm, NodeCreationForm, NodeFilterForm, NodeForm, \
-        ReleaseCreationForm, NetworkCreationForm
+        ReleaseCreationForm, NetworkCreationForm, AttributeForm
 from nailgun import tasks
 import nailgun.api.validators as vld
 
@@ -294,6 +295,39 @@ class NodeHandler(JSONHandler):
 
         node.save()
         return NodeHandler.render(node)
+
+
+class AttributeCollectionHandler(BaseHandler):
+
+    allowed_methods = ('GET', 'PUT')
+    model = Attribute
+
+    fields = ('id', 'cookbook', 'version', 'attribute')
+
+    @validate_json(AttributeForm)
+    def update(self, request):
+        data = request.form.cleaned_data
+        attr, is_created = Attribute.objects.get_or_create(
+                cookbook=data['cookbook'],
+                version=data['version']
+        )
+        attr.attribute = data['attribute']
+        attr.save()
+        return attr.id
+
+
+class AttributeHandler(BaseHandler):
+
+    allowed_methods = ('GET',)
+    model = Attribute
+
+    fields = ('id', 'cookbook', 'version', 'attribute')
+
+    def read(self, request, attribute_id):
+        try:
+            return Attribute.objects.get(id=attribute_id)
+        except ObjectDoesNotExist:
+            return rc.NOT_FOUND
 
 
 class RecipeCollectionHandler(BaseHandler):

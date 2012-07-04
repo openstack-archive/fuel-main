@@ -91,6 +91,11 @@ def validate_recipe(value):
 "cookbook::recipe@version" format')
 
 
+def validate_attribute(value):
+    if not isinstance(value, dict):
+        raise ValidationError('Attributes must be in a dictionary')
+
+
 def validate_role_recipes(value):
     if value and isinstance(value, list):
         map(validate_recipe, value)

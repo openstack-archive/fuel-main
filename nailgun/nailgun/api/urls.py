@@ -8,7 +8,8 @@ from nailgun.api.handlers import ClusterCollectionHandler, ClusterHandler, \
                      RoleCollectionHandler, RoleHandler, \
                      ReleaseCollectionHandler, ReleaseHandler, \
                      ClusterChangesHandler, \
-                     TaskHandler
+                     TaskHandler, \
+                     AttributeCollectionHandler, AttributeHandler
 
 
 class JsonResource(Resource):
@@ -41,6 +42,12 @@ urlpatterns = patterns('',
     url(r'^tasks/(?P<task_id>[\da-f\-]{36})/?$',
         JsonResource(TaskHandler),
         name='task_handler'),
+    url(r'^attributes/?$',
+        JsonResource(AttributeCollectionHandler),
+        name='attribute_collection_handler'),
+    url(r'^attribute/(?P<attribute_id>\d+)$',
+        JsonResource(AttributeHandler),
+        name='attribute_handler'),
     url(r'^recipes/?$',
         JsonResource(RecipeCollectionHandler),
         name='recipe_collection_handler'),

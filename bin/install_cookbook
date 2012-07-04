@@ -14,18 +14,36 @@ ADMIN_URL = "http://127.0.0.1:8000/api"
 
 def create_cookbook(metafile)
   puts "Processing '#{metafile}' metadata file..."
-  create_attributes(metafile)
-  create_recipes(metafile)
-end
-
-def create_attributes(metafile)
-end
-
-def create_recipes(metafile)
-  metafile = File.expand_path(metafile)
   md = Chef::Cookbook::Metadata.new
   md.from_file(metafile)
 
+  attr_id = create_attributes(metafile, md)
+  create_recipes(metafile, md, attr_id)
+end
+
+def create_attributes(metafile, md)
+  cook_name = md.name.empty? ? File.basename(File.dirname(metafile)) : md.name
+
+  attrs_dir = File.join(File.dirname(metafile), "attributes")
+  attr_file = File.join(attrs_dir, "exposed.rb")
+  unless File.exists?(attr_file) and File.readable?(attr_file)
+    puts "File '#{attr_file}' not found."
+    return nil
+  end
+  node = Chef::Node.new
+
+  attrs_url = "#{ADMIN_URL}/attributes"
+  puts "Processing '#{attr_file}' attributes file..."
+  node.from_file(attr_file)
+  attr_hash = {'attribute' => node.attribute.to_hash,
+               'cookbook' => cook_name,
+               'version' => md.version,
+              }
+  attr_id = http_put(attrs_url, attr_hash.to_json)
+  return attr_id
+end
+
+def create_recipes(metafile, md, attr_id)
   cook_name = md.name.empty? ? File.basename(File.dirname(metafile)) : md.name
 
   recipes_dir = File.join(File.dirname(metafile), "recipes")
@@ -41,7 +59,7 @@ def create_recipes(metafile)
     File.readlines(recipe).each { |line| depends << $1 if dep_reg =~ line }
     recipe_name = File.basename(recipe, '.rb')
     recipe_full = "#{cook_name}::#{recipe_name}@#{md.version}"
-    recipe_tree << {"recipe" => recipe_full, "depends" => depends}
+    recipe_tree << {"recipe" => recipe_full, "depends" => depends, "attribute" => attr_id}
   end
 
   res = http_put(recipes_tree_url, recipe_tree.to_json)
@@ -76,13 +94,13 @@ def http_put(url, data_json)
     res = cli.put(url, data_json, headers)
   rescue Exception => e
     puts "Unknown error: #{e.message}"
-    return false
+    return nil
   end
   if res.status < 200 or res.status >= 300
     puts "Error received from server: #{res.inspect}"
-    return false
+    return nil
   end
-  return true
+  return res.content
 end
 
 ### MAIN ###
@@ -106,10 +124,10 @@ ARGV.each do |src|
     end
 
   when File.exists?(File.join(src, "metadata.rb"))
-    create_cookbook(File.join(src, "metadata.rb"))
+    create_cookbook(File.expand_path(File.join(src, "metadata.rb")))
 
   when File.basename(src) == "metadata.rb"
-    create_cookbook(src)
+    create_cookbook(File.expand_path(src))
 
   else
     puts "'#{src}' is not valid cookbook folder or not a valid cookbook archive. Skipping."

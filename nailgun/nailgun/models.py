@@ -6,12 +6,17 @@ from jsonfield import JSONField
 from api.fields import RecipeField
 
 
+class Attribute(models.Model):
+    cookbook = models.CharField(max_length=100)
+    version = models.CharField(max_length=30)
+    attribute = JSONField()
+
+
 class Recipe(models.Model):
     recipe = RecipeField(max_length=100)
+    attribute = models.ForeignKey(Attribute, null=True, blank=True)
     depends = models.ManyToManyField("Recipe",
         related_name="recipe_deps",
-        null=True,
-        blank=True
     )
 
 
