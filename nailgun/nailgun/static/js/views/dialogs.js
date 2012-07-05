@@ -67,7 +67,7 @@ function(models, addRemoveNodesDialogTemplate, createClusterDialogTemplate, node
             });
             if (cluster.isValid()) {
                 cluster.save({}, {success: function() {
-                    app.clusters.add(cluster);
+                    app.page.model.fetch();
                 }});
                 this.$el.modal('hide');
             }
