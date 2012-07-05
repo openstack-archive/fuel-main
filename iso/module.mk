@@ -39,6 +39,7 @@ ISO_ARCHS:=i386 amd64
 ISO_SECTIONS:=main restricted universe multiverse
 
 CENTOSISO:=$(BINARIES_DIR)/CentOS-6.2-x86_64-minimal.iso
+CENTOSMAJOR:=6
 CENTOSRELEASE:=6.2
 CENTOSARCH:=x86_64
 CENTOSMIRROR:=http://mirror.yandex.ru/centos
@@ -231,6 +232,12 @@ name=CentOS $(CENTOSRELEASE) - Contrib
 baseurl=$(CENTOSMIRROR)/$(CENTOSRELEASE)/contrib/$(CENTOSARCH)
 gpgcheck=0
 enabled=1
+
+[epel]
+name=Extra Packages for Enterprise Linux 6
+baseurl=http://download.fedoraproject.org/pub/epel/$(CENTOSMAJOR)/$(CENTOSARCH)
+enabled=1
+gpgcheck=0
 endef
 
 $/rpm/etc/yum.repos.d/base.repo: export contents:=$(yum_base_repo)
