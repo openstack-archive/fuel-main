@@ -2,7 +2,7 @@ import logging
 from functools import wraps
 
 from celery.task import task, chord, TaskSet
-from nailgun.models import Node
+from nailgun.models import Cluster, Node
 
 logger = logging.getLogger(__name__)
 
@@ -29,6 +29,12 @@ class TaskError(Exception):
                 node = Node.objects.get(id=node_id)
                 node.status = "error"
                 node.save()
+
+            if cluster_id:
+                cluster = Cluster.objects.get(id=cluster_id)
+                cluster.last_task = cluster.current_task
+                cluster.current_task = None
+                cluster.save()
         except:
             logger.exception("Exception in exception handler occured")
 
