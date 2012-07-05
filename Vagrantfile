@@ -26,7 +26,7 @@ cp -r /vagrant/binaries/bootstrap/initrd.gz /var/lib/mirror/bootstrap/
 
 mkdir -p /tmp/chef
 cat <<-EOF > /tmp/chef/solo.rb
-cookbook_path '/vagrant/cookbooks'
+cookbook_path ['/vagrant/cookbooks', '/vagrant/cooks/cookbooks']
 EOF
 
 cat <<-EOF > /tmp/chef/solo.json
