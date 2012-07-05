@@ -210,8 +210,9 @@ class ClusterHandler(JSONHandler):
                 json_data[field] = ReleaseHandler.render(cluster.release)
             elif field in ('current_task', 'last_task'):
                 task_id = getattr(cluster, field)
-                json_data[field] = \
-                    task_id and celery.result.AsyncResult(task_id) or None
+                json_data[field] = task_id and \
+                    TaskHandler.render(celery.result.AsyncResult(task_id)) or \
+                    None
 
         return json_data
 
