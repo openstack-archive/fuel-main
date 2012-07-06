@@ -269,7 +269,7 @@ def bootstrap_node(node_id):
     try:
         ssh = SshConnect(node.ip, 'root', settings.PATH_TO_SSH_KEY)
         # Returns True if succeeded
-        # exit_status = ssh.run("/opt/nailgun/bin/deploy")
+        exit_status = ssh.run("/opt/nailgun/bin/deploy")
     except (paramiko.AuthenticationException,
             paramiko.PasswordRequiredException,
             paramiko.SSHException):

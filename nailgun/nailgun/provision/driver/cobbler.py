@@ -1,6 +1,6 @@
-from provision import ProvisionException
-from provision import ProvisionAlreadyExists, ProvisionDoesNotExist
-from provision import Provision
+from nailgun.provision import ProvisionException
+from nailgun.provision import ProvisionAlreadyExists, ProvisionDoesNotExist
+from nailgun.provision import Provision
 import logging
 import xmlrpclib
 
