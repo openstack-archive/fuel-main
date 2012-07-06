@@ -1,6 +1,14 @@
 <div class="node <%= node.get('status') == 'offline' ? 'off' : 'on' %>">
   <div class="nodeimg"><div class="nodeimg<%= node.get('status') %>"></div></div>
-  <h4><a href="#"><i class="icon-pencil"></i><%= node.get('name') || node.get('id') %></a></h4>
+  <% if (editingName) { %>
+    <form class="node-name-editing form-inline" style="<%= editingName ? '' : 'display:none' %>">
+      <input type="text" class="input-medium" value="<%= node.get('name') || node.get('id') %>">
+    </form>
+  <% } else { %>
+    <h4 class="node-name" style="<%= editingName ? 'display:none' : '' %>">
+      <a href="#"><i class="icon-pencil"></i><%= node.get('name') || node.get('id') %></a>
+    </h4>
+  <% } %>
   <div class="roles">
     <a href="#">
       <ul>

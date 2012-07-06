@@ -57,7 +57,8 @@ function(models, dialogViews, clusterPageTemplate, clusterNodeTemplate, deployme
             $.ajax({
                 type: 'DELETE',
                 url: '/api/clusters/' + this.model.id + '/changes',
-                success: _.bind(this.model.fetch, this.model)
+                success: this.model.fetch,
+                context: this.model
             });
             this.disabled = true;
             this.render();
@@ -98,7 +99,9 @@ function(models, dialogViews, clusterPageTemplate, clusterNodeTemplate, deployme
         className: 'span3',
         template: _.template(clusterNodeTemplate),
         events: {
-            'click .roles > a': 'editRoles'
+            'click .roles > a': 'editRoles',
+            'click .node-name': 'startNameEditing',
+            'keydown .node-name-editing': 'onNodeNameInputKeydown'
         },
         editRoles: function(e) {
             e.preventDefault();
@@ -107,12 +110,49 @@ function(models, dialogViews, clusterPageTemplate, clusterNodeTemplate, deployme
             var roleChooser = (new views.NodeRoleChooser({model: this.model}));
             this.$('.roles').after(roleChooser.render().el);
         },
+        startNameEditing: function(e) {
+            e.preventDefault();
+            $('html').off(this.eventNamespace);
+            $('html').on(this.eventNamespace, _.bind(function(e) {
+                if (this.handledFirstClick && !$(e.target).closest(this.$el).length) {
+                    this.endNameEditing();
+                } else {
+                    this.handledFirstClick = true;
+                }
+            }, this));
+            this.editingName = true;
+            this.render();
+            this.$('.node-name-editing input').focus();
+        },
+        endNameEditing: function() {
+            $('html').off(this.eventNamespace);
+            this.handledFirstClick = false;
+            this.editingName = false;
+            this.render();
+        },
+        onNodeNameInputKeydown: function(e) {
+            if (e.which == 13) { // enter
+                var input = this.$('.node-name-editing input');
+                var name = input.attr('value');
+                if (name != this.model.get('name')) {
+                    input.attr('disabled', true).addClass('disabled');
+                    this.model.update({name: name}, {complete: this.endNameEditing, context: this});
+                } else {
+                    this.endNameEditing();
+                }
+            } else if (e.which == 27) { // esc
+                this.endNameEditing();
+            }
+        },
         initialize: function() {
+            this.editingName = false;
+            this.handledFirstClick = false;
+            this.eventNamespace = 'click.editnodename' + this.model.id;
             this.model.bind('change', this.render, this);
             this.model.bind('change:redeployment_needed', app.page.deploymentControl.render, app.page.deploymentControl);
         },
         render: function() {
-            this.$el.html(this.template({node: this.model}));
+            this.$el.html(this.template({node: this.model, editingName: this.editingName}));
             return this;
         }
     });
@@ -153,6 +193,7 @@ function(models, dialogViews, clusterPageTemplate, clusterNodeTemplate, deployme
             this.handledFirstClick = false;
             this.originalRoles = this.model.get('redeployment_needed') ? this.model.get('new_roles') : this.model.get('roles');
             this.eventNamespace = 'click.chooseroles' + this.model.id;
+            $('html').off(this.eventNamespace);
             $('html').on(this.eventNamespace, _.bind(function(e) {
                 if (this.handledFirstClick && !$(e.target).closest(this.$el).length) {
                     this.close();

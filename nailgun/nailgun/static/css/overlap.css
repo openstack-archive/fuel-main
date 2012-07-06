@@ -68,7 +68,7 @@ behavior: url(css/pie.htc);
 
 .on ul, .off ul {display: block; padding: 0px; margin: 0px; margin-left: 30px; list-style-type: none;}
 .on img, .off img {display: block; margin: 5px;}
-.on h4, .off h4 {display: block; padding: 0px 30px 5px 30px; color: #333333; font-weight: 600;}
+.on h4, .off h4 {display: block; padding: 5px 30px 0 30px; color: #333333; font-weight: 600;}
 .on .roles a, .off .roles a {color: #666666;}
 .on a:hover, .off a:hover {color: #13609b;}
 .on h4 a, .off h4 a {color: #333333;}
@@ -82,7 +82,17 @@ behavior: url(css/pie.htc);
 
 .off {background-color: #f4f4f4; opacity: 0.5; }
 
-  .navbar-inner {
+.node-name {
+  height: 25px;
+}
+
+.node-name-editing {
+  height: 30px;
+  overflow: hidden;
+  margin: 0px 0px 0px 20px;
+}
+
+.navbar-inner {
   min-height: 40px;
   padding-right: 20px;
   padding-left: 20px;
