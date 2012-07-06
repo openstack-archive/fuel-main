@@ -13,7 +13,7 @@ from django.conf import settings
 from nailgun.models import Cluster, Node, Role, Recipe
 from nailgun.helpers import SshConnect
 from nailgun.task_helpers import task_with_callbacks, TaskPool, topol_sort
-from nailgun.task_helpers import TaskError
+from nailgun.exceptions import SSHError, EmptyListError, DeployError
 
 logger = logging.getLogger(__name__)
 
@@ -90,8 +90,34 @@ def generate_passwords(d):
     return new_dict
 
 
+# FIXME(vkramskikh):
+# This subtask must be run always at the end of every task, even if an error
+# occured, or we lock a cluster forever
+@task_with_callbacks
+def update_cluster_status(*args):
+    # FIXME(mihgen):
+    # We have to do this ugly trick because chord precedes first argument
+    if isinstance(args[0], list):
+        args = args[1:]
+    cluster_id = args[0]
+
+    cluster = Cluster.objects.get(id=cluster_id)
+    cluster.last_task = cluster.current_task
+    cluster.current_task = None
+    cluster.save()
+
+    return cluster_id
+
+
+def node_set_error_status(node_id):
+    node = Node.objects.get(id=node_id)
+    node.status = "error"
+    node.save()
+
+
 @task_with_callbacks
 def deploy_cluster(cluster_id):
+
     databag = os.path.join(
         settings.CHEF_CONF_FOLDER,
         "_".join(["cluster", str(cluster_id)]),
@@ -100,8 +126,10 @@ def deploy_cluster(cluster_id):
 
     nodes = Node.objects.filter(cluster__id=cluster_id)
     if not nodes:
-        raise TaskError(deploy_cluster.request.id,
-                "Nodes list is empty.", cluster_id=cluster_id)
+        message = "Task %s failed: Nodes list is empty" \
+                    % (deploy_cluster.request.id, )
+        update_cluster_status(cluster_id)
+        raise EmptyListError(message)
 
     use_recipes = []
     for node in nodes:
@@ -111,9 +139,10 @@ def deploy_cluster(cluster_id):
         roles_for_node = node.roles.all()
         # TODO(mihgen): It should be possible to have node w/o role assigned
         if not roles_for_node:
-            raise TaskError(deploy_cluster.request.id,
-                    "Roles list for node %s is empty" % node.id,
-                    cluster_id=cluster_id)
+            message = "Task %s failed: Roles list for node %s is empty" \
+                    % (deploy_cluster.request.id, node.id)
+            update_cluster_status(cluster_id)
+            raise EmptyListError(message)
 
         node_json['cluster_id'] = cluster_id
         for f in node._meta.fields:
@@ -197,25 +226,6 @@ def deploy_cluster(cluster_id):
     return res
 
 
-# FIXME(vkramskikh):
-# This subtask must be run always at the end of every task, even if an error
-# occured, or we lock a cluster forever
-@task_with_callbacks
-def update_cluster_status(*args):
-    # FIXME(mihgen):
-    # We have to do this ugly trick because chord precedes first argument
-    if isinstance(args[0], list):
-        args = args[1:]
-    cluster_id = args[0]
-
-    cluster = Cluster.objects.get(id=cluster_id)
-    cluster.last_task = cluster.current_task
-    cluster.current_task = None
-    cluster.save()
-
-    return cluster_id
-
-
 @task_with_callbacks
 def create_solo(*args):
     logger = create_solo.get_logger()
@@ -250,6 +260,7 @@ def create_solo(*args):
 
 @task_with_callbacks
 def bootstrap_node(node_id):
+
     logger = bootstrap_node.get_logger()
     node = Node.objects.get(id=node_id)
     node.status = "deploying"
@@ -264,21 +275,28 @@ def bootstrap_node(node_id):
     except (paramiko.AuthenticationException,
             paramiko.PasswordRequiredException,
             paramiko.SSHException):
-        raise TaskError(bootstrap_node.request.id,
-                "Can't connect to IP=%s" % node.ip, node_id=node.id)
-    except Exception:
-        raise TaskError(bootstrap_node.request.id,
-                "Unknown error during ssh/deploy IP=%s" % node.ip,
-                node_id=node.id)
+        message = "Task %s failed:" \
+            "Can't connect to IP=%s" \
+            % (bootstrap_node.request.id, node.ip)
+        node_set_error_status(node.id)
+        raise SSHError(message)
+    except Exception, error:
+        message = "Task %s failed:" \
+            "Error during ssh/deploy IP=%s: %s" \
+            % (bootstrap_node.request.id, node.ip, str(error))
+        node_set_error_status(node.id)
+        raise SSHError(message)
     # FIXME(mihgen): If uncomment, it fails in case if SshConnect.__init__
     #                failed. But we need to close ssh in other cases
     #finally:
         #ssh.close()
     #ssh.close()
     if not exit_status:
-        raise TaskError(bootstrap_node.request.id,
-                "Deployment exited with non-zero exit code. IP=%s" % node.ip,
-                node_id=node.id)
+        message = "Task %s failed: " \
+            "Deployment exited with non-zero exit code. IP=%s" \
+            % (bootstrap_node.request.id, node.ip)
+        node_set_error_status(node.id)
+        raise DeployError(message)
     node.status = "ready"
     node.save()
     return exit_status

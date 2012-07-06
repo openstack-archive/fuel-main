@@ -7,41 +7,6 @@ from nailgun.models import Cluster, Node
 logger = logging.getLogger(__name__)
 
 
-class TaskError(Exception):
-
-    def __init__(self, task_id, error, cluster_id=None, node_id=None):
-        self.message = ""
-        node_msg = ""
-        cluster_msg = ""
-
-        if node_id:
-            node_msg = ", node_id='%s'" % (node_id)
-        if cluster_id:
-            cluster_msg = ", cluster_id='%s'" % (cluster_id)
-
-        self.message = "Error in task='%s'%s%s. Error message: '%s'" % (
-                    task_id, cluster_msg, node_msg, error)
-
-        try:
-            Exception.__init__(self, self.message)
-            logger.error(self.message)
-            if node_id:
-                node = Node.objects.get(id=node_id)
-                node.status = "error"
-                node.save()
-
-            if cluster_id:
-                cluster = Cluster.objects.get(id=cluster_id)
-                cluster.last_task = cluster.current_task
-                cluster.current_task = None
-                cluster.save()
-        except:
-            logger.exception("Exception in exception handler occured")
-
-    def __str__(self):
-        return repr(self.message)
-
-
 def topol_sort(graph):
     """ Depth First Traversal algorithm for sorting DAG graph.
 
