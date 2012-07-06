@@ -41,6 +41,9 @@ directory "/var/log/nailgun" do
   recursive true
 end
 
+# FIXME
+# cobbler parameters needed to be defined via attributes
+
 template "#{node.nailgun.root}/nailgun/extrasettings.py" do
   source 'extrasettings.py.erb'
   owner node.nailgun.user
@@ -49,7 +52,12 @@ template "#{node.nailgun.root}/nailgun/extrasettings.py" do
   variables(
             :level => "DEBUG",
             :filename => "/var/log/nailgun/nailgun.log",
-            :sshkey => "#{node.nailgun.root}/.ssh/id_rsa"
+            :sshkey => "#{node.nailgun.root}/.ssh/id_rsa",
+            :bootstrap_sshkey => "#{node.nailgun.root}/.ssh/bootstrap.rsa",
+            :cobbler_address => "localhost",
+            :cobbler_user => "cobbler",
+            :cobbler_password => "cobbler",
+            :cobbler_profile => "centos-6.2-x86_64"
             )
 end
 
