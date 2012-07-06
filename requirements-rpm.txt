@@ -12,3 +12,5 @@ curl
 dmidecode
 rubygems
 rabbitmq-server
+mysql
+mysql-server
