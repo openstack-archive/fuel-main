@@ -245,6 +245,11 @@ $/rpm/etc/yum.repos.d/base.repo: | $/rpm/etc/yum.repos.d/.dir
 	@mkdir -p $(@D)
 	echo "$${contents}" > $@
 
+$/rpm/comps.xml: $(BINARIES_DIR)/centos/$(CENTOSRELEASE)/comps.xml
+	$(ACTION.COPY)
+
+$/rpm-groups.done: $/rpm/comps.xml
+	$(ACTION.TOUCH)
 
 $/rpm-cache-infra.done: \
 	  $/rpm/etc/yum.conf \
@@ -271,7 +276,6 @@ $/rpm/Packages/%.rpm: $(BINARIES_DIR)/centos/$(CENTOSRELEASE)/Packages/%.rpm
 $/rpm-cache.done: $/rpm-cache-extra.done
 	$(ACTION.TOUCH)
 
-
 # ISO ROOT RULES
 
 $/isoroot-infra.done: $(ISO_IMAGE) | $(BUILD_DIR)/ubuntu
@@ -291,12 +295,12 @@ $/isoroot-pool.done: $/apt-cache.done
   done
 	$(ACTION.TOUCH)
 
-$/isoroot-rpm.done: $/rpm-cache.done
+$/isoroot-rpm.done: $/rpm-cache.done $/rpm-groups.done
 	mkdir -p $(ISOROOT)/centos/$(CENTOSRELEASE)/Packages
 	find $/rpm/Packages -name '*.rpm' | while read rpmfile; do \
 	cp -n $${rpmfile} $(ISOROOT)/centos/$(CENTOSRELEASE)/Packages/ ; \
 	done
-	createrepo -o $(ISOROOT)/centos/$(CENTOSRELEASE) $(ISOROOT)/centos/$(CENTOSRELEASE)/Packages
+	createrepo -g $/rpm/comps.xml -o $(ISOROOT)/centos/$(CENTOSRELEASE) $(ISOROOT)/centos/$(CENTOSRELEASE)/Packages
 	$(ACTION.TOUCH)
 
 $/isoroot-keyring.done: $/isoroot-pool.done $/debian/ubuntu-keyring/.done
