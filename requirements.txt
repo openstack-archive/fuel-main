@@ -1,2 +1,0 @@
-# Provide requirements to vagrant/cookbooks/nailgun/recipes/deps.rb
-# To install it, see scripts/ci/solo.rb

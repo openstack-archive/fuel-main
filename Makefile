@@ -13,6 +13,7 @@ help:
 	@echo '  test - run all tests'
 	@echo '  test-unit - run unit tests'
 	@echo '  test-integration - run integration tests'
+	@echo '  clean-integration-test - clean integration test environment'
 
 all:
 
