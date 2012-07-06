@@ -148,7 +148,10 @@ class TestNode(TestCase):
 
         ret = self.remote.exec_cmd("test -f /tmp/chef_success && echo 'SUCCESS'")
         if not "SUCCESS" in ret:
-            raise Exception("Recipe failed to execute")
+            raise Exception("Recipe failed to execute!")
+        ret = self.remote.exec_cmd("cat /tmp/chef_success")
+        if not ret.split("\r\n")[1:-1] == ['monitor', 'default', 'compute']:
+            raise Exception("Recipes executed in a wrong order!")
 
         self.remote.disconnect()
 

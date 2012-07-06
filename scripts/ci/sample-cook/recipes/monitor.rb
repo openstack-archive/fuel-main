@@ -1,0 +1,1 @@
+File.open('/tmp/chef_success', 'a') {|f| f.puts("monitor") }
