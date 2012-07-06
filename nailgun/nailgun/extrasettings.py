@@ -3,8 +3,8 @@ import os
 LOGFILE = "/tmp/nailgun.log"
 LOGLEVEL = "DEBUG"
 PATH_TO_SSH_KEY = os.path.join(os.getenv("HOME"), ".ssh", "id_rsa")
-PATH_TO_BOOTSTRAP_SSH_KEY = os.path.join(os.getenv("HOME"), 
-                                         ".ssh", 
+PATH_TO_BOOTSTRAP_SSH_KEY = os.path.join(os.getenv("HOME"),
+                                         ".ssh",
                                          "bootstrap.rsa")
 
 COBBLER_API = "http://localhost/cobbler_api"

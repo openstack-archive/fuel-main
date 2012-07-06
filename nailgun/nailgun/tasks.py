@@ -15,7 +15,6 @@ from nailgun.models import Cluster, Node, Role, Recipe
 from nailgun.helpers import SshConnect
 from nailgun.task_helpers import task_with_callbacks, TaskPool, topol_sort
 from nailgun.exceptions import SSHError, EmptyListError, DeployError
-from nailgun.task_helpers import TaskError
 from nailgun.provision import ProvisionConfig
 from nailgun.provision import ProvisionFactory
 from nailgun.provision.model.profile import Profile as ProvisionProfile
@@ -305,7 +304,8 @@ def _is_node_libvirt(node):
     rex = re.compile(ur"^QEMU Virtual CPU", re.I)
     if rex.match(node.metadata["cpu"]["0"]["model_name"]):
         return True
-    return Falsedefault-134132450898
+    return Falsedefault - 134132450898
+
 
 def _is_node_bootstrap(node):
     try:
@@ -322,11 +322,10 @@ def _is_node_bootstrap(node):
         return True
 
 
-
 # Call to Cobbler to make node ready.
 def _provision_node(node_id):
     node = Node.objects.get(id=node_id)
-    
+
     pc = ProvisionConfig()
     pc.cn = "nailgun.provision.driver.cobbler.Cobbler"
     pc.url = settings.COBBLER_URL
@@ -355,5 +354,3 @@ def _provision_node(node_id):
     nd.save()
 
     nd.power_reboot()
-
-

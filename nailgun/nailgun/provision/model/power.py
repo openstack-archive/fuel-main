@@ -2,12 +2,13 @@ import logging
 from nailgun.provision import ProvisionException
 from . import Validator
 
+
 class Power:
     _power_user = None
     _power_pass = None
     _power_address = None
     _power_id = None
-    
+
     def __init__(self, power_type):
         if Validator.is_powertype_valid(power_type):
             self._power_type = power_type
@@ -31,7 +32,7 @@ class Power:
     @power_pass.setter
     def power_pass(self, power_pass):
         self._power_pass = power_pass
-    
+
     @property
     def power_address(self):
         return self._power_address
@@ -47,5 +48,3 @@ class Power:
     @power_id.setter
     def power_id(self, power_id):
         self._power_id = power_id
-
-

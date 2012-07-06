@@ -2,6 +2,7 @@ import logging
 from nailgun.provision import ProvisionException
 from . import ModelObject, Validator
 
+
 class Node(ModelObject):
     _mac = None
     _profile = None
@@ -19,25 +20,25 @@ class Node(ModelObject):
     @property
     def mac(self):
         if not self._mac:
-            raise ProvisionException, "Mac is not set properly"
+            raise ProvisionException("Mac is not set properly")
         return self._mac
 
     @mac.setter
     def mac(self, mac):
         if not Validator.is_mac_valid(mac):
-            raise ProvisionException, "Mac is not valid"
+            raise ProvisionException("Mac is not valid")
         self._mac = mac
 
     @property
     def profile(self):
         if not self._profile:
-            raise ProvisionException, "Profile is not set properly"
+            raise ProvisionException("Profile is not set properly")
         return self._profile
 
     @profile.setter
     def profile(self, profile):
         if not Validator.is_profile_valid(profile):
-            raise ProvisionException, "Profile is not valid"
+            raise ProvisionException("Profile is not valid")
         self._profile = profile
 
     @property
@@ -49,7 +50,7 @@ class Node(ModelObject):
     def kopts(self, kopts):
         self.logger.debug("Node kopts setter: %s" % kopts)
         self._kopts = kopts
-    
+
     @property
     def pxe(self):
         self.logger.debug("Node pxe getter: %s" % str(self._pxe))
@@ -65,15 +66,14 @@ class Node(ModelObject):
     @property
     def power(self):
         if not self._power:
-            raise ProvisionException, "Power is not set properly"
+            raise ProvisionException("Power is not set properly")
         return self._power
 
     @power.setter
     def power(self, power):
         if not Validator.is_power_valid(power):
-            raise ProvisionException, "Power is not valid"
+            raise ProvisionException("Power is not valid")
         self._power = power
-
 
     def power_on(self):
         self.driver.power_on(self)
@@ -86,4 +86,3 @@ class Node(ModelObject):
 
     def power_status(self):
         self.driver.power_status(self)
-    

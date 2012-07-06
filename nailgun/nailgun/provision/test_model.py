@@ -2,6 +2,7 @@ from model import Validator
 from model.profile import Profile
 from nose.tools import eq_
 
+
 class TestValidator:
     def setUp(self):
         self.mac = "c8:0a:a9:a6:ff:28"
@@ -14,7 +15,11 @@ class TestValidator:
         assert  Validator.is_mac_valid(self.mac)
 
     def test_is_platform_valid(self):
-        assert Validator.is_platform_valid(self.platform[0], self.platform[1], self.platform[2])
+        assert Validator.is_platform_valid(
+            self.platform[0],
+            self.platform[1],
+            self.platform[2]
+        )
 
     def test_is_os_valid(self):
         assert Validator.is_os_valid(self.os)
@@ -24,7 +29,6 @@ class TestValidator:
 
     def test_is_arch_valid(self):
         assert Validator.is_arch_valid(self.arch)
-
 
 
 class TestProfile:
@@ -66,7 +70,7 @@ class TestProfile:
         self.profile.kopts = self.kopts
         eq_(self.profile.kopts, self.kopts)
 
+
 class TestNode:
     def setUp(self):
         pass
-

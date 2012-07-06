@@ -2,22 +2,24 @@ import re
 from nailgun.provision import ProvisionException
 import logging
 
+
 class ModelObject(object):
     _driver = None
 
     @property
     def driver(self):
         if self._driver is None:
-            raise ProvisionException, "Driver is not set properly."
+            raise ProvisionException("Driver is not set properly.")
         return self._driver
 
     @driver.setter
     def driver(self, driver):
         self._driver = driver
 
+
 class Validator:
     _supported_os = (
-        "ubuntu", 
+        "ubuntu",
         "redhat",
         )
 
@@ -59,7 +61,7 @@ class Validator:
     @classmethod
     def is_platform_valid(cls, os, osversion, arch):
         return (os, osversion, arch) in cls._supported_platform
-    
+
     # FIXME
     # IT NEEDED TO BE CHECKED IF PROVISION ALREADY HAS THAT PROFILE
     # IF NOT THEN PROFILE IS OBVIOUSLY INVALID
