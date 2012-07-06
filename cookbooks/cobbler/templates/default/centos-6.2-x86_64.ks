@@ -36,3 +36,25 @@ make
 curl
 dmidecode
 rubygems
+openssh-server
+
+%post
+# configure yum
+rm /etc/yum.repos.d/*
+cat > /etc/yum.repos.d/nailgun.repo <<EOF
+[nailgun]
+name=Nailgun Repository
+baseurl=http://<%= node.cobbler.repoaddr %>/centos/6.2
+enabled=1
+gpgcheck=0
+EOF
+
+# configure ssh key
+mkdir -p /root/.ssh
+chown -R root:root /root/.ssh
+chmod 700 /root/.ssh
+<%= @late_authorized_keys.init.late_file("/root/.ssh/authorized_keys", "644") %>
+
+# deploy script
+mkdir -p /opt/nailgun/bin
+<%= @late_deploy.init.late_file("/opt/nailgun/bin/deploy", "755") %>

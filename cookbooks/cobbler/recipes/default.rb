@@ -68,6 +68,11 @@ template "/etc/cobbler/pxe/pxedefault.template" do
   notifies :run, "execute[cobbler_sync]" 
 end
 
+template "/etc/cobbler/power/power_ssh.template" do
+  source "power_ssh.template"
+  mode 0644
+end
+
 directory node["cobbler"]["ks_mirror_dir"] do
   owner "root"
   group "root"
@@ -80,3 +85,10 @@ include_recipe "cobbler::bootstrap"
 include_recipe "cobbler::precise-x86_64"
 include_recipe "cobbler::centos-6.2-x86_64"
 
+
+# FIXME
+# TO WORK CORRECTLY COBBLER NEEDED TO BE RESTRTED AND RESYNCED
+# ruby_block "notify cobbler sync" do
+#   block {}
+#   notifies :run, "execute[cobbler_sync]"
+# end

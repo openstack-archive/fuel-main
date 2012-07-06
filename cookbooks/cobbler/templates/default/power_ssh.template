@@ -1,0 +1,26 @@
+## Set proper virsh operation
+#if $power_mode == "reboot"
+#set operation = "reboot"
+#else if $power_mode == "off"
+#set operation = "shutdown -h now"
+#else
+#set operation = "unknown"
+#end if
+
+#if $power_pass and $power_pass.count(':') > 0
+#set (passtype, pass) = $power_pass.split(':', 1)
+#else
+#set (passtype, pass) = ("plain", $power_pass)
+#end if
+
+#if $power_user
+#set username = "%s@" % $power_user
+#else
+#set username = "unknown"
+#end if
+
+if [ X$passtype = Xrsa -o X$passtype = Xdsa ]; then
+    if [ X$passtype = "" X$operation != Xunknown -a X$username != Xunknown ]; then
+	/usr/bin/ssh -i $pass $username$power_address $operation
+    fi
+fi
