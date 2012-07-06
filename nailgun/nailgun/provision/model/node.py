@@ -1,5 +1,5 @@
 import logging
-from provision import ProvisionException
+from nailgun.provision import ProvisionException
 from . import ModelObject, Validator
 
 class Node(ModelObject):
@@ -76,10 +76,14 @@ class Node(ModelObject):
 
 
     def power_on(self):
-        self.power.power_on()
+        self.driver.power_on(self)
 
     def power_off(self):
-        self.power.power_off()
+        self.driver.power_off(self)
 
-    def reboot(self):
-        self.power.reboot()
+    def power_reboot(self):
+        self.driver.power_reboot(self)
+
+    def power_status(self):
+        self.driver.power_status(self)
+    

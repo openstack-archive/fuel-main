@@ -1,6 +1,6 @@
 from provision.model.profile import Profile
 from provision.model.node import Node
-from provision.model.virtual_node import VirtualNode
+from provision.model.power import Power
 import provision
 import logging
 import sys
@@ -20,7 +20,6 @@ pc.url = "http://10.100.0.2/cobbler_api"
 pc.user = "cobbler"
 pc.password = ""
 
-
 pd = provision.ProvisionFactory.getInstance(pc)
 
 pf = Profile("profile0")
@@ -34,21 +33,18 @@ pf.seed = "/var/lib/mirror/preseed/precise.seed"
 pf.kopts = ""
 pf.save()
 
-# nd = Node("node0")
-# nd.driver = pd
-# nd.mac = "52:54:00:31:95:3c"
-# nd.profile = pf
-# nd.kopts = ""
-# nd.save()
+ndp = Power("virsh")
+ndp.power_user = "cobbler"
+ndp.power_address = "qemu+ssh://10.100.0.1"
+ndp.power_id = "cobbler_slave"
 
-vnd = VirtualNode("node1")
-vnd.driver = pd
-vnd.mac = "52:54:00:31:95:3c"
-vnd.profile = pf
-vnd.kopts = ""
-vnd.save()
-vnd.libvirtname = "cobbler_slave"
-vnd.power_on()
+nd = Node("node0")
+nd.driver = pd
+nd.mac = "52:54:00:31:95:3c"
+nd.profile = pf
+nd.kopts = ""
+nd.power = ndp
+nd.save()
 
 
 

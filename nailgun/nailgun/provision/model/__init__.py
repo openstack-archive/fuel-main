@@ -1,5 +1,5 @@
 import re
-from provision import ProvisionException
+from nailgun.provision import ProvisionException
 import logging
 
 class ModelObject(object):
@@ -36,7 +36,7 @@ class Validator:
         )
 
     _supported_powertypes = (
-        "libvirt",
+        "virsh",
         )
 
     @classmethod

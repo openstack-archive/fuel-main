@@ -1,6 +1,6 @@
 import logging
 from . import ModelObject, Validator
-from provision import ProvisionException
+from nailgun.provision import ProvisionException
 
 
 class Profile(ModelObject):

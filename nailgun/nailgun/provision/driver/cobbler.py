@@ -47,24 +47,43 @@ class Cobbler(Provision):
             raise ProvisionAlreadyExists, "System with name %s already exists. Try to edit it." % name
         system_id = self.server.new_system(self.token)
         self.server.modify_system(system_id, 'name', name, self.token)
-        self.server.modify_system(system_id, 'profile', profile, self.token)
+        self.server.modify_system(system_id, 'profile', profile.name, self.token)
         self.server.modify_system(system_id, 'kopts', kopts, self.token)
         self.server.modify_system(system_id, 'modify_interface', {
                 "macaddress-eth0": mac,
                 }, self.token)
+        self.server.modify_system(system_id, 'power_type', power.power_type, self.token)
+        if power.power_user:
+            self.server.modify_system(system_id, 'power_user', power.power_user, self.token)
+        if power.power_pass:
+            self.server.modify_system(system_id, 'power_pass', power.power_pass, self.token)
+        if power.power_id:
+            self.server.modify_system(system_id, 'power_id', power.power_id, self.token)
+        if power.power_address:
+            self.server.modify_system(system_id, 'power_address', power.power_address, self.token)
         self.server.save_system(system_id, self.token)
         return self.system_by_name(name)
 
-    def edit_system(self, name, mac, profile, kopts=""):
+    def edit_system(self, name, mac, power, profile, kopts=""):
         if not self.system_by_name(name):
             self.logger.error("Trying to edit system that does not exist: %s" % name)
             raise ProvisionDoesNotExist, "System with name %s does not exist. Try to edit it." % name
         system_id = self.server.get_system_handle(name, self.token)
-        self.server.modify_system(system_id, 'profile', profile, self.token)
+        self.server.modify_system(system_id, 'profile', profile.name, self.token)
         self.server.modify_system(system_id, 'kopts', kopts, self.token)
         self.server.modify_system(system_id, 'modify_interface', {
                 "macaddress-eth0": mac,
                 }, self.token)
+
+        self.server.modify_system(system_id, 'power_type', power.power_type, self.token)
+        if power.power_user:
+            self.server.modify_system(system_id, 'power_user', power.power_user, self.token)
+        if power.power_pass:
+            self.server.modify_system(system_id, 'power_pass', power.power_pass, self.token)
+        if power.power_id:
+            self.server.modify_system(system_id, 'power_id', power.power_id, self.token)
+        if power.power_address:
+            self.server.modify_system(system_id, 'power_address', power.power_address, self.token)
         self.server.save_system(system_id, self.token)
         return self.system_by_name(name)
 
@@ -72,18 +91,18 @@ class Cobbler(Provision):
         if not self.system_by_name(name):
             self.logger.error("Trying to power system that does not exist: %s" % name)
             raise ProvisionDoesNotExist, "System with name %s does not exist. Try to edit it." % name
-        if power not in ('on', 'off', 'reboot'):
+        if power not in ('on', 'off', 'reboot', 'status'):
             raise ValueError, "Power has invalid value"
         system_id = self.server.get_system_handle(name, self.token)
-        self.server.power_system(system_handle, power=power, token)
+        self.server.power_system(system_handle, power, self.token)
         return self.system_by_name(name)
 
-    def handle_system(self, name, mac, profile, kopts=""):
+    def handle_system(self, name, mac, power, profile, kopts=""):
         try:
-            self.edit_system(name, mac, profile, kopts)
+            self.edit_system(name, mac, power, profile, kopts)
             self.logger.info("Edited system: %s" % name)
         except ProvisionDoesNotExist:
-            self.add_system(name, mac, profile, kopts)
+            self.add_system(name, mac, power, profile, kopts)
             self.logger.info("Added system: %s" % name)
 
 
@@ -215,8 +234,10 @@ class Cobbler(Provision):
     def save_node(self, node):
         self.handle_system(node.name,
                            node.mac,
-                           node.profile.name,
-                           node.kopts)
+                           node.power,
+                           node.profile,
+                           node.kopts,
+                           )
 
     def power_on(self, node):
         self.power_system(node.name, 'on')
@@ -224,6 +245,8 @@ class Cobbler(Provision):
     def power_off(self, node):
         self.power_system(node.name, 'off')
 
-    def reboot(self, node):
+    def power_reboot(self, node):
         self.power_system(node.name, 'reboot')
 
+    def power_status(self, node):
+        raise NotImplementedError

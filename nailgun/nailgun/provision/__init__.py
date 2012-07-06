@@ -10,7 +10,7 @@ class ProvisionDoesNotExist(ProvisionException):
     pass
 
 class ProvisionConfig:
-    cn = 'provision.driver.cobbler.Cobbler'
+    cn = 'nailgun.provision.driver.cobbler.Cobbler'
 
 
 class Provision:
