@@ -47,6 +47,7 @@ class TaskHandler(BaseHandler):
         json_data = {
             "task_id": task.task_id,
             "status": task.state,
+            "ready": task.ready(),
             "name": getattr(task, 'task_name', None),
             "subtasks": None,
             "result": None,
@@ -82,7 +83,7 @@ class ClusterChangesHandler(BaseHandler):
         except ObjectDoesNotExist:
             return rc.NOT_FOUND
 
-        if cluster.current_task:
+        if cluster.locked:
             response = rc.CONFLICT
             response.content = "Another task is running"
             return response
@@ -99,7 +100,7 @@ class ClusterChangesHandler(BaseHandler):
 
         task = tasks.deploy_cluster.delay(cluster_id)
 
-        cluster.current_task = task.task_id
+        cluster.task = task.task_id
         cluster.save()
 
         response = rc.ACCEPTED
@@ -195,7 +196,7 @@ class ClusterHandler(JSONHandler):
     allowed_methods = ('GET', 'PUT')
     model = Cluster
     fields = ('id', 'name')
-    special_fields = ('nodes', 'release', 'current_task', 'last_task')
+    special_fields = ('nodes', 'release', 'task')
 
     @classmethod
     def render(cls, cluster, fields=None):
@@ -208,8 +209,8 @@ class ClusterHandler(JSONHandler):
                 )
             elif field in ('release',):
                 json_data[field] = ReleaseHandler.render(cluster.release)
-            elif field in ('current_task', 'last_task'):
-                task_id = getattr(cluster, field)
+            elif field in ('task',):
+                task_id = cluster.task
                 json_data[field] = task_id and \
                     TaskHandler.render(celery.result.AsyncResult(task_id)) or \
                     None

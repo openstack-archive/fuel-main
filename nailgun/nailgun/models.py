@@ -1,5 +1,5 @@
 import ipaddr
-
+import celery
 from django.db import models
 from django.contrib.auth.models import User
 from jsonfield import JSONField
@@ -39,8 +39,15 @@ class Release(models.Model):
 class Cluster(models.Model):
     name = models.CharField(max_length=100)
     release = models.ForeignKey(Release, related_name='clusters')
-    current_task = models.CharField(max_length=36, null=True)
-    last_task = models.CharField(max_length=36, null=True)
+    task = models.CharField(max_length=36, null=True)
+
+    @property
+    def locked(self):
+        if self.task:
+            task = celery.result.AsyncResult(self.task)
+            if not task.ready():
+                return True
+        return False
 
 
 class Node(models.Model):

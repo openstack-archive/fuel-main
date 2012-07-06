@@ -90,9 +90,6 @@ def generate_passwords(d):
     return new_dict
 
 
-# FIXME(vkramskikh):
-# This subtask must be run always at the end of every task, even if an error
-# occured, or we lock a cluster forever
 @task_with_callbacks
 def update_cluster_status(*args):
     # FIXME(mihgen):
@@ -100,11 +97,6 @@ def update_cluster_status(*args):
     if isinstance(args[0], list):
         args = args[1:]
     cluster_id = args[0]
-
-    cluster = Cluster.objects.get(id=cluster_id)
-    cluster.last_task = cluster.current_task
-    cluster.current_task = None
-    cluster.save()
 
     return cluster_id
 

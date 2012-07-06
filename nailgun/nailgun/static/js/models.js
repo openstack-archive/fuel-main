@@ -33,9 +33,13 @@ define(function() {
             }
             return _.isEmpty(errors) ? null : errors;
         },
+        locked: function() {
+            return this.get('task') && !this.get('task').get('ready');
+        },
         parse: function(response) {
             response.nodes = new models.Nodes(response.nodes);
             response.release = new models.Release(response.release);
+            response.task = response.task ? new models.Task(response.task) : null;
             return response;
         }
     });
