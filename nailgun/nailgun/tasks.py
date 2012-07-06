@@ -3,6 +3,7 @@ import copy
 import string
 import logging
 from random import choice
+import re
 
 import json
 import paramiko
@@ -14,6 +15,12 @@ from nailgun.models import Cluster, Node, Role, Recipe
 from nailgun.helpers import SshConnect
 from nailgun.task_helpers import task_with_callbacks, TaskPool, topol_sort
 from nailgun.exceptions import SSHError, EmptyListError, DeployError
+from nailgun.task_helpers import TaskError
+from nailgun.provision import ProvisionConfig
+from nailgun.provision import ProvisionFactory
+from nailgun.provision.model.profile import Profile as ProvisionProfile
+from nailgun.provision.model.node import Node as ProvisionNode
+from nailgun.provision.model.power import Power as ProvisionPower
 
 logger = logging.getLogger(__name__)
 
@@ -263,7 +270,7 @@ def bootstrap_node(node_id):
     try:
         ssh = SshConnect(node.ip, 'root', settings.PATH_TO_SSH_KEY)
         # Returns True if succeeded
-        exit_status = ssh.run("/opt/nailgun/bin/deploy")
+        # exit_status = ssh.run("/opt/nailgun/bin/deploy")
     except (paramiko.AuthenticationException,
             paramiko.PasswordRequiredException,
             paramiko.SSHException):
@@ -294,6 +301,59 @@ def bootstrap_node(node_id):
     return exit_status
 
 
+def _is_node_libvirt(node):
+    rex = re.compile(ur"^QEMU Virtual CPU", re.I)
+    if rex.match(node.metadata["cpu"]["0"]["model_name"]):
+        return True
+    return Falsedefault-134132450898
+
+def _is_node_bootstrap(node):
+    try:
+        ssh = SshConnect(node.ip, 'root', settings.PATH_TO_BOOTSTRAP_SSH_KEY)
+    except (paramiko.AuthenticationException,
+            paramiko.PasswordRequiredException):
+        logger.debug("Auth error while ssh using bootstrap rsa key")
+        return False
+    except Exception:
+        logger.debug("Unknown error while ssh using bootstrap rsa key")
+        return False
+    else:
+        ssh.close()
+        return True
+
+
+
 # Call to Cobbler to make node ready.
 def _provision_node(node_id):
-    pass
+    node = Node.objects.get(id=node_id)
+    
+    pc = ProvisionConfig()
+    pc.cn = "nailgun.provision.driver.cobbler.Cobbler"
+    pc.url = settings.COBBLER_URL
+    pc.user = settings.COBBLER_USER
+    pc.password = settings.COBBLER_PASSWORD
+
+    pd = ProvisionFactory.getInstance(pc)
+
+    pf = ProvisionProfile(settings.COBBLER_PROFILE)
+
+    ndp = ProvisionPower("ssh")
+    ndp.power_user = "root"
+    if _is_node_bootstrap(node):
+        ndp.power_pass = "rsa:%s" % settings.PATH_TO_BOOTSTRAP_SSH_KEY
+    else:
+        ndp.power_pass = "rsa:%s" % settings.PATH_TO_SSH_KEY
+    ndp.power_address = node.ip
+
+    nd = ProvisionNode(node_id)
+    nd.driver = pd
+    nd.mac = node.mac
+    nd.profile = pf
+    nd.pxe = True
+    nd.kopts = ""
+    nd.power = ndp
+    nd.save()
+
+    nd.power_reboot()
+
+
