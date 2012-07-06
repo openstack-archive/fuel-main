@@ -3,6 +3,10 @@ NAILGUN
 
 How to run Nailgun app from fixtures
 ------------------------------------
+Install application dependencies (eggs):
+`cd scripts/ci/`
+`sudo chef-solo -c solo.rb -j solo.json`
+`cd -`
 
 Remove old DB:
 
@@ -32,7 +36,7 @@ Deploying virtual environment
 **Note:** uncomment *config.vm.forward_port 8000, 8000* in Vagrantfile for working with django webui.
 
 For VM deployment run:
-`vagrant up`
+`vagrant up ubuntu_testbed`
 
 The working directory is /vagrant.
 
@@ -61,28 +65,28 @@ Testing
 
 **Nailgun:**
 
-Testing script is *nailgun/run_tests.sh*
-Test cases:
-- nailgun/nailgun/tests/test_handlers.py
-- nailgun/nailgun/tests/test_models.py
+Unit tests: *make test-unit* or *nailgun/run_tests.sh*
+Integration tests: *make test-integration*
 
 Layout
 ------
 
     Makefile - the global product makefile
-    Vagrantfile - for the vagrant dev vm
+    Vagrantfile - for the vagrant dev vms
     bin/
         create_release - upload a release json file to nailgun (see e.g. scripts/ci/sample-release.json)
         deploy - invoked on a node to deploy; downloads and executes recipes
         install_cookbook - uploads cookbooks to nailgun admin API
+    binaries/ - submodule for binaries such as packages and ISO-files
     bootstrap/ - creating a bootstrap image (aka crowbar sledgehammer) for nodes (initrd, configuration files, packages etc) It needed to be refactored to use clear make without calling additional shell scripts.
-    cookbooks/ - chef cookbooks to be used by nodes.
+    cookbooks/ - chef cookbooks to install Nailgun application
         agent/ - node agent. Sends ohai data to admin node.
         nailgun/ - nailgun server (not slave node!)
         others obvious
+    cooks/ - submodule with Cookbooks to be loaded in Nailgun app. OpenStack cookbooks will be here.
     devops/ - Mirantis CI framework, used by integration tests (./test/integration/). Installed on the master, not slave.
     gnupg/
-    iso/ - creating a main iso to install admin node (isobuild.sh is obsolete, but it is still convenient to use it from time to time to look how some things work), bootstrap images is included into main iso [TODO How does it differ from bootstrap/ and bootstrap2/ ?]
+    iso/ - creating a main iso to install admin node
     nailgun/ - server
         manage.py, run_tests.sh - django standard
         monitor.py - restart server when django conf files change
@@ -92,17 +96,16 @@ Layout
             tasks.py - django-celery tasks submitted from api/handlers.py: deploy cluster [sub: deploy node]
                 MOST IMPORTANT TASK: deploy_cluster
                     Create databags for nodes
-                    Provision node with Cobbler - currently does nothing (?)
+                    Provision node with Cobbler
                     ssh node and call /opt/nailgun/bin/deploy
             api/ - nailgun.api django app; JSON API
                 main entities in REST API: task, recipe/release/role, node, cluster
                 
     scripts/
-        agent/ - unfinished?
-        ci/ - scripts for CI [run on Jenkins? Unfinished?]; looks like scripts check that we can control which cookbooks are installed on nodes.
+        agent/ - development scripts to test agent cookbook
+        ci/ - scripts for CI, sample-cook - cookbook for testing
     test/ - integration tests [TODO figure out more]
     vagrant/ - cookbooks for use by the vagrant vm
-    requirements-deb.txt - debian packages needed on nailgun server
-    requirements.txt - here was the list of python eggs installed via pip, it was moved into cookbooks/nailgun/recipes/deps.rb, but we are not absolutely sure that this file will not be needed in the future
+    requirements-deb.txt - debian packages needed for Ubuntu slave node repository
+    requirements-rpm.txt - debian packages needed for CentOS slave node repository
     rules.mk - it is just some make macroses
-

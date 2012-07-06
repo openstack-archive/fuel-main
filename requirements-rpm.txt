@@ -11,5 +11,6 @@ make
 curl
 dmidecode
 rubygems
-rabbitmq-server
 openssh-server
+mysql
+mysql-server
