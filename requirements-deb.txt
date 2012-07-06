@@ -25,3 +25,6 @@ cloud-init
 ohai
 rubygems
 ruby-json
+yum
+yum-utils
+createrepo
