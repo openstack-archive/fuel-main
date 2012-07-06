@@ -106,6 +106,11 @@ def update_cluster_status(*args):
 
     return cluster_id
 
+def cluster_set_last_task(cluster_id):
+    cluster = Cluster.objects.get(id=cluster_id)
+    cluster.last_task = cluster.current_task
+    cluster.current_task = None
+    cluster.save()
 
 def node_set_error_status(node_id):
     node = Node.objects.get(id=node_id)
@@ -126,7 +131,7 @@ def deploy_cluster(cluster_id):
     if not nodes:
         message = "Task %s failed: Nodes list is empty" \
                     % (deploy_cluster.request.id, )
-        update_cluster_status(cluster_id)
+        cluster_set_last_task(cluster_id)
         raise EmptyListError(message)
 
     use_recipes = []
@@ -139,7 +144,7 @@ def deploy_cluster(cluster_id):
         if not roles_for_node:
             message = "Task %s failed: Roles list for node %s is empty" \
                     % (deploy_cluster.request.id, node.id)
-            update_cluster_status(cluster_id)
+            cluster_set_last_task(cluster_id)
             raise EmptyListError(message)
 
         node_json['cluster_id'] = cluster_id
