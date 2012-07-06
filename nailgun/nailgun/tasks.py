@@ -106,11 +106,13 @@ def update_cluster_status(*args):
 
     return cluster_id
 
+
 def cluster_set_last_task(cluster_id):
     cluster = Cluster.objects.get(id=cluster_id)
     cluster.last_task = cluster.current_task
     cluster.current_task = None
     cluster.save()
+
 
 def node_set_error_status(node_id):
     node = Node.objects.get(id=node_id)
