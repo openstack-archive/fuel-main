@@ -1,8 +1,8 @@
 import os
 import copy
-import uuid
+import string
 import logging
-from hashlib import md5
+from random import choice
 
 import json
 import paramiko
@@ -27,6 +27,10 @@ def resolve_recipe_deps(graph, recipe):
 
 
 def merge_dictionary(dst, src):
+    """
+    'True' way of merging two dictionaries
+    (python dict.update() updates just top-level keys and items)
+    """
     stack = [(dst, src)]
     while stack:
         current_dst, current_src = stack.pop()
@@ -47,9 +51,18 @@ def generate_passwords(d):
     new_dict = d.copy()
 
     def create_pass():
-        return md5(str(uuid.uuid4())).hexdigest()[:10]
+        return ''.join(
+            choice(
+                string.printable.replace('"', '').replace('\\', '')
+            ) for _ in xrange(10)
+        )
 
     def construct(d, k):
+        """
+        Creating a nested dictionary:
+        ['a', 'b', 'c', 'd'] => {'a': {'b': {'c': 'd'}}}
+        Merging it with the main dict updates the single key
+        """
         _d = copy.deepcopy(d)
         if len(k) > 1:
             _k = k.pop(0)
@@ -58,6 +71,9 @@ def generate_passwords(d):
         return k.pop(0)
 
     def search_pwd(node, cdict):
+        """
+        Recursively searching for 'password' fields
+        """
         for a, val in node.items():
             stack.append(a)
             if isinstance(val, dict):
@@ -123,7 +139,7 @@ def deploy_cluster(cluster_id):
                 "recipes": rc
             })
 
-        node_json['attributes'] = add_attrs
+        node_json = merge_dictionary(node_json, add_attrs)
 
         if 'network' in node.metadata:
             node_json['network'] = node.metadata['network']
