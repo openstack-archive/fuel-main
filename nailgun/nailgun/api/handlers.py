@@ -381,6 +381,7 @@ class RecipeCollectionHandler(BaseHandler):
     @validate_json_list(RecipeForm)
     def update(self, request):
         for form in request.forms:
+            attr = form.cleaned_data["attribute"]
             create_depends = []
             for depend in form.cleaned_data["depends"]:
                 try:
@@ -391,13 +392,13 @@ class RecipeCollectionHandler(BaseHandler):
                 create_depends.append(d)
             try:
                 r = Recipe.objects.get(recipe=form.cleaned_data["recipe"])
-                r.depends = create_depends
-                r.save()
             except Recipe.DoesNotExist:
                 r = Recipe(recipe=form.cleaned_data["recipe"])
                 r.save()
-                r.depends = create_depends
-                r.save()
+            r.depends = create_depends
+            if attr:
+                r.attribute = attr
+            r.save()
         return rc.CREATED
 
 

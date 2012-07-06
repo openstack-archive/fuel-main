@@ -26,6 +26,9 @@ class RecipeForm(forms.ModelForm):
             vld.validate_recipe(depend)
         return self.cleaned_data['depends']
 
+    def clean_attribute(self):
+        return self.cleaned_data['attribute']
+
     def clean_recipe(self):
         vld.validate_recipe(self.cleaned_data['recipe'])
         return self.cleaned_data['recipe']

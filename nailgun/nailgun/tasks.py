@@ -1,5 +1,8 @@
 import os
+import copy
+import uuid
 import logging
+from hashlib import md5
 
 import json
 import paramiko
@@ -23,6 +26,54 @@ def resolve_recipe_deps(graph, recipe):
         resolve_recipe_deps(graph, r)
 
 
+def merge_dictionary(dst, src):
+    stack = [(dst, src)]
+    while stack:
+        current_dst, current_src = stack.pop()
+        for key in current_src:
+            if key not in current_dst:
+                current_dst[key] = current_src[key]
+            else:
+                if isinstance(current_src[key], dict) \
+                    and isinstance(current_dst[key], dict):
+                    stack.append((current_dst[key], current_src[key]))
+                else:
+                    current_dst[key] = current_src[key]
+    return dst
+
+
+def generate_passwords(d):
+    stack = []
+    new_dict = d.copy()
+
+    def create_pass():
+        return md5(str(uuid.uuid4())).hexdigest()[:10]
+
+    def construct(d, k):
+        _d = copy.deepcopy(d)
+        if len(k) > 1:
+            _k = k.pop(0)
+            _d[_k] = construct(d, k)
+            return _d
+        return k.pop(0)
+
+    def search_pwd(node, cdict):
+        for a, val in node.items():
+            stack.append(a)
+            if isinstance(val, dict):
+                search_pwd(val, cdict)
+            elif "password" in a:
+                k = stack[:]
+                k.append(create_pass())
+                c = construct({}, k)
+                cdict = merge_dictionary(cdict, c)
+            stack.pop()
+        return cdict
+
+    search_pwd(d, new_dict)
+    return new_dict
+
+
 @task_with_callbacks
 def deploy_cluster(cluster_id):
     databag = os.path.join(
@@ -39,6 +90,7 @@ def deploy_cluster(cluster_id):
     use_recipes = []
     for node in nodes:
         node_json = {}
+        add_attrs = {}
 
         roles_for_node = node.roles.all()
         # TODO(mihgen): It should be possible to have node w/o role assigned
@@ -55,12 +107,23 @@ def deploy_cluster(cluster_id):
         node_json['roles'] = []
         for role in roles_for_node:
             recipes = role.recipes.all()
-            rc = ["recipe[%s]" % r.recipe for r in recipes]
-            use_recipes.extend([r.recipe for r in recipes])
+            rc = []
+            for r in recipes:
+                rc.append("recipe[%s]" % r.recipe)
+                use_recipes.append(r.recipe)
+                if r.attribute:
+                    add_attrs = merge_dictionary(
+                        add_attrs,
+                        r.attribute.attribute
+                    )
+                    add_attrs = generate_passwords(add_attrs)
+
             node_json["roles"].append({
                 "name": role.name,
                 "recipes": rc
             })
+
+        node_json['attributes'] = add_attrs
 
         if 'network' in node.metadata:
             node_json['network'] = node.metadata['network']
