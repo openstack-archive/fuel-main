@@ -1,5 +1,7 @@
 from model import Validator
-from model.profile import Profile, Node, Power
+from model.profile import Profile
+from model.node import Node
+from model.power import Power
 from nose.tools import eq_
 
 

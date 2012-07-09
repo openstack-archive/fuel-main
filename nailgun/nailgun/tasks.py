@@ -22,7 +22,7 @@ from nailgun.provision.model.node import Node as ProvisionNode
 from nailgun.provision.model.power import Power as ProvisionPower
 
 logger = logging.getLogger(__name__)
-
+logging.basicConfig(level=logging.DEBUG)
 
 def resolve_recipe_deps(graph, recipe):
     if recipe.recipe not in graph:
@@ -315,7 +315,9 @@ def _is_node_libvirt(node):
 
 
 def _is_node_bootstrap(node):
+    logger.debug("Checking if node %s is booted with bootstrap image" % node.id)
     try:
+        logger.debug("Trying to establish ssh connection using bootstrap key")
         ssh = SshConnect(node.ip, 'root', settings.PATH_TO_BOOTSTRAP_SSH_KEY)
     except (paramiko.AuthenticationException,
             paramiko.PasswordRequiredException):
@@ -345,9 +347,12 @@ def _provision_node(node_id):
 
     ndp = ProvisionPower("ssh")
     ndp.power_user = "root"
+
     if _is_node_bootstrap(node):
+        logger.info("Node %s seems booted with bootstrap image" % node_id)
         ndp.power_pass = "rsa:%s" % settings.PATH_TO_BOOTSTRAP_SSH_KEY
     else:
+        logger.info("Node %s seems booted with real system" % node_id)
         ndp.power_pass = "rsa:%s" % settings.PATH_TO_SSH_KEY
     ndp.power_address = node.ip
 
@@ -358,6 +363,9 @@ def _provision_node(node_id):
     nd.pxe = True
     nd.kopts = ""
     nd.power = ndp
+
+    logger.debug("Trying to save node %s into provision system" % node_id)
     nd.save()
 
+    logger.debug("Trying to reboot node %s using %s" % (node_id, ndp.power_type))
     nd.power_reboot()
