@@ -2,12 +2,13 @@ define(
 [
     'models',
     'views/dialogs',
+    'views/tasks',
     'text!templates/cluster/page.html',
     'text!templates/cluster/node.html',
     'text!templates/cluster/deployment_control.html',
     'text!templates/cluster/role_chooser.html'
 ],
-function(models, dialogViews, clusterPageTemplate, clusterNodeTemplate, deploymentControlTemplate, roleChooserTemplate) {
+function(models, dialogViews, taskViews, clusterPageTemplate, clusterNodeTemplate, deploymentControlTemplate, roleChooserTemplate) {
     var views = {}
 
     views.ClusterPage = Backbone.View.extend({
@@ -23,11 +24,17 @@ function(models, dialogViews, clusterPageTemplate, clusterNodeTemplate, deployme
         initialize: function() {
             this.model.bind('change', this.render, this);
         },
+        renderTask: function() {
+            if (this.model.get('task')) {
+                this.$('.task-status').html(new taskViews.Task({model: this.model.get('task')}).render().el);
+            }
+        },
         render: function() {
             this.$el.html(this.template({cluster: this.model}));
             this.deploymentControl = new views.DeploymentControl({model: this.model});
             this.$('.deployment-control').html(this.deploymentControl.render().el);
             this.$('.node-list').html(new views.NodeList({model: this.model.get('nodes')}).render().el);
+            this.renderTask();
             return this;
         }
     });
