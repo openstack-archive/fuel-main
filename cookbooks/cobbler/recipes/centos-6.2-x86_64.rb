@@ -31,6 +31,10 @@ link "#{node.cobbler.ks_mirror_dir}/centos-6.2-x86_64" do
   to "#{node["cobbler"]["centos-6.2-x86_64_mnt"]}"
 end
 
+link "/var/lib/mirror/centos/6.2/images" do 
+  to "#{node["cobbler"]["centos-6.2-x86_64_mnt"]}/images"
+end
+
 cobbler_distro "centos-6.2-x86_64" do
   kernel "#{node.cobbler.ks_mirror_dir}/centos-6.2-x86_64/isolinux/vmlinuz"
   initrd "#{node.cobbler.ks_mirror_dir}/centos-6.2-x86_64/isolinux/initrd.img"

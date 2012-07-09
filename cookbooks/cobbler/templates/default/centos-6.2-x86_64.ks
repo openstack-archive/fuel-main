@@ -1,6 +1,7 @@
 install
-url --url http://<%= node.cobbler.repoaddr %>/cblr/ks_mirror/centos-6.2-x86_64
-repo --name=base --baseurl=http://<%= node.cobbler.repoaddr %>/centos/6.2
+url --url http://<%= node.cobbler.repoaddr %>/centos/6.2
+#url --url http://<%= node.cobbler.repoaddr %>/cblr/ks_mirror/centos-6.2-x86_64
+#repo --name=base --baseurl=http://<%= node.cobbler.repoaddr %>/centos/6.2
 lang en_US.UTF-8
 keyboard us
 

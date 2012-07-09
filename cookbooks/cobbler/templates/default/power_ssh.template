@@ -8,9 +8,9 @@
 #end if
 
 #if $power_pass and $power_pass.count(':') > 0
-#set (passtype, pass) = $power_pass.split(':', 1)
+#set (passtype, passwd) = $power_pass.split(':', 1)
 #else
-#set (passtype, pass) = ("plain", $power_pass)
+#set (passtype, passwd) = ("plain", $power_pass)
 #end if
 
 #if $power_user
@@ -19,8 +19,8 @@
 #set username = "unknown"
 #end if
 
-if [ X$passtype = Xrsa -o X$passtype = Xdsa ]; then
-    if [ X$passtype = "" X$operation != Xunknown -a X$username != Xunknown ]; then
-	/usr/bin/ssh -i $pass $username$power_address $operation
+if [ X"$passtype" = X"rsa" -o X"$passtype" = X"dsa" ]; then
+    if [ X"$operation" != X"unknown" -a X"$username" != X"unknown" ]; then
+	/usr/bin/ssh -o "StrictHostKeyChecking no" -o "UserKnownHostsFile /dev/null" -i "$passwd" $username$power_address "$operation"
     fi
 fi
