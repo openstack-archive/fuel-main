@@ -75,6 +75,13 @@ ssh_keygen "Root ssh-keygen" do
   keytype 'rsa'
 end
 
+# FIXME
+file "#{node.nailgun.root}/.ssh/bootstrap.rsa" do
+  mode 0600
+  owner node.nailgun.user
+  group node.nailgun.group
+end
+
 file "#{node[:nailgun][:root]}/nailgun/venv.py" do
   content "VENV = '#{node[:nailgun][:venv]}/local/lib/python2.7/site-packages'
 "

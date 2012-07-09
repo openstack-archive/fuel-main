@@ -486,6 +486,13 @@ chmod 700 /target/root/.ssh
 cp /cdrom/bootstrap/bootstrap.rsa /target/root/.ssh/bootstrap.rsa
 chmod 600 /target/root/.ssh/bootstrap.rsa
 
+# FIXME
+# bootstrap.rsa is needed to be at only place
+mkdir -p /target/opt/nailgun/.ssh
+chmod 700 /target/opt/nailgun/.ssh
+cp /cdrom/bootstrap/bootstrap.rsa /target/opt/nailgun/.ssh/bootstrap.rsa
+chmod 600 /target/opt/nailgun/.ssh/bootstrap.rsa
+
 # netinst
 mkdir -p /target/var/lib/mirror/netinst
 cp /cdrom/netinst/* /target/var/lib/mirror/netinst
