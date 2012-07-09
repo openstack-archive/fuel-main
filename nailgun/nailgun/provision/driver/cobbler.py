@@ -160,7 +160,7 @@ class Cobbler(Provision):
         if power not in ('on', 'off', 'reboot', 'status'):
             raise ValueError("Power has invalid value")
         system_id = self.server.get_system_handle(name, self.token)
-        self.server.power_system(system_handle, power, self.token)
+        self.server.power_system(system_id, power, self.token)
         return self.system_by_name(name)
 
     def handle_system(self, name, mac, power, profile, kopts=""):
