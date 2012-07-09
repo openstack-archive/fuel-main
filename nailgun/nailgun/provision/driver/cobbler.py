@@ -56,7 +56,7 @@ class Cobbler(Provision):
 
     # FIXME
     # IT NEEDED TO BE IMPLEMENTED AS ONLY METHOD FOR ADD AND EDIT
-    def add_system(self, name, mac, profile, kopts=""):
+    def add_system(self, name, mac, power, profile, kopts=""):
         if self.system_by_name(name):
             self.logger.error(
                 "Trying to add system that already exists: %s" \
