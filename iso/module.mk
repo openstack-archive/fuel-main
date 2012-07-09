@@ -300,7 +300,7 @@ $/isoroot-rpm.done: $/rpm-cache.done $/rpm-groups.done
 	find $/rpm/Packages -name '*.rpm' | while read rpmfile; do \
 	cp -n $${rpmfile} $(ISOROOT)/centos/$(CENTOSRELEASE)/Packages/ ; \
 	done
-	createrepo -g $/rpm/comps.xml -o $(ISOROOT)/centos/$(CENTOSRELEASE) $(ISOROOT)/centos/$(CENTOSRELEASE)/Packages
+	createrepo -g `readlink -f "$/rpm/comps.xml"` -o $(ISOROOT)/centos/$(CENTOSRELEASE) $(ISOROOT)/centos/$(CENTOSRELEASE)/Packages
 	$(ACTION.TOUCH)
 
 $/isoroot-keyring.done: $/isoroot-pool.done $/debian/ubuntu-keyring/.done
