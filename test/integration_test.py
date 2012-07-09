@@ -11,6 +11,7 @@ paths = [
 ]
 sys.path[:0] = paths
 
+import cookbooks
 import integration
 
 logger = logging.getLogger('integration')
@@ -24,6 +25,9 @@ def main():
                       default="ERROR", metavar="LEVEL")
     parser.add_argument('--cache-file', dest='cache_file', type=str,
                       help='file to store integration environment name')
+    parser.add_argument('--suite', dest='test_suite', type=str,
+                      help='Test suite to run', choices=["integration", "cookbooks"],
+                      default="integration")
     parser.add_argument('command', choices=('setup', 'destroy', 'test'), default='test',
                       help="command to execute")
 
@@ -32,12 +36,17 @@ def main():
     numeric_level = getattr(logging, params.log_level.upper())
     logging.basicConfig(level=numeric_level)
 
-    integration.ci = integration.Ci(cache_file=params.cache_file, iso=params.iso)
+    if params.test_suite == 'integration':
+        suite = integration
+    elif params.test_suite == 'cookbooks':
+        suite = cookbooks
+
+    suite.ci = suite.Ci(cache_file=params.cache_file, iso=params.iso)
 
     if params.command == 'setup':
-        result = integration.ci.setup_environment()
+        result = suite.ci.setup_environment()
     elif params.command == 'destroy':
-        result = integration.ci.destroy_environment()
+        result = suite.ci.destroy_environment()
     elif params.command == 'test':
         import nose
         import nose.config
@@ -45,7 +54,7 @@ def main():
         nc = nose.config.Config()
         nc.verbosity = 3
         nc.plugins = PluginManager(plugins=[Xunit()])
-        nose.main(module=integration, config=nc, argv=[
+        nose.main(module=suite, config=nc, argv=[
             __file__,
             "--with-xunit",
             "--xunit-file=test/nosetests.xml"
