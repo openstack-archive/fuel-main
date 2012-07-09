@@ -9,6 +9,7 @@ from piston.emitters import Emitter
 
 from nailgun.models import Cluster, Node, Recipe, Role, Release, Attribute
 from nailgun.api import urls as api_urls
+from nailgun.tasks import _provision_node
 
 
 # monkey patch!
@@ -428,10 +429,13 @@ class TestHandlers(TestCase):
         self.assertEquals(set(role_recipes), set(recipes))
 
     @mock.patch('nailgun.tasks.SshConnect')
-    def test_jsons_created_for_chef_solo(self, ssh_mock):
+    @mock.patch('nailgun.tasks._provision_node')
+    def test_jsons_created_for_chef_solo(self, pn_mock, ssh_mock):
         url = reverse('cluster_changes_handler', kwargs={'cluster_id': 1})
         ssh = ssh_mock.return_value
         ssh.run.return_value = True
+        pn_mock.return_value = True
+
         resp = self.client.put(url)
         self.assertEquals(resp.status_code, 202)
 

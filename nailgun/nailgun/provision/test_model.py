@@ -79,7 +79,7 @@ class TestNode:
         self.kopts = "kopts"
         self.pxe = True
         self.power = Power('ssh')
-        
+
     def test_mac(self):
         self.node.mac = self.mac
         eq_(self.node.mac, self.mac)
