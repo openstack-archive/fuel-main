@@ -1,5 +1,5 @@
 from model import Validator
-from model.profile import Profile
+from model.profile import Profile, Node, Power
 from nose.tools import eq_
 
 
@@ -73,4 +73,54 @@ class TestProfile:
 
 class TestNode:
     def setUp(self):
-        pass
+        self.node = Node('node')
+        self.mac = "c8:0a:a9:a6:ff:28"
+        self.profile = Profile('profile')
+        self.kopts = "kopts"
+        self.pxe = True
+        self.power = Power('ssh')
+        
+    def test_mac(self):
+        self.node.mac = self.mac
+        eq_(self.node.mac, self.mac)
+
+    def test_profile(self):
+        self.node.profile = self.profile
+        eq_(self.node.profile, self.profile)
+
+    def test_kopts(self):
+        self.node.kopts = self.kopts
+        eq_(self.node.kopts, self.kopts)
+
+    def test_pxe(self):
+        self.node.pxe = self.pxe
+        eq_(self.node.pxe, self.pxe)
+
+    def test_power(self):
+        self.node.power = self.power
+        eq_(self.node.power, self.power)
+
+
+class TestPower:
+    def setUp(self):
+        self.power = Power('ssh')
+        self.power_user = "user"
+        self.power_pass = "pass"
+        self.power_address = "localhost"
+        self.power_id = "localhost"
+
+    def test_power_user(self):
+        self.power.power_user = self.power_urer
+        eq_(self.power.power_user, self.power_user)
+
+    def test_power_pass(self):
+        self.power.power_pass = self.power_pass
+        eq_(self.power.power_pass, self.power_pass)
+
+    def test_power_address(self):
+        self.power.power_address = self.power_address
+        eq_(self.power.power_address, self.power_address)
+
+    def test_power_id(self):
+        self.power.power_id = self.power_id
+        eq_(self.power.power_id, self.power_id)

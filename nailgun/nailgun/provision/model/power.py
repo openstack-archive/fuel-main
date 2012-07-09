@@ -12,6 +12,8 @@ class Power:
     def __init__(self, power_type):
         if Validator.is_powertype_valid(power_type):
             self._power_type = power_type
+        else:
+            raise ProvisionException("Power type is not valid")
 
     @property
     def power_type(self):

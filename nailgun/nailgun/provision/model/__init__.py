@@ -39,6 +39,7 @@ class Validator:
 
     _supported_powertypes = (
         "virsh",
+        "ssh",
         )
 
     @classmethod
