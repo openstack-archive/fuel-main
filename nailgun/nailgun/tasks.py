@@ -4,6 +4,8 @@ import string
 import logging
 from random import choice
 import re
+import time
+import socket
 
 import json
 import paramiko
@@ -264,6 +266,25 @@ def bootstrap_node(node_id):
     node.save()
 
     _provision_node(node_id)
+
+    def tcp_ping(host, port):
+        s = socket.socket()
+        try:
+            s.connect((str(host), int(port)))
+        except socket.error:
+            return False
+        s.close()
+        return True
+
+    # FIXME
+    # node.ip had been got from bootstrap agent
+    # there is no guarantee that installed slave node has
+    # the same ip as bootstrap node had
+    # it is necessary to install and launch agent on slave node
+    while True:
+        if tcp_ping(node.ip, 22):
+            break
+        time.sleep(5)
 
     try:
         ssh = SshConnect(node.ip, 'root', settings.PATH_TO_SSH_KEY)
