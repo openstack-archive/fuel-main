@@ -16,14 +16,18 @@ timezone --utc America/New_York
 bootloader --location=mbr --driveorder=sda,hda --append=" rhgb crashkernel=auto"
 
 # Partitioning
-clearpart --all
+clearpart --all --initlabel
 autopart
 part swap --recommended
 part /boot --fstype=ext2 --size=1024
 part / --size=4096 --fstype ext4 --grow
 
-%packages --nobase 
-@core
+%packages --nobase --ignoremissing 
+@Core
+yum
+openssh-server
+openssh
+openssh-clients
 ruby
 ruby-devel
 ruby-ri
@@ -37,9 +41,8 @@ make
 curl
 dmidecode
 rubygems
-openssh-server
 
-%post
+%post --log=/root/post-install.log
 # configure yum
 rm /etc/yum.repos.d/*
 cat > /etc/yum.repos.d/nailgun.repo <<EOF
@@ -54,8 +57,9 @@ EOF
 mkdir -p /root/.ssh
 chown -R root:root /root/.ssh
 chmod 700 /root/.ssh
-<%= @late_authorized_keys.init.late_file("/root/.ssh/authorized_keys", "644") %>
+<%= @late_authorized_keys.init.cobbler_late_file("/root/.ssh/authorized_keys", "644") %>
 
 # deploy script
 mkdir -p /opt/nailgun/bin
-<%= @late_deploy.init.late_file("/opt/nailgun/bin/deploy", "755") %>
+<%= @late_deploy.init.cobbler_late_file("/opt/nailgun/bin/deploy", "755") %>
+

@@ -28,13 +28,17 @@ class LateFile
   end
 
   def base64(content)
-    Base64.encode64(content).to_s.strip
+    Base64.encode64(content).to_s.strip.gsub(/\n/, '')
   end
 
   def late_file(destfile, mode="644")
     "sh -c 'filename=${1}; shift; echo ${0} | base64 --decode > ${filename} && chmod #{mode} ${filename}' #{content64} #{destfile}"
   end
 
+  def cobbler_late_file(destfile, mode="644")
+    "sh -c 'filename=\\${1}; shift; echo \\${0} | base64 --decode > \\${filename} && chmod #{mode} \\${filename}' #{content64} #{destfile}"
+  end
+  
 
 end
 

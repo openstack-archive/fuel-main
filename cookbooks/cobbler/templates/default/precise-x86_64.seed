@@ -93,7 +93,7 @@ d-i preseed/late_command string true && \
 in-target sh -c '/usr/sbin/update-rc.d chef-client disable' && \
 in-target sh -c '/bin/sed -i "s/^PermitRootLogin.*/PermitRootLogin yes/g" /etc/ssh/sshd_config' && \
 in-target sh -c 'mkdir -p /root/.ssh && chmod 700 /root/.ssh' && \ 
-in-target <%= @late_authorized_keys.init.late_file("/root/.ssh/authorized_keys", "644") %> && \
+in-target <%= @late_authorized_keys.init.cobbler_late_file("/root/.ssh/authorized_keys", "644") %> && \
 in-target sh -c 'mkdir -p /opt/nailgun/bin' && \
-in-target <%= @late_deploy.init.late_file("/opt/nailgun/bin/deploy", "755") %>
+in-target <%= @late_deploy.init.cobbler_late_file("/opt/nailgun/bin/deploy", "755") %>
 

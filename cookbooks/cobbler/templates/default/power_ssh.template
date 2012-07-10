@@ -1,8 +1,6 @@
 ## Set proper virsh operation
-#if $power_mode == "reboot"
+#if $power_mode == "on"
 #set operation = "reboot"
-#else if $power_mode == "off"
-#set operation = "shutdown -h now"
 #else
 #set operation = "unknown"
 #end if
