@@ -13,7 +13,9 @@ help:
 	@echo '  test - run all tests'
 	@echo '  test-unit - run unit tests'
 	@echo '  test-integration - run integration tests'
+	@echo '  test-cookbooks - run cookbooks tests'
 	@echo '  clean-integration-test - clean integration test environment'
+	@echo '  clean-cookbooks-test - clean cookbooks test environment'
 
 all:
 
