@@ -61,6 +61,14 @@ template "#{node.nailgun.root}/nailgun/extrasettings.py" do
             )
 end
 
+# FIXME
+# IT NEEDED TO BE CREATED DURING ssh-keygen
+directory "#{node.nailgun.root}/.ssh" do
+  owner node.nailgun.user
+  group node.nailgun.group
+  mode "700"
+end
+
 ssh_keygen "Nailgun ssh-keygen" do
   homedir node.nailgun.root
   username node.nailgun.user
@@ -76,6 +84,7 @@ ssh_keygen "Root ssh-keygen" do
 end
 
 # FIXME
+# IT NEEDED TO BE COPIED FROM FIXED PLACE
 file "#{node.nailgun.root}/.ssh/bootstrap.rsa" do
   mode 0600
   owner node.nailgun.user
