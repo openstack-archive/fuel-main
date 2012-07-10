@@ -58,7 +58,11 @@ class Controller:
 
         for network in environment.networks:
             logger.info("Building network %s" % network.name)
-
+            if network.pxe:
+                tftp_path = os.path.join(environment.work_dir, "tftp")
+                if not os.path.exists(tftp_path):
+                    os.mkdir(tftp_path, stat.S_IRWXU | stat.S_IRWXG | stat.S_IRWXO)
+                network.tftp_root_dir = tftp_path
             network.ip_addresses = self.networks_pool.get()
             self.driver.create_network(network)
             network.driver = self.driver

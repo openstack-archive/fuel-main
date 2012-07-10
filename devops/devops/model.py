@@ -44,11 +44,12 @@ class Environment(ManagedObject):
         return name2network
 
 class Network(ManagedObject):
-    def __init__(self, name, dhcp_server=False):
+    def __init__(self, name, dhcp_server=False, pxe=False):
         super(Network, self).__init__()
 
         self.name = name
         self.dhcp_server = dhcp_server
+        self.pxe = pxe
 
     def start(self):
         self.driver.start_network(self)

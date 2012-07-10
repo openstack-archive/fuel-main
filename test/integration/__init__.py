@@ -9,7 +9,7 @@ import traceback
 import logging
 logger = logging.getLogger('integration')
 
-class Ci:
+class Ci(object):
     hostname = 'nailgun'
     domain = 'mirantis.com'
     

@@ -43,12 +43,15 @@ class LibvirtXMLBuilder:
         
         if hasattr(network, 'ip_addresses') and not network.ip_addresses is None:
             with network_xml.ip(address=str(network.ip_addresses[1]), prefix=str(network.ip_addresses.prefixlen)):
+                if network.pxe:
+                    network_xml.tftp(root=network.tftp_root_dir)
                 if network.dhcp_server: 
                     with network_xml.dhcp:
                         start = network.ip_addresses[2]
                         end   = network.ip_addresses[network.ip_addresses.numhosts-2]
-
                         network_xml.range(start=str(start), end=str(end))
+                        if network.pxe:
+                            network_xml.bootp(file="pxelinux.0")
 
         return str(network_xml)
 

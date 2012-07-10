@@ -8,11 +8,12 @@ import urllib2
 from unittest import TestCase
 from subprocess import Popen, PIPE
 
-from . import ci
-from devops.helpers import wait, tcp_ping, http
-from integration.helpers import HTTPClient, SSHClient
-
 import paramiko
+
+from devops.helpers import wait, tcp_ping, http
+
+from . import ci
+from integration.helpers import HTTPClient, SSHClient
 
 logging.basicConfig(format=':%(lineno)d: %(asctime)s %(message)s', level=logging.DEBUG)
 
@@ -24,6 +25,8 @@ SAMPLE_REMOTE_PATH = "/home/ubuntu"
 
 class StillPendingException(Exception):
     pass
+
+
 
 class TestNode(TestCase):
     def __init__(self, *args, **kwargs):
