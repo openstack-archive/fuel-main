@@ -238,6 +238,12 @@ name=Extra Packages for Enterprise Linux 6
 baseurl=http://download.fedoraproject.org/pub/epel/$(CENTOSMAJOR)/$(CENTOSARCH)
 enabled=1
 gpgcheck=0
+
+[mirantis]
+name=Mirantis Packages for CentOS
+baseurl=http://moc-ci.srt.mirantis.net/rpm
+enabled=1
+gpgcheck=0
 endef
 
 $/rpm/etc/yum.repos.d/base.repo: export contents:=$(yum_base_repo)

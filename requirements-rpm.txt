@@ -3,6 +3,7 @@ ruby-devel
 ruby-ri
 ruby-rdoc
 ruby-shadow
+ruby-mysql
 gcc
 gcc-c++
 automake
@@ -14,3 +15,5 @@ rubygems
 openssh-server
 mysql
 mysql-server
+rabbitmq-server
+openstack-keystone
