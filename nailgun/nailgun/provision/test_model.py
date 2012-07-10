@@ -112,7 +112,7 @@ class TestPower:
         self.power_id = "localhost"
 
     def test_power_user(self):
-        self.power.power_user = self.power_urer
+        self.power.power_user = self.power_user
         eq_(self.power.power_user, self.power_user)
 
     def test_power_pass(self):

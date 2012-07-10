@@ -61,7 +61,8 @@ class Node(ModelObject):
         self.logger.debug("Node pxe setter: %s" % str(pxe))
         if pxe:
             self._pxe = True
-        self._pxe = False
+        else:
+            self._pxe = False
 
     @property
     def power(self):
