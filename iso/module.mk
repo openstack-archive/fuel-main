@@ -296,11 +296,11 @@ $/isoroot-pool.done: $/apt-cache.done
 	$(ACTION.TOUCH)
 
 $/isoroot-rpm.done: $/rpm-cache.done $/rpm-groups.done
-	mkdir -p $(ISOROOT)/centos/$(CENTOSRELEASE)/Packages
+	mkdir -p $(ISOROOT)/centos/$(CENTOSRELEASE)
 	find $/rpm/Packages -name '*.rpm' | while read rpmfile; do \
-	cp -n $${rpmfile} $(ISOROOT)/centos/$(CENTOSRELEASE)/Packages/ ; \
+	cp -n $${rpmfile} $(ISOROOT)/centos/$(CENTOSRELEASE)/ ; \
 	done
-	createrepo -g `readlink -f "$/rpm/comps.xml"` -o $(ISOROOT)/centos/$(CENTOSRELEASE) $(ISOROOT)/centos/$(CENTOSRELEASE)/Packages
+	createrepo -g `readlink -f "$/rpm/comps.xml"` -o $(ISOROOT)/centos/$(CENTOSRELEASE) $(ISOROOT)/centos/$(CENTOSRELEASE)
 	$(ACTION.TOUCH)
 
 $/isoroot-keyring.done: $/isoroot-pool.done $/debian/ubuntu-keyring/.done
