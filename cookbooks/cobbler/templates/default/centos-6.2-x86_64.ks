@@ -58,11 +58,14 @@ EOF
 mkdir -p /root/.ssh
 chown -R root:root /root/.ssh
 chmod 700 /root/.ssh
-<%= @late_authorized_keys.init.cobbler_late_file("/root/.ssh/authorized_keys", "644") %>
+<%= @late_authorized_keys.init.cobbler_late_file("/opt/nailgun/.ssh/authorized_keys", "644") %>
 
 # deploy script
 mkdir -p /opt/nailgun/bin
 <%= @late_deploy.init.cobbler_late_file("/opt/nailgun/bin/deploy", "755") %>
+
+# install chef
+gem install chef -r --no-ri --no-rdoc
 
 # nopxe
 $SNIPPET('disable_pxe')
