@@ -17,6 +17,8 @@ class Ci:
         self.environment_cache_file = cache_file
         self.iso = iso
         self.environment = None
+        qcow_file = cache_file + ".qcow2" if cache_file else "test-cookbooks.qcow2"
+        self.image_path = os.path.join(os.path.dirname(__file__), qcow_file)
         if self.environment_cache_file and os.path.exists(self.environment_cache_file):
             logger.info("Loading existing cookbooks environment...")
             with file(self.environment_cache_file) as f:
@@ -49,7 +51,12 @@ class Ci:
             node.memory = 1024
             node.vnc = True
             node.interfaces.append(Interface(network))
-            node.disks.append(Disk(path=self.iso, format='raw'))
+
+            # Creating qcow2 image to speed up the OS loading and not to put stuff on base ISO
+            logger.info("Creating qcow2 image: %s" % self.image_path)
+            os.system("qemu-img create -f qcow2 -b %s %s" % (self.iso, self.image_path))
+
+            node.disks.append(Disk(path=self.image_path, format='qcow2'))
             node.boot = ['disk']
             environment.nodes.append(node)
 
@@ -103,6 +110,9 @@ class Ci:
     def destroy_environment(self):
         if self.environment:
             devops.destroy(self.environment)
+
+        if os.path.exists(self.image_path):
+            os.remove(self.image_path)
 
         if self.environment_cache_file and os.path.exists(self.environment_cache_file):
             os.remove(self.environment_cache_file)

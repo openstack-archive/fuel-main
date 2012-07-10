@@ -54,6 +54,8 @@ def main():
         nc = nose.config.Config()
         nc.verbosity = 3
         nc.plugins = PluginManager(plugins=[Xunit()])
+        # Set folder where to process tests
+        nc.configureWhere(os.path.join(os.path.dirname(os.path.abspath(__file__)), params.test_suite))
         nose.main(module=suite, config=nc, argv=[
             __file__,
             "--with-xunit",
