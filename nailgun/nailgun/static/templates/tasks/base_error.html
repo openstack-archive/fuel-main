@@ -1,3 +1,5 @@
 <div class="alert alert-error">
-  Error!
+  <button class="close">×</button>
+  <h4 class="alert-heading"><strong>Error!</strong></h4>
+  <%= task.get('name') %> has failed with error: <%= task.get('error') %>
 </div>

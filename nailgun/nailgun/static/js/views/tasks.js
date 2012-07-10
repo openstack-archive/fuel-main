@@ -13,11 +13,15 @@ function(models, runningTemplate, successTemplate, errorTemplate) {
         successTemplate: _.template(successTemplate),
         errorTemplate: _.template(errorTemplate),
         events: {
+            'click .close': 'close'
+        },
+        close: function() {
+            this.remove();
+            app.page.model.update({task: null});
         },
         initialize: function() {
         },
         render: function() {
-            console.log(this)
             var template = this.model.get('ready') ? this.model.get('error') ? this.errorTemplate : this.successTemplate : this.runningTemplate;
             this.$el.html(template({task: this.model}));
             return this;

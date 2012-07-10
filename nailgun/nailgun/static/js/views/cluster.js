@@ -120,20 +120,17 @@ function(models, dialogViews, taskViews, clusterPageTemplate, clusterNodeTemplat
         startNameEditing: function(e) {
             e.preventDefault();
             $('html').off(this.eventNamespace);
-            $('html').on(this.eventNamespace, _.bind(function(e) {
-                if (this.handledFirstClick && !$(e.target).closest(this.$el).length) {
+            $('html').on(this.eventNamespace, _.after(2, _.bind(function(e) {
+                if (!$(e.target).closest(this.$el).length) {
                     this.endNameEditing();
-                } else {
-                    this.handledFirstClick = true;
                 }
-            }, this));
+            }, this)));
             this.editingName = true;
             this.render();
             this.$('.node-name-editing input').focus();
         },
         endNameEditing: function() {
             $('html').off(this.eventNamespace);
-            this.handledFirstClick = false;
             this.editingName = false;
             this.render();
         },
@@ -153,7 +150,6 @@ function(models, dialogViews, taskViews, clusterPageTemplate, clusterNodeTemplat
         },
         initialize: function() {
             this.editingName = false;
-            this.handledFirstClick = false;
             this.eventNamespace = 'click.editnodename' + this.model.id;
             this.model.bind('change', this.render, this);
             this.model.bind('change:redeployment_needed', app.page.deploymentControl.render, app.page.deploymentControl);
@@ -197,17 +193,14 @@ function(models, dialogViews, taskViews, clusterPageTemplate, clusterNodeTemplat
             return this.$('.role.checked').map(function() {return parseInt($(this).attr('data-role-id'), 10)}).get();
         },
         initialize: function() {
-            this.handledFirstClick = false;
             this.originalRoles = this.model.get('redeployment_needed') ? this.model.get('new_roles') : this.model.get('roles');
             this.eventNamespace = 'click.chooseroles' + this.model.id;
             $('html').off(this.eventNamespace);
-            $('html').on(this.eventNamespace, _.bind(function(e) {
-                if (this.handledFirstClick && !$(e.target).closest(this.$el).length) {
+            $('html').on(this.eventNamespace, _.after(2, _.bind(function(e) {
+                if (!$(e.target).closest(this.$el).length) {
                     this.close();
-                } else {
-                    this.handledFirstClick = true;
                 }
-            }, this));
+            }, this)));
             this.availableRoles = new models.Roles;
             this.availableRoles.fetch({
                 data: {node_id: this.model.id},
