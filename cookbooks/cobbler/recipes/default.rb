@@ -81,6 +81,13 @@ directory node["cobbler"]["ks_mirror_dir"] do
   action :create
 end
 
+template "/var/lib/cobbler/snippets/disable_pxe" do
+  source "disable_pxe.snippet"
+  owner "root"
+  group "root"
+  mode 0644
+end
+
 include_recipe "cobbler::bootstrap"
 include_recipe "cobbler::precise-x86_64"
 include_recipe "cobbler::centos-6.2-x86_64"

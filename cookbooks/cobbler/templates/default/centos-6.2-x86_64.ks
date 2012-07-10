@@ -4,6 +4,7 @@ url --url http://<%= node.cobbler.repoaddr %>/centos/6.2
 #repo --name=base --baseurl=http://<%= node.cobbler.repoaddr %>/centos/6.2
 lang en_US.UTF-8
 keyboard us
+reboot
 
 network --onboot yes --device eth0 --bootproto=dhcp
 firewall --disable
@@ -63,3 +64,5 @@ chmod 700 /root/.ssh
 mkdir -p /opt/nailgun/bin
 <%= @late_deploy.init.cobbler_late_file("/opt/nailgun/bin/deploy", "755") %>
 
+# nopxe
+$SNIPPET('disable_pxe')
