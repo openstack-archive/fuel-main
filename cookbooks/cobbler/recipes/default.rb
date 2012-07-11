@@ -1,3 +1,5 @@
+include_recipe "nailgun::server"
+
 # Here are packages cobbler needs to have to work correctly
 
 package "cobbler" do
@@ -43,6 +45,17 @@ template "/etc/cobbler/settings" do
   notifies :restart, "service[cobbler]"
 end
 
+script "/etc/cobbler/users.digest" do
+  interpreter "bash"
+  user "root"
+  code <<-EOH
+htpasswd -D /etc/cobbler/users.digest #{node.cobbler.user} || true
+printf "#{node.cobbler.user}:Cobbler:#{node.cobbler.password}" | md5sum | awk '{print $1}' >> /etc/cobbler/users.digest 
+  EOH
+  not_if "grep -q \"^#{node.cobbler.user}:\" /etc/cobbler/users.digest"
+  notifies :restart, "service[cobbler]"
+end
+
 execute "cobbler_sync" do
   command "cobbler sync"
   returns [0,155]
@@ -56,6 +69,7 @@ template "/etc/cobbler/dnsmasq.template" do
             :dhcp_range => node["cobbler"]["dhcp_range"],
             :gateway => node["cobbler"]["gateway"]
             )
+  notifies :restart, "service[cobbler]"
   notifies :run, "execute[cobbler_sync]"
 end
 
@@ -65,6 +79,7 @@ template "/etc/cobbler/pxe/pxedefault.template" do
   variables(
             :pxetimeout => node["cobbler"]["pxetimeout"]
             )
+  notifies :restart, "service[cobbler]"
   notifies :run, "execute[cobbler_sync]" 
 end
 
@@ -92,10 +107,3 @@ include_recipe "cobbler::bootstrap"
 include_recipe "cobbler::precise-x86_64"
 include_recipe "cobbler::centos-6.2-x86_64"
 
-
-# FIXME
-# TO WORK CORRECTLY COBBLER NEEDED TO BE RESTRTED AND RESYNCED
-# ruby_block "notify cobbler sync" do
-#   block {}
-#   notifies :run, "execute[cobbler_sync]"
-# end

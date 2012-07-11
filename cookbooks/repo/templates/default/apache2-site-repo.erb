@@ -13,3 +13,11 @@ Alias /centos <%= node.repo.centos.root %>
   Order deny,allow
   Allow from all
 </Directory>
+
+Alias /gems <%= node.repo.gems.root %>
+
+<Directory <%= node.repo.gems.root %>>
+  Options Indexes FollowSymLinks MultiViews
+  Order deny,allow
+  Allow from all
+</Directory>

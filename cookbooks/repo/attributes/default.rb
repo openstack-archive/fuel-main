@@ -15,3 +15,4 @@ default[:repo][:gnupgpasswdfile] = '/root/.gnupg/keyphrase'
 
 default[:repo][:ubuntu][:root] = '/var/lib/mirror/ubuntu'
 default[:repo][:centos][:root] = '/var/lib/mirror/centos'
+default[:repo][:gems][:root] = '/var/lib/mirror/gems'

@@ -1,7 +1,5 @@
 install
 url --url http://<%= node.cobbler.repoaddr %>/centos/6.2
-#url --url http://<%= node.cobbler.repoaddr %>/cblr/ks_mirror/centos-6.2-x86_64
-#repo --name=base --baseurl=http://<%= node.cobbler.repoaddr %>/centos/6.2
 lang en_US.UTF-8
 keyboard us
 reboot
@@ -54,18 +52,21 @@ enabled=1
 gpgcheck=0
 EOF
 
+
 # configure ssh key
 mkdir -p /root/.ssh
 chown -R root:root /root/.ssh
 chmod 700 /root/.ssh
-<%= @late_authorized_keys.init.cobbler_late_file("/opt/nailgun/.ssh/authorized_keys", "644") %>
+<%= @late_authorized_keys.init.cobbler_late_file("/root/.ssh/authorized_keys", "644") %>
 
 # deploy script
 mkdir -p /opt/nailgun/bin
 <%= @late_deploy.init.cobbler_late_file("/opt/nailgun/bin/deploy", "755") %>
 
 # install chef
+gem sources -a http://<%= node.cobbler.repoaddr %>/gems/gems
 gem install chef -r --no-ri --no-rdoc
 
 # nopxe
 $SNIPPET('disable_pxe')
+

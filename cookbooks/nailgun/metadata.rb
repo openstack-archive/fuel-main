@@ -10,7 +10,7 @@ recipe           "deps", "Installs nailgun deps"
 
 supports "ubuntu" # It should work on debian too, but not tested yet
 
-%w{celery redis2 django python}.each do |cookbook|
+%w{celery redis2 django python cobbler}.each do |cookbook|
   depends cookbook
 end
 

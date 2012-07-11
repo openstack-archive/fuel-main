@@ -9,7 +9,7 @@ template "#{node.cobbler.preseed_dir}/centos-6.2-x86_64.ks" do
   group "root"
   mode "0644"
   variables(
-            :late_authorized_keys => LateFile.new("/root/.ssh/id_rsa.pub"),
+            :late_authorized_keys => LateFile.new("#{node.nailgun.root}/.ssh/id_rsa.pub"),
             :late_deploy => LateFile.new("/opt/nailgun/bin/deploy")
             )
 end

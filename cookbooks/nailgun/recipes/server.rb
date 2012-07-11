@@ -53,20 +53,12 @@ template "#{node.nailgun.root}/nailgun/extrasettings.py" do
             :level => "DEBUG",
             :filename => "/var/log/nailgun/nailgun.log",
             :sshkey => "#{node.nailgun.root}/.ssh/id_rsa",
-            :bootstrap_sshkey => "#{node.nailgun.root}/.ssh/bootstrap.rsa",
+            :bootstrap_sshkey => "/root/bootstrap.rsa",
             :cobbler_address => "localhost",
-            :cobbler_user => "cobbler",
-            :cobbler_password => "cobbler",
+            :cobbler_user => node.cobbler.user,
+            :cobbler_password => node.cobbler.password,
             :cobbler_profile => "centos-6.2-x86_64"
             )
-end
-
-# FIXME
-# IT NEEDED TO BE CREATED DURING ssh-keygen
-directory "#{node.nailgun.root}/.ssh" do
-  owner node.nailgun.user
-  group node.nailgun.group
-  mode "700"
 end
 
 ssh_keygen "Nailgun ssh-keygen" do
@@ -76,18 +68,8 @@ ssh_keygen "Nailgun ssh-keygen" do
   keytype 'rsa'
 end
 
-ssh_keygen "Root ssh-keygen" do
-  homedir "/root"
-  username "root"
-  groupname "root"
-  keytype 'rsa'
-end
-
-# FIXME
-# IT NEEDED TO BE COPIED FROM FIXED PLACE
-file "#{node.nailgun.root}/.ssh/bootstrap.rsa" do
-  mode 0600
-  owner node.nailgun.user
+file "/root/bootstrap.rsa" do
+  mode 0640
   group node.nailgun.group
 end
 
