@@ -97,7 +97,7 @@ class SSHClient(object):
 
     def rmdir(self, path):
         logging.info("Removing directory: %s" % path)
-        return self.exec_command("rm -rf %s" % path)
+        return self.exec_cmd("rm -rf %s" % path)
 
     def scp(self, frm, to):
         logging.info("Copying file: %s -> %s" % (frm, to))

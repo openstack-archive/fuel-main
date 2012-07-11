@@ -21,11 +21,10 @@ SOLO_PATH = os.path.join(os.path.dirname(__file__), "..", "..", "scripts", "agen
 DEPLOY_PATH = os.path.join(os.path.dirname(__file__), "..", "..", "bin", "deploy")
 COOKBOOKS_PATH = os.path.join(os.path.dirname(__file__), "..", "..", "cookbooks")
 SAMPLE_PATH = os.path.join(os.path.dirname(__file__), "..", "..", "scripts", "ci")
-SAMPLE_REMOTE_PATH = "/home/ubuntu"
+SAMPLE_REMOTE_PATH = "/root"
 
 class StillPendingException(Exception):
     pass
-
 
 
 class TestNode(TestCase):
@@ -51,10 +50,11 @@ class TestNode(TestCase):
             nodes = json.loads(self.client.get(
                 "http://%s:8000/api/nodes" % admin_ip
             ))
-            time.sleep(15)
             if len(nodes) > 0:
                 logging.info("Node found")
                 break
+            else:
+                time.sleep(15)
 
         cluster = json.loads(self.client.post(
             "http://%s:8000/api/clusters" % admin_ip,
@@ -80,8 +80,31 @@ class TestNode(TestCase):
         if len(resp["new_roles"]) == 0:
             raise ValueError("Failed to assign roles to node")
 
-        """
-        self.remote.connect_ssh(host, "ubuntu", "r00tme")
+        logging.info("Provisioning...")
+        task = json.loads(self.client.put(
+            "http://%s:8000/api/clusters/1/changes/" % admin_ip,
+            log=True
+        ))
+        task_id = task['task_id']
+        logging.info("Task created: %s" % task_id)
+        logging.info("Waiting for completion of admin node software installation")
+        while True:
+            try:
+                task = json.loads(self.client.get(
+                    "http://%s:8000/api/tasks/%s/" % (admin_ip, task_id)
+                ))
+                self.check_tasks(task)
+                break
+            except StillPendingException:
+                time.sleep(30)
+
+        node = task = json.loads(self.client.get(
+            "http://%s:8000/api/nodes/%s" % (admin_ip, slave_id),
+            log=True
+        ))
+        logging.info("Waiting for SSH access on %s" % node["ip"])
+        wait(lambda: tcp_ping(node["ip"], 22), timeout=1800)
+        self.remote.connect_ssh(node["ip"], "root", "r00tme")
 
         self.remote.rmdir(cookbook_remote_path)
         self.remote.rmdir(os.path.join(SAMPLE_REMOTE_PATH, "cookbooks"))
@@ -117,53 +140,15 @@ class TestNode(TestCase):
             SAMPLE_REMOTE_PATH
         )
 
-        self.remote.aquire_sudo()
-
-        commands = [
-            "rm -rf /opt/nailgun/nailgun.sqlite",
-            "source /opt/nailgun-venv/bin/activate",
-            "python /opt/nailgun/manage.py syncdb --noinput",
-            "deactivate",
-            "cat /opt/nailgun/.ssh/id_rsa.pub > /root/.ssh/authorized_keys",
-            "chmod 600 /root/.ssh/authorized_keys",
-            "chown nailgun:nailgun /opt/nailgun/nailgun.sqlite",
-            "/opt/nailgun/bin/install_cookbook %s" % cookbook_remote_path,
-            "/opt/nailgun/bin/create_release %s" % release_remote_path,
-            "cp %s/deploy /opt/nailgun/bin" % SAMPLE_REMOTE_PATH,
-            "chmod 775 /opt/nailgun/bin/deploy",
-            "chown nailgun:nailgun /opt/nailgun/bin/deploy",
-            "rm /tmp/chef_success",
-            "rm -rf %s/nodes/" % SAMPLE_REMOTE_PATH,
-            "chef-solo -l debug -c %s -j %s" % (
-                os.path.join(SAMPLE_REMOTE_PATH, "solo", "config", "solo.rb"),
-                os.path.join(SAMPLE_REMOTE_PATH, "solo", "config", "solo.json")
-            ),
-        ]
-
-        for cmd in commands:
-            self.remote.exec_cmd(cmd)
-        """
-        logging.info("Provisioning...")
-        task = json.loads(self.client.put(
-            "http://%s:8000/api/clusters/1/changes/" % admin_ip,
-            log=True
+        self.remote.exec_cmd("rm /tmp/chef_success")
+        result = self.remote.exec_cmd("chef-solo -l debug -c %s -j %s" % (
+            os.path.join(SAMPLE_REMOTE_PATH, "solo", "config", "solo.rb"),
+            os.path.join(SAMPLE_REMOTE_PATH, "solo", "config", "solo.json")
         ))
-        task_id = task['task_id']
-        logging.info("Task created: %s" % task_id)
+        if result['exit_status'] != 0:
+            self.remote.disconnect()
+            raise Exception("Error while executing chef-solo: %s" % str(result))
 
-        time.sleep(2)
-
-        while True:
-            try:
-                task = json.loads(self.client.get(
-                    "http://%s:8000/api/tasks/%s/" % (admin_ip, task_id)
-                ))
-                self.check_tasks(task)
-                break
-            except StillPendingException:
-                pass
-
-        """
         # check if recipes executed
         ret = self.remote.exec_cmd("test -f /tmp/chef_success && echo 'SUCCESS'")
         if not "SUCCESS" in ret.split("\r\n")[1:]:
@@ -173,7 +158,7 @@ class TestNode(TestCase):
         if not ret.split("\r\n")[1:-1] == ['monitor', 'default', 'compute']:
             raise Exception("Recipes executed in a wrong order: %s!" \
                 % str(ret.split("\r\n")[1:-1]))
-
+        """
         # check passwords
         self.remote.exec_cmd("tar -C %s -xvf /root/nodes.tar.gz" % SAMPLE_REMOTE_PATH)
         ret = self.remote.exec_cmd("cat %s/nodes/`ls nodes` && echo" % SAMPLE_REMOTE_PATH)
@@ -181,9 +166,9 @@ class TestNode(TestCase):
         gen_pwd = solo_json['service']['password']
         if not gen_pwd or gen_pwd == 'password':
             raise Exception("Password generation failed!")
+        """
 
         self.remote.disconnect()
-        """
 
     def check_tasks(self, task):
         if task['status'] != 'SUCCESS':
