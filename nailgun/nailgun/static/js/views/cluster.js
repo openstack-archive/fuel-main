@@ -13,6 +13,7 @@ function(models, dialogViews, taskViews, clusterPageTemplate, clusterNodeTemplat
 
     views.ClusterPage = Backbone.View.extend({
         className: 'span12',
+        updateInterval: 5000,
         template: _.template(clusterPageTemplate),
         events: {
             'click .js-add-nodes': 'addRemoveNodes'
@@ -23,17 +24,35 @@ function(models, dialogViews, taskViews, clusterPageTemplate, clusterNodeTemplat
         },
         initialize: function() {
             this.model.bind('change', this.render, this);
+            this.scheduleUpdate();
+        },
+        scheduleUpdate: function() {
+            if (this.model.locked()) { // task is running
+                _.delay(_.bind(this.update, this), this.updateInterval);
+            }
+        },
+        update: function() {
+            this.model.fetch({
+                complete: _.bind(function() {
+                    this.scheduleUpdate();
+                }, this)
+            });
         },
         renderTask: function() {
             if (this.model.get('task')) {
-                this.$('.task-status').html(new taskViews.Task({model: this.model.get('task')}).render().el);
+                this.task = new taskViews.Task({model: this.model.get('task')});
+                this.$('.task-status').html(this.task.render().el);
+            } else {
+                this.task = null;
+                this.$('.task-status').html('');
             }
         },
         render: function() {
             this.$el.html(this.template({cluster: this.model}));
             this.deploymentControl = new views.DeploymentControl({model: this.model});
             this.$('.deployment-control').html(this.deploymentControl.render().el);
-            this.$('.node-list').html(new views.NodeList({model: this.model.get('nodes')}).render().el);
+            this.nodeList = new views.NodeList({model: this.model.get('nodes')});
+            this.$('.node-list').html(this.nodeList.render().el);
             this.renderTask();
             return this;
         }
@@ -52,7 +71,8 @@ function(models, dialogViews, taskViews, clusterPageTemplate, clusterNodeTemplat
                 url: '/api/clusters/' + this.model.id + '/changes',
                 success: _.bind(function() {
                     if (task.get('status') == 'PENDING') {
-                        this.model.fetch();
+                        // FIXME: page may change
+                        app.page.update();
                     }
                 }, this)
             });
