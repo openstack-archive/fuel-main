@@ -1,5 +1,6 @@
 
-$(call assert-variable,iso.path,centos.path)
+$(call assert-variable,iso.path)
+$(call assert-variable,centos.path)
 
 LEVEL ?= INFO
 
