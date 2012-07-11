@@ -47,6 +47,10 @@ def create_recipes(metafile, md, attr_id)
   cook_name = md.name.empty? ? File.basename(File.dirname(metafile)) : md.name
 
   recipes_dir = File.join(File.dirname(metafile), "recipes")
+  unless File.exists?(recipes_dir) and File.readable?(recipes_dir)
+    puts "Recipes folder not found."
+    return true
+  end
   Dir.chdir(recipes_dir)
   recipes = Dir.glob("*.rb")
 

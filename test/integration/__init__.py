@@ -53,6 +53,14 @@ class Ci(object):
             node.cdrom = Cdrom(isopath=self.iso)
             node.boot = ['disk', 'cdrom']
             environment.nodes.append(node)
+
+            node2 = Node('slave')
+            node2.memory = 2048
+            node2.vnc = True
+            node2.disks.append(Disk(size=30*1024**3))
+            node2.interfaces.append(Interface(network))
+            node2.boot = ['network']
+            environment.nodes.append(node2)
         
             devops.build(environment)
         except Exception, e:

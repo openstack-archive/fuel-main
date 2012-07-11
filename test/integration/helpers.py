@@ -41,10 +41,20 @@ class HTTPClient(object):
 
 
 class SSHClient(object):
+    class get_sudo(object):
+        def __init__(self, client):
+            self.client = client
+
+        def __enter__(self):
+            self.client.sudo_mode = True
+
+        def __exit__(self, type, value, traceback):
+            self.client.sudo_mode = False
 
     def __init__(self):
         self.channel = None
-        self.sudo = False
+        self.sudo_mode = False
+        self.sudo = self.get_sudo(self)
 
     def connect_ssh(self, host, username, password):
         self.ssh_client = paramiko.SSHClient()
@@ -55,53 +65,39 @@ class SSHClient(object):
         self.ssh_client.connect(host, username=username, password=password)
         self.sftp_client = self.ssh_client.open_sftp()
 
-    def open_channel(self):
-        if not self.channel:
-            self.channel = self.ssh_client.invoke_shell()
 
-    def aquire_sudo(self):
-        if not self.channel:
-            self.open_channel()
-        if not self.sudo:
-            logging.info("Aquiring sudo")
-            self.channel.send("sudo -s\n")
-            self._recv_until("%s: " % self.username)
-            self.channel.send("%s\n" % self.password)
-            self._recv_until("# ")
-            self.sudo = True
-
-    def exec_cmd(self, command, sudo=False):
+    def exec_cmd(self, command):
         logging.info("Executing command: '%s'" % command)
-        if not self.channel:
-            self.open_channel()
-        if sudo and not self.sudo:
-            self.aquire_sudo()
-        self.channel.send("%s\n" % command)
-        if sudo or self.sudo:
-            return self._recv_until("# ")
-        else:
-            return self._recv_until("$ ")
+        chan = self.ssh_client.get_transport().open_session()
+        stdin = chan.makefile('wb')
+        stdout = chan.makefile('rb')
+        stderr = chan.makefile_stderr('rb')
+        cmd = "%s\n" % command
+        if self.sudo_mode:
+            cmd = 'sudo -S bash -c "%s"' % cmd.replace('"', '\\"')
+        chan.exec_command(cmd)
+        if stdout.channel.closed is False:
+            stdin.write('%s\n' % self.password)
+            stdin.flush()
+        result = {
+            'stdout': [],
+            'stderr': [],
+            'exit_status': chan.recv_exit_status()
+        }
+        for line in stdout:
+            result['stdout'].append(line)
+        for line in stderr:
+            result['stderr'].append(line)
 
-    def mkdir(self, path, sudo=False):
+        return result
+
+    def mkdir(self, path):
         logging.info("Creating directory: %s" % path)
-        if not sudo:
-            self.sftp_client.mkdir(path)
-        else:
-            self.open_channel()
-            self.aquire_sudo()
-            self.channel.send("mkdir %s\n" % path)
-            self._recv_until("# ")
+        return self.exec_cmd("mkdir %s\n" % path)
 
-
-    def rmdir(self, path, sudo=False):
+    def rmdir(self, path):
         logging.info("Removing directory: %s" % path)
-        if not sudo:
-            self.ssh_client.exec_command("rm -rf %s" % path)
-        else:
-            self.open_channel()
-            self.aquire_sudo()
-            self.channel.send("rm -rf %s\n" % path)
-            self._recv_until("# ")
+        return self.exec_command("rm -rf %s" % path)
 
     def scp(self, frm, to):
         logging.info("Copying file: %s -> %s" % (frm, to))
@@ -119,9 +115,9 @@ class SSHClient(object):
                 curdir = remote_root
             else:
                 curdir = os.path.join(remote_root, rel)
-            self.sftp_client.mkdir(curdir)
+            self.mkdir(curdir)
             for fl in fls:
-                self.sftp_client.put(
+                self.scp(
                     os.path.join(root, fl),
                     os.path.join(curdir, fl)
                 )
@@ -129,10 +125,3 @@ class SSHClient(object):
     def disconnect(self):
         self.sftp_client.close()
         self.ssh_client.close()
-
-    def _recv_until(self, data):
-        buff = ""
-        while not buff.endswith(data):
-            resp = self.channel.recv(9999)
-            buff += resp
-        return buff

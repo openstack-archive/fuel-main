@@ -38,7 +38,49 @@ class TestNode(TestCase):
         cookbook_remote_path = os.path.join(SAMPLE_REMOTE_PATH, "sample-cook")
         release_remote_path = os.path.join(SAMPLE_REMOTE_PATH, "sample-release.json")
 
-        host = str(ci.environment.node['admin'].ip_address)
+        logging.info("Starting slave node")
+        admin_node = ci.environment.node['admin']
+        admin_ip = admin_node.ip_address
+        node = ci.environment.node['slave']
+        node.start()
+        
+        slave_id = node.interfaces[0].mac_address.replace(":", "").upper()
+
+        while True:
+            logging.info("Waiting for slave agent to run...")
+            nodes = json.loads(self.client.get(
+                "http://%s:8000/api/nodes" % admin_ip
+            ))
+            time.sleep(15)
+            if len(nodes) > 0:
+                logging.info("Node found")
+                break
+
+        cluster = json.loads(self.client.post(
+            "http://%s:8000/api/clusters" % admin_ip,
+            data='{ "name": "MyOwnPrivateCluster", "release": 1 }',
+            log=True
+        ))
+
+        resp = json.loads(self.client.put(
+            "http://%s:8000/api/clusters/1" % admin_ip,
+            data='{ "nodes": ["%s"] }' % slave_id
+        ))
+
+        cluster = json.loads(self.client.get(
+            "http://%s:8000/api/clusters/1" % admin_ip
+        ))
+        if len(cluster["nodes"]) == 0:
+            raise ValueError("Failed to add node into cluster")
+
+        resp = json.loads(self.client.put(
+            "http://%s:8000/api/nodes/%s" % (admin_ip, slave_id),
+            data='{ "new_roles": [1, 2], "redeployment_needed": true }'
+        ))
+        if len(resp["new_roles"]) == 0:
+            raise ValueError("Failed to assign roles to node")
+
+        """
         self.remote.connect_ssh(host, "ubuntu", "r00tme")
 
         self.remote.rmdir(cookbook_remote_path)
@@ -100,56 +142,28 @@ class TestNode(TestCase):
 
         for cmd in commands:
             self.remote.exec_cmd(cmd)
-
-        cluster = json.loads(self.client.post(
-            "http://%s:8000/api/clusters" % host,
-            data='{ "name": "MyOwnPrivateCluster", "release": 1 }',
-            log=True
-        ))
-
-        nodes = json.loads(self.client.get(
-            "http://%s:8000/api/nodes" % host
-        ))
-        if len(nodes) == 0:
-            raise ValueError("Nodes list is empty")
-        node_id = nodes[0]['id']
-
-        resp = json.loads(self.client.put(
-            "http://%s:8000/api/clusters/1" % host,
-            data='{ "nodes": ["%s"] }' % node_id
-        ))
-
-        cluster = json.loads(self.client.get(
-            "http://%s:8000/api/clusters/1" % host
-        ))
-        if len(cluster["nodes"]) == 0:
-            raise ValueError("Failed to add node into cluster")
-
-        resp = json.loads(self.client.put(
-            "http://%s:8000/api/nodes/%s" % (host, node_id),
-            data='{ "new_roles": [1, 2], "redeployment_needed": true }'
-        ))
-        if len(resp["new_roles"]) == 0:
-            raise ValueError("Failed to assign roles to node")
-
+        """
+        logging.info("Provisioning...")
         task = json.loads(self.client.put(
-            "http://%s:8000/api/clusters/1/changes/" % host,
+            "http://%s:8000/api/clusters/1/changes/" % admin_ip,
             log=True
         ))
         task_id = task['task_id']
+        logging.info("Task created: %s" % task_id)
 
         time.sleep(2)
 
         while True:
             try:
                 task = json.loads(self.client.get(
-                    "http://%s:8000/api/tasks/%s/" % (host, task_id)
+                    "http://%s:8000/api/tasks/%s/" % (admin_ip, task_id)
                 ))
                 self.check_tasks(task)
                 break
             except StillPendingException:
                 pass
 
+        """
         # check if recipes executed
         ret = self.remote.exec_cmd("test -f /tmp/chef_success && echo 'SUCCESS'")
         if not "SUCCESS" in ret.split("\r\n")[1:]:
@@ -168,8 +182,8 @@ class TestNode(TestCase):
         if not gen_pwd or gen_pwd == 'password':
             raise Exception("Password generation failed!")
 
-
         self.remote.disconnect()
+        """
 
     def check_tasks(self, task):
         if task['status'] != 'SUCCESS':
