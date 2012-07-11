@@ -341,8 +341,7 @@ $/isoroot.done: \
 		$(addprefix $(ISOROOT)/nailgun/solo/,solo.rb solo.json) \
 		$(addprefix $(ISOROOT)/nailgun/cookbooks/,$(call find-files,cookbooks)) \
 		$(addprefix $(ISOROOT)/nailgun/os-cookbooks/,$(call find-files,cooks)) \
-		$(ISOROOT)/gems \
-		$(addprefix $(ISOROOT)/gems/,$(call find-files,$(BINARIES_DIR)/gems)) \
+		$/isoroot-gems.done \
 		$(ISOROOT)/eggs \
 		$(addprefix $(ISOROOT)/eggs/,$(call find-files,$(BINARIES_DIR)/eggs)) \
 		$(ISOROOT)/dists/$(ISO_RELEASE)/Release \
@@ -487,17 +486,10 @@ chmod 600 /target/root/.gnupg/*
 mkdir -p /target/var/lib/mirror/bootstrap
 cp /cdrom/bootstrap/linux /target/var/lib/mirror/bootstrap/linux
 cp /cdrom/bootstrap/initrd.gz /target/var/lib/mirror/bootstrap/initrd.gz
-mkdir -p /target/root/.ssh
-chmod 700 /target/root/.ssh
-cp /cdrom/bootstrap/bootstrap.rsa /target/root/.ssh/bootstrap.rsa
-chmod 600 /target/root/.ssh/bootstrap.rsa
 
-# FIXME
-# bootstrap.rsa is needed to be at only place
-mkdir -p /target/opt/nailgun/.ssh
-chmod 700 /target/opt/nailgun/.ssh
-cp /cdrom/bootstrap/bootstrap.rsa /target/opt/nailgun/.ssh/bootstrap.rsa
-chmod 600 /target/opt/nailgun/.ssh/bootstrap.rsa
+mkdir -p /target/root
+cp /cdrom/bootstrap/bootstrap.rsa /target/root/bootstrap.rsa
+chmod 640 /target/root/bootstrap.rsa
 
 # netinst
 mkdir -p /target/var/lib/mirror/netinst
@@ -553,11 +545,18 @@ $(ISOROOT)/nailgun/%: nailgun/% ; $(ACTION.COPY)
 $(ISOROOT)/eggs:
 	mkdir -p $@
 $(ISOROOT)/eggs/%: $(BINARIES_DIR)/eggs/% ; $(ACTION.COPY)
-$(ISOROOT)/gems:
+
+
+$(ISOROOT)/gems/gems:
 	mkdir -p $@
-$(ISOROOT)/gems/%: $(BINARIES_DIR)/gems/% ; $(ACTION.COPY)
 
+$(ISOROOT)/gems/gems/%: $(BINARIES_DIR)/gems/% | $(ISOROOT)/gems/gems
+	echo $@
+	$(ACTION.COPY)
 
+$/isoroot-gems.done: $(addprefix $(ISOROOT)/gems/gems/,$(call find-files,$(BINARIES_DIR)/gems))
+	gem generate_index -d $(ISOROOT)/gems
+	$(ACTION.TOUCH)
 
 # MAIN ISO RULE
 
