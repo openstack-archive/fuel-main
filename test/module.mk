@@ -37,7 +37,7 @@ test-integration: $/environment-id-integration
 test-cookbooks: $/environment-id-cookbooks
 	python test/integration_test.py -l $(LEVEL) --cache-file $(abspath $<) --iso $(abspath $(centos.path)) --suite cookbooks test
 
-$/environment-id: | $(iso.path)
+$/environment-id-integration: | $(iso.path)
 	@mkdir -p $(@D)
 	python test/integration_test.py -l $(LEVEL) --cache-file $(abspath $@) destroy
 	python test/integration_test.py -l $(LEVEL) --cache-file $(abspath $@) --iso $(abspath $(iso.path)) setup
