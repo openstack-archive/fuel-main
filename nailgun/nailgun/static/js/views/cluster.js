@@ -32,28 +32,27 @@ function(models, dialogViews, taskViews, clusterPageTemplate, clusterNodeTemplat
             }
         },
         update: function() {
-            this.model.fetch({
-                complete: _.bind(function() {
-                    this.scheduleUpdate();
-                }, this)
-            });
+            if (this == app.page) {
+                this.model.fetch({
+                    complete: _.bind(function() {
+                        this.scheduleUpdate();
+                    }, this)
+                });
+            }
         },
-        renderTask: function() {
+        render: function() {
+            this.$el.html(this.template({cluster: this.model}));
+            this.deploymentControl = new views.DeploymentControl({model: this.model, page: this});
+            this.$('.deployment-control').html(this.deploymentControl.render().el);
+            this.nodeList = new views.NodeList({model: this.model.get('nodes')});
+            this.$('.node-list').html(this.nodeList.render().el);
             if (this.model.get('task')) {
-                this.task = new taskViews.Task({model: this.model.get('task')});
+                this.task = new taskViews.Task({model: this.model.get('task'), page: this});
                 this.$('.task-status').html(this.task.render().el);
             } else {
                 this.task = null;
                 this.$('.task-status').html('');
             }
-        },
-        render: function() {
-            this.$el.html(this.template({cluster: this.model}));
-            this.deploymentControl = new views.DeploymentControl({model: this.model});
-            this.$('.deployment-control').html(this.deploymentControl.render().el);
-            this.nodeList = new views.NodeList({model: this.model.get('nodes')});
-            this.$('.node-list').html(this.nodeList.render().el);
-            this.renderTask();
             return this;
         }
     });
@@ -71,8 +70,7 @@ function(models, dialogViews, taskViews, clusterPageTemplate, clusterNodeTemplat
                 url: '/api/clusters/' + this.model.id + '/changes',
                 success: _.bind(function() {
                     if (task.get('status') == 'PENDING') {
-                        // FIXME: page may change
-                        app.page.update();
+                        if (this.page == app.page) this.page.update();
                     }
                 }, this)
             });
@@ -90,8 +88,12 @@ function(models, dialogViews, taskViews, clusterPageTemplate, clusterNodeTemplat
             this.disabled = true;
             this.render();
         },
-        initialize: function() {
+        initialize: function(options) {
+            this.page = options.page;
             this.disabled = false;
+            this.model.get('nodes').each(function(node) {
+                node.bind('change:redeployment_needed', this.render, this);
+            }, this);
         },
         render: function() {
             if (this.model.get('nodes').where({redeployment_needed: true}).length) {
@@ -168,11 +170,10 @@ function(models, dialogViews, taskViews, clusterPageTemplate, clusterNodeTemplat
                 this.endNameEditing();
             }
         },
-        initialize: function() {
+        initialize: function(options) {
             this.editingName = false;
             this.eventNamespace = 'click.editnodename' + this.model.id;
             this.model.bind('change', this.render, this);
-            this.model.bind('change:redeployment_needed', app.page.deploymentControl.render, app.page.deploymentControl);
         },
         render: function() {
             this.$el.html(this.template({node: this.model, editingName: this.editingName}));

@@ -17,9 +17,10 @@ function(models, runningTemplate, successTemplate, errorTemplate) {
         },
         close: function() {
             this.remove();
-            app.page.model.update({task: null});
+            this.page.model.update({task: null});
         },
-        initialize: function() {
+        initialize: function(options) {
+            this.page = options.page;
         },
         render: function() {
             var template = this.model.get('ready') ? this.model.get('error') ? this.errorTemplate : this.successTemplate : this.runningTemplate;
