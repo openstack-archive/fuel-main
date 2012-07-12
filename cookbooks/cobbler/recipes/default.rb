@@ -32,7 +32,8 @@ end
 template "/etc/cobbler/modules.conf" do
   source "modules.conf.erb"
   mode 0644
-  notifies :restart, ["service[cobbler]", "service[dnsmasq]"]
+  notifies :restart, ["service[cobbler]", "service[dnsmasq]"], :immediately
+  notifies :run, "execute[cobbler_sync]", :immediately
 end
 
 template "/etc/cobbler/settings" do
