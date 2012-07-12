@@ -50,15 +50,34 @@ template "#{node.nailgun.root}/nailgun/extrasettings.py" do
   group node.nailgun.group
   mode '644'
   variables(
-            :level => "DEBUG",
-            :filename => "/var/log/nailgun/nailgun.log",
+            :loglevel => "DEBUG",
+            :logpath => "/var/log/nailgun",
             :sshkey => "#{node.nailgun.root}/.ssh/id_rsa",
-            :bootstrap_sshkey => "/root/bootstrap.rsa",
+            :bootstrap_sshkey => "#{node.nailgun.root}/.ssh/bootstrap.rsa",
             :cobbler_address => "localhost",
             :cobbler_user => node.cobbler.user,
             :cobbler_password => node.cobbler.password,
             :cobbler_profile => "centos-6.2-x86_64"
             )
+end
+
+directory "#{node.nailgun.root}/bin" do
+  owner node.nailgun.user
+  group node.nailgun.group
+  mode '755'
+end
+
+template "#{node.nailgun.root}/bin/deploy" do
+  source "deploy.erb"
+  owner node.nailgun.user
+  group node.nailgun.group
+  mode '755'
+end
+
+directory "#{node.nailgun.root}/.ssh" do
+  owner node.nailgun.user
+  group node.nailgun.group
+  mode '700'
 end
 
 ssh_keygen "Nailgun ssh-keygen" do
@@ -68,9 +87,9 @@ ssh_keygen "Nailgun ssh-keygen" do
   keytype 'rsa'
 end
 
-file "/root/bootstrap.rsa" do
-  mode 0640
-  group node.nailgun.group
+execute "Copying bootstrap.rsa" do
+  command "cp /root/bootstrap.rsa #{node.nailgun.root}/.ssh/bootstrap.rsa"
+  creates "#{node.nailgun.root}/.ssh/bootstrap.rsa"
 end
 
 file "#{node[:nailgun][:root]}/nailgun/venv.py" do
