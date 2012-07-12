@@ -1,4 +1,5 @@
 import os
+import os.path
 import copy
 import string
 import logging
@@ -23,8 +24,15 @@ from nailgun.provision.model.profile import Profile as ProvisionProfile
 from nailgun.provision.model.node import Node as ProvisionNode
 from nailgun.provision.model.power import Power as ProvisionPower
 
-logger = logging.getLogger(__name__)
-logging.basicConfig(level=logging.DEBUG)
+from celery import current_app
+from celery.utils import LOG_LEVELS
+from celery.log import Logging
+
+
+current_app.conf.CELERYD_LOG_LEVEL = LOG_LEVELS[settings.CELERYLOGLEVEL]
+celery_logging = Logging(current_app)
+celery_logging.setup_logger(logfile=settings.CELERYLOGFILE)
+logger = celery_logging.get_default_logger()
 
 
 def resolve_recipe_deps(graph, recipe):
@@ -255,11 +263,12 @@ def create_solo(*args):
 @task_with_callbacks
 def bootstrap_node(node_id):
 
-    logger = bootstrap_node.get_logger()
     node = Node.objects.get(id=node_id)
+    logger.debug("Turning node %s status into 'deploying'" % node_id)
     node.status = "deploying"
     node.save()
 
+    logger.debug("Provisioning node %s" % node_id)
     _provision_node(node_id)
 
     def tcp_ping(host, port):
@@ -276,18 +285,21 @@ def bootstrap_node(node_id):
     # there is no guarantee that installed slave node has
     # the same ip as bootstrap node had
     # it is necessary to install and launch agent on slave node
+
+    logger.debug("Waiting for node %s listen to %s:%s ..." % 
+                 (node_id, str(node.ip), "22"))
     while True:
         if tcp_ping(node.ip, 22):
             break
         time.sleep(5)
 
+    logger.debug("Trying to connect to node %s over ssh" % node_id)
     try:
         ssh = SshConnect(node.ip, 'root', settings.PATH_TO_SSH_KEY)
-        # Returns True if succeeded
-        exit_status = ssh.run("/opt/nailgun/bin/deploy")
     except (paramiko.AuthenticationException,
             paramiko.PasswordRequiredException,
             paramiko.SSHException):
+        logger.error("Error occured while ssh connecting to node %s" % node_id)
         message = "Task %s failed:" \
             "Can't connect to IP=%s" \
             % (bootstrap_node.request.id, node.ip)
@@ -299,17 +311,21 @@ def bootstrap_node(node_id):
             % (bootstrap_node.request.id, node.ip, str(error))
         node_set_error_status(node.id)
         raise SSHError(message)
-    # FIXME(mihgen): If uncomment, it fails in case if SshConnect.__init__
-    #                failed. But we need to close ssh in other cases
-    #finally:
-        #ssh.close()
-    #ssh.close()
-    if not exit_status:
+    else:
+        logger.debug("Trying to launch deploy script on node %s" % node_id)
+        # Returns True if succeeded
+        exit_status = ssh.run("/opt/nailgun/bin/deploy")
+        ssh.close()
+
+    if exit_status:
+        logger.error("Error occured while deploying node %s" % node_id)
         message = "Task %s failed: " \
             "Deployment exited with non-zero exit code. IP=%s" \
             % (bootstrap_node.request.id, node.ip)
         node_set_error_status(node.id)
         raise DeployError(message)
+
+    logger.debug("Turning node %s status into 'ready'" % node_id)
     node.status = "ready"
     node.save()
     return exit_status
