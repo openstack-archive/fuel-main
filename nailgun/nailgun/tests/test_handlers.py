@@ -154,6 +154,13 @@ class TestHandlers(TestCase):
                           self.another_node.id)
         cluster = clusters_from_db[0]
         self.assertEquals(len(cluster.release.networks.all()), 3)
+        # test delete
+        resp = self.client.delete(
+            reverse('cluster_handler', kwargs={'cluster_id': cluster.id}),
+            "",
+            "application/json"
+        )
+        self.assertEquals(resp.status_code, 204)
 
     def test_cluster_update(self):
         updated_name = 'Updated cluster'
@@ -206,6 +213,14 @@ class TestHandlers(TestCase):
 
         nodes_from_db = Node.objects.filter(id=node_id)
         self.assertEquals(len(nodes_from_db), 1)
+
+        # test delete
+        resp = self.client.delete(
+            reverse('node_handler', kwargs={'node_id': node_id}),
+            "",
+            "application/json"
+        )
+        self.assertEquals(resp.status_code, 204)
 
     def test_node_creation_using_put(self):
         node_id = '080000000002'

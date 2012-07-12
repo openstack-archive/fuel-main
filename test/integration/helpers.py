@@ -67,7 +67,7 @@ class SSHClient(object):
 
 
     def exec_cmd(self, command):
-        logging.info("Executing command: '%s'" % command)
+        logging.info("Executing command: '%s'" % command.rstrip())
         chan = self.ssh_client.get_transport().open_session()
         stdin = chan.makefile('wb')
         stdout = chan.makefile('rb')

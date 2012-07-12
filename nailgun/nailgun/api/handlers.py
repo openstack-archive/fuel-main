@@ -193,7 +193,7 @@ class ClusterCollectionHandler(BaseHandler):
 
 class ClusterHandler(JSONHandler):
 
-    allowed_methods = ('GET', 'PUT')
+    allowed_methods = ('GET', 'PUT', 'DELETE')
     model = Cluster
     fields = ('id', 'name')
     special_fields = ('nodes', 'release', 'task')
@@ -241,6 +241,14 @@ class ClusterHandler(JSONHandler):
         except ObjectDoesNotExist:
             return rc.NOT_FOUND
 
+    def delete(self, request, cluster_id):
+        try:
+            cluster = Cluster.objects.get(id=cluster_id)
+            cluster.delete()
+            return rc.DELETED
+        except ObjectDoesNotExist:
+            return rc.NOT_FOUND
+
 
 class NodeCollectionHandler(BaseHandler):
 
@@ -269,7 +277,7 @@ class NodeCollectionHandler(BaseHandler):
 
 class NodeHandler(JSONHandler):
 
-    allowed_methods = ('GET', 'PUT')
+    allowed_methods = ('GET', 'PUT', 'DELETE')
     model = Node
     fields = ('id', 'name', 'metadata', 'status', 'mac', 'fqdn', 'ip',
               'redeployment_needed')
@@ -306,6 +314,14 @@ class NodeHandler(JSONHandler):
 
         node.save()
         return NodeHandler.render(node)
+
+    def delete(self, request, node_id):
+        try:
+            node = Node.objects.get(id=node_id)
+            node.delete()
+            return rc.DELETED
+        except ObjectDoesNotExist:
+            return rc.NOT_FOUND
 
 
 class AttributeCollectionHandler(BaseHandler):
@@ -531,7 +547,7 @@ class ReleaseCollectionHandler(BaseHandler):
 
 class ReleaseHandler(JSONHandler):
 
-    allowed_methods = ('GET',)
+    allowed_methods = ('GET', 'DELETE')
     model = Release
     fields = ('id', 'name', 'version', 'description', 'networks_metadata')
     special_fields = ('roles',)
@@ -551,6 +567,14 @@ class ReleaseHandler(JSONHandler):
         try:
             release = Release.objects.get(id=release_id)
             return ReleaseHandler.render(release)
+        except ObjectDoesNotExist:
+            return rc.NOT_FOUND
+
+    def delete(self, request, release_id):
+        try:
+            release = Release.objects.get(id=release_id)
+            release.delete()
+            return rc.DELETED
         except ObjectDoesNotExist:
             return rc.NOT_FOUND
 

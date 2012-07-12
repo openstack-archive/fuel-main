@@ -137,11 +137,6 @@ def deploy_cluster(cluster_id):
         add_attrs = {}
 
         roles_for_node = node.roles.all()
-        # TODO(mihgen): It should be possible to have node w/o role assigned
-        if not roles_for_node:
-            message = "Task %s failed: Roles list for node %s is empty" \
-                    % (deploy_cluster.request.id, node.id)
-            raise EmptyListError(message)
 
         node_json['cluster_id'] = cluster_id
         for f in node._meta.fields:

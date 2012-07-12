@@ -21,7 +21,8 @@ SOLO_PATH = os.path.join(os.path.dirname(__file__), "..", "..", "scripts", "agen
 DEPLOY_PATH = os.path.join(os.path.dirname(__file__), "..", "..", "bin", "deploy")
 COOKBOOKS_PATH = os.path.join(os.path.dirname(__file__), "..", "..", "cookbooks")
 SAMPLE_PATH = os.path.join(os.path.dirname(__file__), "..", "..", "scripts", "ci")
-SAMPLE_REMOTE_PATH = "/root"
+SAMPLE_REMOTE_PATH = "/home/ubuntu"
+
 
 class StillPendingException(Exception):
     pass
@@ -34,16 +35,18 @@ class TestNode(TestCase):
         self.remote = SSHClient()
 
     def test_node(self):
-        cookbook_remote_path = os.path.join(SAMPLE_REMOTE_PATH, "sample-cook")
-        release_remote_path = os.path.join(SAMPLE_REMOTE_PATH, "sample-release.json")
-
-        logging.info("Starting slave node")
         admin_node = ci.environment.node['admin']
-        admin_ip = admin_node.ip_address
-        node = ci.environment.node['slave']
-        node.start()
-        
-        slave_id = node.interfaces[0].mac_address.replace(":", "").upper()
+        admin_ip = str(admin_node.ip_address)
+        slave = ci.environment.node['slave']
+        slave_id = slave.interfaces[0].mac_address.replace(":", "").upper()
+        logging.info("Starting slave node")
+        slave.start()
+
+        self._load_sample_admin(
+            host=admin_ip,
+            user="ubuntu",
+            passwd="r00tme"
+        )
 
         while True:
             logging.info("Waiting for slave agent to run...")
@@ -56,11 +59,18 @@ class TestNode(TestCase):
             else:
                 time.sleep(15)
 
-        cluster = json.loads(self.client.post(
-            "http://%s:8000/api/clusters" % admin_ip,
-            data='{ "name": "MyOwnPrivateCluster", "release": 1 }',
-            log=True
-        ))
+        try:
+            cluster = json.loads(self.client.get(
+                "http://%s:8000/api/clusters/1" % admin_ip,
+                log=True
+            ))
+        except ValueError:
+            logging.info("No clusters found - creating test cluster...")
+            cluster = json.loads(self.client.post(
+                "http://%s:8000/api/clusters" % admin_ip,
+                data='{ "name": "MyOwnPrivateCluster", "release": 2 }',
+                log=True
+            ))
 
         resp = json.loads(self.client.put(
             "http://%s:8000/api/clusters/1" % admin_ip,
@@ -75,7 +85,7 @@ class TestNode(TestCase):
 
         resp = json.loads(self.client.put(
             "http://%s:8000/api/nodes/%s" % (admin_ip, slave_id),
-            data='{ "new_roles": [1, 2], "redeployment_needed": true }'
+            data='{ "new_roles": [2, 3], "redeployment_needed": true }'
         ))
         if len(resp["new_roles"]) == 0:
             raise ValueError("Failed to assign roles to node")
@@ -87,13 +97,13 @@ class TestNode(TestCase):
         ))
         task_id = task['task_id']
         logging.info("Task created: %s" % task_id)
-        logging.info("Waiting for completion of admin node software installation")
+        logging.info("Waiting for completion of slave node software installation")
         while True:
             try:
                 task = json.loads(self.client.get(
                     "http://%s:8000/api/tasks/%s/" % (admin_ip, task_id)
                 ))
-                self.check_tasks(task)
+                self._check_tasks(task)
                 break
             except StillPendingException:
                 time.sleep(30)
@@ -106,58 +116,15 @@ class TestNode(TestCase):
         wait(lambda: tcp_ping(node["ip"], 22), timeout=1800)
         self.remote.connect_ssh(node["ip"], "root", "r00tme")
 
-        self.remote.rmdir(cookbook_remote_path)
-        self.remote.rmdir(os.path.join(SAMPLE_REMOTE_PATH, "cookbooks"))
-        self.remote.rmdir(os.path.join(SAMPLE_REMOTE_PATH, "solo"))
-
-        self.remote.scp(
-            os.path.join(SAMPLE_PATH, "sample-release.json"),
-            release_remote_path
-        )
-
-        self.remote.mkdir(os.path.join(SAMPLE_REMOTE_PATH, "solo"))
-        self.remote.mkdir(os.path.join(SAMPLE_REMOTE_PATH, "solo/config"))
-
-        self.remote.scp(
-            DEPLOY_PATH,
-            os.path.join(SAMPLE_REMOTE_PATH, "deploy")
-        )
-        self.remote.scp(
-            os.path.join(SOLO_PATH, "solo.json"),
-            os.path.join(SAMPLE_REMOTE_PATH, "solo", "config", "solo.json")
-        )
-        self.remote.scp(
-            os.path.join(SOLO_PATH, "solo.rb"),
-            os.path.join(SAMPLE_REMOTE_PATH, "solo", "config", "solo.rb")
-        )
-
-        self.remote.scp_d(
-            os.path.join(SAMPLE_PATH, "sample-cook"),
-            SAMPLE_REMOTE_PATH
-        )
-        self.remote.scp_d(
-            COOKBOOKS_PATH,
-            SAMPLE_REMOTE_PATH
-        )
-
-        self.remote.exec_cmd("rm /tmp/chef_success")
-        result = self.remote.exec_cmd("chef-solo -l debug -c %s -j %s" % (
-            os.path.join(SAMPLE_REMOTE_PATH, "solo", "config", "solo.rb"),
-            os.path.join(SAMPLE_REMOTE_PATH, "solo", "config", "solo.json")
-        ))
-        if result['exit_status'] != 0:
-            self.remote.disconnect()
-            raise Exception("Error while executing chef-solo: %s" % str(result))
-
         # check if recipes executed
-        ret = self.remote.exec_cmd("test -f /tmp/chef_success && echo 'SUCCESS'")
-        if not "SUCCESS" in ret.split("\r\n")[1:]:
-            raise Exception("Recipe failed to execute!")
+        ret = self.remote.exec_cmd("test -f /tmp/chef_success")
+        if ret['exit_status'] != 0:
+            raise Exception("Recipes failed to execute!")
         # check recipes execution order
         ret = self.remote.exec_cmd("cat /tmp/chef_success")
-        if not ret.split("\r\n")[1:-1] == ['monitor', 'default', 'compute']:
+        if not ret['stdout'].split("\r\n") == ['monitor', 'default', 'compute']:
             raise Exception("Recipes executed in a wrong order: %s!" \
-                % str(ret.split("\r\n")[1:-1]))
+                % str(ret['stdout'].split("\r\n")))
         """
         # check passwords
         self.remote.exec_cmd("tar -C %s -xvf /root/nodes.tar.gz" % SAMPLE_REMOTE_PATH)
@@ -170,7 +137,7 @@ class TestNode(TestCase):
 
         self.remote.disconnect()
 
-    def check_tasks(self, task):
+    def _check_tasks(self, task):
         if task['status'] != 'SUCCESS':
             if task['status'] == 'PENDING':
                 raise StillPendingException("Task %s is still pending")
@@ -180,4 +147,50 @@ class TestNode(TestCase):
             )
         if 'subtasks' in task and task['subtasks']:
             for subtask in task['subtasks']:
-                self.check_tasks(subtask)
+                self._check_tasks(subtask)
+
+    def _load_sample_admin(self, host, user, passwd):
+        cookbook_remote_path = os.path.join(SAMPLE_REMOTE_PATH, "sample-cook")
+        release_remote_path = os.path.join(SAMPLE_REMOTE_PATH, "sample-release.json")
+        self.remote.connect_ssh(host, user, passwd)
+        self.remote.rmdir(cookbook_remote_path)
+        self.remote.rmdir(os.path.join(SAMPLE_REMOTE_PATH, "cookbooks"))
+        self.remote.rmdir(os.path.join(SAMPLE_REMOTE_PATH, "solo"))
+        self.remote.scp(
+            os.path.join(SAMPLE_PATH, "sample-release.json"),
+            release_remote_path
+        )
+        self.remote.mkdir(os.path.join(SAMPLE_REMOTE_PATH, "solo"))
+        self.remote.mkdir(os.path.join(SAMPLE_REMOTE_PATH, "solo/config"))
+        self.remote.scp(
+            os.path.join(SOLO_PATH, "solo.json"),
+            os.path.join(SAMPLE_REMOTE_PATH, "solo", "config", "solo.json")
+        )
+        self.remote.scp(
+            os.path.join(SOLO_PATH, "solo.rb"),
+            os.path.join(SAMPLE_REMOTE_PATH, "solo", "config", "solo.rb")
+        )
+        self.remote.scp_d(
+            os.path.join(SAMPLE_PATH, "sample-cook"),
+            SAMPLE_REMOTE_PATH
+        )
+        self.remote.scp_d(
+            COOKBOOKS_PATH,
+            SAMPLE_REMOTE_PATH
+        )
+        commands = [
+            #"rm -rf /opt/nailgun/nailgun.sqlite",
+            #"/opt/nailgun-venv/bin/python /opt/nailgun/manage.py syncdb --noinput",
+            #"chown nailgun:nailgun /opt/nailgun/nailgun.sqlite",
+            "/opt/nailgun/bin/install_cookbook %s" % cookbook_remote_path,
+            "/opt/nailgun/bin/create_release %s" % release_remote_path
+        ]
+
+        with self.remote.sudo:
+            for cmd in commands:
+                res = self.remote.exec_cmd(cmd)
+                if res['exit_status'] != 0:
+                    self.remote.disconnect()
+                    raise Exception("Command failed: %s" % str(res))
+
+        self.remote.disconnect()

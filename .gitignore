@@ -12,3 +12,4 @@
 /.vagrant
 
 /build
+/test/nosetests.xml
