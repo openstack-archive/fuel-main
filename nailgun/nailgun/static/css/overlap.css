@@ -5,7 +5,7 @@ body {
   line-height: 18px;
   color: #333333;
   background-color: #ffffff;
-  background-image: url(../img/bg.jpg);
+  background-image: url(../img/bg3.png);
   font-weight: 500;
 }
 
@@ -24,20 +24,44 @@ h1, h2, h3, h4, h5, h6 {margin: 0; font-family: inherit; font-weight: 300; color
 display: block;
 width: auto;
 /* height: 316px; */
-min-height: 200px;
+height: 258px;
 border: 1px solid #a9a9a9;
 border-radius: 5px;
 color: #666666;
 text-shadow: 0px 1px 0px #ededed;
 margin-top: 20px;
-behavior: url(css/pie.htc);
+/*overflow: hidden;*/
+behavior: url(/static/css/pie.htc);
 }
 
-.roles {
-  display: block;
-  height: 74px;
-  overflow: auto;
-  overflow-y: none;
+.node .article {width: 100%; height: 34px; overflow: hidden;}
+.node .roles, .cluster .info {width: 100%; height: 100px; overflow-x: hidden; overflow-y: auto;}
+.cluster .info .leftitem {line-height: 16px; min-height: 18px; padding-left: 20px;}
+.cluster .info .rightitem {line-height: 16px; min-height: 18px; font-weight: 700;}
+.node .statusbar {width: 100%; height: 40px; overflow: hidden;}
+.node .statusbar-text {margin-top: 10px; padding: 0px 20px 0px 20px; font-size: 15px; text-align: center;}
+
+.node ::-webkit-scrollbar {
+    display: block;
+    width: 8px;
+}
+
+.node ::-webkit-scrollbar-track {
+        -webkit-box-shadow: inset 0 0 6px rgba(0,0,0,0.0);
+        -webkit-border-radius: 8px;
+        border-radius: 8px;
+}
+
+.node ::-webkit-scrollbar-thumb {
+      border: 0px solid rgba(255,255,255,1.0);
+      -webkit-border-radius: 4px;
+      border-radius: 4px;
+      background: rgba(190,190,190,0.8);
+      -webkit-box-shadow: inset 0 0 1px rgba(0,0,0,0.5);
+}
+
+.node ::-webkit-scrollbar-thumb:window-inactive {
+      background: rgba(220,220,220,0.4);
 }
 
 .nodeimg {display: block; width: 210px; height: 75px; overflow: hidden; background-image: url(../img/node.png); margin: 5px 5px 0px 5px;}
@@ -46,51 +70,88 @@ behavior: url(css/pie.htc);
 .nodeimgdeploying {display: block; width: 34px; height: 27px; overflow: hidden; background-image: url(../img/led_orange.gif); margin-top:23px; margin-left: 11px;}
 .nodeimgoffline {display: block; width: 34px; height: 27px; overflow: hidden; background-image: url(../img/led_off.gif); margin-top:23px; margin-left: 11px;}
 
-.on {
-background-color: #dbdbdb;  box-shadow: inset 0 1px 0px #f2f2f2; -moz-box-shadow: inset 0 1px 0px #f2f2f2;
-background-image: linear-gradient(bottom, rgb(212,212,212) 0%, rgb(220,220,220) 50%, rgb(228,228,228) 100%);
-background-image: -o-linear-gradient(bottom, rgb(212,212,212) 0%, rgb(220,220,220) 50%, rgb(228,228,228) 100%);
-background-image: -moz-linear-gradient(bottom, rgb(212,212,212) 0%, rgb(220,220,220) 50%, rgb(228,228,228) 100%);
-background-image: -webkit-linear-gradient(bottom, rgb(212,212,212) 0%, rgb(220,220,220) 50%, rgb(228,228,228) 100%);
-background-image: -ms-linear-gradient(bottom, rgb(212,212,212) 0%, rgb(220,220,220) 50%, rgb(228,228,228) 100%);
-background-image: -webkit-gradient(
-  linear,
-  left bottom,
-  left top,
-  color-stop(0, rgb(212,212,212)),
-  color-stop(0.5, rgb(220,220,220)),
-  color-stop(1, rgb(228,228,228))
-  );
--pie-background: linear-gradient(#d4d4d4, #e4e4e4);
-behavior: url(css/pie.htc);
+.clusterimg {display: block; width: 210px; height: 75px; overflow: hidden; background-image: url(../img/cluster.png); margin: 5px 5px 0px 5px;}
+
+.node, .cluster {
+  display: block;
+  background-color: #dbdbdb;  box-shadow: inset 0 1px 0px #f2f2f2; -moz-box-shadow: inset 0 1px 0px #f2f2f2;
+  background-image: linear-gradient(bottom, rgb(212,212,212) 0%, rgb(220,220,220) 50%, rgb(228,228,228) 100%);
+  background-image: -o-linear-gradient(bottom, rgb(212,212,212) 0%, rgb(220,220,220) 50%, rgb(228,228,228) 100%);
+  background-image: -moz-linear-gradient(bottom, rgb(212,212,212) 0%, rgb(220,220,220) 50%, rgb(228,228,228) 100%);
+  background-image: -webkit-linear-gradient(bottom, rgb(212,212,212) 0%, rgb(220,220,220) 50%, rgb(228,228,228) 100%);
+  background-image: -ms-linear-gradient(bottom, rgb(212,212,212) 0%, rgb(220,220,220) 50%, rgb(228,228,228) 100%);
+  background-image: -webkit-gradient(
+    linear,
+    left bottom,
+    left top,
+    color-stop(0, rgb(212,212,212)),
+    color-stop(0.5, rgb(220,220,220)),
+    color-stop(1, rgb(228,228,228))
+    );
+  -pie-background: linear-gradient(#d4d4d4, #e4e4e4);
+  behavior: url(/static/css/pie.htc);
 }
 
-
-.on ul, .off ul {display: block; padding: 0px; margin: 0px; margin-left: 30px; list-style-type: none;}
-.on img, .off img {display: block; margin: 5px;}
-.on h4, .off h4 {display: block; padding: 5px 30px 0 30px; color: #333333; font-weight: 600;}
-.on .roles a, .off .roles a {color: #666666;}
-.on a:hover, .off a:hover {color: #13609b;}
-.on h4 a, .off h4 a {color: #333333;}
-.on h4 a:hover, .off h4 a:hover  {color: #13609b; text-decoration: none;}
-
-.on h4 a .icon-pencil, .off h4 a .icon-pencil {margin-left: -21px; margin-top: 3px; visibility: hidden;}
-.on h4 a:hover .icon-pencil, .off h4 a:hover .icon-pencil {margin-left: -21px; margin-top: 3px; visibility: visible;}
-.on hr, .off hr {margin: 12px 0px 0px 0px; border: 0; border-top: 1px solid #a9a9a9; border-bottom: 1px solid #f2f2f2;}
-.on .status_bar, .off .status_bar {display: block; height: 38px; overflow: hidden; margin: 0 px 5px 0px 5px; text-align: center;}
-.status_bar {font-size: 16px; font-weight: 600; padding-top: 12px;}
-
-.off {background-color: #f4f4f4; opacity: 0.5; }
-
-.node-name {
-  height: 25px;
+.cluster:hover {
+  cursor: pointer;
+  text-decoration: none;
+  text-shadow: 0 1px 0 #EDEDED;
+  color: #666666;
+  background-color: #dbdbdb;  box-shadow: inset 0 2px 0px #f2f2f2; -moz-box-shadow: inset 0 2px 0px #f2f2f2;
+  background-image: linear-gradient(bottom, rgb(180,180,180) 0%, rgb(204,204,204) 50%, rgb(212,212,212) 100%);
+  background-image: -o-linear-gradient(bottom, rgb(180,180,180) 0%, rgb(204,204,204) 50%, rgb(212,212,212) 100%);
+  background-image: -moz-linear-gradient(bottom, rgb(180,180,180) 0%, rgb(204,204,204) 50%, rgb(212,212,212) 100%);
+  background-image: -webkit-linear-gradient(bottom, rgb(180,180,180) 0%, rgb(204,204,204) 50%, rgb(212,212,212) 100%);
+  background-image: -ms-linear-gradient(bottom, rgb(180,180,180) 0%, rgb(204,204,204) 50%, rgb(212,212,212) 100%);
+  background-image: -webkit-gradient(
+    linear,
+    left bottom,
+    left top,
+    color-stop(0, rgb(200,200,200)),
+    color-stop(0.5, rgb(210,210,210)),
+    color-stop(1, rgb(220,220,220))
+    );
+  -webkit-box-shadow: 0 1px 10px rgba(0, 0, 0, 0.2);
+      -moz-box-shadow: 0 1px 10px rgba(0, 0, 0, 0.2);
+            box-shadow: 0 1px 10px rgba(0, 0, 0, 0.2);
+  -pie-background: linear-gradient(#d4d4d4, #e4e4e4);
+  behavior: url(/static/css/pie.htc);
 }
+
+.create {background-color: rgba(250, 250, 250, 0.0); border: 1px solid #dfdfdf; padding: 0px; background-image: none;}
+.create:hover {background-color: rgba(220, 220, 220, 0.4); border: 1px solid #d0d0d0; cursor: pointer;}
+.create a {margin: 0px; padding: 0px;}
+.create .textbox {display: block; height: 22px; line-height: 20px; margin-top: 65px; overflow: hidden; text-align: center;}
+.create .iconbox {display: block; font-size: 100px; height: 120px; line-height: 200px; margin-left: -45px; overflow: hidden; text-align: center;}
+.create .iconbox a {color: #999999;}
+.create .iconbox a:hover {text-decoration: none;}
+
+.node ul {list-style-type: none; display: block; padding: 0px; margin: 0px;}
+
+.node .roles ul {padding-left: 20px; padding: 0px; margin: 0px; margin-left: 20px;}
+.node .roles ul:hover {color: #13609b; text-decoration: none; cursor: pointer;}
+.node .roles li {line-height: 19px;}
+.node .roles li.deleted-role {text-decoration: line-through; color: red}
+.node .roles li.added-role {color: green}
+
+.node hr, .cluster hr {margin: 0px; padding: 0px; border: 0; border-top: 1px solid #a9a9a9; border-bottom: 1px solid #f2f2f2;}
+
+.node h4.name, .cluster h4.name {display: block; padding: 0px 10px 5px 20px; color: #333333; font-weight: 600; line-height: 34px;}
+.node h4.name .icon-pencil, .cluster h4.name .icon-pencil {margin-left: -14px; margin-right: 0; margin-top: 3px; visibility: hidden;}
+.node h4.name:hover, .cluster h4.name:hover {color: #13609b; text-decoration: none; cursor: pointer;}
+.node h4.name:hover .icon-pencil, .cluster h4.name:hover .icon-pencil {visibility: visible;}
 
 .node-name-editing {
   height: 30px;
   overflow: hidden;
-  margin: 0px 0px 0px 20px;
+  margin: 3px 0px 0px 20px;
 }
+
+.msg-ok {color: #367b16;}
+.msg-error {color: #8b0000;}
+.msg-warning {color: #b44200;}
+
+.off {background-color: #f4f4f4; opacity: 0.5; }
 
 .navbar-inner {
   min-height: 40px;
@@ -112,7 +173,7 @@ behavior: url(css/pie.htc);
      -moz-box-shadow: 0 1px 3px rgba(0, 0, 0, 0.25), inset 0 -1px 0 rgba(0, 0, 0, 0.1);
           box-shadow: 0 1px 3px rgba(0, 0, 0, 0.25), inset 0 -1px 0 rgba(0, 0, 0, 0.1);
   -pie-background: linear-gradient(#666666, #333333);
-  behavior: url(css/pie.htc);
+  behavior: url(/static/css/pie.htc);
 }
 .navbar .nav > li > a {
   font-size: 16px;
@@ -181,6 +242,28 @@ behavior: url(css/pie.htc);
 .dialog-node {
   cursor: pointer !important;
 }
+
+.node_not_installed {
+  border: 1px solid #a9a9a9;
+  background-color: #dbdbdb;
+  background-image: -ms-linear-gradient(top, #e3e3e3, #d4d4d4);
+  background-image: -webkit-gradient(linear, 0 0, 0 100%, from(#e3e3e3), to(#d4d4d4));
+  background-image: -webkit-linear-gradient(top, #e3e3e3, #d4d4d4);
+  background-image: -o-linear-gradient(top, #e3e3e3, #d4d4d4);
+  background-image: -moz-linear-gradient(top, #e3e3e3, #d4d4d4);
+  background-image: linear-gradient(top, #e3e3e3, #d4d4d4);
+  margin-bottom: 10px;
+  padding: 6px;
+  color: #666666;
+  font-size: 12px;
+  text-shadow: 0 1px 0 rgba(255, 255, 255, 0.8);
+  -webkit-box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.8), 0 1px 2px rgba(0, 0, 0, 0.05);
+  -moz-box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.8), 0 1px 2px rgba(0, 0, 0, 0.05);
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.8), 0 1px 2px rgba(0, 0, 0, 0.05);
+  -pie-background: linear-gradient(#e3e3e3, #d4d4d4);
+  behavior: url(/static/css/pie.htc);
+}
+
 .node_uncheck {border: 1px solid #a9a9a9; background-color: #dbdbdb;
                 background-image: -ms-linear-gradient(top, #e3e3e3, #d4d4d4);
                 background-image: -webkit-gradient(linear, 0 0, 0 100%, from(#e3e3e3), to(#d4d4d4));
@@ -197,7 +280,7 @@ behavior: url(css/pie.htc);
                 -moz-box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.8), 0 1px 2px rgba(0, 0, 0, 0.05);
                     box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.8), 0 1px 2px rgba(0, 0, 0, 0.05);
                 -pie-background: linear-gradient(#e3e3e3, #d4d4d4);
-                behavior: url(css/pie.htc);
+                behavior: url(/static/css/pie.htc);
 }
 .node_uncheck:hover {border: 1px solid #999999;
                 background-image: -ms-linear-gradient(top, #d3d3d3, #c4c4c4);
@@ -207,7 +290,7 @@ behavior: url(css/pie.htc);
                 background-image: -moz-linear-gradient(top, #d3d3d3, #c4c4c4);
                 background-image: linear-gradient(top, #d3d3d3, #c4c4c4);
                 -pie-background: linear-gradient(#d3d3d3, #c4c4c4);
-                behavior: url(css/pie.htc);
+                behavior: url(/static/css/pie.htc);
 }
 .node_uncheck .icon-ok {left: 168px; margin-left: -23px; position: relative; top: -4px; display: none;}
 .node_uncheck:hover .icon-ok {display: inline-block;}
@@ -231,7 +314,7 @@ behavior: url(css/pie.htc);
                 -moz-box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.5), 0 1px 2px rgba(0, 0, 0, 0.05);
                     box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.5), 0 1px 2px rgba(0, 0, 0, 0.05);
                 -pie-background: linear-gradient(#81ca5f, #59ba2e);
-                behavior: url(css/pie.htc);
+                behavior: url(/static/css/pie.htc);
 }
 .node_check:hover {border: 1px solid #295914;
                 background-image: -ms-linear-gradient(top, #70b053, #499826);
@@ -241,7 +324,7 @@ behavior: url(css/pie.htc);
                 background-image: -moz-linear-gradient(top, #70b053, #499826);
                 background-image: linear-gradient(top, #70b053, #499826);
                 -pie-background: linear-gradient(#70b053, #499826);
-                behavior: url(css/pie.htc);
+                behavior: url(/static/css/pie.htc);
 }
 .node_check .icon-ok {left: 168px; margin-left: -23px; position: relative; top: -4px; display: inline-block;}
 .node_check .article {display: inline-block; font-size: 13px; font-weight: 600; text-shadow: 0 1px 0 rgba(0, 0, 0, 0.3);}
@@ -252,6 +335,7 @@ behavior: url(css/pie.htc);
   margin-bottom: 0px;
   margin-top: 10px;
 }
+
 section {margin-bottom: 40px;}
 
 .table-bordered {
@@ -260,7 +344,7 @@ section {margin-bottom: 40px;}
      -moz-box-shadow: 0px 1px 0px rgba(0, 0, 0, 0.15), inset 0 0 0 rgba(0, 0, 0, 0.1);
           box-shadow: 0px 1px 0px rgba(0, 0, 0, 0.15), inset 0 0 0 rgba(0, 0, 0, 0.1);
   -pie-background: linear-gradient(#666666, #333333);
-  behavior: url(css/pie.htc);
+  behavior: url(/static/css/pie.htc);
 }
 
 .dropdown-menu {
@@ -290,22 +374,22 @@ section {margin-bottom: 40px;}
           background-clip: padding-box;
 }
 
-.dropdown-menu .role a:hover {
-  color: #333333;
-  cursor: pointer;
+.dropdown-menu ul {margin: 0;}
+.dropdown-menu li {color: #555555;}
+.dropdown-menu li.role:hover {
+  color: #ffffff;
   text-decoration: none;
   background-color: #78c754;
-  -webkit-box-shadow: none;
-     -moz-box-shadow: none;
-          box-shadow: none;
+  text-shadow: none;
 }
-
-.dropdown-menu .role a i {margin-left: -7px; margin-right: 7px;}
-.dropdown-menu .role.unchecked a i {visibility: hidden;}
-.dropdown-menu h4 {margin-left: -20px; margin-top: 10px;}
-.dropdown-menu .close {line-height: 30px; margin-right: 10px;}
-.dropdown-menu .applybtn {padding: 0px 20px 10px 20px}
-.dropdown-menu .applybtn button {color: #ffffff; width: 100%}
+.dropdown-menu h4 {display: block; padding: 0px 10px 5px 20px; margin-top: 5px; color: #333333; font-weight: 600; line-height: 34px;}
+.dropdown-menu .role {line-height: 23px; cursor: pointer;}
+.dropdown-menu .role.unchecked i {margin-left: 3px; margin-right: 7px; visibility: hidden; margin-top: 2px;}
+.dropdown-menu .role.checked  i {margin-left: 3px; margin-right: 7px; visibility: visible; margin-top: 2px;}
+.dropdown-menu h4 {}
+.dropdown-menu .close {line-height: 37px; margin-right: 10px;}
+.dropdown-menu .applybtn {padding: 5px 20px 10px 20px;}
+.dropdown-menu .applybtn .btn-small {color: #ffffff; width: 100%;}
 .dropdown-menu .noroles {text-align: center; padding: 5px 15px 0;}
 
 .loading {

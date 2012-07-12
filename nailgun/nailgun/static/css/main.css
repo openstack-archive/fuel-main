@@ -1783,7 +1783,7 @@ table .span24 {
   background-repeat: no-repeat;
   margin: 3px 6px 0 0;
 }
-
+/*
 [class^="icon-"]:last-child,
 [class*=" icon-"]:last-child {
   *margin-left: 0;
@@ -2352,7 +2352,7 @@ table .span24 {
 .icon-fullscreen {
   background-position: -456px -144px;
 }
-
+*/
 .dropup,
 .dropdown {
   position: relative;

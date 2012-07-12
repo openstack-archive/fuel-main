@@ -126,7 +126,7 @@ function(models, dialogViews, taskViews, clusterPageTemplate, clusterNodeTemplat
         className: 'span3',
         template: _.template(clusterNodeTemplate),
         events: {
-            'click .roles > a': 'editRoles',
+            'click .roles ul': 'editRoles',
             'click .node-name': 'startNameEditing',
             'keydown .node-name-editing': 'onNodeNameInputKeydown'
         },

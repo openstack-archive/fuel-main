@@ -1,42 +1,58 @@
 <div class="node <%= node.get('status') == 'offline' ? 'off' : 'on' %>">
   <div class="nodeimg"><div class="nodeimg<%= node.get('status') %>"></div></div>
-  <% if (editingName) { %>
-    <form class="node-name-editing form-inline" style="<%= editingName ? '' : 'display:none' %>">
-      <input type="text" class="input-medium" value="<%= node.get('name') || node.get('id') %>">
-    </form>
-  <% } else { %>
-    <h4 class="node-name" style="<%= editingName ? 'display:none' : '' %>">
-      <a href="#"><i class="icon-pencil"></i><%= node.get('name') || node.get('id') %></a>
-    </h4>
-  <% } %>
-  <div class="roles">
-    <a href="#">
-      <ul>
-        <% if (node.get('roles').length || node.get('new_roles').length) { %>
-          <% if (node.get('redeployment_needed')) { %>
-            <% var commonRoles = node.get('roles').filter(function(role) {return node.get('new_roles').get(role.id)}) %>
-            <% var deletedRoles = node.get('roles').filter(function(role) {return !node.get('new_roles').get(role.id)}) %>
-            <% var addedRoles = node.get('new_roles').filter(function(role) {return !node.get('roles').get(role.id)}) %>
-            <% _.each(deletedRoles, function(role) { %>
-              <li style="text-decoration: line-through; color: red"><%= role.get('name') %></li>
-            <% }) %>
-            <% _.each(commonRoles, function(role) { %>
-              <li><%= role.get('name') %></li>
-            <% }) %>
-            <% _.each(addedRoles, function(role) { %>
-              <li style="color: green"><%= role.get('name') %></li>
-            <% }) %>
-          <% } else { %>
-            <% node.get('roles').each(function(role) { %>
-              <li><%= role.get('name') %></li>
-            <% }) %>
-          <% } %>
-        <% } else { %>
-            <li>(No Roles)</li>
-        <% } %>
-      </ul>
-    </a>
+  <div class="article">
+    <% if (editingName) { %>
+      <form class="node-name-editing form-inline" style="<%= editingName ? '' : 'display:none' %>">
+        <input type="text" class="input-medium" value="<%= node.get('name') || node.get('id') %>">
+      </form>
+    <% } else { %>
+      <div class="node-name" style="<%= editingName ? 'display:none' : '' %>">
+        <h4 class="name"><i class="icon-pencil"></i><%= node.get('name') || node.get('id') %></h4>
+      </div>
+    <% } %>
   </div>
-  <hr>
-  <div class="status_bar"><%= node.get('status') %></div>
+  <div class="roles">
+    <ul>
+      <% if (node.get('roles').length || node.get('new_roles').length) { %>
+        <% if (node.get('redeployment_needed')) { %>
+          <% var commonRoles = node.get('roles').filter(function(role) {return node.get('new_roles').get(role.id)}) %>
+          <% var deletedRoles = node.get('roles').filter(function(role) {return !node.get('new_roles').get(role.id)}) %>
+          <% var addedRoles = node.get('new_roles').filter(function(role) {return !node.get('roles').get(role.id)}) %>
+          <% _.each(deletedRoles, function(role) { %>
+            <li class="deleted-role"><%= role.get('name') %></li>
+          <% }) %>
+          <% _.each(commonRoles, function(role) { %>
+            <li><%= role.get('name') %></li>
+          <% }) %>
+          <% _.each(addedRoles, function(role) { %>
+            <li class="added-role"><%= role.get('name') %></li>
+          <% }) %>
+        <% } else { %>
+          <% node.get('roles').each(function(role) { %>
+            <li><%= role.get('name') %></li>
+          <% }) %>
+        <% } %>
+      <% } else { %>
+          <li>(No Roles)</li>
+      <% } %>
+    </ul>
+  </div>
+  <% if (node.get('status') != 'offline') { %>
+    <hr>
+    <div class="statusbar">
+      <% if (node.get('status') == 'ready') { %>
+        <div class="statusbar-text msg-ok">
+          <i class="icon-ok-sign"></i><strong>Ready</strong>
+        </div>
+      <% } else if (node.get('status') == 'error') { %>
+        <div class="statusbar-text msg-error">
+          <i class="icon-warning-sign"></i><strong>Error</strong>
+        </div>
+      <% } else if (node.get('status') == 'deploying') { %>
+        <div class="statusbar-text msg-warning">
+          <i class="icon-refresh"></i><strong>Deploying</strong>
+        </div>
+      <% } %>
+    </div>
+  <% } %>
 </div>

@@ -1,21 +1,25 @@
-<li class="dropdown open" style="top: -174px; left: 80px;">
-  <ul class="dropdown-menu">
+<li class="dropdown open" style="top: -230px; left: 120px;">
+  <div class="dropdown-menu">
     <button type="button" class="close">×</button>
-    <li class="uncheck"><h4>Roles</h4></li>
+    <h4>Roles</h4>
     <% if (availableRoles.length) { %>
-      <% availableRoles.each(function(role) { %>
-        <li data-role-id="<%= role.id %>" class="role <%= role.get('available') ? 'available' : 'unavailable' %> <%= nodeRoles.get(role.id) ? 'checked' : 'unchecked' %>">
-          <a><i class="icon-ok"></i><%= role.get('name') %></a>
-        </li>
-      <% }) %>
-      <li class="divider"></li>
-      <li class="applybtn"><button href="#" class="btn btn-success btn-small disabled">Save</button></li>
+      <ul>
+        <% availableRoles.each(function(role) { %>
+          <li data-role-id="<%= role.id %>" class="role <%= role.get('available') ? 'available' : 'unavailable' %> <%= nodeRoles.get(role.id) ? 'checked' : 'unchecked' %>">
+            <i class="icon-ok"></i><%= role.get('name') %>
+          </li>
+        <% }) %>
+        <li class="divider"></li>
+      </ul>
+      <div class="applybtn">
+        <button class="btn btn-success btn-small disabled">Save</button>
+      </div>
     <% } else { %>
-      <li class="noroles">
+      <div class="noroles">
         <div class="progress progress-striped progress-success active">
           <div class="bar" style="width: 100%"></div>
         </div>
-      </li>
+      </div>
     <% } %>
-  </ul>
+  </div>
 </li>
