@@ -286,8 +286,8 @@ def bootstrap_node(node_id):
     # the same ip as bootstrap node had
     # it is necessary to install and launch agent on slave node
 
-    logger.debug("Waiting for node %s listen to %s:%s ..." % 
-                 (node_id, str(node.ip), "22"))
+    logger.debug("Waiting for node %s listen to %s:%s ..." \
+                     % (node_id, str(node.ip), "22"))
     while True:
         if tcp_ping(node.ip, 22):
             break
