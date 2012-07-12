@@ -69,7 +69,7 @@ template "/etc/cobbler/dnsmasq.template" do
             :dhcp_range => node["cobbler"]["dhcp_range"],
             :gateway => node["cobbler"]["gateway"]
             )
-  notifies :restart, "service[cobbler]"
+  notifies :restart, [ "service[cobbler]", "service[dnsmasq]" ]
   notifies :run, "execute[cobbler_sync]"
 end
 

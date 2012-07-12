@@ -40,6 +40,7 @@ make
 curl
 dmidecode
 rubygems
+wget
 
 %post --log=/root/post-install.log
 # configure yum
@@ -64,9 +65,11 @@ mkdir -p /opt/nailgun/bin
 <%= @late_deploy.init.cobbler_late_file("/opt/nailgun/bin/deploy", "755") %>
 
 # install chef
-gem sources -a http://<%= node.cobbler.repoaddr %>/gems/gems
-gem install chef -r --no-ri --no-rdoc
+# gem sources -l | grep -v "*** CURRENT SOURCES ***\|^$" | while read repo; do gem sources -r \${repo}; done
+# gem sources -a http://<%= node.cobbler.repoaddr %>/gems/gems
+gem install chef --source http://<%= node.cobbler.repoaddr %>/gems/ --no-ri --no-rdoc
 
+%post --log=/root/nopxe.log
 # nopxe
 $SNIPPET('disable_pxe')
 
