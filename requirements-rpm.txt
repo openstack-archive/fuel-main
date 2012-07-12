@@ -17,3 +17,4 @@ mysql
 mysql-server
 rabbitmq-server
 openstack-keystone
+wget
