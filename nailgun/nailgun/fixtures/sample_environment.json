@@ -49,7 +49,9 @@
         "model": "nailgun.node",
         "fields": {
             "status": "ready",
-            "name": null,
+            "name": "",
+            "manufacturer": "",
+            "platform_name": "",
             "roles": [
                 1
             ],
@@ -64,7 +66,9 @@
         "model": "nailgun.node",
         "fields": {
             "status": "error",
-            "name": null,
+            "name": "",
+            "manufacturer": "",
+            "platform_name": "",
             "roles": [
                 1,
                 2
@@ -80,7 +84,9 @@
         "model": "nailgun.node",
         "fields": {
             "status": "deploying",
-            "name": null,
+            "name": "",
+            "manufacturer": "",
+            "platform_name": "",
             "roles": [
                 2
             ],
@@ -95,7 +101,9 @@
         "model": "nailgun.node",
         "fields": {
             "status": "offline",
-            "name": null,
+            "name": "",
+            "manufacturer": "",
+            "platform_name": "",
             "roles": [],
             "ip": "",
             "fqdn": "",
@@ -109,6 +117,8 @@
         "fields": {
             "status": "ready",
             "name": "Node with name",
+            "manufacturer": "",
+            "platform_name": "",
             "roles": [],
             "ip": "",
             "fqdn": "",
@@ -122,6 +132,8 @@
         "fields": {
             "status": "ready",
             "name": "Node without cluster",
+            "manufacturer": "",
+            "platform_name": "",
             "roles": [],
             "ip": "",
             "fqdn": "",
@@ -135,6 +147,8 @@
         "fields": {
             "status": "ready",
             "name": "Another node without cluster",
+            "manufacturer": "",
+            "platform_name": "",
             "roles": [],
             "ip": "",
             "fqdn": "",

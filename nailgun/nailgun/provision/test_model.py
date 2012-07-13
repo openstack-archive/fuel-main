@@ -14,7 +14,7 @@ class TestValidator:
         self.arch = "x86_64"
 
     def test_is_mac_valid(self):
-        assert  Validator.is_mac_valid(self.mac)
+        assert Validator.is_mac_valid(self.mac)
 
     def test_is_platform_valid(self):
         assert Validator.is_platform_valid(

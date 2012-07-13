@@ -73,6 +73,8 @@ class NodeForm(forms.Form):
     fqdn = CharField(max_length=255, required=False)
     ip = CharField(max_length=15, required=False)
     mac = CharField(max_length=17, required=False)
+    manufacturer = CharField(max_length=50, required=False)
+    platform_name = CharField(max_length=150, required=False)
     roles = Field(required=False, validators=[vld.forbid_modifying_roles])
     new_roles = Field(required=False, validators=[vld.validate_node_roles])
     redeployment_needed = BooleanField(required=False)

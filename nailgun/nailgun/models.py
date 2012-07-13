@@ -60,13 +60,15 @@ class Node(models.Model):
     id = models.CharField(max_length=12, primary_key=True)
     cluster = models.ForeignKey(Cluster, related_name='nodes',
         null=True, blank=True, on_delete=models.SET_NULL)
-    name = models.CharField(max_length=100, null=True, blank=True)
+    name = models.CharField(max_length=100, blank=True)
     status = models.CharField(max_length=30, choices=NODE_STATUSES,
             default='online')
     metadata = JSONField()
     mac = models.CharField(max_length=17)
     ip = models.CharField(max_length=15)
     fqdn = models.CharField(max_length=255)
+    manufacturer = models.CharField(max_length=50, blank=True)
+    platform_name = models.CharField(max_length=150, blank=True)
 
     roles = models.ManyToManyField(Role, related_name='nodes')
     new_roles = models.ManyToManyField(Role, related_name='+')

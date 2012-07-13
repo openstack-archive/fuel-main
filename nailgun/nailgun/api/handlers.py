@@ -280,7 +280,7 @@ class NodeHandler(JSONHandler):
     allowed_methods = ('GET', 'PUT', 'DELETE')
     model = Node
     fields = ('id', 'name', 'metadata', 'status', 'mac', 'fqdn', 'ip',
-              'redeployment_needed')
+              'manufacturer', 'platform_name', 'redeployment_needed')
     special_fields = ('roles', 'new_roles')
 
     @classmethod
