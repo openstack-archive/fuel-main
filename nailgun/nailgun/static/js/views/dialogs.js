@@ -17,12 +17,12 @@ function(models, addRemoveNodesDialogTemplate, createClusterDialogTemplate, node
         },
         saveChanges: function(e) {
             e.preventDefault();
-            var nodes = this.$('.node_check').map(function(){return $(this).attr('data-node-id')}).get();
+            var nodes = this.$('.node-checked').map(function(){return $(this).attr('data-node-id')}).get();
             this.model.update({nodes: nodes});
             this.$el.modal('hide');
         },
         toggleNode: function(e) {
-            $(e.currentTarget).toggleClass('node_check').toggleClass('node_uncheck');
+            $(e.currentTarget).toggleClass('node-checked').toggleClass('node-unchecked');
         },
         render: function() {
             this.$el.html(this.template());
@@ -52,7 +52,7 @@ function(models, addRemoveNodesDialogTemplate, createClusterDialogTemplate, node
             e.preventDefault();
             this.$('.help-inline').text('');
             this.$('.control-group').removeClass('error');
-            var nodes = this.$('.node_check').map(function(){return $(this).attr('data-node-id')}).get();
+            var nodes = this.$('.node-checked').map(function(){return $(this).attr('data-node-id')}).get();
             var cluster = new models.Cluster();
             cluster.on('error', function(model, error) {
                 _.each(error, function(message, field) {
@@ -73,7 +73,7 @@ function(models, addRemoveNodesDialogTemplate, createClusterDialogTemplate, node
             }
         },
         toggleNode: function(e) {
-            $(e.currentTarget).toggleClass('node_check').toggleClass('node_uncheck');
+            $(e.currentTarget).toggleClass('node-checked').toggleClass('node-unchecked');
         },
         render: function() {
             this.$el.html(this.template());

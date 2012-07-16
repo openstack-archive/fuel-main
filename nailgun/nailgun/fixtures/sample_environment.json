@@ -50,8 +50,8 @@
         "fields": {
             "status": "ready",
             "name": "",
-            "manufacturer": "",
-            "platform_name": "",
+            "manufacturer": "Dell",
+            "platform_name": "Model-1",
             "roles": [
                 1
             ],
@@ -67,8 +67,8 @@
         "fields": {
             "status": "error",
             "name": "",
-            "manufacturer": "",
-            "platform_name": "",
+            "manufacturer": "HP",
+            "platform_name": "Model-2",
             "roles": [
                 1,
                 2
@@ -85,8 +85,8 @@
         "fields": {
             "status": "deploying",
             "name": "",
-            "manufacturer": "",
-            "platform_name": "",
+            "manufacturer": "Supermicro",
+            "platform_name": "Model-3",
             "roles": [
                 2
             ],
@@ -103,7 +103,7 @@
             "status": "offline",
             "name": "",
             "manufacturer": "",
-            "platform_name": "",
+            "platform_name": "No-Manufacturer",
             "roles": [],
             "ip": "",
             "fqdn": "",
@@ -117,7 +117,7 @@
         "fields": {
             "status": "ready",
             "name": "Node with name",
-            "manufacturer": "",
+            "manufacturer": "VMWare",
             "platform_name": "",
             "roles": [],
             "ip": "",
@@ -147,7 +147,7 @@
         "fields": {
             "status": "ready",
             "name": "Another node without cluster",
-            "manufacturer": "",
+            "manufacturer": "QEMU",
             "platform_name": "",
             "roles": [],
             "ip": "",

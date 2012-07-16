@@ -3,9 +3,13 @@
   <div class="row-fluid">
     <% nodes.each(function(node) { %>
       <div class="span3">
-        <div class="dialog-node <%= checked ? 'node_check' : 'node_uncheck' %>" data-node-id="<%= node.id %>">
+        <div class="dialog-node <%= checked ? 'node-checked' : 'node-unchecked' %>" data-node-id="<%= node.id %>">
           <i class="icon-ok icon-white"></i>
-          <div class="article"><%= node.id %></div>
+          <% var fullProductName = (node.get('manufacturer') ? node.get('manufacturer') + ' ' + node.get('platform_name') : node.get('platform_name')) || 'Unknown Platform' %>
+          <div class="article"><%= fullProductName %></div>
+          <ul>
+            <li class="macaddr"><%= node.id %></li>
+          </ul>
           <ul>
             <li>CPU: X</li>
             <li>HDD: X TB</li>
