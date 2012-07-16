@@ -38,6 +38,7 @@ define(function() {
         },
         parse: function(response) {
             response.nodes = new models.Nodes(response.nodes);
+            response.nodes.cluster = this;
             response.release = new models.Release(response.release);
             response.task = response.task ? new models.Task(response.task) : null;
             return response;
@@ -46,7 +47,10 @@ define(function() {
 
     models.Clusters = Backbone.Collection.extend({
         model: models.Cluster,
-        url: '/api/clusters'
+        url: '/api/clusters',
+        toJSON: function(options) {
+            return this.pluck('id');
+        }
     });
 
     models.Node = Backbone.Model.extend({

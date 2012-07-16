@@ -129,7 +129,8 @@ behavior: url(/static/css/pie.htc);
 .node ul {list-style-type: none; display: block; padding: 0px; margin: 0px;}
 
 .node .roles ul {padding-left: 20px; padding: 0px; margin: 0px; margin-left: 20px;}
-.node .roles ul:hover {color: #13609b; text-decoration: none; cursor: pointer;}
+.cluster-editable .node .roles ul:hover {color: #13609b; text-decoration: none; cursor: pointer;}
+.cluster-locked .node .roles ul:hover {cursor: not-allowed;}
 .node .roles li {line-height: 19px;}
 .node .roles li.deleted-role {text-decoration: line-through; color: red}
 .node .roles li.added-role {color: green}
@@ -137,9 +138,10 @@ behavior: url(/static/css/pie.htc);
 .node hr, .cluster hr {margin: 0px; padding: 0px; border: 0; border-top: 1px solid #a9a9a9; border-bottom: 1px solid #f2f2f2;}
 
 .node h4.name, .cluster h4.name {display: block; padding: 0px 10px 5px 20px; color: #333333; font-weight: 600; line-height: 34px;}
-.node h4.name .icon-pencil, .cluster h4.name .icon-pencil {margin-left: -14px; margin-right: 0; margin-top: 3px; visibility: hidden;}
-.node h4.name:hover, .cluster h4.name:hover {color: #13609b; text-decoration: none; cursor: pointer;}
-.node h4.name:hover .icon-pencil, .cluster h4.name:hover .icon-pencil {visibility: visible;}
+.node h4.name .icon-pencil {margin-left: -14px; margin-right: 0; margin-top: 3px; visibility: hidden;}
+.cluster-editable .node h4.name:hover {color: #13609b; text-decoration: none; cursor: pointer;}
+.cluster-editable .node h4.name:hover .icon-pencil {visibility: visible;}
+.cluster-locked .node h4.name:hover {cursor: not-allowed;}
 
 .node-name-editing {
   height: 30px;

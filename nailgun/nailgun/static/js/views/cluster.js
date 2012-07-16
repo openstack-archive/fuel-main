@@ -19,7 +19,6 @@ function(models, dialogViews, taskViews, clusterPageTemplate, clusterNodeTemplat
             'click .js-add-nodes': 'addRemoveNodes'
         },
         addRemoveNodes: function(e) {
-            e.preventDefault();
             (new dialogViews.addRemoveNodesDialog({model: this.model})).render();
         },
         initialize: function() {
@@ -52,6 +51,11 @@ function(models, dialogViews, taskViews, clusterPageTemplate, clusterNodeTemplat
             } else {
                 this.task = null;
                 this.$('.task-status').html('');
+            }
+            if (this.model.locked()) {
+                this.$el.addClass('cluster-locked').removeClass('cluster-editable');
+            } else {
+                this.$el.addClass('cluster-editable').removeClass('cluster-locked');
             }
             return this;
         }
@@ -132,15 +136,15 @@ function(models, dialogViews, taskViews, clusterPageTemplate, clusterNodeTemplat
             'click .node-name': 'startNameEditing',
             'keydown .node-name-editing': 'onNodeNameInputKeydown'
         },
-        editRoles: function(e) {
-            e.preventDefault();
+        editRoles: function() {
+            if (this.model.collection.cluster.locked()) return;
             if (this.$('.node.off').length) return;
             if (this.$('.role-chooser').length) return;
             var roleChooser = (new views.NodeRoleChooser({model: this.model}));
             this.$('.roles').after(roleChooser.render().el);
         },
-        startNameEditing: function(e) {
-            e.preventDefault();
+        startNameEditing: function() {
+            if (this.model.collection.cluster.locked()) return;
             $('html').off(this.eventNamespace);
             $('html').on(this.eventNamespace, _.after(2, _.bind(function(e) {
                 if (!$(e.target).closest(this.$el).length) {
@@ -195,7 +199,6 @@ function(models, dialogViews, taskViews, clusterPageTemplate, clusterNodeTemplat
             this.remove();
         },
         toggleRole: function(e) {
-            e.preventDefault();
             if ($(e.currentTarget).is('.unavailable')) return;
             $(e.currentTarget).toggleClass('checked').toggleClass('unchecked');
             if (_.isEqual(this.getChosenRoles(), this.originalRoles.pluck('id'))) {
