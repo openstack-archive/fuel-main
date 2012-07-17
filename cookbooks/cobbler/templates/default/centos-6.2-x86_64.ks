@@ -64,10 +64,18 @@ chmod 700 /root/.ssh
 mkdir -p /opt/nailgun/bin
 <%= @late_deploy.init.cobbler_late_file("/opt/nailgun/bin/deploy", "755") %>
 
+# agent script
+mkdir -p /opt/nailgun/bin
+<%= @late_agent.init.cobbler_late_file("/opt/nailgun/bin/agent", "755") %>
+<%= @late_agent_config.init.cobbler_late_file("/opt/nailgun/bin/agent_config.rb", "644") %>
+
+
 # install chef
 # gem sources -l | grep -v "*** CURRENT SOURCES ***\|^$" | while read repo; do gem sources -r \${repo}; done
 # gem sources -a http://<%= node.cobbler.repoaddr %>/gems/gems
+gem install ohai --source http://<%= node.cobbler.repoaddr %>/gems/ --no-ri --no-rdoc
 gem install chef --source http://<%= node.cobbler.repoaddr %>/gems/ --no-ri --no-rdoc
+gem install httpclient --source http://<%= node.cobbler.repoaddr %>/gems/ --no-ri --no-rdoc
 
 %post --log=/root/nopxe.log
 # nopxe

@@ -10,7 +10,18 @@ template "#{node.cobbler.preseed_dir}/centos-6.2-x86_64.ks" do
   mode "0644"
   variables(
             :late_authorized_keys => LateFile.new("#{node.nailgun.root}/.ssh/id_rsa.pub"),
-            :late_deploy => LateFile.new("/opt/nailgun/bin/deploy")
+            :late_deploy => LateFile.new("/opt/nailgun/bin/deploy"),
+            :late_agent => LateFile.new("/opt/nailgun/bin/agent"),
+            :late_agent_config => LateFile.new("
+NodeAgentConfig.define do |config|
+config.api = \"http://#{node.cobbler.repoaddr}:8000/api\"
+end
+", :method => :content),
+            :late_rclocal => LateFile.new("
+#!/bin/sh
+
+flock -w 0 -o /var/lock/agent.lock -c \"/opt/nailgun/bin/agent -c /opt/nailgun/bin/agent_config.rb > /var/log/agent.log 2>&1\" || true
+", :method => :content)
             )
 end
 

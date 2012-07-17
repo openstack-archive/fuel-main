@@ -1,21 +1,29 @@
 require "base64"
 
 class LateFile
-  def initialize(source_file)
-    @source_file = source_file
+  def initialize(source, opts={})
+    default_opts = {
+      :method => :file
+    }
+    @source = source
+    @opts = default_opts.merge(opts)
     @content = ""
     @content64 = base64(@content)
   end
 
   def init
-    open(@source_file , 'r') do |file| 
-      lines = []
-      while line = file.gets
-        lines << line
+    if @opts[:method] == :file
+      open(@source , 'r') do |file| 
+        lines = []
+        while line = file.gets
+          lines << line
+        end
+        @content = lines.to_s
       end
-      @content = lines.to_s
-      @content64 = base64(@content)
+    elsif @opts[:method] == :content
+      @content = @source
     end
+    @content64 = base64(@content)
     return self
   end
 
