@@ -42,6 +42,7 @@ class TestNode(TestCase):
         logging.info("Starting slave node")
         slave.start()
 
+        logging.info("Nailgun IP: %s" % admin_ip)
         self._load_sample_admin(
             host=admin_ip,
             user="ubuntu",
@@ -66,11 +67,13 @@ class TestNode(TestCase):
             ))
         except ValueError:
             logging.info("No clusters found - creating test cluster...")
-            cluster = json.loads(self.client.post(
+            cluster = self.client.post(
                 "http://%s:8000/api/clusters" % admin_ip,
-                data='{ "name": "MyOwnPrivateCluster", "release": 2 }',
+                data='{ "name": "MyOwnPrivateCluster", "release": 1 }',
                 log=True
-            ))
+            )
+            print cluster
+            cluster = json.loads(cluster)
 
         resp = json.loads(self.client.put(
             "http://%s:8000/api/clusters/1" % admin_ip,
@@ -85,7 +88,7 @@ class TestNode(TestCase):
 
         resp = json.loads(self.client.put(
             "http://%s:8000/api/nodes/%s" % (admin_ip, slave_id),
-            data='{ "new_roles": [2, 3], "redeployment_needed": true }'
+            data='{ "new_roles": [1, 2], "redeployment_needed": true }'
         ))
         if len(resp["new_roles"]) == 0:
             raise ValueError("Failed to assign roles to node")
@@ -122,9 +125,9 @@ class TestNode(TestCase):
             raise Exception("Recipes failed to execute!")
         # check recipes execution order
         ret = self.remote.exec_cmd("cat /tmp/chef_success")
-        if not ret['stdout'].split("\r\n") == ['monitor', 'default', 'compute']:
+        if [out.strip() for out in ret['stdout']] != ['monitor', 'default', 'compute']:
             raise Exception("Recipes executed in a wrong order: %s!" \
-                % str(ret['stdout'].split("\r\n")))
+                % str(ret['stdout']))
         """
         # check passwords
         self.remote.exec_cmd("tar -C %s -xvf /root/nodes.tar.gz" % SAMPLE_REMOTE_PATH)

@@ -24,26 +24,22 @@ define :celery_instance, :virtualenv => false do
   celery_options += " -B" if params[:beat]
   celery_options += ' ' + params[:extra_options] if params[:extra_options]
 
-  template "/etc/init/#{name}.conf" do
-    source "celery-upstart.conf.erb"
-    cookbook "celery"
-    owner "root"
-    group "root"
-    mode 0644
-
-    variables({
-      :params => params,
-      :celery_options => celery_options
-    })
-
-    notifies :restart, "service[#{name}]"
+  service "nailgun-jobserver" do
+     supports :restart => true, :start => true, :stop => true, :reload => true
+     action :nothing
   end
 
-  service name do
-    provider Chef::Provider::Service::Upstart
-    enabled true
-    running true
-    supports :restart => true, :reload => true, :status => true
-    action [:enable, :start]
+  template "/etc/init.d/#{name}" do
+     source "celery-init.d.conf.erb"
+     cookbook "celery"
+     owner "root"
+     group "root"
+     mode 0755
+     variables({
+         :params => params,
+         :celery_options => celery_options
+     })
+     notifies :enable, "service[#{name}]"
+     notifies :start, "service[#{name}]"
   end
 end

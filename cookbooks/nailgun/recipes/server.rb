@@ -127,11 +127,14 @@ end
 redis_instance 'nailgun'
 
 celery_instance 'nailgun-jobserver' do
-  command "#{node[:nailgun][:python]} manage.py celeryd_multi start Worker -E"
+  command "#{node[:nailgun][:python]}"
+  command_args "#{node[:nailgun][:root]}/manage.py celeryd_multi start Worker -E"
   cwd node.nailgun.root
   events true
   user node.nailgun.user
   virtualenv node.nailgun.venv
+  pid_file "/opt/nailgun/celery.pid"
+  log_file "/var/log/nailgun/celery.log"
 end
 
 web_app 'nailgun' do
