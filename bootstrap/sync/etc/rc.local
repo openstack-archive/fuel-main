@@ -2,6 +2,6 @@
 
 apt-get update
 
-flock -w 0 -o /var/lock/chef-solo.lock -c "/usr/bin/chef-solo -l debug -c /opt/nailgun/solo/solo.rb -j /opt/nailgun/solo/solo.json" || true
+flock -w 0 -o /var/lock/agent.lock -c "/opt/nailgun/bin/agent > /var/log/agent.log 2>&1" || true
 
 exit 0

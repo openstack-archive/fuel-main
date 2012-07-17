@@ -41,8 +41,7 @@ INITRD_FS=${BASEDIR}/initrd-fs
 INITRD_LOOP=${BASEDIR}/initrd-loop
 INITRD_MODULES=${BASEDIR}/modules
 
-
-DEBOOTSTRAP_INCLUDE=less,vim,bash,net-tools,isc-dhcp-client,rsyslog,cron,iputils-ping,openssh-server,libhttpclient-ruby,chef
+DEBOOTSTRAP_INCLUDE=less,vim,bash,net-tools,isc-dhcp-client,rsyslog,cron,iputils-ping,openssh-server,ruby-httpclient,ruby-json,ohai
 DEBOOTSTRAP_EXCLUDE=
 
 ORIG=${BASEDIR}/orig
@@ -432,18 +431,19 @@ sed -i -e '/exec/c\exec /sbin/getty -8 -l /usr/bin/autologin 38400 tty1' ${INITR
 echo "Syncing system ..."
 cp -r ${SYNC}/* ${INITRD_LOOP}
 
-echo "Injecting cookbooks and configs for chef-solo ..."
 NAILGUN_DIR=${INITRD_LOOP}/opt/nailgun
 
-mkdir -p ${NAILGUN_DIR}/solo
-cp ${SOLO}/solo.json ${NAILGUN_DIR}/solo/solo.json
-cp ${SOLO}/solo.rb ${NAILGUN_DIR}/solo/solo.rb
+#echo "Injecting cookbooks and configs for chef-solo ..."
+#mkdir -p ${NAILGUN_DIR}/solo
+#cp ${SOLO}/solo.json ${NAILGUN_DIR}/solo/solo.json
+#cp ${SOLO}/solo.rb ${NAILGUN_DIR}/solo/solo.rb
 
-echo "Disabling chef-client ..."
-chroot ${INITRD_LOOP} /usr/sbin/update-rc.d chef-client disable
+#echo "Disabling chef-client ..."
+#chroot ${INITRD_LOOP} /usr/sbin/update-rc.d chef-client disable
 
-mkdir -p ${NAILGUN_DIR}/cookbooks
-cp -r ${REPO}/cookbooks/agent ${NAILGUN_DIR}/cookbooks
+echo "Injecting agent ..."
+mkdir -p ${NAILGUN_DIR}/bin
+cp -r ${REPO}/bin/agent ${NAILGUN_DIR}/bin
 
 echo "Injecting bootstrap ssh key ..."
 mkdir -p ${INITRD_LOOP}/root/.ssh
@@ -459,7 +459,8 @@ rm ${INITRD_LOOP}/etc/apt/sources.list
 # UMOUNTING 
 ###########################
 
-if (mount | grep -q ${INITRD_LOOP}); then
+echo "Trying to umount initrd loop ..."
+if (mount | grep -q `readlink -f ${INITRD_LOOP}`); then
     echo "Umounting ${INITRD_LOOP} ..."
     umount ${INITRD_LOOP}
 fi
