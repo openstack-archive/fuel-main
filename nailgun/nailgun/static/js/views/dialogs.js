@@ -3,20 +3,20 @@ define(
     'models',
     'text!templates/dialogs/add_remove_nodes.html',
     'text!templates/dialogs/create_cluster.html',
-    'text!templates/dialogs/node_list.html'
+    'text!templates/dialogs/node_list.html',
+    'text!templates/dialogs/assign_roles.html'
 ],
-function(models, addRemoveNodesDialogTemplate, createClusterDialogTemplate, nodeDialogNodeListTemplate) {
+function(models, addRemoveNodesDialogTemplate, createClusterDialogTemplate, nodeDialogNodeListTemplate, assignRolesDialogTemplate) {
     var views = {}
 
     views.addRemoveNodesDialog = Backbone.View.extend({
         className: 'modal fade',
         template: _.template(addRemoveNodesDialogTemplate),
         events: {
-            'click .js-save-changes': 'saveChanges',
+            'click .save-changes-btn': 'saveChanges',
             'click .dialog-node': 'toggleNode'
         },
         saveChanges: function(e) {
-            e.preventDefault();
             var nodes = this.$('.node-checked').map(function(){return $(this).attr('data-node-id')}).get();
             this.model.update({nodes: nodes});
             this.$el.modal('hide');
@@ -45,11 +45,10 @@ function(models, addRemoveNodesDialogTemplate, createClusterDialogTemplate, node
         className: 'modal fade',
         template: _.template(createClusterDialogTemplate),
         events: {
-            'click .js-create-cluster': 'createCluster',
+            'click .create-cluster-btn': 'createCluster',
             'click .dialog-node': 'toggleNode'
         },
         createCluster: function(e) {
-            e.preventDefault();
             this.$('.help-inline').text('');
             this.$('.control-group').removeClass('error');
             var nodes = this.$('.node-checked').map(function(){return $(this).attr('data-node-id')}).get();
@@ -107,6 +106,24 @@ function(models, addRemoveNodesDialogTemplate, createClusterDialogTemplate, node
         },
         render: function() {
             this.$el.html(this.template({nodes: this.model, checked: this.checked}));
+            return this;
+        }
+    });
+
+    views.assignRolesDialog = Backbone.View.extend({
+        className: 'modal fade',
+        template: _.template(assignRolesDialogTemplate),
+        events: {
+            'click .assign-roles-btn': 'assignRoles'
+        },
+        assignRoles: function() {
+            // TODO
+            this.$el.modal('hide');
+        },
+        render: function() {
+            this.$el.html(this.template());
+            this.$el.on('hidden', function() {$(this).remove()});
+            this.$el.modal();
             return this;
         }
     });
