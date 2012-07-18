@@ -99,6 +99,9 @@ class SSHClient(object):
         logging.info("Removing directory: %s" % path)
         return self.exec_cmd("rm -rf %s" % path)
 
+    def open(self, path, mode='r'):
+        return self.sftp_client.open(path, mode)
+
     def scp(self, frm, to):
         logging.info("Copying file: %s -> %s" % (frm, to))
         self.sftp_client.put(frm, to)
