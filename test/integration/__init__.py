@@ -12,6 +12,8 @@ logger = logging.getLogger('integration')
 class Ci(object):
     hostname = 'nailgun'
     domain = 'mirantis.com'
+    installation_timeout = 1800
+    chef_timeout = 600
     
     def __init__(self, cache_file=None, iso=None):
         self.environment_cache_file = cache_file
@@ -101,10 +103,10 @@ class Ci(object):
         'domain': self.domain}) 
 
             logger.info("Waiting for completion of admin node software installation")
-            wait(lambda: tcp_ping(node.ip_address, 22), timeout=1800)
+            wait(lambda: tcp_ping(node.ip_address, 22), timeout=self.installation_timeout)
 
             logger.info("Got SSH access to admin node, waiting for ports 80 and 8000 to open")
-            wait(lambda: tcp_ping(node.ip_address, 80) and tcp_ping(node.ip_address, 8000), timeout=600)
+            wait(lambda: tcp_ping(node.ip_address, 80) and tcp_ping(node.ip_address, 8000), timeout=self.chef_timeout)
 
             logger.info("Admin node software is installed and ready for use")
 

@@ -25,6 +25,10 @@ def main():
                       default="ERROR", metavar="LEVEL")
     parser.add_argument('--cache-file', dest='cache_file', type=str,
                       help='file to store integration environment name')
+    parser.add_argument('--installation-timeout', dest='installation_timeout', type=int,
+                      help='admin node installation timeout')
+    parser.add_argument('--chef-timeout', dest='chef_timeout', type=int,
+                      help='admin node chef timeout')
     parser.add_argument('--suite', dest='test_suite', type=str,
                       help='Test suite to run', choices=["integration", "cookbooks"],
                       default="integration")
@@ -42,6 +46,8 @@ def main():
         suite = cookbooks
 
     suite.ci = suite.Ci(cache_file=params.cache_file, iso=params.iso)
+    suite.ci.installation_timeout = getattr(params, 'installation_timeout', 1800)
+    suite.ci.chef_timeout = getattr(params, 'chef_timeout', 600)
 
     if params.command == 'setup':
         result = suite.ci.setup_environment()

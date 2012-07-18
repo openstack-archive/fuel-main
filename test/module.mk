@@ -3,7 +3,8 @@ $(call assert-variable,iso.path)
 $(call assert-variable,centos.path)
 
 LEVEL ?= INFO
-
+INSTALLATION_TIMEOUT ?= 1800
+CHEF_TIMEOUT ?= 600
 
 /:=$(BUILD_DIR)/test/
 
@@ -32,7 +33,7 @@ clean-cookbooks-test:
 
 .PHONY: test-integration
 test-integration: $/environment-id-integration
-	python test/integration_test.py -l $(LEVEL) --cache-file $(abspath $<) --iso $(abspath $(iso.path)) test
+	python test/integration_test.py -l $(LEVEL) --installation-timeout=$(INSTALLATION_TIMEOUT) --chef-timeout=$(CHEF_TIMEOUT) --cache-file $(abspath $<) --iso $(abspath $(iso.path)) test
 
 .PHONY: test-cookbooks
 test-cookbooks: $/environment-id-cookbooks
