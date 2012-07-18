@@ -80,19 +80,37 @@ class NodeAgent
     }
   end
 
-  def _manufacturer
+  def _is_virtual
     begin
-      return @os[:dmi][:system][:manufacturer]
+      if @os["virtualization"]["role"] == "guest"
+        return true
+      end
     rescue
-      return "Unknown"
+    end
+    return false
+  end
+
+  def _manufacturer
+    if _is_virtual
+      return @os["virtualization"]["system"].upcase
+    else
+      begin
+        return @os[:dmi][:system][:manufacturer]
+      rescue
+        return "Unknown"
+      end
     end
   end
 
   def _product_name
-    begin
-      return @os[:dmi][:system][:product_name]
-    rescue
-      return "Unknown"
+    if _is_virtual
+      return @os["virtualization"]["role"]
+    else
+      begin
+        return @os[:dmi][:system][:product_name]
+      rescue
+        return "Unknown"
+      end
     end
   end
 
