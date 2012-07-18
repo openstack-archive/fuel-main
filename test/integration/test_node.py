@@ -132,8 +132,7 @@ class TestNode(TestCase):
         # check passwords
         self.remote.exec_cmd("tar -C /root -xvf /root/nodes.tar.gz")
         ret = self.remote.exec_cmd("cat /root/nodes/`ls nodes` && echo")
-        print ret
-        solo_json = json.loads(ret['stdout'][1])
+        solo_json = json.loads(ret['stdout'][0])
         gen_pwd = solo_json['service']['password']
         if not gen_pwd or gen_pwd == 'password':
             raise Exception("Password generation failed!")
