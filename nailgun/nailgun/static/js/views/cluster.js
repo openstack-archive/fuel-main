@@ -16,10 +16,14 @@ function(models, dialogViews, taskViews, clusterPageTemplate, clusterNodeTemplat
         updateInterval: 5000,
         template: _.template(clusterPageTemplate),
         events: {
-            'click .js-add-nodes': 'addRemoveNodes'
+            'click .add-nodes-btn': 'addRemoveNodes',
+            'click .assign-roles-btn': 'assignRoles'
         },
         addRemoveNodes: function(e) {
             (new dialogViews.addRemoveNodesDialog({model: this.model})).render();
+        },
+        assignRoles: function(e) {
+            (new dialogViews.assignRolesDialog({model: this.model})).render();
         },
         initialize: function() {
             this.model.bind('change', this.render, this);

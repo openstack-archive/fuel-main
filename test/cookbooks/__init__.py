@@ -1,5 +1,6 @@
 import time, os
 import devops
+import unittest
 from devops.model import Environment, Network, Node, Disk, Cdrom, Interface
 from devops.controller import Controller
 from devops.driver.libvirt import Libvirt
@@ -129,4 +130,41 @@ def setUp():
 def tearDown():
     if not ci.environment_cache_file:
         ci.destroy_environment()
+
+class CookbokTestCase(unittest.TestCase):
+    def setUp(self):
+        self.ip = ci.environment.node['cookbooks'].ip_address
+        self.cookbooks_dir = os.path.abspath(
+            os.path.join(
+                os.path.dirname(__file__),
+                "..", "..", "cooks", "cookbooks"
+            ) 
+        )
+
+        self.remote = SSHClient()
+        self.remote.connect_ssh(str(self.ip), "root", "r00tme")
+        self.remote.mkdir("/opt/os-cookbooks/")
+
+        with self.remote.open('/tmp/solo.rb', 'w') as solo_rb:
+            solo_rb.write("""
+file_cache_path "/tmp/chef"
+cookbook_path "/opt/os-cookbooks"
+            """)
+
+    def upload_cookbooks(self, cookbooks):
+        if not isinstance(cookbooks, list):
+            cookbooks = [cookbooks]
+
+        for cookbook in cookbooks:
+            self.remote.scp_d(os.path.join(self.cookbooks_dir, cookbook), "/opt/os-cookbooks/")
+
+    def chef_solo(self, attributes={}):
+        with self.remote.open('/tmp/solo.json', 'w') as f:
+            f.write(json.dumps(attributes))
+
+        result = self.remote.exec_cmd("chef-solo -l debug -c /tmp/solo.rb -j /tmp/solo.json")
+        if result['exit_status'] != 0:
+            raise ChefRunError(result['exit_status'], result['stdout'], result['stderr'])
+
+        return result
 

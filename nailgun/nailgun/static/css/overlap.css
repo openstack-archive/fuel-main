@@ -241,6 +241,10 @@ behavior: url(/static/css/pie.htc);
   color: #333333;
 }
 
+.cluster-control .btn {
+  margin-left: 15px;
+}
+
 .dialog-node {
   cursor: pointer !important;
 }
