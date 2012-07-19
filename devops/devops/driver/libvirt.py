@@ -232,7 +232,11 @@ class Libvirt:
             f, disk.path = tempfile.mkstemp(prefix='disk-', suffix=(".%s" % disk.format))
             os.close(f)
 
-        self._system("qemu-img create -f '%(format)s' '%(path)s' '%(size)s'" % {'format': disk.format, 'path': disk.path, 'size': disk.size})
+        if disk.base_image:
+            self._system("qemu-img create -f '%(format)s' -b '%(backing_path)s' '%(path)s'" % {'format': disk.format, 'path': disk.path, 'backing_path': disk.base_image})
+        else:
+            self._system("qemu-img create -f '%(format)s' '%(path)s' '%(size)s'" % {'format': disk.format, 'path': disk.path, 'size': disk.size})
+
 
     def delete_disk(self, disk):
         if disk.path is None: return

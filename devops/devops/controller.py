@@ -49,12 +49,13 @@ class Controller:
         environment.driver = self.driver
 
         for node in environment.nodes:
+            for disk in node.disks:
+                if disk.base_image and disk.base_image.find('://') != -1:
+                    disk.base_image = self._cache_file(disk.base_image)
+
             if node.cdrom:
-                path = node.cdrom.isopath
-                if path.find('://') == -1:
-                    continue
-                logger.debug("Caching iso file for node %s from %s" % (node.name, node.cdrom.isopath))
-                node.cdrom.isopath = self._cache_file(node.cdrom.isopath)
+                if node.cdrom.isopath.find('://') != -1:
+                    node.cdrom.isopath = self._cache_file(node.cdrom.isopath)
 
         for network in environment.networks:
             logger.info("Building network %s" % network.name)
@@ -186,7 +187,7 @@ class Controller:
             logger.debug("Cache hit for '%s': '%s'" % (url, cache_entries[url]))
             return cache_entries[url]
 
-        logger.debug("Cache miss for '%s', downloading")
+        logger.debug("Cache miss for '%s', downloading" % url)
 
         fd, cached_path = tempfile.mkstemp(prefix=cache_dir+'/')
         os.close(fd)

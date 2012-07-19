@@ -116,11 +116,13 @@ class Cdrom(object):
         self.bus = bus
 
 class Disk(object):
-    def __init__(self, size=None, path=None, format='qcow2', bus='ide'):
+    def __init__(self, size=None, path=None, format='qcow2', bus='ide', base_image=None):
         self.size = size
         self.format = format
         self.bus = bus
         self.path = path
+        # Either copy or use "backing file" feature
+        self.base_image = base_image
 
 class Interface(ManagedObject):
     def __init__(self, network, ip_addresses='detect'):
