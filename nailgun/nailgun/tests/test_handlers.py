@@ -115,6 +115,7 @@ class TestHandlers(TestCase):
             'node_role_available': {'node_id': 'A' * 12, 'role_id': 1},
             'recipe_handler': {'recipe_id': 1},
             'attribute_handler': {'attribute_id': 1},
+            'deployment_type_collection_handler': {'cluster_id': 1},
         }
 
         skip_urls = [

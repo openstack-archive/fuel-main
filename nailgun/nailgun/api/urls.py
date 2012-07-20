@@ -8,6 +8,8 @@ from nailgun.api.handlers import ClusterCollectionHandler, ClusterHandler, \
                      RoleCollectionHandler, RoleHandler, \
                      ReleaseCollectionHandler, ReleaseHandler, \
                      ClusterChangesHandler, \
+                     DeploymentTypeCollectionHandler, \
+                     DeploymentTypeHandler, \
                      TaskHandler, \
                      AttributeCollectionHandler, AttributeHandler
 
@@ -66,4 +68,11 @@ urlpatterns = patterns('',
     url(r'^releases/(?P<release_id>\d+)/?$',
         JsonResource(ReleaseHandler),
         name='release_handler'),
+    url(r'^clusters/(?P<cluster_id>\d+)/deployment_types/?$',
+        JsonResource(DeploymentTypeCollectionHandler),
+        name='deployment_type_collection_handler'),
+    url(r'^clusters/(?P<cluster_id>\d+)/deployment_types/\
+        (?P<deployment_type_id>\w+)/?$',
+        JsonResource(DeploymentTypeHandler),
+        name='deployment_type_handler'),
 )

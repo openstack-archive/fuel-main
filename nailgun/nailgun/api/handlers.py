@@ -10,6 +10,7 @@ from django.conf import settings
 
 from nailgun.models import Cluster, Node, Recipe, Role, Release, Network, \
         Attribute
+from nailgun.deployment_types import deployment_types
 from nailgun.api.validators import validate_json, validate_json_list
 from nailgun.api.forms import ClusterForm, ClusterCreationForm, RecipeForm, \
         RoleForm, RoleFilterForm, NodeCreationForm, NodeFilterForm, NodeForm, \
@@ -119,6 +120,40 @@ class ClusterChangesHandler(BaseHandler):
             node.save()
 
         return rc.DELETED
+
+
+class DeploymentTypeCollectionHandler(JSONHandler):
+
+    allowed_methods = ('GET',)
+
+    def read(self, request, cluster_id):
+        try:
+            cluster = Cluster.objects.get(id=cluster_id)
+        except ObjectDoesNotExist:
+            return rc.NOT_FOUND
+
+        return map(DeploymentTypeHandler.render, deployment_types.values())
+
+
+class DeploymentTypeHandler(JSONHandler):
+
+    allowed_methods = ('PUT',)
+    fields = ('id', 'name', 'description')
+
+    @classmethod
+    def render(cls, deployment_type, fields=None):
+        return JSONHandler.render(deployment_type, fields=fields or cls.fields)
+
+    def update(self, request, cluster_id, deployment_type_id):
+        try:
+            cluster = Cluster.objects.get(id=cluster_id)
+            deployment_type = deployment_types[deployment_type_id]
+        except ObjectDoesNotExist:
+            return rc.NOT_FOUND
+
+        deployment_type.assign_roles(cluster)
+
+        return rc.ALL_OK
 
 
 class ClusterCollectionHandler(BaseHandler):
