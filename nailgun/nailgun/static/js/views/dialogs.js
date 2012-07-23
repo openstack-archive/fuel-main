@@ -116,7 +116,11 @@ function(models, addRemoveNodesDialogTemplate, createClusterDialogTemplate, node
         className: 'modal fade',
         template: _.template(assignRolesDialogTemplate),
         events: {
+            'click .deployment-type': 'checkRadioButton',
             'click .assign-roles-btn': 'assignRoles'
+        },
+        checkRadioButton: function(e) {
+            $('input[type=radio]', e.currentTarget).attr('checked', true);
         },
         assignRoles: function() {
             var selectedDeploymentTypeId = this.$('input[name=type]:checked').attr('value');

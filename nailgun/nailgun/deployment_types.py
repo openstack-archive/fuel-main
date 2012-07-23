@@ -21,4 +21,6 @@ class SimpleDeploymentType(BaseDeploymentType):
     def assign_roles(cls, cluster):
         # TODO: replace logic
         for node in cluster.nodes.all():
-            node.roles.clear()
+            node.new_roles.clear()
+            node.redeployment_needed = True
+            node.save()

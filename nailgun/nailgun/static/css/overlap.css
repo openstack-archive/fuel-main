@@ -245,7 +245,7 @@ behavior: url(/static/css/pie.htc);
   margin-left: 15px;
 }
 
-.dialog-node {
+.dialog-node, .deployment-type {
   cursor: pointer !important;
 }
 
