@@ -39,6 +39,26 @@ class SshConnect(object):
             pass
 
 
+def merge_dictionary(dst, src):
+    """
+    'True' way of merging two dictionaries
+    (python dict.update() updates just top-level keys and items)
+    """
+    stack = [(dst, src)]
+    while stack:
+        current_dst, current_src = stack.pop()
+        for key in current_src:
+            if key not in current_dst:
+                current_dst[key] = current_src[key]
+            else:
+                if isinstance(current_src[key], dict) \
+                    and isinstance(current_dst[key], dict):
+                    stack.append((current_dst[key], current_src[key]))
+                else:
+                    current_dst[key] = current_src[key]
+    return dst
+
+
 class DatabagGenerator:
     def __init__(self, cluster_id):
         self.cluster_id = cluster_id

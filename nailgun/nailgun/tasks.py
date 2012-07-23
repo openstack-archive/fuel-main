@@ -15,7 +15,7 @@ import shutil
 from django.conf import settings
 
 from nailgun.models import Cluster, Node, Role, Recipe
-from nailgun.helpers import SshConnect, DatabagGenerator
+from nailgun.helpers import SshConnect, DatabagGenerator, merge_dictionary
 from nailgun.task_helpers import task_with_callbacks, TaskPool, topol_sort
 from nailgun.exceptions import SSHError, EmptyListError, DeployError
 from nailgun.provision import ProvisionConfig
@@ -41,26 +41,6 @@ def resolve_recipe_deps(graph, recipe):
     for r in recipe.depends.all():
         graph[recipe.recipe].append(r.recipe)
         resolve_recipe_deps(graph, r)
-
-
-def merge_dictionary(dst, src):
-    """
-    'True' way of merging two dictionaries
-    (python dict.update() updates just top-level keys and items)
-    """
-    stack = [(dst, src)]
-    while stack:
-        current_dst, current_src = stack.pop()
-        for key in current_src:
-            if key not in current_dst:
-                current_dst[key] = current_src[key]
-            else:
-                if isinstance(current_src[key], dict) \
-                    and isinstance(current_dst[key], dict):
-                    stack.append((current_dst[key], current_src[key]))
-                else:
-                    current_dst[key] = current_src[key]
-    return dst
 
 
 def generate_passwords(d):
