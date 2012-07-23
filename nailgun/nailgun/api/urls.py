@@ -71,8 +71,8 @@ urlpatterns = patterns('',
     url(r'^clusters/(?P<cluster_id>\d+)/deployment_types/?$',
         JsonResource(DeploymentTypeCollectionHandler),
         name='deployment_type_collection_handler'),
-    url(r'^clusters/(?P<cluster_id>\d+)/deployment_types/\
-        (?P<deployment_type_id>\w+)/?$',
+    url(r'^clusters/(?P<cluster_id>\d+)/deployment_types/' \
+        r'(?P<deployment_type_id>\w+)/?$',
         JsonResource(DeploymentTypeHandler),
         name='deployment_type_handler'),
 )

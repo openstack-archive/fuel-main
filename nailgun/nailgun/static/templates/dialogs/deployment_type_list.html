@@ -1,0 +1,15 @@
+<tbody>
+  <% deploymentTypes.each(function(deploymentType) { %>
+    <tr>
+      <td style="width: 16px;">
+        <label class="radio">
+          <input type="radio" name="type" value="<%= deploymentType.id %>">
+        </label>
+      </td>
+      <td>
+        <p><%= deploymentType.get('name') %></p>
+        <p><small><%= deploymentType.get('description') %></small></p>
+      </td>
+    </tr>
+  <% }) %>
+</tbody>

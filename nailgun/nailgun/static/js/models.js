@@ -94,5 +94,21 @@ define(function() {
         url: '/api/roles'
     });
 
+    models.DeploymentType = Backbone.Model.extend({
+        urlRoot: function() {
+            return this.get('cluster') ? this.get('cluster').url() + '/deployment_types' : '/deployment_types';
+        },
+        toJSON: function(options) {
+            return {};
+        }
+    });
+
+    models.DeploymentTypes = Backbone.Collection.extend({
+        model: models.DeploymentType,
+        url: function() {
+            return this.cluster ? this.cluster.url() + '/deployment_types' : '/deployment_types';
+        }
+    });
+
     return models;
 });
