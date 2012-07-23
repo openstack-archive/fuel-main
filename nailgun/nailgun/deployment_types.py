@@ -18,7 +18,7 @@ class SimpleDeploymentType(BaseDeploymentType):
     description = 'Simple OpenStack deployment'
 
     @classmethod
-    def assign_roles(cluster):
+    def assign_roles(cls, cluster):
         # TODO: replace logic
-        for node in cluster.nodes:
+        for node in cluster.nodes.all():
             node.roles.clear()

@@ -153,7 +153,7 @@ class DeploymentTypeHandler(JSONHandler):
 
         deployment_type.assign_roles(cluster)
 
-        return rc.ALL_OK
+        return {}
 
 
 class ClusterCollectionHandler(BaseHandler):
