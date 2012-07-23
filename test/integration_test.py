@@ -45,7 +45,7 @@ def main():
     elif params.test_suite == 'cookbooks':
         suite = cookbooks
 
-    suite.ci = suite.Ci(cache_file=params.cache_file, iso=params.iso)
+    suite.ci = suite.Ci(params.cache_file, params.iso)
     suite.ci.installation_timeout = getattr(params, 'installation_timeout', 1800)
     suite.ci.chef_timeout = getattr(params, 'chef_timeout', 600)
 

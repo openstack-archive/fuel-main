@@ -7,19 +7,23 @@ from devops.driver.libvirt import Libvirt
 from devops.helpers import tcp_ping, wait, TimeoutError
 import traceback
 
+from integration.helpers import HTTPClient, SSHClient
+import simplejson as json
+
 import logging
 logger = logging.getLogger('cookbooks')
+
+class ChefRunError(Exception):
+    pass
 
 class Ci:
     hostname = 'nailgun'
     domain = 'mirantis.com'
 
-    def __init__(self, cache_file=None, iso=None):
+    def __init__(self, cache_file=None, base_image=None):
         self.environment_cache_file = cache_file
-        self.iso = iso
+        self.base_image = base_image
         self.environment = None
-        qcow_file = cache_file + ".qcow2" if cache_file else "test-cookbooks.qcow2"
-        self.image_path = os.path.join(os.path.dirname(__file__), qcow_file)
         if self.environment_cache_file and os.path.exists(self.environment_cache_file):
             logger.info("Loading existing cookbooks environment...")
             with file(self.environment_cache_file) as f:
@@ -36,8 +40,8 @@ class Ci:
         if self.environment:
             return True
 
-        if not self.iso:
-            logger.critical("ISO path missing while trying to build cookbooks environment")
+        if not self.base_image:
+            logger.critical("Base image path is missing while trying to build cookbooks environment")
             return False
 
         logger.info("Building cookbooks environment")
@@ -52,12 +56,7 @@ class Ci:
             node.memory = 1024
             node.vnc = True
             node.interfaces.append(Interface(network))
-
-            # Creating qcow2 image to speed up the OS loading and not to put stuff on base ISO
-            logger.info("Creating qcow2 image: %s" % self.image_path)
-            os.system("qemu-img create -f qcow2 -b %s %s" % (self.iso, self.image_path))
-
-            node.disks.append(Disk(path=self.image_path, format='qcow2'))
+            node.disks.append(Disk(base_image=self.base_image, format='qcow2'))
             node.boot = ['disk']
             environment.nodes.append(node)
 
@@ -72,37 +71,46 @@ class Ci:
             logger.info("Starting test node")
             node.start()
 
-            devops.save(self.environment)
+            logger.info("Waiting ssh to respond...")
+            wait(lambda: tcp_ping(node.ip_address, 22), timeout=1800)
 
-            try:
+            logger.info("Setting up repository configuration")
+
+            remote = SSHClient()
+            remote.connect_ssh(str(node.ip_address), "root", "r00tme")
+            repo = remote.open('/etc/yum.repos.d/mirantis.repo', 'w')
+            repo.write("""
+[mirantis]
+name=Mirantis repository
+baseurl=http://twin0d.srt.mirantis.net/centos62
+enabled=1
+gpgcheck=0
+            """)
+            repo.close()
+
+            logger.info("Test node is ready at %s" % node.ip_address)
+
+            devops.save(self.environment)
+            if not os.path.exists(os.path.dirname(self.environment_cache_file)):
                 os.makedirs(os.path.dirname(self.environment_cache_file))
-            except OSError as e:
-                logger.warning("Error occured while creating directory: %s", os.path.dirname(self.environment_cache_file))
 
             with file(self.environment_cache_file, 'w') as f:
                 f.write(self.environment.id)
 
             logger.info("Environment has been saved")
-            logger.info("Waiting test node installation software to boot")
-            time.sleep(10)
-
-            logger.info("Executing test node software installation")
-
-            logger.info("Waiting ssh to respond...")
-            wait(lambda: tcp_ping(node.ip_address, 22), timeout=1800)
-
-            logger.info("Test node is ready at %s" % node.ip_address)
 
         except Exception, e:
+            logger.error("Exception during environment setup: %s" % str(e))
+
             devops.save(self.environment)
 
             cache_file = self.environment_cache_file + '.candidate'
-            try:
+            if not os.path.exists(os.path.dirname(cache_file)):
                 os.makedirs(os.path.dirname(cache_file))
-            except OSError:
-                logger.warning("Exception occured while making directory: %s" % os.path.dirname(cache_file))
+
             with file(cache_file, 'w') as f:
                 f.write(self.environment.id)
+
             logger.error("Failed to build environment. Candidate environment cache file is %s" % cache_file)
             return False
 
@@ -111,9 +119,6 @@ class Ci:
     def destroy_environment(self):
         if self.environment:
             devops.destroy(self.environment)
-
-        if os.path.exists(self.image_path):
-            os.remove(self.image_path)
 
         if self.environment_cache_file and os.path.exists(self.environment_cache_file):
             os.remove(self.environment_cache_file)
@@ -131,7 +136,7 @@ def tearDown():
     if not ci.environment_cache_file:
         ci.destroy_environment()
 
-class CookbokTestCase(unittest.TestCase):
+class CookbookTestCase(unittest.TestCase):
     def setUp(self):
         self.ip = ci.environment.node['cookbooks'].ip_address
         self.cookbooks_dir = os.path.abspath(
@@ -145,11 +150,12 @@ class CookbokTestCase(unittest.TestCase):
         self.remote.connect_ssh(str(self.ip), "root", "r00tme")
         self.remote.mkdir("/opt/os-cookbooks/")
 
-        with self.remote.open('/tmp/solo.rb', 'w') as solo_rb:
-            solo_rb.write("""
+        solo_rb = self.remote.open('/tmp/solo.rb', 'w')
+        solo_rb.write("""
 file_cache_path "/tmp/chef"
 cookbook_path "/opt/os-cookbooks"
-            """)
+        """)
+        solo_rb.close()
 
     def upload_cookbooks(self, cookbooks):
         if not isinstance(cookbooks, list):
@@ -159,12 +165,21 @@ cookbook_path "/opt/os-cookbooks"
             self.remote.scp_d(os.path.join(self.cookbooks_dir, cookbook), "/opt/os-cookbooks/")
 
     def chef_solo(self, attributes={}):
-        with self.remote.open('/tmp/solo.json', 'w') as f:
-            f.write(json.dumps(attributes))
+        solo_json = self.remote.open('/tmp/solo.json', 'w')
+        solo_json.write(json.dumps(attributes))
+        solo_json.close()
 
         result = self.remote.exec_cmd("chef-solo -l debug -c /tmp/solo.rb -j /tmp/solo.json")
         if result['exit_status'] != 0:
-            raise ChefRunError(result['exit_status'], result['stdout'], result['stderr'])
+            stdout = result['stdout']
+            stderr = result['stderr']
+
+            while stdout[-1] == '':
+                stdout.pop()
+
+            logger.error(''.join(stdout))
+
+            raise ChefRunError(result['exit_status'], stdout[-1], ''.join(stderr))
 
         return result
 
