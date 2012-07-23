@@ -121,7 +121,7 @@ def deploy_cluster(cluster_id):
                     % (deploy_cluster.request.id, )
         raise EmptyListError(message)
     else:
-        if not os.path.exists(databag):
+        if not os.path.exists(os.path.join(databag, "node")):
             os.makedirs(os.path.join(databag, "node"))
 
     for node_id in node_jsons:
