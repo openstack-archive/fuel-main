@@ -15,7 +15,7 @@ import shutil
 from django.conf import settings
 
 from nailgun.models import Cluster, Node, Role, Recipe
-from nailgun.helpers import SshConnect
+from nailgun.helpers import SshConnect, DatabagGenerator
 from nailgun.task_helpers import task_with_callbacks, TaskPool, topol_sort
 from nailgun.exceptions import SSHError, EmptyListError, DeployError
 from nailgun.provision import ProvisionConfig
@@ -132,58 +132,28 @@ def deploy_cluster(cluster_id):
         "_".join(["cluster", str(cluster_id)]),
         settings.CHEF_NODES_DATABAG_NAME
     )
-
-    nodes = Node.objects.filter(cluster__id=cluster_id)
-    if not nodes:
+    
+    dg = DatabagGenerator(cluster_id)
+    try:
+        node_jsons = dg.generate()
+    except EmptyListError as e:
         message = "Task %s failed: Nodes list is empty" \
                     % (deploy_cluster.request.id, )
         raise EmptyListError(message)
-
-    use_recipes = []
-    for node in nodes:
-        node_json = {}
-        add_attrs = {}
-
-        roles_for_node = node.roles.all()
-
-        node_json['cluster_id'] = cluster_id
-        for f in node._meta.fields:
-            if f.name != 'cluster':
-                node_json[f.name] = getattr(node, f.name)
-
-        node_json['roles'] = []
-        for role in roles_for_node:
-            recipes = role.recipes.all()
-            rc = []
-            for r in recipes:
-                rc.append("recipe[%s]" % r.recipe)
-                use_recipes.append(r.recipe)
-                if r.attribute:
-                    add_attrs = merge_dictionary(
-                        add_attrs,
-                        r.attribute.attribute
-                    )
-                    add_attrs = generate_passwords(add_attrs)
-
-            node_json["roles"].append({
-                "name": role.name,
-                "recipes": rc
-            })
-
-        node_json = merge_dictionary(node_json, add_attrs)
-
-        if 'network' in node.metadata:
-            node_json['network'] = node.metadata['network']
-
+    else:
         if not os.path.exists(databag):
             os.makedirs(databag)
+        
+
+    for node_id in node_jsons:
 
         # writing to databag
         with open(
-            os.path.join(databag, "".join([node.id, ".json"])),
+            os.path.join(databag, "node", "".join([node_id, ".json"])),
             "w"
         ) as entity:
-            entity.write(json.dumps(node_json))
+            entity.write(json.dumps(node_jsons[node_id], 
+                                    sort_keys=True, indent=4))
 
     t = tarfile.open("".join([databag, ".tar.gz"]), "w:gz")
     t.add(databag, os.path.basename(databag))

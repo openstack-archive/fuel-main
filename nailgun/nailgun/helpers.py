@@ -1,7 +1,8 @@
 import logging
 import socket
-
 import paramiko
+from nailgun.models import Node
+from nailgun.exceptions import EmptyListError
 
 
 logger = logging.getLogger(__name__)
@@ -36,3 +37,56 @@ class SshConnect(object):
                 self.t.close()
         except:
             pass
+
+
+class DatabagGenerator:
+    def __init__(self, cluster_id):
+        self.cluster_id = cluster_id
+
+    def generate(self):
+        node_jsons = {}
+        
+        nodes = Node.objects.filter(cluster__id=self.cluster_id)
+        if not nodes:
+            raise EmptyListError("Node list is empty")
+
+        use_recipes = []
+        for node in nodes:
+            node_json = {}
+            add_attrs = {}
+
+            roles_for_node = node.roles.all()
+
+            node_json['cluster_id'] = self.cluster_id
+            for f in node._meta.fields:
+                if f.name != 'cluster':
+                    node_json[f.name] = getattr(node, f.name)
+
+            node_json['roles'] = []
+            for role in roles_for_node:
+                recipes = role.recipes.all()
+                rc = []
+                for r in recipes:
+                    rc.append("recipe[%s]" % r.recipe)
+                    use_recipes.append(r.recipe)
+                    if r.attribute:
+                        add_attrs = merge_dictionary(
+                            add_attrs,
+                            r.attribute.attribute
+                            )
+                        add_attrs = generate_passwords(add_attrs)
+
+                node_json["roles"].append({
+                        "name": role.name,
+                        "recipes": rc
+                        })
+
+            node_json = merge_dictionary(node_json, add_attrs)
+
+            if 'network' in node.metadata:
+                node_json['network'] = node.metadata['network']
+
+            node_jsons[node.id] = node_json
+
+        return node_jsons
+
