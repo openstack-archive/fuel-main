@@ -20,20 +20,22 @@ package "dnsmasq" do
 end
 
 service "cobbler" do
-  supports :restart => true 
-  action :start
+  supports :restart => false
+  action [ :enable, :start ]
 end
 
-service "dnsmasq" do
-  supports :restart => true 
-  action :start
+ruby_block "delay5" do
+  block { sleep 5 }
+  action :nothing
 end
 
 template "/etc/cobbler/modules.conf" do
   source "modules.conf.erb"
   mode 0644
-  notifies :restart, ["service[cobbler]", "service[dnsmasq]"], :immediately
-  notifies :run, "execute[cobbler_sync]", :immediately
+  notifies :stop, [ "service[cobbler]" ], :immediately
+  notifies :start, [ "service[cobbler]" ], :immediately
+  notifies :create, "ruby_block[delay5]", :immediately
+  notifies :run, "execute[cobbler_sync]"
 end
 
 template "/etc/cobbler/settings" do
@@ -43,7 +45,10 @@ template "/etc/cobbler/settings" do
             :next_server => node["cobbler"]["next_server"],
             :server => node["cobbler"]["server"]
   )
-  notifies :restart, "service[cobbler]"
+  notifies :stop, [ "service[cobbler]" ], :immediately
+  notifies :start, [ "service[cobbler]" ], :immediately
+  notifies :create, "ruby_block[delay5]", :immediately
+  notifies :run, "execute[cobbler_sync]"
 end
 
 script "/etc/cobbler/users.digest" do
@@ -54,7 +59,10 @@ htpasswd -D /etc/cobbler/users.digest #{node.cobbler.user} || true
 printf "#{node.cobbler.user}:Cobbler:#{node.cobbler.password}" | md5sum | awk '{print $1}' >> /etc/cobbler/users.digest 
   EOH
   not_if "grep -q \"^#{node.cobbler.user}:\" /etc/cobbler/users.digest"
-  notifies :restart, "service[cobbler]"
+  notifies :stop, [ "service[cobbler]" ], :immediately
+  notifies :start, [ "service[cobbler]" ], :immediately
+  notifies :create, "ruby_block[delay5]", :immediately
+  notifies :run, "execute[cobbler_sync]"
 end
 
 execute "cobbler_sync" do
@@ -70,7 +78,9 @@ template "/etc/cobbler/dnsmasq.template" do
             :dhcp_range => node["cobbler"]["dhcp_range"],
             :gateway => node["cobbler"]["gateway"]
             )
-  notifies :restart, [ "service[cobbler]", "service[dnsmasq]" ]
+  notifies :stop, [ "service[cobbler]" ], :immediately
+  notifies :start, [ "service[cobbler]" ], :immediately
+  notifies :create, "ruby_block[delay5]", :immediately
   notifies :run, "execute[cobbler_sync]"
 end
 
@@ -80,8 +90,10 @@ template "/etc/cobbler/pxe/pxedefault.template" do
   variables(
             :pxetimeout => node["cobbler"]["pxetimeout"]
             )
-  notifies :restart, "service[cobbler]"
-  notifies :run, "execute[cobbler_sync]" 
+  notifies :stop, [ "service[cobbler]" ], :immediately
+  notifies :start, [ "service[cobbler]" ], :immediately
+  notifies :create, "ruby_block[delay5]", :immediately
+  notifies :run, "execute[cobbler_sync]"
 end
 
 template "/etc/cobbler/power/power_ssh.template" do
