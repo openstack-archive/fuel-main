@@ -122,7 +122,7 @@ def deploy_cluster(cluster_id):
         raise EmptyListError(message)
     else:
         if not os.path.exists(databag):
-            os.makedirs(databag)
+            os.makedirs(os.path.join(databag, "node"))
 
     for node_id in node_jsons:
         # writing to databag
