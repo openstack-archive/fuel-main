@@ -4,8 +4,6 @@ import logging
 from unittest import TestCase
 import paramiko
 
-logging.basicConfig(format=':%(lineno)d: %(asctime)s %(message)s', level=logging.DEBUG)
-
 
 """
 Integration test helpers
