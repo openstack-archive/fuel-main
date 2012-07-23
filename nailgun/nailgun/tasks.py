@@ -132,7 +132,7 @@ def deploy_cluster(cluster_id):
         "_".join(["cluster", str(cluster_id)]),
         settings.CHEF_NODES_DATABAG_NAME
     )
-    
+
     dg = DatabagGenerator(cluster_id)
     try:
         node_jsons = dg.generate()
@@ -143,16 +143,14 @@ def deploy_cluster(cluster_id):
     else:
         if not os.path.exists(databag):
             os.makedirs(databag)
-        
 
     for node_id in node_jsons:
-
         # writing to databag
         with open(
             os.path.join(databag, "node", "".join([node_id, ".json"])),
             "w"
         ) as entity:
-            entity.write(json.dumps(node_jsons[node_id], 
+            entity.write(json.dumps(node_jsons[node_id],
                                     sort_keys=True, indent=4))
 
     t = tarfile.open("".join([databag, ".tar.gz"]), "w:gz")

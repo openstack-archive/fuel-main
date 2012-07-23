@@ -45,7 +45,7 @@ class DatabagGenerator:
 
     def generate(self):
         node_jsons = {}
-        
+
         nodes = Node.objects.filter(cluster__id=self.cluster_id)
         if not nodes:
             raise EmptyListError("Node list is empty")
@@ -89,4 +89,3 @@ class DatabagGenerator:
             node_jsons[node.id] = node_json
 
         return node_jsons
-
