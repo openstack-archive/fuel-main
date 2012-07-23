@@ -49,6 +49,10 @@ class Controller:
         environment.driver = self.driver
 
         for node in environment.nodes:
+            for interface in node.interfaces:
+                interface.node = node
+                interface.network.interfaces.append(interface)
+
             for disk in node.disks:
                 if disk.base_image and disk.base_image.find('://') != -1:
                     disk.base_image = self._cache_file(disk.base_image)
@@ -59,21 +63,56 @@ class Controller:
 
         for network in environment.networks:
             logger.info("Building network %s" % network.name)
+
+            network.ip_addresses = self.networks_pool.get()
+
             if network.pxe:
+                network.dhcp_server = True
                 tftp_path = os.path.join(environment.work_dir, "tftp")
                 if not os.path.exists(tftp_path):
                     os.mkdir(tftp_path, stat.S_IRWXU | stat.S_IRWXG | stat.S_IRWXO)
                 network.tftp_root_dir = tftp_path
-            network.ip_addresses = self.networks_pool.get()
+
+            if network.dhcp_server:
+                allocated_addresses = []
+                for interface in network.interfaces:
+                    for address in interface.ip_addresses:
+                        if address in network.ip_addresses:
+                            allocated_addresses.append(address)
+
+                next_address_index = 2
+                for interface in network.interfaces:
+                    if len(interface.ip_addresses) == 0:
+                        while next_address_index < network.ip_addresses.numhosts and \
+                                network.ip_addresses[next_address_index] in allocated_addresses:
+                            next_address_index += 1
+
+                        if next_address_index >= network.ip_addresses.numhosts:
+                            raise DevopsError, "Failed to allocated IP address for node '%s' in network '%s': no more addresses left" % (node.name, network.name)
+
+                        address = network.ip_addresses[next_address_index]
+                        interface.ip_addresses.append(address)
+                        allocated_addresses.append(next_address_index)
+                        next_address_index += 1
+
+                network.dhcp_dynamic_address_start = network.ip_addresses[next_address_index]
+                network.dhcp_dynamic_address_end   = network.ip_addresses[network.ip_addresses.numhosts-2]
+
+        for network in environment.networks:
+            logger.info("Building network %s" % network.name)
+
             self.driver.create_network(network)
             network.driver = self.driver
-            network.start()
 
         for node in environment.nodes:
             logger.info("Building node %s" % node.name)
 
             self._build_node(environment, node)
             node.driver = self.driver
+
+        for network in environment.networks:
+            self.driver.create_network(network)
+            network.start()
 
         environment.built = True
         logger.info("Finished building environment %s" % environment.name)
@@ -151,11 +190,6 @@ class Controller:
                 self.networks_pool.reserve(address)
 
         logger.debug("Finished scanning for taken ip networks")
-
-    def _build_network(self, environment, network):
-        network.ip_addresses = self.networks_pool.get()
-
-        self.driver.create_network(network)
 
     def _build_node(self, environment, node):
         for disk in filter(lambda d: d.path is None, node.disks):

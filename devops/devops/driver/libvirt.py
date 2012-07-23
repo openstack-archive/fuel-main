@@ -40,6 +40,7 @@ class LibvirtXMLBuilder:
     def build_network_xml(self, network):
         network_xml = XMLBuilder('network')
         network_xml.name(network.id)
+        network_xml.forward(mode='nat')
         
         if hasattr(network, 'ip_addresses') and not network.ip_addresses is None:
             with network_xml.ip(address=str(network.ip_addresses[1]), prefix=str(network.ip_addresses.prefixlen)):
@@ -47,9 +48,13 @@ class LibvirtXMLBuilder:
                     network_xml.tftp(root=network.tftp_root_dir)
                 if network.dhcp_server: 
                     with network_xml.dhcp:
-                        start = network.ip_addresses[2]
-                        end   = network.ip_addresses[network.ip_addresses.numhosts-2]
+                        start = network.dhcp_dynamic_address_start
+                        end   = network.dhcp_dynamic_address_end
                         network_xml.range(start=str(start), end=str(end))
+                        for interface in network.interfaces:
+                            address = find(lambda ip: ip in network.ip_addresses, interface.ip_addresses)
+                            if address and interface.mac_address:
+                                network_xml.host(mac=str(interface.mac_address), ip=str(address), name=interface.node.name)
                         if network.pxe:
                             network_xml.bootp(file="pxelinux.0")
 
@@ -121,6 +126,8 @@ class Libvirt:
     def create_network(self, network):
         if not hasattr(network, 'id') or network.id is None:
             network.id = self._generate_network_id(network.name)
+        elif self.is_network_defined(network):
+            self._virsh("net-undefine '%s'", network.id)
 
         with tempfile.NamedTemporaryFile(delete=True) as xml_file:
             network_xml = self.xml_builder.build_network_xml(network)

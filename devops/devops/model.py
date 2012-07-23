@@ -49,6 +49,7 @@ class Network(ManagedObject):
 
         self.name = name
         self.dhcp_server = dhcp_server
+        self.interfaces = []
         self.pxe = pxe
 
     def start(self):
@@ -125,16 +126,16 @@ class Disk(object):
         self.base_image = base_image
 
 class Interface(ManagedObject):
-    def __init__(self, network, ip_addresses='detect'):
+    def __init__(self, network, ip_addresses=[]):
+        self.node = None
         self.network = network
-        if ip_addresses != 'detect' and not isinstance(ip_addresses, (list, tuple)):
+        if not isinstance(ip_addresses, (list, tuple)):
             ip_addresses = (ip_addresses,)
         self._ip_addresses = ip_addresses
+        self.mac_address = None
     
     @property
     def ip_addresses(self):
-        if self._ip_addresses == 'detect':
-            return self.driver.get_interface_addresses(self)
         return self._ip_addresses
 
     @ip_addresses.setter
