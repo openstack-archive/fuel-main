@@ -48,8 +48,16 @@ class LibvirtXMLBuilder:
                     network_xml.tftp(root=network.tftp_root_dir)
                 if network.dhcp_server: 
                     with network_xml.dhcp:
-                        start = network.dhcp_dynamic_address_start
-                        end   = network.dhcp_dynamic_address_end
+                        if hasattr(network, 'dhcp_dynamic_address_start'):
+                            start = network.dhcp_dynamic_address_start
+                        else:
+                            start = network.ip_addresses[2]
+
+                        if hasattr(network, 'dhcp_dynamic_address_end'):
+                            end = network.dhcp_dynamic_address_end
+                        else:
+                            end = network.ip_addresses[network.ip_addresses.numhosts-2]
+
                         network_xml.range(start=str(start), end=str(end))
                         for interface in network.interfaces:
                             address = find(lambda ip: ip in network.ip_addresses, interface.ip_addresses)

@@ -3,7 +3,7 @@ import re
 from ipaddr import IPv4Network
 from devops import xml
 from devops.model import Network, Node, Disk, Cdrom
-from devops.network import IPv4Network
+from devops.network import IPv4Address, IPv4Network
 from devops.driver.libvirt import Libvirt, LibvirtXMLBuilder, DeploymentSpec
 
 class TestLibvirtXMLBuilder(unittest.TestCase):
@@ -67,6 +67,22 @@ class TestLibvirtXMLBuilder(unittest.TestCase):
 
         self.assertValidIp(range_element['start'])
         self.assertValidIp(range_element['end'])
+
+    def test_network_dhcp_with_custom_dynamic_ip_range(self):
+        network = Network('net1')
+        network.id = 'net1'
+        network.ip_addresses = IPv4Network('10.0.0.0/24')
+        network.dhcp_server = True
+        network.dhcp_dynamic_address_start = IPv4Address('10.0.0.100')
+        network.dhcp_dynamic_address_end   = IPv4Address('10.0.0.200')
+
+        doc_xml = self.builder.build_network_xml(network)
+
+        doc = xml.parse_string(doc_xml)
+
+        range_element = doc.find('ip/dhcp/range')
+        self.assertEquals('10.0.0.100', range_element['start'])
+        self.assertEquals('10.0.0.200', range_element['end'])
 
     def test_node_memory(self):
         node = Node('node1')
