@@ -115,12 +115,14 @@ def deploy_cluster(cluster_id):
 
     dg = DatabagGenerator(cluster_id)
     try:
-        node_jsons = dg.generate()
+        dg.generate()
     except EmptyListError as e:
         message = "Task %s failed: Nodes list is empty" \
                     % (deploy_cluster.request.id, )
         raise EmptyListError(message)
     else:
+        node_jsons = dg.node_jsons
+        use_recipes = dg.use_recipes
         if not os.path.exists(os.path.join(databag, "node")):
             os.makedirs(os.path.join(databag, "node"))
 

@@ -62,15 +62,14 @@ def merge_dictionary(dst, src):
 class DatabagGenerator:
     def __init__(self, cluster_id):
         self.cluster_id = cluster_id
+        self.node_jsons = {}
+        self.use_recipes = []
 
     def generate(self):
-        node_jsons = {}
-
         nodes = Node.objects.filter(cluster__id=self.cluster_id)
         if not nodes:
             raise EmptyListError("Node list is empty")
 
-        use_recipes = []
         for node in nodes:
             node_json = {}
             add_attrs = {}
@@ -88,7 +87,7 @@ class DatabagGenerator:
                 rc = []
                 for r in recipes:
                     rc.append("recipe[%s]" % r.recipe)
-                    use_recipes.append(r.recipe)
+                    self.use_recipes.append(r.recipe)
                     if r.attribute:
                         add_attrs = merge_dictionary(
                             add_attrs,
@@ -106,6 +105,4 @@ class DatabagGenerator:
             if 'network' in node.metadata:
                 node_json['network'] = node.metadata['network']
 
-            node_jsons[node.id] = node_json
-
-        return node_jsons
+            self.node_jsons[node.id] = node_json
