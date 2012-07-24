@@ -48,9 +48,10 @@ function(models, addRemoveNodesDialogTemplate, createClusterDialogTemplate, node
         template: _.template(createClusterDialogTemplate),
         events: {
             'click .create-cluster-btn': 'createCluster',
+            'keydown input': 'onInputKeydown',
             'click .dialog-node': 'toggleNode'
         },
-        createCluster: function(e) {
+        createCluster: function() {
             this.$('.help-inline').text('');
             this.$('.control-group').removeClass('error');
             var nodes = this.$('.node-checked').map(function(){return $(this).attr('data-node-id')}).get();
@@ -72,6 +73,9 @@ function(models, addRemoveNodesDialogTemplate, createClusterDialogTemplate, node
                 }, this)});
                 this.$el.modal('hide');
             }
+        },
+        onInputKeydown: function(e) {
+            if (e.which == 13) this.createCluster();
         },
         toggleNode: function(e) {
             $(e.currentTarget).toggleClass('node-checked').toggleClass('node-unchecked');

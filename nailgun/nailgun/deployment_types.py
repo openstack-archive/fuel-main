@@ -23,6 +23,7 @@ class SimpleDeploymentType(BaseDeploymentType):
     def assign_roles(cls, cluster):
         roles = cluster.release.roles.all()
         nodes = itertools.cycle(cluster.nodes.all())
+        new_roles = {}
         for role in roles:
             node = nodes.next()
             node.new_roles.add(role)
