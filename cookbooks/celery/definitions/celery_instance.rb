@@ -24,11 +24,6 @@ define :celery_instance, :virtualenv => false do
   celery_options += " -B" if params[:beat]
   celery_options += ' ' + params[:extra_options] if params[:extra_options]
 
-  service "nailgun-jobserver" do
-     supports :restart => true, :start => true, :stop => true, :reload => true
-     action :nothing
-  end
-
   template "/etc/init.d/#{name}" do
      source "celery-init.d.conf.erb"
      cookbook "celery"
@@ -39,7 +34,10 @@ define :celery_instance, :virtualenv => false do
          :params => params,
          :celery_options => celery_options
      })
-     notifies :enable, "service[#{name}]"
-     notifies :start, "service[#{name}]"
+  end
+
+  service "nailgun-jobserver" do
+     supports :restart => true, :start => true, :stop => true, :reload => true
+     action [:enable, :start]
   end
 end
