@@ -1,7 +1,7 @@
 import os
 import os.path
 
-LOGPATH = "/var/log/nailgun"
+LOGPATH = os.path.join(os.path.dirname(os.path.abspath(__file__)), "..")
 LOGFILE = os.path.join(LOGPATH, "nailgun.log")
 LOGLEVEL = "DEBUG"
 CELERYLOGFILE = os.path.join(LOGPATH, "celery.log")
