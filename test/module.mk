@@ -27,9 +27,9 @@ $/environment-id-integration: | $(iso.path)
 .PHONY: clean-integration-test
 clean-integration-test: /:=$/
 clean-integration-test:
-	test -f $/environment-id.candidate && \
+	test -f $/environment-id-integration.candidate && \
 		python test/integration_test.py -l $(LEVEL) --cache-file $(abspath $/environment-id-integration.candidate) destroy || true
-	test -f $/environment-id && \
+	test -f $/environment-id-integration && \
 		python test/integration_test.py -l $(LEVEL) --cache-file $(abspath $/environment-id-integration) destroy || true
 
 
