@@ -126,6 +126,12 @@ end
 
 redis_instance 'nailgun'
 
+directory "/var/run/nailgun" do
+  owner node.nailgun.user
+  group node.nailgun.group
+  mode "755"
+end
+
 celery_instance 'nailgun-jobserver' do
   command "#{node[:nailgun][:python]}"
   command_args "#{node[:nailgun][:root]}/manage.py celeryd_multi start Worker -E"
@@ -133,7 +139,7 @@ celery_instance 'nailgun-jobserver' do
   events true
   user node.nailgun.user
   virtualenv node.nailgun.venv
-  pid_file "/opt/nailgun/celery.pid"
+  pid_file "/var/run/nailgun/celery.pid"
   log_file "/var/log/nailgun/celery.log"
 end
 

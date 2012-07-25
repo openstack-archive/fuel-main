@@ -56,7 +56,8 @@ script "/etc/cobbler/users.digest" do
   user "root"
   code <<-EOH
 htpasswd -D /etc/cobbler/users.digest #{node.cobbler.user} || true
-printf "#{node.cobbler.user}:Cobbler:#{node.cobbler.password}" | md5sum | awk '{print $1}' >> /etc/cobbler/users.digest 
+hash=`printf "#{node.cobbler.user}:Cobbler:#{node.cobbler.password}" | md5sum | awk '{print $1}'`
+printf "cobbler:Cobbler:$hash\n" >> /etc/cobbler/users.digest 
   EOH
   not_if "grep -q \"^#{node.cobbler.user}:\" /etc/cobbler/users.digest"
   notifies :stop, [ "service[cobbler]" ], :immediately
