@@ -2,13 +2,13 @@
 
 start() {
     echo "Starting nailgun-jobserver..."
-    exec start-stop-daemon --start --pidfile <%= @params[:pid_file] %> --chuid <%= @params[:user] %> --exec <%= @params[:command] %> \
+    exec start-stop-daemon -o --start --pidfile <%= @params[:pid_file] %> --chuid <%= @params[:user] %> --exec <%= @params[:command] %> \
      -- <%= @params[:command_args] %> start <%= @params[:workers] || 1 %> <%= @celery_options %>
 }
 
 stop() {
     echo "Stopping nailgun-jobserver..."
-    exec start-stop-daemon --stop --pidfile <%= @params[:pid_file] %> --chuid <%= @params[:user] %> --exec <%= @params[:command] %> --signal QUIT
+    exec start-stop-daemon -o --stop --pidfile <%= @params[:pid_file] %> --chuid <%= @params[:user] %> --exec <%= @params[:command] %> --signal QUIT
 }
 
 status() {

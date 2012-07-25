@@ -136,6 +136,16 @@ def create_solo(*args):
     return True
 
 
+def tcp_ping(host, port):
+    s = socket.socket()
+    try:
+        s.connect((str(host), int(port)))
+    except socket.error:
+        return False
+    s.close()
+    return True
+
+
 @task_with_callbacks
 def bootstrap_node(node_id):
 
@@ -146,15 +156,6 @@ def bootstrap_node(node_id):
 
     logger.debug("Provisioning node %s" % node_id)
     _provision_node(node_id)
-
-    def tcp_ping(host, port):
-        s = socket.socket()
-        try:
-            s.connect((str(host), int(port)))
-        except socket.error:
-            return False
-        s.close()
-        return True
 
     # FIXME
     # node.ip had been got from bootstrap agent
