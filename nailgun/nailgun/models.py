@@ -1,7 +1,9 @@
 import ipaddr
 import celery
+import importlib
 from django.db import models
 from django.contrib.auth.models import User
+from django.core.exceptions import ObjectDoesNotExist
 from jsonfield import JSONField
 from api.fields import RecipeField
 
@@ -36,18 +38,46 @@ class Release(models.Model):
         unique_together = ("name", "version")
 
 
+class Task(models.Model):
+    id = models.CharField(max_length=36, primary_key=True)
+    cluster = models.OneToOneField('Cluster', related_name='+')
+    task_name = models.CharField(max_length=100)
+
+    def _get_celery_task(self):
+        tasks = importlib.import_module('nailgun.tasks')
+        return getattr(tasks, self.task_name)
+
+    @property
+    def name(self):
+        return self._get_celery_task().name
+
+    def run(self, *args):
+        task_result = self._get_celery_task().delay(*args)
+        self.id = task_result.task_id
+        self.save()
+        return task_result
+
+    @property
+    def result(self):
+        return celery.result.AsyncResult(self.id)
+
+    @property
+    def ready(self):
+        # TODO: deal with subtasks readiness to report real status
+        return self.result.ready()
+
+
 class Cluster(models.Model):
     name = models.CharField(max_length=100)
     release = models.ForeignKey(Release, related_name='clusters')
-    task = models.CharField(max_length=36, null=True)
 
+    # working around Django issue #10227
     @property
-    def locked(self):
-        if self.task:
-            task = celery.result.AsyncResult(self.task)
-            if not task.ready():
-                return True
-        return False
+    def task(self):
+        try:
+            return Task.objects.get(cluster=self)
+        except ObjectDoesNotExist:
+            return None
 
 
 class Node(models.Model):
