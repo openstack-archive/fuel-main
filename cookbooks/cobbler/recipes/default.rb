@@ -120,3 +120,8 @@ include_recipe "cobbler::bootstrap"
 include_recipe "cobbler::precise-x86_64"
 include_recipe "cobbler::centos-6.2-x86_64"
 
+execute "cobbler_sync_again" do
+  command "cobbler sync"
+  returns [0,155]
+  not_if "netstat -unlp | awk '{ print $4 }' | grep -q ':67$'"
+end

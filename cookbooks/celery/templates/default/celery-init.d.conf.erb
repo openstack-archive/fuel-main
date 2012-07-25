@@ -1,3 +1,5 @@
+#!/bin/bash
+
 start() {
     echo "Starting nailgun-jobserver..."
     exec start-stop-daemon --start --pidfile <%= @params[:pid_file] %> --chuid <%= @params[:user] %> --exec <%= @params[:command] %> \
@@ -6,7 +8,7 @@ start() {
 
 stop() {
     echo "Stopping nailgun-jobserver..."
-    exec start-stop-daemon --stop --pidfile <%= @params[:pid_file] %> --chuid <%= @params[:user] %> --exec <%= @params[:command] %> --signa$
+    exec start-stop-daemon --stop --pidfile <%= @params[:pid_file] %> --chuid <%= @params[:user] %> --exec <%= @params[:command] %> --signal QUIT
 }
 
 status() {
