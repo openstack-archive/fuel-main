@@ -64,6 +64,7 @@ class Node(models.Model):
     status = models.CharField(max_length=30, choices=NODE_STATUSES,
             default='online')
     metadata = JSONField()
+    node_attrs = JSONField()
     mac = models.CharField(max_length=17)
     ip = models.CharField(max_length=15)
     fqdn = models.CharField(max_length=255)

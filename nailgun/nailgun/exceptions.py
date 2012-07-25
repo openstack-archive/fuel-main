@@ -5,6 +5,10 @@ class EmptyListError(LookupError):
     pass
 
 
+class NotFound(LookupError):
+    pass
+
+
 class SSHError(Exception):
     pass
 
