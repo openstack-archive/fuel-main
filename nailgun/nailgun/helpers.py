@@ -74,7 +74,7 @@ def generate_passwords(d):
     def create_pass():
         return ''.join(
             choice(
-                string.printable.replace('"', '').replace('\\', '')
+                ''.join((string.ascii_letters, string.digits))
             ) for _ in xrange(10)
         )
 
