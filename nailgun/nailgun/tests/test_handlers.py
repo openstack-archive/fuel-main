@@ -459,7 +459,8 @@ class TestHandlers(TestCase):
 
         resp_json = json.loads(resp.content)
         self.assertEquals(len(resp_json['task_id']), 36)
-        self.assertEquals(resp_json['status'], "SUCCESS")
+        self.assertEquals(resp_json['ready'], True)
+        self.assertEquals(resp_json['error'], "")
 
     def test_release_create(self):
         release_name = "OpenStack"
