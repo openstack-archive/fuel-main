@@ -1,12 +1,24 @@
+#!/bin/bash
+
+NAME=nailgun-jobserver
+
 start() {
     echo "Starting nailgun-jobserver..."
-    exec start-stop-daemon --start --pidfile <%= @params[:pid_file] %> --chuid <%= @params[:user] %> --exec <%= @params[:command] %> \
-     -- <%= @params[:command_args] %> start <%= @params[:workers] || 1 %> <%= @celery_options %>
+    if start-stop-daemon --start --pidfile <%= @params[:pid_file] %> --chuid <%= @params[:user] %> --exec <%= @params[:command] %> \
+     -- <%= @params[:command_args] %> start <%= @params[:workers] || 1 %> <%= @celery_options %>; then
+	echo "$NAME"
+    else
+	echo "$NAME failed"
+    fi
 }
 
 stop() {
     echo "Stopping nailgun-jobserver..."
-    exec start-stop-daemon --stop --pidfile <%= @params[:pid_file] %> --chuid <%= @params[:user] %> --exec <%= @params[:command] %> --signa$
+    if start-stop-daemon --stop --pidfile <%= @params[:pid_file] %> --chuid <%= @params[:user] %> --exec <%= @params[:command] %> --signal QUIT; then
+	echo "$NAME"
+    else
+	echo "$NAME failed"
+    fi
 }
 
 status() {

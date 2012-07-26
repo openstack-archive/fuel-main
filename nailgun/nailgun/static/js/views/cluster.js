@@ -58,8 +58,10 @@ function(models, dialogViews, taskViews, clusterPageTemplate, clusterNodeTemplat
             }
             if (this.model.locked()) {
                 this.$el.addClass('cluster-locked').removeClass('cluster-editable');
+                this.$('.cluster-control button').addClass('disabled').attr('disabled', true);
             } else {
                 this.$el.addClass('cluster-editable').removeClass('cluster-locked');
+                this.$('.cluster-control button').removeClass('disabled').attr('disabled', false);
             }
             return this;
         }
@@ -115,7 +117,7 @@ function(models, dialogViews, taskViews, clusterPageTemplate, clusterNodeTemplat
 
     views.NodeList = Backbone.View.extend({
         className: 'row',
-        initialize: function() {
+        initialize: function(options) {
             this.model.bind('reset', this.render, this);
             this.model.bind('add', this.render, this);
         },

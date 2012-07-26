@@ -1,3 +1,5 @@
+import itertools
+
 deployment_types = {}
 
 
@@ -19,8 +21,11 @@ class SimpleDeploymentType(BaseDeploymentType):
 
     @classmethod
     def assign_roles(cls, cluster):
-        # TODO: replace logic
-        for node in cluster.nodes.all():
-            node.new_roles.clear()
+        roles = cluster.release.roles.all()
+        nodes = itertools.cycle(cluster.nodes.all())
+        new_roles = {}
+        for role in roles:
+            node = nodes.next()
+            node.new_roles.add(role)
             node.redeployment_needed = True
             node.save()

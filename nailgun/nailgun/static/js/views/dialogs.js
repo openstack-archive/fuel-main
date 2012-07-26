@@ -27,7 +27,7 @@ function(models, addRemoveNodesDialogTemplate, createClusterDialogTemplate, node
         },
         initialize: function() {
             this.availableNodes = new models.Nodes();
-            this.availableNodes.fetch({data: {cluster_id: ''}});
+            this.availableNodes.deferred = this.availableNodes.fetch({data: {cluster_id: ''}});
         },
         render: function() {
             this.$el.html(this.template());
@@ -35,7 +35,10 @@ function(models, addRemoveNodesDialogTemplate, createClusterDialogTemplate, node
             this.$el.modal();
 
             this.$('.cluster-nodes').html(new views.nodeList({model: this.model.get('nodes'), checked: true}).render().el);
-            this.$('.available-nodes').html(new views.nodeList({model: this.availableNodes, checked: false}).render().el);
+            this.availableNodes.deferred.done(_.bind(function() {
+                this.$('.available-nodes').html(new views.nodeList({model: this.availableNodes, checked: false}).render().el);
+            }, this));
+
             return this;
         }
     });
@@ -45,9 +48,10 @@ function(models, addRemoveNodesDialogTemplate, createClusterDialogTemplate, node
         template: _.template(createClusterDialogTemplate),
         events: {
             'click .create-cluster-btn': 'createCluster',
+            'keydown input': 'onInputKeydown',
             'click .dialog-node': 'toggleNode'
         },
-        createCluster: function(e) {
+        createCluster: function() {
             this.$('.help-inline').text('');
             this.$('.control-group').removeClass('error');
             var nodes = this.$('.node-checked').map(function(){return $(this).attr('data-node-id')}).get();
@@ -70,6 +74,9 @@ function(models, addRemoveNodesDialogTemplate, createClusterDialogTemplate, node
                 this.$el.modal('hide');
             }
         },
+        onInputKeydown: function(e) {
+            if (e.which == 13) this.createCluster();
+        },
         toggleNode: function(e) {
             $(e.currentTarget).toggleClass('node-checked').toggleClass('node-unchecked');
         },
@@ -84,7 +91,7 @@ function(models, addRemoveNodesDialogTemplate, createClusterDialogTemplate, node
             this.releases = new models.Releases();
             this.releases.fetch();
             this.availableNodes = new models.Nodes();
-            this.availableNodes.fetch({data: {cluster_id: ''}});
+            this.availableNodes.deferred = this.availableNodes.fetch({data: {cluster_id: ''}});
         },
         render: function() {
             this.$el.html(this.template());
@@ -94,7 +101,9 @@ function(models, addRemoveNodesDialogTemplate, createClusterDialogTemplate, node
             this.renderReleases();
             this.releases.bind('reset', this.renderReleases, this);
 
-            this.$('.available-nodes').html(new views.nodeList({model: this.availableNodes, checked: false}).render().el);
+            this.availableNodes.deferred.done(_.bind(function() {
+                this.$('.available-nodes').html(new views.nodeList({model: this.availableNodes, checked: false}).render().el);
+            }, this));
 
             return this;
         }
@@ -135,14 +144,16 @@ function(models, addRemoveNodesDialogTemplate, createClusterDialogTemplate, node
         initialize: function() {
             this.deploymentTypes = new models.DeploymentTypes();
             this.deploymentTypes.cluster = this.model;
-            this.deploymentTypes.fetch();
+            this.deploymentTypes.deferred = this.deploymentTypes.fetch();
         },
         render: function() {
             this.$el.html(this.template());
             this.$el.on('hidden', function() {$(this).remove()});
             this.$el.modal();
 
-            this.$('form').html(new views.deploymentTypeList({model: this.deploymentTypes}).render().el);
+            this.deploymentTypes.deferred.done(_.bind(function() {
+                this.$('form').html(new views.deploymentTypeList({model: this.deploymentTypes}).render().el);
+            }, this));
 
             return this;
         }

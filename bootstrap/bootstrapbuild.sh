@@ -41,7 +41,7 @@ INITRD_FS=${BASEDIR}/initrd-fs
 INITRD_LOOP=${BASEDIR}/initrd-loop
 INITRD_MODULES=${BASEDIR}/modules
 
-DEBOOTSTRAP_INCLUDE=less,vim,bash,net-tools,isc-dhcp-client,rsyslog,cron,iputils-ping,openssh-server,ruby-httpclient,ruby-json,ohai
+DEBOOTSTRAP_INCLUDE=less,vim,bash,net-tools,isc-dhcp-client,rsyslog,cron,iputils-ping,openssh-server,ruby-httpclient,ruby-json,ohai,rubygems
 DEBOOTSTRAP_EXCLUDE=
 
 ORIG=${BASEDIR}/orig

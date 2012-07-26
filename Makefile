@@ -1,7 +1,7 @@
 
 BUILD_DIR:=build
 
-MODULES=gnupg bootstrap iso nailgun test
+MODULES=gnupg bootstrap nailgun test os os/centos os/ubuntu iso
 
 .PHONY: all clean test test-unit help FORCE
 
@@ -30,6 +30,7 @@ clean:
 	rm -rf $(BUILD_DIR)
 
 assert-variable=$(if $($1),,$(error Variable $1 need to be defined))
+find-files=$(shell test -d $1 && cd $1 && find * -type f 2> /dev/null)
 
 include config.mk
 

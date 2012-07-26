@@ -15,7 +15,7 @@ import shutil
 from django.conf import settings
 
 from nailgun.models import Cluster, Node, Role, Recipe
-from nailgun.helpers import SshConnect, DatabagGenerator, merge_dictionary
+from nailgun.helpers import SshConnect, DeployGenerator
 from nailgun.task_helpers import task_with_callbacks, TaskPool, topol_sort
 from nailgun.exceptions import SSHError, EmptyListError, DeployError
 from nailgun.provision import ProvisionConfig
@@ -43,50 +43,6 @@ def resolve_recipe_deps(graph, recipe):
         resolve_recipe_deps(graph, r)
 
 
-def generate_passwords(d):
-    stack = []
-    new_dict = d.copy()
-
-    def create_pass():
-        return ''.join(
-            choice(
-                string.printable.replace('"', '').replace('\\', '')
-            ) for _ in xrange(10)
-        )
-
-    def construct(d, k):
-        """
-        Creating a nested dictionary:
-        ['a', 'b', 'c', 'd'] => {'a': {'b': {'c': 'd'}}}
-        Merging it with the main dict updates the single key
-        """
-        _d = copy.deepcopy(d)
-        if len(k) > 1:
-            _k = k.pop(0)
-            _d[_k] = construct(d, k)
-            return _d
-        return k.pop(0)
-
-    def search_pwd(node, cdict):
-        """
-        Recursively searching for 'password' fields
-        """
-        for a, val in node.items():
-            stack.append(a)
-            if isinstance(val, dict):
-                search_pwd(val, cdict)
-            elif "password" in a:
-                k = stack[:]
-                k.append(create_pass())
-                c = construct({}, k)
-                cdict = merge_dictionary(cdict, c)
-            stack.pop()
-        return cdict
-
-    search_pwd(d, new_dict)
-    return new_dict
-
-
 @task_with_callbacks
 def update_cluster_status(*args):
     # FIXME(mihgen):
@@ -107,40 +63,10 @@ def node_set_error_status(node_id):
 @task_with_callbacks
 def deploy_cluster(cluster_id):
 
-    databag = os.path.join(
-        settings.CHEF_CONF_FOLDER,
-        "_".join(["cluster", str(cluster_id)]),
-        settings.CHEF_NODES_DATABAG_NAME
-    )
-
-    dg = DatabagGenerator(cluster_id)
-    try:
-        node_jsons = dg.generate()
-    except EmptyListError as e:
-        message = "Task %s failed: Nodes list is empty" \
-                    % (deploy_cluster.request.id, )
-        raise EmptyListError(message)
-    else:
-        if not os.path.exists(os.path.join(databag, "node")):
-            os.makedirs(os.path.join(databag, "node"))
-
-    for node_id in node_jsons:
-        # writing to databag
-        with open(
-            os.path.join(databag, "node", "".join([node_id, ".json"])),
-            "w"
-        ) as entity:
-            entity.write(json.dumps(node_jsons[node_id],
-                                    sort_keys=True, indent=4))
-
-    t = tarfile.open("".join([databag, ".tar.gz"]), "w:gz")
-    t.add(databag, os.path.basename(databag))
-    t.close()
-    # removing databag - it's already packed
-    shutil.rmtree(databag)
-
     graph = {}
-    for recipe in Recipe.objects.filter(recipe__in=use_recipes):
+    for recipe in Recipe.objects.filter(
+        recipe__in=DeployGenerator.recipes(cluster_id)
+        ):
         resolve_recipe_deps(graph, recipe)
         #graph[recipe.recipe] = [r.recipe for r in recipe.depends.all()]
 
@@ -192,7 +118,9 @@ def create_solo(*args):
     for node in nodes:
         node_solo = {
             "cluster_id": cluster_id,
-            "run_list": ["recipe[%s]" % recipe.recipe]
+            "run_list": ["recipe[%s]" % recipe.recipe],
+            "components_list": DeployGenerator.components4(cluster_id),
+            "components_dict": DeployGenerator.components4(cluster_id, "dict")
         }
 
         # writing to solo
@@ -203,8 +131,18 @@ def create_solo(*args):
             ),
             "w"
         ) as entity:
-            entity.write(json.dumps(node_solo))
+            entity.write(json.dumps(node_solo, sort_keys=True, indent=4))
 
+    return True
+
+
+def tcp_ping(host, port):
+    s = socket.socket()
+    try:
+        s.connect((str(host), int(port)))
+    except socket.error:
+        return False
+    s.close()
     return True
 
 
@@ -218,15 +156,6 @@ def bootstrap_node(node_id):
 
     logger.debug("Provisioning node %s" % node_id)
     _provision_node(node_id)
-
-    def tcp_ping(host, port):
-        s = socket.socket()
-        try:
-            s.connect((str(host), int(port)))
-        except socket.error:
-            return False
-        s.close()
-        return True
 
     # FIXME
     # node.ip had been got from bootstrap agent
