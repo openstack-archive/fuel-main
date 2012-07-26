@@ -44,34 +44,64 @@ class TaskHandler(BaseHandler):
     allowed_methods = ('GET',)
 
     @classmethod
-    def render(cls, task):
-        json_data = {
+    def render_task_tree(cls, task):
+        task_tree = {
             "task_id": task.task_id,
             "status": task.state,
-            "ready": task.ready(),
-            "name": getattr(task, 'task_name', None),
+            #"ready": task.ready(),
+            #"name": getattr(task, 'task_name', None),
             "subtasks": None,
-            "result": None,
             "error": None,
             "traceback": None,
         }
 
         if isinstance(task.result, celery.result.ResultSet):
-            json_data['subtasks'] = [TaskHandler.render(t) for t in \
+            task_tree['subtasks'] = [TaskHandler.render_task_tree(t) for t in \
                     task.result.results]
         elif isinstance(task.result, celery.result.AsyncResult):
-            json_data['subtasks'] = [TaskHandler.render(task.result)]
+            task_tree['subtasks'] = [TaskHandler.render_task_tree(task.result)]
         elif isinstance(task.result, Exception):
-            json_data['error'] = task.result
-            json_data['traceback'] = task.traceback
+            task_tree['error'] = task.result
+            task_tree['traceback'] = task.traceback
         else:
-            json_data['result'] = task.result
+            task_tree['result'] = task.result
+        return task_tree
 
-        return json_data
+    @classmethod
+    def render(cls, task):
+        task_tree = TaskHandler.render_task_tree(task)
+        statuses = []
+
+        def check_status(_task):
+            statuses.append(_task['status'])
+            if _task['subtasks']:
+                for t in _task['subtasks']:
+                    check_status(t)
+            return statuses
+        check_status(task_tree)
+
+        task_result = {
+            "task_id": task.task_id,
+            # TODO(mihgen): Put error and traceback for failing task here
+            "error": None,
+            "traceback": None,
+        }
+        if "FAILURE" in statuses:
+            task_result['status'] = 'FAILURE'
+        elif "PENDING" in statuses:
+            task_result['status'] = 'PENDING'
+        elif "REVOKED" in statuses:
+            task_result['status'] = 'REVOKED'
+        elif "SUCCESS" in statuses and len(set(statuses)) == 1:
+            task_result['status'] = 'SUCCESS'
+        else:
+            task_result['status'] = 'UNKNOWN'
+        return task_result
 
     def read(self, request, task_id):
         task = celery.result.AsyncResult(task_id)
-        return TaskHandler.render(task)
+        task_result = TaskHandler.render(task)
+        return task_result
 
 
 class ClusterChangesHandler(BaseHandler):
