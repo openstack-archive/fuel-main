@@ -74,11 +74,9 @@ $/isoroot-pool.done: $(ubuntu.packages)/cache.done
 	$(ACTION.TOUCH)
 
 $/isoroot-centos.done: $(centos.packages)/cache.done
-	mkdir -p $(ISOROOT)/centos/$(CENTOSRELEASE)
-	find $(centos.packages)/Packages -name '*.rpm' | while read rpmfile; do \
-	cp -n $${rpmfile} $(ISOROOT)/centos/$(CENTOSRELEASE)/ ; \
-	done
-	createrepo -g `readlink -f "$(centos.packages)/comps.xml"` -o $(ISOROOT)/centos/$(CENTOSRELEASE) $(ISOROOT)/centos/$(CENTOSRELEASE)
+	mkdir -p $(ISOROOT)/centos/$(CENTOS_62_RELEASE)
+	find $(centos.packages)/Packages -name '*.rpm' -exec cp -n {} $(ISOROOT)/centos/$(CENTOS_62_RELEASE) \;
+	createrepo -g `readlink -f "$(centos.packages)/comps.xml"` -o $(ISOROOT)/centos/$(CENTOS_62_RELEASE) $(ISOROOT)/centos/$(CENTOS_62_RELEASE)
 	$(ACTION.TOUCH)
 
 $/isoroot-keyring.done: $/isoroot-pool.done $/debian/ubuntu-keyring/.done
