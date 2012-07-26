@@ -9,7 +9,7 @@ from django.core.exceptions import ObjectDoesNotExist
 from django.conf import settings
 
 from nailgun.models import Cluster, Node, Recipe, Role, Release, Network, \
-        Attribute
+        Attribute, Task
 from nailgun.deployment_types import deployment_types
 from nailgun.api.validators import validate_json, validate_json_list
 from nailgun.api.forms import ClusterForm, ClusterCreationForm, RecipeForm, \
@@ -69,7 +69,7 @@ class TaskHandler(BaseHandler):
 
     @classmethod
     def render(cls, task):
-        task_tree = TaskHandler.render_task_tree(task)
+        task_tree = TaskHandler.render_task_tree(task.result)
         statuses = []
         ready = []
         errors = []
@@ -86,7 +86,7 @@ class TaskHandler(BaseHandler):
         check_readiness(task_tree)
 
         task_result = {
-            "task_id": task.task_id,
+            "task_id": task.pk,
             "ready": reduce(lambda x, y: x and y, ready),
             "error": '\n'.join(errors)
         }
@@ -98,9 +98,12 @@ class TaskHandler(BaseHandler):
         return task_result
 
     def read(self, request, task_id):
-        task = celery.result.AsyncResult(task_id)
-        task_result = TaskHandler.render(task)
-        return task_result
+        try:
+            task = Task.objects.get(id=task_id)
+        except ObjectDoesNotExist:
+            return rc.NOT_FOUND
+
+        return TaskHandler.render(task)
 
 
 class ClusterChangesHandler(BaseHandler):
@@ -113,10 +116,13 @@ class ClusterChangesHandler(BaseHandler):
         except ObjectDoesNotExist:
             return rc.NOT_FOUND
 
-        if cluster.locked:
-            response = rc.CONFLICT
-            response.content = "Another task is running"
-            return response
+        if cluster.task:
+            if cluster.task.ready:
+                cluster.task.delete()
+            else:
+                response = rc.DUPLICATE_ENTRY
+                response.content = "Another task is running"
+                return response
 
         for node in cluster.nodes.filter(redeployment_needed=True):
             node.roles = node.new_roles.all()
@@ -128,10 +134,8 @@ class ClusterChangesHandler(BaseHandler):
             for node in cluster.nodes.all():
                 nw.update_node_network_info(node)
 
-        task = tasks.deploy_cluster.delay(cluster_id)
-
-        cluster.task = task.task_id
-        cluster.save()
+        task = Task(task_name='deploy_cluster', cluster=cluster)
+        task.run(cluster_id)
 
         response = rc.ACCEPTED
         response.content = TaskHandler.render(task)
@@ -274,10 +278,8 @@ class ClusterHandler(JSONHandler):
             elif field in ('release',):
                 json_data[field] = ReleaseHandler.render(cluster.release)
             elif field in ('task',):
-                task_id = cluster.task
-                json_data[field] = task_id and \
-                    TaskHandler.render(celery.result.AsyncResult(task_id)) or \
-                    None
+                json_data[field] = cluster.task and \
+                                   TaskHandler.render(cluster.task) or None
 
         return json_data
 
@@ -297,6 +299,8 @@ class ClusterHandler(JSONHandler):
                     if key == 'nodes':
                         new_nodes = Node.objects.filter(id__in=value)
                         cluster.nodes = new_nodes
+                    elif key == 'task':
+                        cluster.task.delete()
                     else:
                         setattr(cluster, key, value)
 
