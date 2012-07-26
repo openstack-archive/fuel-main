@@ -9,7 +9,7 @@ from django.core.exceptions import ObjectDoesNotExist
 from django.conf import settings
 
 from nailgun.models import Cluster, Node, Recipe, Role, Release, Network, \
-        Attribute, Task
+        Attribute
 from nailgun.deployment_types import deployment_types
 from nailgun.api.validators import validate_json, validate_json_list
 from nailgun.api.forms import ClusterForm, ClusterCreationForm, RecipeForm, \
@@ -45,43 +45,32 @@ class TaskHandler(BaseHandler):
 
     @classmethod
     def render(cls, task):
-        def render_task_result(task_result):
-            # TODO: eliminate subtasks and simplify output
-            json_data = {
-                "task_id": task_result.task_id,
-                "status": task_result.state,
-                "ready": task_result.ready(),
-                "subtasks": None,
-                "result": None,
-                "error": None,
-                "traceback": None,
-            }
+        json_data = {
+            "task_id": task.task_id,
+            "status": task.state,
+            "ready": task.ready(),
+            "name": getattr(task, 'task_name', None),
+            "subtasks": None,
+            "result": None,
+            "error": None,
+            "traceback": None,
+        }
 
-            if isinstance(task_result.result, celery.result.ResultSet):
-                json_data['subtasks'] = [render_task_result(t) for t in \
-                        task_result.result.results]
-            elif isinstance(task_result.result, celery.result.AsyncResult):
-                json_data['subtasks'] = \
-                        [render_task_result(task_result.result)]
-            elif isinstance(task_result.result, Exception):
-                json_data['error'] = task_result.result
-                json_data['traceback'] = task_result.traceback
-            else:
-                json_data['result'] = task_result.result
-
-            return json_data
-
-        json_data = render_task_result(task.result)
-        json_data['name'] = task.name
+        if isinstance(task.result, celery.result.ResultSet):
+            json_data['subtasks'] = [TaskHandler.render(t) for t in \
+                    task.result.results]
+        elif isinstance(task.result, celery.result.AsyncResult):
+            json_data['subtasks'] = [TaskHandler.render(task.result)]
+        elif isinstance(task.result, Exception):
+            json_data['error'] = task.result
+            json_data['traceback'] = task.traceback
+        else:
+            json_data['result'] = task.result
 
         return json_data
 
     def read(self, request, task_id):
-        try:
-            task = Task.objects.get(id=task_id)
-        except ObjectDoesNotExist:
-            return rc.NOT_FOUND
-
+        task = celery.result.AsyncResult(task_id)
         return TaskHandler.render(task)
 
 
@@ -95,13 +84,10 @@ class ClusterChangesHandler(BaseHandler):
         except ObjectDoesNotExist:
             return rc.NOT_FOUND
 
-        if cluster.task:
-            if cluster.task.ready:
-                cluster.task.delete()
-            else:
-                response = rc.DUPLICATE_ENTRY
-                response.content = "Another task is running"
-                return response
+        if cluster.locked:
+            response = rc.CONFLICT
+            response.content = "Another task is running"
+            return response
 
         for node in cluster.nodes.filter(redeployment_needed=True):
             node.roles = node.new_roles.all()
@@ -113,8 +99,10 @@ class ClusterChangesHandler(BaseHandler):
             for node in cluster.nodes.all():
                 nw.update_node_network_info(node)
 
-        task = Task(task_name='deploy_cluster', cluster=cluster)
-        task.run(cluster_id)
+        task = tasks.deploy_cluster.delay(cluster_id)
+
+        cluster.task = task.task_id
+        cluster.save()
 
         response = rc.ACCEPTED
         response.content = TaskHandler.render(task)
@@ -257,8 +245,10 @@ class ClusterHandler(JSONHandler):
             elif field in ('release',):
                 json_data[field] = ReleaseHandler.render(cluster.release)
             elif field in ('task',):
-                json_data[field] = cluster.task and \
-                                   TaskHandler.render(cluster.task) or None
+                task_id = cluster.task
+                json_data[field] = task_id and \
+                    TaskHandler.render(celery.result.AsyncResult(task_id)) or \
+                    None
 
         return json_data
 
@@ -278,8 +268,6 @@ class ClusterHandler(JSONHandler):
                     if key == 'nodes':
                         new_nodes = Node.objects.filter(id__in=value)
                         cluster.nodes = new_nodes
-                    elif key == 'task':
-                        cluster.task.delete()
                     else:
                         setattr(cluster, key, value)
 
