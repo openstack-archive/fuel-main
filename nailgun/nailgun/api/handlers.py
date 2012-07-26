@@ -9,7 +9,7 @@ from django.core.exceptions import ObjectDoesNotExist
 from django.conf import settings
 
 from nailgun.models import Cluster, Node, Recipe, Role, Release, Network, \
-        Attribute, Task
+        Attribute
 from nailgun.deployment_types import deployment_types
 from nailgun.api.validators import validate_json, validate_json_list
 from nailgun.api.forms import ClusterForm, ClusterCreationForm, RecipeForm, \
@@ -44,45 +44,64 @@ class TaskHandler(BaseHandler):
     allowed_methods = ('GET',)
 
     @classmethod
+    def render_task_tree(cls, task):
+        task_tree = {
+            "task_id": task.task_id,
+            "status": task.state,
+            #"ready": task.ready(),
+            #"name": getattr(task, 'task_name', None),
+            "subtasks": None,
+            "error": None,
+            "traceback": None,
+        }
+
+        if isinstance(task.result, celery.result.ResultSet):
+            task_tree['subtasks'] = [TaskHandler.render_task_tree(t) for t in \
+                    task.result.results]
+        elif isinstance(task.result, celery.result.AsyncResult):
+            task_tree['subtasks'] = [TaskHandler.render_task_tree(task.result)]
+        elif isinstance(task.result, Exception):
+            task_tree['error'] = task.result
+            task_tree['traceback'] = task.traceback
+        else:
+            task_tree['result'] = task.result
+        return task_tree
+
+    @classmethod
     def render(cls, task):
-        def render_task_result(task_result):
-            # TODO: eliminate subtasks and simplify output
-            json_data = {
-                "task_id": task_result.task_id,
-                "status": task_result.state,
-                "ready": task_result.ready(),
-                "subtasks": None,
-                "result": None,
-                "error": None,
-                "traceback": None,
-            }
+        task_tree = TaskHandler.render_task_tree(task)
+        statuses = []
 
-            if isinstance(task_result.result, celery.result.ResultSet):
-                json_data['subtasks'] = [render_task_result(t) for t in \
-                        task_result.result.results]
-            elif isinstance(task_result.result, celery.result.AsyncResult):
-                json_data['subtasks'] = \
-                        [render_task_result(task_result.result)]
-            elif isinstance(task_result.result, Exception):
-                json_data['error'] = task_result.result
-                json_data['traceback'] = task_result.traceback
-            else:
-                json_data['result'] = task_result.result
+        def check_status(_task):
+            statuses.append(_task['status'])
+            if _task['subtasks']:
+                for t in _task['subtasks']:
+                    check_status(t)
+            return statuses
+        check_status(task_tree)
 
-            return json_data
-
-        json_data = render_task_result(task.result)
-        json_data['name'] = task.name
-
-        return json_data
+        task_result = {
+            "task_id": task.task_id,
+            # TODO(mihgen): Put error and traceback for failing task here
+            "error": None,
+            "traceback": None,
+        }
+        if "FAILURE" in statuses:
+            task_result['status'] = 'FAILURE'
+        elif "PENDING" in statuses:
+            task_result['status'] = 'PENDING'
+        elif "REVOKED" in statuses:
+            task_result['status'] = 'REVOKED'
+        elif "SUCCESS" in statuses and len(set(statuses)) == 1:
+            task_result['status'] = 'SUCCESS'
+        else:
+            task_result['status'] = 'UNKNOWN'
+        return task_result
 
     def read(self, request, task_id):
-        try:
-            task = Task.objects.get(id=task_id)
-        except ObjectDoesNotExist:
-            return rc.NOT_FOUND
-
-        return TaskHandler.render(task)
+        task = celery.result.AsyncResult(task_id)
+        task_result = TaskHandler.render(task)
+        return task_result
 
 
 class ClusterChangesHandler(BaseHandler):
@@ -95,13 +114,10 @@ class ClusterChangesHandler(BaseHandler):
         except ObjectDoesNotExist:
             return rc.NOT_FOUND
 
-        if cluster.task:
-            if cluster.task.ready:
-                cluster.task.delete()
-            else:
-                response = rc.DUPLICATE_ENTRY
-                response.content = "Another task is running"
-                return response
+        if cluster.locked:
+            response = rc.CONFLICT
+            response.content = "Another task is running"
+            return response
 
         for node in cluster.nodes.filter(redeployment_needed=True):
             node.roles = node.new_roles.all()
@@ -113,8 +129,10 @@ class ClusterChangesHandler(BaseHandler):
             for node in cluster.nodes.all():
                 nw.update_node_network_info(node)
 
-        task = Task(task_name='deploy_cluster', cluster=cluster)
-        task.run(cluster_id)
+        task = tasks.deploy_cluster.delay(cluster_id)
+
+        cluster.task = task.task_id
+        cluster.save()
 
         response = rc.ACCEPTED
         response.content = TaskHandler.render(task)
@@ -257,8 +275,10 @@ class ClusterHandler(JSONHandler):
             elif field in ('release',):
                 json_data[field] = ReleaseHandler.render(cluster.release)
             elif field in ('task',):
-                json_data[field] = cluster.task and \
-                                   TaskHandler.render(cluster.task) or None
+                task_id = cluster.task
+                json_data[field] = task_id and \
+                    TaskHandler.render(celery.result.AsyncResult(task_id)) or \
+                    None
 
         return json_data
 
@@ -278,8 +298,6 @@ class ClusterHandler(JSONHandler):
                     if key == 'nodes':
                         new_nodes = Node.objects.filter(id__in=value)
                         cluster.nodes = new_nodes
-                    elif key == 'task':
-                        cluster.task.delete()
                     else:
                         setattr(cluster, key, value)
 
