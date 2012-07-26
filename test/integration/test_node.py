@@ -106,7 +106,13 @@ class TestNode(TestCase):
                 task = json.loads(self.client.get(
                     "http://%s:8000/api/tasks/%s/" % (admin_ip, task_id)
                 ))
-                self._check_tasks(task)
+                if not task['ready']:
+                    raise StillPendingException("Task %s is still pending")
+                if not task['error'] == "":
+                    raise Exception(
+                        "Task %s failed!\n %s" %
+                        (task['task_id'], str(task)),
+                    )
                 break
             except StillPendingException:
                 time.sleep(30)
@@ -138,18 +144,6 @@ class TestNode(TestCase):
             raise Exception("Password generation failed!")
 
         self.remote.disconnect()
-
-    def _check_tasks(self, task):
-        if task['status'] != 'SUCCESS':
-            if task['status'] == 'PENDING':
-                raise StillPendingException("Task %s is still pending")
-            raise Exception(
-                "Task %s failed!\n %s" %
-                (task['task_id'], str(task)),
-            )
-        if 'subtasks' in task and task['subtasks']:
-            for subtask in task['subtasks']:
-                self._check_tasks(subtask)
 
     def _load_sample_admin(self, host, user, passwd):
         cookbook_remote_path = os.path.join(SAMPLE_REMOTE_PATH, "sample-cook")
