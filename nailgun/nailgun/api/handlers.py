@@ -44,58 +44,37 @@ class TaskHandler(BaseHandler):
     allowed_methods = ('GET',)
 
     @classmethod
-    def render_task_tree(cls, task):
-        task_tree = {
-            "task_id": task.task_id,
-            "status": task.state,
-            "ready": task.ready(),
-            #"name": getattr(task, 'task_name', None),
-            "subtasks": None,
-            "error": None,
-            "traceback": None,
-        }
-
-        if isinstance(task.result, celery.result.ResultSet):
-            task_tree['subtasks'] = [TaskHandler.render_task_tree(t) for t in \
-                    task.result.results]
-        elif isinstance(task.result, celery.result.AsyncResult):
-            task_tree['subtasks'] = [TaskHandler.render_task_tree(task.result)]
-        elif isinstance(task.result, Exception):
-            task_tree['error'] = task.result
-            task_tree['traceback'] = task.traceback
-        else:
-            task_tree['result'] = task.result
-        return task_tree
-
-    @classmethod
     def render(cls, task):
-        task_tree = TaskHandler.render_task_tree(task.result)
-        statuses = []
-        ready = []
-        errors = []
+        def calculate_results(task):
+            result = {
+                'status': task.state,
+                'ready': task.ready()
+            }
+            if isinstance(task.result, celery.result.ResultSet):
+                return [result] + reduce(list.__add__, \
+                    map(calculate_results, task.result.results))
+            elif isinstance(task.result, celery.result.AsyncResult):
+                return [result] + calculate_results(task.result)
+            elif isinstance(task.result, Exception):
+                result['error'] = task.result
+                return [result]
+            else:
+                result['result'] = task.result
+                return [result]
 
-        def check_readiness(_task):
-            statuses.append(_task['status'])
-            ready.append(_task['ready'])
-            if _task['error']:
-                errors.append(_task['error'])
-            if _task['subtasks']:
-                for t in _task['subtasks']:
-                    check_readiness(t)
-            return statuses
-        check_readiness(task_tree)
+        results = calculate_results(task.result)
 
-        task_result = {
-            "task_id": task.pk,
-            "ready": reduce(lambda x, y: x and y, ready),
-            "error": '\n'.join(errors)
+        result = {
+            'task_id': task.pk,
+            'name': task.name,
+            'ready': all(map(lambda r: r['ready'], results)),
+            'results': results,
         }
-        # Let's double check if tasks are completed successfully
-        if not ("SUCCESS" in statuses and len(set(statuses)) == 1):
-            if task_result['error'] == "":
-                task_result['error'] = "Unknown task error occured."
+        errors = filter(lambda r: r.get('error', None), results)
+        if len(errors):
+            result['error'] = '; '.join(errors)
 
-        return task_result
+        return result
 
     def read(self, request, task_id):
         try:

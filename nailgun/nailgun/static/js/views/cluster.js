@@ -79,9 +79,7 @@ function(models, dialogViews, taskViews, clusterPageTemplate, clusterNodeTemplat
                 type: 'PUT',
                 url: '/api/clusters/' + this.model.id + '/changes',
                 success: _.bind(function() {
-                    if (task.get('status') == 'PENDING') {
-                        if (this.page == app.page) this.page.update();
-                    }
+                    if (this.page == app.page) this.page.update();
                 }, this)
             });
             this.disabled = true;

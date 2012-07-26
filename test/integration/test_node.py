@@ -108,7 +108,7 @@ class TestNode(TestCase):
                 ))
                 if not task['ready']:
                     raise StillPendingException("Task %s is still pending")
-                if not task['error'] == "":
+                if task.get('error'):
                     raise Exception(
                         "Task %s failed!\n %s" %
                         (task['task_id'], str(task)),
