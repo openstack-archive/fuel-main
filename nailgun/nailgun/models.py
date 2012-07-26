@@ -58,13 +58,33 @@ class Task(models.Model):
         return task_result
 
     @property
-    def result(self):
+    def celery_task_result(self):
         return celery.result.AsyncResult(self.id)
+
+    def _flatten_celery_subtasks(self, task=None):
+        if task is None:
+            task = self.celery_task_result
+        result = [task]
+        if isinstance(task.result, celery.result.ResultSet):
+            result += reduce(list.__add__, \
+                map(self._flatten_celery_subtasks, task.result.results))
+        elif isinstance(task.result, celery.result.AsyncResult):
+            result += self._flatten_celery_subtasks(task.result)
+        return result
 
     @property
     def ready(self):
-        # TODO: deal with subtasks readiness to report real status
-        return self.result.ready()
+        tasks = self._flatten_celery_subtasks()
+        return all(map(lambda t: t.ready(), tasks))
+
+    @property
+    def errors(self):
+        tasks = self._flatten_celery_subtasks()
+        errors = []
+        for task in tasks:
+            if isinstance(task.result, Exception):
+                errors.append(task.result)
+        return errors
 
 
 class Cluster(models.Model):

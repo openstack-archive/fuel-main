@@ -45,32 +45,12 @@ class TaskHandler(BaseHandler):
 
     @classmethod
     def render(cls, task):
-        def calculate_results(task):
-            result = {
-                'status': task.state,
-                'ready': task.ready()
-            }
-            if isinstance(task.result, celery.result.ResultSet):
-                return [result] + reduce(list.__add__, \
-                    map(calculate_results, task.result.results))
-            elif isinstance(task.result, celery.result.AsyncResult):
-                return [result] + calculate_results(task.result)
-            elif isinstance(task.result, Exception):
-                result['error'] = task.result
-                return [result]
-            else:
-                result['result'] = task.result
-                return [result]
-
-        results = calculate_results(task.result)
-
         result = {
             'task_id': task.pk,
             'name': task.name,
-            'ready': all(map(lambda r: r['ready'], results)),
-            'results': results,
+            'ready': task.ready,
         }
-        errors = filter(lambda r: r.get('error', None), results)
+        errors = task.errors
         if len(errors):
             result['error'] = '; '.join(errors)
 
