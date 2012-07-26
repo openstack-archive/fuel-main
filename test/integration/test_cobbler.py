@@ -23,11 +23,15 @@ class TestCobbler(TestCase):
         logging.info("Waiting for handlers to complete")
 
         self.remote.connect_ssh(str(self.ip), "ubuntu", "r00tme")
+        count = 0
         while True:
             res = self.remote.exec_cmd("grep '%s' '%s'" % (self.str_success, self.logpath))
+            count += 1
             if res['exit_status'] == 0:
                 break
             sleep(5)
+            if count == 200:
+                raise Exception("Chef handlers failed to complete")
         self.remote.disconnect()
 
         wait(lambda: http(host=self.ip, url='/cobbler_api', waited_code=501), timeout=60)

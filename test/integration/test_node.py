@@ -17,7 +17,7 @@ from integration.helpers import HTTPClient, SSHClient
 
 logging.basicConfig(format=':%(lineno)d: %(asctime)s %(message)s', level=logging.DEBUG)
 
-SOLO_PATH = os.path.join(os.path.dirname(__file__), "..", "..", "scripts", "agent")
+AGENT_PATH = os.path.join(os.path.dirname(__file__), "..", "..", "bin", "agent")
 DEPLOY_PATH = os.path.join(os.path.dirname(__file__), "..", "..", "bin", "deploy")
 COOKBOOKS_PATH = os.path.join(os.path.dirname(__file__), "..", "..", "cookbooks")
 SAMPLE_PATH = os.path.join(os.path.dirname(__file__), "..", "..", "scripts", "ci")
@@ -158,14 +158,6 @@ class TestNode(TestCase):
         )
         self.remote.mkdir(os.path.join(SAMPLE_REMOTE_PATH, "solo"))
         self.remote.mkdir(os.path.join(SAMPLE_REMOTE_PATH, "solo/config"))
-        self.remote.scp(
-            os.path.join(SOLO_PATH, "solo.json"),
-            os.path.join(SAMPLE_REMOTE_PATH, "solo", "config", "solo.json")
-        )
-        self.remote.scp(
-            os.path.join(SOLO_PATH, "solo.rb"),
-            os.path.join(SAMPLE_REMOTE_PATH, "solo", "config", "solo.rb")
-        )
         self.remote.scp_d(
             os.path.join(SAMPLE_PATH, "sample-cook"),
             SAMPLE_REMOTE_PATH
