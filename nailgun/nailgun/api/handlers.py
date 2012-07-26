@@ -48,7 +48,7 @@ class TaskHandler(BaseHandler):
         task_tree = {
             "task_id": task.task_id,
             "status": task.state,
-            #"ready": task.ready(),
+            "ready": task.ready(),
             #"name": getattr(task, 'task_name', None),
             "subtasks": None,
             "error": None,
@@ -71,9 +71,12 @@ class TaskHandler(BaseHandler):
     def render(cls, task):
         task_tree = TaskHandler.render_task_tree(task)
         statuses = []
+        errors = []
 
         def check_status(_task):
             statuses.append(_task['status'])
+            if _task['error']:
+                errors.append(_task['error'])
             if _task['subtasks']:
                 for t in _task['subtasks']:
                     check_status(t)
@@ -82,20 +85,12 @@ class TaskHandler(BaseHandler):
 
         task_result = {
             "task_id": task.task_id,
-            # TODO(mihgen): Put error and traceback for failing task here
-            "error": None,
-            "traceback": None,
+            "ready": False,
+            "error": '\n'.join(errors)
         }
-        if "FAILURE" in statuses:
-            task_result['status'] = 'FAILURE'
-        elif "PENDING" in statuses:
-            task_result['status'] = 'PENDING'
-        elif "REVOKED" in statuses:
-            task_result['status'] = 'REVOKED'
-        elif "SUCCESS" in statuses and len(set(statuses)) == 1:
-            task_result['status'] = 'SUCCESS'
-        else:
-            task_result['status'] = 'UNKNOWN'
+        if "SUCCESS" in statuses and len(set(statuses)) == 1:
+            task_result['ready'] = True
+
         return task_result
 
     def read(self, request, task_id):
