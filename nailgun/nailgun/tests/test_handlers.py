@@ -459,7 +459,6 @@ class TestHandlers(TestCase):
 
         resp_json = json.loads(resp.content)
         self.assertEquals(len(resp_json['task_id']), 36)
-        self.assertEquals(resp_json['ready'], True)
         self.assertFalse(resp_json.get('error'))
 
     def test_release_create(self):
