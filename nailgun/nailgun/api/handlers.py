@@ -71,25 +71,29 @@ class TaskHandler(BaseHandler):
     def render(cls, task):
         task_tree = TaskHandler.render_task_tree(task)
         statuses = []
+        ready = []
         errors = []
 
-        def check_status(_task):
+        def check_readiness(_task):
             statuses.append(_task['status'])
+            ready.append(_task['ready'])
             if _task['error']:
                 errors.append(_task['error'])
             if _task['subtasks']:
                 for t in _task['subtasks']:
-                    check_status(t)
+                    check_readiness(t)
             return statuses
-        check_status(task_tree)
+        check_readiness(task_tree)
 
         task_result = {
             "task_id": task.task_id,
-            "ready": False,
+            "ready": reduce(lambda x, y: x and y, ready),
             "error": '\n'.join(errors)
         }
-        if "SUCCESS" in statuses and len(set(statuses)) == 1:
-            task_result['ready'] = True
+        # Let's double check if tasks are completed successfully
+        if not ("SUCCESS" in statuses and len(set(statuses)) == 1):
+            if task_result['error'] == "":
+                task_result['error'] = "Unknown task error occured."
 
         return task_result
 
