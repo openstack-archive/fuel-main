@@ -164,7 +164,8 @@ def bootstrap_node(node_id, installed=False):
         logger.debug("Provisioning node %s" % node_id)
         _provision_node(node_id)
     else:
-        logger.debug("Provisioning skipped - node %s is already installed" % node_id)
+        logger.debug("Provisioning skipped - node %s \
+            is already installed" % node_id)
 
     # FIXME
     # node.ip had been got from bootstrap agent
