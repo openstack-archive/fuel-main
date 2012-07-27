@@ -77,18 +77,24 @@ def deploy_cluster(cluster_id):
     sorted_recipes = topol_sort(graph)
     tree = TaskPool()
     # first element in sorted_recipes is the first recipe we have to apply
+    installed = []
     for r in sorted_recipes:
         recipe = Recipe.objects.get(recipe=r)
         # We need to find nodes with these recipes
         roles = recipe.roles.all()
-        nodes = Node.objects.filter(roles__in=roles)
+        nodes = Node.objects.filter(roles__in=roles, cluster__id=cluster_id)
 
         # TODO(mihgen): What if there are no nodes with required role?
         #   we need to raise an exception if there are any roles dependend
 
         taskset = []
         for node in nodes:
-            taskset.append({'func': bootstrap_node, 'args': (node.id,),
+            bootstrap_args = [node.id]
+            if node.id in installed:
+                bootstrap_args.append(True)
+            else:
+                installed.append(node.id)
+            taskset.append({'func': bootstrap_node, 'args': bootstrap_args,
                     'kwargs': {}})
         tree.push_task(create_solo, (cluster_id, recipe.id))
         # FIXME(mihgen): it there are no taskset items,
@@ -147,15 +153,18 @@ def tcp_ping(host, port):
 
 
 @task_with_callbacks
-def bootstrap_node(node_id):
+def bootstrap_node(node_id, installed=False):
 
     node = Node.objects.get(id=node_id)
     logger.debug("Turning node %s status into 'deploying'" % node_id)
     node.status = "deploying"
     node.save()
 
-    logger.debug("Provisioning node %s" % node_id)
-    _provision_node(node_id)
+    if not installed:
+        logger.debug("Provisioning node %s" % node_id)
+        _provision_node(node_id)
+    else:
+        logger.debug("Provisioning skipped - node %s is already installed" % node_id)
 
     # FIXME
     # node.ip had been got from bootstrap agent
