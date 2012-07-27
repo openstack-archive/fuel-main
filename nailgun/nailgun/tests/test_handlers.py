@@ -450,7 +450,7 @@ class TestHandlers(TestCase):
     def test_jsons_created_for_chef_solo(self, tp_mock, pn_mock, ssh_mock):
         url = reverse('cluster_changes_handler', kwargs={'cluster_id': 1})
         ssh = ssh_mock.return_value
-        ssh.run.return_value = None
+        ssh.run.return_value = True
         pn_mock.return_value = True
         tp_mock.return_value = True
 

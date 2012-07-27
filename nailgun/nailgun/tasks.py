@@ -204,7 +204,9 @@ def bootstrap_node(node_id, installed=False):
         exit_status = ssh.run("/opt/nailgun/bin/deploy")
         ssh.close()
 
-    if exit_status:
+    # ssh.run returns True, if command executed successfully
+    # FIXME(mihgen): rename it/refactor, it's unclear
+    if not exit_status:
         logger.error("Error occured while deploying node %s" % node_id)
         message = "Task %s failed: " \
             "Deployment exited with non-zero exit code. IP=%s" \
