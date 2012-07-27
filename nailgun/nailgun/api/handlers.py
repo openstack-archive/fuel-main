@@ -15,7 +15,6 @@ from nailgun.api.validators import validate_json, validate_json_list
 from nailgun.api.forms import ClusterForm, ClusterCreationForm, RecipeForm, \
         RoleForm, RoleFilterForm, NodeCreationForm, NodeFilterForm, NodeForm, \
         ReleaseCreationForm, NetworkCreationForm, AttributeForm
-from nailgun import tasks
 import nailgun.api.validators as vld
 
 

@@ -1,6 +1,5 @@
 import ipaddr
 import celery
-import importlib
 from django.db import models
 from django.contrib.auth.models import User
 from django.core.exceptions import ObjectDoesNotExist
@@ -44,7 +43,7 @@ class Task(models.Model):
     task_name = models.CharField(max_length=100)
 
     def _get_celery_task(self):
-        tasks = importlib.import_module('nailgun.tasks')
+        from nailgun import tasks
         return getattr(tasks, self.task_name)
 
     @property
