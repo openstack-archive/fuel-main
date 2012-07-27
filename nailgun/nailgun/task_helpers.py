@@ -56,7 +56,7 @@ def topol_sort(graph):
 
 # This code is inspired by
 # https://github.com/NetAngels/celery-tasktree/blob/master/celery_tasktree.py
-def task_with_callbacks(func, **options):
+def task_with_callbacks(func=None, **options):
     """ decorator "task with callbacks"
 
     Callback or list of callbacks which go to function in "callbacks" kwarg,

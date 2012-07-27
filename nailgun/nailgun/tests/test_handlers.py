@@ -1,5 +1,6 @@
 import simplejson as json
 import mock
+import celery
 from django import http
 from django.test import TestCase
 from django.db.models import Model
@@ -444,21 +445,13 @@ class TestHandlers(TestCase):
         recipes = [r.recipe for r in roles_from_db[0].recipes.all()]
         self.assertEquals(set(role_recipes), set(recipes))
 
-    @mock.patch('nailgun.tasks.SshConnect')
-    @mock.patch('nailgun.tasks._provision_node')
-    @mock.patch('nailgun.tasks.tcp_ping')
-    def test_jsons_created_for_chef_solo(self, tp_mock, pn_mock, ssh_mock):
+    @mock.patch('nailgun.tasks.deploy_cluster')
+    def test_jsons_created_for_chef_solo(self, task_mock):
         url = reverse('cluster_changes_handler', kwargs={'cluster_id': 1})
-        ssh = ssh_mock.return_value
-        ssh.run.return_value = True
-        pn_mock.return_value = True
-        tp_mock.return_value = True
-
         resp = self.client.put(url)
-        self.assertEquals(resp.status_code, 202)
 
+        self.assertEquals(resp.status_code, 202)
         resp_json = json.loads(resp.content)
-        self.assertEquals(len(resp_json['task_id']), 36)
         self.assertFalse(resp_json.get('error'))
 
     def test_release_create(self):
