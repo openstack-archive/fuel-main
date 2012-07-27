@@ -59,8 +59,7 @@ def node_set_error_status(node_id):
     node.status = "error"
     node.save()
 
-
-@task_with_callbacks
+@task_with_callbacks(name='Deploy Cluster')
 def deploy_cluster(cluster_id):
 
     graph = {}

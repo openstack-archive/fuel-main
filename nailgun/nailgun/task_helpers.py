@@ -67,7 +67,12 @@ def task_with_callbacks(func, **options):
     "async_result" will be added to that object so that it will be possible to
     join() for that result.
     """
-    return task(run_with_callbacks(func), **options)
+    def _decorate(func):
+        return task(run_with_callbacks(func), **options)
+    if func:
+        return _decorate(func)
+    else:
+        return _decorate
 
 
 def run_with_callbacks(func):
