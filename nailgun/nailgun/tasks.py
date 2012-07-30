@@ -142,10 +142,10 @@ def create_solo(*args):
     return True
 
 
-def tcp_ping(host, port):
+def tcp_ping(host, port, timeout=5):
     s = socket.socket()
     try:
-        s.connect((str(host), int(port)))
+        s.create_connection((str(host), int(port)), timeout)
     except socket.error:
         return False
     s.close()
