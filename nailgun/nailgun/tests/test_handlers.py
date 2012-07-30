@@ -10,7 +10,7 @@ from piston.emitters import Emitter
 
 from nailgun.models import Cluster, Node, Recipe, Role, Release, Attribute
 from nailgun.api import urls as api_urls
-from nailgun.tasks import _provision_node
+from nailgun import tasks
 
 
 # monkey patch!
@@ -445,13 +445,14 @@ class TestHandlers(TestCase):
         recipes = [r.recipe for r in roles_from_db[0].recipes.all()]
         self.assertEquals(set(role_recipes), set(recipes))
 
-    @mock.patch('nailgun.tasks.deploy_cluster')
-    def test_jsons_created_for_chef_solo(self, task_mock):
+    @mock.patch('nailgun.tasks.deploy_cluster', celery.task.task(lambda: True))
+    def test_jsons_created_for_chef_solo(self):
         url = reverse('cluster_changes_handler', kwargs={'cluster_id': 1})
         resp = self.client.put(url)
 
         self.assertEquals(resp.status_code, 202)
         resp_json = json.loads(resp.content)
+        self.assertEquals(len(resp_json['task_id']), 36)
         self.assertFalse(resp_json.get('error'))
 
     def test_release_create(self):
