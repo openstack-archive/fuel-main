@@ -220,13 +220,6 @@ def bootstrap_node(node_id, installed=False):
     return exit_status
 
 
-def _is_node_libvirt(node):
-    rex = re.compile(ur"^QEMU Virtual CPU", re.I)
-    if rex.match(node.metadata["cpu"]["0"]["model_name"]):
-        return True
-    return Falsedefault - 134132450898
-
-
 def _is_node_bootstrap(node):
     logger.debug(
         "Checking if node %s is booted with bootstrap image" \
