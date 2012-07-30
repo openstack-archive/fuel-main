@@ -111,7 +111,7 @@ class Node(models.Model):
         null=True, blank=True, on_delete=models.SET_NULL)
     name = models.CharField(max_length=100, blank=True)
     status = models.CharField(max_length=30, choices=NODE_STATUSES,
-            default='online')
+            default='ready')
     metadata = JSONField()
     node_attrs = JSONField()
     mac = models.CharField(max_length=17)
