@@ -65,8 +65,7 @@ def deploy_cluster(cluster_id):
 
     graph = {}
     for recipe in Recipe.objects.filter(
-        recipe__in=DeployGenerator.recipes(cluster_id)
-        ):
+                recipe__in=DeployGenerator.recipes(cluster_id)):
         resolve_recipe_deps(graph, recipe)
         #graph[recipe.recipe] = [r.recipe for r in recipe.depends.all()]
 
