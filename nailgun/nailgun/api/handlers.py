@@ -314,7 +314,7 @@ class NodeHandler(JSONHandler):
     model = Node
     fields = ('id', 'name', 'metadata', 'status', 'mac', 'fqdn', 'ip',
               'manufacturer', 'platform_name', 'redeployment_needed',
-              'roles', 'new_roles')
+              'roles', 'new_roles', 'os_platform')
 
     def read(self, request, node_id):
         try:

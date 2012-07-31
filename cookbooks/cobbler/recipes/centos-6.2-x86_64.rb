@@ -21,6 +21,9 @@ end
 #!/bin/sh
 
 flock -w 0 -o /var/lock/agent.lock -c \"/opt/nailgun/bin/agent -c /opt/nailgun/bin/agent_config.rb > /var/log/agent.log 2>&1\" || true
+", :method => :content),
+            :late_cron => LateFile.new("
+*/5 * * * * export PATH=$PATH:/sbin && root /opt/nailgun/bin/agent -c /opt/nailgun/bin/agent_config.rb > /var/log/agent.log 2>&1
 ", :method => :content)
             )
 end

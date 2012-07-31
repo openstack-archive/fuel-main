@@ -41,6 +41,8 @@ curl
 dmidecode
 rubygems
 wget
+crontabs
+cronie
 
 %post --log=/root/post-install.log
 # configure yum
@@ -69,6 +71,12 @@ mkdir -p /opt/nailgun/bin
 <%= @late_agent.init.cobbler_late_file("/opt/nailgun/bin/agent", "755") %>
 <%= @late_agent_config.init.cobbler_late_file("/opt/nailgun/bin/agent_config.rb", "644") %>
 
+# rc.local script
+<%= @late_rclocal.init.cobbler_late_file("/etc/rc.local", "777") %>
+
+# cron script
+mkdir /etc/cron.d
+<%= @late_cron.init.cobbler_late_file("/etc/cron.d/agent", "444") %>
 
 # install chef
 # gem sources -l | grep -v "*** CURRENT SOURCES ***\|^$" | while read repo; do gem sources -r \${repo}; done

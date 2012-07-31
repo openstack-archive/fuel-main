@@ -33,7 +33,7 @@ class HTTPClient(object):
             resp = self.opener.open(req)
             content = resp.read()
         except urllib2.HTTPError, error:
-            content = error.read()
+            content = ": ".join([str(error.code), error.read()])
         if log:
             logger.debug(content)
         return content
@@ -54,15 +54,18 @@ class SSHClient(object):
         self.channel = None
         self.sudo_mode = False
         self.sudo = self.get_sudo(self)
+        self.established = False
 
     def connect_ssh(self, host, username, password):
-        self.ssh_client = paramiko.SSHClient()
-        self.ssh_client.set_missing_host_key_policy(paramiko.AutoAddPolicy())
-        self.host = host
-        self.username = username
-        self.password = password
-        self.ssh_client.connect(host, username=username, password=password)
-        self.sftp_client = self.ssh_client.open_sftp()
+        if not self.established:
+            self.ssh_client = paramiko.SSHClient()
+            self.ssh_client.set_missing_host_key_policy(paramiko.AutoAddPolicy())
+            self.host = host
+            self.username = username
+            self.password = password
+            self.ssh_client.connect(host, username=username, password=password)
+            self.sftp_client = self.ssh_client.open_sftp()
+            self.established = True
 
 
     def execute(self, command):
@@ -127,3 +130,4 @@ class SSHClient(object):
     def disconnect(self):
         self.sftp_client.close()
         self.ssh_client.close()
+        self.established = False

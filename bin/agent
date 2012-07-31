@@ -1,6 +1,6 @@
 #!/usr/bin/env ruby
 
-require 'rubygems'
+#require 'rubygems'
 require 'ohai/system'
 require 'json'
 require 'httpclient'
@@ -130,6 +130,7 @@ class NodeAgent
       :ip  => @os[:ipaddress],
       :manufacturer => _manufacturer,
       :platform_name => _product_name,
+      :os_platform => @os[:platform],
       :metadata => _metadata
     }
   end

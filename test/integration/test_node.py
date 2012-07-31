@@ -33,31 +33,37 @@ class TestNode(TestCase):
         super(TestNode, self).__init__(*args, **kwargs)
         self.client = HTTPClient()
         self.remote = SSHClient()
+        self.admin_host = None
+        self.admin_user = "ubuntu"
+        self.admin_passwd = "r00tme"
+        self.slave_host = None
+        self.slave_user = "root"
+        self.slave_passwd = "r00tme"
 
     def test_node(self):
         admin_node = ci.environment.node['admin']
-        admin_ip = str(admin_node.ip_address)
+        self.admin_host = admin_ip = str(admin_node.ip_address)
         slave = ci.environment.node['slave']
         slave_id = slave.interfaces[0].mac_address.replace(":", "").upper()
         logging.info("Starting slave node")
         slave.start()
 
         logging.info("Nailgun IP: %s" % admin_ip)
-        self._load_sample_admin(
-            host=admin_ip,
-            user="ubuntu",
-            passwd="r00tme"
-        )
+        self._load_sample_admin()
 
         while True:
-            logging.info("Waiting for slave agent to run...")
-            nodes = json.loads(self.client.get(
-                "http://%s:8000/api/nodes" % admin_ip
-            ))
-            if len(nodes) > 0:
+            node = self.client.get(
+                "http://%s:8000/api/nodes/%s" % (admin_ip, slave_id),
+                log=True
+            )
+            if not node.startswith("404"):
                 logging.info("Node found")
+                node = json.loads(node)
+                self.slave_host = node["ip"]
                 break
             else:
+                logging.info("Node not found")
+                logging.info("Waiting for slave agent to run...")
                 time.sleep(15)
 
         try:
@@ -72,7 +78,6 @@ class TestNode(TestCase):
                 data='{ "name": "MyOwnPrivateCluster", "release": 1 }',
                 log=True
             )
-            print cluster
             cluster = json.loads(cluster)
 
         resp = json.loads(self.client.put(
@@ -92,6 +97,12 @@ class TestNode(TestCase):
         ))
         if len(resp["new_roles"]) == 0:
             raise ValueError("Failed to assign roles to node")
+
+        if node["os_platform"] == "ubuntu":
+            logging.info("Node booted with bootstrap image.")
+        if node["os_platform"] == "centos":
+            logging.info("Node already installed.")
+            self._slave_delete_test_file()
 
         logging.info("Provisioning...")
         task = json.loads(self.client.put(
@@ -117,17 +128,18 @@ class TestNode(TestCase):
             except StillPendingException:
                 time.sleep(30)
 
-        node = task = json.loads(self.client.get(
+        node = json.loads(self.client.get(
             "http://%s:8000/api/nodes/%s" % (admin_ip, slave_id),
             log=True
         ))
-        logging.info("Waiting for SSH access on %s" % node["ip"])
-        wait(lambda: tcp_ping(node["ip"], 22), timeout=1800)
-        self.remote.connect_ssh(node["ip"], "root", "r00tme")
+        self.slave_host = node["ip"]
+
+        logging.info("Waiting for SSH access on %s" % self.slave_host)
+        wait(lambda: tcp_ping(self.slave_host, 22), timeout=1800)
+        self.remote.connect_ssh(self.slave_host, self.slave_user, self.slave_passwd)
 
         # check if recipes executed
-        """
-        ret = self.remote.execute("test -f /tmp/chef_success")
+        ret = self.remote.exec_cmd("test -f /tmp/chef_success")
         if ret['exit_status'] != 0:
             raise Exception("Recipes failed to execute!")
         
@@ -137,21 +149,57 @@ class TestNode(TestCase):
             raise Exception("Recipes executed in a wrong order: %s!" \
                 % str(ret['stdout']))
 
-        # check passwords
-        self.remote.execute("tar -C /root -xvf /root/nodes.tar.gz")
-        ret = self.remote.execute("cat /root/nodes/`ls nodes` && echo")
-        solo_json = json.loads(ret['stdout'][0])
-        gen_pwd = solo_json['service']['password']
-        if not gen_pwd or gen_pwd == 'password':
-            raise Exception("Password generation failed!")
-        """
-
         self.remote.disconnect()
 
-    def _load_sample_admin(self, host, user, passwd):
+    def test_mysql_cookbook(self):
+        pass
+
+    def _admin_resync_db(self):
+        logging.info("Nailgun database resyncing...")
+        admin_client = SSHClient()
+        admin_client.connect_ssh(self.admin_host, self.admin_user, self.admin_passwd)
+        commands = [
+            "rm -rf /opt/nailgun/nailgun.sqlite",
+            "/opt/nailgun-venv/bin/python /opt/nailgun/manage.py syncdb --noinput",
+            "chown nailgun:nailgun /opt/nailgun/nailgun.sqlite",
+        ]
+        with admin_client.sudo:
+            for cmd in commands:
+                res = admin_client.exec_cmd(cmd)
+                if res['exit_status'] != 0:
+                    raise Exception("Command failed: %s" % str(res))
+        logging.info("Done.")
+        admin_client.disconnect()
+
+    def _slave_run_agent(self):
+        logging.info("Running slave node agent...")
+        slave_client = SSHClient()
+        slave_client.connect_ssh(self.admin_host, self.admin_user, self.admin_passwd)
+
+        with slave_client.sudo:
+            res = slave_client.exec_cmd("/opt/nailgun/bin/agent -c /opt/nailgun/bin/agent_config.rb")
+            if res['exit_status'] != 0:
+                raise Exception("Command failed: %s" % str(res))
+        logging.info("Done.")
+        slave_client.disconnect()
+
+    def _slave_delete_test_file(self):
+        logging.info("Deleting test file...")
+        slave_client = SSHClient()
+        slave_client.connect_ssh(self.admin_host, self.admin_user, self.admin_passwd)
+
+        with slave_client.sudo:
+            res = slave_client.exec_cmd("test -f /tmp/chef_success && rm -rf /tmp/chef_success")
+            if res['exit_status'] != 0:
+                raise Exception("Command failed: %s" % str(res))
+        logging.info("Done.")
+        slave_client.disconnect()        
+
+
+    def _load_sample_admin(self):
         cookbook_remote_path = os.path.join(SAMPLE_REMOTE_PATH, "sample-cook")
         release_remote_path = os.path.join(SAMPLE_REMOTE_PATH, "sample-release.json")
-        self.remote.connect_ssh(host, user, passwd)
+        self.remote.connect_ssh(self.admin_host, self.admin_user, self.admin_passwd)
         self.remote.rmdir(cookbook_remote_path)
         self.remote.rmdir(os.path.join(SAMPLE_REMOTE_PATH, "cookbooks"))
         self.remote.rmdir(os.path.join(SAMPLE_REMOTE_PATH, "solo"))
@@ -170,13 +218,11 @@ class TestNode(TestCase):
             SAMPLE_REMOTE_PATH
         )
         commands = [
-            #"rm -rf /opt/nailgun/nailgun.sqlite",
-            #"/opt/nailgun-venv/bin/python /opt/nailgun/manage.py syncdb --noinput",
-            #"chown nailgun:nailgun /opt/nailgun/nailgun.sqlite",
             "/opt/nailgun/bin/install_cookbook %s" % cookbook_remote_path,
             "/opt/nailgun/bin/create_release %s" % release_remote_path
         ]
 
+        self._admin_resync_db()
         with self.remote.sudo:
             for cmd in commands:
                 res = self.remote.execute(cmd)

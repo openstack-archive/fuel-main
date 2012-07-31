@@ -119,6 +119,7 @@ class Node(models.Model):
     fqdn = models.CharField(max_length=255)
     manufacturer = models.CharField(max_length=50, blank=True)
     platform_name = models.CharField(max_length=150, blank=True)
+    os_platform = models.CharField(max_length=150, blank=True)
 
     roles = models.ManyToManyField(Role, related_name='nodes')
     new_roles = models.ManyToManyField(Role, related_name='+')
