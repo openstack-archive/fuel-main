@@ -88,6 +88,12 @@ gpgcheck=0
             """)
             repo.close()
 
+            logger.info("Disabling firewall")
+
+            remote.execute('service iptables save')
+            remote.execute('service iptables stop')
+            remote.execute('chkconfig iptables off')
+
             logger.info("Test node is ready at %s" % node.ip_address)
 
             devops.save(self.environment)
