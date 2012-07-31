@@ -3,10 +3,11 @@ import os
 import celery
 import ipaddr
 import json
-from piston.handler import BaseHandler
+from piston.handler import BaseHandler, HandlerMetaClass
 from piston.utils import rc, validate
 from django.core.exceptions import ObjectDoesNotExist
 from django.conf import settings
+from django.db import models
 
 from nailgun.models import Cluster, Node, Recipe, Role, Release, Network, \
         Attribute, Task
@@ -18,12 +19,26 @@ from nailgun.api.forms import ClusterForm, ClusterCreationForm, RecipeForm, \
 import nailgun.api.validators as vld
 
 
+handlers = {}
+
+
+class HandlerRegistrator(HandlerMetaClass):
+    def __init__(cls, name, bases, dct):
+        super(HandlerRegistrator, cls).__init__(name, bases, dct)
+        if hasattr(cls, 'model'):
+            key = cls.model.__name__
+            if key in handlers:
+                raise Exception("Handler for %s already registered" % key)
+            handlers[key] = cls
+
+
 class JSONHandler(BaseHandler):
     """
     Basic JSON handler
     """
+    __metaclass__ = HandlerRegistrator
+
     fields = None
-    special_fields = None
 
     @classmethod
     def render(cls, item, fields=None):
@@ -32,15 +47,29 @@ class JSONHandler(BaseHandler):
         if not use_fields:
             raise ValueError("No fields for serialize")
         for field in use_fields:
-            if cls is JSONHandler or cls.special_fields and \
-                field not in cls.special_fields:
-                json_data[field] = getattr(item, field)
+            value = getattr(item, field)
+            if value is None:
+                pass
+            elif value.__class__.__name__ in ('ManyRelatedManager',
+                                              'RelatedManager'):
+                try:
+                    handler = handlers[value.model.__name__]
+                    json_data[field] = map(handler.render, value.all())
+                except KeyError:
+                    raise Exception("No handler for %s" % \
+                                    value.model.__name__)
+            elif value.__class__.__name__ in handlers:
+                handler = handlers[value.__class__.__name__]
+                json_data[field] = handler.render(value)
+            else:
+                json_data[field] = value
         return json_data
 
 
-class TaskHandler(BaseHandler):
+class TaskHandler(JSONHandler):
 
     allowed_methods = ('GET',)
+    model = Task
 
     @classmethod
     def render(cls, task):
@@ -113,7 +142,7 @@ class ClusterChangesHandler(BaseHandler):
         return rc.DELETED
 
 
-class DeploymentTypeCollectionHandler(JSONHandler):
+class DeploymentTypeCollectionHandler(BaseHandler):
 
     allowed_methods = ('GET',)
 
@@ -130,10 +159,6 @@ class DeploymentTypeHandler(JSONHandler):
 
     allowed_methods = ('PUT',)
     fields = ('id', 'name', 'description')
-
-    @classmethod
-    def render(cls, deployment_type, fields=None):
-        return JSONHandler.render(deployment_type, fields=fields or cls.fields)
 
     def update(self, request, cluster_id, deployment_type_id):
         try:
@@ -221,25 +246,7 @@ class ClusterHandler(JSONHandler):
 
     allowed_methods = ('GET', 'PUT', 'DELETE')
     model = Cluster
-    fields = ('id', 'name')
-    special_fields = ('nodes', 'release', 'task')
-
-    @classmethod
-    def render(cls, cluster, fields=None):
-        json_data = JSONHandler.render(cluster, fields=fields or cls.fields)
-        for field in cls.special_fields:
-            if field in ('nodes',):
-                json_data[field] = map(
-                    NodeHandler.render,
-                    cluster.nodes.all()
-                )
-            elif field in ('release',):
-                json_data[field] = ReleaseHandler.render(cluster.release)
-            elif field in ('task',):
-                json_data[field] = cluster.task and \
-                                   TaskHandler.render(cluster.task) or None
-
-        return json_data
+    fields = ('id', 'name', 'nodes', 'release', 'task')
 
     def read(self, request, cluster_id):
         try:
@@ -306,19 +313,8 @@ class NodeHandler(JSONHandler):
     allowed_methods = ('GET', 'PUT', 'DELETE')
     model = Node
     fields = ('id', 'name', 'metadata', 'status', 'mac', 'fqdn', 'ip',
-              'manufacturer', 'platform_name', 'redeployment_needed')
-    special_fields = ('roles', 'new_roles')
-
-    @classmethod
-    def render(cls, node, fields=None):
-        json_data = JSONHandler.render(node, fields=fields or cls.fields)
-        for field in cls.special_fields:
-            if field in ('roles', 'new_roles'):
-                json_data[field] = map(
-                    RoleHandler.render,
-                    getattr(node, field).all()
-                )
-        return json_data
+              'manufacturer', 'platform_name', 'redeployment_needed',
+              'roles', 'new_roles')
 
     def read(self, request, node_id):
         try:
@@ -353,9 +349,9 @@ class NodeHandler(JSONHandler):
 class AttributeCollectionHandler(BaseHandler):
 
     allowed_methods = ('GET', 'PUT')
-    model = Attribute
 
-    fields = ('id', 'cookbook', 'version', 'attribute')
+    def read(self, request):
+        return map(AttributeHandler.render, Attribute.objects.all())
 
     @validate_json(AttributeForm)
     def update(self, request):
@@ -366,10 +362,13 @@ class AttributeCollectionHandler(BaseHandler):
         )
         attr.attribute = data['attribute']
         attr.save()
+
+        # FIXME: it is not RESTful, handler should return full representation
+        # of an attribute
         return attr.id
 
 
-class AttributeHandler(BaseHandler):
+class AttributeHandler(JSONHandler):
 
     allowed_methods = ('GET',)
     model = Attribute
@@ -386,13 +385,9 @@ class AttributeHandler(BaseHandler):
 class RecipeCollectionHandler(BaseHandler):
 
     allowed_methods = ('GET', 'POST', 'PUT')
-    model = Recipe
 
     def read(self, request):
-        return map(
-            RecipeHandler.render,
-            Recipe.objects.all()
-        )
+        return map(RecipeHandler.render, Recipe.objects.all())
 
     @validate_json(RecipeForm)
     def create(self, request):
@@ -449,11 +444,10 @@ class RecipeHandler(JSONHandler):
 
     allowed_methods = ('GET',)
     model = Recipe
-    special_fields = ('recipe',)
 
     @classmethod
     def render(cls, recipe, fields=None):
-        return getattr(recipe, 'recipe')
+        return recipe.recipe
 
     def read(self, request, recipe_id):
         try:
@@ -466,7 +460,6 @@ class RecipeHandler(JSONHandler):
 class RoleCollectionHandler(BaseHandler):
 
     allowed_methods = ('GET', 'POST')
-    model = Role
 
     @validate(RoleFilterForm, 'GET')
     def read(self, request):
@@ -504,19 +497,7 @@ class RoleHandler(JSONHandler):
 
     allowed_methods = ('GET',)
     model = Role
-    fields = ('id', 'name')
-    special_fields = ('recipes',)
-
-    @classmethod
-    def render(cls, role, fields=None):
-        json_data = JSONHandler.render(role, fields=fields or cls.fields)
-        for field in cls.special_fields:
-            if field in ('recipes',):
-                json_data[field] = map(
-                    RecipeHandler.render,
-                    role.recipes.all()
-                )
-        return json_data
+    fields = ('id', 'name', 'recipes')
 
     def read(self, request, role_id):
         try:
@@ -529,13 +510,9 @@ class RoleHandler(JSONHandler):
 class ReleaseCollectionHandler(BaseHandler):
 
     allowed_methods = ('GET', 'POST')
-    model = Release
 
     def read(self, request):
-        return map(
-            ReleaseHandler.render,
-            Release.objects.all()
-        )
+        return map(ReleaseHandler.render, Release.objects.all())
 
     @validate_json(ReleaseCreationForm)
     def create(self, request):
@@ -575,19 +552,8 @@ class ReleaseHandler(JSONHandler):
 
     allowed_methods = ('GET', 'DELETE')
     model = Release
-    fields = ('id', 'name', 'version', 'description', 'networks_metadata')
-    special_fields = ('roles',)
-
-    @classmethod
-    def render(cls, release, fields=None):
-        json_data = JSONHandler.render(release, fields=fields or cls.fields)
-        for field in cls.special_fields:
-            if field in ('roles',):
-                json_data[field] = map(
-                    RoleHandler.render,
-                    release.roles.all()
-                )
-        return json_data
+    fields = ('id', 'name', 'version', 'description', 'networks_metadata',
+              'roles')
 
     def read(self, request, release_id):
         try:
@@ -610,21 +576,9 @@ class NetworkHandler(JSONHandler):
     allowed_methods = ('GET',)
     model = Network
     fields = ('id', 'network', 'name', 'access',
-            'vlan_id', 'range_l', 'range_h', 'gateway')
-    special_fields = ('release', 'nodes')
-
-    @classmethod
-    def render(cls, network, fields=None):
-        json_data = JSONHandler.render(network, fields=fields or cls.fields)
-        for field in cls.special_fields:
-            if field == 'release':
-                json_data['release_id'] = network.release_id
-            elif field == 'nodes':
-                json_data[field] = map(
-                    NodeHandler.render,
-                    network.nodes.all()
-                )
-        return json_data
+            'vlan_id', 'range_l', 'range_h', 'gateway',
+            'release', 'nodes',
+            'release_id')
 
     def read(self, request, network_id):
         try:
@@ -637,7 +591,9 @@ class NetworkHandler(JSONHandler):
 class NetworkCollectionHandler(BaseHandler):
 
     allowed_methods = ('GET', 'POST')
-    model = Network
+
+    def read(self, request):
+        return map(NetworkHandler.render, Network.objects.all())
 
     @validate_json(NetworkCreationForm)
     def create(self, request):
@@ -665,9 +621,3 @@ class NetworkCollectionHandler(BaseHandler):
         nw.save()
 
         return NetworkHandler.render(nw)
-
-    def read(self, request):
-        return map(
-            NetworkHandler.render,
-            Network.objects.all()
-        )
