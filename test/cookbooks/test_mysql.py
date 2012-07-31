@@ -31,7 +31,7 @@ cookbook_path "/opt/os-cookbooks"
             f.write(json.dumps(mysql_solo))
         self.remote.scp('/tmp/mysql_solo.json', '/tmp/mysql_solo.json')
 
-        res = self.remote.exec_cmd(
+        res = self.remote.execute(
                 "chef-solo -l debug -c /tmp/solo.rb -j /tmp/mysql_solo.json")
         print "*******************STDOUT*******************"
         for line in res['stdout']:

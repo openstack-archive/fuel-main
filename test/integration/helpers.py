@@ -64,7 +64,7 @@ class SSHClient(object):
         self.sftp_client = self.ssh_client.open_sftp()
 
 
-    def exec_cmd(self, command):
+    def execute(self, command):
         logging.info("Executing command: '%s'" % command.rstrip())
         chan = self.ssh_client.get_transport().open_session()
         stdin = chan.makefile('wb')
@@ -91,11 +91,11 @@ class SSHClient(object):
 
     def mkdir(self, path):
         logging.info("Creating directory: %s" % path)
-        return self.exec_cmd("mkdir %s\n" % path)
+        return self.execute("mkdir %s\n" % path)
 
     def rmdir(self, path):
         logging.info("Removing directory: %s" % path)
-        return self.exec_cmd("rm -rf %s" % path)
+        return self.execute("rm -rf %s" % path)
 
     def open(self, path, mode='r'):
         return self.sftp_client.open(path, mode)

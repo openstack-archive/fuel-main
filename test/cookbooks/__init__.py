@@ -169,7 +169,7 @@ cookbook_path "/opt/os-cookbooks"
         solo_json.write(json.dumps(attributes))
         solo_json.close()
 
-        result = self.remote.exec_cmd("chef-solo -l debug -c /tmp/solo.rb -j /tmp/solo.json")
+        result = self.remote.execute("chef-solo -l debug -c /tmp/solo.rb -j /tmp/solo.json")
         if result['exit_status'] != 0:
             stdout = result['stdout']
             stderr = result['stderr']

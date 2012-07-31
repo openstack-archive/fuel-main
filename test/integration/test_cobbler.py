@@ -25,7 +25,7 @@ class TestCobbler(TestCase):
         self.remote.connect_ssh(str(self.ip), "ubuntu", "r00tme")
         count = 0
         while True:
-            res = self.remote.exec_cmd("grep '%s' '%s'" % (self.str_success, self.logpath))
+            res = self.remote.execute("grep '%s' '%s'" % (self.str_success, self.logpath))
             count += 1
             if res['exit_status'] == 0:
                 break

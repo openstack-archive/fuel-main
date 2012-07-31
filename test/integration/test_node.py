@@ -127,19 +127,19 @@ class TestNode(TestCase):
 
         # check if recipes executed
         """
-        ret = self.remote.exec_cmd("test -f /tmp/chef_success")
+        ret = self.remote.execute("test -f /tmp/chef_success")
         if ret['exit_status'] != 0:
             raise Exception("Recipes failed to execute!")
         
         # check recipes execution order
-        ret = self.remote.exec_cmd("cat /tmp/chef_success")
+        ret = self.remote.execute("cat /tmp/chef_success")
         if [out.strip() for out in ret['stdout']] != ['monitor', 'default', 'compute']:
             raise Exception("Recipes executed in a wrong order: %s!" \
                 % str(ret['stdout']))
 
         # check passwords
-        self.remote.exec_cmd("tar -C /root -xvf /root/nodes.tar.gz")
-        ret = self.remote.exec_cmd("cat /root/nodes/`ls nodes` && echo")
+        self.remote.execute("tar -C /root -xvf /root/nodes.tar.gz")
+        ret = self.remote.execute("cat /root/nodes/`ls nodes` && echo")
         solo_json = json.loads(ret['stdout'][0])
         gen_pwd = solo_json['service']['password']
         if not gen_pwd or gen_pwd == 'password':
@@ -179,7 +179,7 @@ class TestNode(TestCase):
 
         with self.remote.sudo:
             for cmd in commands:
-                res = self.remote.exec_cmd(cmd)
+                res = self.remote.execute(cmd)
                 if res['exit_status'] != 0:
                     self.remote.disconnect()
                     raise Exception("Command failed: %s" % str(res))
