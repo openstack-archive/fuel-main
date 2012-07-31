@@ -36,6 +36,8 @@ def main():
 
     numeric_level = getattr(logging, params.log_level.upper())
     logging.basicConfig(level=numeric_level)
+    paramiko_logger = logging.getLogger('paramiko')
+    paramiko_logger.setLevel(numeric_level+1)
 
     if params.test_suite == 'integration':
         suite = integration

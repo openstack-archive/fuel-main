@@ -4,6 +4,7 @@ import logging
 from unittest import TestCase
 import paramiko
 
+logger = logging.getLogger('integration.helpers')
 
 """
 Integration test helpers
@@ -34,7 +35,7 @@ class HTTPClient(object):
         except urllib2.HTTPError, error:
             content = error.read()
         if log:
-            logging.debug(content)
+            logger.debug(content)
         return content
 
 
@@ -65,7 +66,7 @@ class SSHClient(object):
 
 
     def execute(self, command):
-        logging.info("Executing command: '%s'" % command.rstrip())
+        logger.debug("Executing command: '%s'" % command.rstrip())
         chan = self.ssh_client.get_transport().open_session()
         stdin = chan.makefile('wb')
         stdout = chan.makefile('rb')
@@ -90,22 +91,22 @@ class SSHClient(object):
         return result
 
     def mkdir(self, path):
-        logging.info("Creating directory: %s" % path)
+        logger.debug("Creating directory: %s" % path)
         return self.execute("mkdir %s\n" % path)
 
     def rmdir(self, path):
-        logging.info("Removing directory: %s" % path)
+        logger.debug("Removing directory: %s" % path)
         return self.execute("rm -rf %s" % path)
 
     def open(self, path, mode='r'):
         return self.sftp_client.open(path, mode)
 
     def scp(self, frm, to):
-        logging.info("Copying file: %s -> %s" % (frm, to))
+        logger.debug("Copying file: %s -> %s" % (frm, to))
         self.sftp_client.put(frm, to)
 
     def scp_d(self, frm, to):
-        logging.info("Copying directory: %s -> %s" % (frm, to))
+        logger.debug("Copying directory: %s -> %s" % (frm, to))
         remote_root = os.path.join(
             to,
             os.path.basename(frm)
