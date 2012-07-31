@@ -1,7 +1,11 @@
+import os
+
+import json
 import mock
 from mock import call
 from django.test import TestCase
 from django.db.models import Model
+from django.conf import settings
 from celery.task import task
 
 from nailgun import tasks
@@ -228,3 +232,34 @@ class TestTasks(TestCase):
             call().apply_async()
         ]
         self.assertEquals(tasks.TaskPool.mock_calls, expected)
+
+    def test_create_solo_task(self):
+        dummy_list = []
+        tasks.create_solo(dummy_list, 1, self.recipe.id)
+        with open(
+            os.path.join(
+                settings.CHEF_CONF_FOLDER,
+                "".join([self.node.id, ".json"])
+            ),
+            "r"
+        ) as entity:
+            solo = entity.read()
+
+        expected = {
+            "cluster_id": 1,
+            "components_dict": {
+                self.node.id: {
+                    "node_ips": {}
+                }
+            },
+            "components_list": [
+                {
+                    "node_id": self.node.id,
+                    "node_ips": {}
+                }
+            ],
+            "run_list": [
+                "recipe[%s]" % self.recipe.recipe
+            ]
+        }
+        self.assertEquals(expected, json.loads(solo))
