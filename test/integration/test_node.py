@@ -51,6 +51,8 @@ class TestNode(TestCase):
         logging.info("Nailgun IP: %s" % admin_ip)
         self._load_sample_admin()
 
+        timer = time.time()
+        timeout = 600
         while True:
             node = self.client.get(
                 "http://%s:8000/api/nodes/%s" % (admin_ip, slave_id),
@@ -63,8 +65,10 @@ class TestNode(TestCase):
                 break
             else:
                 logging.info("Node not found")
-                logging.info("Waiting for slave agent to run...")
+                if (time.time() - timer) > timeout:
+                    raise Exception("Slave node agent failed to execute!")
                 time.sleep(15)
+                logging.info("Waiting for slave agent to run...")
 
         try:
             cluster = json.loads(self.client.get(
@@ -112,6 +116,8 @@ class TestNode(TestCase):
         task_id = task['task_id']
         logging.info("Task created: %s" % task_id)
         logging.info("Waiting for completion of slave node software installation")
+        timer = time.time()
+        timeout = 1800
         while True:
             try:
                 task = json.loads(self.client.get(
@@ -126,6 +132,8 @@ class TestNode(TestCase):
                     )
                 break
             except StillPendingException:
+                if (time.time() - timer) > timeout:
+                    raise Exception("Task pending timeout!")
                 time.sleep(30)
 
         node = json.loads(self.client.get(
@@ -139,7 +147,7 @@ class TestNode(TestCase):
         self.remote.connect_ssh(self.slave_host, self.slave_user, self.slave_passwd)
 
         # check if recipes executed
-        ret = self.remote.exec_cmd("test -f /tmp/chef_success")
+        ret = self.remote.execute("test -f /tmp/chef_success")
         if ret['exit_status'] != 0:
             raise Exception("Recipes failed to execute!")
         
@@ -165,7 +173,7 @@ class TestNode(TestCase):
         ]
         with admin_client.sudo:
             for cmd in commands:
-                res = admin_client.exec_cmd(cmd)
+                res = admin_client.execute(cmd)
                 if res['exit_status'] != 0:
                     raise Exception("Command failed: %s" % str(res))
         logging.info("Done.")
@@ -177,7 +185,7 @@ class TestNode(TestCase):
         slave_client.connect_ssh(self.admin_host, self.admin_user, self.admin_passwd)
 
         with slave_client.sudo:
-            res = slave_client.exec_cmd("/opt/nailgun/bin/agent -c /opt/nailgun/bin/agent_config.rb")
+            res = slave_client.execute("/opt/nailgun/bin/agent -c /opt/nailgun/bin/agent_config.rb")
             if res['exit_status'] != 0:
                 raise Exception("Command failed: %s" % str(res))
         logging.info("Done.")
@@ -189,7 +197,7 @@ class TestNode(TestCase):
         slave_client.connect_ssh(self.admin_host, self.admin_user, self.admin_passwd)
 
         with slave_client.sudo:
-            res = slave_client.exec_cmd("test -f /tmp/chef_success && rm -rf /tmp/chef_success")
+            res = slave_client.execute("test -f /tmp/chef_success && rm -rf /tmp/chef_success")
             if res['exit_status'] != 0:
                 raise Exception("Command failed: %s" % str(res))
         logging.info("Done.")
