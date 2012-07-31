@@ -143,6 +143,8 @@ def tearDown():
         ci.destroy_environment()
 
 class CookbookTestCase(unittest.TestCase):
+    cookbooks = []
+
     def setUp(self):
         self.ip = ci.environment.node['cookbooks'].ip_address
         self.cookbooks_dir = os.path.abspath(
@@ -163,11 +165,7 @@ cookbook_path "/opt/os-cookbooks"
         """)
         solo_rb.close()
 
-    def upload_cookbooks(self, cookbooks):
-        if not isinstance(cookbooks, list):
-            cookbooks = [cookbooks]
-
-        for cookbook in cookbooks:
+        for cookbook in self.cookbooks:
             self.remote.scp_d(os.path.join(self.cookbooks_dir, cookbook), "/opt/os-cookbooks/")
 
     def chef_solo(self, attributes={}):
