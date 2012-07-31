@@ -204,3 +204,27 @@ class TestTasks(TestCase):
             call().apply_async()
         ]
         self.assertEquals(tasks.TaskPool.mock_calls, expected)
+
+    @mock.patch('nailgun.tasks.TaskPool')
+    def test_deploy_cluster_nodes_with_same_recipes_generates_group(self, tp):
+        # Adding second node with same recipes/roles
+        node = models.Node()
+        node.id = "FFF000000007"
+        node.ip = "127.0.0.1"
+        node.cluster_id = 1
+        node.save()
+        node.roles = [self.role]
+        node.save()
+
+        tasks.deploy_cluster('1')
+        expected = [
+            call(),
+            call().push_task(tasks.create_solo, ('1', self.recipe.id)),
+            call().push_task([{'args': [self.node.id],
+                    'func': tasks.bootstrap_node, 'kwargs': {}},
+                              {'args': [node.id],
+                    'func': tasks.bootstrap_node, 'kwargs': {}}]),
+            call().push_task(tasks.update_cluster_status, ('1',)),
+            call().apply_async()
+        ]
+        self.assertEquals(tasks.TaskPool.mock_calls, expected)
