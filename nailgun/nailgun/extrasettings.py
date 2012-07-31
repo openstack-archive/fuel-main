@@ -6,6 +6,7 @@ LOGFILE = os.path.join(LOGPATH, "nailgun.log")
 LOGLEVEL = "DEBUG"
 CELERYLOGFILE = os.path.join(LOGPATH, "celery.log")
 CELERYLOGLEVEL = "DEBUG"
+CHEF_CONF_FOLDER = LOGPATH  # For testing purposes
 
 PATH_TO_SSH_KEY = os.path.join(os.getenv("HOME"), ".ssh", "id_rsa")
 PATH_TO_BOOTSTRAP_SSH_KEY = os.path.join(os.getenv("HOME"),
