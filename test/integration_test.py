@@ -1,20 +1,16 @@
 import os.path
-import os
 import sys
 import logging
 import argparse
 from nose.plugins.xunit import Xunit
 from nose.plugins.manager import PluginManager
 
-paths = [
+sys.path[:0] = [
     os.path.join(os.path.dirname(os.path.dirname(os.path.abspath(__file__))), 'devops'),
 ]
-sys.path[:0] = paths
 
 import cookbooks
 import integration
-
-logger = logging.getLogger('integration')
 
 def main():
     parser = argparse.ArgumentParser(description="Integration test suite")
@@ -34,6 +30,7 @@ def main():
                       default="integration")
     parser.add_argument('command', choices=('setup', 'destroy', 'test'), default='test',
                       help="command to execute")
+    parser.add_argument('arguments', nargs=argparse.REMAINDER, help='arguments for nose testing framework')
 
     params = parser.parse_args()
 
@@ -66,7 +63,7 @@ def main():
             __file__,
             "--with-xunit",
             "--xunit-file=test/nosetests.xml"
-        ])
+        ]+params.arguments)
         result = True
     else:
         print("Unknown command '%s'" % params.command)
