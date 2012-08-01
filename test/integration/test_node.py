@@ -42,22 +42,24 @@ class TestNode(TestCase):
 
     def test_node(self):
         admin_node = ci.environment.node['admin']
-        self.admin_host = admin_ip = str(admin_node.ip_address)
+        self.admin_host = str(admin_node.ip_address)
         slave = ci.environment.node['slave']
-        slave_id = slave.interfaces[0].mac_address.replace(":", "").upper()
+        self.slave_id = slave.interfaces[0].mac_address.replace(":", "").upper()
+
         logging.info("Starting slave node")
         slave.start()
 
-        logging.info("Nailgun IP: %s" % admin_ip)
+        logging.info("Nailgun IP: %s" % self.admin_host)
         self._load_sample_admin()
 
         timer = time.time()
         timeout = 600
         while True:
             node = self.client.get(
-                "http://%s:8000/api/nodes/%s" % (admin_ip, slave_id),
+                "http://%s:8000/api/nodes/%s" % (self.admin_host, self.slave_id),
                 log=True
             )
+            logging.info(node)
             if not node.startswith("404"):
                 logging.info("Node found")
                 node = json.loads(node)
@@ -72,32 +74,39 @@ class TestNode(TestCase):
 
         try:
             cluster = json.loads(self.client.get(
-                "http://%s:8000/api/clusters/1" % admin_ip,
+                "http://%s:8000/api/clusters/1" % self.admin_host,
                 log=True
             ))
         except ValueError:
             logging.info("No clusters found - creating test cluster...")
             cluster = self.client.post(
-                "http://%s:8000/api/clusters" % admin_ip,
+                "http://%s:8000/api/clusters" % self.admin_host,
                 data='{ "name": "MyOwnPrivateCluster", "release": 1 }',
                 log=True
             )
             cluster = json.loads(cluster)
 
-        resp = json.loads(self.client.put(
-            "http://%s:8000/api/clusters/1" % admin_ip,
-            data='{ "nodes": ["%s"] }' % slave_id
-        ))
+        resp = self.client.put(
+            "http://%s:8000/api/clusters/1" % self.admin_host,
+            data='{ "nodes": ["%s"] }' % self.slave_id
+        )
+        logging.info(resp)
+        resp = json.loads(resp)
 
         cluster = json.loads(self.client.get(
-            "http://%s:8000/api/clusters/1" % admin_ip
+            "http://%s:8000/api/clusters/1" % self.admin_host
         ))
         if len(cluster["nodes"]) == 0:
             raise ValueError("Failed to add node into cluster")
 
+        roles_uploaded = json.loads(self.client.get(
+            "http://%s:8000/api/roles/" % self.admin_host
+        ))
+        roles_ids = [role["id"] for role in roles_uploaded if role["recipes"][0].startswith("sample-cook")]
+
         resp = json.loads(self.client.put(
-            "http://%s:8000/api/nodes/%s" % (admin_ip, slave_id),
-            data='{ "new_roles": [1, 2], "redeployment_needed": true }'
+            "http://%s:8000/api/nodes/%s" % (self.admin_host, self.slave_id),
+            data='{ "new_roles": %s, "redeployment_needed": true }' % str(roles_ids)
         ))
         if len(resp["new_roles"]) == 0:
             raise ValueError("Failed to assign roles to node")
@@ -110,7 +119,7 @@ class TestNode(TestCase):
 
         logging.info("Provisioning...")
         task = json.loads(self.client.put(
-            "http://%s:8000/api/clusters/1/changes/" % admin_ip,
+            "http://%s:8000/api/clusters/1/changes/" % self.admin_host,
             log=True
         ))
         task_id = task['task_id']
@@ -120,9 +129,11 @@ class TestNode(TestCase):
         timeout = 1800
         while True:
             try:
-                task = json.loads(self.client.get(
-                    "http://%s:8000/api/tasks/%s/" % (admin_ip, task_id)
-                ))
+                task = self.client.get(
+                    "http://%s:8000/api/tasks/%s/" % (self.admin_host, task_id)
+                )
+                logging.info(str(task))
+                task = json.loads(task)
                 if not task['ready']:
                     raise StillPendingException("Task %s is still pending")
                 if task.get('error'):
@@ -137,7 +148,7 @@ class TestNode(TestCase):
                 time.sleep(30)
 
         node = json.loads(self.client.get(
-            "http://%s:8000/api/nodes/%s" % (admin_ip, slave_id),
+            "http://%s:8000/api/nodes/%s" % (self.admin_host, self.slave_id),
             log=True
         ))
         self.slave_host = node["ip"]
@@ -160,47 +171,16 @@ class TestNode(TestCase):
         self.remote.disconnect()
 
     def test_mysql_cookbook(self):
-        pass
-
-    def _admin_resync_db(self):
-        logging.info("Nailgun database resyncing...")
-        admin_client = SSHClient()
-        admin_client.connect_ssh(self.admin_host, self.admin_user, self.admin_passwd)
-        commands = [
-            "rm -rf /opt/nailgun/nailgun.sqlite",
-            "/opt/nailgun-venv/bin/python /opt/nailgun/manage.py syncdb --noinput",
-            "chown nailgun:nailgun /opt/nailgun/nailgun.sqlite",
-        ]
-        with admin_client.sudo:
-            for cmd in commands:
-                res = admin_client.execute(cmd)
-                if res['exit_status'] != 0:
-                    raise Exception("Command failed: %s" % str(res))
-        logging.info("Done.")
-        admin_client.disconnect()
-
-    def _slave_run_agent(self):
-        logging.info("Running slave node agent...")
-        slave_client = SSHClient()
-        slave_client.connect_ssh(self.admin_host, self.admin_user, self.admin_passwd)
-
-        with slave_client.sudo:
-            res = slave_client.execute("/opt/nailgun/bin/agent -c /opt/nailgun/bin/agent_config.rb")
-            if res['exit_status'] != 0:
-                raise Exception("Command failed: %s" % str(res))
-        logging.info("Done.")
-        slave_client.disconnect()
+        admin_node = ci.environment.node['admin']
+        self.admin_host = str(admin_node.ip_address)
+        slave = ci.environment.node['slave']
+        self.slave_id = slave.interfaces[0].mac_address.replace(":", "").upper()
 
     def _slave_delete_test_file(self):
         logging.info("Deleting test file...")
         slave_client = SSHClient()
         slave_client.connect_ssh(self.admin_host, self.admin_user, self.admin_passwd)
-
-        with slave_client.sudo:
-            res = slave_client.execute("test -f /tmp/chef_success && rm -rf /tmp/chef_success")
-            if res['exit_status'] != 0:
-                raise Exception("Command failed: %s" % str(res))
-        logging.info("Done.")
+        res = slave_client.execute("rm -rf /tmp/chef_success")
         slave_client.disconnect()        
 
 
@@ -230,7 +210,6 @@ class TestNode(TestCase):
             "/opt/nailgun/bin/create_release %s" % release_remote_path
         ]
 
-        self._admin_resync_db()
         with self.remote.sudo:
             for cmd in commands:
                 res = self.remote.execute(cmd)

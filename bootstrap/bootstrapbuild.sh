@@ -445,6 +445,9 @@ echo "Injecting agent ..."
 mkdir -p ${NAILGUN_DIR}/bin
 cp -r ${REPO}/bin/agent ${NAILGUN_DIR}/bin
 
+echo "Injecting bootstrap file..."
+echo "bootstrap" > ${NAILGUN_DIR}/system_type
+
 echo "Injecting bootstrap ssh key ..."
 mkdir -p ${INITRD_LOOP}/root/.ssh
 cp ${SSH}/id_rsa.pub ${INITRD_LOOP}/root/.ssh/authorized_keys 
