@@ -80,7 +80,7 @@ class TaskHandler(JSONHandler):
         }
         errors = task.errors
         if len(errors):
-            result['error'] = '; '.join(errors)
+            result['error'] = '; '.join(map(lambda e: e.__str__(), errors))
 
         return result
 
