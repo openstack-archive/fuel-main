@@ -88,6 +88,18 @@ class Node(ManagedObject):
     def shutdown(self):
         self.driver.shutdown_node(self)
 
+    @property
+    def snapshots(self):
+        return self.driver.get_node_snapshots(self)
+
+    def save_snapshot(self):
+        "Create node state snapshot. Returns snapshot id"
+        return self.driver.create_snapshot(self)
+
+    def revert_snapshot(self, snapshot=None):
+        "Revert node state to given snapshot. If no snapshot is given, revert to current."
+        self.driver.revert_snapshot(self, snapshot)
+
     def send_keys(self, keys):
         self.driver.send_keys_to_node(self, keys)
 

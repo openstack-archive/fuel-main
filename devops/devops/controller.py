@@ -124,6 +124,10 @@ class Controller:
             logger.info("Destroying node %s" % node.name)
 
             node.stop()
+
+            for snapshot in node.snapshots:
+                self.driver.delete_snapshot(node, snapshot)
+
             self.driver.delete_node(node)
             del node.driver
 

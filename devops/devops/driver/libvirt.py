@@ -231,6 +231,51 @@ class Libvirt:
     def shutdown_node(self, node):
         self._virsh("stop '%s'", node.id)
 
+
+    def get_node_snapshots(self, node):
+        command = "virsh snapshot-list '%s'" % node.id
+        process = subprocess.Popen(shlex.split(command), stdout=subprocess.PIPE, stderr=subprocess.PIPE)
+        process.wait()
+        if process.returncode != 0:
+            logger.error("Command '%s' returned %d, stderr: %s" % (command, process.returncode, '\n'.join(serr)))
+        else:
+            logger.debug("Command '%s' returned %d" % (command, process.returncode))
+
+        snapshot_ids = []
+        for line in process.stdout.readlines()[2:]:
+            if line.strip() == '': continue
+
+            snapshot_ids.append(line.split()[0])
+
+        return snapshot_ids
+
+    def create_snapshot(self, node, description=None):
+        snapshot_id = str(int(time.time()*100))
+
+        with tempfile.NamedTemporaryFile(delete=True) as xml_file:
+            snapshot_xml = XMLBuilder('domainsnapshot')
+            snapshot_xml.name(snapshot_id)
+            if description:
+                snapshot_xml.description(description)
+
+            logger.debug("Building snapshot with following XML:\n%s" % str(snapshot_xml))
+            xml_file.write(str(snapshot_xml))
+            xml_file.flush()
+
+            self._virsh("snapshot-create '%s' '%s'", node.id, xml_file.name)
+
+        return snapshot_id
+
+    def revert_snapshot(self, node, snapshot_id=None):
+        if not snapshot_id:
+            snapshot_id = '--current'
+        self._virsh("snapshot-revert '%s' %s", node.id, snapshot_id)
+
+    def delete_snapshot(self, node, snapshot_id=None):
+        if not snapshot_id:
+            snapshot_id = '--current'
+        self._virsh("snapshot-delete '%s' %s", node.id, snapshot_id)
+
     def send_keys_to_node(self, node, keys):
         keys = scancodes.from_string(str(keys))
         for key_codes in keys:
