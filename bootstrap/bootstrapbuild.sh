@@ -7,6 +7,8 @@ set -e
 [ -n "$BINARIES_DIR" ] || { echo "BINARIES_DIR variable should be defined."; exit 1; }
 [ -n "$BASEDIR" ] || { echo "BASEDIR variable should be defined."; exit 1; }
 
+BASEDIR=`readlink -f $BASEDIR`
+BINARIES_DIR=`readlink -f $BINARIES_DIR`
 
 ###########################
 # VARIABLES
