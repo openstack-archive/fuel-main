@@ -4,26 +4,28 @@ NAILGUN
 How to run Nailgun app from fixtures
 ------------------------------------
 Install application dependencies (eggs):
-`cd scripts/ci/`
-`sudo chef-solo -c solo.rb -j solo.json`
-`cd -`
+
+        cd scripts/ci/
+        sudo easy_install pip
+        sudo chef-solo -c solo.rb -j solo.json
+        cd -
 
 Remove old DB:
 
-`cd nailgun`
-`rm -f nailgun.sqlite`
+        cd nailgun
+        rm -f nailgun.sqlite
 
 Sync DB:
 
-`./manage.py syncdb --noinput`
+        ./manage.py syncdb --noinput
 
 Load data from fixtures:
 
-`./manage.py loaddata sample_environment`
+        ./manage.py loaddata sample_environment
 
 Run application:
 
-`./manage.py runserver`
+        ./manage.py runserver
 
 Access Web UI at http://localhost:8000/
 
