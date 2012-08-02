@@ -100,7 +100,7 @@ class LibvirtXMLBuilder:
 
             for disk in node.disks:
                 with node_xml.disk(type="file", device="disk"):
-                    node_xml.driver(name="qemu", type=disk.format)
+                    node_xml.driver(name="qemu", type=disk.format, cache="unsafe")
                     node_xml.source(file=disk.path)
                     node_xml.target(dev=disk_name(disk.bus), bus=disk.bus)
 
