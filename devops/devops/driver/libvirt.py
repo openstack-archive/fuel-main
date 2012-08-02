@@ -310,11 +310,11 @@ class Libvirt:
 
     def _virsh(self, format, *args):
         command = ("virsh " + format) % args
-        logger.debug("libvirt: Running '%s'" % command)
+        logger.debug("Running '%s'" % command)
         process = subprocess.Popen(shlex.split(command), stdout=subprocess.PIPE, stderr=subprocess.PIPE)
         process.wait()
         if process.returncode != 0:
-            logger.error("libvirt: command '%s' returned code %d:\n%s" % (command, process.returncode, process.stderr.read()))
+            logger.error("Command '%s' returned code %d:\n%s" % (command, process.returncode, process.stderr.read()))
             raise LibvirtException, "Failed to execute command '%s'" % command
 
     def _init_capabilities(self):
@@ -360,7 +360,7 @@ class Libvirt:
         return self._system2("virsh net-list | grep -q '%s '" % network.id, expected_resultcodes=(0, 1)) == 0
 
     def _system2(self, command, expected_resultcodes=(0,)):
-        logger.debug("libvirt: Running %s" % command)
+        logger.debug("Running %s" % command)
 
         commands = [ i.strip() for i in re.split(ur'\|', command)]
         serr = []
@@ -380,23 +380,23 @@ class Libvirt:
         returncode = process[-1].returncode
 
         if expected_resultcodes and not returncode in expected_resultcodes:
-            logger.error("libvirt: Command '%s' returned %d, stderr: %s" % (command, returncode, '\n'.join(serr)))
+            logger.error("Command '%s' returned %d, stderr: %s" % (command, returncode, '\n'.join(serr)))
         else:
-            logger.debug("libvirt: Command '%s' returned %d" % (command, returncode))
+            logger.debug("Command '%s' returned %d" % (command, returncode))
 
         return returncode
 
     def _system(self, command, expected_resultcodes=(0,)):
-        logger.debug("libvirt: Running '%s'" % command)
+        logger.debug("Running '%s'" % command)
         serr = []
         process = subprocess.Popen(shlex.split(command), stdout=subprocess.PIPE, stderr=subprocess.PIPE)
         process.wait()
         serr += [ err.strip() for err in process.stderr.readlines() ]
 
         if expected_resultcodes and not process.returncode in expected_resultcodes:
-            logger.error("libvirt: Command '%s' returned %d, stderr: %s" % (command, process.returncode, '\n'.join(serr)))
+            logger.error("Command '%s' returned %d, stderr: %s" % (command, process.returncode, '\n'.join(serr)))
         else:
-            logger.debug("libvirt: Command '%s' returned %d" % (command, process.returncode))
+            logger.debug("Command '%s' returned %d" % (command, process.returncode))
 
         return process.returncode
 
