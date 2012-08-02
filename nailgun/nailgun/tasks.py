@@ -35,14 +35,6 @@ celery_logging.setup_logger(logfile=settings.CELERYLOGFILE)
 logger = celery_logging.get_default_logger()
 
 
-def resolve_recipe_deps(graph, recipe):
-    if recipe.recipe not in graph:
-        graph[recipe.recipe] = []
-    for r in recipe.depends.all():
-        graph[recipe.recipe].append(r.recipe)
-        resolve_recipe_deps(graph, r)
-
-
 @task_with_callbacks
 def update_cluster_status(*args):
     # FIXME(mihgen):
@@ -66,14 +58,16 @@ def deploy_cluster(cluster_id):
     graph = {}
     for recipe in Recipe.objects.filter(
                 recipe__in=DeployGenerator.recipes(cluster_id)):
-        resolve_recipe_deps(graph, recipe)
-        #graph[recipe.recipe] = [r.recipe for r in recipe.depends.all()]
+        graph[recipe.recipe] = [r.recipe for r in recipe.depends.all()]
 
     # NOTE(mihgen): Installation components dependency resolution
     # From nodes.roles.recipes we know recipes that needs to be applied
     # We have to apply them in an order according to specified dependencies
     # To sort in an order, we use DFS(Depth First Traversal) over DAG graph
-    sorted_recipes = topol_sort(graph)
+    try:
+        sorted_recipes = topol_sort(graph)
+    except KeyError:
+        raise DeployError("One or more recipes have unresolved dependencies")
     tree = TaskPool()
     # first element in sorted_recipes is the first recipe we have to apply
     installed = []

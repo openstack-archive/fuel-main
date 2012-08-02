@@ -215,10 +215,8 @@ class TestTasks(TestCase):
         for recipe in models.Recipe.objects.filter(
                     recipe__in=DeployGenerator.recipes(1)):
             graph[recipe.recipe] = [r.recipe for r in recipe.depends.all()]
-        try:
-            srtd = task_helpers.topol_sort(graph)
-        except KeyError:
-            pass
+
+        self.assertRaises(exceptions.DeployError, tasks.deploy_cluster, '1')
 
     @mock.patch('nailgun.tasks.TaskPool')
     def test_deploy_cluster_takes_right_cluster(self, tp):
