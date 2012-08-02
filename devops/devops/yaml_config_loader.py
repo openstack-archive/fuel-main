@@ -87,8 +87,10 @@ def parse_node(environment, data):
                 except ValueError:
                     path = disk_data
                     node.disks.append(Disk(path=path))
+            elif isinstance(disk_data, dict):
+                node.disks.append(Disk(**disk_data))
             else:
-                raise ConfigError, "Disk customization is unsupported"
+                raise ConfigError, "Unknown disk config: %s" % str(disk_data)
 
     if data.has_key('networks'):
         networks_data = data['networks']
