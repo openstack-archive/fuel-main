@@ -124,16 +124,17 @@ class NodeAgent
   end
 
   def _data
-    { 
+    res = { 
       :fqdn => @os[:fqdn],
       :mac => @os[:macaddress],
       :ip  => @os[:ipaddress],
       :manufacturer => _manufacturer,
       :platform_name => _product_name,
-      :status => "discover",
       :os_platform => @os[:platform],
       :metadata => _metadata
     }
+    res[:status] = "discover" if File.exist?("/opt/nailgun/system_type")
+    res
   end
 
   def put

@@ -11,6 +11,8 @@ from celery.task import task
 from nailgun import tasks
 from nailgun import models
 from nailgun import exceptions
+from nailgun import task_helpers
+from nailgun.helpers import DeployGenerator
 
 
 class TestTasks(TestCase):
@@ -186,6 +188,37 @@ class TestTasks(TestCase):
             call().apply_async()
         ]
         self.assertEquals(tasks.TaskPool.mock_calls, expected)
+
+    def test_deploy_cluster_error_when_recipe_not_in_cluster(self):
+        rcps = [models.Recipe() for x in range(4)]
+        for i, rec in enumerate(rcps):
+            rec.recipe = 'cookbook::recipe%s@0.1' % i
+            rec.save()
+        rcps[0].depends = [rcps[1], rcps[2]]
+        rcps[1].depends = [rcps[2]]
+        rcps[2].depends = [rcps[3]]
+        rcps[3].depends = []
+        map(lambda r: r.save(), rcps)
+
+        roles = [models.Role() for x in range(3)]
+        for i, role in enumerate(roles):
+            role.name = "Role%s" % i
+            role.save()
+
+        roles[0].recipes = [rcps[0], rcps[3]]
+        roles[1].recipes = [rcps[2]]
+        map(lambda r: r.save(), roles)
+        self.node.roles = roles
+        self.node.save()
+
+        graph = {}
+        for recipe in models.Recipe.objects.filter(
+                    recipe__in=DeployGenerator.recipes(1)):
+            graph[recipe.recipe] = [r.recipe for r in recipe.depends.all()]
+        try:
+            srtd = task_helpers.topol_sort(graph)
+        except KeyError:
+            pass
 
     @mock.patch('nailgun.tasks.TaskPool')
     def test_deploy_cluster_takes_right_cluster(self, tp):

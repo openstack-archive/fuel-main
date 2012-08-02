@@ -59,7 +59,6 @@ class TestNode(TestCase):
                 "http://%s:8000/api/nodes/%s" % (self.admin_host, self.slave_id),
                 log=True
             )
-            logging.info(node)
             if not node.startswith("404"):
                 logging.info("Node found")
                 node = json.loads(node)
@@ -86,12 +85,10 @@ class TestNode(TestCase):
             )
             cluster = json.loads(cluster)
 
-        resp = self.client.put(
+        resp = json.loads(self.client.put(
             "http://%s:8000/api/clusters/1" % self.admin_host,
             data='{ "nodes": ["%s"] }' % self.slave_id
-        )
-        logging.info(resp)
-        resp = json.loads(resp)
+        ))
 
         cluster = json.loads(self.client.get(
             "http://%s:8000/api/clusters/1" % self.admin_host

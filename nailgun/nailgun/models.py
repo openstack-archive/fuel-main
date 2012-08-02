@@ -103,6 +103,7 @@ class Node(models.Model):
     NODE_STATUSES = (
         ('offline', 'offline'),
         ('ready', 'ready'),
+        ('discover', 'discover'),
         ('deploying', 'deploying'),
         ('error', 'error'),
     )
