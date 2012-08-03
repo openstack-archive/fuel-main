@@ -92,13 +92,17 @@ class Node(ManagedObject):
     def snapshots(self):
         return self.driver.get_node_snapshots(self)
 
-    def save_snapshot(self):
-        "Create node state snapshot. Returns snapshot id"
-        return self.driver.create_snapshot(self)
+    def save_snapshot(self, name=None):
+        "Create node state snapshot. Returns snapshot name"
+        return self.driver.create_snapshot(self, name=name)
 
-    def revert_snapshot(self, snapshot=None):
-        "Revert node state to given snapshot. If no snapshot is given, revert to current."
-        self.driver.revert_snapshot(self, snapshot)
+    def restore_snapshot(self, snapshot_name=None):
+        "Revert node state to given snapshot. If no snapshot name given, revert to current snapshot."
+        self.driver.revert_snapshot(self, snapshot_name)
+
+    def delete_snapshot(self, snapshot_name=None):
+        "Delete snapshot. If no snapshot name given, delete current snapshot."
+        self.driver.delete_snapshot(self, snapshot_name)
 
     def send_keys(self, keys):
         self.driver.send_keys_to_node(self, keys)

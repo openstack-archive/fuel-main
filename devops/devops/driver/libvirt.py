@@ -237,7 +237,7 @@ class Libvirt:
         process = subprocess.Popen(shlex.split(command), stdout=subprocess.PIPE, stderr=subprocess.PIPE)
         process.wait()
         if process.returncode != 0:
-            logger.error("Command '%s' returned %d, stderr: %s" % (command, process.returncode, '\n'.join(serr)))
+            logger.error("Command '%s' returned %d, stderr: %s" % (command, process.returncode, process.stderr.read()))
         else:
             logger.debug("Command '%s' returned %d" % (command, process.returncode))
 
@@ -249,12 +249,13 @@ class Libvirt:
 
         return snapshot_ids
 
-    def create_snapshot(self, node, description=None):
-        snapshot_id = str(int(time.time()*100))
+    def create_snapshot(self, node, name=None, description=None):
+        if not name:
+            name = str(int(time.time()*100))
 
         with tempfile.NamedTemporaryFile(delete=True) as xml_file:
             snapshot_xml = XMLBuilder('domainsnapshot')
-            snapshot_xml.name(snapshot_id)
+            snapshot_xml.name(name)
             if description:
                 snapshot_xml.description(description)
 
@@ -264,17 +265,17 @@ class Libvirt:
 
             self._virsh("snapshot-create '%s' '%s'", node.id, xml_file.name)
 
-        return snapshot_id
+        return name
 
-    def revert_snapshot(self, node, snapshot_id=None):
-        if not snapshot_id:
-            snapshot_id = '--current'
-        self._virsh("snapshot-revert '%s' %s", node.id, snapshot_id)
+    def revert_snapshot(self, node, snapshot_name=None):
+        if not snapshot_name:
+            snapshot_name = '--current'
+        self._virsh("snapshot-revert '%s' %s", node.id, snapshot_name)
 
-    def delete_snapshot(self, node, snapshot_id=None):
-        if not snapshot_id:
-            snapshot_id = '--current'
-        self._virsh("snapshot-delete '%s' %s", node.id, snapshot_id)
+    def delete_snapshot(self, node, snapshot_name=None):
+        if not snapshot_name:
+            snapshot_name = '--current'
+        self._virsh("snapshot-delete '%s' %s", node.id, snapshot_name)
 
     def send_keys_to_node(self, node, keys):
         keys = scancodes.from_string(str(keys))
