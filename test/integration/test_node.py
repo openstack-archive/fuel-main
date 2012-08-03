@@ -210,7 +210,6 @@ class TestNode(TestCase):
             "http://%s:8000/api/nodes/%s" % (self.admin_host, self.slave_id)
         ))
         self.assertEqual(node["status"], "ready")
-
         self.remote.disconnect()
 
     def _slave_delete_test_file(self):
