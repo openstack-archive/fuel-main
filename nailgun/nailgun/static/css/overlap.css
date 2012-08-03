@@ -312,7 +312,7 @@ behavior: url(/static/css/pie.htc);
 .node-checked .article, .node-unchecked .article {font-size: 13px; font-weight: 600;}
 .node-checked .article {text-shadow: 0 1px 0 rgba(0, 0, 0, 0.3);}
 .node-unchecked .article {text-shadow: 0 1px 0 rgba(255, 255, 255, 0.8);}
-.node-checked ul, .node-unchecked ul {list-style: none outside none; margin: 0px; padding: 0px; lie-height: 16px; margin-left: 38px;}
+.node-checked ul, .node-unchecked ul {list-style: none outside none; margin: 0px; padding: 0px; line-height: 16px; margin-left: 38px;}
 .node-checked ul li, .node-unchecked ul li {display: inline-block; font-size: 8.5px; margin-right: 4px;}
 .node-checked ul li.macaddr, .node-unchecked ul li.macaddr {font-size: 12px;}
 .node-checked ul li {color: #ffffff; text-shadow: 0 1px 0 rgba(0, 0, 0, 0.3);}
