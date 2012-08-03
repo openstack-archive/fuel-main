@@ -4,10 +4,9 @@ import unittest
 from devops.model import Environment, Network, Node, Disk, Cdrom, Interface
 from devops.controller import Controller
 from devops.driver.libvirt import Libvirt
-from devops.helpers import tcp_ping, wait, TimeoutError
+from devops.helpers import tcp_ping, wait, TimeoutError, ssh
 import traceback
 
-from integration.helpers import HTTPClient, SSHClient
 import simplejson as json
 
 import logging
@@ -76,8 +75,7 @@ class Ci:
 
             logger.info("Setting up repository configuration")
 
-            remote = SSHClient()
-            remote.connect_ssh(str(node.ip_address), "root", "r00tme")
+            remote = ssh(node.ip_address, username='root', password='r00tme')
             repo = remote.open('/etc/yum.repos.d/mirantis.repo', 'w')
             repo.write("""
 [mirantis]
@@ -93,6 +91,10 @@ gpgcheck=0
             remote.execute('service iptables save')
             remote.execute('service iptables stop')
             remote.execute('chkconfig iptables off')
+
+            logger.info("Creating snapshot 'blank'")
+
+            node.save_snapshot('blank')
 
             logger.info("Test node is ready at %s" % node.ip_address)
 
@@ -144,37 +146,67 @@ def tearDown():
 
 class CookbookTestCase(unittest.TestCase):
     cookbooks = []
+    cookbooks_dir = os.path.abspath(
+        os.path.join(
+            os.path.dirname(__file__),
+            "..", "..", "cooks", "cookbooks"
+        ) 
+    )
 
-    def setUp(self):
-        self.ip = ci.environment.node['cookbooks'].ip_address
-        self.cookbooks_dir = os.path.abspath(
-            os.path.join(
-                os.path.dirname(__file__),
-                "..", "..", "cooks", "cookbooks"
-            ) 
-        )
+    @classmethod
+    def setUpState(klass):
+        pass
 
-        self.remote = SSHClient()
-        self.remote.connect_ssh(str(self.ip), "root", "r00tme")
-        self.remote.mkdir("/opt/os-cookbooks/")
+    @classmethod
+    def setUpClass(klass):
+        klass.node = ci.environment.node['cookbooks']
+        klass.ip = klass.node.ip_address
 
-        solo_rb = self.remote.open('/tmp/solo.rb', 'w')
+        klass.remote = ssh(klass.ip, username='root', password='r00tme')
+
+        snapshot = klass.__name__
+
+        if not os.environ.get('DEVELOPMENT') or not snapshot in klass.node.snapshots:
+            logger.info('Setting up state for %s' % klass.__name__)
+
+            if snapshot in klass.node.snapshots:
+                klass.node.delete_snapshot(snapshot)
+
+            klass.node.restore_snapshot('blank')
+            klass.remote.reconnect()
+
+            klass.upload_cookbooks(klass.cookbooks)
+            klass.setUpState()
+
+            klass.node.save_snapshot(snapshot)
+
+            logger.info('Finished state for %s' % klass.__name__)
+
+    @classmethod
+    def upload_cookbooks(klass, cookbooks):
+        klass.remote.mkdir("/opt/os-cookbooks/")
+
+        solo_rb = klass.remote.open('/tmp/solo.rb', 'w')
         solo_rb.write("""
 file_cache_path "/tmp/chef"
 cookbook_path "/opt/os-cookbooks"
         """)
         solo_rb.close()
 
-        for cookbook in self.cookbooks:
-            self.remote.scp_d(os.path.join(self.cookbooks_dir, cookbook), "/opt/os-cookbooks/")
+        for cookbook in cookbooks:
+            klass.remote.upload(os.path.join(klass.cookbooks_dir, cookbook), "/opt/os-cookbooks/")
 
-    def chef_solo(self, attributes={}):
-        solo_json = self.remote.open('/tmp/solo.json', 'w')
+    @classmethod
+    def chef_solo(klass, attributes={}):
+        recipes = attributes.get('recipes') or attributes.get('run_list')
+        logger.info('Running Chef with recipes: %s' % (', '.join(recipes)))
+
+        solo_json = klass.remote.open('/tmp/solo.json', 'w')
         solo_json.write(json.dumps(attributes))
         solo_json.close()
 
-        result = self.remote.execute("chef-solo -l debug -c /tmp/solo.rb -j /tmp/solo.json")
-        if result['exit_status'] != 0:
+        result = klass.remote.execute("chef-solo -l debug -c /tmp/solo.rb -j /tmp/solo.json")
+        if result['exit_code'] != 0:
             stdout = result['stdout']
             stderr = result['stderr']
 
@@ -183,7 +215,13 @@ cookbook_path "/opt/os-cookbooks"
 
             logger.error(''.join(stdout))
 
-            raise ChefRunError(result['exit_status'], stdout[-1], ''.join(stderr))
+            raise ChefRunError(result['exit_code'], stdout[-1], ''.join(stderr))
+
+        logger.info('Chef run successfully finished')
 
         return result
+
+    def setUp(self):
+        self.node.restore_snapshot(self.__class__.__name__)
+        self.remote.reconnect()
 
