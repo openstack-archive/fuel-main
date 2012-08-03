@@ -108,9 +108,9 @@ class TestNode(TestCase):
         if len(resp["new_roles"]) == 0:
             raise ValueError("Failed to assign roles to node")
 
-        if node["os_platform"] == "ubuntu":
+        if node["status"] == "discover":
             logging.info("Node booted with bootstrap image.")
-        if node["os_platform"] == "centos":
+        else:
             logging.info("Node already installed.")
             self._slave_delete_test_file()
 
@@ -164,6 +164,13 @@ class TestNode(TestCase):
         if [out.strip() for out in ret['stdout']] != ['monitor', 'default', 'compute']:
             raise Exception("Recipes executed in a wrong order: %s!" \
                 % str(ret['stdout']))
+
+        # chech node status
+        node = json.loads(self.client.get(
+            "http://%s:8000/api/nodes/%s" % (self.admin_host, self.slave_id),
+            log=True
+        ))
+        self.assertEqual(node["status"], "ready")
 
         self.remote.disconnect()
 
