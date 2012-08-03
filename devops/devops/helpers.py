@@ -1,10 +1,14 @@
 import os
+import stat
 import socket
 import time
 import httplib
 import xmlrpclib
 import paramiko
 import string
+
+import logging
+logger = logging.getLogger('devops.helpers')
 
 class TimeoutError(Exception): pass
 class AuthenticationError(Exception): pass
@@ -59,58 +63,124 @@ class KeyPolicy(paramiko.WarningPolicy):
     def missing_host_key(self, client, hostname, key):
         return
     
-class Ssh:
-    def __init__(self, hostname, port=22, username=None, 
-                 password=None, pkey=None, 
-                 key_filename=None, timeout=None):
+class SSHClient(object):
+    class get_sudo(object):
+        def __init__(self, ssh):
+            self.ssh = ssh
 
-        self.hostname = hostname
-        self.port = port
+        def __enter__(self):
+            self.ssh.sudo_mode = True
+
+        def __exit__(self, type, value, traceback):
+            self.ssh.sudo_mode = False
+
+    def __init__(self, host, port=22, username=None, password=None):
+        self.host = str(host)
+        self.port = int(port)
         self.username = username
         self.password = password
-        self.pkey = pkey
-        self.key_filename = key_filename
-        self.timeout = timeout
 
-        self.ssh = paramiko.SSHClient()
-        self.ssh.set_missing_host_key_policy(KeyPolicy())
-        
-    def connect(self):
-        self.ssh.connect(self.hostname, port=self.port, username=self.username, 
-                         password=self.password, pkey=self.pkey, 
-                         key_filename=self.key_filename, timeout=self.timeout)
+        self.sudo_mode = False
+        self.sudo = self.get_sudo(self)
 
-    def __enter__(self):
-        self.connect()
-        return self.ssh
+        self.reconnect()
 
-    def __exit__(self, type, value, traceback):
+    def __del__(self):
+        self.sftp.close()
         self.ssh.close()
 
+    def __enter__(self):
+        return self
 
-def ssh(hostname, command, port=22, username=None, 
-        password=None, pkey=None, key_filename=None, timeout=None, outerr=False):
+    def __exit__(self, type, value, traceback):
+        pass
 
-    rsout = []
-    rserr = []
+    def reconnect(self):
+        self.ssh = paramiko.SSHClient()
+        self.ssh.set_missing_host_key_policy(paramiko.AutoAddPolicy())
+        self.ssh.connect(self.host, port=self.port, username=self.username, password=self.password)
+        self.sftp = self.ssh.open_sftp()
 
-    with Ssh(str(hostname), port=int(port), username=username, 
-             password=password, pkey=pkey, 
-             key_filename=key_filename, timeout=timeout) as s:
-        if outerr:
-            (sin, sout, sout) = s.exec_command(command)
-        else:
-            (sin, sout, serr) = s.exec_command(command)
+    def execute(self, command):
+        logger.debug("Executing command: '%s'" % command.rstrip())
+        chan = self.ssh.get_transport().open_session()
+        stdin = chan.makefile('wb')
+        stdout = chan.makefile('rb')
+        stderr = chan.makefile_stderr('rb')
+        cmd = "%s\n" % command
+        if self.sudo_mode:
+            cmd = 'sudo -S bash -c "%s"' % cmd.replace('"', '\\"')
+        chan.exec_command(cmd)
+        if stdout.channel.closed is False:
+            stdin.write('%s\n' % self.password)
+            stdin.flush()
+        result = {
+            'stdout': [],
+            'stderr': [],
+            'exit_code': chan.recv_exit_status()
+        }
+        for line in stdout:
+            result['stdout'].append(line)
+        for line in stderr:
+            result['stderr'].append(line)
 
-            for line in serr.readlines():
-                line = string.strip(line)
-                rserr.append(line)
+        return result
 
-        for line in sout.readlines():
-            line = string.strip(line)
-            rsout.append(line)
+    def mkdir(self, path):
+        logger.debug("Creating directory: %s" % path)
+        return self.execute("mkdir %s\n" % path)
 
-    return {'out':rsout, 'err':rserr}
+    def rm_rf(self, path):
+        logger.debug("Removing directory: %s" % path)
+        return self.execute("rm -rf %s" % path)
+
+    def open(self, path, mode='r'):
+        return self.sftp.open(path, mode)
+
+    def upload(self, source, target):
+        logger.debug("Copying '%s' -> '%s'" % (source, target))
+
+        if self.isdir(target):
+            target = os.path.join(target, os.path.basename(source))
+
+        if not os.path.isdir(source):
+            self.sftp.put(source, target)
+            return
+
+        for rootdir, subdirs, files in os.walk(source):
+            targetdir = os.path.normpath(os.path.join(target, os.path.relpath(rootdir, source)))
+
+            self.sftp.mkdir(targetdir)
+
+            for entry in files:
+                local_path  = os.path.join(rootdir, entry)
+                remote_path = os.path.join(targetdir, entry)
+                self.sftp.put(local_path, remote_path)
+
+    def exists(self, path):
+        try:
+            self.sftp.lstat(path)
+            return True
+        except IOError:
+            return False
+
+    def isfile(self, path):
+        try:
+            attrs = self.sftp.lstat(path)
+            return attrs.st_mode & stat.S_IFREG != 0
+        except IOError:
+            return False
+
+    def isdir(self, path):
+        try:
+            attrs = self.sftp.lstat(path)
+            return attrs.st_mode & stat.S_IFDIR != 0
+        except IOError:
+            return False
+
+
+def ssh(*args, **kwargs):
+    return SSHClient(*args, **kwargs)
 
 
 def xmlrpctoken(uri, login, password):
