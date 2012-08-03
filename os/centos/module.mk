@@ -2,7 +2,7 @@
 
 $/%: /:=$/
 
-CENTOSMIRROR:=http://mirror.yandex.ru/centos
+CENTOSMIRROR:=http://mirror.san.fastserv.com/pub/linux/centos
 
 CENTOSEXTRA_PACKAGES:=$(shell grep -v ^\\s*\# requirements-rpm.txt)
 
