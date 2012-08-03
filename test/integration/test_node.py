@@ -206,7 +206,7 @@ class TestNode(TestCase):
 
         # chech node status
         node = json.loads(self.client.get(
-            "http://%s:8000/api/nodes/%s" % (self.admin_host, self.slave_id)
+           "http://%s:8000/api/nodes/%s" % (self.admin_host, self.slave_id)
         ))
         self.assertEqual(node["status"], "ready")
         self.remote.disconnect()
