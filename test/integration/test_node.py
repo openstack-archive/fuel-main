@@ -19,7 +19,7 @@ logging.basicConfig(format=':%(lineno)d: %(asctime)s %(message)s', level=logging
 
 AGENT_PATH = os.path.join(os.path.dirname(__file__), "..", "..", "bin", "agent")
 DEPLOY_PATH = os.path.join(os.path.dirname(__file__), "..", "..", "bin", "deploy")
-COOKBOOKS_PATH = os.path.join(os.path.dirname(__file__), "..", "..", "cookbooks")
+COOKBOOKS_PATH = os.path.join(os.path.dirname(__file__), "..", "..", "cooks", "cookbooks")
 SAMPLE_PATH = os.path.join(os.path.dirname(__file__), "..", "..", "scripts", "ci")
 SAMPLE_REMOTE_PATH = "/home/ubuntu"
 
@@ -40,9 +40,47 @@ class TestNode(TestCase):
         self.slave_user = "root"
         self.slave_passwd = "r00tme"
 
-    def test_node(self):
+    def setUp(self):
         admin_node = ci.environment.node['admin']
         self.admin_host = str(admin_node.ip_address)
+        cookbook_remote_path = os.path.join(SAMPLE_REMOTE_PATH, "sample-cook")
+        mysql_remote_path = os.path.join(COOKBOOKS_PATH, "mysql")
+        release_remote_path = os.path.join(SAMPLE_REMOTE_PATH, "sample-release.json")
+        self.remote.connect_ssh(self.admin_host, self.admin_user, self.admin_passwd)
+        self.remote.rmdir(cookbook_remote_path)
+        self.remote.rmdir(os.path.join(SAMPLE_REMOTE_PATH, "cookbooks"))
+        self.remote.rmdir(os.path.join(SAMPLE_REMOTE_PATH, "solo"))
+        self.remote.scp(
+            os.path.join(SAMPLE_PATH, "sample-release.json"),
+            release_remote_path
+        )
+        self.remote.mkdir(os.path.join(SAMPLE_REMOTE_PATH, "solo"))
+        self.remote.mkdir(os.path.join(SAMPLE_REMOTE_PATH, "solo/config"))
+        self.remote.scp_d(
+            os.path.join(SAMPLE_PATH, "sample-cook"),
+            SAMPLE_REMOTE_PATH
+        )
+        self.remote.scp_d(
+            COOKBOOKS_PATH,
+            SAMPLE_REMOTE_PATH
+        )
+        commands = [
+            "/opt/nailgun/bin/install_cookbook %s" % cookbook_remote_path,
+            "/opt/nailgun/bin/install_cookbook %s" % mysql_remote_path,
+            "/opt/nailgun/bin/create_release %s" % release_remote_path
+        ]
+        logging.info("Loading cookbooks to database...")
+        with self.remote.sudo:
+            for cmd in commands:
+                res = self.remote.execute(cmd)
+                if res['exit_status'] != 0:
+                    self.remote.disconnect()
+                    raise Exception("Command failed: %s" % str(res))
+
+        self.remote.disconnect()
+
+    def test_node_deploy(self):
+        # TODO: move system installation in setUp
         slave = ci.environment.node['slave']
         self.slave_id = slave.interfaces[0].mac_address.replace(":", "").upper()
 
@@ -50,14 +88,12 @@ class TestNode(TestCase):
         slave.start()
 
         logging.info("Nailgun IP: %s" % self.admin_host)
-        self._load_sample_admin()
 
         timer = time.time()
         timeout = 600
         while True:
             node = self.client.get(
-                "http://%s:8000/api/nodes/%s" % (self.admin_host, self.slave_id),
-                log=True
+                "http://%s:8000/api/nodes/%s" % (self.admin_host, self.slave_id)
             )
             if not node.startswith("404"):
                 logging.info("Node found")
@@ -73,15 +109,13 @@ class TestNode(TestCase):
 
         try:
             cluster = json.loads(self.client.get(
-                "http://%s:8000/api/clusters/1" % self.admin_host,
-                log=True
+                "http://%s:8000/api/clusters/1" % self.admin_host
             ))
         except ValueError:
             logging.info("No clusters found - creating test cluster...")
             cluster = self.client.post(
                 "http://%s:8000/api/clusters" % self.admin_host,
-                data='{ "name": "MyOwnPrivateCluster", "release": 1 }',
-                log=True
+                data='{ "name": "MyOwnPrivateCluster", "release": 1 }'
             )
             cluster = json.loads(cluster)
 
@@ -99,7 +133,11 @@ class TestNode(TestCase):
         roles_uploaded = json.loads(self.client.get(
             "http://%s:8000/api/roles/" % self.admin_host
         ))
-        roles_ids = [role["id"] for role in roles_uploaded if role["recipes"][0].startswith("sample-cook")]
+        roles_ids = [
+            role["id"] for role in roles_uploaded \
+                if role["recipes"][0].startswith("sample-cook") \
+                or role["recipes"][0].startswith("mysql")
+        ]
 
         resp = json.loads(self.client.put(
             "http://%s:8000/api/nodes/%s" % (self.admin_host, self.slave_id),
@@ -110,14 +148,13 @@ class TestNode(TestCase):
 
         if node["status"] == "discover":
             logging.info("Node booted with bootstrap image.")
-        else:
+        elif node["status"] == "ready":
             logging.info("Node already installed.")
             self._slave_delete_test_file()
 
         logging.info("Provisioning...")
         task = json.loads(self.client.put(
-            "http://%s:8000/api/clusters/1/changes/" % self.admin_host,
-            log=True
+            "http://%s:8000/api/clusters/1/changes/" % self.admin_host
         ))
         task_id = task['task_id']
         logging.info("Task created: %s" % task_id)
@@ -145,8 +182,7 @@ class TestNode(TestCase):
                 time.sleep(30)
 
         node = json.loads(self.client.get(
-            "http://%s:8000/api/nodes/%s" % (self.admin_host, self.slave_id),
-            log=True
+            "http://%s:8000/api/nodes/%s" % (self.admin_host, self.slave_id)
         ))
         self.slave_host = node["ip"]
 
@@ -158,7 +194,11 @@ class TestNode(TestCase):
         ret = self.remote.execute("test -f /tmp/chef_success")
         if ret['exit_status'] != 0:
             raise Exception("Recipes failed to execute!")
-        
+
+        # check mysql running
+        #db = MySQLdb.connect(passwd="test", user="root", host=self.slave_host)
+        #print db
+
         # check recipes execution order
         ret = self.remote.execute("cat /tmp/chef_success")
         if [out.strip() for out in ret['stdout']] != ['monitor', 'default', 'compute']:
@@ -167,58 +207,15 @@ class TestNode(TestCase):
 
         # chech node status
         node = json.loads(self.client.get(
-            "http://%s:8000/api/nodes/%s" % (self.admin_host, self.slave_id),
-            log=True
+            "http://%s:8000/api/nodes/%s" % (self.admin_host, self.slave_id)
         ))
         self.assertEqual(node["status"], "ready")
 
         self.remote.disconnect()
 
-    def test_mysql_cookbook(self):
-        admin_node = ci.environment.node['admin']
-        self.admin_host = str(admin_node.ip_address)
-        slave = ci.environment.node['slave']
-        self.slave_id = slave.interfaces[0].mac_address.replace(":", "").upper()
-
     def _slave_delete_test_file(self):
         logging.info("Deleting test file...")
         slave_client = SSHClient()
-        slave_client.connect_ssh(self.admin_host, self.admin_user, self.admin_passwd)
+        slave_client.connect_ssh(self.slave_host, self.slave_user, self.slave_passwd)
         res = slave_client.execute("rm -rf /tmp/chef_success")
-        slave_client.disconnect()        
-
-
-    def _load_sample_admin(self):
-        cookbook_remote_path = os.path.join(SAMPLE_REMOTE_PATH, "sample-cook")
-        release_remote_path = os.path.join(SAMPLE_REMOTE_PATH, "sample-release.json")
-        self.remote.connect_ssh(self.admin_host, self.admin_user, self.admin_passwd)
-        self.remote.rmdir(cookbook_remote_path)
-        self.remote.rmdir(os.path.join(SAMPLE_REMOTE_PATH, "cookbooks"))
-        self.remote.rmdir(os.path.join(SAMPLE_REMOTE_PATH, "solo"))
-        self.remote.scp(
-            os.path.join(SAMPLE_PATH, "sample-release.json"),
-            release_remote_path
-        )
-        self.remote.mkdir(os.path.join(SAMPLE_REMOTE_PATH, "solo"))
-        self.remote.mkdir(os.path.join(SAMPLE_REMOTE_PATH, "solo/config"))
-        self.remote.scp_d(
-            os.path.join(SAMPLE_PATH, "sample-cook"),
-            SAMPLE_REMOTE_PATH
-        )
-        self.remote.scp_d(
-            COOKBOOKS_PATH,
-            SAMPLE_REMOTE_PATH
-        )
-        commands = [
-            "/opt/nailgun/bin/install_cookbook %s" % cookbook_remote_path,
-            "/opt/nailgun/bin/create_release %s" % release_remote_path
-        ]
-
-        with self.remote.sudo:
-            for cmd in commands:
-                res = self.remote.execute(cmd)
-                if res['exit_status'] != 0:
-                    self.remote.disconnect()
-                    raise Exception("Command failed: %s" % str(res))
-
-        self.remote.disconnect()
+        slave_client.disconnect()

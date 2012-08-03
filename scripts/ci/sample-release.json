@@ -18,6 +18,11 @@
         "recipes": [
             "sample-cook::default@0.3.0"
         ]
+      },{
+        "name": "mysql_server",
+        "recipes": [
+            "mysql::server@0.1.0"
+        ]
       }
     ]
 }
