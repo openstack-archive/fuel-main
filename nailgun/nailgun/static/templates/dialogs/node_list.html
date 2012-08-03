@@ -7,6 +7,15 @@
           <i class="icon-ok icon-white"></i>
           <% var fullProductName = (node.get('manufacturer') ? node.get('manufacturer') + ' ' + node.get('platform_name') : node.get('platform_name')) || 'Unknown Platform' %>
           <div class="article"><%= fullProductName %></div>
+          <% var manufacturer = node.get('manufacturer').toLowerCase() %>
+          <% var knownManufacturers = ['hp', 'dell', 'vmware', 'vbox', 'virtualbox', 'xen', 'kvm', 'qemu', 'openvz'] %>
+          <% if (_.contains(knownManufacturers, manufacturer)) { %>
+            <div class="platform-icon <%= manufacturer %>"></div>
+          <% } else { %>
+            <div class="platform-icon">
+              <i class="icon-hdd"></i>
+            </div>
+          <% } %>
           <ul>
             <li class="macaddr"><%= node.id %></li>
           </ul>

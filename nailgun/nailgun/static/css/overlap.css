@@ -245,7 +245,7 @@ behavior: url(/static/css/pie.htc);
   margin-left: 17px;
 }
 
-.dialog-node, .deployment-type {
+.node-unchecked, .node-checked, .deployment-type {
   cursor: pointer !important;
 }
 
@@ -312,11 +312,21 @@ behavior: url(/static/css/pie.htc);
 .node-checked .article, .node-unchecked .article {font-size: 13px; font-weight: 600;}
 .node-checked .article {text-shadow: 0 1px 0 rgba(0, 0, 0, 0.3);}
 .node-unchecked .article {text-shadow: 0 1px 0 rgba(255, 255, 255, 0.8);}
-.node-checked ul, .node-unchecked ul {list-style: none outside none; margin: 0px; padding: 0px;}
+.node-checked ul, .node-unchecked ul {list-style: none outside none; margin: 0px; padding: 0px; lie-height: 16px; margin-left: 38px;}
 .node-checked ul li, .node-unchecked ul li {display: inline-block; font-size: 8.5px; margin-right: 4px;}
 .node-checked ul li.macaddr, .node-unchecked ul li.macaddr {font-size: 12px;}
 .node-checked ul li {color: #ffffff; text-shadow: 0 1px 0 rgba(0, 0, 0, 0.3);}
 .node-unchecked ul li {color: #333333;}
+
+.platform-icon {width: 32px; height: 32px; margin: 2px 0 0 2px; float: left; font-size: 32px}
+.platform-icon.vmware {background-image: url(../img/manufacturers/vmware.png)}
+.platform-icon.vbox, .platform-icon.virtualbox {background-image: url(../img/manufacturers/vbox.png)}
+.platform-icon.xen {background-image: url(../img/manufacturers/xen.png)}
+.platform-icon.kvm, .platform-icon.qemu {background-image: url(../img/manufacturers/qemu.png)}
+.platform-icon.openvz {background-image: url(../img/manufacturers/openvz.png)}
+.platform-icon.hp {background-image: url(../img/manufacturers/hp.png)}
+.platform-icon.dell {background-image: url(../img/manufacturers/dell.png)}
+.platform-icon i {margin-top: 10px}
 
 
 .alert {

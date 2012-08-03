@@ -85,7 +85,7 @@
         "fields": {
             "status": "deploying",
             "name": "",
-            "manufacturer": "Supermicro",
+            "manufacturer": "OpenVZ",
             "platform_name": "Model-3",
             "roles": [
                 2
