@@ -70,7 +70,7 @@ function run_tests {
   python manage.py test nailgun $noseopts $noseargs
 }
 
-run_tests
+run_tests || exit 1
 
 if [ -z "$noseargs" ]; then
   if [ $no_pep8 -eq 0 ]; then
