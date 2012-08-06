@@ -66,6 +66,8 @@ class TestTasks(TestCase):
         ssh = ssh_mock.return_value
         ssh.run = mock.MagicMock(return_value=True)
         tp_mock.return_value = True
+        self.node.status = "discover"
+        self.node.save()
 
         tasks._provision_node = mock.MagicMock(return_value=None)
         tasks.bootstrap_node(self.node.id)
@@ -82,7 +84,7 @@ class TestTasks(TestCase):
         tp_mock.return_value = True
         tasks._provision_node = mock.MagicMock(return_value=None)
 
-        tasks.bootstrap_node(self.node.id, installed=True)
+        tasks.bootstrap_node(self.node.id)
         self.assertEquals(tasks._provision_node.call_args_list, [])
 
     @mock.patch('nailgun.tasks.tcp_ping')
@@ -178,10 +180,10 @@ class TestTasks(TestCase):
             call().push_task([{'args': [nodes[1].id],
                     'func': tasks.bootstrap_node, 'kwargs': {}}]),
             call().push_task(tasks.create_solo, ('1', rcps[0].id)),
-            call().push_task([{'args': [nodes[0].id, True],
+            call().push_task([{'args': [nodes[0].id],
                     'func': tasks.bootstrap_node, 'kwargs': {}}]),
             call().push_task(tasks.create_solo, ('1', rcps[3].id)),
-            call().push_task([{'args': [nodes[1].id, True],
+            call().push_task([{'args': [nodes[1].id],
                     'func': tasks.bootstrap_node, 'kwargs': {}}]),
             # Last task for chord to succeed
             call().push_task(tasks.update_cluster_status, ('1',)),
