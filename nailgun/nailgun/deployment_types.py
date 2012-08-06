@@ -17,7 +17,8 @@ class BaseDeploymentType(object):
 class SimpleDeploymentType(BaseDeploymentType):
     id = 'simple'
     name = 'Simple Deployment'
-    description = 'No redundancy. Best suited for non-critical environments (e.g. dev, staging, QA)'
+    description = 'No redundancy. Best suited for non-critical ' \
+                  'OpenStack installations (e.g. dev, staging, QA)'
 
     @classmethod
     def assign_roles(cls, cluster):
@@ -34,7 +35,9 @@ class SimpleDeploymentType(BaseDeploymentType):
 class HighAvailabilityDeploymentType(BaseDeploymentType):
     id = 'ha'
     name = 'HA Deployment'
-    description = 'Built-in redundancy (controller, database, rabbitmq, services). Ideal for production deployments'
+    description = 'Built-in redundancy for OpenStack components ' \
+                  '(database, rabbitmq, nova, swift). ' \
+                  'Ideal for production deployments'
 
     @classmethod
     def assign_roles(cls, cluster):
