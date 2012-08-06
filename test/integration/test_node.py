@@ -66,7 +66,6 @@ class TestNode(TestCase):
         )
         commands = [
             "/opt/nailgun/bin/install_cookbook %s" % cookbook_remote_path,
-            "/opt/nailgun/bin/install_cookbook %s" % mysql_remote_path,
             "/opt/nailgun/bin/create_release %s" % release_remote_path
         ]
         logging.info("Loading cookbooks to database...")

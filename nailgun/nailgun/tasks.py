@@ -143,11 +143,17 @@ def bootstrap_node(node_id):
 
     node = Node.objects.get(id=node_id)
 
+    if node.status not in ["ready", "discover", "offline"]:
+        raise DeployError(
+            "Invalid node status '%s' - deployment aborted." \
+                % node.status
+        )
+
     if node.status == "ready":
         logger.debug("Provisioning skipped - node %s \
             is already installed" % node_id)
-    else:
-        logger.debug("Provisioning node %s" % node_id)
+    elif node.status in ["discover", "offline"]:
+        logger.debug("Trying to provision node %s..." % node_id)
         _provision_node(node_id)
     logger.debug("Turning node %s status into 'deploying'" % node_id)
     node.status = "deploying"
