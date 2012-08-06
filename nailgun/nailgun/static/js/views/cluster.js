@@ -126,7 +126,7 @@ function(models, dialogViews, taskViews, clusterPageTemplate, clusterNodeTemplat
                     this.$el.append(new views.Node({model: node}).render().el);
                 }, this));
             } else {
-                this.$el.html('<div class="span12"><div class="alert">This cluster has no nodes</div></div>');
+                this.$el.html('<div class="span12"><div class="alert">This OpenStack installation does not have any nodes</div></div>');
             }
             return this;
         }

@@ -17,7 +17,24 @@ class BaseDeploymentType(object):
 class SimpleDeploymentType(BaseDeploymentType):
     id = 'simple'
     name = 'Simple Deployment'
-    description = 'Simple OpenStack deployment'
+    description = 'No redundancy. Best suited for non-critical environments (e.g. dev, staging, QA)'
+
+    @classmethod
+    def assign_roles(cls, cluster):
+        roles = cluster.release.roles.all()
+        nodes = itertools.cycle(cluster.nodes.all())
+        new_roles = {}
+        for role in roles:
+            node = nodes.next()
+            node.new_roles.add(role)
+            node.redeployment_needed = True
+            node.save()
+
+
+class HighAvailabilityDeploymentType(BaseDeploymentType):
+    id = 'ha'
+    name = 'HA Deployment'
+    description = 'Built-in redundancy (controller, database, rabbitmq, services). Ideal for production deployments'
 
     @classmethod
     def assign_roles(cls, cluster):

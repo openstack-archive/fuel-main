@@ -1,11 +1,11 @@
 <div class="row">
   <div class="span6">
-    <h1><%= cluster.get('name') %></h1>
+    <h1><%= cluster.get('name') %> (<%= cluster.get('release').get('name') %>)</h1>
   </div>
   <div class="span6 cluster-control">
     <button class="btn btn-success pull-right add-nodes-btn"><i class="icon-plus-sign icon-white"></i>Add Nodes</button>
-    <button class="btn pull-right assign-roles-btn"><i class="icon-tags icon-white"></i>Assign Roles</button>
-    <button class="btn pull-right"><i class="icon-wrench icon-white"></i>Settings</button>
+    <button class="btn pull-right assign-roles-btn"><i class="icon-tags icon-white"></i>Select Deployment Mode</button>
+    <!-- <button class="btn pull-right"><i class="icon-wrench icon-white"></i>Settings</button> -->
   </div>
 </div>
 <div class="deployment-control"></div>

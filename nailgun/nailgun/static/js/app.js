@@ -15,8 +15,8 @@ define(
         },
         initialize: function() {
             this.navbar = new commonViews.Navbar({elements: [
-                ['Clusters', '#clusters'],
-                ['Available Releases', '#releases'],
+                ['OpenStack Installations', '#clusters'],
+                ['Software Updates', '#releases'],
             ]});
             $('#content').before(this.navbar.render().el);
             this.breadcrumb = new commonViews.Breadcrumb;
@@ -27,7 +27,7 @@ define(
             cluster.fetch({
                 success: _.bind(function() {
                     this.navbar.setActive('clusters');
-                    this.breadcrumb.setPath(['Home', '#'], ['Clusters', '#clusters'], cluster.get('name'));
+                    this.breadcrumb.setPath(['Home', '#'], ['OpenStack Installations', '#clusters'], cluster.get('name'));
                     this.page = new clusterViews.ClusterPage({model: cluster});
                     $('#content').html(this.page.render().el);
                 }, this),
@@ -42,7 +42,7 @@ define(
             clusters.fetch({
                 success: _.bind(function() {
                     this.navbar.setActive('clusters');
-                    this.breadcrumb.setPath(['Home', '#'], 'Clusters');
+                    this.breadcrumb.setPath(['Home', '#'], 'OpenStack Installations');
                     this.page = new clustersViews.ClustersPage({model: clusters});
                     $('#content').html(this.page.render().el);
                 }, this)
@@ -53,7 +53,7 @@ define(
             releases.fetch({
                 success: _.bind(function() {
                     this.navbar.setActive('releases');
-                    this.breadcrumb.setPath(['Home', '#'], 'Releases');
+                    this.breadcrumb.setPath(['Home', '#'], 'Software Updates');
                     this.page = new releaseViews.ReleasesPage({model: releases});
                     $('#content').html(this.page.render().el);
                 }, this)

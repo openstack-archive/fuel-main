@@ -1,4 +1,5 @@
 [
+
     {
         "pk": 1,
         "model": "nailgun.release",
@@ -16,7 +17,7 @@
         "pk": 1,
         "model": "nailgun.cluster",
         "fields": {
-            "name": "Default Cluster",
+            "name": "Production",
             "release": 1
         }
     },
@@ -24,7 +25,7 @@
         "pk": 2,
         "model": "nailgun.cluster",
         "fields": {
-            "name": "Empty Cluster",
+            "name": "Staging",
             "release": 1
         }
     },
@@ -58,7 +59,7 @@
             "ip": "",
             "fqdn": "",
             "cluster": 1,
-            "mac": ""
+            "mac": "C0:8D:DF:52:76:F1"
         }
     },
     {
@@ -76,7 +77,7 @@
             "ip": "",
             "fqdn": "",
             "cluster": 1,
-            "mac": ""
+            "mac": "46:FC:5A:0C:F9:51"
         }
     },
     {
@@ -93,7 +94,7 @@
             "ip": "",
             "fqdn": "",
             "cluster": 1,
-            "mac": ""
+            "mac": "2E:04:78:86:69:1F"
         }
     },
     {
@@ -108,7 +109,7 @@
             "ip": "",
             "fqdn": "",
             "cluster": 1,
-            "mac": ""
+            "mac": "BC:10:A1:44:94:A0"
         }
     },
     {
@@ -123,7 +124,7 @@
             "ip": "",
             "fqdn": "",
             "cluster": 1,
-            "mac": ""
+            "mac": "B6:17:54:39:27:EA"
         }
     },
     {
@@ -138,7 +139,7 @@
             "ip": "",
             "fqdn": "",
             "cluster": null,
-            "mac": ""
+            "mac": "47:33:22:46:9B:92"
         }
     },
     {
@@ -153,7 +154,23 @@
             "ip": "",
             "fqdn": "",
             "cluster": null,
-            "mac": ""
+            "mac": "84:67:BA:CA:69:95"
+        }
+    },
+    {
+        "pk": "000000000001",
+        "model": "nailgun.node",
+        "fields": {
+            "status": "ready",
+            "name": "node virtualbox",
+            "manufacturer": "virtualbox",
+            "platform_name": "",
+            "roles": [],
+            "ip": "",
+            "fqdn": "",
+            "cluster": null,
+            "mac": "3A:10:EC:04:9A:DE"
         }
     }
+
 ]
