@@ -63,6 +63,12 @@ define(function() {
             response.roles = new models.Roles(response.roles);
             response.new_roles = new models.Roles(response.new_roles);
             return response;
+        },
+        mac: function() {
+            return this.id.replace(/^(..)(..)(..)(..)(..)(..)$/, "$1:$2:$3:$4:$5:$6");
+        },
+        fullProductName: function() {
+            return (this.get('manufacturer') ? this.get('manufacturer') + ' ' + this.get('platform_name') : this.get('platform_name')) || 'Unknown Platform';
         }
     });
 
