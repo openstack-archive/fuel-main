@@ -2,11 +2,10 @@
   <% var count = 0 %>
   <div class="row-fluid">
     <% nodes.each(function(node) { %>
-      <div class="span3">
+      <div class="span<%= Math.floor(12 / rowSize) %>">
         <div class="dialog-node <%= checked ? 'node-checked' : 'node-unchecked' %>" data-node-id="<%= node.id %>">
           <i class="icon-ok icon-white"></i>
-          <% var fullProductName = (node.get('manufacturer') ? node.get('manufacturer') + ' ' + node.get('platform_name') : node.get('platform_name')) || 'Unknown Platform' %>
-          <div class="article"><%= fullProductName %></div>
+          <div class="article"><%= node.fullProductName() %></div>
           <% var manufacturer = node.get('manufacturer').toLowerCase() %>
           <% var knownManufacturers = ['hp', 'dell', 'vmware', 'vbox', 'virtualbox', 'xen', 'kvm', 'qemu', 'openvz'] %>
           <% if (_.contains(knownManufacturers, manufacturer)) { %>
@@ -17,7 +16,7 @@
             </div>
           <% } %>
           <ul>
-            <li class="macaddr"><%= node.get('mac') %></li>
+            <li class="macaddr"><%= node.mac() %></li>
           </ul>
           <ul>
             <li>CPU: X</li>
@@ -27,7 +26,7 @@
         </div>
       </div>
       <% count++ %>
-      <% if (!(count % 4)) { %>
+      <% if (!(count % rowSize)) { %>
         </div><div class="row-fluid">
       <% } %>
     <% }) %>
