@@ -26,26 +26,41 @@ class TestKeystone(CookbookTestCase):
 
         klass.chef_solo({
             'recipes': ['keystone::server'],
-            'keystone': {
-                'admin_port': klass.keystone_admin_port,
-                'public_port': klass.keystone_public_port,
-
-                'admin_url': "http://%s:%d" % (klass.ip, klass.keystone_admin_port),
-                'public_url': "http://%s:%d" % (klass.ip, klass.keystone_public_port),
-                'internal_url': "http://%s:%d" % (klass.ip, klass.keystone_public_port),
-            },
-            'services': {
-                'keystone': {
-                    'endpoints': {
-                        'mysql': {
-                            'host': str(klass.ip),
-                            'port': klass.mysql_port,
-                            'username': 'db_maker',
-                            'password': 'secret'
-                        }
-                    }
+            'mysql': {
+                'admin': {
+                    'host': str(klass.ip),
+                    'port': klass.mysql_port,
+                    'username': 'db_maker',
+                    'password': 'test'
                 }
-            }
+             },
+            'keystone': {
+                'db': {
+                    'password': 'secret'
+                },
+                'admin_token': 'secret',
+                'service_tenant': 'service',
+                'admin_tenant': 'admin',
+                'admin_user': 'admin',
+                'admin_password': 'admin',
+                'admin_role': 'admin',
+                'admin_url': 'http://%s:%s/' % (klass.ip,
+                        klass.keystone_public_port),
+                'public_url': 'http://%s:%s/' % (klass.ip,
+                        klass.keystone_public_port),
+                'internal_url': 'http://%s:%s/' % (klass.ip,
+                        klass.keystone_public_port),
+                'admin': {
+                    'host': klass.ip,
+                    'admin_port': klass.keystone_admin_port,
+                    'service_port': klass.keystone_public_port,
+                },
+                'public': {
+                    'host': klass.ip,
+                    'admin_port': klass.keystone_admin_port,
+                    'service_port': klass.keystone_public_port,
+                },
+            },
         })
 
     def test_public_port_open(self):
