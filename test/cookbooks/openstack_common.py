@@ -59,12 +59,12 @@ class OpenstackCommon(object):
                     'internal_url': 'http://%s:%s/' % (klass.ip,
                             klass.keystone_public_port),
                     'admin': {
-                        'host': klass.ip,
+                        'host': str(klass.ip),
                         'admin_port': klass.keystone_admin_port,
                         'service_port': klass.keystone_public_port,
                     },
                     'public': {
-                        'host': klass.ip,
+                        'host': str(klass.ip),
                         'admin_port': klass.keystone_admin_port,
                         'service_port': klass.keystone_public_port,
                     },
