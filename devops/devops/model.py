@@ -92,8 +92,13 @@ class Node(ManagedObject):
     def snapshots(self):
         return self.driver.get_node_snapshots(self)
 
-    def save_snapshot(self, name=None):
+    def has_snapshot(self, snapshot_name):
+        return snapshot_name in self.snapshots
+
+    def save_snapshot(self, name=None, force=False):
         "Create node state snapshot. Returns snapshot name"
+        if name and force and self.has_snapshot(name):
+            self.delete_snapshot(name)
         return self.driver.create_snapshot(self, name=name)
 
     def restore_snapshot(self, snapshot_name=None):
