@@ -148,7 +148,7 @@ class SSHClient(object):
         if self.exists(path):
             return
         logger.debug("Creating directory: %s" % path)
-        self.execute("mkdir %s\n" % path)
+        self.execute("mkdir -p %s\n" % path)
 
     def rm_rf(self, path):
         logger.debug("Removing directory: %s" % path)
