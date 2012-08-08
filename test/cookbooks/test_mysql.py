@@ -1,19 +1,13 @@
 from . import CookbookTestCase
+from openstack_common import OpenstackCommon
 from devops.helpers import tcp_ping
 
-class TestMysql(CookbookTestCase):
+class TestMysql(CookbookTestCase, OpenstackCommon):
     cookbooks = ['mysql']
-
-    mysql_port = 3306
 
     @classmethod
     def setUpState(klass):
-        klass.chef_solo({
-            'recipes': ['mysql::server'],
-            'mysql': {
-                'port': klass.mysql_port
-            }
-        })
+        klass.setUpMysql(reuse_cached=False)
 
     def test_mysql_deploy(self):
         assert tcp_ping(self.ip, self.mysql_port)

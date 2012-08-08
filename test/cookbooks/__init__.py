@@ -4,7 +4,7 @@ import unittest
 from devops.model import Environment, Network, Node, Disk, Cdrom, Interface
 from devops.controller import Controller
 from devops.driver.libvirt import Libvirt
-from devops.helpers import tcp_ping, wait, TimeoutError, ssh
+from devops.helpers import tcp_ping, wait, TimeoutError, ssh, http_server
 import traceback
 
 import simplejson as json
@@ -30,6 +30,8 @@ class Ci:
 
             try:
                 self.environment = devops.load(environment_id)
+                self.node = self.environment.nodes[0]
+                self.network = self.environment.networks[0]
                 logger.info("Successfully loaded existing environment")
             except Exception, e:
                 logger.error("Failed to load existing cookbooks environment: " + str(e) + "\n" + traceback.format_exc())
@@ -65,6 +67,8 @@ class Ci:
             return False
 
         self.environment = environment
+        self.node = node
+        self.network = network
 
         try:
             logger.info("Starting test node")
@@ -80,11 +84,13 @@ class Ci:
             repo.write("""
 [mirantis]
 name=Mirantis repository
-baseurl=http://twin0d.srt.mirantis.net/centos62
+baseurl=http://%s:8000
 enabled=1
 gpgcheck=0
-            """)
+            """ % network.ip_addresses[1])
             repo.close()
+
+            remote.execute('yum makecache')
 
             logger.info("Disabling firewall")
 
@@ -94,7 +100,7 @@ gpgcheck=0
 
             logger.info("Creating snapshot 'blank'")
 
-            node.save_snapshot('blank')
+            node.save_snapshot('empty')
 
             logger.info("Test node is ready at %s" % node.ip_address)
 
@@ -133,14 +139,53 @@ gpgcheck=0
 
         return True
 
+    def setup_repository(self):
+        remote = ssh(self.node.ip_address, username='root', password='r00tme')
+        repo = remote.open('/etc/yum.repos.d/mirantis.repo', 'w')
+        repo.write("""
+[mirantis]
+name=Mirantis repository
+baseurl=http://%s:%d
+enabled=1
+gpgcheck=0
+        """ % (self.network.ip_addresses[1], self.repository_server.port))
+        repo.close()
+
+        remote.execute('yum makecache')
+
+
+    def start_environment(self):
+        self.repository_server = http_server(
+            os.path.abspath(
+                os.path.join(
+                    os.path.dirname(__file__), "..", "..",
+                    "build", "packages", "centos", "Packages"
+                ) 
+            )
+        )
+
+        self.setup_repository()
+
+        self.node.save_snapshot('blank', force=True)
+
+        return True
+
+    def shutdown_environment(self):
+        if hasattr(self, 'repository_server'):
+            self.repository_server.stop()
+
+        return True
 
 ci = None
 
 def setUp():
     if not ci.setup_environment():
         raise Exception, "Failed to setup cookbooks environment"
+    if not ci.start_environment():
+        raise Exception, "Failed to run cookboks environment"
 
 def tearDown():
+    ci.shutdown_environment()
     if not ci.environment_cache_file:
         ci.destroy_environment()
 
@@ -164,23 +209,27 @@ class CookbookTestCase(unittest.TestCase):
 
         klass.remote = ssh(klass.ip, username='root', password='r00tme')
 
-        snapshot = klass.__name__
+        try:
+            snapshot = klass.__name__
 
-        if not os.environ.get('DEVELOPMENT') or not snapshot in klass.node.snapshots:
-            logger.info('Setting up state for %s' % klass.__name__)
+            if not os.environ.get('DEVELOPMENT') or not snapshot in klass.node.snapshots:
+                logger.info('Setting up state for %s' % klass.__name__)
 
-            if snapshot in klass.node.snapshots:
-                klass.node.delete_snapshot(snapshot)
+                if snapshot in klass.node.snapshots:
+                    klass.node.delete_snapshot(snapshot)
 
-            klass.node.restore_snapshot('blank')
-            klass.remote.reconnect()
+                klass.node.restore_snapshot('blank')
+                klass.remote.reconnect()
 
-            klass.upload_cookbooks(klass.cookbooks)
-            klass.setUpState()
+                klass.upload_cookbooks(klass.cookbooks)
+                klass.setUpState()
 
-            klass.node.save_snapshot(snapshot)
+                klass.node.save_snapshot(snapshot)
 
-            logger.info('Finished state for %s' % klass.__name__)
+                logger.info('Finished state for %s' % klass.__name__)
+        except:
+            # klass.http_server.stop()
+            raise
 
     @classmethod
     def upload_cookbooks(klass, cookbooks):
@@ -198,6 +247,8 @@ cookbook_path "/opt/os-cookbooks"
 
     @classmethod
     def chef_solo(klass, attributes={}):
+        ci.setup_repository()
+
         recipes = attributes.get('recipes') or attributes.get('run_list')
         logger.info('Running Chef with recipes: %s' % (', '.join(recipes)))
 

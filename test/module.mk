@@ -35,7 +35,7 @@ clean-integration-test:
 
 
 .PHONY: test-cookbooks
-test-cookbooks: $/environment-id-cookbooks
+test-cookbooks: $/environment-id-cookbooks $(centos.packages)/Packages/repodata/repomd.xml
 	python test/integration_test.py -l $(LEVEL) --cache-file $(abspath $<) --iso $(image.centos.url) --suite cookbooks test $(NOSEARGS)
 
 $/environment-id-cookbooks:
