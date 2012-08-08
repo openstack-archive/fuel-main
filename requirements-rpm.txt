@@ -17,6 +17,7 @@ mysql
 mysql-server
 rabbitmq-server
 openstack-keystone
+openstack-glance
 wget
 crontabs
 cronie
