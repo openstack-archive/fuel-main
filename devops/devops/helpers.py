@@ -1,4 +1,6 @@
 import os
+import os.path
+import urllib
 import stat
 import socket
 import time
@@ -6,12 +8,26 @@ import httplib
 import xmlrpclib
 import paramiko
 import string
+import random
+from threading import Thread
+
+import BaseHTTPServer
+from SimpleHTTPServer import SimpleHTTPRequestHandler
+import posixpath
 
 import logging
 logger = logging.getLogger('devops.helpers')
 
 class TimeoutError(Exception): pass
 class AuthenticationError(Exception): pass
+
+def get_free_port():
+    ports = range(32000, 32100)
+    random.shuffle(ports)
+    for port in ports:
+        if not tcp_ping('localhost', port):
+            return port
+    raise Error, "No free ports available"
 
 def icmp_ping(host, timeout=1):
     "icmp_ping(host, timeout=1) - returns True if host is pingable; False - otherwise."
@@ -181,6 +197,71 @@ class SSHClient(object):
 
 def ssh(*args, **kwargs):
     return SSHClient(*args, **kwargs)
+
+
+
+class HttpServer:
+    class Handler(SimpleHTTPRequestHandler):
+        logger = logging.getLogger('devops.helpers.http_server')
+
+        def __init__(self, docroot, *args, **kwargs):
+            self.docroot = docroot
+            SimpleHTTPRequestHandler.__init__(self, *args, **kwargs)
+
+        # Suppress reverse DNS lookups to speed up processing
+        def address_string(self):
+            return self.client_address[0]
+
+        # Handle docroot
+        def translate_path(self, path):
+            """Translate a /-separated PATH to the local filename syntax.
+
+            Components that mean special things to the local file system
+            (e.g. drive or directory names) are ignored.  (XXX They should
+            probably be diagnosed.)
+
+            """
+            # abandon query parameters
+            path = path.split('?',1)[0]
+            path = path.split('#',1)[0]
+            path = posixpath.normpath(urllib.unquote(path))
+            words = path.split('/')
+            words = filter(None, words)
+            path = self.docroot
+            for word in words:
+                drive, word = os.path.splitdrive(word)
+                head, word = os.path.split(word)
+                path = os.path.join(path, word)
+            return path
+
+        def log_message(self, format, *args):
+            self.logger.info(format % args)
+
+    def __init__(self, document_root):
+        self.port = get_free_port()
+        self.document_root = document_root
+
+        def handler_factory(*args, **kwargs):
+            return HttpServer.Handler(document_root, *args, **kwargs)
+
+        self._server = BaseHTTPServer.HTTPServer(('', self.port), handler_factory)
+        self._thread = Thread(target=self._server.serve_forever)
+        self._thread.daemon = True
+
+    def start(self):
+        self._thread.start()
+
+    def run(self):
+        self._thread.join()
+
+    def stop(self):
+        self._server.shutdown()
+        self._thread.join()
+
+def http_server(document_root):
+    server = HttpServer(document_root)
+    server.start()
+    return server
 
 
 def xmlrpctoken(uri, login, password):
