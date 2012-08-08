@@ -224,4 +224,3 @@ cookbook_path "/opt/os-cookbooks"
     def setUp(self):
         self.node.restore_snapshot(self.__class__.__name__)
         self.remote.reconnect()
-
