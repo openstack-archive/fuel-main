@@ -271,6 +271,10 @@ class Controller:
                 pass
             fd, cached_path = tempfile.mkstemp(prefix=cache_dir+'/')
             os.close(fd)
+
+            with file(cached_path, 'w') as f:
+                shutil.copyfileobj(remote, f)
+
             os.chmod(cached_path, stat.S_IRUSR | stat.S_IWUSR | stat.S_IRGRP | stat.S_IROTH)
 
         if msg.has_key('last-modified'):
