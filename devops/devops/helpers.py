@@ -102,8 +102,8 @@ class SSHClient(object):
         self.reconnect()
 
     def __del__(self):
-        self.sftp.close()
-        self.ssh.close()
+        self._sftp.close()
+        self._ssh.close()
 
     def __enter__(self):
         return self
@@ -112,14 +112,14 @@ class SSHClient(object):
         pass
 
     def reconnect(self):
-        self.ssh = paramiko.SSHClient()
-        self.ssh.set_missing_host_key_policy(paramiko.AutoAddPolicy())
-        self.ssh.connect(self.host, port=self.port, username=self.username, password=self.password)
-        self.sftp = self.ssh.open_sftp()
+        self._ssh = paramiko.SSHClient()
+        self._ssh.set_missing_host_key_policy(paramiko.AutoAddPolicy())
+        self._ssh.connect(self.host, port=self.port, username=self.username, password=self.password)
+        self._sftp = self._ssh.open_sftp()
 
     def execute(self, command):
         logger.debug("Executing command: '%s'" % command.rstrip())
-        chan = self.ssh.get_transport().open_session()
+        chan = self._ssh.get_transport().open_session()
         stdin = chan.makefile('wb')
         stdout = chan.makefile('rb')
         stderr = chan.makefile_stderr('rb')
@@ -140,18 +140,22 @@ class SSHClient(object):
         for line in stderr:
             result['stderr'].append(line)
 
+        chan.close()
+
         return result
 
     def mkdir(self, path):
+        if self.exists(path):
+            return
         logger.debug("Creating directory: %s" % path)
-        return self.execute("mkdir %s\n" % path)
+        self.execute("mkdir %s\n" % path)
 
     def rm_rf(self, path):
         logger.debug("Removing directory: %s" % path)
-        return self.execute("rm -rf %s" % path)
+        self.execute("rm -rf %s" % path)
 
     def open(self, path, mode='r'):
-        return self.sftp.open(path, mode)
+        return self._sftp.open(path, mode)
 
     def upload(self, source, target):
         logger.debug("Copying '%s' -> '%s'" % (source, target))
@@ -160,36 +164,37 @@ class SSHClient(object):
             target = os.path.join(target, os.path.basename(source))
 
         if not os.path.isdir(source):
-            self.sftp.put(source, target)
+            self._sftp.put(source, target)
             return
 
         for rootdir, subdirs, files in os.walk(source):
             targetdir = os.path.normpath(os.path.join(target, os.path.relpath(rootdir, source)))
 
-            self.sftp.mkdir(targetdir)
+            self.mkdir(targetdir)
 
             for entry in files:
                 local_path  = os.path.join(rootdir, entry)
                 remote_path = os.path.join(targetdir, entry)
-                self.sftp.put(local_path, remote_path)
+                if not self.exists(remote_path):
+                    self._sftp.put(local_path, remote_path)
 
     def exists(self, path):
         try:
-            self.sftp.lstat(path)
+            self._sftp.lstat(path)
             return True
         except IOError:
             return False
 
     def isfile(self, path):
         try:
-            attrs = self.sftp.lstat(path)
+            attrs = self._sftp.lstat(path)
             return attrs.st_mode & stat.S_IFREG != 0
         except IOError:
             return False
 
     def isdir(self, path):
         try:
-            attrs = self.sftp.lstat(path)
+            attrs = self._sftp.lstat(path)
             return attrs.st_mode & stat.S_IFDIR != 0
         except IOError:
             return False
