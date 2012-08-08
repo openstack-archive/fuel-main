@@ -103,3 +103,10 @@ $/Packages/%.rpm: $(BINARIES_DIR)/centos/$(CENTOS_62_RELEASE)/Packages/%.rpm
 $/cache.done: $/cache-extra.done $/comps.xml
 	$(ACTION.TOUCH)
 
+METADATA_FILES=repomd.xml comps.xml filelists.xml.gz primary.xml.gz other.xml.gz
+$(addprefix $(BUILD_DIR)/packages/%/Packages/repodata/,$(METADATA_FILES)):
+	createrepo -g `readlink -f "$/comps.xml"` -o $(BUILD_DIR)/packages/$*/Packages $(BUILD_DIR)/packages/$*/Packages
+
+$/repo.done: $(addprefix $/Packages/repodata/,$(METADATA_FILES))
+	$(ACTION.TOUCH)
+
