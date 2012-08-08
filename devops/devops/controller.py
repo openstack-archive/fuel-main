@@ -9,6 +9,7 @@ import glob
 import random
 import string
 import re
+import time
 
 from devops.model import Node, Network
 from devops.network import IpNetworksPool
@@ -220,17 +221,65 @@ class Controller:
                 cache_entries = my_yaml.load(f.read())
         else:
             cache_entries = dict()
+        
+        ext_cache_log_path = os.path.join(cache_dir, 'extended_entries')
+        if os.path.exists(ext_cache_log_path):
+            with file(ext_cache_log_path) as f:
+                extended_cache_entries = my_yaml.load(f.read())
+        else:
+            extended_cache_entries = dict()
+        for key, value in cache_entries.items():
+            if not extended_cache_entries.has_key(key): 
+                extended_cache_entries[key] = {'cached-path':value}
 
-        if cache_entries.has_key(url):
-            logger.debug("Cache hit for '%s': '%s'" % (url, cache_entries[url]))
-            return cache_entries[url]
+        RFC1123_DATETIME_FORMAT = '%a, %d %b %Y %H:%M:%S %Z'
+        url_attrs = {}
+        cached_path = ''
+        local_mtime = 0
+        
+        if extended_cache_entries.has_key(url):
+            url_attrs = extended_cache_entries[url]
+            cached_path = url_attrs['cached-path']
 
-        logger.debug("Cache miss for '%s', downloading" % url)
+            if url_attrs.has_key('last-modified'):
+                local_mtime = time.mktime(
+                    time.strptime(url_attrs['last-modified'], RFC1123_DATETIME_FORMAT))
 
-        fd, cached_path = tempfile.mkstemp(prefix=cache_dir+'/')
-        os.close(fd)
+        else:
+            logger.debug("Cache miss for '%s', downloading" % url)
 
-        urllib.urlretrieve(url, cached_path)
+        remote = urllib.urlopen(url)
+        msg = remote.info()
+        if msg.has_key('last-modified'):
+            url_mtime = time.mktime(
+                time.strptime(msg['last-modified'], RFC1123_DATETIME_FORMAT))
+        else:
+            url_mtime = 0
+
+        if local_mtime >= url_mtime:
+            logger.debug("Cache is up to date for '%s': '%s'" % (
+                         url, cached_path))
+            return cached_path
+
+        elif cached_path != '':
+            logger.debug("Cache is old for '%s', downloading" % url)
+
+        if not os.access(cached_path, os.W_OK):
+            try:
+                os.unlink(cached_path)
+            except Exception:
+                pass
+            fd, cached_path = tempfile.mkstemp(prefix=cache_dir+'/')
+            os.close(fd)
+            os.chmod(cached_path, stat.S_IRUSR | stat.S_IWUSR | stat.S_IRGRP | stat.S_IROTH)
+
+        if msg.has_key('last-modified'):
+            url_attrs['last-modified'] = msg['last-modified']
+        url_attrs['cached-path'] = cached_path
+        extended_cache_entries[url] = url_attrs
+
+        with file(ext_cache_log_path, 'w') as f:
+            f.write(my_yaml.dump(extended_cache_entries))
 
         cache_entries[url] = cached_path
 
