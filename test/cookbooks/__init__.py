@@ -209,27 +209,23 @@ class CookbookTestCase(unittest.TestCase):
 
         klass.remote = ssh(klass.ip, username='root', password='r00tme')
 
-        try:
-            snapshot = klass.__name__
+        snapshot = klass.__name__
 
-            if not os.environ.get('DEVELOPMENT') or not snapshot in klass.node.snapshots:
-                logger.info('Setting up state for %s' % klass.__name__)
+        if not os.environ.get('DEVELOPMENT') or not snapshot in klass.node.snapshots:
+            logger.info('Setting up state for %s' % klass.__name__)
 
-                if snapshot in klass.node.snapshots:
-                    klass.node.delete_snapshot(snapshot)
+            if snapshot in klass.node.snapshots:
+                klass.node.delete_snapshot(snapshot)
 
-                klass.node.restore_snapshot('blank')
-                klass.remote.reconnect()
+            klass.node.restore_snapshot('blank')
+            klass.remote.reconnect()
 
-                klass.upload_cookbooks(klass.cookbooks)
-                klass.setUpState()
+            klass.upload_cookbooks(klass.cookbooks)
+            klass.setUpState()
 
-                klass.node.save_snapshot(snapshot)
+            klass.node.save_snapshot(snapshot)
 
-                logger.info('Finished state for %s' % klass.__name__)
-        except:
-            # klass.http_server.stop()
-            raise
+            logger.info('Finished state for %s' % klass.__name__)
 
     @classmethod
     def upload_cookbooks(klass, cookbooks):
