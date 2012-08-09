@@ -19,9 +19,9 @@
             <li class="macaddr"><%= node.mac() %></li>
           </ul>
           <ul>
-            <li>CPU: X</li>
-            <li>HDD: X TB</li>
-            <li>RAM: X GB</li>
+            <li>CPU: <%= _.isNumber(node.resource('cpu')) ? node.resource('cpu') : '?' %></li>
+            <li>HDD: <%= _.isNumber(node.resource('hdd')) ? node.resource('hdd').toFixed(2) : '?' %> TB</li>
+            <li>RAM: <%= _.isNumber(node.resource('ram')) ? node.resource('ram').toFixed(1) : '?' %> GB</li>
           </ul>
         </div>
       </div>

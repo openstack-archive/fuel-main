@@ -1,3 +1,4 @@
+import re
 import ipaddr
 import celery
 from django.db import models
@@ -125,6 +126,38 @@ class Node(models.Model):
     roles = models.ManyToManyField(Role, related_name='nodes')
     new_roles = models.ManyToManyField(Role, related_name='+')
     redeployment_needed = models.BooleanField(default=False)
+
+    @property
+    def info(self):
+        """ Safely aggregate metadata to provide short info for UI """
+        result = {}
+
+        try:
+            kilobytes = int(self.metadata['memory']['total'][:-2])
+            gigabytes = kilobytes / 1024.0 ** 2
+            result['ram'] = gigabytes
+        except Exception:
+            result['ram'] = None
+
+        try:
+            result['cpu'] = self.metadata['cpu']['real']
+            result['cores'] = self.metadata['cpu']['total']
+        except Exception:
+            result['cpu'] = None
+            result['cores'] = None
+
+        # FIXME: disk space calculating may be wrong
+        try:
+            result['hdd'] = 0
+            for name, info in self.metadata['block_device'].iteritems():
+                if re.match(r'^sd.$', name):
+                    bytes = int(info['size']) * 512
+                    terabytes = bytes / 1024.0 ** 4
+                    result['hdd'] += terabytes
+        except Exception:
+            result['hdd'] = None
+
+        return result
 
 
 class IPAddr(models.Model):

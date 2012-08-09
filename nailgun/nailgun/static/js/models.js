@@ -69,6 +69,9 @@ define(function() {
         },
         fullProductName: function() {
             return (this.get('manufacturer') ? this.get('manufacturer') + ' ' + this.get('platform_name') : this.get('platform_name')) || 'Unknown Platform';
+        },
+        resource: function(resourceName) {
+            return this.get('info')[resourceName];
         }
     });
 
@@ -77,6 +80,10 @@ define(function() {
         url: '/api/nodes',
         toJSON: function(options) {
             return this.pluck('id');
+        },
+        resources: function(resourceName) {
+            var resources = this.map(function(node) {return node.resource(resourceName)});
+            return _.reduce(resources, function(sum, n) {return sum + n}, 0);
         }
     });
 

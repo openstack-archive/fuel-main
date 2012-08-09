@@ -103,7 +103,7 @@ function(models, addRemoveNodesDialogTemplate, createClusterDialogTemplate, node
 
             this.availableNodes.deferred.done(_.bind(function() {
                 if (this.availableNodes.length) {
-                    this.$('.available-nodes').html(new views.nodeList({model: this.availableNodes, checked: false, rowSize: 3}).render().el);
+                    this.$('.available-nodes').html(new views.nodeList({model: this.availableNodes, checked: false, rowSize: 2}).render().el);
                 } else {
                     this.$('.available-nodes-group').hide();
                 }
@@ -117,7 +117,7 @@ function(models, addRemoveNodesDialogTemplate, createClusterDialogTemplate, node
         template: _.template(nodeDialogNodeListTemplate),
         initialize: function(options) {
             this.checked = options.checked;
-            this.rowSize = options.rowSize || 4;
+            this.rowSize = options.rowSize || 3;
             this.model.bind('reset', this.render, this);
         },
         render: function() {

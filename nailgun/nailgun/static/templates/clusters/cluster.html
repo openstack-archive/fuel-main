@@ -6,18 +6,27 @@
       <div class="span7 leftitem">Nodes:</div>
       <div class="span5 rightitem"><%= cluster.get('nodes').length %></div>
     </div>
-    <div class="row-fluid">
-      <div class="span7 leftitem">CPU:</div>
-      <div class="span5 rightitem"><strong>Z (Z cores)</strong></div>
-    </div>
-    <div class="row-fluid">
-      <div class="span7 leftitem">RAM:</div>
-      <div class="span5 rightitem"><strong>Z GB</strong></div>
-    </div>
-    <div class="row-fluid">
-      <div class="span7 leftitem">HDD:</div>
-      <div class="span5 rightitem"><strong>Z TB</strong></div>
-    </div>
+    <% var nodes = cluster.get('nodes') %>
+    <% if (nodes.length) { %>
+      <div class="row-fluid">
+        <div class="span7 leftitem">CPU:</div>
+        <div class="span5 rightitem">
+          <strong><%= nodes.resources('cpu') %> (<%= nodes.resources('cores') %> cores)</strong>
+        </div>
+      </div>
+      <div class="row-fluid">
+        <div class="span7 leftitem">RAM:</div>
+        <div class="span5 rightitem">
+          <strong><%= nodes.resources('ram').toFixed(1) %> GB</strong>
+        </div>
+      </div>
+      <div class="row-fluid">
+        <div class="span7 leftitem">HDD:</div>
+        <div class="span5 rightitem">
+          <strong><%= nodes.resources('hdd').toFixed(2) %> TB</strong>
+        </div>
+      </div>
+    <% } %>
   </div>
   <hr>
   <div class="statusbar">
@@ -26,4 +35,3 @@
     </div>
   </div>
 </a>
-
