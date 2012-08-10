@@ -82,6 +82,7 @@ Vagrant::Config.run do |config|
   config.vm.define :centos_testbed do |vm_config|
     vm_config.vm.box = CENTOS_BOX_NAME
     vm_config.vm.box_url = CENTOS_BOX_URL
+    vm_config.vm.customize ["modifyvm", :id, "--memory", 1024]
 
     # extra network for testing
     vm_config.vm.network :hostonly, '10.1.1.2', :adapter => 2
