@@ -3,11 +3,11 @@
   <div class="article">
     <% if (editingName) { %>
       <form class="node-name-editing form-inline" style="<%= editingName ? '' : 'display:none' %>">
-        <input type="text" class="input-medium" value="<%= node.get('name') || node.get('id') %>">
+        <input type="text" class="input-medium" value="<%= node.get('name') || '' %>">
       </form>
     <% } else { %>
       <div class="node-name" style="<%= editingName ? 'display:none' : '' %>">
-        <h4 class="name"><i class="icon-pencil"></i><%= node.get('name') || node.get('id') %></h4>
+        <h4 class="name"><i class="icon-pencil"></i><%= node.get('name') || node.mac() %></h4>
       </div>
     <% } %>
   </div>
