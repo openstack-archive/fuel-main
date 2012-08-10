@@ -21,3 +21,4 @@ openstack-glance
 wget
 crontabs
 cronie
+ntp

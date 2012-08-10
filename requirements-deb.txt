@@ -28,3 +28,4 @@ ruby-json
 yum
 yum-utils
 createrepo
+ntpd
