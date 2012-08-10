@@ -268,6 +268,18 @@ cookbook_path "/opt/os-cookbooks"
 
         return result
 
+    @classmethod
+    def chef_run_recipe(klass, recipe):
+        klass.remote.mkdir('/opt/os-cookbooks/test')
+        klass.remote.mkdir('/opt/os-cookbooks/test/recipes')
+
+        default_rb = klass.remote.open('/opt/os-cookbooks/test/recipes/default.rb', 'w')
+        default_rb.write(recipe)
+        default_rb.close()
+
+        klass.chef_solo({'recipes': ['test']})
+
     def setUp(self):
         self.node.restore_snapshot(self.__class__.__name__)
         self.remote.reconnect()
+

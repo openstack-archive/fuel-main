@@ -22,6 +22,7 @@ class OpenstackCommon(object):
             klass.remote.reconnect()
 
 
+    keystone_admin_token = 'secret'
     keystone_admin_port  = 37376
     keystone_public_port = 5000
 
@@ -39,21 +40,23 @@ class OpenstackCommon(object):
                         'host': str(klass.ip),
                         'port': klass.mysql_port,
                         'username': 'db_maker',
-                        'password': 'test'
+                        'password': 'secret'
                     }
                  },
                 'keystone': {
                     'db': {
                         'password': 'secret'
                     },
-                    'admin_token': 'secret',
+                    'admin_port': klass.keystone_admin_port,
+                    'public_port': klass.keystone_public_port,
+                    'admin_token': klass.keystone_admin_token,
                     'service_tenant': 'service',
                     'admin_tenant': 'admin',
                     'admin_user': 'admin',
                     'admin_password': 'admin',
                     'admin_role': 'admin',
                     'admin_url': 'http://%s:%s/' % (klass.ip,
-                            klass.keystone_public_port),
+                            klass.keystone_admin_port),
                     'public_url': 'http://%s:%s/' % (klass.ip,
                             klass.keystone_public_port),
                     'internal_url': 'http://%s:%s/' % (klass.ip,
