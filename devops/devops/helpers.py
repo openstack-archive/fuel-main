@@ -175,8 +175,9 @@ class SSHClient(object):
             for entry in files:
                 local_path  = os.path.join(rootdir, entry)
                 remote_path = os.path.join(targetdir, entry)
-                if not self.exists(remote_path):
-                    self._sftp.put(local_path, remote_path)
+                if self.exists(remote_path):
+                    self._sftp.unlink(remote_path)
+                self._sftp.put(local_path, remote_path)
 
     def exists(self, path):
         try:
