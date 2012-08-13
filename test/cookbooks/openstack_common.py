@@ -81,6 +81,20 @@ class OpenstackCommon(object):
             klass.remote.reconnect()
 
 
+    rabbitmq_port = 5672
+
+    @classmethod
+    def setUpRabbitMq(klass):
+        klass.upload_cookbooks(['rabbitmq'])
+
+        klass.chef_solo({
+            'recipes': ['rabbitmq'],
+            'rabbitmq': {
+                'port': klass.rabbitmq_port
+            }
+        })
+
+
     glance_registry_port = 9191
 
     @classmethod
@@ -94,32 +108,92 @@ class OpenstackCommon(object):
                 'recipes': ['glance::registry'],
                 'glance': {
                     'registry': {
-                        'port': klass.glance_registry_port,
+                        'admin': {
+                            'host': str(klass.ip),
+                            'port': klass.glance_registry_port,
+                        },
                     },
                 },
-                'services': {
-                    'glance_registry': {
-                        'endpoints': {
-                            'mysql': {
-                                'host': str(klass.ip),
-                                'port': klass.mysql_port,
-                                'username': 'db_maker',
-                                'password': 'secret',
-                            },
-                            'keystone_admin': {
-                                'host': str(klass.ip),
-                                'port': klass.keystone_admin_port,
-                                'username': 'admin',
-                                'token': 'keystone_secret',
-                            },
-                        }
+                'mysql': {
+                    'admin': {
+                        'host': str(klass.ip),
+                        'port': klass.mysql_port,
+                        'username': 'db_maker',
+                        'password': 'secret'
+                    }
+                 },
+                'keystone': {
+                    'admin_url': 'http://%s:%s/' %
+                        (klass.ip, klass.keystone_admin_port),
+                    'admin_token': klass.keystone_admin_token,
+                    'service_tenant': 'admin',
+                    'admin_role': 'admin',
+                    'admin': {
+                        'host': str(klass.ip),
+                        'admin_port': klass.keystone_admin_port,
                     },
-                }
+                },
             })
             
             if not klass.node.has_snapshot('openstack-glance-registry'):
                 klass.node.save_snapshot('openstack-glance-registry')
         else:
             klass.node.restore_snapshot('openstack-glance-registry')
+            klass.remote.reconnect()
+
+
+    glance_api_port = 9292
+
+    @classmethod
+    def setUpGlanceApi(klass, reuse_cached=True):
+        if not klass.node.has_snapshot('openstack-glance-api') or not reuse_cached:
+            klass.setUpGlanceRegistry()
+            klass.setUpRabbitMq()
+
+            klass.upload_cookbooks(['chef-resource-groups', 'database', 'keystone', 'glance'])
+
+            klass.chef_solo({
+                'recipes': ['glance::api'],
+                'glance': {
+                    'api': {
+                        'admin': {
+                            'host': str(klass.ip),
+                            'port': klass.glance_api_port,
+                        },
+                        'public': {
+                            'host': str(klass.ip),
+                            'port': klass.glance_api_port,
+                        },
+                    },
+                    'registry': {
+                        'admin': {
+                            'host': str(klass.ip),
+                            'port': klass.glance_registry_port,
+                        },
+                    },
+                },
+                'keystone': {
+                    'admin_url': 'http://%s:%s/' %
+                        (klass.ip, klass.keystone_admin_port),
+                    'admin_token': klass.keystone_admin_token,
+                    'service_tenant': 'admin',
+                    'admin_role': 'admin',
+                    'admin': {
+                        'host': str(klass.ip),
+                        'admin_port': klass.keystone_admin_port,
+                    },
+                },
+                'rabbitmq': {
+                    'admin': {
+                        'host': str(klass.ip),
+                        'port': klass.rabbitmq_port,
+                    },
+                },
+            })
+            
+            if not klass.node.has_snapshot('openstack-glance-api'):
+                klass.node.save_snapshot('openstack-glance-api')
+        else:
+            klass.node.restore_snapshot('openstack-glance-api')
             klass.remote.reconnect()
 
