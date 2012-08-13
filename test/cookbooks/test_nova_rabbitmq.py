@@ -15,7 +15,7 @@ class TestNovaRabbitMQ(CookbookTestCase):
                 'port': klass.rabbitmq_port
             },
             'nova': {
-                'rabbit': {
+                'rabbitmq': {
                     'user': klass.nova_user,
                     'vhost': klass.nova_vhost
                 }
