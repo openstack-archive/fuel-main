@@ -92,9 +92,7 @@ $/cache-extra.done: \
 	  $/cache-iso.done \
 	  $(addprefix $/Packages/,$(call find-files,$(BINARIES_DIR)/centos/$(CENTOS_62_RELEASE)/Packages)) \
 	  requirements-rpm.txt
-	for p in $(CENTOSEXTRA_PACKAGES); do \
-	repotrack -c $/etc/yum.conf -p $/Packages -a $(CENTOS_62_ARCH) $$p; \
-	done
+	repotrack -c $/etc/yum.conf -p $/Packages -a $(CENTOS_62_ARCH) $(CENTOSEXTRA_PACKAGES)
 	$(ACTION.TOUCH)
 
 $/Packages/%.rpm: $(BINARIES_DIR)/centos/$(CENTOS_62_RELEASE)/Packages/%.rpm
