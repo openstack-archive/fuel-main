@@ -157,7 +157,7 @@ class TestKeystone(CookbookTestCase, OpenstackCommon):
 
         assert role == None, "Role wasn't deleted"
 
-    def test_role_deletion(self):
+    def test_role_deletion_doesnt_fail_if_role_do_not_exist(self):
         self._create_role('foo')
 
         self._delete_role('foo')
