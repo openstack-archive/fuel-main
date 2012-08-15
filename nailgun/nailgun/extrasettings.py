@@ -8,10 +8,10 @@ CELERYLOGFILE = os.path.join(LOGPATH, "celery.log")
 CELERYLOGLEVEL = "DEBUG"
 CHEF_CONF_FOLDER = LOGPATH  # For testing purposes
 
-PATH_TO_SSH_KEY = os.path.join(os.getenv("HOME"), ".ssh", "id_rsa")
-PATH_TO_BOOTSTRAP_SSH_KEY = os.path.join(os.getenv("HOME"),
-                                         ".ssh",
-                                        "bootstrap.rsa")
+home = os.getenv("HOME")
+PATH_TO_SSH_KEY = home and os.path.join(home, ".ssh", "id_rsa") or None
+PATH_TO_BOOTSTRAP_SSH_KEY = home and \
+                            os.path.join(home, ".ssh", "bootstrap.rsa") or None
 
 COBBLER_URL = "http://localhost/cobbler_api"
 COBBLER_USER = "cobbler"
