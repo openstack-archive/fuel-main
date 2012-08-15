@@ -10,9 +10,9 @@ CHEF_TIMEOUT ?= 600
 
 $/%: /:=$/
 
-test: test-integration test-cookbooks
+test: test-integration
 
-clean: clean-integration-test clean-cookbooks-test
+clean: clean-integration-test
 
 
 .PHONY: test-integration
@@ -33,21 +33,4 @@ clean-integration-test:
 		python test/integration_test.py -l $(LEVEL) --cache-file $(abspath $/environment-id-integration) destroy || true
 
 
-
-.PHONY: test-cookbooks
-test-cookbooks: $/environment-id-cookbooks $(centos.packages)/Packages/repodata/repomd.xml
-	python test/integration_test.py -l $(LEVEL) --cache-file $(abspath $<) --iso $(image.centos.url) --suite cookbooks test $(NOSEARGS)
-
-$/environment-id-cookbooks:
-	@mkdir -p $(@D)
-	python test/integration_test.py -l $(LEVEL) --cache-file $(abspath $@) --suite cookbooks destroy
-	python test/integration_test.py -l $(LEVEL) --cache-file $(abspath $@) --iso $(image.centos.url) --suite cookbooks setup
-
-.PHONY: clean-cookbooks-test
-clean-cookbooks-test: /:=$/
-clean-cookbooks-test:
-	test -f $/environment-id-cookbooks.candidate && \
-		python test/integration_test.py -l $(LEVEL) --cache-file $(abspath $/environment-id-cookbooks.candidate) --suite cookbooks destroy || true
-	test -f $/environment-id-cookbooks && \
-		python test/integration_test.py -l $(LEVEL) --cache-file $(abspath $/environment-id-cookbooks) --suite cookbooks destroy || true
 
