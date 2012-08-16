@@ -1,7 +1,7 @@
 
 BUILD_DIR:=build
 
-MODULES=gnupg bootstrap nailgun test os os/centos os/ubuntu iso
+MODULES=gnupg bootstrap nailgun test os os/centos os/ubuntu iso cooks
 
 .PHONY: all clean test test-unit help FORCE
 
@@ -34,7 +34,19 @@ find-files=$(shell test -d $1 && cd $1 && find * -type f 2> /dev/null)
 
 include config.mk
 
-include $(addsuffix /module.mk,$(MODULES))
+define include-module-template
+MODULE_SOURCE_DIR:=$1
+MODULE_BUILD_DIR:=$(BUILD_DIR)/$1
+.:=$$(MODULE_SOURCE_DIR)
+/:=$$(MODULE_BUILD_DIR)/
+$$/%: .:=$$.
+$$/%: /:=$$/
+include $1/module.mk
+endef
+
+include-module=$(eval $(call include-module-template,$1))
+
+$(foreach module,$(MODULES),$(call include-module,$(module)))
 
 include rules.mk
 
