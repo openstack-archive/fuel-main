@@ -14,3 +14,4 @@
 
 /build
 /test/nosetests.xml
+lock
