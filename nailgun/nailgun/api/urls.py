@@ -4,14 +4,17 @@ from piston.resource import Resource
 from nailgun.api.handlers import ClusterCollectionHandler, ClusterHandler, \
                      NodeCollectionHandler, NodeHandler, \
                      NetworkHandler, NetworkCollectionHandler, \
-                     RecipeCollectionHandler, RecipeHandler, \
                      RoleCollectionHandler, RoleHandler, \
                      ReleaseCollectionHandler, ReleaseHandler, \
                      ClusterChangesHandler, \
                      DeploymentTypeCollectionHandler, \
                      DeploymentTypeHandler, \
-                     TaskHandler, \
-                     AttributeCollectionHandler, AttributeHandler
+                     TaskHandler
+from nailgun.api.handlers import ComCollectionHandler
+from nailgun.api.handlers import ComHandler
+from nailgun.api.handlers import PointCollectionHandler
+from nailgun.api.handlers import PointHandler
+from nailgun.api.handlers import EndPointCollectionHandler
 
 
 class JsonResource(Resource):
@@ -44,24 +47,30 @@ urlpatterns = patterns('',
     url(r'^tasks/(?P<task_id>[\da-f\-]{36})/?$',
         JsonResource(TaskHandler),
         name='task_handler'),
-    url(r'^attributes/?$',
-        JsonResource(AttributeCollectionHandler),
-        name='attribute_collection_handler'),
-    url(r'^attribute/(?P<attribute_id>\d+)$',
-        JsonResource(AttributeHandler),
-        name='attribute_handler'),
-    url(r'^recipes/?$',
-        JsonResource(RecipeCollectionHandler),
-        name='recipe_collection_handler'),
-    url(r'^recipe/(?P<recipe_id>\d+)$',
-        JsonResource(RecipeHandler),
-        name='recipe_handler'),
     url(r'^roles/?$',
         JsonResource(RoleCollectionHandler),
         name='role_collection_handler'),
     url(r'^roles/(?P<role_id>\d+)/?$',
         JsonResource(RoleHandler),
         name='role_handler'),
+    url(r'^coms/?$',
+        JsonResource(ComCollectionHandler),
+        name='com_collection_handler'),
+    url(r'^coms/(?P<component_id>\d+)/?$',
+        JsonResource(ComHandler),
+        name='com_handler'),
+    url(r'^points/?$',
+        JsonResource(PointCollectionHandler),
+        name='point_collection_handler'),
+    url(r'^points/(?P<point_id>\d+)/?$',
+        JsonResource(PointHandler),
+        name='point_handler'),
+    url(r'^endpoints/(?P<node_id>[\dA-F]{12})/(?P<component_name>\w+)/?$',
+        JsonResource(EndPointCollectionHandler),
+        name='endpoint_handler'),
+    url(r'^endpoints/?$',
+        JsonResource(EndPointCollectionHandler),
+        name='endpoint_collection_handler'),
     url(r'^releases/?$',
         JsonResource(ReleaseCollectionHandler),
         name='release_collection_handler'),

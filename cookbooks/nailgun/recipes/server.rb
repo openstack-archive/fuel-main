@@ -57,7 +57,8 @@ template "#{node.nailgun.root}/nailgun/extrasettings.py" do
             :cobbler_address => "localhost",
             :cobbler_user => node.cobbler.user,
             :cobbler_password => node.cobbler.password,
-            :cobbler_profile => "centos-6.2-x86_64"
+            :cobbler_profile => "centos-6.2-x86_64",
+            :repo_address => node.cobbler.repoaddr
             )
 end
 

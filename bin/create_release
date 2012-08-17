@@ -1,39 +1,143 @@
-#!/usr/bin/env ruby
+#!/usr/bin/env python
 
-# Copyright 2012, Mirantis
+import json
+import os
+import os.path
+import logging
+import pprint
+import sys
 
-require 'rubygems'
-require 'json'
-require 'httpclient'
+import httplib
+import argparse
 
-if ARGV[0].nil?
-  puts "Provide path to release file for uploading" 
-  puts "You can also provide Nailgun app endpoint as a second argument, if it's not localhost(which is by default)"
-  exit 1
-end
 
-data = JSON.parse(File.read(File.expand_path(ARGV[0])))
+console = logging.StreamHandler()
+formatter = logging.Formatter('%(asctime)s %(name)-12s %(levelname)-8s %(message)s')
+console.setFormatter(formatter)
+logger = logging.getLogger()
+logger.setLevel(logging.DEBUG)
+logger.addHandler(console)
 
-url = "http://127.0.0.1:8000/api/releases"
-if not ARGV[1].nil?
-  url = "#{ARGV[1]}/api/releases"
-end
+parser = argparse.ArgumentParser()
+parser.add_argument("-n", "--dry-run", dest="dry_run",
+                    action='store_true', default=False, 
+                    help="Do not really create release")
+parser.add_argument("-H", "--host", dest="host",
+                    action='store', type=str, default="127.0.0.1",
+                    help="API host")
+parser.add_argument("-P", "--port", dest="port",
+                    action='store', type=int, default=8000,
+                    help="API port")
+parser.add_argument("-f", "--file", dest="release_file",
+                    action='store', type=str, required=True,
+                    help="Release file")
+params = parser.parse_args()
 
-puts "Using #{url} url for relase uploading..."
+if not params.release_file:
+   parser.error("Release file is not set. Use -f option.")
 
-headers = {"Content-Type" => "application/json"}
 
-cli = HTTPClient.new
-begin
-  res = cli.post(url, data.to_json, headers)
-rescue Exception => e
-  puts "Unknown error: #{e.message}"
-end
-if res.status == 200
-  puts "Release '#{data['name']}' has been successfully created."
-elsif res.status == 409
-  puts "Release '#{data['name']}' already exists."
-elsif res.status < 200 or res.status >= 300
-  puts "Error in creating release: #{res.inspect}"
-  exit 1
-end
+def main():
+
+    logger.info("=== Creating release ===")
+    with open(params.release_file, "r") as f:
+       logger.debug("Trying to parse release file")
+       data = json.load(f)
+
+    httpconn = httplib.HTTPConnection(host=params.host, port=params.port)
+    httpheaders = {"Content-Type": "application/json"}
+    
+    httpdata = {}
+    for field in ('name', 'version', 'description', 'networks_metadata'):
+       httpdata[field] = data[field]
+           
+    logger.info("Request url: %s, data: %s" % \
+                   ('/api/releases', json.dumps(httpdata)))
+
+    if params.dry_run:
+       release_dict = {'id': '1'}
+    else:
+       logger.debug("Sending request")
+       try:
+          httpconn.request(method="POST", 
+                           url="/api/releases",
+                           body=json.dumps(httpdata),
+                           headers=httpheaders)
+       except Exception as e:
+          logger.error("Error: %s" % str(e))
+          sys.exit(1)
+       else:
+          response = httpconn.getresponse()
+          response_body = response.read()
+          logger.debug("Response status: %s" % response.status)
+          logger.debug("Response body: %s" % response_body)
+
+       if response.status == 200:
+          logger.info("Release '%s' has been successfully added" % \
+                         httpdata['name'])
+          release_dict = json.loads(response_body)
+          logger.info("Release id: %s" % release_dict['id'])
+       elif response.status == 409:
+          logger.error("Release '%s' already exists" % httpdata['name'])
+          sys.exit(0)
+       elif response.status < 200 and response.status >= 300:
+          logger.error("Error in creating release: %s" % response.read())
+          sys.exit(1)
+
+
+    def add_item(httpconn, handler_url, release,
+                 item_collection, item_fields):
+
+       for item in item_collection:
+          httpdata = {}
+          for field in item_fields:
+             httpdata[field] = item[field]
+
+          if params.dry_run:
+             httpdata['release'] = '1'
+          else:
+             httpdata['release'] = release
+          
+          logger.debug("Request: url: %s, data: %s" % \
+                          (handler_url, json.dumps(httpdata)))
+
+          if not params.dry_run:
+             logger.debug("Sending request")
+             try:
+                httpconn.request(method="POST", 
+                                 url=handler_url,
+                                 body=json.dumps(httpdata),
+                                 headers=httpheaders)
+             
+             except Exception as e:
+                logger.error("Error: %s" % str(e))
+                raise e
+             else:
+                response = httpconn.getresponse()
+                response_body = response.read()
+                logger.debug("Response status: %s" % response.status)
+                logger.debug("Response body: %s" % response_body)
+                
+
+    add_item(
+       httpconn, '/api/points', release_dict['id'],
+       data['points'],
+       ('name', 'scheme')
+       )
+
+    add_item(
+       httpconn, '/api/coms', release_dict['id'], 
+       data['components'],
+       ('name', 'deploy', 'provides', 'requires')
+       )
+
+    add_item(
+       httpconn, '/api/roles', release_dict['id'],
+       data['roles'],
+       ('name', 'components')
+       )
+
+
+if __name__ == "__main__":
+    main()
+   

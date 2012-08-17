@@ -8,7 +8,14 @@ from django.core.urlresolvers import reverse, NoReverseMatch
 
 from piston.emitters import Emitter
 
-from nailgun.models import Cluster, Node, Recipe, Role, Release, Attribute
+from nailgun import models
+from nailgun.models import Cluster
+from nailgun.models import Node
+from nailgun.models import Role
+from nailgun.models import Release
+from nailgun.models import Com
+from nailgun.models import Point
+from nailgun.models import EndPoint
 from nailgun.api import urls as api_urls
 from nailgun import tasks
 
@@ -30,54 +37,6 @@ class TestHandlers(TestCase):
 
     def setUp(self):
         self.request = http.HttpRequest()
-        self.old_meta = {'block_device': 'value',
-                         'interfaces': 'val2',
-                         'cpu': 'asf',
-                         'memory': 'sd'
-                        }
-
-        self.node_name = "test.server.com"
-
-        self.node = Node(id="080000000001",
-                    cluster_id=1,
-                    name=self.node_name,
-                    ip="127.0.0.1",
-                    metadata=self.old_meta)
-        self.node.save()
-
-        self.another_node = Node(
-                    id="080000000000",
-                    name="test2.server.com",
-                    ip="127.0.0.2",
-                    metadata=self.old_meta)
-        self.another_node.save()
-
-        self.recipe = Recipe()
-        self.recipe.recipe = 'cookbook::recipe@2.1'
-        self.recipe.save()
-        self.second_recipe = Recipe()
-        self.second_recipe.recipe = 'nova::compute@0.1.0'
-        self.second_recipe.save()
-        self.third_recipe = Recipe()
-        self.third_recipe.recipe = 'nova::monitor@0.1.0'
-        self.third_recipe.save()
-
-        self.role = Role()
-        self.role.save()
-        self.role.recipes.add(self.recipe)
-        self.role.name = "My role"
-        self.role.save()
-
-        self.another_role = Role()
-        self.another_role.save()
-        self.another_role.recipes.add(self.recipe)
-        self.another_role.name = "My role 2"
-        self.another_role.save()
-
-        self.node.roles = [self.role]
-        self.node.save()
-        self.node_url = reverse('node_handler',
-                                kwargs={'node_id': self.node.id})
 
         self.new_meta = {'block_device': 'new-val',
                          'interfaces': 'd',
@@ -85,21 +44,19 @@ class TestHandlers(TestCase):
                          'memory': 'a'
                         }
 
-        self.another_cluster = Cluster(id=2,
-                release_id=1,
-                name='Another cluster')
-        self.another_cluster.save()
+        self.clusters = models.Cluster.objects.all()
+        self.releases = models.Release.objects.all()
+        self.roles = models.Role.objects.all()
+        self.nodes = models.Node.objects.all()
+        self.points = models.Point.objects.all()
+        self.com = models.Com.objects.all()
+        self.node_url = reverse('node_handler',
+                                kwargs={'node_id': self.nodes[0].id})
 
         self.meta_json = json.dumps(self.new_meta)
 
     def tearDown(self):
-        self.another_cluster.delete()
-        self.node.delete()
-        self.role.delete()
-        self.another_role.delete()
-        self.recipe.delete()
-        self.second_recipe.delete()
-        self.third_recipe.delete()
+        pass
 
     def test_all_api_urls_500(self):
         test_urls = {}
@@ -107,16 +64,23 @@ class TestHandlers(TestCase):
             test_urls[pattern.name] = pattern.callback.handler.allowed_methods
 
         url_ids = {
-            'cluster_handler': {'cluster_id': 1},
+            'cluster_handler': {'cluster_id': self.clusters[0].id},
             'node_handler': {'node_id': 'A' * 12},
             'task_handler': {'task_id': 'a' * 36},
             'network_handler': {'network_id': 1},
-            'release_handler': {'release_id': 1},
-            'role_handler': {'role_id': 1},
-            'node_role_available': {'node_id': 'A' * 12, 'role_id': 1},
-            'recipe_handler': {'recipe_id': 1},
-            'attribute_handler': {'attribute_id': 1},
-            'deployment_type_collection_handler': {'cluster_id': 1},
+            'release_handler': {'release_id': self.releases[0].id},
+            'role_handler': {'role_id': self.roles[0].id},
+            'endpoint_handler': {'node_id': self.nodes[0].id,
+                    'component_name': 'abc'},
+            'point_handler': {'point_id': self.points[0].id},
+            'com_handler': {'component_id': self.com[0].id},
+            'node_role_available': {
+                'node_id': 'A' * 12,
+                'role_id': self.roles[0].id
+                },
+            'deployment_type_collection_handler': {
+                'cluster_id': self.clusters[0].id
+                },
         }
 
         skip_urls = [
@@ -142,7 +106,7 @@ class TestHandlers(TestCase):
             json.dumps({
                 'name': yet_another_cluster_name,
                 'release': 1,
-                'nodes': [self.another_node.id],
+                'nodes': [self.nodes[0].id],
             }),
             "application/json"
         )
@@ -152,9 +116,8 @@ class TestHandlers(TestCase):
             name=yet_another_cluster_name
         )
         self.assertEquals(len(clusters_from_db), 1)
-        self.assertEquals(clusters_from_db[0].nodes.all()[0].id,
-                          self.another_node.id)
         cluster = clusters_from_db[0]
+        self.assertEquals(cluster.nodes.all()[0].id, self.nodes[0].id)
         self.assertEquals(len(cluster.release.networks.all()), 3)
         # test delete
         resp = self.client.delete(
@@ -170,7 +133,7 @@ class TestHandlers(TestCase):
 
         resp = self.client.put(
             reverse('cluster_handler',
-                    kwargs={'cluster_id': self.another_cluster.id}),
+                    kwargs={'cluster_id': self.clusters[0].id}),
             json.dumps({'name': updated_name}),
             "application/json"
         )
@@ -186,23 +149,23 @@ class TestHandlers(TestCase):
     def test_cluster_node_list_update(self):
         resp = self.client.put(
             reverse('cluster_handler', kwargs={'cluster_id': 1}),
-            json.dumps({'nodes': [self.node.id]}),
+            json.dumps({'nodes': [self.nodes[0].id]}),
             "application/json"
         )
         self.assertEquals(resp.status_code, 200)
         nodes_from_db = Node.objects.filter(cluster_id=1)
         self.assertEquals(len(nodes_from_db), 1)
-        self.assertEquals(nodes_from_db[0].id, self.node.id)
+        self.assertEquals(nodes_from_db[0].id, self.nodes[0].id)
 
         resp = self.client.put(
             reverse('cluster_handler', kwargs={'cluster_id': 1}),
-            json.dumps({'nodes': [self.another_node.id]}),
+            json.dumps({'nodes': [self.nodes[1].id]}),
             "application/json"
         )
         self.assertEquals(resp.status_code, 200)
         nodes_from_db = Node.objects.filter(cluster_id=1)
         self.assertEquals(len(nodes_from_db), 1)
-        self.assertEquals(nodes_from_db[0].id, self.another_node.id)
+        self.assertEquals(nodes_from_db[0].id, self.nodes[1].id)
 
     def test_node_creation(self):
         node_id = '080000000003'
@@ -242,7 +205,7 @@ class TestHandlers(TestCase):
                                "application/json")
         self.assertEquals(resp.status_code, 200)
 
-        nodes_from_db = Node.objects.filter(id=self.node.id)
+        nodes_from_db = Node.objects.filter(id=self.nodes[0].id)
         self.assertEquals(len(nodes_from_db), 1)
         self.assertEquals(nodes_from_db[0].metadata, self.new_meta)
 
@@ -255,18 +218,18 @@ class TestHandlers(TestCase):
     def test_node_valid_list_of_new_roles_gets_updated(self):
         resp = self.client.put(self.node_url,
             json.dumps({
-                'new_roles': [self.another_role.id],
+                'new_roles': [self.roles[1].id],
                 'redeployment_needed': True
             }), "application/json"
         )
         self.assertEquals(resp.status_code, 200)
 
-        node_from_db = Node.objects.get(id=self.node.id)
+        node_from_db = Node.objects.get(id=self.nodes[0].id)
         self.assertEquals(node_from_db.redeployment_needed, True)
         self.assertEquals(len(node_from_db.roles.all()), 1)
         self.assertEquals(len(node_from_db.new_roles.all()), 1)
         self.assertEquals(node_from_db.new_roles.all()[0].id,
-                          self.another_role.id)
+                          self.roles[1].id)
 
     def test_put_returns_400_if_no_body(self):
         resp = self.client.put(self.node_url, None, "application/json")
@@ -284,157 +247,113 @@ class TestHandlers(TestCase):
         self.assertEquals(resp.status_code, 400)
 
     def test_put_returns_400_if_no_block_device_attr(self):
-        meta = self.new_meta.copy()
-        del meta['block_device']
+        old_meta = self.nodes[0].metadata
+        new_meta = self.new_meta.copy()
+        del new_meta['block_device']
         resp = self.client.put(self.node_url,
-                               json.dumps({'metadata': meta}),
+                               json.dumps({'metadata': new_meta}),
                                "application/json")
         self.assertEquals(resp.status_code, 400)
 
-        nodes_from_db = Node.objects.filter(id=self.node.id)
-        self.assertEquals(len(nodes_from_db), 1)
-        self.assertEquals(nodes_from_db[0].metadata, self.old_meta)
+        node_from_db = Node.objects.get(id=self.nodes[0].id)
+        self.assertEquals(node_from_db.metadata, old_meta)
 
     def test_put_returns_400_if_no_interfaces_attr(self):
-        meta = self.new_meta.copy()
-        del meta['interfaces']
+        old_meta = self.nodes[0].metadata
+        new_meta = self.new_meta.copy()
+        del new_meta['interfaces']
         resp = self.client.put(self.node_url,
-                               json.dumps({'metadata': meta}),
+                               json.dumps({'metadata': new_meta}),
                                "application/json")
         self.assertEquals(resp.status_code, 400)
 
-        nodes_from_db = Node.objects.filter(id=self.node.id)
-        self.assertEquals(len(nodes_from_db), 1)
-        self.assertEquals(nodes_from_db[0].metadata, self.old_meta)
+        node_from_db = Node.objects.get(id=self.nodes[0].id)
+        self.assertEquals(node_from_db.metadata, old_meta)
 
     def test_put_returns_400_if_interfaces_empty(self):
-        meta = self.new_meta.copy()
-        meta['interfaces'] = ""
+        old_meta = self.nodes[0].metadata
+        new_meta = self.new_meta.copy()
+        new_meta['interfaces'] = ""
         resp = self.client.put(self.node_url,
-                               json.dumps({'metadata': meta}),
+                               json.dumps({'metadata': new_meta}),
                                "application/json")
         self.assertEquals(resp.status_code, 400)
 
-        nodes_from_db = Node.objects.filter(id=self.node.id)
-        self.assertEquals(len(nodes_from_db), 1)
-        self.assertEquals(nodes_from_db[0].metadata, self.old_meta)
+        node_from_db = Node.objects.get(id=self.nodes[0].id)
+        self.assertEquals(node_from_db.metadata, old_meta)
 
     def test_put_returns_400_if_no_cpu_attr(self):
-        meta = self.new_meta.copy()
-        del meta['cpu']
+        old_meta = self.nodes[0].metadata
+        new_meta = self.new_meta.copy()
+        del new_meta['cpu']
         resp = self.client.put(self.node_url,
-                               json.dumps({'metadata': meta}),
+                               json.dumps({'metadata': new_meta}),
                                "application/json")
         self.assertEquals(resp.status_code, 400)
 
-        nodes_from_db = Node.objects.filter(id=self.node.id)
-        self.assertEquals(len(nodes_from_db), 1)
-        self.assertEquals(nodes_from_db[0].metadata, self.old_meta)
+        node_from_db = Node.objects.get(id=self.nodes[0].id)
+        self.assertEquals(node_from_db.metadata, old_meta)
 
     def test_put_returns_400_if_no_memory_attr(self):
-        meta = self.new_meta.copy()
-        del meta['memory']
+        old_meta = self.nodes[0].metadata
+        new_meta = self.new_meta.copy()
+        del new_meta['memory']
         resp = self.client.put(self.node_url,
-                               json.dumps({'metadata': meta}),
+                               json.dumps({'metadata': new_meta}),
                                "application/json")
         self.assertEquals(resp.status_code, 400)
 
-        nodes_from_db = Node.objects.filter(id=self.node.id)
-        self.assertEquals(len(nodes_from_db), 1)
-        self.assertEquals(nodes_from_db[0].metadata, self.old_meta)
+        node_from_db = Node.objects.get(id=self.nodes[0].id)
+        self.assertEquals(node_from_db.metadata, old_meta)
 
-    def test_attribute_create(self):
-        resp = self.client.put(
-            reverse('attribute_collection_handler'),
-            json.dumps({
-                'attribute': {'a': 'av'},
-                'cookbook': 'cook_name',
-                'version': '0.1',
-            }), "application/json"
-        )
-        self.assertEquals(resp.status_code, 200)
-        self.assertEquals(resp.content, '1')
+    # (mihgen): Disabled - we don't have attributes anymore
+    #def test_attribute_create(self):
+        #resp = self.client.put(
+            #reverse('attribute_collection_handler'),
+            #json.dumps({
+                #'attribute': {'a': 'av'},
+                #'cookbook': 'cook_name',
+                #'version': '0.1',
+            #}), "application/json"
+        #)
+        #self.assertEquals(resp.status_code, 200)
+        #self.assertEquals(resp.content, '1')
 
-    def test_attribute_update(self):
-        resp = self.client.put(
-            reverse('attribute_collection_handler'),
-            json.dumps({
-                'attribute': {'a': 'b'},
-                'cookbook': 'cook',
-                'version': '0.1',
-            }), "application/json"
-        )
-        self.assertEquals(resp.status_code, 200)
-        self.assertEquals(resp.content, '1')
-        resp = self.client.put(
-            reverse('attribute_collection_handler'),
-            json.dumps({
-                'attribute': {'a': 'new'},
-                'cookbook': 'cook',
-                'version': '0.1',
-            }), "application/json"
-        )
-        self.assertEquals(resp.status_code, 200)
-        self.assertEquals(resp.content, '1')
-        attrs = Attribute.objects.all()
-        self.assertEquals(len(attrs), 1)
-        self.assertEquals(attrs[0].attribute, {'a': 'new'})
-
-    def test_recipe_create(self):
-        recipe = 'cookbook::recipe@0.1.0'
-        recipe_depends = [
-            'cookbook2::depend@0.0.1',
-            'cookbook3::other_depend@0.1.0'
-        ]
-        resp = self.client.post(
-            reverse('recipe_collection_handler'),
-            json.dumps({
-                'recipe': recipe,
-                'depends': recipe_depends,
-                'attribute': None,
-            }),
-            "application/json"
-        )
-        self.assertEquals(resp.status_code, 200)
-        test_deps = Recipe.objects.filter(recipe__in=recipe_depends)
-        self.assertEquals(len(test_deps), len(recipe_depends))
-
-        # test duplicate
-        resp = self.client.post(
-            reverse('recipe_collection_handler'),
-            json.dumps({
-                'recipe': recipe,
-                'depends': [],
-            }),
-            "application/json"
-        )
-        self.assertEquals(resp.status_code, 409)
-
-        # test wrong format
-        resp = self.client.post(
-            reverse('recipe_collection_handler'),
-            json.dumps({
-                'recipe': 'ololo::onotole',
-                'depends': []
-            }),
-            "application/json"
-        )
-        self.assertEquals(resp.status_code, 400)
-
-        recipe_from_db = Recipe.objects.filter(recipe=recipe)
-        self.assertEquals(len(recipe_from_db), 1)
+    #def test_attribute_update(self):
+        #resp = self.client.put(
+            #reverse('attribute_collection_handler'),
+            #json.dumps({
+                #'attribute': {'a': 'b'},
+                #'cookbook': 'cook',
+                #'version': '0.1',
+            #}), "application/json"
+        #)
+        #self.assertEquals(resp.status_code, 200)
+        #self.assertEquals(resp.content, '1')
+        #resp = self.client.put(
+            #reverse('attribute_collection_handler'),
+            #json.dumps({
+                #'attribute': {'a': 'new'},
+                #'cookbook': 'cook',
+                #'version': '0.1',
+            #}), "application/json"
+        #)
+        #self.assertEquals(resp.status_code, 200)
+        #self.assertEquals(resp.content, '1')
+        #attrs = Attribute.objects.all()
+        #self.assertEquals(len(attrs), 1)
+        #self.assertEquals(attrs[0].attribute, {'a': 'new'})
 
     def test_role_create(self):
         role_name = 'My role 3'
-        role_recipes = [
-            'nova::compute@0.1.0',
-            'nova::monitor@0.1.0'
-        ]
+        role_release = self.releases[0].id
+        role_components = [c.name for c in self.com]
         resp = self.client.post(
             reverse('role_collection_handler'),
             json.dumps({
                 'name': role_name,
-                'recipes': role_recipes
+                'release': role_release,
+                'components': role_components
             }),
             "application/json"
         )
@@ -442,8 +361,8 @@ class TestHandlers(TestCase):
 
         roles_from_db = Role.objects.filter(name=role_name)
         self.assertEquals(len(roles_from_db), 1)
-        recipes = [r.recipe for r in roles_from_db[0].recipes.all()]
-        self.assertEquals(set(role_recipes), set(recipes))
+        components = [c.name for c in roles_from_db[0].components.all()]
+        self.assertEquals(set(role_components), set(components))
 
     @mock.patch('nailgun.tasks.deploy_cluster', celery.task.task(lambda: True))
     def test_jsons_created_for_chef_solo(self):

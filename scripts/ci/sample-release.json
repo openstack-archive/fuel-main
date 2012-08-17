@@ -7,22 +7,103 @@
         {"name": "management", "access": "private"},
         {"name": "storage", "access": "private"}
     ],
-    "roles": [{
-        "name": "role1",
-        "recipes": [
-            "sample-cook::compute@0.3.0",
-            "sample-cook::monitor@0.3.0"
-        ]
-      },{
-        "name": "role2",
-        "recipes": [
-            "sample-cook::default@0.3.0"
-        ]
-      },{
-        "name": "mysql_server",
-        "recipes": [
-            "mysql::server@0.1.0"
-        ]
-      }
+    "roles": [
+	{
+            "name": "role1",
+            "components": [
+		"sample_compute",
+		"sample_monitor"
+            ]
+	},
+	{
+            "name": "role2",
+            "components": [
+		"sample_default"
+            ]
+	},
+	{
+            "name": "mysql_server",
+            "components": [
+		"mysql_server"
+            ]
+	}
+    ],
+    "components": [
+	{
+	    "name": "sample_default", 
+	    "deploy": {
+		"driver": "chef-solo",
+		"driver_args": {
+		    "run_list": [
+			"recipe[sample-cook::default@0.3.0]"
+		    ]
+		}
+	    },
+	    "provides": ["default_endpoint"],
+	    "requires": ["monitor_endpoint"]
+	},
+	{
+	    "name": "sample_compute", 
+	    "deploy": {
+		"driver": "chef-solo",
+		"driver_args": {
+		    "run_list": [
+			"recipe[sample-cook::compute@0.3.0]"
+		    ]
+		}
+	    },
+	    "provides": ["compute_endpoint"],
+	    "requires": ["default_endpoint", "monitor_endpoint"]
+	},
+	{
+	    "name": "sample_monitor", 
+	    "deploy": {
+		"driver": "chef-solo",
+		"driver_args": {
+		    "run_list": [
+			"recipe[sample-cook::monitor@0.3.0]"
+		    ]
+		}
+	    },
+	    "provides": ["monitor_endpoint"],
+	    "requires": []
+	},
+	{
+	    "name": "mysql_server", 
+	    "deploy": {
+		"driver": "chef-solo",
+		"driver_args": {
+		    "run_list": [
+			"recipe[mysql::server@0.1.0]"
+		    ]
+		}
+	    },
+	    "provides": ["mysql_endpoint"],
+	    "requires": []
+	}
+
+    ],
+    "points": [
+	{
+	    "name": "mysql_endpoint",
+	    "scheme": {
+	    }
+	},
+	{
+	    "name": "default_endpoint",
+	    "scheme": {
+	    }
+	},
+	{
+	    "name": "monitor_endpoint",
+	    "scheme": {
+	    }
+	},
+	{
+	    "name": "compute_endpoint",
+	    "scheme": {
+	    }
+	}
     ]
+
 }

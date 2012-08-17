@@ -63,11 +63,11 @@ baseurl=http://download.fedoraproject.org/pub/epel/$(CENTOS_62_MAJOR)/$(CENTOS_6
 enabled=1
 gpgcheck=0
 
-[mirantis]
-name=Mirantis Packages for CentOS
-baseurl=http://moc-ci.srt.mirantis.net/rpm
-enabled=1
-gpgcheck=0
+# [mirantis]
+# name=Mirantis Packages for CentOS
+# baseurl=http://moc-ci.srt.mirantis.net/rpm
+# enabled=1
+# gpgcheck=0
 endef
 
 $/etc/yum.repos.d/base.repo: export contents:=$(yum_base_repo)

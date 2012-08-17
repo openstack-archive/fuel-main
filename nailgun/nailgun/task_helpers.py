@@ -103,11 +103,23 @@ class TaskPool(object):
         self.pool.append(task)
 
     @task_with_callbacks
-    def _chord_task(taskset, clbk):
+    def _chord_task(*args):
+
+        if len(args) == 3:
+            taskset, clbk = args[1], args[2]
+        else:
+            taskset, clbk = args[0], args[1]
+
+        logger.error("TaskPool._chord_task: args: %s" % str(args))
+        logger.error("TaskPool._chord_task: args length: %s" % len(args))
+        logger.error("TaskPool._chord_task: taskset: %s" % str(taskset))
+        logger.error("TaskPool._chord_task: clbk: %s" % str(clbk))
+
         # We have to create separate subtask that contains chord expression
         #   because otherwise chord functions get applied synchronously
-        return chord([tsk['func'].subtask(args=tsk['args'], \
-                    kwargs=tsk['kwargs']) for tsk in taskset])(clbk)
+        return chord([
+                tsk['func'].subtask(args=tsk['args'], kwargs=tsk['kwargs']) \
+                    for tsk in taskset])(clbk)
 
     def _get_head_task(self):
         prev_task = None

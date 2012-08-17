@@ -170,5 +170,5 @@ PISTON_IGNORE_DUPE_MODELS = True
 
 NETWORK_POOLS = {
     'public': ['172.18.0.0/16'],
-    'private': ['10.0.0.0/8']
+    'private': ['10.1.0.0/16']
 }

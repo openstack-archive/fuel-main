@@ -1,22 +1,53 @@
 import os
-
+import copy
+import re
 import celery
 import ipaddr
 import json
+
 from piston.handler import BaseHandler, HandlerMetaClass
 from piston.utils import rc, validate
 from django.core.exceptions import ObjectDoesNotExist
 from django.conf import settings
 from django.db import models
 
-from nailgun.models import Cluster, Node, Recipe, Role, Release, Network, \
-        Attribute, Task
+from nailgun.models import Cluster
+from nailgun.models import Release
+from nailgun.models import Role
+from nailgun.models import Com
+from nailgun.models import Point
+from nailgun.models import EndPoint
+from nailgun.models import Network
+from nailgun.models import Node
+from nailgun.models import Task
+
 from nailgun.deployment_types import deployment_types
 from nailgun.api.validators import validate_json, validate_json_list
-from nailgun.api.forms import ClusterForm, ClusterCreationForm, RecipeForm, \
-        RoleForm, RoleFilterForm, NodeCreationForm, NodeFilterForm, NodeForm, \
-        ReleaseCreationForm, NetworkCreationForm, AttributeForm
+from nailgun.api.forms import ClusterForm
+from nailgun.api.forms import ClusterCreationForm
+from nailgun.api.forms import RoleFilterForm
+from nailgun.api.forms import RoleCreateForm
+from nailgun.api.forms import PointFilterForm
+from nailgun.api.forms import PointUpdateForm
+from nailgun.api.forms import PointCreateForm
+from nailgun.api.forms import ComFilterForm
+from nailgun.api.forms import ComCreateForm
+from nailgun.api.forms import NodeCreationForm
+from nailgun.api.forms import NodeFilterForm
+from nailgun.api.forms import NodeForm
+from nailgun.api.forms import ReleaseCreationForm
+from nailgun.api.forms import NetworkCreationForm
+
+from nailgun import tasks
 import nailgun.api.validators as vld
+
+from nailgun.helpers import DeployManager
+from nailgun.helpers import DeployDriver
+
+import logging
+
+
+logger = logging.getLogger(__name__)
 
 
 handlers = {}
@@ -44,25 +75,53 @@ class JSONHandler(BaseHandler):
     def render(cls, item, fields=None):
         json_data = {}
         use_fields = fields if fields else cls.fields
+
         if not use_fields:
             raise ValueError("No fields for serialize")
         for field in use_fields:
-            value = getattr(item, field)
-            if value is None:
-                pass
-            elif value.__class__.__name__ in ('ManyRelatedManager',
-                                              'RelatedManager'):
-                try:
-                    handler = handlers[value.model.__name__]
-                    json_data[field] = map(handler.render, value.all())
-                except KeyError:
-                    raise Exception("No handler for %s" % \
-                                    value.model.__name__)
-            elif value.__class__.__name__ in handlers:
-                handler = handlers[value.__class__.__name__]
-                json_data[field] = handler.render(value)
+            if isinstance(field, (tuple,)):
+
+                logger.debug("rendering: field is a tuple: %s" % str(field))
+                if field[1] == '*':
+                    subfields = None
+                else:
+                    subfields = field[1:]
+
+                value = getattr(item, field[0])
+                if value is None:
+                    pass
+                elif value.__class__.__name__ in ('ManyRelatedManager',
+                                                'RelatedManager'):
+                    try:
+                        handler = handlers[value.model.__name__]
+                        json_data[field[0]] = [
+                            handler.render(o, fields=subfields) \
+                                for o in value.all()]
+                    except KeyError:
+                        raise Exception("No handler for %s" % \
+                                            value.model.__name__)
+
+                elif value.__class__.__name__ in handlers:
+                    handler = handlers[value.__class__.__name__]
+                    json_data[field[0]] = handler.render(value,
+                                                         fields=subfields)
+                else:
+                    json_data[field[0]] = value.id
+
             else:
-                json_data[field] = value
+                value = getattr(item, field)
+
+                if value is None:
+                    pass
+                elif value.__class__.__name__ in ('ManyRelatedManager',
+                                                  'RelatedManager',):
+                    json_data[field] = [getattr(o, 'id') \
+                                            for o in value.all()]
+                elif value.__class__.__name__ in handlers:
+                    json_data[field] = value.id
+                else:
+                    json_data[field] = value
+
         return json_data
 
 
@@ -72,7 +131,7 @@ class TaskHandler(JSONHandler):
     model = Task
 
     @classmethod
-    def render(cls, task):
+    def render(cls, task, fields=None):
         result = {
             'task_id': task.pk,
             'name': task.name,
@@ -103,6 +162,7 @@ class ClusterChangesHandler(BaseHandler):
         except ObjectDoesNotExist:
             return rc.NOT_FOUND
 
+        logger.debug("Cluster changes: Checking if another task is running")
         if cluster.task:
             if cluster.task.ready:
                 cluster.task.delete()
@@ -111,16 +171,25 @@ class ClusterChangesHandler(BaseHandler):
                 response.content = "Another task is running"
                 return response
 
+        logger.debug("Cluster changes: Updating node roles")
         for node in cluster.nodes.filter(redeployment_needed=True):
             node.roles = node.new_roles.all()
             node.new_roles.clear()
             node.redeployment_needed = False
             node.save()
 
+        logger.debug("Cluster changes: Updating node networks")
         for nw in cluster.release.networks.all():
             for node in cluster.nodes.all():
                 nw.update_node_network_info(node)
 
+        logger.debug("Cluster changes: Trying to instantiate cluster")
+
+        dm = DeployManager(cluster_id)
+        dm.clean_cluster()
+        dm.instantiate_cluster()
+
+        logger.debug("Cluster changes: Trying to deploy cluster")
         task = Task(task_name='deploy_cluster', cluster=cluster)
         task.run(cluster_id)
 
@@ -172,10 +241,37 @@ class DeploymentTypeHandler(JSONHandler):
         return {}
 
 
+class EndPointCollectionHandler(BaseHandler):
+    allowed_methods = ('GET',)
+
+    def read(self, request, node_id=None, component_name=None):
+        if not node_id or not component_name:
+            return map(EndPointHandler.render,
+                       EndPoint.objects.all())
+
+        try:
+            node = Node.objects.get(id=node_id)
+            component = Com.objects.get(
+                name=component_name,
+                release=node.cluster.release
+                )
+            dd = DeployDriver(node, component)
+            return dd.deploy_data()
+        except:
+            return rc.NOT_FOUND
+
+
+class EndPointHandler(JSONHandler):
+    model = EndPoint
+
+    @classmethod
+    def render(cls, endpoint):
+        return endpoint.data
+
+
 class ClusterCollectionHandler(BaseHandler):
 
     allowed_methods = ('GET', 'POST')
-    model = Cluster
 
     def read(self, request):
         json_data = map(
@@ -186,6 +282,16 @@ class ClusterCollectionHandler(BaseHandler):
 
     @validate_json(ClusterCreationForm)
     def create(self, request):
+        data = request.form.cleaned_data
+
+        try:
+            cluster = Cluster.objects.get(
+                name=data['name']
+            )
+            return rc.DUPLICATE_ENTRY
+        except Cluster.DoesNotExist:
+            pass
+
         cluster = Cluster()
         for key, value in request.form.cleaned_data.items():
             if key in request.form.data:
@@ -198,9 +304,9 @@ class ClusterCollectionHandler(BaseHandler):
         vlan_ids = {
             'storage': 200,
             'public': 300,
-            'floating': 300,
+            'floating': 400,
             'fixed': 500,
-            'management': 100
+            'admin': 100
         }
 
         for network in cluster.release.networks_metadata:
@@ -227,7 +333,7 @@ class ClusterCollectionHandler(BaseHandler):
                 access=access,
                 network=str(new_network),
                 gateway=str(new_network[1]),
-                range_l=str(new_network[2]),
+                range_l=str(new_network[3]),
                 range_h=str(new_network[-1]),
                 vlan_id=vlan_ids[network['name']]
             )
@@ -246,9 +352,12 @@ class ClusterHandler(JSONHandler):
 
     allowed_methods = ('GET', 'PUT', 'DELETE')
     model = Cluster
-    fields = ('id', 'name', 'nodes', 'release', 'task')
+    fields = ('id', 'name',
+              ('nodes', '*'),
+              ('release', '*'), 'task')
 
     def read(self, request, cluster_id):
+        logger.debug("Cluster reading: id: %s" % cluster_id)
         try:
             cluster = Cluster.objects.get(id=cluster_id)
             return ClusterHandler.render(cluster)
@@ -286,7 +395,6 @@ class ClusterHandler(JSONHandler):
 class NodeCollectionHandler(BaseHandler):
 
     allowed_methods = ('GET', 'POST')
-    model = Node
 
     @validate(NodeFilterForm, 'GET')
     def read(self, request):
@@ -314,7 +422,7 @@ class NodeHandler(JSONHandler):
     model = Node
     fields = ('id', 'name', 'info', 'status', 'mac', 'fqdn', 'ip',
               'manufacturer', 'platform_name', 'redeployment_needed',
-              'roles', 'new_roles', 'os_platform')
+              ('roles', '*'), ('new_roles', '*'), 'os_platform')
 
     def read(self, request, node_id):
         try:
@@ -346,113 +454,158 @@ class NodeHandler(JSONHandler):
             return rc.NOT_FOUND
 
 
-class AttributeCollectionHandler(BaseHandler):
+class PointCollectionHandler(BaseHandler):
+
+    allowed_methods = ('GET', 'POST')
+
+    @validate(PointFilterForm, 'GET')
+    def read(self, request):
+        logger.debug("Getting points from data: %s" % \
+                         str(request.form.data))
+        if 'release' in request.form.data:
+            points = Point.objects.filter(
+                release__id=request.form.cleaned_data['release']
+                )
+        else:
+            points = Point.objects.all()
+        return map(PointHandler.render, points)
+
+    @validate_json(PointCreateForm)
+    def create(self, request):
+        data = request.form.cleaned_data
+        logger.debug("Creating Point from data: %s" % str(data))
+
+        try:
+            point = Point.objects.get(
+                name=data['name'],
+                release=data['release']
+            )
+            return rc.DUPLICATE_ENTRY
+        except Point.DoesNotExist:
+            pass
+
+        point = Point(
+            name=data['name'],
+            release=data['release']
+            )
+
+        if 'scheme' in data:
+            point.scheme = data['scheme']
+        else:
+            point.scheme = {}
+        point.save()
+
+        return PointHandler.render(point)
+
+
+class PointHandler(JSONHandler):
 
     allowed_methods = ('GET', 'PUT')
+    model = Point
 
-    def read(self, request):
-        return map(AttributeHandler.render, Attribute.objects.all())
+    fields = ('id', 'name', 'scheme', ('release', 'name'),
+              ('required_by', 'name'),
+              ('provided_by', 'name'))
 
-    @validate_json(AttributeForm)
-    def update(self, request):
-        data = request.form.cleaned_data
-        attr, is_created = Attribute.objects.get_or_create(
-                cookbook=data['cookbook'],
-                version=data['version']
-        )
-        attr.attribute = data['attribute']
-        attr.save()
-
-        # FIXME: it is not RESTful, handler should return full representation
-        # of an attribute
-        return attr.id
-
-
-class AttributeHandler(JSONHandler):
-
-    allowed_methods = ('GET',)
-    model = Attribute
-
-    fields = ('id', 'cookbook', 'version', 'attribute')
-
-    def read(self, request, attribute_id):
+    def read(self, request, point_id):
         try:
-            return Attribute.objects.get(id=attribute_id)
+            return PointHandler.render(Point.objects.get(id=point_id))
         except ObjectDoesNotExist:
             return rc.NOT_FOUND
 
+    @validate_json(PointUpdateForm)
+    def update(self, request, point_id):
+        data = request.form.cleaned_data
+        logger.debug("Updating Point from data: %s" % str(data))
 
-class RecipeCollectionHandler(BaseHandler):
+        try:
+            point = Point.objects.get(id=point_id)
+        except ObjectDoesNotExist:
+            return rc.NOT_FOUND
 
-    allowed_methods = ('GET', 'POST', 'PUT')
+        if data.get('scheme', None):
+            point.scheme = data['scheme']
 
+        point.save()
+        return PointHandler.render(point)
+
+
+class ComCollectionHandler(BaseHandler):
+    allowed_methods = ('GET', 'POST')
+
+    @validate(ComFilterForm, 'GET')
     def read(self, request):
-        return map(RecipeHandler.render, Recipe.objects.all())
+        logger.debug("Getting components from data: %s" % \
+                         str(request.form.data))
+        if 'release' in request.form.data:
+            components = Com.objects.filter(
+                release__id=request.form.cleaned_data['release']
+                )
+        else:
+            components = Com.objects.all()
+        return map(ComHandler.render, components)
 
-    @validate_json(RecipeForm)
+    @validate_json(ComCreateForm)
     def create(self, request):
         data = request.form.cleaned_data
+        logger.debug("Creating Com from data: %s" % str(data))
+
         try:
-            release = Recipe.objects.get(
-                recipe=data['recipe']
+            component = Com.objects.get(
+                name=data['name'],
+                release=data['release']
             )
             return rc.DUPLICATE_ENTRY
-        except Recipe.DoesNotExist:
+        except Com.DoesNotExist:
             pass
 
-        recipe = Recipe(recipe=data['recipe'])
-        recipe.save()
-        for key, value in data.items():
-            if key == 'depends':
-                for dep in value:
-                    try:
-                        d = Recipe.objects.get(recipe=dep)
-                    except Recipe.DoesNotExist:
-                        d = Recipe(recipe=dep)
-                        d.save()
-            else:
-                setattr(recipe, key, value)
-        recipe.save()
+        component = Com(
+            name=data['name'],
+            release=data['release']
+            )
 
-        return RecipeHandler.render(recipe)
+        component.deploy = data['deploy']
+        component.save()
 
-    @validate_json_list(RecipeForm)
-    def update(self, request):
-        for form in request.forms:
-            attr = form.cleaned_data["attribute"]
-            create_depends = []
-            for depend in form.cleaned_data["depends"]:
+        if data.get('requires', None):
+            for point_name in data['requires']:
                 try:
-                    d = Recipe.objects.get(recipe=depend)
-                except Recipe.DoesNotExist:
-                    d = Recipe(recipe=depend)
-                    d.save()
-                create_depends.append(d)
-            try:
-                r = Recipe.objects.get(recipe=form.cleaned_data["recipe"])
-            except Recipe.DoesNotExist:
-                r = Recipe(recipe=form.cleaned_data["recipe"])
-                r.save()
-            r.depends = create_depends
-            if attr:
-                r.attribute = attr
-            r.save()
-        return rc.CREATED
+                    point = Point.objects.get(
+                        name=point_name,
+                        release=data['release']
+                        )
+                except ObjectDoesNotExist:
+                    return rc.NOT_FOUND
+                else:
+                    component.requires.add(point)
+
+        if data.get('provides', None):
+            for point_name in data['provides']:
+                try:
+                    point = Point.objects.get(
+                        name=point_name,
+                        release=data['release']
+                        )
+                except ObjectDoesNotExist:
+                    return rc.NOT_FOUND
+                else:
+                    component.provides.add(point)
+
+        component.save()
+        return ComHandler.render(component)
 
 
-class RecipeHandler(JSONHandler):
-
+class ComHandler(JSONHandler):
     allowed_methods = ('GET',)
-    model = Recipe
+    model = Com
 
-    @classmethod
-    def render(cls, recipe, fields=None):
-        return recipe.recipe
+    fields = ('id', 'name', 'deploy', ('release', 'name'),
+              ('requires', 'name'), ('provides', 'name'),
+              ('roles', 'name'))
 
-    def read(self, request, recipe_id):
+    def read(self, request, component_id):
         try:
-            recipe = Recipe.objects.get(id=recipe_id)
-            return RecipeHandler.render(recipe)
+            return ComHandler.render(Com.objects.get(id=component_id))
         except ObjectDoesNotExist:
             return rc.NOT_FOUND
 
@@ -463,6 +616,14 @@ class RoleCollectionHandler(BaseHandler):
 
     @validate(RoleFilterForm, 'GET')
     def read(self, request):
+        if 'release_id' in request.form.data:
+            return map(
+                RoleHandler.render,
+                Role.objects.filter(
+                    release__id=request.form.data['release_id']
+                    )
+                )
+
         roles = Role.objects.all()
         if 'node_id' in request.form.data:
             result = []
@@ -481,15 +642,40 @@ class RoleCollectionHandler(BaseHandler):
         else:
             return map(RoleHandler.render, roles)
 
-    @validate_json(RoleForm)
+    @validate_json(RoleCreateForm)
     def create(self, request):
         data = request.form.cleaned_data
-        recipes = Recipe.objects.filter(recipe__in=data['recipes'])
-        role = Role(name=data["name"])
-        role.save()
-        map(role.recipes.add, recipes)
+        logger.debug("Creating Role from data: %s" % str(data))
+
+        try:
+            role = Role.objects.get(
+                name=data['name'],
+                release=data['release']
+            )
+            return rc.DUPLICATE_ENTRY
+        except Role.DoesNotExist:
+            pass
+
+        role = Role(
+            name=data['name'],
+            release=data['release']
+            )
+
         role.save()
 
+        if data.get('components', None):
+            for component_name in data['components']:
+                try:
+                    component = Com.objects.get(
+                        name=component_name,
+                        release=data['release']
+                        )
+                except ObjectDoesNotExist:
+                    return rc.NOT_FOUND
+                else:
+                    role.components.add(component)
+
+        role.save()
         return RoleHandler.render(role)
 
 
@@ -497,19 +683,22 @@ class RoleHandler(JSONHandler):
 
     allowed_methods = ('GET',)
     model = Role
-    fields = ('id', 'name', 'recipes')
+    fields = ('id', 'name', ('release', 'id', 'name'),
+              ('components', 'name'))
 
     def read(self, request, role_id):
         try:
-            role = Role.objects.get(id=role_id)
-            RoleHandler.render(role)
+            return RoleHandler.render(Role.objects.get(id=role_id))
         except ObjectDoesNotExist:
             return rc.NOT_FOUND
 
 
 class ReleaseCollectionHandler(BaseHandler):
 
+    logger.warning("Trying to add release")
+
     allowed_methods = ('GET', 'POST')
+    model = Release
 
     def read(self, request):
         return map(ReleaseHandler.render, Release.objects.all())
@@ -517,7 +706,7 @@ class ReleaseCollectionHandler(BaseHandler):
     @validate_json(ReleaseCreationForm)
     def create(self, request):
         data = request.form.cleaned_data
-
+        logger.debug("Creating release from data: %s" % str(data))
         try:
             release = Release.objects.get(
                 name=data['name'],
@@ -535,16 +724,6 @@ class ReleaseCollectionHandler(BaseHandler):
         )
         release.save()
 
-        for role in data["roles"]:
-            rl = Role(name=role["name"])
-            rl.save()
-            recipes = Recipe.objects.filter(recipe__in=role["recipes"])
-            map(rl.recipes.add, recipes)
-            rl.save()
-            release.roles.add(rl)
-
-        release.save()
-
         return ReleaseHandler.render(release)
 
 
@@ -553,7 +732,8 @@ class ReleaseHandler(JSONHandler):
     allowed_methods = ('GET', 'DELETE')
     model = Release
     fields = ('id', 'name', 'version', 'description', 'networks_metadata',
-              'roles')
+              ('roles', 'name'), ('components', 'name'),
+              ('points', 'name'))
 
     def read(self, request, release_id):
         try:

@@ -67,7 +67,8 @@ fi
 
 function run_tests {
   clean
-  python manage.py test nailgun $noseopts $noseargs
+  [ -z "$noseargs" ] && test_args=nailgun || test_args="$noseargs"
+  python manage.py test $noseopts $test_args
 }
 
 run_tests || exit 1

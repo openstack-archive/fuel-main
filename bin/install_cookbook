@@ -17,62 +17,7 @@ def create_cookbook(metafile)
   md = Chef::Cookbook::Metadata.new
   md.from_file(metafile)
 
-  attr_id = create_attributes(metafile, md)
-  create_recipes(metafile, md, attr_id)
-end
-
-def create_attributes(metafile, md)
   cook_name = md.name.empty? ? File.basename(File.dirname(metafile)) : md.name
-
-  attrs_dir = File.join(File.dirname(metafile), "attributes")
-  attr_file = File.join(attrs_dir, "exposed.rb")
-  unless File.exists?(attr_file) and File.readable?(attr_file)
-    puts "File '#{attr_file}' not found."
-    return nil
-  end
-  node = Chef::Node.new
-
-  attrs_url = "#{ADMIN_URL}/attributes"
-  puts "Processing '#{attr_file}' attributes file..."
-  node.from_file(attr_file)
-  attr_hash = {'attribute' => node.attribute.to_hash,
-               'cookbook' => cook_name,
-               'version' => md.version,
-              }
-  attr_id = http_put(attrs_url, attr_hash.to_json)
-  return attr_id
-end
-
-def create_recipes(metafile, md, attr_id)
-  cook_name = md.name.empty? ? File.basename(File.dirname(metafile)) : md.name
-
-  recipes_dir = File.join(File.dirname(metafile), "recipes")
-  unless File.exists?(recipes_dir) and File.readable?(recipes_dir)
-    puts "Recipes folder not found."
-    return true
-  end
-  Dir.chdir(recipes_dir)
-  recipes = Dir.glob("*.rb")
-
-  recipes_tree_url = "#{ADMIN_URL}/recipes"
-  dep_reg = /^# depends: "(\S+)"$/
-
-  recipe_tree = []
-  recipes.each do |recipe|
-    depends = []
-    File.readlines(recipe).each { |line| depends << $1 if dep_reg =~ line }
-    recipe_name = File.basename(recipe, '.rb')
-    recipe_full = "#{cook_name}::#{recipe_name}@#{md.version}"
-    recipe_tree << {"recipe" => recipe_full, "depends" => depends, "attribute" => attr_id}
-  end
-
-  res = http_put(recipes_tree_url, recipe_tree.to_json)
-  if res
-    puts "Recipes for cookbook '#{cook_name}' created successfully"
-  else
-    puts "Skipping cookbook '#{cook_name}' from tar creation because of errors."
-    return false
-  end
 
   begin
     Dir.mktmpdir do |dir|
@@ -88,23 +33,6 @@ def create_recipes(metafile, md, attr_id)
     puts e.backtrace
     return false
   end
-  return true
-end
-
-def http_put(url, data_json)
-  headers = {"Content-Type" => "application/json"}
-  cli = HTTPClient.new
-  begin
-    res = cli.put(url, data_json, headers)
-  rescue Exception => e
-    puts "Unknown error: #{e.message}"
-    return nil
-  end
-  if res.status < 200 or res.status >= 300
-    puts "Error received from server: #{res.inspect}"
-    return nil
-  end
-  return res.content
 end
 
 ### MAIN ###

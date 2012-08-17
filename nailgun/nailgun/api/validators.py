@@ -7,14 +7,25 @@ from piston.decorator import decorator
 
 from django.core.exceptions import ValidationError
 from django.core.validators import RegexValidator
-from nailgun.models import Cluster, Node, Recipe, Role, Release, Network
+from nailgun.models import Cluster
+from nailgun.models import Node
+from nailgun.models import Role
+from nailgun.models import Release
+from nailgun.models import Network
+
+import logging
+
+
+logger = logging.getLogger("validators")
 
 
 # Handler decorator for JSON validation using forms
 def validate_json(v_form):
     @decorator
     def wrap(f, self, request, *a, **kwa):
+        logger.debug("Validation json: trying to find out content_type")
         content_type = request.content_type.split(';')[0]
+        logger.debug("Validation json: content_type: %s" % content_type)
         if content_type != "application/json":
             response = rc.BAD_REQUEST
             response.content = "Invalid content type, must be application/json"
@@ -22,18 +33,24 @@ def validate_json(v_form):
 
         try:
             parsed_body = json.loads(request.body)
+            logger.debug("Validation json: body: %s" % str(parsed_body))
         except:
             response = rc.BAD_REQUEST
             response.content = "Invalid JSON object"
             raise HttpStatusCode(response)
 
         if not isinstance(parsed_body, dict):
+            logger.debug("Validation json: parsed_body is not dict")
             response = rc.BAD_REQUEST
             response.content = "Dictionary expected"
             raise HttpStatusCode(response)
 
-        form = v_form(parsed_body, request.FILES)
-
+        logger.debug("Validation json: trying to construct form from v_form")
+        try:
+            form = v_form(parsed_body, request.FILES)
+        except Exception as e:
+            logger.debug("Validation json: error: %s" % str(e.message))
+        logger.debug("Validation json: form: %s" % str(form))
         if form.is_valid():
             setattr(request, 'form', form)
             return f(self, request, *a, **kwa)
@@ -84,30 +101,6 @@ def validate_json_list(v_form):
 FORM DATA VALIDATORS
 """
 
-
-def validate_recipe(value):
-    if not re.match(r'^[^\]]+::([^\]]+)@[0-9]+(\.[0-9]+){1,2}$', value):
-        raise ValidationError('Recipe should be in a \
-"cookbook::recipe@version" format')
-
-
-def validate_attribute(value):
-    if not isinstance(value, dict):
-        raise ValidationError('Attributes must be in a dictionary')
-
-
-def validate_role_recipes(value):
-    if value and isinstance(value, list):
-        map(validate_recipe, value)
-        for i in value:
-            try:
-                rec_exist = Recipe.objects.get(recipe=i)
-            except Recipe.DoesNotExist:
-                raise ValidationError('Recipe %s does not exist' % i)
-    else:
-        raise ValidationError('Invalid recipe list')
-
-
 validate_node_id = RegexValidator(regex=re.compile('^[\dA-F]{12}$'))
 
 
@@ -144,15 +137,23 @@ def validate_release_node_roles(data):
     if not all(map(lambda i: 'name' in i, data)):
         raise ValidationError('Role name is empty')
     for role in data:
-        if 'recipes' not in role or not role['recipes']:
-            raise ValidationError('Recipes list for role "%s" \
+        if 'components' not in role or not role['components']:
+            raise ValidationError('Components list for role "%s" \
 should not be empty' % role['name'])
-        for recipe in role['recipes']:
-            validate_recipe(recipe)
-            try:
-                rec_exists = Recipe.objects.get(recipe=recipe)
-            except Recipe.DoesNotExist:
-                raise ValidationError('Recipe %s doesn\'t exist' % recipe)
+
+
+def validate_release_points(data):
+    if not data or not isinstance(data, list):
+        raise ValidationError('Invalid points list')
+    if not all(map(lambda i: 'name' in i, data)):
+        raise ValidationError('Point name is empty')
+
+
+def validate_release_components(data):
+    if not data or not isinstance(data, list):
+        raise ValidationError('Invalid components list')
+    if not all(map(lambda i: 'name' in i, data)):
+        raise ValidationError('Component name is empty')
 
 
 def forbid_modifying_roles(value):

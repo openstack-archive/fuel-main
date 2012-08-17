@@ -17,3 +17,5 @@ COBBLER_URL = "http://localhost/cobbler_api"
 COBBLER_USER = "cobbler"
 COBBLER_PASSWORD = "cobbler"
 COBBLER_PROFILE = "centos-6.2-x86_64"
+
+REPO_ADDRESS = "127.0.0.1"

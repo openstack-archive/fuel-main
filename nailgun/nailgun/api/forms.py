@@ -7,49 +7,87 @@ from django.forms.fields import Field, IntegerField, CharField, ChoiceField, \
                                 BooleanField
 from django.core.validators import RegexValidator
 
-from nailgun.models import Cluster, Node, Recipe, Role, Release, Network, \
-        Attribute
+from nailgun.models import Cluster
+from nailgun.models import Node
+from nailgun.models import Role
+from nailgun.models import Release
+from nailgun.models import Network
+from nailgun.models import Point
+from nailgun.models import Com
+
 import nailgun.api.validators as vld
 
-
-class RecipeForm(forms.ModelForm):
-    depends = Field(required=False)
-
-    class Meta:
-        model = Recipe
-
-    def clean(self):
-        return self.cleaned_data
-
-    def clean_depends(self):
-        for depend in self.cleaned_data['depends']:
-            vld.validate_recipe(depend)
-        return self.cleaned_data['depends']
-
-    def clean_attribute(self):
-        return self.cleaned_data['attribute']
-
-    def clean_recipe(self):
-        vld.validate_recipe(self.cleaned_data['recipe'])
-        return self.cleaned_data['recipe']
+import logging
 
 
-class RoleForm(forms.ModelForm):
-    recipes = Field(validators=[vld.validate_role_recipes])
+logger = logging.getLogger('forms')
+
+
+class RoleFilterForm(forms.Form):
+    node_id = Field(required=False, validators=[vld.validate_node_id])
+    release_id = Field(required=False, validators=[])
+
+
+class RoleCreateForm(forms.ModelForm):
+    components = Field(validators=[], required=False)
+
+    def clean_components(self):
+
+        return [c.name for c in Com.objects.filter(
+            name__in=self.data['components'],
+            release=Release.objects.get(id=self.data['release'])
+            )]
 
     class Meta:
         model = Role
 
 
-class AttributeForm(forms.ModelForm):
-    attribute = Field(validators=[vld.validate_attribute])
+class PointFilterForm(forms.Form):
+    release = IntegerField(required=False)
+
+
+class PointUpdateForm(forms.ModelForm):
+    scheme = Field(validators=[])
 
     class Meta:
-        model = Attribute
+        model = Point
+        exclude = ('name', 'release', 'provided_by', 'required_by')
 
 
-class RoleFilterForm(forms.Form):
-    node_id = Field(required=False, validators=[vld.validate_node_id])
+class PointCreateForm(forms.ModelForm):
+    scheme = Field(required=False, validators=[])
+
+    class Meta:
+        model = Point
+        exclude = ('provided_by', 'required_by')
+
+
+class ComFilterForm(forms.Form):
+    release = IntegerField(required=False)
+
+
+class ComCreateForm(forms.ModelForm):
+    deploy = Field(validators=[])
+    requires = Field(validators=[], required=False)
+    provides = Field(validators=[], required=False)
+
+    def clean_requires(self):
+
+        return [p.name for p in Point.objects.filter(
+            name__in=self.data['requires'],
+            release=Release.objects.get(id=self.data['release'])
+            )]
+
+    def clean_provides(self):
+
+        return [p.name for p in Point.objects.filter(
+            name__in=self.data['provides'],
+            release=Release.objects.get(id=self.data['release'])
+            )]
+
+    class Meta:
+        model = Com
+        exclude = ('roles')
 
 
 class ClusterForm(forms.Form):
@@ -90,7 +128,6 @@ class NodeFilterForm(forms.Form):
 
 
 class ReleaseCreationForm(forms.ModelForm):
-    roles = Field(validators=[vld.validate_release_node_roles])
     networks_metadata = Field(validators=[vld.validate_networks_metadata])
 
     class Meta:

@@ -5,6 +5,7 @@ import logging
 import time
 import json
 import urllib2
+import pprint
 from unittest import TestCase
 from subprocess import Popen, PIPE
 
@@ -39,6 +40,7 @@ class TestNode(TestCase):
         self.slave_host = None
         self.slave_user = "root"
         self.slave_passwd = "r00tme"
+        self.release_id = None
 
     def setUp(self):
         admin_node = ci.environment.node['admin']
@@ -64,14 +66,46 @@ class TestNode(TestCase):
             COOKBOOKS_PATH,
             SAMPLE_REMOTE_PATH
         )
+
+        attempts = 0
+        while True:
+            releases = json.loads(self.client.get(
+                    "http://%s:8000/api/releases/" % self.admin_host
+                    ))
+
+            for r in releases:
+                logging.debug("Found release name: %s" % r["name"])
+                if r["name"] == "Sample release":
+                    logging.debug("Sample release id: %s" % r["id"])
+                    self.release_id = r["id"]
+                    break
+                    
+            if self.release_id:
+                break
+
+            if attempts >= 1:
+                raise Exception("Release is not found")
+
+            logging.error("Sample release is not found. Trying to upload")
+            with self.remote.sudo:
+                cmd = "/opt/nailgun/bin/create_release -f %s" % \
+                    release_remote_path
+                logging.info("Launching command: %s" % cmd)
+                res = self.remote.execute(cmd)
+                if res['exit_status'] != 0:
+                    self.remote.disconnect()
+                    raise Exception("Command failed: %s" % str(res))
+                attempts += 1
+
+
         commands = [
-            "/opt/nailgun/bin/install_cookbook %s" % cookbook_remote_path,
-            "/opt/nailgun/bin/create_release %s" % release_remote_path
+            "/opt/nailgun/bin/install_cookbook %s" % cookbook_remote_path
         ]
-        logging.info("Loading cookbooks to database...")
         with self.remote.sudo:
             for cmd in commands:
+                logging.info("Launching command: %s" % cmd)
                 res = self.remote.execute(cmd)
+                logging.debug("Command result: %s" % pprint.pformat(res))
                 if res['exit_status'] != 0:
                     self.remote.disconnect()
                     raise Exception("Command failed: %s" % str(res))
@@ -114,7 +148,8 @@ class TestNode(TestCase):
             logging.info("No clusters found - creating test cluster...")
             cluster = self.client.post(
                 "http://%s:8000/api/clusters" % self.admin_host,
-                data='{ "name": "MyOwnPrivateCluster", "release": 1 }'
+                data='{ "name": "MyOwnPrivateCluster", "release": %s }' % \
+                    self.release_id
             )
             cluster = json.loads(cluster)
 
@@ -130,12 +165,16 @@ class TestNode(TestCase):
             raise ValueError("Failed to add node into cluster")
 
         roles_uploaded = json.loads(self.client.get(
-            "http://%s:8000/api/roles/" % self.admin_host
+            "http://%s:8000/api/roles?release_id=%s" % \
+                (self.admin_host, self.release_id)
         ))
+
+        """
+        FIXME
+        WILL BE CHANGED WHEN RENDERING WILL BE REWRITTEN
+        """
         roles_ids = [
-            role["id"] for role in roles_uploaded \
-                if role["recipes"][0].startswith("sample-cook") \
-                or role["recipes"][0].startswith("mysql")
+            role["id"] for role in roles_uploaded
         ]
 
         resp = json.loads(self.client.put(
@@ -153,7 +192,8 @@ class TestNode(TestCase):
 
         logging.info("Provisioning...")
         task = json.loads(self.client.put(
-            "http://%s:8000/api/clusters/1/changes/" % self.admin_host
+            "http://%s:8000/api/clusters/1/changes/" % self.admin_host,
+            log=True
         ))
         task_id = task['task_id']
         logging.info("Task created: %s" % task_id)

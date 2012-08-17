@@ -5,26 +5,44 @@ from django.db import models
 from django.contrib.auth.models import User
 from django.core.exceptions import ObjectDoesNotExist
 from jsonfield import JSONField
-from api.fields import RecipeField
 
 
-class Attribute(models.Model):
-    cookbook = models.CharField(max_length=100)
-    version = models.CharField(max_length=30)
-    attribute = JSONField()
+class EndPoint(models.Model):
+    point = models.ForeignKey('Point', related_name='endpoints')
+    node = models.ForeignKey('Node', related_name='endpoints')
+    data = JSONField()
+
+    class Meta:
+        unique_together = ("point", "node")
 
 
-class Recipe(models.Model):
-    recipe = RecipeField(max_length=100)
-    attribute = models.ForeignKey(Attribute, null=True, blank=True)
-    depends = models.ManyToManyField("Recipe",
-        related_name="recipe_deps",
-    )
+class Point(models.Model):
+    name = models.CharField(max_length=100)
+    release = models.ForeignKey('Release', related_name='points')
+    scheme = JSONField()
+
+    class Meta:
+        unique_together = ("name", "release")
+
+
+class Com(models.Model):
+    name = models.CharField(max_length=100)
+    release = models.ForeignKey('Release', related_name='components')
+    requires = models.ManyToManyField(Point, related_name='required_by')
+    provides = models.ManyToManyField(Point, related_name='provided_by')
+    deploy = JSONField()
+
+    class Meta:
+        unique_together = ("name", "release")
 
 
 class Role(models.Model):
-    name = models.CharField(max_length=50)
-    recipes = models.ManyToManyField(Recipe, related_name="roles")
+    name = models.CharField(max_length=100)
+    release = models.ForeignKey('Release', related_name='roles')
+    components = models.ManyToManyField(Com, related_name="roles")
+
+    class Meta:
+        unique_together = ("name", "release")
 
 
 class Release(models.Model):
@@ -32,7 +50,6 @@ class Release(models.Model):
     version = models.CharField(max_length=30)
     description = models.TextField(null=True, blank=True)
     networks_metadata = JSONField()
-    roles = models.ManyToManyField(Role, related_name='releases')
 
     class Meta:
         unique_together = ("name", "version")
@@ -88,7 +105,7 @@ class Task(models.Model):
 
 
 class Cluster(models.Model):
-    name = models.CharField(max_length=100)
+    name = models.CharField(max_length=100, unique=True)
     release = models.ForeignKey(Release, related_name='clusters')
 
     # working around Django issue #10227
@@ -115,7 +132,6 @@ class Node(models.Model):
     status = models.CharField(max_length=30, choices=NODE_STATUSES,
             default='ready')
     metadata = JSONField()
-    node_attrs = JSONField()
     mac = models.CharField(max_length=17)
     ip = models.CharField(max_length=15)
     fqdn = models.CharField(max_length=255)

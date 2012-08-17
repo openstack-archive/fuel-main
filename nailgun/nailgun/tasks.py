@@ -14,8 +14,8 @@ import tarfile
 import shutil
 from django.conf import settings
 
-from nailgun.models import Cluster, Node, Role, Recipe
-from nailgun.helpers import SshConnect, DeployGenerator
+from nailgun.models import Cluster, Node, Role, Com
+from nailgun.helpers import SshConnect, DeployManager
 from nailgun.task_helpers import task_with_callbacks, TaskPool, topol_sort
 from nailgun.exceptions import SSHError, EmptyListError, DeployError
 from nailgun.provision import ProvisionConfig
@@ -52,38 +52,35 @@ def node_set_error_status(node_id):
     node.save()
 
 
-@task_with_callbacks(name='Deploy Cluster')
+@task_with_callbacks
 def deploy_cluster(cluster_id):
 
-    graph = {}
-    for recipe in Recipe.objects.filter(
-                recipe__in=DeployGenerator.recipes(cluster_id)):
-        graph[recipe.recipe] = [r.recipe for r in recipe.depends.all()]
+    deploy_manager = DeployManager(cluster_id)
+    release = Cluster.objects.get(id=cluster_id).release
+    logger.debug("deploy_cluster: Cluster release: %s" % release.id)
 
-    # NOTE(mihgen): Installation components dependency resolution
-    # From nodes.roles.recipes we know recipes that needs to be applied
-    # We have to apply them in an order according to specified dependencies
-    # To sort in an order, we use DFS(Depth First Traversal) over DAG graph
-    try:
-        sorted_recipes = topol_sort(graph)
-    except KeyError:
-        raise DeployError("One or more recipes have unresolved dependencies")
     tree = TaskPool()
     # first element in sorted_recipes is the first recipe we have to apply
-    for r in sorted_recipes:
-        recipe = Recipe.objects.get(recipe=r)
-        # We need to find nodes with these recipes
-        roles = recipe.roles.all()
-        nodes = Node.objects.filter(roles__in=roles, cluster__id=cluster_id)
+    installed = []
+    logger.debug("deploy_cluster: sorted_components: %s" % \
+                     deploy_manager.sorted_components())
 
-        # TODO(mihgen): What if there are no nodes with required role?
-        #   we need to raise an exception if there are any roles dependend
+    for component_name in deploy_manager.sorted_components():
+        logger.debug("deploy_cluster: Com: %s" % component_name)
+        component = Com.objects.get(
+            release=release,
+            name=component_name)
+        roles = component.roles.all()
+        nodes = Node.objects.filter(roles__in=roles, cluster__id=cluster_id)
 
         taskset = []
         for node in nodes:
-            taskset.append({'func': bootstrap_node, 'args': [node.id],
+            logger.debug("deploy_cluster: task: node: %s com: %s" % \
+                             (node.id, component.name))
+            bootstrap_args = [node.id, component.name]
+            taskset.append({'func': bootstrap_node, 'args': bootstrap_args,
                     'kwargs': {}})
-        tree.push_task(create_solo, (cluster_id, recipe.id))
+
         # FIXME(mihgen): it there are no taskset items,
         #   we included recipes which are not applied on nodes.
         #   We have to include only recipes which are assigned to nodes
@@ -93,40 +90,6 @@ def deploy_cluster(cluster_id):
     tree.push_task(update_cluster_status, (cluster_id,))
     res = tree.apply_async()
     return res
-
-
-@task_with_callbacks
-def create_solo(*args):
-    logger = create_solo.get_logger()
-    # FIXME(mihgen):
-    # We have to do this ugly trick because chord precedes first argument
-    if isinstance(args[0], list):
-        args = args[1:]
-    cluster_id, recipe = args[0], Recipe.objects.get(id=args[1])
-
-    # We need to find nodes with these recipes
-    roles = recipe.roles.all()
-    nodes = Node.objects.filter(roles__in=roles)
-
-    for node in nodes:
-        node_solo = {
-            "cluster_id": cluster_id,
-            "run_list": ["recipe[%s]" % recipe.recipe],
-            "components_list": DeployGenerator.components4(cluster_id),
-            "components_dict": DeployGenerator.components4(cluster_id, "dict")
-        }
-
-        # writing to solo
-        with open(
-            os.path.join(
-                settings.CHEF_CONF_FOLDER,
-                "".join([node.id, ".json"])
-            ),
-            "w"
-        ) as entity:
-            entity.write(json.dumps(node_solo, sort_keys=True, indent=4))
-
-    return True
 
 
 def tcp_ping(host, port, timeout=5):
@@ -139,7 +102,7 @@ def tcp_ping(host, port, timeout=5):
 
 
 @task_with_callbacks
-def bootstrap_node(node_id):
+def bootstrap_node(node_id, component_name):
 
     node = Node.objects.get(id=node_id)
 
@@ -193,7 +156,7 @@ def bootstrap_node(node_id):
     else:
         logger.debug("Trying to launch deploy script on node %s" % node_id)
         # Returns True if succeeded
-        exit_status = ssh.run("/opt/nailgun/bin/deploy")
+        exit_status = ssh.run("/opt/nailgun/bin/deploy %s" % component_name)
         ssh.close()
 
     # ssh.run returns True, if command executed successfully
@@ -213,18 +176,25 @@ def bootstrap_node(node_id):
 
 
 def _is_node_bootstrap(node):
+    ssh_user = 'root'
+    ssh_key = settings.PATH_TO_BOOTSTRAP_SSH_KEY
+
     logger.debug(
         "Checking if node %s is booted with bootstrap image" \
         % node.id
     )
     try:
         logger.debug(
-            "Trying to establish ssh connection using bootstrap key"
+            "Trying to establish ssh connection using bootstrap key" \
+                "ip: %s key: %s user: %s" % \
+                (node.ip,
+                 ssh_key,
+                 ssh_user)
         )
         ssh = SshConnect(
             node.ip,
-            'root',
-            settings.PATH_TO_BOOTSTRAP_SSH_KEY
+            ssh_user,
+            ssh_key
         )
     except (paramiko.AuthenticationException,
             paramiko.PasswordRequiredException):
@@ -234,6 +204,8 @@ def _is_node_bootstrap(node):
         logger.debug("Unknown error while ssh using bootstrap rsa key")
         return False
     else:
+        logger.debug("Ssh connection succeeded: key: %s" % \
+                         ssh_key)
         ssh.close()
         return True
 
@@ -272,13 +244,13 @@ def _provision_node(node_id):
     nd.power = ndp
 
     logger.debug(
-        "Trying to save node %s into provision system" \
-        % node_id
+        "Trying to save node %s into provision system: profile: %s " % \
+            (node_id, pf.name)
     )
     nd.save()
 
     logger.debug(
-        "Trying to reboot node %s using %s" \
-        % (node_id, ndp.power_type)
+        "Trying to reboot node %s using %s in order to launch provisioning" % \
+            (node_id, ndp.power_type)
     )
     nd.power_reboot()

@@ -64,7 +64,7 @@ class Validator:
         return (os, osversion, arch) in cls._supported_platform
 
     # FIXME
-    # IT NEEDED TO BE CHECKED IF PROVISION ALREADY HAS THAT PROFILE
+    # IT IS NEEDED TO BE CHECKED IF PROVISION ALREADY HAS THAT PROFILE
     # IF NOT THEN PROFILE IS OBVIOUSLY INVALID
     @classmethod
     def is_profile_valid(cls, profile):
@@ -75,7 +75,7 @@ class Validator:
         return powertype in cls._supported_powertypes
 
     # FIXME
-    # IT NEEDED TO BE CHECKED IF POWER IS VALID
+    # IT IS NEEDED TO BE CHECKED IF POWER IS VALID
     @classmethod
     def is_power_valid(cls, power):
         return True
