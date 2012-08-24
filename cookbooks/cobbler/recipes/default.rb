@@ -117,6 +117,27 @@ template "/var/lib/cobbler/snippets/disable_pxe" do
   mode 0644
 end
 
+cookbook_file "/var/lib/cobbler/snippets/hostname_generate" do
+  source "hostname_generate.snippet"
+  owner "root"
+  group "root"
+  mode 0644
+end
+
+cookbook_file "/var/lib/cobbler/snippets/rsyslog.d-enable" do
+  source "rsyslog.d-enable.snippet"
+  owner "root"
+  group "root"
+  mode 0644
+end
+
+cookbook_file "/var/www/cobbler/aux/send2syslog.py" do
+  source "send2syslog.py"
+  owner "root"
+  group "root"
+  mode 0644
+end
+
 include_recipe "cobbler::bootstrap"
 include_recipe "cobbler::precise-x86_64"
 include_recipe "cobbler::centos-6.3-x86_64"

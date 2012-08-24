@@ -4,7 +4,8 @@ lang en_US.UTF-8
 keyboard us
 reboot
 
-network --onboot yes --device eth0 --bootproto=dhcp
+$SNIPPET('hostname_generate')
+network --onboot yes --device eth0 --bootproto=dhcp --hostname=$hostname
 firewall --disable
 
 rootpw  --iscrypted $6$6PKP1tMCaSx8lAkP$3I2iODktkcLGqN1U2C4kC5mPuQy8gXhWjk7DxlS1fhOaI5rNsJGy4kOv0cetgS0nEfMsjAR6shDGD/47d/B0v/
@@ -45,6 +46,11 @@ wget
 crontabs
 cronie
 
+%pre --log=/tmp/pre-install.log
+wget -O /tmp/send2syslog.py "http://$server/cobbler/aux/send2syslog.py"
+python /tmp/send2syslog.py --server $server
+%end
+
 %post --log=/root/post-install.log
 # configure yum
 rm /etc/yum.repos.d/*
@@ -79,6 +85,9 @@ mkdir -p /opt/nailgun/bin
 mkdir /etc/cron.d
 <%= @late_cron.init.cobbler_late_file("/etc/cron.d/agent", "444") %>
 
+# rsyslog
+$SNIPPET('rsyslog.d-enable')
+
 # install chef
 # gem sources -l | grep -v "*** CURRENT SOURCES ***\|^$" | while read repo; do gem sources -r \${repo}; done
 # gem sources -a http://<%= node.cobbler.repoaddr %>/gems/gems
@@ -89,4 +98,4 @@ gem install httpclient --source http://<%= node.cobbler.repoaddr %>/gems/ --no-r
 %post --log=/root/nopxe.log
 # nopxe
 $SNIPPET('disable_pxe')
-
+%end
