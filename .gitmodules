@@ -4,3 +4,6 @@
 [submodule "cooks"]
 	path = cooks
 	url = git@github.com:Mirantis/product-cookbooks.git
+[submodule "recipes-library"]
+	path = recipes-library
+	url = git@github.com:Mirantis/recipes-library.git
