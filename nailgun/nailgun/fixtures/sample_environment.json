@@ -252,7 +252,7 @@
                         "vlan_id": 300,
                         "address": "172.18.0.2"
                     },
-                    "management": {
+                    "admin": {
                         "access": "private",
                         "device": "eth0",
                         "netmask": "255.255.255.0",
