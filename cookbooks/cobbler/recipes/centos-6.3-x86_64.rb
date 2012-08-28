@@ -3,8 +3,8 @@
 # it requires also ssh key generated in /root/.ssh
 
 
-template "#{node.cobbler.preseed_dir}/centos-6.2-x86_64.ks" do
-  source "centos-6.2-x86_64.ks"
+template "#{node.cobbler.preseed_dir}/centos-6.3-x86_64.ks" do
+  source "centos-6.3-x86_64.ks"
   owner "root"
   group "root"
   mode "0644"
@@ -28,39 +28,39 @@ flock -w 0 -o /var/lock/agent.lock -c \"/opt/nailgun/bin/agent -c /opt/nailgun/b
             )
 end
 
-directory "#{node["cobbler"]["centos-6.2-x86_64_mnt"]}" do
+directory "#{node["cobbler"]["centos-6.3-x86_64_mnt"]}" do
   recursive true
   owner "root"
   group "root"
   mode "0755"
-  not_if "test -d #{node["cobbler"]["centos-6.2-x86_64_mnt"]}"
+  not_if "test -d #{node["cobbler"]["centos-6.3-x86_64_mnt"]}"
 end
 
-mount "#{node["cobbler"]["centos-6.2-x86_64_mnt"]}" do
+mount "#{node["cobbler"]["centos-6.3-x86_64_mnt"]}" do
   options "loop"
-  device "#{node["cobbler"]["centos-6.2-x86_64_iso"]}"
+  device "#{node["cobbler"]["centos-6.3-x86_64_iso"]}"
 end
 
-link "#{node.cobbler.ks_mirror_dir}/centos-6.2-x86_64" do
-  to "#{node["cobbler"]["centos-6.2-x86_64_mnt"]}"
+link "#{node.cobbler.ks_mirror_dir}/centos-6.3-x86_64" do
+  to "#{node["cobbler"]["centos-6.3-x86_64_mnt"]}"
 end
 
-link "/var/lib/mirror/centos/6.2/images" do 
-  to "#{node["cobbler"]["centos-6.2-x86_64_mnt"]}/images"
+link "/var/lib/mirror/centos/6.3/images" do 
+  to "#{node["cobbler"]["centos-6.3-x86_64_mnt"]}/images"
 end
 
-cobbler_distro "centos-6.2-x86_64" do
-  kernel "#{node.cobbler.ks_mirror_dir}/centos-6.2-x86_64/isolinux/vmlinuz"
-  initrd "#{node.cobbler.ks_mirror_dir}/centos-6.2-x86_64/isolinux/initrd.img"
+cobbler_distro "centos-6.3-x86_64" do
+  kernel "#{node.cobbler.ks_mirror_dir}/centos-6.3-x86_64/isolinux/vmlinuz"
+  initrd "#{node.cobbler.ks_mirror_dir}/centos-6.3-x86_64/isolinux/initrd.img"
   arch "x86_64"
   breed "redhat"
   osversion "rhel6"
 end
 
-cobbler_profile "centos-6.2-x86_64" do
-  kickstart "#{node.cobbler.preseed_dir}/centos-6.2-x86_64.ks"
+cobbler_profile "centos-6.3-x86_64" do
+  kickstart "#{node.cobbler.preseed_dir}/centos-6.3-x86_64.ks"
   kopts ""
-  distro "centos-6.2-x86_64"
+  distro "centos-6.3-x86_64"
   menu true
 end
 

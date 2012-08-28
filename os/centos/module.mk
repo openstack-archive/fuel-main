@@ -2,7 +2,7 @@
 
 $/%: /:=$/
 
-CENTOSMIRROR:=http://mirror.san.fastserv.com/pub/linux/centos
+CENTOSMIRROR:=http://mirror.yandex.ru/centos
 
 CENTOSEXTRA_PACKAGES:=$(shell grep -v ^\\s*\# requirements-rpm.txt)
 
@@ -28,38 +28,38 @@ $/etc/yum.conf: | $/etc/.dir
 
 define yum_base_repo
 [base]
-name=CentOS $(CENTOS_62_RELEASE) - Base
-baseurl=$(CENTOSMIRROR)/$(CENTOS_62_RELEASE)/os/$(CENTOS_62_ARCH)
+name=CentOS $(CENTOS_63_RELEASE) - Base
+baseurl=$(CENTOSMIRROR)/$(CENTOS_63_RELEASE)/os/$(CENTOS_63_ARCH)
 gpgcheck=0
 enabled=1
 
 [updates]
-name=CentOS $(CENTOS_62_RELEASE) - Updates
-baseurl=$(CENTOSMIRROR)/$(CENTOS_62_RELEASE)/updates/$(CENTOS_62_ARCH)
+name=CentOS $(CENTOS_63_RELEASE) - Updates
+baseurl=$(CENTOSMIRROR)/$(CENTOS_63_RELEASE)/updates/$(CENTOS_63_ARCH)
 gpgcheck=0
 enabled=1
 
 [extras]
-name=CentOS $(CENTOS_62_RELEASE) - Extras
-baseurl=$(CENTOSMIRROR)/$(CENTOS_62_RELEASE)/extras/$(CENTOS_62_ARCH)
+name=CentOS $(CENTOS_63_RELEASE) - Extras
+baseurl=$(CENTOSMIRROR)/$(CENTOS_63_RELEASE)/extras/$(CENTOS_63_ARCH)
 gpgcheck=0
 enabled=1
 
 [centosplus]
-name=CentOS $(CENTOS_62_RELEASE) - Plus
-baseurl=$(CENTOSMIRROR)/$(CENTOS_62_RELEASE)/centosplus/$(CENTOS_62_ARCH)
+name=CentOS $(CENTOS_63_RELEASE) - Plus
+baseurl=$(CENTOSMIRROR)/$(CENTOS_63_RELEASE)/centosplus/$(CENTOS_63_ARCH)
 gpgcheck=0
 enabled=1
 
 [contrib]
-name=CentOS $(CENTOS_62_RELEASE) - Contrib
-baseurl=$(CENTOSMIRROR)/$(CENTOS_62_RELEASE)/contrib/$(CENTOS_62_ARCH)
+name=CentOS $(CENTOS_63_RELEASE) - Contrib
+baseurl=$(CENTOSMIRROR)/$(CENTOS_63_RELEASE)/contrib/$(CENTOS_63_ARCH)
 gpgcheck=0
 enabled=1
 
 [epel]
 name=Extra Packages for Enterprise Linux 6
-baseurl=http://download.fedoraproject.org/pub/epel/$(CENTOS_62_MAJOR)/$(CENTOS_62_ARCH)
+baseurl=http://download.fedoraproject.org/pub/epel/$(CENTOS_63_MAJOR)/$(CENTOS_63_ARCH)
 enabled=1
 gpgcheck=0
 
@@ -75,7 +75,7 @@ $/etc/yum.repos.d/base.repo: | $/etc/yum.repos.d/.dir
 	@mkdir -p $(@D)
 	echo "$${contents}" > $@
 
-$/comps.xml: $(BINARIES_DIR)/centos/$(CENTOS_62_RELEASE)/comps.xml
+$/comps.xml: $(BINARIES_DIR)/centos/$(CENTOS_63_RELEASE)/comps.xml
 	$(ACTION.COPY)
 
 $/cache-infra.done: \
@@ -83,21 +83,21 @@ $/cache-infra.done: \
 	  $/etc/yum.repos.d/base.repo
 	$(ACTION.TOUCH)
 
-$/cache-iso.done: $(CENTOS_62_ISO) | $(CENTOS_62_ROOT)/Packages $/Packages/.dir
-	find $(abspath $(CENTOS_62_ROOT)/Packages) -type f \( -name '*.rpm' \) -exec ln -sf {} $/Packages \;
+$/cache-iso.done: $(CENTOS_63_ISO) | $(CENTOS_63_ROOT)/Packages $/Packages/.dir
+	find $(abspath $(CENTOS_63_ROOT)/Packages) -type f \( -name '*.rpm' \) -exec ln -sf {} $/Packages \;
 	$(ACTION.TOUCH)
 
 $/cache-extra.done: \
 	  $/cache-infra.done \
 	  $/cache-iso.done \
-	  $(addprefix $/Packages/,$(call find-files,$(BINARIES_DIR)/centos/$(CENTOS_62_RELEASE)/Packages)) \
+	  $(addprefix $/Packages/,$(call find-files,$(BINARIES_DIR)/centos/$(CENTOS_63_RELEASE)/Packages)) \
 	  requirements-rpm.txt
 	for p in $(CENTOSEXTRA_PACKAGES); do \
-	repotrack -c $/etc/yum.conf -p $/Packages -a $(CENTOS_62_ARCH) $$p; \
+	repotrack -c $/etc/yum.conf -p $/Packages -a $(CENTOS_63_ARCH) $$p; \
 	done
 	$(ACTION.TOUCH)
 
-$/Packages/%.rpm: $(BINARIES_DIR)/centos/$(CENTOS_62_RELEASE)/Packages/%.rpm
+$/Packages/%.rpm: $(BINARIES_DIR)/centos/$(CENTOS_63_RELEASE)/Packages/%.rpm
 	ln -sf $(abspath $<) $@
 
 $/cache.done: $/cache-extra.done $/comps.xml

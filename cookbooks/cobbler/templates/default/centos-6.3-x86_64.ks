@@ -1,5 +1,5 @@
 install
-url --url http://<%= node.cobbler.repoaddr %>/centos/6.2
+url --url http://<%= node.cobbler.repoaddr %>/centos/6.3
 lang en_US.UTF-8
 keyboard us
 reboot
@@ -50,7 +50,7 @@ rm /etc/yum.repos.d/*
 cat > /etc/yum.repos.d/nailgun.repo <<EOF
 [nailgun]
 name=Nailgun Repository
-baseurl=http://<%= node.cobbler.repoaddr %>/centos/6.2
+baseurl=http://<%= node.cobbler.repoaddr %>/centos/6.3
 enabled=1
 gpgcheck=0
 EOF
