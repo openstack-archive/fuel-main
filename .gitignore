@@ -15,3 +15,5 @@
 /build
 /test/nosetests.xml
 lock
+
+.idea
