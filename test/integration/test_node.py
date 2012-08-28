@@ -1,21 +1,13 @@
-import shlex
 import os
-import sys
 import logging
 import time
 import json
-import urllib2
 import pprint
-from unittest import TestCase
-from subprocess import Popen, PIPE
-#import posixpath
-import paramiko
 import posixpath
 from devops.helpers import wait, tcp_ping, http
 from integration import ci
-
 from integration.base import Base
-from helpers import HTTPClient, SSHClient
+from helpers import SSHClient
 from root import root
 
 logging.basicConfig(format=':%(lineno)d: %(asctime)s %(message)s', level=logging.DEBUG)
@@ -93,7 +85,7 @@ class TestNode(Base):
                     release_remote_path
                 logging.info("Launching command: %s" % cmd)
                 res = self.remote.execute(cmd)
-                if res['exit_status'] != 0:
+                if res['exit_status']:
                     self.remote.disconnect()
                     raise Exception("Command failed: %s" % str(res))
                 attempts += 1

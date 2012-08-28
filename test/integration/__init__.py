@@ -1,11 +1,8 @@
 import time, os
 
 from devops.model import Environment, Network, Node, Disk, Cdrom, Interface
-from devops.controller import Controller
-from devops.driver.libvirt import Libvirt
-from devops.helpers import tcp_ping, wait, TimeoutError
+from devops.helpers import tcp_ping, wait
 import traceback
-
 import logging
 import devops
 
@@ -148,12 +145,3 @@ class Ci(object):
         return True
 
 ci = None
-
-def setUp():
-    if not ci.setup_environment():
-        raise Exception, "Failed to setup integration environment"
-
-def tearDown():
-    if not ci.environment_cache_file:
-        ci.destroy_environment()
-

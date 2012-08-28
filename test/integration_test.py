@@ -45,7 +45,7 @@ def main():
         suite = integration
     elif params.test_suite == 'cookbooks':
         suite = cookbooks
-
+#   todo fix default values
     suite.ci = suite.Ci(params.cache_file, params.iso)
     suite.ci.installation_timeout = getattr(params, 'installation_timeout', 1800)
     suite.ci.chef_timeout = getattr(params, 'chef_timeout', 600)
