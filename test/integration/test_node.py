@@ -246,7 +246,7 @@ class TestNode(Base):
 #   create node with predefined mac address
     def get_slave_id(self):
         if hasattr(self,"slave_id"): return self.slave_id
-        if ci is not None:
+        if ci is not None and ci.environment is not None:
             slave = ci.environment.node['slave']
             slave_id = self.get_id_by_mac(slave.interfaces[0].mac_address)
             logging.info("Starting slave node")
@@ -259,7 +259,6 @@ class TestNode(Base):
             last_node = json.loads(response)[-1]
             slave_id = self.get_id_by_mac(last_node['mac'])
         self.slave_id = slave_id
-
         return slave_id
 
     def get_slave_node(self, slave_id):
