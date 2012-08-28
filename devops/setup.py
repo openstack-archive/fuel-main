@@ -7,6 +7,6 @@ setup(
     author='Mirantis, Inc.',
     author_email='product@mirantis.com',
     packages=['devops', 'devops.driver'],
-    scripts=['bin/devops'], requires=['xmlbuilder', "ipaddr", "paramiko"]
+    scripts=['bin/devops'], requires=['xmlbuilder', "ipaddr", "paramiko", "lxml"]
 )
 

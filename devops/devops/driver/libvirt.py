@@ -1,6 +1,5 @@
 # vim: ts=4 sw=4 expandtab
-import xml
-
+from devops import xml, scancodes
 import os
 import tempfile
 import time
@@ -366,7 +365,7 @@ class Libvirt:
         serr = []
 
         process = []
-        process.append(subprocess.Popen(shlex.split(commands[0]), stdin=None, 
+        process.append(subprocess.Popen(shlex.split(commands[0]), stdin=None,
                                         stdout=subprocess.PIPE, stderr=subprocess.PIPE))
         for c in commands[1:]:
             process.append(subprocess.Popen(shlex.split(c), stdin=process[-1].stdout, 
