@@ -1,12 +1,11 @@
 # vim: ts=4 sw=4 expandtab
+import xml
 
 import os
 import tempfile
 import time
 import subprocess, shlex
 from collections import deque
-from devops import xml
-from devops import scancodes
 from xmlbuilder import XMLBuilder
 import ipaddr
 import re

@@ -1,34 +1,39 @@
 import logging
-
-from devops import yaml_config_loader
-from devops.error import DevopsError
-from devops.controller import Controller
-from devops.driver.libvirt import Libvirt
+from error import DevopsError
+from controller import Controller
+from driver.libvirt import Libvirt
+import yaml_config_loader
 
 __all__ = ['logger', 'getController', 'build', 'destroy', 'load', 'save']
 
 logger = logging.getLogger('devops')
 
-controller = Controller(Libvirt())
+class ControllerSingleton(Controller):
+    _instance = None
+    def __new__(cls, *args, **kwargs):
+        if not cls._instance:
+            cls._instance = super(ControllerSingleton, cls).__new__(
+                cls, *args, **kwargs)
+        return cls._instance
 
 def getController():
-    return controller
+    return ControllerSingleton(Libvirt())
 
 def build(environment):
-    controller.build_environment(environment)
+    getController().build_environment(environment)
 
 def destroy(environment):
-    controller.destroy_environment(environment)
+    getController().destroy_environment(environment)
 
 def load(source):
     source = str(source).strip()
     if source.find("\n") == -1:
-        if not source in controller.saved_environments:
+        if not source in  getController().saved_environments:
             raise DevopsError, "Environment '%s' does not exist" % source
-        return controller.load_environment(source)
+        return getController().load_environment(source)
 
     return yaml_config_loader.load(source)
 
 def save(environment):
-    controller.save_environment(environment)
+    getController().save_environment(environment)
 

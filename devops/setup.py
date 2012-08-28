@@ -6,7 +6,7 @@ setup(
     description='Library to aid creating and manipulating virtual environments',
     author='Mirantis, Inc.',
     author_email='product@mirantis.com',
-    packages=['devops'],
-    scripts=['scripts/devops']
+    packages=['devops', 'devops.driver'],
+    scripts=['bin/devops'], requires=['xmlbuilder', "ipaddr", "paramiko"]
 )
 

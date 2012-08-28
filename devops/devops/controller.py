@@ -11,10 +11,10 @@ import string
 import re
 import time
 
-from devops.model import Node, Network
-from devops.network import IpNetworksPool
-from devops.error import DevopsError
-from devops import my_yaml
+from model import Node, Network
+from network import IpNetworksPool
+from error import DevopsError
+import my_yaml
 
 import logging
 logger = logging.getLogger('devops.controller')

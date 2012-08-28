@@ -16,6 +16,8 @@ from SimpleHTTPServer import SimpleHTTPRequestHandler
 import posixpath
 
 import logging
+from devops.error import DevopsError
+
 logger = logging.getLogger('devops.helpers')
 
 class TimeoutError(Exception): pass
@@ -27,7 +29,7 @@ def get_free_port():
     for port in ports:
         if not tcp_ping('localhost', port):
             return port
-    raise Error, "No free ports available"
+    raise DevopsError, "No free ports available"
 
 def icmp_ping(host, timeout=1):
     "icmp_ping(host, timeout=1) - returns True if host is pingable; False - otherwise."
@@ -161,20 +163,20 @@ class SSHClient(object):
         logger.debug("Copying '%s' -> '%s'" % (source, target))
 
         if self.isdir(target):
-            target = os.path.join(target, os.path.basename(source))
+            target = posixpath.join(target, os.path.basename(source))
 
         if not os.path.isdir(source):
             self._sftp.put(source, target)
             return
 
         for rootdir, subdirs, files in os.walk(source):
-            targetdir = os.path.normpath(os.path.join(target, os.path.relpath(rootdir, source)))
+            targetdir = os.path.normpath(os.path.join(target, os.path.relpath(rootdir, source))).replace("\\", "/")
 
             self.mkdir(targetdir)
 
             for entry in files:
                 local_path  = os.path.join(rootdir, entry)
-                remote_path = os.path.join(targetdir, entry)
+                remote_path = posixpath.join(targetdir, entry)
                 if self.exists(remote_path):
                     self._sftp.unlink(remote_path)
                 self._sftp.put(local_path, remote_path)

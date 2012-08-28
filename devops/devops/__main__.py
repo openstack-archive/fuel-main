@@ -1,5 +1,4 @@
-
-from devops.main import *
+from main import *
 
 def saved(args):
     c = getController()

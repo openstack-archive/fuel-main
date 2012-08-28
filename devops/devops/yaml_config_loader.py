@@ -1,6 +1,5 @@
-import os.path
-from devops import my_yaml
 import re
+import my_yaml
 from model import Environment, Network, Node, Disk, Interface, Cdrom
 
 class ConfigError(Exception): pass

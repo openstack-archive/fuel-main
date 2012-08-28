@@ -7,7 +7,8 @@ IPv4Network = ipaddr.IPv4Network
 class NetworkPoolException(Exception): pass
 
 class IpNetworksPool:
-    def __init__(self, net_addresses=['10.0.0.0/20'], prefix=24):
+    def __init__(self, net_addresses=None, prefix=24):
+        if not net_addresses: net_addresses = ['10.0.0.0/20']
         networks = []
         for address in net_addresses:
             if not isinstance(address, IPv4Network):
