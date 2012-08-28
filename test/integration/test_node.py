@@ -8,20 +8,22 @@ import urllib2
 import pprint
 from unittest import TestCase
 from subprocess import Popen, PIPE
-
+#import posixpath
 import paramiko
-
+import posixpath
 from devops.helpers import wait, tcp_ping, http
+from integration import ci
 
-from . import ci
-from integration.helpers import HTTPClient, SSHClient
+from integration.base import Base
+from helpers import HTTPClient, SSHClient
+from root import root
 
 logging.basicConfig(format=':%(lineno)d: %(asctime)s %(message)s', level=logging.DEBUG)
 
-AGENT_PATH = os.path.join(os.path.dirname(__file__), "..", "..", "bin", "agent")
-DEPLOY_PATH = os.path.join(os.path.dirname(__file__), "..", "..", "bin", "deploy")
-COOKBOOKS_PATH = os.path.join(os.path.dirname(__file__), "..", "..", "cooks", "cookbooks")
-SAMPLE_PATH = os.path.join(os.path.dirname(__file__), "..", "..", "scripts", "ci")
+AGENT_PATH = root("bin", "agent")
+DEPLOY_PATH = root("bin", "deploy")
+COOKBOOKS_PATH = root("cooks", "cookbooks")
+SAMPLE_PATH = root("scripts", "ci")
 SAMPLE_REMOTE_PATH = "/home/ubuntu"
 
 
@@ -29,10 +31,9 @@ class StillPendingException(Exception):
     pass
 
 
-class TestNode(TestCase):
+class TestNode(Base):
     def __init__(self, *args, **kwargs):
         super(TestNode, self).__init__(*args, **kwargs)
-        self.client = HTTPClient()
         self.remote = SSHClient()
         self.admin_host = None
         self.admin_user = "ubuntu"
@@ -43,11 +44,11 @@ class TestNode(TestCase):
         self.release_id = None
 
     def setUp(self):
-        admin_node = ci.environment.node['admin']
-        self.admin_host = str(admin_node.ip_address)
-        cookbook_remote_path = os.path.join(SAMPLE_REMOTE_PATH, "sample-cook")
-        mysql_remote_path = os.path.join(COOKBOOKS_PATH, "mysql")
-        release_remote_path = os.path.join(SAMPLE_REMOTE_PATH, "sample-release.json")
+        self.ip = self.get_admin_node_ip()
+        self.admin_host = self.ip
+        cookbook_remote_path = posixpath.join(SAMPLE_REMOTE_PATH, "sample-cook")
+        mysql_remote_path = posixpath.join(COOKBOOKS_PATH, "mysql")
+        release_remote_path = posixpath.join(SAMPLE_REMOTE_PATH, "sample-release.json")
         self.remote.connect_ssh(self.admin_host, self.admin_user, self.admin_passwd)
         self.remote.rmdir(cookbook_remote_path)
         self.remote.rmdir(os.path.join(SAMPLE_REMOTE_PATH, "cookbooks"))
@@ -97,7 +98,7 @@ class TestNode(TestCase):
                     raise Exception("Command failed: %s" % str(res))
                 attempts += 1
 
-
+#       todo install_cookbook always return 0
         commands = [
             "/opt/nailgun/bin/install_cookbook %s" % cookbook_remote_path
         ]
@@ -106,31 +107,23 @@ class TestNode(TestCase):
                 logging.info("Launching command: %s" % cmd)
                 res = self.remote.execute(cmd)
                 logging.debug("Command result: %s" % pprint.pformat(res))
-                if res['exit_status'] != 0:
+                if res['exit_status']:
                     self.remote.disconnect()
                     raise Exception("Command failed: %s" % str(res))
 
         self.remote.disconnect()
 
     def test_node_deploy(self):
-        # TODO: move system installation in setUp
-        slave = ci.environment.node['slave']
-        self.slave_id = slave.interfaces[0].mac_address.replace(":", "").upper()
-
-        logging.info("Starting slave node")
-        slave.start()
-
-        logging.info("Nailgun IP: %s" % self.admin_host)
-
+        try:
+            self.get_slave_id()
+        except :
+            pass
         timer = time.time()
         timeout = 600
         while True:
-            node = self.client.get(
-                "http://%s:8000/api/nodes/%s" % (self.admin_host, self.slave_id)
-            )
-            if not node.startswith("404"):
+            node = self.get_slave_node(self.get_slave_id())
+            if node is not None:
                 logging.info("Node found")
-                node = json.loads(node)
                 self.slave_host = node["ip"]
                 break
             else:
@@ -149,7 +142,7 @@ class TestNode(TestCase):
             cluster = self.client.post(
                 "http://%s:8000/api/clusters" % self.admin_host,
                 data='{ "name": "MyOwnPrivateCluster", "release": %s }' % \
-                    self.release_id
+                    self.release_id, log=True
             )
             cluster = json.loads(cluster)
 
@@ -161,7 +154,7 @@ class TestNode(TestCase):
         cluster = json.loads(self.client.get(
             "http://%s:8000/api/clusters/1" % self.admin_host
         ))
-        if len(cluster["nodes"]) == 0:
+        if not len(cluster["nodes"]):
             raise ValueError("Failed to add node into cluster")
 
         roles_uploaded = json.loads(self.client.get(
@@ -181,7 +174,7 @@ class TestNode(TestCase):
             "http://%s:8000/api/nodes/%s" % (self.admin_host, self.slave_id),
             data='{ "new_roles": %s, "redeployment_needed": true }' % str(roles_ids)
         ))
-        if len(resp["new_roles"]) == 0:
+        if not len(resp["new_roles"]):
             raise ValueError("Failed to assign roles to node")
 
         if node["status"] == "discover":
@@ -231,7 +224,7 @@ class TestNode(TestCase):
 
         # check if recipes executed
         ret = self.remote.execute("test -f /tmp/chef_success")
-        if ret['exit_status'] != 0:
+        if ret['exit_status']:
             raise Exception("Recipes failed to execute!")
 
         # check mysql running
@@ -257,3 +250,31 @@ class TestNode(TestCase):
         slave_client.connect_ssh(self.slave_host, self.slave_user, self.slave_passwd)
         res = slave_client.execute("rm -rf /tmp/chef_success")
         slave_client.disconnect()
+
+#   create node with predefined mac address
+    def get_slave_id(self):
+        if hasattr(self,"slave_id"): return self.slave_id
+        if ci is not None:
+            slave = ci.environment.node['slave']
+            slave_id = self.get_id_by_mac(slave.interfaces[0].mac_address)
+            logging.info("Starting slave node")
+            slave.start()
+            logging.info("Nailgun IP: %s" % self.admin_host)
+        else:
+            response = self.client.get(
+                "http://%s:8000/api/nodes" % self.admin_host
+            )
+            last_node = json.loads(response)[-1]
+            slave_id = self.get_id_by_mac(last_node['mac'])
+        self.slave_id = slave_id
+
+        return slave_id
+
+    def get_slave_node(self, slave_id):
+        response = self.client.get(
+            "http://%s:8000/api/nodes/%s" % (self.admin_host, slave_id)
+        )
+
+        if response.startswith("404"):
+            return None
+        return json.loads(response)

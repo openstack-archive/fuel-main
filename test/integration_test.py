@@ -2,11 +2,13 @@ import os.path
 import sys
 import logging
 import argparse
-from nose.plugins.xunit import Xunit
 from nose.plugins.manager import PluginManager
+from nose.plugins.xunit import Xunit
+from root import root
+
 
 sys.path[:0] = [
-    os.path.join(os.path.dirname(os.path.dirname(os.path.abspath(__file__))), 'devops'),
+    root('devops'),
 ]
 
 import cookbooks
@@ -64,7 +66,7 @@ def main():
         nose.main(module=suite, config=nc, argv=[
             __file__,
             "--with-xunit",
-            "--xunit-file=test/nosetests.xml"
+            "--xunit-file=nosetests.xml"
         ]+params.arguments)
         result = True
     else:

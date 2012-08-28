@@ -1,23 +1,30 @@
-import xmlrpclib
 import logging
+import xmlrpclib
 from time import sleep
-from unittest import TestCase
 
-from . import ci
+
+
 from devops.helpers import wait, tcp_ping, http, ssh
-from integration.helpers import SSHClient
+from integration.base import Base
+from helpers import SSHClient
 
-logging.basicConfig(format=':%(lineno)d: %(asctime)s %(message)s', level=logging.DEBUG)
 
-class TestCobbler(TestCase):
+
+class TestCobbler(Base):
     def __init__(self, *args, **kwargs):
         super(TestCobbler, self).__init__(*args, **kwargs)
         self.remote = SSHClient()
         self.logpath = "/var/log/chef/solo.log"
         self.str_success = "Report handlers complete"
 
+
     def setUp(self):
-        self.ip = ci.environment.node['admin'].ip_address
+        self.ip = self.get_admin_node_ip()
+
+
+    def tearDown(self):
+        pass
+
 
     def test_cobbler_alive(self):
         logging.info("Waiting for handlers to complete")
@@ -27,7 +34,7 @@ class TestCobbler(TestCase):
         while True:
             res = self.remote.execute("grep '%s' '%s'" % (self.str_success, self.logpath))
             count += 1
-            if res['exit_status'] == 0:
+            if not res['exit_status']:
                 break
             sleep(5)
             if count == 200:

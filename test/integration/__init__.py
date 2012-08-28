@@ -1,5 +1,5 @@
 import time, os
-import devops
+
 from devops.model import Environment, Network, Node, Disk, Cdrom, Interface
 from devops.controller import Controller
 from devops.driver.libvirt import Libvirt
@@ -7,6 +7,8 @@ from devops.helpers import tcp_ping, wait, TimeoutError
 import traceback
 
 import logging
+import devops
+
 logger = logging.getLogger('integration')
 
 class Ci(object):
@@ -14,7 +16,7 @@ class Ci(object):
     domain = 'mirantis.com'
     installation_timeout = 1800
     chef_timeout = 600
-    
+
     def __init__(self, cache_file=None, iso=None):
         self.environment_cache_file = cache_file
         self.iso = iso
@@ -23,14 +25,13 @@ class Ci(object):
             logger.info("Loading existing integration environment...")
             with file(self.environment_cache_file) as f:
                 environment_id = f.read()
-
             try:
                 self.environment = devops.load(environment_id)
                 logger.info("Successfully loaded existing environment")
             except Exception, e:
                 logger.error("Failed to load existing integration environment: " + str(e) + "\n" + traceback.format_exc())
                 pass
-        
+
     def setup_environment(self):
         if self.environment:
             return True
@@ -43,10 +44,10 @@ class Ci(object):
 
         try:
             environment = Environment('integration')
-            
+
             network = Network('default')
             environment.networks.append(network)
-            
+
             node = Node('admin')
             node.memory = 2048
             node.vnc = True
@@ -63,7 +64,7 @@ class Ci(object):
             node2.interfaces.append(Interface(network))
             node2.boot = ['network']
             environment.nodes.append(node2)
-        
+
             devops.build(environment)
         except Exception, e:
             logger.error("Failed to build environment: %s\n%s" % (str(e), traceback.format_exc()))
@@ -78,6 +79,7 @@ class Ci(object):
             node.start()
 
             logger.info("Waiting admin node installation software to boot")
+            #            todo await
             time.sleep(10)
 
             logger.info("Executing admin node software installation")
@@ -96,11 +98,11 @@ class Ci(object):
  netcfg/get_hostname=%(hostname)s
  netcfg/get_domai=%(domain)s
  <Enter>
-""" % { 'ip': node.ip_address, 
-        'mask': network.ip_addresses.netmask, 
+""" % { 'ip': node.ip_address,
+        'mask': network.ip_addresses.netmask,
         'gw': network.ip_addresses[1],
         'hostname': self.hostname,
-        'domain': self.domain}) 
+        'domain': self.domain})
 
             logger.info("Waiting for completion of admin node software installation")
             wait(lambda: tcp_ping(node.ip_address, 22), timeout=self.installation_timeout)
@@ -144,7 +146,6 @@ class Ci(object):
             os.remove(self.environment_cache_file)
 
         return True
-
 
 ci = None
 
