@@ -15,6 +15,7 @@ timezone --utc America/New_York
 bootloader --location=mbr --driveorder=sda,hda --append=" rhgb crashkernel=auto"
 
 # Partitioning
+zerombr
 clearpart --all --initlabel
 autopart
 part swap --recommended
