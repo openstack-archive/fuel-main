@@ -1,7 +1,6 @@
 import os
 import urllib2
 import logging
-from unittest import TestCase
 import paramiko
 import posixpath
 

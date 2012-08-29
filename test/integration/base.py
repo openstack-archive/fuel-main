@@ -10,7 +10,7 @@ class Base(TestCase):
 
     def get_admin_node_ip(self):
         if ci is not None and ci.environment is not None:
-            return ci.environment.node['admin'].ip_address
+            return str(ci.environment.node['admin'].ip_address)
         else:
             return "10.20.0.2"
 
