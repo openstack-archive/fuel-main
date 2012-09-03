@@ -4,6 +4,7 @@
 import sys
 import argparse
 import logging
+import code
 
 import web
 
@@ -35,6 +36,9 @@ if __name__ == "__main__":
     syncdb_parser = subparsers.add_parser(
         'syncdb', help='sync application database'
     )
+    shell_parser = subparsers.add_parser(
+        'shell', help='open python REPL'
+    )
     params, other_params = parser.parse_known_args()
     sys.argv.pop(1)
 
@@ -60,5 +64,7 @@ if __name__ == "__main__":
             logging.info("Stopping WSGI app...")
             server.stop()
             logging.info("Done")
+    elif params.action == "shell":
+        code.interact()
     else:
         parser.print_help()
