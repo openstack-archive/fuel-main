@@ -10,6 +10,7 @@ end
   'simplejson' => '2.5.2',
   'paramiko' => '1.7.7.2',
   'ipaddr' => '2.1.10',
+  'eventlet' => '0.9.17',
 }.each do |package, version|
   python_pip package do
     version version
