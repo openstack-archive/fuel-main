@@ -172,7 +172,9 @@ class TestHandlers(TestCase):
         )
         self.db.refresh(cluster)
         self.assertEquals(resp.status, 200)
-        clusters = self.db.query(Cluster).filter(Cluster.name == updated_name).all()
+        clusters = self.db.query(Cluster).filter(
+            Cluster.name == updated_name
+        ).all()
         self.assertEquals(len(clusters), 1)
         self.assertEquals(clusters[0].name, updated_name)
 
@@ -204,7 +206,6 @@ class TestHandlers(TestCase):
         nodes = self.db.query(Node).filter(Node.cluster == cluster)
         self.assertEquals(2, nodes.count())
 
-
     def test_node_creation_with_id(self):
         node_id = '080000000003'
         resp = self.app.post(
@@ -227,7 +228,7 @@ class TestHandlers(TestCase):
     def test_node_deletion(self):
         node = self.create_default_node()
         resp = self.app.delete(
-            reverse('NodeHandler', kwargs={'node_id':node.id}),
+            reverse('NodeHandler', kwargs={'node_id': node.id}),
             "",
             headers=self.default_headers,
             expect_errors=True
@@ -257,7 +258,9 @@ class TestHandlers(TestCase):
         self.assertEquals(resp.status, 200)
         self.db.refresh(node)
 
-        nodes = self.db.query(Node).filter(Node.id == node.id).all()
+        nodes = self.db.query(Node).filter(
+            Node.id == node.id
+        ).all()
         self.assertEquals(len(nodes), 1)
         self.assertEquals(nodes[0].meta, new_metadata)
 
@@ -282,7 +285,9 @@ class TestHandlers(TestCase):
         self.assertEquals(resp.status, 200)
         self.db.refresh(node)
 
-        node_from_db = self.db.query(Node).filter(Node.id==node.id).first()
+        node_from_db = self.db.query(Node).filter(
+            Node.id == node.id
+        ).first()
         self.assertEquals(node_from_db.redeployment_needed, True)
 
     def test_put_returns_400_if_no_body(self):

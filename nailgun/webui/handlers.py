@@ -2,6 +2,7 @@
 
 import web
 
+
 class IndexHandler(object):
     def GET(self):
         render = web.template.render('static/')

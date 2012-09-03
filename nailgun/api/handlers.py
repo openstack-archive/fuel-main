@@ -207,7 +207,6 @@ class ReleaseHandler(JSONHandler):
         )
 
 
-
 class ReleaseCollectionHandler(JSONHandler):
     def GET(self):
         web.header('Content-Type', 'application/json')

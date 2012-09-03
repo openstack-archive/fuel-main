@@ -5,7 +5,7 @@ import web
 from webui.handlers import IndexHandler
 
 urls = (
-	r"", 'IndexHandler',
+    r"", 'IndexHandler',
 )
 
 webui_app = web.application(urls, locals())

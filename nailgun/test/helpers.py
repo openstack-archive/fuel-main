@@ -5,6 +5,7 @@ import urllib2
 
 from api.urls import urls
 
+
 class HTTPClient(object):
     def __init__(self):
         self.opener = urllib2.build_opener(urllib2.HTTPHandler)
@@ -45,5 +46,3 @@ def reverse(name, kwargs=None):
         url = re.sub(r"\(.+\)", str(kwargs[kwarg]), url, 1)
     url = re.sub(r"\??\$", "", url)
     return "/api" + url
-
-
