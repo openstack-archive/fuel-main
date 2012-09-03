@@ -10,6 +10,8 @@ import web
 
 import db
 from api.handlers import check_client_content_type
+from api.models import engine
+from sqlalchemy.orm import scoped_session, sessionmaker
 from unit_test import TestRunner
 from urls import urls
 
@@ -65,6 +67,8 @@ if __name__ == "__main__":
             server.stop()
             logging.info("Done")
     elif params.action == "shell":
-        code.interact()
+        orm = scoped_session(sessionmaker(bind=engine))
+        code.interact(local={'orm': orm})
+        orm.commit()
     else:
         parser.print_help()
