@@ -13,8 +13,8 @@ from api.models import Release, Cluster, Node, Role, Network
 
 def check_client_content_type(handler):
     content_type = web.ctx.env.get("CONTENT_TYPE", "application/json")
-    if content_type != "application/json" \
-        and web.ctx.path.startswith("/api"):
+    if web.ctx.path.startswith("/api") \
+        and not content_type.startswith("application/json"):
         raise web.unsupportedmediatype
     return handler()
 
@@ -159,6 +159,7 @@ class ClusterCollectionHandler(JSONHandler):
 
 class ReleaseHandler(JSONHandler):
     fields = (
+        "id",
         "name",
         "version",
         "description",
