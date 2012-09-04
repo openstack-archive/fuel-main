@@ -12,7 +12,7 @@ def create_connection(new=True):
                 implementation is free to return an existing connection from a
                 pool.
 
-    :returns: An instance of nailgun.rpc.common.Connection
+    :returns: An instance of nailgun.rpc.impl_kombu.Connection
     """
     return impl.create_connection(new=new)
 
@@ -22,7 +22,7 @@ def call(topic, msg, timeout=None):
 
     :param topic: The topic to send the rpc message to.  This correlates to the
                   topic argument of
-                  nailgun.rpc.common.Connection.create_consumer() and only
+                  nailgun.rpc.impl_kombu.Connection.create_consumer() and only
                   applies when the consumer was created with fanout=False.
     :param msg: This is a dict in the form { "method" : "method_to_invoke",
                                              "args" : dict_of_kwargs }
@@ -31,8 +31,8 @@ def call(topic, msg, timeout=None):
 
     :returns: A dict from the remote method.
 
-    :raises: nailgun.rpc.common.Timeout if a complete response is not received
-             before the timeout is reached.
+    :raises: nailgun.rpc.impl_kombu.Timeout if a complete response is not
+             received before the timeout is reached.
     """
     return impl.call(topic, msg, timeout)
 
@@ -42,7 +42,7 @@ def cast(topic, msg):
 
     :param topic: The topic to send the rpc message to.  This correlates to the
                   topic argument of
-                  nailgun.rpc.common.Connection.create_consumer() and only
+                  nailgun.rpc.impl_kombu.Connection.create_consumer() and only
                   applies when the consumer was created with fanout=False.
     :param msg: This is a dict in the form { "method" : "method_to_invoke",
                                              "args" : dict_of_kwargs }
