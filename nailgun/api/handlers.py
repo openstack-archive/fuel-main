@@ -18,16 +18,67 @@ def check_client_content_type(handler):
         raise web.unsupportedmediatype
     return handler()
 
+handlers = {}
+
+
+class HandlerRegistrator(type):
+    def __init__(cls, name, bases, dct):
+        super(HandlerRegistrator, cls).__init__(name, bases, dct)
+        if hasattr(cls, 'model'):
+            key = cls.model.__name__
+            if key in handlers:
+                raise Exception("Handler for %s already registered" % key)
+            handlers[key] = cls
+
 
 class JSONHandler(object):
+    __metaclass__ = HandlerRegistrator
+
     fields = []
 
     @classmethod
     def render(cls, instance, fields=None):
         json_data = {}
         use_fields = fields if fields else cls.fields
+        if not use_fields:
+            raise ValueError("No fields for serialize")
         for field in use_fields:
-            json_data[field] = getattr(instance, field)
+            if isinstance(field, (tuple,)):
+                if field[1] == '*':
+                    subfields = None
+                else:
+                    subfields = field[1:]
+
+                value = getattr(instance, field[0])
+                rel = getattr(instance.__class__, \
+                        field[0]).impl.__class__.__name__
+                if value is None:
+                    pass
+                elif rel == 'ScalarObjectAttributeImpl':
+                    handler = handlers[value.__class__.__name__]
+                    json_data[field[0]] = handler.render(value, fields=subfields)
+                elif rel == 'CollectionAttributeImpl':
+                    if not value:
+                        json_data[field[0]] = []
+                    else:
+                        handler = handlers[value[0].__class__.__name__]
+                        json_data[field[0]] = [
+                            handler.render(v, fields=subfields) \
+                            for v in value
+                        ]
+            else:
+                value = getattr(instance, field)
+                if value is None:
+                    pass
+                else:
+                    rel = getattr(instance.__class__, \
+                            field).impl.__class__.__name__
+                    if rel == 'ScalarObjectAttributeImpl':
+                        json_data[field] = value.id
+                    elif rel == 'CollectionAttributeImpl':
+                        json_data[field] = [v.id for v in value]
+                    else:
+                        json_data[field] = value
         return json_data
 
 
@@ -35,8 +86,10 @@ class ClusterHandler(JSONHandler):
     fields = (
         "id",
         "name",
-        "release_id"
+        ("nodes", "*"),
+        ("release", "*")
     )
+    model = Cluster
 
     @classmethod
     def render(cls, instance, fields=None):
@@ -163,8 +216,10 @@ class ReleaseHandler(JSONHandler):
         "name",
         "version",
         "description",
-        "networks_metadata"
+        "networks_metadata",
+        ("roles", "name")
     )
+    model = Release
 
     def GET(self, release_id):
         web.header('Content-Type', 'application/json')
@@ -231,9 +286,10 @@ class ReleaseCollectionHandler(JSONHandler):
 
 
 class NodeHandler(JSONHandler):
-    fields = ('id', 'name', 'roles', 'status', 'mac', 'fqdn', 'ip',
-              'manufacturer', 'platform_name', 'redeployment_needed',
-              'os_platform')
+    fields = ('id', 'name', ('roles', '*'), ('new_roles', '*'),
+            'status', 'mac', 'fqdn', 'ip', 'manufacturer', 'platform_name',
+            'redeployment_needed', 'os_platform')
+    model = Node
 
     def GET(self, node_id):
         web.header('Content-Type', 'application/json')
@@ -336,7 +392,8 @@ class RoleCollectionHandler(JSONHandler):
 
 
 class RoleHandler(JSONHandler):
-    fields = ('id', 'name')
+    fields = ('id', 'name', ('release', 'id', 'name'))
+    model = Role
 
     def GET(self, role_id):
         q = web.ctx.orm.query(Role)

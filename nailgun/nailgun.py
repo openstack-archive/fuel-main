@@ -1,6 +1,7 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
 
+import os
 import sys
 import argparse
 import logging
@@ -41,6 +42,12 @@ if __name__ == "__main__":
     shell_parser = subparsers.add_parser(
         'shell', help='open python REPL'
     )
+    loaddata_parser = subparsers.add_parser(
+        'loaddata', help='load data from fixture'
+    )
+    loaddata_parser.add_argument(
+        'fixture', action='store', help='json fixture to load'
+    )
     params, other_params = parser.parse_known_args()
     sys.argv.pop(1)
 
@@ -52,6 +59,15 @@ if __name__ == "__main__":
         logging.info("Running tests...")
         TestRunner.run()
         logging.info("Done")
+    elif params.action == "loaddata":
+        from fixtures import fixman
+        if os.path.exists(params.fixture):
+            logging.info("Uploading fixtures...")
+            with open(params.fixture, "r") as f:
+                fixman.upload_fixture(f)
+            logging.info("Done")
+        else:
+            parser.print_help()
     elif params.action == "run":
         app.run()
     elif params.action == "runwsgi":

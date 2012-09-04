@@ -62,7 +62,7 @@ class Release(Base, BasicValidator):
         return d
 
 
-class Role(Base):
+class Role(Base, BasicValidator):
     __tablename__ = 'roles'
     __table_args__ = (
         UniqueConstraint('name', 'release_id'),
