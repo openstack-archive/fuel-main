@@ -251,7 +251,7 @@ class Connection(object):
 
         # TODO - check if it's test
         # (mihgen) Will do it right when config file of new Nailgun available
-        if not True:
+        if True:
             self.params['transport'] = 'memory'
             self.memory_transport = True
         else:
