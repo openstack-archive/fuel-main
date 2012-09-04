@@ -7,6 +7,7 @@ from api.urls import urls
 
 logger = logging.getLogger('helpers')
 
+
 class HTTPClient(object):
     def __init__(self):
         self.opener = urllib2.build_opener(urllib2.HTTPHandler)

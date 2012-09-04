@@ -8,6 +8,7 @@ from models import Release, Cluster, Node, Role, Network
 from settings import settings
 from helpers.vlan import VlanManager
 
+
 def check_client_content_type(handler):
     content_type = web.ctx.env.get("CONTENT_TYPE", "application/json")
     if web.ctx.path.startswith("/api") \
@@ -53,7 +54,9 @@ class JSONHandler(object):
                     pass
                 elif rel == 'ScalarObjectAttributeImpl':
                     handler = handlers[value.__class__.__name__]
-                    json_data[field[0]] = handler.render(value, fields=subfields)
+                    json_data[field[0]] = handler.render(
+                        value, fields=subfields
+                    )
                 elif rel == 'CollectionAttributeImpl':
                     if not value:
                         json_data[field[0]] = []

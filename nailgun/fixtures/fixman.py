@@ -7,6 +7,7 @@ from sqlalchemy import orm
 
 db = orm.scoped_session(orm.sessionmaker(bind=models.engine))()
 
+
 def upload_fixture(fileobj):
     try:
         fixture = json.load(fileobj)
@@ -38,10 +39,12 @@ def upload_fixture(fileobj):
                     orm.attributes.ScalarObjectAttributeImpl):
                     if value:
                         setattr(new_obj, field, db.query(fk_model).get(value))
-                elif isinstance(impl, 
+                elif isinstance(impl,
                     orm.attributes.CollectionAttributeImpl):
                     if value:
-                        for sub in db.query(fk_model).filter(fk_model.id.in_(value)):
+                        for sub in db.query(fk_model).filter(
+                                fk_model.id.in_(value)
+                            ):
                             getattr(new_obj, field).append(sub)
                 else:
                     setattr(new_obj, field, value)
