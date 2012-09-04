@@ -71,12 +71,15 @@ class JSONHandler(object):
                 if value is None:
                     pass
                 else:
-                    rel = getattr(instance.__class__, \
-                            field).impl.__class__.__name__
-                    if rel == 'ScalarObjectAttributeImpl':
-                        json_data[field] = value.id
-                    elif rel == 'CollectionAttributeImpl':
-                        json_data[field] = [v.id for v in value]
+                    f = getattr(instance.__class__, field)
+                    if hasattr(f, "impl"):
+                        rel = f.impl.__class__.__name__
+                        if rel == 'ScalarObjectAttributeImpl':
+                            json_data[field] = value.id
+                        elif rel == 'CollectionAttributeImpl':
+                            json_data[field] = [v.id for v in value]
+                        else:
+                            json_data[field] = value
                     else:
                         json_data[field] = value
         return json_data
@@ -286,7 +289,7 @@ class ReleaseCollectionHandler(JSONHandler):
 
 
 class NodeHandler(JSONHandler):
-    fields = ('id', 'name', ('roles', '*'), ('new_roles', '*'),
+    fields = ('id', 'name', 'info', ('roles', '*'), ('new_roles', '*'),
             'status', 'mac', 'fqdn', 'ip', 'manufacturer', 'platform_name',
             'redeployment_needed', 'os_platform')
     model = Node

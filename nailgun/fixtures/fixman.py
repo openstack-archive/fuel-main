@@ -3,7 +3,7 @@
 import json
 
 from api import models
-from sqlalchemy import orm
+from sqlalchemy import orm, ext
 
 db = orm.scoped_session(orm.sessionmaker(bind=models.engine))()
 
@@ -26,20 +26,21 @@ def upload_fixture(fileobj):
             for field, value in obj["fields"].iteritems():
                 f = getattr(obj['model'], field)
                 impl = f.impl
-                print dir(f.comparator)
-                print type(f.comparator.prop)
-                # if isinstance(impl,
-                #     orm.attributes.ScalarObjectAttributeImpl):
-                #     if value:
-                #         fk = db.query(known_objects[field]).get(value)
-                #         setattr(new_obj, field, fk)
-                # elif isinstance(impl, 
-                #     orm.attributes.CollectionAttributeImpl):
-                #     pass
-                #     #for sub in db.query(known_models[field]).filter(known_models[field].id.in_(value)):
-                #     #    getattr(new_obj, field).append(sub)
-                # else:
-                #     setattr(new_obj, field, value)
+                fk_model = None
+                if hasattr(f.comparator.prop, "argument") \
+                    and hasattr(f.comparator.prop.argument, "__call__"):
+                    fk_model = f.comparator.prop.argument()
 
-        # db.add(new_obj)
-        # db.commit()
+                if isinstance(impl,
+                    orm.attributes.ScalarObjectAttributeImpl):
+                    print field
+                    print dir(f)
+                elif isinstance(impl, 
+                    orm.attributes.CollectionAttributeImpl):
+                    for sub in db.query(fk_model).filter(fk_model.id.in_(value)):
+                        getattr(new_obj, field).append(sub)
+                else:
+                    setattr(new_obj, field, value)
+
+        #db.add(new_obj)
+        #db.commit()

@@ -131,6 +131,38 @@ class Node(Base, BasicValidator):
                 secondary=nodes_new_roles)
     redeployment_needed = Column(Boolean, default=False)
 
+    @property
+    def info(self):
+        """ Safely aggregate metadata to provide short info for UI """
+        result = {}
+
+        try:
+            kilobytes = int(self.meta['memory']['total'][:-2])
+            gigabytes = kilobytes / 1024.0 ** 2
+            result['ram'] = gigabytes
+        except Exception:
+            result['ram'] = None
+
+        try:
+            result['cpu'] = self.meta['cpu']['real']
+            result['cores'] = self.meta['cpu']['total']
+        except Exception:
+            result['cpu'] = None
+            result['cores'] = None
+
+        # FIXME: disk space calculating may be wrong
+        try:
+            result['hdd'] = 0
+            for name, info in self.meta['block_device'].iteritems():
+                if re.match(r'^sd.$', name):
+                    bytes = int(info['size']) * 512
+                    terabytes = bytes / 1024.0 ** 4
+                    result['hdd'] += terabytes
+        except Exception:
+            result['hdd'] = None
+
+        return result
+
     @classmethod
     def validate(cls, data):
         d = cls.validate_json(data)
