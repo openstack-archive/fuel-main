@@ -1,42 +1,78 @@
-# -*- coding: utf-8 -*-
-import logging
-
+import json
+from paste.fixture import TestApp
+from random import randint
+from unittest.case import TestCase
 import re
-import urllib2
+from sqlalchemy.orm.events import orm
+from api.models import engine, Node, Release, Cluster
 from api.urls import urls
+from db import dropdb, syncdb, flush
+from manage import app
 
-logger = logging.getLogger('helpers')
+class BaseHandlers(TestCase):
 
+    @classmethod
+    def setUpClass(cls):
+        dropdb()
+        syncdb()
 
-class HTTPClient(object):
-    def __init__(self):
-        self.opener = urllib2.build_opener(urllib2.HTTPHandler)
+    def setUp(self):
+        self.app = TestApp(app.wsgifunc())
+        self.db = orm.scoped_session(orm.sessionmaker(bind=engine))()
+        self.default_headers = {
+            "Content-Type": "application/json"
+        }
+        flush()
 
-    def get(self, url, log=False):
-        req = urllib2.Request(url)
-        return self._open(req, log)
+    def default_metadata(self):
+        metadata = {'block_device': 'new-val',
+                    'interfaces': 'd',
+                    'cpu': 'u',
+                    'memory': 'a'}
+        return metadata
 
-    def post(self, url, data="{}", content_type="application/json", log=False):
-        req = urllib2.Request(url, data=data)
-        req.add_header('Content-Type', content_type)
-        return self._open(req, log)
+    def create_release_api(self):
+        resp = self.app.post(
+            '/api/releases',
+            params=json.dumps({
+                'name': 'Another test release',
+                'version': '1.0'
+            }),
+            headers=self.default_headers
+        )
+        self.assertEquals(resp.status, 201)
+        return json.loads(resp.body)
 
-    def put(self, url, data="{}", content_type="application/json", log=False):
-        req = urllib2.Request(url, data=data)
-        req.add_header('Content-Type', content_type)
-        req.get_method = lambda: 'PUT'
-        return self._open(req, log)
+    def create_default_node(self):
+        node = Node()
+        node.mac = u"ASDFGHJKLMNOPR"
+        self.db.add(node)
+        self.db.commit()
+        return node
 
-    def _open(self, req, log):
-        try:
-            resp = self.opener.open(req)
-            content = resp.read()
-        except urllib2.HTTPError, error:
-            content = ": ".join([str(error.code), error.read()])
-        if log:
-            logger.debug(content)
-        return content
+        #    def create_default_role(self):
+        #        role = Role()
+        #        role.name = u"role Name"
+        #        role.release = self.create_default_release()
+        #        self.db.add(role)
+        #        self.db.commit()
+        #        return role
 
+    def create_default_release(self):
+        release = Release()
+        release.version = randint(0, 100000000)
+        release.name = u"release_name_" + str(release.version)
+        self.db.add(release)
+        self.db.commit()
+        return release
+
+    def create_default_cluster(self):
+        cluster = Cluster()
+        cluster.name = u"cluster_name_" + str(randint(0, 100000000))
+        cluster.release = self.create_default_release()
+        self.db.add(cluster)
+        self.db.commit()
+        return cluster
 
 def reverse(name, kwargs=None):
     urldict = dict(zip(urls[1::2], urls[::2]))

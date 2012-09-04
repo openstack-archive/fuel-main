@@ -1,5 +1,4 @@
-# Move this file to nailgun/tests
-# and run tests: nosetests nailgun.tests.test_rpc
+from datetime import time
 import eventlet
 eventlet.monkey_patch()
 

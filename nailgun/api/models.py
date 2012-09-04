@@ -26,7 +26,7 @@ class Release(Base, BasicValidator):
     name = Column(Unicode(100), nullable=False)
     version = Column(String(30), nullable=False)
     description = Column(Unicode)
-    networks_metadata = Column(JSON)
+    networks_metadata = Column(JSON, default=[])
     roles = relationship("Role", backref="release")
     clusters = relationship("Cluster", backref="release")
 
