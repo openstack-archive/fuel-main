@@ -3,11 +3,7 @@
 import json
 
 from api import models
-<<<<<<< HEAD
-from sqlalchemy import orm, ext
-=======
 from sqlalchemy import orm
->>>>>>> tree rendering remastered
 
 db = orm.scoped_session(orm.sessionmaker(bind=models.engine))()
 
@@ -28,7 +24,6 @@ def upload_fixture(fileobj):
             new_obj = obj['model']()
 
             for field, value in obj["fields"].iteritems():
-<<<<<<< HEAD
                 #print ".".join([name.capitalize(), field])
                 f = getattr(obj['model'], field)
                 impl = f.impl
@@ -54,24 +49,3 @@ def upload_fixture(fileobj):
         print new_obj
         db.add(new_obj)
         db.commit()
-=======
-                f = getattr(obj['model'], field)
-                impl = f.impl
-                print dir(f.comparator)
-                print type(f.comparator.prop)
-                # if isinstance(impl,
-                #     orm.attributes.ScalarObjectAttributeImpl):
-                #     if value:
-                #         fk = db.query(known_objects[field]).get(value)
-                #         setattr(new_obj, field, fk)
-                # elif isinstance(impl, 
-                #     orm.attributes.CollectionAttributeImpl):
-                #     pass
-                #     #for sub in db.query(known_models[field]).filter(known_models[field].id.in_(value)):
-                #     #    getattr(new_obj, field).append(sub)
-                # else:
-                #     setattr(new_obj, field, value)
-
-        # db.add(new_obj)
-        # db.commit()
->>>>>>> tree rendering remastered
