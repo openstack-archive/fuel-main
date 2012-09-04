@@ -21,6 +21,30 @@ UBUNTU_SECTIONS:=main restricted universe multiverse
 UBUNTU_GPG_KEY1:=FBB75451 
 UBUNTU_GPG_KEY2:=437D05B5 
 
+CENTOS_63_NETINST_ISO:=CentOS-$(CENTOS_63_RELEASE)-$(CENTOS_63_ARCH)-netinstall.iso
+UBUNTU_NETINST_ISO:=$(UBUNTU_RELEASE)-x86_64.iso
+ifeq ($(IGNORE_MIRROR),1)
+CENTOS_63_NETINST_ISO_URL:=$(CENTOSMIRROR)/$(CENTOS_63_RELEASE)/isos/$(CENTOS_63_ARCH)/$(CENTOS_63_NETINST_ISO)
+UBUNTU_NETINST_ISO_URL:=http://archive.ubuntu.com/ubuntu/dists/precise/main/installer-amd64/current/images/netboot/mini.iso
+else
+CENTOS_63_NETINST_ISO_URL:=$(MIRROR_URL)/isos/$(CENTOS_63_NETINST_ISO)
+UBUNTU_NETINST_ISO_URL:=$(MIRROR_URL)/isos/$(UBUNTU_NETINST_ISO)
+endif
+NETINST_ISOS:=$(CENTOS_63_NETINST_ISO) $(UBUNTU_NETINST_ISO)
+
+ifdef MIRROR_DIR
+ISOS_DIR:=$(MIRROR_DIR)/isos/
+else
+ISOS_DIR:=$(ISOROOT)/netinst/
+endif
+
+$(addprefix $(ISOS_DIR),$(NETINST_ISOS)):
+	mkdir -p $(@D)
+	curl -C - -o $(ISOS_DIR)$(CENTOS_63_NETINST_ISO) $(CENTOS_63_NETINST_ISO_URL)
+	curl -C - -o $(ISOS_DIR)$(UBUNTU_NETINST_ISO) $(UBUNTU_NETINST_ISO_URL)
+
+mirror: $(addprefix $(ISOS_DIR),$(NETINST_ISOS))
+
 $/%: /:=$/
 $/%: ISOROOT:=$(ISOROOT)
 $/%: UBUNTU_RELEASE:=$(UBUNTU_RELEASE)
@@ -100,7 +124,7 @@ $/isoroot.done: \
 		$(ISOROOT)/bootstrap/linux \
 		$(ISOROOT)/bootstrap/initrd.gz \
 		$(ISOROOT)/bootstrap/bootstrap.rsa \
-		$(addprefix $(ISOROOT)/netinst/,$(call find-files,$(BINARIES_DIR)/netinst)) \
+		$(addprefix $(ISOROOT)/netinst/,$(NETINST_ISOS)) \
 		$(ISOROOT)/bin/late \
 		$(ISOROOT)/gnupg \
 		$(addprefix $(ISOROOT)/gnupg/,$(call find-files,gnupg)) \
@@ -298,7 +322,6 @@ $(ISOROOT)/bootstrap/%: $(BUILD_DIR)/bootstrap/% ; $(ACTION.COPY)
 else
 $(ISOROOT)/bootstrap/%: $(BINARIES_DIR)/bootstrap/% ; $(ACTION.COPY)
 endif
-$(ISOROOT)/netinst/%: $(BINARIES_DIR)/netinst/% ; $(ACTION.COPY)
 
 $(ISOROOT)/gnupg:
 	mkdir -p $@

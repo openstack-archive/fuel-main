@@ -28,11 +28,6 @@ $(call image-mount-rules,UBUNTU_1204)
 
 $(UBUNTU_1204_ROOT): $(UBUNTU_1204_ROOT)/md5sum.txt
 
-CENTOS_63_ISO:=$(BINARIES_DIR)/CentOS-6.3-x86_64-minimal.iso
-CENTOS_63_ROOT:=$(BUILD_DIR)/images/centos-6.3
 CENTOS_63_MAJOR:=6
 CENTOS_63_RELEASE:=6.3
 CENTOS_63_ARCH:=x86_64
-$(call image-mount-rules,CENTOS_63)
-$(CENTOS_63_ROOT): $(CENTOS_63_ROOT)/CentOS_BuildTag
-

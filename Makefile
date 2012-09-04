@@ -3,7 +3,7 @@ BUILD_DIR:=build
 
 MODULES=gnupg bootstrap nailgun test os os/centos os/ubuntu iso cooks packages/rpm
 
-.PHONY: all clean test test-unit help FORCE
+.PHONY: all clean test test-unit help mirror FORCE
 
 help:
 	@echo 'Available targets:'
@@ -22,6 +22,16 @@ all:
 test: test-unit
 
 test-unit:
+
+ifeq (mirror, $(findstring mirror,$(MAKECMDGOALS)))
+ifndef MIRROR_DIR
+$(error Please specify MIRROR_DIR variable: make MIRROR_DIR=/path/to/mirror mirror)
+else
+ifndef IGNORE_MIRROR
+IGNORE_MIRROR:=1
+endif
+endif
+endif
 
 # target to force rebuild of other targets
 FORCE:
