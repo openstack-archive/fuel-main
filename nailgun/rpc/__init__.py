@@ -1,4 +1,4 @@
-from nailgun.rpc import impl_kombu as impl
+from rpc import impl_kombu as impl
 
 
 def create_connection(new=True):

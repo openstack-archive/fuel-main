@@ -5,7 +5,7 @@ eventlet.monkey_patch()
 
 from unittest import TestCase
 
-from nailgun import rpc
+import rpc
 
 
 class TestTasks(TestCase):

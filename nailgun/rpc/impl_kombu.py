@@ -12,7 +12,7 @@ import kombu.entity
 import kombu.messaging
 import kombu.connection
 
-from nailgun.rpc import amqp as rpc_amqp
+from rpc import amqp as rpc_amqp
 
 LOG = logging.getLogger(__name__)
 
