@@ -1,10 +1,11 @@
 # -*- coding: utf-8 -*-
+import logging
 
 import re
 import urllib2
-
 from api.urls import urls
 
+logger = logging.getLogger('helpers')
 
 class HTTPClient(object):
     def __init__(self):

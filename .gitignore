@@ -13,7 +13,7 @@
 /.vagrant
 
 /build
-/test/nosetests.xml
+nosetests.xml
 lock
 
 .idea

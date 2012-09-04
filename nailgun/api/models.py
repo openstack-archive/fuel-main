@@ -1,7 +1,5 @@
 # -*- coding: utf-8 -*-
 
-import json
-
 import web
 import ipaddr
 from sqlalchemy import Column, UniqueConstraint, Table
@@ -10,9 +8,10 @@ from sqlalchemy import create_engine
 from sqlalchemy.orm import relationship
 from sqlalchemy.ext.declarative import declarative_base
 
-import settings
-from api.fields import JSON
-from api.validators import BasicValidator
+from fields import JSON
+from settings import settings
+from validators import BasicValidator
+
 
 engine = create_engine(settings.DATABASE_ENGINE)
 Base = declarative_base()

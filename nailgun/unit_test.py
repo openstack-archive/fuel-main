@@ -18,5 +18,5 @@ class TestRunner(object):
         nose.main(module=test, config=nc, argv=[
             __file__,
             "--with-xunit",
-            "--xunit-file=test/nosetests.xml"
+            "--xunit-file=nosetests.xml"
         ])

@@ -8,15 +8,18 @@ import logging
 import code
 
 import web
-
-import db
+from sqlalchemy.orm import scoped_session, sessionmaker
 from api.handlers import check_client_content_type
 from api.models import engine
-from sqlalchemy.orm import scoped_session, sessionmaker
+from db import load_db_driver, syncdb
 from unit_test import TestRunner
 from urls import urls
 
 logging.basicConfig(level="DEBUG")
+
+app = web.application(urls, locals())
+app.add_processor(load_db_driver)
+app.add_processor(check_client_content_type)
 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser()
@@ -49,7 +52,7 @@ if __name__ == "__main__":
 
     if params.action == "syncdb":
         logging.info("Syncing database...")
-        db.syncdb()
+        syncdb()
         logging.info("Done")
     elif params.action == "test":
         logging.info("Running tests...")

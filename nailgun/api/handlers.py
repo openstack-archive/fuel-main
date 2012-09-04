@@ -1,15 +1,12 @@
 # -*- coding: utf-8 -*-
 
 import json
-import logging
 
 import web
 import ipaddr
-
-import settings
+from models import Release, Cluster, Node, Role, Network
+from settings import settings
 from helpers.vlan import VlanManager
-from api.models import Release, Cluster, Node, Role, Network
-
 
 def check_client_content_type(handler):
     content_type = web.ctx.env.get("CONTENT_TYPE", "application/json")

@@ -2,7 +2,7 @@
 
 import web
 from sqlalchemy.orm import scoped_session, sessionmaker
-from api.models import engine, Release
+from api.models import engine
 
 
 def load_db_driver(handler):

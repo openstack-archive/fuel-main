@@ -3,15 +3,11 @@ import unittest
 import json
 from unittest import TestCase
 from paste.fixture import TestApp
-from web import utils
-from api.urls import urls
-
 from db import syncdb, flush, dropdb
-
-from nailgun import app
 from sqlalchemy import orm
 from api.models import Cluster, Node, Release, engine
-from test.helpers import reverse
+from base import reverse
+from manage import app
 
 
 class TestHandlers(TestCase):
