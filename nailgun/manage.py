@@ -73,7 +73,7 @@ if __name__ == "__main__":
         else:
             app = web.application(urls, locals())
 
-        app.add_processor(db.load_db_driver)
+        app.add_processor(load_db_driver)
         app.add_processor(check_client_content_type)
 
         if params.action == "run":
