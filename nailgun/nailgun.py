@@ -18,10 +18,6 @@ from urls import urls
 
 logging.basicConfig(level="DEBUG")
 
-app = web.application(urls, locals())
-app.add_processor(db.load_db_driver)
-app.add_processor(check_client_content_type)
-
 if __name__ == "__main__":
     parser = argparse.ArgumentParser()
     subparsers = parser.add_subparsers(
@@ -68,20 +64,29 @@ if __name__ == "__main__":
             logging.info("Done")
         else:
             parser.print_help()
-    elif params.action == "run":
-        app.run()
-    elif params.action == "runwsgi":
-        logging.info("Running WSGI app...")
-        server = web.httpserver.WSGIServer(
-            ("0.0.0.0", 8080),
-            app.wsgifunc()
-        )
-        try:
-            server.start()
-        except KeyboardInterrupt:
-            logging.info("Stopping WSGI app...")
-            server.stop()
-            logging.info("Done")
+    elif params.action in ("run", "runwsgi"):
+        if params.action == "run":
+            app = web.application(urls, locals(), autoreload=True)
+        else:
+            app = web.application(urls, locals())
+
+        app.add_processor(db.load_db_driver)
+        app.add_processor(check_client_content_type)
+
+        if params.action == "run":
+            app.run()
+        else:
+            logging.info("Running WSGI app...")
+            server = web.httpserver.WSGIServer(
+                ("0.0.0.0", 8080),
+                app.wsgifunc()
+            )
+            try:
+                server.start()
+            except KeyboardInterrupt:
+                logging.info("Stopping WSGI app...")
+                server.stop()
+                logging.info("Done")
     elif params.action == "shell":
         orm = scoped_session(sessionmaker(bind=engine))
         code.interact(local={'orm': orm})
