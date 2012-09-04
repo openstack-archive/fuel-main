@@ -47,15 +47,6 @@ if __name__ == "__main__":
     loaddata_parser.add_argument(
         'fixture', action='store', help='json fixture to load'
     )
-    shell_parser = subparsers.add_parser(
-        'shell', help='open python REPL'
-    )
-    loaddata_parser = subparsers.add_parser(
-        'loaddata', help='load data from fixture'
-    )
-    loaddata_parser.add_argument(
-        'fixture', action='store', help='json fixture to load'
-    )
     params, other_params = parser.parse_known_args()
     sys.argv.pop(1)
 
