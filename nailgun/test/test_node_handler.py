@@ -20,7 +20,8 @@ class TestHandlers(BaseHandlers):
 #       todo: decide None output format
 #        self.assertEquals(node.name, response['name'])
         self.assertEquals(node.mac, response['mac'])
-        self.assertEquals(node.redeployment_needed, response['redeployment_needed'])
+        self.assertEquals(
+            node.redeployment_needed, response['redeployment_needed'])
         self.assertEquals(node.status, response['status'])
         self.assertEquals(node.roles, response['roles'])
         self.assertEquals(node.new_roles, response['new_roles'])
@@ -28,7 +29,6 @@ class TestHandlers(BaseHandlers):
         self.assertEquals(node.info['hdd'], response['info']['hdd'])
         self.assertEquals(node.info['ram'], response['info']['ram'])
         self.assertEquals(node.info['cpu'], response['info']['cpu'])
-
 
     def test_node_creation_with_id(self):
         node_id = '080000000003'
