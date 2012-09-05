@@ -20,9 +20,7 @@ class TestTasks(TestCase):
 
     def test_call_succeed(self):
         value = 42
-        result = rpc.call(
-            'test', {"method": "echo",
-            "args": {"value": value}})
+        result = rpc.call('test', {"method": "echo", "args": {"value": value}})
         self.assertEqual(value, result)
 
     def test_reusing_connection(self):
@@ -54,13 +52,12 @@ class TestTasks(TestCase):
         self.assertEqual(self.received_message, message)
 
     def test_rpc_topic_send_receive(self):
-        message = {
-            "method": "hello",
-            "args": {"value": 142}}
+        message = {"method": "hello", "args": {"value": 142}}
         conn = rpc.create_connection()
 
         def _callback(message):
             self.received_message = message
+
         conn.declare_topic_consumer('b_topic', _callback)
 
         rpc.cast('b_topic', message)
