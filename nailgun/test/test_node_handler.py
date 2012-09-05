@@ -8,6 +8,28 @@ from base import reverse
 
 
 class TestHandlers(BaseHandlers):
+
+    def test_node_get(self):
+        node = self.create_default_node()
+        resp = self.app.get(
+            reverse('NodeHandler', kwargs={'node_id': node.id}),
+            headers=self.default_headers)
+        self.assertEquals(200, resp.status)
+        response = json.loads(resp.body)
+        self.assertEquals(node.id, response['id'])
+#       todo: decide None output format
+#        self.assertEquals(node.name, response['name'])
+        self.assertEquals(node.mac, response['mac'])
+        self.assertEquals(node.redeployment_needed, response['redeployment_needed'])
+        self.assertEquals(node.status, response['status'])
+        self.assertEquals(node.roles, response['roles'])
+        self.assertEquals(node.new_roles, response['new_roles'])
+        self.assertEquals(node.info['cores'], response['info']['cores'])
+        self.assertEquals(node.info['hdd'], response['info']['hdd'])
+        self.assertEquals(node.info['ram'], response['info']['ram'])
+        self.assertEquals(node.info['cpu'], response['info']['cpu'])
+
+
     def test_node_creation_with_id(self):
         node_id = '080000000003'
         resp = self.app.post(
