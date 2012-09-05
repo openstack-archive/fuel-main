@@ -20,27 +20,24 @@ class TestHandlers(BaseHandlers):
         )
         self.assertEquals(resp.status, 201)
 
-    def test_all_api_urls_404(self):
-        test_urls = {}
-        url_ids = {
+    def test_all_api_urls_404_or_405(self):
+        urls = {
             'ClusterHandler': {'cluster_id': 1},
             'NodeHandler': {'node_id': 1},
             'ReleaseHandler': {'release_id': 1},
+            'RoleHandler': {'role_id': 1},
         }
 
-        skip_urls = [
-        ]
-
-        for url, methods in test_urls.iteritems():
-            if url in skip_urls:
-                continue
-            kwargs = {}
-            if url in url_ids:
-                kwargs = url_ids[url]
-
-            test_url = reverse(url, kwargs=kwargs)
-            resp = self.app.get(test_url)
-            self.assertEqual(resp.status, 404)
+        for handler in urls:
+            test_url = reverse(handler, urls[handler])
+            resp = self.app.get(test_url, expect_errors=True)
+            self.assertTrue(resp.status in [404,405])
+            resp = self.app.delete(test_url, expect_errors=True)
+            self.assertTrue(resp.status in [404,405])
+            resp = self.app.put(test_url, expect_errors=True)
+            self.assertTrue(resp.status in [404,405])
+            resp = self.app.post(test_url, expect_errors=True)
+            self.assertTrue(resp.status in [404,405])
 
     def test_release_create(self):
         release_name = "OpenStack"
