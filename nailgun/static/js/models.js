@@ -2,11 +2,6 @@ define(function() {
     var models = {};
     var collections = {};
 
-    models.Task = Backbone.Model.extend({
-        urlRoot: '/api/tasks',
-        idAttribute: 'task_id'
-    });
-
     models.Release = Backbone.Model.extend({
         urlRoot: '/api/releases',
         initialize: function(attrs) {
@@ -84,17 +79,6 @@ define(function() {
         }
     });
 
-    models.Cookbook = Backbone.Model.extend({
-        urlRoot: '/api/cookbooks',
-        initialize: function(attrs) {
-            this.set('roles', new models.Roles(attrs.roles));
-        }
-    });
-
-    models.Cookbooks = Backbone.Collection.extend({
-        model: models.Cookbook
-    });
-
     models.Role = Backbone.Model.extend({
         urlRoot: '/api/roles'
     });
@@ -102,22 +86,6 @@ define(function() {
     models.Roles = Backbone.Collection.extend({
         model: models.Role,
         url: '/api/roles'
-    });
-
-    models.DeploymentType = Backbone.Model.extend({
-        urlRoot: function() {
-            return this.get('cluster') ? this.get('cluster').url() + '/deployment_types' : '/deployment_types';
-        },
-        toJSON: function(options) {
-            return {};
-        }
-    });
-
-    models.DeploymentTypes = Backbone.Collection.extend({
-        model: models.DeploymentType,
-        url: function() {
-            return this.cluster ? this.cluster.url() + '/deployment_types' : '/deployment_types';
-        }
     });
 
     return models;

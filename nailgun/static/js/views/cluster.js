@@ -6,9 +6,8 @@ define(
     'text!templates/cluster/page.html',
     'text!templates/cluster/node.html',
     'text!templates/cluster/deployment_control.html',
-    'text!templates/cluster/role_chooser.html'
 ],
-function(models, dialogViews, taskViews, clusterPageTemplate, clusterNodeTemplate, deploymentControlTemplate, roleChooserTemplate) {
+function(models, dialogViews, taskViews, clusterPageTemplate, clusterNodeTemplate, deploymentControlTemplate) {
     var views = {}
 
     views.ClusterPage = Backbone.View.extend({
@@ -136,16 +135,8 @@ function(models, dialogViews, taskViews, clusterPageTemplate, clusterNodeTemplat
         className: 'span3',
         template: _.template(clusterNodeTemplate),
         events: {
-            'click .roles ul': 'editRoles',
             'click .node-name': 'startNameEditing',
             'keydown .node-name-editing': 'onNodeNameInputKeydown'
-        },
-        editRoles: function() {
-            if (this.model.collection.cluster.locked()) return;
-            if (this.$('.node.off').length) return;
-            if (this.$('.role-chooser').length) return;
-            var roleChooser = (new views.NodeRoleChooser({model: this.model}));
-            this.$('.roles').after(roleChooser.render().el);
         },
         startNameEditing: function() {
             if (this.model.collection.cluster.locked()) return;
@@ -185,58 +176,6 @@ function(models, dialogViews, taskViews, clusterPageTemplate, clusterNodeTemplat
         },
         render: function() {
             this.$el.html(this.template({node: this.model, editingName: this.editingName}));
-            return this;
-        }
-    });
-
-    views.NodeRoleChooser = Backbone.View.extend({
-        tagName: 'ul',
-        className: 'role-chooser',
-        template: _.template(roleChooserTemplate),
-        events: {
-            'click .close': 'close',
-            'click .role': 'toggleRole',
-            'click .applybtn button:not(.disabled)': 'applyRoles'
-        },
-        close: function() {
-            $('html').off(this.eventNamespace);
-            this.remove();
-        },
-        toggleRole: function(e) {
-            if ($(e.currentTarget).is('.unavailable')) return;
-            $(e.currentTarget).toggleClass('checked').toggleClass('unchecked');
-            if (_.isEqual(this.getChosenRoles(), this.originalRoles.pluck('id'))) {
-                this.$('.applybtn button').addClass('disabled');
-            } else {
-                this.$('.applybtn button').removeClass('disabled');
-            }
-        },
-        applyRoles: function() {
-            var new_roles = this.getChosenRoles();
-            var redeployment_needed = !_.isEqual(this.model.get('roles').pluck('id'), new_roles);
-            this.model.update({new_roles: new_roles, redeployment_needed: redeployment_needed});
-            this.close();
-        },
-        getChosenRoles: function() {
-            return this.$('.role.checked').map(function() {return parseInt($(this).attr('data-role-id'), 10)}).get();
-        },
-        initialize: function() {
-            this.originalRoles = this.model.get('redeployment_needed') ? this.model.get('new_roles') : this.model.get('roles');
-            this.eventNamespace = 'click.chooseroles' + this.model.id;
-            $('html').off(this.eventNamespace);
-            $('html').on(this.eventNamespace, _.after(2, _.bind(function(e) {
-                if (!$(e.target).closest(this.$el).length) {
-                    this.close();
-                }
-            }, this)));
-            this.availableRoles = new models.Roles;
-            this.availableRoles.fetch({
-                data: {node_id: this.model.id},
-                success: _.bind(this.render, this)
-            });
-        },
-        render: function() {
-            this.$el.html(this.template({availableRoles: this.availableRoles, nodeRoles: this.originalRoles}));
             return this;
         }
     });
