@@ -16,7 +16,7 @@
             </div>
           <% } %>
           <ul>
-            <li class="macaddr"><%= node.mac() %></li>
+            <li class="macaddr"><%= node.get('mac') %></li>
           </ul>
           <ul>
             <li>CPU: <%= _.isNumber(node.resource('cpu')) ? node.resource('cpu') : '?' %></li>
