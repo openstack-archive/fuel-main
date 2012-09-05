@@ -120,4 +120,4 @@ class TestHandlers(BaseHandlers):
         self.assertEquals(resp.status, 200)
 
         nodes = self.db.query(Node).filter(Node.cluster == cluster)
-        self.assertEquals(2, nodes.count())
+        self.assertEquals(1, nodes.count())
