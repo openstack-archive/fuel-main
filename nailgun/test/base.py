@@ -4,7 +4,7 @@ from random import randint
 from unittest.case import TestCase
 import re
 from sqlalchemy.orm.events import orm
-from api.models import engine, Node, Release, Cluster
+from api.models import engine, Node, Release, Cluster, Role
 from api.urls import urls
 from db import dropdb, syncdb, flush
 from manage import app
@@ -50,13 +50,13 @@ class BaseHandlers(TestCase):
         self.db.commit()
         return node
 
-        #    def create_default_role(self):
-        #        role = Role()
-        #        role.name = u"role Name"
-        #        role.release = self.create_default_release()
-        #        self.db.add(role)
-        #        self.db.commit()
-        #        return role
+    def create_default_role(self):
+        role = Role()
+        role.name = u"role Name"
+        role.release = self.create_default_release()
+        self.db.add(role)
+        self.db.commit()
+        return role
 
     def create_default_release(self):
         release = Release()
