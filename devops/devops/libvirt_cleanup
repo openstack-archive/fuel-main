@@ -1,6 +1,6 @@
 #!/bin/bash
 
-function virsh { command virsh "$@" | awk 'NR>2 && $0!=""'; }
+function virsh { command virsh "$@" |grev -v "jenkins-"|awk 'NR>2 && $0!=""'; }
 function foreach { xargs --no-run-if-empty -n 1 "$@"; }
 function column { awk "{print \$$1}"; }
 
