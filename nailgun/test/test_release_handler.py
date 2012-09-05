@@ -1,5 +1,4 @@
 # -*- coding: utf-8 -*-
-import unittest
 import json
 from paste.fixture import TestApp
 from api.models import Release
@@ -8,12 +7,10 @@ from base import reverse
 
 
 class TestHandlers(BaseHandlers):
-
     def test_release_put_change_name_and_version(self):
         release = self.create_default_release()
         resp = self.app.put(
-            reverse('ReleaseHandler',
-                kwargs={'release_id': release.id}),
+            reverse('ReleaseHandler', kwargs={'release_id': release.id}),
             params=json.dumps({
                 'name': 'modified release',
                 'version': '5.1'
@@ -101,4 +98,3 @@ class TestHandlers(BaseHandlers):
             Release.version == release_version,
             Release.description == release_description
         ).one()
-

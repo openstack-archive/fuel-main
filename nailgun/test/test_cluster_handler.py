@@ -7,7 +7,6 @@ from base import reverse
 
 
 class TestHandlers(BaseHandlers):
-
     def test_cluster_put_attach_node(self):
         pass
 
@@ -21,7 +20,7 @@ class TestHandlers(BaseHandlers):
         cluster = self.create_default_cluster()
         resp = self.app.delete(
             reverse('ClusterHandler', kwargs={'cluster_id': cluster.id}),
-            headers = self.default_headers
+            headers=self.default_headers
         )
         self.assertEquals(204, resp.status)
         self.assertEquals('', resp.body)
@@ -30,7 +29,7 @@ class TestHandlers(BaseHandlers):
         cluster = self.create_default_cluster()
         resp = self.app.get(
             reverse('ClusterHandler', kwargs={'cluster_id': cluster.id}),
-            headers = self.default_headers
+            headers=self.default_headers
         )
         self.assertEquals(200, resp.status)
         response = json.loads(resp.body)
@@ -43,12 +42,12 @@ class TestHandlers(BaseHandlers):
         release = self.create_default_release()
         yet_another_cluster_name = 'Yet another cluster'
         resp = self.app.post(
-             '/api/clusters',
-             params=json.dumps({
-                 'name': yet_another_cluster_name,
-                 'release': release.id
-             }),
-             headers = self.default_headers
+            '/api/clusters',
+            params=json.dumps({
+                'name': yet_another_cluster_name,
+                'release': release.id
+            }),
+            headers=self.default_headers
         )
         self.assertEquals(201, resp.status)
         response = json.loads(resp.body)

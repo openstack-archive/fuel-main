@@ -8,7 +8,6 @@ from base import reverse
 
 
 class TestHandlers(BaseHandlers):
-
     def test_node_creation_with_id(self):
         node_id = '080000000003'
         resp = self.app.post(
@@ -26,7 +25,7 @@ class TestHandlers(BaseHandlers):
         self.assertEquals(resp.status, 201)
         node = self.db.query(Node).filter(Node.mac == 'ASDFAAASDFAA').one()
         response = json.loads(resp.body)
-        self.assertEquals('ready',response['status'])
+        self.assertEquals('ready', response['status'])
 
     def test_node_deletion(self):
         node = self.create_default_node()
@@ -201,7 +200,3 @@ class TestHandlers(BaseHandlers):
 
         node_from_db = Node.objects.get(id=self.create_default_node().id)
         self.assertEquals(node_from_db.metadata, old_meta)
-
-
-
-

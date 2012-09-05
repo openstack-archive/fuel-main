@@ -8,7 +8,6 @@ from base import reverse
 
 
 class TestHandlers(BaseHandlers):
-
     def test_release_creation(self):
         resp = self.app.post(
             '/api/releases',
@@ -27,17 +26,16 @@ class TestHandlers(BaseHandlers):
             'ReleaseHandler': {'release_id': 1},
             'RoleHandler': {'role_id': 1},
         }
-
         for handler in urls:
             test_url = reverse(handler, urls[handler])
             resp = self.app.get(test_url, expect_errors=True)
-            self.assertTrue(resp.status in [404,405])
+            self.assertTrue(resp.status in [404, 405])
             resp = self.app.delete(test_url, expect_errors=True)
-            self.assertTrue(resp.status in [404,405])
+            self.assertTrue(resp.status in [404, 405])
             resp = self.app.put(test_url, expect_errors=True)
-            self.assertTrue(resp.status in [404,405])
+            self.assertTrue(resp.status in [404, 405])
             resp = self.app.post(test_url, expect_errors=True)
-            self.assertTrue(resp.status in [404,405])
+            self.assertTrue(resp.status in [404, 405])
 
     def test_release_create(self):
         release_name = "OpenStack"

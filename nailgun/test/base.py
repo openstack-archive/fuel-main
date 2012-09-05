@@ -9,8 +9,8 @@ from api.urls import urls
 from db import dropdb, syncdb, flush
 from manage import app
 
-class BaseHandlers(TestCase):
 
+class BaseHandlers(TestCase):
     @classmethod
     def setUpClass(cls):
         dropdb()
@@ -73,6 +73,7 @@ class BaseHandlers(TestCase):
         self.db.add(cluster)
         self.db.commit()
         return cluster
+
 
 def reverse(name, kwargs=None):
     urldict = dict(zip(urls[1::2], urls[::2]))
