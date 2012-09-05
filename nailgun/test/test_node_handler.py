@@ -17,7 +17,6 @@ class TestHandlers(BaseHandlers):
             headers=self.default_headers,
             expect_errors=True)
         self.assertEquals(400, resp.status)
-        self.assertEquals('{json with error}', resp.body)
 
     def test_node_creation(self):
         resp = self.app.post(
@@ -27,7 +26,7 @@ class TestHandlers(BaseHandlers):
         self.assertEquals(resp.status, 201)
         node = self.db.query(Node).filter(Node.mac == 'ASDFAAASDFAA').one()
         response = json.loads(resp.body)
-        self.assertEquals('discovered',response['status'])
+        self.assertEquals('ready',response['status'])
 
     def test_node_deletion(self):
         node = self.create_default_node()
