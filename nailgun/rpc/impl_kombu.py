@@ -145,13 +145,8 @@ class TopicConsumer(ConsumerBase):
             durable=options['durable'],
             auto_delete=options['auto_delete'])
         super(TopicConsumer, self).__init__(
-            channel,
-            callback,
-            tag,
-            name=topic,
-            exchange=exchange,
-            routing_key=topic,
-            **options)
+            channel, callback, tag, name=topic, exchange=exchange,
+            routing_key=topic, **options)
 
 
 class Publisher(object):
@@ -182,6 +177,7 @@ class Publisher(object):
 
 class DirectPublisher(Publisher):
     """Publisher class for 'direct'"""
+
     def __init__(self, channel, msg_id, **kwargs):
         """init a 'direct' publisher.
 
@@ -203,24 +199,19 @@ class DirectPublisher(Publisher):
 
 class TopicPublisher(Publisher):
     """Publisher class for 'topic'"""
+
     def __init__(self, channel, topic, **kwargs):
         """init a 'topic' publisher.
 
         Kombu options may be passed as keyword args to override defaults
         """
 
-        options = {
-            'durable': False,
-            'auto_delete': False,
-            'exclusive': False}
+        options = {'durable': False,
+                   'auto_delete': False,
+                   'exclusive': False}
         options.update(kwargs)
-        super(
-            TopicPublisher, self).__init__(
-                channel,
-                'nailgun',
-                topic,
-                type='topic',
-                **options)
+        super(TopicPublisher, self).__init__(
+            channel, 'nailgun', topic, type='topic', **options)
 
 
 class Connection(object):

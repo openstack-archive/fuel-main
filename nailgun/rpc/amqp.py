@@ -120,8 +120,8 @@ def msg_reply(msg_id, connection_pool, reply=None, failure=None, ending=False):
             msg = {'result': reply, 'failure': failure}
         except TypeError:
             msg = {
-                'result': dict((k, repr(v))
-                for k, v in reply.__dict__.iteritems()),
+                'result': dict((k, repr(v)) for k, v in reply.__dict__.
+                iteritems()),
                 'failure': failure}
         if ending:
             msg['ending'] = True
@@ -197,8 +197,8 @@ class ProxyCallback(object):
 class MulticallWaiter(object):
     def __init__(self, connection, timeout):
         self._connection = connection
-        self._iterator = connection.iterconsume(
-            timeout=timeout or 20)  # TODO resp timeout
+        # TODO resp timeout
+        self._iterator = connection.iterconsume(timeout=timeout or 20)
         self._result = None
         self._done = False
         self._got_ending = False

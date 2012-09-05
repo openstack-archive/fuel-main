@@ -11,7 +11,7 @@ from helpers.vlan import VlanManager
 
 def check_client_content_type(handler):
     content_type = web.ctx.env.get("CONTENT_TYPE", "application/json")
-    if web.ctx.path.startswith("/api") \
+    if web.ctx.path.startswith("/api")\
             and not content_type.startswith("application/json"):
         raise web.unsupportedmediatype
     return handler()
@@ -63,8 +63,7 @@ class JSONHandler(object):
                     else:
                         handler = handlers[value[0].__class__.__name__]
                         json_data[field[0]] = [
-                            handler.render(v, fields=subfields)
-                            for v in value
+                            handler.render(v, fields=subfields) for v in value
                         ]
             else:
                 value = getattr(instance, field)
@@ -290,11 +289,9 @@ class ReleaseCollectionHandler(JSONHandler):
 
 
 class NodeHandler(JSONHandler):
-    fields = (
-        'id', 'name', 'info', ('roles', '*'), ('new_roles', '*'),
-        'status', 'mac', 'fqdn', 'ip', 'manufacturer', 'platform_name',
-        'redeployment_needed', 'os_platform'
-    )
+    fields = ('id', 'name', 'info', ('roles', '*'), ('new_roles', '*'),
+              'status', 'mac', 'fqdn', 'ip', 'manufacturer', 'platform_name',
+              'redeployment_needed', 'os_platform')
     model = Node
 
     def GET(self, node_id):

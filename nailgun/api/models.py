@@ -125,12 +125,8 @@ class Node(Base, BasicValidator):
     platform_name = Column(String(150))
     os_platform = Column(String(150))
     roles = relationship(
-        "Role",
-        secondary=nodes_roles,
-        backref="nodes")
-    new_roles = relationship(
-        "Role",
-        secondary=nodes_new_roles)
+        "Role", secondary=nodes_roles, backref="nodes")
+    new_roles = relationship("Role", secondary=nodes_new_roles)
     redeployment_needed = Column(Boolean, default=False)
 
     @property
