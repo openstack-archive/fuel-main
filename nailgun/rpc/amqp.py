@@ -51,7 +51,7 @@ class ConnectionContext(object):
             self.connection = connection_pool.get()
         else:
             self.connection = connection_pool.connection_cls(
-                    server_params=server_params)
+                server_params=server_params)
         self.pooled = pooled
 
     def __enter__(self):
@@ -119,9 +119,10 @@ def msg_reply(msg_id, connection_pool, reply=None, failure=None, ending=False):
         try:
             msg = {'result': reply, 'failure': failure}
         except TypeError:
-            msg = {'result': dict((k, repr(v))
-                            for k, v in reply.__dict__.iteritems()),
-                    'failure': failure}
+            msg = {
+                'result': dict((k, repr(v))
+                for k, v in reply.__dict__.iteritems()),
+                'failure': failure}
         if ending:
             msg['ending'] = True
         conn.direct_send(msg_id, msg)
@@ -160,8 +161,9 @@ class ProxyCallback(object):
         if not method:
             LOG.warn('no method for message: %s' % message_data)
             reply = 'No method for message: %s' % message_data
-            msg_reply(msg_id, self.connection_pool, reply=reply,
-                    failure=None, ending=False)
+            msg_reply(
+                msg_id, self.connection_pool, reply=reply,
+                failure=None, ending=False)
             return
         self.pool.spawn_n(self._process_data, msg_id, method, args)
 
@@ -177,16 +179,18 @@ class ProxyCallback(object):
             # Check if the result was a generator
             if inspect.isgenerator(rval):
                 for x in rval:
-                    msg_reply(msg_id, self.connection_pool, reply=x,
-                            failure=None, ending=False)
+                    msg_reply(
+                        msg_id, self.connection_pool, reply=x,
+                        failure=None, ending=False)
             else:
                 msg_reply(msg_id, self.connection_pool, reply=rval)
             # This final None tells multicall that it is done.
             msg_reply(msg_id, self.connection_pool, ending=True)
         except Exception as e:
             LOG.exception('Exception during message handling')
-            msg_reply(msg_id, self.connection_pool, reply=None,
-                    failure=sys.exc_info(), ending=False)
+            msg_reply(
+                msg_id, self.connection_pool, reply=None,
+                failure=sys.exc_info(), ending=False)
         return
 
 
@@ -194,7 +198,7 @@ class MulticallWaiter(object):
     def __init__(self, connection, timeout):
         self._connection = connection
         self._iterator = connection.iterconsume(
-                                timeout=timeout or 20)  # TODO resp timeout
+            timeout=timeout or 20)  # TODO resp timeout
         self._result = None
         self._done = False
         self._got_ending = False

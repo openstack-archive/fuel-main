@@ -40,13 +40,15 @@ def upload_fixture(fileobj):
                     else:
                         fk_model = f.comparator.prop.argument.class_
 
-                if isinstance(impl,
-                    orm.attributes.ScalarObjectAttributeImpl):
+                if isinstance(
+                        impl,
+                        orm.attributes.ScalarObjectAttributeImpl):
                     if value:
                         fk_fields[field] = (value, fk_model)
                         #setattr(new_obj, field, db.query(fk_model).get(value))
-                elif isinstance(impl,
-                    orm.attributes.CollectionAttributeImpl):
+                elif isinstance(
+                        impl,
+                        orm.attributes.CollectionAttributeImpl):
                     if value:
                         fk_fields[field] = (value, fk_model)
                         # for sub in db.query(fk_model).filter(

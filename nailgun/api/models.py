@@ -42,9 +42,8 @@ class Release(Base, BasicValidator):
                 message="No release version specified"
             )
         if web.ctx.orm.query(Release).filter(
-                Release.name == d["name"] \
-                    and Release.version == d["version"]
-            ).first():
+                Release.name == d["name"]
+                and Release.version == d["version"]).first():
             raise web.webapi.conflict
         if "networks_metadata" in d:
             for network in d["networks_metadata"]:
@@ -92,12 +91,14 @@ class Cluster(Base, BasicValidator):
         return d
 
 
-nodes_roles = Table('nodes_roles', Base.metadata,
+nodes_roles = Table(
+    'nodes_roles', Base.metadata,
     Column('node', Integer, ForeignKey('nodes.id')),
     Column('role', Integer, ForeignKey('roles.id'))
 )
 
-nodes_new_roles = Table('nodes_new_roles', Base.metadata,
+nodes_new_roles = Table(
+    'nodes_new_roles', Base.metadata,
     Column('node', Integer, ForeignKey('nodes.id')),
     Column('role', Integer, ForeignKey('roles.id'))
 )
@@ -123,11 +124,13 @@ class Node(Base, BasicValidator):
     manufacturer = Column(Unicode(50))
     platform_name = Column(String(150))
     os_platform = Column(String(150))
-    roles = relationship("Role",
-                secondary=nodes_roles,
-                backref="nodes")
-    new_roles = relationship("Role",
-                secondary=nodes_new_roles)
+    roles = relationship(
+        "Role",
+        secondary=nodes_roles,
+        backref="nodes")
+    new_roles = relationship(
+        "Role",
+        secondary=nodes_new_roles)
     redeployment_needed = Column(Boolean, default=False)
 
     @property
@@ -208,9 +211,10 @@ class Network(Base, BasicValidator):
     range_l = Column(String(25))
     range_h = Column(String(25))
     gateway = Column(String(25))
-    nodes = relationship("Node",
-                secondary=IPAddr.__table__,
-                backref="networks")
+    nodes = relationship(
+        "Node",
+        secondary=IPAddr.__table__,
+        backref="networks")
 
     @property
     def netmask(self):

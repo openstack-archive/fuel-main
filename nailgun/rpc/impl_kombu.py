@@ -100,23 +100,24 @@ class DirectConsumer(ConsumerBase):
         Other kombu options may be passed
         """
         # Default options
-        options = {'durable': False,
-                'auto_delete': True,
-                'exclusive': True}
+        options = {
+            'durable': False,
+            'auto_delete': True,
+            'exclusive': True}
         options.update(kwargs)
         exchange = kombu.entity.Exchange(
-                name=msg_id,
-                type='direct',
-                durable=options['durable'],
-                auto_delete=options['auto_delete'])
+            name=msg_id,
+            type='direct',
+            durable=options['durable'],
+            auto_delete=options['auto_delete'])
         super(DirectConsumer, self).__init__(
-                channel,
-                callback,
-                tag,
-                name=msg_id,
-                exchange=exchange,
-                routing_key=msg_id,
-                **options)
+            channel,
+            callback,
+            tag,
+            name=msg_id,
+            exchange=exchange,
+            routing_key=msg_id,
+            **options)
 
 
 class TopicConsumer(ConsumerBase):
@@ -133,23 +134,24 @@ class TopicConsumer(ConsumerBase):
         Other kombu options may be passed
         """
         # Default options
-        options = {'durable': False,
-                'auto_delete': False,
-                'exclusive': False}
+        options = {
+            'durable': False,
+            'auto_delete': False,
+            'exclusive': False}
         options.update(kwargs)
         exchange = kombu.entity.Exchange(
-                name='nailgun',
-                type='topic',
-                durable=options['durable'],
-                auto_delete=options['auto_delete'])
+            name='nailgun',
+            type='topic',
+            durable=options['durable'],
+            auto_delete=options['auto_delete'])
         super(TopicConsumer, self).__init__(
-                channel,
-                callback,
-                tag,
-                name=topic,
-                exchange=exchange,
-                routing_key=topic,
-                **options)
+            channel,
+            callback,
+            tag,
+            name=topic,
+            exchange=exchange,
+            routing_key=topic,
+            **options)
 
 
 class Publisher(object):
@@ -166,10 +168,12 @@ class Publisher(object):
 
     def reconnect(self, channel):
         """Re-establish the Producer after a rabbit reconnection"""
-        self.exchange = kombu.entity.Exchange(name=self.exchange_name,
-                **self.kwargs)
-        self.producer = kombu.messaging.Producer(exchange=self.exchange,
-                channel=channel, routing_key=self.routing_key)
+        self.exchange = kombu.entity.Exchange(
+            name=self.exchange_name,
+            **self.kwargs)
+        self.producer = kombu.messaging.Producer(
+            exchange=self.exchange,
+            channel=channel, routing_key=self.routing_key)
 
     def send(self, msg):
         """Send a message"""
@@ -184,15 +188,17 @@ class DirectPublisher(Publisher):
         Kombu options may be passed as keyword args to override defaults
         """
 
-        options = {'durable': False,
-                'auto_delete': True,
-                'exclusive': True}
+        options = {
+            'durable': False,
+            'auto_delete': True,
+            'exclusive': True}
         options.update(kwargs)
-        super(DirectPublisher, self).__init__(channel,
-                msg_id,
-                msg_id,
-                type='direct',
-                **options)
+        super(DirectPublisher, self).__init__(
+            channel,
+            msg_id,
+            msg_id,
+            type='direct',
+            **options)
 
 
 class TopicPublisher(Publisher):
@@ -203,11 +209,14 @@ class TopicPublisher(Publisher):
         Kombu options may be passed as keyword args to override defaults
         """
 
-        options = {'durable': False,
-                'auto_delete': False,
-                'exclusive': False}
+        options = {
+            'durable': False,
+            'auto_delete': False,
+            'exclusive': False}
         options.update(kwargs)
-        super(TopicPublisher, self).__init__(channel,
+        super(
+            TopicPublisher, self).__init__(
+                channel,
                 'nailgun',
                 topic,
                 type='topic',
@@ -266,8 +275,9 @@ class Connection(object):
         be handled by the caller.
         """
         if self.connection:
-            LOG.info("Reconnecting to AMQP server on "
-                    "%(hostname)s:%(port)d" % self.params)
+            LOG.info(
+                "Reconnecting to AMQP server on "
+                "%(hostname)s:%(port)d" % self.params)
             try:
                 self.connection.close()
             except self.connection_errors:
@@ -275,8 +285,7 @@ class Connection(object):
             # Setting this in case the next statement fails, though
             # it shouldn't be doing any network operations, yet.
             self.connection = None
-        self.connection = kombu.connection.BrokerConnection(
-                **self.params)
+        self.connection = kombu.connection.BrokerConnection(**self.params)
         self.connection_errors = self.connection.connection_errors
         if self.memory_transport:
             # Kludge to speed up tests.
@@ -289,8 +298,9 @@ class Connection(object):
             self.channel._new_queue('ae.undeliver')
         for consumer in self.consumers:
             consumer.reconnect(self.channel)
-        LOG.info('Connected to AMQP server on '
-                '%(hostname)s:%(port)d' % self.params)
+        LOG.info(
+            'Connected to AMQP server on '
+            '%(hostname)s:%(port)d' % self.params)
 
     def reconnect(self):
         """Handles reconnecting and re-establishing queues.
@@ -325,9 +335,10 @@ class Connection(object):
             log_info.update(self.params)
 
             if self.max_retries and attempt == self.max_retries:
-                LOG.exception('Unable to connect to AMQP server on '
-                        '%(hostname)s:%(port)d after %(max_retries)d '
-                        'tries: %(err_str)s' % log_info)
+                LOG.exception(
+                    'Unable to connect to AMQP server on '
+                    '%(hostname)s:%(port)d after %(max_retries)d '
+                    'tries: %(err_str)s' % log_info)
                 # NOTE(comstud): Copied from original code.  There's
                 # really no better recourse because if this was a queue we
                 # need to consume on, we have no way to consume anymore.
@@ -341,9 +352,10 @@ class Connection(object):
                 sleep_time = min(sleep_time, self.interval_max)
 
             log_info['sleep_time'] = sleep_time
-            LOG.exception('AMQP server on %(hostname)s:%(port)d is'
-                    ' unreachable: %(err_str)s. Trying again in '
-                    '%(sleep_time)d seconds.' % log_info)
+            LOG.exception(
+                'AMQP server on %(hostname)s:%(port)d is'
+                ' unreachable: %(err_str)s. Trying again in '
+                '%(sleep_time)d seconds.' % log_info)
             time.sleep(sleep_time)
 
     def ensure(self, error_callback, method, *args, **kwargs):
@@ -392,12 +404,14 @@ class Connection(object):
 
         def _connect_error(exc):
             log_info = {'topic': topic, 'err_str': str(exc)}
-            LOG.error("Failed to declare consumer for topic '%(topic)s': "
+            LOG.error(
+                "Failed to declare consumer for topic '%(topic)s': "
                 "%(err_str)s" % log_info)
 
         def _declare_consumer():
-            consumer = consumer_cls(self.channel, topic, callback,
-                    self.consumer_num.next())
+            consumer = consumer_cls(
+                self.channel, topic, callback,
+                self.consumer_num.next())
             self.consumers.append(consumer)
             return consumer
 
@@ -410,14 +424,14 @@ class Connection(object):
 
         def _error_callback(exc):
             if isinstance(exc, socket.timeout):
-                LOG.exception('Timed out waiting for RPC response: %s' %
-                        str(exc))
+                LOG.exception(
+                    'Timed out waiting for RPC response: %s' % str(exc))
                 #raise rpc_common.Timeout()
-                raise Exception("Timed out waiting for RPC response: %s" % \
-                        str(exc))
+                raise Exception(
+                    "Timed out waiting for RPC response: %s" % str(exc))
             else:
-                LOG.exception('Failed to consume message from queue: %s' %
-                        str(exc))
+                LOG.exception(
+                    'Failed to consume message from queue: %s' % str(exc))
                 raise
                 info['do_consume'] = True
 
@@ -451,7 +465,8 @@ class Connection(object):
 
         def _error_callback(exc):
             log_info = {'topic': topic, 'err_str': str(exc)}
-            LOG.exception("Failed to publish message to topic "
+            LOG.exception(
+                "Failed to publish message to topic "
                 "'%(topic)s': %(err_str)s" % log_info)
 
         def _publish():
@@ -503,11 +518,11 @@ class Connection(object):
     def create_consumer(self, topic, proxy, fanout=False):
         """Create a consumer that calls a method in a proxy object"""
         if fanout:
-            self.declare_fanout_consumer(topic,
-                    rpc_amqp.ProxyCallback(proxy, Connection.pool))
+            self.declare_fanout_consumer(
+                topic, rpc_amqp.ProxyCallback(proxy, Connection.pool))
         else:
-            self.declare_topic_consumer(topic,
-                    rpc_amqp.ProxyCallback(proxy, Connection.pool))
+            self.declare_topic_consumer(
+                topic, rpc_amqp.ProxyCallback(proxy, Connection.pool))
 
 
 Connection.pool = rpc_amqp.Pool(connection_cls=Connection)

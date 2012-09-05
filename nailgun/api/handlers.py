@@ -12,7 +12,7 @@ from helpers.vlan import VlanManager
 def check_client_content_type(handler):
     content_type = web.ctx.env.get("CONTENT_TYPE", "application/json")
     if web.ctx.path.startswith("/api") \
-        and not content_type.startswith("application/json"):
+            and not content_type.startswith("application/json"):
         raise web.unsupportedmediatype
     return handler()
 
@@ -48,8 +48,8 @@ class JSONHandler(object):
                     subfields = field[1:]
 
                 value = getattr(instance, field[0])
-                rel = getattr(instance.__class__, \
-                        field[0]).impl.__class__.__name__
+                rel = getattr(
+                    instance.__class__, field[0]).impl.__class__.__name__
                 if value is None:
                     pass
                 elif rel == 'ScalarObjectAttributeImpl':
@@ -63,7 +63,7 @@ class JSONHandler(object):
                     else:
                         handler = handlers[value[0].__class__.__name__]
                         json_data[field[0]] = [
-                            handler.render(v, fields=subfields) \
+                            handler.render(v, fields=subfields)
                             for v in value
                         ]
             else:
@@ -127,7 +127,7 @@ class ClusterHandler(JSONHandler):
             if key == "nodes":
                 map(cluster.nodes.remove, cluster.nodes)
                 nodes = web.ctx.orm.query(Node).filter(
-                     Node.id.in_(value)
+                    Node.id.in_(value)
                 )
                 map(cluster.nodes.append, nodes)
             else:
@@ -173,7 +173,7 @@ class ClusterCollectionHandler(JSONHandler):
         # TODO: discover how to add multiple objects
         if 'nodes' in data and data['nodes']:
             nodes = web.ctx.orm.query(Node).filter(
-                 Node.id.in_(data['nodes'])
+                Node.id.in_(data['nodes'])
             )
             map(cluster.nodes.append, nodes)
 
@@ -290,9 +290,11 @@ class ReleaseCollectionHandler(JSONHandler):
 
 
 class NodeHandler(JSONHandler):
-    fields = ('id', 'name', 'info', ('roles', '*'), ('new_roles', '*'),
-            'status', 'mac', 'fqdn', 'ip', 'manufacturer', 'platform_name',
-            'redeployment_needed', 'os_platform')
+    fields = (
+        'id', 'name', 'info', ('roles', '*'), ('new_roles', '*'),
+        'status', 'mac', 'fqdn', 'ip', 'manufacturer', 'platform_name',
+        'redeployment_needed', 'os_platform'
+    )
     model = Node
 
     def GET(self, node_id):
@@ -371,7 +373,8 @@ class RoleCollectionHandler(JSONHandler):
         if data:
             data = Role.validate_json(data)
         if 'release_id' in data:
-            return json.dumps(map(
+            return json.dumps(
+                map(
                     RoleHandler.render,
                     web.ctx.orm.query(Role).filter(
                         Role.id == data["release_id"]
