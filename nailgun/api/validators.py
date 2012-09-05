@@ -12,10 +12,13 @@ class BasicValidator(object):
                 res = json.loads(data)
             except:
                 raise web.webapi.badrequest(
-                    message="Invalid json format!"
+                    message="Invalid json format"
                 )
-            return res
-        return data
+        else:
+            raise web.webapi.badrequest(
+                message="Empty request received"
+            )
+        return res
 
     @classmethod
     def validate(cls, data):

@@ -167,6 +167,8 @@ class Node(Base, BasicValidator):
         d = cls.validate_json(data)
         if not "mac" in d:
             raise web.webapi.badrequest(message="No mac address specified")
+        if "id" in d:
+            raise web.webapi.badrequest(message="Manual ID setting is prohibited")
         return d
 
     @classmethod
@@ -174,6 +176,8 @@ class Node(Base, BasicValidator):
         d = cls.validate_json(data)
         if "status" in d and d["status"] not in cls.NODE_STATUSES:
             raise web.webapi.badrequest(message="Invalid status for node")
+        if "id" in d:
+            raise web.webapi.badrequest(message="Manual ID setting is prohibited")
         return d
 
 

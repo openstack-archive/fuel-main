@@ -125,6 +125,7 @@ class ClusterHandler(JSONHandler):
         # /additional validation needed?
         for key, value in data.iteritems():
             if key == "nodes":
+                map(cluster.nodes.remove, cluster.nodes)
                 nodes = web.ctx.orm.query(Node).filter(
                      Node.id.in_(value)
                 )
@@ -366,7 +367,9 @@ class RoleCollectionHandler(JSONHandler):
 
     def GET(self):
         web.header('Content-Type', 'application/json')
-        data = Role.validate_json(web.data())
+        data = web.data() if web.data() else {}
+        if data:
+            data = Role.validate_json(data)
         if 'release_id' in data:
             return json.dumps(map(
                     RoleHandler.render,
