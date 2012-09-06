@@ -30,7 +30,7 @@ if __name__ == "__main__":
         'run', help='run application locally'
     )
     run_parser.add_argument(
-        '-p', '--port', dest='port', action='store', type=str, 
+        '-p', '--port', dest='port', action='store', type=str,
         help='application port', default='8000'
     )
     runwsgi_parser = subparsers.add_parser(
