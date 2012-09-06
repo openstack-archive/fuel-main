@@ -54,7 +54,7 @@ define(
                 success: _.bind(function() {
                     this.navbar.setActive('clusters');
                     this.breadcrumb.setPath(['Home', '#'], 'OpenStack Installations');
-                    this.page = new clustersViews.ClustersPage({model: clusters});
+                    this.page = new clustersViews.ClustersPage({collection: clusters});
                     this.content.html(this.page.render().el);
                 }, this)
             });
@@ -65,7 +65,7 @@ define(
                 success: _.bind(function() {
                     this.navbar.setActive('releases');
                     this.breadcrumb.setPath(['Home', '#'], 'Software Updates');
-                    this.page = new releaseViews.ReleasesPage({model: releases});
+                    this.page = new releaseViews.ReleasesPage({collection: releases});
                     this.content.html(this.page.render().el);
                 }, this)
             });

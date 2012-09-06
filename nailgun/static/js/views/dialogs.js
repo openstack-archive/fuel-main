@@ -30,7 +30,7 @@ function(models, createClusterDialogTemplate) {
             });
             if (cluster.isValid()) {
                 cluster.save({}, {success: _.bind(function() {
-                    this.model.fetch();
+                    this.collection.fetch();
                 }, this)});
                 this.$el.modal('hide');
             }

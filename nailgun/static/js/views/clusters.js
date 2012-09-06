@@ -13,8 +13,8 @@ function(models, dialogViews, clustersPageTemplate, clusterTemplate, newClusterT
         className: 'span12',
         template: _.template(clustersPageTemplate),
         render: function() {
-            this.$el.html(this.template({clusters: this.model}));
-            this.$('.cluster-list').html(new views.ClusterList({model: this.model}).render().el);
+            this.$el.html(this.template({clusters: this.collection}));
+            this.$('.cluster-list').html(new views.ClusterList({collection: this.collection}).render().el);
             return this;
         }
     });
@@ -27,15 +27,15 @@ function(models, dialogViews, clustersPageTemplate, clusterTemplate, newClusterT
         },
         createCluster: function(e) {
             e.preventDefault();
-            (new dialogViews.createClusterDialog({model: this.model})).render();
+            (new dialogViews.createClusterDialog({collection: this.collection})).render();
         },
         initialize: function() {
-            this.model.bind('reset', this.render, this);
-            this.model.bind('add', this.render, this);
+            this.collection.bind('reset', this.render, this);
+            this.collection.bind('add', this.render, this);
         },
         render: function() {
             this.$el.html('');
-            this.model.each(_.bind(function(cluster) {
+            this.collection.each(_.bind(function(cluster) {
                 this.$el.append(new views.Cluster({model: cluster}).render().el);
             }, this));
             this.$el.append(this.newClusterTemplate());

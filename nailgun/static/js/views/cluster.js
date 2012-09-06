@@ -25,7 +25,7 @@ function(models, dialogViews, taskViews, clusterPageTemplate, clusterNodeTemplat
             (new dialogViews.assignRolesDialog({model: this.model})).render();
         },
         initialize: function(options) {
-            _.extend(this, options);
+            _.defaults(this, options);
             this.model.bind('change', this.render, this);
             this.scheduleUpdate();
         },

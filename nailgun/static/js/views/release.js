@@ -9,10 +9,10 @@ function(releaseListTemplate) {
         className: 'span12',
         template: _.template(releaseListTemplate),
         initialize: function() {
-            this.model.bind('reset', this.render, this);
+            this.collection.bind('reset', this.render, this);
         },
         render: function() {
-            this.$el.html(this.template({releases: this.model}));
+            this.$el.html(this.template({releases: this.collection}));
             return this;
         }
     });
