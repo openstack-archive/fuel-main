@@ -24,7 +24,8 @@ function(models, dialogViews, taskViews, clusterPageTemplate, clusterNodeTemplat
         assignRoles: function(e) {
             (new dialogViews.assignRolesDialog({model: this.model})).render();
         },
-        initialize: function() {
+        initialize: function(options) {
+            _.extend(this, options);
             this.model.bind('change', this.render, this);
             this.scheduleUpdate();
         },
@@ -43,7 +44,7 @@ function(models, dialogViews, taskViews, clusterPageTemplate, clusterNodeTemplat
             }
         },
         render: function() {
-            this.$el.html(this.template({cluster: this.model}));
+            this.$el.html(this.template({cluster: this.model, tabs: this.tabs, activeTab: this.activeTab}));
             this.deploymentControl = new views.DeploymentControl({model: this.model, page: this});
             this.$('.deployment-control').html(this.deploymentControl.render().el);
             this.nodeList = new views.NodeList({model: this.model.get('nodes')});

@@ -1,4 +1,9 @@
 <h1><%= cluster.get('name') %> (<%= cluster.get('release').get('name') %>)</h1>
+<ul class="nav nav-tabs">
+  <% _.each(tabs, function(tab) { %>
+    <li class="<%= activeTab == tab ? 'active' : '' %>"><a href="#cluster/<%= cluster.id %>/<%= tab %>"><%= tab %></a></li>
+  <% })%>
+</ul>
 <div class="deployment-control"></div>
 <div class="task-status"></div>
 <div class="node-list"></div>
