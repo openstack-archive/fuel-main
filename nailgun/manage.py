@@ -29,6 +29,10 @@ if __name__ == "__main__":
     run_parser = subparsers.add_parser(
         'run', help='run application locally'
     )
+    run_parser.add_argument(
+        '-p', '--port', dest='port', action='store', type=str, 
+        help='application port', default='8000'
+    )
     runwsgi_parser = subparsers.add_parser(
         'runwsgi', help='run WSGI application'
     )
@@ -67,22 +71,6 @@ if __name__ == "__main__":
             logging.info("Done")
         else:
             parser.print_help()
-    elif params.action == "run":
-        app.run()
-    elif params.action == "runwsgi":
-        logging.info("Running WSGI app...")
-        server = web.httpserver.WSGIServer(
-            ("0.0.0.0", 8080),
-            app.wsgifunc()
-        )
-        try:
-            server.start()
-        except KeyboardInterrupt:
-            logging.info("Stopping WSGI app...")
-            server.stop()
-            logging.info("Done")
-        else:
-            parser.print_help()
     elif params.action in ("run", "runwsgi"):
         if params.action == "run":
             app = web.application(urls, locals(), autoreload=True)
@@ -93,6 +81,7 @@ if __name__ == "__main__":
         app.add_processor(check_client_content_type)
 
         if params.action == "run":
+            sys.argv.insert(1, params.port)
             app.run()
         else:
             logging.info("Running WSGI app...")
