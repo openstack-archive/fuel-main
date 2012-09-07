@@ -1,7 +1,6 @@
 # -*- coding: utf-8 -*-
 
 import web
-import ipaddr
 from sqlalchemy import Column, UniqueConstraint, Table
 from sqlalchemy import Integer, String, Unicode, Boolean, ForeignKey, Enum
 from sqlalchemy import create_engine
@@ -196,26 +195,22 @@ class IPAddr(Base):
     ip_addr = Column(String(25))
 
 
+class Vlan(Base, BasicValidator):
+    __tablename__ = 'vlan'
+    id = Column(Integer, primary_key=True)
+    network = relationship("Network")
+
+
 class Network(Base, BasicValidator):
     __tablename__ = 'networks'
     id = Column(Integer, primary_key=True)
     release = Column(Integer, ForeignKey('releases.id'), nullable=False)
-    name = Column(Unicode(20), nullable=False)
+    name = Column(Unicode(100), nullable=False)
     access = Column(String(20), nullable=False)
-    vlan_id = Column(Integer)
-    network = Column(String(25), nullable=False)
-    range_l = Column(String(25))
-    range_h = Column(String(25))
+    vlan = Column(Integer, ForeignKey('vlan.id'))
+    cidr = Column(String(25), nullable=False)
     gateway = Column(String(25))
     nodes = relationship(
         "Node",
         secondary=IPAddr.__table__,
         backref="networks")
-
-    @property
-    def netmask(self):
-        return str(ipaddr.IPv4Network(self.network).netmask)
-
-    @property
-    def broadcast(self):
-        return str(ipaddr.IPv4Network(self.network).broadcast)

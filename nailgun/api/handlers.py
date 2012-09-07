@@ -1,12 +1,12 @@
 # -*- coding: utf-8 -*-
 
 import json
-
 import web
 import ipaddr
-from models import Release, Cluster, Node, Role, Network
+import netaddr
+
+from models import Release, Cluster, Node, Role, Network, Vlan
 from settings import settings
-from helpers.vlan import VlanManager
 
 
 def check_client_content_type(handler):
@@ -179,33 +179,35 @@ class ClusterCollectionHandler(JSONHandler):
         web.ctx.orm.add(cluster)
         web.ctx.orm.commit()
 
-        network_objects = web.ctx.orm.query(Network)
-        for network in release.networks_metadata:
-            for nw_pool in settings.NETWORK_POOLS[network['access']]:
-                nw_ip = ipaddr.IPv4Network(nw_pool)
-                new_network = None
-                for net in nw_ip.iter_subnets(new_prefix=24):
-                    nw_exist = network_objects.filter(
-                        Network.network == str(net)
-                    ).first()
-                    if not nw_exist:
-                        new_network = net
-                        break
-                if new_network:
-                    break
+        used_nets = [n.cidr for n in web.ctx.orm.query(Network).all()]
+        used_vlans = [v.id for v in web.ctx.orm.query(Vlan).all()]
 
-            nw = Network(
+        for network in release.networks_metadata:
+            new_vlan = sorted(list(set(settings.VLANS) - set(used_vlans)))[0]
+            vlan_db = Vlan(id=new_vlan)
+            web.ctx.orm.add(vlan_db)
+
+            pool = settings.NETWORK_POOLS[network['access']]
+            nets_free_set = netaddr.IPSet(pool) -\
+                netaddr.IPSet(settings.NET_EXCLUDE) -\
+                netaddr.IPSet(used_nets)
+
+            free_cidrs = sorted(list(nets_free_set._cidrs))
+            new_net = list(free_cidrs[0].subnet(24, count=1))[0]
+
+            nw_db = Network(
                 release=release.id,
                 name=network['name'],
                 access=network['access'],
-                network=str(new_network),
-                gateway=str(new_network[1]),
-                range_l=str(new_network[3]),
-                range_h=str(new_network[-1]),
-                vlan_id=VlanManager.generate_id(network['name'])
+                cidr=str(new_net),
+                gateway=str(new_net[1]),
+                vlan=vlan_db.id
             )
-            web.ctx.orm.add(nw)
+            web.ctx.orm.add(nw_db)
             web.ctx.orm.commit()
+
+            used_vlans.append(new_vlan)
+            used_nets.append(str(new_net))
 
         raise web.webapi.created(json.dumps(
             ClusterHandler.render(cluster),
