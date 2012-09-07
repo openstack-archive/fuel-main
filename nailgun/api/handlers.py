@@ -7,6 +7,7 @@ import netaddr
 
 from models import Release, Cluster, Node, Role, Network, Vlan
 from settings import settings
+import rpc
 
 
 def check_client_content_type(handler):
@@ -213,6 +214,28 @@ class ClusterCollectionHandler(JSONHandler):
             ClusterHandler.render(cluster),
             indent=4
         ))
+
+
+class ClusterChangesHandler(JSONHandler):
+    fields = (
+        "id",
+        "name",
+    )
+
+    def PUT(self, cluster_id):
+        web.header('Content-Type', 'application/json')
+        q = web.ctx.orm.query(Cluster).filter(Cluster.id == cluster_id)
+        cluster = q.first()
+        if not cluster:
+            return web.notfound()
+
+        message = {"method": "deploy", "args": {"var1": "Hello from nailgun"}}
+        rpc.cast('mcollective', message)
+
+        return json.dumps(
+            self.render(cluster),
+            indent=4
+        )
 
 
 class ReleaseHandler(JSONHandler):
