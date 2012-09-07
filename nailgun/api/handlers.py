@@ -201,7 +201,7 @@ class ClusterCollectionHandler(JSONHandler):
                 access=network['access'],
                 cidr=str(new_net),
                 gateway=str(new_net[1]),
-                vlan=vlan_db.id
+                vlan_id=vlan_db.id
             )
             web.ctx.orm.add(nw_db)
             web.ctx.orm.commit()

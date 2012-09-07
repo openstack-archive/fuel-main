@@ -207,7 +207,7 @@ class Network(Base, BasicValidator):
     release = Column(Integer, ForeignKey('releases.id'), nullable=False)
     name = Column(Unicode(100), nullable=False)
     access = Column(String(20), nullable=False)
-    vlan = Column(Integer, ForeignKey('vlan.id'))
+    vlan_id = Column(Integer, ForeignKey('vlan.id'))
     cidr = Column(String(25), nullable=False)
     gateway = Column(String(25))
     nodes = relationship(

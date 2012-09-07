@@ -70,7 +70,7 @@ class TestHandlers(BaseHandlers):
                 'release': net.release,
                 'name': net.name,
                 'access': net.access,
-                'vlan': net.vlan,
+                'vlan_id': net.vlan_id,
                 'cidr': net.cidr,
                 'gateway': net.gateway
             })
@@ -79,7 +79,7 @@ class TestHandlers(BaseHandlers):
                 'release': release.id,
                 'name': u'floating',
                 'access': 'public',
-                'vlan': 100,
+                'vlan_id': 100,
                 'cidr': '240.0.0.0/24',
                 'gateway': '240.0.0.1'
             },
@@ -87,7 +87,7 @@ class TestHandlers(BaseHandlers):
                 'release': release.id,
                 'name': u'fixed',
                 'access': 'private10',
-                'vlan': 101,
+                'vlan_id': 101,
                 'cidr': '10.0.0.0/24',
                 'gateway': '10.0.0.1'
             },
@@ -95,7 +95,7 @@ class TestHandlers(BaseHandlers):
                 'release': release.id,
                 'name': u'storage',
                 'access': 'private192',
-                'vlan': 102,
+                'vlan_id': 102,
                 'cidr': '192.168.0.0/24',
                 'gateway': '192.168.0.1'
             },
@@ -103,7 +103,7 @@ class TestHandlers(BaseHandlers):
                 'release': release.id,
                 'name': u'management',
                 'access': 'private172',
-                'vlan': 103,
+                'vlan_id': 103,
                 'cidr': '172.16.0.0/24',
                 'gateway': '172.16.0.1'
             },
@@ -111,7 +111,7 @@ class TestHandlers(BaseHandlers):
                 'release': release.id,
                 'name': u'other_172',
                 'access': 'private172',
-                'vlan': 104,
+                'vlan_id': 104,
                 'cidr': '172.16.1.0/24',
                 'gateway': '172.16.1.1'
             },
