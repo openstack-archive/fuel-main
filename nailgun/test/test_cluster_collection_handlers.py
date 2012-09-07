@@ -25,3 +25,18 @@ class TestHandlers(BaseHandlers):
         self.assertEquals(200, resp.status)
         response = json.loads(resp.body)
         self.assertEquals(100, len(response))
+
+    def test_cluster_create(self):
+        release_id = self.create_default_release().id
+        resp = self.app.post(
+            reverse('ClusterCollectionHandler'),
+            json.dumps({
+                'name': 'cluster-name',
+                'release': release_id,
+            }),
+            headers=self.default_headers
+        )
+        self.assertEquals(201, resp.status)
+
+    #def test_if_cluster_creates_correct_networks(self):
+        #pass

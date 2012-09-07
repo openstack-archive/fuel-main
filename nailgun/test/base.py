@@ -62,6 +62,14 @@ class BaseHandlers(TestCase):
         release = Release()
         release.version = randint(0, 100000000)
         release.name = u"release_name_" + str(release.version)
+        release.description = u"release_desc" + str(release.version)
+        release.networks_metadata = [
+            {"name": "floating", "access": "public"},
+            {"name": "fixed", "access": "private10"},
+            {"name": "storage", "access": "private192"},
+            {"name": "management", "access": "private172"},
+            {"name": "other_172", "access": "private172"}
+        ]
         self.db.add(release)
         self.db.commit()
         return release
