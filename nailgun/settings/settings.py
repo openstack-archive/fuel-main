@@ -2,6 +2,7 @@
 
 import posixpath
 
+
 PROJECT_PATH = posixpath.join(
     posixpath.dirname(posixpath.abspath(__file__)),
     ".."
@@ -9,6 +10,7 @@ PROJECT_PATH = posixpath.join(
 
 DATABASE_PATH = posixpath.join(PROJECT_PATH, 'nailgun.sqlite')
 DATABASE_ENGINE = 'sqlite:///%s' % DATABASE_PATH
+
 
 STATIC_DIR = posixpath.join(PROJECT_PATH, "static")
 TEMPLATE_DIR = posixpath.join(PROJECT_PATH, "static")
