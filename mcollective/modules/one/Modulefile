@@ -1,0 +1,6 @@
+name    'one'
+version '0.0.1'
+author 'Mirantis Inc'
+license 'Apache'
+summary 'Test module: one'
+description 'Test module: one'

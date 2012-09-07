@@ -1,0 +1,7 @@
+classes:
+  one:
+    first: first param
+    second: second param
+parameters:
+  one: one
+  two: two
