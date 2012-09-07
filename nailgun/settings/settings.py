@@ -2,13 +2,13 @@
 
 import posixpath
 
-DATABASE_PATH = 'nailgun.sqlite'
-DATABASE_ENGINE = 'sqlite:///%s' % DATABASE_PATH
-
 PROJECT_PATH = posixpath.join(
     posixpath.dirname(posixpath.abspath(__file__)),
     ".."
 )
+
+DATABASE_PATH = posixpath.join(PROJECT_PATH, 'nailgun.sqlite')
+DATABASE_ENGINE = 'sqlite:///%s' % DATABASE_PATH
 
 STATIC_DIR = posixpath.join(PROJECT_PATH, "static")
 TEMPLATE_DIR = posixpath.join(PROJECT_PATH, "static")
