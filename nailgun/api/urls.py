@@ -7,6 +7,7 @@ from api.handlers import ReleaseHandler, ReleaseCollectionHandler
 from api.handlers import NodeHandler, NodeCollectionHandler
 from api.handlers import RoleHandler, RoleCollectionHandler
 
+
 urls = (
     r'/releases/?$', 'ReleaseCollectionHandler',
     r'/releases/(?P<release_id>\d+)/?$', 'ReleaseHandler',

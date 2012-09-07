@@ -1,7 +1,17 @@
 # -*- coding: utf-8 -*-
 
+import posixpath
+
 DATABASE_PATH = 'nailgun.sqlite'
 DATABASE_ENGINE = 'sqlite:///%s' % DATABASE_PATH
+
+PROJECT_PATH = posixpath.join(
+    posixpath.dirname(posixpath.abspath(__file__)),
+    ".."
+)
+
+STATIC_DIR = posixpath.join(PROJECT_PATH, "static")
+TEMPLATE_DIR = posixpath.join(PROJECT_PATH, "static")
 
 NETWORK_POOLS = {
     'public': ['240.0.0.0/24'],  # reserved
