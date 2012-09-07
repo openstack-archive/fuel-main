@@ -28,24 +28,32 @@ define(
             this.navigate('#cluster/' + id + '/nodes', {trigger: true, replace: true});
         },
         showClusterTab: function(id, tab) {
-            var tabs = ['nodes', 'network', 'settings'];
+            var tabs = ['nodes', 'network'];
             if (!_.contains(tabs, tab)) {
                 this.showCluster(id);
                 return;
             }
-            var cluster = new models.Cluster({id: id});
 
-            cluster.deferred = cluster.fetch({
-                success: _.bind(function() {
-                    this.navbar.setActive('clusters');
-                    this.breadcrumb.setPath(['Home', '#'], ['OpenStack Installations', '#clusters'], cluster.get('name'));
-                    this.page = new clusterViews.ClusterPage({model: cluster, tabs: tabs, activeTab: tab});
-                    this.content.html(this.page.render().el);
-                }, this),
-                error: _.bind(function() {
-                    this.listClusters();
-                }, this)
-            });
+            var cluster;
+
+            function render() {
+                this.navbar.setActive('clusters');
+                this.breadcrumb.setPath(['Home', '#'], ['OpenStack Installations', '#clusters'], cluster.get('name'));
+                this.page = new clusterViews.ClusterPage({model: cluster, tabs: tabs, tab: tab});
+                this.content.html(this.page.render().el);
+            }
+
+            if (app.page && app.page.constructor == clusterViews.ClusterPage) {
+                // just another tab has been chosen, do not load cluster again
+                cluster = app.page.model;
+                render.call(this);
+            } else {
+                cluster = new models.Cluster({id: id});
+                cluster.fetch({
+                    success: _.bind(render, this),
+                    error: _.bind(function() {this.listClusters()}, this)
+                });
+            }
         },
         listClusters: function() {
             this.navigate('#clusters', {replace: true});

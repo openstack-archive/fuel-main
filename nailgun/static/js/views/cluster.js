@@ -44,25 +44,15 @@ function(models, dialogViews, taskViews, clusterPageTemplate, clusterNodeTemplat
             }
         },
         render: function() {
-            this.$el.html(this.template({cluster: this.model, tabs: this.tabs, activeTab: this.activeTab}));
-            this.deploymentControl = new views.DeploymentControl({model: this.model, page: this});
-            this.$('.deployment-control').html(this.deploymentControl.render().el);
-            this.nodeList = new views.NodeList({model: this.model.get('nodes')});
-            this.$('.node-list').html(this.nodeList.render().el);
-            if (this.model.get('task')) {
-                this.task = new taskViews.Task({model: this.model.get('task'), page: this});
-                this.$('.task-status').html(this.task.render().el);
+            this.$el.html(this.template({cluster: this.model, tabs: this.tabs, activeTab: this.tab}));
+
+            if (this.tab == 'nodes') {
+                this.nodeList = new views.NodeList({model: this.model.get('nodes')});
+                this.$('#tab-' + this.tab).html(this.nodeList.render().el);
             } else {
-                this.task = null;
-                this.$('.task-status').html('');
+                this.$('#tab-' + this.tab).text('TBD');
             }
-            if (this.model.locked()) {
-                this.$el.addClass('cluster-locked').removeClass('cluster-editable');
-                this.$('.cluster-control button').addClass('disabled').attr('disabled', true);
-            } else {
-                this.$el.addClass('cluster-editable').removeClass('cluster-locked');
-                this.$('.cluster-control button').removeClass('disabled').attr('disabled', false);
-            }
+
             return this;
         }
     });

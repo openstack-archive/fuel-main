@@ -4,6 +4,8 @@
     <li class="<%= activeTab == tab ? 'active' : '' %>"><a href="#cluster/<%= cluster.id %>/<%= tab %>"><%= tab %></a></li>
   <% })%>
 </ul>
-<div class="deployment-control"></div>
-<div class="task-status"></div>
-<div class="node-list"></div>
+<div class="tab-content">
+  <% _.each(tabs, function(tab) { %>
+    <div class="tab-pane <%= activeTab == tab ? 'active' : '' %>" id="tab-<%= tab %>"></div>
+  <% })%>
+</div>
