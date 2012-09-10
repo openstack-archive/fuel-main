@@ -2,10 +2,11 @@
 
 import web
 
-from webui.handlers import IndexHandler
+from webui.handlers import IndexHandler, StaticHandler
 
 urls = (
-    r"", 'IndexHandler',
+    r"/static/(.*)", 'StaticHandler',
+    r"/", 'IndexHandler',
 )
 
 webui_app = web.application(urls, locals())

@@ -36,6 +36,10 @@ if __name__ == "__main__":
     runwsgi_parser = subparsers.add_parser(
         'runwsgi', help='run WSGI application'
     )
+    runwsgi_parser.add_argument(
+        '-p', '--port', dest='port', action='store', type=str,
+        help='application port', default='8000'
+    )
     test_parser = subparsers.add_parser(
         'test', help='run unit tests'
     )
@@ -86,7 +90,7 @@ if __name__ == "__main__":
         else:
             logging.info("Running WSGI app...")
             server = web.httpserver.WSGIServer(
-                ("0.0.0.0", 8080),
+                ("0.0.0.0", int(params.port)),
                 app.wsgifunc()
             )
             try:
