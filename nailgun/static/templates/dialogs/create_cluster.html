@@ -8,15 +8,52 @@
       <div class="control-group">
         <label class="control-label">Name</label>
         <div class="controls">
-          <input type="text" class="span4" name="name">
+          <input type="text" class="input-large" name="name">
           <span class="help-inline"></span>
         </div>
       </div>
       <div class="control-group">
         <label class="control-label">OpenStack Release</label>
         <div class="controls">
-          <select class="span4" name="release"></select>
+          <select class="input-large" name="release"></select>
           <span class="help-inline"></span>
+        </div>
+      </div>
+      <div class="control-group">
+        <label class="control-label">Deployment Mode</label>
+        <div class="controls">
+          <label class="radio">
+            <input type="radio" name="mode" value="simple" checked>
+            Simple mode
+          </label>
+          <label class="radio">
+            <input type="radio" name="mode" value="ha">
+            HA mode
+          </label>
+        </div>
+      </div>
+      <div class="control-group redundancy-control-group hide">
+        <label class="control-label">Number of controllers</label>
+        <div class="controls">
+          <input type="number" class="input-mini" name="redundancy" value="2">
+          <span class="help-inline"></span>
+        </div>
+      </div>
+      <div class="control-group">
+        <label class="control-label">Cluster Type</label>
+        <div class="controls">
+          <label class="radio">
+            <input type="radio" name="type" value="both" checked>
+            Compute and storage
+          </label>
+          <label class="radio">
+            <input type="radio" name="type" value="compute">
+            Compute only
+          </label>
+          <label class="radio">
+            <input type="radio" name="type" value="storage">
+            Storage only
+          </label>
         </div>
       </div>
     </fieldset>

@@ -12,7 +12,7 @@ function(models, createClusterDialogTemplate) {
         events: {
             'click .create-cluster-btn': 'createCluster',
             'keydown input': 'onInputKeydown',
-            'click .dialog-node': 'toggleNode'
+            'change input[name=mode]': 'toggleRedundancyInput'
         },
         createCluster: function() {
             this.$('.help-inline').text('');
@@ -26,20 +26,24 @@ function(models, createClusterDialogTemplate) {
             }, this);
             cluster.set({
                 name: this.$('input[name=name]').val(),
-                release: this.$('select[name=release]').val()
+                release: this.$('select[name=release]').val(),
+                type: this.$('input[name=type]:checked').val(),
+                mode: this.$('input[name=mode]:checked').val(),
+                redundancy: this.$('input[name=redundancy]').val()
             });
             if (cluster.isValid()) {
+                if (cluster.get('mode') != 'ha') cluster.unset('redundancy');
                 cluster.save({}, {success: _.bind(function() {
                     this.collection.fetch();
                 }, this)});
                 this.$el.modal('hide');
             }
         },
+        toggleRedundancyInput: function() {
+            this.$('.redundancy-control-group').toggleClass('hide', this.$('input[name=mode]:checked').val() != 'ha');
+        },
         onInputKeydown: function(e) {
             if (e.which == 13) this.createCluster();
-        },
-        toggleNode: function(e) {
-            $(e.currentTarget).toggleClass('node-checked').toggleClass('node-unchecked');
         },
         renderReleases: function(e) {
             var input = this.$('select[name=release]');
