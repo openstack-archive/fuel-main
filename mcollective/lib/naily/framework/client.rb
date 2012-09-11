@@ -5,6 +5,9 @@ module Naily
       def available_roles
         
       end
+
+      
+
       
       def runonce params={}
         

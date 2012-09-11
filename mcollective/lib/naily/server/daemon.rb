@@ -9,21 +9,33 @@ module Naily
         @logger = Logger.new(STDOUT)
         @logger.level = Logger::DEBUG
 
-        @options = {
-          :host => Config.amqp_host,
-          :port => Config.amqp_port,
-          :username => Config.amqp_username,
-          :password => Config.amqp_password,
-          
-          :topic_exchange_name => Config.topic_exchange_name,
-          :topic_queue_name => Config.topic_queue_name,
-          :topic_queue_routing_key => Config.topic_queue_routing_key
-        }
+        case Config.driver
+
+        when :amqp
+          @logger.debug("Naily driver is Naily::Amqp::Driver")
+          @driver_class = Naily::Amqp::Driver
+
+          @driver_options = {
+            :host => Config.amqp_host,
+            :port => Config.amqp_port,
+            :username => Config.amqp_username,
+            :password => Config.amqp_password,
+            
+            :topic_exchange_name => Config.topic_exchange_name,
+            :topic_queue_name => Config.topic_queue_name,
+            :topic_queue_routing_key => Config.topic_queue_routing_key
+          }
+
+        else
+          @logger.error("Unknown driver. Raising exception.")
+          raise "Unknown driver."
+        end
+
       end
 
       def run
         EM.run do
-          driver = Naily::Amqp::Driver.new @options
+          driver = @driver_class.new @driver_options
           
           Signal.trap("INT") do
             @logger.debug("INT signal has been caught")

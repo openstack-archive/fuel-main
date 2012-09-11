@@ -3,6 +3,7 @@ module Naily
     module Config
       extend self
       
+      attr_accessor :driver
       attr_accessor :amqp_host
       attr_accessor :amqp_port
       attr_accessor :amqp_username
