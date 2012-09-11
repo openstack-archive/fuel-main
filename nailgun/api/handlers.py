@@ -483,3 +483,19 @@ class RoleHandler(JSONHandler):
             self.render(role),
             indent=4
         )
+
+
+class NetworkCollectionHandler(JSONHandler):
+    fields = ('id', 'name', 'cidr', 'gateway', 'vlan_id')
+    model = Network
+
+    def GET(self):
+        web.header('Content-Type', 'application/json')
+        nets = web.ctx.orm.query(Network).all()
+        if not nets:
+            return web.notfound()
+
+        return json.dumps(
+            map(self.render, nets),
+            indent=4
+        )
