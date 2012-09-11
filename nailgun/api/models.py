@@ -71,6 +71,11 @@ class Role(Base, BasicValidator):
 
 class Cluster(Base, BasicValidator):
     __tablename__ = 'clusters'
+    TYPES = ('compute', 'storage', 'both')
+    MODES = ('simple', 'ha')
+    type = Column(Enum(*TYPES), nullable=False, default='both')
+    mode = Column(Enum(*MODES), nullable=False, default='simple')
+    redundancy = Column(Integer, nullable=True)
     id = Column(Integer, primary_key=True)
     name = Column(Unicode(100), unique=True, nullable=False)
     release_id = Column(Integer, ForeignKey('releases.id'), nullable=False)
@@ -83,10 +88,14 @@ class Cluster(Base, BasicValidator):
             Cluster.name == d["name"]
         ).first():
             raise web.webapi.conflict
-        if d["release"]:
-            release = web.ctx.orm.query(Release).get(d["release"])
+        if d.get("release"):
+            release = web.ctx.orm.query(Release).get(d.get("release"))
             if not release:
                 raise web.webapi.badrequest(message="Invalid release id")
+        if d.get("mode") == "ha":
+            if not (isinstance(d.get("redundancy"), int) and \
+                    2 <= d.get("redundancy") <= 9):
+                raise web.webapi.badrequest(message="Invalid redundancy")
         return d
 
 

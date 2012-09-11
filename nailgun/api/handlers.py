@@ -97,6 +97,9 @@ class ClusterHandler(JSONHandler):
     fields = (
         "id",
         "name",
+        "type",
+        "mode",
+        "redundancy",
         ("nodes", "*"),
         ("release", "*")
     )

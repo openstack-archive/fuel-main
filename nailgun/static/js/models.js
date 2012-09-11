@@ -27,10 +27,9 @@ define(function() {
                 errors.release = 'Please choose OpenStack release';
             }
             if (attrs.mode == 'ha') {
-                var redundancy = parseInt(attrs.redundancy, 10);
-                if (_.isNaN(redundancy)) {
+                if (_.isNaN(attrs.redundancy)) {
                     errors.redundancy = 'Please enter integer number';
-                } else if (redundancy < 2 || redundancy > 9) {
+                } else if (attrs.redundancy < 2 || attrs.redundancy > 9) {
                     errors.redundancy = 'Please enter number between 2 and 9';
                 }
             }

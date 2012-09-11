@@ -29,7 +29,7 @@ function(models, createClusterDialogTemplate) {
                 release: this.$('select[name=release]').val(),
                 type: this.$('input[name=type]:checked').val(),
                 mode: this.$('input[name=mode]:checked').val(),
-                redundancy: this.$('input[name=redundancy]').val()
+                redundancy: parseInt(this.$('input[name=redundancy]').val(), 10)
             });
             if (cluster.isValid()) {
                 if (cluster.get('mode') != 'ha') cluster.unset('redundancy');
