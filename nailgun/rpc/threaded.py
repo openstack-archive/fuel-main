@@ -36,12 +36,14 @@ class RPCThread(threading.Thread):
             except Queue.Empty:
                 pass
             try:
-                ans = rpc.call('test', {
-                    "method": "echo",
-                    "args": {
-                        "value": 1
-                    }
-                })
+                pass
+                # TODO: implement real rpc.call()
+                # ans = rpc.call('test', {
+                #     "method": "echo",
+                #     "args": {
+                #         "value": 1
+                #     }
+                # })
                 # update db here with data
             except Exception as error:
                 # update db here with error

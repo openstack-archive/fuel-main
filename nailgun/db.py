@@ -9,6 +9,12 @@ from api.models import engine
 
 
 class Query(Query):
+    """
+    Override for common Query class.
+    Needed for automatic refreshing objects
+    from database during every query for evading
+    problems with multiple sessions
+    """
     def __init__(self, *args, **kwargs):
         self._populate_existing = True
         super(Query, self).__init__(*args, **kwargs)
