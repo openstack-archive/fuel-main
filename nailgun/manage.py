@@ -76,6 +76,10 @@ if __name__ == "__main__":
         else:
             parser.print_help()
     elif params.action in ("run", "runwsgi"):
+        from rpc import threaded
+        q = threaded.rpc_queue
+        rpc_thread = threaded.RPCThread()
+
         if params.action == "run":
             app = web.application(urls, locals(), autoreload=True)
         else:
@@ -94,9 +98,11 @@ if __name__ == "__main__":
                 app.wsgifunc()
             )
             try:
+                rpc_thread.start()
                 server.start()
             except KeyboardInterrupt:
                 logging.info("Stopping WSGI app...")
+                q.put("exit")
                 server.stop()
                 logging.info("Done")
     elif params.action == "shell":

@@ -1,12 +1,23 @@
 # -*- coding: utf-8 -*-
 
+
 import web
 from sqlalchemy.orm import scoped_session, sessionmaker
+from sqlalchemy.orm.query import Query
+
 from api.models import engine
 
 
+class Query(Query):
+    def __init__(self, *args, **kwargs):
+        self._populate_existing = True
+        super(Query, self).__init__(*args, **kwargs)
+
+
 def load_db_driver(handler):
-    web.ctx.orm = scoped_session(sessionmaker(bind=engine))
+    web.ctx.orm = scoped_session(
+        sessionmaker(bind=engine, query_cls=Query)
+    )
     try:
         return handler()
     except web.HTTPError:

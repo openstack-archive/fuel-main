@@ -1,3 +1,5 @@
+# -*- coding: utf-8 -*-
+
 from datetime import time
 import eventlet
 eventlet.monkey_patch()
