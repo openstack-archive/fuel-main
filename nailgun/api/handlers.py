@@ -175,12 +175,10 @@ class ClusterCollectionHandler(JSONHandler):
     def POST(self):
         web.header('Content-Type', 'application/json')
         data = Cluster.validate(web.data())
-        release = web.ctx.orm.query(Release).get(data["release"])
 
-        cluster = Cluster(
-            name=data["name"],
-            release=release
-        )
+        cluster = Cluster()
+        cluster.release = web.ctx.orm.query(Release).get(data["release"])
+
         # TODO: discover how to add multiple objects
         if 'nodes' in data and data['nodes']:
             nodes = web.ctx.orm.query(Node).filter(
@@ -188,13 +186,17 @@ class ClusterCollectionHandler(JSONHandler):
             )
             map(cluster.nodes.append, nodes)
 
+        # TODO: use fields
+        for field in ('name', 'type', 'mode', 'redundancy'):
+            setattr(cluster, field, data.get(field))
+
         web.ctx.orm.add(cluster)
         web.ctx.orm.commit()
 
         used_nets = [n.cidr for n in web.ctx.orm.query(Network).all()]
         used_vlans = [v.id for v in web.ctx.orm.query(Vlan).all()]
 
-        for network in release.networks_metadata:
+        for network in cluster.release.networks_metadata:
             new_vlan = sorted(list(set(settings.VLANS) - set(used_vlans)))[0]
             vlan_db = Vlan(id=new_vlan)
             web.ctx.orm.add(vlan_db)
@@ -209,7 +211,7 @@ class ClusterCollectionHandler(JSONHandler):
             new_net = list(free_cidrs[0].subnet(24, count=1))[0]
 
             nw_db = Network(
-                release=release.id,
+                release=cluster.release.id,
                 name=network['name'],
                 access=network['access'],
                 cidr=str(new_net),
