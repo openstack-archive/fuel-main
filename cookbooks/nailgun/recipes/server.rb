@@ -41,6 +41,18 @@ directory "/var/log/nailgun" do
   recursive true
 end
 
+directory "#{node.nailgun.root}/bin" do
+  owner node.nailgun.user
+  group node.nailgun.group
+  mode '755'
+end
+
+directory "#{node.nailgun.root}/nailgun" do
+  owner node.nailgun.user
+  group node.nailgun.group
+  mode '755'
+end
+
 # FIXME
 # cobbler parameters needed to be defined via attributes
 

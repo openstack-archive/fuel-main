@@ -7,6 +7,7 @@ cooks.each do |cook|
   end
 end
 
+=begin
 releases = Dir.glob("#{node[:nailgun][:root]}/os-cookbooks/releases/*.json")
 releases.each do |rls|
   bash "Bash script for release creation #{rls}" do
@@ -15,4 +16,5 @@ releases.each do |rls|
     EOH
   end
 end
+=end
 

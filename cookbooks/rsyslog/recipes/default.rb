@@ -32,6 +32,6 @@ template "/etc/rsyslog.d/30-remote-log.conf" do
   owner "root"
   group "root"
   mode 0644
-  notifies :restart, "service[rsyslog]"
+  notifies :restart, "service[rsyslog]", :immediately
 end
 

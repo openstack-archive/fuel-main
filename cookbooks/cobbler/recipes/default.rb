@@ -1,4 +1,5 @@
 include_recipe "nailgun::server"
+include_recipe "rsyslog"
 
 # Here are packages cobbler needs to have to work correctly
 
