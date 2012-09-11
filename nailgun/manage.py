@@ -77,6 +77,8 @@ if __name__ == "__main__":
             parser.print_help()
     elif params.action in ("run", "runwsgi"):
         from rpc import threaded
+        import eventlet
+        eventlet.monkey_patch()
         q = threaded.rpc_queue
         rpc_thread = threaded.RPCThread()
 
