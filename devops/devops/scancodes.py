@@ -1,4 +1,3 @@
-
 # Based on http://www.win.tue.nl/~aeb/linux/kbd/scancodes-1.html
 # Scancodes < 0x80 - key presses, > 0x80 - key releases
 SCANCODES = {
@@ -136,9 +135,12 @@ SPECIALS = {
 
 __all__ = ['from_string']
 
+
 def iterable(a):
-    if a is None: return tuple() 
+    if a is None:
+        return tuple()
     return a if isinstance(a, (tuple, list)) else (a,)
+
 
 def from_string(s):
     "from_string(s) - Convert string of chars into string of corresponding scancodes."
@@ -147,7 +149,7 @@ def from_string(s):
 
     while len(s) > 0:
         if s[0] == '<' and s.find('>') > 0:
-            special_end = s.find('>')+1
+            special_end = s.find('>') + 1
             special = s[0:special_end]
             s = s[special_end:]
 
@@ -157,10 +159,9 @@ def from_string(s):
             s = s[1:]
 
             codes = SCANCODES.get(key)
-            
+
         codes = iterable(codes)
         if len(codes) > 0:
             scancodes.append(codes)
 
     return scancodes
-

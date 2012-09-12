@@ -1,8 +1,8 @@
 import unittest
 from devops import scancodes
 
-class TestScancodes(unittest.TestCase):
 
+class TestScancodes(unittest.TestCase):
     def test_abc(self):
         codes = scancodes.from_string('abc')
         self.assertEqual([(0x1e,), (0x30,), (0x2e,)], codes)
@@ -22,4 +22,3 @@ class TestScancodes(unittest.TestCase):
     def test_wait(self):
         codes = scancodes.from_string("a<Wait>b")
         self.assertEqual([(0x1e,), ('wait',), (0x30,)], codes)
-

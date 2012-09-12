@@ -1,9 +1,11 @@
 from main import *
 
+
 def saved(args):
     c = getController()
     for saved_env in c.saved_environments:
         print(saved_env)
+
 
 def resume(args):
     parser = argparse.ArgumentParser(prog='devops resume')
@@ -11,6 +13,7 @@ def resume(args):
     arguments = parser.parse_args(args)
     env = load(arguments.environment)
     import code
+
     code.InteractiveConsole(locals={'environment': env}).interact()
 
 import sys
@@ -28,4 +31,3 @@ elif arguments.command == 'resume':
 else:
     help()
     sys.exit(1)
-

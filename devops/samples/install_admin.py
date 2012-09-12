@@ -15,15 +15,20 @@ from devops.helpers import tcp_ping, wait
 
 ADMIN_ISO_NAME = 'nailgun-ubuntu-12.04-amd64.last.iso'
 ADMIN_ISO_URL = "http://mc0n1-srt.srt.mirantis.net/%s" % ADMIN_ISO_NAME
-ADMIN_ISO_PATH = os.path.abspath(os.path.join(os.path.dirname(__file__), '..', ADMIN_ISO_NAME))
+ADMIN_ISO_PATH = os.path.abspath(
+    os.path.join(os.path.dirname(__file__), '..', ADMIN_ISO_NAME))
+
 
 def log(message):
     print(message)
 
+
 def download_iso():
     print("Downloading installation iso")
-    os.system("cd '%s'; wget --timestamping '%s'" % (os.path.dirname(ADMIN_ISO_PATH), ADMIN_ISO_URL))
+    os.system("cd '%s'; wget --timestamping '%s'" % (
+        os.path.dirname(ADMIN_ISO_PATH), ADMIN_ISO_URL))
     print("Finished downloading installation iso")
+
 
 def main():
     parser = OptionParser()
@@ -45,7 +50,7 @@ def main():
     admin_node = Node('admin')
     admin_node.vnc = True
     admin_node.cdrom = Cdrom(isopath=ADMIN_ISO_PATH)
-    admin_node.disks.append(Disk(size=8*1024**3))
+    admin_node.disks.append(Disk(size=8 * 1024 ** 3))
     admin_node.interfaces.append(Interface(network))
     admin_node.boot += ['disk', 'cdrom']
     environment.nodes.append(admin_node)
@@ -82,7 +87,7 @@ def main():
  netcfg/get_gateway=%(gateway)s
  netcfg/get_nameservers=%(gateway)s
  netcfg/confirm_static=true
- <Enter>""" % { 'ipaddress': ip[2], 'netmask': ip.netmask, 'gateway': ip[1] })
+ <Enter>""" % {'ipaddress': ip[2], 'netmask': ip.netmask, 'gateway': ip[1]})
 
         log("Waiting for node to install")
 
@@ -96,7 +101,9 @@ def main():
 
         shutil.copy(admin_node.disks[0].path, admin_disk_path)
 
-        print("Admin image creation completed. Image is stored at %s" % admin_disk_path)
+        print(
+            "Admin image creation completed. Image is stored at %s" %
+            admin_disk_path)
 
         log("Destroying environment")
         controller.destroy_environment(environment)
@@ -106,4 +113,3 @@ def main():
 
 if __name__ == '__main__':
     main()
-

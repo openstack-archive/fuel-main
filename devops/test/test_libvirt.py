@@ -6,6 +6,7 @@ from devops.model import Network, Node, Disk, Cdrom
 from devops.network import IPv4Address, IPv4Network
 from devops.driver.libvirt import Libvirt, LibvirtXMLBuilder, DeploymentSpec
 
+
 class TestLibvirtXMLBuilder(unittest.TestCase):
     node_spec = DeploymentSpec()
     node_spec.arch = 'x86_64'
@@ -25,7 +26,7 @@ class TestLibvirtXMLBuilder(unittest.TestCase):
 
         self.assertIsNotNone(doc)
         self.assertEqual('network', doc.tag)
-        
+
         e = doc.find('name')
         self.assertIsNotNone(e)
         self.assertEqual('net1', e.text)
@@ -58,7 +59,7 @@ class TestLibvirtXMLBuilder(unittest.TestCase):
         dhcp_element = doc.find('ip/dhcp')
 
         self.assertIsNotNone(dhcp_element)
-        
+
         range_element = dhcp_element.find('range')
         self.assertIsNotNone(range_element)
 
@@ -74,7 +75,7 @@ class TestLibvirtXMLBuilder(unittest.TestCase):
         network.ip_addresses = IPv4Network('10.0.0.0/24')
         network.dhcp_server = True
         network.dhcp_dynamic_address_start = IPv4Address('10.0.0.100')
-        network.dhcp_dynamic_address_end   = IPv4Address('10.0.0.200')
+        network.dhcp_dynamic_address_end = IPv4Address('10.0.0.200')
 
         doc_xml = self.builder.build_network_xml(network)
 
@@ -88,7 +89,7 @@ class TestLibvirtXMLBuilder(unittest.TestCase):
         node = Node('node1')
         node.id = node.name
         node.memory = 123
-        
+
         doc_xml = self.builder.build_node_xml(node, self.node_spec)
 
         doc = xml.parse_string(doc_xml)
@@ -96,8 +97,7 @@ class TestLibvirtXMLBuilder(unittest.TestCase):
         memory_element = doc.find('memory')
         self.assertIsNotNone(memory_element)
         self.assertEqual('KiB', memory_element['unit'])
-        self.assertEqual(str(123*1024), memory_element.text)
-
+        self.assertEqual(str(123 * 1024), memory_element.text)
 
     def test_cdrom_disk(self):
         node = Node('node1')
@@ -108,7 +108,8 @@ class TestLibvirtXMLBuilder(unittest.TestCase):
 
         doc = xml.parse_string(doc_xml)
 
-        cdrom_element = doc.find('devices/disk[@type="file" and @device="cdrom"]')
+        cdrom_element = doc.find(
+            'devices/disk[@type="file" and @device="cdrom"]')
         self.assertIsNotNone(cdrom_element)
 
         cdrom_driver_element = cdrom_element.find('driver')
@@ -123,7 +124,9 @@ class TestLibvirtXMLBuilder(unittest.TestCase):
     IPV4_RE = re.compile('\d{1,3}\.\d{1,3}\.\d{1,3}\.\d{1,3}')
 
     def assertValidIp(self, s):
-        self.assertIsNotNone(self.IPV4_RE.match(s), "'%s' is not a valid IPv4 address" % s)
+        self.assertIsNotNone(
+            self.IPV4_RE.match(s),
+            "'%s' is not a valid IPv4 address" % s)
 
 if __name__ == '__main__':
     unittest.main()

@@ -1,5 +1,6 @@
 from itertools import chain
 
+
 class ManagedObject(object):
     def __init__(self):
         super(ManagedObject, self).__init__()
@@ -43,6 +44,7 @@ class Environment(ManagedObject):
             name2network[network.name] = network
         return name2network
 
+
 class Network(ManagedObject):
     def __init__(self, name, dhcp_server=False, pxe=False):
         super(Network, self).__init__()
@@ -54,9 +56,10 @@ class Network(ManagedObject):
 
     def start(self):
         self.driver.start_network(self)
-        
+
     def stop(self):
         self.driver.stop_network(self)
+
 
 class Node(ManagedObject):
     def __init__(self, name, cpu=1, memory=512, arch='x86_64', vnc=False):
@@ -132,19 +135,23 @@ class Node(ManagedObject):
         for interface in self.interfaces:
             interface.driver = driver
 
+
 class Cdrom(object):
     def __init__(self, isopath=None, bus='ide'):
         self.isopath = isopath
         self.bus = bus
 
+
 class Disk(object):
-    def __init__(self, size=None, path=None, format='qcow2', bus='ide', base_image=None):
+    def __init__(self, size=None, path=None, format='qcow2', bus='ide',
+                 base_image=None):
         self.size = size
         self.format = format
         self.bus = bus
         self.path = path
         # Either copy or use "backing file" feature
         self.base_image = base_image
+
 
 class Interface(ManagedObject):
     def __init__(self, network, ip_addresses=[]):
@@ -154,7 +161,7 @@ class Interface(ManagedObject):
             ip_addresses = (ip_addresses,)
         self._ip_addresses = ip_addresses
         self.mac_address = None
-    
+
     @property
     def ip_addresses(self):
         return self._ip_addresses
@@ -164,4 +171,3 @@ class Interface(ManagedObject):
         if not isinstance(value, (list, tuple)):
             value = (value,)
         self._ip_addresses = value
-

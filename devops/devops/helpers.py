@@ -20,8 +20,14 @@ from devops.error import DevopsError
 
 logger = logging.getLogger('devops.helpers')
 
-class TimeoutError(Exception): pass
-class AuthenticationError(Exception): pass
+
+class TimeoutError(Exception):
+    pass
+
+
+class AuthenticationError(Exception):
+    pass
+
 
 def get_free_port():
     ports = range(32000, 32100)
@@ -31,9 +37,13 @@ def get_free_port():
             return port
     raise DevopsError, "No free ports available"
 
+
 def icmp_ping(host, timeout=1):
     "icmp_ping(host, timeout=1) - returns True if host is pingable; False - otherwise."
-    return os.system("ping -c 1 -W '%(timeout)d' '%(host)s' 1>/dev/null 2>&1" % { 'host': str(host), 'timeout': timeout}) == 0
+    return os.system(
+        "ping -c 1 -W '%(timeout)d' '%(host)s' 1>/dev/null 2>&1" % {
+            'host': str(host), 'timeout': timeout}) == 0
+
 
 def tcp_ping(host, port):
     "tcp_ping(host, port) - returns True if TCP connection to specified host and port can be established; False - otherwise."
@@ -44,6 +54,7 @@ def tcp_ping(host, port):
         return False
     s.close()
     return True
+
 
 def wait(predicate, interval=5, timeout=None):
     """
@@ -59,17 +70,20 @@ def wait(predicate, interval=5, timeout=None):
 
         seconds_to_sleep = interval
         if timeout:
-            seconds_to_sleep = max(0, min(seconds_to_sleep, start_time + timeout - time.time()))
+            seconds_to_sleep = max(
+                0,
+                min(seconds_to_sleep, start_time + timeout - time.time()))
         time.sleep(seconds_to_sleep)
 
     return timeout + start_time - time.time() if timeout else 0
+
 
 def http(host='localhost', port=80, method='GET', url='/', waited_code=200):
     try:
         conn = httplib.HTTPConnection(str(host), int(port))
         conn.request(method, url)
         res = conn.getresponse()
-        
+
         if res.status == waited_code:
             return True
         return False
@@ -80,7 +94,8 @@ def http(host='localhost', port=80, method='GET', url='/', waited_code=200):
 class KeyPolicy(paramiko.WarningPolicy):
     def missing_host_key(self, client, hostname, key):
         return
-    
+
+
 class SSHClient(object):
     class get_sudo(object):
         def __init__(self, ssh):
@@ -116,7 +131,9 @@ class SSHClient(object):
     def reconnect(self):
         self._ssh = paramiko.SSHClient()
         self._ssh.set_missing_host_key_policy(paramiko.AutoAddPolicy())
-        self._ssh.connect(self.host, port=self.port, username=self.username, password=self.password)
+        self._ssh.connect(
+            self.host, port=self.port, username=self.username,
+            password=self.password)
         self._sftp = self._ssh.open_sftp()
 
     def execute(self, command):
@@ -170,12 +187,15 @@ class SSHClient(object):
             return
 
         for rootdir, subdirs, files in os.walk(source):
-            targetdir = os.path.normpath(os.path.join(target, os.path.relpath(rootdir, source))).replace("\\", "/")
+            targetdir = os.path.normpath(
+                os.path.join(
+                    target,
+                    os.path.relpath(rootdir, source))).replace("\\", "/")
 
             self.mkdir(targetdir)
 
             for entry in files:
-                local_path  = os.path.join(rootdir, entry)
+                local_path = os.path.join(rootdir, entry)
                 remote_path = posixpath.join(targetdir, entry)
                 if self.exists(remote_path):
                     self._sftp.unlink(remote_path)
@@ -207,7 +227,6 @@ def ssh(*args, **kwargs):
     return SSHClient(*args, **kwargs)
 
 
-
 class HttpServer:
     class Handler(SimpleHTTPRequestHandler):
         logger = logging.getLogger('devops.helpers.http_server')
@@ -230,8 +249,8 @@ class HttpServer:
 
             """
             # abandon query parameters
-            path = path.split('?',1)[0]
-            path = path.split('#',1)[0]
+            path = path.split('?', 1)[0]
+            path = path.split('#', 1)[0]
             path = posixpath.normpath(urllib.unquote(path))
             words = path.split('/')
             words = filter(None, words)
@@ -252,7 +271,9 @@ class HttpServer:
         def handler_factory(*args, **kwargs):
             return HttpServer.Handler(document_root, *args, **kwargs)
 
-        self._server = BaseHTTPServer.HTTPServer(('', self.port), handler_factory)
+        self._server = BaseHTTPServer.HTTPServer(
+            ('', self.port),
+            handler_factory)
         self._thread = Thread(target=self._server.serve_forever)
         self._thread.daemon = True
 
@@ -265,6 +286,7 @@ class HttpServer:
     def stop(self):
         self._server.shutdown()
         self._thread.join()
+
 
 def http_server(document_root):
     server = HttpServer(document_root)
@@ -279,11 +301,10 @@ def xmlrpctoken(uri, login, password):
     except:
         raise AuthenticationError, "Error occured while login process"
 
+
 def xmlrpcmethod(uri, method):
     server = xmlrpclib.Server(uri)
     try:
         return getattr(server, method)
     except:
         raise AttributeError, "Error occured while getting server method"
-        
-

@@ -2,7 +2,10 @@ import re
 import my_yaml
 from model import Environment, Network, Node, Disk, Interface, Cdrom
 
-class ConfigError(Exception): pass
+
+class ConfigError(Exception):
+    pass
+
 
 def load(stream):
     data = my_yaml.load(stream)
@@ -21,11 +24,12 @@ def load(stream):
     for node_data in data['nodes']:
         parse_node(environment, node_data)
 
-    return environment 
+    return environment
 
 
 def dump(stream):
     raise "Not implemented yet"
+
 
 def parse_network(environment, data):
     if data.has_key('name'):
@@ -47,6 +51,7 @@ def parse_network(environment, data):
     environment.networks.append(network)
 
     return network
+
 
 def parse_node(environment, data):
     if data.has_key('name'):
@@ -71,7 +76,6 @@ def parse_node(environment, data):
             raise ConfigError, "It must be string containing path to iso image file"
 
         node.cdrom = Cdrom(isopath)
-
 
     if data.has_key('disk'):
         disks_data = data['disk']
@@ -104,10 +108,10 @@ def parse_node(environment, data):
                         network = n
                         break
 
-                # Inline networks
-                # if network is None:
-                #     network = parse_network(environment, {'name': network_data})
-                #     self.networks.append(network)
+                        # Inline networks
+                        # if network is None:
+                        #     network = parse_network(environment, {'name': network_data})
+                        #     self.networks.append(network)
 
             # TODO: add support for specifying additional network interface params (e.g. mac address)
 
@@ -126,9 +130,12 @@ def parse_node(environment, data):
                 raise ConfigError, "Unknown boot option: %s" % boot
             node.boot.append(boot)
     else:
-        if len(node.disks)      > 0: node.boot.append('disk')
-        if node.cdrom              : node.boot.append('cdrom')
-        if len(node.interfaces) > 0: node.boot.append('network')
+        if len(node.disks) > 0:
+            node.boot.append('disk')
+        if node.cdrom:
+            node.boot.append('cdrom')
+        if len(node.interfaces) > 0:
+            node.boot.append('network')
 
     for existing_node in environment.nodes:
         if existing_node.name == node.name:
@@ -137,8 +144,8 @@ def parse_node(environment, data):
     environment.nodes.append(node)
 
 
-
 SIZE_RE = re.compile('^(\d+)\s*(|kb|k|mb|m|gb|g)$')
+
 
 def parse_size(s):
     m = SIZE_RE.match(s.lower())
@@ -147,12 +154,17 @@ def parse_size(s):
 
     value = int(m.group(1))
     units = m.group(2)
-    if   units in ['k', 'kb']: multiplier=1024
-    elif units in ['m', 'mb']: multiplier=1024**2
-    elif units in ['g', 'gb']: multiplier=1024**3
-    elif units in ['t', 'tb']: multiplier=1024**4
-    elif units == '': multiplier=1
-    else: raise ValueError, "Invalid size format: %s" % units
+    if   units in ['k', 'kb']:
+        multiplier = 1024
+    elif units in ['m', 'mb']:
+        multiplier = 1024 ** 2
+    elif units in ['g', 'gb']:
+        multiplier = 1024 ** 3
+    elif units in ['t', 'tb']:
+        multiplier = 1024 ** 4
+    elif units == '':
+        multiplier = 1
+    else:
+        raise ValueError, "Invalid size format: %s" % units
 
     return value * multiplier
-

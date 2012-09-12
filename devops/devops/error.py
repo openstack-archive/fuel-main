@@ -1,2 +1,2 @@
-class DevopsError(Exception): pass
-
+class DevopsError(Exception):
+    pass

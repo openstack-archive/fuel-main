@@ -1,6 +1,6 @@
-
 from devops import xml
 import unittest
+
 
 class TestXml(unittest.TestCase):
     def test_parsing_returns_root_element(self):
@@ -38,4 +38,3 @@ class TestXml(unittest.TestCase):
     def test_finding_node_text(self):
         d = xml.parse_string("<a><b>foo</b></a>")
         self.assertEquals('foo', d.find('b/text()'))
-

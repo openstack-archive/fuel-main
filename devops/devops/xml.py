@@ -1,5 +1,6 @@
 from lxml import etree
 
+
 class Element:
     def __init__(self, element):
         self.element = element
@@ -32,16 +33,18 @@ class Element:
 
         return elements[0]
 
+
 def parse_file(path):
-    "parse_file(path) - parse file contents as XML and return XML document object."
+    """parse_file(path) - parse file contents as XML and return XML document object."""
     with file(path) as f:
         return parse_stream(f)
 
+
 def parse_stream(stream):
-    "parse_stream(stream) - parse stream as XML and return XML document object."
+    """parse_stream(stream) - parse stream as XML and return XML document object."""
     return parse_string(stream.read())
+
 
 def parse_string(s):
     "parse_string(s) - parse string as XML and return XML document object."
     return Element(etree.fromstring(s))
-

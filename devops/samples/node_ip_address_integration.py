@@ -5,6 +5,7 @@ import time
 
 ISO_URL = 'http://mc0n1-srt.srt.mirantis.net/livecd.iso'
 
+
 class TestNodeIpAddress(unittest.TestCase):
     def setUp(self):
         self.env = devops.load("""
@@ -30,7 +31,7 @@ class TestNodeIpAddress(unittest.TestCase):
         # Wait for ISOLINUX to boot
         time.sleep(10)
         # Trigger ISOLINUX menu selection
-        node.send_keys('<Enter>') 
+        node.send_keys('<Enter>')
 
         try:
             wait(lambda: len(node.ip_addresses) > 0, timeout=60)
@@ -39,4 +40,3 @@ class TestNodeIpAddress(unittest.TestCase):
 
         self.assertEqual(node.ip_address, node.ip_addresses[0])
         self.assertTrue(node.ip_address in network.ip_addresses)
-

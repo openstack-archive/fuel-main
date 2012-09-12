@@ -17,6 +17,7 @@ from error import DevopsError
 import my_yaml
 
 import logging
+
 logger = logging.getLogger('devops.controller')
 
 def randstr(length=8):
@@ -30,7 +31,8 @@ class Controller:
         self.networks_pool = IpNetworksPool()
         self._reserve_networks()
 
-        self.home_dir = os.environ.get('DEVOPS_HOME') or os.path.join(os.environ['HOME'], ".devops")
+        self.home_dir = os.environ.get('DEVOPS_HOME') or os.path.join(
+            os.environ['HOME'], ".devops")
         try:
             os.makedirs(os.path.join(self.home_dir, 'environments'), 0755)
         except OSError:
@@ -39,10 +41,14 @@ class Controller:
     def build_environment(self, environment):
         logger.info("Building environment %s" % environment.name)
         environment.id = environment.name
-        logger.debug("Creating environment working directory for %s environment" % environment.name)
-        environment.work_dir = os.path.join(self.home_dir, 'environments', environment.id)
-        os.mkdir(environment.work_dir, stat.S_IRWXU | stat.S_IRWXG | stat.S_IRWXO)
-        logger.debug("Environment working directory has been created: %s" % environment.work_dir)
+        logger.debug(
+            "Creating environment working directory for %s environment" % environment.name)
+        environment.work_dir = os.path.join(self.home_dir, 'environments',
+            environment.id)
+        os.mkdir(environment.work_dir,
+            stat.S_IRWXU | stat.S_IRWXG | stat.S_IRWXO)
+        logger.debug(
+            "Environment working directory has been created: %s" % environment.work_dir)
 
         environment.driver = self.driver
 
@@ -68,7 +74,8 @@ class Controller:
                 network.dhcp_server = True
                 tftp_path = os.path.join(environment.work_dir, "tftp")
                 if not os.path.exists(tftp_path):
-                    os.mkdir(tftp_path, stat.S_IRWXU | stat.S_IRWXG | stat.S_IRWXO)
+                    os.mkdir(tftp_path,
+                        stat.S_IRWXU | stat.S_IRWXG | stat.S_IRWXO)
                 network.tftp_root_dir = tftp_path
 
             if network.dhcp_server:
@@ -80,9 +87,10 @@ class Controller:
 
                 next_address_index = 2
                 for interface in network.interfaces:
-                    if len(interface.ip_addresses) == 0:
-                        while next_address_index < network.ip_addresses.numhosts and \
-                                network.ip_addresses[next_address_index] in allocated_addresses:
+                    if not len(interface.ip_addresses):
+                        while next_address_index < network.ip_addresses.numhosts and\
+                              network.ip_addresses[
+                              next_address_index] in allocated_addresses:
                             next_address_index += 1
 
                         if next_address_index >= network.ip_addresses.numhosts:
@@ -93,8 +101,10 @@ class Controller:
                         allocated_addresses.append(next_address_index)
                         next_address_index += 1
 
-                network.dhcp_dynamic_address_start = network.ip_addresses[next_address_index]
-                network.dhcp_dynamic_address_end   = network.ip_addresses[network.ip_addresses.numhosts-2]
+                network.dhcp_dynamic_address_start = network.ip_addresses[
+                                                     next_address_index]
+                network.dhcp_dynamic_address_end = network.ip_addresses[
+                                                   network.ip_addresses.numhosts - 2]
 
         for network in environment.networks:
             logger.info("Building network %s" % network.name)
@@ -135,7 +145,7 @@ class Controller:
             network.stop()
             self.driver.delete_network(network)
             del network.driver
-            
+
             # FIXME
             try:
                 self.networks_pool.put(network.ip_addresses)
@@ -151,7 +161,9 @@ class Controller:
         logger.info("Finished destroying environment %s" % environment.name)
 
     def load_environment(self, environment_id):
-        env_work_dir = os.path.join(self.home_dir, 'environments', environment_id)
+        env_work_dir = os.path.join(
+            self.home_dir, 'environments',
+            environment_id)
         env_config_file = os.path.join(env_work_dir, 'config')
         if not os.path.exists(env_config_file):
             raise DevopsError, "Environment '%s' couldn't be found" % environment_id
@@ -196,7 +208,7 @@ class Controller:
     def _build_node(self, environment, node):
         for disk in filter(lambda d: d.path is None, node.disks):
             logger.debug("Creating disk file for node '%s'" % node.name)
-            disk.path=self.driver.create_disk(disk)
+            disk.path = self.driver.create_disk(disk)
 
         logger.debug("Creating node '%s'" % node.name)
         self.driver.create_node(node)
@@ -212,7 +224,7 @@ class Controller:
                 cache_entries = my_yaml.load(f.read())
         else:
             cache_entries = dict()
-        
+
         ext_cache_log_path = os.path.join(cache_dir, 'extended_entries')
         if os.path.exists(ext_cache_log_path):
             with file(ext_cache_log_path) as f:
@@ -220,21 +232,22 @@ class Controller:
         else:
             extended_cache_entries = dict()
         for key, value in cache_entries.items():
-            if not extended_cache_entries.has_key(key): 
-                extended_cache_entries[key] = {'cached-path':value}
+            if not extended_cache_entries.has_key(key):
+                extended_cache_entries[key] = {'cached-path': value}
 
         RFC1123_DATETIME_FORMAT = '%a, %d %b %Y %H:%M:%S %Z'
         url_attrs = {}
         cached_path = ''
         local_mtime = 0
-        
+
         if extended_cache_entries.has_key(url):
             url_attrs = extended_cache_entries[url]
             cached_path = url_attrs['cached-path']
 
             if url_attrs.has_key('last-modified'):
                 local_mtime = time.mktime(
-                    time.strptime(url_attrs['last-modified'], RFC1123_DATETIME_FORMAT))
+                    time.strptime(url_attrs['last-modified'],
+                        RFC1123_DATETIME_FORMAT))
 
         else:
             logger.debug("Cache miss for '%s', downloading" % url)
@@ -249,7 +262,7 @@ class Controller:
 
         if local_mtime >= url_mtime:
             logger.debug("Cache is up to date for '%s': '%s'" % (
-                         url, cached_path))
+                url, cached_path))
             return cached_path
 
         elif cached_path != '':
@@ -260,13 +273,15 @@ class Controller:
                 os.unlink(cached_path)
             except Exception:
                 pass
-            fd, cached_path = tempfile.mkstemp(prefix=cache_dir+'/')
+            fd, cached_path = tempfile.mkstemp(prefix=cache_dir + '/')
             os.close(fd)
 
             with file(cached_path, 'w') as f:
                 shutil.copyfileobj(remote, f)
 
-            os.chmod(cached_path, stat.S_IRUSR | stat.S_IWUSR | stat.S_IRGRP | stat.S_IROTH)
+            os.chmod(
+                cached_path,
+                stat.S_IRUSR | stat.S_IWUSR | stat.S_IRGRP | stat.S_IROTH)
 
         if msg.has_key('last-modified'):
             url_attrs['last-modified'] = msg['last-modified']

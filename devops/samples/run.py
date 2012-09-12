@@ -39,7 +39,7 @@ def main():
         external_network = environment.network['external']
 
         master_node = environment.node['master']
-        slave_node  = environment.node['slave']
+        slave_node = environment.node['slave']
 
         logger.info("Starting master node")
         master_node.start()
@@ -52,9 +52,9 @@ def main():
         logger.info("Sending user input")
 
         ip = external_network.ip_addresses
-        host_ip   = ip[1]
+        host_ip = ip[1]
         master_ip = ip[2]
-        netmask   = ip.netmask
+        netmask = ip.netmask
 
         master_node.send_keys("""<Esc><Enter>
 <Wait>
@@ -84,7 +84,8 @@ def main():
 
         wait(lambda: len(slave_node.ip_addresses) > 0, timeout=120)
 
-        logger.info("Slave node has IP address %s" % slave_node.ip_addresses[0])
+        logger.info(
+            "Slave node has IP address %s" % slave_node.ip_addresses[0])
     except:
         devops.save(environment)
         logger.warn("Environment has been saved as %s" % environment.id)
@@ -93,4 +94,3 @@ def main():
 
 if __name__ == '__main__':
     main()
-
