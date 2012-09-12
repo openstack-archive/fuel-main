@@ -4,10 +4,12 @@ define(
     'views/dialogs',
     'views/tasks',
     'text!templates/cluster/page.html',
-    'text!templates/cluster/node.html',
     'text!templates/cluster/deployment_control.html',
+    'text!templates/cluster/tab.html',
+    'text!templates/cluster/nodes_tab_summary.html',
+    'text!templates/cluster/node.html',
 ],
-function(models, dialogViews, taskViews, clusterPageTemplate, clusterNodeTemplate, deploymentControlTemplate) {
+function(models, dialogViews, taskViews, clusterPageTemplate, deploymentControlTemplate, tabTemplate, nodesTabSummary, nodeTemplate) {
     var views = {}
 
     views.ClusterPage = Backbone.View.extend({
@@ -47,8 +49,8 @@ function(models, dialogViews, taskViews, clusterPageTemplate, clusterNodeTemplat
             this.$el.html(this.template({cluster: this.model, tabs: this.tabs, activeTab: this.tab}));
 
             if (this.tab == 'nodes') {
-                this.nodeList = new views.NodeList({model: this.model.get('nodes')});
-                this.$('#tab-' + this.tab).html(this.nodeList.render().el);
+                this.nodesTab = new views.NodesTab({model: this.model});
+                this.$('#tab-' + this.tab).html(this.nodesTab.render().el);
             } else {
                 this.$('#tab-' + this.tab).text('TBD');
             }
@@ -103,28 +105,56 @@ function(models, dialogViews, taskViews, clusterPageTemplate, clusterNodeTemplat
         }
     });
 
+    views.NodesTab = Backbone.View.extend({
+        template: _.template(tabTemplate),
+        className: 'row-fluid',
+        render: function() {
+            this.$el.html(this.template());
+            this.content = new views.NodesTabContent({model: this.model});
+            this.summary = new views.NodesTabSummary({model: this.model});
+            this.$('.tab-content').html(this.content.render().el);
+            this.$('.tab-summary').html(this.summary.render().el);
+            return this;
+        }
+    });
+
+    views.NodesTabSummary = Backbone.View.extend({
+        template: _.template(nodesTabSummary),
+        render: function() {
+            this.$el.html(this.template({cluster: this.model}));
+            return this;
+        }
+    });
+
+    views.NodesTabContent = Backbone.View.extend({
+        render: function() {
+            this.$el.html((new views.NodeList({collection: this.model.get('nodes')})).render().el);
+            return this;
+        }
+    });
+
     views.NodeList = Backbone.View.extend({
-        className: 'row',
+        className: 'row-fluid',
         initialize: function(options) {
-            this.model.bind('reset', this.render, this);
-            this.model.bind('add', this.render, this);
+            this.collection.bind('reset', this.render, this);
+            this.collection.bind('add', this.render, this);
         },
         render: function() {
-            if (this.model.length) {
+            if (this.collection.length) {
                 this.$el.html('');
-                this.model.each(_.bind(function(node) {
+                this.collection.each(_.bind(function(node) {
                     this.$el.append(new views.Node({model: node}).render().el);
                 }, this));
             } else {
-                this.$el.html('<div class="span12"><div class="alert">This OpenStack installation does not have any nodes</div></div>');
+                this.$el.html('<div class="span12"><div class="alert">There are no nodes of this type</div></div>');
             }
             return this;
         }
     });
 
     views.Node = Backbone.View.extend({
-        className: 'span3',
-        template: _.template(clusterNodeTemplate),
+        className: 'span4',
+        template: _.template(nodeTemplate),
         events: {
             'click .node-name': 'startNameEditing',
             'keydown .node-name-editing': 'onNodeNameInputKeydown'
