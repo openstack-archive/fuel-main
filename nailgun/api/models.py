@@ -209,9 +209,24 @@ class Network(Base, BasicValidator):
     name = Column(Unicode(100), nullable=False)
     access = Column(String(20), nullable=False)
     vlan_id = Column(Integer, ForeignKey('vlan.id'))
+    cluster_id = Column(Integer, ForeignKey('clusters.id'))
     cidr = Column(String(25), nullable=False)
     gateway = Column(String(25))
     nodes = relationship(
         "Node",
         secondary=IPAddr.__table__,
         backref="networks")
+
+    @classmethod
+    def validate_update(cls, data):
+        d = cls.validate_json(data)
+        if not isinstance(d, list):
+            raise web.webapi.badrequest(
+                message="It's expected to receive array, not single object"
+            )
+        for i in d:
+            if not 'id' in i:
+                raise web.webapi.badrequest(
+                    message="No 'id' param for '%'" % i
+                )
+        return d

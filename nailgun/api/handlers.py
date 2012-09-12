@@ -186,7 +186,6 @@ class ClusterCollectionHandler(JSONHandler):
             map(cluster.nodes.append, nodes)
 
         web.ctx.orm.add(cluster)
-        web.ctx.orm.commit()
 
         used_nets = [n.cidr for n in web.ctx.orm.query(Network).all()]
         used_vlans = [v.id for v in web.ctx.orm.query(Vlan).all()]
@@ -210,13 +209,15 @@ class ClusterCollectionHandler(JSONHandler):
                 access=network['access'],
                 cidr=str(new_net),
                 gateway=str(new_net[1]),
+                cluster_id=cluster.id,
                 vlan_id=vlan_db.id
             )
             web.ctx.orm.add(nw_db)
-            web.ctx.orm.commit()
 
             used_vlans.append(new_vlan)
             used_nets.append(str(new_net))
+
+        web.ctx.orm.commit()
 
         raise web.webapi.created(json.dumps(
             ClusterHandler.render(cluster),
@@ -486,16 +487,46 @@ class RoleHandler(JSONHandler):
 
 
 class NetworkCollectionHandler(JSONHandler):
-    fields = ('id', 'name', 'cidr', 'gateway', 'vlan_id')
+    fields = ('id', 'cluster_id', 'name', 'cidr', 'gateway', 'vlan_id')
     model = Network
 
     def GET(self):
         web.header('Content-Type', 'application/json')
-        nets = web.ctx.orm.query(Network).all()
+        user_data = web.input(cluster_id=None)
+        if user_data.cluster_id:
+            nets = web.ctx.orm.query(Network).filter(
+                Network.cluster_id == user_data.cluster_id).all()
+        else:
+            nets = web.ctx.orm.query(Network).all()
+
         if not nets:
             return web.notfound()
 
         return json.dumps(
             map(self.render, nets),
+            indent=4
+        )
+
+    def PUT(self):
+        web.header('Content-Type', 'application/json')
+        new_nets = Network.validate_update(web.data())
+        if not new_nets:
+            raise web.badrequest()
+
+        nets_to_render = []
+        for network in new_nets:
+            network_db = web.ctx.orm.query(Network).get(network['id'])
+            if not network_db:
+                raise web.badrequest(
+                    message="Network with id=%s not found in DB" %
+                    network['id'])
+            # Check if there is no such object
+            for key, value in network.iteritems():
+                setattr(network_db, key, value)
+            nets_to_render.append(network_db)
+
+        web.ctx.orm.commit()
+        return json.dumps(
+            map(self.render, nets_to_render),
             indent=4
         )

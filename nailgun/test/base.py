@@ -95,6 +95,18 @@ class BaseHandlers(TestCase):
         self.db.commit()
         return cluster
 
+    def create_cluster_api(self):
+        resp = self.app.post(
+            reverse('ClusterCollectionHandler'),
+            json.dumps({
+                'name': 'cluster-api-' + str(randint(0, 1000000)),
+                'release': self.create_default_release().id
+            }),
+            headers=self.default_headers
+        )
+        self.assertEquals(resp.status, 201)
+        return json.loads(resp.body)
+
 
 def reverse(name, kwargs=None):
     urldict = dict(zip(urls[1::2], urls[::2]))

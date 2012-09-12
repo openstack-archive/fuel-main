@@ -14,7 +14,7 @@ STATIC_DIR = posixpath.join(PROJECT_PATH, "static")
 TEMPLATE_DIR = posixpath.join(PROJECT_PATH, "static")
 
 NETWORK_POOLS = {
-    'public': ['240.0.0.0/24'],  # reserved
+    'public': ['240.0.0.0/16'],  # reserved
     # private nets according to RFC-5735
     'private10': ['10.0.0.0/8'],
     'private172': ['172.16.0.0/12'],
