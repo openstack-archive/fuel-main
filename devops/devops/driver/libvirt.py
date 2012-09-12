@@ -126,6 +126,9 @@ class Libvirt:
     def node_exists(self, node_name):
         return self._system("virsh dominfo '%s'" % node_name, expected_resultcodes=(0, 1)) == 0
 
+    def disk_exists(self, disk_name, pool = 'default'):
+        return self._system("virsh vol-info '%s' --pool '%s'" % (disk_name, pool), expected_resultcodes=(0, 1)) == 0
+
     def network_exists(self, network_name):
         return self._system("virsh net-info '%s' 2>/dev/null" % network_name, expected_resultcodes=(0, 1)) == 0
 
@@ -153,7 +156,6 @@ class Libvirt:
             logger.debug("Network %s is defined. Undefining.")
             self._virsh("net-undefine '%s'", network.id)
 
-
     def start_network(self, network):
         if not self.is_network_running(network):
             logger.debug("Network %s is not running. Starting.")
@@ -167,6 +169,14 @@ class Libvirt:
     def _get_node_xml(self, node):
         with os.popen("virsh dumpxml '%s'" % node.id) as f:
             return xml.parse_stream(f)
+
+    def _get_volume_xml(self, name, pool='default'):
+        with os.popen("virsh vol-dumpxml '%s' '%s' " % (name, pool)) as f:
+            return xml.parse_stream(f)
+
+    def _get_volume_capacity(self, name, pool='default'):
+        xml = self._get_volume_xml(name, pool)
+        return xml.find('capacity').text
 
     def create_node(self, node):
         specs = filter(lambda spec: spec.arch == node.arch, self.specs)
@@ -286,35 +296,53 @@ class Libvirt:
 
             self._virsh("send-key '%s' %s", node.id, ' '.join(map(lambda x: str(x), key_codes)))
 
-    def create_disk(self, disk):
-        if not disk.path:
-            f, disk.path = tempfile.mkstemp(prefix='disk-', suffix=(".%s" % disk.format))
-            os.close(f)
+    def _create_disk(self, name, capacity=1, pool='default', format='qcow2'):
+        self._virsh_execute("vol-create-as --pool '%(pool)s' --name '%(name)s' --capacity '%(capacity)s' --format '%(format)s' " % {'format': format, 'name': name, 'capacity': capacity, 'pool': pool})
 
+    def create_disk(self, disk):
+        name = self._generate_disk_id(format=disk.format)
         if disk.base_image:
-            self._system("qemu-img create -f '%(format)s' -b '%(backing_path)s' '%(path)s'" % {'format': disk.format, 'path': disk.path, 'backing_path': disk.base_image})
+            base_name = disk.base_image.split('/')[-1]
+            if not self.disk_exists(base_name):
+                self._create_disk(base_name)
+                self._virsh_execute(
+                    "vol-upload '%(base_name)s' '%(base_image)s' --pool default"
+                    % {'base_name': base_name, 'base_image': disk.base_image})
+            capacity = self._get_volume_capacity(base_name)
+            self._virsh_execute(
+                "vol-create-as --name '%(name)s' --capacity '%(capacity)s'  --pool default --format '%(format)s' --backing-vol '%(base_name)s' --backing-vol-format '%(backing-vol-format)s' " % {'format': disk.format, 'name': name, 'base_name': base_name, 'capacity': capacity, 'backing-vol-format':'qcow2'})
         else:
-            self._system("qemu-img create -f '%(format)s' '%(path)s' '%(size)s'" % {'format': disk.format, 'path': disk.path, 'size': disk.size})
+            capacity = disk.size
+            self._create_disk(name=name, capacity=capacity, format=disk.format)
+        return self.get_disk_path(name)
 
 
     def delete_disk(self, disk):
         if disk.path is None: return
-        
         os.unlink(disk.path)
+
+    def get_disk_path(self, name, pool='default'):
+        command = "virsh vol-path %s --pool %s" % (name, pool)
+        with os.popen(command) as f:
+            return f.read().strip()
 
     def get_interface_addresses(self, interface):
         command = "arp -an | awk '$4 == \"%(mac)s\" && $7 == \"%(interface)s\" {print substr($2, 2, length($2)-2)}'" % { 'mac': interface.mac_address, 'interface': interface.network.bridge_name}
         with os.popen(command) as f:
             return [ipaddr.IPv4Address(s) for s in f.read().split()]
 
-    def _virsh(self, format, *args):
-        command = ("virsh " + format) % args
+    def _virsh_execute(self, param):
+        command = 'virsh ' + param
         logger.debug("Running '%s'" % command)
         process = subprocess.Popen(shlex.split(command), stdout=subprocess.PIPE, stderr=subprocess.PIPE)
         process.wait()
         if process.returncode != 0:
             logger.error("Command '%s' returned code %d:\n%s" % (command, process.returncode, process.stderr.read()))
             raise LibvirtException, "Failed to execute command '%s'" % command
+
+    def _virsh(self, format, *args):
+        command = format % args
+        self._virsh_execute(command)
 
     def _init_capabilities(self):
         with os.popen("virsh capabilities") as f:
@@ -332,6 +360,12 @@ class Libvirt:
                     spec.emulator = (domain.find('emulator') or arch.find('emulator')).text
 
                     self.specs.append(spec)
+
+    def _generate_disk_id(self, prefix='disk', format='qcow2'):
+        while True:
+            id = prefix + '-' + str(int(time.time()*100))+'.%s' % format
+            if not self.disk_exists(id):
+                return id
 
     def _generate_network_id(self, name='net'):
         while True:

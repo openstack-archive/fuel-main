@@ -38,10 +38,7 @@ class Controller:
 
     def build_environment(self, environment):
         logger.info("Building environment %s" % environment.name)
-
-        env_id = getattr(environment, 'id', '-'.join([environment.name, randstr()]))
-        environment.id = env_id
-
+        environment.id = environment.name
         logger.debug("Creating environment working directory for %s environment" % environment.name)
         environment.work_dir = os.path.join(self.home_dir, 'environments', environment.id)
         os.mkdir(environment.work_dir, stat.S_IRWXU | stat.S_IRWXG | stat.S_IRWXO)
@@ -199,13 +196,7 @@ class Controller:
     def _build_node(self, environment, node):
         for disk in filter(lambda d: d.path is None, node.disks):
             logger.debug("Creating disk file for node '%s'" % node.name)
-            fd, disk.path = tempfile.mkstemp(
-                prefix=environment.work_dir + '/disk',
-                suffix='.' + disk.format
-            )
-            os.close(fd)
-            os.chmod(disk.path, stat.S_IRUSR | stat.S_IWUSR | stat.S_IRGRP | stat.S_IWGRP | stat.S_IROTH)
-            self.driver.create_disk(disk)
+            disk.path=self.driver.create_disk(disk)
 
         logger.debug("Creating node '%s'" % node.name)
         self.driver.create_node(node)
