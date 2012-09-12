@@ -366,7 +366,7 @@ class Libvirt:
     def delete_disk(self, disk):
         if disk.path is None:
             return
-        os.unlink(disk.path)
+        self._virsh_execute("vol-delete '%s'" % disk.path)
 
     def get_disk_path(self, name, pool='default'):
         command = "virsh vol-path %s --pool %s" % (name, pool)

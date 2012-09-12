@@ -136,6 +136,9 @@ class Controller:
             for snapshot in node.snapshots:
                 self.driver.delete_snapshot(node, snapshot)
 
+            for disk in node.disks:
+                self.driver.delete_disk(disk)
+
             self.driver.delete_node(node)
             del node.driver
 
