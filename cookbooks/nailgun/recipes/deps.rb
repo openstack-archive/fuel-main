@@ -1,9 +1,5 @@
 include_recipe "python"
 
-virtualenv "#{node[:nailgun][:venv]}" do
-  site_packages false
-end
-
 ['libxml2-dev', 'python-dev', 'python-paramiko', 'ruby-httpclient'].each do |deb|
   package deb do
     action :install
@@ -26,7 +22,7 @@ end
   'kombu' => '2.1.8',
   'nose' => '1.1.2',
 }.each do |package, version|
-  local_python_pip package do
+  python_pip package do
     version version
     virtualenv node.nailgun.venv
   end
