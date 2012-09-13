@@ -24,3 +24,5 @@ NETWORK_POOLS = {
 NET_EXCLUDE = ['10.20.0.0/24']
 
 VLANS = range(100, 1000)
+
+from .extrasettings import *

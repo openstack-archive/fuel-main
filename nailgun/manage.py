@@ -9,11 +9,13 @@ import code
 
 import web
 from sqlalchemy.orm import scoped_session, sessionmaker
+
 from api.handlers import check_client_content_type
 from api.models import engine
 from db import load_db_driver, syncdb
 from unit_test import TestRunner
 from urls import urls
+from logger import Log
 
 logging.basicConfig(level="DEBUG")
 
@@ -97,7 +99,7 @@ if __name__ == "__main__":
             logging.info("Running WSGI app...")
             server = web.httpserver.WSGIServer(
                 ("0.0.0.0", int(params.port)),
-                app.wsgifunc()
+                app.wsgifunc(Log)
             )
             try:
                 rpc_thread.start()

@@ -41,101 +41,83 @@ def main():
 
     logger.info("=== Creating release ===")
     with open(params.release_file, "r") as f:
-       logger.debug("Trying to parse release file")
-       data = json.load(f)
+        logger.debug("Trying to parse release file")
+        data = json.load(f)
 
     httpconn = httplib.HTTPConnection(host=params.host, port=params.port)
     httpheaders = {"Content-Type": "application/json"}
     
     httpdata = {}
     for field in ('name', 'version', 'description', 'networks_metadata'):
-       httpdata[field] = data[field]
+        httpdata[field] = data[field]
            
     logger.info("Request url: %s, data: %s" % \
                    ('/api/releases', json.dumps(httpdata)))
 
     if params.dry_run:
-       release_dict = {'id': '1'}
+        release_dict = {'id': '1'}
     else:
-       logger.debug("Sending request")
-       try:
-          httpconn.request(method="POST", 
-                           url="/api/releases",
-                           body=json.dumps(httpdata),
-                           headers=httpheaders)
-       except Exception as e:
-          logger.error("Error: %s" % str(e))
-          sys.exit(1)
-       else:
-          response = httpconn.getresponse()
-          response_body = response.read()
-          logger.debug("Response status: %s" % response.status)
-          logger.debug("Response body: %s" % response_body)
+        release_dict = {}
+        logger.debug("Sending request")
+        try:
+            httpconn.request(method="POST", 
+                            url="/api/releases",
+                            body=json.dumps(httpdata),
+                            headers=httpheaders)
+        except Exception as e:
+            logger.error("Error: %s" % str(e))
+            sys.exit(1)
+        else:
+            response = httpconn.getresponse()
+            response_body = response.read()
+            logger.debug("Response status: %s" % response.status)
+            logger.debug("Response body: %s" % response_body)
 
-       if response.status == 200:
-          logger.info("Release '%s' has been successfully added" % \
-                         httpdata['name'])
-          release_dict = json.loads(response_body)
-          logger.info("Release id: %s" % release_dict['id'])
-       elif response.status == 409:
-          logger.error("Release '%s' already exists" % httpdata['name'])
-          sys.exit(0)
-       elif response.status < 200 and response.status >= 300:
-          logger.error("Error in creating release: %s" % response.read())
-          sys.exit(1)
+        if response.status == 201:
+            logger.info("Release '%s' has been successfully added" % \
+                            httpdata['name'])
+            release_dict = json.loads(response_body)
+            logger.info("Release id: %s" % release_dict['id'])
+        elif response.status == 409:
+            logger.error("Release '%s' already exists" % httpdata['name'])
+            sys.exit(0)
+        elif response.status < 201 and response.status >= 300:
+            logger.error("Error in creating release: %s" % response.read())
+            sys.exit(1)
 
 
     def add_item(httpconn, handler_url, release,
                  item_collection, item_fields):
 
-       for item in item_collection:
-          httpdata = {}
-          for field in item_fields:
-             httpdata[field] = item[field]
+        for item in item_collection:
+            httpdata = {}
+            for field in item_fields:
+                httpdata[field] = item[field]
 
-          if params.dry_run:
-             httpdata['release'] = '1'
-          else:
-             httpdata['release'] = release
-          
-          logger.debug("Request: url: %s, data: %s" % \
-                          (handler_url, json.dumps(httpdata)))
+            if params.dry_run:
+                httpdata['release'] = '1'
+            else:
+                httpdata['release'] = release
+              
+            logger.debug("Request: url: %s, data: %s" % \
+                            (handler_url, json.dumps(httpdata)))
 
-          if not params.dry_run:
-             logger.debug("Sending request")
-             try:
-                httpconn.request(method="POST", 
-                                 url=handler_url,
-                                 body=json.dumps(httpdata),
-                                 headers=httpheaders)
-             
-             except Exception as e:
-                logger.error("Error: %s" % str(e))
-                raise e
-             else:
-                response = httpconn.getresponse()
-                response_body = response.read()
-                logger.debug("Response status: %s" % response.status)
-                logger.debug("Response body: %s" % response_body)
-                
-
-    add_item(
-       httpconn, '/api/points', release_dict['id'],
-       data['points'],
-       ('name', 'scheme')
-       )
-
-    add_item(
-       httpconn, '/api/coms', release_dict['id'], 
-       data['components'],
-       ('name', 'deploy', 'provides', 'requires')
-       )
-
-    add_item(
-       httpconn, '/api/roles', release_dict['id'],
-       data['roles'],
-       ('name', 'components')
-       )
+            if not params.dry_run:
+                logger.debug("Sending request")
+                try:
+                    httpconn.request(method="POST", 
+                                    url=handler_url,
+                                    body=json.dumps(httpdata),
+                                    headers=httpheaders)
+                 
+                except Exception as e:
+                    logger.error("Error: %s" % str(e))
+                    raise e
+                else:
+                    response = httpconn.getresponse()
+                    response_body = response.read()
+                    logger.debug("Response status: %s" % response.status)
+                    logger.debug("Response body: %s" % response_body)
 
 
 if __name__ == "__main__":

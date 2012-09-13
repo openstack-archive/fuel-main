@@ -1,13 +1,21 @@
 # -*- coding: utf-8 -*-
 
 import json
+import logging
+import itertools
+
 import web
 import ipaddr
 import netaddr
 
-from models import Release, Cluster, Node, Role, Network, Vlan
-from settings import settings
 import rpc
+from settings import settings
+from provision import ProvisionConfig
+from provision import ProvisionFactory
+from provision.model.profile import Profile as ProvisionProfile
+from provision.model.node import Node as ProvisionNode
+from provision.model.power import Power as ProvisionPower
+from models import Release, Cluster, Node, Role, Network, Vlan
 
 
 def check_client_content_type(handler):
@@ -228,6 +236,43 @@ class ClusterChangesHandler(JSONHandler):
         cluster = q.first()
         if not cluster:
             return web.notfound()
+
+        pc = ProvisionConfig()
+        pc.cn = "provision.driver.cobbler.Cobbler"
+        pc.url = settings.COBBLER_URL
+        pc.user = settings.COBBLER_USER
+        pc.password = settings.COBBLER_PASSWORD
+        try:
+            pd = ProvisionFactory.getInstance(pc)
+        except:
+            raise web.badrequest()
+        pf = ProvisionProfile(settings.COBBLER_PROFILE)
+        ndp = ProvisionPower("ssh")
+        ndp.power_user = "root"
+
+        for node in itertools.ifilter(
+            lambda n: n.status == "discover", cluster.nodes
+        ):
+            nd = ProvisionNode(node.id)
+            nd.driver = pd
+            nd.mac = node.mac
+            nd.profile = pf
+            nd.pxe = True
+            nd.kopts = ""
+            nd.power = ndp
+            logging.debug(
+                "Trying to save node %s into provision system: profile: %s ",
+                node.id,
+                pf.name
+            )
+            nd.save()
+            logging.debug(
+                "Trying to reboot node %s using %s "
+                "in order to launch provisioning",
+                node.id,
+                ndp.power_type
+            )
+            nd.power_reboot()
 
         message = {"method": "deploy", "args": {"var1": "Hello from nailgun"}}
         rpc.cast('mcollective', message)

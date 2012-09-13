@@ -1,16 +1,25 @@
+# -*- coding: utf-8 -*-
+
+import re
 import json
-from paste.fixture import TestApp
 from random import randint
 from unittest.case import TestCase
-import re
+
+import mock
+from paste.fixture import TestApp
 from sqlalchemy.orm.events import orm
+
 from api.models import engine, Node, Release, Cluster, Role
 from api.urls import urls
-from db import dropdb, syncdb, flush
 from manage import app
+from db import dropdb, syncdb, flush
 
 
 class BaseHandlers(TestCase):
+    def __init__(self, *args, **kwargs):
+        super(BaseHandlers, self).__init__(*args, **kwargs)
+        self.mock = mock
+
     @classmethod
     def setUpClass(cls):
         dropdb()
@@ -31,6 +40,10 @@ class BaseHandlers(TestCase):
                     'memory': 'a'}
         return metadata
 
+    def _generate_random_mac(self):
+        mac = [randint(0x00, 0x7f) for _ in xrange(6)]
+        return ':'.join(map(lambda x: "%02x" % x, mac))
+
     def create_release_api(self):
         resp = self.app.post(
             '/api/releases',
@@ -45,7 +58,7 @@ class BaseHandlers(TestCase):
 
     def create_default_node(self):
         node = Node()
-        node.mac = u"ASDFGHJKLMNOPR"
+        node.mac = self._generate_random_mac()
         self.db.add(node)
         self.db.commit()
         return node
