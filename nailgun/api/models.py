@@ -122,6 +122,11 @@ class Node(Base, BasicValidator):
         'deploying',
         'error'
     )
+    NODE_ROLES = (
+        'controller',
+        'compute',
+        'storage',
+    )
     id = Column(Integer, primary_key=True)
     cluster_id = Column(Integer, ForeignKey('clusters.id'))
     name = Column(Unicode(100))
@@ -133,6 +138,8 @@ class Node(Base, BasicValidator):
     manufacturer = Column(Unicode(50))
     platform_name = Column(String(150))
     os_platform = Column(String(150))
+    role = Column(Enum(*NODE_ROLES))
+    # FIXME: deprecated
     roles = relationship(
         "Role", secondary=nodes_roles, backref="nodes")
     new_roles = relationship("Role", secondary=nodes_new_roles)

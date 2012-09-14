@@ -31,22 +31,6 @@
         }
     },
     {
-      "model": "nailgun.role",
-      "pk": 1,
-      "fields": {
-        "name": "Controller",
-        "release": 1
-      }
-    },
-    {
-      "model": "nailgun.role",
-      "pk": 2,
-      "fields": {
-        "name": "Compute",
-        "release": 1
-      }
-    },
-    {
         "pk": 1,
         "model": "nailgun.node",
         "fields": {
@@ -54,9 +38,7 @@
             "name": "",
             "manufacturer": "Dell",
             "platform_name": "Model-1",
-            "roles": [
-                1
-            ],
+            "role": "controller",
             "ip": "",
             "fqdn": "",
             "cluster": 1,
@@ -185,10 +167,7 @@
             "name": "",
             "manufacturer": "HP",
             "platform_name": "Model-2",
-            "roles": [
-                1,
-                2
-            ],
+            "role": "compute",
             "ip": "",
             "fqdn": "",
             "cluster": 1,
@@ -203,9 +182,7 @@
             "name": "",
             "manufacturer": "OpenVZ",
             "platform_name": "Model-3",
-            "roles": [
-                2
-            ],
+            "role": "storage",
             "ip": "",
             "fqdn": "",
             "cluster": 1,
@@ -220,7 +197,7 @@
             "name": "",
             "manufacturer": "",
             "platform_name": "No-Manufacturer",
-            "roles": [],
+            "role": "compute",
             "ip": "",
             "fqdn": "",
             "cluster": 1,
@@ -235,7 +212,7 @@
             "name": "Node with name",
             "manufacturer": "VMWare",
             "platform_name": "",
-            "roles": [],
+            "role": "controller",
             "ip": "",
             "fqdn": "",
             "cluster": 1,
@@ -250,7 +227,7 @@
             "name": "Node without cluster",
             "manufacturer": "",
             "platform_name": "",
-            "roles": [],
+            "role": null,
             "ip": "",
             "fqdn": "",
             "cluster": null,
@@ -265,7 +242,7 @@
             "name": "Another node without cluster",
             "manufacturer": "QEMU",
             "platform_name": "",
-            "roles": [],
+            "role": null,
             "ip": "",
             "fqdn": "",
             "cluster": null,
@@ -280,7 +257,7 @@
             "name": "node virtualbox",
             "manufacturer": "virtualbox",
             "platform_name": "",
-            "roles": [],
+            "role": null,
             "ip": "",
             "fqdn": "",
             "cluster": null,

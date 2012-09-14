@@ -135,7 +135,8 @@ function(models, dialogViews, taskViews, clusterPageTemplate, deploymentControlT
         render: function() {
             this.$el.html('');
             _.each(this.model.availableRoles(), function(role) {
-                this.$el.append((new views.NodeList({collection: this.model.get('nodes'), role: role})).render().el);
+                var nodes = this.model.get('nodes').filter(function(node) {return node.get('role') == role});
+                this.$el.append((new views.NodeList({collection: new models.Nodes(nodes), role: role})).render().el);
             }, this);
             return this;
         }

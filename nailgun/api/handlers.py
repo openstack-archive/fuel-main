@@ -371,7 +371,7 @@ class ReleaseCollectionHandler(JSONHandler):
 
 
 class NodeHandler(JSONHandler):
-    fields = ('id', 'name', 'info', ('roles', '*'), ('new_roles', '*'),
+    fields = ('id', 'name', 'info', 'role',
               'status', 'mac', 'fqdn', 'ip', 'manufacturer', 'platform_name',
               'redeployment_needed', 'os_platform')
     model = Node
