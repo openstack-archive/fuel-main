@@ -83,6 +83,7 @@ class TestHandlers(BaseHandlers):
         self.assertEquals(200, resp.status)
         nets_received = json.loads(resp.body)
         self.assertEquals(nets_len, len(nets_received))
+        self.assertEquals(cluster1['id'], nets_received[0]['cluster_id'])
 
     def test_networks_update_new_vlan_id(self):
         cluster = self.create_cluster_api()

@@ -5,7 +5,6 @@ import logging
 import itertools
 
 import web
-import ipaddr
 import netaddr
 
 import rpc
@@ -186,6 +185,7 @@ class ClusterCollectionHandler(JSONHandler):
             map(cluster.nodes.append, nodes)
 
         web.ctx.orm.add(cluster)
+        web.ctx.orm.commit()
 
         used_nets = [n.cidr for n in web.ctx.orm.query(Network).all()]
         used_vlans = [v.id for v in web.ctx.orm.query(Vlan).all()]
@@ -194,6 +194,7 @@ class ClusterCollectionHandler(JSONHandler):
             new_vlan = sorted(list(set(settings.VLANS) - set(used_vlans)))[0]
             vlan_db = Vlan(id=new_vlan)
             web.ctx.orm.add(vlan_db)
+            web.ctx.orm.commit()
 
             pool = settings.NETWORK_POOLS[network['access']]
             nets_free_set = netaddr.IPSet(pool) -\
@@ -213,11 +214,10 @@ class ClusterCollectionHandler(JSONHandler):
                 vlan_id=vlan_db.id
             )
             web.ctx.orm.add(nw_db)
+            web.ctx.orm.commit()
 
             used_vlans.append(new_vlan)
             used_nets.append(str(new_net))
-
-        web.ctx.orm.commit()
 
         raise web.webapi.created(json.dumps(
             ClusterHandler.render(cluster),
@@ -280,6 +280,8 @@ class ClusterChangesHandler(JSONHandler):
 
         message = {"method": "deploy", "args": {"var1": "Hello from nailgun"}}
         rpc.cast('mcollective', message)
+
+
 
         return json.dumps(
             self.render(cluster),
