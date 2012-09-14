@@ -81,7 +81,7 @@ def main():
         elif response.status == 409:
             logger.error("Release '%s' already exists" % httpdata['name'])
             sys.exit(0)
-        elif response.status < 201 and response.status >= 300:
+        elif response.status < 201 or response.status >= 300:
             logger.error("Error in creating release: %s" % response.read())
             sys.exit(1)
 

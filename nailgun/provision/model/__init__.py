@@ -1,6 +1,9 @@
+# -*- coding: utf-8 -*-
+
 import re
-from provision import ProvisionException
 import logging
+
+from provision import ProvisionException
 
 
 class ModelObject(object):

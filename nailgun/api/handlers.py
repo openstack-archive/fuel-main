@@ -244,8 +244,8 @@ class ClusterChangesHandler(JSONHandler):
         pc.password = settings.COBBLER_PASSWORD
         try:
             pd = ProvisionFactory.getInstance(pc)
-        except:
-            raise web.badrequest()
+        except Exception as err:
+            raise web.badrequest(str(err))
         pf = ProvisionProfile(settings.COBBLER_PROFILE)
         ndp = ProvisionPower("ssh")
         ndp.power_user = "root"
@@ -253,6 +253,9 @@ class ClusterChangesHandler(JSONHandler):
         for node in itertools.ifilter(
             lambda n: n.status == "discover", cluster.nodes
         ):
+            node.status = u"provisioning"
+            web.ctx.orm.add(node)
+            web.ctx.orm.commit()
             nd = ProvisionNode(node.id)
             nd.driver = pd
             nd.mac = node.mac

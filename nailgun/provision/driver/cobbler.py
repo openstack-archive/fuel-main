@@ -1,8 +1,12 @@
+# -*- coding: utf-8 -*-
+
+import logging
+import xmlrpclib
+from itertools import repeat
+
 from provision import ProvisionException
 from provision import ProvisionAlreadyExists, ProvisionDoesNotExist
 from provision import Provision
-import logging
-import xmlrpclib
 
 
 class Cobbler(Provision):
@@ -45,120 +49,59 @@ class Cobbler(Provision):
         systems = self.server.find_system({'name': name}, self.token)
         if systems:
             if len(systems) > 1:
-                self.logger.error(
-                    "There are more than one system found by pattern: %s",
-                    name
-                )
-                raise ProvisionException(
-                    "There are more than one system found by pattern: %s",
-                    name
-                )
+                err = "There are more than one system"
+                " found by pattern: %s" % name
+                self.logger.error(err)
+                raise ProvisionException(err)
             return systems[0]
         return None
 
-    # FIXME
-    # IT NEEDED TO BE IMPLEMENTED AS ONLY METHOD FOR ADD AND EDIT
-    def add_system(self, name, mac, power, profile, kopts=""):
+    def update_system(self, name, mac, power, profile, kopts="", create=False):
         if self.system_by_name(name):
-            self.logger.error(
-                "Trying to add system that already exists: %s",
-                name
-            )
-            raise ProvisionAlreadyExists(
-                "System with name %s already exists. Try to edit it.",
-                name
-            )
-        system_id = self.server.new_system(self.token)
-        self.server.modify_system(
-            system_id, 'name', name, self.token
-        )
-        self.server.modify_system(
-            system_id, 'profile', profile.name, self.token
-        )
-        self.server.modify_system(
-            system_id, 'kopts', kopts, self.token
-        )
-        self.server.modify_system(
-            system_id, 'modify_interface', {
-                "macaddress-eth0": mac,
-            }, self.token
-        )
-        self.server.modify_system(
-            system_id, 'power_type', power.power_type, self.token
-        )
-        if power.power_user:
-            self.server.modify_system(
-                system_id, 'power_user', power.power_user, self.token
-            )
-        if power.power_pass:
-            self.server.modify_system(
-                system_id, 'power_pass', power.power_pass, self.token
-            )
-        if power.power_id:
-            self.server.modify_system(
-                system_id, 'power_id', power.power_id, self.token
-            )
-        if power.power_address:
-            self.server.modify_system(
-                system_id, 'power_address', power.power_address, self.token
-            )
-        self.server.save_system(system_id, self.token)
-        return self.system_by_name(name)
+            err = "System with name %s already exists."
+            " Try to edit it." % name
+            self.logger.error(err)
+            raise ProvisionAlreadyExists(err)
+        if create:
+            system_id = self.server.new_system(self.token)
+        else:
+            system_id = self.server.get_system_handle(name, self.token)
 
-    def edit_system(self, name, mac, power, profile, kopts=""):
-        if not self.system_by_name(name):
-            self.logger.error(
-                "Trying to edit system that does not exist: %s",
-                name
-            )
-            raise ProvisionDoesNotExist(
-                "System with name %s does not exist. Try to edit it.",
-                name
-            )
-        system_id = self.server.get_system_handle(name, self.token)
-        self.server.modify_system(
-            system_id, 'profile', profile.name, self.token
-        )
-        self.server.modify_system(
-            system_id, 'kopts', kopts, self.token
-        )
-        self.server.modify_system(
-            system_id, 'modify_interface',
-            {
+        fields = {
+            "name": name,
+            "profile": profile.name,
+            "kopts": kopts,
+            "modify_interface": {
                 "macaddress-eth0": mac,
-            }, self.token
-        )
+            },
+        }
 
-        self.server.modify_system(
-            system_id, 'power_type', power.power_type, self.token
-        )
-        if power.power_user:
+        for key, value in fields.iteritems():
             self.server.modify_system(
-                system_id, 'power_user', power.power_user, self.token
+                system_id, key, value, self.token
             )
-        if power.power_pass:
-            self.server.modify_system(
-                system_id, 'power_pass', power.power_pass, self.token
-            )
-        if power.power_id:
-            self.server.modify_system(
-                system_id, 'power_id', power.power_id, self.token
-            )
-        if power.power_address:
-            self.server.modify_system(
-                system_id, 'power_address', power.power_address, self.token
-            )
+
+        if_fields = {
+            "power_type": power.power_type,
+            "power_user": power.power_user,
+            "power_pass": power.power_pass,
+            "power_id": power.power_id,
+            "power_address": power.power_address
+        }
+        for key, value in if_fields.iteritems():
+            if value:
+                self.server.modify_system(
+                    system_id, key, value, self.token
+                )
         self.server.save_system(system_id, self.token)
         return self.system_by_name(name)
 
     def power_system(self, name, power):
         if not self.system_by_name(name):
-            self.logger.error(
-                "Trying to power system that does not exist: %s" % name
-            )
-            raise ProvisionDoesNotExist(
-                "System with name %s does not exist. Try to edit it." % name
-            )
+            err = "Trying to power system"
+            " that does not exist: %s" % name
+            self.logger.error(err)
+            raise ProvisionDoesNotExist(err)
         if power not in ('on', 'off', 'reboot', 'status'):
             raise ValueError("Power has invalid value")
         system_id = self.server.get_system_handle(name, self.token)
@@ -167,21 +110,18 @@ class Cobbler(Provision):
 
     def handle_system(self, name, mac, power, profile, kopts=""):
         try:
-            self.edit_system(name, mac, power, profile, kopts)
+            self.update_system(name, mac, power, profile, kopts)
             self.logger.info("Edited system: %s" % name)
         except ProvisionDoesNotExist:
-            self.add_system(name, mac, power, profile, kopts)
+            self.update_system(name, mac, power, profile, kopts, create=True)
             self.logger.info("Added system: %s" % name)
 
     def del_system(self, name):
         system = self.system_by_name(name)
         if not system:
-            self.logger.error(
-                "Trying to remove system that does not exist: %s" % name
-            )
-            raise ProvisionDoesNotExist(
-                "There is no system with name %s" % name
-            )
+            err = "There is no system with name %s" % name
+            self.logger.error(err)
+            raise ProvisionDoesNotExist(err)
         self.server.remove_system(name, self.token)
         self.logger.info("Removed system %s" % name)
 
@@ -189,46 +129,23 @@ class Cobbler(Provision):
         profiles = self.server.find_profile({'name': name}, self.token)
         if profiles:
             if len(profiles) > 1:
-                self.logger.error(
-                    "There are more than one profile found by pattern: %s",
-                    name
-                )
-                raise ProvisionException(
-                    "There are more than one profile found by pattern: %s",
-                    name
-                )
+                err = "There are more than one profile"
+                " found by pattern: %s" % name
+                self.logger.error(err)
+                raise ProvisionException(err)
             return profiles[0]
         return None
 
-    # FIXME
-    # IT NEEDED TO BE IMPLEMENTED AS ONLY METHOD FOR ADD AND EDIT
-    def add_profile(self, name, distro, kickstart):
+    def update_profile(self, name, distro, kickstart, create=False):
         if self.profile_by_name(name):
-            self.logger.error(
-                "Trying to add profile that already exists: %s" % name
-            )
-            raise ProvisionAlreadyExists(
-                "Profile with name %s already exists. Try to edit it.",
-                name
-            )
-        profile_id = self.server.new_profile(self.token)
+            err = "Trying to add profile that already exists: %s" % name
+            self.logger.error(err)
+            raise ProvisionAlreadyExists(err)
+        if create:
+            profile_id = self.server.new_profile(self.token)
+        else:
+            profile_id = self.server.get_profile_handle(name, self.token)
         self.server.modify_profile(profile_id, 'name', name, self.token)
-        self.server.modify_profile(profile_id, 'distro', distro, self.token)
-        self.server.modify_profile(
-            profile_id, 'kickstart', kickstart, self.token
-        )
-        self.server.save_profile(profile_id, self.token)
-        return self.profile_by_name(name)
-
-    def edit_profile(self, name, distro, kickstart):
-        if not self.profile_by_name(name):
-            self.logger.error(
-                "Trying to edit profile that does not exist: %s" % name
-            )
-            raise ProvisionDoesNotExist(
-                "Profile with name %s does not exist. Try to add it." % name
-            )
-        profile_id = self.server.get_profile_handle(name, self.token)
         self.server.modify_profile(profile_id, 'distro', distro, self.token)
         self.server.modify_profile(
             profile_id, 'kickstart', kickstart, self.token
@@ -238,21 +155,18 @@ class Cobbler(Provision):
 
     def handle_profile(self, name, distro, seed):
         try:
-            self.edit_profile(name, distro, seed)
+            self.update_profile(name, distro, seed)
             self.logger.info("Edited profile: %s" % name)
         except ProvisionDoesNotExist:
-            self.add_profile(name, distro, seed)
+            self.update_profile(name, distro, seed, create=True)
             self.logger.info("Added profile: %s" % name)
 
     def del_profile(self, name):
         profile = self.profile_by_name(name)
         if not profile:
-            self.logger.error(
-                "Trying to remove profile that does not exist: %s" % name
-            )
-            raise ProvisionDoesNotExist(
-                "There is no profile with name %s" % name
-            )
+            err = "Trying to remove profile that does not exist: %s" % name
+            self.logger.error(err)
+            raise ProvisionDoesNotExist(err)
         self.server.remove_profile(name, self.token)
         self.logger.info("Removed profile: %s" % name)
 
@@ -260,48 +174,25 @@ class Cobbler(Provision):
         distros = self.server.find_distro({'name': name}, self.token)
         if distros:
             if len(distros) > 1:
-                self.logger.error(
-                    "There are more than one distro found by pattern: %s",
-                    name
-                )
-                raise ProvisionException(
-                    "There are more than one distro found by pattern %s",
-                    name
-                )
+                err = "There are more than one distro"
+                " found by pattern: %s" % name
+                self.logger.error(err)
+                raise ProvisionException(err)
             return distros[0]
         return None
 
-    # FIXME
-    # IT NEEDED TO BE IMPLEMENTED AS ONLY METHOD FOR ADD AND EDIT
-    def add_distro(self, name, kernel, initrd, arch, breed, osversion):
+    def update_distro(
+            self, name, kernel, initrd, arch, breed, osversion,
+            create=False):
         if self.distro_by_name(name):
-            self.logger.error(
-                "Trying to add distro that already exists: %s" % name
-            )
-            raise ProvisionAlreadyExists(
-                "Distro with name %s already exists. Try to edit it." % name
-            )
-        distro_id = self.server.new_distro(self.token)
+            err = "Trying to add distro that already exists: %s" % name
+            self.logger.error(err)
+            raise ProvisionAlreadyExists(err)
+        if create:
+            distro_id = self.server.new_distro(self.token)
+        else:
+            distro_id = self.server.get_distro_handle(name, self.token)
         self.server.modify_distro(distro_id, 'name', name, self.token)
-        self.server.modify_distro(distro_id, 'kernel', kernel, self.token)
-        self.server.modify_distro(distro_id, 'initrd', initrd, self.token)
-        self.server.modify_distro(distro_id, 'arch', arch, self.token)
-        self.server.modify_distro(distro_id, 'breed', breed, self.token)
-        self.server.modify_distro(
-            distro_id, 'os_version', osversion, self.token
-        )
-        self.server.save_distro(distro_id, self.token)
-        return self.distro_by_name(name)
-
-    def edit_distro(self, name, kernel, initrd, arch, breed, osversion):
-        if not self.distro_by_name(name):
-            self.logger.error(
-                "Trying to edit distro that does not exist: %s" % name
-            )
-            raise ProvisionDoesNotExist(
-                "Distro with name %s does not exist. Try to add it." % name
-            )
-        distro_id = self.server.get_distro_handle(name, self.token)
         self.server.modify_distro(distro_id, 'kernel', kernel, self.token)
         self.server.modify_distro(distro_id, 'initrd', initrd, self.token)
         self.server.modify_distro(distro_id, 'arch', arch, self.token)
@@ -314,21 +205,21 @@ class Cobbler(Provision):
 
     def handle_distro(self, name, kernel, initrd, arch, os, osversion):
         try:
-            self.edit_distro(name, kernel, initrd, arch, os, osversion)
+            self.update_distro(name, kernel, initrd, arch, os, osversion)
             self.logger.info("Edited distro: %s" % name)
         except ProvisionDoesNotExist:
-            self.add_distro(name, kernel, initrd, arch, os, osversion)
+            self.update_distro(
+                name, kernel, initrd, arch, os, osversion, create=True
+            )
             self.logger.info("Added distro: %s" % name)
 
     def del_distro(self, name):
         distro = self.distro_by_name(name)
         if not distro:
-            self.logger.error(
-                "Trying to remove distro that does not exist: %s" % name
-            )
-            raise ProvisionDoesNotExist(
-                "There is no distro with name %s" % name
-            )
+            err = "Trying to remove distro"
+            " that does not exist: %s" % name
+            self.logger.error(err)
+            raise ProvisionDoesNotExist(err)
         self.server.remove_distro(name, self.token)
         self.logger.info("Removed distro %s" % name)
 
