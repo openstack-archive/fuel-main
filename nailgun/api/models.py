@@ -109,6 +109,7 @@ class Node(Base, BasicValidator):
         'offline',
         'ready',
         'discover',
+        'provisioning',
         'deploying',
         'error'
     )

@@ -14,7 +14,8 @@ end
   'web.py' => '0.37',
   'SQLAlchemy' => '0.7.8',
   'Paste' => '1.7.5.1',
-  'coverage' => '3.5.2'
+  'coverage' => '3.5.2',
+  'wsgilog' => '0.3'
 }.each do |package, version|
   python_pip package do
     version version

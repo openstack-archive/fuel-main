@@ -38,4 +38,5 @@ class TestProvisioning(BaseHandlers):
             headers=self.default_headers,
             expect_errors=True
         )
+        print resp
         self.assertEquals(200, resp.status)
