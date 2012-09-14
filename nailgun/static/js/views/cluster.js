@@ -7,9 +7,10 @@ define(
     'text!templates/cluster/deployment_control.html',
     'text!templates/cluster/tab.html',
     'text!templates/cluster/nodes_tab_summary.html',
-    'text!templates/cluster/node.html',
+    'text!templates/cluster/node_list.html',
+    'text!templates/cluster/node.html'
 ],
-function(models, dialogViews, taskViews, clusterPageTemplate, deploymentControlTemplate, tabTemplate, nodesTabSummary, nodeTemplate) {
+function(models, dialogViews, taskViews, clusterPageTemplate, deploymentControlTemplate, tabTemplate, nodesTabSummaryTemplate, nodeListTemplate, nodeTemplate) {
     var views = {}
 
     views.ClusterPage = Backbone.View.extend({
@@ -119,7 +120,7 @@ function(models, dialogViews, taskViews, clusterPageTemplate, deploymentControlT
     });
 
     views.NodesTabSummary = Backbone.View.extend({
-        template: _.template(nodesTabSummary),
+        template: _.template(nodesTabSummaryTemplate),
         render: function() {
             this.$el.html(this.template({cluster: this.model}));
             return this;
@@ -127,26 +128,32 @@ function(models, dialogViews, taskViews, clusterPageTemplate, deploymentControlT
     });
 
     views.NodesTabContent = Backbone.View.extend({
+        initialize: function(options) {
+            this.model.get('nodes').bind('reset', this.render, this);
+            this.model.get('nodes').bind('add', this.render, this);
+        },
         render: function() {
-            this.$el.html((new views.NodeList({collection: this.model.get('nodes')})).render().el);
+            this.$el.html('');
+            _.each(this.model.availableRoles(), function(role) {
+                this.$el.append((new views.NodeList({collection: this.model.get('nodes'), role: role})).render().el);
+            }, this);
             return this;
         }
     });
 
     views.NodeList = Backbone.View.extend({
         className: 'row-fluid',
+        template: _.template(nodeListTemplate),
         initialize: function(options) {
-            this.collection.bind('reset', this.render, this);
-            this.collection.bind('add', this.render, this);
+            this.role = options.role;
         },
         render: function() {
+            this.$el.html(this.template({nodes: this.collection, role: this.role}));
             if (this.collection.length) {
-                this.$el.html('');
-                this.collection.each(_.bind(function(node) {
-                    this.$el.append(new views.Node({model: node}).render().el);
-                }, this));
-            } else {
-                this.$el.html('<div class="span12"><div class="alert">There are no nodes of this type</div></div>');
+                var container = this.$('.node-list-container');
+                this.collection.each(function(node) {
+                    container.append(new views.Node({model: node}).render().el);
+                })
             }
             return this;
         }

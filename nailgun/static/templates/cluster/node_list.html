@@ -1,0 +1,16 @@
+<h2><%= role %></h2>
+<div>
+    <button class="btn btn-success">
+      <i class="icon-plus icon-white"></i>
+      Add
+    </button>
+    <button class="btn btn-danger <%= nodes.length ? '' : 'disabled' %>">
+      <i class="icon-minus icon-white"></i>
+      Delete
+    </button>
+</div>
+<% if (nodes.length) { %>
+  <div class="node-list-container"></div>
+<% } else { %>
+  <div class="span12"><div class="alert">There are no nodes of this type</div></div>
+<% } %>

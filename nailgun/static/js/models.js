@@ -38,6 +38,15 @@ define(function() {
         locked: function() {
             return this.get('task') && !this.get('task').get('ready');
         },
+        availableRoles: function() {
+            if (this.get('type') == 'storage') {
+                return ['controller', 'storage']
+            } else if (this.get('type') == 'compute') {
+                return ['controller', 'compute']
+            } else {
+                return ['controller', 'compute', 'storage']
+            }
+        },
         parse: function(response) {
             response.nodes = new models.Nodes(response.nodes);
             response.nodes.cluster = this;
