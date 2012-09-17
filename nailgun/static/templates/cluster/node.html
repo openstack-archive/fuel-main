@@ -1,32 +1,37 @@
-<div class="node <%= node.get('status') == 'offline' ? 'off' : 'on' %>">
-  <div class="nodeimg"><div class="nodeimg<%= node.get('status') %>"></div></div>
-  <div class="article">
+<div class="nodebox assigned <%= node.get('manufacturer') ? 'manufacturer-' + node.get('manufacturer').toLowerCase() : '' %>">
+  <div class="nodename">
     <% if (editingName) { %>
-      <form class="node-name-editing form-inline" style="<%= editingName ? '' : 'display:none' %>">
+      <form class="node-name-editing form-inline">
         <input type="text" class="input-medium" value="<%= node.get('name') || '' %>">
       </form>
     <% } else { %>
-      <div class="node-name" style="<%= editingName ? 'display:none' : '' %>">
-        <h4 class="name"><i class="icon-pencil"></i><%= node.get('name') || node.get('mac') %></h4>
-      </div>
+      <%= node.get('name') || node.get('mac') %>
     <% } %>
   </div>
-  <% if (node.get('status') != 'offline') { %>
-    <hr>
-    <div class="statusbar">
-      <% if (node.get('status') == 'ready') { %>
-        <div class="statusbar-text msg-ok">
-          <i class="icon-ok-sign"></i><strong>Ready</strong>
-        </div>
-      <% } else if (node.get('status') == 'error') { %>
-        <div class="statusbar-text msg-error">
-          <i class="icon-exclamation-sign"></i><strong>Error</strong>
-        </div>
-      <% } else if (node.get('status') == 'deploying') { %>
-        <div class="statusbar-text msg-warning">
-          <i class="icon-refresh"></i><strong>Deploying</strong>
-        </div>
-      <% } %>
-    </div>
-  <% } %>
+  <div class="nodestatus">
+    <% var status = node.get('status') %>
+    <% if (status == 'ready') { %>
+      <div class="msg-ok">
+        <i class="icon-ok-circle"></i>Ready
+      </div>
+    <% } else if (status == 'error') { %>
+      <div class="msg-error">
+        <i class="icon-exclamation-sign"></i>Error
+      </div>
+    <% } else if (status == 'deploying') { %>
+      <div class="msg-warning">
+        <i class="icon-refresh"></i>Deploying
+      </div>
+    <% } else { %>
+      <%= status %>
+    <% } %>
+  </div>
+  <div class="nodetech">
+    <ul>
+      <li>CPU: <%= _.isNumber(node.resource('cpu')) ? node.resource('cpu') : '?' %></li>
+      <li>HDD: <%= _.isNumber(node.resource('hdd')) ? node.resource('hdd').toFixed(2) : '?' %> TB</li>
+      <li>RAM: <%= _.isNumber(node.resource('ram')) ? node.resource('ram').toFixed(1) : '?' %> GB</li>
+    </ul>
+  </div>
 </div>
+

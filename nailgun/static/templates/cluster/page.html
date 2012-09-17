@@ -1,11 +1,15 @@
-<h1><%= cluster.get('name') %> (<%= cluster.get('release').get('name') %>)</h1>
-<ul class="nav nav-tabs">
-  <% _.each(tabs, function(tab) { %>
-    <li class="<%= activeTab == tab ? 'active' : '' %>"><a href="#cluster/<%= cluster.id %>/<%= tab %>"><%= tab %></a></li>
-  <% })%>
-</ul>
-<div class="tab-content">
-  <% _.each(tabs, function(tab) { %>
-    <div class="tab-pane <%= activeTab == tab ? 'active' : '' %>" id="tab-<%= tab %>"></div>
-  <% })%>
+<h3 class="page-title"><%= cluster.get('name') %> (<%= cluster.get('release').get('name') %>)</h3>
+<div class="whitebox">
+  <ul class="nav nav-tabs">
+    <% _.each(tabs, function(tab) { %>
+      <li class="<%= activeTab == tab ? 'active' : '' %>"><a href="#cluster/<%= cluster.id %>/<%= tab %>"><b class="tab_<%= tab %>_normal"></b></a></li>
+    <% })%>
+    <li class="pull-right"><a class="tabsetting-btn"><i class="icon-cancel-3"></i></a></li>
+    <li class="pull-right"><a class="tabsetting-btn"><i class="icon-pencil-1"></i></a></li>
+  </ul>
+  <div class="tab-content">
+    <% _.each(tabs, function(tab) { %>
+      <div class="tab-pane <%= activeTab == tab ? 'active' : '' %>" id="tab-<%= tab %>"></div>
+    <% })%>
+  </div>
 </div>

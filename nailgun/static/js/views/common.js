@@ -7,7 +7,7 @@ function(navbarTemplate, breadcrumbTemplate) {
     var views = {}
 
     views.Navbar = Backbone.View.extend({
-        className: 'navbar',
+        className: 'container',
         template: _.template(navbarTemplate),
         initialize: function(options) {
             this.elements = _.isArray(options.elements) ? options.elements : [];
@@ -23,8 +23,7 @@ function(navbarTemplate, breadcrumbTemplate) {
     });
 
     views.Breadcrumb = Backbone.View.extend({
-        tagName: 'ul',
-        className: 'breadcrumb',
+        className: 'container',
         template: _.template(breadcrumbTemplate),
         path: [],
         setPath: function() {

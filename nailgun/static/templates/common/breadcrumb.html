@@ -1,9 +1,11 @@
-<% _.each(path, function(part) { %>
-  <% if (_.isArray(part)) { %>
-    <li>
-      <a href="<%= part[1] %>"><%= part[0] %></a> <span class="divider">/</span>
-    </li>
-  <% } else { %>
-    <li class="active"><%= part %></li>
-  <% } %>
-<% }) %>
+<ul class="breadcrumb">
+  <% _.each(path, function(part) { %>
+    <% if (_.isArray(part)) { %>
+      <li>
+        <a href="<%= part[1] %>"><%= part[0] %></a> <span class="divider">/</span>
+      </li>
+    <% } else { %>
+      <li class="active"><%= part %></li>
+    <% } %>
+  <% }) %>
+</ul>

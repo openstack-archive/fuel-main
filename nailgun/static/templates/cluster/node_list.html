@@ -1,16 +1,10 @@
-<h2><%= role %></h2>
-<div>
-    <button class="btn btn-success">
-      <i class="icon-plus icon-white"></i>
-      Add
-    </button>
-    <button class="btn btn-danger <%= nodes.length ? '' : 'disabled' %>">
-      <i class="icon-minus icon-white"></i>
-      Delete
-    </button>
+<div class="row-fluid nodesbox-header">
+  <div class="span8"><h3><%= {'controller': 'Controllers', 'compute': 'Compute', 'storage': 'Storage'}[role] || role %></h3></div>
+  <div class="span2 roles-action-link"><button class="btn btn-link pull-right"><i class="icon-plus-circle"></i>Add</button></div>
+  <div class="span2 roles-action-link"><button class="btn btn-link pull-right"><i class="icon-cancel-circle"></i>Delete</button></div>
 </div>
 <% if (nodes.length) { %>
-  <div class="node-list-container"></div>
+  <div class="row-fluid node-list-container"></div>
 <% } else { %>
-  <div class="span12"><div class="alert">There are no nodes of this type</div></div>
+  <div class="alert">There are no nodes of this type</div>
 <% } %>

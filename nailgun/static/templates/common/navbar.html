@@ -1,9 +1,11 @@
-<div class="navbar-inner">
-  <div class="container">
-    <ul class="nav">
+<div class="navigation-bar">
+  <div class="navigation-bar-box">
+    <ul class="navigation-bar-ul">
       <% _.each(elements, function(element) { %>
         <li><a href="<%= element[1] %>"><%= element[0] %></a></li>
       <% }) %>
+      <li class="space"></li>
+      <li class="navigation-bar-icon"><i class="icon-comment-1-1"></i><span class="badge badge-warning">∞</span></li>
     </ul>
   </div>
 </div>

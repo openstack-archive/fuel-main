@@ -14,7 +14,6 @@ function(models, dialogViews, taskViews, clusterPageTemplate, deploymentControlT
     var views = {}
 
     views.ClusterPage = Backbone.View.extend({
-        className: 'span12',
         updateInterval: 5000,
         template: _.template(clusterPageTemplate),
         events: {
@@ -108,7 +107,7 @@ function(models, dialogViews, taskViews, clusterPageTemplate, deploymentControlT
 
     views.NodesTab = Backbone.View.extend({
         template: _.template(tabTemplate),
-        className: 'row-fluid',
+        className: 'roles-block-row',
         render: function() {
             this.$el.html(this.template());
             this.content = new views.NodesTabContent({model: this.model});
@@ -134,16 +133,17 @@ function(models, dialogViews, taskViews, clusterPageTemplate, deploymentControlT
         },
         render: function() {
             this.$el.html('');
-            _.each(this.model.availableRoles(), function(role) {
+            var roles = this.model.availableRoles();
+            _.each(roles, function(role, index) {
                 var nodes = this.model.get('nodes').filter(function(node) {return node.get('role') == role});
                 this.$el.append((new views.NodeList({collection: new models.Nodes(nodes), role: role})).render().el);
+                if (index < roles.length - 1) this.$el.append('<hr>');
             }, this);
             return this;
         }
     });
 
     views.NodeList = Backbone.View.extend({
-        className: 'row-fluid',
         template: _.template(nodeListTemplate),
         initialize: function(options) {
             this.role = options.role;
@@ -161,7 +161,7 @@ function(models, dialogViews, taskViews, clusterPageTemplate, deploymentControlT
     });
 
     views.Node = Backbone.View.extend({
-        className: 'span4',
+        className: 'span3',
         template: _.template(nodeTemplate),
         events: {
             'click .node-name': 'startNameEditing',

@@ -10,7 +10,6 @@ function(models, dialogViews, clustersPageTemplate, clusterTemplate, newClusterT
     var views = {}
 
     views.ClustersPage = Backbone.View.extend({
-        className: 'span12',
         template: _.template(clustersPageTemplate),
         render: function() {
             this.$el.html(this.template({clusters: this.collection}));
@@ -20,10 +19,10 @@ function(models, dialogViews, clustersPageTemplate, clusterTemplate, newClusterT
     });
 
     views.ClusterList = Backbone.View.extend({
-        className: 'row',
+        className: 'roles-block-row',
         newClusterTemplate: _.template(newClusterTemplate),
         events: {
-            'click .create': 'createCluster'
+            'click .addnew': 'createCluster'
         },
         createCluster: function(e) {
             e.preventDefault();
@@ -44,7 +43,7 @@ function(models, dialogViews, clustersPageTemplate, clusterTemplate, newClusterT
     });
 
     views.Cluster = Backbone.View.extend({
-        className: 'span3',
+        className: 'span3 clusterbox',
         template: _.template(clusterTemplate),
         initialize: function() {
             this.model.bind('change', this.render, this);
