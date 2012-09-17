@@ -15,6 +15,7 @@ from provision.model.profile import Profile as ProvisionProfile
 from provision.model.node import Node as ProvisionNode
 from provision.model.power import Power as ProvisionPower
 from models import Release, Cluster, Node, Role, Network, Vlan
+from network import manager as netmanager
 
 
 def check_client_content_type(handler):
@@ -281,7 +282,7 @@ class ClusterChangesHandler(JSONHandler):
         message = {"method": "deploy", "args": {"var1": "Hello from nailgun"}}
         rpc.cast('mcollective', message)
 
-
+        netmanager.assign_ips(cluster_id, "management")
 
         return json.dumps(
             self.render(cluster),

@@ -56,9 +56,10 @@ class BaseHandlers(TestCase):
         self.assertEquals(resp.status, 201)
         return json.loads(resp.body)
 
-    def create_default_node(self):
+    def create_default_node(self, cluster_id=None):
         node = Node()
         node.mac = self._generate_random_mac()
+        node.cluster_id = cluster_id
         self.db.add(node)
         self.db.commit()
         return node
