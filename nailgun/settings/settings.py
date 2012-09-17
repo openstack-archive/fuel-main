@@ -25,8 +25,6 @@ NET_EXCLUDE = ['10.20.0.0/24']
 
 VLANS = range(100, 1000)
 
-AMQP_TRANSPORT_MEMORY = True
-
 # It's also possible to override other settings, see impl_kombu.py
 RABBITMQ = {'transport': 'memory',
             'hostname': '127.0.0.1'}
