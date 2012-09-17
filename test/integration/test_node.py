@@ -168,12 +168,14 @@ class TestNode(Base):
             role["id"] for role in roles_uploaded
         ]
 
+        """
         resp = json.loads(self.client.put(
             "http://%s:8000/api/nodes/%s" % (self.admin_host, self.slave_id),
             data='{ "new_roles": %s, "redeployment_needed": true }' % str(roles_ids)
         ))
         if not len(resp["new_roles"]):
             raise ValueError("Failed to assign roles to node")
+        """
 
         if node["status"] == "discover":
             logging.info("Node booted with bootstrap image.")
@@ -182,34 +184,37 @@ class TestNode(Base):
             self._slave_delete_test_file()
 
         logging.info("Provisioning...")
-        task = json.loads(self.client.put(
+        changes = self.client.put(
             "http://%s:8000/api/clusters/1/changes/" % self.admin_host,
             log=True
-        ))
+        )
+        print changes
+        """
         task_id = task['task_id']
         logging.info("Task created: %s" % task_id)
+        """
         logging.info("Waiting for completion of slave node software installation")
         timer = time.time()
         timeout = 1800
         while True:
             try:
-                task = self.client.get(
-                    "http://%s:8000/api/tasks/%s/" % (self.admin_host, task_id)
-                )
-                logging.info(str(task))
-                task = json.loads(task)
-                if not task['ready']:
-                    raise StillPendingException("Task %s is still pending")
-                if task.get('error'):
+                node = json.loads(self.client.get(
+                    "http://%s:8000/api/nodes/%s" % (self.admin_host, self.slave_id)
+                ))
+                if not node["status"] == 'provisioning':
+                    raise StillPendingException("Installation in progress...")
+                elif node["status"] == 'error':
                     raise Exception(
-                        "Task %s failed!\n %s" %
-                        (task['task_id'], str(task)),
+                        "Installation failed!"
                     )
-                break
+                elif node["status"] == 'ready':
+                    logging.info("Installation complete!")
+                    break
             except StillPendingException:
                 if (time.time() - timer) > timeout:
-                    raise Exception("Task pending timeout!")
+                    raise Exception("Installation timeout expired!")
                 time.sleep(30)
+
 
         node = json.loads(self.client.get(
             "http://%s:8000/api/nodes/%s" % (self.admin_host, self.slave_id)
