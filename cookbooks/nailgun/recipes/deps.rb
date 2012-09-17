@@ -25,7 +25,6 @@ end
 }.each do |package, version|
   python_pip package do
     version version
-    virtualenv node.nailgun.venv
   end
 end
 

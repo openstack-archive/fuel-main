@@ -66,10 +66,6 @@ class NodeAgent
     interfaces
   end
 
-  def _node_id
-    _mac.gsub(':','')
-  end
-
   def _mac
     @os[:macaddress]
   end
@@ -145,10 +141,22 @@ class NodeAgent
     htclient = HTTPClient.new
     begin
       @logger.debug("Trying to put host info into #{_api_url}")
-      res = htclient.put("#{_api_url}/nodes/#{_node_id}", _data.to_json, headers)
+      res = htclient.put("#{_api_url}/nodes/", [_data].to_json, headers)
       if res.status < 200 or res.status >= 300
         @logger.error("HTTP PUT failed: #{res.inspect}")
       end
+    rescue Exception => e
+      @logger.error("Error in sending node info: #{e.message}")
+    end
+  end
+
+  def post
+    headers = {"Content-Type" => "application/json"}
+    htclient = HTTPClient.new
+    begin
+      @logger.debug("Trying to create host using #{_api_url}")
+      res = htclient.post("#{_api_url}/nodes/", _data.to_json, headers)
+      return res
     rescue Exception => e
       @logger.error("Error in sending node info: #{e.message}")
     end
@@ -190,6 +198,8 @@ rescue LoadError
 end
 
 na = NodeAgent.new(NodeAgentConfig)
-na.put
-
+res = na.post
+if res.status == 409:
+  na.put
+end
 

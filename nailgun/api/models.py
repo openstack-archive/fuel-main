@@ -108,7 +108,7 @@ class Node(Base, BasicValidator):
     name = Column(Unicode(100))
     status = Column(Enum(*NODE_STATUSES), nullable=False, default='ready')
     meta = Column(JSON)
-    mac = Column(String(17), nullable=False)
+    mac = Column(String(17), nullable=False, unique=True)
     ip = Column(String(15))
     fqdn = Column(String(255))
     manufacturer = Column(Unicode(50))
@@ -156,6 +156,10 @@ class Node(Base, BasicValidator):
             raise web.webapi.badrequest(
                 message="No mac address specified"
             )
+        else:
+            q = web.ctx.orm.query(Node)
+            if q.filter(Node.mac == d["mac"]).first():
+                raise web.webapi.conflict()
         if "id" in d:
             raise web.webapi.badrequest(
                 message="Manual ID setting is prohibited"

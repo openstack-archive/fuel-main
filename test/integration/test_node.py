@@ -112,11 +112,17 @@ class TestNode(Base):
             pass
         timer = time.time()
         timeout = 600
+
+        slave = ci.environment.node['slave']
+        logging.info("Starting slave node")
+        slave.start()
+
         while True:
-            node = self.get_slave_node(self.get_slave_id())
+            node = self.get_slave_node()
             if node is not None:
                 logging.info("Node found")
                 self.slave_host = node["ip"]
+                self.slave_id = node["id"]
                 break
             else:
                 logging.info("Node not found")
@@ -243,29 +249,10 @@ class TestNode(Base):
         res = slave_client.execute("rm -rf /tmp/chef_success")
         slave_client.disconnect()
 
-#   create node with predefined mac address
-    def get_slave_id(self):
-        if hasattr(self,"slave_id"): return self.slave_id
-        if ci is not None and ci.environment is not None:
-            slave = ci.environment.node['slave']
-            slave_id = self.get_id_by_mac(slave.interfaces[0].mac_address)
-            logging.info("Starting slave node")
-            slave.start()
-            logging.info("Nailgun IP: %s" % self.admin_host)
-        else:
-            response = self.client.get(
-                "http://%s:8000/api/nodes" % self.admin_host
-            )
-            last_node = json.loads(response)[-1]
-            slave_id = self.get_id_by_mac(last_node['mac'])
-        self.slave_id = slave_id
-        return slave_id
-
-    def get_slave_node(self, slave_id):
+    def get_slave_node(self):
         response = self.client.get(
-            "http://%s:8000/api/nodes/%s" % (self.admin_host, slave_id)
+            "http://%s:8000/api/nodes/" % self.admin_host
         )
-
-        if response.startswith("404"):
-            return None
-        return json.loads(response)
+        nodes = json.loads(response)
+        if nodes:
+            return nodes[0]

@@ -442,6 +442,30 @@ class NodeCollectionHandler(JSONHandler):
             indent=4
         ))
 
+    def PUT(self):
+        web.header('Content-Type', 'application/json')
+        data = Node.validate_json(web.data())
+
+        if not isinstance(data, list):
+            raise web.badrequest(
+                "Invalid json list"
+            )
+        q = web.ctx.orm.query(Node)
+        for nd in data:
+            if not "mac" in nd or not q.filter(
+                Node.mac == nd["mac"]
+            ).first():
+                raise web.badrequest()
+
+        ids_updated = []
+        for nd in data:
+            node = q.filter(Node.mac == nd["mac"]).first()
+            ids_updated.append(node.id)
+            for key, value in nd.iteritems():
+                setattr(node, key, value)
+        web.ctx.orm.commit()
+        return json.dumps(ids_updated)
+
 
 class NetworkCollectionHandler(JSONHandler):
     fields = ('id', 'cluster_id', 'name', 'cidr', 'gateway', 'vlan_id')

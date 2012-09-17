@@ -1,4 +1,3 @@
-node.set[:django][:venv] = node.nailgun.venv
 include_recipe 'django'
 
 # FIXME
@@ -105,13 +104,6 @@ execute "Copying bootstrap.rsa" do
   creates "#{node.nailgun.root}/.ssh/bootstrap.rsa"
 end
 
-file "#{node[:nailgun][:root]}/nailgun/venv.py" do
-  content "VENV = '#{node[:nailgun][:venv]}/local/lib/python2.7/site-packages'
-"
-  owner node.nailgun.user
-  group node.nailgun.group
-  mode '644'
-end
 
 # it is assumed that nailgun files already installed into nailgun.root
 execute 'chown nailgun root' do
@@ -130,30 +122,17 @@ end
 # end
 
 execute 'Sync Nailgun database' do
-  command "#{node[:nailgun][:python]} manage.py syncdb --noinput"
+  command "#{node[:nailgun][:python]} manage.py syncdb"
   cwd node.nailgun.root
   user node.nailgun.user
   # notifies :run, resources('execute[Preseed Nailgun database]')
   not_if "test -e #{node[:nailgun][:root]}/nailgun.sqlite"
 end
 
-redis_instance 'nailgun'
-
 directory "/var/run/nailgun" do
   owner node.nailgun.user
   group node.nailgun.group
   mode "755"
-end
-
-celery_instance 'nailgun-jobserver' do
-  command "#{node[:nailgun][:python]}"
-  command_args "#{node[:nailgun][:root]}/manage.py celeryd_multi start Worker -E"
-  cwd node.nailgun.root
-  events true
-  user node.nailgun.user
-  virtualenv node.nailgun.venv
-  pid_file "/var/run/nailgun/celery.pid"
-  log_file "/var/log/nailgun/celery.log"
 end
 
 web_app 'nailgun' do
