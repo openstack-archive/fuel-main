@@ -100,15 +100,8 @@ class TestHandlers(BaseHandlers):
         self.assertEquals(200, resp.status)
         nets_received = json.loads(resp.body)
         self.assertEquals(1, len(nets_received))
-        expected_network = {
-            'name': net1.name,
-            'id': net1.id,
-            'cluster_id': net1.cluster_id,
-            'cidr': net1.cidr,
-            'gateway': net1.gateway,
-            'vlan_id': new_vlan_id,
-        }
-        self.assertEquals(expected_network, nets_received[0])
+        expected_network_id = net1.id
+        self.assertEquals(expected_network_id, nets_received[0])
 
     def test_networks_update_fails_with_wrong_net_id(self):
         new_nets = [{

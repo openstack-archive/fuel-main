@@ -512,7 +512,7 @@ class NetworkCollectionHandler(JSONHandler):
 
     def PUT(self):
         web.header('Content-Type', 'application/json')
-        new_nets = Network.validate_update(web.data())
+        new_nets = Network.validate_collection_update(web.data())
         if not new_nets:
             raise web.badrequest()
 
@@ -530,6 +530,6 @@ class NetworkCollectionHandler(JSONHandler):
 
         web.ctx.orm.commit()
         return json.dumps(
-            map(self.render, nets_to_render),
+            [n.id for n in nets_to_render],
             indent=4
         )

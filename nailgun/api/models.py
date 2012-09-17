@@ -218,7 +218,7 @@ class Network(Base, BasicValidator):
         backref="networks")
 
     @classmethod
-    def validate_update(cls, data):
+    def validate_collection_update(cls, data):
         d = cls.validate_json(data)
         if not isinstance(d, list):
             raise web.webapi.badrequest(
