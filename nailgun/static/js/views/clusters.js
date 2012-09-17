@@ -22,7 +22,7 @@ function(models, dialogViews, clustersPageTemplate, clusterTemplate, newClusterT
         className: 'roles-block-row',
         newClusterTemplate: _.template(newClusterTemplate),
         events: {
-            'click .addnew': 'createCluster'
+            'click .create-cluster': 'createCluster'
         },
         createCluster: function(e) {
             e.preventDefault();

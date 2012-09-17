@@ -1,7 +1,7 @@
 <% var nodes = cluster.get('nodes') %>
 <a href="#cluster/<%= cluster.id %>/nodes">
-  <div class="clustername"><%= cluster.get('name') %></div>
-  <div class="clustertech">
+  <div class="cluster-name"><%= cluster.get('name') %></div>
+  <div class="cluster-hardware">
     <div class="row-fluid">
       <div class="span4">Nodes:</div>
       <div class="span6"><%= nodes.length %></div>
@@ -19,5 +19,5 @@
       <% } %>
     </div>
   </div>
-  <div class="clusterstat">Operational</div>
+  <div class="cluster-status">Operational</div>
 </a>
