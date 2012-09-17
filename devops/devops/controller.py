@@ -56,6 +56,7 @@ class Controller:
             for interface in node.interfaces:
                 interface.node = node
                 interface.network.interfaces.append(interface)
+                logger.info("Calculated interfaces '%s' '%s'" % (interface.node, interface.network.name))
 
             for disk in node.disks:
                 if disk.base_image and disk.base_image.find('://') != -1:
@@ -84,27 +85,23 @@ class Controller:
                     for address in interface.ip_addresses:
                         if address in network.ip_addresses:
                             allocated_addresses.append(address)
-
-                next_address_index = 2
+                logger.info("Allocate addresses are calculated for '%s'" % network.name)
+                dhcp_allowed_addresses = list(network.ip_addresses)[2:-2]
                 for interface in network.interfaces:
-                    if not len(interface.ip_addresses):
-                        while next_address_index < network.ip_addresses.numhosts and\
-                              network.ip_addresses[
-                              next_address_index] in allocated_addresses:
-                            next_address_index += 1
-
-                        if next_address_index >= network.ip_addresses.numhosts:
-                            raise DevopsError, "Failed to allocated IP address for node '%s' in network '%s': no more addresses left" % (node.name, network.name)
-
-                        address = network.ip_addresses[next_address_index]
+                    logger.info("Enumerated interfaces '%s' '%s'" % (interface.node, interface.network.name))
+                    logger.info(list(interface.ip_addresses))
+                    if not len(list(interface.ip_addresses)):
+                        address = self.get_first_free_address(
+                            dhcp_allowed_addresses,
+                            allocated_addresses)
+                        if address is None:
+                            raise DevopsError, "Failed to allocate IP address for node '%s' in network '%s': no more addresses left" % (interface.node.name, network.name)
                         interface.ip_addresses.append(address)
-                        allocated_addresses.append(next_address_index)
-                        next_address_index += 1
+                        logger.info("Allocate IP address '%s' for node '%s' in network '%s'" % (address, interface.node.name, network.name))
+                        allocated_addresses.append(address)
 
-                network.dhcp_dynamic_address_start = network.ip_addresses[
-                                                     next_address_index]
-                network.dhcp_dynamic_address_end = network.ip_addresses[
-                                                   network.ip_addresses.numhosts - 2]
+                network.dhcp_dynamic_address_start = dhcp_allowed_addresses[0]
+                network.dhcp_dynamic_address_end = dhcp_allowed_addresses[-1]
 
         for network in environment.networks:
             logger.info("Building network %s" % network.name)
@@ -303,3 +300,9 @@ class Controller:
 
         return cached_path
 
+    def get_first_free_address(self, allowed_addresses, allocated_addresses):
+        s = set(allocated_addresses)
+        for x in allowed_addresses:
+            if x not in s:
+                return x
+        return None

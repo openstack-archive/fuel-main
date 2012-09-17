@@ -70,11 +70,11 @@ class LibvirtXMLBuilder:
                         else:
                             end = network.ip_addresses[
                                 network.ip_addresses.numhosts - 2]
-
+                        allowed_addresses = list(network.ip_addresses)[2: network.ip_addresses.numhosts - 2]
                         network_xml.range(start=str(start), end=str(end))
                         for interface in network.interfaces:
                             address = find(
-                                lambda ip: ip in network.ip_addresses,
+                                lambda ip: ip in allowed_addresses,
                                 interface.ip_addresses)
                             if address and interface.mac_address:
                                 network_xml.host(
@@ -282,11 +282,12 @@ class Libvirt:
         process.wait()
         if process.returncode:
             logger.error(
-                "Command '%s' returned %d, stderr: %s" % (
-                command, process.returncode, process.stderr.read()))
+                "Command '{0:>s}' returned {1:d}, stderr: {2:>s}".format(
+                    command, process.returncode, process.stderr.read()))
         else:
             logger.debug(
-                "Command '%s' returned %d" % (command, process.returncode))
+                "Command '{0:>s}' returned {1:d}".format(command,
+                    process.returncode))
 
         snapshot_ids = []
         for line in process.stdout.readlines()[2:]:
@@ -389,8 +390,7 @@ class Libvirt:
         process.wait()
         if process.returncode:
             logger.error(
-                "Command '%s' returned code %d:\n%s" % (
-                    command,
+                "Command '{0:>s}' returned code {1:d}:\n{2:>s}".format(command,
                     process.returncode,
                     process.stderr.read()))
             raise LibvirtException, "Failed to execute command '%s'" % command

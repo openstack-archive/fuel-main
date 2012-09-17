@@ -1,10 +1,15 @@
 from itertools import chain
 
 
+class EnvironmentException(object):
+    pass
+
+
 class ManagedObject(object):
     def __init__(self):
         super(ManagedObject, self).__init__()
         self._driver = None
+        self.name = None
 
     @property
     def driver(self):
@@ -154,7 +159,8 @@ class Disk(object):
 
 
 class Interface(ManagedObject):
-    def __init__(self, network, ip_addresses=[]):
+    def __init__(self, network, ip_addresses=None):
+        if not ip_addresses: ip_addresses = []
         self.node = None
         self.network = network
         if not isinstance(ip_addresses, (list, tuple)):
