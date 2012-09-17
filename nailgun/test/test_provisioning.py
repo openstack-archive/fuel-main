@@ -12,6 +12,7 @@ from provision import ProvisionFactory
 from provision.model.profile import Profile as ProvisionProfile
 from provision.model.node import Node as ProvisionNode
 from provision.model.power import Power as ProvisionPower
+from network import manager as netmanager
 
 
 class TestProvisioning(BaseHandlers):
@@ -28,6 +29,7 @@ class TestProvisioning(BaseHandlers):
 
         self.assertEqual(len(cluster.nodes), 2)
         ProvisionFactory.getInstance = self.mock.MagicMock()
+        netmanager.assign_ips = self.mock.MagicMock()
 
         resp = self.app.put(
             reverse(
@@ -35,8 +37,6 @@ class TestProvisioning(BaseHandlers):
                 kwargs={"cluster_id": cluster.id}
             ),
             "",
-            headers=self.default_headers,
-            expect_errors=True
+            headers=self.default_headers
         )
-        print resp
         self.assertEquals(200, resp.status)

@@ -6,6 +6,9 @@ from base import reverse
 from network import manager as netmanager
 from api.models import engine
 from api.models import Network, Node, IPAddr
+from provision import ProvisionFactory
+from provision.model.node import Node as ProvisionNode
+from provision.model.power import Power as ProvisionPower
 
 
 class TestNetworkManager(BaseHandlers):
@@ -15,6 +18,7 @@ class TestNetworkManager(BaseHandlers):
         node2 = self.create_default_node(cluster_id=cluster['id'])
         # TODO(mihgen): it should be separeted call of network manager,
         #  not via API. It's impossible now because of issues with web.ctx.orm
+        ProvisionFactory.getInstance = self.mock.MagicMock()
         resp = self.app.put(
             reverse(
                 'ClusterChangesHandler',

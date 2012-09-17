@@ -17,6 +17,10 @@ def assign_ips(cluster_id, network_name):
         filter_by(cluster_id=cluster_id).\
         filter_by(name=network_name).first()
 
+    if not network:
+        raise Exception("Network '%s' for cluster_id=%s not found." %
+                        (network_name, cluster_id))
+
     used_ips = [n.ip_addr for n in web.ctx.orm.query(IPAddr).all()]
 
     for node in nodes:
