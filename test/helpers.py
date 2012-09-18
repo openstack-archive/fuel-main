@@ -1,10 +1,12 @@
 import os
 import urllib2
 import logging
-import paramiko
 import posixpath
+import json
 
-logger = logging.getLogger('helpers')
+import paramiko
+
+logger = logging.getLogger(__name__)
 
 """
 Integration test helpers
@@ -13,30 +15,20 @@ class HTTPClient(object):
     def __init__(self):
         self.opener = urllib2.build_opener(urllib2.HTTPHandler)
 
-    def get(self, url, log=False):
+    def get(self, url):
         req = urllib2.Request(url)
-        return self._open(req, log)
+        return self.opener.open(req)
 
-    def post(self, url, data="{}", content_type="application/json", log=False):
-        req = urllib2.Request(url, data=data)
+    def post(self, url, data={}, content_type="application/json"):
+        req = urllib2.Request(url, data=json.dumps(data))
         req.add_header('Content-Type', content_type)
-        return self._open(req, log)
+        return self.opener.open(req)
 
-    def put(self, url, data="{}", content_type="application/json", log=False):
-        req = urllib2.Request(url, data=data)
+    def put(self, url, data={}, content_type="application/json"):
+        req = urllib2.Request(url, data=json.dumps(data))
         req.add_header('Content-Type', content_type)
         req.get_method = lambda: 'PUT'
-        return self._open(req, log)
-
-    def _open(self, req, log):
-        try:
-            resp = self.opener.open(req)
-            content = resp.read()
-        except urllib2.HTTPError, error:
-            content = ": ".join([str(error.code), error.read()])
-        if log:
-            logger.debug(content)
-        return content
+        return self.opener.open(req)
 
 
 class SSHClient(object):

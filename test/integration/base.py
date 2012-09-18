@@ -12,7 +12,7 @@ class Base(TestCase):
         if ci is not None and ci.environment is not None:
             return str(ci.environment.node['admin'].ip_address)
         else:
-            return "10.20.0.2"
+            return "10.0.0.2"
 
     def get_id_by_mac(self, mac_address):
         return mac_address.replace(":", "").upper()
