@@ -23,7 +23,8 @@ class Ci(object):
             with file(self.environment_cache_file) as f:
                 environment_id = f.read()
             try:
-                self.environment = devops.load(environment_id)
+                #self.environment = devops.load(environment_id)
+                self.environment = devops.load('integration')
                 logger.info("Successfully loaded existing environment")
             except Exception, e:
                 logger.error("Failed to load existing integration environment: " + str(e) + "\n" + traceback.format_exc())
