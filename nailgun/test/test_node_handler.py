@@ -95,7 +95,7 @@ class TestHandlers(BaseHandlers):
             headers=self.default_headers)
         self.assertEquals(resp.status, 200)
 
-    def test_node_valid_list_of_new_roles_gets_updated(self):
+    def test_redeployment_needed_flag_is_set(self):
         node = self.create_default_node()
         resp = self.app.put(
             reverse('NodeHandler', kwargs={'node_id': node.id}),

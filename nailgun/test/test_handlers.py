@@ -13,7 +13,6 @@ class TestHandlers(BaseHandlers):
             'ClusterHandler': {'cluster_id': 1},
             'NodeHandler': {'node_id': 1},
             'ReleaseHandler': {'release_id': 1},
-            'RoleHandler': {'role_id': 1},
         }
         for handler in urls:
             test_url = reverse(handler, urls[handler])

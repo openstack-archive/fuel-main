@@ -14,7 +14,7 @@ from provision import ProvisionFactory
 from provision.model.profile import Profile as ProvisionProfile
 from provision.model.node import Node as ProvisionNode
 from provision.model.power import Power as ProvisionPower
-from models import Release, Cluster, Node, Role, Network, Vlan
+from models import Release, Cluster, Node, Network, Vlan
 from network import manager as netmanager
 
 
@@ -301,8 +301,7 @@ class ReleaseHandler(JSONHandler):
         "name",
         "version",
         "description",
-        "networks_metadata",
-        ("roles", "name")
+        "networks_metadata"
     )
     model = Release
 
@@ -442,56 +441,6 @@ class NodeCollectionHandler(JSONHandler):
             NodeHandler.render(node),
             indent=4
         ))
-
-
-class RoleCollectionHandler(JSONHandler):
-
-    def GET(self):
-        web.header('Content-Type', 'application/json')
-        data = web.data() if web.data() else {}
-        if data:
-            data = Role.validate_json(data)
-        if 'release_id' in data:
-            return json.dumps(
-                map(
-                    RoleHandler.render,
-                    web.ctx.orm.query(Role).filter(
-                        Role.id == data["release_id"]
-                    )
-                ), indent=4)
-
-        roles = web.ctx.orm.query(Role).all()
-        if 'node_id' in data:
-            result = []
-            for role in roles:
-                # TODO role filtering
-                # use request.form.cleaned_data['node_id'] to filter roles
-                if False:
-                    continue
-                # if the role is suitable for the node, set 'available' field
-                # to True. If it is not, set it to False and also describe the
-                # reason in 'reason' field of rendered_role
-                rendered_role = RoleHandler.render(role)
-                rendered_role['available'] = True
-                result.append(rendered_role)
-            return json.dumps(result)
-        else:
-            return json.dumps(map(RoleHandler.render, roles))
-
-
-class RoleHandler(JSONHandler):
-    fields = ('id', 'name', ('release', 'id', 'name'))
-    model = Role
-
-    def GET(self, role_id):
-        q = web.ctx.orm.query(Role)
-        role = q.filter(Role.id == role_id).first()
-        if not role:
-            return web.notfound()
-        return json.dumps(
-            self.render(role),
-            indent=4
-        )
 
 
 class NetworkCollectionHandler(JSONHandler):

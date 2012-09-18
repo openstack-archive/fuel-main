@@ -26,7 +26,6 @@ class Release(Base, BasicValidator):
     version = Column(String(30), nullable=False)
     description = Column(Unicode)
     networks_metadata = Column(JSON, default=[])
-    roles = relationship("Role", backref="release")
     clusters = relationship("Cluster", backref="release")
 
     @classmethod
@@ -59,16 +58,6 @@ class Release(Base, BasicValidator):
         return d
 
 
-class Role(Base, BasicValidator):
-    __tablename__ = 'roles'
-    __table_args__ = (
-        UniqueConstraint('name', 'release_id'),
-    )
-    id = Column(Integer, primary_key=True)
-    name = Column(Unicode(100), nullable=False)
-    release_id = Column(Integer, ForeignKey('releases.id'), nullable=False)
-
-
 class Cluster(Base, BasicValidator):
     __tablename__ = 'clusters'
     TYPES = ('compute', 'storage', 'both')
@@ -99,19 +88,6 @@ class Cluster(Base, BasicValidator):
         return d
 
 
-nodes_roles = Table(
-    'nodes_roles', Base.metadata,
-    Column('node', Integer, ForeignKey('nodes.id')),
-    Column('role', Integer, ForeignKey('roles.id'))
-)
-
-nodes_new_roles = Table(
-    'nodes_new_roles', Base.metadata,
-    Column('node', Integer, ForeignKey('nodes.id')),
-    Column('role', Integer, ForeignKey('roles.id'))
-)
-
-
 class Node(Base, BasicValidator):
     __tablename__ = 'nodes'
     NODE_STATUSES = (
@@ -139,10 +115,6 @@ class Node(Base, BasicValidator):
     platform_name = Column(String(150))
     os_platform = Column(String(150))
     role = Column(Enum(*NODE_ROLES))
-    # FIXME: deprecated
-    roles = relationship(
-        "Role", secondary=nodes_roles, backref="nodes")
-    new_roles = relationship("Role", secondary=nodes_new_roles)
     redeployment_needed = Column(Boolean, default=False)
 
     @property

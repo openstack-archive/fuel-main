@@ -9,7 +9,7 @@ import mock
 from paste.fixture import TestApp
 from sqlalchemy.orm.events import orm
 
-from api.models import engine, Node, Release, Cluster, Role
+from api.models import engine, Node, Release, Cluster
 from api.urls import urls
 from manage import app
 from db import dropdb, syncdb, flush
@@ -63,14 +63,6 @@ class BaseHandlers(TestCase):
         self.db.add(node)
         self.db.commit()
         return node
-
-    def create_default_role(self):
-        role = Role()
-        role.name = u"role Name"
-        role.release = self.create_default_release()
-        self.db.add(role)
-        self.db.commit()
-        return role
 
     def create_default_release(self):
         release = Release()

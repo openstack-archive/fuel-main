@@ -6,7 +6,6 @@ from api.handlers import ClusterHandler, ClusterCollectionHandler
 from api.handlers import ClusterChangesHandler
 from api.handlers import ReleaseHandler, ReleaseCollectionHandler
 from api.handlers import NodeHandler, NodeCollectionHandler
-from api.handlers import RoleHandler, RoleCollectionHandler
 from api.handlers import NetworkCollectionHandler
 
 
@@ -18,8 +17,6 @@ urls = (
     r'/clusters/(?P<cluster_id>\d+)/changes/?$', 'ClusterChangesHandler',
     r'/nodes/?$', 'NodeCollectionHandler',
     r'/nodes/(?P<node_id>\d+)/?$', 'NodeHandler',
-    r'/roles/?$', 'RoleCollectionHandler',
-    r'/roles/(?P<role_id>\d+)/?$', 'RoleHandler',
     r'/networks/?$', 'NetworkCollectionHandler',
 )
 
