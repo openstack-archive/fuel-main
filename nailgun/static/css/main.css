@@ -583,6 +583,9 @@ h6.page-title {
     -o-transition: all 1s ease;
     -ms-transition: all 1s ease;
 }
+.clusterbox a, .clusterbox a:hover {
+  text-decoration: none;
+}
 .create-cluster {
   background-color: rgba(0, 0, 0, 0.1);
   border: 1px solid transparent;
@@ -649,6 +652,8 @@ h6.page-title {
   font-size: 13px;
   font-weight: 500;
   color: #666666;
+  height: 72px;
+  overflow: hidden;
 }
 
 .cluster-hardware > .row-fluid > .span4 {
