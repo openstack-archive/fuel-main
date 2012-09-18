@@ -5,9 +5,6 @@ import logging
 logging.basicConfig(format=':%(lineno)d: %(asctime)s %(message)s', level=logging.DEBUG)
 
 class Base(TestCase):
-
-    client = HTTPClient()
-
     def get_admin_node_ip(self):
         if ci is not None and ci.environment is not None:
             return str(ci.environment.node['admin'].ip_address)
@@ -16,7 +13,3 @@ class Base(TestCase):
 
     def get_id_by_mac(self, mac_address):
         return mac_address.replace(":", "").upper()
-
-#    def getSlaveNodeIp(self, getIdByMac):
-
-

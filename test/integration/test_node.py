@@ -7,7 +7,7 @@ import posixpath
 from devops.helpers import wait, tcp_ping, http
 from integration import ci
 from integration.base import Base
-from helpers import SSHClient
+from helpers import SSHClient, HTTPClient
 from root import root
 
 logging.basicConfig(format=':%(lineno)d: %(asctime)s %(message)s', level=logging.DEBUG)
@@ -26,6 +26,7 @@ class TestNode(Base):
     def __init__(self, *args, **kwargs):
         super(TestNode, self).__init__(*args, **kwargs)
         self.remote = SSHClient()
+        self.client = HTTPClient(url="http://%s:8000" % self.get_admin_node_ip())
         self.ssh_user = "ubuntu"
         self.ssh_passwd = "r00tme"
         self.admin_host = self.get_admin_node_ip()
@@ -38,15 +39,15 @@ class TestNode(Base):
         self._upload_sample_release()
 
     def test_http_returns_200(self):
-        resp = self.client.get(
-            "http://%s:8000/" % self.admin_host)
+        resp = self.client.get("/")
         self.assertEquals(200, resp.getcode())
 
     def test_create_empty_cluster(self):
         self._create_cluster(name='empty')
 
     def _upload_sample_release(self):
-        release_remote_path = posixpath.join(SAMPLE_REMOTE_PATH, "sample-release.json")
+        release_remote_path = posixpath.join(
+            SAMPLE_REMOTE_PATH, "sample-release.json")
         self.remote.scp(
             os.path.join(SAMPLE_PATH, "sample-release.json"),
             release_remote_path
@@ -54,7 +55,7 @@ class TestNode(Base):
 
         def _get_release_id():
             releases = json.loads(self.client.get(
-                    "http://%s:8000/api/releases/" % self.admin_host).read())
+                    "/api/releases/").read())
             for r in releases:
                 logging.debug("Found release name: %s" % r["name"])
                 if r["name"] == "Sample release":
@@ -81,7 +82,7 @@ class TestNode(Base):
 
         def _get_cluster_id(name):
             clusters = json.loads(self.client.get(
-                    "http://%s:8000/api/clusters/" % self.admin_host).read())
+                    "/api/clusters/").read())
             for cl in clusters:
                 logging.debug("Found cluster name: %s" % cl["name"])
                 if cl["name"] == name:
@@ -91,7 +92,7 @@ class TestNode(Base):
         cluster_id = _get_cluster_id(name)
         if not cluster_id:
             resp = self.client.post(
-                "http://%s:8000/api/clusters" % self.admin_host,
+                "/api/clusters",
                 data={"name": name, "release": str(release_id)}
             )
             self.assertEquals(201, resp.getcode())

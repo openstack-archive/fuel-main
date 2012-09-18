@@ -12,20 +12,21 @@ logger = logging.getLogger(__name__)
 Integration test helpers
 """
 class HTTPClient(object):
-    def __init__(self):
+    def __init__(self, url=""):
+        self.url = url
         self.opener = urllib2.build_opener(urllib2.HTTPHandler)
 
-    def get(self, url):
-        req = urllib2.Request(url)
+    def get(self, endpoint):
+        req = urllib2.Request(self.url + endpoint)
         return self.opener.open(req)
 
-    def post(self, url, data={}, content_type="application/json"):
-        req = urllib2.Request(url, data=json.dumps(data))
+    def post(self, endpoint, data={}, content_type="application/json"):
+        req = urllib2.Request(self.url + endpoint, data=json.dumps(data))
         req.add_header('Content-Type', content_type)
         return self.opener.open(req)
 
-    def put(self, url, data={}, content_type="application/json"):
-        req = urllib2.Request(url, data=json.dumps(data))
+    def put(self, endpoint, data={}, content_type="application/json"):
+        req = urllib2.Request(self.url + endpoint, data=json.dumps(data))
         req.add_header('Content-Type', content_type)
         req.get_method = lambda: 'PUT'
         return self.opener.open(req)
