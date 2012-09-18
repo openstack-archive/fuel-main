@@ -45,133 +45,14 @@ class TestNode(Base):
     def test_create_empty_cluster(self):
         self._create_cluster(name='empty')
 
-    def _upload_sample_release(self):
-        release_remote_path = posixpath.join(
-            SAMPLE_REMOTE_PATH, "sample-release.json")
-        self.remote.scp(
-            os.path.join(SAMPLE_PATH, "sample-release.json"),
-            release_remote_path
-        )
+    def test_node_deploy(self):
+        self._bootstrap_slave()
 
-        def _get_release_id():
-            releases = json.loads(self.client.get(
-                    "/api/releases/").read())
-            for r in releases:
-                logging.debug("Found release name: %s" % r["name"])
-                if r["name"] == "Sample release":
-                    logging.debug("Sample release id: %s" % r["id"])
-                    return r["id"]
+    def test_updating_nodes_in_cluster(self):
+        cluster_id = self._create_cluster(name='empty')
+        nodes = [str(n['id']) for n in self._bootstrap_slave()]
+        self._update_nodes_in_cluster(cluster_id, nodes)
 
-        release_id = _get_release_id()
-        if not release_id:
-            with self.remote.sudo:
-                cmd = "/opt/nailgun/bin/create_release -f %s" % \
-                    release_remote_path
-                res = self.remote.execute(cmd)
-                if res['exit_status']:
-                    self.remote.disconnect()
-                    raise Exception("Command failed: %s" % str(res))
-                release_id = _get_release_id()
-        if not release_id:
-            raise Exception("Could not get release id.")
-        return release_id
-
-    def _create_cluster(self, name='default', release_id=None):
-        if not release_id:
-            release_id = self._upload_sample_release()
-
-        def _get_cluster_id(name):
-            clusters = json.loads(self.client.get(
-                    "/api/clusters/").read())
-            for cl in clusters:
-                logging.debug("Found cluster name: %s" % cl["name"])
-                if cl["name"] == name:
-                    logging.debug("Cluster id: %s" % cl["id"])
-                    return cl["id"]
-
-        cluster_id = _get_cluster_id(name)
-        if not cluster_id:
-            resp = self.client.post(
-                "/api/clusters",
-                data={"name": name, "release": str(release_id)}
-            )
-            self.assertEquals(201, resp.getcode())
-            cluster_id = _get_cluster_id(name)
-        if not cluster_id:
-            raise Exception("Could not get cluster '%s'" % name)
-        return cluster_id
-
-    #def test_node_deploy(self):
-        #try:
-            #self.get_slave_id()
-        #except :
-            #pass
-        #timer = time.time()
-        #timeout = 600
-
-        #slave = ci.environment.node['slave']
-        #logging.info("Starting slave node")
-        #slave.start()
-
-        #while True:
-            #node = self.get_slave_node()
-            #if node is not None:
-                #logging.info("Node found")
-                #self.slave_host = node["ip"]
-                #self.slave_id = node["id"]
-                #break
-            #else:
-                #logging.info("Node not found")
-                #if (time.time() - timer) > timeout:
-                    #raise Exception("Slave node agent failed to execute!")
-                #time.sleep(15)
-                #logging.info("Waiting for slave agent to run...")
-
-        #try:
-            #cluster = json.loads(self.client.get(
-                #"http://%s:8000/api/clusters/1" % self.admin_host
-            #))
-        #except ValueError:
-            #logging.info("No clusters found - creating test cluster...")
-            #cluster = self.client.post(
-                #"http://%s:8000/api/clusters" % self.admin_host,
-                #data='{ "name": "MyOwnPrivateCluster", "release": %s }' % \
-                    #self.release_id, log=True
-            #)
-            #cluster = json.loads(cluster)
-
-        #resp = json.loads(self.client.put(
-            #"http://%s:8000/api/clusters/1" % self.admin_host,
-            #data='{ "nodes": ["%s"] }' % self.slave_id
-        #))
-
-        #cluster = json.loads(self.client.get(
-            #"http://%s:8000/api/clusters/1" % self.admin_host
-        #))
-        #if not len(cluster["nodes"]):
-            #raise ValueError("Failed to add node into cluster")
-
-        #roles_uploaded = json.loads(self.client.get(
-            #"http://%s:8000/api/roles?release_id=%s" % \
-                #(self.admin_host, self.release_id)
-        #))
-
-        #"""
-        #FIXME
-        #WILL BE CHANGED WHEN RENDERING WILL BE REWRITTEN
-        #"""
-        #roles_ids = [
-            #role["id"] for role in roles_uploaded
-        #]
-
-        #"""
-        #resp = json.loads(self.client.put(
-            #"http://%s:8000/api/nodes/%s" % (self.admin_host, self.slave_id),
-            #data='{ "new_roles": %s, "redeployment_needed": true }' % str(roles_ids)
-        #))
-        #if not len(resp["new_roles"]):
-            #raise ValueError("Failed to assign roles to node")
-        #"""
 
         #if node["status"] == "discover":
             #logging.info("Node booted with bootstrap image.")
@@ -250,10 +131,104 @@ class TestNode(Base):
         #res = slave_client.execute("rm -rf /tmp/chef_success")
         #slave_client.disconnect()
 
-    #def get_slave_node(self):
-        #response = self.client.get(
-            #"http://%s:8000/api/nodes/" % self.admin_host
-        #)
-        #nodes = json.loads(response)
-        #if nodes:
-            #return nodes
+
+    def _upload_sample_release(self):
+        release_remote_path = posixpath.join(
+            SAMPLE_REMOTE_PATH, "sample-release.json")
+        self.remote.scp(
+            os.path.join(SAMPLE_PATH, "sample-release.json"),
+            release_remote_path
+        )
+
+        def _get_release_id():
+            releases = json.loads(self.client.get(
+                    "/api/releases/").read())
+            for r in releases:
+                logging.debug("Found release name: %s" % r["name"])
+                if r["name"] == "Sample release":
+                    logging.debug("Sample release id: %s" % r["id"])
+                    return r["id"]
+
+        release_id = _get_release_id()
+        if not release_id:
+            with self.remote.sudo:
+                cmd = "/opt/nailgun/bin/create_release -f %s" % \
+                    release_remote_path
+                res = self.remote.execute(cmd)
+                if res['exit_status']:
+                    self.remote.disconnect()
+                    raise Exception("Command failed: %s" % str(res))
+                release_id = _get_release_id()
+        if not release_id:
+            raise Exception("Could not get release id.")
+        return release_id
+
+    def _create_cluster(self, name='default', release_id=None):
+        if not release_id:
+            release_id = self._upload_sample_release()
+
+        def _get_cluster_id(name):
+            clusters = json.loads(self.client.get(
+                    "/api/clusters/").read())
+            for cl in clusters:
+                logging.debug("Found cluster name: %s" % cl["name"])
+                if cl["name"] == name:
+                    logging.debug("Cluster id: %s" % cl["id"])
+                    return cl["id"]
+
+        cluster_id = _get_cluster_id(name)
+        if not cluster_id:
+            resp = self.client.post(
+                "/api/clusters",
+                data={"name": name, "release": str(release_id)}
+            )
+            self.assertEquals(201, resp.getcode())
+            cluster_id = _get_cluster_id(name)
+        if not cluster_id:
+            raise Exception("Could not get cluster '%s'" % name)
+        return cluster_id
+
+    def _update_nodes_in_cluster(self, cluster_id, nodes):
+        resp = self.client.put(
+            "/api/clusters/%s" % cluster_id,
+            data={"nodes": nodes})
+        self.assertEquals(200, resp.getcode())
+        cluster = json.loads(self.client.get(
+            "/api/clusters/%s" % cluster_id).read())
+        nodes_in_cluster = [str(n['id']) for n in cluster['nodes']]
+        self.assertEquals(nodes, nodes_in_cluster)
+
+    def _bootstrap_slave(self):
+        """This function returns list of found nodes
+        """
+        try:
+            self.get_slave_id()
+        except :
+            pass
+        timer = time.time()
+        timeout = 600
+
+        slave = ci.environment.node['slave']
+        logging.info("Starting slave node")
+        slave.start()
+
+        def _get_slave_nodes():
+            response = self.client.get("/api/nodes/")
+            nodes = json.loads(response.read())
+            if nodes:
+                return nodes
+
+        while True:
+            nodes = _get_slave_nodes()
+            if nodes is not None:
+                logging.info("Node(s) found")
+                break
+            else:
+                logging.info("Node not found")
+                if (time.time() - timer) > timeout:
+                    raise Exception("Slave node agent failed to execute!")
+                time.sleep(15)
+                logging.info("Waiting for slave agent to run...")
+        return nodes
+
+
