@@ -23,8 +23,6 @@ class TestHandlers(BaseHandlers):
         self.assertEquals(
             node.redeployment_needed, response['redeployment_needed'])
         self.assertEquals(node.status, response['status'])
-        self.assertEquals(node.roles, response['roles'])
-        self.assertEquals(node.new_roles, response['new_roles'])
         self.assertEquals(node.info['cores'], response['info']['cores'])
         self.assertEquals(node.info['hdd'], response['info']['hdd'])
         self.assertEquals(node.info['ram'], response['info']['ram'])

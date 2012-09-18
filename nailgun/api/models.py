@@ -93,7 +93,7 @@ class Cluster(Base, BasicValidator):
             if not release:
                 raise web.webapi.badrequest(message="Invalid release id")
         if d.get("mode") == "ha":
-            if not (isinstance(d.get("redundancy"), int) and \
+            if not (isinstance(d.get("redundancy"), int) and
                     2 <= d.get("redundancy") <= 9):
                 raise web.webapi.badrequest(message="Invalid redundancy")
         return d
