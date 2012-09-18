@@ -484,7 +484,6 @@ cp -r ${REPO}/cookbooks ${NEW}/nailgun
 echo ">>> Injecting scripts ..."
 mkdir -p ${NEW}/nailgun/bin
 cp ${REPO}/bin/create_release ${NEW}/nailgun/bin/create_release
-cp ${REPO}/bin/install_cookbook ${NEW}/nailgun/bin/install_cookbook
 
 echo ">>> Injecting solo auxiliary files ..."
 mkdir -p ${NEW}/nailgun/solo

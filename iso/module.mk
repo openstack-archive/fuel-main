@@ -132,7 +132,7 @@ $/isoroot.done: \
 		$(addprefix $(ISOROOT)/sync/,$(call find-files,iso/sync)) \
 		$(addprefix $(ISOROOT)/indices/,$(call find-files,$(BINARIES_DIR)/ubuntu/$(UBUNTU_RELEASE)/indices)) \
 		$(addprefix $(ISOROOT)/nailgun/,$(call find-files,nailgun)) \
-		$(addprefix $(ISOROOT)/nailgun/bin/,create_release install_cookbook deploy agent) \
+		$(addprefix $(ISOROOT)/nailgun/bin/,create_release agent) \
 		$(addprefix $(ISOROOT)/nailgun/solo/,solo.rb solo.json) \
 		$(addprefix $(ISOROOT)/nailgun/cookbooks/,$(call find-files,cookbooks)) \
 		$(addprefix $(ISOROOT)/nailgun/os-cookbooks/,$(call find-files,cooks)) \
