@@ -424,10 +424,18 @@ class NodeCollectionHandler(JSONHandler):
 
     def GET(self):
         web.header('Content-Type', 'application/json')
+        user_data = web.input(cluster_id=None)
+        if user_data.cluster_id == '':
+            nodes = web.ctx.orm.query(Node).filter_by(
+                cluster_id=None).all()
+        elif user_data.cluster_id:
+            nodes = web.ctx.orm.query(Node).filter_by(
+                cluster_id=user_data.cluster_id).all()
+        else:
+            nodes = web.ctx.orm.query(Node).all()
         return json.dumps(map(
             NodeHandler.render,
-            web.ctx.orm.query(Node).all()
-        ), indent=4)
+            nodes), indent=4)
 
     def POST(self):
         web.header('Content-Type', 'application/json')
