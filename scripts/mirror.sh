@@ -32,7 +32,7 @@ else
 
     # rsyncing from the golden mirror and
     # assuming that current user have access to the root user of golden mirror using public keys
-    rsync -e 'ssh -o UserKnownHostsFile=/dev/null,StrictHostKeyChecking=no' --size-only -r root@$1 $2 || exit 1 && echo "Couldn't Rsync with golden mirror"
+    rsync -e 'ssh -o UserKnownHostsFile=/dev/null -o StrictHostKeyChecking=no' --size-only -r root@$1 $2 || exit 1 && echo "Couldn't Rsync with golden mirror"
     echo "Local mirror updated from the golden mirror"
 
 fi
