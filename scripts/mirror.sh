@@ -5,6 +5,7 @@
 
 MIRROR_SERVER=$1
 HOSTNAME=`hostname`
+LOCAL_MIRROR=$2
 
 # checking is server trying to sync from itself or not
 if [[ $MIRROR_SERVER =~ $HOSTNAME.*:(.*) ]]
@@ -32,7 +33,7 @@ else
 
     # rsyncing from the golden mirror and
     # assuming that current user have access to the root user of golden mirror using public keys
-    rsync -e 'ssh -o UserKnownHostsFile=/dev/null -o StrictHostKeyChecking=no' --size-only -r root@$1 $2 || exit 1 && echo "Couldn't Rsync with golden mirror"
+    rsync -e 'ssh -o UserKnownHostsFile=/dev/null -o StrictHostKeyChecking=no' --size-only -r root@$MIRROR_SERVER/* $LOCAL_MIRROR || (echo "Couldn't Rsync with Golden Mirror" && exit 1)
     echo "Local mirror updated from the golden mirror"
 
 fi
