@@ -7,24 +7,17 @@ define(
     'text!templates/cluster/deployment_control.html',
     'text!templates/cluster/tab.html',
     'text!templates/cluster/nodes_tab_summary.html',
+    'text!templates/cluster/add_nodes_screen.html',
     'text!templates/cluster/node_list.html',
     'text!templates/cluster/node.html'
 ],
-function(models, dialogViews, taskViews, clusterPageTemplate, deploymentControlTemplate, tabTemplate, nodesTabSummaryTemplate, nodeListTemplate, nodeTemplate) {
+function(models, dialogViews, taskViews, clusterPageTemplate, deploymentControlTemplate, tabTemplate, nodesTabSummaryTemplate, addNodesScreenTemplate, nodeListTemplate, nodeTemplate) {
     var views = {}
 
     views.ClusterPage = Backbone.View.extend({
         updateInterval: 5000,
         template: _.template(clusterPageTemplate),
         events: {
-            'click .add-nodes-btn': 'addRemoveNodes',
-            'click .assign-roles-btn': 'assignRoles'
-        },
-        addRemoveNodes: function(e) {
-            (new dialogViews.addRemoveNodesDialog({model: this.model})).render();
-        },
-        assignRoles: function(e) {
-            (new dialogViews.assignRolesDialog({model: this.model})).render();
         },
         initialize: function(options) {
             _.defaults(this, options);
@@ -108,12 +101,15 @@ function(models, dialogViews, taskViews, clusterPageTemplate, deploymentControlT
     views.NodesTab = Backbone.View.extend({
         template: _.template(tabTemplate),
         className: 'roles-block-row',
+        changeScreen: function(newScreenView, screenOptions) {
+            var options = _.extend({model: this.model, tab: this}, screenOptions || {});
+            var screenView = new newScreenView(options);
+            this.$('.tab-content').html(screenView.render().el);
+        },
         render: function() {
             this.$el.html(this.template());
-            this.content = new views.NodesTabContent({model: this.model});
-            this.summary = new views.NodesTabSummary({model: this.model});
-            this.$('.tab-content').html(this.content.render().el);
-            this.$('.tab-summary').html(this.summary.render().el);
+            this.changeScreen(views.NodesByRolesScreen);
+            this.$('.tab-summary').html((new views.NodesTabSummary({model: this.model, tab: this})).render().el);
             return this;
         }
     });
@@ -126,8 +122,9 @@ function(models, dialogViews, taskViews, clusterPageTemplate, deploymentControlT
         }
     });
 
-    views.NodesTabContent = Backbone.View.extend({
+    views.NodesByRolesScreen = Backbone.View.extend({
         initialize: function(options) {
+            this.tab = options.tab;
             this.model.get('nodes').bind('reset', this.render, this);
             this.model.get('nodes').bind('add', this.render, this);
         },
@@ -136,17 +133,47 @@ function(models, dialogViews, taskViews, clusterPageTemplate, deploymentControlT
             var roles = this.model.availableRoles();
             _.each(roles, function(role, index) {
                 var nodes = this.model.get('nodes').filter(function(node) {return node.get('role') == role});
-                this.$el.append((new views.NodeList({collection: new models.Nodes(nodes), role: role})).render().el);
+                var nodeListView = new views.NodeList({
+                    collection: new models.Nodes(nodes),
+                    role: role,
+                    tab: this.tab
+                });
+                this.$el.append(nodeListView.render().el);
                 if (index < roles.length - 1) this.$el.append('<hr>');
             }, this);
             return this;
         }
     });
 
+    views.AddNodesScreen = Backbone.View.extend({
+        template: _.template(addNodesScreenTemplate),
+        events: {
+            'click .btn-discard, .btn-save': 'discardChanges'
+        },
+        discardChanges: function() {
+            this.tab.changeScreen(views.NodesByRolesScreen);
+        },
+        initialize: function(options) {
+            this.tab = options.tab;
+            this.role = options.role;
+        },
+        render: function() {
+            this.$el.html(this.template({cluster: this.model, role: this.role}));
+            return this;
+        }
+    });
+
     views.NodeList = Backbone.View.extend({
         template: _.template(nodeListTemplate),
+        events: {
+            'click .btn-add-nodes': 'addNodes'
+        },
+        addNodes: function() {
+            this.tab.changeScreen(views.AddNodesScreen, {role: this.role});
+        },
         initialize: function(options) {
             this.role = options.role;
+            this.tab = options.tab;
         },
         render: function() {
             this.$el.html(this.template({nodes: this.collection, role: this.role}));
