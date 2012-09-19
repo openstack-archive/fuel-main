@@ -284,10 +284,17 @@ class ClusterChangesHandler(JSONHandler):
             )
             nd.power_reboot()
 
-        message = {"method": "deploy", "args": {"var1": "Hello from nailgun"}}
-        rpc.cast('mcollective', message)
-
         netmanager.assign_ips(cluster_id, "management")
+
+        nodes = []
+        for n in cluster.nodes:
+            nodes.append({'id': n.id, 'status': n.status,
+                          'ip': n.ip, 'mac': n.mac, 'role': n.role,
+                          'network_data': netmanager.get_node_networks(n.id)})
+        message = {'method': 'deploy',
+                   'respond_to': 'deploy_resp',
+                   'args': {'nodes': nodes}}
+        rpc.cast('naily', message)
 
         return json.dumps(
             self.render(cluster),

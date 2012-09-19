@@ -48,3 +48,17 @@ def assign_ips(cluster_id, network_name):
             web.ctx.orm.add(ip_db)
             web.ctx.orm.commit()
             used_ips.append(free_ip)
+
+
+def get_node_networks(node_id):
+    ips = web.ctx.orm.query(IPAddr).filter_by(node=node_id).all()
+    network_data = []
+    for i in ips:
+        net = web.ctx.orm.query(Network).get(i.network)
+        network_data.append({
+            'vlan': net.vlan_id,
+            'ip': i.ip_addr + '/' + str(IPNetwork(net.cidr).prefixlen),
+            'brd': str(IPNetwork(net.cidr).broadcast),
+            'gateway': net.gateway,
+            'dev': 'eth0'})  # We need to figure out interface
+    return network_data
