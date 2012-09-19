@@ -34,10 +34,12 @@ class BaseHandlers(TestCase):
         flush()
 
     def default_metadata(self):
-        metadata = {'block_device': 'new-val',
+        metadata = {'block_device':
+                    ['sda', {'size': '16777216'},
+                     'ram0', {'size': '131072'}],
                     'interfaces': 'd',
-                    'cpu': 'u',
-                    'memory': 'a'}
+                    'cpu': {'real': 2, 'total': 4},
+                    'memory': {'total': '1594988kB'}}
         return metadata
 
     def _generate_random_mac(self):
@@ -60,6 +62,7 @@ class BaseHandlers(TestCase):
         node = Node()
         node.mac = self._generate_random_mac()
         node.cluster_id = cluster_id
+        node.meta = self.default_metadata()
         self.db.add(node)
         self.db.commit()
         return node

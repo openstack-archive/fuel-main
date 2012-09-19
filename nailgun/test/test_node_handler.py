@@ -37,16 +37,6 @@ class TestHandlers(BaseHandlers):
             expect_errors=True)
         self.assertEquals(400, resp.status)
 
-    def test_node_creation(self):
-        resp = self.app.post(
-            reverse('NodeCollectionHandler'),
-            json.dumps({'mac': 'ASDFAAASDFAA'}),
-            headers=self.default_headers)
-        self.assertEquals(resp.status, 201)
-        node = self.db.query(Node).filter(Node.mac == 'ASDFAAASDFAA').one()
-        response = json.loads(resp.body)
-        self.assertEquals('ready', response['status'])
-
     def test_node_deletion(self):
         node = self.create_default_node()
         resp = self.app.delete(
@@ -56,19 +46,6 @@ class TestHandlers(BaseHandlers):
             expect_errors=True
         )
         self.assertEquals(resp.status, 204)
-
-    @unittest.skip('wth?')
-    def test_node_creation_using_put(self):
-        node_id = '080000000002'
-
-        resp = self.app.put(
-            reverse('NodeHandler', kwargs={'node_id': node_id}),
-            json.dumps({}),
-            headers=self.default_headers)
-        self.assertEquals(resp.status, 200)
-
-        nodes_from_db = self.db.query(Node).filter(id=node_id)
-        self.assertEquals(len(nodes_from_db), 1)
 
     def test_node_valid_metadata_gets_updated(self):
         new_metadata = self.default_metadata()

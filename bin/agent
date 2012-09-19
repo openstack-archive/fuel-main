@@ -123,7 +123,7 @@ class NodeAgent
       :manufacturer => _manufacturer,
       :platform_name => _product_name,
       :os_platform => @os[:platform],
-      :metadata => _metadata
+      :meta => _metadata
     }
     res[:status] = "discover" if File.exist?("/opt/nailgun/system_type")
     res

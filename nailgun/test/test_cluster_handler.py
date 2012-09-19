@@ -7,15 +7,6 @@ from base import reverse
 
 
 class TestHandlers(BaseHandlers):
-    def test_cluster_put_attach_node(self):
-        pass
-
-    def test_cluster_put_attach_attached_node(self):
-        pass
-
-    def test_cluster_put_detach_node(self):
-        pass
-
     def test_cluster_delete(self):
         cluster = self.create_default_cluster()
         resp = self.app.delete(

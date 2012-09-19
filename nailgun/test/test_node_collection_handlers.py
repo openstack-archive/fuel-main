@@ -1,8 +1,10 @@
 # -*- coding: utf-8 -*-
 import json
+
 from paste.fixture import TestApp
 from base import BaseHandlers
 from base import reverse
+from api.models import Node
 
 
 class TestHandlers(BaseHandlers):
@@ -68,3 +70,38 @@ class TestHandlers(BaseHandlers):
         self.assertEquals(200, resp.status)
         response = json.loads(resp.body)
         self.assertEquals(2, len(response))
+
+    def test_node_creation(self):
+        resp = self.app.post(
+            reverse('NodeCollectionHandler'),
+            json.dumps({'mac': 'ASDFAAASDFAA',
+                        'meta': self.default_metadata()}),
+            headers=self.default_headers)
+        self.assertEquals(resp.status, 201)
+        node = self.db.query(Node).filter(Node.mac == 'ASDFAAASDFAA').one()
+        response = json.loads(resp.body)
+        self.assertEquals('ready', response['status'])
+
+    def test_node_update(self):
+        node = self.create_default_node()
+        resp = self.app.put(
+            reverse('NodeCollectionHandler'),
+            json.dumps([{'mac': node.mac, 'manufacturer': 'new'}]),
+            headers=self.default_headers)
+        self.assertEquals(resp.status, 200)
+        resp = self.app.get(
+            reverse('NodeCollectionHandler'),
+            headers=self.default_headers
+        )
+        self.db.refresh(node)
+        node_db = self.db.query(Node).filter_by(id=node.id).first()
+        self.assertEquals('new', node_db.manufacturer)
+
+    def test_duplicated_node_create_fails(self):
+        node = self.create_default_node()
+        resp = self.app.post(
+            reverse('NodeCollectionHandler'),
+            json.dumps({'mac': node.mac}),
+            headers=self.default_headers,
+            expect_errors=True)
+        self.assertEquals(409, resp.status)
