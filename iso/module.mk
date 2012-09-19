@@ -83,6 +83,7 @@ $/debian/ubuntu-keyring/.done: $/debian/ubuntu-keyring/keyrings/ubuntu-archive-k
 $/isoroot-infra.done: $(UBUNTU_1204_ISO) | $(UBUNTU_1204_ROOT)
 	mkdir -p $(ISOROOT)
 	rsync --recursive --links --perms --chmod=u+w --exclude=pool $(UBUNTU_1204_ROOT)/ $(ISOROOT)
+	scripts/mirror.sh $(GOLDEN_MIRROR) $(LOCAL_MIRROR)
 	$(ACTION.TOUCH)
 
 $/isoroot-pool.done: $(ubuntu.packages)/cache.done
@@ -138,7 +139,7 @@ $/isoroot.done: \
 		$(addprefix $(ISOROOT)/nailgun/,openstack-essex.json) \
 		$/isoroot-gems.done \
 		$(ISOROOT)/eggs \
-		$(addprefix $(ISOROOT)/eggs/,$(call find-files,$(BINARIES_DIR)/eggs)) \
+		$(addprefix $(ISOROOT)/eggs/,$(call find-files,$(LOCAL_MIRROR)/eggs)) \
 		$(ISOROOT)/dists/$(UBUNTU_RELEASE)/Release \
 		$(ISOROOT)/dists/$(UBUNTU_RELEASE)/Release.gpg
 	$(ACTION.TOUCH)
@@ -148,6 +149,7 @@ $(ISOROOT)/md5sum.txt: $/isoroot.done
 	  xargs -0 md5sum | \
 		grep -v "boot.cat" | \
 		grep -v "md5sum.txt" > $(@F)
+
 
 # Arguments:
 #   1 - section (e.g. main, restricted, etc.)
@@ -338,17 +340,17 @@ $(ISOROOT)/nailgun/bin/%: bin/% ; $(ACTION.COPY)
 $(ISOROOT)/nailgun/%: nailgun/% ; $(ACTION.COPY)
 $(ISOROOT)/eggs:
 	mkdir -p $@
-$(ISOROOT)/eggs/%: $(BINARIES_DIR)/eggs/% ; $(ACTION.COPY)
+$(ISOROOT)/eggs/%: $(LOCAL_MIRROR)/eggs/% ; $(ACTION.COPY)
 
 
 $(ISOROOT)/gems/gems:
 	mkdir -p $@
 
-$(ISOROOT)/gems/gems/%: $(BINARIES_DIR)/gems/% | $(ISOROOT)/gems/gems
+$(ISOROOT)/gems/gems/%: $(LOCAL_MIRROR)/gems/% | $(ISOROOT)/gems/gems
 	echo $@
 	$(ACTION.COPY)
 
-$/isoroot-gems.done: $(addprefix $(ISOROOT)/gems/gems/,$(call find-files,$(BINARIES_DIR)/gems))
+$/isoroot-gems.done: $(addprefix $(ISOROOT)/gems/gems/,$(call find-files,$(LOCAL_MIRROR)/gems))
 	gem generate_index -d $(ISOROOT)/gems
 	$(ACTION.TOUCH)
 

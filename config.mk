@@ -9,6 +9,14 @@ ifndef IGNORE_MIRROR
 IGNORE_MIRROR:=0
 endif
 
+ifndef LOCAL_MIRROR
+LOCAL_MIRROR:=mirror
+endif
+
+ifndef GOLDEN_MIRROR
+GOLDEN_MIRROR:=jenkins-product.srt.mirantis.net:/var/mirror
+endif
+
 iso.path:=$(BUILD_DIR)/iso/nailgun-ubuntu-12.04-amd64.iso
 image.centos.url=http://mc0n1-srt.srt.mirantis.net/centos63.qcow2
 
