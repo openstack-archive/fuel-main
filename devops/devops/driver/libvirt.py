@@ -141,41 +141,49 @@ class LibvirtXMLBuilder:
 
 
 class Libvirt:
-    def __init__(self, xml_builder=LibvirtXMLBuilder()):
+    def __init__(self, xml_builder=LibvirtXMLBuilder(), virsh_cmd=None):
+        if not virsh_cmd: virsh_cmd = [
+            'virsh']
         self.xml_builder = xml_builder
+        self._virsh_cmd = virsh_cmd
         self._init_capabilities()
+
+    @property
+    def virsh_cmd(self):
+        return self._virsh_cmd[:]
 
     def node_exists(self, node_name):
         return self._system(
-            "virsh dominfo '%s'" % node_name,
+            self.virsh_cmd + ['dominfo', node_name],
             expected_resultcodes=(0, 1)) == 0
 
     def disk_exists(self, disk_name, pool='default'):
         return self._system(
-            "virsh vol-info '%s' --pool '%s'" % (disk_name, pool),
+            self.virsh_cmd + ["vol-info",disk_name, '--pool', pool],
             expected_resultcodes=(0, 1)) == 0
 
     def network_exists(self, network_name):
         return self._system(
-            "virsh net-info '%s' 2>/dev/null" % network_name,
+            self.virsh_cmd + ['net-info', network_name, '2>/dev/null'],
             expected_resultcodes=(0, 1)) == 0
 
     def create_network(self, network):
         if not hasattr(network, 'id') or network.id is None:
             network.id = self._generate_network_id(network.name)
         elif self.is_network_defined(network):
-            self._virsh("net-undefine '%s'", network.id)
+            self._virsh(['net-undefine', network.id])
 
-        with tempfile.NamedTemporaryFile(delete=True) as xml_file:
-            network_xml = self.xml_builder.build_network_xml(network)
-            logger.debug(
-                "libvirt: Building network with following XML:\n%s" % network_xml)
-            xml_file.write(network_xml)
-            xml_file.flush()
-            self._virsh("net-define '%s'", xml_file.name)
+        xml_file = tempfile.NamedTemporaryFile(delete=False)
+        network_xml = self.xml_builder.build_network_xml(network)
+        logger.debug(
+            "libvirt: Building network with following XML:\n%s" % network_xml)
+        xml_file.write(network_xml)
+        xml_file.close()
+        self._virsh(['net-define', xml_file.name])
+        os.unlink(xml_file.name)
 
-        with os.popen("virsh net-dumpxml '%s'" % network.id) as f:
-            network_element = xml.parse_stream(f)
+
+        network_element = self.get_output_as_xml(self.virsh_cmd + ['net-dumpxml',network.id])
 
         network.bridge_name = network_element.find('bridge/@name')
         network.mac_address = network_element.find('mac/@address')
@@ -183,25 +191,24 @@ class Libvirt:
     def delete_network(self, network):
         if self.is_network_defined(network):
             logger.debug("Network %s is defined. Undefining.")
-            self._virsh("net-undefine '%s'", network.id)
+            self._virsh(['net-undefine', network.id])
 
     def start_network(self, network):
         if not self.is_network_running(network):
             logger.debug("Network %s is not running. Starting.")
-            self._virsh("net-start '%s'", network.id)
+            self._virsh(['net-start', network.id])
 
     def stop_network(self, network):
         if self.is_network_running(network):
             logger.debug("Network %s is running. Stopping.")
-            self._virsh("net-destroy '%s'", network.id)
+            self._virsh(['net-destroy', network.id])
 
     def _get_node_xml(self, node):
-        with os.popen("virsh dumpxml '%s'" % node.id) as f:
-            return xml.parse_stream(f)
+        return self.get_output_as_xml(
+            self.virsh_cmd + ['dumpxml',node.id])
 
     def _get_volume_xml(self, name, pool='default'):
-        with os.popen("virsh vol-dumpxml '%s' '%s' " % (name, pool)) as f:
-            return xml.parse_stream(f)
+        return  self.get_output_as_xml(self.virsh_cmd + ['vol-dumpxml', name, '--pool', pool])
 
     def _get_volume_capacity(self, name, pool='default'):
         xml = self._get_volume_xml(name, pool)
@@ -218,13 +225,14 @@ class Libvirt:
         if not hasattr(node, 'id') or node.id is None:
             node.id = self._generate_node_id(node.name)
 
-        with tempfile.NamedTemporaryFile(delete=True) as xml_file:
-            node_xml = self.xml_builder.build_node_xml(node, spec)
-            logger.debug(
-                "libvirt: Building node with following XML:\n%s" % node_xml)
-            xml_file.write(node_xml)
-            xml_file.flush()
-            self._virsh("define '%s'", xml_file.name)
+        xml_file = tempfile.NamedTemporaryFile(delete=False)
+        node_xml = self.xml_builder.build_node_xml(node, spec)
+        logger.debug(
+            "libvirt: Building node with following XML:\n%s" % node_xml)
+        xml_file.write(node_xml)
+        xml_file.close()
+        self._virsh(['define', xml_file.name])
+        os.unlink(xml_file.name)
 
         domain = self._get_node_xml(node)
 
@@ -244,13 +252,13 @@ class Libvirt:
     def delete_node(self, node):
         if self.is_node_defined(node):
             logger.debug("Node %s defined. Undefining." % node.id)
-            self._virsh("undefine '%s'", node.id)
+            self._virsh(['undefine', node.id])
 
     def start_node(self, node):
         if not self.is_node_running(node):
             logger.debug(
                 "Node %s is not running at the moment. Starting." % node.id)
-            self._virsh("start '%s'", node.id)
+            self._virsh(['start', node.id])
 
         if node.vnc:
             domain = self._get_node_xml(node)
@@ -263,21 +271,21 @@ class Libvirt:
         if self.is_node_running(node):
             logger.debug(
                 "Node %s is running at the moment. Stopping." % node.id)
-            self._virsh("destroy '%s'", node.id)
+            self._virsh(['destroy', node.id])
 
     def reset_node(self, node):
-        self._virsh("reset '%s'", node.id)
+        self._virsh(['reset', node.id])
 
     def reboot_node(self, node):
-        self._virsh("reboot '%s'", node.id)
+        self._virsh(['reboot', node.id])
 
     def shutdown_node(self, node):
-        self._virsh("stop '%s'", node.id)
+        self._virsh(['stop', node.id])
 
     def get_node_snapshots(self, node):
-        command = "virsh snapshot-list '%s'" % node.id
+        command = self.virsh_cmd + ['snapshot-list', node.id]
         process = subprocess.Popen(
-            shlex.split(command), stdout=subprocess.PIPE,
+            command, stdout=subprocess.PIPE,
             stderr=subprocess.PIPE)
         process.wait()
         if process.returncode:
@@ -301,30 +309,29 @@ class Libvirt:
         if not name:
             name = str(int(time.time() * 100))
 
-        with tempfile.NamedTemporaryFile(delete=True) as xml_file:
-            snapshot_xml = XMLBuilder('domainsnapshot')
-            snapshot_xml.name(name)
-            if description:
-                snapshot_xml.description(description)
-
-            logger.debug(
-                "Building snapshot with following XML:\n%s" % str(snapshot_xml))
-            xml_file.write(str(snapshot_xml))
-            xml_file.flush()
-
-            self._virsh("snapshot-create '%s' '%s'", node.id, xml_file.name)
+        xml_file = tempfile.NamedTemporaryFile(delete=False)
+        snapshot_xml = XMLBuilder('domainsnapshot')
+        snapshot_xml.name(name)
+        if description:
+            snapshot_xml.description(description)
+        logger.debug(
+            "Building snapshot with following XML:\n%s" % str(snapshot_xml))
+        xml_file.write(str(snapshot_xml))
+        xml_file.close()
+        self._virsh(['snapshot-create', node.id, xml_file.name])
+        os.unlink(xml_file.name)
 
         return name
 
     def revert_snapshot(self, node, snapshot_name=None):
         if not snapshot_name:
             snapshot_name = '--current'
-        self._virsh("snapshot-revert '%s' %s", node.id, snapshot_name)
+        self._virsh(['snapshot-revert', node.id, snapshot_name])
 
     def delete_snapshot(self, node, snapshot_name=None):
         if not snapshot_name:
             snapshot_name = '--current'
-        self._virsh("snapshot-delete '%s' %s", node.id, snapshot_name)
+        self._virsh(['snapshot-delete', node.id, snapshot_name])
 
     def send_keys_to_node(self, node, keys):
         keys = scancodes.from_string(str(keys))
@@ -336,14 +343,13 @@ class Libvirt:
                 continue
 
             self._virsh(
-                "send-key '%s' %s", node.id,
-                ' '.join(map(lambda x: str(x), key_codes)))
+                ['send-key', node.id,
+                ' '.join(map(lambda x: str(x), key_codes))])
 
     def _create_disk(self, name, capacity=1, pool='default', format='qcow2'):
-        self._virsh_execute(
-            "vol-create-as --pool '%(pool)s' --name '%(name)s' --capacity '%(capacity)s' --format '%(format)s' " % {
-                'format': format, 'name': name, 'capacity': capacity,
-                'pool': pool})
+        self._virsh(
+            ['vol-create-as', '--pool', pool, '--name', name,
+             '--capacity', capacity,'--format', format])
 
     def create_disk(self, disk):
         name = self._generate_disk_id(format=disk.format)
@@ -351,14 +357,13 @@ class Libvirt:
             base_name = disk.base_image.split('/')[-1]
             if not self.disk_exists(base_name):
                 self._create_disk(base_name)
-                self._virsh_execute(
-                    "vol-upload '%(base_name)s' '%(base_image)s' --pool default"
-                    % {'base_name': base_name, 'base_image': disk.base_image})
+                self._virsh(
+                    ['vol-upload', base_name, disk.base_image, '--pool',  'default'])
             capacity = self._get_volume_capacity(base_name)
-            self._virsh_execute(
-                "vol-create-as --name '%(name)s' --capacity '%(capacity)s'  --pool default --format '%(format)s' --backing-vol '%(base_name)s' --backing-vol-format '%(backing-vol-format)s' " % {
-                    'format': disk.format, 'name': name, 'base_name': base_name,
-                    'capacity': capacity, 'backing-vol-format': 'qcow2'})
+            self._virsh(
+                ['vol-create-as', '--name', name,  '--capacity', capacity,
+                 '--pool', 'default', '--format', disk.format,
+                 '--backing-vol', base_name, '--backing-vol-format', 'qcow2'])
         else:
             capacity = disk.size
             self._create_disk(name=name, capacity=capacity, format=disk.format)
@@ -367,41 +372,29 @@ class Libvirt:
     def delete_disk(self, disk):
         if disk.path is None:
             return
-        self._virsh_execute("vol-delete '%s'" % disk.path)
+        self._virsh(['vol-delete',disk.path])
 
     def get_disk_path(self, name, pool='default'):
-        command = "virsh vol-path %s --pool %s" % (name, pool)
-        with os.popen(command) as f:
-            return f.read().strip()
+        command = self.virsh_cmd + ['vol-path', name, '--pool', pool]
+        return subprocess.check_output(command).strip()
 
     def get_interface_addresses(self, interface):
         command = "arp -an | awk '$4 == \"%(mac)s\" && $7 == \"%(interface)s\" {print substr($2, 2, length($2)-2)}'" % {
             'mac': interface.mac_address,
             'interface': interface.network.bridge_name}
-        with os.popen(command) as f:
-            return [ipaddr.IPv4Address(s) for s in f.read().split()]
+        output = subprocess.check_output(command)
+        return [ipaddr.IPv4Address(s) for s in output.split()]
 
-    def _virsh_execute(self, param):
-        command = 'virsh ' + param
-        logger.debug("Running '%s'" % command)
-        process = subprocess.Popen(
-            shlex.split(command), stdout=subprocess.PIPE,
-            stderr=subprocess.PIPE)
-        process.wait()
-        if process.returncode:
-            logger.error(
-                "Command '{0:>s}' returned code {1:d}:\n{2:>s}".format(command,
-                    process.returncode,
-                    process.stderr.read()))
-            raise LibvirtException, "Failed to execute command '%s'" % command
+    def _virsh(self, param):
+        command = self.virsh_cmd + param
+        subprocess.check_call(command)
 
-    def _virsh(self, format, *args):
-        command = format % args
-        self._virsh_execute(command)
+    def get_output_as_xml(self, command):
+        output = subprocess.check_output(command)
+        return xml.parse_string(output)
 
     def _init_capabilities(self):
-        with os.popen("virsh capabilities") as f:
-            capabilities = xml.parse_stream(f)
+        capabilities = self.get_output_as_xml(self.virsh_cmd + ['capabilities'])
 
         self.specs = []
 
@@ -436,22 +429,22 @@ class Libvirt:
 
     def is_node_defined(self, node):
         return self._system2(
-            "virsh list --all | grep -q ' %s '" % node.id,
+            ' '.join(self.virsh_cmd) + " list --all | grep -q ' %s '" % node.id,
             expected_resultcodes=(0, 1)) == 0
 
     def is_node_running(self, node):
         return self._system2(
-            "virsh list | grep -q ' %s '" % node.id,
+            ' '.join(self.virsh_cmd) + " list | grep -q ' %s '" % node.id,
             expected_resultcodes=(0, 1)) == 0
 
     def is_network_defined(self, network):
         return self._system2(
-            "virsh net-list --all | grep -q '%s '" % network.id,
+            ' '.join(self.virsh_cmd) + " net-list --all | grep -q '%s '" % network.id,
             expected_resultcodes=(0, 1)) == 0
 
     def is_network_running(self, network):
         return self._system2(
-            "virsh net-list | grep -q '%s '" % network.id,
+            ' '.join(self.virsh_cmd) + " net-list | grep -q '%s '" % network.id,
             expected_resultcodes=(0, 1)) == 0
 
     def _system2(self, command, expected_resultcodes=(0,)):
@@ -460,23 +453,21 @@ class Libvirt:
         commands = [i.strip() for i in re.split(ur'\|', command)]
         serr = []
 
-        process = []
-        process.append(
-            subprocess.Popen(
-                shlex.split(commands[0]), stdin=None,
-                stdout=subprocess.PIPE, stderr=subprocess.PIPE))
+        processes = [subprocess.Popen(
+            shlex.split(commands[0]), stdin=None,
+            stdout=subprocess.PIPE, stderr=subprocess.PIPE)]
         for c in commands[1:]:
-            process.append(
+            processes.append(
                 subprocess.Popen(
-                    shlex.split(c), stdin=process[-1].stdout,
+                    shlex.split(c), stdin=processes[-1].stdout,
                     stdout=subprocess.PIPE, stderr=subprocess.PIPE))
 
-        process[-1].wait()
+        processes[-1].wait()
 
-        for p in process:
+        for p in processes:
             serr += [err.strip() for err in p.stderr.readlines()]
 
-        returncode = process[-1].returncode
+        returncode = processes[-1].returncode
 
         if expected_resultcodes and not returncode in expected_resultcodes:
             logger.error(
@@ -492,7 +483,7 @@ class Libvirt:
         logger.debug("Running '%s'" % command)
         serr = []
         process = subprocess.Popen(
-            shlex.split(command),
+            command,
             stdout=subprocess.PIPE,
             stderr=subprocess.PIPE)
         process.wait()
@@ -500,11 +491,12 @@ class Libvirt:
 
         if expected_resultcodes and not process.returncode in expected_resultcodes:
             logger.error(
-                "Command '%s' returned %d, stderr: %s" % (
+                "Command '{0:>s}' returned {1:d}, stderr: {2:>s}".format(
                     command,
                     process.returncode, '\n'.join(serr)))
         else:
             logger.debug(
-                "Command '%s' returned %d" % (command, process.returncode))
+                "Command '{0:>s}' returned {1:d}".format(command,
+                    process.returncode))
 
         return process.returncode

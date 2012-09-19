@@ -31,8 +31,9 @@ class Controller:
         self.networks_pool = IpNetworksPool()
         self._reserve_networks()
 
-        self.home_dir = os.environ.get('DEVOPS_HOME') or os.path.join(
-            os.environ['HOME'], ".devops")
+        self.home_dir = os.environ.get('DEVOPS_HOME') or\
+            os.path.join(os.environ.get('APPDATA'), '.devops') or\
+            os.path.join(os.environ['HOME'], ".devops")
         try:
             os.makedirs(os.path.join(self.home_dir, 'environments'), 0755)
         except OSError:
@@ -45,8 +46,12 @@ class Controller:
             "Creating environment working directory for %s environment" % environment.name)
         environment.work_dir = os.path.join(self.home_dir, 'environments',
             environment.id)
-        os.mkdir(environment.work_dir,
-            stat.S_IRWXU | stat.S_IRWXG | stat.S_IRWXO)
+        if os.path.isdir(environment.work_dir):
+            if os.listdir(environment.work_dir):
+                raise DevopsError(
+                    "Working directory already exists and not emtpy: %s" % environment.work_dir)
+        if not os.path.isdir(environment.work_dir):
+            os.makedirs(environment.work_dir)
         logger.debug(
             "Environment working directory has been created: %s" % environment.work_dir)
 
