@@ -127,13 +127,13 @@ class Node(Base, BasicValidator):
             kilobytes = int(self.meta['memory']['total'][:-2])
             gigabytes = kilobytes / 1024.0 ** 2
             result['ram'] = gigabytes
-        except (KeyError, ValueError):
+        except (KeyError, ValueError, TypeError):
             result['ram'] = None
 
         try:
             result['cpu'] = self.meta['cpu']['real']
             result['cores'] = self.meta['cpu']['total']
-        except (KeyError, ValueError):
+        except (KeyError, ValueError, TypeError):
             result['cpu'] = None
             result['cores'] = None
 
