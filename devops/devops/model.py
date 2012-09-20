@@ -65,18 +65,6 @@ class Network(ManagedObject):
     def stop(self):
         self.driver.stop_network(self)
 
-class Bridge(ManagedObject):
-    def __init__(self, bridge):
-        super(Bridge, self).__init__()
-        pass
-
-    def start(self):
-        self.driver.start_network(self)
-
-    def stop(self):
-        self.driver.stop_network(self)
-
-
 class Node(ManagedObject):
     def __init__(self, name, cpu=1, memory=512, arch='x86_64', vnc=False):
         super(Node, self).__init__()
@@ -88,6 +76,7 @@ class Node(ManagedObject):
         self.arch = arch
         self.vnc = vnc
         self.interfaces = []
+        self.bridged_interfaces = []
         self.disks = []
         self.boot = []
         self.cdrom = None
@@ -169,8 +158,14 @@ class Disk(object):
         self.base_image = base_image
 
 
+class BridgedInterface(ManagedObject):
+    def __init__(self, bridge):
+        super(BridgedInterface, self).__init__()
+        self.bridge = bridge
+
 class Interface(ManagedObject):
-    def __init__(self, network, ip_addresses=None):
+    def __init__(self, network, ip_addresses=None, interface_type='network'):
+        super(Interface, self).__init__()
         if not ip_addresses: ip_addresses = []
         self.node = None
         self.network = network
@@ -178,6 +173,8 @@ class Interface(ManagedObject):
             ip_addresses = (ip_addresses,)
         self._ip_addresses = ip_addresses
         self.mac_address = None
+        self.bridge = None
+        self.type = interface_type
 
     @property
     def ip_addresses(self):

@@ -134,6 +134,10 @@ class LibvirtXMLBuilder:
                 with node_xml.interface(type="network"):
                     node_xml.source(network=interface.network.id)
 
+            for interface in node.bridged_intefaces:
+                with node_xml.interface(type="bridge"):
+                    node_xml.source(bridge=interface.bridge)
+
             if node.vnc:
                 node_xml.graphics(type='vnc', listen='0.0.0.0', autoport='yes')
 
