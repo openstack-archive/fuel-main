@@ -137,9 +137,9 @@ $/isoroot.done: \
 		$(addprefix $(ISOROOT)/nailgun/solo/,solo.rb solo.json) \
 		$(addprefix $(ISOROOT)/nailgun/cookbooks/,$(call find-files,cookbooks)) \
 		$(addprefix $(ISOROOT)/nailgun/os-cookbooks/,$(call find-files,cooks)) \
+		$/isoroot-gems.done \
 		$(ISOROOT)/eggs \
 		$(addprefix $(ISOROOT)/eggs/,$(call find-files,$(LOCAL_MIRROR)/eggs)) \
-		$/isoroot-gems.done \
 		$(ISOROOT)/dists/$(UBUNTU_RELEASE)/Release \
 		$(ISOROOT)/dists/$(UBUNTU_RELEASE)/Release.gpg
 	$(ACTION.TOUCH)
@@ -351,6 +351,9 @@ $(ISOROOT)/gems/gems/%: $(LOCAL_MIRROR)/gems/% | $(ISOROOT)/gems/gems
 	$(ACTION.COPY)
 
 $/isoroot-gems.done: $(addprefix $(ISOROOT)/gems/gems/,$(call find-files,$(LOCAL_MIRROR)/gems))
+	echo "$(LOCAL_MIRROR)/gems"
+	echo $(LOCAL_MIRROR)/gems
+	ls -l $(LOCAL_MIRROR)/gems
 	gem generate_index -d $(ISOROOT)/gems
 	$(ACTION.TOUCH)
 
