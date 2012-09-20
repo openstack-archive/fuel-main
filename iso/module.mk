@@ -139,6 +139,7 @@ $/isoroot.done: \
 		$(addprefix $(ISOROOT)/nailgun/os-cookbooks/,$(call find-files,cooks)) \
 		$(ISOROOT)/eggs \
 		$(addprefix $(ISOROOT)/eggs/,$(call find-files,$(LOCAL_MIRROR)/eggs)) \
+		$/isoroot-gems.done \
 		$(ISOROOT)/dists/$(UBUNTU_RELEASE)/Release \
 		$(ISOROOT)/dists/$(UBUNTU_RELEASE)/Release.gpg
 	$(ACTION.TOUCH)
