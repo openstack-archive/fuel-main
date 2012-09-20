@@ -5,13 +5,12 @@ define(
     'views/tasks',
     'text!templates/cluster/page.html',
     'text!templates/cluster/deployment_control.html',
-    'text!templates/cluster/tab.html',
     'text!templates/cluster/nodes_tab_summary.html',
     'text!templates/cluster/add_nodes_screen.html',
     'text!templates/cluster/node_list.html',
     'text!templates/cluster/node.html'
 ],
-function(models, dialogViews, taskViews, clusterPageTemplate, deploymentControlTemplate, tabTemplate, nodesTabSummaryTemplate, addNodesScreenTemplate, nodeListTemplate, nodeTemplate) {
+function(models, dialogViews, taskViews, clusterPageTemplate, deploymentControlTemplate, nodesTabSummaryTemplate, addNodesScreenTemplate, nodeListTemplate, nodeTemplate) {
     var views = {}
 
     views.ClusterPage = Backbone.View.extend({
@@ -99,17 +98,14 @@ function(models, dialogViews, taskViews, clusterPageTemplate, deploymentControlT
     });
 
     views.NodesTab = Backbone.View.extend({
-        template: _.template(tabTemplate),
-        className: 'roles-block-row',
         changeScreen: function(newScreenView, screenOptions) {
             var options = _.extend({model: this.model, tab: this}, screenOptions || {});
             var screenView = new newScreenView(options);
-            this.$('.tab-content').html(screenView.render().el);
+            this.$el.html(screenView.render().el);
         },
         render: function() {
-            this.$el.html(this.template());
+            this.$el.html('');
             this.changeScreen(views.NodesByRolesScreen);
-            this.$('.tab-summary').html((new views.NodesTabSummary({model: this.model, tab: this})).render().el);
             return this;
         }
     });
@@ -130,6 +126,7 @@ function(models, dialogViews, taskViews, clusterPageTemplate, deploymentControlT
         },
         render: function() {
             this.$el.html('');
+            this.$el.append((new views.NodesTabSummary({model: this.model, tab: this.tab})).render().el);
             var roles = this.model.availableRoles();
             _.each(roles, function(role, index) {
                 var nodes = this.model.get('nodes').filter(function(node) {return node.get('role') == role});
@@ -188,7 +185,6 @@ function(models, dialogViews, taskViews, clusterPageTemplate, deploymentControlT
     });
 
     views.Node = Backbone.View.extend({
-        className: 'span3',
         template: _.template(nodeTemplate),
         events: {
             'click .node-name': 'startNameEditing',
