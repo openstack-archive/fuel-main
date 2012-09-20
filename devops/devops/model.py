@@ -164,7 +164,7 @@ class BridgedInterface(ManagedObject):
         self.bridge = bridge
 
 class Interface(ManagedObject):
-    def __init__(self, network, ip_addresses=None, interface_type='network'):
+    def __init__(self, network, ip_addresses=None):
         super(Interface, self).__init__()
         if not ip_addresses: ip_addresses = []
         self.node = None
@@ -173,8 +173,6 @@ class Interface(ManagedObject):
             ip_addresses = (ip_addresses,)
         self._ip_addresses = ip_addresses
         self.mac_address = None
-        self.bridge = None
-        self.type = interface_type
 
     @property
     def ip_addresses(self):
