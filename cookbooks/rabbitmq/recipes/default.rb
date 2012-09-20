@@ -20,14 +20,21 @@
 package "rabbitmq-server"
 
 service "rabbitmq-server" do
-  supports :status => true, :restart => true, :reload => true
-  action [ :enable, :start ]
+  action [ :enable ]
 end
 
-template "/etc/rabbitmq/rabbitmq-env.conf" do
+template "/etc/rabbitmq/rabbitmq.config" do
   source "rabbitmq.config.erb"
-  owner "root"
-  group "root"
   mode 0644
   notifies :restart, resources(:service => "rabbitmq-server")
+end
+
+cookbook_file "/etc/rabbitmq/enabled_plugins" do
+  source "enabled_plugins"
+  mode 0644
+  notifies :restart, resources(:service => "rabbitmq-server")
+end
+
+service "rabbitmq-server" do
+  action [ :start ]
 end
