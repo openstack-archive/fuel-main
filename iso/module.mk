@@ -351,7 +351,6 @@ $(ISOROOT)/gems/gems/%: $(LOCAL_MIRROR)/gems/% | $(ISOROOT)/gems/gems
 	$(ACTION.COPY)
 
 $/isoroot-gems.done: $(addprefix $(ISOROOT)/gems/gems/,$(call find-files,$(LOCAL_MIRROR)/gems))
-	echo $(SHELL)"   "$SHELL
 	gem generate_index -d $(ISOROOT)/gems
 	$(ACTION.TOUCH)
 
