@@ -134,7 +134,7 @@ class LibvirtXMLBuilder:
                 with node_xml.interface(type="network"):
                     node_xml.source(network=interface.network.id)
 
-            for interface in node.bridged_intefaces:
+            for interface in node.bridged_interfaces:
                 with node_xml.interface(type="bridge"):
                     node_xml.source(bridge=interface.bridge)
 
