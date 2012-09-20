@@ -27,7 +27,7 @@ then
 
     ln -s ${BASH_REMATCH[1]} ./mirror
     echo "Local golden mirror is updated from the internet."
-    echo "Symlink to /var/mirror created at the build dir"
+    echo "Symlink to ${BASH_REMATCH[1]} created at the build dir"
 
 else
 
