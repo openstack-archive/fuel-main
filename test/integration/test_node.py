@@ -51,8 +51,14 @@ class TestNode(Base):
     def test_updating_nodes_in_cluster(self):
         cluster_id = self._create_cluster(name='empty')
         nodes = [str(n['id']) for n in self._bootstrap_slave()]
-        self._update_nodes_in_cluster(cluster_id, nodes)
+        self._update_nodes_in_cluster(cluster_id, nodes) 
 
+    def test_provisioning(self):
+        self._clean_clusters()
+        cluster_id = self._create_cluster(name='provision')
+        nodes = [str(n['id']) for n in self._bootstrap_slave()]
+        self._update_nodes_in_cluster(cluster_id, nodes)
+        self._launch_provisioning(cluster_id)
 
         #if node["status"] == "discover":
             #logging.info("Node booted with bootstrap image.")
@@ -131,6 +137,11 @@ class TestNode(Base):
         #res = slave_client.execute("rm -rf /tmp/chef_success")
         #slave_client.disconnect()
 
+    def _launch_provisioning(self, cluster_id):
+        changes = self.client.put(
+            "/api/clusters/%d/changes/" % cluster_id
+        )
+        self.assertEquals(200, changes.getcode())
 
     def _upload_sample_release(self):
         release_remote_path = posixpath.join(
@@ -187,6 +198,15 @@ class TestNode(Base):
         if not cluster_id:
             raise Exception("Could not get cluster '%s'" % name)
         return cluster_id
+
+    def _clean_clusters(self):
+        clusters = json.loads(self.client.get(
+            "/api/clusters/"
+        ).read())
+        for cluster in clusters:
+            resp = self.client.put(
+            "/api/clusters/%s" % cluster["id"],
+            data={"nodes": []}).read()
 
     def _update_nodes_in_cluster(self, cluster_id, nodes):
         resp = self.client.put(

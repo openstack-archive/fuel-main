@@ -3,6 +3,7 @@ import urllib2
 import logging
 import posixpath
 import json
+import cStringIO
 
 import paramiko
 
@@ -18,18 +19,25 @@ class HTTPClient(object):
 
     def get(self, endpoint):
         req = urllib2.Request(self.url + endpoint)
-        return self.opener.open(req)
+        return self._open(req)
 
     def post(self, endpoint, data={}, content_type="application/json"):
         req = urllib2.Request(self.url + endpoint, data=json.dumps(data))
         req.add_header('Content-Type', content_type)
-        return self.opener.open(req)
+        return self._open(req)
 
     def put(self, endpoint, data={}, content_type="application/json"):
         req = urllib2.Request(self.url + endpoint, data=json.dumps(data))
         req.add_header('Content-Type', content_type)
         req.get_method = lambda: 'PUT'
-        return self.opener.open(req)
+        return self._open(req)
+
+    def _open(self, req):
+        try:
+            res = self.opener.open(req)
+        except urllib2.HTTPError as err:
+            res = cStringIO.StringIO(str(err))
+        return res
 
 
 class SSHClient(object):

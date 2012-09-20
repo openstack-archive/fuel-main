@@ -1,5 +1,3 @@
-include_recipe 'django'
-
 # FIXME
 # it is nice to encapsulate all these components into os package
 # installing deps, creating system user, installing nailgun files

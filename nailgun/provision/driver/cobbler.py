@@ -57,14 +57,19 @@ class Cobbler(Provision):
         return None
 
     def update_system(self, name, mac, power, profile, kopts="", create=False):
-        if self.system_by_name(name):
-            err = "System with name %s already exists."
-            " Try to edit it." % name
-            self.logger.error(err)
-            raise ProvisionAlreadyExists(err)
         if create:
+            if self.system_by_name(name):
+                err = "System with name %s already exists."
+                " Try to edit it." % name
+                self.logger.error(err)
+                raise ProvisionAlreadyExists(err)
             system_id = self.server.new_system(self.token)
         else:
+            if not self.system_by_name(name):
+                err = "Trying to edit system"
+                " that does not exist: %s" % name
+                self.logger.error(err)
+                raise ProvisionDoesNotExist(err)
             system_id = self.server.get_system_handle(name, self.token)
 
         fields = {
@@ -137,13 +142,18 @@ class Cobbler(Provision):
         return None
 
     def update_profile(self, name, distro, kickstart, create=False):
-        if self.profile_by_name(name):
-            err = "Trying to add profile that already exists: %s" % name
-            self.logger.error(err)
-            raise ProvisionAlreadyExists(err)
         if create:
+            if self.profile_by_name(name):
+                err = "Trying to add profile that already exists: %s" % name
+                self.logger.error(err)
+                raise ProvisionAlreadyExists(err)
             profile_id = self.server.new_profile(self.token)
         else:
+            if not self.profile_by_name(name):
+                err = "Trying to edit profile"
+                " that does not exist: %s" % name
+                self.logger.error(err)
+                raise ProvisionDoesNotExist(err)
             profile_id = self.server.get_profile_handle(name, self.token)
         self.server.modify_profile(profile_id, 'name', name, self.token)
         self.server.modify_profile(profile_id, 'distro', distro, self.token)
@@ -184,13 +194,18 @@ class Cobbler(Provision):
     def update_distro(
             self, name, kernel, initrd, arch, breed, osversion,
             create=False):
-        if self.distro_by_name(name):
-            err = "Trying to add distro that already exists: %s" % name
-            self.logger.error(err)
-            raise ProvisionAlreadyExists(err)
         if create:
+            if self.distro_by_name(name):
+                err = "Trying to add distro that already exists: %s" % name
+                self.logger.error(err)
+                raise ProvisionAlreadyExists(err)
             distro_id = self.server.new_distro(self.token)
         else:
+            if not self.distro_by_name(name):
+                err = "Trying to edit distro"
+                " that does not exist: %s" % name
+                self.logger.error(err)
+                raise ProvisionDoesNotExist(err)
             distro_id = self.server.get_distro_handle(name, self.token)
         self.server.modify_distro(distro_id, 'name', name, self.token)
         self.server.modify_distro(distro_id, 'kernel', kernel, self.token)

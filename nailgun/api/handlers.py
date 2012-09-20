@@ -257,13 +257,39 @@ class ClusterChangesHandler(JSONHandler):
         ndp = ProvisionPower("ssh")
         ndp.power_user = "root"
 
+        allowed_statuses = ("discover", "ready")
+        for node in cluster.nodes:
+            if node.status not in allowed_statuses:
+                raise Exception(
+                    "Node %s (%s) status:%s not in %s" % (
+                        node.mac,
+                        node.ip,
+                        node.status,
+                        str(allowed_statuses)
+                    )
+                )
+
         for node in itertools.ifilter(
-            lambda n: n.status == "discover", cluster.nodes
+            lambda n: n.status in allowed_statuses, cluster.nodes
         ):
-            node.status = u"provisioning"
+            if node.status == "discover":
+                logging.info(
+                    "Node %s seems booted with bootstrap image",
+                    node.id
+                )
+                ndp.power_pass = "rsa:%s" % settings.PATH_TO_BOOTSTRAP_SSH_KEY
+            else:
+                logging.info(
+                    "Node %s seems booted with real system",
+                    node.id
+                )
+                ndp.power_pass = "rsa:%s" % settings.PATH_TO_SSH_KEY
+            ndp.power_address = node.ip
+
+            node.status = "provisioning"
             web.ctx.orm.add(node)
             web.ctx.orm.commit()
-            nd = ProvisionNode(node.id)
+            nd = ProvisionNode("%d_%s" % (node.id, node.mac))
             nd.driver = pd
             nd.mac = node.mac
             nd.profile = pf
