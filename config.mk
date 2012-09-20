@@ -10,7 +10,7 @@ IGNORE_MIRROR:=0
 endif
 
 ifndef LOCAL_MIRROR
-LOCAL_MIRROR:=$(BUILD_DIR)/build/mirror
+LOCAL_MIRROR:=./mirror
 endif
 
 ifndef GOLDEN_MIRROR
