@@ -1,4 +1,5 @@
 include_recipe "python"
+include_recipe "rabbitmq"
 
 ['libxml2-dev', 'python-dev', 'python-paramiko', 'ruby-httpclient'].each do |deb|
   package deb do

@@ -26,7 +26,7 @@ NET_EXCLUDE = ['10.20.0.0/24']
 VLANS = range(100, 1000)
 
 # It's also possible to override other settings, see impl_kombu.py
-RABBITMQ = {'transport': 'memory',
+RABBITMQ = {'fake': True,
             'hostname': '127.0.0.1'}
 
 from .extrasettings import *

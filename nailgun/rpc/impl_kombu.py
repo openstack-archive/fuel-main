@@ -247,14 +247,12 @@ class Connection(object):
         params.setdefault('userid', 'guest')
         params.setdefault('password', 'guest')
         params.setdefault('virtual_host', '/')
-        params.setdefault('transport', 'rabbit')
 
         params.update(settings.RABBITMQ)
         self.params = params
 
-        # TODO - check if it's test
-        # (mihgen) Will do it right when config file of new Nailgun available
-        if self.params['transport'] == 'memory':
+        if self.params.get('fake'):
+            self.params['transport'] = 'memory'
             self.memory_transport = True
         else:
             self.memory_transport = False

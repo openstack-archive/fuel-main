@@ -53,7 +53,7 @@ end
 # FIXME
 # cobbler parameters needed to be defined via attributes
 
-template "#{node.nailgun.root}/nailgun/extrasettings.py" do
+template "#{node.nailgun.root}/settings/extrasettings.py" do
   source 'extrasettings.py.erb'
   owner node.nailgun.user
   group node.nailgun.group
