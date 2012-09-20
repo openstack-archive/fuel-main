@@ -447,6 +447,24 @@ class Libvirt:
             ' '.join(self.virsh_cmd) + " net-list | grep -q '%s '" % network.id,
             expected_resultcodes=(0, 1)) == 0
 
+    def get_all_defined_networks(self):
+        output = subprocess.check_output(self.virsh_cmd + ['net-list', '--all'])
+        return re.findall('(\S+).*active.*', output)
+
+    def get_allocated_networks(self):
+        allocated_networks = []
+        all_networks = self.get_all_defined_networks()
+        for network in all_networks:
+            xml = self.get_output_as_xml(self.virsh_cmd + ['net-dumpxml', network])
+            ip = xml.find('ip')
+            network = ip.find('@address')
+            prefix_or_netmask = ip.find('@prefix')
+            if prefix_or_netmask is None:
+                prefix_or_netmask = ip.find('@netmask')
+            allocated_networks.append("%s/%s" % (network, prefix_or_netmask))
+        return allocated_networks
+
+
     def _system2(self, command, expected_resultcodes=(0,)):
         logger.debug("Running %s" % command)
 

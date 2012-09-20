@@ -65,6 +65,17 @@ class Network(ManagedObject):
     def stop(self):
         self.driver.stop_network(self)
 
+class Bridge(ManagedObject):
+    def __init__(self, bridge):
+        super(Bridge, self).__init__()
+        pass
+
+    def start(self):
+        self.driver.start_network(self)
+
+    def stop(self):
+        self.driver.stop_network(self)
+
 
 class Node(ManagedObject):
     def __init__(self, name, cpu=1, memory=512, arch='x86_64', vnc=False):
