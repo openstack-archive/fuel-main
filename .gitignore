@@ -7,7 +7,6 @@
 # services' runtime files
 *.log
 *.pid
-*.json
 
 # Vagrant housekeeping file
 /.vagrant

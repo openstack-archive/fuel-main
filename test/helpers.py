@@ -3,7 +3,6 @@ import urllib2
 import logging
 import posixpath
 import json
-import cStringIO
 
 import paramiko
 
@@ -36,7 +35,14 @@ class HTTPClient(object):
         try:
             res = self.opener.open(req)
         except urllib2.HTTPError as err:
-            res = cStringIO.StringIO(str(err))
+            res = type(
+                'HTTPError',
+                (object,),
+                {
+                    'read': lambda s: str(err),
+                    'getcode': lambda s: err.code
+                }
+            )()
         return res
 
 

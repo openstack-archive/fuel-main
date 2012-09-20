@@ -135,7 +135,7 @@ $/isoroot.done: \
 		$(addprefix $(ISOROOT)/nailgun/bin/,create_release agent) \
 		$(addprefix $(ISOROOT)/nailgun/solo/,solo.rb solo.json) \
 		$(addprefix $(ISOROOT)/nailgun/cookbooks/,$(call find-files,cookbooks)) \
-		$(addprefix $(ISOROOT)/nailgun/os-cookbooks/,$(call find-files,cooks)) \
+		$(addprefix $(ISOROOT)/nailgun/,openstack-essex.json) \
 		$/isoroot-gems.done \
 		$(ISOROOT)/eggs \
 		$(addprefix $(ISOROOT)/eggs/,$(call find-files,$(BINARIES_DIR)/eggs)) \
@@ -332,7 +332,7 @@ $(ISOROOT)/sync/%: iso/sync/% ; $(ACTION.COPY)
 $(ISOROOT)/indices/override.$(UBUNTU_RELEASE).extra.main: $/override.$(UBUNTU_RELEASE).extra.main ; $(ACTION.COPY)
 $(ISOROOT)/indices/%: $(BINARIES_DIR)/ubuntu/$(UBUNTU_RELEASE)/indices/% ; $(ACTION.COPY)
 $(ISOROOT)/nailgun/cookbooks/%: cookbooks/% ; $(ACTION.COPY)
-$(ISOROOT)/nailgun/os-cookbooks/%: cooks/% ; $(ACTION.COPY)
+$(ISOROOT)/nailgun/openstack-essex.json: scripts/release/openstack-essex.json ; $(ACTION.COPY)
 $(ISOROOT)/nailgun/solo/%: iso/solo/% ; $(ACTION.COPY)
 $(ISOROOT)/nailgun/bin/%: bin/% ; $(ACTION.COPY)
 $(ISOROOT)/nailgun/%: nailgun/% ; $(ACTION.COPY)

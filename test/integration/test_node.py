@@ -60,6 +60,30 @@ class TestNode(Base):
         self._update_nodes_in_cluster(cluster_id, nodes)
         self._launch_provisioning(cluster_id)
 
+        timer = time.time()
+        timeout = 1800
+        ready = False
+        while not ready:
+            try:
+                for node_id in nodes:
+                    node = json.loads(self.client.get(
+                        "/api/nodes/%s/" % node_id
+                    ).read())
+                    if node["status"] == 'provisioning':
+                        logging.info("Installation in progress...")
+                        raise StillPendingException()
+                    elif node["status"] == 'error':
+                        raise Exception(
+                            "Installation failed!"
+                        )
+                    elif node["status"] == 'ready':
+                        logging.info("Installation complete!")
+                        ready = True
+            except StillPendingException:
+                if (time.time() - timer) > timeout:
+                    raise Exception("Installation timeout expired!")
+                time.sleep(30)
+
         #if node["status"] == "discover":
             #logging.info("Node booted with bootstrap image.")
         #elif node["status"] == "ready":
@@ -138,6 +162,10 @@ class TestNode(Base):
         #slave_client.disconnect()
 
     def _launch_provisioning(self, cluster_id):
+        logging.info(
+            "Launching provisioning on cluster %d",
+            cluster_id
+        )
         changes = self.client.put(
             "/api/clusters/%d/changes/" % cluster_id
         )
