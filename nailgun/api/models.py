@@ -127,13 +127,13 @@ class Node(Base, BasicValidator):
             kilobytes = int(self.meta['memory']['total'][:-2])
             gigabytes = kilobytes / 1024.0 ** 2
             result['ram'] = gigabytes
-        except KeyError:
+        except (KeyError, ValueError):
             result['ram'] = None
 
         try:
             result['cpu'] = self.meta['cpu']['real']
             result['cores'] = self.meta['cpu']['total']
-        except KeyError:
+        except (KeyError, ValueError):
             result['cpu'] = None
             result['cores'] = None
 
@@ -145,7 +145,7 @@ class Node(Base, BasicValidator):
                     bytes = int(info['size']) * 512
                     terabytes = bytes / 1024.0 ** 4
                     result['hdd'] += terabytes
-        except AttributeError:
+        except (AttributeError, KeyError, ValueError):
             result['hdd'] = None
 
         return result
