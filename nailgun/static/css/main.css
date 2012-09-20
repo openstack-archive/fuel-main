@@ -261,6 +261,11 @@ h6.page-title {
   height: 46px;
 }
 
+.nodesbox-header .checkbox {
+  padding-left: 68px;
+  padding-top: 10px;
+}
+
 .nodebox {
   width: 172px;
   /* height: 226px; */
@@ -274,10 +279,68 @@ h6.page-title {
   overflow: hidden;
 }
 
-/*
-.nodebox:hover {box-shadow: 0 0px 6px rgba(0,0,0,.2), inset 0px 0px 0px rgba(255,255,255,.0); cursor: pointer;}
-*/
+.node-select {
+  display: block;
+  width: 172px;
+  height: 86px;
+  float: left;
+  margin-left: -1px;
+  margin-top: -85px;
+  border-radius: 4px;
+  line-height: 52px;
+  font-size: 60px;
+  text-align: center;
+  padding: 0px 0px 0px 5px;
+  color: rgba(255,255,255,0.85);
+  cursor: pointer;
+}
+.node-install-uncheck:hover {
+  background-color: rgba(0, 100, 38, 0.25);
+  cursor: pointer;
+  box-shadow: 0 0px 6px rgba(0,0,0,.3),
+  inset 0px 0px 0px rgba(255,255,255,.0);
+  cursor: pointer;
+}
+.node-install-uncheck .node-select {
+  display: none;
+}
+.node-install-check:hover {
+  background-color: rgba(0, 100, 38, 0.15);
+  cursor: pointer;
+  box-shadow: 0 0px 6px rgba(0,0,0,.3),
+  inset 0px 0px 0px rgba(255,255,255,.0);
+  cursor: pointer;
+}
+.node-install-check .node-select {
+  display: block;
+  background-color: rgba(0, 100, 38, 0.25);
+}
 
+.node-delete-uncheck:hover {
+  background-color: rgba(121, 0, 0, 0.25);
+  cursor: pointer;
+  box-shadow: 0 0px 6px rgba(0,0,0,.3),
+  inset 0px 0px 0px rgba(255,255,255,.0);
+  cursor: pointer;
+}
+.node-delete-uncheck .node-select {
+  display: none;
+}
+.node-delete-check:hover {
+  background-color: rgba(121, 0, 0, 0.25);
+  cursor: pointer;
+  box-shadow: 0 0px 6px rgba(0,0,0,.3),
+  inset 0px 0px 0px rgba(255,255,255,.0);
+  cursor: pointer;
+}
+.node-delete-check .node-select {
+  display: block;
+  background-color: rgba(121, 0, 0, 0.25);
+}
+
+.breaker {
+  margin: 0px 20px 20px 20px;
+}
 
 .node-name {
   height: 33px;
@@ -353,23 +416,17 @@ h6.page-title {
 
 
 .assigned {
-  height: 114px !important;
+  height: 114px !important; 
   border: 1px solid #afafaf;
 }
 
 .unassigned {
-  height: 86px !important;
+  height: 86px !important; 
   border: 1px solid #afafaf;
 }
-.unassigned:hover {
-  background-color: rgba(121, 0, 0, 0.25);
-  box-shadow: 0 0px 6px rgba(0,0,0,.2),
-  inset 0px 0px 0px rgba(255,255,255,.0);
-  cursor: pointer;
-}
 
-.unassigned > .node-status {
-	display: none;
+.unassigned > .nodestatus {
+  display: none;
 }
 
 .node-hardware {
