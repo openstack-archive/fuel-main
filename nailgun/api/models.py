@@ -145,7 +145,7 @@ class Node(Base, BasicValidator):
                     bytes = int(info['size']) * 512
                     terabytes = bytes / 1024.0 ** 4
                     result['hdd'] += terabytes
-        except (AttributeError, KeyError, ValueError):
+        except (AttributeError, KeyError, ValueError, TypeError):
             result['hdd'] = None
 
         return result
