@@ -25,7 +25,7 @@ then
     [ -d $MIRROR_DIR_GEMS ] || mkdir -p $MIRROR_DIR_GEMS
     awk -v mirror=$MIRROR_DIR_GEMS '{system ("[ `find " mirror " -name " $1 "-" $2 "*` ] || ( cd "mirror" && gem fetch "$1" -v "$2")")}' ./requirements-gems.txt
 
-    ln -s ${BASH_REMATCH[1]} ./mirror
+    [ -h $LOCAL_MIRROR ] || ln -s ${BASH_REMATCH[1]} $LOCAL_MIRROR
     echo "Local golden mirror is updated from the internet."
     echo "Symlink to ${BASH_REMATCH[1]} created at the build dir"
 
