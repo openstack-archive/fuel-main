@@ -294,43 +294,24 @@ h6.page-title {
   color: rgba(255,255,255,0.85);
   cursor: pointer;
 }
-<<<<<<< HEAD
 .node-to-add-unchecked:hover {
-=======
-
-.node-install-uncheck:hover {
->>>>>>> Create Summary block
   background-color: rgba(0, 100, 38, 0.25);
   cursor: pointer;
   box-shadow: 0 0px 6px rgba(0,0,0,.3),
   inset 0px 0px 0px rgba(255,255,255,.0);
   cursor: pointer;
 }
-<<<<<<< HEAD
 .node-to-add-unchecked .node-select {
   display: none;
 }
 .node-to-add-checked:hover {
-=======
-
-.node-install-uncheck .node-select {
-  display: none;
-}
-
-.node-install-check:hover {
->>>>>>> Create Summary block
   background-color: rgba(0, 100, 38, 0.15);
   cursor: pointer;
   box-shadow: 0 0px 6px rgba(0,0,0,.3),
   inset 0px 0px 0px rgba(255,255,255,.0);
   cursor: pointer;
 }
-<<<<<<< HEAD
 .node-to-add-checked .node-select {
-=======
-
-.node-install-check .node-select {
->>>>>>> Create Summary block
   display: block;
   background-color: rgba(0, 100, 38, 0.25);
 }
@@ -342,31 +323,17 @@ h6.page-title {
   inset 0px 0px 0px rgba(255,255,255,.0);
   cursor: pointer;
 }
-<<<<<<< HEAD
 .node-to-delete-unchecked .node-select {
   display: none;
 }
 .node-to-delete-checked:hover {
-=======
-
-.node-delete-uncheck .node-select {
-  display: none;
-}
-
-.node-delete-check:hover {
->>>>>>> Create Summary block
   background-color: rgba(121, 0, 0, 0.25);
   cursor: pointer;
   box-shadow: 0 0px 6px rgba(0,0,0,.3),
   inset 0px 0px 0px rgba(255,255,255,.0);
   cursor: pointer;
 }
-<<<<<<< HEAD
 .node-to-delete-checked .node-select {
-=======
-
-.node-delete-check .node-select {
->>>>>>> Create Summary block
   display: block;
   background-color: rgba(121, 0, 0, 0.25);
 }
