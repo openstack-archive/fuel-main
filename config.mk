@@ -14,7 +14,7 @@ LOCAL_MIRROR:=mirror
 endif
 
 ifndef GOLDEN_MIRROR
-GOLDEN_MIRROR:=jenkins-product.srt.mirantis.net:/var/lib/jenkins/mirror
+GOLDEN_MIRROR:=srv08-srt.srt.mirantis.net:/var/lib/jenkins/mirror
 endif
 
 iso.path:=$(BUILD_DIR)/iso/nailgun-ubuntu-12.04-amd64.iso
