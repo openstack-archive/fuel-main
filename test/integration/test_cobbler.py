@@ -19,6 +19,7 @@ class TestCobbler(Base):
 
 
     def setUp(self):
+        logging.info('Admin node ip: %s' % self.get_admin_node_ip())
         self.ip = self.get_admin_node_ip()
 
 
