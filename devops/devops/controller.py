@@ -31,9 +31,10 @@ class Controller:
         self.networks_pool = IpNetworksPool()
         self._reserve_networks()
 
-        self.home_dir = os.environ.get('DEVOPS_HOME') or\
-            os.path.join(os.environ.get('APPDATA'), '.devops') or\
-            os.path.join(os.environ['HOME'], ".devops")
+        self.home_dir = os.environ.get('DEVOPS_HOME')
+        if self.home_dir is None:
+            home_dir = os.environ.get('APPDATA') or os.environ['HOME']
+            self.home_dir = os.path.join(home_dir,'.devops')
         try:
             os.makedirs(os.path.join(self.home_dir, 'environments'), 0755)
         except OSError:
