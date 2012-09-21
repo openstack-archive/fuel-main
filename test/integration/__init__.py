@@ -64,11 +64,9 @@ class Ci(object):
             logger.error("Failed to build environment: %s\n%s" % (str(e), traceback.format_exc()))
             return False
 
+        node.interfaces[0].ip_addresses = network.ip_addresses[2]
         devops.save(self.environment)
         logger.info("Environment has been saved")
-
-
-        node.interfaces[0].ip_addresses = network.ip_addresses[2]
 
         logger.info("Starting admin node")
         node.start()
