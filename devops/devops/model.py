@@ -134,6 +134,16 @@ class Node(ManagedObject):
             return None
         return x[0]
 
+    @property
+    def ip_address_by_network(self):
+        name2ip_addresses = {}
+        for interface in self.interfaces:
+            if len(interface.ip_addresses) == 0:
+                name2ip_addresses[interface.network.name] = None
+            else:
+                name2ip_addresses[interface.network.name] = interface.ip_addresses[0]
+        return name2ip_addresses
+
     @ManagedObject.driver.setter
     def driver(self, driver):
         ManagedObject.driver.fset(self, driver)

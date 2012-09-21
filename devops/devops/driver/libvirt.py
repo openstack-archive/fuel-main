@@ -347,8 +347,8 @@ class Libvirt:
                 continue
 
             self._virsh(
-                ['send-key', node.id].append(
-                    map(lambda x: str(x), key_codes)))
+                ['send-key', node.id] +
+                    map(lambda x: str(x), key_codes))
 
     def _create_disk(self, name, capacity='1', pool='default', format='qcow2'):
         self._virsh(
