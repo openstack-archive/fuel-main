@@ -145,17 +145,42 @@ function(models, dialogViews, taskViews, clusterPageTemplate, deploymentControlT
     views.AddNodesScreen = Backbone.View.extend({
         template: _.template(addNodesScreenTemplate),
         events: {
-            'click .btn-discard, .btn-save': 'discardChanges'
+            'click .btn-discard': 'discardChanges',
+            'click .btn-apply': 'applyChanges',
+            'click .nodebox': 'toggleNode'
         },
         discardChanges: function() {
             this.tab.changeScreen(views.NodesByRolesScreen);
         },
+        applyChanges: function(e) {
+            if ($(e.currentTarget).attr('disabled')) return;
+            var nodes = this.$('.node-to-add-checked').map(function(){return $(this).attr('data-node-id')}).get();
+            console.log(nodes);
+            this.tab.changeScreen(views.NodesByRolesScreen);
+        },
+        toggleNode: function(e) {
+            $(e.currentTarget).toggleClass('node-to-add-checked').toggleClass('node-to-add-unchecked');
+        },
         initialize: function(options) {
             this.tab = options.tab;
             this.role = options.role;
+            this.availableNodes = new models.Nodes();
+            this.availableNodes.deferred = this.availableNodes.fetch({data: {cluster_id: ''}});
         },
         render: function() {
             this.$el.html(this.template({cluster: this.model, role: this.role}));
+            var nodesContainer = this.$('.available-nodes');
+            this.availableNodes.deferred.done(_.bind(function() {
+                if (this.availableNodes.length) {
+                    nodesContainer.html('');
+                    this.$('.btn-apply').attr('disabled', false);
+                    this.availableNodes.each(function(node) {
+                        nodesContainer.append(new views.Node({model: node, selectableForAddition: true}).render().el);
+                    })
+                } else {
+                    nodesContainer.html('No nodes available');
+                }
+            }, this));
             return this;
         }
     });
@@ -177,7 +202,7 @@ function(models, dialogViews, taskViews, clusterPageTemplate, deploymentControlT
             if (this.collection.length) {
                 var container = this.$('.node-list-container');
                 this.collection.each(function(node) {
-                    container.append(new views.Node({model: node}).render().el);
+                    container.append(new views.Node({model: node, renameable: true}).render().el);
                 })
             }
             return this;
@@ -191,6 +216,7 @@ function(models, dialogViews, taskViews, clusterPageTemplate, deploymentControlT
             'keydown .node-name-editing': 'onNodeNameInputKeydown'
         },
         startNameEditing: function() {
+            if (!this.renameable) return;
             if (this.model.collection.cluster.locked()) return;
             $('html').off(this.eventNamespace);
             $('html').on(this.eventNamespace, _.after(2, _.bind(function(e) {
@@ -222,12 +248,18 @@ function(models, dialogViews, taskViews, clusterPageTemplate, deploymentControlT
             }
         },
         initialize: function(options) {
+            _.defaults(this, options);
             this.editingName = false;
             this.eventNamespace = 'click.editnodename' + this.model.id;
             this.model.bind('change', this.render, this);
         },
         render: function() {
-            this.$el.html(this.template({node: this.model, editingName: this.editingName}));
+            this.$el.html(this.template({
+                node: this.model,
+                editingName: this.editingName,
+                selectableForAddition: this.selectableForAddition,
+                selectableForDeletion: this.selectableForDeletion
+            }));
             return this;
         }
     });
