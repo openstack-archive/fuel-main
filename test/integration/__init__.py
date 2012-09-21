@@ -18,17 +18,12 @@ class Ci(object):
         self.environment_cache_file = cache_file
         self.iso = iso
         self.environment = None
-        if self.environment_cache_file and os.path.exists(self.environment_cache_file):
-            logger.info("Loading existing integration environment...")
-            with file(self.environment_cache_file) as f:
-                environment_id = f.read()
-            try:
-                #self.environment = devops.load(environment_id)
-                self.environment = devops.load('integration')
-                logger.info("Successfully loaded existing environment")
-            except Exception, e:
-                logger.error("Failed to load existing integration environment: " + str(e) + "\n" + traceback.format_exc())
-                pass
+        try:
+            self.environment = devops.load('integration')
+            logger.info("Successfully loaded existing environment")
+        except Exception, e:
+            logger.info("Failed to load existing integration environment: " + str(e) + "\n" + traceback.format_exc())
+            pass
 
     def setup_environment(self):
         if self.environment:
@@ -64,24 +59,26 @@ class Ci(object):
             environment.nodes.append(node2)
 
             devops.build(environment)
+            self.environment = environment
         except Exception, e:
             logger.error("Failed to build environment: %s\n%s" % (str(e), traceback.format_exc()))
             return False
 
-        self.environment = environment
+        devops.save(self.environment)
+        logger.info("Environment has been saved")
 
-        try:
-            node.interfaces[0].ip_addresses = network.ip_addresses[2]
 
-            logger.info("Starting admin node")
-            node.start()
+        node.interfaces[0].ip_addresses = network.ip_addresses[2]
 
-            logger.info("Waiting admin node installation software to boot")
-            #            todo await
-            time.sleep(10)
+        logger.info("Starting admin node")
+        node.start()
 
-            logger.info("Executing admin node software installation")
-            node.send_keys("""<Esc><Enter>
+        logger.info("Waiting admin node installation software to boot")
+        #            todo await
+        time.sleep(10)
+
+        logger.info("Executing admin node software installation")
+        node.send_keys("""<Esc><Enter>
 <Wait>
 /install/vmlinuz initrd=/install/initrd.gz
  priority=critical
@@ -102,47 +99,19 @@ class Ci(object):
         'hostname': self.hostname,
         'domain': self.domain})
 
-            logger.info("Waiting for completion of admin node software installation")
-            wait(lambda: tcp_ping(node.ip_address, 22), timeout=self.installation_timeout)
+        logger.info("Waiting for completion of admin node software installation")
+        wait(lambda: tcp_ping(node.ip_address, 22), timeout=self.installation_timeout)
 
-            logger.info("Got SSH access to admin node, waiting for ports 80 and 8000 to open")
-            wait(lambda: tcp_ping(node.ip_address, 80) and tcp_ping(node.ip_address, 8000), timeout=self.chef_timeout)
+        logger.info("Got SSH access to admin node, waiting for ports 80 and 8000 to open")
+        wait(lambda: tcp_ping(node.ip_address, 80) and tcp_ping(node.ip_address, 8000), timeout=self.chef_timeout)
 
-            logger.info("Admin node software is installed and ready for use")
-
-            devops.save(self.environment)
-
-            try:
-                os.makedirs(os.path.dirname(self.environment_cache_file))
-            except OSError as e:
-                logger.warning("Error occured while creating directory: %s", os.path.dirname(self.environment_cache_file))
-
-            with file(self.environment_cache_file, 'w') as f:
-                f.write(self.environment.id)
-
-            logger.info("Environment has been saved")
-        except Exception, e:
-            devops.save(self.environment)
-
-            cache_file = self.environment_cache_file + '.candidate'
-            try:
-                os.makedirs(os.path.dirname(cache_file))
-            except OSError:
-                logger.warning("Exception occured while making directory: %s" % os.path.dirname(cache_file))
-            with file(cache_file, 'w') as f:
-                f.write(self.environment.id)
-            logger.error("Failed to build environment. Candidate environment cache file is %s" % cache_file)
-            return False
+        logger.info("Admin node software is installed and ready for use")
 
         return True
 
     def destroy_environment(self):
         if self.environment:
             devops.destroy(self.environment)
-
-        if self.environment_cache_file and os.path.exists(self.environment_cache_file):
-            os.remove(self.environment_cache_file)
-
         return True
 
 ci = None

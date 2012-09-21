@@ -347,10 +347,10 @@ class Libvirt:
                 continue
 
             self._virsh(
-                ['send-key', node.id,
-                ' '.join(map(lambda x: str(x), key_codes))])
+                ['send-key', node.id].append(
+                    map(lambda x: str(x), key_codes)))
 
-    def _create_disk(self, name, capacity=1, pool='default', format='qcow2'):
+    def _create_disk(self, name, capacity='1', pool='default', format='qcow2'):
         self._virsh(
             ['vol-create-as', '--pool', pool, '--name', name,
              '--capacity', capacity,'--format', format])
@@ -369,7 +369,7 @@ class Libvirt:
                  '--pool', 'default', '--format', disk.format,
                  '--backing-vol', base_name, '--backing-vol-format', 'qcow2'])
         else:
-            capacity = disk.size
+            capacity = str(disk.size)
             self._create_disk(name=name, capacity=capacity, format=disk.format)
         return self.get_disk_path(name)
 
