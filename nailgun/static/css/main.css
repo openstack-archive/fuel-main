@@ -294,24 +294,43 @@ h6.page-title {
   color: rgba(255,255,255,0.85);
   cursor: pointer;
 }
+<<<<<<< HEAD
 .node-to-add-unchecked:hover {
+=======
+
+.node-install-uncheck:hover {
+>>>>>>> Create Summary block
   background-color: rgba(0, 100, 38, 0.25);
   cursor: pointer;
   box-shadow: 0 0px 6px rgba(0,0,0,.3),
   inset 0px 0px 0px rgba(255,255,255,.0);
   cursor: pointer;
 }
+<<<<<<< HEAD
 .node-to-add-unchecked .node-select {
   display: none;
 }
 .node-to-add-checked:hover {
+=======
+
+.node-install-uncheck .node-select {
+  display: none;
+}
+
+.node-install-check:hover {
+>>>>>>> Create Summary block
   background-color: rgba(0, 100, 38, 0.15);
   cursor: pointer;
   box-shadow: 0 0px 6px rgba(0,0,0,.3),
   inset 0px 0px 0px rgba(255,255,255,.0);
   cursor: pointer;
 }
+<<<<<<< HEAD
 .node-to-add-checked .node-select {
+=======
+
+.node-install-check .node-select {
+>>>>>>> Create Summary block
   display: block;
   background-color: rgba(0, 100, 38, 0.25);
 }
@@ -323,17 +342,31 @@ h6.page-title {
   inset 0px 0px 0px rgba(255,255,255,.0);
   cursor: pointer;
 }
+<<<<<<< HEAD
 .node-to-delete-unchecked .node-select {
   display: none;
 }
 .node-to-delete-checked:hover {
+=======
+
+.node-delete-uncheck .node-select {
+  display: none;
+}
+
+.node-delete-check:hover {
+>>>>>>> Create Summary block
   background-color: rgba(121, 0, 0, 0.25);
   cursor: pointer;
   box-shadow: 0 0px 6px rgba(0,0,0,.3),
   inset 0px 0px 0px rgba(255,255,255,.0);
   cursor: pointer;
 }
+<<<<<<< HEAD
 .node-to-delete-checked .node-select {
+=======
+
+.node-delete-check .node-select {
+>>>>>>> Create Summary block
   display: block;
   background-color: rgba(121, 0, 0, 0.25);
 }
@@ -734,4 +767,40 @@ h6.page-title {
   text-align: center;
   color: #666666;
   text-shadow: 0 1px 0 rgba(255, 255, 255, 0.45);
+}
+
+.summary {
+  margin: 10px 20px 20px 20px;
+}
+
+.summary-inner {
+  min-height: 40px;
+  padding-right: 20px;
+  padding-left: 20px;
+  background-color: #fafafa;
+  background-image: -moz-linear-gradient(top, #ffffff, #f2f2f2);
+  background-image: -webkit-gradient(linear, 0 0, 0 100%, from(#ffffff), to(#f2f2f2));
+  background-image: -webkit-linear-gradient(top, #ffffff, #f2f2f2);
+  background-image: -o-linear-gradient(top, #ffffff, #f2f2f2);
+  background-image: linear-gradient(to bottom, #ffffff, #f2f2f2);
+  background-repeat: repeat-x;
+  border: 1px solid #d4d4d4;
+  -webkit-border-radius: 4px;
+     -moz-border-radius: 4px;
+          border-radius: 4px;
+  filter: progid:dximagetransform.microsoft.gradient(startColorstr='#ffffffff', endColorstr='#fff2f2f2', GradientType=0);
+  -webkit-box-shadow: 0 1px 4px rgba(0, 0, 0, 0.065);
+     -moz-box-shadow: 0 1px 4px rgba(0, 0, 0, 0.065);
+          box-shadow: 0 1px 4px rgba(0, 0, 0, 0.065);
+}
+
+.summary-article {
+  display: block;
+  float: left;
+  padding: 9px 20px 10px;
+  margin-left: -20px;
+  font-size: 18px;
+  font-weight: 200;
+  color: #999999;
+  text-shadow: 0 1px 0 #ffffff;
 }

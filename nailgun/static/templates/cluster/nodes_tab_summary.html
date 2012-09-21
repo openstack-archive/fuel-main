@@ -1,3 +1,10 @@
-Mode: <b><%= cluster.get('mode') %></b>
-Type: <b><%= cluster.get('type') %></b>
-Release: <b><%= cluster.get('release').get('name') %></b>
+<div class="navbar summary">
+  <div class="navbar-inner">
+    <div class="summary-article" href="#"><b>Summary</b></div>
+    <ul class="nav">
+      <li><a href="#"><b>Mode: </b><%= cluster.get('mode') %></a></li>
+      <li><a href="#"><b>Type: </b><%= cluster.get('type') %></a></li>
+      <li><a href="#"><b>Release: </b><%= cluster.get('release').get('name') %></a></li>
+    </ul>
+  </div>
+</div>
