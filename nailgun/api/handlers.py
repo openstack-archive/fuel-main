@@ -260,7 +260,7 @@ class ClusterChangesHandler(JSONHandler):
         allowed_statuses = ("discover", "ready")
         for node in cluster.nodes:
             if node.status not in allowed_statuses:
-                raise Exception(
+                raise web.badrequest(
                     "Node %s (%s) status:%s not in %s" % (
                         node.mac,
                         node.ip,

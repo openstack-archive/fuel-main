@@ -1,10 +1,13 @@
 import os
 import sys
+import logging
 
 import web
 
 curdir = os.path.dirname(__file__)
 sys.path.insert(0, curdir)
+
+logging.basicConfig(stream=sys.stderr, level=logging.DEBUG)
 
 from api.handlers import check_client_content_type
 from db import load_db_driver
