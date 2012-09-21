@@ -114,4 +114,4 @@ class Ci(object):
             devops.destroy(self.environment)
         return True
 
-ci = None
+ci = Ci()

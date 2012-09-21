@@ -6,10 +6,7 @@ logging.basicConfig(format=':%(lineno)d: %(asctime)s %(message)s', level=logging
 
 class Base(TestCase):
     def get_admin_node_ip(self):
-        if ci is not None and ci.environment is not None:
-            return str(ci.environment.node['admin'].ip_address)
-        else:
-            return "10.0.0.2"
+        return str(ci.environment.node['admin'].ip_address)
 
     def get_id_by_mac(self, mac_address):
         return mac_address.replace(":", "").upper()

@@ -11,7 +11,6 @@ sys.path[:0] = [
     root('devops'),
 ]
 
-import cookbooks
 import integration
 
 def main():
@@ -41,19 +40,14 @@ def main():
     paramiko_logger = logging.getLogger('paramiko')
     paramiko_logger.setLevel(numeric_level+1)
 
-    if params.test_suite == 'integration':
-        suite = integration
-    elif params.test_suite == 'cookbooks':
-        suite = cookbooks
+    suite = integration
 #   todo fix default values
-    suite.ci = suite.Ci(params.cache_file, params.iso)
-    suite.ci.installation_timeout = getattr(params, 'installation_timeout', 1800)
-    suite.ci.chef_timeout = getattr(params, 'chef_timeout', 600)
+    ci = suite.Ci(params.cache_file, params.iso)
 
     if params.command == 'setup':
-        result = suite.ci.setup_environment()
+        result = ci.setup_environment()
     elif params.command == 'destroy':
-        result = suite.ci.destroy_environment()
+        result = ci.destroy_environment()
     elif params.command == 'test':
         import nose
         import nose.config
