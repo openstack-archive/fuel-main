@@ -27,6 +27,7 @@ h5.page-title,
 h6.page-title {
   color: #ffffff;
   text-shadow: 0 1px 0 rgba(0, 0, 0, 0.35);
+  display: inline-block;
 }
 
 .container,
@@ -181,26 +182,25 @@ h6.page-title {
   text-decoration: none;
 }
 
-.tabsetting-btn {
-  background: none !important;
-  border: none !important;
-  box-shadow: none !important;
-  box-shadow: 0 0px 0px rgba(0,0,0,.9),
-  inset 0px 0px 0px rgba(0,0,0,.9);
+.cluster-name-btn {
+  display: inline-block;
+  padding-top: 18px;
+  margin-left: 10px;
   cursor: pointer;
-  opacity: 0.5;
+  opacity: 0.35;
 }
 
-.tabsetting-btn:hover {
+.cluster-name-btn:hover {
   opacity: 1;
 }
 
-.tabsetting-btn > i {
+.cluster-name-btn > i {
   font-size: 20px;
   color: #ffffff;
   text-shadow: 0 1px 0 rgba(0, 0, 0, 0.45);
   box-shadow: 0 0px 0px rgba(0,0,0,.9), inset 0px 0px 0px rgba(0,0,0,.9);
 }
+
 
 /* White Box for Cluster content*/
 .whitebox {
@@ -635,36 +635,41 @@ h6.page-title {
   inset 0px 0px 0px rgba(255,255,255,.0);
   cursor: pointer;
   text-shadow: 0 1px 0 rgba(255, 255, 255, 0.45);
-  -webkit-transition: all 1s ease;
-    -moz-transition: all 1s ease;
-    -o-transition: all 1s ease;
-    -ms-transition: all 1s ease;
+  -webkit-transition: all 0.5s ease;
+  -moz-transition: all 0.5s ease;
+  -o-transition: all 0.5s ease;
+  -ms-transition: all 0.5s ease;
+  background-image: -webkit-linear-gradient(top, #f2f4f4, #c4cbcc);
+  background-image: -moz-linear-gradient(top, #f2f4f4, #c4cbcc);
+  background-image: -o-linear-gradient(top, #f2f4f4, #c4cbcc);
+  background-image: -ms-linear-gradient(top, #f2f4f4, #c4cbcc);
+  background-image: linear-gradient(to bottom, #f2f4f4, #c4cbcc);
 }
 .clusterbox a, .clusterbox a:hover {
   text-decoration: none;
 }
 .create-cluster {
   background-color: rgba(0, 0, 0, 0.1);
-  border: 1px solid transparent;
+  /* border: 1px solid transparent; */
   box-shadow: 0 1px 0 rgba(255, 255, 255, 0.2), 0 1px 1px rgba(0, 0, 0, 0.4) inset;
   text-shadow: 0 1px 0 rgba(0, 0, 0, 0.3);
-    -webkit-transition: all 1s ease;
-    -moz-transition: all 1s ease;
-    -o-transition: all 1s ease;
-    -ms-transition: all 1s ease;
+    -webkit-transition: all 0.5s ease;
+    -moz-transition: all 0.5s ease;
+    -o-transition: all 0.5s ease;
+    -ms-transition: all 0.5s ease;
 }
 
 .create-cluster:hover {
   background-color: #c8cfd6;
   box-shadow: 0 1px 8px rgba(0,0,0,.85),
   inset 0px 0px 0px rgba(255,255,255,.0);
-  border: 1px solid #2b3139;
+  /* border: 1px solid #2b3139; */
   cursor: pointer;
   text-shadow: 0 1px 0 rgba(255, 255, 255, 0.45);
-  -webkit-transition: all 1s ease;
-    -moz-transition: all 1s ease;
-    -o-transition: all 1s ease;
-    -ms-transition: all 1s ease;
+  -webkit-transition: all 0.5s ease;
+    -moz-transition: all 0.5s ease;
+    -o-transition: all 0.5s ease;
+    -ms-transition: all 0.5s ease;
 }
 .create-cluster > .add-icon {
   display: block;
@@ -679,18 +684,18 @@ h6.page-title {
   text-align: center;
   color: #798797;
   text-shadow: 0 1px 0 rgba(0, 0, 0, 0.45);
-  -webkit-transition: all 1s ease;
-    -moz-transition: all 1s ease;
-    -o-transition: all 1s ease;
-    -ms-transition: all 1s ease;
+  -webkit-transition: all 0.5s ease;
+    -moz-transition: all 0.5s ease;
+    -o-transition: all 0.5s ease;
+    -ms-transition: all 0.5s ease;
 }
 .create-cluster:hover > .create-cluster-text {
   color: #333333;
   text-shadow: 0 1px 0 rgba(255, 255, 255, 0.45);
-  -webkit-transition: all 1s ease;
-    -moz-transition: all 1s ease;
-    -o-transition: all 1s ease;
-    -ms-transition: all 1s ease;
+  -webkit-transition: all 0.5s ease;
+    -moz-transition: all 0.5s ease;
+    -o-transition: all 0.5s ease;
+    -ms-transition: all 0.5s ease;
 }
 .cluster-name {
   height: 34px;
