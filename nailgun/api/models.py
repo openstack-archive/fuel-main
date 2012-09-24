@@ -180,6 +180,33 @@ class Node(Base, BasicValidator):
             )
         return d
 
+    @classmethod
+    def validate_collection_update(cls, data):
+        d = cls.validate_json(data)
+        if not isinstance(d, list):
+            raise web.badrequest(
+                "Invalid json list"
+            )
+
+        q = web.ctx.orm.query(Node)
+        for nd in d:
+            if not "mac" in nd and not "id" in nd:
+                raise web.badrequest(
+                    "MAC or ID is not specified"
+                )
+            else:
+                if "mac" in nd and not q.filter(
+                    Node.mac == nd["mac"]
+                ).first():
+                    raise web.badrequest(
+                        "Invalid MAC specified"
+                    )
+                if "id" in nd and not q.get(nd["id"]):
+                    raise web.badrequest(
+                        "Invalid ID specified"
+                    )
+        return d
+
 
 class IPAddr(Base):
     __tablename__ = 'ip_addrs'
