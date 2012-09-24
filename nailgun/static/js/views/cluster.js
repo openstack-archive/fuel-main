@@ -154,9 +154,26 @@ function(models, dialogViews, taskViews, clusterPageTemplate, deploymentControlT
         },
         applyChanges: function(e) {
             if ($(e.currentTarget).attr('disabled')) return;
-            var nodes = this.$('.node-to-add-checked').map(function(){return $(this).attr('data-node-id')}).get();
-            console.log(nodes);
-            this.tab.changeScreen(views.NodesByRolesScreen);
+            this.$('.btn-apply').attr('disabled', true);
+            var chosenNodesIds = this.$('.node-to-add-checked').map(function() {return parseInt($(this).attr('data-node-id'), 10)}).get();
+            var chosenNodes = this.availableNodes.filter(function(node) {return _.contains(chosenNodesIds, node.id)});
+            var chosenNodesCollection = new models.Nodes(chosenNodes);
+            chosenNodesCollection.each(function(node) {
+                node.set({
+                    cluster_id: this.model.id,
+                    role: this.role,
+                    redeployment_needed: true
+                });
+            }, this);
+            chosenNodesCollection.toJSON = function(options) {
+                return this.map(function(node) {
+                    return _.pick(node.attributes, 'id', 'cluster_id', 'role', 'redeployment_needed')
+                });
+            };
+            Backbone.sync('update', chosenNodesCollection).done(_.bind(function() {
+                this.tab.changeScreen(views.NodesByRolesScreen);
+                this.model.fetch();
+            }, this));
         },
         toggleNode: function(e) {
             $(e.currentTarget).toggleClass('node-to-add-checked').toggleClass('node-to-add-unchecked');
@@ -178,7 +195,7 @@ function(models, dialogViews, taskViews, clusterPageTemplate, deploymentControlT
                         nodesContainer.append(new views.Node({model: node, selectableForAddition: true}).render().el);
                     })
                 } else {
-                    nodesContainer.html('No nodes available');
+                    nodesContainer.html('<div class="span12">No nodes available</div>');
                 }
             }, this));
             return this;

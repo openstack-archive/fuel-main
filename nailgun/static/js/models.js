@@ -3,10 +3,7 @@ define(function() {
     var collections = {};
 
     models.Release = Backbone.Model.extend({
-        urlRoot: '/api/releases',
-        initialize: function(attrs) {
-            this.set('roles', new models.Roles(attrs.roles));
-        }
+        urlRoot: '/api/releases'
     });
 
     models.Releases = Backbone.Collection.extend({
@@ -66,15 +63,6 @@ define(function() {
 
     models.Node = Backbone.Model.extend({
         urlRoot: '/api/nodes',
-        initialize: function(attrs) {
-            this.set('roles', new models.Roles(attrs.roles));
-            this.set('new_roles', new models.Roles(attrs.new_roles));
-        },
-        parse: function(response) {
-            response.roles = new models.Roles(response.roles);
-            response.new_roles = new models.Roles(response.new_roles);
-            return response;
-        },
         fullProductName: function() {
             return (this.get('manufacturer') ? this.get('manufacturer') + ' ' + this.get('platform_name') : this.get('platform_name')) || 'Unknown Platform';
         },
@@ -93,15 +81,6 @@ define(function() {
             var resources = this.map(function(node) {return node.resource(resourceName)});
             return _.reduce(resources, function(sum, n) {return sum + n}, 0);
         }
-    });
-
-    models.Role = Backbone.Model.extend({
-        urlRoot: '/api/roles'
-    });
-
-    models.Roles = Backbone.Collection.extend({
-        model: models.Role,
-        url: '/api/roles'
     });
 
     return models;
