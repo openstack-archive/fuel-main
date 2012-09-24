@@ -1,7 +1,9 @@
 # -*- coding: utf-8 -*-
 
+import os
 import re
 import json
+import logging
 from random import randint
 from unittest.case import TestCase
 
@@ -13,9 +15,14 @@ from api.models import engine, Node, Release, Cluster
 from api.urls import urls
 from manage import app
 from db import dropdb, syncdb, flush
+from fixtures.fixman import upload_fixture
 
 
 class BaseHandlers(TestCase):
+
+    fixture_dir = "fixtures"
+    fixtures = []
+
     def __init__(self, *args, **kwargs):
         super(BaseHandlers, self).__init__(*args, **kwargs)
         self.mock = mock
@@ -32,6 +39,24 @@ class BaseHandlers(TestCase):
             "Content-Type": "application/json"
         }
         flush()
+        for fxtr in self.fixtures:
+            fxtr_path = os.path.join(
+                self.fixture_dir,
+                "%s.json" % fxtr
+            )
+            if not os.path.exists(fxtr_path):
+                logging.warning(
+                    "Fixture file not found: %s",
+                    fxtr_path
+                )
+                break
+            else:
+                logging.info(
+                    "Uploading fixture from file: %s",
+                    fxtr_path
+                )
+                with open(fxtr_path, "r") as fixture:
+                    upload_fixture(fixture)
 
     def default_metadata(self):
         metadata = {'block_device':
