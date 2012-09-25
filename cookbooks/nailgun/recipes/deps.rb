@@ -17,6 +17,7 @@ end
   'SQLAlchemy' => '0.7.8',
   'Paste' => '1.7.5.1',
   'kombu' => '2.1.8',
+  'nose' => '1.1.2',
   'wsgilog' => '0.3'
 }.each do |package, version|
   python_pip package do
