@@ -17,6 +17,37 @@ function(models, dialogViews, taskViews, clusterPageTemplate, deploymentControlT
         updateInterval: 5000,
         template: _.template(clusterPageTemplate),
         events: {
+            'click .rename-cluster-btn': 'startClusterRenaming',
+            'click .cluster-name-editable .discard-renaming-btn': 'endClusterRenaming',
+            'click .cluster-name-editable .apply-name-btn': 'applyNewClusterName',
+            'keydown .cluster-name-editable input': 'onClusterNameInputKeydown'
+        },
+        startClusterRenaming: function() {
+            this.renaming = true;
+            this.$('.cluster-name-editable').show();
+            this.$('.cluster-name-uneditable').hide();
+            this.$('.cluster-name-editable input').val(this.model.get('name')).focus();
+        },
+        endClusterRenaming: function() {
+            this.renaming = false;
+            this.$('.cluster-name-editable').hide();
+            this.$('.cluster-name-uneditable').show();
+        },
+        applyNewClusterName: function() {
+            var name = this.$('.cluster-name-editable input').val();
+            if (name != this.model.get('name')) {
+                this.$('.cluster-name-editable input, .cluster-name-editable button').attr('disabled', true);
+                this.model.update({name: name}, {complete: this.endClusterRenaming, context: this});
+            } else {
+                this.endClusterRenaming();
+            }
+        },
+        onClusterNameInputKeydown: function(e) {
+            if (e.which == 13) {
+                this.applyNewClusterName();
+            } else if (e.which == 27) {
+                this.endClusterRenaming();
+            }
         },
         initialize: function(options) {
             _.defaults(this, options);
@@ -38,7 +69,12 @@ function(models, dialogViews, taskViews, clusterPageTemplate, deploymentControlT
             }
         },
         render: function() {
-            this.$el.html(this.template({cluster: this.model, tabs: this.tabs, activeTab: this.tab}));
+            this.$el.html(this.template({
+                cluster: this.model,
+                tabs: this.tabs,
+                activeTab: this.tab,
+                renaming: this.renaming
+            }));
 
             if (this.tab == 'nodes') {
                 this.nodesTab = new views.NodesTab({model: this.model});
@@ -282,51 +318,53 @@ function(models, dialogViews, taskViews, clusterPageTemplate, deploymentControlT
     views.Node = Backbone.View.extend({
         template: _.template(nodeTemplate),
         events: {
-            'click .node-name': 'startNameEditing',
+            'click .node-name': 'startNodeRenaming',
             'keydown .node-name-editing': 'onNodeNameInputKeydown'
         },
-        startNameEditing: function() {
+        startNodeRenaming: function() {
             if (!this.renameable) return;
             if (this.model.collection.cluster.locked()) return;
             $('html').off(this.eventNamespace);
             $('html').on(this.eventNamespace, _.after(2, _.bind(function(e) {
                 if (!$(e.target).closest(this.$el).length) {
-                    this.endNameEditing();
+                    this.endNodeRenaming();
                 }
             }, this)));
-            this.editingName = true;
+            this.renaming = true;
             this.render();
             this.$('.node-name-editing input').focus();
         },
-        endNameEditing: function() {
+        endNodeRenaming: function() {
             $('html').off(this.eventNamespace);
-            this.editingName = false;
+            this.renaming = false;
             this.render();
         },
+        applyNewNodeName: function() {
+            var name = this.$('.node-name-editing input').val();
+            if (name != this.model.get('name')) {
+                this.$('.node-name-editing input').attr('disabled', true);
+                this.model.update({name: name}, {complete: this.endNodeRenaming, context: this});
+            } else {
+                this.endNodeRenaming();
+            }
+        },
         onNodeNameInputKeydown: function(e) {
-            if (e.which == 13) { // enter
-                var input = this.$('.node-name-editing input');
-                var name = input.attr('value');
-                if (name != this.model.get('name')) {
-                    input.attr('disabled', true).addClass('disabled');
-                    this.model.update({name: name}, {complete: this.endNameEditing, context: this});
-                } else {
-                    this.endNameEditing();
-                }
-            } else if (e.which == 27) { // esc
-                this.endNameEditing();
+            if (e.which == 13) {
+                this.applyNewNodeName();
+            } else if (e.which == 27) {
+                this.endNodeRenaming();
             }
         },
         initialize: function(options) {
             _.defaults(this, options);
-            this.editingName = false;
+            this.renaming = false;
             this.eventNamespace = 'click.editnodename' + this.model.id;
             this.model.bind('change', this.render, this);
         },
         render: function() {
             this.$el.html(this.template({
                 node: this.model,
-                editingName: this.editingName,
+                editingName: this.renaming,
                 selectableForAddition: this.selectableForAddition,
                 selectableForDeletion: this.selectableForDeletion
             }));

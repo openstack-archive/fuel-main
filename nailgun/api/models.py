@@ -67,7 +67,7 @@ class Cluster(Base, BasicValidator):
     mode = Column(Enum(*MODES), nullable=False, default='simple')
     redundancy = Column(Integer, nullable=True)
     id = Column(Integer, primary_key=True)
-    name = Column(Unicode(100), unique=True, nullable=False)
+    name = Column(Unicode(50), unique=True, nullable=False)
     release_id = Column(Integer, ForeignKey('releases.id'), nullable=False)
     nodes = relationship("Node", backref="cluster")
 

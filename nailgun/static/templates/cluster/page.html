@@ -1,16 +1,16 @@
 <div class="row-fluid">
   <div class="span12">
-    <h3 class="page-title"><%= cluster.get('name') %> (<%= cluster.get('release').get('name') %>)</h3>
-    <div class="cluster-name-btn"><i class="icon-pencil-1" title="Rename Cluster"></i></div>
-    <div class="cluster-name-btn pull-right"><i class="icon-cancel-3" title="Delete Cluster"></i></div>
-  </div>
-</div>
-
-<div class="row-fluid">
-  <div class="span12">
-    <h3 class="page-title"><form><input type="text" placeholder="Production (Essex)"></fotm></h3>
-    <button class="btn btn-success" style="margin-top: -15px;" type="button"><i class="icon-ok-4"></i></button>
-    <button class="btn" style="margin-top: -15px;" type="button"><i class="icon-cancel-3"></i></button>
+    <div class="cluster-name-uneditable" style="<%= renaming ? 'display:none' : '' %>">
+      <h3 class="page-title"><%= cluster.get('name') %></h3>
+      <div class="cluster-name-btn rename-cluster-btn"><i class="icon-pencil-1" title="Rename Cluster"></i></div>
+      <div class="cluster-name-btn delete-cluster-btn pull-right"><i class="icon-cancel-3" title="Delete Cluster"></i></div>
+    </div>
+    <div class="cluster-name-editable" style="<%= renaming ? '' : 'display:none' %>">
+      <h3 class="page-title"><input type="text" maxlength="50" name="cluster-name" value="<%= cluster.get('name') %>"></h3>
+      <button class="btn btn-success apply-name-btn" style="margin-top: -15px;" type="button"><i class="icon-ok-4"></i></button>
+      <button class="btn discard-renaming-btn" style="margin-top: -15px;" type="button"><i class="icon-cancel-3"></i></button>
+      <div class="cluster-name-btn delete-cluster-btn pull-right"><i class="icon-cancel-3" title="Delete Cluster"></i></div>
+    </div>
   </div>
 </div>
 
@@ -19,8 +19,9 @@
     <% _.each(tabs, function(tab) { %>
       <li class="<%= activeTab == tab ? 'active' : '' %>"><a href="#cluster/<%= cluster.id %>/<%= tab %>"><b class="tab-<%= tab %>-normal"></b></a></li>
     <% }) %>
-    <li class="pull-right"><button class="deploy-btn disabled" type="button"><i class="icon-upload-cloud-1"></i> Deploy Button</button></li>
-    <li class="pull-right"><button class="deploy-btn" type="button"><i class="icon-upload-cloud-1"></i> Deploy Button</button></li>
+    <li class="pull-right">
+      <button class="deploy-btn" type="button"><i class="icon-upload-cloud-1"></i> Deploy Cluster</button>
+    </li>
   </ul>
   <div class="tab-content">
     <% _.each(tabs, function(tab) { %>
