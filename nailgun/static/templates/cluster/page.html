@@ -1,21 +1,26 @@
 <div class="row-fluid">
   <div class="span12">
     <h3 class="page-title"><%= cluster.get('name') %> (<%= cluster.get('release').get('name') %>)</h3>
-    <div class="cluster-name-btn"><i class="icon-pencil-1"></i></div>
-    <div class="cluster-name-btn pull-right"><i class="icon-cancel-3"></i></div>
+    <div class="cluster-name-btn"><i class="icon-pencil-1" title="Rename Cluster"></i></div>
+    <div class="cluster-name-btn pull-right"><i class="icon-cancel-3" title="Delete Cluster"></i></div>
   </div>
-
 </div>
+
+<div class="row-fluid">
+  <div class="span12">
+    <h3 class="page-title"><form><input type="text" placeholder="Production (Essex)"></fotm></h3>
+    <button class="btn btn-success" style="margin-top: -15px;" type="button"><i class="icon-ok-4"></i></button>
+    <button class="btn" style="margin-top: -15px;" type="button"><i class="icon-cancel-3"></i></button>
+  </div>
+</div>
+
 <div class="whitebox">
   <ul class="nav nav-tabs">
     <% _.each(tabs, function(tab) { %>
       <li class="<%= activeTab == tab ? 'active' : '' %>"><a href="#cluster/<%= cluster.id %>/<%= tab %>"><b class="tab-<%= tab %>-normal"></b></a></li>
     <% }) %>
-    <li class="pull-right"><button class="btn" type="button">Deploy Button</button></li>
-    <!--
-    <li class="pull-right"><a class="tabsetting-btn"><i class="icon-cancel-3"></i></a></li>
-    <li class="pull-right"><a class="tabsetting-btn"><i class="icon-pencil-1"></i></a></li>
-    -->
+    <li class="pull-right"><button class="deploy-btn disabled" type="button"><i class="icon-upload-cloud-1"></i> Deploy Button</button></li>
+    <li class="pull-right"><button class="deploy-btn" type="button"><i class="icon-upload-cloud-1"></i> Deploy Button</button></li>
   </ul>
   <div class="tab-content">
     <% _.each(tabs, function(tab) { %>
