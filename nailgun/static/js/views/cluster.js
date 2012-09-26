@@ -281,7 +281,7 @@ function(models, dialogViews, taskViews, clusterPageTemplate, deploymentControlT
         },
         applyChanges: function() {
             if (confirm('Do you really want to delete these nodes?')) {
-                views.DeleteNodesScreen.__super__.applyChanges.call(this);
+                this.constructor.__super__.applyChanges.call(this);
             }
         },
         modifyNodes: function(nodes) {
