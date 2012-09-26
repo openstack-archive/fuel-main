@@ -195,8 +195,8 @@
         "fields": {
             "status": "offline",
             "name": "",
-            "manufacturer": "",
-            "platform_name": "No-Manufacturer",
+            "manufacturer": "Xen",
+            "platform_name": "",
             "role": "compute",
             "ip": "",
             "fqdn": "",
@@ -225,7 +225,7 @@
         "fields": {
             "status": "ready",
             "name": "Node without cluster",
-            "manufacturer": "",
+            "manufacturer": "Cisco",
             "platform_name": "",
             "role": null,
             "ip": "",
