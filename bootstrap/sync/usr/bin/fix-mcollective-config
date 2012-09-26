@@ -1,0 +1,4 @@
+#!/bin/sh
+masternode_ip=`sed -r 's/^.*url=http:\/\/([^/]+)\/.*$/\1/' /proc/cmdline`
+sed -i "s/plugin.stomp.host= .*\$/plugin.stomp.host= $masternode_ip/" /etc/mcollective/server.cfg
+service mcollective restart

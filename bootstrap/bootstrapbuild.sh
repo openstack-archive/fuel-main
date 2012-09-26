@@ -43,7 +43,8 @@ INITRD_FS=${BASEDIR}/initrd-fs
 INITRD_LOOP=${BASEDIR}/initrd-loop
 INITRD_MODULES=${BASEDIR}/modules
 
-DEBOOTSTRAP_INCLUDE=less,vim,bash,net-tools,isc-dhcp-client,rsyslog,cron,iputils-ping,openssh-server,ruby-httpclient,ruby-json,ohai,rubygems
+DEBOOTSTRAP_INCLUDE=less,vim,bash,net-tools,isc-dhcp-client,rsyslog,cron,iputils-ping,openssh-server,ruby-httpclient,ruby-json,ohai,rubygems\
+,mcollective,python-scapy
 DEBOOTSTRAP_EXCLUDE=
 
 ORIG=${BASEDIR}/orig
@@ -428,7 +429,7 @@ echo "Adding root autologin on tty1 ..."
 sed -i -e '/exec/c\exec /sbin/getty -8 -l /usr/bin/autologin 38400 tty1' ${INITRD_LOOP}/etc/init/tty1.conf
 
 ###########################
-# INJECTING ESTRA FILES
+# INJECTING EXTRA FILES
 ###########################
 echo "Syncing system ..."
 cp -r ${SYNC}/* ${INITRD_LOOP}

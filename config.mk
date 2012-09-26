@@ -1,7 +1,7 @@
 
 BINARIES_DIR:=binaries
 ifndef BOOTSTRAP_REBUILD
-BOOTSTRAP_REDUILD:=0
+BOOTSTRAP_REBUILD:=0
 endif
 
 MIRROR_URL:=http://srv08-srt.srt.mirantis.net/mirror

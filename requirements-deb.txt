@@ -12,6 +12,7 @@ libapache2-svn
 libhttpclient-ruby
 libjson-ruby
 libxml2-dev
+mcollective
 ntp
 ohai
 python-dev
@@ -19,6 +20,7 @@ python-django
 python-ipaddr
 python-paramiko
 python-pip
+python-scapy
 python-virtualenv
 redis-server
 rsync
