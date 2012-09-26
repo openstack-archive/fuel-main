@@ -35,6 +35,9 @@ define(function() {
         locked: function() {
             return this.get('task') && !this.get('task').get('ready');
         },
+        hasChanges: function() {
+            return _.any(this.get('nodes').pluck('redeployment_needed'));
+        },
         availableRoles: function() {
             if (this.get('type') == 'storage') {
                 return ['controller', 'storage']

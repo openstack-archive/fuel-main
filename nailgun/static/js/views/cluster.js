@@ -4,13 +4,12 @@ define(
     'views/dialogs',
     'views/tasks',
     'text!templates/cluster/page.html',
-    'text!templates/cluster/deployment_control.html',
     'text!templates/cluster/nodes_tab_summary.html',
     'text!templates/cluster/edit_nodes_screen.html',
     'text!templates/cluster/node_list.html',
     'text!templates/cluster/node.html'
 ],
-function(models, dialogViews, taskViews, clusterPageTemplate, deploymentControlTemplate, nodesTabSummaryTemplate, editNodesScreenTemplate, nodeListTemplate, nodeTemplate) {
+function(models, dialogViews, taskViews, clusterPageTemplate, nodesTabSummaryTemplate, editNodesScreenTemplate, nodeListTemplate, nodeTemplate) {
     var views = {}
 
     views.ClusterPage = Backbone.View.extend({
@@ -92,52 +91,6 @@ function(models, dialogViews, taskViews, clusterPageTemplate, deploymentControlT
                 this.$('#tab-' + this.tab).text('TBD');
             }
 
-            return this;
-        }
-    });
-
-    views.DeploymentControl = Backbone.View.extend({
-        template: _.template(deploymentControlTemplate),
-        events: {
-            'click .apply-changes:not(.disabled)': 'applyChanges',
-            'click .discard-changes:not(.disabled)': 'discardChanges'
-        },
-        applyChanges: function() {
-            var task = new models.Task();
-            task.save({}, {
-                type: 'PUT',
-                url: '/api/clusters/' + this.model.id + '/changes',
-                success: _.bind(function() {
-                    if (this.page == app.page) this.page.update();
-                }, this)
-            });
-            this.disabled = true;
-            this.render();
-        },
-        discardChanges: function() {
-            var cluster = this.model;
-            $.ajax({
-                type: 'DELETE',
-                url: '/api/clusters/' + this.model.id + '/changes',
-                success: this.model.fetch,
-                context: this.model
-            });
-            this.disabled = true;
-            this.render();
-        },
-        initialize: function(options) {
-            this.page = options.page;
-            this.disabled = false;
-            this.model.get('nodes').each(function(node) {
-                node.bind('change:redeployment_needed', this.render, this);
-            }, this);
-        },
-        render: function() {
-            if (this.model.get('nodes').where({redeployment_needed: true}).length) {
-                this.$el.html(this.template({disabled: this.disabled}));
-            } else {
-                this.$el.html('');
-            }
             return this;
         }
     });
