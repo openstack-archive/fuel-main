@@ -20,7 +20,8 @@ function(models, dialogViews, taskViews, clusterPageTemplate, deploymentControlT
             'click .rename-cluster-btn': 'startClusterRenaming',
             'click .cluster-name-editable .discard-renaming-btn': 'endClusterRenaming',
             'click .cluster-name-editable .apply-name-btn': 'applyNewClusterName',
-            'keydown .cluster-name-editable input': 'onClusterNameInputKeydown'
+            'keydown .cluster-name-editable input': 'onClusterNameInputKeydown',
+            'click .delete-cluster-btn': 'deleteCluster'
         },
         startClusterRenaming: function() {
             this.renaming = true;
@@ -49,9 +50,17 @@ function(models, dialogViews, taskViews, clusterPageTemplate, deploymentControlT
                 this.endClusterRenaming();
             }
         },
+        deleteCluster: function() {
+            if (confirm('Do you really want to delete this cluster?')) {
+                this.model.destroy();
+            }
+        },
         initialize: function(options) {
             _.defaults(this, options);
             this.model.bind('change', this.render, this);
+            this.model.bind('destroy', function() {
+                app.navigate('#clusters', {trigger: true});
+            }, this);
             this.scheduleUpdate();
         },
         scheduleUpdate: function() {
