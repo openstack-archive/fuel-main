@@ -105,8 +105,9 @@ if __name__ == "__main__":
                 rpc_thread.start()
                 server.start()
             except KeyboardInterrupt:
+                logging.info("Stopping RPC thread...")
+                rpc_thread.running = False
                 logging.info("Stopping WSGI app...")
-                q.put("exit")
                 server.stop()
                 logging.info("Done")
     elif params.action == "shell":

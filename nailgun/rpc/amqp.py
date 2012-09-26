@@ -91,7 +91,7 @@ class ConnectionContext(object):
         self.connection.create_consumer(topic, proxy, fanout)
 
     def consume_in_thread(self):
-        self.connection.consume_in_thread()
+        return self.connection.consume_in_thread()
 
     def __getattr__(self, key):
         """Proxy all other calls to the Connection instance"""

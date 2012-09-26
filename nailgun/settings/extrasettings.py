@@ -13,3 +13,6 @@ home = os.getenv("HOME")
 PATH_TO_SSH_KEY = home and os.path.join(home, ".ssh", "id_rsa") or None
 PATH_TO_BOOTSTRAP_SSH_KEY = home and \
     os.path.join(home, ".ssh", "bootstrap.rsa") or None
+
+RABBITMQ = {'fake': False,
+            'hostname': '127.0.0.1'}

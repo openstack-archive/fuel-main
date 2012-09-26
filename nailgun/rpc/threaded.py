@@ -5,13 +5,29 @@ import Queue
 import logging
 import threading
 
+import greenlet
+import eventlet
 from sqlalchemy.orm import scoped_session, sessionmaker
 
 import rpc
 from db import Query
-from api.models import engine
+from api.models import engine, Node
 
 rpc_queue = Queue.Queue()
+
+
+class NailgunReceiver(object):
+    db = scoped_session(
+        sessionmaker(bind=engine, query_cls=Query)
+    )
+
+    @classmethod
+    def node_error(cls, node_id):
+        logging.info("Setting node %d status to 'error'", node_id)
+        node = cls.db.query(Node).get(node_id)
+        node.status = 'error'
+        cls.db.add(node)
+        cls.db.commit()
 
 
 class RPCThread(threading.Thread):
@@ -21,36 +37,13 @@ class RPCThread(threading.Thread):
         self.db = scoped_session(
             sessionmaker(bind=engine, query_cls=Query)
         )
+        self.receiver = NailgunReceiver()
         self.conn = rpc.create_connection(True)
+        self.conn.create_consumer('nailgun', self.receiver)
 
     def run(self):
         logging.info("Starting RPC thread...")
         self.running = True
-
-        while self.running:
-            try:
-                msg = self.queue.get_nowait()
-                getattr(self, msg)()
-                if not self.running:
-                    break
-            except Queue.Empty:
-                pass
-            try:
-                pass
-                # TODO: implement real rpc.call()
-                # ans = rpc.call('test', {
-                #     "method": "echo",
-                #     "args": {
-                #         "value": 1
-                #     }
-                # })
-                # update db here with data
-            except Exception as error:
-                # update db here with error
-                logging.info("ERROR!!!!")
-            time.sleep(5)
+        # TODO: implement fail-safe auto-reloading
+        self.conn.consume()
         self.conn.close()
-
-    def exit(self):
-        logging.info("Stopping RPC thread...")
-        self.running = False
