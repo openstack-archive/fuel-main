@@ -22,12 +22,17 @@ class NailgunReceiver(object):
     )
 
     @classmethod
-    def node_error(cls, node_id):
-        logging.info("Setting node %d status to 'error'", node_id)
-        node = cls.db.query(Node).get(node_id)
-        node.status = 'error'
-        cls.db.add(node)
+    def deploy_resp(cls, nodes):
+        logging.info("Received deploy_resp")
+        updated = []
+        for nd_id, fields in nodes.iteritems():
+            node = cls.db.query(Node).get(int(nd_id))
+            for field, value in fields.iteritems():
+                setattr(node, field, value)
+            cls.db.add(node)
+            updated.append(node.id)
         cls.db.commit()
+        return updated
 
 
 class RPCThread(threading.Thread):
