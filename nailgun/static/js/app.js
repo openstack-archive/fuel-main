@@ -84,6 +84,7 @@ define(
         initialize: function() {
             window.app = new AppRouter();
             Backbone.history.start();
+            $('body').tooltip({selector: "[rel=tooltip]"});
         }
     };
 });

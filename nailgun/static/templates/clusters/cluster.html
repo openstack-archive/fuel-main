@@ -1,23 +1,21 @@
 <% var nodes = cluster.get('nodes') %>
-<a href="#cluster/<%= cluster.id %>/nodes">
-  <div class="cluster-name"><%= cluster.get('name') %></div>
-  <div class="cluster-hardware">
-    <div class="row-fluid">
-      <div class="span4">Nodes:</div>
-      <div class="span6"><%= nodes.length %></div>
-      <% if (nodes.length) { %>
-        <div class="span4">CPU:</div>
-        <div class="span6">
-          <%= nodes.resources('cpu') %>
-          <% var cores = nodes.resources('cores') %>
-          (<%= cores %> core<%= cores == 1 ? '' : 's' %>)
-        </div>
-        <div class="span4">RAM:</div>
-        <div class="span6"><%= nodes.resources('ram').toFixed(1) %> GB</div>
-        <div class="span4">HDD:</div>
-        <div class="span6"><%= nodes.resources('hdd').toFixed(2) %> TB</div>
-      <% } %>
-    </div>
+<div class="cluster-name"><%= cluster.get('name') %></div>
+<div class="cluster-hardware">
+  <div class="row-fluid">
+    <div class="span4">Nodes:</div>
+    <div class="span6"><%= nodes.length %></div>
+    <% if (nodes.length) { %>
+      <div class="span4">CPU:</div>
+      <div class="span6">
+        <%= nodes.resources('cpu') %>
+        <% var cores = nodes.resources('cores') %>
+        (<%= cores %> core<%= cores == 1 ? '' : 's' %>)
+      </div>
+      <div class="span4">RAM:</div>
+      <div class="span6"><%= nodes.resources('ram').toFixed(1) %> GB</div>
+      <div class="span4">HDD:</div>
+      <div class="span6"><%= nodes.resources('hdd').toFixed(2) %> TB</div>
+    <% } %>
   </div>
-  <div class="cluster-status">Operational</div>
-</a>
+</div>
+<div class="cluster-status">Operational</div>

@@ -43,12 +43,14 @@ function(models, dialogViews, clustersPageTemplate, clusterTemplate, newClusterT
     });
 
     views.Cluster = Backbone.View.extend({
+        tagName: 'a',
         className: 'span3 clusterbox',
         template: _.template(clusterTemplate),
         initialize: function() {
             this.model.bind('change', this.render, this);
         },
         render: function() {
+            this.$el.attr('href', '#cluster/' + this.model.id + '/nodes');
             this.$el.html(this.template({cluster: this.model}));
             return this;
         }

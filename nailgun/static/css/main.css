@@ -630,6 +630,7 @@ h6.page-title {
 }
 
 .clusterbox:hover {
+  text-decoration: none;
   background-color: #dfe5eb;
   box-shadow: 0 1px 8px rgba(0,0,0,.85),
   inset 0px 0px 0px rgba(255,255,255,.0);
@@ -644,9 +645,6 @@ h6.page-title {
   background-image: -o-linear-gradient(top, #f2f4f4, #c4cbcc);
   background-image: -ms-linear-gradient(top, #f2f4f4, #c4cbcc);
   background-image: linear-gradient(to bottom, #f2f4f4, #c4cbcc);
-}
-.clusterbox a, .clusterbox a:hover {
-  text-decoration: none;
 }
 .create-cluster {
   background-color: rgba(0, 0, 0, 0.1);
@@ -788,7 +786,7 @@ h6.page-title {
   *line-height: 26px;
   color: #333333;
   text-align: center;
-  
+
   vertical-align: middle;
   cursor: pointer;
   *border: 0;
