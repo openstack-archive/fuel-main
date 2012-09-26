@@ -191,17 +191,17 @@ function(models, dialogViews, taskViews, clusterPageTemplate, deploymentControlT
         template: _.template(editNodesScreenTemplate),
         events: {
             'click .btn-discard': 'discardChanges',
-            'click .btn-apply': 'applyChanges',
+            'click .btn-apply:not([disabled])': 'applyChanges',
             'click .nodebox': 'toggleNode'
         },
         toggleNode: function(e) {
             $(e.currentTarget).toggleClass('node-to-' + this.action + '-checked').toggleClass('node-to-' + this.action + '-unchecked');
+            this.$('.btn-apply').attr('disabled', !this.$('.node-to-' + this.action + '-checked').length);
         },
         discardChanges: function() {
             this.tab.changeScreen(views.NodesByRolesScreen);
         },
         applyChanges: function(e) {
-            if ($(e.currentTarget).attr('disabled')) return;
             this.$('.btn-apply').attr('disabled', true);
             var chosenNodes = this.getChosenNodes();
             this.modifyNodes(chosenNodes);
@@ -224,7 +224,6 @@ function(models, dialogViews, taskViews, clusterPageTemplate, deploymentControlT
             var nodesContainer = this.$('.available-nodes');
             if (this.availableNodes.length) {
                 nodesContainer.html('');
-                this.$('.btn-apply').attr('disabled', false);
                 this.availableNodes.each(function(node) {
                     var options = {model: node};
                     if (this.action == 'add') {
@@ -279,6 +278,11 @@ function(models, dialogViews, taskViews, clusterPageTemplate, deploymentControlT
             this.tab = options.tab;
             this.role = options.role;
             this.availableNodes = new models.Nodes(this.model.get('nodes').filter(function(node) {return node.get('role') == options.role}));
+        },
+        applyChanges: function() {
+            if (confirm('Do you really want to delete these nodes?')) {
+                views.DeleteNodesScreen.__super__.applyChanges.call(this);
+            }
         },
         modifyNodes: function(nodes) {
             nodes.each(function(node) {
