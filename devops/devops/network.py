@@ -12,7 +12,7 @@ class NetworkPoolException(Exception):
 class IpNetworksPool:
     def __init__(self, net_addresses=None, prefix=24):
         if not net_addresses:
-            net_addresses = ['10.0.0.0/20']
+            net_addresses = ['10.0.0.0/16']
         networks = []
         for address in net_addresses:
             if not isinstance(address, IPv4Network):
