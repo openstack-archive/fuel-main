@@ -20,7 +20,8 @@ function(models, dialogViews, taskViews, clusterPageTemplate, nodesTabSummaryTem
             'click .cluster-name-editable .discard-renaming-btn': 'endClusterRenaming',
             'click .cluster-name-editable .apply-name-btn': 'applyNewClusterName',
             'keydown .cluster-name-editable input': 'onClusterNameInputKeydown',
-            'click .delete-cluster-btn': 'deleteCluster'
+            'click .delete-cluster-btn': 'deleteCluster',
+            'click .deploy-btn:not([disabled])': 'deployCluster'
         },
         startClusterRenaming: function() {
             this.renaming = true;
@@ -53,6 +54,13 @@ function(models, dialogViews, taskViews, clusterPageTemplate, nodesTabSummaryTem
             if (confirm('Do you really want to delete this cluster?')) {
                 this.model.destroy();
             }
+        },
+        deployCluster: function() {
+            this.$('.deploy-btn').attr('disabled', true);
+            $.ajax({
+                type: 'PUT',
+                url: '/api/clusters/' + this.model.id + '/changes'
+            });
         },
         initialize: function(options) {
             _.defaults(this, options);
