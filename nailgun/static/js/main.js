@@ -1,5 +1,6 @@
 requirejs.config({
     baseUrl: 'static',
+    urlArgs: '_=' +  (new Date()).getTime(),
     paths: {
         jquery: 'js/libs/jquery-1.7.2.min',
         underscore: 'js/libs/underscore-min',
