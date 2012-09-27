@@ -263,6 +263,20 @@
             "cluster": null,
             "mac": "3A:10:EC:04:9A:DE"
         }
+    },
+    {
+        "pk": 9,
+        "model": "nailgun.node",
+        "fields": {
+            "status": "ready",
+            "name": "Supermicro",
+            "manufacturer": "Supermicro",
+            "platform_name": "",
+            "role": null,
+            "ip": "",
+            "fqdn": "",
+            "cluster": null,
+            "mac": "4B:19:FF:55:6D:01"
+        }
     }
-
 ]
