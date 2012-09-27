@@ -1,0 +1,79 @@
+= DESCRIPTION:
+
+Installs the Marionette Collective
+
+= PLATFORMS:
+
+Tested as working:
+ * Ubuntu (10.04)
+ * Centos (5.5, 5.6, 6.0)
+
+Likely to work without modification on Debian, RHEL, Fedora (if you try, please let me know).
+
+
+= REQUIREMENTS:
+
+A STOMP server.
+
+Cookbooks
+---------
+* apt
+* yum
+* chef_handler
+
+The `apt_repository` and `yum_repository` LWRPs are optionally used to create entries for the puppetlabs repository.
+The `chef_handler` LWRP is used to install a report handler (::server only)
+
+
+= ATTRIBUTES:
+
+Security:
+* mcollective['psk'] - the pre-shared key for encrypting messages
+
+STOMP service connection details:
+* mcollective['stomp']['hostname'] 
+* mcollective['stomp']['port']
+* mcollective['stomp']['username']
+* mcollective['stomp']['password']
+
+Site Plugin path:
+* mcollective['site_plugins'] - installation location for extra plugins (this is added to the MCollective plugin path)
+
+Facts:
+* mcollective['factsource'] - sets where MCollective gets facts from
+* mcollective['fact_whitelist'] - Ohai fact groups to include when using the 'yaml' factsource.
+
+
+= USAGE:
+
+Add recipe[mcollective] to your run_list to install the server and client tools.
+
+Set the node's mcollective['stomp'] attributes to point to your server (or use role/environment attributes).  The default expects a STOMP server on localhost configured as per http://docs.puppetlabs.com/mcollective/reference/basic/gettingstarted.html#configuring-stomp
+
+MCollective's "class list" will be populated with the roles and recipes present in the expanded run list of the last Chef run.
+
+You can customise installation by choosing from these recipes instead of the default:
+* recipe[mcollective::server] installs the server components.
+* recipe[mcollective::client] installs the client components.
+* recipe[mcollective::puppetlabs-repo] installs the Puppetlabs apt/yum repo.
+
+
+= TODO:
+
+* Support for security configurations other than PSK
+* Configurable fact- and class-file names.
+* Tests
+
+= LICENSE:
+
+Licensed under the Apache License, Version 2.0 (the "License");
+you may not use this file except in compliance with the License.
+You may obtain a copy of the License at
+
+    http://www.apache.org/licenses/LICENSE-2.0
+
+Unless required by applicable law or agreed to in writing, software
+distributed under the License is distributed on an "AS IS" BASIS,
+WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+See the License for the specific language governing permissions and
+limitations under the License.

@@ -11,8 +11,10 @@ libapache2-mod-wsgi
 libapache2-svn
 libhttpclient-ruby
 libjson-ruby
+libstomp-ruby
 libxml2-dev
 mcollective
+mcollective-client
 ntp
 ohai
 python-dev

@@ -12,6 +12,7 @@
 /.vagrant
 
 /build
+/mirror
 nosetests.xml
 nailgun.log
 lock

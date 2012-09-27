@@ -1,6 +1,7 @@
+require "json"
+
 module MCollective
   module Agent
-    require "json"
     class Net_probe<RPC::Agent
       metadata    :name        => "Network Probe Agent",
                   :description => "Check network connectivity between nodes.",
@@ -10,7 +11,10 @@ module MCollective
                   :url         => "http://mirantis.com",
                   :timeout     => 60
 
-      uid = "5e33c330-fce0-11e1-a21f-0800200c9a66"
+      uid = ""
+      open('/etc/bootif') do |f|
+        uid = f.gets
+      end
 
       action "start_frame_listeners" do
         validate :iflist, String
@@ -56,7 +60,18 @@ module MCollective
         piddir = "/var/run/net_probe"
         pidfiles = Dir.glob(File.join(piddir, '*'))
         pidfiles.each do |f|
-          run("kill -INT #{File.basename(f)}")
+          #run("kill -INT #{File.basename(f)}")
+          Process.kill("INT", File.basename(f))
+        end
+        while not pidfiles.empty? do
+          pidfiles.each do |f|
+            begin
+              Process.getpgid(File.basename(f))
+              File.unlink(f)
+            rescue Errno::ESRCH, Errno::ENOENT
+            end
+          end
+          pidfiles = Dir.glob(File.join(piddir, '*'))
         end
       end
 
@@ -76,7 +91,6 @@ module MCollective
 
       def get_probing_frames()
         stop_frame_listeners
-        sleep(1)
         neigbours = Hash.new
         pattern = "/var/tmp/net-probe-dump-*"
         Dir.glob(pattern).each do |file|
