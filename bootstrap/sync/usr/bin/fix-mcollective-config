@@ -3,5 +3,5 @@ masternode_ip=`sed -r 's/^.*url=http:\/\/([^/]+)\/.*$/\1/' /proc/cmdline`
 sed -i "s/plugin.stomp.host= .*\$/plugin.stomp.host= $masternode_ip/" /etc/mcollective/server.cfg
 service mcollective restart
 
-sed -r 's/^.*BOOTIF=([^ ]+).*$/\1/' /proc/cmdline|tr -d '-\n'|tail -c12 >/etc/bootif
+sed -r 's/^.*BOOTIF=([^ ]+).*$/\1/' /proc/cmdline|tr -d '\n-'|tail -c12 >/etc/bootif
 

@@ -59,18 +59,28 @@ def parse_vlan_list(vlan_string):
     validate = lambda x: (x > 0) and (x < 4095)
     chunks = vlan_string.split(",")
     vlan_list = []
+    zero = False
     for chunk in chunks:
         delim = chunk.find("-")
         try:
             if delim > 0 :
                 left = int(chunk[:delim])
                 right = int(chunk[delim+1:])
+                if left == 0:
+                    zero = True
+                    left = 1
+                    if left == right:
+                        vlan_list.append(left)
+                        continue
                 if validate(left) and validate(right):
                     vlan_list.append((left, right))
                 else:
                     raise ValueError
             else:
                 vlan = int(chunk)
+                if vlan == 0:
+                    zero = True
+                    continue
                 if validate(vlan):
                     vlan_list.append(vlan)
                 else:
@@ -78,6 +88,8 @@ def parse_vlan_list(vlan_string):
         except ValueError:
             error('Error: incorrect vlan: %s\n' % chunk)
             exit(1)
+        if zero:
+            vlan_list.append(0)
     return vlan_list
 
 def get_probe_frames(iface):
@@ -104,10 +116,21 @@ def get_probe_frames(iface):
     return neigbors
 
 def send_probe_frame(**props):
+    try:
+        props['vlan'].remove(0)
+        zero = True
+    except ValueError:
+        zero = False
     p = Ether(src=props['src_mac'], dst="ff:ff:ff:ff:ff:ff")
     p = p/Dot1Q(vlan=props['vlan'])/IP(src=props['src'], dst=props['dst'])
     p = p/UDP(sport=props['sport'], dport=props['dport'])/props['data']
     sendp(p, iface=props['iface'])
+    if zero:
+        p = Ether(src=props['src_mac'], dst="ff:ff:ff:ff:ff:ff")
+        p = p/IP(src=props['src'], dst=props['dst'])
+        p = p/UDP(sport=props['sport'], dport=props['dport'])/props['data']
+        sendp(p, iface=props['iface'])
+
 
 def addpid(piddir):
     pid = os.getpid()

@@ -11,10 +11,7 @@ module MCollective
                   :url         => "http://mirantis.com",
                   :timeout     => 60
 
-      uid = ""
-      open('/etc/bootif') do |f|
-        uid = f.gets
-      end
+      uid = "#{open('/etc/bootif').gets.chomp}"
 
       action "start_frame_listeners" do
         validate :iflist, String
@@ -60,15 +57,21 @@ module MCollective
         piddir = "/var/run/net_probe"
         pidfiles = Dir.glob(File.join(piddir, '*'))
         pidfiles.each do |f|
-          #run("kill -INT #{File.basename(f)}")
-          Process.kill("INT", File.basename(f))
+          begin
+            Process.kill("INT", File.basename(f).to_i)
+          rescue Errno::ESRCH
+            File.unlink(f)
+          end
         end
         while not pidfiles.empty? do
           pidfiles.each do |f|
             begin
-              Process.getpgid(File.basename(f))
-              File.unlink(f)
-            rescue Errno::ESRCH, Errno::ENOENT
+              Process.getpgid(File.basename(f).to_i)
+            rescue Errno::ESRCH
+              begin
+                File.unlink(f)
+              rescue Errno::ENOENT
+              end
             end
           end
           pidfiles = Dir.glob(File.join(piddir, '*'))
