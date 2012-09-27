@@ -2,8 +2,9 @@ define(
 [
     'models',
     'text!templates/dialogs/create_cluster.html',
+    'text!templates/dialogs/change_network_mode.html'
 ],
-function(models, createClusterDialogTemplate) {
+function(models, createClusterDialogTemplate, changeNetworkModeDialogTemplate) {
     var views = {}
 
     views.createClusterDialog = Backbone.View.extend({
@@ -64,6 +65,19 @@ function(models, createClusterDialogTemplate) {
             this.renderReleases();
             this.releases.bind('reset', this.renderReleases, this);
 
+            return this;
+        }
+    });
+
+    views.changeNetworkModeDialog = Backbone.View.extend({
+        className: 'modal fade',
+        template: _.template(changeNetworkModeDialogTemplate),
+        events: {
+        },
+        render: function() {
+            this.$el.html(this.template());
+            this.$el.on('hidden', function() {$(this).remove()});
+            this.$el.modal();
             return this;
         }
     });

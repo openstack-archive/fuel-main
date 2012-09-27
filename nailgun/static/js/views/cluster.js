@@ -7,9 +7,10 @@ define(
     'text!templates/cluster/nodes_tab_summary.html',
     'text!templates/cluster/edit_nodes_screen.html',
     'text!templates/cluster/node_list.html',
-    'text!templates/cluster/node.html'
+    'text!templates/cluster/node.html',
+    'text!templates/cluster/network_tab_summary.html',
 ],
-function(models, dialogViews, taskViews, clusterPageTemplate, nodesTabSummaryTemplate, editNodesScreenTemplate, nodeListTemplate, nodeTemplate) {
+function(models, dialogViews, taskViews, clusterPageTemplate, nodesTabSummaryTemplate, editNodesScreenTemplate, nodeListTemplate, nodeTemplate, networkTabSummaryTemplate) {
     var views = {}
 
     views.ClusterPage = Backbone.View.extend({
@@ -92,11 +93,12 @@ function(models, dialogViews, taskViews, clusterPageTemplate, nodesTabSummaryTem
                 renaming: this.renaming
             }));
 
+            var tabContainer = this.$('#tab-' + this.tab);
+
             if (this.tab == 'nodes') {
-                this.nodesTab = new views.NodesTab({model: this.model});
-                this.$('#tab-' + this.tab).html(this.nodesTab.render().el);
-            } else {
-                this.$('#tab-' + this.tab).text('TBD');
+                tabContainer.html(new views.NodesTab({model: this.model}).render().el);
+            } else if (this.tab == 'network') {
+                tabContainer.html(new views.NetworkTab({model: this.model}).render().el);
             }
 
             return this;
@@ -132,7 +134,7 @@ function(models, dialogViews, taskViews, clusterPageTemplate, nodesTabSummaryTem
         },
         render: function() {
             this.$el.html('');
-            this.$el.append((new views.NodesTabSummary({model: this.model, tab: this.tab})).render().el);
+            this.$el.append((new views.NodesTabSummary({model: this.model})).render().el);
             var roles = this.model.availableRoles();
             _.each(roles, function(role, index) {
                 var nodes = this.model.get('nodes').filter(function(node) {return node.get('role') == role});
@@ -342,6 +344,29 @@ function(models, dialogViews, taskViews, clusterPageTemplate, nodesTabSummaryTem
                 selectableForAddition: this.selectableForAddition,
                 selectableForDeletion: this.selectableForDeletion
             }));
+            return this;
+        }
+    });
+
+    views.NetworkTab = Backbone.View.extend({
+        render: function() {
+            this.$el.html('');
+            this.$el.append((new views.NetworkTabSummary({model: this.model})).render().el);
+            // other contents TBD
+            return this;
+        }
+    });
+
+    views.NetworkTabSummary = Backbone.View.extend({
+        template: _.template(networkTabSummaryTemplate),
+        events: {
+            'click .change-network-mode-btn': 'changeNetworkMode'
+        },
+        changeNetworkMode: function() {
+            (new dialogViews.changeNetworkModeDialog({model: this.model})).render();
+        },
+        render: function() {
+            this.$el.html(this.template({cluster: this.model}));
             return this;
         }
     });
