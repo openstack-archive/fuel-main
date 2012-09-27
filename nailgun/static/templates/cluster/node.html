@@ -1,7 +1,7 @@
 <div class="span2 nodebox <%= selectableForAddition ? 'unassigned node-to-add-unchecked' : selectableForDeletion ? 'unassigned node-to-delete-unchecked' : 'assigned' %> <%= node.get('manufacturer') ? 'manufacturer-' + node.get('manufacturer').toLowerCase() : '' %>" data-node-id="<%= node.id %>">
   <div class="node-name">
-    <% if (editingName) { %>
-      <form class="node-name-editing form-inline">
+    <% if (renaming) { %>
+      <form class="node-name-editable form-inline" onsubmit="return false">
         <input type="text" class="input-medium" value="<%= node.get('name') || '' %>">
       </form>
     <% } else { %>

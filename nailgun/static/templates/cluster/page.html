@@ -20,7 +20,7 @@
       <li class="<%= activeTab == tab ? 'active' : '' %>"><a href="#cluster/<%= cluster.id %>/<%= tab %>"><b class="tab-<%= tab %>-normal"></b></a></li>
     <% }) %>
     <li class="pull-right">
-      <button class="deploy-btn" <%= cluster.hasChanges() ? '' : 'disabled' %>><i class="icon-upload-cloud-1"></i> Deploy Cluster</button>
+      <button class="deploy-btn" <%= cluster.hasChanges() ? '' : 'disabled' %>><i class="icon-upload-cloud-1"></i> Apply Changes</button>
     </li>
   </ul>
   <div class="tab-content">

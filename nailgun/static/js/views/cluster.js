@@ -295,10 +295,10 @@ function(models, dialogViews, taskViews, clusterPageTemplate, nodesTabSummaryTem
         template: _.template(nodeTemplate),
         events: {
             'click .node-name': 'startNodeRenaming',
-            'keydown .node-name-editing': 'onNodeNameInputKeydown'
+            'keydown .node-name-editable': 'onNodeNameInputKeydown'
         },
         startNodeRenaming: function() {
-            if (!this.renameable) return;
+            if (!this.renameable || this.renaming) return;
             if (this.model.collection.cluster.locked()) return;
             $('html').off(this.eventNamespace);
             $('html').on(this.eventNamespace, _.after(2, _.bind(function(e) {
@@ -308,7 +308,7 @@ function(models, dialogViews, taskViews, clusterPageTemplate, nodesTabSummaryTem
             }, this)));
             this.renaming = true;
             this.render();
-            this.$('.node-name-editing input').focus();
+            this.$('.node-name-editable input').focus();
         },
         endNodeRenaming: function() {
             $('html').off(this.eventNamespace);
@@ -316,9 +316,9 @@ function(models, dialogViews, taskViews, clusterPageTemplate, nodesTabSummaryTem
             this.render();
         },
         applyNewNodeName: function() {
-            var name = this.$('.node-name-editing input').val();
+            var name = this.$('.node-name-editable input').val();
             if (name != this.model.get('name')) {
-                this.$('.node-name-editing input').attr('disabled', true);
+                this.$('.node-name-editable input').attr('disabled', true);
                 this.model.update({name: name}, {complete: this.endNodeRenaming, context: this});
             } else {
                 this.endNodeRenaming();
@@ -340,7 +340,7 @@ function(models, dialogViews, taskViews, clusterPageTemplate, nodesTabSummaryTem
         render: function() {
             this.$el.html(this.template({
                 node: this.model,
-                editingName: this.renaming,
+                renaming: this.renaming,
                 selectableForAddition: this.selectableForAddition,
                 selectableForDeletion: this.selectableForDeletion
             }));
