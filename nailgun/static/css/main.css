@@ -351,6 +351,15 @@ h6.page-title {
   font-weight: 500;
   line-height: 16px;
   color: #333333;
+  cursor: pointer;
+}
+
+.node-name .input-medium {
+  margin: 0px;
+  padding: 0px;
+  height: 24px;
+  width: 104px;
+  font-size: 12px;
 }
 
 .node-status {
@@ -467,6 +476,9 @@ h6.page-title {
 }
 .manufacturer-qemu {
   background: #efefef url(../img/node_manufacturer_logos.png) 0px -840px no-repeat;
+}
+.manufacturer-supermicro {
+  background: #efefef url(../img/node_manufacturer_logos.png) 0px -960px no-repeat;
 }
 .openstack {
   background: url(../img/cluster_logos.png) 0px 0px no-repeat;
