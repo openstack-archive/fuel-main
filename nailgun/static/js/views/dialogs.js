@@ -2,9 +2,10 @@ define(
 [
     'models',
     'text!templates/dialogs/create_cluster.html',
-    'text!templates/dialogs/change_network_mode.html'
+    'text!templates/dialogs/change_network_mode.html',
+    'text!templates/dialogs/change_network_parameters.html'
 ],
-function(models, createClusterDialogTemplate, changeNetworkModeDialogTemplate) {
+function(models, createClusterDialogTemplate, changeNetworkModeDialogTemplate, changeNetworkParametersDialogTemplate) {
     var views = {}
 
     views.createClusterDialog = Backbone.View.extend({
@@ -72,6 +73,19 @@ function(models, createClusterDialogTemplate, changeNetworkModeDialogTemplate) {
     views.changeNetworkModeDialog = Backbone.View.extend({
         className: 'modal fade',
         template: _.template(changeNetworkModeDialogTemplate),
+        events: {
+        },
+        render: function() {
+            this.$el.html(this.template());
+            this.$el.on('hidden', function() {$(this).remove()});
+            this.$el.modal();
+            return this;
+        }
+    });
+
+    views.changeNetworkParametersDialog = Backbone.View.extend({
+        className: 'modal fade',
+        template: _.template(changeNetworkParametersDialogTemplate),
         events: {
         },
         render: function() {
