@@ -36,8 +36,8 @@ function(models, dialogViews, taskViews, clusterPageTemplate, nodesTabSummaryTem
             this.$('.cluster-name-uneditable').show();
         },
         applyNewClusterName: function() {
-            var name = this.$('.cluster-name-editable input').val();
-            if (name != this.model.get('name')) {
+            var name = $.trim(this.$('.cluster-name-editable input').val());
+            if (name != '' && name != this.model.get('name')) {
                 this.$('.cluster-name-editable input, .cluster-name-editable button').attr('disabled', true);
                 this.model.update({name: name}, {complete: this.endClusterRenaming, context: this});
             } else {
@@ -324,7 +324,7 @@ function(models, dialogViews, taskViews, clusterPageTemplate, nodesTabSummaryTem
             this.render();
         },
         applyNewNodeName: function() {
-            var name = this.$('.node-name-editable input').val();
+            var name = $.trim(this.$('.node-name-editable input').val());
             if (name != this.model.get('name')) {
                 this.$('.node-name-editable input').attr('disabled', true);
                 this.model.update({name: name}, {complete: this.endNodeRenaming, context: this});
