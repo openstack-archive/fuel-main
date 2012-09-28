@@ -11,7 +11,7 @@ from sqlalchemy.orm import scoped_session, sessionmaker
 
 import rpc
 from db import Query
-from api.models import engine, Node
+from api.models import engine, Node, Task
 
 rpc_queue = Queue.Queue()
 
@@ -22,17 +22,43 @@ class NailgunReceiver(object):
     )
 
     @classmethod
-    def deploy_resp(cls, nodes):
+    def __update_task_status(cls, uuid, status, error=""):
+        task = cls.db.query(Task).filter(Task.uuid == uuid).first()
+        task.status = status
+        if error:
+            task.error = error
+        cls.db.add(task)
+        cls.db.commit()
+
+    @classmethod
+    def deploy_resp(cls, task_uuid, nodes):
         logging.info("Received deploy_resp")
         updated = []
+
+        error_nodes = []
         for nd_id, fields in nodes.iteritems():
             node = cls.db.query(Node).get(int(nd_id))
             for field, value in fields.iteritems():
                 setattr(node, field, value)
+                if (field, value) == ("status", "error"):
+                    error_nodes.append(str(nd_id))
             cls.db.add(node)
             updated.append(node.id)
         cls.db.commit()
+
+        if error_nodes:
+            cls.__update_task_status(
+                task_uuid,
+                "error",
+                "Failed to deploy nodes %s!" % ", ".join(error_nodes)
+            )
+        else:
+            cls.__update_task_status(task_uuid, "ready")
         return updated
+
+    @classmethod
+    def verify_networks_resp(cls, task_uuid, result):
+        pass
 
 
 class RPCThread(threading.Thread):

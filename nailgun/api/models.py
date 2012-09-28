@@ -3,7 +3,8 @@ import re
 
 import web
 from sqlalchemy import Column, UniqueConstraint, Table
-from sqlalchemy import Integer, String, Unicode, Boolean, ForeignKey, Enum
+from sqlalchemy import Integer, String, Unicode, Text, Boolean
+from sqlalchemy import ForeignKey, Enum
 from sqlalchemy import create_engine
 from sqlalchemy.orm import relationship
 from sqlalchemy.ext.declarative import declarative_base
@@ -250,3 +251,17 @@ class Network(Base, BasicValidator):
                     message="No 'id' param for '%'" % i
                 )
         return d
+
+
+class Task(Base, BasicValidator):
+    __tablename__ = 'tasks'
+    TASK_STATUSES = (
+        'ready',
+        'pending',
+        'error'
+    )
+    id = Column(Integer, primary_key=True)
+    uuid = Column(String(36), nullable=False)
+    name = Column(String(36), nullable=False)
+    errors = Column(Text)
+    status = Column(Enum(*TASK_STATUSES), nullable=False, default='pending')

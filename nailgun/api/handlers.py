@@ -1,6 +1,7 @@
 # -*- coding: utf-8 -*-
 
 import json
+import uuid
 import logging
 import itertools
 
@@ -14,7 +15,8 @@ from provision import ProvisionFactory
 from provision.model.profile import Profile as ProvisionProfile
 from provision.model.node import Node as ProvisionNode
 from provision.model.power import Power as ProvisionPower
-from models import Release, Cluster, Node, Network, Vlan
+from api.models import Release, Cluster, Node, Network, Vlan
+from api.models import Task
 from network import manager as netmanager
 
 
@@ -244,6 +246,13 @@ class ClusterChangesHandler(JSONHandler):
         if not cluster:
             return web.notfound()
 
+        task = Task(
+            uuid=str(uuid.uuid4()),
+            name="Provisioning cluster %d" % cluster_id
+        )
+        web.ctx.orm.add(task)
+        web.ctx.orm.commit()
+
         pc = ProvisionConfig()
         pc.cn = "provision.driver.cobbler.Cobbler"
         pc.url = settings.COBBLER_URL
@@ -319,7 +328,38 @@ class ClusterChangesHandler(JSONHandler):
                           'network_data': netmanager.get_node_networks(n.id)})
         message = {'method': 'deploy',
                    'respond_to': 'deploy_resp',
-                   'args': {'nodes': nodes}}
+                   'args': {'task_uuid': task.uuid, 'nodes': nodes}}
+        rpc.cast('naily', message)
+
+        return json.dumps(
+            self.render(cluster),
+            indent=4
+        )
+
+
+class ClusterNetworksHandler(JSONHandler):
+    fields = (
+        "id",
+        "name",
+    )
+
+    def PUT(self, cluster_id):
+        web.header('Content-Type', 'application/json')
+        q = web.ctx.orm.query(Cluster).filter(Cluster.id == cluster_id)
+        cluster = q.first()
+        if not cluster:
+            return web.notfound()
+
+        task = Task(
+            uuid=str(uuid.uuid4()),
+            name="Verify Networks for cluster %d" % cluster_id
+        )
+        web.ctx.orm.add(task)
+        web.ctx.orm.commit()
+
+        message = {'method': 'verify_networks',
+                   'respond_to': 'verify_networks_resp',
+                   'args': {'task_uuid': task.uuid}}
         rpc.cast('naily', message)
 
         return json.dumps(
