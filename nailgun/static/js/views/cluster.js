@@ -155,10 +155,18 @@ function(models, dialogViews, taskViews, clusterPageTemplate, nodesTabSummaryTem
         events: {
             'click .btn-discard': 'discardChanges',
             'click .btn-apply:not([disabled])': 'applyChanges',
-            'click .nodebox': 'toggleNode'
+            'click .nodebox': 'toggleNode',
+            'click .select-all-btn': 'selectAll'
         },
         toggleNode: function(e) {
             $(e.currentTarget).toggleClass('node-to-' + this.action + '-checked').toggleClass('node-to-' + this.action + '-unchecked');
+            this.calculateApplyButtonAvailability();
+        },
+        selectAll: function() {
+            this.$('.nodebox').addClass('node-to-' + this.action + '-checked').removeClass('node-to-' + this.action + '-unchecked');
+            this.calculateApplyButtonAvailability();
+        },
+        calculateApplyButtonAvailability: function() {
             this.$('.btn-apply').attr('disabled', !this.$('.node-to-' + this.action + '-checked').length);
         },
         discardChanges: function() {
