@@ -2,8 +2,13 @@ _.extend(Backbone.Model.prototype, {
   update: function(key, value, options) {
     var attrs, current;
 
-    // Handle both `("key", value)` and `({key: value})` -style calls.
-    if (_.isObject(key) || key == null) {
+    if (_.isArray(key)) {
+      attrs = {};
+      _.each(key, function(attr) {
+        attrs[attr] = this.get(attr);
+      }, this);
+      options = value;
+    } else if (_.isObject(key) || key == null) {
       attrs = key;
       options = value;
     } else {
@@ -11,11 +16,6 @@ _.extend(Backbone.Model.prototype, {
       attrs[key] = value;
     }
     options = options ? _.clone(options) : {};
-
-    // Regular saves `set` attributes before persisting to the server.
-    //if (attrs && !this.set(attrs, options)) {
-    //  return false;
-    //}
 
     if (this.isNew()) return false;
 

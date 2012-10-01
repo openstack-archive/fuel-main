@@ -800,14 +800,14 @@ h6.page-title {
   text-shadow: 0 1px 0 #ffffff;
 }
 
-.change-network-mode-btn {
+.summary-settings-btn {
   color: #555555;
   float: none;
   text-decoration: none;
   text-shadow: 0 1px 0 #FFFFFF;
 }
 
-.change-network-mode-btn:hover {
+.summary-settings-btn:hover {
   color: #333333;
   text-decoration: none;
 }
@@ -894,7 +894,7 @@ h6.page-title {
   background: rgba(0,0,0,0.1);
 }
 
-.modal-header h2 {
+.modal-header h3 {
   font-size: 26px;
   margin: 0;
   line-height: 40px;

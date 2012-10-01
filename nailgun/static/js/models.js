@@ -38,6 +38,12 @@ define(function() {
         hasChanges: function() {
             return _.any(this.get('nodes').pluck('redeployment_needed'));
         },
+        availableModes: function() {
+            return ['simple', 'ha'];
+        },
+        availableTypes: function() {
+            return ['both', 'compute', 'storage'];
+        },
         availableRoles: function() {
             if (this.get('type') == 'storage') {
                 return ['controller', 'storage']

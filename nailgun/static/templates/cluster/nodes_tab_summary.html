@@ -1,10 +1,10 @@
 <div class="navbar summary">
   <div class="navbar-inner">
-    <div class="summary-article" href="#"><b>Summary</b></div>
+    <div class="summary-article"><b>Settings</b></div>
     <ul class="nav">
-      <li><a href="#"><b>Mode: </b><%= cluster.get('mode') %></a></li>
-      <li><a href="#"><b>Type: </b><%= cluster.get('type') %></a></li>
-      <li><a href="#"><b>Release: </b><%= cluster.get('release').get('name') %></a></li>
+      <li class="btn btn-link summary-settings-btn change-cluster-mode-btn"><b>Mode: </b><%= cluster.get('mode') %></li>
+      <li class="btn btn-link summary-settings-btn change-cluster-type-btn"><b>Type: </b><%= cluster.get('type') %></li>
+      <li class="btn btn-link summary-settings-btn"><b>Release: </b><%= cluster.get('release').get('name') %></li>
     </ul>
   </div>
 </div>
