@@ -1,7 +1,14 @@
-<h3 class="page-title">OpenStack Releases</h3>
+<div class="row-fluid">
+  <div class="span12">
+    <h3 class="page-title">OpenStack Releases</h3>
+  </div>
+</div>
+
+<div class="table-releases-box">
+
 <% if (releases.length) { %>
   <section>
-    <table class="table table-bordered">
+    <table class="table table-bordered table-releases">
       <thead>
         <tr>
           <th>Name</th>
@@ -21,3 +28,6 @@
 <% } else { %>
   <div class="alert">There are no OpenStack releases available.</div>
 <% } %>
+
+</div>
+
