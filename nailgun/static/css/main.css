@@ -800,6 +800,18 @@ h6.page-title {
   text-shadow: 0 1px 0 #ffffff;
 }
 
+.change-network-mode-btn {
+  color: #555555;
+  float: none;
+  text-decoration: none;
+  text-shadow: 0 1px 0 #FFFFFF;
+}
+
+.change-network-mode-btn:hover {
+  color: #333333;
+  text-decoration: none;
+}
+
 .deploy-btn {
   display: inline-block;
   *display: inline;
@@ -880,4 +892,10 @@ h6.page-title {
   color: rgba(255,255,255,0.4);
   cursor: default;
   background: rgba(0,0,0,0.1);
+}
+
+.modal-header h2 {
+  font-size: 26px;
+  margin: 0;
+  line-height: 40px;
 }
