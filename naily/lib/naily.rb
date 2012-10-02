@@ -14,4 +14,3 @@ module Naily
     @logger = logger
   end
 end
-
