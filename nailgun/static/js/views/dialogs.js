@@ -24,7 +24,8 @@ function(models, createClusterDialogTemplate, changeClusterModeDialogTemplate, c
         template: _.template(createClusterDialogTemplate),
         events: {
             'click .create-cluster-btn': 'createCluster',
-            'keydown input': 'onInputKeydown'
+            'keydown input': 'onInputKeydown',
+            'change select[name=release]': 'updateReleaseDescription'
         },
         createCluster: function() {
             this.$('.help-inline').text('');
@@ -38,7 +39,7 @@ function(models, createClusterDialogTemplate, changeClusterModeDialogTemplate, c
             }, this);
             cluster.set({
                 name: this.$('input[name=name]').val(),
-                release: this.$('select[name=release]').val()
+                release: parseInt(this.$('select[name=release]').val(), 10)
             });
             if (cluster.isValid()) {
                 cluster.save({}, {success: _.bind(function() {
@@ -56,6 +57,14 @@ function(models, createClusterDialogTemplate, changeClusterModeDialogTemplate, c
             this.releases.each(function(release) {
                 input.append($('<option/>').attr('value', release.id).text(release.get('name')));
             }, this);
+            this.updateReleaseDescription();
+        },
+        updateReleaseDescription: function() {
+            if (this.releases.length) {
+                var releaseId = parseInt(this.$('select[name=release]').val(), 10);
+                var release = this.releases.get(releaseId);
+                this.$('select[name=release] ~ .help-block').text(release.get('description'));
+            }
         },
         initialize: function() {
             this.releases = new models.Releases();
@@ -72,7 +81,7 @@ function(models, createClusterDialogTemplate, changeClusterModeDialogTemplate, c
     views.changeClusterModeDialog = views.dialog.extend({
         template: _.template(changeClusterModeDialogTemplate),
         events: {
-            'change input[name=mode]': 'toggleRedundancyInput',
+            'change input[name=mode]': 'toggleControls',
             'click .apply-btn': 'apply'
         },
         apply: function() {
@@ -85,26 +94,34 @@ function(models, createClusterDialogTemplate, changeClusterModeDialogTemplate, c
             cluster.update(['mode', 'redundancy']);
             this.$el.modal('hide');
         },
-        toggleRedundancyInput: function() {
+        toggleControls: function() {
             this.$('.redundancy-control-group').toggleClass('hide', this.$('input[name=mode]:checked').val() != 'ha');
+            this.$('.help-block').addClass('hide');
+            this.$('.help-mode-' + this.$('input[name=mode]:checked').val()).removeClass('hide');
         },
         render: function() {
             this.constructor.__super__.render.call(this, {cluster: this.model});
-            this.toggleRedundancyInput();
+            this.toggleControls();
         }
     });
 
     views.changeClusterTypeDialog = views.dialog.extend({
         template: _.template(changeClusterTypeDialogTemplate),
         events: {
+            'change input[name=type]': 'toggleDescription',
             'click .apply-btn': 'apply'
         },
         apply: function() {
             this.model.update({type: this.$('input[name=type]:checked').val()});
             this.$el.modal('hide');
         },
+        toggleDescription: function() {
+            this.$('.help-block').addClass('hide');
+            this.$('.help-type-' + this.$('input[name=type]:checked').val()).removeClass('hide');
+        },
         render: function() {
             this.constructor.__super__.render.call(this, {cluster: this.model});
+            this.toggleDescription();
         }
     });
 

@@ -907,3 +907,8 @@ h6.page-title {
 }
 
 .table-releases th {color: #777777;}
+
+.modal .help-block {
+  color: #777777;
+  font-size: 13px;
+}
