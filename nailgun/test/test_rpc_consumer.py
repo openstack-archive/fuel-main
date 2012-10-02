@@ -39,3 +39,5 @@ class TestConsumer(BaseHandlers):
         if (node.status, node2.status) != ("deploying", "error"):
             raise Exception("Failed to update nodes")
         self.assertEqual(task.status, "error")
+        print task.errors
+        raise

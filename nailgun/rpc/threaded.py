@@ -16,17 +16,23 @@ from api.models import engine, Node, Task
 rpc_queue = Queue.Queue()
 
 
+class TaskNotFound(Exception):
+    pass
+
+
 class NailgunReceiver(object):
     db = scoped_session(
         sessionmaker(bind=engine, query_cls=Query)
     )
 
     @classmethod
-    def __update_task_status(cls, uuid, status, error=""):
+    def __update_task_status(cls, uuid, status, errors=""):
         task = cls.db.query(Task).filter(Task.uuid == uuid).first()
+        if not task:
+            raise TaskNotFound()
         task.status = status
-        if error:
-            task.error = error
+        if errors:
+            task.errors = errors
         cls.db.add(task)
         cls.db.commit()
 
@@ -39,21 +45,33 @@ class NailgunReceiver(object):
         for nd_id, fields in nodes.iteritems():
             node = cls.db.query(Node).get(int(nd_id))
             for field, value in fields.iteritems():
-                setattr(node, field, value)
-                if (field, value) == ("status", "error"):
-                    error_nodes.append(str(nd_id))
+                # TODO: add logic according to API
+                if field == "status":
+                    setattr(node, field, value)
+                    if value == "error":
+                        error_nodes.append(node)
             cls.db.add(node)
             updated.append(node.id)
         cls.db.commit()
 
-        if error_nodes:
-            cls.__update_task_status(
-                task_uuid,
-                "error",
-                "Failed to deploy nodes %s!" % ", ".join(error_nodes)
-            )
-        else:
-            cls.__update_task_status(task_uuid, "ready")
+        try:
+            if error_nodes:
+                nodes_info = [
+                    unicode({
+                        "MAC": n.mac,
+                        "IP": n.ip or "Unknown",
+                        "NAME": n.name or "Unknown"
+                    }) for n in error_nodes
+                ]
+                cls.__update_task_status(
+                    task_uuid,
+                    "error",
+                    "Failed to deploy nodes:\n%s" % "\n".join(nodes_info)
+                )
+            else:
+                cls.__update_task_status(task_uuid, "ready")
+        except TaskNotFound:
+            logging.error("No task with UUID %s found!" % uuid)
         return updated
 
     @classmethod
