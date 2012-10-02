@@ -10,17 +10,6 @@
   </div>
   <% if (!selectableForAddition && !selectableForDeletion) { %>
     <div class="node-status">
-
-      <!-- ####################################################### -->
-      <div class="progress progress-striped active">
-        <div class="bar" style="width: 40%;"><p>Provisioning</p></div>
-      </div>
-
-      <div class="progress progress-success progress-striped active">
-        <div class="bar" style="width: 40%;"><p>Deploy</p></div>
-      </div>
-      <!-- ####################################################### -->
-
       <% var status = node.get('status') %>
       <% if (node.get('redeployment_needed')) { %>
         <div class="msg-info">
@@ -31,9 +20,13 @@
           <i class="icon-ok-circle"></i>Ready
         </div>
       <% } else if (status == 'provisioning') { %>
-        <div class="progress progress-striped active"><div class="bar" style="width:100%"></div></div>
+        <div class="progress progress-striped active">
+          <div class="bar" style="width:100%"><p>Provisioning</p></div>
+        </div>
       <% } else if (status == 'deploying') { %>
-        <div class="progress progress-striped active"><div class="bar" style="width:100%"></div></div>
+        <div class="progress progress-success progress-striped active">
+          <div class="bar" style="width:100%"><p>Deploying</p></div>
+        </div>
       <% } else if (status == 'error') { %>
         <div class="msg-error">
           <i class="icon-attention-3"></i>Error
