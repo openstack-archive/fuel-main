@@ -248,7 +248,7 @@ class ClusterChangesHandler(JSONHandler):
 
         task = Task(
             uuid=str(uuid.uuid4()),
-            name="Provisioning cluster %d" % cluster_id
+            name="Provisioning cluster %d" % int(cluster_id)
         )
         web.ctx.orm.add(task)
         web.ctx.orm.commit()
