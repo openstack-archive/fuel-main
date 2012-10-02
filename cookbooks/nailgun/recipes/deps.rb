@@ -2,12 +2,21 @@ include_recipe "python"
 include_recipe "rabbitmq"
 include_recipe "mcollective"
 
+rabbitmq_user "mcollective" do
+  password "marionette"
+  action :add
+end
+
+rabbitmq_user "mcollective" do
+  permissions "\".*\" \".*\" \".*\""
+  action :set_permissions
+end
+
 ['libxml2-dev', 'python-dev', 'python-paramiko', 'ruby-httpclient'].each do |deb|
   package deb do
     action :install
   end
 end
-
 
 {
   'pycrypto' => '2.6',

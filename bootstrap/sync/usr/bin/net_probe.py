@@ -193,7 +193,9 @@ if opts.listen_iface:
     else:
         conf['dump_file'] = "%s%s" % (dumpname_prefix, conf['interface'])
 
-if conf['action'] == 'generate':
+if not conf.has_key('action'):
+    print usage
+elif conf['action'] == 'generate':
     if not conf.has_key('interfaces'):
         error("Error: specify at least one 'interface-vlans' pair.")
         exit(1)

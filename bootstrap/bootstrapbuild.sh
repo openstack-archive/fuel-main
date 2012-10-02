@@ -44,7 +44,7 @@ INITRD_LOOP=${BASEDIR}/initrd-loop
 INITRD_MODULES=${BASEDIR}/modules
 
 DEBOOTSTRAP_INCLUDE=less,vim,bash,net-tools,isc-dhcp-client,rsyslog,cron,iputils-ping,openssh-server,ruby-httpclient,ruby-json,ohai,rubygems\
-,mcollective,python-scapy
+,mcollective,python-scapy,vlan,tcpdump
 DEBOOTSTRAP_EXCLUDE=
 
 ORIG=${BASEDIR}/orig

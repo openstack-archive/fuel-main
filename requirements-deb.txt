@@ -30,5 +30,6 @@ rubygems
 ruby-json
 runit
 tftpd-hpa
+vlan
 yum
 yum-utils

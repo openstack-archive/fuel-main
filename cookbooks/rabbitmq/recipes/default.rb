@@ -39,12 +39,3 @@ service "rabbitmq-server" do
   action [ :start ]
 end
 
-rabbitmq_user "mcollective" do
-	password "marionette"
-	action :add
-end
-
-rabbitmq_user "mcollective" do
-  permissions "\".*\" \".*\" \".*\""
-  action :set_permissions
-end
