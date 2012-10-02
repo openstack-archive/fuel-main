@@ -1,7 +1,7 @@
 
 BUILD_DIR:=build
 
-MODULES=gnupg bootstrap nailgun test os os/centos os/ubuntu iso cooks packages/rpm
+MODULES=gnupg bootstrap nailgun test os os/centos os/ubuntu iso packages/rpm
 
 .PHONY: all clean test test-unit help mirror FORCE
 
