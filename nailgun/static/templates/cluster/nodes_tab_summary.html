@@ -2,9 +2,11 @@
   <div class="navbar-inner">
     <div class="summary-article"><b>Settings</b></div>
     <ul class="nav">
-      <li class="btn btn-link summary-settings-btn change-cluster-mode-btn"><b>Mode: </b><%= cluster.get('mode') %></li>
-      <li class="btn btn-link summary-settings-btn change-cluster-type-btn"><b>Type: </b><%= cluster.get('type') %></li>
-      <li class="btn btn-link summary-settings-btn"><b>Release: </b><%= cluster.get('release').get('name') %></li>
+      <% var modes = {'simple': 'Simple', 'ha': 'HA'} %>
+      <li class="btn btn-link summary-settings-btn change-cluster-mode-btn"><b>Mode: </b><%= modes[cluster.get('mode')] %></li>
+      <% var types = {'both': 'Compute and storage', 'compute': 'Compute only', 'storage': 'Storage only'} %>
+      <li class="btn btn-link summary-settings-btn change-cluster-type-btn"><b>Type: </b><%= types[cluster.get('type')] %></li>
+      <li class="btn btn-link summary-settings-btn"><b>Release: </b><%= cluster.get('release').get('name') %> <%= cluster.get('release').get('version') %></li>
     </ul>
   </div>
 </div>
