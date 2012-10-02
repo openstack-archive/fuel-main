@@ -2,11 +2,11 @@
 
 import web
 
-from api.handlers import ClusterHandler, ClusterCollectionHandler
-from api.handlers import ClusterChangesHandler, ClusterNetworksHandler
-from api.handlers import ReleaseHandler, ReleaseCollectionHandler
-from api.handlers import NodeHandler, NodeCollectionHandler
-from api.handlers import NetworkCollectionHandler
+from api.handlers.cluster import ClusterHandler, ClusterCollectionHandler
+from api.handlers.cluster import ClusterChangesHandler, ClusterNetworksHandler
+from api.handlers.release import ReleaseHandler, ReleaseCollectionHandler
+from api.handlers.node import NodeHandler, NodeCollectionHandler
+from api.handlers.networks import NetworkCollectionHandler
 
 
 urls = (

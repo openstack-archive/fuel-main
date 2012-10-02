@@ -1,0 +1,1 @@
+from base import check_client_content_type
