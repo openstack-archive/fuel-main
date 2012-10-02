@@ -86,13 +86,21 @@ function(models, createClusterDialogTemplate, changeClusterModeDialogTemplate, c
         },
         apply: function() {
             var cluster = this.model;
-            cluster.set({
-                mode: this.$('input[name=mode]:checked').val(),
-                redundancy: parseInt(this.$('input[name=redundancy]').val(), 10)
-            });
-            if (cluster.get('mode') != 'ha') cluster.unset('redundancy');
-            cluster.update(['mode', 'redundancy']);
-            this.$el.modal('hide');
+            var valid = true;
+            cluster.on('error', function(model, error) {
+                valid = false;
+                _.each(error, function(message, field) {
+                    this.$('*[name=' + field + '] ~ .help-inline').text(message);
+                    this.$('*[name=' + field + ']').closest('.control-group').addClass('error');
+                }, this);
+            }, this);
+            var mode = this.$('input[name=mode]:checked').val();
+            var redundancy = mode == 'ha' ? parseInt(this.$('input[name=redundancy]').val(), 10) : null;
+            cluster.set({mode: mode, redundancy: redundancy});
+            if (valid) {
+                cluster.update(['mode', 'redundancy']);
+                this.$el.modal('hide');
+            }
         },
         toggleControls: function() {
             this.$('.redundancy-control-group').toggleClass('hide', this.$('input[name=mode]:checked').val() != 'ha');
