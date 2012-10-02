@@ -372,10 +372,20 @@ h6.page-title {
 
 .node-status > .progress {
 	height: 13px;
-	background-color: #dadada;
+	background-color: #cacaca;
 	background-image: none;
 	border-radius: 3px 3px 3px 3px;
 	margin-top: 5px;
+}
+
+.node-status > .progress > .bar > p {
+  color: #FFFFFF;
+  font-size: 10px;
+  line-height: 20px;
+  letter-spacing: 1px;
+  margin: -4px 0 0 4px;
+  text-align: left;
+  text-shadow: none;
 }
 
 .checktoinstall {
@@ -661,10 +671,10 @@ h6.page-title {
   inset 0px 0px 0px rgba(255,255,255,.0);
   cursor: pointer;
   text-shadow: 0 1px 0 rgba(255, 255, 255, 0.45);
-  -webkit-transition: all 0.5s ease;
-  -moz-transition: all 0.5s ease;
-  -o-transition: all 0.5s ease;
-  -ms-transition: all 0.5s ease;
+  -webkit-transition: all 0.7s ease;
+  -moz-transition: all 0.7s ease;
+  -o-transition: all 0.7s ease;
+  -ms-transition: all 0.7s ease;
   background-image: -webkit-linear-gradient(top, #f2f4f4, #c4cbcc);
   background-image: -moz-linear-gradient(top, #f2f4f4, #c4cbcc);
   background-image: -o-linear-gradient(top, #f2f4f4, #c4cbcc);
@@ -676,10 +686,10 @@ h6.page-title {
   /* border: 1px solid transparent; */
   box-shadow: 0 1px 0 rgba(255, 255, 255, 0.2), 0 1px 1px rgba(0, 0, 0, 0.4) inset;
   text-shadow: 0 1px 0 rgba(0, 0, 0, 0.3);
-    -webkit-transition: all 0.5s ease;
-    -moz-transition: all 0.5s ease;
-    -o-transition: all 0.5s ease;
-    -ms-transition: all 0.5s ease;
+    -webkit-transition: all 0.7s ease;
+    -moz-transition: all 0.7s ease;
+    -o-transition: all 0.7s ease;
+    -ms-transition: all 0.7s ease;
 }
 
 .create-cluster:hover {
@@ -689,10 +699,10 @@ h6.page-title {
   /* border: 1px solid #2b3139; */
   cursor: pointer;
   text-shadow: 0 1px 0 rgba(255, 255, 255, 0.45);
-  -webkit-transition: all 0.5s ease;
-    -moz-transition: all 0.5s ease;
-    -o-transition: all 0.5s ease;
-    -ms-transition: all 0.5s ease;
+  -webkit-transition: all 0.7s ease;
+    -moz-transition: all 0.7s ease;
+    -o-transition: all 0.7s ease;
+    -ms-transition: all 0.7s ease;
 }
 .create-cluster > .add-icon {
   display: block;
@@ -707,18 +717,18 @@ h6.page-title {
   text-align: center;
   color: #798797;
   text-shadow: 0 1px 0 rgba(0, 0, 0, 0.45);
-  -webkit-transition: all 0.5s ease;
-    -moz-transition: all 0.5s ease;
-    -o-transition: all 0.5s ease;
-    -ms-transition: all 0.5s ease;
+  -webkit-transition: all 0.7s ease;
+    -moz-transition: all 0.7s ease;
+    -o-transition: all 0.7s ease;
+    -ms-transition: all 0.7s ease;
 }
 .create-cluster:hover > .create-cluster-text {
   color: #333333;
   text-shadow: 0 1px 0 rgba(255, 255, 255, 0.45);
-  -webkit-transition: all 0.5s ease;
-    -moz-transition: all 0.5s ease;
-    -o-transition: all 0.5s ease;
-    -ms-transition: all 0.5s ease;
+  -webkit-transition: all 0.7s ease;
+    -moz-transition: all 0.7s ease;
+    -o-transition: all 0.7s ease;
+    -ms-transition: all 0.7s ease;
 }
 .cluster-name {
   height: 34px;
