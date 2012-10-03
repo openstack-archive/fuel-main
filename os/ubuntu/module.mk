@@ -50,13 +50,13 @@ $/etc/sources.list: | $/etc/.dir
 
 
 define opscode_preferences_contents
-Package: chef*
+Package: *
 Pin: origin "apt.opscode.com"
 Pin-Priority: 999
 endef
 
 define puppet_preferences_contents
-Package: puppet*
+Package: *
 Pin: origin "apt.puppetlabs.com"
 Pin-Priority: 999
 endef
