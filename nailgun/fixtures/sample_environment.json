@@ -11,7 +11,19 @@
               {"name": "fixed", "access": "private10"},
               {"name": "management", "access": "private172"},
               {"name": "storage", "access": "private192"}
-            ]
+            ],
+            "attributes_metadata": {
+                "editable": {
+                    "keystone": {
+                        "admin_tenant": "admin"
+                    }
+                },
+                "generated": {
+                    "mysql": {
+                        "root_password": ""
+                    }
+                }
+            }
         }
     },
     {
@@ -28,6 +40,23 @@
         "fields": {
             "name": "Staging",
             "release": 1
+        }
+    },
+    {
+        "pk": 1,
+        "model": "nailgun.attributes",
+        "fields": {
+            "cluster": 1,
+            "editable": {
+                "keystone": {
+                    "admin_tenant": "admin"
+                }
+            },
+            "generated": {
+                "mysql": {
+                    "root_password": "12345"
+                }
+            }
         }
     },
     {

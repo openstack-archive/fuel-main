@@ -4,6 +4,7 @@ import web
 
 from api.handlers.cluster import ClusterHandler, ClusterCollectionHandler
 from api.handlers.cluster import ClusterChangesHandler, ClusterNetworksHandler
+from api.handlers.cluster import ClusterAttributesHandler
 from api.handlers.release import ReleaseHandler, ReleaseCollectionHandler
 from api.handlers.node import NodeHandler, NodeCollectionHandler
 from api.handlers.networks import NetworkCollectionHandler
@@ -21,6 +22,8 @@ urls = (
     'ClusterHandler',
     r'/clusters/(?P<cluster_id>\d+)/changes/?$',
     'ClusterChangesHandler',
+    r'/clusters/(?P<cluster_id>\d+)/attributes/?$',
+    'ClusterAttributesHandler',
     r'/clusters/(?P<cluster_id>\d+)/verify/networks/?$',
     'ClusterNetworksHandler',
     r'/nodes/?$',

@@ -1,5 +1,8 @@
 # -*- coding: utf-8 -*-
+
 import re
+import string
+from random import choice
 
 import web
 from sqlalchemy import Column, UniqueConstraint, Table
@@ -28,6 +31,7 @@ class Release(Base, BasicValidator):
     version = Column(String(30), nullable=False)
     description = Column(Unicode)
     networks_metadata = Column(JSON, default=[])
+    attributes_metadata = Column(JSON, default={})
     clusters = relationship("Cluster", backref="release")
 
     @classmethod
@@ -71,7 +75,11 @@ class Cluster(Base, BasicValidator):
     name = Column(Unicode(50), unique=True, nullable=False)
     release_id = Column(Integer, ForeignKey('releases.id'), nullable=False)
     nodes = relationship("Node", backref="cluster")
+<<<<<<< HEAD
     tasks = relationship("Task", backref="cluster")
+=======
+    attributes = relationship("Attributes", uselist=False, backref="cluster")
+>>>>>>> implementing attributes for cluster
 
     @classmethod
     def validate(cls, data):
@@ -252,6 +260,25 @@ class Network(Base, BasicValidator):
                     message="No 'id' param for '%'" % i
                 )
         return d
+
+
+class Attributes(Base, BasicValidator):
+    __tablename__ = 'attributes'
+    id = Column(Integer, primary_key=True)
+    cluster_id = Column(Integer, ForeignKey('clusters.id'))
+    editable = Column(JSON)
+    generated = Column(JSON)
+
+    def generate_fields(self):
+        for service, flds in self.generated.iteritems():
+            for field, value in flds.iteritems():
+                self.generated[service][field] = self._generate_pwd()
+        web.ctx.orm.add(self)
+        web.ctx.orm.commit()
+
+    def _generate_pwd(self, length=8):
+        chars = string.letters + string.digits
+        return ''.join([choice(chars) for i in xrange(length)])
 
 
 class Task(Base, BasicValidator):

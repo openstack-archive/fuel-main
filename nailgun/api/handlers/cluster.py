@@ -10,7 +10,8 @@ import netaddr
 
 import rpc
 from settings import settings
-from api.models import Cluster, Node, Network, Release, Vlan, Task
+from api.models import Cluster, Node, Network, Release, Attributes
+from api.models import Vlan, Task
 from api.handlers.base import JSONHandler
 from api.handlers.node import NodeHandler
 from api.handlers.tasks import TaskHandler
@@ -120,6 +121,16 @@ class ClusterCollectionHandler(JSONHandler):
             setattr(cluster, field, data.get(field))
 
         web.ctx.orm.add(cluster)
+        web.ctx.orm.commit()
+        attributes = Attributes(
+            editable=cluster.release.attributes_metadata.get("editable"),
+            generated=cluster.release.attributes_metadata.get("generated"),
+            cluster=cluster
+        )
+        web.ctx.orm.add(attributes)
+        web.ctx.orm.commit()
+        attributes.generate_fields()
+        web.ctx.orm.add(attributes)
         web.ctx.orm.commit()
 
         used_nets = [n.cidr for n in web.ctx.orm.query(Network).all()]
@@ -323,5 +334,29 @@ class ClusterNetworksHandler(JSONHandler):
 
         return json.dumps(
             self.render(cluster),
+            indent=4
+        )
+
+
+class ClusterAttributesHandler(JSONHandler):
+    fields = (
+        "editable",
+    )
+
+    def GET(self, cluster_id):
+        web.header('Content-Type', 'application/json')
+        q = web.ctx.orm.query(Cluster).filter(Cluster.id == cluster_id)
+        cluster = q.first()
+        if not cluster:
+            return web.notfound()
+
+        attrs = cluster.attributes
+        if not attrs:
+            return web.notfound()
+
+        return json.dumps(
+            {
+                "editable": attrs.editable
+            },
             indent=4
         )
