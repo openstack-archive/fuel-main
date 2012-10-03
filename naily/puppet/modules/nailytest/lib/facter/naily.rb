@@ -9,9 +9,6 @@ if File.exist?("/etc/naily.facts")
             Facter.add(var) do
                 setcode { val }
             end
-            Facter.add("myrole") do
-                setcode {'a' => {'b' => {'c' => 'd'}}}
-            end
         end
     end
 end
