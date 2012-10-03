@@ -13,6 +13,7 @@ from settings import settings
 from api.models import Cluster, Node, Network, Release, Vlan, Task
 from api.handlers.base import JSONHandler
 from api.handlers.node import NodeHandler
+from api.handlers.tasks import TaskHandler
 from provision import ProvisionConfig
 from provision import ProvisionFactory
 from provision.model.profile import Profile as ProvisionProfile
@@ -36,9 +37,9 @@ class ClusterHandler(JSONHandler):
     @classmethod
     def render(cls, instance, fields=None):
         json_data = JSONHandler.render(instance, fields=cls.fields)
-        json_data["nodes"] = map(
-            NodeHandler.render,
-            instance.nodes
+        json_data["tasks"] = map(
+            TaskHandler.render,
+            instance.tasks
         )
         return json_data
 
@@ -174,7 +175,8 @@ class ClusterChangesHandler(JSONHandler):
 
         task = Task(
             uuid=str(uuid.uuid4()),
-            name="Provisioning cluster %d" % int(cluster_id)
+            name="deploy",
+            cluster=cluster
         )
         web.ctx.orm.add(task)
         web.ctx.orm.commit()
@@ -187,6 +189,10 @@ class ClusterChangesHandler(JSONHandler):
         try:
             pd = ProvisionFactory.getInstance(pc)
         except Exception as err:
+            task.status = "error"
+            task.errors = "Failed to start provisioning"
+            web.ctx.orm.add(task)
+            web.ctx.orm.commit()
             raise web.badrequest(str(err))
         pf = ProvisionProfile(settings.COBBLER_PROFILE)
         ndp = ProvisionPower("ssh")
@@ -195,14 +201,17 @@ class ClusterChangesHandler(JSONHandler):
         allowed_statuses = ("discover", "ready")
         for node in cluster.nodes:
             if node.status not in allowed_statuses:
-                raise web.badrequest(
-                    "Node %s (%s) status:%s not in %s" % (
-                        node.mac,
-                        node.ip,
-                        node.status,
-                        str(allowed_statuses)
-                    )
+                err = "Node %s (%s) status:%s not in %s" % (
+                    node.mac,
+                    node.ip,
+                    node.status,
+                    str(allowed_statuses)
                 )
+                task.status = "error"
+                task.errors = err
+                web.ctx.orm.add(task)
+                web.ctx.orm.commit()
+                raise web.badrequest()
 
         for node in itertools.ifilter(
             lambda n: n.status in allowed_statuses, cluster.nodes
@@ -258,7 +267,7 @@ class ClusterChangesHandler(JSONHandler):
         rpc.cast('naily', message)
 
         return json.dumps(
-            self.render(cluster),
+            TaskHandler.render(task),
             indent=4
         )
 
@@ -278,7 +287,8 @@ class ClusterNetworksHandler(JSONHandler):
 
         task = Task(
             uuid=str(uuid.uuid4()),
-            name="Verify Networks for cluster %d" % cluster_id
+            name="verify_networks",
+            cluster=cluster
         )
         web.ctx.orm.add(task)
         web.ctx.orm.commit()

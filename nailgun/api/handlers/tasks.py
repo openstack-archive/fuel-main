@@ -1,0 +1,32 @@
+# -*- coding: utf-8 -*-
+
+import json
+import logging
+
+import web
+
+from api.models import Task
+from api.handlers.base import JSONHandler
+
+
+class TaskHandler(JSONHandler):
+    fields = (
+        "id",
+        "cluster",
+        "uuid",
+        "name",
+        "errors",
+        "status"
+    )
+    model = Task
+
+    def GET(self, task_id):
+        web.header('Content-Type', 'application/json')
+        q = web.ctx.orm.query(Task)
+        task = q.filter(Task.id == task_id).first()
+        if not task:
+            return web.notfound()
+        return json.dumps(
+            self.render(task),
+            indent=4
+        )

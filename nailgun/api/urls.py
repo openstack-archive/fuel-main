@@ -7,6 +7,7 @@ from api.handlers.cluster import ClusterChangesHandler, ClusterNetworksHandler
 from api.handlers.release import ReleaseHandler, ReleaseCollectionHandler
 from api.handlers.node import NodeHandler, NodeCollectionHandler
 from api.handlers.networks import NetworkCollectionHandler
+from api.handlers.tasks import TaskHandler
 
 
 urls = (
@@ -28,6 +29,8 @@ urls = (
     'NodeHandler',
     r'/networks/?$',
     'NetworkCollectionHandler',
+    r'/tasks/(?P<node_id>\d+)/?$',
+    'TaskHandler',
 )
 
 api_app = web.application(urls, locals())

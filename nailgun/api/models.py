@@ -71,6 +71,7 @@ class Cluster(Base, BasicValidator):
     name = Column(Unicode(50), unique=True, nullable=False)
     release_id = Column(Integer, ForeignKey('releases.id'), nullable=False)
     nodes = relationship("Node", backref="cluster")
+    tasks = relationship("Task", backref="cluster")
 
     @classmethod
     def validate(cls, data):
@@ -261,6 +262,7 @@ class Task(Base, BasicValidator):
         'error'
     )
     id = Column(Integer, primary_key=True)
+    cluster_id = Column(Integer, ForeignKey('clusters.id'))
     uuid = Column(String(36), nullable=False)
     name = Column(String(36), nullable=False)
     errors = Column(Text)
