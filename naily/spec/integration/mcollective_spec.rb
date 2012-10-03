@@ -16,17 +16,20 @@ describe "MCollective" do
     end
 
     it "it should update facts file with new key-value and could get it back" do
-      value_to_send = rand(2**30).to_s
+      data_to_send = {"anykey" => rand(2**30).to_s, "other" => "static"}
       node = "admin"
       mc = rpcclient("nailyfact")
       mc.progress = false
       mc.discover(:nodes => [node])
-      stats = mc.put(:key => "role", :value => value_to_send)
-      stats.should have(1).items
-      stats[0].results[:statuscode].should eql(0)
-      stats = mc.get(:key => "role")
+      stats = mc.post(:value => data_to_send)
       check_mcollective_result(stats)
-      stats[0].results[:data][:value].should eql(value_to_send)
+
+      stats = mc.get(:key => "anykey")
+      check_mcollective_result(stats)
+      stats[0].results[:data][:value].should eql(data_to_send['anykey'])
+      stats = mc.get(:key => "other")
+      check_mcollective_result(stats)
+      stats[0].results[:data][:value].should eql(data_to_send['other'])
     end
   end
 end
