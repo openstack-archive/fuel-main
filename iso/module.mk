@@ -341,9 +341,10 @@ $(ISOROOT)/eggs:
 	mkdir -p $@
 	cp $(LOCAL_MIRROR)/eggs/* $(ISOROOT)/eggs/
 
-$(ISOROOT)/gems/gems:
+$(ISOROOT)/gems/gems: $(BUILD_DIR)/gems/naily.gem
 	mkdir -p $@
-	cp $(LOCAL_MIRROR)/gems/* $(ISOROOT)/gems/gems
+	cp $(LOCAL_MIRROR)/gems/* $@
+	cp $(filter %.gem,$^) $@
 	gem generate_index -d $(ISOROOT)/gems
 
 # MAIN ISO RULE
