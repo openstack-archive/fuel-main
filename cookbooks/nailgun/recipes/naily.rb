@@ -1,3 +1,6 @@
+include_recipe "mcollective::client"
+include_recipe "puppet::master"
+
 Dir.glob("#{node[:nailgun][:root]}/naily/agent/*").each do |agent|
   link agent do
     to "/usr/share/mcollective/plugins/mcollective/agent/" + File.basename(agent)

@@ -4,6 +4,7 @@
         "nailgun::server",
         "naily",
         "cobbler::default",
-        "nailgun::upload"
+        "nailgun::upload",
+        "nailgun::naily"
      ]
 }
