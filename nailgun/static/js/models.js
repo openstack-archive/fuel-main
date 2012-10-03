@@ -32,8 +32,8 @@ define(function() {
             }
             return _.isEmpty(errors) ? null : errors;
         },
-        locked: function() {
-            return this.get('task') && !this.get('task').get('ready');
+        task: function(taskName) {
+            return this.get('tasks') && this.get('tasks').where({name: taskName})[0];
         },
         hasChanges: function() {
             return _.any(this.get('nodes').pluck('redeployment_needed'));
@@ -54,10 +54,11 @@ define(function() {
             }
         },
         parse: function(response) {
+            response.release = new models.Release(response.release);
             response.nodes = new models.Nodes(response.nodes);
             response.nodes.cluster = this;
-            response.release = new models.Release(response.release);
-            response.task = response.task ? new models.Task(response.task) : null;
+            response.tasks = new models.Tasks(response.tasks);
+            response.tasks.cluster = this;
             return response;
         }
     });
@@ -89,6 +90,18 @@ define(function() {
         resources: function(resourceName) {
             var resources = this.map(function(node) {return node.resource(resourceName)});
             return _.reduce(resources, function(sum, n) {return sum + n}, 0);
+        }
+    });
+
+    models.Task = Backbone.Model.extend({
+        urlRoot: '/api/tasks'
+    });
+
+    models.Tasks = Backbone.Collection.extend({
+        model: models.Task,
+        url: '/api/tasks',
+        toJSON: function(options) {
+            return this.pluck('id');
         }
     });
 

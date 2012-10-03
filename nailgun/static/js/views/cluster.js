@@ -58,10 +58,15 @@ function(models, dialogViews, taskViews, clusterPageTemplate, nodesTabSummaryTem
         },
         deployCluster: function() {
             this.$('.deploy-btn').attr('disabled', true);
-            $.ajax({
+            var task = new models.Task();
+            task.save({}, {
                 type: 'PUT',
-                url: '/api/clusters/' + this.model.id + '/changes'
+                url: '/api/clusters/' + this.model.id + '/changes',
+                success: _.bind(function() {
+                    if (this == app.page) this.update();
+                }, this)
             });
+            this.render();
         },
         initialize: function(options) {
             _.defaults(this, options);
@@ -72,7 +77,7 @@ function(models, dialogViews, taskViews, clusterPageTemplate, nodesTabSummaryTem
             this.scheduleUpdate();
         },
         scheduleUpdate: function() {
-            if (this.model.locked()) { // task is running
+            if (this.model.task('deploy')) {
                 _.delay(_.bind(this.update, this), this.updateInterval);
             }
         },
@@ -147,7 +152,7 @@ function(models, dialogViews, taskViews, clusterPageTemplate, nodesTabSummaryTem
             this.$el.append((new views.NodesTabSummary({model: this.model})).render().el);
             var roles = this.model.availableRoles();
             _.each(roles, function(role, index) {
-                var nodes = this.model.get('nodes').filter(function(node) {return node.get('role') == role});
+                var nodes = this.model.get('nodes').where({role: role});
                 var nodeListView = new views.NodeList({
                     collection: new models.Nodes(nodes),
                     role: role,
@@ -258,7 +263,7 @@ function(models, dialogViews, taskViews, clusterPageTemplate, nodesTabSummaryTem
         initialize: function(options) {
             this.tab = options.tab;
             this.role = options.role;
-            this.availableNodes = new models.Nodes(this.model.get('nodes').filter(function(node) {return node.get('role') == options.role}));
+            this.availableNodes = new models.Nodes(this.model.get('nodes').where({role: options.role}));
         },
         applyChanges: function() {
             if (confirm('Do you really want to delete these nodes?')) {
@@ -317,7 +322,7 @@ function(models, dialogViews, taskViews, clusterPageTemplate, nodesTabSummaryTem
         },
         startNodeRenaming: function() {
             if (!this.renameable || this.renaming) return;
-            if (this.model.collection.cluster.locked()) return;
+            if (this.model.collection.cluster.task('deploy')) return;
             $('html').off(this.eventNamespace);
             $('html').on(this.eventNamespace, _.after(2, _.bind(function(e) {
                 if (!$(e.target).closest(this.$el).length) {
