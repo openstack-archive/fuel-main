@@ -136,6 +136,7 @@ $/isoroot.done: \
 		$(addprefix $(ISOROOT)/nailgun/bin/,create_release agent) \
 		$(addprefix $(ISOROOT)/nailgun/solo/,solo.rb solo.json) \
 		$(addprefix $(ISOROOT)/nailgun/cookbooks/,$(call find-files,cookbooks)) \
+		$(addprefix $(ISOROOT)/nailgun/naily/,$(call find-files,naily)) \
 		$(addprefix $(ISOROOT)/nailgun/,openstack-essex.json) \
 		$(ISOROOT)/eggs \
 		$(ISOROOT)/gems/gems \
