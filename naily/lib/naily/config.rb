@@ -26,7 +26,7 @@ module Naily
           line.gsub!(/#.*$/, '').trim! # remove comments
           next if line == ''
 
-          unless /(\S+)\s*=\s*(\S.*)/ ~= line
+          unless /(\S+)\s*=\s*(\S.*)/ =~ line
             raise ConfigParseErorr.new("Syntax error in line #{line}", line)
           end
 

@@ -1,6 +1,7 @@
 #!/usr/bin/env ruby
 
 require 'naily/server'
+require 'naily/config'
 require 'naily/version'
 
 require 'ostruct'
