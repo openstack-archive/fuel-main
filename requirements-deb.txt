@@ -22,6 +22,7 @@ python-django
 python-ipaddr
 python-paramiko
 python-pip
+python-pypcap
 python-scapy
 python-virtualenv
 redis-server

@@ -12,6 +12,7 @@ import json
 from optparse import OptionParser
 from scapy.config import *
 conf.logLevel = 40
+conf.use_pcap = True
 from scapy.all import *
 
 usage = """This is a packet generator and analyser.
@@ -56,31 +57,21 @@ def error(msg):
     sys.stderr.write(msg)
 
 def parse_vlan_list(vlan_string):
-    validate = lambda x: (x > 0) and (x < 4095)
+    validate = lambda x: (x >= 0) and (x < 4095)
     chunks = vlan_string.split(",")
     vlan_list = []
-    zero = False
     for chunk in chunks:
         delim = chunk.find("-")
         try:
             if delim > 0 :
                 left = int(chunk[:delim])
                 right = int(chunk[delim+1:])
-                if left == 0:
-                    zero = True
-                    left = 1
-                    if left == right:
-                        vlan_list.append(left)
-                        continue
                 if validate(left) and validate(right):
-                    vlan_list.append((left, right))
+                    vlan_list.extend(xrange(left, right+1))
                 else:
                     raise ValueError
             else:
                 vlan = int(chunk)
-                if vlan == 0:
-                    zero = True
-                    continue
                 if validate(vlan):
                     vlan_list.append(vlan)
                 else:
@@ -88,8 +79,6 @@ def parse_vlan_list(vlan_string):
         except ValueError:
             error('Error: incorrect vlan: %s\n' % chunk)
             exit(1)
-        if zero:
-            vlan_list.append(0)
     return vlan_list
 
 def get_probe_frames(iface):
@@ -116,20 +105,21 @@ def get_probe_frames(iface):
     return neigbors
 
 def send_probe_frame(**props):
-    try:
-        props['vlan'].remove(0)
-        zero = True
-    except ValueError:
-        zero = False
-    p = Ether(src=props['src_mac'], dst="ff:ff:ff:ff:ff:ff")
-    p = p/Dot1Q(vlan=props['vlan'])/IP(src=props['src'], dst=props['dst'])
-    p = p/UDP(sport=props['sport'], dport=props['dport'])/props['data']
-    sendp(p, iface=props['iface'])
-    if zero:
+    for vlan in props['vlan']:
         p = Ether(src=props['src_mac'], dst="ff:ff:ff:ff:ff:ff")
+        if vlan > 0:
+            os.system('vconfig add %s %d' % (props['iface'], vlan))
+            iface = '%s.%d' % (props['iface'], vlan)
+            os.system('ifconfig %s up' % iface)
+        else:
+            iface = props['iface']
         p = p/IP(src=props['src'], dst=props['dst'])
         p = p/UDP(sport=props['sport'], dport=props['dport'])/props['data']
-        sendp(p, iface=props['iface'])
+        sendp(p, iface=iface)
+        if vlan > 0:
+            os.system('ifconfig %s down' % iface)
+            os.system('vconfig rem %s' % iface)
+
 
 
 def addpid(piddir):
@@ -156,7 +146,7 @@ opts, args = parser.parse_args()
 cookie = "Nailgun:"
 piddir = '/var/run/net_probe'
 dumpname_prefix = "/var/tmp/net-probe-dump-"
-conf = {'src_mac': None,
+config= {'src_mac': None,
          'src': '1.0.0.0', 'dst': '1.0.0.0',
          'sport': 31337, 'dport': 31337,
          'cookie': cookie}
@@ -167,47 +157,48 @@ if opts.config_file or '-' in args:
             fo = sys.stdin
         else:
             fo = open(opts.config_file, 'r')
-        config = json.load(fo)
+        parsed_config = json.load(fo)
     except IOError:
         error("Error: can not read config file %s\n" % opts.config_file)
         exit(1)
     except ValueError as e:
         error("Error: can not parse config file: %s\n" % e.message)
         exit(1)
-    for key in config.keys():
-        conf[key] = config[key]
+    for key in parsed_config.keys():
+        config[key] = parsed_config[key]
 
 if opts.uid:
-    conf['uid'] = opts.uid
+    config['uid'] = opts.uid
 
 if opts.ifname and opts.vlan_list:
-    conf['action'] = 'generate'
-    conf['interfaces'] = {}
-    conf['interfaces'][opts.ifname] = opts.vlan_list
+    config['action'] = 'generate'
+    config['interfaces'] = {}
+    config['interfaces'][opts.ifname] = opts.vlan_list
 
 if opts.listen_iface:
-    conf['action'] = 'listen'
-    conf['interface'] = opts.listen_iface
+    config['action'] = 'listen'
+    config['interface'] = opts.listen_iface
     if opts.dump_file:
-        conf['dump_file'] = opts.dump_file
+        config['dump_file'] = opts.dump_file
     else:
-        conf['dump_file'] = "%s%s" % (dumpname_prefix, conf['interface'])
+        config['dump_file'] = "%s%s" % (dumpname_prefix, config['interface'])
 
-if not conf.has_key('action'):
+if not config.has_key('action'):
     print usage
-elif conf['action'] == 'generate':
-    if not conf.has_key('interfaces'):
+elif config['action'] == 'generate':
+    if not config.has_key('interfaces'):
         error("Error: specify at least one 'interface-vlans' pair.")
         exit(1)
-    for iface, vlan_list in conf['interfaces'].items():
-        conf['iface'] = iface
-        conf['data'] = str(''.join((conf['cookie'], iface, ' ', conf['uid'])))
-        conf['vlan'] = parse_vlan_list(vlan_list)
-        send_probe_frame(**conf)
-elif conf['action'] == 'listen':
+    for iface, vlan_list in config['interfaces'].items():
+        props = dict(config)
+        props['iface'] = iface
+        props['data'] = str(''.join((config['cookie'], iface, ' ', config['uid'])))
+        props['vlan'] = parse_vlan_list(vlan_list)
+        send_probe_frame(**props)
+elif config['action'] == 'listen':
     pidfile = addpid(piddir)
-    neigbors = get_probe_frames(conf['interface'])
-    fo = open(conf['dump_file'], 'w')
+    neigbors = get_probe_frames(config['interface'])
+    fo = open(config['dump_file'], 'w')
     fo.write(json.dumps(neigbors))
     fo.close()
     os.unlink(pidfile)
