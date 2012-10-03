@@ -258,7 +258,7 @@ class Task(Base, BasicValidator):
     __tablename__ = 'tasks'
     TASK_STATUSES = (
         'ready',
-        'pending',
+        'running',
         'error'
     )
     id = Column(Integer, primary_key=True)
@@ -266,4 +266,4 @@ class Task(Base, BasicValidator):
     uuid = Column(String(36), nullable=False)
     name = Column(String(36), nullable=False)
     errors = Column(Text)
-    status = Column(Enum(*TASK_STATUSES), nullable=False, default='pending')
+    status = Column(Enum(*TASK_STATUSES), nullable=False, default='running')
