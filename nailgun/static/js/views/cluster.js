@@ -66,7 +66,6 @@ function(models, dialogViews, taskViews, clusterPageTemplate, nodesTabSummaryTem
                     if (this == app.page) this.update();
                 }, this)
             });
-            this.render();
         },
         initialize: function(options) {
             _.defaults(this, options);
