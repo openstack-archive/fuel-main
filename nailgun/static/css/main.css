@@ -922,3 +922,10 @@ h6.page-title {
   color: #777777;
   font-size: 13px;
 }
+
+.loading {
+  margin-top: 100px;
+  width: 100%;
+  height: 90px;
+  background: url(../img/cloud-loader.gif) no-repeat top center;
+}
