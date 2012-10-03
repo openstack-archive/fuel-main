@@ -9,6 +9,7 @@ EXTRA_PACKAGES:=$(shell grep -v ^\\s*\# requirements-deb.txt)
 
 UBUNTU_MIRROR:=http://ru.archive.ubuntu.com/ubuntu
 OPSCODE_UBUNTU_MIRROR:=http://apt.opscode.com
+PUPPET_UBUNTU_MIRROR:=http://apt.puppetlabs.com
 # DEBIAN PACKET CACHE RULES
 
 define apt_conf_contents
@@ -39,6 +40,7 @@ define apt_sources_list_contents
 deb $(UBUNTU_MIRROR) precise main restricted universe multiverse
 deb-src $(UBUNTU_MIRROR) precise main restricted universe multiverse
 deb $(OPSCODE_UBUNTU_MIRROR) $(UBUNTU_1204_RELEASE)-0.10 main
+deb $(PUPPET_UBUNTU_MIRROR) $(UBUNTU_1204_RELEASE) main
 endef
 
 $/etc/sources.list: export contents:=$(apt_sources_list_contents)
@@ -48,8 +50,14 @@ $/etc/sources.list: | $/etc/.dir
 
 
 define opscode_preferences_contents
-Package: *
+Package: chef*
 Pin: origin "apt.opscode.com"
+Pin-Priority: 999
+endef
+
+define puppet_preferences_contents
+Package: puppet*
+Pin: origin "apt.puppetlabs.com"
 Pin-Priority: 999
 endef
 
@@ -58,6 +66,10 @@ $/etc/preferences.d/opscode: | $/etc/preferences.d/.dir
 	@mkdir -p $(@D)
 	echo "$${contents}" > $@
 
+$/etc/preferences.d/puppet: export contents:=$(puppet_preferences_contents)
+$/etc/preferences.d/puppet: | $/etc/preferences.d/.dir
+	@mkdir -p $(@D)
+	echo "$${contents}" > $@
 
 $/state/status: | $/state/.dir
 	$(ACTION.TOUCH)
@@ -66,6 +78,7 @@ $/cache-infra.done: \
 	  $/etc/apt.conf \
 		$/etc/sources.list \
 		$/etc/preferences.d/opscode \
+		$/etc/preferences.d/puppet \
 	  $/archives/.dir \
 		| $/cache/.dir \
 		  $/state/status

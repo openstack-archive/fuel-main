@@ -17,6 +17,8 @@ mcollective
 mcollective-client
 ntp
 ohai
+puppetmaster
+puppet
 python-dev
 python-django
 python-ipaddr
