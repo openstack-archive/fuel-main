@@ -5,6 +5,7 @@ from api.models import Cluster, Node, Attributes
 from base import BaseHandlers
 from base import reverse
 
+
 class TestAttributes(BaseHandlers):
 
     def test_attributes_creation(self):
@@ -27,7 +28,9 @@ class TestAttributes(BaseHandlers):
         )
         self.assertEquals(200, resp.status)
         response = json.loads(resp.body)
-        attrs = self.db.query(Attributes).filter(Attributes.cluster_id == cluster_id).first()
+        attrs = self.db.query(Attributes).filter(
+            Attributes.cluster_id == cluster_id
+        ).first()
         for service, fields in attrs.editable.iteritems():
             for f, value in fields.iteritems():
                 self.assertNotEqual(value, "")
