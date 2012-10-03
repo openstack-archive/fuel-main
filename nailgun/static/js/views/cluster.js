@@ -77,7 +77,7 @@ function(models, dialogViews, taskViews, clusterPageTemplate, nodesTabSummaryTem
             this.scheduleUpdate();
         },
         scheduleUpdate: function() {
-            if (this.model.task('deploy')) {
+            if (this.model.task('deploy', 'running')) {
                 _.delay(_.bind(this.update, this), this.updateInterval);
             }
         },
@@ -322,7 +322,7 @@ function(models, dialogViews, taskViews, clusterPageTemplate, nodesTabSummaryTem
         },
         startNodeRenaming: function() {
             if (!this.renameable || this.renaming) return;
-            if (this.model.collection.cluster.task('deploy')) return;
+            if (this.model.collection.cluster.task('deploy', 'running')) return;
             $('html').off(this.eventNamespace);
             $('html').on(this.eventNamespace, _.after(2, _.bind(function(e) {
                 if (!$(e.target).closest(this.$el).length) {

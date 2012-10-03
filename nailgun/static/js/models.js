@@ -32,8 +32,10 @@ define(function() {
             }
             return _.isEmpty(errors) ? null : errors;
         },
-        task: function(taskName) {
-            return this.get('tasks') && this.get('tasks').where({name: taskName})[0];
+        task: function(taskName, status) {
+            var options = {name: taskName};
+            if (status) options.status = status;
+            return this.get('tasks') && this.get('tasks').where(options)[0];
         },
         hasChanges: function() {
             return _.any(this.get('nodes').pluck('redeployment_needed'));

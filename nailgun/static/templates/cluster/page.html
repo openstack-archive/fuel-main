@@ -19,13 +19,15 @@
     <% _.each(tabs, function(tab) { %>
       <li class="<%= activeTab == tab ? 'active' : '' %>"><a href="#cluster/<%= cluster.id %>/<%= tab %>"><b class="tab-<%= tab %>-normal"></b></a></li>
     <% }) %>
-    <!--<li class="pull-right">
-      <div class="progress progress-warning progress-striped progress-deploy active">
-        <div class="bar" style="width: 60%;"></div>
-      </div>
-    </li>-->
     <li class="pull-right">
-      <button class="deploy-btn" <%= cluster.hasChanges() ? '' : 'disabled' %>><i class="icon-upload-cloud-1"></i> Apply Changes</button>
+      <% var task = cluster.task('deploy') %>
+      <% if (task && task.get('status') == 'running') { %>
+        <div class="progress progress-warning progress-striped progress-deploy active">
+          <div class="bar" style="width:100%"></div>
+        </div>
+      <% } else { %>
+        <button class="deploy-btn" <%= cluster.hasChanges() ? '' : 'disabled' %>><i class="icon-upload-cloud-1"></i> Apply Changes</button>
+      <% } %>
     </li>
   </ul>
   <div class="tab-content">
