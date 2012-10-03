@@ -61,6 +61,8 @@ class Release(Base, BasicValidator):
                     )
         else:
             d["networks_metadata"] = []
+        if not "attributes_metadata" in d:
+            d["attributes_metadata"] = {}
         return d
 
 

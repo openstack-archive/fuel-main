@@ -52,6 +52,18 @@ class TestHandlers(BaseHandlers):
             {"name": "management", "access": "private172"},
             {"name": "other_172", "access": "private172"},
         ]
+        release.attributes_metadata = {
+            "editable": {
+                "keystone": {
+                    "admin_tenant": "admin"
+                }
+            },
+            "generated": {
+                "mysql": {
+                    "root_password": ""
+                }
+            }
+        }
         self.db.add(release)
         self.db.commit()
         resp = self.app.post(
