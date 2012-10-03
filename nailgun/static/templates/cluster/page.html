@@ -19,6 +19,11 @@
     <% _.each(tabs, function(tab) { %>
       <li class="<%= activeTab == tab ? 'active' : '' %>"><a href="#cluster/<%= cluster.id %>/<%= tab %>"><b class="tab-<%= tab %>-normal"></b></a></li>
     <% }) %>
+    <!--<li class="pull-right">
+      <div class="progress progress-warning progress-striped progress-deploy active">
+        <div class="bar" style="width: 60%;"></div>
+      </div>
+    </li>-->
     <li class="pull-right">
       <button class="deploy-btn" <%= cluster.hasChanges() ? '' : 'disabled' %>><i class="icon-upload-cloud-1"></i> Apply Changes</button>
     </li>
