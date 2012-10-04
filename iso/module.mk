@@ -304,6 +304,7 @@ cp -r /cdrom/eggs /target/var/lib/mirror
 
 # gems
 cp -r /cdrom/gems /target/var/lib/mirror
+in-target gem sources --add file:///var/lib/mirror/gems/
 
 endef
 
