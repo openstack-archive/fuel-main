@@ -15,7 +15,7 @@ class TaskHandler(JSONHandler):
         "cluster",
         "uuid",
         "name",
-        "errors",
+        "error",
         "status"
     )
     model = Task

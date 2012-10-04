@@ -203,7 +203,7 @@ class ClusterChangesHandler(JSONHandler):
             pd = ProvisionFactory.getInstance(pc)
         except Exception as err:
             task.status = "error"
-            task.errors = "Failed to start provisioning"
+            task.error = "Failed to start provisioning"
             web.ctx.orm.add(task)
             web.ctx.orm.commit()
             raise web.badrequest(str(err))
@@ -221,7 +221,7 @@ class ClusterChangesHandler(JSONHandler):
                     str(allowed_statuses)
                 )
                 task.status = "error"
-                task.errors = err
+                task.error = err
                 web.ctx.orm.add(task)
                 web.ctx.orm.commit()
                 raise web.badrequest()

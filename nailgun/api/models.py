@@ -265,5 +265,5 @@ class Task(Base, BasicValidator):
     cluster_id = Column(Integer, ForeignKey('clusters.id'))
     uuid = Column(String(36), nullable=False)
     name = Column(String(36), nullable=False)
-    errors = Column(Text)
+    error = Column(Text)
     status = Column(Enum(*TASK_STATUSES), nullable=False, default='running')

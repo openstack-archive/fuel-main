@@ -26,13 +26,13 @@ class NailgunReceiver(object):
     )
 
     @classmethod
-    def __update_task_status(cls, uuid, status, errors=""):
+    def __update_task_status(cls, uuid, status, error=""):
         task = cls.db.query(Task).filter(Task.uuid == uuid).first()
         if not task:
             raise TaskNotFound()
         task.status = status
-        if errors:
-            task.errors = errors
+        if error:
+            task.error = error
         cls.db.add(task)
         cls.db.commit()
 
