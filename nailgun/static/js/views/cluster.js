@@ -115,10 +115,22 @@ function(models, dialogViews, taskViews, clusterPageTemplate, nodesTabSummaryTem
     });
 
     views.NodesTab = Backbone.View.extend({
+        screen: null,
         changeScreen: function(newScreenView, screenOptions) {
             var options = _.extend({model: this.model, tab: this}, screenOptions || {});
-            var screenView = new newScreenView(options);
-            this.$el.html(screenView.render().el);
+            var newScreen = new newScreenView(options);
+            var oldScreen = this.screen;
+            if (oldScreen) {
+                oldScreen.$el.fadeOut('fast', _.bind(function() {
+                    oldScreen.remove();
+                    newScreen.render();
+                    newScreen.$el.hide().fadeIn('fast');
+                    this.$el.html(newScreen.el);
+                }, this));
+            } else {
+                this.$el.html(newScreen.render().el);
+            }
+            this.screen = newScreen;
         },
         render: function() {
             this.$el.html('');
