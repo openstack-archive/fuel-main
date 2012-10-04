@@ -6,6 +6,7 @@ group node[:naily][:group]
 
 template '/etc/init.d/naily' do
   source 'sv-init.erb'
+  mode '0755'
 end
 
 directory '/etc/naily' do
