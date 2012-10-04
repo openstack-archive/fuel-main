@@ -1,5 +1,7 @@
 include_recipe "python"
 include_recipe "rabbitmq"
+
+node[:mcollective][:site_plugins] = "#{node[:nailgun][:root]}/naily/mcollective"
 include_recipe "mcollective"
 
 rabbitmq_user "mcollective" do

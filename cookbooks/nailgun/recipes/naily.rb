@@ -1,12 +1,6 @@
 include_recipe "mcollective::client"
 include_recipe "puppet::master"
 
-Dir.glob("#{node[:nailgun][:root]}/naily/agent/*").each do |agent|
-  link agent do
-    to "/usr/share/mcollective/plugins/mcollective/agent/" + File.basename(agent)
-  end
-end
-
 # Chef's link resource doesn't process directory link, so we end up with bash script
 bash "Link Puppet test module" do
   code <<-EOH
