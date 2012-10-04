@@ -8,12 +8,15 @@ import os
 import sys
 import signal
 import json
+import socket
 
+from subprocess import check_call, CalledProcessError
 from optparse import OptionParser
-from scapy.config import *
-conf.logLevel = 40
-conf.use_pcap = True
-from scapy.all import *
+
+import scapy.config as scapy
+scapy.conf.logLevel = 40
+scapy.conf.use_pcap = True
+import scapy.all as scapy
 
 usage = """This is a packet generator and analyser.
 
@@ -82,21 +85,21 @@ def parse_vlan_list(vlan_string):
     return vlan_list
 
 def get_probe_frames(iface):
-    fltr = lambda r: UDP in r and str(r[UDP].payload).startswith(cookie)
-    packets = sniff(iface=iface, lfilter=fltr)
+    fltr = lambda r: scapy.UDP in r and str(r[scapy.UDP].payload).startswith(cookie)
+    packets = scapy.sniff(iface=iface, lfilter=fltr)
     neigbors = {}
     neigbors[iface] = {}
     neigbor_dict = neigbors[iface]
     for p in packets:
-        if Dot1Q in p:
-            vlan = p[Dot1Q].vlan
+        if scapy.Dot1Q in p:
+            vlan = p[scapy.Dot1Q].vlan
         else:
             vlan = 0
-        rmsg = str(p[UDP].payload)[len(cookie):]
+        rmsg = str(p[scapy.UDP].payload)[len(cookie):]
         riface, uid = rmsg.split(' ', 1)
-        if not neigbor_dict.has_key(vlan):
+        if vlan not in neigbor_dict:
             neigbor_dict[vlan] = {}
-        if not neigbor_dict[vlan].has_key(uid):
+        if uid not in neigbor_dict[vlan]:
             neigbor_dict[vlan][uid] = [riface]
         else:
             iface_list = neigbor_dict[vlan][uid]
@@ -106,19 +109,34 @@ def get_probe_frames(iface):
 
 def send_probe_frame(**props):
     for vlan in props['vlan']:
-        p = Ether(src=props['src_mac'], dst="ff:ff:ff:ff:ff:ff")
         if vlan > 0:
-            os.system('vconfig add %s %d' % (props['iface'], vlan))
+            try:
+                check_call(('vconfig', 'add', props['iface'], str(vlan)))
+            except CalledProcessError:
+                pass
             iface = '%s.%d' % (props['iface'], vlan)
-            os.system('ifconfig %s up' % iface)
+            try:
+                check_call(('ifconfig', iface, 'up'))
+            except CalledProcessError:
+                pass
         else:
             iface = props['iface']
-        p = p/IP(src=props['src'], dst=props['dst'])
-        p = p/UDP(sport=props['sport'], dport=props['dport'])/props['data']
-        sendp(p, iface=iface)
+        p = scapy.Ether(src=props['src_mac'], dst="ff:ff:ff:ff:ff:ff")
+        p = p/scapy.IP(src=props['src'], dst=props['dst'])
+        p = p/scapy.UDP(sport=props['sport'], dport=props['dport'])/props['data']
+        try:
+            scapy.sendp(p, iface=iface)
+        except socket.error, e:
+            print e, iface
         if vlan > 0:
-            os.system('ifconfig %s down' % iface)
-            os.system('vconfig rem %s' % iface)
+            try:
+                check_call(('ifconfig', iface, 'down'))
+            except CalledProcessError:
+                pass
+            try:    
+                check_call(('vconfig', 'rem', iface))
+            except CalledProcessError:
+                pass
 
 
 
@@ -146,10 +164,10 @@ opts, args = parser.parse_args()
 cookie = "Nailgun:"
 piddir = '/var/run/net_probe'
 dumpname_prefix = "/var/tmp/net-probe-dump-"
-config= {'src_mac': None,
-         'src': '1.0.0.0', 'dst': '1.0.0.0',
-         'sport': 31337, 'dport': 31337,
-         'cookie': cookie}
+config = {'src_mac': None,
+          'src': '1.0.0.0', 'dst': '1.0.0.0',
+          'sport': 31337, 'dport': 31337,
+          'cookie': cookie}
 
 if opts.config_file or '-' in args:    
     try:
@@ -183,10 +201,10 @@ if opts.listen_iface:
     else:
         config['dump_file'] = "%s%s" % (dumpname_prefix, config['interface'])
 
-if not config.has_key('action'):
+if 'action' not in config:
     print usage
 elif config['action'] == 'generate':
-    if not config.has_key('interfaces'):
+    if 'interfaces' not in config:
         error("Error: specify at least one 'interface-vlans' pair.")
         exit(1)
     for iface, vlan_list in config['interfaces'].items():
@@ -198,9 +216,8 @@ elif config['action'] == 'generate':
 elif config['action'] == 'listen':
     pidfile = addpid(piddir)
     neigbors = get_probe_frames(config['interface'])
-    fo = open(config['dump_file'], 'w')
-    fo.write(json.dumps(neigbors))
-    fo.close()
+    with open(config['dump_file'], 'w') as fo:
+        fo.write(json.dumps(neigbors))
     os.unlink(pidfile)
 else:
     print usage
