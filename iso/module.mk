@@ -342,7 +342,7 @@ $(ISOROOT)/eggs:
 	mkdir -p $@
 	cp $(LOCAL_MIRROR)/eggs/* $(ISOROOT)/eggs/
 
-$(ISOROOT)/gems/gems: $(BUILD_DIR)/gems/naily.gem
+$(ISOROOT)/gems/gems: $(BUILD_DIR)/gems/naily-0.1.gem
 	mkdir -p $@
 	cp $(LOCAL_MIRROR)/gems/* $@
 	cp $(filter %.gem,$^) $@
