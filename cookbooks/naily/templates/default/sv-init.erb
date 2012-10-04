@@ -49,7 +49,7 @@ case "$1" in
 		;;
 
 	status)
-		status_of_proc -p /var/run/$NAME.pid "$DAEMON" nailyd && exit 0 || exit $?
+		status_of_proc -p /var/run/$NAME.pid "$DAEMON" naily && exit 0 || exit $?
 		;;
 	*)
 		echo "Usage: $NAME {start|stop|restart|status}" >&2
