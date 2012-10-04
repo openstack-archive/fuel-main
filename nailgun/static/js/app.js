@@ -28,7 +28,7 @@ define(
             this.navigate('#cluster/' + id + '/nodes', {trigger: true, replace: true});
         },
         showClusterTab: function(id, tab) {
-            var tabs = ['nodes', 'network'];
+            var tabs = ['nodes', 'network', 'settings'];
             if (!_.contains(tabs, tab)) {
                 this.showCluster(id);
                 return;

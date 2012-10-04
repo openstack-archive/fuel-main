@@ -545,14 +545,17 @@ h6.page-title {
 
 .nav-tabs > li > a { margin-right: 3px; /* margin: -3px 12px 0px 12px; */}
 .nav-tabs > li > a > b {display: block; width: 30px; height: 30px; margin: -4px 12px 0px 12px;}
-.tab-nodes-normal {background: url(../img/tab_icons.png) 0px 0px;}
-.tab-nodes-good {background: url(../img/tab_icons.png) -30px 0px;}
-.tab-nodes-bad {background: url(../img/tab_icons.png) -60px 0px;}
+.tab-nodes-normal    {background: url(../img/tab_icons.png) no-repeat   0px   0px;}
+.tab-nodes-good      {background: url(../img/tab_icons.png) no-repeat -30px   0px;}
+.tab-nodes-bad       {background: url(../img/tab_icons.png) no-repeat -60px   0px;}
 
-.tab-network-normal {background: url(../img/tab_icons.png) 0px 30px;}
-.tab-network-good {background: url(../img/tab_icons.png) -30px 30px;}
-.tab-network-bad {background: url(../img/tab_icons.png) -60px 30px;}
+.tab-network-normal  {background: url(../img/tab_icons.png) no-repeat   0px -30px;}
+.tab-network-good    {background: url(../img/tab_icons.png) no-repeat -30px -30px;}
+.tab-network-bad     {background: url(../img/tab_icons.png) no-repeat -60px -30px;}
 
+.tab-settings-normal {background: url(../img/tab_icons.png) no-repeat   0px -60px;}
+.tab-settings-good   {background: url(../img/tab_icons.png) no-repeat -30px -60px;}
+.tab-settings-bad    {background: url(../img/tab_icons.png) no-repeat -60px -60px;}
 
 .nav-tabs li a:hover {
   border-color: #404c5c #404c5c #404c5c;
