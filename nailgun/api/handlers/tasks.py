@@ -32,6 +32,7 @@ class TaskHandler(JSONHandler):
         )
 
     def DELETE(self, task_id):
+        q = web.ctx.orm.query(Task)
         task = q.filter(Task.id == task_id).first()
         if not task:
             return web.notfound()
