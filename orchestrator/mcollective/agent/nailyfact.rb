@@ -1,3 +1,5 @@
+require 'json'
+
 module MCollective
   module Agent
     class Nailyfact<RPC::Agent
@@ -60,9 +62,9 @@ module MCollective
       end
 
       action "post" do
-        validate :value, Hash
+        validate :value, String
 
-        kv_map = request[:value]
+        kv_map = JSON.parse(request[:value])
 
         if write_facts(nailyfile, kv_map)
           reply[:msg] = "Settings Updated!"

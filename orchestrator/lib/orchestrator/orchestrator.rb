@@ -1,6 +1,7 @@
+require 'json'
 require 'mcollective'
 
-module Naily
+module Orchestrator
   class Orchestrator
   include MCollective::RPC
     def initialize(nodes, metadata={})
@@ -21,7 +22,7 @@ module Naily
       mc = rpcclient("nailyfact")
       mc.progress = false
       mc.discover(:nodes => @nodes)
-      stats = mc.post(:value => @metadata)
+      stats = mc.post(:value => @metadata.to_json)
       check_mcollective_result(stats)
 
       mc = rpcclient("puppetd")

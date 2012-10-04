@@ -1,11 +1,12 @@
 require File.join(File.dirname(__FILE__), "..", "spec_helper")
 require 'mcollective'
+require 'json'
 include MCollective::RPC
 
 describe "MCollective" do
   context "When MC agent is up and running" do
     it "it should send echo message to MC agent and get it back" do
-      node = "admin"
+      node = "nailgun"
       data_to_send = "simple message of node '#{node}'"
       mc = rpcclient("fake")
       mc.progress = false
@@ -17,11 +18,11 @@ describe "MCollective" do
 
     it "it should update facts file with new key-value and could get it back" do
       data_to_send = {"anykey" => rand(2**30).to_s, "other" => "static"}
-      node = "admin"
+      node = "nailgun"
       mc = rpcclient("nailyfact")
       mc.progress = false
       mc.discover(:nodes => [node])
-      stats = mc.post(:value => data_to_send)
+      stats = mc.post(:value => data_to_send.to_json)
       check_mcollective_result(stats)
 
       stats = mc.get(:key => "anykey")

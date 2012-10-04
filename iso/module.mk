@@ -139,7 +139,7 @@ $/isoroot.done: \
 		$(addprefix $(ISOROOT)/nailgun/,openstack-essex.json) \
 		$(ISOROOT)/eggs \
 		$(ISOROOT)/gems/gems \
-		$(ISOROOT)/naily \
+		$(ISOROOT)/orchestrator \
 		$(ISOROOT)/dists/$(UBUNTU_RELEASE)/Release \
 		$(ISOROOT)/dists/$(UBUNTU_RELEASE)/Release.gpg
 	$(ACTION.TOUCH)
@@ -308,7 +308,7 @@ cp -r /cdrom/gems /target/var/lib/mirror
 in-target gem sources --add file:///var/lib/mirror/gems/
 
 # mcollective
-cp -r /cdrom/naily /target/opt/nailgun
+cp -r /cdrom/orchestrator /target/opt/nailgun
 
 endef
 
@@ -351,9 +351,9 @@ $(ISOROOT)/gems/gems: $(BUILD_DIR)/gems/naily-0.1.gem
 	cp $(LOCAL_MIRROR)/gems/* $@
 	cp $(filter %.gem,$^) $@
 	gem generate_index -d $(ISOROOT)/gems
-$(ISOROOT)/naily:
+$(ISOROOT)/orchestrator:
 	mkdir -p $@
-	cp -r naily $(ISOROOT)
+	cp -r orchestrator $(ISOROOT)
 
 # MAIN ISO RULE
 

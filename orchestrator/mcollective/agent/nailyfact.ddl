@@ -28,7 +28,8 @@ action "post", :description => "Create new attributes file" do
 	input :value,
                 :prompt         => "Value",
                 :description    => "Value you want to set in the file",
-                :type           => :hash,
+                :type           => :string,
+                :validation	    => '.*',
                 :optional       => false,
                 :maxlength      => 90
 
