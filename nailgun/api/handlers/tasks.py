@@ -30,3 +30,14 @@ class TaskHandler(JSONHandler):
             self.render(task),
             indent=4
         )
+
+    def DELETE(self, task_id):
+        task = q.filter(Task.id == task_id).first()
+        if not task:
+            return web.notfound()
+        web.ctx.orm.delete(task)
+        web.ctx.orm.commit()
+        raise web.webapi.HTTPError(
+            status="204 No Content",
+            data=""
+        )
