@@ -22,6 +22,7 @@ function(models, dialogViews, taskViews, clusterPageTemplate, nodesTabSummaryTem
             'click .cluster-name-editable .apply-name-btn': 'applyNewClusterName',
             'keydown .cluster-name-editable input': 'onClusterNameInputKeydown',
             'click .delete-cluster-btn': 'deleteCluster',
+            'click .task-result .close': 'dismissTaskResult',
             'click .deploy-btn:not([disabled])': 'deployCluster'
         },
         startClusterRenaming: function() {
@@ -55,6 +56,10 @@ function(models, dialogViews, taskViews, clusterPageTemplate, nodesTabSummaryTem
             if (confirm('Do you really want to delete this cluster?')) {
                 this.model.destroy();
             }
+        },
+        dismissTaskResult: function() {
+            this.$('.task-result').remove();
+            this.model.task('deploy').destroy();
         },
         deployCluster: function() {
             this.$('.deploy-btn').attr('disabled', true);

@@ -1,3 +1,5 @@
+<% var task = cluster.task('deploy') %>
+<% var taskStatus = task ? task.get('status') : null %>
 <div class="row-fluid">
   <div class="span12">
     <div class="cluster-name-uneditable" style="<%= renaming ? 'display:none' : '' %>">
@@ -14,14 +16,27 @@
   </div>
 </div>
 
+<% if (taskStatus == 'ready') { %>
+  <div class="alert alert-block global-success alert-success task-result">
+    <button type="button" class="close">×</button>
+    <h4>Success</h4>
+    <p>Cluster has been deployed successfully</p>
+  </div>
+<% } else if (taskStatus == 'error') { %>
+  <div class="alert alert-block global-error alert-error task-result">
+    <button type="button" class="close">×</button>
+    <h4>Error</h4>
+    <p><%= task.get('errors') %></p>
+  </div>
+<% } %>
+
 <div class="whitebox">
   <ul class="nav nav-tabs">
     <% _.each(tabs, function(tab) { %>
       <li class="<%= activeTab == tab ? 'active' : '' %>"><a href="#cluster/<%= cluster.id %>/<%= tab %>"><b class="tab-<%= tab %>-normal"></b></a></li>
     <% }) %>
     <li class="pull-right">
-      <% var task = cluster.task('deploy') %>
-      <% if (task && task.get('status') == 'running') { %>
+      <% if (taskStatus == 'running') { %>
         <div class="progress progress-warning progress-striped progress-deploy active">
           <div class="bar" style="width:100%"></div>
         </div>

@@ -648,7 +648,6 @@ h6.page-title {
 .global-error > p,
 .global-success > p,
 .global-info > p {
-  margin-bottom: 10px;
   font-style: italic;
 }
 
