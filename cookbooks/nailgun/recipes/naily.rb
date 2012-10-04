@@ -1,4 +1,3 @@
-include_recipe "mcollective::client"
 include_recipe "puppet::master"
 
 # Chef's link resource doesn't process directory link, so we end up with bash script
