@@ -21,7 +21,7 @@ set -e
 
 . /lib/lsb/init-functions
 
-DAEMON_OPTS="--config /etc/naily/nailyd.conf --logfile /var/log/$NAME.log --loglevel INFO"
+DAEMON_OPTS="--config /etc/naily/nailyd.conf --deamonize --pidfile /var/run/$NAME.pid --logfile /var/log/$NAME.log --loglevel info"
 
 case "$1" in
 	start)
