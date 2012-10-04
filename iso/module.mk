@@ -136,10 +136,10 @@ $/isoroot.done: \
 		$(addprefix $(ISOROOT)/nailgun/bin/,create_release agent) \
 		$(addprefix $(ISOROOT)/nailgun/solo/,solo.rb solo.json) \
 		$(addprefix $(ISOROOT)/nailgun/cookbooks/,$(call find-files,cookbooks)) \
-		$(addprefix $(ISOROOT)/nailgun/naily/,$(call find-files,naily)) \
 		$(addprefix $(ISOROOT)/nailgun/,openstack-essex.json) \
 		$(ISOROOT)/eggs \
 		$(ISOROOT)/gems/gems \
+		$(ISOROOT)/naily \
 		$(ISOROOT)/dists/$(UBUNTU_RELEASE)/Release \
 		$(ISOROOT)/dists/$(UBUNTU_RELEASE)/Release.gpg
 	$(ACTION.TOUCH)
@@ -307,6 +307,9 @@ cp -r /cdrom/eggs /target/var/lib/mirror
 cp -r /cdrom/gems /target/var/lib/mirror
 in-target gem sources --add file:///var/lib/mirror/gems/
 
+# mcollective
+cp -r /cdrom/naily /target/opt/nailgun
+
 endef
 
 $(ISOROOT)/bin/late: export contents:=$(late_contents)
@@ -348,6 +351,9 @@ $(ISOROOT)/gems/gems: $(BUILD_DIR)/gems/naily-0.1.gem
 	cp $(LOCAL_MIRROR)/gems/* $@
 	cp $(filter %.gem,$^) $@
 	gem generate_index -d $(ISOROOT)/gems
+$(ISOROOT)/naily:
+	mkdir -p $@
+	cp -r naily $(ISOROOT)
 
 # MAIN ISO RULE
 
