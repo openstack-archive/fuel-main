@@ -12,7 +12,7 @@
 
 PATH=/usr/local/sbin:/usr/local/bin:/sbin:/bin:/usr/sbin:/usr/bin
 DAEMON=$(which nailyd)
-NAME=naily
+NAME=nailyd
 DESC=naily
 
 test -x $DAEMON || exit 0
@@ -27,29 +27,29 @@ case "$1" in
 	start)
 		echo -n "Starting $DESC: "
 		start-stop-daemon --start --quiet --pidfile /var/run/$NAME.pid \
-		    --exec $DAEMON -- $DAEMON_OPTS || true
+		    --name $NAME --startas $DAEMON -- $DAEMON_OPTS || true
 		echo "$NAME."
 		;;
 
 	stop)
 		echo -n "Stopping $DESC: "
 		start-stop-daemon --stop --quiet --pidfile /var/run/$NAME.pid \
-		    --exec $DAEMON || true
+		    --name $NAME || true
 		echo "$NAME."
 		;;
 
 	restart)
 		echo -n "Restarting $DESC: "
-		start-stop-daemon --stop --quiet --pidfile \
-		    /var/run/$NAME.pid --exec $DAEMON || true
+    start-stop-daemon --stop --quiet --pidfile /var/run/$NAME.pid \
+        --name $NAME || true
 		sleep 1
-		start-stop-daemon --start --quiet --pidfile \
-		    /var/run/$NAME.pid --exec $DAEMON -- $DAEMON_OPTS || true
+    start-stop-daemon --start --quiet --pidfile /var/run/$NAME.pid \
+        --name $NAME --startas $DAEMON -- $DAEMON_OPTS || true
 		echo "$NAME."
 		;;
 
 	status)
-		status_of_proc -p /var/run/$NAME.pid "$DAEMON" naily && exit 0 || exit $?
+		status_of_proc -p /var/run/$NAME.pid "$DAEMON" $NAME && exit 0 || exit $?
 		;;
 	*)
 		echo "Usage: $NAME {start|stop|restart|status}" >&2
