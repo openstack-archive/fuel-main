@@ -4,6 +4,7 @@ collectives = mcollective
 libdir = <%= @site_plugins %>:<%= @node['mcollective']['libdir'] %>
 logfile = /dev/null
 loglevel = info
+direct_addressing = 1
 
 # Plugins
 securityprovider = psk
