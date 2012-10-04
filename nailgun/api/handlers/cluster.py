@@ -173,6 +173,19 @@ class ClusterChangesHandler(JSONHandler):
         if not cluster:
             return web.notfound()
 
+        q = web.ctx.orm.query(Task).filter(
+            Task.cluster == cluster,
+            Task.name == "deploy"
+        )
+        for t in q:
+            if t.status == "running":
+                raise web.badrequest(
+                    "Deploying has been already started"
+                )
+            elif t.status in ("ready", "error"):
+                web.ctx.orm.delete(t)
+                web.ctx.orm.commit()
+
         task = Task(
             uuid=str(uuid.uuid4()),
             name="deploy",
