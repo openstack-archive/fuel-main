@@ -1,16 +1,14 @@
 #!/usr/bin/env ruby
 
-require 'naily/server'
-require 'naily/config'
-require 'naily/version'
+require 'naily'
 
+require 'logger'
 require 'ostruct'
 require 'optparse'
 
 options = OpenStruct.new
-options.show_version = false
 options.daemonize = false
-options.config_path = nil
+options.config_path = '/etc/naily/nailyd.conf'
 options.log_path = nil
 options.log_level = :error
 
@@ -20,7 +18,6 @@ OptionParser.new do |opts|
   opts.separator ''
   opts.separator 'Options:'
 
-  opts.on('-v', '--version', 'Show version')               { |flag| options.show_version = true }
   opts.on('-d', '--[no-]deamonize', 'Daemonize server')    { |flag| options.daemonize = flag }
   opts.on('-c', '--config PATH', 'Use custom config file') do |path|
     unless File.exists?(path)
@@ -31,8 +28,14 @@ OptionParser.new do |opts|
     options.config_path = path
   end
 
-  opts.on('-l', '--logfile PATH' 'Log file path')          { |path| options.log_path = path }
-  opts.on('--loglevel LEVEL', [:fatal, :error, :warn, :info, :debug], 'Logging level (fatal, error, warn, info, debug)') { |level| option.log_level = level }
+  opts.on('-l', '--logfile PATH' 'Log file path') do |path|
+    options.log_path = path
+  end
+
+  levels = %w{fatal error warn info debug}
+  opts.on('--loglevel LEVEL', levels, "Logging level (#{levels.join(', ')})") do |level|
+    options.log_level = level
+  end
 
   opts.on_tail('-h', '--help', 'Show this message') do
     puts opts
@@ -45,10 +48,8 @@ OptionParser.new do |opts|
   end
 end.parse!
 
-config_path = options.config_path || '/etc/naily/nailyd.conf'
-
 config = Naily::Config.default
-config.update(Naily::Config.load(config_path)) if File.exists?(config_path)
+config.update(Naily::Config.load(options.config_path)) if File.exists?(options.config_path)
 
 if options.daemonize
   # After daemonize we can't log to STDOUT, pick a default log file
@@ -58,11 +59,10 @@ if options.daemonize
   Daemons.daemonize
 end
 
-logger = options.log_path ? Logger.new(options.log_path) : Logger.new(STDOUT)
-logger.level = Logger.const_get(options.log_level.upcase)
+Naily.logger = options.log_path ? Logger.new(options.log_path) : Logger.new(STDOUT)
+Naily.logger.level = Logger.const_get(options.log_level.upcase)
 
 server = Naily::Server.new(config)
-server.logger = logger
 
 server.run
 

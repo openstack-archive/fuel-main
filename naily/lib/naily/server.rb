@@ -1,19 +1,15 @@
 require 'eventmachine'
 require 'amqp'
 require 'json'
-require 'logger'
 require 'naily/dispatcher'
 
 module Naily
   class Server
     attr_reader :options, :delegate
 
-    def initialize(config)
-      @options = options.dup
-      # TODO: validate options
-      @config = config
-      @options.freeze
-      @delegate = options[:delegate] || Dispatcher.new
+    def initialize(options)
+      @options = options.dup.freeze
+      @delegate = options[:delegate] || Dispatcher.new(@options)
     end
 
     def run
@@ -22,21 +18,30 @@ module Naily
         @connection = AMQP.connect(connection_options)
         @channel = AMQP::Channel.new(@connection)
         @channel.on_error do |ch, error|
-          logger.fatal "Channel error #{error}"
-
-          stop { exit }
+          Naily.logger.fatal "Channel error #{error}"
+          stop
         end
 
-        queue = @channel.queue(options[:queue], :durable => true)
+        exchange = @channel.topic(options[:broker_exchange], :durable => true)
+
+        queue = @channel.queue(options[:broker_queue], :durable => true)
+        queue.bind(exchange, :routing_key => options[:broker_queue])
 
         queue.subscribe do |header, payload|
           dispatch payload
         end
 
-        Signal.trap('INT')  { stop }
-        Signal.trap('TERM') { stop }
+        Signal.trap('INT')  do
+          Naily.logger.info "Got INT signal, stopping"
+          stop
+        end
 
-        puts "Server started"
+        Signal.trap('TERM') do
+          Naily.logger.info "Got TERM signal, stopping"
+          stop
+        end
+
+        Naily.logger.info "Server started"
       end
     end
 
@@ -48,51 +53,47 @@ module Naily
       end
     end
 
-    def logger
-      @logger ||= ::Logger.new(STDOUT)
-    end
-
-    attr_writer :logger
-
     private
 
     def dispatch(payload)
-      logger.debug "Got message with payload #{payload.inspect}"
+      Naily.logger.debug "Got message with payload #{payload.inspect}"
 
       begin
         data = JSON.load(payload)
       rescue
-        logger.error "Error deserializing payload: #{$!}"
+        Naily.logger.error "Error deserializing payload: #{$!}"
+        # TODO: send RPC error response
         return
       end
 
       unless delegate.respond_to?(data['method'])
-        logger.error "Unsupported RPC call #{data['method']}"
+        Naily.logger.error "Unsupported RPC call #{data['method']}"
+        # TODO: send RPC error response
         return
       end
 
-      logger.info "Processing RPC call #{data['method']}"
+      Naily.logger.info "Processing RPC call #{data['method']}"
 
       begin
         result = delegate.send(data['method'], *data['args'])
       rescue
-        logger.error "Error running RPC method #{data['method']}: #{$!}"
-        # TODO: send error response in case of RPC call
+        Naily.logger.error "Error running RPC method #{data['method']}: #{$!}"
+        # TODO: send RPC error response
         return
       end
 
       if data['msg_id']
-        logger.info "Sending RPC call result #{result.inspect} for rpc call #{data['method']}"
+        Naily.logger.info "Sending RPC call result #{result.inspect} for rpc call #{data['method']}"
         @channel.default_exchange.publish(JSON.dump(result), :routing_key => data['msg_id'])
       end
     end
 
     def connection_options
       {
-        :host => options[:host],
-        :port => options[:port],
-        :username => options[:username],
-        :password => options[:password],
+        :host => options[:broker_host],
+        :port => options[:broker_port],
+        :username => options[:broker_username],
+        :password => options[:broker_password],
       }.reject { |k, v| v.nil? }
     end
   end

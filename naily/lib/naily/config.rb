@@ -20,10 +20,10 @@ module Naily
 
   class Config
     def self.load(path)
-      config = new
+      config = {}
       File.open(path) do |f|
         f.each_line do |line|
-          line.gsub!(/#.*$/, '').trim! # remove comments
+          line = line.gsub(/#.*$/, '').strip # remove comments
           next if line == ''
 
           unless /(\S+)\s*=\s*(\S.*)/ =~ line
@@ -43,11 +43,13 @@ module Naily
 
     def self.default
       config = {}
-      config[:host] = 'localhost'
-      config[:port] = 5672
-      config[:username] = 'guest'
-      config[:password] = 'guest'
-      config[:queue] = 'naily'
+      config[:broker_host] = 'localhost'
+      config[:broker_port] = 5672
+      config[:broker_username] = 'guest'
+      config[:broker_password] = 'guest'
+
+      config[:broker_queue] = 'naily'
+      config[:broker_exchange] = 'naily'
       config
     end
   end
