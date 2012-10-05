@@ -4,10 +4,6 @@ require 'mcollective'
 module Orchestrator
   class Orchestrator
   include MCollective::RPC
-    def initialize(nodes, metadata={})
-      @nodes = nodes
-      @metadata = metadata
-    end
 
     private
     def check_mcollective_result(stats)
@@ -18,20 +14,28 @@ module Orchestrator
     end
 
     public
-    def deploy
-      mc = rpcclient("nailyfact")
-      mc.progress = false
-      mc.discover(:nodes => @nodes)
-      stats = mc.post(:value => @metadata.to_json)
-      check_mcollective_result(stats)
+    def deploy(nodes)
+      # TODO Check if nodes contains all required data
+      nodes.each do |node|
+        mc = rpcclient("nailyfact")
+        mc.progress = false
+        mc.discover(:nodes => [node['mac'].gsub(":", "")])
+        metadata = {'role' => node['role']}
+        stats = mc.post(:value => metadata.to_json)
+        check_mcollective_result(stats)
+      end
 
+      macs = nodes.map {|n| n['mac'].gsub(":", "")}
       mc = rpcclient("puppetd")
       mc.progress = false
-      mc.discover(:nodes => @nodes)
+      mc.discover(:nodes => macs)
       stats = mc.runonce
       printrpc mc.status
       sleep 5
       printrpc mc.status
+    end
+
+    def verify_networks(args)
     end
   end
 

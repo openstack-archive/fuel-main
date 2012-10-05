@@ -1,3 +1,5 @@
+$LOAD_PATH << File.join(File.dirname(__FILE__), "..", "..", "orchestrator", "lib")
+require 'orchestrator'
 require 'naily/version'
 
 require 'logger'

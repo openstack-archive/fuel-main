@@ -75,7 +75,7 @@ module Naily
       Naily.logger.info "Processing RPC call #{data['method']}"
 
       begin
-        result = delegate.send(data['method'], *data['args'])
+        result = delegate.send(data['method'], data['args'])
       rescue
         Naily.logger.error "Error running RPC method #{data['method']}: #{$!}"
         # TODO: send RPC error response
