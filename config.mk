@@ -4,7 +4,7 @@ ifndef BOOTSTRAP_REBUILD
 BOOTSTRAP_REBUILD:=0
 endif
 
-MIRROR_URL:=http://srv08-srt.srt.mirantis.net/mirror
+MIRROR_URL:=http://srv08-srt.srt.mirantis.net/mirror.new
 ifndef IGNORE_MIRROR
 IGNORE_MIRROR:=0
 endif
@@ -14,7 +14,7 @@ LOCAL_MIRROR:=mirror
 endif
 
 ifndef GOLDEN_MIRROR
-GOLDEN_MIRROR:=srv08-srt.srt.mirantis.net:/var/lib/jenkins/mirror
+GOLDEN_MIRROR:=srv08-srt.srt.mirantis.net:/var/lib/jenkins/mirror.new
 endif
 
 iso.path:=$(BUILD_DIR)/iso/nailgun-ubuntu-12.04-amd64.iso
