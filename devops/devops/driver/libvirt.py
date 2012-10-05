@@ -284,7 +284,7 @@ class Libvirt:
         self._virsh(['reboot', node.id])
 
     def shutdown_node(self, node):
-        self._virsh(['stop', node.id])
+        self._virsh(['shutdown', node.id])
 
     def get_node_snapshots(self, node):
         command = self.virsh_cmd + ['snapshot-list', node.id]
