@@ -67,9 +67,7 @@ function(models, dialogViews, taskViews, clusterPageTemplate, nodesTabSummaryTem
             task.save({}, {
                 type: 'PUT',
                 url: '/api/clusters/' + this.model.id + '/changes',
-                success: _.bind(function() {
-                    if (this == app.page) this.update();
-                }, this)
+                complete: _.bind(this.update, this)
             });
         },
         initialize: function(options) {
