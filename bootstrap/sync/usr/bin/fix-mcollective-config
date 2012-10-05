@@ -4,6 +4,7 @@ sed -i "s/plugin.stomp.host= .*\$/plugin.stomp.host= $masternode_ip/" /etc/mcoll
 id=`sed -rn 's/^.*BOOTIF=([0-9a-fA-F-]+).*$/\1/ p' /proc/cmdline|tr -d '\n-'|tail -c12`
 echo -n "$id" > /etc/bootif
 echo "identity = $id" >> /etc/mcollective/server.cfg
+echo "direct_addressing = 1" >> /etc/mcollective/server.cfg
 
 service mcollective restart
 

@@ -6,6 +6,7 @@ libdir = <%= @site_plugins %>:<%= @node['mcollective']['libdir'] %>
 logfile = /var/log/mcollective.log
 loglevel = info
 daemonize = 1
+direct_addressing = 1
 
 # Plugins
 securityprovider = psk
