@@ -136,7 +136,7 @@ class TopicConsumer(ConsumerBase):
         """
         # Default options
         options = {
-            'durable': False,
+            'durable': True,
             'auto_delete': False,
             'exclusive': False}
         options.update(kwargs)
