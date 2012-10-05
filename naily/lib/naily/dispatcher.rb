@@ -19,7 +19,7 @@ module Naily
     end
 
     def verify_networks(args)
-      @orchestrator.verify_networks(args)
+      @orchestrator.verify_networks(args['nodes'], args['networks'])
     end
   end
 end
