@@ -207,7 +207,7 @@ class TopicPublisher(Publisher):
         Kombu options may be passed as keyword args to override defaults
         """
 
-        options = {'durable': False,
+        options = {'durable': True,
                    'auto_delete': False,
                    'exclusive': False}
         options.update(kwargs)
