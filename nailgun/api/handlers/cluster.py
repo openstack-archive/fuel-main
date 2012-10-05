@@ -306,9 +306,15 @@ class ClusterNetworksHandler(JSONHandler):
         web.ctx.orm.add(task)
         web.ctx.orm.commit()
 
+        nets_db = web.ctx.orm.query(Network).filter_by(
+            cluster_id=cluster_id).all()
+        networks = [{
+            'id': n.id, 'vlan_id': n.vlan_id, 'cidr': n.cidr}
+            for n in nets_db]
+
         message = {'method': 'verify_networks',
                    'respond_to': 'verify_networks_resp',
-                   'args': {'task_uuid': task.uuid}}
+                   'args': {'task_uuid': task.uuid, 'networks': networks}}
         rpc.cast('naily', message)
 
         return json.dumps(

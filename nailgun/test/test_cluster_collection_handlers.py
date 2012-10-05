@@ -117,3 +117,12 @@ class TestHandlers(BaseHandlers):
             },
         ]
         self.assertEquals(expected, obtained)
+
+    def test_verify_networks(self):
+        cluster = self.create_cluster_api()
+        resp = self.app.put(
+            reverse('ClusterNetworksHandler',
+                    kwargs={'cluster_id': cluster['id']}),
+            headers=self.default_headers
+        )
+        self.assertEquals(200, resp.status)
