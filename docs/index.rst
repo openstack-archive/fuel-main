@@ -2,3 +2,4 @@
    :maxdepth: 2
 
    logical_arch
+   sequence
