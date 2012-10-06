@@ -37,6 +37,7 @@ Sequence Diagram
 
  .. uml::
     title Cluster Deployment
+    autonumber
     actor WebUser
 
     Nailgun -> Naily: Deploy cluster
@@ -88,3 +89,35 @@ Sequence Diagram
     Orchestrator --> Naily: vlans Ok
     Naily --> Nailgun: response
     Nailgun --> WebUser: response
+
+ .. uml::
+    title Diagram of ALTERNATIVE Implementation of Cluster Deployment
+    autonumber
+    actor WebUser
+    
+    Nailgun -> Naily: Deploy cluster
+    Naily -> YAML_file: Store configuration
+    Naily -> Orchestrator: Deploy
+    Orchestrator -> YAML_file: get data
+    YAML_file --> Orchestrator: data
+    Orchestrator -> MC: nodes ready?
+    MC --> Orchestrator: ready
+    Orchestrator --> Naily: ready
+    Naily -> Nailgun: nodes booted
+    Nailgun --> WebUser: status on UI
+    |||
+    Orchestrator -> MC: run puppet
+    MC -> Puppet: runonce
+    Puppet -> Puppet_master: get modules,class
+    Puppet_master -> ENC: get class
+    ENC -> YAML_file: get class
+    YAML_file --> ENC: class to deploy
+    ENC --> Puppet_master: class
+    Puppet_master --> Puppet: modules, class
+    Puppet -> Puppet: applies $role
+    Puppet --> MC: done
+    MC --> Orchestrator: deploy is done
+    Orchestrator -> YAML_file: update info
+    Orchestrator --> Naily: deploy is done
+    Naily --> Nailgun: deploy is done
+    Nailgun --> WebUser: deploy is done
