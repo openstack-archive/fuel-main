@@ -111,11 +111,14 @@ easily used in Puppet modules. Case structure in running class chooses appropria
 variable, received from /etc/naily.fact. It loads and starts to execute. All variables from file are available
 like ordinary facts from Facter.
 Inspired by blog post `self-classifying puppet nodes <http://nuknad.com/2011/02/11/self-classifying-puppet-nodes/>`_.
+Some other details on approach: `nodeless-puppet example <https://github.com/jordansissel/puppet-examples/tree/master/nodeless-puppet>`_.
 It could be possible to use just special file and not to extend facts of Facter, just load JSON data straight
 during Puppet recipes execution, however additional research should be done.
 Last notice on how to work with the system without Nailgun and Naily: user creates a YAML file with all required
 data, and calls Orchestrator binary script. Script loads data from YAML and instantiates Orchestrator instance
 the same way as it's instanciated from Naily. Messages come to STDOUT instead of file logger.
+
+.. _deploy_via_enc_sequence:
 
 Alternative Implementation for deployment via ENC
 -------------------------------------------------

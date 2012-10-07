@@ -1,6 +1,8 @@
 Logical Architecture Diagram
 ============================
 
+Metadata via Facter Extension
+-----------------------------
  .. uml::
     package "Master Node" {
         [JavaScript UI]
@@ -35,3 +37,27 @@ Logical Architecture Diagram
 
 ..    CLI_User --> [Provisioner(cobbler)]
 
+
+Metadata via Puppet ENC (part of architecture)
+----------------------------------------------
+
+This is alternative possible architecture.
+See corresponding sequence diagram for details: :ref:`deploy_via_enc_sequence`.
+
+ .. uml::
+    package "Master Node" {
+        [Async RPC consumer(Naily)] --> [Orchestrator]
+        [Orchestrator] --> [MCollective]
+        [Orchestrator] <-- [YAML data source]
+        [Puppet Master] --> [ENC Script]
+        [ENC Script] --> [YAML data source]
+    }
+    package "Target Node" {
+        [MCollective Agent] --> [Puppet]
+    }
+    actor CLI_User
+    CLI_User --> [YAML data source]
+    CLI_User --> [Orchestrator]
+
+    [MCollective] --> [MCollective Agent]
+    [Puppet] --> [Puppet Master]
