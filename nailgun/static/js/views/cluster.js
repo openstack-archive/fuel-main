@@ -4,13 +4,14 @@ define(
     'views/dialogs',
     'views/tasks',
     'text!templates/cluster/page.html',
+    'text!templates/cluster/deployment_control.html',
     'text!templates/cluster/nodes_tab_summary.html',
     'text!templates/cluster/edit_nodes_screen.html',
     'text!templates/cluster/node_list.html',
     'text!templates/cluster/node.html',
     'text!templates/cluster/network_tab_summary.html',
 ],
-function(models, dialogViews, taskViews, clusterPageTemplate, nodesTabSummaryTemplate, editNodesScreenTemplate, nodeListTemplate, nodeTemplate, networkTabSummaryTemplate) {
+function(models, dialogViews, taskViews, clusterPageTemplate, deploymentControlTemplate, nodesTabSummaryTemplate, editNodesScreenTemplate, nodeListTemplate, nodeTemplate, networkTabSummaryTemplate) {
     var views = {}
 
     views.ClusterPage = Backbone.View.extend({
@@ -100,14 +101,23 @@ function(models, dialogViews, taskViews, clusterPageTemplate, nodesTabSummaryTem
                 renaming: this.renaming
             }));
 
-            var tabContainer = this.$('#tab-' + this.tab);
+            this.$('.deployment-control').html(new views.DeploymentControl({model: this.model}).render().el);
 
+            var tabContainer = this.$('#tab-' + this.tab);
             if (this.tab == 'nodes') {
                 tabContainer.html(new views.NodesTab({model: this.model}).render().el);
             } else if (this.tab == 'network') {
                 tabContainer.html(new views.NetworkTab({model: this.model}).render().el);
             }
 
+            return this;
+        }
+    });
+
+    views.DeploymentControl = Backbone.View.extend({
+        template: _.template(deploymentControlTemplate),
+        render: function() {
+            this.$el.html(this.template({cluster: this.model}));
             return this;
         }
     });
