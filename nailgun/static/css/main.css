@@ -178,9 +178,19 @@ h6.page-title {
   color: #999999;
 }
 
+.roles-action-link button.disabled {
+  color: #999999;
+  opacity: 1;
+  background-color: transparent;
+}
+
 .roles-action-link button:hover {
   color: #666666;
   text-decoration: none;
+}
+
+.roles-action-link button.disabled:hover {
+  color: #999999;
 }
 
 .cluster-name-btn {
@@ -352,7 +362,6 @@ h6.page-title {
   font-weight: 500;
   line-height: 16px;
   color: #333333;
-  cursor: pointer;
 }
 
 .node-name .input-medium {
@@ -361,6 +370,10 @@ h6.page-title {
   height: 24px;
   width: 104px;
   font-size: 12px;
+}
+
+.node-name .node-renameable {
+  cursor: pointer;
 }
 
 .node-status {

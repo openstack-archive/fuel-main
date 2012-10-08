@@ -1,7 +1,7 @@
 <div class="roles-block-row nodesbox-header">
   <div class="span8"><h3><%= {'controller': 'Controllers', 'compute': 'Compute', 'storage': 'Storage'}[role] || role %></h3></div>
-  <div class="span2 roles-action-link"><button class="btn btn-add-nodes btn-link pull-right"><i class="icon-plus-circle"></i>Add</button></div>
-  <div class="span2 roles-action-link"><button class="btn btn-delete-nodes btn-link pull-right"><i class="icon-cancel-circle"></i>Delete</button></div>
+  <div class="span2 roles-action-link"><button class="btn btn-add-nodes btn-link pull-right <%= nodes.cluster.task('deploy', 'running') ? 'disabled' : '' %>"><i class="icon-plus-circle"></i>Add</button></div>
+  <div class="span2 roles-action-link"><button class="btn btn-delete-nodes btn-link pull-right <%= nodes.cluster.task('deploy', 'running') ? 'disabled' : '' %>"><i class="icon-cancel-circle"></i>Delete</button></div>
 </div>
 <% if (nodes.length) { %>
   <div class="roles-block-row node-list-container"></div>
@@ -10,5 +10,3 @@
     <div class="span6">There are no nodes of this type</div>
   </div>
 <% } %>
-
-

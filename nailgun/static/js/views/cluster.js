@@ -166,9 +166,10 @@ function(models, dialogViews, taskViews, clusterPageTemplate, nodesTabSummaryTem
             this.$el.append((new views.NodesTabSummary({model: this.model})).render().el);
             var roles = this.model.availableRoles();
             _.each(roles, function(role, index) {
-                var nodes = this.model.get('nodes').where({role: role});
+                var nodes = new models.Nodes(this.model.get('nodes').where({role: role}));
+                nodes.cluster = this.model;
                 var nodeListView = new views.NodeList({
-                    collection: new models.Nodes(nodes),
+                    collection: nodes,
                     role: role,
                     tab: this.tab
                 });
@@ -303,8 +304,8 @@ function(models, dialogViews, taskViews, clusterPageTemplate, nodesTabSummaryTem
     views.NodeList = Backbone.View.extend({
         template: _.template(nodeListTemplate),
         events: {
-            'click .btn-add-nodes': 'addNodes',
-            'click .btn-delete-nodes': 'deleteNodes'
+            'click .btn-add-nodes:not(.disabled)': 'addNodes',
+            'click .btn-delete-nodes:not(.disabled)': 'deleteNodes'
         },
         addNodes: function() {
             this.tab.changeScreen(views.AddNodesScreen, {role: this.role});
@@ -321,8 +322,8 @@ function(models, dialogViews, taskViews, clusterPageTemplate, nodesTabSummaryTem
             if (this.collection.length) {
                 var container = this.$('.node-list-container');
                 this.collection.each(function(node) {
-                    container.append(new views.Node({model: node, renameable: true}).render().el);
-                })
+                    container.append(new views.Node({model: node, renameable: !this.collection.cluster.task('deploy', 'running')}).render().el);
+                }, this);
             }
             return this;
         }
@@ -378,6 +379,7 @@ function(models, dialogViews, taskViews, clusterPageTemplate, nodesTabSummaryTem
             this.$el.html(this.template({
                 node: this.model,
                 renaming: this.renaming,
+                renameable: this.renameable,
                 selectableForAddition: this.selectableForAddition,
                 selectableForDeletion: this.selectableForDeletion
             }));
