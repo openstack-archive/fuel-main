@@ -4,6 +4,7 @@ define(
     'views/dialogs',
     'views/tasks',
     'text!templates/cluster/page.html',
+    'text!templates/cluster/deployment_result.html',
     'text!templates/cluster/deployment_control.html',
     'text!templates/cluster/nodes_tab_summary.html',
     'text!templates/cluster/edit_nodes_screen.html',
@@ -11,7 +12,7 @@ define(
     'text!templates/cluster/node.html',
     'text!templates/cluster/network_tab_summary.html',
 ],
-function(models, dialogViews, taskViews, clusterPageTemplate, deploymentControlTemplate, nodesTabSummaryTemplate, editNodesScreenTemplate, nodeListTemplate, nodeTemplate, networkTabSummaryTemplate) {
+function(models, dialogViews, taskViews, clusterPageTemplate, deploymentResultTemplate, deploymentControlTemplate, nodesTabSummaryTemplate, editNodesScreenTemplate, nodeListTemplate, nodeTemplate, networkTabSummaryTemplate) {
     var views = {}
 
     views.ClusterPage = Backbone.View.extend({
@@ -101,6 +102,7 @@ function(models, dialogViews, taskViews, clusterPageTemplate, deploymentControlT
                 renaming: this.renaming
             }));
 
+            this.$('.deployment-result').html(new views.DeploymentResult({model: this.model}).render().el);
             this.$('.deployment-control').html(new views.DeploymentControl({model: this.model}).render().el);
 
             var tabContainer = this.$('#tab-' + this.tab);
@@ -110,6 +112,14 @@ function(models, dialogViews, taskViews, clusterPageTemplate, deploymentControlT
                 tabContainer.html(new views.NetworkTab({model: this.model}).render().el);
             }
 
+            return this;
+        }
+    });
+
+    views.DeploymentResult = Backbone.View.extend({
+        template: _.template(deploymentResultTemplate),
+        render: function() {
+            this.$el.html(this.template({cluster: this.model}));
             return this;
         }
     });
