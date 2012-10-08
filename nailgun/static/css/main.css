@@ -814,15 +814,27 @@ h6.page-title {
 }
 
 .summary-settings-btn {
-  color: #555555;
   float: none;
   text-decoration: none;
   text-shadow: 0 1px 0 #FFFFFF;
 }
 
+.summary-settings-btn b {
+  color: #555555;
+}
+
+.summary-settings-btn.disabled {
+  color: #555555;
+  opacity: 1;
+  background-color: transparent;
+}
 .summary-settings-btn:hover {
-  color: #333333;
   text-decoration: none;
+}
+
+.summary-settings-btn.disabled:hover {
+  color: #555555;
+  cursor: default;
 }
 
 .deploy-btn {

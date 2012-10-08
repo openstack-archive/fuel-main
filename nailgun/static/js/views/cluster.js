@@ -140,8 +140,8 @@ function(models, dialogViews, taskViews, clusterPageTemplate, nodesTabSummaryTem
     views.NodesTabSummary = Backbone.View.extend({
         template: _.template(nodesTabSummaryTemplate),
         events: {
-            'click .change-cluster-mode-btn': 'changeClusterMode',
-            'click .change-cluster-type-btn': 'changeClusterType'
+            'click .change-cluster-mode-btn:not(.disabled)': 'changeClusterMode',
+            'click .change-cluster-type-btn:not(.disabled)': 'changeClusterType'
         },
         changeClusterMode: function() {
             (new dialogViews.changeClusterModeDialog({model: this.model})).render();
