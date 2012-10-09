@@ -28,7 +28,9 @@ module Naily
         queue.bind(exchange, :routing_key => options[:broker_queue])
 
         queue.subscribe do |header, payload|
-          dispatch payload
+          Thread.new do
+            dispatch payload
+          end
         end
 
         Signal.trap('INT')  do
