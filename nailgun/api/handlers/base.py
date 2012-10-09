@@ -9,11 +9,6 @@ import netaddr
 
 import rpc
 from settings import settings
-from provision import ProvisionConfig
-from provision import ProvisionFactory
-from provision.model.profile import Profile as ProvisionProfile
-from provision.model.node import Node as ProvisionNode
-from provision.model.power import Power as ProvisionPower
 from api.models import Release, Cluster, Node, Network, Vlan
 from api.models import Task
 from network import manager as netmanager

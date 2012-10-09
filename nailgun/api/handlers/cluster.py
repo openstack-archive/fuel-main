@@ -10,16 +10,12 @@ import netaddr
 
 import rpc
 from settings import settings
-from api.models import Cluster, Node, Network, Release, Attributes
+from api.models import Cluster, Node, Network, Release, Attributes, IPAddr
 from api.models import Vlan, Task
 from api.handlers.base import JSONHandler
 from api.handlers.node import NodeHandler
 from api.handlers.tasks import TaskHandler
-from provision import ProvisionConfig
-from provision import ProvisionFactory
-from provision.model.profile import Profile as ProvisionProfile
-from provision.model.node import Node as ProvisionNode
-from provision.model.power import Power as ProvisionPower
+from provision.cobbler import Cobbler
 from network import manager as netmanager
 
 
@@ -205,22 +201,21 @@ class ClusterChangesHandler(JSONHandler):
         web.ctx.orm.add(task)
         web.ctx.orm.commit()
 
-        pc = ProvisionConfig()
-        pc.cn = "provision.driver.cobbler.Cobbler"
-        pc.url = settings.COBBLER_URL
-        pc.user = settings.COBBLER_USER
-        pc.password = settings.COBBLER_PASSWORD
         try:
-            pd = ProvisionFactory.getInstance(pc)
+            pd = Cobbler(settings.COBBLER_URL,
+                         settings.COBBLER_USER, settings.COBBLER_PASSWORD)
         except Exception as err:
             task.status = "error"
             task.error = "Failed to start provisioning"
             web.ctx.orm.add(task)
             web.ctx.orm.commit()
             raise web.badrequest(str(err))
-        pf = ProvisionProfile(settings.COBBLER_PROFILE)
-        ndp = ProvisionPower("ssh")
-        ndp.power_user = "root"
+
+        nd_dict = {
+            'profile': settings.COBBLER_PROFILE,
+            'power_type': 'ssh',
+            'power_user': 'root',
+        }
 
         allowed_statuses = ("discover", "ready")
         for node in cluster.nodes:
@@ -245,38 +240,71 @@ class ClusterChangesHandler(JSONHandler):
                     "Node %s seems booted with bootstrap image",
                     node.id
                 )
-                ndp.power_pass = "rsa:%s" % settings.PATH_TO_BOOTSTRAP_SSH_KEY
+                nd_dict['power_pass'] = 'rsa:%s' % \
+                    settings.PATH_TO_BOOTSTRAP_SSH_KEY
             else:
                 logging.info(
                     "Node %s seems booted with real system",
                     node.id
                 )
-                ndp.power_pass = "rsa:%s" % settings.PATH_TO_SSH_KEY
-            ndp.power_address = node.ip
+                nd_dict['power_pass'] = 'rsa:%s' % settings.PATH_TO_SSH_KEY
+
+            nd_dict['power_address'] = node.ip
 
             node.status = "provisioning"
             web.ctx.orm.add(node)
             web.ctx.orm.commit()
-            nd = ProvisionNode("%d_%s" % (node.id, node.mac))
-            nd.driver = pd
-            nd.mac = node.mac
-            nd.profile = pf
-            nd.pxe = True
-            nd.kopts = ""
-            nd.power = ndp
+
+            nd_name = "%d_%s." % (node.id, node.mac)
+
+            nd_dict['hostname'] = 'slave-%s.%s' % \
+                (node.mac.replace(':', ''), settings.DNS_DOMAIN)
+            nd_dict['name_servers'] = '\"%s\"' % settings.DNS_SERVERS
+            nd_dict['name_servers_search'] = '\"%s\"' % settings.DNS_SEARCH
+
+            nd_dict['interfaces'] = {
+                'eth0': {
+                    'mac_address': node.mac,
+                    'static': '0',
+                },
+            }
+            nd_dict['interfaces_extra'] = {
+                'eth0': {
+                    'peerdns': 'no'
+                }
+            }
+            nd_dict['netboot_enabled'] = '1'
+            nd_dict['ks_meta'] = "\"puppet_auto_setup=1 \
+puppet_master=%(puppet_master_host)s \
+puppet_version=2.7.19 \
+puppet_enable=0 \
+mco_auto_setup=1 \
+mco_pskey=%(mco_pskey)s \
+mco_stomphost=%(mco_stomphost)s \
+mco_stompport=%(mco_stompport)s \
+mco_stompuser=%(mco_stompuser)s \
+mco_stomppassword=%(mco_stompassword)s \
+mco_enable=1\"" % {'puppet_master_host': settings.PUPPET_MASTER_HOST,
+                   'mco_pskey': settings.MCO_PSKEY,
+                   'mco_stomphost': settings.MCO_STOMPHOST,
+                   'mco_stompport': settings.MCO_STOMPPORT,
+                   'mco_stompuser': settings.MCO_STOMPUSER,
+                   'mco_stompassword': settings.MCO_STOMPPASSWORD,
+                   }
+
             logging.debug(
                 "Trying to save node %s into provision system: profile: %s ",
                 node.id,
-                pf.name
+                nd_dict.get('profile', 'unknown')
             )
-            nd.save()
+            pd.item_from_dict('system', nd_name, nd_dict, False, False)
             logging.debug(
                 "Trying to reboot node %s using %s "
                 "in order to launch provisioning",
                 node.id,
-                ndp.power_type
+                nd_dict.get('power_type', 'unknown')
             )
-            nd.power_reboot()
+            pd.power_on(nd_name)
 
         netmanager.assign_ips(cluster_id, "management")
 

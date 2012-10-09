@@ -67,7 +67,16 @@ template "#{node.nailgun.root}/settings/extrasettings.py" do
             :cobbler_user => node.cobbler.user,
             :cobbler_password => node.cobbler.password,
             :cobbler_profile => "centos-6.3-x86_64",
-            :repo_address => node.cobbler.repoaddr
+            :repo_address => node.cobbler.repoaddr,
+            :mco_pskey => node['mcollective']['psk'],
+            :mco_stomphost => node['mcollective']['stomp']['hostname'],
+            :mco_stompport => node['mcollective']['stomp']['port'],
+            :mco_stompuser => node['mcollective']['stomp']['username'],
+            :mco_stomppassword => node['mcollective']['stomp']['password'],
+            :puppet_master_host => node['fqdn'],
+            :dns_servers => node.ipaddress,
+            :dns_search => node.nailgun.domain,
+            :dns_domain => node.nailgun.search
             )
 end
 
