@@ -69,7 +69,9 @@ function(models, dialogViews, taskViews, clusterPageTemplate, deploymentResultTe
             task.save({}, {
                 type: 'PUT',
                 url: '/api/clusters/' + this.model.id + '/changes',
-                complete: _.bind(this.update, this)
+                complete: _.bind(function() {
+                    this.model.fetch().done(_.bind(this.scheduleUpdate, this));
+                }, this)
             });
         },
         initialize: function(options) {
@@ -87,11 +89,12 @@ function(models, dialogViews, taskViews, clusterPageTemplate, deploymentResultTe
         },
         update: function() {
             if (this == app.page) {
-                this.model.fetch({
-                    complete: _.bind(function() {
-                        this.scheduleUpdate();
-                    }, this)
-                });
+                var complete = _.after(2, _.bind(this.scheduleUpdate, this));
+                var task = this.model.task('deploy', 'running');
+                if (task) {
+                    task.fetch({complete: complete});
+                    this.model.get('nodes').fetch({complete: complete});
+                }
             }
         },
         render: function() {
@@ -118,6 +121,10 @@ function(models, dialogViews, taskViews, clusterPageTemplate, deploymentResultTe
 
     views.DeploymentResult = Backbone.View.extend({
         template: _.template(deploymentResultTemplate),
+        initialize: function(options) {
+            var task = this.model.task('deploy');
+            if (task) task.bind('change', this.render, this);
+        },
         render: function() {
             this.$el.html(this.template({cluster: this.model}));
             return this;
@@ -126,6 +133,10 @@ function(models, dialogViews, taskViews, clusterPageTemplate, deploymentResultTe
 
     views.DeploymentControl = Backbone.View.extend({
         template: _.template(deploymentControlTemplate),
+        initialize: function(options) {
+            var task = this.model.task('deploy');
+            if (task) task.bind('change', this.render, this);
+        },
         render: function() {
             this.$el.html(this.template({cluster: this.model}));
             return this;
