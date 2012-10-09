@@ -110,8 +110,10 @@ reads facts from /etc/naily.fact placed by mcollective, and extends Facter data 
 easily used in Puppet modules. Case structure in running class chooses appropriate class to import, based on $role
 variable, received from /etc/naily.fact. It loads and starts to execute. All variables from file are available
 like ordinary facts from Facter.
-Inspired by blog post `self-classifying puppet nodes <http://nuknad.com/2011/02/11/self-classifying-puppet-nodes/>`_.
-Some other details on approach: `nodeless-puppet example <https://github.com/jordansissel/puppet-examples/tree/master/nodeless-puppet>`_.
+Inspired by blog posts `self-classifying puppet nodes <http://nuknad.com/2011/02/11/self-classifying-puppet-nodes/>`_,
+`pulling a list of hosts from mcollective for puppet <http://nuknad.com/2011/01/07/pulling-a-list-of-hosts-from-mcollective-for-puppet/>`_,
+`A Simple Puppet Function to Retrieve Information From the Stored Config DB <http://blog.thesilentpenguin.com/blog/2012/02/22/a-simple-puppet-function-to-retrieve-information-from-the-stored-config-db/>`_,
+`nodeless-puppet example <https://github.com/jordansissel/puppet-examples/tree/master/nodeless-puppet>`_.
 It could be possible to use just special file and not to extend facts of Facter, just load JSON data straight
 during Puppet recipes execution, however additional research should be done.
 Last notice on how to work with the system without Nailgun and Naily: user creates a YAML file with all required
