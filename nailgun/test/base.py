@@ -83,6 +83,36 @@ class BaseHandlers(TestCase):
         self.assertEquals(resp.status, 201)
         return json.loads(resp.body)
 
+    def get_default_networks_metadata(self):
+        return [
+            {"name": "floating", "access": "public"},
+            {"name": "fixed", "access": "private10"},
+            {"name": "storage", "access": "private192"},
+            {"name": "management", "access": "private172"},
+            {"name": "other_172", "access": "private172"}
+        ]
+
+    def get_default_attributes_metadata(self):
+        return {
+            "editable": {
+                "keystone": {
+                    "admin_tenant": "admin"
+                }
+            },
+            "generated": {
+                "mysql": {
+                    "root_password": "",
+                    "predefined": "i am value",
+                    "db": {
+                        "generated_db": ""
+                    }
+                },
+                "keystone": {
+                    "token": ""
+                }
+            }
+        }
+
     def create_default_node(self, cluster_id=None):
         node = Node()
         node.mac = self._generate_random_mac()
@@ -97,25 +127,8 @@ class BaseHandlers(TestCase):
         release.version = randint(0, 100000000)
         release.name = u"release_name_" + str(release.version)
         release.description = u"release_desc" + str(release.version)
-        release.networks_metadata = [
-            {"name": "floating", "access": "public"},
-            {"name": "fixed", "access": "private10"},
-            {"name": "storage", "access": "private192"},
-            {"name": "management", "access": "private172"},
-            {"name": "other_172", "access": "private172"}
-        ]
-        release.attributes_metadata = {
-            "editable": {
-                "keystone": {
-                    "admin_tenant": "admin"
-                }
-            },
-            "generated": {
-                "mysql": {
-                    "root_password": ""
-                }
-            }
-        }
+        release.networks_metadata = self.get_default_networks_metadata()
+        release.attributes_metadata = self.get_default_attributes_metadata()
         self.db.add(release)
         self.db.commit()
         return release

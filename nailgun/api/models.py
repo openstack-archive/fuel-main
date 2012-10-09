@@ -77,11 +77,8 @@ class Cluster(Base, BasicValidator):
     name = Column(Unicode(50), unique=True, nullable=False)
     release_id = Column(Integer, ForeignKey('releases.id'), nullable=False)
     nodes = relationship("Node", backref="cluster")
-<<<<<<< HEAD
     tasks = relationship("Task", backref="cluster")
-=======
     attributes = relationship("Attributes", uselist=False, backref="cluster")
->>>>>>> implementing attributes for cluster
 
     @classmethod
     def validate(cls, data):
@@ -272,15 +269,26 @@ class Attributes(Base, BasicValidator):
     generated = Column(JSON)
 
     def generate_fields(self):
-        for service, flds in self.generated.iteritems():
-            for field, value in flds.iteritems():
-                self.generated[service][field] = self._generate_pwd()
+        def traverse(cdict):
+            new_dict = {}
+            for i, val in cdict.iteritems():
+                if isinstance(val, str) or isinstance(val, unicode):
+                    if val in ["", u""]:
+                        new_dict[i] = self._generate_pwd()
+                    else:
+                        new_dict[i] = val
+                elif isinstance(val, dict):
+                    new_dict[i] = traverse(val)
+            return new_dict
+
+        self.generated = traverse(self.generated)
+
         web.ctx.orm.add(self)
         web.ctx.orm.commit()
 
     def _generate_pwd(self, length=8):
         chars = string.letters + string.digits
-        return ''.join([choice(chars) for i in xrange(length)])
+        return u''.join([choice(chars) for _ in xrange(length)])
 
 
 class Task(Base, BasicValidator):
