@@ -271,14 +271,15 @@ class Attributes(Base, BasicValidator):
     def generate_fields(self):
         def traverse(cdict):
             new_dict = {}
-            for i, val in cdict.iteritems():
-                if isinstance(val, str) or isinstance(val, unicode):
-                    if val in ["", u""]:
-                        new_dict[i] = self._generate_pwd()
-                    else:
-                        new_dict[i] = val
-                elif isinstance(val, dict):
-                    new_dict[i] = traverse(val)
+            if cdict:
+                for i, val in cdict.iteritems():
+                    if isinstance(val, str) or isinstance(val, unicode):
+                        if val in ["", u""]:
+                            new_dict[i] = self._generate_pwd()
+                        else:
+                            new_dict[i] = val
+                    elif isinstance(val, dict):
+                        new_dict[i] = traverse(val)
             return new_dict
 
         self.generated = traverse(self.generated)
