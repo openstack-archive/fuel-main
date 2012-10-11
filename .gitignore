@@ -1,6 +1,8 @@
 *.pyc
 *.sqlite
 
+*.gem
+
 # vim swap files
 .*.swp
 

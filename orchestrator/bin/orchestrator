@@ -1,5 +1,7 @@
 #!/usr/bin/env ruby
-$LOAD_PATH << File.join(File.dirname(__FILE__),"..","lib")
+$:.unshift File.expand_path('../lib', File.dirname(__FILE__))
+
+require 'rubygems'
 require 'orchestrator'
 
 class DumbReporter
