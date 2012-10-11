@@ -17,8 +17,7 @@ module Orchestrator
         status = agent.results[:statuscode]
         result_data << agent.results['data']
         if status != 0
-          @logger.error "MC agent #{agent.agent} has failed, results: #{agent.results.inspect}"
-          raise "MCollective id='#{agent.results[:sender]}' call failed in agent '#{agent.agent}'"
+          raise "MCollective call failed in agent '#{agent.agent}', results: #{agent.results.inspect}"
         else
           @logger.debug "MC agent #{agent.agent} succeeded, results: #{agent.results.inspect}" if log
         end

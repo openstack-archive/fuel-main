@@ -1,16 +1,15 @@
 #!/usr/bin/env ruby
-$:.unshift File.expand_path('../lib', File.dirname(__FILE__))
 
 require 'rubygems'
 require 'orchestrator'
 
-class DumbReporter
+class ConsoleReporter
   def report(msg)
     p msg
   end
 end
 
-reporter = DumbReporter.new
+reporter = ConsoleReporter.new
 
 nodes = [{'mac' => 'devnailgun.mirantis.com', 'role' => 'test_controller'}]
 orchestrator = Orchestrator::Orchestrator.new
