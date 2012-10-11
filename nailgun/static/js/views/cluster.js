@@ -430,14 +430,10 @@ function(models, dialogViews, taskViews, clusterPageTemplate, deploymentResultTe
     views.NetworkTabSummary = Backbone.View.extend({
         template: _.template(networkTabSummaryTemplate),
         events: {
-            'click .change-network-mode-btn': 'changeNetworkMode',
-            'click .change-network-parameters-btn': 'changeNetworkParameters'
+            'click .change-network-settings-btn': 'changeNetworkSettings'
         },
-        changeNetworkMode: function() {
-            (new dialogViews.changeNetworkModeDialog({model: this.model})).render();
-        },
-        changeNetworkParameters: function() {
-            (new dialogViews.changeNetworkParametersDialog({model: this.model})).render();
+        changeNetworkSettings: function() {
+            (new dialogViews.changeNetworkSettingsDialog({model: this.model})).render();
         },
         render: function() {
             this.$el.html(this.template({cluster: this.model}));

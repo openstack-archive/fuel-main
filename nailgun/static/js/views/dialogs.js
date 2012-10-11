@@ -4,10 +4,9 @@ define(
     'text!templates/dialogs/create_cluster.html',
     'text!templates/dialogs/change_cluster_mode.html',
     'text!templates/dialogs/change_cluster_type.html',
-    'text!templates/dialogs/change_network_mode.html',
-    'text!templates/dialogs/change_network_parameters.html'
+    'text!templates/dialogs/change_network_settings.html'
 ],
-function(models, createClusterDialogTemplate, changeClusterModeDialogTemplate, changeClusterTypeDialogTemplate, changeNetworkModeDialogTemplate, changeNetworkParametersDialogTemplate) {
+function(models, createClusterDialogTemplate, changeClusterModeDialogTemplate, changeClusterTypeDialogTemplate, changeNetworkSettingsDialogTemplate) {
     var views = {}
 
     views.dialog = Backbone.View.extend({
@@ -133,12 +132,8 @@ function(models, createClusterDialogTemplate, changeClusterModeDialogTemplate, c
         }
     });
 
-    views.changeNetworkModeDialog = views.dialog.extend({
-        template: _.template(changeNetworkModeDialogTemplate)
-    });
-
-    views.changeNetworkParametersDialog = views.dialog.extend({
-        template: _.template(changeNetworkParametersDialogTemplate)
+    views.changeNetworkSettingsDialog = views.dialog.extend({
+        template: _.template(changeNetworkSettingsDialogTemplate)
     });
 
     return views;
