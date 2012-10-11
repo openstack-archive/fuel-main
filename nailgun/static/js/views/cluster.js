@@ -10,9 +10,11 @@ define(
     'text!templates/cluster/node_list.html',
     'text!templates/cluster/node.html',
     'text!templates/cluster/network_tab_summary.html',
-    'text!templates/cluster/verify_network_control.html'
+    'text!templates/cluster/verify_network_control.html',
+    'text!templates/cluster/settings_tab.html',
+    'text!templates/cluster/settings_group.html'
 ],
-function(models, dialogViews, clusterPageTemplate, deploymentResultTemplate, deploymentControlTemplate, nodesTabSummaryTemplate, editNodesScreenTemplate, nodeListTemplate, nodeTemplate, networkTabSummaryTemplate, networkTabVerificationTemplate) {
+function(models, dialogViews, clusterPageTemplate, deploymentResultTemplate, deploymentControlTemplate, nodesTabSummaryTemplate, editNodesScreenTemplate, nodeListTemplate, nodeTemplate, networkTabSummaryTemplate, networkTabVerificationTemplate, settingsTabTemplate, settingsGroupTemplate) {
     var views = {};
 
     views.ClusterPage = Backbone.View.extend({
@@ -113,6 +115,8 @@ function(models, dialogViews, clusterPageTemplate, deploymentResultTemplate, dep
                 tabContainer.html(new views.NodesTab({model: this.model}).render().el);
             } else if (this.tab == 'network') {
                 tabContainer.html(new views.NetworkTab({model: this.model}).render().el);
+            } else if (this.tab == 'settings') {
+                tabContainer.html(new views.SettingsTab({model: this.model}).render().el);
             }
 
             return this;
@@ -514,6 +518,41 @@ function(models, dialogViews, clusterPageTemplate, deploymentResultTemplate, dep
         render: function() {
             this.$el.html(this.template({cluster: this.model}));
             this.updateProgress();
+            return this;
+        }
+    });
+    
+    views.SettingsTab = Backbone.View.extend({
+        template: _.template(settingsTabTemplate),
+        events: {
+            'click .btn-apply-changes': 'applyChanges',
+            'click .btn-revert-changes': 'revertChanges',
+            'click .btn-set-defaults': 'setDefaults'
+        },
+        applyChanges: function() {
+            task.save({}, {
+                type: 'PUT',
+                url: '/api/clusters/' + this.model.id + '/attributes',
+                complete: _.bind(function() {
+                    //this.model.fetch().done(_.bind(this.scheduleUpdate, this));
+                }, this)
+            });
+        },
+        revertChanges: function() {
+            $('.settings-editable').reset();
+        },
+        setDefaults: function() {
+            // set defaults action
+        },
+        render: function() {
+            settings = new models.Settings();
+            settings.fetch({
+                url: '/api/clusters/' + this.model.id + '/attributes',
+                success: _.bind(function(data) {
+                    this.$el.html(this.template({cluster: this.model}));
+                    console.log(data);
+                }, this)
+            });
             return this;
         }
     });

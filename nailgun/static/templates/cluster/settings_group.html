@@ -1,0 +1,7 @@
+<fieldset class="fieldset">
+        <legend><%= legend %></legend>
+        <% _.each(settings, function(setting) { %>
+            <label><%= setting.key %></label>
+            <input type="text" class="input-medium" value="<%= setting.value %>">
+        <% }) %>
+</fieldset>

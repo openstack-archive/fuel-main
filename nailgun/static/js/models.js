@@ -110,6 +110,14 @@ define(function() {
             return this.pluck('id');
         }
     });
+    
+    models.Settings = Backbone.Model.extend({
+        urlRoot: '/api/clusters/',
+        parse: function(response) {
+            response.editable = this;
+            return response;
+        }
+    });
 
     models.Network = Backbone.Model.extend({
         urlRoot: '/api/networks',
