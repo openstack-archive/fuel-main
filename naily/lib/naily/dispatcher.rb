@@ -1,4 +1,4 @@
-
+require 'naily/reporter'
 
 module Naily
   class Dispatcher
@@ -14,12 +14,15 @@ module Naily
       args
     end
 
-    def deploy(args)
-      @orchestrator.deploy(args['nodes'])
+    def deploy(data)
+      reporter = Naily::Reporter.new(data['respond_to'])
+      @orchestrator.deploy(reporter, data['args']['nodes'])
     end
 
-    def verify_networks(args)
-      @orchestrator.verify_networks(args['nodes'], args['networks'])
+    def verify_networks(data)
+      reporter = Naily::Reporter.new(data['respond_to'])
+      args = data['args']
+      @orchestrator.verify_networks(reporter, args['nodes'], args['networks'])
     end
   end
 end

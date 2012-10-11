@@ -2,6 +2,14 @@
 $LOAD_PATH << File.join(File.dirname(__FILE__),"..","lib")
 require 'orchestrator'
 
-nodes = [{'mac' => 'nailgun', 'role' => 'test_controller'}]
+class DumbReporter
+  def report(msg)
+    p msg
+  end
+end
+
+reporter = DumbReporter.new
+
+nodes = [{'mac' => 'devnailgun.mirantis.com', 'role' => 'test_controller'}]
 orchestrator = Orchestrator::Orchestrator.new
-orchestrator.deploy(nodes)
+orchestrator.deploy(reporter, nodes)
