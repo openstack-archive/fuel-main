@@ -2,8 +2,12 @@ require 'json'
 require 'logger'
 
 require 'orchestrator/orchestrator'
+require 'orchestrator/helpers'
 
 module Orchestrator
+  autoload 'PuppetDeployer', 'orchestrator/deployer'
+  autoload 'FactsPublisher', 'orchestrator/metadata'
+
   def self.logger
     @logger ||= Logger.new(STDOUT)
   end
