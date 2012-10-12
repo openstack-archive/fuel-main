@@ -23,7 +23,8 @@ class Cobbler:
             self.logger.error('Error while connecting to cobbler api: %s' % e)
             raise e
 
-    def item_from_dict(self, what, obj_name, obj_dict, lazy=True, ilazy=False):
+    def item_from_dict(self, what, obj_name, obj_dict,
+                       item_override=True, iface_override=False):
         item_fields = get_fields(what)
         self.logger.debug("Valid item fields: %s" % item_fields['fields'])
         if what == 'system':
@@ -76,11 +77,11 @@ class Cobbler:
                     interfaces_item_dict['%s-%s' % (iopt, iname)] = idict[iopt]
 
         # Here we assume that the item fully qualified by item_dict
-        # lazy parameter is set to False.
+        # item_override parameter is set to False.
         # So in order to prevent not defined fields to have non default
         # values we need to delete item at first and then to create it
         # initializing it from obj_dict.
-        if not lazy and self.remote.has_item(what, obj_name):
+        if not item_override and self.remote.has_item(what, obj_name):
             self.logger.debug('Lazy mode is disabled, removing %s: %s' %
                               (what, obj_name))
             self.remote.remove_item(what, obj_name, self.token)
@@ -101,8 +102,8 @@ class Cobbler:
             self.remote.modify_item(what, item_id,
                                     opt, item_dict[opt], self.token)
 
-        # removing all system interfaces if ilazy mode is disabled
-        if what == 'system' and not ilazy:
+        # removing all system interfaces if iface_override mode is disabled
+        if what == 'system' and not iface_override:
             try:
                 system = self.remote.get_item('system', obj_name)
                 ifaces = system.get('interfaces', {})
@@ -111,7 +112,7 @@ class Cobbler:
             else:
                 for iname in ifaces:
                     if not iname in interfaces_names:
-                        self.logger.debug('Ilazy mode is disabled, '
+                        self.logger.debug('iface_override mode is disabled, '
                                           'removing interface: %s' % iname)
                         self.remote.modify_system(item_id, 'delete_interface',
                                                   iname, self.token)
@@ -126,7 +127,7 @@ class Cobbler:
         self.logger.debug('Saving %s %s' % (what, obj_name))
         self.remote.save_item(what, item_id, self.token)
 
-    def system_from_dict(self, obj_name, obj_dict, lazy=True):
+    def system_from_dict(self, obj_name, obj_dict, item_override=True):
         return self.item_from_dict('system', obj_name, obj_dict)
 
     def _item_id_if_exists(self, what, obj_name):
