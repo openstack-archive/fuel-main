@@ -5,7 +5,7 @@ require 'orchestrator/orchestrator'
 require 'orchestrator/helpers'
 
 module Orchestrator
-  autoload 'PuppetDeployer', 'orchestrator/deployer'
+  autoload 'PuppetPollingDeployer', 'orchestrator/deployer'
   autoload 'FactsPublisher', 'orchestrator/metadata'
 
   def self.logger

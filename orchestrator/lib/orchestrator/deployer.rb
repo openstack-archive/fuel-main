@@ -5,7 +5,7 @@ require 'mcollective'
 PUPPET_TIMEOUT = 30*60
 
 module Orchestrator
-  class PuppetDeployer
+  class PuppetPollingDeployer
     include MCollective::RPC
     include ::Orchestrator
 

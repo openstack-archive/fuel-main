@@ -4,7 +4,7 @@ module Orchestrator
   class Orchestrator
 
     def initialize
-      @deployer = PuppetDeployer.new
+      @deployer = PuppetPollingDeployer.new
       @metapublisher = FactsPublisher.new
     end
 
