@@ -7,6 +7,7 @@ require 'orchestrator/helpers'
 module Orchestrator
   autoload 'PuppetPollingDeployer', 'orchestrator/deployer'
   autoload 'FactsPublisher', 'orchestrator/metadata'
+  autoload 'Network', 'orchestrator/network'
 
   def self.logger
     @logger ||= Logger.new(STDOUT)

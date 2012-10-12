@@ -6,6 +6,7 @@ module Orchestrator
     def initialize
       @deployer = PuppetPollingDeployer.new
       @metapublisher = FactsPublisher.new
+      @network = Network.new
     end
 
     def deploy(reporter, task_id, nodes)
@@ -30,25 +31,12 @@ module Orchestrator
       ::Orchestrator.logger.info "#{task_id}: Starting deployment of other roles on nodes(macs): #{other_nodes.map {|n| n['mac']}.join(',')}"
       @metapublisher.post(reporter, task_id, other_nodes)
       @deployer.deploy(reporter, task_id, other_nodes)
+      reporter.report({'progress' => 100})
     end
 
-    # TODO rewrite it in a new model
-    #def verify_networks(reporter, task_id, nodes, networks)
-      #macs = nodes.map {|n| n['mac'].gsub(":", "")}
-      #mc = rpcclient("net_probe")
-      #mc.progress = false
-      #mc.discover(:nodes => macs)
-
-      #stats = mc.start_frame_listeners({'iflist' => 'eth0'})
-      #check_mcollective_result(stats)
-      
-      #stats = mc.send_probing_frames({'interfaces' => {'eth0' => networks.map {|n| n['vlan_id']}.join(',')}})
-      #check_mcollective_result(stats)
-
-      #sleep 5
-      #stats = mc.get_probing_info
-      #printrpc mc.get_probing_info
-    #end
+    def verify_networks(reporter, task_id, nodes, networks)
+      @network.check_network(reporter, task_id, nodes, networks)
+    end
   end
 
 end

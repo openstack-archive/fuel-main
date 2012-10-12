@@ -48,8 +48,6 @@ module Orchestrator
 
       self.check_mcollective_result(mc.runonce, task_id)
 
-      reporter.report({'progress' => 2})
-
       ::Orchestrator.logger.debug "Waiting for puppet to finish deploymen on all nodes (timeout = #{PUPPET_TIMEOUT} sec)..."
       time_before = Time.now
       Timeout::timeout(PUPPET_TIMEOUT) do  # 30 min for deployment to be done
@@ -61,7 +59,6 @@ module Orchestrator
       time_spent = Time.now - time_before
       ::Orchestrator.logger.info "Spent #{time_spent} seconds on puppet run for following nodes(macs): #{nodes.map {|n| n['mac']}.join(',')}"
 
-      reporter.report({'progress' => 100})
     end
   end
 end

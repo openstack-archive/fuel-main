@@ -3,13 +3,6 @@ require "json"
 module MCollective
   module Agent
     class Net_probe<RPC::Agent
-      metadata    :name        => "Network Probe Agent",
-                  :description => "Check network connectivity between nodes.",
-                  :author      => "Andrey Danin",
-                  :license     => "MIT",
-                  :version     => "0.1",
-                  :url         => "http://mirantis.com",
-                  :timeout     => 60
 
       uid = open('/etc/bootif').gets.chomp
 
@@ -40,7 +33,7 @@ module MCollective
       end
 
       action "stop_frame_listeners" do
-       stop_frame_listeners
+        stop_frame_listeners
       end
 
       action "echo" do
