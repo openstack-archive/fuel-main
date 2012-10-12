@@ -4,7 +4,7 @@ metadata    :name        => "puppetd",
             :license     => "Apache License 2.0",
             :version     => "1.8",
             :url         => "https://github.com/puppetlabs/mcollective-plugins",
-            :timeout     => 20
+            :timeout     => 40
 
 action "last_run_summary", :description => "Get a summary of the last puppet run" do
     display :always

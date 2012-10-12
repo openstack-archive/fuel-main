@@ -17,14 +17,6 @@ module MCollective
     #    puppetd.pidfile   - Where to find puppet agent's pid file; defaults to
     #                        /var/run/puppet/agent.pid
     class Puppetd<RPC::Agent
-      metadata    :name        => "puppetd",
-                  :description => "Run puppet agent, get its status, and enable/disable it",
-                  :author      => "R.I.Pienaar",
-                  :license     => "Apache License 2.0",
-                  :version     => "1.8",
-                  :url         => "http://projects.puppetlabs.com/projects/mcollective-plugins/wiki/AgentPuppetd",
-                  :timeout     => 30
-
       def startup_hook
         @splaytime = @config.pluginconf["puppetd.splaytime"].to_i || 0
         @lockfile = @config.pluginconf["puppetd.lockfile"] || "/var/lib/puppet/state/puppetdlock"

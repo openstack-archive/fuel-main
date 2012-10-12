@@ -4,7 +4,7 @@ metadata        :name           => "Naily Fact Agent",
 		:license        => "GPL",
 		:version        => "Version 1",
 		:url            => "www.naily.com",
-		:timeout        => 10
+		:timeout        => 30
 
 action "get",	:description => "fetches a value from a file" do
 	display :failed

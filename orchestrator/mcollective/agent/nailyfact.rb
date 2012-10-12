@@ -3,14 +3,6 @@ require 'json'
 module MCollective
   module Agent
     class Nailyfact<RPC::Agent
-      metadata    :name       => "Naily Fact Agent",
-          :description    => "Key/values in a text file",
-          :author     => "Puppet Master Guy",
-          :license    => "GPL",
-          :version    => "Version 1",
-          :url        => "www.naily.com",
-          :timeout    => 10
-
       nailyfile = "/etc/naily.facts"
 
       def parse_facts(fname)

@@ -4,14 +4,6 @@ require "base64"
 module MCollective
   module Agent
     class Erase_node<RPC::Agent
-      metadata    :name        => "Erase node bootloader",
-                  :description => "Erase node bootloader and reboot it.",
-                  :author      => "Andrey Danin",
-                  :license     => "MIT",
-                  :version     => "0.1",
-                  :url         => "http://mirantis.com",
-                  :timeout     => 60
-
       action "erase_node" do
         validate :file, String
         if File.exist?(request[:file])
