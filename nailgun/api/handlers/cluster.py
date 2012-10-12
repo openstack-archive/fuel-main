@@ -276,21 +276,21 @@ class ClusterChangesHandler(JSONHandler):
             nd_dict['netboot_enabled'] = '1'
             nd_dict['ks_meta'] = "\"puppet_auto_setup=1 \
 puppet_master=%(puppet_master_host)s \
-puppet_version=%(puppet_version) \
+puppet_version=%(puppet_version)s \
 puppet_enable=0 \
 mco_auto_setup=1 \
 mco_pskey=%(mco_pskey)s \
 mco_stomphost=%(mco_stomphost)s \
 mco_stompport=%(mco_stompport)s \
 mco_stompuser=%(mco_stompuser)s \
-mco_stomppassword=%(mco_stompassword)s \
+mco_stomppassword=%(mco_stomppassword)s \
 mco_enable=1\"" % {'puppet_master_host': settings.PUPPET_MASTER_HOST,
                    'puppet_version': settings.PUPPET_VERSION,
                    'mco_pskey': settings.MCO_PSKEY,
                    'mco_stomphost': settings.MCO_STOMPHOST,
                    'mco_stompport': settings.MCO_STOMPPORT,
                    'mco_stompuser': settings.MCO_STOMPUSER,
-                   'mco_stompassword': settings.MCO_STOMPPASSWORD,
+                   'mco_stomppassword': settings.MCO_STOMPPASSWORD,
                    }
 
             logging.debug(
