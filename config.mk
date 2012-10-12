@@ -1,5 +1,3 @@
-
-BINARIES_DIR:=binaries
 ifndef BOOTSTRAP_REBUILD
 BOOTSTRAP_REBUILD:=0
 endif

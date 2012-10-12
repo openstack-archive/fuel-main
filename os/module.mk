@@ -19,15 +19,9 @@ endef
 
 image-mount-rules=$(eval $(call image-mount-rules-template,$1,$2,$3))
 
-
-UBUNTU_1204_ISO:=$(BINARIES_DIR)/ubuntu-12.04-server-amd64.iso
-UBUNTU_1204_ROOT:=$(BUILD_DIR)/images/ubuntu-12.04-server
-UBUNTU_1204_RELEASE:=precise
-UBUNTU_1204_VERSION:=12.04
-$(call image-mount-rules,UBUNTU_1204)
-
-$(UBUNTU_1204_ROOT): $(UBUNTU_1204_ROOT)/md5sum.txt
-
+CENTOS_63_ISO:=$(BINARIES_DIR)/CentOS-6.3-x86_64-minimal.iso
+CENTOS_63_ROOT:=$(BUILD_DIR)/images/centos-6.3-minimal
 CENTOS_63_MAJOR:=6
 CENTOS_63_RELEASE:=6.3
 CENTOS_63_ARCH:=x86_64
+$(call image-mount-rules,CENTOS_63)

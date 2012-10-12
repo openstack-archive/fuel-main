@@ -1,5 +1,0 @@
-d-i netcfg/dhcp_timeout string 5
-d-i netcfg/dhcp_failed note
-d-i netcfg/dhcp_options select Configure network manually
-d-i preseed/include string common.seed
-

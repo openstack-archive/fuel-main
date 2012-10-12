@@ -1,0 +1,20 @@
+[general]
+family = CentOS
+timestamp = 1323560005.81
+variant = 
+totaldiscs = 1
+version = 6.3
+discnum = 1
+packagedir = 
+arch = x86_64
+
+[images-x86_64]
+kernel = images/pxeboot/vmlinuz
+initrd = images/pxeboot/initrd.img
+
+[images-xen]
+kernel = images/pxeboot/vmlinuz
+initrd = images/pxeboot/initrd.img
+
+[stage2]
+mainimage = images/install.img
