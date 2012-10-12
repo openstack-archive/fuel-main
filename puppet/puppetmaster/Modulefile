@@ -1,0 +1,8 @@
+name    'puppetmaster'
+version '0.0.1'
+source  'git@github.com:Mirantis/product.git'
+author  'Mirantis Inc.'
+license 'Apache License 2.0'
+summary 'Mirantis Puppet Master Module'
+description 'Module to install puppet master with nginx as frontend'
+project_page 'http://mirantis.com'
