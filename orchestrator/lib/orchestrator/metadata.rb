@@ -7,6 +7,10 @@ module Orchestrator
     include ::Orchestrator
 
     def post(reporter, task_id, nodes)
+      if nodes.empty?
+        ::Orchestrator.logger.info "#{task_id}: Nodes to post metadata into are not provided. Do nothing."
+        return false
+      end
       macs = nodes.map {|n| n['mac'].gsub(":", "")}
       ::Orchestrator.logger.debug "#{task_id}: nailyfact - storing metadata for nodes: #{macs.join(',')}"
 

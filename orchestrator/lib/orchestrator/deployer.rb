@@ -31,6 +31,10 @@ module Orchestrator
 
     public
     def deploy(reporter, task_id, nodes)
+      if nodes.empty?
+        ::Orchestrator.logger.info "#{task_id}: Nodes to deploy are not provided. Do nothing."
+        return false
+      end
       macs = nodes.map {|n| n['mac'].gsub(":", "")}
       mc = rpcclient("puppetd")
       mc.progress = false
