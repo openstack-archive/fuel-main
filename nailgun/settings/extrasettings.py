@@ -21,6 +21,7 @@ MCO_STOMPUSER = "guest"
 MCO_STOMPPASSWORD = "guest"
 
 PUPPET_MASTER_HOST = "localhost"
+PUPPET_VERSION = "2.7.19"
 
 DNS_DOMAIN = "example.com"
 DNS_SERVERS = "127.0.0.1"

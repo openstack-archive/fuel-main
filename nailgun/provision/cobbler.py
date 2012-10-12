@@ -15,7 +15,7 @@ class Cobbler:
     }
 
     def __init__(self, cobbler_api_url, username, password):
-        self.logger = logging.getLogger('provision.cobbler')
+        self.logger = logging.getLogger(__name__)
         try:
             self.remote = xmlrpclib.Server(cobbler_api_url, allow_none=True)
             self.token = self.remote.login(username, password)
@@ -32,8 +32,8 @@ class Cobbler:
 
         # converting interfaces extra parameters into ks_meta format
         int_extra_str = ''
-        for iname in obj_dict.get('interfaces_extra', {}):
-            int_extra_dict = obj_dict['interfaces_extra'][iname]
+        for iname, int_extra_dict in obj_dict.get('interfaces_extra',
+                                                  {}).iteritems():
             for int_extra in int_extra_dict:
                 int_extra_str = """%s interface_extra_%s_%s=%s""" % \
                     (int_extra_str, iname, int_extra,
@@ -67,8 +67,7 @@ class Cobbler:
         if what == 'system' and 'interfaces' in obj_dict:
             interfaces_names = set([])
             interfaces_item_dict = {}
-            for iname in obj_dict['interfaces']:
-                idict = obj_dict['interfaces'][iname]
+            for iname, idict in obj_dict.get('interfaces', {}).iteritems():
                 for iopt in idict:
                     if not iopt in item_fields['interface_fields']:
                         self.logger.debug('Skipping interface opt: %s' % iopt)
