@@ -16,13 +16,13 @@ module Naily
 
     def deploy(data)
       reporter = Naily::Reporter.new(data['respond_to'])
-      @orchestrator.deploy(reporter, data['args']['nodes'])
+      @orchestrator.deploy(reporter, data['args']['task_uuid'], [data['args']['nodes'])
     end
 
     def verify_networks(data)
       reporter = Naily::Reporter.new(data['respond_to'])
       args = data['args']
-      @orchestrator.verify_networks(reporter, args['nodes'], args['networks'])
+      @orchestrator.verify_networks(reporter, data['args']['task_uuid'], args['nodes'], args['networks'])
     end
   end
 end

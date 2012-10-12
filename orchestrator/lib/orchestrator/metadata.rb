@@ -6,9 +6,9 @@ module Orchestrator
     include MCollective::RPC
     include ::Orchestrator
 
-    def post(reporter, nodes)
+    def post(reporter, task_id, nodes)
       macs = nodes.map {|n| n['mac'].gsub(":", "")}
-      ::Orchestrator.logger.debug "nailyfact - storing metadata for nodes: #{macs.join(',')}"
+      ::Orchestrator.logger.debug "#{task_id}: nailyfact - storing metadata for nodes: #{macs.join(',')}"
 
       nodes.each do |node|
         mc = rpcclient("nailyfact")
@@ -18,7 +18,7 @@ module Orchestrator
 
         # This is synchronious RPC call, so we are sure that data were sent and processed remotely
         stats = mc.post(:value => metadata.to_json)
-        self.check_mcollective_result(stats)
+        self.check_mcollective_result(stats, task_id)
       end
     end
   end

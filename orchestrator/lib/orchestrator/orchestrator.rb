@@ -6,17 +6,17 @@ module Orchestrator
       @metapublisher = FactsPublisher.new
     end
 
-    def deploy(reporter, nodes)
+    def deploy(reporter, task_id, nodes)
       # First we post metadata so Puppet would know it when it starts
-      @metapublisher.post(reporter, nodes)
+      @metapublisher.post(reporter, task_id, nodes)
       reporter.report({'progress' => 1})
 
       # Run actual deployment
-      @deployer.deploy(reporter, nodes)
+      @deployer.deploy(reporter, task_id, nodes)
     end
 
     # TODO rewrite it in a new model
-    #def verify_networks(reporter, nodes, networks)
+    #def verify_networks(reporter, task_id, nodes, networks)
       #macs = nodes.map {|n| n['mac'].gsub(":", "")}
       #mc = rpcclient("net_probe")
       #mc.progress = false

@@ -12,5 +12,6 @@ end
 reporter = ConsoleReporter.new
 
 nodes = [{'mac' => 'devnailgun.mirantis.com', 'role' => 'test_controller'}]
+task_id = `uuidgen`.strip
 orchestrator = Orchestrator::Orchestrator.new
-orchestrator.deploy(reporter, nodes)
+orchestrator.deploy(reporter, task_id, nodes)
