@@ -27,13 +27,13 @@ module Orchestrator
     end
 
     public
-    def deploy(reporter, task_id, nodes)
+    def deploy(ctx, nodes)
       if nodes.empty?
-        ::Orchestrator.logger.info "#{task_id}: Nodes to deploy are not provided. Do nothing."
+        ::Orchestrator.logger.info "#{ctx.task_id}: Nodes to deploy are not provided. Do nothing."
         return false
       end
       macs = nodes.map {|n| n['mac'].gsub(":", "")}
-      mc = MClient.new(task_id, "puppetd", macs)
+      mc = MClient.new(ctx, "puppetd", macs)
       puppet_status = mc.status
 
       # In results :lastrun we get the time when Puppet finished it's work last time
@@ -51,7 +51,7 @@ module Orchestrator
         wait_until_puppet_done(mc, previous_runs)
       end
       time_spent = Time.now - time_before
-      ::Orchestrator.logger.info "#{task_id}: Spent #{time_spent} seconds on puppet run for following nodes(macs): #{nodes.map {|n| n['mac']}.join(',')}"
+      ::Orchestrator.logger.info "#{ctx.task_id}: Spent #{time_spent} seconds on puppet run for following nodes(macs): #{nodes.map {|n| n['mac']}.join(',')}"
 
     end
   end

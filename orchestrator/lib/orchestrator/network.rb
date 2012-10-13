@@ -2,14 +2,14 @@ module Orchestrator
   class Network
     include ::Orchestrator
 
-    def check_network(reporter, task_id, nodes, networks)
+    def check_network(ctx, nodes, networks)
       if nodes.length < 2
-        ::Orchestrator.logger.info "#{task_id}: Network checker: at least two nodes are required to check network connectivity. Do nothing."
+        ::Orchestrator.logger.info "#{ctx.task_id}: Network checker: at least two nodes are required to check network connectivity. Do nothing."
         return false
       end
       macs = nodes.map {|n| n['mac'].gsub(":", "")}
       # TODO Everything breakes if agent not found. We have to handle that
-      mc = MClient.new(task_id, "net_probe", macs)
+      mc = MClient.new(ctx, "net_probe", macs)
 
       mc.start_frame_listeners(:iflist => ['eth0'].to_json)
       

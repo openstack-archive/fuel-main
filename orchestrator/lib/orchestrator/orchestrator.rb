@@ -8,32 +8,33 @@ module Orchestrator
     end
 
     def deploy(reporter, task_id, nodes)
-
+      context = Context.new(task_id, reporter)
       # Run actual deployment
       # First we deploy nodes with role 'controller'
       ctrl_nodes = nodes.select {|n| n['role'] == 'controller'}
       ::Orchestrator.logger.info "#{task_id}: Starting deployment of controllers on nodes(macs): #{ctrl_nodes.map {|n| n['mac']}.join(',')}"
       
       # we post metadata so Puppet would know what to do when it starts
-      @metapublisher.post(reporter, task_id, ctrl_nodes)
+      @metapublisher.post(context, ctrl_nodes)
       reporter.report({'progress' => 1})
-      @deployer.deploy(reporter, task_id, ctrl_nodes)
+      @deployer.deploy(context, ctrl_nodes)
       reporter.report({'progress' => 40})
 
       compute_nodes = nodes.select {|n| n['role'] == 'compute'}
       ::Orchestrator.logger.info "#{task_id}: Starting deployment of computes on nodes(macs): #{compute_nodes.map {|n| n['mac']}.join(',')}"
-      @metapublisher.post(reporter, task_id, compute_nodes)
-      @deployer.deploy(reporter, task_id, compute_nodes)
+      @metapublisher.post(context, compute_nodes)
+      @deployer.deploy(context, compute_nodes)
 
       other_nodes = nodes - ctrl_nodes - compute_nodes
       ::Orchestrator.logger.info "#{task_id}: Starting deployment of other roles on nodes(macs): #{other_nodes.map {|n| n['mac']}.join(',')}"
-      @metapublisher.post(reporter, task_id, other_nodes)
-      @deployer.deploy(reporter, task_id, other_nodes)
+      @metapublisher.post(context, other_nodes)
+      @deployer.deploy(context, other_nodes)
       reporter.report({'progress' => 100})
     end
 
     def verify_networks(reporter, task_id, nodes, networks)
-      @network.check_network(reporter, task_id, nodes, networks)
+      context = Context.new(task_id, reporter)
+      @network.check_network(context, nodes, networks)
     end
   end
 

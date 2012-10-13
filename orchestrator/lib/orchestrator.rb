@@ -8,6 +8,7 @@ module Orchestrator
   autoload 'PuppetPollingDeployer', 'orchestrator/deployer'
   autoload 'FactsPublisher', 'orchestrator/metadata'
   autoload 'Network', 'orchestrator/network'
+  autoload 'Context', 'orchestrator/context'
 
   def self.logger
     @logger ||= Logger.new(STDOUT)

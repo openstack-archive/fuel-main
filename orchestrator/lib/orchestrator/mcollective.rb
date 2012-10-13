@@ -5,8 +5,8 @@ module Orchestrator
     include MCollective::RPC
     include ::Orchestrator
 
-    def initialize(task_id, agent, nodes=nil)
-      @task_id = task_id
+    def initialize(ctx, agent, nodes=nil)
+      @task_id = ctx.task_id
       @agent = agent
       @nodes = nodes
       @mc = rpcclient(agent)
