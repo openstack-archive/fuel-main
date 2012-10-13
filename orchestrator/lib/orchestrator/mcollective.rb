@@ -8,6 +8,7 @@ module Orchestrator
     def initialize(task_id, agent, nodes=nil)
       @task_id = task_id
       @agent = agent
+      @nodes = nodes
       @mc = rpcclient(agent)
       @mc.progress = false
       unless nodes.nil?
@@ -19,6 +20,8 @@ module Orchestrator
       res = @mc.send(method, *args)
       unless method == :discover
         check_mcollective_result(method, res)
+      else
+        @nodes = args[0][:nodes]
       end
       return res
     end
@@ -27,6 +30,13 @@ module Orchestrator
     def check_mcollective_result(method, stats)
       # Following error might happen because of misconfiguration, ex. direct_addressing = 1 only on client
       raise "#{@task_id}: MCollective client failed to call agent '#{@agent}' with method '#{method}' and didn't even return anything. Check logs." if stats.length == 0
+      if stats.length < @nodes.length
+        # some nodes didn't respond
+        nodes_responded = stats.map { |n| n.results[:sender] }
+        not_responded = @nodes - nodes_responded
+        raise "#{@task_id}: MCollective agents '#{not_responded.join(',')}' didn't respond."
+      end
+      # TODO: should we collect all errors and make one exception with all of data?
       stats.each do |node|
         status = node.results[:statuscode]
         if status != 0

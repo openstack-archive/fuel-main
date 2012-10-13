@@ -1,5 +1,3 @@
-require 'set'
-
 module Orchestrator
   class Orchestrator
 
@@ -27,7 +25,7 @@ module Orchestrator
       @metapublisher.post(reporter, task_id, compute_nodes)
       @deployer.deploy(reporter, task_id, compute_nodes)
 
-      other_nodes = (nodes.to_set - ctrl_nodes.to_set - compute_nodes.to_set).to_a
+      other_nodes = nodes - ctrl_nodes - compute_nodes
       ::Orchestrator.logger.info "#{task_id}: Starting deployment of other roles on nodes(macs): #{other_nodes.map {|n| n['mac']}.join(',')}"
       @metapublisher.post(reporter, task_id, other_nodes)
       @deployer.deploy(reporter, task_id, other_nodes)
