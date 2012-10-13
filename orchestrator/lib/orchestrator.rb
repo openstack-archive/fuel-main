@@ -2,7 +2,7 @@ require 'json'
 require 'logger'
 
 require 'orchestrator/orchestrator'
-require 'orchestrator/helpers'
+require 'orchestrator/mcollective'
 
 module Orchestrator
   autoload 'PuppetPollingDeployer', 'orchestrator/deployer'
