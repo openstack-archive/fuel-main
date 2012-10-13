@@ -107,5 +107,24 @@ define(function() {
         }
     });
 
+    models.Network = Backbone.Model.extend({
+        urlRoot: '/api/networks',
+        validate: function(attrs) {
+            var errors = {};
+            if (!_.isString(attrs.cidr) || !/^\d{1,3}\.\d{1,3}\.\d{1,3}\.\d{1,3}\/\d{1,2}$/.test(attrs.cidr)) {
+                errors.cidr = 'Invalid CIDR';
+            }
+            if (!_.isNumber(attrs.vlan_id) || attrs.vlan_id < 1 || attrs.vlan_id > 4094) {
+                errors.vlan_id = 'Invalid VLAN ID';
+            }
+            return _.isEmpty(errors) ? null : errors;
+        }
+    });
+
+    models.Networks = Backbone.Collection.extend({
+        model: models.Network,
+        url: '/api/networks'
+    });
+
     return models;
 });

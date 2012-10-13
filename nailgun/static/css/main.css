@@ -971,3 +971,27 @@ h6.page-title {
   height: 12px;
   border-radius: 3px;
 }
+
+.networks-table {
+  width: 100%;
+}
+
+.networks-table .network-name {
+  text-align: left;
+  width: 20%;
+}
+
+.networks-table .network-cidr {
+  text-align: center;
+  width: 30%;
+}
+
+.networks-table .network-vlan {
+  text-align: center;
+  width: 20%;
+}
+
+.networks-table .network-error {
+  text-align: left;
+  width: 30%;
+}

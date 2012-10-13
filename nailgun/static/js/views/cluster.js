@@ -175,10 +175,10 @@ function(models, dialogViews, taskViews, clusterPageTemplate, deploymentResultTe
             'click .change-cluster-type-btn:not(.disabled)': 'changeClusterType'
         },
         changeClusterMode: function() {
-            (new dialogViews.changeClusterModeDialog({model: this.model})).render();
+            (new dialogViews.ChangeClusterModeDialog({model: this.model})).render();
         },
         changeClusterType: function() {
-            (new dialogViews.changeClusterTypeDialog({model: this.model})).render();
+            (new dialogViews.ChangeClusterTypeDialog({model: this.model})).render();
         },
         render: function() {
             this.$el.html(this.template({cluster: this.model}));
@@ -433,7 +433,7 @@ function(models, dialogViews, taskViews, clusterPageTemplate, deploymentResultTe
             'click .change-network-settings-btn': 'changeNetworkSettings'
         },
         changeNetworkSettings: function() {
-            (new dialogViews.changeNetworkSettingsDialog({model: this.model})).render();
+            (new dialogViews.ChangeNetworkSettingsDialog({model: this.model})).render();
         },
         render: function() {
             this.$el.html(this.template({cluster: this.model}));

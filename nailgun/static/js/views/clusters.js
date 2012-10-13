@@ -26,7 +26,7 @@ function(models, dialogViews, clustersPageTemplate, clusterTemplate, newClusterT
         },
         createCluster: function(e) {
             e.preventDefault();
-            (new dialogViews.createClusterDialog({collection: this.collection})).render();
+            (new dialogViews.CreateClusterDialog({collection: this.collection})).render();
         },
         initialize: function() {
             this.collection.bind('reset', this.render, this);

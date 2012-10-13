@@ -9,17 +9,21 @@ define(
 function(models, createClusterDialogTemplate, changeClusterModeDialogTemplate, changeClusterTypeDialogTemplate, changeNetworkSettingsDialogTemplate) {
     var views = {}
 
-    views.dialog = Backbone.View.extend({
+    views.Dialog = Backbone.View.extend({
         className: 'modal fade',
+        modalBound: false,
         render: function(options) {
             this.$el.html(this.template(options));
-            this.$el.on('hidden', function() {$(this).remove()});
-            this.$el.modal();
+            if (!this.modalBound) {
+                this.$el.on('hidden', function() {$(this).remove()});
+                this.$el.modal();
+                this.modelBound = true;
+            }
             return this;
         }
     })
 
-    views.createClusterDialog = views.dialog.extend({
+    views.CreateClusterDialog = views.Dialog.extend({
         template: _.template(createClusterDialogTemplate),
         events: {
             'click .create-cluster-btn': 'createCluster',
@@ -68,16 +72,11 @@ function(models, createClusterDialogTemplate, changeClusterModeDialogTemplate, c
         initialize: function() {
             this.releases = new models.Releases();
             this.releases.fetch();
-        },
-        render: function() {
-            this.constructor.__super__.render.call(this);
-            this.renderReleases();
             this.releases.bind('reset', this.renderReleases, this);
-            return this;
         }
     });
 
-    views.changeClusterModeDialog = views.dialog.extend({
+    views.ChangeClusterModeDialog = views.Dialog.extend({
         template: _.template(changeClusterModeDialogTemplate),
         events: {
             'change input[name=mode]': 'toggleControls',
@@ -86,9 +85,9 @@ function(models, createClusterDialogTemplate, changeClusterModeDialogTemplate, c
         apply: function() {
             var cluster = this.model;
             var valid = true;
-            cluster.on('error', function(model, error) {
+            cluster.on('error', function(model, errors) {
                 valid = false;
-                _.each(error, function(message, field) {
+                _.each(errors, function(message, field) {
                     this.$('*[name=' + field + '] ~ .help-inline').text(message);
                     this.$('*[name=' + field + ']').closest('.control-group').addClass('error');
                 }, this);
@@ -109,10 +108,11 @@ function(models, createClusterDialogTemplate, changeClusterModeDialogTemplate, c
         render: function() {
             this.constructor.__super__.render.call(this, {cluster: this.model});
             this.toggleControls();
+            return this;
         }
     });
 
-    views.changeClusterTypeDialog = views.dialog.extend({
+    views.ChangeClusterTypeDialog = views.Dialog.extend({
         template: _.template(changeClusterTypeDialogTemplate),
         events: {
             'change input[name=type]': 'toggleDescription',
@@ -129,11 +129,44 @@ function(models, createClusterDialogTemplate, changeClusterModeDialogTemplate, c
         render: function() {
             this.constructor.__super__.render.call(this, {cluster: this.model});
             this.toggleDescription();
+            return this;
         }
     });
 
-    views.changeNetworkSettingsDialog = views.dialog.extend({
-        template: _.template(changeNetworkSettingsDialogTemplate)
+    views.ChangeNetworkSettingsDialog = views.Dialog.extend({
+        template: _.template(changeNetworkSettingsDialogTemplate),
+        events: {
+            'click .apply-btn': 'apply'
+        },
+        apply: function() {
+            var valid = true;
+            this.$('.help-inline').text('');
+            this.$('.control-group').removeClass('error');
+            this.networks.each(function(network) {
+                var row = this.$('.control-group[data-network-name=' + network.get('name') + ']');
+                network.on('error', function(model, errors) {
+                    valid = false;
+                    $('.network-error .help-inline', row).text(errors.cidr || errors.vlan_id);
+                    row.addClass('error');
+                }, this);
+                network.set({
+                    cidr: $('.network-cidr input', row).val(),
+                    vlan_id: parseInt($('.network-vlan input', row).val(), 10)
+                });
+            }, this);
+            if (valid) {
+                Backbone.sync('update', this.networks);
+                this.$el.modal('hide');
+            }
+        },
+        initialize: function(options) {
+            this.networks = new models.Networks();
+            this.networks.deferred = this.networks.fetch({data: {cluster_id: this.model.id}});
+            this.networks.bind('reset', this.render, this);
+        },
+        render: function() {
+            return this.constructor.__super__.render.call(this, {cluster: this.model, networks: this.networks});
+        }
     });
 
     return views;
