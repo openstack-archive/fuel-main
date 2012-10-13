@@ -19,5 +19,5 @@ networks = [{'id' => 1, 'vlan_id' => 100, 'cidr' => '10.0.0.0/24'},
 
 task_id = `uuidgen`.strip
 orchestrator = Orchestrator::Orchestrator.new
-orchestrator.deploy(reporter, task_id, nodes)
-#orchestrator.verify_networks(reporter, task_id, nodes, networks)
+#orchestrator.deploy(reporter, task_id, nodes)
+orchestrator.verify_networks(reporter, task_id, nodes, networks)

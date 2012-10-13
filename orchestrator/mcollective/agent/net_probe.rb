@@ -5,30 +5,49 @@ module MCollective
     class Net_probe<RPC::Agent
 
       uid = open('/etc/bootif').gets.chomp
+      pattern = "/var/tmp/net-probe-dump-*"
 
       action "start_frame_listeners" do
         validate :iflist, String
-        status = start_frame_listeners(JSON.parse(request[:iflist]))
-        if status.empty?
-          reply[:status] = true
-        else
-          reply[:status] = false
-          reply[:errors] = status.to_json
+        # wipe out old stuff before start
+        Dir.glob(pattern).each do |file|
+          File.delete file
+        end
+        iflist = JSON.parse(request[:iflist])
+        iflist.each do |iface|
+          cmd = "net_probe.py -l #{iface}"
+          pid = fork { `#{cmd}` }
+          Process.detach(pid)
+          # It raises Errno::ESRCH if there is no process, so we check that it runs
+          sleep 1
+          begin
+            Process.kill(0, pid)
+          rescue Errno::ESRCH => e
+            reply.fail "Failed to run '#{cmd}'"
+          end
         end
       end
 
       action "send_probing_frames" do
         validate :interfaces, String
         config = { "action" => "generate", "uid" => uid,
-          "interfaces" => JSON.parse(request[:interfaces]) }
+                   "interfaces" => JSON.parse(request[:interfaces]) }
         if request.data.key?('config')
           config.merge!(JSON.parse(request[:config]))
         end
-        send_probing_frames(config)
+        cmd = "net_probe.py -"
+        status = run(cmd, :stdin => config.to_json, :stdout => :out, :stderr => :error)
+        reply.fail "Failed to send probing frames, cmd='#{cmd}' failed, config: #{config.inspect}" if status != 0
       end
 
       action "get_probing_info" do
-        reply[:neigbours] = get_probing_frames
+        stop_frame_listeners
+        neigbours = Hash.new
+        Dir.glob(pattern).each do |file|
+          p = JSON.load(File.read(file))
+          neigbours.merge!(p)
+        end
+        reply[:neigbours] = neigbours
         reply[:uid] = uid
       end
 
@@ -44,20 +63,6 @@ module MCollective
       end
 
       private
-
-      def start_frame_listeners(iflist)
-        errors = []
-        iflist.each do |iface|
-          begin
-            cmd = "net_probe.py -l #{iface}"
-            pid = fork { system(cmd) }
-            Process.detach(pid)
-          rescue Exception => e
-            errors.push("Error occured while running command \"#{cmd}\": #{e.message}")
-          end
-        end
-        return errors
-      end
 
       def stop_frame_listeners
         piddir = "/var/run/net_probe"
@@ -85,35 +90,6 @@ module MCollective
           end
           pidfiles = Dir.glob(File.join(piddir, '*'))
         end
-      end
-
-      def send_probing_frames(config)
-        cmd = "net_probe.py -"
-        out = ""
-        err = ""
-        status = run(cmd, :stdin => config.to_json, :stdout => out, :stderr => err)
-        reply[:stdout] = out
-        reply[:stderr] = err
-        if status == 0:
-          reply[:status] = true
-        else
-          reply[:status] = false
-        end
-      end
-
-      def get_probing_frames
-        stop_frame_listeners
-        neigbours = Hash.new
-        pattern = "/var/tmp/net-probe-dump-*"
-        Dir.glob(pattern).each do |file|
-          data = ""
-          open(file).readlines.each do |f|
-            data += f
-          end
-          p = JSON.load(data)
-          neigbours.merge!(p)
-        end
-        return neigbours
       end
     end
   end
