@@ -3,11 +3,11 @@ require 'logger'
 
 require 'orchestrator/orchestrator'
 require 'orchestrator/mcollective'
+require 'orchestrator/metadata'
+require 'orchestrator/deployer'
+require 'orchestrator/network'
 
 module Orchestrator
-  autoload 'PuppetPollingDeployer', 'orchestrator/deployer'
-  autoload 'FactsPublisher', 'orchestrator/metadata'
-  autoload 'Network', 'orchestrator/network'
   autoload 'Context', 'orchestrator/context'
 
   def self.logger
