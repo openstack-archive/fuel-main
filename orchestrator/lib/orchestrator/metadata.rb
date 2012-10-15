@@ -10,11 +10,11 @@ module Orchestrator
     ::Orchestrator.logger.debug "#{ctx.task_id}: nailyfact - storing metadata for nodes: #{macs.join(',')}"
 
     nodes.each do |node|
-      mc = MClient.new(ctx, "nailyfact", [node['mac'].gsub(":", "")])
+      nailyfact = MClient.new(ctx, "nailyfact", [node['mac'].gsub(":", "")])
       metadata = {'role' => node['role']}
 
       # This is synchronious RPC call, so we are sure that data were sent and processed remotely
-      stats = mc.post(:value => metadata.to_json)
+      stats = nailyfact.post(:value => metadata.to_json)
     end
   end
 end
