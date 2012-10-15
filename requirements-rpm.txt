@@ -17,7 +17,7 @@ openstack-glance
 openstack-keystone
 openstack-nova
 openstack-nova-novncproxy
-puppet
+puppet-2.7.19
 novnc
 rabbitmq-server
 ruby
