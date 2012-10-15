@@ -6,7 +6,7 @@ module Naily
 
     def initialize(options={})
       @options = options.dup.freeze
-      @orchestrator = Orchestrator::Orchestrator.new
+      @orchestrator = Astute::Orchestrator.new
     end
 
     def echo(args)

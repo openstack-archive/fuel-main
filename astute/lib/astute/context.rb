@@ -1,4 +1,4 @@
-module Orchestrator
+module Astute
   class Context
     attr_accessor :task_id, :reporter
 

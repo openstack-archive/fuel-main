@@ -14,7 +14,7 @@ Gem::Specification.new do |s|
   s.add_dependency 'daemons'
   s.add_dependency 'amqp'
   s.add_dependency 'mcollective-client'
-  s.add_dependency 'orchestrator'
+  s.add_dependency 'astute'
 
   s.files   = Dir.glob("{bin,lib}/**/*")
   s.executables = ['nailyd']

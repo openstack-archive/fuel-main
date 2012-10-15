@@ -1,9 +1,9 @@
 $:.unshift File.expand_path('lib', File.dirname(__FILE__))
-require 'orchestrator'
+require 'astute'
 
 Gem::Specification.new do |s|
-  s.name = 'orchestrator'
-  s.version = Orchestrator::VERSION
+  s.name = 'astute'
+  s.version = Astute::VERSION
 
   s.summary = 'Orchestrator for OpenStack deployment'
   s.description = 'Orchestrator of deployment via Puppet & MCollective. Works both with Nailgun and from CLI.'
@@ -13,7 +13,7 @@ Gem::Specification.new do |s|
   s.add_dependency 'mcollective-client', '> 2.0.0'
 
   s.files   = Dir.glob("{bin,lib,spec}/**/*")
-  s.executables = ['orchestrator']
+  s.executables = ['astute']
   s.require_path = 'lib'
 end
 

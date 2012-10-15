@@ -1,9 +1,9 @@
 require 'mcollective'
 
-module Orchestrator
+module Astute
   class MClient
     include MCollective::RPC
-    include ::Orchestrator
+    include Astute
 
     def initialize(ctx, agent, nodes=nil)
       @task_id = ctx.task_id
@@ -42,7 +42,7 @@ module Orchestrator
         if status != 0
           raise "#{@task_id}: MCollective call failed in agent '#{node.agent}', method '#{method}', results: #{node.results.inspect}"
         else
-          ::Orchestrator.logger.debug "#{@task_id}: MC agent '#{node.agent}', method '#{method}' succeeded, results: #{node.results.inspect}"
+          Astute.logger.debug "#{@task_id}: MC agent '#{node.agent}', method '#{method}' succeeded, results: #{node.results.inspect}"
         end
       end
     end

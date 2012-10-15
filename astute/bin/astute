@@ -1,7 +1,7 @@
 #!/usr/bin/env ruby
 
 require 'rubygems'
-require 'orchestrator'
+require 'astute'
 
 class ConsoleReporter
   def report(msg)
@@ -18,6 +18,6 @@ networks = [{'id' => 1, 'vlan_id' => 100, 'cidr' => '10.0.0.0/24'},
             {'id' => 2, 'vlan_id' => 101, 'cidr' => '192.168.0.0/24'}]
 
 task_id = `uuidgen`.strip
-orchestrator = Orchestrator::Orchestrator.new
+orchestrator = Astute::Orchestrator.new
 orchestrator.deploy(reporter, task_id, nodes)
 orchestrator.verify_networks(reporter, task_id, nodes, networks)
