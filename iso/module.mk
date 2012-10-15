@@ -72,6 +72,7 @@ $/isoroot.done: \
 		$/isoroot-gpg.done \
 		$/isoroot-isolinux.done \
 		$(ISOROOT)/ks.cfg \
+		$(ISOROOT)/bootstrap_admin_node.sh \
 		$(ISOROOT)/sync \
 		$(addprefix $(ISOROOT)/sync/,$(call find-files,iso/sync)) \
 #		$(ISOROOT)/EFI \
@@ -90,6 +91,7 @@ $(ISOROOT)/sync/%: iso/sync/% ; $(ACTION.COPY)
 #	mkdir -p $@
 #$(ISOROOT)/EFI/%: iso/EFI/% ; $(ACTION.COPY)
 $(ISOROOT)/ks.cfg: iso/ks.cfg ; $(ACTION.COPY)
+$(ISOROOT)/bootstrap_admin_node.sh: iso/bootstrap_admin_node.sh ; $(ACTION.COPY)
 
 $(ISOROOT)/nailgun/openstack-essex.json: scripts/release/openstack-essex.json ; $(ACTION.COPY)
 $(ISOROOT)/nailgun/bin/%: bin/% ; $(ACTION.COPY)
