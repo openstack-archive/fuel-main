@@ -129,9 +129,13 @@ $(CENTOS_REPO_DIR)etc/yum-$(REPO_SUFFIX).repos.d/base.repo:
 	@mkdir -p $(@D)
 	echo "$${contents}" > $@
 
-### NOTE: comps.xml came from centos-minimal.iso
-$(CENTOS_REPO_DIR)comps.xml: os/centos/comps.xml
-	$(ACTION.COPY)
+$(CENTOS_REPO_DIR)comps.xml.gz:
+	@mkdir -p $(CENTOS_REPO_DIR)
+	wget -O $@ $(CENTOS_63_MIRROR)/`wget -qO- $(CENTOS_63_MIRROR)/repodata/repomd.xml | \
+	 xml2 | grep 'comps\.xml\.gz' | awk -F'=' '{ print $$2 }'`
+
+$(CENTOS_REPO_DIR)comps.xml: $(CENTOS_REPO_DIR)comps.xml.gz
+	gunzip -c $(CENTOS_REPO_DIR)comps.xml.gz > $@
 
 $(CENTOS_REPO_DIR)cache-infra.done: \
 	  $(CENTOS_REPO_DIR)etc/yum-$(REPO_SUFFIX).conf \

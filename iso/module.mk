@@ -18,54 +18,51 @@ iso: $/nailgun-centos-6.3-amd64.iso
 mirror: $/isoroot-packages.done
 
 $/isoroot-infra.done: 
-	mkdir -p $(ISOROOT)
+	@mkdir -p $(ISOROOT)
 	#scripts/mirror.sh $(GOLDEN_MIRROR) $(LOCAL_MIRROR)
 	$(ACTION.TOUCH)
 
 $/isoroot-centos.done: \
 		$(BUILD_DIR)/packages/rpm/rpm.done \
 		$(centos.packages)/cache.done \
-		$(centos.packages)/comps.xml \
+		$(ISOROOT)/repodata/comps.xml \
 		$(ISOROOT)/.discinfo \
 		$(ISOROOT)/.treeinfo
 	mkdir -p $(ISOROOT)/Packages
 	find $(centos.packages)/Packages -name '*.rpm' -exec cp -n {} $(ISOROOT)/Packages \;
 	find $(BUILD_DIR)/packages/rpm/RPMS -name '*.rpm' -exec cp -n {} $(ISOROOT)/Packages \;
-	createrepo -g `readlink -f "$(centos.packages)/comps.xml"` -u media://`head -1 $(ISOROOT)/.discinfo` $(ISOROOT)
+	createrepo -g `readlink -f "$(ISOROOT)/repodata/comps.xml"` -u media://`head -1 $(ISOROOT)/.discinfo` $(ISOROOT)
 	$(ACTION.TOUCH)
 
-$(ISOROOT)/repodata/comps.xml.gz:
-	mkdir -p $(ISOROOT)/repodata
-	wget -O $(ISOROOT)/repodata/comps.xml.gz $(CENTOS_63_MIRROR)/`wget -qO- $(CENTOS_63_MIRROR)/repodata/repomd.xml | \
-	 xml2 | grep 'comps\.xml\.gz' | awk -F'=' '{ print $$2 }'`
+$(ISOROOT)/repodata/comps.xml: \
+		$(CENTOS_REPO_DIR)comps.xml
+	$(ACTION.COPY)
+	
 
-$(centos.packages)/comps.xml: $(ISOROOT)/repodata/comps.xml.gz
-	gunzip -c $(ISOROOT)/repodata/comps.xml.gz > $(centos.packages)/comps.xml
-
-$(ISOLINUX_FILES):
-	mkdir -p $(ISOROOT)/isolinux/
-	test -f $(ISOROOT)/isolinux/$@ || wget -O $(ISOROOT)/isolinux/$@ $(CENTOS_63_MIRROR)/isolinux/$(@F)
+$(addprefix $(ISOROOT)/isolinux/,$(ISOLINUX_FILES)):
+	@mkdir -p $(@D)
+	wget -O $@ $(CENTOS_63_MIRROR)/isolinux/$(@F)
 
 $(ISOROOT)/isolinux/isolinux.cfg: iso/isolinux/isolinux.cfg ; $(ACTION.COPY)
 
 $/isoroot-isolinux.done: \
-		$(ISOLINUX_FILES) \
+		$(addprefix $(ISOROOT)/isolinux/,$(ISOLINUX_FILES)) \
 		$(ISOROOT)/isolinux/isolinux.cfg \
 	$(ACTION.TOUCH)
 
-$(IMAGES_FILES):
-	mkdir -p $(ISOROOT)/images/
-	test -f $(ISOROOT)/images/$@ || wget -O $(ISOROOT)/images/$@ $(CENTOS_63_MIRROR)/images/$(@F)
+$(addprefix $(ISOROOT)/images/,$(IMAGES_FILES)):
+	@mkdir -p $(ISOROOT)/images/
+	wget -O $@ $(CENTOS_63_MIRROR)/images/$(@F)
 
 $/isoroot-prepare.done:\
-		$(IMAGES_FILES) \
+		$(addprefix $(ISOROOT)/images/,$(IMAGES_FILES)) \
 	$(ACTION.TOUCH)
 
-$(GPGFILES):
-	test -f $(ISOROOT)/$@ || wget -nc -O $(ISOROOT)/$@ $(CENTOS_63_GPG)/$(@F)
+$(addprefix $(ISOROOT)/,$(GPGFILES)):
+	wget -O $@ $(CENTOS_63_GPG)/$(@F)
 
 $/isoroot-gpg.done:\
-		$(GPGFILES) \
+		$(addprefix $(ISOROOT)/,$(GPGFILES)) \
 	$(ACTION.TOUCH)
 
 $/isoroot.done: \
@@ -81,7 +78,6 @@ $/isoroot.done: \
 #		$(addprefix $(ISOROOT)/EFI/,$(call find-files,iso/EFI)) \
 		$(addprefix $(ISOROOT)/nailgun/,$(call find-files,nailgun)) \
 		$(addprefix $(ISOROOT)/nailgun/bin/,create_release agent) \
-		$(addprefix $(ISOROOT)/nailgun/cookbooks/,$(call find-files,cookbooks)) \
 		$(addprefix $(ISOROOT)/nailgun/,openstack-essex.json) \
 		$(ISOROOT)/eggs \
 		$(ISOROOT)/gems/gems \
@@ -96,7 +92,6 @@ $(ISOROOT)/sync/%: iso/sync/% ; $(ACTION.COPY)
 $(ISOROOT)/ks.cfg: iso/ks.cfg ; $(ACTION.COPY)
 
 $(ISOROOT)/nailgun/openstack-essex.json: scripts/release/openstack-essex.json ; $(ACTION.COPY)
-$(ISOROOT)/nailgun/cookbooks/%: cookbooks/% ; $(ACTION.COPY)
 $(ISOROOT)/nailgun/bin/%: bin/% ; $(ACTION.COPY)
 $(ISOROOT)/nailgun/%: nailgun/% ; $(ACTION.COPY)
 $(ISOROOT)/.discinfo: iso/.discinfo ; $(ACTION.COPY)
