@@ -34,16 +34,17 @@ $/isoroot-centos.done: \
 	createrepo -g `readlink -f "$(centos.packages)/comps.xml"` -u media://`head -1 $(ISOROOT)/.discinfo` $(ISOROOT)
 	$(ACTION.TOUCH)
 
-$(centos.packages)/comps.xml:
+$(ISOROOT)/repodata/comps.xml.gz:
 	mkdir -p $(ISOROOT)/repodata
-	wget -nc -O $(ISOROOT)/repodata/comps.xml.gz $(CENTOS_63_MIRROR)/`wget -qO- $(CENTOS_63_MIRROR)/repodata/repomd.xml | \
+	wget -O $(ISOROOT)/repodata/comps.xml.gz $(CENTOS_63_MIRROR)/`wget -qO- $(CENTOS_63_MIRROR)/repodata/repomd.xml | \
 	 xml2 | grep 'comps\.xml\.gz' | awk -F'=' '{ print $$2 }'`
+
+$(centos.packages)/comps.xml: $(ISOROOT)/repodata/comps.xml.gz
 	gunzip -c $(ISOROOT)/repodata/comps.xml.gz > $(centos.packages)/comps.xml
-	rm -f $(ISOROOT)/repodata/comps.xml.gz
 
 $(ISOLINUX_FILES):
 	mkdir -p $(ISOROOT)/isolinux/
-	wget -nc -O $(ISOROOT)/isolinux/$@ $(CENTOS_63_MIRROR)/isolinux/$(@F) || true
+	test -f $(ISOROOT)/isolinux/$@ || wget -O $(ISOROOT)/isolinux/$@ $(CENTOS_63_MIRROR)/isolinux/$(@F)
 
 $(ISOROOT)/isolinux/isolinux.cfg: iso/isolinux/isolinux.cfg ; $(ACTION.COPY)
 
@@ -54,14 +55,14 @@ $/isoroot-isolinux.done: \
 
 $(IMAGES_FILES):
 	mkdir -p $(ISOROOT)/images/
-	wget -nc -O $(ISOROOT)/images/$@ $(CENTOS_63_MIRROR)/images/$(@F) || true
+	test -f $(ISOROOT)/images/$@ || wget -O $(ISOROOT)/images/$@ $(CENTOS_63_MIRROR)/images/$(@F)
 
 $/isoroot-prepare.done:\
 		$(IMAGES_FILES) \
 	$(ACTION.TOUCH)
 
 $(GPGFILES):
-	wget -nc -O $(ISOROOT)/$@ $(CENTOS_63_GPG)/$(@F) || true
+	test -f $(ISOROOT)/$@ || wget -nc -O $(ISOROOT)/$@ $(CENTOS_63_GPG)/$(@F)
 
 $/isoroot-gpg.done:\
 		$(GPGFILES) \
@@ -80,7 +81,6 @@ $/isoroot.done: \
 #		$(addprefix $(ISOROOT)/EFI/,$(call find-files,iso/EFI)) \
 		$(addprefix $(ISOROOT)/nailgun/,$(call find-files,nailgun)) \
 		$(addprefix $(ISOROOT)/nailgun/bin/,create_release agent) \
-		$(addprefix $(ISOROOT)/nailgun/solo/,solo.rb solo.json) \
 		$(addprefix $(ISOROOT)/nailgun/cookbooks/,$(call find-files,cookbooks)) \
 		$(addprefix $(ISOROOT)/nailgun/,openstack-essex.json) \
 		$(ISOROOT)/eggs \
@@ -97,7 +97,6 @@ $(ISOROOT)/ks.cfg: iso/ks.cfg ; $(ACTION.COPY)
 
 $(ISOROOT)/nailgun/openstack-essex.json: scripts/release/openstack-essex.json ; $(ACTION.COPY)
 $(ISOROOT)/nailgun/cookbooks/%: cookbooks/% ; $(ACTION.COPY)
-$(ISOROOT)/nailgun/solo/%: iso/solo/% ; $(ACTION.COPY)
 $(ISOROOT)/nailgun/bin/%: bin/% ; $(ACTION.COPY)
 $(ISOROOT)/nailgun/%: nailgun/% ; $(ACTION.COPY)
 $(ISOROOT)/.discinfo: iso/.discinfo ; $(ACTION.COPY)

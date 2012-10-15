@@ -114,6 +114,13 @@ name = RHEL $(CENTOS_63_RELEASE) - RPMforge.net - extras
 baseurl = $(RPMFORGEMIRROR)/el$(CENTOS_63_MAJOR)/en/$(CENTOS_63_ARCH)/extras
 gpgcheck = 0
 enabled = 0
+
+[puppetlabs]
+name=Puppet Labs Packages
+baseurl=http://yum.puppetlabs.com/el/$(CENTOS_63_MAJOR)/products/$(CENTOS_63_ARCH)/
+enabled=1
+gpgcheck=1
+gpgkey=http://yum.puppetlabs.com/RPM-GPG-KEY-puppetlabs
 endef
 
 $(CENTOS_REPO_DIR)etc/yum-$(REPO_SUFFIX).repos.d/base.repo: export contents:=$(yum_$(REPO_SUFFIX)_repo)
