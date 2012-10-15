@@ -116,7 +116,7 @@ function(models, dialogViews, clusterPageTemplate, deploymentResultTemplate, dep
             } else if (this.tab == 'network') {
                 tabContainer.html(new views.NetworkTab({model: this.model}).render().el);
             } else if (this.tab == 'settings') {
-                tabContainer.html(new views.SettingsTab({model: this.model}).render().el);
+                tabContainer.html(new views.SettingsTab({model: this.model, settings: this.settings}).render().el);
             }
 
             return this;
@@ -545,14 +545,37 @@ function(models, dialogViews, clusterPageTemplate, deploymentResultTemplate, dep
             // set defaults action
         },
         render: function() {
-            settings = new models.Settings();
-            settings.fetch({
-                url: '/api/clusters/' + this.model.id + '/attributes',
-                success: _.bind(function(data) {
-                    this.$el.html(this.template({cluster: this.model}));
-                    console.log(data);
-                }, this)
-            });
+            this.$el.html(this.template({cluster: this.model}));
+            var settingsData = this.options.settings.attributes;
+            console.log(settingsData); console.log(_.size(settingsData)); console.log(settingsData.hasOwnProperty('editable')); 
+            if (settingsData) {
+                _.each(settingsData, function(el, index) {
+                    var settingsGroupView = new views.SettingsGroup({
+                        settings: el.value,
+                        legend: el.key
+                    });
+                    this.$el.append(settingsGroupView.render().el);
+                }, this);  
+            }
+            return this;
+        }
+    });
+    
+    views.SettingsGroup = Backbone.View.extend({
+        template: _.template(settingsGroupTemplate),
+        events: {
+            'change input': 'hasChanges'
+        },
+        hasChanges: function() {
+            $('.btn-apply-changes').attr('disabled', false);
+            $('.btn-revert-changes').attr('disabled', false);
+        },
+        initialize: function(options) {
+            this.settings = this.options.settings;
+            this.legend = this.options.legend;
+        },
+        render: function() {
+            this.$el.html(this.template({settings: this.settings, legend: this.legend}));
             return this;
         }
     });

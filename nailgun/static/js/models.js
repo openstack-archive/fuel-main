@@ -112,11 +112,7 @@ define(function() {
     });
     
     models.Settings = Backbone.Model.extend({
-        urlRoot: '/api/clusters/',
-        parse: function(response) {
-            response.editable = this;
-            return response;
-        }
+        urlRoot: '/api/clusters/'
     });
 
     models.Network = Backbone.Model.extend({

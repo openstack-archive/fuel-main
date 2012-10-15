@@ -34,24 +34,29 @@ define(
                 return;
             }
 
-            var cluster;
+            var cluster, settings = {};
 
             function render() {
                 this.navbar.setActive('clusters');
                 this.breadcrumb.setPath(['Home', '#'], ['OpenStack Installations', '#clusters'], cluster.get('name'));
-                this.page = new clusterViews.ClusterPage({model: cluster, tabs: tabs, tab: tab});
+                this.page = new clusterViews.ClusterPage({model: cluster, tabs: tabs, tab: tab, settings: settings});
                 this.content.html(this.page.render().el);
             }
 
             if (app.page && app.page.constructor == clusterViews.ClusterPage) {
                 // just another tab has been chosen, do not load cluster again
                 cluster = app.page.model;
+                settings = app.page.settings;
                 render.call(this);
             } else {
                 cluster = new models.Cluster({id: id});
                 cluster.fetch({
                     success: _.bind(render, this),
                     error: _.bind(function() {this.listClusters();}, this)
+                });
+                settings = new models.Settings();
+                settings.fetch({
+                    url: '/api/clusters/' + cluster.id + '/attributes'
                 });
             }
         },
