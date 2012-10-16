@@ -11,8 +11,9 @@ define(
     'text!templates/cluster/node_list.html',
     'text!templates/cluster/node.html',
     'text!templates/cluster/network_tab_summary.html',
+    'text!templates/cluster/verify_network_control.html'
 ],
-function(models, dialogViews, taskViews, clusterPageTemplate, deploymentResultTemplate, deploymentControlTemplate, nodesTabSummaryTemplate, editNodesScreenTemplate, nodeListTemplate, nodeTemplate, networkTabSummaryTemplate) {
+function(models, dialogViews, taskViews, clusterPageTemplate, deploymentResultTemplate, deploymentControlTemplate, nodesTabSummaryTemplate, editNodesScreenTemplate, nodeListTemplate, nodeTemplate, networkTabSummaryTemplate, networkTabVerificationTemplate) {
     var views = {}
 
     views.ClusterPage = Backbone.View.extend({
@@ -434,6 +435,57 @@ function(models, dialogViews, taskViews, clusterPageTemplate, deploymentResultTe
         },
         changeNetworkSettings: function() {
             (new dialogViews.ChangeNetworkSettingsDialog({model: this.model})).render();
+        },
+        initialize: function(options) {
+            this.model.get('tasks').bind('remove', this.render, this);
+        },
+        render: function() {
+            this.$el.html(this.template({cluster: this.model}));
+            this.$('.verify-network').html((new views.NetworkTabVerification({model: this.model})).render().el);
+            return this;
+        }
+    });
+
+    views.NetworkTabVerification = Backbone.View.extend({
+        updateInterval: 5000,
+        template: _.template(networkTabVerificationTemplate),
+        events: {
+            'click .verify-networks-btn:not([disabled])': 'verifyNetworks',
+            'click .verification-result-btn': 'dismissVerificationResult'
+        },
+        scheduleUpdate: function() {
+            if (this.model.task('verify_networks', 'running')) {
+                _.delay(_.bind(this.update, this), this.updateInterval);
+            }
+        },
+        update: function(force) {
+            var task = this.model.task('verify_networks', 'running');
+            if (task && force || app.page.$el.find(this.el).length) {
+                task.fetch({complete: _.bind(this.scheduleUpdate, this)});
+            }
+        },
+        verifyNetworks: function() {
+            this.$('.verify-networks-btn').attr('disabled', true);
+            var task = new models.Task();
+            task.save({}, {
+                type: 'PUT',
+                url: '/api/clusters/' + this.model.id + '/verify/networks',
+                complete: _.bind(function() {
+                    this.model.fetch();
+                }, this)
+            });
+        },
+        dismissVerificationResult: function() {
+            var task = this.model.task('verify_networks');
+            this.model.get('tasks').remove(task);
+            task.destroy();
+        },
+        initialize: function(options) {
+            var task = this.model.task('verify_networks');
+            if (task) {
+                task.bind('change', this.render, this);
+                this.update(true);
+            }
         },
         render: function() {
             this.$el.html(this.template({cluster: this.model}));

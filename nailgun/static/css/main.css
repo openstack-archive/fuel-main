@@ -967,9 +967,27 @@ h6.page-title {
   background-image: none;
 }
 
-.progress-deploy > .bar {
+.progress-verify-networks {
+  width: 150px;
+  padding: 2px;
+  margin: 13px 0 0 0;
+  height: 12px;
+  background-color: #373e46;
+  background-image: none;
+}
+
+.progress-deploy > .bar, .progress-verify-networks > .bar {
   height: 12px;
   border-radius: 3px;
+}
+
+.verification-result {
+  float: left;
+  font-weight: bold;
+  margin: 10px 7px 0 0;
+}
+
+.verification-result-btn {
 }
 
 .networks-table {
