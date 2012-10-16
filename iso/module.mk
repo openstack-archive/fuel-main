@@ -17,12 +17,6 @@ GPGFILES:=RPM-GPG-KEY-CentOS-6 RPM-GPG-KEY-CentOS-Debug-6 RPM-GPG-KEY-CentOS-Sec
 NETINSTALL_ISO:=CentOS-6.3-x86_64-netinstall-EFI.iso
 
 iso: $/nailgun-centos-6.3-amd64.iso
-mirror: $/isoroot-packages.done
-
-$/isoroot-infra.done: 
-	@mkdir -p $(ISOROOT)
-	scripts/mirror.sh $(GOLDEN_MIRROR) $(LOCAL_MIRROR)
-	$(ACTION.TOUCH)
 
 $/isoroot-centos.done: \
 		$(BUILD_DIR)/packages/rpm/rpm.done \
@@ -72,7 +66,6 @@ $(addprefix $(ISOROOT)/,$(GPGFILES)):
 	wget -O $@ $(CENTOS_63_GPG)/$(@F)
 
 $/isoroot.done: \
-		$/isoroot-infra.done \
 		$/isoroot-centos.done \
 		$/isoroot-prepare.done \
 		$/isoroot-isolinux.done \

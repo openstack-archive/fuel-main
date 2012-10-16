@@ -1,7 +1,7 @@
 
 BUILD_DIR:=build
 
-MODULES=gnupg bootstrap nailgun test os os/centos iso packages/rpm naily
+MODULES=gnupg bootstrap nailgun test mirror iso packages/rpm naily
 
 .PHONY: all clean test test-unit help mirror FORCE
 
@@ -23,16 +23,6 @@ all:
 test: test-unit
 
 test-unit:
-
-ifeq (mirror, $(findstring mirror,$(MAKECMDGOALS)))
-ifndef MIRROR_DIR
-$(error Please specify MIRROR_DIR variable: make MIRROR_DIR=/path/to/mirror mirror)
-else
-ifndef IGNORE_MIRROR
-IGNORE_MIRROR:=1
-endif
-endif
-endif
 
 # target to force rebuild of other targets
 FORCE:
