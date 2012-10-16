@@ -5,13 +5,14 @@ require 'naily'
 require 'logger'
 require 'ostruct'
 require 'optparse'
+require 'amqp'
 
 options = OpenStruct.new
 options.daemonize = false
 options.pidfile = '/var/run/nailyd.pid'
 options.config_path = '/etc/naily/nailyd.conf'
 options.log_path = nil
-options.log_level = :error
+options.log_level = 'debug'
 
 OptionParser.new do |opts|
   opts.banner = 'Usage: nailyd [options]'
@@ -71,11 +72,54 @@ rescue
   Naily.logger.error "Exception: #{$!}"
 end
 
+def connection_options(config)
+  {
+    :host => config[:broker_host],
+    :port => config[:broker_port],
+    :username => config[:broker_username],
+    :password => config[:broker_password],
+  }.reject { |k, v| v.nil? }
+end
+
 Naily.logger.info "Starting..."
 
-server = Naily::Server.new(config)
+EM.run do
+  AMQP.logging = true
+  connection = AMQP.connect(connection_options(config))
+  channel = AMQP::Channel.new(connection)
+  channel.on_error do |ch, error|
+    Naily.logger.fatal "Channel error #{error.inspect}"
+    stop(connection)
+  end
+  exchange = channel.topic(config[:broker_exchange], :durable => true)
 
-server.run
+  producer = Naily::Producer.new(channel, exchange)
+  delegate = config[:delegate] || Naily::Dispatcher.new(config, producer)
+
+  server = Naily::Server.new(config, channel, exchange, delegate)
+  server.run
+
+  # Example
+  #reporter = Naily::Reporter.new(producer, "some_method")
+  #reporter.report("some haha")
+
+  Signal.trap('INT')  do
+    Naily.logger.info "Got INT signal, stopping"
+    stop(connection)
+  end
+
+  Signal.trap('TERM') do
+    Naily.logger.info "Got TERM signal, stopping"
+    stop(connection)
+  end
+
+  def stop(connection, &block)
+    if connection
+      connection.close { EM.stop(&block) }
+    else
+      EM.stop(&block)
+    end
+  end
+end
 
 File.unlink(options.pidfile) if options.daemonize
-

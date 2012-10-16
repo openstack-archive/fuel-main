@@ -4,9 +4,10 @@ module Naily
   class Dispatcher
     attr_reader :options
 
-    def initialize(options={})
+    def initialize(options, producer)
       @options = options.dup.freeze
       @orchestrator = Astute::Orchestrator.new
+      @producer = producer
     end
 
     def echo(args)
@@ -15,12 +16,12 @@ module Naily
     end
 
     def deploy(data)
-      reporter = Naily::Reporter.new(data['respond_to'])
-      @orchestrator.deploy(reporter, data['args']['task_uuid'], [data['args']['nodes'])
+      reporter = Naily::Reporter.new(@producer, data['respond_to'])
+      @orchestrator.deploy(reporter, data['args']['task_uuid'], data['args']['nodes'])
     end
 
     def verify_networks(data)
-      reporter = Naily::Reporter.new(data['respond_to'])
+      reporter = Naily::Reporter.new(@producer, data['respond_to'])
       args = data['args']
       @orchestrator.verify_networks(reporter, data['args']['task_uuid'], args['nodes'], args['networks'])
     end

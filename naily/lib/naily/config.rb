@@ -49,6 +49,7 @@ module Naily
       config[:broker_password] = 'guest'
 
       config[:broker_queue] = 'naily'
+      config[:broker_publisher_queue] = 'nailgun'
       config[:broker_exchange] = 'nailgun'
       config
     end
