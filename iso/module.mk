@@ -19,7 +19,7 @@ mirror: $/isoroot-packages.done
 
 $/isoroot-infra.done: 
 	@mkdir -p $(ISOROOT)
-	#scripts/mirror.sh $(GOLDEN_MIRROR) $(LOCAL_MIRROR)
+	scripts/mirror.sh $(GOLDEN_MIRROR) $(LOCAL_MIRROR)
 	$(ACTION.TOUCH)
 
 $/isoroot-centos.done: \
@@ -34,10 +34,7 @@ $/isoroot-centos.done: \
 	createrepo -g `readlink -f "$(ISOROOT)/repodata/comps.xml"` -u media://`head -1 $(ISOROOT)/.discinfo` $(ISOROOT)
 	$(ACTION.TOUCH)
 
-$(ISOROOT)/repodata/comps.xml: \
-		$(CENTOS_REPO_DIR)comps.xml
-	$(ACTION.COPY)
-	
+$(ISOROOT)/repodata/comps.xml: $(CENTOS_REPO_DIR)comps.xml ; $(ACTION.COPY)
 
 $(addprefix $(ISOROOT)/isolinux/,$(ISOLINUX_FILES)):
 	@mkdir -p $(@D)
@@ -73,20 +70,22 @@ $/isoroot.done: \
 		$/isoroot-isolinux.done \
 		$(ISOROOT)/ks.cfg \
 		$(ISOROOT)/bootstrap_admin_node.sh \
-		$(ISOROOT)/sync \
 		$(addprefix $(ISOROOT)/sync/,$(call find-files,iso/sync)) \
-#		$(ISOROOT)/EFI \
-#		$(addprefix $(ISOROOT)/EFI/,$(call find-files,iso/EFI)) \
 		$(addprefix $(ISOROOT)/nailgun/,$(call find-files,nailgun)) \
 		$(addprefix $(ISOROOT)/nailgun/bin/,create_release agent) \
 		$(addprefix $(ISOROOT)/nailgun/,openstack-essex.json) \
-		$(ISOROOT)/eggs \
-		$(ISOROOT)/gems/gems \
+		$(addprefix $(ISOROOT)/eggs/,$(call find-files,$(LOCAL_MIRROR)/eggs)) \
+		$(addprefix $(ISOROOT)/gems/gems/,$(call find-files,$(LOCAL_MIRROR)/gems))
 	$(ACTION.TOUCH)
 
-$(ISOROOT)/sync:
-	mkdir -p $@
 $(ISOROOT)/sync/%: iso/sync/% ; $(ACTION.COPY)
+
+$(ISOROOT)/eggs/%: $(LOCAL_MIRROR)/eggs/% ; $(ACTION.COPY)
+$(ISOROOT)/gems/gems/%: $(LOCAL_MIRROR)/gems/% ; $(ACTION.COPY)
+
+$(LOCAL_MIRROR)/eggs/%: $/isoroot-infra.done
+$(LOCAL_MIRROR)/gems/%: $/isoroot-infra.done
+
 #$(ISOROOT)/EFI:
 #	mkdir -p $@
 #$(ISOROOT)/EFI/%: iso/EFI/% ; $(ACTION.COPY)
@@ -98,13 +97,6 @@ $(ISOROOT)/nailgun/bin/%: bin/% ; $(ACTION.COPY)
 $(ISOROOT)/nailgun/%: nailgun/% ; $(ACTION.COPY)
 $(ISOROOT)/.discinfo: iso/.discinfo ; $(ACTION.COPY)
 $(ISOROOT)/.treeinfo: iso/.treeinfo ; $(ACTION.COPY)
-$(ISOROOT)/eggs:
-	mkdir -p $@
-	cp $(LOCAL_MIRROR)/eggs/* $(ISOROOT)/eggs/
-$(ISOROOT)/gems/gems:
-	mkdir -p $@
-	cp $(LOCAL_MIRROR)/gems/* $(ISOROOT)/gems/gems
-	gem generate_index -d $(ISOROOT)/gems
 
 $/nailgun-centos-6.3-amd64.iso: $/isoroot.done
 	rm -f $@

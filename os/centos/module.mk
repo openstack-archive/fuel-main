@@ -7,16 +7,15 @@ CENTOSMIRROR:=http://mirror.yandex.ru/centos
 EPELMIRROR:=http://mirror.yandex.ru/epel
 RPMFORGEMIRROR:=http://apt.sw.be/redhat
 
-CENTOSMIN_PACKAGES:=$(shell grep "<packagereq type='mandatory'>" os/centos/comps.xml | sed -e "s/^\s*<packagereq type='mandatory'>\(.*\)<\/packagereq>\s*$$/\\1/")
-CENTOSEXTRA_PACKAGES:=$(shell grep -v ^\\s*\# requirements-rpm.txt)
-CENTOSRPMFORGE_PACKAGES:=qemu
-
 ifdef MIRROR_DIR
 CENTOS_REPO_DIR:=$(MIRROR_DIR)/centos/
 else
 CENTOS_REPO_DIR:=$/
 endif
 
+CENTOSMIN_PACKAGES:=$(shell grep "<packagereq type='mandatory'>" $(CENTOS_REPO_DIR)comps.xml | sed -e "s/^\s*<packagereq type='mandatory'>\(.*\)<\/packagereq>\s*$$/\\1/")
+CENTOSEXTRA_PACKAGES:=$(shell grep -v ^\\s*\# requirements-rpm.txt)
+CENTOSRPMFORGE_PACKAGES:=qemu
 
 # RPM PACKAGE CACHE RULES
 
@@ -143,7 +142,8 @@ $(CENTOS_REPO_DIR)cache-infra.done: \
 	$(ACTION.TOUCH)
 
 $(CENTOS_REPO_DIR)cache-extra.done: \
-	  $(CENTOS_REPO_DIR)cache-infra.done
+		$(CENTOS_REPO_DIR)comps.xml \
+	  	$(CENTOS_REPO_DIR)cache-infra.done
 	yum -c $(CENTOS_REPO_DIR)etc/yum-$(REPO_SUFFIX).conf clean all
 	rm -rf /var/tmp/yum-$$USER-*/
 ifeq ($(IGNORE_MIRROR),1)
@@ -160,7 +160,7 @@ $(CENTOS_REPO_DIR)cache.done: $(CENTOS_REPO_DIR)cache-extra.done $(CENTOS_REPO_D
 	$(ACTION.TOUCH)
 
 METADATA_FILES=repomd.xml comps.xml filelists.xml.gz primary.xml.gz other.xml.gz
-$(addprefix $(CENTOS_REPO_DIR)Packages/repodata/,$(METADATA_FILES)): $(CENTOS_REPO_DIR)cache.done
+$(addprefix $(CENTOS_REPO_DIR)Packages/repodata/,$(METADATA_FILES)): $(CENTOS_REPO_DIR)cache.done $(CENTOS_REPO_DIR)comps.xml
 	createrepo -g `readlink -f "$(CENTOS_REPO_DIR)comps.xml"` -o $(CENTOS_REPO_DIR)Packages $(CENTOS_REPO_DIR)Packages
 
 $(CENTOS_REPO_DIR)repo.done: $(addprefix $(CENTOS_REPO_DIR)Packages/repodata/,$(METADATA_FILES))
