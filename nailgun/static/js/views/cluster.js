@@ -530,33 +530,37 @@ function(models, dialogViews, clusterPageTemplate, deploymentResultTemplate, dep
             'click .btn-set-defaults': 'setDefaults'
         },
         applyChanges: function() {
-            task.save({}, {
+            var data = this.options.settings.attributes.editable;
+            _.each($('.changed'), function(el){
+                var key = $(el).siblings('label');
+                data.key = $(el).val();
+            });
+            this.options.settings.attributes.set({editable:data});
+            this.options.settings.save({}, {
                 type: 'PUT',
-                url: '/api/clusters/' + this.model.id + '/attributes',
-                complete: _.bind(function() {
-                    //this.model.fetch().done(_.bind(this.scheduleUpdate, this));
-                }, this)
+                url: '/api/clusters/' + this.model.id + '/attributes'
             });
         },
         revertChanges: function() {
-            $('.settings-editable').reset();
+            $('.settings-editable')[0].reset();
         },
         setDefaults: function() {
-            // set defaults action
+            this.pasteSettings(this.options.settings.defaults.editable);
+        },
+        pasteSettings: function(settings) {
+            _.each(_.keys(settings), function(el){
+                var obj = {};
+                obj.legend = el;
+                obj.value = settings[el];
+                var settingsGroupView = new views.SettingsGroup(obj);
+                this.$el.find('.settings-editable').append(settingsGroupView.render().el);
+            }, this); 
+            return this;
         },
         render: function() {
             this.$el.html(this.template({cluster: this.model}));
-            var settingsData = this.options.settings.attributes;
-            console.log(settingsData); console.log(_.size(settingsData)); console.log(settingsData.hasOwnProperty('editable')); 
-            if (settingsData) {
-                _.each(settingsData, function(el, index) {
-                    var settingsGroupView = new views.SettingsGroup({
-                        settings: el.value,
-                        legend: el.key
-                    });
-                    this.$el.append(settingsGroupView.render().el);
-                }, this);  
-            }
+            var settingsData = this.options.settings.attributes.editable;
+            if (settingsData) this.pasteSettings(settingsData);
             return this;
         }
     });
@@ -566,16 +570,19 @@ function(models, dialogViews, clusterPageTemplate, deploymentResultTemplate, dep
         events: {
             'change input': 'hasChanges'
         },
-        hasChanges: function() {
+        hasChanges: function(el) {
             $('.btn-apply-changes').attr('disabled', false);
             $('.btn-revert-changes').attr('disabled', false);
+            $(el.target).addClass('changed');
         },
         initialize: function(options) {
-            this.settings = this.options.settings;
-            this.legend = this.options.legend;
+            this.settings = options.settings;
+            this.legend = options.legend;
         },
         render: function() {
-            this.$el.html(this.template({settings: this.settings, legend: this.legend}));
+            //var fake = '{"admin_tenant1": "admin1","admin_tenant2":{"admin_tenant3":"admin3"}}';
+            this.$el.html(this.template({settings: this.options.value, legend: this.options.legend}));
+            //this.$el.html(this.template({settings: $.parseJSON(fake), legend: this.options.legend}));
             return this;
         }
     });

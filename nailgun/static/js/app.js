@@ -52,12 +52,14 @@ define(
                 cluster = new models.Cluster({id: id});
                 cluster.fetch({
                     success: _.bind(render, this),
-                    error: _.bind(function() {this.listClusters();}, this)
+                    error: _.bind(function() {this.listClusters()}, this)
                 });
                 settings = new models.Settings();
                 settings.fetch({
-                    url: '/api/clusters/' + cluster.id + '/attributes'
+                    url: '/api/clusters/' + cluster.id + '/attributes',
+                    success: _.bind(render, this)
                 });
+                // also need to fetch defaults attributes
             }
         },
         listClusters: function() {

@@ -259,24 +259,25 @@ h6.page-title {
   border-color: #afafaf;
 }
 
-.roles-block-row {
+.roles-block-row, .settings-header, .settings-editable > div:last-child {
     margin-left: -20px;
     padding: 0 20px;
     *zoom: 1;
 }
 
-.roles-block-row:before,
-.roles-block-row:after {
+.roles-block-row:before, .roles-block-row:after,
+.settings-header:before, .settings-header:after,
+.settings-editable > div:last-child:before, .settings-editable > div:last-child:after {
   display: table;
   line-height: 0;
   content: "";
 }
 
-.roles-block-row:after {
+.roles-block-row:after, .settings-header:after, .settings-editable > div:last-child:after {
   clear: both;
 }
 
-.roles-block-row h3 {
+.roles-block-row h3, .settings-header h3 {
   color: #333333;
   margin: 0px;
   padding: 0px;
@@ -284,9 +285,21 @@ h6.page-title {
   text-shadow: 0 0 0 rgba(0, 0, 0, 0);
 }
 
-.nodesbox-header {
+.nodesbox-header, .settings-header {
   margin-bottom: 20px;
   height: 46px;
+}
+
+.settings-editable > div:last-child {
+  margin-bottom: 20px;
+}
+
+.settings-editable > div:last-child fieldset {
+  margin-left: 20px;
+}
+
+.settings-editable > div:last-child legend {
+  text-transform: capitalize;
 }
 
 .nodesbox-header .checkbox {

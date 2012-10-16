@@ -1,11 +1,11 @@
-<% console.log(this) %>
+<% var page = this %>
 <fieldset class="fieldset">
   <legend><%= legend %></legend>
-  <% _.each(settings, function(setting) { %>
-    <label><%= setting.key %></label>
-    <% if (_.isObject(settings.value))
-      _.template(settingsGroupTemplate,{settings:this.settings,legend:this.legend})
-    else %>
-      <input type="text" class="input-medium" value="<%= setting.value %>" />
+  <% _.each(_.keys(settings), function(key) { %>
+    <label><%= key %></label>
+    <% if (_.isObject(settings[key])) {
+      page.template({settings: settings[key],legend:key});
+    } else %>
+      <input type="text" class="input-large" value="<%= settings[key] %>" />
   <% }) %>
 </fieldset>
