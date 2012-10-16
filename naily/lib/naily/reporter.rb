@@ -8,7 +8,7 @@ module Naily
     def report(msg)
       message = {'method' => @method, 'args' => msg}
       Naily.logger.info "Casting message to nailgun: #{message.inspect}"
-      @producer.publish(message, :routing_key => 'nailgun')
+      @producer.publish(message)
     end
   end
 end

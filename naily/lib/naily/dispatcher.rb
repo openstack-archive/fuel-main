@@ -2,10 +2,7 @@ require 'naily/reporter'
 
 module Naily
   class Dispatcher
-    attr_reader :options
-
-    def initialize(options, producer)
-      @options = options.dup.freeze
+    def initialize(producer)
       @orchestrator = Astute::Orchestrator.new
       @producer = producer
     end

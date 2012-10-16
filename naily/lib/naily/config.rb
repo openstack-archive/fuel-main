@@ -1,3 +1,10 @@
+require 'symboltable'
+require 'singleton'
+
+class SymbolTable
+  include Singleton
+end
+
 module Naily
   class ConfigError < StandardError; end
   class UnknownOptionError < ConfigError
@@ -18,41 +25,22 @@ module Naily
     end
   end
 
-  class Config
-    def self.load(path)
-      config = {}
-      File.open(path) do |f|
-        f.each_line do |line|
-          line = line.gsub(/#.*$/, '').strip # remove comments
-          next if line == ''
+  def self.config
+    config = SymbolTable.instance
+    config.update(default_config) if config.empty?
+    return config
+  end
 
-          unless /(\S+)\s*=\s*(\S.*)/ =~ line
-            raise ConfigParseErorr.new("Syntax error in line #{line}", line)
-          end
+  def self.default_config
+    conf = {}
+    conf[:broker_host] = 'localhost'
+    conf[:broker_port] = 5672
+    conf[:broker_username] = 'guest'
+    conf[:broker_password] = 'guest'
 
-          name, value = $1, $2
-
-          # TODO: validate config option
-          # raise UnknownOptionError.new(name) unless config.respond_to?(:"#{name}=")
-
-          config[name.to_sym] = value
-        end
-      end
-      config
-    end
-
-    def self.default
-      config = {}
-      config[:broker_host] = 'localhost'
-      config[:broker_port] = 5672
-      config[:broker_username] = 'guest'
-      config[:broker_password] = 'guest'
-
-      config[:broker_queue] = 'naily'
-      config[:broker_publisher_queue] = 'nailgun'
-      config[:broker_exchange] = 'nailgun'
-      config
-    end
+    conf[:broker_queue] = 'naily'
+    conf[:broker_publisher_queue] = 'nailgun'
+    conf[:broker_exchange] = 'nailgun'
+    return conf
   end
 end
-

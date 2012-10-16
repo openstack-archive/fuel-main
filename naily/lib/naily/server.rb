@@ -2,18 +2,15 @@ require 'json'
 
 module Naily
   class Server
-    attr_reader :options
-
-    def initialize(options, channel, exchange, delegate)
-      @options  = options.dup.freeze
+    def initialize(channel, exchange, delegate)
       @channel  = channel
       @exchange = exchange
       @delegate = delegate
     end
 
     def run
-      queue = @channel.queue(@options[:broker_queue], :durable => true)
-      queue.bind(@exchange, :routing_key => @options[:broker_queue])
+      queue = @channel.queue(Naily.config.broker_queue, :durable => true)
+      queue.bind(@exchange, :routing_key => Naily.config.broker_queue)
 
       queue.subscribe do |header, payload|
         Thread.new do

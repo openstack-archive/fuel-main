@@ -1,10 +1,10 @@
 require 'astute'
 require 'naily/version'
+require 'naily/config'
 
 require 'logger'
 
 module Naily
-  autoload 'Config', 'naily/config'
   autoload 'Server', 'naily/server'
   autoload 'Producer', 'naily/producer'
   autoload 'Dispatcher', 'naily/dispatcher'

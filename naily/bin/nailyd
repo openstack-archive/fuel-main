@@ -5,6 +5,7 @@ require 'naily'
 require 'logger'
 require 'ostruct'
 require 'optparse'
+require 'yaml'
 require 'amqp'
 
 options = OpenStruct.new
@@ -51,8 +52,7 @@ OptionParser.new do |opts|
   end
 end.parse!
 
-config = Naily::Config.default
-config.update(Naily::Config.load(options.config_path)) if File.exists?(options.config_path)
+Naily.config.update(YAML.load(File.read(options.config_path))) if File.exists?(options.config_path)
 
 if options.daemonize
   # After daemonize we can't log to STDOUT, pick a default log file
@@ -72,12 +72,12 @@ rescue
   Naily.logger.error "Exception: #{$!}"
 end
 
-def connection_options(config)
+def connection_options
   {
-    :host => config[:broker_host],
-    :port => config[:broker_port],
-    :username => config[:broker_username],
-    :password => config[:broker_password],
+    :host => Naily.config.broker_host,
+    :port => Naily.config.broker_port,
+    :username => Naily.config.broker_username,
+    :password => Naily.config.broker_password,
   }.reject { |k, v| v.nil? }
 end
 
@@ -85,18 +85,18 @@ Naily.logger.info "Starting..."
 
 EM.run do
   AMQP.logging = true
-  connection = AMQP.connect(connection_options(config))
+  connection = AMQP.connect(connection_options)
   channel = AMQP::Channel.new(connection)
   channel.on_error do |ch, error|
     Naily.logger.fatal "Channel error #{error.inspect}"
     stop(connection)
   end
-  exchange = channel.topic(config[:broker_exchange], :durable => true)
+  exchange = channel.topic(Naily.config.broker_exchange, :durable => true)
 
   producer = Naily::Producer.new(channel, exchange)
-  delegate = config[:delegate] || Naily::Dispatcher.new(config, producer)
+  delegate = Naily.config.delegate || Naily::Dispatcher.new(producer)
 
-  server = Naily::Server.new(config, channel, exchange, delegate)
+  server = Naily::Server.new(channel, exchange, delegate)
   server.run
 
   # Example
