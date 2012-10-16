@@ -26,14 +26,13 @@ end
 
 cobbler_distro "bootstrap" do
   kernel "#{node.cobbler.ks_mirror_dir}/bootstrap/linux"
-  initrd "#{node.cobbler.ks_mirror_dir}/bootstrap/initrd.gz"
+  initrd "#{node.cobbler.ks_mirror_dir}/bootstrap/initramfs.img"
   arch "x86_64"
-  breed "ubuntu"
-  osversion "precise"
+  breed "redhat"
+  osversion "rhel6"
 end
 
 cobbler_profile "bootstrap" do
-  kopts "root=/dev/ram0 rw ramdisk_size=614400"
   distro "bootstrap"
   menu true
 end

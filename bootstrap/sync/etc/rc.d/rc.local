@@ -1,8 +1,8 @@
 #!/bin/sh -e
 
-apt-get update
+mount -t devpts devpts /dev/pts
 
 flock -w 0 -o /var/lock/agent.lock -c "/opt/nailgun/bin/agent > /var/log/agent.log 2>&1" || true
 fix-mcollective-config || true
 
-exit 0
+touch /var/lock/subsys/local
