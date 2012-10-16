@@ -14,7 +14,8 @@
 /.vagrant
 
 /build
-/mirror
+/mirror/eggs
+/mirror/gems
 nosetests.xml
 nailgun.log
 lock
