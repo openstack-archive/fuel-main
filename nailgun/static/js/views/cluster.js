@@ -582,6 +582,7 @@ function(models, dialogViews, clusterPageTemplate, deploymentResultTemplate, dep
         hasChanges: function(el) {
             $('.btn-apply-changes').attr('disabled', false);
             $('.btn-revert-changes').attr('disabled', false);
+            $(el.target).addClass('changed');
         },
         initialize: function(options) {
             this.settings = options.settings;
