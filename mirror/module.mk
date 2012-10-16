@@ -117,7 +117,7 @@ enabled = 0
 name=Puppet Labs Packages
 baseurl=http://yum.puppetlabs.com/el/$(CENTOS_63_MAJOR)/products/$(CENTOS_63_ARCH)/
 enabled=1
-gpgcheck=1$(CENTOS_REPO_DIR)comps.xml
+gpgcheck=1
 gpgkey=http://yum.puppetlabs.com/RPM-GPG-KEY-puppetlabs
 endef
 

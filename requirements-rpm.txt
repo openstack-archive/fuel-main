@@ -28,3 +28,10 @@ ruby-rdoc
 ruby-ri
 ruby-shadow
 wget
+dhclient
+mcollective
+tcpdump
+scapy
+flex
+byacc
+python-devel
