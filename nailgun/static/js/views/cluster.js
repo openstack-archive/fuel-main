@@ -460,7 +460,7 @@ function(models, dialogViews, taskViews, clusterPageTemplate, deploymentResultTe
         },
         update: function(force) {
             var task = this.model.task('verify_networks', 'running');
-            if (task && force || app.page.$el.find(this.el).length) {
+            if (task && (force || app.page.$el.find(this.el).length)) {
                 task.fetch({complete: _.bind(this.scheduleUpdate, this)});
             }
         },
