@@ -362,7 +362,7 @@ class ClusterNetworksHandler(JSONHandler):
         rpc.cast('naily', message)
 
         return json.dumps(
-            self.render(cluster),
+            TaskHandler.render(task),
             indent=4
         )
 
