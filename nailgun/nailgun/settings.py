@@ -39,8 +39,9 @@ class NailgunSettings:
                 self.logger.debug("Trying to read config file %s" % sf)
                 with open(sf, 'r') as f:
                     self.config.update(yaml.load(f.read()))
-            except:
-                self.logger.error("Error while reading config file %s" % sf)
+            except Exception as e:
+                self.logger.error("Error while reading config file %s: %s" %
+                                  (sf, str(e)))
 
     def __getattr__(self, name):
         return self.config.get(name, None)
