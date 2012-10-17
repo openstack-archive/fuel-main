@@ -4,7 +4,7 @@ define(
     'text!templates/common/breadcrumb.html'
 ],
 function(navbarTemplate, breadcrumbTemplate) {
-    var views = {}
+    var views = {};
 
     views.Navbar = Backbone.View.extend({
         className: 'container',

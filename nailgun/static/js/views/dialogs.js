@@ -7,7 +7,7 @@ define(
     'text!templates/dialogs/change_network_settings.html'
 ],
 function(models, createClusterDialogTemplate, changeClusterModeDialogTemplate, changeClusterTypeDialogTemplate, changeNetworkSettingsDialogTemplate) {
-    var views = {}
+    var views = {};
 
     views.Dialog = Backbone.View.extend({
         className: 'modal fade',
@@ -15,13 +15,13 @@ function(models, createClusterDialogTemplate, changeClusterModeDialogTemplate, c
         render: function(options) {
             this.$el.html(this.template(options));
             if (!this.modalBound) {
-                this.$el.on('hidden', function() {$(this).remove()});
+                this.$el.on('hidden', function() {$(this).remove();});
                 this.$el.modal();
                 this.modelBound = true;
             }
             return this;
         }
-    })
+    });
 
     views.CreateClusterDialog = views.Dialog.extend({
         template: _.template(createClusterDialogTemplate),
@@ -52,7 +52,9 @@ function(models, createClusterDialogTemplate, changeClusterModeDialogTemplate, c
             }
         },
         onInputKeydown: function(e) {
-            if (e.which == 13) this.createCluster();
+            if (e.which == 13) {
+                this.createCluster();
+            }
         },
         renderReleases: function(e) {
             var input = this.$('select[name=release]');

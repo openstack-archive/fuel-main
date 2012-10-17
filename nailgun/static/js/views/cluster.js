@@ -14,7 +14,7 @@ define(
     'text!templates/cluster/verify_network_control.html'
 ],
 function(models, dialogViews, taskViews, clusterPageTemplate, deploymentResultTemplate, deploymentControlTemplate, nodesTabSummaryTemplate, editNodesScreenTemplate, nodeListTemplate, nodeTemplate, networkTabSummaryTemplate, networkTabVerificationTemplate) {
-    var views = {}
+    var views = {};
 
     views.ClusterPage = Backbone.View.extend({
         updateInterval: 5000,
@@ -124,7 +124,9 @@ function(models, dialogViews, taskViews, clusterPageTemplate, deploymentResultTe
         template: _.template(deploymentResultTemplate),
         initialize: function(options) {
             var task = this.model.task('deploy');
-            if (task) task.bind('change', this.render, this);
+            if (task) {
+                task.bind('change', this.render, this);
+            }
         },
         render: function() {
             this.$el.html(this.template({cluster: this.model}));
@@ -136,7 +138,9 @@ function(models, dialogViews, taskViews, clusterPageTemplate, deploymentResultTe
         template: _.template(deploymentControlTemplate),
         initialize: function(options) {
             var task = this.model.task('deploy');
-            if (task) task.bind('change', this.render, this);
+            if (task) {
+                task.bind('change', this.render, this);
+            }
         },
         render: function() {
             this.$el.html(this.template({cluster: this.model}));
@@ -146,9 +150,9 @@ function(models, dialogViews, taskViews, clusterPageTemplate, deploymentResultTe
 
     views.NodesTab = Backbone.View.extend({
         screen: null,
-        changeScreen: function(newScreenView, screenOptions) {
+        changeScreen: function(NewScreenView, screenOptions) {
             var options = _.extend({model: this.model, tab: this}, screenOptions || {});
-            var newScreen = new newScreenView(options);
+            var newScreen = new NewScreenView(options);
             var oldScreen = this.screen;
             if (oldScreen) {
                 oldScreen.$el.fadeOut('fast', _.bind(function() {
@@ -206,7 +210,9 @@ function(models, dialogViews, taskViews, clusterPageTemplate, deploymentResultTe
                     tab: this.tab
                 });
                 this.$el.append(nodeListView.render().el);
-                if (index < roles.length - 1) this.$el.append('<hr>');
+                if (index < roles.length - 1) {
+                    this.$el.append('<hr>');
+                }
             }, this);
             return this;
         }
@@ -244,8 +250,8 @@ function(models, dialogViews, taskViews, clusterPageTemplate, deploymentResultTe
             }, this));
         },
         getChosenNodes: function() {
-            var chosenNodesIds = this.$('.node-to-' + this.action + '-checked').map(function() {return parseInt($(this).attr('data-node-id'), 10)}).get();
-            var chosenNodes = this.availableNodes.filter(function(node) {return _.contains(chosenNodesIds, node.id)});
+            var chosenNodesIds = this.$('.node-to-' + this.action + '-checked').map(function() {return parseInt($(this).attr('data-node-id'), 10);}).get();
+            var chosenNodes = this.availableNodes.filter(function(node) {return _.contains(chosenNodesIds, node.id);});
             return new models.Nodes(chosenNodes);
         },
         initialize: function(options) {
@@ -265,7 +271,7 @@ function(models, dialogViews, taskViews, clusterPageTemplate, deploymentResultTe
                         options.selectableForDeletion = true;
                     }
                     nodesContainer.append(new views.Node(options).render().el);
-                }, this)
+                }, this);
             } else {
                 nodesContainer.html('<div class="span12">No nodes available</div>');
             }
@@ -299,7 +305,7 @@ function(models, dialogViews, taskViews, clusterPageTemplate, deploymentResultTe
             }, this);
             nodes.toJSON = function(options) {
                 return this.map(function(node) {
-                    return _.pick(node.attributes, 'id', 'cluster_id', 'role', 'redeployment_needed')
+                    return _.pick(node.attributes, 'id', 'cluster_id', 'role', 'redeployment_needed');
                 });
             };
         }
@@ -327,7 +333,7 @@ function(models, dialogViews, taskViews, clusterPageTemplate, deploymentResultTe
             }, this);
             nodes.toJSON = function(options) {
                 return this.map(function(node) {
-                    return _.pick(node.attributes, 'id', 'cluster_id', 'role', 'redeployment_needed')
+                    return _.pick(node.attributes, 'id', 'cluster_id', 'role', 'redeployment_needed');
                 });
             };
         }
@@ -368,8 +374,7 @@ function(models, dialogViews, taskViews, clusterPageTemplate, deploymentResultTe
             'keydown .node-name-editable': 'onNodeNameInputKeydown'
         },
         startNodeRenaming: function() {
-            if (!this.renameable || this.renaming) return;
-            if (this.model.collection.cluster.task('deploy', 'running')) return;
+            if (!this.renameable || this.renaming || this.model.collection.cluster.task('deploy', 'running')) {return;}
             $('html').off(this.eventNamespace);
             $('html').on(this.eventNamespace, _.after(2, _.bind(function(e) {
                 if (!$(e.target).closest(this.$el).length) {

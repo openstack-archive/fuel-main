@@ -3,10 +3,10 @@ define(
     'models',
     'text!templates/tasks/base_running.html',
     'text!templates/tasks/base_success.html',
-    'text!templates/tasks/base_error.html',
+    'text!templates/tasks/base_error.html'
 ],
 function(models, runningTemplate, successTemplate, errorTemplate) {
-    var views = {}
+    var views = {};
 
     views.Task = Backbone.View.extend({
         runningTemplate: _.template(runningTemplate),

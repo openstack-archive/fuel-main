@@ -34,7 +34,9 @@ define(function() {
         },
         task: function(taskName, status) {
             var options = {name: taskName};
-            if (status) options.status = status;
+            if (status) {
+                options.status = status;
+            }
             return this.get('tasks') && this.get('tasks').where(options)[0];
         },
         hasChanges: function() {
@@ -47,13 +49,15 @@ define(function() {
             return ['both', 'compute', 'storage'];
         },
         availableRoles: function() {
+            var roles = [];
             if (this.get('type') == 'storage') {
-                return ['controller', 'storage']
+                roles = ['controller', 'storage'];
             } else if (this.get('type') == 'compute') {
-                return ['controller', 'compute']
+                roles = ['controller', 'compute'];
             } else {
-                return ['controller', 'compute', 'storage']
+                roles = ['controller', 'compute', 'storage'];
             }
+            return roles;
         },
         parse: function(response) {
             response.release = new models.Release(response.release);
@@ -90,8 +94,8 @@ define(function() {
             return this.pluck('id');
         },
         resources: function(resourceName) {
-            var resources = this.map(function(node) {return node.resource(resourceName)});
-            return _.reduce(resources, function(sum, n) {return sum + n}, 0);
+            var resources = this.map(function(node) {return node.resource(resourceName);});
+            return _.reduce(resources, function(sum, n) {return sum + n;}, 0);
         }
     });
 

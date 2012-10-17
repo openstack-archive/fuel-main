@@ -4,7 +4,7 @@ define(
     'views/common',
     'views/cluster',
     'views/clusters',
-    'views/release',
+    'views/release'
 ], function(models, commonViews, clusterViews, clustersViews, releaseViews) {
     var AppRouter = Backbone.Router.extend({
         routes: {
@@ -18,10 +18,10 @@ define(
             this.content = $('#content');
             this.navbar = new commonViews.Navbar({elements: [
                 ['OpenStack Installations', '#clusters'],
-                ['Software Updates', '#releases'],
+                ['Software Updates', '#releases']
             ]});
             this.content.before(this.navbar.render().el);
-            this.breadcrumb = new commonViews.Breadcrumb;
+            this.breadcrumb = new commonViews.Breadcrumb();
             this.content.before(this.breadcrumb.render().el);
         },
         showCluster: function(id) {
@@ -51,13 +51,13 @@ define(
                 cluster = new models.Cluster({id: id});
                 cluster.fetch({
                     success: _.bind(render, this),
-                    error: _.bind(function() {this.listClusters()}, this)
+                    error: _.bind(function() {this.listClusters();}, this)
                 });
             }
         },
         listClusters: function() {
             this.navigate('#clusters', {replace: true});
-            var clusters = new models.Clusters;
+            var clusters = new models.Clusters();
             clusters.fetch({
                 success: _.bind(function() {
                     this.navbar.setActive('clusters');
@@ -68,7 +68,7 @@ define(
             });
         },
         listReleases: function() {
-            var releases = new models.Releases;
+            var releases = new models.Releases();
             releases.fetch({
                 success: _.bind(function() {
                     this.navbar.setActive('releases');

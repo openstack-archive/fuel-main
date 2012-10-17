@@ -3,7 +3,7 @@ define(
     'text!templates/release/list.html'
 ],
 function(releaseListTemplate) {
-    var views = {}
+    var views = {};
 
     views.ReleasesPage = Backbone.View.extend({
         template: _.template(releaseListTemplate),
