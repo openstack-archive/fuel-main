@@ -10,6 +10,7 @@ help:
 	@echo '  all  - build product'
 	@echo '  bootstrap  - build nailgun bootstrap'
 	@echo '  iso  - build nailgun iso'
+	@echo '  sdist-nailgun - build nailgun sdist'
 	@echo '  test - run all tests'
 	@echo '  test-unit - run unit tests'
 	@echo '  test-integration - run integration tests'

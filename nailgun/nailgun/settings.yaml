@@ -1,0 +1,46 @@
+DATABASE_ENGINE: "sqlite:////var/tmp/nailgun.sqlite"
+STATIC_DIR: "/var/tmp/nailgun_static"
+TEMPLATE_DIR: "/var/tmp/nailgun_static"
+NETWORK_POOLS:
+  public:
+    - "240.0.0.0/16"
+  private10:
+    - "10.0.0.0/8"
+  private172:
+    - "172.16.0.0/12"
+  private192:
+    - "192.168.0.0/16"
+
+NET_EXCLUDE:
+  - "10.20.0.0/24"
+
+VLANS_RANGE_START: "100"
+VLANS_RANGE_END: "1000"
+
+RABBITMQ:
+  fake: "1"
+  hostname: "127.0.0.1"
+  
+LOGFILE: "/var/tmp/nailgun.log"
+
+PATH_TO_SSH_KEY: = "/root/.ssh/id_rsa"
+PATH_TO_BOOTSTRAP_SSH_KEY: "/root/.ssh/bootstrap.rsa"
+
+COBBLER_URL: "http://localhost/cobbler_api"
+COBBLER_USER: "cobbler"
+COBBLER_PASSWORD: "cobbler"
+COBBLER_PROFILE: "centos-6.3-x86_64"
+
+MCO_PSKEY: "Gie6iega9ohngaenahthohngu8aebohxah9seidi"
+MCO_STOMPHOST: "localhost"
+MCO_STOMPPORT: "61613"
+MCO_STOMPUSER: "guest"
+MCO_STOMPPASSWORD: "guest"
+
+PUPPET_MASTER_HOST: "localhost"
+PUPPET_VERSION: "2.7.19"
+
+DNS_DOMAIN: "example.com"
+DNS_SERVERS: "127.0.0.1"
+DNS_SEARCH: "example.com"
+
