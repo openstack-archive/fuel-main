@@ -2,10 +2,11 @@ require 'json'
 
 module Naily
   class Server
-    def initialize(channel, exchange, delegate)
+    def initialize(channel, exchange, delegate, producer)
       @channel  = channel
       @exchange = exchange
       @delegate = delegate
+      @producer = producer
     end
 
     def run
@@ -36,7 +37,10 @@ module Naily
 
       unless @delegate.respond_to?(data['method'])
         Naily.logger.error "Unsupported RPC call #{data['method']}"
-        # TODO: send RPC error response
+        if data['respond_to']
+          reporter = Naily::Reporter.new(@publisher, data['respond_to'], data['task_uuid'])
+          reporter.report({"error" => "Unsupported method '#{data['method']}' called."})
+        end
         return
       end
 
@@ -46,7 +50,10 @@ module Naily
         result = @delegate.send(data['method'], data)
       rescue
         Naily.logger.error "Error running RPC method #{data['method']}: #{$!}"
-        # TODO: send RPC error response
+        if data['respond_to']
+          reporter = Naily::Reporter.new(@publisher, data['respond_to'], data['task_uuid'])
+          reporter.report({"error" => "Error occured while running method '#{data['method']}'. See logs of Naily for details."})
+        end
         return
       end
 

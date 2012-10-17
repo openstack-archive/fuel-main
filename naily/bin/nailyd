@@ -96,7 +96,7 @@ EM.run do
   producer = Naily::Producer.new(channel, exchange)
   delegate = Naily.config.delegate || Naily::Dispatcher.new(producer)
 
-  server = Naily::Server.new(channel, exchange, delegate)
+  server = Naily::Server.new(channel, exchange, delegate, producer)
   server.run
 
   # Example
