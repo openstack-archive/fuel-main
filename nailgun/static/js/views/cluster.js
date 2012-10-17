@@ -580,9 +580,9 @@ function(models, dialogViews, clusterPageTemplate, deploymentResultTemplate, dep
             this.legend = options.legend;
         },
         render: function() {
-            //var fake = '{"admin_tenant1": "admin1","admin_tenant2":{"admin_tenant3":"admin3"}}';
-            this.$el.html(this.template({settings: this.options.value, legend: this.options.legend}));
+            //var fake = '{"admin_tenant1": "admin1","admin_tenant2":{"admin_tenant3":"admin3"},"admin_tenant4":{"admin_tenant5":"admin3"}}';
             //this.$el.html(this.template({settings: $.parseJSON(fake), legend: this.options.legend}));
+            this.$el.html(this.template({settings: this.options.value, legend: this.options.legend}));
             return this;
         }
     });

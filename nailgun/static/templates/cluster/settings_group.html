@@ -1,11 +1,19 @@
-<% var page = this %>
-<fieldset class="fieldset">
-  <legend><%= legend %></legend>
-  <% _.each(_.keys(settings), function(key) { %>
-    <label><%= key %></label>
-    <% if (_.isObject(settings[key])) {
-      page.template({settings: settings[key],legend:key});
-    } else %>
-      <input type="text" class="input-large" value="<%= settings[key] %>" />
-  <% }) %>
-</fieldset>
+<% var page = this; %>
+  <div class="control-group">
+    <fieldset class="fieldset">
+      <legend><%= legend %></legend>
+      <% _.each(_.keys(settings), function(key){
+        if (_.isObject(settings[key])) { 
+          var recursive_fieldset = page.template({settings: settings[key],legend: key});
+          console.log(page.$el.append(recursive_fieldset));
+        %>
+          <%= recursive_fieldset %>
+        <% } else { %>
+          <label class="control-label" for="<%= key %>"><%= key %></label>
+          <div class="controls">
+            <input type="text" class="input-large" name="<%= key %>" value="<%= settings[key] %>" />
+          </div>
+        <% } %>
+      <% }) %>
+    </fieldset>
+  </div>
