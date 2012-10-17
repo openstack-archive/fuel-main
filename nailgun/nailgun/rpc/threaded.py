@@ -27,9 +27,10 @@ class NailgunReceiver(object):
 
     @classmethod
     def __update_task_status(cls, uuid, status, error=""):
-        task = cls.db.query(Task).filter(Task.uuid == uuid).first()
+        task = cls.db.query(Task).filter_by(uuid=uuid).first()
         if not task:
-            raise TaskNotFound()
+            logging.error("Can't set status='%s', error='%s':no task \
+                    with UUID %s found!", status, error, uuid)
         task.status = status
         if error:
             task.error = error
@@ -37,46 +38,46 @@ class NailgunReceiver(object):
         cls.db.commit()
 
     @classmethod
-    def deploy_resp(cls, task_uuid, nodes):
-        logging.info("Received deploy_resp")
-        updated = []
+    def deploy_resp(cls, **kwargs):
+        logging.info("RPC method deploy_resp received: %s" % kwargs)
+        task_uuid = kwargs.get('task_uuid')
+        nodes = kwargs.get('nodes') or []
+        error_msg = kwargs.get('error')
+        status = kwargs.get('status')
 
         error_nodes = []
-        for nd_id, fields in nodes.iteritems():
-            node = cls.db.query(Node).get(int(nd_id))
-            for field, value in fields.iteritems():
-                # TODO: add logic according to API
-                if field == "status":
-                    setattr(node, field, value)
-                    if value == "error":
-                        error_nodes.append(node)
-            cls.db.add(node)
-            updated.append(node.id)
-        cls.db.commit()
+        for node in nodes:
+            # TODO if not found? or node['uid'] not specified?
+            node_db = cls.db.query(Node).filter_by(fqdn=node['uid']).first()
+            if node.get('status'):
+                node_db.status = node['status']
+                cls.db.add(node_db)
+                cls.db.commit()
+                if node['status'] == 'error':
+                    error_nodes.append(node_db)
 
-        try:
-            if error_nodes:
-                nodes_info = [
-                    unicode({
-                        "MAC": n.mac,
-                        "IP": n.ip or "Unknown",
-                        "NAME": n.name or "Unknown"
-                    }) for n in error_nodes
-                ]
-                cls.__update_task_status(
-                    task_uuid,
-                    "error",
-                    "Failed to deploy nodes:\n%s" % "\n".join(nodes_info)
-                )
-            else:
-                cls.__update_task_status(task_uuid, "ready")
-        except TaskNotFound:
-            logging.error("No task with UUID %s found!" % uuid)
-        return updated
+        if error_nodes:
+            nodes_info = [
+                unicode({
+                    "MAC": n.mac,
+                    "IP": n.ip or "Unknown",
+                    "NAME": n.name or "Unknown"
+                }) for n in error_nodes
+            ]
+            error_msg = "Failed to deploy nodes:\n%s" % "\n".join(nodes_info)
+            status = 'error'
+
+        if status:
+            cls.__update_task_status(task_uuid, status, error_msg)
 
     @classmethod
-    def verify_networks_resp(cls, task_uuid, result):
-        pass
+    def verify_networks_resp(cls, **kwargs):
+        logging.info("RPC method verify_networks_resp received: %s" % kwargs)
+        task_uuid = kwargs.get('task_uuid')
+        nodes = kwagrs.get('nodes') or []
+        error_msg = kwargs.get('error')
+        status = kwargs.get('status')
+        # TODO complete this
 
 
 class RPCThread(threading.Thread):

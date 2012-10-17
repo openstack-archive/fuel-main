@@ -29,7 +29,7 @@ module Astute
       # STUBBED for now!
       vlans = networks.map {|n| n['vlan_id']}.join(',')
       result.map! { |node| {'uid' => node['sender'], 'networks' => [ {'iface' => 'eth0', 'vlans' => vlans} ]} }
-      reporter.report result
+      reporter.report({'networks' => result})
     end
 
     private

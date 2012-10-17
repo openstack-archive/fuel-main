@@ -320,7 +320,7 @@ mco_enable=1\"" % {'puppet_master_host': settings.PUPPET_MASTER_HOST,
 
         nodes = []
         for n in cluster.nodes:
-            nodes.append({'id': n.id, 'status': n.status,
+            nodes.append({'id': n.id, 'status': n.status, 'uid': n.fqdn,
                           'ip': n.ip, 'mac': n.mac, 'role': n.role,
                           'network_data': netmanager.get_node_networks(n.id)})
         message = {'method': 'deploy',
@@ -361,7 +361,8 @@ class ClusterNetworksHandler(JSONHandler):
             'id': n.id, 'vlan_id': n.vlan_id, 'cidr': n.cidr}
             for n in nets_db]
 
-        nodes = [{'id': n.id, 'ip': n.ip, 'mac': n.mac} for n in cluster.nodes]
+        nodes = [{'id': n.id, 'ip': n.ip, 'mac': n.mac, 'uid': n.fqdn}
+                 for n in cluster.nodes]
 
         message = {'method': 'verify_networks',
                    'respond_to': 'verify_networks_resp',
