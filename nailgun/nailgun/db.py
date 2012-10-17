@@ -37,17 +37,17 @@ def load_db_driver(handler):
 
 
 def syncdb():
-    from api.models import Base
+    from nailgun.api.models import Base
     Base.metadata.create_all(engine)
 
 
 def dropdb():
-    from api.models import Base
+    from nailgun.api.models import Base
     Base.metadata.drop_all(engine)
 
 
 def flush():
-    from api.models import Base
+    from nailgun.api.models import Base
     session = scoped_session(sessionmaker(bind=engine))
     for table in reversed(Base.metadata.sorted_tables):
         session.execute(table.delete())

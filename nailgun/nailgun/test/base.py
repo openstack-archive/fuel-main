@@ -17,7 +17,7 @@ from nailgun.api.models import Release
 from nailgun.api.models import Cluster
 
 from nailgun.api.urls import urls
-from nailgun.manage import app
+from nailgun.wsgi import app
 from nailgun.db import dropdb, syncdb, flush
 from nailgun.fixtures.fixman import upload_fixture
 

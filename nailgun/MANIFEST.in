@@ -1,2 +1,3 @@
+include manage.py
 recursive-include nailgun *
 recursive-include static *

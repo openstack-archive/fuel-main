@@ -20,3 +20,5 @@ nailgun.log
 lock
 
 .idea
+
+Nailgun.egg-info

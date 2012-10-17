@@ -7,7 +7,7 @@ from sqlalchemy.orm.events import orm
 
 from nailgun.api.models import engine, Node
 from nailgun.db import dropdb, syncdb, flush, Query
-from nailgun.manage import app
+from nailgun.wsgi import app
 
 
 class TestDBRefresh(TestCase):

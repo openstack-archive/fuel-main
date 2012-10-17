@@ -16,12 +16,11 @@ from nailgun.db import load_db_driver, syncdb
 from nailgun.unit_test import TestRunner
 from nailgun.urls import urls
 from nailgun.logger import Log
+from nailgun.wsgi import app
+
 
 logging.basicConfig(level="DEBUG")
 
-app = web.application(urls, locals())
-app.add_processor(load_db_driver)
-app.add_processor(check_client_content_type)
 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser()
