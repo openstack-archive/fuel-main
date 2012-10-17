@@ -30,8 +30,8 @@ module Astute
         Astute.logger.info "#{ctx.task_id}: Nodes to deploy are not provided. Do nothing."
         return false
       end
-      macs = nodes.map {|n| n['mac'].gsub(":", "")}
-      puppetd = MClient.new(ctx, "puppetd", macs)
+      uids = nodes.map {|n| n['uid'].gsub(":", "")}
+      puppetd = MClient.new(ctx, "puppetd", uids)
       puppet_status = puppetd.status
 
       puppetd.runonce
@@ -45,8 +45,7 @@ module Astute
         wait_until_puppet_done(puppetd, puppet_status)
       end
       time_spent = Time.now - time_before
-      Astute.logger.info "#{ctx.task_id}: Spent #{time_spent} seconds on puppet run for following nodes(macs): #{nodes.map {|n| n['mac']}.join(',')}"
-
+      Astute.logger.info "#{ctx.task_id}: Spent #{time_spent} seconds on puppet run for following nodes(uids): #{nodes.map {|n| n['uid']}.join(',')}"
     end
   end
 end
