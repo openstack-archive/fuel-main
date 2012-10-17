@@ -88,20 +88,19 @@ $(addprefix $(ISOROOT)/bootstrap/, $(BOOTSTRAP_FILES)): \
 
 $(ISOROOT)/bootstrap/bootstrap.rsa: bootstrap/ssh/id_rsa ; $(ACTION.COPY)
 
-$(addprefix $(ISOROOT)/eggs/,$(call find-files,$(LOCAL_MIRROR)/eggs)): $(LOCAL_MIRROR)/eggs/% ; $(ACTION.COPY)
-
 $(ISOROOT)/eggs/Nailgun-$(NAILGUN_VERSION).tar.gz: \
 		sdist-nailgun
+	@mkdir -p $(@D)
 	cp $(BUILD_DIR)/nailgun/$(@F) $@
 	
 $/isoroot-eggs.done: \
-		$(ISOROOT)/eggs/Nailgun-$(NAILGUN_VERSION).tar.gz \
-		$(addprefix $(ISOROOT)/eggs/,$(call find-files,$(LOCAL_MIRROR)/eggs))
-
-$(addprefix $(ISOROOT)/gems/gems/,$(call find-files,$(LOCAL_MIRROR)/gems)): $(LOCAL_MIRROR)/gems/% ; $(ACTION.COPY)	
+		$(ISOROOT)/eggs/Nailgun-$(NAILGUN_VERSION).tar.gz
+	cp $(LOCAL_MIRROR)/eggs/* $(ISOROOT)/eggs
 
 $/isoroot-gems.done: \
-		$(addprefix $(ISOROOT)/gems/gems/,$(call find-files,$(LOCAL_MIRROR)/gems))
+		$(CENTOS_REPO_DIR)eggs-gems.done
+	@mkdir -p $(ISOROOT)/gems/gems
+	cp $(LOCAL_MIRROR)/gems/* $(ISOROOT)/gems/gems
 
 $/isoroot.done: \
 		$/isoroot-centos.done \
@@ -118,11 +117,6 @@ $/isoroot.done: \
 	$(ACTION.TOUCH)
 
 $(ISOROOT)/sync/%: iso/sync/% ; $(ACTION.COPY)
-
-$(ISOROOT)/gems/gems/%: $(LOCAL_MIRROR)/gems/% ; $(ACTION.COPY)
-
-$(LOCAL_MIRROR)/eggs/%: $/isoroot-infra.done
-$(LOCAL_MIRROR)/gems/%: $/isoroot-infra.done
 
 $(ISOROOT)/ks.cfg: iso/ks.cfg ; $(ACTION.COPY)
 $(ISOROOT)/bootstrap_admin_node.sh: iso/bootstrap_admin_node.sh ; $(ACTION.COPY)
