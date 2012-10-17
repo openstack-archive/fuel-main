@@ -10,12 +10,12 @@ from setuptools import find_packages
 # README = open(os.path.join(here, 'README.txt')).read()
 
 requires = [
-    'SQLAlchemy',
-    'web.py',
-    'uWSGI',
-    'greenlet',
-    'eventlet',
-    'kombu',
+    'SQLAlchemy==0.7.9',
+    'web.py==0.37',
+    'uWSGI==1.3',
+    'greenlet==0.4.0',
+    'eventlet==0.9.17',
+    'kombu==2.4.7',
     # 'cobbler',
 ]
 
