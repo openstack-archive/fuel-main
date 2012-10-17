@@ -21,6 +21,8 @@ RABBITMQ_VERSION:=2.6.1
 RABBITMQ_PLUGINS:=amqp_client-$(RABBITMQ_VERSION).ez rabbitmq_stomp-$(RABBITMQ_VERSION).ez
 RABBITMQ_PLUGINS_URL:=http://www.rabbitmq.com/releases/plugins/v$(RABBITMQ_VERSION)
 
+NAILGUN_VERSION:=0.1.0
+
 iso: $/nailgun-centos-6.3-amd64.iso
 
 $/isoroot-centos.done: \
@@ -86,6 +88,21 @@ $(addprefix $(ISOROOT)/bootstrap/, $(BOOTSTRAP_FILES)): \
 
 $(ISOROOT)/bootstrap/bootstrap.rsa: bootstrap/ssh/id_rsa ; $(ACTION.COPY)
 
+$(addprefix $(ISOROOT)/eggs/,$(call find-files,$(LOCAL_MIRROR)/eggs)): $(LOCAL_MIRROR)/eggs/% ; $(ACTION.COPY)
+
+$(ISOROOT)/eggs/Nailgun-$(NAILGUN_VERSION).tar.gz: \
+		sdist-nailgun
+	cp $(BUILD_DIR)/nailgun/$(@F) $@
+	
+$/isoroot-eggs.done: \
+		$(ISOROOT)/eggs/Nailgun-$(NAILGUN_VERSION).tar.gz \
+		$(addprefix $(ISOROOT)/eggs/,$(call find-files,$(LOCAL_MIRROR)/eggs))
+
+$(addprefix $(ISOROOT)/gems/gems/,$(call find-files,$(LOCAL_MIRROR)/gems)): $(LOCAL_MIRROR)/gems/% ; $(ACTION.COPY)	
+
+$/isoroot-gems.done: \
+		$(addprefix $(ISOROOT)/gems/gems/,$(call find-files,$(LOCAL_MIRROR)/gems))
+
 $/isoroot.done: \
 		$/isoroot-centos.done \
 		$/isoroot-prepare.done \
@@ -93,17 +110,15 @@ $/isoroot.done: \
 		$(ISOROOT)/ks.cfg \
 		$/isoroot-bootstrap.done \
 		$(ISOROOT)/bootstrap_admin_node.sh \
+		$/isoroot-eggs.done \
+		$/isoroot-gems.done \
 		$(addprefix $(ISOROOT)/sync/,$(call find-files,iso/sync)) \
-		$(addprefix $(ISOROOT)/nailgun/,$(call find-files,nailgun)) \
-		$(addprefix $(ISOROOT)/nailgun/bin/,create_release agent) \
-		$(addprefix $(ISOROOT)/nailgun/,openstack-essex.json) \
 		$(addprefix $(ISOROOT)/eggs/,$(call find-files,$(LOCAL_MIRROR)/eggs)) \
 		$(addprefix $(ISOROOT)/gems/gems/,$(call find-files,$(LOCAL_MIRROR)/gems))
 	$(ACTION.TOUCH)
 
 $(ISOROOT)/sync/%: iso/sync/% ; $(ACTION.COPY)
 
-$(ISOROOT)/eggs/%: $(LOCAL_MIRROR)/eggs/% ; $(ACTION.COPY)
 $(ISOROOT)/gems/gems/%: $(LOCAL_MIRROR)/gems/% ; $(ACTION.COPY)
 
 $(LOCAL_MIRROR)/eggs/%: $/isoroot-infra.done
