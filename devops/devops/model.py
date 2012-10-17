@@ -51,11 +51,12 @@ class Environment(ManagedObject):
 
 
 class Network(ManagedObject):
-    def __init__(self, name, dhcp_server=False, pxe=False):
+    def __init__(self, name, dhcp_server=False, pxe=False, reserve_static=True):
         super(Network, self).__init__()
 
         self.name = name
         self.dhcp_server = dhcp_server
+        self.reserve_static=reserve_static
         self.interfaces = []
         self.pxe = pxe
 

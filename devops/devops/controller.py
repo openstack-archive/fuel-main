@@ -85,7 +85,7 @@ class Controller:
                         stat.S_IRWXU | stat.S_IRWXG | stat.S_IRWXO)
                 network.tftp_root_dir = tftp_path
 
-            if network.dhcp_server:
+            if network.dhcp_server or network.reserve_static:
                 allocated_addresses = []
                 for interface in network.interfaces:
                     for address in interface.ip_addresses:
