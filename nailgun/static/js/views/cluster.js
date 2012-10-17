@@ -12,7 +12,8 @@ define(
     'text!templates/cluster/network_tab_summary.html',
     'text!templates/cluster/verify_network_control.html',
     'text!templates/cluster/settings_tab.html',
-    'text!templates/cluster/settings_group.html'
+    'text!templates/cluster/settings_group.html',
+    'verify_network_control.html'
 ],
 function(models, dialogViews, clusterPageTemplate, deploymentResultTemplate, deploymentControlTemplate, nodesTabSummaryTemplate, editNodesScreenTemplate, nodeListTemplate, nodeTemplate, networkTabSummaryTemplate, networkTabVerificationTemplate, settingsTabTemplate, settingsGroupTemplate) {
     var views = {};
