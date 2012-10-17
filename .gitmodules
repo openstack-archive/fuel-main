@@ -13,3 +13,6 @@
 [submodule "puppet/cobbler"]
 	path = puppet/cobbler
 	url = gitolite@gitolite.mirantis.com:fuel/deployment/puppet/cobbler.git
+[submodule "puppet/rabbitmq"]
+	path = puppet/rabbitmq
+	url = gitolite@gitolite.mirantis.com:fuel/deployment/puppet/rabbitmq.git
