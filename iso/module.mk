@@ -13,8 +13,13 @@ ISOROOT:=$/isoroot
 ISOLINUX_FILES:=boot.msg grub.conf initrd.img isolinux.bin memtest splash.jpg vesamenu.c32 vmlinuz
 IMAGES_FILES:=efiboot.img efidisk.img install.img
 EFI_FILES:=BOOTX64.conf BOOTX64.efi splash.xpm.gz
+BOOTSTRAP_FILES:=initramfs.img linux
 GPGFILES:=RPM-GPG-KEY-CentOS-6 RPM-GPG-KEY-CentOS-Debug-6 RPM-GPG-KEY-CentOS-Security-6 RPM-GPG-KEY-CentOS-Testing-6
 NETINSTALL_ISO:=CentOS-6.3-x86_64-netinstall-EFI.iso
+
+RABBITMQ_VERSION:=2.6.1
+RABBITMQ_PLUGINS:=amqp_client-$(RABBITMQ_VERSION).ez rabbitmq_stomp-$(RABBITMQ_VERSION).ez
+RABBITMQ_PLUGINS_URL:=http://www.rabbitmq.com/releases/plugins/v$(RABBITMQ_VERSION)
 
 iso: $/nailgun-centos-6.3-amd64.iso
 
@@ -55,21 +60,38 @@ $(addprefix $(ISOROOT)/EFI/BOOT/,$(EFI_FILES)):
 	@mkdir -p $(@D)
 	wget -O $@ $(CENTOS_63_MIRROR)/EFI/BOOT/$(@F)
 
+$(addprefix $(ISOROOT)/rabbitmq-plugins/,$(RABBITMQ_PLUGINS)):
+	@mkdir -p $(@D)
+	wget -O $@ $(RABBITMQ_PLUGINS_URL)/$(@F)
+
 $/isoroot-prepare.done:\
 		$(ISOROOT)/netinstall/centos.iso \
 		$(addprefix $(ISOROOT)/images/,$(IMAGES_FILES)) \
 		$(addprefix $(ISOROOT)/EFI/BOOT/,$(EFI_FILES)) \
 		$(addprefix $(ISOROOT)/,$(GPGFILES)) \
+		$(addprefix $(ISOROOT)/rabbitmq-plugins/,$(RABBITMQ_PLUGINS)) \
 	$(ACTION.TOUCH)
 
 $(addprefix $(ISOROOT)/,$(GPGFILES)):
 	wget -O $@ $(CENTOS_63_GPG)/$(@F)
+
+$/isoroot-bootstrap.done: \
+	$(ISOROOT)/bootstrap/bootstrap.rsa \
+	$(addprefix $(ISOROOT)/bootstrap/, $(BOOTSTRAP_FILES))
+
+$(addprefix $(ISOROOT)/bootstrap/, $(BOOTSTRAP_FILES)): \
+		bootstrap
+	@mkdir -p $(@D)
+	cp $(BUILD_DIR)/bootstrap/$(@F) $@
+
+$(ISOROOT)/bootstrap/bootstrap.rsa: bootstrap/ssh/id_rsa ; $(ACTION.COPY)
 
 $/isoroot.done: \
 		$/isoroot-centos.done \
 		$/isoroot-prepare.done \
 		$/isoroot-isolinux.done \
 		$(ISOROOT)/ks.cfg \
+		$/isoroot-bootstrap.done \
 		$(ISOROOT)/bootstrap_admin_node.sh \
 		$(addprefix $(ISOROOT)/sync/,$(call find-files,iso/sync)) \
 		$(addprefix $(ISOROOT)/nailgun/,$(call find-files,nailgun)) \
