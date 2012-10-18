@@ -529,14 +529,24 @@ function(models, dialogViews, clusterPageTemplate, deploymentResultTemplate, dep
             'click .btn-revert-changes': 'revertChanges',
             'click .btn-set-defaults': 'setDefaults'
         },
-        applyChanges: function() {
-            var data = this.options.settings.attributes.editable;
-            _.each($('.changed'), function(el){
-                var key = $(el).siblings('label');
-                data.key = $(el).val();
+        collectData: function(parent_el,changed_data) {
+            var model = this;
+            _.each(parent_el.children().children('.wrapper'), function(el){
+                if ($(el).data('nested')) {
+                    var param = $(el).find('legend:first').text();
+                    changed_data[param] = {};
+                    model.collectData($(el),changed_data[param]);
+                } else {
+                    var param = $(el).find('input');
+                    changed_data[param.attr('name')] = param.val();    
+                };
             });
-            this.options.settings.attributes.set({editable:data});
-            this.options.settings.save({}, {
+        },
+        applyChanges: function() {
+            var changed_data = {};
+            this.collectData($('.settings-editable'),changed_data);
+            this.settings.set({editable:changed_data});
+            this.settings.save({}, {
                 type: 'PUT',
                 url: '/api/clusters/' + this.model.id + '/attributes'
             });
@@ -545,22 +555,21 @@ function(models, dialogViews, clusterPageTemplate, deploymentResultTemplate, dep
             $('.settings-editable')[0].reset();
         },
         setDefaults: function() {
-            this.pasteSettings(this.options.settings.defaults.editable);
+            this.pasteSettings(this.settings.get('defaults'));
         },
         pasteSettings: function(settings) {
             _.each(_.keys(settings), function(el){
-                var obj = {};
-                obj.legend = el;
-                obj.value = settings[el];
-                var settingsGroupView = new views.SettingsGroup(obj);
+                var settingsGroupView = new views.SettingsGroup({legend: el, value: settings[el]});
                 this.$el.find('.settings-editable').append(settingsGroupView.render().el);
             }, this); 
             return this;
         },
+        initialize: function() {
+            this.settings = this.options.settings;
+        },
         render: function() {
             this.$el.html(this.template({cluster: this.model}));
-            var settingsData = this.options.settings.attributes.editable;
-            if (settingsData) this.pasteSettings(settingsData);
+            this.pasteSettings(this.settings.get('editable'));
             return this;
         }
     });
@@ -573,16 +582,18 @@ function(models, dialogViews, clusterPageTemplate, deploymentResultTemplate, dep
         hasChanges: function(el) {
             $('.btn-apply-changes').attr('disabled', false);
             $('.btn-revert-changes').attr('disabled', false);
-            $(el.target).addClass('changed');
         },
         initialize: function(options) {
-            this.settings = options.settings;
+            this.settings = options.value;
             this.legend = options.legend;
         },
         render: function() {
-            //var fake = '{"admin_tenant1": "admin1","admin_tenant2":{"admin_tenant3":"admin3"},"admin_tenant4":{"admin_tenant5":"admin3"}}';
-            //this.$el.html(this.template({settings: $.parseJSON(fake), legend: this.options.legend}));
-            this.$el.html(this.template({settings: this.options.value, legend: this.options.legend}));
+            /*
+                // fake used to test a large nesting level
+                var fake = '{"admin_tenant1": "admin1","admin_tenant2":{"admin_tenant3":"admin3"},"admin_tenant4":{"admin_tenant5":"admin3"}}';
+                this.$el.html(this.template({settings: $.parseJSON(fake), legend: this.options.legend}));
+            */
+            this.$el.html(this.template({settings: this.settings, legend: this.legend}));
             return this;
         }
     });

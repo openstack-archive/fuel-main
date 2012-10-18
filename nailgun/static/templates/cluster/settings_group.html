@@ -1,19 +1,25 @@
-<% var page = this; %>
-  <div class="control-group">
+<% var page = this %>
+  <div class="control-group wrapper" data-nested="true">
     <fieldset class="fieldset">
       <legend><%= legend %></legend>
-      <% _.each(_.keys(settings), function(key){
-        if (_.isObject(settings[key])) { 
-          var recursive_fieldset = page.template({settings: settings[key],legend: key});
-          console.log(page.$el.append(recursive_fieldset));
+      <%
+        _.each(_.keys(settings), function(key){
+          if (_.isObject(settings[key])) { 
+            var recursive_fieldset = page.template({settings: settings[key],legend: key});
         %>
-          <%= recursive_fieldset %>
-        <% } else { %>
-          <label class="control-label" for="<%= key %>"><%= key %></label>
-          <div class="controls">
-            <input type="text" class="input-large" name="<%= key %>" value="<%= settings[key] %>" />
-          </div>
-        <% } %>
-      <% }) %>
+            <%= recursive_fieldset %>
+        <%
+          } else {
+        %>
+            <div class="wrapper" data-nested="false">
+              <label class="control-label" for="<%= key %>"><%= key %></label>
+              <div class="controls">
+                <input type="text" class="input-large" name="<%= key %>" value="<%= settings[key] %>" />
+              </div>
+            </div>
+        <%
+          }
+        })
+      %>
     </fieldset>
   </div>
