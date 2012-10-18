@@ -10,6 +10,17 @@ import code
 import web
 from sqlalchemy.orm import scoped_session, sessionmaker
 
+from nailgun.settings import settings
+here = os.path.abspath(os.path.dirname(__file__))
+
+settings.update({
+    'STATIC_DIR': os.path.join(here, 'static'),
+    'TEMPLATE_DIR': os.path.join(here, 'static'),
+    'LOGFILE': os.path.join(here, 'nailgun.log'),
+    'DATABASE_ENGINE': 'sqlite:///%s' %
+    os.path.join(here, 'nailgun.sqlite')})
+
+
 from nailgun.api.handlers import check_client_content_type
 from nailgun.api.models import engine
 from nailgun.db import load_db_driver, syncdb
@@ -17,10 +28,9 @@ from nailgun.unit_test import TestRunner
 from nailgun.urls import urls
 from nailgun.logger import Log
 from nailgun.wsgi import app
-from nailgun.settings import settings
 
 logging.basicConfig(level="DEBUG")
-here = os.path.dirname(__file__)
+
 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser()
@@ -82,14 +92,6 @@ if __name__ == "__main__":
         eventlet.monkey_patch()
         q = threaded.rpc_queue
         rpc_thread = threaded.RPCThread()
-
-        settings.config.update({
-            'STATIC_DIR': os.path.join(here, 'static'),
-            'TEMPLATE_DIR': os.path.join(here, 'static'),
-            'LOGFILE': os.path.join(here, 'nailgun.log'),
-            'DATABASE_ENGINE': 'sqlite:///%s' %
-            os.path.join(here, 'nailgun.sqlite')
-        })
 
         if params.action == "run":
             sys.argv.insert(1, params.port)

@@ -43,6 +43,9 @@ class NailgunSettings:
                 self.logger.error("Error while reading config file %s: %s" %
                                   (sf, str(e)))
 
+    def update(self, dct):
+        self.config.update(dct)
+
     def __getattr__(self, name):
         return self.config.get(name, None)
 
