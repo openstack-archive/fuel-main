@@ -15,7 +15,7 @@ ifndef GOLDEN_MIRROR
 GOLDEN_MIRROR:=srv08-srt.srt.mirantis.net:/var/lib/jenkins/mirror
 endif
 
-iso.path:=$(BUILD_DIR)/iso/nailgun-ubuntu-12.04-amd64.iso
+iso.path:=$(BUILD_DIR)/iso/nailgun-centos-6.3-amd64.iso
 image.centos.url=http://mc0n1-srt.srt.mirantis.net/centos63.qcow2
 
 centos.packages=$(BUILD_DIR)/packages/centos
