@@ -68,7 +68,7 @@ if __name__ == "__main__":
         TestRunner.run()
         logging.info("Done")
     elif params.action == "loaddata":
-        from fixtures import fixman
+        from nailgun.fixtures import fixman
         if os.path.exists(params.fixture):
             logging.info("Uploading fixtures...")
             with open(params.fixture, "r") as f:
@@ -77,7 +77,7 @@ if __name__ == "__main__":
         else:
             parser.print_help()
     elif params.action in ("run", "runwsgi"):
-        from rpc import threaded
+        from nailgun.rpc import threaded
         import eventlet
         eventlet.monkey_patch()
         q = threaded.rpc_queue

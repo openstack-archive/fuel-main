@@ -16,6 +16,15 @@ requires = [
     'greenlet==0.4.0',
     'eventlet==0.9.17',
     'kombu==2.4.7',
+    'netaddr==0.7.10',
+    'simplejson==2.6.2',
+    'amqplib==1.0.2',
+    'PyYAML==3.10',
+    'wsgilog==0.3',
+    'wsgiref==0.1.2',
+    'argparse==1.2.1',
+    'nose==1.2.1',
+    'nose2==0.4.1',
     # 'cobbler',
 ]
 
