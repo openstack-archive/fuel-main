@@ -32,6 +32,7 @@ class NailgunReceiver(object):
         if not task:
             logging.error("Can't set status='%s', error='%s':no task \
                     with UUID %s found!", status, error, uuid)
+            return
         data = {'status': status, 'progress': progress, 'error': error}
         for key, value in data.iteritems():
             if value:
