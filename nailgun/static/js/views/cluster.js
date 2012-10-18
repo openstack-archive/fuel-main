@@ -531,6 +531,7 @@ function(models, dialogViews, clusterPageTemplate, deploymentResultTemplate, dep
             'click .btn-set-defaults': 'setDefaults'
         },
         collectData: function(parent_el,changed_data) {
+<<<<<<< HEAD
             var model = this, param;
             _.each(parent_el.children().children('.wrapper'), function(el){
                 if ($(el).data('nested')) {
@@ -541,6 +542,18 @@ function(models, dialogViews, clusterPageTemplate, deploymentResultTemplate, dep
                     param = $(el).find('input');
                     changed_data[param.attr('name')] = param.val();    
                 }
+=======
+            var model = this;
+            _.each(parent_el.children().children('.wrapper'), function(el){
+                if ($(el).data('nested')) {
+                    var param = $(el).find('legend:first').text();
+                    changed_data[param] = {};
+                    model.collectData($(el),changed_data[param]);
+                } else {
+                    var param = $(el).find('input');
+                    changed_data[param.attr('name')] = param.val();    
+                };
+>>>>>>> Saving of the settings
             });
         },
         applyChanges: function() {
@@ -583,10 +596,9 @@ function(models, dialogViews, clusterPageTemplate, deploymentResultTemplate, dep
         hasChanges: function(el) {
             $('.btn-apply-changes').attr('disabled', false);
             $('.btn-revert-changes').attr('disabled', false);
-            $(el.target).addClass('changed');
         },
         initialize: function(options) {
-            this.settings = options.settings;
+            this.settings = options.value;
             this.legend = options.legend;
         },
         render: function() {
