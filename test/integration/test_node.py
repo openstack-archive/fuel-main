@@ -27,7 +27,7 @@ class TestNode(Base):
         super(TestNode, self).__init__(*args, **kwargs)
         self.remote = SSHClient()
         self.client = HTTPClient(url="http://%s:8000" % self.get_admin_node_ip())
-        self.ssh_user = "ubuntu"
+        self.ssh_user = "root"
         self.ssh_passwd = "r00tme"
         self.admin_host = self.get_admin_node_ip()
         self.remote.connect_ssh(self.admin_host, self.ssh_user, self.ssh_passwd)

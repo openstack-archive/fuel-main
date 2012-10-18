@@ -30,7 +30,7 @@ class TestCobbler(Base):
     def test_cobbler_alive(self):
         logging.info("Waiting for handlers to complete")
 
-        self.remote.connect_ssh(str(self.ip), "ubuntu", "r00tme")
+        self.remote.connect_ssh(str(self.ip), "admin", "r00tme")
         count = 0
         while True:
             res = self.remote.execute("grep '%s' '%s'" % (self.str_success, self.logpath))
