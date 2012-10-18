@@ -8,4 +8,3 @@ $/naily-0.1.gem: naily/naily.gemspec \
 	cd $(<D) && \
 		gem build $(<F)
 	mv $(<D)/naily-*.gem $@
-

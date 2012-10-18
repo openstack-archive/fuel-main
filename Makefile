@@ -1,7 +1,7 @@
 
 BUILD_DIR:=build
 
-MODULES=gnupg bootstrap nailgun test mirror iso packages/rpm naily
+MODULES=gnupg bootstrap nailgun test mirror iso packages/rpm naily astute
 
 .PHONY: all clean test test-unit help mirror FORCE
 
