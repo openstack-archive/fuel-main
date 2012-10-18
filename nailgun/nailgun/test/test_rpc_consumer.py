@@ -88,3 +88,19 @@ class TestConsumer(BaseHandlers):
                        {'uid': node2.fqdn, 'absent_vlans': [104]}]
         error_msg = "Following nodes do not have vlans:\n%s" % error_nodes
         self.assertEqual(task.error, error_msg)
+
+    def test_task_progress(self):
+        receiver = threaded.NailgunReceiver()
+
+        task = Task(
+            uuid=str(uuid.uuid4()),
+            name="Test task",
+            status="running"
+        )
+        self.db.add(task)
+        self.db.commit()
+        kwargs = {'task_uuid': task.uuid, 'progress': 20}
+        receiver.deploy_resp(**kwargs)
+        self.db.refresh(task)
+        self.assertEqual(task.progress, 20)
+        self.assertEqual(task.status, "running")

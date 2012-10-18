@@ -304,3 +304,4 @@ class Task(Base, BasicValidator):
     name = Column(String(36), nullable=False)
     error = Column(Text)
     status = Column(Enum(*TASK_STATUSES), nullable=False, default='running')
+    progress = Column(Integer)

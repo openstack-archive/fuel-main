@@ -4,6 +4,7 @@ import time
 import Queue
 import logging
 import threading
+import itertools
 
 import greenlet
 import eventlet
@@ -26,14 +27,15 @@ class NailgunReceiver(object):
     )
 
     @classmethod
-    def __update_task_status(cls, uuid, status, error=""):
+    def __update_task_status(cls, uuid, status, progress, error=""):
         task = cls.db.query(Task).filter_by(uuid=uuid).first()
         if not task:
             logging.error("Can't set status='%s', error='%s':no task \
                     with UUID %s found!", status, error, uuid)
-        task.status = status
-        if error:
-            task.error = error
+        data = {'status': status, 'progress': progress, 'error': error}
+        for key, value in data.iteritems():
+            if value:
+                setattr(task, key, value)
         cls.db.add(task)
         cls.db.commit()
 
@@ -44,6 +46,7 @@ class NailgunReceiver(object):
         nodes = kwargs.get('nodes') or []
         error_msg = kwargs.get('error')
         status = kwargs.get('status')
+        progress = kwargs.get('progress')
 
         error_nodes = []
         for node in nodes:
@@ -67,8 +70,7 @@ class NailgunReceiver(object):
             error_msg = "Failed to deploy nodes:\n%s" % "\n".join(nodes_info)
             status = 'error'
 
-        if status:
-            cls.__update_task_status(task_uuid, status, error_msg)
+        cls.__update_task_status(task_uuid, status, progress, error_msg)
 
     @classmethod
     def verify_networks_resp(cls, **kwargs):
@@ -77,6 +79,7 @@ class NailgunReceiver(object):
         networks = kwargs.get('networks') or []
         error_msg = kwargs.get('error')
         status = kwargs.get('status')
+        progress = kwargs.get('progress')
 
         # We simply check that each node received all vlans for cluster
         task = cls.db.query(Task).filter_by(uuid=task_uuid).first()
@@ -101,8 +104,7 @@ class NailgunReceiver(object):
             logging.error(error_msg)
             status = 'error'
 
-        if status:
-            cls.__update_task_status(task_uuid, status, error_msg)
+        cls.__update_task_status(task_uuid, status, progress, error_msg)
 
 
 class RPCThread(threading.Thread):

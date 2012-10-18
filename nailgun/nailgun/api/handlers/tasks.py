@@ -16,7 +16,8 @@ class TaskHandler(JSONHandler):
         "uuid",
         "name",
         "error",
-        "status"
+        "status",
+        "progress"
     )
     model = Task
 
