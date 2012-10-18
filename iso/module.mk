@@ -92,13 +92,15 @@ $(ISOROOT)/eggs/Nailgun-$(NAILGUN_VERSION).tar.gz: \
 		sdist-nailgun
 	@mkdir -p $(@D)
 	cp $(BUILD_DIR)/nailgun/$(@F) $@
-	
+
+$(ISOROOT)/puppet/%: puppet/% ; $(ACTION.COPY)
+
 $/isoroot-eggs.done: \
-		$(ISOROOT)/eggs/Nailgun-$(NAILGUN_VERSION).tar.gz
+	    $(ISOROOT)/eggs/Nailgun-$(NAILGUN_VERSION).tar.gz
 	cp $(LOCAL_MIRROR)/eggs/* $(ISOROOT)/eggs
 
 $/isoroot-gems.done: \
-		$(CENTOS_REPO_DIR)eggs-gems.done
+	    $(CENTOS_REPO_DIR)eggs-gems.done
 	@mkdir -p $(ISOROOT)/gems/gems
 	cp $(LOCAL_MIRROR)/gems/* $(ISOROOT)/gems/gems
 
@@ -113,6 +115,7 @@ $/isoroot.done: \
 		$/isoroot-gems.done \
 		$(addprefix $(ISOROOT)/sync/,$(call find-files,iso/sync)) \
 		$(addprefix $(ISOROOT)/eggs/,$(call find-files,$(LOCAL_MIRROR)/eggs)) \
+		$(addprefix $(ISOROOT)/puppet/,$(call find-files,puppet)) \
 		$(addprefix $(ISOROOT)/gems/gems/,$(call find-files,$(LOCAL_MIRROR)/gems))
 	$(ACTION.TOUCH)
 
