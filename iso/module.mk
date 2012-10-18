@@ -78,8 +78,9 @@ $(addprefix $(ISOROOT)/,$(GPGFILES)):
 	wget -O $@ $(CENTOS_63_GPG)/$(@F)
 
 $/isoroot-bootstrap.done: \
-	$(ISOROOT)/bootstrap/bootstrap.rsa \
-	$(addprefix $(ISOROOT)/bootstrap/, $(BOOTSTRAP_FILES))
+		$(ISOROOT)/bootstrap/bootstrap.rsa \
+		$(addprefix $(ISOROOT)/bootstrap/, $(BOOTSTRAP_FILES))
+	$(ACTION.TOUCH)
 
 $(addprefix $(ISOROOT)/bootstrap/, $(BOOTSTRAP_FILES)): \
 		bootstrap
@@ -95,14 +96,19 @@ $(ISOROOT)/eggs/Nailgun-$(NAILGUN_VERSION).tar.gz: \
 
 $(ISOROOT)/puppet/%: puppet/% ; $(ACTION.COPY)
 
+$(ISOROOT)/eggs/%: $(LOCAL_MIRROR)/eggs/% ; $(ACTION.COPY)
+$(ISOROOT)/gems/gems/%: $(LOCAL_MIRROR)/gems/% ; $(ACTION.COPY)
+
 $/isoroot-eggs.done: \
-	    $(ISOROOT)/eggs/Nailgun-$(NAILGUN_VERSION).tar.gz
-	cp $(LOCAL_MIRROR)/eggs/* $(ISOROOT)/eggs
+		$(CENTOS_REPO_DIR)eggs-gems.done \
+		$(addprefix $(ISOROOT)/eggs/,$(call find-files,$(LOCAL_MIRROR)/eggs)) \
+		$(ISOROOT)/eggs/Nailgun-$(NAILGUN_VERSION).tar.gz
+	$(ACTION.TOUCH)
 
 $/isoroot-gems.done: \
-	    $(CENTOS_REPO_DIR)eggs-gems.done
-	@mkdir -p $(ISOROOT)/gems/gems
-	cp $(LOCAL_MIRROR)/gems/* $(ISOROOT)/gems/gems
+		$(CENTOS_REPO_DIR)eggs-gems.done \
+		$(addprefix $(ISOROOT)/gems/gems/,$(call find-files,$(LOCAL_MIRROR)/gems))
+	$(ACTION.TOUCH)
 
 $/isoroot.done: \
 		$/isoroot-centos.done \
@@ -114,19 +120,13 @@ $/isoroot.done: \
 		$/isoroot-eggs.done \
 		$/isoroot-gems.done \
 		$(addprefix $(ISOROOT)/sync/,$(call find-files,iso/sync)) \
-		$(addprefix $(ISOROOT)/eggs/,$(call find-files,$(LOCAL_MIRROR)/eggs)) \
-		$(addprefix $(ISOROOT)/puppet/,$(call find-files,puppet)) \
-		$(addprefix $(ISOROOT)/gems/gems/,$(call find-files,$(LOCAL_MIRROR)/gems))
+		$(addprefix $(ISOROOT)/puppet/,$(call find-files,puppet))
 	$(ACTION.TOUCH)
 
 $(ISOROOT)/sync/%: iso/sync/% ; $(ACTION.COPY)
 
 $(ISOROOT)/ks.cfg: iso/ks.cfg ; $(ACTION.COPY)
 $(ISOROOT)/bootstrap_admin_node.sh: iso/bootstrap_admin_node.sh ; $(ACTION.COPY)
-
-$(ISOROOT)/nailgun/openstack-essex.json: scripts/release/openstack-essex.json ; $(ACTION.COPY)
-$(ISOROOT)/nailgun/bin/%: bin/% ; $(ACTION.COPY)
-$(ISOROOT)/nailgun/%: nailgun/% ; $(ACTION.COPY)
 $(ISOROOT)/.discinfo: iso/.discinfo ; $(ACTION.COPY)
 $(ISOROOT)/.treeinfo: iso/.treeinfo ; $(ACTION.COPY)
 
