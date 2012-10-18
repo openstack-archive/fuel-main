@@ -78,18 +78,13 @@ class Ci(object):
         logger.info("Executing admin node software installation")
         node.send_keys("""<Esc><Enter>
 <Wait>
-/install/vmlinuz initrd=/install/initrd.gz
- priority=critical
- locale=en_US
- file=/cdrom/preseed/manual.seed
- vga=788
- netcfg/get_ipaddress=%(ip)s
- netcfg/get_netmask=%(mask)s
- netcfg/get_gateway=%(gw)s
- netcfg/get_nameservers=%(gw)s
- netcfg/confirm_static=true
- netcfg/get_hostname=%(hostname)s
- netcfg/get_domai=%(domain)s
+vmlinuz initrd=initrd.img ks=cdrom:/ks.cfg
+ ip=%(ip)s
+ netmask=%(mask)s
+ gw=%(gw)s
+ dns1=%(gw)s
+ hostname=%(hostname)s
+ domain=%(domain)s
  <Enter>
 """ % { 'ip': node.ip_address,
         'mask': network.ip_addresses.netmask,
