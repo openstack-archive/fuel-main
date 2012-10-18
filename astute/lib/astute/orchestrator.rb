@@ -19,17 +19,17 @@ module Astute
 
       other_nodes = nodes - ctrl_nodes - compute_nodes
       deploy_piece(context, other_nodes)
-      reporter.report({'progress' => 100})
+      return
     end
 
     def verify_networks(reporter, task_id, nodes, networks)
       context = Context.new(task_id, reporter)
       result = @check_network.call(context, nodes, networks)
-      # TODO return result like [ {'node' => 'id_of_node', 'network' => [ {'iface' => 'eth0', 'vlans' => [100,101]} } ]
+      # TODO return result like [ {'node' => 'id_of_node', 'networks' => [ {'iface' => 'eth0', 'vlans' => [100,101]} } ]
       # STUBBED for now!
-      vlans = networks.map {|n| n['vlan_id']}.join(',')
+      vlans = networks.map {|n| n['vlan_id']}
       result.map! { |node| {'uid' => node['sender'], 'networks' => [ {'iface' => 'eth0', 'vlans' => vlans} ]} }
-      reporter.report({'networks' => result})
+      return {'networks' => result}
     end
 
     private

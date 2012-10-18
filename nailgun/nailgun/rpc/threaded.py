@@ -11,7 +11,7 @@ from sqlalchemy.orm import scoped_session, sessionmaker
 
 import nailgun.rpc as rpc
 from nailgun.db import Query
-from nailgun.api.models import engine, Node, Task
+from nailgun.api.models import engine, Node, Task, Network
 
 rpc_queue = Queue.Queue()
 
@@ -74,10 +74,35 @@ class NailgunReceiver(object):
     def verify_networks_resp(cls, **kwargs):
         logging.info("RPC method verify_networks_resp received: %s" % kwargs)
         task_uuid = kwargs.get('task_uuid')
-        nodes = kwagrs.get('nodes') or []
+        networks = kwargs.get('networks') or []
         error_msg = kwargs.get('error')
         status = kwargs.get('status')
-        # TODO complete this
+
+        # We simply check that each node received all vlans for cluster
+        task = cls.db.query(Task).filter_by(uuid=task_uuid).first()
+        if not task:
+            logging.error("verify_networks_resp: task \
+                    with UUID %s found!", task_uuid)
+            return
+        nets_db = cls.db.query(Network).filter_by(cluster_id=
+                                                  task.cluster_id).all()
+        vlans_db = [net.vlan_id for net in nets_db]
+        error_nodes = []
+        for x in networks:
+            # Now - for all interfaces (eth0, eth1, etc.)
+            for iface in x['networks']:
+                absent_vlans = list(set(vlans_db) - set(iface['vlans']))
+                if absent_vlans:
+                    error_nodes.append({'uid': x['uid'],
+                                        'absent_vlans': absent_vlans})
+
+        if error_nodes:
+            error_msg = "Following nodes do not have vlans:\n%s" % error_nodes
+            logging.error(error_msg)
+            status = 'error'
+
+        if status:
+            cls.__update_task_status(task_uuid, status, error_msg)
 
 
 class RPCThread(threading.Thread):

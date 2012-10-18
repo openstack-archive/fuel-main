@@ -35,3 +35,56 @@ class TestConsumer(BaseHandlers):
         self.db.refresh(task)
         self.assertEqual((node.status, node2.status), ("deploying", "error"))
         self.assertEqual(task.status, "error")
+
+    def test_verify_networks_resp(self):
+        cluster = self.create_cluster_api()
+        node1 = self.create_default_node(cluster_id=cluster['id'])
+        node2 = self.create_default_node(cluster_id=cluster['id'])
+
+        receiver = threaded.NailgunReceiver()
+
+        task = Task(
+            uuid=str(uuid.uuid4()),
+            name="Test task",
+            cluster_id=cluster['id']
+        )
+        self.db.add(task)
+        self.db.commit()
+
+        nets = [{'iface': 'eth0', 'vlans': range(100, 105)}]
+        kwargs = {'task_uuid': task.uuid,
+                  'status': 'ready',
+                  'networks': [{'uid': node1.fqdn, 'networks': nets},
+                               {'uid': node2.fqdn, 'networks': nets}]}
+        receiver.verify_networks_resp(**kwargs)
+        self.db.refresh(task)
+        self.assertEqual(task.status, "ready")
+        self.assertEqual(task.error, None)
+
+    def test_verify_networks_resp_error(self):
+        cluster = self.create_cluster_api()
+        node1 = self.create_default_node(cluster_id=cluster['id'])
+        node2 = self.create_default_node(cluster_id=cluster['id'])
+
+        receiver = threaded.NailgunReceiver()
+
+        task = Task(
+            uuid=str(uuid.uuid4()),
+            name="Test task",
+            cluster_id=cluster['id']
+        )
+        self.db.add(task)
+        self.db.commit()
+
+        nets = [{'iface': 'eth0', 'vlans': range(100, 104)}]
+        kwargs = {'task_uuid': task.uuid,
+                  'status': 'ready',
+                  'networks': [{'uid': node1.fqdn, 'networks': nets},
+                               {'uid': node2.fqdn, 'networks': nets}]}
+        receiver.verify_networks_resp(**kwargs)
+        self.db.refresh(task)
+        self.assertEqual(task.status, "error")
+        error_nodes = [{'uid': node1.fqdn, 'absent_vlans': [104]},
+                       {'uid': node2.fqdn, 'absent_vlans': [104]}]
+        error_msg = "Following nodes do not have vlans:\n%s" % error_nodes
+        self.assertEqual(task.error, error_msg)

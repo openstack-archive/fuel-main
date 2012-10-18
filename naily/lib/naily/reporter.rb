@@ -7,7 +7,8 @@ module Naily
     end
 
     def report(msg)
-      message = {'method' => @method, 'task_uuid' => @task_uuid, 'args' => msg}
+      msg_with_task = {'task_uuid' => @task_uuid}.merge(msg)
+      message = {'method' => @method, 'args' => msg_with_task}
       Naily.logger.info "Casting message to nailgun: #{message.inspect}"
       @producer.publish(message)
     end
