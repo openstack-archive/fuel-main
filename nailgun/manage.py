@@ -17,10 +17,10 @@ from nailgun.unit_test import TestRunner
 from nailgun.urls import urls
 from nailgun.logger import Log
 from nailgun.wsgi import app
-
+from nailgun.settings import settings
 
 logging.basicConfig(level="DEBUG")
-
+here = os.path.dirname(__file__)
 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser()
@@ -83,13 +83,13 @@ if __name__ == "__main__":
         q = threaded.rpc_queue
         rpc_thread = threaded.RPCThread()
 
-        if params.action == "run":
-            app = web.application(urls, locals(), autoreload=True)
-        else:
-            app = web.application(urls, locals())
-
-        app.add_processor(load_db_driver)
-        app.add_processor(check_client_content_type)
+        settings.config.update({
+            'STATIC_DIR': os.path.join(here, 'static'),
+            'TEMPLATE_DIR': os.path.join(here, 'static'),
+            'LOGFILE': os.path.join(here, 'nailgun.log'),
+            'DATABASE_ENGINE': 'sqlite:///%s' %
+            os.path.join(here, 'nailgun.sqlite')
+        })
 
         if params.action == "run":
             sys.argv.insert(1, params.port)
