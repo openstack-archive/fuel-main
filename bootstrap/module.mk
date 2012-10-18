@@ -1,31 +1,29 @@
-/:=$(BUILD_DIR)/bootstrap/
-INITRAM_DIR=$/initram-root
-INITRAM_FS=$/initramfs.img
-LINUX=$/linux
+BS_DIR:=$(BUILD_DIR)/bootstrap
+INITRAM_DIR:=$(BS_DIR)/initram-root
+INITRAM_FS:=$(BS_DIR)/initramfs.img
+LINUX:=$(BS_DIR)/linux
 
 .PHONY: bootstrap clean chroot-bootstrap
 all: bootstrap
 
-YUM_PACKAGES=puppet openssh-server wget cronie-noanacron crontabs ntp \
+YUM_PACKAGES:=puppet openssh-server wget cronie-noanacron crontabs ntp \
 mcollective bash net-tools dhclient rsyslog iputils openssh-server \
 ruby-json rubygems mcollective vconfig tcpdump scapy mingetty
 
-YUM_BUILD_PACKAGES=ruby-devel make gcc flex byacc python-devel \
+YUM_BUILD_PACKAGES:=ruby-devel make gcc flex byacc python-devel \
 glibc-devel glibc-headers kernel-headers
 
-NAILGUN_DIR=$(INITRAM_DIR)/opt/nailgun
+NAILGUN_DIR:=$(INITRAM_DIR)/opt/nailgun
 
-RPM=sudo rpm --root=`readlink -f $(INITRAM_DIR)`
-YUM=sudo yum --installroot=`readlink -f $(INITRAM_DIR)` -y --nogpgcheck
+RPM:=sudo rpm --root=`readlink -f $(INITRAM_DIR)`
+YUM:=sudo yum --installroot=`readlink -f $(INITRAM_DIR)` -y --nogpgcheck
 RPM_DIR=$(CENTOS_REPO_DIR)Packages
-CHROOT_CMD=sudo chroot $(INITRAM_DIR)
+CHROOT_CMD:=sudo chroot $(INITRAM_DIR)
 
 clean: clean-bootstrap
 
 clean-bootstrap:
 	sudo rm -rf $(INITRAM_DIR)
-
-%: /:=$/
 
 
 bootstrap: $(LINUX) $(INITRAM_FS)
@@ -48,10 +46,10 @@ $(INITRAM_FS): $(NAILGUN_DIR)/system_type
 
 
 $(LINUX): $(BUILD_DIR)/packages/centos/cache.done
-	mkdir -p $/
-	find $(RPM_DIR) -name 'kernel-2.*' | xargs rpm2cpio | (cd $/; cpio -imd './boot/vmlinuz*')
-	mv $/boot/vmlinuz* $(LINUX)
-	rmdir $/boot
+	mkdir -p $(BS_DIR)
+	find $(RPM_DIR) -name 'kernel-2.*' | xargs rpm2cpio | (cd $(BS_DIR)/; cpio -imd './boot/vmlinuz*')
+	mv $(BS_DIR)/boot/vmlinuz* $(LINUX)
+	rmdir $(BS_DIR)/boot
 	touch $(LINUX)
 
 
@@ -60,6 +58,7 @@ $(NAILGUN_DIR)/system_type: $(INITRAM_DIR)/init
 	sudo cp -r bootstrap/sync/* $(INITRAM_DIR)
 	sudo mkdir -p $(INITRAM_DIR)/root/.ssh
 	sudo cp bootstrap/ssh/id_rsa.pub $(INITRAM_DIR)/root/.ssh/authorized_keys
+	sudo chmod go-rwx $(INITRAM_DIR)/root/.ssh $(INITRAM_DIR)/root/.ssh/authorized_keys
 	sudo mkdir -p $(NAILGUN_DIR)/bin
 	sudo cp -r bin/agent $(NAILGUN_DIR)/bin
 	echo "bootstrap" | sudo tee $(NAILGUN_DIR)/system_type > /dev/null
