@@ -25,10 +25,9 @@ module Astute
     def verify_networks(reporter, task_id, nodes, networks)
       context = Context.new(task_id, reporter)
       result = @check_network.call(context, nodes, networks)
-      # TODO return result like [ {'node' => 'id_of_node', 'networks' => [ {'iface' => 'eth0', 'vlans' => [100,101]} } ]
-      # STUBBED for now!
-      vlans = networks.map {|n| n['vlan_id']}
-      result.map! { |node| {'uid' => node['sender'], 'networks' => [ {'iface' => 'eth0', 'vlans' => vlans} ]} }
+      result.map! { |node| {'uid' => node['sender'],
+                            'networks' => check_vlans_by_traffic(node['data'][:neighbours]) }
+                  }
       return {'networks' => result}
     end
 
@@ -45,6 +44,10 @@ module Astute
 
     def nodes_status(nodes, status)
       {'nodes' => nodes.map { |n| {'uid' => n['uid'], 'status' => status} }}
+    end
+
+    def check_vlans_by_traffic(data)
+      return data.map{|iface, vlans| {'iface' => iface, 'vlans' => vlans.keys.map{|n| n.to_i} } }
     end
   end
 end

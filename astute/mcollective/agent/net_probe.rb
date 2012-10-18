@@ -42,12 +42,12 @@ module MCollective
 
       action "get_probing_info" do
         stop_frame_listeners
-        neigbours = Hash.new
+        neighbours = Hash.new
         Dir.glob(pattern).each do |file|
           p = JSON.load(File.read(file))
-          neigbours.merge!(p)
+          neighbours.merge!(p)
         end
-        reply[:neigbours] = neigbours
+        reply[:neighbours] = neighbours
         reply[:uid] = uid
       end
 
