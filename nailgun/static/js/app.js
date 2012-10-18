@@ -51,8 +51,7 @@ define(
             } else {
                 cluster = new models.Cluster({id: id});
                 cluster.fetch({
-                    success: _.bind(render, this),
-                    error: _.bind(function() {this.listClusters()}, this)
+                    error: _.bind(function() {this.listClusters();}, this)
                 });
                 settings = new models.Settings();
                 settings.fetch({

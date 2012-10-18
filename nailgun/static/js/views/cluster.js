@@ -530,16 +530,16 @@ function(models, dialogViews, clusterPageTemplate, deploymentResultTemplate, dep
             'click .btn-set-defaults': 'setDefaults'
         },
         collectData: function(parent_el,changed_data) {
-            var model = this;
+            var model = this, param;
             _.each(parent_el.children().children('.wrapper'), function(el){
                 if ($(el).data('nested')) {
-                    var param = $(el).find('legend:first').text();
+                    param = $(el).find('legend:first').text();
                     changed_data[param] = {};
                     model.collectData($(el),changed_data[param]);
                 } else {
-                    var param = $(el).find('input');
+                    param = $(el).find('input');
                     changed_data[param.attr('name')] = param.val();    
-                };
+                }
             });
         },
         applyChanges: function() {
@@ -559,7 +559,7 @@ function(models, dialogViews, clusterPageTemplate, deploymentResultTemplate, dep
         },
         pasteSettings: function(settings) {
             _.each(_.keys(settings), function(el){
-                var settingsGroupView = new views.SettingsGroup({legend: el, value: settings[el]});
+                var settingsGroupView = new views.SettingsGroup({legend: el, settings: settings[el]});
                 this.$el.find('.settings-editable').append(settingsGroupView.render().el);
             }, this); 
             return this;
@@ -584,7 +584,7 @@ function(models, dialogViews, clusterPageTemplate, deploymentResultTemplate, dep
             $('.btn-revert-changes').attr('disabled', false);
         },
         initialize: function(options) {
-            this.settings = options.value;
+            this.settings = options.settings;
             this.legend = options.legend;
         },
         render: function() {
