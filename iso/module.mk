@@ -112,7 +112,7 @@ $/isoroot-eggs.done: \
 
 $/isoroot-gems.done: \
 		$(CENTOS_REPO_DIR)eggs-gems.done \
-		$(BUILD_DIR)/gems/naily-0.1.gem \
+		$(BUILD_DIR)/gems/naily-$(NAILY_VERSION).gem \
 		$(ISOROOT)/gems/gems/naily-$(NAILY_VERSION).gem \
 		$(ISOROOT)/gems/gems/astute-$(ASTUTE_VERSION).gem \
 		$(addprefix $(ISOROOT)/gems/gems/,$(call find-files,$(LOCAL_MIRROR)/gems))
