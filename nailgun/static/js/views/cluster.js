@@ -2,7 +2,6 @@ define(
 [
     'models',
     'views/dialogs',
-    'views/tasks',
     'text!templates/cluster/page.html',
     'text!templates/cluster/deployment_result.html',
     'text!templates/cluster/deployment_control.html',
@@ -13,7 +12,7 @@ define(
     'text!templates/cluster/network_tab_summary.html',
     'text!templates/cluster/verify_network_control.html'
 ],
-function(models, dialogViews, taskViews, clusterPageTemplate, deploymentResultTemplate, deploymentControlTemplate, nodesTabSummaryTemplate, editNodesScreenTemplate, nodeListTemplate, nodeTemplate, networkTabSummaryTemplate, networkTabVerificationTemplate) {
+function(models, dialogViews, clusterPageTemplate, deploymentResultTemplate, deploymentControlTemplate, nodesTabSummaryTemplate, editNodesScreenTemplate, nodeListTemplate, nodeTemplate, networkTabSummaryTemplate, networkTabVerificationTemplate) {
     var views = {};
 
     views.ClusterPage = Backbone.View.extend({
@@ -247,6 +246,7 @@ function(models, dialogViews, taskViews, clusterPageTemplate, deploymentResultTe
             Backbone.sync('update', chosenNodes).done(_.bind(function() {
                 this.tab.changeScreen(views.NodesByRolesScreen);
                 this.model.fetch();
+                app.navbar.nodes.fetch();
             }, this));
         },
         getChosenNodes: function() {
@@ -452,7 +452,7 @@ function(models, dialogViews, taskViews, clusterPageTemplate, deploymentResultTe
     });
 
     views.NetworkTabVerification = Backbone.View.extend({
-        updateInterval: 5000,
+        updateInterval: 3000,
         template: _.template(networkTabVerificationTemplate),
         events: {
             'click .verify-networks-btn:not([disabled])': 'verifyNetworks',

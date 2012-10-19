@@ -137,6 +137,23 @@ h6.page-title {
 
 .navigation-bar-ul .active {color: #ffffff;}
 
+.navigation-bar-nodes {
+  float: right !important;
+  border: none !important;
+  height: 30px !important;
+  margin: 10px 10px 0 0;
+  color: #bbbbbb;
+  text-shadow: 0 1px 0 rgba(0, 0, 0, 0.5);
+}
+
+.navigation-bar-nodes span {
+  margin-left: 10px;
+}
+
+.navigation-bar-nodes b {
+  color: #eeeeee;
+}
+
 .navigation-bar-icon {
   float: right !important;
   border: none !important;
