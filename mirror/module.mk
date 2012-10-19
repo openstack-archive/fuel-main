@@ -129,8 +129,7 @@ $(CENTOS_REPO_DIR)etc/yum-$(REPO_SUFFIX).repos.d/base.repo:
 
 $(CENTOS_REPO_DIR)comps.xml.gz:
 	@mkdir -p $(CENTOS_REPO_DIR)
-	wget -O $@ $(CENTOS_63_MIRROR)/`wget -qO- $(CENTOS_63_MIRROR)/repodata/repomd.xml | \
-	 xml2 | grep 'comps\.xml\.gz' | awk -F'=' '{ print $$2 }'`
+	wget -O $@ $(CENTOS_63_MIRROR)/`wget -qO- $(CENTOS_63_MIRROR)/repodata/repomd.xml | grep 'comps\.xml\.gz' | awk -F'"' '{ print $$2 }'`
 
 $(CENTOS_REPO_DIR)comps.xml: $(CENTOS_REPO_DIR)comps.xml.gz
 	gunzip -c $(CENTOS_REPO_DIR)comps.xml.gz > $@
