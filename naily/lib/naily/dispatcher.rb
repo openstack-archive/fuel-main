@@ -14,8 +14,26 @@ module Naily
     end
 
     def deploy(data)
+      nodes = data['args']['nodes']
+      nodes_not_booted = nodes.map { |n| n['uid'] }
+      begin
+        Timeout::timeout(20 * 60) do  # 20 min for booting target OS
+          while true
+            types = @orchestrator.node_type(nodes)
+            if types.length == nodes.length and types.all? {|n| n['node_type'] == 'target'}
+              break
+            end
+            nodes_not_booted = nodes.map { |n| n['uid'] } - types.map { |n| n['uid'] }
+            sleep 5
+          end
+        end
+      rescue Timeout::Error
+        error_msg = "Timeout of booting is exceeded for nodes: '#{nodes_not_booted.join(',')}'"
+        reporter.report({'status' => 'error', 'error' => error_msg})
+      end
+
       orchestrate(data) do |reporter|
-        @orchestrator.deploy(reporter, data['args']['task_uuid'], data['args']['nodes'])
+        @orchestrator.deploy(reporter, data['args']['task_uuid'], nodes)
       end
     end
 
