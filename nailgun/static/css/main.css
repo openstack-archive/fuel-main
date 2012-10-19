@@ -191,22 +191,22 @@ h6.page-title {
   padding-top: 8px;
 }
 
-.roles-action-link button {
+.roles-action-link button, .settings-editable button {
   color: #999999;
 }
 
-.roles-action-link button.disabled {
+.roles-action-link button.disabled, .settings-editable button.disabled {
   color: #999999;
   opacity: 1;
   background-color: transparent;
 }
 
-.roles-action-link button:hover {
+.roles-action-link button:hover, .settings-editable button:hover {
   color: #666666;
   text-decoration: none;
 }
 
-.roles-action-link button.disabled:hover {
+.roles-action-link button.disabled:hover, .settings-editable button.disabled:hover {
   color: #999999;
 }
 
@@ -1056,4 +1056,8 @@ fieldset fieldset legend {
 .control-group .control-group {
   margin-bottom: 0px;
   margin-top: 10px;
+}
+
+.btn.disabled, .btn[disabled] {
+    background-color: transparent;
 }

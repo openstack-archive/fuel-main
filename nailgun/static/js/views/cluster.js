@@ -557,29 +557,24 @@ function(models, dialogViews, clusterPageTemplate, deploymentResultTemplate, dep
         setDefaults: function() {
             this.pasteSettings(this.settings.get('defaults'));
         },
-        parseSettings: function() {
-            var settings = this.model.settings.get('editable');
-            _.each(_.keys(settings), function(el) {
-                var settingsGroupView = new views.SettingsGroup({legend: el, settings: settings[el]});
-                this.$el.find('.settings-editable').append(settingsGroupView.render().el);
-            }, this); 
-            return this;
-        },
         render: function () {
             this.$el.html(this.template({cluster: this.model}));
-            if (this.model.settings.deferred.state() == 'pending') {
-                this.model.settings.deferred.done(_.bind(this.parseSettings(), this));
-            } else {
-                this.parseSettings();
+            if (_.isObject(this.model.get('settings').get('editable'))) {
+                var settingsSet = this.model.get('settings').get('editable');
+                _.each(_.keys(settingsSet), function(setting) {
+                    var settingsGroupView = new views.SettingsGroup({legend: setting, settings: settingsSet[setting]});
+                    this.$el.find('.settings-editable').append(settingsGroupView.render().el);
+                }, this); 
             }
             return this;
         },
         initialize: function() {
-            if (!this.model.settings) {
-                this.model.settings = new models.Settings();
-                this.model.settings.deferred = this.model.settings.fetch({
+            if (!this.model.get('settings')) {
+                this.model.set({'settings': new models.Settings()}, {silent: true});
+                this.model.get('settings').deferred = this.model.get('settings').fetch({
                     url: '/api/clusters/' + this.model.id + '/attributes'
                 });
+                this.model.get('settings').deferred.done(_.bind(this.render, this));
                 // also need to fetch defaults attributes
             }
         }
