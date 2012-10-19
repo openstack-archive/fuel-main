@@ -58,10 +58,11 @@ $(NAILGUN_DIR)/system_type: $(INITRAM_DIR)/init
 	sudo cp -r bootstrap/sync/* $(INITRAM_DIR)
 	sudo mkdir -p $(INITRAM_DIR)/root/.ssh
 	sudo cp bootstrap/ssh/id_rsa.pub $(INITRAM_DIR)/root/.ssh/authorized_keys
-	sudo chmod go-rwx $(INITRAM_DIR)/root/.ssh $(INITRAM_DIR)/root/.ssh/authorized_keys
+	sudo chmod 700 $(INITRAM_DIR)/root/.ssh
+	sudo chmod 600 $(INITRAM_DIR)/root/.ssh/authorized_keys
 	sudo mkdir -p $(NAILGUN_DIR)/bin
 	sudo cp -r bin/agent $(NAILGUN_DIR)/bin
-	echo "bootstrap" | sudo tee $(NAILGUN_DIR)/system_type > /dev/null
+	sudo sh -c "echo bootstrap > $(NAILGUN_DIR)/system_type"
 
 
 $(INITRAM_DIR)/init: $(BUILD_DIR)/packages/centos/repo.done $(INITRAM_DIR)/etc/yum.repos.d/mirror.repo
@@ -108,4 +109,4 @@ endef
 $(INITRAM_DIR)/etc/yum.repos.d/mirror.repo: export contents:=$(yum_local_repo)
 $(INITRAM_DIR)/etc/yum.repos.d/mirror.repo:
 	sudo mkdir -p $(@D)
-	echo "$${contents}" | sudo tee $@ > /dev/null
+	sudo sh -c "echo \"$${contents}\" > $@"
