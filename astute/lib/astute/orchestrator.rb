@@ -6,10 +6,12 @@ module Astute
       @check_network = Astute::Network.method(:check_network)
     end
 
-    def node_type(nodes)
+    def node_type(reporter, task_id, nodes)
+      context = Context.new(task_id, reporter)
       uids = nodes.map {|n| n['uid']}
-      systems = MClient.new(ctx, "systemtype", uids)
-      return systems.map {|n| {'uid' => n.results[:sender], 'node_type' => n.results[:node_type]}}
+      systemtype = MClient.new(context, "systemtype", uids)
+      systems = systemtype.get_type
+      return systems.map {|n| {'uid' => n.results[:sender], 'node_type' => n.results[:data][:node_type].chomp}}
     end
 
     def deploy(reporter, task_id, nodes)

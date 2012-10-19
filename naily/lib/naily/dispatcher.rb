@@ -14,12 +14,13 @@ module Naily
     end
 
     def deploy(data)
+      reporter = Naily::Reporter.new(@producer, data['respond_to'], data['args']['task_uuid'])
       nodes = data['args']['nodes']
       nodes_not_booted = nodes.map { |n| n['uid'] }
       begin
         Timeout::timeout(20 * 60) do  # 20 min for booting target OS
           while true
-            types = @orchestrator.node_type(nodes)
+            types = @orchestrator.node_type(reporter, data['args']['task_uuid'], nodes)
             if types.length == nodes.length and types.all? {|n| n['node_type'] == 'target'}
               break
             end
@@ -30,30 +31,25 @@ module Naily
       rescue Timeout::Error
         error_msg = "Timeout of booting is exceeded for nodes: '#{nodes_not_booted.join(',')}'"
         reporter.report({'status' => 'error', 'error' => error_msg})
+        return
       end
 
-      orchestrate(data) do |reporter|
-        @orchestrator.deploy(reporter, data['args']['task_uuid'], nodes)
-      end
+      result = @orchestrator.deploy(reporter, data['args']['task_uuid'], nodes)
+      report_result(result, reporter)
     end
 
     def verify_networks(data)
+      reporter = Naily::Reporter.new(@producer, data['respond_to'], data['args']['task_uuid'])
       args = data['args']
-      orchestrate(data) do |reporter|
-        @orchestrator.verify_networks(reporter, data['args']['task_uuid'], args['nodes'], args['networks'])
-      end
+      result = @orchestrator.verify_networks(reporter, data['args']['task_uuid'], args['nodes'], args['networks'])
+      report_result(result, reporter)
     end
 
     private
-    def orchestrate(data, &block)
-      reporter = Naily::Reporter.new(@producer, data['respond_to'], data['args']['task_uuid'])
-
-      result = block.call(reporter)
-
+    def report_result(result, reporter)
       result = {} unless result.instance_of?(Hash)
       status = @default_result.merge(result)
       reporter.report(status)
     end
   end
 end
-
