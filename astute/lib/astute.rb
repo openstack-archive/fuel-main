@@ -17,6 +17,4 @@ module Astute
   def self.logger=(logger)
     @logger = logger
   end
-
-  VERSION = '0.0.1'
 end
