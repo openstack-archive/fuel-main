@@ -116,7 +116,7 @@ function(models, dialogViews, clusterPageTemplate, deploymentResultTemplate, dep
             } else if (this.tab == 'network') {
                 tabContainer.html(new views.NetworkTab({model: this.model}).render().el);
             } else if (this.tab == 'settings') {
-                tabContainer.html(new views.SettingsTab({model: this.model, settings: this.settings}).render().el);
+                tabContainer.html(new views.SettingsTab({model: this.model}).render().el);
             }
 
             return this;
@@ -557,29 +557,30 @@ function(models, dialogViews, clusterPageTemplate, deploymentResultTemplate, dep
         setDefaults: function() {
             this.pasteSettings(this.settings.get('defaults'));
         },
-        pasteSettings: function(settings) {
+        parseSettings: function() {
+            var settings = this.model.settings.get('editable');
             _.each(_.keys(settings), function(el) {
                 var settingsGroupView = new views.SettingsGroup({legend: el, settings: settings[el]});
                 this.$el.find('.settings-editable').append(settingsGroupView.render().el);
             }, this); 
             return this;
         },
-        initialize: function() {
-            
-            function render() {
-                this.$el.html(this.template({cluster: this.model}));
-                this.pasteSettings(this.settings.get('editable'));
-                return this;
+        render: function () {
+            this.$el.html(this.template({cluster: this.model}));
+            if (this.model.settings.deferred.state() == 'pending') {
+                this.model.settings.deferred.done(_.bind(this.parseSettings(), this));
+            } else {
+                this.parseSettings();
             }
-
-            if (app.page) {
-                var settings = new models.Settings();
-                settings.fetch({
-                    url: '/api/clusters/' + this.model.id + '/attributes',
-                    success: _.bind(render, this)
+            return this;
+        },
+        initialize: function() {
+            if (!this.model.settings) {
+                this.model.settings = new models.Settings();
+                this.model.settings.deferred = this.model.settings.fetch({
+                    url: '/api/clusters/' + this.model.id + '/attributes'
                 });
                 // also need to fetch defaults attributes
-                this.settings = settings;
             }
         }
     });
