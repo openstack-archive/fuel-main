@@ -3,11 +3,11 @@
     <fieldset class="fieldset">
       <legend><%= legend %></legend>
       <%
-        _.each(_.keys(settings), function(key){
+        _.each(_.keys(settings), function(key) {
           if (_.isObject(settings[key])) { 
-            var recursive_fieldset = page.template({settings: settings[key],legend: key});
+            var recursiveFieldset = page.template({settings: settings[key], legend: key});
         %>
-            <%= recursive_fieldset %>
+            <%= recursiveFieldset %>
         <%
           } else {
         %>

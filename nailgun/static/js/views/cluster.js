@@ -529,23 +529,23 @@ function(models, dialogViews, clusterPageTemplate, deploymentResultTemplate, dep
             'click .btn-revert-changes': 'revertChanges',
             'click .btn-set-defaults': 'setDefaults'
         },
-        collectData: function(parent_el,changed_data) {
+        collectData: function(parentEl, changedData) {
             var model = this, param;
-            _.each(parent_el.children().children('.wrapper'), function(el){
+            _.each(parentEl.children().children('.wrapper'), function(el){
                 if ($(el).data('nested')) {
                     param = $(el).find('legend:first').text();
-                    changed_data[param] = {};
-                    model.collectData($(el),changed_data[param]);
+                    changedData[param] = {};
+                    model.collectData($(el), changedData[param]);
                 } else {
                     param = $(el).find('input');
-                    changed_data[param.attr('name')] = param.val();    
-                } 
+                    changedData[param.attr('name')] = param.val();    
+                }
             });
         },
         applyChanges: function() {
-            var changed_data = {};
-            this.collectData($('.settings-editable'),changed_data);
-            this.settings.set({editable:changed_data});
+            var changedData = {};
+            this.collectData($('.settings-editable'), changedData);
+            this.settings.set({editable: changedData});
             this.settings.save({}, {
                 type: 'PUT',
                 url: '/api/clusters/' + this.model.id + '/attributes'
@@ -558,19 +558,29 @@ function(models, dialogViews, clusterPageTemplate, deploymentResultTemplate, dep
             this.pasteSettings(this.settings.get('defaults'));
         },
         pasteSettings: function(settings) {
-            _.each(_.keys(settings), function(el){
+            _.each(_.keys(settings), function(el) {
                 var settingsGroupView = new views.SettingsGroup({legend: el, settings: settings[el]});
                 this.$el.find('.settings-editable').append(settingsGroupView.render().el);
             }, this); 
             return this;
         },
         initialize: function() {
-            this.settings = this.options.settings;
-        },
-        render: function() {
-            this.$el.html(this.template({cluster: this.model}));
-            this.pasteSettings(this.settings.get('editable'));
-            return this;
+            
+            function render() {
+                this.$el.html(this.template({cluster: this.model}));
+                this.pasteSettings(this.settings.get('editable'));
+                return this;
+            }
+
+            if (app.page) {
+                var settings = new models.Settings();
+                settings.fetch({
+                    url: '/api/clusters/' + this.model.id + '/attributes',
+                    success: _.bind(render, this)
+                });
+                // also need to fetch defaults attributes
+                this.settings = settings;
+            }
         }
     });
     
