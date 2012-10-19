@@ -14,17 +14,24 @@ module Naily
     end
 
     def deploy(data)
-      reporter = Naily::Reporter.new(@producer, data['respond_to'], data['args']['task_uuid'])
-      result = @orchestrator.deploy(reporter, data['args']['task_uuid'], data['args']['nodes'])
-      result = {} unless result.instance_of?(Hash)
-      status = @default_result.merge(result)
-      reporter.report(status)
+      orchestrate(data) do |reporter|
+        @orchestrator.deploy(reporter, data['args']['task_uuid'], data['args']['nodes'])
+      end
     end
 
     def verify_networks(data)
-      reporter = Naily::Reporter.new(@producer, data['respond_to'], data['args']['task_uuid'])
       args = data['args']
-      result = @orchestrator.verify_networks(reporter, data['args']['task_uuid'], args['nodes'], args['networks'])
+      orchestrate(data) do |reporter|
+        @orchestrator.verify_networks(reporter, data['args']['task_uuid'], args['nodes'], args['networks'])
+      end
+    end
+
+    private
+    def orchestrate(data, &block)
+      reporter = Naily::Reporter.new(@producer, data['respond_to'], data['args']['task_uuid'])
+
+      result = block.call(reporter)
+
       result = {} unless result.instance_of?(Hash)
       status = @default_result.merge(result)
       reporter.report(status)
