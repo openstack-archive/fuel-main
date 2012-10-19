@@ -30,7 +30,7 @@ module Astute
         Astute.logger.info "#{ctx.task_id}: Nodes to deploy are not provided. Do nothing."
         return false
       end
-      uids = nodes.map {|n| n['uid'].gsub(":", "")}
+      uids = nodes.map {|n| n['uid']}
       puppetd = MClient.new(ctx, "puppetd", uids)
       puppet_status = puppetd.status
 

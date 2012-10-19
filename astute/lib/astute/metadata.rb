@@ -7,11 +7,11 @@ module Astute
         Astute.logger.info "#{ctx.task_id}: Nodes to post metadata into are not provided. Do nothing."
         return false
       end
-      uids = nodes.map {|n| n['uid'].gsub(":", "")}
+      uids = nodes.map {|n| n['uid']}
       Astute.logger.debug "#{ctx.task_id}: nailyfact - storing metadata for nodes: #{uids.join(',')}"
 
       nodes.each do |node|
-        nailyfact = MClient.new(ctx, "nailyfact", [node['uid'].gsub(":", "")])
+        nailyfact = MClient.new(ctx, "nailyfact", [node['uid']])
         metadata = {'role' => node['role']}
 
         # This is synchronious RPC call, so we are sure that data were sent and processed remotely
