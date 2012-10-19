@@ -27,7 +27,7 @@ clean-bootstrap:
 
 bootstrap: $(LINUX) $(INITRAM_FS)
 
-chroot-bootstrap: $(NAILGUN_DIR)/system_type $(INITRAM_DIR)/init
+chroot-bootstrap: $(INITRAM_DIR)/etc/nailgun_systemtype $(INITRAM_DIR)/init
 	sudo mkdir -p $(INITRAM_DIR)/proc $(INITRAM_DIR)/dev
 	mount | grep $(INITRAM_DIR)/proc || sudo mount --bind /proc $(INITRAM_DIR)/proc
 	mount | grep $(INITRAM_DIR)/dev || sudo mount --bind /dev $(INITRAM_DIR)/dev
@@ -36,7 +36,7 @@ chroot-bootstrap: $(NAILGUN_DIR)/system_type $(INITRAM_DIR)/init
 	sudo umount $(INITRAM_DIR)/dev
 
 
-$(INITRAM_FS): $(NAILGUN_DIR)/system_type
+$(INITRAM_FS): $(INITRAM_DIR)/etc/nailgun_systemtype
 	sudo rm -rf $(INITRAM_DIR)/var/cache/yum $(INITRAM_DIR)/var/lib/yum $(INITRAM_DIR)/usr/share/doc \
         $(INITRAM_DIR)/usr/share/locale $(INITRAM_DIR)/src
 	sudo sh -c "cd $(INITRAM_DIR) && find . -xdev | cpio --create \
@@ -51,7 +51,7 @@ $(LINUX): $(LOCAL_MIRROR)/cache.done
 	touch $(LINUX)
 
 
-$(NAILGUN_DIR)/system_type: $(INITRAM_DIR)/init
+$(INITRAM_DIR)/etc/nailgun_systemtype: $(INITRAM_DIR)/init
 	sudo sed -i -e '/^root/c\root:$$6$$oC7haQNQ$$LtVf6AI.QKn9Jb89r83PtQN9fBqpHT9bAFLzy.YVxTLiFgsoqlPY3awKvbuSgtxYHx4RUcpUqMotp.WZ0Hwoj.:15441:0:99999:7:::' $(INITRAM_DIR)/etc/shadow
 	sudo cp -r bootstrap/sync/* $(INITRAM_DIR)
 	sudo mkdir -p $(INITRAM_DIR)/root/.ssh
@@ -60,7 +60,7 @@ $(NAILGUN_DIR)/system_type: $(INITRAM_DIR)/init
 	sudo chmod 600 $(INITRAM_DIR)/root/.ssh/authorized_keys
 	sudo mkdir -p $(NAILGUN_DIR)/bin
 	sudo cp -r bin/agent $(NAILGUN_DIR)/bin
-	sudo sh -c "echo bootstrap > $(NAILGUN_DIR)/system_type"
+	sudo sh -c "echo bootstrap > $(INITRAM_DIR)/etc/nailgun_systemtype"
 
 
 $(INITRAM_DIR)/init: $(LOCAL_MIRROR)/repo.done $(INITRAM_DIR)/etc/yum.repos.d/mirror.repo

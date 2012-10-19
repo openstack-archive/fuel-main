@@ -151,12 +151,12 @@ class NodeAgent
 
   def update_state
     @node_state = nil
-    if File.exist?("/opt/nailgun/system_type")
-      fl = File.open("/opt/nailgun/system_type", "r")
+    if File.exist?("/etc/nailgun_systemtype")
+      fl = File.open("/etc/nailgun_systemtype", "r")
       system_type = fl.readline.rstrip
       @node_state = "discover" if system_type == "bootstrap"
     else
-      fl = File.open("/opt/nailgun/system_type", "w")
+      fl = File.open("/etc/nailgun_systemtype", "w")
       fl.puts("target")
       @node_state = "ready"
     end
