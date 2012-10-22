@@ -290,6 +290,15 @@ class Attributes(Base, BasicValidator):
         chars = string.letters + string.digits
         return u''.join([choice(chars) for _ in xrange(length)])
 
+    @classmethod
+    def validate(cls, data):
+        d = cls.validate_json(data)
+        if "generated" in d:
+            raise web.webapi.badrequest(
+                message="It is not allowed to update generated attributes"
+            )
+        return d
+
 
 class Task(Base, BasicValidator):
     __tablename__ = 'tasks'

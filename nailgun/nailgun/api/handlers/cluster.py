@@ -384,14 +384,13 @@ class ClusterAttributesHandler(JSONHandler):
 
     def GET(self, cluster_id):
         web.header('Content-Type', 'application/json')
-        q = web.ctx.orm.query(Cluster).filter(Cluster.id == cluster_id)
-        cluster = q.first()
+        cluster = web.ctx.orm.query(Cluster).get(int(cluster_id))
         if not cluster:
             return web.notfound()
 
         attrs = cluster.attributes
         if not attrs:
-            return json.dumps([])
+            return web.notfound()
 
         return json.dumps(
             {
@@ -402,16 +401,15 @@ class ClusterAttributesHandler(JSONHandler):
 
     def PUT(self, cluster_id):
         web.header('Content-Type', 'application/json')
-        q = web.ctx.orm.query(Cluster).filter(Cluster.id == cluster_id)
-        cluster = q.first()
+        cluster = web.ctx.orm.query(Cluster).get(int(cluster_id))
         if not cluster:
             return web.notfound()
 
         attrs = cluster.attributes
         if not attrs:
-            return json.dumps([])
+            return web.notfound()
 
-        data = Attributes.validate_json(web.data())
+        data = Attributes.validate(web.data())
 
         for key, value in data.iteritems():
             setattr(attrs, key, value)
