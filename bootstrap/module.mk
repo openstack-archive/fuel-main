@@ -17,7 +17,7 @@ NAILGUN_DIR:=$(INITRAM_DIR)/opt/nailgun
 
 RPM:=sudo rpm --root=`readlink -f $(INITRAM_DIR)`
 YUM:=sudo yum --installroot=`readlink -f $(INITRAM_DIR)` -y --nogpgcheck
-RPM_DIR=$(CENTOS_REPO_DIR)
+RPM_DIR:=$(CENTOS_REPO_DIR)
 CHROOT_CMD:=sudo chroot $(INITRAM_DIR)
 
 clean: clean-bootstrap

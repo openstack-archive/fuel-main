@@ -31,7 +31,7 @@ FORCE:
 
 clean:
 	rm -rf $(BUILD_DIR)
-	find $(LOCAL_MIRROR) -name *.done -exec rm {} \;
+	[ ! -d $(LOCAL_MIRROR) ] || find $(LOCAL_MIRROR) -name *.done -exec rm {} \;
 deep_clean: clean
 	rm -rf $(LOCAL_MIRROR)
 

@@ -1,6 +1,7 @@
 autoconf
 automake
 byacc
+cobbler
 cronie
 crontabs
 curl
