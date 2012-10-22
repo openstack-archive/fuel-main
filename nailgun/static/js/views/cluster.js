@@ -546,7 +546,9 @@ function(models, dialogViews, clusterPageTemplate, deploymentResultTemplate, dep
             var changedData = {};
             this.collectData(this.$('.settings-editable'), changedData);
             this.model.get('settings').set({editable: changedData});
+            //console.log(this.model.get('settings').isNew());
             this.model.get('settings').save({}, {
+                method: 'PUT',
                 url: '/api/clusters/' + this.model.id + '/attributes'
             });
         },
