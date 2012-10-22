@@ -138,11 +138,21 @@ function(models, dialogViews, clusterPageTemplate, deploymentResultTemplate, dep
         initialize: function(options) {
             var task = this.model.task('deploy');
             if (task) {
-                task.bind('change', this.render, this);
+                task.bind('change:status', this.render, this);
+                task.bind('change:progress', this.updateProgress, this);
+            }
+        },
+        updateProgress: function() {
+            var task = this.model.task('deploy', 'running');
+            if (task) {
+                var progress = task.get('progress') || 0;
+                this.$('.progress').attr('data-original-title', 'Deployment in progress, ' + progress + '% completed').tooltip('fixTitle');
+                this.$('.bar').css('width', (progress > 10 ? progress : 10) + '%');
             }
         },
         render: function() {
             this.$el.html(this.template({cluster: this.model}));
+            this.updateProgress();
             return this;
         }
     });
@@ -485,15 +495,25 @@ function(models, dialogViews, clusterPageTemplate, deploymentResultTemplate, dep
             this.model.get('tasks').remove(task);
             task.destroy();
         },
+        updateProgress: function() {
+            var task = this.model.task('verify_networks', 'running');
+            if (task) {
+                var progress = task.get('progress') || 0;
+                this.$('.progress').attr('data-original-title', 'Verifying networks, ' + progress + '% completed').tooltip('fixTitle');
+                this.$('.bar').css('width', (progress > 10 ? progress : 10) + '%');
+            }
+        },
         initialize: function(options) {
             var task = this.model.task('verify_networks');
             if (task) {
-                task.bind('change', this.render, this);
+                task.bind('change:status', this.render, this);
+                task.bind('change:progress', this.updateProgress, this);
                 this.update(true);
             }
         },
         render: function() {
             this.$el.html(this.template({cluster: this.model}));
+            this.updateProgress();
             return this;
         }
     });

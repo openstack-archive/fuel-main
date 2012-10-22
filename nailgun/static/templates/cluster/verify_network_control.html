@@ -1,8 +1,8 @@
 <% var task = cluster.task('verify_networks') %>
 <% if (task) { %>
   <% if (task.get('status') == 'running') { %>
-    <div class="progress progress-warning progress-striped progress-verify-networks active">
-      <div class="bar" style="width:100%"></div>
+    <div class="progress progress-success progress-striped progress-verify-networks active" rel="tooltip">
+      <div class="bar"></div>
     </div>
   <% } else { %>
     <% if (task.get('status') == 'ready') { %>

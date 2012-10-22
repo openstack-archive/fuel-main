@@ -1,6 +1,7 @@
-<% if (cluster.task('deploy', 'running')) { %>
-  <div class="progress progress-warning progress-striped progress-deploy active">
-    <div class="bar" style="width:100%"></div>
+<% var task = cluster.task('deploy', 'running') %>
+<% if (task) { %>
+  <div class="progress progress-warning progress-striped progress-deploy active" rel="tooltip">
+    <div class="bar"></div>
   </div>
 <% } else { %>
   <button class="deploy-btn" <%= cluster.hasChanges() ? '' : 'disabled' %>><i class="icon-upload-cloud-1"></i> Apply Changes</button>

@@ -976,7 +976,7 @@ h6.page-title {
 }
 
 .progress-deploy {
-  width: 150px;
+  width: 350px;
   padding: 2px;
   margin-top: 17px;
   height: 12px;
@@ -985,11 +985,11 @@ h6.page-title {
 }
 
 .progress-verify-networks {
-  width: 150px;
+  width: 250px;
   padding: 2px;
   margin: 13px 0 0 0;
   height: 12px;
-  background-color: #373e46;
+  background-color: #e3e3e3;
   background-image: none;
 }
 
