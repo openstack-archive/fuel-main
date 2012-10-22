@@ -6,7 +6,7 @@ LINUX:=$(BS_DIR)/linux
 .PHONY: bootstrap clean chroot-bootstrap
 all: bootstrap
 
-YUM_PACKAGES:=puppet openssh-server wget cronie-noanacron crontabs ntp \
+YUM_PACKAGES:=openssh-server wget cronie-noanacron crontabs ntp \
 mcollective bash net-tools dhclient rsyslog iputils openssh-server \
 ruby-json rubygems mcollective vconfig tcpdump scapy mingetty
 
@@ -66,7 +66,6 @@ $(NAILGUN_DIR)/system_type: $(INITRAM_DIR)/init
 
 
 $(INITRAM_DIR)/init: $(BUILD_DIR)/packages/centos/repo.done $(INITRAM_DIR)/etc/yum.repos.d/mirror.repo
-	#$(MAKE) $(INITRAM_DIR)/dev/urandom $(INITRAM_DIR)/proc/1
 	sudo mkdir -p $(INITRAM_DIR)/var/lib/rpm
 	$(RPM) --rebuilddb
 	$(YUM) install $(YUM_PACKAGES) $(YUM_BUILD_PACKAGES)
