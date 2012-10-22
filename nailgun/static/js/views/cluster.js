@@ -544,7 +544,7 @@ function(models, dialogViews, clusterPageTemplate, deploymentResultTemplate, dep
         },
         applyChanges: function() {
             var changedData = {};
-            this.collectData($('.settings-editable'), changedData);
+            this.collectData(this.$('.settings-editable'), changedData);
             this.settings.set({editable: changedData});
             this.settings.save({}, {
                 url: '/api/clusters/' + this.model.id + '/attributes'
