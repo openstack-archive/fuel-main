@@ -325,7 +325,8 @@ mco_enable=1\"" % {'puppet_master_host': settings.PUPPET_MASTER_HOST,
                           'network_data': netmanager.get_node_networks(n.id)})
         message = {'method': 'deploy',
                    'respond_to': 'deploy_resp',
-                   'args': {'task_uuid': task.uuid, 'nodes': nodes}}
+                   'args': {'task_uuid': task.uuid, 'nodes': nodes,
+                            'attributes': cluster.attributes.merged_attrs()}}
         rpc.cast('naily', message)
 
         return json.dumps(

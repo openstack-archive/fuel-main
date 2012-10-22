@@ -273,7 +273,7 @@ def create_connection(new, connection_pool):
 
 def cast(topic, msg, connection_pool):
     """Sends a message on a topic without waiting for a response."""
-    LOG.debug('Making asynchronous cast on %s...', topic)
+    LOG.debug('Making asynchronous cast on %s with msg=%s', topic, msg)
     with ConnectionContext(connection_pool) as conn:
         conn.topic_send(topic, msg)
 

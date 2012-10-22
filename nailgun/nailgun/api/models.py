@@ -3,6 +3,7 @@
 import re
 import string
 from random import choice
+from copy import deepcopy
 
 import web
 from sqlalchemy import Column, UniqueConstraint, Table
@@ -302,6 +303,23 @@ class Attributes(Base, BasicValidator):
                 message="Editable attributes should be a dictionary"
             )
         return d
+
+    def merged_attrs(self):
+        return self._dict_merge(self.generated, self.editable)
+
+    def _dict_merge(self, a, b):
+        '''recursively merges dict's. not just simple a['key'] = b['key'], if
+        both a and bhave a key who's value is a dict then dict_merge is called
+        on both values and the result stored in the returned dictionary.'''
+        if not isinstance(b, dict):
+            return b
+        result = deepcopy(a)
+        for k, v in b.iteritems():
+            if k in result and isinstance(result[k], dict):
+                    result[k] = self._dict_merge(result[k], v)
+            else:
+                result[k] = deepcopy(v)
+        return result
 
 
 class Task(Base, BasicValidator):
