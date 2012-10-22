@@ -1,5 +1,5 @@
 ifndef BOOTSTRAP_REBUILD
-BOOTSTRAP_REBUILD:=0
+BOOTSTRAP_REBUILD:=1
 endif
 
 MIRROR_URL:=http://srv08-srt.srt.mirantis.net/mirror
@@ -8,17 +8,10 @@ IGNORE_MIRROR:=0
 endif
 
 ifndef LOCAL_MIRROR
-LOCAL_MIRROR:=mirror
-endif
-
-ifndef GOLDEN_MIRROR
-GOLDEN_MIRROR:=srv08-srt.srt.mirantis.net:/var/lib/jenkins/mirror
+LOCAL_MIRROR:=local_mirror
 endif
 
 iso.path:=$(BUILD_DIR)/iso/nailgun-centos-6.3-amd64.iso
-image.centos.url=http://mc0n1-srt.srt.mirantis.net/centos63.qcow2
-
-centos.packages=$(BUILD_DIR)/packages/centos
 
 bootstrap.linux:=$(BUILD_DIR)/bootstrap/linux
 bootstrap.initrd:=$(BUILD_DIR)/bootstrap/initrd.gz

@@ -1,4 +1,4 @@
-/:=$(BUILD_DIR)/packages/rpm/
+/:=$(BUILD_DIR)/rpm/
 
 $/%: /:=$/
 
@@ -22,7 +22,7 @@ endif
 $/RPMS/x86_64/cirros-uec-0.3.0-1.x86_64.rpm: $/SOURCES/cirros-0.3.0-x86_64-uec.tar.gz packages/rpm/specs/cirros-0.3.0.spec
 	rpmbuild -vv --define "_topdir `readlink -f $/`" -ba packages/rpm/specs/cirros-0.3.0.spec
 
-$(BUILD_DIR)/packages/rpm/rpm.done: $/RPMS/x86_64/cirros-uec-0.3.0-1.x86_64.rpm
+$(BUILD_DIR)/rpm/rpm.done: $/RPMS/x86_64/cirros-uec-0.3.0-1.x86_64.rpm
 	$(ACTION.TOUCH)
 
 $(addprefix $(SRC_DIR),$(SRC_FILES)):

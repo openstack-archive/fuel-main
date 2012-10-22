@@ -17,7 +17,7 @@ NAILGUN_DIR:=$(INITRAM_DIR)/opt/nailgun
 
 RPM:=sudo rpm --root=`readlink -f $(INITRAM_DIR)`
 YUM:=sudo yum --installroot=`readlink -f $(INITRAM_DIR)` -y --nogpgcheck
-RPM_DIR=$(CENTOS_REPO_DIR)Packages
+RPM_DIR=$(CENTOS_REPO_DIR)
 CHROOT_CMD:=sudo chroot $(INITRAM_DIR)
 
 clean: clean-bootstrap
@@ -25,9 +25,7 @@ clean: clean-bootstrap
 clean-bootstrap:
 	sudo rm -rf $(INITRAM_DIR)
 
-
 bootstrap: $(LINUX) $(INITRAM_FS)
-
 
 chroot-bootstrap: $(NAILGUN_DIR)/system_type $(INITRAM_DIR)/init
 	sudo mkdir -p $(INITRAM_DIR)/proc $(INITRAM_DIR)/dev
@@ -45,7 +43,7 @@ $(INITRAM_FS): $(NAILGUN_DIR)/system_type
         --format='newc' | gzip -9 > `readlink -f $(INITRAM_FS)`"
 
 
-$(LINUX): $(BUILD_DIR)/packages/centos/cache.done
+$(LINUX): $(LOCAL_MIRROR)/cache.done
 	mkdir -p $(BS_DIR)
 	find $(RPM_DIR) -name 'kernel-2.*' | xargs rpm2cpio | (cd $(BS_DIR)/; cpio -imd './boot/vmlinuz*')
 	mv $(BS_DIR)/boot/vmlinuz* $(LINUX)
@@ -65,7 +63,7 @@ $(NAILGUN_DIR)/system_type: $(INITRAM_DIR)/init
 	sudo sh -c "echo bootstrap > $(NAILGUN_DIR)/system_type"
 
 
-$(INITRAM_DIR)/init: $(BUILD_DIR)/packages/centos/repo.done $(INITRAM_DIR)/etc/yum.repos.d/mirror.repo
+$(INITRAM_DIR)/init: $(LOCAL_MIRROR)/repo.done $(INITRAM_DIR)/etc/yum.repos.d/mirror.repo
 	sudo mkdir -p $(INITRAM_DIR)/var/lib/rpm
 	$(RPM) --rebuilddb
 	$(YUM) install $(YUM_PACKAGES) $(YUM_BUILD_PACKAGES)
@@ -100,7 +98,7 @@ $(INITRAM_DIR)/init: $(BUILD_DIR)/packages/centos/repo.done $(INITRAM_DIR)/etc/y
 define yum_local_repo
 [mirror]
 name=Mirantis mirror
-baseurl=file://$(shell readlink -f $(BUILD_DIR))/packages/centos/Packages
+baseurl=file://$(shell readlink -f $(RPM_DIR))/Packages
 gpgcheck=0
 enabled=1
 endef

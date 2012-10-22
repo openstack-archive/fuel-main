@@ -3,7 +3,7 @@ BUILD_DIR:=build
 
 MODULES=gnupg bootstrap nailgun test mirror iso packages/rpm naily astute
 
-.PHONY: all clean test test-unit help mirror FORCE
+.PHONY: all clean test test-unit help mirror FORCE deep_clean
 
 help:
 	@echo 'Available targets:'
@@ -17,6 +17,8 @@ help:
 	@echo '  test-cookbooks - run cookbooks tests'
 	@echo '  clean-integration-test - clean integration test environment'
 	@echo '  clean-cookbooks-test - clean cookbooks test environment'
+	@echo '  clean - remove build directory and resetting .done flags'
+	@echo '  deep_clean - clean + removing $(LOCAL_MIRROR) directory'
 
 all:
 
@@ -29,11 +31,15 @@ FORCE:
 
 clean:
 	rm -rf $(BUILD_DIR)
+	find $(LOCAL_MIRROR) -name *.done -exec rm {} \;
+deep_clean: clean
+	rm -rf $(LOCAL_MIRROR)
 
 assert-variable=$(if $($1),,$(error Variable $1 need to be defined))
 find-files=$(shell test -d $1 && cd $1 && find * -type f 2> /dev/null)
 
 include config.mk
+include repo.mk
 
 define include-module-template
 MODULE_SOURCE_DIR:=$1
