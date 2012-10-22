@@ -391,7 +391,33 @@ class ClusterAttributesHandler(JSONHandler):
 
         attrs = cluster.attributes
         if not attrs:
+            return json.dumps([])
+
+        return json.dumps(
+            {
+                "editable": attrs.editable
+            },
+            indent=4
+        )
+
+    def PUT(self, cluster_id):
+        web.header('Content-Type', 'application/json')
+        q = web.ctx.orm.query(Cluster).filter(Cluster.id == cluster_id)
+        cluster = q.first()
+        if not cluster:
             return web.notfound()
+
+        attrs = cluster.attributes
+        if not attrs:
+            return json.dumps([])
+
+        data = Attributes.validate_json(web.data())
+
+        for key, value in data.iteritems():
+            setattr(attrs, key, value)
+
+        web.ctx.orm.add(attrs)
+        web.ctx.orm.commit()
 
         return json.dumps(
             {
