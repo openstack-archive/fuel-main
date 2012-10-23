@@ -110,13 +110,13 @@ function(models, dialogViews, clusterPageTemplate, deploymentResultTemplate, dep
             this.$('.deployment-result').html(new views.DeploymentResult({model: this.model}).render().el);
             this.$('.deployment-control').html(new views.DeploymentControl({model: this.model}).render().el);
 
-            var tabContainer = this.$('#tab-' + this.tab);
-            if (this.tab == 'nodes') {
-                tabContainer.html(new views.NodesTab({model: this.model}).render().el);
-            } else if (this.tab == 'network') {
-                tabContainer.html(new views.NetworkTab({model: this.model}).render().el);
-            } else if (this.tab == 'settings') {
-                tabContainer.html(new views.SettingsTab({model: this.model}).render().el);
+            var tabs = {
+                'nodes': views.NodesTab,
+                'network': views.NetworkTab,
+                'settings': views.SettingsTab
+            };
+            if (_.has(tabs, this.tab)) {
+                this.$('#tab-' + this.tab).html(new tabs[this.tab]({model: this.model}).render().el);
             }
 
             return this;
@@ -521,7 +521,7 @@ function(models, dialogViews, clusterPageTemplate, deploymentResultTemplate, dep
             return this;
         }
     });
-    
+
     views.SettingsTab = Backbone.View.extend({
         template: _.template(settingsTabTemplate),
         events: {
@@ -531,24 +531,21 @@ function(models, dialogViews, clusterPageTemplate, deploymentResultTemplate, dep
         },
         collectData: function(parentEl, changedData) {
             var model = this, param;
-            _.each(parentEl.children().children('.wrapper'), function(el){
+            _.each(parentEl.children().children('.wrapper'), function(el) {
                 if ($(el).data('nested')) {
                     param = $(el).find('legend:first').text();
                     changedData[param] = {};
                     model.collectData($(el), changedData[param]);
                 } else {
                     param = $(el).find('input');
-                    changedData[param.attr('name')] = param.val();    
+                    changedData[param.attr('name')] = param.val();
                 }
             });
         },
         applyChanges: function() {
             var changedData = {};
             this.collectData(this.$('.settings-editable'), changedData);
-            this.model.get('settings').set({editable: changedData});
-            //console.log(this.model.get('settings').isNew());
-            this.model.get('settings').save({}, {
-                method: 'PUT',
+            this.model.get('settings').update({editable: changedData}, {
                 url: '/api/clusters/' + this.model.id + '/attributes'
             });
         },
@@ -559,13 +556,16 @@ function(models, dialogViews, clusterPageTemplate, deploymentResultTemplate, dep
             this.pasteSettings(this.settings.get('defaults'));
         },
         render: function () {
-            this.$el.html(this.template({cluster: this.model}));
-            if (_.isObject(this.model.get('settings').get('editable'))) {
+            this.$el.html(this.template({settings: this.model.get('settings')}));
+            if (this.model.get('settings').deferred.state() != 'pending') {
+                this.$('.settings-content').html('');
                 var settingsSet = this.model.get('settings').get('editable');
-                _.each(_.keys(settingsSet), function(setting) {
-                    var settingsGroupView = new views.SettingsGroup({legend: setting, settings: settingsSet[setting]});
-                    this.$el.find('.settings-editable').append(settingsGroupView.render().el);
-                }, this); 
+                if (_.isObject(settingsSet)) {
+                    _.each(_.keys(settingsSet), function(setting) {
+                        var settingsGroupView = new views.SettingsGroup({legend: setting, settings: settingsSet[setting]});
+                        this.$('.settings-content').append(settingsGroupView.render().el);
+                    }, this);
+                }
             }
             return this;
         },
@@ -580,7 +580,7 @@ function(models, dialogViews, clusterPageTemplate, deploymentResultTemplate, dep
             }
         }
     });
-    
+
     views.SettingsGroup = Backbone.View.extend({
         template: _.template(settingsGroupTemplate),
         events: {

@@ -17,7 +17,7 @@ _.extend(Backbone.Model.prototype, {
     }
     options = options ? _.clone(options) : {};
 
-    if (this.isNew()) return false;
+    if (this.id && this.isNew()) return false;
 
     // After a successful server-side save, the client is (optionally)
     // updated with the server-side state.
