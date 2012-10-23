@@ -11,7 +11,7 @@ class NailgunSettings:
 
         settings_files = []
         self.logger.debug("Looking for settings.yaml package config "
-                              "using old style __file__")
+                          "using old style __file__")
         project_path = os.path.dirname(__file__)
         project_settings_file = os.path.join(project_path, 'settings.yaml')
         settings_files.append(project_settings_file)
@@ -45,4 +45,3 @@ if int(settings.DEVELOPMENT):
         'LOGFILE': os.path.join(here, 'nailgun.log'),
         'DATABASE_ENGINE': 'sqlite:///%s' %
         os.path.join(here, 'nailgun.sqlite')})
-

@@ -27,12 +27,12 @@ def appstart():
     eventlet.monkey_patch()
     q = threaded.rpc_queue
     rpc_thread = threaded.RPCThread()
-    
+
     server = web.httpserver.WSGIServer(
         (settings.LISTEN_ADDRESS, int(settings.LISTEN_PORT)),
         app.wsgifunc(Log)
     )
-    
+
     try:
         rpc_thread.start()
         server.start()
@@ -43,5 +43,5 @@ def appstart():
         server.stop()
         logging.info("Done")
 
-    
+
 application = app.wsgifunc()
