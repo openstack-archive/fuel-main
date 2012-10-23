@@ -1,0 +1,8 @@
+name    'mcollective'
+version '0.0.1'
+source  'gitolite@gitolite.mirantis.com:fuel/deployment/puppet/mcollective.git'
+author  'Mirantis Inc.'
+license 'Apache License 2.0'
+summary 'Mirantis Mcollective Module'
+description 'Module to install mcollective orchestration node'
+project_page 'http://mirantis.com'

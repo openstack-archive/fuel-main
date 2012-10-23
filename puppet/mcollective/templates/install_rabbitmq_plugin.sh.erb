@@ -1,0 +1,55 @@
+#!/bin/sh
+
+
+usage(){
+    echo "Usage: `basename $0` <plugin> <action>"
+    echo "       possible actions: install is_installed"
+    exit 1
+}
+
+test $# -lt 2 && usage
+
+
+plugin=$1
+action=$2
+
+
+get_version(){
+    local rv=`cat /root/installed_rabbitmq_version 2>/dev/null`
+    if test X$rv = X; then
+	rv=`(rpm -qa | grep rabbitmq-server | awk -F- '{print $3}') 2>/dev/null`
+	echo $rv > /root/installed_rabbitmq_version
+    else
+	echo $rv
+    fi
+}
+
+version=`get_version`
+# echo "Installed rabbitmq-server version: ${version}"
+plugins_dir="/usr/lib/rabbitmq/lib/rabbitmq_server-${version}/plugins"
+repo="http://www.rabbitmq.com/releases/plugins/v${version}"
+
+is_installed(){
+    # echo "Checking if plugin ${plugin} already installed"
+    test -s "${plugins_dir}/${plugin}-${version}.ez"
+}
+
+install_plugin(){
+    # echo "Downloading and installing rabbitmq-server plugin: ${plugin}"
+    wget -q -O- "${repo}/${plugin}-${version}.ez" > "${plugins_dir}/${plugin}-${version}.ez"
+    
+}
+
+
+case $action in
+    install)
+	is_installed || install_plugin
+	;;
+    is_installed)
+	is_installed && exit 0 || exit 1
+	;;
+    *)
+	usage
+	;;
+esac
+
