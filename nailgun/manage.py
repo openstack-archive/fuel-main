@@ -4,32 +4,19 @@
 import os
 import sys
 import argparse
-import logging
 import code
+import logging
+
+logging.basicConfig(level="DEBUG")
 
 import web
 from sqlalchemy.orm import scoped_session, sessionmaker
 
 from nailgun.settings import settings
-here = os.path.abspath(os.path.dirname(__file__))
-
-settings.update({
-    'STATIC_DIR': os.path.join(here, 'static'),
-    'TEMPLATE_DIR': os.path.join(here, 'static'),
-    'LOGFILE': os.path.join(here, 'nailgun.log'),
-    'DATABASE_ENGINE': 'sqlite:///%s' %
-    os.path.join(here, 'nailgun.sqlite')})
-
-
-from nailgun.api.handlers import check_client_content_type
-from nailgun.api.models import engine
-from nailgun.db import load_db_driver, syncdb
+from nailgun.db import syncdb
 from nailgun.unit_test import TestRunner
-from nailgun.urls import urls
 from nailgun.logger import Log
 from nailgun.wsgi import app
-
-logging.basicConfig(level="DEBUG")
 
 
 if __name__ == "__main__":
@@ -44,12 +31,9 @@ if __name__ == "__main__":
         '-p', '--port', dest='port', action='store', type=str,
         help='application port', default='8000'
     )
-    runwsgi_parser = subparsers.add_parser(
-        'runwsgi', help='run WSGI application'
-    )
-    runwsgi_parser.add_argument(
-        '-p', '--port', dest='port', action='store', type=str,
-        help='application port', default='8000'
+    run_parser.add_argument(
+        '-a', '--address', dest='address', action='store', type=str,
+        help='application address', default='0.0.0.0'
     )
     test_parser = subparsers.add_parser(
         'test', help='run unit tests'
@@ -86,32 +70,14 @@ if __name__ == "__main__":
             logging.info("Done")
         else:
             parser.print_help()
-    elif params.action in ("run", "runwsgi"):
-        from nailgun.rpc import threaded
-        import eventlet
-        eventlet.monkey_patch()
-        q = threaded.rpc_queue
-        rpc_thread = threaded.RPCThread()
-
-        if params.action == "run":
-            sys.argv.insert(1, params.port)
-            app.run()
-        else:
-            logging.info("Running WSGI app...")
-            server = web.httpserver.WSGIServer(
-                ("0.0.0.0", int(params.port)),
-                app.wsgifunc(Log)
-            )
-            try:
-                rpc_thread.start()
-                server.start()
-            except KeyboardInterrupt:
-                logging.info("Stopping RPC thread...")
-                rpc_thread.running = False
-                logging.info("Stopping WSGI app...")
-                server.stop()
-                logging.info("Done")
+    elif params.action in ("run",):
+        from nailgun.wsgi import appstart
+        settings.update({
+            'LISTEN_PORT': int(params.port),
+            'LISTEN_ADDRESS': params.address})
+        appstart()
     elif params.action == "shell":
+        from nailgun.api.models import engine
         orm = scoped_session(sessionmaker(bind=engine))
         code.interact(local={'orm': orm})
         orm.commit()

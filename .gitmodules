@@ -4,9 +4,6 @@
 [submodule "puppet/mysql"]
 	path = puppet/mysql
 	url = git@github.com:kozhukalov/puppetlabs-mysql.git
-[submodule "puppet/mcollective"]
-	path = puppet/mcollective
-	url = gitolite@gitolite.mirantis.com:fuel/deployment/puppet/mcollective
 [submodule "puppet/cobbler"]
 	path = puppet/cobbler
 	url = gitolite@gitolite.mirantis.com:fuel/deployment/puppet/cobbler.git

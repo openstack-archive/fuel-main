@@ -10,21 +10,23 @@ from setuptools import find_packages
 # README = open(os.path.join(here, 'README.txt')).read()
 
 requires = [
-    'SQLAlchemy==0.7.9',
-    'web.py==0.37',
-    'uWSGI==1.3',
-    'greenlet==0.4.0',
-    'eventlet==0.9.17',
-    'kombu==2.4.7',
-    'netaddr==0.7.10',
-    'simplejson==2.6.2',
     'amqplib==1.0.2',
+    'anyjson==0.3.1',
+    'argparse==1.2.1',
+    'Paste==1.7.5.1',
+    'eventlet==0.9.17',
+    'greenlet==0.4.0',
+    'kombu==2.1.8',
+    'nose==1.1.2',
+    'nose2==0.4.1',
+    'netaddr==0.7.10',
+    'pycrypto==2.6',
     'PyYAML==3.10',
+    'SQLAlchemy==0.7.8',
+    'simplejson==2.6.2',
+    'web.py==0.37',
     'wsgilog==0.3',
     'wsgiref==0.1.2',
-    'argparse==1.2.1',
-    'nose==1.2.1',
-    'nose2==0.4.1',
     # 'cobbler',
 ]
 
@@ -68,6 +70,7 @@ if __name__ == "__main__":
           entry_points={
               'console_scripts': [
                   'nailgun_syncdb = nailgun.db:syncdb',
+                  'nailgund = nailgun.wsgi:appstart',
               ],
           },
           data_files=recursive_data_files([('usr/share/nailgun', 'static')])

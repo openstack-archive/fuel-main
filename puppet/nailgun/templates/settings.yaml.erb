@@ -1,0 +1,52 @@
+LISTEN_ADDRESS: "127.0.0.1"
+LISTEN_PORT: "8001"
+DEVELOPMENT: "1"
+DATABASE_ENGINE: "<%= database_engine %>"
+STATIC_DIR: "<%= staticdir %>"
+TEMPLATE_DIR: "<%= templatedir %>"
+NETWORK_POOLS:
+  public:
+    - "240.0.0.0/16"
+  private10:
+    - "10.0.0.0/8"
+  private172:
+    - "172.16.0.0/12"
+  private192:
+    - "192.168.0.0/16"
+
+NET_EXCLUDE:
+  - "10.20.0.0/24"
+
+VLANS_RANGE_START: "100"
+VLANS_RANGE_END: "1000"
+
+RABBITMQ:
+  fake: "0"
+  hostname: "127.0.0.1"
+  port: 5672
+  userid: "<%= naily_user %>"
+  password: "<%= naily_password %>"
+  virtual_host: "/"
+  
+LOGFILE: "<%= logfile %>"
+
+PATH_TO_SSH_KEY: = "/root/.ssh/id_rsa"
+PATH_TO_BOOTSTRAP_SSH_KEY: "/root/.ssh/bootstrap.rsa"
+
+COBBLER_URL: "<%= cobbler_url %>"
+COBBLER_USER: "<%= cobbler_user %>"
+COBBLER_PASSWORD: "<%= cobbler_password %>"
+COBBLER_PROFILE: "centos-6.3-x86_64"
+
+MCO_PSKEY: "<%= mco_pskey %>"
+MCO_STOMPHOST: "localhost"
+MCO_STOMPPORT: "61613"
+MCO_STOMPUSER: "<%= mco_stompuser %>"
+MCO_STOMPPASSWORD: "<%= mco_stomppassword %>"
+
+PUPPET_MASTER_HOST: "<%= puppet_master_host %>"
+PUPPET_VERSION: "2.7.19"
+
+DNS_DOMAIN: "<%= domain %>"
+DNS_SERVERS: "127.0.0.1"
+DNS_SEARCH: "<%= domain %>"

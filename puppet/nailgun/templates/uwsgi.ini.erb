@@ -1,0 +1,17 @@
+[uwsgi]
+autoload = true
+master = true
+no-orphans = true
+log-date = true
+log-maxsize = 50M
+vacuum = true
+pidfile = <%= rundir %>/nailgun.pid
+max-requests = 5000
+socket = <%= rundir %>/nailgun.sock
+chmod-socket = 660
+workers = 2
+
+module = nailgun.wsgi 
+
+uid = <%= nailgun_user %>
+gid = <%= nailgun_group %>

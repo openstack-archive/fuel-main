@@ -35,7 +35,7 @@ $(addprefix $(ISOROOT)/isolinux/,$(ISOLINUX_FILES)):
 
 $(ISOROOT)/isolinux/isolinux.cfg: iso/isolinux/isolinux.cfg ; $(ACTION.COPY)
 
-$(ISOROOT)/netinstall/$(NETINSTALL_ISO): $(CENTOS_ISO_DIR)/$(NETINSTALL_ISO)
+$(ISOROOT)/iso/$(NETINSTALL_ISO): $(CENTOS_ISO_DIR)/$(NETINSTALL_ISO)
 	@mkdir -p $(@D)
 	cp $(CENTOS_ISO_DIR)/$(@F) $(@D)
 
@@ -52,20 +52,16 @@ $(addprefix $(ISOROOT)/EFI/BOOT/,$(EFI_FILES)):
 	@mkdir -p $(@D)
 	cp $(CENTOS_REPO_DIR)EFI/BOOT/$(@F) $(@D)
 
-$(addprefix $(ISOROOT)/rabbitmq-plugins/,$(RABBITMQ_PLUGINS)):
+$(addprefix $(ISOROOT)/rabbitmq-plugins/v$(RABBITMQ_VERSION)/,$(RABBITMQ_PLUGINS)):
 	@mkdir -p $(@D)
 	wget -O $@ $(RABBITMQ_PLUGINS_URL)/$(@F)
 
 $/isoroot-prepare.done:\
-		$(ISOROOT)/netinstall/$(NETINSTALL_ISO) \
+		$(ISOROOT)/iso/$(NETINSTALL_ISO) \
 		$(addprefix $(ISOROOT)/images/,$(IMAGES_FILES)) \
 		$(addprefix $(ISOROOT)/EFI/BOOT/,$(EFI_FILES)) \
-		$(addprefix $(ISOROOT)/,$(GPGFILES)) \
-		$(addprefix $(ISOROOT)/rabbitmq-plugins/,$(RABBITMQ_PLUGINS)) \
+		$(addprefix $(ISOROOT)/rabbitmq-plugins/v$(RABBITMQ_VERSION)/,$(RABBITMQ_PLUGINS)) \
 	$(ACTION.TOUCH)
-
-$(addprefix $(ISOROOT)/,$(GPGFILES)):
-	wget -O $@ $(CENTOS_GPG)/$(@F)
 
 $/isoroot-bootstrap.done: \
 		$(ISOROOT)/bootstrap/bootstrap.rsa \
@@ -115,11 +111,8 @@ $/isoroot.done: \
 		$(ISOROOT)/bootstrap_admin_node.sh \
 		$/isoroot-eggs.done \
 		$/isoroot-gems.done \
-		$(addprefix $(ISOROOT)/sync/,$(call find-files,iso/sync)) \
 		$(addprefix $(ISOROOT)/puppet/,$(call find-files,puppet))
 	$(ACTION.TOUCH)
-
-$(ISOROOT)/sync/%: iso/sync/% ; $(ACTION.COPY)
 
 $(ISOROOT)/ks.cfg: iso/ks.cfg ; $(ACTION.COPY)
 $(ISOROOT)/bootstrap_admin_node.sh: iso/bootstrap_admin_node.sh ; $(ACTION.COPY)

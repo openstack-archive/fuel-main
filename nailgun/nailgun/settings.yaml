@@ -1,3 +1,6 @@
+LISTEN_ADDRESS: "0.0.0.0"
+LISTEN_PORT: "8000"
+DEVELOPMENT: "1"
 DATABASE_ENGINE: "sqlite:////var/tmp/nailgun.sqlite"
 STATIC_DIR: "/var/tmp/nailgun_static"
 TEMPLATE_DIR: "/var/tmp/nailgun_static"
