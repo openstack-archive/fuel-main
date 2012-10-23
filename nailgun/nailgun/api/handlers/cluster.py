@@ -390,7 +390,7 @@ class ClusterAttributesHandler(JSONHandler):
 
         attrs = cluster.attributes
         if not attrs:
-            return web.notfound()
+            raise web.internalerror("No attributes found!")
 
         return json.dumps(
             {
@@ -407,7 +407,7 @@ class ClusterAttributesHandler(JSONHandler):
 
         attrs = cluster.attributes
         if not attrs:
-            return web.notfound()
+            raise web.internalerror("No attributes found!")
 
         data = Attributes.validate(web.data())
 

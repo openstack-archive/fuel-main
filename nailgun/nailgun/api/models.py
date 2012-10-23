@@ -297,6 +297,10 @@ class Attributes(Base, BasicValidator):
             raise web.webapi.badrequest(
                 message="It is not allowed to update generated attributes"
             )
+        if "editable" in d and not isinstance(d["editable"], dict):
+            raise web.webapi.badrequest(
+                message="Editable attributes should be a dictionary"
+            )
         return d
 
 

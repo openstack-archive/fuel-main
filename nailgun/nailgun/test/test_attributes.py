@@ -43,6 +43,76 @@ class TestAttributes(BaseHandlers):
             attrs.generated
         )
 
+    def test_500_if_no_attributes(self):
+        cluster = self.create_default_cluster()
+        resp = self.app.put(
+            '/api/clusters/%d/attributes/' % cluster.id,
+            params=json.dumps({
+                'editable': {
+                    "foo": "bar"
+                },
+            }),
+            headers=self.default_headers,
+            expect_errors=True
+        )
+        self.assertEquals(500, resp.status)
+
+    def test_attributes_update(self):
+        release = self.create_default_release()
+        yet_another_cluster_name = 'Yet another cluster'
+        resp = self.app.post(
+            '/api/clusters',
+            params=json.dumps({
+                'name': yet_another_cluster_name,
+                'release': release.id
+            }),
+            headers=self.default_headers
+        )
+        self.assertEquals(201, resp.status)
+        response = json.loads(resp.body)
+        cluster_id = int(response["id"])
+        resp = self.app.get(
+            '/api/clusters/%d/attributes/' % cluster_id,
+            headers=self.default_headers
+        )
+        self.assertEquals(200, resp.status)
+        resp = self.app.put(
+            '/api/clusters/%d/attributes/' % cluster_id,
+            params=json.dumps({
+                'editable': {
+                    "foo": "bar"
+                },
+            }),
+            headers=self.default_headers
+        )
+        self.assertEquals(200, resp.status)
+        attrs = self.db.query(Attributes).filter(
+            Attributes.cluster_id == cluster_id
+        ).first()
+        self.assertEquals("bar", attrs.editable["foo"])
+        # 400 on generated update
+        resp = self.app.put(
+            '/api/clusters/%d/attributes/' % cluster_id,
+            params=json.dumps({
+                'generated': {
+                    "foo": "bar"
+                },
+            }),
+            headers=self.default_headers,
+            expect_errors=True
+        )
+        self.assertEquals(400, resp.status)
+        # 400 if editable is not dict
+        resp = self.app.put(
+            '/api/clusters/%d/attributes/' % cluster_id,
+            params=json.dumps({
+                'editable': ["foo", "bar"],
+            }),
+            headers=self.default_headers,
+            expect_errors=True
+        )
+        self.assertEquals(400, resp.status)
+
     def _compare(self, d1, d2):
         if isinstance(d1, dict) and isinstance(d2, dict):
             for s_field, s_value in d1.iteritems():
