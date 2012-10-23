@@ -530,8 +530,8 @@ function(models, dialogViews, clusterPageTemplate, deploymentResultTemplate, dep
             'click .btn-set-defaults': 'setDefaults'
         },
         defaultButtonsState: function() {
-            $('.settings-editable .btn').attr('disabled', true).addClass('disabled');
-            $('.btn-set-defaults').attr('disabled', false).removeClass('disabled');
+            $('.settings-editable .btn').addClass('disabled');
+            $('.btn-set-defaults').removeClass('disabled');
         },
         collectData: function(parentEl, changedData) {
             var model = this, param;
@@ -560,8 +560,8 @@ function(models, dialogViews, clusterPageTemplate, deploymentResultTemplate, dep
         },
         setDefaults: function() {
             this.pasteSettings(this.model.get('settings').get('defaults'));
-            $('.settings-editable .btn').attr('disabled', false).removeClass('disabled');
-            $('.btn-set-defaults').attr('disabled', true).addClass('disabled');
+            $('.settings-editable .btn').removeClass('disabled');
+            $('.btn-set-defaults').addClass('disabled');
         },
         render: function () {
             this.$el.html(this.template({settings: this.model.get('settings')}));
@@ -595,7 +595,7 @@ function(models, dialogViews, clusterPageTemplate, deploymentResultTemplate, dep
             'change input': 'hasChanges'
         },
         hasChanges: function(el) {
-            $('.settings-editable .btn').attr('disabled', false).removeClass('disabled');
+            $('.settings-editable .btn').removeClass('disabled');
         },
         initialize: function(options) {
             this.settings = options.settings;
