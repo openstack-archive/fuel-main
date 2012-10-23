@@ -3,6 +3,8 @@ define(
     'text!templates/release/list.html'
 ],
 function(releaseListTemplate) {
+    'use strict';
+
     var views = {};
 
     views.ReleasesPage = Backbone.View.extend({

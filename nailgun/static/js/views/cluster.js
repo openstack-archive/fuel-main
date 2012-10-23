@@ -15,6 +15,8 @@ define(
     'text!templates/cluster/settings_group.html'
 ],
 function(models, dialogViews, clusterPageTemplate, deploymentResultTemplate, deploymentControlTemplate, nodesTabSummaryTemplate, editNodesScreenTemplate, nodeListTemplate, nodeTemplate, networkTabSummaryTemplate, networkTabVerificationTemplate, settingsTabTemplate, settingsGroupTemplate) {
+    'use strict';
+
     var views = {};
 
     views.ClusterPage = Backbone.View.extend({

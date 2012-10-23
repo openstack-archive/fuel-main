@@ -5,6 +5,8 @@ define(
     'text!templates/common/breadcrumb.html'
 ],
 function(models, navbarTemplate, breadcrumbTemplate) {
+    'use strict';
+
     var views = {};
 
     views.Navbar = Backbone.View.extend({

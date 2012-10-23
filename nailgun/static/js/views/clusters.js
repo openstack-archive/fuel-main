@@ -7,6 +7,8 @@ define(
     'text!templates/clusters/new.html'
 ],
 function(models, dialogViews, clustersPageTemplate, clusterTemplate, newClusterTemplate) {
+    'use strict';
+
     var views = {};
 
     views.ClustersPage = Backbone.View.extend({

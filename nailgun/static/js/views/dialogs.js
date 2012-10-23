@@ -7,6 +7,8 @@ define(
     'text!templates/dialogs/change_network_settings.html'
 ],
 function(models, createClusterDialogTemplate, changeClusterModeDialogTemplate, changeClusterTypeDialogTemplate, changeNetworkSettingsDialogTemplate) {
+    'use strict';
+
     var views = {};
 
     views.Dialog = Backbone.View.extend({

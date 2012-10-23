@@ -5,7 +5,10 @@ define(
     'views/cluster',
     'views/clusters',
     'views/release'
-], function(models, commonViews, clusterViews, clustersViews, releaseViews) {
+],
+function(models, commonViews, clusterViews, clustersViews, releaseViews) {
+    'use strict';
+
     var AppRouter = Backbone.Router.extend({
         routes: {
             'clusters': 'listClusters',
@@ -35,15 +38,14 @@ define(
             }
 
             var cluster;
-
-            function render() {
+            var render = function() {
                 this.navbar.setActive('clusters');
                 this.breadcrumb.setPath(['Home', '#'], ['OpenStack Installations', '#clusters'], cluster.get('name'));
                 this.page = new clusterViews.ClusterPage({model: cluster, tabs: tabs, tab: tab});
                 this.content.html(this.page.render().el);
-            }
+            };
 
-            if (app.page && app.page.constructor == clusterViews.ClusterPage) {
+            if (app.page && app.page.constructor == clusterViews.ClusterPage && app.page.model.id == id) {
                 // just another tab has been chosen, do not load cluster again
                 cluster = app.page.model;
                 render.call(this);
@@ -51,7 +53,7 @@ define(
                 cluster = new models.Cluster({id: id});
                 cluster.fetch({
                     success: _.bind(render, this),
-                    error: _.bind(function() {this.listClusters();}, this)
+                    error: _.bind(this.listClusters, this)
                 });
             }
         },

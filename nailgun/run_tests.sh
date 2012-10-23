@@ -74,7 +74,7 @@ fi
 function run_jslint {
     jsfiles=$(find static/js -type f | grep -v ^static/js/libs/ | grep \\.js$)
     jslint_predef=(requirejs require define app Backbone $ _ alert confirm)
-    jslint_options="$(echo ${jslint_predef[@]} | sed 's/^\| / --predef=/g') --browser=true --nomen=true --eqeq=true --sloppy=true --vars=true --white=true --es5=false"
+    jslint_options="$(echo ${jslint_predef[@]} | sed 's/^\| / --predef=/g') --browser=true --nomen=true --eqeq=true --vars=true --white=true --es5=false"
     jslint $jslint_options $jsfiles || return 1
 }
 
