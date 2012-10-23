@@ -594,7 +594,7 @@ function(models, dialogViews, clusterPageTemplate, deploymentResultTemplate, dep
     views.SettingsGroup = Backbone.View.extend({
         template: _.template(settingsGroupTemplate),
         events: {
-            'change input': 'hasChanges'
+            'keydown input': 'hasChanges'
         },
         hasChanges: function(el) {
             $('.settings-editable .btn').removeClass('disabled');

@@ -1058,6 +1058,6 @@ fieldset fieldset legend {
   margin-top: 10px;
 }
 
-.btn.disabled, .btn[disabled] {
+.settings-editable .btn.disabled, .settings-editable .btn[disabled] {
     background-color: transparent;
 }
