@@ -529,6 +529,10 @@ function(models, dialogViews, clusterPageTemplate, deploymentResultTemplate, dep
             'click .btn-revert-changes': 'revertChanges',
             'click .btn-set-defaults': 'setDefaults'
         },
+        defaultButtonsState: function() {
+            $('.settings-editable .btn').attr('disabled', true).addClass('disabled');
+            $('.btn-set-defaults').attr('disabled', false).removeClass('disabled');
+        },
         collectData: function(parentEl, changedData) {
             var model = this, param;
             _.each(parentEl.children().children('.wrapper'), function(el) {
@@ -548,12 +552,16 @@ function(models, dialogViews, clusterPageTemplate, deploymentResultTemplate, dep
             this.model.get('settings').update({editable: changedData}, {
                 url: '/api/clusters/' + this.model.id + '/attributes'
             });
+            this.defaultButtonsState();
         },
         revertChanges: function() {
             $('.settings-editable')[0].reset();
+            this.defaultButtonsState();
         },
         setDefaults: function() {
-            this.pasteSettings(this.settings.get('defaults'));
+            this.pasteSettings(this.model.get('settings').get('defaults'));
+            $('.settings-editable .btn').attr('disabled', false).removeClass('disabled');
+            $('.btn-set-defaults').attr('disabled', true).addClass('disabled');
         },
         render: function () {
             this.$el.html(this.template({settings: this.model.get('settings')}));
@@ -587,8 +595,7 @@ function(models, dialogViews, clusterPageTemplate, deploymentResultTemplate, dep
             'change input': 'hasChanges'
         },
         hasChanges: function(el) {
-            $('.btn-apply-changes').attr('disabled', false);
-            $('.btn-revert-changes').attr('disabled', false);
+            $('.settings-editable .btn').attr('disabled', false).removeClass('disabled');
         },
         initialize: function(options) {
             this.settings = options.settings;
