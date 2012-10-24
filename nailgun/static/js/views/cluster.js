@@ -253,11 +253,11 @@ function(models, dialogViews, clusterPageTemplate, deploymentResultTemplate, dep
             'click .select-all-btn': 'selectAll'
         },
         toggleNode: function(e) {
-            $(e.currentTarget).toggleClass('node-to-' + this.action + '-checked').toggleClass('node-to-' + this.action + '-unchecked');
+            $(e.currentTarget).toggleClass('node-to-' + this.action + '-checked').toggleClass('node-to-' + this.action + '-unchecked').css('webkitTransform', 'scale(1)');
             this.calculateApplyButtonAvailability();
         },
         selectAll: function() {
-            this.$('.nodebox').addClass('node-to-' + this.action + '-checked').removeClass('node-to-' + this.action + '-unchecked');
+            this.$('.nodebox').addClass('node-to-' + this.action + '-checked').removeClass('node-to-' + this.action + '-unchecked').css('webkitTransform', 'scale(1)');
             this.calculateApplyButtonAvailability();
         },
         calculateApplyButtonAvailability: function() {
