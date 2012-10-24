@@ -165,16 +165,23 @@ function(models, dialogViews, clusterPageTemplate, deploymentResultTemplate, dep
 
     views.NodesTab = Backbone.View.extend({
         screen: null,
+        scrollPositions: {},
         changeScreen: function(NewScreenView, screenOptions) {
             var options = _.extend({model: this.model, tab: this}, screenOptions || {});
             var newScreen = new NewScreenView(options);
             var oldScreen = this.screen;
             if (oldScreen) {
+                if (oldScreen.keepScrollPosition) {
+                    this.scrollPositions[oldScreen.screenName] = $(window).scrollTop();
+                }
                 oldScreen.$el.fadeOut('fast', _.bind(function() {
                     oldScreen.remove();
                     newScreen.render();
                     newScreen.$el.hide().fadeIn('fast');
                     this.$el.html(newScreen.el);
+                    if (newScreen.keepScrollPosition && this.scrollPositions[newScreen.screenName]) {
+                        $(window).scrollTop(this.scrollPositions[newScreen.screenName]);
+                    }
                 }, this));
             } else {
                 this.$el.html(newScreen.render().el);
@@ -207,6 +214,8 @@ function(models, dialogViews, clusterPageTemplate, deploymentResultTemplate, dep
     });
 
     views.NodesByRolesScreen = Backbone.View.extend({
+        screenName: 'nodes-by-roles',
+        keepScrollPosition: true,
         initialize: function(options) {
             this.tab = options.tab;
             this.model.get('nodes').bind('reset', this.render, this);
@@ -234,6 +243,8 @@ function(models, dialogViews, clusterPageTemplate, deploymentResultTemplate, dep
     });
 
     views.EditNodesScreen = Backbone.View.extend({
+        screenName: 'edit-nodes',
+        keepScrollPosition: false,
         template: _.template(editNodesScreenTemplate),
         events: {
             'click .btn-discard': 'discardChanges',
