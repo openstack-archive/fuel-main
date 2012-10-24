@@ -1,17 +1,20 @@
-# -*- coding: utf-8 -*-
-
 from datetime import time
+import json
+
 import eventlet
 eventlet.monkey_patch()
-
-from unittest import TestCase
+from mock import patch
 
 import nailgun.rpc as rpc
+from nailgun.test.base import BaseHandlers
+from nailgun.test.base import reverse
+from nailgun.api.models import Cluster
 
 
-class TestTasks(TestCase):
+class TestTasks(BaseHandlers):
 
     def setUp(self):
+        super(TestTasks, self).setUp()
         self.conn = rpc.create_connection(True)
         self.receiver = TestReceiver()
         self.conn.create_consumer('test', self.receiver, False)
@@ -19,6 +22,7 @@ class TestTasks(TestCase):
 
     def tearDown(self):
         self.conn.close()
+        super(TestTasks, self).tearDown()
 
     def test_call_succeed(self):
         value = 42
