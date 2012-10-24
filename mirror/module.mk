@@ -187,10 +187,32 @@ $(CENTOS_ISO_DIR)/$(NETINSTALL_ISO):
 
 # EGGS AND GEMS
 
-$/eggs-gems.done: requirements-gems.txt requirements-eggs.txt
+$/eggs-chroot.done: \
+		$(INITRAM_DIR)/init
 	@mkdir -p $/eggs
+	sudo cp /etc/resolv.conf $(INITRAM_DIR)/etc/resolv.conf
+	@mkdir -p $(INITRAM_DIR)/tmp/eggs
+	sudo cp ./requirements-eggs.txt $(INITRAM_DIR)/tmp
+	$(YUM) install python-setuptools
+	mount | grep $(INITRAM_DIR)/proc || sudo mount --bind /proc $(INITRAM_DIR)/proc
+	mount | grep $(INITRAM_DIR)/dev || sudo mount --bind /dev $(INITRAM_DIR)/dev
+	$(CHROOT_CMD) easy_install -U distribute
+	$(CHROOT_CMD) easy_install -U pip
+	$(CHROOT_CMD) awk -v mirror=/tmp/eggs '{system ("[ `find " mirror " -name " $$1 "-"$$2 "* ` ] || pip install -d " mirror " --exists-action=i " $$1 "=="$$2 )}' /tmp/requirements-eggs.txt
+	sudo cp -R $(INITRAM_DIR)/tmp/eggs $/
+	$(CHROOT_CMD) rm -rf /tmp/eggs
+	$(CHROOT_CMD) rm -f /tmp/requirements-eggs.txt
+	sudo sync
+	sudo umount $(INITRAM_DIR)/proc
+	sudo umount $(INITRAM_DIR)/dev
+	sudo rm $(INITRAM_DIR)/etc/resolv.conf
+	$(ACTION.TOUCH)
+
+$/eggs-gems.done: \
+		requirements-gems.txt \
+		requirements-eggs.txt \
+		$/eggs-chroot.done
 	@mkdir -p $/gems
-	@awk -v mirror=$/eggs '{system ("[ `find " mirror " -name " $$1 "-"$$2 "* ` ] || pip install -d " mirror " " $$1 "=="$$2 )}' ./requirements-eggs.txt
 	@awk -v mirror=$/gems '{system ("[ `find " mirror " -name " $$1 "-"$$2 "*` ] || ( cd "mirror" && gem fetch "$$1" -v "$$2")")}' ./requirements-gems.txt
 	$(ACTION.TOUCH)
 
