@@ -139,7 +139,8 @@ $/cache-infra.done: \
 
 $/cache-extra.done: \
 		$(CENTOS_REPO_DIR)repodata/comps.xml \
-	 	$/cache-infra.done
+	 	$/cache-infra.done \
+		requirements-rpm.txt
 	CENTOSMIN_PACKAGES=$(shell grep "<packagereq type='mandatory'>" $(CENTOS_REPO_DIR)comps.xml | sed -e "s/^\s*<packagereq type='mandatory'>\(.*\)<\/packagereq>\s*$$/\\1/")
 	yum -c $(CENTOS_REPO_DIR)etc/yum-$(REPO_SUFFIX).conf clean all
 	rm -rf /var/tmp/yum-$$USER-*/
