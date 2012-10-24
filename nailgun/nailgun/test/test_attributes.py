@@ -3,6 +3,7 @@ import json
 from paste.fixture import TestApp
 from nailgun.api.models import Cluster
 from nailgun.api.models import Node
+from nailgun.api.models import Release
 from nailgun.api.models import Attributes
 
 from nailgun.test.base import BaseHandlers
@@ -12,22 +13,13 @@ from nailgun.test.base import reverse
 class TestAttributes(BaseHandlers):
 
     def test_attributes_creation(self):
-        release = self.create_default_release()
-        yet_another_cluster_name = 'Yet another cluster'
-        resp = self.app.post(
-            '/api/clusters',
-            params=json.dumps({
-                'name': yet_another_cluster_name,
-                'release': release.id
-            }),
+        cluster = self.create_cluster_api()
+        resp = self.app.get(
+            '/api/clusters/%d/attributes/' % cluster['id'],
             headers=self.default_headers
         )
-        self.assertEquals(201, resp.status)
-        response = json.loads(resp.body)
-        cluster_id = int(response["id"])
-        resp = self.app.get(
-            '/api/clusters/%d/attributes/' % cluster_id,
-            headers=self.default_headers
+        release = self.db.query(Release).get(
+            cluster['release']['id']
         )
         self.assertEquals(200, resp.status)
         self.assertEquals(
@@ -36,7 +28,7 @@ class TestAttributes(BaseHandlers):
         )
         response = json.loads(resp.body)
         attrs = self.db.query(Attributes).filter(
-            Attributes.cluster_id == cluster_id
+            Attributes.cluster_id == cluster['id']
         ).first()
         self._compare(
             release.attributes_metadata['generated'],
@@ -58,19 +50,7 @@ class TestAttributes(BaseHandlers):
         self.assertEquals(500, resp.status)
 
     def test_attributes_update(self):
-        release = self.create_default_release()
-        yet_another_cluster_name = 'Yet another cluster'
-        resp = self.app.post(
-            '/api/clusters',
-            params=json.dumps({
-                'name': yet_another_cluster_name,
-                'release': release.id
-            }),
-            headers=self.default_headers
-        )
-        self.assertEquals(201, resp.status)
-        response = json.loads(resp.body)
-        cluster_id = int(response["id"])
+        cluster_id = self.create_cluster_api()['id']
         resp = self.app.get(
             '/api/clusters/%d/attributes/' % cluster_id,
             headers=self.default_headers
