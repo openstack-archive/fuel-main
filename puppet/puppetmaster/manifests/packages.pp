@@ -2,6 +2,18 @@ class puppetmaster::packages(
   $gem_source="http://rubygems.org/",
   ){
 
+  # define puppetmaster_safe_package(){
+  #   if ! defined(Package[$name]){
+  #     @package { $name : }
+  #   }
+  # }
+  
+  # puppetmaster_safe_package{ "mysql-devel": }
+  # puppetmaster_safe_package{ "ruby-devel": }
+  # puppetmaster_safe_package{ "rubygems": }
+  # puppetmaster_safe_package{ "make": }
+  # puppetmaster_safe_package{ "gcc": }
+
   package { "mysql-devel": } ->
   package { "ruby-devel": } ->
   package { "rubygems": } ->

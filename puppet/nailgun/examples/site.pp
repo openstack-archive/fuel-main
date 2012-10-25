@@ -38,7 +38,7 @@ node default {
     cobbler_user        => $cobbler_user,
     cobbler_password    => $cobbler_password,
     
-    pxetimeout          => '0'
+    pxetimeout          => '50'
   } ->
         
 
