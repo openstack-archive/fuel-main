@@ -263,7 +263,7 @@ function(models, dialogViews, clusterPageTemplate, deploymentResultTemplate, dep
             } else {
                 this.$('.nodebox').removeClass('node-to-' + this.action + '-checked').addClass('node-to-' + this.action + '-unchecked');
             }
-            $('.nodebox').css('webkitTransform', 'scale(1)');
+            this.$('.nodebox').css('webkitTransform', 'scale(1)');
             this.calculateApplyButtonAvailability();
         },
         calculateApplyButtonAvailability: function() {
