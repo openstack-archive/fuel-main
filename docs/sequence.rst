@@ -208,3 +208,9 @@ Cons:
 * More complex code for Naily(or Orchestrator) is required to do merges of existing data in YAML file and new data,
   code to prevent concurrency issues. It would be even more complex with Updates feature, when it would require
   of a sequence of actions performed in a specific order.
+* Let's say we have attribute { 'keystone' => { 'data_dir' => '/var/lib/keystone' } }, and we want to update our
+  cluster to new version of OpenStack, node by node, where data_dir location is different. In case with NailyFact,
+  it's easy - just write facts on target node and run puppet on it, other nodes will not be affected (they still
+  have settings for old data_dir location). In case with data from ENC it's much more complex, because there is
+  only single DB - YAML file for the whole cluster. It means it would not be possible to run puppet on old nodes
+  if they should not be updated yet. 
