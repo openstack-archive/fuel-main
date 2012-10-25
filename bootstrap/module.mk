@@ -98,7 +98,7 @@ $(INITRAM_DIR)/init: $(LOCAL_MIRROR)/repo.done $(INITRAM_DIR)/etc/yum.repos.d/mi
 define yum_local_repo
 [mirror]
 name=Mirantis mirror
-baseurl=file://$(shell readlink -f $(RPM_DIR))/Packages
+baseurl=file://$(shell readlink -f -m $(RPM_DIR))/Packages
 gpgcheck=0
 enabled=1
 endef
