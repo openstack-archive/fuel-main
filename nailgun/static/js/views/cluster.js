@@ -250,14 +250,20 @@ function(models, dialogViews, clusterPageTemplate, deploymentResultTemplate, dep
             'click .btn-discard': 'discardChanges',
             'click .btn-apply:not([disabled])': 'applyChanges',
             'click .nodebox': 'toggleNode',
-            'click .select-all-btn': 'selectAll'
+            'click .select-all-tumbler': 'selectAll'
         },
         toggleNode: function(e) {
+            this.$('.select-all-tumbler').attr('checked', false);
             $(e.currentTarget).toggleClass('node-to-' + this.action + '-checked').toggleClass('node-to-' + this.action + '-unchecked').css('webkitTransform', 'scale(1)');
             this.calculateApplyButtonAvailability();
         },
-        selectAll: function() {
-            this.$('.nodebox').addClass('node-to-' + this.action + '-checked').removeClass('node-to-' + this.action + '-unchecked').css('webkitTransform', 'scale(1)');
+        selectAll: function(e) {
+            if ($(e.currentTarget).is(':checked')) {
+                this.$('.nodebox').addClass('node-to-' + this.action + '-checked').removeClass('node-to-' + this.action + '-unchecked');
+            } else {
+                this.$('.nodebox').removeClass('node-to-' + this.action + '-checked').addClass('node-to-' + this.action + '-unchecked');
+            }
+            $('.nodebox').css('webkitTransform', 'scale(1)');
             this.calculateApplyButtonAvailability();
         },
         calculateApplyButtonAvailability: function() {
