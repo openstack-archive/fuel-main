@@ -2,6 +2,8 @@ class mcollective::rabbitmq(
   $stompuser     = "mcollective",
   $stomppassword = "mcollective",
   $stompport     = "61613",
+
+  $rabbitmq_plugins_repo = "http://www.rabbitmq.com/releases/plugins",
   ){
 
   define mcollective_rabbitmq_safe_package(){

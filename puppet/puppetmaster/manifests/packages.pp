@@ -1,4 +1,6 @@
-class puppetmaster::packages {
+class puppetmaster::packages(
+  $gem_source="http://rubygems.org/",
+  ){
 
   package { "mysql-devel": } ->
   package { "ruby-devel": } ->
@@ -11,15 +13,18 @@ class puppetmaster::packages {
   package { "rails":
     provider => "gem",
     ensure => "3.0.10",
+    source => $gem_source,
   }
 
   package { "activerecord":
     provider => "gem",
     ensure => "3.0.10",
+    source => $gem_source,
   }
 
   package { "mysql":
     provider => "gem", 
     ensure => "2.8.1",
+    source => $gem_source,
   }
 }

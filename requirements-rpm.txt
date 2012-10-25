@@ -31,6 +31,7 @@ openstack-nova
 openstack-nova-novncproxy
 policycoreutils
 puppet-2.7.19
+puppet-server-2.7.19
 python-devel
 python-virtualenv
 rabbitmq-server
@@ -42,6 +43,7 @@ ruby-rdoc
 ruby-ri
 ruby-shadow
 rubygems
+rubygem-mongrel
 scapy
 supervisor
 syslinux

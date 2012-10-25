@@ -1,0 +1,24 @@
+## Set proper virsh operation
+#if $power_mode == "on"
+#set operation = "reboot"
+#else
+#set operation = "unknown"
+#end if
+
+#if $power_pass and $power_pass.count(':') > 0
+#set (passtype, passwd) = $power_pass.split(':', 1)
+#else
+#set (passtype, passwd) = ("plain", $power_pass)
+#end if
+
+#if $power_user
+#set username = "%s@" % $power_user
+#else
+#set username = "unknown"
+#end if
+
+if [ X"$passtype" = X"rsa" -o X"$passtype" = X"dsa" ]; then
+    if [ X"$operation" != X"unknown" -a X"$username" != X"unknown" ]; then
+	/usr/bin/ssh -o "StrictHostKeyChecking no" -o "UserKnownHostsFile /dev/null" -i "$passwd" $username$power_address "$operation"
+    fi
+fi

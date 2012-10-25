@@ -93,14 +93,6 @@ class nailgun(
     mode => 0755,
   }
 
-  file { "/etc/nailgun/uwsgi.ini":
-    content => template("nailgun/uwsgi.ini.erb"),
-    owner => 'root',
-    group => 'root',
-    mode => 0644,
-    require => File["/etc/nailgun"],
-  }
-
   file { "/etc/nailgun/settings.yaml":
     content => template("nailgun/settings.yaml.erb"),
     owner => 'root',

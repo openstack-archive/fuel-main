@@ -17,7 +17,8 @@ node default {
   $mco_pskey = "un0aez2ei9eiGaequaey4loocohjuch4Ievu3shaeweeg5Uthi"
   $mco_stompuser = "mcollective"
   $mso_stomppassword = "AeN5mi5thahz2Aiveexo"
-  
+
+  $repo_root = "/var/www/nailgun"
   $pip_repo = "/var/www/nailgun/eggs"
   $gem_repo = "/var/www/nailgun/gems"
                    
@@ -48,8 +49,41 @@ node default {
 
   class { "cobbler::profile::centos63-x86_64":
     ks_repo => $centos_repos,
+  } ->
+
+  cobbler_distro { "bootstrap":
+    kernel => "${repo_root}/bootstrap/linux",
+    initrd => "${repo_root}/bootstrap/initramfs.img",
+    arch => "x86_64",
+    breed => "redhat",
+    osversion => "rhel6",
+    ksmeta => "",
+  } ->
+
+  cobbler_profile { "bootstrap":
+    distro => "bootstrap",
+    menu => true,
+  } ->
+
+  exec { "cobbler_system_add_default":
+    command => "cobbler system add --name=default \
+    --profile=bootstrap --netboot-enabled=True",
+    onlyif => "test -z `cobbler system find --name=default`",
+  } ->
+
+  exec { "cobbler_system_edit_default":
+    command => "cobbler system edit --name=default \
+    --profile=bootstrap --netboot-enabled=True",
+    onlyif => "test ! -z `cobbler system find --name=default`",
   }
 
+  file { "/etc/cobbler/power/power_ssh.template":
+    content => template("nailgun/power_ssh.template.erb"),
+    owner => 'root',
+    group => 'root',
+    mode => 0644,
+  }
+  
   class { "mcollective::rabbitmq":
     stompuser => "mcollective",
     stomppassword => "AeN5mi5thahz2Aiveexo",
@@ -65,7 +99,13 @@ node default {
   }
               
   class { "puppetmaster" :
-        puppet_master_hostname => "${hostname}.${domain}"
+    puppet_master_hostname => "${hostname}.${domain}",
+    # TODO
+    # IT IS NECESSARY TO CARRY OUT NGINX SERVICE OUTSIDE OF PUPPETMASTER
+    # AND NAILGUN MODULES IN ORDER TO MAKE GEM REPOSITORY WORKING BEFORE
+    # PUPPETMASTER INSTALLING
+    # 
+    # gem_source => "file://${gem_repo}",
   }
       
   class { "nailgun":

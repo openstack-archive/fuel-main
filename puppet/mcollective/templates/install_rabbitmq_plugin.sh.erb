@@ -36,10 +36,13 @@ is_installed(){
 
 install_plugin(){
     # echo "Downloading and installing rabbitmq-server plugin: ${plugin}"
-    wget -q -O- "${repo}/${plugin}-${version}.ez" > "${plugins_dir}/${plugin}-${version}.ez"
-    
+    if (echo ${repo} | grep -q "^file"); then
+	repopath=`echo ${repo} | awk -F'file://' '{print $2}'`
+	cp "${repopath}/${plugin}-${version}.ez" "${plugins_dir}/${plugin}-${version}.ez"
+    else
+	wget -q -O- "${repo}/${plugin}-${version}.ez" > "${plugins_dir}/${plugin}-${version}.ez"
+    fi
 }
-
 
 case $action in
     install)
