@@ -112,7 +112,7 @@ define(function() {
             return this.pluck('id');
         }
     });
-    
+
     models.Settings = Backbone.Model.extend({
         urlRoot: '/api/clusters/'
     });

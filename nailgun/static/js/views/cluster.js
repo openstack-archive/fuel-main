@@ -273,7 +273,7 @@ function(models, dialogViews, clusterPageTemplate, deploymentResultTemplate, dep
             Backbone.sync('update', chosenNodes).done(_.bind(function() {
                 this.tab.changeScreen(views.NodesByRolesScreen);
                 this.model.fetch();
-                app.navbar.nodes.fetch();
+                app.navbar.stats.nodes.fetch();
             }, this));
         },
         getChosenNodes: function() {

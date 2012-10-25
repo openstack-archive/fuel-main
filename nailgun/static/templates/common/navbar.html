@@ -6,13 +6,7 @@
       <% }) %>
       <li class="space"></li>
       <li class="navigation-bar-icon"><i class="icon-comment-1-1"></i><span class="badge badge-warning">∞</span></li>
-      <li class="navigation-bar-nodes">
-        <% if (nodes.deferred.state() != 'pending') { %>
-          <span>Total nodes: <b><%= nodes.length %></b></span>
-          <span>Allocated: <b><%= nodes.filter(function(node) {return node.get('role')}).length %></b></span>
-          <span>Unallocated: <b><%= nodes.filter(function(node) {return !node.get('role')}).length %></b></span>
-        <% } %>
-      </li>
+      <li class="navigation-bar-icon nodes-summary-container"></li>
     </ul>
   </div>
 </div>
