@@ -152,7 +152,7 @@ else
 endif
 	$(ACTION.TOUCH)
 
-$/cache.done: $/cache-extra.done $/eggs-gems.done $/cache-boot.done
+$/cache.done: $/cache-extra.done $/cache-boot.done
 	$(ACTION.TOUCH)
 
 $(addprefix $(CENTOS_REPO_DIR)Packages/repodata/,$(METADATA_FILES)): $/cache.done $(CENTOS_REPO_DIR)repodata/comps.xml
@@ -192,14 +192,14 @@ $/eggs-chroot.done: \
 	@mkdir -p $/eggs
 	sudo cp /etc/resolv.conf $(INITRAM_DIR)/etc/resolv.conf
 	@mkdir -p $(INITRAM_DIR)/tmp/eggs
-	sudo cp ./requirements-eggs.txt $(INITRAM_DIR)/tmp
+	cp ./requirements-eggs.txt $(INITRAM_DIR)/tmp
 	$(YUM) install python-setuptools
-	mount | grep $(INITRAM_DIR)/proc || sudo mount --bind /proc $(INITRAM_DIR)/proc
-	mount | grep $(INITRAM_DIR)/dev || sudo mount --bind /dev $(INITRAM_DIR)/dev
+	mount | grep -q $(INITRAM_DIR)/proc || sudo mount --bind /proc $(INITRAM_DIR)/proc
+	mount | grep -q $(INITRAM_DIR)/dev || sudo mount --bind /dev $(INITRAM_DIR)/dev
 	$(CHROOT_CMD) easy_install -U distribute
 	$(CHROOT_CMD) easy_install -U pip
 	$(CHROOT_CMD) awk -v mirror=/tmp/eggs '{system ("[ `find " mirror " -name " $$1 "-"$$2 "* ` ] || pip install -d " mirror " --exists-action=i " $$1 "=="$$2 )}' /tmp/requirements-eggs.txt
-	sudo cp -R $(INITRAM_DIR)/tmp/eggs $/
+	cp -R $(INITRAM_DIR)/tmp/eggs $/
 	$(CHROOT_CMD) rm -rf /tmp/eggs
 	$(CHROOT_CMD) rm -f /tmp/requirements-eggs.txt
 	sudo sync
