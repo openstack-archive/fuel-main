@@ -63,6 +63,9 @@ node default {
   cobbler_profile { "bootstrap":
     distro => "bootstrap",
     menu => true,
+    kickstart => "",
+    kopts => "",
+    ksmeta => "",
   } ->
 
   exec { "cobbler_system_add_default":

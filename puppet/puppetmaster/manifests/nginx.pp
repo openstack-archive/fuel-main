@@ -31,6 +31,13 @@ class puppetmaster::nginx(
     notify => Service["nginx"],
   }
 
+  file { ["/etc/nginx/conf.d/default.conf",
+          "/etc/nginx/conf.d/virtual.conf",
+          "/etc/nginx/conf.d/ssl.conf"]:
+            ensure => "absent",
+            notify => Service["nginx"],
+  }
+  
   service { "nginx":
     enable => true,
     ensure => "running",
