@@ -76,7 +76,7 @@ class nailgun(
     recurse => true,
     owner => 'root',
     group => 'root',
-    mode => 0755,
+    mode => 1777,
   }
 
   file { $rundir:
