@@ -7,7 +7,7 @@ LINUX:=$(BS_DIR)/linux
 all: bootstrap
 
 YUM_PACKAGES:=openssh-server wget cronie-noanacron crontabs ntp \
-mcollective bash net-tools dhclient rsyslog iputils openssh-server \
+bash net-tools dhclient rsyslog iputils \
 ruby-json rubygems mcollective vconfig tcpdump scapy mingetty
 
 YUM_BUILD_PACKAGES:=ruby-devel make gcc flex byacc python-devel \
@@ -27,7 +27,7 @@ clean-bootstrap:
 
 bootstrap: $(LINUX) $(INITRAM_FS)
 
-chroot-bootstrap: $(INITRAM_DIR)/etc/nailgun_systemtype $(INITRAM_DIR)/init
+chroot-bootstrap: $(INITRAM_DIR)/etc/nailgun_systemtype $(BS_DIR)/init.done
 	sudo mkdir -p $(INITRAM_DIR)/proc $(INITRAM_DIR)/dev
 	mount | grep $(INITRAM_DIR)/proc || sudo mount --bind /proc $(INITRAM_DIR)/proc
 	mount | grep $(INITRAM_DIR)/dev || sudo mount --bind /dev $(INITRAM_DIR)/dev
@@ -51,7 +51,7 @@ $(LINUX): $(LOCAL_MIRROR)/cache.done
 	touch $(LINUX)
 
 
-$(INITRAM_DIR)/etc/nailgun_systemtype: $(INITRAM_DIR)/init
+$(INITRAM_DIR)/etc/nailgun_systemtype: $(BS_DIR)/init.done
 	sudo sed -i -e '/^root/c\root:$$6$$oC7haQNQ$$LtVf6AI.QKn9Jb89r83PtQN9fBqpHT9bAFLzy.YVxTLiFgsoqlPY3awKvbuSgtxYHx4RUcpUqMotp.WZ0Hwoj.:15441:0:99999:7:::' $(INITRAM_DIR)/etc/shadow
 	sudo cp -r bootstrap/sync/* $(INITRAM_DIR)
 	sudo mkdir -p $(INITRAM_DIR)/root/.ssh
@@ -62,9 +62,8 @@ $(INITRAM_DIR)/etc/nailgun_systemtype: $(INITRAM_DIR)/init
 	sudo cp -r bin/agent $(NAILGUN_DIR)/bin
 	sudo sh -c "echo bootstrap > $(INITRAM_DIR)/etc/nailgun_systemtype"
 
-
-$(INITRAM_DIR)/init: $(LOCAL_MIRROR)/repo.done $(INITRAM_DIR)/etc/yum.repos.d/mirror.repo
-	sudo mkdir -p $(INITRAM_DIR)/var/lib/rpm
+$(BS_DIR)/init.done: $(LOCAL_MIRROR)/repo.done $(INITRAM_DIR)/etc/yum.repos.d/mirror.repo
+	mkdir -p $(INITRAM_DIR)/var/lib/rpm
 	$(RPM) --rebuilddb
 	$(YUM) install $(YUM_PACKAGES) $(YUM_BUILD_PACKAGES)
 	sudo touch $(INITRAM_DIR)/etc/fstab
@@ -91,9 +90,9 @@ $(INITRAM_DIR)/init: $(LOCAL_MIRROR)/repo.done $(INITRAM_DIR)/etc/yum.repos.d/mi
 	$(CHROOT_CMD) /bin/sh -c "cd /src/libpcap-1.3.0 && ./configure && make"
 	$(CHROOT_CMD) /bin/sh -c "cd /src/pypcap-1.1 && make && make install"
 	$(YUM) erase $(YUM_BUILD_PACKAGES)
-
+	rm -f $(INITRAM_DIR)/etc/yum.repos.d/Cent*
 	sudo cp $(INITRAM_DIR)/sbin/init $(INITRAM_DIR)/init
-
+	$(ACTION.TOUCH)
 
 define yum_local_repo
 [mirror]
@@ -105,5 +104,5 @@ endef
 
 $(INITRAM_DIR)/etc/yum.repos.d/mirror.repo: export contents:=$(yum_local_repo)
 $(INITRAM_DIR)/etc/yum.repos.d/mirror.repo:
-	sudo mkdir -p $(@D)
-	sudo sh -c "echo \"$${contents}\" > $@"
+	mkdir -p $(@D)
+	sh -c "echo \"$${contents}\" > $@"

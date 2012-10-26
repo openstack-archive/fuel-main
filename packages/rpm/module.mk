@@ -21,6 +21,7 @@ $(BUILD_DIR)/rpm/rpm.done: $/RPMS/x86_64/cirros-uec-0.3.0-1.x86_64.rpm
 	$(ACTION.TOUCH)
 
 $(addprefix $(SRC_DIR),$(SRC_FILES)):
+	@mkdir -p $(SRC_DIR)
 	wget --no-use-server-timestamps -c -P $(SRC_DIR) $${SRC_URLS}
 
 mirror: $(addprefix $(SRC_DIR),$(SRC_FILES))

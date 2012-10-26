@@ -121,7 +121,7 @@ $(CENTOS_REPO_DIR)etc/yum-$(REPO_SUFFIX).repos.d/base.repo:
 $(CENTOS_REPO_DIR)repodata/comps.xml.gz:
 	@mkdir -p $(@D)
 	wget -O $@ $(CENTOS_MIRROR)/`wget -qO- $(CENTOS_MIRROR)/repodata/repomd.xml | \
-	 xml2 | grep 'comps\.xml\.gz' | awk -F'=' '{ print $$2 }'`
+	 grep 'comps\.xml\.gz' | awk -F'"' '{ print $$2 }'`
 
 $(CENTOS_REPO_DIR)repodata/comps.xml: $(CENTOS_REPO_DIR)repodata/comps.xml.gz
 	gunzip -c $(CENTOS_REPO_DIR)repodata/comps.xml.gz > $@
@@ -187,19 +187,22 @@ $(CENTOS_ISO_DIR)/$(NETINSTALL_ISO):
 
 # EGGS AND GEMS
 
-$/eggs-chroot.done: \
-		$(INITRAM_DIR)/init
+$/eggs.done: \
+		$(BS_DIR)/init.done \
+		requirements-eggs.txt
 	@mkdir -p $/eggs
+	@cp -R $/eggs $(INITRAM_DIR)/tmp
 	sudo cp /etc/resolv.conf $(INITRAM_DIR)/etc/resolv.conf
-	@mkdir -p $(INITRAM_DIR)/tmp/eggs
-	cp ./requirements-eggs.txt $(INITRAM_DIR)/tmp
 	$(YUM) install python-setuptools
 	mount | grep -q $(INITRAM_DIR)/proc || sudo mount --bind /proc $(INITRAM_DIR)/proc
 	mount | grep -q $(INITRAM_DIR)/dev || sudo mount --bind /dev $(INITRAM_DIR)/dev
 	$(CHROOT_CMD) easy_install -U distribute
 	$(CHROOT_CMD) easy_install -U pip
-	$(CHROOT_CMD) awk -v mirror=/tmp/eggs '{system ("[ `find " mirror " -name " $$1 "-"$$2 "* ` ] || pip install -d " mirror " --exists-action=i " $$1 "=="$$2 )}' /tmp/requirements-eggs.txt
-	cp -R $(INITRAM_DIR)/tmp/eggs $/
+#	$(CHROOT_CMD) awk -v mirror=/tmp/eggs '{system ("[ `find " mirror " -name " $$1 "-"$$2 "* ` ] || pip install -d " mirror " --exists-action=i " $$1 "=="$$2 )}' /tmp/requirements-eggs.txt
+	@cat requirements-eggs.txt | while read egg ver; do \
+	 [ `$(CHROOT_CMD) find /tmp/eggs -name $${egg}-$${ver}\*` ] || $(CHROOT_CMD) pip install --exists-action=i -d /tmp/eggs $${egg}==$${ver} ;\
+	done
+	cp -fR $(INITRAM_DIR)/tmp/eggs $/
 	$(CHROOT_CMD) rm -rf /tmp/eggs
 	$(CHROOT_CMD) rm -f /tmp/requirements-eggs.txt
 	sudo sync
@@ -208,12 +211,15 @@ $/eggs-chroot.done: \
 	sudo rm $(INITRAM_DIR)/etc/resolv.conf
 	$(ACTION.TOUCH)
 
-$/eggs-gems.done: \
-		requirements-gems.txt \
-		requirements-eggs.txt \
-		$/eggs-chroot.done
+$/gems.done: requirements-gems.txt
 	@mkdir -p $/gems
-	@awk -v mirror=$/gems '{system ("[ `find " mirror " -name " $$1 "-"$$2 "*` ] || ( cd "mirror" && gem fetch "$$1" -v "$$2")")}' ./requirements-gems.txt
+	@cat requirements-gems.txt | while read gem ver; do \
+	 [ `find $/gems -name $${gem}-$${ver}\*` ] || ( cd $/gems && gem fetch "$${gem}" -v "$$ver") ;\
+	done
+#	@awk -v mirror=$/gems '{system ("[ `find " mirror " -name " $$1 "-"$$2 "*` ] || ( cd "mirror" && gem fetch "$$1" -v "$$2")")}' ./requirements-gems.txt
+	$(ACTION.TOUCH)
+
+$/eggs-gems.done: $/gems.done $/eggs.done
 	$(ACTION.TOUCH)
 
 mirror: $(addprefix $(CENTOS_REPO_DIR)Packages/repodata/,$(METADATA_FILES)) \

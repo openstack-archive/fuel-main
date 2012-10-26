@@ -3,6 +3,7 @@ BOOTSTRAP_REBUILD:=1
 endif
 
 MIRROR_URL:=http://srv08-srt.srt.mirantis.net/mirror
+
 ifndef IGNORE_MIRROR
 IGNORE_MIRROR:=0
 endif
