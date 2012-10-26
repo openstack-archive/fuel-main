@@ -178,7 +178,7 @@ h6.page-title {
   color: #999999;
 }
 
-.roles-action-link button.disabled, .settings-editable button.disabled {
+.roles-action-link button.disabled {
   color: #999999;
   opacity: 1;
   background-color: transparent;
@@ -189,7 +189,7 @@ h6.page-title {
   text-decoration: none;
 }
 
-.roles-action-link button.disabled:hover, .settings-editable button.disabled:hover {
+.roles-action-link button.disabled:hover {
   color: #999999;
 }
 
@@ -1041,8 +1041,17 @@ h6.page-title {
   margin-top: 10px;
 }
 
-.settings-editable .btn.disabled, .settings-editable .btn[disabled] {
+.settings-editable .btn {
   background-color: transparent;
+}
+
+.settings-editable .btn[disabled] {
+  color: #999999;
+  opacity: 1;
+}
+
+.settings-editable button[disabled]:hover {
+  color: #999999;
 }
 
 .nodes-summary-stat {

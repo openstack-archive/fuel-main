@@ -548,9 +548,9 @@ function(models, dialogViews, clusterPageTemplate, deploymentResultTemplate, dep
             'click .btn-revert-changes': 'revertChanges',
             'click .btn-set-defaults': 'setDefaults'
         },
-        defaultButtonsState: function() {
-            $('.settings-editable .btn').addClass('disabled');
-            $('.btn-set-defaults').removeClass('disabled');
+        defaultButtonsState: function(buttonState) {
+            this.$('.settings-editable .btn').attr('disabled', buttonState);
+            this.$('.btn-set-defaults').attr('disabled', !buttonState);
         },
         collectData: function(parentEl, changedData) {
             var model = this, param;
@@ -571,28 +571,30 @@ function(models, dialogViews, clusterPageTemplate, deploymentResultTemplate, dep
             this.model.get('settings').update({editable: changedData}, {
                 url: '/api/clusters/' + this.model.id + '/attributes'
             });
-            this.defaultButtonsState();
+            this.defaultButtonsState(true);
+        },
+        parseSettings: function(settings) {
+            if (_.isObject(settings)) {
+                this.$('.settings-content').html('');
+                _.each(_.keys(settings), function(setting) {
+                    var settingsGroupView = new views.SettingsGroup({legend: setting, settings: settings[setting]});
+                    this.$('.settings-content').append(settingsGroupView.render().el);
+                }, this);
+            }
         },
         revertChanges: function() {
-            $('.settings-editable')[0].reset();
-            this.defaultButtonsState();
+            this.parseSettings(this.model.get('settings').get('editable'));
+            this.defaultButtonsState(true);
         },
         setDefaults: function() {
-            this.pasteSettings(this.model.get('settings').get('defaults'));
-            $('.settings-editable .btn').removeClass('disabled');
-            $('.btn-set-defaults').addClass('disabled');
+            this.parseSettings(this.model.get('settings').get('defaults'));
+            this.defaultButtonsState(false);
         },
         render: function () {
             this.$el.html(this.template({settings: this.model.get('settings')}));
             if (this.model.get('settings').deferred.state() != 'pending') {
-                this.$('.settings-content').html('');
-                var settingsSet = this.model.get('settings').get('editable');
-                if (_.isObject(settingsSet)) {
-                    _.each(_.keys(settingsSet), function(setting) {
-                        var settingsGroupView = new views.SettingsGroup({legend: setting, settings: settingsSet[setting]});
-                        this.$('.settings-content').append(settingsGroupView.render().el);
-                    }, this);
-                }
+                var settings = this.model.get('settings').get('editable');
+                this.parseSettings(settings);
             }
             return this;
         },
@@ -614,7 +616,7 @@ function(models, dialogViews, clusterPageTemplate, deploymentResultTemplate, dep
             'keydown input': 'hasChanges'
         },
         hasChanges: function(el) {
-            $('.settings-editable .btn').removeClass('disabled');
+            $('.settings-editable .btn').attr('disabled', false);
         },
         initialize: function(options) {
             this.settings = options.settings;
