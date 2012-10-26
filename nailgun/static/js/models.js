@@ -121,7 +121,20 @@ define(function() {
         urlRoot: '/api/networks',
         validate: function(attrs) {
             var errors = {};
-            if (!_.isString(attrs.cidr) || !/^\d{1,3}\.\d{1,3}\.\d{1,3}\.\d{1,3}\/\d{1,2}$/.test(attrs.cidr)) {
+            if (_.isString(attrs.cidr)) {
+                var cidrRegexp = /^(?:(?:[0-9]|[1-9][0-9]|1[0-9]{2}|2[0-4][0-9]|25[0-5])\.){3}(?:[0-9]|[1-9][0-9]|1[0-9]{2}|2[0-4][0-9]|25[0-5])\/([1-9]|[1-2]\d|3[0-2])$/;
+                var match = attrs.cidr.match(cidrRegexp);
+                if (match) {
+                    var prefix = parseInt(match[1], 10);
+                    if (prefix < 2) {
+                        errors.cidr = 'Network is too large';
+                    } else if (prefix > 31) {
+                        errors.cidr = 'Network is too small';
+                    }
+                } else {
+                    errors.cidr = 'Invalid CIDR';
+                }
+            } else {
                 errors.cidr = 'Invalid CIDR';
             }
             if (!_.isNumber(attrs.vlan_id) || attrs.vlan_id < 1 || attrs.vlan_id > 4094) {
