@@ -85,21 +85,18 @@ $(ISOROOT)/gems/gems/astute-$(ASTUTE_VERSION).gem: $(BUILD_DIR)/gems/astute-$(AS
 
 $(ISOROOT)/puppet/%: puppet/% ; $(ACTION.COPY)
 
-$(ISOROOT)/eggs/%: $(LOCAL_MIRROR)/eggs/% ; $(ACTION.COPY)
-$(ISOROOT)/gems/gems/%: $(LOCAL_MIRROR)/gems/% ; $(ACTION.COPY)
-
 $/isoroot-eggs.done: \
-		$(LOCAL_MIRROR)/eggs-gems.done \
-		$(addprefix $(ISOROOT)/eggs/,$(call find-files,$(LOCAL_MIRROR)/eggs)) \
+		$(LOCAL_MIRROR)/eggs.done \
 		$(ISOROOT)/eggs/Nailgun-$(NAILGUN_VERSION).tar.gz
+	cp -r $(LOCAL_MIRROR)/eggs $(ISOROOT)/
 	$(ACTION.TOUCH)
 
 $/isoroot-gems.done: \
-		$(LOCAL_MIRROR)/eggs-gems.done \
+		$(LOCAL_MIRROR)/gems.done \
 		$(BUILD_DIR)/gems/naily-$(NAILY_VERSION).gem \
 		$(ISOROOT)/gems/gems/naily-$(NAILY_VERSION).gem \
-		$(ISOROOT)/gems/gems/astute-$(ASTUTE_VERSION).gem \
-		$(addprefix $(ISOROOT)/gems/gems/,$(call find-files,$(LOCAL_MIRROR)/gems))
+		$(ISOROOT)/gems/gems/astute-$(ASTUTE_VERSION).gem
+	cp -r $(LOCAL_MIRROR)/gems $(ISOROOT)/gems
 	$(ACTION.TOUCH)
 
 $/isoroot.done: \
