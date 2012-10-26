@@ -53,7 +53,7 @@
                         "test_parameter_3": "test_value_3",
                         "test_parameter_4": "test_value_4"
                     },
-                    "admin_tenant_1": "admin1",
+                    "admin_tenant": "admin",
                     "nested_parameter_1": {
                         "test_parameter_1": "test_value_1",
                         "nested_parameter_3": {
