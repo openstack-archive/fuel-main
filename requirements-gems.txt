@@ -1,10 +1,16 @@
+amqp	0.9.8
+amq-protocol	0.9.5
+amq-client	0.9.5
 bunny	0.8.0
 chef	10.12.0
+daemons	1.1.9
 erubis	2.7.0
+eventmachine	1.0.0
 highline	1.6.13
 httpclient	2.2.5
 ipaddress	0.8.0
 json	1.6.1
+mcollective-client	2.2.1
 mime-types	1.19
 mixlib-authentication	1.1.4
 mixlib-cli	1.2.2
@@ -18,6 +24,8 @@ net-ssh-multi	1.1
 ohai	6.14.0
 polyglot	0.3.3
 rest-client	1.6.7
+stomp	1.2.6
+symboltable	1.0.2
 systemu	2.5.2
 treetop	1.4.10
 uuidtools	2.1.2
