@@ -1,4 +1,7 @@
-class nailgun::packages {
+class nailgun::packages(
+  $gem_source = "http://rubygems.org/",
+  ){
+  
   define nailgun_safe_package(){
     if ! defined(Package[$name]){
       @package { $name : }
@@ -11,5 +14,5 @@ class nailgun::packages {
   nailgun_safe_package { "python-devel": }
   nailgun_safe_package { "gcc": }
   nailgun_safe_package { "make": }
-  
+
 }

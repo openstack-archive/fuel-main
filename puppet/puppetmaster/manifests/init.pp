@@ -5,6 +5,7 @@ class puppetmaster (
   $puppet_stored_dbpassword = "Johmek0mi9WeGhieshiFiB9rizai0M",
   $puppet_stored_dbsocket = "/var/lib/mysql/mysql.sock",
   $mysql_root_password = "eo6raesh7aThe5ahbahgohphupahk5",
+  $puppet_package_version = "2.7.19-1.el6",
   $gem_source = "http://rubygems.org/",
   ) {
   anchor { "puppetmaster-begin": }
@@ -32,6 +33,7 @@ class puppetmaster (
   }
 
   class { "puppetmaster::packages":
+    puppet_package_version = $puppet_package_version,
     gem_source => $gem_source,
   }
   
@@ -47,4 +49,5 @@ class puppetmaster (
   class { "puppetmaster::nginx":
     puppet_master_hostname => $puppet_master_hostname,
   }
-}
+
+  }

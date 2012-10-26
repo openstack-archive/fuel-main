@@ -20,8 +20,6 @@ class puppetmaster::nginx(
     $puppet_master_key = $key
   }
   
-  package { "nginx": }
-
   file { "/etc/nginx/conf.d/puppet.conf":
     content => template("puppetmaster/nginx_puppet.erb"),
     owner => 'root',
@@ -29,19 +27,6 @@ class puppetmaster::nginx(
     mode => 0644,
     require => Package["nginx"],
     notify => Service["nginx"],
-  }
-
-  file { ["/etc/nginx/conf.d/default.conf",
-          "/etc/nginx/conf.d/virtual.conf",
-          "/etc/nginx/conf.d/ssl.conf"]:
-            ensure => "absent",
-            notify => Service["nginx"],
-  }
-  
-  service { "nginx":
-    enable => true,
-    ensure => "running",
-    require => Package["nginx"]
   }
 
 }

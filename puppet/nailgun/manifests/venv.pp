@@ -4,6 +4,16 @@ class nailgun::venv(
   $package,
   $version,
   $pip_opts = "",
+
+  $nailgun_user,
+  $nailgun_group,
+  $databasefile,
+  $staticdir,
+  $templatedir,
+  $logfile,
+
+  $rabbitmq_naily_user,
+  $rabbitmq_naily_password,
   ) {
 
   nailgun::venv::venv { $venv:
@@ -23,6 +33,44 @@ class nailgun::venv(
                 Package["gcc"],
                 Package["make"],
                 ]
+  }
+
+  $logparentdir = inline_template("<%= logfile.match(%r!(.+)/.+!)[1] %>")
+  $databasefiledir = inline_template("<%= databasefile.match(%r!(.+)/.+!)[1] %>")
+  $database_engine = "sqlite:///${databasefile}"
+  
+  file { "/etc/nailgun":
+    ensure => directory,
+    owner => 'root',
+    group => 'root',
+    mode => 0755,
+  }
+
+  file { "/etc/nailgun/settings.yaml":
+    content => template("nailgun/settings.yaml.erb"),
+    owner => 'root',
+    group => 'root',
+    mode => 0644,
+    require => File["/etc/nailgun"],
+  }
+
+  file { $logparentdir:
+    ensure => directory,
+    recurse => true,
+  }
+
+  file { $databasefiledir:
+    ensure => directory,
+    recurse => true,
+  }
+
+  exec {"nailgun_syncdb":
+    command => "${venv}/bin/nailgun_syncdb",
+    creates => $databasefile,
+    require => [
+                File["/etc/nailgun/settings.yaml"],
+                File[$databasefiledir],
+                ],
   }
   
   }

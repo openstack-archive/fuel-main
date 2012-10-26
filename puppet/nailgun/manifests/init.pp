@@ -5,49 +5,69 @@ class nailgun(
   $nailgun_user = "nailgun",
   $venv = "/opt/nailgun",
 
+  $repo_root = "/var/www/nailgun",
   $pip_index = "",
   $pip_find_links = "",
-  $gem_repo = "/var/www/gems",
+  $gem_source = "http://localhost:8080/gems/",
   
   $databasefile = "/var/tmp/nailgun.sqlite",
   $staticdir = "/opt/nailgun/usr/share/nailgun/static",
   $templatedir = "/opt/nailgun/usr/share/nailgun/static",
   $logfile = "/var/log/nailgun/nailgun.log",
-  $rundir = "/var/run/nailgun",
   
   $cobbler_url = "http://localhost/cobbler_api",
   $cobbler_user = "cobbler",
   $cobbler_password = "cobbler",
 
-  $mco_pskey = "123456",
+  $mco_pskey = "unset",
   $mco_stompuser = "mcollective",
-  $mco_stomppassword = "mcollective",
+  $mco_stomppassword = "marionette",
 
-  $naily_user = "naily",
-  $naily_password = "naily",
+  $naily_version,
+  $rabbitmq_naily_user = "naily",
+  $rabbitmq_naily_password = "naily",
   
-  $puppet_master_host = "${hostname}.${domain}",
+  $puppet_master_hostname = "${hostname}.${domain}",
   
   ) {
 
-  $logparentdir = inline_template("<%= logfile.match(%r!(.+)/.+!)[1] %>")
-  $database_engine = "sqlite:///${databasefile}"
-  
   anchor { "nailgun-begin": }
   anchor { "nailgun-end": }
 
   Anchor<| title == "nailgun-begin" |> ->
   Class["nailgun::packages"] ->
   Class["nailgun::iptables"] ->
+  Class["nailgun::nginx-repo"] ->
+  Class["nailgun::nginx-service"] ->
   Class["nailgun::user"] ->
   Class["nailgun::venv"] ->
-  Class["nailgun::nginx"] ->
+  Class["nailgun::naily"] ->
   Class["nailgun::supervisor"] ->
+  Class["nailgun::nginx-nailgun"] ->
+  Class["nailgun::cobbler"] ->
+  Class["nailgun::puppetmaster"] ->
   Anchor<| title == "nailgun-end" |>
   
-  class { "nailgun::packages": }
+  class { "nailgun::packages":
+    gem_source => $gem_source, 
+  }
 
   class { "nailgun::iptables": }
+
+  file { ["/etc/nginx/conf.d/default.conf",
+          "/etc/nginx/conf.d/virtual.conf",
+          "/etc/nginx/conf.d/ssl.conf"]:
+    ensure => "absent",
+    notify => Service["nginx"],
+    before => Class["nailgun::nginx-repo"],
+  }
+
+  class { "nailgun::nginx-repo":
+    repo_root => $repo_root,
+    notify => Service["nginx"],
+  }
+
+  class { "nailgun::nginx-service": }
   
   class { "nailgun::user":
     nailgun_group => $nailgun_group,
@@ -60,64 +80,60 @@ class nailgun(
     package => $package,
     version => $version,
     pip_opts => "${pip_index} ${pip_find_links}"
+    nailgun_user => $nailgun_user,
+    nailgun_group => $nailgun_group,
+    databasefile => $databasefile,
+    staticdir => $staticdir,
+    templatedir => $templatedir,
+    logfile => $logfile,
+    rabbitmq_naily_user => $rabbitmq_naily_user,
+    rabbitmq_naily_password => $rabbitmq_naily_password,
   }
 
+  class {"nailgun::naily":
+    rabbitmq_naily_user => $naily_user,
+    rabbitmq_naily_password => $naily_password,
+    version => $naily_version,
+    gem_source => $gem_source,
+  }
+  
   class { "nailgun::supervisor":
     venv => $venv,
   }
 
-  class { "nailgun::nginx":
+  class { "nailgun::nginx-nailgun":
     staticdir => $staticdir,
     rundir => $rundir,
+    notify => Service["nginx"],
   }
 
-  file { $logparentdir:
-    ensure => directory,
-    recurse => true,
-    owner => 'root',
-    group => 'root',
-    mode => 1777,
+  class { "nailgun::cobbler":
+    cobbler_user => "cobbler",
+    cobbler_password => "cobbler",
+    centos_iso => $centos_iso,
+    centos_repos => $centos_repos,
   }
 
-  file { $rundir:
-    ensure => directory,
-    owner => $nailgun_user,
-    group => $nailgun_group,
-    mode => 0755,
+  class { "nailgun::puppetmaster":
+    puppet_master_hostname => $puppet_master_hostname,
+    gem_source => $gem_source,
   }
   
-  file { "/etc/nailgun":
-    ensure => directory,
-    owner => 'root',
-    group => 'root',
-    mode => 0755,
+  class { "nailgun::mcollective":
+    mco_pskey => $mco_pskey,
+    mco_stompuser => $mco_stompuser,
+    mco_stomppassword => $mco_stomppassword,
+    rabbitmq_plugins_repo = "file:///var/www/rabbitmq-plugins",
   }
-
-  file { "/etc/nailgun/settings.yaml":
-    content => template("nailgun/settings.yaml.erb"),
-    owner => 'root',
-    group => 'root',
-    mode => 0644,
-    require => File["/etc/nailgun"],
-  }
-
-  exec {"nailgun_syncdb":
-    command => "${venv}/bin/nailgun_syncdb",
-    creates => $databasefile,
-    require => [
-                File["/etc/nailgun/settings.yaml"],
-                Class["nailgun::venv"],
-                ]
-  }
-
-  rabbitmq_user { $naily_user:
+  
+  rabbitmq_user { $rabbitmq_naily_user:
     admin     => true,
-    password  => $naily_password,
+    password  => $rabbitmq_naily_password,
     provider  => 'rabbitmqctl',
     require   => Class['rabbitmq::server'],
   }
   
-  rabbitmq_user_permissions { "${naily_user}@/":
+  rabbitmq_user_permissions { "${rabbitmq_naily_user}@/":
     configure_permission => '.*',
     write_permission     => '.*',
     read_permission      => '.*',

@@ -11,7 +11,7 @@ server {
 
     location / {
         autoindex on;
-        root /var/www/nailgun;
+        root <%= repo_root %>;
     }
 
     location ~ /\.ht {
