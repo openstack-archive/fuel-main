@@ -14,6 +14,7 @@ gcc-c++
 make
 man
 mcollective
+mcollective-client
 mysql
 mysql-devel
 mysql-server
