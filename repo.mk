@@ -20,4 +20,4 @@ ISOLINUX_FILES:=boot.msg grub.conf initrd.img isolinux.bin memtest splash.jpg ve
 IMAGES_FILES:=efiboot.img efidisk.img install.img
 EFI_FILES:=BOOTX64.conf BOOTX64.efi splash.xpm.gz
 BOOTSTRAP_FILES:=initramfs.img linux
-NETINSTALL_ISO:=CentOS-$(CENTOS_RELEASE)-$(CENTOS_ARCH)-netinstall-EFI.iso
+NETINSTALL_ISO:=CentOS-$(CENTOS_RELEASE)-$(CENTOS_ARCH)-minimal-EFI.iso
