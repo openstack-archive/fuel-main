@@ -254,7 +254,8 @@ function(models, dialogViews, clusterPageTemplate, deploymentResultTemplate, dep
         },
         toggleNode: function(e) {
             this.$('.select-all-tumbler').attr('checked', false);
-            $(e.currentTarget).toggleClass('node-to-' + this.action + '-checked').toggleClass('node-to-' + this.action + '-unchecked').css('webkitTransform', 'scale(1)');
+            $(e.currentTarget).toggleClass('node-to-' + this.action + '-checked').toggleClass('node-to-' + this.action + '-unchecked');
+            this.forceWebkitRedraw();
             this.calculateApplyButtonAvailability();
         },
         selectAll: function(e) {
@@ -263,8 +264,15 @@ function(models, dialogViews, clusterPageTemplate, deploymentResultTemplate, dep
             } else {
                 this.$('.nodebox').removeClass('node-to-' + this.action + '-checked').addClass('node-to-' + this.action + '-unchecked');
             }
-            this.$('.nodebox').css('webkitTransform', 'scale(1)');
+            this.forceWebkitRedraw();
             this.calculateApplyButtonAvailability();
+        },
+        forceWebkitRedraw: function() {
+            this.$('.nodebox').each(function() {
+                this.style.webkitTransform = 'scale(1)';
+                var dummy = this.offsetHeight;
+                this.style.webkitTransform = '';
+            });
         },
         calculateApplyButtonAvailability: function() {
             this.$('.btn-apply').attr('disabled', !this.$('.node-to-' + this.action + '-checked').length);
