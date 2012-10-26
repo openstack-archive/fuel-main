@@ -89,6 +89,8 @@ class ClusterHandler(JSONHandler):
         ).first()
         if not cluster:
             return web.notfound()
+        for node in cluster.nodes:
+            node.role = None
         web.ctx.orm.delete(cluster)
         web.ctx.orm.commit()
         raise web.webapi.HTTPError(

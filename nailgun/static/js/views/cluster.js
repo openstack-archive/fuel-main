@@ -82,6 +82,7 @@ function(models, dialogViews, clusterPageTemplate, deploymentResultTemplate, dep
             _.defaults(this, options);
             this.model.bind('change', this.render, this);
             this.model.bind('destroy', function() {
+                app.navbar.stats.nodes.fetch();
                 app.navigate('#clusters', {trigger: true});
             }, this);
             this.scheduleUpdate();
