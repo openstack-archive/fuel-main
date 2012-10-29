@@ -20,7 +20,7 @@ class puppetmaster (
   Class["puppetmaster::nginx"] ->
   Anchor<| title == "puppetmaster-end" |>
 
-  
+
   class { "puppetmaster::selinux": }
 
   class { "puppetmaster::iptables": }
@@ -36,7 +36,7 @@ class puppetmaster (
     puppet_package_version => $puppet_package_version,
     gem_source => $gem_source,
   }
-  
+
   class { "puppetmaster::master":
     puppet_master_hostname => $puppet_master_hostname,
     puppet_stored_dbname => $puppet_stored_dbname,
@@ -50,4 +50,4 @@ class puppetmaster (
     puppet_master_hostname => $puppet_master_hostname,
   }
 
-  }
+}
