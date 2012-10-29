@@ -75,12 +75,28 @@ function(models, navbarTemplate, nodesStatsTemplate, nodesStatsPopoverTemplate, 
             if (!_.isEqual(stats, this.stats)) {
                 this.stats = stats;
                 _.each(roles, function(role) {
-                    this.$('.stats-' + role).css('width', stats.total ? (100 * stats[role] / stats.total) + '%' : 0);
                     stats[role] = this.nodes.where({role: role}).length;
                 }, this);
                 if (this.popoverVisible) {
                     this.hidePopover();
                     this.showPopover();
+                }
+                if (stats.unallocated) {
+                    _.each(roles, function(role) {
+                        this.$('.stats-' + role).width(stats.total ? (100 * stats[role] / stats.total) + '%' : 0);
+                    }, this);
+                } else if (stats.total) {
+                    // all nodes have role assigned, working around "odd pixel" bug
+                    var containerWidth = this.$('.nodes-summary-stat').width();
+                    var barsWidth = 0;
+                    _.each(_.initial(roles), function(role) {
+                        var barWidth = Math.round(containerWidth * stats[role] / stats.total);
+                        barsWidth += barWidth;
+                        this.$('.stats-' + role).width(barWidth);
+                    }, this);
+                    this.$('.stats-' + _.last(roles)).width(containerWidth - barsWidth);
+                } else {
+                    this.$('.bar').width(0);
                 }
             }
         },
