@@ -97,6 +97,12 @@ class Node(ManagedObject):
     def shutdown(self):
         self.driver.shutdown_node(self)
 
+    def suspend(self):
+        self.driver.suspend_node(self)
+
+    def resume(self):
+        self.driver.resume_node(self)
+
     @property
     def snapshots(self):
         return self.driver.get_node_snapshots(self)

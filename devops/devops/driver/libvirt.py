@@ -283,6 +283,12 @@ class Libvirt:
     def reboot_node(self, node):
         self._virsh(['reboot', node.id])
 
+    def suspend_node(self, node):
+        self._virsh(['suspend', node.id])
+
+    def resume_node(self, node):
+        self._virsh(['resume', node.id])
+
     def shutdown_node(self, node):
         self._virsh(['shutdown', node.id])
 
