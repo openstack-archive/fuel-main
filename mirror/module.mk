@@ -230,6 +230,7 @@ $/gems-bundle-gemfile.done: requirements-gems.txt
 
 $/gems-bundle.done: $/gems-bundle-gemfile.done
 	( cd $/gems-bundle && bundle install --path ./ && bundle package )
+	( cd $/gems-bundle/vendor/cache/ && gem fetch -v 1.2.1 bundler )
 	$(ACTION.TOUCH)
 
 $/gems: $/gems-bundle.done

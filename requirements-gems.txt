@@ -1,6 +1,7 @@
 amqp	0.9.8
 amq-protocol	0.9.5
 amq-client	0.9.5
+bundler 1.2.1
 bunny	0.8.0
 chef	10.12.0
 daemons	1.1.9

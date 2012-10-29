@@ -44,10 +44,10 @@ class nailgun(
   Class["nailgun::user"] ->
   Class["nailgun::venv"] ->
   Class["nailgun::naily"] ->
-  Class["nailgun::supervisor"] ->
   Class["nailgun::nginx-nailgun"] ->
   Class["nailgun::cobbler"] ->
   Class["nailgun::pm"] ->
+  Class["nailgun::supervisor"] ->
   Anchor<| title == "nailgun-end" |>
 
   class { "nailgun::packages":

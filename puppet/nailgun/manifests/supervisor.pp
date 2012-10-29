@@ -14,7 +14,10 @@ class nailgun::supervisor(
   service { "supervisord":
     ensure => "running",
     enable => true,
-    require => Package["supervisor"],
+    require => [
+                Package["supervisor"],
+                Service["rabbitmq-server"],
+                ],
   }
-  
+
 }

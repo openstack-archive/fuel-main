@@ -31,7 +31,7 @@ node default {
   class { "nailgun":
     package => "Nailgun",
     version => "0.1.0",
-    naily_version => "0.1",
+    naily_version => "0.0.1",
     nailgun_group => "nailgun",
     nailgun_user => "nailgun",
     venv => "/opt/nailgun",
