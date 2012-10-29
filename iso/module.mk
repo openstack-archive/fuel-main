@@ -10,8 +10,8 @@ RABBITMQ_PLUGINS:=amqp_client-$(RABBITMQ_VERSION).ez rabbitmq_stomp-$(RABBITMQ_V
 RABBITMQ_PLUGINS_URL:=http://www.rabbitmq.com/releases/plugins/v$(RABBITMQ_VERSION)
 
 NAILGUN_VERSION:=0.1.0
-NAILY_VERSION:=0.1
-ASTUTE_VERSION:=0.1
+NAILY_VERSION:=0.0.1
+ASTUTE_VERSION:=0.0.1
 
 iso: $/nailgun-centos-6.3-amd64.iso
 
@@ -97,6 +97,7 @@ $/isoroot-gems.done: \
 		$(ISOROOT)/gems/gems/naily-$(NAILY_VERSION).gem \
 		$(ISOROOT)/gems/gems/astute-$(ASTUTE_VERSION).gem
 	cp -r $(LOCAL_MIRROR)/gems $(ISOROOT)/gems
+	(cd $(ISOROOT)/gems && gem generate_index gems)
 	$(ACTION.TOUCH)
 
 $/isoroot.done: \

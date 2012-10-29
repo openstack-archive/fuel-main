@@ -1,6 +1,5 @@
 class nailgun::nginx-nailgun(
   $staticdir,
-  $rundir,
   ) {
 
   file { "/etc/nginx/conf.d/nailgun.conf":

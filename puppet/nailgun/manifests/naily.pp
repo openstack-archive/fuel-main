@@ -10,14 +10,14 @@ class nailgun::naily(
     ensure => $version,
     source => $gem_source,
   }
-  
+
   file {"/etc/naily":
     ensure => directory,
     owner => 'root',
     group => 'root',
     mode => 0755,
   }
-  
+
   file {"/etc/naily/nailyd.conf":
     content => template("nailgun/nailyd.conf.erb"),
     owner => 'root',
@@ -32,5 +32,5 @@ class nailgun::naily(
     group => 'root',
     mode => 0755,
   }
-  
+
 }

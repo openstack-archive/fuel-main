@@ -16,7 +16,4 @@ class nailgun::user(
     require => Group[$nailgun_group],
   }
 
-  user {"nginx":
-    groups => [$nailgun_group],
-  }
 }

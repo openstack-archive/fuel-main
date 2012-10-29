@@ -4,7 +4,6 @@ amq-client	0.9.5
 bunny	0.8.0
 chef	10.12.0
 daemons	1.1.9
-erubis	2.7.0
 eventmachine	1.0.0
 highline	1.6.13
 httpclient	2.2.5

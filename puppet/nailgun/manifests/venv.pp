@@ -22,7 +22,7 @@ class nailgun::venv(
     opts => $venv_opts,
     require => Package["python-virtualenv"],
   }
-  
+
   nailgun::venv::pip { "$venv_$package":
     package => "$package==$version",
     opts => $pip_opts,
@@ -38,7 +38,7 @@ class nailgun::venv(
   $logparentdir = inline_template("<%= logfile.match(%r!(.+)/.+!)[1] %>")
   $databasefiledir = inline_template("<%= databasefile.match(%r!(.+)/.+!)[1] %>")
   $database_engine = "sqlite:///${databasefile}"
-  
+
   file { "/etc/nailgun":
     ensure => directory,
     owner => 'root',
@@ -54,14 +54,18 @@ class nailgun::venv(
     require => File["/etc/nailgun"],
   }
 
-  file { $logparentdir:
-    ensure => directory,
-    recurse => true,
+  if ! defined(File[$databasefiledir]){
+    file { $logparentdir:
+      ensure => directory,
+      recurse => true,
+    }
   }
 
-  file { $databasefiledir:
-    ensure => directory,
-    recurse => true,
+  if ! defined(File[$databasefiledir]){
+    file { $databasefiledir:
+      ensure => directory,
+      recurse => true,
+    }
   }
 
   exec {"nailgun_syncdb":
@@ -70,7 +74,8 @@ class nailgun::venv(
     require => [
                 File["/etc/nailgun/settings.yaml"],
                 File[$databasefiledir],
+                Nailgun::Venv::Pip["$venv_$package"],
                 ],
   }
-  
+
   }

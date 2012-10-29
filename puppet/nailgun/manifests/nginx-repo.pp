@@ -7,8 +7,10 @@ class nailgun::nginx-repo(
     owner => 'root',
     group => 'root',
     mode => 0644,
-    require => Package["nginx"],
+    require => [
+                Package["nginx"],
+                ],
     notify => Service["nginx"],
   }
-  
+
 }

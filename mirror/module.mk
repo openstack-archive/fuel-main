@@ -199,7 +199,8 @@ $/eggs.done: \
 	$(CHROOT_CMD) easy_install -U distribute
 	$(CHROOT_CMD) easy_install -U pip
 	@cat requirements-eggs.txt | while read egg ver; do \
-	 [ `$(CHROOT_CMD) find /tmp/eggs -name $${egg}-$${ver}\*` ] || $(CHROOT_CMD) pip install --exists-action=i -d /tmp/eggs $${egg}==$${ver} ;\
+         $(CHROOT_CMD) ls /tmp/eggs/$${egg}-$${ver}\* >/dev/null 2>&1 || \
+         $(CHROOT_CMD) pip install --exists-action=i -d /tmp/eggs $${egg}==$${ver} ;\
 	done
 	cp -fR $(INITRAM_DIR)/tmp/eggs $/
 	$(CHROOT_CMD) rm -rf /tmp/eggs
@@ -210,11 +211,32 @@ $/eggs.done: \
 	sudo rm $(INITRAM_DIR)/etc/resolv.conf
 	$(ACTION.TOUCH)
 
-$/gems.done: requirements-gems.txt
-	@mkdir -p $/gems
-	@cat requirements-gems.txt | while read gem ver; do \
-	 [ `find $/gems -name $${gem}-$${ver}\*` ] || ( cd $/gems && gem fetch "$${gem}" -v "$$ver") ;\
+
+define bundle_gemfile_template
+source "http://rubygems.org"
+source "http://gems.rubyforge.org"
+source "http://gemcutter.org"
+endef
+
+
+$/gems-bundle-gemfile.done: export bundle_gemfile_template_content:=$(bundle_gemfile_template)
+$/gems-bundle-gemfile.done: requirements-gems.txt
+	@mkdir -p $/gems-bundle
+	echo "$${bundle_gemfile_template_content}" > $/gems-bundle/Gemfile
+	cat requirements-gems.txt | while read gem ver; do \
+         echo "gem \"$${gem}\", \"$${ver}\"" >> $/gems-bundle/Gemfile; \
 	done
+	$(ACTION.TOUCH)
+
+$/gems-bundle.done: $/gems-bundle-gemfile.done
+	( cd $/gems-bundle && bundle install --path ./ && bundle package )
+	$(ACTION.TOUCH)
+
+$/gems: $/gems-bundle.done
+	mkdir -p $@
+	cp $/gems-bundle/vendor/cache/*.gem $@
+
+$/gems.done: $/gems-bundle.done $/gems
 	$(ACTION.TOUCH)
 
 mirror: $(addprefix $(CENTOS_REPO_DIR)Packages/repodata/,$(METADATA_FILES)) \

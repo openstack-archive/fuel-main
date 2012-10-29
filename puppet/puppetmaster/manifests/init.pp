@@ -33,7 +33,7 @@ class puppetmaster (
   }
 
   class { "puppetmaster::packages":
-    puppet_package_version = $puppet_package_version,
+    puppet_package_version => $puppet_package_version,
     gem_source => $gem_source,
   }
   

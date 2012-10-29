@@ -9,25 +9,25 @@ node default {
    "url"  => "http://${ipaddress}:8080/centos/6.3/nailgun/x86_64"
    },
    ]
- 
+
   $centos_iso = "file:///var/www/nailgun/iso/CentOS-6.3-x86_64-minimal-EFI.iso"
   $cobbler_user = "cobbler"
   $cobbler_password = "cobbler"
 
   $puppet_master_hostname = "${hostname}.${domain}"
-   
+
   $mco_pskey = "unset"
   $mco_stompuser = "mcollective"
   $mco_stomppassword = "marionette"
 
   $rabbitmq_naily_user = "naily"
   $rabbitmq_naily_password = "naily"
-   
+
   $repo_root = "/var/www/nailgun"
   $pip_repo = "/var/www/nailgun/eggs"
   $gem_source = "http://localhost:8080/gems/"
-                   
-  
+
+
   class { "nailgun":
     package => "Nailgun",
     version => "0.1.0",
