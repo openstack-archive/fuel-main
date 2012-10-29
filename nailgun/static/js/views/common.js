@@ -75,7 +75,7 @@ function(models, navbarTemplate, nodesStatsTemplate, nodesStatsPopoverTemplate, 
             if (!_.isEqual(stats, this.stats)) {
                 this.stats = stats;
                 _.each(roles, function(role) {
-                    this.$('.stats-' + role).css('width', (100 * stats[role] / stats.total) + '%');
+                    this.$('.stats-' + role).css('width', stats.total ? (100 * stats[role] / stats.total) + '%' : 0);
                     stats[role] = this.nodes.where({role: role}).length;
                 }, this);
                 if (this.popoverVisible) {
