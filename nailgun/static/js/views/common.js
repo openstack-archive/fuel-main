@@ -70,6 +70,7 @@ function(models, navbarTemplate, nodesStatsTemplate, nodesStatsPopoverTemplate, 
                     stats[role] = this.nodes.where({role: role}).length;
                 }, this);
                 stats.total = this.nodes.length;
+                stats.unallocated = stats.total - stats.controller - stats.compute - stats.storage;
             }
             if (!_.isEqual(stats, this.stats)) {
                 this.stats = stats;

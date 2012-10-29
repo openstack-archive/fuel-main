@@ -1,6 +1,7 @@
 <table class="nodes-stat-popover">
-    <tr><td>Controllers</td><td class="msg-ok"><%= stats.controller %></td></tr>
-    <tr><td>Compute Nodes</td><td class="msg-warning"><%= stats.compute %></td></tr>
-    <tr><td>Storage Nodes</td><td class="msg-error"><%= stats.storage %></td></tr>
-    <tr><td>Total</td><td><%= stats.total %></td></tr>
+  <tr class="msg-ok"><td>Controllers</td><td><%= stats.controller %></td></tr>
+  <tr class="msg-warning"><td>Compute Nodes</td><td><%= stats.compute %></td></tr>
+  <tr class="msg-error"><td>Storage Nodes</td><td><%= stats.storage %></td></tr>
+  <tr class="msg-unimportant"><td>Unallocated Nodes</td><td><%= stats.unallocated %></td></tr>
+  <tr><td>Total</td><td><%= stats.total %></td></tr>
 </table>
