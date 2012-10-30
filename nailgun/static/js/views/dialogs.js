@@ -123,7 +123,11 @@ function(models, createClusterDialogTemplate, changeClusterModeDialogTemplate, c
             'click .apply-btn': 'apply'
         },
         apply: function() {
-            this.model.update({type: this.$('input[name=type]:checked').val()});
+            var options = {type: this.$('input[name=type]:checked').val()};
+            if (options.type == 'singlenode') {
+                options.mode = 'simple';
+            }
+            this.model.update(options);
             this.$el.modal('hide');
         },
         toggleDescription: function() {

@@ -44,11 +44,17 @@ define(function() {
         hasChanges: function() {
             return _.any(this.get('nodes').pluck('redeployment_needed'));
         },
+        canChangeMode: function() {
+            return !this.get('nodes').length && this.get('type') != 'singlenode';
+        },
+        canChangeType: function() {
+            return !this.get('nodes').length;
+        },
         availableModes: function() {
             return ['simple', 'ha'];
         },
         availableTypes: function() {
-            return ['both', 'compute', 'storage'];
+            return ['both', 'compute', 'storage', 'singlenode'];
         },
         availableRoles: function() {
             var roles = [];
@@ -56,6 +62,8 @@ define(function() {
                 roles = ['controller', 'storage'];
             } else if (this.get('type') == 'compute') {
                 roles = ['controller', 'compute'];
+            } else if (this.get('type') == 'singlenode') {
+                roles = ['controller'];
             } else {
                 roles = ['controller', 'compute', 'storage'];
             }
