@@ -7,7 +7,7 @@ LINUX:=$(BS_DIR)/linux
 all: bootstrap
 
 YUM_PACKAGES:=openssh-server wget cronie-noanacron crontabs ntp \
-bash net-tools dhclient rsyslog iputils \
+bash net-tools dhclient rsyslog iputils openssh-clients vim-minimal\
 rubygems mcollective vconfig tcpdump scapy mingetty
 
 YUM_BUILD_PACKAGES:=ruby-devel make gcc flex byacc python-devel \
@@ -60,6 +60,7 @@ $(INITRAM_DIR)/etc/nailgun_systemtype: $(BS_DIR)/init.done
 	sudo chmod 600 $(INITRAM_DIR)/root/.ssh/authorized_keys
 	sudo mkdir -p $(NAILGUN_DIR)/bin
 	sudo cp -r bin/agent $(NAILGUN_DIR)/bin
+	sudo cp mcagent/* $(INITRAM_DIR)/usr/libexec/mcollective/mcollective/agent/
 	sudo sh -c "echo bootstrap > $(INITRAM_DIR)/etc/nailgun_systemtype"
 
 $(BS_DIR)/init.done: $(LOCAL_MIRROR)/repo.done $(INITRAM_DIR)/etc/yum.repos.d/mirror.repo
