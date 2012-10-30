@@ -8,7 +8,7 @@ all: bootstrap
 
 YUM_PACKAGES:=openssh-server wget cronie-noanacron crontabs ntp \
 bash net-tools dhclient rsyslog iputils \
-ruby-json rubygems mcollective vconfig tcpdump scapy mingetty
+rubygems mcollective vconfig tcpdump scapy mingetty
 
 YUM_BUILD_PACKAGES:=ruby-devel make gcc flex byacc python-devel \
 glibc-devel glibc-headers kernel-headers
@@ -79,6 +79,7 @@ $(BS_DIR)/init.done: $(LOCAL_MIRROR)/repo.done $(INITRAM_DIR)/etc/yum.repos.d/mi
 	sudo cp /etc/resolv.conf $(INITRAM_DIR)/etc/resolv.conf
 	$(CHROOT_CMD) gem install --no-rdoc --no-ri httpclient
 	$(CHROOT_CMD) gem install --no-rdoc --no-ri ohai
+	$(CHROOT_CMD) gem install --no-rdoc --no-ri json
 	sudo rm $(INITRAM_DIR)/etc/resolv.conf
 
 	sudo mkdir -p $(INITRAM_DIR)/src
