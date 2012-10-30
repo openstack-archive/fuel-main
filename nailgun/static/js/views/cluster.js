@@ -232,7 +232,8 @@ function(models, dialogViews, clusterPageTemplate, deploymentResultTemplate, dep
                 var nodeListView = new views.NodeList({
                     collection: nodes,
                     role: role,
-                    tab: this.tab
+                    tab: this.tab,
+                    size: role == 'controller' ? this.model.get('mode') == 'ha' ? this.model.get('redundancy') : 1 : 0
                 });
                 this.$el.append(nodeListView.render().el);
                 if (index < roles.length - 1) {
@@ -394,11 +395,10 @@ function(models, dialogViews, clusterPageTemplate, deploymentResultTemplate, dep
             this.tab.changeScreen(views.DeleteNodesScreen, {role: this.role});
         },
         initialize: function(options) {
-            this.role = options.role;
-            this.tab = options.tab;
+            _.defaults(this, options);
         },
         render: function() {
-            this.$el.html(this.template({nodes: this.collection, role: this.role}));
+            this.$el.html(this.template({nodes: this.collection, role: this.role, size: this.size}));
             if (this.collection.length) {
                 var container = this.$('.node-list-container');
                 this.collection.each(function(node) {

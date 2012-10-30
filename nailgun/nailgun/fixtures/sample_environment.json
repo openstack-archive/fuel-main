@@ -255,7 +255,7 @@
             "name": "Node with name",
             "manufacturer": "VMWare",
             "platform_name": "",
-            "role": "controller",
+            "role": "compute",
             "ip": "",
             "fqdn": "",
             "cluster": 1,

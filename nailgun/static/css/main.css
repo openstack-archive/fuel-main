@@ -289,6 +289,10 @@ h6.page-title {
   padding-top: 10px;
 }
 
+.nodesbox-header h3 > span {
+  font-size: 16px;
+}
+
 .nodebox {
   width: 172px;
   /* height: 226px; */
