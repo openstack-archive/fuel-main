@@ -237,9 +237,9 @@ h6.page-title {
   border-top-left-radius: 0;
 }
 
-.whitebox > hr {
+.whitebox hr {
   border-width: 1px 0 0 0;
-  border-color: #afafaf;
+  margin: 10px 0 15px 0;
 }
 
 .roles-block-row, .settings-header, .settings-editable > div:last-child {
@@ -269,8 +269,7 @@ h6.page-title {
 }
 
 .nodesbox-header, .settings-header {
-  margin-bottom: 20px;
-  height: 46px;
+  margin-bottom: 10px;
 }
 
 .settings-editable > div:last-child {
@@ -805,7 +804,7 @@ h6.page-title {
 }
 
 .summary {
-  margin: 10px 20px 20px 20px;
+  margin: 2px 20px 15px 20px;
 }
 
 .summary-inner {
