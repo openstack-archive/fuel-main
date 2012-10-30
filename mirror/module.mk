@@ -211,14 +211,11 @@ $/eggs.done: \
 	sudo rm $(INITRAM_DIR)/etc/resolv.conf
 	$(ACTION.TOUCH)
 
-<<<<<<< HEAD
-
 define bundle_gemfile_template
 source "http://rubygems.org"
 source "http://gems.rubyforge.org"
 source "http://gemcutter.org"
 endef
-
 
 $/gems-bundle-gemfile.done: export bundle_gemfile_template_content:=$(bundle_gemfile_template)
 $/gems-bundle-gemfile.done: requirements-gems.txt
