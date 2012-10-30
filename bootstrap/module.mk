@@ -3,6 +3,9 @@ INITRAM_DIR:=$(BS_DIR)/initram-root
 INITRAM_FS:=$(BS_DIR)/initramfs.img
 LINUX:=$(BS_DIR)/linux
 
+/:=$(BS_DIR)/
+$/%: /:=$/
+
 .PHONY: bootstrap clean chroot-bootstrap
 all: bootstrap
 
@@ -27,6 +30,9 @@ clean-bootstrap:
 
 bootstrap: $(LINUX) $(INITRAM_FS)
 
+$/bootstrap.done: $(LINUX) $(INITRAM_FS)
+	$(ACTION.TOUCH)
+
 chroot-bootstrap: $(INITRAM_DIR)/etc/nailgun_systemtype $(BS_DIR)/init.done
 	sudo mkdir -p $(INITRAM_DIR)/proc $(INITRAM_DIR)/dev
 	mount | grep $(INITRAM_DIR)/proc || sudo mount --bind /proc $(INITRAM_DIR)/proc
@@ -34,7 +40,6 @@ chroot-bootstrap: $(INITRAM_DIR)/etc/nailgun_systemtype $(BS_DIR)/init.done
 	-$(CHROOT_CMD) /bin/bash
 	sudo umount $(INITRAM_DIR)/proc
 	sudo umount $(INITRAM_DIR)/dev
-
 
 $(INITRAM_FS): $(INITRAM_DIR)/etc/nailgun_systemtype
 	sudo rm -rf $(INITRAM_DIR)/var/cache/yum $(INITRAM_DIR)/var/lib/yum $(INITRAM_DIR)/usr/share/doc \

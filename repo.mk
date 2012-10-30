@@ -21,3 +21,9 @@ IMAGES_FILES:=efiboot.img efidisk.img install.img
 EFI_FILES:=BOOTX64.conf BOOTX64.efi splash.xpm.gz
 BOOTSTRAP_FILES:=initramfs.img linux
 NETINSTALL_ISO:=CentOS-$(CENTOS_RELEASE)-$(CENTOS_ARCH)-minimal-EFI.iso
+
+# OUR PACKAGES VERSIONS
+
+NAILGUN_VERSION:=0.1.0
+NAILY_VERSION:=0.0.1
+ASTUTE_VERSION:=0.0.1

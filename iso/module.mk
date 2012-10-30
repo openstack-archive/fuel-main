@@ -9,10 +9,6 @@ RABBITMQ_VERSION:=2.6.1
 RABBITMQ_PLUGINS:=amqp_client-$(RABBITMQ_VERSION).ez rabbitmq_stomp-$(RABBITMQ_VERSION).ez
 RABBITMQ_PLUGINS_URL:=http://www.rabbitmq.com/releases/plugins/v$(RABBITMQ_VERSION)
 
-NAILGUN_VERSION:=0.1.0
-NAILY_VERSION:=0.0.1
-ASTUTE_VERSION:=0.0.1
-
 iso: $/nailgun-centos-6.3-amd64.iso
 
 $/isoroot-centos.done: \
@@ -56,11 +52,14 @@ $(addprefix $(ISOROOT)/rabbitmq-plugins/v$(RABBITMQ_VERSION)/,$(RABBITMQ_PLUGINS
 	@mkdir -p $(@D)
 	wget -O $@ $(RABBITMQ_PLUGINS_URL)/$(@F)
 
-$/isoroot-prepare.done:\
+$/isoroot-prepare.done: \
 		$(ISOROOT)/iso/$(NETINSTALL_ISO) \
 		$(addprefix $(ISOROOT)/images/,$(IMAGES_FILES)) \
 		$(addprefix $(ISOROOT)/EFI/BOOT/,$(EFI_FILES)) \
 		$(addprefix $(ISOROOT)/rabbitmq-plugins/v$(RABBITMQ_VERSION)/,$(RABBITMQ_PLUGINS)) \
+		$(addprefix $(ISOROOT)/puppet/,$(call find-files,puppet)) \
+		$(ISOROOT)/ks.cfg \
+		$(ISOROOT)/bootstrap_admin_node.sh
 	$(ACTION.TOUCH)
 
 $/isoroot-bootstrap.done: \
@@ -69,17 +68,13 @@ $/isoroot-bootstrap.done: \
 	$(ACTION.TOUCH)
 
 $(addprefix $(ISOROOT)/bootstrap/, $(BOOTSTRAP_FILES)): \
-		bootstrap
+		$(BUILD_DIR)/bootstrap/bootstrap.done
 	@mkdir -p $(@D)
 	cp $(BUILD_DIR)/bootstrap/$(@F) $@
 
 $(ISOROOT)/bootstrap/bootstrap.rsa: bootstrap/ssh/id_rsa ; $(ACTION.COPY)
 
-$(ISOROOT)/eggs/Nailgun-$(NAILGUN_VERSION).tar.gz: \
-		sdist-nailgun
-	@mkdir -p $(@D)
-	cp $(BUILD_DIR)/nailgun/$(@F) $@
-
+$(ISOROOT)/eggs/Nailgun-$(NAILGUN_VERSION).tar.gz: $(BUILD_DIR)/nailgun/Nailgun-$(NAILGUN_VERSION).tar.gz ; $(ACTION.COPY)
 $(ISOROOT)/gems/gems/naily-$(NAILY_VERSION).gem: $(BUILD_DIR)/gems/naily-$(NAILY_VERSION).gem ; $(ACTION.COPY)
 $(ISOROOT)/gems/gems/astute-$(ASTUTE_VERSION).gem: $(BUILD_DIR)/gems/astute-$(ASTUTE_VERSION).gem ; $(ACTION.COPY)
 
@@ -100,22 +95,21 @@ $/isoroot-gems.done: \
 	(cd $(ISOROOT)/gems && gem generate_index gems)
 	$(ACTION.TOUCH)
 
-$/isoroot.done: \
-		$/isoroot-centos.done \
-		$/isoroot-prepare.done \
-		$/isoroot-isolinux.done \
-		$(ISOROOT)/ks.cfg \
-		$/isoroot-bootstrap.done \
-		$(ISOROOT)/bootstrap_admin_node.sh \
-		$/isoroot-eggs.done \
-		$/isoroot-gems.done \
-		$(addprefix $(ISOROOT)/puppet/,$(call find-files,puppet))
-	$(ACTION.TOUCH)
-
 $(ISOROOT)/ks.cfg: iso/ks.cfg ; $(ACTION.COPY)
 $(ISOROOT)/bootstrap_admin_node.sh: iso/bootstrap_admin_node.sh ; $(ACTION.COPY)
 $(ISOROOT)/.discinfo: iso/.discinfo ; $(ACTION.COPY)
 $(ISOROOT)/.treeinfo: iso/.treeinfo ; $(ACTION.COPY)
+
+$/isoroot.done: \
+		$/isoroot-isolinux.done \
+		$/isoroot-centos.done \
+		$/isoroot-bootstrap.done \
+		$/isoroot-eggs.done \
+		$/isoroot-gems.done \
+		$/isoroot-prepare.done \
+	$(ACTION.TOUCH)
+
+
 
 $/nailgun-centos-6.3-amd64.iso: $/isoroot.done
 	rm -f $@

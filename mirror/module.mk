@@ -211,6 +211,7 @@ $/eggs.done: \
 	sudo rm $(INITRAM_DIR)/etc/resolv.conf
 	$(ACTION.TOUCH)
 
+<<<<<<< HEAD
 
 define bundle_gemfile_template
 source "http://rubygems.org"

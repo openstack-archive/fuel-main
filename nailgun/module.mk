@@ -2,15 +2,12 @@
 
 %: /:=$/
 
-sdist-nailgun:
+$/Nailgun-$(NAILGUN_VERSION).tar.gz:
 	cd nailgun && \
 	python setup.py sdist --dist-dir ../$/
 
-
 test-unit: test-unit-nailgun
 
-.PHONY: test-unit-nailgun sdist-nailgun
+.PHONY: test-unit-nailgun
 test-unit-nailgun:
 	cd nailgun && ./run_tests.sh
-
-
