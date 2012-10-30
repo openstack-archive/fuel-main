@@ -60,6 +60,7 @@ $(INITRAM_DIR)/etc/nailgun_systemtype: $(BS_DIR)/init.done
 	sudo chmod 600 $(INITRAM_DIR)/root/.ssh/authorized_keys
 	sudo mkdir -p $(NAILGUN_DIR)/bin
 	sudo cp -r bin/agent $(NAILGUN_DIR)/bin
+	sudo mkdir -p $(INITRAM_DIR)/usr/libexec/mcollective/mcollective/agent/
 	sudo cp mcagent/* $(INITRAM_DIR)/usr/libexec/mcollective/mcollective/agent/
 	sudo sh -c "echo bootstrap > $(INITRAM_DIR)/etc/nailgun_systemtype"
 
