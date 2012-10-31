@@ -1168,3 +1168,23 @@ h6.page-title {
 .nodes-stat-popover tr td:last-child {
   text-align: right;
 }
+
+.roles-block-row:first-child .span2 {
+  width: auto;
+}
+
+.roles-block-row:first-child .span2 label {
+  white-space: nowrap;
+}
+
+.roles-block-row:first-child .span8 {
+    width: 720px;
+}
+
+.roles-block-row:last-child .span10 {
+  width: auto;
+}
+
+.tab-pane > div > div {
+  overflow-y: hidden;
+}
