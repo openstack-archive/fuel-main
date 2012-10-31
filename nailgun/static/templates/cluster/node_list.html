@@ -2,13 +2,19 @@
   <div class="span8">
     <h3>
       <%= {'controller': 'Controllers', 'compute': 'Compute', 'storage': 'Storage'}[role] || role %>
-      <span>(<%= nodes.length %><%= size ? ' of ' + size : '' %> node<%= nodes.length != 1 ? 's' : '' %>)</span>
+      <span>
+        <% if (size) { %>
+          (<%= nodes.length %> of <%= size %> node<%= size != 1 ? 's' : '' %>)
+        <% } else { %>
+          (<%= nodes.length %> node<%= nodes.length != 1 ? 's' : '' %>)
+        <% } %>
+      </span>
     </h3>
   </div>
   <div class="span2 roles-action-link"><button class="btn btn-add-nodes btn-link pull-right <%= nodes.cluster.task('deploy', 'running') ? 'disabled' : '' %>"><i class="icon-plus-circle"></i>Add</button></div>
   <div class="span2 roles-action-link"><button class="btn btn-delete-nodes btn-link pull-right <%= nodes.cluster.task('deploy', 'running') ? 'disabled' : '' %>"><i class="icon-cancel-circle"></i>Delete</button></div>
 </div>
-<% if (nodes.length) { %>
+<% if (nodes.length || size) { %>
   <div class="roles-block-row node-list-container"></div>
 <% } else { %>
   <div class="roles-block-row">

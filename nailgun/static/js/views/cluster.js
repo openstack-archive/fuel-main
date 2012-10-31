@@ -298,8 +298,7 @@ function(models, dialogViews, clusterPageTemplate, deploymentResultTemplate, dep
             return new models.Nodes(chosenNodes);
         },
         initialize: function(options) {
-            this.tab = options.tab;
-            this.role = options.role;
+            _.defaults(this, options);
             this.availableNodes = new models.Nodes();
         },
         renderNodes: function() {
@@ -389,7 +388,7 @@ function(models, dialogViews, clusterPageTemplate, deploymentResultTemplate, dep
             'click .btn-delete-nodes:not(.disabled)': 'deleteNodes'
         },
         addNodes: function() {
-            this.tab.changeScreen(views.AddNodesScreen, {role: this.role});
+            this.tab.changeScreen(views.AddNodesScreen, {role: this.role, size: this.size});
         },
         deleteNodes: function() {
             this.tab.changeScreen(views.DeleteNodesScreen, {role: this.role});
@@ -399,11 +398,16 @@ function(models, dialogViews, clusterPageTemplate, deploymentResultTemplate, dep
         },
         render: function() {
             this.$el.html(this.template({nodes: this.collection, role: this.role, size: this.size}));
-            if (this.collection.length) {
+            if (this.collection.length || this.size) {
                 var container = this.$('.node-list-container');
                 this.collection.each(function(node) {
                     container.append(new views.Node({model: node, renameable: !this.collection.cluster.task('deploy', 'running')}).render().el);
                 }, this);
+                if (this.collection.length < this.size) {
+                    for (var i = this.collection.length; i < this.size; i++) {
+                        container.append('<div class="span2 nodebox nodeplaceholder"></div>');
+                    }
+                }
             }
             return this;
         }

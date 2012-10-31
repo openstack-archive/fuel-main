@@ -311,6 +311,12 @@ h6.page-title {
   overflow: hidden;
 }
 
+.nodeplaceholder {
+  height: 114px;
+  opacity: 0.7;
+  border: 1px dashed #afafaf;
+}
+
 .node-select {
   display: block;
   width: 172px;
