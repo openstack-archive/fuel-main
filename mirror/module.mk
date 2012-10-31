@@ -226,8 +226,6 @@ $/gems-bundle-gemfile.done: requirements-gems.txt
 	cat requirements-gems.txt | while read gem ver; do \
          echo "gem \"$${gem}\", \"$${ver}\"" >> $/gems-bundle/Gemfile; \
 	done
-	@cp $/gems/tmp/cache/* $/gems
-	@rm -rf $/gems/tmp
 	$(ACTION.TOUCH)
 
 ifeq ($(IGNORE_MIRROR),1)
