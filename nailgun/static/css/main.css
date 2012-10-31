@@ -5,7 +5,12 @@ html {
 }
 body {
   overflow-y: scroll;
-  background: url(../img/flare.png) no-repeat top center;
+  background: -moz-radial-gradient(center top, rgba(128, 134, 143, 0.3) 0%, rgba(128, 134, 143, 0.3) 30%, rgba(128, 134, 143, 0.0) 55%);
+  background: -webkit-gradient(radial, center top, 0, center top, 30%, center top, 55%, color-stop(100%,rgba(128, 134, 143, 0.3)), color-stop(100%,rgba(128, 134, 143, 0.3)), color-stop(100%,rgba(128, 134, 143, 0.0)));
+  background: -webkit-radial-gradient(center top, rgba(128, 134, 143, 0.3) 0%, rgba(128, 134, 143, 0.3) 30%, rgba(128, 134, 143, 0.0) 55%);
+  background: -o-radial-gradient(center top, rgba(128, 134, 143, 0.3) 0%, rgba(128, 134, 143, 0.3) 30%, rgba(128, 134, 143, 0.0) 55%);
+  background: -ms-radial-gradient(center top, rgba(128, 134, 143, 0.3) 0%, rgba(128, 134, 143, 0.3) 30%, rgba(128, 134, 143, 0.0) 55%);
+  background: radial-gradient(center top, rgba(128, 134, 143, 0.3) 0%, rgba(128, 134, 143, 0.3) 30%, rgba(128, 134, 143, 0.0) 55%);
   font-family: 'Segoe UI', Helvetica, Georgia, Tahoma, Arial;
   height: 100%;
 }
