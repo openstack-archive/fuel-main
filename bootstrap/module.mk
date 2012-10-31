@@ -86,7 +86,7 @@ $(BS_DIR)/init.done: $(LOCAL_MIRROR)/repo.done $(INITRAM_DIR)/etc/yum.repos.d/mi
 	sudo cp /etc/resolv.conf $(INITRAM_DIR)/etc/resolv.conf
 	$(CHROOT_CMD) gem install --no-rdoc --no-ri httpclient
 	$(CHROOT_CMD) gem install --no-rdoc --no-ri ohai
-	$(CHROOT_CMD) gem install --no-rdoc --no-ri json
+	$(CHROOT_CMD) gem install --no-rdoc --no-ri json_pure
 	sudo rm $(INITRAM_DIR)/etc/resolv.conf
 
 	sudo mkdir -p $(INITRAM_DIR)/src
