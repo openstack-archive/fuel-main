@@ -417,9 +417,9 @@ function(models, dialogViews, clusterPageTemplate, deploymentResultTemplate, dep
                     container.append(new views.Node({model: node, renameable: !this.collection.cluster.task('deploy', 'running')}).render().el);
                 }, this);
                 if (this.collection.length < this.size) {
-                    for (var i = this.collection.length; i < this.size; i++) {
+                    _(this.size - this.collection.length).times(function() {
                         container.append('<div class="span2 nodebox nodeplaceholder"></div>');
-                    }
+                    });
                 }
             }
             return this;
