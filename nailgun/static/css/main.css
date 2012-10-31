@@ -334,7 +334,6 @@ h6.page-title {
 }
 .node-to-add-unchecked:hover {
   background-color: rgba(0, 100, 38, 0.25);
-  cursor: pointer;
   box-shadow: 0 0px 6px rgba(0,0,0,.3),
   inset 0px 0px 0px rgba(255,255,255,.0);
   cursor: pointer;
@@ -344,7 +343,6 @@ h6.page-title {
 }
 .node-to-add-checked:hover {
   background-color: rgba(0, 100, 38, 0.15);
-  cursor: pointer;
   box-shadow: 0 0px 6px rgba(0,0,0,.3),
   inset 0px 0px 0px rgba(255,255,255,.0);
   cursor: pointer;
@@ -356,7 +354,6 @@ h6.page-title {
 
 .node-to-delete-unchecked:hover {
   background-color: rgba(121, 0, 0, 0.25);
-  cursor: pointer;
   box-shadow: 0 0px 6px rgba(0,0,0,.3),
   inset 0px 0px 0px rgba(255,255,255,.0);
   cursor: pointer;
@@ -366,7 +363,6 @@ h6.page-title {
 }
 .node-to-delete-checked:hover {
   background-color: rgba(121, 0, 0, 0.25);
-  cursor: pointer;
   box-shadow: 0 0px 6px rgba(0,0,0,.3),
   inset 0px 0px 0px rgba(255,255,255,.0);
   cursor: pointer;
@@ -374,6 +370,10 @@ h6.page-title {
 .node-to-delete-checked .node-select {
   display: block;
   background-color: rgba(121, 0, 0, 0.25);
+}
+.node-not-checkable:hover {
+  background-color: rgba(130, 130, 130, 0.25);
+  cursor: not-allowed !important;
 }
 
 .breaker {

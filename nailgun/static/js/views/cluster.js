@@ -255,17 +255,18 @@ function(models, dialogViews, clusterPageTemplate, deploymentResultTemplate, dep
             'click .select-all-tumbler': 'selectAll'
         },
         toggleNode: function(e) {
-            this.$('.select-all-tumbler').attr('checked', false);
+            if (this.limit && $(e.currentTarget).is('.node-to-' + this.action + '-unchecked') && this.$('.node-to-' + this.action + '-checked').length >= this.limit) {
+                return;
+            }
             $(e.currentTarget).toggleClass('node-to-' + this.action + '-checked').toggleClass('node-to-' + this.action + '-unchecked');
-            this.forceWebkitRedraw();
+            this.calculateSelectAllTumblerState();
+            this.calculateNotChosenNodesAvailability();
             this.calculateApplyButtonAvailability();
+            this.forceWebkitRedraw();
         },
         selectAll: function(e) {
-            if ($(e.currentTarget).is(':checked')) {
-                this.$('.nodebox').addClass('node-to-' + this.action + '-checked').removeClass('node-to-' + this.action + '-unchecked');
-            } else {
-                this.$('.nodebox').removeClass('node-to-' + this.action + '-checked').addClass('node-to-' + this.action + '-unchecked');
-            }
+            var checked = $(e.currentTarget).is(':checked');
+            this.$('.nodebox').toggleClass('node-to-' + this.action + '-checked', checked).toggleClass('node-to-' + this.action + '-unchecked', !checked);
             this.forceWebkitRedraw();
             this.calculateApplyButtonAvailability();
         },
@@ -275,6 +276,16 @@ function(models, dialogViews, clusterPageTemplate, deploymentResultTemplate, dep
                 var dummy = this.offsetHeight;
                 this.style.webkitTransform = '';
             });
+        },
+        calculateSelectAllTumblerState: function() {
+            this.$('.select-all-tumbler').attr('checked', this.availableNodes.length == this.$('.node-to-' + this.action + '-checked').length);
+        },
+        calculateNotChosenNodesAvailability: function() {
+            if (this.limit) {
+                var chosenNodesCount = this.$('.node-to-' + this.action + '-checked').length;
+                var notChosenNodes = this.$('.nodebox:not(.node-to-' + this.action + '-checked)');
+                notChosenNodes.toggleClass('node-not-checkable', chosenNodesCount >= this.limit);
+            }
         },
         calculateApplyButtonAvailability: function() {
             this.$('.btn-apply').attr('disabled', !this.$('.node-to-' + this.action + '-checked').length);
@@ -319,7 +330,7 @@ function(models, dialogViews, clusterPageTemplate, deploymentResultTemplate, dep
             }
         },
         render: function() {
-            this.$el.html(this.template({cluster: this.model, role: this.role, action: this.action}));
+            this.$el.html(this.template({nodes: this.availableNodes, role: this.role, action: this.action, limit: this.limit}));
             if (this.availableNodes.deferred) {
                 this.availableNodes.deferred.done(_.bind(this.renderNodes, this));
             } else {
@@ -332,8 +343,7 @@ function(models, dialogViews, clusterPageTemplate, deploymentResultTemplate, dep
     views.AddNodesScreen = views.EditNodesScreen.extend({
         action: 'add',
         initialize: function(options) {
-            this.tab = options.tab;
-            this.role = options.role;
+            this.constructor.__super__.initialize.apply(this, arguments);
             this.availableNodes = new models.Nodes();
             this.availableNodes.deferred = this.availableNodes.fetch({data: {cluster_id: ''}});
         },
@@ -356,8 +366,7 @@ function(models, dialogViews, clusterPageTemplate, deploymentResultTemplate, dep
     views.DeleteNodesScreen = views.EditNodesScreen.extend({
         action: 'delete',
         initialize: function(options) {
-            this.tab = options.tab;
-            this.role = options.role;
+            this.constructor.__super__.initialize.apply(this, arguments);
             this.availableNodes = new models.Nodes(this.model.get('nodes').where({role: options.role}));
         },
         applyChanges: function() {
@@ -388,7 +397,11 @@ function(models, dialogViews, clusterPageTemplate, deploymentResultTemplate, dep
             'click .btn-delete-nodes:not(.disabled)': 'deleteNodes'
         },
         addNodes: function() {
-            this.tab.changeScreen(views.AddNodesScreen, {role: this.role, size: this.size});
+            var limit = this.size - this.collection.length;
+            if (limit <= 0) {
+                limit = 0;
+            }
+            this.tab.changeScreen(views.AddNodesScreen, {role: this.role, limit: limit});
         },
         deleteNodes: function() {
             this.tab.changeScreen(views.DeleteNodesScreen, {role: this.role});
