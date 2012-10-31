@@ -1155,6 +1155,7 @@ h6.page-title {
   text-align: right;
 }
 
+
 .roles-block-row:first-child .span2 {
   width: auto;
 }
@@ -1174,3 +1175,15 @@ h6.page-title {
 .tab-pane > div > div {
   overflow-y: hidden;
 }
+
+.network-settings-table {margin-bottom: 10px;}
+.network-settings-table .network {width: 100px; float: left; margin-left: 20px;}
+.network-settings-table .cidr {width: 220px; float: left; margin-left: 20px;}
+.network-settings-table .vlan {width: 60px; float: left; margin-left: 20px;}
+
+.network-setting-span-label {width: 100px; padding-top: 5px;}
+.network-setting-span-cidr {width: 220px;}
+.network-setting-span-vlan {width: 60px;}
+.network-setting-span-test {width: 300px; padding-top: 5px;}
+
+.space30 {display: block; height: 30px;}
