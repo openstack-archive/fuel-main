@@ -106,7 +106,7 @@ $/isoroot.done: \
 		$/isoroot-bootstrap.done \
 		$/isoroot-eggs.done \
 		$/isoroot-gems.done \
-		$/isoroot-prepare.done \
+		$/isoroot-prepare.done
 	$(ACTION.TOUCH)
 
 
