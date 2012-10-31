@@ -226,6 +226,19 @@ $/gems-bundle-gemfile.done: requirements-gems.txt
 	cat requirements-gems.txt | while read gem ver; do \
          echo "gem \"$${gem}\", \"$${ver}\"" >> $/gems-bundle/Gemfile; \
 	done
+	@cp $/gems/tmp/cache/* $/gems
+	@rm -rf $/gems/tmp
+	$(ACTION.TOUCH)
+
+ifeq ($(IGNORE_MIRROR),1)
+SRC_URLS:=$(shell grep -v ^\\s*\# requirements-src.txt)
+else
+SRC_URLS:=$(shell grep -v ^\\s*\# requirements-src.txt | sed "s=.*/\(.*\)=$(MIRROR_URL)/src/\1=")
+endif
+
+$/src.done:
+	@mkdir -p $/src
+	wget --no-use-server-timestamps -c -P $/src $(SRC_URLS)
 	$(ACTION.TOUCH)
 
 $/gems-bundle.done: $/gems-bundle-gemfile.done
@@ -242,6 +255,7 @@ $/gems.done: $/gems-bundle.done $/gems
 
 mirror: $(addprefix $(CENTOS_REPO_DIR)Packages/repodata/,$(METADATA_FILES)) \
 	$(CENTOS_ISO_DIR)/$(NETINSTALL_ISO) \
+	$/src.done \
 	$/cache-boot.done \
 	$/eggs.done \
 	$/gems.done
