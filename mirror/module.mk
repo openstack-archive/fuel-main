@@ -127,14 +127,14 @@ $(CENTOS_REPO_DIR)repodata/comps.xml: $(CENTOS_REPO_DIR)repodata/comps.xml.gz
 	gunzip -c $(CENTOS_REPO_DIR)repodata/comps.xml.gz > $@
 
 $/cache-boot.done: \
-	    $(addprefix $(CENTOS_REPO_DIR)/images/,$(IMAGES_FILES)) \
-	    $(addprefix $(CENTOS_REPO_DIR)/EFI/BOOT/,$(EFI_FILES)) \
-	    $(addprefix $(CENTOS_REPO_DIR)/isolinux/,$(ISOLINUX_FILES))
+		$(addprefix $(CENTOS_REPO_DIR)/images/,$(IMAGES_FILES)) \
+		$(addprefix $(CENTOS_REPO_DIR)/EFI/BOOT/,$(EFI_FILES)) \
+		$(addprefix $(CENTOS_REPO_DIR)/isolinux/,$(ISOLINUX_FILES))
 	$(ACTION.TOUCH)
 
 $/cache-infra.done: \
-	  $(CENTOS_REPO_DIR)etc/yum-$(REPO_SUFFIX).conf \
-	  $(CENTOS_REPO_DIR)etc/yum-$(REPO_SUFFIX).repos.d/base.repo
+		$(CENTOS_REPO_DIR)etc/yum-$(REPO_SUFFIX).conf \
+		$(CENTOS_REPO_DIR)etc/yum-$(REPO_SUFFIX).repos.d/base.repo
 	$(ACTION.TOUCH)
 
 $/cache-extra.done: \
@@ -242,11 +242,9 @@ $/gems-bundle.done: $/gems-bundle-gemfile.done
 	( cd $/gems-bundle/vendor/cache/ && gem fetch -v 1.2.1 bundler )
 	$(ACTION.TOUCH)
 
-$/gems: $/gems-bundle.done
-	mkdir -p $@
-	cp $/gems-bundle/vendor/cache/*.gem $@
-
-$/gems.done: $/gems-bundle.done $/gems
+$/gems.done: $/gems-bundle.done
+	@mkdir -p $/gems
+	cp $/gems-bundle/vendor/cache/*.gem $/gems
 	$(ACTION.TOUCH)
 
 mirror: $(addprefix $(CENTOS_REPO_DIR)Packages/repodata/,$(METADATA_FILES)) \

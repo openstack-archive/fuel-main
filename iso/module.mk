@@ -25,19 +25,18 @@ $/isoroot-centos.done: \
 
 $(ISOROOT)/repodata/comps.xml: $(CENTOS_REPO_DIR)/repodata/comps.xml ; $(ACTION.COPY)
 
-$(addprefix $(ISOROOT)/isolinux/,$(ISOLINUX_FILES)):
-	@mkdir -p $(@D)
-	cp $(CENTOS_REPO_DIR)/isolinux/$(@F) $(@D)
-
-$(ISOROOT)/isolinux/isolinux.cfg: iso/isolinux/isolinux.cfg ; $(ACTION.COPY)
-
 $(ISOROOT)/iso/$(NETINSTALL_ISO): $(CENTOS_ISO_DIR)/$(NETINSTALL_ISO)
 	@mkdir -p $(@D)
 	cp $(CENTOS_ISO_DIR)/$(@F) $(@D)
 
-$/isoroot-isolinux.done: \
-		$(addprefix $(ISOROOT)/isolinux/,$(ISOLINUX_FILES)) \
-		$(ISOROOT)/isolinux/isolinux.cfg \
+$(ISOROOT)/isolinux/isolinux.cfg: iso/isolinux/isolinux.cfg ; $(ACTION.COPY)
+
+$(addprefix $(ISOROOT)/isolinux/,$(ISOLINUX_FILES)): \
+		$(LOCAL_MIRROR)/cache-boot.done \
+		$(ISOROOT)/isolinux/isolinux.cfg
+	cp $(CENTOS_REPO_DIR)/isolinux/$(@F) $(@D)
+
+$/isoroot-isolinux.done: $(addprefix $(ISOROOT)/isolinux/,$(ISOLINUX_FILES))
 	$(ACTION.TOUCH)
 
 $(addprefix $(ISOROOT)/images/,$(IMAGES_FILES)):
@@ -101,11 +100,11 @@ $(ISOROOT)/.discinfo: iso/.discinfo ; $(ACTION.COPY)
 $(ISOROOT)/.treeinfo: iso/.treeinfo ; $(ACTION.COPY)
 
 $/isoroot.done: \
-		$/isoroot-isolinux.done \
-		$/isoroot-centos.done \
 		$/isoroot-bootstrap.done \
 		$/isoroot-eggs.done \
 		$/isoroot-gems.done \
+		$/isoroot-isolinux.done \
+		$/isoroot-centos.done \
 		$/isoroot-prepare.done
 	$(ACTION.TOUCH)
 
