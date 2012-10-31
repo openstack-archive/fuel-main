@@ -35,6 +35,7 @@ puppet-server-2.7.19
 python-devel
 python-virtualenv
 rabbitmq-server
+rsyslog
 ruby
 ruby-augeas
 ruby-devel
@@ -42,8 +43,8 @@ ruby-mysql
 ruby-rdoc
 ruby-ri
 ruby-shadow
-rubygems
 rubygem-mongrel
+rubygems
 scapy
 supervisor
 syslinux

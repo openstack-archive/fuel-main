@@ -1,0 +1,4 @@
+#if $str($getVar('install_log_2_syslog','')) == "1"
+wget -O /tmp/send2syslog.py "http://$server/cobbler/aux/send2syslog.py"
+python /tmp/send2syslog.py --server $server
+#end if

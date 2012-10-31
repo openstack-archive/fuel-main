@@ -47,6 +47,7 @@ class nailgun(
   Class["nailgun::nginx-nailgun"] ->
   Class["nailgun::cobbler"] ->
   Class["nailgun::pm"] ->
+  Class["nailgun::rsyslog"] ->
   Class["nailgun::supervisor"] ->
   Anchor<| title == "nailgun-end" |>
 
@@ -61,9 +62,14 @@ class nailgun(
           "/etc/nginx/conf.d/ssl.conf"]:
     ensure => "absent",
     notify => Service["nginx"],
-    before => Class["nailgun::nginx-repo"],
+    before => [
+               Class["nailgun::nginx-repo"],
+               Class["nailgun::nginx-nailgun"],
+               Class["nailgun::pm"],
+               ],
   }
 
+  class { "nailgun::rsyslog": }
 
   class { "nailgun::user":
     nailgun_group => $nailgun_group,
