@@ -6,6 +6,7 @@ SRC_DIR:=$/SOURCES/
 
 
 $/prep.done: $(LOCAL_MIRROR)/src.done
+	@mkdir -p $/SOURCES
 	cp -f $(LOCAL_MIRROR)/src/* $/SOURCES/
 	$(ACTION.TOUCH)
 
