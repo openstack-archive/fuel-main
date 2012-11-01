@@ -4,7 +4,7 @@ $/%: /:=$/
 
 METADATA_FILES:=repomd.xml comps.xml filelists.xml.gz primary.xml.gz other.xml.gz
 
-CENTOSEXTRA_PACKAGES:=$(shell grep -v ^\\s*\# requirements-rpm.txt)
+CENTOSEXTRA_PACKAGES:=$(shell grep -v "^\\s*\#" requirements-rpm.txt)
 CENTOSRPMFORGE_PACKAGES:=qemu
 
 # RPM PACKAGE CACHE RULES
