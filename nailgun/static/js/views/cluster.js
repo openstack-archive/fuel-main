@@ -116,7 +116,8 @@ function(models, dialogViews, clusterPageTemplate, deploymentResultTemplate, dep
             var tabs = {
                 'nodes': views.NodesTab,
                 'network': views.NetworkTab,
-                'settings': views.SettingsTab
+                'settings': views.SettingsTab,
+                'actions': views.ActionsTab
             };
             if (_.has(tabs, this.tab)) {
                 this.$('#tab-' + this.tab).html(new tabs[this.tab]({model: this.model}).render().el);
@@ -655,6 +656,13 @@ function(models, dialogViews, clusterPageTemplate, deploymentResultTemplate, dep
                 this.$el.html(this.template({settings: $.parseJSON(fake), legend: this.options.legend}));
             */
             this.$el.html(this.template({settings: this.settings, legend: this.legend}));
+            return this;
+        }
+    });
+
+    views.ActionsTab = Backbone.View.extend({
+        render: function() {
+            this.$el.html('');
             return this;
         }
     });
