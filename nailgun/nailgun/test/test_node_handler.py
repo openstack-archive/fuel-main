@@ -99,16 +99,6 @@ class TestHandlers(BaseHandlers):
             expect_errors=True)
         self.assertEquals(resp.status, 400)
 
-    def test_put_returns_415_if_wrong_content_type(self):
-        node = self.create_default_node()
-        resp = self.app.put(
-            reverse('NodeHandler', kwargs={'node_id': node.id}),
-            json.dumps({'meta': json.dumps(self.default_metadata())}),
-            headers={"Content-Type": "plain/text"},
-            expect_errors=True
-        )
-        self.assertEquals(resp.status, 415)
-
     def test_put_returns_400_if_wrong_status(self):
         node = self.create_default_node()
         params = {'status': 'invalid_status'}
