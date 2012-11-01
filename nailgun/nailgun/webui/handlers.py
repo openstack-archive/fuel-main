@@ -12,7 +12,6 @@ render = web.template.render(settings.TEMPLATE_DIR)
 
 class IndexHandler(object):
     def GET(self):
-        logger.info("TESTING")
         return render.index()
 
 
