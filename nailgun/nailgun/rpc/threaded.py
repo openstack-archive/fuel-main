@@ -3,6 +3,9 @@
 import time
 import Queue
 import logging
+
+logger = logging.getLogger(__name__)
+
 import threading
 import itertools
 
@@ -30,7 +33,7 @@ class NailgunReceiver(object):
     def __update_task_status(cls, uuid, status, progress, error=""):
         task = cls.db.query(Task).filter_by(uuid=uuid).first()
         if not task:
-            logging.error("Can't set status='%s', error='%s':no task \
+            logger.error("Can't set status='%s', error='%s':no task \
                     with UUID %s found!", status, error, uuid)
             return
         data = {'status': status, 'progress': progress, 'error': error}
@@ -42,7 +45,7 @@ class NailgunReceiver(object):
 
     @classmethod
     def deploy_resp(cls, **kwargs):
-        logging.info("RPC method deploy_resp received: %s" % kwargs)
+        logger.info("RPC method deploy_resp received: %s" % kwargs)
         task_uuid = kwargs.get('task_uuid')
         nodes = kwargs.get('nodes') or []
         error_msg = kwargs.get('error')
@@ -75,7 +78,7 @@ class NailgunReceiver(object):
 
     @classmethod
     def verify_networks_resp(cls, **kwargs):
-        logging.info("RPC method verify_networks_resp received: %s" % kwargs)
+        logger.info("RPC method verify_networks_resp received: %s" % kwargs)
         task_uuid = kwargs.get('task_uuid')
         networks = kwargs.get('networks') or []
         error_msg = kwargs.get('error')
@@ -85,7 +88,7 @@ class NailgunReceiver(object):
         # We simply check that each node received all vlans for cluster
         task = cls.db.query(Task).filter_by(uuid=task_uuid).first()
         if not task:
-            logging.error("verify_networks_resp: task \
+            logger.error("verify_networks_resp: task \
                     with UUID %s found!", task_uuid)
             return
         nets_db = cls.db.query(Network).filter_by(cluster_id=
@@ -102,7 +105,7 @@ class NailgunReceiver(object):
 
         if error_nodes:
             error_msg = "Following nodes do not have vlans:\n%s" % error_nodes
-            logging.error(error_msg)
+            logger.error(error_msg)
             status = 'error'
 
         cls.__update_task_status(task_uuid, status, progress, error_msg)
@@ -120,7 +123,7 @@ class RPCThread(threading.Thread):
         self.conn.create_consumer('nailgun', self.receiver)
 
     def run(self):
-        logging.info("Starting RPC thread...")
+        logger.info("Starting RPC thread...")
         self.running = True
         # TODO: implement fail-safe auto-reloading
         self.conn.consume()
