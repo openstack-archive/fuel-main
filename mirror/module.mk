@@ -199,8 +199,9 @@ $/eggs.done: \
 	$(CHROOT_CMD) easy_install -U distribute
 	$(CHROOT_CMD) easy_install -U pip
 	@cat requirements-eggs.txt | while read egg ver; do \
-         $(CHROOT_CMD) ls /tmp/eggs/$${egg}-$${ver}\* >/dev/null 2>&1 || \
-         $(CHROOT_CMD) pip install --exists-action=i -d /tmp/eggs $${egg}==$${ver} ;\
+         if [ -z "`find $(INITRAM_DIR)/tmp/eggs/ -name $${egg}-$${ver}\*`" ]; then \
+             $(CHROOT_CMD) pip install --exists-action=i -d /tmp/eggs $${egg}==$${ver} ;\
+         fi; \
 	done
 	cp -fR $(INITRAM_DIR)/tmp/eggs $/
 	$(CHROOT_CMD) rm -rf /tmp/eggs
