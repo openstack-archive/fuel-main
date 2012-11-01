@@ -66,13 +66,14 @@ class McollectiveConfig
       unless value_from_config  # if key was not found
         config += "\nidentity = #{new_id}\n"
         @logger.info "Identity in mcollective server.cfg has not been found. Setting to '#{new_id}'"
-        File.open(@configfile, "w").write(config)
+        File.open(@configfile, "w") { |f| f.write(config) }
       else
         # Key found, but it has other value
         @logger.info "Replacing identity in mcollective server.cfg to new value = '#{new_id}'"
         config.gsub!(/^identity[ =].*$/, "identity = #{new_id}")
-        File.open(@configfile, "w").write(config)
+        File.open(@configfile, "w") { |f| f.write(config) }
       end
+      puts `/sbin/service mcollective restart`
     end
   end
 end
