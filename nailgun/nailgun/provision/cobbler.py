@@ -148,5 +148,8 @@ class Cobbler:
     def power_on(self, obj_name):
         self.power(obj_name, 'on')
 
+    def power_off(self, obj_name):
+        self.power(obj_name, 'off')
+
     def power_reboot(self, obj_name):
         self.power(obj_name, 'reboot')

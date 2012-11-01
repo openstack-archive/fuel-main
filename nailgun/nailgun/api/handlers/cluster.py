@@ -251,14 +251,13 @@ class ClusterChangesHandler(JSONHandler):
                     "Node %s seems booted with bootstrap image",
                     node.id
                 )
-                nd_dict['power_pass'] = 'rsa:%s' % \
-                    settings.PATH_TO_BOOTSTRAP_SSH_KEY
+                nd_dict['power_pass'] = settings.PATH_TO_BOOTSTRAP_SSH_KEY
             else:
                 logger.info(
                     "Node %s seems booted with real system",
                     node.id
                 )
-                nd_dict['power_pass'] = 'rsa:%s' % settings.PATH_TO_SSH_KEY
+                nd_dict['power_pass'] = settings.PATH_TO_SSH_KEY
 
             nd_dict['power_address'] = node.ip
 
@@ -317,7 +316,7 @@ mco_enable=1\"" % {'puppet_master_host': settings.PUPPET_MASTER_HOST,
                 node.id,
                 nd_dict.get('power_type', 'unknown')
             )
-            pd.power_on(nd_name)
+            pd.power_reboot(nd_name)
 
         netmanager.assign_ips(cluster_id, "management")
 

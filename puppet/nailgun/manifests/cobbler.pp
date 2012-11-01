@@ -115,12 +115,22 @@ class nailgun::cobbler(
     require => Cobbler_profile["bootstrap"],
   }
 
-  file { "/etc/cobbler/power/power_ssh.template":
-    content => template("nailgun/power_ssh.template.erb"),
+  file { "/etc/cobbler/power/fence_ssh.template":
+    content => template("nailgun/cobbler/fence_ssh.template.erb"),
     owner => 'root',
     group => 'root',
     mode => 0644,
     require => Class["cobbler::server"],
   }
 
+  file { "/usr/sbin/fence_ssh":
+    content => template("nailgun/cobbler/fence_ssh.erb"),
+    owner => 'root',
+    group => 'root',
+    mode => 0755,
+    require => Class["cobbler::server"],
+  }
+
+  Package<| title == "cman" |>
+  Package<| title == "fence-agents"|>
 }

@@ -27,7 +27,7 @@ get_version(){
 version=`get_version`
 # echo "Installed rabbitmq-server version: ${version}"
 plugins_dir="/usr/lib/rabbitmq/lib/rabbitmq_server-${version}/plugins"
-repo="http://www.rabbitmq.com/releases/plugins/v${version}"
+repo="<%= rabbitmq_plugins_repo %>/v${version}"
 
 is_installed(){
     # echo "Checking if plugin ${plugin} already installed"

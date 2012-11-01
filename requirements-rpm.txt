@@ -1,6 +1,7 @@
 autoconf
 automake
 byacc
+cman
 cobbler
 cobbler-web
 cronie
@@ -8,6 +9,7 @@ crontabs
 curl
 dhclient
 dmidecode
+fence-agents
 flex
 gcc
 gcc-c++

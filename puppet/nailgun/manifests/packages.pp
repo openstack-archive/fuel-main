@@ -16,4 +16,7 @@ class nailgun::packages(
   nailgun_safe_package { "make": }
   nailgun_safe_package { "rsyslog": }
 
+  nailgun_safe_package { "cman": }
+  nailgun_safe_package { "fence-agents": }
+
 }
