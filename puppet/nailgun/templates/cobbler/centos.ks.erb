@@ -74,6 +74,10 @@ $SNIPPET('log_ks_pre')
 # LINES FROM THOSE FILES TO SYSLOG
 $SNIPPET('send2syslog')
 
+# SNIPPET: 'kickstart_ntp'
+# SYNC LOCAL TIME VIA NTP
+$SNIPPET('kickstart_ntp')
+
 # COBBLER EMBEDDED SNIPPET: 'kickstart_start'
 # LAUNCHES %pre TRIGGERS IF THOSE INSTALLED
 $SNIPPET('kickstart_start')
@@ -101,6 +105,7 @@ wget
 crontabs
 cronie
 ruby-augeas
+ntp
 # COBBLER EMBEDDED SNIPPET: 'puppet_install_if_enabled'
 # LISTS puppet PACKAGE IF puppet_auto_setup VARIABLE IS SET TO 1
 $SNIPPET('puppet_install_if_enabled')
@@ -138,6 +143,10 @@ $SNIPPET('puppet_register_if_enabled_fuel')
 # COBBLER EMBEDDED SNIPPET: 'mcollective_conf'
 # CONFIGURES MCOLLECTIVE AGENT
 $SNIPPET('mcollective_conf')
+
+# SNIPPET: 'ntp_to_masternode'
+# CONFIGURES NTPD POOL TO MASTER NODE
+$SNIPPET('ntp_to_masternode')
 
 # COBBLER EMBEDDED SNIPPET: 'kickstart_done'
 # DISABLES PXE BOOTING

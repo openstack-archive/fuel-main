@@ -54,8 +54,24 @@ class nailgun::cobbler(
     require => Class["cobbler::server"],
   }
 
-  file {"/var/lib/cobbler/snippets/send2syslog.snippet":
+  file {"/var/lib/cobbler/snippets/send2syslog":
     content => template("nailgun/cobbler/send2syslog.snippet.erb"),
+    owner => root,
+    group => root,
+    mode => 0644,
+    require => Class["cobbler::server"],
+  }
+
+  file {"/var/lib/cobbler/snippets/ntp_to_masternode":
+    content => template("nailgun/cobbler/ntp_to_masternode.snippet.erb"),
+    owner => root,
+    group => root,
+    mode => 0644,
+    require => Class["cobbler::server"],
+  }
+
+file {"/var/lib/cobbler/snippets/kickstart_ntp":
+    content => template("nailgun/cobbler/kickstart_ntp.snippet.erb"),
     owner => root,
     group => root,
     mode => 0644,

@@ -1,0 +1,6 @@
+# Point installed ntpd to Master node
+sed -i '/^server/ d' /etc/ntp.conf
+echo "server $server" >> /etc/ntp.conf
+sed -i 's/SYNC_HWCLOCK\s*=\s*no/SYNC_HWCLOCK=yes/' /etc/sysconfig/ntpdate
+chkconfig ntpd on
+chkconfig ntpdate on
