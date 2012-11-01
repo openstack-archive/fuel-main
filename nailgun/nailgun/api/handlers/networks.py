@@ -1,10 +1,10 @@
 # -*- coding: utf-8 -*-
 
 import json
-import logging
 
 import web
 
+from nailgun.logger import logger
 from nailgun.api.models import Network
 from nailgun.api.handlers.base import JSONHandler
 

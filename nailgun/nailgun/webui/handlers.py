@@ -5,12 +5,14 @@ import mimetypes
 import posixpath
 
 from nailgun.settings import settings
+from nailgun.logger import logger
 
 render = web.template.render(settings.TEMPLATE_DIR)
 
 
 class IndexHandler(object):
     def GET(self):
+        logger.info("TESTING")
         return render.index()
 
 

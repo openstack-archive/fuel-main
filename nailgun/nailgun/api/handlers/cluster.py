@@ -2,7 +2,6 @@
 
 import json
 import uuid
-import logging
 import itertools
 
 import web
@@ -10,6 +9,7 @@ import netaddr
 
 import nailgun.rpc as rpc
 from nailgun.settings import settings
+from nailgun.logger import logger
 from nailgun.api.models import Cluster
 from nailgun.api.models import Node
 from nailgun.api.models import Network
@@ -247,14 +247,14 @@ class ClusterChangesHandler(JSONHandler):
             lambda n: n.status in allowed_statuses, cluster.nodes
         ):
             if node.status == "discover":
-                logging.info(
+                logger.info(
                     "Node %s seems booted with bootstrap image",
                     node.id
                 )
                 nd_dict['power_pass'] = 'rsa:%s' % \
                     settings.PATH_TO_BOOTSTRAP_SSH_KEY
             else:
-                logging.info(
+                logger.info(
                     "Node %s seems booted with real system",
                     node.id
                 )
@@ -305,13 +305,13 @@ mco_enable=1\"" % {'puppet_master_host': settings.PUPPET_MASTER_HOST,
                    'mco_stomp_password': settings.MCO_STOMPPASSWORD,
                    }
 
-            logging.debug(
+            logger.debug(
                 "Trying to save node %s into provision system: profile: %s ",
                 node.id,
                 nd_dict.get('profile', 'unknown')
             )
             pd.item_from_dict('system', nd_name, nd_dict, False, False)
-            logging.debug(
+            logger.debug(
                 "Trying to reboot node %s using %s "
                 "in order to launch provisioning",
                 node.id,

@@ -2,13 +2,13 @@
 
 import json
 import uuid
-import logging
 
 import web
 import netaddr
 
 import nailgun.rpc as rpc
 from nailgun.settings import settings
+from nailgun.logger import logger
 from nailgun.api.models import Release
 from nailgun.api.models import Cluster
 from nailgun.api.models import Node
@@ -34,7 +34,7 @@ class HandlerRegistrator(type):
         if hasattr(cls, 'model'):
             key = cls.model.__name__
             if key in handlers:
-                logging.warning("Handler for %s already registered" % key)
+                logger.warning("Handler for %s already registered" % key)
                 return
                 #raise Exception("Handler for %s already registered" % key)
             handlers[key] = cls

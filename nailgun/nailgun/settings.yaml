@@ -1,6 +1,6 @@
 LISTEN_ADDRESS: "0.0.0.0"
 LISTEN_PORT: "8000"
-DEVELOPMENT: "1"
+DEVELOPMENT: "0"
 DATABASE_ENGINE: "sqlite:////var/tmp/nailgun.sqlite"
 STATIC_DIR: "/var/tmp/nailgun_static"
 TEMPLATE_DIR: "/var/tmp/nailgun_static"
@@ -24,7 +24,8 @@ RABBITMQ:
   fake: "1"
   hostname: "127.0.0.1"
 
-LOGFILE: "/var/tmp/nailgun.log"
+CUSTOM_LOG: "/tmp/nailgun.log"
+ACCESS_LOG: "/tmp/nailgun_access.log"
 
 PATH_TO_SSH_KEY: = "/root/.ssh/id_rsa"
 PATH_TO_BOOTSTRAP_SSH_KEY: "/root/.ssh/bootstrap.rsa"

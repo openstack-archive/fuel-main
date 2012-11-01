@@ -5,18 +5,14 @@ import os
 import sys
 import argparse
 import code
-import logging
-
-logging.basicConfig(level="DEBUG")
 
 import web
 from sqlalchemy.orm import scoped_session, sessionmaker
 
-from nailgun.settings import settings
 from nailgun.db import syncdb
+from nailgun.settings import settings
 from nailgun.unit_test import TestRunner
-from nailgun.logger import Log
-from nailgun.wsgi import app
+from nailgun.logger import logger
 
 
 if __name__ == "__main__":
@@ -54,28 +50,30 @@ if __name__ == "__main__":
     sys.argv.pop(1)
 
     if params.action == "syncdb":
-        logging.info("Syncing database...")
+        logger.info("Syncing database...")
         syncdb()
-        logging.info("Done")
+        logger.info("Done")
     elif params.action == "test":
-        logging.info("Running tests...")
+        logger.info("Running tests...")
         TestRunner.run()
-        logging.info("Done")
+        logger.info("Done")
     elif params.action == "loaddata":
         from nailgun.fixtures import fixman
         if os.path.exists(params.fixture):
-            logging.info("Uploading fixtures...")
+            logger.info("Uploading fixtures...")
             with open(params.fixture, "r") as f:
                 fixman.upload_fixture(f)
-            logging.info("Done")
+            logger.info("Done")
         else:
             parser.print_help()
     elif params.action in ("run",):
+        logger.info("Running WSGI app...")
         from nailgun.wsgi import appstart
         settings.update({
             'LISTEN_PORT': int(params.port),
             'LISTEN_ADDRESS': params.address})
         appstart()
+        logger.info("Stopping WSGI app...")
     elif params.action == "shell":
         from nailgun.api.models import engine
         orm = scoped_session(sessionmaker(bind=engine))
