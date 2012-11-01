@@ -7,7 +7,7 @@ echo -n "$id" > /etc/bootif
 #
 # Sync clock with master node
 #
-sed -i "/^server\\s.*\$/ d" /etc/ntp.conf
+sed -i "/^server\b/ d" /etc/ntp.conf
 echo "server $masternode_ip" >> /etc/ntp.conf
 /etc/init.d/ntpdate start
 /etc/init.d/ntpd start
@@ -15,8 +15,8 @@ echo "server $masternode_ip" >> /etc/ntp.conf
 #
 # Update mcollective config
 #
-sed -i "s/^plugin.stomp.host.*\$/plugin.stomp.host = $masternode_ip/" /etc/mcollective/server.cfg
-sed -i "s/^plugin.stomp.password.*\$/plugin.stomp.password = marionette/" /etc/mcollective/server.cfg
+sed -i "s/^plugin.stomp.host\b.*$/plugin.stomp.host = $masternode_ip/" /etc/mcollective/server.cfg
+sed -i "s/^plugin.stomp.password\b.*$/plugin.stomp.password = marionette/" /etc/mcollective/server.cfg
 #echo "identity = $id" >> /etc/mcollective/server.cfg
 echo "direct_addressing = 1" >> /etc/mcollective/server.cfg
 
