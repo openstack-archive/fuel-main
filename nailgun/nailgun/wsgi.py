@@ -1,8 +1,6 @@
 import os
 import sys
 import web
-import logging
-import logging.config
 
 curdir = os.path.dirname(__file__)
 sys.path.insert(0, curdir)
