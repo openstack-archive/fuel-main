@@ -21,6 +21,63 @@ module NodeAgentConfig
 end
 
 
+class McollectiveConfig
+  def initialize(logger)
+    @logger = logger
+    @configfile = '/etc/mcollective/server.cfg'
+  end
+
+  def get_config_by_key(find_key)
+    found_key = nil
+    found_value = nil
+    # This code is from mcollective's sources
+    File.open(@configfile, "r").each do |line|
+      # strip blank spaces, tabs etc off the end of all lines
+      line.gsub!(/\s*$/, "")
+      unless line =~ /^#|^$/
+        if (line =~ /(.+?)\s*=\s*(.+)/)
+          key = $1
+          val = $2
+          if key == find_key
+            found_key = key
+            found_value = val
+          end
+        end
+      end
+    end
+
+    if found_key
+      return found_value
+    else
+      return nil
+    end
+  end
+
+  def replace_identity(new_id)
+    # check if id complies reqs
+    raise 'Identities can only match /\w\.\-/' unless new_id.to_s.match(/^[\w\.\-]+$/)
+
+    value_from_config = get_config_by_key('identity')
+
+    if value_from_config == new_id.to_s
+      @logger.info "MCollective is up to date with identity = #{new_id}"
+    else
+      config = File.open(@configfile, "rb").read
+      unless value_from_config  # if key was not found
+        config += "\nidentity = #{new_id}\n"
+        @logger.info "Identity in mcollective server.cfg has not been found. Setting to '#{new_id}'"
+        File.open(@configfile, "w").write(config)
+      else
+        # Key found, but it has other value
+        @logger.info "Replacing identity in mcollective server.cfg to new value = '#{new_id}'"
+        config.gsub!(/^identity[ =].*$/, "identity = #{new_id}")
+        File.open(@configfile, "w").write(config)
+      end
+    end
+  end
+end
+ 
+
 class NodeAgent
   def initialize(logger, config=nil)
     @logger = logger
@@ -40,7 +97,7 @@ class NodeAgent
         api_ip = cmdline.match(/\burl=http:\/\/((\d{1,3}\.){3}\d{1,3})/)[1]
         @logger.info("Found admin node IP address in kernel cmdline: #{api_ip}")
       rescue
-        @logger.error("Can't get API url from /proc/cmdline. Will use localhost.")
+        @logger.info("Can't get API url from /proc/cmdline. Will use localhost.")
         api_ip = "127.0.0.1"
       end
       @api_url = "http://#{api_ip}:#{@api_default_port}/api"
@@ -194,18 +251,16 @@ begin
   logger.info("Trying to load agent config #{options[:config_file]}")
   load options[:config_file]
 rescue LoadError
-  logger.error("Error occured while loading agent config")
+  logger.info("Could not load agent config #{options[:config_file]}")
 end
 
 
 agent = NodeAgent.new(logger, NodeAgentConfig)
-begin
-  agent.update_state
-  res = agent.post
-  if res.status == 409:
-    agent.put
-  end
-rescue Exception => e
-  logger.error("Error in sending node info: #{e.message}")
+agent.update_state
+res = agent.post
+if res.status == 409:
+  res = agent.put
 end
-
+new_id = JSON.parse(res.body)['id']
+mc_config = McollectiveConfig.new(logger)
+mc_config.replace_identity(new_id)

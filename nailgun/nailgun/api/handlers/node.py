@@ -104,4 +104,4 @@ class NodeCollectionHandler(JSONHandler):
             for key, value in nd.iteritems():
                 setattr(node, key, value)
         web.ctx.orm.commit()
-        return json.dumps(ids_updated)
+        return json.dumps(NodeHandler.render(node), indent=4)
