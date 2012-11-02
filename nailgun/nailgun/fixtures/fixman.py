@@ -76,7 +76,7 @@ def upload_fixtures():
     for path in settings.FIXTURES_TO_UPLOAD:
         if not os.path.isabs(path):
             path = os.path.abspath(os.path.join(os.path.dirname(__file__),
-                    path))
+                                                path))
         fns.append(path)
 
     for fn in fns:
