@@ -12,7 +12,7 @@ class Ci(object):
     hostname = 'nailgun'
     domain = 'mirantis.com'
     installation_timeout = 1800
-    chef_timeout = 600
+    chef_timeout = 1000
 
     def __init__(self, cache_file=None, iso=None):
         self.environment_cache_file = cache_file

@@ -1,21 +1,19 @@
 import logging
-import xmlrpclib
 from time import sleep
 
-
-
+import xmlrpclib
 from devops.helpers import wait, tcp_ping, http, ssh
+
 from integration.base import Base
 from helpers import SSHClient
-
 
 
 class TestCobbler(Base):
     def __init__(self, *args, **kwargs):
         super(TestCobbler, self).__init__(*args, **kwargs)
         self.remote = SSHClient()
-        self.logpath = "/var/log/chef/solo.log"
-        self.str_success = "Report handlers complete"
+        self.logpath = "/var/log/puppet/firstboot.log"
+        self.str_success = "Finished catalog run"
 
 
     def setUp(self):
@@ -30,7 +28,7 @@ class TestCobbler(Base):
     def test_cobbler_alive(self):
         logging.info("Waiting for handlers to complete")
 
-        self.remote.connect_ssh(str(self.ip), "admin", "r00tme")
+        self.remote.connect_ssh(str(self.ip), "root", "r00tme")
         count = 0
         while True:
             res = self.remote.execute("grep '%s' '%s'" % (self.str_success, self.logpath))
@@ -39,7 +37,8 @@ class TestCobbler(Base):
                 break
             sleep(5)
             if count == 200:
-                raise Exception("Chef handlers failed to complete")
+                raise Exception("Admin node bootstrapping has not finished or failed.
+                                 Check %s manually." % self.logpath)
         self.remote.disconnect()
 
         wait(lambda: http(host=self.ip, url='/cobbler_api', waited_code=501), timeout=60)
