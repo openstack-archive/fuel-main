@@ -29,6 +29,7 @@ class nailgun(
   $rabbitmq_naily_password = "naily",
   $rabbitmq_plugins_repo = "file:///var/www/nailgun/rabbitmq-plugins",
   $puppet_master_hostname = "${hostname}.${domain}",
+  $puppet_master_ip = $ipaddress,
 
   ) {
 

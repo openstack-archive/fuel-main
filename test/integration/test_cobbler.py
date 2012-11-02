@@ -26,7 +26,7 @@ class TestCobbler(Base):
 
 
     def test_cobbler_alive(self):
-        logging.info("Waiting for handlers to complete")
+        logging.info("Waiting while bootstrapping is in progress")
 
         self.remote.connect_ssh(str(self.ip), "root", "r00tme")
         count = 0

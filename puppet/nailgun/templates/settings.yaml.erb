@@ -48,5 +48,5 @@ PUPPET_MASTER_HOST: "<%= puppet_master_hostname %>"
 PUPPET_VERSION: "2.7.19"
 
 DNS_DOMAIN: "<%= domain %>"
-DNS_SERVERS: "127.0.0.1"
+DNS_SERVERS: "<%= puppet_master_ip %>"
 DNS_SEARCH: "<%= domain %>"
