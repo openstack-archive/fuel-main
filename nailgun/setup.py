@@ -71,7 +71,7 @@ if __name__ == "__main__":
               'console_scripts': [
                   'nailgun_syncdb = nailgun.db:syncdb',
                   'nailgun_fixtures = '
-                  'nailgun.fixtures.fixman:upload_fixtures',
+                      'nailgun.fixtures.fixman:upload_fixtures',
                   'nailgund = nailgun.wsgi:appstart',
               ],
           },

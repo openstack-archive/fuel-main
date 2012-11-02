@@ -14,10 +14,7 @@ db = orm.scoped_session(orm.sessionmaker(bind=models.engine))()
 
 
 def upload_fixture(fileobj):
-    try:
-        fixture = json.load(fileobj)
-    except:
-        raise Exception("Invalid fixture!")
+    fixture = json.load(fileobj)
 
     known_objects = {}
 
@@ -70,35 +67,19 @@ def upload_fixture(fileobj):
                             db.query(data[1]).get(v)
                         )
 
-            try:
-                db.add(new_obj)
-                db.commit()
-            except IntegrityError as e:
-                logger.info("Integrity error while uploading"
-                            "\n=== object: %s"
-                            "\n=== exception trace: %s" % (obj, e))
-
-
-def upload_fixture_from_file(filename):
-    if os.path.exists(filename):
-        with open(filename, "r") as fileobj:
-            upload_fixture(fileobj)
+            db.add(new_obj)
+            db.commit()
 
 
 def upload_fixtures():
     fns = []
     for path in settings.FIXTURES_TO_UPLOAD:
         if not os.path.isabs(path):
-            path = os.path.abspath(os.path.join(os.path.dirname(__file__), path)
+            path = os.path.abspath(os.path.join(os.path.dirname(__file__),
+                    path))
         fns.append(path)
 
     for fn in fns:
-        try:
-            upload_fixture_from_file(abs_fn)
-        except Exception as e:
-            logger.error("Error while uploading fixture: "
-                         "\nfilename: %s\n"
-                         "\nexception trace: %s" % (abs_fn, e))
-            raise e
-        else:
-            logger.info("Fixture has been uploaded from file: %s" % abs_fn)
+        with open(fn, "r") as fileobj:
+            upload_fixture(fileobj)
+        logger.info("Fixture has been uploaded from file: %s" % fn)
