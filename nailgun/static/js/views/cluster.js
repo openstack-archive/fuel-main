@@ -60,6 +60,7 @@ function(models, dialogViews, clusterPageTemplate, deploymentResultTemplate, dep
         initialize: function(options) {
             _.defaults(this, options);
             this.model.get('tasks').bind('add remove reset', this.renderDeploymentControls, this);
+            this.model.get('nodes').bind('add remove reset', this.renderDeploymentControls, this);
             this.model.bind('destroy', function() {
                 app.navbar.stats.nodes.fetch();
                 app.navigate('#clusters', {trigger: true});
@@ -266,7 +267,7 @@ function(models, dialogViews, clusterPageTemplate, deploymentResultTemplate, dep
             this.modifyNodes(chosenNodes);
             Backbone.sync('update', chosenNodes).done(_.bind(function() {
                 this.tab.changeScreen(views.NodesByRolesScreen);
-                this.model.fetch();
+                this.model.get('nodes').fetch({data: {cluster_id: this.model.id}});
                 app.navbar.stats.nodes.fetch();
             }, this));
         },
