@@ -60,7 +60,8 @@ if __name__ == "__main__":
     elif params.action == "loaddata":
         logger.info("Uploading fixture...")
         from nailgun.fixtures import fixman
-        fixman.upload_fixture(params.fixture)
+        with open(params.fixture, "r") as fileobj:
+            fixman.upload_fixture(fileobj)
         logger.info("Done")
     elif params.action in ("run",):
         logger.info("Running WSGI app...")
