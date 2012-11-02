@@ -63,7 +63,7 @@ class nailgun::cobbler(
   }
 
   file {"/var/lib/cobbler/snippets/kickstart_ntp":
-    content => template("nailgun/cobbler/kickstart_ntp.snippet.erb")
+    content => template("nailgun/cobbler/kickstart_ntp.snippet.erb"),
     owner => root,
     group => root,
     mode => 0644,
