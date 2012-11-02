@@ -85,13 +85,20 @@ def upload_fixture_from_file(filename):
             upload_fixture(fileobj)
 
 
-def upload_fixture_essex():
-    filename = os.path.join(os.path.dirname(__file__), "openstack_essex.json")
-    try:
-        upload_fixture_from_file(filename)
-    except Exception as e:
-        logger.error("Error while uploading essex release: filename: %s\n"
-                     "\nexception trace: %s" % (filename, e))
-        raise e
-    else:
-        logger.info("Openstack Essex release has been uploaded into database")
+def upload_fixtures():
+    fns = []
+    for path in settings.FIXTURES_TO_UPLOAD:
+        if not os.path.isabs(path):
+            path = os.path.abspath(os.path.join(os.path.dirname(__file__), path)
+        fns.append(path)
+
+    for fn in fns:
+        try:
+            upload_fixture_from_file(abs_fn)
+        except Exception as e:
+            logger.error("Error while uploading fixture: "
+                         "\nfilename: %s\n"
+                         "\nexception trace: %s" % (abs_fn, e))
+            raise e
+        else:
+            logger.info("Fixture has been uploaded from file: %s" % abs_fn)

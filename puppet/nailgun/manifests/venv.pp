@@ -78,8 +78,8 @@ class nailgun::venv(
                 ],
   }
 
-  exec {"nailgun_upload_essex":
-    command => "${venv}/bin/nailgun_essex",
+  exec {"nailgun_upload_fixtures":
+    command => "${venv}/bin/nailgun_fixtures",
     require => Exec["nailgun_syncdb"],
   }
 
