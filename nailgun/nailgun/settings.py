@@ -69,7 +69,7 @@ formatter=verbose
 args=(sys.stdout,)
 """
 
-LOGGING_HANDLER = 'file' if int(settings.DEVELOPMENT) else 'stream'
+LOGGING_HANDLER = 'file' if not int(settings.DEVELOPMENT) else 'stream'
 
 if int(settings.DEVELOPMENT):
     here = os.path.abspath(os.path.join(os.path.dirname(__file__), '..'))
