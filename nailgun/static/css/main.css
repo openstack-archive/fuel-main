@@ -969,7 +969,7 @@ h6.page-title {
 .progress-deploy {
   width: 350px;
   padding: 2px;
-  margin-top: 17px;
+  margin: 17px 0;
   height: 12px;
   background-color: #373e46;
   background-image: none;

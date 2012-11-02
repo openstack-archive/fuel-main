@@ -33,21 +33,12 @@ function(models, dialogViews, clusterPageTemplate, deploymentResultTemplate, dep
         },
         deployCluster: function() {
             this.$('.deploy-btn').attr('disabled', true);
-            // FIXME: implement TaskCollectionHandler and use it
-            var oldTask = this.model.task('deploy');
-            if (oldTask) {
-                this.model.get('tasks').remove(oldTask);
-            }
             var task = new models.Task();
             task.save({}, {
                 type: 'PUT',
                 url: '/api/clusters/' + this.model.id + '/changes',
-                success: _.bind(function() {
-                    this.model.get('tasks').add(task);
-                    this.scheduleUpdate();
-                }, this),
-                error: _.bind(function() {
-                    this.model.fetch().done(_.bind(this.render, this));
+                complete: _.bind(function() {
+                    this.model.get('tasks').fetch({data: {cluster_id: this.model.id}}).done(_.bind(this.scheduleUpdate, this));
                 }, this)
             });
         },
@@ -514,7 +505,7 @@ function(models, dialogViews, clusterPageTemplate, deploymentResultTemplate, dep
                 type: 'PUT',
                 url: '/api/clusters/' + this.model.id + '/verify/networks',
                 complete: _.bind(function() {
-                    this.model.get('tasks').add(task);
+                    this.model.get('tasks').fetch({data: {cluster_id: this.model.id}});
                 }, this)
             });
         },
