@@ -13,13 +13,11 @@ logger = logging.getLogger(__name__)
 db = orm.scoped_session(orm.sessionmaker(bind=models.engine))()
 
 
-def upload_fixture(filename):
-    if os.path.exists(filename):
-        with open(filename, "r") as fileobj:
-            try:
-                fixture = json.load(fileobj)
-            except:
-                raise Exception("Invalid fixture!")
+def upload_fixture(fileobj):
+    try:
+        fixture = json.load(fileobj)
+    except:
+        raise Exception("Invalid fixture!")
 
     known_objects = {}
 
@@ -81,10 +79,16 @@ def upload_fixture(filename):
                             "\n=== exception trace: %s" % (obj, e))
 
 
+def upload_fixture_from_file(filename):
+    if os.path.exists(filename):
+        with open(filename, "r") as fileobj:
+            upload_fixture(fileobj)
+
+
 def upload_fixture_essex():
     filename = os.path.join(os.path.dirname(__file__), "openstack_essex.json")
     try:
-        upload_fixture(filename)
+        upload_fixture_from_file(filename)
     except Exception as e:
         logger.error("Error while uploading essex release: filename: %s\n"
                      "\nexception trace: %s" % (filename, e))
