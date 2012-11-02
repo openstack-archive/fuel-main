@@ -265,7 +265,7 @@ h6.page-title {
   clear: both;
 }
 
-.roles-block-row h3, .settings-header h3 {
+.tab-pane h3 {
   color: #333333;
   margin: 0px;
   padding: 0px;
@@ -313,8 +313,8 @@ h6.page-title {
 
 .nodeplaceholder {
   height: 114px;
-  opacity: 0.7;
-  border: 1px dashed #afafaf;
+  background: none;
+  border: 1.5pt dashed #dadada;
 }
 
 .node-select {
@@ -539,7 +539,7 @@ h6.page-title {
 
 .breadcrumb {
     background-color: rgba(0,0,0,.1);
-    margin-top: -10px;
+    margin: -10px 0 10px 0;
     border-radius: 0 0 4px 4px;
 }
 
@@ -1016,21 +1016,25 @@ h6.page-title {
 .verification-result {
   float: left;
   font-weight: bold;
-  margin: 10px 7px 0 0;
+  margin: 5px 7px 0 0;
 }
 
 .networks-table {
   width: 100%;
   margin-bottom: 10px;
+  margin-left: -20px;
 }
 
 .networks-table .row {
   margin: 8px 0;
 }
 
-.networks-table .control-group > div, .networks-header > div {
+.networks-table .control-group > div, .networks-table .networks-header > div {
   float: left;
   margin-left: 20px;
+}
+
+.networks-header {
   font-weight: bold;
 }
 
@@ -1233,10 +1237,9 @@ h6.page-title {
 }
 
 .wrapper {
-   margin: 20px;
-   margin-top: 0;
+  margin: 0 20px;
 }
 
 .wrapper h3 {
-   margin-top: 0;
+  margin-top: 0;
 }

@@ -456,12 +456,13 @@ function(models, dialogViews, clusterPageTemplate, deploymentResultTemplate, dep
         template: _.template(networkTabTemplate),
         viewModeTemplate: _.template(networkTabViewModeTemplate),
         events: {
-            'keydown .row input': 'applyEnabled',
-            'click .apply-btn': 'apply',
+            'keydown .row input': 'enableApplyButton',
+            'click .apply-btn:not([disabled])': 'apply',
             'click .nav a': 'changeMode'
         },
-        applyEnabled: function() {
-            this.$('.apply-btn').removeAttr('disabled');
+        enableApplyButton: function() {
+            // FIXME: calculate availability instead
+            this.$('.apply-btn').attr('disabled', false);
         },
         apply: function() {
             var valid = true;
@@ -471,8 +472,7 @@ function(models, dialogViews, clusterPageTemplate, deploymentResultTemplate, dep
                 var row = this.$('.control-group[data-network-name=' + network.get('name') + ']');
                 network.on('error', function(model, errors) {
                     valid = false;
-                    var errorIcon = '<i class="icon-attention-3"></i> ';
-                    $('.network-error .help-inline', row).html(errorIcon + errors.cidr || errorIcon + errors.vlan_id);
+                    $('.network-error .help-inline', row).text(errors.cidr || errors.vlan_id);
                     row.addClass('error');
                 }, this);
                 network.set({
@@ -505,9 +505,12 @@ function(models, dialogViews, clusterPageTemplate, deploymentResultTemplate, dep
             this.networks.deferred = this.networks.fetch({data: {cluster_id: this.model.id}});
             this.networks.bind('reset', this.render, this);
         },
+        renderVerificationControls: function() {
+            this.$('.verify-network').html((new views.NetworkTabVerification({model: this.model})).render().el);
+        },
         render: function() {
             this.$el.html(this.template({cluster: this.model, networks: this.networks}));
-            this.$('.verify-network').html((new views.NetworkTabVerification({model: this.model})).render().el);
+            this.renderVerificationControls();
             return this;
         }
     });

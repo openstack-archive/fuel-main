@@ -2,18 +2,18 @@
   <h3>Network Setup</h3>
   <ul class="nav nav-pills">
     <li class="active network-setup">
-	<a href="#">Network Setup</a>
+      <a href="#">Network Setup</a>
     </li>
     <li class="network-view">
-	<a href="#">Network View</a>
+      <a href="#">Network View</a>
     </li>
   </ul>
   <div class="network-tab-content">
     <fieldset>
       <legend>Network Manager</legend>
       <select id="networkManager" disabled>
-	<option value="flatdhcp" selected>FlatDHCPManager</option>
-	<option value="vlan">VLANManager</option>
+        <option value="flatdhcp" selected>FlatDHCPManager</option>
+        <option value="vlan">VLANManager</option>
       </select>
       <legend>Network Settings</legend>
       <% if (networks.deferred.state() != 'pending') { %>
@@ -23,21 +23,21 @@
             <div class="cidr">CIDR</div>
             <div class="vlan">VLAN</div>
           </div>
-	  <% networks.each(function(network) { %>
-	    <div class="row">
-	      <div class="control-group" data-network-name="<%= network.get('name') %>">
-	        <div class="network-name"><%= network.get('name') %></div>
-	        <div class="network-cidr">
-	  	  <input class="input-large" type="text" placeholder="IP/Subnet" value="<%= network.get('cidr') %>" maxlength="18" />
-	        </div>
-	        <div class="network-vlan">
-	  	  <input class="input-mini" type="text" placeholder="100" value="<%= network.get('vlan_id') %>" maxlength="4" />
-	        </div>
-	        <div class="network-error">
-		  <span class="help-inline"></span>
-		</div>
-	      </div>
-	    </div>
+          <% networks.each(function(network) { %>
+            <div class="row">
+              <div class="control-group" data-network-name="<%= network.get('name') %>">
+                <div class="network-name"><%= network.get('name') %></div>
+                <div class="network-cidr">
+                  <input class="input-large" type="text" value="<%= network.get('cidr') %>" maxlength="18" />
+                </div>
+                <div class="network-vlan">
+                  <input class="input-mini" type="text" value="<%= network.get('vlan_id') %>" maxlength="4" />
+                </div>
+                <div class="network-error">
+                  <span class="help-inline"></span>
+                </div>
+              </div>
+            </div>
           <% }) %>
         </form>
       <% } else { %>
@@ -54,12 +54,12 @@
   </div>
   <hr>
   <div class="row">
-    <div class="span7"></div>
-    <div class="span1 pull-right">
-      <div class="btn btn-success apply-btn" disabled>Save</div>
+    <div class="span6">&nbsp;</div>
+    <div class="span4">
+      <div class="verify-network pull-right"></div>
     </div>
-    <div class="span4 verify-network pull-right">
-      <div class="btn btn-discard verify-networks-btn" <% if (networks.deferred.state() != 'pending') { %>disabled<% } %> >Verify Settings</div>
+    <div class="span2">
+      <div class="btn btn-success apply-btn pull-right" disabled>Save</div>
     </div>
   </div>
 </div>
