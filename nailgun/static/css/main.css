@@ -198,26 +198,6 @@ h6.page-title {
   color: #999999;
 }
 
-.cluster-name-btn {
-  display: inline-block;
-  padding-top: 18px;
-  margin-left: 10px;
-  cursor: pointer;
-  opacity: 0.35;
-}
-
-.cluster-name-btn:hover {
-  opacity: 1;
-}
-
-.cluster-name-btn > i {
-  font-size: 20px;
-  color: #ffffff;
-  text-shadow: 0 1px 0 rgba(0, 0, 0, 0.45);
-  box-shadow: 0 0px 0px rgba(0,0,0,.9), inset 0px 0px 0px rgba(0,0,0,.9);
-}
-
-
 /* White Box for Cluster content*/
 .whitebox {
   display: block;
