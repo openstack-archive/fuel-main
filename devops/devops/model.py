@@ -59,6 +59,7 @@ class Network(ManagedObject):
         self.reserve_static=reserve_static
         self.interfaces = []
         self.pxe = pxe
+        self.environment = None
 
     def start(self):
         self.driver.start_network(self)
@@ -81,6 +82,7 @@ class Node(ManagedObject):
         self.disks = []
         self.boot = []
         self.cdrom = None
+        self.environment = None
 
     def start(self):
         self.driver.start_node(self)

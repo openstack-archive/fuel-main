@@ -173,7 +173,8 @@ class Libvirt:
 
     def create_network(self, network):
         if not hasattr(network, 'id') or network.id is None:
-            network.id = self._generate_network_id(network.name)
+            network.id = self._generate_network_id(
+                network.environment.name + "_" + network.name)
         elif self.is_network_defined(network):
             self._virsh(['net-undefine', network.id])
 
@@ -227,7 +228,8 @@ class Libvirt:
         spec = specs[-1]
 
         if not hasattr(node, 'id') or node.id is None:
-            node.id = self._generate_node_id(node.name)
+            node.id = self._generate_node_id(
+                node.environment.name + "_" + node.name)
 
         xml_file = tempfile.NamedTemporaryFile(delete=False)
         node_xml = self.xml_builder.build_node_xml(node, spec)
@@ -382,7 +384,8 @@ class Libvirt:
     def delete_disk(self, disk):
         if disk.path is None:
             return
-        self._virsh(['vol-delete',disk.path])
+        if self.disk_exists(disk.path):
+            self._virsh(['vol-delete',disk.path])
 
     def get_disk_path(self, name, pool='default'):
         command = self.virsh_cmd + ['vol-path', name, '--pool', pool]
@@ -425,15 +428,15 @@ class Libvirt:
             if not self.disk_exists(id):
                 return id
 
-    def _generate_network_id(self, name='net'):
+    def _generate_network_id(self, prefix='net'):
         while True:
-            id = name + '-' + str(int(time.time() * 100))
+            id = prefix + '-' + str(int(time.time() * 100))
             if not self.network_exists(id):
                 return id
 
-    def _generate_node_id(self, name='node'):
+    def _generate_node_id(self, prefix='node'):
         while True:
-            id = name + '-' + str(int(time.time() * 100))
+            id = prefix + '-' + str(int(time.time() * 100))
             if not self.node_exists(id):
                 return id
 

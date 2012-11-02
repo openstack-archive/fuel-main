@@ -59,6 +59,12 @@ class Controller:
         environment.driver = self.driver
 
         for node in environment.nodes:
+            node.environment = environment
+
+        for network in environment.networks:
+            network.environment = environment
+
+        for node in environment.nodes:
             for interface in node.interfaces:
                 interface.node = node
                 interface.network.interfaces.append(interface)
@@ -118,7 +124,7 @@ class Controller:
         for node in environment.nodes:
             logger.info("Building node %s" % node.name)
 
-            self._build_node(environment, node)
+            self._build_node(node)
             node.driver = self.driver
 
         for network in environment.networks:
@@ -217,7 +223,7 @@ class Controller:
 
         logger.debug("Finished scanning for taken ip networks")
 
-    def _build_node(self, environment, node):
+    def _build_node(self, node):
         for disk in filter(lambda d: d.path is None, node.disks):
             logger.debug("Creating disk file for node '%s'" % node.name)
             disk.path = self.driver.create_disk(disk)
