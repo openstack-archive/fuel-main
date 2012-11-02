@@ -43,7 +43,7 @@ class TestHandlers(BaseHandlers):
         for n in (node1, node2):
             node_ip = str(self.db.query(IPAddr).filter_by(
                 node=n.id).first().ip_addr) + '/24'
-            nodes.append({'uid': n.fqdn, 'status': n.status, 'ip': n.ip,
+            nodes.append({'uid': n.id, 'status': n.status, 'ip': n.ip,
                           'mac': n.mac, 'role': n.role, 'id': n.id,
                           'network_data': [{'brd': '172.16.0.255',
                                             'ip': node_ip,
