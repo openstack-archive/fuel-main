@@ -4,7 +4,7 @@
 
 $/Nailgun-$(NAILGUN_VERSION).tar.gz:
 	cd nailgun && \
-	python setup.py sdist --dist-dir ../$/
+	python setup.py sdist --dist-dir $/
 
 test-unit: test-unit-nailgun
 

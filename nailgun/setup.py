@@ -70,6 +70,8 @@ if __name__ == "__main__":
           entry_points={
               'console_scripts': [
                   'nailgun_syncdb = nailgun.db:syncdb',
+                  'nailgun_essex = '
+                  'nailgun.fixtures.fixman:upload_fixture_essex',
                   'nailgund = nailgun.wsgi:appstart',
               ],
           },
