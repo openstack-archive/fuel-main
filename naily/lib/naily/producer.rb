@@ -1,5 +1,3 @@
-require 'json'
-
 module Naily
   class Producer
     def initialize(channel, exchange)
@@ -18,7 +16,7 @@ module Naily
       options = default_options.merge(options)
 
       begin
-        @exchange.publish(message, options)
+        @exchange.publish(message.to_json, options)
       rescue
         Naily.logger.error "Error publishing message: #{$!}"
       end

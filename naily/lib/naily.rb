@@ -3,6 +3,7 @@ require 'naily/version'
 require 'naily/config'
 
 require 'logger'
+require 'json'
 
 module Naily
   autoload 'Server', 'naily/server'

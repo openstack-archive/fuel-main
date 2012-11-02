@@ -15,6 +15,7 @@ Gem::Specification.new do |s|
   s.add_dependency 'amqp'
   s.add_dependency 'symboltable', '>= 1.0.2'
   s.add_dependency 'astute'
+  s.add_dependency 'json'
 
   s.files   = Dir.glob("{bin,lib}/**/*")
   s.executables = ['nailyd']
