@@ -198,6 +198,26 @@ h6.page-title {
   color: #999999;
 }
 
+.cluster-name-btn {
+  display: inline-block;
+  padding-top: 18px;
+  margin-left: 10px;
+  cursor: pointer;
+  opacity: 0.35;
+}
+
+.cluster-name-btn:hover {
+  opacity: 1;
+}
+
+.cluster-name-btn > i {
+  font-size: 20px;
+  color: #ffffff;
+  text-shadow: 0 1px 0 rgba(0, 0, 0, 0.45);
+  box-shadow: 0 0px 0px rgba(0,0,0,.9), inset 0px 0px 0px rgba(0,0,0,.9);
+}
+
+
 /* White Box for Cluster content*/
 .whitebox {
   display: block;
@@ -245,7 +265,7 @@ h6.page-title {
   clear: both;
 }
 
-.tab-pane h3 {
+.roles-block-row h3, .settings-header h3 {
   color: #333333;
   margin: 0px;
   padding: 0px;
@@ -293,8 +313,8 @@ h6.page-title {
 
 .nodeplaceholder {
   height: 114px;
-  background: none;
-  border: 1.5pt dashed #dadada;
+  opacity: 0.7;
+  border: 1px dashed #afafaf;
 }
 
 .node-select {
@@ -519,7 +539,7 @@ h6.page-title {
 
 .breadcrumb {
     background-color: rgba(0,0,0,.1);
-    margin: -10px 0 10px 0;
+    margin-top: -10px;
     border-radius: 0 0 4px 4px;
 }
 
@@ -1004,21 +1024,25 @@ h6.page-title {
   margin-bottom: 10px;
 }
 
-.networks-table > div {
+.networks-table .row {
+  margin: 8px 0;
+}
+
+.networks-table .control-group > div, .networks-header > div {
   float: left;
   margin-left: 20px;
   font-weight: bold;
 }
 
-.networks-table .network {
+.networks-header .network {
   width: 100px;
 }
 
-.networks-table .cidr {
+.networks-header .cidr {
   width: 220px;
 }
 
-.networks-table .vlan {
+.networks-header .vlan {
   width: 60px;
 }
 
@@ -1026,22 +1050,31 @@ h6.page-title {
   text-align: left;
   width: 100px;
   padding-top: 5px;
+  text-transform: capitalize;
 }
 
 .networks-table .network-cidr {
   text-align: center;
   width: 220px;
+  text-transform: capitalize;
 }
 
 .networks-table .network-vlan {
   text-align: center;
   width: 60px;
+  text-transform: capitalize;
 }
 
 .networks-table .network-error {
   text-align: left;
   width: 300px;
   padding-top: 5px;
+  text-transform: capitalize;
+}
+
+.network-error .help-inline {
+  position: relative;
+  top: -4px;
 }
 
 #networkManager {

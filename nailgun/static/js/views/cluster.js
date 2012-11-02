@@ -471,7 +471,8 @@ function(models, dialogViews, clusterPageTemplate, deploymentResultTemplate, dep
                 var row = this.$('.control-group[data-network-name=' + network.get('name') + ']');
                 network.on('error', function(model, errors) {
                     valid = false;
-                    $('.network-error .help-inline', row).text(errors.cidr || errors.vlan_id);
+                    var errorIcon = '<i class="icon-attention-3"></i> ';
+                    $('.network-error .help-inline', row).html(errorIcon + errors.cidr || errorIcon + errors.vlan_id);
                     row.addClass('error');
                 }, this);
                 network.set({
@@ -486,6 +487,7 @@ function(models, dialogViews, clusterPageTemplate, deploymentResultTemplate, dep
         },
         changeMode: function(e) {
             e.preventDefault();
+            /*
             var targetLi = $(e.currentTarget).parent();
             if (!targetLi.hasClass('active')) {
                 if (targetLi.hasClass('network-view')) {
@@ -495,6 +497,7 @@ function(models, dialogViews, clusterPageTemplate, deploymentResultTemplate, dep
                     this.render();
                 }
             }
+            */
         },
         initialize: function(options) {
             this.model.get('tasks').bind('remove', this.render, this);

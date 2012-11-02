@@ -17,8 +17,8 @@
       </select>
       <legend>Network Settings</legend>
       <% if (networks.deferred.state() != 'pending') { %>
-        <form class="form-inline" onsubmit="return false">
-          <div class="row networks-table">
+        <form class="form-inline networks-table" onsubmit="return false">
+          <div class="row networks-header">
             <div class="network">Network</div>
             <div class="cidr">CIDR</div>
             <div class="vlan">VLAN</div>
@@ -33,9 +33,9 @@
 	        <div class="network-vlan">
 	  	  <input class="input-mini" type="text" placeholder="100" value="<%= network.get('vlan_id') %>" maxlength="4" />
 	        </div>
-	        <div class="help-inline network-error">
-	  	<!--<i class="icon-attention-3"></i>Please correct the error bla bla bla bla-->
-	        </div>
+	        <div class="network-error">
+		  <span class="help-inline"></span>
+		</div>
 	      </div>
 	    </div>
           <% }) %>
@@ -59,7 +59,7 @@
       <div class="btn btn-success apply-btn" disabled>Save</div>
     </div>
     <div class="span4 verify-network pull-right">
-      <div class="btn btn-discard verify-networks-btn">Verify Settings</div>
+      <div class="btn btn-discard verify-networks-btn" <% if (networks.deferred.state() != 'pending') { %>disabled<% } %> >Verify Settings</div>
     </div>
   </div>
 </div>
