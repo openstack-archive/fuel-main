@@ -500,7 +500,7 @@ function(models, dialogViews, clusterPageTemplate, deploymentResultTemplate, dep
             */
         },
         initialize: function(options) {
-            this.model.get('tasks').bind('remove', this.render, this);
+            this.model.get('tasks').bind('add remove reset', this.renderVerificationControls, this);
             this.networks = new models.Networks();
             this.networks.deferred = this.networks.fetch({data: {cluster_id: this.model.id}});
             this.networks.bind('reset', this.render, this);
