@@ -37,7 +37,7 @@ class TestCobbler(Base):
                 break
             sleep(5)
             if count == 200:
-                raise Exception("Admin node bootstrapping has not finished or failed.
+                raise Exception("Admin node bootstrapping has not finished or failed. \
                                  Check %s manually." % self.logpath)
         self.remote.disconnect()
 

@@ -16,6 +16,7 @@ AGENT_PATH = root("bin", "agent")
 COOKBOOKS_PATH = root("cooks", "cookbooks")
 SAMPLE_PATH = root("scripts", "ci")
 SAMPLE_REMOTE_PATH = "/home/ubuntu"
+REMOTE_PYTHON = "/opt/nailgun/bin/python"
 
 
 class StillPendingException(Exception):
@@ -172,32 +173,18 @@ class TestNode(Base):
         self.assertEquals(200, changes.getcode())
 
     def _upload_sample_release(self):
-        release_remote_path = posixpath.join(
-            SAMPLE_REMOTE_PATH, "sample-release.json")
-        self.remote.scp(
-            os.path.join(SAMPLE_PATH, "sample-release.json"),
-            release_remote_path
-        )
-
         def _get_release_id():
             releases = json.loads(self.client.get(
                     "/api/releases/").read())
             for r in releases:
                 logging.debug("Found release name: %s" % r["name"])
-                if r["name"] == "Sample release":
+                if r["name"] == "OpenStack Essex Release":
                     logging.debug("Sample release id: %s" % r["id"])
                     return r["id"]
 
         release_id = _get_release_id()
         if not release_id:
-            with self.remote.sudo:
-                cmd = "/opt/nailgun/bin/create_release -f %s" % \
-                    release_remote_path
-                res = self.remote.execute(cmd)
-                if res['exit_status']:
-                    self.remote.disconnect()
-                    raise Exception("Command failed: %s" % str(res))
-                release_id = _get_release_id()
+            raise "Not implemented uploading of release"
         if not release_id:
             raise Exception("Could not get release id.")
         return release_id
