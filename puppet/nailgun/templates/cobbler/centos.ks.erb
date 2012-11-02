@@ -125,7 +125,11 @@ $SNIPPET('mcollective_install_if_enabled')
 %post
 
 gem install ohai httpclient json --source <%= gem_source %> --no-ri --no-rdoc
-
+mkdir -p /etc/nailgun-agent/
+cat > /etc/nailgun-agent/config.yaml << EOA
+---
+url: '<%= nailgun_api_url %>'
+EOA
 
 # COBBLER EMBEDDED SNIPPET: 'log_ks_post'
 # CONFIGURES %post LOGGING

@@ -25,6 +25,7 @@ class nailgun(
   $mco_stomppassword = "marionette",
 
   $naily_version,
+  $nailgun_api_url = "http://$ipaddress:8000/api",
   $rabbitmq_naily_user = "naily",
   $rabbitmq_naily_password = "naily",
   $rabbitmq_plugins_repo = "file:///var/www/nailgun/rabbitmq-plugins",
