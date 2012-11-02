@@ -308,7 +308,7 @@ mco_enable=1
                    }
 
             logger.debug("Node %s\nks_meta without extra params: %s" %
-                            (nd_name, nd_dict['ks_meta']))
+                         (nd_name, nd_dict['ks_meta']))
             logger.debug(
                 "Trying to save node %s into provision system: profile: %s ",
                 node.id,
