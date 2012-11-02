@@ -3,10 +3,9 @@ define(
     'models',
     'text!templates/dialogs/create_cluster.html',
     'text!templates/dialogs/change_cluster_mode.html',
-    'text!templates/dialogs/change_cluster_type.html',
-    'text!templates/dialogs/change_network_settings.html'
+    'text!templates/dialogs/change_cluster_type.html'
 ],
-function(models, createClusterDialogTemplate, changeClusterModeDialogTemplate, changeClusterTypeDialogTemplate, changeNetworkSettingsDialogTemplate) {
+function(models, createClusterDialogTemplate, changeClusterModeDialogTemplate, changeClusterTypeDialogTemplate) {
     'use strict';
 
     var views = {};
@@ -138,42 +137,6 @@ function(models, createClusterDialogTemplate, changeClusterModeDialogTemplate, c
             this.constructor.__super__.render.call(this, {cluster: this.model});
             this.toggleDescription();
             return this;
-        }
-    });
-
-    views.ChangeNetworkSettingsDialog = views.Dialog.extend({
-        template: _.template(changeNetworkSettingsDialogTemplate),
-        events: {
-            'click .apply-btn': 'apply'
-        },
-        apply: function() {
-            var valid = true;
-            this.$('.help-inline').text('');
-            this.$('.control-group').removeClass('error');
-            this.networks.each(function(network) {
-                var row = this.$('.control-group[data-network-name=' + network.get('name') + ']');
-                network.on('error', function(model, errors) {
-                    valid = false;
-                    $('.network-error .help-inline', row).text(errors.cidr || errors.vlan_id);
-                    row.addClass('error');
-                }, this);
-                network.set({
-                    cidr: $('.network-cidr input', row).val(),
-                    vlan_id: parseInt($('.network-vlan input', row).val(), 10)
-                });
-            }, this);
-            if (valid) {
-                Backbone.sync('update', this.networks);
-                this.$el.modal('hide');
-            }
-        },
-        initialize: function(options) {
-            this.networks = new models.Networks();
-            this.networks.deferred = this.networks.fetch({data: {cluster_id: this.model.id}});
-            this.networks.bind('reset', this.render, this);
-        },
-        render: function() {
-            return this.constructor.__super__.render.call(this, {cluster: this.model, networks: this.networks});
         }
     });
 

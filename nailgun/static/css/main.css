@@ -978,7 +978,7 @@ h6.page-title {
 .progress-verify-networks {
   width: 250px;
   padding: 2px;
-  margin: 13px 0 0 0;
+  margin: 9px 0 0 0;
   height: 12px;
   background-color: #e3e3e3;
   background-image: none;
@@ -989,38 +989,65 @@ h6.page-title {
   border-radius: 3px;
 }
 
+.verify-network {
+  text-align: right;
+}
+
 .verification-result {
   float: left;
   font-weight: bold;
   margin: 10px 7px 0 0;
 }
 
-.verification-result-btn {
-}
-
 .networks-table {
   width: 100%;
+  margin-bottom: 10px;
+}
+
+.networks-table > div {
+  float: left;
+  margin-left: 20px;
+  font-weight: bold;
+}
+
+.networks-table .network {
+  width: 100px;
+}
+
+.networks-table .cidr {
+  width: 220px;
+}
+
+.networks-table .vlan {
+  width: 60px;
 }
 
 .networks-table .network-name {
   text-align: left;
-  width: 20%;
+  width: 100px;
+  padding-top: 5px;
 }
 
 .networks-table .network-cidr {
   text-align: center;
-  width: 30%;
+  width: 220px;
 }
 
 .networks-table .network-vlan {
   text-align: center;
-  width: 20%;
+  width: 60px;
 }
 
 .networks-table .network-error {
   text-align: left;
-  width: 30%;
+  width: 300px;
+  padding-top: 5px;
 }
+
+#networkManager {
+  margin-bottom: 30px;
+}
+
 
 .settings-editable fieldset fieldset legend {
   font-size: 16px;
@@ -1036,10 +1063,6 @@ h6.page-title {
   border: 1px solid #bbb;
   padding-bottom: 10px;
   margin-right: 10px;
-}
-
-.settings-editable .wrapper {
-  margin-bottom: 3px;
 }
 
 .settings-editable .control-group .control-group {
@@ -1176,14 +1199,11 @@ h6.page-title {
   overflow-y: hidden;
 }
 
-.network-settings-table {margin-bottom: 10px;}
-.network-settings-table .network {width: 100px; float: left; margin-left: 20px;}
-.network-settings-table .cidr {width: 220px; float: left; margin-left: 20px;}
-.network-settings-table .vlan {width: 60px; float: left; margin-left: 20px;}
+.wrapper {
+   margin: 20px;
+   margin-top: 0;
+}
 
-.network-setting-span-label {width: 100px; padding-top: 5px;}
-.network-setting-span-cidr {width: 220px;}
-.network-setting-span-vlan {width: 60px;}
-.network-setting-span-test {width: 300px; padding-top: 5px;}
-
-.space30 {display: block; height: 30px;}
+.wrapper h3 {
+   margin-top: 0;
+}

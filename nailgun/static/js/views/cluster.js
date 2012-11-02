@@ -9,13 +9,14 @@ define(
     'text!templates/cluster/edit_nodes_screen.html',
     'text!templates/cluster/node_list.html',
     'text!templates/cluster/node.html',
-    'text!templates/cluster/network_tab_summary.html',
+    'text!templates/cluster/network_tab.html',
+    'text!templates/cluster/network_tab_view.html',
     'text!templates/cluster/verify_network_control.html',
     'text!templates/cluster/settings_tab.html',
     'text!templates/cluster/settings_group.html',
     'text!templates/cluster/actions_tab.html'
 ],
-function(models, dialogViews, clusterPageTemplate, deploymentResultTemplate, deploymentControlTemplate, nodesTabSummaryTemplate, editNodesScreenTemplate, nodeListTemplate, nodeTemplate, networkTabSummaryTemplate, networkTabVerificationTemplate, settingsTabTemplate, settingsGroupTemplate, actionsTabTemplate) {
+function(models, dialogViews, clusterPageTemplate, deploymentResultTemplate, deploymentControlTemplate, nodesTabSummaryTemplate, editNodesScreenTemplate, nodeListTemplate, nodeTemplate, networkTabTemplate, networkTabViewModeTemplate, networkTabVerificationTemplate, settingsTabTemplate, settingsGroupTemplate, actionsTabTemplate) {
     'use strict';
 
     var views = {};
@@ -452,31 +453,58 @@ function(models, dialogViews, clusterPageTemplate, deploymentResultTemplate, dep
     });
 
     views.NetworkTab = Backbone.View.extend({
-        render: function() {
-            this.$el.html('');
-            this.$el.append((new views.NetworkTabSummary({model: this.model})).render().el);
-            // other contents TBD
-            return this;
-        }
-    });
-
-    views.NetworkTabSummary = Backbone.View.extend({
-        template: _.template(networkTabSummaryTemplate),
+        template: _.template(networkTabTemplate),
+        viewModeTemplate: _.template(networkTabViewModeTemplate),
         events: {
-            'click .change-network-settings-btn': 'changeNetworkSettings'
+            'keydown .row input': 'applyEnabled',
+            'click .apply-btn': 'apply',
+            'click .nav a': 'changeMode'
         },
-        changeNetworkSettings: function() {
-            (new dialogViews.ChangeNetworkSettingsDialog({model: this.model})).render();
+        applyEnabled: function() {
+            this.$('.apply-btn').removeAttr('disabled');
+        },
+        apply: function() {
+            var valid = true;
+            this.$('.help-inline').text('');
+            this.$('.control-group').removeClass('error');
+            this.networks.each(function(network) {
+                var row = this.$('.control-group[data-network-name=' + network.get('name') + ']');
+                network.on('error', function(model, errors) {
+                    valid = false;
+                    $('.network-error .help-inline', row).text(errors.cidr || errors.vlan_id);
+                    row.addClass('error');
+                }, this);
+                network.set({
+                    cidr: $('.network-cidr input', row).val(),
+                    vlan_id: parseInt($('.network-vlan input', row).val(), 10)
+                });
+            }, this);
+            if (valid) {
+                Backbone.sync('update', this.networks);
+                this.$el.modal('hide');
+            }
+        },
+        changeMode: function(e) {
+            e.preventDefault();
+            var targetLi = $(e.currentTarget).parent();
+            if (!targetLi.hasClass('active')) {
+                if (targetLi.hasClass('network-view')) {
+                    this.$('.nav li').toggleClass('active');
+                    this.$('.network-tab-content').html(this.viewModeTemplate({cluster: this.model, networks: this.networks}));
+                } else {
+                    this.render();
+                }
+            }
         },
         initialize: function(options) {
-            this.model.get('tasks').bind('add remove reset', this.renderVerificationControls, this);
-        },
-        renderVerificationControls: function() {
-            this.$('.verify-network').html((new views.NetworkTabVerification({model: this.model})).render().el);
+            this.model.get('tasks').bind('remove', this.render, this);
+            this.networks = new models.Networks();
+            this.networks.deferred = this.networks.fetch({data: {cluster_id: this.model.id}});
+            this.networks.bind('reset', this.render, this);
         },
         render: function() {
-            this.$el.html(this.template({cluster: this.model}));
-            this.renderVerificationControls();
+            this.$el.html(this.template({cluster: this.model, networks: this.networks}));
+            this.$('.verify-network').html((new views.NetworkTabVerification({model: this.model})).render().el);
             return this;
         }
     });
