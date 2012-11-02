@@ -20,6 +20,7 @@ class nailgun(
   $cobbler_password = "cobbler",
 
   $mco_pskey = "unset",
+  $mco_stomphost = $ipaddress,
   $mco_stompuser = "mcollective",
   $mco_stomppassword = "marionette",
 
@@ -153,5 +154,12 @@ class nailgun(
   }
 
   class { "nailgun::nginx-service": }
+
+  nailgun::sshkeygen { "/root/.ssh/id_rsa":
+    homedir => "/root",
+    username => "root",
+    groupname => "root",
+    keytype => "rsa",
+  }
 
 }

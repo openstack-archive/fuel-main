@@ -266,10 +266,10 @@ class ClusterChangesHandler(JSONHandler):
             web.ctx.orm.add(node)
             web.ctx.orm.commit()
 
-            nd_name = "%d_%s." % (node.id, node.mac)
+            nd_name = "slave-%d" % node.id
 
-            nd_dict['hostname'] = 'slave-%s.%s' % \
-                (node.mac.replace(':', ''), settings.DNS_DOMAIN)
+            nd_dict['hostname'] = 'slave-%d.%s' % \
+                (node.id, settings.DNS_DOMAIN)
             nd_dict['name_servers'] = '\"%s\"' % settings.DNS_SERVERS
             nd_dict['name_servers_search'] = '\"%s\"' % settings.DNS_SEARCH
 
@@ -285,18 +285,20 @@ class ClusterChangesHandler(JSONHandler):
                 }
             }
             nd_dict['netboot_enabled'] = '1'
-            nd_dict['ks_meta'] = "\"puppet_auto_setup=1 \
-puppet_master=%(puppet_master_host)s \
-puppet_version=%(puppet_version)s \
-puppet_enable=0 \
-mco_auto_setup=1 \
-install_log_2_syslog=1 \
-mco_pskey=%(mco_pskey)s \
-mco_stomphost=%(mco_stomp_host)s \
-mco_stompport=%(mco_stomp_port)s \
-mco_stompuser=%(mco_stomp_user)s \
-mco_stomppassword=%(mco_stomp_password)s \
-mco_enable=1\"" % {'puppet_master_host': settings.PUPPET_MASTER_HOST,
+            nd_dict['ks_meta'] = """
+puppet_auto_setup=1
+puppet_master=%(puppet_master_host)s
+puppet_version=%(puppet_version)s
+puppet_enable=0
+mco_auto_setup=1
+install_log_2_syslog=1
+mco_pskey=%(mco_pskey)s
+mco_stomphost=%(mco_stomp_host)s
+mco_stompport=%(mco_stomp_port)s
+mco_stompuser=%(mco_stomp_user)s
+mco_stomppassword=%(mco_stomp_password)s
+mco_enable=1
+            """ % {'puppet_master_host': settings.PUPPET_MASTER_HOST,
                    'puppet_version': settings.PUPPET_VERSION,
                    'mco_pskey': settings.MCO_PSKEY,
                    'mco_stomp_host': settings.MCO_STOMPHOST,
@@ -305,6 +307,8 @@ mco_enable=1\"" % {'puppet_master_host': settings.PUPPET_MASTER_HOST,
                    'mco_stomp_password': settings.MCO_STOMPPASSWORD,
                    }
 
+            logger.debug("Node %s\nks_meta without extra params: %s" %
+                            (nd_name, nd_dict['ks_meta']))
             logger.debug(
                 "Trying to save node %s into provision system: profile: %s ",
                 node.id,

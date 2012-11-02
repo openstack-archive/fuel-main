@@ -139,7 +139,7 @@ class Cobbler:
         return None
 
     def power(self, obj_name, power):
-        system_id = _item_id_if_exists('system', obj_name)
+        system_id = self._item_id_if_exists('system', obj_name)
         if not system_id is None:
             self.remote.power_system(system_id, power, self.token)
         else:
