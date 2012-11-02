@@ -125,6 +125,7 @@ class nailgun(
     cobbler_password => "cobbler",
     centos_iso => $centos_iso,
     centos_repos => $centos_repos,
+    gem_source => $gem_source,
   }
 
   class { "nailgun::pm":

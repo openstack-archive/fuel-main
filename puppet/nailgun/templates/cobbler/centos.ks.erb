@@ -106,6 +106,9 @@ crontabs
 cronie
 ruby-augeas
 ntp
+ruby-devel
+make
+gcc
 nailgun-agent
 
 # COBBLER EMBEDDED SNIPPET: 'puppet_install_if_enabled'
@@ -120,6 +123,9 @@ $SNIPPET('mcollective_install_if_enabled')
 # HERE ARE COMMANDS THAT WILL BE LAUNCHED JUST AFTER
 # INSTALLATION ITSELF COMPLETED
 %post
+
+gem install ohai httpclient json --source <%= gem_source %> --no-ri --no-rdoc
+
 
 # COBBLER EMBEDDED SNIPPET: 'log_ks_post'
 # CONFIGURES %post LOGGING
@@ -150,9 +156,8 @@ $SNIPPET('mcollective_conf')
 # CONFIGURES NTPD POOL TO MASTER NODE
 $SNIPPET('ntp_to_masternode')
 
-# SNIPPET: 'agent_to_rclocal'
-# ADD NAILGUN AGENT TO RC.LOCAL
-$SNIPPET('agent_to_rclocal')
+# Let's not to use separate snippet for just one line of code. Complexity eats my time.
+echo 'flock -w 0 -o /var/lock/agent.lock -c "/opt/nailgun/bin/agent > /var/log/nailgun-agent.log 2>&1"' >> /etc/rc.local
 
 # COBBLER EMBEDDED SNIPPET: 'kickstart_done'
 # DISABLES PXE BOOTING

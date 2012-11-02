@@ -25,7 +25,7 @@ node default {
 
   $repo_root = "/var/www/nailgun"
   $pip_repo = "/var/www/nailgun/eggs"
-  $gem_source = "http://localhost:8080/gems/"
+  $gem_source = "http://$ipaddress:8080/gems/"
 
 
   class { "nailgun":
