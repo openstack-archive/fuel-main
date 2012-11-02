@@ -12,7 +12,8 @@ module Naily
     end
 
     def publish(message, options={})
-      default_options = {:routing_key => Naily.config.broker_publisher_queue}
+      default_options = {:routing_key => Naily.config.broker_publisher_queue,
+                         :content_type => 'application/json'}
       options = default_options.merge(options)
 
       begin
