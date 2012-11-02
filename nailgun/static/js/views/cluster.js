@@ -39,7 +39,9 @@ function(models, dialogViews, clusterPageTemplate, deploymentResultTemplate, dep
                 type: 'PUT',
                 url: '/api/clusters/' + this.model.id + '/changes',
                 complete: _.bind(function() {
-                    this.model.get('tasks').fetch({data: {cluster_id: this.model.id}}).done(_.bind(this.scheduleUpdate, this));
+                    var complete = _.after(2, _.bind(this.scheduleUpdate, this));
+                    this.model.get('tasks').fetch({data: {cluster_id: this.model.id}, complete: complete});
+                    this.model.get('nodes').fetch({data: {cluster_id: this.model.id}, complete: complete});
                 }, this)
             });
         },

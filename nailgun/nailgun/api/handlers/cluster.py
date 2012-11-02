@@ -262,6 +262,7 @@ class ClusterChangesHandler(JSONHandler):
             nd_dict['power_address'] = node.ip
 
             node.status = "provisioning"
+            node.redeployment_needed = False
             web.ctx.orm.add(node)
             web.ctx.orm.commit()
 
