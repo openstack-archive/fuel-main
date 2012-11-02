@@ -1,4 +1,5 @@
 import yaml
+import cStringIO
 import os.path
 import logging
 import logging.config
@@ -38,35 +39,37 @@ class NailgunSettings:
 
 settings = NailgunSettings()
 
-LOGGING = {
-    'version': 1,
+LOGGING = """
+[loggers]
+keys=root
 
-    'formatters': {
-        'verbose': {
-            'format': '%(asctime)s %(levelname)s %(module)s'
-            ' %(process)d %(thread)d %(message)s',
-        }
-    },
+[logger_root]
+level=DEBUG
+handlers={handlers}
 
-    'handlers': {
-        'file': {
-            'level': 'DEBUG',
-            'class': 'logging.handlers.WatchedFileHandler',
-            'filename': settings.CUSTOM_LOG,
-            'formatter': 'verbose'
-        },
-        'stream': {
-            'level': 'DEBUG',
-            'class': 'logging.StreamHandler',
-            'formatter': 'verbose',
-        }
-    },
-    'root': {
-        'level': 'DEBUG',
-        'handlers': ['file'],
-    }
+[formatters]
+keys=verbose
 
-}
+[formatter_verbose]
+format=%(asctime)s %(levelname)s (%(module)s) %(message)s
+
+[handlers]
+keys=file,stream
+
+[handler_file]
+level=DEBUG
+class=logging.handlers.WatchedFileHandler
+args=("{logfile}",)
+formatter=verbose
+
+[handler_stream]
+level=DEBUG
+class=logging.StreamHandler
+formatter=verbose
+args=(sys.stdout,)
+"""
+
+LOGGING_HANDLER = 'file' if int(settings.DEVELOPMENT) else 'stream'
 
 if int(settings.DEVELOPMENT):
     here = os.path.abspath(os.path.join(os.path.dirname(__file__), '..'))
@@ -75,12 +78,16 @@ if int(settings.DEVELOPMENT):
         'TEMPLATE_DIR': os.path.join(here, 'static'),
         'DATABASE_ENGINE': 'sqlite:///%s' %
         os.path.join(here, 'nailgun.sqlite')})
-    ch = logging.StreamHandler()
-    ch.setLevel(logging.DEBUG)
-    LOGGING['root']['handlers'] = ['stream']
     logging.info("DEVELOPMENT MODE ON:")
     logging.info("Static dir is %s" % settings.STATIC_DIR)
     logging.info("Template dir is %s" % settings.TEMPLATE_DIR)
 
 
-logging.config.dictConfig(LOGGING)
+logging.config.fileConfig(
+    cStringIO.StringIO(
+        LOGGING.format(
+            logfile=settings.CUSTOM_LOG,
+            handlers=LOGGING_HANDLER
+        )
+    )
+)

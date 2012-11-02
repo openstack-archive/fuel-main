@@ -24,8 +24,8 @@ RABBITMQ:
   fake: "1"
   hostname: "127.0.0.1"
 
-CUSTOM_LOG: "/var/log/nailgun.log"
-ACCESS_LOG: "/var/log/nailgun_access.log"
+CUSTOM_LOG: "/tmp/nailgun.log"
+ACCESS_LOG: "/tmp/nailgun_access.log"
 
 PATH_TO_SSH_KEY: = "/root/.ssh/id_rsa"
 PATH_TO_BOOTSTRAP_SSH_KEY: "/root/.ssh/bootstrap.rsa"
