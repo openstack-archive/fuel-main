@@ -1,5 +1,6 @@
 
-BUILD_DIR:=build
+PWD:=$(shell pwd -P)
+BUILD_DIR:=$(PWD)/build
 
 MODULES=gnupg bootstrap nailgun test mirror iso packages/rpm naily astute
 

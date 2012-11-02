@@ -58,14 +58,10 @@ if __name__ == "__main__":
         TestRunner.run()
         logger.info("Done")
     elif params.action == "loaddata":
+        logger.info("Uploading fixture...")
         from nailgun.fixtures import fixman
-        if os.path.exists(params.fixture):
-            logger.info("Uploading fixtures...")
-            with open(params.fixture, "r") as f:
-                fixman.upload_fixture(f)
-            logger.info("Done")
-        else:
-            parser.print_help()
+        fixman.upload_fixture(params.fixture)
+        logger.info("Done")
     elif params.action in ("run",):
         logger.info("Running WSGI app...")
         from nailgun.wsgi import appstart

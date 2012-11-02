@@ -26,7 +26,7 @@ class nailgun(
   $naily_version,
   $rabbitmq_naily_user = "naily",
   $rabbitmq_naily_password = "naily",
-
+  $rabbitmq_plugins_repo = "file:///var/www/nailgun/rabbitmq-plugins",
   $puppet_master_hostname = "${hostname}.${domain}",
 
   ) {
@@ -134,7 +134,7 @@ class nailgun(
     mco_pskey => $mco_pskey,
     mco_stompuser => $mco_stompuser,
     mco_stomppassword => $mco_stomppassword,
-    rabbitmq_plugins_repo => "file:///var/www/rabbitmq-plugins",
+    rabbitmq_plugins_repo => $rabbitmq_plugins_repo,
   }
 
   rabbitmq_user { $rabbitmq_naily_user:

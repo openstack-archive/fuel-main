@@ -1,19 +1,23 @@
 # -*- coding: utf-8 -*-
 
 import json
+import os.path
+import logging
 
+from nailgun.settings import settings
 from nailgun.api import models
 from sqlalchemy import orm
+from sqlalchemy.exc import IntegrityError
 
+logger = logging.getLogger(__name__)
 db = orm.scoped_session(orm.sessionmaker(bind=models.engine))()
 
 
 def upload_fixture(fileobj):
-    try:
-        fixture = json.load(fileobj)
-    except:
-        raise Exception("Invalid fixture!")
+    fixture = json.load(fileobj)
+
     known_objects = {}
+
     for obj in fixture:
         pk = obj["pk"]
         model_name = obj["model"].split(".")[1]
@@ -65,3 +69,17 @@ def upload_fixture(fileobj):
 
             db.add(new_obj)
             db.commit()
+
+
+def upload_fixtures():
+    fns = []
+    for path in settings.FIXTURES_TO_UPLOAD:
+        if not os.path.isabs(path):
+            path = os.path.abspath(os.path.join(os.path.dirname(__file__),
+                    path))
+        fns.append(path)
+
+    for fn in fns:
+        with open(fn, "r") as fileobj:
+            upload_fixture(fileobj)
+        logger.info("Fixture has been uploaded from file: %s" % fn)

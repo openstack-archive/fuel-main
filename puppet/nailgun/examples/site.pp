@@ -55,7 +55,7 @@ node default {
 
     rabbitmq_naily_user => $rabbitmq_naily_user,
     rabbitmq_naily_password => $rabbitmq_naily_password,
-
+    rabbitmq_plugins_repo => "file://${repo_root}/rabbitmq-plugins",
     puppet_master_hostname => $puppet_master_hostname,
   }
 

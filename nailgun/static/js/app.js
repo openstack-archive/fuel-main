@@ -31,7 +31,7 @@ function(models, commonViews, clusterViews, clustersViews, releaseViews) {
             this.navigate('#cluster/' + id + '/nodes', {trigger: true, replace: true});
         },
         showClusterTab: function(id, tab) {
-            var tabs = ['nodes', 'network', 'settings'];
+            var tabs = ['nodes', 'network', 'settings', 'actions'];
             if (!_.contains(tabs, tab)) {
                 this.showCluster(id);
                 return;

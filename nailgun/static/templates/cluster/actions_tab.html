@@ -1,0 +1,15 @@
+<div style="margin: 0 20px">
+  <h3 class="span12">Actions</h3>
+
+  <form class="rename-cluster-form" onsubmit="return false">
+    <legend>Rename cluster</legend>
+    <input type="text" maxlength="50" value="<%= cluster.get('name') %>">
+    <button class="btn btn-success apply-name-btn" style="margin-top: -10px;"><i class="icon-ok-4"></i></button>
+  </form>
+
+  <form class="delete-cluster-form" onsubmit="return false">
+    <legend>Delete cluster</legend>
+    <div class="msg-error">Warning message</div>
+    <button class="btn btn-danger delete-cluster-btn">Delete cluster</button>
+  </form>
+</div>

@@ -16,6 +16,7 @@ from nailgun.api.handlers.node import NodeCollectionHandler
 
 from nailgun.api.handlers.networks import NetworkCollectionHandler
 from nailgun.api.handlers.tasks import TaskHandler
+from nailgun.api.handlers.tasks import TaskCollectionHandler
 
 
 urls = (
@@ -39,7 +40,9 @@ urls = (
     'NodeHandler',
     r'/networks/?$',
     'NetworkCollectionHandler',
-    r'/tasks/(?P<node_id>\d+)/?$',
+    r'/tasks/?$',
+    'TaskCollectionHandler',
+    r'/tasks/(?P<task_id>\d+)/?$',
     'TaskHandler',
 )
 

@@ -44,3 +44,18 @@ class TaskHandler(JSONHandler):
             status="204 No Content",
             data=""
         )
+
+
+class TaskCollectionHandler(JSONHandler):
+
+    def GET(self):
+        web.header('Content-Type', 'application/json')
+        user_data = web.input(cluster_id=None)
+        if user_data.cluster_id:
+            tasks = web.ctx.orm.query(Task).filter_by(
+                cluster_id=user_data.cluster_id).all()
+        else:
+            tasks = web.ctx.orm.query(Task).all()
+        return json.dumps(map(
+            TaskHandler.render,
+            tasks), indent=4)

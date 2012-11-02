@@ -1,21 +1,4 @@
-<div class="row-fluid">
-  <div class="span12">
-    <div class="cluster-name-uneditable" style="<%= renaming ? 'display:none' : '' %>">
-      <h3 class="page-title"><%= cluster.get('name') %></h3>
-      <div class="cluster-name-btn rename-cluster-btn"><i class="icon-pencil-1" rel="tooltip" data-title="Rename Cluster" data-placement="right"></i></div>
-      <div class="cluster-name-btn delete-cluster-btn pull-right"><i class="icon-cancel-3" rel="tooltip" data-title="Delete Cluster" data-placement="left"></i></div>
-    </div>
-    <div class="cluster-name-editable" style="<%= renaming ? '' : 'display:none' %>">
-      <h3 class="page-title"><input type="text" maxlength="50" name="cluster-name" value="<%= cluster.get('name') %>"></h3>
-      <button class="btn btn-success apply-name-btn" style="margin-top: -15px;"><i class="icon-ok-4"></i></button>
-      <button class="btn discard-renaming-btn" style="margin-top: -15px;"><i class="icon-cancel-3"></i></button>
-      <div class="cluster-name-btn delete-cluster-btn pull-right"><i class="icon-cancel-3" rel="tooltip" data-title="Delete Cluster" data-placement="left"></i></div>
-    </div>
-  </div>
-</div>
-
 <div class="deployment-result"></div>
-
 <div class="whitebox">
   <ul class="nav nav-tabs">
     <% _.each(tabs, function(tab) { %>

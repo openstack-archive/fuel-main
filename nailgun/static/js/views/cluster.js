@@ -12,9 +12,10 @@ define(
     'text!templates/cluster/network_tab_summary.html',
     'text!templates/cluster/verify_network_control.html',
     'text!templates/cluster/settings_tab.html',
-    'text!templates/cluster/settings_group.html'
+    'text!templates/cluster/settings_group.html',
+    'text!templates/cluster/actions_tab.html'
 ],
-function(models, dialogViews, clusterPageTemplate, deploymentResultTemplate, deploymentControlTemplate, nodesTabSummaryTemplate, editNodesScreenTemplate, nodeListTemplate, nodeTemplate, networkTabSummaryTemplate, networkTabVerificationTemplate, settingsTabTemplate, settingsGroupTemplate) {
+function(models, dialogViews, clusterPageTemplate, deploymentResultTemplate, deploymentControlTemplate, nodesTabSummaryTemplate, editNodesScreenTemplate, nodeListTemplate, nodeTemplate, networkTabSummaryTemplate, networkTabVerificationTemplate, settingsTabTemplate, settingsGroupTemplate, actionsTabTemplate) {
     'use strict';
 
     var views = {};
@@ -23,45 +24,8 @@ function(models, dialogViews, clusterPageTemplate, deploymentResultTemplate, dep
         updateInterval: 5000,
         template: _.template(clusterPageTemplate),
         events: {
-            'click .rename-cluster-btn': 'startClusterRenaming',
-            'click .cluster-name-editable .discard-renaming-btn': 'endClusterRenaming',
-            'click .cluster-name-editable .apply-name-btn': 'applyNewClusterName',
-            'keydown .cluster-name-editable input': 'onClusterNameInputKeydown',
-            'click .delete-cluster-btn': 'deleteCluster',
             'click .task-result .close': 'dismissTaskResult',
             'click .deploy-btn:not([disabled])': 'deployCluster'
-        },
-        startClusterRenaming: function() {
-            this.renaming = true;
-            this.$('.cluster-name-editable').show();
-            this.$('.cluster-name-uneditable').hide();
-            this.$('.cluster-name-editable input').val(this.model.get('name')).focus();
-        },
-        endClusterRenaming: function() {
-            this.renaming = false;
-            this.$('.cluster-name-editable').hide();
-            this.$('.cluster-name-uneditable').show();
-        },
-        applyNewClusterName: function() {
-            var name = $.trim(this.$('.cluster-name-editable input').val());
-            if (name != '' && name != this.model.get('name')) {
-                this.$('.cluster-name-editable input, .cluster-name-editable button').attr('disabled', true);
-                this.model.update({name: name}, {complete: this.endClusterRenaming, context: this});
-            } else {
-                this.endClusterRenaming();
-            }
-        },
-        onClusterNameInputKeydown: function(e) {
-            if (e.which == 13) {
-                this.applyNewClusterName();
-            } else if (e.which == 27) {
-                this.endClusterRenaming();
-            }
-        },
-        deleteCluster: function() {
-            if (confirm('Do you really want to delete this cluster?')) {
-                this.model.destroy();
-            }
         },
         dismissTaskResult: function() {
             this.$('.task-result').remove();
@@ -74,18 +38,9 @@ function(models, dialogViews, clusterPageTemplate, deploymentResultTemplate, dep
                 type: 'PUT',
                 url: '/api/clusters/' + this.model.id + '/changes',
                 complete: _.bind(function() {
-                    this.model.fetch().done(_.bind(this.scheduleUpdate, this));
+                    this.model.get('tasks').fetch({data: {cluster_id: this.model.id}}).done(_.bind(this.scheduleUpdate, this));
                 }, this)
             });
-        },
-        initialize: function(options) {
-            _.defaults(this, options);
-            this.model.bind('change', this.render, this);
-            this.model.bind('destroy', function() {
-                app.navbar.stats.nodes.fetch();
-                app.navigate('#clusters', {trigger: true});
-            }, this);
-            this.scheduleUpdate();
         },
         scheduleUpdate: function() {
             if (this.model.task('deploy', 'running')) {
@@ -98,9 +53,23 @@ function(models, dialogViews, clusterPageTemplate, deploymentResultTemplate, dep
                 var task = this.model.task('deploy', 'running');
                 if (task) {
                     task.fetch({complete: complete});
-                    this.model.get('nodes').fetch({complete: complete});
+                    this.model.get('nodes').fetch({data: {cluster_id: this.model.id}, complete: complete});
                 }
             }
+        },
+        initialize: function(options) {
+            _.defaults(this, options);
+            this.model.get('tasks').bind('add remove reset', this.renderDeploymentControls, this);
+            this.model.get('nodes').bind('add remove reset', this.renderDeploymentControls, this);
+            this.model.bind('destroy', function() {
+                app.navbar.stats.nodes.fetch();
+                app.navigate('#clusters', {trigger: true});
+            }, this);
+            this.scheduleUpdate();
+        },
+        renderDeploymentControls: function() {
+            this.$('.deployment-result').html(new views.DeploymentResult({model: this.model}).render().el);
+            this.$('.deployment-control').html(new views.DeploymentControl({model: this.model}).render().el);
         },
         render: function() {
             this.$el.html(this.template({
@@ -109,14 +78,13 @@ function(models, dialogViews, clusterPageTemplate, deploymentResultTemplate, dep
                 activeTab: this.tab,
                 renaming: this.renaming
             }));
-
-            this.$('.deployment-result').html(new views.DeploymentResult({model: this.model}).render().el);
-            this.$('.deployment-control').html(new views.DeploymentControl({model: this.model}).render().el);
+            this.renderDeploymentControls();
 
             var tabs = {
                 'nodes': views.NodesTab,
                 'network': views.NetworkTab,
-                'settings': views.SettingsTab
+                'settings': views.SettingsTab,
+                'actions': views.ActionsTab
             };
             if (_.has(tabs, this.tab)) {
                 this.$('#tab-' + this.tab).html(new tabs[this.tab]({model: this.model}).render().el);
@@ -219,8 +187,8 @@ function(models, dialogViews, clusterPageTemplate, deploymentResultTemplate, dep
         keepScrollPosition: true,
         initialize: function(options) {
             this.tab = options.tab;
-            this.model.get('nodes').bind('reset', this.render, this);
-            this.model.get('nodes').bind('add', this.render, this);
+            this.model.bind('change:mode change:type', this.render, this);
+            this.model.get('nodes').bind('add remove reset', this.render, this);
         },
         render: function() {
             this.$el.html('');
@@ -299,7 +267,7 @@ function(models, dialogViews, clusterPageTemplate, deploymentResultTemplate, dep
             this.modifyNodes(chosenNodes);
             Backbone.sync('update', chosenNodes).done(_.bind(function() {
                 this.tab.changeScreen(views.NodesByRolesScreen);
-                this.model.fetch();
+                this.model.get('nodes').fetch({data: {cluster_id: this.model.id}});
                 app.navbar.stats.nodes.fetch();
             }, this));
         },
@@ -501,11 +469,14 @@ function(models, dialogViews, clusterPageTemplate, deploymentResultTemplate, dep
             (new dialogViews.ChangeNetworkSettingsDialog({model: this.model})).render();
         },
         initialize: function(options) {
-            this.model.get('tasks').bind('remove', this.render, this);
+            this.model.get('tasks').bind('add remove reset', this.renderVerificationControls, this);
+        },
+        renderVerificationControls: function() {
+            this.$('.verify-network').html((new views.NetworkTabVerification({model: this.model})).render().el);
         },
         render: function() {
             this.$el.html(this.template({cluster: this.model}));
-            this.$('.verify-network').html((new views.NetworkTabVerification({model: this.model})).render().el);
+            this.renderVerificationControls();
             return this;
         }
     });
@@ -535,7 +506,7 @@ function(models, dialogViews, clusterPageTemplate, deploymentResultTemplate, dep
                 type: 'PUT',
                 url: '/api/clusters/' + this.model.id + '/verify/networks',
                 complete: _.bind(function() {
-                    this.model.fetch();
+                    this.model.get('tasks').fetch({data: {cluster_id: this.model.id}});
                 }, this)
             });
         },
@@ -655,6 +626,39 @@ function(models, dialogViews, clusterPageTemplate, deploymentResultTemplate, dep
                 this.$el.html(this.template({settings: $.parseJSON(fake), legend: this.options.legend}));
             */
             this.$el.html(this.template({settings: this.settings, legend: this.legend}));
+            return this;
+        }
+    });
+
+    views.ActionsTab = Backbone.View.extend({
+        template: _.template(actionsTabTemplate),
+        events: {
+            'click .rename-cluster-form .apply-name-btn': 'applyNewClusterName',
+            'keydown .rename-cluster-form input': 'onClusterNameInputKeydown',
+            'click .delete-cluster-form .delete-cluster-btn': 'deleteCluster'
+        },
+        applyNewClusterName: function() {
+            var name = $.trim(this.$('.rename-cluster-form input').val());
+            if (name != '' && name != this.model.get('name')) {
+                this.$('.rename-cluster-form input, .rename-cluster-form .apply-name-btn').attr('disabled', true);
+                this.model.update({name: name}, {complete: this.render, context: this});
+            }
+        },
+        onClusterNameInputKeydown: function(e) {
+            if (e.which == 13) {
+                this.applyNewClusterName();
+            }
+        },
+        deleteCluster: function() {
+            if (confirm('Do you really want to delete this cluster?')) {
+                this.model.destroy();
+            }
+        },
+        initialize: function() {
+            this.model.bind('change:name', this.render, this);
+        },
+        render: function() {
+            this.$el.html(this.template({cluster: this.model}));
             return this;
         }
     });
