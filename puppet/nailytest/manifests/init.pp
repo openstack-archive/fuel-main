@@ -1,12 +1,12 @@
 class nailytest {
         case $role {
-                "test_controller" : {
+                "controller" : {
                         include nailytest::test_controller
                 }
         }
 
         case $role {
-                "test_compute" : {
+                "compute" : {
                         include nailytest::test_compute
                 }
         }       

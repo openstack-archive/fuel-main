@@ -29,8 +29,8 @@ module Naily
 
       begin
         data = JSON.load(payload)
-      rescue
-        Naily.logger.error "Error deserializing payload: #{$!}"
+      rescue Exception => e
+        Naily.logger.error "Error deserializing payload: #{e.message}, trace: #{e.backtrace.inspect}"
         # TODO: send RPC error response
         return
       end
@@ -38,7 +38,7 @@ module Naily
       unless @delegate.respond_to?(data['method'])
         Naily.logger.error "Unsupported RPC call #{data['method']}"
         if data['respond_to']
-          reporter = Naily::Reporter.new(@publisher, data['respond_to'], data['task_uuid'])
+          reporter = Naily::Reporter.new(@publisher, data['respond_to'], data['args']['task_uuid'])
           reporter.report({'status' => 'error', 'error' => "Unsupported method '#{data['method']}' called."})
         end
         return
@@ -48,10 +48,10 @@ module Naily
 
       begin
         result = @delegate.send(data['method'], data)
-      rescue
-        Naily.logger.error "Error running RPC method #{data['method']}: #{$!}"
+      rescue Exception => e
+        Naily.logger.error "Error running RPC method #{data['method']}: #{e.message}, trace: #{e.backtrace.inspect}"
         if data['respond_to']
-          reporter = Naily::Reporter.new(@publisher, data['respond_to'], data['task_uuid'])
+          reporter = Naily::Reporter.new(@publisher, data['respond_to'], data['args']['task_uuid'])
           reporter.report({'status' => 'error', 'error' => "Error occured while running method '#{data['method']}'. See logs of Naily for details."})
         end
         return

@@ -1,6 +1,6 @@
 class nailytest::test_controller {
     file { "/tmp/controller-file":
-      content => "$role",
+      content => "Hello world! $role is installed",
     }
     exec { "/bin/sleep 3": }
 }

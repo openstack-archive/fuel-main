@@ -8,11 +8,11 @@ module Astute
     def initialize(ctx, agent, nodes=nil)
       @task_id = ctx.task_id
       @agent = agent
-      @nodes = nodes
+      @nodes = nodes.map { |n| n.to_s }
       @mc = rpcclient(agent)
       @mc.progress = false
-      unless nodes.nil?
-        @mc.discover(:nodes => nodes)
+      unless @nodes.nil?
+        @mc.discover(:nodes => @nodes)
       end
     end
 
