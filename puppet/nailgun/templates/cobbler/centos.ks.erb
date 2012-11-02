@@ -106,6 +106,8 @@ crontabs
 cronie
 ruby-augeas
 ntp
+nailgun-agent
+
 # COBBLER EMBEDDED SNIPPET: 'puppet_install_if_enabled'
 # LISTS puppet PACKAGE IF puppet_auto_setup VARIABLE IS SET TO 1
 $SNIPPET('puppet_install_if_enabled')
@@ -147,6 +149,10 @@ $SNIPPET('mcollective_conf')
 # SNIPPET: 'ntp_to_masternode'
 # CONFIGURES NTPD POOL TO MASTER NODE
 $SNIPPET('ntp_to_masternode')
+
+# SNIPPET: 'agent_to_rclocal'
+# ADD NAILGUN AGENT TO RC.LOCAL
+$SNIPPET('agent_to_rclocal')
 
 # COBBLER EMBEDDED SNIPPET: 'kickstart_done'
 # DISABLES PXE BOOTING
