@@ -145,7 +145,7 @@ define(function() {
             } else {
                 errors.cidr = 'Invalid CIDR';
             }
-            if (!_.isNumber(attrs.vlan_id) || attrs.vlan_id < 1 || attrs.vlan_id > 4094) {
+            if (_.isNaN(attrs.vlan_id) || !_.isNumber(attrs.vlan_id) || attrs.vlan_id < 1 || attrs.vlan_id > 4094) {
                 errors.vlan_id = 'Invalid VLAN ID';
             }
             return _.isEmpty(errors) ? null : errors;

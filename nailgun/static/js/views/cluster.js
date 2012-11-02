@@ -482,7 +482,7 @@ function(models, dialogViews, clusterPageTemplate, deploymentResultTemplate, dep
             }, this);
             if (valid) {
                 Backbone.sync('update', this.networks);
-                this.$el.modal('hide');
+                this.$('.apply-btn').attr('disabled', true);
             }
         },
         changeMode: function(e) {
@@ -501,9 +501,14 @@ function(models, dialogViews, clusterPageTemplate, deploymentResultTemplate, dep
         },
         initialize: function(options) {
             this.model.get('tasks').bind('add remove reset', this.renderVerificationControls, this);
-            this.networks = new models.Networks();
-            this.networks.deferred = this.networks.fetch({data: {cluster_id: this.model.id}});
-            this.networks.bind('reset', this.render, this);
+            if (!this.model.get('networks')) {
+                this.networks = new models.Networks();
+                this.networks.deferred = this.networks.fetch({data: {cluster_id: this.model.id}});
+                this.networks.deferred.done(_.bind(this.render, this));
+                this.model.set({'networks': this.networks}, {silent: true});
+            } else {
+                this.networks = this.model.get('networks');
+            }
         },
         renderVerificationControls: function() {
             this.$('.verify-network').html((new views.NetworkTabVerification({model: this.model})).render().el);
