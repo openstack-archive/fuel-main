@@ -80,7 +80,7 @@ class nailgun::venv(
 
   exec {"nailgun_upload_essex":
     command => "${venv}/bin/nailgun_essex",
-    require => Exex["nailgun_syncdb"],
+    require => Exec["nailgun_syncdb"],
   }
 
   }
