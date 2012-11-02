@@ -21,7 +21,14 @@ def upload_fixture(fileobj):
     for obj in fixture:
         pk = obj["pk"]
         model_name = obj["model"].split(".")[1]
+
         obj['model'] = getattr(models, model_name.capitalize())
+        # Check if it's already uploaded
+        obj_from_db = db.query(obj['model']).get(pk)
+        if obj_from_db:
+            logger.info("Fixture model '%s' with pk='%s' already"
+                        " uploaded. Skipping", model_name, pk)
+            continue
         known_objects.setdefault(model_name, {})[pk] = obj
 
     for name, objects in known_objects.iteritems():

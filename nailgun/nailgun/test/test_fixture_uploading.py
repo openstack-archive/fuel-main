@@ -20,7 +20,7 @@ class TestFixture(BaseHandlers):
 
     def test_custom_fixture(self):
         data = u'''[{
-            "pk": 1,
+            "pk": 2,
             "model": "nailgun.release",
             "fields": {
                 "name": "CustomFixtureRelease",
