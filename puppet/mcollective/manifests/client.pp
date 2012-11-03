@@ -20,6 +20,7 @@ class mcollective::client(
   }
 
   package { $mcollective_client_package : }
+  package { 'nailgun-mcagents': }
 
   file {"/etc/mcollective/client.cfg" :
     content => template("mcollective/client.cfg.erb"),
