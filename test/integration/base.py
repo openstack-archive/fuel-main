@@ -1,4 +1,5 @@
 import logging
+import time
 
 from unittest.case import TestCase
 
@@ -23,7 +24,7 @@ class Base(TestCase):
             count += 1
             if not res['exit_status']:
                 break
-            sleep(5)
+            time.sleep(5)
             if count == 200:
                 raise Exception("Admin node bootstrapping has not finished or failed. \
                                  Check %s manually." % logpath)
