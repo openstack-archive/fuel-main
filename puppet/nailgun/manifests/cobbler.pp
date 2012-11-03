@@ -4,6 +4,7 @@ class nailgun::cobbler(
 
   $centos_iso,
   $centos_repos,
+  $gem_source,
 
   $ks_system_timezone         = "America/Los_Angeles",
 
@@ -64,14 +65,6 @@ class nailgun::cobbler(
 
   file {"/var/lib/cobbler/snippets/kickstart_ntp":
     content => template("nailgun/cobbler/kickstart_ntp.snippet.erb"),
-    owner => root,
-    group => root,
-    mode => 0644,
-    require => Class["cobbler::server"],
-  }
-
-  file {"/var/lib/cobbler/snippets/agent_to_rclocal":
-    content => template("nailgun/cobbler/agent_to_rclocal.snippet.erb"),
     owner => root,
     group => root,
     mode => 0644,
