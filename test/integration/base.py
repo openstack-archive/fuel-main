@@ -3,8 +3,8 @@ import time
 
 from unittest.case import TestCase
 
-from integration import ci
-from helpers import HTTPClient, SSHClient
+from test.integration import ci
+from test.helpers import HTTPClient, SSHClient
 logging.basicConfig(format=':%(lineno)d: %(asctime)s %(message)s',
                     level=logging.DEBUG)
 

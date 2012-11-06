@@ -4,8 +4,8 @@ from time import sleep
 import xmlrpclib
 from devops.helpers import wait, tcp_ping, http, ssh
 
-from integration.base import Base
-from helpers import SSHClient
+from test.integration.base import Base
+from test.helpers import SSHClient
 
 
 class TestCobbler(Base):
@@ -21,11 +21,12 @@ class TestCobbler(Base):
         pass
 
     # There is unknown issue with Cobbler interface so this currently fails
-    #def test_cobbler_alive(self):
-        #wait(
-        #    lambda: http(host=self.ip, url='/cobbler_api', waited_code=501),
-        #    timeout=60
-        #)
-        #server = xmlrpclib.Server('http://%s/cobbler_api' % self.ip)
-        #token = server.login('cobbler', 'cobbler')
-        #assert server.ping() == True
+    def test_cobbler_alive(self):
+        wait(
+            # it's now 502 but shouldn't be - just for now
+            lambda: http(host=self.ip, url='/cobbler_api', waited_code=502),
+            timeout=60
+        )
+        server = xmlrpclib.Server('http://%s/cobbler_api' % self.ip)
+        token = server.login('cobbler', 'cobbler')
+        assert server.ping() is True
