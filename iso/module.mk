@@ -57,7 +57,6 @@ $/isoroot-prepare.done: \
 		$(addprefix $(ISOROOT)/EFI/BOOT/,$(EFI_FILES)) \
 		$(addprefix $(ISOROOT)/rabbitmq-plugins/v$(RABBITMQ_VERSION)/,$(RABBITMQ_PLUGINS)) \
 		$(addprefix $(ISOROOT)/puppet/,$(call find-files,puppet)) \
-		$(ISOROOT)/puppet/manifests/site.pp \
 		$(ISOROOT)/ks.cfg \
 		$(ISOROOT)/bootstrap_admin_node.sh
 	$(ACTION.TOUCH)
@@ -79,9 +78,6 @@ $(ISOROOT)/gems/gems/naily-$(NAILY_VERSION).gem: $(BUILD_DIR)/gems/naily-$(NAILY
 $(ISOROOT)/gems/gems/astute-$(ASTUTE_VERSION).gem: $(BUILD_DIR)/gems/astute-$(ASTUTE_VERSION).gem ; $(ACTION.COPY)
 
 $(ISOROOT)/puppet/%: puppet/% ; $(ACTION.COPY)
-
-$(ISOROOT)/puppet/manifests/site.pp: puppet/nailytest/examples/site.pp
-	$(ACTION.COPY)
 
 $/isoroot-eggs.done: \
 		$(LOCAL_MIRROR)/eggs.done \
