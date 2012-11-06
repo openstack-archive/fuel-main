@@ -23,9 +23,9 @@ class TestCobbler(Base):
     # There is unknown issue with Cobbler interface so this currently fails
     def test_cobbler_alive(self):
         wait(
-            # it's now 502 but shouldn't be - just for now
             lambda: http(host=self.ip, url='/cobbler_api', waited_code=502),
             timeout=60
         )
         server = xmlrpclib.Server('http://%s/cobbler_api' % self.ip)
+        # raises an error if something isn't right
         token = server.login('cobbler', 'cobbler')
