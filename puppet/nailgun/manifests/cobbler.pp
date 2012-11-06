@@ -96,7 +96,10 @@ class nailgun::cobbler(
     distro => "centos63-x86_64",
     ksmeta => "",
     menu => true,
-    require => Class["cobbler::server"],
+    require => [
+                Class["cobbler::server"],
+                Class["cobbler::distro::centos63-x86_64"],
+                ],
   }
 
   cobbler_distro { "bootstrap":
