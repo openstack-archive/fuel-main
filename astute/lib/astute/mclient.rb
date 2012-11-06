@@ -9,7 +9,7 @@ module Astute
       @task_id = ctx.task_id
       @agent = agent
       @nodes = nodes.map { |n| n.to_s }
-      @mc = rpcclient(agent)
+      @mc = rpcclient(agent, :exit_on_failure => false)
       @mc.progress = false
       unless @nodes.nil?
         @mc.discover(:nodes => @nodes)
