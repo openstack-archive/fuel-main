@@ -4,19 +4,20 @@ define nailgun::venv::venv(
   $owner = undef,
   $group = undef,
   $ensure = "present",
+  $pip_opts = "",
   ) {
 
-  
+
   if $ensure == 'present' {
     $root_parent = inline_template("<%= venv.match(%r!(.+)/.+!)[1] %>")
-    
+
     if !defined(File[$root_parent]) {
       file { $root_parent:
         ensure => directory,
         recurse => true
       }
     }
-    
+
     Exec {
       user => $owner,
       group => $group,
@@ -30,14 +31,15 @@ define nailgun::venv::venv(
       require => [File[$root_parent],
                   Package["python-virtualenv"]],
     }
-    
+
     exec { "update distribute and pip in $venv":
-      command => "$venv/bin/pip install -U distribute pip",
+      command => "$venv/bin/pip install ${pip_opts} -U distribute pip",
       refreshonly => true,
+      returns => [0, 1],
     }
-    
+
     }
-    
+
     elsif $ensure == 'absent' {
 
       file { $venv:
@@ -47,5 +49,5 @@ define nailgun::venv::venv(
         force => true,
       }
     }
-  
+
 }

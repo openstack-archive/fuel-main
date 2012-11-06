@@ -21,6 +21,7 @@ class nailgun::venv(
     venv => $venv,
     opts => $venv_opts,
     require => Package["python-virtualenv"],
+    pip_opts => $pip_opts,
   }
 
   nailgun::venv::pip { "$venv_$package":
