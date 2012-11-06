@@ -29,4 +29,3 @@ class TestCobbler(Base):
         )
         server = xmlrpclib.Server('http://%s/cobbler_api' % self.ip)
         token = server.login('cobbler', 'cobbler')
-        assert server.ping() is True
