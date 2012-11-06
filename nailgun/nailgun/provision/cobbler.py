@@ -139,11 +139,8 @@ class Cobbler:
         return None
 
     def power(self, obj_name, power):
-        system_id = self._item_id_if_exists('system', obj_name)
-        if not system_id is None:
-            self.remote.power_system(system_id, power, self.token)
-        else:
-            raise Exception('There is no system named: %s' % obj_name)
+        options = { "systems" : [obj_name], "power" : power }
+        self.remote.background_power_system(options, self.token)
 
     def power_on(self, obj_name):
         self.power(obj_name, 'on')
