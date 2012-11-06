@@ -9,7 +9,8 @@ $/prep.done: $(LOCAL_MIRROR)/src.done
 	@mkdir -p $/SOURCES
 	cp -f $(LOCAL_MIRROR)/src/* $/SOURCES/
 	cp -f bin/agent bin/nailgun-agent.cron $/SOURCES/
-	cp -f mcagent/* $/SOURCES/
+	mkdir -p $/SOURCES/nailgun-mcagents
+	cp -f mcagent/* $/SOURCES/nailgun-mcagents
 	$(ACTION.TOUCH)
 
 $/RPMS/x86_64/cirros-uec-0.3.0-1.x86_64.rpm: $/prep.done packages/rpm/specs/cirros-0.3.0.spec

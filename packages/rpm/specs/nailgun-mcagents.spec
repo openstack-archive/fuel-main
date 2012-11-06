@@ -13,7 +13,7 @@ MCollective agents
 %prep
 rm -rf %{name}-%{version}
 mkdir %{name}-%{version}
-cp %{_sourcedir}/* %{name}-%{version}
+cp %{_sourcedir}/%{name}/* %{name}-%{version}
 
 %install
 cd %{name}-%{version}
