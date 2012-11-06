@@ -13,32 +13,42 @@ sys.path[:0] = [
 
 import integration
 
+
 def main():
     parser = argparse.ArgumentParser(description="Integration test suite")
     parser.add_argument("-i", "--iso", dest="iso",
-                      help="iso image path or http://url")
+                        help="iso image path or http://url")
     parser.add_argument("-l", "--level", dest="log_level", type=str,
-                      help="log level", choices=["DEBUG", "INFO", "WARNING", "ERROR"],
-                      default="ERROR", metavar="LEVEL")
+                        help="log level", choices=[
+                            "DEBUG",
+                            "INFO",
+                            "WARNING",
+                            "ERROR"
+                        ],
+                        default="ERROR", metavar="LEVEL")
     parser.add_argument('--cache-file', dest='cache_file', type=str,
-                      help='file to store integration environment name')
-    parser.add_argument('--installation-timeout', dest='installation_timeout', type=int,
-                      help='admin node installation timeout')
+                        help='file to store integration environment name')
+    parser.add_argument('--installation-timeout', dest='installation_timeout',
+                        type=int, help='admin node installation timeout')
     parser.add_argument('--chef-timeout', dest='chef_timeout', type=int,
-                      help='admin node chef timeout')
+                        help='admin node chef timeout')
     parser.add_argument('--suite', dest='test_suite', type=str,
-                      help='Test suite to run', choices=["integration", "cookbooks"],
-                      default="integration")
-    parser.add_argument('command', choices=('setup', 'destroy', 'test'), default='test',
-                      help="command to execute")
-    parser.add_argument('arguments', nargs=argparse.REMAINDER, help='arguments for nose testing framework')
+                        help='Test suite to run', choices=["integration"],
+                        default="integration")
+    parser.add_argument('command', choices=('setup', 'destroy', 'test'),
+                        default='test', help="command to execute")
+    parser.add_argument(
+        'arguments',
+        nargs=argparse.REMAINDER,
+        help='arguments for nose testing framework'
+    )
 
     params = parser.parse_args()
 
     numeric_level = getattr(logging, params.log_level.upper())
     logging.basicConfig(level=numeric_level)
     paramiko_logger = logging.getLogger('paramiko')
-    paramiko_logger.setLevel(numeric_level+1)
+    paramiko_logger.setLevel(numeric_level + 1)
 
     suite = integration
 #   todo fix default values
@@ -56,12 +66,17 @@ def main():
         nc.verbosity = 3
         nc.plugins = PluginManager(plugins=[Xunit()])
         # Set folder where to process tests
-        nc.configureWhere(os.path.join(os.path.dirname(os.path.abspath(__file__)), params.test_suite))
+        nc.configureWhere(
+            os.path.join(
+                os.path.dirname(os.path.abspath(__file__)),
+                params.test_suite
+            )
+        )
         nose.main(module=suite, config=nc, argv=[
             __file__,
             "--with-xunit",
             "--xunit-file=nosetests.xml"
-        ]+params.arguments)
+        ] + params.arguments)
         result = True
     else:
         print("Unknown command '%s'" % params.command)
@@ -73,4 +88,3 @@ def main():
 
 if __name__ == "__main__":
     main()
-

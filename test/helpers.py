@@ -11,6 +11,8 @@ logger = logging.getLogger(__name__)
 """
 Integration test helpers
 """
+
+
 class HTTPClient(object):
     def __init__(self, url=""):
         self.url = url
@@ -66,14 +68,15 @@ class SSHClient(object):
     def connect_ssh(self, host, username, password):
         if not self.established:
             self.ssh_client = paramiko.SSHClient()
-            self.ssh_client.set_missing_host_key_policy(paramiko.AutoAddPolicy())
+            self.ssh_client.set_missing_host_key_policy(
+                paramiko.AutoAddPolicy()
+            )
             self.host = host
             self.username = username
             self.password = password
             self.ssh_client.connect(host, username=username, password=password)
             self.sftp_client = self.ssh_client.open_sftp()
             self.established = True
-
 
     def execute(self, command):
         logger.debug("Executing command: '%s'" % command.rstrip())
@@ -122,11 +125,11 @@ class SSHClient(object):
             os.path.basename(frm)
         )
         for root, dirs, fls in os.walk(frm):
-            rel = os.path.relpath(root, frm).replace('\\','/')
+            rel = os.path.relpath(root, frm).replace('\\', '/')
             if rel == ".":
                 curdir = remote_root
             else:
-                curdir =  posixpath.join(remote_root, rel)
+                curdir = posixpath.join(remote_root, rel)
             self.mkdir(curdir)
             for fl in fls:
                 self.scp(

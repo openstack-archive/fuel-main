@@ -10,7 +10,10 @@ from integration.base import Base
 from helpers import SSHClient, HTTPClient
 from root import root
 
-logging.basicConfig(format=':%(lineno)d: %(asctime)s %(message)s', level=logging.DEBUG)
+logging.basicConfig(
+    format=':%(lineno)d: %(asctime)s %(message)s',
+    level=logging.DEBUG
+)
 
 AGENT_PATH = root("bin", "agent")
 COOKBOOKS_PATH = root("cooks", "cookbooks")
@@ -27,11 +30,17 @@ class TestNode(Base):
     def __init__(self, *args, **kwargs):
         super(TestNode, self).__init__(*args, **kwargs)
         self.remote = SSHClient()
-        self.client = HTTPClient(url="http://%s:8000" % self.get_admin_node_ip())
+        self.client = HTTPClient(
+            url="http://%s:8000" % self.get_admin_node_ip()
+        )
         self.ssh_user = "root"
         self.ssh_passwd = "r00tme"
         self.admin_host = self.get_admin_node_ip()
-        self.remote.connect_ssh(self.admin_host, self.ssh_user, self.ssh_passwd)
+        self.remote.connect_ssh(
+            self.admin_host,
+            self.ssh_user,
+            self.ssh_passwd
+        )
 
     def setUp(self):
         pass
@@ -52,7 +61,7 @@ class TestNode(Base):
     def test_updating_nodes_in_cluster(self):
         cluster_id = self._create_cluster(name='empty')
         nodes = [str(n['id']) for n in self._bootstrap_slave()]
-        self._update_nodes_in_cluster(cluster_id, nodes) 
+        self._update_nodes_in_cluster(cluster_id, nodes)
 
     def test_provisioning(self):
         self._clean_clusters()
@@ -101,13 +110,17 @@ class TestNode(Base):
         #task_id = task['task_id']
         #logging.info("Task created: %s" % task_id)
         #"""
-        #logging.info("Waiting for completion of slave node software installation")
+        #logging.info(
+        #    "Waiting for completion"
+        #    " of slave node software installation"
+        #)
         #timer = time.time()
         #timeout = 1800
         #while True:
             #try:
                 #node = json.loads(self.client.get(
-                    #"http://%s:8000/api/nodes/%s" % (self.admin_host, self.slave_id)
+                    #"http://%s:8000/api/nodes/%s" %
+                    #(self.admin_host, self.slave_id)
                 #))
                 #if not node["status"] == 'provisioning':
                     #raise StillPendingException("Installation in progress...")
@@ -122,45 +135,34 @@ class TestNode(Base):
                 #if (time.time() - timer) > timeout:
                     #raise Exception("Installation timeout expired!")
                 #time.sleep(30)
-
-
         #node = json.loads(self.client.get(
             #"http://%s:8000/api/nodes/%s" % (self.admin_host, self.slave_id)
         #))
         #self.slave_host = node["ip"]
-
         #logging.info("Waiting for SSH access on %s" % self.slave_host)
         #wait(lambda: tcp_ping(self.slave_host, 22), timeout=1800)
-        #self.remote.connect_ssh(self.slave_host, self.ssh_user, self.ssh_passwd)
-
+        #self.remote.connect_ssh(
+        #    self.slave_host,
+        #    self.ssh_user,
+        #    self.ssh_passwd
+        #)
         ## check if recipes executed
         #ret = self.remote.execute("test -f /tmp/chef_success")
         #if ret['exit_status']:
             #raise Exception("Recipes failed to execute!")
-
         ## check mysql running
-        ##db = MySQLdb.connect(passwd="test", user="root", host=self.slave_host)
+        ##db = MySQLdb.connect(
+        #    passwd="test",
+        #    user="root",
+        #    host=self.slave_host
+        #)
         ##print db
-
-        ## check recipes execution order
-        #ret = self.remote.execute("cat /tmp/chef_success")
-        #if [out.strip() for out in ret['stdout']] != ['monitor', 'default', 'compute']:
-            #raise Exception("Recipes executed in a wrong order: %s!" \
-                #% str(ret['stdout']))
-
         ## chech node status
         #node = json.loads(self.client.get(
             #"http://%s:8000/api/nodes/%s" % (self.admin_host, self.slave_id)
         #))
         #self.assertEqual(node["status"], "ready")
         #self.remote.disconnect()
-
-    #def _slave_delete_test_file(self):
-        #logging.info("Deleting test file...")
-        #slave_client = SSHClient()
-        #slave_client.connect_ssh(self.slave_host, self.ssh_user, self.ssh_passwd)
-        #res = slave_client.execute("rm -rf /tmp/chef_success")
-        #slave_client.disconnect()
 
     def _launch_provisioning(self, cluster_id):
         logging.info(
@@ -174,8 +176,9 @@ class TestNode(Base):
 
     def _upload_sample_release(self):
         def _get_release_id():
-            releases = json.loads(self.client.get(
-                    "/api/releases/").read())
+            releases = json.loads(
+                self.client.get("/api/releases/").read()
+            )
             for r in releases:
                 logging.debug("Found release name: %s" % r["name"])
                 if r["name"] == "OpenStack Essex Release":
@@ -194,8 +197,9 @@ class TestNode(Base):
             release_id = self._upload_sample_release()
 
         def _get_cluster_id(name):
-            clusters = json.loads(self.client.get(
-                    "/api/clusters/").read())
+            clusters = json.loads(
+                self.client.get("/api/clusters/").read()
+            )
             for cl in clusters:
                 logging.debug("Found cluster name: %s" % cl["name"])
                 if cl["name"] == name:
@@ -220,8 +224,9 @@ class TestNode(Base):
         ).read())
         for cluster in clusters:
             resp = self.client.put(
-            "/api/clusters/%s" % cluster["id"],
-            data={"nodes": []}).read()
+                "/api/clusters/%s" % cluster["id"],
+                data={"nodes": []}
+            ).read()
 
     def _update_nodes_in_cluster(self, cluster_id, nodes):
         resp = self.client.put(
@@ -238,7 +243,7 @@ class TestNode(Base):
         """
         try:
             self.get_slave_id()
-        except :
+        except:
             pass
         timer = time.time()
         timeout = 600
@@ -265,5 +270,3 @@ class TestNode(Base):
                 time.sleep(15)
                 logging.info("Waiting for slave agent to run...")
         return nodes
-
-

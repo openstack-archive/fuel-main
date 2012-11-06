@@ -1,4 +1,5 @@
-import time, os
+import os
+import time
 
 from devops.model import Environment, Network, Node, Disk, Cdrom, Interface
 from devops.helpers import tcp_ping, wait
@@ -7,6 +8,7 @@ import logging
 import devops
 
 logger = logging.getLogger('integration')
+
 
 class Ci(object):
     hostname = 'nailgun'
@@ -22,7 +24,11 @@ class Ci(object):
             self.environment = devops.load('integration')
             logger.info("Successfully loaded existing environment")
         except Exception, e:
-            logger.info("Failed to load existing integration environment: " + str(e) + "\n" + traceback.format_exc())
+            logger.info(
+                "Failed to load existing integration environment: %s\n%s",
+                str(e),
+                traceback.format_exc()
+            )
             pass
 
     def setup_environment(self):
@@ -30,7 +36,10 @@ class Ci(object):
             return True
 
         if not self.iso:
-            logger.critical("ISO path missing while trying to build integration environment")
+            logger.critical(
+                "ISO path missing while trying "
+                "to build integration environment"
+            )
             return False
 
         logger.info("Building integration environment")
@@ -44,7 +53,9 @@ class Ci(object):
             node = Node('admin')
             node.memory = 2048
             node.vnc = True
-            node.disks.append(Disk(size=30*1024**3))
+            node.disks.append(
+                Disk(size=30 * 1024 ** 3)
+            )
             node.interfaces.append(Interface(network))
             node.cdrom = Cdrom(isopath=self.iso)
             node.boot = ['disk', 'cdrom']
@@ -53,7 +64,9 @@ class Ci(object):
             node2 = Node('slave')
             node2.memory = 2048
             node2.vnc = True
-            node2.disks.append(Disk(size=30*1024**3))
+            node2.disks.append(
+                Disk(size=30 * 1024 ** 3)
+            )
             node2.interfaces.append(Interface(network))
             node2.boot = ['network']
             environment.nodes.append(node2)
@@ -61,7 +74,11 @@ class Ci(object):
             devops.build(environment)
             self.environment = environment
         except Exception, e:
-            logger.error("Failed to build environment: %s\n%s" % (str(e), traceback.format_exc()))
+            logger.error(
+                "Failed to build environment: %s\n%s",
+                str(e),
+                traceback.format_exc()
+            )
             return False
 
         node.interfaces[0].ip_addresses = network.ip_addresses[2]
@@ -76,7 +93,14 @@ class Ci(object):
         time.sleep(10)
 
         logger.info("Executing admin node software installation")
-        node.send_keys("""<Esc><Enter>
+        params = {
+            'ip': node.ip_address,
+            'mask': network.ip_addresses.netmask,
+            'gw': network.ip_addresses[1],
+            'hostname': self.hostname,
+            'domain': self.domain
+        }
+        keys = """<Esc><Enter>
 <Wait>
 vmlinuz initrd=initrd.img ks=cdrom:/ks.cfg
  ip=%(ip)s
@@ -86,17 +110,26 @@ vmlinuz initrd=initrd.img ks=cdrom:/ks.cfg
  hostname=%(hostname)s
  domain=%(domain)s
  <Enter>
-""" % { 'ip': node.ip_address,
-        'mask': network.ip_addresses.netmask,
-        'gw': network.ip_addresses[1],
-        'hostname': self.hostname,
-        'domain': self.domain})
+""" % params
+        node.send_keys(keys)
 
-        logger.info("Waiting for completion of admin node software installation")
-        wait(lambda: tcp_ping(node.ip_address, 22), timeout=self.installation_timeout)
+        logger.info(
+            "Waiting for completion of admin node software installation"
+        )
+        wait(
+            lambda: tcp_ping(node.ip_address, 22),
+            timeout=self.installation_timeout
+        )
 
-        logger.info("Got SSH access to admin node, waiting for ports 80 and 8000 to open")
-        wait(lambda: tcp_ping(node.ip_address, 80) and tcp_ping(node.ip_address, 8000), timeout=self.chef_timeout)
+        logger.info(
+            "Got SSH access to admin node, "
+            "waiting for ports 80 and 8000 to open"
+        )
+        wait(
+            lambda: tcp_ping(node.ip_address, 80)
+            and tcp_ping(node.ip_address, 8000),
+            timeout=self.chef_timeout
+        )
 
         logger.info("Admin node software is installed and ready for use")
 
