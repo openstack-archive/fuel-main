@@ -11,7 +11,7 @@ module Astute
   autoload 'Context', 'astute/context'
 
   def self.logger
-    @logger ||= Logger.new(STDOUT)
+    @logger ||= Logger.new('/var/log/astute.log')
   end
 
   def self.logger=(logger)

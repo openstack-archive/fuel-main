@@ -5,10 +5,11 @@ module Astute
     include MCollective::RPC
     include Astute
 
-    def initialize(ctx, agent, nodes=nil)
+    def initialize(ctx, agent, nodes=nil, check_result=true)
       @task_id = ctx.task_id
       @agent = agent
       @nodes = nodes.map { |n| n.to_s }
+      @check_result = check_result
       @mc = rpcclient(agent, :exit_on_failure => false)
       @mc.progress = false
       unless @nodes.nil?
@@ -19,7 +20,7 @@ module Astute
     def method_missing(method, *args)
       res = @mc.send(method, *args)
       unless method == :discover
-        check_mcollective_result(method, res)
+        check_mcollective_result(method, res) if @check_result
       else
         @nodes = args[0][:nodes]
       end

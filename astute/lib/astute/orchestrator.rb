@@ -9,7 +9,7 @@ module Astute
     def node_type(reporter, task_id, nodes)
       context = Context.new(task_id, reporter)
       uids = nodes.map {|n| n['uid']}
-      systemtype = MClient.new(context, "systemtype", uids)
+      systemtype = MClient.new(context, "systemtype", uids, check_result=false)
       systems = systemtype.get_type
       return systems.map {|n| {'uid' => n.results[:sender], 'node_type' => n.results[:data][:node_type].chomp}}
     end
