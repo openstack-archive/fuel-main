@@ -53,7 +53,7 @@ def main():
     options["-c"] = "\[EXPECT\]#\ "
 
     # this string will be appended to the end of ssh command
-    options["ssh_options"]="-t '/bin/bash -c \"PS1=%s  /bin/bash --noprofile --norc\"'" % options["-c"]
+    options["ssh_options"]="-t -o 'StrictHostKeyChecking=no' '/bin/bash -c \"PS1=%s  /bin/bash --noprofile --norc\"'" % options["-c"]
 
     docs = { }
     docs["shortdesc"] = "Fence agent that can just reboot node via ssh"
