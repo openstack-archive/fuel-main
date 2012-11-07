@@ -9,6 +9,6 @@ $/Nailgun-$(NAILGUN_VERSION).tar.gz: \
 
 test-unit: test-unit-nailgun
 
-.PHONY: test-unit-naigun
+.PHONY: test-unit-nailgun
 test-unit-nailgun:
 	cd nailgun && ./run_tests.sh
