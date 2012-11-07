@@ -2,12 +2,13 @@
 
 %: /:=$/
 
-$/Nailgun-$(NAILGUN_VERSION).tar.gz:
+$/Nailgun-$(NAILGUN_VERSION).tar.gz: \
+	 $(addprefix nailgun/, $(call find-files,nailgun))
 	cd nailgun && \
 	python setup.py sdist --dist-dir $/
 
 test-unit: test-unit-nailgun
 
-.PHONY: test-unit-nailgun $/Nailgun-$(NAILGUN_VERSION).tar.gz
+.PHONY: test-unit-naigun
 test-unit-nailgun:
 	cd nailgun && ./run_tests.sh

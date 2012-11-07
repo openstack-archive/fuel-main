@@ -1,5 +1,5 @@
 #!/bin/bash
 
-puppet apply --logdest /var/log/puppet/firstboot.log --modulepath=/etc/puppet/modules /etc/puppet/modules/nailgun/examples/site.pp
+puppet apply --modulepath=/etc/puppet/modules /etc/puppet/modules/nailgun/examples/site.pp | tee /var/log/puppet/firstboot.log
 
-sed -i "/bootstrap_admin_node.sh/d" /etc/rc.local
+sed -i --follow-symlinks "/bootstrap_admin_node.sh/d" /etc/rc.local

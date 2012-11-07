@@ -163,6 +163,12 @@ class nailgun(
     username => "root",
     groupname => "root",
     keytype => "rsa",
+  } ->
+
+  exec { "cp /root/.ssh/id_rsa.pub /etc/cobbler/authorized_keys":
+    command => "cp /root/.ssh/id_rsa.pub /etc/cobbler/authorized_keys",
+    creates => "/etc/cobbler/authorized_keys",
+    require => Class["nailgun::cobbler"],
   }
 
 }

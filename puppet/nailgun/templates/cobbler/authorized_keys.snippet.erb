@@ -1,0 +1,16 @@
+#if $str($getVar('install_authorized_keys','')) == "1"
+    #try
+	#set $authorized_keys = str(open("/etc/cobbler/authorized_keys", "r").read())
+    #except
+	#set $authorized_keys = None
+# error occured while reading file /etc/cobbler/authorized_keys
+    #end try
+    #if $authorized_keys
+mkdir -p /root/.ssh
+chown root:root /root/.ssh
+chmod 700 /root/.ssh
+cat > /root/.ssh/authorized_keys <<EOF
+$authorized_keys
+EOF
+    #end if
+#end if

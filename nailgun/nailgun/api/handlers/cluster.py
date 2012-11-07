@@ -292,6 +292,7 @@ puppet_version=%(puppet_version)s
 puppet_enable=0
 mco_auto_setup=1
 install_log_2_syslog=1
+install_authorized_keys=1
 mco_pskey=%(mco_pskey)s
 mco_stomphost=%(mco_stomp_host)s
 mco_stompport=%(mco_stomp_port)s

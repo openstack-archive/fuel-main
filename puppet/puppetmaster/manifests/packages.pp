@@ -39,7 +39,6 @@ class puppetmaster::packages(
   Puppetmaster_safe_package<| title == "gcc" |> ->
   Puppetmaster_safe_package<| title == "gcc-c++" |> ->
 
-  # gem packages by default are installed with --no-rdoc --no-ri options
   Package<| provider == "gem" |> ->
 
   Puppetmaster_safe_package<| title == "rubygem-mongrel" |> ->
