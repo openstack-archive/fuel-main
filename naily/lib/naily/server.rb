@@ -38,7 +38,7 @@ module Naily
       unless @delegate.respond_to?(data['method'])
         Naily.logger.error "Unsupported RPC call #{data['method']}"
         if data['respond_to']
-          reporter = Naily::Reporter.new(@publisher, data['respond_to'], data['args']['task_uuid'])
+          reporter = Naily::Reporter.new(@producer, data['respond_to'], data['args']['task_uuid'])
           reporter.report({'status' => 'error', 'error' => "Unsupported method '#{data['method']}' called."})
         end
         return
@@ -51,7 +51,7 @@ module Naily
       rescue Exception => e
         Naily.logger.error "Error running RPC method #{data['method']}: #{e.message}, trace: #{e.backtrace.inspect}"
         if data['respond_to']
-          reporter = Naily::Reporter.new(@publisher, data['respond_to'], data['args']['task_uuid'])
+          reporter = Naily::Reporter.new(@producer, data['respond_to'], data['args']['task_uuid'])
           reporter.report({'status' => 'error', 'error' => "Error occured while running method '#{data['method']}'. See logs of Naily for details."})
         end
         return

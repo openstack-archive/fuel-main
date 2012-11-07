@@ -6,7 +6,7 @@ metadata    :name        => "Erase node bootloader",
             :url         => "http://mirantis.com",
             :timeout     => 40
 
-action "erase_node", :description => "Zeroing of raw disk" do
+action "erase_node", :description => "Zeroing of boot device" do
     display :always
 end
 

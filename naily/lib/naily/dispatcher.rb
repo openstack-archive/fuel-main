@@ -45,6 +45,13 @@ module Naily
       report_result(result, reporter)
     end
 
+    def remove_nodes(data)
+      reporter = Naily::Reporter.new(@producer, data['respond_to'], data['args']['task_uuid'])
+      nodes = data['args']['nodes']
+      result = @orchestrator.remove_nodes(reporter, data['args']['task_uuid'], nodes)
+      report_result(result, reporter)
+    end
+
     private
     def report_result(result, reporter)
       result = {} unless result.instance_of?(Hash)
