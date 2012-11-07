@@ -12,7 +12,7 @@ from nailgun.api.handlers.base import JSONHandler
 class NodeHandler(JSONHandler):
     fields = ('id', 'name', 'info', 'role',
               'status', 'mac', 'fqdn', 'ip', 'manufacturer', 'platform_name',
-              'redeployment_needed', 'os_platform')
+              'pending_addition', 'pending_deletion', 'os_platform')
     model = Node
 
     def GET(self, node_id):

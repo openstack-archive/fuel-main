@@ -14,9 +14,13 @@
   <% if (!selectableForAddition && !selectableForDeletion) { %>
     <div class="node-status">
       <% var status = node.get('status') %>
-      <% if (node.get('redeployment_needed')) { %>
+      <% if (node.get('pending_addition')) { %>
         <div class="msg-info">
-          <i class="icon-attention-circle"></i>Pending
+          <i class="icon-attention-circle"></i>Pending Addition
+        </div>
+      <% } else if (node.get('pending_deletion')) { %>
+        <div class="msg-info">
+          <i class="icon-attention-circle"></i>Pending Deletion
         </div>
       <% } else if (status == 'ready') { %>
         <div class="msg-ok">

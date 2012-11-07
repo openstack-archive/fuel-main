@@ -42,7 +42,9 @@ define(function() {
             return this.get('tasks') && this.get('tasks').where(options)[0];
         },
         hasChanges: function() {
-            return _.any(this.get('nodes').pluck('redeployment_needed'));
+            return !!this.get('nodes').filter(function(node) {
+                return node.get('pending_addition') || node.get('pending_deletion');
+            }).length;
         },
         canChangeMode: function() {
             return !this.get('nodes').length && this.get('type') != 'singlenode';
@@ -81,10 +83,7 @@ define(function() {
 
     models.Clusters = Backbone.Collection.extend({
         model: models.Cluster,
-        url: '/api/clusters',
-        toJSON: function(options) {
-            return this.pluck('id');
-        }
+        url: '/api/clusters'
     });
 
     models.Node = Backbone.Model.extend({
@@ -100,9 +99,6 @@ define(function() {
     models.Nodes = Backbone.Collection.extend({
         model: models.Node,
         url: '/api/nodes',
-        toJSON: function(options) {
-            return this.pluck('id');
-        },
         resources: function(resourceName) {
             var resources = this.map(function(node) {return node.resource(resourceName);});
             return _.reduce(resources, function(sum, n) {return sum + n;}, 0);

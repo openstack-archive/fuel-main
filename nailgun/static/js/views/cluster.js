@@ -241,18 +241,20 @@ function(models, dialogViews, clusterPageTemplate, deploymentResultTemplate, dep
         selectAll: function(e) {
             var checked = $(e.currentTarget).is(':checked');
             this.$('.nodebox').toggleClass('node-to-' + this.action + '-checked', checked).toggleClass('node-to-' + this.action + '-unchecked', !checked);
-            this.forceWebkitRedraw();
             this.calculateApplyButtonAvailability();
+            this.forceWebkitRedraw();
         },
         forceWebkitRedraw: function() {
-            this.$('.nodebox').each(function() {
-                this.style.webkitTransform = 'scale(1)';
-                var dummy = this.offsetHeight;
-                this.style.webkitTransform = '';
-            });
+            if ($.browser.webkit) {
+                this.$('.nodebox').each(function() {
+                    this.style.webkitTransform = 'scale(1)';
+                    var dummy = this.offsetHeight;
+                    this.style.webkitTransform = '';
+                });
+            }
         },
         calculateSelectAllTumblerState: function() {
-            this.$('.select-all-tumbler').attr('checked', this.availableNodes.length == this.$('.node-to-' + this.action + '-checked').length);
+            this.$('.select-all-tumbler').attr('checked', this.nodes.length == this.$('.node-to-' + this.action + '-checked').length);
         },
         calculateNotChosenNodesAvailability: function() {
             if (this.limit) {
@@ -262,52 +264,71 @@ function(models, dialogViews, clusterPageTemplate, deploymentResultTemplate, dep
             }
         },
         calculateApplyButtonAvailability: function() {
-            this.$('.btn-apply').attr('disabled', !this.$('.node-to-' + this.action + '-checked').length);
+            var available = false;
+            if (this.nodes.length) {
+                var chosenNodesIds = this.getChosenNodesIds();
+                var originalNodesIds = _.pluck(this.getOriginalNodes(), 'id');
+                available = !_.isEqual(chosenNodesIds, originalNodesIds);
+            }
+            this.$('.btn-apply').attr('disabled', !available);
         },
         discardChanges: function() {
             this.tab.changeScreen(views.NodesByRolesScreen);
         },
         applyChanges: function(e) {
             this.$('.btn-apply').attr('disabled', true);
-            var chosenNodes = this.getChosenNodes();
-            this.modifyNodes(chosenNodes);
-            Backbone.sync('update', chosenNodes).done(_.bind(function() {
+            var nodes = new models.Nodes(this.getNodesToModify());
+            this.modifyNodes(nodes);
+            Backbone.sync('update', nodes).done(_.bind(function() {
                 this.tab.changeScreen(views.NodesByRolesScreen);
                 this.model.get('nodes').fetch({data: {cluster_id: this.model.id}});
                 app.navbar.stats.nodes.fetch();
             }, this));
         },
+        getChosenNodesIds: function() {
+            return this.$('.node-to-' + this.action + '-checked').map(function() {return parseInt($(this).attr('data-node-id'), 10);}).get();
+        },
         getChosenNodes: function() {
-            var chosenNodesIds = this.$('.node-to-' + this.action + '-checked').map(function() {return parseInt($(this).attr('data-node-id'), 10);}).get();
-            var chosenNodes = this.availableNodes.filter(function(node) {return _.contains(chosenNodesIds, node.id);});
-            return new models.Nodes(chosenNodes);
+            var chosenNodesIds = this.getChosenNodesIds();
+            return this.nodes.filter(function(node) {return _.contains(chosenNodesIds, node.id);});
+        },
+        getNodesToModify: function() {
+            var nodesToModify = [];
+            var chosenNodes = new models.Nodes(this.getChosenNodes());
+            var originalNodes = new models.Nodes(this.getOriginalNodes());
+            chosenNodes.each(function(node) {if (!originalNodes.get(node.id)) {nodesToModify.push(node);}}, this);
+            originalNodes.each(function(node) {if (!chosenNodes.get(node.id)) {nodesToModify.push(node);}}, this);
+            return nodesToModify;
         },
         initialize: function(options) {
             _.defaults(this, options);
-            this.availableNodes = new models.Nodes();
+            this.nodes = new models.Nodes();
         },
         renderNodes: function() {
             var nodesContainer = this.$('.available-nodes');
-            if (this.availableNodes.length) {
+            if (this.nodes.length) {
                 nodesContainer.html('');
-                this.availableNodes.each(function(node) {
+                this.nodes.each(function(node) {
                     var options = {model: node};
                     if (this.action == 'add') {
                         options.selectableForAddition = true;
                     } else if (this.action == 'delete') {
                         options.selectableForDeletion = true;
                     }
-                    nodesContainer.append(new views.Node(options).render().el);
+                    var nodeView = new views.Node(options);
+                    nodesContainer.append(nodeView.render().el);
+                    if (node.get(this.flag)) {
+                        nodeView.$('.nodebox[data-node-id=' + node.id + ']').addClass('node-to-' + this.action + '-checked').removeClass('node-to-' + this.action + '-unchecked');
+                    }
                 }, this);
+                this.calculateSelectAllTumblerState();
             } else {
                 nodesContainer.html('<div class="span12">No nodes available</div>');
             }
         },
         render: function() {
-            this.$el.html(this.template({nodes: this.availableNodes, role: this.role, action: this.action, limit: this.limit}));
-            if (this.availableNodes.deferred) {
-                this.availableNodes.deferred.done(_.bind(this.renderNodes, this));
-            } else {
+            this.$el.html(this.template({nodes: this.nodes, role: this.role, action: this.action, limit: this.limit}));
+            if (!this.nodes.deferred || this.nodes.deferred.state() != 'pending') {
                 this.renderNodes();
             }
             return this;
@@ -316,22 +337,37 @@ function(models, dialogViews, clusterPageTemplate, deploymentResultTemplate, dep
 
     views.AddNodesScreen = views.EditNodesScreen.extend({
         action: 'add',
+        flag: 'pending_addition',
         initialize: function(options) {
             this.constructor.__super__.initialize.apply(this, arguments);
-            this.availableNodes = new models.Nodes();
-            this.availableNodes.deferred = this.availableNodes.fetch({data: {cluster_id: ''}});
+            this.nodes = new models.Nodes();
+            this.nodes.deferred = this.nodes.fetch({data: {cluster_id: ''}}).done(_.bind(function() {
+                this.nodes.add(this.model.get('nodes').where({role: options.role, pending_addition: true}), {at: 0});
+                this.render();
+            }, this));
+        },
+        getOriginalNodes: function() {
+            return this.model.get('nodes').filter(function(node) {return node.get(this.flag) == true}, this);
         },
         modifyNodes: function(nodes) {
             nodes.each(function(node) {
-                node.set({
-                    cluster_id: this.model.id,
-                    role: this.role,
-                    redeployment_needed: true
-                });
+                if (!node.get(this.flag)) {
+                    node.set({
+                        cluster_id: this.model.id,
+                        role: this.role,
+                        pending_addition: true
+                    }, {silent: true});
+                } else {
+                    node.set({
+                        cluster_id: null,
+                        role: null,
+                        pending_addition: false
+                    }, {silent: true});
+                }
             }, this);
             nodes.toJSON = function(options) {
                 return this.map(function(node) {
-                    return _.pick(node.attributes, 'id', 'cluster_id', 'role', 'redeployment_needed');
+                    return _.pick(node.attributes, 'id', 'cluster_id', 'role', 'pending_addition');
                 });
             };
         }
@@ -339,26 +375,21 @@ function(models, dialogViews, clusterPageTemplate, deploymentResultTemplate, dep
 
     views.DeleteNodesScreen = views.EditNodesScreen.extend({
         action: 'delete',
+        flag: 'pending_deletion',
         initialize: function(options) {
             this.constructor.__super__.initialize.apply(this, arguments);
-            this.availableNodes = new models.Nodes(this.model.get('nodes').where({role: options.role}));
+            this.nodes = new models.Nodes(this.model.get('nodes').where({role: options.role, pending_addition: false}));
         },
-        applyChanges: function() {
-            if (confirm('Do you really want to delete these nodes?')) {
-                this.constructor.__super__.applyChanges.call(this);
-            }
+        getOriginalNodes: function() {
+            return this.nodes.filter(function(node) {return node.get(this.flag) == true}, this);
         },
         modifyNodes: function(nodes) {
             nodes.each(function(node) {
-                node.set({
-                    cluster_id: null,
-                    role: null,
-                    redeployment_needed: false
-                });
+                node.set({pending_deletion: !node.get('pending_deletion')}, {silent: true});
             }, this);
             nodes.toJSON = function(options) {
                 return this.map(function(node) {
-                    return _.pick(node.attributes, 'id', 'cluster_id', 'role', 'redeployment_needed');
+                    return _.pick(node.attributes, 'id', 'pending_deletion');
                 });
             };
         }

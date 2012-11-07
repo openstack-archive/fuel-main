@@ -126,7 +126,8 @@ class Node(Base, BasicValidator):
     platform_name = Column(String(150))
     os_platform = Column(String(150))
     role = Column(Enum(*NODE_ROLES))
-    redeployment_needed = Column(Boolean, default=False)
+    pending_addition = Column(Boolean, default=False)
+    pending_deletion = Column(Boolean, default=False)
 
     @property
     def info(self):

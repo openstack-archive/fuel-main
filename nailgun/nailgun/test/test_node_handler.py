@@ -22,7 +22,9 @@ class TestHandlers(BaseHandlers):
 #        self.assertEquals(node.name, response['name'])
         self.assertEquals(node.mac, response['mac'])
         self.assertEquals(
-            node.redeployment_needed, response['redeployment_needed'])
+            node.pending_addition, response['pending_addition'])
+        self.assertEquals(
+            node.pending_deletion, response['pending_deletion'])
         self.assertEquals(node.status, response['status'])
         self.assertEquals(node.info['cores'], response['info']['cores'])
         self.assertEquals(node.info['hdd'], response['info']['hdd'])
@@ -73,22 +75,23 @@ class TestHandlers(BaseHandlers):
             headers=self.default_headers)
         self.assertEquals(resp.status, 200)
 
-    def test_redeployment_needed_flag_is_set(self):
+    def test_node_action_flags_are_set(self):
+        flags = ['pending_addition', 'pending_deletion']
         node = self.create_default_node()
-        resp = self.app.put(
-            reverse('NodeHandler', kwargs={'node_id': node.id}),
-            json.dumps({
-                'redeployment_needed': True
-            }),
-            headers=self.default_headers
-        )
-        self.assertEquals(resp.status, 200)
-        self.db.refresh(node)
+        for flag in flags:
+            resp = self.app.put(
+                reverse('NodeHandler', kwargs={'node_id': node.id}),
+                json.dumps({flag: True}),
+                headers=self.default_headers
+            )
+            self.assertEquals(resp.status, 200)
+            self.db.refresh(node)
 
         node_from_db = self.db.query(Node).filter(
             Node.id == node.id
         ).first()
-        self.assertEquals(node_from_db.redeployment_needed, True)
+        for flag in flags:
+            self.assertEquals(getattr(node_from_db, flag), True)
 
     def test_put_returns_400_if_no_body(self):
         node = self.create_default_node()
