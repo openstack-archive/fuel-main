@@ -227,9 +227,12 @@ class ClusterChangesHandler(JSONHandler):
 
         nodes = []
         for n in cluster.nodes:
-            nodes.append({'id': n.id, 'status': n.status, 'uid': n.id,
-                          'ip': n.ip, 'mac': n.mac, 'role': n.role,
-                          'network_data': netmanager.get_node_networks(n.id)})
+            if not node.pending_deletion:
+                nodes.append({
+                    'id': n.id, 'status': n.status, 'uid': n.id,
+                    'ip': n.ip, 'mac': n.mac, 'role': n.role,
+                    'network_data': netmanager.get_node_networks(n.id)
+                })
 
         message = {
             'method': 'deploy',
