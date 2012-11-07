@@ -215,7 +215,7 @@ class ClusterChangesHandler(JSONHandler):
                 'respond_to': 'remove_nodes_resp',
                 'args': {
                     'task_uuid': task.uuid,
-                    'nodes': nodes
+                    'nodes': nodes_to_delete
                 }
             }
             rpc.cast('naily', msg_delete)
@@ -234,7 +234,7 @@ class ClusterChangesHandler(JSONHandler):
             'respond_to': 'deploy_resp',
             'args': {
                 'task_uuid': task.uuid,
-                'nodes': nodes_to_delete,
+                'nodes': nodes,
                 'attributes': cluster.attributes.merged_attrs()
             }
         }
