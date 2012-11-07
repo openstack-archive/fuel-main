@@ -21,7 +21,7 @@ class Cobbler:
             self.token = self.remote.login(username, password)
         except Exception as e:
             self.logger.error('Error while connecting to cobbler api: %s' % e)
-            raise e
+            raise Exception(str(e))
 
     def item_from_dict(self, what, obj_name, obj_dict,
                        item_override=True, iface_override=False):

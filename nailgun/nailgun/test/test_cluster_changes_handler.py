@@ -21,7 +21,7 @@ class TestHandlers(BaseHandlers):
         node1 = self.create_default_node(cluster_id=cluster['id'])
         node2 = self.create_default_node(cluster_id=cluster['id'])
 
-        nailgun.api.handlers.cluster.Cobbler = Mock()
+        nailgun.taskmanager.manager.Cobbler = Mock()
         resp = self.app.put(
             reverse(
                 'ClusterChangesHandler',

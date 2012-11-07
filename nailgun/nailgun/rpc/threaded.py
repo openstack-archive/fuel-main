@@ -44,6 +44,15 @@ class NailgunReceiver(object):
         cls.db.commit()
 
     @classmethod
+    def remove_nodes_resp(cls, **kwargs):
+        logger.info("RPC method remove_nodes_resp received: %s" % kwargs)
+        task_uuid = kwargs.get('task_uuid')
+        nodes = kwargs.get('nodes') or []
+        nodes = kwargs.get('error_nodes') or []
+        error_msg = kwargs.get('error')
+        status = kwargs.get('status')
+
+    @classmethod
     def deploy_resp(cls, **kwargs):
         logger.info("RPC method deploy_resp received: %s" % kwargs)
         task_uuid = kwargs.get('task_uuid')

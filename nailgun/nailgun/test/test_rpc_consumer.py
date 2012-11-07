@@ -21,7 +21,7 @@ class TestConsumer(BaseHandlers):
 
         task = Task(
             uuid=str(uuid.uuid4()),
-            name="Test task"
+            name="super"
         )
         self.db.add(task)
         self.db.commit()
@@ -45,7 +45,7 @@ class TestConsumer(BaseHandlers):
 
         task = Task(
             uuid=str(uuid.uuid4()),
-            name="Test task",
+            name="super",
             cluster_id=cluster['id']
         )
         self.db.add(task)
@@ -70,7 +70,7 @@ class TestConsumer(BaseHandlers):
 
         task = Task(
             uuid=str(uuid.uuid4()),
-            name="Test task",
+            name="super",
             cluster_id=cluster['id']
         )
         self.db.add(task)
@@ -94,7 +94,7 @@ class TestConsumer(BaseHandlers):
 
         task = Task(
             uuid=str(uuid.uuid4()),
-            name="Test task",
+            name="super",
             status="running"
         )
         self.db.add(task)

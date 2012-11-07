@@ -1,6 +1,7 @@
 # -*- coding: utf-8 -*-
 
 import re
+import uuid
 import string
 from random import choice
 from copy import deepcopy
@@ -10,7 +11,7 @@ from sqlalchemy import Column, UniqueConstraint, Table
 from sqlalchemy import Integer, String, Unicode, Text, Boolean
 from sqlalchemy import ForeignKey, Enum
 from sqlalchemy import create_engine
-from sqlalchemy.orm import relationship
+from sqlalchemy.orm import relationship, backref
 from sqlalchemy.ext.declarative import declarative_base
 
 from nailgun.api.fields import JSON
@@ -330,10 +331,48 @@ class Task(Base, BasicValidator):
         'running',
         'error'
     )
+    TASK_TYPES = (
+        'super',
+        'deployment',
+        'deletion',
+        'verify_networks'
+    )
     id = Column(Integer, primary_key=True)
     cluster_id = Column(Integer, ForeignKey('clusters.id'))
     uuid = Column(String(36), nullable=False)
-    name = Column(String(36), nullable=False)
+    name = Column(Enum(*TASK_TYPES), nullable=False, default='super')
     error = Column(Text)
     status = Column(Enum(*TASK_STATUSES), nullable=False, default='running')
     progress = Column(Integer)
+    parent_id = Column(Integer, ForeignKey('tasks.id'))
+    subtasks = relationship(
+        "Task",
+        backref=backref('parent', remote_side=[id])
+    )
+
+    def create_subtask(self, name):
+        if not name:
+            raise ValueError("Subtask name not specified")
+
+        task = Task(
+            uuid=str(uuid.uuid4()),
+            name=name,
+            cluster=self.cluster
+        )
+        self.subtasks.append(task)
+        web.ctx.orm.commit()
+        return task
+
+    def refresh(self):
+        # TODO: add logic for progress
+        for task in self.subtasks:
+            if task.status == "error":
+                self.status = "error"
+                self.error = task.error
+                web.ctx.orm.add(self)
+                web.ctx.orm.commit()
+                break
+
+    def delete_tree(self):
+        # TODO: add logic for tree resolving
+        pass

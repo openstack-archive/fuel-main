@@ -22,8 +22,11 @@ from nailgun.api.models import Task
 from nailgun.api.handlers.base import JSONHandler
 from nailgun.api.handlers.node import NodeHandler
 from nailgun.api.handlers.tasks import TaskHandler
-from nailgun.provision.cobbler import Cobbler
 from nailgun.network import manager as netmanager
+from nailgun.taskmanager.manager import DeploymentTaskManager
+from nailgun.taskmanager.errors import FailedProvisioning
+from nailgun.taskmanager.errors import DeploymentAlreadyStarted
+from nailgun.taskmanager.errors import WrongNodeStatus
 
 
 class ClusterHandler(JSONHandler):
@@ -191,137 +194,31 @@ class ClusterChangesHandler(JSONHandler):
         if not cluster:
             return web.notfound()
 
-        q = web.ctx.orm.query(Task).filter(
-            Task.cluster == cluster,
-            Task.name == "deploy"
-        )
-        for t in q:
-            if t.status == "running":
-                raise web.badrequest(
-                    "Deploying has been already started"
-                )
-            elif t.status in ("ready", "error"):
-                web.ctx.orm.delete(t)
-                web.ctx.orm.commit()
-
-        task = Task(
-            uuid=str(uuid.uuid4()),
-            name="deploy",
-            cluster=cluster
-        )
-        web.ctx.orm.add(task)
-        web.ctx.orm.commit()
-
+        task_manager = DeploymentTaskManager(cluster=cluster)
+        # might be different logic for any error type
         try:
-            pd = Cobbler(settings.COBBLER_URL,
-                         settings.COBBLER_USER, settings.COBBLER_PASSWORD)
-        except Exception as err:
-            task.status = "error"
-            task.error = "Failed to start provisioning"
-            web.ctx.orm.add(task)
-            web.ctx.orm.commit()
-            raise web.badrequest(str(err))
+            task = task_manager.start_deployment()
+        except DeploymentAlreadyStarted as exc:
+            raise web.badrequest(exc.message)
+        except FailedProvisioning as exc:
+            raise web.badrequest(exc.message)
+        except WrongNodeStatus as exc:
+            raise web.badrequest(exc.message)
 
-        nd_dict = {
-            'profile': settings.COBBLER_PROFILE,
-            'power_type': 'ssh',
-            'power_user': 'root',
-        }
-
-        allowed_statuses = ("discover", "ready")
+        nodes_to_delete = []
         for node in cluster.nodes:
-            if node.status not in allowed_statuses:
-                err = "Node %s (%s) status:%s not in %s" % (
-                    node.mac,
-                    node.ip,
-                    node.status,
-                    str(allowed_statuses)
-                )
-                task.status = "error"
-                task.error = err
-                web.ctx.orm.add(task)
-                web.ctx.orm.commit()
-                raise web.badrequest()
-
-        for node in itertools.ifilter(
-            lambda n: n.status in allowed_statuses, cluster.nodes
-        ):
-            if node.status == "discover":
-                logger.info(
-                    "Node %s seems booted with bootstrap image",
-                    node.id
-                )
-                nd_dict['power_pass'] = settings.PATH_TO_BOOTSTRAP_SSH_KEY
-            else:
-                logger.info(
-                    "Node %s seems booted with real system",
-                    node.id
-                )
-                nd_dict['power_pass'] = settings.PATH_TO_SSH_KEY
-
-            nd_dict['power_address'] = node.ip
-
-            node.status = "provisioning"
-            node.pending_addition = False
-            web.ctx.orm.add(node)
-            web.ctx.orm.commit()
-
-            nd_name = "slave-%d" % node.id
-
-            nd_dict['hostname'] = 'slave-%d.%s' % \
-                (node.id, settings.DNS_DOMAIN)
-            nd_dict['name_servers'] = '\"%s\"' % settings.DNS_SERVERS
-            nd_dict['name_servers_search'] = '\"%s\"' % settings.DNS_SEARCH
-
-            nd_dict['interfaces'] = {
-                'eth0': {
-                    'mac_address': node.mac,
-                    'static': '0',
-                },
-            }
-            nd_dict['interfaces_extra'] = {
-                'eth0': {
-                    'peerdns': 'no'
+            if node.pending_deletion:
+                nodes_to_delete.append(node.id)
+        if nodes_to_delete:
+            msg_delete = {
+                'method': 'remove_nodes',
+                'respond_to': 'remove_nodes_resp',
+                'args': {
+                    'task_uuid': task.uuid,
+                    'nodes': nodes
                 }
             }
-            nd_dict['netboot_enabled'] = '1'
-            nd_dict['ks_meta'] = """
-puppet_auto_setup=1
-puppet_master=%(puppet_master_host)s
-puppet_version=%(puppet_version)s
-puppet_enable=0
-mco_auto_setup=1
-install_log_2_syslog=1
-mco_pskey=%(mco_pskey)s
-mco_stomphost=%(mco_stomp_host)s
-mco_stompport=%(mco_stomp_port)s
-mco_stompuser=%(mco_stomp_user)s
-mco_stomppassword=%(mco_stomp_password)s
-mco_enable=1
-            """ % {'puppet_master_host': settings.PUPPET_MASTER_HOST,
-                   'puppet_version': settings.PUPPET_VERSION,
-                   'mco_pskey': settings.MCO_PSKEY,
-                   'mco_stomp_host': settings.MCO_STOMPHOST,
-                   'mco_stomp_port': settings.MCO_STOMPPORT,
-                   'mco_stomp_user': settings.MCO_STOMPUSER,
-                   'mco_stomp_password': settings.MCO_STOMPPASSWORD,
-                   }
-
-            logger.debug("Node %s\nks_meta without extra params: %s" %
-                         (nd_name, nd_dict['ks_meta']))
-            logger.debug(
-                "Trying to save node %s into provision system: profile: %s ",
-                node.id,
-                nd_dict.get('profile', 'unknown')
-            )
-            pd.item_from_dict('system', nd_name, nd_dict, False, False)
-            logger.debug(
-                "Trying to reboot node %s using %s "
-                "in order to launch provisioning",
-                node.id,
-                nd_dict.get('power_type', 'unknown')
-            )
-            pd.power_reboot(nd_name)
+            rpc.cast('naily', msg_delete)
 
         netmanager.assign_ips(cluster_id, "management")
 
@@ -330,10 +227,17 @@ mco_enable=1
             nodes.append({'id': n.id, 'status': n.status, 'uid': n.id,
                           'ip': n.ip, 'mac': n.mac, 'role': n.role,
                           'network_data': netmanager.get_node_networks(n.id)})
-        message = {'method': 'deploy',
-                   'respond_to': 'deploy_resp',
-                   'args': {'task_uuid': task.uuid, 'nodes': nodes,
-                            'attributes': cluster.attributes.merged_attrs()}}
+
+        
+        message = {
+            'method': 'deploy',
+            'respond_to': 'deploy_resp',
+            'args': {
+                'task_uuid': task.uuid,
+                'nodes': nodes_to_delete,
+                'attributes': cluster.attributes.merged_attrs()
+            }
+        }
         rpc.cast('naily', message)
 
         return json.dumps(
