@@ -208,7 +208,10 @@ class ClusterChangesHandler(JSONHandler):
         nodes_to_delete = []
         for node in cluster.nodes:
             if node.pending_deletion:
-                nodes_to_delete.append(node.id)
+                nodes_to_delete.append({
+                    'id': node.id,
+                    'uid': node.id
+                })
         if nodes_to_delete:
             msg_delete = {
                 'method': 'remove_nodes',
@@ -228,7 +231,6 @@ class ClusterChangesHandler(JSONHandler):
                           'ip': n.ip, 'mac': n.mac, 'role': n.role,
                           'network_data': netmanager.get_node_networks(n.id)})
 
-        
         message = {
             'method': 'deploy',
             'respond_to': 'deploy_resp',
