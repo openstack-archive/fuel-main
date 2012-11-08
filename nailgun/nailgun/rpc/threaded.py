@@ -49,9 +49,22 @@ class NailgunReceiver(object):
         logger.info("RPC method remove_nodes_resp received: %s" % kwargs)
         task_uuid = kwargs.get('task_uuid')
         nodes = kwargs.get('nodes') or []
-        nodes = kwargs.get('error_nodes') or []
+        error_nodes = kwargs.get('error_nodes') or []
         error_msg = kwargs.get('error')
         status = kwargs.get('status')
+        progress = kwargs.get('progress')
+
+        for node in nodes:
+            node_db = cls.db.query(Node).get(node['uid'])
+            cls.db.delete(node_db)
+
+        for node in error_nodes:
+            node_db = cls.db.query(Node).get(node['uid'])
+            node_db.status = 'error'
+            cls.db.add(node_db)
+        cls.db.commit()
+
+        cls.__update_task_status(task_uuid, status, progress, error_msg)
 
     @classmethod
     def deploy_resp(cls, **kwargs):
@@ -65,7 +78,7 @@ class NailgunReceiver(object):
         error_nodes = []
         for node in nodes:
             # TODO if not found? or node['uid'] not specified?
-            node_db = cls.db.query(Node).filter_by(fqdn=node['uid']).first()
+            node_db = cls.db.query(Node).get(node['uid'])
             if node.get('status'):
                 node_db.status = node['status']
                 cls.db.add(node_db)

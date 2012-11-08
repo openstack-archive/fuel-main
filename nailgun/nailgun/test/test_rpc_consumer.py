@@ -28,8 +28,8 @@ class TestConsumer(BaseHandlers):
         self.db.commit()
 
         kwargs = {'task_uuid': task.uuid,
-                  'nodes': [{'uid': node.fqdn, 'status': 'deploying'},
-                            {'uid': node2.fqdn, 'status': 'error'}]}
+                  'nodes': [{'uid': node.id, 'status': 'deploying'},
+                            {'uid': node2.id, 'status': 'error'}]}
         receiver.deploy_resp(**kwargs)
         self.db.refresh(node)
         self.db.refresh(node2)
