@@ -155,25 +155,13 @@ function(models, createClusterDialogTemplate, changeClusterModeDialogTemplate, c
                 this.startDeployCluster();
             }
         },
-        initialize: function() {
-            this.model = this.options.cluster;
-            this.nodes = this.model.get('nodes').models;
-        },
         render: function() {
-            var redeploymentNeededNodes = _.filter(this.nodes, function(node) {
-                    return node.get('redeployment_needed') == true;
-                });
-            this.constructor.__super__.render.call(this, {
-                controller: _.filter(redeploymentNeededNodes, function(node) {
-                    return node.get('role') == 'controller';
-                }),
-                compute: _.filter(redeploymentNeededNodes, function(node) {
-                    return node.get('role') == 'compute';
-                }),
-                storage: _.filter(redeploymentNeededNodes, function(node) {
-                    return node.get('role') == 'storage';
-                })
-            });
+            var roles = this.model.availableRoles();
+            var nodesForDisplay = {};
+            _.each(roles, function(role, index) {
+                nodesForDisplay[role] = this.model.get('nodes').where({redeployment_needed: true, role: role});
+            }, this);
+            this.constructor.__super__.render.call(this, {nodes: nodesForDisplay, roles: roles});
             return this;
         }
     });

@@ -6,15 +6,11 @@
   <div class="predeploy-info-dialog">
     <p class="group_title">Redeployment needed</p>
     <ul>
-    <% if (controller.length) { %>
-      <li><%= controller.length %> Controller</li>
-    <% } %>
-    <% if (compute.length) { %>
-      <li><%= compute.length %> Compute</li>
-    <% } %>
-    <% if (storage.length) { %>
-      <li><%= storage.length %> Storage</li>
-    <% } %>
+    <% _.each(roles, function(role, index) {
+      if (nodes[role].length) { %>
+        <li><%= nodes[role].length %> <%= role %></li>
+      <% } %>
+    <% }, this); %>
     </ul>
   </div>
 </div>

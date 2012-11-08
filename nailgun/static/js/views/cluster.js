@@ -32,9 +32,8 @@ function(models, dialogViews, clusterPageTemplate, deploymentResultTemplate, dep
             this.$('.task-result').remove();
             this.model.task('deploy').destroy();
         },
-        displayChanges: function(e) {
-            e.preventDefault();
-            (new dialogViews.DisplayChangesDialog({cluster: this.model})).render();
+        displayChanges: function() {
+            (new dialogViews.DisplayChangesDialog({model: this.model})).render();
         },
         deployCluster: function() {
             this.$('.deploy-btn').attr('disabled', true);
