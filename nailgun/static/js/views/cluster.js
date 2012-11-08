@@ -685,7 +685,13 @@ function(models, dialogViews, clusterPageTemplate, deploymentResultTemplate, dep
             var name = $.trim(this.$('.rename-cluster-form input').val());
             if (name != '' && name != this.model.get('name')) {
                 this.$('.rename-cluster-form input, .rename-cluster-form .apply-name-btn').attr('disabled', true);
-                this.model.update({name: name}, {complete: this.render, context: this});
+                this.model.update({name: name}, {
+                    complete: function() {
+                            app.breadcrumb.setPath(['Home', '#'], ['OpenStack Installations', '#clusters'], this.model.get('name'));
+                            this.render;
+                        },
+                    context: this
+                });
             }
         },
         onClusterNameInputKeydown: function(e) {
