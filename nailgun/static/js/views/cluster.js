@@ -26,15 +26,28 @@ function(models, dialogViews, clusterPageTemplate, deploymentResultTemplate, dep
         template: _.template(clusterPageTemplate),
         events: {
             'click .task-result .close': 'dismissTaskResult',
-            'click .deploy-btn:not([disabled])': 'preDeployCluster'
+            'click .deploy-btn:not([disabled])': 'displayChanges'
         },
         dismissTaskResult: function() {
             this.$('.task-result').remove();
             this.model.task('deploy').destroy();
         },
-        preDeployCluster: function(e) {
+        displayChanges: function(e) {
             e.preventDefault();
-            (new dialogViews.PreDeployDialog({cluster: this.model})).render();
+            (new dialogViews.DisplayChangesDialog({cluster: this.model})).render();
+        },
+        deployCluster: function() {
+            this.$('.deploy-btn').attr('disabled', true);
+            var task = new models.Task();
+            task.save({}, {
+                type: 'PUT',
+                url: '/api/clusters/' + this.model.id + '/changes',
+                complete: _.bind(function() {
+                    var complete = _.after(2, _.bind(this.scheduleUpdate, this));
+                    this.model.get('tasks').fetch({data: {cluster_id: this.model.id}, complete: complete});
+                    this.model.get('nodes').fetch({data: {cluster_id: this.model.id}, complete: complete});
+                }, this)
+            });
         },
         scheduleUpdate: function() {
             if (this.model.task('deploy', 'running')) {

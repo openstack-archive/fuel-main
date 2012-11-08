@@ -1,0 +1,24 @@
+<div class="modal-header">
+  <button type="button" class="close" data-dismiss="modal">×</button>
+  <h3>Changes to deploy list</h3>
+</div>
+<div class="modal-body">
+  <div class="predeploy-info-dialog">
+    <p class="group_title">Redeployment needed</p>
+    <ul>
+    <% if (controller.length) { %>
+      <li><%= controller.length %> Controller</li>
+    <% } %>
+    <% if (compute.length) { %>
+      <li><%= compute.length %> Compute</li>
+    <% } %>
+    <% if (storage.length) { %>
+      <li><%= storage.length %> Storage</li>
+    <% } %>
+    </ul>
+  </div>
+</div>
+<div class="modal-footer">
+  <button class="btn" data-dismiss="modal">Cancel</button>
+  <button class="btn btn-success start-deploy-btn">Start Deploy</button>
+</div>

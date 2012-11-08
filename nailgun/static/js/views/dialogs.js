@@ -4,9 +4,9 @@ define(
     'text!templates/dialogs/create_cluster.html',
     'text!templates/dialogs/change_cluster_mode.html',
     'text!templates/dialogs/change_cluster_type.html',
-    'text!templates/dialogs/predeploy_info.html'
+    'text!templates/dialogs/display_changes.html'
 ],
-function(models, createClusterDialogTemplate, changeClusterModeDialogTemplate, changeClusterTypeDialogTemplate, preDeployDialogTemplate) {
+function(models, createClusterDialogTemplate, changeClusterModeDialogTemplate, changeClusterTypeDialogTemplate, displayChangesDialogTemplate) {
     'use strict';
 
     var views = {};
@@ -141,28 +141,18 @@ function(models, createClusterDialogTemplate, changeClusterModeDialogTemplate, c
         }
     });
 
-    views.PreDeployDialog = views.Dialog.extend({
-        template: _.template(preDeployDialogTemplate),
+    views.DisplayChangesDialog = views.Dialog.extend({
+        template: _.template(displayChangesDialogTemplate),
         events: {
-            'click .start-deploy-btn': 'deployCluster'
+            'click .start-deploy-btn': 'startDeployCluster'
         },
-        deployCluster: function() {
-            //this.$('.deploy-btn').attr('disabled', true);
-            var task = new models.Task();
-            task.save({}, {
-                type: 'PUT',
-                url: '/api/clusters/' + this.model.id + '/changes'/*,
-                complete: _.bind(function() {
-                    var complete = _.after(2, _.bind(this.scheduleUpdate, this));
-                    this.model.get('tasks').fetch({data: {cluster_id: this.model.id}, complete: complete});
-                    this.model.get('nodes').fetch({data: {cluster_id: this.model.id}, complete: complete});
-                }, this)*/
-            });
+        startDeployCluster: function() {
+            app.page.deployCluster();
             this.$el.modal('hide');
         },
         onInputKeydown: function(e) {
             if (e.which == 13) {
-                this.deployCluster();
+                this.startDeployCluster();
             }
         },
         initialize: function() {
@@ -174,13 +164,13 @@ function(models, createClusterDialogTemplate, changeClusterModeDialogTemplate, c
                     return node.get('redeployment_needed') == true;
                 });
             this.constructor.__super__.render.call(this, {
-                redeploy_controllers: _.filter(redeploymentNeededNodes, function(node) {
+                controller: _.filter(redeploymentNeededNodes, function(node) {
                     return node.get('role') == 'controller';
                 }),
-                redeploy_compute: _.filter(redeploymentNeededNodes, function(node) {
+                compute: _.filter(redeploymentNeededNodes, function(node) {
                     return node.get('role') == 'compute';
                 }),
-                redeploy_storage: _.filter(redeploymentNeededNodes, function(node) {
+                storage: _.filter(redeploymentNeededNodes, function(node) {
                     return node.get('role') == 'storage';
                 })
             });

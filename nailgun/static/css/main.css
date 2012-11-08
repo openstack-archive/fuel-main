@@ -1228,15 +1228,7 @@ h6.page-title {
   margin-top: 0;
 }
 
-.predeploy-info-dialog {
-  width: 100%;
-}
-
-.predeploy-info-dialog td:last-child {
-  text-align: right;
-}
-
-.predeploy-info-dialog td.group_title {
+.predeploy-info-dialog p.group_title {
   text-align: left;
   font-weight: bold;
 }
