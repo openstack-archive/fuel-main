@@ -12,5 +12,6 @@ chmod 700 /root/.ssh
 cat > /root/.ssh/authorized_keys <<EOF
 $authorized_keys
 EOF
+chown root:root /root/.ssh/authorized_keys
     #end if
 #end if

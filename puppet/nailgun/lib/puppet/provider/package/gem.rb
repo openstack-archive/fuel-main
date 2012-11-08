@@ -1,3 +1,8 @@
+# THIS FILE IS JUST A BIT PATCHED VERSION OF STANDARD GEM
+# PACKAGE PROVIDER FROM puppet 2.7.19
+# TWO ADDITIONAL OPTIONS HAVE BEEN ADDED TO gem COMMAND
+# --no-ri --no-rdoc
+
 require 'puppet/provider/package'
 require 'uri'
 
