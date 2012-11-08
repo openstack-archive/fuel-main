@@ -1243,7 +1243,7 @@ h6.page-title {
   position: relative;
   top: -114px;
   left: 0px;
-  z-index: 88888;
+  z-index: 100;
   width: 16px;
   height: 15px;
   background: url(../img/pending-flags.png) no-repeat top left;
@@ -1254,7 +1254,7 @@ h6.page-title {
   position: relative;
   top: -114px;
   left: -1px;
-  z-index: 88888;
+  z-index: 100;
   width: 16px;
   height: 15px;
   background: url(../img/pending-flags.png) no-repeat 0px -16px;
