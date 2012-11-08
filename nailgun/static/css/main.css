@@ -1230,9 +1230,12 @@ h6.page-title {
   margin-top: 0;
 }
 
-.predeploy-info-dialog p.group_title {
-  text-align: left;
-  font-weight: bold;
+.display-changes-dialog > ul {
+  margin-left: 35px;
+}
+
+.display-changes-dialog > ul > li {
+  margin-top: 10px;
 }
 
 .pending-deletion-flag {

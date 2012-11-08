@@ -144,24 +144,14 @@ function(models, createClusterDialogTemplate, changeClusterModeDialogTemplate, c
     views.DisplayChangesDialog = views.Dialog.extend({
         template: _.template(displayChangesDialogTemplate),
         events: {
-            'click .start-deploy-btn': 'startDeployCluster'
+            'click .start-deployment-btn': 'deployCluster'
         },
-        startDeployCluster: function() {
+        deployCluster: function() {
             app.page.deployCluster();
             this.$el.modal('hide');
         },
-        onInputKeydown: function(e) {
-            if (e.which == 13) {
-                this.startDeployCluster();
-            }
-        },
         render: function() {
-            var roles = this.model.availableRoles();
-            var nodesForDisplay = {};
-            _.each(roles, function(role, index) {
-                nodesForDisplay[role] = this.model.get('nodes').where({redeployment_needed: true, role: role});
-            }, this);
-            this.constructor.__super__.render.call(this, {nodes: nodesForDisplay, roles: roles});
+            this.constructor.__super__.render.call(this, {cluster: this.model});
             return this;
         }
     });
