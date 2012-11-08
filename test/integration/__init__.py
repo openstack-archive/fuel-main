@@ -14,12 +14,13 @@ class Ci(object):
     hostname = 'nailgun'
     domain = 'mirantis.com'
     installation_timeout = 1800
-    chef_timeout = 1000
+    deployment_timeout = 1800
 
     def __init__(self, cache_file=None, iso=None):
         self.environment_cache_file = cache_file
         self.iso = iso
         self.environment = None
+        self.nat = True
         try:
             self.environment = devops.load('integration')
             logger.info("Successfully loaded existing environment")
@@ -48,6 +49,8 @@ class Ci(object):
             environment = Environment('integration')
 
             network = Network('default')
+            if not self.nat:
+                network.forward = False
             environment.networks.append(network)
 
             node = Node('admin')
@@ -128,7 +131,7 @@ vmlinuz initrd=initrd.img ks=cdrom:/ks.cfg
         wait(
             lambda: tcp_ping(node.ip_address, 80)
             and tcp_ping(node.ip_address, 8000),
-            timeout=self.chef_timeout
+            timeout=self.deployment_timeout
         )
 
         logger.info("Admin node software is installed and ready for use")

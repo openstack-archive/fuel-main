@@ -59,6 +59,7 @@ class Network(ManagedObject):
         self.reserve_static=reserve_static
         self.interfaces = []
         self.pxe = pxe
+        self.forward = 'nat'
         self.environment = None
 
     def start(self):

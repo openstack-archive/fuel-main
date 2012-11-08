@@ -28,10 +28,13 @@ def main():
                         default="ERROR", metavar="LEVEL")
     parser.add_argument('--cache-file', dest='cache_file', type=str,
                         help='file to store integration environment name')
+    parser.add_argument('--no-forward-network', dest='no_forward_network',
+                        action="store_true", default=False,
+                        help='do not forward environment netork')
     parser.add_argument('--installation-timeout', dest='installation_timeout',
                         type=int, help='admin node installation timeout')
-    parser.add_argument('--chef-timeout', dest='chef_timeout', type=int,
-                        help='admin node chef timeout')
+    parser.add_argument('--deployment-timeout', dest='deployment_timeout',
+                        type=int, help='admin node deployment timeout')
     parser.add_argument('--suite', dest='test_suite', type=str,
                         help='Test suite to run', choices=["integration"],
                         default="integration")
@@ -53,6 +56,11 @@ def main():
     suite = integration
 #   todo fix default values
     ci = suite.Ci(params.cache_file, params.iso)
+    if params.no_forward_network:
+        ci.nat = False
+
+    if not params.deployment_timeout is None:
+        ci.deployment_timeout = params.deployment_timeout
 
     if params.command == 'setup':
         result = ci.setup_environment()

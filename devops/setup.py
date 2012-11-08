@@ -1,4 +1,4 @@
-from distutils.core import setup
+from setuptools import setup
 
 setup(
     name='devops',
@@ -9,5 +9,5 @@ setup(
     author_email='product@mirantis.com',
     packages=['devops', 'devops.driver'],
     scripts=['bin/devops'],
-    requires=['xmlbuilder', "ipaddr", "paramiko", "lxml"]
+    install_requires=['xmlbuilder', "ipaddr", "paramiko", "lxml"]
 )

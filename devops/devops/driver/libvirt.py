@@ -49,7 +49,8 @@ class LibvirtXMLBuilder:
     def build_network_xml(self, network):
         network_xml = XMLBuilder('network')
         network_xml.name(network.id)
-        network_xml.forward(mode='nat')
+        if network.forward:
+            network_xml.forward(mode=network.forward)
 
         if hasattr(network, 'ip_addresses') and not network.ip_addresses is None:
             with network_xml.ip(
@@ -470,6 +471,9 @@ class Libvirt:
         for network in all_networks:
             xml = self.get_output_as_xml(self.virsh_cmd + ['net-dumpxml', network])
             ip = xml.find('ip')
+            # not all defined networks have ip address
+            if ip is None:
+                continue
             network = ip.find('@address')
             prefix_or_netmask = ip.find('@prefix')
             if prefix_or_netmask is None:

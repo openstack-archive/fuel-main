@@ -70,7 +70,7 @@ $(INITRAM_DIR)/etc/nailgun_systemtype: $(BS_DIR)/init.done
 	sudo sh -c "echo bootstrap > $(INITRAM_DIR)/etc/nailgun_systemtype"
 
 $(BS_DIR)/init.done: $(LOCAL_MIRROR)/repo.done $(INITRAM_DIR)/etc/yum.repos.d/mirror.repo
-	mkdir -p $(INITRAM_DIR)/var/lib/rpm
+	sudo mkdir -p $(INITRAM_DIR)/var/lib/rpm
 	$(RPM) --rebuilddb
 	$(YUM) install $(YUM_PACKAGES) $(YUM_BUILD_PACKAGES)
 	sudo touch $(INITRAM_DIR)/etc/fstab
@@ -98,7 +98,7 @@ $(BS_DIR)/init.done: $(LOCAL_MIRROR)/repo.done $(INITRAM_DIR)/etc/yum.repos.d/mi
 	$(CHROOT_CMD) /bin/sh -c "cd /src/libpcap-1.3.0 && ./configure && make"
 	$(CHROOT_CMD) /bin/sh -c "cd /src/pypcap-1.1 && make && make install"
 	$(YUM) erase $(YUM_BUILD_PACKAGES)
-	rm -f $(INITRAM_DIR)/etc/yum.repos.d/Cent*
+	sudo rm -f $(INITRAM_DIR)/etc/yum.repos.d/Cent*
 	sudo cp $(INITRAM_DIR)/sbin/init $(INITRAM_DIR)/init
 	$(ACTION.TOUCH)
 
@@ -112,5 +112,5 @@ endef
 
 $(INITRAM_DIR)/etc/yum.repos.d/mirror.repo: export contents:=$(yum_local_repo)
 $(INITRAM_DIR)/etc/yum.repos.d/mirror.repo:
-	mkdir -p $(@D)
-	sh -c "echo \"$${contents}\" > $@"
+	sudo mkdir -p $(@D)
+	sudo sh -c "echo \"$${contents}\" > $@"
