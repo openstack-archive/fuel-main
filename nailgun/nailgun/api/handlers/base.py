@@ -14,7 +14,7 @@ from nailgun.api.models import Cluster
 from nailgun.api.models import Node
 from nailgun.api.models import Network
 from nailgun.api.models import Vlan
-from nailgun.api.models import Task
+from nailgun.task.task import Task
 from nailgun.network import manager as netmanager
 
 

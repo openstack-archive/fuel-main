@@ -18,7 +18,7 @@ class TestNetworkManager(BaseHandlers):
         # TODO(mihgen): it should be separeted call of network manager,
         #  not via API. It's impossible now because of issues with web.ctx.orm
 
-        with patch('nailgun.taskmanager.manager.Cobbler'):
+        with patch('nailgun.task.task.Cobbler'):
             resp = self.app.put(
                 reverse(
                     'ClusterChangesHandler',

@@ -1,3 +1,5 @@
+# -*- coding: utf-8 -*-
+
 import web
 from netaddr import IPSet, IPNetwork
 

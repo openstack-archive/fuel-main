@@ -17,16 +17,17 @@ from nailgun.api.models import Release
 from nailgun.api.models import Attributes
 from nailgun.api.models import IPAddr
 from nailgun.api.models import Vlan
-from nailgun.api.models import Task
 
 from nailgun.api.handlers.base import JSONHandler
 from nailgun.api.handlers.node import NodeHandler
 from nailgun.api.handlers.tasks import TaskHandler
 from nailgun.network import manager as netmanager
-from nailgun.taskmanager.manager import DeploymentTaskManager
-from nailgun.taskmanager.errors import FailedProvisioning
-from nailgun.taskmanager.errors import DeploymentAlreadyStarted
-from nailgun.taskmanager.errors import WrongNodeStatus
+from nailgun.task.task import Task
+from nailgun.task.manager import DeploymentTaskManager
+from nailgun.task.manager import VerifyNetworksTaskManager
+from nailgun.task.errors import FailedProvisioning
+from nailgun.task.errors import DeploymentAlreadyStarted
+from nailgun.task.errors import WrongNodeStatus
 
 
 class ClusterHandler(JSONHandler):
@@ -194,56 +195,13 @@ class ClusterChangesHandler(JSONHandler):
         if not cluster:
             return web.notfound()
 
-        task_manager = DeploymentTaskManager(cluster=cluster)
-        # might be different logic for any error type
+        task_manager = DeploymentTaskManager(cluster_id=cluster.id)
         try:
-            task = task_manager.start_deployment()
-        except DeploymentAlreadyStarted as exc:
+            task = task_manager.execute()
+        except (DeploymentAlreadyStarted,
+                FailedProvisioning,
+                WrongNodeStatus) as exc:
             raise web.badrequest(exc.message)
-        except FailedProvisioning as exc:
-            raise web.badrequest(exc.message)
-        except WrongNodeStatus as exc:
-            raise web.badrequest(exc.message)
-
-        nodes_to_delete = []
-        for node in cluster.nodes:
-            if node.pending_deletion:
-                nodes_to_delete.append({
-                    'id': node.id,
-                    'uid': node.id
-                })
-        if nodes_to_delete:
-            msg_delete = {
-                'method': 'remove_nodes',
-                'respond_to': 'remove_nodes_resp',
-                'args': {
-                    'task_uuid': task.uuid,
-                    'nodes': nodes_to_delete
-                }
-            }
-            rpc.cast('naily', msg_delete)
-
-        netmanager.assign_ips(cluster_id, "management")
-
-        nodes = []
-        for n in cluster.nodes:
-            if not node.pending_deletion:
-                nodes.append({
-                    'id': n.id, 'status': n.status, 'uid': n.id,
-                    'ip': n.ip, 'mac': n.mac, 'role': n.role,
-                    'network_data': netmanager.get_node_networks(n.id)
-                })
-
-        message = {
-            'method': 'deploy',
-            'respond_to': 'deploy_resp',
-            'args': {
-                'task_uuid': task.uuid,
-                'nodes': nodes,
-                'attributes': cluster.attributes.merged_attrs()
-            }
-        }
-        rpc.cast('naily', message)
 
         return json.dumps(
             TaskHandler.render(task),
@@ -264,29 +222,8 @@ class ClusterNetworksHandler(JSONHandler):
         if not cluster:
             return web.notfound()
 
-        task = Task(
-            uuid=str(uuid.uuid4()),
-            name="verify_networks",
-            cluster=cluster
-        )
-        web.ctx.orm.add(task)
-        web.ctx.orm.commit()
-
-        nets_db = web.ctx.orm.query(Network).filter_by(
-            cluster_id=cluster_id).all()
-        networks = [{
-            'id': n.id, 'vlan_id': n.vlan_id, 'cidr': n.cidr}
-            for n in nets_db]
-
-        nodes = [{'id': n.id, 'ip': n.ip, 'mac': n.mac, 'uid': n.id}
-                 for n in cluster.nodes]
-
-        message = {'method': 'verify_networks',
-                   'respond_to': 'verify_networks_resp',
-                   'args': {'task_uuid': task.uuid,
-                            'networks': networks,
-                            'nodes': nodes}}
-        rpc.cast('naily', message)
+        task_manager = VerifyNetworksTaskManager(cluster_id=cluster.id)
+        task = task_manager.execute()
 
         return json.dumps(
             TaskHandler.render(task),

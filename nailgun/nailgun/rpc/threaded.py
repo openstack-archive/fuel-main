@@ -15,7 +15,8 @@ from sqlalchemy.orm import scoped_session, sessionmaker
 
 import nailgun.rpc as rpc
 from nailgun.db import Query
-from nailgun.api.models import engine, Node, Task, Network
+from nailgun.api.models import engine, Node, Network
+from nailgun.task.task import Task
 
 rpc_queue = Queue.Queue()
 

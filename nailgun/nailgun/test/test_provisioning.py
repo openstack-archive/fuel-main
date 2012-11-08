@@ -30,7 +30,7 @@ class TestProvisioning(BaseHandlers):
 
         netmanager.assign_ips = self.mock.MagicMock()
 
-        with patch('nailgun.taskmanager.manager.Cobbler'):
+        with patch('nailgun.task.task.Cobbler'):
             resp = self.app.put(
                 reverse(
                     'ClusterChangesHandler',

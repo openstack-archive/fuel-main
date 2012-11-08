@@ -13,7 +13,7 @@ from nailgun.api.models import Cluster, Attributes, IPAddr
 class TestHandlers(BaseHandlers):
 
     def test_deploy_cast_with_right_args(self):
-        nailgun.api.handlers.cluster.rpc = Mock()
+        nailgun.task.task.rpc = Mock()
         cluster = self.create_cluster_api()
         cluster_db = self.db.query(Cluster).get(cluster['id'])
 
@@ -21,7 +21,7 @@ class TestHandlers(BaseHandlers):
         node1 = self.create_default_node(cluster_id=cluster['id'])
         node2 = self.create_default_node(cluster_id=cluster['id'])
 
-        nailgun.taskmanager.manager.Cobbler = Mock()
+        nailgun.task.task.Cobbler = Mock()
         resp = self.app.put(
             reverse(
                 'ClusterChangesHandler',
@@ -52,5 +52,5 @@ class TestHandlers(BaseHandlers):
                                             'dev': 'eth0'}]})
         msg['args']['nodes'] = nodes
 
-        nailgun.api.handlers.cluster.rpc.cast.assert_called_once_with(
+        nailgun.task.task.rpc.cast.assert_called_once_with(
             'naily', msg)
