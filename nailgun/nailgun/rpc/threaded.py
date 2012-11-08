@@ -3,9 +3,6 @@
 import time
 import Queue
 import logging
-
-logger = logging.getLogger(__name__)
-
 import threading
 import itertools
 
@@ -16,8 +13,9 @@ from sqlalchemy.orm import scoped_session, sessionmaker
 import nailgun.rpc as rpc
 from nailgun.db import Query
 from nailgun.api.models import engine, Node, Network
-from nailgun.task.task import Task
+from nailgun.api.models import Task
 
+logger = logging.getLogger(__name__)
 rpc_queue = Queue.Queue()
 
 
@@ -56,10 +54,21 @@ class NailgunReceiver(object):
 
         for node in nodes:
             node_db = cls.db.query(Node).get(node['uid'])
+            if not node_db:
+                logger.error(
+                    "Node should be deleted, but not found: %s" % str(node)
+                )
+                break
             cls.db.delete(node_db)
 
         for node in error_nodes:
             node_db = cls.db.query(Node).get(node['uid'])
+            if not node_db:
+                logger.error(
+                    "Error while deleting node, "
+                    " but it is not found: %s" % str(node)
+                )
+                break
             node_db.status = 'error'
             cls.db.add(node_db)
         cls.db.commit()

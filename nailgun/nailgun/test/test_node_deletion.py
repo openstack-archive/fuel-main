@@ -11,7 +11,7 @@ logger = logging.getLogger(__name__)
 
 class TestNodeDeletion(BaseHandlers):
 
-    def test_node_deletion(self):
+    def test_node_deletion_and_attributes_clearing(self):
         cluster = self.create_cluster_api()
         node = self.create_default_node(cluster_id=cluster['id'])
 
@@ -24,9 +24,18 @@ class TestNodeDeletion(BaseHandlers):
             )
             self.assertEquals(200, resp.status)
 
-        node = self.db.query(Node).filter_by(cluster_id=cluster['id']).first()
-        self.db.delete(node)
-        self.db.commit()
+        resp = self.app.delete(
+            reverse(
+                'NodeHandler',
+                kwargs={'node_id': node.id}),
+            headers=self.default_headers
+        )
+        self.assertEquals(204, resp.status)
+
+        node_try = self.db.query(Node).filter_by(
+            cluster_id=cluster['id']
+        ).first()
+        self.assertEquals(node_try, None)
 
         management_net = self.db.query(Network).filter_by(
             cluster_id=cluster['id']).filter_by(

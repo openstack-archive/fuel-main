@@ -45,22 +45,31 @@ class DeploymentTask(object):
         }
 
         allowed_statuses = ("discover", "ready")
+        error_nodes = []
         for node in task.cluster.nodes:
             if node.status not in allowed_statuses:
                 if node.pending_deletion:
                     continue
                 else:
-                    err = "Node %s (%s) status:%s not in %s" % (
+                    error_nodes.append(node)
+
+        if error_nodes:
+            errorlist = []
+            for node in error_nodes:
+                errorlist.append(
+                    "Node %s (%s) status:%s not in %s" % (
                         node.mac,
                         node.ip,
                         node.status,
                         str(allowed_statuses)
                     )
-                    task.status = "error"
-                    task.error = err
-                    web.ctx.orm.add(task)
-                    web.ctx.orm.commit()
-                    raise WrongNodeStatus(err)
+                )
+            err = "\n".join(errorlist)
+            task.status = "error"
+            task.error = err
+            web.ctx.orm.add(task)
+            web.ctx.orm.commit()
+            raise WrongNodeStatus(err)
 
         for node in itertools.ifilter(
             lambda n: n.status in allowed_statuses, task.cluster.nodes
@@ -207,64 +216,3 @@ class VerifyNetworksTask(object):
                             'networks': networks,
                             'nodes': nodes}}
         rpc.cast('naily', message)
-
-
-TASK_TYPES = {
-    'super': None,
-    'deploy': None,
-    'deployment': DeploymentTask,
-    'deletion': DeletionTask,
-    'verify_networks': VerifyNetworksTask
-}
-
-
-class Task(Base, BasicValidator):
-    __tablename__ = 'tasks'
-    TASK_STATUSES = (
-        'ready',
-        'running',
-        'error'
-    )
-    id = Column(Integer, primary_key=True)
-    cluster_id = Column(Integer, ForeignKey('clusters.id'))
-    uuid = Column(String(36), nullable=False, default=str(uuid.uuid4()))
-    name = Column(Enum(*TASK_TYPES.keys()), nullable=False, default='super')
-    error = Column(Text)
-    status = Column(Enum(*TASK_STATUSES), nullable=False, default='running')
-    progress = Column(Integer)
-    parent_id = Column(Integer, ForeignKey('tasks.id'))
-    subtasks = relationship(
-        "Task",
-        backref=backref('parent', remote_side=[id])
-    )
-
-    def execute(self):
-        if self.name not in TASK_TYPES or not TASK_TYPES[self.name]:
-            raise NotImplementedError("No task instance to run")
-        return TASK_TYPES[self.name].execute(self)
-
-    def create_subtask(self, name):
-        if not name:
-            raise ValueError("Subtask name not specified")
-
-        task = Task(
-            name=name,
-            cluster=self.cluster
-        )
-        self.subtasks.append(task)
-        web.ctx.orm.commit()
-        return task
-
-    def refresh(self):
-        # TODO: add logic for progress
-        for task in self.subtasks:
-            if task.status == "error":
-                self.status = "error"
-                self.error = task.error
-                web.ctx.orm.add(self)
-                web.ctx.orm.commit()
-                break
-
-    def delete_tree(self):
-        # TODO: add logic for tree resolving
-        pass

@@ -9,8 +9,7 @@ eventlet.monkey_patch()
 import nailgun.rpc as rpc
 from nailgun.rpc import threaded
 from nailgun.test.base import BaseHandlers
-from nailgun.api.models import Node
-from nailgun.task.task import Task
+from nailgun.api.models import Node, Task
 
 
 class TestConsumer(BaseHandlers):

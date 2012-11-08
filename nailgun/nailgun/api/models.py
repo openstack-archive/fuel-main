@@ -322,3 +322,60 @@ class Attributes(Base, BasicValidator):
             else:
                 result[k] = deepcopy(v)
         return result
+
+
+class Task(Base, BasicValidator):
+    __tablename__ = 'tasks'
+    TASK_STATUSES = (
+        'ready',
+        'running',
+        'error'
+    )
+    TASK_TYPES = (
+        'super',
+        'deploy',
+        'deployment',
+        'deletion',
+        'verify_networks'
+    )
+    id = Column(Integer, primary_key=True)
+    cluster_id = Column(Integer, ForeignKey('clusters.id'))
+    uuid = Column(String(36), nullable=False, default=str(uuid.uuid4()))
+    name = Column(Enum(*TASK_TYPES), nullable=False, default='super')
+    error = Column(Text)
+    status = Column(Enum(*TASK_STATUSES), nullable=False, default='running')
+    progress = Column(Integer)
+    parent_id = Column(Integer, ForeignKey('tasks.id'))
+    subtasks = relationship(
+        "Task",
+        backref=backref('parent', remote_side=[id])
+    )
+
+    def execute(self, instance):
+        return instance.execute(self)
+
+    def create_subtask(self, name):
+        if not name:
+            raise ValueError("Subtask name not specified")
+
+        task = Task(
+            name=name,
+            cluster=self.cluster
+        )
+        self.subtasks.append(task)
+        web.ctx.orm.commit()
+        return task
+
+    def refresh(self):
+        # TODO: add logic for progress
+        for task in self.subtasks:
+            if task.status == "error":
+                self.status = "error"
+                self.error = task.error
+                web.ctx.orm.add(self)
+                web.ctx.orm.commit()
+                break
+
+    def delete_tree(self):
+        # TODO: add logic for tree resolving
+        pass

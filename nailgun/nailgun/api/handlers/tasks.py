@@ -4,7 +4,7 @@ import json
 
 import web
 
-from nailgun.task.task import Task
+from nailgun.api.models import Task
 from nailgun.api.handlers.base import JSONHandler
 
 
