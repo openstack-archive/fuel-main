@@ -229,7 +229,7 @@ function(models, dialogViews, clusterPageTemplate, deploymentResultTemplate, dep
             'click .select-all-tumbler': 'selectAll'
         },
         toggleNode: function(e) {
-            if (this.limit && $(e.currentTarget).is('.node-to-' + this.action + '-unchecked') && this.$('.node-to-' + this.action + '-checked').length >= this.limit) {
+            if (this.limit !== null && $(e.currentTarget).is('.node-to-' + this.action + '-unchecked') && this.$('.node-to-' + this.action + '-checked').length >= this.limit) {
                 return;
             }
             $(e.currentTarget).toggleClass('node-to-' + this.action + '-checked').toggleClass('node-to-' + this.action + '-unchecked');
@@ -257,7 +257,7 @@ function(models, dialogViews, clusterPageTemplate, deploymentResultTemplate, dep
             this.$('.select-all-tumbler').attr('checked', this.nodes.length == this.$('.node-to-' + this.action + '-checked').length);
         },
         calculateNotChosenNodesAvailability: function() {
-            if (this.limit) {
+            if (this.limit !== null) {
                 var chosenNodesCount = this.$('.node-to-' + this.action + '-checked').length;
                 var notChosenNodes = this.$('.nodebox:not(.node-to-' + this.action + '-checked)');
                 notChosenNodes.toggleClass('node-not-checkable', chosenNodesCount >= this.limit);
@@ -321,6 +321,7 @@ function(models, dialogViews, clusterPageTemplate, deploymentResultTemplate, dep
                         nodeView.$('.nodebox[data-node-id=' + node.id + ']').addClass('node-to-' + this.action + '-checked').removeClass('node-to-' + this.action + '-unchecked');
                     }
                 }, this);
+                this.calculateNotChosenNodesAvailability();
                 this.calculateSelectAllTumblerState();
             } else {
                 nodesContainer.html('<div class="span12">No nodes available</div>');
@@ -347,7 +348,7 @@ function(models, dialogViews, clusterPageTemplate, deploymentResultTemplate, dep
             }, this));
         },
         getOriginalNodes: function() {
-            return this.model.get('nodes').filter(function(node) {return node.get(this.flag) == true}, this);
+            return this.model.get('nodes').filter(function(node) {return node.get(this.flag) == true;}, this);
         },
         modifyNodes: function(nodes) {
             nodes.each(function(node) {
@@ -381,7 +382,7 @@ function(models, dialogViews, clusterPageTemplate, deploymentResultTemplate, dep
             this.nodes = new models.Nodes(this.model.get('nodes').where({role: options.role, pending_addition: false}));
         },
         getOriginalNodes: function() {
-            return this.nodes.filter(function(node) {return node.get(this.flag) == true}, this);
+            return this.nodes.filter(function(node) {return node.get(this.flag) == true;}, this);
         },
         modifyNodes: function(nodes) {
             nodes.each(function(node) {
@@ -402,9 +403,12 @@ function(models, dialogViews, clusterPageTemplate, deploymentResultTemplate, dep
             'click .btn-delete-nodes:not(.disabled)': 'deleteNodes'
         },
         addNodes: function() {
-            var limit = this.size - this.collection.length;
-            if (limit <= 0) {
-                limit = 0;
+            var limit = null;
+            if (this.size) {
+                limit = this.size - this.collection.nodesAfterDeployment().length;
+                if (limit <= 0) {
+                    limit = 0;
+                }
             }
             this.tab.changeScreen(views.AddNodesScreen, {role: this.role, limit: limit});
         },
@@ -415,14 +419,24 @@ function(models, dialogViews, clusterPageTemplate, deploymentResultTemplate, dep
             _.defaults(this, options);
         },
         render: function() {
-            this.$el.html(this.template({nodes: this.collection, role: this.role, size: this.size}));
+            var hasChanges = this.collection.hasChanges();
+            var currentNodes = this.collection.currentNodes();
+            var nodesAfterDeployment = this.collection.nodesAfterDeployment();
+            this.$el.html(this.template({
+                nodes: this.collection,
+                role: this.role,
+                size: this.size,
+                hasChanges: hasChanges,
+                currentNodes: currentNodes,
+                nodesAfterDeployment: nodesAfterDeployment
+            }));
             if (this.collection.length || this.size) {
                 var container = this.$('.node-list-container');
                 this.collection.each(function(node) {
                     container.append(new views.Node({model: node, renameable: !this.collection.cluster.task('deploy', 'running')}).render().el);
                 }, this);
-                if (this.collection.length < this.size) {
-                    _(this.size - this.collection.length).times(function() {
+                if (nodesAfterDeployment.length < this.size) {
+                    _(this.size - nodesAfterDeployment.length).times(function() {
                         container.append('<div class="span2 nodebox nodeplaceholder"></div>');
                     });
                 }

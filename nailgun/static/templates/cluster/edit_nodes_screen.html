@@ -3,14 +3,14 @@
     <h3>
       <%= {add: 'Add', delete: 'Delete'}[action] || action %> <%= role %> nodes
       <span>
-        <% if (limit) { %>
+        <% if (limit !== null) { %>
           (<%= limit %> node<%= limit != 1 ? 's' : '' %> max)
         <% } %>
       </span>
     </h3>
   </div>
   <div class="span2">
-    <% if (this.nodes.deferred && this.nodes.deferred.state() != 'pending' && (!limit || nodes.length <= limit)) { %>
+    <% if (this.nodes.deferred && this.nodes.deferred.state() != 'pending' && (limit === null || nodes.length <= limit)) { %>
       <label class="checkbox pull-right">
         <input type="checkbox" class="select-all-tumbler"> Select All
       </label>

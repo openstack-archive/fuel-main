@@ -42,9 +42,7 @@ define(function() {
             return this.get('tasks') && this.get('tasks').where(options)[0];
         },
         hasChanges: function() {
-            return !!this.get('nodes').filter(function(node) {
-                return node.get('pending_addition') || node.get('pending_deletion');
-            }).length;
+            return this.get('nodes').hasChanges();
         },
         canChangeMode: function() {
             return !this.get('nodes').length && this.get('type') != 'singlenode';
@@ -99,6 +97,17 @@ define(function() {
     models.Nodes = Backbone.Collection.extend({
         model: models.Node,
         url: '/api/nodes',
+        hasChanges: function() {
+            return !!this.filter(function(node) {
+                return node.get('pending_addition') || node.get('pending_deletion');
+            }).length;
+        },
+        currentNodes: function() {
+            return this.filter(function(node) {return !node.get('pending_addition');});
+        },
+        nodesAfterDeployment: function() {
+            return this.filter(function(node) {return node.get('pending_addition') || !node.get('pending_deletion');});
+        },
         resources: function(resourceName) {
             var resources = this.map(function(node) {return node.resource(resourceName);});
             return _.reduce(resources, function(sum, n) {return sum + n;}, 0);
