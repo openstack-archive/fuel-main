@@ -1227,3 +1227,16 @@ h6.page-title {
 .wrapper h3 {
   margin-top: 0;
 }
+
+.predeploy-info-dialog {
+  width: 100%;
+}
+
+.predeploy-info-dialog td:last-child {
+  text-align: right;
+}
+
+.predeploy-info-dialog td.group_title {
+  text-align: left;
+  font-weight: bold;
+}

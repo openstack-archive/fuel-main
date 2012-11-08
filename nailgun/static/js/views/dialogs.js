@@ -3,9 +3,10 @@ define(
     'models',
     'text!templates/dialogs/create_cluster.html',
     'text!templates/dialogs/change_cluster_mode.html',
-    'text!templates/dialogs/change_cluster_type.html'
+    'text!templates/dialogs/change_cluster_type.html',
+    'text!templates/dialogs/predeploy_info.html'
 ],
-function(models, createClusterDialogTemplate, changeClusterModeDialogTemplate, changeClusterTypeDialogTemplate) {
+function(models, createClusterDialogTemplate, changeClusterModeDialogTemplate, changeClusterTypeDialogTemplate, preDeployDialogTemplate) {
     'use strict';
 
     var views = {};
@@ -136,6 +137,53 @@ function(models, createClusterDialogTemplate, changeClusterModeDialogTemplate, c
         render: function() {
             this.constructor.__super__.render.call(this, {cluster: this.model});
             this.toggleDescription();
+            return this;
+        }
+    });
+
+    views.PreDeployDialog = views.Dialog.extend({
+        template: _.template(preDeployDialogTemplate),
+        events: {
+            'click .start-deploy-btn': 'deployCluster'
+        },
+        deployCluster: function() {
+            //this.$('.deploy-btn').attr('disabled', true);
+            var task = new models.Task();
+            task.save({}, {
+                type: 'PUT',
+                url: '/api/clusters/' + this.model.id + '/changes'/*,
+                complete: _.bind(function() {
+                    var complete = _.after(2, _.bind(this.scheduleUpdate, this));
+                    this.model.get('tasks').fetch({data: {cluster_id: this.model.id}, complete: complete});
+                    this.model.get('nodes').fetch({data: {cluster_id: this.model.id}, complete: complete});
+                }, this)*/
+            });
+            this.$el.modal('hide');
+        },
+        onInputKeydown: function(e) {
+            if (e.which == 13) {
+                this.deployCluster();
+            }
+        },
+        initialize: function() {
+            this.model = this.options.cluster;
+            this.nodes = this.model.get('nodes').models;
+        },
+        render: function() {
+            var redeploymentNeededNodes = _.filter(this.nodes, function(node) {
+                    return node.get('redeployment_needed') == true;
+                });
+            this.constructor.__super__.render.call(this, {
+                redeploy_controllers: _.filter(redeploymentNeededNodes, function(node) {
+                    return node.get('role') == 'controller';
+                }),
+                redeploy_compute: _.filter(redeploymentNeededNodes, function(node) {
+                    return node.get('role') == 'compute';
+                }),
+                redeploy_storage: _.filter(redeploymentNeededNodes, function(node) {
+                    return node.get('role') == 'storage';
+                })
+            });
             return this;
         }
     });
