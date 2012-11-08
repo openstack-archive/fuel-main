@@ -51,7 +51,8 @@ class Environment(ManagedObject):
 
 
 class Network(ManagedObject):
-    def __init__(self, name, dhcp_server=False, pxe=False, reserve_static=True):
+    def __init__(self, name, dhcp_server=False, pxe=False,
+                 reserve_static=True, forward='nat'):
         super(Network, self).__init__()
 
         self.name = name
@@ -59,7 +60,7 @@ class Network(ManagedObject):
         self.reserve_static=reserve_static
         self.interfaces = []
         self.pxe = pxe
-        self.forward = 'nat'
+        self.forward = forward
         self.environment = None
 
     def start(self):

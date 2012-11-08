@@ -57,7 +57,9 @@ def main():
 #   todo fix default values
     ci = suite.Ci(params.cache_file, params.iso)
     if params.no_forward_network:
-        ci.nat = False
+        ci = suite.Ci(params.cache_file, params.iso, forward=False)
+    else:
+        ci = suite.Ci(params.cache_file, params.iso)
 
     if not params.deployment_timeout is None:
         ci.deployment_timeout = params.deployment_timeout

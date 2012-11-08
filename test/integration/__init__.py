@@ -16,11 +16,11 @@ class Ci(object):
     installation_timeout = 1800
     deployment_timeout = 1800
 
-    def __init__(self, cache_file=None, iso=None):
+    def __init__(self, cache_file=None, iso=None, forward='nat'):
         self.environment_cache_file = cache_file
         self.iso = iso
         self.environment = None
-        self.nat = True
+        self.forward = forward
         try:
             self.environment = devops.load('integration')
             logger.info("Successfully loaded existing environment")
@@ -48,9 +48,7 @@ class Ci(object):
         try:
             environment = Environment('integration')
 
-            network = Network('default')
-            if not self.nat:
-                network.forward = False
+            network = Network('default', forward=self.forward)
             environment.networks.append(network)
 
             node = Node('admin')
