@@ -688,7 +688,7 @@ function(models, dialogViews, clusterPageTemplate, deploymentResultTemplate, dep
                 this.model.update({name: name}, {
                     complete: function() {
                             app.breadcrumb.setPath(['Home', '#'], ['OpenStack Installations', '#clusters'], this.model.get('name'));
-                            this.render;
+                            this.render();
                         },
                     context: this
                 });
