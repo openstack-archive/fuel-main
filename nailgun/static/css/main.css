@@ -1232,3 +1232,25 @@ h6.page-title {
   text-align: left;
   font-weight: bold;
 }
+
+.pending-deletion-flag {
+  display: block;
+  position: relative;
+  top: -114px;
+  left: 0px;
+  z-index: 88888;
+  width: 16px;
+  height: 15px;
+  background: url(../img/pending-flags.png) no-repeat top left;
+}
+
+.pending-addition-flag {
+  display: block;
+  position: relative;
+  top: -114px;
+  left: -1px;
+  z-index: 88888;
+  width: 16px;
+  height: 15px;
+  background: url(../img/pending-flags.png) no-repeat 0px -16px;
+}

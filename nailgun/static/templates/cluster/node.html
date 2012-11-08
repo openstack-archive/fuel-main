@@ -52,6 +52,7 @@
       <li>RAM: <%= _.isNumber(node.resource('ram')) ? node.resource('ram').toFixed(1) : '?' %> GB</li>
     </ul>
   </div>
+  <div class="pending-deletion-flag"></div>
   <% if (selectableForAddition) { %>
     <div class="node-select"><i class="icon-ok"></i></div>
   <% } else if (selectableForDeletion) { %>
