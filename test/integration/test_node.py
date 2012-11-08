@@ -69,31 +69,25 @@ class TestNode(Base):
         nodes = [str(n['id']) for n in self._bootstrap_slave()]
         self.client.put("/api/nodes/%s/" % nodes[0], {"role": "controller"})
         self._update_nodes_in_cluster(cluster_id, nodes)
-        self._launch_provisioning(cluster_id)
+        task = self._launch_provisioning(cluster_id)
 
         timer = time.time()
         timeout = 1800
         ready = False
+        task_id = task['id']
         while not ready:
-            try:
-                for node_id in nodes:
-                    node = json.loads(self.client.get(
-                        "/api/nodes/%s/" % node_id
-                    ).read())
-                    if node["status"] == 'provisioning':
-                        logging.info("Installation in progress...")
-                        raise StillPendingException()
-                    elif node["status"] == 'error':
-                        raise Exception(
-                            "Installation failed!"
-                        )
-                    elif node["status"] == 'ready':
-                        logging.info("Installation complete!")
-                        ready = True
-            except StillPendingException:
+            task = json.loads(
+                self.client.get("/api/tasks/%s" % task_id).read()
+            )
+            if task['status'] == 'ready':
+                logging.info("Installation complete")
+                ready = True
+            elif task['status'] == 'running':
                 if (time.time() - timer) > timeout:
                     raise Exception("Installation timeout expired!")
                 time.sleep(30)
+            else:
+                raise Exception("Installation failed!")
         node = json.loads(self.client.get(
             "/api/nodes/%s/" % nodes[0]
         ).read())
@@ -181,6 +175,7 @@ class TestNode(Base):
             "/api/clusters/%d/changes/" % cluster_id
         )
         self.assertEquals(200, changes.getcode())
+        return json.loads(changes.read())
 
     def _upload_sample_release(self):
         def _get_release_id():
