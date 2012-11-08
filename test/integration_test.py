@@ -57,7 +57,7 @@ def main():
 #   todo fix default values
     ci = suite.Ci(params.cache_file, params.iso)
     if params.no_forward_network:
-        ci = suite.Ci(params.cache_file, params.iso, forward=False)
+        ci = suite.Ci(params.cache_file, params.iso, forward=None)
     else:
         ci = suite.Ci(params.cache_file, params.iso)
 

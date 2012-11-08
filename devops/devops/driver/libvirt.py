@@ -49,7 +49,7 @@ class LibvirtXMLBuilder:
     def build_network_xml(self, network):
         network_xml = XMLBuilder('network')
         network_xml.name(network.id)
-        if network.forward:
+        if not network.forward is None:
             network_xml.forward(mode=network.forward)
 
         if hasattr(network, 'ip_addresses') and not network.ip_addresses is None:
