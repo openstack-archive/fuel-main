@@ -386,9 +386,11 @@ h6.page-title {
 .node-status {
 	height: 30px;
 	overflow: hidden;
-	margin-left: 54px;
+	margin-left: 14px;
 	color: #666666;
-	padding-right: 10px;
+	padding-right: 14px;
+  text-align: center;
+  font-size: 14px;
 }
 
 .node-status > .progress {
