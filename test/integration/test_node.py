@@ -67,6 +67,7 @@ class TestNode(Base):
         self._clean_clusters()
         cluster_id = self._create_cluster(name='provision')
         nodes = [str(n['id']) for n in self._bootstrap_slave()]
+        self.client.put("/api/nodes/%s/" % nodes[0], {"role": "controller"})
         self._update_nodes_in_cluster(cluster_id, nodes)
         self._launch_provisioning(cluster_id)
 
@@ -93,6 +94,13 @@ class TestNode(Base):
                 if (time.time() - timer) > timeout:
                     raise Exception("Installation timeout expired!")
                 time.sleep(30)
+        node = json.loads(self.client.get(
+            "/api/nodes/%s/" % nodes[0]
+        ).read())
+        ctrl_ssh = SSHClient()
+        ctrl_ssh.connect_ssh(node['ip'], 'root', 'r00tme')
+        ret = ctrl_ssh.execute('test -f /tmp/controller-file')['exit_status']
+        self.assertEquals(ret, 0)
 
         #if node["status"] == "discover":
             #logging.info("Node booted with bootstrap image.")
