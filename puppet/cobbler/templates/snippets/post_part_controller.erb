@@ -1,0 +1,14 @@
+/sbin/sfdisk -l
+dd if=/dev/zero of=/dev/sdb bs=512 count=1
+echo "0 300000 83" | /sbin/sfdisk -uM /dev/sdb
+echo "300008 40000 83" | /sbin/sfdisk -N2 -uM /dev/sdb
+sfdisk -R /dev/sdb
+sleep 10
+mkfs.ext4 /dev/sdb1
+mkfs.ext4 /dev/sdb2
+sdb1_uuid=$(blkid -ovalue /dev/sdb1 | head -1)
+echo "UUID=$sdb1_uuid /var/lib/postgresql ext4 defaults,noatime,nodiratime 0 0" >> /etc/fstab
+mkdir /var/lib/mysql
+sdb2_uuid=$(blkid -ovalue /dev/sdb2 | head -1)
+echo "UUID=$sdb2_uuid /var/lib/rabbitmq ext4 defaults,noatime,nodiratime 0 0" >> /etc/fstab
+mkdir /var/lib/rabbitmq

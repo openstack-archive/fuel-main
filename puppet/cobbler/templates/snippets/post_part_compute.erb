@@ -1,0 +1,9 @@
+/sbin/sfdisk -l;
+dd if=/dev/zero of=/dev/sdb bs=512 count=1;
+echo ";" | /sbin/sfdisk /dev/sdb;
+sfdisk -R /dev/sdb;
+sleep 10;
+mkfs.ext4 /dev/sdb1;
+sdb1_uuid=$(blkid -ovalue /dev/sdb1 | head -1);
+echo "UUID=$sdb1_uuid /instances ext4 defaults,noatime,nodiratime 0 0" >> /etc/fstab;
+mkdir /instances;

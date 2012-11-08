@@ -1,0 +1,8 @@
+name    'cobbler'
+version '0.0.1'
+source  'https://github.com/Mirantis/recipes-library/cobbler'
+author  'Mirantis Inc.'
+license 'Apache License 2.0'
+summary 'Mirantis Cobbler Module'
+description 'Module to install cobbler provisioning system'
+project_page 'https://github.com/Mirantis/recipes-library'

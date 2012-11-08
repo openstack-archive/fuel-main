@@ -1,0 +1,33 @@
+#if $str($getVar('mco_auto_setup','')) == "1"
+mkdir -p /etc/mcollective
+cat <<EOCONF > /etc/mcollective/server.cfg
+topicprefix = /topic/
+main_collective = mcollective
+collectives = mcollective
+libdir = /usr/libexec/mcollective
+logfile = /var/log/mcollective.log
+loglevel = info
+daemonize = 1
+direct_addressing = 1
+
+# Plugins
+securityprovider = psk
+plugin.psk = $mco_pskey
+
+connector = stomp
+plugin.stomp.host = $mco_stomphost
+plugin.stomp.port = $mco_stompport
+plugin.stomp.user = $mco_stompuser
+plugin.stomp.password = $mco_stomppassword
+
+
+# Facts
+factsource = yaml
+plugin.yaml = /etc/mcollective/facts.yaml
+EOCONF
+#end if
+
+#if $str($getVar('mco_enable', '')) == "1"
+# turn on mcollective service after reboot
+/sbin/chkconfig mcollective on
+#end if

@@ -1,0 +1,140 @@
+dd if=/dev/zero of=/dev/sdd bs=512 count=1
+echo ";" | /sbin/sfdisk /dev/sdd
+sdd_uuid_old=$(blkid -ovalue /dev/sdd | head -1)
+sfdisk -R /dev/sdd
+sleep 10
+mkfs.xfs -i size=1024 -f /dev/sdd1
+sdd_uuid_new=$(blkid -ovalue /dev/sdd1 | head -1)
+echo "UUID=$sdd_uuid /srv/node/sdd1 xfs noatime,nodiratime,nobarrier,logbufs=8 0 0" >> /etc/fstab
+mkdir -p /srv/node/sdd1
+xfs_check /dev/sdd1
+dd if=/dev/zero of=/dev/sde bs=512 count=1
+echo ";" | /sbin/sfdisk /dev/sde
+sde_uuid_old=$(blkid -ovalue /dev/sde | head -1)
+sfdisk -R /dev/sde
+sleep 10
+mkfs.xfs -i size=1024 -f /dev/sde1
+sde_uuid_new=$(blkid -ovalue /dev/sde1 | head -1)
+echo "UUID=$sde_uuid /srv/node/sde1 xfs noatime,nodiratime,nobarrier,logbufs=8 0 0" >> /etc/fstab
+mkdir -p /srv/node/sde1
+xfs_check /dev/sde1
+dd if=/dev/zero of=/dev/sdf bs=512 count=1
+echo ";" | /sbin/sfdisk /dev/sdf
+sdf_uuid_old=$(blkid -ovalue /dev/sdf | head -1)
+sfdisk -R /dev/sdf
+sleep 10
+mkfs.xfs -i size=1024 -f /dev/sdf1
+sdf_uuid_new=$(blkid -ovalue /dev/sdf1 | head -1)
+echo "UUID=$sdf_uuid /srv/node/sdf1 xfs noatime,nodiratime,nobarrier,logbufs=8 0 0" >> /etc/fstab
+mkdir -p /srv/node/sdf1
+xfs_check /dev/sdf1
+dd if=/dev/zero of=/dev/sdg bs=512 count=1
+echo ";" | /sbin/sfdisk /dev/sdg
+sdg_uuid_old=$(blkid -ovalue /dev/sdg | head -1)
+sfdisk -R /dev/sdg
+sleep 10
+mkfs.xfs -i size=1024 -f /dev/sdg1
+sdg_uuid_new=$(blkid -ovalue /dev/sdg1 | head -1)
+echo "UUID=$sdg_uuid /srv/node/sdg1 xfs noatime,nodiratime,nobarrier,logbufs=8 0 0" >> /etc/fstab
+mkdir -p /srv/node/sdg1
+xfs_check /dev/sdg1
+dd if=/dev/zero of=/dev/sdh bs=512 count=1
+echo ";" | /sbin/sfdisk /dev/sdh
+sdh_uuid_old=$(blkid -ovalue /dev/sdh | head -1)
+sfdisk -R /dev/sdh
+sleep 10
+mkfs.xfs -i size=1024 -f /dev/sdh1
+sdh_uuid_new=$(blkid -ovalue /dev/sdh1 | head -1)
+echo "UUID=$sdh_uuid /srv/node/sdh1 xfs noatime,nodiratime,nobarrier,logbufs=8 0 0" >> /etc/fstab
+mkdir -p /srv/node/sdh1
+xfs_check /dev/sdh1
+dd if=/dev/zero of=/dev/sdi bs=512 count=1
+echo ";" | /sbin/sfdisk /dev/sdi
+sdi_uuid_old=$(blkid -ovalue /dev/sdi | head -1)
+sfdisk -R /dev/sdi
+sleep 10
+mkfs.xfs -i size=1024 -f /dev/sdi1
+sdi_uuid_new=$(blkid -ovalue /dev/sdi1 | head -1)
+echo "UUID=$sdi_uuid /srv/node/sdi1 xfs noatime,nodiratime,nobarrier,logbufs=8 0 0" >> /etc/fstab
+mkdir -p /srv/node/sdi1
+xfs_check /dev/sdi1
+dd if=/dev/zero of=/dev/sdj bs=512 count=1
+echo ";" | /sbin/sfdisk /dev/sdj
+sdj_uuid_old=$(blkid -ovalue /dev/sdj | head -1)
+sfdisk -R /dev/sdj
+sleep 10
+mkfs.xfs -i size=1024 -f /dev/sdj1
+sdj_uuid_new=$(blkid -ovalue /dev/sdj1 | head -1)
+echo "UUID=$sdj_uuid /srv/node/sdj1 xfs noatime,nodiratime,nobarrier,logbufs=8 0 0" >> /etc/fstab
+mkdir -p /srv/node/sdj1
+xfs_check /dev/sdj1
+dd if=/dev/zero of=/dev/sdk bs=512 count=1
+echo ";" | /sbin/sfdisk /dev/sdk
+sdk_uuid_old=$(blkid -ovalue /dev/sdk | head -1)
+sfdisk -R /dev/sdk
+sleep 10
+mkfs.xfs -i size=1024 -f /dev/sdk1
+sdk_uuid_new=$(blkid -ovalue /dev/sdk1 | head -1)
+echo "UUID=$sdk_uuid /srv/node/sdk1 xfs noatime,nodiratime,nobarrier,logbufs=8 0 0" >> /etc/fstab
+mkdir -p /srv/node/sdk1
+xfs_check /dev/sdk1
+dd if=/dev/zero of=/dev/sdl bs=512 count=1
+echo ";" | /sbin/sfdisk /dev/sdl
+sdl_uuid_old=$(blkid -ovalue /dev/sdl | head -1)
+sfdisk -R /dev/sdl
+sleep 10
+mkfs.xfs -i size=1024 -f /dev/sdl1
+sdl_uuid_new=$(blkid -ovalue /dev/sdl1 | head -1)
+echo "UUID=$sdl_uuid /srv/node/sdl1 xfs noatime,nodiratime,nobarrier,logbufs=8 0 0" >> /etc/fstab
+mkdir -p /srv/node/sdl1
+xfs_check /dev/sdl1
+dd if=/dev/zero of=/dev/sdm bs=512 count=1
+echo ";" | /sbin/sfdisk /dev/sdm
+sdm_uuid_old=$(blkid -ovalue /dev/sdm | head -1)
+sfdisk -R /dev/sdm
+sleep 10
+mkfs.xfs -i size=1024 -f /dev/sdm1
+sdm_uuid_new=$(blkid -ovalue /dev/sdm1 | head -1)
+echo "UUID=$sdm_uuid /srv/node/sdm1 xfs noatime,nodiratime,nobarrier,logbufs=8 0 0" >> /etc/fstab
+mkdir -p /srv/node/sdm1
+xfs_check /dev/sdm1
+dd if=/dev/zero of=/dev/sdn bs=512 count=1
+echo ";" | /sbin/sfdisk /dev/sdn
+sdn_uuid_old=$(blkid -ovalue /dev/sdn | head -1)
+sfdisk -R /dev/sdn
+sleep 10
+mkfs.xfs -i size=1024 -f /dev/sdn1
+sdn_uuid_new=$(blkid -ovalue /dev/sdn1 | head -1)
+echo "UUID=$sdn_uuid /srv/node/sdn1 xfs noatime,nodiratime,nobarrier,logbufs=8 0 0" >> /etc/fstab
+mkdir -p /srv/node/sdn1
+xfs_check /dev/sdn1
+dd if=/dev/zero of=/dev/sdo bs=512 count=1
+echo ";" | /sbin/sfdisk /dev/sdo
+sdo_uuid_old=$(blkid -ovalue /dev/sdo | head -1)
+sfdisk -R /dev/sdo
+sleep 10
+mkfs.xfs -i size=1024 -f /dev/sdo1
+sdo_uuid_new=$(blkid -ovalue /dev/sdo1 | head -1)
+echo "UUID=$sdo_uuid /srv/node/sdo1 xfs noatime,nodiratime,nobarrier,logbufs=8 0 0" >> /etc/fstab
+mkdir -p /srv/node/sdo1
+xfs_check /dev/sdo1
+dd if=/dev/zero of=/dev/sdp bs=512 count=1
+echo ";" | /sbin/sfdisk /dev/sdp
+sdp_uuid_old=$(blkid -ovalue /dev/sdp | head -1)
+sfdisk -R /dev/sdp
+sleep 10
+mkfs.xfs -i size=1024 -f /dev/sdp1
+sdp_uuid_new=$(blkid -ovalue /dev/sdp1 | head -1)
+echo "UUID=$sdp_uuid /srv/node/sdp1 xfs noatime,nodiratime,nobarrier,logbufs=8 0 0" >> /etc/fstab
+mkdir -p /srv/node/sdp1
+xfs_check /dev/sdp1
+dd if=/dev/zero of=/dev/sdq bs=512 count=1
+echo ";" | /sbin/sfdisk /dev/sdq
+sdq_uuid_old=$(blkid -ovalue /dev/sdq | head -1)
+sfdisk -R /dev/sdq
+sleep 10
+mkfs.xfs -i size=1024 -f /dev/sdq1
+sdq_uuid_new=$(blkid -ovalue /dev/sdq1 | head -1)
+echo "UUID=$sdq_uuid /srv/node/sdq1 xfs noatime,nodiratime,nobarrier,logbufs=8 0 0" >> /etc/fstab
+mkdir -p /srv/node/sdq1
+xfs_check /dev/sdq1
