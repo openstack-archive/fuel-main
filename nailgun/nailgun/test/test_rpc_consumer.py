@@ -54,8 +54,8 @@ class TestConsumer(BaseHandlers):
         nets = [{'iface': 'eth0', 'vlans': range(100, 105)}]
         kwargs = {'task_uuid': task.uuid,
                   'status': 'ready',
-                  'networks': [{'uid': node1.fqdn, 'networks': nets},
-                               {'uid': node2.fqdn, 'networks': nets}]}
+                  'networks': [{'uid': node1.id, 'networks': nets},
+                               {'uid': node2.id, 'networks': nets}]}
         receiver.verify_networks_resp(**kwargs)
         self.db.refresh(task)
         self.assertEqual(task.status, "ready")
@@ -79,13 +79,13 @@ class TestConsumer(BaseHandlers):
         nets = [{'iface': 'eth0', 'vlans': range(100, 104)}]
         kwargs = {'task_uuid': task.uuid,
                   'status': 'ready',
-                  'networks': [{'uid': node1.fqdn, 'networks': nets},
-                               {'uid': node2.fqdn, 'networks': nets}]}
+                  'networks': [{'uid': node1.id, 'networks': nets},
+                               {'uid': node2.id, 'networks': nets}]}
         receiver.verify_networks_resp(**kwargs)
         self.db.refresh(task)
         self.assertEqual(task.status, "error")
-        error_nodes = [{'uid': node1.fqdn, 'absent_vlans': [104]},
-                       {'uid': node2.fqdn, 'absent_vlans': [104]}]
+        error_nodes = [{'uid': node1.id, 'absent_vlans': [104]},
+                       {'uid': node2.id, 'absent_vlans': [104]}]
         error_msg = "Following nodes do not have vlans:\n%s" % error_nodes
         self.assertEqual(task.error, error_msg)
 
@@ -104,3 +104,61 @@ class TestConsumer(BaseHandlers):
         self.db.refresh(task)
         self.assertEqual(task.progress, 20)
         self.assertEqual(task.status, "running")
+
+    def test_remove_nodes_resp(self):
+        cluster = self.create_cluster_api()
+        node1 = self.create_default_node(cluster_id=cluster['id'])
+        node2 = self.create_default_node(cluster_id=cluster['id'])
+
+        receiver = threaded.NailgunReceiver()
+
+        task = Task(
+            uuid=str(uuid.uuid4()),
+            name="super",
+            cluster_id=cluster['id']
+        )
+        self.db.add(task)
+        self.db.commit()
+
+        kwargs = {'task_uuid': task.uuid,
+                  'progress': 100,
+                  'status': 'ready',
+                  'nodes': [{'uid': node1.id},
+                            {'uid': str(node2.id)}]}
+
+        receiver.remove_nodes_resp(**kwargs)
+        self.db.refresh(task)
+        self.assertEqual(task.status, "ready")
+        nodes_db = self.db.query(Node).all()
+        self.assertEquals(len(nodes_db), 0)
+
+    def test_remove_nodes_resp_failure(self):
+        cluster = self.create_cluster_api()
+        node1 = self.create_default_node(cluster_id=cluster['id'])
+        node2 = self.create_default_node(cluster_id=cluster['id'])
+
+        receiver = threaded.NailgunReceiver()
+
+        task = Task(
+            uuid=str(uuid.uuid4()),
+            name="super",
+            cluster_id=cluster['id']
+        )
+        self.db.add(task)
+        self.db.commit()
+
+        kwargs = {'task_uuid': task.uuid,
+                  'progress': 100,
+                  'status': 'error',
+                  'nodes': [],
+                  'error_nodes': [{'uid': node1.id,
+                                   'error': "RPC method failed"}]}
+
+        receiver.remove_nodes_resp(**kwargs)
+        self.db.refresh(task)
+        self.assertEqual(task.status, "error")
+        nodes_db = self.db.query(Node).all()
+        error_node = self.db.query(Node).get(node1.id)
+        self.db.refresh(error_node)
+        self.assertEquals(len(nodes_db), 2)
+        self.assertEquals(error_node.status, "error")
