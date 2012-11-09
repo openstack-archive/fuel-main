@@ -134,12 +134,14 @@ class LibvirtXMLBuilder:
             for interface in node.interfaces:
                 with node_xml.interface(type="network"):
                     node_xml.source(network=interface.network.id)
-                    node_xml.model(type='virtio')
+                    if not (interface.type is None):
+                        node_xml.model(type=interface.type)
 
             for interface in node.bridged_interfaces:
                 with node_xml.interface(type="bridge"):
                     node_xml.source(bridge=interface.bridge)
-                    node_xml.model(type='virtio')
+                    if not (interface.type is None):
+                        node_xml.model(type=interface.type)
 
             if node.vnc:
                 node_xml.graphics(type='vnc', listen='0.0.0.0', autoport='yes')

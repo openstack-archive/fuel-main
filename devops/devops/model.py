@@ -180,12 +180,13 @@ class Disk(object):
 
 
 class BridgedInterface(ManagedObject):
-    def __init__(self, bridge):
+    def __init__(self, bridge, type='virtio'):
         super(BridgedInterface, self).__init__()
         self.bridge = bridge
+        self.type = type
 
 class Interface(ManagedObject):
-    def __init__(self, network, ip_addresses=None):
+    def __init__(self, network, ip_addresses=None, type='virtio'):
         super(Interface, self).__init__()
         if not ip_addresses: ip_addresses = []
         self.node = None
@@ -194,6 +195,7 @@ class Interface(ManagedObject):
             ip_addresses = (ip_addresses,)
         self._ip_addresses = ip_addresses
         self.mac_address = None
+        self.type = type
 
     @property
     def ip_addresses(self):
