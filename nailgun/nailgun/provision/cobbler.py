@@ -131,8 +131,7 @@ class Cobbler:
         return self.item_from_dict('system', obj_name, obj_dict)
 
     def remove_item(self, what, obj_name, recursive=True):
-        return self.remote.remove_item(what, obj_name, self.token,
-                                       recursive=recursive)
+        return self.remote.remove_item(what, obj_name, self.token)
 
     def remove_system(self, obj_name):
         return self.remove_item('system', obj_name)
