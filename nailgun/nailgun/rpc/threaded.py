@@ -69,7 +69,7 @@ class NailgunReceiver(object):
                     " node doesn't exist", str(node)
                 )
                 break
-            node_db.pending_addition = False
+            node_db.pending_deletion = False
             node_db.status = 'error'
             cls.db.add(node_db)
         cls.db.commit()

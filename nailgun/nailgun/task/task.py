@@ -99,6 +99,7 @@ class DeploymentTask(object):
             nd_dict['power_address'] = node.ip
 
             node.status = "provisioning"
+            node.pending_addition = False
 
             nd_name = TaskHelper.slave_name_by_id(node.id)
 
@@ -187,16 +188,12 @@ class DeletionTask(object):
         nodes_to_delete = []
         for node in task.cluster.nodes:
             if node.pending_deletion:
-                node.pending_deletion = False
-                web.ctx.orm.add(node)
-                web.ctx.orm.commit()
                 nodes_to_delete.append({
                     'id': node.id,
                     'uid': node.id
                 })
 
         if nodes_to_delete:
-
             pd = Cobbler(settings.COBBLER_URL,
                          settings.COBBLER_USER, settings.COBBLER_PASSWORD)
             for node in nodes_to_delete:
