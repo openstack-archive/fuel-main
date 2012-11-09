@@ -1003,6 +1003,9 @@ h6.page-title {
   float: left;
   font-weight: bold;
   margin: 5px 7px 0 0;
+  max-width: 800px;
+  overflow: hidden;
+  word-break: break-all;
 }
 
 .networks-table {
