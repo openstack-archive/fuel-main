@@ -169,7 +169,7 @@ class Cdrom(object):
 
 
 class Disk(object):
-    def __init__(self, size=None, path=None, format='qcow2', bus='ide',
+    def __init__(self, size=None, path=None, format='qcow2', bus='virtio',
                  base_image=None):
         self.size = size
         self.format = format
