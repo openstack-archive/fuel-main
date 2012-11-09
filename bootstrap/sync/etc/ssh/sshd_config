@@ -4,6 +4,7 @@ PasswordAuthentication yes
 ChallengeResponseAuthentication no
 GSSAPIAuthentication no
 UsePAM no
+UseDNS no
 
 # Accept locale-related environment variables
 AcceptEnv LANG LC_CTYPE LC_NUMERIC LC_TIME LC_COLLATE LC_MONETARY LC_MESSAGES
