@@ -56,7 +56,7 @@ class NailgunReceiver(object):
             node_db = cls.db.query(Node).get(node['uid'])
             if not node_db:
                 logger.error(
-                    "Node should be deleted, but not found: %s" % str(node)
+                    "Failed to delete node '%s': node doesn't exist", str(node)
                 )
                 break
             cls.db.delete(node_db)
@@ -65,8 +65,8 @@ class NailgunReceiver(object):
             node_db = cls.db.query(Node).get(node['uid'])
             if not node_db:
                 logger.error(
-                    "Error while deleting node, "
-                    " but it is not found: %s" % str(node)
+                    "Failed to delete node '%s' marked as error from Naily:"
+                    " node doesn't exist", str(node)
                 )
                 break
             node_db.status = 'error'

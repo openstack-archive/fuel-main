@@ -22,7 +22,6 @@ from nailgun.api.models import Task
 from nailgun.api.handlers.base import JSONHandler
 from nailgun.api.handlers.node import NodeHandler
 from nailgun.api.handlers.tasks import TaskHandler
-from nailgun.network import manager as netmanager
 from nailgun.task.manager import DeploymentTaskManager
 from nailgun.task.manager import VerifyNetworksTaskManager
 from nailgun.task.errors import FailedProvisioning

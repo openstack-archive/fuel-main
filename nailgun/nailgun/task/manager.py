@@ -41,10 +41,10 @@ class DeploymentTaskManager(TaskManager):
         )
         web.ctx.orm.add(self.super_task)
         web.ctx.orm.commit()
-        self.deployment_task = self.super_task.create_subtask("deployment")
         self.deletion_task = self.super_task.create_subtask("deletion")
-        self.deployment_task.execute(DeploymentTask)
+        self.deployment_task = self.super_task.create_subtask("deployment")
         self.deletion_task.execute(DeletionTask)
+        self.deployment_task.execute(DeploymentTask)
         # note: this will work only in sync mode
         self.super_task.refresh()
         return self.super_task
