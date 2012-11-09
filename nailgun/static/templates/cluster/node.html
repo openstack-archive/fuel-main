@@ -15,16 +15,16 @@
     <div class="node-status">
       <% var status = node.get('status') %>
       <% if (node.get('pending_addition')) { %>
-        <div class="msg-info">
-          <i class="icon-attention-circle"></i>Pending Addition
+        <div class="msg-warning">
+          <i class="icon-ok-circle2"></i>Pending Addition
         </div>
       <% } else if (node.get('pending_deletion')) { %>
-        <div class="msg-info">
-          <i class="icon-attention-circle"></i>Pending Deletion
+        <div class="msg-warning">
+          <i class="icon-cancel-circle2"></i>Pending Deletion
         </div>
       <% } else if (status == 'ready') { %>
         <div class="msg-ok">
-          <i class="icon-ok-circle"></i>Ready
+          <i class="icon-ok"></i>Ready
         </div>
       <% } else if (status == 'provisioning') { %>
         <div class="progress progress-striped active">
@@ -39,7 +39,7 @@
           <i class="icon-attention-3"></i>Error
         </div>
       <% } else if (status == 'offline') { %>
-        <i class="icon-off"></i>Offline
+        <i class="icon-block-1"></i>Not available
       <% } else { %>
         <%= status %>
       <% } %>
