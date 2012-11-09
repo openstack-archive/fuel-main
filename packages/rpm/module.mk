@@ -4,7 +4,6 @@ $/%: /:=$/
 
 SRC_DIR:=$/SOURCES/
 
-
 $/prep.done: $(LOCAL_MIRROR)/src.done
 	@mkdir -p $/SOURCES
 	cp -f $(LOCAL_MIRROR)/src/* $/SOURCES/
@@ -13,19 +12,24 @@ $/prep.done: $(LOCAL_MIRROR)/src.done
 	cp -f mcagent/* $/SOURCES/nailgun-mcagents
 	$(ACTION.TOUCH)
 
-$/RPMS/x86_64/cirros-uec-0.3.0-1.x86_64.rpm: $/prep.done packages/rpm/specs/cirros-0.3.0.spec
+$/rpm-cirros.done: $/prep.done packages/rpm/specs/cirros-0.3.0.spec
 	rpmbuild -vv --define "_topdir `readlink -f $/`" -ba packages/rpm/specs/cirros-0.3.0.spec
+	$(ACTION.TOUCH)
 
-$/RPMS/x86_64/rabbitmq-plugins-2.6.1.rpm: $/prep.done packages/rpm/specs/rabbitmq-plugins.spec
+$/rpm-rabbitmq-plugins.done: $/prep.done packages/rpm/specs/rabbitmq-plugins.spec
 	rpmbuild -vv --define "_topdir `readlink -f $/`" -ba packages/rpm/specs/rabbitmq-plugins.spec
+	$(ACTION.TOUCH)
 
-$/RPMS/x86_64/nailgun-agent-0.1.0.rpm: $/prep.done packages/rpm/specs/nailgun-agent.spec
+$/rpm-nailgun-agent.done: $/prep.done packages/rpm/specs/nailgun-agent.spec
 	rpmbuild -vv --define "_topdir `readlink -f $/`" -ba packages/rpm/specs/nailgun-agent.spec
+	$(ACTION.TOUCH)
 
-$/RPMS/x86_64/nailgun-mcagents-0.1.0.rpm: $/prep.done packages/rpm/specs/nailgun-mcagents.spec
+$/rpm-nailgun-mcagents.done: $/prep.done packages/rpm/specs/nailgun-mcagents.spec
 	rpmbuild -vv --define "_topdir `readlink -f $/`" -ba packages/rpm/specs/nailgun-mcagents.spec
+	$(ACTION.TOUCH)
 
-$(BUILD_DIR)/rpm/rpm.done: $/RPMS/x86_64/cirros-uec-0.3.0-1.x86_64.rpm \
-	    $/RPMS/x86_64/rabbitmq-plugins-2.6.1.rpm $/RPMS/x86_64/nailgun-agent-0.1.0.rpm \
-		$/RPMS/x86_64/nailgun-mcagents-0.1.0.rpm
+$(BUILD_DIR)/rpm/rpm.done: $/rpm-cirros.done \
+		$/rpm-rabbitmq-plugins.done \
+		$/rpm-nailgun-agent.done \
+		$/rpm-nailgun-mcagents.done
 	$(ACTION.TOUCH)

@@ -108,13 +108,17 @@ $/isoroot.done: \
 		$/isoroot-prepare.done
 	$(ACTION.TOUCH)
 
-
-
+# keep in mind that mkisofs touches some files inside directory
+# from which it builds iso image
+# that is why we need to make $/isoroot.done dependent on some files
+# and then copy these files into another directory
 $/nailgun-centos-6.3-amd64.iso: $/isoroot.done
 	rm -f $@
+	mkdir -p $/isoroot-mkisofs
+	rsync -a --delete $(ISOROOT)/ $/isoroot-mkisofs
 	mkisofs -r -V "Mirantis Nailgun" -p "Mirantis" \
 		-J -T -R -b isolinux/isolinux.bin \
 		-no-emul-boot \
 		-boot-load-size 8 -boot-info-table \
-		-x "lost+found" -o $@ $(ISOROOT)
+		-x "lost+found" -o $@ $/isoroot-mkisofs
 	implantisomd5 $/nailgun-centos-6.3-amd64.iso
