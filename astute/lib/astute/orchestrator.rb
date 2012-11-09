@@ -51,7 +51,7 @@ module Astute
         Astute.logger.info "#{ctx.task_id}: Nodes to remove are not provided. Do nothing."
         return {'nodes' => nodes}
       end
-      uids = nodes.map {|n| n['uid']}
+      uids = nodes.map {|n| n['uid'].to_s}
       Astute.logger.info "#{ctx.task_id}: Starting removing of nodes: #{uids.inspect}"
       remover = MClient.new(ctx, "erase_node", uids, check_result=false)
       result = remover.erase_node(:reboot => true)
