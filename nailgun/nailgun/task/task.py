@@ -81,6 +81,8 @@ class DeploymentTask(object):
         for node in itertools.ifilter(
             lambda n: n.status in allowed_statuses, task.cluster.nodes
         ):
+            if node.pending_deletion:
+                continue
             if node.status == "discover":
                 logger.info(
                     "Node %s seems booted with bootstrap image",
