@@ -23,6 +23,13 @@ from nailgun.task.errors import WrongNodeStatus
 logger = logging.getLogger(__name__)
 
 
+class TaskHelper(object):
+
+    @classmethod
+    def slave_name_by_id(cls, id):
+        return "slave-%s" % str(id)
+
+
 class DeploymentTask(object):
 
     @classmethod
@@ -94,7 +101,7 @@ class DeploymentTask(object):
             web.ctx.orm.add(node)
             web.ctx.orm.commit()
 
-            nd_name = "slave-%d" % node.id
+            nd_name = TaskHelper.slave_name_by_id(node.id)
 
             nd_dict['hostname'] = 'slave-%d.%s' % \
                 (node.id, settings.DNS_DOMAIN)
@@ -185,7 +192,14 @@ class DeletionTask(object):
                     'id': node.id,
                     'uid': node.id
                 })
+
         if nodes_to_delete:
+
+            pd = Cobbler(settings.COBBLER_URL,
+                         settings.COBBLER_USER, settings.COBBLER_PASSWORD)
+            for node in nodes_to_delete:
+                pd.remove_system(TaskHelper.slave_name_by_id(node['id']))
+
             msg_delete = {
                 'method': 'remove_nodes',
                 'respond_to': 'remove_nodes_resp',

@@ -130,6 +130,13 @@ class Cobbler:
     def system_from_dict(self, obj_name, obj_dict, item_override=True):
         return self.item_from_dict('system', obj_name, obj_dict)
 
+    def remove_item(self, what, obj_name, recursive=True):
+        return self.remote.remove_item(what, obj_name, self.token,
+                                       recursive=recursive)
+
+    def remove_system(self, obj_name):
+        return self.remove_item('system', obj_name)
+
     def _item_id_if_exists(self, what, obj_name):
         try:
             if self.remote.has_item(what, obj_name):
