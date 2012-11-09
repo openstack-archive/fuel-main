@@ -97,7 +97,7 @@ class DeploymentTask(object):
             nd_dict['power_address'] = node.ip
 
             node.status = "provisioning"
-            node.redeployment_needed = False
+            node.pending_addition = False
             web.ctx.orm.add(node)
             web.ctx.orm.commit()
 
@@ -188,6 +188,9 @@ class DeletionTask(object):
         nodes_to_delete = []
         for node in task.cluster.nodes:
             if node.pending_deletion:
+                node.pending_deletion = False
+                web.ctx.orm.add(node)
+                web.ctx.orm.commit()
                 nodes_to_delete.append({
                     'id': node.id,
                     'uid': node.id
