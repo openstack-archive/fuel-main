@@ -20,12 +20,12 @@
     </h3>
   </div>
   <div class="span2 roles-action-link">
-    <button class="btn btn-add-nodes btn-link pull-right <%= nodes.cluster.task('deploy', 'running') || size && !hasChanges && nodes.length >= size ? 'disabled' : '' %>">
+    <button class="btn btn-add-nodes btn-link pull-right <%= nodes.cluster.task('deploy', 'running') || size && nodesAfterDeployment.length >= size ? 'disabled' : '' %>">
       <i class="icon-plus-circle"></i>Add
     </button>
   </div>
   <div class="span2 roles-action-link">
-    <button class="btn btn-delete-nodes btn-link pull-right <%= nodes.cluster.task('deploy', 'running') || !currentNodes.length ? 'disabled' : '' %>">
+    <button class="btn btn-delete-nodes btn-link pull-right <%= nodes.cluster.task('deploy', 'running') || !nodesAfterDeployment.length ? 'disabled' : '' %>">
       <i class="icon-cancel-circle"></i>Delete
     </button>
   </div>

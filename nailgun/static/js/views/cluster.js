@@ -264,20 +264,14 @@ function(models, dialogViews, clusterPageTemplate, deploymentResultTemplate, dep
             }
         },
         calculateApplyButtonAvailability: function() {
-            var available = false;
-            if (this.nodes.length) {
-                var chosenNodesIds = this.getChosenNodesIds();
-                var originalNodesIds = _.pluck(this.getOriginalNodes(), 'id');
-                available = !_.isEqual(chosenNodesIds, originalNodesIds);
-            }
-            this.$('.btn-apply').attr('disabled', !available);
+            this.$('.btn-apply').attr('disabled', !this.getChosenNodesIds());
         },
         discardChanges: function() {
             this.tab.changeScreen(views.NodesByRolesScreen);
         },
         applyChanges: function(e) {
             this.$('.btn-apply').attr('disabled', true);
-            var nodes = new models.Nodes(this.getNodesToModify());
+            var nodes = new models.Nodes(this.getChosenNodes());
             this.modifyNodes(nodes);
             Backbone.sync('update', nodes).done(_.bind(function() {
                 this.tab.changeScreen(views.NodesByRolesScreen);
@@ -291,14 +285,6 @@ function(models, dialogViews, clusterPageTemplate, deploymentResultTemplate, dep
         getChosenNodes: function() {
             var chosenNodesIds = this.getChosenNodesIds();
             return this.nodes.filter(function(node) {return _.contains(chosenNodesIds, node.id);});
-        },
-        getNodesToModify: function() {
-            var nodesToModify = [];
-            var chosenNodes = new models.Nodes(this.getChosenNodes());
-            var originalNodes = new models.Nodes(this.getOriginalNodes());
-            chosenNodes.each(function(node) {if (!originalNodes.get(node.id)) {nodesToModify.push(node);}}, this);
-            originalNodes.each(function(node) {if (!chosenNodes.get(node.id)) {nodesToModify.push(node);}}, this);
-            return nodesToModify;
         },
         initialize: function(options) {
             _.defaults(this, options);
@@ -321,8 +307,6 @@ function(models, dialogViews, clusterPageTemplate, deploymentResultTemplate, dep
                         nodeView.$('.nodebox[data-node-id=' + node.id + ']').addClass('node-to-' + this.action + '-checked').removeClass('node-to-' + this.action + '-unchecked');
                     }
                 }, this);
-                this.calculateNotChosenNodesAvailability();
-                this.calculateSelectAllTumblerState();
             } else {
                 nodesContainer.html('<div class="span12">No nodes available</div>');
             }
@@ -343,32 +327,25 @@ function(models, dialogViews, clusterPageTemplate, deploymentResultTemplate, dep
             this.constructor.__super__.initialize.apply(this, arguments);
             this.nodes = new models.Nodes();
             this.nodes.deferred = this.nodes.fetch({data: {cluster_id: ''}}).done(_.bind(function() {
-                this.nodes.add(this.model.get('nodes').where({role: options.role, pending_addition: true}), {at: 0});
+                this.nodes.add(this.model.get('nodes').where({role: options.role, pending_deletion: true}), {at: 0});
                 this.render();
             }, this));
         },
-        getOriginalNodes: function() {
-            return this.model.get('nodes').filter(function(node) {return node.get(this.flag) == true;}, this);
-        },
         modifyNodes: function(nodes) {
             nodes.each(function(node) {
-                if (!node.get(this.flag)) {
+                if (node.get('pending_deletion')) {
+                    node.set({pending_deletion: false}, {silent: true});
+                } else {
                     node.set({
                         cluster_id: this.model.id,
                         role: this.role,
                         pending_addition: true
                     }, {silent: true});
-                } else {
-                    node.set({
-                        cluster_id: null,
-                        role: null,
-                        pending_addition: false
-                    }, {silent: true});
                 }
             }, this);
             nodes.toJSON = function(options) {
                 return this.map(function(node) {
-                    return _.pick(node.attributes, 'id', 'cluster_id', 'role', 'pending_addition');
+                    return _.pick(node.attributes, 'id', 'cluster_id', 'role', 'pending_addition', 'pending_deletion');
                 });
             };
         }
@@ -379,18 +356,25 @@ function(models, dialogViews, clusterPageTemplate, deploymentResultTemplate, dep
         flag: 'pending_deletion',
         initialize: function(options) {
             this.constructor.__super__.initialize.apply(this, arguments);
-            this.nodes = new models.Nodes(this.model.get('nodes').where({role: options.role, pending_addition: false}));
-        },
-        getOriginalNodes: function() {
-            return this.nodes.filter(function(node) {return node.get(this.flag) == true;}, this);
+            this.nodes = new models.Nodes(this.model.get('nodes').filter(function(node) {
+                return node.get('role') == options.role && (node.get('pending_addition') || !node.get('pending_deletion'));
+            }));
         },
         modifyNodes: function(nodes) {
             nodes.each(function(node) {
-                node.set({pending_deletion: !node.get('pending_deletion')}, {silent: true});
+                if (node.get('pending_addition')) {
+                    node.set({
+                        cluster_id: null,
+                        role: null,
+                        pending_addition: false
+                    }, {silent: true});
+                } else {
+                    node.set({pending_deletion: true}, {silent: true});
+                }
             }, this);
             nodes.toJSON = function(options) {
                 return this.map(function(node) {
-                    return _.pick(node.attributes, 'id', 'pending_deletion');
+                    return _.pick(node.attributes, 'id', 'cluster_id', 'role', 'pending_addition', 'pending_deletion');
                 });
             };
         }
@@ -413,7 +397,7 @@ function(models, dialogViews, clusterPageTemplate, deploymentResultTemplate, dep
             this.tab.changeScreen(views.AddNodesScreen, {role: this.role, limit: limit});
         },
         deleteNodes: function() {
-            this.tab.changeScreen(views.DeleteNodesScreen, {role: this.role});
+            this.tab.changeScreen(views.DeleteNodesScreen, {role: this.role, limit: null});
         },
         initialize: function(options) {
             _.defaults(this, options);
