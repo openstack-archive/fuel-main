@@ -100,6 +100,8 @@ class DeploymentTask(object):
 
             node.status = "provisioning"
             node.pending_addition = False
+            web.ctx.orm.add(node)
+            web.ctx.orm.commit()
 
             nd_name = TaskHelper.slave_name_by_id(node.id)
 
