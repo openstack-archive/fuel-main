@@ -36,7 +36,7 @@ class DeploymentTaskManager(TaskManager):
                 web.ctx.orm.delete(t)
                 web.ctx.orm.commit()
         self.super_task = Task(
-            name="super",
+            name="deploy",
             cluster=self.cluster
         )
         web.ctx.orm.add(self.super_task)
