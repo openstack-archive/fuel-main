@@ -118,13 +118,11 @@ $(CENTOS_REPO_DIR)etc/yum-$(REPO_SUFFIX).repos.d/base.repo:
 	@mkdir -p $(@D)
 	echo "$${contents}" > $@
 
-$(CENTOS_REPO_DIR)repodata/comps.xml.gz:
+$(CENTOS_REPO_DIR)repodata/comps.xml:
 	@mkdir -p $(@D)
-	wget -O $@ $(CENTOS_MIRROR)/`wget -qO- $(CENTOS_MIRROR)/repodata/repomd.xml | \
-	 grep 'comps\.xml\.gz' | awk -F'"' '{ print $$2 }'`
-
-$(CENTOS_REPO_DIR)repodata/comps.xml: $(CENTOS_REPO_DIR)repodata/comps.xml.gz
-	gunzip -c $(CENTOS_REPO_DIR)repodata/comps.xml.gz > $@
+	wget -O $@.gz $(CENTOS_MIRROR)/`wget -qO- $(CENTOS_MIRROR)/repodata/repomd.xml | \
+	 grep '$(@F)\.gz' | awk -F'"' '{ print $$2 }'`
+	gunzip $(CENTOS_REPO_DIR)repodata/$(@F).gz
 
 $/cache-boot.done: \
 		$(addprefix $(CENTOS_REPO_DIR)/images/,$(IMAGES_FILES)) \
@@ -141,14 +139,13 @@ $/cache-extra.done: \
 		$(CENTOS_REPO_DIR)repodata/comps.xml \
 	 	$/cache-infra.done \
 		requirements-rpm.txt
-	CENTOSMIN_PACKAGES=$(shell grep "<packagereq type='mandatory'>" $(CENTOS_REPO_DIR)comps.xml | sed -e "s/^\s*<packagereq type='mandatory'>\(.*\)<\/packagereq>\s*$$/\\1/")
 	yum -c $(CENTOS_REPO_DIR)etc/yum-$(REPO_SUFFIX).conf clean all
 	rm -rf /var/tmp/yum-$$USER-*/
 ifeq ($(IGNORE_MIRROR),1)
-	repotrack -c $(CENTOS_REPO_DIR)etc/yum-$(REPO_SUFFIX).conf -p $(CENTOS_REPO_DIR)Packages -a $(CENTOS_ARCH) $(CENTOSMIN_PACKAGES) $(CENTOSEXTRA_PACKAGES)
+	repotrack -c $(CENTOS_REPO_DIR)etc/yum-$(REPO_SUFFIX).conf -p $(CENTOS_REPO_DIR)Packages -a $(CENTOS_ARCH) $(CENTOSEXTRA_PACKAGES)
 	repotrack -r base -r updates -r extras -r contrib -r centosplus -r epel -r rpmforge-extras -c $(CENTOS_REPO_DIR)etc/yum-$(REPO_SUFFIX).conf -p $(CENTOS_REPO_DIR)Packages -a $(CENTOS_ARCH) $(CENTOSRPMFORGE_PACKAGES)
 else
-	repotrack -c $(CENTOS_REPO_DIR)etc/yum-$(REPO_SUFFIX).conf -p $(CENTOS_REPO_DIR)Packages -a $(CENTOS_ARCH) $(CENTOSMIN_PACKAGES) $(CENTOSEXTRA_PACKAGES) $(CENTOSRPMFORGE_PACKAGES)
+	repotrack -c $(CENTOS_REPO_DIR)etc/yum-$(REPO_SUFFIX).conf -p $(CENTOS_REPO_DIR)Packages -a $(CENTOS_ARCH) $(CENTOSEXTRA_PACKAGES) $(CENTOSRPMFORGE_PACKAGES)
 endif
 	$(ACTION.TOUCH)
 
