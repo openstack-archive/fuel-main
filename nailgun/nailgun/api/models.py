@@ -115,6 +115,10 @@ class Node(Base, BasicValidator):
         'compute',
         'storage',
     )
+    NODE_ERRORS = (
+        'deploy',
+        'provision',
+    )
     id = Column(Integer, primary_key=True)
     cluster_id = Column(Integer, ForeignKey('clusters.id'))
     name = Column(Unicode(100))
@@ -129,6 +133,8 @@ class Node(Base, BasicValidator):
     role = Column(Enum(*NODE_ROLES))
     pending_addition = Column(Boolean, default=False)
     pending_deletion = Column(Boolean, default=False)
+    error_type = Column(Enum(*NODE_ERRORS))
+    error_msg = Column(String(255))
 
     @property
     def info(self):
