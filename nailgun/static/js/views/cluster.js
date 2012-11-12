@@ -26,7 +26,7 @@ function(models, dialogViews, clusterPageTemplate, deploymentResultTemplate, dep
         template: _.template(clusterPageTemplate),
         events: {
             'click .task-result .close': 'dismissTaskResult',
-            'click .deploy-btn:not([disabled])': 'displayChanges'
+            'click .deploy-btn': 'displayChanges'
         },
         dismissTaskResult: function() {
             this.$('.task-result').remove();
@@ -36,7 +36,6 @@ function(models, dialogViews, clusterPageTemplate, deploymentResultTemplate, dep
             (new dialogViews.DisplayChangesDialog({model: this.model})).render();
         },
         deployCluster: function() {
-            this.$('.deploy-btn').attr('disabled', true);
             var task = new models.Task();
             task.save({}, {
                 type: 'PUT',

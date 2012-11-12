@@ -147,11 +147,14 @@ function(models, createClusterDialogTemplate, changeClusterModeDialogTemplate, c
             'click .start-deployment-btn': 'deployCluster'
         },
         deployCluster: function() {
-            app.page.deployCluster();
             this.$el.modal('hide');
+            app.page.deployCluster();
         },
         render: function() {
-            this.constructor.__super__.render.call(this, {cluster: this.model});
+            this.constructor.__super__.render.call(this, {
+                cluster: this.model,
+                size: this.model.get('mode') == 'ha' ? this.model.get('redundancy') : 1
+            });
             return this;
         }
     });

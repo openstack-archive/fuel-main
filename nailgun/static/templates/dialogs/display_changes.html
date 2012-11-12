@@ -1,34 +1,48 @@
 <div class="modal-header">
   <button type="button" class="close" data-dismiss="modal">×</button>
-  <h3>Changes to deploy</h3>
+  <h3>Deploy statistic</h3>
 </div>
 <div class="modal-body display-changes-dialog">
   <ul>
-    <% var nodesToAdd = cluster.get('nodes').where({pending_addition: true}) %>
-    <% if (nodesToAdd.length) { %>
-      <li>Add nodes:
-        <ul>
-          <% _.each(cluster.availableRoles(), function(role) { %>
-            <% var count = _.filter(nodesToAdd, function(node) {return node.get('role') == role}).length %>
-            <% if (count) { %><li><%= count %> <%= role %> node<%= count != 1 ? 's' : '' %></li><% } %>
-          <% }) %>
-        </ul>
-      </li>
-    <% } %>
+    <% var canDeploy = true %>
+    <% var roles = cluster.availableRoles() %>
+    <% _.each(roles, function(role) { %>
+      <% var count = cluster.get('nodes').where({role: role}).length %>
+      <% if (role == 'controller' && count != size) { %>
+        <li>Insufficient number of <%= role %><%= count != 1 ? 's' : '' %>: <%= count %> of <%= size %> node<%= size != 1 ? 's' : '' %></li>
+        <% canDeploy = false %>
+      <% } else if (!count) { %>
+        <li>Must contain at least one <%= role %> node</li>
+        <% canDeploy = false %>
+      <% } %>
+    <% }) %>
 
-    <% var nodesToDelete = cluster.get('nodes').where({pending_deletion: true}) %>
-    <% if (nodesToDelete.length) { %>
-      <li>Delete nodes:
-        <ul>
-          <% _.each(cluster.availableRoles(), function(role) { %>
-            <% var count = _.filter(nodesToDelete, function(node) {return node.get('role') == role}).length %>
-            <% if (count) { %><li><%= count %> <%= role %> node<%= count != 1 ? 's' : '' %></li><% } %>
-          <% }) %>
-        </ul>
-      </li>
+    <% if (canDeploy) { %>
+      <% var nodesToAdd = cluster.get('nodes').where({pending_addition: true}) %>
+      <% if (nodesToAdd.length) { %>
+        <li>Add nodes:
+          <ul>
+            <% _.each(roles, function(role) { %>
+              <% var count = _.filter(nodesToAdd, function(node) {return node.get('role') == role}).length %>
+              <% if (count) { %><li><%= count %> <%= role %> node<%= count != 1 ? 's' : '' %></li><% } %>
+            <% }) %>
+          </ul>
+        </li>
+      <% } %>
+      <% var nodesToDelete = cluster.get('nodes').where({pending_deletion: true}) %>
+      <% if (nodesToDelete.length) { %>
+        <li>Delete nodes:
+          <ul>
+            <% _.each(roles, function(role) { %>
+              <% var count = _.filter(nodesToDelete, function(node) {return node.get('role') == role}).length %>
+              <% if (count) { %><li><%= count %> <%= role %> node<%= count != 1 ? 's' : '' %></li><% } %>
+            <% }) %>
+          </ul>
+        </li>
+      <% } %>
     <% } %>
   </ul>
 </div>
 <div class="modal-footer" style="text-align: center">
-  <button class="btn btn-success start-deployment-btn center">Start Deployment</button>
+  <button class="btn btn-success start-deployment-btn center" <%= canDeploy ? '' : 'disabled' %>>Start Deployment</button>
 </div>
