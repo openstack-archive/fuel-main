@@ -390,11 +390,7 @@ h6.page-title {
 	color: #666666;
 	padding-right: 14px;
   text-align: center;
-  font-size: 14px;
-}
-
-.nodestatus > i {
-  font-size: 15px;
+  font-size: 13px;
 }
 
 .node-status > .progress {
@@ -414,6 +410,8 @@ h6.page-title {
   text-align: left;
   text-shadow: none;
 }
+
+.node-status i {font-size: 15px;}
 
 .checktoinstall {
   display: block;
@@ -455,9 +453,6 @@ h6.page-title {
   background-color: rgba(121, 0, 0, 0.35);
 }
 */
-
-.msg-ok, .msg-info, .msg-error, .msg-warning, .msg-unimportant {font-size: 13px;}
-.msg-ok > i, .msg-info > i, .msg-error > i, .msg-warning > i, .msg-unimportant > i {font-size: 15px;}
 
 .msg-ok {color: #17824b;}
 .msg-info {color: #4794cf;}
