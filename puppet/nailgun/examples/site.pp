@@ -5,6 +5,7 @@ node default {
   $centos_repos =
   [
    {
+   "id" => "nailgun",
    "name" => "Nailgun",
    "url"  => "http://${ipaddress}:8080/centos/6.3/nailgun/x86_64"
    },

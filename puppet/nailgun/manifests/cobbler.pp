@@ -159,6 +159,22 @@ class nailgun::cobbler(
     require => Class["cobbler::server"],
   }
 
+  file { "/var/lib/cobbler/snippets/nailgun_repo":
+    content => template("nailgun/cobbler/nailgun_repo.snippet.erb"),
+    owner => root,
+    group => root,
+    mode => 0644,
+    require => Class["cobbler::server"],
+  }
+
+  file { "/var/lib/cobbler/snippets/ssh_disable_gssapi":
+    content => template("nailgun/cobbler/ssh_disable_gssapi.snippet.erb"),
+    owner => root,
+    group => root,
+    mode => 0644,
+    require => Class["cobbler::server"],
+  }
+
   Package<| title == "cman" |>
   Package<| title == "fence-agents"|>
 }

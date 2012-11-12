@@ -168,6 +168,16 @@ echo 'flock -w 0 -o /var/lock/agent.lock -c "/opt/nailgun/bin/agent > /var/log/n
 # PUTS authorized_keys file into /root/.ssh/authorized_keys
 $SNIPPET('authorized_keys')
 
+# COBBLER EMBEDDED SNIPPET: 'nailgun_repo'
+# REMOVES ALL *.repo FILES FROM /etc/yum.repos.d AND
+# CREATES /etc/yum.repos.d/nailgun.repo FILE AND
+# PUTS IN IT ALL THE REPOSITORIES DEFINED IN ks_repo VARIABLE
+$SNIPPET('nailgun_repo')
+
+# COBBLER EMBEDDED SNIPPET: 'ssh_disable_gssapi'
+# REMOVES "GSSAPICleanupCredentials yes" AND "GSSAPIAuthentication yes" LINES
+# FROM /etc/ssh/sshd_config
+$SNIPPET('ssh_disable_gssapi')
 
 # COBBLER EMBEDDED SNIPPET: 'kickstart_done'
 # DISABLES PXE BOOTING
