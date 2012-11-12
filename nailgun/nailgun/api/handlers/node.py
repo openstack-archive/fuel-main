@@ -4,14 +4,13 @@ import json
 
 import web
 
-from nailgun.notifier import notifier
 from nailgun.logger import logger
 from nailgun.api.models import Node
 from nailgun.api.handlers.base import JSONHandler
 
 
 class NodeHandler(JSONHandler):
-    fields = ('id', 'name', 'info', 'network_data', 'role',
+    fields = ('id', 'name', 'info', 'networks', 'role',
               'status', 'mac', 'fqdn', 'ip', 'manufacturer', 'platform_name',
               'pending_addition', 'pending_deletion', 'os_platform')
     model = Node
@@ -86,12 +85,6 @@ class NodeCollectionHandler(JSONHandler):
             setattr(node, key, value)
         web.ctx.orm.add(node)
         web.ctx.orm.commit()
-        ram = round(node.info.get('ram', 0), 1)
-        cores = node.info.get('cores', 'unknown')
-        notifier.notify("discover",
-                        "New node with %s CPU core(s) "
-                        "and %s GB memory is discovered" %
-                        (cores, ram))
         raise web.webapi.created(json.dumps(
             NodeHandler.render(node),
             indent=4
@@ -101,17 +94,14 @@ class NodeCollectionHandler(JSONHandler):
         web.header('Content-Type', 'application/json')
         data = Node.validate_collection_update(web.data())
         q = web.ctx.orm.query(Node)
-        nodes_updated = []
+        ids_updated = []
         for nd in data:
             if "mac" in nd:
                 node = q.filter(Node.mac == nd["mac"]).first()
             else:
                 node = q.get(nd["id"])
+            ids_updated.append(node.id)
             for key, value in nd.iteritems():
                 setattr(node, key, value)
-            nodes_updated.append(node)
-            web.ctx.orm.add(node)
         web.ctx.orm.commit()
-        return json.dumps(map(
-            NodeHandler.render,
-            nodes_updated), indent=4)
+        return json.dumps(NodeHandler.render(node), indent=4)
