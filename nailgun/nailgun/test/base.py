@@ -118,12 +118,14 @@ class BaseHandlers(TestCase):
             }
         }
 
-    def create_default_node(self, cluster_id=None):
+    def create_default_node(self, cluster_id=None, status=None):
         node = Node()
         node.mac = self._generate_random_mac()
         node.cluster_id = cluster_id
         node.meta = self.default_metadata()
         node.fqdn = "fqdn_" + str(randint(0, 10000000))
+        if status:
+            node.status = status
         self.db.add(node)
         self.db.commit()
         return node
