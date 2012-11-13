@@ -89,13 +89,20 @@ function run_tests {
   nosetests $noseopts $test_args
 }
 
-run_tests || exit 1
+errors=''
+
+run_tests || errors+=' unittests'
 
 if [ -z "$noseargs" ]; then
   if [ $no_pep8 -eq 0 ]; then
-    run_pep8
+    run_pep8 || errors+=' pep8'
   fi
   if [ $no_jslint -eq 0 ]; then
-    run_jslint
+    run_jslint || errors+=' jslint'
   fi
+fi
+
+if [ -n "$errors" ]; then
+  echo Failed tests: $errors
+  exit 1
 fi
