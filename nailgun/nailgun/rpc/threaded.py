@@ -124,8 +124,9 @@ class NailgunReceiver(object):
             logger.error("verify_networks_resp: task \
                     with UUID %s found!", task_uuid)
             return
-        nets_db = cls.db.query(Network).filter_by(cluster_id=
-                                                  task.cluster_id).all()
+        nets_db = cls.db.query(Network).filter_by(
+            cluster_id=task.cluster_id
+        ).all()
         vlans_db = [net.vlan_id for net in nets_db]
         error_nodes = []
         for x in networks:
