@@ -179,6 +179,10 @@ $SNIPPET('nailgun_repo')
 # FROM /etc/ssh/sshd_config
 $SNIPPET('ssh_disable_gssapi')
 
+# COBBLER EMBEDDED SNIPPET: 'ssh_disable_dns'
+# ADDS 'UseDNS no' TO /etc/ssh/sshd_config
+$SNIPPET('ssh_disable_dns')
+
 # COBBLER EMBEDDED SNIPPET: 'kickstart_done'
 # DISABLES PXE BOOTING
 $SNIPPET('kickstart_done')

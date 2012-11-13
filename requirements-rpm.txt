@@ -1,5 +1,6 @@
 autoconf
 automake
+bind-utils
 byacc
 cman
 cobbler
