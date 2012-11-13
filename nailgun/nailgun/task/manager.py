@@ -9,9 +9,10 @@ import web
 from nailgun.settings import settings
 from nailgun.api.models import Cluster
 from nailgun.api.models import Task
-from nailgun.task.task import DeploymentTask
-from nailgun.task.task import DeletionTask
-from nailgun.task.task import VerifyNetworksTask
+
+from nailgun.task import task as original_tasks
+from nailgun.task import fake as fake_tasks
+tasks = settings.FAKE_TASKS and fake_tasks or original_tasks
 
 logger = logging.getLogger(__name__)
 
@@ -43,8 +44,8 @@ class DeploymentTaskManager(TaskManager):
         web.ctx.orm.commit()
         self.deletion_task = self.super_task.create_subtask("deletion")
         self.deployment_task = self.super_task.create_subtask("deployment")
-        self.deletion_task.execute(DeletionTask)
-        self.deployment_task.execute(DeploymentTask)
+        self.deletion_task.execute(tasks.DeletionTask)
+        self.deployment_task.execute(tasks.DeploymentTask)
         # note: this will work only in sync mode
         self.super_task.refresh()
         return self.super_task
@@ -59,5 +60,5 @@ class VerifyNetworksTaskManager(TaskManager):
         )
         web.ctx.orm.add(self.task)
         web.ctx.orm.commit()
-        self.task.execute(VerifyNetworksTask)
+        self.task.execute(tasks.VerifyNetworksTask)
         return self.task

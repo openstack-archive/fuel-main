@@ -10,10 +10,6 @@ from nailgun.api.handlers import check_client_content_type
 from nailgun.db import load_db_driver
 from nailgun.urls import urls
 
-app = web.application(urls, locals())
-app.add_processor(load_db_driver)
-#app.add_processor(check_client_content_type)
-
 
 class FlushingLogger(object):
     def __init__(self):
@@ -48,7 +44,8 @@ def appstart():
     import eventlet
     from eventlet import wsgi
     eventlet.monkey_patch()
-    q = threaded.rpc_queue
+    app = web.application(urls, locals())
+    app.add_processor(load_db_driver)
     rpc_thread = threaded.RPCThread()
 
     try:
@@ -69,6 +66,3 @@ def appstart():
         logger.info("Stopping WSGI app...")
         server.stop()
         logger.info("Done")
-
-
-application = app.wsgifunc()

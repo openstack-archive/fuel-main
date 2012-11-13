@@ -31,6 +31,9 @@ if __name__ == "__main__":
         '-a', '--address', dest='address', action='store', type=str,
         help='application address', default='0.0.0.0'
     )
+    run_parser.add_argument(
+        '--fake-tasks', action='store_true', help='fake tasks'
+    )
     test_parser = subparsers.add_parser(
         'test', help='run unit tests'
     )
@@ -64,11 +67,13 @@ if __name__ == "__main__":
             fixman.upload_fixture(fileobj)
         logger.info("Done")
     elif params.action in ("run",):
-        logger.info("Running WSGI app...")
-        from nailgun.wsgi import appstart
         settings.update({
             'LISTEN_PORT': int(params.port),
-            'LISTEN_ADDRESS': params.address})
+            'LISTEN_ADDRESS': params.address,
+            'FAKE_TASKS': params.fake_tasks,
+        })
+        logger.info("Running WSGI app...")
+        from nailgun.wsgi import appstart
         appstart()
         logger.info("Stopping WSGI app...")
     elif params.action == "shell":
