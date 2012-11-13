@@ -81,6 +81,7 @@ class Cluster(Base, BasicValidator):
     nodes = relationship("Node", backref="cluster")
     tasks = relationship("Task", backref="cluster")
     attributes = relationship("Attributes", uselist=False, backref="cluster")
+    notifications = relationship("Notification", backref="cluster")
 
     @classmethod
     def validate(cls, data):
@@ -372,3 +373,35 @@ class Task(Base, BasicValidator):
         self.subtasks.append(task)
         web.ctx.orm.commit()
         return task
+
+
+class Notification(Base, BasicValidator):
+    __tablename__ = 'notifications'
+
+    NOTIFICATION_STATUSES = (
+        'read',
+        'unread',
+    )
+
+    id = Column(Integer, primary_key=True)
+    cluster_id = Column(Integer, ForeignKey('clusters.id'))
+    level = Column(Integer, nullable=False, default=10)
+    message = Column(Text)
+    status = Column(Enum(*NOTIFICATION_STATUSES), nullable=False,
+                    default='unread')
+
+    @classmethod
+    def validate_update(cls, data):
+        def not_valid(message="Invalid request"):
+            raise web.webapi.badrequest(message=message)
+
+        valid = {}
+        d = cls.validate_json(data)
+
+        status = d.get("status", None)
+        if status in cls.NOTIFICATION_STATUSES:
+            valid["status"] = status
+        else:
+            not_valid("Bad status")
+
+        return valid

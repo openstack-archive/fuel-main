@@ -10,7 +10,8 @@ class nailgun::venv(
   $databasefile,
   $staticdir,
   $templatedir,
-  $logfile,
+  $custom_logfile,
+  $access_logfile,
 
   $rabbitmq_naily_user,
   $rabbitmq_naily_password,

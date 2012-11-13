@@ -18,6 +18,8 @@ from nailgun.api.handlers.networks import NetworkCollectionHandler
 from nailgun.api.handlers.tasks import TaskHandler
 from nailgun.api.handlers.tasks import TaskCollectionHandler
 
+from nailgun.api.handlers.notifications import NotificationHandler
+from nailgun.api.handlers.notifications import NotificationCollectionHandler
 
 urls = (
     r'/releases/?$',
@@ -44,6 +46,10 @@ urls = (
     'TaskCollectionHandler',
     r'/tasks/(?P<task_id>\d+)/?$',
     'TaskHandler',
+    r'/notifications/?$',
+    'NotificationCollectionHandler',
+    r'/notifications/(?P<notification_id>\d+)/?$',
+    'NotificationHandler',
 )
 
 api_app = web.application(urls, locals())

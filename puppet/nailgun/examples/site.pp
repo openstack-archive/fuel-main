@@ -44,7 +44,8 @@ node default {
     databasefile => "/var/tmp/nailgun.sqlite",
     staticdir => "/opt/nailgun/usr/share/nailgun/static",
     templatedir => "/opt/nailgun/usr/share/nailgun/static",
-    logfile => "/var/tmp/nailgun.log",
+    custom_logfile => "/var/log/nailgun.log",
+    access_logfile => "/var/log/nailgun_access.log",
 
     cobbler_url => "http://localhost/cobbler_api",
     cobbler_user => $cobbler_user,
