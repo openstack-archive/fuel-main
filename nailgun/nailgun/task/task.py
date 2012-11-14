@@ -217,15 +217,15 @@ class DeletionTask(object):
             for node in nodes_to_delete:
                 pd.remove_system(TaskHelper.slave_name_by_id(node['id']))
 
-            msg_delete = {
-                'method': 'remove_nodes',
-                'respond_to': 'remove_nodes_resp',
-                'args': {
-                    'task_uuid': task.uuid,
-                    'nodes': nodes_to_delete
-                }
+        msg_delete = {
+            'method': 'remove_nodes',
+            'respond_to': 'remove_nodes_resp',
+            'args': {
+                'task_uuid': task.uuid,
+                'nodes': nodes_to_delete
             }
-            rpc.cast('naily', msg_delete)
+        }
+        rpc.cast('naily', msg_delete)
 
 
 class VerifyNetworksTask(object):

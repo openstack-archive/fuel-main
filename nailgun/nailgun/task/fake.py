@@ -1,5 +1,7 @@
-import logging
 import web
+import time
+import logging
+import threading
 
 from nailgun.api.models import Network, Node
 from nailgun.task.errors import WrongNodeStatus
@@ -34,13 +36,27 @@ class DeploymentTask(object):
                 'network_data': netmanager.get_node_networks(n.id)
             })
 
-        receiver = NailgunReceiver()
-        kwargs = {
-            'task_uuid': task.uuid,
-            'nodes': nodes_with_attrs,
-            'progress': 20
-        }
-        receiver.deploy_resp(**kwargs)
+        class FakeDeploymentThread(threading.Thread):
+            def run(self):
+                receiver = NailgunReceiver()
+                kwargs = {
+                    'task_uuid': task.uuid,
+                    'nodes': nodes_with_attrs,
+                    'progress': 0
+                }
+
+                for i in range(1, 10):
+                    kwargs['progress'] = i * 10
+                    receiver.deploy_resp(**kwargs)
+                    time.sleep(3)
+
+                kwargs['progress'] = 100
+                kwargs['status'] = 'ready'
+                for n in kwargs['nodes']:
+                    n['status'] = 'ready'
+                receiver.deploy_resp(**kwargs)
+
+        FakeDeploymentThread().start()
 
 
 class DeletionTask(object):
@@ -55,14 +71,12 @@ class DeletionTask(object):
                     'uid': node.id
                 })
 
-        if nodes_to_delete:
-            receiver = NailgunReceiver()
-            kwargs = {
-                'task_uuid': task.uuid,
-                'nodes': nodes_to_delete
-            }
-            receiver.remove_nodes_resp(**kwargs)
-
+        receiver = NailgunReceiver()
+        kwargs = {
+            'task_uuid': task.uuid,
+            'nodes': nodes_to_delete
+        }
+        receiver.remove_nodes_resp(**kwargs)
 
 class VerifyNetworksTask(object):
 
@@ -77,11 +91,23 @@ class VerifyNetworksTask(object):
         nodes = [{'id': n.id, 'ip': n.ip, 'mac': n.mac, 'uid': n.id}
                  for n in task.cluster.nodes]
 
-        receiver = NailgunReceiver()
-        kwargs = {
-            'task_uuid': task.uuid,
-            'networks': networks,
-            'nodes': nodes,
-            'progress': 60
-        }
-        receiver.verify_networks_resp(**kwargs)
+        class FakeVerificationThread(threading.Thread):
+            def run(self):
+                receiver = NailgunReceiver()
+                kwargs = {
+                    'task_uuid': task.uuid,
+                    'networks': networks,
+                    'nodes': nodes,
+                    'progress': 0
+                }
+
+                for i in range(1, 10):
+                    kwargs['progress'] = i * 10
+                    receiver.verify_networks_resp(**kwargs)
+                    time.sleep(3)
+
+                kwargs['progress'] = 100
+                kwargs['status'] = 'ready'
+                receiver.verify_networks_resp(**kwargs)
+
+        FakeVerificationThread().start()
