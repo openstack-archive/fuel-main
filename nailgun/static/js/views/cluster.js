@@ -65,7 +65,7 @@ function(models, dialogViews, clusterPageTemplate, deploymentResultTemplate, dep
         initialize: function(options) {
             _.defaults(this, options);
             this.model.get('tasks').bind('add remove reset', this.renderDeploymentControls, this);
-            this.model.get('nodes').bind('add remove reset', this.renderDeploymentControls, this);
+            //this.model.get('nodes').bind('add remove reset', this.renderDeploymentControls, this);
             this.model.bind('destroy', function() {
                 app.navbar.stats.nodes.fetch();
                 app.navigate('#clusters', {trigger: true});
