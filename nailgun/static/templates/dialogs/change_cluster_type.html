@@ -11,7 +11,7 @@
           <% var types = {'both': 'Compute and storage', 'compute': 'Compute only', 'storage': 'Storage only', 'singlenode': 'Single node'} %>
           <% _.each(cluster.availableTypes(), function(type) { %>
             <label class="radio">
-              <input type="radio" name="type" value="<%= type %>" <%= cluster.get('type') == type ? 'checked' : '' %>>
+              <input type="radio" name="type" value="<%= type %>" <%= cluster.get('type') == type ? 'checked' : '' %> <%= cluster.canChangeType(type) ? '' : 'disabled' %>>
               <%= types[type] || type %>
             </label>
           <% }) %>

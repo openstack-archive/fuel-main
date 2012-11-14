@@ -45,10 +45,16 @@ define(function() {
             return this.get('nodes').hasChanges();
         },
         canChangeMode: function() {
-            return !this.get('nodes').length && this.get('type') != 'singlenode';
+            return this.get('mode') == 'ha' || !this.get('nodes').length && this.get('type') != 'singlenode';
         },
-        canChangeType: function() {
-            return !this.get('nodes').length;
+        canChangeType: function(type) {
+            var canCheck = true;
+            var cluster = this;
+            var clusterTypesToNodesRoles = {'both': [], 'compute': ['storage'], 'storage': ['compute'], 'singlenode': ['compute', 'storage']};
+            _.each(clusterTypesToNodesRoles[type], function(nodeRole) {
+                if (cluster.get('nodes').where({'role': nodeRole}).length) canCheck = false;
+            })
+            return canCheck;
         },
         availableModes: function() {
             return ['simple', 'ha'];

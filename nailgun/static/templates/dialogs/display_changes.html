@@ -9,7 +9,7 @@
     <% _.each(roles, function(role) { %>
       <% var count = cluster.get('nodes').where({role: role}).length %>
       <% if (role == 'controller' && count != size) { %>
-        <li>Insufficient number of <%= role %><%= count != 1 ? 's' : '' %>: <%= count %> of <%= size %> node<%= size != 1 ? 's' : '' %></li>
+        <li>Incorrect number of <%= role %><%= count != 1 ? 's' : '' %>: <%= count %> of <%= size %> node<%= size != 1 ? 's' : '' %></li>
         <% canDeploy = false %>
       <% } else if (!count) { %>
         <li>Must contain at least one <%= role %> node</li>
