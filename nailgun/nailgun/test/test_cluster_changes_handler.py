@@ -7,7 +7,7 @@ from mock import Mock
 import nailgun
 from nailgun.test.base import BaseHandlers
 from nailgun.test.base import reverse
-from nailgun.api.models import Cluster, Attributes, IPAddr
+from nailgun.api.models import Cluster, Attributes, IPAddr, Task
 
 
 class TestHandlers(BaseHandlers):
@@ -30,7 +30,10 @@ class TestHandlers(BaseHandlers):
         )
         self.assertEquals(200, resp.status)
         response = json.loads(resp.body)
-        task_uuid = response['uuid']
+        supertask_uuid = response['uuid']
+        supertask = self.db.query(Task).filter_by(uuid=supertask_uuid).first()
+        deploy_task_uuid = [x.uuid for x in supertask.subtasks
+                            if x.name == 'deployment'][0]
 
         msg = {'method': 'deploy', 'respond_to': 'deploy_resp',
                'args': {}}
@@ -38,7 +41,7 @@ class TestHandlers(BaseHandlers):
             cluster_id=cluster['id']).first()
         attrs = attrs_db.merged_attrs()
         msg['args']['attributes'] = attrs
-        msg['args']['task_uuid'] = task_uuid
+        msg['args']['task_uuid'] = deploy_task_uuid
         nodes = []
         for n in (node1, node2):
             node_ip = str(self.db.query(IPAddr).filter_by(

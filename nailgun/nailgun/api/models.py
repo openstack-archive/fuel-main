@@ -346,7 +346,8 @@ class Task(Base, BasicValidator):
     )
     id = Column(Integer, primary_key=True)
     cluster_id = Column(Integer, ForeignKey('clusters.id'))
-    uuid = Column(String(36), nullable=False, default=str(uuid.uuid4()))
+    uuid = Column(String(36), nullable=False,
+                  default=lambda: str(uuid.uuid4()))
     name = Column(Enum(*TASK_TYPES), nullable=False, default='super')
     error = Column(Text)
     status = Column(Enum(*TASK_STATUSES), nullable=False, default='running')
