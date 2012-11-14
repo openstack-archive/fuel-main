@@ -39,6 +39,10 @@ module Astute
     def verify_networks(reporter, task_id, nodes, networks)
       context = Context.new(task_id, reporter)
       result = @check_network.call(context, nodes, networks)
+      if result.empty?
+        return {'status' => 'error', 'error' => "At least two nodes are required to check network connectivity."}
+      end
+
       result.map! { |node| {'uid' => node['sender'],
                             'networks' => check_vlans_by_traffic(node['data'][:neighbours]) }
                   }
