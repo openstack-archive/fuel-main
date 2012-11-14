@@ -1,7 +1,7 @@
 <div class="navbar summary">
   <div class="navbar-inner">
     <div class="summary-article"><b>Settings</b></div>
-    <ul class="nav">
+     <ul class="nav">
       <% var modes = {'simple': 'Simple', 'ha': 'HA'} %>
       <% var types = {'both': 'Compute and storage', 'compute': 'Compute only', 'storage': 'Storage only', 'singlenode': 'Single node'} %>
       <li class="btn btn-link summary-settings-btn change-cluster-mode-btn <%= cluster.canChangeMode() ? '' : 'disabled' %>" <%= cluster.canChangeMode() ? 'rel="tooltip" data-title="Change cluster deployment mode"' : '' %>>

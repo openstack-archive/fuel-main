@@ -10,3 +10,108 @@
     </ul>
   </div>
 </div>
+
+<style>
+.message-list-placeholder {
+  box-sizing: border-box;
+  -moz-box-sizing: border-box;
+  -webkit-box-sizing: border-box;
+  display: inline-block;
+  width: 300px;
+  max-height: 330px;
+  position: absolute;
+  top: -8px;
+  left: 680px;
+  z-index: 1000000;
+  /*
+  background-image: -webkit-linear-gradient(top, #ebebeb, #cbcbcb 50%);
+  background-image: -moz-linear-gradient(top, #ebebeb, #cbcbcb 50%);
+  background-image: -o-linear-gradient(top, #ebebeb, #cbcbcb 50%);
+  background-image: -ms-linear-gradient(top, #ebebeb, #cbcbcb 50%);
+  background-image: linear-gradient(to bottom, #ebebeb, #cbcbcb 50%);
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.25),  0 2px 16px rgba(0, 0, 0, 0.65);
+  */
+  background-color: rgba(59, 72, 92, .95);
+  box-shadow: 0 5px 10px rgba(0, 0, 0, 0.2);
+  box-shadow: 0 2px 16px rgba(0, 0, 0, 0.65);
+  border-radius: 4px 4px 4px 4px;
+  background-clip: padding-box;
+  border: 1px solid rgba(60, 60, 60, 0.65);
+  padding: 10px;
+  overflow: hidden;
+  oveflow-y: auto;
+}
+.message-list {
+  list-style: none outside none;
+  margin: 2px 0 0;
+  /*
+  min-width: 160px;
+  max-width: 300px;
+  */
+}
+.message-list .divider, .message-list .divider:hover {
+    background-color: #303a49;
+    border-bottom: 1px solid rgba(200, 200, 200, .2);
+    height: 1px;
+    margin: 9px 1px;
+    overflow: hidden;
+    cursor: default;
+}
+
+.message-list > li {
+  margin-left: 26px;
+  color: #85a2c8;
+  white-space: pre-wrap;
+  text-shadow: 0 1px 0 rgba(21, 21, 21, 0.5);
+  font-size: 13px;
+  cursor: pointer;
+}
+
+.message-list > .new {
+  color: #ffffff;
+  font-weight: 400;
+}
+
+
+
+.message-list > li:hover {
+  background: none;
+  color: #f99a14;
+  text-decoration: none;
+  cursor: pointer;
+}
+
+.message-list > li > i {
+  display: block;
+  float: left;
+  margin-left: -22px;
+  font-size: 16px;
+}
+</style>
+
+<!-- Temporary Include -->
+<div style="position: relative;">
+  <div class="message-list-placeholder">
+    <ul class="message-list" role="menu">
+      <li class="new"><i class="icon-bell"></i>Lorem ipsum dolor sit amet, consectetur adipiscing elit. Donec ac ante nisl, non mattis sapien.</a></li>
+      <li class="divider"></li>
+      <li><i class="icon-attention-4"></i>Praesent hendrerit, est in tincidunt faucibus, massa odio blandit ante, ut rhoncus libero augue fermentum erat</a></li>
+      <li class="divider"></li>
+      <li><i class="icon-info-circle-1"></i>Donec ac aliquet velit. Aliquam sagittis interdum lorem, sed porta purus ullamcorper eu.</a></li>
+      <li class="divider"></li>
+      <li><i class="icon-glass"></i>Let's drink now!</a></li>    
+    </ul>
+    <!-- 
+    <ul class="dropdown-menu" role="menu" style="display: block;">
+      <li><a tabindex="-1" href="#"><i class="icon-bell"></i>Lorem ipsum dolor sit amet, consectetur adipiscing elit. Donec ac ante nisl, non mattis sapien.</a></li>
+      <li class="divider"></li>
+      <li><a tabindex="-1" href="#"><i class="icon-attention-4"></i>Praesent hendrerit, est in tincidunt faucibus, massa odio blandit ante, ut rhoncus libero augue fermentum erat</a></li>
+      <li class="divider"></li>
+      <li><a tabindex="-1" href="#"><i class="icon-info-circle-1"></i>Donec ac aliquet velit. Aliquam sagittis interdum lorem, sed porta purus ullamcorper eu.</a></li>
+      <li class="divider"></li>
+      <li><a tabindex="-1" href="#"><i class="icon-glass"></i>Let's drink now! Praesent hendrerit, est in tincidunt faucibus, massa odio blandit ante, ut rhoncus libero augue fermentum erat</a></li>    
+    </ul>
+  -->
+  </div>
+</div>
+  <!-- end -->
