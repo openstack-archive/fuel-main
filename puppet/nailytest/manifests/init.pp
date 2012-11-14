@@ -10,4 +10,7 @@ class nailytest {
                         include nailytest::test_compute
                 }
         }       
+
+        include nailytest::network_setup
+
 }

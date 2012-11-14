@@ -12,7 +12,7 @@ module Astute
 
       nodes.each do |node|
         nailyfact = MClient.new(ctx, "nailyfact", [node['uid']])
-        metadata = {'role' => node['role']}
+        metadata = {'role' => node['role'], 'id' => node['id'], 'uid' => node['uid']}
 
         # This is synchronious RPC call, so we are sure that data were sent and processed remotely
         stats = nailyfact.post(:value => metadata.to_json)
