@@ -372,17 +372,3 @@ class Task(Base, BasicValidator):
         self.subtasks.append(task)
         web.ctx.orm.commit()
         return task
-
-    def refresh(self):
-        # TODO: add logic for progress
-        for task in self.subtasks:
-            if task.status == "error":
-                self.status = "error"
-                self.error = task.error
-                web.ctx.orm.add(self)
-                web.ctx.orm.commit()
-                break
-
-    def delete_tree(self):
-        # TODO: add logic for tree resolving
-        pass

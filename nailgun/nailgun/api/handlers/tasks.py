@@ -38,6 +38,8 @@ class TaskHandler(JSONHandler):
             return web.notfound()
         if task.status not in ("ready", "error"):
             raise web.badrequest("You cannot delete running task manually")
+        for subtask in task.subtasks:
+            web.ctx.orm.delete(subtask)
         web.ctx.orm.delete(task)
         web.ctx.orm.commit()
         raise web.webapi.HTTPError(

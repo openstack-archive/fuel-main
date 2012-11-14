@@ -34,6 +34,8 @@ class DeploymentTaskManager(TaskManager):
             if t.status == "running":
                 raise DeploymentAlreadyStarted()
             elif t.status in ("ready", "error"):
+                for subtask in t.subtasks:
+                    web.ctx.orm.delete(subtask)
                 web.ctx.orm.delete(t)
                 web.ctx.orm.commit()
         self.super_task = Task(
@@ -46,8 +48,6 @@ class DeploymentTaskManager(TaskManager):
         self.deployment_task = self.super_task.create_subtask("deployment")
         self.deletion_task.execute(tasks.DeletionTask)
         self.deployment_task.execute(tasks.DeploymentTask)
-        # note: this will work only in sync mode
-        self.super_task.refresh()
         return self.super_task
 
 

@@ -39,13 +39,18 @@ class FlushingLogger(object):
         self.opened = False
 
 
+def build_app():
+    app = web.application(urls, locals())
+    app.add_processor(load_db_driver)
+    return app
+
+
 def appstart():
     from nailgun.rpc import threaded
     import eventlet
     from eventlet import wsgi
     eventlet.monkey_patch()
-    app = web.application(urls, locals())
-    app.add_processor(load_db_driver)
+    app = build_app()
     rpc_thread = threaded.RPCThread()
 
     try:

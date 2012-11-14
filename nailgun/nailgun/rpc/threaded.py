@@ -41,6 +41,38 @@ class NailgunReceiver(object):
                 setattr(task, key, value)
         cls.db.add(task)
         cls.db.commit()
+        if task.parent:
+            cls.__update_parent_task(task.parent)
+
+    @classmethod
+    def __update_parent_task(cls, task):
+        subtasks = task.subtasks
+        if len(subtasks):
+            if all(map(lambda s: s.status == 'ready', subtasks)):
+                task.status = 'ready'
+                task.progress = 100
+            elif all(map(lambda s: s.status == 'ready' or
+                         s.status == 'error', subtasks)):
+                task.status = 'error'
+                task.progress = 100
+                task.error = '; '.join(map(
+                    lambda s: s.error, filter(
+                        lambda s: s.status == 'error', subtasks)))
+            else:
+                total_progress = 0
+                subtasks_with_progress = 0
+                for subtask in subtasks:
+                    if subtask.progress is not None:
+                        subtasks_with_progress += 1
+                        progress = subtask.progress
+                        if subtask.status == 'ready':
+                            progress = 100
+                        total_progress += progress
+                if subtasks_with_progress:
+                    total_progress /= subtasks_with_progress
+                task.progress = total_progress
+            cls.db.add(task)
+            cls.db.commit()
 
     @classmethod
     def remove_nodes_resp(cls, **kwargs):

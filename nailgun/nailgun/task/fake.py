@@ -74,9 +74,11 @@ class DeletionTask(object):
         receiver = NailgunReceiver()
         kwargs = {
             'task_uuid': task.uuid,
-            'nodes': nodes_to_delete
+            'nodes': nodes_to_delete,
+            'status': 'ready'
         }
         receiver.remove_nodes_resp(**kwargs)
+
 
 class VerifyNetworksTask(object):
 

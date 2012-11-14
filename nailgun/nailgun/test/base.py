@@ -17,7 +17,7 @@ from nailgun.api.models import Release
 from nailgun.api.models import Cluster
 
 from nailgun.api.urls import urls
-from nailgun.wsgi import app
+from nailgun.wsgi import build_app
 from nailgun.db import dropdb, syncdb, flush
 from nailgun.fixtures.fixman import upload_fixture
 
@@ -38,7 +38,7 @@ class BaseHandlers(TestCase):
         syncdb()
 
     def setUp(self):
-        self.app = TestApp(app.wsgifunc())
+        self.app = TestApp(build_app().wsgifunc())
         self.db = orm.scoped_session(orm.sessionmaker(bind=engine))()
         self.default_headers = {
             "Content-Type": "application/json"

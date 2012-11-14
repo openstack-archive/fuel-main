@@ -7,7 +7,7 @@ from sqlalchemy.orm.events import orm
 
 from nailgun.api.models import engine, Node
 from nailgun.db import dropdb, syncdb, flush, Query
-from nailgun.wsgi import app
+from nailgun.wsgi import build_app
 
 
 class TestDBRefresh(TestCase):
@@ -17,7 +17,7 @@ class TestDBRefresh(TestCase):
         syncdb()
 
     def setUp(self):
-        self.app = TestApp(app.wsgifunc())
+        self.app = TestApp(build_app().wsgifunc())
         self.db = orm.scoped_session(
             orm.sessionmaker(bind=engine, query_cls=Query)
         )()
