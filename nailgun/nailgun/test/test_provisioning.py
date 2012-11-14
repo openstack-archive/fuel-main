@@ -19,6 +19,7 @@ class TestProvisioning(BaseHandlers):
         node = self.create_default_node()
         node2 = self.create_default_node()
         node2.status = "discover"
+        node2.pending_addition = True
         node3 = self.create_default_node()
         cluster_db = self.db.query(Cluster).get(cluster['id'])
         cluster_db.nodes.append(node)
@@ -43,13 +44,17 @@ class TestProvisioning(BaseHandlers):
     def test_node_status_changes_to_provision(self):
         cluster = self.create_cluster_api()
         node_ready = self.create_default_node(cluster_id=cluster['id'],
-                                              status='ready')
+                                              status='ready',
+                                              pending_addition=True)
         node_discover = self.create_default_node(cluster_id=cluster['id'],
-                                                 status='discover')
+                                                 status='discover',
+                                                 pending_addition=True)
         node_provis = self.create_default_node(cluster_id=cluster['id'],
-                                               status='provisioning')
+                                               status='provisioning',
+                                               pending_addition=True)
         node_deploy = self.create_default_node(cluster_id=cluster['id'],
-                                               status='deploying')
+                                               status='deploying',
+                                               pending_addition=True)
 
         netmanager.assign_ips = self.mock.MagicMock()
 

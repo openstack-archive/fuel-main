@@ -13,8 +13,10 @@ class TestNetworkManager(BaseHandlers):
 
     def test_assign_ips(self):
         cluster = self.create_cluster_api()
-        node1 = self.create_default_node(cluster_id=cluster['id'])
-        node2 = self.create_default_node(cluster_id=cluster['id'])
+        node1 = self.create_default_node(cluster_id=cluster['id'],
+                                         pending_addition=True)
+        node2 = self.create_default_node(cluster_id=cluster['id'],
+                                         pending_addition=True)
         # TODO(mihgen): it should be separeted call of network manager,
         #  not via API. It's impossible now because of issues with web.ctx.orm
 

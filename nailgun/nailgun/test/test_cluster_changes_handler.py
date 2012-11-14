@@ -18,8 +18,10 @@ class TestHandlers(BaseHandlers):
         cluster_db = self.db.query(Cluster).get(cluster['id'])
 
         attrs = cluster_db.attributes.merged_attrs()
-        node1 = self.create_default_node(cluster_id=cluster['id'])
-        node2 = self.create_default_node(cluster_id=cluster['id'])
+        node1 = self.create_default_node(cluster_id=cluster['id'],
+                                         pending_addition=True)
+        node2 = self.create_default_node(cluster_id=cluster['id'],
+                                         pending_addition=True)
 
         nailgun.task.task.Cobbler = Mock()
         resp = self.app.put(

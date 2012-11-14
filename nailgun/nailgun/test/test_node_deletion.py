@@ -13,7 +13,8 @@ class TestNodeDeletion(BaseHandlers):
 
     def test_node_deletion_and_attributes_clearing(self):
         cluster = self.create_cluster_api()
-        node = self.create_default_node(cluster_id=cluster['id'])
+        node = self.create_default_node(cluster_id=cluster['id'],
+                                        pending_deletion=True)
 
         with patch('nailgun.task.task.Cobbler'):
             resp = self.app.put(

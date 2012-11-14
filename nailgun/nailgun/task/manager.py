@@ -9,6 +9,7 @@ import web
 from nailgun.settings import settings
 from nailgun.api.models import Cluster
 from nailgun.api.models import Task
+from nailgun.task.errors import DeploymentAlreadyStarted, WrongNodeStatus
 
 from nailgun.task import task as original_tasks
 from nailgun.task import fake as fake_tasks
@@ -26,28 +27,36 @@ class TaskManager(object):
 class DeploymentTaskManager(TaskManager):
 
     def execute(self):
-        q = web.ctx.orm.query(Task).filter(
+        current_tasks = web.ctx.orm.query(Task).filter(
             Task.cluster == self.cluster,
             Task.name == "deploy"
         )
-        for t in q:
-            if t.status == "running":
+        for task in current_tasks:
+            if task.status == "running":
                 raise DeploymentAlreadyStarted()
-            elif t.status in ("ready", "error"):
-                for subtask in t.subtasks:
+            elif task.status in ("ready", "error"):
+                for subtask in task.subtasks:
                     web.ctx.orm.delete(subtask)
-                web.ctx.orm.delete(t)
+                web.ctx.orm.delete(task)
                 web.ctx.orm.commit()
+        nodes_to_delete = filter(lambda n: n.pending_deletion,
+                                 self.cluster.nodes)
+        nodes_to_deploy = filter(lambda n: n.pending_addition,
+                                 self.cluster.nodes)
+        if not nodes_to_deploy and not nodes_to_delete:
+            raise WrongNodeStatus("No changes to deploy")
         self.super_task = Task(
             name="deploy",
             cluster=self.cluster
         )
         web.ctx.orm.add(self.super_task)
         web.ctx.orm.commit()
-        self.deletion_task = self.super_task.create_subtask("deletion")
-        self.deployment_task = self.super_task.create_subtask("deployment")
-        self.deletion_task.execute(tasks.DeletionTask)
-        self.deployment_task.execute(tasks.DeploymentTask)
+        if nodes_to_delete:
+            self.deletion_task = self.super_task.create_subtask("deletion")
+            self.deletion_task.execute(tasks.DeletionTask)
+        if nodes_to_deploy:
+            self.deployment_task = self.super_task.create_subtask("deployment")
+            self.deployment_task.execute(tasks.DeploymentTask)
         return self.super_task
 
 
