@@ -80,7 +80,9 @@ class NodeAgent
 
     @api_url = url
 
-    unless @api_url
+    if @api_url
+      @api_url.chomp!('/')
+    else
       begin
         cmdline = ::File.read("/proc/cmdline")
         api_ip = cmdline.match(/\burl=http:\/\/((\d{1,3}\.){3}\d{1,3})/)[1]
@@ -210,6 +212,29 @@ class NodeAgent
 
 end
 
+def write_data_to_file(logger, filename, data)
+  if File.exist?(filename)
+    File.open('/etc/nailgun_uid', 'r') do |fo|
+      text = fo.read
+    end
+  else
+    text = ''
+  end
+
+  if text != data
+    begin
+      File.open(filename, 'w') do |fo|
+        fo.write(data)
+      end
+      logger.info("Writed data to file '#{filename}'. Data: #{data}")
+    rescue Exception => e
+      logger.warning("Can't write data to file '#{filename}'. Reason: #{e.message}")
+    end
+  else
+    logger.info("File '#{filename}' is up to date.")
+  end
+end
+
 
 logger = Logger.new(STDOUT)
 logger.level = Logger::DEBUG
@@ -232,3 +257,4 @@ end
 new_id = JSON.parse(res.body)['id']
 mc_config = McollectiveConfig.new(logger)
 mc_config.replace_identity(new_id)
+write_data_to_file(logger, '/etc/nailgun_uid', new_id.to_s)
