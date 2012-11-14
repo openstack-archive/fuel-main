@@ -3,14 +3,39 @@ require "json"
 module MCollective
   module Agent
     class Net_probe<RPC::Agent
-
-      uid = open('/etc/bootif').gets.chomp
-      pattern = "/var/tmp/net-probe-dump-*"
+      def startup_hook
+        @pattern = "/var/tmp/net-probe-dump-*"
+      end
 
       action "start_frame_listeners" do
+        start_frame_listeners
+      end
+
+      action "send_probing_frames" do
+        send_probing_frames
+      end
+
+      action "get_probing_info" do
+        get_probing_info
+      end
+
+      action "stop_frame_listeners" do
+        stop_frame_listeners
+      end
+
+      private
+
+      def get_uid
+        File.open('/etc/nailgun_uid') do |fo|
+          uid = fo.gets.chomp
+          return uid
+        end
+      end
+
+      def start_frame_listeners
         validate :iflist, String
         # wipe out old stuff before start
-        Dir.glob(pattern).each do |file|
+        Dir.glob(@pattern).each do |file|
           File.delete file
         end
         iflist = JSON.parse(request[:iflist])
@@ -28,9 +53,9 @@ module MCollective
         end
       end
 
-      action "send_probing_frames" do
+      def send_probing_frames
         validate :interfaces, String
-        config = { "action" => "generate", "uid" => uid,
+        config = { "action" => "generate", "uid" => get_uid,
                    "interfaces" => JSON.parse(request[:interfaces]) }
         if request.data.key?('config')
           config.merge!(JSON.parse(request[:config]))
@@ -40,29 +65,16 @@ module MCollective
         reply.fail "Failed to send probing frames, cmd='#{cmd}' failed, config: #{config.inspect}" if status != 0
       end
 
-      action "get_probing_info" do
+      def get_probing_info
         stop_frame_listeners
         neighbours = Hash.new
-        Dir.glob(pattern).each do |file|
+        Dir.glob(@pattern).each do |file|
           p = JSON.load(File.read(file))
           neighbours.merge!(p)
         end
         reply[:neighbours] = neighbours
-        reply[:uid] = uid
+        reply[:uid] = get_uid
       end
-
-      action "stop_frame_listeners" do
-        stop_frame_listeners
-      end
-
-      action "echo" do
-        request.data.each do |key, value|
-          reply[key] = value
-        end
-        reply[:uid] = uid
-      end
-
-      private
 
       def stop_frame_listeners
         piddir = "/var/run/net_probe"
