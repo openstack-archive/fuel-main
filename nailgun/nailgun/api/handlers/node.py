@@ -4,6 +4,7 @@ import json
 
 import web
 
+from nailgun.notifier import notifier
 from nailgun.logger import logger
 from nailgun.api.models import Node
 from nailgun.api.handlers.base import JSONHandler
@@ -85,6 +86,7 @@ class NodeCollectionHandler(JSONHandler):
             setattr(node, key, value)
         web.ctx.orm.add(node)
         web.ctx.orm.commit()
+        notifier.notify("New node created: mac: %s" % node.mac, 20)
         raise web.webapi.created(json.dumps(
             NodeHandler.render(node),
             indent=4
