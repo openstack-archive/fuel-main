@@ -70,6 +70,16 @@ class Ci(object):
             node2.boot = ['network']
             environment.nodes.append(node2)
 
+            node3 = Node('slave-delete')
+            node3.memory = 2048
+            node3.vnc = True
+            node3.disks.append(
+                Disk(size=30 * 1024 ** 3)
+            )
+            node3.interfaces.append(Interface(network))
+            node3.boot = ['network']
+            environment.nodes.append(node3)
+
             devops.build(environment)
             self.environment = environment
         except Exception, e:

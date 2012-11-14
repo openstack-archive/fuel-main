@@ -60,114 +60,55 @@ class TestNode(Base):
 
     def test_updating_nodes_in_cluster(self):
         cluster_id = self._create_cluster(name='empty')
-        nodes = [str(n['id']) for n in self._bootstrap_slave()]
-        self._update_nodes_in_cluster(cluster_id, nodes)
+        node = str(self._bootstrap_slave()['id'])
+        self._update_nodes_in_cluster(cluster_id, [node])
 
     def test_provisioning(self):
         self._clean_clusters()
-        cluster_id = self._create_cluster(name='provision')
-        nodes = [str(n['id']) for n in self._bootstrap_slave()]
-        self.client.put(
-            "/api/nodes/%s/" % nodes[0],
-            {"role": "controller", "pending_addition": True}
-        )
-        self._update_nodes_in_cluster(cluster_id, nodes)
+        self._basic_provisioning('provision', 'slave')
+
+    def test_node_deletion(self):
+        cluster_name = 'node_deletion'
+        node_name = 'slave-delete'
+        cluster_id = self._basic_provisioning(cluster_name, node_name)
+
+        slave = ci.environment.node[node_name]
+        node = self._get_slave_node_by_devops_node(slave)
+        self.client.put("/api/nodes/%s/" % node['id'],
+                        {'pending_deletion': True})
         task = self._launch_provisioning(cluster_id)
+        self._task_wait(task, 'Node deletion')
 
         timer = time.time()
-        timeout = 1800
-        ready = False
-        task_id = task['id']
-        while not ready:
-            task = json.loads(
-                self.client.get("/api/tasks/%s" % task_id).read()
-            )
-            if task['status'] == 'ready':
-                logging.info("Installation complete")
-                ready = True
-            elif task['status'] == 'running':
-                if (time.time() - timer) > timeout:
-                    raise Exception("Installation timeout expired!")
-                time.sleep(30)
-            else:
-                raise Exception("Installation failed!")
+        timeout = 3 * 60
+        while True:
+            response = self.client.get("/api/nodes/")
+            nodes = json.loads(response.read())
+            for n in nodes:
+                if (n['mac'] == node['mac'] and n['status'] == 'discover'):
+                    return
+            if (time.time() - timer) > timeout:
+                raise Exception("Bootstrap boot timeout expired!")
+            time.sleep(5)
+# TODO make post test deletion of cluster and nodes
+
+    def _basic_provisioning(self, cluster_name, node_name):
+        self._clean_clusters()
+        cluster_id = self._create_cluster(name=cluster_name)
+        slave_id = str(self._bootstrap_slave(node_name)['id'])
+        self.client.put("/api/nodes/%s/" % slave_id, {"role": "controller"})
+        self._update_nodes_in_cluster(cluster_id, [slave_id])
+        task = self._launch_provisioning(cluster_id)
+
+        self._task_wait(task, 'Installation')
         node = json.loads(self.client.get(
-            "/api/nodes/%s/" % nodes[0]
+            "/api/nodes/%s/" % slave_id
         ).read())
         ctrl_ssh = SSHClient()
         ctrl_ssh.connect_ssh(node['ip'], 'root', 'r00tme')
         ret = ctrl_ssh.execute('test -f /tmp/controller-file')['exit_status']
         self.assertEquals(ret, 0)
-
-        #if node["status"] == "discover":
-            #logging.info("Node booted with bootstrap image.")
-        #elif node["status"] == "ready":
-            #logging.info("Node already installed.")
-            #self._slave_delete_test_file()
-
-        #logging.info("Provisioning...")
-        #changes = self.client.put(
-            #"http://%s:8000/api/clusters/1/changes/" % self.admin_host,
-            #log=True
-        #)
-        #print changes
-        #"""
-        #task_id = task['task_id']
-        #logging.info("Task created: %s" % task_id)
-        #"""
-        #logging.info(
-        #    "Waiting for completion"
-        #    " of slave node software installation"
-        #)
-        #timer = time.time()
-        #timeout = 1800
-        #while True:
-            #try:
-                #node = json.loads(self.client.get(
-                    #"http://%s:8000/api/nodes/%s" %
-                    #(self.admin_host, self.slave_id)
-                #))
-                #if not node["status"] == 'provisioning':
-                    #raise StillPendingException("Installation in progress...")
-                #elif node["status"] == 'error':
-                    #raise Exception(
-                        #"Installation failed!"
-                    #)
-                #elif node["status"] == 'ready':
-                    #logging.info("Installation complete!")
-                    #break
-            #except StillPendingException:
-                #if (time.time() - timer) > timeout:
-                    #raise Exception("Installation timeout expired!")
-                #time.sleep(30)
-        #node = json.loads(self.client.get(
-            #"http://%s:8000/api/nodes/%s" % (self.admin_host, self.slave_id)
-        #))
-        #self.slave_host = node["ip"]
-        #logging.info("Waiting for SSH access on %s" % self.slave_host)
-        #wait(lambda: tcp_ping(self.slave_host, 22), timeout=1800)
-        #self.remote.connect_ssh(
-        #    self.slave_host,
-        #    self.ssh_user,
-        #    self.ssh_passwd
-        #)
-        ## check if recipes executed
-        #ret = self.remote.execute("test -f /tmp/chef_success")
-        #if ret['exit_status']:
-            #raise Exception("Recipes failed to execute!")
-        ## check mysql running
-        ##db = MySQLdb.connect(
-        #    passwd="test",
-        #    user="root",
-        #    host=self.slave_host
-        #)
-        ##print db
-        ## chech node status
-        #node = json.loads(self.client.get(
-            #"http://%s:8000/api/nodes/%s" % (self.admin_host, self.slave_id)
-        #))
-        #self.assertEqual(node["status"], "ready")
-        #self.remote.disconnect()
+        return cluster_id
 
     def _launch_provisioning(self, cluster_id):
         logging.info(
@@ -179,6 +120,25 @@ class TestNode(Base):
         )
         self.assertEquals(200, changes.getcode())
         return json.loads(changes.read())
+
+    def _task_wait(self, task, task_desc, timeout=30 * 60):
+        timer = time.time()
+        ready = False
+        task_id = task['id']
+        logging.info("Waiting task %r ..." % task_desc)
+        while not ready:
+            task = json.loads(
+                self.client.get("/api/tasks/%s" % task_id).read()
+            )
+            if task['status'] == 'ready':
+                logging.info("Task %r complete" % task_desc)
+                ready = True
+            elif task['status'] == 'running':
+                if (time.time() - timer) > timeout:
+                    raise Exception("Task %r timeout expired!" % task_desc)
+                time.sleep(30)
+            else:
+                raise Exception("%s failed!" % task_desc)
 
     def _upload_sample_release(self):
         def _get_release_id():
@@ -244,8 +204,22 @@ class TestNode(Base):
         nodes_in_cluster = [str(n['id']) for n in cluster['nodes']]
         self.assertEquals(nodes, nodes_in_cluster)
 
-    def _bootstrap_slave(self):
-        """This function returns list of found nodes
+    def _get_slave_node_by_devops_node(self, node):
+        response = self.client.get("/api/nodes/")
+        nodes = json.loads(response.read())
+        logging.debug("get_slave_node_by_devops_node: nodes at nailgun: %r" %
+                      str(nodes))
+
+        for n in nodes:
+            for i in node.interfaces:
+                logging.debug("get_slave_node_by_devops_node: \
+node.interfaces[n].mac_address: %r" % str(i.mac_address))
+                if n['mac'].capitalize() == i.mac_address.capitalize():
+                    return n
+        return None
+
+    def _bootstrap_slave(self, node_name='slave'):
+        """This function returns nailgun node descpription by devops name.
         """
         try:
             self.get_slave_id()
@@ -254,25 +228,19 @@ class TestNode(Base):
         timer = time.time()
         timeout = 600
 
-        slave = ci.environment.node['slave']
-        logging.info("Starting slave node")
+        slave = ci.environment.node[node_name]
+        logging.info("Starting slave node %r" % node_name)
         slave.start()
 
-        def _get_slave_nodes():
-            response = self.client.get("/api/nodes/")
-            nodes = json.loads(response.read())
-            if nodes:
-                return nodes
-
         while True:
-            nodes = _get_slave_nodes()
-            if nodes is not None:
-                logging.info("Node(s) found")
+            node = self._get_slave_node_by_devops_node(slave)
+            if node is not None:
+                logging.debug("Node %r found" % node_name)
                 break
             else:
-                logging.info("Node not found")
+                logging.debug("Node %r not found" % node_name)
                 if (time.time() - timer) > timeout:
                     raise Exception("Slave node agent failed to execute!")
                 time.sleep(15)
                 logging.info("Waiting for slave agent to run...")
-        return nodes
+        return node
