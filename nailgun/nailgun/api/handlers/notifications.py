@@ -5,7 +5,6 @@ import logging
 
 import web
 
-from nailgun.logger import logger
 from nailgun.api.models import Notification
 from nailgun.api.handlers.base import JSONHandler
 
@@ -33,8 +32,7 @@ class NotificationHandler(JSONHandler):
 
     def PUT(self, notification_id):
         web.header('Content-Type', 'application/json')
-        q = web.ctx.orm.query(Notification)
-        notification = q.filter(Notification.id == notification_id).first()
+        notification = web.ctx.orm.query(Notification).get(notification_id)
         if not notification:
             return web.notfound()
         data = Notification.validate_update(web.data())
