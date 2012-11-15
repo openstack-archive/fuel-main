@@ -383,9 +383,15 @@ class Notification(Base, BasicValidator):
         'unread',
     )
 
+    NOTIFICATION_TOPICS = (
+        'discover',
+        'done',
+        'error',
+    )
+
     id = Column(Integer, primary_key=True)
     cluster_id = Column(Integer, ForeignKey('clusters.id'))
-    topic = Column(Unicode(32), nullable=False)
+    topic = Column(Enum(*NOTIFICATION_TOPICS), nullable=False)
     message = Column(Text)
     status = Column(Enum(*NOTIFICATION_STATUSES), nullable=False,
                     default='unread')
@@ -421,11 +427,14 @@ class Notification(Base, BasicValidator):
             if "id" not in nd:
                 raise web.badrequest("ID is not set correctly")
 
+            if "status" not in nd:
+                raise web.badrequest("ID is not set correctly")
+
             if not q.get(nd["id"]):
                 raise web.badrequest("Invalid ID specified")
 
             valid_nd["id"] = nd["id"]
-            valid_nd.update(cls.validate_update(nd))
+            valid_nd["status"] = nd["status"]
             valid_d.append(valid_nd)
 
         return valid_d

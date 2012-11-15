@@ -68,4 +68,3 @@ class ParentException(Exception):
             self.notifier.notify(self.topic, self.message, self.cluster_id)
 
         super(ParentException, self).__init__(self.message)
-

@@ -15,6 +15,7 @@ from nailgun.api.models import engine
 from nailgun.api.models import Node
 from nailgun.api.models import Release
 from nailgun.api.models import Cluster
+from nailgun.api.models import Notification
 
 from nailgun.api.urls import urls
 from nailgun.wsgi import build_app
@@ -147,6 +148,16 @@ class BaseHandlers(TestCase):
         self.db.add(cluster)
         self.db.commit()
         return cluster
+
+    def create_default_notification(self, cluster_id=None):
+        notification = Notification()
+        notification.topic = "discover"
+        notification.message = "Test message"
+        notification.status = "unread"
+        notification.cluster_id = cluster_id
+        self.db.add(notification)
+        self.db.commit()
+        return notification
 
     def create_cluster_api(self):
         resp = self.app.post(
