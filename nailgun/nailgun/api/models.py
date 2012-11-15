@@ -385,7 +385,7 @@ class Notification(Base, BasicValidator):
 
     id = Column(Integer, primary_key=True)
     cluster_id = Column(Integer, ForeignKey('clusters.id'))
-    level = Column(Integer, nullable=False, default=10)
+    topic = Column(Unicode(32), nullable=False)
     message = Column(Text)
     status = Column(Enum(*NOTIFICATION_STATUSES), nullable=False,
                     default='unread')

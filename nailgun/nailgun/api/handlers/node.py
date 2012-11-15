@@ -88,9 +88,10 @@ class NodeCollectionHandler(JSONHandler):
         web.ctx.orm.commit()
         ram = round(node.info.get('ram', 0), 1)
         cores = node.info.get('cores', 'unknown')
-        notifier.info("New node with %s CPU core(s) "
-                      "and %s GB memory is discovered" %
-                      (cores, ram))
+        notifier.notify("discover",
+                        "New node with %s CPU core(s) "
+                        "and %s GB memory is discovered" %
+                        (cores, ram))
         raise web.webapi.created(json.dumps(
             NodeHandler.render(node),
             indent=4

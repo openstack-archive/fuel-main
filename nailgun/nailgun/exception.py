@@ -8,13 +8,13 @@ import functools
 from nailgun.logger import logger
 
 
-def notified(level=10, logger=None, notifier=None, avoid_raising=False):
+def notified(logger=None, avoid_raising=False):
     """
     Decorate your methods to catch thrown exceptions and log them.
 
     Usage:
 
-    @notified([level][, notifier][, logger][, avoid])
+    @notified([level][, logger][, avoid_raising])
     def method(argument):
         raise Exception("test exception")
     """
@@ -34,14 +34,6 @@ def notified(level=10, logger=None, notifier=None, avoid_raising=False):
                 logger.debug("Exception trace:\n%s" %
                              "\n".join(exception_trace))
 
-                exception_message = getattr(e, 'message', str(e))
-
-                if notifier:
-                    notifier.notify(level, exception_message)
-
-                if logger:
-                    logger.log(level, exception_message)
-
                 if not avoid_raising:
                     raise e
 
@@ -52,22 +44,28 @@ def notified(level=10, logger=None, notifier=None, avoid_raising=False):
 class ParentException(Exception):
     """Parent Exception"""
 
+    topic = "Undefined topic"
     message = "An unknown exception occurred."
 
-    def __init__(self, message=None, level=10, logger=None, notifier=None):
+    def __init__(self, message=None, topic=None, cluster_id=None,
+                 level=10, logger=None, notifier=None):
 
-        if message is None:
-            message = self.message
+        if message:
+            self.message = message
 
+        if topic:
+            self.topic = topic
+
+        self.cluster_id = cluster_id
         self.logger = logger
         self.notifier = notifier
         self.level = level
 
-        self._note(message)
-        super(ParentException, self).__init__(message)
-
-    def _note(self, message):
         if self.logger:
-            self.logger.log(self.level, message)
+            self.logger.log(self.level, self.message)
+
         if self.notifier:
-            self.notifier.notify(self.level, message)
+            self.notifier.notify(self.topic, self.message, self.cluster_id)
+
+        super(ParentException, self).__init__(self.message)
+

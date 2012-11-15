@@ -143,16 +143,18 @@ class NailgunReceiver(object):
         task = cls.db.query(Task).filter_by(uuid=task_uuid).first()
 
         if status in ('error',):
-            notifier.error({
-                "message": "Error occured during deployment",
-                "cluster": getattr(task.cluster, "id", "unknown")
-            })
+            notifier.notify(
+                "error",
+                "Error occured during deployment",
+                getattr(task.cluster, "id", "unknown")
+            )
 
         if progress == 100:
-            notifier.info({
-                "message": "Deployment is done",
-                "cluster": getattr(task.cluster, "id", "unknown")
-            })
+            notifier.notify(
+                "done",
+                "Deployment is done",
+                getattr(task.cluster, "id", "unknown")
+            )
 
         cls.__update_task_status(task_uuid, status, progress, error_msg)
 

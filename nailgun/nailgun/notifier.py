@@ -8,54 +8,17 @@ from nailgun.exception import notified
 from nailgun.api.models import Notification
 
 
-class DbNotifier(object):
+class Notifier(object):
 
-    @classmethod
-    @notified(level=10, logger=logger)
-    def notify(cls, level, payload):
-        try:
-            logger.debug("Trying to treat notification message as json")
-            message = json.loads(payload)
-        except:
-            logger.debug("Notification message seems it's not a valid json")
-            message = payload
-
+    @notified(logger=logger)
+    def notify(self, topic, message, cluster_id=None):
         notification = Notification()
-        notification.level = level
-        if isinstance(message, dict):
-            notification.message = message['message']
-            notification.cluster_id = message.get('cluster', None)
-        else:
-            notification.message = message
-            notification.cluster_id = None
+        notification.topic = topic
+        notification.message = message
+        notification.cluster_id = cluster_id
         web.ctx.orm.add(notification)
         web.ctx.orm.commit()
-
-
-class Notifier(object):
-    driver = DbNotifier
-
-    def __init__(self, driver=None):
-        if driver:
-            self.driver = driver
-
-    def notify(self, level, message):
-        self.driver.notify(level, message)
-
-    def debug(self, message):
-        self.notify(10, message)
-
-    def info(self, message):
-        self.notify(20, message)
-
-    def warn(self, message):
-        self.notify(30, message)
-
-    def error(self, message):
-        self.notify(40, message)
-
-    def critical(self, message):
-        self.notify(50, message)
+        logger.info("Notification: topic: %s message: %s" % (topic, message))
 
 
 notifier = Notifier()

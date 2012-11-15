@@ -13,7 +13,7 @@ class NotificationHandler(JSONHandler):
     fields = (
         "id",
         "cluster",
-        "level",
+        "topic",
         "message",
         "status",
     )
