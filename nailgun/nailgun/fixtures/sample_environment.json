@@ -337,7 +337,7 @@
         "pk": 2,
         "model": "nailgun.notification",
         "fields": {
-            "level": "error",
+            "topic": "error",
             "status": "read",
             "message": "Notification: level 10, status: read",
             "cluster": 1
