@@ -20,7 +20,7 @@
       <div class="control-group redundancy-control-group hide">
         <label class="control-label">Number of controllers</label>
         <div class="controls">
-          <input type="number" class="input-mini" name="redundancy" maxlength="1" value="<%= cluster.get('redundancy') ? cluster.get('redundancy') : 2 %>">
+          <input type="number" class="input-mini" name="redundancy" maxlength="1" value="<%= cluster.get('redundancy') || 2 %>">
           <span class="help-inline"></span>
         </div>
       </div>
