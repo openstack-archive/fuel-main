@@ -44,7 +44,7 @@ module Astute
       end
 
       result.map! { |node| {'uid' => node['sender'],
-                            'networks' => check_vlans_by_traffic(node['data'][:neighbours]) }
+                            'networks' => check_vlans_by_traffic(node['sender'], node['data'][:neighbours]) }
                   }
       return {'networks' => result}
     end
@@ -99,8 +99,8 @@ module Astute
       {'nodes' => nodes.map { |n| {'uid' => n['uid'], 'status' => status} }}
     end
 
-    def check_vlans_by_traffic(data)
-      return data.map{|iface, vlans| {'iface' => iface, 'vlans' => vlans.keys.map{|n| n.to_i} } }
+    def check_vlans_by_traffic(uid, data)
+      return data.map{|iface, vlans| {'iface' => iface, 'vlans' => vlans.reject{|k,v| v.size==1 and v.has_key?(uid)}.keys.map{|n| n.to_i} } }
     end
   end
 end
