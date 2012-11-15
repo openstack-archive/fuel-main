@@ -327,10 +327,9 @@
         "pk": 1,
         "model": "nailgun.notification",
         "fields": {
-            "level": 5,
+            "level": 20,
             "status": "unread",
-            "message": "Notification: level: 5, cluster: null, status: unread",
-            "cluster": null
+            "message": "Notification: level: 20, status: unread"
         }
     },
     {
@@ -339,8 +338,7 @@
         "fields": {
             "level": 10,
             "status": "read",
-            "message": "Notification: level 10, cluster: 1, status: read",
-            "cluster": 1
+            "message": "Notification: level 10, status: read"
         }
     }
 ]

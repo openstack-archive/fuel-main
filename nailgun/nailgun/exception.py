@@ -6,7 +6,7 @@ import functools
 from nailgun.logger import logger
 
 
-def notified(level=10, logger=None, notifier=None, avoid=True):
+def notified(level=10, logger=None, notifier=None, avoid_raising=False):
     """
     Decorate your methods to catch thrown exceptions and log them.
 
@@ -22,9 +22,12 @@ def notified(level=10, logger=None, notifier=None, avoid=True):
             try:
                 return func(*args, **kw)
             except Exception, e:
-                p = dict(func=func.__name__, args=args, exception=e)
-                p.update(kw)
-                exception_message = str(p)
+                debug_data = dict(func=func.__name__, args=args, exception=e)
+                debug_data.update(kw)
+                logger.debug("Exception caught in notified decorator:\n%s" %
+                             str(debug_data))
+
+                exception_message = getattr(e, 'message', str(e))
 
                 if not notifier is None:
                     notifier.notify(level, exception_message)
@@ -32,36 +35,31 @@ def notified(level=10, logger=None, notifier=None, avoid=True):
                 if not logger is None:
                     logger.log(level, exception_message)
 
-                if not avoid:
+                if not avoid_raising:
                     raise e
 
         return functools.wraps(func)(caller)
     return wrapper
 
 
-class NailgunBaseException(Exception):
-    """Base Nailgun Exception"""
+class ParentException(Exception):
+    """Parent Exception"""
 
     message = "An unknown exception occurred."
-    level = 10
-    logger = None
-    notifier = None
 
-    def __init__(self, message=None, logger=None, notifier=None):
+    def __init__(self, message=None, level=10, logger=None, notifier=None):
 
         if message is None:
             message = self.message
 
-        if not logger is None:
-            self.logger = logger
+        self.logger = logger
+        self.notifier = notifier
+        self.level = level
 
-        if not notifier is None:
-            self.notifier = notifier
+        self._note(message)
+        super(ParentException, self).__init__(message)
 
-        self._realize(message)
-        super(BaseException, self).__init__(message)
-
-    def _realize(self, message):
+    def _note(self, message):
         if not self.logger is None:
             self.logger.log(self.level, message)
         if not self.notifier is None:

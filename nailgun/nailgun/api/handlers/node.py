@@ -86,7 +86,7 @@ class NodeCollectionHandler(JSONHandler):
             setattr(node, key, value)
         web.ctx.orm.add(node)
         web.ctx.orm.commit()
-        notifier.notify("New node created: mac: %s" % node.mac, 20)
+        notifier.info("Node available: mac: %s" % node.mac)
         raise web.webapi.created(json.dumps(
             NodeHandler.render(node),
             indent=4
