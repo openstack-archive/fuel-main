@@ -67,7 +67,10 @@ class TestNode(Base):
         self._clean_clusters()
         cluster_id = self._create_cluster(name='provision')
         nodes = [str(n['id']) for n in self._bootstrap_slave()]
-        self.client.put("/api/nodes/%s/" % nodes[0], {"role": "controller"})
+        self.client.put(
+            "/api/nodes/%s/" % nodes[0],
+            {"role": "controller", "pending_addition": True}
+        )
         self._update_nodes_in_cluster(cluster_id, nodes)
         task = self._launch_provisioning(cluster_id)
 
