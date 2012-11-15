@@ -65,13 +65,16 @@ function(models, dialogViews, clusterPageTemplate, deploymentResultTemplate, dep
         },
         initialize: function(options) {
             _.defaults(this, options);
-            this.model.get('tasks').bind('add remove reset', this.renderDeploymentControls, this);
-            //this.model.get('nodes').bind('add remove reset', this.renderDeploymentControls, this);
             this.model.bind('destroy', function() {
                 app.navbar.stats.nodes.fetch();
                 app.navigate('#clusters', {trigger: true});
             }, this);
+            this.model.bind('change:tasks', this.bindTasksEvents, this);
+            this.bindTasksEvents();
             this.scheduleUpdate();
+        },
+        bindTasksEvents: function() {
+            this.model.get('tasks').bind('add remove reset', this.renderDeploymentControls, this);
         },
         renderDeploymentControls: function() {
             this.$('.deployment-result').html(new views.DeploymentResult({model: this.model}).render().el);
