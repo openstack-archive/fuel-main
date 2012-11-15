@@ -21,8 +21,7 @@ class NotificationHandler(JSONHandler):
 
     def GET(self, notification_id):
         web.header('Content-Type', 'application/json')
-        q = web.ctx.orm.query(Notification)
-        notification = q.filter(Notification.id == notification_id).first()
+        notification = web.ctx.orm.query(Notification).get(notification_id)
         if not notification:
             return web.notfound()
         return json.dumps(
