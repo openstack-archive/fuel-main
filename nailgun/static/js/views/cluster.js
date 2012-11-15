@@ -14,9 +14,10 @@ define(
     'text!templates/cluster/verify_network_control.html',
     'text!templates/cluster/settings_tab.html',
     'text!templates/cluster/settings_group.html',
-    'text!templates/cluster/actions_tab.html'
+    'text!templates/cluster/actions_tab.html',
+    'text!templates/cluster/logs_tab.html'
 ],
-function(models, dialogViews, clusterPageTemplate, deploymentResultTemplate, deploymentControlTemplate, nodesTabSummaryTemplate, editNodesScreenTemplate, nodeListTemplate, nodeTemplate, networkTabTemplate, networkTabViewModeTemplate, networkTabVerificationTemplate, settingsTabTemplate, settingsGroupTemplate, actionsTabTemplate) {
+function(models, dialogViews, clusterPageTemplate, deploymentResultTemplate, deploymentControlTemplate, nodesTabSummaryTemplate, editNodesScreenTemplate, nodeListTemplate, nodeTemplate, networkTabTemplate, networkTabViewModeTemplate, networkTabVerificationTemplate, settingsTabTemplate, settingsGroupTemplate, actionsTabTemplate, logsTabTemplate) {
     'use strict';
 
     var views = {};
@@ -89,7 +90,8 @@ function(models, dialogViews, clusterPageTemplate, deploymentResultTemplate, dep
                 'nodes': views.NodesTab,
                 'network': views.NetworkTab,
                 'settings': views.SettingsTab,
-                'actions': views.ActionsTab
+                'actions': views.ActionsTab,
+                'logs': views.LogsTab
             };
             if (_.has(tabs, this.tab)) {
                 this.$('#tab-' + this.tab).html(new tabs[this.tab]({model: this.model}).render().el);
@@ -692,11 +694,6 @@ function(models, dialogViews, clusterPageTemplate, deploymentResultTemplate, dep
             this.legend = options.legend;
         },
         render: function() {
-            /*
-                // fake used to test a large nesting level
-                var fake = '{"admin_tenant1": "admin1","admin_tenant2":{"admin_tenant3":"admin3"},"admin_tenant4":{"admin_tenant5":"admin3"}}';
-                this.$el.html(this.template({settings: $.parseJSON(fake), legend: this.options.legend}));
-            */
             this.$el.html(this.template({settings: this.settings, legend: this.legend}));
             return this;
         }
@@ -737,6 +734,14 @@ function(models, dialogViews, clusterPageTemplate, deploymentResultTemplate, dep
         },
         render: function() {
             this.$el.html(this.template({cluster: this.model}));
+            return this;
+        }
+    });
+
+    views.LogsTab = Backbone.View.extend({
+        template: _.template(logsTabTemplate),
+        render: function() {
+            this.$el.html(this.template());
             return this;
         }
     });
