@@ -70,8 +70,9 @@ if __name__ == "__main__":
         settings.update({
             'LISTEN_PORT': int(params.port),
             'LISTEN_ADDRESS': params.address,
-            'FAKE_TASKS': params.fake_tasks,
         })
+        if params.fake_tasks:
+            settings.update({'FAKE_TASKS': params.fake_tasks})
         logger.info("Running WSGI app...")
         from nailgun.wsgi import appstart
         appstart()
