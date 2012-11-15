@@ -55,6 +55,12 @@ class TestProvisioning(BaseHandlers):
         node_deploy = self.create_default_node(cluster_id=cluster['id'],
                                                status='deploying',
                                                pending_addition=True)
+        node_error_deploy = self.create_default_node(cluster_id=cluster['id'],
+                                                     status='error',
+                                                     error_type='deploy')
+        node_error_provis = self.create_default_node(cluster_id=cluster['id'],
+                                                     status='error',
+                                                     error_type='provision')
 
         netmanager.assign_ips = self.mock.MagicMock()
 
@@ -68,10 +74,13 @@ class TestProvisioning(BaseHandlers):
             )
             self.assertEquals(200, resp.status)
 
-        for n in (node_ready, node_discover, node_provis, node_deploy):
+        for n in (node_ready, node_discover, node_provis, node_deploy,
+                  node_error_deploy, node_error_provis):
             self.db.refresh(n)
 
         self.assertEquals(node_ready.status, 'ready')
         self.assertEquals(node_discover.status, 'provisioning')
         self.assertEquals(node_provis.status, 'provisioning')
         self.assertEquals(node_deploy.status, 'deploying')
+        self.assertEquals(node_error_deploy.status, 'error')
+        self.assertEquals(node_error_provis.status, 'provisioning')

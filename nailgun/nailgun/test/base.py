@@ -118,14 +118,13 @@ class BaseHandlers(TestCase):
             }
         }
 
-    def create_default_node(self, cluster_id=None, **kwargs):
+    def create_default_node(self, **kwargs):
         node = Node()
         node.mac = self._generate_random_mac()
-        node.cluster_id = cluster_id
         node.meta = self.default_metadata()
         node.fqdn = "fqdn_" + str(randint(0, 10000000))
-        for attr in kwargs:
-            setattr(node, attr, kwargs[attr])
+        for key, value in kwargs.iteritems():
+            setattr(node, key, value)
         self.db.add(node)
         self.db.commit()
         return node

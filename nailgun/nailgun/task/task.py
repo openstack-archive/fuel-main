@@ -3,6 +3,7 @@
 import uuid
 import itertools
 import logging
+import traceback
 
 import web
 
@@ -79,6 +80,8 @@ class DeploymentTask(object):
             DeploymentTask._provision(nodes_to_provision)
         except Exception as err:
             error = "Failed to call cobbler: %s" % err.message
+            logger.error("Provision error: %s\n%s",
+                         error, traceback.format_exc())
             task.status = "error"
             task.error = error
             web.ctx.orm.add(task)
@@ -111,8 +114,8 @@ class DeploymentTask(object):
 
     @classmethod
     def _provision(cls, nodes):
-        # how to do reduce in fucking python??!
-        #logger.info("Requested to provision nodes:
+        logger.info("Requested to provision nodes: %s",
+                    ','.join([str(n.id) for n in nodes]))
         pd = Cobbler(settings.COBBLER_URL,
                      settings.COBBLER_USER, settings.COBBLER_PASSWORD)
         nd_dict = {
@@ -129,7 +132,9 @@ class DeploymentTask(object):
                 )
                 nd_dict['power_pass'] = settings.PATH_TO_BOOTSTRAP_SSH_KEY
             else:
-                # Or, suka, s xren znaet 4em if error
+                # If it's not in discover, we expect it to be booted
+                #   in target system.
+                # TODO: Get rid of expectations!
                 logger.info(
                     "Node %s seems booted with real system",
                     node.id
