@@ -330,7 +330,7 @@
             "level": 20,
             "status": "unread",
             "message": "Notification: level: 20, status: unread",
-	    "cluster": null
+            "cluster": null
         }
     },
     {
@@ -340,7 +340,7 @@
             "level": 10,
             "status": "read",
             "message": "Notification: level 10, status: read",
-	    "cluster": 1
+            "cluster": 1
         }
     }
 ]
