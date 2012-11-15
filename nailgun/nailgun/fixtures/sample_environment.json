@@ -267,7 +267,7 @@
         "pk": 6,
         "model": "nailgun.node",
         "fields": {
-            "status": "ready",
+            "status": "discover",
             "name": "Node without cluster",
             "manufacturer": "Cisco",
             "platform_name": "",
@@ -282,7 +282,7 @@
         "pk": 7,
         "model": "nailgun.node",
         "fields": {
-            "status": "ready",
+            "status": "discover",
             "name": "Another node without cluster",
             "manufacturer": "QEMU",
             "platform_name": "",
@@ -297,7 +297,7 @@
         "pk": 8,
         "model": "nailgun.node",
         "fields": {
-            "status": "ready",
+            "status": "discover",
             "name": "node virtualbox",
             "manufacturer": "virtualbox",
             "platform_name": "",
@@ -312,7 +312,7 @@
         "pk": 9,
         "model": "nailgun.node",
         "fields": {
-            "status": "ready",
+            "status": "discover",
             "name": "Supermicro",
             "manufacturer": "Supermicro",
             "platform_name": "",

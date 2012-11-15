@@ -17,22 +17,14 @@ class DeploymentTask(object):
             cluster_id=task.cluster.id,
             pending_deletion=False)
 
-        nodes_to_provision = []
-        for node in nodes:
-            if node.status in ('discover', 'provisioning') or \
-                    (node.status == 'error' and
-                     node.error_type == 'provision'):
-                nodes_to_provision.append(node)
-
         nodes_with_attrs = []
         for n in nodes:
             n.pending_addition = False
-            n.status = 'provisioning'
             web.ctx.orm.add(n)
             web.ctx.orm.commit()
             nodes_with_attrs.append({
-                'id': n.id, 'status': n.status, 'uid': n.id,
-                'ip': n.ip, 'mac': n.mac, 'role': n.role,
+                'id': n.id, 'status': n.status, 'error_type': n.error_type,
+                'uid': n.id, 'ip': n.ip, 'mac': n.mac, 'role': n.role,
                 'network_data': netmanager.get_node_networks(n.id)
             })
 
@@ -45,16 +37,29 @@ class DeploymentTask(object):
                     'progress': 0
                 }
 
-                for i in range(1, 10):
+                for i in range(1, 11):
+                    if i < 5:
+                        for n in kwargs['nodes']:
+                            if n['status'] == 'discover' or (
+                                n['status'] == 'error' and
+                                    n['error_type'] == 'provision'):
+                                        n['status'] = 'provisioning'
+                            elif n['status'] == 'ready':
+                                n['status'] = 'deploying'
+                    elif i < 10:
+                        for n in kwargs['nodes']:
+                            if n['status'] == 'provisioning':
+                                n['status'] = 'deploying'
+                    else:
+                        kwargs['status'] = 'ready'
+                        for n in kwargs['nodes']:
+                            if n['status'] == 'deploying':
+                                n['status'] = 'ready'
+
                     kwargs['progress'] = i * 10
                     receiver.deploy_resp(**kwargs)
-                    time.sleep(3)
-
-                kwargs['progress'] = 100
-                kwargs['status'] = 'ready'
-                for n in kwargs['nodes']:
-                    n['status'] = 'ready'
-                receiver.deploy_resp(**kwargs)
+                    if i < 10:
+                        time.sleep(3)
 
         FakeDeploymentThread().start()
 
@@ -68,7 +73,8 @@ class DeletionTask(object):
             if node.pending_deletion:
                 nodes_to_delete.append({
                     'id': node.id,
-                    'uid': node.id
+                    'uid': node.id,
+                    'status': 'discover'
                 })
 
         receiver = NailgunReceiver()
