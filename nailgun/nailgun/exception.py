@@ -1,5 +1,7 @@
 # -*- coding: utf-8 -*-
 
+import sys
+import traceback
 import logging
 import functools
 
@@ -21,18 +23,23 @@ def notified(level=10, logger=None, notifier=None, avoid_raising=False):
         def caller(*args, **kw):
             try:
                 return func(*args, **kw)
-            except Exception, e:
-                debug_data = dict(func=func.__name__, args=args, exception=e)
+            except Exception as e:
+                debug_data = dict(func=func.__name__, args=args)
                 debug_data.update(kw)
-                logger.debug("Exception caught in notified decorator:\n%s" %
+                logger.debug("Exception has been caught in "
+                             "notified decorator:\n%s" %
                              str(debug_data))
+
+                exception_trace = traceback.format_exception(*sys.exc_info())
+                logger.debug("Exception trace:\n%s" %
+                             "\n".join(exception_trace))
 
                 exception_message = getattr(e, 'message', str(e))
 
-                if not notifier is None:
+                if notifier:
                     notifier.notify(level, exception_message)
 
-                if not logger is None:
+                if logger:
                     logger.log(level, exception_message)
 
                 if not avoid_raising:
@@ -60,7 +67,7 @@ class ParentException(Exception):
         super(ParentException, self).__init__(message)
 
     def _note(self, message):
-        if not self.logger is None:
+        if self.logger:
             self.logger.log(self.level, message)
-        if not self.notifier is None:
+        if self.notifier:
             self.notifier.notify(self.level, message)

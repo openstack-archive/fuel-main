@@ -392,8 +392,6 @@ class Notification(Base, BasicValidator):
 
     @classmethod
     def validate_update(cls, data):
-        def not_valid(message="Invalid request"):
-            raise web.webapi.badrequest(message=message)
 
         valid = {}
         d = cls.validate_json(data)
@@ -402,6 +400,32 @@ class Notification(Base, BasicValidator):
         if status in cls.NOTIFICATION_STATUSES:
             valid["status"] = status
         else:
-            not_valid("Bad status")
+            raise web.webapi.badrequest("Bad status")
 
         return valid
+
+    @classmethod
+    def validate_collection_update(cls, data):
+
+        d = cls.validate_json(data)
+        if not isinstance(d, list):
+            raise web.badrequest(
+                "Invalid json list"
+            )
+
+        q = web.ctx.orm.query(Notification)
+
+        valid_d = []
+        for nd in d:
+            valid_nd = {}
+            if "id" not in nd:
+                raise web.badrequest("ID is not set correctly")
+
+            if not q.get(nd["id"]):
+                raise web.badrequest("Invalid ID specified")
+
+            valid_nd["id"] = nd["id"]
+            valid_nd.update(cls.validate_update(nd))
+            valid_d.append(valid_nd)
+
+        return valid_d

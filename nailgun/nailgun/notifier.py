@@ -8,10 +8,6 @@ from nailgun.exception import notified
 from nailgun.api.models import Notification
 
 
-class NotifierException(Exception):
-    pass
-
-
 class DbNotifier(object):
 
     @classmethod
@@ -24,28 +20,23 @@ class DbNotifier(object):
             logger.debug("Notification message seems it's not a valid json")
             message = payload
 
-        try:
-            notification = Notification()
-            notification.level = level
-            if isinstance(message, dict):
-                notification.message = message['message']
-                notification.cluster = message.get('cluster', None)
-            else:
-                notification.message = message
-                notification.cluster = None
-            web.ctx.orm.add(notification)
-            web.ctx.orm.commit()
-
-        except Exception as e:
-            raise NotifierException("Error while writing notification "
-                                    "into database: %s" % str(e))
+        notification = Notification()
+        notification.level = level
+        if isinstance(message, dict):
+            notification.message = message['message']
+            notification.cluster_id = message.get('cluster', None)
+        else:
+            notification.message = message
+            notification.cluster_id = None
+        web.ctx.orm.add(notification)
+        web.ctx.orm.commit()
 
 
 class Notifier(object):
     driver = DbNotifier
 
     def __init__(self, driver=None):
-        if not driver is None:
+        if driver:
             self.driver = driver
 
     def notify(self, level, message):

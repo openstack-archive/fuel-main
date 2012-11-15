@@ -10,8 +10,6 @@ class nailgun::venv(
   $databasefile,
   $staticdir,
   $templatedir,
-  $custom_logfile,
-  $access_logfile,
 
   $rabbitmq_naily_user,
   $rabbitmq_naily_password,
@@ -37,7 +35,6 @@ class nailgun::venv(
                 ]
   }
 
-  $logparentdir = inline_template("<%= logfile.match(%r!(.+)/.+!)[1] %>")
   $databasefiledir = inline_template("<%= databasefile.match(%r!(.+)/.+!)[1] %>")
   $database_engine = "sqlite:///${databasefile}"
 
@@ -54,13 +51,6 @@ class nailgun::venv(
     group => 'root',
     mode => 0644,
     require => File["/etc/nailgun"],
-  }
-
-  if ! defined(File[$databasefiledir]){
-    file { $logparentdir:
-      ensure => directory,
-      recurse => true,
-    }
   }
 
   if ! defined(File[$databasefiledir]){

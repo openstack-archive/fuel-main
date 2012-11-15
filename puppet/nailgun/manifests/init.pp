@@ -13,8 +13,6 @@ class nailgun(
   $databasefile = "/var/tmp/nailgun.sqlite",
   $staticdir = "/opt/nailgun/usr/share/nailgun/static",
   $templatedir = "/opt/nailgun/usr/share/nailgun/static",
-  $custom_logfile = "/var/log/nailgun.log",
-  $access_logfile = "/var/log/nailgun_access.log",
 
   $cobbler_url = "http://localhost/cobbler_api",
   $cobbler_user = "cobbler",
@@ -91,8 +89,6 @@ class nailgun(
     databasefile => $databasefile,
     staticdir => $staticdir,
     templatedir => $templatedir,
-    custom_logfile => $custom_logfile,
-    access_logfile => $access_logfile,
     rabbitmq_naily_user => $rabbitmq_naily_user,
     rabbitmq_naily_password => $rabbitmq_naily_password,
   }

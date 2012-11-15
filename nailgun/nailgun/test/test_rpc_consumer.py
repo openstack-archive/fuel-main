@@ -3,6 +3,7 @@
 import time
 import uuid
 
+from mock import patch
 import eventlet
 eventlet.monkey_patch()
 
@@ -29,7 +30,10 @@ class TestConsumer(BaseHandlers):
         kwargs = {'task_uuid': task.uuid,
                   'nodes': [{'uid': node.id, 'status': 'deploying'},
                             {'uid': node2.id, 'status': 'error'}]}
-        receiver.deploy_resp(**kwargs)
+
+        with patch('nailgun.rpc.threaded.notifier'):
+            receiver.deploy_resp(**kwargs)
+
         self.db.refresh(node)
         self.db.refresh(node2)
         self.db.refresh(task)

@@ -38,6 +38,7 @@ class NotificationHandler(JSONHandler):
         data = Notification.validate_update(web.data())
         for key, value in data.iteritems():
             setattr(notification, key, value)
+        web.ctx.orm.add(notification)
         web.ctx.orm.commit()
         return json.dumps(
             self.render(notification),
@@ -50,7 +51,7 @@ class NotificationCollectionHandler(JSONHandler):
     def GET(self):
         web.header('Content-Type', 'application/json')
         user_data = web.input(cluster_id=None)
-        if not user_data.cluster_id is None:
+        if user_data.cluster_id:
             notifications = web.ctx.orm.query(Notification).filter_by(
                 cluster_id=user_data.cluster_id).all()
         else:
@@ -58,3 +59,19 @@ class NotificationCollectionHandler(JSONHandler):
         return json.dumps(map(
             NotificationHandler.render,
             notifications), indent=4)
+
+    def PUT(self):
+        web.header('Content-Type', 'application/json')
+        data = Notification.validate_collection_update(web.data())
+        q = web.ctx.orm.query(Notification)
+        notifications_updated = []
+        for nd in data:
+            notification = q.get(nd["id"])
+            for key, value in nd.iteritems():
+                setattr(notification, key, value)
+            notifications_updated.append(notification)
+            web.ctx.orm.add(notification)
+        web.ctx.orm.commit()
+        return json.dumps(map(
+            NotificationHandler.render,
+            notifications_updated), indent=4)

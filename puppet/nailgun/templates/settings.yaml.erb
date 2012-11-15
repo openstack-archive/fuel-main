@@ -28,8 +28,8 @@ RABBITMQ:
   password: "<%= rabbitmq_naily_password %>"
   virtual_host: "/"
 
-CUSTOM_LOG: "<%= custom_logfile %>"
-ACCESS_LOG: "<%= access_logfile %>"
+CUSTOM_LOG: "/var/log/nailgun.log"
+ACCESS_LOG: "/var/log/nailgun_access.log"
 
 PATH_TO_SSH_KEY: "/root/.ssh/id_rsa"
 PATH_TO_BOOTSTRAP_SSH_KEY: "/root/.ssh/bootstrap.rsa"

@@ -14,6 +14,7 @@ import nailgun.rpc as rpc
 from nailgun.db import Query
 from nailgun.api.models import engine, Node, Network
 from nailgun.api.models import Task
+from nailgun.notifier import notifier
 
 logger = logging.getLogger(__name__)
 rpc_queue = Queue.Queue()
@@ -138,6 +139,20 @@ class NailgunReceiver(object):
             ]
             error_msg = "Failed to deploy nodes:\n%s" % "\n".join(nodes_info)
             status = 'error'
+
+        task = cls.db.query(Task).filter_by(uuid=task_uuid).first()
+
+        if status in ('error',):
+            notifier.error({
+                "message": "Error occured during deployment",
+                "cluster": getattr(task.cluster, "id", "unknown")
+            })
+
+        if progress == 100:
+            notifier.info({
+                "message": "Deployment is done",
+                "cluster": getattr(task.cluster, "id", "unknown")
+            })
 
         cls.__update_task_status(task_uuid, status, progress, error_msg)
 
