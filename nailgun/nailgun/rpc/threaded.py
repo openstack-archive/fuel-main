@@ -145,12 +145,12 @@ class NailgunReceiver(object):
         if status in ('error',):
             notifier.notify(
                 "error",
-                task.error,
+                error_msg,
                 task.cluster.id,
                 cls.db
             )
 
-        if progress == 100:
+        elif status in ('ready',):
             notifier.notify(
                 "done",
                 "Deployment is done",
