@@ -214,7 +214,7 @@ end
 
 def write_data_to_file(logger, filename, data)
   if File.exist?(filename)
-    File.open('/etc/nailgun_uid', 'r') do |fo|
+    File.open(filename, 'r') do |fo|
       text = fo.read
     end
   else

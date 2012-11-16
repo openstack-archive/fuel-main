@@ -164,7 +164,7 @@ class NailgunReceiver(object):
     def verify_networks_resp(cls, **kwargs):
         logger.info("RPC method verify_networks_resp received: %s" % kwargs)
         task_uuid = kwargs.get('task_uuid')
-        networks = kwargs.get('networks') or []
+        nodes = kwargs.get('nodes')
         error_msg = kwargs.get('error')
         status = kwargs.get('status')
         progress = kwargs.get('progress')
@@ -173,25 +173,36 @@ class NailgunReceiver(object):
         task = cls.db.query(Task).filter_by(uuid=task_uuid).first()
         if not task:
             logger.error("verify_networks_resp: task \
-                    with UUID %s found!", task_uuid)
+                    with UUID %s not found!", task_uuid)
             return
-        nets_db = cls.db.query(Network).filter_by(
-            cluster_id=task.cluster_id
-        ).all()
-        vlans_db = [net.vlan_id for net in nets_db]
-        error_nodes = []
-        for x in networks:
-            # Now - for all interfaces (eth0, eth1, etc.)
-            for iface in x['networks']:
-                absent_vlans = list(set(vlans_db) - set(iface['vlans']))
-                if absent_vlans:
-                    error_nodes.append({'uid': x['uid'],
-                                        'absent_vlans': absent_vlans})
-
-        if error_nodes:
-            error_msg = "Following nodes do not have vlans:\n%s" % error_nodes
-            logger.error(error_msg)
-            status = 'error'
+        #  We expect that 'nodes' contains all nodes which we test.
+        #  Situation when some nodes not answered must be processed
+        #  in orchestrator early.
+        if nodes:
+            nets_db = cls.db.query(Network).filter_by(
+                cluster_id=task.cluster_id
+            ).all()
+            vlans_db = [net.vlan_id for net in nets_db]
+            iface_db = {'iface': 'eth0', 'vlans': set(vlans_db)}
+            error_nodes = []
+            for n in nodes:
+                # Now - for all interfaces (eth0, eth1, etc.)
+                for iface in n['networks']:
+                    if iface['iface'] == iface_db['iface']:
+                        absent_vlans = list(
+                            iface_db['vlans'] - set(iface['vlans']))
+                        if absent_vlans:
+                            error_nodes.append(
+                                "uid: %r, interface: %s, absent vlans: %s" %
+                                (n['uid'],
+                                iface['iface'],
+                                absent_vlans)
+                            )
+            if error_nodes:
+                error_msg = "Following nodes have network errors:\n%s." % (
+                    '; '.join(error_nodes))
+                logger.error(error_msg)
+                status = 'error'
 
         cls.__update_task_status(task_uuid, status, progress, error_msg)
 

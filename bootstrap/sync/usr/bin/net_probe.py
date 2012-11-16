@@ -125,7 +125,8 @@ def send_probe_frame(**props):
         p = p/scapy.IP(src=props['src'], dst=props['dst'])
         p = p/scapy.UDP(sport=props['sport'], dport=props['dport'])/props['data']
         try:
-            scapy.sendp(p, iface=iface)
+            for i in xrange(5):
+                scapy.sendp(p, iface=iface)
         except socket.error, e:
             print e, iface
         if vlan > 0:

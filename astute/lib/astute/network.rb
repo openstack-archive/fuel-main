@@ -1,11 +1,6 @@
 module Astute
   module Network
     def self.check_network(ctx, nodes, networks)
-      if nodes.length < 2
-        Astute.logger.info "#{ctx.task_id}: Network checker: at least two nodes are required to check network connectivity. Do nothing."
-        return []
-      end
-
       uids = nodes.map {|n| n['uid']}
       # TODO Everything breakes if agent not found. We have to handle that
       net_probe = MClient.new(ctx, "net_probe", uids)

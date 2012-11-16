@@ -49,7 +49,6 @@ class TestConsumer(BaseHandlers):
         receiver = threaded.NailgunReceiver()
 
         task = Task(
-            uuid=str(uuid.uuid4()),
             name="super",
             cluster_id=cluster['id']
         )
@@ -59,8 +58,8 @@ class TestConsumer(BaseHandlers):
         nets = [{'iface': 'eth0', 'vlans': range(100, 105)}]
         kwargs = {'task_uuid': task.uuid,
                   'status': 'ready',
-                  'networks': [{'uid': node1.id, 'networks': nets},
-                               {'uid': node2.id, 'networks': nets}]}
+                  'nodes': [{'uid': node1.id, 'networks': nets},
+                            {'uid': node2.id, 'networks': nets}]}
         receiver.verify_networks_resp(**kwargs)
         self.db.refresh(task)
         self.assertEqual(task.status, "ready")
@@ -84,14 +83,19 @@ class TestConsumer(BaseHandlers):
         nets = [{'iface': 'eth0', 'vlans': range(100, 104)}]
         kwargs = {'task_uuid': task.uuid,
                   'status': 'ready',
-                  'networks': [{'uid': node1.id, 'networks': nets},
-                               {'uid': node2.id, 'networks': nets}]}
+                  'nodes': [{'uid': node1.id, 'networks': nets},
+                            {'uid': node2.id, 'networks': nets}]}
         receiver.verify_networks_resp(**kwargs)
         self.db.refresh(task)
         self.assertEqual(task.status, "error")
         error_nodes = [{'uid': node1.id, 'absent_vlans': [104]},
                        {'uid': node2.id, 'absent_vlans': [104]}]
-        error_msg = "Following nodes do not have vlans:\n%s" % error_nodes
+        error_nodes = ["uid: %r, interface: %s, absent vlans: %s" %
+                       (node1.id, 'eth0', [104]),
+                       "uid: %r, interface: %s, absent vlans: %s" %
+                       (node2.id, 'eth0', [104])]
+        error_msg = "Following nodes have network errors:\n%s." % (
+            '; '.join(error_nodes))
         self.assertEqual(task.error, error_msg)
 
     def test_task_progress(self):
