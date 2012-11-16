@@ -37,7 +37,7 @@ class TestHandlers(BaseHandlers):
             rn0 = response[1]
             rn1 = response[0]
         self.assertEquals(rn1['cluster'], n1.cluster_id)
-        self.assertEquals(rn0.get('cluster', 'Am6miesa'), 'Am6miesa')
+        self.assertIsNone(rn0.get('cluster', None))
 
     def test_update(self):
         c = self.create_default_cluster()
@@ -69,5 +69,5 @@ class TestHandlers(BaseHandlers):
             rn1 = response[0]
         self.assertEquals(rn1['cluster'], n1.cluster_id)
         self.assertEquals(rn1['status'], 'read')
-        self.assertEquals(rn0.get('cluster', 'Am6miesa'), 'Am6miesa')
+        self.assertIsNone(rn0.get('cluster', None))
         self.assertEquals(rn0['status'], 'read')
