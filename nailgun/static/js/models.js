@@ -56,6 +56,9 @@ define(function() {
                     canCheck = false;
                 }
             });
+            if (type == 'singlenode' && cluster.get('nodes').where({'role': 'controller'}).length > 1) {
+                canCheck = false;
+            }
             return canCheck;
         },
         availableModes: function() {
