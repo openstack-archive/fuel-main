@@ -300,15 +300,15 @@ h6.page-title {
 .node-select {
   display: block;
   width: 172px;
-  height: 86px;
+  height: 114px;
   float: left;
   margin-left: -1px;
-  margin-top: -85px;
+  margin-top: -114px;
   border-radius: 4px;
   line-height: 52px;
   font-size: 60px;
   text-align: center;
-  padding: 0px 0px 0px 5px;
+  padding: 17px 0px 0px 9px;
   color: rgba(255,255,255,0.85);
   cursor: pointer;
 }
@@ -467,7 +467,7 @@ h6.page-title {
 }
 
 .unassigned {
-  height: 86px !important;
+  height: 114px !important;
   border: 1px solid #afafaf;
 }
 
