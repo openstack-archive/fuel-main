@@ -26,8 +26,6 @@ def main():
                             "ERROR"
                         ],
                         default="ERROR", metavar="LEVEL")
-    parser.add_argument('--cache-file', dest='cache_file', type=str,
-                        help='file to store integration environment name')
     parser.add_argument('--no-forward-network', dest='no_forward_network',
                         action="store_true", default=False,
                         help='do not forward environment netork')
@@ -55,11 +53,10 @@ def main():
 
     suite = integration
 #   todo fix default values
-    ci = suite.Ci(params.cache_file, params.iso)
     if params.no_forward_network:
-        ci = suite.Ci(params.cache_file, params.iso, forward=None)
+        ci = suite.Ci(params.iso, forward=None)
     else:
-        ci = suite.Ci(params.cache_file, params.iso)
+        ci = suite.Ci(params.iso)
 
     if not params.deployment_timeout is None:
         ci.deployment_timeout = params.deployment_timeout

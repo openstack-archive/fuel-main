@@ -16,8 +16,7 @@ class Ci(object):
     installation_timeout = 1800
     deployment_timeout = 1800
 
-    def __init__(self, cache_file=None, iso=None, forward='nat'):
-        self.environment_cache_file = cache_file
+    def __init__(self, iso=None, forward='nat'):
         self.iso = iso
         self.environment = None
         self.forward = forward
@@ -26,9 +25,8 @@ class Ci(object):
             logger.info("Successfully loaded existing environment")
         except Exception, e:
             logger.info(
-                "Failed to load existing integration environment: %s\n%s",
-                str(e),
-                traceback.format_exc()
+                "Failed to load existing integration environment: %s",
+                str(e)
             )
             pass
 

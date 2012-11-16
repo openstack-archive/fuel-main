@@ -25,20 +25,14 @@ clean: clean-integration-test
 
 .PHONY: test-integration
 test-integration: $/environment-id-integration
-	python test/integration_test.py -l $(LEVEL) --installation-timeout=$(INSTALLATION_TIMEOUT) --deployment-timeout=$(DEPLOYMENT_TIMEOUT) --cache-file $(abspath $<) --iso $(abspath $(iso.path)) test $(NOSEARGS)
+	python test/integration_test.py -l $(LEVEL) --installation-timeout=$(INSTALLATION_TIMEOUT) --deployment-timeout=$(DEPLOYMENT_TIMEOUT) --iso $(abspath $(iso.path)) test $(NOSEARGS)
 
 $/environment-id-integration: | $(iso.path)
 	@mkdir -p $(@D)
-	python test/integration_test.py -l $(LEVEL) --cache-file $(abspath $@) destroy
-	python test/integration_test.py -l $(LEVEL) $(NOFORWARD_CLI_ARG) --cache-file $(abspath $@) --iso $(abspath $(iso.path)) setup
+	python test/integration_test.py -l $(LEVEL) destroy
+	python test/integration_test.py -l $(LEVEL) $(NOFORWARD_CLI_ARG) --iso $(abspath $(iso.path)) setup
 
 .PHONY: clean-integration-test
 clean-integration-test: /:=$/
 clean-integration-test:
-	test -f $/environment-id-integration.candidate && \
-		python test/integration_test.py -l $(LEVEL) --cache-file $(abspath $/environment-id-integration.candidate) destroy || true
-	test -f $/environment-id-integration && \
-		python test/integration_test.py -l $(LEVEL) --cache-file $(abspath $/environment-id-integration) destroy || true
-
-
-
+	python test/integration_test.py -l $(LEVEL) destroy
