@@ -45,7 +45,7 @@ define(function() {
             return this.get('nodes').hasChanges();
         },
         canChangeMode: function() {
-            return this.get('mode') == 'ha' || (!this.get('nodes').length && this.get('type') != 'singlenode');
+            return this.get('mode') == 'ha' || !this.get('nodes').length;
         },
         canChangeType: function(type) {
             var canCheck = true;
