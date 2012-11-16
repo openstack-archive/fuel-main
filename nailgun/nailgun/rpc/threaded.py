@@ -146,14 +146,14 @@ class NailgunReceiver(object):
             notifier.notify(
                 "error",
                 "Error occured during deployment",
-                getattr(task.cluster, "id", "unknown")
+                task.cluster["id"]
             )
 
         if progress == 100:
             notifier.notify(
                 "done",
                 "Deployment is done",
-                getattr(task.cluster, "id", "unknown")
+                task.cluster["id"]
             )
 
         cls.__update_task_status(task_uuid, status, progress, error_msg)
