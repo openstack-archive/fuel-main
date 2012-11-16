@@ -197,7 +197,7 @@ function(models, dialogViews, clusterPageTemplate, deploymentResultTemplate, dep
         keepScrollPosition: true,
         initialize: function(options) {
             this.tab = options.tab;
-            this.model.bind('change:mode change:type', this.render, this);
+            this.model.bind('change:mode change:redundancy change:type', this.render, this);
             this.model.get('nodes').bind('add remove reset', this.render, this);
         },
         render: function() {
