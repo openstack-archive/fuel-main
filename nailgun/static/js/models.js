@@ -45,18 +45,18 @@ define(function() {
             return this.get('nodes').hasChanges();
         },
         canChangeMode: function() {
-            return !this.task('deploy', 'running') && (this.get('mode') == 'ha' || !this.get('nodes').length);
+            return !this.task('deploy', 'running') && (this.get('mode') == 'ha' || !this.get('nodes').nodesAfterDeployment().length);
         },
         canChangeType: function(type) {
             var canCheck = true;
             var cluster = this;
             var clusterTypesToNodesRoles = {'both': [], 'compute': ['storage'], 'storage': ['compute'], 'singlenode': ['compute', 'storage']};
             _.each(clusterTypesToNodesRoles[type], function(nodeRole) {
-                if (cluster.get('nodes').where({'role': nodeRole}).length) {
+                if (_.where(cluster.get('nodes').nodesAfterDeployment(), {'role': nodeRole}).length) {
                     canCheck = false;
                 }
             });
-            if (type == 'singlenode' && cluster.get('nodes').where({'role': 'controller'}).length > 1) {
+            if (type == 'singlenode' && _.where(cluster.get('nodes').nodesAfterDeployment(), {'role': 'controller'}) > 1) {
                 canCheck = false;
             }
             return canCheck;

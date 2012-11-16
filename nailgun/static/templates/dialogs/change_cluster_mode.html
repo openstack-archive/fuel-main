@@ -11,7 +11,7 @@
           <% var modes = {'simple': 'Simple mode', 'ha': 'HA mode'} %>
           <% _.each(cluster.availableModes(), function(mode) { %>
             <label class="radio">
-              <input type="radio" name="mode" value="<%= mode %>" <%= cluster.get('mode') == mode ? 'checked' : '' %> <%= cluster.get('nodes').length ? 'disabled' : '' %>>
+              <input type="radio" name="mode" value="<%= mode %>" <%= cluster.get('mode') == mode ? 'checked' : '' %> <%= cluster.get('nodes').nodesAfterDeployment().length ? 'disabled' : '' %>>
               <%= modes[mode] || mode %>
             </label>
           <% }) %>
