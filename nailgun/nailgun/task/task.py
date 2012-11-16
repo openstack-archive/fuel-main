@@ -149,7 +149,7 @@ class DeploymentTask(object):
 
             nd_name = TaskHelper.slave_name_by_id(node.id)
 
-            nd_dict['hostname'] = nd_name + settings.DNS_DOMAIN
+            nd_dict['hostname'] = ".".join([nd_name, settings.DNS_DOMAIN])
             nd_dict['name_servers'] = '\"%s\"' % settings.DNS_SERVERS
             nd_dict['name_servers_search'] = '\"%s\"' % settings.DNS_SEARCH
 

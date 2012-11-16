@@ -16,13 +16,15 @@ from nailgun.api.models import Node, Task
 class TestConsumer(BaseHandlers):
 
     def test_node_deploy_resp(self):
+        cluster = self.create_default_cluster()
         node = self.create_default_node()
         node2 = self.create_default_node()
         receiver = threaded.NailgunReceiver()
 
         task = Task(
             uuid=str(uuid.uuid4()),
-            name="super"
+            name="super",
+            cluster_id=cluster.id
         )
         self.db.add(task)
         self.db.commit()
@@ -31,8 +33,7 @@ class TestConsumer(BaseHandlers):
                   'nodes': [{'uid': node.id, 'status': 'deploying'},
                             {'uid': node2.id, 'status': 'error'}]}
 
-        with patch('nailgun.rpc.threaded.notifier'):
-            receiver.deploy_resp(**kwargs)
+        receiver.deploy_resp(**kwargs)
 
         self.db.refresh(node)
         self.db.refresh(node2)
