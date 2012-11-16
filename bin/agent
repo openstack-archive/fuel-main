@@ -69,7 +69,7 @@ class McollectiveConfig
     end
   end
 end
- 
+
 
 class NodeAgent
   def initialize(logger, url=nil)
@@ -117,7 +117,7 @@ class NodeAgent
     return res
   end
 
-  def _interfaces 
+  def _interfaces
     interfaces = @os[:network][:interfaces].inject([]) do |result, elm|
       result << { :name => elm[0], :addresses => elm[1]["addresses"] }
     end
@@ -183,7 +183,7 @@ class NodeAgent
   end
 
   def _data
-    res = { 
+    res = {
       :fqdn => @os[:fqdn],
       :mac => @os[:macaddress],
       :ip  => @os[:ipaddress],
@@ -192,7 +192,7 @@ class NodeAgent
       :os_platform => @os[:platform],
       :meta => _metadata
     }
-    
+
     res[:status] = @node_state if @node_state
     res
   end
@@ -250,11 +250,14 @@ end
 
 agent = NodeAgent.new(logger, url)
 agent.update_state
-res = agent.post
-if res.status == 409:
-  res = agent.put
+post_res = agent.post
+if post_res.status == 409:
+  put_res = agent.put
+  new_id = JSON.parse(put_res.body)[0]['id']
+else
+  new_id = JSON.parse(post_res.body)['id']
 end
-new_id = JSON.parse(res.body)['id']
+
 mc_config = McollectiveConfig.new(logger)
 mc_config.replace_identity(new_id)
 write_data_to_file(logger, '/etc/nailgun_uid', new_id.to_s)
