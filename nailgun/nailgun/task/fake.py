@@ -3,6 +3,8 @@ import time
 import logging
 import threading
 
+from sqlalchemy.orm import object_mapper, ColumnProperty
+
 from nailgun.api.models import Network, Node
 from nailgun.task.errors import WrongNodeStatus
 from nailgun.network import manager as netmanager
@@ -69,14 +71,21 @@ class DeletionTask(object):
     @classmethod
     def execute(self, task):
         nodes_to_delete = []
+        nodes_to_restore = []
         for node in task.cluster.nodes:
             if node.pending_deletion:
                 nodes_to_delete.append({
                     'id': node.id,
                     'uid': node.id,
-                    'status': 'discover',
-                    'return_to_discover': True
+                    'status': 'discover'
                 })
+
+                new_node = Node()
+                for prop in object_mapper(new_node).iterate_properties:
+                    if (isinstance(prop, ColumnProperty) and prop.key not in (
+                            'id', 'cluster_id', 'role', 'pending_deletion')):
+                        setattr(new_node, prop.key, getattr(node, prop.key))
+                nodes_to_restore.append(new_node)
 
         receiver = NailgunReceiver()
         kwargs = {
@@ -85,6 +94,10 @@ class DeletionTask(object):
             'status': 'ready'
         }
         receiver.remove_nodes_resp(**kwargs)
+
+        for node in nodes_to_restore:
+            web.ctx.orm.add(node)
+            web.ctx.orm.commit()
 
 
 class VerifyNetworksTask(object):
