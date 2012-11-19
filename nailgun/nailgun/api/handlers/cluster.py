@@ -194,7 +194,7 @@ class ClusterChangesHandler(JSONHandler):
                      cluster_id)
         cluster = q.first()
         if not cluster:
-            logger.warn('ClusterChangesHandler: there is'\
+            logger.warn('ClusterChangesHandler: there is'
                         ' no cluster with id %s in DB.' % cluster_id)
             return web.notfound()
 
@@ -207,7 +207,7 @@ class ClusterChangesHandler(JSONHandler):
         except (DeploymentAlreadyStarted,
                 FailedProvisioning,
                 WrongNodeStatus) as exc:
-            logger.warn('ClusterChangesHandler: error while execution'\
+            logger.warn('ClusterChangesHandler: error while execution'
                         ' deploy task: %s' % exc.message)
             raise web.badrequest(exc.message)
 
