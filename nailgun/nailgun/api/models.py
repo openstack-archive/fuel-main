@@ -137,11 +137,6 @@ class Node(Base, BasicValidator):
     error_msg = Column(String(255))
 
     @property
-    def networks(self):
-        from nailgun.network import manager as netmanager
-        return netmanager.get_node_networks(self.id)
-
-    @property
     def info(self):
         """ Safely aggregate metadata to provide short info for UI """
         result = {}
