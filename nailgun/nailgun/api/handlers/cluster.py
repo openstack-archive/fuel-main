@@ -190,16 +190,25 @@ class ClusterChangesHandler(JSONHandler):
     def PUT(self, cluster_id):
         web.header('Content-Type', 'application/json')
         q = web.ctx.orm.query(Cluster).filter(Cluster.id == cluster_id)
+        logger.debug('ClusterChangesHandler: PUT request with cluster_id %s' %
+                     cluster_id)
         cluster = q.first()
         if not cluster:
+            logger.warn('ClusterChangesHandler: there is'\
+                        ' no cluster with id %s in DB.' % cluster_id)
             return web.notfound()
 
         task_manager = DeploymentTaskManager(cluster_id=cluster.id)
         try:
+            logger.debug('ClusterChangesHandler: trying to execute task...')
             task = task_manager.execute()
+            logger.debug('ClusterChangesHandler: task to deploy is %s' %
+                         task.uuid)
         except (DeploymentAlreadyStarted,
                 FailedProvisioning,
                 WrongNodeStatus) as exc:
+            logger.warn('ClusterChangesHandler: error while execution'\
+                        ' deploy task: %s' % exc.message)
             raise web.badrequest(exc.message)
 
         return json.dumps(

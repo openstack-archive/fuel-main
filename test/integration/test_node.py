@@ -90,13 +90,13 @@ class TestNode(Base):
             if (time.time() - timer) > timeout:
                 raise Exception("Bootstrap boot timeout expired!")
             time.sleep(5)
-# TODO make post test deletion of cluster and nodes
 
     def _basic_provisioning(self, cluster_name, node_name):
         self._clean_clusters()
         cluster_id = self._create_cluster(name=cluster_name)
         slave_id = str(self._bootstrap_slave(node_name)['id'])
-        self.client.put("/api/nodes/%s/" % slave_id, {"role": "controller"})
+        self.client.put("/api/nodes/%s/" % slave_id,
+                        {"role": "controller", "pending_addition": True})
         self._update_nodes_in_cluster(cluster_id, [slave_id])
         task = self._launch_provisioning(cluster_id)
 
