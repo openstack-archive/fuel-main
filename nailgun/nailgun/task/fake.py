@@ -5,6 +5,7 @@ import threading
 
 from sqlalchemy.orm import object_mapper, ColumnProperty
 
+from nailgun.notifier import notifier
 from nailgun.api.models import Network, Node
 from nailgun.task.errors import WrongNodeStatus
 from nailgun.network import manager as netmanager
@@ -98,6 +99,7 @@ class DeletionTask(object):
         for node in nodes_to_restore:
             web.ctx.orm.add(node)
             web.ctx.orm.commit()
+            notifier.notify("discover", "New fake node discovered")
 
 
 class VerifyNetworksTask(object):
