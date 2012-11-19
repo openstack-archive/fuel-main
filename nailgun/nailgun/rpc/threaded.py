@@ -92,7 +92,12 @@ class NailgunReceiver(object):
                     "Failed to delete node '%s': node doesn't exist", str(node)
                 )
                 break
-            cls.db.delete(node_db)
+            if node.get('status') == 'discover':
+                node_db.role = None
+                node_db.cluster_id = None
+                cls.db.add(node_db)
+            else:
+                cls.db.delete(node_db)
 
         for node in error_nodes:
             node_db = cls.db.query(Node).get(node['uid'])

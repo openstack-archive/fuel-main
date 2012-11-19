@@ -74,7 +74,8 @@ class DeletionTask(object):
                 nodes_to_delete.append({
                     'id': node.id,
                     'uid': node.id,
-                    'status': 'discover'
+                    'status': 'discover',
+                    'return_to_discover': True
                 })
 
         receiver = NailgunReceiver()
@@ -90,14 +91,8 @@ class VerifyNetworksTask(object):
 
     @classmethod
     def execute(self, task):
-        nets_db = web.ctx.orm.query(Network).filter_by(
-            cluster_id=task.cluster.id).all()
-        networks = [{
-            'id': n.id, 'vlan_id': n.vlan_id, 'cidr': n.cidr}
-            for n in nets_db]
-
-        nodes = [{'id': n.id, 'ip': n.ip, 'mac': n.mac, 'uid': n.id}
-                 for n in task.cluster.nodes]
+        networks = []
+        nodes = []
 
         class FakeVerificationThread(threading.Thread):
             def run(self):
