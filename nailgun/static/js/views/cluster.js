@@ -74,7 +74,7 @@ function(models, dialogViews, clusterPageTemplate, deploymentResultTemplate, dep
             this.scheduleUpdate();
         },
         bindTasksEvents: function() {
-            this.model.get('tasks').bind('add remove reset', this.renderDeploymentControls, this);
+            this.model.get('tasks').bind('reset', this.renderDeploymentControls, this);
         },
         renderDeploymentControls: function() {
             this.$('.deployment-result').html(new views.DeploymentResult({model: this.model}).render().el);
@@ -84,7 +84,7 @@ function(models, dialogViews, clusterPageTemplate, deploymentResultTemplate, dep
             this.$el.html(this.template({
                 cluster: this.model,
                 tabs: this.tabs,
-                activeTab: this.tab,
+                activeTab: this.activeTab,
                 renaming: this.renaming
             }));
             this.renderDeploymentControls();
@@ -96,8 +96,9 @@ function(models, dialogViews, clusterPageTemplate, deploymentResultTemplate, dep
                 'actions': views.ActionsTab,
                 'logs': views.LogsTab
             };
-            if (_.has(tabs, this.tab)) {
-                this.$('#tab-' + this.tab).html(new tabs[this.tab]({model: this.model}).render().el);
+            if (_.has(tabs, this.activeTab)) {
+                this.tab = new tabs[this.activeTab]({model: this.model});
+                this.$('#tab-' + this.activeTab).html(this.tab.render().el);
             }
 
             return this;
@@ -109,7 +110,7 @@ function(models, dialogViews, clusterPageTemplate, deploymentResultTemplate, dep
         initialize: function(options) {
             var task = this.model.task('deploy');
             if (task) {
-                task.bind('change', this.render, this);
+                task.bind('change:status', this.render, this);
             }
         },
         render: function() {
@@ -198,7 +199,17 @@ function(models, dialogViews, clusterPageTemplate, deploymentResultTemplate, dep
         initialize: function(options) {
             this.tab = options.tab;
             this.model.bind('change:mode change:redundancy change:type', this.render, this);
-            this.model.get('nodes').bind('add remove reset', this.render, this);
+            this.model.bind('change:nodes', this.bindEvents, this);
+            this.bindEvents();
+        },
+        bindEvents: function() {
+            this.model.get('nodes').bind('reset', this.render, this);
+            this.model.get('tasks').bind('reset', function() {
+                var task = this.model.task('deploy', 'running');
+                if (task) {
+                    task.bind('change:status', this.render, this);
+                }
+            }, this);
         },
         render: function() {
             this.$el.html('');
@@ -538,7 +549,7 @@ function(models, dialogViews, clusterPageTemplate, deploymentResultTemplate, dep
             */
         },
         initialize: function(options) {
-            this.model.get('tasks').bind('add remove reset', this.renderVerificationControls, this);
+            this.model.get('tasks').bind('remove reset', this.renderVerificationControls, this);
             if (!this.model.get('networks')) {
                 this.networks = new models.Networks();
                 this.networks.deferred = this.networks.fetch({data: {cluster_id: this.model.id}});

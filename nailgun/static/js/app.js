@@ -30,9 +30,9 @@ function(models, commonViews, clusterViews, clustersViews, releaseViews) {
         showCluster: function(id) {
             this.navigate('#cluster/' + id + '/nodes', {trigger: true, replace: true});
         },
-        showClusterTab: function(id, tab) {
+        showClusterTab: function(id, activeTab) {
             var tabs = ['nodes', 'network', 'settings', 'actions', 'logs'];
-            if (!_.contains(tabs, tab)) {
+            if (!_.contains(tabs, activeTab)) {
                 this.showCluster(id);
                 return;
             }
@@ -41,7 +41,7 @@ function(models, commonViews, clusterViews, clustersViews, releaseViews) {
             var render = function() {
                 this.navbar.setActive('clusters');
                 this.breadcrumb.setPath(['Home', '#'], ['OpenStack Installations', '#clusters'], cluster.get('name'));
-                this.page = new clusterViews.ClusterPage({model: cluster, tabs: tabs, tab: tab});
+                this.page = new clusterViews.ClusterPage({model: cluster, tabs: tabs, activeTab: activeTab});
                 this.content.html(this.page.render().el);
             };
 
