@@ -52,7 +52,7 @@ define(function() {
             var cluster = this;
             var clusterTypesToNodesRoles = {'both': [], 'compute': ['storage'], 'storage': ['compute'], 'singlenode': ['compute', 'storage']};
             _.each(clusterTypesToNodesRoles[type], function(nodeRole) {
-                if (_.filter(cluster.get('nodes').nodesAfterDeployment(), function(node) {return node.get('role') == nodeRole}).length) {
+                if (_.filter(cluster.get('nodes').nodesAfterDeployment(), function(node) {return node.get('role') == nodeRole;}).length) {
                     canCheck = false;
                 }
             });
