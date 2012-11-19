@@ -5,49 +5,44 @@
 <div class="modal-body display-changes-dialog">
   <ul>
     <% var canDeploy = true %>
-    <% if (!cluster.get('nodes').nodesAfterDeployment().length) { %>
+    <% if (!cluster.hasChanges()) { %>
       <% canDeploy = false; %>
-      <li>Can't start deployment. There will be no controller nodes.</li>
+      <li>There are no any changes to deploy</li>
     <% } else { %>
-      <% if (!cluster.hasChanges()) { %>
-        <% canDeploy = false; %>
-        <li>There are no any changes to deploy</li>
-      <% } else { %>
-        <% var roles = cluster.availableRoles() %>
-        <% _.each(roles, function(role) { %>
-          <% var count = cluster.get('nodes').where({role: role}).length %>
-          <% if (role == 'controller' && count != size) { %>
-            <li><%= count < size ? 'Insufficient' : 'Redundant' %> number of <%= role %><%= count != 1 ? 's' : '' %>: <%= count %> of <%= size %> node<%= size != 1 ? 's' : '' %></li>
-            <% canDeploy = false %>
-          <% } else if (!count) { %>
-            <li>Must contain at least one <%= role %> node</li>
-            <% canDeploy = false %>
-          <% } %>
-        <% }) %>
+      <% var roles = cluster.availableRoles() %>
+      <% _.each(roles, function(role) { %>
+        <% var count = _.filter(cluster.get('nodes').nodesAfterDeployment(), function(node) {return node.get('role') == 'controller'}).length %>
+        <% if (role == 'controller' && count != size) { %>
+          <li><%= count < size ? 'Insufficient' : 'Redundant' %> number of <%= role %><%= count != 1 ? 's' : '' %>: <%= count %> of <%= size %> node<%= size != 1 ? 's' : '' %></li>
+          <% canDeploy = false %>
+        <% } else if (!count) { %>
+          <li>Must contain at least one <%= role %> node</li>
+          <% canDeploy = false %>
+        <% } %>
+      <% }) %>
 
-        <% if (canDeploy) { %>
-          <% var nodesToAdd = cluster.get('nodes').where({pending_addition: true}) %>
-          <% if (nodesToAdd.length) { %>
-            <li>Add nodes:
-              <ul>
-                <% _.each(roles, function(role) { %>
-                  <% var count = _.filter(nodesToAdd, function(node) {return node.get('role') == role}).length %>
-                  <% if (count) { %><li><%= count %> <%= role %> node<%= count != 1 ? 's' : '' %></li><% } %>
-                <% }) %>
-              </ul>
-            </li>
-          <% } %>
-          <% var nodesToDelete = cluster.get('nodes').where({pending_deletion: true}) %>
-          <% if (nodesToDelete.length) { %>
-            <li>Delete nodes:
-              <ul>
-                <% _.each(roles, function(role) { %>
-                  <% var count = _.filter(nodesToDelete, function(node) {return node.get('role') == role}).length %>
-                  <% if (count) { %><li><%= count %> <%= role %> node<%= count != 1 ? 's' : '' %></li><% } %>
-                <% }) %>
-              </ul>
-            </li>
-          <% } %>
+      <% if (canDeploy) { %>
+        <% var nodesToAdd = cluster.get('nodes').where({pending_addition: true}) %>
+        <% if (nodesToAdd.length) { %>
+          <li>Add nodes:
+            <ul>
+              <% _.each(roles, function(role) { %>
+                <% var count = _.filter(nodesToAdd, function(node) {return node.get('role') == role}).length %>
+                <% if (count) { %><li><%= count %> <%= role %> node<%= count != 1 ? 's' : '' %></li><% } %>
+              <% }) %>
+            </ul>
+          </li>
+        <% } %>
+        <% var nodesToDelete = cluster.get('nodes').where({pending_deletion: true}) %>
+        <% if (nodesToDelete.length) { %>
+          <li>Delete nodes:
+            <ul>
+              <% _.each(roles, function(role) { %>
+                <% var count = _.filter(nodesToDelete, function(node) {return node.get('role') == role}).length %>
+                <% if (count) { %><li><%= count %> <%= role %> node<%= count != 1 ? 's' : '' %></li><% } %>
+              <% }) %>
+            </ul>
+          </li>
         <% } %>
       <% } %>
     <% } %>
