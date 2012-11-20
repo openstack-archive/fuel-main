@@ -18,7 +18,6 @@ from nailgun.api.fields import JSON
 from nailgun.settings import settings
 from nailgun.api.validators import BasicValidator
 
-
 engine = create_engine(settings.DATABASE_ENGINE)
 Base = declarative_base()
 
@@ -136,6 +135,11 @@ class Node(Base, BasicValidator):
     pending_deletion = Column(Boolean, default=False)
     error_type = Column(Enum(*NODE_ERRORS))
     error_msg = Column(String(255))
+
+    @property
+    def network_data(self):
+        from nailgun.network import manager as netmanager
+        return netmanager.get_node_networks(self.id)
 
     @property
     def info(self):

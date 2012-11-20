@@ -3,6 +3,8 @@ import time
 
 from devops.model import Environment, Network, Node, Disk, Cdrom, Interface
 from devops.helpers import tcp_ping, wait
+from helpers import SSHClient
+
 import traceback
 import logging
 import devops
@@ -50,7 +52,7 @@ class Ci(object):
             environment.networks.append(network)
 
             node = Node('admin')
-            node.memory = 2048
+            node.memory = 1024
             node.vnc = True
             node.disks.append(
                 Disk(size=30 * 1024 ** 3)
@@ -61,7 +63,7 @@ class Ci(object):
             environment.nodes.append(node)
 
             node2 = Node('slave')
-            node2.memory = 2048
+            node2.memory = 1024
             node2.vnc = True
             node2.disks.append(
                 Disk(size=30 * 1024 ** 3)
@@ -70,8 +72,8 @@ class Ci(object):
             node2.boot = ['network']
             environment.nodes.append(node2)
 
-            node3 = Node('slave-delete')
-            node3.memory = 2048
+            node3 = Node('slave2')
+            node3.memory = 1024
             node3.vnc = True
             node3.disks.append(
                 Disk(size=30 * 1024 ** 3)
@@ -139,6 +141,35 @@ vmlinuz initrd=initrd.img ks=cdrom:/ks.cfg
             and tcp_ping(node.ip_address, 8000),
             timeout=self.deployment_timeout
         )
+
+        logging.info("Waiting while bootstrapping is in progress")
+        ssh = SSHClient()
+        logpath = "/var/log/puppet/firstboot.log"
+        str_success = "Finished catalog run"
+
+        ssh.connect_ssh(
+            str(self.environment.node['admin'].ip_address),
+            "root",
+            "r00tme"
+        )
+        count = 0
+        while True:
+            res = ssh.execute("grep '%s' '%s'" % (str_success, logpath))
+            count += 1
+            if not res['exit_status']:
+                break
+            time.sleep(5)
+            if count == 200:
+                raise Exception(
+                    "Admin node bootstrapping has not finished or failed. "
+                    "Check %s manually." % logpath
+                )
+        ssh.disconnect()
+
+        for node in self.environment.nodes:
+            logging.info("Creating snapshot 'initial'")
+            node.save_snapshot('initial')
+            logging.info("Test node is ready at %s" % node.ip_address)
 
         logger.info("Admin node software is installed and ready for use")
 

@@ -4,6 +4,9 @@ import time
 import json
 import pprint
 import posixpath
+import re
+from time import sleep
+
 from devops.helpers import wait, tcp_ping, http
 from integration import ci
 from integration.base import Base
@@ -56,24 +59,84 @@ class TestNode(Base):
         self._create_cluster(name='empty')
 
     def test_node_deploy(self):
-        self._bootstrap_slave()
+        self._revert_nodes()
+        self._bootstrap_nodes()
 
     def test_updating_nodes_in_cluster(self):
+        self._revert_nodes()
         cluster_id = self._create_cluster(name='empty')
-        node = str(self._bootstrap_slave()['id'])
-        self._update_nodes_in_cluster(cluster_id, [node])
+        nodes = self._bootstrap_nodes()
+        self._update_nodes_in_cluster(cluster_id, nodes)
 
-    def test_provisioning(self):
+    def test_one_node_provisioning(self):
+        self._revert_nodes()
         self._clean_clusters()
-        self._basic_provisioning('provision', 'slave')
+        self._basic_provisioning('provision', {'controller': ['slave']})
+
+    def test_two_nodes_provisioning(self):
+        self._revert_nodes()
+        cluster_name = 'two_nodes'
+        nodes = {'controller': ['slave'], 'compute': ['slave2']}
+        self._basic_provisioning(cluster_name, nodes)
+
+    def test_network_config(self):
+        self._revert_nodes()
+        self._clean_clusters()
+        self._basic_provisioning('network_config', {'controller': ['slave']})
+
+        slave = ci.environment.node['slave']
+        node = self._get_node_by_devops_node(slave)
+        ctrl_ssh = SSHClient()
+        ctrl_ssh.connect_ssh(node['ip'], 'root', 'r00tme')
+        ifaces_data = ''.join(ctrl_ssh.execute('/sbin/ip addr')['stdout'])
+        ifaces_fail = False
+
+        ifaces_config_is_implemented = True
+        if ifaces_config_is_implemented:
+            for iface in node['network_data']:
+                if iface['vlan']:
+                    ifname = "%s.%s@%s" % (
+                        iface['dev'], iface['vlan'], iface['dev']
+                    )
+                else:
+                    ifname = iface['dev']
+                r = r"""\d+: (%s): .*(
+    .*)*
+    (inet %s/\d+.* brd %s).*
+""" % (ifname, iface['ip'], iface['brd'])
+                if re.search(r, ifaces_data):
+                    logging.debug(
+                        "Interface %s is ok on node %s" % (ifname, node['id'])
+                    )
+                else:
+                    logging.error(
+                        "Interface %s is BAD on node %s" % (ifname, node['id'])
+                    )
+                    ifaces_fail = True
+        else:
+            r = """
+    link/ether %s brd ff:ff:ff:ff:ff:ff
+    inet %s/""" % (node['mac'].lower(), node['ip'])
+            if re.search(r, ifaces_data):
+                logging.debug(
+                    "Default interface is ok on node %s" % (node['id'])
+                )
+            else:
+                logging.error(
+                    "Default interface is BAD on node %s" % (node['id'])
+                )
+                failed = True
+        self.assertEquals(ifaces_fail, False)
 
     def test_node_deletion(self):
+        self._revert_nodes()
         cluster_name = 'node_deletion'
-        node_name = 'slave-delete'
-        cluster_id = self._basic_provisioning(cluster_name, node_name)
+        node_name = 'slave'
+        nodes = {'controller': [node_name]}
+        cluster_id = self._basic_provisioning(cluster_name, nodes)
 
         slave = ci.environment.node[node_name]
-        node = self._get_slave_node_by_devops_node(slave)
+        node = self._get_node_by_devops_node(slave)
         self.client.put("/api/nodes/%s/" % node['id'],
                         {'pending_deletion': True})
         task = self._launch_provisioning(cluster_id)
@@ -91,23 +154,35 @@ class TestNode(Base):
                 raise Exception("Bootstrap boot timeout expired!")
             time.sleep(5)
 
-    def _basic_provisioning(self, cluster_name, node_name):
+    def _basic_provisioning(self, cluster_name, nodes_dict):
         self._clean_clusters()
         cluster_id = self._create_cluster(name=cluster_name)
-        slave_id = str(self._bootstrap_slave(node_name)['id'])
-        self.client.put("/api/nodes/%s/" % slave_id,
-                        {"role": "controller", "pending_addition": True})
-        self._update_nodes_in_cluster(cluster_id, [slave_id])
+        node_names = []
+        for role in nodes_dict:
+            node_names += nodes_dict[role]
+        nodes = self._bootstrap_nodes(node_names)
+
+        for role in nodes_dict:
+            for n in nodes_dict[role]:
+                slave = ci.environment.node[n]
+                node = self._get_node_by_devops_node(slave)
+                self.client.put(
+                    "/api/nodes/%s/" % node['id'],
+                    {"role": role, "pending_addition": True}
+                )
+        self._update_nodes_in_cluster(cluster_id, nodes)
         task = self._launch_provisioning(cluster_id)
 
         self._task_wait(task, 'Installation')
-        node = json.loads(self.client.get(
-            "/api/nodes/%s/" % slave_id
-        ).read())
-        ctrl_ssh = SSHClient()
-        ctrl_ssh.connect_ssh(node['ip'], 'root', 'r00tme')
-        ret = ctrl_ssh.execute('test -f /tmp/controller-file')['exit_status']
-        self.assertEquals(ret, 0)
+
+        for role in nodes_dict:
+            for n in nodes_dict[role]:
+                slave = ci.environment.node[n]
+                node = self._get_node_by_devops_node(slave)
+                ctrl_ssh = SSHClient()
+                ctrl_ssh.connect_ssh(node['ip'], 'root', 'r00tme')
+                ret = ctrl_ssh.execute('test -f /tmp/%s-file' % role)
+                self.assertEquals(ret['exit_status'], 0)
         return cluster_id
 
     def _launch_provisioning(self, cluster_id):
@@ -195,52 +270,67 @@ class TestNode(Base):
             ).read()
 
     def _update_nodes_in_cluster(self, cluster_id, nodes):
+        node_ids = [str(node['id']) for node in nodes]
         resp = self.client.put(
             "/api/clusters/%s" % cluster_id,
-            data={"nodes": nodes})
+            data={"nodes": node_ids})
         self.assertEquals(200, resp.getcode())
         cluster = json.loads(self.client.get(
             "/api/clusters/%s" % cluster_id).read())
         nodes_in_cluster = [str(n['id']) for n in cluster['nodes']]
-        self.assertEquals(nodes, nodes_in_cluster)
+        self.assertEquals(sorted(node_ids), sorted(nodes_in_cluster))
 
-    def _get_slave_node_by_devops_node(self, node):
+    def _get_node_by_devops_node(self, slave):
         response = self.client.get("/api/nodes/")
         nodes = json.loads(response.read())
         logging.debug("get_slave_node_by_devops_node: nodes at nailgun: %r" %
                       str(nodes))
 
         for n in nodes:
-            for i in node.interfaces:
+            for i in slave.interfaces:
                 logging.debug("get_slave_node_by_devops_node: \
 node.interfaces[n].mac_address: %r" % str(i.mac_address))
                 if n['mac'].capitalize() == i.mac_address.capitalize():
+                    n['devops_name'] = slave.name
                     return n
         return None
 
-    def _bootstrap_slave(self, node_name='slave'):
+    def _bootstrap_nodes(self, node_names=['slave']):
         """This function returns nailgun node descpription by devops name.
         """
-        try:
-            self.get_slave_id()
-        except:
-            pass
         timer = time.time()
         timeout = 600
 
-        slave = ci.environment.node[node_name]
-        logging.info("Starting slave node %r" % node_name)
-        slave.start()
+        slaves = []
+        for node_name in node_names:
+            slave = ci.environment.node[node_name]
+            logging.info("Starting slave node %r" % node_name)
+            slave.start()
+            slaves.append(slave)
 
-        while True:
-            node = self._get_slave_node_by_devops_node(slave)
-            if node is not None:
-                logging.debug("Node %r found" % node_name)
-                break
-            else:
-                logging.debug("Node %r not found" % node_name)
+        nodes = []
+        while len(nodes) < len(slaves):
+            nodes = []
+            for slave in slaves:
+                node = self._get_node_by_devops_node(slave)
+                if node is not None:
+                    nodes.append(node)
+                else:
+                    logging.debug("Node %r not found" % node_name)
                 if (time.time() - timer) > timeout:
                     raise Exception("Slave node agent failed to execute!")
                 time.sleep(15)
                 logging.info("Waiting for slave agent to run...")
-        return node
+        logging.debug("%d node(s) found" % len(nodes))
+        return nodes
+
+    def _revert_nodes(self):
+        logging.info("Reverting to snapshot 'initial'")
+        for node in ci.environment.nodes:
+            try:
+                node.stop()
+            except:
+                pass
+        for node in ci.environment.nodes:
+            node.restore_snapshot('initial')
+            sleep(2)

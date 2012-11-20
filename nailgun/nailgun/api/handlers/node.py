@@ -11,7 +11,7 @@ from nailgun.api.handlers.base import JSONHandler
 
 
 class NodeHandler(JSONHandler):
-    fields = ('id', 'name', 'info', 'role',
+    fields = ('id', 'name', 'info', 'network_data', 'role',
               'status', 'mac', 'fqdn', 'ip', 'manufacturer', 'platform_name',
               'pending_addition', 'pending_deletion', 'os_platform')
     model = Node
