@@ -2,6 +2,7 @@
 
 import time
 import Queue
+import types
 import logging
 import threading
 import itertools
@@ -146,7 +147,7 @@ class NailgunReceiver(object):
             notifier.notify(
                 "error",
                 error_msg,
-                task.cluster.id,
+                task.cluster_id,
                 cls.db
             )
 
@@ -154,7 +155,7 @@ class NailgunReceiver(object):
             notifier.notify(
                 "done",
                 "Deployment is done",
-                task.cluster.id,
+                task.cluster_id,
                 cls.db
             )
 
@@ -178,7 +179,12 @@ class NailgunReceiver(object):
         #  We expect that 'nodes' contains all nodes which we test.
         #  Situation when some nodes not answered must be processed
         #  in orchestrator early.
-        if nodes:
+        if not isinstance(nodes, (list, types.NoneType)) or len(nodes) == 0:
+            status = 'error'
+            if not error_msg:
+                error_msg = 'Received empty node list from orchestrator.'
+
+        if nodes is not None:
             nets_db = cls.db.query(Network).filter_by(
                 cluster_id=task.cluster_id
             ).all()

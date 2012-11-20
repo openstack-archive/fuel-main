@@ -3,7 +3,6 @@
 import time
 import uuid
 
-from mock import patch
 import eventlet
 eventlet.monkey_patch()
 
@@ -13,33 +12,7 @@ from nailgun.test.base import BaseHandlers
 from nailgun.api.models import Node, Task
 
 
-class TestConsumer(BaseHandlers):
-
-    def test_node_deploy_resp(self):
-        cluster = self.create_default_cluster()
-        node = self.create_default_node()
-        node2 = self.create_default_node()
-        receiver = threaded.NailgunReceiver()
-
-        task = Task(
-            uuid=str(uuid.uuid4()),
-            name="super",
-            cluster_id=cluster.id
-        )
-        self.db.add(task)
-        self.db.commit()
-
-        kwargs = {'task_uuid': task.uuid,
-                  'nodes': [{'uid': node.id, 'status': 'deploying'},
-                            {'uid': node2.id, 'status': 'error'}]}
-
-        receiver.deploy_resp(**kwargs)
-
-        self.db.refresh(node)
-        self.db.refresh(node2)
-        self.db.refresh(task)
-        self.assertEqual((node.status, node2.status), ("deploying", "error"))
-        self.assertEqual(task.status, "error")
+class TestVerifyNetworks(BaseHandlers):
 
     def test_verify_networks_resp(self):
         cluster = self.create_cluster_api()
@@ -73,7 +46,6 @@ class TestConsumer(BaseHandlers):
         receiver = threaded.NailgunReceiver()
 
         task = Task(
-            uuid=str(uuid.uuid4()),
             name="super",
             cluster_id=cluster['id']
         )
@@ -88,8 +60,6 @@ class TestConsumer(BaseHandlers):
         receiver.verify_networks_resp(**kwargs)
         self.db.refresh(task)
         self.assertEqual(task.status, "error")
-        error_nodes = [{'uid': node1.id, 'absent_vlans': [104]},
-                       {'uid': node2.id, 'absent_vlans': [104]}]
         error_nodes = ["uid: %r, interface: %s, absent vlans: %s" %
                        (node1.id, 'eth0', [104]),
                        "uid: %r, interface: %s, absent vlans: %s" %
@@ -97,6 +67,78 @@ class TestConsumer(BaseHandlers):
         error_msg = "Following nodes have network errors:\n%s." % (
             '; '.join(error_nodes))
         self.assertEqual(task.error, error_msg)
+
+    def test_verify_networks_resp_empty_nodes_default_error(self):
+        cluster = self.create_cluster_api()
+        node1 = self.create_default_node(cluster_id=cluster['id'])
+        node2 = self.create_default_node(cluster_id=cluster['id'])
+
+        receiver = threaded.NailgunReceiver()
+
+        task = Task(
+            name="super",
+            cluster_id=cluster['id']
+        )
+        self.db.add(task)
+        self.db.commit()
+
+        kwargs = {'task_uuid': task.uuid,
+                  'status': 'ready',
+                  'nodes': []}
+        receiver.verify_networks_resp(**kwargs)
+        self.db.refresh(task)
+        self.assertEqual(task.status, "error")
+        error_msg = "Received empty node list from orchestrator."
+        self.assertEqual(task.error, error_msg)
+
+    def test_verify_networks_resp_empty_nodes_custom_error(self):
+        cluster = self.create_cluster_api()
+        node1 = self.create_default_node(cluster_id=cluster['id'])
+        node2 = self.create_default_node(cluster_id=cluster['id'])
+
+        receiver = threaded.NailgunReceiver()
+
+        task = Task(
+            name="super",
+            cluster_id=cluster['id']
+        )
+        self.db.add(task)
+        self.db.commit()
+
+        error_msg = 'Custom error message.'
+        kwargs = {'task_uuid': task.uuid,
+                  'status': 'ready',
+                  'nodes': [],
+                  'error': error_msg}
+        receiver.verify_networks_resp(**kwargs)
+        self.db.refresh(task)
+        self.assertEqual(task.status, "error")
+        self.assertEqual(task.error, error_msg)
+
+
+class TestConsumer(BaseHandlers):
+
+    def test_node_deploy_resp(self):
+        node = self.create_default_node()
+        node2 = self.create_default_node()
+        receiver = threaded.NailgunReceiver()
+
+        task = Task(
+            uuid=str(uuid.uuid4()),
+            name="super"
+        )
+        self.db.add(task)
+        self.db.commit()
+
+        kwargs = {'task_uuid': task.uuid,
+                  'nodes': [{'uid': node.id, 'status': 'deploying'},
+                            {'uid': node2.id, 'status': 'error'}]}
+        receiver.deploy_resp(**kwargs)
+        self.db.refresh(node)
+        self.db.refresh(node2)
+        self.db.refresh(task)
+        self.assertEqual((node.status, node2.status), ("deploying", "error"))
+        self.assertEqual(task.status, "error")
 
     def test_task_progress(self):
         receiver = threaded.NailgunReceiver()
