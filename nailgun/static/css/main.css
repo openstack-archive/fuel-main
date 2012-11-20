@@ -1003,12 +1003,19 @@ h6.page-title {
 
 .verify-network {
   text-align: right;
+  min-width: 230px;
+}
+
+.verify-network > div {
+  text-align: right;
 }
 
 .verification-result {
-  float: left;
+  display: inline-block;
   font-weight: bold;
-  margin: 5px 7px 0 0;
+  margin: 0 7px 0 0;
+  position: relative;
+  top: 5px;
   max-width: 800px;
   overflow: hidden;
   word-break: break-all;

@@ -596,8 +596,10 @@ function(models, dialogViews, clusterPageTemplate, deploymentResultTemplate, dep
             var task = this.model.task('verify_networks', 'running');
             if (task) {
                 var progress = task.get('progress') || 0;
-                this.$('.progress').attr('data-original-title', 'Verifying networks, ' + progress + '% completed').tooltip('fixTitle');
+                this.$('.progress').attr('data-original-title', 'Verifying networks, ' + progress + '% completed').attr('data-trigger', 'focus').tooltip('fixTitle');
                 this.$('.bar').css('width', (progress > 10 ? progress : 10) + '%');
+            } else {
+                $('.tooltip').remove();
             }
         },
         initialize: function(options) {
