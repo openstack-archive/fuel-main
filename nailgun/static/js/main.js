@@ -6,6 +6,7 @@ requirejs.config({
         underscore: 'js/libs/underscore-min',
         backbone: 'js/libs/backbone-min',
         'backbone-model-update': 'js/libs/backbone-model-update',
+        coccyx: 'js/libs/coccyx',
         bootstrap: 'js/libs/bootstrap.min',
         text: 'js/libs/text',
         app: 'js/app',
@@ -24,11 +25,14 @@ requirejs.config({
         'backbone-model-update': {
             deps: ['backbone']
         },
+        coccyx: {
+            deps: ['underscore', 'backbone']
+        },
         bootstrap: {
             deps: ['jquery']
         },
         app: {
-            deps: ['jquery', 'underscore', 'backbone', 'backbone-model-update', 'bootstrap']
+            deps: ['jquery', 'underscore', 'backbone', 'backbone-model-update', 'coccyx', 'bootstrap']
         }
     }
 });

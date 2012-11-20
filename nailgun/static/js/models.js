@@ -5,15 +5,18 @@ define(function() {
     var collections = {};
 
     models.Release = Backbone.Model.extend({
+        constructorName: 'Release',
         urlRoot: '/api/releases'
     });
 
     models.Releases = Backbone.Collection.extend({
+        constructorName: 'Releases',
         model: models.Release,
         url: '/api/releases'
     });
 
     models.Cluster = Backbone.Model.extend({
+        constructorName: 'Cluster',
         urlRoot: '/api/clusters',
         validate: function(attrs) {
             var errors = {};
@@ -91,11 +94,13 @@ define(function() {
     });
 
     models.Clusters = Backbone.Collection.extend({
+        constructorName: 'Clusters',
         model: models.Cluster,
         url: '/api/clusters'
     });
 
     models.Node = Backbone.Model.extend({
+        constructorName: 'Node',
         urlRoot: '/api/nodes',
         fullProductName: function() {
             return (this.get('manufacturer') ? this.get('manufacturer') + ' ' + this.get('platform_name') : this.get('platform_name')) || 'Unknown Platform';
@@ -106,6 +111,7 @@ define(function() {
     });
 
     models.Nodes = Backbone.Collection.extend({
+        constructorName: 'Nodes',
         model: models.Node,
         url: '/api/nodes',
         hasChanges: function() {
@@ -126,10 +132,12 @@ define(function() {
     });
 
     models.Task = Backbone.Model.extend({
+        constructorName: 'Task',
         urlRoot: '/api/tasks'
     });
 
     models.Tasks = Backbone.Collection.extend({
+        constructorName: 'Tasks',
         model: models.Task,
         url: '/api/tasks',
         toJSON: function(options) {
@@ -138,10 +146,12 @@ define(function() {
     });
 
     models.Settings = Backbone.Model.extend({
+        constructorName: 'Settings',
         urlRoot: '/api/clusters/'
     });
 
     models.Network = Backbone.Model.extend({
+        constructorName: 'Network',
         urlRoot: '/api/networks',
         validate: function(attrs) {
             var errors = {};
@@ -169,6 +179,7 @@ define(function() {
     });
 
     models.Networks = Backbone.Collection.extend({
+        constructorName: 'Networks',
         model: models.Network,
         url: '/api/networks'
     });

@@ -77,8 +77,12 @@ function(models, dialogViews, clusterPageTemplate, deploymentResultTemplate, dep
             this.model.get('tasks').bind('reset', this.renderDeploymentControls, this);
         },
         renderDeploymentControls: function() {
-            this.$('.deployment-result').html(new views.DeploymentResult({model: this.model}).render().el);
-            this.$('.deployment-control').html(new views.DeploymentControl({model: this.model}).render().el);
+            this.deploymentResult = new views.DeploymentResult({model: this.model});
+            this.registerSubView(this.deploymentResult);
+            this.$('.deployment-result').html(this.deploymentResult.render().el);
+            this.deploymentControl = new views.DeploymentControl({model: this.model});
+            this.registerSubView(this.deploymentControl);
+            this.$('.deployment-control').html(this.deploymentControl.render().el);
         },
         render: function() {
             this.$el.html(this.template({
@@ -99,6 +103,7 @@ function(models, dialogViews, clusterPageTemplate, deploymentResultTemplate, dep
             if (_.has(tabs, this.activeTab)) {
                 this.tab = new tabs[this.activeTab]({model: this.model});
                 this.$('#tab-' + this.activeTab).html(this.tab.render().el);
+                this.registerSubView(this.tab);
             }
 
             return this;
@@ -137,6 +142,7 @@ function(models, dialogViews, clusterPageTemplate, deploymentResultTemplate, dep
             }
         },
         render: function() {
+            this.$('.progress').tooltip('destroy');
             this.$el.html(this.template({cluster: this.model}));
             this.updateProgress();
             return this;
@@ -155,7 +161,7 @@ function(models, dialogViews, clusterPageTemplate, deploymentResultTemplate, dep
                     this.scrollPositions[oldScreen.screenName] = $(window).scrollTop();
                 }
                 oldScreen.$el.fadeOut('fast', _.bind(function() {
-                    oldScreen.remove();
+                    oldScreen.tearDown();
                     newScreen.render();
                     newScreen.$el.hide().fadeIn('fast');
                     this.$el.html(newScreen.el);
@@ -167,6 +173,7 @@ function(models, dialogViews, clusterPageTemplate, deploymentResultTemplate, dep
                 this.$el.html(newScreen.render().el);
             }
             this.screen = newScreen;
+            this.registerSubView(this.screen);
         },
         render: function() {
             this.$el.html('');
@@ -182,10 +189,14 @@ function(models, dialogViews, clusterPageTemplate, deploymentResultTemplate, dep
             'click .change-cluster-type-btn:not(.disabled)': 'changeClusterType'
         },
         changeClusterMode: function() {
-            (new dialogViews.ChangeClusterModeDialog({model: this.model})).render();
+            var dialog = new dialogViews.ChangeClusterModeDialog({model: this.model});
+            this.registerSubView(dialog);
+            dialog.render();
         },
         changeClusterType: function() {
-            (new dialogViews.ChangeClusterTypeDialog({model: this.model})).render();
+            var dialog = new dialogViews.ChangeClusterTypeDialog({model: this.model});
+            this.registerSubView(dialog);
+            dialog.render();
         },
         render: function() {
             this.$el.html(this.template({cluster: this.model}));
@@ -213,7 +224,9 @@ function(models, dialogViews, clusterPageTemplate, deploymentResultTemplate, dep
         },
         render: function() {
             this.$el.html('');
-            this.$el.append((new views.NodesTabSummary({model: this.model})).render().el);
+            var summary = new views.NodesTabSummary({model: this.model});
+            this.registerSubView(summary);
+            this.$el.append(summary.render().el);
             var roles = this.model.availableRoles();
             _.each(roles, function(role, index) {
                 var nodes = new models.Nodes(this.model.get('nodes').where({role: role}));
@@ -224,6 +237,7 @@ function(models, dialogViews, clusterPageTemplate, deploymentResultTemplate, dep
                     tab: this.tab,
                     size: role == 'controller' ? this.model.get('mode') == 'ha' ? this.model.get('redundancy') : 1 : 0
                 });
+                this.registerSubView(nodeListView);
                 this.$el.append(nodeListView.render().el);
                 if (index < roles.length - 1) {
                     this.$el.append('<hr>');
@@ -317,6 +331,7 @@ function(models, dialogViews, clusterPageTemplate, deploymentResultTemplate, dep
                         options.selectableForDeletion = true;
                     }
                     var nodeView = new views.Node(options);
+                    this.registerSubView(nodeView);
                     nodesContainer.append(nodeView.render().el);
                     if (node.get(this.flag)) {
                         nodeView.$('.nodebox[data-node-id=' + node.id + ']').addClass('node-to-' + this.action + '-checked').removeClass('node-to-' + this.action + '-unchecked');
@@ -432,7 +447,9 @@ function(models, dialogViews, clusterPageTemplate, deploymentResultTemplate, dep
             if (this.collection.length || this.size) {
                 var container = this.$('.node-list-container');
                 this.collection.each(function(node) {
-                    container.append(new views.Node({model: node, renameable: !this.collection.cluster.task('deploy', 'running')}).render().el);
+                    var nodeView = new views.Node({model: node, renameable: !this.collection.cluster.task('deploy', 'running')});
+                    this.registerSubView(nodeView);
+                    container.append(nodeView.render().el);
                 }, this);
                 if (nodesAfterDeployment.length < this.size) {
                     _(this.size - nodesAfterDeployment.length).times(function() {
@@ -482,6 +499,9 @@ function(models, dialogViews, clusterPageTemplate, deploymentResultTemplate, dep
             } else if (e.which == 27) {
                 this.endNodeRenaming();
             }
+        },
+        beforeTearDown: function() {
+            $('html').off(this.eventNamespace);
         },
         initialize: function(options) {
             _.defaults(this, options);
@@ -560,7 +580,9 @@ function(models, dialogViews, clusterPageTemplate, deploymentResultTemplate, dep
             }
         },
         renderVerificationControls: function() {
-            this.$('.verify-network').html((new views.NetworkTabVerification({model: this.model})).render().el);
+            var verificationView = new views.NetworkTabVerification({model: this.model});
+            this.registerSubView(verificationView);
+            this.$('.verify-network').html(verificationView.render().el);
         },
         render: function() {
             this.$el.html(this.template({cluster: this.model, networks: this.networks}));
@@ -607,10 +629,8 @@ function(models, dialogViews, clusterPageTemplate, deploymentResultTemplate, dep
             var task = this.model.task('verify_networks', 'running');
             if (task) {
                 var progress = task.get('progress') || 0;
-                this.$('.progress').attr('data-original-title', 'Verifying networks, ' + progress + '% completed').attr('data-trigger', 'focus').tooltip('fixTitle');
+                this.$('.progress').attr('data-original-title', 'Verifying networks, ' + progress + '% completed').tooltip('fixTitle');
                 this.$('.bar').css('width', (progress > 10 ? progress : 10) + '%');
-            } else {
-                $('.tooltip').remove();
             }
         },
         initialize: function(options) {
@@ -622,6 +642,7 @@ function(models, dialogViews, clusterPageTemplate, deploymentResultTemplate, dep
             }
         },
         render: function() {
+            this.$('.progress').tooltip('destroy');
             this.$el.html(this.template({cluster: this.model}));
             this.updateProgress();
             return this;
@@ -665,6 +686,7 @@ function(models, dialogViews, clusterPageTemplate, deploymentResultTemplate, dep
                 this.$('.settings-content').html('');
                 _.each(_.keys(settings), function(setting) {
                     var settingsGroupView = new views.SettingsGroup({legend: setting, settings: settings[setting]});
+                    this.registerSubView(settingsGroupView);
                     this.$('.settings-content').append(settingsGroupView.render().el);
                 }, this);
             }

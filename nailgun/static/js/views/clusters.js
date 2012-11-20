@@ -15,7 +15,9 @@ function(models, dialogViews, clustersPageTemplate, clusterTemplate, newClusterT
         template: _.template(clustersPageTemplate),
         render: function() {
             this.$el.html(this.template({clusters: this.collection}));
-            this.$('.cluster-list').html(new views.ClusterList({collection: this.collection}).render().el);
+            var clustersView = new views.ClusterList({collection: this.collection});
+            this.registerSubView(clustersView);
+            this.$('.cluster-list').html(clustersView.render().el);
             return this;
         }
     });
@@ -32,12 +34,13 @@ function(models, dialogViews, clustersPageTemplate, clusterTemplate, newClusterT
         },
         initialize: function() {
             this.collection.bind('reset', this.render, this);
-            this.collection.bind('add', this.render, this);
         },
         render: function() {
             this.$el.html('');
             this.collection.each(_.bind(function(cluster) {
-                this.$el.append(new views.Cluster({model: cluster}).render().el);
+                var clusterView = new views.Cluster({model: cluster});
+                this.registerSubView(clusterView);
+                this.$el.append(clusterView.render().el);
             }, this));
             this.$el.append(this.newClusterTemplate());
             return this;

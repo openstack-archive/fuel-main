@@ -14,12 +14,15 @@ function(models, createClusterDialogTemplate, changeClusterModeDialogTemplate, c
     views.Dialog = Backbone.View.extend({
         className: 'modal fade',
         modalBound: false,
+        beforeTearDown: function() {
+            this.$el.modal('hide');
+        },
         render: function(options) {
             this.$el.html(this.template(options));
             if (!this.modalBound) {
-                this.$el.on('hidden', function() {$(this).remove();});
+                this.$el.on('hidden', _.bind(this.tearDown, this));
                 this.$el.modal();
-                this.modelBound = true;
+                this.modalBound = true;
             }
             return this;
         }

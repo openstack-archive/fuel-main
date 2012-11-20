@@ -24,6 +24,7 @@ function(models, navbarTemplate, nodesStatsTemplate, nodesStatsPopoverTemplate, 
         render: function() {
             this.$el.html(this.template({elements: this.elements}));
             this.stats = new views.NodesStats();
+            this.registerSubView(this.stats);
             this.$('.nodes-summary-container').html(this.stats.render().el);
             return this;
         }

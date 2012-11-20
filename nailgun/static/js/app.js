@@ -27,6 +27,13 @@ function(models, commonViews, clusterViews, clustersViews, releaseViews) {
             this.breadcrumb = new commonViews.Breadcrumb();
             this.content.before(this.breadcrumb.render().el);
         },
+        setPage: function(newPage) {
+            if (this.page) {
+                this.page.tearDown();
+            }
+            this.page = newPage;
+            this.content.html(this.page.render().el);
+        },
         showCluster: function(id) {
             this.navigate('#cluster/' + id + '/nodes', {trigger: true, replace: true});
         },
@@ -41,8 +48,7 @@ function(models, commonViews, clusterViews, clustersViews, releaseViews) {
             var render = function() {
                 this.navbar.setActive('clusters');
                 this.breadcrumb.setPath(['Home', '#'], ['OpenStack Installations', '#clusters'], cluster.get('name'));
-                this.page = new clusterViews.ClusterPage({model: cluster, tabs: tabs, activeTab: activeTab});
-                this.content.html(this.page.render().el);
+                this.setPage(new clusterViews.ClusterPage({model: cluster, tabs: tabs, activeTab: activeTab}));
             };
 
             if (app.page && app.page.constructor == clusterViews.ClusterPage && app.page.model.id == id) {
@@ -64,8 +70,7 @@ function(models, commonViews, clusterViews, clustersViews, releaseViews) {
                 success: _.bind(function() {
                     this.navbar.setActive('clusters');
                     this.breadcrumb.setPath(['Home', '#'], 'OpenStack Installations');
-                    this.page = new clustersViews.ClustersPage({collection: clusters});
-                    this.content.html(this.page.render().el);
+                    this.setPage(new clustersViews.ClustersPage({collection: clusters}));
                 }, this)
             });
         },
@@ -75,8 +80,7 @@ function(models, commonViews, clusterViews, clustersViews, releaseViews) {
                 success: _.bind(function() {
                     this.navbar.setActive('releases');
                     this.breadcrumb.setPath(['Home', '#'], 'Software Updates');
-                    this.page = new releaseViews.ReleasesPage({collection: releases});
-                    this.content.html(this.page.render().el);
+                    this.setPage(new releaseViews.ReleasesPage({collection: releases}));
                 }, this)
             });
         }
@@ -84,9 +88,13 @@ function(models, commonViews, clusterViews, clustersViews, releaseViews) {
 
     return {
         initialize: function() {
-            window.app = new AppRouter();
+            var app = new AppRouter();
+            window.app = app;
             Backbone.history.start();
+
+            // tooltips
             $('body').tooltip({selector: "[rel=tooltip]"});
+            app.bind('all', function(route) {$('.tooltip').remove();});
         }
     };
 });
