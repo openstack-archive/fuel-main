@@ -147,7 +147,7 @@ h6.page-title {
   border: none !important;
 }
 
-.navigation-bar-icon > i {
+.navigation-bar-icon i {
   color: #2b3139;
   font-size: 30px;
   display: block;
@@ -160,13 +160,13 @@ h6.page-title {
   text-shadow: 0 1px 0 rgba(255, 255, 255, 0.2);
   cursor: pointer;
  }
- .navigation-bar-icon > i:hover {
+ .navigation-bar-icon i:hover {
   color: #899cb5;
   text-shadow: 0 1px 1px rgba(0, 0, 0, 0.5);
 }
- .navigation-bar-icon > .badge {
+.navigation-bar-icon .badge {
   position: relative;
-  top: -40px;
+  top: -34px;
   left: 36px;
   padding: 0px 6px 1px 5px;
   border-radius: 3px;
@@ -1316,10 +1316,9 @@ h6.page-title {
 .message-list > li {
   margin-left: 26px;
   color: #85a2c8;
-  white-space: pre-wrap;
   text-shadow: 0 1px 0 rgba(21, 21, 21, 0.5);
   font-size: 13px;
-  cursor: pointer;
+  cursor: default;
 }
 
 .message-list > .new {
@@ -1339,4 +1338,8 @@ h6.page-title {
   float: left;
   margin-left: -22px;
   font-size: 16px;
+}
+
+#notification-wrapper {
+  position: relative;
 }

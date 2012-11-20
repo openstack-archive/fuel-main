@@ -145,6 +145,18 @@ define(function() {
         }
     });
 
+    models.Notification = Backbone.Model.extend({
+        urlRoot: '/api/notifications'
+    });
+
+    models.Notifications = Backbone.Collection.extend({
+        model: models.Notification,
+        url: '/api/notifications',
+        toJSON: function(options) {
+            return this.pluck('id');
+        }
+    });
+
     models.Settings = Backbone.Model.extend({
         constructorName: 'Settings',
         urlRoot: '/api/clusters/'

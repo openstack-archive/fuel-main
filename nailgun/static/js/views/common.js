@@ -4,9 +4,11 @@ define(
     'text!templates/common/navbar.html',
     'text!templates/common/nodes_stats.html',
     'text!templates/common/nodes_stats_popover.html',
+    'text!templates/common/notifications.html',
+    'text!templates/common/notifications_popover.html',
     'text!templates/common/breadcrumb.html'
 ],
-function(models, navbarTemplate, nodesStatsTemplate, nodesStatsPopoverTemplate, breadcrumbTemplate) {
+function(models, navbarTemplate, nodesStatsTemplate, nodesStatsPopoverTemplate, notificationsTemplate, notificationsPopoverTemplate, breadcrumbTemplate) {
     'use strict';
 
     var views = {};
@@ -26,6 +28,8 @@ function(models, navbarTemplate, nodesStatsTemplate, nodesStatsPopoverTemplate, 
             this.stats = new views.NodesStats();
             this.registerSubView(this.stats);
             this.$('.nodes-summary-container').html(this.stats.render().el);
+            this.notifications = new views.Notifications();
+            this.$('.notifications').html(this.notifications.render().el);
             return this;
         }
     });
@@ -109,6 +113,50 @@ function(models, navbarTemplate, nodesStatsTemplate, nodesStatsPopoverTemplate, 
         },
         render: function() {
             this.$el.html(this.template({stats: this.stats}));
+            return this;
+        }
+    });
+
+    views.Notifications = Backbone.View.extend({
+        updateInterval: 5000,
+        template: _.template(notificationsTemplate),
+        popoverTemplate: _.template(notificationsPopoverTemplate),
+        popoverVisible: false,
+        events: {
+            'mouseenter': 'showPopover',
+            'mouseleave': 'hidePopover'
+        },
+        showPopover: function() {
+            if (!this.popoverVisible) {
+                this.popoverVisible = true;
+                var notificationsToDisplay = this.notifications.first(5);
+                $('.navigation-bar').after(this.popoverTemplate({notifications: notificationsToDisplay}));
+                _.each(notificationsToDisplay, function(notification) {
+                    notification.save({'status': 'read'});
+                });
+                this.render();
+            }
+        },
+        hidePopover: function() {
+            if (this.popoverVisible) {
+                this.popoverVisible = false;
+                $('.message-list-placeholder').remove();
+            }
+        },
+        scheduleUpdate: function() {
+            this.render();
+            _.delay(_.bind(this.update, this), this.updateInterval);
+        },
+        update: function() {
+            this.notifications.fetch({complete: _.bind(this.scheduleUpdate, this)});
+        },
+        initialize: function(options) {
+            this.notifications = new models.Notifications();
+            this.notifications.deferred = this.notifications.fetch();
+            this.notifications.deferred.done(_.bind(this.scheduleUpdate, this));
+        },
+        render: function() {
+            this.$el.html(this.template({notifications: this.notifications}));
             return this;
         }
     });
