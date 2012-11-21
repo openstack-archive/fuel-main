@@ -1,10 +1,9 @@
 html {
+  background: #474e59 url(../img/bg-main.jpg) repeat;
   font-family: 'Segoe UI', Helvetica, Georgia, Tahoma, Arial;
   height: 100%;
-  background-color: #474e59;
 }
 body {
-  background-color: #474e59 !important;
   overflow-y: scroll;
   background: -moz-radial-gradient(center top, rgba(128, 134, 143, 0.3) 0%, rgba(128, 134, 143, 0.3) 30%, rgba(128, 134, 143, 0.0) 55%);
   background: -webkit-gradient(radial, center top, 0, center top, 30%, center top, 55%, color-stop(100%,rgba(128, 134, 143, 0.3)), color-stop(100%,rgba(128, 134, 143, 0.3)), color-stop(100%,rgba(128, 134, 143, 0.0)));
@@ -1352,7 +1351,7 @@ h6.page-title {
   clear: both;
   width: auto;
   height: 38px;
-  margin: 10px 0px 14px 20px;
+  margin: 20px 0px 14px 20px;
   -webkit-border-radius: 4px;
   -moz-border-radius: 4px;
   border-radius: 4px;
@@ -1390,7 +1389,7 @@ h6.page-title {
   -webkit-box-sizing: border-box;
   text-align: center;
   text-shadow: 0 1px 0 rgba(255,255,255,.4);
-  background-color: #303a49;
+  background-color: #efefef;
   box-shadow: inset 0 0 0 1px rgba(255,255,255,.3);
   background-image: -webkit-linear-gradient(bottom, #dcdcdd, #f5f5f5);
   background-image: -moz-linear-gradient(bottom, #dcdcdd, #f5f5f5);
