@@ -122,24 +122,22 @@ function(models, navbarTemplate, nodesStatsTemplate, nodesStatsPopoverTemplate, 
         template: _.template(notificationsTemplate),
         popoverTemplate: _.template(notificationsPopoverTemplate),
         popoverVisible: false,
+        displayCount: 5,
         events: {
             'mouseenter': 'showPopover',
             'mouseleave': 'hidePopover'
         },
         getUnreadNotifications: function() {
-            return _.filter(this.notifications.last(5), function(notification) {return notification.get('status') == 'unread';});
+            return _.filter(this.notifications.last(this.displayCount), function(notification) {return notification.get('status') == 'unread';});
         },
         showPopover: function() {
             if (!this.popoverVisible) {
                 this.popoverVisible = true;
-                $('.navigation-bar').after(this.popoverTemplate({notifications: this.notifications.last(5)}));
+                $('.navigation-bar').after(this.popoverTemplate({notifications: this.notifications.last(this.displayCount)}));
                 _.each(this.getUnreadNotifications(), function(notification) {
-                    notification.save({'status': 'read'});
-                });
-                /*_.each(this.notifications.last(5), function(notification) {
                     notification.set({'status': 'read'});
                 });
-                Backbone.sync('update', this.notifications);*/
+                Backbone.sync('update', this.notifications);
             }
         },
         hidePopover: function() {
