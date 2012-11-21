@@ -5,6 +5,7 @@ import threading
 
 from sqlalchemy.orm import object_mapper, ColumnProperty
 
+from nailgun.settings import settings
 from nailgun.notifier import notifier
 from nailgun.api.models import Network, Node
 from nailgun.task.errors import WrongNodeStatus
@@ -16,6 +17,7 @@ class DeploymentTask(object):
 
     @classmethod
     def execute(cls, task):
+        task_uuid = task.uuid
         nodes = web.ctx.orm.query(Node).filter_by(
             cluster_id=task.cluster.id,
             pending_deletion=False)
@@ -35,13 +37,16 @@ class DeploymentTask(object):
             def run(self):
                 receiver = NailgunReceiver()
                 kwargs = {
-                    'task_uuid': task.uuid,
+                    'task_uuid': task_uuid,
                     'nodes': nodes_with_attrs,
                     'progress': 0
                 }
 
-                for i in range(1, 11):
-                    if i < 5:
+                tick_count = settings.FAKE_TASKS_TICK_COUNT or 10
+                tick_interval = settings.FAKE_TASKS_TICK_INTERVAL or 3
+
+                for i in range(1, tick_count + 1):
+                    if i < tick_count / 2:
                         for n in kwargs['nodes']:
                             if n['status'] == 'discover' or (
                                 n['status'] == 'error' and
@@ -49,7 +54,7 @@ class DeploymentTask(object):
                                         n['status'] = 'provisioning'
                             elif n['status'] == 'ready':
                                 n['status'] = 'deploying'
-                    elif i < 10:
+                    elif i < tick_count:
                         for n in kwargs['nodes']:
                             if n['status'] == 'provisioning':
                                 n['status'] = 'deploying'
@@ -59,10 +64,10 @@ class DeploymentTask(object):
                             if n['status'] == 'deploying':
                                 n['status'] = 'ready'
 
-                    kwargs['progress'] = i * 10
+                    kwargs['progress'] = 100 * i / tick_count
                     receiver.deploy_resp(**kwargs)
-                    if i < 10:
-                        time.sleep(3)
+                    if i < tick_count:
+                        time.sleep(tick_interval)
 
         FakeDeploymentThread().start()
 
@@ -106,6 +111,7 @@ class VerifyNetworksTask(object):
 
     @classmethod
     def execute(self, task):
+        task_uuid = task.uuid
         networks = []
         nodes = []
 
@@ -113,16 +119,19 @@ class VerifyNetworksTask(object):
             def run(self):
                 receiver = NailgunReceiver()
                 kwargs = {
-                    'task_uuid': task.uuid,
+                    'task_uuid': task_uuid,
                     'networks': networks,
                     'nodes': nodes,
                     'progress': 0
                 }
 
-                for i in range(1, 10):
-                    kwargs['progress'] = i * 10
+                tick_count = settings.FAKE_TASKS_TICK_COUNT or 10
+                tick_interval = settings.FAKE_TASKS_TICK_INTERVAL or 3
+
+                for i in range(1, tick_count + 1):
+                    kwargs['progress'] = i * tick_count
                     receiver.verify_networks_resp(**kwargs)
-                    time.sleep(3)
+                    time.sleep(tick_interval)
 
                 kwargs['progress'] = 100
                 kwargs['status'] = 'ready'
