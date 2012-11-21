@@ -136,9 +136,7 @@ function(models, navbarTemplate, nodesStatsTemplate, nodesStatsPopoverTemplate, 
                 _.each(this.getUnreadNotifications(), function(notification) {
                     notification.set({'status': 'read'});
                 });
-                Backbone.sync('update', this.notifications).done(_.bind(function() {
-                    this.render();
-                }, this));
+                Backbone.sync('update', this.notifications).done(_.bind(this.render, this));
             } else {
                 this.popoverVisible = false;
                 $('.message-list-placeholder').remove();
