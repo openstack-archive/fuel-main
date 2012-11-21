@@ -580,7 +580,7 @@ function(models, dialogViews, clusterPageTemplate, deploymentResultTemplate, dep
             }
         },
         renderVerificationControls: function() {
-            var verificationView = new views.NetworkTabVerification({model: this.model});
+            var verificationView = new views.NetworkTabVerification({model: this.model, networks: this.networks});
             this.registerSubView(verificationView);
             this.$('.verify-network').html(verificationView.render().el);
         },
@@ -643,7 +643,7 @@ function(models, dialogViews, clusterPageTemplate, deploymentResultTemplate, dep
         },
         render: function() {
             this.$('.progress').tooltip('destroy');
-            this.$el.html(this.template({cluster: this.model}));
+            this.$el.html(this.template({cluster: this.model, networks: this.options.networks}));
             this.updateProgress();
             return this;
         }
