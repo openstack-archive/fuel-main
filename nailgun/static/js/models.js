@@ -146,15 +146,14 @@ define(function() {
     });
 
     models.Notification = Backbone.Model.extend({
+        constructorName: 'Notification',
         urlRoot: '/api/notifications'
     });
 
     models.Notifications = Backbone.Collection.extend({
+        constructorName: 'Notifications',
         model: models.Notification,
-        url: '/api/notifications',
-        toJSON: function(options) {
-            return this.pluck('id');
-        }
+        url: '/api/notifications'
     });
 
     models.Settings = Backbone.Model.extend({
