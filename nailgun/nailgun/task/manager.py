@@ -45,19 +45,22 @@ class DeploymentTaskManager(TaskManager):
                                  self.cluster.nodes)
         if not nodes_to_deploy and not nodes_to_delete:
             raise WrongNodeStatus("No changes to deploy")
-        super_task = Task(
+        supertask = Task(
             name="deploy",
             cluster=self.cluster
         )
-        web.ctx.orm.add(super_task)
+        web.ctx.orm.add(supertask)
         web.ctx.orm.commit()
         if nodes_to_delete:
-            deletion_task = super_task.create_subtask("deletion")
-            deletion_task.execute(tasks.DeletionTask)
+            supertask.create_subtask("deletion")
         if nodes_to_deploy:
-            deployment_task = super_task.create_subtask("deployment")
-            deployment_task.execute(tasks.DeploymentTask)
-        return super_task
+            supertask.create_subtask("deployment")
+        for subtask in supertask.subtasks:
+            subtask.execute({
+                'deletion': tasks.DeletionTask,
+                'deployment': tasks.DeploymentTask,
+            }[subtask.name])
+        return supertask
 
 
 class VerifyNetworksTaskManager(TaskManager):
