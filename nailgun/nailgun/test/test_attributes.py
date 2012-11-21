@@ -15,7 +15,9 @@ class TestAttributes(BaseHandlers):
     def test_attributes_creation(self):
         cluster = self.create_cluster_api()
         resp = self.app.get(
-            '/api/clusters/%d/attributes/' % cluster['id'],
+            reverse(
+                'ClusterAttributesHandler',
+                kwargs={'cluster_id': cluster['id']}),
             headers=self.default_headers
         )
         release = self.db.query(Release).get(
@@ -38,7 +40,9 @@ class TestAttributes(BaseHandlers):
     def test_500_if_no_attributes(self):
         cluster = self.create_default_cluster()
         resp = self.app.put(
-            '/api/clusters/%d/attributes/' % cluster.id,
+            reverse(
+                'ClusterAttributesHandler',
+                kwargs={'cluster_id': cluster.id}),
             params=json.dumps({
                 'editable': {
                     "foo": "bar"
@@ -52,12 +56,16 @@ class TestAttributes(BaseHandlers):
     def test_attributes_update(self):
         cluster_id = self.create_cluster_api()['id']
         resp = self.app.get(
-            '/api/clusters/%d/attributes/' % cluster_id,
+            reverse(
+                'ClusterAttributesHandler',
+                kwargs={'cluster_id': cluster_id}),
             headers=self.default_headers
         )
         self.assertEquals(200, resp.status)
         resp = self.app.put(
-            '/api/clusters/%d/attributes/' % cluster_id,
+            reverse(
+                'ClusterAttributesHandler',
+                kwargs={'cluster_id': cluster_id}),
             params=json.dumps({
                 'editable': {
                     "foo": "bar"
@@ -72,7 +80,9 @@ class TestAttributes(BaseHandlers):
         self.assertEquals("bar", attrs.editable["foo"])
         # 400 on generated update
         resp = self.app.put(
-            '/api/clusters/%d/attributes/' % cluster_id,
+            reverse(
+                'ClusterAttributesHandler',
+                kwargs={'cluster_id': cluster_id}),
             params=json.dumps({
                 'generated': {
                     "foo": "bar"
@@ -84,7 +94,9 @@ class TestAttributes(BaseHandlers):
         self.assertEquals(400, resp.status)
         # 400 if editable is not dict
         resp = self.app.put(
-            '/api/clusters/%d/attributes/' % cluster_id,
+            reverse(
+                'ClusterAttributesHandler',
+                kwargs={'cluster_id': cluster_id}),
             params=json.dumps({
                 'editable': ["foo", "bar"],
             }),
@@ -96,7 +108,6 @@ class TestAttributes(BaseHandlers):
     def test_attributes_set_defaults(self):
         cluster = self.create_cluster_api()
         # Change editable attributes.
-        a = dict(self.default_headers)
         resp = self.app.put(
             reverse(
                 'ClusterAttributesHandler',
@@ -106,7 +117,7 @@ class TestAttributes(BaseHandlers):
                     "foo": "bar"
                 },
             }),
-            headers=a,
+            headers=self.default_headers,
             expect_errors=True
         )
         self.assertEquals(200, resp.status)
@@ -119,7 +130,7 @@ class TestAttributes(BaseHandlers):
             reverse(
                 'ClusterAttributesDefaultsHandler',
                 kwargs={'cluster_id': cluster['id']}),
-            headers=a
+            headers=self.default_headers
         )
         self.assertEquals(200, resp.status)
         release = self.db.query(Release).get(
@@ -128,7 +139,7 @@ class TestAttributes(BaseHandlers):
         self.assertEquals(
             json.loads(resp.body)['editable'],
             release.attributes_metadata['editable']
-        )        
+        )
 
     def _compare(self, d1, d2):
         if isinstance(d1, dict) and isinstance(d2, dict):

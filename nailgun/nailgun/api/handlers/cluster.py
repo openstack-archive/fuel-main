@@ -305,17 +305,16 @@ class ClusterAttributesDefaultsHandler(JSONHandler):
         attrs = cluster.attributes
         if not attrs:
             logger.error('ClusterAttributesDefaultsHandler: no attributes'
-                         ' found for cluster_id %s.' % cluster_id)
+                         ' found for cluster_id %s' % cluster_id)
             raise web.internalerror("No attributes found!")
 
-        logger.debug('ClusterAttributesDefaultsHandler:'
-                     ' obtain default editable attributes from release.')
         attrs.editable = cluster.release.attributes_metadata.get("editable")
-        logger.debug('ClusterAttributesDefaultsHandler:'
-                     ' commit new attributes to DB.')
         web.ctx.orm.add(attrs)
         web.ctx.orm.commit()
 
+        logger.debug('ClusterAttributesDefaultsHandler:'
+                     ' editable attributes for cluster_id %s were reset'
+                     ' to default' % cluster_id)
         return json.dumps(
             {
                 "editable": attrs.editable

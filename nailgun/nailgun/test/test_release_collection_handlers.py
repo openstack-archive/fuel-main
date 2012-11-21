@@ -30,7 +30,7 @@ class TestHandlers(BaseHandlers):
 
     def test_release_creation(self):
         resp = self.app.post(
-            '/api/releases',
+            reverse('ReleaseCollectionHandler'),
             params=json.dumps({
                 'name': 'Another test release',
                 'version': '1.0'

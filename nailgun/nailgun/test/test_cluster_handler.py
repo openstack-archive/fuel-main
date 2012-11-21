@@ -34,7 +34,7 @@ class TestHandlers(BaseHandlers):
         release = self.create_default_release()
         yet_another_cluster_name = 'Yet another cluster'
         resp = self.app.post(
-            '/api/clusters',
+            reverse('ClusterCollectionHandler'),
             params=json.dumps({
                 'name': yet_another_cluster_name,
                 'release': release.id
@@ -52,7 +52,7 @@ class TestHandlers(BaseHandlers):
         node = self.create_default_node()
         yet_another_cluster_name = u'Yet another cluster'
         resp = self.app.post(
-            '/api/clusters',
+            reverse('ClusterCollectionHandler'),
             params=json.dumps({
                 'name': yet_another_cluster_name,
                 'release': release.id,
