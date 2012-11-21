@@ -15,7 +15,7 @@ action "get",	:description => "fetches a value from a file" do
 		:type		=> :string,
 		:validation	=> '^[a-zA-Z0-9_]+$',
 		:optional	=> false,
-		:maxlength	=> 90
+		:maxlength	=> 0
 	
 	output :value,
 		:description	=> "Value",
@@ -31,7 +31,7 @@ action "post", :description => "Create new attributes file" do
                 :type           => :string,
                 :validation	    => '.*',
                 :optional       => false,
-                :maxlength      => 90
+                :maxlength      => 0
 
 	output :msg,
 		:description	=> "Status",
