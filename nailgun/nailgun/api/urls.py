@@ -7,6 +7,7 @@ from nailgun.api.handlers.cluster import ClusterCollectionHandler
 from nailgun.api.handlers.cluster import ClusterChangesHandler
 from nailgun.api.handlers.cluster import ClusterNetworksHandler
 from nailgun.api.handlers.cluster import ClusterAttributesHandler
+from nailgun.api.handlers.cluster import ClusterAttributesDefaultsHandler
 
 from nailgun.api.handlers.release import ReleaseHandler
 from nailgun.api.handlers.release import ReleaseCollectionHandler
@@ -34,6 +35,8 @@ urls = (
     'ClusterChangesHandler',
     r'/clusters/(?P<cluster_id>\d+)/attributes/?$',
     'ClusterAttributesHandler',
+    r'/clusters/(?P<cluster_id>\d+)/attributes/defaults/?$',
+    'ClusterAttributesDefaultsHandler',
     r'/clusters/(?P<cluster_id>\d+)/verify/networks/?$',
     'ClusterNetworksHandler',
     r'/nodes/?$',

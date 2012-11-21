@@ -93,6 +93,43 @@ class TestAttributes(BaseHandlers):
         )
         self.assertEquals(400, resp.status)
 
+    def test_attributes_set_defaults(self):
+        cluster = self.create_cluster_api()
+        # Change editable attributes.
+        a = dict(self.default_headers)
+        resp = self.app.put(
+            reverse(
+                'ClusterAttributesHandler',
+                kwargs={'cluster_id': cluster['id']}),
+            params=json.dumps({
+                'editable': {
+                    "foo": "bar"
+                },
+            }),
+            headers=a,
+            expect_errors=True
+        )
+        self.assertEquals(200, resp.status)
+        attrs = self.db.query(Attributes).filter(
+            Attributes.cluster_id == cluster['id']
+        ).first()
+        self.assertEquals("bar", attrs.editable["foo"])
+        # Set attributes to defaults.
+        resp = self.app.put(
+            reverse(
+                'ClusterAttributesDefaultsHandler',
+                kwargs={'cluster_id': cluster['id']}),
+            headers=a
+        )
+        self.assertEquals(200, resp.status)
+        release = self.db.query(Release).get(
+            cluster['release']['id']
+        )
+        self.assertEquals(
+            json.loads(resp.body)['editable'],
+            release.attributes_metadata['editable']
+        )        
+
     def _compare(self, d1, d2):
         if isinstance(d1, dict) and isinstance(d2, dict):
             for s_field, s_value in d1.iteritems():

@@ -285,3 +285,40 @@ class ClusterAttributesHandler(JSONHandler):
             },
             indent=4
         )
+
+
+class ClusterAttributesDefaultsHandler(JSONHandler):
+    fields = (
+        "editable",
+    )
+
+    def PUT(self, cluster_id):
+        logger.debug('ClusterAttributesDefaultsHandler:'
+                     ' PUT request with cluster_id %s' % cluster_id)
+        web.header('Content-Type', 'application/json')
+        cluster = web.ctx.orm.query(Cluster).get(cluster_id)
+        if not cluster:
+            logger.warn('ClusterAttributesDefaultsHandler: there is'
+                        ' no cluster with id %s in DB.' % cluster_id)
+            return web.notfound()
+
+        attrs = cluster.attributes
+        if not attrs:
+            logger.error('ClusterAttributesDefaultsHandler: no attributes'
+                         ' found for cluster_id %s.' % cluster_id)
+            raise web.internalerror("No attributes found!")
+
+        logger.debug('ClusterAttributesDefaultsHandler:'
+                     ' obtain default editable attributes from release.')
+        attrs.editable = cluster.release.attributes_metadata.get("editable")
+        logger.debug('ClusterAttributesDefaultsHandler:'
+                     ' commit new attributes to DB.')
+        web.ctx.orm.add(attrs)
+        web.ctx.orm.commit()
+
+        return json.dumps(
+            {
+                "editable": attrs.editable
+            },
+            indent=4
+        )
