@@ -1211,6 +1211,7 @@ h6.page-title {
 
 .nodes-stat-popover {
   width: 100%;
+  z-index: 300;
 }
 
 .nodes-stat-popover tr td:last-child {
@@ -1287,7 +1288,7 @@ h6.page-title {
   position: absolute;
   top: -8px;
   left: 682px;
-  z-index: 1000000;
+  z-index: 200;
   background-color: rgba(59, 72, 92, .95);
   box-shadow: 0 5px 10px rgba(0, 0, 0, 0.2);
   box-shadow: 0 2px 16px rgba(0, 0, 0, 0.65);

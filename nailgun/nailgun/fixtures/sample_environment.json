@@ -322,25 +322,5 @@
             "cluster": null,
             "mac": "4B:19:FF:55:6D:01"
         }
-    },
-    {
-        "pk": 1,
-        "model": "nailgun.notification",
-        "fields": {
-            "topic": "discover",
-            "status": "unread",
-            "message": "Notification: level: 20, status: unread",
-            "cluster": null
-        }
-    },
-    {
-        "pk": 2,
-        "model": "nailgun.notification",
-        "fields": {
-            "topic": "error",
-            "status": "read",
-            "message": "Notification: level 10, status: read",
-            "cluster": 1
-        }
     }
 ]

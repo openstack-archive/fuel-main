@@ -124,27 +124,24 @@ function(models, navbarTemplate, nodesStatsTemplate, nodesStatsPopoverTemplate, 
         popoverVisible: false,
         displayCount: 5,
         events: {
-            'mouseenter': 'showPopover',
-            'mouseleave': 'hidePopover'
+            'click': 'togglePopover'
         },
         getUnreadNotifications: function() {
             return _.filter(this.notifications.last(this.displayCount), function(notification) {return notification.get('status') == 'unread';});
         },
-        showPopover: function() {
+        togglePopover: function() {
             if (!this.popoverVisible) {
                 this.popoverVisible = true;
                 $('.navigation-bar').after(this.popoverTemplate({notifications: this.notifications.last(this.displayCount)}));
                 _.each(this.getUnreadNotifications(), function(notification) {
                     notification.set({'status': 'read'});
                 });
-                Backbone.sync('update', this.notifications);
-            }
-        },
-        hidePopover: function() {
-            if (this.popoverVisible) {
+                Backbone.sync('update', this.notifications).done(_.bind(function() {
+                    this.render();
+                }, this));
+            } else {
                 this.popoverVisible = false;
                 $('.message-list-placeholder').remove();
-                this.render();
             }
         },
         scheduleUpdate: function() {
