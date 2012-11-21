@@ -2029,6 +2029,10 @@ table .span24 {
   background-color: #d9edf7;
 }
 
+.table tbody tr.warning td {
+  background-color: #fcf8e3;
+}
+
 /*
 
 [class^="icon-"],
