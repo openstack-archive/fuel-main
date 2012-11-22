@@ -139,7 +139,7 @@ function(models, navbarTemplate, nodesStatsTemplate, nodesStatsPopoverTemplate, 
                 });
                 Backbone.sync('update', this.notifications).done(_.bind( function() {
                     $('html').on(this.eventNamespace, _.bind(function(e) {
-                        if (!$(e.target).closest($('.message-list-placeholder')).length) {
+                        if (this.popoverVisible && !$(e.target).closest($('.message-list-placeholder')).length) {
                             $('html').off(this.eventNamespace);
                             this.popoverVisible = false;
                             $('.message-list-placeholder').remove();
