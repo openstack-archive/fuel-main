@@ -137,10 +137,16 @@ function(models, navbarTemplate, nodesStatsTemplate, nodesStatsPopoverTemplate, 
                 _.each(this.getUnreadNotifications(), function(notification) {
                     notification.set({'status': 'read'});
                 });
-                Backbone.sync('update', this.notifications).done(_.bind(this.render, this));
-            } else {
-                this.popoverVisible = false;
-                $('.message-list-placeholder').remove();
+                Backbone.sync('update', this.notifications).done(_.bind( function() {
+                    $('html').on(this.eventNamespace, _.bind(function(e) {
+                        if (!$(e.target).closest($('.message-list-placeholder')).length) {
+                            $('html').off(this.eventNamespace);
+                            this.popoverVisible = false;
+                            $('.message-list-placeholder').remove();
+                        }
+                    }, this));
+                    this.render;
+                }, this));
             }
         },
         scheduleUpdate: function() {
@@ -153,6 +159,7 @@ function(models, navbarTemplate, nodesStatsTemplate, nodesStatsPopoverTemplate, 
             this.notifications.fetch({complete: _.bind(this.scheduleUpdate, this)});
         },
         initialize: function(options) {
+            this.eventNamespace = 'click';
             this.notifications = new models.Notifications();
             this.notifications.deferred = this.notifications.fetch();
             this.notifications.deferred.done(_.bind(this.scheduleUpdate, this));
