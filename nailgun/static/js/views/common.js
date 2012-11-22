@@ -124,30 +124,28 @@ function(models, navbarTemplate, nodesStatsTemplate, nodesStatsPopoverTemplate, 
         popoverTemplate: _.template(notificationsPopoverTemplate),
         popoverVisible: false,
         displayCount: 5,
-        events: {
-            'click': 'togglePopover'
-        },
         getUnreadNotifications: function() {
             return _.filter(this.notifications.last(this.displayCount), function(notification) {return notification.get('status') == 'unread';});
         },
-        togglePopover: function() {
+        togglePopover: function(e) {
             if (!this.popoverVisible) {
-                this.popoverVisible = true;
-                $('.navigation-bar').after(this.popoverTemplate({notifications: this.notifications.last(this.displayCount)}));
-                _.each(this.getUnreadNotifications(), function(notification) {
-                    notification.set({'status': 'read'});
-                });
-                Backbone.sync('update', this.notifications).done(_.bind( function() {
-                    $('html').on(this.eventNamespace, _.bind(function(e) {
-                        if (this.popoverVisible && !$(e.target).closest($('.message-list-placeholder')).length) {
-                            $('html').off(this.eventNamespace);
-                            this.popoverVisible = false;
-                            $('.message-list-placeholder').remove();
-                        }
-                    }, this));
-                    this.render();
-                }, this));
+                if ($(e.target).closest(this.$el).length) {
+                    this.popoverVisible = true;
+                    $('.navigation-bar').after(this.popoverTemplate({notifications: this.notifications.last(this.displayCount)}));
+                    _.each(this.getUnreadNotifications(), function(notification) {
+                        notification.set({'status': 'read'});
+                    });
+                    Backbone.sync('update', this.notifications).done(_.bind(this.render, this));
+                }
+            } else {
+                if (!$(e.target).closest($('.message-list-placeholder')).length) {
+                    this.popoverVisible = false;
+                    $('.message-list-placeholder').remove();
+                }
             }
+        },
+        beforeTearDown: function() {
+            $('html').off(this.eventNamespace);
         },
         scheduleUpdate: function() {
             if (this.getUnreadNotifications().length) {
@@ -159,10 +157,13 @@ function(models, navbarTemplate, nodesStatsTemplate, nodesStatsPopoverTemplate, 
             this.notifications.fetch({complete: _.bind(this.scheduleUpdate, this)});
         },
         initialize: function(options) {
-            this.eventNamespace = 'click';
+            this.eventNamespace = 'click.click-notofications';
             this.notifications = new models.Notifications();
             this.notifications.deferred = this.notifications.fetch();
-            this.notifications.deferred.done(_.bind(this.scheduleUpdate, this));
+            this.notifications.deferred.done(_.bind( function() {
+                this.scheduleUpdate();
+                $('html').on(this.eventNamespace, _.bind(this.togglePopover, this));
+            }, this));
         },
         render: function() {
             this.$el.html(this.template({notifications: this.notifications}));
