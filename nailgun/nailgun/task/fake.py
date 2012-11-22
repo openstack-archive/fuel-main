@@ -112,16 +112,18 @@ class VerifyNetworksTask(object):
     @classmethod
     def execute(self, task):
         task_uuid = task.uuid
-        networks = []
-        nodes = []
+        nets_db = web.ctx.orm.query(Network).filter_by(
+            cluster_id=task.cluster.id).all()
+        vlans_db = [net.vlan_id for net in nets_db]
+        iface_db = [{'iface': 'eth0', 'vlans': vlans_db}]
+        nodes = [{'networks': iface_db, 'uid': n.id}
+                 for n in task.cluster.nodes]
 
         class FakeVerificationThread(threading.Thread):
             def run(self):
                 receiver = NailgunReceiver()
                 kwargs = {
                     'task_uuid': task_uuid,
-                    'networks': networks,
-                    'nodes': nodes,
                     'progress': 0
                 }
 
@@ -129,11 +131,12 @@ class VerifyNetworksTask(object):
                 tick_interval = settings.FAKE_TASKS_TICK_INTERVAL or 3
 
                 for i in range(1, tick_count + 1):
-                    kwargs['progress'] = i * tick_count
+                    kwargs['progress'] = 100 * i / tick_count
                     receiver.verify_networks_resp(**kwargs)
                     time.sleep(tick_interval)
 
                 kwargs['progress'] = 100
+                kwargs['nodes'] = nodes
                 kwargs['status'] = 'ready'
                 receiver.verify_networks_resp(**kwargs)
 
