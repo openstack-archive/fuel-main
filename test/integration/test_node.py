@@ -71,21 +71,21 @@ class TestNode(Base):
     def test_one_node_provisioning(self):
         self._revert_nodes()
         self._clean_clusters()
-        self._basic_provisioning('provision', {'controller': ['slave']})
+        self._basic_provisioning('provision', {'controller': ['slave1']})
 
     def test_two_nodes_provisioning(self):
         self._revert_nodes()
         cluster_name = 'two_nodes'
-        nodes = {'controller': ['slave'], 'compute': ['slave2']}
+        nodes = {'controller': ['slave1'], 'compute': ['slave2']}
         self._basic_provisioning(cluster_name, nodes)
 
     def test_network_config(self):
         self._revert_nodes()
         self._clean_clusters()
-        self._basic_provisioning('network_config', {'controller': ['slave']})
+        self._basic_provisioning('network_config', {'controller': ['slave1']})
 
-        slave = ci.environment.node['slave']
-        node = self._get_node_by_devops_node(slave)
+        slave = ci.environment.node['slave1']
+        node = self._get_slave_node_by_devops_node(slave)
         ctrl_ssh = SSHClient()
         ctrl_ssh.connect_ssh(node['ip'], 'root', 'r00tme')
         ifaces_data = ''.join(ctrl_ssh.execute('/sbin/ip addr')['stdout'])
@@ -131,12 +131,12 @@ class TestNode(Base):
     def test_node_deletion(self):
         self._revert_nodes()
         cluster_name = 'node_deletion'
-        node_name = 'slave'
+        node_name = 'slave1'
         nodes = {'controller': [node_name]}
         cluster_id = self._basic_provisioning(cluster_name, nodes)
 
         slave = ci.environment.node[node_name]
-        node = self._get_node_by_devops_node(slave)
+        node = self._get_slave_node_by_devops_node(slave)
         self.client.put("/api/nodes/%s/" % node['id'],
                         {'pending_deletion': True})
         task = self._launch_provisioning(cluster_id)
@@ -165,7 +165,7 @@ class TestNode(Base):
         for role in nodes_dict:
             for n in nodes_dict[role]:
                 slave = ci.environment.node[n]
-                node = self._get_node_by_devops_node(slave)
+                node = self._get_slave_node_by_devops_node(slave)
                 self.client.put(
                     "/api/nodes/%s/" % node['id'],
                     {"role": role, "pending_addition": True}
@@ -178,7 +178,7 @@ class TestNode(Base):
         for role in nodes_dict:
             for n in nodes_dict[role]:
                 slave = ci.environment.node[n]
-                node = self._get_node_by_devops_node(slave)
+                node = self._get_slave_node_by_devops_node(slave)
                 ctrl_ssh = SSHClient()
                 ctrl_ssh.connect_ssh(node['ip'], 'root', 'r00tme')
                 ret = ctrl_ssh.execute('test -f /tmp/%s-file' % role)
@@ -280,7 +280,7 @@ class TestNode(Base):
         nodes_in_cluster = [str(n['id']) for n in cluster['nodes']]
         self.assertEquals(sorted(node_ids), sorted(nodes_in_cluster))
 
-    def _get_node_by_devops_node(self, slave):
+    def _get_slave_node_by_devops_node(self, slave):
         response = self.client.get("/api/nodes/")
         nodes = json.loads(response.read())
         logging.debug("get_slave_node_by_devops_node: nodes at nailgun: %r" %
@@ -295,7 +295,7 @@ node.interfaces[n].mac_address: %r" % str(i.mac_address))
                     return n
         return None
 
-    def _bootstrap_nodes(self, node_names=['slave']):
+    def _bootstrap_nodes(self, node_names=['slave1']):
         """This function returns nailgun node descpription by devops name.
         """
         timer = time.time()
@@ -312,7 +312,7 @@ node.interfaces[n].mac_address: %r" % str(i.mac_address))
         while len(nodes) < len(slaves):
             nodes = []
             for slave in slaves:
-                node = self._get_node_by_devops_node(slave)
+                node = self._get_slave_node_by_devops_node(slave)
                 if node is not None:
                     nodes.append(node)
                 else:

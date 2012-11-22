@@ -62,7 +62,7 @@ class Ci(object):
             node.boot = ['disk', 'cdrom']
             environment.nodes.append(node)
 
-            node2 = Node('slave')
+            node2 = Node('slave1')
             node2.memory = 1024
             node2.vnc = True
             node2.disks.append(

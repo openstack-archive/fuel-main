@@ -18,6 +18,7 @@ from nailgun.api.fields import JSON
 from nailgun.settings import settings
 from nailgun.api.validators import BasicValidator
 
+
 engine = create_engine(settings.DATABASE_ENGINE)
 Base = declarative_base()
 
