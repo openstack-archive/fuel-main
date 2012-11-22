@@ -124,8 +124,17 @@ function(models, navbarTemplate, nodesStatsTemplate, nodesStatsPopoverTemplate, 
         popoverTemplate: _.template(notificationsPopoverTemplate),
         popoverVisible: false,
         displayCount: 5,
+        events: {
+            'click': 'togglePopover'
+        },
         getUnreadNotifications: function() {
             return _.filter(this.notifications.last(this.displayCount), function(notification) {return notification.get('status') == 'unread';});
+        },
+        hidePopover: function(e) {
+            if (this.popoverVisible && !$(e.target).closest($('.message-list-placeholder')).length) {
+                this.popoverVisible = false;
+                $('.message-list-placeholder').remove();
+            }
         },
         togglePopover: function(e) {
             if (!this.popoverVisible) {
@@ -137,12 +146,7 @@ function(models, navbarTemplate, nodesStatsTemplate, nodesStatsPopoverTemplate, 
                     });
                     Backbone.sync('update', this.notifications).done(_.bind(this.render, this));
                 }
-            } else {
-                if (!$(e.target).closest($('.message-list-placeholder')).length) {
-                    this.popoverVisible = false;
-                    $('.message-list-placeholder').remove();
-                }
-            }
+            } else this.hidePopover(e);
         },
         beforeTearDown: function() {
             $('html').off(this.eventNamespace);
@@ -162,7 +166,11 @@ function(models, navbarTemplate, nodesStatsTemplate, nodesStatsPopoverTemplate, 
             this.notifications.deferred = this.notifications.fetch();
             this.notifications.deferred.done(_.bind( function() {
                 this.scheduleUpdate();
-                $('html').on(this.eventNamespace, _.bind(this.togglePopover, this));
+                $('html').on(this.eventNamespace, _.bind(function(e){
+                    if (!$(e.target).closest(this.$el).length) {
+                        this.hidePopover(e);
+                    }
+                }, this));
             }, this));
         },
         render: function() {
