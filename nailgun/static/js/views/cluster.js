@@ -660,6 +660,9 @@ function(models, dialogViews, clusterPageTemplate, deploymentResultTemplate, dep
             this.$('.settings-editable .btn').attr('disabled', buttonState);
             this.$('.btn-set-defaults').attr('disabled', !buttonState);
         },
+        disableControls: function() {
+            this.$('.settings-editable .btn, .settings-editable input').attr('disabled', true);
+        },
         collectData: function(parentEl, changedData) {
             var model = this, param;
             _.each(parentEl.children().children('.wrapper'), function(el) {
@@ -677,9 +680,10 @@ function(models, dialogViews, clusterPageTemplate, deploymentResultTemplate, dep
             var changedData = {};
             this.collectData(this.$('.settings-content'), changedData);
             this.model.get('settings').update({editable: changedData}, {
-                url: '/api/clusters/' + this.model.id + '/attributes'
+                url: '/api/clusters/' + this.model.id + '/attributes',
+                complete: _.bind(this.render, this)
             });
-            this.defaultButtonsState(true);
+            this.disableControls();
         },
         parseSettings: function(settings) {
             if (_.isObject(settings)) {
@@ -696,8 +700,11 @@ function(models, dialogViews, clusterPageTemplate, deploymentResultTemplate, dep
             this.defaultButtonsState(true);
         },
         setDefaults: function() {
-            this.parseSettings(this.model.get('settings').get('defaults'));
-            this.defaultButtonsState(false);
+            this.model.get('settings').update({}, {
+                url: '/api/clusters/' + this.model.id + '/attributes/defaults',
+                complete: _.bind(this.render, this)
+            });
+            this.disableControls();
         },
         render: function () {
             this.$el.html(this.template({settings: this.model.get('settings')}));
@@ -714,7 +721,6 @@ function(models, dialogViews, clusterPageTemplate, deploymentResultTemplate, dep
                     url: '/api/clusters/' + this.model.id + '/attributes'
                 });
                 this.model.get('settings').deferred.done(_.bind(this.render, this));
-                // also need to fetch defaults attributes
             }
         }
     });
