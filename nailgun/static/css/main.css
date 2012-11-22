@@ -1214,6 +1214,31 @@ h6.page-title {
   z-index: 300;
 }
 
+.nodes-stat-popover tr td:first-child div {
+  width: 13px;
+  height: 13px;
+  margin: 0 6px 0;
+  display: inline-block;
+  position: relative;
+  top: 2px;
+}
+
+.nodes-stat-popover tr.controller div {
+  background: #5cae5c;
+}
+
+.nodes-stat-popover tr.compute div {
+  background: #fa9f24;
+}
+
+.nodes-stat-popover tr.storage div {
+  background: #d3473f;
+}
+
+.nodes-stat-popover tr.unallocated div {
+  background: #bebebe;
+}
+
 .nodes-stat-popover tr td:last-child {
   text-align: right;
 }
