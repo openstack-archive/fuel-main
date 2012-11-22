@@ -29,6 +29,7 @@ function(models, navbarTemplate, nodesStatsTemplate, nodesStatsPopoverTemplate, 
             this.registerSubView(this.stats);
             this.$('.nodes-summary-container').html(this.stats.render().el);
             this.notifications = new views.Notifications();
+            this.registerSubView(this.notifications);
             this.$('.notifications').html(this.notifications.render().el);
             return this;
         }
