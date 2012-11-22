@@ -8,7 +8,7 @@
             <i class="<%= topic == 'error' ? 'icon-attention-4' : topic == 'discover' ? 'icon-bell' : 'icon-info-circle-1' %>"></i>
             <%= notification.get('message') %>
           </li>
-          <li class="divider"></li>
+          <%= index < (notifications.length - 1) ? '<li class="divider"></li>' : '' %>
         <% }) %>
       <% } else { %>
         <li>There are no notifications to display</li>
