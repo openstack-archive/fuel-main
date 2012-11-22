@@ -145,7 +145,7 @@ function(models, navbarTemplate, nodesStatsTemplate, nodesStatsPopoverTemplate, 
                             $('.message-list-placeholder').remove();
                         }
                     }, this));
-                    this.render;
+                    this.render();
                 }, this));
             }
         },
