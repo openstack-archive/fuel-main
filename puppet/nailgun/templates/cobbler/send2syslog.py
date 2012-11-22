@@ -139,7 +139,7 @@ def cmdlineParse():
     parser = OptionParser()
     parser.add_option("-c", "--config", dest="config_file", metavar="FILE",
                       help="Read config from FILE.")
-    parser.add_option("-i", "--stdin", dest="stdin_config", default="False",
+    parser.add_option("-i", "--stdin", dest="stdin_config", default=False,
                       action="store_true", help="Read config from Stdin.")
 # FIXIT Add optionGroups.
     parser.add_option("-r", "--run-once", dest="run_once", action="store_true",
@@ -213,7 +213,7 @@ def getConfig():
     default_config = {"daemon": True,
                       "run_once": False,
                       "debug": False,
-                      "hostname": getHostname(),  # can't be overrided
+                      "hostname": getHostname(),
                       "watchlist": []
                       }
     # First use default config as running config.
@@ -293,7 +293,7 @@ def configValidate(config):
             checkType(config[key], bool, key)
     key = "hostname"
     if key in config:
-        checkType(item[key], basestring, key)
+        checkType(config[key], basestring, key)
 
     key = "watchlist"
     if key in config:
