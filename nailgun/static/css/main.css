@@ -1266,6 +1266,7 @@ h6.page-title {
 
 .wrapper {
   margin: 0 20px;
+  overflow-x: hidden;
 }
 
 .wrapper h3 {
