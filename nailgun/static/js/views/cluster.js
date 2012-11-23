@@ -750,9 +750,7 @@ function(models, dialogViews, clusterPageTemplate, deploymentResultTemplate, dep
             $('.settings-editable .btn').attr('disabled', false);
         },
         initialize: function(options) {
-            this.settings = options.settings;
-            this.legend = options.legend;
-            this.model = options.model;
+            _.defaults(this, options);
         },
         render: function() {
             this.$el.html(this.template({settings: this.settings, legend: this.legend, cluster: this.model}));
