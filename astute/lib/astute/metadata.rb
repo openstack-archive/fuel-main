@@ -17,12 +17,32 @@ module Astute
             hash[key] = {}
         end
         node['network_data'].each do |intf|
-            intfhash[intf['dev']]=intf
-            ipmask=intf['ip'].split('/')
-            intfhash[intf['dev']]['ip']=ipmask[0]
-            intfhash[intf['dev']]['mask']=IPAddr.new('255.255.255.255').mask(ipmask[1]).to_s
-        end
-        metadata = {'role' => node['role'], 'id' => node['id'], 'uid' => node['uid'], 'network_data' => intfhash.to_json }
+            if intf['vlan'].size>0
+		name="#{intf['dev']}.#{intf['vlan']}"
+		intfhash[name]={"vlan"=>"yes"}
+	    else
+	    	name=intf['dev']
+            end
+	    if intf['ip'].size>0
+            	ipmask=intf['ip'].split('/')
+            	intfhash[name]['ipaddr']=ipmask[0]
+            	intfhash[name]['netmask']=IPAddr.new('255.255.255.255').mask(ipmask[1]).to_s
+        	intfhash[name]['bootproto']="static"
+		if intf['brd'].size>0
+			intfhash[name]['broadcast']=intf['brd']
+		end
+		intfhash[name]['ensure']="present"
+	    else
+		intfhash[name]['bootproto']="dhcp"
+	    end
+	end
+        if ! intfhash.has_key?("lo")
+		intfhash["lo"]={}
+	end
+	if ! intfhash.has_key?("eth0")
+		intfhash["eth0"]={"bootproto"=>"dhcp","ensure"=>"present"}
+	end
+	metadata = {'role' => node['role'], 'id' => node['id'], 'uid' => node['uid'], 'network_data' => intfhash.to_json }
 
         # This is synchronious RPC call, so we are sure that data were sent and processed remotely
         stats = nailyfact.post(:value => metadata.to_json)

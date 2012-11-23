@@ -48,9 +48,11 @@ Puppet::Type.type(:network_config).provide(:network_scripts) do
         f.write("#{vs}\n")
       end
     end
+    system("ifdown #{@resource[:name]};sleep 2;ifup #{@resource[:name]}")
   end
 
   def destroy
+    system("ifdown #{@resource[:name]}")
     if File.exists?(@config_file)
       Puppet.notice "Destroying #{@config_file}"
       File.unlink(@config_file)
@@ -94,7 +96,9 @@ Puppet::Type.type(:network_config).provide(:network_scripts) do
     unless @@exclusive == :false
       existing = Dir["#{@@config_dir}ifcfg-*"].map { |f| File.basename(f) }
       (existing - @@configured_devices).each do |parasite_file|
-        Puppet.notice "puppet-network exclusive: removing #{parasite_file}"
+        intf = parasite_file.gsub(/^ifcfg-/,"")
+        Puppet.notice "puppet-network exclusive: deleting interface #{intf} and removing #{parasite_file}"
+        system("ifdown #{intf}")
         File.delete("#{@@config_dir}#{parasite_file}")
       end
     end
