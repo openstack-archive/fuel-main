@@ -146,7 +146,9 @@ function(models, navbarTemplate, nodesStatsTemplate, nodesStatsPopoverTemplate, 
                     });
                     Backbone.sync('update', this.notifications).done(_.bind(this.render, this));
                 }
-            } else this.hidePopover(e);
+            } else {
+                this.hidePopover(e);
+            }
         },
         beforeTearDown: function() {
             $('html').off(this.eventNamespace);
