@@ -102,7 +102,7 @@ class TestNode(Base):
                     ifname = iface['dev']
                 r = r"""\d+: (%s): .*(
     .*)*
-    (inet %s/\d+.* brd %s).*
+    (inet %s brd %s).*
 """ % (ifname, iface['ip'], iface['brd'])
                 if re.search(r, ifaces_data):
                     logging.debug(
