@@ -261,25 +261,13 @@ def getConfig():
     return config
 
 
-def type2str(value):
-    """ Return text description of type of value. """
-
-    definitions = ((basestring, "string"), (int, "int"), (dict, "dict"),
-                   (list, "list"), (bool, "bool"))
-    for i in definitions:
-        if (isinstance(value, type) and value or type(value)) is i[0]:
-            return i[1]
-    else:
-        return str(value)
-
-
 def checkType(value, value_type, value_name='', msg=None):
     """ Check correctness of type of value and exit if not. """
 
     if not isinstance(value, value_type):
         message = msg or "Value %r in config have type %r but"\
             " %r is expected." %\
-            (value_name, type2str(value), type2str(value_type))
+            (value_name, type(value).__name__, value_type.__name__)
         main_logger.error(message)
         exit(1)
 
