@@ -81,6 +81,7 @@ class Cluster(Base, BasicValidator):
     nodes = relationship("Node", backref="cluster")
     tasks = relationship("Task", backref="cluster")
     attributes = relationship("Attributes", uselist=False, backref="cluster")
+    notifications = relationship("Notification", backref="cluster")
 
     @classmethod
     def validate(cls, data):
@@ -135,6 +136,11 @@ class Node(Base, BasicValidator):
     pending_deletion = Column(Boolean, default=False)
     error_type = Column(Enum(*NODE_ERRORS))
     error_msg = Column(String(255))
+
+    @property
+    def network_data(self):
+        from nailgun.network import manager as netmanager
+        return netmanager.get_node_networks(self.id)
 
     @property
     def info(self):
@@ -372,3 +378,68 @@ class Task(Base, BasicValidator):
         self.subtasks.append(task)
         web.ctx.orm.commit()
         return task
+
+
+class Notification(Base, BasicValidator):
+    __tablename__ = 'notifications'
+
+    NOTIFICATION_STATUSES = (
+        'read',
+        'unread',
+    )
+
+    NOTIFICATION_TOPICS = (
+        'discover',
+        'done',
+        'error',
+    )
+
+    id = Column(Integer, primary_key=True)
+    cluster_id = Column(Integer, ForeignKey('clusters.id'))
+    topic = Column(Enum(*NOTIFICATION_TOPICS), nullable=False)
+    message = Column(Text)
+    status = Column(Enum(*NOTIFICATION_STATUSES), nullable=False,
+                    default='unread')
+
+    @classmethod
+    def validate_update(cls, data):
+
+        valid = {}
+        d = cls.validate_json(data)
+
+        status = d.get("status", None)
+        if status in cls.NOTIFICATION_STATUSES:
+            valid["status"] = status
+        else:
+            raise web.webapi.badrequest("Bad status")
+
+        return valid
+
+    @classmethod
+    def validate_collection_update(cls, data):
+
+        d = cls.validate_json(data)
+        if not isinstance(d, list):
+            raise web.badrequest(
+                "Invalid json list"
+            )
+
+        q = web.ctx.orm.query(Notification)
+
+        valid_d = []
+        for nd in d:
+            valid_nd = {}
+            if "id" not in nd:
+                raise web.badrequest("ID is not set correctly")
+
+            if "status" not in nd:
+                raise web.badrequest("ID is not set correctly")
+
+            if not q.get(nd["id"]):
+                raise web.badrequest("Invalid ID specified")
+
+            valid_nd["id"] = nd["id"]
+            valid_nd["status"] = nd["status"]
+            valid_d.append(valid_nd)
+
+        return valid_d
