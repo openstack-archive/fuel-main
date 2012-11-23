@@ -568,11 +568,15 @@ function(models, dialogViews, clusterPageTemplate, deploymentResultTemplate, dep
             }
             */
         },
-        bindEvents: function() {
+        bindTaskEvents: function() {
             var task = this.model.task('deploy', 'running');
             if (task) {
                 task.bind('change:status', this.render, this);
             }
+        },
+        bindEvents: function() {
+            this.model.get('tasks').bind('reset', this.bindTaskEvents, this);
+            this.bindTaskEvents();
         },
         initialize: function(options) {
             this.model.get('tasks').bind('remove reset', this.renderVerificationControls, this);
@@ -722,11 +726,15 @@ function(models, dialogViews, clusterPageTemplate, deploymentResultTemplate, dep
             }
             return this;
         },
-        bindEvents: function() {
+        bindTaskEvents: function() {
             var task = this.model.task('deploy', 'running');
             if (task) {
                 task.bind('change:status', this.render, this);
             }
+        },
+        bindEvents: function() {
+            this.model.get('tasks').bind('reset', this.bindTaskEvents, this);
+            this.bindTaskEvents();
         },
         initialize: function() {
             this.model.bind('change:tasks', this.bindEvents, this);
