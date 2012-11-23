@@ -28,10 +28,10 @@
               <div class="control-group" data-network-name="<%= network.get('name') %>">
                 <div class="network-name"><%= network.get('name') %></div>
                 <div class="network-cidr">
-                  <input class="input-large" type="text" value="<%= network.get('cidr') %>" maxlength="18" />
+                  <input class="input-large" type="text" value="<%= network.get('cidr') %>" maxlength="18" <%= cluster.task('deploy', 'running') ? 'disabled ' : '' %>/>
                 </div>
                 <div class="network-vlan">
-                  <input class="input-mini" type="text" value="<%= network.get('vlan_id') %>" maxlength="4" />
+                  <input class="input-mini" type="text" value="<%= network.get('vlan_id') %>" maxlength="4" <%= cluster.task('deploy', 'running') ? 'disabled ' : '' %>/>
                 </div>
                 <div class="network-error">
                   <span class="help-inline"></span>

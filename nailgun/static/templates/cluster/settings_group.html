@@ -4,7 +4,7 @@
       <legend><%= legend %></legend>
       <%
         _.each(_.keys(settings), function(key) {
-          if (_.isObject(settings[key])) { 
+          if (_.isObject(settings[key])) {
             var recursiveFieldset = page.template({settings: settings[key], legend: key});
         %>
             <%= recursiveFieldset %>
@@ -14,7 +14,7 @@
             <div class="wrapper" data-nested="false">
               <label class="control-label" for="<%= key %>"><%= key %></label>
               <div class="controls">
-                <input type="text" class="input-large" name="<%= key %>" value="<%= settings[key] %>" />
+                <input type="text" class="input-large" name="<%= key %>" value="<%= settings[key] %>" <%= cluster.task('deploy', 'running') ? 'disabled ' : '' %>/>
               </div>
             </div>
         <%

@@ -14,7 +14,7 @@
       <button class="btn verification-result-btn">OK</button>
     <% } %>
   <% } else { %>
-    <button class="btn verify-networks-btn">Verify Settings</button>
+    <button class="btn verify-networks-btn" <%= cluster.task('deploy', 'running') ? 'disabled' : '' %>>Verify Settings</button>
   <% } %>
 <% } else { %>
   &nbsp;

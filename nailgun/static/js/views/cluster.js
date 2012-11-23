@@ -568,8 +568,16 @@ function(models, dialogViews, clusterPageTemplate, deploymentResultTemplate, dep
             }
             */
         },
+        bindEvents: function() {
+            var task = this.model.task('deploy', 'running');
+            if (task) {
+                task.bind('change:status', this.render, this);
+            }
+        },
         initialize: function(options) {
             this.model.get('tasks').bind('remove reset', this.renderVerificationControls, this);
+            this.model.bind('change:tasks', this.bindEvents, this);
+            this.bindEvents();
             if (!this.model.get('networks')) {
                 this.networks = new models.Networks();
                 this.networks.deferred = this.networks.fetch({data: {cluster_id: this.model.id}});
@@ -652,9 +660,9 @@ function(models, dialogViews, clusterPageTemplate, deploymentResultTemplate, dep
     views.SettingsTab = Backbone.View.extend({
         template: _.template(settingsTabTemplate),
         events: {
-            'click .btn-apply-changes': 'applyChanges',
-            'click .btn-revert-changes': 'revertChanges',
-            'click .btn-set-defaults': 'setDefaults'
+            'click .btn-apply-changes:not([disabled])': 'applyChanges',
+            'click .btn-revert-changes:not([disabled])': 'revertChanges',
+            'click .btn-set-defaults:not([disabled])': 'setDefaults'
         },
         defaultButtonsState: function(buttonState) {
             this.$('.settings-editable .btn').attr('disabled', buttonState);
@@ -689,7 +697,7 @@ function(models, dialogViews, clusterPageTemplate, deploymentResultTemplate, dep
             if (_.isObject(settings)) {
                 this.$('.settings-content').html('');
                 _.each(_.keys(settings), function(setting) {
-                    var settingsGroupView = new views.SettingsGroup({legend: setting, settings: settings[setting]});
+                    var settingsGroupView = new views.SettingsGroup({legend: setting, settings: settings[setting], model: this.model});
                     this.registerSubView(settingsGroupView);
                     this.$('.settings-content').append(settingsGroupView.render().el);
                 }, this);
@@ -707,14 +715,22 @@ function(models, dialogViews, clusterPageTemplate, deploymentResultTemplate, dep
             this.disableControls();
         },
         render: function () {
-            this.$el.html(this.template({settings: this.model.get('settings')}));
+            this.$el.html(this.template({settings: this.model.get('settings'), cluster: this.model}));
             if (this.model.get('settings').deferred.state() != 'pending') {
                 var settings = this.model.get('settings').get('editable');
                 this.parseSettings(settings);
             }
             return this;
         },
+        bindEvents: function() {
+            var task = this.model.task('deploy', 'running');
+            if (task) {
+                task.bind('change:status', this.render, this);
+            }
+        },
         initialize: function() {
+            this.model.bind('change:tasks', this.bindEvents, this);
+            this.bindEvents();
             if (!this.model.get('settings')) {
                 this.model.set({'settings': new models.Settings()}, {silent: true});
                 this.model.get('settings').deferred = this.model.get('settings').fetch({
@@ -730,15 +746,16 @@ function(models, dialogViews, clusterPageTemplate, deploymentResultTemplate, dep
         events: {
             'keydown input': 'hasChanges'
         },
-        hasChanges: function(el) {
+        hasChanges: function() {
             $('.settings-editable .btn').attr('disabled', false);
         },
         initialize: function(options) {
             this.settings = options.settings;
             this.legend = options.legend;
+            this.model = options.model;
         },
         render: function() {
-            this.$el.html(this.template({settings: this.settings, legend: this.legend}));
+            this.$el.html(this.template({settings: this.settings, legend: this.legend, cluster: this.model}));
             return this;
         }
     });

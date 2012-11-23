@@ -2,7 +2,7 @@
   <div class="message-list-placeholder">
     <ul class="message-list" role="menu">
       <% if (notifications.length) { %>
-        <% _.each(notifications, function(notification, index) { %>
+        <% _.each(notifications.reverse(), function(notification, index) { %>
           <li data-notificationid="<%= notification.get('id') %>"<%= notification.get('status') == 'unread' ? ' class="new"' : '' %>>
             <% var topic = notification.get('topic') %>
             <i class="<%= topic == 'error' ? 'icon-attention-4' : topic == 'discover' ? 'icon-bell' : 'icon-info-circle-1' %>"></i>
