@@ -17,6 +17,7 @@ class Ci(object):
     domain = 'mirantis.com'
     installation_timeout = 1800
     deployment_timeout = 1800
+    puppet_timeout = 1000
 
     def __init__(self, iso=None, forward='nat'):
         self.iso = iso
@@ -152,18 +153,12 @@ vmlinuz initrd=initrd.img ks=cdrom:/ks.cfg
             "root",
             "r00tme"
         )
-        count = 0
-        while True:
-            res = ssh.execute("grep '%s' '%s'" % (str_success, logpath))
-            count += 1
-            if not res['exit_status']:
-                break
-            time.sleep(5)
-            if count == 200:
-                raise Exception(
-                    "Admin node bootstrapping has not finished or failed. "
-                    "Check %s manually." % logpath
-                )
+        wait(
+            lambda: not ssh.execute(
+                "grep '%s' '%s'" % (str_success, logpath)
+            )['exit_status'],
+            timeout=self.puppet_timeout
+        )
         ssh.disconnect()
 
         for node in self.environment.nodes:
