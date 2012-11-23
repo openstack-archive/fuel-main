@@ -180,6 +180,7 @@ class NailgunReceiver(object):
         #  Situation when some nodes not answered must be processed
         #  in orchestrator early.
         if nodes is None:
+            # If no nodes in kwargs then we update progress or status only.
             pass
         elif isinstance(nodes, list):
             if len(nodes) == 0:
@@ -214,8 +215,11 @@ class NailgunReceiver(object):
                     logger.error(error_msg)
                     status = 'error'
         else:
-            logger.error('verify_networks_resp: bad argument "nodes"')
-            return
+            error_msg = (error_msg or
+                         'verify_networks_resp: argument "nodes"'
+                         ' have incorrect type')
+            status = 'error'
+            logger.error(error_msg)
 
         cls.__update_task_status(task_uuid, status, progress, error_msg)
 

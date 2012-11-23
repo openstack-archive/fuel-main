@@ -1,6 +1,5 @@
 # -*- coding: utf-8 -*-
 import json
-import time
 from mock import Mock
 
 from nailgun.settings import settings
@@ -40,10 +39,8 @@ class TestTaskManagers(BaseHandlers):
 
     def test_network_verify_task_managers(self):
         cluster = self.create_cluster_api()
-        node1 = self.create_default_node(cluster_id=cluster['id'],
-                                         pending_addition=True)
-        node2 = self.create_default_node(cluster_id=cluster['id'],
-                                         pending_deletion=True)
+        node1 = self.create_default_node(cluster_id=cluster['id'])
+        node2 = self.create_default_node(cluster_id=cluster['id'])
         resp = self.app.put(
             reverse(
                 'ClusterNetworksHandler',
