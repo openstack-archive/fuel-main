@@ -176,12 +176,6 @@ $(addprefix $(CENTOS_REPO_DIR)/images/,$(IMAGES_FILES)):
 	@mkdir -p $(@D)
 	wget -O $@ $(CENTOS_MIRROR)/images/$(@F)
 
-# centos netinstall iso
-
-$(CENTOS_ISO_DIR)/$(NETINSTALL_ISO):
-	mkdir -p $(@D)
-	wget -O $@ $(CENTOS_NETINSTALL)/$(NETINSTALL_ISO)
-
 # EGGS AND GEMS
 
 $/eggs.done: \
@@ -246,7 +240,6 @@ $/gems.done: $/gems-bundle.done
 	$(ACTION.TOUCH)
 
 mirror: $(addprefix $(CENTOS_REPO_DIR)Packages/repodata/,$(METADATA_FILES)) \
-	$(CENTOS_ISO_DIR)/$(NETINSTALL_ISO) \
 	$/src.done \
 	$/cache-boot.done \
 	$/eggs.done \

@@ -2,7 +2,6 @@ class nailgun::cobbler(
   $cobbler_user = "cobbler",
   $cobbler_password = "cobbler",
 
-  $centos_iso,
   $centos_repos,
   $gem_source,
 
@@ -18,7 +17,6 @@ class nailgun::cobbler(
 
   Anchor<| title == "nailgun-cobbler-begin" |> ->
   Class["cobbler::server"] ->
-  Class["cobbler::distro::centos63-x86_64"] ->
   Anchor<| title == "nailgun-cobbler-end" |>
 
   class { "cobbler::server":
@@ -38,11 +36,6 @@ class nailgun::cobbler(
     cobbler_password    => $cobbler_password,
 
     pxetimeout          => '50'
-  }
-
-  class { "cobbler::distro::centos63-x86_64":
-    http_iso => $centos_iso,
-    ks_url   => "cobbler",
   }
 
   # ADDING send2syslog.py SCRIPT AND CORRESPONDING SNIPPET
@@ -90,16 +83,23 @@ class nailgun::cobbler(
     require => Class["cobbler::server"],
   } ->
 
+  cobbler_distro { "centos63-x86_64":
+    kernel => "${repo_root}/centos/6.3/nailgun/x86_64/isolinux/vmlinuz",
+    initrd => "${repo_root}/centos/6.3/nailgun/x86_64/isolinux/initrd.img",
+    arch => "x86_64",
+    breed => "redhat",
+    osversion => "rhel6",
+    ksmeta => "tree=http://@@server@@:8080/centos/6.3/nailgun/x86_64",
+    require => Class["cobbler::server"],
+  }
+
   cobbler_profile { "centos63-x86_64":
     kickstart => "/var/lib/cobbler/kickstarts/centos63-x86_64.ks",
     kopts => "",
     distro => "centos63-x86_64",
     ksmeta => "",
     menu => true,
-    require => [
-                Class["cobbler::server"],
-                Class["cobbler::distro::centos63-x86_64"],
-                ],
+    require => Cobbler_distro["centos63-x86_64"],
   }
 
   cobbler_distro { "bootstrap":

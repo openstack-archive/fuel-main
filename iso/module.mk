@@ -25,10 +25,6 @@ $/isoroot-centos.done: \
 
 $(ISOROOT)/repodata/comps.xml: $(CENTOS_REPO_DIR)/repodata/comps.xml ; $(ACTION.COPY)
 
-$(ISOROOT)/iso/$(NETINSTALL_ISO): $(CENTOS_ISO_DIR)/$(NETINSTALL_ISO)
-	@mkdir -p $(@D)
-	cp $(CENTOS_ISO_DIR)/$(@F) $(@D)
-
 $(ISOROOT)/isolinux/isolinux.cfg: iso/isolinux/isolinux.cfg ; $(ACTION.COPY)
 
 $(addprefix $(ISOROOT)/isolinux/,$(ISOLINUX_FILES)): \
@@ -52,7 +48,6 @@ $(addprefix $(ISOROOT)/rabbitmq-plugins/v$(RABBITMQ_VERSION)/,$(RABBITMQ_PLUGINS
 	wget -O $@ $(RABBITMQ_PLUGINS_URL)/$(@F)
 
 $/isoroot-prepare.done: \
-		$(ISOROOT)/iso/$(NETINSTALL_ISO) \
 		$(addprefix $(ISOROOT)/images/,$(IMAGES_FILES)) \
 		$(addprefix $(ISOROOT)/EFI/BOOT/,$(EFI_FILES)) \
 		$(addprefix $(ISOROOT)/rabbitmq-plugins/v$(RABBITMQ_VERSION)/,$(RABBITMQ_PLUGINS)) \

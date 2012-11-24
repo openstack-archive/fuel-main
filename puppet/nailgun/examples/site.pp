@@ -11,7 +11,6 @@ node default {
    },
    ]
 
-  $centos_iso = "file:///var/www/nailgun/iso/CentOS-6.3-x86_64-minimal-EFI.iso"
   $cobbler_user = "cobbler"
   $cobbler_password = "cobbler"
 
