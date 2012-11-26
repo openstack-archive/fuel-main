@@ -28,3 +28,11 @@ casper.createCluster = function(options) {
         data: JSON.stringify(options)
     });
 }
+
+casper.createNode = function(options) {
+    return this.thenOpen(baseUrl + 'api/nodes', {
+        method: 'post',
+        headers: {'Content-Type': 'application/json'},
+        data: JSON.stringify(options)
+    });
+}

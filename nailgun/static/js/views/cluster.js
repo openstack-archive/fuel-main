@@ -205,6 +205,7 @@ function(models, dialogViews, clusterPageTemplate, deploymentResultTemplate, dep
     });
 
     views.NodesByRolesScreen = Backbone.View.extend({
+        className: 'nodes-by-roles-screen',
         screenName: 'nodes-by-roles',
         keepScrollPosition: true,
         initialize: function(options) {
@@ -248,6 +249,7 @@ function(models, dialogViews, clusterPageTemplate, deploymentResultTemplate, dep
     });
 
     views.EditNodesScreen = Backbone.View.extend({
+        className: 'edit-nodes-screen',
         screenName: 'edit-nodes',
         keepScrollPosition: false,
         template: _.template(editNodesScreenTemplate),
@@ -351,6 +353,7 @@ function(models, dialogViews, clusterPageTemplate, deploymentResultTemplate, dep
     });
 
     views.AddNodesScreen = views.EditNodesScreen.extend({
+        className: 'add-nodes-screen',
         action: 'add',
         flag: 'pending_addition',
         initialize: function(options) {
@@ -382,6 +385,7 @@ function(models, dialogViews, clusterPageTemplate, deploymentResultTemplate, dep
     });
 
     views.DeleteNodesScreen = views.EditNodesScreen.extend({
+        className: 'delete-nodes-screen',
         action: 'delete',
         flag: 'pending_deletion',
         initialize: function(options) {
@@ -445,6 +449,7 @@ function(models, dialogViews, clusterPageTemplate, deploymentResultTemplate, dep
                 currentNodes: currentNodes,
                 nodesAfterDeployment: nodesAfterDeployment
             }));
+            this.$el.addClass('node-list-' + this.role);
             if (this.collection.length || this.size) {
                 var container = this.$('.node-list-container');
                 this.collection.each(function(node) {

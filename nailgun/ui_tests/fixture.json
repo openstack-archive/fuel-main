@@ -25,23 +25,5 @@
                 }
             }
         }
-    },
-    {
-        "pk": 1,
-        "model": "nailgun.node",
-        "fields": {
-            "status": "discover",
-            "manufacturer": "Dell",
-            "mac": "C0:8D:DF:52:76:F1"
-        }
-    },
-    {
-        "pk": 2,
-        "model": "nailgun.node",
-        "fields": {
-            "status": "discover",
-            "manufacturer": "HP",
-            "mac": "46:FC:5A:0C:F9:51"
-        }
     }
 ]

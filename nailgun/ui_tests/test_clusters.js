@@ -1,9 +1,11 @@
 casper.start().loadPage('#clusters');
+
 casper.then(function() {
     this.test.comment('Testing cluster list page');
     this.test.assertExists('.cluster-list', 'Cluster container exists');
     this.test.assertExists('.create-cluster', 'Cluster creation control exists');
 });
+
 casper.then(function() {
     this.test.comment('Testing cluster creation');
     var name = 'Test Cluster';
@@ -20,6 +22,7 @@ casper.then(function() {
         this.test.assertSelectorHasText('.cluster-list a.clusterbox .cluster-name', name, 'Created cluster has specified name');
     })
 });
+
 casper.run(function() {
     this.test.done();
 });
