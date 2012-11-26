@@ -100,7 +100,7 @@ function(models, navbarTemplate, nodesStatsTemplate, nodesStatsPopoverTemplate, 
                         barsWidth += barWidth;
                         this.$('.stats-' + role).width(barWidth);
                     }, this);
-                    this.$('.stats-' + _.last(roles)).width(containerWidth - barsWidth);
+                    this.$('.stats-' + _.last(roles)).width(Math.floor(containerWidth - barsWidth));
                 } else {
                     this.$('.bar').width(0);
                 }
