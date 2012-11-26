@@ -1,4 +1,6 @@
-casper.start().loadPage('#cluster/1/nodes').waitForSelector('#tab-nodes > *');
+casper.start();
+casper.createCluster({name: 'Test Cluster'});
+casper.loadPage('#cluster/1/nodes').waitForSelector('#tab-nodes > *');
 casper.then(function() {
     this.test.comment('Testing cluster page');
     this.test.assertExists('.summary .change-cluster-mode-btn:not(.disabled)', 'Cluster deployment mode is changeable');

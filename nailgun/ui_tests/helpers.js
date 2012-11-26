@@ -1,6 +1,7 @@
+var baseUrl = 'http://127.0.0.1:5544/';
+
 casper.loadPage = function(page) {
-    var baseUrl = 'http://127.0.0.1:5544/';
-    return this.open(baseUrl + page).waitWhileSelector('#content > .loading');
+    return this.thenOpen(baseUrl + page).waitWhileSelector('#content > .loading');
 }
 
 casper.test.assertSelectorAppears = function(selector, message, timeout) {
@@ -17,4 +18,13 @@ casper.test.assertSelectorDisappears = function(selector, message, timeout) {
     }, function() {
         this.test.fail(message);
     }, timeout);
+}
+
+casper.createCluster = function(options) {
+    options.release = 1;
+    return this.thenOpen(baseUrl + 'api/clusters', {
+        method: 'post',
+        headers: {'Content-Type': 'application/json'},
+        data: JSON.stringify(options)
+    });
 }

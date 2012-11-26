@@ -76,6 +76,13 @@ if [ $just_pep8 -eq 1 ]; then
 fi
 
 function run_jslint {
+    which jslint > /dev/null
+    if [ $? -ne 0 ]; then
+        echo "JSLint is not installed; install by running:"
+        echo "sudo apt-get install npm"
+        echo "sudo npm install -g jslint"
+        return 1
+    fi
     jsfiles=$(find static/js -type f | grep -v ^static/js/libs/ | grep \\.js$)
     jslint_predef=(requirejs require define app Backbone $ _ alert confirm)
     jslint_options="$(echo ${jslint_predef[@]} | sed 's/^\| / --predef=/g') --browser=true --nomen=true --eqeq=true --vars=true --white=true --es5=false"
@@ -88,12 +95,28 @@ if [ $just_jslint -eq 1 ]; then
 fi
 
 function run_ui_tests {
+    which casperjs > /dev/null
+    if [ $? -ne 0 ]; then
+        echo "CasperJS is not installed; install by running:"
+        echo "sudo apt-get install phantomjs"
+        echo "cd ~"
+        echo "git clone git://github.com/n1k0/casperjs.git"
+        echo "cd casperjs"
+        echo "git checkout tags/1.0.0-RC4"
+        echo "sudo ln -sf \`pwd\`/bin/casperjs /usr/local/bin/casperjs"
+        return 1
+    fi
     ui_tests_dir=ui_tests
-    rm -f nailgun.sqlite && ./manage.py syncdb && ./manage.py loaddata $ui_tests_dir/fixture.json
+    result=0
     ./manage.py run --fake-tasks --port=5544 &
-    casperjs test --includes=$ui_tests_dir/helpers.js $ui_tests_dir/test_*.js
-    result=$?
-    kill %1
+    for test_file in $ui_tests_dir/test_*.js; do
+        rm -f nailgun.sqlite
+        ./manage.py syncdb > /dev/null
+        ./manage.py loaddata $ui_tests_dir/fixture.json > /dev/null
+        casperjs test --includes=$ui_tests_dir/helpers.js $test_file
+        result=$(($result + $?))
+    done
+    kill -9 %1
     return $result
 }
 
