@@ -1,16 +1,15 @@
-class nailytest {
-        case $role {
+class nailytest ($role) {
+        case $role[0] {
                 "controller" : {
                         include nailytest::test_controller
                 }
         }
 
-        case $role {
+        case $role[0] {
                 "compute" : {
                         include nailytest::test_compute
                 }
         }       
 
-        include nailytest::network_setup
 
 }
