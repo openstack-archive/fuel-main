@@ -9,7 +9,7 @@
       <% if (task.get('status') == 'ready') { %>
         <div class="verification-result msg-ok"><i class="icon-ok-circle"></i>Verification Succeeded</div>
       <% } else if (task.get('status') == 'error') { %>
-        <div class="verification-result msg-error"><i class="icon-attention-3"></i><%= task.get('error') || 'Verification Failed' %></div>
+        <div class="verification-result msg-error"><i class="icon-attention-3"></i><%- task.get('error') || 'Verification Failed' %></div>
       <% } %>
       <button class="btn verification-result-btn">OK</button>
     <% } %>

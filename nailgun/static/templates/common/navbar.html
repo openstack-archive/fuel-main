@@ -2,7 +2,7 @@
   <div class="navigation-bar-box">
     <ul class="navigation-bar-ul">
       <% _.each(elements, function(element) { %>
-        <li><a href="<%= element[1] %>"><%= element[0] %></a></li>
+        <li><a href="<%- element[1] %>"><%- element[0] %></a></li>
       <% }) %>
       <li class="space"></li>
       <li class="navigation-bar-icon notifications"></li>

@@ -18,8 +18,8 @@
       <tbody>
         <% releases.each(function(release) { %>
         <tr>
-          <td><%= release.get('name') %> <%= release.get('version') %></td>
-          <td><%= release.get('description') %></td>
+          <td><%- release.get('name') %> <%- release.get('version') %></td>
+          <td><%- release.get('description') %></td>
         </tr>
         <% }) %>
       </tbody>
@@ -30,4 +30,3 @@
 <% } %>
 
 </div>
-

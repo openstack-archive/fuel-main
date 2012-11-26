@@ -6,7 +6,7 @@
           <li data-notificationid="<%= notification.get('id') %>"<%= notification.get('status') == 'unread' ? ' class="new"' : '' %>>
             <% var topic = notification.get('topic') %>
             <i class="<%= topic == 'error' ? 'icon-attention-4' : topic == 'discover' ? 'icon-bell' : 'icon-info-circle-1' %>"></i>
-            <%= notification.get('message') %>
+            <%- notification.get('message') %>
           </li>
           <%= index < (notifications.length - 1) ? '<li class="divider"></li>' : '' %>
         <% }) %>

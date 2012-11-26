@@ -1,7 +1,7 @@
 <% var page = this %>
   <div class="control-group wrapper" data-nested="true">
     <fieldset class="fieldset">
-      <legend><%= legend %></legend>
+      <legend><%- legend %></legend>
       <%
         _.each(_.keys(settings), function(key) {
           if (_.isObject(settings[key])) {
@@ -12,9 +12,9 @@
           } else {
         %>
             <div class="wrapper" data-nested="false">
-              <label class="control-label" for="<%= key %>"><%= key %></label>
+              <label class="control-label" for="<%- key %>"><%- key %></label>
               <div class="controls">
-                <input type="text" class="input-large" name="<%= key %>" value="<%= settings[key] %>" <%= cluster.task('deploy', 'running') ? 'disabled ' : '' %>/>
+                <input type="text" class="input-large" name="<%- key %>" value="<%- settings[key] %>" <%= cluster.task('deploy', 'running') ? 'disabled ' : '' %>/>
               </div>
             </div>
         <%

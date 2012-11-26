@@ -5,13 +5,13 @@
       <% var modes = {'simple': 'Simple', 'ha': 'HA'} %>
       <% var types = {'both': 'Compute and storage', 'compute': 'Compute only', 'storage': 'Storage only', 'singlenode': 'Single node'} %>
       <li class="btn btn-link summary-settings-btn change-cluster-mode-btn <%= cluster.canChangeMode() ? '' : 'disabled' %>" <%= cluster.canChangeMode() ? 'rel="tooltip" data-title="Change cluster deployment mode"' : '' %>>
-        <b>Deployment Mode: </b><%= modes[cluster.get('mode')] %>
+        <b>Deployment Mode: </b><%- modes[cluster.get('mode')] %>
       </li>
       <li class="btn btn-link summary-settings-btn change-cluster-type-btn <%= cluster.task('deploy', 'running') ? 'disabled' : '' %>" <%= cluster.task('deploy', 'running') ? '' : 'rel="tooltip" data-title="Change cluster type"' %>>
-        <b>Type: </b><%= types[cluster.get('type')] %>
+        <b>Type: </b><%- types[cluster.get('type')] %>
       </li>
       <li class="btn btn-link summary-settings-btn disabled">
-        <b>Release: </b><%= cluster.get('release').get('name') %> <%= cluster.get('release').get('version') %>
+        <b>Release: </b><%- cluster.get('release').get('name') %> <%- cluster.get('release').get('version') %>
       </li>
     </ul>
   </div>
