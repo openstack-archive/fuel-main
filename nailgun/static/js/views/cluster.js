@@ -411,6 +411,7 @@ function(models, dialogViews, clusterPageTemplate, deploymentResultTemplate, dep
     });
 
     views.NodeList = Backbone.View.extend({
+        className: 'node-list',
         template: _.template(nodeListTemplate),
         events: {
             'click .btn-add-nodes:not(.disabled)': 'addNodes',

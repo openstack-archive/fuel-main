@@ -21,8 +21,10 @@ function process_option {
     -h|--help) usage;;
     -p|--pep8) just_pep8=1;;
     -j|--jslint) just_jslint=1;;
+    -u|--ui-tests) just_ui_tests=1;;
     -P|--no-pep8) no_pep8=1;;
     -J|--no-jslint) no_jslint=1;;
+    -U|--no-ui-tests) no_ui_tests=1;;
     -x|--xunit) xunit=1;;
     -c|--clean) clean=1;;
     -*) noseopts="$noseopts $1";;
@@ -34,6 +36,8 @@ just_pep8=0
 no_pep8=0
 just_jslint=0
 no_jslint=0
+just_ui_tests=0
+no_ui_tests=0
 xunit=0
 clean=0
 noseargs=
@@ -83,6 +87,21 @@ if [ $just_jslint -eq 1 ]; then
     exit
 fi
 
+function run_ui_tests {
+    ui_tests_dir=ui_tests
+    rm -f nailgun.sqlite && ./manage.py syncdb && ./manage.py loaddata $ui_tests_dir/fixture.json
+    ./manage.py run --fake-tasks --port=5544 &
+    casperjs test --includes=$ui_tests_dir/helpers.js $ui_tests_dir/test_*.js
+    result=$?
+    kill %1
+    return $result
+}
+
+if [ $just_ui_tests -eq 1 ]; then
+    run_ui_tests || exit 1
+    exit
+fi
+
 function run_tests {
   clean
   [ -z "$noseargs" ] && test_args=. || test_args="$noseargs"
@@ -99,6 +118,9 @@ if [ -z "$noseargs" ]; then
   fi
   if [ $no_jslint -eq 0 ]; then
     run_jslint || errors+=' jslint'
+  fi
+  if [ $no_ui_tests -eq 0 ]; then
+    run_ui_tests || errors+=' ui-tests'
   fi
 fi
 
