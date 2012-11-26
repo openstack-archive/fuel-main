@@ -20,9 +20,6 @@ $/%: /:=$/
 
 test: test-integration
 
-clean: clean-integration-test
-
-
 .PHONY: test-integration
 test-integration: $/environment-id-integration
 	python test/integration_test.py -l $(LEVEL) --installation-timeout=$(INSTALLATION_TIMEOUT) --deployment-timeout=$(DEPLOYMENT_TIMEOUT) --iso $(abspath $(iso.path)) test $(NOSEARGS)
