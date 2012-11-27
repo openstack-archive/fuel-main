@@ -9,9 +9,9 @@ metadata    :name        => "rpuppet",
 action "run", :description => "Invoke a puppet run" do
 	input :data,
 		:prompt		=> "data",
-		:description	=> "Data to pass into puppet run",
+		:description	=> "Data encoded in JSON to pass into puppet run",
 		:type		=> :string,
-		:validation	=> '^[a-zA-Z0-9_]+$',
+		:validation	=> '.*',
 		:optional	=> false,
 		:maxlength	=> 0
 
