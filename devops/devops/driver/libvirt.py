@@ -271,9 +271,20 @@ class Libvirt:
                 "Node %s is not running at the moment. Starting." % node.id)
             self._virsh(['start', node.id])
 
-        if node.vnc:
-            domain = self._get_node_xml(node)
+        domain = self._get_node_xml(node)
 
+        for interface_element in domain.find_all(
+            'devices/interface[@type="network"]'
+        ):
+            network_id = interface_element.find('source/@network')
+            interface = find(
+                lambda i: i.network.id == network_id,
+                node.interfaces)
+            if interface is None:
+                continue
+            interface.target_dev = interface_element.find('target/@dev')
+
+        if node.vnc:
             port_text = domain.find('devices/graphics[@type="vnc"]/@port')
             if port_text:
                 node.vnc_port = int(port_text)

@@ -196,6 +196,7 @@ class Interface(ManagedObject):
         self._ip_addresses = ip_addresses
         self.mac_address = None
         self.type = type
+        self.target_dev = None
 
     @property
     def ip_addresses(self):

@@ -5,6 +5,7 @@ import json
 import pprint
 import posixpath
 import re
+import subprocess
 from time import sleep
 
 from devops.helpers import wait, tcp_ping, http
@@ -60,12 +61,12 @@ class TestNode(Base):
 
     def test_node_deploy(self):
         self._revert_nodes()
-        self._bootstrap_nodes()
+        self._bootstrap_nodes(['slave1'])
 
     def test_updating_nodes_in_cluster(self):
         self._revert_nodes()
         cluster_id = self._create_cluster(name='empty')
-        nodes = self._bootstrap_nodes()
+        nodes = self._bootstrap_nodes(['slave1'])
         self._update_nodes_in_cluster(cluster_id, nodes)
 
     def test_one_node_provisioning(self):
@@ -154,6 +155,98 @@ class TestNode(Base):
                 raise Exception("Bootstrap boot timeout expired!")
             time.sleep(5)
 
+    def test_network_verify(self):
+        self._revert_nodes()
+        cluster_name = 'net_verify'
+        cluster_id = self._create_cluster(name=cluster_name)
+        # Check network in empty cluster.
+        task = self._run_network_verify(cluster_id)
+        task = self._task_wait(task, 'Verify network in empty cluster',
+                               20, True)
+        self.assertEquals(task['status'], 'error')
+        # Check network with one node.
+        node_names = ['slave1', 'slave2']
+        nailgun_slave_nodes = self._bootstrap_nodes(node_names)
+        devops_nodes = [ci.environment.node[n] for n in node_names]
+        self._update_nodes_in_cluster(cluster_id, [nailgun_slave_nodes[0]])
+        task = self._run_network_verify(cluster_id)
+        self._task_wait(task, 'Verify network in cluster with one node', 20)
+        # Check network with two nodes.
+        logging.info("Clear BROUTING table entries.")
+        vlan = self._get_common_vlan(cluster_id)
+        for node in devops_nodes:
+            self._restore_vlan_in_ebtables(node.interfaces[0].target_dev,
+                                           vlan, False)
+        self._update_nodes_in_cluster(cluster_id, nailgun_slave_nodes)
+        task = self._run_network_verify(cluster_id)
+        self._task_wait(task, 'Verify network in cluster with two nodes',
+                        60 * 2)
+        # Check network with one blocked vlan.
+        self._block_vlan_in_ebtables(devops_nodes, vlan)
+        task = self._run_network_verify(cluster_id)
+        task = self._task_wait(task,
+                               'Verify network in cluster with blocked vlan',
+                               60 * 2, True)
+        self.assertEquals(task['status'], 'error')
+
+    def _block_vlan_in_ebtables(self, devops_nodes, vlan):
+        try:
+            for node in devops_nodes:
+                subprocess.check_output(
+                    'sudo ebtables -t broute -A BROUTING -i %s -p 8021Q'
+                    ' --vlan-id %s -j DROP' % (
+                        node.interfaces[0].target_dev, vlan
+                    ),
+                    stderr=subprocess.STDOUT,
+                    shell=True
+                )
+                self.addCleanup(self._restore_vlan_in_ebtables,
+                                node.interfaces[0].target_dev, vlan)
+        except subprocess.CalledProcessError as e:
+            raise Exception("Can't block vlan %s for interface %s"
+                            " via ebtables: %s" %
+                            (vlan, node.interfaces[0].target_dev, e.output))
+
+    def _get_common_vlan(self, cluster_id):
+        """Find vlan that must be at all two nodes.
+        """
+        resp = self.client.get(
+            "/api/networks/"
+        )
+        self.assertEquals(200, resp.getcode())
+        for net in json.loads(resp.read()):
+            if net['cluster_id'] == cluster_id:
+                return net['vlan_id']
+        raise Exception("Can't find vlan for cluster_id %s" % cluster_id)
+
+    @staticmethod
+    def _restore_vlan_in_ebtables(target_dev, vlan, log=True):
+        try:
+            subprocess.check_output(
+                'sudo ebtables -t broute -D BROUTING -i %s -p 8021Q'
+                ' --vlan-id %s -j DROP' % (
+                    target_dev, vlan
+                ),
+                stderr=subprocess.STDOUT,
+                shell=True
+            )
+        except subprocess.CalledProcessError as e:
+            if log:
+                logging.warn("Can't restore vlan %s for interface %s"
+                             " via ebtables: %s" %
+                             (vlan, target_dev, e.output))
+
+    def _run_network_verify(self, cluster_id):
+        logging.info(
+            "Run network verifty in cluster %d",
+            cluster_id
+        )
+        changes = self.client.put(
+            "/api/clusters/%d/verify/networks/" % cluster_id
+        )
+        self.assertEquals(200, changes.getcode())
+        return json.loads(changes.read())
+
     def _basic_provisioning(self, cluster_name, nodes_dict):
         self._clean_clusters()
         cluster_id = self._create_cluster(name=cluster_name)
@@ -186,6 +279,7 @@ class TestNode(Base):
         return cluster_id
 
     def _launch_provisioning(self, cluster_id):
+        """Return hash with task description."""
         logging.info(
             "Launching provisioning on cluster %d",
             cluster_id
@@ -196,7 +290,8 @@ class TestNode(Base):
         self.assertEquals(200, changes.getcode())
         return json.loads(changes.read())
 
-    def _task_wait(self, task, task_desc, timeout=30 * 60):
+    def _task_wait(self, task, task_desc, timeout=30 * 60,
+                   skip_error_status=False):
         timer = time.time()
         ready = False
         task_id = task['id']
@@ -208,12 +303,17 @@ class TestNode(Base):
             if task['status'] == 'ready':
                 logging.info("Task %r complete" % task_desc)
                 ready = True
+            elif task['status'] == 'error' and skip_error_status:
+                logging.info("Task %r ended with error: %s" %
+                             (task_desc, task['error']))
+                ready = True
             elif task['status'] == 'running':
                 if (time.time() - timer) > timeout:
                     raise Exception("Task %r timeout expired!" % task_desc)
-                time.sleep(30)
+                time.sleep(5)
             else:
-                raise Exception("%s failed!" % task_desc)
+                raise Exception("Task %s failed!" % task_desc)
+        return task
 
     def _upload_sample_release(self):
         def _get_release_id():
@@ -280,29 +380,34 @@ class TestNode(Base):
         nodes_in_cluster = [str(n['id']) for n in cluster['nodes']]
         self.assertEquals(sorted(node_ids), sorted(nodes_in_cluster))
 
-    def _get_slave_node_by_devops_node(self, slave):
+    def _get_slave_node_by_devops_node(self, devops_node):
+        """Return hash with nailgun slave node description if node
+        register itself on nailgun. Otherwise return None.
+        """
         response = self.client.get("/api/nodes/")
         nodes = json.loads(response.read())
         logging.debug("get_slave_node_by_devops_node: nodes at nailgun: %r" %
                       str(nodes))
 
         for n in nodes:
-            for i in slave.interfaces:
+            for i in devops_node.interfaces:
                 logging.debug("get_slave_node_by_devops_node: \
 node.interfaces[n].mac_address: %r" % str(i.mac_address))
                 if n['mac'].capitalize() == i.mac_address.capitalize():
-                    n['devops_name'] = slave.name
+                    n['devops_name'] = devops_node.name
                     return n
         return None
 
-    def _bootstrap_nodes(self, node_names=['slave1']):
-        """This function returns nailgun node descpription by devops name.
+    def _bootstrap_nodes(self, devops_node_names=[]):
+        """Start devops nodes and wait while they load boodstrap image
+        and register on nailgun. Returns list of hashes with registred nailgun
+        slave node descpriptions.
         """
         timer = time.time()
         timeout = 600
 
         slaves = []
-        for node_name in node_names:
+        for node_name in devops_node_names:
             slave = ci.environment.node[node_name]
             logging.info("Starting slave node %r" % node_name)
             slave.start()
@@ -333,4 +438,4 @@ node.interfaces[n].mac_address: %r" % str(i.mac_address))
                 pass
         for node in ci.environment.nodes:
             node.restore_snapshot('initial')
-            sleep(2)
+            sleep(5)
