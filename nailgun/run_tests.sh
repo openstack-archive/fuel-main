@@ -108,7 +108,7 @@ function run_ui_tests {
     fi
     ui_tests_dir=ui_tests
     result=0
-    ./manage.py run --fake-tasks --port=5544 &
+    ./manage.py run --port=5544 --fake-tasks --fake-tasks-tick-count=6 --fake-tasks-tick-interval=1 &
     for test_file in $ui_tests_dir/test_*.js; do
         rm -f nailgun.sqlite
         ./manage.py syncdb > /dev/null

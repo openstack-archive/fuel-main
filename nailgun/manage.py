@@ -34,6 +34,14 @@ if __name__ == "__main__":
     run_parser.add_argument(
         '--fake-tasks', action='store_true', help='fake tasks'
     )
+    run_parser.add_argument(
+        '--fake-tasks-tick-count', action='store', type=int,
+        help='Fake tasks tick count'
+    )
+    run_parser.add_argument(
+        '--fake-tasks-tick-interval', action='store', type=int,
+        help='Fake tasks tick interval in seconds'
+    )
     test_parser = subparsers.add_parser(
         'test', help='run unit tests'
     )
@@ -71,8 +79,11 @@ if __name__ == "__main__":
             'LISTEN_PORT': int(params.port),
             'LISTEN_ADDRESS': params.address,
         })
-        if params.fake_tasks:
-            settings.update({'FAKE_TASKS': params.fake_tasks})
+        for attr in ['FAKE_TASKS', 'FAKE_TASKS_TICK_COUNT',
+                     'FAKE_TASKS_TICK_INTERVAL']:
+            param = getattr(params, attr.lower())
+            if param is not None:
+                settings.update({attr: param})
         logger.info("Running WSGI app...")
         from nailgun.wsgi import appstart
         appstart()

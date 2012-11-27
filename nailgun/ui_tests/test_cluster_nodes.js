@@ -15,7 +15,7 @@ casper.then(function() {
     this.test.assertExists('.summary .change-cluster-type-btn:not(.disabled)', 'Cluster type is changeable');
     this.test.assertDoesntExist('.node-list .btn-add-nodes.disabled', 'All "Add Node" buttons are enabled');
     this.test.assertDoesntExist('.node-list .btn-delete-nodes:not(.disabled)', 'All "Delete Node" buttons are disabled');
-    this.test.assertExists('.node-list .nodebox.nodeplaceholder', 'Placeholder for controller node presents');
+    this.test.assertExists('.node-list-controller .nodebox.nodeplaceholder', 'Placeholder for controller node presents');
     this.test.assertEvalEquals(function() {return $('.node-list').length}, 3, 'Number of available roles is correct');
 });
 
@@ -72,6 +72,16 @@ casper.then(function() {
         this.click('.add-nodes-screen .btn-apply');
     });
     this.waitForSelector('.nodes-by-roles-screen');
+    this.waitFor(function() {
+        return this.evaluate(function() {
+            return $('.node-list-controller .nodebox:not(.nodeplaceholder)').length == 1;
+        });
+    }, function() {
+        this.test.pass('Scheduled for addition controller appears in node list');
+    });
+    this.then(function() {
+        this.test.assertDoesntExist('.node-list-controller .nodebox.nodeplaceholder', 'Placeholder for controller node disappears');
+    });
 });
 
 casper.then(function() {
@@ -87,6 +97,33 @@ casper.then(function() {
         this.click('.add-nodes-screen .btn-apply');
     });
     this.waitForSelector('.nodes-by-roles-screen');
+    this.waitFor(function() {
+        return (nodes.length - 1) == this.evaluate(function() {
+            return $('.node-list-compute .nodebox').length;
+        });
+    }, function() {
+        this.test.pass('Scheduled for addition computes appear in node list');
+    });
+});
+
+casper.then(function() {
+    this.test.comment('Testing deletion of compute node, scheduled for addition');
+    this.click('.node-list-compute .btn-delete-nodes');
+    this.waitForSelector('.delete-nodes-screen');
+    this.then(function() {
+        this.evaluate(function() {
+            $('.delete-nodes-screen .nodebox:first').click();
+        });
+        this.click('.delete-nodes-screen .btn-apply');
+    });
+    this.waitForSelector('.nodes-by-roles-screen');
+    this.waitFor(function() {
+        return (nodes.length - 2) == this.evaluate(function() {
+            return $('.node-list-compute .nodebox').length;
+        });
+    }, function() {
+        this.test.pass('Deleted node disappears from node list');
+    });
 });
 
 casper.run(function() {
