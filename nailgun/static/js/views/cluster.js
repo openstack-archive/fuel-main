@@ -211,17 +211,24 @@ function(models, dialogViews, clusterPageTemplate, deploymentResultTemplate, dep
         initialize: function(options) {
             this.tab = options.tab;
             this.model.bind('change:mode change:redundancy change:type', this.render, this);
-            this.model.bind('change:nodes', this.bindEvents, this);
-            this.bindEvents();
+            this.model.bind('change:nodes', this.bindNodesEvents, this);
+            this.bindNodesEvents();
+            this.model.bind('change:tasks', this.bindTasksEvents, this);
+            this.bindTasksEvents();
         },
-        bindEvents: function() {
+        bindTasksEvents: function() {
+            this.model.get('tasks').bind('reset', this.bindTaskEvents, this);
+            this.bindTaskEvents();
+        },
+        bindTaskEvents: function() {
+            var task = this.model.task('deploy', 'running');
+            if (task) {
+                task.bind('change:status', this.render, this);
+                this.render();
+            }
+        },
+        bindNodesEvents: function() {
             this.model.get('nodes').bind('reset', this.render, this);
-            this.model.get('tasks').bind('reset', function() {
-                var task = this.model.task('deploy', 'running');
-                if (task) {
-                    task.bind('change:status', this.render, this);
-                }
-            }, this);
         },
         render: function() {
             this.$el.html('');

@@ -13,8 +13,8 @@ casper.then(function() {
     this.test.comment('Testing cluster page');
     this.test.assertExists('.summary .change-cluster-mode-btn:not(.disabled)', 'Cluster deployment mode is changeable');
     this.test.assertExists('.summary .change-cluster-type-btn:not(.disabled)', 'Cluster type is changeable');
-    this.test.assertDoesntExist('.node-list .btn-add-nodes.disabled', 'All "Add Node" buttons are enabled');
-    this.test.assertDoesntExist('.node-list .btn-delete-nodes:not(.disabled)', 'All "Delete Node" buttons are disabled');
+    this.test.assertDoesntExist('.node-list .btn-add-nodes.disabled', 'All Add Node buttons are enabled');
+    this.test.assertDoesntExist('.node-list .btn-delete-nodes:not(.disabled)', 'All Delete Node buttons are disabled');
     this.test.assertExists('.node-list-controller .nodebox.nodeplaceholder', 'Placeholder for controller node presents');
     this.test.assertEvalEquals(function() {return $('.node-list').length}, 3, 'Number of available roles is correct');
 });
@@ -123,6 +123,29 @@ casper.then(function() {
         });
     }, function() {
         this.test.pass('Deleted node disappears from node list');
+    });
+});
+
+casper.then(function() {
+    this.test.comment('Testing deployment');
+    this.click('.deployment-control .deploy-btn');
+    this.test.assertSelectorAppears('.modal', 'Deployment dialog opens');
+    this.then(function() {
+        this.click('.modal .start-deployment-btn');
+    });
+    this.test.assertSelectorDisappears('.modal', 'Deployment dialog closes after clicking Start Deployment');
+    this.test.assertSelectorAppears('.deployment-control .progress', 'Deployment progress bar appears');
+    this.then(function() {
+        this.test.assertExists('.summary .change-cluster-type-btn.disabled', 'Cluster type is not changeable');
+        this.test.assertDoesntExist('.node-list .btn-add-nodes:not(.disabled)', 'All Add Node buttons are disabled');
+        this.test.assertDoesntExist('.node-list .btn-delete-nodes:not(.disabled)', 'All Delete Node buttons are disabled');
+        this.test.info('Waiting for deployment readiness...');
+    });
+    this.test.assertSelectorDisappears('.deployment-control .progress', 'Deployment progress bar disappears', 10000);
+    this.then(function() {
+        this.test.assertExists('.summary .change-cluster-type-btn:not(.disabled)', 'Cluster type is changeable again');
+        this.test.assertExists('.node-list .btn-add-nodes:not(.disabled)', 'Add Node buttons are enabled again');
+        this.test.assertExists('.node-list .btn-delete-nodes:not(.disabled)', 'Delete Node buttons are enabled again');
     });
 });
 
