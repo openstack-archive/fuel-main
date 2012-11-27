@@ -6,9 +6,11 @@ function usage {
   echo ""
   echo "  -p, --pep8               Just run PEP8 and HACKING compliance check"
   echo "  -j, --jslint             Just run JSLint"
+  echo "  -u, --ui-tests           Just run UI tests"
   echo "  -x, --xunit              Generate reports (useful in Jenkins environment)"
   echo "  -P, --no-pep8            Don't run static code checks"
   echo "  -J, --no-jslint          Don't run JSLint"
+  echo "  -U, --no-ui-tests        Don't run UI tests"
   echo "  -c, --clean              Only clean *.log, *.json, *.pyc, *.pid files, doesn't run tests"
   echo "  -h, --help               Print this usage message"
   echo ""
@@ -27,6 +29,7 @@ function process_option {
     -U|--no-ui-tests) no_ui_tests=1;;
     -x|--xunit) xunit=1;;
     -c|--clean) clean=1;;
+    ui_tests*) ui_test_files="$ui_test_files $1";;
     -*) noseopts="$noseopts $1";;
     *) noseargs="$noseargs $1"
   esac
@@ -40,12 +43,17 @@ just_ui_tests=0
 no_ui_tests=0
 xunit=0
 clean=0
+ui_test_files=
 noseargs=
 noseopts=
 
 for arg in "$@"; do
   process_option $arg
 done
+
+if [ -n "$ui_test_files" ]; then
+    just_ui_tests=1
+fi
 
 function clean {
   echo "cleaning *.pyc, *.json, *.log, *.pid files"
@@ -107,13 +115,16 @@ function run_ui_tests {
         return 1
     fi
     ui_tests_dir=ui_tests
+    if [ -z "$ui_test_files" ]; then
+        ui_test_files=$ui_tests_dir/test_*.js
+    fi
     result=0
     ./manage.py run --port=5544 --fake-tasks --fake-tasks-tick-count=6 --fake-tasks-tick-interval=1 &
-    for test_file in $ui_tests_dir/test_*.js; do
+    for test_file in $ui_test_files; do
         rm -f nailgun.sqlite
         ./manage.py syncdb > /dev/null
         ./manage.py loaddata $ui_tests_dir/fixture.json > /dev/null
-        casperjs test --includes=$ui_tests_dir/helpers.js $test_file
+        casperjs test --includes=$ui_tests_dir/helpers.js --fail-fast $test_file
         result=$(($result + $?))
     done
     kill -9 %1
