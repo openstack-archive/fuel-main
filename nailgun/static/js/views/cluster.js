@@ -543,7 +543,6 @@ function(models, dialogViews, clusterPageTemplate, deploymentResultTemplate, dep
             'click .nav a': 'changeMode'
         },
         enableApplyButton: function() {
-            // FIXME: calculate availability instead
             this.$('.apply-btn').attr('disabled', false);
         },
         apply: function() {

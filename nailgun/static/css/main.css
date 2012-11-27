@@ -866,7 +866,6 @@ h6.page-title {
 }
 
 .summary-settings-btn.disabled:hover {
-  color: #555555;
   cursor: default;
 }
 
@@ -988,37 +987,16 @@ h6.page-title {
 }
 
 .progress-verify-networks {
-  width: 250px;
-  padding: 2px;
-  margin: 9px 0 0 0;
-  height: 12px;
-  background-color: #e3e3e3;
-  background-image: none;
+  display: inline-block;
+  float: right;
+  margin: 7px 0px 0px 0px;
+  width: 120px;
+  height: 16px;
 }
 
-.progress-deploy > .bar, .progress-verify-networks > .bar {
+.progress-deploy > .bar {
   height: 12px;
   border-radius: 3px;
-}
-
-.verify-network {
-  text-align: right;
-  min-width: 230px;
-}
-
-.verify-network > div {
-  text-align: right;
-}
-
-.verification-result {
-  display: inline-block;
-  font-weight: bold;
-  margin: 0 7px 0 0;
-  position: relative;
-  top: 5px;
-  max-width: 800px;
-  overflow: hidden;
-  word-break: break-all;
 }
 
 .networks-table {
@@ -1484,6 +1462,7 @@ h6.page-title {
 .table-logs tbody tr td {
   font-size: 13px;
 }
+
 .page-control-box {
     display: block;
     margin-left: 20px;
@@ -1521,14 +1500,6 @@ h6.page-title {
     float: right;
     margin: 5px 10px 5px 10px;
   }
-
-.page-control-button-placeholder > .progress {
-  display: inline-block;
-  float: right;
-  margin: 7px 0px 0px 0px;
-  width: 120px;
-  height: 16px;
-}
 
 /* buttons facelift */
 .apply-btn {
@@ -1890,14 +1861,13 @@ h6.page-title {
 
 .btn-link:hover {
   color: #005580;
-  text-decoration: underline;
   background-color: transparent;
   background-image: none;
   border: none;
   box-shadow:  0 0 0 rgba(0, 0, 0, 0);
 }
 
-.btn-link.disabled,
+.btn.disabled,
 .btn[disabled] {
   cursor: default;
   color: #777777;
@@ -1909,6 +1879,22 @@ h6.page-title {
   -webkit-box-shadow: inset 0 1px 0px rgba(255, 255, 255, 0.45);
      -moz-box-shadow: inset 0 1px 0px rgba(255, 255, 255, 0.45);
           box-shadow: inset 0 1px 0px rgba(255, 255, 255, 0.45);
+  filter: alpha(opacity=65);
+
+}
+
+.btn-link.disabled,
+.btn-link[disabled] {
+  cursor: default;
+  color: #777777;
+  background: none;
+  text-shadow: 0 1px 0px rgba(255, 255, 255, 0.65);
+  border: none;
+  background-image: none;
+  /* opacity: 0.65; */
+  -webkit-box-shadow: inset 0 1px 0px rgba(255, 255, 255, 0);
+     -moz-box-shadow: inset 0 1px 0px rgba(255, 255, 255, 0);
+          box-shadow: inset 0 1px 0px rgba(255, 255, 255, 0);
   filter: alpha(opacity=65);
 
 }
