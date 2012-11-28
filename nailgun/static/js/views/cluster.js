@@ -198,7 +198,11 @@ function(models, dialogViews, clusterPageTemplate, deploymentResultTemplate, dep
             this.registerSubView(dialog);
             dialog.render();
         },
+        beforeTearDown: function() {
+            this.$('[rel=tooltip]').tooltip('destroy');
+        },
         render: function() {
+            this.$('[rel=tooltip]').tooltip('destroy');
             this.$el.html(this.template({cluster: this.model}));
             return this;
         }
@@ -231,6 +235,7 @@ function(models, dialogViews, clusterPageTemplate, deploymentResultTemplate, dep
             this.model.get('nodes').bind('reset', this.render, this);
         },
         render: function() {
+            this.tearDownRegisteredSubViews();
             this.$el.html('');
             var summary = new views.NodesTabSummary({model: this.model});
             this.registerSubView(summary);
@@ -329,6 +334,7 @@ function(models, dialogViews, clusterPageTemplate, deploymentResultTemplate, dep
             this.nodes = new models.Nodes();
         },
         renderNodes: function() {
+            this.tearDownRegisteredSubViews();
             var nodesContainer = this.$('.available-nodes');
             if (this.nodes.length) {
                 nodesContainer.html('');
@@ -710,6 +716,7 @@ function(models, dialogViews, clusterPageTemplate, deploymentResultTemplate, dep
             this.disableControls();
         },
         parseSettings: function(settings) {
+            this.tearDownRegisteredSubViews();
             if (_.isObject(settings)) {
                 this.$('.settings-content').html('');
                 _.each(_.keys(settings), function(setting) {
