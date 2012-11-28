@@ -241,7 +241,7 @@ class DeletionTask(object):
         rpc.cast('naily', msg_delete)
 
 
-class DeletionClusterTask(object):
+class ClusterDeletionTask(object):
 
     @classmethod
     def execute(cls, task):

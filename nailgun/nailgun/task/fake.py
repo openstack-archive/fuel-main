@@ -109,7 +109,7 @@ class DeletionTask(object):
             notifier.notify("discover", "New fake node discovered")
 
 
-class DeletionClusterTask(object):
+class ClusterDeletionTask(object):
 
     @classmethod
     def execute(cls, task):

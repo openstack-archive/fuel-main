@@ -53,12 +53,12 @@ class DeploymentTaskManager(TaskManager):
         web.ctx.orm.add(supertask)
         web.ctx.orm.commit()
         if nodes_to_delete:
-            supertask.create_subtask("deletion")
+            supertask.create_subtask("node_deletion")
         if nodes_to_deploy:
             supertask.create_subtask("deployment")
         for subtask in supertask.subtasks:
             subtask.execute({
-                'deletion': tasks.DeletionTask,
+                'node_deletion': tasks.DeletionTask,
                 'deployment': tasks.DeploymentTask,
             }[subtask.name])
         return supertask
@@ -77,7 +77,7 @@ class VerifyNetworksTaskManager(TaskManager):
         return task
 
 
-class DeletionClusterManager(TaskManager):
+class ClusterDeletionManager(TaskManager):
 
     def execute(self):
         current_cluster_tasks = web.ctx.orm.query(Task).filter(
@@ -98,8 +98,8 @@ class DeletionClusterManager(TaskManager):
             web.ctx.orm.commit()
 
         logger.debug("Creating nodes deletion task")
-        task = Task(name="deletion", cluster=self.cluster)
+        task = Task(name="cluster_deletion", cluster=self.cluster)
         web.ctx.orm.add(task)
         web.ctx.orm.commit()
-        task.execute(tasks.DeletionClusterTask)
+        task.execute(tasks.ClusterDeletionTask)
         return task

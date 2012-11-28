@@ -120,29 +120,6 @@ class NailgunReceiver(object):
         cluster = task.cluster
 
         if task.status in ('ready',):
-            logger.debug("Removing cluster attributes")
-            attrs = cluster.attributes
-            if attrs:
-                cls.db.delete(attrs)
-                cls.db.commit()
-
-            logger.debug("Removing cluster notifications")
-            for notification in cluster.notifications:
-                cls.db.delete(notification)
-                cls.db.commit()
-
-            logger.debug("Removing cluster networks")
-            networks = cls.db.query(Network).filter_by(
-                cluster_id=cluster.id
-            )
-            for network in networks:
-                cls.db.delete(network)
-                cls.db.commit()
-
-            logger.debug("Removing cluster deletion task itself")
-            cls.db.delete(task)
-            cls.db.commit()
-
             logger.debug("Removing cluster itself")
             cluster_name = cluster.name
             cls.db.delete(cluster)

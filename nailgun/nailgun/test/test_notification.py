@@ -87,7 +87,7 @@ class TestNotification(BaseHandlers):
 
         task = Task(
             uuid=str(uuid.uuid4()),
-            name="deletion",
+            name="cluster_deletion",
             cluster_id=cluster.id
         )
         self.db.add(task)
@@ -116,7 +116,7 @@ class TestNotification(BaseHandlers):
 
         task = Task(
             uuid=str(uuid.uuid4()),
-            name="deletion",
+            name="cluster_deletion",
             cluster_id=cluster.id
         )
         self.db.add(task)

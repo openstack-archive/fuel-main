@@ -78,10 +78,14 @@ class Cluster(Base, BasicValidator):
     id = Column(Integer, primary_key=True)
     name = Column(Unicode(50), unique=True, nullable=False)
     release_id = Column(Integer, ForeignKey('releases.id'), nullable=False)
-    nodes = relationship("Node", backref="cluster")
-    tasks = relationship("Task", backref="cluster")
-    attributes = relationship("Attributes", uselist=False, backref="cluster")
-    notifications = relationship("Notification", backref="cluster")
+    nodes = relationship("Node", backref="cluster", cascade="delete")
+    tasks = relationship("Task", backref="cluster", cascade="delete")
+    attributes = relationship("Attributes", uselist=False,
+                              backref="cluster", cascade="delete")
+    notifications = relationship("Notification", backref="cluster",
+                                 cascade="delete")
+    networks = relationship("Network", backref="cluster",
+                            cascade="delete")
 
     @classmethod
     def validate(cls, data):
@@ -241,7 +245,8 @@ class IPAddr(Base):
 class Vlan(Base, BasicValidator):
     __tablename__ = 'vlan'
     id = Column(Integer, primary_key=True)
-    network = relationship("Network")
+    network = relationship("Network",
+                           backref=backref("vlan", cascade="delete"))
 
 
 class Network(Base, BasicValidator):
@@ -345,7 +350,8 @@ class Task(Base, BasicValidator):
         'super',
         'deploy',
         'deployment',
-        'deletion',
+        'node_deletion',
+        'cluster_deletion',
         'verify_networks'
     )
     id = Column(Integer, primary_key=True)

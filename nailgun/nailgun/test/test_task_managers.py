@@ -12,7 +12,7 @@ settings.update({
 import nailgun
 from nailgun.test.base import BaseHandlers
 from nailgun.test.base import reverse
-from nailgun.api.models import Cluster, Attributes, IPAddr, Task
+from nailgun.api.models import Cluster, Attributes, IPAddr, Task, Notification
 
 
 class TestTaskManagers(BaseHandlers):
@@ -62,9 +62,22 @@ class TestTaskManagers(BaseHandlers):
                 kwargs={'cluster_id': cluster['id']}),
             headers=self.default_headers
         )
-        self.assertEquals(200, resp.status)
-        response = json.loads(resp.body)
-        uuid = response['uuid']
-        task = self.db.query(Task).filter_by(uuid=uuid).first()
-        self.assertEquals(task.name, 'deletion')
-        self.assertIn(task.status, ('running', 'ready'))
+        self.assertEquals(202, resp.status)
+
+        # As far as DELETE method in ClusterHandler launches
+        # asynchronous task which deletes cluster and all
+        # related items including tasks, so we cannot be
+        # sure that the cluster deletion task itself is still alive
+        # However we can check "cluster deletion is done" notification
+        task = self.db.query(Task)\
+            .filter(Task.name == "cluster_deletion")\
+            .filter(Task.cluster_id == cluster["id"])\
+            .first()
+        notification = self.db.query(Notification)\
+            .filter(Notification.topic == "done")\
+            .filter(Notification.message == "Cluster %s and all cluster "
+                    "nodes are deleted" % cluster["name"])
+        if task:
+            self.assertIn(task.status, ('running', 'ready'))
+        else:
+            self.assertIsNotNone(notification)

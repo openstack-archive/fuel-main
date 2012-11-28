@@ -23,7 +23,7 @@ from nailgun.api.handlers.base import JSONHandler
 from nailgun.api.handlers.node import NodeHandler
 from nailgun.api.handlers.tasks import TaskHandler
 from nailgun.task.manager import DeploymentTaskManager
-from nailgun.task.manager import DeletionClusterManager
+from nailgun.task.manager import ClusterDeletionManager
 from nailgun.task.manager import VerifyNetworksTaskManager
 from nailgun.task.errors import FailedProvisioning
 from nailgun.task.errors import DeploymentAlreadyStarted
@@ -96,7 +96,7 @@ class ClusterHandler(JSONHandler):
         if not cluster:
             return web.notfound()
 
-        task_manager = DeletionClusterManager(cluster_id=cluster.id)
+        task_manager = ClusterDeletionManager(cluster_id=cluster.id)
         try:
             logger.debug('Trying to execute cluster deletion task')
             task = task_manager.execute()
@@ -106,9 +106,9 @@ class ClusterHandler(JSONHandler):
                         'cluster deletion task: %s' % str(e))
             raise web.badrequest(str(e))
 
-        return json.dumps(
-            TaskHandler.render(task),
-            indent=4
+        raise web.webapi.HTTPError(
+            status="202 Accepted",
+            data=""
         )
 
 
