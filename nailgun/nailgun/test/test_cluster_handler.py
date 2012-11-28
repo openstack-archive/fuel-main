@@ -14,8 +14,7 @@ class TestHandlers(BaseHandlers):
             reverse('ClusterHandler', kwargs={'cluster_id': cluster.id}),
             headers=self.default_headers
         )
-        self.assertEquals(204, resp.status)
-        self.assertEquals('', resp.body)
+        self.assertEquals(200, resp.status)
 
     def test_cluster_get(self):
         cluster = self.create_default_cluster()
