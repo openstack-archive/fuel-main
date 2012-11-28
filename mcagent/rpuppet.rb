@@ -1,4 +1,4 @@
-$LOAD_PATH << File.join(File.dirname(__FILE__))
+$LOAD_PATH << File.join(File.dirname(__FILE__))  # So we can load rapply & node_indirector.rb from the same dir
 require 'puppet/util/command_line'
 require 'puppet/application'
 require 'puppet'
@@ -22,19 +22,21 @@ module MCollective
     class Rpuppet < RPC::Agent
 
       action "run" do
+        # mco rpc rpuppet run data='{"environment": "production", "classes": {"nailytest::test_rpuppet": {"rpuppet": ["controller"]}}}' -v
         validate :data, String
         config = JSON.parse(request[:data])
         Log.info("Received configuration: #{config.inspect}")
         Astute.set_config(config)
 
         `echo > /opt/site.pp`
-        cmdline = Puppet::Util::CommandLine.new("puppet", ["apply", "/opt/site.pp", "--modulepath=/opt/fuel", "--debug", "--logdest=/var/log/puppetrun.log"])
+        cmdline = Puppet::Util::CommandLine.new("puppet", ["apply", "/opt/site.pp", "--modulepath=/opt/fuel", "--debug", "--logdest=/var/log/puppetrun.log", "--node_terminus=exec"])
         Puppet.settings.initialize_global_settings(cmdline.args) unless Puppet.settings.global_defaults_initialized?
 
         app = Puppet::Application::Rapply.new(cmdline)
 
         # TODO: what are these plugins for ??
         #Puppet::Plugins.on_application_initialization(:application_object => self)
+        Log.info("Running puppet...")
         app.run
       end
     end

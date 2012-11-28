@@ -1,16 +1,19 @@
+# NOTE(mihgen): this file is modified copy of puppet's indirector/node/exec.rb
 require 'puppet/node'
 require 'puppet/indirector/exec'
 
+# It must be configured in puppet.conf (or passed in cmdline) 'node_terminus = exec' to make use of it
 class Puppet::Node::Exec < Puppet::Indirector::Exec
-  desc "Call an external program to get node information.  See
-  the [External Nodes](http://docs.puppetlabs.com/guides/external_nodes.html) page for more information."
+  desc "Obtain information about node from our orchestrator - Astute"
   include Puppet::Util
 
   # Look for external node definitions.
   def find(request)
-    puts "******************************************* HERE HERE HERE HERE *****************************"
     node = Puppet::Node.new(request.key)
+
     result = Astute.get_config
+    Puppet.info("Obtained configuration from Astute: #{result.inspect}")
+
     %w{parameters classes environment}.each do |param|
       if value = result[param]
         node.send(param.to_s + "=", value)

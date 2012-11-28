@@ -1,3 +1,4 @@
+# NOTE(mihgen): this file is modified copy of puppet's lib/puppet/application/apply.rb
 require 'yaml'
 
 require 'puppet/application'
@@ -31,7 +32,7 @@ class Puppet::Application::Rapply < Puppet::Application
       facts.name = Puppet[:node_name_value]
     end
 
-    # Find our Node
+    # Find our Node. It's expected it will look for it in our terminus (node_indirector.rb)
     unless node = Puppet::Node.indirection.find(Puppet[:node_name_value])
       raise "Could not find node #{Puppet[:node_name_value]}"
     end
