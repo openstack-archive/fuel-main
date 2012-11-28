@@ -2,15 +2,15 @@
 <div class="cluster-name"><%- cluster.get('name') %></div>
 <div class="cluster-hardware">
   <div class="row-fluid">
-    <div class="span4">Nodes:</div>
-    <div class="span6"><%= nodes.length %></div>
+    <div class="span6">Nodes:</div>
+    <div class="span4"><%= nodes.length %></div>
     <% if (nodes.length) { %>
-      <div class="span4">CPU cores:</div>
-      <div class="span6"><%= nodes.resources('cores') %></div>
-      <div class="span4">RAM:</div>
-      <div class="span6"><%= nodes.resources('ram').toFixed(1) %> GB</div>
-      <div class="span4">HDD:</div>
-      <div class="span6"><%= nodes.resources('hdd').toFixed(1) %> TB</div>
+      <div class="span6">CPU (cores):</div>
+      <div class="span4"><%= nodes.resources('cores') %></div>
+      <div class="span6">RAM (GB):</div>
+      <div class="span4"><%= nodes.resources('ram').toFixed(1) %></div>
+      <div class="span6">HDD (TB):</div>
+      <div class="span4"><%= nodes.resources('hdd').toFixed(1) %></div>
     <% } %>
   </div>
 </div>
