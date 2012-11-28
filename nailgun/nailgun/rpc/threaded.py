@@ -111,6 +111,59 @@ class NailgunReceiver(object):
         cls.__update_task_status(task_uuid, status, progress, error_msg)
 
     @classmethod
+    def remove_cluster_resp(cls, **kwargs):
+        task_uuid = kwargs.get('task_uuid')
+
+        cls.remove_nodes_resp(**kwargs)
+
+        task = cls.db.query(Task).filter_by(uuid=task_uuid).first()
+        cluster = task.cluster
+
+        if task.status in ('ready',):
+            logger.debug("Removing cluster attributes")
+            attrs = cluster.attributes
+            if attrs:
+                cls.db.delete(attrs)
+                cls.db.commit()
+
+            logger.debug("Removing cluster notifications")
+            for notification in cluster.notifications:
+                cls.db.delete(notification)
+                cls.db.commit()
+
+            logger.debug("Removing cluster networks")
+            networks = cls.db.query(Network).filter_by(
+                cluster_id=cluster.id
+            )
+            for network in networks:
+                cls.db.delete(network)
+                cls.db.commit()
+
+            logger.debug("Removing cluster deletion task itself")
+            cls.db.delete(task)
+            cls.db.commit()
+
+            logger.debug("Removing cluster itself")
+            cluster_name = cluster.name
+            cls.db.delete(cluster)
+            cls.db.commit()
+
+            notifier.notify(
+                "done",
+                "Cluster %s and all cluster nodes are deleted" % cluster_name,
+                db=cls.db
+            )
+
+        elif task.status in ('error',):
+            notifier.notify(
+                "error",
+                task.error,
+                cluster.id,
+                cls.db
+            )
+
+
+    @classmethod
     def deploy_resp(cls, **kwargs):
         logger.info("RPC method deploy_resp received: %s" % kwargs)
         task_uuid = kwargs.get('task_uuid')

@@ -16,6 +16,8 @@ from nailgun.api.models import Node
 from nailgun.api.models import Release
 from nailgun.api.models import Cluster
 from nailgun.api.models import Notification
+from nailgun.api.models import Attributes
+from nailgun.api.models import Network
 
 from nailgun.api.urls import urls
 from nailgun.wsgi import build_app

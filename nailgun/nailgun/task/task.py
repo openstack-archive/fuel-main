@@ -207,7 +207,7 @@ mco_enable=1
 class DeletionTask(object):
 
     @classmethod
-    def execute(self, task):
+    def execute(self, task, respond_to='remove_nodes_resp'):
         nodes_to_delete = []
         for node in task.cluster.nodes:
             if node.pending_deletion:
@@ -217,20 +217,35 @@ class DeletionTask(object):
                 })
 
         if nodes_to_delete:
+            logger.debug("There are nodes to delete")
             pd = Cobbler(settings.COBBLER_URL,
-                         settings.COBBLER_USER, settings.COBBLER_PASSWORD)
+                         settings.COBBLER_USER,
+                         settings.COBBLER_PASSWORD
+            )
             for node in nodes_to_delete:
-                pd.remove_system(TaskHelper.slave_name_by_id(node['id']))
+                slave_name = TaskHelper.slave_name_by_id(node['id'])
+                if pd.system_exists(slave_name):
+                    logger.debug("Removing system "
+                                 "from cobbler: %s" % slave_name)
+                    pd.remove_system(slave_name)
 
         msg_delete = {
             'method': 'remove_nodes',
-            'respond_to': 'remove_nodes_resp',
+            'respond_to': respond_to,
             'args': {
                 'task_uuid': task.uuid,
                 'nodes': nodes_to_delete
             }
         }
+        logger.debug("Calling rpc remove_nodes method")
         rpc.cast('naily', msg_delete)
+
+
+class DeletionClusterTask(object):
+
+    @classmethod
+    def execute(cls, task):
+        DeletionTask.execute(task, 'remove_cluster_resp')
 
 
 class VerifyNetworksTask(object):

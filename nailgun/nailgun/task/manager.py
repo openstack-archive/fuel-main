@@ -9,6 +9,7 @@ import web
 from nailgun.settings import settings
 from nailgun.api.models import Cluster
 from nailgun.api.models import Task
+from nailgun.api.models import Network
 from nailgun.task.errors import DeploymentAlreadyStarted, WrongNodeStatus
 
 from nailgun.task import task as original_tasks
@@ -73,4 +74,32 @@ class VerifyNetworksTaskManager(TaskManager):
         web.ctx.orm.add(task)
         web.ctx.orm.commit()
         task.execute(tasks.VerifyNetworksTask)
+        return task
+
+
+class DeletionClusterManager(TaskManager):
+
+    def execute(self):
+        current_cluster_tasks = web.ctx.orm.query(Task).filter(
+            Task.cluster == self.cluster
+        )
+
+        logger.debug("Removing cluster tasks")
+        for task in current_cluster_tasks:
+            for subtask in task.subtasks:
+                web.ctx.orm.delete(subtask)
+            web.ctx.orm.delete(task)
+            web.ctx.orm.commit()
+
+        logger.debug("Labeling cluster nodes to delete")
+        for node in self.cluster.nodes:
+            node.pending_deletion = True
+            web.ctx.orm.add(node)
+            web.ctx.orm.commit()
+
+        logger.debug("Creating nodes deletion task")
+        task = Task(name="deletion", cluster=self.cluster)
+        web.ctx.orm.add(task)
+        web.ctx.orm.commit()
+        task.execute(tasks.DeletionClusterTask)
         return task

@@ -23,6 +23,7 @@ from nailgun.api.handlers.base import JSONHandler
 from nailgun.api.handlers.node import NodeHandler
 from nailgun.api.handlers.tasks import TaskHandler
 from nailgun.task.manager import DeploymentTaskManager
+from nailgun.task.manager import DeletionClusterManager
 from nailgun.task.manager import VerifyNetworksTaskManager
 from nailgun.task.errors import FailedProvisioning
 from nailgun.task.errors import DeploymentAlreadyStarted
@@ -87,18 +88,27 @@ class ClusterHandler(JSONHandler):
         )
 
     def DELETE(self, cluster_id):
+        web.header('Content-Type', 'application/json')
+
         cluster = web.ctx.orm.query(Cluster).filter(
             Cluster.id == cluster_id
         ).first()
         if not cluster:
             return web.notfound()
-        for node in cluster.nodes:
-            node.role = None
-        web.ctx.orm.delete(cluster)
-        web.ctx.orm.commit()
-        raise web.webapi.HTTPError(
-            status="204 No Content",
-            data=""
+
+        task_manager = DeletionClusterManager(cluster_id=cluster.id)
+        try:
+            logger.debug('Trying to execute cluster deletion task')
+            task = task_manager.execute()
+            logger.debug('Cluster deletion task: %s' % task.uuid)
+        except Exception as e:
+            logger.warn('Error while execution '
+                        'cluster deletion task: %s' % str(e))
+            raise web.badrequest(str(e))
+
+        return json.dumps(
+            TaskHandler.render(task),
+            indent=4
         )
 
 

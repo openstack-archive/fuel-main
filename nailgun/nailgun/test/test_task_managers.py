@@ -34,7 +34,7 @@ class TestTaskManagers(BaseHandlers):
         supertask_uuid = response['uuid']
         supertask = self.db.query(Task).filter_by(uuid=supertask_uuid).first()
         self.assertEquals(supertask.name, 'deploy')
-        self.assertEquals(supertask.status, 'running')
+        self.assertIn(supertask.status, ('running', 'ready'))
         self.assertEquals(len(supertask.subtasks), 2)
 
     def test_network_verify_task_managers(self):
@@ -52,4 +52,20 @@ class TestTaskManagers(BaseHandlers):
         task_uuid = response['uuid']
         task = self.db.query(Task).filter_by(uuid=task_uuid).first()
         self.assertEquals(task.name, 'verify_networks')
-        self.assertEquals(task.status, 'running')
+        self.assertIn(task.status, ('running', 'ready'))
+
+    def test_deletion_cluster_task_manager(self):
+        cluster = self.create_cluster_api()
+        resp = self.app.delete(
+            reverse(
+                'ClusterHandler',
+                kwargs={'cluster_id': cluster['id']}),
+            headers=self.default_headers
+        )
+        self.assertEquals(200, resp.status)
+        response = json.loads(resp.body)
+        uuid = response['uuid']
+        task = self.db.query(Task).filter_by(uuid=uuid).first()
+        self.assertEquals(task.name, 'deletion')
+        self.assertIn(task.status, ('running', 'ready'))
+

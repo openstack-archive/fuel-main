@@ -75,7 +75,7 @@ class DeploymentTask(object):
 class DeletionTask(object):
 
     @classmethod
-    def execute(self, task):
+    def execute(self, task, respond_to='remove_nodes_resp'):
         nodes_to_delete = []
         nodes_to_restore = []
         for node in task.cluster.nodes:
@@ -99,12 +99,21 @@ class DeletionTask(object):
             'nodes': nodes_to_delete,
             'status': 'ready'
         }
-        receiver.remove_nodes_resp(**kwargs)
+
+        resp_method = getattr(receiver, respond_to)
+        resp_method(**kwargs)
 
         for node in nodes_to_restore:
             web.ctx.orm.add(node)
             web.ctx.orm.commit()
             notifier.notify("discover", "New fake node discovered")
+
+
+class DeletionClusterTask(object):
+
+    @classmethod
+    def execute(cls, task):
+        DeletionTask.execute(task, 'remove_cluster_resp')
 
 
 class VerifyNetworksTask(object):

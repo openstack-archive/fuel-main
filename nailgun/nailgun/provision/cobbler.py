@@ -137,6 +137,12 @@ class Cobbler:
     def remove_system(self, obj_name):
         return self.remove_item('system', obj_name)
 
+    def item_exists(self, what, obj_name):
+        return self.remote.has_item(what, obj_name)
+
+    def system_exists(self, obj_name):
+        return self.item_exists('system', obj_name)
+
     def _item_id_if_exists(self, what, obj_name):
         try:
             if self.remote.has_item(what, obj_name):

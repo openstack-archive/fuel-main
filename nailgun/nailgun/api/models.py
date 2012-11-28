@@ -341,7 +341,7 @@ class Task(Base, BasicValidator):
         'running',
         'error'
     )
-    TASK_TYPES = (
+    TASK_NAMES = (
         'super',
         'deploy',
         'deployment',
@@ -352,7 +352,7 @@ class Task(Base, BasicValidator):
     cluster_id = Column(Integer, ForeignKey('clusters.id'))
     uuid = Column(String(36), nullable=False,
                   default=lambda: str(uuid.uuid4()))
-    name = Column(Enum(*TASK_TYPES), nullable=False, default='super')
+    name = Column(Enum(*TASK_NAMES), nullable=False, default='super')
     error = Column(Text)
     status = Column(Enum(*TASK_STATUSES), nullable=False, default='running')
     progress = Column(Integer)
@@ -369,10 +369,8 @@ class Task(Base, BasicValidator):
         if not name:
             raise ValueError("Subtask name not specified")
 
-        task = Task(
-            name=name,
-            cluster=self.cluster
-        )
+        task = Task(name=name, cluster=self.cluster)
+
         self.subtasks.append(task)
         web.ctx.orm.commit()
         return task

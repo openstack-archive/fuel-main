@@ -79,3 +79,63 @@ class TestNotification(BaseHandlers):
 
         self.assertEquals(notification.status, 'unread')
         self.assertEquals(notification.topic, 'discover')
+
+    def test_notification_delete_cluster_done(self):
+        cluster = self.create_default_cluster()
+        cluster_name = cluster.name
+        receiver = threaded.NailgunReceiver()
+
+        task = Task(
+            uuid=str(uuid.uuid4()),
+            name="deletion",
+            cluster_id=cluster.id
+        )
+        self.db.add(task)
+        self.db.commit()
+
+        kwargs = {
+            'task_uuid': task.uuid,
+            'status': 'ready',
+        }
+
+        receiver.remove_cluster_resp(**kwargs)
+
+        notification = self.db.query(Notification).first()
+
+        self.assertEqual(notification.status, "unread")
+        self.assertEqual(notification.topic, "done")
+        self.assertEqual(
+            notification.message,
+            "Cluster %s and all cluster nodes "
+            "are deleted" % cluster_name
+        )
+
+    def test_notification_delete_cluster_failed(self):
+        cluster = self.create_default_cluster()
+        receiver = threaded.NailgunReceiver()
+
+        task = Task(
+            uuid=str(uuid.uuid4()),
+            name="deletion",
+            cluster_id=cluster.id
+        )
+        self.db.add(task)
+        self.db.commit()
+
+        kwargs = {
+            'task_uuid': task.uuid,
+            'status': 'error',
+            'error': 'Cluster deletion fake error'
+        }
+
+        receiver.remove_cluster_resp(**kwargs)
+
+        notification = self.db.query(Notification).first()
+
+        self.assertEqual(notification.status, "unread")
+        self.assertEqual(notification.topic, "error")
+        self.assertEqual(notification.cluster_id, cluster.id)
+        self.assertEqual(
+            notification.message,
+            "Cluster deletion fake error"
+        )
