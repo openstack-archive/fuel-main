@@ -48,7 +48,7 @@
   <div class="node-hardware">
     <ul>
       <li>CPU: <%= _.isNumber(node.resource('cores')) ? node.resource('cores') : '?' %></li>
-      <li>HDD: <%= _.isNumber(node.resource('hdd')) ? node.resource('hdd').toFixed(2) : '?' %> TB</li>
+      <li>HDD: <%= _.isNumber(node.resource('hdd')) ? node.resource('hdd').toFixed(1) : '?' %> TB</li>
       <li>RAM: <%= _.isNumber(node.resource('ram')) ? node.resource('ram').toFixed(1) : '?' %> GB</li>
     </ul>
   </div>

@@ -29,7 +29,6 @@ class TestHandlers(BaseHandlers):
         self.assertEquals(node.info['cores'], response['info']['cores'])
         self.assertEquals(node.info['hdd'], response['info']['hdd'])
         self.assertEquals(node.info['ram'], response['info']['ram'])
-        self.assertEquals(node.info['cpu'], response['info']['cpu'])
 
     def test_node_creation_with_id(self):
         node_id = '080000000003'

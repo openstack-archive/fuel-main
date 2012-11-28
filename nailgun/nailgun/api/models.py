@@ -155,10 +155,8 @@ class Node(Base, BasicValidator):
             result['ram'] = None
 
         try:
-            result['cpu'] = self.meta['cpu']['real']
             result['cores'] = self.meta['cpu']['total']
         except (KeyError, ValueError, TypeError):
-            result['cpu'] = None
             result['cores'] = None
 
         # FIXME: disk space calculating may be wrong
