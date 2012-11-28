@@ -1,4 +1,6 @@
 # NOTE(mihgen): this file is modified copy of puppet's indirector/node/exec.rb
+# See more about node terminus here: http://rcrowley.org/talks/sv-puppet-2011-01-11/#47
+# and http://www.masterzen.fr/2011/12/11/the-indirector-puppet-extensions-points-3/
 require 'puppet/node'
 require 'puppet/indirector/exec'
 

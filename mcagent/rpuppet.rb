@@ -28,8 +28,8 @@ module MCollective
         Log.info("Received configuration: #{config.inspect}")
         Astute.set_config(config)
 
-        `echo > /opt/site.pp`
-        cmdline = Puppet::Util::CommandLine.new("puppet", ["apply", "/opt/site.pp", "--modulepath=/opt/fuel", "--debug", "--logdest=/var/log/puppetrun.log", "--node_terminus=exec"])
+        # /dev/null instead of empty site.pp required by puppet run
+        cmdline = Puppet::Util::CommandLine.new("puppet", ["apply", "/dev/null", "--modulepath=/opt/fuel", "--debug", "--logdest=/var/log/puppetrun.log", "--node_terminus=exec"])
         Puppet.settings.initialize_global_settings(cmdline.args) unless Puppet.settings.global_defaults_initialized?
 
         app = Puppet::Application::Rapply.new(cmdline)
