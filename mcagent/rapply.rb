@@ -19,7 +19,8 @@ class Puppet::Application::Rapply < Puppet::Application
   def main
     manifest = command_line.args.shift
     raise "Could not find file #{manifest}" unless ::File.exist?(manifest)
-    Puppet.warning("Only one file can be applied per run.  Skipping #{command_line.args.join(', ')}") if command_line.args.size > 0
+    Puppet.warning("Only one file can be applied per run. 
+                   Skipping #{command_line.args.join(', ')}") if command_line.args.size > 0
     Puppet[:manifest] = manifest
 
     unless Puppet[:node_name_fact].empty?
