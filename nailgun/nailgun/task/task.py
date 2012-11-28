@@ -221,7 +221,7 @@ class DeletionTask(object):
             pd = Cobbler(settings.COBBLER_URL,
                          settings.COBBLER_USER,
                          settings.COBBLER_PASSWORD
-            )
+                         )
             for node in nodes_to_delete:
                 slave_name = TaskHelper.slave_name_by_id(node['id'])
                 if pd.system_exists(slave_name):

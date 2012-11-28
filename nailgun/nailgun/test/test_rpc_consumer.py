@@ -246,32 +246,32 @@ class TestConsumer(BaseHandlers):
                   'nodes': [{'uid': node1.id},
                             {'uid': str(node2.id)}],
                   'error_nodes': []
-        }
+                  }
 
         receiver.remove_cluster_resp(**kwargs)
 
         nodes_db = self.db.query(Node)\
-          .filter_by(cluster_id=cluster['id']).all()
+            .filter_by(cluster_id=cluster['id']).all()
         self.assertEquals(len(nodes_db), 0)
 
         ip_db = self.db.query(IPAddr)\
-          .filter(IPAddr.node.in_([node1_id, node2_id])).all()
+            .filter(IPAddr.node.in_([node1_id, node2_id])).all()
         self.assertEquals(len(ip_db), 0)
 
         attrs_db = self.db.query(Attributes)\
-          .filter_by(cluster_id=cluster['id']).all()
+            .filter_by(cluster_id=cluster['id']).all()
         self.assertEquals(len(attrs_db), 0)
 
         nots_db = self.db.query(Notification)\
-          .filter_by(cluster_id=cluster['id']).all()
+            .filter_by(cluster_id=cluster['id']).all()
         self.assertEquals(len(nots_db), 0)
 
         nets_db = self.db.query(Network)\
-          .filter_by(cluster_id=cluster['id']).all()
+            .filter_by(cluster_id=cluster['id']).all()
         self.assertEquals(len(nets_db), 0)
 
         task_db = self.db.query(Task)\
-          .filter_by(cluster_id=cluster['id']).all()
+            .filter_by(cluster_id=cluster['id']).all()
         self.assertEquals(len(task_db), 0)
 
         cluster_db = self.db.query(Cluster).get(cluster['id'])
@@ -301,24 +301,24 @@ class TestConsumer(BaseHandlers):
                   'nodes': [{'uid': node1.id}],
                   'error_nodes': [{'uid': node1.id,
                                    'error': "RPC method failed"}],
-        }
+                  }
 
         receiver.remove_cluster_resp(**kwargs)
         self.db.refresh(task)
         self.assertEqual(task.status, "error")
 
         nodes_db = self.db.query(Node)\
-          .filter_by(cluster_id=cluster['id']).all()
+            .filter_by(cluster_id=cluster['id']).all()
         self.assertNotEqual(len(nodes_db), 0)
 
         attrs_db = self.db.query(Attributes)\
-          .filter_by(cluster_id=cluster['id']).all()
+            .filter_by(cluster_id=cluster['id']).all()
         self.assertNotEqual(len(attrs_db), 0)
 
         nots_db = self.db.query(Notification)\
-          .filter_by(cluster_id=cluster['id']).all()
+            .filter_by(cluster_id=cluster['id']).all()
         self.assertNotEqual(len(nots_db), 0)
 
         nets_db = self.db.query(Network)\
-          .filter_by(cluster_id=cluster['id']).all()
+            .filter_by(cluster_id=cluster['id']).all()
         self.assertNotEqual(len(nets_db), 0)

@@ -68,4 +68,3 @@ class TestTaskManagers(BaseHandlers):
         task = self.db.query(Task).filter_by(uuid=uuid).first()
         self.assertEquals(task.name, 'deletion')
         self.assertIn(task.status, ('running', 'ready'))
-

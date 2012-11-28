@@ -162,7 +162,6 @@ class NailgunReceiver(object):
                 cls.db
             )
 
-
     @classmethod
     def deploy_resp(cls, **kwargs):
         logger.info("RPC method deploy_resp received: %s" % kwargs)
