@@ -336,19 +336,16 @@ class Libvirt:
     def create_snapshot(self, node, name=None, description=None):
         if not name:
             name = str(int(time.time() * 100))
-
-        xml_file = tempfile.NamedTemporaryFile(delete=False)
-        snapshot_xml = XMLBuilder('domainsnapshot')
-        snapshot_xml.name(name)
-        if description:
-            snapshot_xml.description(description)
         logger.debug(
-            "Building snapshot with following XML:\n%s" % str(snapshot_xml))
-        xml_file.write(str(snapshot_xml))
-        xml_file.close()
-        self._virsh(['snapshot-create', node.id, xml_file.name])
-        os.unlink(xml_file.name)
-
+            "Building snapshot %s of %s" % (name, node.id))
+        command = [
+            'snapshot-create-as',
+            '--domain', node.id,
+            '--name', name,
+            ]
+        if description:
+            command += ['--description', description]
+        self._virsh(command)
         return name
 
     def revert_snapshot(self, node, snapshot_name=None):
