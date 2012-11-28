@@ -39,7 +39,7 @@
         "model": "nailgun.cluster",
         "fields": {
             "name": "Staging",
-            "type": "singlenode",
+            "type": "both",
             "release": 1
         }
     },

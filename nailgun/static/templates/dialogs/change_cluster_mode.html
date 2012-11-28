@@ -5,10 +5,10 @@
 <div class="modal-body">
   <form class="form-horizontal" onsubmit="return false">
     <fieldset>
-      <div class="control-group">
-        <label class="control-label">Deployment Mode</label>
-        <div class="controls">
-          <% var modes = {'simple': 'Simple mode', 'ha': 'HA mode'} %>
+      <div class="simple-mode-title">Deployment Mode:</div>
+      <div class="control-group mode-control-group">
+        <div class="controls controlls-without-labels">
+          <% var modes = {'singlenode': 'Single-node', 'simple': 'Multi-node', 'ha': 'Multi-node with HA'} %>
           <% _.each(cluster.availableModes(), function(mode) { %>
             <label class="radio">
               <input type="radio" name="mode" value="<%= mode %>" <%= cluster.get('mode') == mode ? 'checked' : '' %> <%= cluster.get('nodes').nodesAfterDeployment().length ? 'disabled' : '' %>>
@@ -16,20 +16,41 @@
             </label>
           <% }) %>
         </div>
-      </div>
-      <div class="control-group redundancy-control-group hide">
-        <label class="control-label">Number of controllers</label>
-        <div class="controls">
-          <input type="number" class="input-mini" name="redundancy" maxlength="1" value="<%= cluster.get('redundancy') || 2 %>">
-          <span class="help-inline"></span>
+        <div class="pull-right-help">
+          <span class="help-block hide mode-description help-mode-singlenode">
+            This simple configuration is for you if you want to give OpenStack a test drive. You will get a fully functional private cloud, with all OpenStack components installed on one node. The node will also act as a compute node.
+          </span>
+          <span class="help-block hide mode-description help-mode-simple">
+            In this configuration OpenStack controller is deployed separately from compute and nodes. The mode assumes presence of 1 controller node and 1 or more compute/storage nodes. You can add more nodes as you go and scale your cloud.
+          </span>
+          <span class="help-block hide mode-description help-mode-ha">
+            This configuration requires multiple OpenStack controllers (3+) and provides high availability for all OpenStack components, including MySQL/Galera, RabbitMQ, Quantum, Cinder, as well as OpenStack API services. Select this configuration if you want to build a production-grade OpenStack cloud with 6 nodes or more.
+          </span>
         </div>
       </div>
-      <span class="help-block hide help-mode-simple">
-        Description of simple mode
-      </span>
-      <span class="help-block hide help-mode-ha">
-        Description of ha mode
-      </span>
+      <div class="simple-type-title hide">Deployment Type:</div>
+      <div class="control-group type-control-group hide">
+        <div class="controls controlls-without-labels">
+          <% var types = {'compute': 'Compute only', 'storage': 'Storage only', 'both': 'Compute and storage'} %>
+          <% _.each(cluster.availableTypes(), function(type) { %>
+            <label class="radio">
+              <input type="radio" name="type" value="<%= type %>" <%= cluster.get('type') == type ? 'checked' : '' %> <%= cluster.canChangeType(type) ? '' : 'disabled' %>>
+              <%= types[type] || type %>
+            </label>
+          <% }) %>
+        </div>
+        <div class="pull-right-help">
+          <span class="help-block hide type-description help-type-compute">
+            Description of compute only type
+          </span>
+          <span class="help-block hide type-description help-type-storage">
+            Description of storage only type
+          </span>
+          <span class="help-block hide type-description help-type-both">
+            Description of compute+storage type
+          </span>
+        </div>
+      </div>
     </fieldset>
   </form>
 </div>

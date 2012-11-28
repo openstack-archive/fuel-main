@@ -436,7 +436,7 @@ function(models, dialogViews, clusterPageTemplate, deploymentResultTemplate, dep
         },
         addNodes: function() {
             var limit = null;
-            if (this.size) {
+            if (this.size && this.__parentView.model.get('mode') != 'ha') {
                 limit = this.size - this.collection.nodesAfterDeployment().length;
                 if (limit <= 0) {
                     limit = 0;

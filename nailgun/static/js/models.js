@@ -28,13 +28,6 @@ define(function() {
             if (!attrs.release) {
                 errors.release = 'Please choose OpenStack release';
             }
-            if (attrs.mode == 'ha') {
-                if (_.isNaN(attrs.redundancy)) {
-                    errors.redundancy = 'Please enter integer number';
-                } else if (attrs.redundancy < 2 || attrs.redundancy > 9) {
-                    errors.redundancy = 'Please enter number between 2 and 9';
-                }
-            }
             return _.isEmpty(errors) ? null : errors;
         },
         task: function(taskName, status) {
@@ -48,36 +41,36 @@ define(function() {
             return this.get('nodes').hasChanges();
         },
         canChangeMode: function() {
-            return !this.task('deploy', 'running') && (this.get('mode') == 'ha' || !this.get('nodes').nodesAfterDeployment().length);
+            return !this.task('deploy', 'running') && (this.get('mode') != 'singlenode' || !this.get('nodes').nodesAfterDeployment().length);
         },
         canChangeType: function(type) {
             var canCheck = true;
             var cluster = this;
-            var clusterTypesToNodesRoles = {'both': [], 'compute': ['storage'], 'storage': ['compute'], 'singlenode': ['compute', 'storage']};
+            var clusterTypesToNodesRoles = {'both': [], 'compute': ['storage'], 'storage': ['compute']};
             _.each(clusterTypesToNodesRoles[type], function(nodeRole) {
                 if (_.filter(cluster.get('nodes').nodesAfterDeployment(), function(node) {return node.get('role') == nodeRole;}).length) {
                     canCheck = false;
                 }
             });
-            if (type == 'singlenode' && _.where(cluster.get('nodes').nodesAfterDeployment(), {'role': 'controller'}) > 1) {
+            if (_.where(cluster.get('nodes').nodesAfterDeployment(), {'role': 'controller'}) > 1) {
                 canCheck = false;
             }
             return canCheck;
         },
         availableModes: function() {
-            return ['simple', 'ha'];
+            return ['singlenode', 'simple', 'ha'];
         },
         availableTypes: function() {
-            return ['both', 'compute', 'storage', 'singlenode'];
+            return ['compute', 'storage', 'both'];
         },
         availableRoles: function() {
             var roles = [];
-            if (this.get('type') == 'storage') {
+            if (this.get('mode') == 'singlenode') {
+                roles = ['controller'];
+            } else if (this.get('type') == 'storage') {
                 roles = ['controller', 'storage'];
             } else if (this.get('type') == 'compute') {
                 roles = ['controller', 'compute'];
-            } else if (this.get('type') == 'singlenode') {
-                roles = ['controller'];
             } else {
                 roles = ['controller', 'compute', 'storage'];
             }

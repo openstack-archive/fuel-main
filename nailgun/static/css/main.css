@@ -1903,6 +1903,7 @@ h6.page-title {
 
 }
 
+
 .node-image-outline {
   display: block;
   width: 204px;
@@ -1911,4 +1912,38 @@ h6.page-title {
   background: url(../img/node_image_outline.png) no-repeat top left;
   margin-top: 10px;
   margin-bottom: 20px;
+}
+
+.simple-mode-title, .simple-type-title {
+  padding: 0 20px 0 15px;
+}
+
+.mode-description, .type-description {
+  display: block;
+  padding: 0;
+  overflow: hidden;
+  text-align: justify;
+  margin-top: 9px !important;
+  font-size: 12px !important;
+  line-height: 14px !important;
+}
+
+.controlls-without-labels {
+  margin: 0;
+  margin-left: 15px !important;
+  width: 30%;
+  float: left;
+  height: 90px;
+}
+
+.mode-control-group, .type-control-group {
+  margin-bottom: 0 !important;
+}
+
+.pull-right-help {
+  margin: 0;
+  margin-left: 30%;
+  height: 90px;
+  padding: 0 10px 0 10px;
+  position: relative;
 }

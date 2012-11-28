@@ -3,10 +3,9 @@ define(
     'models',
     'text!templates/dialogs/create_cluster.html',
     'text!templates/dialogs/change_cluster_mode.html',
-    'text!templates/dialogs/change_cluster_type.html',
     'text!templates/dialogs/display_changes.html'
 ],
-function(models, createClusterDialogTemplate, changeClusterModeDialogTemplate, changeClusterTypeDialogTemplate, displayChangesDialogTemplate) {
+function(models, createClusterDialogTemplate, changeClusterModeDialogTemplate, displayChangesDialogTemplate) {
     'use strict';
 
     var views = {};
@@ -86,7 +85,8 @@ function(models, createClusterDialogTemplate, changeClusterModeDialogTemplate, c
     views.ChangeClusterModeDialog = views.Dialog.extend({
         template: _.template(changeClusterModeDialogTemplate),
         events: {
-            'change input[name=mode]': 'toggleControls',
+            'change input[name=mode]': 'toggleTypes',
+            'change input[name=type]': 'toggleTypeDescription',
             'click .apply-btn': 'apply'
         },
         apply: function() {
@@ -100,46 +100,27 @@ function(models, createClusterDialogTemplate, changeClusterModeDialogTemplate, c
                 }, this);
             }, this);
             var mode = this.$('input[name=mode]:checked').val();
-            var redundancy = mode == 'ha' ? parseInt(this.$('input[name=redundancy]').val(), 10) : null;
-            cluster.set({mode: mode, redundancy: redundancy});
+            var type = this.$('input[name=type]:checked').val();
+            var redundancy = mode == 'ha' ? 3 : null;
+            cluster.set({mode: mode, type: type, redundancy: redundancy});
             if (valid) {
-                cluster.update(['mode', 'redundancy']);
+                cluster.update(['mode', 'type', 'redundancy']);
                 this.$el.modal('hide');
             }
         },
-        toggleControls: function() {
-            this.$('.redundancy-control-group').toggleClass('hide', this.$('input[name=mode]:checked').val() != 'ha');
-            this.$('.help-block').addClass('hide');
+        toggleTypes: function() {
+            this.$('.type-control-group, .simple-type-title').toggleClass('hide', this.$('input[name=mode]:checked').val() == 'singlenode');
+            this.$('.mode-description').addClass('hide');
             this.$('.help-mode-' + this.$('input[name=mode]:checked').val()).removeClass('hide');
         },
-        render: function() {
-            this.constructor.__super__.render.call(this, {cluster: this.model});
-            this.toggleControls();
-            return this;
-        }
-    });
-
-    views.ChangeClusterTypeDialog = views.Dialog.extend({
-        template: _.template(changeClusterTypeDialogTemplate),
-        events: {
-            'change input[name=type]': 'toggleDescription',
-            'click .apply-btn': 'apply'
-        },
-        apply: function() {
-            var options = {type: this.$('input[name=type]:checked').val()};
-            if (options.type == 'singlenode') {
-                options.mode = 'simple';
-            }
-            this.model.update(options);
-            this.$el.modal('hide');
-        },
-        toggleDescription: function() {
-            this.$('.help-block').addClass('hide');
+        toggleTypeDescription: function() {
+            this.$('.type-description').addClass('hide');
             this.$('.help-type-' + this.$('input[name=type]:checked').val()).removeClass('hide');
         },
         render: function() {
             this.constructor.__super__.render.call(this, {cluster: this.model});
-            this.toggleDescription();
+            this.toggleTypes();
+            this.toggleTypeDescription();
             return this;
         }
     });

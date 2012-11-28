@@ -70,10 +70,10 @@ class Release(Base, BasicValidator):
 
 class Cluster(Base, BasicValidator):
     __tablename__ = 'clusters'
-    TYPES = ('compute', 'storage', 'both', 'singlenode')
-    MODES = ('simple', 'ha')
+    TYPES = ('compute', 'storage', 'both')
+    MODES = ('singlenode', 'simple', 'ha')
     type = Column(Enum(*TYPES), nullable=False, default='both')
-    mode = Column(Enum(*MODES), nullable=False, default='simple')
+    mode = Column(Enum(*MODES), nullable=False, default='singlenode')
     redundancy = Column(Integer, nullable=True)
     id = Column(Integer, primary_key=True)
     name = Column(Unicode(50), unique=True, nullable=False)
@@ -103,10 +103,6 @@ class Cluster(Base, BasicValidator):
             release = web.ctx.orm.query(Release).get(d.get("release"))
             if not release:
                 raise web.webapi.badrequest(message="Invalid release id")
-        if d.get("mode") == "ha":
-            if not (isinstance(d.get("redundancy"), int) and
-                    2 <= d.get("redundancy") <= 9):
-                raise web.webapi.badrequest(message="Invalid redundancy")
         return d
 
 

@@ -2,14 +2,14 @@
   <div class="navbar-inner">
     <div class="summary-article"><b>Settings</b></div>
      <ul class="nav">
-      <% var modes = {'simple': 'Simple', 'ha': 'HA'} %>
-      <% var types = {'both': 'Compute and storage', 'compute': 'Compute only', 'storage': 'Storage only', 'singlenode': 'Single node'} %>
+      <% var modes = {'singlenode': 'Single-node', 'simple': 'Multi-node', 'ha': 'Multi-node with HA'} %>
+      <% var types = {'both': 'Compute and storage', 'compute': 'Compute only', 'storage': 'Storage only'} %>
       <li class="btn btn-link summary-settings-btn change-cluster-mode-btn <%= cluster.canChangeMode() ? '' : 'disabled' %>" <%= cluster.canChangeMode() ? 'rel="tooltip" data-title="Change cluster deployment mode"' : '' %>>
         <b>Deployment Mode: </b><%- modes[cluster.get('mode')] %>
       </li>
-      <li class="btn btn-link summary-settings-btn change-cluster-type-btn <%= cluster.task('deploy', 'running') ? 'disabled' : '' %>" <%= cluster.task('deploy', 'running') ? '' : 'rel="tooltip" data-title="Change cluster type"' %>>
+      <!--<li class="btn btn-link summary-settings-btn change-cluster-type-btn <%= cluster.task('deploy', 'running') ? 'disabled' : '' %>" <%= cluster.task('deploy', 'running') ? '' : 'rel="tooltip" data-title="Change cluster type"' %>>
         <b>Type: </b><%- types[cluster.get('type')] %>
-      </li>
+      </li>-->
       <li class="btn btn-link summary-settings-btn disabled">
         <b>Release: </b><%- cluster.get('release').get('name') %> <%- cluster.get('release').get('version') %>
       </li>
