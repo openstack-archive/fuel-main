@@ -516,6 +516,9 @@ h6.page-title {
 .manufacturer-supermicro {
   background: #efefef url(../img/node_manufacturer_logos.png) 0px -960px no-repeat;
 }
+.manufacturer-kvm {
+  background: #efefef url(../img/node_manufacturer_logos.png) 0px -1080px no-repeat;
+}
 .openstack {
   background: url(../img/cluster_logos.png) 0px 0px no-repeat;
   background-position: 168px 0px;
@@ -1892,9 +1895,20 @@ h6.page-title {
   border: none;
   background-image: none;
   /* opacity: 0.65; */
+  text-decoration: none;
   -webkit-box-shadow: inset 0 1px 0px rgba(255, 255, 255, 0);
      -moz-box-shadow: inset 0 1px 0px rgba(255, 255, 255, 0);
           box-shadow: inset 0 1px 0px rgba(255, 255, 255, 0);
   filter: alpha(opacity=65);
 
+}
+
+.node-image-outline {
+  display: block;
+  width: 204px;
+  height: 62px;
+  overflow: hidden;
+  background: url(../img/node_image_outline.png) no-repeat top left;
+  margin-top: 10px;
+  margin-bottom: 20px;
 }
