@@ -129,11 +129,10 @@ casper.then(function() {
         this.test.assertDoesntExist('.node-list .btn-add-nodes:not(.disabled)', 'All Add Node buttons are disabled');
         this.test.assertDoesntExist('.node-list .btn-delete-nodes:not(.disabled)', 'All Delete Node buttons are disabled');
         this.test.info('Waiting for deployment readiness...');
-        this.capture('progressbar.png');
     });
     this.test.assertSelectorDisappears('.deployment-control .progress', 'Deployment progress bar disappears', 15000);
     this.then(function() {
-        this.test.assertExists('.summary .change-cluster-type-btn:not(.disabled)', 'Cluster type is changeable again');
+        this.test.assertExists('.summary .change-cluster-mode-btn:not(.disabled)', 'Cluster mode is changeable');
         this.test.assertExists('.node-list .btn-add-nodes:not(.disabled)', 'Add Node buttons are enabled again');
         this.test.assertExists('.node-list .btn-delete-nodes:not(.disabled)', 'Delete Node buttons are enabled again');
         this.test.assertSelectorHasText('.task-result', 'Success', 'Message about successful deployment appeared');
