@@ -4,12 +4,30 @@
 </div>
 <div class="modal-body display-changes-dialog">
   <ul>
-    <% var warning = false %>
-    <% if (!cluster.hasChanges()) { %>
+    <% var warnings = {
+      'controller': 'You are about to delete the last remaining cloud controller and lose all data in the current OpenStack installation. Are you sure you want to proceed?',
+      'compute': 'Compute nodes are recommended for deployment',
+      'storage': 'Storage nodes are recommended for deployment',
+      'compute-storage': 'Compute and storage nodes are recommended for deployment',
+    } %>
+    <% var warning = null %>
+    <% var canDeploy = true %>
+    <% if (!cluster.hasChanges() && cluster.get('nodes').length) { %>
       <div>There are no any changes to deploy</div>
+      <% canDeploy = false %>
     <% } else { %>
       <% var roles = cluster.availableRoles() %>
-      <% if (!_.filter(cluster.get('nodes').nodesAfterDeployment(), function(node) {return node.get('role') == 'controller'}).length) warning = true %>
+      <% var size = cluster.get('mode') == 'ha' ? 3 : 1 %>
+      <% if (cluster.get('nodes').where({role: 'controller'}).length < size) { %>
+        <li>There must be at least <%= size %> controller node<%= size != 1 ? 's' : '' %></li>
+        <% canDeploy = false %>
+      <% } else {%>
+        <% _.each(roles, function(role) { %>
+          <% if (!_.filter(cluster.get('nodes').nodesAfterDeployment(), function(node) {return node.get('role') == role}).length) { %>
+            <% role == 'controller' ? warning = 'controller' : role == 'compute' ? warning = 'compute' : warning == 'compute' ? warning = 'compute-storage' : warning = 'storage' %>
+          <% } %>
+        <% }) %>
+      <% } %>
       <% var nodesToAdd = cluster.get('nodes').where({pending_addition: true}) %>
       <% if (nodesToAdd.length) { %>
         <li>Add nodes:
@@ -34,9 +52,11 @@
       <% } %>
     <% } %>
   </ul>
-  <div class="alert <%= warning ? '' : ' hide' %>">You are about to delete the last remaining cloud controller and lose all data in the current OpenStack installation. Are you sure you want to proceed?</div>
+  <% if (warning) { %>
+    <div class="alert"><%= warnings[warning] %></div>
+  <% } %>
 </div>
 <div class="modal-footer">
   <button class="btn" data-dismiss="modal">Cancel</button>
-  <button class="btn btn-<%= warning ? 'danger' : 'success' %> start-deployment-btn<%= cluster.hasChanges() ? '' : ' hide' %>">Start</button>
+  <button class="btn btn-<%= warning ? warning == 'controller' ? 'danger' : 'warning' : 'success' %> start-deployment-btn<%= canDeploy ? '' : ' disabled' %>">Start</button>
 </div>
