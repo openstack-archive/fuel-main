@@ -12,11 +12,10 @@ casper.loadPage('#cluster/1/nodes').waitForSelector('#tab-nodes > *');
 casper.then(function() {
     this.test.comment('Testing cluster page');
     this.test.assertExists('.summary .change-cluster-mode-btn:not(.disabled)', 'Cluster deployment mode is changeable');
-    this.test.assertExists('.summary .change-cluster-type-btn:not(.disabled)', 'Cluster type is changeable');
     this.test.assertDoesntExist('.node-list .btn-add-nodes.disabled', 'All Add Node buttons are enabled');
     this.test.assertDoesntExist('.node-list .btn-delete-nodes:not(.disabled)', 'All Delete Node buttons are disabled');
     this.test.assertExists('.node-list-controller .nodebox.nodeplaceholder', 'Placeholder for controller node presents');
-    this.test.assertEvalEquals(function() {return $('.node-list').length}, 3, 'Number of available roles is correct');
+    this.test.assertEvalEquals(function() {return $('.node-list').length}, 1, 'Number of available roles is correct');
 });
 
 casper.then(function() {
@@ -24,38 +23,29 @@ casper.then(function() {
     this.click('.summary .change-cluster-mode-btn');
     this.test.assertSelectorAppears('.modal', 'Cluster deployment mode dialog opens');
     this.then(function() {
-        this.test.assertExists('.modal input[type=radio][name=mode][value=simple]:checked', 'Simple deployment mode chosen');
+        this.test.assertExists('.modal input[type=radio][name=mode][value=singlenode]:checked', 'Singlenode deployment mode chosen');
         this.click('.modal input[type=radio][name=mode][value=ha]');
-        this.test.assertVisible('.modal input[name=redundancy]', 'Cluster redundancy input is visible if deployment mode is HA');
+        this.test.assertVisible('.modal .type-control-group', 'Cluster types radio group is visible if deployment mode is Multi-node with HA');
+        this.test.assertExists('.modal input[type=radio][name=type][value=both]:checked', 'Compute and storage type chosen');
+        this.click('.modal input[type=radio][name=type][value=compute]');
+        this.test.assertExists('.modal input[type=radio][name=type][value=compute]:checked', 'Compute cluster type has been chosen successfully');
         this.click('.modal .apply-btn');
     });
-    this.test.assertSelectorDisappears('.modal', 'Cluster deployment mode dialog closes after setting deployment mode to HA');
+    this.test.assertSelectorDisappears('.modal', 'Cluster deployment mode dialog closes after setting deployment mode to Multi-node with HA');
+    this.then(function() {
+        this.test.assertEvalEquals(function() {return $('.node-list').length}, 2, 'Number of available roles after mode change is correct');
+    });
     this.then(function() {
         this.click('.summary .change-cluster-mode-btn');
     });
     this.test.assertSelectorAppears('.modal', 'Cluster deployment mode dialog opens again');
     this.then(function() {
-        this.test.assertExists('.modal input[type=radio][name=mode][value=ha]:checked', 'HA deployment mode chosen');
+        this.test.assertExists('.modal input[type=radio][name=mode][value=ha]:checked', 'Multi-node with HA deployment mode chosen');
         this.click('.modal input[type=radio][name=mode][value=simple]');
-        this.test.assertNotVisible('.modal input[name=redundancy]', 'Cluster redundancy input is not visible if deployment mode is simple');
+        this.test.assertVisible('.modal .type-control-group', 'Cluster types radio group is visible if deployment mode is Multi-node');
         this.click('.modal .apply-btn');
     });
-    this.test.assertSelectorDisappears('.modal', 'Cluster deployment mode dialog closes after setting deployment mode to simple');
-});
-
-casper.then(function() {
-    this.test.comment('Testing cluster type dialog');
-    this.click('.summary .change-cluster-type-btn');
-    this.test.assertSelectorAppears('.modal', 'Cluster type dialog opens');
-    this.then(function() {
-        this.test.assertExists('.modal input[type=radio][name=type][value=both]:checked', 'Compute and storage type chosen');
-        this.click('.modal input[type=radio][name=type][value=compute]');
-        this.click('.modal .apply-btn');
-    });
-    this.test.assertSelectorDisappears('.modal', 'Cluster type dialog closes after setting type to Compute only');
-    this.then(function() {
-        this.test.assertEvalEquals(function() {return $('.node-list').length}, 2, 'Number of available roles after type change is correct');
-    });
+    this.test.assertSelectorDisappears('.modal', 'Cluster deployment mode dialog closes after setting deployment mode to Multi-node');
 });
 
 casper.then(function() {
@@ -136,12 +126,12 @@ casper.then(function() {
     this.test.assertSelectorDisappears('.modal', 'Deployment dialog closes after clicking Start Deployment');
     this.test.assertSelectorAppears('.deployment-control .progress', 'Deployment progress bar appears');
     this.then(function() {
-        this.test.assertExists('.summary .change-cluster-type-btn.disabled', 'Cluster type is not changeable');
         this.test.assertDoesntExist('.node-list .btn-add-nodes:not(.disabled)', 'All Add Node buttons are disabled');
         this.test.assertDoesntExist('.node-list .btn-delete-nodes:not(.disabled)', 'All Delete Node buttons are disabled');
         this.test.info('Waiting for deployment readiness...');
+        this.capture('progressbar.png');
     });
-    this.test.assertSelectorDisappears('.deployment-control .progress', 'Deployment progress bar disappears', 10000);
+    this.test.assertSelectorDisappears('.deployment-control .progress', 'Deployment progress bar disappears', 15000);
     this.then(function() {
         this.test.assertExists('.summary .change-cluster-type-btn:not(.disabled)', 'Cluster type is changeable again');
         this.test.assertExists('.node-list .btn-add-nodes:not(.disabled)', 'Add Node buttons are enabled again');
