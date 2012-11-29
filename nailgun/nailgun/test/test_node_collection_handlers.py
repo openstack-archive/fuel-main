@@ -81,7 +81,7 @@ class TestHandlers(BaseHandlers):
         self.assertEquals(resp.status, 201)
         node = self.db.query(Node).filter(Node.mac == 'ASDFAAASDFAA').one()
         response = json.loads(resp.body)
-        self.assertEquals('ready', response['status'])
+        self.assertEquals('discover', response['status'])
 
     def test_node_update(self):
         node = self.create_default_node()
