@@ -127,7 +127,7 @@ class Node(Base, BasicValidator):
     id = Column(Integer, primary_key=True)
     cluster_id = Column(Integer, ForeignKey('clusters.id'))
     name = Column(Unicode(100))
-    status = Column(Enum(*NODE_STATUSES), nullable=False, default='ready')
+    status = Column(Enum(*NODE_STATUSES), nullable=False, default='discover')
     meta = Column(JSON)
     mac = Column(String(17), nullable=False, unique=True)
     ip = Column(String(15))

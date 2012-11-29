@@ -164,6 +164,9 @@ $SNIPPET('ntp_to_masternode')
 # Let's not to use separate snippet for just one line of code. Complexity eats my time.
 echo 'flock -w 0 -o /var/lock/agent.lock -c "/opt/nailgun/bin/agent > /var/log/nailgun-agent.log 2>&1"' >> /etc/rc.local
 
+# It is for the internal nailgun using
+echo target > /etc/nailgun_systemtype
+
 # COBBLER EMBEDDED SNIPPET: 'authorized_keys'
 # PUTS authorized_keys file into /root/.ssh/authorized_keys
 $SNIPPET('authorized_keys')

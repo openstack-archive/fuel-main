@@ -206,7 +206,6 @@ class NodeAgent
     else
       fl = File.open("/etc/nailgun_systemtype", "w")
       fl.puts("target")
-      @node_state = "ready"
     end
   end
 
@@ -250,6 +249,7 @@ end
 
 agent = NodeAgent.new(logger, url)
 agent.update_state
+
 post_res = agent.post
 if post_res.status == 409:
   put_res = agent.put
