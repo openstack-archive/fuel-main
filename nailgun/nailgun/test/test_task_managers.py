@@ -73,11 +73,11 @@ class TestTaskManagers(BaseHandlers):
             .filter(Task.name == "cluster_deletion")\
             .filter(Task.cluster_id == cluster["id"])\
             .first()
-        notification = self.db.query(Notification)\
-            .filter(Notification.topic == "done")\
-            .filter(Notification.message == "Cluster %s and all cluster "
-                    "nodes are deleted" % cluster["name"])
         if task:
             self.assertIn(task.status, ('running', 'ready'))
         else:
+            notification = self.db.query(Notification)\
+                .filter(Notification.topic == "done")\
+                .filter(Notification.message == "Cluster %s and all cluster "
+                        "nodes are deleted" % cluster["name"])
             self.assertIsNotNone(notification)

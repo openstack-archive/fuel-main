@@ -16,6 +16,7 @@ from nailgun.api.models import Notification
 from nailgun.api.models import Attributes
 from nailgun.api.models import Network
 from nailgun.api.models import IPAddr
+from nailgun.api.models import Vlan
 
 
 class TestVerifyNetworks(BaseHandlers):
@@ -229,6 +230,12 @@ class TestConsumer(BaseHandlers):
         notification = self.create_default_notification(
             cluster_id=cluster['id']
         )
+        networks = self.db.query(Network)\
+            .filter_by(cluster_id=cluster['id']).all()
+
+        vlans = []
+        for net in networks:
+            vlans.append(net.vlan_id)
 
         receiver = threaded.NailgunReceiver()
 
@@ -257,6 +264,10 @@ class TestConsumer(BaseHandlers):
         ip_db = self.db.query(IPAddr)\
             .filter(IPAddr.node.in_([node1_id, node2_id])).all()
         self.assertEquals(len(ip_db), 0)
+
+        vlan_db = self.db.query(Vlan)\
+            .filter(Vlan.id.in_(vlans)).all()
+        self.assertEquals(len(vlan_db), 0)
 
         attrs_db = self.db.query(Attributes)\
             .filter_by(cluster_id=cluster['id']).all()

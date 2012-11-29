@@ -82,8 +82,13 @@ class Cluster(Base, BasicValidator):
     tasks = relationship("Task", backref="cluster", cascade="delete")
     attributes = relationship("Attributes", uselist=False,
                               backref="cluster", cascade="delete")
-    notifications = relationship("Notification", backref="cluster",
-                                 cascade="delete")
+    # We must keep all notifications even if cluster is removed.
+    # It is because we want user to be able to see
+    # the notification history so that is why we don't use
+    # cascade="delete" in this relationship
+    # During cluster deletion sqlalchemy engine will set null
+    # into cluster foreign key column of notification entity
+    notifications = relationship("Notification", backref="cluster")
     networks = relationship("Network", backref="cluster",
                             cascade="delete")
 
