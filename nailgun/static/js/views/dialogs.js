@@ -151,7 +151,16 @@ function(models, createClusterDialogTemplate, changeClusterModeDialogTemplate, c
         },
         removeCluster: function() {
             this.$el.modal('hide');
-            this.model.destroy();
+            app.navigate('#clusters', {trigger: true});
+            this.model.destroy({
+                before: function() {
+                    app.navigate('#clusters', {trigger: true});
+                },
+                complete: function() {
+                    app.navbar.stats.nodes.fetch();
+                    //console.log(this.model.get('tasks'));
+                }
+            });
         },
         initialize: function(options) {
             _.defaults(this, options);
