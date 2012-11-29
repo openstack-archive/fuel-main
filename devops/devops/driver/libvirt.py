@@ -11,6 +11,7 @@ import ipaddr
 import re
 
 import logging
+from helpers import retry
 
 logger = logging.getLogger('devops.libvirt')
 
@@ -338,20 +339,22 @@ class Libvirt:
             name = str(int(time.time() * 100))
         logger.debug(
             "Building snapshot %s of %s" % (name, node.id))
-        command = [
+        param = [
             'snapshot-create-as',
             '--domain', node.id,
             '--name', name,
             ]
         if description:
-            command += ['--description', description]
-        self._virsh(command)
+            param += ['--description', description]
+        retry(10, self._virsh, param=param)
         return name
 
     def revert_snapshot(self, node, snapshot_name=None):
         if not snapshot_name:
             snapshot_name = '--current'
-        self._virsh(['snapshot-revert', node.id, snapshot_name])
+        retry(
+            10, self._virsh,
+            param =['snapshot-revert', node.id, snapshot_name])
 
     def delete_snapshot(self, node, snapshot_name=None):
         if not snapshot_name:

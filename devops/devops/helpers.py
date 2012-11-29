@@ -308,3 +308,15 @@ def xmlrpcmethod(uri, method):
         return getattr(server, method)
     except:
         raise AttributeError, "Error occured while getting server method"
+
+def retry(count, func, **kwargs):
+    i = 0
+    while True:
+        #noinspection PyBroadException
+        try:
+            return func(**kwargs)
+        except:
+            if i >= count:
+                raise
+            i += 1
+            time.sleep(1)
