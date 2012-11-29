@@ -127,7 +127,7 @@ function(models, createClusterDialogTemplate, changeClusterModeDialogTemplate, d
     views.DisplayChangesDialog = views.Dialog.extend({
         template: _.template(displayChangesDialogTemplate),
         events: {
-            'click .start-deployment-btn': 'deployCluster'
+            'click .start-deployment-btn:not(.disabled)': 'deployCluster'
         },
         deployCluster: function() {
             this.$el.modal('hide');

@@ -58,7 +58,7 @@ define(function() {
             return canCheck;
         },
         availableModes: function() {
-            return ['singlenode', 'simple', 'ha'];
+            return ['singlenode', 'multinode', 'ha'];
         },
         availableTypes: function() {
             return ['compute', 'storage', 'both'];

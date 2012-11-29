@@ -71,8 +71,8 @@ class Release(Base, BasicValidator):
 class Cluster(Base, BasicValidator):
     __tablename__ = 'clusters'
     TYPES = ('compute', 'storage', 'both')
-    MODES = ('singlenode', 'simple', 'ha')
-    type = Column(Enum(*TYPES), nullable=False, default='both')
+    MODES = ('singlenode', 'multinode', 'ha')
+    type = Column(Enum(*TYPES), nullable=True)
     mode = Column(Enum(*MODES), nullable=False, default='singlenode')
     id = Column(Integer, primary_key=True)
     name = Column(Unicode(50), unique=True, nullable=False)

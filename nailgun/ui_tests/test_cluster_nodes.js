@@ -24,9 +24,11 @@ casper.then(function() {
     this.test.assertSelectorAppears('.modal', 'Cluster deployment mode dialog opens');
     this.then(function() {
         this.test.assertExists('.modal input[type=radio][name=mode][value=singlenode]:checked', 'Singlenode deployment mode chosen');
+        this.test.assertDoesntExist('.modal .type-control-group:not(.hide)', 'Cluster types radio group is not visible if deployment mode is Singlenode');
         this.click('.modal input[type=radio][name=mode][value=ha]');
         this.test.assertVisible('.modal .type-control-group', 'Cluster types radio group is visible if deployment mode is Multi-node with HA');
-        this.test.assertExists('.modal input[type=radio][name=type][value=both]:checked', 'Compute and storage type chosen');
+        this.click('.modal input[type=radio][name=type][value=both]');
+        this.test.assertExists('.modal input[type=radio][name=type][value=both]:checked', 'Compute and Storage cluster type has been chosen successfully');
         this.click('.modal input[type=radio][name=type][value=compute]');
         this.test.assertExists('.modal input[type=radio][name=type][value=compute]:checked', 'Compute cluster type has been chosen successfully');
         this.click('.modal .apply-btn');
@@ -41,7 +43,7 @@ casper.then(function() {
     this.test.assertSelectorAppears('.modal', 'Cluster deployment mode dialog opens again');
     this.then(function() {
         this.test.assertExists('.modal input[type=radio][name=mode][value=ha]:checked', 'Multi-node with HA deployment mode chosen');
-        this.click('.modal input[type=radio][name=mode][value=simple]');
+        this.click('.modal input[type=radio][name=mode][value=multinode]');
         this.test.assertVisible('.modal .type-control-group', 'Cluster types radio group is visible if deployment mode is Multi-node');
         this.click('.modal .apply-btn');
     });
@@ -130,7 +132,7 @@ casper.then(function() {
         this.test.assertDoesntExist('.node-list .btn-delete-nodes:not(.disabled)', 'All Delete Node buttons are disabled');
         this.test.info('Waiting for deployment readiness...');
     });
-    this.test.assertSelectorDisappears('.deployment-control .progress', 'Deployment progress bar disappears', 15000);
+    this.test.assertSelectorDisappears('.deployment-control .progress', 'Deployment progress bar disappears', 10000);
     this.then(function() {
         this.test.assertExists('.summary .change-cluster-mode-btn:not(.disabled)', 'Cluster mode is changeable');
         this.test.assertExists('.node-list .btn-add-nodes:not(.disabled)', 'Add Node buttons are enabled again');

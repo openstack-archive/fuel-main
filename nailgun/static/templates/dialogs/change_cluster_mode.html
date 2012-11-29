@@ -8,7 +8,7 @@
       <div class="simple-mode-title">Deployment Mode:</div>
       <div class="control-group mode-control-group">
         <div class="controls controlls-without-labels">
-          <% var modes = {'singlenode': 'Single-node', 'simple': 'Multi-node', 'ha': 'Multi-node with HA'} %>
+          <% var modes = {'singlenode': 'Single-node', 'multinode': 'Multi-node', 'ha': 'Multi-node with HA'} %>
           <% _.each(cluster.availableModes(), function(mode) { %>
             <label class="radio">
               <input type="radio" name="mode" value="<%= mode %>" <%= cluster.get('mode') == mode ? 'checked' : '' %> <%= cluster.get('nodes').nodesAfterDeployment().length ? 'disabled' : '' %>>
@@ -20,7 +20,7 @@
           <span class="help-block hide mode-description help-mode-singlenode">
             This simple configuration is for you if you want to give OpenStack a test drive. You will get a fully functional private cloud, with all OpenStack components installed on one node. The node will also act as a compute node.
           </span>
-          <span class="help-block hide mode-description help-mode-simple">
+          <span class="help-block hide mode-description help-mode-multinode">
             In this configuration OpenStack controller is deployed separately from compute and nodes. The mode assumes presence of 1 controller node and 1 or more compute/storage nodes. You can add more nodes as you go and scale your cloud.
           </span>
           <span class="help-block hide mode-description help-mode-ha">
