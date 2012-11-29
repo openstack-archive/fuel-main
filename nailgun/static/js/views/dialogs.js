@@ -153,8 +153,10 @@ function(models, createClusterDialogTemplate, changeClusterModeDialogTemplate, c
             this.$el.modal('hide');
             this.model.destroy();
         },
+        initialize: function(options) {
+            _.defaults(this, options);
+        },
         render: function() {
-            console.log(this);
             this.constructor.__super__.render.call(this, {cluster: this.model});
             return this;
         }

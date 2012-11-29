@@ -812,7 +812,7 @@ function(models, dialogViews, clusterPageTemplate, deploymentResultTemplate, dep
         },
         deleteCluster: function(e) {
             e.preventDefault();
-            (new dialogViews.RemoveClusterDialog()).render();
+            (new dialogViews.RemoveClusterDialog({model: this.model})).render();
         },
         initialize: function() {
             this.model.bind('change:name', this.render, this);
