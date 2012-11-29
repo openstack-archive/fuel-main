@@ -3,9 +3,11 @@ define(
     'models',
     'text!templates/dialogs/create_cluster.html',
     'text!templates/dialogs/change_cluster_mode.html',
-    'text!templates/dialogs/display_changes.html'
+    'text!templates/dialogs/change_cluster_type.html',
+    'text!templates/dialogs/display_changes.html',
+    'text!templates/dialogs/remove_cluster.html'
 ],
-function(models, createClusterDialogTemplate, changeClusterModeDialogTemplate, displayChangesDialogTemplate) {
+function(models, createClusterDialogTemplate, changeClusterModeDialogTemplate, changeClusterTypeDialogTemplate, displayChangesDialogTemplate, removeClusterDialogTemplate) {
     'use strict';
 
     var views = {};
@@ -138,6 +140,22 @@ function(models, createClusterDialogTemplate, changeClusterModeDialogTemplate, d
                 cluster: this.model,
                 size: this.model.get('mode') == 'ha' ? 3 : 1
             });
+            return this;
+        }
+    });
+
+    views.RemoveClusterDialog = views.Dialog.extend({
+        template: _.template(removeClusterDialogTemplate),
+        events: {
+            'click .remove-cluster-btn': 'removeCluster'
+        },
+        removeCluster: function() {
+            this.$el.modal('hide');
+            this.model.destroy();
+        },
+        render: function() {
+            console.log(this);
+            this.constructor.__super__.render.call(this, {cluster: this.model});
             return this;
         }
     });

@@ -810,10 +810,9 @@ function(models, dialogViews, clusterPageTemplate, deploymentResultTemplate, dep
                 this.applyNewClusterName();
             }
         },
-        deleteCluster: function() {
-            if (confirm('Do you really want to delete this cluster?')) {
-                this.model.destroy();
-            }
+        deleteCluster: function(e) {
+            e.preventDefault();
+            (new dialogViews.RemoveClusterDialog()).render();
         },
         initialize: function() {
             this.model.bind('change:name', this.render, this);
