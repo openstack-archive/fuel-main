@@ -101,10 +101,9 @@ function(models, createClusterDialogTemplate, changeClusterModeDialogTemplate, d
             }, this);
             var mode = this.$('input[name=mode]:checked').val();
             var type = this.$('input[name=type]:checked').val();
-            var redundancy = mode == 'ha' ? 3 : null;
-            cluster.set({mode: mode, type: type, redundancy: redundancy});
+            cluster.set({mode: mode, type: type});
             if (valid) {
-                cluster.update(['mode', 'type', 'redundancy']);
+                cluster.update(['mode', 'type']);
                 this.$el.modal('hide');
             }
         },
@@ -137,7 +136,7 @@ function(models, createClusterDialogTemplate, changeClusterModeDialogTemplate, d
         render: function() {
             this.constructor.__super__.render.call(this, {
                 cluster: this.model,
-                size: this.model.get('mode') == 'ha' ? this.model.get('redundancy') : 1
+                size: this.model.get('mode') == 'ha' ? 3 : 1
             });
             return this;
         }

@@ -214,7 +214,7 @@ function(models, dialogViews, clusterPageTemplate, deploymentResultTemplate, dep
         keepScrollPosition: true,
         initialize: function(options) {
             this.tab = options.tab;
-            this.model.bind('change:mode change:redundancy change:type', this.render, this);
+            this.model.bind('change:mode change:type', this.render, this);
             this.model.bind('change:nodes', this.bindNodesEvents, this);
             this.bindNodesEvents();
             this.model.bind('change:tasks', this.bindTasksEvents, this);
@@ -248,7 +248,7 @@ function(models, dialogViews, clusterPageTemplate, deploymentResultTemplate, dep
                     collection: nodes,
                     role: role,
                     tab: this.tab,
-                    size: role == 'controller' ? this.model.get('mode') == 'ha' ? this.model.get('redundancy') : 1 : 0
+                    size: role == 'controller' ? this.model.get('mode') == 'ha' ? 3 : 1 : 0
                 });
                 this.registerSubView(nodeListView);
                 this.$el.append(nodeListView.render().el);

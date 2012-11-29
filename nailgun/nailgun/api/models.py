@@ -74,7 +74,6 @@ class Cluster(Base, BasicValidator):
     MODES = ('singlenode', 'simple', 'ha')
     type = Column(Enum(*TYPES), nullable=False, default='both')
     mode = Column(Enum(*MODES), nullable=False, default='singlenode')
-    redundancy = Column(Integer, nullable=True)
     id = Column(Integer, primary_key=True)
     name = Column(Unicode(50), unique=True, nullable=False)
     release_id = Column(Integer, ForeignKey('releases.id'), nullable=False)

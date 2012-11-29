@@ -36,7 +36,6 @@ class ClusterHandler(JSONHandler):
         "name",
         "type",
         "mode",
-        "redundancy",
         ("nodes", "*"),
         ("release", "*")
     )
@@ -135,7 +134,7 @@ class ClusterCollectionHandler(JSONHandler):
             map(cluster.nodes.append, nodes)
 
         # TODO: use fields
-        for field in ('name', 'type', 'mode', 'redundancy'):
+        for field in ('name', 'type', 'mode'):
             setattr(cluster, field, data.get(field))
 
         web.ctx.orm.add(cluster)
