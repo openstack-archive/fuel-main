@@ -51,7 +51,6 @@ $/isoroot-prepare.done: \
 		$(addprefix $(ISOROOT)/images/,$(IMAGES_FILES)) \
 		$(addprefix $(ISOROOT)/EFI/BOOT/,$(EFI_FILES)) \
 		$(addprefix $(ISOROOT)/rabbitmq-plugins/v$(RABBITMQ_VERSION)/,$(RABBITMQ_PLUGINS)) \
-		$(addprefix $(ISOROOT)/puppet/,$(call find-files,puppet)) \
 		$(ISOROOT)/ks.cfg \
 		$(ISOROOT)/bootstrap_admin_node.sh
 	$(ACTION.TOUCH)
@@ -72,8 +71,6 @@ $(ISOROOT)/eggs/Nailgun-$(NAILGUN_VERSION).tar.gz: $(BUILD_DIR)/nailgun/Nailgun-
 $(ISOROOT)/gems/gems/naily-$(NAILY_VERSION).gem: $(BUILD_DIR)/gems/naily-$(NAILY_VERSION).gem ; $(ACTION.COPY)
 $(ISOROOT)/gems/gems/astute-$(ASTUTE_VERSION).gem: $(BUILD_DIR)/gems/astute-$(ASTUTE_VERSION).gem ; $(ACTION.COPY)
 
-$(ISOROOT)/puppet/%: puppet/% ; $(ACTION.COPY)
-
 $/isoroot-eggs.done: \
 		$(LOCAL_MIRROR)/eggs.done \
 		$(ISOROOT)/eggs/Nailgun-$(NAILGUN_VERSION).tar.gz
@@ -89,6 +86,18 @@ $/isoroot-gems.done: \
 	(cd $(ISOROOT)/gems && gem generate_index gems)
 	$(ACTION.TOUCH)
 
+$(ISOROOT)/puppet-nailgun.tgz:
+	(cd puppet && tar czf $@ *)
+
+$(ISOROOT)/puppet-slave.tgz:
+	(cd puppet && tar cf $(BUILD_DIR)/puppet-slave.tar puppet-network nailytest)
+	(cd fuel/deployment/puppet && tar rf $(BUILD_DIR)/puppet-slave.tar ./*)
+	gzip -c -9 $(BUILD_DIR)/puppet-slave.tar > $@
+
+$/isoroot-puppetmod.done: \
+		$(ISOROOT)/puppet-nailgun.tgz \
+		$(ISOROOT)/puppet-slave.tgz \
+
 $(ISOROOT)/ks.cfg: iso/ks.cfg ; $(ACTION.COPY)
 $(ISOROOT)/bootstrap_admin_node.sh: iso/bootstrap_admin_node.sh ; $(ACTION.COPY)
 $(ISOROOT)/.discinfo: iso/.discinfo ; $(ACTION.COPY)
@@ -96,6 +105,7 @@ $(ISOROOT)/.treeinfo: iso/.treeinfo ; $(ACTION.COPY)
 
 $/isoroot.done: \
 		$/isoroot-bootstrap.done \
+		$/isoroot-puppetmod.done \
 		$/isoroot-eggs.done \
 		$/isoroot-gems.done \
 		$/isoroot-isolinux.done \

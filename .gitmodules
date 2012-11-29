@@ -7,3 +7,6 @@
 [submodule "puppet/rabbitmq"]
 	path = puppet/rabbitmq
 	url = gitolite@gitolite.mirantis.com:fuel/deployment/puppet/rabbitmq.git
+[submodule "fuel"]
+	path = fuel
+	url = ssh://gerrit.vm.mirantis.net:29418/fuel/fuel-folsom.git
