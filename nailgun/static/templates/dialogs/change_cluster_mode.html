@@ -9,9 +9,10 @@
       <div class="control-group mode-control-group">
         <div class="controls controlls-without-labels">
           <% var modes = {'singlenode': 'Single-node', 'multinode': 'Multi-node', 'ha': 'Multi-node with HA'} %>
+          <% var canChangeMode = cluster.canChangeMode() %>
           <% _.each(cluster.availableModes(), function(mode) { %>
             <label class="radio">
-              <input type="radio" name="mode" value="<%= mode %>" <%= cluster.get('mode') == mode ? 'checked' : '' %> <%= cluster.get('nodes').nodesAfterDeployment().length ? 'disabled' : '' %>>
+              <input type="radio" name="mode" value="<%= mode %>" <%= cluster.get('mode') == mode ? 'checked' : '' %> <%= canChangeMode ? '' : 'disabled' %>>
               <%= modes[mode] || mode %>
             </label>
           <% }) %>

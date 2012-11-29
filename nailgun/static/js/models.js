@@ -41,21 +41,30 @@ define(function() {
             return this.get('nodes').hasChanges();
         },
         canChangeMode: function() {
-            return !this.task('deploy', 'running') && (this.get('mode') != 'singlenode' || !this.get('nodes').nodesAfterDeployment().length);
+            return !this.get('nodes').nodesAfterDeployment().length;
         },
-        canChangeType: function(type) {
-            var canCheck = true;
-            var cluster = this;
-            var clusterTypesToNodesRoles = {'both': [], 'compute': ['storage'], 'storage': ['compute']};
-            _.each(clusterTypesToNodesRoles[type], function(nodeRole) {
-                if (_.filter(cluster.get('nodes').nodesAfterDeployment(), function(node) {return node.get('role') == nodeRole;}).length) {
-                    canCheck = false;
+        canChangeType: function(typeToChangeTo) {
+            // FIXME: algorithmic complexity is very high
+            var canChange;
+            if (!typeToChangeTo) {
+                canChange = false;
+                _.each(this.availableTypes(), function(type) {
+                    if (type == this.get('type')) {return;}
+                    canChange = canChange || this.canChangeType(type);
+                }, this);
+            } else {
+                canChange = true;
+                var clusterTypesToNodesRoles = {'both': [], 'compute': ['storage'], 'storage': ['compute']};
+                _.each(clusterTypesToNodesRoles[typeToChangeTo], function(nodeRole) {
+                    if (this.get('nodes').where({role: nodeRole}).length) {
+                        canChange = false;
+                    }
+                }, this);
+                if (this.get('nodes').where({role: 'controller'}).length > 1) {
+                    canChange = false;
                 }
-            });
-            if (_.where(cluster.get('nodes').nodesAfterDeployment(), {'role': 'controller'}) > 1) {
-                canCheck = false;
             }
-            return canCheck;
+            return canChange;
         },
         availableModes: function() {
             return ['singlenode', 'multinode', 'ha'];
