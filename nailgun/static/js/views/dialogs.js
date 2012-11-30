@@ -146,9 +146,11 @@ function(models, createClusterDialogTemplate, changeClusterModeDialogTemplate, d
     views.RemoveClusterDialog = views.Dialog.extend({
         template: _.template(removeClusterDialogTemplate),
         events: {
-            'click .remove-cluster-btn': 'removeCluster'
+            'click .remove-cluster-btn:not(.disabled)': 'removeCluster'
         },
         removeCluster: function() {
+            this.$('.remove-cluster-btn').addClass('disabled');
+            var modal = this;
             Backbone.sync('delete', this.model, {
                 success: function() {
                     modal.$el.modal('hide');
