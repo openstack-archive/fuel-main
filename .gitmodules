@@ -9,4 +9,4 @@
 	url = gitolite@gitolite.mirantis.com:fuel/deployment/puppet/rabbitmq.git
 [submodule "fuel"]
 	path = fuel
-	url = ssh://gerrit.vm.mirantis.net:29418/fuel/fuel-folsom.git
+	url = ssh://fuel-jenkins@gerrit.vm.mirantis.net:29418/fuel/fuel-folsom.git
