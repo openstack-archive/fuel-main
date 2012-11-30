@@ -15,7 +15,7 @@ NETWORK_POOLS:
     - "192.168.0.0/16"
 
 NET_EXCLUDE:
-  - "10.20.0.0/24"
+  - "<%= @exclude_network %>/<%= @exclude_cidr %>"
 
 VLANS_RANGE_START: "100"
 VLANS_RANGE_END: "1000"

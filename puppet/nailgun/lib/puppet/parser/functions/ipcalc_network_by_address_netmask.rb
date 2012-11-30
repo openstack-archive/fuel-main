@@ -11,10 +11,10 @@ Returns network address by host ip address and netmask.
             "given #{arguments.size} for 2")
     end
 
-    begin 
+    begin
       ip = IPAddr.new("#{arguments[0]}/#{arguments[1]}")
     rescue ArgumentError
-      raise(Puppet::ParseError, "ipcalc_network_nth_address(): bad arguments #{arguments[0]} #{arguments[1]}")
+      raise(Puppet::ParseError, "ipcalc_network_by_address_netmask(): bad arguments #{arguments[0]} #{arguments[1]}")
     end
 
     return ip.to_s

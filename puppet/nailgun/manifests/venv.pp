@@ -45,6 +45,9 @@ class nailgun::venv(
     mode => 0755,
   }
 
+  $exclude_network = ipcalc_network_by_address_netmask($ipaddress, $netmask)
+  $exclude_cidr = ipcalc_network_cidr_by_netmask($netmask)
+
   file { "/etc/nailgun/settings.yaml":
     content => template("nailgun/settings.yaml.erb"),
     owner => 'root',
