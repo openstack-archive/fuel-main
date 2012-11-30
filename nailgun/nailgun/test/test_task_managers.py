@@ -18,9 +18,11 @@ from nailgun.api.models import Cluster, Attributes, IPAddr, Task, Notification
 class TestTaskManagers(BaseHandlers):
 
     def tearDown(self):
-        # this is used for
-        import time
-        time.sleep(1)
+        # wait for fake task thread termination
+        import threading
+        for thread in threading.enumerate():
+            if thread is not threading.currentThread():
+                thread.join(1)
 
     def test_deployment_task_managers(self):
         cluster = self.create_cluster_api()
