@@ -65,6 +65,10 @@ function(models, dialogViews, clusterPageTemplate, deploymentResultTemplate, dep
         },
         initialize: function(options) {
             _.defaults(this, options);
+            /*this.model.bind('destroy', function() {
+                app.navbar.stats.nodes.fetch();
+                app.navigate('#clusters', {trigger: true});
+            }, this);*/
             this.model.bind('change:tasks', this.bindTasksEvents, this);
             this.bindTasksEvents();
             this.scheduleUpdate();

@@ -1950,3 +1950,15 @@ h6.page-title {
 .cluster-removing-description {
   margin-bottom: 10px;
 }
+
+.disabledCluster {
+  background-color: #aaa;
+}
+.disabledCluster:hover {
+  background-color: #acb2b9;
+  background-image: -webkit-linear-gradient(top, #d0d2d2, #a2a9aa);
+  background-image: -moz-linear-gradient(top, #d0d2d2, #a2a9aa);
+  background-image: -o-linear-gradient(top, #d0d2d2, #a2a9aa);
+  background-image: -ms-linear-gradient(top, #d0d2d2, #a2a9aa);
+  background-image: linear-gradient(top bottom, #d0d2d2, #a2a9aa);
+}

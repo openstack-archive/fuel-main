@@ -51,8 +51,24 @@ function(models, dialogViews, clustersPageTemplate, clusterTemplate, newClusterT
         tagName: 'a',
         className: 'span3 clusterbox',
         template: _.template(clusterTemplate),
+        updateInterval: 500,
+        scheduleUpdate: function() {
+            if (this.model.task('cluster_deletion', 'running')) {
+                _.delay(_.bind(this.update, this), this.updateInterval);
+            } else {
+                this.model.collection.trigger('reset');
+            }
+        },
+        update: function() {
+            var complete = _.after(2, _.bind(this.scheduleUpdate, this));
+            this.model.get('tasks').fetch({data: {cluster_id: this.model.id}, complete: complete});
+        },
         initialize: function() {
             this.model.bind('change', this.render, this);
+            if (this.model.task('cluster_deletion', 'running')) {
+                this.$el.removeAttr('href').addClass('disabledCluster');
+                this.update();
+            }
         },
         render: function() {
             this.$el.attr('href', '#cluster/' + this.model.id + '/nodes');

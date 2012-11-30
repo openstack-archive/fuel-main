@@ -147,18 +147,29 @@ function(models, createClusterDialogTemplate, changeClusterModeDialogTemplate, c
     views.RemoveClusterDialog = views.Dialog.extend({
         template: _.template(removeClusterDialogTemplate),
         events: {
-            'click .remove-cluster-btn': 'removeCluster'
+            'click .remove-cluster-btn:not(.disabled)': 'removeCluster'
         },
         removeCluster: function() {
-            this.$el.modal('hide');
-            app.navigate('#clusters', {trigger: true});
-            this.model.destroy({
-                before: function() {
+            this.$('.remove-cluster-btn').addClass('disabled');
+            var modal = this;
+            /*this.model.destroy({
+                success: function() {
+                    modal.$el.modal('hide');
+                    app.navbar.stats.nodes.fetch();
                     app.navigate('#clusters', {trigger: true});
                 },
-                complete: function() {
+                error: function() {
+                    modal.$('.cluster-removing-description, .cluster-removing-failed').toggleClass('hide');
+                }
+            });*/
+            Backbone.sync('delete', this.model, {
+                success: function() {
+                    modal.$el.modal('hide');
                     app.navbar.stats.nodes.fetch();
-                    //console.log(this.model.get('tasks'));
+                    app.navigate('#clusters', {trigger: true});
+                },
+                error: function() {
+                    modal.$('.cluster-removing-description, .cluster-removing-failed').toggleClass('hide');
                 }
             });
         },
