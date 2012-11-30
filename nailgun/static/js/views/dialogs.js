@@ -3,11 +3,10 @@ define(
     'models',
     'text!templates/dialogs/create_cluster.html',
     'text!templates/dialogs/change_cluster_mode.html',
-    'text!templates/dialogs/change_cluster_type.html',
     'text!templates/dialogs/display_changes.html',
     'text!templates/dialogs/remove_cluster.html'
 ],
-function(models, createClusterDialogTemplate, changeClusterModeDialogTemplate, changeClusterTypeDialogTemplate, displayChangesDialogTemplate, removeClusterDialogTemplate) {
+function(models, createClusterDialogTemplate, changeClusterModeDialogTemplate, displayChangesDialogTemplate, removeClusterDialogTemplate) {
     'use strict';
 
     var views = {};
@@ -147,21 +146,9 @@ function(models, createClusterDialogTemplate, changeClusterModeDialogTemplate, c
     views.RemoveClusterDialog = views.Dialog.extend({
         template: _.template(removeClusterDialogTemplate),
         events: {
-            'click .remove-cluster-btn:not(.disabled)': 'removeCluster'
+            'click .remove-cluster-btn': 'removeCluster'
         },
         removeCluster: function() {
-            this.$('.remove-cluster-btn').addClass('disabled');
-            var modal = this;
-            /*this.model.destroy({
-                success: function() {
-                    modal.$el.modal('hide');
-                    app.navbar.stats.nodes.fetch();
-                    app.navigate('#clusters', {trigger: true});
-                },
-                error: function() {
-                    modal.$('.cluster-removing-description, .cluster-removing-failed').toggleClass('hide');
-                }
-            });*/
             Backbone.sync('delete', this.model, {
                 success: function() {
                     modal.$el.modal('hide');
