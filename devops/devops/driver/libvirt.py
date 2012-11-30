@@ -11,7 +11,7 @@ import ipaddr
 import re
 
 import logging
-from helpers import retry
+from devops.helpers import retry
 
 logger = logging.getLogger('devops.libvirt')
 
