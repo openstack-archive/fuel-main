@@ -1,12 +1,3 @@
-[submodule "puppet/stdlib"]
-	path = puppet/stdlib
-	url = git://github.com/puppetlabs/puppetlabs-stdlib.git
-[submodule "puppet/mysql"]
-	path = puppet/mysql
-	url = git@github.com:kozhukalov/puppetlabs-mysql.git
-[submodule "puppet/rabbitmq"]
-	path = puppet/rabbitmq
-	url = gitolite@gitolite.mirantis.com:fuel/deployment/puppet/rabbitmq.git
 [submodule "fuel"]
 	path = fuel
 	url = ssh://fuel-jenkins@gerrit.vm.mirantis.net:29418/fuel/fuel-folsom.git
