@@ -42,6 +42,7 @@ chroot-bootstrap: $(INITRAM_DIR)/etc/nailgun_systemtype $(BS_DIR)/init.done
 	sudo umount $(INITRAM_DIR)/dev
 
 $(INITRAM_FS): $(INITRAM_DIR)/etc/nailgun_systemtype
+	sudo cp -f $(INITRAM_DIR)/etc/skel/.bash* $(INITRAM_DIR)/root/
 	sudo rm -rf $(INITRAM_DIR)/var/cache/yum $(INITRAM_DIR)/var/lib/yum $(INITRAM_DIR)/usr/share/doc \
         $(INITRAM_DIR)/usr/share/locale $(INITRAM_DIR)/src
 	sudo sh -c "cd $(INITRAM_DIR) && find . -xdev | cpio --create \

@@ -186,6 +186,9 @@ $SNIPPET('ssh_disable_gssapi')
 # ADDS 'UseDNS no' TO /etc/ssh/sshd_config
 $SNIPPET('ssh_disable_dns')
 
+# Copying default bash settings to the root directory
+cp -f /etc/skel/.bash* /root/ 
+
 # COBBLER EMBEDDED SNIPPET: 'kickstart_done'
 # DISABLES PXE BOOTING
 $SNIPPET('kickstart_done')
