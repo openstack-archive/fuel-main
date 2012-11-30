@@ -15,6 +15,7 @@ else
 REPO_SUFFIX=mirror
 endif
 
+YUM_PLUGIN_PATH:=$(shell readlink -f -m $(CENTOS_REPO_DIR)etc/yum-plugins)
 define yum_conf
 [main]
 cachedir=$(CENTOS_REPO_DIR)cache
@@ -24,12 +25,19 @@ logfile=$(CENTOS_REPO_DIR)yum.log
 exactarch=1
 obsoletes=1
 gpgcheck=0
-plugins=0
+plugins=1
+pluginpath=$(YUM_PLUGIN_PATH)
 reposdir=$(CENTOS_REPO_DIR)etc/yum-$(REPO_SUFFIX).repos.d
 endef
 
 $(CENTOS_REPO_DIR)etc/yum-$(REPO_SUFFIX).conf: export contents:=$(yum_conf)
 $(CENTOS_REPO_DIR)etc/yum-$(REPO_SUFFIX).conf:
+ifeq ($(IGNORE_MIRROR),1)
+	mkdir -p $(CENTOS_REPO_DIR)etc/yum/pluginconf.d
+	echo "[main]\nenabled=1" > $(CENTOS_REPO_DIR)etc/yum/pluginconf.d/priorities.conf
+	mkdir -p $(CENTOS_REPO_DIR)etc/yum-plugins
+	cp mirror/yum-priorities-plugin.py $(CENTOS_REPO_DIR)etc/yum-plugins/priorities.py
+endif
 	@mkdir -p $(@D)
 	echo "$${contents}" > $@
 
@@ -48,6 +56,7 @@ name=CentOS-$(CENTOS_RELEASE) - Base
 baseurl=$(CENTOSMIRROR)/$(CENTOS_RELEASE)/os/$(CENTOS_ARCH)
 gpgcheck=0
 enabled=1
+priority=10
 
 [updates]
 name=CentOS-$(CENTOS_RELEASE) - Updates
@@ -55,6 +64,7 @@ name=CentOS-$(CENTOS_RELEASE) - Updates
 baseurl=$(CENTOSMIRROR)/$(CENTOS_RELEASE)/updates/$(CENTOS_ARCH)
 gpgcheck=0
 enabled=1
+priority=10
 
 [extras]
 name=CentOS-$(CENTOS_RELEASE) - Extras
@@ -62,6 +72,7 @@ name=CentOS-$(CENTOS_RELEASE) - Extras
 baseurl=$(CENTOSMIRROR)/$(CENTOS_RELEASE)/extras/$(CENTOS_ARCH)
 gpgcheck=0
 enabled=1
+priority=10
 
 [centosplus]
 name=CentOS-$(CENTOS_RELEASE) - Plus
@@ -69,6 +80,7 @@ name=CentOS-$(CENTOS_RELEASE) - Plus
 baseurl=$(CENTOSMIRROR)/$(CENTOS_RELEASE)/centosplus/$(CENTOS_ARCH)
 gpgcheck=0
 enabled=1
+priority=10
 
 [contrib]
 name=CentOS-$(CENTOS_RELEASE) - Contrib
@@ -76,6 +88,7 @@ name=CentOS-$(CENTOS_RELEASE) - Contrib
 baseurl=$(CENTOSMIRROR)/$(CENTOS_RELEASE)/contrib/$(CENTOS_ARCH)
 gpgcheck=0
 enabled=1
+priority=10
 
 [epel]
 name=Extra Packages for Enterprise Linux $(CENTOS_MAJOR) - $(CENTOS_ARCH)
@@ -83,6 +96,18 @@ name=Extra Packages for Enterprise Linux $(CENTOS_MAJOR) - $(CENTOS_ARCH)
 baseurl=$(EPELMIRROR)/$(CENTOS_MAJOR)/$(CENTOS_ARCH)
 gpgcheck=0
 enabled=1
+priority=20
+
+[openstack-epel-fuel]
+name=Mirantis OpenStack Custom Packages
+mirrorlist=http://download.mirantis.com/epel-fuel-folsom/mirror.external.list
+gpgkey=https://fedoraproject.org/static/0608B895.txt
+  http://mirror.centos.org/centos/RPM-GPG-KEY-CentOS-6
+  http://download.mirantis.com/epel-fuel-folsom/rabbit.key
+  http://download.mirantis.com/epel-fuel-folsom/mirantis.key
+gpgcheck=0
+enabled=1
+priority=1
 
 [mirantis]
 name=Mirantis Packages for CentOS
@@ -102,7 +127,8 @@ name = RHEL $(CENTOS_RELEASE) - RPMforge.net - extras
 #mirrorlist = http://apt.sw.be/redhat/el$(CENTOS_MAJOR)/en/mirrors-rpmforge-extras
 baseurl = $(RPMFORGEMIRROR)/el$(CENTOS_MAJOR)/en/$(CENTOS_ARCH)/extras
 gpgcheck = 0
-enabled = 0
+enabled = 1
+priority=95
 
 [puppetlabs]
 name=Puppet Labs Packages
@@ -110,6 +136,7 @@ baseurl=http://yum.puppetlabs.com/el/$(CENTOS_MAJOR)/products/$(CENTOS_ARCH)/
 enabled=1
 gpgcheck=1
 gpgkey=http://yum.puppetlabs.com/RPM-GPG-KEY-puppetlabs
+priority=1
 endef
 
 $(CENTOS_REPO_DIR)etc/yum-$(REPO_SUFFIX).repos.d/base.repo: export contents:=$(yum_$(REPO_SUFFIX)_repo)
@@ -141,12 +168,7 @@ $/cache-extra.done: \
 		requirements-rpm.txt
 	yum -c $(CENTOS_REPO_DIR)etc/yum-$(REPO_SUFFIX).conf clean all
 	rm -rf /var/tmp/yum-$$USER-*/
-ifeq ($(IGNORE_MIRROR),1)
-	repotrack -c $(CENTOS_REPO_DIR)etc/yum-$(REPO_SUFFIX).conf -p $(CENTOS_REPO_DIR)Packages -a $(CENTOS_ARCH) $(CENTOSEXTRA_PACKAGES)
-	repotrack -r base -r updates -r extras -r contrib -r centosplus -r epel -r rpmforge-extras -c $(CENTOS_REPO_DIR)etc/yum-$(REPO_SUFFIX).conf -p $(CENTOS_REPO_DIR)Packages -a $(CENTOS_ARCH) $(CENTOSRPMFORGE_PACKAGES)
-else
-	repotrack -c $(CENTOS_REPO_DIR)etc/yum-$(REPO_SUFFIX).conf -p $(CENTOS_REPO_DIR)Packages -a $(CENTOS_ARCH) $(CENTOSEXTRA_PACKAGES) $(CENTOSRPMFORGE_PACKAGES)
-endif
+	yumdownloader -c $(CENTOS_REPO_DIR)etc/yum-$(REPO_SUFFIX).conf --resolve --destdir=$(CENTOS_REPO_DIR)Packages --archlist=$(CENTOS_ARCH) $(CENTOSEXTRA_PACKAGES) $(CENTOSRPMFORGE_PACKAGES)
 	$(ACTION.TOUCH)
 
 $/cache.done: $/cache-extra.done $/cache-boot.done
