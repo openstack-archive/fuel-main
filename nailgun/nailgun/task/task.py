@@ -245,8 +245,6 @@ class ClusterDeletionTask(object):
 
     @classmethod
     def execute(cls, task):
-        import time
-        time.sleep(10)
         DeletionTask.execute(task, 'remove_cluster_resp')
 
 

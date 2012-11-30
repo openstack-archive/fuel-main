@@ -3,8 +3,10 @@ import time
 import logging
 import threading
 
-from sqlalchemy.orm import object_mapper, ColumnProperty
-
+from sqlalchemy.orm import object_mapper, ColumnProperty, \
+    scoped_session, sessionmaker
+from nailgun.db import Query
+from nailgun.api.models import engine
 from nailgun.settings import settings
 from nailgun.notifier import notifier
 from nailgun.api.models import Network, Node
@@ -93,20 +95,32 @@ class DeletionTask(object):
                         setattr(new_node, prop.key, getattr(node, prop.key))
                 nodes_to_restore.append(new_node)
 
-        receiver = NailgunReceiver()
-        kwargs = {
-            'task_uuid': task.uuid,
-            'nodes': nodes_to_delete,
-            'status': 'ready'
-        }
+                # FIXME: it should be called in FakeDeletionThread, but
+                # notifier uses web.ctx.orm, which is unavailable there.
+                # Should be moved to the thread code after ORM session
+                # issue is adressed
+                notifier.notify("discover", "New fake node discovered")
 
-        resp_method = getattr(receiver, respond_to)
-        resp_method(**kwargs)
+        class FakeDeletionThread(threading.Thread):
+            def run(self):
+                receiver = NailgunReceiver()
+                kwargs = {
+                    'task_uuid': task.uuid,
+                    'nodes': nodes_to_delete,
+                    'status': 'ready'
+                }
+                tick_interval = settings.FAKE_TASKS_TICK_INTERVAL or 3
+                time.sleep(tick_interval)
+                resp_method = getattr(receiver, respond_to)
+                resp_method(**kwargs)
+                orm = scoped_session(
+                    sessionmaker(bind=engine, query_cls=Query)
+                )
+                for node in nodes_to_restore:
+                    orm.add(node)
+                    orm.commit()
 
-        for node in nodes_to_restore:
-            web.ctx.orm.add(node)
-            web.ctx.orm.commit()
-            notifier.notify("discover", "New fake node discovered")
+        FakeDeletionThread().start()
 
 
 class ClusterDeletionTask(object):
