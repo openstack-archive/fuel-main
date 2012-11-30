@@ -1,7 +1,0 @@
-#set mac_hash = $getVar('$mac_address_eth0', None)
-#if mac_hash == None
-#set global hostname = 'slave'
-#else
-#set mac_hash = ''.join($mac_hash.split(':'))
-#set global hostname = ''.join(('slave-', $mac_hash))
-#end if

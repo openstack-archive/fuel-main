@@ -1,9 +1,0 @@
-# provides UDP syslog reception
-$ModLoad imudp
-$UDPServerRun 514
-
-# remote anaconda logs
-$template RemoteLog, "%FROMHOST% %TIMESTAMP% %HOSTNAME% %programname%: %msg%\n"
-$template RemoteLogFile, "/var/log/remote/%FROMHOST%/%programname%.log"
-:FROMHOST, regex, "^[1-9]" ?RemoteLogFile;RemoteLog
-:FROMHOST, regex, "^[1-9]" ~

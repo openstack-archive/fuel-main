@@ -203,9 +203,6 @@ class NodeAgent
       fl = File.open("/etc/nailgun_systemtype", "r")
       system_type = fl.readline.rstrip
       @node_state = "discover" if system_type == "bootstrap"
-    else
-      fl = File.open("/etc/nailgun_systemtype", "w")
-      fl.puts("target")
     end
   end
 

@@ -1,2 +1,0 @@
-mkdir /etc/rsyslog.d
-egrep -q '\$IncludeConfig\s/etc/rsyslog.d/\*\.conf' /etc/rsyslog.conf || echo -e '\n\$IncludeConfig /etc/rsyslog.d/*.conf' >> /etc/rsyslog.conf

@@ -1,2 +1,0 @@
-cobbler	cobbler/password password cobbler
-cobbler	cobbler/server_and_next_server string 10.0.0.1

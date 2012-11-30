@@ -1,8 +1,0 @@
-default[:nailgun][:root] = "/opt/nailgun"
-default[:nailgun][:group] = "nailgun"
-default[:nailgun][:user] = "nailgun"
-default[:nailgun][:venv] = "/opt/nailgun-venv"
-default[:nailgun][:python] = "python"
-default[:nailgun][:logfile] = "/var/log/nailgun/nailgun.log"
-default[:nailgun][:domain] = "mirantis.com"
-default[:nailgun][:search] = "mirantis.com"
