@@ -34,7 +34,7 @@ module Naily
         return
       end
 
-      result = @orchestrator.deploy(reporter, data['args']['task_uuid'], nodes)
+      result = @orchestrator.deploy(reporter, data['args']['task_uuid'], nodes, data['args']['attributes'])
       report_result(result, reporter)
     end
 

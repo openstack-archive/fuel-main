@@ -6,6 +6,8 @@ require 'astute/mclient'
 require 'astute/metadata'
 require 'astute/deployer'
 require 'astute/network'
+require 'astute/puppetd'
+require 'astute/rpuppet'
 
 module Astute
   autoload 'Context', 'astute/context'

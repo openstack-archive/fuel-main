@@ -5,47 +5,55 @@ PUPPET_TIMEOUT = 30*60
 
 module Astute
   module Deployer
-    private
-
-    def self.wait_until_puppet_done(puppetd, previous_run_status)
-      # Wait for first node is done, than check the next one
-      # Load to mcollective is reduced by checking only one machine at time in a set
-      # In fact we need to know if whole set of machines finished deployment
-      previous_run_status.each do |res|
-        prev_run = res.results[:data][:lastrun]
-        last_run = prev_run
-        while last_run == prev_run
-          puppetd.discover(:nodes => [res.results[:sender]])
-          puppet_status = puppetd.status
-          # logging to false, otherwise we get a message every second
-          last_run = puppet_status[0].results[:data][:lastrun]
-          sleep 1 if last_run == prev_run
-        end
-      end
-    end
-
-    public
-    def self.puppet_deploy_with_polling(ctx, nodes)
+    def self.puppet_deploy_with_polling(ctx, nodes, attrs)
+      # Preparing parameters here
       if nodes.empty?
         Astute.logger.info "#{ctx.task_id}: Nodes to deploy are not provided. Do nothing."
         return false
       end
-      uids = nodes.map {|n| n['uid']}
-      puppetd = MClient.new(ctx, "puppetd", uids)
-      puppet_status = puppetd.status
+      metapublisher = Astute::Metadata.method(:publish_facts)
 
-      puppetd.runonce
-
-      Astute.logger.debug "Waiting for puppet to finish deployment on all nodes (timeout = #{PUPPET_TIMEOUT} sec)..."
-      time_before = Time.now
-      Timeout::timeout(PUPPET_TIMEOUT) do  # 30 min for deployment to be done
-        # Yes, we polling here and yes, it's temporary.
-        # As a better implementation we can later use separate queue to get result, ex. http://www.devco.net/archives/2012/08/19/mcollective-async-result-handling.php
-        # or we can rewrite puppet agent not to fork, and increase ttl for mcollective RPC.
-        wait_until_puppet_done(puppetd, puppet_status)
+      nodes.each do |node|
+        # TODO(mihgen): refactor this
+        intfhash = Hash.new do |hash, key|
+          hash[key] = {}
+        end
+        node['network_data'].each do |intf|
+          if intf['vlan'].size > 0
+            name="#{intf['dev']}.#{intf['vlan']}"
+            intfhash[name]={"vlan"=>"yes"}
+          else
+	    	name=intf['dev']
+          end
+          if intf['ip'].size>0
+            ipmask=intf['ip'].split('/')
+            intfhash[name]['ipaddr']=ipmask[0]
+            intfhash[name]['netmask']=IPAddr.new('255.255.255.255').mask(ipmask[1]).to_s
+        	intfhash[name]['bootproto']="static"
+            if intf['brd'].size>0
+              intfhash[name]['broadcast']=intf['brd']
+            end
+            intfhash[name]['ensure']="present"
+          else
+            intfhash[name]['bootproto']="dhcp"
+          end
+        end
+        if ! intfhash.has_key?("lo")
+          intfhash["lo"]={}
+        end
+        if ! intfhash.has_key?("eth0")
+          intfhash["eth0"]={"bootproto"=>"dhcp","ensure"=>"present"}
+        end
+        metadata = {'role' => node['role'], 'uid' => node['uid'], 'network_data' => intfhash.to_json }
+        metapublisher.call(ctx, node['uid'], metadata)
       end
-      time_spent = Time.now - time_before
-      Astute.logger.info "#{ctx.task_id}: Spent #{time_spent} seconds on puppet run for following nodes(uids): #{nodes.map {|n| n['uid']}.join(',')}"
+
+      Astute::PuppetdDeployer.deploy(ctx, nodes)
+    end
+
+    def self.rpuppet_deploy(ctx, nodes, attrs)
+      classes = {"nailytest::test_rpuppet" => {"rpuppet" => ["controller", "privet"]}}
+      Astute::RpuppetDeployer.rpuppet_deploy(ctx, nodes, attrs, classes)
     end
   end
 end

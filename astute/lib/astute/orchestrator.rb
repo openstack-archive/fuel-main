@@ -1,8 +1,7 @@
 module Astute
   class Orchestrator
-    def initialize
-      @deployer = Astute::Deployer.method(:puppet_deploy_with_polling)
-      @metapublisher = Astute::Metadata.method(:publish_facts)
+    def initialize(deployer=nil)
+      @deployer = deployer ||= Astute::Deployer.method(:puppet_deploy_with_polling)
       @check_network = Astute::Network.method(:check_network)
     end
 
@@ -14,19 +13,19 @@ module Astute
       return systems.map {|n| {'uid' => n.results[:sender], 'node_type' => n.results[:data][:node_type].chomp}}
     end
 
-    def deploy(reporter, task_id, nodes)
+    def deploy(reporter, task_id, nodes, attrs)
       context = Context.new(task_id, reporter)
 
       ctrl_nodes = nodes.select {|n| n['role'] == 'controller'}
-      deploy_piece(context, ctrl_nodes)
+      deploy_piece(context, ctrl_nodes, attrs)
       reporter.report({'progress' => 40})
 
       compute_nodes = nodes.select {|n| n['role'] == 'compute'}
-      deploy_piece(context, compute_nodes)
+      deploy_piece(context, compute_nodes, attrs)
       reporter.report({'progress' => 60})
 
       other_nodes = nodes - ctrl_nodes - compute_nodes
-      deploy_piece(context, other_nodes)
+      deploy_piece(context, other_nodes, attrs)
       return
     end
 
@@ -93,12 +92,12 @@ module Astute
       return answer
     end
 
-    def deploy_piece(ctx, nodes)
+    def deploy_piece(ctx, nodes, attrs)
       nodes_roles = nodes.map { |n| { n['uid'] => n['role'] } }
       Astute.logger.info "#{ctx.task_id}: Starting deployment of nodes => roles: #{nodes_roles.inspect}"
       ctx.reporter.report nodes_status(nodes, 'deploying')
-      @metapublisher.call(ctx, nodes)
-      @deployer.call(ctx, nodes)
+
+      @deployer.call(ctx, nodes, attrs)
       ctx.reporter.report nodes_status(nodes, 'ready')
       Astute.logger.info "#{ctx.task_id}: Finished deployment of nodes => roles: #{nodes_roles.inspect}"
     end

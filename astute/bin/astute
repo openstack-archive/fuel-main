@@ -11,13 +11,16 @@ end
 
 reporter = ConsoleReporter.new
 
-nodes = [{'id' => '1', 'ip' => '10.1.1.2', 'uid' => 'devnailgun.mirantis.com', 'role' => 'test_controller'}]
+network_data = [{'vlan' =>  102, 'dev' => 'eth0', 'ip' => '10.20.20.20/24', 'brd' => '10.20.20.255'}] 
+nodes = [{'id' => '1', 'ip' => '10.1.1.2', 'uid' => 'devnailgun.mirantis.com', 'role' => 'controller',
+          'network_data' => network_data}]
 #nodes << {'id' => '2', 'ip' => '10.1.1.3', 'uid' => 'mcoll2', 'role' => 'test_controller'}
 
 networks = [{'id' => 1, 'vlan_id' => 100, 'cidr' => '10.0.0.0/24'},
             {'id' => 2, 'vlan_id' => 101, 'cidr' => '192.168.0.0/24'}]
 
 task_id = `uuidgen`.strip
-orchestrator = Astute::Orchestrator.new
-orchestrator.deploy(reporter, task_id, nodes)
+#orchestrator = Astute::Orchestrator.new(Astute::Deployer.method(:puppet_deploy_with_polling))
+orchestrator = Astute::Orchestrator.new(Astute::Deployer.method(:rpuppet_deploy))
+orchestrator.deploy(reporter, task_id, nodes, {'param1' => 'haha'})
 orchestrator.verify_networks(reporter, task_id, nodes, networks)
