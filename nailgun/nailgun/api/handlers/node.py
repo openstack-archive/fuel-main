@@ -86,8 +86,8 @@ class NodeCollectionHandler(JSONHandler):
             setattr(node, key, value)
         web.ctx.orm.add(node)
         web.ctx.orm.commit()
-        ram = round(node.info.get('ram', 0), 1)
-        cores = node.info.get('cores', 'unknown')
+        ram = round(node.info.get('ram') or 0, 1)
+        cores = node.info.get('cores') or 'unknown'
         notifier.notify("discover",
                         "New node with %s CPU core(s) "
                         "and %s GB memory is discovered" %

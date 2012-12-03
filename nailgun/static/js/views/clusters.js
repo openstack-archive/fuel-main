@@ -67,6 +67,8 @@ function(models, dialogViews, clustersPageTemplate, clusterTemplate, newClusterT
                 error: function(model, response, options) {
                     if (response.status == 404) {
                         cluster.model.collection.remove(cluster.model);
+                        app.navbar.stats.nodes.fetch();
+                        app.navbar.notifications.collection.fetch();
                     }
                 }
             });

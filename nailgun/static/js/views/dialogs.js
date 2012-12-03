@@ -154,7 +154,6 @@ function(models, createClusterDialogTemplate, changeClusterModeDialogTemplate, d
             Backbone.sync('delete', this.model, {
                 success: function() {
                     modal.$el.modal('hide');
-                    app.navbar.stats.nodes.fetch();
                     app.navigate('#clusters', {trigger: true});
                 },
                 error: function() {

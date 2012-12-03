@@ -128,7 +128,7 @@ function(models, navbarTemplate, nodesStatsTemplate, nodesStatsPopoverTemplate, 
             'click': 'togglePopover'
         },
         getUnreadNotifications: function() {
-            return this.notifications.where({status : 'unread'});
+            return this.collection.where({status : 'unread'});
         },
         hidePopover: function(e) {
             if (this.popoverVisible && !$(e.target).closest($('.message-list-placeholder')).length) {
@@ -140,11 +140,11 @@ function(models, navbarTemplate, nodesStatsTemplate, nodesStatsPopoverTemplate, 
             if (!this.popoverVisible) {
                 if ($(e.target).closest(this.$el).length) {
                     this.popoverVisible = true;
-                    $('.navigation-bar').after(this.popoverTemplate({notifications: this.notifications.last(this.displayCount)}));
+                    $('.navigation-bar').after(this.popoverTemplate({notifications: this.collection.last(this.displayCount)}));
                     _.each(this.getUnreadNotifications(), function(notification) {
                         notification.set({'status': 'read'});
                     });
-                    Backbone.sync('update', this.notifications).done(_.bind(this.render, this));
+                    Backbone.sync('update', this.collection).done(_.bind(this.render, this));
                 }
             } else {
                 this.hidePopover(e);
@@ -160,13 +160,14 @@ function(models, navbarTemplate, nodesStatsTemplate, nodesStatsPopoverTemplate, 
             _.delay(_.bind(this.update, this), this.updateInterval);
         },
         update: function() {
-            this.notifications.fetch({complete: _.bind(this.scheduleUpdate, this)});
+            this.collection.fetch({complete: _.bind(this.scheduleUpdate, this)});
         },
         initialize: function(options) {
-            this.eventNamespace = 'click.click-notofications';
-            this.notifications = new models.Notifications();
-            this.notifications.deferred = this.notifications.fetch();
-            this.notifications.deferred.done(_.bind( function() {
+            this.eventNamespace = 'click.click-notifications';
+            this.collection = new models.Notifications();
+            this.collection.bind('reset', this.render, this);
+            this.collection.deferred = this.collection.fetch();
+            this.collection.deferred.done(_.bind(function() {
                 this.scheduleUpdate();
                 $('html').on(this.eventNamespace, _.bind(function(e){
                     if (!$(e.target).closest(this.$el).length) {
@@ -176,7 +177,7 @@ function(models, navbarTemplate, nodesStatsTemplate, nodesStatsPopoverTemplate, 
             }, this));
         },
         render: function() {
-            this.$el.html(this.template({notifications: this.notifications}));
+            this.$el.html(this.template({notifications: this.collection}));
             return this;
         }
     });

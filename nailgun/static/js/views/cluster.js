@@ -58,9 +58,15 @@ function(models, dialogViews, clusterPageTemplate, deploymentResultTemplate, dep
                 var complete = _.after(2, _.bind(this.scheduleUpdate, this));
                 var task = this.model.task('deploy', 'running');
                 if (task) {
-                    task.fetch({complete: complete});
+                    task.fetch({complete: complete}).done(_.bind(this.refreshNotificationsAfterDeployment, this));
                     this.model.get('nodes').fetch({data: {cluster_id: this.model.id}, complete: complete});
                 }
+            }
+        },
+        refreshNotificationsAfterDeployment: function() {
+            var task = this.model.task('deploy');
+            if (task.get('status') != 'running') {
+                app.navbar.notifications.collection.fetch();
             }
         },
         initialize: function(options) {
