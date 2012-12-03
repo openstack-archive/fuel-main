@@ -11,7 +11,7 @@ module Astute
       uids = nodes.map {|n| n['uid']}
       rpuppet = MClient.new(ctx, "rpuppet", uids)
 
-      data = {"parameters" => data,
+      data = {"parameters" => attrs,
               "classes" => classes,
               "environment" => "production"}
 
