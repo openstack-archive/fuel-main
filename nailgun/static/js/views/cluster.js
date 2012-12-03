@@ -36,15 +36,19 @@ function(models, dialogViews, clusterPageTemplate, deploymentResultTemplate, dep
         displayChanges: function() {
             (new dialogViews.DisplayChangesDialog({model: this.model})).render();
         },
-        deployCluster: function() {
+        deployCluster: function(modalDialog) {
             var task = new models.Task();
             task.save({}, {
                 type: 'PUT',
                 url: '/api/clusters/' + this.model.id + '/changes',
-                complete: _.bind(function() {
+                success: _.bind(function() {
+                    modalDialog.$el.modal('hide');
                     var complete = _.after(2, _.bind(this.scheduleUpdate, this));
                     this.model.get('tasks').fetch({data: {cluster_id: this.model.id}, complete: complete});
                     this.model.get('nodes').fetch({data: {cluster_id: this.model.id}, complete: complete});
+                }, this),
+                error: _.bind(function() {
+                    modalDialog.$('.modal-body').html(modalDialog.errorMessageTemplate());
                 }, this)
             });
         },
@@ -216,7 +220,6 @@ function(models, dialogViews, clusterPageTemplate, deploymentResultTemplate, dep
         keepScrollPosition: true,
         initialize: function(options) {
             this.tab = options.tab;
-            this.model.bind('change:mode change:type', this.render, this);
             this.model.bind('change:nodes', this.bindNodesEvents, this);
             this.bindNodesEvents();
             this.model.bind('change:tasks', this.bindTasksEvents, this);

@@ -4,15 +4,17 @@ define(
     'text!templates/dialogs/create_cluster.html',
     'text!templates/dialogs/change_cluster_mode.html',
     'text!templates/dialogs/display_changes.html',
-    'text!templates/dialogs/remove_cluster.html'
+    'text!templates/dialogs/remove_cluster.html',
+    'text!templates/dialogs/error_message.html'
 ],
-function(models, createClusterDialogTemplate, changeClusterModeDialogTemplate, displayChangesDialogTemplate, removeClusterDialogTemplate) {
+function(models, createClusterDialogTemplate, changeClusterModeDialogTemplate, displayChangesDialogTemplate, removeClusterDialogTemplate, errorMessageTemplate) {
     'use strict';
 
     var views = {};
 
     views.Dialog = Backbone.View.extend({
         className: 'modal fade',
+        errorMessageTemplate: _.template(errorMessageTemplate),
         modalBound: false,
         beforeTearDown: function() {
             this.$el.modal('hide');
@@ -31,7 +33,7 @@ function(models, createClusterDialogTemplate, changeClusterModeDialogTemplate, d
     views.CreateClusterDialog = views.Dialog.extend({
         template: _.template(createClusterDialogTemplate),
         events: {
-            'click .create-cluster-btn': 'createCluster',
+            'click .create-cluster-btn:not(.disabled)': 'createCluster',
             'keydown input': 'onInputKeydown',
             'change select[name=release]': 'updateReleaseDescription'
         },
@@ -50,10 +52,17 @@ function(models, createClusterDialogTemplate, changeClusterModeDialogTemplate, d
                 release: parseInt(this.$('select[name=release]').val(), 10)
             });
             if (cluster.isValid()) {
-                cluster.save({}, {success: _.bind(function() {
-                    this.collection.fetch();
-                }, this)});
-                this.$el.modal('hide');
+                this.$('.create-cluster-btn').addClass('disabled');
+                cluster.save({}, {
+                    success: _.bind(function() {
+                                this.$el.modal('hide');
+                                this.collection.fetch();
+                            }, this),
+                    error: _.bind(function() {
+                                this.$('.modal-body').html(this.errorMessageTemplate());
+                            }, this)
+                });
+
             }
         },
         onInputKeydown: function(e) {
@@ -88,7 +97,7 @@ function(models, createClusterDialogTemplate, changeClusterModeDialogTemplate, d
         events: {
             'change input[name=mode]': 'toggleTypes',
             'change input[name=type]': 'toggleTypeDescription',
-            'click .apply-btn': 'apply'
+            'click .apply-btn:not(.disabled)': 'apply'
         },
         apply: function() {
             var cluster = this.model;
@@ -104,8 +113,15 @@ function(models, createClusterDialogTemplate, changeClusterModeDialogTemplate, d
             var type = this.$('input[name=type]:checked').val();
             cluster.set({mode: mode, type: type});
             if (valid) {
-                cluster.update(['mode', 'type']);
-                this.$el.modal('hide');
+                this.$('.apply-btn').addClass('disabled');
+                cluster.update(['mode', 'type'])
+                    .done(_.bind(function() {
+                        this.$el.modal('hide');
+                        app.page.tab.screen.render();
+                    }, this))
+                    .fail(_.bind(function() {
+                        this.$('.modal-body').html(this.errorMessageTemplate());
+                    }, this));
             }
         },
         toggleTypes: function() {
@@ -131,8 +147,8 @@ function(models, createClusterDialogTemplate, changeClusterModeDialogTemplate, d
             'click .start-deployment-btn:not(.disabled)': 'deployCluster'
         },
         deployCluster: function() {
-            this.$el.modal('hide');
-            app.page.deployCluster();
+            this.$('.start-deployment-btn').addClass('disabled');
+            app.page.deployCluster(this);
         },
         render: function() {
             this.constructor.__super__.render.call(this, {
