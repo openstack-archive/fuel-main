@@ -7,37 +7,30 @@ module Astute
   module Deployer
     private
     def self.calculate_networks(data)
-      # TODO(mihgen): refactor this
-      intfhash = Hash.new do |hash, key|
-        hash[key] = {}
-      end
-      data.each do |intf|
-        if intf['vlan'].size > 0
-          name="#{intf['dev']}.#{intf['vlan']}"
-          intfhash[name]={"vlan"=>"yes"}
+      # {"eth0":{"ensure":"present","bootproto":"dhcp"},"lo":{},
+      # "eth0.102":{"ipaddr":"10.20.20.20","ensure":"present","vlan":"yes",
+      #     "netmask":"255.255.255.0","broadcast":"10.20.20.255","bootproto":"static"}}
+
+      interfaces = {}
+      data.each do |iface|
+        if iface['vlan'] and iface['vlan'] != 0
+          name = [iface['dev'], iface['vlan']].join('.')
+          interfaces[name] = {"vlan" => "yes"}
         else
-          name=intf['dev']
+          name = iface['dev']
         end
-        if intf['ip'].size>0
-          ipmask=intf['ip'].split('/')
-          intfhash[name]['ipaddr']=ipmask[0]
-          intfhash[name]['netmask']=IPAddr.new('255.255.255.255').mask(ipmask[1]).to_s
-          intfhash[name]['bootproto']="static"
-          if intf['brd'].size>0
-            intfhash[name]['broadcast']=intf['brd']
-          end
-          intfhash[name]['ensure']="present"
-        else
-          intfhash[name]['bootproto']="dhcp"
+        if iface['ip']
+          ipaddr = iface['ip'].split('/')[0]
+          interfaces[name]['ipaddr'] = ipaddr
+          interfaces[name]['netmask'] = iface['netmask']  #=IPAddr.new('255.255.255.255').mask(ipmask[1]).to_s
+          interfaces[name]['bootproto']="static"
         end
+        interfaces[name]['ensure']="present"
       end
-      if ! intfhash.has_key?("lo")
-        intfhash["lo"]={}
-      end
-      if ! intfhash.has_key?("eth0")
-        intfhash["eth0"]={"bootproto"=>"dhcp","ensure"=>"present"}
-      end
-      return intfhash
+      interfaces['lo'] = {} unless interfaces.has_key?('lo')
+      interfaces['eth0'] = {'bootproto' => 'dhcp',
+                            'ensure' => 'present'} unless interfaces.has_key?('eth0')
+      return interfaces
     end
 
     public
@@ -52,7 +45,9 @@ module Astute
       nodes.each do |node|
         network_data = calculate_networks(node['network_data'])
         metadata = {'role' => node['role'], 'uid' => node['uid'], 'network_data' => network_data.to_json }
-        metadata.merge!(attrs.map {|k, v| k => v.to_json})
+        attrs.each do |k, v|
+          metadata[k] = v.to_json
+        end
 
         metapublisher.call(ctx, node['uid'], metadata)
       end

@@ -60,6 +60,7 @@ def get_node_networks(node_id):
         network_data.append({
             'vlan': net.vlan_id,
             'ip': i.ip_addr + '/' + str(IPNetwork(net.cidr).prefixlen),
+            'netmask': str(IPNetwork(net.cidr).netmask),
             'brd': str(IPNetwork(net.cidr).broadcast),
             'gateway': net.gateway,
             'dev': 'eth0'})  # We need to figure out interface
