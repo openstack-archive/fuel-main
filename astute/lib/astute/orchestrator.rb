@@ -5,16 +5,17 @@ module Astute
       @check_network = Astute::Network.method(:check_network)
     end
 
-    def node_type(reporter, task_id, nodes)
+    def node_type(reporter, task_id, nodes, timeout=nil)
       context = Context.new(task_id, reporter)
       uids = nodes.map {|n| n['uid']}
-      systemtype = MClient.new(context, "systemtype", uids, check_result=false)
+      systemtype = MClient.new(context, "systemtype", uids, check_result=false, timeout)
       systems = systemtype.get_type
       return systems.map {|n| {'uid' => n.results[:sender], 'node_type' => n.results[:data][:node_type].chomp}}
     end
 
-    def deploy(reporter, task_id, nodes, attrs)
+    def deploy(reporter, task_id, nodes, attrs, prev_progress)
       context = Context.new(task_id, reporter)
+      deploying_progress_part = 1 - prev_progress
 
       ctrl_nodes = nodes.select {|n| n['role'] == 'controller'}
       # TODO(mihgen): we should report error back if there are not enough metadata passed
@@ -30,11 +31,13 @@ module Astute
       attrs['controller_node_public'] = ctrl_public_ips[0].split('/')[0]
 
       deploy_piece(context, ctrl_nodes, attrs)
-      reporter.report({'progress' => 40})
+      progress = (100* prev_progress + 40 * deploying_progress_part).to_i
+      reporter.report({'progress' => progress})
 
       compute_nodes = nodes.select {|n| n['role'] == 'compute'}
       deploy_piece(context, compute_nodes, attrs)
-      reporter.report({'progress' => 60})
+      progress = (100* prev_progress + 60 * deploying_progress_part).to_i
+      reporter.report({'progress' => progress})
 
       other_nodes = nodes - ctrl_nodes - compute_nodes
       deploy_piece(context, other_nodes, attrs)

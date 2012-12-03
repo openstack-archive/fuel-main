@@ -5,12 +5,13 @@ module Astute
     include MCollective::RPC
     include Astute
 
-    def initialize(ctx, agent, nodes=nil, check_result=true)
+    def initialize(ctx, agent, nodes=nil, check_result=true, timeout=nil)
       @task_id = ctx.task_id
       @agent = agent
       @nodes = nodes.map { |n| n.to_s }
       @check_result = check_result
       @mc = rpcclient(agent, :exit_on_failure => false)
+      @mc.timeout = timeout if timeout
       @mc.progress = false
       unless @nodes.nil?
         @mc.discover(:nodes => @nodes)

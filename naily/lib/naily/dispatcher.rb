@@ -6,6 +6,22 @@ module Naily
       @orchestrator = Astute::Orchestrator.new
       @producer = producer
       @default_result = {'status' => 'ready', 'progress' => 100}
+      @provision_progress_part = 0.8
+      @anaconda_log_portion = 40000 # Size of block which reads for pattern searching.
+      @ananconda_log_patterns = [
+        {'pattern' => 'Running kickstart %%pre script', 'progress' => 0.08},
+        {'pattern' => 'to step enablefilesystems', 'progress' => 0.09},
+        {'pattern' => 'to step reposetup', 'progress' => 0.13},
+        {'pattern' => 'to step installpackages', 'progress' => 0.16},
+        {'pattern' => 'Installing',
+          'number' => 210, # Now it install 205 packets. Add 5 packets for growth in future.
+          'p_min' => 0.16, # min percent
+          'p_max' => 0.87 # max percent
+          },
+        {'pattern' => 'to step postinstallconfig', 'progress' => 0.87},
+        {'pattern' => 'to step dopostaction', 'progress' => 0.92},
+        {'pattern' => 'SEPARATOR', 'progress' => 0}
+        ].reverse
     end
 
     def echo(args)
@@ -17,15 +33,30 @@ module Naily
       reporter = Naily::Reporter.new(@producer, data['respond_to'], data['args']['task_uuid'])
       nodes = data['args']['nodes']
       nodes_not_booted = nodes.map { |n| n['uid'] }
+      add_anaconda_log_separator(nodes)
+      sleep 10 # Wait while nodes going to reboot.
       begin
         Timeout::timeout(20 * 60) do  # 20 min for booting target OS
           while true
-            types = @orchestrator.node_type(reporter, data['args']['task_uuid'], nodes)
-            if types.length == nodes.length and types.all? {|n| n['node_type'] == 'target'}
+            types = @orchestrator.node_type(reporter, data['args']['task_uuid'], nodes, 5)
+            target_uids = types.reject{|n| n['node_type'] != 'target'}.map{|n| n['uid']}
+            if nodes.length == target_uids.length
               break
             end
             nodes_not_booted = nodes.map { |n| n['uid'] } - types.map { |n| n['uid'] }
-            sleep 5
+            all_progress = 0.0
+            nodes_progress = provisioning_progress_calculate(nodes)
+            nodes_progress.each do |n|
+              if target_uids.include?(n['uid'])
+                all_progress += 1 # 100%
+              else
+                all_progress += n['progress']
+              end
+            end
+
+            all_progress = all_progress * @provision_progress_part / nodes.size
+            reporter.report({'progress' => (all_progress * 100).to_i})
+            sleep 2
           end
         end
       rescue Timeout::Error
@@ -34,7 +65,8 @@ module Naily
         return
       end
 
-      result = @orchestrator.deploy(reporter, data['args']['task_uuid'], nodes, data['args']['attributes'])
+      reporter.report({'progress' => (@provision_progress_part * 100).to_i})
+      result = @orchestrator.deploy(reporter, data['args']['task_uuid'], nodes, data['args']['attributes'], @provision_progress_part)
       report_result(result, reporter)
     end
 
@@ -53,6 +85,57 @@ module Naily
     end
 
     private
+    def provisioning_progress_calculate(nodes)
+      return 0 if nodes.empty?
+      nodes_progress = []
+      nodes.each do |node|
+        path = "/var/log/remote/#{node['ip']}/install/anaconda.log"
+        nodes_progress << {'uid' => node['uid'], 'progress' => get_anaconda_log_progress(path)}
+      end
+      return nodes_progress
+    end
+
+    def add_anaconda_log_separator(nodes)
+      nodes.each do |node|
+        path = "/var/log/remote/#{node['ip']}/install/anaconda.log"
+        File.open(path, 'a') {|fo| fo.puts "\n\nSEPARATOR" } if File.readable?(path)
+      end
+    end
+
+    def get_anaconda_log_progress(file)
+      return 0 unless File.readable?(file)
+      File.open(file) do |fo|
+        if fo.stat.size > @anaconda_log_portion
+          fo.pos = fo.stat.size - @anaconda_log_portion
+          block = fo.read(@anaconda_log_portion).split("\n")
+        else
+          block = fo.read(fo.stat.size).split("\n")
+        end
+
+        while true
+          string = block.pop
+          return 0 unless string # If we found nothing
+          @ananconda_log_patterns.each do |pattern|
+            if string.include?(pattern['pattern'])
+              return pattern['progress'] if pattern['progress']
+              if pattern['number']
+                string = block.pop
+                counter = 1
+                while string and string.include?(pattern['pattern'])
+                  counter += 1
+                  string = block.pop
+                end
+                progress = counter.to_f / pattern['number']
+                progress = 1 if progress > 1
+                return pattern['p_min'] + progress * (pattern['p_max'] - pattern['p_min'])
+              end
+              Naily.logger.warn("Wrong pattern #{pattern.inspect} defined for calculating progress via Anaconda log.")
+            end
+          end
+        end
+      end
+    end
+
     def report_result(result, reporter)
       result = {} unless result.instance_of?(Hash)
       status = @default_result.merge(result)
