@@ -28,9 +28,10 @@ function(models, dialogViews, clustersPageTemplate, clusterTemplate, newClusterT
         events: {
             'click .create-cluster': 'createCluster'
         },
-        createCluster: function(e) {
-            e.preventDefault();
-            (new dialogViews.CreateClusterDialog({collection: this.collection})).render();
+        createCluster: function() {
+            var createClusterDialogView = new dialogViews.CreateClusterDialog({collection: this.collection});
+            this.registerSubView(createClusterDialogView);
+            createClusterDialogView.render();
         },
         initialize: function() {
             this.collection.bind('reset remove', this.render, this);
@@ -53,32 +54,32 @@ function(models, dialogViews, clustersPageTemplate, clusterTemplate, newClusterT
         template: _.template(clusterTemplate),
         updateInterval: 3000,
         scheduleUpdate: function() {
-            if (this.task) {
-                if (this.task.get('status') == 'running') {
-                    _.delay(_.bind(this.update, this), this.updateInterval);
-                } else {
-                    this.render();
-                }
+            if (this.model.task('cluster_deletion', 'running')) {
+                _.delay(_.bind(this.update, this), this.updateInterval);
+            } else {
+                this.render();
             }
         },
-        update: function(task) {
+        update: function() {
+            var task = this.model.task('cluster_deletion');
             var cluster = this;
-            this.task.deferred = this.task.fetch({
-                error: function() {
-                    cluster.model.collection.remove(cluster.model);
+            task.deferred = task.fetch({
+                error: function(model, response, options) {
+                    if (response.status == 404) {
+                        cluster.model.collection.remove(cluster.model);
+                    }
                 }
             });
-            this.task.deferred.done(_.bind(this.scheduleUpdate, this));
+            task.deferred.done(_.bind(this.scheduleUpdate, this));
         },
         initialize: function() {
             this.model.bind('change', this.render, this);
-            this.task = this.model.task('cluster_deletion');
         },
         render: function() {
             this.$el.html(this.template({cluster: this.model}));
-            if (this.task) {
-                this.$el.addClass('disabledCluster');
-                this.update(this.task);
+            if (this.model.task('cluster_deletion', 'running')) {
+                this.$el.addClass('disabled-cluster');
+                this.update();
             } else {
                 this.$el.attr('href', '#cluster/' + this.model.id + '/nodes');
             }

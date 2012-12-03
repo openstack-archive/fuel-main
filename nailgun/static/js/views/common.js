@@ -119,7 +119,7 @@ function(models, navbarTemplate, nodesStatsTemplate, nodesStatsPopoverTemplate, 
     });
 
     views.Notifications = Backbone.View.extend({
-        updateInterval: 3000,
+        updateInterval: 20000,
         template: _.template(notificationsTemplate),
         popoverTemplate: _.template(notificationsPopoverTemplate),
         popoverVisible: false,

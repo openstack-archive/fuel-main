@@ -65,10 +65,6 @@ function(models, dialogViews, clusterPageTemplate, deploymentResultTemplate, dep
         },
         initialize: function(options) {
             _.defaults(this, options);
-            /*this.model.bind('destroy', function() {
-                app.navbar.stats.nodes.fetch();
-                app.navigate('#clusters', {trigger: true});
-            }, this);*/
             this.model.bind('change:tasks', this.bindTasksEvents, this);
             this.bindTasksEvents();
             this.scheduleUpdate();
@@ -810,9 +806,10 @@ function(models, dialogViews, clusterPageTemplate, deploymentResultTemplate, dep
                 this.applyNewClusterName();
             }
         },
-        deleteCluster: function(e) {
-            e.preventDefault();
-            (new dialogViews.RemoveClusterDialog({model: this.model})).render();
+        deleteCluster: function() {
+            var deleteClusterDialogView = new dialogViews.RemoveClusterDialog({model: this.model});
+            this.registerSubView(deleteClusterDialogView);
+            deleteClusterDialogView.render();
         },
         initialize: function() {
             this.model.bind('change:name', this.render, this);

@@ -1951,10 +1951,10 @@ h6.page-title {
   margin-bottom: 10px;
 }
 
-.disabledCluster {
+.disabled-cluster {
   background-color: #aaa;
 }
-.disabledCluster:hover {
+.disabled-cluster:hover {
   background-color: #acb2b9;
   background-image: -webkit-linear-gradient(top, #d0d2d2, #a2a9aa);
   background-image: -moz-linear-gradient(top, #d0d2d2, #a2a9aa);
