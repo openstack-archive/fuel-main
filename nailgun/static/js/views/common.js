@@ -128,7 +128,7 @@ function(models, navbarTemplate, nodesStatsTemplate, nodesStatsPopoverTemplate, 
             'click': 'togglePopover'
         },
         getUnreadNotifications: function() {
-            return _.filter(this.notifications.last(this.displayCount), function(notification) {return notification.get('status') == 'unread';});
+            return this.notifications.where({status : 'unread'});
         },
         hidePopover: function(e) {
             if (this.popoverVisible && !$(e.target).closest($('.message-list-placeholder')).length) {
