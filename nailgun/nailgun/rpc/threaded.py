@@ -152,12 +152,17 @@ class NailgunReceiver(object):
         for node in nodes:
             # TODO if not found? or node['uid'] not specified?
             node_db = cls.db.query(Node).get(node['uid'])
-            if node.get('status'):
-                node_db.status = node['status']
+            modified = False
+            for param in ('status', 'progress'):
+                if node.get(param):
+                    setattr(node_db, param, node['status'])
+                    node_db.status = node['status']
+                    modified = True
+            if modified:
                 cls.db.add(node_db)
                 cls.db.commit()
-                if node['status'] == 'error':
-                    error_nodes.append(node_db)
+            if node.get('status') and node['status'] == 'error':
+                error_nodes.append(node_db)
 
         if error_nodes:
             nodes_info = [

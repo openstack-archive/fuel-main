@@ -95,6 +95,7 @@ class DeploymentTask(object):
         nodes_with_attrs = []
         for n in nodes:
             n.pending_addition = False
+            n.progress = None
             web.ctx.orm.add(n)
             web.ctx.orm.commit()
             nodes_with_attrs.append({

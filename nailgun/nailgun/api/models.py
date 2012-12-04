@@ -134,6 +134,7 @@ class Node(Base, BasicValidator):
     fqdn = Column(String(255))
     manufacturer = Column(Unicode(50))
     platform_name = Column(String(150))
+    progress = Column(Integer)
     os_platform = Column(String(150))
     role = Column(Enum(*NODE_ROLES))
     pending_addition = Column(Boolean, default=False)

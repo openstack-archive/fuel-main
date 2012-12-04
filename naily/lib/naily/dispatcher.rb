@@ -47,18 +47,19 @@ module Naily
               break
             end
             nodes_not_booted = nodes.map { |n| n['uid'] } - types.map { |n| n['uid'] }
-            all_progress = 0.0
+            all_progress = 0
             nodes_progress = provisioning_progress_calculate(nodes)
             nodes_progress.each do |n|
               if target_uids.include?(n['uid'])
-                all_progress += 1 # 100%
+                all_progress += 100 # 100%
+                n['progress'] = 100
               else
                 all_progress += n['progress']
               end
             end
 
-            all_progress = all_progress * @provision_progress_part / nodes.size
-            reporter.report({'progress' => (all_progress * 100).to_i})
+            all_progress = (all_progress * @provision_progress_part / nodes.size).to_i
+            reporter.report({'progress' => all_progress, 'nodes' => nodes_progress})
             time = 5 + time - Time::now.to_f
             sleep (time) if time > 0 # Sleep not greater than 5 sec.
           end
@@ -94,7 +95,10 @@ module Naily
       nodes_progress = []
       nodes.each do |node|
         path = "/var/log/remote/#{node['ip']}/install/anaconda.log"
-        nodes_progress << {'uid' => node['uid'], 'progress' => get_anaconda_log_progress(path)}
+        nodes_progress << {
+          'uid' => node['uid'],
+          'progress' => (get_anaconda_log_progress(path)*100).to_i # Return percent of progress
+        }
       end
       return nodes_progress
     end
