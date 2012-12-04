@@ -19,6 +19,9 @@ function(models, createClusterDialogTemplate, changeClusterModeDialogTemplate, d
         beforeTearDown: function() {
             this.$el.modal('hide');
         },
+        displayErrorMessage: function () {
+            this.$('.modal-body').html(this.errorMessageTemplate());
+        },
         render: function(options) {
             this.$el.html(this.template(options));
             if (!this.modalBound) {
@@ -58,9 +61,7 @@ function(models, createClusterDialogTemplate, changeClusterModeDialogTemplate, d
                                 this.$el.modal('hide');
                                 this.collection.fetch();
                             }, this),
-                    error: _.bind(function() {
-                                this.$('.modal-body').html(this.errorMessageTemplate());
-                            }, this)
+                    error: _.bind(this.displayErrorMessage, this)
                 });
 
             }
@@ -111,17 +112,9 @@ function(models, createClusterDialogTemplate, changeClusterModeDialogTemplate, d
             }, this);
             var mode = this.$('input[name=mode]:checked').val();
             var type = this.$('input[name=type]:checked').val();
-            cluster.set({mode: mode, type: type});
             if (valid) {
                 this.$('.apply-btn').addClass('disabled');
-                cluster.update(['mode', 'type'])
-                    .done(_.bind(function() {
-                        this.$el.modal('hide');
-                        app.page.tab.screen.render();
-                    }, this))
-                    .fail(_.bind(function() {
-                        this.$('.modal-body').html(this.errorMessageTemplate());
-                    }, this));
+                cluster.update({mode: mode, type: type}).fail(_.bind(this.displayErrorMessage, this));
             }
         },
         toggleTypes: function() {
@@ -172,9 +165,7 @@ function(models, createClusterDialogTemplate, changeClusterModeDialogTemplate, d
                     modal.$el.modal('hide');
                     app.navigate('#clusters', {trigger: true});
                 },
-                error: function() {
-                    modal.$('.cluster-removing-description, .cluster-removing-failed').toggleClass('hide');
-                }
+                error: _.bind(this.displayErrorMessage, this)
             });
         },
         initialize: function(options) {

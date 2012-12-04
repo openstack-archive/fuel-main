@@ -3,16 +3,13 @@
   <h3>Delete installation</h3>
 </div>
 <div class="modal-body">
-  <div class="msg-error cluster-removing-description">
+  <div class="msg-error">
     <span class="label label-important">Important</span>
     <% if (cluster.get('tasks').where({status: 'running'}).length) { %>
       There are incompleted actions. Removing of the installation may fail and lead to inconsistent state.
     <% } else { %>
       With installation removal all nodes will be cleaned up and returned to the pool of unallocated nodes.
     <% } %>
-  </div>
-  <div class="msg-warning cluster-removing-failed hide">
-      Server error has occured. Please contact the administrators.
   </div>
 </div>
 <div class="modal-footer">

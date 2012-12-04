@@ -47,9 +47,9 @@ function(models, dialogViews, clusterPageTemplate, deploymentResultTemplate, dep
                     this.model.get('tasks').fetch({data: {cluster_id: this.model.id}, complete: complete});
                     this.model.get('nodes').fetch({data: {cluster_id: this.model.id}, complete: complete});
                 }, this),
-                error: _.bind(function() {
-                    modalDialog.$('.modal-body').html(modalDialog.errorMessageTemplate());
-                }, this)
+                error: function() {
+                    modalDialog.displayErrorMessage();
+                }
             });
         },
         scheduleUpdate: function() {
@@ -220,6 +220,7 @@ function(models, dialogViews, clusterPageTemplate, deploymentResultTemplate, dep
         keepScrollPosition: true,
         initialize: function(options) {
             this.tab = options.tab;
+            this.model.bind('change:mode change:type', this.render, this);
             this.model.bind('change:nodes', this.bindNodesEvents, this);
             this.bindNodesEvents();
             this.model.bind('change:tasks', this.bindTasksEvents, this);
