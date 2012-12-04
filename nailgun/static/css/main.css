@@ -1,5 +1,7 @@
 html {
-  background: #474e59 url(../img/bg-main.jpg) repeat;
+  background-color: #39444F;
+  background-image: url(../img/bg-main.png);
+  background-repeat: repeat;
   font-family: Oswald,'Segoe UI', Helvetica, Georgia, Tahoma, Arial;
   height: 100%;
 }
