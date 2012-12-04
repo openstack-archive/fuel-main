@@ -204,13 +204,13 @@ $/eggs.done: \
 		$(BS_DIR)/init.done \
 		requirements-eggs.txt
 	@mkdir -p $/eggs
+	@[ -f $/eggs/pip-1.2.1.tar.gz ] || (cd $/eggs && wget http://pypi.python.org/packages/source/p/pip/pip-1.2.1.tar.gz)
 	@cp -R $/eggs $(INITRAM_DIR)/tmp
 	sudo cp /etc/resolv.conf $(INITRAM_DIR)/etc/resolv.conf
 	$(YUM) install python-setuptools
 	mount | grep -q $(INITRAM_DIR)/proc || sudo mount --bind /proc $(INITRAM_DIR)/proc
 	mount | grep -q $(INITRAM_DIR)/dev || sudo mount --bind /dev $(INITRAM_DIR)/dev
-	$(CHROOT_CMD) easy_install -U distribute
-	$(CHROOT_CMD) easy_install -U pip
+	$(CHROOT_CMD) easy_install -U /tmp/eggs/pip-1.2.1.tar.gz
 	@cat requirements-eggs.txt | while read egg ver; do \
          if [ -z "`find $(INITRAM_DIR)/tmp/eggs/ -name $${egg}-$${ver}\*`" ]; then \
              $(CHROOT_CMD) pip install --exists-action=i -d /tmp/eggs $${egg}==$${ver} ;\
