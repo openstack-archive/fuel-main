@@ -32,12 +32,15 @@ module Naily
     def deploy(data)
       reporter = Naily::Reporter.new(@producer, data['respond_to'], data['args']['task_uuid'])
       nodes = data['args']['nodes']
+      time = Time::now.to_f
       nodes_not_booted = nodes.map { |n| n['uid'] }
       add_anaconda_log_separator(nodes)
-      sleep 10 # Wait while nodes going to reboot.
+      time = 10 + time - Time::now.to_f
+      sleep (time) if time > 0 # Wait while nodes going to reboot. Sleep not greater than 10 sec.
       begin
         Timeout::timeout(20 * 60) do  # 20 min for booting target OS
           while true
+            time = Time::now.to_f
             types = @orchestrator.node_type(reporter, data['args']['task_uuid'], nodes, 5)
             target_uids = types.reject{|n| n['node_type'] != 'target'}.map{|n| n['uid']}
             if nodes.length == target_uids.length
@@ -56,7 +59,8 @@ module Naily
 
             all_progress = all_progress * @provision_progress_part / nodes.size
             reporter.report({'progress' => (all_progress * 100).to_i})
-            sleep 2
+            time = 5 + time - Time::now.to_f
+            sleep (time) if time > 0 # Sleep not greater than 5 sec.
           end
         end
       rescue Timeout::Error
@@ -121,13 +125,14 @@ module Naily
               if pattern['number']
                 string = block.pop
                 counter = 1
-                while string and string.include?(pattern['pattern'])
-                  counter += 1
+                while string
+                  counter += 1 if string.include?(pattern['pattern'])
                   string = block.pop
                 end
                 progress = counter.to_f / pattern['number']
                 progress = 1 if progress > 1
-                return pattern['p_min'] + progress * (pattern['p_max'] - pattern['p_min'])
+                progress = pattern['p_min'] + progress * (pattern['p_max'] - pattern['p_min'])
+                return progress
               end
               Naily.logger.warn("Wrong pattern #{pattern.inspect} defined for calculating progress via Anaconda log.")
             end
