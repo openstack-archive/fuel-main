@@ -169,6 +169,7 @@ h6.page-title {
   top: -34px;
   left: 36px;
   padding: 0px 6px 1px 5px;
+  cursor: pointer;
   border-radius: 3px;
   -webkit-border-radius: 3px;
      -moz-border-radius: 3px;

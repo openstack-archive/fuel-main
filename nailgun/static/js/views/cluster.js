@@ -37,20 +37,9 @@ function(models, dialogViews, clusterPageTemplate, deploymentResultTemplate, dep
             (new dialogViews.DisplayChangesDialog({model: this.model})).render();
         },
         deployCluster: function(modalDialog) {
-            var task = new models.Task();
-            task.save({}, {
-                type: 'PUT',
-                url: '/api/clusters/' + this.model.id + '/changes',
-                success: _.bind(function() {
-                    modalDialog.$el.modal('hide');
-                    var complete = _.after(2, _.bind(this.scheduleUpdate, this));
-                    this.model.get('tasks').fetch({data: {cluster_id: this.model.id}, complete: complete});
-                    this.model.get('nodes').fetch({data: {cluster_id: this.model.id}, complete: complete});
-                }, this),
-                error: function() {
-                    modalDialog.displayErrorMessage();
-                }
-            });
+            var complete = _.after(2, _.bind(this.scheduleUpdate, this));
+            this.model.get('tasks').fetch({data: {cluster_id: this.model.id}, complete: complete});
+            this.model.get('nodes').fetch({data: {cluster_id: this.model.id}, complete: complete});
         },
         scheduleUpdate: function() {
             if (this.model.task('deploy', 'running')) {

@@ -141,7 +141,16 @@ function(models, createClusterDialogTemplate, changeClusterModeDialogTemplate, d
         },
         deployCluster: function() {
             this.$('.start-deployment-btn').addClass('disabled');
-            app.page.deployCluster(this);
+            var task = new models.Task();
+            task.save({}, {
+                type: 'PUT',
+                url: '/api/clusters/' + this.model.id + '/changes',
+                success: _.bind(function() {
+                    this.$el.modal('hide');
+                    app.page.deployCluster();
+                }, this),
+                error: _.bind(this.displayErrorMessage, this)
+            });
         },
         render: function() {
             this.constructor.__super__.render.call(this, {
