@@ -1,14 +1,14 @@
 <div class="modal-header">
   <button type="button" class="close" data-dismiss="modal">×</button>
-  <h3>Delete cluster</h3>
+  <h3>Delete installation</h3>
 </div>
 <div class="modal-body">
   <div class="msg-error cluster-removing-description">
     <span class="label label-important">Important</span>
     <% if (cluster.get('tasks').where({status: 'running'}).length) { %>
-      There are incompleted actions. Removing of cluster may fail and lead to inconsistent state.
+      There are incompleted actions. Removing of the installation may fail and lead to inconsistent state.
     <% } else { %>
-      With cluster removal all nodes will be cleaned up and returned to the pool of unallocated nodes.
+      With installation removal all nodes will be cleaned up and returned to the pool of unallocated nodes.
     <% } %>
   </div>
   <div class="msg-warning cluster-removing-failed hide">
