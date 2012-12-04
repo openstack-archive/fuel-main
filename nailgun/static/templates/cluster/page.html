@@ -5,6 +5,7 @@
       <li class="<%= activeTab == tab ? 'active' : '' %>"><a href="#cluster/<%= cluster.id %>/<%= tab %>"><b class="tab-<%= tab %>-normal"></b></a></li>
     <% }) %>
     <li class="pull-right deployment-control"></li>
+    <li class="pull-right"><button href="#myModal" class="btn rollback" role="button" data-toggle="modal" title="Discard Changes"><i class="icon-ccw"></i></button></li>
   </ul>
   <div class="tab-content">
     <% _.each(tabs, function(tab) { %>
@@ -12,3 +13,28 @@
     <% }) %>
   </div>
 </div>
+
+
+ <!-- Modal With Tech Spec Info -->
+ 
+    <!-- Modal -->
+    <div id="myModal" class="modal hide fade">
+
+      <div class="modal-header">
+        <button type="button" class="close" data-dismiss="modal" aria-hidden="true">×</button>
+        <h3 id="myModalLabel">Discard Changes</h3>
+      </div>
+
+      <div class="modal-body">
+        
+        <div class="row-fluid">
+          <div class="span3" style="text-align: center;"><i class="icon-attention-3 sign-warning"></i></div>
+          <div class="span9"><h4>Are you sure you want to cancel all the changes you made?</h4></div>
+        </div>
+
+      </div>
+      <div class="modal-footer">
+        <button class="btn" data-dismiss="modal" aria-hidden="true">No</button>
+        <button class="btn btn-success" data-dismiss="modal" aria-hidden="true">Yes</button>
+      </div>
+    </div>
