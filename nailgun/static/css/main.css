@@ -1927,15 +1927,15 @@ h6.page-title {
 }
 
 .simple-mode-title, .simple-type-title {
-  padding: 0 20px 0 15px;
+  /* padding: 0 20px 0 15px; */
 }
 
 .mode-description, .type-description {
   display: block;
   padding: 0;
   overflow: hidden;
-  text-align: justify;
-  margin-top: 9px !important;
+
+  margin-top: 0px !important;
   font-size: 12px !important;
   line-height: 14px !important;
 }
@@ -1949,7 +1949,8 @@ h6.page-title {
 }
 
 .mode-control-group, .type-control-group {
-  margin-bottom: 0 !important;
+  margin: 0;
+
 }
 
 .pull-right-help {
