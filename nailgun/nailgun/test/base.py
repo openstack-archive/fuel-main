@@ -97,7 +97,7 @@ class BaseHandlers(TestCase):
             {"name": "fixed", "access": "private10"},
             {"name": "storage", "access": "private192"},
             {"name": "management", "access": "private172"},
-            {"name": "other_172", "access": "private172"}
+            {"name": "public", "access": "public"}
         ]
 
     def get_default_attributes_metadata(self):

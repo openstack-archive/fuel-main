@@ -88,7 +88,9 @@ class DeploymentTask(object):
             web.ctx.orm.commit()
             raise FailedProvisioning(error)
 
-        netmanager.assign_ips(task.cluster.id, "management")
+        nodes_ids = [n.id for n in nodes]
+        netmanager.assign_ips(nodes_ids, "management")
+        netmanager.assign_ips(nodes_ids, "public")
 
         nodes_with_attrs = []
         for n in nodes:
@@ -101,13 +103,20 @@ class DeploymentTask(object):
                 'network_data': netmanager.get_node_networks(n.id)
             })
 
+        cluster_attrs = task.cluster.attributes.merged_attrs()
+        nets_db = web.ctx.orm.query(Network).filter_by(
+            cluster_id=task.cluster.id).all()
+
+        for net in nets_db:
+            cluster_attrs[net.name + '_network_range'] = net.cidr
+
         message = {
             'method': 'deploy',
             'respond_to': 'deploy_resp',
             'args': {
                 'task_uuid': task.uuid,
                 'nodes': nodes_with_attrs,
-                'attributes': task.cluster.attributes.merged_attrs()
+                'attributes': cluster_attrs
             }
         }
         rpc.cast('naily', message)

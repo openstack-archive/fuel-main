@@ -59,11 +59,11 @@ class TestHandlers(BaseHandlers):
             },
             {
                 'id': 5,
-                'name': u'other_172',
+                'name': u'public',
                 'cluster_id': cluster['id'],
                 'vlan_id': 104,
-                'cidr': '172.16.1.0/24',
-                'gateway': '172.16.1.1'
+                'cidr': '240.0.1.0/24',
+                'gateway': '240.0.1.1'
             },
         ]
         self.assertEquals(expected, response)

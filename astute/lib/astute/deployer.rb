@@ -23,9 +23,12 @@ module Astute
           ipaddr = iface['ip'].split('/')[0]
           interfaces[name]['ipaddr'] = ipaddr
           interfaces[name]['netmask'] = iface['netmask']  #=IPAddr.new('255.255.255.255').mask(ipmask[1]).to_s
-          interfaces[name]['bootproto']="static"
+          interfaces[name]['bootproto'] = 'static'
+          if iface['brd']
+            interfaces[name]['broadcast'] = iface['brd']
+          end
         end
-        interfaces[name]['ensure']="present"
+        interfaces[name]['ensure'] = 'present'
       end
       interfaces['lo'] = {} unless interfaces.has_key?('lo')
       interfaces['eth0'] = {'bootproto' => 'dhcp',

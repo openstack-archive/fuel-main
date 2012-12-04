@@ -7,7 +7,8 @@ from mock import Mock
 import nailgun
 from nailgun.test.base import BaseHandlers
 from nailgun.test.base import reverse
-from nailgun.api.models import Cluster, Attributes, IPAddr, Task
+from nailgun.api.models import Cluster, Attributes, NetworkElement, Task
+from nailgun.api.models import Network
 
 
 class TestHandlers(BaseHandlers):
@@ -17,7 +18,6 @@ class TestHandlers(BaseHandlers):
         cluster = self.create_cluster_api()
         cluster_db = self.db.query(Cluster).get(cluster['id'])
 
-        attrs = cluster_db.attributes.merged_attrs()
         node1 = self.create_default_node(cluster_id=cluster['id'],
                                          pending_addition=True)
         node2 = self.create_default_node(cluster_id=cluster['id'],
@@ -39,21 +39,47 @@ class TestHandlers(BaseHandlers):
 
         msg = {'method': 'deploy', 'respond_to': 'deploy_resp',
                'args': {}}
-        attrs_db = self.db.query(Attributes).filter_by(
-            cluster_id=cluster['id']).first()
-        attrs = attrs_db.merged_attrs()
-        msg['args']['attributes'] = attrs
+        cluster_attrs = cluster_db.attributes.merged_attrs()
+        #attrs_db = self.db.query(Attributes).filter_by(
+            #cluster_id=cluster['id']).first()
+        #cluster_attrs = attrs_db.merged_attrs()
+
+        nets_db = self.db.query(Network).filter_by(
+            cluster_id=cluster['id']).all()
+        for net in nets_db:
+            cluster_attrs[net.name + '_network_range'] = net.cidr
+
+        msg['args']['attributes'] = cluster_attrs
         msg['args']['task_uuid'] = deploy_task_uuid
         nodes = []
         for n in (node1, node2):
-            node_ip = str(self.db.query(IPAddr).filter_by(
-                node=n.id).first().ip_addr) + '/24'
+            node_ips = [x for x in self.db.query(NetworkElement).filter_by(
+                node=n.id).all() if x.ip_addr]
+            node_ip = [ne.ip_addr + "/24" for ne in node_ips]
             nodes.append({'uid': n.id, 'status': n.status, 'ip': n.ip,
                           'mac': n.mac, 'role': n.role, 'id': n.id,
                           'network_data': [{'brd': '172.16.0.255',
-                                            'ip': node_ip,
+                                            'ip': node_ip[0],
                                             'vlan': 103,
                                             'gateway': '172.16.0.1',
+                                            'netmask': '255.255.255.0',
+                                            'dev': 'eth0',
+                                            'name': 'management'},
+                                           {'brd': '240.0.1.255',
+                                            'ip': node_ip[1],
+                                            'vlan': 104,
+                                            'gateway': '240.0.1.1',
+                                            'netmask': '255.255.255.0',
+                                            'dev': 'eth0',
+                                            'name': 'public'},
+                                           {'vlan': 100,
+                                            'name': 'floating',
+                                            'dev': 'eth0'},
+                                           {'vlan': 101,
+                                            'name': 'fixed',
+                                            'dev': 'eth0'},
+                                           {'vlan': 102,
+                                            'name': 'storage',
                                             'dev': 'eth0'}]})
         msg['args']['nodes'] = nodes
 

@@ -9,7 +9,8 @@
             "networks_metadata": [
 		{"name": "floating", "access": "public"},
 		{"name": "public", "access": "public"},
-		{"name": "management", "access": "private10"},
+		{"name": "management", "access": "private192"},
+		{"name": "fixed", "access": "private10"},
 		{"name": "storage", "access": "private172"}
             ],
             "attributes_metadata": {

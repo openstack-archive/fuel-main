@@ -234,8 +234,8 @@ class Node(Base, BasicValidator):
         return d
 
 
-class IPAddr(Base):
-    __tablename__ = 'ip_addrs'
+class NetworkElement(Base):
+    __tablename__ = 'net_elements'
     id = Column(Integer, primary_key=True)
     network = Column(Integer, ForeignKey('networks.id'))
     node = Column(Integer, ForeignKey('nodes.id'))
@@ -261,7 +261,7 @@ class Network(Base, BasicValidator):
     gateway = Column(String(25))
     nodes = relationship(
         "Node",
-        secondary=IPAddr.__table__,
+        secondary=NetworkElement.__table__,
         backref="networks")
 
     @classmethod

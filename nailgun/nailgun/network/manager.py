@@ -1,20 +1,28 @@
 # -*- coding: utf-8 -*-
 
 import web
+from sqlalchemy.sql import not_
 from netaddr import IPSet, IPNetwork
 
-from nailgun.api.models import Network, Node, IPAddr
+from nailgun.api.models import Network, Node, NetworkElement
 
 
-def assign_ips(cluster_id, network_name):
+def assign_ips(nodes_ids, network_name):
     """Idempotent assignment IP addresses to nodes.
 
-    All nodes in cluster referred by cluster_id get IP address from
+    All nodes passed as first argument get IP address from
     network, referred by network_name.
     If node already has IP address from this network, it remains unchanged.
+    If one of the nodes is the node from other cluster, this func will fail.
 
     """
-    nodes = web.ctx.orm.query(Node).filter_by(cluster_id=cluster_id).all()
+    cluster_id = web.ctx.orm.query(Node).get(nodes_ids[0]).cluster_id
+    for node_id in nodes_ids:
+        node = web.ctx.orm.query(Node).get(node_id)
+        if node.cluster_id != cluster_id:
+            raise Exception("Node id='%s' doesn't belong to cluster_id='%s'" %
+                            (node_id, cluster_id))
+
     network = web.ctx.orm.query(Network).\
         filter_by(cluster_id=cluster_id).\
         filter_by(name=network_name).first()
@@ -23,12 +31,13 @@ def assign_ips(cluster_id, network_name):
         raise Exception("Network '%s' for cluster_id=%s not found." %
                         (network_name, cluster_id))
 
-    used_ips = [n.ip_addr for n in web.ctx.orm.query(IPAddr).all()]
+    used_ips = [ne.ip_addr for ne in web.ctx.orm.query(NetworkElement).all()
+                if ne.ip_addr]
 
-    for node in nodes:
-        node_ips = [n.ip_addr for n in web.ctx.orm.query(IPAddr).
-                    filter_by(node=node.id).
-                    filter_by(network=network.id).all()]
+    for node_id in nodes_ids:
+        node_ips = [ne.ip_addr for ne in web.ctx.orm.query(NetworkElement).
+                    filter_by(node=node_id).
+                    filter_by(network=network.id).all() if ne.ip_addr]
 
         # check if any of node_ips in required cidr: network.cidr
         ips_belongs_to_net = IPSet(IPNetwork(network.cidr))\
@@ -46,22 +55,39 @@ def assign_ips(cluster_id, network_name):
             if not free_ip:
                 raise Exception(
                     "Network pool %s ran out of free ips." % network.cidr)
-            ip_db = IPAddr(network=network.id, node=node.id, ip_addr=free_ip)
+            ip_db = NetworkElement(network=network.id, node=node_id,
+                                   ip_addr=free_ip)
             web.ctx.orm.add(ip_db)
             web.ctx.orm.commit()
             used_ips.append(free_ip)
 
 
 def get_node_networks(node_id):
-    ips = web.ctx.orm.query(IPAddr).filter_by(node=node_id).all()
+    cluster_id = web.ctx.orm.query(Node).get(node_id).cluster_id
+    ips = [x for x in web.ctx.orm.query(NetworkElement).filter_by(
+        node=node_id).all() if x.ip_addr]  # Got rid of Nones (if x.ip_addr)
     network_data = []
+    network_ids = []
     for i in ips:
         net = web.ctx.orm.query(Network).get(i.network)
         network_data.append({
+            'name': net.name,
             'vlan': net.vlan_id,
             'ip': i.ip_addr + '/' + str(IPNetwork(net.cidr).prefixlen),
             'netmask': str(IPNetwork(net.cidr).netmask),
             'brd': str(IPNetwork(net.cidr).broadcast),
             'gateway': net.gateway,
             'dev': 'eth0'})  # We need to figure out interface
+        network_ids.append(net.id)
+    # And now let's add networks w/o IP addresses
+    nets = web.ctx.orm.query(Network).filter_by(cluster_id=cluster_id).filter(
+        not_(Network.id.in_(network_ids))).all()
+    # For now, we pass information about all networks,
+    #    so these vlans will be created on every node we call this func for
+    for net in nets:
+        network_data.append({
+            'name': net.name,
+            'vlan': net.vlan_id,
+            'dev': 'eth0'})
+
     return network_data

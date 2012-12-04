@@ -15,7 +15,7 @@ from nailgun.api.models import Node
 from nailgun.api.models import Network
 from nailgun.api.models import Release
 from nailgun.api.models import Attributes
-from nailgun.api.models import IPAddr
+from nailgun.api.models import NetworkElement
 from nailgun.api.models import Vlan
 from nailgun.api.models import Task
 

@@ -12,7 +12,7 @@ settings.update({
 import nailgun
 from nailgun.test.base import BaseHandlers
 from nailgun.test.base import reverse
-from nailgun.api.models import Cluster, Attributes, IPAddr, Task, Notification
+from nailgun.api.models import Cluster, Attributes, Task, Notification
 
 
 class TestTaskManagers(BaseHandlers):

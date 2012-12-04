@@ -8,9 +8,10 @@
             "description": "Essex release description",
             "networks_metadata": [
               {"name": "floating", "access": "public"},
+              {"name": "public", "access": "public"},
+              {"name": "management", "access": "private192"},
               {"name": "fixed", "access": "private10"},
-              {"name": "management", "access": "private172"},
-              {"name": "storage", "access": "private192"}
+              {"name": "storage", "access": "private172"}
             ],
             "attributes_metadata": {
                 "editable": {
@@ -186,8 +187,22 @@
                         "vlan_id": 300,
                         "address": "172.18.0.2"
                     },
+                    "public": {
+                        "access": "public",
+                        "device": "eth0",
+                        "netmask": "255.255.255.0",
+                        "vlan_id": 301,
+                        "address": "172.18.0.4"
+                    },
                     "management": {
                         "access": "private172",
+                        "device": "eth0",
+                        "netmask": "255.255.255.0",
+                        "vlan_id": 100,
+                        "address": "172.18.12.12"
+                    },
+                    "fixed": {
+                        "access": "private10",
                         "device": "eth0",
                         "netmask": "255.255.255.0",
                         "vlan_id": 100,
@@ -198,7 +213,7 @@
                         "device": "eth0",
                         "netmask": "255.255.255.0",
                         "vlan_id": 200,
-                        "address": "10.0.1.2"
+                        "address": "192.168.124.12"
                     }
                 }
             }

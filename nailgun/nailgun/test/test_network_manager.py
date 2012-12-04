@@ -6,7 +6,7 @@ from nailgun.test.base import BaseHandlers
 from nailgun.test.base import reverse
 from nailgun.network import manager as netmanager
 from nailgun.api.models import engine
-from nailgun.api.models import Network, Node, IPAddr
+from nailgun.api.models import Network, Node, NetworkElement
 
 
 class TestNetworkManager(BaseHandlers):
@@ -37,9 +37,9 @@ class TestNetworkManager(BaseHandlers):
 
         assigned_ips = []
         for node in nodes:
-            ips = self.db.query(IPAddr).filter_by(
+            ips = [x for x in self.db.query(NetworkElement).filter_by(
                 node=node.id).filter_by(
-                    network=management_net.id).all()
+                    network=management_net.id).all() if x.ip_addr]
 
             self.assertEquals(1, len(ips))
             self.assertEquals(
