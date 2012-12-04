@@ -132,7 +132,11 @@ function(models, dialogViews, clusterPageTemplate, deploymentResultTemplate, dep
             var task = this.model.task('deploy', 'running');
             if (task) {
                 var progress = task.get('progress') || 0;
-                this.$('.progress').attr('data-original-title', 'Deployment in progress, ' + progress + '% completed').tooltip('fixTitle');
+                var progressBar = this.$('.progress');
+                progressBar.attr('data-original-title', 'Deployment in progress, ' + progress + '% completed').tooltip('fixTitle').tooltip();
+                if (progressBar.is(':hover')) {
+                    progressBar.tooltip('show');
+                }
                 this.$('.bar').css('width', (progress > 10 ? progress : 10) + '%');
             }
         },
@@ -654,7 +658,11 @@ function(models, dialogViews, clusterPageTemplate, deploymentResultTemplate, dep
             var task = this.model.task('verify_networks', 'running');
             if (task) {
                 var progress = task.get('progress') || 0;
-                this.$('.progress').attr('data-original-title', 'Verifying networks, ' + progress + '% completed').tooltip('fixTitle');
+                var progressBar = this.$('.progress');
+                progressBar.attr('data-original-title', 'Verifying networks, ' + progress + '% completed').tooltip('fixTitle').tooltip();
+                if (progressBar.is(':hover')) {
+                    progressBar.tooltip('show');
+                }
                 this.$('.bar').css('width', (progress > 10 ? progress : 10) + '%');
             }
         },
