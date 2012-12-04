@@ -35,15 +35,6 @@ class nailytest {
   $quantum_db_user        = 'quantum'
   $quantum_db_dbname      = 'quantum'
 
-  $openstack_version = {
-    'keystone'   => latest,
-    'glance'     => latest,
-    'horizon'    => latest,
-    'nova'       => latest,
-    'novncproxy' => latest,
-    'cinder' => latest,
-  }
-
   $mirror_type="external"
   #stage { 'openstack-custom-repo': before => Stage['main'] }
   #class { 'openstack::mirantis_repos': stage => 'openstack-custom-repo', type => $mirror_type }

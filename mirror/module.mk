@@ -15,7 +15,6 @@ else
 REPO_SUFFIX=mirror
 endif
 
-YUM_PLUGIN_PATH:=$(shell readlink -f -m $(CENTOS_REPO_DIR)etc/yum-plugins)
 define yum_conf
 [main]
 cachedir=$(CENTOS_REPO_DIR)cache
@@ -26,7 +25,8 @@ exactarch=1
 obsoletes=1
 gpgcheck=0
 plugins=1
-pluginpath=$(YUM_PLUGIN_PATH)
+pluginpath=$(shell readlink -f -m $(CENTOS_REPO_DIR)etc/yum-plugins)
+pluginconfpath=$(shell readlink -f -m $(CENTOS_REPO_DIR)etc/yum/pluginconf.d)
 reposdir=$(CENTOS_REPO_DIR)etc/yum-$(REPO_SUFFIX).repos.d
 endef
 
