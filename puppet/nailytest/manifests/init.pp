@@ -1,12 +1,5 @@
 class nailytest {
 
-  # assumes that eth0 is the public interface
-  $public_interface        = 'eth0'                ### GET RID OF HARDCODE ###
-  # assumes that eth1 is the interface that will be used for the vm network
-  # this configuration assumes this interface is active but does not have an
-  # ip address allocated to it.
-  $private_interface       = 'eth0.103'            ### GET RID OF HARDCODE ###
-  $internal_interface       = 'eth0.102'           ### GET RID OF HARDCODE ###
   # credentials
   $admin_email             = 'root@localhost'
   $admin_password          = 'keystone_admin'
@@ -18,8 +11,6 @@ class nailytest {
   $glance_user_password    = 'glance_pass'
   $rabbit_password         = 'openstack_rabbit_password'
   $rabbit_user             = 'openstack_rabbit_user'
-  $fixed_network_range     = '10.0.1.0/24'         ### GET RID OF HARDCODE ###
-  $floating_network_range  = '10.0.215.128/28'     ### GET RID OF HARDCODE ###
   # switch this to true to have all service log at verbose
   $verbose                 = true
   # by default it does not enable atomatically adding floating IPs
@@ -39,8 +30,6 @@ class nailytest {
   #stage { 'openstack-custom-repo': before => Stage['main'] }
   #class { 'openstack::mirantis_repos': stage => 'openstack-custom-repo', type => $mirror_type }
 
-  $controller_node_address  = '10.0.0.2'           ### GET RID OF HARDCODE ###
-  $controller_node_public   = '10.0.203.72'        ### GET RID OF HARDCODE ###
   $controller_node_internal = $controller_node_address
 
   $quantum_host             = $controller_node_address

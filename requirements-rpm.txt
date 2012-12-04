@@ -40,6 +40,7 @@ patch
 policycoreutils
 puppet-2.7.19
 puppet-server-2.7.19
+python-amqp
 python-cinder
 python-devel
 python-virtualenv
