@@ -753,7 +753,7 @@ function(models, dialogViews, clusterPageTemplate, deploymentResultTemplate, dep
             this.disableControls();
         },
         render: function () {
-            this.$el.html(this.template({settings: this.model.get('settings'), cluster: this.model}));
+            this.$el.html(this.template({cluster: this.model}));
             if (this.model.get('settings').deferred.state() != 'pending') {
                 var settings = this.model.get('settings').get('editable');
                 this.parseSettings(settings);

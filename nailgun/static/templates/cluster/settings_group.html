@@ -5,7 +5,7 @@
       <%
         _.each(_.keys(settings), function(key) {
           if (_.isObject(settings[key])) {
-            var recursiveFieldset = page.template({settings: settings[key], legend: key});
+            var recursiveFieldset = page.template({settings: settings[key], legend: key, cluster: cluster});
         %>
             <%= recursiveFieldset %>
         <%
