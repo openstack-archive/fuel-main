@@ -155,8 +155,7 @@ class NailgunReceiver(object):
             modified = False
             for param in ('status', 'progress'):
                 if node.get(param):
-                    setattr(node_db, param, node['status'])
-                    node_db.status = node['status']
+                    setattr(node_db, param, node[param])
                     modified = True
             if modified:
                 cls.db.add(node_db)
