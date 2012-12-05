@@ -1,17 +1,21 @@
 define(
 [
     'models',
+    'views/common',
     'views/dialogs',
     'text!templates/clusters/page.html',
     'text!templates/clusters/cluster.html',
     'text!templates/clusters/new.html'
 ],
-function(models, dialogViews, clustersPageTemplate, clusterTemplate, newClusterTemplate) {
+function(models, commonViews, dialogViews, clustersPageTemplate, clusterTemplate, newClusterTemplate) {
     'use strict';
 
     var views = {};
 
-    views.ClustersPage = Backbone.View.extend({
+    views.ClustersPage = commonViews.Page.extend({
+        navbarActiveElement: 'clusters',
+        breadcrumbsPath: [['Home', '#'], 'OpenStack Installations'],
+        title: 'OpenStack Installations',
         template: _.template(clustersPageTemplate),
         render: function() {
             this.$el.html(this.template({clusters: this.collection}));

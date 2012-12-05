@@ -46,9 +46,7 @@ define(function() {
         canChangeType: function(typeToChangeTo) {
             // FIXME: algorithmic complexity is very high
             var canChange;
-            if (this.get('mode') == 'singlenode') {
-                canChange = false;
-            } else if (!typeToChangeTo) {
+            if (!typeToChangeTo) {
                 canChange = false;
                 _.each(this.availableTypes(), function(type) {
                     if (type == this.get('type')) {return;}

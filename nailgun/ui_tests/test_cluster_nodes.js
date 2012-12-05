@@ -24,9 +24,10 @@ casper.then(function() {
     this.test.assertSelectorAppears('.modal', 'Cluster deployment mode dialog opens');
     this.then(function() {
         this.test.assertExists('.modal input[type=radio][name=mode][value=singlenode]:checked', 'Singlenode deployment mode chosen');
-        this.test.assertDoesntExist('.modal .type-control-group:not(.hide)', 'Cluster types radio group is not visible if deployment mode is Singlenode');
+        this.test.assertNotVisible('.modal .type-control-group', 'Cluster types radio group is not visible if deployment mode is Singlenode');
         this.click('.modal input[type=radio][name=mode][value=ha]');
         this.test.assertVisible('.modal .type-control-group', 'Cluster types radio group is visible if deployment mode is Multi-node with HA');
+        this.test.assertDoesntExist('.modal input[type=radio][name=type][disabled]', 'All cluster type radio buttons are enabled');
         this.click('.modal input[type=radio][name=type][value=both]');
         this.test.assertExists('.modal input[type=radio][name=type][value=both]:checked', 'Compute and Storage cluster type has been chosen successfully');
         this.click('.modal input[type=radio][name=type][value=compute]');

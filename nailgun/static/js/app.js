@@ -24,31 +24,31 @@ function(models, commonViews, clusterViews, clustersViews, releaseViews) {
                 ['Software Updates', '#releases']
             ]});
             this.content.before(this.navbar.render().el);
-            this.breadcrumb = new commonViews.Breadcrumb();
-            this.content.before(this.breadcrumb.render().el);
+            this.breadcrumbs = new commonViews.Breadcrumbs();
+            this.content.before(this.breadcrumbs.render().el);
         },
         setPage: function(newPage) {
             if (this.page) {
                 this.page.tearDown();
             }
             this.page = newPage;
+            this.page.updateNavbar();
+            this.page.updateBreadcrumbs();
+            this.page.updateTitle();
             this.content.html(this.page.render().el);
         },
         showCluster: function(id) {
             this.navigate('#cluster/' + id + '/nodes', {trigger: true, replace: true});
         },
         showClusterTab: function(id, activeTab) {
-            var tabs = ['nodes', 'network', 'settings', 'actions', 'logs'];
-            if (!_.contains(tabs, activeTab)) {
+            if (!_.contains(clusterViews.ClusterPage.prototype.tabs, activeTab)) {
                 this.showCluster(id);
                 return;
             }
 
             var cluster;
             var render = function() {
-                this.navbar.setActive('clusters');
-                this.breadcrumb.setPath(['Home', '#'], ['OpenStack Installations', '#clusters'], cluster.get('name'));
-                this.setPage(new clusterViews.ClusterPage({model: cluster, tabs: tabs, activeTab: activeTab}));
+                this.setPage(new clusterViews.ClusterPage({model: cluster, activeTab: activeTab}));
             };
 
             if (app.page && app.page.constructor == clusterViews.ClusterPage && app.page.model.id == id) {
@@ -68,8 +68,6 @@ function(models, commonViews, clusterViews, clustersViews, releaseViews) {
             var clusters = new models.Clusters();
             clusters.fetch({
                 success: _.bind(function() {
-                    this.navbar.setActive('clusters');
-                    this.breadcrumb.setPath(['Home', '#'], 'OpenStack Installations');
                     this.setPage(new clustersViews.ClustersPage({collection: clusters}));
                 }, this)
             });
@@ -78,8 +76,6 @@ function(models, commonViews, clusterViews, clustersViews, releaseViews) {
             var releases = new models.Releases();
             releases.fetch({
                 success: _.bind(function() {
-                    this.navbar.setActive('releases');
-                    this.breadcrumb.setPath(['Home', '#'], 'Software Updates');
                     this.setPage(new releaseViews.ReleasesPage({collection: releases}));
                 }, this)
             });

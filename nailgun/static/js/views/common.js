@@ -8,10 +8,29 @@ define(
     'text!templates/common/notifications_popover.html',
     'text!templates/common/breadcrumb.html'
 ],
-function(models, navbarTemplate, nodesStatsTemplate, nodesStatsPopoverTemplate, notificationsTemplate, notificationsPopoverTemplate, breadcrumbTemplate) {
+function(models, navbarTemplate, nodesStatsTemplate, nodesStatsPopoverTemplate, notificationsTemplate, notificationsPopoverTemplate, breadcrumbsTemplate) {
     'use strict';
 
     var views = {};
+
+    views.Page = Backbone.View.extend({
+        navbarActiveElement: null,
+        breadcrumbsPath: null,
+        title: null,
+        updateNavbar: function() {
+            var navbarActiveElement = _.isFunction(this.navbarActiveElement) ? this.navbarActiveElement() : this.navbarActiveElement;
+            app.navbar.setActive(navbarActiveElement);
+        },
+        updateBreadcrumbs: function() {
+            var breadcrumbsPath = _.isFunction(this.breadcrumbsPath) ? this.breadcrumbsPath() : this.breadcrumbsPath;
+            app.breadcrumbs.setPath(breadcrumbsPath);
+        },
+        updateTitle: function() {
+            var defaultTitle = 'Nailgun Dashboard';
+            var title = _.isFunction(this.title) ? this.title() : this.title;
+            document.title = title ? defaultTitle + ' - ' + title : defaultTitle;
+        }
+    });
 
     views.Navbar = Backbone.View.extend({
         className: 'container',
@@ -182,12 +201,12 @@ function(models, navbarTemplate, nodesStatsTemplate, nodesStatsPopoverTemplate, 
         }
     });
 
-    views.Breadcrumb = Backbone.View.extend({
+    views.Breadcrumbs = Backbone.View.extend({
         className: 'container',
-        template: _.template(breadcrumbTemplate),
+        template: _.template(breadcrumbsTemplate),
         path: [],
-        setPath: function() {
-            this.path = arguments;
+        setPath: function(path) {
+            this.path = path;
             this.render();
         },
         render: function() {

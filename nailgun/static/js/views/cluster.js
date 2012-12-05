@@ -1,6 +1,7 @@
 define(
 [
     'models',
+    'views/common',
     'views/dialogs',
     'text!templates/cluster/page.html',
     'text!templates/cluster/deployment_result.html',
@@ -17,12 +18,20 @@ define(
     'text!templates/cluster/actions_tab.html',
     'text!templates/cluster/logs_tab.html'
 ],
-function(models, dialogViews, clusterPageTemplate, deploymentResultTemplate, deploymentControlTemplate, nodesTabSummaryTemplate, editNodesScreenTemplate, nodeListTemplate, nodeTemplate, networkTabTemplate, networkTabViewModeTemplate, networkTabVerificationTemplate, settingsTabTemplate, settingsGroupTemplate, actionsTabTemplate, logsTabTemplate) {
+function(models, commonViews, dialogViews, clusterPageTemplate, deploymentResultTemplate, deploymentControlTemplate, nodesTabSummaryTemplate, editNodesScreenTemplate, nodeListTemplate, nodeTemplate, networkTabTemplate, networkTabViewModeTemplate, networkTabVerificationTemplate, settingsTabTemplate, settingsGroupTemplate, actionsTabTemplate, logsTabTemplate) {
     'use strict';
 
     var views = {};
 
-    views.ClusterPage = Backbone.View.extend({
+    views.ClusterPage = commonViews.Page.extend({
+        navbarActiveElement: 'clusters',
+        breadcrumbsPath: function() {
+            return [['Home', '#'], ['OpenStack Installations', '#clusters'], this.model.get('name')];
+        },
+        title: function() {
+            return this.model.get('name');
+        },
+        tabs: ['nodes', 'network', 'settings', 'logs', 'actions'],
         updateInterval: 5000,
         template: _.template(clusterPageTemplate),
         events: {
@@ -38,7 +47,7 @@ function(models, dialogViews, clusterPageTemplate, deploymentResultTemplate, dep
             var nodesToAdd = this.model.get('nodes').where({pending_addition: true});
             var nodesToDelete = this.model.get('nodes').where({pending_deletion: true});
             if (nodesToAdd.length || nodesToDelete.length) {
-                var dialog = new dialogViews.DiscardChangesDialog({ model: this.model});
+                var dialog = new dialogViews.DiscardChangesDialog({model: this.model});
                 this.registerSubView(dialog);
                 dialog.render();
             }
@@ -813,9 +822,10 @@ function(models, dialogViews, clusterPageTemplate, deploymentResultTemplate, dep
                 this.$('.rename-cluster-form input, .rename-cluster-form .apply-name-btn').attr('disabled', true);
                 this.model.update({name: name}, {
                     complete: function() {
-                            app.breadcrumb.setPath(['Home', '#'], ['OpenStack Installations', '#clusters'], this.model.get('name'));
-                            this.render();
-                        },
+                        app.page.updateBreadcrumbs();
+                        app.page.updateTitle();
+                        this.render();
+                    },
                     context: this
                 });
             }
