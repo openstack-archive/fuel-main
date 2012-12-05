@@ -91,6 +91,7 @@ $(ISOROOT)/puppet-nailgun.tgz:
 	(cd puppet && tar czf $@ *)
 
 $(ISOROOT)/puppet-slave.tgz:
+	@rm -rf fuel/deployment/puppet/network
 	(cd puppet && tar cf $(BUILD_DIR)/puppet-slave.tar puppet-network nailytest)
 	(cd fuel/deployment/puppet && tar rf $(BUILD_DIR)/puppet-slave.tar ./*)
 	gzip -c -9 $(BUILD_DIR)/puppet-slave.tar > $@
