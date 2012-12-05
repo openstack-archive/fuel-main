@@ -48,24 +48,22 @@ define(function() {
             var canChange;
             if (this.get('mode') == 'singlenode') {
                 canChange = false;
+            } else if (!typeToChangeTo) {
+                canChange = false;
+                _.each(this.availableTypes(), function(type) {
+                    if (type == this.get('type')) {return;}
+                    canChange = canChange || this.canChangeType(type);
+                }, this);
             } else {
-                if (!typeToChangeTo) {
-                    canChange = false;
-                    _.each(this.availableTypes(), function(type) {
-                        if (type == this.get('type')) {return;}
-                        canChange = canChange || this.canChangeType(type);
-                    }, this);
-                } else {
-                    canChange = true;
-                    var clusterTypesToNodesRoles = {'both': [], 'compute': ['storage'], 'storage': ['compute']};
-                    _.each(clusterTypesToNodesRoles[typeToChangeTo], function(nodeRole) {
-                        if (this.get('nodes').where({role: nodeRole}).length) {
-                            canChange = false;
-                        }
-                    }, this);
-                    if (this.get('nodes').where({role: 'controller'}).length > 1) {
+                canChange = true;
+                var clusterTypesToNodesRoles = {'both': [], 'compute': ['storage'], 'storage': ['compute']};
+                _.each(clusterTypesToNodesRoles[typeToChangeTo], function(nodeRole) {
+                    if (this.get('nodes').where({role: nodeRole}).length) {
                         canChange = false;
                     }
+                }, this);
+                if (canChange && this.get('nodes').where({role: 'controller'}).length > 1) {
+                    canChange = false;
                 }
             }
             return canChange;
