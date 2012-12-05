@@ -3,11 +3,12 @@ define(
     'models',
     'text!templates/dialogs/create_cluster.html',
     'text!templates/dialogs/change_cluster_mode.html',
+    'text!templates/dialogs/discard_changes.html',
     'text!templates/dialogs/display_changes.html',
     'text!templates/dialogs/remove_cluster.html',
     'text!templates/dialogs/error_message.html'
 ],
-function(models, createClusterDialogTemplate, changeClusterModeDialogTemplate, displayChangesDialogTemplate, removeClusterDialogTemplate, errorMessageTemplate) {
+function(models, createClusterDialogTemplate, changeClusterModeDialogTemplate, discardChangesDialogTemplate, displayChangesDialogTemplate, removeClusterDialogTemplate, errorMessageTemplate) {
     'use strict';
 
     var views = {};
@@ -130,6 +131,49 @@ function(models, createClusterDialogTemplate, changeClusterModeDialogTemplate, d
             this.constructor.__super__.render.call(this, {cluster: this.model});
             this.toggleTypes();
             this.toggleTypeDescription();
+            return this;
+        }
+    });
+
+    views.DiscardChangesDialog = views.Dialog.extend({
+        template: _.template(discardChangesDialogTemplate),
+        events: {
+            'click .discard-btn:not(.disabled)': 'discardChanges'
+        },
+        discardChanges: function() {
+            this.$('.discard-btn').addClass('disabled');
+            var pendingNodes = this.model.get('nodes').filter(function(node) {
+                return node.get('pending_addition') || node.get('pending_deletion');
+            });
+            var nodes = new models.Nodes(pendingNodes);
+            nodes.each(function(node) {
+                if (node.get('pending_addition')) {
+                    node.set({
+                        cluster_id: null,
+                        role: null,
+                        pending_addition: false
+                    }, {silent: true});
+                } else {
+                    node.set({pending_deletion: false}, {silent: true});
+                }
+            });
+            nodes.toJSON = function() {
+                return this.map(function(node) {
+                    return _.pick(node.attributes, 'id', 'cluster_id', 'role', 'pending_addition', 'pending_deletion');
+                });
+            };
+            Backbone.sync('update', nodes)
+                .done(_.bind(function() {
+                    this.model.get('nodes').fetch({data: {cluster_id: this.model.id}});
+                    app.navbar.stats.nodes.fetch();
+                }, this))
+                .fail(_.bind(this.displayErrorMessage, this));
+        },
+        initialize: function(options) {
+            _.defaults(this, options);
+        },
+        render: function() {
+            this.constructor.__super__.render.call(this, {cluster: this.model});
             return this;
         }
     });

@@ -27,14 +27,26 @@ function(models, dialogViews, clusterPageTemplate, deploymentResultTemplate, dep
         template: _.template(clusterPageTemplate),
         events: {
             'click .task-result .close': 'dismissTaskResult',
+            'click .rollback': 'discardChanges',
             'click .deploy-btn': 'displayChanges'
         },
         dismissTaskResult: function() {
             this.$('.task-result').remove();
             this.model.task('deploy').destroy();
         },
+        discardChanges: function() {
+            var nodesToAdd = this.model.get('nodes').where({pending_addition: true});
+            var nodesToDelete = this.model.get('nodes').where({pending_deletion: true});
+            if (nodesToAdd.length || nodesToDelete.length) {
+                var dialog = new dialogViews.DiscardChangesDialog({ model: this.model});
+                this.registerSubView(dialog);
+                dialog.render();
+            }
+        },
         displayChanges: function() {
-            (new dialogViews.DisplayChangesDialog({model: this.model})).render();
+            var dialog = new dialogViews.DisplayChangesDialog({model: this.model});
+            this.registerSubView(dialog);
+            dialog.render();
         },
         deployCluster: function(modalDialog) {
             var complete = _.after(2, _.bind(this.scheduleUpdate, this));
