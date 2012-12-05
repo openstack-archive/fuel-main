@@ -1,4 +1,5 @@
 from itertools import chain
+from devops.helpers import retry
 
 
 class EnvironmentException(object):
@@ -114,10 +115,18 @@ class Node(ManagedObject):
     def has_snapshot(self, snapshot_name):
         return snapshot_name in self.snapshots
 
+    def _delete_and_create(self, name):
+        #noinspection PyBroadException
+        try:
+            self.delete_snapshot(name)
+        except:
+            pass
+        return self.driver.create_snapshot(self, name=name)
+
     def save_snapshot(self, name=None, force=False):
         "Create node state snapshot. Returns snapshot name"
         if name and force and self.has_snapshot(name):
-            self.delete_snapshot(name)
+            return retry(10, self._delete_and_create, name=name)
         return self.driver.create_snapshot(self, name=name)
 
     def restore_snapshot(self, snapshot_name=None):
