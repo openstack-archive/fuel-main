@@ -7,10 +7,6 @@ module Astute
   module Deployer
     private
     def self.calculate_networks(data)
-      # {"eth0":{"ensure":"present","bootproto":"dhcp"},"lo":{},
-      # "eth0.102":{"ipaddr":"10.20.20.20","ensure":"present","vlan":"yes",
-      #     "netmask":"255.255.255.0","broadcast":"10.20.20.255","bootproto":"static"}}
-
       interfaces = {}
       data.each do |iface|
         if iface['vlan'] and iface['vlan'] != 0
@@ -33,6 +29,10 @@ module Astute
       interfaces['lo'] = {} unless interfaces.has_key?('lo')
       interfaces['eth0'] = {'bootproto' => 'dhcp',
                             'ensure' => 'present'} unless interfaces.has_key?('eth0')
+      # Example of return:
+      # {"eth0":{"ensure":"present","bootproto":"dhcp"},"lo":{},
+      # "eth0.102":{"ipaddr":"10.20.20.20","ensure":"present","vlan":"yes",
+      #     "netmask":"255.255.255.0","broadcast":"10.20.20.255","bootproto":"static"}}
       return interfaces
     end
 
@@ -45,16 +45,22 @@ module Astute
       end
       metapublisher = Astute::Metadata.method(:publish_facts)
 
+      Astute.logger.info "#{ctx.task_id}: Calculation of required attributes to pass, include netw.settings"
       nodes.each do |node|
         network_data = calculate_networks(node['network_data'])
         metadata = {'role' => node['role'], 'uid' => node['uid'], 'network_data' => network_data.to_json }
         attrs.each do |k, v|
           metadata[k] = v.to_json
         end
+        # Let's calculate interface settings we need for OpenStack:
+        node['network_data'].each do |iface|
+          device = (iface['vlan'] and iface['vlan'] > 0) ? [iface['dev'], iface['vlan']].join('.') : iface['dev']
+          metadata[iface['name'] + '_interface'] = device.to_json
+        end
 
         metapublisher.call(ctx, node['uid'], metadata)
       end
-
+      Astute.logger.info "#{ctx.task_id}: All required attrs/metadata passed via facts extension. Starting deployment."
       Astute::PuppetdDeployer.deploy(ctx, nodes)
     end
 

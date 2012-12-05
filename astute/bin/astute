@@ -11,8 +11,10 @@ end
 
 reporter = ConsoleReporter.new
 
-network_data = [{'vlan' =>  102, 'dev' => 'eth0', 'ip' => '10.20.20.24/24', 'brd' => '10.20.20.255', 'netmask' => '255.255.255.0'},
-                {'vlan' => 103, 'dev' => 'eth0'}] 
+network_data = [{'vlan' =>  102, 'dev' => 'eth0', 'ip' => '10.20.20.24/24', 'brd' => '10.20.20.255', 'netmask' => '255.255.255.0', 'name' => 'management'},
+                {'vlan' => 103, 'dev' => 'eth0', 'ip' => '240.12.12.12/24', 'brd' => '240.12.12.255', 'netmask' => '255.255.255.0', 'name' => 'public'},
+                {'vlan' => 104, 'dev' => 'eth0', 'name' => 'floating'},
+                {'vlan' => 101, 'dev' => 'eth0', 'name' => 'fixed'}] 
 nodes = [{'id' => '1', 'ip' => '10.1.1.2', 'uid' => 'devnailgun.mirantis.com', 'role' => 'controller',
           'network_data' => network_data}]
 #nodes << {'id' => '2', 'ip' => '10.1.1.3', 'uid' => 'mcoll2', 'role' => 'test_controller'}
