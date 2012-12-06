@@ -7,13 +7,17 @@ module Astute
   class DeploymentEngine
     def initialize(context)
       @ctx = context
+      @pattern_spec = {'type' => 'count-lines',
+        'endlog_patterns' => [{'pattern' => /Finished catalog run in [0-9]+\.[0-9]* seconds\n/, 'progress' => 1.0}],
+        'expected_line_number' => 500}
+      @deployLogParser = Astute::LogParser::ParseNodeLogs.new('puppet-agent.log', @pattern_spec)
     end
 
-    def deploy(nodes, attrs, prev_progress)
+    def deploy(nodes, attrs)
       # FIXME(mihgen): hardcode simple_compute for now
       attrs['deployment_mode'] ||= 'simple_compute'
       Astute.logger.info "Deployment mode #{attrs['deployment_mode']}, using #{self.class} for deployment."
-      result = self.send("deploy_#{attrs['deployment_mode']}", nodes, attrs, prev_progress)
+      result = self.send("deploy_#{attrs['deployment_mode']}", nodes, attrs)
     end
 
     def method_missing(method, *args)
@@ -23,22 +27,18 @@ module Astute
     # This method is called by Ruby metaprogramming magic from deploy method
     # It should not contain any magic with attributes, and should not directly run any type of MC plugins
     # It does only support of deployment sequence. See deploy_piece implementation in subclasses.
-    def deploy_simple_compute(nodes, attrs, prev_progress)
-      deploying_progress_part = 1 - prev_progress
-
+    def deploy_simple_compute(nodes, attrs)
       ctrl_nodes = nodes.select {|n| n['role'] == 'controller'}
 
       attrs = extend_attrs(nodes, attrs)
 
       deploy_piece(ctrl_nodes, attrs)
-      progress = (100* prev_progress + 40 * deploying_progress_part).to_i
-      @ctx.reporter.report({'progress' => progress})
 
+      @deployLogParser.pattern_spec['expected_line_number'] = 380
       compute_nodes = nodes.select {|n| n['role'] == 'compute'}
       deploy_piece(compute_nodes, attrs)
-      progress = (100* prev_progress + 60 * deploying_progress_part).to_i
-      @ctx.reporter.report({'progress' => progress})
 
+      @deployLogParser.pattern_spec['expected_line_number'] = 300
       other_nodes = nodes - ctrl_nodes - compute_nodes
       deploy_piece(other_nodes, attrs)
       return

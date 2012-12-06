@@ -56,6 +56,14 @@ class nailgun::cobbler(
     require => Class["cobbler::server"],
   }
 
+  file {"/var/lib/cobbler/snippets/target_logs_to_master":
+    content => template("nailgun/cobbler/target_logs_to_master.snippet.erb"),
+    owner => root,
+    group => root,
+    mode => 0644,
+    require => Class["cobbler::server"],
+  }
+
   file {"/var/lib/cobbler/snippets/kickstart_ntp":
     content => template("nailgun/cobbler/kickstart_ntp.snippet.erb"),
     owner => root,

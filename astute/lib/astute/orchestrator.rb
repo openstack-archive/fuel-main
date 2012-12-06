@@ -13,10 +13,10 @@ module Astute
       return systems.map {|n| {'uid' => n.results[:sender], 'node_type' => n.results[:data][:node_type].chomp}}
     end
 
-    def deploy(reporter, task_id, nodes, attrs, prev_progress=0)
+    def deploy(reporter, task_id, nodes, attrs)
       context = Context.new(task_id, reporter)
       deploy_engine_instance = @deploy_engine.new(context)
-      deploy_engine_instance.deploy(nodes, attrs, prev_progress)
+      deploy_engine_instance.deploy(nodes, attrs)
     end
 
     def remove_nodes(reporter, task_id, nodes)

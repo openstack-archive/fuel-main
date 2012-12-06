@@ -1,6 +1,7 @@
 require 'json'
 require 'logger'
 
+require 'astute/logparser'
 require 'astute/orchestrator'
 require 'astute/metadata'
 require 'astute/deployment_engine'

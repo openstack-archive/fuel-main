@@ -4,13 +4,14 @@ require 'timeout'
 module Astute
   module PuppetdDeployer
     private
+
     def self.calc_error_nodes(last_run_summary)
       error_nodes = last_run_summary.select { |n|
             n.results[:data][:resources]['failed'] != 0}.map {|x| x.results[:sender]}
       return error_nodes
     end
 
-    def self.wait_until_puppet_done(ctx, puppetd, prev_summary)
+    def self.wait_until_puppet_done(ctx, puppetd, prev_summary, nodes, deployLogParser)
       prev_error_nodes = calc_error_nodes(prev_summary)
       last_run = prev_summary
       while last_run.all? {|x| x.results[:data][:time]['last_run'] ==
@@ -28,15 +29,26 @@ module Astute
           # We want to send error message only once (only when status is changed)
           prev_error_nodes = new_error_nodes
         end
+        begin
+          nodes_progress = deployLogParser.progress_calculate(nodes)
+          ctx.reporter.report({'nodes' => nodes_progress})
+        rescue Exception => e
+          Astute.logger.warn "Some error occured when parse logs for nodes progress: #{e.message}, trace: #{e.backtrace.inspect}"
+        end
       end
       last_run
     end
 
     public
-    def self.deploy(ctx, nodes)
+    def self.deploy(ctx, nodes, deployLogParser)
       uids = nodes.map {|n| n['uid']}
       puppetd = MClient.new(ctx, "puppetd", uids)
       lastrun_summary = puppetd.last_run_summary
+      begin
+        deployLogParser.add_separator(nodes)
+      rescue Exception => e
+        Astute.logger.warn "Some error occured when add separator to logs: #{e.message}, trace: #{e.backtrace.inspect}"
+      end
 
       puppetd.runonce
 
@@ -46,7 +58,7 @@ module Astute
         # Yes, we polling here and yes, it's temporary.
         # As a better implementation we can later use separate queue to get result, ex. http://www.devco.net/archives/2012/08/19/mcollective-async-result-handling.php
         # or we can rewrite puppet agent not to fork, and increase ttl for mcollective RPC.
-        wait_until_puppet_done(ctx, puppetd, lastrun_summary)
+        wait_until_puppet_done(ctx, puppetd, lastrun_summary, nodes, deployLogParser)
       end
       summary = puppetd.last_run_summary.map { |x| {x.results[:sender] => x.results[:data][:resources]} }
       Astute.logger.debug "Results of puppet run from all nodes: #{summary.inspect}"
