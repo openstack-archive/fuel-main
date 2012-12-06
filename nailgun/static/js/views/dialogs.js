@@ -104,18 +104,22 @@ function(models, createClusterDialogTemplate, changeClusterModeDialogTemplate, d
         apply: function() {
             var cluster = this.model;
             var valid = true;
-            cluster.on('error', function(model, errors) {
-                valid = false;
-                _.each(errors, function(message, field) {
-                    this.$('*[name=' + field + '] ~ .help-inline').text(message);
-                    this.$('*[name=' + field + ']').closest('.control-group').addClass('error');
-                }, this);
-            }, this);
             var mode = this.$('input[name=mode]:checked').val();
             var type = this.$('input[name=type]:checked').val();
-            if (valid) {
-                this.$('.apply-btn').addClass('disabled');
-                cluster.update({mode: mode, type: type}).fail(_.bind(this.displayErrorMessage, this));
+            if (cluster.get('mode') == mode && cluster.get('type') == type) {
+                this.$el.modal('hide');
+            } else {
+                cluster.on('error', function(model, errors) {
+                    valid = false;
+                    _.each(errors, function(message, field) {
+                        this.$('*[name=' + field + '] ~ .help-inline').text(message);
+                        this.$('*[name=' + field + ']').closest('.control-group').addClass('error');
+                    }, this);
+                }, this);
+                if (valid) {
+                    this.$('.apply-btn').addClass('disabled');
+                    cluster.update({mode: mode, type: type}).fail(_.bind(this.displayErrorMessage, this));
+                }
             }
         },
         toggleTypes: function() {

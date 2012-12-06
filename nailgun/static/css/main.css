@@ -988,17 +988,21 @@ h6.page-title {
   background-image: none;
 }
 
+.progress-deploy-clusters-page {
+  padding: 2px 10px;
+}
+
+.progress > .bar {
+  height: 12px;
+  border-radius: 3px;
+}
+
 .progress-verify-networks {
   display: inline-block;
   float: right;
   margin: 7px 0px 0px 0px;
   width: 120px;
   height: 16px;
-}
-
-.progress-deploy > .bar {
-  height: 12px;
-  border-radius: 3px;
 }
 
 .networks-table {
@@ -1934,7 +1938,7 @@ h6.page-title {
   display: block;
   padding: 0;
   overflow: hidden;
-
+  text-align: justify;
   margin-top: 0px !important;
   font-size: 12px !important;
   line-height: 14px !important;

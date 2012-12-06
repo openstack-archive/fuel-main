@@ -16,5 +16,11 @@
 </div>
 <div class="cluster-status">
   <% var statuses = {'new': 'New', 'deployment': 'Deployment', 'operational': 'Operational', 'error': 'Error', 'remove': 'Removing'} %>
-  <%= cluster.task('deploy', 'running') ? 'Deployment' : cluster.task('cluster_deletion', 'running') ? 'Removing' : statuses[cluster.get('status')] %>
+  <% if (cluster.task('deploy', 'running')) { %>
+    <div class="progress progress-warning progress-striped progress-deploy-clusters-page active" rel="tooltip">
+      <div class="bar"></div>
+    </div>
+  <% } else { %>
+    <%= cluster.task('cluster_deletion', 'running') ? 'Removing' : statuses[cluster.get('status')] %>
+  <% } %>
 </div>

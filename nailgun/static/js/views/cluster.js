@@ -146,10 +146,19 @@ function(models, commonViews, dialogViews, clusterPageTemplate, deploymentResult
                 clusterStatus = 'error';
                 this.model.update({status: clusterStatus});
             } else if (taskStatus == 'ready') {
-                if (this.model.get('nodes').where({role: 'controller', pending_addition: false, pending_deletion: false}).length) {
-                    clusterStatus = 'operational';
+                if (!this.model.get('nodes').length) {
+                    clusterStatus = 'new';
                 } else {
-                    clusterStatus = 'error';
+                    var size;
+                    _.each(this.model.availableRoles(), function(role) {
+                        size = this.model.get('mode') == 'ha' && role == 'controller' ? 3 : 1;
+                        if (this.model.get('nodes').where({role: role, pending_addition: false, pending_deletion: false}).length >= size) {
+                            clusterStatus = 'operational';
+                        }
+                    });
+                    if (clusterStatus != 'operational') {
+                        clusterStatus = 'error';
+                    }
                 }
                 this.model.update({status: clusterStatus});
             }
