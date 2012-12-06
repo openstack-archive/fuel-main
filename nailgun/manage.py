@@ -84,10 +84,8 @@ if __name__ == "__main__":
             param = getattr(params, attr.lower())
             if param is not None:
                 settings.update({attr: param})
-        logger.info("Running WSGI app...")
         from nailgun.wsgi import appstart
         appstart()
-        logger.info("Stopping WSGI app...")
     elif params.action == "shell":
         from nailgun.api.models import engine
         orm = scoped_session(sessionmaker(bind=engine))

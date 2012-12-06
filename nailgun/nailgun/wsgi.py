@@ -10,6 +10,7 @@ from nailgun.api.handlers import check_client_content_type
 from nailgun.api.handlers import forbid_client_caching
 from nailgun.db import load_db_driver
 from nailgun.urls import urls
+from nailgun.logger import logger
 
 
 class FlushingLogger(object):
@@ -48,28 +49,22 @@ def build_app():
 
 
 def appstart():
-    from nailgun.rpc import threaded
-    import eventlet
-    from eventlet import wsgi
-    eventlet.monkey_patch()
+    from nailgun.rpc import processed
     app = build_app()
-    rpc_thread = threaded.RPCThread()
+    rpc_process = processed.RPCProcess()
 
-    try:
-        rpc_thread.start()
-        wsgi.server(
-            eventlet.listen(
-                (
-                    settings.LISTEN_ADDRESS,
-                    int(settings.LISTEN_PORT)
-                )
-            ),
-            app.wsgifunc(),
-            log=FlushingLogger()
+    logger.info("Running RPC process...")
+    rpc_process.start()
+    logger.info("Running WSGI app...")
+    # seizes control
+    web.httpserver.runsimple(
+        app.wsgifunc(),
+        (
+            settings.LISTEN_ADDRESS,
+            int(settings.LISTEN_PORT)
         )
-    except KeyboardInterrupt:
-        logger.info("Stopping RPC thread...")
-        rpc_thread.running = False
-        logger.info("Stopping WSGI app...")
-        server.stop()
-        logger.info("Done")
+    )
+    logger.info("Stopping WSGI app...")
+    logger.info("Stopping RPC process...")
+    rpc_process.terminate()
+    logger.info("Done")

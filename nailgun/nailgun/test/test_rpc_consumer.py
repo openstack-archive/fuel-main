@@ -7,7 +7,7 @@ import eventlet
 eventlet.monkey_patch()
 
 import nailgun.rpc as rpc
-from nailgun.rpc import threaded
+from nailgun.rpc import receiver as rec
 from nailgun.test.base import BaseHandlers
 from nailgun.api.models import Node
 from nailgun.api.models import Task
@@ -26,7 +26,7 @@ class TestVerifyNetworks(BaseHandlers):
         node1 = self.create_default_node(cluster_id=cluster['id'])
         node2 = self.create_default_node(cluster_id=cluster['id'])
 
-        receiver = threaded.NailgunReceiver()
+        receiver = rec.NailgunReceiver()
 
         task = Task(
             name="super",
@@ -50,7 +50,7 @@ class TestVerifyNetworks(BaseHandlers):
         node1 = self.create_default_node(cluster_id=cluster['id'])
         node2 = self.create_default_node(cluster_id=cluster['id'])
 
-        receiver = threaded.NailgunReceiver()
+        receiver = rec.NailgunReceiver()
 
         task = Task(
             name="super",
@@ -80,7 +80,7 @@ class TestVerifyNetworks(BaseHandlers):
         node1 = self.create_default_node(cluster_id=cluster['id'])
         node2 = self.create_default_node(cluster_id=cluster['id'])
 
-        receiver = threaded.NailgunReceiver()
+        receiver = rec.NailgunReceiver()
 
         task = Task(
             name="super",
@@ -103,7 +103,7 @@ class TestVerifyNetworks(BaseHandlers):
         node1 = self.create_default_node(cluster_id=cluster['id'])
         node2 = self.create_default_node(cluster_id=cluster['id'])
 
-        receiver = threaded.NailgunReceiver()
+        receiver = rec.NailgunReceiver()
 
         task = Task(
             name="super",
@@ -128,7 +128,7 @@ class TestConsumer(BaseHandlers):
     def test_node_deploy_resp(self):
         node = self.create_default_node()
         node2 = self.create_default_node()
-        receiver = threaded.NailgunReceiver()
+        receiver = rec.NailgunReceiver()
 
         task = Task(
             uuid=str(uuid.uuid4()),
@@ -148,7 +148,7 @@ class TestConsumer(BaseHandlers):
         self.assertEqual(task.status, "error")
 
     def test_task_progress(self):
-        receiver = threaded.NailgunReceiver()
+        receiver = rec.NailgunReceiver()
 
         task = Task(
             uuid=str(uuid.uuid4()),
@@ -168,7 +168,7 @@ class TestConsumer(BaseHandlers):
         node1 = self.create_default_node(cluster_id=cluster['id'])
         node2 = self.create_default_node(cluster_id=cluster['id'])
 
-        receiver = threaded.NailgunReceiver()
+        receiver = rec.NailgunReceiver()
 
         task = Task(
             uuid=str(uuid.uuid4()),
@@ -195,7 +195,7 @@ class TestConsumer(BaseHandlers):
         node1 = self.create_default_node(cluster_id=cluster['id'])
         node2 = self.create_default_node(cluster_id=cluster['id'])
 
-        receiver = threaded.NailgunReceiver()
+        receiver = rec.NailgunReceiver()
 
         task = Task(
             uuid=str(uuid.uuid4()),
@@ -237,7 +237,7 @@ class TestConsumer(BaseHandlers):
         for net in networks:
             vlans.append(net.vlan_id)
 
-        receiver = threaded.NailgunReceiver()
+        receiver = rec.NailgunReceiver()
 
         task = Task(
             uuid=str(uuid.uuid4()),
@@ -296,7 +296,7 @@ class TestConsumer(BaseHandlers):
             cluster_id=cluster['id']
         )
 
-        receiver = threaded.NailgunReceiver()
+        receiver = rec.NailgunReceiver()
 
         task = Task(
             uuid=str(uuid.uuid4()),
