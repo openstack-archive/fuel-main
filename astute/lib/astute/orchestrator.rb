@@ -78,7 +78,7 @@ module Astute
       Astute.logger.info "#{ctx.task_id}: Starting removing of nodes: #{uids.inspect}"
       remover = MClient.new(ctx, "erase_node", uids, check_result=false)
       result = remover.erase_node(:reboot => true)
-      Astute.logger.debug "#{ctx.task_id}: Data resieved from nodes: #{result.inspect}"
+      Astute.logger.debug "#{ctx.task_id}: Data received from nodes: #{result.inspect}"
       inaccessible_uids = uids - result.map {|n| n.results[:sender]}
       error_nodes = []
       erased_nodes = []
