@@ -5,7 +5,7 @@
 <div class="modal-body display-changes-dialog">
   <ul>
     <% var warnings = {
-      'controller': 'You are about to delete the last remaining cloud controller and lose all data in the current OpenStack installation. Are you sure you want to proceed?',
+      'controller': 'The cluster will not contain the necessary number of controllers after deployment. Thus, it will not be usable.',
       'compute': 'Compute nodes are recommended for deployment',
       'storage': 'Storage nodes are recommended for deployment',
       'compute-storage': 'Compute and storage nodes are recommended for deployment',
@@ -17,10 +17,13 @@
       <% canDeploy = false %>
     <% } else { %>
       <% var roles = cluster.availableRoles() %>
-      <% var size = cluster.get('mode') == 'ha' ? 3 : 1 %>
       <% if (cluster.get('nodes').where({role: 'controller'}).length < size) { %>
         <li>There must be at least <%= size %> controller node<%= size != 1 ? 's' : '' %></li>
-        <% canDeploy = false %>
+        <% if (!cluster.get('nodes').length) { %>
+          <% canDeploy = false %>
+        <% } else { %>
+          <% warning = 'controller' %>
+        <% } %>
       <% } else {%>
         <% _.each(roles, function(role) { %>
           <% if (warning != 'controller' && !_.filter(cluster.get('nodes').nodesAfterDeployment(), function(node) {return node.get('role') == role}).length) { %>
