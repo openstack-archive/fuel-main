@@ -16,7 +16,7 @@ class LogEntryCollectionHandler(JSONHandler):
     def GET(self):
         web.header('Content-Type', 'application/json')
         user_data = web.input()
-        if not user_data.node or not user_data.source:
+        if not user_data.get('node') or not user_data.get('source'):
             raise web.badrequest()
 
         node = web.ctx.orm.query(Node).get(user_data.node)
