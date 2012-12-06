@@ -15,6 +15,7 @@ module Astute
         else
           name = iface['dev']
         end
+        interfaces[name]['bootproto'] = 'none'
         if iface['ip']
           ipaddr = iface['ip'].split('/')[0]
           interfaces[name]['ipaddr'] = ipaddr
@@ -50,12 +51,12 @@ module Astute
         network_data = calculate_networks(node['network_data'])
         metadata = {'role' => node['role'], 'uid' => node['uid'], 'network_data' => network_data.to_json }
         attrs.each do |k, v|
-          metadata[k] = v.to_json
+          metadata[k] = v  # TODO(mihgen): needs to be much smarter than this. This will work only with simple string.
         end
         # Let's calculate interface settings we need for OpenStack:
         node['network_data'].each do |iface|
           device = (iface['vlan'] and iface['vlan'] > 0) ? [iface['dev'], iface['vlan']].join('.') : iface['dev']
-          metadata[iface['name'] + '_interface'] = device.to_json
+          metadata[iface['name'] + '_interface'] = device
         end
 
         metapublisher.call(ctx, node['uid'], metadata)
