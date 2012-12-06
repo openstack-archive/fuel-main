@@ -3,9 +3,9 @@
         "pk": 1,
         "model": "nailgun.release",
         "fields": {
-            "name": "OpenStack Folsom Release",
-            "version": "0.1.0",
-            "description": "Alpha release",
+            "name": "Folsom",
+            "version": "2012.1.3",
+            "description": "Developed by more than 330 contributors who implemented 185 different features, the OpenStack Folsom release continues the themes of stability and extensibility, while adding significant new features like Networking, Block Storage and Hyper-V support. There was also signficiant progress made with localization efforts, including a new translation framework for user-facing guides and documentation.",
             "networks_metadata": [
                 {"name": "floating", "access": "public"},
                 {"name": "public", "access": "public"},
