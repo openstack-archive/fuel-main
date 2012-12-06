@@ -21,6 +21,7 @@ class TestTasks(BaseHandlers):
         self.conn.consume_in_thread()
 
     def tearDown(self):
+        self.conn.cancel_consumer_thread()
         self.conn.close()
         super(TestTasks, self).tearDown()
 
