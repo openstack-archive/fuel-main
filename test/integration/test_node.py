@@ -79,6 +79,14 @@ class TestNode(Base):
         cluster_name = 'two_nodes'
         nodes = {'controller': ['slave1'], 'compute': ['slave2']}
         self._basic_provisioning(cluster_name, nodes)
+        slave = ci.environment.node['slave1']
+        node = self._get_slave_node_by_devops_node(slave)
+        ctrl_ssh = SSHClient()
+        ctrl_ssh.connect_ssh(node['ip'], 'root', 'r00tme')
+        ret = ctrl_ssh.execute('/usr/bin/nova-manage service list')
+        self.assertEquals(ret['exit_status'], 0)
+        self.assertEquals(''.join(ret['stdout']).count(":-)"), 5)
+        self.assertEquals(''.join(ret['stdout']).count("XXX"), 0)
 
     def test_network_config(self):
         self._revert_nodes()
@@ -89,44 +97,49 @@ class TestNode(Base):
         node = self._get_slave_node_by_devops_node(slave)
         ctrl_ssh = SSHClient()
         ctrl_ssh.connect_ssh(node['ip'], 'root', 'r00tme')
-        ifaces_data = ''.join(ctrl_ssh.execute('/sbin/ip addr')['stdout'])
         ifaces_fail = False
-
-        ifaces_config_is_implemented = True
-        if ifaces_config_is_implemented:
-            for iface in node['network_data']:
-                if iface['vlan']:
-                    ifname = "%s.%s@%s" % (
-                        iface['dev'], iface['vlan'], iface['dev']
-                    )
-                else:
-                    ifname = iface['dev']
-                r = r"""\d+: (%s): .*(
-    .*)*
-    (inet %s brd %s).*
-""" % (ifname, iface['ip'], iface['brd'])
-                if re.search(r, ifaces_data):
-                    logging.debug(
-                        "Interface %s is ok on node %s" % (ifname, node['id'])
-                    )
-                else:
-                    logging.error(
-                        "Interface %s is BAD on node %s" % (ifname, node['id'])
-                    )
-                    ifaces_fail = True
-        else:
-            r = """
-    link/ether %s brd ff:ff:ff:ff:ff:ff
-    inet %s/""" % (node['mac'].lower(), node['ip'])
-            if re.search(r, ifaces_data):
-                logging.debug(
-                    "Default interface is ok on node %s" % (node['id'])
+        for iface in node['network_data']:
+            try:
+                ifname = "%s.%s@%s" % (
+                    iface['dev'], iface['vlan'], iface['dev']
                 )
+                ifname_short = "%s.%s" % (iface['dev'], iface['vlan'])
+            except KeyError:
+                ifname = iface['dev']
+            iface_data = ''.join(
+                ctrl_ssh.execute(
+                    '/sbin/ip addr show dev %s' % ifname_short
+                )['stdout']
+            )
+            if iface_data.find(ifname) == -1:
+                logging.error("Interface %s is absent" % ifname_short)
+                ifaces_fail = True
             else:
-                logging.error(
-                    "Default interface is BAD on node %s" % (node['id'])
-                )
-                failed = True
+                try:
+                    if iface_data.find("inet %s" % iface['ip']) == -1:
+                        logging.error(
+                            "Interface %s does not have ip %s" % (
+                                ifname_short, iface['ip']
+                            )
+                        )
+                        ifaces_fail = True
+                except KeyError:
+                    if iface_data.find("inet ") != -1:
+                        logging.error(
+                            "Interface %s does have ip.  And it should not" %
+                            ifname_short
+                        )
+                        ifaces_fail = True
+                try:
+                    if iface_data.find("brd %s" % iface['brd']) == -1:
+                        logging.error(
+                            "Interface %s does not have broadcast %s" % (
+                                ifname_short, iface['brd']
+                            )
+                        )
+                        ifaces_fail = True
+                except KeyError:
+                    pass
         self.assertEquals(ifaces_fail, False)
 
     def test_node_deletion(self):
@@ -263,6 +276,11 @@ class TestNode(Base):
                     "/api/nodes/%s/" % node['id'],
                     {"role": role, "pending_addition": True}
                 )
+        if len(node_names) > 1:
+            self.client.put(
+                "/api/clusters/%s/" % cluster_id,
+                {"mode": "multinode"}
+            )
         self._update_nodes_in_cluster(cluster_id, nodes)
         task = self._launch_provisioning(cluster_id)
 
