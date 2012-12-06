@@ -53,6 +53,7 @@
             "name": "Production",
             "mode": "multinode",
             "type": "both",
+            "status": "operational",
             "release": 1
         }
     },

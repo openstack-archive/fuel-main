@@ -14,4 +14,7 @@
     <% } %>
   </div>
 </div>
-<div class="cluster-status">Operational</div>
+<div class="cluster-status">
+  <% var statuses = {'new': 'New', 'deployment': 'Deployment', 'operational': 'Operational', 'error': 'Error', 'remove': 'Removing'} %>
+  <%= cluster.task('deploy', 'running') ? 'Deployment' : cluster.task('cluster_deletion', 'running') ? 'Removing' : statuses[cluster.get('status')] %>
+</div>

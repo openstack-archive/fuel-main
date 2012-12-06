@@ -58,7 +58,7 @@ function(models, commonViews, dialogViews, clusterPageTemplate, deploymentResult
             this.registerSubView(dialog);
             dialog.render();
         },
-        deployCluster: function(modalDialog) {
+        deployCluster: function() {
             var complete = _.after(2, _.bind(this.scheduleUpdate, this));
             this.model.get('tasks').fetch({data: {cluster_id: this.model.id}, complete: complete});
             this.model.get('nodes').fetch({data: {cluster_id: this.model.id}, complete: complete});
@@ -91,7 +91,9 @@ function(models, commonViews, dialogViews, clusterPageTemplate, deploymentResult
             this.scheduleUpdate();
         },
         bindTasksEvents: function() {
-            this.model.get('tasks').bind('reset', this.renderDeploymentControls, this);
+            this.model.get('tasks').bind('reset', function() {
+                this.renderDeploymentControls();
+            }, this);
         },
         renderDeploymentControls: function() {
             this.deploymentResult = new views.DeploymentResult({model: this.model});
@@ -137,6 +139,20 @@ function(models, commonViews, dialogViews, clusterPageTemplate, deploymentResult
         },
         render: function() {
             this.$el.html(this.template({cluster: this.model}));
+            var task = this.model.task('deploy');
+            var taskStatus = task ? task.get('status') : null;
+            var clusterStatus;
+            if (taskStatus == 'error') {
+                clusterStatus = 'error';
+                this.model.update({status: clusterStatus});
+            } else if (taskStatus == 'ready') {
+                if (this.model.get('nodes').where({role: 'controller', pending_addition: false, pending_deletion: false}).length) {
+                    clusterStatus = 'operational';
+                } else {
+                    clusterStatus = 'error';
+                }
+                this.model.update({status: clusterStatus});
+            }
             return this;
         }
     });
