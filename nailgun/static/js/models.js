@@ -197,5 +197,16 @@ define(function() {
         url: '/api/networks'
     });
 
+    models.LogSource = Backbone.Model.extend({
+        constructorName: 'LogSource',
+        urlRoot: '/api/logs/sources'
+    });
+
+    models.LogSources = Backbone.Collection.extend({
+        constructorName: 'LogSources',
+        model: models.LogSource,
+        url: '/api/logs/sources'
+    });
+
     return models;
 });

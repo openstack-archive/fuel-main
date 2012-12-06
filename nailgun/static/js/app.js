@@ -47,8 +47,9 @@ function(models, commonViews, clusterViews, clustersViews, releaseViews) {
             }
 
             var cluster;
+            var tabArguments = _.tail(arguments, 2);
             var render = function() {
-                this.setPage(new clusterViews.ClusterPage({model: cluster, activeTab: activeTab}));
+                this.setPage(new clusterViews.ClusterPage({model: cluster, activeTab: activeTab, tabArguments: tabArguments}));
             };
 
             if (app.page && app.page.constructor == clusterViews.ClusterPage && app.page.model.id == id) {

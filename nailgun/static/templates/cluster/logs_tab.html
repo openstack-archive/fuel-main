@@ -1,140 +1,58 @@
 <div class="wrapper">
-	<h3 class="span12">Logs</h3>
-	
-	<!-- Filters -->
-	<div class="row">
+  <h3 class="span12">Logs</h3>
 
-		<!-- Filter Bar -->
-		<div class="filter-bar">
+  <div class="row">
+    <div class="filter-bar">
+			<% var loaded = !sources.deferred || sources.deferred.state() != 'pending' %>
+      <div class="filter-bar-item">
+				<div class="filter-bar-label">Node:</div>
+				<select name="node" class="filter-bar-dropdown input-large" <%= loaded ? '' : 'disabled' %>>
+					<% _.each(cluster.get('nodes').currentNodes(), function(node) { %>
+						<option value="<%= node.id %>" <%= node.id == chosenNodeId ? 'selected' : '' %>><%- node.get('name') || node.get('mac') %></option>
+					<% }) %>
+				</select>
+      </div>
+      <div class="filter-bar-item">
+				<div class="filter-bar-label">Log:</div>
+				<select name="source" class="filter-bar-dropdown input-medium" <%= loaded ? '' : 'disabled' %>>
+					<% sources.each(function(source) { %>
+						<option value="<%= source.id %>" <%= source.id == chosenSourceId ? 'selected' : '' %>><%- source.get('name') %></option>
+					<% }) %>
+				</select>
+      </div>
 
-			<div class="filter-bar-item">
-				<div class="filter-bar-label">Log Level:</div>
-				<button class="filter-bar-dropdown dropdown-toggle" data-toggle="dropdown">Warning<i class="icon-down-dir-1"></i></button>
-				<ul class="dropdown-menu">
-    				<li><a href="#">All</a></li>
-    				<li><a href="#">Info</a></li>
-    				<li><a href="#">Warning</a></li>
-    				<li><a href="#">Error</a></li>
-  				</ul>
+      <div class="filter-bar-item">
+				<button class="filter-bar-btn show-logs-btn btn" disabled>Show</button>
 			</div>
+    </div>
+  </div>
 
-			<div class="filter-bar-item">
-				<div class="filter-bar-label">Period:</div>
-				<button class="filter-bar-dropdown dropdown-toggle" data-toggle="dropdown">Period:<i class="icon-down-dir-1"></i></button>
-				<ul class="dropdown-menu">
-					<li><a href="#">All</a></li>
-    				<li><a href="#">Day</a></li>
-    				<li><a href="#">Week</a></li>
-    				<li><a href="#">Month</a></li>
-    				<li><a href="#">Year</a></li>
-  				</ul>
-			</div>
-
-			<div class="filter-bar-item">
-				<div class="filter-bar-label">Type:</div>
-				<button class="filter-bar-dropdown dropdown-toggle" data-toggle="dropdown">Syslog<i class="icon-down-dir-1"></i></button>
-				<ul class="dropdown-menu">
-					<li><a href="#">All</a></li>
-    				<li><a href="#">Syslog</a></li>
-    				<li><a href="#">Puppet</a></li>
-    				<li><a href="#">Other</a></li>
-  				</ul>
-			</div>
-
-			<div class="filter-bar-item">
-				<div class="filter-bar-label">Backlit:</div>
-				<button class="filter-bar-dropdown dropdown-toggle" data-toggle="dropdown">Mono<i class="icon-down-dir-1"></i></button>
-				<ul class="dropdown-menu">
-					<li><a href="#">Mono</a></li>
-    				<li><a href="#">Colored</a></li>
-  				</ul>
-			</div>
-
-			<div class="filter-bar-item">
-				<div class="filter-bar-label">Items per page:</div>
-				<button class="filter-bar-dropdown dropdown-toggle" data-toggle="dropdown">20<i class="icon-down-dir-1"></i></button>
-				<ul class="dropdown-menu">
-					<li><a href="#">50</a></li>
-    				<li><a href="#">150</a></li>
-  				</ul>
-			</div>
-
-		</div>
-
-		
-
+	<div class="logs-description">
+		Please choose node and log source, then click "Show".
 	</div>
 
-
-	<!-- Tables -->
-	<table class="table table-bordered table-condensed table-logs">
-		<thead>
-			<tr>
-				<th nowrap>Date / Time</th>
-				<th nowrap>Level</th>
-				<th>Description</th>
-				<th nowrap>Type</th>
-				<th nowrap>Node Name</th>				
-			</tr>
-		</thead>
-		<tbody>
-			<tr>
-				<td nowrap>11.19.2012 18:15</td>
-				<td nowrap>Info</td>
-				<td>Lorem ipsum dolor sit amet, consectetur adipiscing elit. Cras eget sapien et lectus scelerisque consequat. Integer suscipit augue eu mi mattis consectetur. Nam at orci ipsum, non sollicitudin arcu.</td>
-				<td nowrap>Syslog</td>
-				<td nowrap>Node 001</td>
-			</tr>
-			<tr>
-				<td nowrap>11.19.2012 18:15</td>
-				<td nowrap>Warning</td>
-				<td>Lorem ipsum dolor sit amet, consectetur adipiscing elit. Cras eget sapien et lectus scelerisque consequat. Integer suscipit augue eu mi mattis consectetur. Nam at orci ipsum, non sollicitudin arcu.</td>
-				<td nowrap>Puppet</td>
-				<td nowrap>Node 002</td>				
-			</tr>
-			<tr class="error">
-				<td nowrap>11.19.2012 18:15</td>
-				<td nowrap>Error</td>
-				<td>Lorem ipsum dolor sit amet, consectetur adipiscing elit. Cras eget sapien et lectus scelerisque consequat. Integer suscipit augue eu mi mattis consectetur. Nam at orci ipsum, non sollicitudin arcu.</td>
-				<td nowrap>Syslog</td>
-				<td nowrap>Node 003</td>
-			</tr>
-			<tr class="info">
-				<td nowrap>11.19.2012 18:15</td>
-				<td nowrap>Info</td>
-				<td>Lorem ipsum dolor sit amet, consectetur adipiscing elit. Cras eget sapien et lectus scelerisque consequat. Integer suscipit augue eu mi mattis consectetur. Nam at orci ipsum, non sollicitudin arcu.</td>
-				<td nowrap>Syslog</td>
-				<td nowrap>Node 001</td>
-			</tr>
-			<tr class="warning">
-				<td nowrap>11.19.2012 18:15</td>
-				<td nowrap>Warning</td>
-				<td>Lorem ipsum dolor sit amet, consectetur adipiscing elit. Cras eget sapien et lectus scelerisque consequat. Integer suscipit augue eu mi mattis consectetur. Nam at orci ipsum, non sollicitudin arcu.</td>
-				<td nowrap>Puppet</td>
-				<td nowrap>Node 002</td>				
-			</tr>
-			<tr class="error">
-				<td nowrap>11.19.2012 18:15</td>
-				<td nowrap>Error</td>
-				<td>Lorem ipsum dolor sit amet, consectetur adipiscing elit. Cras eget sapien et lectus scelerisque consequat. Integer suscipit augue eu mi mattis consectetur. Nam at orci ipsum, non sollicitudin arcu.</td>
-				<td nowrap>Syslog</td>
-				<td nowrap>Node 003</td>
-			</tr>
-		</tbody>
-	</table>
-
-	<hr>
-	
-	<div class="pagination pagination-centered">
-  		<ul>
-    		<li><a href="#">Prev</a></li>
-    		<li><a href="#">1</a></li>
-    		<li><a href="#">2</a></li>
-    		<li><a href="#">3</a></li>
-    		<li><a href="#">4</a></li>
-    		<li><a href="#">...</a></li>
-    		<li><a href="#">Next</a></li>
-  		</ul>
+	<div class="logs-fetch-error alert alert-error hide">
+		Unable to fetch logs.
 	</div>
+
+  <div class="logs-loading row row-fluid hide">
+    <div class="span4"></div>
+    <div class="span4">
+      <div class="progress progress-striped progress-success active">
+        <div class="bar" style="width: 100%"></div>
+      </div>
+    </div>
+  </div>
+
+  <table class="table table-bordered table-condensed table-logs hide">
+    <thead>
+      <tr>
+        <th nowrap>Date</th>
+        <th nowrap>Level</th>
+        <th>Message</th>
+      </tr>
+    </thead>
+    <tbody></tbody>
+  </table>
 
 </div>

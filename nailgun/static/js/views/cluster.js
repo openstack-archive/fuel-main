@@ -16,9 +16,10 @@ define(
     'text!templates/cluster/settings_tab.html',
     'text!templates/cluster/settings_group.html',
     'text!templates/cluster/actions_tab.html',
-    'text!templates/cluster/logs_tab.html'
+    'text!templates/cluster/logs_tab.html',
+    'text!templates/cluster/log_entry.html'
 ],
-function(models, commonViews, dialogViews, clusterPageTemplate, deploymentResultTemplate, deploymentControlTemplate, nodesTabSummaryTemplate, editNodesScreenTemplate, nodeListTemplate, nodeTemplate, networkTabTemplate, networkTabViewModeTemplate, networkTabVerificationTemplate, settingsTabTemplate, settingsGroupTemplate, actionsTabTemplate, logsTabTemplate) {
+function(models, commonViews, dialogViews, clusterPageTemplate, deploymentResultTemplate, deploymentControlTemplate, nodesTabSummaryTemplate, editNodesScreenTemplate, nodeListTemplate, nodeTemplate, networkTabTemplate, networkTabViewModeTemplate, networkTabVerificationTemplate, settingsTabTemplate, settingsGroupTemplate, actionsTabTemplate, logsTabTemplate, logEntryTemplate) {
     'use strict';
 
     var views = {};
@@ -117,7 +118,7 @@ function(models, commonViews, dialogViews, clusterPageTemplate, deploymentResult
                 'logs': views.LogsTab
             };
             if (_.has(tabs, this.activeTab)) {
-                this.tab = new tabs[this.activeTab]({model: this.model});
+                this.tab = new tabs[this.activeTab]({model: this.model, tabArguments: this.tabArguments, page: this});
                 this.$('#tab-' + this.activeTab).html(this.tab.render().el);
                 this.registerSubView(this.tab);
             }
@@ -169,7 +170,13 @@ function(models, commonViews, dialogViews, clusterPageTemplate, deploymentResult
         }
     });
 
-    views.NodesTab = Backbone.View.extend({
+    views.Tab = Backbone.View.extend({
+        initialize: function(options) {
+            _.defaults(this, options);
+        }
+    });
+
+    views.NodesTab = views.Tab.extend({
         screen: null,
         scrollPositions: {},
         changeScreen: function(NewScreenView, screenOptions) {
@@ -579,7 +586,7 @@ function(models, commonViews, dialogViews, clusterPageTemplate, deploymentResult
         }
     });
 
-    views.NetworkTab = Backbone.View.extend({
+    views.NetworkTab = views.Tab.extend({
         template: _.template(networkTabTemplate),
         viewModeTemplate: _.template(networkTabViewModeTemplate),
         events: {
@@ -636,6 +643,7 @@ function(models, commonViews, dialogViews, clusterPageTemplate, deploymentResult
             this.bindTaskEvents();
         },
         initialize: function(options) {
+            _.defaults(this, options);
             this.model.get('tasks').bind('remove reset', this.renderVerificationControls, this);
             this.model.bind('change:tasks', this.bindEvents, this);
             this.bindEvents();
@@ -722,7 +730,7 @@ function(models, commonViews, dialogViews, clusterPageTemplate, deploymentResult
         }
     });
 
-    views.SettingsTab = Backbone.View.extend({
+    views.SettingsTab = views.Tab.extend({
         template: _.template(settingsTabTemplate),
         events: {
             'click .btn-apply-changes:not([disabled])': 'applyChanges',
@@ -798,7 +806,8 @@ function(models, commonViews, dialogViews, clusterPageTemplate, deploymentResult
             this.model.get('tasks').bind('reset', this.bindTaskEvents, this);
             this.bindTaskEvents();
         },
-        initialize: function() {
+        initialize: function(options) {
+            _.defaults(this, options);
             this.model.bind('change:tasks', this.bindEvents, this);
             this.bindEvents();
             if (!this.model.get('settings')) {
@@ -828,7 +837,75 @@ function(models, commonViews, dialogViews, clusterPageTemplate, deploymentResult
         }
     });
 
-    views.ActionsTab = Backbone.View.extend({
+    views.LogsTab = views.Tab.extend({
+        template: _.template(logsTabTemplate),
+        logEntryTemplate: _.template(logEntryTemplate),
+        events: {
+            'click .show-logs-btn': 'showLogs',
+            'change select': 'enableShowButton'
+        },
+        enableShowButton: function() {
+            this.$('.show-logs-btn').attr('disabled', false);
+        },
+        showLogs: function() {
+            this.chosenNodeId = this.$('select[name=node]').val();
+            this.chosenSourceId = this.$('select[name=source]').val();
+            this.$('.logs-description, .table-logs, .logs-fetch-error').hide();
+            this.$('.logs-loading').show();
+            this.$('select, .show-logs-btn').attr('disabled', true);
+            $.ajax({
+                url: '/api/logs',
+                dataType: 'json',
+                data: {
+                    node: this.chosenNodeId,
+                    source: this.chosenSourceId
+                },
+                complete: _.bind(function() {
+                    this.$('.logs-loading').hide();
+                    this.$('select').attr('disabled', false);
+                }, this),
+                success: _.bind(function(data) {
+                    this.$('.table-logs tbody').html('');
+                    this.appendLogEntries(data);
+                    this.$('.table-logs').show();
+                }, this),
+                error: _.bind(function() {
+                    this.$('.logs-fetch-error').show();
+                    this.$('.show-logs-btn').attr('disabled', false);
+                }, this)
+            });
+        },
+        appendLogEntries: function(data) {
+            this.$('.table-logs tbody').append(_.map(data, function(entry) {
+                return this.logEntryTemplate({entry: entry});
+            }, this).join(''));
+        },
+        initialize: function(options) {
+            _.defaults(this, options);
+            if (!this.model.get('log_sources')) {
+                this.sources = new models.LogSources();
+                this.sources.deferred = this.sources.fetch();
+                this.sources.deferred.done(_.bind(function() {
+                    this.render();
+                    this.enableShowButton();
+                }, this));
+                this.model.set({'log_sources': this.sources}, {silent: true});
+            } else {
+                this.sources = this.model.get('log_sources');
+            }
+        },
+        render: function() {
+            this.$el.html(this.template({
+                cluster: this.model,
+                sources: this.sources,
+                chosenNodeId: this.chosenNodeId,
+                chosenSourceId: this.chosenSourceId
+            }));
+            return this;
+        }
+    });
+
+    views.ActionsTab = views.Tab.extend({
         template: _.template(actionsTabTemplate),
         events: {
             'click .rename-cluster-form .apply-name-btn': 'applyNewClusterName',
@@ -841,8 +918,8 @@ function(models, commonViews, dialogViews, clusterPageTemplate, deploymentResult
                 this.$('.rename-cluster-form input, .rename-cluster-form .apply-name-btn').attr('disabled', true);
                 this.model.update({name: name}, {
                     complete: function() {
-                        app.page.updateBreadcrumbs();
-                        app.page.updateTitle();
+                        this.page.updateBreadcrumbs();
+                        this.page.updateTitle();
                         this.render();
                     },
                     context: this
@@ -859,19 +936,12 @@ function(models, commonViews, dialogViews, clusterPageTemplate, deploymentResult
             this.registerSubView(deleteClusterDialogView);
             deleteClusterDialogView.render();
         },
-        initialize: function() {
+        initialize: function(options) {
+            _.defaults(this, options);
             this.model.bind('change:name', this.render, this);
         },
         render: function() {
             this.$el.html(this.template({cluster: this.model}));
-            return this;
-        }
-    });
-
-    views.LogsTab = Backbone.View.extend({
-        template: _.template(logsTabTemplate),
-        render: function() {
-            this.$el.html(this.template());
             return this;
         }
     });

@@ -39,6 +39,15 @@ COBBLER_USER: "cobbler"
 COBBLER_PASSWORD: "cobbler"
 COBBLER_PROFILE: "centos63-x86_64"
 
+REMOTE_LOGS_PATH: "/var/log/remote/"
+REMOTE_LOGS:
+  - id: syslog
+    name: "Syslog"
+    path: "install/syslog.log"
+  - id: storage
+    name: "Storage"
+    path: "install/storage.log"
+
 MCO_PSKEY: "Gie6iega9ohngaenahthohngu8aebohxah9seidi"
 MCO_STOMPHOST: "localhost"
 MCO_STOMPPORT: "61613"
