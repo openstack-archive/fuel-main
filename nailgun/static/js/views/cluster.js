@@ -91,9 +91,7 @@ function(models, commonViews, dialogViews, clusterPageTemplate, deploymentResult
             this.scheduleUpdate();
         },
         bindTasksEvents: function() {
-            this.model.get('tasks').bind('reset', function() {
-                this.renderDeploymentControls();
-            }, this);
+            this.model.get('tasks').bind('reset', this.renderDeploymentControls, this);
         },
         renderDeploymentControls: function() {
             this.deploymentResult = new views.DeploymentResult({model: this.model});

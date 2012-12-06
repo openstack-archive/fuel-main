@@ -3,14 +3,10 @@
   <h3>Change Installation Mode</h3>
 </div>
 <div class="modal-body">
-  
   <form class="form-horizontal" onsubmit="return false">
     <fieldset>
-
       <h4>Deployment Mode:</h4>
-
       <div class="row-fluid control-group mode-control-group">
-
         <div class="span4">
            <% var modes = {'singlenode': 'Single-node', 'multinode': 'Multi-node', 'ha': 'Multi-node with HA'} %>
           <% var canChangeMode = cluster.canChangeMode() %>
@@ -21,54 +17,21 @@
             </label>
           <% }) %>
         </div>
-
         <div class="span8">
-           <p class="help-block hide mode-description help-mode-singlenode">
+          <p class="help-block hide mode-description help-mode-singlenode">
             This simple configuration is for you if you want to give OpenStack a test drive. You will get a fully functional private cloud, with all OpenStack components installed on one node. The node will also act as a compute node.
           </p>
-
           <p class="help-block hide mode-description help-mode-multinode">
             In this configuration OpenStack controller is deployed separately from compute and nodes. The mode assumes presence of 1 controller node and 1 or more compute/storage nodes. You can add more nodes as you go and scale your cloud.
           </p>
-
           <p class="help-block hide mode-description help-mode-ha">
             This configuration requires multiple OpenStack controllers (3+) and provides high availability for all OpenStack components, including MySQL/Galera, RabbitMQ, Quantum, Cinder, as well as OpenStack API services. Select this configuration if you want to build a production-grade OpenStack cloud with 6 nodes or more.
           </p>
         </div>
-
       </div>
-      <!-- 
-      <div class="control-group mode-control-group">
-        <div class="controls controlls-without-labels">
-          <% var modes = {'singlenode': 'Single-node', 'multinode': 'Multi-node', 'ha': 'Multi-node with HA'} %>
-          <% var canChangeMode = cluster.canChangeMode() %>
-          <% _.each(cluster.availableModes(), function(mode) { %>
-            <label class="radio">
-              <input type="radio" name="mode" value="<%= mode %>" <%= cluster.get('mode') == mode ? 'checked' : '' %> <%= canChangeMode ? '' : 'disabled' %>>
-              <%= modes[mode] || mode %>
-            </label>
-          <% }) %>
-        </div>
-        <div class="pull-right-help">
-          <span class="help-block hide mode-description help-mode-singlenode">
-            This simple configuration is for you if you want to give OpenStack a test drive. You will get a fully functional private cloud, with all OpenStack components installed on one node. The node will also act as a compute node.
-          </span>
-          <span class="help-block hide mode-description help-mode-multinode">
-            In this configuration OpenStack controller is deployed separately from compute and nodes. The mode assumes presence of 1 controller node and 1 or more compute/storage nodes. You can add more nodes as you go and scale your cloud.
-          </span>
-          <span class="help-block hide mode-description help-mode-ha">
-            This configuration requires multiple OpenStack controllers (3+) and provides high availability for all OpenStack components, including MySQL/Galera, RabbitMQ, Quantum, Cinder, as well as OpenStack API services. Select this configuration if you want to build a production-grade OpenStack cloud with 6 nodes or more.
-          </span>
-        </div>
-      </div>
-      -->
-
        <h4 class="simple-type-title hide">Deployment Type:</h4>
-
        <div class="row-fluid control-group type-control-group hide">
-
         <div class="span4">
-
           <% var types = {'compute': 'Compute only', 'storage': 'Storage only', 'both': 'Compute and storage'} %>
           <% _.each(cluster.availableTypes(), function(type) { %>
             <label class="radio">
@@ -76,52 +39,19 @@
               <%= types[type] || type %>
             </label>
           <% }) %>
-
         </div>
-
         <div class="span8">
-
           <p class="help-block hide type-description help-type-compute">
-            Description of compute only type
-          </p>
-
-          <p class="help-block hide type-description help-type-storage">
-            Description of storage only type
-          </p>
-
-          <p class="help-block hide type-description help-type-both">
-            Description of compute+storage type
-          </p>
-
-        </div>
-
-      </div>
-
-      <!--
-      <div class="simple-type-title hide">Deployment Type:</div>
-      <div class="control-group type-control-group hide">
-        <div class="controls controlls-without-labels">
-          <% var types = {'compute': 'Compute only', 'storage': 'Storage only', 'both': 'Compute and storage'} %>
-          <% _.each(cluster.availableTypes(), function(type) { %>
-            <label class="radio">
-              <input type="radio" name="type" value="<%= type %>" <%= cluster.get('type') == type ? 'checked' : '' %> <%= cluster.canChangeType(type) ? '' : 'disabled' %>>
-              <%= types[type] || type %>
-            </label>
-          <% }) %>
-        </div>
-        <div class="pull-right-help">
-          <span class="help-block hide type-description help-type-compute">
             In this deployment type your installation will have only computes to run VMs on them. There will be no storage (Swift) nodes.
-          </span>
-          <span class="help-block hide type-description help-type-storage">
+          </p>
+          <p class="help-block hide type-description help-type-storage">
             Choose this deployment type if you don't need to run virtual machines and need only storage (Swift) nodes.
-          </span>
-          <span class="help-block hide type-description help-type-both">
+          </p>
+          <p class="help-block hide type-description help-type-both">
             Choose this deployment type if you need both compute and storage nodes, to run VMs and store objects into Swift.
-          </span>
+          </p>
         </div>
       </div>
-      -->
     </fieldset>
   </form>
 </div>
