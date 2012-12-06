@@ -3,7 +3,7 @@ LISTEN_PORT: "8000"
 DEVELOPMENT: "1"
 
 FIXTURES_TO_UPLOAD:
-  - "openstack_essex.json"
+  - "openstack_folsom.json"
 
 DATABASE_ENGINE: "sqlite:////var/tmp/nailgun.sqlite"
 STATIC_DIR: "/var/tmp/nailgun_static"
