@@ -16,10 +16,25 @@
 </div>
 <div class="cluster-status">
   <% var statuses = {'new': 'New', 'deployment': 'Deployment', 'operational': 'Operational', 'error': 'Error', 'remove': 'Removing'} %>
-  <% if (cluster.task('deploy', 'running')) { %>
+  <% var task = cluster.task('deploy') %>
+  <% var taskStatus = task ? task.get('status') : null %>
+  <% if (taskStatus =='running') { %>
     <div class="progress progress-warning progress-striped progress-deploy-clusters-page active" rel="tooltip">
       <div class="bar"></div>
     </div>
+  <% } else if (taskStatus == 'error') { %>
+    <%= statuses['error'] %>
+  <% } else if (taskStatus == 'ready') { %>
+    <% if (!nodes.length) { %>
+      <%= statuses['new'] %>
+    <% } else { %>
+      <% var size, clusterStatus = 'operational' %>
+      <% _.each(cluster.availableRoles(), function(role) { %>
+        <% size = cluster.get('mode') == 'ha' && role == 'controller' ? 3 : 1 %>
+        <% if (cluster.get('nodes').where({role: role, pending_addition: false, pending_deletion: false}).length < size) clusterStatus = 'error' %>
+      <% }) %>
+      <%= statuses[clusterStatus] %>
+    <% } %>
   <% } else { %>
     <%= cluster.task('cluster_deletion', 'running') ? 'Removing' : statuses[cluster.get('status')] %>
   <% } %>

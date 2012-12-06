@@ -150,15 +150,13 @@ function(models, commonViews, dialogViews, clusterPageTemplate, deploymentResult
                     clusterStatus = 'new';
                 } else {
                     var size;
-                    _.each(this.model.availableRoles(), function(role) {
+                    clusterStatus = 'operational';
+                    _.each(this.model.availableRoles(), _.bind(function(role) {
                         size = this.model.get('mode') == 'ha' && role == 'controller' ? 3 : 1;
-                        if (this.model.get('nodes').where({role: role, pending_addition: false, pending_deletion: false}).length >= size) {
-                            clusterStatus = 'operational';
+                        if (this.model.get('nodes').where({role: role, pending_addition: false, pending_deletion: false}).length < size) {
+                            clusterStatus = 'error';
                         }
-                    });
-                    if (clusterStatus != 'operational') {
-                        clusterStatus = 'error';
-                    }
+                    }, this));
                 }
                 this.model.update({status: clusterStatus});
             }

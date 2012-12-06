@@ -58,7 +58,7 @@ function(models, commonViews, dialogViews, clustersPageTemplate, clusterTemplate
         template: _.template(clusterTemplate),
         updateInterval: 3000,
         scheduleUpdate: function() {
-            if (this.model.task('cluster_deletion', 'running')) {
+            if (this.model.task('cluster_deletion', 'running') || this.model.task('deploy', 'running')) {
                 _.delay(_.bind(this.update, this), this.updateInterval);
             } else {
                 this.render();
@@ -67,16 +67,24 @@ function(models, commonViews, dialogViews, clustersPageTemplate, clusterTemplate
         update: function() {
             var task = this.model.task('cluster_deletion');
             var cluster = this;
-            task.deferred = task.fetch({
-                error: function(model, response, options) {
-                    if (response.status == 404) {
-                        cluster.model.collection.remove(cluster.model);
-                        app.navbar.stats.nodes.fetch();
-                        app.navbar.notifications.collection.fetch();
+            if (task) {
+                task.deferred = task.fetch({
+                    error: function(model, response, options) {
+                        if (response.status == 404) {
+                            cluster.model.collection.remove(cluster.model);
+                            app.navbar.stats.nodes.fetch();
+                            app.navbar.notifications.collection.fetch();
+                        }
                     }
-                }
-            });
-            task.deferred.done(_.bind(this.scheduleUpdate, this));
+                });
+                task.deferred.done(_.bind(this.scheduleUpdate, this));
+            } else {
+                task = this.model.task('deploy');
+                task.fetch().done(function() {
+                    cluster.updateProgress();
+                    cluster.scheduleUpdate();
+                });
+            }
         },
         updateProgress: function() {
             var task = this.model.task('deploy', 'running');
@@ -87,28 +95,23 @@ function(models, commonViews, dialogViews, clustersPageTemplate, clusterTemplate
                 if (progressBar.is(':hover')) {
                     progressBar.tooltip('show');
                 }
-                console.log(progress);
                 this.$('.bar').css('width', (progress > 10 ? progress : 10) + '%');
             }
         },
         initialize: function() {
             this.model.bind('change', this.render, this);
-            var task = this.model.task('deploy');
-            if (task) {
-                task.bind('change:status', this.render, this);
-                task.bind('change:progress', this.updateProgress, this);
-            }
         },
         render: function() {
             this.$el.html(this.template({cluster: this.model}));
-            if (this.$('.progress').data('tooltip')) {
-                this.$('.progress').tooltip('destroy');
-            }
             if (this.model.task('cluster_deletion', 'running')) {
                 this.$el.addClass('disabled-cluster');
                 this.update();
             } else {
                 this.$el.attr('href', '#cluster/' + this.model.id + '/nodes');
+                if (this.model.task('deploy', 'running')) {
+                    this.$('.progress').tooltip('destroy');
+                    this.update();
+                }
             }
             return this;
         }
