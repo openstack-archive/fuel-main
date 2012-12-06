@@ -2021,3 +2021,24 @@ h6.page-title {
 .with-big-warning-icon {
   text-align: center;
 }
+
+.statistic > div {
+  float: left;
+  text-transform: uppercase;
+  font-size: 8pt;
+  vertical-align: top;
+  line-height: 9pt;
+  padding: 4px 8px;
+  color: #ccc;
+  font-family: Segoe UI;
+}
+
+.statistic .stat-count {
+  font-size: 26pt;
+  line-height: 19pt;
+  padding-right: 1px;
+}
+
+.statistic .stat-title {
+  padding-left: 2px;
+}

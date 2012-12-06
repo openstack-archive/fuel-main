@@ -3,12 +3,11 @@ define(
     'models',
     'text!templates/common/navbar.html',
     'text!templates/common/nodes_stats.html',
-    'text!templates/common/nodes_stats_popover.html',
     'text!templates/common/notifications.html',
     'text!templates/common/notifications_popover.html',
     'text!templates/common/breadcrumb.html'
 ],
-function(models, navbarTemplate, nodesStatsTemplate, nodesStatsPopoverTemplate, notificationsTemplate, notificationsPopoverTemplate, breadcrumbsTemplate) {
+function(models, navbarTemplate, nodesStatsTemplate, notificationsTemplate, notificationsPopoverTemplate, breadcrumbsTemplate) {
     'use strict';
 
     var views = {};
@@ -57,30 +56,7 @@ function(models, navbarTemplate, nodesStatsTemplate, nodesStatsPopoverTemplate, 
     views.NodesStats = Backbone.View.extend({
         updateInterval: 30000,
         template: _.template(nodesStatsTemplate),
-        popoverTemplate: _.template(nodesStatsPopoverTemplate),
-        popoverVisible: false,
         stats: {},
-        events: {
-            'mouseenter': 'showPopover',
-            'mouseleave': 'hidePopover'
-        },
-        showPopover: function() {
-            if (!this.popoverVisible) {
-                this.popoverVisible = true;
-                this.$el.popover({
-                    placement: 'bottom',
-                    trigger: 'manual',
-                    title: 'Usage Statistics',
-                    content: this.popoverTemplate({stats: this.stats})
-                }).popover('show');
-            }
-        },
-        hidePopover: function() {
-            if (this.popoverVisible) {
-                this.popoverVisible = false;
-                this.$el.popover('destroy');
-            }
-        },
         scheduleUpdate: function() {
             _.delay(_.bind(this.update, this), this.updateInterval);
         },
@@ -88,41 +64,14 @@ function(models, navbarTemplate, nodesStatsTemplate, nodesStatsPopoverTemplate, 
             this.nodes.fetch({complete: _.bind(this.scheduleUpdate, this)});
         },
         updateStats: function() {
-            var stats = {};
             var roles = ['controller', 'compute', 'storage'];
             if (this.nodes.deferred.state() != 'pending') {
                 _.each(roles, function(role) {
-                    stats[role] = this.nodes.where({role: role}).length;
+                    this.stats[role] = this.nodes.where({role: role}).length;
                 }, this);
-                stats.total = this.nodes.length;
-                stats.unallocated = stats.total - stats.controller - stats.compute - stats.storage;
-            }
-            if (!_.isEqual(stats, this.stats)) {
-                this.stats = stats;
-                _.each(roles, function(role) {
-                    stats[role] = this.nodes.where({role: role}).length;
-                }, this);
-                if (this.popoverVisible) {
-                    this.hidePopover();
-                    this.showPopover();
-                }
-                if (stats.unallocated) {
-                    _.each(roles, function(role) {
-                        this.$('.stats-' + role).width(stats.total ? (100 * stats[role] / stats.total) + '%' : 0);
-                    }, this);
-                } else if (stats.total) {
-                    // all nodes have role assigned, working around "odd pixel" bug
-                    var containerWidth = this.$('.nodes-summary-stat').width();
-                    var barsWidth = 0;
-                    _.each(_.initial(roles), function(role) {
-                        var barWidth = Math.round(containerWidth * stats[role] / stats.total);
-                        barsWidth += barWidth;
-                        this.$('.stats-' + role).width(barWidth);
-                    }, this);
-                    this.$('.stats-' + _.last(roles)).width(Math.floor(containerWidth - barsWidth));
-                } else {
-                    this.$('.bar').width(0);
-                }
+                this.stats.total = this.nodes.length;
+                this.stats.unallocated = this.stats.total - this.stats.controller - this.stats.compute - this.stats.storage;
+                this.render();
             }
         },
         initialize: function(options) {
