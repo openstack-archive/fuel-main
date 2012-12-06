@@ -3,25 +3,44 @@
         "pk": 1,
         "model": "nailgun.release",
         "fields": {
-            "name": "OpenStack Essex Release",
+            "name": "OpenStack Folsom Release",
             "version": "0.1.0",
             "description": "Alpha release",
             "networks_metadata": [
-		{"name": "floating", "access": "public"},
-		{"name": "public", "access": "public"},
-		{"name": "management", "access": "private192"},
-		{"name": "fixed", "access": "private10"},
-		{"name": "storage", "access": "private172"}
+                {"name": "floating", "access": "public"},
+                {"name": "public", "access": "public"},
+                {"name": "management", "access": "private192"},
+                {"name": "fixed", "access": "private10"},
+                {"name": "storage", "access": "private172"}
             ],
             "attributes_metadata": {
                 "editable": {
                     "keystone": {
-                        "admin_tenant": "admin1"
-                    }
+                        "admin_tenant": "admin"
+                    },
+                    "rabbit": {
+                        "user": "nova"
+                    },
+                    "auto_assign_floating_ip": "false"
                 },
                 "generated": {
                     "mysql": {
                         "root_password": ""
+                    },
+                    "keystone": {
+                        "db_password": "",
+                        "admin_token": ""
+                    },
+                    "glance": {
+                        "db_password": "",
+                        "user_password": ""
+                    },
+                    "nova": {
+                        "db_password": "",
+                        "user_password": ""
+                    },
+                    "rabbit": {
+                        "password": ""
                     }
                 }
             }

@@ -16,12 +16,31 @@
             "attributes_metadata": {
                 "editable": {
                     "keystone": {
-                        "admin_tenant": "admin1"
-                    }
+                        "admin_tenant": "admin"
+                    },
+                    "rabbit": {
+                        "user": "nova"
+                    },
+                    "auto_assign_floating_ip": "false"
                 },
                 "generated": {
                     "mysql": {
                         "root_password": ""
+                    },
+                    "keystone": {
+                        "db_password": "",
+                        "admin_token": ""
+                    },
+                    "glance": {
+                        "db_password": "",
+                        "user_password": ""
+                    },
+                    "nova": {
+                        "db_password": "",
+                        "user_password": ""
+                    },
+                    "rabbit": {
+                        "password": ""
                     }
                 }
             }
@@ -52,22 +71,12 @@
             "cluster": 1,
             "editable": {
                 "keystone": {
-                    "nested_parameter_2": {
-                        "test_parameter_3": "test_value_3",
-                        "test_parameter_4": "test_value_4"
-                    },
-                    "admin_tenant": "admin",
-                    "nested_parameter_1": {
-                        "test_parameter_1": "test_value_1",
-                        "nested_parameter_3": {
-                            "test_parameter_5": "test_value_5"
-                        }
-                    },
-                    "admin_tenant_2": "admin2"
+                    "admin_tenant": "admin"
                 },
-                "glance": {
-                    "test_parameter_3": "test_value_3"
-                }
+                "rabbit": {
+                    "user": "nova"
+                },
+                "auto_assign_floating_ip": "false"
             },
             "generated": {
                 "mysql": {
