@@ -25,7 +25,7 @@ VLANS_RANGE_START: "100"
 VLANS_RANGE_END: "1000"
 
 RABBITMQ:
-  fake: "0"
+  fake: "1"
   hostname: "127.0.0.1"
 
 CUSTOM_LOG: "/var/log/nailgun.log"
