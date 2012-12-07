@@ -100,8 +100,6 @@ class ClusterHandler(JSONHandler):
         try:
             logger.debug('Trying to execute cluster deletion task')
             task = task_manager.execute()
-            cluster.status = 'remove'
-            web.ctx.orm.commit()
             logger.debug('Cluster deletion task: %s' % task.uuid)
         except Exception as e:
             logger.warn('Error while execution '
@@ -214,8 +212,6 @@ class ClusterChangesHandler(JSONHandler):
         try:
             logger.debug('ClusterChangesHandler: trying to execute task...')
             task = task_manager.execute()
-            cluster.status = 'deployment'
-            web.ctx.orm.commit()
             logger.debug('ClusterChangesHandler: task to deploy is %s' %
                          task.uuid)
         except (DeploymentAlreadyStarted,

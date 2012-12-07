@@ -37,12 +37,15 @@ class NailgunReceiver(object):
             logger.error("Can't set status='%s', message='%s':no task \
                     with UUID %s found!", status, msg, uuid)
             return
+        previous_status = task.status
         data = {'status': status, 'progress': progress, 'message': msg}
         for key, value in data.iteritems():
             if value:
                 setattr(task, key, value)
         cls.db.add(task)
         cls.db.commit()
+        if previous_status != status:
+            cls.__update_cluster_status(task)
         if task.parent:
             cls.__update_parent_task(task.parent)
 
@@ -53,6 +56,7 @@ class NailgunReceiver(object):
             if all(map(lambda s: s.status == 'ready', subtasks)):
                 task.status = 'ready'
                 task.progress = 100
+                cls.__update_cluster_status(task)
             elif all(map(lambda s: s.status == 'ready' or
                          s.status == 'error', subtasks)):
                 task.status = 'error'
@@ -60,6 +64,7 @@ class NailgunReceiver(object):
                 task.message = '; '.join(map(
                     lambda s: s.message, filter(
                         lambda s: s.status == 'error', subtasks)))
+                cls.__update_cluster_status(task)
             else:
                 total_progress = 0
                 subtasks_with_progress = 0
@@ -75,6 +80,25 @@ class NailgunReceiver(object):
                 task.progress = total_progress
             cls.db.add(task)
             cls.db.commit()
+
+    @classmethod
+    def __update_cluster_status(cls, task):
+        # FIXME: should be moved to task/manager "finish" method after
+        # web.ctx.orm issue is addressed
+        if task.name == 'deploy':
+            cluster = task.cluster
+            if task.status == 'ready':
+                # FIXME: we should also calculate deployment "validity"
+                # (check if all of the required nodes of required roles are
+                # present). If cluster is not "valid", we should also set
+                # its status to "error" even if it is deployed successfully.
+                # This method is also would be affected by web.ctx.orm issue.
+                cluster.status = 'operational'
+            elif task.status == 'error':
+                cluster.status = 'error'
+            cls.db.add(cluster)
+            cls.db.commit()
+        pass
 
     @classmethod
     def remove_nodes_resp(cls, **kwargs):

@@ -46,6 +46,11 @@ class DeploymentTaskManager(TaskManager):
                                  self.cluster.nodes)
         if not nodes_to_deploy and not nodes_to_delete:
             raise WrongNodeStatus("No changes to deploy")
+
+        self.cluster.status = 'deployment'
+        web.ctx.orm.add(self.cluster)
+        web.ctx.orm.commit()
+
         supertask = Task(
             name="deploy",
             cluster=self.cluster
@@ -96,6 +101,10 @@ class ClusterDeletionManager(TaskManager):
             node.pending_deletion = True
             web.ctx.orm.add(node)
             web.ctx.orm.commit()
+
+        self.cluster.status = 'remove'
+        web.ctx.orm.add(self.cluster)
+        web.ctx.orm.commit()
 
         logger.debug("Creating nodes deletion task")
         task = Task(name="cluster_deletion", cluster=self.cluster)
