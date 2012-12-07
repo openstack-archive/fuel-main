@@ -2025,17 +2025,17 @@ h6.page-title {
 .statistic > div {
   float: left;
   text-transform: uppercase;
-  font-size: 8pt;
+  font-size: 11px;
   vertical-align: top;
-  line-height: 9pt;
-  padding: 4px 8px;
+  line-height: 11px;
+  padding: 6px 8px;
   color: #ccc;
-  font-family: Segoe UI;
+  font-family: Segoe UI, Arial;
 }
 
 .statistic .stat-count {
-  font-size: 26pt;
-  line-height: 19pt;
+  font-size: 34px;
+  line-height: 26px;
   padding-right: 1px;
 }
 
