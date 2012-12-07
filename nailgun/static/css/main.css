@@ -264,10 +264,6 @@ h6.page-title {
   margin-bottom: 20px;
 }
 
-.settings-editable > div:last-child fieldset {
-  margin-left: 20px;
-}
-
 .settings-editable > div:last-child legend {
   text-transform: capitalize;
 }

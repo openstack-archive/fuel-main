@@ -1,5 +1,6 @@
 <% var page = this %>
   <div class="control-group wrapper" data-nested="true">
+  <% if (_.isObject(settings)) { %>
     <fieldset class="fieldset">
       <legend><%- legend %></legend>
       <%
@@ -22,4 +23,10 @@
         })
       %>
     </fieldset>
+  <% } else { %>
+    <label class="control-label" for="<%- legend %>"><%- legend %></label>
+      <div class="controls">
+        <input type="text" class="input-large" name="<%- legend %>" value="<%- settings %>" <%= cluster.task('deploy', 'running') ? 'disabled ' : '' %>/>
+      </div>
+  <% } %>
   </div>
