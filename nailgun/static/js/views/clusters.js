@@ -87,25 +87,18 @@ function(models, commonViews, dialogViews, clustersPageTemplate, clusterTemplate
             }
         },
         updateProgress: function() {
-            var task = this.model.task('deploy', 'running');
-            if (task) {
+            var task = this.model.task('deploy');
+            if (task.get('status') == 'running') {
                 var progress = task.get('progress') || 0;
-                var progressBar = this.$('.progress');
-                progressBar.attr('data-original-title', 'Deployment in progress, ' + progress + '% completed').tooltip('fixTitle').tooltip();
-                if (progressBar.is(':hover')) {
-                    progressBar.tooltip('show');
-                }
-                this.$('.bar').css('width', (progress > 10 ? progress : 10) + '%');
+                this.$('.bar').css('width', (progress > 3 ? progress : 3) + '%');
+            } else {
+               this.model.fetch();
             }
         },
         initialize: function() {
             this.model.bind('change', this.render, this);
         },
-        beforeTearDown: function() {
-            this.$('.progress').tooltip('destroy');
-        },
         render: function() {
-            this.$('.progress').tooltip('destroy');
             this.$el.html(this.template({cluster: this.model}));
             if (this.model.task('cluster_deletion', 'running')) {
                 this.$el.addClass('disabled-cluster');

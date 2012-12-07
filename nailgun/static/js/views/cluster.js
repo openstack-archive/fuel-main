@@ -548,23 +548,13 @@ function(models, commonViews, dialogViews, clusterPageTemplate, deploymentResult
         },
         updateProgress: function() {
             var nodeStatus = this.model.get('status');
-            if ( nodeStatus == 'provisioning' || nodeStatus == 'deploying') {
+            if (this.model.get('status') == 'provisioning' || this.model.get('status') == 'deploying') {
                 var progress = this.model.get('progress') || 0;
-                var progressBar = this.$('.progress');
-                var processName = 'Provisioning';
-                if (nodeStatus == 'deploying') {
-                    processName = 'Deployment';
-                }
-                progressBar.attr('data-original-title', processName + ' in progress, ' + progress + '% completed').tooltip('fixTitle').tooltip();
-                if (progressBar.is(':hover')) {
-                    progressBar.tooltip('show');
-                }
                 this.$('.bar').css('width', (progress > 3 ? progress : 3) + '%');
             }
         },
         beforeTearDown: function() {
             $('html').off(this.eventNamespace);
-            this.$('.progress').tooltip('destroy');
         },
         initialize: function(options) {
             _.defaults(this, options);
@@ -573,7 +563,6 @@ function(models, commonViews, dialogViews, clusterPageTemplate, deploymentResult
             this.model.bind('change', this.render, this);
         },
         render: function() {
-            this.$('.progress').tooltip('destroy');
             this.$el.html(this.template({
                 node: this.model,
                 renaming: this.renaming,
