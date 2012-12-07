@@ -60,39 +60,37 @@ function(models, commonViews, dialogViews, clustersPageTemplate, clusterTemplate
         scheduleUpdate: function() {
             if (this.model.task('cluster_deletion', 'running') || this.model.task('deploy', 'running')) {
                 _.delay(_.bind(this.update, this), this.updateInterval);
-            } else {
-                this.render();
             }
         },
         update: function() {
-            var task = this.model.task('cluster_deletion');
-            var cluster = this;
-            if (task) {
-                task.deferred = task.fetch({
-                    error: function(model, response, options) {
+            var deletionTask = this.model.task('cluster_deletion');
+            var deploymentTask = this.model.task('deploy');
+            if (deletionTask) {
+                deletionTask.fetch()
+                    .done(_.bind(this.scheduleUpdate, this))
+                    .fail(_.bind(function(response) {
                         if (response.status == 404) {
-                            cluster.model.collection.remove(cluster.model);
+                            this.model.collection.remove(this.model);
                             app.navbar.stats.nodes.fetch();
                             app.navbar.notifications.collection.fetch();
                         }
+                    }, this));
+            } else if (deploymentTask) {
+                deploymentTask.fetch().done(_.bind(function() {
+                    if (deploymentTask.get('status') == 'running') {
+                        this.updateProgress();
+                        this.scheduleUpdate();
+                    } else {
+                       this.model.fetch();
                     }
-                });
-                task.deferred.done(_.bind(this.scheduleUpdate, this));
-            } else {
-                task = this.model.task('deploy');
-                task.fetch().done(function() {
-                    cluster.updateProgress();
-                    cluster.scheduleUpdate();
-                });
+                }, this));
             }
         },
         updateProgress: function() {
-            var task = this.model.task('deploy');
-            if (task.get('status') == 'running') {
+            var task = this.model.task('deploy', 'running');
+            if (task) {
                 var progress = task.get('progress') || 0;
                 this.$('.bar').css('width', (progress > 3 ? progress : 3) + '%');
-            } else {
-               this.model.fetch();
             }
         },
         initialize: function() {
