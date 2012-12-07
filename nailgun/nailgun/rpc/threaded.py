@@ -98,7 +98,6 @@ class NailgunReceiver(object):
                 cluster.status = 'error'
             cls.db.add(cluster)
             cls.db.commit()
-        pass
 
     @classmethod
     def remove_nodes_resp(cls, **kwargs):
