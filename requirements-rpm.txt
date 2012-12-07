@@ -4,6 +4,7 @@ avahi
 bind-utils
 byacc
 cman
+centos-release
 cobbler
 cobbler-web
 cronie
@@ -42,13 +43,14 @@ puppet-2.7.19
 puppet-server-2.7.19
 python-amqp
 python-cinder
-python-devel
+python-devel.x86_64
 python-virtualenv
 rabbitmq-server
+rpm-build
 rsyslog
 ruby
 ruby-augeas
-ruby-devel
+ruby-devel.x86_64
 ruby-mysql
 ruby-rdoc
 ruby-ri

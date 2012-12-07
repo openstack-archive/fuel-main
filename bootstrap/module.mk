@@ -13,7 +13,7 @@ YUM_PACKAGES:=openssh-server wget cronie-noanacron crontabs ntp \
 bash net-tools dhclient rsyslog iputils openssh-clients vim-minimal\
 rubygems mcollective vconfig tcpdump scapy mingetty ntp
 
-YUM_BUILD_PACKAGES:=ruby-devel make gcc flex byacc python-devel \
+YUM_BUILD_PACKAGES:=ruby-devel.x86_64 make gcc flex byacc python-devel.x86_64 \
 glibc-devel glibc-headers kernel-headers
 
 NAILGUN_DIR:=$(INITRAM_DIR)/opt/nailgun
@@ -91,13 +91,6 @@ $(BS_DIR)/init.done: $(LOCAL_MIRROR)/repo.done $(INITRAM_DIR)/etc/yum.repos.d/mi
 	sudo rm $(INITRAM_DIR)/etc/resolv.conf
 
 	sudo mkdir -p $(INITRAM_DIR)/src
-	cd $(INITRAM_DIR)/src && sudo wget -c http://pypcap.googlecode.com/files/pypcap-1.1.tar.gz \
-        http://www.tcpdump.org/release/libpcap-1.3.0.tar.gz
-	cd $(INITRAM_DIR)/src && sudo tar zxf libpcap-1.3.0.tar.gz
-	cd $(INITRAM_DIR)/src && sudo tar zxf pypcap-1.1.tar.gz
-	(cd $(INITRAM_DIR)/src && sudo patch -p1) < bootstrap/pypcap.diff
-	$(CHROOT_CMD) /bin/sh -c "cd /src/libpcap-1.3.0 && ./configure && make"
-	$(CHROOT_CMD) /bin/sh -c "cd /src/pypcap-1.1 && make && make install"
 	$(YUM) erase $(YUM_BUILD_PACKAGES)
 	sudo rm -f $(INITRAM_DIR)/etc/yum.repos.d/Cent*
 	sudo cp $(INITRAM_DIR)/sbin/init $(INITRAM_DIR)/init

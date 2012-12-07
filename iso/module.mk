@@ -19,8 +19,6 @@ $/isoroot-centos.done: \
 		$(ISOROOT)/.treeinfo
 	mkdir -p $(ISOROOT)/Packages
 	find $(CENTOS_REPO_DIR)Packages -name '*.rpm' -exec cp -n {} $(ISOROOT)/Packages \;
-	find $(BUILD_DIR)/rpm/RPMS -name '*.rpm' -exec cp -n {} $(ISOROOT)/Packages \;
-	rm $(ISOROOT)/Packages/*.i686.rpm
 	createrepo -g `readlink -f "$(ISOROOT)/repodata/comps.xml"` -u media://`head -1 $(ISOROOT)/.discinfo` $(ISOROOT)
 	$(ACTION.TOUCH)
 

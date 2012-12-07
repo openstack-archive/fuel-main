@@ -21,6 +21,7 @@ cachedir=$(CENTOS_REPO_DIR)cache
 keepcache=0
 debuglevel=6
 logfile=$(CENTOS_REPO_DIR)yum.log
+exclude=*.i686.rpm
 exactarch=1
 obsoletes=1
 gpgcheck=0
@@ -171,11 +172,14 @@ $/cache-extra.done: \
 $/cache.done: $/cache-extra.done $/cache-boot.done
 	$(ACTION.TOUCH)
 
-$(addprefix $(CENTOS_REPO_DIR)Packages/repodata/,$(METADATA_FILES)): $/cache.done $(CENTOS_REPO_DIR)repodata/comps.xml
+$(addprefix $(CENTOS_REPO_DIR)Packages/repodata/,$(METADATA_FILES)): \
+		$/cache.done \
+		$(CENTOS_REPO_DIR)repodata/comps.xml \
+		$(BUILD_DIR)/rpm/rpm.done
 	createrepo -g `readlink -f "$(CENTOS_REPO_DIR)repodata/comps.xml"` -o $(CENTOS_REPO_DIR)Packages $(CENTOS_REPO_DIR)Packages
 
 $/repo.done: $(addprefix $(CENTOS_REPO_DIR)Packages/repodata/,$(METADATA_FILES))
-	touch $@
+	$(ACTION.TOUCH)
 
 # centos isolinux files
 
