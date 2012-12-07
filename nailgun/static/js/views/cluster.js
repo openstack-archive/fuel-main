@@ -137,27 +137,6 @@ function(models, commonViews, dialogViews, clusterPageTemplate, deploymentResult
         },
         render: function() {
             this.$el.html(this.template({cluster: this.model}));
-            var task = this.model.task('deploy');
-            var taskStatus = task ? task.get('status') : null;
-            var clusterStatus;
-            if (taskStatus == 'error') {
-                clusterStatus = 'error';
-                this.model.update({status: clusterStatus});
-            } else if (taskStatus == 'ready') {
-                if (!this.model.get('nodes').length) {
-                    clusterStatus = 'new';
-                } else {
-                    var size;
-                    clusterStatus = 'operational';
-                    _.each(this.model.availableRoles(), _.bind(function(role) {
-                        size = this.model.get('mode') == 'ha' && role == 'controller' ? 3 : 1;
-                        if (this.model.get('nodes').where({role: role, pending_addition: false, pending_deletion: false}).length < size) {
-                            clusterStatus = 'error';
-                        }
-                    }, this));
-                }
-                this.model.update({status: clusterStatus});
-            }
             return this;
         }
     });

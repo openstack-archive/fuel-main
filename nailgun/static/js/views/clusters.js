@@ -101,7 +101,11 @@ function(models, commonViews, dialogViews, clustersPageTemplate, clusterTemplate
         initialize: function() {
             this.model.bind('change', this.render, this);
         },
+        beforeTearDown: function() {
+            this.$('.progress').tooltip('destroy');
+        },
         render: function() {
+            this.$('.progress').tooltip('destroy');
             this.$el.html(this.template({cluster: this.model}));
             if (this.model.task('cluster_deletion', 'running')) {
                 this.$el.addClass('disabled-cluster');
@@ -109,7 +113,6 @@ function(models, commonViews, dialogViews, clustersPageTemplate, clusterTemplate
             } else {
                 this.$el.attr('href', '#cluster/' + this.model.id + '/nodes');
                 if (this.model.task('deploy', 'running')) {
-                    this.$('.progress').tooltip('destroy');
                     this.update();
                 }
             }

@@ -190,16 +190,12 @@ function(models, createClusterDialogTemplate, changeClusterModeDialogTemplate, d
         deployCluster: function() {
             this.$('.start-deployment-btn').addClass('disabled');
             var task = new models.Task();
-            var modal = this;
             task.save({}, {
                 type: 'PUT',
                 url: '/api/clusters/' + this.model.id + '/changes',
                 success: _.bind(function() {
-                    this.model.update({status: 'deployment'})
-                    .done(function() {
-                        modal.$el.modal('hide');
-                        app.page.deployCluster();
-                    });
+                    this.$el.modal('hide');
+                    app.page.deployCluster();
                 }, this),
                 error: _.bind(this.displayErrorMessage, this)
             });
@@ -220,15 +216,10 @@ function(models, createClusterDialogTemplate, changeClusterModeDialogTemplate, d
         },
         removeCluster: function() {
             this.$('.remove-cluster-btn').addClass('disabled');
-            var modal = this;
             Backbone.sync('delete', this.model, {
                 success: _.bind(function() {
-                    this.model.update({status: 'remove'})
-                    .done(function() {
-                        modal.$el.modal('hide');
-                        app.navigate('#clusters', {trigger: true});
-                    })
-                    .fail(_.bind(this.displayErrorMessage, this));
+                    this.$el.modal('hide');
+                    app.navigate('#clusters', {trigger: true});
                 }, this),
                 error: _.bind(this.displayErrorMessage, this)
             });
