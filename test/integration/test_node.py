@@ -323,7 +323,7 @@ class TestNode(Base):
                 ready = True
             elif task['status'] == 'error' and skip_error_status:
                 logging.info("Task %r ended with error: %s" %
-                             (task_desc, task['error']))
+                             (task_desc, task['message']))
                 ready = True
             elif task['status'] == 'running':
                 if (time.time() - timer) > timeout:

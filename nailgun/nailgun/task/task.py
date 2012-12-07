@@ -83,7 +83,7 @@ class DeploymentTask(object):
             logger.error("Provision error: %s\n%s",
                          error, traceback.format_exc())
             task.status = "error"
-            task.error = error
+            task.message = error
             web.ctx.orm.add(task)
             web.ctx.orm.commit()
             raise FailedProvisioning(error)

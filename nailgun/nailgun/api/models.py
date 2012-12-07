@@ -360,7 +360,7 @@ class Task(Base, BasicValidator):
     uuid = Column(String(36), nullable=False,
                   default=lambda: str(uuid.uuid4()))
     name = Column(Enum(*TASK_NAMES), nullable=False, default='super')
-    error = Column(Text)
+    message = Column(Text)
     status = Column(Enum(*TASK_STATUSES), nullable=False, default='running')
     progress = Column(Integer)
     parent_id = Column(Integer, ForeignKey('tasks.id'))

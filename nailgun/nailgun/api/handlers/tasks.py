@@ -14,7 +14,7 @@ class TaskHandler(JSONHandler):
         "cluster",
         "uuid",
         "name",
-        "error",
+        "message",
         "status",
         "progress"
     )

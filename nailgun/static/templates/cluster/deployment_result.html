@@ -4,12 +4,12 @@
   <div class="alert alert-block global-success alert-success task-result">
     <button type="button" class="close">×</button>
     <h4>Success</h4>
-    <p>Cluster has been deployed successfully</p>
+    <p><%- task.get('message') %></p>
   </div>
 <% } else if (taskStatus == 'error') { %>
   <div class="alert alert-block global-error alert-error task-result">
     <button type="button" class="close">×</button>
     <h4>Error</h4>
-    <p><%- task.get('error') %></p>
+    <p><%- task.get('message') %></p>
   </div>
 <% } %>

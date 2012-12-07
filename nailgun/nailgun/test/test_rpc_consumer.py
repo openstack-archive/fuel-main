@@ -43,7 +43,7 @@ class TestVerifyNetworks(BaseHandlers):
         receiver.verify_networks_resp(**kwargs)
         self.db.refresh(task)
         self.assertEqual(task.status, "ready")
-        self.assertEqual(task.error, None)
+        self.assertEqual(task.message, None)
 
     def test_verify_networks_resp_error(self):
         cluster = self.create_cluster_api()
@@ -73,7 +73,7 @@ class TestVerifyNetworks(BaseHandlers):
                        (node2.id, 'eth0', [104])]
         error_msg = "Following nodes have network errors:\n%s." % (
             '; '.join(error_nodes))
-        self.assertEqual(task.error, error_msg)
+        self.assertEqual(task.message, error_msg)
 
     def test_verify_networks_resp_empty_nodes_default_error(self):
         cluster = self.create_cluster_api()
@@ -96,7 +96,7 @@ class TestVerifyNetworks(BaseHandlers):
         self.db.refresh(task)
         self.assertEqual(task.status, "error")
         error_msg = "Received empty node list from orchestrator."
-        self.assertEqual(task.error, error_msg)
+        self.assertEqual(task.message, error_msg)
 
     def test_verify_networks_resp_empty_nodes_custom_error(self):
         cluster = self.create_cluster_api()
@@ -120,7 +120,7 @@ class TestVerifyNetworks(BaseHandlers):
         receiver.verify_networks_resp(**kwargs)
         self.db.refresh(task)
         self.assertEqual(task.status, "error")
-        self.assertEqual(task.error, error_msg)
+        self.assertEqual(task.message, error_msg)
 
 
 class TestConsumer(BaseHandlers):

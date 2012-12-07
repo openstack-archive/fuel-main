@@ -106,7 +106,7 @@ class TestNotification(BaseHandlers):
         self.assertEqual(notification.topic, "done")
         self.assertEqual(
             notification.message,
-            "Cluster %s and all cluster nodes "
+            "Installation '%s' and all its nodes "
             "are deleted" % cluster_name
         )
 

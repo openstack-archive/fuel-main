@@ -31,13 +31,13 @@ class NailgunReceiver(object):
     )
 
     @classmethod
-    def __update_task_status(cls, uuid, status, progress, error=""):
+    def __update_task_status(cls, uuid, status, progress, msg=""):
         task = cls.db.query(Task).filter_by(uuid=uuid).first()
         if not task:
-            logger.error("Can't set status='%s', error='%s':no task \
-                    with UUID %s found!", status, error, uuid)
+            logger.error("Can't set status='%s', message='%s':no task \
+                    with UUID %s found!", status, msg, uuid)
             return
-        data = {'status': status, 'progress': progress, 'error': error}
+        data = {'status': status, 'progress': progress, 'message': msg}
         for key, value in data.iteritems():
             if value:
                 setattr(task, key, value)
@@ -57,8 +57,8 @@ class NailgunReceiver(object):
                          s.status == 'error', subtasks)):
                 task.status = 'error'
                 task.progress = 100
-                task.error = '; '.join(map(
-                    lambda s: s.error, filter(
+                task.message = '; '.join(map(
+                    lambda s: s.message, filter(
                         lambda s: s.status == 'error', subtasks)))
             else:
                 total_progress = 0
@@ -127,14 +127,15 @@ class NailgunReceiver(object):
 
             notifier.notify(
                 "done",
-                "Cluster %s and all cluster nodes are deleted" % cluster_name,
+                "Installation '%s' and all its nodes are deleted" % (
+                    cluster_name),
                 db=cls.db
             )
 
         elif task.status in ('error',):
             notifier.notify(
                 "error",
-                task.error,
+                task.message,
                 cluster.id,
                 cls.db
             )
@@ -144,7 +145,7 @@ class NailgunReceiver(object):
         logger.info("RPC method deploy_resp received: %s" % kwargs)
         task_uuid = kwargs.get('task_uuid')
         nodes = kwargs.get('nodes') or []
-        error_msg = kwargs.get('error')
+        message = kwargs.get('error')
         status = kwargs.get('status')
         progress = kwargs.get('progress')
 
@@ -171,7 +172,7 @@ class NailgunReceiver(object):
                     "NAME": n.name or "Unknown"
                 }) for n in error_nodes
             ]
-            error_msg = "Failed to deploy nodes:\n%s" % "\n".join(nodes_info)
+            message = "Failed to deploy nodes:\n%s" % "\n".join(nodes_info)
             status = 'error'
 
         task = cls.db.query(Task).filter_by(uuid=task_uuid).first()
@@ -179,20 +180,22 @@ class NailgunReceiver(object):
         if status in ('error',):
             notifier.notify(
                 "error",
-                error_msg,
+                message,
                 task.cluster_id,
                 cls.db
             )
 
         elif status in ('ready',):
+            message = "Deployment of installation '%s' is done. \
+                Access WebUI of OpenStack at http://here will \
+                be the address" % task.cluster.name
             notifier.notify(
                 "done",
-                "Deployment is done",
+                message,
                 task.cluster_id,
                 cls.db
             )
-
-        cls.__update_task_status(task_uuid, status, progress, error_msg)
+        cls.__update_task_status(task_uuid, status, progress, message)
 
     @classmethod
     def verify_networks_resp(cls, **kwargs):

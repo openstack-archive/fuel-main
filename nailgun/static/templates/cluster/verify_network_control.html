@@ -14,7 +14,7 @@
         </div>
       <% } else if (task.get('status') == 'error') { %>
         <div class="page-control-error-placeholder">
-          <%- task.get('error') || 'Verification Failed' %>
+          <%- task.get('message') || 'Verification Failed' %>
         </div>
       <% } %>
       <div class="page-control-button-placeholder">
