@@ -1,5 +1,8 @@
-from datetime import time
+
 import json
+import string
+from random import choice
+from datetime import time
 
 import eventlet
 eventlet.monkey_patch()
@@ -20,7 +23,8 @@ class TestRPCProcess(BaseHandlers):
 
     def setUp(self):
         super(TestRPCProcess, self).setUp()
-        self.process = RPCProcess('test', TestReceiver)
+        self.q_name = "".join([choice(string.ascii_lowercase) for _ in xrange(7)])
+        self.process = RPCProcess(self.q_name, TestReceiver)
         self.process.start()
         self.conn = rpc.create_connection(True)
 
@@ -35,5 +39,5 @@ class TestRPCProcess(BaseHandlers):
 
     def test_echo_working(self):
         value = 42
-        result = rpc.call('test', {"method": "echo", "args": {"value": value}})
+        result = rpc.call(self.q_name, {"method": "echo", "args": {"value": value}})
         self.assertEqual(value, result)
