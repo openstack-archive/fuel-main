@@ -1,6 +1,9 @@
 from datetime import time
 import json
 
+import eventlet
+eventlet.monkey_patch()
+
 import nailgun.rpc as rpc
 from nailgun.test.base import BaseHandlers
 from nailgun.rpc.processed import RPCProcess
@@ -27,6 +30,7 @@ class TestRPCProcess(BaseHandlers):
             self.process.join()
         else:
             raise Exception("RPC process terminated unexpectedly")
+        self.conn.close()
         super(TestRPCProcess, self).tearDown()
 
     def test_echo_working(self):
