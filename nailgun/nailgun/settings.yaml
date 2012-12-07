@@ -40,6 +40,7 @@ COBBLER_PASSWORD: "cobbler"
 COBBLER_PROFILE: "centos63-x86_64"
 
 REMOTE_LOGS_PATH: "/var/log/remote/"
+REMOTE_LOGS_REGEXP: '^(?P<ip>\d+\.\d+\.\d+\.\d+)\s+(?P<date>\w{3}\s+\d+\s+\d+:\d+:\d+)\s+(?P<fqdn>[\w\.\-]+)\s+(?P<component>[\w\.\-/]+):\s+(?:[\d:,]+\s+(?P<level>[A-Z]+)\s+)?(?:\s*:\s*)?(?P<text>.*)$'
 REMOTE_LOGS:
   - id: syslog
     name: "Syslog"
