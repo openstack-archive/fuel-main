@@ -43,6 +43,7 @@ class TestLogs(BaseHandlers):
 
     def test_log_entry_collection_handler(self):
         node_ip = '10.20.30.40'
+        log_entry = ['date111', 'level222', 'text333']
         cluster = self.create_default_cluster()
         node = self.create_default_node(cluster_id=cluster.id, ip=node_ip)
 
@@ -51,7 +52,7 @@ class TestLogs(BaseHandlers):
         node_log_file = os.path.join(node_log_dir,
                                      settings.REMOTE_LOGS[0]['path'])
         f = open(node_log_file, 'w')
-        f.write('date111:level222:text333')
+        f.write(':'.join(log_entry))
         f.close()
 
         resp = self.app.get(
@@ -61,8 +62,4 @@ class TestLogs(BaseHandlers):
         )
         self.assertEquals(200, resp.status)
         response = json.loads(resp.body)
-        self.assertEquals(response, [{
-            'date': 'date111',
-            'level': 'level222',
-            'text': 'text333',
-        }])
+        self.assertEquals(response, [log_entry])

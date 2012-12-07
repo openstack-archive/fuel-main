@@ -50,11 +50,11 @@ class LogEntryCollectionHandler(JSONHandler):
             if m is None:
                 logger.error("Unable to parse log entry '%s'" % entry)
                 continue
-            output.append({
-                'date': m.group('date'),
-                'level': m.group('level') or 'INFO',
-                'text': m.group('text')
-            })
+            output.append([
+                m.group('date'),
+                m.group('level') or 'INFO',
+                m.group('text')
+            ])
         f.close()
         return json.dumps(output)
 
