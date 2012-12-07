@@ -158,7 +158,7 @@ function(models, commonViews, dialogViews, clusterPageTemplate, deploymentResult
                 if (progressBar.is(':hover')) {
                     progressBar.tooltip('show');
                 }
-                this.$('.bar').css('width', (progress > 10 ? progress : 10) + '%');
+                this.$('.bar').css('width', (progress > 3 ? progress : 3) + '%');
             }
         },
         render: function() {
@@ -552,7 +552,7 @@ function(models, commonViews, dialogViews, clusterPageTemplate, deploymentResult
                 if (progressBar.is(':hover')) {
                     progressBar.tooltip('show');
                 }
-                this.$('.bar').css('width', (progress > 10 ? progress : 10) + '%');
+                this.$('.bar').css('width', (progress > 3 ? progress : 3) + '%');
             }
         },
         beforeTearDown: function() {
@@ -703,7 +703,7 @@ function(models, commonViews, dialogViews, clusterPageTemplate, deploymentResult
                 if (progressBar.is(':hover')) {
                     progressBar.tooltip('show');
                 }
-                this.$('.bar').css('width', (progress > 10 ? progress : 10) + '%');
+                this.$('.bar').css('width', (progress > 3 ? progress : 3) + '%');
             }
         },
         initialize: function(options) {
