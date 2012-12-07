@@ -539,8 +539,25 @@ function(models, commonViews, dialogViews, clusterPageTemplate, deploymentResult
                 this.endNodeRenaming();
             }
         },
+        updateProgress: function() {
+            var nodeStatus = this.model.get('status');
+            if ( nodeStatus == 'provisioning' || nodeStatus == 'deploying') {
+                var progress = this.model.get('progress') || 0;
+                var progressBar = this.$('.progress');
+                var processName = 'Provisioning';
+                if (nodeStatus == 'deploying') {
+                    processName = 'Deployment';
+                }
+                progressBar.attr('data-original-title', processName + ' in progress, ' + progress + '% completed').tooltip('fixTitle').tooltip();
+                if (progressBar.is(':hover')) {
+                    progressBar.tooltip('show');
+                }
+                this.$('.bar').css('width', (progress > 10 ? progress : 10) + '%');
+            }
+        },
         beforeTearDown: function() {
             $('html').off(this.eventNamespace);
+            this.$('.progress').tooltip('destroy');
         },
         initialize: function(options) {
             _.defaults(this, options);
@@ -549,6 +566,7 @@ function(models, commonViews, dialogViews, clusterPageTemplate, deploymentResult
             this.model.bind('change', this.render, this);
         },
         render: function() {
+            this.$('.progress').tooltip('destroy');
             this.$el.html(this.template({
                 node: this.model,
                 renaming: this.renaming,
@@ -556,6 +574,7 @@ function(models, commonViews, dialogViews, clusterPageTemplate, deploymentResult
                 selectableForAddition: this.selectableForAddition,
                 selectableForDeletion: this.selectableForDeletion
             }));
+            this.updateProgress();
             return this;
         }
     });
