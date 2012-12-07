@@ -2035,10 +2035,6 @@ h6.page-title {
   text-shadow: 0px 1px 2px rgba(0, 0, 0, 0.3);
 }
 
-.with-big-warning-icon {
-  text-align: center;
-}
-
 .statistic > div {
   float: left;
   text-transform: uppercase;
@@ -2058,4 +2054,28 @@ h6.page-title {
 
 .statistic .stat-title {
   padding-left: 2px;
+}
+
+.cluster-status-deploy {
+  margin: 5px 40px 0px 40px;
+  height: 12px;
+  -webkit-border-radius: 4px;
+  -moz-border-radius: 4px;
+  border-radius: 4px;
+  background-color: #b5bbbc;
+  -webkit-box-shadow: 0 1px rgba(255,255,255,.25), inset 0 1px 6px rgba(0,0,0,.25);
+  -moz-box-shadow: 0 1px rgba(255,255,255,.25), inset 0 1px 6px rgba(0,0,0,.25);
+  box-shadow: 0 1px rgba(255,255,255,.25), inset 0 1px 6px rgba(0,0,0,.25);
+}
+.cluster-status-deploy > .bar {
+  height: 12px;
+  -webkit-border-radius: 4px;
+  -moz-border-radius: 4px;
+  border-radius: 4px;
+  background-color: #41900c;
+  background-image: -webkit-linear-gradient(bottom, #51a451, #61c161);
+  background-image: -moz-linear-gradient(bottom, #51a451, #61c161);
+  background-image: -o-linear-gradient(bottom, #51a451, #61c161);
+  background-image: -ms-linear-gradient(bottom, #51a451, #61c161);
+  background-image: linear-gradient(to top, #51a451, #61c161);
 }

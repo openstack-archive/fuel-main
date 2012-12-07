@@ -19,7 +19,7 @@
   <% var task = cluster.task('deploy') %>
   <% var taskStatus = task ? task.get('status') : null %>
   <% if (taskStatus =='running') { %>
-    <div class="progress progress-warning progress-striped progress-deploy-clusters-page active" rel="tooltip">
+    <div class="cluster-status-deploy">
       <div class="bar"></div>
     </div>
   <% } else { %>
