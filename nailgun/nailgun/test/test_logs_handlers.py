@@ -51,9 +51,8 @@ class TestLogs(BaseHandlers):
         os.makedirs(node_log_dir)
         node_log_file = os.path.join(node_log_dir,
                                      settings.REMOTE_LOGS[0]['path'])
-        f = open(node_log_file, 'w')
-        f.write(':'.join(log_entry))
-        f.close()
+        with open(node_log_file, 'w') as f:
+            f.write(':'.join(log_entry))
 
         resp = self.app.get(
             reverse('LogEntryCollectionHandler'),

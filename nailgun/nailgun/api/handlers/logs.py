@@ -36,26 +36,26 @@ class LogEntryCollectionHandler(JSONHandler):
 
         node_log_dir = os.path.join(settings.REMOTE_LOGS_PATH, node.ip)
         if not os.path.exists(node_log_dir):
-            return web.notfound("Log file not found")
+            return web.notfound("Log files dir for node not found")
 
         node_log_file = os.path.join(node_log_dir, log_config['path'])
         if not os.path.exists(node_log_file):
             return web.notfound("Log file not found")
 
         output = []
-        f = open(node_log_file, 'r')
-        for line in f:
-            entry = line.rstrip('\n')
-            m = re.match(settings.REMOTE_LOGS_REGEXP, entry)
-            if m is None:
-                logger.error("Unable to parse log entry '%s'" % entry)
-                continue
-            output.append([
-                m.group('date'),
-                m.group('level') or 'INFO',
-                m.group('text')
-            ])
-        f.close()
+        with open(node_log_file, 'r') as f:
+            for line in f:
+                entry = line.rstrip('\n')
+                m = re.match(settings.REMOTE_LOGS_REGEXP, entry)
+                if m is None:
+                    logger.error("Unable to parse log entry '%s'" % entry)
+                    continue
+                output.append([
+                    m.group('date'),
+                    m.group('level') or 'INFO',
+                    m.group('text')
+                ])
+
         return json.dumps(output)
 
 
