@@ -58,6 +58,7 @@ class LogEntryCollectionHandler(JSONHandler):
         f.close()
         return json.dumps(output)
 
+
 class LogSourceCollectionHandler(JSONHandler):
 
     def GET(self):

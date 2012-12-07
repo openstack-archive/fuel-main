@@ -11,14 +11,16 @@ from nailgun.test.base import reverse
 
 from nailgun.settings import settings
 
+
 class TestLogs(BaseHandlers):
 
     def setUp(self):
         super(TestLogs, self).setUp()
         self.log_dir = tempfile.mkdtemp()
+        logs_regexp = r'^(?P<date>\w+):(?P<level>\w+):(?P<text>\w+)$'
         settings.update({
             'REMOTE_LOGS_PATH': self.log_dir,
-            'REMOTE_LOGS_REGEXP': r'^(?P<date>\w+):(?P<level>\w+):(?P<text>\w+)$',
+            'REMOTE_LOGS_REGEXP': logs_regexp,
             'REMOTE_LOGS': [{
                 'id': 'syslog',
                 'name': 'Syslog',
