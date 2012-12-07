@@ -54,7 +54,7 @@ class ClusterHandler(JSONHandler):
     def GET(self, cluster_id):
         web.header('Content-Type', 'application/json')
         q = web.ctx.orm.query(Cluster)
-        cluster = q.filter(Cluster.id == cluster_id).first()
+        cluster = q.get(cluster_id)
         if not cluster:
             return web.notfound()
         return json.dumps(
@@ -64,8 +64,7 @@ class ClusterHandler(JSONHandler):
 
     def PUT(self, cluster_id):
         web.header('Content-Type', 'application/json')
-        q = web.ctx.orm.query(Cluster).filter(Cluster.id == cluster_id)
-        cluster = q.first()
+        cluster = web.ctx.orm.query(Cluster).get(int(cluster_id))
         if not cluster:
             return web.notfound()
         # additional validation needed?
@@ -90,9 +89,7 @@ class ClusterHandler(JSONHandler):
     def DELETE(self, cluster_id):
         web.header('Content-Type', 'application/json')
 
-        cluster = web.ctx.orm.query(Cluster).filter(
-            Cluster.id == cluster_id
-        ).first()
+        cluster = web.ctx.orm.query(Cluster).get(cluster_id)
         if not cluster:
             return web.notfound()
 
@@ -199,10 +196,9 @@ class ClusterChangesHandler(JSONHandler):
 
     def PUT(self, cluster_id):
         web.header('Content-Type', 'application/json')
-        q = web.ctx.orm.query(Cluster).filter(Cluster.id == cluster_id)
+        cluster = web.ctx.orm.query(Cluster).get(int(cluster_id))
         logger.debug('ClusterChangesHandler: PUT request with cluster_id %s' %
                      cluster_id)
-        cluster = q.first()
         if not cluster:
             logger.warn('ClusterChangesHandler: there is'
                         ' no cluster with id %s in DB.' % cluster_id)
@@ -235,8 +231,7 @@ class ClusterNetworksHandler(JSONHandler):
 
     def PUT(self, cluster_id):
         web.header('Content-Type', 'application/json')
-        q = web.ctx.orm.query(Cluster).filter(Cluster.id == cluster_id)
-        cluster = q.first()
+        cluster = web.ctx.orm.query(Cluster).get(int(cluster_id))
         if not cluster:
             return web.notfound()
 

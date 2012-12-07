@@ -127,7 +127,7 @@ function run_ui_tests {
         casperjs test --includes=$ui_tests_dir/helpers.js --fail-fast $test_file
         result=$(($result + $?))
     done
-    kill -9 %1
+    kill %1
     return $result
 }
 

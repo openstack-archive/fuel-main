@@ -23,7 +23,7 @@ class TaskHandler(JSONHandler):
     def GET(self, task_id):
         web.header('Content-Type', 'application/json')
         q = web.ctx.orm.query(Task)
-        task = q.filter(Task.id == task_id).first()
+        task = q.get(task_id)
         if not task:
             return web.notfound()
         return json.dumps(
@@ -33,7 +33,7 @@ class TaskHandler(JSONHandler):
 
     def DELETE(self, task_id):
         q = web.ctx.orm.query(Task)
-        task = q.filter(Task.id == task_id).first()
+        task = q.get(task_id)
         if not task:
             return web.notfound()
         if task.status not in ("ready", "error"):

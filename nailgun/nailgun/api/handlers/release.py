@@ -20,7 +20,7 @@ class ReleaseHandler(JSONHandler):
     def GET(self, release_id):
         web.header('Content-Type', 'application/json')
         q = web.ctx.orm.query(Release)
-        release = q.filter(Release.id == release_id).first()
+        release = q.get(release_id)
         if not release:
             return web.notfound()
         return json.dumps(
@@ -31,7 +31,7 @@ class ReleaseHandler(JSONHandler):
     def PUT(self, release_id):
         web.header('Content-Type', 'application/json')
         q = web.ctx.orm.query(Release)
-        release = q.filter(Release.id == release_id).first()
+        release = q.get(release_id)
         if not release:
             return web.notfound()
         # additional validation needed?
@@ -46,9 +46,7 @@ class ReleaseHandler(JSONHandler):
         )
 
     def DELETE(self, release_id):
-        release = web.ctx.orm.query(Release).filter(
-            Release.id == release_id
-        ).first()
+        release = web.ctx.orm.query(Release).get(release_id)
         if not release:
             return web.notfound()
         web.ctx.orm.delete(release)

@@ -80,11 +80,12 @@ def get_node_networks(node_id):
             'dev': 'eth0'})  # We need to figure out interface
         network_ids.append(net.id)
     # And now let's add networks w/o IP addresses
-    nets = web.ctx.orm.query(Network).filter_by(cluster_id=cluster_id).filter(
-        not_(Network.id.in_(network_ids))).all()
+    nets = web.ctx.orm.query(Network).filter_by(cluster_id=cluster_id)
+    if network_ids:
+        nets = nets.filter(not_(Network.id.in_(network_ids)))
     # For now, we pass information about all networks,
     #    so these vlans will be created on every node we call this func for
-    for net in nets:
+    for net in nets.all():
         network_data.append({
             'name': net.name,
             'vlan': net.vlan_id,

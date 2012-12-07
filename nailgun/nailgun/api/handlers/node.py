@@ -19,7 +19,7 @@ class NodeHandler(JSONHandler):
     def GET(self, node_id):
         web.header('Content-Type', 'application/json')
         q = web.ctx.orm.query(Node)
-        node = q.filter(Node.id == node_id).first()
+        node = q.get(node_id)
         if not node:
             return web.notfound()
 
@@ -31,7 +31,7 @@ class NodeHandler(JSONHandler):
     def PUT(self, node_id):
         web.header('Content-Type', 'application/json')
         q = web.ctx.orm.query(Node)
-        node = q.filter(Node.id == node_id).first()
+        node = q.get(node_id)
         if not node:
             return web.notfound()
         # additional validation needed?
@@ -48,9 +48,7 @@ class NodeHandler(JSONHandler):
         )
 
     def DELETE(self, node_id):
-        node = web.ctx.orm.query(Node).filter(
-            Node.id == node_id
-        ).first()
+        node = web.ctx.orm.query(Node).get(node_id)
         if not node:
             return web.notfound()
         web.ctx.orm.delete(node)
