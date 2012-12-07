@@ -340,13 +340,13 @@ class TestNode(Base):
             )
             for r in releases:
                 logging.debug("Found release name: %s" % r["name"])
-                if r["name"] == "OpenStack Essex Release":
+                if r["name"] == "Folsom":
                     logging.debug("Sample release id: %s" % r["id"])
                     return r["id"]
 
         release_id = _get_release_id()
         if not release_id:
-            raise "Not implemented uploading of release"
+            raise Exception("Not implemented uploading of release")
         if not release_id:
             raise Exception("Could not get release id.")
         return release_id
