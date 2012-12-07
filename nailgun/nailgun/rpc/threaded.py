@@ -56,6 +56,9 @@ class NailgunReceiver(object):
             if all(map(lambda s: s.status == 'ready', subtasks)):
                 task.status = 'ready'
                 task.progress = 100
+                task.message = '; '.join(map(
+                    lambda s: s.message, filter(
+                        lambda s: s.message is not None, subtasks)))
                 cls.__update_cluster_status(task)
             elif all(map(lambda s: s.status == 'ready' or
                          s.status == 'error', subtasks)):
