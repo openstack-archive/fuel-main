@@ -34,11 +34,10 @@ def forbid_client_caching(handler):
                    'store, no-cache, must-revalidate,'
                    ' post-check=0, pre-check=0')
         web.header('Pragma', 'no-cache')
-        dt = datetime.fromtimestamp(12345).strftime(
+        dt = datetime.fromtimestamp(0).strftime(
             '%a, %d %b %Y %H:%M:%S GMT'
         )
         web.header('Expires', dt)
-        web.header('Date', dt)
     return handler()
 
 handlers = {}
