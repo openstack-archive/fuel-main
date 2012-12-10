@@ -25,6 +25,12 @@ def check_client_content_type(handler):
         raise web.unsupportedmediatype
     return handler()
 
+def forbid_client_caching(handler):
+    if web.ctx.path.startswith("/api"):
+        web.header('Cache-Control',
+                   'store, no-cache, must-revalidate, post-check=0, pre-check=0')
+    return handler()
+
 handlers = {}
 
 

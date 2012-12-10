@@ -7,6 +7,7 @@ sys.path.insert(0, curdir)
 
 from nailgun.settings import settings
 from nailgun.api.handlers import check_client_content_type
+from nailgun.api.handlers import forbid_client_caching
 from nailgun.db import load_db_driver
 from nailgun.urls import urls
 
@@ -42,6 +43,7 @@ class FlushingLogger(object):
 def build_app():
     app = web.application(urls, locals())
     app.add_processor(load_db_driver)
+    app.add_processor(forbid_client_caching)
     return app
 
 
