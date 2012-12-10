@@ -2,6 +2,8 @@
 
 import json
 import uuid
+from wsgiref.handlers import format_date_time
+from datetime import datetime
 
 import web
 import netaddr
@@ -25,10 +27,19 @@ def check_client_content_type(handler):
         raise web.unsupportedmediatype
     return handler()
 
+
 def forbid_client_caching(handler):
     if web.ctx.path.startswith("/api"):
         web.header('Cache-Control',
-                   'store, no-cache, must-revalidate, post-check=0, pre-check=0')
+                   'store, no-cache, must-revalidate,'
+                   ' post-check=0, pre-check=0')
+        web.header('Pragma', 'no-cache')
+        web.header(
+            'Expires',
+            datetime.fromtimestamp(12345).strftime(
+                '%a, %d %b %Y %H:%M:%S GMT'
+            )
+        )
     return handler()
 
 handlers = {}
