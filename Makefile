@@ -36,6 +36,8 @@ clean:
 deep_clean: clean
 	rm -rf $(LOCAL_MIRROR)
 
+distclean: deep_clean clean-integration-test
+
 assert-variable=$(if $($1),,$(error Variable $1 need to be defined))
 find-files=$(shell test -d $1 && cd $1 && find * -type f 2> /dev/null)
 
