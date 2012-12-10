@@ -59,7 +59,7 @@ function(models, commonViews, dialogViews, clustersPageTemplate, clusterTemplate
         updateInterval: 3000,
         scheduleUpdate: function() {
             if (this.model.task('cluster_deletion', 'running') || this.model.task('deploy', 'running')) {
-                _.delay(_.bind(this.update, this), this.updateInterval);
+                this.timeout = _.delay(_.bind(this.update, this), this.updateInterval);
             }
         },
         update: function() {
@@ -91,6 +91,11 @@ function(models, commonViews, dialogViews, clustersPageTemplate, clusterTemplate
             if (task) {
                 var progress = task.get('progress') || 0;
                 this.$('.bar').css('width', (progress > 3 ? progress : 3) + '%');
+            }
+        },
+        beforeTearDown: function() {
+            if (this.timeout) {
+                clearTimeout(this.timeout);
             }
         },
         initialize: function() {

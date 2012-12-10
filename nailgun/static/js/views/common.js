@@ -118,9 +118,6 @@ function(models, navbarTemplate, nodesStatsTemplate, notificationsTemplate, noti
                 this.hidePopover(e);
             }
         },
-        beforeTearDown: function() {
-            $('html').off(this.eventNamespace);
-        },
         scheduleUpdate: function() {
             if (this.getUnreadNotifications().length) {
                 this.render();
@@ -131,18 +128,10 @@ function(models, navbarTemplate, nodesStatsTemplate, notificationsTemplate, noti
             this.collection.fetch({complete: _.bind(this.scheduleUpdate, this)});
         },
         initialize: function(options) {
-            this.eventNamespace = 'click.click-notifications';
             this.collection = new models.Notifications();
             this.collection.bind('reset', this.render, this);
             this.collection.deferred = this.collection.fetch();
-            this.collection.deferred.done(_.bind(function() {
-                this.scheduleUpdate();
-                $('html').on(this.eventNamespace, _.bind(function(e){
-                    if (!$(e.target).closest(this.$el).length) {
-                        this.hidePopover(e);
-                    }
-                }, this));
-            }, this));
+            this.collection.deferred.done(_.bind(this.scheduleUpdate, this));
         },
         render: function() {
             this.$el.html(this.template({notifications: this.collection}));

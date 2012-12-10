@@ -43,9 +43,19 @@ class LogEntryCollectionHandler(JSONHandler):
             return web.notfound("Log file not found")
 
         output = []
+        from_line = 0
+        try:
+            from_line = int(user_data.get('from', 0))
+        except ValueError:
+            raise web.badrequest("Invalid 'from' value")
+
         with open(node_log_file, 'r') as f:
-            for line in f:
+            for num, line in enumerate(f):
+                if num < from_line:
+                    continue
                 entry = line.rstrip('\n')
+                if not len(entry):
+                    continue
                 m = re.match(settings.REMOTE_LOGS_REGEXP, entry)
                 if m is None:
                     logger.error("Unable to parse log entry '%s'" % entry)

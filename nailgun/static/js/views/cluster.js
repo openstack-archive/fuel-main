@@ -65,23 +65,26 @@ function(models, commonViews, dialogViews, clusterPageTemplate, deploymentResult
         },
         scheduleUpdate: function() {
             if (this.model.task('deploy', 'running')) {
-                _.delay(_.bind(this.update, this), this.updateInterval);
+                this.timeout = _.delay(_.bind(this.update, this), this.updateInterval);
             }
         },
         update: function() {
-            if (this == app.page) {
-                var complete = _.after(2, _.bind(this.scheduleUpdate, this));
-                var task = this.model.task('deploy', 'running');
-                if (task) {
-                    task.fetch({complete: complete}).done(_.bind(this.refreshNotificationsAfterDeployment, this));
-                    this.model.get('nodes').fetch({data: {cluster_id: this.model.id}, complete: complete});
-                }
+            var complete = _.after(2, _.bind(this.scheduleUpdate, this));
+            var task = this.model.task('deploy', 'running');
+            if (task) {
+                task.fetch({complete: complete}).done(_.bind(this.refreshNotificationsAfterDeployment, this));
+                this.model.get('nodes').fetch({data: {cluster_id: this.model.id}, complete: complete});
             }
         },
         refreshNotificationsAfterDeployment: function() {
             var task = this.model.task('deploy');
             if (task.get('status') != 'running') {
                 app.navbar.notifications.collection.fetch();
+            }
+        },
+        beforeTearDown: function() {
+            if (this.timeout) {
+                clearTimeout(this.timeout);
             }
         },
         initialize: function(options) {
@@ -666,7 +669,7 @@ function(models, commonViews, dialogViews, clusterPageTemplate, deploymentResult
         },
         scheduleUpdate: function() {
             if (this.model.task('verify_networks', 'running')) {
-                _.delay(_.bind(this.update, this), this.updateInterval);
+                this.timeout = _.delay(_.bind(this.update, this), this.updateInterval);
             }
         },
         update: function(force) {
@@ -701,6 +704,11 @@ function(models, commonViews, dialogViews, clusterPageTemplate, deploymentResult
                     progressBar.tooltip('show');
                 }
                 this.$('.bar').css('width', (progress > 3 ? progress : 3) + '%');
+            }
+        },
+        beforeTearDown: function() {
+            if (this.timeout) {
+                clearTimeout(this.timeout);
             }
         },
         initialize: function(options) {
@@ -827,28 +835,54 @@ function(models, commonViews, dialogViews, clusterPageTemplate, deploymentResult
     });
 
     views.LogsTab = views.Tab.extend({
+        updateInterval: 5000,
         template: _.template(logsTabTemplate),
         logEntryTemplate: _.template(logEntryTemplate),
         events: {
             'click .show-logs-btn': 'showLogs',
             'change select': 'enableShowButton'
         },
+        beforeTearDown: function() {
+            if (this.timeout) {
+                clearTimeout(this.timeout);
+            }
+        },
+        scheduleUpdate: function() {
+            this.timeout = _.delay(_.bind(this.update, this), this.updateInterval);
+        },
+        update: function() {
+            this.fetchLogs({
+                success: _.bind(this.appendLogEntries, this),
+                complete: _.bind(this.scheduleUpdate, this)
+            });
+        },
         enableShowButton: function() {
             this.$('.show-logs-btn').attr('disabled', false);
         },
+        fetchLogs: function(callbacks) {
+            var options = {
+                url: '/api/logs',
+                dataType: 'json',
+                data: {
+                    node: this.chosenNodeId,
+                    source: this.chosenSourceId,
+                    from: this.from
+                }
+            };
+            _.extend(options, callbacks);
+            return $.ajax(options);
+        },
         showLogs: function() {
+            if (this.timeout) {
+                clearTimeout(this.timeout);
+            }
+            this.from = 0;
             this.chosenNodeId = this.$('select[name=node]').val();
             this.chosenSourceId = this.$('select[name=source]').val();
             this.$('.logs-description, .table-logs, .logs-fetch-error').hide();
             this.$('.logs-loading').show();
             this.$('select, .show-logs-btn').attr('disabled', true);
-            $.ajax({
-                url: '/api/logs',
-                dataType: 'json',
-                data: {
-                    node: this.chosenNodeId,
-                    source: this.chosenSourceId
-                },
+            this.fetchLogs({
                 complete: _.bind(function() {
                     this.$('.logs-loading').hide();
                     this.$('select').attr('disabled', false);
@@ -857,6 +891,7 @@ function(models, commonViews, dialogViews, clusterPageTemplate, deploymentResult
                     this.$('.table-logs tbody').html('');
                     this.appendLogEntries(data);
                     this.$('.table-logs').show();
+                    this.scheduleUpdate();
                 }, this),
                 error: _.bind(function() {
                     this.$('.logs-fetch-error').show();
@@ -865,12 +900,14 @@ function(models, commonViews, dialogViews, clusterPageTemplate, deploymentResult
             });
         },
         appendLogEntries: function(data) {
+            this.from += data.length;
             this.$('.table-logs tbody').append(_.map(data, function(entry) {
                 return this.logEntryTemplate({entry: entry});
             }, this).join(''));
         },
         initialize: function(options) {
             _.defaults(this, options);
+            this.from = 0;
             if (!this.model.get('log_sources')) {
                 this.sources = new models.LogSources();
                 this.sources.deferred = this.sources.fetch();
