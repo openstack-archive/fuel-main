@@ -75,18 +75,22 @@ class TestNode(Base):
         self._basic_provisioning('provision', {'controller': ['slave1']})
 
     def test_two_nodes_provisioning(self):
+        def _check_nova_status(ip):
+            ctrl_ssh = SSHClient()
+            ctrl_ssh.connect_ssh(ip, 'root', 'r00tme')
+            ret = ctrl_ssh.execute('/usr/bin/nova-manage service list')
+            return (
+                (ret['exit_status'] == 0)
+                and (''.join(ret['stdout']).count(":-)") == 5)
+                and (''.join(ret['stdout']).count("XXX") == 0)
+            )
         self._revert_nodes()
         cluster_name = 'two_nodes'
         nodes = {'controller': ['slave1'], 'compute': ['slave2']}
         self._basic_provisioning(cluster_name, nodes)
         slave = ci.environment.node['slave1']
         node = self._get_slave_node_by_devops_node(slave)
-        ctrl_ssh = SSHClient()
-        ctrl_ssh.connect_ssh(node['ip'], 'root', 'r00tme')
-        ret = ctrl_ssh.execute('/usr/bin/nova-manage service list')
-        self.assertEquals(ret['exit_status'], 0)
-        self.assertEquals(''.join(ret['stdout']).count(":-)"), 5)
-        self.assertEquals(''.join(ret['stdout']).count("XXX"), 0)
+        wait(lambda: _check_nova_status(node['ip']), timeout=300)
 
     def test_network_config(self):
         self._revert_nodes()
