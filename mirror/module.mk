@@ -31,7 +31,7 @@ reposdir=$(CENTOS_REPO_DIR)etc/yum-$(REPO_SUFFIX).repos.d
 endef
 
 $(CENTOS_REPO_DIR)etc/yum-$(REPO_SUFFIX).conf: export contents:=$(yum_conf)
-$(CENTOS_REPO_DIR)etc/yum-$(REPO_SUFFIX).conf:
+$(CENTOS_REPO_DIR)etc/yum-$(REPO_SUFFIX).conf: mirror/module.mk
 ifeq ($(IGNORE_MIRROR),1)
 	mkdir -p $(CENTOS_REPO_DIR)etc/yum/pluginconf.d
 	echo "[main]\nenabled=1" > $(CENTOS_REPO_DIR)etc/yum/pluginconf.d/priorities.conf
@@ -141,7 +141,7 @@ endef
 
 $(CENTOS_REPO_DIR)etc/yum-$(REPO_SUFFIX).repos.d/base.repo: export contents:=$(yum_$(REPO_SUFFIX)_repo)
 
-$(CENTOS_REPO_DIR)etc/yum-$(REPO_SUFFIX).repos.d/base.repo:
+$(CENTOS_REPO_DIR)etc/yum-$(REPO_SUFFIX).repos.d/base.repo: mirror/module.mk
 	@mkdir -p $(@D)
 	echo "$${contents}" > $@
 
