@@ -62,12 +62,20 @@ function(models, createClusterDialogTemplate, changeClusterModeDialogTemplate, d
                                 this.$el.modal('hide');
                                 this.collection.fetch();
                             }, this),
-                    error: _.bind(this.displayErrorMessage, this)
+                    error: _.bind(function(model, response, options) {
+                                if (response.status == 409) {
+                                    this.$('.existing-cluster-message').show();
+                                    this.$('.create-cluster-btn').removeClass('disabled');
+                                } else {
+                                    this.displayErrorMessage();
+                                }
+                            }, this)
                 });
 
             }
         },
         onInputKeydown: function(e) {
+            this.$('.existing-cluster-message').hide();
             if (e.which == 13) {
                 this.createCluster();
             }
