@@ -109,12 +109,6 @@ gpgcheck=0
 enabled=1
 priority=1
 
-[mirantis]
-name=Mirantis Packages for CentOS
-baseurl=http://moc-ci.srt.mirantis.net/rpm
-gpgcheck=0
-enabled=0
-
 [rpmforge]
 name=RHEL $(CENTOS_RELEASE) - RPMforge.net - dag
 #mirrorlist = http://apt.sw.be/redhat/el$(CENTOS_MAJOR)/en/mirrors-rpmforge
@@ -168,7 +162,10 @@ $/cache-extra.done: \
 		requirements-rpm.txt
 	yum -c $(CENTOS_REPO_DIR)etc/yum-$(REPO_SUFFIX).conf clean all
 	rm -rf /var/tmp/yum-$$USER-*/
-	yumdownloader -c $(CENTOS_REPO_DIR)etc/yum-$(REPO_SUFFIX).conf --resolve --destdir=$(CENTOS_REPO_DIR)Packages --archlist=$(CENTOS_ARCH) $(CENTOSEXTRA_PACKAGES) $(CENTOSRPMFORGE_PACKAGES)
+	yumdownloader -q --resolve --archlist=$(CENTOS_ARCH) \
+		-c $(CENTOS_REPO_DIR)etc/yum-$(REPO_SUFFIX).conf \
+		--destdir=$(CENTOS_REPO_DIR)Packages \
+		$(CENTOSEXTRA_PACKAGES) $(CENTOSRPMFORGE_PACKAGES)
 	$(ACTION.TOUCH)
 
 $/cache.done: $/cache-extra.done $/cache-boot.done
