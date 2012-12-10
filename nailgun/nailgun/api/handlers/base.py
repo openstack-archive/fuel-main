@@ -40,6 +40,12 @@ def forbid_client_caching(handler):
                 '%a, %d %b %Y %H:%M:%S GMT'
             )
         )
+        web.header(
+            'Date',
+            datetime.fromtimestamp(12345).strftime(
+                '%a, %d %b %Y %H:%M:%S GMT'
+            )
+        )
     return handler()
 
 handlers = {}
