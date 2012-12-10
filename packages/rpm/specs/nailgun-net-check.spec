@@ -31,7 +31,6 @@ cd libpcap-%{libpcapver}
 make
 cd ../pypcap-%{pypcapver}
 make all
-#make test
 
 %install
 mkdir -p %{buildroot}/usr/bin
