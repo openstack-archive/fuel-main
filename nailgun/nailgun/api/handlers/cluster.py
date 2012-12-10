@@ -64,7 +64,7 @@ class ClusterHandler(JSONHandler):
 
     def PUT(self, cluster_id):
         web.header('Content-Type', 'application/json')
-        cluster = web.ctx.orm.query(Cluster).get(int(cluster_id))
+        cluster = web.ctx.orm.query(Cluster).get(cluster_id)
         if not cluster:
             return web.notfound()
         # additional validation needed?
@@ -196,7 +196,7 @@ class ClusterChangesHandler(JSONHandler):
 
     def PUT(self, cluster_id):
         web.header('Content-Type', 'application/json')
-        cluster = web.ctx.orm.query(Cluster).get(int(cluster_id))
+        cluster = web.ctx.orm.query(Cluster).get(cluster_id)
         logger.debug('ClusterChangesHandler: PUT request with cluster_id %s' %
                      cluster_id)
         if not cluster:
@@ -231,7 +231,7 @@ class ClusterNetworksHandler(JSONHandler):
 
     def PUT(self, cluster_id):
         web.header('Content-Type', 'application/json')
-        cluster = web.ctx.orm.query(Cluster).get(int(cluster_id))
+        cluster = web.ctx.orm.query(Cluster).get(cluster_id)
         if not cluster:
             return web.notfound()
 
@@ -251,7 +251,7 @@ class ClusterAttributesHandler(JSONHandler):
 
     def GET(self, cluster_id):
         web.header('Content-Type', 'application/json')
-        cluster = web.ctx.orm.query(Cluster).get(int(cluster_id))
+        cluster = web.ctx.orm.query(Cluster).get(cluster_id)
         if not cluster:
             return web.notfound()
 
@@ -268,7 +268,7 @@ class ClusterAttributesHandler(JSONHandler):
 
     def PUT(self, cluster_id):
         web.header('Content-Type', 'application/json')
-        cluster = web.ctx.orm.query(Cluster).get(int(cluster_id))
+        cluster = web.ctx.orm.query(Cluster).get(cluster_id)
         if not cluster:
             return web.notfound()
 

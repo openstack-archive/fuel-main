@@ -7,7 +7,7 @@ import json
 import eventlet
 eventlet.monkey_patch()
 
-from nailgun.rpc import receiver as rec
+from nailgun.rpc import receiver as rcvr
 from nailgun.test.base import BaseHandlers
 from nailgun.api.models import Node, Task, Notification
 from nailgun.test.base import reverse
@@ -17,7 +17,7 @@ class TestNotification(BaseHandlers):
 
     def test_notification_deploy_done(self):
         cluster = self.create_default_cluster()
-        receiver = rec.NailgunReceiver()
+        receiver = rcvr.NailgunReceiver()
 
         task = Task(
             uuid=str(uuid.uuid4()),
@@ -42,7 +42,7 @@ class TestNotification(BaseHandlers):
 
     def test_notification_deploy_error(self):
         cluster = self.create_default_cluster()
-        receiver = rec.NailgunReceiver()
+        receiver = rcvr.NailgunReceiver()
 
         task = Task(
             uuid=str(uuid.uuid4()),
@@ -83,7 +83,7 @@ class TestNotification(BaseHandlers):
     def test_notification_delete_cluster_done(self):
         cluster = self.create_default_cluster()
         cluster_name = cluster.name
-        receiver = rec.NailgunReceiver()
+        receiver = rcvr.NailgunReceiver()
 
         task = Task(
             uuid=str(uuid.uuid4()),
@@ -112,7 +112,7 @@ class TestNotification(BaseHandlers):
 
     def test_notification_delete_cluster_failed(self):
         cluster = self.create_default_cluster()
-        receiver = rec.NailgunReceiver()
+        receiver = rcvr.NailgunReceiver()
 
         task = Task(
             uuid=str(uuid.uuid4()),
