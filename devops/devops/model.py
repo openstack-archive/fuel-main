@@ -71,11 +71,12 @@ class Network(ManagedObject):
         self.driver.stop_network(self)
 
 class Node(ManagedObject):
-    def __init__(self, name, cpu=1, memory=512, arch='x86_64', vnc=False):
+    def __init__(self, name, cpu=1, memory=512, arch='x86_64', vnc=False,
+                 metadata=None):
         super(Node, self).__init__()
 
         self.name = name
-
+        if not metadata: self.metadata = {}
         self.cpu = cpu
         self.memory = memory
         self.arch = arch
