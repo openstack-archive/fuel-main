@@ -3,7 +3,7 @@ require 'timeout'
 
 module Astute
   module RpuppetDeployer
-    def self.rpuppet_deploy(ctx, nodes, attrs, classes)
+    def self.rpuppet_deploy(ctx, nodes, parameters, classes, env="production")
       if nodes.empty?
         Astute.logger.info "#{ctx.task_id}: Nodes to deploy are not provided. Do nothing."
         return false
@@ -11,9 +11,9 @@ module Astute
       uids = nodes.map {|n| n['uid']}
       rpuppet = MClient.new(ctx, "rpuppet", uids)
 
-      data = {"parameters" => attrs,
+      data = {"parameters" => parameters,
               "classes" => classes,
-              "environment" => "production"}
+              "environment" => env}
 
       Astute.logger.debug "Waiting for puppet to finish deployment on all nodes (timeout = #{PUPPET_TIMEOUT} sec)..."
       time_before = Time.now

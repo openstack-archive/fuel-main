@@ -1,7 +1,7 @@
 module Astute
   class Orchestrator
-    def initialize(deployer=nil)
-      @deployer = deployer ||= Astute::Deployer.method(:puppet_deploy_with_polling)
+    def initialize(deploy_engine=nil)
+      @deploy_engine = deploy_engine ||= Astute::DeploymentEngine::NailyFact
       @check_network = Astute::Network.method(:check_network)
     end
 
@@ -13,35 +13,10 @@ module Astute
       return systems.map {|n| {'uid' => n.results[:sender], 'node_type' => n.results[:data][:node_type].chomp}}
     end
 
-    def deploy(reporter, task_id, nodes, attrs, prev_progress)
+    def deploy(reporter, task_id, nodes, attrs, prev_progress=0)
       context = Context.new(task_id, reporter)
-      deploying_progress_part = 1 - prev_progress
-
-      ctrl_nodes = nodes.select {|n| n['role'] == 'controller'}
-      # TODO(mihgen): we should report error back if there are not enough metadata passed
-      ctrl_management_ips = []
-      ctrl_public_ips = []
-      ctrl_nodes.each do |n|
-        ctrl_management_ips << n['network_data'].select {|nd| nd['name'] == 'management'}[0]['ip']
-        ctrl_public_ips << n['network_data'].select {|nd| nd['name'] == 'public'}[0]['ip']
-      end
-
-      # TODO(mihgen): we take first IP, is it Ok for all installations? I suppose it would not be for HA..
-      attrs['controller_node_address'] = ctrl_management_ips[0].split('/')[0]
-      attrs['controller_node_public'] = ctrl_public_ips[0].split('/')[0]
-
-      deploy_piece(context, ctrl_nodes, attrs)
-      progress = (100* prev_progress + 40 * deploying_progress_part).to_i
-      reporter.report({'progress' => progress})
-
-      compute_nodes = nodes.select {|n| n['role'] == 'compute'}
-      deploy_piece(context, compute_nodes, attrs)
-      progress = (100* prev_progress + 60 * deploying_progress_part).to_i
-      reporter.report({'progress' => progress})
-
-      other_nodes = nodes - ctrl_nodes - compute_nodes
-      deploy_piece(context, other_nodes, attrs)
-      return
+      deploy_engine_instance = @deploy_engine.new(context)
+      deploy_engine_instance.deploy(nodes, attrs, prev_progress)
     end
 
     def remove_nodes(reporter, task_id, nodes)
@@ -105,20 +80,6 @@ module Astute
       end
       Astute.logger.info "#{ctx.task_id}: Finished removing of nodes: #{uids.inspect}"
       return answer
-    end
-
-    def deploy_piece(ctx, nodes, attrs)
-      nodes_roles = nodes.map { |n| { n['uid'] => n['role'] } }
-      Astute.logger.info "#{ctx.task_id}: Starting deployment of nodes => roles: #{nodes_roles.inspect}"
-      ctx.reporter.report nodes_status(nodes, 'deploying')
-
-      @deployer.call(ctx, nodes, attrs)
-      ctx.reporter.report nodes_status(nodes, 'ready')
-      Astute.logger.info "#{ctx.task_id}: Finished deployment of nodes => roles: #{nodes_roles.inspect}"
-    end
-
-    def nodes_status(nodes, status)
-      {'nodes' => nodes.map { |n| {'uid' => n['uid'], 'status' => status} }}
     end
 
     def check_vlans_by_traffic(uid, data)

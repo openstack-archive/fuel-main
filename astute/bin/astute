@@ -10,6 +10,7 @@ class ConsoleReporter
 end
 
 reporter = ConsoleReporter.new
+Astute.logger = Logger.new(STDOUT)
 
 network_data = [{'vlan' =>  102, 'dev' => 'eth0', 'ip' => '10.20.20.24/24', 'brd' => '10.20.20.255', 'netmask' => '255.255.255.0', 'name' => 'management'},
                 {'vlan' => 103, 'dev' => 'eth0', 'ip' => '240.12.12.12/24', 'brd' => '240.12.12.255', 'netmask' => '255.255.255.0', 'name' => 'public'},
@@ -17,15 +18,14 @@ network_data = [{'vlan' =>  102, 'dev' => 'eth0', 'ip' => '10.20.20.24/24', 'brd
                 {'vlan' => 101, 'dev' => 'eth0', 'name' => 'fixed'}] 
 nodes = [{'id' => '1', 'ip' => '10.1.1.2', 'uid' => 'devnailgun.mirantis.com', 'role' => 'controller',
           'network_data' => network_data}]
-#nodes << {'id' => '2', 'ip' => '10.1.1.3', 'uid' => 'mcoll2', 'role' => 'test_controller'}
+nodes << {'id' => '1', 'ip' => '10.1.1.2', 'uid' => 'devnailgun.mirantis.com', 'role' => 'compute'}
 
 networks = [{'id' => 1, 'vlan_id' => 100, 'cidr' => '10.0.0.0/24'},
             {'id' => 2, 'vlan_id' => 101, 'cidr' => '192.168.0.0/24'}]
 
 task_id = `uuidgen`.strip
-orchestrator = Astute::Orchestrator.new(Astute::Deployer.method(:puppet_deploy_with_polling))
-#orchestrator = Astute::Orchestrator.new(Astute::Deployer.method(:rpuppet_deploy))
+orchestrator = Astute::Orchestrator.new(Astute::DeploymentEngine::NailyFact)
 
-attrs = {'simple_string' => 'just_string', 'list' => ['a','v'], 'hashes' => [{'a' => '1'}]}
+attrs = {'deployment_mode' => 'simple_compute', 'simple_string' => 'just_string', 'list' => ['a','v'], 'hashes' => [{'a' => '1'}]}
 orchestrator.deploy(reporter, task_id, nodes, attrs)
 orchestrator.verify_networks(reporter, task_id, nodes, networks)

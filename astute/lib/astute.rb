@@ -2,15 +2,17 @@ require 'json'
 require 'logger'
 
 require 'astute/orchestrator'
-require 'astute/mclient'
 require 'astute/metadata'
-require 'astute/deployer'
+require 'astute/deployment_engine'
 require 'astute/network'
 require 'astute/puppetd'
 require 'astute/rpuppet'
+require 'astute/deployment_engine/simple_puppet'
+require 'astute/deployment_engine/nailyfact'
 
 module Astute
   autoload 'Context', 'astute/context'
+  autoload 'MClient', 'astute/mclient'
 
   def self.logger
     @logger ||= Logger.new('/var/log/astute.log')
