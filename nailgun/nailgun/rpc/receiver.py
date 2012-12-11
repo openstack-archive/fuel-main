@@ -12,7 +12,11 @@ from sqlalchemy.orm import scoped_session, sessionmaker
 
 import nailgun.rpc as rpc
 from nailgun.db import Query
+<<<<<<< HEAD
 from nailgun.network.manager import get_node_networks
+=======
+from nailgun.settings import settings
+>>>>>>> task status update added
 from nailgun.api.models import engine, Node, Network
 from nailgun.api.models import Task
 from nailgun.notifier import notifier
@@ -200,6 +204,26 @@ class NailgunReceiver(object):
             ]
             message = "Failed to deploy nodes:\n%s" % "\n".join(nodes_info)
             status = 'error'
+            progress = 100
+
+        coeff = settings.PROVISIONING_PROGRESS_COEFF or 0.8
+        pre = 0
+        if nodes and not progress and not error_nodes:
+            # we should calculate task progress by nodes info
+            nodes_progress = []
+
+            nodes_db = cls.db.query(Node).filter(
+                Node.id.in_([n['uid'] for n in nodes])
+            ).all()
+            for node in nodes_db:
+                if node.status in ['provisioning', 'provisioned']:
+                    nodes_progress.append(int(node.progress * coeff))
+                elif node.status in ['deploying', 'ready']:
+                    nodes_progress.append(
+                        int(100 * coeff + node.progress * (1 - coeff))
+                    )
+
+            progress = sum(nodes_progress) / len(nodes_progress)
 
         task = cls.db.query(Task).filter_by(uuid=task_uuid).first()
 

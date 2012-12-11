@@ -115,6 +115,7 @@ class Node(Base, BasicValidator):
         'ready',
         'discover',
         'provisioning',
+        'provisioned',
         'deploying',
         'error'
     )
