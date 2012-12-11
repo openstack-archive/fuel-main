@@ -1,18 +1,92 @@
-<form class="settings-editable form-horizontal" onsubmit="return false">
-  <div class="settings-header">
-    <div class="span5"><h3>Settings</h3></div>
-    <div class="span2"><button class="btn btn-apply-changes btn-link pull-right" disabled><i class="icon-ok"></i>Save</button></div>
-    <div class="span3"><button class="btn btn-revert-changes btn-link pull-right" disabled><i class="icon-cancel"></i>Cancel current changes</button></div>
-    <div class="span2"><button class="btn btn-set-defaults btn-link pull-right" <%= cluster.task('deploy', 'running') ? 'disabled' : '' %>><i class="icon-cw"></i>Set defaults</button></div>
-  </div>
-  <div class="settings-content">
-    <div class="row-fluid">
-      <div class="span4"></div>
-      <div class="span4">
-        <div class="progress progress-striped progress-success active">
-          <div class="bar" style="width: 100%"></div>
+<div class="wrapper">
+
+  <h3>Settings</h3>
+
+  <form class="form-horizontal">
+
+  <div class="network-tab-content">
+
+      <div class="fieldset-group">
+
+        <legend>Keystone</legend>
+
+          <h4>Group Name Level 1</h4>
+
+          <label>Auto Assign Floating IP</label>
+          <input type="text" placeholder="False">
+        
+          <label>User</label>
+          <select>
+            <option>Sample Item 1</option>
+            <option>Sample Item 2</option>
+            <option>Sample Item 3</option>
+            <option>Sample Item 4</option>
+            <option>Sample Item 5</option>
+          </select>
+
+            <div class="fieldset-group">
+              <h4>Group Name Level 2</h4>
+
+              <label>Auto Assign Floating IP</label>
+              <input type="text" placeholder="False">
+        
+              <div class="fieldset-group">
+                <h4>Group Name Level 3</h4>
+
+                <label>Auto Assign Floating IP</label>
+                <input type="text" placeholder="False">
+
+                  <div class="fieldset-group">
+                    <h4>Group Name Level 4</h4>
+
+                    <label>Auto Assign Floating IP</label>
+                    <input type="text" placeholder="False">
+
+                    <div class="fieldset-group">
+                      <h4>Group Name Level 5</h4>
+
+                      <label>Auto Assign Floating IP</label>
+                      <input type="text" placeholder="False">
+
+                    </div>
+
+                  </div>
+
+              </div>
+
         </div>
+
+      </div>
+
+      <div class="fieldset-group">
+
+        <span class="help-block">Sample of block without groupname</span>
+                
+        <label>Auto Assign Floating IP</label>
+        <input type="text" placeholder="False">
+        
+        <label>User</label>
+        <input type="text" placeholder="Item 1">
+
+        <label>Label 2</label>
+        <input type="text" placeholder="Item 2">
+
+      </div>
+
+  </div>
+
+</form>
+
+
+  <!-- page-control box -->  
+  <div class="row">
+    <div class="page-control-box">
+      <div class="page-control-button-placeholder">
+        <button class="btn">Set defaults</button>
+        <button class="btn" disabled>Cancel by all items</button>
+        <button class="btn btn-success apply-btn" disabled>Save Settings</button>
       </div>
     </div>
   </div>
-</form>
+
+</div>

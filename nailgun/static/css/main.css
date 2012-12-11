@@ -2082,3 +2082,29 @@ h6.page-title {
   background-image: -ms-linear-gradient(bottom, #51a451, #61c161);
   background-image: linear-gradient(to top, #51a451, #61c161);
 }
+
+.fieldset-group {
+  margin: 0px;
+  padding: 10px 10px 10px 0px;
+}
+
+.fieldset-group > .fieldset-group {
+  margin-left: 20px;
+}
+
+.fieldset-group > legend {
+  background-color: none;
+  margin: 0px;
+  padding: 0px;
+}
+
+.fieldset-group > h4 {
+  font-size: 16.5px;
+  margin: 0px; 
+  padding: 0px;
+  margin: 20px 0px 20px 0px;
+}
+
+.fieldset-group > label {
+  margin-top: 10px;
+}
