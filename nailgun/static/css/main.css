@@ -1297,13 +1297,6 @@ h6.page-title {
   font-weight: 400;
 }
 
-.message-list > li:hover {
-  background: none;
-  color: #f99a14;
-  text-decoration: none;
-  cursor: pointer;
-}
-
 .message-list > li > i {
   display: block;
   float: left;
@@ -1313,6 +1306,19 @@ h6.page-title {
 
 #notification-wrapper {
   position: relative;
+}
+
+.show-more-notifications {
+  text-align: center;
+}
+
+.show-more-notifications a:hover {
+  text-decoration: none;
+}
+
+.message-list .discover:hover {
+  color: #f99a14;
+  cursor: pointer;
 }
 
 /* Filter Bar */

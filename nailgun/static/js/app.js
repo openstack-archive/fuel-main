@@ -4,9 +4,10 @@ define(
     'views/common',
     'views/cluster',
     'views/clusters',
-    'views/release'
+    'views/release',
+    'views/notifications'
 ],
-function(models, commonViews, clusterViews, clustersViews, releaseViews) {
+function(models, commonViews, clusterViews, clustersViews, releaseViews, notificationsViews) {
     'use strict';
 
     var AppRouter = Backbone.Router.extend({
@@ -15,6 +16,7 @@ function(models, commonViews, clusterViews, clustersViews, releaseViews) {
             'cluster/:id': 'showCluster',
             'cluster/:id/:tab': 'showClusterTab',
             'releases': 'listReleases',
+            'notifications': 'showNotifications',
             '*default': 'listClusters'
         },
         initialize: function() {
@@ -78,6 +80,14 @@ function(models, commonViews, clusterViews, clustersViews, releaseViews) {
             releases.fetch({
                 success: _.bind(function() {
                     this.setPage(new releaseViews.ReleasesPage({collection: releases}));
+                }, this)
+            });
+        },
+        showNotifications: function() {
+            var notifications = new models.Notifications();
+            notifications.fetch({
+                success: _.bind(function() {
+                    this.setPage(new notificationsViews.NotificationsPage({collection: notifications}));
                 }, this)
             });
         }

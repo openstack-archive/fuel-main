@@ -1,13 +1,14 @@
 define(
 [
     'models',
+    'views/dialogs',
     'text!templates/common/navbar.html',
     'text!templates/common/nodes_stats.html',
     'text!templates/common/notifications.html',
     'text!templates/common/notifications_popover.html',
     'text!templates/common/breadcrumb.html'
 ],
-function(models, navbarTemplate, nodesStatsTemplate, notificationsTemplate, notificationsPopoverTemplate, breadcrumbsTemplate) {
+function(models, dialogViews, navbarTemplate, nodesStatsTemplate, notificationsTemplate, notificationsPopoverTemplate, breadcrumbsTemplate) {
     'use strict';
 
     var views = {};
@@ -91,22 +92,32 @@ function(models, navbarTemplate, nodesStatsTemplate, notificationsTemplate, noti
         template: _.template(notificationsTemplate),
         popoverTemplate: _.template(notificationsPopoverTemplate),
         popoverVisible: false,
-        displayCount: 5,
         events: {
-            'click': 'togglePopover'
+            'click': 'togglePopover',
+            'click .show-more-notifications a': 'hidePopover'
+        },
+        showNodeInfo: function(e) {
+            var node = new models.Node(this.nodes.filter(function(node) {return node.id == $(e.target).data('node');}));
+            var dialog = new dialogViews.ShowNodeInfoDialog({node: node});
+            this.registerSubView(dialog);
+            dialog.render();
         },
         getUnreadNotifications: function() {
             return this.collection.where({status : 'unread'});
         },
         hidePopover: function(e) {
-            if (this.popoverVisible && !$(e.target).closest($('.message-list-placeholder')).length) {
+            if (this.popoverVisible && (!$(e.target).closest($('.message-list-placeholder')).length || $(e.target).parent().hasClass('show-more-notifications'))) {
                 $('html').off(this.eventNamespace);
                 this.popoverVisible = false;
                 $('.message-list-placeholder').remove();
             }
         },
         togglePopover: function(e) {
-            if (!this.popoverVisible && $(e.target).closest(this.$el).length) {
+            console.log($(e.target));
+            if ($(e.target).hasClass('discover')) {
+                this.hidePopover(e);
+                this.showNodeInfo(e);
+            } else if (!this.popoverVisible && $(e.target).closest(this.$el).length) {
                 $('html').off(this.eventNamespace);
                 $('html').on(this.eventNamespace, _.after(2, _.bind(function(e) {
                     this.hidePopover(e);
@@ -133,6 +144,8 @@ function(models, navbarTemplate, nodesStatsTemplate, notificationsTemplate, noti
         },
         initialize: function(options) {
             this.eventNamespace = 'click.click-notifications';
+            this.nodes = new models.Nodes();
+            this.nodes.fetch();
             this.collection = new models.Notifications();
             this.collection.bind('reset', this.render, this);
             this.collection.deferred = this.collection.fetch();

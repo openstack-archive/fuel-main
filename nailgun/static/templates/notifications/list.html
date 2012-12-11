@@ -1,0 +1,20 @@
+<div class="row-fluid">
+  <div class="span12">
+    <h3 class="page-title">Notifications</h3>
+  </div>
+</div>
+<div class="notifications-list">
+  <ul class="message-list" role="menu">
+    <% if (notifications.length) { %>
+      <% _.each(notifications.models.reverse(), function(notification, index) { %>
+        <% var topic = notification.get('topic') %>
+        <li <%= topic == 'discover' ? 'class="discover" data-node=""' : '' %> data-notificationid="<%= notification.get('id') %>"<%= notification.get('status') == 'unread' ? ' class="new"' : '' %>>
+          <i class="<%= topic == 'error' ? 'icon-attention-4' : topic == 'discover' ? 'icon-bell' : 'icon-info-circle-1' %>"></i>
+          <%- notification.get('message') %>
+        </li>
+      <% }) %>
+    <% } else { %>
+      <li>There are no notifications to display</li>
+    <% } %>
+  </ul>
+</div>

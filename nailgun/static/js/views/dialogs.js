@@ -6,9 +6,10 @@ define(
     'text!templates/dialogs/discard_changes.html',
     'text!templates/dialogs/display_changes.html',
     'text!templates/dialogs/remove_cluster.html',
-    'text!templates/dialogs/error_message.html'
+    'text!templates/dialogs/error_message.html',
+    'text!templates/dialogs/show_node.html'
 ],
-function(models, createClusterDialogTemplate, changeClusterModeDialogTemplate, discardChangesDialogTemplate, displayChangesDialogTemplate, removeClusterDialogTemplate, errorMessageTemplate) {
+function(models, createClusterDialogTemplate, changeClusterModeDialogTemplate, discardChangesDialogTemplate, displayChangesDialogTemplate, removeClusterDialogTemplate, errorMessageTemplate, showNodeInfoTemplate) {
     'use strict';
 
     var views = {};
@@ -237,6 +238,17 @@ function(models, createClusterDialogTemplate, changeClusterModeDialogTemplate, d
         },
         render: function() {
             this.constructor.__super__.render.call(this, {cluster: this.model});
+            return this;
+        }
+    });
+
+    views.ShowNodeInfoDialog = views.Dialog.extend({
+        template: _.template(showNodeInfoTemplate),
+        initialize: function(options) {
+            _.defaults(this, options);
+        },
+        render: function() {
+            this.constructor.__super__.render.call(this, {node: this.node});
             return this;
         }
     });

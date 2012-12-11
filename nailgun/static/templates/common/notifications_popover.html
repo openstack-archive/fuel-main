@@ -2,17 +2,18 @@
   <div class="message-list-placeholder">
     <ul class="message-list" role="menu">
       <% if (notifications.length) { %>
-        <% _.each(notifications.reverse(), function(notification, index) { %>
-          <li data-notificationid="<%= notification.get('id') %>"<%= notification.get('status') == 'unread' ? ' class="new"' : '' %>>
-            <% var topic = notification.get('topic') %>
+        <% _.each(notifications.last(displayCount).reverse(), function(notification, index) { %>
+          <% var topic = notification.get('topic') %>
+          <li <%= topic == 'discover' ? 'class="discover" data-node=""' : '' %> data-notificationid="<%= notification.get('id') %>"<%= notification.get('status') == 'unread' ? ' class="new"' : '' %>>
             <i class="<%= topic == 'error' ? 'icon-attention-4' : topic == 'discover' ? 'icon-bell' : 'icon-info-circle-1' %>"></i>
             <%- notification.get('message') %>
           </li>
-          <%= index < (notifications.length - 1) ? '<li class="divider"></li>' : '' %>
+          <%= notifications.length > displayCount || index < (notifications.last(displayCount).length - 1) ? '<li class="divider"></li>' : '' %>
         <% }) %>
       <% } else { %>
         <li>There are no notifications to display</li>
       <% } %>
     </ul>
+    <%= notifications.length > displayCount ? '<div class="show-more-notifications"><a href="#notifications">Show more</a></div>' : '' %>
   </div>
 </div>
