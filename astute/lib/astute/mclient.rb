@@ -44,7 +44,8 @@ module Astute
         if status != 0
           raise "#{@task_id}: MCollective call failed in agent '#{node.agent}', method '#{method}', results: #{node.results.inspect}"
         else
-          Astute.logger.debug "#{@task_id}: MC agent '#{node.agent}', method '#{method}' succeeded, results: #{node.results.inspect}"
+          # Enable if needed. In normal case it eats the screen pretty fast
+          #Astute.logger.debug "#{@task_id}: MC agent '#{node.agent}', method '#{method}' succeeded, results: #{node.results.inspect}"
         end
       end
     end
