@@ -5,7 +5,6 @@
       <li class="<%= activeTab == tab ? 'active' : '' %>"><a href="#cluster/<%= cluster.id %>/<%= tab %>"><b class="tab-<%= tab %>-normal"></b></a></li>
     <% }) %>
     <li class="pull-right deployment-control"></li>
-    <li class="pull-right"><button class="btn rollback" role="button" title="Discard Changes"><i class="icon-ccw"></i></button></li>
   </ul>
   <div class="tab-content">
     <% _.each(tabs, function(tab) { %>

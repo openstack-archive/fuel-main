@@ -45,13 +45,9 @@ function(models, commonViews, dialogViews, clusterPageTemplate, deploymentResult
             this.model.task('deploy').destroy();
         },
         discardChanges: function() {
-            var nodesToAdd = this.model.get('nodes').where({pending_addition: true});
-            var nodesToDelete = this.model.get('nodes').where({pending_deletion: true});
-            if (nodesToAdd.length || nodesToDelete.length) {
-                var dialog = new dialogViews.DiscardChangesDialog({model: this.model});
-                this.registerSubView(dialog);
-                dialog.render();
-            }
+            var dialog = new dialogViews.DiscardChangesDialog({model: this.model});
+            this.registerSubView(dialog);
+            dialog.render();
         },
         displayChanges: function() {
             var dialog = new dialogViews.DisplayChangesDialog({model: this.model});
@@ -72,8 +68,17 @@ function(models, commonViews, dialogViews, clusterPageTemplate, deploymentResult
             var complete = _.after(2, _.bind(this.scheduleUpdate, this));
             var task = this.model.task('deploy', 'running');
             if (task) {
-                task.fetch({complete: complete}).done(_.bind(this.refreshNotificationsAfterDeployment, this));
+                task.fetch({complete: complete}).done(_.bind(function(){
+                        this.updateTasksAfterDeployment();
+                        this.refreshNotificationsAfterDeployment();
+                    }, this));
                 this.model.get('nodes').fetch({data: {cluster_id: this.model.id}, complete: complete});
+            }
+        },
+        updateTasksAfterDeployment: function() {
+            var task = this.model.task('deploy');
+            if (task.get('status') != 'running') {
+                this.model.get('tasks').fetch({data: {cluster_id: this.model.id}});
             }
         },
         refreshNotificationsAfterDeployment: function() {
@@ -91,10 +96,15 @@ function(models, commonViews, dialogViews, clusterPageTemplate, deploymentResult
             _.defaults(this, options);
             this.model.bind('change:tasks', this.bindTasksEvents, this);
             this.bindTasksEvents();
+            this.model.bind('change:nodes', this.bindNodesEvents, this);
+            this.bindNodesEvents();
             this.scheduleUpdate();
         },
         bindTasksEvents: function() {
             this.model.get('tasks').bind('reset', this.renderDeploymentControls, this);
+        },
+        bindNodesEvents: function() {
+            this.model.get('nodes').bind('reset', this.renderDeploymentControls, this);
         },
         renderDeploymentControls: function() {
             this.deploymentResult = new views.DeploymentResult({model: this.model});

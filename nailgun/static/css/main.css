@@ -989,7 +989,6 @@ h6.page-title {
 }
 
 .progress > .bar {
-  height: 12px;
   border-radius: 3px;
 }
 
@@ -998,6 +997,10 @@ h6.page-title {
   background: none;
   border: none;
   box-shadow: none;
+}
+
+.progress-deploy-clusters-page > .bar {
+  height: 12px;
 }
 
 .progress-verify-networks {
