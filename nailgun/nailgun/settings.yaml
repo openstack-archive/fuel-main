@@ -28,7 +28,7 @@ RABBITMQ:
   fake: "0"
   hostname: "127.0.0.1"
 
-CUSTOM_LOG: "/var/log/nailgun.log"
+CUSTOM_LOG: &nailgun_log "/var/log/nailgun.log"
 ACCESS_LOG: "/var/log/nailgun_access.log"
 
 PATH_TO_SSH_KEY: = "/root/.ssh/id_rsa"
@@ -39,15 +39,27 @@ COBBLER_USER: "cobbler"
 COBBLER_PASSWORD: "cobbler"
 COBBLER_PROFILE: "centos63-x86_64"
 
-REMOTE_LOGS_PATH: "/var/log/remote/"
-REMOTE_LOGS_REGEXP: '^(?P<ip>\d+\.\d+\.\d+\.\d+)\s+(?P<date>\w{3}\s+\d+\s+\d+:\d+:\d+)\s+(?P<fqdn>[\w\.\-]+)\s+(?P<component>[\w\.\-/]+):\s+(?:[\d:,]+\s+(?P<level>[A-Z]+)\s+)?(?:\s*:\s*)?(?P<text>.*)$'
-REMOTE_LOGS:
+LOG_TYPES:
+  - &local
+    remote: False
+    regexp: '^(?P<date>\d{4}-\d{2}-\d{2}\s\d{2}:\d{2}:\d{2},\d{3})\s(?P<level>[A-Z]+)\s(?P<text>.*)$'
+  - &remote
+    remote: True
+    regexp: '^(?P<ip>\d+\.\d+\.\d+\.\d+)\s+(?P<date>\w{3}\s+\d+\s+\d+:\d+:\d+)\s+(?P<fqdn>[\w\.\-]+)\s+(?P<component>[\w\.\-/]+):\s+(?:[\d:,]+\s+(?P<level>[A-Z]+)\s+)?(?:\s*:\s*)?(?P<text>.*)$'
+    base: '/var/log/remote/'
+LOGS:
+  - id: nailgun
+    name: "Nailgun"
+    <<: *local
+    path: *nailgun_log
   - id: syslog
     name: "Syslog"
-    path: "install/syslog.log"
+    <<: *remote
+    path: 'install/syslog.log'
   - id: storage
     name: "Storage"
-    path: "install/storage.log"
+    <<: *remote
+    path: 'install/storage.log'
 
 MCO_PSKEY: "Gie6iega9ohngaenahthohngu8aebohxah9seidi"
 MCO_STOMPHOST: "localhost"

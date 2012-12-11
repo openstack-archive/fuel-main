@@ -19,27 +19,32 @@ class LogEntryCollectionHandler(JSONHandler):
     def GET(self):
         web.header('Content-Type', 'application/json')
         user_data = web.input()
-        if not user_data.get('node') or not user_data.get('source'):
-            raise web.badrequest("'node' and 'source' must be specified")
-
-        node = web.ctx.orm.query(Node).get(user_data.node)
-        if not node:
-            return web.notfound("Node not found")
-        if not node.ip:
-            return web.internalerror("Node has no assigned ip")
+        if not user_data.get('source'):
+            raise web.badrequest("'source' must be specified")
 
         log_config = filter(lambda lc: lc['id'] == user_data.source,
-                            settings.REMOTE_LOGS)
+                            settings.LOGS)
         if not log_config:
             return web.notfound("Log source not found")
         log_config = log_config[0]
 
-        node_log_dir = os.path.join(settings.REMOTE_LOGS_PATH, node.ip)
-        if not os.path.exists(node_log_dir):
-            return web.notfound("Log files dir for node not found")
+        if log_config['remote']:
+            if not user_data.get('node'):
+                raise web.badrequest("'node' must be specified")
+            node = web.ctx.orm.query(Node).get(user_data.node)
+            if not node:
+                return web.notfound("Node not found")
+            if not node.ip:
+                return web.internalerror("Node has no assigned ip")
 
-        node_log_file = os.path.join(node_log_dir, log_config['path'])
-        if not os.path.exists(node_log_file):
+            remote_log_dir = os.path.join(log_config['base'], node.ip)
+            if not os.path.exists(remote_log_dir):
+                return web.notfound("Log files dir for node not found")
+
+            log_file = os.path.join(remote_log_dir, log_config['path'])
+        else:
+            log_file = log_config['path']
+        if not os.path.exists(log_file):
             return web.notfound("Log file not found")
 
         output = []
@@ -49,14 +54,14 @@ class LogEntryCollectionHandler(JSONHandler):
         except ValueError:
             raise web.badrequest("Invalid 'from' value")
 
-        with open(node_log_file, 'r') as f:
+        with open(log_file, 'r') as f:
             for num, line in enumerate(f):
                 if num < from_line:
                     continue
                 entry = line.rstrip('\n')
                 if not len(entry):
                     continue
-                m = re.match(settings.REMOTE_LOGS_REGEXP, entry)
+                m = re.match(log_config['regexp'], entry)
                 if m is None:
                     logger.error("Unable to parse log entry '%s'" % entry)
                     continue
@@ -73,4 +78,4 @@ class LogSourceCollectionHandler(JSONHandler):
 
     def GET(self):
         web.header('Content-Type', 'application/json')
-        return json.dumps(settings.REMOTE_LOGS, indent=4)
+        return json.dumps(settings.LOGS, indent=4)

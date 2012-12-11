@@ -840,7 +840,7 @@ function(models, commonViews, dialogViews, clusterPageTemplate, deploymentResult
         logEntryTemplate: _.template(logEntryTemplate),
         events: {
             'click .show-logs-btn': 'showLogs',
-            'change select': 'enableShowButton'
+            'change select': 'updateControlsState'
         },
         beforeTearDown: function() {
             if (this.timeout) {
@@ -856,8 +856,28 @@ function(models, commonViews, dialogViews, clusterPageTemplate, deploymentResult
                 complete: _.bind(this.scheduleUpdate, this)
             });
         },
-        enableShowButton: function() {
-            this.$('.show-logs-btn').attr('disabled', false);
+        updateControlsState: function() {
+            var nodeSelectBoxVisible = false;
+            var showButtonEnabled = false;
+            var chosenSourceId = this.$('select[name=source]').val();
+            if (chosenSourceId) {
+                showButtonEnabled = true;
+                var source = this.sources.get(chosenSourceId);
+                if (source.get('remote')) {
+                    nodeSelectBoxVisible = true;
+                }
+            } else {
+                this.$('.show-logs-btn').attr('disabled', false);
+                return;
+            }
+            if (nodeSelectBoxVisible) {
+                var chosenNodeId = this.$('select[name=node]').val();
+                if (!chosenNodeId) {
+                    showButtonEnabled = false;
+                }
+            }
+            this.$('.node-filter').toggle(nodeSelectBoxVisible);
+            this.$('.show-logs-btn').attr('disabled', !showButtonEnabled);
         },
         fetchLogs: function(callbacks) {
             var options = {
@@ -911,10 +931,7 @@ function(models, commonViews, dialogViews, clusterPageTemplate, deploymentResult
             if (!this.model.get('log_sources')) {
                 this.sources = new models.LogSources();
                 this.sources.deferred = this.sources.fetch();
-                this.sources.deferred.done(_.bind(function() {
-                    this.render();
-                    this.enableShowButton();
-                }, this));
+                this.sources.deferred.done(_.bind(this.render, this));
                 this.model.set({'log_sources': this.sources}, {silent: true});
             } else {
                 this.sources = this.model.get('log_sources');
@@ -927,6 +944,7 @@ function(models, commonViews, dialogViews, clusterPageTemplate, deploymentResult
                 chosenNodeId: this.chosenNodeId,
                 chosenSourceId: this.chosenSourceId
             }));
+            this.updateControlsState();
             return this;
         }
     });

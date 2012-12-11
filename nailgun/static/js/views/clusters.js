@@ -41,6 +41,7 @@ function(models, commonViews, dialogViews, clustersPageTemplate, clusterTemplate
             this.collection.bind('reset remove', this.render, this);
         },
         render: function() {
+            this.tearDownRegisteredSubViews();
             this.$el.html('');
             this.collection.each(_.bind(function(cluster) {
                 var clusterView = new views.Cluster({model: cluster});

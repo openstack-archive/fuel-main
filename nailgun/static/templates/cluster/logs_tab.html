@@ -4,19 +4,21 @@
   <div class="row">
     <div class="filter-bar">
 			<% var loaded = !sources.deferred || sources.deferred.state() != 'pending' %>
-      <div class="filter-bar-item">
-				<div class="filter-bar-label">Node:</div>
-				<select name="node" class="filter-bar-dropdown input-large" <%= loaded ? '' : 'disabled' %>>
-					<% _.each(cluster.get('nodes').currentNodes(), function(node) { %>
-						<option value="<%= node.id %>" <%= node.id == chosenNodeId ? 'selected' : '' %>><%- node.get('name') || node.get('mac') %></option>
-					<% }) %>
-				</select>
-      </div>
-      <div class="filter-bar-item">
+
+      <div class="filter-bar-item source-filter">
 				<div class="filter-bar-label">Log:</div>
 				<select name="source" class="filter-bar-dropdown input-medium" <%= loaded ? '' : 'disabled' %>>
 					<% sources.each(function(source) { %>
 						<option value="<%= source.id %>" <%= source.id == chosenSourceId ? 'selected' : '' %>><%- source.get('name') %></option>
+					<% }) %>
+				</select>
+      </div>
+
+      <div class="filter-bar-item node-filter" style="display:none">
+				<div class="filter-bar-label">Node:</div>
+				<select name="node" class="filter-bar-dropdown input-large" <%= loaded ? '' : 'disabled' %>>
+					<% _.each(cluster.get('nodes').currentNodes(), function(node) { %>
+						<option value="<%= node.id %>" <%= node.id == chosenNodeId ? 'selected' : '' %>><%- node.get('name') || node.get('mac') %></option>
 					<% }) %>
 				</select>
       </div>
