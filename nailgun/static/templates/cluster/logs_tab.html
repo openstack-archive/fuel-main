@@ -3,39 +3,39 @@
 
   <div class="row">
     <div class="filter-bar">
-			<% var loaded = !sources.deferred || sources.deferred.state() != 'pending' %>
+      <% var loaded = !sources.deferred || sources.deferred.state() != 'pending' %>
 
       <div class="filter-bar-item source-filter">
-				<div class="filter-bar-label">Log:</div>
-				<select name="source" class="filter-bar-dropdown input-medium" <%= loaded ? '' : 'disabled' %>>
-					<% sources.each(function(source) { %>
-						<option value="<%= source.id %>" <%= source.id == chosenSourceId ? 'selected' : '' %>><%- source.get('name') %></option>
-					<% }) %>
-				</select>
+        <div class="filter-bar-label">Log:</div>
+        <select name="source" class="filter-bar-dropdown input-medium" <%= loaded ? '' : 'disabled' %>>
+          <% sources.each(function(source) { %>
+            <option value="<%= source.id %>" <%= source.id == chosenSourceId ? 'selected' : '' %>><%- source.get('name') %></option>
+          <% }) %>
+        </select>
       </div>
 
       <div class="filter-bar-item node-filter" style="display:none">
-				<div class="filter-bar-label">Node:</div>
-				<select name="node" class="filter-bar-dropdown input-large" <%= loaded ? '' : 'disabled' %>>
-					<% _.each(cluster.get('nodes').currentNodes(), function(node) { %>
-						<option value="<%= node.id %>" <%= node.id == chosenNodeId ? 'selected' : '' %>><%- node.get('name') || node.get('mac') %></option>
-					<% }) %>
-				</select>
+        <div class="filter-bar-label">Node:</div>
+        <select name="node" class="filter-bar-dropdown input-large" <%= loaded ? '' : 'disabled' %>>
+          <% _.each(cluster.get('nodes').currentNodes(), function(node) { %>
+            <option value="<%= node.id %>" <%= node.id == chosenNodeId ? 'selected' : '' %>><%- node.get('name') || node.get('mac') %></option>
+          <% }) %>
+        </select>
       </div>
 
       <div class="filter-bar-item">
-				<button class="filter-bar-btn show-logs-btn btn" disabled>Show</button>
-			</div>
+        <button class="filter-bar-btn show-logs-btn btn" disabled>Show</button>
+      </div>
     </div>
   </div>
 
-	<div class="logs-description">
-		Please choose node and log source, then click "Show".
-	</div>
+  <div class="logs-description">
+    Please choose node and log source, then click "Show".
+  </div>
 
-	<div class="logs-fetch-error alert alert-error hide">
-		Unable to fetch logs.
-	</div>
+  <div class="logs-fetch-error alert alert-error hide">
+    Unable to fetch logs.
+  </div>
 
   <div class="logs-loading row row-fluid hide">
     <div class="span4"></div>

@@ -866,9 +866,6 @@ function(models, commonViews, dialogViews, clusterPageTemplate, deploymentResult
                 if (source.get('remote')) {
                     nodeSelectBoxVisible = true;
                 }
-            } else {
-                this.$('.show-logs-btn').attr('disabled', false);
-                return;
             }
             if (nodeSelectBoxVisible) {
                 var chosenNodeId = this.$('select[name=node]').val();
