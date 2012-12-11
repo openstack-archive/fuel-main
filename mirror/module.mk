@@ -174,8 +174,7 @@ $/cache.done: $/cache-extra.done $/cache-boot.done
 
 $(addprefix $(CENTOS_REPO_DIR)Packages/repodata/,$(METADATA_FILES)): \
 		$/cache.done \
-		$(CENTOS_REPO_DIR)repodata/comps.xml \
-		$(BUILD_DIR)/rpm/rpm.done
+		$(CENTOS_REPO_DIR)repodata/comps.xml
 	createrepo -g `readlink -f "$(CENTOS_REPO_DIR)repodata/comps.xml"` -o $(CENTOS_REPO_DIR)Packages $(CENTOS_REPO_DIR)Packages
 
 $/repo.done: $(addprefix $(CENTOS_REPO_DIR)Packages/repodata/,$(METADATA_FILES))

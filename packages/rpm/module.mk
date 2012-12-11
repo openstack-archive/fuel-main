@@ -31,6 +31,7 @@ $(SANDBOX)/etc/yum.repos.d/mirror.repo:
 	sudo sh -c "echo \"$${contents}\" > $@"
 
 $/prep.done: $(LOCAL_MIRROR)/src.done \
+	     $(LOCAL_MIRROR)/repo.done \
 	     $(SANDBOX)/etc/yum.repos.d/mirror.repo
 	mkdir -p $(SRC_DIR)
 	cp -f packages/rpm/patches/* $(SRC_DIR)
@@ -76,4 +77,5 @@ $(BUILD_DIR)/rpm/rpm.done: $/rpm-cirros.done \
 		$/rpm-nailgun-mcagents.done \
 		$/rpm-nailgun-net-check.done
 	find $/RPMS -name '*.rpm' -exec cp -n {} $(CENTOS_REPO_DIR)/Packages \;
+	createrepo -g `readlink -f "$(CENTOS_REPO_DIR)repodata/comps.xml"` -o $(CENTOS_REPO_DIR)Packages $(CENTOS_REPO_DIR)Packages
 	$(ACTION.TOUCH)
