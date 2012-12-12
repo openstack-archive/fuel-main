@@ -25,6 +25,7 @@ class TestLogs(BaseHandlers):
                     'name': 'Nailgun',
                     'remote': False,
                     'regexp': r'^(?P<date>\w+):(?P<level>\w+):(?P<text>\w+)$',
+                    'levels': [],
                     'path': self.local_log_file
                 }, {
                     'id': 'syslog',
@@ -32,6 +33,7 @@ class TestLogs(BaseHandlers):
                     'remote': True,
                     'regexp': r'^(?P<date>\w+):(?P<level>\w+):(?P<text>\w+)$',
                     'base': self.log_dir,
+                    'levels': [],
                     'path': 'test-syslog.log'
                 }
             ]
@@ -71,7 +73,7 @@ class TestLogs(BaseHandlers):
         )
         self.assertEquals(200, resp.status)
         response = json.loads(resp.body)
-        self.assertEquals(response, [log_entry])
+        self.assertEquals(response['entries'], [log_entry])
 
         resp = self.app.get(
             reverse('LogEntryCollectionHandler'),
@@ -80,4 +82,4 @@ class TestLogs(BaseHandlers):
         )
         self.assertEquals(200, resp.status)
         response = json.loads(resp.body)
-        self.assertEquals(response, [log_entry])
+        self.assertEquals(response['entries'], [log_entry])

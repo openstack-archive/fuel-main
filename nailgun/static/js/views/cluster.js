@@ -959,8 +959,8 @@ function(models, commonViews, dialogViews, clusterPageTemplate, deploymentResult
             });
         },
         appendLogEntries: function(data) {
-            this.from += data.length;
-            this.$('.table-logs tbody').append(_.map(data, function(entry) {
+            this.from = data.from;
+            this.$('.table-logs tbody').append(_.map(data.entries, function(entry) {
                 return this.logEntryTemplate({entry: entry});
             }, this).join(''));
         },

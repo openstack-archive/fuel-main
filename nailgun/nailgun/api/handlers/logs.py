@@ -56,7 +56,7 @@ class LogEntryCollectionHandler(JSONHandler):
             allowed_levels = [l for l in dropwhile(lambda l: l != level,
                                                    log_config['levels'])]
 
-        output = []
+        entries = []
         from_line = 0
         try:
             from_line = int(user_data.get('from', 0))
@@ -74,15 +74,18 @@ class LogEntryCollectionHandler(JSONHandler):
                 if m is None:
                     logger.error("Unable to parse log entry '%s'" % entry)
                     continue
-                if level and m.group('level') not in allowed_levels:
+                if level and not (m.group('level') in allowed_levels):
                     continue
-                output.append([
+                entries.append([
                     m.group('date'),
                     m.group('level') or 'INFO',
                     m.group('text')
                 ])
 
-        return json.dumps(output)
+        return json.dumps({
+            'entries': entries,
+            'from': num,
+        })
 
 
 class LogSourceCollectionHandler(JSONHandler):
