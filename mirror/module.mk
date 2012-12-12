@@ -201,28 +201,27 @@ $(addprefix $(CENTOS_REPO_DIR)/images/,$(IMAGES_FILES)):
 # EGGS AND GEMS
 
 $/eggs.done: \
-		$(BS_DIR)/init.done \
+		$(BUILD_DIR)/rpm/prep.done \
 		requirements-eggs.txt
 	@mkdir -p $/eggs
 	@[ -f $/eggs/pip-1.2.1.tar.gz ] || (cd $/eggs && wget http://pypi.python.org/packages/source/p/pip/pip-1.2.1.tar.gz)
-	@cp -R $/eggs $(INITRAM_DIR)/tmp
-	sudo cp /etc/resolv.conf $(INITRAM_DIR)/etc/resolv.conf
-	$(YUM) install python-setuptools
-	mount | grep -q $(INITRAM_DIR)/proc || sudo mount --bind /proc $(INITRAM_DIR)/proc
-	mount | grep -q $(INITRAM_DIR)/dev || sudo mount --bind /dev $(INITRAM_DIR)/dev
-	$(CHROOT_CMD) easy_install -U /tmp/eggs/pip-1.2.1.tar.gz
+	@cp -R $/eggs $(SANDBOX)/tmp
+	sudo cp /etc/resolv.conf $(SANDBOX)/etc/resolv.conf
+	$(SAND_YUM) install python-setuptools
+	mount | grep -q $(SANDBOX)/proc || sudo mount --bind /proc $(SANDBOX)/proc
+	mount | grep -q $(SANDBOX)/dev || sudo mount --bind /dev $(SANDBOX)/dev
+	$(CHROOT_BOX) easy_install -U /tmp/eggs/pip-1.2.1.tar.gz
 	@cat requirements-eggs.txt | while read egg ver; do \
-         if [ -z "`find $(INITRAM_DIR)/tmp/eggs/ -name $${egg}-$${ver}\*`" ]; then \
-             $(CHROOT_CMD) pip install --exists-action=i -d /tmp/eggs $${egg}==$${ver} ;\
+         if [ -z "`find $(SANDBOX)/tmp/eggs/ -name $${egg}-$${ver}\*`" ]; then \
+             $(CHROOT_BOX) pip install --exists-action=i -d /tmp/eggs $${egg}==$${ver} ;\
          fi; \
 	done
-	cp -fR $(INITRAM_DIR)/tmp/eggs $/
-	$(CHROOT_CMD) rm -rf /tmp/eggs
-	$(CHROOT_CMD) rm -f /tmp/requirements-eggs.txt
+	sudo umount $(SANDBOX)/proc
+	sudo umount $(SANDBOX)/dev
+	cp -fR $(SANDBOX)/tmp/eggs $/
+	$(CHROOT_BOX) rm -rf /tmp/eggs
+	$(CHROOT_BOX) rm -f /tmp/requirements-eggs.txt
 	sudo sync
-	sudo umount $(INITRAM_DIR)/proc
-	sudo umount $(INITRAM_DIR)/dev
-	sudo rm $(INITRAM_DIR)/etc/resolv.conf
 	$(ACTION.TOUCH)
 
 define bundle_gemfile_template

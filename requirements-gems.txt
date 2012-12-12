@@ -9,6 +9,7 @@ highline	1.6.13
 httpclient	2.2.5
 ipaddress	0.8.0
 json	1.6.1
+json_pure	1.7.5
 mcollective-client	2.2.1
 mime-types	1.19
 mixlib-authentication	1.1.4

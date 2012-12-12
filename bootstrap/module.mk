@@ -6,15 +6,14 @@ LINUX:=$(BS_DIR)/linux
 /:=$(BS_DIR)/
 $/%: /:=$/
 
-.PHONY: bootstrap clean chroot-bootstrap
+.PHONY: bootstrap clean
 all: bootstrap
 
 YUM_PACKAGES:=openssh-server wget cronie-noanacron crontabs ntp \
 bash net-tools dhclient rsyslog iputils openssh-clients vim-minimal\
 rubygems mcollective vconfig tcpdump scapy mingetty ntp nailgun-net-check
 
-YUM_BUILD_PACKAGES:=ruby-devel.x86_64 make gcc flex byacc python-devel.x86_64 \
-glibc-devel glibc-headers kernel-headers
+YUM_BUILD_PACKAGES:=ruby-devel.x86_64 make gcc flex byacc
 
 NAILGUN_DIR:=$(INITRAM_DIR)/opt/nailgun
 
@@ -33,21 +32,12 @@ bootstrap: $(LINUX) $(INITRAM_FS)
 $/bootstrap.done: $(LINUX) $(INITRAM_FS)
 	$(ACTION.TOUCH)
 
-chroot-bootstrap: $(INITRAM_DIR)/etc/nailgun_systemtype $(BS_DIR)/init.done
-	sudo mkdir -p $(INITRAM_DIR)/proc $(INITRAM_DIR)/dev
-	mount | grep $(INITRAM_DIR)/proc || sudo mount --bind /proc $(INITRAM_DIR)/proc
-	mount | grep $(INITRAM_DIR)/dev || sudo mount --bind /dev $(INITRAM_DIR)/dev
-	-$(CHROOT_CMD) /bin/bash
-	sudo umount $(INITRAM_DIR)/proc
-	sudo umount $(INITRAM_DIR)/dev
-
 $(INITRAM_FS): $(INITRAM_DIR)/etc/nailgun_systemtype
 	sudo cp -f $(INITRAM_DIR)/etc/skel/.bash* $(INITRAM_DIR)/root/
 	sudo rm -rf $(INITRAM_DIR)/var/cache/yum $(INITRAM_DIR)/var/lib/yum $(INITRAM_DIR)/usr/share/doc \
         $(INITRAM_DIR)/usr/share/locale $(INITRAM_DIR)/src
 	sudo sh -c "cd $(INITRAM_DIR) && find . -xdev | cpio --create \
         --format='newc' | gzip -9 > `readlink -f $(INITRAM_FS)`"
-
 
 $(LINUX): $(LOCAL_MIRROR)/cache.done
 	mkdir -p $(BS_DIR)
@@ -69,8 +59,10 @@ $(INITRAM_DIR)/etc/nailgun_systemtype: $(BS_DIR)/init.done
 	sudo mkdir -p $(INITRAM_DIR)/usr/libexec/mcollective/mcollective/agent/
 	sudo cp mcagent/* $(INITRAM_DIR)/usr/libexec/mcollective/mcollective/agent/
 	sudo sh -c "echo bootstrap > $(INITRAM_DIR)/etc/nailgun_systemtype"
+	sudo rm -rf $(INITRAM_DIR)/home/*
 
-$(BS_DIR)/init.done: $(LOCAL_MIRROR)/repo.done $(INITRAM_DIR)/etc/yum.repos.d/mirror.repo
+$(BS_DIR)/init.done: $(LOCAL_MIRROR)/repo.done $(INITRAM_DIR)/etc/yum.repos.d/mirror.repo $(LOCAL_MIRROR)/gems.done
+	sudo mkdir -p $(INITRAM_DIR)/proc $(INITRAM_DIR)/dev
 	sudo mkdir -p $(INITRAM_DIR)/var/lib/rpm
 	$(RPM) --rebuilddb
 	$(YUM) install $(YUM_PACKAGES) $(YUM_BUILD_PACKAGES)
@@ -84,11 +76,12 @@ $(BS_DIR)/init.done: $(LOCAL_MIRROR)/repo.done $(INITRAM_DIR)/etc/yum.repos.d/mi
           sudo depmod -b $(INITRAM_DIR) $$version; \
 	done
 
-	sudo cp /etc/resolv.conf $(INITRAM_DIR)/etc/resolv.conf
-	$(CHROOT_CMD) gem install --no-rdoc --no-ri httpclient
-	$(CHROOT_CMD) gem install --no-rdoc --no-ri ohai
-	$(CHROOT_CMD) gem install --no-rdoc --no-ri json_pure
-	sudo rm $(INITRAM_DIR)/etc/resolv.conf
+	sudo mkdir -p $(INITRAM_DIR)/tmp/gems
+	sudo cp -rf $(LOCAL_MIRROR)/gems $(INITRAM_DIR)/tmp/gems
+	sudo gem generate_index -d $(INITRAM_DIR)/tmp/gems
+	$(CHROOT_CMD) gem install --no-rdoc --no-ri --source file:///tmp/gems \
+	httpclient ohai json_pure
+	sudo rm -rf $(INITRAM_DIR)/tmp/gems $(INITRAM_DIR)/usr/lib/ruby/gems/1.8/cache/*
 
 	sudo mkdir -p $(INITRAM_DIR)/src
 	$(YUM) erase $(YUM_BUILD_PACKAGES)
