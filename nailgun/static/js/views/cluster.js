@@ -868,7 +868,8 @@ function(models, commonViews, dialogViews, clusterPageTemplate, deploymentResult
         logEntryTemplate: _.template(logEntryTemplate),
         events: {
             'click .show-logs-btn': 'showLogs',
-            'change select': 'updateControlsState'
+            'change select': 'updateControlsState',
+            'change select[name=source]': 'updateLevels'
         },
         beforeTearDown: function() {
             if (this.timeout) {
@@ -884,7 +885,7 @@ function(models, commonViews, dialogViews, clusterPageTemplate, deploymentResult
                 complete: _.bind(this.scheduleUpdate, this)
             });
         },
-        updateControlsState: function() {
+        updateControlsState: function(e) {
             var nodeSelectBoxVisible = false;
             var showButtonEnabled = false;
             var chosenSourceId = this.$('select[name=source]').val();
@@ -901,8 +902,19 @@ function(models, commonViews, dialogViews, clusterPageTemplate, deploymentResult
                     showButtonEnabled = false;
                 }
             }
-            this.$('.node-filter').toggle(nodeSelectBoxVisible);
+            this.$('.log-node-filter').toggle(nodeSelectBoxVisible);
             this.$('.show-logs-btn').attr('disabled', !showButtonEnabled);
+        },
+        updateLevels: function() {
+            var input = this.$('select[name=level]');
+            input.html('');
+            var chosenSourceId = this.$('select[name=source]').val();
+            if (chosenSourceId) {
+                var source = this.sources.get(chosenSourceId);
+                _.each(source.get('levels'), function(level) {
+                    input.append($('<option/>').text(level));
+                }, this);
+            }
         },
         fetchLogs: function(callbacks) {
             var options = {
@@ -911,6 +923,7 @@ function(models, commonViews, dialogViews, clusterPageTemplate, deploymentResult
                 data: {
                     node: this.chosenNodeId,
                     source: this.chosenSourceId,
+                    level: this.chosenLevel,
                     from: this.from
                 }
             };
@@ -924,6 +937,7 @@ function(models, commonViews, dialogViews, clusterPageTemplate, deploymentResult
             this.from = 0;
             this.chosenNodeId = this.$('select[name=node]').val();
             this.chosenSourceId = this.$('select[name=source]').val();
+            this.chosenLevel = this.$('select[name=level]').val();
             this.$('.logs-description, .table-logs, .logs-fetch-error').hide();
             this.$('.logs-loading').show();
             this.$('select, .show-logs-btn').attr('disabled', true);
@@ -970,6 +984,7 @@ function(models, commonViews, dialogViews, clusterPageTemplate, deploymentResult
                 chosenSourceId: this.chosenSourceId
             }));
             this.updateControlsState();
+            this.updateLevels();
             return this;
         }
     });

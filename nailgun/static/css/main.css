@@ -1342,7 +1342,7 @@ h6.page-title {
 .filter-bar-item {
   display: block;
   float: left;
-  margin: 0px 12px 0px 12px;
+  margin: 0 0 0 12px;
   position: relative;
 }
 .filter-bar-btn {

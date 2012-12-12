@@ -4,6 +4,7 @@ import re
 import os.path
 import json
 import logging
+from itertools import dropwhile
 
 import web
 
@@ -47,6 +48,14 @@ class LogEntryCollectionHandler(JSONHandler):
         if not os.path.exists(log_file):
             return web.notfound("Log file not found")
 
+        level = user_data.get('level')
+        allowed_levels = log_config['levels']
+        if level is not None:
+            if not (level in log_config['levels']):
+                raise web.badrequest("Invalid level")
+            allowed_levels = [l for l in dropwhile(lambda l: l != level,
+                                                   log_config['levels'])]
+
         output = []
         from_line = 0
         try:
@@ -64,6 +73,8 @@ class LogEntryCollectionHandler(JSONHandler):
                 m = re.match(log_config['regexp'], entry)
                 if m is None:
                     logger.error("Unable to parse log entry '%s'" % entry)
+                    continue
+                if level and m.group('level') not in allowed_levels:
                     continue
                 output.append([
                     m.group('date'),

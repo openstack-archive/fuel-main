@@ -39,26 +39,45 @@ COBBLER_USER: "cobbler"
 COBBLER_PASSWORD: "cobbler"
 COBBLER_PROFILE: "centos63-x86_64"
 
+LOG_LEVELS:
+  syslog: &syslog_log_levels
+    - DEBUG
+    - INFO
+    - NOTICE
+    - WARNING
+    - ERR
+    - CRIT
+    - ALERT
+    - EMERG
+  python: &python_log_levels
+    - DEBUG
+    - INFO
+    - WARNING
+    - ERROR
+    - CRITICAL
 LOG_TYPES:
-  - &local
+  - &local_log_type
     remote: False
     regexp: '^(?P<date>\d{4}-\d{2}-\d{2}\s\d{2}:\d{2}:\d{2},\d{3})\s(?P<level>[A-Z]+)\s(?P<text>.*)$'
-  - &remote
+  - &remote_log_type
     remote: True
     regexp: '^(?P<ip>\d+\.\d+\.\d+\.\d+)\s+(?P<date>\w{3}\s+\d+\s+\d+:\d+:\d+)\s+(?P<fqdn>[\w\.\-]+)\s+(?P<component>[\w\.\-/]+):\s+(?:[\d:,]+\s+(?P<level>[A-Z]+)\s+)?(?:\s*:\s*)?(?P<text>.*)$'
     base: '/var/log/remote/'
 LOGS:
   - id: nailgun
     name: "Nailgun"
-    <<: *local
+    <<: *local_log_type
+    levels: *python_log_levels
     path: *nailgun_log
   - id: syslog
     name: "Syslog"
-    <<: *remote
+    <<: *remote_log_type
+    levels: *syslog_log_levels
     path: 'install/syslog.log'
   - id: storage
     name: "Storage"
-    <<: *remote
+    <<: *remote_log_type
+    levels: *syslog_log_levels
     path: 'install/storage.log'
 
 MCO_PSKEY: "Gie6iega9ohngaenahthohngu8aebohxah9seidi"
