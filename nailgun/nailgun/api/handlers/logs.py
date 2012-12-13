@@ -70,6 +70,9 @@ class LogEntryCollectionHandler(JSONHandler):
                 entry = line.rstrip('\n')
                 if not len(entry):
                     continue
+                if 'skip_regexp' in log_config and \
+                        re.match(log_config['skip_regexp'], entry):
+                        continue
                 m = re.match(log_config['regexp'], entry)
                 if m is None:
                     logger.warn("Unable to parse log entry '%s' from %s",
