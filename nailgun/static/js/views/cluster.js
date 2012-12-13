@@ -745,28 +745,45 @@ function(models, commonViews, dialogViews, clusterPageTemplate, deploymentResult
             'click .btn-set-defaults:not([disabled])': 'setDefaults'
         },
         defaultButtonsState: function(buttonState) {
-            this.$('.settings-editable .btn').attr('disabled', buttonState);
+            this.$('.btn').attr('disabled', buttonState);
             this.$('.btn-set-defaults').attr('disabled', !buttonState);
         },
         disableControls: function() {
-            this.$('.settings-editable .btn, .settings-editable input').attr('disabled', true);
+            this.$('.btn, input').attr('disabled', true);
         },
         collectData: function(parentEl, changedData) {
             var model = this, param;
-            _.each(parentEl.children().children('.wrapper'), function(el) {
+            _.each(parentEl.children('.wrapper'), function(el) {
                 if ($(el).data('nested')) {
-                    param = $(el).find('legend:first').text();
+                    param = $(el).find('h4:first').text();
                     changedData[param] = {};
                     model.collectData($(el), changedData[param]);
                 } else {
-                    param = $(el).find('input');
-                    changedData[param.attr('name')] = param.val();
+                    var value;
+                    if ($(el).find('input[type=text]').length) {
+                        param = $(el).find('input[type=text]');
+                        value = param.val();
+                    } else if ($(el).find('input[type=checkbox]').length) {
+                        param = $(el).find('input[type=checkbox]');
+                        value = param.attr('checked') == 'checked' ? 'true' : 'false';
+                    } else {
+                        param = $(el).find('select');
+                        value = [];
+                        _.each(param.children('option'), function(option) {
+                            value.push({
+                                "id": $(option).attr('value'),
+                                "name": $(option).text(),
+                                "chosen": $(option).attr('selected') == 'selected' ? 'true' : 'false'
+                            });
+                        });
+                    }
+                    changedData[param.attr('name')] = value;
                 }
             });
         },
         applyChanges: function() {
             var changedData = {};
-            this.collectData(this.$('.settings-content'), changedData);
+            this.collectData(this.$('form'), changedData);
             this.model.get('settings').update({editable: changedData}, {
                 url: '/api/clusters/' + this.model.id + '/attributes',
                 complete: _.bind(this.render, this)
@@ -775,14 +792,12 @@ function(models, commonViews, dialogViews, clusterPageTemplate, deploymentResult
         },
         parseSettings: function(settings) {
             this.tearDownRegisteredSubViews();
-            if (_.isObject(settings)) {
-                this.$('.settings-content').html('');
-                _.each(_.keys(settings), function(setting) {
-                    var settingsGroupView = new views.SettingsGroup({legend: setting, settings: settings[setting], model: this.model});
-                    this.registerSubView(settingsGroupView);
-                    this.$('.settings-content').append(settingsGroupView.render().el);
-                }, this);
-            }
+            this.$('form').html('');
+            _.each(_.keys(settings), function(setting) {
+                var settingsGroupView = new views.SettingsGroup({legend: setting, settings: settings[setting], model: this.model});
+                this.registerSubView(settingsGroupView);
+                this.$('form').append(settingsGroupView.render().el);
+            }, this);
         },
         revertChanges: function() {
             this.parseSettings(this.model.get('settings').get('editable'));
@@ -829,17 +844,20 @@ function(models, commonViews, dialogViews, clusterPageTemplate, deploymentResult
 
     views.SettingsGroup = Backbone.View.extend({
         template: _.template(settingsGroupTemplate),
+        className: 'fieldset-group wrapper',
         events: {
-            'keydown input': 'hasChanges'
+            'keydown input[type=text]': 'hasChanges',
+            'change input[type=checkbox], select': 'hasChanges'
         },
         hasChanges: function() {
-            $('.settings-editable .btn').attr('disabled', false);
+            $('.openstack-settings .btn').attr('disabled', false);
         },
         initialize: function(options) {
             _.defaults(this, options);
         },
         render: function() {
             this.$el.html(this.template({settings: this.settings, legend: this.legend, cluster: this.model}));
+            this.$el.attr('data-nested', Object.prototype.toString.call(this.settings) == '[object Object]' ? 'true' : 'false');
             return this;
         }
     });
