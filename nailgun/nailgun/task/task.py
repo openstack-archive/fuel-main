@@ -12,7 +12,6 @@ import nailgun.rpc as rpc
 from nailgun.db import orm
 from nailgun.settings import settings
 from nailgun.notifier import notifier
-from nailgun.api.models import Network, Node
 from nailgun.task.errors import WrongNodeStatus
 from nailgun.network import manager as netmanager
 from nailgun.api.models import Base, Network, Node
