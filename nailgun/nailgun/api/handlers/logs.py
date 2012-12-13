@@ -72,13 +72,15 @@ class LogEntryCollectionHandler(JSONHandler):
                     continue
                 m = re.match(log_config['regexp'], entry)
                 if m is None:
-                    logger.error("Unable to parse log entry '%s'" % entry)
+                    logger.warn("Unable to parse log entry '%s' from %s",
+                                entry, log_file)
                     continue
-                if level and not (m.group('level') in allowed_levels):
+                entry_level = m.group('level') or 'INFO'
+                if level and not (entry_level in allowed_levels):
                     continue
                 entries.append([
                     m.group('date'),
-                    m.group('level') or 'INFO',
+                    entry_level,
                     m.group('text')
                 ])
 
