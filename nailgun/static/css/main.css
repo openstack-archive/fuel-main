@@ -1442,6 +1442,13 @@ h6.page-title {
 .table-logs tbody tr td {
   font-size: 13px;
 }
+.table-logs .no-logs-msg {
+  display: none;
+}
+.table-logs .no-logs-msg tr td {
+  text-align: center;
+  padding: 20px;
+}
 
 .page-control-box {
     display: block;

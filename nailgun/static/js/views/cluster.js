@@ -947,8 +947,13 @@ function(models, commonViews, dialogViews, clusterPageTemplate, deploymentResult
                     this.$('select').attr('disabled', false);
                 }, this),
                 success: _.bind(function(data) {
-                    this.$('.table-logs tbody').html('');
-                    this.appendLogEntries(data);
+                    this.$('.table-logs .log-entries').html('');
+                    if (data.entries.length) {
+                        this.appendLogEntries(data);
+                        this.$('.table-logs .no-logs-msg').hide();
+                    } else {
+                        this.$('.table-logs .no-logs-msg').show();
+                    }
                     this.$('.table-logs').show();
                     this.scheduleUpdate();
                 }, this),
@@ -960,7 +965,7 @@ function(models, commonViews, dialogViews, clusterPageTemplate, deploymentResult
         },
         appendLogEntries: function(data) {
             this.from = data.from;
-            this.$('.table-logs tbody').append(_.map(data.entries, function(entry) {
+            this.$('.table-logs .log-entries').append(_.map(data.entries, function(entry) {
                 return this.logEntryTemplate({entry: entry});
             }, this).join(''));
         },
