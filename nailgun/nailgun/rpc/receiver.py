@@ -12,6 +12,7 @@ from sqlalchemy.orm import scoped_session, sessionmaker
 
 import nailgun.rpc as rpc
 from nailgun.db import Query
+from nailgun.network.manager import get_node_networks
 from nailgun.api.models import engine, Node, Network
 from nailgun.api.models import Task
 from nailgun.notifier import notifier
@@ -177,6 +178,7 @@ class NailgunReceiver(object):
         for node in nodes:
             # TODO if not found? or node['uid'] not specified?
             node_db = cls.db.query(Node).get(node['uid'])
+            # determining node with horizon - it's controller
             modified = False
             for param in ('status', 'progress'):
                 if node.get(param):
@@ -208,11 +210,23 @@ class NailgunReceiver(object):
                 task.cluster_id,
                 cls.db
             )
-
         elif status in ('ready',):
-            message = "Deployment of installation '%s' is done. \
-                Access WebUI of OpenStack at http://here will \
-                be the address" % task.cluster.name
+            # determining horizon url - it's ip of controller
+            # from a public network - works only for simple deployment
+            controller = cls.db.query(Node).filter(
+                Node.cluster_id == task.cluster_id and
+                Node.role == 'controller'
+            ).first()
+            cntr_networks = get_node_networks(controller.id)
+            public_net = filter(
+                lambda n: n['name'] == 'public',
+                cntr_networks
+            )[0]
+            horizon_ip = public_net['ip'].split('/')[0]
+
+            message = "Deployment of installation '{0}' is done. \
+                Access WebUI of OpenStack at http://{1}/ will \
+                be the address".format(task.cluster.name, horizon_ip)
             notifier.notify(
                 "done",
                 message,
