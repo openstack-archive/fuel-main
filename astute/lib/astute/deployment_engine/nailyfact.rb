@@ -23,7 +23,7 @@ class Astute::DeploymentEngine::NailyFact < Astute::DeploymentEngine
     # calculate_networks method is common and you can find it in superclass
     # if node['network_data'] is undefined, we use empty list because we later try to iterate over it
     #   otherwise we will get KeyError
-    node_network_data = node['network_data'] ||= []
+    node_network_data = node['network_data'] or []
     network_data_puppet = calculate_networks(node_network_data)
     metadata = {'role' => node['role'], 'uid' => node['uid'], 'network_data' => network_data_puppet.to_json }
     attrs.each do |k, v|
