@@ -765,7 +765,7 @@ function(models, commonViews, dialogViews, clusterPageTemplate, deploymentResult
                         value = param.val();
                     } else if ($(el).find('input[type=checkbox]').length) {
                         param = $(el).find('input[type=checkbox]');
-                        value = param.attr('checked') == 'checked' ? 'true' : 'false';
+                        value = param.attr('checked') == 'checked' ? true : false;
                     } else {
                         param = $(el).find('select');
                         value = [];
@@ -773,7 +773,7 @@ function(models, commonViews, dialogViews, clusterPageTemplate, deploymentResult
                             value.push({
                                 "id": $(option).attr('value'),
                                 "name": $(option).text(),
-                                "chosen": $(option).attr('selected') == 'selected' ? 'true' : 'false'
+                                "chosen": $(option).attr('selected') == 'selected' ? true : false
                             });
                         });
                     }
@@ -857,7 +857,7 @@ function(models, commonViews, dialogViews, clusterPageTemplate, deploymentResult
         },
         render: function() {
             this.$el.html(this.template({settings: this.settings, legend: this.legend, cluster: this.model}));
-            this.$el.attr('data-nested', Object.prototype.toString.call(this.settings) == '[object Object]' ? 'true' : 'false');
+            this.$el.attr('data-nested', !_.isArray(this.settings) && _.isObject(this.settings));
             return this;
         }
     });

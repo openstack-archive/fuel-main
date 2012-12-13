@@ -1,23 +1,23 @@
 <% var page = this %>
 <% var deployment = cluster.task('deploy', 'running') %>
-  <% if (Object.prototype.toString.call(settings) == '[object Object]') { %>
+  <% if (!_.isArray(settings) && _.isObject(settings)) { %>
     <h4><%- legend %></h4>
     <% _.each(_.keys(settings), function(key) { %>
-      <% if (Object.prototype.toString.call(settings[key]) == '[object Object]') { %>
+      <% if (!_.isArray(settings[key]) && _.isObject(settings[key])) { %>
         <div class="fieldset-group wrapper" data-nested="true">
           <%= page.template({settings: settings[key], legend: key, cluster: cluster}) %>
         </div>
       <% } else { %>
           <div class="fieldset-group wrapper" data-nested="false">
-            <% if (settings[key] == 'true' || settings[key] == 'false') { %>
+            <% if (_.isBoolean(settings[key])) { %>
               <label class="checkbox" for="<%- key %>"><%- key %>
-                <input type="checkbox" name="<%- key %>" <%= settings[key] == 'true' ? 'checked' : '' %> <%= deployment ? 'disabled ' : '' %>/>
+                <input type="checkbox" name="<%- key %>" <%= settings[key] ? 'checked' : '' %> <%= deployment ? 'disabled ' : '' %>/>
               </label>
             <% } else if (_.isArray(settings[key])) { %>
               <label for="<%- key %>"><%- key %></label>
               <select name="<%- key %>" <%= deployment ? 'disabled ' : '' %>>
                 <% _.each(settings[key], function(setting) { %>
-                  <option value="<%- setting.id %>" <%= setting.chosen == 'true' ? 'selected' : '' %>><%- setting.name %></option>
+                  <option value="<%- setting.id %>" <%= setting.chosen ? 'selected' : '' %>><%- setting.name %></option>
                 <% }) %>
               <select>
             <% } else { %>
@@ -28,15 +28,15 @@
       <% } %>
     <% }) %>
   <% } else { %>
-    <% if (settings == 'true' || settings == 'false') { %>
+    <% if (_.isBoolean(settings)) { %>
       <label class="checkbox" for="<%- legend %>"><%- legend %>
-        <input type="checkbox" name="<%- legend %>" <%= settings == 'true' ? 'checked' : '' %> <%= deployment ? 'disabled ' : '' %>/>
+        <input type="checkbox" name="<%- legend %>" <%= settings ? 'checked' : '' %> <%= deployment ? 'disabled ' : '' %>/>
       </label>
     <% } else if (_.isArray(settings)) { %>
       <label for="<%- legend %>"><%- legend %></label>
       <select name="<%- legend %>" <%= deployment ? 'disabled ' : '' %>>
         <% _.each(settings, function(setting) { %>
-          <option value="<%- setting.id %>" <%= setting.chosen == 'true' ? 'selected' : '' %>><%- setting.name %></option>
+          <option value="<%- setting.id %>" <%= setting.chosen ? 'selected' : '' %>><%- setting.name %></option>
         <% }) %>
       <select>
     <% } else { %>
