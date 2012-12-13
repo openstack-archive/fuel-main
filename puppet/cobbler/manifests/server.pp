@@ -267,6 +267,18 @@ class cobbler::server(
                ],
   }
 
+  file {"/etc/cobbler/pxe/pxelocal.template":
+    content => template("cobbler/pxelocal.template.erb"),
+    owner => root,
+    group => root,
+    mode => 0644,
+    require => Package[$cobbler_package],
+    notify => [
+               Service[$cobbler_service],
+               Exec["cobbler_sync"],
+               ],
+  }
+
   define cobbler_snippet(){
     file {"/var/lib/cobbler/snippets/${name}":
       content => template("cobbler/snippets/${name}.erb"),
