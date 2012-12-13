@@ -1,7 +1,7 @@
 module Astute
   class Orchestrator
     def initialize(deploy_engine=nil)
-      @deploy_engine = deploy_engine ||= Astute::DeploymentEngine::NailyFact
+      @deploy_engine = deploy_engine or Astute::DeploymentEngine::NailyFact
       @check_network = Astute::Network.method(:check_network)
     end
 

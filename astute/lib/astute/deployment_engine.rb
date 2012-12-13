@@ -76,6 +76,7 @@ module Astute
           interfaces[name] = {"vlan" => "yes"}
         else
           name = iface['dev']
+          interfaces[name] = {}
         end
         interfaces[name]['bootproto'] = 'none'
         if iface['ip']
