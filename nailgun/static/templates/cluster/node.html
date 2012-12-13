@@ -20,7 +20,7 @@
           </div>
         <% } else if (node.get('pending_deletion')) { %>
           <div class="msg-warning">
-            <i class="icon-cancel-circle2"></i>Pending Deletion
+            <i class="icon-cancel-circle"></i>Pending Deletion
           </div>
         <% } else if (status == 'ready') { %>
           <div class="msg-ok">
@@ -40,10 +40,10 @@
           </div>
         <% } else if (status == 'error') { %>
           <div class="msg-error">
-            <i class="icon-attention-3"></i>Error
+            <i class="icon-attention"></i>Error
           </div>
         <% } else if (status == 'offline') { %>
-          <i class="icon-block-1"></i>Not available
+          <i class="icon-block"></i>Not available
         <% } else { %>
           <%= status %>
         <% } %>
@@ -66,8 +66,8 @@
   <% } %>
 
   <% if (selectableForAddition) { %>
-    <div class="node-select"><i class="icon-ok"></i></div>
+    <div class="node-select"><i class="icon-ok-1"></i></div>
   <% } else if (selectableForDeletion) { %>
-    <div class="node-select"><i class="icon-cancel"></i></div>
+    <div class="node-select"><i class="icon-cancel-2"></i></div>
   <% } %>
 </div>

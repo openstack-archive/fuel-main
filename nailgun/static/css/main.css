@@ -5,6 +5,7 @@ html {
   font-family: Oswald,'Segoe UI', Helvetica, Georgia, Tahoma, Arial;
   height: 100%;
 }
+
 body {
   overflow-y: scroll;
   background: -moz-radial-gradient(center top, rgba(128, 134, 143, 0.3) 0%, rgba(128, 134, 143, 0.3) 30%, rgba(128, 134, 143, 0.0) 55%);
@@ -14,7 +15,9 @@ body {
   background: -ms-radial-gradient(center top, rgba(128, 134, 143, 0.3) 0%, rgba(128, 134, 143, 0.3) 30%, rgba(128, 134, 143, 0.0) 55%);
   background: radial-gradient(center top, rgba(128, 134, 143, 0.3) 0%, rgba(128, 134, 143, 0.3) 30%, rgba(128, 134, 143, 0.0) 55%);
   font-family: Oswald,'Segoe UI', Helvetica, Georgia, Tahoma, Arial;
+  -webkit-font-smoothing: antialiased;
   height: 100%;
+  
 }
 
 body {
