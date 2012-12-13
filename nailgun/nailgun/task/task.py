@@ -6,19 +6,33 @@ import logging
 import traceback
 
 import web
+from sqlalchemy.orm import object_mapper, ColumnProperty
 
 import nailgun.rpc as rpc
 from nailgun.db import orm
 from nailgun.settings import settings
+from nailgun.notifier import notifier
+from nailgun.api.models import Network, Node
+from nailgun.task.errors import WrongNodeStatus
 from nailgun.network import manager as netmanager
 from nailgun.api.models import Base, Network, Node
 from nailgun.api.validators import BasicValidator
 from nailgun.provision.cobbler import Cobbler
+from nailgun.task.fake import FAKE_THREADS
 from nailgun.task.errors import DeploymentAlreadyStarted
 from nailgun.task.errors import FailedProvisioning
 from nailgun.task.errors import WrongNodeStatus
 
 logger = logging.getLogger(__name__)
+
+
+if settings.FAKE_TASKS:
+    def fake_cast(queue, message):
+        thread = FAKE_THREADS[message['method']](
+            data=message
+        )
+        thread.start()
+    rpc.cast = fake_cast
 
 
 class TaskHelper(object):
@@ -62,32 +76,36 @@ class DeploymentTask(object):
 
     @classmethod
     def execute(cls, task):
-        nodes = orm().query(Node).filter_by(
+        task_uuid = task.uuid
+        nodes = web.ctx.orm.query(Node).filter_by(
             cluster_id=task.cluster.id,
             pending_deletion=False)
 
-        nodes_to_provision = []
-        for node in nodes:
-            if node.status == 'offline':
-                raise Exception("Node '%s' (id=%s) is in offline status."
-                                " Remove it from cluster and try again." %
-                                (node.name, node.id))
-            if node.status in ('discover', 'provisioning') or \
-                    (node.status == 'error' and
-                     node.error_type == 'provision'):
-                nodes_to_provision.append(node)
+        if not settings.FAKE_TASKS:
+            # only real tasks
+            nodes_to_provision = []
+            for node in nodes:
+                if node.status == 'offline':
+                    raise Exception("Node '%s' (id=%s) is in offline status."
+                                    " Remove it from cluster and try again." %
+                                    (node.name, node.id))
+                if node.status in ('discover', 'provisioning') or \
+                        (node.status == 'error' and
+                         node.error_type == 'provision'):
+                    nodes_to_provision.append(node)
 
-        try:
-            DeploymentTask._provision(nodes_to_provision)
-        except Exception as err:
-            error = "Failed to call cobbler: %s" % err.message
-            logger.error("Provision error: %s\n%s",
-                         error, traceback.format_exc())
-            task.status = "error"
-            task.message = error
-            orm().add(task)
-            orm().commit()
-            raise FailedProvisioning(error)
+            try:
+                DeploymentTask._provision(nodes_to_provision)
+            except Exception as err:
+                error = "Failed to call cobbler: %s" % err.message
+                logger.error("Provision error: %s\n%s",
+                             error, traceback.format_exc())
+                task.status = "error"
+                task.message = error
+                web.ctx.orm.add(task)
+                web.ctx.orm.commit()
+                raise FailedProvisioning(error)
+            # /only real tasks
 
         nodes_ids = [n.id for n in nodes]
         netmanager.assign_ips(nodes_ids, "management")
@@ -100,8 +118,8 @@ class DeploymentTask(object):
             orm().add(n)
             orm().commit()
             nodes_with_attrs.append({
-                'id': n.id, 'status': n.status, 'uid': n.id,
-                'ip': n.ip, 'mac': n.mac, 'role': n.role,
+                'id': n.id, 'status': n.status, 'error_type': n.error_type,
+                'uid': n.id, 'ip': n.ip, 'mac': n.mac, 'role': n.role,
                 'network_data': netmanager.get_node_networks(n.id)
             })
 
@@ -220,6 +238,7 @@ class DeletionTask(object):
     @classmethod
     def execute(self, task, respond_to='remove_nodes_resp'):
         nodes_to_delete = []
+        nodes_to_restore = []
         for node in task.cluster.nodes:
             if node.pending_deletion:
                 nodes_to_delete.append({
@@ -227,27 +246,55 @@ class DeletionTask(object):
                     'uid': node.id
                 })
 
-        if nodes_to_delete:
-            logger.debug("There are nodes to delete")
-            pd = Cobbler(settings.COBBLER_URL,
-                         settings.COBBLER_USER,
-                         settings.COBBLER_PASSWORD
-                         )
-            for node in nodes_to_delete:
-                slave_name = TaskHelper.slave_name_by_id(node['id'])
-                if pd.system_exists(slave_name):
-                    logger.debug("Removing system "
-                                 "from cobbler: %s" % slave_name)
-                    pd.remove_system(slave_name)
+            if settings.FAKE_TASKS:
+                # only fake tasks
+                new_node = Node()
+                for prop in object_mapper(new_node).iterate_properties:
+                    if (isinstance(prop, ColumnProperty) and prop.key not in (
+                            'id', 'cluster_id', 'role', 'pending_deletion')):
+                        setattr(new_node, prop.key, getattr(node, prop.key))
+                nodes_to_restore.append(new_node)
+
+                # FIXME: it should be called in FakeDeletionThread, but
+                # notifier uses web.ctx.orm, which is unavailable there.
+                # Should be moved to the thread code after ORM session
+                # issue is adressed
+                ram = round(new_node.info.get('ram') or 0, 1)
+                cores = new_node.info.get('cores') or 'unknown'
+                notifier.notify("discover",
+                                "New node with %s CPU core(s) "
+                                "and %s GB memory is discovered" %
+                                (cores, ram))
+                # /only fake tasks
+
+        # only real tasks
+        if not settings.FAKE_TASKS:
+            if nodes_to_delete:
+                logger.debug("There are nodes to delete")
+                pd = Cobbler(settings.COBBLER_URL,
+                             settings.COBBLER_USER,
+                             settings.COBBLER_PASSWORD
+                             )
+                for node in nodes_to_delete:
+                    slave_name = TaskHelper.slave_name_by_id(node['id'])
+                    if pd.system_exists(slave_name):
+                        logger.debug("Removing system "
+                                     "from cobbler: %s" % slave_name)
+                        pd.remove_system(slave_name)
+        # /only real tasks
 
         msg_delete = {
             'method': 'remove_nodes',
             'respond_to': respond_to,
             'args': {
                 'task_uuid': task.uuid,
-                'nodes': nodes_to_delete
+                'nodes': nodes_to_delete,
             }
         }
+        # only fake tasks
+        if settings.FAKE_TASKS and nodes_to_restore:
+            msg_delete['args']['nodes_to_restore'] = nodes_to_restore
+        # /only fake tasks
         logger.debug("Calling rpc remove_nodes method")
         rpc.cast('naily', msg_delete)
 
@@ -263,18 +310,16 @@ class VerifyNetworksTask(object):
 
     @classmethod
     def execute(self, task):
+        task_uuid = task.uuid
         nets_db = orm().query(Network).filter_by(
             cluster_id=task.cluster.id).all()
-        networks = [{
-            'id': n.id, 'vlan_id': n.vlan_id, 'cidr': n.cidr}
-            for n in nets_db]
-
-        nodes = [{'id': n.id, 'ip': n.ip, 'mac': n.mac, 'uid': n.id}
+        vlans_db = [net.vlan_id for net in nets_db]
+        iface_db = [{'iface': 'eth0', 'vlans': vlans_db}]
+        nodes = [{'networks': iface_db, 'uid': n.id}
                  for n in task.cluster.nodes]
 
         message = {'method': 'verify_networks',
                    'respond_to': 'verify_networks_resp',
                    'args': {'task_uuid': task.uuid,
-                            'networks': networks,
                             'nodes': nodes}}
         rpc.cast('naily', message)

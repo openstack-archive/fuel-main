@@ -57,7 +57,8 @@ class TestHandlers(BaseHandlers):
                 node=n.id).all() if x.ip_addr]
             node_ip = [ne.ip_addr + "/24" for ne in node_ips]
             nodes.append({'uid': n.id, 'status': n.status, 'ip': n.ip,
-                          'mac': n.mac, 'role': n.role, 'id': n.id,
+                          'error_type': n.error_type, 'mac': n.mac,
+                          'role': n.role, 'id': n.id,
                           'network_data': [{'brd': '172.16.0.255',
                                             'ip': node_ip[0],
                                             'vlan': 103,

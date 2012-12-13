@@ -3,11 +3,6 @@ import json
 from mock import Mock
 
 from nailgun.settings import settings
-settings.update({
-    'FAKE_TASKS': True,
-    'FAKE_TASKS_TICK_INTERVAL': 1,
-    'FAKE_TASKS_TICK_COUNT': 1,
-})
 
 import nailgun
 from nailgun.test.base import BaseHandlers
@@ -17,12 +12,23 @@ from nailgun.api.models import Cluster, Attributes, Task, Notification
 
 class TestTaskManagers(BaseHandlers):
 
+    def setUp(self):
+        super(TestTaskManagers, self).setUp()
+        settings.update({
+            'FAKE_TASKS': True,
+            'FAKE_TASKS_TICK_INTERVAL': 1,
+            'FAKE_TASKS_TICK_COUNT': 1,
+        })
+
     def tearDown(self):
         # wait for fake task thread termination
         import threading
         for thread in threading.enumerate():
             if thread is not threading.currentThread():
                 thread.join(1)
+        settings.update({
+            'FAKE_TASKS': False,
+        })
 
     def test_deployment_task_managers(self):
         cluster = self.create_cluster_api()

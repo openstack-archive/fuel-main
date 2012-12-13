@@ -13,9 +13,7 @@ from nailgun.api.models import Task
 from nailgun.api.models import Network
 from nailgun.task.errors import DeploymentAlreadyStarted, WrongNodeStatus
 
-from nailgun.task import task as original_tasks
-from nailgun.task import fake as fake_tasks
-tasks = settings.FAKE_TASKS and fake_tasks or original_tasks
+from nailgun.task import task as tasks
 
 logger = logging.getLogger(__name__)
 

@@ -15,157 +15,102 @@ from nailgun.network import manager as netmanager
 from nailgun.rpc.threaded import NailgunReceiver
 
 
-class DeploymentTask(object):
-
-    @classmethod
-    def execute(cls, task):
-        task_uuid = task.uuid
-        nodes = orm().query(Node).filter_by(
-            cluster_id=task.cluster.id,
-            pending_deletion=False)
-
-        nodes_with_attrs = []
-        for n in nodes:
-            n.pending_addition = False
-            orm().add(n)
-            orm().commit()
-            nodes_with_attrs.append({
-                'id': n.id, 'status': n.status, 'error_type': n.error_type,
-                'uid': n.id, 'ip': n.ip, 'mac': n.mac, 'role': n.role,
-                'network_data': netmanager.get_node_networks(n.id)
-            })
-
-        class FakeDeploymentThread(threading.Thread):
-            def run(self):
-                receiver = NailgunReceiver()
-                kwargs = {
-                    'task_uuid': task_uuid,
-                    'nodes': nodes_with_attrs,
-                    'progress': 0
-                }
-
-                tick_count = settings.FAKE_TASKS_TICK_COUNT or 10
-                tick_interval = settings.FAKE_TASKS_TICK_INTERVAL or 3
-
-                for i in range(1, tick_count + 1):
-                    if i < tick_count / 2:
-                        for n in kwargs['nodes']:
-                            if n['status'] == 'discover' or (
-                                n['status'] == 'error' and
-                                    n['error_type'] == 'provision'):
-                                        n['status'] = 'provisioning'
-                            elif n['status'] == 'ready':
-                                n['status'] = 'deploying'
-                    elif i < tick_count:
-                        for n in kwargs['nodes']:
-                            if n['status'] == 'provisioning':
-                                n['status'] = 'deploying'
-                    else:
-                        kwargs['status'] = 'ready'
-                        for n in kwargs['nodes']:
-                            if n['status'] == 'deploying':
-                                n['status'] = 'ready'
-
-                    kwargs['progress'] = 100 * i / tick_count
-                    receiver.deploy_resp(**kwargs)
-                    if i < tick_count:
-                        time.sleep(tick_interval)
-
-        FakeDeploymentThread().start()
+class FakeThread(threading.Thread):
+    def __init__(self, data=None, group=None, target=None, name=None,
+                 verbose=None):
+        threading.Thread.__init__(self, group=group, target=target, name=name,
+                                  verbose=verbose)
+        self.data = data
+        self.task_uuid = data['args'].get(
+            'task_uuid'
+        )
+        self.respond_to = data['respond_to']
 
 
-class DeletionTask(object):
+class FakeDeploymentThread(FakeThread):
+    def run(self):
+        receiver = NailgunReceiver()
+        kwargs = {
+            'task_uuid': self.task_uuid,
+            'nodes': self.data['args']['nodes'],
+            'progress': 0
+        }
 
-    @classmethod
-    def execute(self, task, respond_to='remove_nodes_resp'):
-        nodes_to_delete = []
-        nodes_to_restore = []
-        for node in task.cluster.nodes:
-            if node.pending_deletion:
-                nodes_to_delete.append({
-                    'id': node.id,
-                    'uid': node.id,
-                    'status': 'discover'
-                })
+        tick_count = settings.FAKE_TASKS_TICK_COUNT or 10
+        tick_interval = settings.FAKE_TASKS_TICK_INTERVAL or 3
 
-                new_node = Node()
-                for prop in object_mapper(new_node).iterate_properties:
-                    if (isinstance(prop, ColumnProperty) and prop.key not in (
-                            'id', 'cluster_id', 'role', 'pending_deletion')):
-                        setattr(new_node, prop.key, getattr(node, prop.key))
-                nodes_to_restore.append(new_node)
-
-                # FIXME: it should be called in FakeDeletionThread, but
-                # notifier uses web.ctx.orm, which is unavailable there.
-                # Should be moved to the thread code after ORM session
-                # issue is adressed
-                ram = round(new_node.info.get('ram') or 0, 1)
-                cores = new_node.info.get('cores') or 'unknown'
-                notifier.notify("discover",
-                                "New node with %s CPU core(s) "
-                                "and %s GB memory is discovered" %
-                                (cores, ram))
-
-        class FakeDeletionThread(threading.Thread):
-            def run(self):
-                receiver = NailgunReceiver()
-                kwargs = {
-                    'task_uuid': task.uuid,
-                    'nodes': nodes_to_delete,
-                    'status': 'ready'
-                }
-                tick_interval = settings.FAKE_TASKS_TICK_INTERVAL or 3
-                time.sleep(tick_interval)
-                resp_method = getattr(receiver, respond_to)
-                resp_method(**kwargs)
-                orm = scoped_session(
-                    sessionmaker(bind=engine, query_cls=Query)
-                )
-                for node in nodes_to_restore:
-                    orm.add(node)
-                    orm.commit()
-
-        FakeDeletionThread().start()
-
-
-class ClusterDeletionTask(object):
-
-    @classmethod
-    def execute(cls, task):
-        DeletionTask.execute(task, 'remove_cluster_resp')
-
-
-class VerifyNetworksTask(object):
-
-    @classmethod
-    def execute(self, task):
-        task_uuid = task.uuid
-        nets_db = orm().query(Network).filter_by(
-            cluster_id=task.cluster.id).all()
-        vlans_db = [net.vlan_id for net in nets_db]
-        iface_db = [{'iface': 'eth0', 'vlans': vlans_db}]
-        nodes = [{'networks': iface_db, 'uid': n.id}
-                 for n in task.cluster.nodes]
-
-        class FakeVerificationThread(threading.Thread):
-            def run(self):
-                receiver = NailgunReceiver()
-                kwargs = {
-                    'task_uuid': task_uuid,
-                    'progress': 0
-                }
-
-                tick_count = settings.FAKE_TASKS_TICK_COUNT or 10
-                tick_interval = settings.FAKE_TASKS_TICK_INTERVAL or 3
-
-                for i in range(1, tick_count + 1):
-                    kwargs['progress'] = 100 * i / tick_count
-                    receiver.verify_networks_resp(**kwargs)
-                    time.sleep(tick_interval)
-
-                kwargs['progress'] = 100
-                kwargs['nodes'] = nodes
+        for i in range(1, tick_count + 1):
+            if i < tick_count / 2:
+                for n in kwargs['nodes']:
+                    if n['status'] == 'discover' or (
+                        n['status'] == 'error' and
+                            n['error_type'] == 'provision'):
+                                n['status'] = 'provisioning'
+                    elif n['status'] == 'ready':
+                        n['status'] = 'deploying'
+            elif i < tick_count:
+                for n in kwargs['nodes']:
+                    if n['status'] == 'provisioning':
+                        n['status'] = 'deploying'
+            else:
                 kwargs['status'] = 'ready'
-                receiver.verify_networks_resp(**kwargs)
+                for n in kwargs['nodes']:
+                    if n['status'] == 'deploying':
+                        n['status'] = 'ready'
 
-        FakeVerificationThread().start()
+            kwargs['progress'] = 100 * i / tick_count
+            resp_method = getattr(receiver, self.respond_to)
+            resp_method(**kwargs)
+            if i < tick_count:
+                time.sleep(tick_interval)
+
+
+class FakeDeletionThread(FakeThread):
+    def run(self):
+        receiver = NailgunReceiver()
+        kwargs = {
+            'task_uuid': self.task_uuid,
+            'nodes': self.data['args']['nodes'],
+            'status': 'ready'
+        }
+        nodes_to_restore = self.data['args']['nodes_to_restore']
+        tick_interval = settings.FAKE_TASKS_TICK_INTERVAL or 3
+        time.sleep(tick_interval)
+        resp_method = getattr(receiver, self.respond_to)
+        resp_method(**kwargs)
+        orm = scoped_session(
+            sessionmaker(bind=engine, query_cls=Query)
+        )
+        for node in nodes_to_restore:
+            orm.add(node)
+            orm.commit()
+
+
+class FakeVerificationThread(FakeThread):
+    def run(self):
+        receiver = NailgunReceiver()
+        kwargs = {
+            'task_uuid': self.task_uuid,
+            'progress': 0
+        }
+
+        tick_count = settings.FAKE_TASKS_TICK_COUNT or 10
+        tick_interval = settings.FAKE_TASKS_TICK_INTERVAL or 3
+
+        resp_method = getattr(receiver, self.respond_to)
+        for i in range(1, tick_count + 1):
+            kwargs['progress'] = 100 * i / tick_count
+            resp_method(**kwargs)
+            time.sleep(tick_interval)
+
+        kwargs['progress'] = 100
+        kwargs['nodes'] = self.data['args']['nodes']
+        kwargs['status'] = 'ready'
+        resp_method(**kwargs)
+
+
+FAKE_THREADS = {
+    'deploy': FakeDeploymentThread,
+    'remove_nodes': FakeDeletionThread,
+    'verify_networks': FakeVerificationThread
+}
