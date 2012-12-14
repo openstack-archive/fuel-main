@@ -1,9 +1,9 @@
-casper.test.comment('Testing common controls')
 casper.start().loadPage('');
 
 casper.then(function() {
-    this.test.assertExists('.navigation-bar', 'Navigation bar presents');
-    this.test.assertExists('.breadcrumb', 'Breadcrumbs present');
+    this.test.comment('Testing common controls');
+    this.test.assertSelectorAppears('.navigation-bar', 'Navigation bar presents');
+    this.test.assertSelectorAppears('.breadcrumb', 'Breadcrumbs present');
 });
 
 casper.run(function() {

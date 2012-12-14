@@ -4,6 +4,10 @@ casper.loadPage = function(page) {
     return this.thenOpen(baseUrl + page).waitWhileSelector('#content > .loading');
 }
 
+casper.loadJsFile = function(file) {
+    return this.page.injectJs('ui_tests/' + file + '.js');
+}
+
 casper.test.assertSelectorAppears = function(selector, message, timeout) {
     return this.casper.waitForSelector(selector, function () {
         this.test.pass(message);
