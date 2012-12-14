@@ -10,6 +10,7 @@ from nailgun.api.models import engine
 
 conn = None
 
+
 def orm():
     if hasattr(web.ctx, "orm"):
         return web.ctx.orm

@@ -218,18 +218,23 @@ class NailgunReceiver(object):
                 Node.role == 'controller'
             ).first()
             if controller:
-                cntr_networks = get_node_networks(controller.id)
                 public_net = filter(
-                    lambda n: n['name'] == 'public',
-                    cntr_networks
-                )[0]
-                horizon_ip = public_net['ip'].split('/')[0]
-                message = "Deployment of installation '{0}' is done. \
-                Access WebUI of OpenStack at http://{1}/ will \
-                be the address".format(task.cluster.name, horizon_ip)
+                    lambda n: n['name'] == 'public' and 'ip' in n,
+                    get_node_networks(controller.id)
+                )
+                if public_net:
+                    horizon_ip = public_net[0]['ip'].split('/')[0]
+                    message = "Deployment of installation '{0}' is done. \
+                    Access WebUI of OpenStack at http://{1}/ will \
+                    be the address".format(task.cluster.name, horizon_ip)
+                else:
+                    message = "Deployment of installation '{0}' is done, \
+                    but horizon url could not be found".format(
+                        task.cluster.name
+                    )
             else:
                 message = "Deployment of installation '{0}' is done, \
-                but horizon url could not be found".format(
+                but controller node could not be found".format(
                     task.cluster.name
                 )
             notifier.notify(
