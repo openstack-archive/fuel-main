@@ -57,16 +57,15 @@ class LogEntryCollectionHandler(JSONHandler):
                                                    log_config['levels'])]
 
         entries = []
-        from_line = 0
+        from_byte = 0
         try:
-            from_line = int(user_data.get('from', 0))
+            from_byte = int(user_data.get('from', 0))
         except ValueError:
             raise web.badrequest("Invalid 'from' value")
 
         with open(log_file, 'r') as f:
-            for num, line in enumerate(f):
-                if num < from_line:
-                    continue
+            f.seek(from_byte)
+            for line in f:
                 entry = line.rstrip('\n')
                 if not len(entry):
                     continue
@@ -86,10 +85,11 @@ class LogEntryCollectionHandler(JSONHandler):
                     entry_level,
                     m.group('text')
                 ])
+            from_byte = f.tell()
 
         return json.dumps({
             'entries': entries,
-            'from': num,
+            'from': from_byte,
         })
 
 

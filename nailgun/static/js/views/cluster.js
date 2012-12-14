@@ -950,7 +950,6 @@ function(models, commonViews, dialogViews, clusterPageTemplate, deploymentResult
                     this.$('.table-logs .log-entries').html('');
                     if (data.entries.length) {
                         this.appendLogEntries(data);
-                        this.$('.table-logs .no-logs-msg').hide();
                     } else {
                         this.$('.table-logs .no-logs-msg').show();
                     }
@@ -965,9 +964,12 @@ function(models, commonViews, dialogViews, clusterPageTemplate, deploymentResult
         },
         appendLogEntries: function(data) {
             this.from = data.from;
-            this.$('.table-logs .log-entries').append(_.map(data.entries, function(entry) {
-                return this.logEntryTemplate({entry: entry});
-            }, this).join(''));
+            if (data.entries.length) {
+                this.$('.table-logs .no-logs-msg').hide();
+                this.$('.table-logs .log-entries').append(_.map(data.entries, function(entry) {
+                    return this.logEntryTemplate({entry: entry});
+                }, this).join(''));
+            }
         },
         initialize: function(options) {
             _.defaults(this, options);
