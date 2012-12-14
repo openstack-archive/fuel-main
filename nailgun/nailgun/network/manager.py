@@ -4,6 +4,7 @@ import web
 from sqlalchemy.sql import not_
 from netaddr import IPSet, IPNetwork
 
+from nailgun.db import orm
 from nailgun.api.models import Network, Node, NetworkElement
 
 
@@ -16,14 +17,14 @@ def assign_ips(nodes_ids, network_name):
     If one of the nodes is the node from other cluster, this func will fail.
 
     """
-    cluster_id = web.ctx.orm.query(Node).get(nodes_ids[0]).cluster_id
+    cluster_id = orm.query(Node).get(nodes_ids[0]).cluster_id
     for node_id in nodes_ids:
-        node = web.ctx.orm.query(Node).get(node_id)
+        node = orm.query(Node).get(node_id)
         if node.cluster_id != cluster_id:
             raise Exception("Node id='%s' doesn't belong to cluster_id='%s'" %
                             (node_id, cluster_id))
 
-    network = web.ctx.orm.query(Network).\
+    network = orm.query(Network).\
         filter_by(cluster_id=cluster_id).\
         filter_by(name=network_name).first()
 
@@ -31,11 +32,11 @@ def assign_ips(nodes_ids, network_name):
         raise Exception("Network '%s' for cluster_id=%s not found." %
                         (network_name, cluster_id))
 
-    used_ips = [ne.ip_addr for ne in web.ctx.orm.query(NetworkElement).all()
+    used_ips = [ne.ip_addr for ne in orm.query(NetworkElement).all()
                 if ne.ip_addr]
 
     for node_id in nodes_ids:
-        node_ips = [ne.ip_addr for ne in web.ctx.orm.query(NetworkElement).
+        node_ips = [ne.ip_addr for ne in orm.query(NetworkElement).
                     filter_by(node=node_id).
                     filter_by(network=network.id).all() if ne.ip_addr]
 
@@ -57,19 +58,19 @@ def assign_ips(nodes_ids, network_name):
                     "Network pool %s ran out of free ips." % network.cidr)
             ip_db = NetworkElement(network=network.id, node=node_id,
                                    ip_addr=free_ip)
-            web.ctx.orm.add(ip_db)
-            web.ctx.orm.commit()
+            orm.add(ip_db)
+            orm.commit()
             used_ips.append(free_ip)
 
 
 def get_node_networks(node_id):
-    cluster_id = web.ctx.orm.query(Node).get(node_id).cluster_id
-    ips = [x for x in web.ctx.orm.query(NetworkElement).filter_by(
+    cluster_id = orm.query(Node).get(node_id).cluster_id
+    ips = [x for x in orm.query(NetworkElement).filter_by(
         node=node_id).all() if x.ip_addr]  # Got rid of Nones (if x.ip_addr)
     network_data = []
     network_ids = []
     for i in ips:
-        net = web.ctx.orm.query(Network).get(i.network)
+        net = orm.query(Network).get(i.network)
         network_data.append({
             'name': net.name,
             'vlan': net.vlan_id,
@@ -80,7 +81,7 @@ def get_node_networks(node_id):
             'dev': 'eth0'})  # We need to figure out interface
         network_ids.append(net.id)
     # And now let's add networks w/o IP addresses
-    nets = web.ctx.orm.query(Network).filter_by(cluster_id=cluster_id)
+    nets = orm.query(Network).filter_by(cluster_id=cluster_id)
     if network_ids:
         nets = nets.filter(not_(Network.id.in_(network_ids)))
     # For now, we pass information about all networks,

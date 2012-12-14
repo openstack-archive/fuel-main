@@ -114,3 +114,4 @@ DNS_DOMAIN: "example.com"
 DNS_SERVERS: "127.0.0.1"
 DNS_SEARCH: "example.com"
 
+FAKE_TASKS: "1"
