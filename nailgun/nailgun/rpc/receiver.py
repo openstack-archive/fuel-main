@@ -230,8 +230,7 @@ class NailgunReceiver(object):
             else:
                 message = "Deployment of installation '{0}' is done, \
                 but horizon url could not be found".format(
-                    task.cluster.name,
-                    horizon_ip
+                    task.cluster.name
                 )
             notifier.notify(
                 "done",
