@@ -10,7 +10,7 @@ import signal
 import json
 import socket
 
-from subprocess import check_call, CalledProcessError
+from subprocess import call
 from optparse import OptionParser
 
 import scapy.config as scapy
@@ -110,15 +110,11 @@ def get_probe_frames(iface):
 def send_probe_frame(**props):
     for vlan in props['vlan']:
         if vlan > 0:
-            try:
-                check_call(('vconfig', 'add', props['iface'], str(vlan)))
-            except CalledProcessError:
-                pass
             iface = '%s.%d' % (props['iface'], vlan)
-            try:
-                check_call(('ifconfig', iface, 'up'))
-            except CalledProcessError:
-                pass
+            iface_already_exist = not call('ifconfig %s' % iface, shell=True)
+            if not iface_already_exist:
+                call(('vconfig', 'add', props['iface'], str(vlan)))
+                call(('ifconfig', iface, 'up'))
         else:
             iface = props['iface']
         p = scapy.Ether(src=props['src_mac'], dst="ff:ff:ff:ff:ff:ff")
@@ -129,15 +125,9 @@ def send_probe_frame(**props):
                 scapy.sendp(p, iface=iface)
         except socket.error, e:
             print e, iface
-        if vlan > 0:
-            try:
-                check_call(('ifconfig', iface, 'down'))
-            except CalledProcessError:
-                pass
-            try:    
-                check_call(('vconfig', 'rem', iface))
-            except CalledProcessError:
-                pass
+        if vlan > 0 and not iface_already_exist:
+            call(('ifconfig', iface, 'down'))
+            call(('vconfig', 'rem', iface))
 
 
 
