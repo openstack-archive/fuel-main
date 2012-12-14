@@ -12,6 +12,7 @@ conn = None
 
 
 def orm():
+    global conn
     if hasattr(web.ctx, "orm"):
         return web.ctx.orm
     else:
