@@ -76,7 +76,10 @@ class Node(ManagedObject):
         super(Node, self).__init__()
 
         self.name = name
-        if not metadata: self.metadata = {}
+        if metadata is None:
+            self.metadata = {}
+        else:
+            self.metadata = metadata
         self.cpu = cpu
         self.memory = memory
         self.arch = arch
