@@ -5,10 +5,8 @@ module Astute
   module PuppetdDeployer
     private
     def self.calc_error_nodes(last_run_summary)
-      error_nodes = last_run_summary.map {|x| {'uid' => x.results[:sender],
-                                         'status' =>
-                x.results[:data][:resources]['failed'] != 0 ? 'error' : 'idle'} }.select { |n|
-                    n['status'] == 'error' }.map {|x| x['uid']}
+      error_nodes = last_run_summary.select { |n|
+            n.results[:data][:resources]['failed'] != 0}.map {|x| x.results[:sender]}
       return error_nodes
     end
 
