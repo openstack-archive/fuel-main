@@ -1,13 +1,24 @@
 # -*- coding: utf-8 -*-
 import json
-from mock import Mock
+from mock import Mock, patch
 
 from nailgun.settings import settings
 
 import nailgun
+import nailgun.rpc as rpc
+from nailgun.task.fake import FAKE_THREADS
 from nailgun.test.base import BaseHandlers
 from nailgun.test.base import reverse
 from nailgun.api.models import Cluster, Attributes, Task, Notification
+
+
+def fake_cast(queue, message):
+    thread = FAKE_THREADS[message['method']](
+        data=message
+    )
+    thread.start()
+    thread.name = message['method'].upper()
+    thread.join()
 
 
 class TestTaskManagers(BaseHandlers):
@@ -15,21 +26,21 @@ class TestTaskManagers(BaseHandlers):
     def setUp(self):
         super(TestTaskManagers, self).setUp()
         settings.update({
-            'FAKE_TASKS': True,
-            'FAKE_TASKS_TICK_INTERVAL': 1,
-            'FAKE_TASKS_TICK_COUNT': 1,
+            'FAKE_TASKS': True
         })
 
     def tearDown(self):
+        settings.update({
+            'FAKE_TASKS': False,
+        })
         # wait for fake task thread termination
         import threading
         for thread in threading.enumerate():
             if thread is not threading.currentThread():
                 thread.join(1)
-        settings.update({
-            'FAKE_TASKS': False,
-        })
 
+    @patch('nailgun.task.task.rpc.cast', nailgun.task.task.fake_cast)
+    @patch('nailgun.task.task.settings.FAKE_TASKS', True)
     def test_deployment_task_managers(self):
         cluster = self.create_cluster_api()
         node1 = self.create_default_node(cluster_id=cluster['id'],
@@ -50,6 +61,8 @@ class TestTaskManagers(BaseHandlers):
         self.assertIn(supertask.status, ('running', 'ready'))
         self.assertEquals(len(supertask.subtasks), 2)
 
+    @patch('nailgun.task.task.rpc.cast', nailgun.task.task.fake_cast)
+    @patch('nailgun.task.task.settings.FAKE_TASKS', True)
     def test_network_verify_task_managers(self):
         cluster = self.create_cluster_api()
         node1 = self.create_default_node(cluster_id=cluster['id'])
@@ -67,6 +80,8 @@ class TestTaskManagers(BaseHandlers):
         self.assertEquals(task.name, 'verify_networks')
         self.assertIn(task.status, ('running', 'ready'))
 
+    @patch('nailgun.task.task.rpc.cast', nailgun.task.task.fake_cast)
+    @patch('nailgun.task.task.settings.FAKE_TASKS', True)
     def test_deletion_cluster_task_manager(self):
         cluster = self.create_cluster_api()
         resp = self.app.delete(

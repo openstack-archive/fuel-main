@@ -25,12 +25,16 @@ from nailgun.task.errors import WrongNodeStatus
 logger = logging.getLogger(__name__)
 
 
+def fake_cast(queue, message):
+    thread = FAKE_THREADS[message['method']](
+        data=message
+    )
+    thread.start()
+    thread.name = message['method'].upper()
+    thread.join()
+
+
 if settings.FAKE_TASKS:
-    def fake_cast(queue, message):
-        thread = FAKE_THREADS[message['method']](
-            data=message
-        )
-        thread.start()
     rpc.cast = fake_cast
 
 
@@ -245,35 +249,46 @@ class DeletionTask(object):
                     'uid': node.id
                 })
 
-            if settings.FAKE_TASKS:
-                # only fake tasks
-                new_node = Node()
-                for prop in object_mapper(new_node).iterate_properties:
-                    if (isinstance(prop, ColumnProperty) and prop.key not in (
-                            'id', 'cluster_id', 'role', 'pending_deletion')):
-                        setattr(new_node, prop.key, getattr(node, prop.key))
-                nodes_to_restore.append(new_node)
+                if settings.FAKE_TASKS:
+                    # only fake tasks
+                    new_node = Node()
+                    keep_attrs = (
+                        'id',
+                        'cluster_id',
+                        'role',
+                        'pending_deletion',
+                    )
+                    for prop in object_mapper(new_node).iterate_properties:
+                        if isinstance(
+                            prop, ColumnProperty
+                        ) and prop.key not in keep_attrs:
+                            setattr(
+                                new_node,
+                                prop.key,
+                                getattr(node, prop.key)
+                            )
+                    nodes_to_restore.append(new_node)
 
-                # FIXME: it should be called in FakeDeletionThread, but
-                # notifier uses web.ctx.orm, which is unavailable there.
-                # Should be moved to the thread code after ORM session
-                # issue is adressed
-                ram = round(new_node.info.get('ram') or 0, 1)
-                cores = new_node.info.get('cores') or 'unknown'
-                notifier.notify("discover",
-                                "New node with %s CPU core(s) "
-                                "and %s GB memory is discovered" %
-                                (cores, ram))
-                # /only fake tasks
-
+                    # FIXME: it should be called in FakeDeletionThread, but
+                    # notifier uses web.ctx.orm, which is unavailable there.
+                    # Should be moved to the thread code after ORM session
+                    # issue is adressed
+                    ram = round(new_node.info.get('ram') or 0, 1)
+                    cores = new_node.info.get('cores') or 'unknown'
+                    notifier.notify("discover",
+                                    "New node with %s CPU core(s) "
+                                    "and %s GB memory is discovered" %
+                                    (cores, ram))
+                    # /only fake tasks
         # only real tasks
         if not settings.FAKE_TASKS:
             if nodes_to_delete:
                 logger.debug("There are nodes to delete")
-                pd = Cobbler(settings.COBBLER_URL,
-                             settings.COBBLER_USER,
-                             settings.COBBLER_PASSWORD
-                             )
+                pd = Cobbler(
+                    settings.COBBLER_URL,
+                    settings.COBBLER_USER,
+                    settings.COBBLER_PASSWORD
+                )
                 for node in nodes_to_delete:
                     slave_name = TaskHelper.slave_name_by_id(node['id'])
                     if pd.system_exists(slave_name):
@@ -316,9 +331,13 @@ class VerifyNetworksTask(object):
         iface_db = [{'iface': 'eth0', 'vlans': vlans_db}]
         nodes = [{'networks': iface_db, 'uid': n.id}
                  for n in task.cluster.nodes]
+        networks = [{
+            'id': n.id, 'vlan_id': n.vlan_id, 'cidr': n.cidr}
+            for n in nets_db]
 
         message = {'method': 'verify_networks',
                    'respond_to': 'verify_networks_resp',
                    'args': {'task_uuid': task.uuid,
+                            'networks': networks,
                             'nodes': nodes}}
         rpc.cast('naily', message)

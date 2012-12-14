@@ -36,8 +36,8 @@ class FakeDeploymentThread(FakeThread):
             'progress': 0
         }
 
-        tick_count = settings.FAKE_TASKS_TICK_COUNT or 10
-        tick_interval = settings.FAKE_TASKS_TICK_INTERVAL or 3
+        tick_count = int(settings.FAKE_TASKS_TICK_COUNT) or 10
+        tick_interval = int(settings.FAKE_TASKS_TICK_INTERVAL) or 3
 
         for i in range(1, tick_count + 1):
             if i < tick_count / 2:
@@ -73,8 +73,8 @@ class FakeDeletionThread(FakeThread):
             'nodes': self.data['args']['nodes'],
             'status': 'ready'
         }
-        nodes_to_restore = self.data['args']['nodes_to_restore']
-        tick_interval = settings.FAKE_TASKS_TICK_INTERVAL or 3
+        nodes_to_restore = self.data['args'].get('nodes_to_restore', [])
+        tick_interval = int(settings.FAKE_TASKS_TICK_INTERVAL) or 3
         time.sleep(tick_interval)
         resp_method = getattr(receiver, self.respond_to)
         resp_method(**kwargs)
@@ -94,8 +94,8 @@ class FakeVerificationThread(FakeThread):
             'progress': 0
         }
 
-        tick_count = settings.FAKE_TASKS_TICK_COUNT or 10
-        tick_interval = settings.FAKE_TASKS_TICK_INTERVAL or 3
+        tick_count = int(settings.FAKE_TASKS_TICK_COUNT) or 10
+        tick_interval = int(settings.FAKE_TASKS_TICK_INTERVAL) or 3
 
         resp_method = getattr(receiver, self.respond_to)
         for i in range(1, tick_count + 1):

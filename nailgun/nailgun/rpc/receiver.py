@@ -8,6 +8,7 @@ import itertools
 
 import greenlet
 import eventlet
+from web.utils import ThreadedDict
 from sqlalchemy.orm import scoped_session, sessionmaker
 
 import nailgun.rpc as rpc
@@ -26,19 +27,17 @@ class TaskNotFound(Exception):
 
 
 class NailgunReceiver(object):
-    conn = None
+    conn = ThreadedDict()
+    connected = False
 
     @classmethod
     def db(cls):
-        """
-        This method prevents sharing session between threads
-        """
-        if cls.conn:
-            return cls.conn
-        cls.conn = scoped_session(
-            sessionmaker(bind=engine, query_cls=Query)
-        )
-        return cls.conn
+        if not cls.connected or not hasattr(cls.conn, "orm"):
+            cls.conn.orm = scoped_session(
+                sessionmaker(bind=engine, query_cls=Query)
+            )
+            cls.connected = True
+        return cls.conn.orm
 
     @classmethod
     def __update_task_status(cls, uuid, status, progress, msg=""):
