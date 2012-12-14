@@ -57,7 +57,7 @@ Vagrant::Config.run do |config|
     #config.vm.boot_mode = :gui
 
     config.vm.share_folder "v-data", "/opt", "."
-    config.vm.share_folder "v-data", "/fuel", "../fuel"
+    config.vm.share_folder "v-data", "/fuel", "../fuel-folsom"
     
     # extra network for testing
     vm_config.vm.network :hostonly, '10.1.1.2', :adapter => 2

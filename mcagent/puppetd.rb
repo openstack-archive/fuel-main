@@ -50,7 +50,10 @@ module MCollective
       def last_run_summary
         summary = YAML.load_file(@last_summary)
 
-        reply[:resources] = {"failed"=>0, "changed"=>0, "total"=>0, "restarted"=>0, "out_of_sync"=>0}.merge(summary["resources"])
+        # It should be empty hash, if 'resources' key is not defined, because otherwise merge will fail with TypeError
+        summary["resources"] ||= {}
+        # if 'failed' is not provided, it means something is wrong. So default value is 1.
+        reply[:resources] = {"failed"=>1, "changed"=>0, "total"=>0, "restarted"=>0, "out_of_sync"=>0}.merge(summary["resources"])
 
         ["time", "events", "changes", "version"].each do |dat|
           reply[dat.to_sym] = summary[dat]
