@@ -8,13 +8,17 @@ from sqlalchemy.orm.query import Query
 from nailgun.api.models import engine
 
 
+conn = None
+
 def orm():
     if hasattr(web.ctx, "orm"):
         return web.ctx.orm
     else:
-        return scoped_session(
-            sessionmaker(bind=engine, query_cls=Query)
-        )
+        if not conn:
+            conn = scoped_session(
+                sessionmaker(bind=engine, query_cls=Query)
+            )
+        return conn
 
 
 class Query(Query):
