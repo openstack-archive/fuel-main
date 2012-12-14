@@ -2070,3 +2070,7 @@ h6.page-title {
   margin-top: 10px;
   text-transform: capitalize;
 }
+
+.modal-body {
+    max-height: 450px;
+}

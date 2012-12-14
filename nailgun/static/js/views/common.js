@@ -93,14 +93,7 @@ function(models, dialogViews, navbarTemplate, nodesStatsTemplate, notificationsT
         popoverTemplate: _.template(notificationsPopoverTemplate),
         popoverVisible: false,
         events: {
-            'click': 'togglePopover',
-            'click .show-more-notifications a': 'hidePopover'
-        },
-        showNodeInfo: function(e) {
-            var node = new models.Node(this.nodes.filter(function(node) {return node.id == $(e.target).data('node');}));
-            var dialog = new dialogViews.ShowNodeInfoDialog({node: node});
-            this.registerSubView(dialog);
-            dialog.render();
+            'click': 'togglePopover'
         },
         getUnreadNotifications: function() {
             return this.collection.where({status : 'unread'});
@@ -113,17 +106,13 @@ function(models, dialogViews, navbarTemplate, nodesStatsTemplate, notificationsT
             }
         },
         togglePopover: function(e) {
-            console.log($(e.target));
-            if ($(e.target).hasClass('discover')) {
-                this.hidePopover(e);
-                this.showNodeInfo(e);
-            } else if (!this.popoverVisible && $(e.target).closest(this.$el).length) {
+            if (!this.popoverVisible && $(e.target).closest(this.$el).length) {
                 $('html').off(this.eventNamespace);
                 $('html').on(this.eventNamespace, _.after(2, _.bind(function(e) {
                     this.hidePopover(e);
                 }, this)));
                 this.popoverVisible = true;
-                $('.navigation-bar').after(this.popoverTemplate({notifications: this.collection.last(this.displayCount)}));
+                $('.navigation-bar').after(this.popoverTemplate({notifications: this.collection, displayCount: 5}));
                 _.each(this.getUnreadNotifications(), function(notification) {
                     notification.set({'status': 'read'});
                 });
@@ -142,14 +131,12 @@ function(models, dialogViews, navbarTemplate, nodesStatsTemplate, notificationsT
         beforeTearDown: function() {
             $('html').off(this.eventNamespace);
         },
-        initialize: function(options) {
+        initialize: function() {
             this.eventNamespace = 'click.click-notifications';
-            this.nodes = new models.Nodes();
-            this.nodes.fetch();
             this.collection = new models.Notifications();
-            this.collection.bind('reset', this.render, this);
             this.collection.deferred = this.collection.fetch();
             this.collection.deferred.done(_.bind(this.scheduleUpdate, this));
+            this.collection.bind('reset', this.render, this);
         },
         render: function() {
             this.$el.html(this.template({notifications: this.collection}));

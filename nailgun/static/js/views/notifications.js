@@ -19,19 +19,19 @@ function(models, commonViews, dialogViews, notificationsListTemplate) {
             'click .discover' : 'showNodeInfo'
         },
         showNodeInfo: function(e) {
-            var node = new models.Node(this.nodes.filter(function(node) {return node.id == $(e.target).data('node');}));
-            var dialog = new dialogViews.ShowNodeInfoDialog({node: node});
-            this.registerSubView(dialog);
-            dialog.render();
+            if ($(e.target).data('node')) {
+                var node = this.nodes.get($(e.target).data('node'));
+                var dialog = new dialogViews.ShowNodeInfoDialog({node: node});
+                this.registerSubView(dialog);
+                dialog.render();
+            }
         },
-        initialize: function() {
+        initialize: function(options) {
+            _.defaults(this, options);
             this.collection.bind('reset', this.render, this);
-            this.nodes = new models.Nodes();
-            this.nodes.deferred = this.nodes.fetch();
-            this.nodes.deferred.done(_.bind(this.render, this));
         },
         render: function() {
-            this.$el.html(this.template({notifications: this.collection}));
+            this.$el.html(this.template({notifications: this.collection, displayCount: this.collection.length}));
             return this;
         }
     });

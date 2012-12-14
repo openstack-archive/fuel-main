@@ -84,12 +84,7 @@ function(models, commonViews, clusterViews, clustersViews, releaseViews, notific
             });
         },
         showNotifications: function() {
-            var notifications = new models.Notifications();
-            notifications.fetch({
-                success: _.bind(function() {
-                    this.setPage(new notificationsViews.NotificationsPage({collection: notifications}));
-                }, this)
-            });
+            this.setPage(new notificationsViews.NotificationsPage({collection: app.navbar.notifications.collection, nodes: app.navbar.stats.nodes}));
         }
     });
 

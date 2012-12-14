@@ -6,15 +6,22 @@
 <div class="notifications-list">
   <ul class="message-list" role="menu">
     <% if (notifications.length) { %>
-      <% _.each(notifications.models.reverse(), function(notification, index) { %>
+      <% _.each(notifications.last(displayCount).reverse(), function(notification, index) { %>
         <% var topic = notification.get('topic') %>
-        <li <%= topic == 'discover' ? 'class="discover" data-node=""' : '' %> data-notificationid="<%= notification.get('id') %>"<%= notification.get('status') == 'unread' ? ' class="new"' : '' %>>
+        <li class="<%= notification.get('status') == 'unread' ? 'new' : '' %> <%= topic == 'discover' ? 'discover' : '' %>" data-node="<%- notification.get('node') %>">
           <i class="<%= topic == 'error' ? 'icon-attention-4' : topic == 'discover' ? 'icon-bell' : 'icon-info-circle-1' %>"></i>
           <%- notification.get('message') %>
         </li>
       <% }) %>
     <% } else { %>
-      <li>There are no notifications to display</li>
+      <div class="row row-fluid">
+        <div class="span4"></div>
+        <div class="span4">
+          <div class="progress progress-striped progress-success active">
+            <div class="bar" style="width: 100%"></div>
+          </div>
+        </div>
+      </div>
     <% } %>
   </ul>
 </div>

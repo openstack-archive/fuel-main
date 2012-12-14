@@ -1,10 +1,37 @@
-<div class="modal-header">
-  <button type="button" class="close" data-dismiss="modal">×</button>
-  <h3>Node <%- node.get('name') %> detailed info</h3>
-</div>
 <div class="modal-body">
-  <%- node.get('mac') %>
+  <div class="row-fluid">
+    <div class="span5"><div class="node-image-outline"></div></div>
+    <div class="span7">
+      <h4><%- node.get('name') %></h4>
+      <div><strong>Manufacturer: </strong><%- node.get('manufacturer') %></div>
+      <div><strong>MAC Address: </strong><%- node.get('mac') %></div>
+    </div>
+  </div>
+  <table class="table table-bordered table-condensed table-logs">
+    <thead><tr><th colspan="2">CPU</th></tr></thead>
+    <tbody>
+      <tr><td>Stepping</td><td>10</td></tr>
+      <tr><td>Vendor ID</td><td>Genuine Intel</td></tr>
+      <tr><td>Speed, Mhz</td><td>1641.062</td></tr>
+      <tr><td>Model Name</td><td>Intel(R) Core(TM)2 Duo CPU  P8600  @ 2.40GHz</td></tr>
+      <tr><td>Cache Size, KB</td><td>6144</td></tr>
+      <tr><td>Model</td><td>23</td></tr>
+      <tr><td>Family</td><td>6</td>
+      </tr>
+    </tbody>
+    <thead><tr><th colspan="2">Kernel</th></tr></thead>
+    <tbody>
+      <tr><td>Version</td><td>#27-Ubuntu SMP Fri Feb 24 15:37:36 UTC 2012</td></tr>
+      <tr><td>Stepping</td><td>10</td></tr>
+      <tr><td>Vendor ID</td><td>Genuine Intel</td></tr>
+      <tr><td>Speed, Mhz</td><td>1641.062</td></tr>
+      <tr><td>Model Name</td><td>Intel(R) Core(TM)2 Duo CPU  P8600  @ 2.40GHz</td></tr>
+      <tr><td>Cache Size, KB</td><td>6144</td></tr>
+      <tr><td>Model</td><td>23</td></tr>
+      <tr><td>Family</td><td>6</td></tr>
+    </tbody>
+  </table>
 </div>
 <div class="modal-footer">
-  <button class="btn" data-dismiss="modal">Ok</button>
+  <button class="btn" data-dismiss="modal">Close</button>
 </div>
