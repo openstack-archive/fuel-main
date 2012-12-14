@@ -1,4 +1,4 @@
-class nailytest::test_controller {
+class osnailyfacter::test_controller {
     file { "/tmp/controller-file":
       content => "Hello world! $role is installed",
     }
