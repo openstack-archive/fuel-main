@@ -12,6 +12,8 @@ module Astute
     def deploy(nodes, attrs, prev_progress)
       # TODO(mihgen): return exception message back to nailgun; check if deployment_mode attr is present
       begin
+        # FIXME(mihgen): hardcode simple_compute for now
+        attrs['deployment_mode'] ||= 'simple_compute'
         Astute.logger.info "Deployment mode #{attrs['deployment_mode']}, using #{self.class} for deployment."
         result = self.send("deploy_#{attrs['deployment_mode']}", nodes, attrs, prev_progress)
       rescue Exception => e
