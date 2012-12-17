@@ -255,7 +255,7 @@ class NailgunReceiver(object):
                     horizon_ip = public_net[0]['ip'].split('/')[0]
                     message = "Deployment of installation '{0}' is done. \
                     Access WebUI of OpenStack at http://{1}/ or via \
-                    internal network at {2}".format(
+                    internal network at http://{2}/".format(
                         task.cluster.name,
                         horizon_ip,
                         controller.ip

@@ -99,6 +99,7 @@
             "fqdn": "",
             "cluster": 1,
             "mac": "C0:8D:DF:52:76:F1",
+            "ip": "10.0.12.45",
             "meta": {
                 "block_device": {
                     "ram0": {
@@ -238,7 +239,7 @@
             "manufacturer": "HP",
             "platform_name": "Model-2",
             "role": "compute",
-            "ip": "",
+            "ip": "10.0.12.47",
             "fqdn": "",
             "cluster": 1,
             "mac": "46:FC:5A:0C:F9:51"
@@ -253,7 +254,7 @@
             "manufacturer": "OpenVZ",
             "platform_name": "Model-3",
             "role": "storage",
-            "ip": "",
+            "ip": "10.0.12.49",
             "fqdn": "",
             "cluster": 1,
             "mac": "2E:04:78:86:69:1F",
@@ -269,7 +270,7 @@
             "manufacturer": "Xen",
             "platform_name": "",
             "role": "compute",
-            "ip": "",
+            "ip": "10.0.12.41",
             "fqdn": "",
             "cluster": 1,
             "mac": "BC:10:A1:44:94:A0"
@@ -284,7 +285,7 @@
             "manufacturer": "VMWare",
             "platform_name": "",
             "role": "compute",
-            "ip": "",
+            "ip": "10.0.12.43",
             "fqdn": "",
             "cluster": 1,
             "mac": "B6:17:54:39:27:EA"
@@ -299,7 +300,7 @@
             "manufacturer": "Cisco",
             "platform_name": "",
             "role": null,
-            "ip": "",
+            "ip": "10.0.12.50",
             "fqdn": "",
             "cluster": null,
             "mac": "47:33:22:46:9B:92"
@@ -314,7 +315,7 @@
             "manufacturer": "QEMU",
             "platform_name": "",
             "role": null,
-            "ip": "",
+            "ip": "10.0.12.52",
             "fqdn": "",
             "cluster": null,
             "mac": "84:67:BA:CA:69:95"
@@ -329,7 +330,7 @@
             "manufacturer": "VBOX",
             "platform_name": "",
             "role": null,
-            "ip": "",
+            "ip": "10.0.12.53",
             "fqdn": "",
             "cluster": null,
             "mac": "3A:10:EC:04:9A:DE"
@@ -344,7 +345,7 @@
             "manufacturer": "Supermicro",
             "platform_name": "",
             "role": null,
-            "ip": "",
+            "ip": "10.0.12.55",
             "fqdn": "",
             "cluster": null,
             "mac": "4B:19:FF:55:6D:01"
