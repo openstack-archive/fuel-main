@@ -57,6 +57,9 @@ module MCollective
 
         # It should be empty hash, if 'resources' key is not defined, because otherwise merge will fail with TypeError
         summary["resources"] ||= {}
+        # Astute relies on last_run, so we must set last_run
+        summary["time"] ||= {}
+        summary["time"]["last_run"] ||= 0
         # if 'failed' is not provided, it means something is wrong. So default value is 1.
         reply[:resources] = {"failed"=>1, "changed"=>0, "total"=>0, "restarted"=>0, "out_of_sync"=>0}.merge(summary["resources"])
 
