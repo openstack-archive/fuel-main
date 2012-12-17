@@ -460,6 +460,7 @@ h6.page-title {
 .msg-error {color: #8b0000;}
 .msg-warning {color: #b44200;}
 .msg-unimportant {color: #888888;}
+.msg-provisioned {color: #0088cc;}
 
 
 .assigned {

@@ -30,6 +30,10 @@
           <div class="progress progress-striped active">
             <div class="bar"><p>Installing OS</p></div>
           </div>
+        <% } else if (status == 'provisioned') { %>
+          <div class="msg-provisioned">
+            <i class="icon-ok"></i>OS is installed
+          </div>
         <% } else if (status == 'deploying') { %>
           <div class="progress progress-success progress-striped active">
             <div class="bar"><p>Installing OpenStack</p></div>
