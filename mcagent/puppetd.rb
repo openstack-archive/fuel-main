@@ -48,7 +48,12 @@ module MCollective
 
       private
       def last_run_summary
-        summary = YAML.load_file(@last_summary)
+        # wrap into begin..rescue: fixes PRD-252
+        begin
+          summary = YAML.load_file(@last_summary)
+        rescue
+          summary = {}
+        end
 
         # It should be empty hash, if 'resources' key is not defined, because otherwise merge will fail with TypeError
         summary["resources"] ||= {}
