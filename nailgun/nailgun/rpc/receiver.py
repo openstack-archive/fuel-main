@@ -242,7 +242,7 @@ class NailgunReceiver(object):
         elif status in ('ready',):
             # determining horizon url - it's ip of controller
             # from a public network - works only for simple deployment
-            controller = cls.db.query(Node).filter(
+            controller = cls.db().query(Node).filter(
                 Node.cluster_id == task.cluster_id and
                 Node.role == 'controller'
             ).first()
@@ -257,6 +257,7 @@ class NailgunReceiver(object):
                     Access WebUI of OpenStack at http://{1}/ or via \
                     internal network at {2}".format(
                         task.cluster.name,
+                        horizon_ip,
                         controller.ip
                     )
                 else:

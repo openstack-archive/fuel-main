@@ -31,9 +31,7 @@ class TestTaskManagers(BaseHandlers):
         import threading
         for thread in threading.enumerate():
             if thread is not threading.currentThread():
-                print thread
                 thread.join(1)
-        raise
 
     @patch('nailgun.task.task.rpc.cast', nailgun.task.task.fake_cast)
     @patch('nailgun.task.task.settings.FAKE_TASKS', True)

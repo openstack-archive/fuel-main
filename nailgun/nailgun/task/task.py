@@ -305,7 +305,7 @@ class DeletionTask(object):
             }
         }
         # only fake tasks
-        if settings.FAKE_TASKS and int(settings.FAKE_TASKS) and nodes_to_restore:
+        if settings.FAKE_TASKS and nodes_to_restore:
             msg_delete['args']['nodes_to_restore'] = nodes_to_restore
         # /only fake tasks
         logger.debug("Calling rpc remove_nodes method")
