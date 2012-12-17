@@ -231,15 +231,19 @@ class NailgunReceiver(object):
                         controller.ip
                     )
                 else:
-                    message = "Deployment of installation '{0}' is done, \
-                    but horizon url could not be found".format(
+                    message = "Deployment of installation '{0}' \
+                        is done".format(
                         task.cluster.name
                     )
+                    logger.warning("Public ip for controller node \
+                        not found in '{0}'".format(task.cluster.name))
             else:
-                message = "Deployment of installation '{0}' is done, \
-                but controller node could not be found".format(
+                message = "Deployment of installation '{0}' is done".format(
                     task.cluster.name
                 )
+                logger.warning("Controller node not found in '{0}'".format(
+                    task.cluster.name
+                ))
             notifier.notify(
                 "done",
                 message,
