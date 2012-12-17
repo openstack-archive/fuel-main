@@ -44,7 +44,7 @@ module Naily
       time = 10 + time - Time::now.to_f
       sleep (time) if time > 0 # Wait while nodes going to reboot. Sleep not greater than 10 sec.
       begin
-        Timeout::timeout(20 * 60) do  # 20 min for booting target OS
+        Timeout::timeout(60 * 60) do  # 60 min for booting target OS
           while true
             time = Time::now.to_f
             types = @orchestrator.node_type(reporter, data['args']['task_uuid'], nodes, 5)

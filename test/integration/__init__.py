@@ -63,25 +63,16 @@ class Ci(object):
             node.boot = ['disk', 'cdrom']
             environment.nodes.append(node)
 
-            node2 = Node('slave1')
-            node2.memory = 1024
-            node2.vnc = True
-            node2.disks.append(
-                Disk(size=30 * 1024 ** 3)
-            )
-            node2.interfaces.append(Interface(network))
-            node2.boot = ['network']
-            environment.nodes.append(node2)
-
-            node3 = Node('slave2')
-            node3.memory = 1024
-            node3.vnc = True
-            node3.disks.append(
-                Disk(size=30 * 1024 ** 3)
-            )
-            node3.interfaces.append(Interface(network))
-            node3.boot = ['network']
-            environment.nodes.append(node3)
+            for n in range(5):
+                nodex = Node('slave%d' % (n + 1))
+                nodex.memory = 1024
+                nodex.vnc = True
+                nodex.disks.append(
+                    Disk(size=30 * 1024 ** 3)
+                )
+                nodex.interfaces.append(Interface(network))
+                nodex.boot = ['network']
+                environment.nodes.append(nodex)
 
             devops.build(environment)
             self.environment = environment

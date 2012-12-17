@@ -68,3 +68,17 @@ vim-enhanced
 wget
 xinetd
 yum
+openstack-cinder
+openstack-swift
+haproxy
+socat
+keepalived
+openssl098e
+xfsprogs
+openstack-swift-account
+openstack-swift-container
+openstack-swift-object
+postgresql-server
+puppetdb
+puppetdb-terminus
+openstack-swift-proxy

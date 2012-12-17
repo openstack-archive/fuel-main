@@ -20,11 +20,11 @@ $/%: /:=$/
 
 test: test-integration
 
-.PHONY: test-integration
-test-integration: $/environment-id-integration
+.PHONY: test-integration test-integration-env
+test-integration: test-integration-env
 	python test/integration_test.py -l $(LEVEL) --installation-timeout=$(INSTALLATION_TIMEOUT) --deployment-timeout=$(DEPLOYMENT_TIMEOUT) --iso $(abspath $(iso.path)) test $(NOSEARGS)
 
-$/environment-id-integration: | $(iso.path)
+test-integration-env: | $(iso.path)
 	@mkdir -p $(@D)
 	python test/integration_test.py -l $(LEVEL) destroy
 	python test/integration_test.py -l $(LEVEL) $(NOFORWARD_CLI_ARG) --iso $(abspath $(iso.path)) setup
