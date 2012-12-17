@@ -25,19 +25,15 @@ class TestTaskManagers(BaseHandlers):
 
     def setUp(self):
         super(TestTaskManagers, self).setUp()
-        settings.update({
-            'FAKE_TASKS': True
-        })
 
     def tearDown(self):
-        settings.update({
-            'FAKE_TASKS': False,
-        })
         # wait for fake task thread termination
         import threading
         for thread in threading.enumerate():
             if thread is not threading.currentThread():
+                print thread
                 thread.join(1)
+        raise
 
     @patch('nailgun.task.task.rpc.cast', nailgun.task.task.fake_cast)
     @patch('nailgun.task.task.settings.FAKE_TASKS', True)

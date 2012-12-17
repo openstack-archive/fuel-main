@@ -33,7 +33,8 @@ class FakeDeploymentThread(FakeThread):
         kwargs = {
             'task_uuid': self.task_uuid,
             'nodes': self.data['args']['nodes'],
-            'progress': 0
+            'progress': 0,
+            'status': 'running'
         }
 
         tick_count = int(settings.FAKE_TASKS_TICK_COUNT) or 10
@@ -59,6 +60,8 @@ class FakeDeploymentThread(FakeThread):
                         n['status'] = 'ready'
 
             kwargs['progress'] = 100 * i / tick_count
+            if kwargs['progress'] == 100:
+                kwargs['status'] = 'ready'
             resp_method = getattr(receiver, self.respond_to)
             resp_method(**kwargs)
             if i < tick_count:

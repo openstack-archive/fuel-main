@@ -31,10 +31,9 @@ def fake_cast(queue, message):
     )
     thread.start()
     thread.name = message['method'].upper()
-    thread.join()
 
 
-if settings.FAKE_TASKS:
+if settings.FAKE_TASKS and int(settings.FAKE_TASKS):
     rpc.cast = fake_cast
 
 
@@ -84,7 +83,7 @@ class DeploymentTask(object):
             cluster_id=task.cluster.id,
             pending_deletion=False)
 
-        if not settings.FAKE_TASKS:
+        if not settings.FAKE_TASKS or not int(settings.FAKE_TASKS):
             # only real tasks
             nodes_to_provision = []
             for node in nodes:
@@ -249,7 +248,7 @@ class DeletionTask(object):
                     'uid': node.id
                 })
 
-                if settings.FAKE_TASKS:
+                if settings.FAKE_TASKS and int(settings.FAKE_TASKS):
                     # only fake tasks
                     new_node = Node()
                     keep_attrs = (
@@ -281,7 +280,7 @@ class DeletionTask(object):
                                     (cores, ram))
                     # /only fake tasks
         # only real tasks
-        if not settings.FAKE_TASKS:
+        if not settings.FAKE_TASKS or not int(settings.FAKE_TASKS):
             if nodes_to_delete:
                 logger.debug("There are nodes to delete")
                 pd = Cobbler(
@@ -306,7 +305,7 @@ class DeletionTask(object):
             }
         }
         # only fake tasks
-        if settings.FAKE_TASKS and nodes_to_restore:
+        if settings.FAKE_TASKS and int(settings.FAKE_TASKS) and nodes_to_restore:
             msg_delete['args']['nodes_to_restore'] = nodes_to_restore
         # /only fake tasks
         logger.debug("Calling rpc remove_nodes method")
