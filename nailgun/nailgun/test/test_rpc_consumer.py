@@ -7,7 +7,6 @@ import eventlet
 eventlet.monkey_patch()
 
 import nailgun.rpc as rpc
-from nailgun.settings import settings
 from nailgun.rpc import receiver as rcvr
 from nailgun.test.base import BaseHandlers
 from nailgun.api.models import Node
