@@ -8,6 +8,7 @@ from itertools import dropwhile
 
 import web
 
+from nailgun.db import orm
 from nailgun.settings import settings
 from nailgun.api.models import Node
 from nailgun.api.handlers.base import JSONHandler
@@ -32,7 +33,7 @@ class LogEntryCollectionHandler(JSONHandler):
         if log_config['remote']:
             if not user_data.get('node'):
                 raise web.badrequest("'node' must be specified")
-            node = web.ctx.orm.query(Node).get(user_data.node)
+            node = orm().query(Node).get(user_data.node)
             if not node:
                 return web.notfound("Node not found")
             if not node.ip:

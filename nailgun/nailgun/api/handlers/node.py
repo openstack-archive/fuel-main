@@ -4,6 +4,7 @@ import json
 
 import web
 
+from nailgun.db import orm
 from nailgun.notifier import notifier
 from nailgun.logger import logger
 from nailgun.api.models import Node
@@ -18,7 +19,7 @@ class NodeHandler(JSONHandler):
 
     def GET(self, node_id):
         web.header('Content-Type', 'application/json')
-        node = web.ctx.orm.query(Node).get(node_id)
+        node = orm().query(Node).get(node_id)
         if not node:
             return web.notfound()
 
@@ -29,7 +30,7 @@ class NodeHandler(JSONHandler):
 
     def PUT(self, node_id):
         web.header('Content-Type', 'application/json')
-        node = web.ctx.orm.query(Node).get(node_id)
+        node = orm().query(Node).get(node_id)
         if not node:
             return web.notfound()
         # additional validation needed?
@@ -39,18 +40,18 @@ class NodeHandler(JSONHandler):
         # /additional validation needed?
         for key, value in data.iteritems():
             setattr(node, key, value)
-        web.ctx.orm.commit()
+        orm().commit()
         return json.dumps(
             self.render(node),
             indent=4
         )
 
     def DELETE(self, node_id):
-        node = web.ctx.orm.query(Node).get(node_id)
+        node = orm().query(Node).get(node_id)
         if not node:
             return web.notfound()
-        web.ctx.orm.delete(node)
-        web.ctx.orm.commit()
+        orm().delete(node)
+        orm().commit()
         raise web.webapi.HTTPError(
             status="204 No Content",
             data=""
@@ -63,13 +64,13 @@ class NodeCollectionHandler(JSONHandler):
         web.header('Content-Type', 'application/json')
         user_data = web.input(cluster_id=None)
         if user_data.cluster_id == '':
-            nodes = web.ctx.orm.query(Node).filter_by(
+            nodes = orm().query(Node).filter_by(
                 cluster_id=None).all()
         elif user_data.cluster_id:
-            nodes = web.ctx.orm.query(Node).filter_by(
+            nodes = orm().query(Node).filter_by(
                 cluster_id=user_data.cluster_id).all()
         else:
-            nodes = web.ctx.orm.query(Node).all()
+            nodes = orm().query(Node).all()
         return json.dumps(map(
             NodeHandler.render,
             nodes), indent=4)
@@ -80,8 +81,8 @@ class NodeCollectionHandler(JSONHandler):
         node = Node()
         for key, value in data.iteritems():
             setattr(node, key, value)
-        web.ctx.orm.add(node)
-        web.ctx.orm.commit()
+        orm().add(node)
+        orm().commit()
         ram = round(node.info.get('ram') or 0, 1)
         cores = node.info.get('cores') or 'unknown'
         notifier.notify("discover",
@@ -96,7 +97,7 @@ class NodeCollectionHandler(JSONHandler):
     def PUT(self):
         web.header('Content-Type', 'application/json')
         data = Node.validate_collection_update(web.data())
-        q = web.ctx.orm.query(Node)
+        q = orm().query(Node)
         nodes_updated = []
         for nd in data:
             if "mac" in nd:
@@ -106,8 +107,8 @@ class NodeCollectionHandler(JSONHandler):
             for key, value in nd.iteritems():
                 setattr(node, key, value)
             nodes_updated.append(node)
-            web.ctx.orm.add(node)
-        web.ctx.orm.commit()
+            orm().add(node)
+        orm().commit()
         return json.dumps(map(
             NodeHandler.render,
             nodes_updated), indent=4)

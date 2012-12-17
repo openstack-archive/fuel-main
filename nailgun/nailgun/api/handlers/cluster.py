@@ -8,6 +8,7 @@ import web
 import netaddr
 
 import nailgun.rpc as rpc
+from nailgun.db import orm
 from nailgun.settings import settings
 from nailgun.logger import logger
 from nailgun.api.models import Cluster
@@ -53,7 +54,7 @@ class ClusterHandler(JSONHandler):
 
     def GET(self, cluster_id):
         web.header('Content-Type', 'application/json')
-        q = web.ctx.orm.query(Cluster)
+        q = orm().query(Cluster)
         cluster = q.get(cluster_id)
         if not cluster:
             return web.notfound()
@@ -64,7 +65,7 @@ class ClusterHandler(JSONHandler):
 
     def PUT(self, cluster_id):
         web.header('Content-Type', 'application/json')
-        cluster = web.ctx.orm.query(Cluster).get(cluster_id)
+        cluster = orm().query(Cluster).get(cluster_id)
         if not cluster:
             return web.notfound()
         # additional validation needed?
@@ -73,14 +74,14 @@ class ClusterHandler(JSONHandler):
         for key, value in data.iteritems():
             if key == "nodes":
                 map(cluster.nodes.remove, cluster.nodes)
-                nodes = web.ctx.orm.query(Node).filter(
+                nodes = orm().query(Node).filter(
                     Node.id.in_(value)
                 )
                 map(cluster.nodes.append, nodes)
             else:
                 setattr(cluster, key, value)
-        web.ctx.orm.add(cluster)
-        web.ctx.orm.commit()
+        orm().add(cluster)
+        orm().commit()
         return json.dumps(
             self.render(cluster),
             indent=4
@@ -89,7 +90,7 @@ class ClusterHandler(JSONHandler):
     def DELETE(self, cluster_id):
         web.header('Content-Type', 'application/json')
 
-        cluster = web.ctx.orm.query(Cluster).get(cluster_id)
+        cluster = orm().query(Cluster).get(cluster_id)
         if not cluster:
             return web.notfound()
 
@@ -114,7 +115,7 @@ class ClusterCollectionHandler(JSONHandler):
         web.header('Content-Type', 'application/json')
         return json.dumps(map(
             ClusterHandler.render,
-            web.ctx.orm.query(Cluster).all()
+            orm().query(Cluster).all()
         ), indent=4)
 
     def POST(self):
@@ -122,11 +123,11 @@ class ClusterCollectionHandler(JSONHandler):
         data = Cluster.validate(web.data())
 
         cluster = Cluster()
-        cluster.release = web.ctx.orm.query(Release).get(data["release"])
+        cluster.release = orm().query(Release).get(data["release"])
 
         # TODO: discover how to add multiple objects
         if 'nodes' in data and data['nodes']:
-            nodes = web.ctx.orm.query(Node).filter(
+            nodes = orm().query(Node).filter(
                 Node.id.in_(data['nodes'])
             )
             map(cluster.nodes.append, nodes)
@@ -135,29 +136,29 @@ class ClusterCollectionHandler(JSONHandler):
         for field in ('name', 'type', 'mode'):
             setattr(cluster, field, data.get(field))
 
-        web.ctx.orm.add(cluster)
-        web.ctx.orm.commit()
+        orm().add(cluster)
+        orm().commit()
         attributes = Attributes(
             editable=cluster.release.attributes_metadata.get("editable"),
             generated=cluster.release.attributes_metadata.get("generated"),
             cluster=cluster
         )
-        web.ctx.orm.add(attributes)
-        web.ctx.orm.commit()
+        orm().add(attributes)
+        orm().commit()
         attributes.generate_fields()
-        web.ctx.orm.add(attributes)
-        web.ctx.orm.commit()
+        orm().add(attributes)
+        orm().commit()
 
-        used_nets = [n.cidr for n in web.ctx.orm.query(Network).all()]
-        used_vlans = [v.id for v in web.ctx.orm.query(Vlan).all()]
+        used_nets = [n.cidr for n in orm().query(Network).all()]
+        used_vlans = [v.id for v in orm().query(Vlan).all()]
 
         for network in cluster.release.networks_metadata:
             new_vlan = sorted(list(set(range(int(settings.VLANS_RANGE_START),
                                              int(settings.VLANS_RANGE_END))) -
                                    set(used_vlans)))[0]
             vlan_db = Vlan(id=new_vlan)
-            web.ctx.orm.add(vlan_db)
-            web.ctx.orm.commit()
+            orm().add(vlan_db)
+            orm().commit()
 
             pool = settings.NETWORK_POOLS[network['access']]
             nets_free_set = netaddr.IPSet(pool) -\
@@ -176,8 +177,8 @@ class ClusterCollectionHandler(JSONHandler):
                 cluster_id=cluster.id,
                 vlan_id=vlan_db.id
             )
-            web.ctx.orm.add(nw_db)
-            web.ctx.orm.commit()
+            orm().add(nw_db)
+            orm().commit()
 
             used_vlans.append(new_vlan)
             used_nets.append(str(new_net))
@@ -196,7 +197,7 @@ class ClusterChangesHandler(JSONHandler):
 
     def PUT(self, cluster_id):
         web.header('Content-Type', 'application/json')
-        cluster = web.ctx.orm.query(Cluster).get(cluster_id)
+        cluster = orm().query(Cluster).get(cluster_id)
         logger.debug('ClusterChangesHandler: PUT request with cluster_id %s' %
                      cluster_id)
         if not cluster:
@@ -231,7 +232,7 @@ class ClusterNetworksHandler(JSONHandler):
 
     def PUT(self, cluster_id):
         web.header('Content-Type', 'application/json')
-        cluster = web.ctx.orm.query(Cluster).get(cluster_id)
+        cluster = orm().query(Cluster).get(cluster_id)
         if not cluster:
             return web.notfound()
 
@@ -251,7 +252,7 @@ class ClusterAttributesHandler(JSONHandler):
 
     def GET(self, cluster_id):
         web.header('Content-Type', 'application/json')
-        cluster = web.ctx.orm.query(Cluster).get(cluster_id)
+        cluster = orm().query(Cluster).get(cluster_id)
         if not cluster:
             return web.notfound()
 
@@ -268,7 +269,7 @@ class ClusterAttributesHandler(JSONHandler):
 
     def PUT(self, cluster_id):
         web.header('Content-Type', 'application/json')
-        cluster = web.ctx.orm.query(Cluster).get(cluster_id)
+        cluster = orm().query(Cluster).get(cluster_id)
         if not cluster:
             return web.notfound()
 
@@ -281,8 +282,8 @@ class ClusterAttributesHandler(JSONHandler):
         for key, value in data.iteritems():
             setattr(attrs, key, value)
 
-        web.ctx.orm.add(attrs)
-        web.ctx.orm.commit()
+        orm().add(attrs)
+        orm().commit()
 
         return json.dumps(
             {
@@ -301,7 +302,7 @@ class ClusterAttributesDefaultsHandler(JSONHandler):
         logger.debug('ClusterAttributesDefaultsHandler:'
                      ' PUT request with cluster_id %s' % cluster_id)
         web.header('Content-Type', 'application/json')
-        cluster = web.ctx.orm.query(Cluster).get(cluster_id)
+        cluster = orm().query(Cluster).get(cluster_id)
         if not cluster:
             logger.warn('ClusterAttributesDefaultsHandler: there is'
                         ' no cluster with id %s in DB.' % cluster_id)
@@ -314,8 +315,8 @@ class ClusterAttributesDefaultsHandler(JSONHandler):
             raise web.internalerror("No attributes found!")
 
         attrs.editable = cluster.release.attributes_metadata.get("editable")
-        web.ctx.orm.add(attrs)
-        web.ctx.orm.commit()
+        orm().add(attrs)
+        orm().commit()
 
         logger.debug('ClusterAttributesDefaultsHandler:'
                      ' editable attributes for cluster_id %s were reset'

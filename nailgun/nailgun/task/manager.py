@@ -6,6 +6,7 @@ import itertools
 
 import web
 
+from nailgun.db import orm
 from nailgun.settings import settings
 from nailgun.api.models import Cluster
 from nailgun.api.models import Task
@@ -22,13 +23,13 @@ logger = logging.getLogger(__name__)
 class TaskManager(object):
 
     def __init__(self, cluster_id):
-        self.cluster = web.ctx.orm.query(Cluster).get(cluster_id)
+        self.cluster = orm().query(Cluster).get(cluster_id)
 
 
 class DeploymentTaskManager(TaskManager):
 
     def execute(self):
-        current_tasks = web.ctx.orm.query(Task).filter(
+        current_tasks = orm().query(Task).filter(
             Task.cluster == self.cluster,
             Task.name == "deploy"
         )
@@ -37,9 +38,9 @@ class DeploymentTaskManager(TaskManager):
                 raise DeploymentAlreadyStarted()
             elif task.status in ("ready", "error"):
                 for subtask in task.subtasks:
-                    web.ctx.orm.delete(subtask)
-                web.ctx.orm.delete(task)
-                web.ctx.orm.commit()
+                    orm().delete(subtask)
+                orm().delete(task)
+                orm().commit()
         nodes_to_delete = filter(lambda n: n.pending_deletion,
                                  self.cluster.nodes)
         nodes_to_deploy = filter(lambda n: n.pending_addition,
@@ -48,15 +49,15 @@ class DeploymentTaskManager(TaskManager):
             raise WrongNodeStatus("No changes to deploy")
 
         self.cluster.status = 'deployment'
-        web.ctx.orm.add(self.cluster)
-        web.ctx.orm.commit()
+        orm().add(self.cluster)
+        orm().commit()
 
         supertask = Task(
             name="deploy",
             cluster=self.cluster
         )
-        web.ctx.orm.add(supertask)
-        web.ctx.orm.commit()
+        orm().add(supertask)
+        orm().commit()
         if nodes_to_delete:
             supertask.create_subtask("node_deletion")
         if nodes_to_deploy:
@@ -76,8 +77,8 @@ class VerifyNetworksTaskManager(TaskManager):
             name="verify_networks",
             cluster=self.cluster
         )
-        web.ctx.orm.add(task)
-        web.ctx.orm.commit()
+        orm().add(task)
+        orm().commit()
         task.execute(tasks.VerifyNetworksTask)
         return task
 
@@ -85,30 +86,30 @@ class VerifyNetworksTaskManager(TaskManager):
 class ClusterDeletionManager(TaskManager):
 
     def execute(self):
-        current_cluster_tasks = web.ctx.orm.query(Task).filter(
+        current_cluster_tasks = orm().query(Task).filter(
             Task.cluster == self.cluster
         )
 
         logger.debug("Removing cluster tasks")
         for task in current_cluster_tasks:
             for subtask in task.subtasks:
-                web.ctx.orm.delete(subtask)
-            web.ctx.orm.delete(task)
-            web.ctx.orm.commit()
+                orm().delete(subtask)
+            orm().delete(task)
+            orm().commit()
 
         logger.debug("Labeling cluster nodes to delete")
         for node in self.cluster.nodes:
             node.pending_deletion = True
-            web.ctx.orm.add(node)
-            web.ctx.orm.commit()
+            orm().add(node)
+            orm().commit()
 
         self.cluster.status = 'remove'
-        web.ctx.orm.add(self.cluster)
-        web.ctx.orm.commit()
+        orm().add(self.cluster)
+        orm().commit()
 
         logger.debug("Creating nodes deletion task")
         task = Task(name="cluster_deletion", cluster=self.cluster)
-        web.ctx.orm.add(task)
-        web.ctx.orm.commit()
+        orm().add(task)
+        orm().commit()
         task.execute(tasks.ClusterDeletionTask)
         return task

@@ -4,6 +4,7 @@ import json
 
 import web
 
+from nailgun.db import orm
 from nailgun.api.models import Release
 from nailgun.api.handlers.base import JSONHandler
 
@@ -19,7 +20,7 @@ class ReleaseHandler(JSONHandler):
 
     def GET(self, release_id):
         web.header('Content-Type', 'application/json')
-        q = web.ctx.orm.query(Release)
+        q = orm().query(Release)
         release = q.get(release_id)
         if not release:
             return web.notfound()
@@ -30,7 +31,7 @@ class ReleaseHandler(JSONHandler):
 
     def PUT(self, release_id):
         web.header('Content-Type', 'application/json')
-        q = web.ctx.orm.query(Release)
+        q = orm().query(Release)
         release = q.get(release_id)
         if not release:
             return web.notfound()
@@ -39,18 +40,18 @@ class ReleaseHandler(JSONHandler):
         # /additional validation needed?
         for key, value in data.iteritems():
             setattr(release, key, value)
-        web.ctx.orm.commit()
+        orm().commit()
         return json.dumps(
             self.render(release),
             indent=4
         )
 
     def DELETE(self, release_id):
-        release = web.ctx.orm.query(Release).get(release_id)
+        release = orm().query(Release).get(release_id)
         if not release:
             return web.notfound()
-        web.ctx.orm.delete(release)
-        web.ctx.orm.commit()
+        orm().delete(release)
+        orm().commit()
         raise web.webapi.HTTPError(
             status="204 No Content",
             data=""
@@ -62,7 +63,7 @@ class ReleaseCollectionHandler(JSONHandler):
         web.header('Content-Type', 'application/json')
         return json.dumps(map(
             ReleaseHandler.render,
-            web.ctx.orm.query(Release).all()
+            orm().query(Release).all()
         ), indent=4)
 
     def POST(self):
@@ -71,8 +72,8 @@ class ReleaseCollectionHandler(JSONHandler):
         release = Release()
         for key, value in data.iteritems():
             setattr(release, key, value)
-        web.ctx.orm.add(release)
-        web.ctx.orm.commit()
+        orm().add(release)
+        orm().commit()
         raise web.webapi.created(json.dumps(
             ReleaseHandler.render(release),
             indent=4

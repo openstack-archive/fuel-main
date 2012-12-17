@@ -5,7 +5,7 @@ DEVELOPMENT: "1"
 FIXTURES_TO_UPLOAD:
   - "openstack_folsom.json"
 
-DATABASE_ENGINE: "sqlite:////var/tmp/nailgun.sqlite"
+DATABASE_ENGINE: "sqlite:////var/tmp/nailgun.sqlite?check_same_thread=False"
 STATIC_DIR: "/var/tmp/nailgun_static"
 TEMPLATE_DIR: "/var/tmp/nailgun_static"
 NETWORK_POOLS:

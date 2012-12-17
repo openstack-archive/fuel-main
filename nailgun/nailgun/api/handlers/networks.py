@@ -4,6 +4,7 @@ import json
 
 import web
 
+from nailgun.db import orm
 from nailgun.logger import logger
 from nailgun.api.models import Network
 from nailgun.api.handlers.base import JSONHandler
@@ -17,10 +18,10 @@ class NetworkCollectionHandler(JSONHandler):
         web.header('Content-Type', 'application/json')
         user_data = web.input(cluster_id=None)
         if user_data.cluster_id:
-            nets = web.ctx.orm.query(Network).filter(
+            nets = orm().query(Network).filter(
                 Network.cluster_id == user_data.cluster_id).all()
         else:
-            nets = web.ctx.orm.query(Network).all()
+            nets = orm().query(Network).all()
 
         if not nets:
             return web.notfound()
@@ -38,7 +39,7 @@ class NetworkCollectionHandler(JSONHandler):
 
         nets_to_render = []
         for network in new_nets:
-            network_db = web.ctx.orm.query(Network).get(network['id'])
+            network_db = orm().query(Network).get(network['id'])
             if not network_db:
                 raise web.badrequest(
                     message="Network with id=%s not found in DB" %
@@ -48,7 +49,7 @@ class NetworkCollectionHandler(JSONHandler):
                 setattr(network_db, key, value)
             nets_to_render.append(network_db)
 
-        web.ctx.orm.commit()
+        orm().commit()
         return json.dumps(
             [n.id for n in nets_to_render],
             indent=4

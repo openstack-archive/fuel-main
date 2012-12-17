@@ -4,23 +4,23 @@
 import web
 from sqlalchemy.orm import scoped_session, sessionmaker
 from sqlalchemy.orm.query import Query
+from sqlalchemy import create_engine
 
-from nailgun.api.models import engine
+from nailgun.settings import settings
 
-
-conn = None
+engine = create_engine(settings.DATABASE_ENGINE)
 
 
 def orm():
-    global conn
+    conn = web.utils.ThreadedDict()
     if hasattr(web.ctx, "orm"):
         return web.ctx.orm
     else:
-        if not conn:
-            conn = scoped_session(
+        if not hasattr(conn, "orm") or not conn.orm:
+            conn.orm = scoped_session(
                 sessionmaker(bind=engine, query_cls=Query)
             )
-        return conn
+        return conn.orm
 
 
 class Query(Query):

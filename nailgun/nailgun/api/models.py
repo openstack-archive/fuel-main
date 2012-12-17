@@ -14,6 +14,7 @@ from sqlalchemy import create_engine
 from sqlalchemy.orm import relationship, backref
 from sqlalchemy.ext.declarative import declarative_base
 
+from nailgun.db import orm
 from nailgun.api.fields import JSON
 from nailgun.settings import settings
 from nailgun.api.validators import BasicValidator
@@ -47,7 +48,7 @@ class Release(Base, BasicValidator):
             raise web.webapi.badrequest(
                 message="No release version specified"
             )
-        if web.ctx.orm.query(Release).filter(
+        if orm().query(Release).filter(
                 Release.name == d["name"]
                 and Release.version == d["version"]).first():
             raise web.webapi.conflict
@@ -96,12 +97,12 @@ class Cluster(Base, BasicValidator):
     @classmethod
     def validate(cls, data):
         d = cls.validate_json(data)
-        if web.ctx.orm.query(Cluster).filter(
+        if orm().query(Cluster).filter(
             Cluster.name == d["name"]
         ).first():
             raise web.webapi.conflict
         if d.get("release"):
-            release = web.ctx.orm.query(Release).get(d.get("release"))
+            release = orm().query(Release).get(d.get("release"))
             if not release:
                 raise web.webapi.badrequest(message="Invalid release id")
         return d
@@ -187,7 +188,7 @@ class Node(Base, BasicValidator):
                 message="No mac address specified"
             )
         else:
-            q = web.ctx.orm.query(Node)
+            q = orm().query(Node)
             if q.filter(Node.mac == d["mac"]).first():
                 raise web.webapi.conflict()
         if "id" in d:
@@ -217,7 +218,7 @@ class Node(Base, BasicValidator):
                 "Invalid json list"
             )
 
-        q = web.ctx.orm.query(Node)
+        q = orm().query(Node)
         for nd in d:
             if not "mac" in nd and not "id" in nd:
                 raise web.badrequest(
@@ -304,8 +305,8 @@ class Attributes(Base, BasicValidator):
             return new_dict
         self.generated = traverse(self.generated)
 
-        web.ctx.orm.add(self)
-        web.ctx.orm.commit()
+        orm().add(self)
+        orm().commit()
 
     def _generate_pwd(self, length=8):
         chars = string.letters + string.digits
@@ -381,7 +382,7 @@ class Task(Base, BasicValidator):
         task = Task(name=name, cluster=self.cluster)
 
         self.subtasks.append(task)
-        web.ctx.orm.commit()
+        orm().commit()
         return task
 
 
@@ -429,7 +430,7 @@ class Notification(Base, BasicValidator):
                 "Invalid json list"
             )
 
-        q = web.ctx.orm.query(Notification)
+        q = orm().query(Notification)
 
         valid_d = []
         for nd in d:

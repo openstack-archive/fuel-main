@@ -5,7 +5,7 @@ import threading
 
 from sqlalchemy.orm import object_mapper, ColumnProperty, \
     scoped_session, sessionmaker
-from nailgun.db import Query
+from nailgun.db import Query, orm
 from nailgun.api.models import engine
 from nailgun.settings import settings
 from nailgun.notifier import notifier
@@ -20,15 +20,15 @@ class DeploymentTask(object):
     @classmethod
     def execute(cls, task):
         task_uuid = task.uuid
-        nodes = web.ctx.orm.query(Node).filter_by(
+        nodes = orm().query(Node).filter_by(
             cluster_id=task.cluster.id,
             pending_deletion=False)
 
         nodes_with_attrs = []
         for n in nodes:
             n.pending_addition = False
-            web.ctx.orm.add(n)
-            web.ctx.orm.commit()
+            orm().add(n)
+            orm().commit()
             nodes_with_attrs.append({
                 'id': n.id, 'status': n.status, 'error_type': n.error_type,
                 'uid': n.id, 'ip': n.ip, 'mac': n.mac, 'role': n.role,
@@ -140,7 +140,7 @@ class VerifyNetworksTask(object):
     @classmethod
     def execute(self, task):
         task_uuid = task.uuid
-        nets_db = web.ctx.orm.query(Network).filter_by(
+        nets_db = orm().query(Network).filter_by(
             cluster_id=task.cluster.id).all()
         vlans_db = [net.vlan_id for net in nets_db]
         iface_db = [{'iface': 'eth0', 'vlans': vlans_db}]

@@ -4,6 +4,7 @@ import json
 
 import web
 
+from nailgun.db import orm
 from nailgun.api.models import Task
 from nailgun.api.handlers.base import JSONHandler
 
@@ -22,7 +23,7 @@ class TaskHandler(JSONHandler):
 
     def GET(self, task_id):
         web.header('Content-Type', 'application/json')
-        q = web.ctx.orm.query(Task)
+        q = orm().query(Task)
         task = q.get(task_id)
         if not task:
             return web.notfound()
@@ -32,16 +33,16 @@ class TaskHandler(JSONHandler):
         )
 
     def DELETE(self, task_id):
-        q = web.ctx.orm.query(Task)
+        q = orm().query(Task)
         task = q.get(task_id)
         if not task:
             return web.notfound()
         if task.status not in ("ready", "error"):
             raise web.badrequest("You cannot delete running task manually")
         for subtask in task.subtasks:
-            web.ctx.orm.delete(subtask)
-        web.ctx.orm.delete(task)
-        web.ctx.orm.commit()
+            orm().delete(subtask)
+        orm().delete(task)
+        orm().commit()
         raise web.webapi.HTTPError(
             status="204 No Content",
             data=""
@@ -54,10 +55,10 @@ class TaskCollectionHandler(JSONHandler):
         web.header('Content-Type', 'application/json')
         user_data = web.input(cluster_id=None)
         if user_data.cluster_id:
-            tasks = web.ctx.orm.query(Task).filter_by(
+            tasks = orm().query(Task).filter_by(
                 cluster_id=user_data.cluster_id).all()
         else:
-            tasks = web.ctx.orm.query(Task).all()
+            tasks = orm().query(Task).all()
         return json.dumps(map(
             TaskHandler.render,
             tasks), indent=4)

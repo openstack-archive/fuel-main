@@ -8,6 +8,7 @@ import traceback
 import web
 
 import nailgun.rpc as rpc
+from nailgun.db import orm
 from nailgun.settings import settings
 from nailgun.network import manager as netmanager
 from nailgun.api.models import Base, Network, Node
@@ -61,7 +62,7 @@ class DeploymentTask(object):
 
     @classmethod
     def execute(cls, task):
-        nodes = web.ctx.orm.query(Node).filter_by(
+        nodes = orm().query(Node).filter_by(
             cluster_id=task.cluster.id,
             pending_deletion=False)
 
@@ -84,8 +85,8 @@ class DeploymentTask(object):
                          error, traceback.format_exc())
             task.status = "error"
             task.message = error
-            web.ctx.orm.add(task)
-            web.ctx.orm.commit()
+            orm().add(task)
+            orm().commit()
             raise FailedProvisioning(error)
 
         nodes_ids = [n.id for n in nodes]
@@ -96,8 +97,8 @@ class DeploymentTask(object):
         for n in nodes:
             n.pending_addition = False
             n.progress = None
-            web.ctx.orm.add(n)
-            web.ctx.orm.commit()
+            orm().add(n)
+            orm().commit()
             nodes_with_attrs.append({
                 'id': n.id, 'status': n.status, 'uid': n.id,
                 'ip': n.ip, 'mac': n.mac, 'role': n.role,
@@ -105,7 +106,7 @@ class DeploymentTask(object):
             })
 
         cluster_attrs = task.cluster.attributes.merged_attrs()
-        nets_db = web.ctx.orm.query(Network).filter_by(
+        nets_db = orm().query(Network).filter_by(
             cluster_id=task.cluster.id).all()
 
         for net in nets_db:
@@ -154,8 +155,8 @@ class DeploymentTask(object):
             nd_dict['power_address'] = node.ip
 
             node.status = "provisioning"
-            web.ctx.orm.add(node)
-            web.ctx.orm.commit()
+            orm().add(node)
+            orm().commit()
 
             nd_name = TaskHelper.slave_name_by_id(node.id)
 
@@ -262,7 +263,7 @@ class VerifyNetworksTask(object):
 
     @classmethod
     def execute(self, task):
-        nets_db = web.ctx.orm.query(Network).filter_by(
+        nets_db = orm().query(Network).filter_by(
             cluster_id=task.cluster.id).all()
         networks = [{
             'id': n.id, 'vlan_id': n.vlan_id, 'cidr': n.cidr}
