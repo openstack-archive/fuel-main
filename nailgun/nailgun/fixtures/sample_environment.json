@@ -326,7 +326,7 @@
         "fields": {
             "status": "discover",
             "name": "node virtualbox",
-            "manufacturer": "virtualbox",
+            "manufacturer": "VBOX",
             "platform_name": "",
             "role": null,
             "ip": "",
