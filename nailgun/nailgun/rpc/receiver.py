@@ -225,8 +225,11 @@ class NailgunReceiver(object):
                 if public_net:
                     horizon_ip = public_net[0]['ip'].split('/')[0]
                     message = "Deployment of installation '{0}' is done. \
-                    Access WebUI of OpenStack at http://{1}/ will \
-                    be the address".format(task.cluster.name, horizon_ip)
+                    Access WebUI of OpenStack at http://{1}/ or via \
+                    internal network at {2}".format(
+                        task.cluster.name,
+                        controller.ip
+                    )
                 else:
                     message = "Deployment of installation '{0}' is done, \
                     but horizon url could not be found".format(
