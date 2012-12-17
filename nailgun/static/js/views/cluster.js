@@ -176,7 +176,7 @@ function(models, commonViews, dialogViews, clusterPageTemplate, deploymentResult
             }
         },
         render: function() {
-            this.$('.progress').tooltip('destroy');
+            $('.tooltip').remove();
             this.$el.html(this.template({cluster: this.model}));
             this.updateProgress();
             return this;
