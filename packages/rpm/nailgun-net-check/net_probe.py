@@ -111,10 +111,10 @@ def send_probe_frame(**props):
     for vlan in props['vlan']:
         if vlan > 0:
             iface = '%s.%d' % (props['iface'], vlan)
-            iface_already_exist = not call('ifconfig %s' % iface, shell=True)
+            iface_already_exist = not call('/sbin/ifconfig %s' % iface, shell=True)
             if not iface_already_exist:
-                call(('vconfig', 'add', props['iface'], str(vlan)))
-                call(('ifconfig', iface, 'up'))
+                call(('/sbin/vconfig', 'add', props['iface'], str(vlan)))
+                call(('/sbin/ifconfig', iface, 'up'))
         else:
             iface = props['iface']
         p = scapy.Ether(src=props['src_mac'], dst="ff:ff:ff:ff:ff:ff")
@@ -126,8 +126,8 @@ def send_probe_frame(**props):
         except socket.error, e:
             print e, iface
         if vlan > 0 and not iface_already_exist:
-            call(('ifconfig', iface, 'down'))
-            call(('vconfig', 'rem', iface))
+            call(('/sbin/ifconfig', iface, 'down'))
+            call(('/sbin/vconfig', 'rem', iface))
 
 
 
