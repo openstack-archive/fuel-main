@@ -28,11 +28,11 @@
           </div>
         <% } else if (status == 'provisioning') { %>
           <div class="progress progress-striped active">
-            <div class="bar"><p>Provisioning</p></div>
+            <div class="bar"><p>Installing OS</p></div>
           </div>
         <% } else if (status == 'deploying') { %>
           <div class="progress progress-success progress-striped active">
-            <div class="bar"><p>Deploying</p></div>
+            <div class="bar"><p>Installing OpenStack</p></div>
           </div>
         <% } else if (status == 'error') { %>
           <div class="msg-error">

@@ -994,6 +994,10 @@ h6.page-title {
   border-radius: 3px;
 }
 
+.progress > .bar > p {
+  white-space: pre;
+}
+
 .progress-deploy-clusters-page {
   padding: 2px 10px;
   background: none;
