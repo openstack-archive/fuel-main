@@ -35,68 +35,65 @@ function(models, dialogViews, navbarTemplate, nodesStatsTemplate, notificationsT
     views.Navbar = Backbone.View.extend({
         className: 'container',
         template: _.template(navbarTemplate),
+        updateInterval: 20000,
         setActive: function(element) {
             this.$('.nav > li.active').removeClass('active');
             this.$('a[href="#' + element + '"]').parent().addClass('active');
         },
+        scheduleUpdate: function() {
+            _.delay(_.bind(this.update, this), this.updateInterval);
+        },
+        update: function() {
+            var complete = _.after(2, _.bind(this.scheduleUpdate, this));
+            this.nodes.fetch({complete: complete});
+            this.notifications.fetch({complete: complete});
+        },
         initialize: function(options) {
             this.elements = _.isArray(options.elements) ? options.elements : [];
+            var complete = _.after(2, _.bind(this.scheduleUpdate, this));
+            this.nodes = new models.Nodes();
+            this.nodes.fetch({complete: complete});
+            this.nodes.bind('reset', this.render, this);
+            this.notifications = new models.Notifications();
+            this.notifications.fetch({complete: complete});
+            this.notifications.bind('reset', this.render, this);
         },
         render: function() {
             this.$el.html(this.template({elements: this.elements}));
-            this.stats = new views.NodesStats();
+            this.stats = new views.NodesStats({nodes: this.nodes});
             this.registerSubView(this.stats);
             this.$('.nodes-summary-container').html(this.stats.render().el);
-            this.notifications = new views.Notifications();
-            this.registerSubView(this.notifications);
-            this.$('.notifications').html(this.notifications.render().el);
+            this.notificationsBar = new views.Notifications({notifications: this.notifications});
+            this.registerSubView(this.notificationsBar);
+            this.$('.notifications').html(this.notificationsBar.render().el);
             return this;
         }
     });
 
     views.NodesStats = Backbone.View.extend({
-        updateInterval: 30000,
         template: _.template(nodesStatsTemplate),
         stats: {},
-        scheduleUpdate: function() {
-            _.delay(_.bind(this.update, this), this.updateInterval);
-        },
-        update: function() {
-            this.nodes.fetch({complete: _.bind(this.scheduleUpdate, this)});
-        },
-        updateStats: function() {
-            var roles = ['controller', 'compute', 'storage'];
-            if (this.nodes.deferred.state() != 'pending') {
-                _.each(roles, function(role) {
-                    this.stats[role] = this.nodes.where({role: role}).length;
-                }, this);
-                this.stats.total = this.nodes.length;
-                this.stats.unallocated = this.stats.total - this.stats.controller - this.stats.compute - this.stats.storage;
-                this.render();
-            }
-        },
         initialize: function(options) {
-            this.nodes = new models.Nodes();
-            this.nodes.deferred = this.nodes.fetch();
-            this.nodes.deferred.done(_.bind(this.scheduleUpdate, this));
-            this.nodes.bind('reset', this.updateStats, this);
+            _.defaults(this, options);
         },
         render: function() {
+            var roles = ['controller', 'compute', 'storage'];
+            _.each(roles, function(role) {
+                this.stats[role] = this.nodes.where({role: role}).length;
+            }, this);
+            this.stats.total = this.nodes.length;
+            this.stats.unallocated = this.stats.total - this.stats.controller - this.stats.compute - this.stats.storage;
             this.$el.html(this.template({stats: this.stats}));
             return this;
         }
     });
 
     views.Notifications = Backbone.View.extend({
-        updateInterval: 20000,
         template: _.template(notificationsTemplate),
         popoverTemplate: _.template(notificationsPopoverTemplate),
         popoverVisible: false,
         events: {
             'click': 'togglePopover'
-        },
-        getUnreadNotifications: function() {
-            return this.collection.where({status : 'unread'});
         },
         hidePopover: function(e) {
             if (this.popoverVisible && (!$(e.target).closest($('.message-list-placeholder')).length || $(e.target).parent().hasClass('show-more-notifications'))) {
@@ -112,34 +109,22 @@ function(models, dialogViews, navbarTemplate, nodesStatsTemplate, notificationsT
                     this.hidePopover(e);
                 }, this)));
                 this.popoverVisible = true;
-                $('.navigation-bar').after(this.popoverTemplate({notifications: this.collection, displayCount: 5}));
-                _.each(this.getUnreadNotifications(), function(notification) {
+                $('.navigation-bar').after(this.popoverTemplate({notifications: this.notifications, displayCount: 5}));
+                _.each(this.notifications.where({status : 'unread'}), function(notification) {
                     notification.set({'status': 'read'});
                 });
-                Backbone.sync('update', this.collection).done(_.bind(this.render, this));
+                Backbone.sync('update', this.notifications).done(_.bind(this.render, this));
             }
-        },
-        scheduleUpdate: function() {
-            if (this.getUnreadNotifications().length) {
-                this.render();
-            }
-            _.delay(_.bind(this.update, this), this.updateInterval);
-        },
-        update: function() {
-            this.collection.fetch({complete: _.bind(this.scheduleUpdate, this)});
         },
         beforeTearDown: function() {
             $('html').off(this.eventNamespace);
         },
-        initialize: function() {
+        initialize: function(options) {
+            _.defaults(this, options);
             this.eventNamespace = 'click.click-notifications';
-            this.collection = new models.Notifications();
-            this.collection.deferred = this.collection.fetch();
-            this.collection.deferred.done(_.bind(this.scheduleUpdate, this));
-            this.collection.bind('reset', this.render, this);
         },
         render: function() {
-            this.$el.html(this.template({notifications: this.collection}));
+            this.$el.html(this.template({notifications: this.notifications}));
             return this;
         }
     });

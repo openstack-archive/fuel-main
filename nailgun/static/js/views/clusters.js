@@ -73,7 +73,7 @@ function(models, commonViews, dialogViews, clustersPageTemplate, clusterTemplate
                         if (response.status == 404) {
                             this.model.collection.remove(this.model);
                             app.navbar.stats.nodes.fetch();
-                            app.navbar.notifications.collection.fetch();
+                            app.navbar.notifications.fetch();
                         }
                     }, this));
             } else if (deploymentTask) {
@@ -82,7 +82,9 @@ function(models, commonViews, dialogViews, clustersPageTemplate, clusterTemplate
                         this.updateProgress();
                         this.scheduleUpdate();
                     } else {
-                       this.model.fetch();
+                        this.model.fetch();
+                        app.navbar.stats.nodes.fetch();
+                        app.navbar.notifications.fetch();
                     }
                 }, this));
             }

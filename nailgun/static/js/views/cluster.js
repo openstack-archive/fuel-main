@@ -84,7 +84,8 @@ function(models, commonViews, dialogViews, clusterPageTemplate, deploymentResult
         refreshNotificationsAfterDeployment: function() {
             var task = this.model.task('deploy');
             if (task.get('status') != 'running') {
-                app.navbar.notifications.collection.fetch();
+                app.navbar.stats.nodes.fetch();
+                app.navbar.notifications.fetch();
             }
         },
         beforeTearDown: function() {
