@@ -77,7 +77,7 @@
                 "rabbit": {
                     "user": "nova"
                 },
-                "auto_assign_floating_ip": "false"
+                "auto_assign_floating_ip": false
             },
             "generated": {
                 "mysql": {
