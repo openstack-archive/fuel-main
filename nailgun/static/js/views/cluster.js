@@ -79,6 +79,11 @@ function(models, commonViews, dialogViews, clusterPageTemplate, deploymentResult
             var task = this.model.task('deploy');
             if (task.get('status') != 'running') {
                 this.model.get('tasks').fetch({data: {cluster_id: this.model.id}});
+                var verificationTask = this.model.task('verify_networks');
+                if (verificationTask && verificationTask.get('status') != 'running') {
+                    this.model.get('tasks').remove(verificationTask);
+                    verificationTask.destroy();
+                }
             }
         },
         refreshNotificationsAfterDeployment: function() {
@@ -361,6 +366,11 @@ function(models, commonViews, dialogViews, clusterPageTemplate, deploymentResult
                 this.tab.changeScreen(views.NodesByRolesScreen);
                 this.model.get('nodes').fetch({data: {cluster_id: this.model.id}});
                 app.navbar.stats.nodes.fetch();
+                var task = this.model.task('verify_networks');
+                if (task && task.get('status') != 'running') {
+                    this.model.get('tasks').remove(task);
+                    task.destroy();
+                }
             }, this));
         },
         getChosenNodesIds: function() {
@@ -599,6 +609,11 @@ function(models, commonViews, dialogViews, clusterPageTemplate, deploymentResult
         },
         enableApplyButton: function() {
             this.$('.apply-btn').attr('disabled', false);
+            var task = this.model.task('verify_networks');
+            if (task && task.get('status') != 'running') {
+                this.model.get('tasks').remove(task);
+                task.destroy({complete: _.bind(this.renderVerificationControls, this)});
+            }
         },
         apply: function() {
             var valid = true;
@@ -675,8 +690,7 @@ function(models, commonViews, dialogViews, clusterPageTemplate, deploymentResult
         updateInterval: 3000,
         template: _.template(networkTabVerificationTemplate),
         events: {
-            'click .verify-networks-btn:not([disabled])': 'verifyNetworks',
-            'click .verification-result-btn': 'dismissVerificationResult'
+            'click .verify-networks-btn:not([disabled])': 'verifyNetworks'
         },
         scheduleUpdate: function() {
             if (this.model.task('verify_networks', 'running')) {
@@ -689,8 +703,7 @@ function(models, commonViews, dialogViews, clusterPageTemplate, deploymentResult
                 task.fetch({complete: _.bind(this.scheduleUpdate, this)});
             }
         },
-        verifyNetworks: function() {
-            this.$('.verify-networks-btn').attr('disabled', true);
+        startVerification: function() {
             var task = new models.Task();
             task.save({}, {
                 type: 'PUT',
@@ -700,10 +713,15 @@ function(models, commonViews, dialogViews, clusterPageTemplate, deploymentResult
                 }, this)
             });
         },
-        dismissVerificationResult: function() {
+        verifyNetworks: function() {
+            this.$('.verify-networks-btn').attr('disabled', true);
             var task = this.model.task('verify_networks');
-            this.model.get('tasks').remove(task);
-            task.destroy();
+            if (task) {
+                this.model.get('tasks').remove(task);
+                task.destroy({complete: _.bind(this.startVerification, this)});
+            } else {
+                this.startVerification();
+            }
         },
         updateProgress: function() {
             var task = this.model.task('verify_networks', 'running');

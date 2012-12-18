@@ -1,27 +1,21 @@
 <% if (networks.deferred.state() != 'pending') { %>
   <% var task = cluster.task('verify_networks') %>
-  <% if (task) { %>
-    <% if (task.get('status') == 'running') { %>
-      <div class="page-control-button-placeholder">
-        <div class="progress progress-success progress-verify-networks" rel="tooltip">
-          <div class="bar"></div>
-        </div>
+  <% if (task && task.get('status') == 'running') { %>
+    <div class="page-control-button-placeholder">
+      <div class="progress progress-success progress-verify-networks" rel="tooltip">
+        <div class="bar"></div>
       </div>
-    <% } else { %>
-      <% if (task.get('status') == 'ready') { %>
-        <div class="page-control-error-placeholder">
-          <div class="msg-ok"></i>Verification Succeeded</div>
-        </div>
-      <% } else if (task.get('status') == 'error') { %>
-        <div class="page-control-error-placeholder">
-          <%- task.get('message') || 'Verification Failed' %>
-        </div>
-      <% } %>
-      <div class="page-control-button-placeholder">
-        <button class="btn verification-result-btn">OK</button>
+    </div>
+  <% } else { %>
+    <% if (task && task.get('status') == 'ready') { %>
+      <div class="page-control-error-placeholder">
+        <div class="msg-ok"></i>Verification Succeeded</div>
+      </div>
+    <% } else if (task && task.get('status') == 'error') { %>
+      <div class="page-control-error-placeholder">
+         <%- task.get('message') || 'Verification Failed' %>
       </div>
     <% } %>
-  <% } else { %>
     <div class="page-control-button-placeholder">
       <button class="btn verify-networks-btn" <%= cluster.task('deploy', 'running') ? 'disabled' : '' %>>Verify Settings</button>
     </div>
