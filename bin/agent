@@ -126,10 +126,6 @@ class NodeAgent
     interfaces
   end
 
-  def _mac
-    @os[:macaddress]
-  end
-
   def _metadata
     {
       :block_device => @os["block_device"].to_hash,
@@ -155,6 +151,8 @@ class NodeAgent
       return @os["virtualization"]["system"].upcase
     else
       begin
+        # Check in other place for VBox: ohai doesn't show it's virtual with VBox 4.2.4
+        return "VBOX" if @os["dmi"]["system"]["product_name"] == "VirtualBox" rescue nil
         return @os[:dmi][:system][:manufacturer]
       rescue
         return "Unknown"
