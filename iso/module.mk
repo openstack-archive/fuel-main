@@ -18,7 +18,7 @@ $/isoroot-centos.done: \
 		$(ISOROOT)/.discinfo \
 		$(ISOROOT)/.treeinfo
 	mkdir -p $(ISOROOT)/Packages
-	find $(CENTOS_REPO_DIR)Packages -name '*.rpm' -exec cp -n {} $(ISOROOT)/Packages \;
+	find $(CENTOS_REPO_DIR)Packages -name '*.rpm' -exec cp -u {} $(ISOROOT)/Packages \;
 	createrepo -g `readlink -f "$(ISOROOT)/repodata/comps.xml"` -u media://`head -1 $(ISOROOT)/.discinfo` $(ISOROOT)
 	$(ACTION.TOUCH)
 
@@ -85,10 +85,11 @@ $/isoroot-gems.done: \
 	(cd $(ISOROOT)/gems && gem generate_index gems)
 	$(ACTION.TOUCH)
 
-$(ISOROOT)/puppet-nailgun.tgz:
+$(ISOROOT)/puppet-nailgun.tgz: $(addprefix puppet/,$(call find-files,puppet))
 	(cd puppet && tar czf $@ *)
 
-$(ISOROOT)/puppet-slave.tgz:
+$(ISOROOT)/puppet-slave.tgz: \
+		$(addprefix fuel/deployment/puppet/network/,$(call find-files,fuel/deployment/puppet/network))
 	@rm -rf fuel/deployment/puppet/network
 	(cd puppet && tar cf $(BUILD_DIR)/puppet-slave.tar puppet-network nailytest osnailyfacter)
 	(cd fuel/deployment/puppet && tar rf $(BUILD_DIR)/puppet-slave.tar ./*)

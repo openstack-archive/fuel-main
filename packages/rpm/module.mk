@@ -34,11 +34,7 @@ $/prep.done: $(LOCAL_MIRROR)/src.done \
 	     $(LOCAL_MIRROR)/repo.done \
 	     $(SANDBOX)/etc/yum.repos.d/mirror.repo
 	mkdir -p $(SRC_DIR)
-	cp -f packages/rpm/patches/* $(SRC_DIR)
 	cp -f $(LOCAL_MIRROR)/src/* $(SRC_DIR)
-	cp -f bin/agent bin/nailgun-agent.cron $(SRC_DIR)
-	mkdir -p $/SOURCES/nailgun-mcagents
-	cp -f mcagent/* $(SRC_DIR)nailgun-mcagents
 	find $(LOCAL_MIRROR) -name centos-release* | head | xargs sudo rpm -i --root=$(SANDBOX) || echo "chroot already prepared"
 	sudo rm -f $(SANDBOX)/etc/yum.repos.d/Cent*
 	$(SAND_RPM) --rebuilddb
@@ -53,15 +49,25 @@ $/rpm-rabbitmq-plugins.done: $/prep.done packages/rpm/specs/rabbitmq-plugins.spe
 	rpmbuild -vv --define "_topdir `readlink -f $/`" -ba packages/rpm/specs/rabbitmq-plugins.spec
 	$(ACTION.TOUCH)
 
-$/rpm-nailgun-agent.done: $/prep.done packages/rpm/specs/nailgun-agent.spec
+$/rpm-nailgun-agent.done: $/prep.done \
+	    packages/rpm/specs/nailgun-agent.spec \
+	    $(addprefix bin/,$(call find-files,bin))
+	cp -f bin/agent bin/nailgun-agent.cron $(SRC_DIR)
 	rpmbuild -vv --define "_topdir `readlink -f $/`" -ba packages/rpm/specs/nailgun-agent.spec
 	$(ACTION.TOUCH)
 
-$/rpm-nailgun-mcagents.done: $/prep.done packages/rpm/specs/nailgun-mcagents.spec
+$/rpm-nailgun-mcagents.done: $/prep.done \
+	    packages/rpm/specs/nailgun-mcagents.spec \
+	    $(addprefix mcagent/,$(call find-files,mcagent))
+	mkdir -p $/SOURCES/nailgun-mcagents
+	cp -f mcagent/* $(SRC_DIR)nailgun-mcagents
 	rpmbuild -vv --define "_topdir `readlink -f $/`" -ba packages/rpm/specs/nailgun-mcagents.spec
 	$(ACTION.TOUCH)
 
-$/rpm-nailgun-net-check.done: $/prep.done packages/rpm/specs/nailgun-net-check.spec
+$/rpm-nailgun-net-check.done: $/prep.done \
+	    packages/rpm/specs/nailgun-net-check.spec \
+	    packages/rpm/nailgun-net-check/net_probe.py
+	cp -f packages/rpm/patches/* $(SRC_DIR)
 	sudo mkdir -p $(SANDBOX)/tmp/SOURCES
 	sudo cp packages/rpm/nailgun-net-check/net_probe.py $(SANDBOX)/tmp/SOURCES
 	sudo cp packages/rpm/specs/nailgun-net-check.spec $(SANDBOX)/tmp
@@ -76,6 +82,6 @@ $(BUILD_DIR)/rpm/rpm.done: $/rpm-cirros.done \
 		$/rpm-nailgun-agent.done \
 		$/rpm-nailgun-mcagents.done \
 		$/rpm-nailgun-net-check.done
-	find $/RPMS -name '*.rpm' -exec cp -n {} $(CENTOS_REPO_DIR)/Packages \;
+	find $/RPMS -name '*.rpm' -exec cp -u {} $(CENTOS_REPO_DIR)/Packages \;
 	createrepo -g `readlink -f "$(CENTOS_REPO_DIR)repodata/comps.xml"` -o $(CENTOS_REPO_DIR)Packages $(CENTOS_REPO_DIR)Packages
 	$(ACTION.TOUCH)
