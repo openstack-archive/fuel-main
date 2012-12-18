@@ -11,7 +11,7 @@ all: bootstrap
 
 YUM_PACKAGES:=openssh-server wget cronie-noanacron crontabs ntp \
 bash net-tools dhclient rsyslog iputils openssh-clients vim-minimal\
-rubygems mcollective vconfig tcpdump scapy mingetty ntp nailgun-net-check
+rubygems mcollective vconfig tcpdump scapy mingetty ntp nailgun-net-check dmidecode
 
 YUM_BUILD_PACKAGES:=ruby-devel.x86_64 make gcc flex byacc
 
