@@ -5,10 +5,6 @@ all: iso
 
 ISOROOT:=$/isoroot
 
-RABBITMQ_VERSION:=2.6.1
-RABBITMQ_PLUGINS:=amqp_client-$(RABBITMQ_VERSION).ez rabbitmq_stomp-$(RABBITMQ_VERSION).ez
-RABBITMQ_PLUGINS_URL:=http://www.rabbitmq.com/releases/plugins/v$(RABBITMQ_VERSION)
-
 iso: $/nailgun-centos-6.3-amd64.iso
 
 $/isoroot-centos.done: \
@@ -42,14 +38,9 @@ $(addprefix $(ISOROOT)/EFI/BOOT/,$(EFI_FILES)):
 	@mkdir -p $(@D)
 	cp $(CENTOS_REPO_DIR)EFI/BOOT/$(@F) $(@D)
 
-$(addprefix $(ISOROOT)/rabbitmq-plugins/v$(RABBITMQ_VERSION)/,$(RABBITMQ_PLUGINS)):
-	@mkdir -p $(@D)
-	wget -O $@ $(RABBITMQ_PLUGINS_URL)/$(@F)
-
 $/isoroot-prepare.done: \
 		$(addprefix $(ISOROOT)/images/,$(IMAGES_FILES)) \
 		$(addprefix $(ISOROOT)/EFI/BOOT/,$(EFI_FILES)) \
-		$(addprefix $(ISOROOT)/rabbitmq-plugins/v$(RABBITMQ_VERSION)/,$(RABBITMQ_PLUGINS)) \
 		$(ISOROOT)/ks.cfg \
 		$(ISOROOT)/bootstrap_admin_node.sh
 	$(ACTION.TOUCH)

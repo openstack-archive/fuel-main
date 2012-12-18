@@ -45,7 +45,7 @@ python-amqp
 python-cinder
 python-devel.x86_64
 python-virtualenv
-rabbitmq-server
+rabbitmq-server-2.8.7
 rpm-build
 rsyslog
 ruby

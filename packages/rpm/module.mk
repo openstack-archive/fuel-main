@@ -45,10 +45,6 @@ $/rpm-cirros.done: $/prep.done packages/rpm/specs/cirros-0.3.0.spec
 	rpmbuild -vv --define "_topdir `readlink -f $/`" -ba packages/rpm/specs/cirros-0.3.0.spec
 	$(ACTION.TOUCH)
 
-$/rpm-rabbitmq-plugins.done: $/prep.done packages/rpm/specs/rabbitmq-plugins.spec
-	rpmbuild -vv --define "_topdir `readlink -f $/`" -ba packages/rpm/specs/rabbitmq-plugins.spec
-	$(ACTION.TOUCH)
-
 $/rpm-nailgun-agent.done: $/prep.done \
 	    packages/rpm/specs/nailgun-agent.spec \
 	    $(addprefix bin/,$(call find-files,bin))
@@ -78,7 +74,6 @@ $/rpm-nailgun-net-check.done: $/prep.done \
 	$(ACTION.TOUCH)
 
 $(BUILD_DIR)/rpm/rpm.done: $/rpm-cirros.done \
-		$/rpm-rabbitmq-plugins.done \
 		$/rpm-nailgun-agent.done \
 		$/rpm-nailgun-mcagents.done \
 		$/rpm-nailgun-net-check.done
