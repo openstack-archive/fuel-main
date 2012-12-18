@@ -217,7 +217,7 @@ class NailgunReceiver(object):
             # we should calculate task progress by nodes info
             nodes_progress = []
 
-            nodes_db = cls.db.query(Node).filter(
+            nodes_db = cls.db().query(Node).filter(
                 Node.id.in_([n['uid'] for n in nodes])
             ).all()
             for node in nodes_db:
