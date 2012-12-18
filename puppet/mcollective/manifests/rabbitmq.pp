@@ -6,8 +6,6 @@ class mcollective::rabbitmq(
   $rabbitmq_plugins_repo = "http://www.rabbitmq.com/releases/plugins",
   ){
 
-  Exec {path => '/usr/bin:/bin:/usr/sbin:/sbin'}
-
   define mcollective_rabbitmq_safe_package(){
     if ! defined(Package[$name]){
       @package { $name : }
