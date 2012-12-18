@@ -87,6 +87,7 @@ $(BS_DIR)/init.done: $(LOCAL_MIRROR)/repo.done $(INITRAM_DIR)/etc/yum.repos.d/mi
 	$(YUM) erase $(YUM_BUILD_PACKAGES)
 	sudo rm -f $(INITRAM_DIR)/etc/yum.repos.d/Cent*
 	sudo cp $(INITRAM_DIR)/sbin/init $(INITRAM_DIR)/init
+	$(CHROOT_CMD) chkconfig exim off
 	$(ACTION.TOUCH)
 
 define yum_local_repo
