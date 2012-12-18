@@ -137,47 +137,29 @@ class NodeAgent
   end
 
   def _is_virtual
-    begin
-      if @os["virtualization"]["role"] == "guest"
-        return true
-      end
-    rescue
-    end
-    return false
+    @os["virtualization"]["role"] == "guest" rescue false
   end
 
   def _manufacturer
     if _is_virtual
-      return @os["virtualization"]["system"].upcase
+      return @os["virtualization"]["system"].upcase rescue "Unknown"
     else
-      begin
-        # Check in other place for VBox: ohai doesn't show it's virtual with VBox 4.2.4
-        return "VBOX" if @os["dmi"]["system"]["product_name"] == "VirtualBox" rescue nil
-        return @os[:dmi][:system][:manufacturer]
-      rescue
-        return "Unknown"
-      end
+      # Check in other place for VBox: ohai doesn't show it's virtual with VBox 4.2.4
+      return "VBOX" if @os["dmi"]["system"]["product_name"] == "VirtualBox" rescue nil
+      return @os[:dmi][:system][:manufacturer] rescue "Unknown"
     end
   end
 
   def _product_name
     if _is_virtual
-      return @os["virtualization"]["role"]
+      @os["virtualization"]["role"] rescue "Unknown"
     else
-      begin
-        return @os[:dmi][:system][:product_name]
-      rescue
-        return "Unknown"
-      end
+      @os[:dmi][:system][:product_name] rescue "Unknown"
     end
   end
 
   def _serial
-    begin
-      return @os[:dmi][:system][:serial_number]
-    rescue
-      return "Unknown"
-    end
+    @os[:dmi][:system][:serial_number] rescue "Unknown"
   end
 
   def _data
