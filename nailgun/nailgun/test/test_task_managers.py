@@ -12,15 +12,6 @@ from nailgun.test.base import reverse
 from nailgun.api.models import Cluster, Attributes, Task, Notification
 
 
-def fake_cast(queue, message):
-    thread = FAKE_THREADS[message['method']](
-        data=message
-    )
-    thread.start()
-    thread.name = message['method'].upper()
-    thread.join()
-
-
 class TestTaskManagers(BaseHandlers):
 
     def setUp(self):
@@ -31,7 +22,7 @@ class TestTaskManagers(BaseHandlers):
         import threading
         for thread in threading.enumerate():
             if thread is not threading.currentThread():
-                thread.join(1)
+                thread.join()
 
     @patch('nailgun.task.task.rpc.cast', nailgun.task.task.fake_cast)
     @patch('nailgun.task.task.settings.FAKE_TASKS', True)
