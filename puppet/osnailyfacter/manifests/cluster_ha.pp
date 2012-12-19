@@ -6,10 +6,10 @@ $public_virtual_ip = '240.0.1.253'
 $master_hostname = 'slave-1'
 $controller_public_addresses = {'slave-1' => '10.0.101.3','slave-2' => '10.0.101.4','slave-3' => '10.0.101.5'}
 $controller_internal_addresses = {'slave-1' => '192.168.0.2','slave-2' => '192.168.0.3','slave-3' => '192.168.0.4'}
-$swift_proxy_address = '192.168.0.253'
 $controller_hostnames = ['slave-1', 'slave-2', 'slave-3']
 $swift_zone = 1 # Different for each controller
 $swift_proxy_address = $internal_virtual_ip
+$internal_address = '192.168.0.2'
 
 ##
 # These parameters should be edit
@@ -98,7 +98,7 @@ $swift_local_net_ip       = $ipaddress_eth0
 #}
 
 $tenant_network_type    = 'gre'
-$internal_address = getvar("::ipaddress_${internal_interface}")
+#$internal_address = getvar("::ipaddress_${internal_interface}") # Provided by Astute
 $verbose = true
 Exec { logoutput => true }
 
