@@ -97,7 +97,10 @@ class ClusterDeletionManager(TaskManager):
         )
         if deploy_running:
             logger.error(
-                "Deleting cluster while deployment is still running"
+                "Deleting cluster '{0}' "
+                "while deployment is still running".format(
+                    self.cluster.name
+                )
             )
 
         logger.debug("Removing cluster tasks")
