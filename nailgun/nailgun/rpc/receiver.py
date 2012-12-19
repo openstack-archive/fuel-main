@@ -154,7 +154,7 @@ class NailgunReceiver(object):
             err_msg = "Failed to remove {0} node(s)".format(
                 len(error_nodes)
             )
-            notifier.notify("done", err_msg)
+            notifier.notify("error", err_msg)
         if not error_msg:
             error_msg = ". ".join([success_msg, err_msg])
 
