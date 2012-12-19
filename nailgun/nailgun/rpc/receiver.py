@@ -204,9 +204,16 @@ class NailgunReceiver(object):
 
         error_nodes = []
         for node in nodes:
-            # TODO if not found? or node['uid'] not specified?
-
             node_db = cls.db().query(Node).get(node['uid'])
+
+            if not node_db:
+                logger.warning(
+                    "No node found with uid '{0}' - nothing changed".format(
+                        node['uid']
+                    )
+                )
+                continue
+
             modified = False
             for param in ('status', 'progress'):
                 if node.get(param):
