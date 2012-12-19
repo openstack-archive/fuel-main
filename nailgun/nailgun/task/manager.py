@@ -90,6 +90,15 @@ class ClusterDeletionManager(TaskManager):
             Task.cluster == self.cluster,
             Task.name == 'cluster_deletion'
         )
+        deploy_running = orm().query(Task).filter(
+            Task.cluster == self.cluster,
+            Task.name == 'deploy',
+            Task.status == 'running'
+        )
+        if deploy_running:
+            logger.error(
+                "Deleting cluster while deployment is still running"
+            )
 
         logger.debug("Removing cluster tasks")
         for task in current_cluster_tasks:
