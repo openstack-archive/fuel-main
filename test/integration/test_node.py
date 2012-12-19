@@ -1,4 +1,6 @@
 import os
+import sys
+import traceback
 import logging
 import time
 import json
@@ -24,6 +26,32 @@ COOKBOOKS_PATH = root("cooks", "cookbooks")
 SAMPLE_PATH = root("scripts", "ci")
 SAMPLE_REMOTE_PATH = "/home/ubuntu"
 REMOTE_PYTHON = "/opt/nailgun/bin/python"
+
+
+def snapshot_errors(func):
+    """ Decorator to snapshot nodes when error occured in test.
+    """
+    def decorator(*args, **kwagrs):
+        ss_name = 'error-%d' % int(time.time())
+        desc = "Failed in method '%s'" % func.__name__
+        try:
+            func(*args, **kwagrs)
+        except Exception, e:
+            exc = list(sys.exc_info())
+            exc[2] = exc[2].tb_next
+            logging.warn('Some raise occered in method "%s"' % func.__name__)
+            logging.warn(''.join(traceback.format_exception(*exc)))
+            for node in ci.environment.nodes:
+                logging.info("Creating snapshot '%s' for node %s" %
+                             (ss_name, node.name))
+                node.save_snapshot(ss_name, desc)
+            raise e
+    newfunc = decorator
+    newfunc.__dict__ = func.__dict__
+    newfunc.__doc__ = func.__doc__
+    newfunc.__module__ = func.__module__
+    newfunc.__name__ = func.__name__
+    return newfunc
 
 
 class StillPendingException(Exception):
@@ -59,21 +87,25 @@ class TestNode(Base):
     def test_create_empty_cluster(self):
         self._create_cluster(name='empty')
 
+    @snapshot_errors
     def test_node_deploy(self):
         self._revert_nodes()
         self._bootstrap_nodes(['slave1'])
 
+    @snapshot_errors
     def test_updating_nodes_in_cluster(self):
         self._revert_nodes()
         cluster_id = self._create_cluster(name='empty')
         nodes = self._bootstrap_nodes(['slave1'])
         self._update_nodes_in_cluster(cluster_id, nodes)
 
+    @snapshot_errors
     def test_one_node_provisioning(self):
         self._revert_nodes()
         self._clean_clusters()
         self._basic_provisioning('provision', {'controller': ['slave1']})
 
+    @snapshot_errors
     def test_two_nodes_provisioning(self):
         def _check_nova_status(ip):
             ctrl_ssh = SSHClient()
@@ -92,6 +124,7 @@ class TestNode(Base):
         node = self._get_slave_node_by_devops_node(slave)
         wait(lambda: _check_nova_status(node['ip']), timeout=300)
 
+    @snapshot_errors
     def test_network_config(self):
         self._revert_nodes()
         self._clean_clusters()
@@ -146,6 +179,7 @@ class TestNode(Base):
                     pass
         self.assertEquals(ifaces_fail, False)
 
+    @snapshot_errors
     def test_node_deletion(self):
         self._revert_nodes()
         cluster_name = 'node_deletion'
@@ -172,6 +206,7 @@ class TestNode(Base):
                 raise Exception("Bootstrap boot timeout expired!")
             time.sleep(5)
 
+    @snapshot_errors
     def test_network_verify(self):
         self._revert_nodes()
         cluster_name = 'net_verify'
