@@ -94,6 +94,9 @@ function(models, commonViews, clusterViews, clustersViews, releaseViews, notific
             window.app = app;
             Backbone.history.start();
 
+            // disable text selections
+            $('body').disableSelection();
+
             // tooltips
             $('body').tooltip({selector: "[rel=tooltip]"});
             app.bind('all', function(route) {$('.tooltip').remove();});
