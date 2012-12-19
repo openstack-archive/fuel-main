@@ -499,6 +499,11 @@ h6.page-title {
   font-size: 9px;
   color: #666666;
   text-shadow: 0 1px 0 rgba(255, 255, 255, 0.45);
+  cursor: pointer;
+}
+
+.node-list .node-hardware:hover > ul > li {
+  color: #0088cc;
 }
 
 .node-hardware > ul {list-style: none; margin: 0px; padding: 0px;}

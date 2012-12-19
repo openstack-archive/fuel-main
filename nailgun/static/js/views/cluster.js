@@ -535,7 +535,8 @@ function(models, commonViews, dialogViews, clusterPageTemplate, deploymentResult
         template: _.template(nodeTemplate),
         events: {
             'click .node-name': 'startNodeRenaming',
-            'keydown .node-name-editable': 'onNodeNameInputKeydown'
+            'keydown .node-name-editable': 'onNodeNameInputKeydown',
+            'click .node-hardware': 'showNodeInfo'
         },
         startNodeRenaming: function() {
             if (!this.renameable || this.renaming || this.model.collection.cluster.task('deploy', 'running')) {return;}
@@ -569,6 +570,12 @@ function(models, commonViews, dialogViews, clusterPageTemplate, deploymentResult
             } else if (e.which == 27) {
                 this.endNodeRenaming();
             }
+        },
+        showNodeInfo: function() {
+            if (this.$('.nodebox').hasClass('unassigned')) {return;}
+            var dialog = new dialogViews.ShowNodeInfoDialog({node: this.model});
+            this.registerSubView(dialog);
+            dialog.render();
         },
         updateProgress: function() {
             var nodeStatus = this.model.get('status');
