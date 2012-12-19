@@ -39,7 +39,7 @@ deep_clean: clean
 distclean: deep_clean clean-integration-test
 
 assert-variable=$(if $($1),,$(error Variable $1 need to be defined))
-find-files=$(shell test -d $1 && cd $1 && find * -type f 2> /dev/null)
+find-files=$(shell test -d $1 && find $1 -type f 2> /dev/null)
 
 include config.mk
 include repo.mk

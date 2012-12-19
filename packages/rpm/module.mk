@@ -47,14 +47,14 @@ $/rpm-cirros.done: $/prep.done packages/rpm/specs/cirros-0.3.0.spec
 
 $/rpm-nailgun-agent.done: $/prep.done \
 	    packages/rpm/specs/nailgun-agent.spec \
-	    $(addprefix bin/,$(call find-files,bin))
+	    $(call find-files,bin)
 	cp -f bin/agent bin/nailgun-agent.cron $(SRC_DIR)
 	rpmbuild -vv --define "_topdir `readlink -f $/`" -ba packages/rpm/specs/nailgun-agent.spec
 	$(ACTION.TOUCH)
 
 $/rpm-nailgun-mcagents.done: $/prep.done \
 	    packages/rpm/specs/nailgun-mcagents.spec \
-	    $(addprefix mcagent/,$(call find-files,mcagent))
+	    $(call find-files,mcagent)
 	mkdir -p $/SOURCES/nailgun-mcagents
 	cp -f mcagent/* $(SRC_DIR)nailgun-mcagents
 	rpmbuild -vv --define "_topdir `readlink -f $/`" -ba packages/rpm/specs/nailgun-mcagents.spec

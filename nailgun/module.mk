@@ -3,7 +3,7 @@
 %: /:=$/
 
 $/Nailgun-$(NAILGUN_VERSION).tar.gz: \
-	 $(addprefix nailgun/, $(call find-files,nailgun))
+	 $(call find-files,nailgun)
 	cd nailgun && \
 	python setup.py sdist --dist-dir $/
 

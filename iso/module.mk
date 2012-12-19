@@ -76,11 +76,11 @@ $/isoroot-gems.done: \
 	(cd $(ISOROOT)/gems && gem generate_index gems)
 	$(ACTION.TOUCH)
 
-$(ISOROOT)/puppet-nailgun.tgz: $(addprefix puppet/,$(call find-files,puppet))
+$(ISOROOT)/puppet-nailgun.tgz: $(call find-files,puppet)
 	(cd puppet && tar czf $@ *)
 
 $(ISOROOT)/puppet-slave.tgz: \
-		$(addprefix fuel/deployment/puppet/network/,$(call find-files,fuel/deployment/puppet/network))
+		$(call find-files,fuel/deployment/puppet/network)
 	@rm -rf fuel/deployment/puppet/network
 	(cd puppet && tar cf $(BUILD_DIR)/puppet-slave.tar puppet-network nailytest osnailyfacter)
 	(cd fuel/deployment/puppet && tar rf $(BUILD_DIR)/puppet-slave.tar ./*)
