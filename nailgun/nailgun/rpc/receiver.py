@@ -155,7 +155,8 @@ class NailgunReceiver(object):
                 len(error_nodes)
             )
             notifier.notify("done", err_msg)
-        error_msg = ". ".join([success_msg, err_msg])
+        if not error_msg:
+            error_msg = ". ".join([success_msg, err_msg])
 
         cls.__update_task_status(task_uuid, status, progress, error_msg)
 

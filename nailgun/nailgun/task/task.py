@@ -314,7 +314,8 @@ class DeletionTask(object):
                         )
                         p_stdout, p_stderr = proc.communicate()
                         logger.info(
-                            "'{0}' executed, STDOUT: '{1}', STDERR: '{2}'".format(
+                            "'{0}' executed, STDOUT: '{1}',"
+                            " STDERR: '{2}'".format(
                                 cmd,
                                 p_stdout,
                                 p_stderr
