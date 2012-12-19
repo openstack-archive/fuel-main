@@ -22,7 +22,10 @@ class TestTaskManagers(BaseHandlers):
         import threading
         for thread in threading.enumerate():
             if thread is not threading.currentThread():
-                thread.join()
+                thread.join(
+                    int(settings.FAKE_TASKS_TICK_COUNT) *
+                    int(settings.FAKE_TASKS_TICK_INTERVAL) + 5
+                )
 
     @patch('nailgun.task.task.rpc.cast', nailgun.task.task.fake_cast)
     @patch('nailgun.task.task.settings.FAKE_TASKS', True)
