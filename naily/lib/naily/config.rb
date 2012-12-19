@@ -35,8 +35,8 @@ module Naily
     conf = {}
     conf[:broker_host] = 'localhost'
     conf[:broker_port] = 5672
-    conf[:broker_username] = 'guest'
-    conf[:broker_password] = 'guest'
+    conf[:broker_username] = 'mcollective'
+    conf[:broker_password] = 'mcollective'
 
     conf[:broker_queue] = 'naily'
     conf[:broker_publisher_queue] = 'nailgun'

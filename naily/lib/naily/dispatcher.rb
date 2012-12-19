@@ -34,6 +34,7 @@ module Naily
       nodes = data['args']['nodes']
       time = Time::now.to_f
       nodes_not_booted = nodes.map { |n| n['uid'] }
+      Naily.logger.info "Starting OS provisioning for nodes: #{nodes_not_booted.join(',')}" 
       add_anaconda_log_separator(nodes)
       time = 10 + time - Time::now.to_f
       sleep (time) if time > 0 # Wait while nodes going to reboot. Sleep not greater than 10 sec.
@@ -43,7 +44,9 @@ module Naily
             time = Time::now.to_f
             types = @orchestrator.node_type(reporter, data['args']['task_uuid'], nodes, 5)
             target_uids = types.reject{|n| n['node_type'] != 'target'}.map{|n| n['uid']}
+            Naily.logger.debug "Not provisioned: #{nodes_not_booted.join(',')}, got target OSes: #{target_uids.join(',')}" 
             if nodes.length == target_uids.length
+              Naily.logger.info "All nodes #{target_uids.join(',')} are provisioned."
               break
             end
             nodes_not_booted = nodes.map { |n| n['uid'] } - types.map { |n| n['uid'] }
@@ -53,6 +56,8 @@ module Naily
               if target_uids.include?(n['uid'])
                 all_progress += 100 # 100%
                 n['progress'] = 100
+                # TODO(mihgen): should we change status only once?
+                n['status'] = 'provisioned'
               else
                 all_progress += n['progress']
               end
@@ -63,10 +68,16 @@ module Naily
             time = 5 + time - Time::now.to_f
             sleep (time) if time > 0 # Sleep not greater than 5 sec.
           end
+          # We are here if jumped by break from while cycle
         end
       rescue Timeout::Error
-        error_msg = "Timeout of booting is exceeded for nodes: '#{nodes_not_booted.join(',')}'"
-        reporter.report({'status' => 'error', 'error' => error_msg})
+        Naily.logger.error "Provisioning has timed out"
+        error_msg = "Timeout of provisioning is exceeded for nodes: '#{nodes_not_booted.join(',')}'"
+        error_nodes = nodes_not_booted.map { |n| {'uid' => n,
+                                                  'status' => 'error',
+                                                  'progress' => 100,
+                                                  'error_type' => 'provision'} }
+        reporter.report({'status' => 'error', 'error' => error_msg, 'nodes' => error_nodes})
         return
       end
 
