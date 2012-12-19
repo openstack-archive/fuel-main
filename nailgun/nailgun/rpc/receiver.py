@@ -183,6 +183,9 @@ class NailgunReceiver(object):
             )
 
         elif task.status in ('error',):
+            cluster.status = 'error'
+            cls.db().add(cluster)
+            cls.db().commit()
             notifier.notify(
                 "error",
                 task.message,
