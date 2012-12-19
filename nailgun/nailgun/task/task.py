@@ -261,6 +261,7 @@ class DeletionTask(object):
                         'cluster_id',
                         'role',
                         'pending_deletion',
+                        'pending_addition'
                     )
                     for prop in object_mapper(new_node).iterate_properties:
                         if isinstance(
