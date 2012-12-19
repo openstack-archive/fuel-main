@@ -143,6 +143,20 @@ class NailgunReceiver(object):
             cls.db().add(node_db)
         cls.db().commit()
 
+        success_msg = "No nodes were removed"
+        err_msg = "No errors occured"
+        if nodes:
+            success_msg = "Successfully removed {0} node(s)".format(
+                len(nodes)
+            )
+            notifier.notify("done", success_msg)
+        if error_nodes:
+            err_msg = "Failed to remove {0} node(s)".format(
+                len(error_nodes)
+            )
+            notifier.notify("done", err_msg)
+        error_msg = ". ".join([success_msg, err_msg])
+
         cls.__update_task_status(task_uuid, status, progress, error_msg)
 
     @classmethod

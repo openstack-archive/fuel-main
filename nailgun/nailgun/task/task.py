@@ -4,6 +4,8 @@ import uuid
 import itertools
 import logging
 import traceback
+import subprocess
+import shlex
 
 import web
 from sqlalchemy.orm import object_mapper, ColumnProperty
@@ -297,6 +299,26 @@ class DeletionTask(object):
                         logger.debug("Removing system "
                                      "from cobbler: %s" % slave_name)
                         pd.remove_system(slave_name)
+                    # deleting certs from puppet
+                    node_hostname = ".".join([
+                        slave_name,
+                        settings.DNS_DOMAIN
+                    ])
+                    cmd = "puppet cert clean {0}".format(node_hostname)
+                    proc = subprocess.Popen(
+                        shlex.split(cmd),
+                        shell=False,
+                        stdout=subprocess.PIPE,
+                        stderr=subprocess.PIPE
+                    )
+                    p_stdout, p_stderr = proc.communicate()
+                    logging.info(
+                        "'{0}' executed, STDOUT: '{1}', STDERR: '{2}'".format(
+                            cmd,
+                            p_stdout,
+                            p_stderr
+                        )
+                    )
         # /only real tasks
 
         msg_delete = {
