@@ -267,6 +267,15 @@ class DeletionTask(object):
     def execute(self, task, respond_to='remove_nodes_resp'):
         nodes_to_delete = []
         nodes_to_restore = []
+
+        # no need to call naily if there are no nodes in cluster
+        if not task.cluster.nodes:
+            rcvr = rpc.receiver.NailgunReceiver
+            rcvr.remove_cluster_resp(
+                task_uuid=task.uuid
+            )
+            return
+
         for node in task.cluster.nodes:
             if node.pending_deletion:
                 nodes_to_delete.append({

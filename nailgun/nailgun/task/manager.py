@@ -11,7 +11,9 @@ from nailgun.settings import settings
 from nailgun.api.models import Cluster
 from nailgun.api.models import Task
 from nailgun.api.models import Network
-from nailgun.task.errors import DeploymentAlreadyStarted, WrongNodeStatus
+from nailgun.task.errors import DeploymentAlreadyStarted
+from nailgun.task.errors import WrongNodeStatus
+from nailgun.task.errors import DeletionAlreadyStarted
 
 from nailgun.task import task as tasks
 
@@ -85,15 +87,19 @@ class ClusterDeletionManager(TaskManager):
 
     def execute(self):
         current_cluster_tasks = orm().query(Task).filter(
-            Task.cluster == self.cluster
+            Task.cluster == self.cluster,
+            Task.name == 'cluster_deletion'
         )
 
         logger.debug("Removing cluster tasks")
         for task in current_cluster_tasks:
-            for subtask in task.subtasks:
-                orm().delete(subtask)
-            orm().delete(task)
-            orm().commit()
+            if task.status == "running":
+                raise DeletionAlreadyStarted()
+            elif task.status in ("ready", "error"):
+                for subtask in task.subtasks:
+                    orm().delete(subtask)
+                orm().delete(task)
+                orm().commit()
 
         logger.debug("Labeling cluster nodes to delete")
         for node in self.cluster.nodes:

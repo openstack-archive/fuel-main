@@ -9,6 +9,14 @@ class DeploymentAlreadyStarted(Exception):
         super(DeploymentAlreadyStarted, self).__init__(message)
 
 
+class DeletionAlreadyStarted(Exception):
+    def __init__(
+        self,
+        message="Cluster deletion already started"
+    ):
+        super(DeletionAlreadyStarted, self).__init__(message)
+
+
 class FailedProvisioning(Exception):
     def __init__(
         self,
