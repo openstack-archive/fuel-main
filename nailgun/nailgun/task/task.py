@@ -305,20 +305,27 @@ class DeletionTask(object):
                         settings.DNS_DOMAIN
                     ])
                     cmd = "puppet cert clean {0}".format(node_hostname)
-                    proc = subprocess.Popen(
-                        shlex.split(cmd),
-                        shell=False,
-                        stdout=subprocess.PIPE,
-                        stderr=subprocess.PIPE
-                    )
-                    p_stdout, p_stderr = proc.communicate()
-                    logging.info(
-                        "'{0}' executed, STDOUT: '{1}', STDERR: '{2}'".format(
-                            cmd,
-                            p_stdout,
-                            p_stderr
+                    try:
+                        proc = subprocess.Popen(
+                            shlex.split(cmd),
+                            shell=False,
+                            stdout=subprocess.PIPE,
+                            stderr=subprocess.PIPE
                         )
-                    )
+                        p_stdout, p_stderr = proc.communicate()
+                        logger.info(
+                            "'{0}' executed, STDOUT: '{1}', STDERR: '{2}'".format(
+                                cmd,
+                                p_stdout,
+                                p_stderr
+                            )
+                        )
+                    except OSError:
+                        logger.warning(
+                            "'{0}' returned non-zero exit code".format(
+                                cmd
+                            )
+                        )
         # /only real tasks
 
         msg_delete = {
