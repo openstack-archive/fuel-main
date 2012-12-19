@@ -24,4 +24,4 @@ cp * %{buildroot}/usr/libexec/mcollective/mcollective/agent/
 rm -rf %{buildroot}
 
 %files
-/*
+/usr/libexec/mcollective/mcollective/agent/*

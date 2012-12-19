@@ -42,7 +42,9 @@ python setup.py install --root=%{buildroot}
 
 %files
 %defattr(0755,root,root,-)
-/*
+/usr/bin/net_probe.py
+%defattr(0644,root,root,-)
+/usr/lib64/python2.6/site-packages/pcap*
 
 %clean
 rm -rf %{buildroot}

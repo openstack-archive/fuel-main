@@ -29,4 +29,5 @@ install -m 644 %{SOURCE1} %{buildroot}/etc/cron.d/nailgun-agent
 rm -rf %{buildroot}
 
 %files
-/*
+/etc/cron.d/nailgun-agent
+/opt/nailgun/bin/agent
