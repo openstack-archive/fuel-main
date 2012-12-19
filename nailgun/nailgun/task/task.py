@@ -188,6 +188,8 @@ class DeploymentTask(object):
                 'eth0': {
                     'mac_address': node.mac,
                     'static': '0',
+                    'dns_name': ".".join([nd_name, settings.DNS_DOMAIN]),
+                    'ip_address': node.ip,
                 },
             }
             nd_dict['interfaces_extra'] = {
@@ -233,6 +235,7 @@ mco_enable=1
                 nd_dict.get('power_type', 'unknown')
             )
             pd.power_reboot(nd_name)
+        pd.sync()
 
 
 class DeletionTask(object):

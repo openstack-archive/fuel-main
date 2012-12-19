@@ -151,6 +151,9 @@ class Cobbler:
             pass
         return None
 
+    def sync(self):
+        self.remote.sync(self.token)
+
     def power(self, obj_name, power):
         options = {"systems": [obj_name], "power": power}
         self.remote.background_power_system(options, self.token)
