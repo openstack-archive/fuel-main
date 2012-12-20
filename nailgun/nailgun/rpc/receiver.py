@@ -257,14 +257,14 @@ class NailgunReceiver(object):
 
         task = cls.db().query(Task).filter_by(uuid=task_uuid).first()
 
-        if status in ('error',):
+        if status in ('error',) and task:
             notifier.notify(
                 "error",
                 message,
                 task.cluster_id,
                 cls.db()
             )
-        elif status in ('ready',):
+        elif status in ('ready',) and task:
             # determining horizon url - it's ip of controller
             # from a public network - works only for simple deployment
             controller = cls.db().query(Node).filter(
@@ -293,7 +293,8 @@ class NailgunReceiver(object):
                     logger.warning("Public ip for controller node \
                         not found in '{0}'".format(task.cluster.name))
             else:
-                message = "Deployment of installation '{0}' is done".format(
+                message = "Deployment of installation"
+                " '{0}' is done".format(
                     task.cluster.name
                 )
                 logger.warning("Controller node not found in '{0}'".format(
@@ -305,7 +306,8 @@ class NailgunReceiver(object):
                 task.cluster_id,
                 cls.db()
             )
-        cls.__update_task_status(task_uuid, status, progress, message)
+        if task:
+            cls.__update_task_status(task_uuid, status, progress, message)
 
     @classmethod
     def verify_networks_resp(cls, **kwargs):
