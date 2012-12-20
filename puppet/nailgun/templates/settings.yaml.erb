@@ -34,13 +34,13 @@ ACCESS_LOG: "/var/log/nailgun_access.log"
 PATH_TO_SSH_KEY: "/root/.ssh/id_rsa"
 PATH_TO_BOOTSTRAP_SSH_KEY: "/root/.ssh/bootstrap.rsa"
 
-COBBLER_URL: "<%= cobbler_url %>"
+COBBLER_URL: "<%= scope.lookupvar('nailgun::cobbler_url') %>"
 COBBLER_USER: "<%= cobbler_user %>"
 COBBLER_PASSWORD: "<%= cobbler_password %>"
 COBBLER_PROFILE: "centos63-x86_64"
 
 MCO_PSKEY: "<%= mco_pskey %>"
-MCO_STOMPHOST: <%= mco_stomphost %>
+MCO_STOMPHOST: <%= scope.lookupvar('nailgun::mco_stomphost') %>
 MCO_STOMPPORT: "61613"
 MCO_STOMPUSER: "<%= mco_stompuser %>"
 MCO_STOMPPASSWORD: "<%= mco_stomppassword %>"
@@ -49,5 +49,5 @@ PUPPET_MASTER_HOST: "<%= puppet_master_hostname %>"
 PUPPET_VERSION: "2.7.19"
 
 DNS_DOMAIN: "<%= domain %>"
-DNS_SERVERS: "<%= puppet_master_ip %>"
+DNS_SERVERS: "<%= scope.lookupvar('nailgun::puppet_master_ip') %>"
 DNS_SEARCH: "<%= domain %>"

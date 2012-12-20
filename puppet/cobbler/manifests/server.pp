@@ -285,7 +285,7 @@ class cobbler::server(
       owner => root,
       group => root,
       mode => 0644,
-      require => Package[$cobbler_package],
+      require => Package[$cobbler::server::cobbler_package],
     }
   }
   
