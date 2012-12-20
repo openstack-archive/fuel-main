@@ -1,6 +1,17 @@
 Using VirtualBox to deploy nailgun and slave nodes.
 ===================================================
 
+Pre-requirements
+----------------
+
+This instruction has been tested on following environments:
+
+* Ubuntu Linux 12.04, VirtualBox 4.1.22r80657 + Extension Pack 4.1.14r77440
+* Windows 7 SP1, VirtualBox 4.2.4 + Extension Pack
+* MacOS 10.6.8, VirtualBox 4.2.4 + Extension Pack
+
+Extension pack is required and can be downloaded from the www.virtualbox.org
+
 Nailgun server deployment
 -------------------------
 
