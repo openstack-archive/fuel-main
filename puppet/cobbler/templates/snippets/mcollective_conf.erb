@@ -28,6 +28,7 @@ EOCONF
 #end if
 
 #if $str($getVar('mco_enable', '')) == "1"
-# turn on mcollective service after reboot
+# turn on mcollective service after reboot and set priority to 81
+sed -i /etc/rc.d/init.d/mcollective -e 's/\(# chkconfig:\s\+[-0-6]\+\) [0-9]\+ \([0-9]\+\)/\1 81 \2/'
 /sbin/chkconfig mcollective on
 #end if
