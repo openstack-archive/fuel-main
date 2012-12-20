@@ -8,12 +8,12 @@
             <i class="<%= topic == 'error' ? 'icon-attention-4' : topic == 'discover' ? 'icon-bell' : 'icon-info-circle-1' %>"></i>
             <%= app.urlify(notification.escape('message')) %>
           </li>
-          <%= notifications.length > displayCount || index < (notifications.last(displayCount).length - 1) ? '<li class="divider"></li>' : '' %>
+          <li class="divider"></li>
         <% }) %>
       <% } else { %>
         <li>There are no notifications to display</li>
       <% } %>
     </ul>
-    <%= notifications.length > displayCount ? '<div class="show-more-notifications"><a href="#notifications">Show more</a></div>' : '' %>
+    <%= notifications.length ? '<div class="show-more-notifications"><a href="#notifications">View all</a></div>' : '' %>
   </div>
 </div>
