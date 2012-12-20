@@ -27,7 +27,6 @@ class nailgun(
   $nailgun_api_url = "http://$ipaddress:8000/api",
   $rabbitmq_naily_user = "naily",
   $rabbitmq_naily_password = "naily",
-  $rabbitmq_plugins_repo = "file:///var/www/nailgun/rabbitmq-plugins",
   $puppet_master_hostname = "${hostname}.${domain}",
   $puppet_master_ip = $ipaddress,
 
@@ -135,7 +134,6 @@ class nailgun(
     mco_pskey => $mco_pskey,
     mco_stompuser => $mco_stompuser,
     mco_stomppassword => $mco_stomppassword,
-    rabbitmq_plugins_repo => $rabbitmq_plugins_repo,
   }
 
   rabbitmq_user { $rabbitmq_naily_user:
