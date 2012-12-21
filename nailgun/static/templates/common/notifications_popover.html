@@ -6,7 +6,7 @@
           <% var topic = notification.get('topic') %>
           <li class="<%= notification.get('status') == 'unread' ? 'new' : '' %> <%= topic == 'discover' ? 'discover' : '' %>" data-node="<%- notification.get('node') %>">
             <i class="<%= topic == 'error' ? 'icon-attention-4' : topic == 'discover' ? 'icon-bell' : 'icon-info-circle-1' %>"></i>
-            <%- notification.get('message') %>
+            <%= app.urlify(notification.escape('message')) %>
           </li>
           <%= notifications.length > displayCount || index < (notifications.last(displayCount).length - 1) ? '<li class="divider"></li>' : '' %>
         <% }) %>
