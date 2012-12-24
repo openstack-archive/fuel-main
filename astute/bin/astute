@@ -5,7 +5,7 @@ require 'astute'
 
 class ConsoleReporter
   def report(msg)
-    p msg
+    puts "REPORTING MSG='#{msg.inspect}'"
   end
 end
 

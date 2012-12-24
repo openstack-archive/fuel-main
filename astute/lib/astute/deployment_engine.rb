@@ -29,17 +29,18 @@ module Astute
     # It does only support of deployment sequence. See deploy_piece implementation in subclasses.
     def deploy_simple_compute(nodes, attrs)
       ctrl_nodes = nodes.select {|n| n['role'] == 'controller'}
-
       attrs = extend_attrs(nodes, attrs)
-
+      Astute.logger.info "Starting deployment of controllers"
       deploy_piece(ctrl_nodes, attrs)
 
       @deployLogParser.pattern_spec['expected_line_number'] = 380
       compute_nodes = nodes.select {|n| n['role'] == 'compute'}
+      Astute.logger.info "Starting deployment of computes"
       deploy_piece(compute_nodes, attrs)
 
       @deployLogParser.pattern_spec['expected_line_number'] = 300
       other_nodes = nodes - ctrl_nodes - compute_nodes
+      Astute.logger.info "Starting deployment of other nodes"
       deploy_piece(other_nodes, attrs)
       return
     end

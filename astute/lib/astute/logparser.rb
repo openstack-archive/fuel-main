@@ -12,7 +12,6 @@ module Astute
       end
 
       def progress_calculate(nodes)
-        return 0 if nodes.empty?
         nodes_progress = []
         nodes.each do |node|
           path = "/var/log/remote/#{node['ip']}/#{@filename}"
