@@ -27,10 +27,15 @@ module Astute
     end
 
     public
-    def self.deploy(ctx, nodes, deployLogParser, retries=0)
+    def self.deploy(ctx, nodes, deployLogParser, retries=2)
       uids = nodes.map {|n| n['uid']}
       puppetd = MClient.new(ctx, "puppetd", uids)
       prev_summary = puppetd.last_run_summary
+
+      # Keep info about retries for each node
+      node_retries = {}
+      uids.each {|x| node_retries.merge!({x => retries}) }
+
       begin
         deployLogParser.add_separator(nodes)
       rescue Exception => e
@@ -49,8 +54,31 @@ module Astute
         while nodes_to_check.any?
           nodes_to_check = calc_nodes_status(last_run, prev_summary)
           Astute.logger.debug "Nodes statuses: #{nodes_to_check.inspect}"
-          nodes_to_report = nodes_to_check.select { |n| n['status'] == 'error' or n['status'] == 'ready' }
+          nodes_ready = nodes_to_check.select { |n| n['status'] == 'ready' }
+          nodes_error = nodes_to_check.select { |n| n['status'] == 'error' }
+
+          # Process retries
+          nodes_to_retry = []
+          nodes_error.each do |n|
+            uid = n['uid']
+            if node_retries[uid] > 0
+              node_retries[uid] -= 1
+              # It's a bit hacky. Remove node from nodes_error if we will retry it.
+              # This hack is required for reporting: we don't want to report error node if it will be retried.
+              # Later on we will need to say the user that we are retrying.
+              nodes_error.delete_if {|x| x['uid'] == uid }
+              nodes_to_retry += [uid]
+            end
+          end
+          if nodes_to_retry.any?
+            Astute.logger.info "Retrying to run puppet for following error nodes: #{nodes_to_retry.join(',')}"
+            puppetd.discover(:nodes => nodes_to_retry)
+            puppetd.runonce
+          end
+          # /end of processing retries
+
           nodes_idle = nodes_to_check.select { |n| n['status'] == 'idle' }
+          nodes_to_report = nodes_ready + nodes_error
           nodes_progress = []
           if nodes_idle.any?
             begin
@@ -62,9 +90,9 @@ module Astute
               Astute.logger.warn "Some error occured when parse logs for nodes progress: #{e.message}, trace: #{e.backtrace.inspect}"
             end
           end
-          ctx.reporter.report('nodes' => nodes_to_report)
-          # we will iterate only over idle nodes
-          nodes_to_check = nodes_idle
+          ctx.reporter.report('nodes' => nodes_to_report) if nodes_to_report.any?
+          # we will iterate only over idle nodes and those that we restart deployment for
+          nodes_to_check = nodes_idle + nodes_to_retry.map {|n| {'uid' => n, 'status' => 'idle'} }
           break if nodes_to_check.empty?
 
           sleep 2
