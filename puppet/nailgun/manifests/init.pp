@@ -10,7 +10,7 @@ class nailgun(
   $pip_find_links = "",
   $gem_source = "http://localhost/gems/",
 
-  $databasefile = "/var/tmp/nailgun.sqlite",
+  $databasefile = "/var/lib/nailgun/nailgun.sqlite",
   $staticdir = "/opt/nailgun/usr/share/nailgun/static",
   $templatedir = "/opt/nailgun/usr/share/nailgun/static",
 

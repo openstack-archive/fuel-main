@@ -40,7 +40,7 @@ node default {
     pip_find_links => "-f file://${pip_repo}",
     gem_source => $gem_source,
 
-    databasefile => "/var/tmp/nailgun.sqlite",
+    databasefile => "/var/lib/nailgun/nailgun.sqlite",
     staticdir => "/opt/nailgun/usr/share/nailgun/static",
     templatedir => "/opt/nailgun/usr/share/nailgun/static",
 
