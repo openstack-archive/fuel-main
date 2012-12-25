@@ -45,7 +45,9 @@ class TestTaskManagers(BaseHandlers):
         self.assertEquals(200, resp.status)
         response = json.loads(resp.body)
         supertask_uuid = response['uuid']
-        supertask = self.db.query(Task).filter_by(uuid=supertask_uuid).first()
+        supertask = self.db.query(Task).filter_by(
+            uuid=supertask_uuid
+        ).first()
         self.assertEquals(supertask.name, 'deploy')
         self.assertIn(supertask.status, ('running', 'ready'))
         self.assertEquals(len(supertask.subtasks), 2)
