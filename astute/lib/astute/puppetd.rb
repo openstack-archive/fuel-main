@@ -6,7 +6,6 @@ module Astute
     private
 
     def self.calc_nodes_status(last_run, prev_run)
-      all_nodes = last_run.map {|n| n.results[:sender]}
       finished = last_run.select {|x| x.results[:data][:time]['last_run'] != 
           prev_run.select {|ps|
               ps.results[:sender] == x.results[:sender]
