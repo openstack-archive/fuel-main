@@ -17,6 +17,19 @@ body {
   height: 100%;
 }
 
+body {
+  -webkit-user-select: none;
+     -moz-user-select: -moz-none;
+      -ms-user-select: none;
+          user-select: none;
+}
+.enable-selection {
+  -webkit-user-select: text;
+     -moz-user-select: text;
+      -ms-user-select: text;
+          user-select: text;
+}
+
 h1,
 h2,
 h3,

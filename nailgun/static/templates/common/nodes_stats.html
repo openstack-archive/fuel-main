@@ -1,16 +1,14 @@
-<% if (stats.total || stats.unallocated) { %>
-  <div class="statistic">
-    <div class="stat-count">
-      <%= stats.total %>
-    </div>
-    <div class="stat-title">
-      total<br/>node<%= stats.total == 1 ? '' : 's' %>
-    </div>
-    <div class="stat-count">
-      <%= stats.unallocated %>
-    </div>
-    <div class="stat-title">
-      unallocated<br/>node<%= stats.unallocated == 1 ? '' : 's' %>
-    </div>
+<div class="statistic">
+  <div class="stat-count">
+    <%= stats.total %>
   </div>
-<% } %>
+  <div class="stat-title">
+    total<br/>node<%= stats.total == 1 ? '' : 's' %>
+  </div>
+  <div class="stat-count">
+    <%= stats.unallocated %>
+  </div>
+  <div class="stat-title">
+    unallocated<br/>node<%= stats.unallocated == 1 ? '' : 's' %>
+  </div>
+</div>

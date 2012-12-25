@@ -4,7 +4,6 @@ requirejs.config({
     waitSeconds: 60,
     paths: {
         jquery: 'js/libs/jquery-1.7.2.min',
-        jqueryUIcore: 'js/libs/jquery-ui-1.9.2.custom.min',
         underscore: 'js/libs/underscore-min',
         backbone: 'js/libs/backbone-min',
         'backbone-model-update': 'js/libs/backbone-model-update',
@@ -17,9 +16,6 @@ requirejs.config({
         views: 'js/views'
     },
     shim: {
-        jqueryUIcore: {
-            deps: ['jquery']
-        },
         underscore: {
             exports: '_'
         },
@@ -37,7 +33,7 @@ requirejs.config({
             deps: ['jquery']
         },
         app: {
-            deps: ['jquery', 'jqueryUIcore', 'underscore', 'backbone', 'backbone-model-update', 'coccyx', 'bootstrap']
+            deps: ['jquery', 'underscore', 'backbone', 'backbone-model-update', 'coccyx', 'bootstrap']
         }
     }
 });

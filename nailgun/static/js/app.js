@@ -100,12 +100,6 @@ function(models, commonViews, clusterViews, clustersViews, releaseViews, notific
             window.app = app;
             Backbone.history.start();
 
-            // disable text selections
-            // FIXME: doesn't work in FF
-            if (!$.browser.mozilla) {
-                $('body').disableSelection();
-            }
-
             // tooltips
             $('body').tooltip({selector: "[rel=tooltip]"});
             app.bind('all', function(route) {$('.tooltip').remove();});

@@ -4,12 +4,12 @@
   <div class="alert alert-block global-success alert-success task-result">
     <button type="button" class="close">×</button>
     <h4>Success</h4>
-    <p><%= app.urlify(task.escape('message')) %></p>
+    <p class="enable-selection"><%= app.urlify(task.escape('message')) %></p>
   </div>
 <% } else if (taskStatus == 'error') { %>
   <div class="alert alert-block global-error alert-error task-result">
     <button type="button" class="close">×</button>
     <h4>Error</h4>
-    <p><%= app.urlify(task.escape('message')) %></p>
+    <p class="enable-selection"><%= app.urlify(task.escape('message')) %></p>
   </div>
 <% } %>
