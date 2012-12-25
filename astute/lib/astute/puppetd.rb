@@ -13,21 +13,23 @@ module Astute
           }[0].results[:data][:time]['last_run']}
 
       error_nodes = finished.select { |n|
-            n.results[:data][:resources]['failed'] != 0}.map {|x| {'uid' => x.results[:sender], 'status' => 'error'}}
+            n.results[:data][:resources]['failed'] != 0}.map {|x| x.results[:sender]}
+
       succeed_nodes = finished.select { |n|
-            n.results[:data][:resources]['failed'] == 0}.map {|x| {'uid' => x.results[:sender], 'status' => 'ready'}}
-      idle_nodes_uids = last_run.map {|n| n.results[:sender]} - finished.map {|n| n.results[:sender]}
-      idle_nodes = idle_nodes_uids.map {|n| {'uid' => n, 'status' => 'idle'}}
+            n.results[:data][:resources]['failed'] == 0}.map {|x| x.results[:sender]}
+
+      idle_nodes = last_run.map {|n| n.results[:sender]} - finished.map {|n| n.results[:sender]}
+
       nodes_to_check = idle_nodes + succeed_nodes + error_nodes
       unless nodes_to_check.size == last_run.size
-        raise "Internal error in nodes statuses calculation. Statuses calculated: #{nodes_to_check.inspect},"
+        raise "Shoud never happen. Internal error in nodes statuses calculation. Statuses calculated for: #{nodes_to_check.inspect},"
                     "nodes passed to check statuses of: #{last_run.map {|n| n.results[:sender]}}"
       end
-      return nodes_to_check
+      return {'succeed' => succeed_nodes, 'error' => error_nodes, 'idle' => idle_nodes}
     end
 
     public
-    def self.deploy(ctx, nodes, deployLogParser, retries=2)
+    def self.deploy(ctx, nodes, deploy_log_parser, retries=2)
       uids = nodes.map {|n| n['uid']}
       puppetd = MClient.new(ctx, "puppetd", uids)
       prev_summary = puppetd.last_run_summary
@@ -37,7 +39,7 @@ module Astute
       uids.each {|x| node_retries.merge!({x => retries}) }
 
       begin
-        deployLogParser.add_separator(nodes)
+        deploy_log_parser.add_separator(nodes)
       rescue Exception => e
         Astute.logger.warn "Some error occured when add separator to logs: #{e.message}, trace: #{e.backtrace.inspect}"
       end
@@ -49,25 +51,23 @@ module Astute
         # As a better implementation we can later use separate queue to get result, ex. http://www.devco.net/archives/2012/08/19/mcollective-async-result-handling.php
         # or we can rewrite puppet agent not to fork, and increase ttl for mcollective RPC.
         puppetd.runonce
-        nodes_to_check = nodes.map { |n| {'uid' => n['uid'], 'status' => nil} }
+        nodes_to_check = uids
         last_run = prev_summary
         while nodes_to_check.any?
-          nodes_to_check = calc_nodes_status(last_run, prev_summary)
-          Astute.logger.debug "Nodes statuses: #{nodes_to_check.inspect}"
-          nodes_ready = nodes_to_check.select { |n| n['status'] == 'ready' }
-          nodes_error = nodes_to_check.select { |n| n['status'] == 'error' }
+          calc_nodes = calc_nodes_status(last_run, prev_summary)
+          Astute.logger.debug "Nodes statuses: #{calc_nodes.inspect}"
+
+          # At least we will report about successfully deployed nodes
+          nodes_to_report = calc_nodes['succeed'].map { |n| {'uid' => n, 'status' => 'ready'} }
 
           # Process retries
           nodes_to_retry = []
-          nodes_error.each do |n|
-            uid = n['uid']
+          calc_nodes['error'].each do |uid|
             if node_retries[uid] > 0
               node_retries[uid] -= 1
-              # It's a bit hacky. Remove node from nodes_error if we will retry it.
-              # This hack is required for reporting: we don't want to report error node if it will be retried.
-              # Later on we will need to say the user that we are retrying.
-              nodes_error.delete_if {|x| x['uid'] == uid }
-              nodes_to_retry += [uid]
+              nodes_to_retry << uid
+            else
+              nodes_to_report << {'uid' => uid, 'status' => 'error'}
             end
           end
           if nodes_to_retry.any?
@@ -77,12 +77,10 @@ module Astute
           end
           # /end of processing retries
 
-          nodes_idle = nodes_to_check.select { |n| n['status'] == 'idle' }
-          nodes_to_report = nodes_ready + nodes_error
-          nodes_progress = []
-          if nodes_idle.any?
+          if calc_nodes['idle'].any?
             begin
-              nodes_progress = deployLogParser.progress_calculate(nodes_idle)
+              # Pass nodes because logs calculation needs IP address of node, not just uid
+              nodes_progress = deploy_log_parser.progress_calculate(calc_nodes['idle'], nodes)
               Astute.logger.debug "Got progress for nodes: #{nodes_progress.inspect}"
               # Nodes with progress are idle, so they are not included in nodes_to_report yet
               nodes_to_report += nodes_progress
@@ -92,11 +90,11 @@ module Astute
           end
           ctx.reporter.report('nodes' => nodes_to_report) if nodes_to_report.any?
           # we will iterate only over idle nodes and those that we restart deployment for
-          nodes_to_check = nodes_idle + nodes_to_retry.map {|n| {'uid' => n, 'status' => 'idle'} }
+          nodes_to_check = calc_nodes['idle'] + nodes_to_retry
           break if nodes_to_check.empty?
 
           sleep 2
-          puppetd.discover(:nodes => nodes_to_check.map {|x| x['uid']})
+          puppetd.discover(:nodes => nodes_to_check)
           last_run = puppetd.last_run_summary
         end
       end

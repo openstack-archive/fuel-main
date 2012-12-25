@@ -10,7 +10,7 @@ module Astute
       @pattern_spec = {'type' => 'count-lines',
         'endlog_patterns' => [{'pattern' => /Finished catalog run in [0-9]+\.[0-9]* seconds\n/, 'progress' => 1.0}],
         'expected_line_number' => 500}
-      @deployLogParser = Astute::LogParser::ParseNodeLogs.new('puppet-agent.log', @pattern_spec)
+      @deploy_log_parser = Astute::LogParser::ParseNodeLogs.new('puppet-agent.log', @pattern_spec)
     end
 
     def deploy(nodes, attrs)
@@ -33,12 +33,12 @@ module Astute
       Astute.logger.info "Starting deployment of controllers"
       deploy_piece(ctrl_nodes, attrs)
 
-      @deployLogParser.pattern_spec['expected_line_number'] = 380
+      @deploy_log_parser.pattern_spec['expected_line_number'] = 380
       compute_nodes = nodes.select {|n| n['role'] == 'compute'}
       Astute.logger.info "Starting deployment of computes"
       deploy_piece(compute_nodes, attrs)
 
-      @deployLogParser.pattern_spec['expected_line_number'] = 300
+      @deploy_log_parser.pattern_spec['expected_line_number'] = 300
       other_nodes = nodes - ctrl_nodes - compute_nodes
       Astute.logger.info "Starting deployment of other nodes"
       deploy_piece(other_nodes, attrs)

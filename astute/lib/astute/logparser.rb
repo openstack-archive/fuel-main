@@ -11,12 +11,13 @@ module Astute
         @pattern_spec = pattern_spec
       end
 
-      def progress_calculate(nodes)
+      def progress_calculate(uids_to_calc, nodes)
         nodes_progress = []
-        nodes.each do |node|
+        uids_to_calc.each do |uid|
+          node = nodes.select {|n| n['uid'] == uid}[0]
           path = "/var/log/remote/#{node['ip']}/#{@filename}"
           nodes_progress << {
-            'uid' => node['uid'],
+            'uid' => uid,
             'progress' => (LogParser::get_log_progress(path, @pattern_spec)*100).to_i # Return percent of progress
           }
         end
