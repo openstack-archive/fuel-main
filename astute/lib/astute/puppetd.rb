@@ -67,7 +67,7 @@ module Astute
               node_retries[uid] -= 1
               nodes_to_retry << uid
             else
-              nodes_to_report << {'uid' => uid, 'status' => 'error'}
+              nodes_to_report << {'uid' => uid, 'status' => 'error', 'error_type' => 'deploy'}
             end
           end
           if nodes_to_retry.any?
