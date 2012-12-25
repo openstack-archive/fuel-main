@@ -5,6 +5,7 @@ from sqlalchemy.sql import not_
 from netaddr import IPSet, IPNetwork
 
 from nailgun.db import orm
+from nailgun.task import errors
 from nailgun.api.models import Network, Node, NetworkElement, Cluster
 
 
@@ -29,8 +30,10 @@ def assign_ips(nodes_ids, network_name):
         filter_by(name=network_name).first()
 
     if not network:
-        raise Exception("Network '%s' for cluster_id=%s not found." %
-                        (network_name, cluster_id))
+        raise errors.AssignIPError(
+            "Network '%s' for cluster_id=%s not found." %
+            (network_name, cluster_id)
+        )
 
     used_ips = [ne.ip_addr for ne in orm().query(NetworkElement).all()
                 if ne.ip_addr]

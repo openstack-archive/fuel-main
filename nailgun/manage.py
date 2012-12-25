@@ -9,7 +9,7 @@ import code
 import web
 from sqlalchemy.orm import scoped_session, sessionmaker
 
-from nailgun.db import syncdb
+from nailgun.db import syncdb, orm
 from nailgun.settings import settings
 from nailgun.unit_test import TestRunner
 from nailgun.logger import logger
@@ -87,9 +87,7 @@ if __name__ == "__main__":
         from nailgun.wsgi import appstart
         appstart()
     elif params.action == "shell":
-        from nailgun.api.models import engine
-        orm = scoped_session(sessionmaker(bind=engine))
         code.interact(local={'orm': orm})
-        orm.commit()
+        orm().commit()
     else:
         parser.print_help()

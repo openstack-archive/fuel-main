@@ -12,15 +12,13 @@ engine = create_engine(settings.DATABASE_ENGINE)
 
 
 def orm():
-    conn = web.utils.ThreadedDict()
     if hasattr(web.ctx, "orm"):
         return web.ctx.orm
     else:
-        if not hasattr(conn, "orm") or not conn.orm:
-            conn.orm = scoped_session(
-                sessionmaker(bind=engine, query_cls=Query)
-            )
-        return conn.orm
+        web.ctx.orm = scoped_session(
+            sessionmaker(bind=engine, query_cls=Query)
+        )
+        return web.ctx.orm
 
 
 class Query(Query):

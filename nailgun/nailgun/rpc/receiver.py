@@ -15,6 +15,7 @@ import nailgun.rpc as rpc
 from nailgun.db import Query
 from nailgun.network.manager import get_node_networks
 from nailgun.settings import settings
+from nailgun.task.helpers import update_task_status
 from nailgun.api.models import engine, Node, Network
 from nailgun.api.models import Task
 from nailgun.notifier import notifier
@@ -38,78 +39,6 @@ class NailgunReceiver(object):
             )
             cls.connected = True
         return cls.conn.orm
-
-    @classmethod
-    def __update_task_status(cls, uuid, status, progress, msg=""):
-        task = cls.db().query(Task).filter_by(uuid=uuid).first()
-        if not task:
-            logger.error("Can't set status='%s', message='%s':no task \
-                    with UUID %s found!", status, msg, uuid)
-            return
-        previous_status = task.status
-        data = {'status': status, 'progress': progress, 'message': msg}
-        for key, value in data.iteritems():
-            if value:
-                setattr(task, key, value)
-        cls.db().add(task)
-        cls.db().commit()
-        if previous_status != status:
-            cls.__update_cluster_status(task)
-        if task.parent:
-            cls.__update_parent_task(task.parent)
-
-    @classmethod
-    def __update_parent_task(cls, task):
-        subtasks = task.subtasks
-        if len(subtasks):
-            if all(map(lambda s: s.status == 'ready', subtasks)):
-                task.status = 'ready'
-                task.progress = 100
-                task.message = '; '.join(map(
-                    lambda s: s.message, filter(
-                        lambda s: s.message is not None, subtasks)))
-                cls.__update_cluster_status(task)
-            elif all(map(lambda s: s.status == 'ready' or
-                         s.status == 'error', subtasks)):
-                task.status = 'error'
-                task.progress = 100
-                task.message = '; '.join(map(
-                    lambda s: s.message, filter(
-                        lambda s: s.status == 'error', subtasks)))
-                cls.__update_cluster_status(task)
-            else:
-                total_progress = 0
-                subtasks_with_progress = 0
-                for subtask in subtasks:
-                    if subtask.progress is not None:
-                        subtasks_with_progress += 1
-                        progress = subtask.progress
-                        if subtask.status == 'ready':
-                            progress = 100
-                        total_progress += progress
-                if subtasks_with_progress:
-                    total_progress /= subtasks_with_progress
-                task.progress = total_progress
-            cls.db().add(task)
-            cls.db().commit()
-
-    @classmethod
-    def __update_cluster_status(cls, task):
-        # FIXME: should be moved to task/manager "finish" method after
-        # web.ctx.orm issue is addressed
-        if task.name == 'deploy':
-            cluster = task.cluster
-            if task.status == 'ready':
-                # FIXME: we should also calculate deployment "validity"
-                # (check if all of the required nodes of required roles are
-                # present). If cluster is not "valid", we should also set
-                # its status to "error" even if it is deployed successfully.
-                # This method is also would be affected by web.ctx.orm issue.
-                cluster.status = 'operational'
-            elif task.status == 'error':
-                cluster.status = 'error'
-            cls.db().add(cluster)
-            cls.db().commit()
 
     @classmethod
     def remove_nodes_resp(cls, **kwargs):
@@ -158,7 +87,7 @@ class NailgunReceiver(object):
         if not error_msg:
             error_msg = ". ".join([success_msg, err_msg])
 
-        cls.__update_task_status(task_uuid, status, progress, error_msg)
+        update_task_status(task_uuid, status, progress, error_msg, db=cls.db())
 
     @classmethod
     def remove_cluster_resp(cls, **kwargs):
@@ -246,6 +175,11 @@ class NailgunReceiver(object):
                 Node.id.in_([n['uid'] for n in nodes])
             ).all()
             for node in nodes_db:
+                if node.progress is None:
+                    logger.error("Node {0} has no progress value - assuming 0")
+                    node.progress = 0
+                    cls.db().commit()
+
                 if node.status in ['provisioning', 'provisioned']:
                     nodes_progress.append(int(node.progress * coeff))
                 elif node.status in ['deploying', 'ready']:
@@ -307,7 +241,7 @@ class NailgunReceiver(object):
                 cls.db()
             )
         if task:
-            cls.__update_task_status(task_uuid, status, progress, message)
+            update_task_status(task_uuid, status, progress, message)
 
     @classmethod
     def verify_networks_resp(cls, **kwargs):
@@ -369,4 +303,4 @@ class NailgunReceiver(object):
             status = 'error'
             logger.error(error_msg)
 
-        cls.__update_task_status(task_uuid, status, progress, error_msg)
+        update_task_status(task_uuid, status, progress, error_msg)

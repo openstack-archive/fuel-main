@@ -82,8 +82,8 @@ class DeploymentTask(object):
     def execute(cls, task):
         task_uuid = task.uuid
         cluster_id = task.cluster.id
-        nodes = web.ctx.orm.query(Node).filter_by(
-            cluster_id=cluster_id,
+        nodes = orm().query(Node).filter_by(
+            cluster_id=task.cluster.id,
             pending_deletion=False)
 
         for node in nodes:
@@ -115,8 +115,8 @@ class DeploymentTask(object):
                              error, traceback.format_exc())
                 task.status = "error"
                 task.message = error
-                web.ctx.orm.add(task)
-                web.ctx.orm.commit()
+                orm().add(task)
+                orm().commit()
                 raise FailedProvisioning(error)
             # /only real tasks
 

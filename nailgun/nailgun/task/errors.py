@@ -31,3 +31,11 @@ class WrongNodeStatus(Exception):
         message="Wrong node status"
     ):
         super(WrongNodeStatus, self).__init__(message)
+
+
+class AssignIPError(Exception):
+    def __init__(
+        self,
+        message="Failed to assign IP to node"
+    ):
+        super(AssignIPError, self).__init__(message)

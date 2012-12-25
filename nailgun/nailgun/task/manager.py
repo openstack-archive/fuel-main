@@ -11,9 +11,12 @@ from nailgun.settings import settings
 from nailgun.api.models import Cluster
 from nailgun.api.models import Task
 from nailgun.api.models import Network
+from nailgun.task.helpers import update_task_status
 from nailgun.task.errors import DeploymentAlreadyStarted
 from nailgun.task.errors import WrongNodeStatus
 from nailgun.task.errors import DeletionAlreadyStarted
+from nailgun.task.errors import AssignIPError
+from nailgun.task.errors import FailedProvisioning
 
 from nailgun.task import task as tasks
 
@@ -58,15 +61,33 @@ class DeploymentTaskManager(TaskManager):
         )
         orm().add(supertask)
         orm().commit()
+        task_deletion, task_deployment = None, None
         if nodes_to_delete:
-            supertask.create_subtask("node_deletion")
+            task_deletion = supertask.create_subtask("node_deletion")
         if nodes_to_deploy:
-            supertask.create_subtask("deployment")
-        for subtask in supertask.subtasks:
-            subtask.execute({
-                'node_deletion': tasks.DeletionTask,
-                'deployment': tasks.DeploymentTask,
-            }[subtask.name])
+            task_deployment = supertask.create_subtask("deployment")
+
+        if task_deletion:
+            task_deletion.execute(tasks.DeletionTask)
+        if task_deployment:
+            err = None
+            try:
+                task_deployment.execute(tasks.DeploymentTask)
+            except AssignIPError:
+                err = "Failed to assign IP no node(s)"
+            except FailedProvisioning:
+                err = "Failed to provision node(s)"
+            except Exception as ex:
+                err = str(ex)
+            if err:
+                update_task_status(
+                    task_deployment.uuid,
+                    status="error",
+                    progress=100,
+                    msg=err
+                )
+                orm().commit()
+
         return supertask
 
 

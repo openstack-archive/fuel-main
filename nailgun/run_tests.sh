@@ -5,6 +5,7 @@ function usage {
   echo "Run tests"
   echo ""
   echo "  -p, --pep8               Just run PEP8 and HACKING compliance check"
+  echo "  -f, --fail-first         Nosetests will stop on first error"
   echo "  -j, --jslint             Just run JSLint"
   echo "  -u, --ui-tests           Just run UI tests"
   echo "  -x, --xunit              Generate reports (useful in Jenkins environment)"
@@ -22,6 +23,7 @@ function process_option {
   case "$1" in
     -h|--help) usage;;
     -p|--pep8) just_pep8=1;;
+    -f|--fail-first) fail_first=1;;
     -j|--jslint) just_jslint=1;;
     -u|--ui-tests) just_ui_tests=1;;
     -P|--no-pep8) no_pep8=1;;
@@ -37,6 +39,7 @@ function process_option {
 
 just_pep8=0
 no_pep8=0
+fail_first=0
 just_jslint=0
 no_jslint=0
 just_ui_tests=0
@@ -71,6 +74,10 @@ fi
 # If enabled, tell nose to create xunit report
 if [ $xunit -eq 1 ]; then
     noseopts="--with-xunit"
+fi
+
+if [ $fail_first -eq 1 ]; then
+    noseopts="--stop"
 fi
 
 function run_pep8 {

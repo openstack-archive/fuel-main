@@ -1,5 +1,6 @@
 # -*- coding: utf-8 -*-
 import json
+from time import sleep
 from mock import Mock, patch
 
 from nailgun.settings import settings
@@ -97,6 +98,43 @@ class TestTaskManagers(BaseHandlers):
                 .filter(Notification.message == "Cluster %s and all cluster "
                         "nodes are deleted" % cluster["name"])
             self.assertIsNotNone(notification)
+
+    @patch('nailgun.task.task.rpc.cast', nailgun.task.task.fake_cast)
+    @patch('nailgun.task.task.settings.FAKE_TASKS', True)
+    def test_deletion_during_deployment(self):
+        cluster = self.create_cluster_api()
+        node1 = self.create_default_node(cluster_id=cluster['id'],
+                                         pending_addition=True)
+        resp = self.app.put(
+            reverse(
+                'ClusterChangesHandler',
+                kwargs={'cluster_id': cluster['id']}),
+            headers=self.default_headers
+        )
+        deploy_uuid = json.loads(resp.body)['uuid']
+        resp = self.app.delete(
+            reverse(
+                'ClusterHandler',
+                kwargs={'cluster_id': cluster['id']}),
+            headers=self.default_headers
+        )
+
+        while True:
+            task_deploy = self.db.query(Task).filter_by(
+                uuid=deploy_uuid
+            ).first()
+            task_delete = self.db.query(Task).filter_by(
+                cluster_id=cluster['id'],
+                name="cluster_deletion"
+            ).first()
+            if not task_delete:
+                break
+            self.db.expire(task_deploy)
+            self.db.expire(task_delete)
+            sleep(1)
+
+        cluster_db = self.db.query(Cluster).get(cluster['id'])
+        self.assertIsNone(cluster_db)
 
     @patch('nailgun.task.task.rpc.cast', nailgun.task.task.fake_cast)
     @patch('nailgun.task.task.settings.FAKE_TASKS', True)
