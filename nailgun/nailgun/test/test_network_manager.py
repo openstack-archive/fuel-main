@@ -1,6 +1,7 @@
 import json
-from netaddr import IPNetwork, IPAddress
+
 from mock import patch
+from netaddr import IPNetwork, IPAddress
 
 from nailgun.test.base import BaseHandlers
 from nailgun.test.base import reverse
@@ -60,12 +61,11 @@ class TestNetworkManager(BaseHandlers):
 
     def test_assign_vip(self):
         cluster = self.create_cluster_api()
-        node1 = self.create_default_node(cluster_id=cluster['id'],
-                                         pending_addition=True)
-        node2 = self.create_default_node(cluster_id=cluster['id'],
-                                         pending_addition=True)
-
-        ip = netmanager.assign_vip(cluster['id'], "management")
+        vip = netmanager.assign_vip(cluster['id'], "management")
+        management_net = self.db.query(Network).filter_by(
+            cluster_id=cluster['id']).filter_by(
+                name='management').first()
+        ip_db = IPNetwork(management_net.cidr)[2]
         # TODO(mihgen): we should check DB for correct data!
         #  can't do it now because of issues with orm
-        self.assertEquals("172.16.0.2", ip)
+        self.assertEquals(str(ip_db), vip)

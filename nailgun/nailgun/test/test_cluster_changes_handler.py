@@ -3,6 +3,7 @@ import json
 from paste.fixture import TestApp
 
 from mock import Mock
+from netaddr import IPNetwork
 
 import nailgun
 from nailgun.test.base import BaseHandlers
@@ -53,8 +54,17 @@ class TestHandlers(BaseHandlers):
             cluster_id=cluster['id']).all()
         for net in nets_db:
             cluster_attrs[net.name + '_network_range'] = net.cidr
-        cluster_attrs['management_vip'] = '172.16.0.4'
-        cluster_attrs['public_vip'] = '240.0.1.4'
+
+        management_net = self.db.query(Network).filter_by(
+            cluster_id=cluster['id']).filter_by(
+                name='management').first()
+        management_vip = str(IPNetwork(management_net.cidr)[4])
+        public_net = self.db.query(Network).filter_by(
+            cluster_id=cluster['id']).filter_by(
+                name='public').first()
+        public_vip = str(IPNetwork(public_net.cidr)[4])
+        cluster_attrs['management_vip'] = management_vip
+        cluster_attrs['public_vip'] = public_vip
         cluster_attrs['deployment_mode'] = cluster_depl_mode
 
         msg['args']['attributes'] = cluster_attrs

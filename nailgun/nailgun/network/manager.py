@@ -88,7 +88,6 @@ def assign_vip(cluster_id, network_name):
                 if ne.ip_addr]
 
     cluster_ips = [ne.ip_addr for ne in orm().query(NetworkElement).
-                   filter_by(cluster_id=cluster_id).
                    filter_by(network=network.id).
                    filter_by(node=None).all() if ne.ip_addr]
     # check if any of used_ips in required cidr: network.cidr
@@ -109,8 +108,7 @@ def assign_vip(cluster_id, network_name):
         if not free_ip:
             raise Exception(
                 "Network pool %s ran out of free ips." % network.cidr)
-        ne_db = NetworkElement(network=network.id, cluster_id=cluster_id,
-                               ip_addr=free_ip)
+        ne_db = NetworkElement(network=network.id, ip_addr=free_ip)
         orm().add(ne_db)
         orm().commit()
         vip = free_ip
