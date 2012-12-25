@@ -119,12 +119,13 @@ class DeploymentTask(object):
         nodes_with_attrs = []
         for n in nodes:
             n.pending_addition = False
-            n.progress = None
+            n.progress = 0
             orm().add(n)
             orm().commit()
             nodes_with_attrs.append({
                 'id': n.id, 'status': n.status, 'error_type': n.error_type,
                 'uid': n.id, 'ip': n.ip, 'mac': n.mac, 'role': n.role,
+                'fqdn': n.fqdn,
                 'network_data': netmanager.get_node_networks(n.id)
             })
 
@@ -140,6 +141,9 @@ class DeploymentTask(object):
                 cluster_id, "management")
             cluster_attrs['public_vip'] = netmanager.assign_vip(
                 cluster_id, "public")
+
+        cluster_attrs['deployment_mode'] = '_'.join(
+            [task.cluster.mode, task.cluster.type])
 
         message = {
             'method': 'deploy',

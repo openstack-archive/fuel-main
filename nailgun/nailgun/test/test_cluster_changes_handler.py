@@ -18,6 +18,8 @@ class TestHandlers(BaseHandlers):
         cluster = self.create_cluster_api()
         cluster_db = self.db.query(Cluster).get(cluster['id'])
         cluster_db.mode = 'ha'
+        cluster_db.type = 'compute'
+        cluster_depl_mode = 'ha_compute'
         self.db.add(cluster_db)
         self.db.commit()
 
@@ -53,6 +55,7 @@ class TestHandlers(BaseHandlers):
             cluster_attrs[net.name + '_network_range'] = net.cidr
         cluster_attrs['management_vip'] = '172.16.0.4'
         cluster_attrs['public_vip'] = '240.0.1.4'
+        cluster_attrs['deployment_mode'] = cluster_depl_mode
 
         msg['args']['attributes'] = cluster_attrs
         msg['args']['task_uuid'] = deploy_task_uuid
@@ -63,7 +66,7 @@ class TestHandlers(BaseHandlers):
             node_ip = [ne.ip_addr + "/24" for ne in node_ips]
             nodes.append({'uid': n.id, 'status': n.status, 'ip': n.ip,
                           'error_type': n.error_type, 'mac': n.mac,
-                          'role': n.role, 'id': n.id,
+                          'role': n.role, 'id': n.id, 'fqdn': n.fqdn,
                           'network_data': [{'brd': '172.16.0.255',
                                             'ip': node_ip[0],
                                             'vlan': 103,
