@@ -57,3 +57,15 @@ class TestNetworkManager(BaseHandlers):
         self.assertEquals(False, net_ip in assigned_ips)
         self.assertEquals(False, gateway in assigned_ips)
         self.assertEquals(False, broadcast in assigned_ips)
+
+    def test_assign_vip(self):
+        cluster = self.create_cluster_api()
+        node1 = self.create_default_node(cluster_id=cluster['id'],
+                                         pending_addition=True)
+        node2 = self.create_default_node(cluster_id=cluster['id'],
+                                         pending_addition=True)
+
+        ip = netmanager.assign_vip(cluster['id'], "management")
+        # TODO(mihgen): we should check DB for correct data!
+        #  can't do it now because of issues with orm
+        self.assertEquals("172.16.0.2", ip)

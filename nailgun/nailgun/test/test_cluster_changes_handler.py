@@ -17,6 +17,9 @@ class TestHandlers(BaseHandlers):
         nailgun.task.task.rpc = Mock()
         cluster = self.create_cluster_api()
         cluster_db = self.db.query(Cluster).get(cluster['id'])
+        cluster_db.mode = 'ha'
+        self.db.add(cluster_db)
+        self.db.commit()
 
         node1 = self.create_default_node(cluster_id=cluster['id'],
                                          pending_addition=True)
@@ -48,6 +51,8 @@ class TestHandlers(BaseHandlers):
             cluster_id=cluster['id']).all()
         for net in nets_db:
             cluster_attrs[net.name + '_network_range'] = net.cidr
+        cluster_attrs['management_vip'] = '172.16.0.4'
+        cluster_attrs['public_vip'] = '240.0.1.4'
 
         msg['args']['attributes'] = cluster_attrs
         msg['args']['task_uuid'] = deploy_task_uuid

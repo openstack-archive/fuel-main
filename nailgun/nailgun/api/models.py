@@ -245,6 +245,7 @@ class NetworkElement(Base):
     network = Column(Integer, ForeignKey('networks.id'))
     node = Column(Integer, ForeignKey('nodes.id'))
     ip_addr = Column(String(25))
+    cluster_id = Column(Integer, ForeignKey('clusters.id'))
 
 
 class Vlan(Base, BasicValidator):

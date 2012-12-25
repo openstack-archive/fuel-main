@@ -81,8 +81,9 @@ class DeploymentTask(object):
     @classmethod
     def execute(cls, task):
         task_uuid = task.uuid
+        cluster_id = task.cluster.id
         nodes = web.ctx.orm.query(Node).filter_by(
-            cluster_id=task.cluster.id,
+            cluster_id=cluster_id,
             pending_deletion=False)
 
         if not settings.FAKE_TASKS or not int(settings.FAKE_TASKS):
@@ -129,10 +130,16 @@ class DeploymentTask(object):
 
         cluster_attrs = task.cluster.attributes.merged_attrs()
         nets_db = orm().query(Network).filter_by(
-            cluster_id=task.cluster.id).all()
+            cluster_id=cluster_id).all()
 
         for net in nets_db:
             cluster_attrs[net.name + '_network_range'] = net.cidr
+
+        if task.cluster.mode == 'ha':
+            cluster_attrs['management_vip'] = netmanager.assign_vip(
+                cluster_id, "management")
+            cluster_attrs['public_vip'] = netmanager.assign_vip(
+                cluster_id, "public")
 
         message = {
             'method': 'deploy',
