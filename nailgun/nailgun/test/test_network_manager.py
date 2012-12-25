@@ -68,4 +68,16 @@ class TestNetworkManager(BaseHandlers):
         ip_db = IPNetwork(management_net.cidr)[2]
         # TODO(mihgen): we should check DB for correct data!
         #  can't do it now because of issues with orm
+
+    def test_assign_vip_is_idempotent(self):
+        cluster = self.create_cluster_api()
+        vip = netmanager.assign_vip(cluster['id'], "management")
+        vip2 = netmanager.assign_vip(cluster['id'], "management")
+        management_net = self.db.query(Network).filter_by(
+            cluster_id=cluster['id']).filter_by(
+                name='management').first()
+        ip_db = IPNetwork(management_net.cidr)[2]
+        # This test may fail when we fix orm issues
+        # If that happen, the code behavior in netmanager is not idempotent...
         self.assertEquals(str(ip_db), vip)
+        self.assertEquals(vip, vip2)
