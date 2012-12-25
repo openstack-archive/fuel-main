@@ -87,7 +87,7 @@ class NailgunReceiver(object):
         if not error_msg:
             error_msg = ". ".join([success_msg, err_msg])
 
-        update_task_status(task_uuid, status, progress, error_msg, db=cls.db())
+        update_task_status(task_uuid, status, progress, error_msg)
 
     @classmethod
     def remove_cluster_resp(cls, **kwargs):

@@ -25,7 +25,7 @@ def update_task_status(uuid, status, progress, msg=""):
         update_parent_task(uuid)
 
 
-def update_parent_task(task):
+def update_parent_task(uuid):
     task = orm().query(Task).filter_by(uuid=uuid).first()
     subtasks = task.subtasks
     if len(subtasks):
