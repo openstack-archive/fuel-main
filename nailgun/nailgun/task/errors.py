@@ -12,7 +12,7 @@ class DeploymentAlreadyStarted(Exception):
 class DeletionAlreadyStarted(Exception):
     def __init__(
         self,
-        message="Cluster deletion already started"
+        message="Installation removal already started"
     ):
         super(DeletionAlreadyStarted, self).__init__(message)
 
