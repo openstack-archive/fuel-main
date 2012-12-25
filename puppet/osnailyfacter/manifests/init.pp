@@ -1,8 +1,7 @@
 class osnailyfacter {
-  $cluster_mode = "simple"
-  case $cluster_mode {
-    "simple": { include osnailyfacter::cluster_simple }
-    "ha": { include osnailyfacter::cluster_ha }
+  case $deployment_mode {
+    "simple_compute": { include osnailyfacter::cluster_simple }
+    "ha_compute": { include osnailyfacter::cluster_ha }
   }
 
   include osnailyfacter::network_setup

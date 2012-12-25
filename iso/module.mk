@@ -83,8 +83,7 @@ $(ISOROOT)/puppet-nailgun.tgz: $(call find-files,puppet)
 
 $(ISOROOT)/puppet-slave.tgz: \
 		$(call find-files,fuel/deployment/puppet/network)
-	@rm -rf fuel/deployment/puppet/network
-	(cd puppet && tar cf $(BUILD_DIR)/puppet-slave.tar puppet-network nailytest osnailyfacter)
+	(cd puppet && tar cf $(BUILD_DIR)/puppet-slave.tar nailytest osnailyfacter)
 	(cd fuel/deployment/puppet && tar rf $(BUILD_DIR)/puppet-slave.tar ./*)
 	gzip -c -9 $(BUILD_DIR)/puppet-slave.tar > $@
 

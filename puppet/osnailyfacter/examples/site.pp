@@ -10,13 +10,16 @@ $private_interface       = $fixed_interface  # provided by Astute  # 'eth0.103'
 #$controller_node_address  = '10.0.0.2'
 #$controller_node_public   = '10.0.203.72'
 
+$fixed_range = $fixed_network_range
+$floating_range = $floating_network_range
+
 $openstack_version = {
-  'keystone'   => latest,
-  'glance'     => latest,
-  'horizon'    => latest,
-  'nova'       => latest,
-  'novncproxy' => latest,
-  'cinder' => latest,
+  'keystone'   => 'latest',
+  'glance'     => 'latest',
+  'horizon'    => 'latest',
+  'nova'       => 'latest',
+  'novncproxy' => 'latest',
+  'cinder'     => 'latest',
 }
 
 
