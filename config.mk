@@ -13,3 +13,4 @@ iso.path:=$(BUILD_DIR)/iso/nailgun-centos-6.3-amd64.iso
 bootstrap.linux:=$(BUILD_DIR)/bootstrap/linux
 bootstrap.initrd:=$(BUILD_DIR)/bootstrap/initrd.gz
 
+NOFORWARD:=1
