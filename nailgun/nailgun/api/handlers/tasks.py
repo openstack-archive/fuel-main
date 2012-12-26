@@ -23,8 +23,7 @@ class TaskHandler(JSONHandler):
 
     def GET(self, task_id):
         web.header('Content-Type', 'application/json')
-        q = orm().query(Task)
-        task = q.get(task_id)
+        task = orm().query(Task).get(task_id)
         if not task:
             return web.notfound()
         return json.dumps(

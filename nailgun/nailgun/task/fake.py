@@ -2,6 +2,7 @@ import web
 import time
 import logging
 import threading
+from random import randrange
 
 from sqlalchemy.orm import object_mapper, ColumnProperty, \
     scoped_session, sessionmaker
@@ -33,39 +34,42 @@ class FakeDeploymentThread(FakeThread):
         kwargs = {
             'task_uuid': self.task_uuid,
             'nodes': self.data['args']['nodes'],
-            'progress': 0,
             'status': 'running'
         }
 
         tick_count = int(settings.FAKE_TASKS_TICK_COUNT) or 10
         tick_interval = int(settings.FAKE_TASKS_TICK_INTERVAL) or 3
 
-        for i in range(1, tick_count + 1):
-            if i < tick_count / 2:
-                for n in kwargs['nodes']:
-                    if n['status'] == 'discover' or (
-                        n['status'] == 'error' and
-                            n['error_type'] == 'provision'):
-                                n['status'] = 'provisioning'
-                    elif n['status'] == 'ready':
-                        n['status'] = 'deploying'
-            elif i < tick_count:
-                for n in kwargs['nodes']:
-                    if n['status'] == 'provisioning':
-                        n['status'] = 'deploying'
-            else:
+        next_st = {
+            "discover": "provisioning",
+            "provisioning": "provisioned",
+            "provisioned": "deploying",
+            "deploying": "ready"
+        }
+        ready = False
+        while not ready:
+            for n in kwargs['nodes']:
+                if not 'progress' in n and n['status'] == 'discover':
+                    n['status'] = next_st[n['status']]
+                    n['progress'] = 0
+                elif n['status'] == 'provisioned':
+                    n['status'] = next_st[n['status']]
+                    n['progress'] = 0
+                else:
+                    n['progress'] += randrange(0, tick_count)
+                    if n['progress'] >= 100:
+                        if n['status'] in ('provisioning', 'deploying'):
+                            n['status'] = next_st[n['status']]
+                        n['progress'] = 100
+            if all(map(
+                lambda n: n['progress'] == 100 and n['status'] == 'ready',
+                kwargs['nodes']
+            )):
                 kwargs['status'] = 'ready'
-                for n in kwargs['nodes']:
-                    if n['status'] == 'deploying':
-                        n['status'] = 'ready'
-
-            kwargs['progress'] = 100 * i / tick_count
-            if kwargs['progress'] == 100:
-                kwargs['status'] = 'ready'
+                ready = True
             resp_method = getattr(receiver, self.respond_to)
             resp_method(**kwargs)
-            if i < tick_count:
-                time.sleep(tick_interval)
+            time.sleep(tick_interval)
 
 
 class FakeDeletionThread(FakeThread):

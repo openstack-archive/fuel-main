@@ -11,17 +11,7 @@ from nailgun.settings import settings
 engine = create_engine(settings.DATABASE_ENGINE)
 
 
-def orm():
-    if hasattr(web.ctx, "orm"):
-        return web.ctx.orm
-    else:
-        web.ctx.orm = scoped_session(
-            sessionmaker(bind=engine, query_cls=Query)
-        )
-        return web.ctx.orm
-
-
-class Query(Query):
+class NoCacheQuery(Query):
     """
     Override for common Query class.
     Needed for automatic refreshing objects
@@ -30,7 +20,17 @@ class Query(Query):
     """
     def __init__(self, *args, **kwargs):
         self._populate_existing = True
-        super(Query, self).__init__(*args, **kwargs)
+        super(NoCacheQuery, self).__init__(*args, **kwargs)
+
+
+def orm():
+    if hasattr(web.ctx, "orm"):
+        return web.ctx.orm
+    else:
+        web.ctx.orm = scoped_session(
+            sessionmaker(bind=engine, query_cls=NoCacheQuery)
+        )
+        return web.ctx.orm
 
 
 def load_db_driver(handler):

@@ -15,14 +15,21 @@ def update_task_status(uuid, status, progress, msg=""):
     previous_status = task.status
     data = {'status': status, 'progress': progress, 'message': msg}
     for key, value in data.iteritems():
-        if value:
+        if value is not None:
             setattr(task, key, value)
+            logger.info(
+                "Task {0} {1} is set to {2}".format(
+                    task.uuid,
+                    key,
+                    value
+                )
+            )
     orm().add(task)
     orm().commit()
     if previous_status != status:
         update_cluster_status(uuid)
     if task.parent:
-        update_parent_task(uuid)
+        update_parent_task(task.parent.uuid)
 
 
 def update_parent_task(uuid):
@@ -35,30 +42,31 @@ def update_parent_task(uuid):
             task.message = '; '.join(map(
                 lambda s: s.message, filter(
                     lambda s: s.message is not None, subtasks)))
+            orm().add(task)
+            orm().commit()
             update_cluster_status(uuid)
-        elif all(map(lambda s: s.status == 'ready' or
-                     s.status == 'error', subtasks)):
+        elif all(map(lambda s: s.status in ('ready', 'error'), subtasks)):
             task.status = 'error'
             task.progress = 100
             task.message = '; '.join(map(
                 lambda s: s.message, filter(
                     lambda s: s.status == 'error', subtasks)))
+            orm().add(task)
+            orm().commit()
             update_cluster_status(uuid)
         else:
-            total_progress = 0
-            subtasks_with_progress = 0
-            for subtask in subtasks:
-                if subtask.progress is not None:
-                    subtasks_with_progress += 1
-                    progress = subtask.progress
-                    if subtask.status == 'ready':
-                        progress = 100
-                    total_progress += progress
+            subtasks_with_progress = filter(
+                lambda s: s.progress is not None,
+                subtasks
+            )
             if subtasks_with_progress:
-                total_progress /= subtasks_with_progress
-            task.progress = total_progress
-        orm().add(task)
-        orm().commit()
+                task.progress = int(sum(
+                    [s.progress for s in subtasks_with_progress]
+                ) / len(subtasks_with_progress))
+            else:
+                task.progress = 0
+            orm().add(task)
+            orm().commit()
 
 
 def update_cluster_status(uuid):

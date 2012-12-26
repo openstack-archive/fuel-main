@@ -12,7 +12,7 @@ from web.utils import ThreadedDict
 from sqlalchemy.orm import scoped_session, sessionmaker
 
 import nailgun.rpc as rpc
-from nailgun.db import Query
+from nailgun.db import orm
 from nailgun.network.manager import get_node_networks
 from nailgun.settings import settings
 from nailgun.task.helpers import update_task_status
@@ -28,17 +28,6 @@ class TaskNotFound(Exception):
 
 
 class NailgunReceiver(object):
-    conn = ThreadedDict()
-    connected = False
-
-    @classmethod
-    def db(cls):
-        if not cls.connected or not hasattr(cls.conn, "orm"):
-            cls.conn.orm = scoped_session(
-                sessionmaker(bind=engine, query_cls=Query)
-            )
-            cls.connected = True
-        return cls.conn.orm
 
     @classmethod
     def remove_nodes_resp(cls, **kwargs):
@@ -51,16 +40,16 @@ class NailgunReceiver(object):
         progress = kwargs.get('progress')
 
         for node in nodes:
-            node_db = cls.db().query(Node).get(node['uid'])
+            node_db = orm().query(Node).get(node['uid'])
             if not node_db:
                 logger.error(
                     "Failed to delete node '%s': node doesn't exist", str(node)
                 )
                 break
-            cls.db().delete(node_db)
+            orm().delete(node_db)
 
         for node in error_nodes:
-            node_db = cls.db().query(Node).get(node['uid'])
+            node_db = orm().query(Node).get(node['uid'])
             if not node_db:
                 logger.error(
                     "Failed to delete node '%s' marked as error from Naily:"
@@ -69,8 +58,8 @@ class NailgunReceiver(object):
                 break
             node_db.pending_deletion = False
             node_db.status = 'error'
-            cls.db().add(node_db)
-        cls.db().commit()
+            orm().add(node_db)
+        orm().commit()
 
         success_msg = "No nodes were removed"
         err_msg = "No errors occured"
@@ -95,31 +84,31 @@ class NailgunReceiver(object):
 
         cls.remove_nodes_resp(**kwargs)
 
-        task = cls.db().query(Task).filter_by(uuid=task_uuid).first()
+        task = orm().query(Task).filter_by(uuid=task_uuid).first()
         cluster = task.cluster
 
         if task.status in ('ready',):
             logger.debug("Removing cluster itself")
             cluster_name = cluster.name
-            cls.db().delete(cluster)
-            cls.db().commit()
+            orm().delete(cluster)
+            orm().commit()
 
             notifier.notify(
                 "done",
                 "Installation '%s' and all its nodes are deleted" % (
                     cluster_name),
-                db=cls.db()
+                db=orm()
             )
 
         elif task.status in ('error',):
             cluster.status = 'error'
-            cls.db().add(cluster)
-            cls.db().commit()
+            orm().add(cluster)
+            orm().commit()
             notifier.notify(
                 "error",
                 task.message,
                 cluster.id,
-                cls.db()
+                orm()
             )
 
     @classmethod
@@ -133,7 +122,7 @@ class NailgunReceiver(object):
 
         error_nodes = []
         for node in nodes:
-            node_db = cls.db().query(Node).get(node['uid'])
+            node_db = orm().query(Node).get(node['uid'])
 
             if not node_db:
                 logger.warning(
@@ -149,8 +138,8 @@ class NailgunReceiver(object):
                     setattr(node_db, param, node[param])
                     modified = True
             if modified:
-                cls.db().add(node_db)
-                cls.db().commit()
+                orm().add(node_db)
+                orm().commit()
             if node.get('status') and node['status'] == 'error':
                 error_nodes.append(node_db)
 
@@ -171,37 +160,40 @@ class NailgunReceiver(object):
             # we should calculate task progress by nodes info
             nodes_progress = []
 
-            nodes_db = cls.db().query(Node).filter(
+            orm().expire_all()
+            nodes_db = orm().query(Node).filter(
                 Node.id.in_([n['uid'] for n in nodes])
             ).all()
             for node in nodes_db:
                 if node.progress is None:
                     logger.error("Node {0} has no progress value - assuming 0")
                     node.progress = 0
-                    cls.db().commit()
+                    orm().commit()
 
                 if node.status in ['provisioning', 'provisioned']:
-                    nodes_progress.append(int(node.progress * coeff))
+                    nodes_progress.append(float(node.progress) * coeff)
                 elif node.status in ['deploying', 'ready']:
                     nodes_progress.append(
-                        int(100 * coeff + node.progress * (1 - coeff))
+                        100.0 * coeff + float(node.progress) * (1.0 - coeff)
                     )
+                elif node.status == "discover":
+                    nodes_progress.append(0)
 
-            progress = sum(nodes_progress) / len(nodes_progress)
+            progress = int(sum(nodes_progress) / len(nodes_progress))
 
-        task = cls.db().query(Task).filter_by(uuid=task_uuid).first()
+        task = orm().query(Task).filter_by(uuid=task_uuid).first()
 
         if status in ('error',) and task:
             notifier.notify(
                 "error",
                 message,
                 task.cluster_id,
-                cls.db()
+                orm()
             )
         elif status in ('ready',) and task:
             # determining horizon url - it's ip of controller
             # from a public network - works only for simple deployment
-            controller = cls.db().query(Node).filter(
+            controller = orm().query(Node).filter(
                 Node.cluster_id == task.cluster_id and
                 Node.role == 'controller'
             ).first()
@@ -238,7 +230,7 @@ class NailgunReceiver(object):
                 "done",
                 message,
                 task.cluster_id,
-                cls.db()
+                orm()
             )
         if task:
             update_task_status(task_uuid, status, progress, message)
@@ -253,7 +245,7 @@ class NailgunReceiver(object):
         progress = kwargs.get('progress')
 
         # We simply check that each node received all vlans for cluster
-        task = cls.db().query(Task).filter_by(uuid=task_uuid).first()
+        task = orm().query(Task).filter_by(uuid=task_uuid).first()
         if not task:
             logger.error("verify_networks_resp: task \
                     with UUID %s not found!", task_uuid)
@@ -270,7 +262,7 @@ class NailgunReceiver(object):
                 if not error_msg:
                     error_msg = 'Received empty node list from orchestrator.'
             else:
-                nets_db = cls.db().query(Network).filter_by(
+                nets_db = orm().query(Network).filter_by(
                     cluster_id=task.cluster_id
                 ).all()
                 vlans_db = [net.vlan_id for net in nets_db]

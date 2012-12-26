@@ -15,6 +15,7 @@ from nailgun.db import orm
 from nailgun.settings import settings
 from nailgun.notifier import notifier
 from nailgun.task.errors import WrongNodeStatus
+from nailgun.task.helpers import update_task_status
 from nailgun.network import manager as netmanager
 from nailgun.api.models import Base, Network, Node
 from nailgun.api.validators import BasicValidator
@@ -113,10 +114,7 @@ class DeploymentTask(object):
                 error = "Failed to call cobbler: %s" % err.message
                 logger.error("Provision error: %s\n%s",
                              error, traceback.format_exc())
-                task.status = "error"
-                task.message = error
-                orm().add(task)
-                orm().commit()
+                update_task_status(task.uuid, "error", 100, error)
                 raise FailedProvisioning(error)
             # /only real tasks
 
