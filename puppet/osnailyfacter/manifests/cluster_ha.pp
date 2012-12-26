@@ -12,7 +12,13 @@ class osnailyfacter::cluster_ha {
 #$swift_zone = 1 # Different for each controller
 #$swift_proxy_address = $internal_virtual_ip
 #$internal_address = '192.168.0.2'
+$controller_internal_addresses = parsejson($ctrl_management_addresses)
+$controller_public_addresses = parsejson($ctrl_public_addresses)
+$controller_hostnames = keys($controller_internal_addresses)
+$galera_nodes = values($controller_internal_addresses)
 
+$internal_virtual_ip = $management_vip
+$public_virtual_ip = $public_vip
 
 #
 # site_openstack_swift_compact from fuel examples
@@ -107,12 +113,12 @@ $rabbit_user             = 'nova'
 #$swift_user_password     = 'swift_pass' # Swift is turned off
 #$swift_shared_secret     = 'changeme' # Swift is turned off
 
-#$quantum_user_password   = 'quantum_pass' # Quantum is turned off
-#$quantum_db_password     = 'quantum_pass' # Quantum is turned off
-#$quantum_db_user         = 'quantum' # Quantum is turned off
-#$quantum_db_dbname       = 'quantum' # Quantum is turned off
-#$tenant_network_type     = 'gre' # Quantum is turned off
-#$quantum_host            = $internal_virtual_ip # Quantum is turned off
+$quantum_user_password   = 'quantum_pass' # Quantum is turned off
+$quantum_db_password     = 'quantum_pass' # Quantum is turned off
+$quantum_db_user         = 'quantum' # Quantum is turned off
+$quantum_db_dbname       = 'quantum' # Quantum is turned off
+$tenant_network_type     = 'gre' # Quantum is turned off
+$quantum_host            = $internal_virtual_ip # Quantum is turned off
 
 
 # Moved to the global scope
@@ -129,7 +135,7 @@ $rabbit_user             = 'nova'
 $mirror_type = 'external'
 
 #$internal_address = getvar("::ipaddress_${internal_interface}") # Provided by Astute
-#$quantum_sql_connection  = "mysql://${quantum_db_user}:${quantum_db_password}@${quantum_host}/${quantum_db_dbname}" # Quantum is turned off
+$quantum_sql_connection  = "mysql://${quantum_db_user}:${quantum_db_password}@${quantum_host}/${quantum_db_dbname}" # Quantum is turned off
 
 #$swift_local_net_ip      = $internal_address # Swift is turned off
 $controller_node_public  = $internal_virtual_ip
@@ -180,16 +186,16 @@ class compact_controller {
     export_resources        => false,
     glance_backend          => $glance_backend,
     #swift_proxies           => $swift_proxies,
-    #quantum                 => $quantum,
-    #quantum_user_password   => $quantum_user_password,
-    #quantum_db_password     => $quantum_db_password,
-    #quantum_db_user         => $quantum_db_user,
-    #quantum_db_dbname       => $quantum_db_dbname,
-    #tenant_network_type     => $tenant_network_type,
-    #segment_range           => $segment_range,
+    quantum                 => $quantum,
+    quantum_user_password   => $quantum_user_password,
+    quantum_db_password     => $quantum_db_password,
+    quantum_db_user         => $quantum_db_user,
+    quantum_db_dbname       => $quantum_db_dbname,
+    tenant_network_type     => $tenant_network_type,
+    segment_range           => $segment_range,
     cinder                  => $cinder,
     manage_volumes          => $manage_volumes,
-    galera_nodes            => $controller_hostnames,
+    galera_nodes            => $galera_nodes,
     nv_physical_volume      => $nv_physical_volume,
   }
   #class { 'swift::keystone::auth':
@@ -289,11 +295,11 @@ class compact_controller {
         cache_server_ip        => $controller_hostnames,
         service_endpoint       => $internal_virtual_ip,
         quantum                => $quantum,
-        #quantum_host           => $quantum_host,
-        #quantum_sql_connection => $quantum_sql_connection,
-        #quantum_user_password  => $quantum_user_password,
-        #tenant_network_type    => $tenant_network_type,
-        #segment_range          => $segment_range,
+        quantum_host           => $quantum_host,
+        quantum_sql_connection => $quantum_sql_connection,
+        quantum_user_password  => $quantum_user_password,
+        tenant_network_type    => $tenant_network_type,
+        segment_range          => $segment_range,
         cinder                 => $cinder,
         #ssh_private_key        => 'puppet:///ssh_keys/openstack',
         #ssh_public_key         => 'puppet:///ssh_keys/openstack.pub',

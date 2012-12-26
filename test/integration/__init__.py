@@ -63,9 +63,9 @@ class Ci(object):
             node.boot = ['disk', 'cdrom']
             environment.nodes.append(node)
 
-            for n in range(5):
+            for n in range(4):
                 nodex = Node('slave%d' % (n + 1))
-                nodex.memory = 1024
+                nodex.memory = 768
                 nodex.vnc = True
                 nodex.disks.append(
                     Disk(size=30 * 1024 ** 3)

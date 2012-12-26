@@ -125,6 +125,28 @@ class TestNode(Base):
         wait(lambda: _check_nova_status(node['ip']), timeout=300)
 
     @snapshot_errors
+    def test_ha_cluster(self):
+        def _check_nova_status(ip):
+            ctrl_ssh = SSHClient()
+            ctrl_ssh.connect_ssh(ip, 'root', 'r00tme')
+            ret = ctrl_ssh.execute('/usr/bin/nova-manage service list')
+            return (
+                (ret['exit_status'] == 0)
+                and (''.join(ret['stdout']).count(":-)") == 10)
+                and (''.join(ret['stdout']).count("XXX") == 0)
+            )
+        self._revert_nodes()
+        cluster_name = 'ha_cluster'
+        nodes = {
+            'controller': ['slave1', 'slave2'],
+            'compute': ['slave3', 'slave4']
+        }
+        self._basic_provisioning(cluster_name, nodes)
+        slave = ci.environment.node['slave1']
+        node = self._get_slave_node_by_devops_node(slave)
+        wait(lambda: _check_nova_status(node['ip']), timeout=300)
+
+    @snapshot_errors
     def test_network_config(self):
         self._revert_nodes()
         self._clean_clusters()
@@ -305,6 +327,21 @@ class TestNode(Base):
         node_names = []
         for role in nodes_dict:
             node_names += nodes_dict[role]
+        try:
+            if len(node_names) > 1:
+                if len(nodes_dict['controller']) == 1:
+                    self.client.put(
+                        "/api/clusters/%s/" % cluster_id,
+                        {"mode": "multinode"}
+                    )
+                if len(nodes_dict['controller']) > 1:
+                    self.client.put(
+                        "/api/clusters/%s/" % cluster_id,
+                        {"mode": "ha"}
+                    )
+        except KeyError:
+            pass
+
         nodes = self._bootstrap_nodes(node_names)
 
         for role in nodes_dict:
@@ -315,11 +352,7 @@ class TestNode(Base):
                     "/api/nodes/%s/" % node['id'],
                     {"role": role, "pending_addition": True}
                 )
-        if len(node_names) > 1:
-            self.client.put(
-                "/api/clusters/%s/" % cluster_id,
-                {"mode": "multinode"}
-            )
+
         self._update_nodes_in_cluster(cluster_id, nodes)
         task = self._launch_provisioning(cluster_id)
 
@@ -354,9 +387,12 @@ class TestNode(Base):
         task_id = task['id']
         logging.info("Waiting task %r ..." % task_desc)
         while not ready:
-            task = json.loads(
-                self.client.get("/api/tasks/%s" % task_id).read()
-            )
+            try:
+                task = json.loads(
+                    self.client.get("/api/tasks/%s" % task_id).read()
+                )
+            except ValueError:
+                task = {'status': 'running'}
             if task['status'] == 'ready':
                 logging.info("Task %r complete" % task_desc)
                 ready = True
