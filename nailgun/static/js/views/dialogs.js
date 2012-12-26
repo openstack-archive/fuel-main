@@ -53,7 +53,7 @@ function(models, createClusterDialogTemplate, changeClusterModeDialogTemplate, d
                 }, this);
             }, this);
             cluster.set({
-                name: this.$('input[name=name]').val(),
+                name: $.trim(this.$('input[name=name]').val()),
                 release: parseInt(this.$('select[name=release]').val(), 10)
             });
             if (cluster.isValid()) {

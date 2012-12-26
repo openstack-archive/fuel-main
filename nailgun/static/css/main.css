@@ -781,6 +781,7 @@ h6.page-title {
   font-weight: 500;
   line-height: 16px;
   color: #333333;
+  word-break: break-all;
 }
 .cluster-hardware {
   /* background-color: #dadada; */

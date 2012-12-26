@@ -20,10 +20,8 @@ define(function() {
         urlRoot: '/api/clusters',
         validate: function(attrs) {
             var errors = {};
-            if (!attrs.name || attrs.name.length == 0) {
+            if (!$.trim(attrs.name) || $.trim(attrs.name).length == 0) {
                 errors.name = 'Installation name cannot be empty';
-            } else if (attrs.name.length > 100) {
-                errors.name = 'Installation name is too long';
             }
             if (!attrs.release) {
                 errors.release = 'Please choose OpenStack release';
