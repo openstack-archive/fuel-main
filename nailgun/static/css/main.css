@@ -2100,3 +2100,7 @@ h6.page-title {
 .modal-body {
     max-height: 450px;
 }
+
+.label-info {
+  margin-bottom: 10px;
+}

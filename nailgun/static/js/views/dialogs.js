@@ -132,7 +132,7 @@ function(models, createClusterDialogTemplate, changeClusterModeDialogTemplate, d
             }
         },
         toggleTypes: function() {
-            this.$('.type-control-group, .simple-type-title').toggleClass('hide', this.$('input[name=mode]:checked').val() == 'singlenode');
+            this.$('.type-control-group, .simple-type-title, .label-info').toggleClass('hide', this.$('input[name=mode]:checked').val() == 'singlenode');
             this.$('.mode-description').addClass('hide');
             this.$('.help-mode-' + this.$('input[name=mode]:checked').val()).removeClass('hide');
         },
