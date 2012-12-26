@@ -73,11 +73,11 @@ fi
 
 # If enabled, tell nose to create xunit report
 if [ $xunit -eq 1 ]; then
-    noseopts="--with-xunit"
+    noseopts=${noseopts}" --with-xunit"
 fi
 
 if [ $fail_first -eq 1 ]; then
-    noseopts="--stop"
+    noseopts=${noseopts}" --stop"
 fi
 
 function run_pep8 {

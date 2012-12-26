@@ -1,6 +1,7 @@
 # -*- coding: utf-8 -*-
 import json
-from time import sleep
+import time
+
 from mock import Mock, patch
 
 from nailgun.settings import settings
@@ -120,7 +121,8 @@ class TestTaskManagers(BaseHandlers):
                 kwargs={'cluster_id': cluster['id']}),
             headers=self.default_headers
         )
-
+        timeout = 120
+        timer = time.time()
         while True:
             task_deploy = self.db.query(Task).filter_by(
                 uuid=deploy_uuid
@@ -133,7 +135,9 @@ class TestTaskManagers(BaseHandlers):
                 break
             self.db.expire(task_deploy)
             self.db.expire(task_delete)
-            sleep(1)
+            if (time.time() - timer) > timeout:
+                break
+            time.sleep(1)
 
         cluster_db = self.db.query(Cluster).get(cluster['id'])
         self.assertIsNone(cluster_db)

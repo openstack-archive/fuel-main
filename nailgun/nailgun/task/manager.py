@@ -3,6 +3,7 @@
 import uuid
 import logging
 import itertools
+import traceback
 
 import web
 
@@ -73,12 +74,9 @@ class DeploymentTaskManager(TaskManager):
             err = None
             try:
                 task_deployment.execute(tasks.DeploymentTask)
-            except AssignIPError:
-                err = "Failed to assign IP no node(s)"
-            except FailedProvisioning:
-                err = "Failed to provision node(s)"
-            except Exception as ex:
+            except (AssignIPError, FailedProvisioning, Exception) as exc:
                 err = str(ex)
+                logger.error(traceback.format_exc())
             if err:
                 update_task_status(
                     task_deployment.uuid,
@@ -107,14 +105,14 @@ class VerifyNetworksTaskManager(TaskManager):
 class ClusterDeletionManager(TaskManager):
 
     def execute(self):
-        current_cluster_tasks = orm().query(Task).filter(
-            Task.cluster == self.cluster,
-            Task.name == 'cluster_deletion'
+        current_cluster_tasks = orm().query(Task).filter_by(
+            cluster=self.cluster,
+            name='cluster_deletion'
         )
-        deploy_running = orm().query(Task).filter(
-            Task.cluster == self.cluster,
-            Task.name == 'deploy',
-            Task.status == 'running'
+        deploy_running = orm().query(Task).filter_by(
+            cluster=self.cluster,
+            name='deploy',
+            status='running'
         )
         if deploy_running:
             logger.error(
