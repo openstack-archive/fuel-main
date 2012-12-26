@@ -125,19 +125,22 @@ class ClusterCollectionHandler(JSONHandler):
         cluster = Cluster()
         cluster.release = orm().query(Release).get(data["release"])
 
-        # TODO: discover how to add multiple objects
-        if 'nodes' in data and data['nodes']:
-            nodes = orm().query(Node).filter(
-                Node.id.in_(data['nodes'])
-            )
-            map(cluster.nodes.append, nodes)
-
         # TODO: use fields
         for field in ('name', 'type', 'mode'):
             setattr(cluster, field, data.get(field))
 
         orm().add(cluster)
         orm().commit()
+
+        # TODO: discover how to add multiple objects
+        if 'nodes' in data and data['nodes']:
+            nodes = orm().query(Node).filter(
+                Node.id.in_(data['nodes'])
+            ).all()
+            map(cluster.nodes.append, nodes)
+        orm().add(cluster)
+        orm().commit()
+
         attributes = Attributes(
             editable=cluster.release.attributes_metadata.get("editable"),
             generated=cluster.release.attributes_metadata.get("generated"),

@@ -6,7 +6,7 @@ from paste.fixture import TestApp
 from sqlalchemy.orm.events import orm
 
 from nailgun.api.models import engine, Node
-from nailgun.db import dropdb, syncdb, flush, Query
+from nailgun.db import dropdb, syncdb, flush, NoCacheQuery
 from nailgun.wsgi import build_app
 
 
@@ -19,10 +19,10 @@ class TestDBRefresh(TestCase):
     def setUp(self):
         self.app = TestApp(build_app().wsgifunc())
         self.db = orm.scoped_session(
-            orm.sessionmaker(bind=engine, query_cls=Query)
+            orm.sessionmaker(bind=engine, query_cls=NoCacheQuery)
         )()
         self.db2 = orm.scoped_session(
-            orm.sessionmaker(bind=engine, query_cls=Query)
+            orm.sessionmaker(bind=engine, query_cls=NoCacheQuery)
         )()
         self.default_headers = {
             "Content-Type": "application/json"
