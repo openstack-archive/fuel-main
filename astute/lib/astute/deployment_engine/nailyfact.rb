@@ -22,6 +22,9 @@ class Astute::DeploymentEngine::NailyFact < Astute::DeploymentEngine
       metadata[iface['name'] + '_interface'] = device
     end
 
+    # internal_address is required for HA..
+    metadata['internal_address'] = node['network_data'].select {|nd| nd['name'] == 'management'}[0]['ip'].split(/\//)[0]
+
     metapublisher.call(@ctx, node['uid'], metadata)
   end
 
