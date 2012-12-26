@@ -9,7 +9,12 @@ class Astute::DeploymentEngine::NailyFact < Astute::DeploymentEngine
     network_data_puppet = calculate_networks(node_network_data)
     metadata = {'role' => node['role'], 'uid' => node['uid'], 'network_data' => network_data_puppet.to_json }
     attrs.each do |k, v|
-      metadata[k] = v  # TODO(mihgen): needs to be much smarter than this. This will work only with simple string.
+      if v.is_a? String
+        metadata[k] = v
+      else
+        # And it's the problem on the puppet side now to decode json
+        metadata[k] = v.to_json
+      end
     end
     # Let's calculate interface settings we need for OpenStack:
     node_network_data.each do |iface|

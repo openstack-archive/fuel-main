@@ -61,6 +61,46 @@ module Astute
       return
     end
 
+    def attrs_ha_compute(nodes, attrs)
+      # TODO(mihgen): we should report error back if there are not enough metadata passed
+      ctrl_nodes = nodes.select {|n| n['role'] == 'controller'}
+      ctrl_manag_addrs = {}
+      ctrl_public_addrs = {}
+      ctrl_nodes.each do |n|
+        # current puppet modules require `hostname -s`
+        hostname = n['fqdn'].split(/\./)[0]
+        ctrl_manag_addrs.merge!({hostname =>
+                   n['network_data'].select {|nd| nd['name'] == 'management'}[0]['ip'].split(/\//)[0]})
+        ctrl_public_addrs.merge!({hostname =>
+                   n['network_data'].select {|nd| nd['name'] == 'public'}[0]['ip'].split(/\//)[0]})
+      end
+
+      attrs['master_hostname'] = ctrl_nodes[0]['fqdn'].split(/\./)[0]
+      attrs['controller_public_addresses'] = ctrl_public_addrs
+      attrs['controller_management_addresses'] = ctrl_manag_addrs
+      attrs
+    end
+
+    def deploy_ha_compute(nodes, attrs)
+      ctrl_nodes = nodes.select {|n| n['role'] == 'controller'}
+      Astute.logger.info "Starting deployment of controllers one by one"
+      ctrl_nodes.each do |node|
+        deploy_piece([node], attrs)
+      end
+
+      # FIXME(mihgen): put right numbers for logs
+      @deploy_log_parser.pattern_spec['expected_line_number'] = 380
+      compute_nodes = nodes.select {|n| n['role'] == 'compute'}
+      Astute.logger.info "Starting deployment of computes"
+      deploy_piece(compute_nodes, attrs)
+
+      @deploy_log_parser.pattern_spec['expected_line_number'] = 300
+      other_nodes = nodes - ctrl_nodes - compute_nodes
+      Astute.logger.info "Starting deployment of other nodes"
+      deploy_piece(other_nodes, attrs)
+      return
+    end
+
     private
     def nodes_status(nodes, status)
       {'nodes' => nodes.map { |n| {'uid' => n['uid'], 'status' => status} }}
