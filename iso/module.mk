@@ -18,7 +18,8 @@ $/isoroot-centos.done: \
 	createrepo -g `readlink -f "$(ISOROOT)/repodata/comps.xml"` -u media://`head -1 $(ISOROOT)/.discinfo` $(ISOROOT)
 	$(ACTION.TOUCH)
 
-$(ISOROOT)/repodata/comps.xml: $(CENTOS_REPO_DIR)/repodata/comps.xml ; $(ACTION.COPY)
+$(ISOROOT)/repodata/comps.xml: | $(CENTOS_REPO_DIR)repodata/comps.xml
+	cp $(CENTOS_REPO_DIR)repodata/comps.xml $(@D)
 
 $(ISOROOT)/isolinux/isolinux.cfg: iso/isolinux/isolinux.cfg ; $(ACTION.COPY)
 
@@ -88,7 +89,8 @@ $(ISOROOT)/puppet-slave.tgz: \
 
 $/isoroot-puppetmod.done: \
 		$(ISOROOT)/puppet-nailgun.tgz \
-		$(ISOROOT)/puppet-slave.tgz \
+		$(ISOROOT)/puppet-slave.tgz
+	$(ACTION.TOUCH)
 
 $(ISOROOT)/ks.cfg: iso/ks.cfg ; $(ACTION.COPY)
 $(ISOROOT)/bootstrap_admin_node.sh: iso/bootstrap_admin_node.sh ; $(ACTION.COPY)

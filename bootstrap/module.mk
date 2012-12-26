@@ -61,7 +61,7 @@ $(INITRAM_DIR)/etc/nailgun_systemtype: $(BS_DIR)/init.done
 	sudo sh -c "echo bootstrap > $(INITRAM_DIR)/etc/nailgun_systemtype"
 	sudo rm -rf $(INITRAM_DIR)/home/*
 
-$(BS_DIR)/init.done: $(LOCAL_MIRROR)/repo.done $(INITRAM_DIR)/etc/yum.repos.d/mirror.repo $(LOCAL_MIRROR)/gems.done
+$(BS_DIR)/init.done: $(LOCAL_MIRROR)/repo.done $(INITRAM_DIR)/etc/yum.repos.d/mirror.repo $(LOCAL_MIRROR)/gems.done $(BUILD_DIR)/rpm/rpm.done
 	sudo mkdir -p $(INITRAM_DIR)/proc $(INITRAM_DIR)/dev
 	sudo mkdir -p $(INITRAM_DIR)/var/lib/rpm
 	$(RPM) --rebuilddb
@@ -93,12 +93,12 @@ $(BS_DIR)/init.done: $(LOCAL_MIRROR)/repo.done $(INITRAM_DIR)/etc/yum.repos.d/mi
 define yum_local_repo
 [mirror]
 name=Mirantis mirror
-baseurl=file://$(shell readlink -f -m $(RPM_DIR))/Packages
+baseurl=file://$(shell readlink -f -m $(RPM_DIR))
 gpgcheck=0
 enabled=1
 endef
 
 $(INITRAM_DIR)/etc/yum.repos.d/mirror.repo: export contents:=$(yum_local_repo)
-$(INITRAM_DIR)/etc/yum.repos.d/mirror.repo:
+$(INITRAM_DIR)/etc/yum.repos.d/mirror.repo: bootstrap/module.mk
 	sudo mkdir -p $(@D)
 	sudo sh -c "echo \"$${contents}\" > $@"

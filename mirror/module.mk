@@ -2,8 +2,6 @@
 
 $/%: /:=$/
 
-METADATA_FILES:=repomd.xml comps.xml filelists.xml.gz primary.xml.gz other.xml.gz
-
 CENTOSEXTRA_PACKAGES:=$(shell grep -v "^\\s*\#" requirements-rpm.txt)
 CENTOSRPMFORGE_PACKAGES:=qemu
 
@@ -45,7 +43,7 @@ endif
 define yum_mirror_repo
 [mirror]
 name=CentOS $(CENTOS_RELEASE) - Base
-baseurl=$(REPOMIRROR)/Packages
+baseurl=$(REPOMIRROR)
 gpgcheck=0
 enabled=1
 endef
@@ -158,8 +156,7 @@ $/cache-infra.done: \
 	$(ACTION.TOUCH)
 
 $/cache-extra.done: \
-		$(CENTOS_REPO_DIR)repodata/comps.xml \
-	 	$/cache-infra.done \
+		$/cache-infra.done \
 		requirements-rpm.txt
 	yum -c $(CENTOS_REPO_DIR)etc/yum-$(REPO_SUFFIX).conf clean all
 	rm -rf /var/tmp/yum-$$USER-*/
@@ -172,12 +169,8 @@ $/cache-extra.done: \
 $/cache.done: $/cache-extra.done $/cache-boot.done
 	$(ACTION.TOUCH)
 
-$(addprefix $(CENTOS_REPO_DIR)Packages/repodata/,$(METADATA_FILES)): \
-		$/cache.done \
-		$(CENTOS_REPO_DIR)repodata/comps.xml
-	createrepo -g `readlink -f "$(CENTOS_REPO_DIR)repodata/comps.xml"` -o $(CENTOS_REPO_DIR)Packages $(CENTOS_REPO_DIR)Packages
-
-$/repo.done: $(addprefix $(CENTOS_REPO_DIR)Packages/repodata/,$(METADATA_FILES))
+$/repo.done: | $(CENTOS_REPO_DIR)repodata/comps.xml
+	createrepo -g `readlink -f "$(CENTOS_REPO_DIR)repodata/comps.xml"` -o $(CENTOS_REPO_DIR) $(CENTOS_REPO_DIR)
 	$(ACTION.TOUCH)
 
 # centos isolinux files
@@ -260,7 +253,7 @@ $/gems.done: $/gems-bundle.done
 	cp $/gems-bundle/vendor/cache/*.gem $/gems
 	$(ACTION.TOUCH)
 
-mirror: $(addprefix $(CENTOS_REPO_DIR)Packages/repodata/,$(METADATA_FILES)) \
+mirror: $/repo.done \
 	$/src.done \
 	$/cache-boot.done \
 	$/eggs.done \

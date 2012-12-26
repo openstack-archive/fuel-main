@@ -20,13 +20,13 @@ clean_rpm:
 define yum_local_repo
 [mirror]
 name=Mirantis mirror
-baseurl=file://$(shell readlink -f -m $(RPM_DIR))/Packages
+baseurl=file://$(shell readlink -f -m $(RPM_DIR))
 gpgcheck=0
 enabled=1
 endef
 
 $(SANDBOX)/etc/yum.repos.d/mirror.repo: export contents:=$(yum_local_repo)
-$(SANDBOX)/etc/yum.repos.d/mirror.repo:
+$(SANDBOX)/etc/yum.repos.d/mirror.repo: packages/rpm/module.mk
 	mkdir -p $(@D) || echo "$(@D) already exists"
 	sudo sh -c "echo \"$${contents}\" > $@"
 
@@ -76,7 +76,8 @@ $/rpm-nailgun-net-check.done: $/prep.done \
 $(BUILD_DIR)/rpm/rpm.done: $/rpm-cirros.done \
 		$/rpm-nailgun-agent.done \
 		$/rpm-nailgun-mcagents.done \
-		$/rpm-nailgun-net-check.done
+		$/rpm-nailgun-net-check.done \
+		| $(CENTOS_REPO_DIR)repodata/comps.xml
 	find $/RPMS -name '*.rpm' -exec cp -u {} $(CENTOS_REPO_DIR)/Packages \;
-	createrepo -g `readlink -f "$(CENTOS_REPO_DIR)repodata/comps.xml"` -o $(CENTOS_REPO_DIR)Packages $(CENTOS_REPO_DIR)Packages
+	createrepo -g `readlink -f "$(CENTOS_REPO_DIR)repodata/comps.xml"` -o $(CENTOS_REPO_DIR) $(CENTOS_REPO_DIR)
 	$(ACTION.TOUCH)
