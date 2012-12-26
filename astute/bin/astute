@@ -27,6 +27,6 @@ task_id = `uuidgen`.strip
 orchestrator = Astute::Orchestrator.new
 
 
-attrs = {'deployment_mode' => 'simple_compute', 'simple_string' => 'just_string', 'list' => ['a','v'], 'hashes' => [{'a' => '1'}]}
+attrs = {'deployment_mode' => 'multinode_compute', 'simple_string' => 'just_string', 'list' => ['a','v'], 'hashes' => [{'a' => '1'}]}
 orchestrator.deploy(reporter, task_id, nodes, attrs)
 #orchestrator.verify_networks(reporter, task_id, nodes, networks)

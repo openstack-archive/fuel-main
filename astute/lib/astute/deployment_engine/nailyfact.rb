@@ -1,23 +1,5 @@
 class Astute::DeploymentEngine::NailyFact < Astute::DeploymentEngine
 
-  # This is the main method where we mix all attrs and prepare them for Puppet
-  # It's called from superclass's main deployment method
-  def extend_attrs(nodes, attrs)
-    ctrl_nodes = nodes.select {|n| n['role'] == 'controller'}
-    # TODO(mihgen): we should report error back if there are not enough metadata passed
-    ctrl_management_ips = []
-    ctrl_public_ips = []
-    ctrl_nodes.each do |n|
-      ctrl_management_ips << n['network_data'].select {|nd| nd['name'] == 'management'}[0]['ip']
-      ctrl_public_ips << n['network_data'].select {|nd| nd['name'] == 'public'}[0]['ip']
-    end
-
-    # TODO(mihgen): we take first IP, is it Ok for all installations? I suppose it would not be for HA..
-    attrs['controller_node_address'] = ctrl_management_ips[0].split('/')[0]
-    attrs['controller_node_public'] = ctrl_public_ips[0].split('/')[0]
-    attrs
-  end
-
   def create_facts(node, attrs)
     metapublisher = Astute::Metadata.method(:publish_facts)
     # calculate_networks method is common and you can find it in superclass

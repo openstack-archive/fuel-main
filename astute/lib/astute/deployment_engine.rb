@@ -14,22 +14,38 @@ module Astute
     end
 
     def deploy(nodes, attrs)
-      # FIXME(mihgen): hardcode simple_compute for now
-      attrs['deployment_mode'] ||= 'simple_compute'
+      attrs['deployment_mode'] ||= 'multinode_compute'  # simple multinode deployment is the default
       Astute.logger.info "Deployment mode #{attrs['deployment_mode']}, using #{self.class} for deployment."
-      result = self.send("deploy_#{attrs['deployment_mode']}", nodes, attrs)
+      attrs_for_mode = self.send("attrs_#{attrs['deployment_mode']}", nodes, attrs)
+      result = self.send("deploy_#{attrs['deployment_mode']}", nodes, attrs_for_mode)
     end
 
     def method_missing(method, *args)
       Astute.logger.error "Method #{method} is not implemented for #{self.class}"
     end
 
+    # we mix all attrs and prepare them for Puppet
+    # Works for multinode_compute deployment mode
+    def attrs_multinode_compute(nodes, attrs)
+      ctrl_nodes = nodes.select {|n| n['role'] == 'controller'}
+      # TODO(mihgen): we should report error back if there are not enough metadata passed
+      ctrl_management_ips = []
+      ctrl_public_ips = []
+      ctrl_nodes.each do |n|
+        ctrl_management_ips << n['network_data'].select {|nd| nd['name'] == 'management'}[0]['ip']
+        ctrl_public_ips << n['network_data'].select {|nd| nd['name'] == 'public'}[0]['ip']
+      end
+
+      attrs['controller_node_address'] = ctrl_management_ips[0].split('/')[0]
+      attrs['controller_node_public'] = ctrl_public_ips[0].split('/')[0]
+      attrs
+    end
+
     # This method is called by Ruby metaprogramming magic from deploy method
     # It should not contain any magic with attributes, and should not directly run any type of MC plugins
     # It does only support of deployment sequence. See deploy_piece implementation in subclasses.
-    def deploy_simple_compute(nodes, attrs)
+    def deploy_multinode_compute(nodes, attrs)
       ctrl_nodes = nodes.select {|n| n['role'] == 'controller'}
-      attrs = extend_attrs(nodes, attrs)
       Astute.logger.info "Starting deployment of controllers"
       deploy_piece(ctrl_nodes, attrs)
 
@@ -48,11 +64,6 @@ module Astute
     private
     def nodes_status(nodes, status)
       {'nodes' => nodes.map { |n| {'uid' => n['uid'], 'status' => status} }}
-    end
-
-    def extend_attrs(nodes, attrs)
-      # See overrides in subclasses
-      attrs
     end
 
     def validate_nodes(nodes)
