@@ -294,7 +294,7 @@ function(models, commonViews, dialogViews, clusterPageTemplate, deploymentResult
                     collection: nodes,
                     role: role,
                     tab: this.tab,
-                    size: role == 'controller' ? this.model.get('mode') == 'ha' ? 3 : 1 : 0
+                    size: role == 'controller' ? this.model.get('mode') == 'ha' ? 0 : 1 : 0
                 });
                 this.registerSubView(nodeListView);
                 this.$el.append(nodeListView.render().el);
