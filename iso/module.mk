@@ -6,6 +6,7 @@ all: iso
 ISOROOT:=$/isoroot
 
 iso: $/nailgun-centos-6.3-amd64.iso
+img: $/nailgun-centos-6.3-amd64.img
 
 $/isoroot-centos.done: \
 		$(BUILD_DIR)/rpm/rpm.done \
@@ -130,3 +131,42 @@ $/nailgun-centos-6.3-amd64.iso: $/isoroot.done
 		-boot-load-size 8 -boot-info-table \
 		-x "lost+found" -o $@ $/isoroot-mkisofs
 	implantisomd5 $/nailgun-centos-6.3-amd64.iso
+
+$/nailgun-centos-6.3-amd64.img: $/nailgun-centos-6.3-amd64.iso
+	rm -f $/img_loop_device
+	rm -f $/img_loop_partition
+	rm -f $/img_loop_uuid
+	sudo losetup -j $@ | awk -F: '{print $$1}' | while read loopdevice; do \
+        sudo kpartx -v $$loopdevice | awk '{print "/dev/mapper/" $$1}' | while read looppartition; do \
+            sudo umount -f $$looppartition; \
+        done; \
+        sudo kpartx -d $$loopdevice; \
+	    sudo losetup -d $$loopdevice; \
+    done
+	rm -f $@
+	dd if=/dev/zero of=$/nailgun-centos-6.3-amd64.img bs=1M count=2048
+	sudo losetup -f > $/img_loop_device
+	sudo losetup `cat $/img_loop_device` $@
+	sudo wipefs -a `cat $/img_loop_device`
+	sudo parted -s `cat $/img_loop_device` mklabel msdos
+	sudo parted -s `cat $/img_loop_device` unit MB mkpart primary ext2 1 2048 set 1 boot on
+	sudo kpartx -a -v `cat $/img_loop_device` | awk '{print "/dev/mapper/" $$3}' > $/img_loop_partition
+	sleep 1
+	sudo mkfs.ext2 `cat $/img_loop_partition`
+	mkdir -p $/imgroot
+	sudo mount `cat $/img_loop_partition` $/imgroot
+	sudo extlinux -i $/imgroot
+	sudo /sbin/blkid -s UUID -o value `cat $/img_loop_partition` > $/img_loop_uuid
+	sudo dd conv=notrunc bs=440 count=1 if=/usr/lib/extlinux/mbr.bin of=`cat $/img_loop_device`
+	sudo cp -r $/isoroot/images $/imgroot
+	sudo cp -r $/isoroot/isolinux $/imgroot
+	sudo mv $/imgroot/isolinux $/imgroot/syslinux
+	sudo rm $/imgroot/syslinux/isolinux.cfg
+	sudo cp iso/syslinux/syslinux.cfg $/imgroot/syslinux
+	sudo sed -i -e "s/11111111-1111-1111-1111-111111111111/`cat $/img_loop_uuid`/g" $/imgroot/syslinux/syslinux.cfg
+	sudo cp iso/usbks.cfg $/imgroot/ks.cfg
+	sudo sed -i -e "s/11111111-1111-1111-1111-111111111111/`cat $/img_loop_uuid`/g" $/imgroot/ks.cfg
+	sudo cp $/nailgun-centos-6.3-amd64.iso $/imgroot/nailgun.iso
+	sudo umount -f `cat $/img_loop_partition`
+	sudo kpartx -d `cat $/img_loop_device`
+	sudo losetup -d `cat $/img_loop_device`
