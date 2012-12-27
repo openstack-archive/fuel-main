@@ -14,6 +14,7 @@ module Astute
     end
 
     def deploy(reporter, task_id, nodes, attrs)
+      raise "Nodes to deploy are not provided!" if nodes.empty?
       context = Context.new(task_id, reporter)
       deploy_engine_instance = @deploy_engine.new(context)
       deploy_engine_instance.deploy(nodes, attrs)
