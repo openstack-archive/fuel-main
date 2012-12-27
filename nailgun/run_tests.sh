@@ -126,7 +126,7 @@ function run_ui_tests {
         ui_test_files=$ui_tests_dir/test_*.js
     fi
     result=0
-    ./manage.py run --port=5544 --fake-tasks --fake-tasks-tick-count=6 --fake-tasks-tick-interval=1 > /dev/null 2>&1 &
+    ./manage.py run --port=5544 --fake-tasks --fake-tasks-tick-count=30 --fake-tasks-tick-interval=3 > /dev/null 2>&1 &
     for test_file in $ui_test_files; do
         rm -f nailgun.sqlite
         ./manage.py syncdb > /dev/null
@@ -134,7 +134,7 @@ function run_ui_tests {
         casperjs test --includes=$ui_tests_dir/helpers.js --fail-fast $test_file
         result=$(($result + $?))
     done
-    kill %1
+    ps aux | grep "manage.py run --port=5544" | grep -v grep | awk '{ print $2 }' | xargs kill
     return $result
 }
 
