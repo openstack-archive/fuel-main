@@ -1,7 +1,0 @@
-{
-    "recipes": [ "nailgun::deps", "devops::deps" ],
-    "mysql": {
-		"server_root_password": "ololo"
-    }
-}
-
