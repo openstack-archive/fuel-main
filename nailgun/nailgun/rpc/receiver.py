@@ -178,10 +178,16 @@ class NailgunReceiver(object):
                     )
                 elif node.status == "discover":
                     nodes_progress.append(0)
-
-            progress = int(sum(nodes_progress) / len(nodes_progress))
+            if nodes_progress:
+                progress = int(sum(nodes_progress) / len(nodes_progress))
 
         task = orm().query(Task).filter_by(uuid=task_uuid).first()
+        if not task:
+            logger.warning(
+                "No task with uuid '{0}'' found - nothing changed".format(
+                    task_uuid
+                )
+            )
 
         if status in ('error',) and task:
             notifier.notify(

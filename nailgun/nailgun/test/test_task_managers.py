@@ -8,7 +8,9 @@ from nailgun.settings import settings
 
 import nailgun
 import nailgun.rpc as rpc
+from nailgun.task.manager import DeploymentTaskManager
 from nailgun.task.fake import FAKE_THREADS
+from nailgun.task.errors import WrongNodeStatus
 from nailgun.test.base import BaseHandlers
 from nailgun.test.base import reverse
 from nailgun.api.models import Cluster, Attributes, Task, Notification, Node
@@ -162,3 +164,14 @@ class TestTaskManagers(BaseHandlers):
             self.db.refresh(node)
             fqdn = "slave-%s.%s" % (node.id, settings.DNS_DOMAIN)
             self.assertEquals(fqdn, node.fqdn)
+
+    @patch('nailgun.task.task.rpc.cast', nailgun.task.task.fake_cast)
+    @patch('nailgun.task.task.settings.FAKE_TASKS', True)
+    def test_no_node_no_cry(self):
+        cluster = self.create_cluster_api()
+        rcvr = rpc.receiver.NailgunReceiver
+        manager = DeploymentTaskManager(cluster["id"])
+        rcvr.deploy_resp(nodes=[
+            {'uid': 666, 'id': 666, 'status': 'discover'}
+        ], uuid='no_freaking_way')  # and wrong task also
+        self.assertRaises(WrongNodeStatus, manager.execute)
