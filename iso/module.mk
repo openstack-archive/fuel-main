@@ -19,6 +19,7 @@ $/isoroot-centos.done: \
 	$(ACTION.TOUCH)
 
 $(ISOROOT)/repodata/comps.xml: | $(CENTOS_REPO_DIR)repodata/comps.xml
+	mkdir $(@D)
 	cp $(CENTOS_REPO_DIR)repodata/comps.xml $(@D)
 
 $(ISOROOT)/isolinux/isolinux.cfg: iso/isolinux/isolinux.cfg ; $(ACTION.COPY)
