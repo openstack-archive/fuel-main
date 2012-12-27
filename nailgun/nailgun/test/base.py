@@ -125,7 +125,6 @@ class BaseHandlers(TestCase):
         node = Node()
         node.mac = self._generate_random_mac()
         node.meta = self.default_metadata()
-        node.fqdn = "fqdn_" + str(randint(0, 10000000))
         for key, value in kwargs.iteritems():
             setattr(node, key, value)
         self.db.add(node)

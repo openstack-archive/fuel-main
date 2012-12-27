@@ -164,7 +164,6 @@ class NodeAgent
 
   def _data
     res = {
-      :fqdn => @os[:fqdn],
       :mac => @os[:macaddress],
       :ip  => @os[:ipaddress],
       :manufacturer => _manufacturer,

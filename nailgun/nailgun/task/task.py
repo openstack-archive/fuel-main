@@ -86,8 +86,17 @@ class DeploymentTask(object):
             cluster_id=cluster_id,
             pending_deletion=False)
 
+        for node in nodes:
+            nd_name = TaskHelper.slave_name_by_id(node.id)
+            fqdn = ".".join([nd_name, settings.DNS_DOMAIN])
+            node.fqdn = fqdn
+            orm().add(node)
+            orm().commit()
+        fqdns = ','.join([n.fqdn for n in nodes])
+        logger.info("Associated FQDNs to nodes: %s" % fqdns)
+
         if not settings.FAKE_TASKS or not int(settings.FAKE_TASKS):
-            # only real tasks
+            logger.info("Entered to processing of 'real' tasks, not 'fake'..")
             nodes_to_provision = []
             for node in nodes:
                 if node.status == 'offline':
@@ -113,6 +122,7 @@ class DeploymentTask(object):
             # /only real tasks
 
         nodes_ids = [n.id for n in nodes]
+        logger.info("Assigning IP addresses to nodes..")
         netmanager.assign_ips(nodes_ids, "management")
         netmanager.assign_ips(nodes_ids, "public")
 
@@ -137,6 +147,7 @@ class DeploymentTask(object):
             cluster_attrs[net.name + '_network_range'] = net.cidr
 
         if task.cluster.mode == 'ha':
+            logger.info("HA mode chosen, creating VIP addresses for it..")
             cluster_attrs['management_vip'] = netmanager.assign_vip(
                 cluster_id, "management")
             cluster_attrs['public_vip'] = netmanager.assign_vip(
@@ -191,9 +202,9 @@ class DeploymentTask(object):
             orm().add(node)
             orm().commit()
 
-            nd_name = TaskHelper.slave_name_by_id(node.id)
+            nd_name = node.fqdn.split('.')[0]
 
-            nd_dict['hostname'] = ".".join([nd_name, settings.DNS_DOMAIN])
+            nd_dict['hostname'] = node.fqdn
             nd_dict['name_servers'] = '\"%s\"' % settings.DNS_SERVERS
             nd_dict['name_servers_search'] = '\"%s\"' % settings.DNS_SEARCH
 
@@ -201,7 +212,7 @@ class DeploymentTask(object):
                 'eth0': {
                     'mac_address': node.mac,
                     'static': '0',
-                    'dns_name': ".".join([nd_name, settings.DNS_DOMAIN]),
+                    'dns_name': node.fqdn,
                     'ip_address': node.ip,
                 },
             }
@@ -311,13 +322,15 @@ class DeletionTask(object):
                         logger.debug("Removing system "
                                      "from cobbler: %s" % slave_name)
                         pd.remove_system(slave_name)
-                    # deleting certs from puppet
-                    node_hostname = ".".join([
-                        slave_name,
-                        settings.DNS_DOMAIN
-                    ])
-                    cmd = "puppet cert clean {0}".format(node_hostname)
                     try:
+                        logger.info("Deleting old certs from puppet..")
+                        node_db = orm().query(Node).get(node['id'])
+                        if node_db and node_db.fqdn:
+                            node_hostname = node_db.fqdn
+                        else:
+                            node_hostname = '.'.join([
+                                slave_name, settings.DNS_DOMAIN])
+                        cmd = "puppet cert clean {0}".format(node_hostname)
                         proc = subprocess.Popen(
                             shlex.split(cmd),
                             shell=False,
@@ -339,6 +352,11 @@ class DeletionTask(object):
                                 cmd
                             )
                         )
+                    except Exception as e:
+                        logger.warning("Exception occured while trying to \
+                                remove the system from Cobbler: '{0}'".format(
+                            e.message))
+
         # /only real tasks
 
         msg_delete = {

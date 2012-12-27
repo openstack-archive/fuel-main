@@ -9,7 +9,7 @@ import nailgun.rpc as rpc
 from nailgun.task.fake import FAKE_THREADS
 from nailgun.test.base import BaseHandlers
 from nailgun.test.base import reverse
-from nailgun.api.models import Cluster, Attributes, Task, Notification
+from nailgun.api.models import Cluster, Attributes, Task, Notification, Node
 
 
 class TestTaskManagers(BaseHandlers):
@@ -97,3 +97,24 @@ class TestTaskManagers(BaseHandlers):
                 .filter(Notification.message == "Cluster %s and all cluster "
                         "nodes are deleted" % cluster["name"])
             self.assertIsNotNone(notification)
+
+    @patch('nailgun.task.task.rpc.cast', nailgun.task.task.fake_cast)
+    @patch('nailgun.task.task.settings.FAKE_TASKS', True)
+    def test_node_fqdn_is_assigned(self):
+        cluster = self.create_cluster_api()
+        node1 = self.create_default_node(cluster_id=cluster['id'],
+                                         pending_addition=True)
+        node2 = self.create_default_node(cluster_id=cluster['id'],
+                                         pending_addition=True)
+        resp = self.app.put(
+            reverse(
+                'ClusterChangesHandler',
+                kwargs={'cluster_id': cluster['id']}),
+            headers=self.default_headers
+        )
+        self.assertEquals(200, resp.status)
+        nodes = self.db.query(Node).all()
+        for node in (node1, node2):
+            self.db.refresh(node)
+            fqdn = "slave-%s.%s" % (node.id, settings.DNS_DOMAIN)
+            self.assertEquals(fqdn, node.fqdn)
