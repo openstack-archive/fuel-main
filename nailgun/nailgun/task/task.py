@@ -88,8 +88,7 @@ class DeploymentTask(object):
 
         for node in nodes:
             nd_name = TaskHelper.slave_name_by_id(node.id)
-            fqdn = ".".join([nd_name, settings.DNS_DOMAIN])
-            node.fqdn = fqdn
+            node.fqdn = ".".join([nd_name, settings.DNS_DOMAIN])
             orm().add(node)
             orm().commit()
         fqdns = ','.join([n.fqdn for n in nodes])
