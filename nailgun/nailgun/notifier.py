@@ -10,9 +10,8 @@ from nailgun.api.models import Notification
 
 class Notifier(object):
 
-    def notify(self, topic, message, cluster_id=None, db=None):
-        if not db:
-            db = orm()
+    def notify(self, topic, message, cluster_id=None):
+        db = orm()
         notification = Notification()
         notification.topic = topic
         notification.message = message

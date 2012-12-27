@@ -96,8 +96,8 @@ class NailgunReceiver(object):
             notifier.notify(
                 "done",
                 "Installation '%s' and all its nodes are deleted" % (
-                    cluster_name),
-                db=orm()
+                    cluster_name
+                )
             )
 
         elif task.status in ('error',):
@@ -107,8 +107,7 @@ class NailgunReceiver(object):
             notifier.notify(
                 "error",
                 task.message,
-                cluster.id,
-                orm()
+                cluster.id
             )
 
     @classmethod
@@ -193,8 +192,7 @@ class NailgunReceiver(object):
             notifier.notify(
                 "error",
                 message,
-                task.cluster_id,
-                orm()
+                task.cluster_id
             )
         elif status in ('ready',) and task:
             # determining horizon url - it's ip of controller
@@ -235,8 +233,7 @@ class NailgunReceiver(object):
             notifier.notify(
                 "done",
                 message,
-                task.cluster_id,
-                orm()
+                task.cluster_id
             )
         if task:
             update_task_status(task_uuid, status, progress, message)
