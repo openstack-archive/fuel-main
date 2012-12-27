@@ -26,10 +26,7 @@ class TestTaskManagers(BaseHandlers):
         import threading
         for thread in threading.enumerate():
             if thread is not threading.currentThread():
-                thread.join(
-                    int(settings.FAKE_TASKS_TICK_COUNT) *
-                    int(settings.FAKE_TASKS_TICK_INTERVAL) + 5
-                )
+                thread.join(5)
 
     @patch('nailgun.task.task.rpc.cast', nailgun.task.task.fake_cast)
     @patch('nailgun.task.task.settings.FAKE_TASKS', True)
@@ -139,7 +136,7 @@ class TestTaskManagers(BaseHandlers):
             self.db.expire(task_delete)
             if (time.time() - timer) > timeout:
                 break
-            time.sleep(1)
+            time.sleep(0.24)
 
         cluster_db = self.db.query(Cluster).get(cluster['id'])
         self.assertIsNone(cluster_db)
