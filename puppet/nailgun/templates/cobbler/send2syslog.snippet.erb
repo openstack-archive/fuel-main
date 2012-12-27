@@ -7,13 +7,15 @@ echo '{$config_hostname
     "watchlist": [
         {"servers": [ {"host": "$server"} ],
             "watchfiles": [
-                {"tag": "install/anaconda", "files":
-                    ["/tmp/anaconda.log",
-                    "/mnt/sysimage/root/install.log"]},
+                {"tag": "install/anaconda", "log_type": "anaconda",
+                    "files": ["/tmp/anaconda.log",
+                        "/mnt/sysimage/root/install.log"]},
                 {"tag": "install/ks-pre", "files": ["/tmp/ks-pre.log"]},
                 {"tag": "install/ks-post", "files": ["/mnt/sysimage/root/ks-post.log"]},
-                {"tag": "install/syslog", "files": ["/tmp/syslog"]},
-                {"tag": "install/storage", "files": ["/tmp/storage.log"]}
+                {"tag": "install/syslog", "log_type": "anaconda",
+                    "files": ["/tmp/syslog"]},
+                {"tag": "install/storage", "log_type": "anaconda",
+                    "files": ["/tmp/storage.log"]}
             ]
         }
     ]

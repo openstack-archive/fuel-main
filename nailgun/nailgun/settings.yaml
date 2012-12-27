@@ -49,7 +49,7 @@ COBBLER_PROFILE: "centos63-x86_64"
 
 LOG_FORMATS:
   - &remote_syslog_log_format
-    regexp: '^(?P<date>\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2})\s(?P<level>[a-z]{3,7})\s+):\s(?P<text>.*)$'
+    regexp: '^(?P<date>\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2})\s(?P<level>[a-z]{3,7}):\s(?P<text>.*)$'
     levels:
       - DEBUG
       - INFO
@@ -140,7 +140,7 @@ LOGS:
     path: 'install/ks-post.log'
 # Bootstrap node logs.
   - id: 'bootstrap/dmesg'
-    name: "node: bootstap/dmesg"
+    name: "node: bootstrap/dmesg"
     <<: *remote_log_type
     <<: *remote_syslog_log_format
     path: 'bootstrap/dmesg.log'
