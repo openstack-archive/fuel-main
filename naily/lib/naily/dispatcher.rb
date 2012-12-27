@@ -32,6 +32,7 @@ module Naily
     def deploy(data)
       reporter = Naily::Reporter.new(@producer, data['respond_to'], data['args']['task_uuid'])
       nodes = data['args']['nodes']
+      nodes_uids = nodes.map { |n| n['uid'] }
       time = Time::now.to_f
       nodes_not_booted = nodes.map { |n| n['uid'] }
       Naily.logger.info "Starting OS provisioning for nodes: #{nodes_not_booted.join(',')}" 
@@ -53,9 +54,9 @@ module Naily
               Naily.logger.info "All nodes #{target_uids.join(',')} are provisioned."
               break
             end
-            nodes_not_booted = nodes.map { |n| n['uid'] } - types.map { |n| n['uid'] }
+            nodes_not_booted = nodes_uids - types.map { |n| n['uid'] }
             begin
-              nodes_progress = @provisionLogParser.progress_calculate(nodes)
+              nodes_progress = @provisionLogParser.progress_calculate(nodes_uids, nodes)
               nodes_progress.each do |n|
                 if target_uids.include?(n['uid'])
                   n['progress'] = 100
