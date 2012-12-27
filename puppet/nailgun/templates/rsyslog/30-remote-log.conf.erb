@@ -3,7 +3,7 @@ $ModLoad imudp
 $UDPServerRun 514
 
 # remote anaconda logs
-$template RemoteLog, "%FROMHOST% %TIMESTAMP% %HOSTNAME% %APP-NAME%: %syslogseverity-text%: %msg%\n"
+$template RemoteLog, "%$NOW%T%TIMESTAMP:8:$% %syslogseverity-text%: %msg%\n"
 $template RemoteLogFile, "/var/log/remote/%FROMHOST%/%APP-NAME%.log"
 :FROMHOST, regex, "^[1-9]" ?RemoteLogFile;RemoteLog
 :FROMHOST, regex, "^[1-9]" ~

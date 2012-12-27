@@ -47,9 +47,11 @@ $(LINUX): $(LOCAL_MIRROR)/cache.done
 	touch $(LINUX)
 
 
-$(INITRAM_DIR)/etc/nailgun_systemtype: $(BS_DIR)/init.done
+$(INITRAM_DIR)/etc/nailgun_systemtype: $(BS_DIR)/init.done $(call find-files,bootstrap/sync) \
+		bin/agent bin/send2syslog.py bootstrap/ssh/id_rsa.pub $(call find-files,mcagent)
 	sudo sed -i -e '/^root/c\root:$$6$$oC7haQNQ$$LtVf6AI.QKn9Jb89r83PtQN9fBqpHT9bAFLzy.YVxTLiFgsoqlPY3awKvbuSgtxYHx4RUcpUqMotp.WZ0Hwoj.:15441:0:99999:7:::' $(INITRAM_DIR)/etc/shadow
 	sudo cp -r bootstrap/sync/* $(INITRAM_DIR)
+	sudo cp -r bin/send2syslog.py $(INITRAM_DIR)/usr/bin
 	sudo mkdir -p $(INITRAM_DIR)/root/.ssh
 	sudo cp bootstrap/ssh/id_rsa.pub $(INITRAM_DIR)/root/.ssh/authorized_keys
 	sudo chmod 700 $(INITRAM_DIR)/root/.ssh

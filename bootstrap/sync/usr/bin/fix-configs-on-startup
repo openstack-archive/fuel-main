@@ -2,6 +2,25 @@
 
 masternode_ip=`sed -rn 's/^.*url=http:\/\/(([0-9]{1,3}\.){3}[0-9]{1,3}).*$/\1/ p' /proc/cmdline`
 
+# Send logs to master node.
+cat > /etc/send2syslog.conf <<EOF
+{
+"watchlist": [
+    {"servers": [ {"host": "$masternode_ip"} ],
+        "watchfiles": [
+            {"tag": "bootstrap/dmesg", "files": ["/var/log/dmesg"]},
+            {"tag": "bootstrap/secure", "files": ["/var/log/secure"]},
+            {"tag": "bootstrap/messages", "files": ["/var/log/messages"]},
+            {"tag": "bootstrap/mcollective", "log_type": "ruby",
+                "files": ["/var/log/mcollective.log"]},
+            {"tag": "bootstrap/agent", "log_type": "ruby",
+                "files": ["/var/log/agent.log"]}
+        ]
+    }
+]
+}
+EOF
+/usr/bin/send2syslog.py -i < /etc/send2syslog.conf
 #
 # Sync clock with master node
 #

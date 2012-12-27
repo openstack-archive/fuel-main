@@ -48,6 +48,17 @@ COBBLER_PASSWORD: "cobbler"
 COBBLER_PROFILE: "centos63-x86_64"
 
 LOG_FORMATS:
+  - &remote_syslog_log_format
+    regexp: '^(?P<date>\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2})\s(?P<level>[a-z]{3,7})\s+):\s(?P<text>.*)$'
+    levels:
+      - DEBUG
+      - INFO
+      - NOTICE
+      - WARNING
+      - ERR
+      - CRIT
+      - ALERT
+      - EMERG
   - &syslog_log_format
     regexp: '^(?P<ip>\d+\.\d+\.\d+\.\d+)\s+(?P<date>\w{3}\s+\d+\s+\d+:\d+:\d+)\s+(?P<fqdn>[\w\.\-]+)\s+(?P<component>[\w\.\-/]+):\s+(?:[\d:,]+\s+(?P<level>[A-Z]+)\s+)?(?:\s*:\s*)?(?P<text>.*)$'
     levels:
@@ -76,38 +87,83 @@ LOG_FORMATS:
       - WARN
       - ERROR
       - FATAL
+
 LOG_TYPES:
   - &local_log_type
     remote: False
   - &remote_log_type
     remote: True
     base: '/var/log/remote/'
+
 LOGS:
+# Master node logs.
   - id: nailgun
-    name: "Nailgun"
+    name: "Nailgun log"
     <<: *local_log_type
     <<: *python_log_format
     path: *nailgun_log
   - id: naily
-    name: "Naily"
+    name: "Naily log"
     <<: *local_log_type
     <<: *ruby_log_format
     path: '/var/log/naily/naily.log'
   - id: astute
-    name: "Astute"
+    name: "Astute log"
     <<: *local_log_type
     <<: *ruby_log_format
     path: '/var/log/astute.log'
-  - id: syslog
-    name: "Syslog"
+# Target node installation logs.
+  - id: 'install/syslog'
+    name: "node: install/syslog.log"
     <<: *remote_log_type
-    <<: *syslog_log_format
+    <<: *remote_syslog_log_format
     path: 'install/syslog.log'
-  - id: storage
-    name: "Storage"
+  - id: 'install/storage'
+    name: "node: install/storage.log"
     <<: *remote_log_type
-    <<: *syslog_log_format
+    <<: *remote_syslog_log_format
     path: 'install/storage.log'
+  - id: 'install/anaconda'
+    name: "node: install/anaconda.log"
+    <<: *remote_log_type
+    <<: *remote_syslog_log_format
+    path: 'install/anaconda.log'
+  - id: 'install/ks-pre'
+    name: "node: install/ks-pre"
+    <<: *remote_log_type
+    <<: *remote_syslog_log_format
+    path: 'install/ks-pre.log'
+  - id: 'install/ks-post'
+    name: "node: install/ks-post"
+    <<: *remote_log_type
+    <<: *remote_syslog_log_format
+    path: 'install/ks-post.log'
+# Bootstrap node logs.
+  - id: 'bootstrap/dmesg'
+    name: "node: bootstap/dmesg"
+    <<: *remote_log_type
+    <<: *remote_syslog_log_format
+    path: 'bootstrap/dmesg.log'
+  - id: 'bootstrap/secure'
+    name: "node: bootstrap/secure"
+    <<: *remote_log_type
+    <<: *remote_syslog_log_format
+    path: 'bootstrap/secure.log'
+  - id: 'bootstrap/messages'
+    name: "node: bootstrap/messages"
+    <<: *remote_log_type
+    <<: *remote_syslog_log_format
+    path: 'bootstrap/messages.log'
+  - id: 'bootstrap/mco'
+    name: "node: bootstrap/mcollective.log"
+    <<: *remote_log_type
+    <<: *remote_syslog_log_format
+    path: 'bootstrap/mcollective.log'
+  - id: 'bootstrap/agent'
+    name: "node: bootstrap/agent.log"
+    <<: *remote_log_type
+    <<: *remote_syslog_log_format
+    path: 'bootstrap/agent.log'
 
 MCO_PSKEY: "Gie6iega9ohngaenahthohngu8aebohxah9seidi"
 MCO_STOMPHOST: "localhost"

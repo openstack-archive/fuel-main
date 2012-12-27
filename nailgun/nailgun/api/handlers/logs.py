@@ -78,7 +78,7 @@ class LogEntryCollectionHandler(JSONHandler):
                     logger.warn("Unable to parse log entry '%s' from %s",
                                 entry, log_file)
                     continue
-                entry_level = m.group('level') or 'INFO'
+                entry_level = m.group('level').upper() or 'INFO'
                 if level and not (entry_level in allowed_levels):
                     continue
                 entries.append([

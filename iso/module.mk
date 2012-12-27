@@ -79,7 +79,7 @@ $/isoroot-gems.done: \
 	$(ACTION.TOUCH)
 
 $(ISOROOT)/puppet-nailgun.tgz: $(call find-files,puppet)
-	(cd puppet && tar czf $@ *)
+	(cd puppet && tar chzf $@ *)
 
 $(ISOROOT)/puppet-slave.tgz: \
 		$(call find-files,puppet/nailytest) \
