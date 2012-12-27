@@ -21,7 +21,8 @@ module Astute
     end
 
     def method_missing(method, *args)
-      Astute.logger.error "Method #{method} is not implemented for #{self.class}"
+      Astute.logger.error "Method #{method} is not implemented for #{self.class}, raising exception."
+      raise "Method #{method} is not implemented for #{self.class}"
     end
 
     # we mix all attrs and prepare them for Puppet
