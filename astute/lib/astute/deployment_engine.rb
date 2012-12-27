@@ -76,9 +76,10 @@ module Astute
                    n['network_data'].select {|nd| nd['name'] == 'public'}[0]['ip'].split(/\//)[0]})
       end
 
+      attrs['ctrl_hostnames'] = ctrl_nodes.map {|n| n['fqdn'].split(/\./)[0]}
       attrs['master_hostname'] = ctrl_nodes[0]['fqdn'].split(/\./)[0]
-      attrs['controller_public_addresses'] = ctrl_public_addrs
-      attrs['controller_management_addresses'] = ctrl_manag_addrs
+      attrs['ctrl_public_addresses'] = ctrl_public_addrs
+      attrs['ctrl_management_addresses'] = ctrl_manag_addrs
       attrs
     end
 
