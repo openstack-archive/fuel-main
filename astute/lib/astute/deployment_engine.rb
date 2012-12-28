@@ -26,6 +26,10 @@ module Astute
     end
 
     def attrs_singlenode_compute(nodes, attrs)
+      ctrl_management_ips = nodes[0]['network_data'].select {|nd| nd['name'] == 'management'}[0]['ip']
+      ctrl_public_ips = nodes[0]['network_data'].select {|nd| nd['name'] == 'public'}[0]['ip']
+      attrs['controller_node_address'] = ctrl_management_ips[0].split('/')[0]
+      attrs['controller_node_public'] = ctrl_public_ips[0].split('/')[0]
       attrs
     end
 
