@@ -49,10 +49,13 @@ class FakeDeploymentThread(FakeThread):
         ready = False
         while not ready:
             for n in kwargs['nodes']:
-                if n['status'] == 'ready':
-                    continue
                 if not 'progress' in n:
                     n['progress'] = 0
+                if n['status'] == 'ready':
+                    continue
+                elif n['status'] == 'error':
+                    ready = True
+                    break
                 if n['status'] == 'discover':
                     n['status'] = next_st[n['status']]
                 elif n['status'] == 'provisioned':
