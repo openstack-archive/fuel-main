@@ -54,7 +54,7 @@ class TestLogs(BaseHandlers):
 
     def test_log_entry_collection_handler(self):
         node_ip = '10.20.30.40'
-        log_entry = ['date111', 'level222', 'text333']
+        log_entry = ['date111', 'LEVEL222', 'text333']
         cluster = self.create_default_cluster()
         node = self.create_default_node(cluster_id=cluster.id, ip=node_ip)
 
