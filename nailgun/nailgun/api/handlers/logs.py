@@ -37,7 +37,8 @@ class LogEntryCollectionHandler(JSONHandler):
             if not node:
                 return web.notfound("Node not found")
             if not node.ip:
-                return web.internalerror("Node has no assigned ip")
+                logger.error('Node %r has no assigned ip', node.id)
+                raise web.internalerror("Node has no assigned ip")
 
             remote_log_dir = os.path.join(log_config['base'], node.ip)
             if not os.path.exists(remote_log_dir):
@@ -56,6 +57,12 @@ class LogEntryCollectionHandler(JSONHandler):
                 raise web.badrequest("Invalid level")
             allowed_levels = [l for l in dropwhile(lambda l: l != level,
                                                    log_config['levels'])]
+        try:
+            regexp = re.compile(log_config['regexp'])
+        except re.error, e:
+            logger.error('Invalid regular expression for file %r: %s',
+                         log_config['id'], e)
+            raise web.internalerror("Invalid regular expression in config")
 
         entries = []
         from_byte = 0
@@ -73,7 +80,7 @@ class LogEntryCollectionHandler(JSONHandler):
                 if 'skip_regexp' in log_config and \
                         re.match(log_config['skip_regexp'], entry):
                         continue
-                m = re.match(log_config['regexp'], entry)
+                m = regexp.match(entry)
                 if m is None:
                     logger.warn("Unable to parse log entry '%s' from %s",
                                 entry, log_file)
