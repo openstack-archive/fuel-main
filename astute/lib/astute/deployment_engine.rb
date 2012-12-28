@@ -25,6 +25,16 @@ module Astute
       raise "Method #{method} is not implemented for #{self.class}"
     end
 
+    def attrs_singlenode_compute(nodes, attrs)
+      attrs
+    end
+
+    def deploy_singlenode_compute(nodes, attrs)
+      # TODO(mihgen) some real stuff is needed
+      Astute.logger.info "Starting deployment of single node OpenStack"
+      deploy_piece(nodes, attrs)
+    end
+
     # we mix all attrs and prepare them for Puppet
     # Works for multinode_compute deployment mode
     def attrs_multinode_compute(nodes, attrs)
