@@ -15,6 +15,7 @@ module Astute
 
     def deploy(nodes, attrs)
       attrs['deployment_mode'] ||= 'multinode_compute'  # simple multinode deployment is the default
+      nodes.each {|n| n['uid'] = n['uid'].to_s }  # It may fail if uid is Fixnum
       Astute.logger.info "Deployment mode #{attrs['deployment_mode']}, using #{self.class} for deployment."
       attrs_for_mode = self.send("attrs_#{attrs['deployment_mode']}", nodes, attrs)
       result = self.send("deploy_#{attrs['deployment_mode']}", nodes, attrs_for_mode)
