@@ -35,6 +35,10 @@ if __name__ == "__main__":
         '--fake-tasks', action='store_true', help='fake tasks'
     )
     run_parser.add_argument(
+        '-c', '--config', dest='config_file', action='store', type=str,
+        help='custom config file', default=None
+    )
+    run_parser.add_argument(
         '--fake-tasks-tick-count', action='store', type=int,
         help='Fake tasks tick count'
     )
@@ -51,11 +55,18 @@ if __name__ == "__main__":
     shell_parser = subparsers.add_parser(
         'shell', help='open python REPL'
     )
+    shell_parser.add_argument(
+        '-c', '--config', dest='config_file', action='store', type=str,
+        help='custom config file', default=None
+    )
     loaddata_parser = subparsers.add_parser(
         'loaddata', help='load data from fixture'
     )
     loaddata_parser.add_argument(
         'fixture', action='store', help='json fixture to load'
+    )
+    dump_settings = subparsers.add_parser(
+        'dump_settings', help='dump current settings to YAML'
     )
     params, other_params = parser.parse_known_args()
     sys.argv.pop(1)
@@ -74,6 +85,8 @@ if __name__ == "__main__":
         with open(params.fixture, "r") as fileobj:
             fixman.upload_fixture(fileobj)
         logger.info("Done")
+    elif params.action == "dump_settings":
+        sys.stdout.write(settings.dump())
     elif params.action in ("run",):
         settings.update({
             'LISTEN_PORT': int(params.port),
@@ -84,10 +97,14 @@ if __name__ == "__main__":
             param = getattr(params, attr.lower())
             if param is not None:
                 settings.update({attr: param})
+        if params.config_file:
+            settings.update_from_file(params.config_file)
         from nailgun.wsgi import appstart
         appstart()
     elif params.action == "shell":
-        code.interact(local={'orm': orm})
+        if params.config_file:
+            settings.update_from_file(params.config_file)
+        code.interact(local={'orm': orm, 'settings': settings})
         orm().commit()
     else:
         parser.print_help()

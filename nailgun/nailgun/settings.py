@@ -33,6 +33,15 @@ class NailgunSettings:
     def update(self, dct):
         self.config.update(dct)
 
+    def update_from_file(self, path):
+        with open(path, "r") as custom_config:
+            self.config.update(
+                yaml.load(custom_config.read())
+            )
+
+    def dump(self):
+        return yaml.dump(self.config)
+
     def __getattr__(self, name):
         return self.config.get(name, None)
 
@@ -72,12 +81,6 @@ args=(sys.stdout,)
 LOGGING_HANDLER = 'file' if not int(settings.DEVELOPMENT) else 'stream'
 
 if int(settings.DEVELOPMENT):
-    here = os.path.abspath(os.path.join(os.path.dirname(__file__), '..'))
-    settings.update({
-        'STATIC_DIR': os.path.join(here, 'static'),
-        'TEMPLATE_DIR': os.path.join(here, 'static'),
-        'DATABASE_ENGINE': 'sqlite:///%s' %
-        os.path.join(here, 'nailgun.sqlite')})
     logging.info("DEVELOPMENT MODE ON:")
     logging.info("Static dir is %s" % settings.STATIC_DIR)
     logging.info("Template dir is %s" % settings.TEMPLATE_DIR)
