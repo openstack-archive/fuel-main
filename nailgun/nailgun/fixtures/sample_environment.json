@@ -350,5 +350,20 @@
             "cluster": null,
             "mac": "4B:19:FF:55:6D:01"
         }
+    },
+    {
+        "pk": 10,
+        "model": "nailgun.node",
+        "fields": {
+            "status": "error",
+            "name": "Error node",
+            "manufacturer": "HP",
+            "platform_name": "Model-2",
+            "role": "compute",
+            "ip": "10.0.12.61",
+            "fqdn": "",
+            "cluster": null,
+            "mac": "46:FC:5A:4B:10:CC"
+        }
     }
 ]
