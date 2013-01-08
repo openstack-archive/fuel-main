@@ -126,6 +126,8 @@ class DeploymentTask(object):
         nodes_with_attrs = []
         for n in nodes:
             n.pending_addition = False
+            if n.status == 'ready':
+                n.status = 'provisioned'
             n.progress = 0
             orm().add(n)
             orm().commit()

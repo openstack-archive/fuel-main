@@ -371,6 +371,14 @@ class Task(Base, BasicValidator):
         backref=backref('parent', remote_side=[id])
     )
 
+    def __repr__(self):
+        return "<Task '{0}' {1} ({2}) {3}>".format(
+            self.name,
+            self.uuid,
+            self.cluster_id,
+            self.status
+        )
+
     def execute(self, instance):
         return instance.execute(self)
 

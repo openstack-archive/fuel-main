@@ -47,7 +47,7 @@ def orm():
 
 def load_db_driver(handler):
     web.ctx.orm = scoped_session(
-        sessionmaker(bind=engine, query_cls=Query)
+        sessionmaker(bind=engine, query_cls=NoCacheQuery)
     )
     try:
         return handler()

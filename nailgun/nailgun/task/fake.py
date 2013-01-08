@@ -55,17 +55,16 @@ class FakeDeploymentThread(FakeThread):
                 elif n['status'] == 'error':
                     ready = True
                     break
-                if n['status'] == 'discover':
-                    n['status'] = next_st[n['status']]
-                elif n['status'] == 'provisioned':
+                if n['status'] in ('discover', 'provisioned'):
                     n['status'] = next_st[n['status']]
                     n['progress'] = 0
                 else:
                     n['progress'] += randrange(0, tick_count)
                     if n['progress'] >= 100:
-                        if n['status'] in ('provisioning', 'deploying'):
-                            n['status'] = next_st[n['status']]
                         n['progress'] = 100
+                        n['status'] = next_st[n['status']]
+                        if n['status'] == 'provisioned':
+                            n['progress'] = 0
             if all(map(
                 lambda n: n['progress'] == 100 and n['status'] == 'ready',
                 kwargs['nodes']

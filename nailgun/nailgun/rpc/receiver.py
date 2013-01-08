@@ -133,12 +133,17 @@ class NailgunReceiver(object):
 
             modified = False
             for param in ('status', 'progress'):
-                if node.get(param):
+                if param in node:
+                    logging.debug(
+                        "Updating node {0} - set {1} to {2}".format(
+                            node['uid'],
+                            param,
+                            node[param]
+                        )
+                    )
                     setattr(node_db, param, node[param])
-                    modified = True
-            if modified:
-                orm().add(node_db)
-                orm().commit()
+            orm().add(node_db)
+            orm().commit()
             if node.get('status') and node['status'] == 'error':
                 error_nodes.append(node_db)
 
@@ -165,7 +170,9 @@ class NailgunReceiver(object):
             ).all()
             for node in nodes_db:
                 if node.progress is None:
-                    logger.error("Node {0} has no progress value - assuming 0")
+                    logger.error("Node {0} has no progress value - assuming 0".format(
+                        node.uid
+                    ))
                     node.progress = 0
                     orm().commit()
 

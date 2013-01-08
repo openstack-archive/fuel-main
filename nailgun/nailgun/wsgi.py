@@ -51,10 +51,11 @@ def build_app():
 def appstart():
     from nailgun.rpc import processed
     app = build_app()
-    rpc_process = processed.RPCProcess()
 
-    logger.info("Running RPC process...")
-    rpc_process.start()
+    if not settings.FAKE_TASKS:
+        rpc_process = processed.RPCProcess()
+        logger.info("Running RPC process...")
+        rpc_process.start()
     logger.info("Running WSGI app...")
     # seizes control
     web.httpserver.runsimple(
@@ -65,6 +66,7 @@ def appstart():
         )
     )
     logger.info("Stopping WSGI app...")
-    logger.info("Stopping RPC process...")
-    rpc_process.terminate()
+    if not settings.FAKE_TASKS:
+        logger.info("Stopping RPC process...")
+        rpc_process.terminate()
     logger.info("Done")
