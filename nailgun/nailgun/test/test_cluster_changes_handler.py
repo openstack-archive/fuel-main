@@ -141,5 +141,5 @@ class TestHandlers(BaseHandlers):
         n_ready_rpc = [n for n in n_rpc if n['uid'] == n_ready.id][0]
         n_added_rpc = [n for n in n_rpc if n['uid'] == n_added.id][0]
 
-        self.assertEquals(n_ready_rpc['status'], 'ready')
+        self.assertEquals(n_ready_rpc['status'], 'provisioned')
         self.assertEquals(n_added_rpc['status'], 'provisioning')

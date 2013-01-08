@@ -170,9 +170,11 @@ class NailgunReceiver(object):
             ).all()
             for node in nodes_db:
                 if node.progress is None:
-                    logger.error("Node {0} has no progress value - assuming 0".format(
-                        node.uid
-                    ))
+                    logger.error(
+                        "Node {0} has no progress value - assuming 0".format(
+                            node.uid
+                        )
+                    )
                     node.progress = 0
                     orm().commit()
 

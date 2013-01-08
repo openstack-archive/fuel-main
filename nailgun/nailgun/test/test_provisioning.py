@@ -78,7 +78,7 @@ class TestProvisioning(BaseHandlers):
                   node_error_deploy, node_error_provis):
             self.db.refresh(n)
 
-        self.assertEquals(node_ready.status, 'ready')
+        self.assertEquals(node_ready.status, 'provisioned')
         self.assertEquals(node_discover.status, 'provisioning')
         self.assertEquals(node_provis.status, 'provisioning')
         self.assertEquals(node_deploy.status, 'deploying')
