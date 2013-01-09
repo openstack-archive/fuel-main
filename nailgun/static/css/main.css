@@ -2,7 +2,7 @@ html {
   background-color: #39444F;
   background-image: url(../img/bg-main.png);
   background-repeat: repeat;
-  font-family: Oswald,'Segoe UI', Helvetica, Georgia, Tahoma, Arial;
+  font-family: 'Helvetica Neue', 'Segoe UI', Oswald, Verdana, Tahoma, Arial, san-serif;
   height: 100%;
 }
 
@@ -14,7 +14,7 @@ body {
   background: -o-radial-gradient(center top, rgba(128, 134, 143, 0.3) 0%, rgba(128, 134, 143, 0.3) 30%, rgba(128, 134, 143, 0.0) 55%);
   background: -ms-radial-gradient(center top, rgba(128, 134, 143, 0.3) 0%, rgba(128, 134, 143, 0.3) 30%, rgba(128, 134, 143, 0.0) 55%);
   background: radial-gradient(center top, rgba(128, 134, 143, 0.3) 0%, rgba(128, 134, 143, 0.3) 30%, rgba(128, 134, 143, 0.0) 55%);
-  font-family: Oswald,'Segoe UI', Helvetica, Georgia, Tahoma, Arial;
+  font-family: 'Helvetica Neue', 'Segoe UI', Oswald, Verdana, Tahoma, Arial, san-serif;
   -webkit-font-smoothing: antialiased;
   height: 100%;
 }
@@ -118,6 +118,7 @@ h6.page-title {
   float: left;
   border-left: 1px solid #7789a0;
   border-right: 1px solid #3c3c3c;
+  -webkit-font-smoothing: subpixel-antialiased;
 }
 .navigation-bar-ul > li:first-child {border-left: none;}
 
@@ -1006,9 +1007,9 @@ h6.page-title {
 .progress-deploy {
   width: 350px;
   padding: 2px;
-  margin: 17px 0;
+
   height: 12px;
-  background-color: #373e46;
+  background-color: #2b3036;
   background-image: none;
 }
 
@@ -2126,4 +2127,47 @@ h6.page-title {
 
 .label-info {
   margin-bottom: 10px;
+}
+
+.deployment-control-box {
+  background: rgba(0,0,0,.15);
+  border-radius: 4px;
+  margin-top: 9px;
+  box-sizing: border-box;
+  -moz-box-sizing: border-box;
+  -webkit-box-sizing: border-box;
+}
+
+.deployment-control-box:after {
+  clear: both;
+}
+
+.deploying-progress-text-box {
+  display: block;
+  color: #ffffff;
+  float: left;
+  padding: 5px 16px 0px 16px;
+  font-size: 11px;
+  text-align: left;
+  -webkit-font-smoothing: antialiased;
+  text-shadow: 0 0 0 rgba(0, 0, 0, 0);
+  max-width: 255px;
+  max-height: 20px;
+  overflow: hidden;
+}
+
+.deploying-progress-bar-box {
+  max-width: 100px;
+  float: left;
+  margin: 8px 0px 8px 0px;
+}
+
+.deploying-progress-bar-box > .progress-deploy {
+  width: 100px;
+  margin: 0px;
+}
+
+.deploying-progress-bar-box > .progress-deploy > .bar {
+  margin: 0px;
+  padding: 0px;
 }
