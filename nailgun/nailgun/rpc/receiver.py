@@ -131,7 +131,6 @@ class NailgunReceiver(object):
                 )
                 continue
 
-            modified = False
             for param in ('status', 'progress'):
                 if param in node:
                     logging.debug(

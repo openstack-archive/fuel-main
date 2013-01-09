@@ -138,8 +138,8 @@ class TestHandlers(BaseHandlers):
         n_rpc = nailgun.task.task.rpc.cast. \
             call_args_list[1][0][1]['args']['nodes']
         self.assertEquals(len(n_rpc), 2)
-        n_ready_rpc = [n for n in n_rpc if n['uid'] == n_ready.id][0]
+        n_provisioned_rpc = [n for n in n_rpc if n['uid'] == n_ready.id][0]
         n_added_rpc = [n for n in n_rpc if n['uid'] == n_added.id][0]
 
-        self.assertEquals(n_ready_rpc['status'], 'provisioned')
+        self.assertEquals(n_provisioned_rpc['status'], 'provisioned')
         self.assertEquals(n_added_rpc['status'], 'provisioning')
