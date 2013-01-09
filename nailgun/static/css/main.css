@@ -496,11 +496,11 @@ h6.page-title {
   height: 25px;
   margin-top: 16px;
   cursor: pointer;
-	height: 25px;
-	overflow: hidden;
-	margin-left: 13px;
-	color: #666666;
-	padding-right: 14px;
+  height: 25px;
+  overflow: hidden;
+  margin-left: 13px;
+  color: #666666;
+  padding-right: 14px;
   text-align: center;
   font-size: 13px;
 }
@@ -534,11 +534,11 @@ h6.page-title {
 
 
 .node-status > .progress {
-	height: 13px;
-	background-color: #cacaca;
-	background-image: none;
-	border-radius: 3px 3px 3px 3px;
-	margin-top: 5px;
+  height: 13px;
+  background-color: #cacaca;
+  background-image: none;
+  border-radius: 3px 3px 3px 3px;
+  margin-top: 5px;
 }
 
 .node-status > .progress > .bar > p {
@@ -1820,7 +1820,6 @@ h6.page-title {
   color: #ffffff;
 }
 */
-
 
 .page-control-box {
     display: block;
