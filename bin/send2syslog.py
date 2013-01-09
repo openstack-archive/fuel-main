@@ -12,7 +12,7 @@ from logging.handlers import SysLogHandler
 from optparse import OptionParser, OptionGroup
 
 
-# Add levels to syslog.
+# Add syslog levels to logging module.
 logging.NOTICE = 25
 logging.ALERT = 60
 logging.EMERG = 70
@@ -22,6 +22,44 @@ logging.addLevelName(logging.EMERG, 'EMERG')
 SysLogHandler.priority_map['NOTICE'] = 'notice'
 SysLogHandler.priority_map['ALERT'] = 'alert'
 SysLogHandler.priority_map['EMERG'] = 'emerg'
+# Define data and message format according to RFC 5424.
+rfc5424_format = '{version} {timestamp} {hostname} {appname} {procid}'\
+                 ' {msgid} {structured_data} {msg}'
+date_format = '%Y-%m-%dT%H:%M:%SZ'
+# Define global semaphore.
+sending_in_progress = 0
+# Define file types.
+msg_levels = {'ruby': {'regex': '(?P<level>[DIWEF]), \[[0-9-]{10}T',
+                       'levels': {'D': logging.DEBUG,
+                                  'I': logging.INFO,
+                                  'W': logging.WARNING,
+                                  'E': logging.ERROR,
+                                  'F': logging.FATAL
+                                  }
+                       },
+              'syslog': {'regex': ('[0-9-]{10}T[0-9:]{8}Z (?P<level>'
+                                   'debug|info|notice|warning|err|crit|'
+                                   'alert|emerg)'),
+                         'levels': {'debug': logging.DEBUG,
+                                    'info': logging.INFO,
+                                    'notice': logging.NOTICE,
+                                    'warning': logging.WARNING,
+                                    'err': logging.ERROR,
+                                    'crit': logging.CRITICAL,
+                                    'alert': logging.ALERT,
+                                    'emerg': logging.EMERG
+                                    }
+                         },
+              'anaconda': {'regex': ('[0-9:]{8},[0-9]+ (?P<level>'
+                                     'DEBUG|INFO|WARNING|ERROR|CRITICAL)'),
+                           'levels': {'DEBUG': logging.DEBUG,
+                                      'INFO': logging.INFO,
+                                      'WARNING': logging.WARNING,
+                                      'ERROR': logging.ERROR,
+                                      'CRITICAL': logging.CRITICAL
+                                      }
+                           }
+              }
 
 
 class WatchedFile:
@@ -60,11 +98,6 @@ class WatchedFile:
 
     def close(self):
         self.reset()
-
-# Define data and message format according to RFC 5424.
-rfc5424_format = '{version} {timestamp} {hostname} {appname} {procid}'\
-                 ' {msgid} {structured_data} {msg}'
-date_format = '%Y-%m-%dT%H:%M:%SZ'
 
 
 class WatchedGroup:
@@ -111,54 +144,21 @@ class WatchedGroup:
         for watchedfile in self.watchedfiles:
             for line in watchedfile.readLines():
                 line = line.strip()
-                level = get_msg_level(line, self.log_type)
+                level = self._get_msg_level(line, self.log_type)
                 self.logger.log(level, line)
                 main_logger and main_logger.log(
                     level,
                     'From file "%s" send: %s' % (watchedfile.name, line)
                 )
 
-
-msg_levels = {'ruby': {'regex': '(?P<level>[DIWEF]), \[[0-9-]{10}T',
-                       'levels': {'D': logging.DEBUG,
-                                  'I': logging.INFO,
-                                  'W': logging.WARNING,
-                                  'E': logging.ERROR,
-                                  'F': logging.FATAL
-                                  }
-                       },
-              'syslog': {'regex': ('[0-9-]{10}T[0-9:]{8}Z (?P<level>'
-                                   'debug|info|notice|warning|err|crit|'
-                                   'alert|emerg)'),
-                         'levels': {'debug': logging.DEBUG,
-                                    'info': logging.INFO,
-                                    'notice': logging.NOTICE,
-                                    'warning': logging.WARNING,
-                                    'err': logging.ERROR,
-                                    'crit': logging.CRITICAL,
-                                    'alert': logging.ALERT,
-                                    'emerg': logging.EMERG
-                                    }
-                         },
-              'anaconda': {'regex': ('[0-9:]{8},[0-9]+ (?P<level>'
-                                     'DEBUG|INFO|WARNING|ERROR|CRITICAL)'),
-                           'levels': {'DEBUG': logging.DEBUG,
-                                      'INFO': logging.INFO,
-                                      'WARNING': logging.WARNING,
-                                      'ERROR': logging.ERROR,
-                                      'CRITICAL': logging.CRITICAL
-                                      }
-                           }
-              }
-
-
-def get_msg_level(line, log_type):
-    if log_type in msg_levels:
-        msg_type = msg_levels[log_type]
-        regex = re.match(msg_type['regex'], line)
-        if regex:
-            return msg_type['levels'][regex.group('level')]
-    return logging.INFO
+    @staticmethod
+    def _get_msg_level(line, log_type):
+        if log_type in msg_levels:
+            msg_type = msg_levels[log_type]
+            regex = re.match(msg_type['regex'], line)
+            if regex:
+                return msg_type['levels'][regex.group('level')]
+        return logging.INFO
 
 
 def sig_handler(signum, frame):
@@ -193,233 +193,242 @@ def main_loop():
             break
 
 
-def cmdlineParse():
-    """ Parse command line config options. """
+class Config:
+    """ Collection of config generation methods.
+    Usage: config = Config.getConfig()
+    """
 
-    parser = OptionParser()
-    parser.add_option("-c", "--config", dest="config_file", metavar="FILE",
-                      help="Read config from FILE.")
-    parser.add_option("-i", "--stdin", dest="stdin_config", default=False,
-                      action="store_true", help="Read config from Stdin.")
-# FIXIT Add optionGroups.
-    parser.add_option("-r", "--run-once", dest="run_once", action="store_true",
-                      help="Send all data and exit.")
-    parser.add_option("-n", "--no-daemon", dest="no_daemon",
-                      action="store_true", help="Do not daemonize.")
-    parser.add_option("-d", "--debug", dest="debug",
-                      action="store_true", help="Print debug messages.")
+    @classmethod
+    def getConfig(cls):
+        """ Generate config from command line arguments and config file. """
 
-    parser.add_option("-t", "--tag", dest="tag", metavar="TAG",
-                      help="Set tag of sending messages as TAG.")
-    parser.add_option("-T", "--type", dest="log_type", metavar="TYPE",
-                      default='syslog',
-                      help="Set type of files as TYPE (default: %default).")
-    parser.add_option("-f", "--watchfile", dest="watchfiles", action="append",
-                      metavar="FILE", help="Add FILE to watchlist.")
-    parser.add_option("-s", "--host", dest="host", metavar="HOSTNAME",
-                      help="Set destination as HOSTNAME.")
-    parser.add_option("-p", "--port", dest="port", type="int", default=514,
-                      metavar="PORT",
-                      help="Set remote port as PORT (default: %default).")
+        # example_config = {
+        #       "daemon": True,
+        #       "run_once": False,
+        #       "debug": False,
+        #       "watchlist": [
+        #           {"servers": [ {"host": "localhost", "port": 514} ],
+        #            "watchfiles": [
+        #               {"tag": "anaconda",
+        #                "log_type": "anaconda",
+        #                "files": ["/tmp/anaconda.log",
+        #                   "/mnt/sysimage/root/install.log"]
+        #                }
+        #               ]
+        #            }
+        #           ]
+        #       }
 
-    options, args = parser.parse_args()
-    # Validate gathered options.
-    if options.config_file and options.stdin_config:
-        parser.error("You must not set both options --config"
-                     " and --stdin at the same time.")
-        exit(1)
-    if ((options.config_file or options.stdin_config) and
-            (options.tag or options.watchfiles or options.host)):
-        main_logger.warning("If --config or --stdin is set up options"
-                            " --tag, --watchfile, --type, --host and --port"
-                            " will be ignored.")
-    if (not (options.config_file or options.stdin_config) and
-            not (options.tag and options.watchfiles and options.host)):
-        parser.error("Options --tag, --watchfile and --host"
-                     "must be set up at the same time.")
-        exit(1)
-    return options, args
+        default_config = {"daemon": True,
+                          "run_once": False,
+                          "debug": False,
+                          "hostname": cls._getHostname(),
+                          "watchlist": []
+                          }
+        # First use default config as running config.
+        config = dict(default_config)
+        # Get command line options and validate it.
+        cmdline = cls.cmdlineParse()[0]
+        # Check config file source and read it.
+        if cmdline.config_file or cmdline.stdin_config:
+            try:
+                if cmdline.stdin_config is True:
+                    fo = sys.stdin
+                else:
+                    fo = open(cmdline.config_file, 'r')
+                parsed_config = json.load(fo)
+                if cmdline.debug:
+                    print parsed_config
+            except IOError:  # Raised if IO operations failed.
+                main_logger.error("Can not read config file %s\n" %
+                                  cmdline.config_file)
+                exit(1)
+            except ValueError as e:  # Raised if json parsing failed.
+                main_logger.error("Can not parse config file. %s\n" %
+                                  e.message)
+                exit(1)
+            #  Validate config from config file.
+            cls.configValidate(parsed_config)
+            # Copy gathered config from config file to running config
+            # structure.
+            for key, value in parsed_config.items():
+                config[key] = value
+        else:
+            # If no config file specified use watchlist setting from
+            # command line.
+            watchlist = {"servers": [{"host": cmdline.host,
+                                      "port": cmdline.port}],
+                         "watchfiles": [{"tag": cmdline.tag,
+                                         "log_type": cmdline.log_type,
+                                         "files": cmdline.watchfiles}]}
+            config['watchlist'].append(watchlist)
 
+        # Apply behavioural command line options to running config.
+        if cmdline.no_daemon:
+            config["daemon"] = False
+        if cmdline.run_once:
+            config["run_once"] = True
+        if cmdline.debug:
+            config["debug"] = True
+        return config
 
-def getHostname():
-    """ Generate hostname by BOOTIF kernel option or use os.uname()."""
+    @staticmethod
+    def _getHostname():
+        """ Generate hostname by BOOTIF kernel option or use os.uname()."""
 
-    with open('/proc/cmdline') as fo:
-        cpu_cmdline = fo.readline().strip()
-    regex = re.search('(?<=BOOTIF=)([0-9a-fA-F-]*)', cpu_cmdline)
-    if regex:
-        mac = regex.group(0).upper()
-        return ''.join(mac.split('-'))
-    else:
-        return os.uname()[1]
+        with open('/proc/cmdline') as fo:
+            cpu_cmdline = fo.readline().strip()
+        regex = re.search('(?<=BOOTIF=)([0-9a-fA-F-]*)', cpu_cmdline)
+        if regex:
+            mac = regex.group(0).upper()
+            return ''.join(mac.split('-'))
+        else:
+            return os.uname()[1]
 
+    @staticmethod
+    def cmdlineParse():
+        """ Parse command line config options. """
 
-def getConfig():
-    """ Generate config from command line arguments and config file. """
+        parser = OptionParser()
+        parser.add_option("-c", "--config", dest="config_file", metavar="FILE",
+                          help="Read config from FILE.")
+        parser.add_option("-i", "--stdin", dest="stdin_config", default=False,
+                          action="store_true", help="Read config from Stdin.")
+        # FIXIT Add optionGroups.
+        parser.add_option("-r", "--run-once", dest="run_once",
+                          action="store_true", help="Send all data and exit.")
+        parser.add_option("-n", "--no-daemon", dest="no_daemon",
+                          action="store_true", help="Do not daemonize.")
+        parser.add_option("-d", "--debug", dest="debug",
+                          action="store_true", help="Print debug messages.")
 
-    # example_config = {
-    #       "daemon": True,
-    #       "run_once": False,
-    #       "debug": False,
-    #       "watchlist": [
-    #           {"servers": [ {"host": "localhost", "port": 514} ],
-    #            "watchfiles": [
-    #               {"tag": "anaconda",
-    #                "log_type": "anaconda",
-    #                "files": ["/tmp/anaconda.log",
-    #                   "/mnt/sysimage/root/install.log"]
-    #                }
-    #               ]
-    #            }
-    #           ]
-    #       }
+        parser.add_option("-t", "--tag", dest="tag", metavar="TAG",
+                          help="Set tag of sending messages as TAG.")
+        parser.add_option("-T", "--type", dest="log_type", metavar="TYPE",
+                          default='syslog',
+                          help="Set type of files as TYPE"
+                               "(default: %default).")
+        parser.add_option("-f", "--watchfile", dest="watchfiles",
+                          action="append",
+                          metavar="FILE", help="Add FILE to watchlist.")
+        parser.add_option("-s", "--host", dest="host", metavar="HOSTNAME",
+                          help="Set destination as HOSTNAME.")
+        parser.add_option("-p", "--port", dest="port", type="int", default=514,
+                          metavar="PORT",
+                          help="Set remote port as PORT (default: %default).")
 
-    default_config = {"daemon": True,
-                      "run_once": False,
-                      "debug": False,
-                      "hostname": getHostname(),
-                      "watchlist": []
-                      }
-    # First use default config as running config.
-    config = dict(default_config)
-    # Get command line options and validate it.
-    cmdline = cmdlineParse()[0]
-    # Check config file source and read it.
-    if cmdline.config_file or cmdline.stdin_config:
-        try:
-            if cmdline.stdin_config is True:
-                fo = sys.stdin
-            else:
-                fo = open(cmdline.config_file, 'r')
-            parsed_config = json.load(fo)
-            if cmdline.debug:
-                print parsed_config
-        except IOError:  # Raised if IO operations failed.
-            main_logger.error("Can not read config file %s\n" %
-                              cmdline.config_file)
+        options, args = parser.parse_args()
+        # Validate gathered options.
+        if options.config_file and options.stdin_config:
+            parser.error("You must not set both options --config"
+                         " and --stdin at the same time.")
             exit(1)
-        except ValueError as e:  # Raised if json parsing failed.
-            main_logger.error("Can not parse config file. %s\n" %
-                              e.message)
+        if ((options.config_file or options.stdin_config) and
+                (options.tag or options.watchfiles or options.host)):
+            main_logger.warning("If --config or --stdin is set up options"
+                                " --tag, --watchfile, --type,"
+                                " --host and --port will be ignored.")
+        if (not (options.config_file or options.stdin_config) and
+                not (options.tag and options.watchfiles and options.host)):
+            parser.error("Options --tag, --watchfile and --host"
+                         " must be set up at the same time.")
             exit(1)
-        #  Validate config from config file.
-        configValidate(parsed_config)
-        # Copy gathered config from config file to running config structure.
-        for key, value in parsed_config.items():
-            config[key] = value
-    else:
-        # If no config file specified use watchlist setting from command line.
-        watchlist = {"servers": [{"host": cmdline.host,
-                                  "port": cmdline.port}],
-                     "watchfiles": [{"tag": cmdline.tag,
-                                     "log_type": cmdline.log_type,
-                                     "files": cmdline.watchfiles}]}
-        config['watchlist'].append(watchlist)
+        return options, args
 
-    # Apply behavioural command line options to running config.
-    if cmdline.no_daemon:
-        config["daemon"] = False
-    if cmdline.run_once:
-        config["run_once"] = True
-    if cmdline.debug:
-        config["debug"] = True
-    return config
+    @staticmethod
+    def _checkType(value, value_type, value_name='', msg=None):
+        """ Check correctness of type of value and exit if not. """
 
+        if not isinstance(value, value_type):
+            message = msg or "Value %r in config have type %r but"\
+                " %r is expected." %\
+                (value_name, type(value).__name__, value_type.__name__)
+            main_logger.error(message)
+            exit(1)
 
-def checkType(value, value_type, value_name='', msg=None):
-    """ Check correctness of type of value and exit if not. """
+    @classmethod
+    def configValidate(cls, config):
+        """ Validate types and names of data items in config. """
 
-    if not isinstance(value, value_type):
-        message = msg or "Value %r in config have type %r but"\
-            " %r is expected." %\
-            (value_name, type(value).__name__, value_type.__name__)
-        main_logger.error(message)
-        exit(1)
-
-
-def configValidate(config):
-    """ Validate types and names of data items in config. """
-
-    checkType(config, dict, msg='Config must be a dict.')
-    for key in ("daemon", "run_once", "debug"):
+        cls._checkType(config, dict, msg='Config must be a dict.')
+        for key in ("daemon", "run_once", "debug"):
+            if key in config:
+                cls._checkType(config[key], bool, key)
+        key = "hostname"
         if key in config:
-            checkType(config[key], bool, key)
-    key = "hostname"
-    if key in config:
-        checkType(config[key], basestring, key)
+            cls._checkType(config[key], basestring, key)
 
-    key = "watchlist"
-    if key in config:
-        checkType(config[key], list, key)
-    else:
-        main_logger.error("There must be key %r in config." % key)
-        exit(1)
-
-    for item in config["watchlist"]:
-        checkType(item, dict, "watchlist[n]")
-        key, name = "servers", "watchlist[n]  => servers"
-        if key in item:
-            checkType(item[key], list, name)
+        key = "watchlist"
+        if key in config:
+            cls._checkType(config[key], list, key)
         else:
-            main_logger.error("There must be key %r in %s in config." %
-                              (key, '"watchlist[n]" item'))
-            exit(1)
-        key, name = "watchfiles", "watchlist[n] => watchfiles"
-        if key in item:
-            checkType(item[key], list, name)
-        else:
-            main_logger.error("There must be key %r in %s in config." %
-                              (key, '"watchlist[n]" item'))
+            main_logger.error("There must be key %r in config." % key)
             exit(1)
 
-        for item2 in item["servers"]:
-            checkType(item2, dict, "watchlist[n]  => servers[n]")
-            key, name = "host", "watchlist[n]  => servers[n] => host"
-            if key in item2:
-                checkType(item2[key], basestring, name)
+        for item in config["watchlist"]:
+            cls._checkType(item, dict, "watchlist[n]")
+            key, name = "servers", "watchlist[n]  => servers"
+            if key in item:
+                cls._checkType(item[key], list, name)
             else:
                 main_logger.error("There must be key %r in %s in config." %
-                                  (key, '"watchlist[n] => servers[n]" item'))
+                                  (key, '"watchlist[n]" item'))
                 exit(1)
-            key, name = "port", "watchlist[n]  => servers[n] => port"
-            if key in item2:
-                checkType(item2[key], int, name)
-
-        for item2 in item["watchfiles"]:
-            checkType(item2, dict, "watchlist[n]  => watchfiles[n]")
-            key, name = "tag", "watchlist[n]  => watchfiles[n] => tag"
-            if key in item2:
-                checkType(item2[key], basestring, name)
+            key, name = "watchfiles", "watchlist[n] => watchfiles"
+            if key in item:
+                cls._checkType(item[key], list, name)
             else:
                 main_logger.error("There must be key %r in %s in config." %
-                                  (key,
-                                   '"watchlist[n] => watchfiles[n]" item'))
+                                  (key, '"watchlist[n]" item'))
                 exit(1)
-            key = "log_type"
-            name = "watchlist[n]  => watchfiles[n] => log_type"
-            if key in item2:
-                checkType(item2[key], basestring, name)
-            key, name = "files", "watchlist[n]  => watchfiles[n] => files"
-            if key in item2:
-                checkType(item2[key], list, name)
-            else:
-                main_logger.error("There must be key %r in %s in config." %
-                                  (key,
-                                   '"watchlist[n] => watchfiles[n]" item'))
-                exit(1)
-            for item3 in item2["files"]:
-                checkType(item3, basestring,
-                          "watchlist[n]  => watchfiles[n] => files[n]")
+
+            for item2 in item["servers"]:
+                cls._checkType(item2, dict, "watchlist[n]  => servers[n]")
+                key, name = "host", "watchlist[n]  => servers[n] => host"
+                if key in item2:
+                    cls._checkType(item2[key], basestring, name)
+                else:
+                    main_logger.error("There must be key %r in %s in config." %
+                                      (key,
+                                       '"watchlist[n] => servers[n]" item'))
+                    exit(1)
+                key, name = "port", "watchlist[n]  => servers[n] => port"
+                if key in item2:
+                    cls._checkType(item2[key], int, name)
+
+            for item2 in item["watchfiles"]:
+                cls._checkType(item2, dict, "watchlist[n]  => watchfiles[n]")
+                key, name = "tag", "watchlist[n]  => watchfiles[n] => tag"
+                if key in item2:
+                    cls._checkType(item2[key], basestring, name)
+                else:
+                    main_logger.error("There must be key %r in %s in config." %
+                                      (key,
+                                       '"watchlist[n] => watchfiles[n]" item'))
+                    exit(1)
+                key = "log_type"
+                name = "watchlist[n]  => watchfiles[n] => log_type"
+                if key in item2:
+                    cls._checkType(item2[key], basestring, name)
+                key, name = "files", "watchlist[n]  => watchfiles[n] => files"
+                if key in item2:
+                    cls._checkType(item2[key], list, name)
+                else:
+                    main_logger.error("There must be key %r in %s in config." %
+                                      (key,
+                                       '"watchlist[n] => watchfiles[n]" item'))
+                    exit(1)
+                for item3 in item2["files"]:
+                    name = "watchlist[n]  => watchfiles[n] => files[n]"
+                    cls._checkType(item3, basestring, name)
 
 
-# Define global semaphore
-sending_in_progress = 0
 # Create a main logger.
 logging.basicConfig(format='%(levelname)s: %(message)s')
 main_logger = logging.getLogger()
 main_logger.setLevel(logging.NOTSET)
 
-config = getConfig()
+config = Config.getConfig()
 # Create list of WatchedGroup objects with different log names.
 watchlist = []
 i = 0
