@@ -17,7 +17,6 @@ body {
   font-family: Oswald,'Segoe UI', Helvetica, Georgia, Tahoma, Arial;
   -webkit-font-smoothing: antialiased;
   height: 100%;
-  
 }
 
 body {
@@ -325,7 +324,7 @@ h6.page-title {
   line-height: 52px;
   font-size: 60px;
   text-align: center;
-  padding: 17px 0px 0px 9px;
+  padding: 17px 0px 0px;
   color: rgba(255,255,255,0.85);
   cursor: pointer;
 }
