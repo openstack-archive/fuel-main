@@ -82,7 +82,9 @@ $(ISOROOT)/puppet-nailgun.tgz: $(call find-files,puppet)
 	(cd puppet && tar czf $@ *)
 
 $(ISOROOT)/puppet-slave.tgz: \
-		$(call find-files,fuel/deployment/puppet/network)
+		$(call find-files,puppet/nailytest) \
+		$(call find-files,puppet/osnailyfacter) \
+		$(call find-files,fuel/deployment/puppet)
 	(cd puppet && tar cf $(BUILD_DIR)/puppet-slave.tar nailytest osnailyfacter)
 	(cd fuel/deployment/puppet && tar rf $(BUILD_DIR)/puppet-slave.tar ./*)
 	gzip -c -9 $(BUILD_DIR)/puppet-slave.tar > $@
@@ -92,7 +94,7 @@ $/isoroot-puppetmod.done: \
 		$(ISOROOT)/puppet-nailgun.tgz \
 		$(ISOROOT)/puppet-slave.tgz
 	mkdir -p $(ISOROOT)/more_rpm
-	cd $(ISOROOT)/more_rpm && wget \
+	cd $(ISOROOT)/more_rpm && wget -c \
 		$(FUEL_PACKAGES)/MySQL-shared-5.5.28-1.el6.x86_64.rpm \
 		$(FUEL_PACKAGES)/MySQL-client-5.5.28-1.el6.x86_64.rpm \
 		$(FUEL_PACKAGES)/MySQL-server-5.5.28_wsrep_23.7-1.rhel5.x86_64.rpm \
