@@ -97,6 +97,7 @@ def get_probe_frames(iface):
             vlan = 0
         rmsg = str(p[scapy.UDP].payload)[len(cookie):]
         riface, uid = rmsg.split(' ', 1)
+        uid = uid.strip('\x00\n')
         if vlan not in neigbor_dict:
             neigbor_dict[vlan] = {}
         if uid not in neigbor_dict[vlan]:
