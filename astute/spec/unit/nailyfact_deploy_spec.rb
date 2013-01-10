@@ -10,28 +10,7 @@ describe "NailyFact DeploymentEngine" do
       @ctx.stubs(:reporter).returns(reporter)
       reporter.stubs(:report)
       @deploy_engine = Astute::DeploymentEngine::NailyFact.new(@ctx)
-    end
-
-    it "should call valid method depends on attrs" do
-      nodes = [{'uid' => 1}]
-      attrs = {'deployment_mode' => 'ha_compute'}
-      attrs_modified = attrs.merge({'some' => 'somea'})
-      
-      @deploy_engine.expects(:attrs_ha_compute).with(nodes, attrs).returns(attrs_modified)
-      @deploy_engine.expects(:deploy_ha_compute).with(nodes, attrs_modified)
-      # All implementations of deploy_piece go to subclasses
-      @deploy_engine.respond_to?(:deploy_piece).should be_true
-      @deploy_engine.deploy(nodes, attrs)
-    end
-
-    it "should raise an exception if deployment mode is unsupported" do
-      nodes = [{'uid' => 1}]
-      attrs = {'deployment_mode' => 'unknown'}
-      expect {@deploy_engine.deploy(nodes, attrs)}.to raise_exception(/Method attrs_unknown is not implemented/)
-    end
-
-    it "multinode_compute deploy should not raise any exception" do
-      data = {"args" =>
+      @data = {"args" =>
                 {"attributes" =>
                   {"storage_network_range" => "172.16.0.0/24", "auto_assign_floating_ip" => false,
                    "mysql" => {"root_password" => "Z2EqsZo5"},
@@ -42,8 +21,7 @@ describe "NailyFact DeploymentEngine" do
                    "management_network_range" => "192.168.0.0/24",
                    "public_network_range" => "240.0.1.0/24",
                    "fixed_network_range" => "10.0.0.0/24",
-                   "floating_network_range" => "240.0.0.0/24",
-                   "deployment_mode" => "multinode_compute"},
+                   "floating_network_range" => "240.0.0.0/24"},
                "task_uuid" => "19d99029-350a-4c9c-819c-1f294cf9e741",
                "nodes" => [{"mac" => "52:54:00:0E:B8:F5", "status" => "provisioning",
                             "uid" => "devnailgun.mirantis.com", "error_type" => nil,
@@ -95,9 +73,32 @@ describe "NailyFact DeploymentEngine" do
                             "role" => "compute"}]},
               "method" => "deploy",
               "respond_to" => "deploy_resp"}
-      Astute::Metadata.expects(:publish_facts).times(data['args']['nodes'].size)
+      
+    end
+
+    it "should call valid method depends on attrs" do
+      nodes = [{'uid' => 1}]
+      attrs = {'deployment_mode' => 'ha_compute'}
+      attrs_modified = attrs.merge({'some' => 'somea'})
+      
+      @deploy_engine.expects(:attrs_ha_compute).with(nodes, attrs).returns(attrs_modified)
+      @deploy_engine.expects(:deploy_ha_compute).with(nodes, attrs_modified)
+      # All implementations of deploy_piece go to subclasses
+      @deploy_engine.respond_to?(:deploy_piece).should be_true
+      @deploy_engine.deploy(nodes, attrs)
+    end
+
+    it "should raise an exception if deployment mode is unsupported" do
+      nodes = [{'uid' => 1}]
+      attrs = {'deployment_mode' => 'unknown'}
+      expect {@deploy_engine.deploy(nodes, attrs)}.to raise_exception(/Method attrs_unknown is not implemented/)
+    end
+
+    it "multinode_compute deploy should not raise any exception" do
+      @data['args']['attributes']['deployment_mode'] = "multinode_compute"
+      Astute::Metadata.expects(:publish_facts).times(@data['args']['nodes'].size)
       Astute::PuppetdDeployer.expects(:deploy).twice  # we got two calls, one for controller, and another for all computes
-      @deploy_engine.deploy(data['args']['nodes'], data['args']['attributes'])
+      @deploy_engine.deploy(@data['args']['nodes'], @data['args']['attributes'])
     end
   end
 end
