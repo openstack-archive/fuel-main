@@ -30,6 +30,7 @@
     </button>
   </div>
 </div>
+<% if (nodes.cluster.get('mode') == 'ha' && role == 'controller') size = 3 %>
 <% if (nodes.length || size) { %>
   <div class="roles-block-row node-list-container"></div>
 <% } else { %>

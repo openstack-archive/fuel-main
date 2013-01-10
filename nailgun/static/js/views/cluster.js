@@ -514,15 +514,21 @@ function(models, commonViews, dialogViews, clusterPageTemplate, deploymentResult
                 nodesAfterDeployment: nodesAfterDeployment
             }));
             this.$el.addClass('node-list-' + this.role);
-            if (this.collection.length || this.size) {
+            var placeholders;
+            if (this.collection.cluster.get('mode') == 'ha' && this.role == 'controller') {
+                placeholders = 3;
+            } else {
+                placeholders = this.size;
+            }
+            if (this.collection.length || placeholders) {
                 var container = this.$('.node-list-container');
                 this.collection.each(function(node) {
                     var nodeView = new views.Node({model: node, renameable: !this.collection.cluster.task('deploy', 'running')});
                     this.registerSubView(nodeView);
                     container.append(nodeView.render().el);
                 }, this);
-                if (nodesAfterDeployment.length < this.size) {
-                    _(this.size - nodesAfterDeployment.length).times(function() {
+                if (nodesAfterDeployment.length < placeholders) {
+                    _(placeholders - nodesAfterDeployment.length).times(function() {
                         container.append('<div class="span2 nodebox nodeplaceholder"></div>');
                     });
                 }

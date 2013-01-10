@@ -1387,7 +1387,6 @@ h6.page-title {
   display: block;
   float: left;
   margin: 0 0 0 12px;
-  position: relative;
 }
 .filter-bar-btn {
   margin: 4px;
@@ -1447,7 +1446,6 @@ h6.page-title {
   display: block;
   float: left;
   margin-top: 9px;
-  margin-right: 6px;
   font-size: 14px;
   color: #444444;
   text-shadow: 0 1px 0 rgba(255,255,255,.4);
@@ -2103,6 +2101,7 @@ h6.page-title {
 
 .fieldset-group {
   margin: 0px;
+  padding-bottom: 2px;
 }
 
 .fieldset-group > .fieldset-group {
