@@ -128,7 +128,7 @@ $/nailgun-centos-6.3-amd64.iso: $/isoroot.done
 	mkisofs -r -V "Mirantis Nailgun" -p "Mirantis" \
 		-J -T -R -b isolinux/isolinux.bin \
 		-no-emul-boot \
-		-boot-load-size 8 -boot-info-table \
+		-boot-load-size 4 -boot-info-table \
 		-x "lost+found" -o $@ $/isoroot-mkisofs
 	implantisomd5 $/nailgun-centos-6.3-amd64.iso
 
@@ -141,7 +141,7 @@ $/nailgun-centos-6.3-amd64.img: $/nailgun-centos-6.3-amd64.iso
             sudo umount -f $$looppartition; \
         done; \
         sudo kpartx -d $$loopdevice; \
-	    sudo losetup -d $$loopdevice; \
+        sudo losetup -d $$loopdevice; \
     done
 	rm -f $@
 	dd if=/dev/zero of=$/nailgun-centos-6.3-amd64.img bs=1M count=2048
@@ -164,7 +164,7 @@ $/nailgun-centos-6.3-amd64.img: $/nailgun-centos-6.3-amd64.iso
 	sudo rm $/imgroot/syslinux/isolinux.cfg
 	sudo cp iso/syslinux/syslinux.cfg $/imgroot/syslinux
 	sudo sed -i -e "s/11111111-1111-1111-1111-111111111111/`cat $/img_loop_uuid`/g" $/imgroot/syslinux/syslinux.cfg
-	sudo cp iso/usbks.cfg $/imgroot/ks.cfg
+	sudo cp iso/ks.cfg $/imgroot/ks.cfg
 	sudo sed -i -e "s/11111111-1111-1111-1111-111111111111/`cat $/img_loop_uuid`/g" $/imgroot/ks.cfg
 	sudo cp $/nailgun-centos-6.3-amd64.iso $/imgroot/nailgun.iso
 	sudo umount -f `cat $/img_loop_partition`
