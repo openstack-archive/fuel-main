@@ -1475,6 +1475,10 @@ h6.page-title {
   font-size: 13px;
   color: #545a63;
 }
+.table-logs tr.critical {
+  background-color: #E99292;
+  color: #fff;
+}
 .table-logs tr td {
   padding: 1px 5px;
   line-height: 15px;
