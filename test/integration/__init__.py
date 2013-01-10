@@ -109,8 +109,7 @@ class Ci(object):
             'ip': node.ip_address,
             'mask': network.ip_addresses.netmask,
             'gw': network.ip_addresses[1],
-            'hostname': self.hostname,
-            'domain': self.domain
+            'hostname': '.'.join((self.hostname, self.domain))
         }
         keys = """<Esc><Enter>
 <Wait>
@@ -120,7 +119,6 @@ vmlinuz initrd=initrd.img ks=cdrom:/ks.cfg
  gw=%(gw)s
  dns1=%(gw)s
  hostname=%(hostname)s
- domain=%(domain)s
  <Enter>
 """ % params
         node.send_keys(keys)
