@@ -8,7 +8,19 @@ from sqlalchemy import create_engine
 
 from nailgun.settings import settings
 
-engine = create_engine(settings.DATABASE_ENGINE)
+db_str = "{engine}://{path}"
+if settings.DATABASE['engine'] == 'sqlite':
+    db_str = db_str.format(
+        engine='sqlite',
+        path="/" + settings.DATABASE['name']
+    )
+else:
+    db_str = db_str.replace(
+        '{path}',
+        '{user}:{passwd}@{host}:{port}/{name}'
+    ).format(settings.DATABASE)
+
+engine = create_engine(db_str)
 
 
 class NoCacheQuery(Query):

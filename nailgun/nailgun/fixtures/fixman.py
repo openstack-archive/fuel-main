@@ -7,10 +7,11 @@ import logging
 from nailgun.settings import settings
 from nailgun.api import models
 from sqlalchemy import orm
+from nailgun.db import orm as ormgen
 from sqlalchemy.exc import IntegrityError
 
 logger = logging.getLogger(__name__)
-db = orm.scoped_session(orm.sessionmaker(bind=models.engine))()
+db = ormgen()
 
 
 def upload_fixture(fileobj):

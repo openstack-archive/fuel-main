@@ -45,6 +45,9 @@ class NailgunSettings:
     def __getattr__(self, name):
         return self.config.get(name, None)
 
+    def __repr__(self):
+        return "<settings object>"
+
 
 settings = NailgunSettings()
 

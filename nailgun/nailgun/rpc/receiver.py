@@ -12,11 +12,11 @@ from web.utils import ThreadedDict
 from sqlalchemy.orm import scoped_session, sessionmaker
 
 import nailgun.rpc as rpc
-from nailgun.db import orm
+from nailgun.db import orm, engine
 from nailgun.network.manager import get_node_networks
 from nailgun.settings import settings
 from nailgun.task.helpers import update_task_status
-from nailgun.api.models import engine, Node, Network
+from nailgun.api.models import Node, Network
 from nailgun.api.models import Task
 from nailgun.notifier import notifier
 

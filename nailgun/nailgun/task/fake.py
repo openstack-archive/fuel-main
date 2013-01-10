@@ -6,8 +6,7 @@ from random import randrange
 
 from sqlalchemy.orm import object_mapper, ColumnProperty, \
     scoped_session, sessionmaker
-from nailgun.db import Query, orm
-from nailgun.api.models import engine
+from nailgun.db import Query, orm, engine
 from nailgun.settings import settings
 from nailgun.notifier import notifier
 from nailgun.api.models import Network, Node
