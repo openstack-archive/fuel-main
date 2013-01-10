@@ -147,7 +147,6 @@ $/nailgun-centos-6.3-amd64.img: $/nailgun-centos-6.3-amd64.iso
 	dd if=/dev/zero of=$/nailgun-centos-6.3-amd64.img bs=1M count=2048
 	sudo losetup -f > $/img_loop_device
 	sudo losetup `cat $/img_loop_device` $@
-	sudo wipefs -a `cat $/img_loop_device`
 	sudo parted -s `cat $/img_loop_device` mklabel msdos
 	sudo parted -s `cat $/img_loop_device` unit MB mkpart primary ext2 1 2048 set 1 boot on
 	sudo kpartx -a -v `cat $/img_loop_device` | awk '{print "/dev/mapper/" $$3}' > $/img_loop_partition
