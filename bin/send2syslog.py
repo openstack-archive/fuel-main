@@ -60,6 +60,10 @@ msg_levels = {'ruby': {'regex': '(?P<level>[DIWEF]), \[[0-9-]{10}T',
                                       }
                            }
               }
+# Create a main logger.
+logging.basicConfig(format='%(levelname)s: %(message)s')
+main_logger = logging.getLogger()
+main_logger.setLevel(logging.NOTSET)
 
 
 class WatchedFile:
@@ -282,8 +286,7 @@ class Config:
         if regex:
             mac = regex.group(0).upper()
             return ''.join(mac.split('-'))
-        else:
-            return os.uname()[1]
+        return os.uname()[1]
 
     @staticmethod
     def cmdlineParse():
@@ -423,11 +426,7 @@ class Config:
                     cls._checkType(item3, basestring, name)
 
 
-# Create a main logger.
-logging.basicConfig(format='%(levelname)s: %(message)s')
-main_logger = logging.getLogger()
-main_logger.setLevel(logging.NOTSET)
-
+# Create global config.
 config = Config.getConfig()
 # Create list of WatchedGroup objects with different log names.
 watchlist = []
