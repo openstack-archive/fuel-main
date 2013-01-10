@@ -93,8 +93,13 @@ class compact_controller {
       include osnailyfacter::test_controller
 
       class { compact_controller: }
+      class { 'openstack::img::cirros':
+        os_password               => $admin_password,
+        img_name                  => "TestVM",
+      }
 
       Class[osnailyfacter::network_setup] -> Class[openstack::controller_ha]
+      Class[glance::api]        -> Class[openstack::img::cirros]
     }
 
     "compute" : {
@@ -127,6 +132,7 @@ class compact_controller {
         tenant_network_type    => $tenant_network_type,
         segment_range          => $segment_range,
         cinder                 => $cinder,
+        db_host                => $internal_virtual_ip,
       }
 
       Class[osnailyfacter::network_setup] -> Class[openstack::compute]

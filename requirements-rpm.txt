@@ -4,6 +4,7 @@ avahi
 bind-utils
 byacc
 centos-release
+cirros-testvm
 cman
 cobbler
 cobbler-web

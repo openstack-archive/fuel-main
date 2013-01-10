@@ -65,7 +65,13 @@ Exec { logoutput => true }
         controller_node      => $controller_node_address,
       }
 
+      class { 'openstack::img::cirros':
+        os_password               => $admin_password,
+        img_name                  => "TestVM",
+      }
+
       Class[osnailyfacter::network_setup] -> Class[openstack::controller]
+      Class[glance::api]        -> Class[openstack::img::cirros]
     }
 
     "compute" : {
@@ -95,6 +101,7 @@ Exec { logoutput => true }
         #quantum_user_password  => $quantum_user_password,
         #tenant_network_type    => $tenant_network_type,
         service_endpoint       => $controller_node_address,
+        db_host                => $conrtoller_node_address,
         verbose                => $verbose,
       }
 
