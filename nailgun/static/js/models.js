@@ -38,13 +38,15 @@ define(function() {
         hasChanges: function() {
             return this.get('nodes').hasChanges();
         },
-        canChangeMode: function() {
-            return !this.get('nodes').nodesAfterDeployment().length;
+        canChangeMode: function(newMode) {
+            var nodes = this.get('nodes');
+            return !(nodes.currentNodes().length || (nodes.where({role: 'controller'}).length > 1) || (newMode && newMode == 'singlenode' && (nodes.length > 1 || (nodes.length == 1 && !nodes.where({role: 'controller'}).length))));
         },
-        canChangeType: function(typeToChangeTo) {
+        canChangeType: function(newType) {
             // FIXME: algorithmic complexity is very high
             var canChange;
-            if (!typeToChangeTo) {
+            var nodes = this.get('nodes');
+            if (!newType) {
                 canChange = false;
                 _.each(this.availableTypes(), function(type) {
                     if (type == this.get('type')) {return;}
@@ -53,12 +55,12 @@ define(function() {
             } else {
                 canChange = true;
                 var clusterTypesToNodesRoles = {'both': [], 'compute': ['storage'], 'storage': ['compute']};
-                _.each(clusterTypesToNodesRoles[typeToChangeTo], function(nodeRole) {
-                    if (this.get('nodes').where({role: nodeRole}).length) {
+                _.each(clusterTypesToNodesRoles[newType], function(nodeRole) {
+                    if (nodes.where({role: nodeRole}).length) {
                         canChange = false;
                     }
                 }, this);
-                if (canChange && this.get('nodes').where({role: 'controller'}).length > 1) {
+                if (canChange && (nodes.where({role: 'controller'}).length > 1 || nodes.currentNodes().length)) {
                     canChange = false;
                 }
             }
