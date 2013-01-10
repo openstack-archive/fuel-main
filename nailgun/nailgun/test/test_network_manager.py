@@ -6,7 +6,7 @@ from netaddr import IPNetwork, IPAddress
 from nailgun.test.base import BaseHandlers
 from nailgun.test.base import reverse
 from nailgun.network import manager as netmanager
-from nailgun.api.models import engine
+from nailgun.db import engine
 from nailgun.api.models import Network, Node, NetworkElement
 
 

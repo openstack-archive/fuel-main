@@ -11,7 +11,7 @@ import mock
 from paste.fixture import TestApp
 from sqlalchemy.orm.events import orm
 
-from nailgun.api.models import engine
+from nailgun.db import engine
 from nailgun.api.models import Node
 from nailgun.api.models import Release
 from nailgun.api.models import Cluster
