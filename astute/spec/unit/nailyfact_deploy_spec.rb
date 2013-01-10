@@ -2,7 +2,7 @@
 require File.join(File.dirname(__FILE__), "..", "spec_helper")
 
 describe "NailyFact DeploymentEngine" do
-  context "When deploy is called, it" do
+  context "When deploy is called, " do
     before(:each) do
       @ctx = mock
       @ctx.stubs(:task_id)
@@ -25,6 +25,7 @@ describe "NailyFact DeploymentEngine" do
                "task_uuid" => "19d99029-350a-4c9c-819c-1f294cf9e741",
                "nodes" => [{"mac" => "52:54:00:0E:B8:F5", "status" => "provisioning",
                             "uid" => "devnailgun.mirantis.com", "error_type" => nil,
+                            "fqdn" => "devnailgun.mirantis.com",
                             "network_data" => [{"gateway" => "192.168.0.1",
                                                 "name" => "management", "dev" => "eth0",
                                                 "brd" => "192.168.0.255", "netmask" => "255.255.255.0",
@@ -41,6 +42,7 @@ describe "NailyFact DeploymentEngine" do
                             "role" => "controller"},
                            {"mac" => "52:54:00:50:91:DD", "status" => "provisioning",
                             "uid" => 2, "error_type" => nil,
+                            "fqdn" => "slave-2.mirantis.com",
                             "network_data" => [{"gateway" => "192.168.0.1",
                                                 "name" => "management", "dev" => "eth0",
                                                 "brd" => "192.168.0.255", "netmask" => "255.255.255.0",
@@ -57,6 +59,7 @@ describe "NailyFact DeploymentEngine" do
                             "role" => "compute"},
                            {"mac" => "52:54:00:C3:2C:28", "status" => "provisioning",
                             "uid" => 3, "error_type" => nil,
+                            "fqdn" => "slave-3.mirantis.com",
                             "network_data" => [{"gateway" => "192.168.0.1",
                                                 "name" => "management", "dev" => "eth0",
                                                 "brd" => "192.168.0.255", "netmask" => "255.255.255.0",
@@ -76,7 +79,7 @@ describe "NailyFact DeploymentEngine" do
       
     end
 
-    it "should call valid method depends on attrs" do
+    it "it should call valid method depends on attrs" do
       nodes = [{'uid' => 1}]
       attrs = {'deployment_mode' => 'ha_compute'}
       attrs_modified = attrs.merge({'some' => 'somea'})
@@ -88,7 +91,7 @@ describe "NailyFact DeploymentEngine" do
       @deploy_engine.deploy(nodes, attrs)
     end
 
-    it "should raise an exception if deployment mode is unsupported" do
+    it "it should raise an exception if deployment mode is unsupported" do
       nodes = [{'uid' => 1}]
       attrs = {'deployment_mode' => 'unknown'}
       expect {@deploy_engine.deploy(nodes, attrs)}.to raise_exception(/Method attrs_unknown is not implemented/)
@@ -96,6 +99,17 @@ describe "NailyFact DeploymentEngine" do
 
     it "multinode_compute deploy should not raise any exception" do
       @data['args']['attributes']['deployment_mode'] = "multinode_compute"
+      Astute::Metadata.expects(:publish_facts).times(@data['args']['nodes'].size)
+      Astute::PuppetdDeployer.expects(:deploy).twice  # we got two calls, one for controller, and another for all computes
+      @deploy_engine.deploy(@data['args']['nodes'], @data['args']['attributes'])
+    end
+
+    it "ha_compute deploy should not raise any exception" do
+      @data['args']['attributes']['deployment_mode'] = "ha_compute"
+      # VIPs are required for HA mode and should be passed from Nailgun (only in HA)
+      @data['args']['attributes']['management_vip'] = "192.168.0.5"
+      @data['args']['attributes']['public_vip'] = "240.0.1.5"
+
       Astute::Metadata.expects(:publish_facts).times(@data['args']['nodes'].size)
       Astute::PuppetdDeployer.expects(:deploy).twice  # we got two calls, one for controller, and another for all computes
       @deploy_engine.deploy(@data['args']['nodes'], @data['args']['attributes'])
