@@ -4,6 +4,7 @@ DEVELOPMENT: "1"
 
 FIXTURES_TO_UPLOAD:
   - "openstack_folsom.json"
+  - "start_notification.json"
 
 DATABASE:
   engine: "sqlite"
