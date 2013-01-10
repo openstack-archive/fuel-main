@@ -163,9 +163,9 @@ $/nailgun-centos-6.3-amd64.img: $/nailgun-centos-6.3-amd64.iso
 	sudo mv $/imgroot/isolinux $/imgroot/syslinux
 	sudo rm $/imgroot/syslinux/isolinux.cfg
 	sudo cp iso/syslinux/syslinux.cfg $/imgroot/syslinux
-	sudo sed -i -e "s/11111111-1111-1111-1111-111111111111/`cat $/img_loop_uuid`/g" $/imgroot/syslinux/syslinux.cfg
+	sudo sed -i -e "s/will_be_substituted_with_actual_uuid/`cat $/img_loop_uuid`/g" $/imgroot/syslinux/syslinux.cfg
 	sudo cp iso/ks.cfg $/imgroot/ks.cfg
-	sudo sed -i -e "s/11111111-1111-1111-1111-111111111111/`cat $/img_loop_uuid`/g" $/imgroot/ks.cfg
+	sudo sed -i -e "s/will_be_substituted_with_actual_uuid/`cat $/img_loop_uuid`/g" $/imgroot/ks.cfg
 	sudo cp $/nailgun-centos-6.3-amd64.iso $/imgroot/nailgun.iso
 	sudo umount -f `cat $/img_loop_partition`
 	sudo kpartx -d `cat $/img_loop_device`
