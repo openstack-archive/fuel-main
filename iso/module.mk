@@ -125,12 +125,12 @@ $/nailgun-centos-6.3-amd64.iso: $/isoroot.done
 	rm -f $@
 	mkdir -p $/isoroot-mkisofs
 	rsync -a --delete $(ISOROOT)/ $/isoroot-mkisofs
-	mkisofs -r -V "Mirantis Nailgun" -p "Mirantis" \
+	mkisofs -r -V "Mirantis Nailgun" -p "Mirantis Inc." \
 		-J -T -R -b isolinux/isolinux.bin \
 		-no-emul-boot \
 		-boot-load-size 4 -boot-info-table \
 		-x "lost+found" -o $@ $/isoroot-mkisofs
-	implantisomd5 $/nailgun-centos-6.3-amd64.iso
+	implantisomd5 $@
 
 $/nailgun-centos-6.3-amd64.img: $/nailgun-centos-6.3-amd64.iso
 	rm -f $/img_loop_device
