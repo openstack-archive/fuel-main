@@ -1,24 +1,22 @@
 <% var task = cluster.task('deploy', 'running') %>
 <% if (task) { %>
-  <div class="progress progress-warning progress-striped progress-deploy active" rel="tooltip">
-    <div class="bar"></div>
-  </div>
+  <li class="pull-right deployment-control-box">
+    <div class="deploying-progress-text-box"></div>
+    <div class="deploying-progress-bar-box">
+      <div class="progress progress-success progress-striped progress-deploy active">
+        <div class="bar"></div>
+      </div>
+    </div>
+    <div class="deploying-progress-text-box percentage">0%</div>
+  </li>
 <% } else { %>
   <% var nodesToAdd = cluster.get('nodes').where({pending_addition: true}) %>
   <% var nodesToDelete = cluster.get('nodes').where({pending_deletion: true}) %>
   <% if (nodesToAdd.length || nodesToDelete.length) { %>
     <button class="btn rollback" role="button" title="Discard Changes"><i class="icon-ccw"></i></button>
   <% } %>
-  <!--
-  <button class="deploy-btn"><i class="icon-upload-cloud-1"></i> Deploy Changes</button>
-  -->
   <li class="pull-right deployment-control-box">
-    <div class="deploying-progress-text-box">OpenStack: installing controller node 1/3 (rabbit)</div>
-    <div class="deploying-progress-bar-box">
-      <div class="progress progress-success progress-striped progress-deploy active">
-        <div class="bar" style="width: 65%;"></div>
-      </div>
-    </div>
-    <div class="deploying-progress-text-box">100%</div>
+    <div class="deploying-progress-text-box"></div>
+    <button class="deploy-btn"><i class="icon-upload-cloud-1"></i> Deploy Changes</button>
   </li>
 <% } %>

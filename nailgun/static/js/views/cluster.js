@@ -173,16 +173,11 @@ function(models, commonViews, dialogViews, clusterPageTemplate, deploymentResult
             var task = this.model.task('deploy', 'running');
             if (task) {
                 var progress = task.get('progress') || 0;
-                var progressBar = this.$('.progress');
-                progressBar.attr('data-original-title', 'Deployment in progress, ' + progress + '% completed').tooltip('fixTitle').tooltip();
-                if (progressBar.is(':hover')) {
-                    progressBar.tooltip('show');
-                }
                 this.$('.bar').css('width', (progress > 3 ? progress : 3) + '%');
+                this.$('.deploying-progress-text-box:last').text((progress > 3 ? progress : 3) + '%');
             }
         },
         render: function() {
-            $('.tooltip').remove();
             this.$el.html(this.template({cluster: this.model}));
             this.updateProgress();
             return this;
