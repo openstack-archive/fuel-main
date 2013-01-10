@@ -160,13 +160,16 @@ class BaseHandlers(TestCase):
         self.db.commit()
         return notification
 
-    def create_cluster_api(self):
+    def create_cluster_api(self, **kwargs):
+        cluster_data = {
+            'name': 'cluster-api-' + str(randint(0, 1000000)),
+            'release': self.create_default_release().id
+        }
+        if kwargs:
+            cluster_data.update(kwargs)
         resp = self.app.post(
             reverse('ClusterCollectionHandler'),
-            json.dumps({
-                'name': 'cluster-api-' + str(randint(0, 1000000)),
-                'release': self.create_default_release().id
-            }),
+            json.dumps(cluster_data),
             headers=self.default_headers
         )
         self.assertEquals(resp.status, 201)

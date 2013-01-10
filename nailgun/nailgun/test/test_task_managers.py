@@ -33,8 +33,12 @@ class TestTaskManagers(BaseHandlers):
     def test_deployment_task_managers(self):
         cluster = self.create_cluster_api()
         node1 = self.create_default_node(cluster_id=cluster['id'],
+                                         status="discover",
                                          pending_addition=True)
         node2 = self.create_default_node(cluster_id=cluster['id'],
+                                         status="ready",
+                                         pending_addition=True)
+        node3 = self.create_default_node(cluster_id=cluster['id'],
                                          pending_deletion=True)
         resp = self.app.put(
             reverse(
@@ -51,6 +55,93 @@ class TestTaskManagers(BaseHandlers):
         self.assertEquals(supertask.name, 'deploy')
         self.assertIn(supertask.status, ('running', 'ready'))
         self.assertEquals(len(supertask.subtasks), 2)
+
+        timer = time.time()
+        timeout = 10
+        while True:
+            self.db.refresh(node1)
+            self.db.refresh(node2)
+            if node1.status == 'provisioning' and node2.status == 'deploying':
+                break
+            if time.time() - timer > timeout:
+                raise Exception("Something wrong with the statuses")
+
+        timer = time.time()
+        timeout = 60
+        while True:
+            self.db.refresh(node1)
+            self.db.refresh(node2)
+            self.db.refresh(supertask)
+            if node1.status == 'ready' and node2.status == 'ready' \
+                    and supertask.status == 'ready':
+                break
+            if time.time() - timer > timeout:
+                raise Exception("Deployment seems to be hanged")
+
+    @patch('nailgun.task.task.rpc.cast', nailgun.task.task.fake_cast)
+    @patch('nailgun.task.task.settings.FAKE_TASKS', True)
+    def test_redeployment_works(self):
+        cluster = self.create_cluster_api(mode="ha")
+        node1 = self.create_default_node(cluster_id=cluster['id'],
+                                         role="controller",
+                                         pending_addition=True)
+        node2 = self.create_default_node(cluster_id=cluster['id'],
+                                         role="compute",
+                                         pending_addition=True)
+        resp = self.app.put(
+            reverse(
+                'ClusterChangesHandler',
+                kwargs={'cluster_id': cluster['id']}),
+            headers=self.default_headers
+        )
+
+        response = json.loads(resp.body)
+        supertask_uuid = response['uuid']
+        supertask = self.db.query(Task).filter_by(
+            uuid=supertask_uuid
+        ).first()
+
+        timer = time.time()
+        timeout = 60
+        while True:
+            self.db.refresh(node1)
+            self.db.refresh(node2)
+            self.db.refresh(supertask)
+            if node1.status == 'ready' and node2.status == 'ready' \
+                    and supertask.status == 'ready':
+                break
+            if time.time() - timer > timeout:
+                raise Exception("First deployment seems to be hanged")
+
+        node3 = self.create_default_node(cluster_id=cluster['id'],
+                                         role="controller",
+                                         pending_addition=True)
+
+        resp = self.app.put(
+            reverse(
+                'ClusterChangesHandler',
+                kwargs={'cluster_id': cluster['id']}),
+            headers=self.default_headers
+        )
+        response = json.loads(resp.body)
+        supertask_uuid = response['uuid']
+        supertask = self.db.query(Task).filter_by(
+            uuid=supertask_uuid
+        ).first()
+
+        timer = time.time()
+        timeout = 60
+        while True:
+            self.db.refresh(node1)
+            self.db.refresh(node2)
+            self.db.refresh(node3)
+            self.db.refresh(supertask)
+            if node1.status == 'ready' and node2.status == 'ready' \
+                    and node3.status == 'ready' \
+                    and supertask.status == 'ready':
+                break
+            if time.time() - timer > timeout:
+                raise Exception("Second deployment seems to be hanged")
 
     @patch('nailgun.task.task.rpc.cast', nailgun.task.task.fake_cast)
     @patch('nailgun.task.task.settings.FAKE_TASKS', True)
