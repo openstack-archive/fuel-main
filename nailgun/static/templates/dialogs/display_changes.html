@@ -12,10 +12,6 @@
     } %>
     <% var warning = null %>
     <% var canDeploy = true %>
-    <% if (!cluster.hasChanges() && cluster.get('nodes').length) { %>
-      <div>There are no any changes to deploy</div>
-      <% canDeploy = false %>
-    <% } else { %>
       <% var roles = cluster.availableRoles() %>
       <% if (cluster.get('nodes').where({role: 'controller'}).length < size) { %>
         <li>There must be at least <%= size %> controller node<%= size != 1 ? 's' : '' %></li>
@@ -53,7 +49,6 @@
           </ul>
         </li>
       <% } %>
-    <% } %>
   </ul>
   <% if (warning) { %>
     <div class="alert"><%- warnings[warning] %></div>

@@ -38,7 +38,7 @@ function(models, commonViews, dialogViews, clusterPageTemplate, deploymentResult
         events: {
             'click .task-result .close': 'dismissTaskResult',
             'click .rollback': 'discardChanges',
-            'click .deploy-btn': 'displayChanges'
+            'click .deploy-btn:not(.disabled)': 'displayChanges'
         },
         dismissTaskResult: function() {
             this.$('.task-result').remove();

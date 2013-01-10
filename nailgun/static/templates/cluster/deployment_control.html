@@ -13,10 +13,10 @@
   <% var nodesToAdd = cluster.get('nodes').where({pending_addition: true}) %>
   <% var nodesToDelete = cluster.get('nodes').where({pending_deletion: true}) %>
   <% if (nodesToAdd.length || nodesToDelete.length) { %>
-    <button class="btn rollback" role="button" title="Discard Changes"><i class="icon-ccw"></i></button>
+    <button class="btn rollback" role="button" title="Discard Changes"><i class="icon-back-in-time"></i></button>
   <% } %>
   <li class="pull-right deployment-control-box">
     <div class="deploying-progress-text-box"></div>
-    <button class="deploy-btn"><i class="icon-upload-cloud-1"></i> Deploy Changes</button>
+    <button class="deploy-btn <%= cluster.hasChanges() ? '' : 'disabled' %>"><i class="icon-upload-cloud-1"></i> Deploy Changes</button>
   </li>
 <% } %>

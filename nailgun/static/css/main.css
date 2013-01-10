@@ -573,7 +573,7 @@ h6.page-title {
 }
 
 .nav-tabs > li:last-child {
-  width: 475px;
+  width: 485px;
 }
 
 .nav-tabs > li:last-child .deploying-progress-text-box:first-child {
@@ -2005,7 +2005,7 @@ h6.page-title {
 .rollback {
   overflow: hidden;
   height: 36px;
-  margin: 3px 10px 0px 0px;
+  margin: 3px 5px 0px 0px;
   padding: 1px 10px 0px 10px;
   border: transparent;
   background: none;
