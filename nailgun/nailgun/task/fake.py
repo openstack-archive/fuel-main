@@ -45,17 +45,42 @@ class FakeDeploymentThread(FakeThread):
             "provisioned": "deploying",
             "deploying": "ready"
         }
+
         ready = False
         while not ready:
             for n in kwargs['nodes']:
                 if not 'progress' in n:
                     n['progress'] = 0
+                elif n['status'] == 'error':
+                    ready = True
+                    break
+                elif n['status'] == 'discover':
+                    n['status'] = next_st[n['status']]
+                    n['progress'] = 0
+                elif n['status'] != 'provisioned':
+                    n['progress'] += randrange(0, tick_count)
+                    if n['progress'] >= 100:
+                        n['progress'] = 100
+                        n['status'] = next_st[n['status']]
+            resp_method = getattr(receiver, self.respond_to)
+            resp_method(**kwargs)
+            if all(map(
+                lambda n: n['status'] == 'provisioned',
+                kwargs['nodes']
+            )):
+                ready = True
+            else:
+                time.sleep(tick_interval)
+
+        ready = False
+        while not ready:
+            for n in kwargs['nodes']:
                 if n['status'] == 'ready':
                     continue
                 elif n['status'] == 'error':
                     ready = True
                     break
-                if n['status'] in ('discover', 'provisioned'):
+                elif n['status'] == 'provisioned':
                     n['status'] = next_st[n['status']]
                     n['progress'] = 0
                 else:
@@ -63,8 +88,6 @@ class FakeDeploymentThread(FakeThread):
                     if n['progress'] >= 100:
                         n['progress'] = 100
                         n['status'] = next_st[n['status']]
-                        if n['status'] == 'provisioned':
-                            n['progress'] = 0
             if all(map(
                 lambda n: n['progress'] == 100 and n['status'] == 'ready',
                 kwargs['nodes']

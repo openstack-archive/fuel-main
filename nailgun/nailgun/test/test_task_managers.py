@@ -61,10 +61,12 @@ class TestTaskManagers(BaseHandlers):
         while True:
             self.db.refresh(node1)
             self.db.refresh(node2)
-            if node1.status == 'provisioning' and node2.status == 'deploying':
+            if node1.status in ('provisioning', 'provisioned') and \
+                node2.status == 'provisioned':
                 break
             if time.time() - timer > timeout:
                 raise Exception("Something wrong with the statuses")
+            time.sleep(1)
 
         timer = time.time()
         timeout = 60
@@ -72,11 +74,13 @@ class TestTaskManagers(BaseHandlers):
             self.db.refresh(node1)
             self.db.refresh(node2)
             self.db.refresh(supertask)
-            if node1.status == 'ready' and node2.status == 'ready' \
-                    and supertask.status == 'ready':
+            if node1.status == node2.status == supertask.status == 'ready' \
+                    and node1.progress == node2.progress == \
+                    supertask.progress == 100:
                 break
             if time.time() - timer > timeout:
                 raise Exception("Deployment seems to be hanged")
+            time.sleep(1)
 
     @patch('nailgun.task.task.rpc.cast', nailgun.task.task.fake_cast)
     @patch('nailgun.task.task.settings.FAKE_TASKS', True)
@@ -107,11 +111,13 @@ class TestTaskManagers(BaseHandlers):
             self.db.refresh(node1)
             self.db.refresh(node2)
             self.db.refresh(supertask)
-            if node1.status == 'ready' and node2.status == 'ready' \
-                    and supertask.status == 'ready':
+            if node1.status == node2.status == supertask.status == 'ready' \
+                    and node1.progress == node2.progress == \
+                    supertask.progress == 100:
                 break
             if time.time() - timer > timeout:
                 raise Exception("First deployment seems to be hanged")
+            time.sleep(1)
 
         node3 = self.create_default_node(cluster_id=cluster['id'],
                                          role="controller",
@@ -136,12 +142,13 @@ class TestTaskManagers(BaseHandlers):
             self.db.refresh(node2)
             self.db.refresh(node3)
             self.db.refresh(supertask)
-            if node1.status == 'ready' and node2.status == 'ready' \
-                    and node3.status == 'ready' \
-                    and supertask.status == 'ready':
+            if node1.status == node2.status == supertask.status == 'ready' \
+                    and node1.progress == node2.progress == \
+                    supertask.progress == 100:
                 break
             if time.time() - timer > timeout:
                 raise Exception("Second deployment seems to be hanged")
+            time.sleep(1)
 
     @patch('nailgun.task.task.rpc.cast', nailgun.task.task.fake_cast)
     @patch('nailgun.task.task.settings.FAKE_TASKS', True)
