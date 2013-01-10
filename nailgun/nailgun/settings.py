@@ -85,6 +85,7 @@ LOGGING_HANDLER = 'file' if not int(settings.DEVELOPMENT) else 'stream'
 
 if int(settings.DEVELOPMENT):
     logging.info("DEVELOPMENT MODE ON:")
+    here = os.path.abspath(os.path.join(os.path.dirname(__file__), '..'))
     settings.update({
         'STATIC_DIR': os.path.join(here, 'static'),
         'TEMPLATE_DIR': os.path.join(here, 'static')
