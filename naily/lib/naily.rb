@@ -11,11 +11,16 @@ module Naily
   autoload 'Dispatcher', 'naily/dispatcher'
   autoload 'Reporter', 'naily/reporter'
 
+  @logger ||= Logger.new(STDOUT)
+  Astute.logger = @logger
+
   def self.logger
-    @logger ||= Logger.new(STDOUT)
+    @logger
   end
 
   def self.logger=(logger)
+    Astute.logger = logger
     @logger = logger
   end
+
 end
