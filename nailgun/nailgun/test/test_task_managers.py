@@ -112,7 +112,7 @@ class TestTaskManagers(BaseHandlers):
         while supertask.status == 'running':
             self.db.refresh(supertask)
             if time.time() - timer > timeout:
-                raise Exception("First eployment seems to be hanged")
+                raise Exception("First deployment seems to be hanged")
             time.sleep(1)
         self.db.refresh(node1)
         self.db.refresh(node2)
@@ -144,7 +144,7 @@ class TestTaskManagers(BaseHandlers):
         while supertask.status == 'running':
             self.db.refresh(supertask)
             if time.time() - timer > timeout:
-                raise Exception("Second eployment seems to be hanged")
+                raise Exception("Second deployment seems to be hanged")
             time.sleep(1)
         self.db.refresh(node1)
         self.db.refresh(node2)
