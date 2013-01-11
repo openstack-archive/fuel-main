@@ -62,7 +62,7 @@ class TestTaskManagers(BaseHandlers):
             self.db.refresh(node1)
             self.db.refresh(node2)
             if node1.status in ('provisioning', 'provisioned') and \
-                node2.status == 'provisioned':
+                    node2.status == 'provisioned':
                 break
             if time.time() - timer > timeout:
                 raise Exception("Something wrong with the statuses")
