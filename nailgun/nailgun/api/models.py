@@ -137,11 +137,11 @@ class Cluster(Base, BasicValidator):
             name=changes_type
         )
         orm().add(ch)
-        orm.commit()
+        orm().commit()
 
     def clear_pending_changes(self):
         chs = orm().query(ClusterChanges).filter_by(
-            cluster=self
+            cluster_id=self.id
         ).all()
         map(orm().delete, chs)
         orm().commit()
