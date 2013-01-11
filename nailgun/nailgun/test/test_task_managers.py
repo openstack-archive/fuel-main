@@ -208,11 +208,10 @@ class TestTaskManagers(BaseHandlers):
             if time.time() - timer > timeout:
                 raise Exception("Cluster deletion seems to be hanged")
 
-        task = self.db.query(Task)\
-            .filter(Task.name == "cluster_deletion")\
+        tasks = self.db.query(Task)\
             .filter(Task.cluster_id == cluster["id"])\
-            .first()
-        self.assertIsNone(task)
+            .all()
+        self.assertEqual(tasks, [])
 
     @patch('nailgun.task.task.rpc.cast', nailgun.task.task.fake_cast)
     @patch('nailgun.task.task.settings.FAKE_TASKS', True)
@@ -253,11 +252,10 @@ class TestTaskManagers(BaseHandlers):
             if time.time() - timer > timeout:
                 raise Exception("Cluster deletion seems to be hanged")
 
-        task = self.db.query(Task)\
-            .filter(Task.name == "cluster_deletion")\
+        tasks = self.db.query(Task)\
             .filter(Task.cluster_id == cluster["id"])\
-            .first()
-        self.assertIsNone(task)
+            .all()
+        self.assertEqual(tasks, [])
 
     @patch('nailgun.task.task.rpc.cast', nailgun.task.task.fake_cast)
     @patch('nailgun.task.task.settings.FAKE_TASKS', True)
