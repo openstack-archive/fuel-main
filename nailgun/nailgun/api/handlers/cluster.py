@@ -50,7 +50,9 @@ class ClusterHandler(JSONHandler):
             instance.tasks
         )
         if instance.changes:
-            json_data["changes"] = [i.name for i in instance.changes]
+            json_data["changes"] = [
+                i.name for i in instance.changes
+            ]
         else:
             json_data["changes"] = []
         return json_data
