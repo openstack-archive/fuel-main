@@ -76,7 +76,6 @@ describe "NailyFact DeploymentEngine" do
                             "role" => "compute"}]},
               "method" => "deploy",
               "respond_to" => "deploy_resp"}
-      
     end
 
     it "it should call valid method depends on attrs" do
@@ -111,7 +110,17 @@ describe "NailyFact DeploymentEngine" do
       @data['args']['attributes']['public_vip'] = "240.0.1.5"
 
       Astute::Metadata.expects(:publish_facts).times(@data['args']['nodes'].size)
+      # FIXME: this test should also handle few controllers. If there are more than one controller,
+      #  deployment is called for controllers one by one, and then for computes.
       Astute::PuppetdDeployer.expects(:deploy).twice  # we got two calls, one for controller, and another for all computes
+      @deploy_engine.deploy(@data['args']['nodes'], @data['args']['attributes'])
+    end
+
+    it "singlenode_compute deploy should not raise any exception" do
+      @data['args']['attributes']['deployment_mode'] = "singlenode_compute"
+      @data['args']['nodes'] = [@data['args']['nodes'][0]]  # We have only one node in singlenode
+      Astute::Metadata.expects(:publish_facts).times(@data['args']['nodes'].size)
+      Astute::PuppetdDeployer.expects(:deploy).once  # we got two calls, one for controller, and another for all computes
       @deploy_engine.deploy(@data['args']['nodes'], @data['args']['attributes'])
     end
   end
