@@ -183,7 +183,7 @@ class TestTaskManagers(BaseHandlers):
 
     @patch('nailgun.task.task.rpc.cast', nailgun.task.task.fake_cast)
     @patch('nailgun.task.task.settings.FAKE_TASKS', True)
-    def test_deletion_cluster_task_manager(self):
+    def test_deletion_empty_cluster_task_manager(self):
         cluster = self.create_cluster_api()
         resp = self.app.delete(
             reverse(
@@ -193,23 +193,59 @@ class TestTaskManagers(BaseHandlers):
         )
         self.assertEquals(202, resp.status)
 
-        # As far as DELETE method in ClusterHandler launches
-        # asynchronous task which deletes cluster and all
-        # related items including tasks, so we cannot be
-        # sure that the cluster deletion task itself is still alive
-        # However we can check "cluster deletion is done" notification
-        task = self.db.query(Task)\
-            .filter(Task.name == "cluster_deletion")\
-            .filter(Task.cluster_id == cluster["id"])\
-            .first()
-        if task:
-            self.assertIn(task.status, ('running', 'ready'))
-        else:
-            notification = self.db.query(Notification)\
-                .filter(Notification.topic == "done")\
-                .filter(Notification.message == "Cluster %s and all cluster "
-                        "nodes are deleted" % cluster["name"])
-            self.assertIsNotNone(notification)
+        notification = self.db.query(Notification)\
+            .filter(Notification.topic == "done")\
+            .filter(Notification.message == "Cluster %s and all cluster "
+                    "nodes are deleted" % cluster["name"])
+        self.assertIsNotNone(notification)
+
+        timer = time.time()
+        timeout = 15
+        clstr = self.db.query(Cluster).get(cluster["id"])
+        while clstr:
+            time.sleep(1)
+            clstr = self.db.query(Cluster).get(cluster["id"])
+            if time.time() - timer > timeout:
+                raise Exception("Cluster deletion seems to be hanged")
+
+    @patch('nailgun.task.task.rpc.cast', nailgun.task.task.fake_cast)
+    @patch('nailgun.task.task.settings.FAKE_TASKS', True)
+    def test_deletion_cluster_task_manager(self):
+        cluster = self.create_cluster_api()
+        node1 = self.create_default_node(cluster_id=cluster['id'],
+                                         role="controller",
+                                         status="ready",
+                                         progress=100)
+        node2 = self.create_default_node(cluster_id=cluster['id'],
+                                         role="compute",
+                                         status="ready",
+                                         progress=100)
+        node3 = self.create_default_node(cluster_id=cluster['id'],
+                                         role="compute",
+                                         pending_addition=True)
+        nodes_ids = [node1.id, node2.id, node3.id]
+        resp = self.app.delete(
+            reverse(
+                'ClusterHandler',
+                kwargs={'cluster_id': cluster['id']}),
+            headers=self.default_headers
+        )
+        self.assertEquals(202, resp.status)
+
+        notification = self.db.query(Notification)\
+            .filter(Notification.topic == "done")\
+            .filter(Notification.message == "Cluster %s and all cluster "
+                    "nodes are deleted" % cluster["name"])
+        self.assertIsNotNone(notification)
+
+        timer = time.time()
+        timeout = 15
+        clstr = self.db.query(Cluster).get(cluster["id"])
+        while clstr:
+            time.sleep(1)
+            clstr = self.db.query(Cluster).get(cluster["id"])
+            if time.time() - timer > timeout:
+                raise Exception("Cluster deletion seems to be hanged")
 
     @patch('nailgun.task.task.rpc.cast', nailgun.task.task.fake_cast)
     @patch('nailgun.task.task.settings.FAKE_TASKS', True)
