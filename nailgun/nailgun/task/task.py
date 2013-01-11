@@ -284,7 +284,6 @@ class DeletionTask(object):
 
         # no need to call naily if there are no nodes in cluster
         if not task.cluster.nodes:
-            logger.debug("HOLY FUCKING SHIT")
             rcvr = rpc.receiver.NailgunReceiver
             rcvr.remove_cluster_resp(
                 task_uuid=task.uuid,
