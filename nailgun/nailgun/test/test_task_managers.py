@@ -70,17 +70,19 @@ class TestTaskManagers(BaseHandlers):
 
         timer = time.time()
         timeout = 60
-        while True:
-            self.db.refresh(node1)
-            self.db.refresh(node2)
+        while supertask.status == 'running':
             self.db.refresh(supertask)
-            if node1.status == node2.status == supertask.status == 'ready' \
-                    and node1.progress == node2.progress == \
-                    supertask.progress == 100:
-                break
             if time.time() - timer > timeout:
                 raise Exception("Deployment seems to be hanged")
             time.sleep(1)
+        self.db.refresh(node1)
+        self.db.refresh(node2)
+        self.assertEquals(node1.status, 'ready')
+        self.assertEquals(node2.status, 'ready')
+        self.assertEquals(node1.progress, 100)
+        self.assertEquals(node2.progress, 100)
+        self.assertEquals(supertask.status, 'ready')
+        self.assertEquals(supertask.progress, 100)
 
     @patch('nailgun.task.task.rpc.cast', nailgun.task.task.fake_cast)
     @patch('nailgun.task.task.settings.FAKE_TASKS', True)
