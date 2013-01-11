@@ -323,6 +323,7 @@ class ClusterAttributesDefaultsHandler(JSONHandler):
         attrs.editable = cluster.release.attributes_metadata.get("editable")
         orm().add(attrs)
         orm().commit()
+        cluster.add_pending_changes("attributes")
 
         logger.debug('ClusterAttributesDefaultsHandler:'
                      ' editable attributes for cluster_id %s were reset'
