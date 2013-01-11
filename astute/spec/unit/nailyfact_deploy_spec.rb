@@ -99,7 +99,8 @@ describe "NailyFact DeploymentEngine" do
     it "multinode_compute deploy should not raise any exception" do
       @data['args']['attributes']['deployment_mode'] = "multinode_compute"
       Astute::Metadata.expects(:publish_facts).times(@data['args']['nodes'].size)
-      Astute::PuppetdDeployer.expects(:deploy).twice  # we got two calls, one for controller, and another for all computes
+      # we got two calls, one for controller, and another for all computes
+      Astute::PuppetdDeployer.expects(:deploy).twice
       @deploy_engine.deploy(@data['args']['nodes'], @data['args']['attributes'])
     end
 
@@ -112,7 +113,8 @@ describe "NailyFact DeploymentEngine" do
       Astute::Metadata.expects(:publish_facts).times(@data['args']['nodes'].size)
       # FIXME: this test should also handle few controllers. If there are more than one controller,
       #  deployment is called for controllers one by one, and then for computes.
-      Astute::PuppetdDeployer.expects(:deploy).twice  # we got two calls, one for controller, and another for all computes
+      # we got two calls, one for controller, and another for all computes
+      Astute::PuppetdDeployer.expects(:deploy).twice
       @deploy_engine.deploy(@data['args']['nodes'], @data['args']['attributes'])
     end
 
@@ -120,7 +122,7 @@ describe "NailyFact DeploymentEngine" do
       @data['args']['attributes']['deployment_mode'] = "singlenode_compute"
       @data['args']['nodes'] = [@data['args']['nodes'][0]]  # We have only one node in singlenode
       Astute::Metadata.expects(:publish_facts).times(@data['args']['nodes'].size)
-      Astute::PuppetdDeployer.expects(:deploy).once  # we got two calls, one for controller, and another for all computes
+      Astute::PuppetdDeployer.expects(:deploy).once  # one call for one node
       @deploy_engine.deploy(@data['args']['nodes'], @data['args']['attributes'])
     end
   end
