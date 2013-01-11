@@ -36,13 +36,17 @@
 .icon-ok:before { content: '\2713'; } /* '✓' */
 .icon-ok-circle:before { content: '\2714'; } /* '✔' */
 .icon-cancel:before { content: '\2715'; } /* '✕' */
-.icon-cancel-circle:before { content: '\e801'; } /* '' */
-.icon-plus-circle:before { content: '\e800'; } /* '' */
+.icon-cancel-circle:before { content: '\e800'; } /* '' */
+.icon-plus-circle:before { content: '\2795'; } /* '➕' */
 .icon-minus-circle:before { content: '\2796'; } /* '➖' */
+.icon-ok-circle-empty:before { content: '\e702'; } /* '' */
+.icon-cancel-circle2:before { content: '\e703'; } /* '' */
 .icon-help-circled:before { content: '\e704'; } /* '' */
 .icon-info-circled:before { content: '\e705'; } /* '' */
 .icon-upload-cloud:before { content: '\e711'; } /* '' */
 .icon-comment:before { content: '\e718'; } /* '' */
+.icon-arrows-cw:before { content: '\e760'; } /* '' */
 .icon-back-in-time:before { content: '\e771'; } /* '' */
 .icon-bell:before { content: '🔔'; } /* '\1f514' */
+.icon-clock:before { content: '🕔'; } /* '\1f554' */
 .icon-block:before { content: '🚫'; } /* '\1f6ab' */
