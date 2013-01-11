@@ -113,7 +113,7 @@ class ClusterDeletionManager(TaskManager):
             cluster=self.cluster,
             name='deploy',
             status='running'
-        )
+        ).first()
         if deploy_running:
             logger.error(
                 "Deleting cluster '{0}' "
@@ -142,7 +142,7 @@ class ClusterDeletionManager(TaskManager):
         orm().add(self.cluster)
         orm().commit()
 
-        logger.debug("Creating nodes deletion task")
+        logger.debug("Creating cluster deletion task")
         task = Task(name="cluster_deletion", cluster=self.cluster)
         orm().add(task)
         orm().commit()

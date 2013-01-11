@@ -6,7 +6,7 @@ from random import randrange
 
 from sqlalchemy.orm import object_mapper, ColumnProperty, \
     scoped_session, sessionmaker
-from nailgun.db import Query, orm, engine
+from nailgun.db import NoCacheQuery, orm, engine
 from nailgun.settings import settings
 from nailgun.notifier import notifier
 from nailgun.api.models import Network, Node
@@ -113,7 +113,7 @@ class FakeDeletionThread(FakeThread):
         resp_method = getattr(receiver, self.respond_to)
         resp_method(**kwargs)
         orm = scoped_session(
-            sessionmaker(bind=engine, query_cls=Query)
+            sessionmaker(bind=engine, query_cls=NoCacheQuery)
         )
         for node in nodes_to_restore:
             orm.add(node)

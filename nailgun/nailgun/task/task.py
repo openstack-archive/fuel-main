@@ -278,14 +278,17 @@ class DeletionTask(object):
 
     @classmethod
     def execute(self, task, respond_to='remove_nodes_resp'):
+        logger.debug("Nodes deletion task is running")
         nodes_to_delete = []
         nodes_to_restore = []
 
         # no need to call naily if there are no nodes in cluster
         if not task.cluster.nodes:
+            logger.debug("HOLY FUCKING SHIT")
             rcvr = rpc.receiver.NailgunReceiver
             rcvr.remove_cluster_resp(
-                task_uuid=task.uuid
+                task_uuid=task.uuid,
+                status='ready'
             )
             return
 
@@ -389,6 +392,7 @@ class ClusterDeletionTask(object):
 
     @classmethod
     def execute(cls, task):
+        logger.debug("Cluster deletion task is running")
         DeletionTask.execute(task, 'remove_cluster_resp')
 
 

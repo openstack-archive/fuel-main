@@ -80,6 +80,7 @@ class NailgunReceiver(object):
 
     @classmethod
     def remove_cluster_resp(cls, **kwargs):
+        logger.info("RPC method remove_cluster_resp received: %s" % kwargs)
         task_uuid = kwargs.get('task_uuid')
 
         cls.remove_nodes_resp(**kwargs)
