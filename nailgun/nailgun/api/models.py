@@ -133,7 +133,7 @@ class Cluster(Base, BasicValidator):
         if ex_chs:
             return
         ch = ClusterChanges(
-            cluster_id=self,
+            cluster_id=self.id,
             name=changes_type
         )
         orm().add(ch)
