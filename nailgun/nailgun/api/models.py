@@ -99,7 +99,7 @@ class Cluster(Base, BasicValidator):
     tasks = relationship("Task", backref="cluster", cascade="delete")
     attributes = relationship("Attributes", uselist=False,
                               backref="cluster", cascade="delete")
-    changes = relationship("ClusterChanges", backref="cluster", 
+    changes = relationship("ClusterChanges", backref="cluster",
                            cascade="delete")
     # We must keep all notifications even if cluster is removed.
     # It is because we want user to be able to see
