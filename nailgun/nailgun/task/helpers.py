@@ -85,6 +85,7 @@ def update_cluster_status(uuid):
             # its status to "error" even if it is deployed successfully.
             # This method is also would be affected by web.ctx.orm issue.
             cluster.status = 'operational'
+            cluster.clear_pending_changes()
         elif task.status == 'error':
             cluster.status = 'error'
         orm().add(cluster)

@@ -70,6 +70,17 @@ class Release(Base, BasicValidator):
         return d
 
 
+class ClusterChanges(Base, BasicValidator):
+    __tablename__ = 'cluster_changes'
+    POSSIBLE_CHANGES = (
+        'networks',
+        'attributes'
+    )
+    id = Column(Integer, primary_key=True)
+    cluster_id = Column(Integer, ForeignKey('clusters.id'))
+    name = Column(Enum(*POSSIBLE_CHANGES), nullable=False)
+
+
 class Cluster(Base, BasicValidator):
     __tablename__ = 'clusters'
     TYPES = ('compute', 'storage', 'both')
@@ -87,6 +98,8 @@ class Cluster(Base, BasicValidator):
     nodes = relationship("Node", backref="cluster", cascade="delete")
     tasks = relationship("Task", backref="cluster", cascade="delete")
     attributes = relationship("Attributes", uselist=False,
+                              backref="cluster", cascade="delete")
+    changes = relationship("ClusterChanges", uselist=False,
                               backref="cluster", cascade="delete")
     # We must keep all notifications even if cluster is removed.
     # It is because we want user to be able to see
@@ -110,6 +123,28 @@ class Cluster(Base, BasicValidator):
             if not release:
                 raise web.webapi.badrequest(message="Invalid release id")
         return d
+
+    def add_pending_changes(self, changes_type):
+        ex_chs = orm().query(ClusterChanges).filter_by(
+            cluster=self,
+            name=changes_type
+        ).first()
+        # do nothing if changes with the same name already pending
+        if ex_chs:
+            return
+        ch = ClusterChanges(
+            cluster_id=self,
+            name=changes_type
+        )
+        orm().add(ch)
+        orm.commit()
+
+    def clear_pending_changes(self):
+        chs = orm().query(ClusterChanges).filter_by(
+            cluster=self
+        ).all()
+        map(orm().delete, chs)
+        orm().commit()
 
 
 class Node(Base, BasicValidator):

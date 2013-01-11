@@ -49,6 +49,7 @@ class ClusterHandler(JSONHandler):
             TaskHandler.render,
             instance.tasks
         )
+        json_data["changes"] = [i.name for i in instance.changes]
         return json_data
 
     def GET(self, cluster_id):
@@ -285,6 +286,7 @@ class ClusterAttributesHandler(JSONHandler):
 
         for key, value in data.iteritems():
             setattr(attrs, key, value)
+        cluster.add_pending_changes("attributes")
 
         orm().add(attrs)
         orm().commit()

@@ -6,7 +6,7 @@ import web
 
 from nailgun.db import orm
 from nailgun.logger import logger
-from nailgun.api.models import NetworkGroup
+from nailgun.api.models import NetworkGroup, ClusterChanges
 from nailgun.api.handlers.base import JSONHandler
 
 
@@ -45,6 +45,7 @@ class NetworkCollectionHandler(JSONHandler):
                 raise web.badrequest(
                     message="NetworkGroup with id=%s not found in DB" %
                     ng['id'])
+            network_db.cluster.add_pending_changes("networks")
             for key, value in ng.iteritems():
                 setattr(ng_db, key, value)
             orm().commit()
