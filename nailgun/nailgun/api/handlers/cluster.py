@@ -49,7 +49,10 @@ class ClusterHandler(JSONHandler):
             TaskHandler.render,
             instance.tasks
         )
-        json_data["changes"] = [i.name for i in instance.changes]
+        if instance.changes:
+            json_data["changes"] = [i.name for i in instance.changes]
+        else:
+            json_data["changes"] = []
         return json_data
 
     def GET(self, cluster_id):
