@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 
 import re
-import os.path
+import os
 import json
 import logging
 from itertools import dropwhile
@@ -106,3 +106,20 @@ class LogSourceCollectionHandler(JSONHandler):
     def GET(self):
         web.header('Content-Type', 'application/json')
         return json.dumps(settings.LOGS, indent=4)
+
+
+class LogSourceByNodeCollectionHandler(JSONHandler):
+
+    def GET(self, node_id):
+        web.header('Content-Type', 'application/json')
+        node = orm().query(Node).get(node_id)
+        if not node:
+            return web.notfound()
+        f = lambda x: (x.get('remote') and x.get('path') and x.get('base') and
+                       os.access(os.path.join(x['base'], node.ip, x['path']),
+                                 os.R_OK) and
+                       os.path.isfile(os.path.join(x['base'], node.ip,
+                                                   x['path']))
+                       )
+        sources = filter(f, settings.LOGS)
+        return json.dumps(sources, indent=4)

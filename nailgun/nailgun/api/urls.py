@@ -24,6 +24,7 @@ from nailgun.api.handlers.notifications import NotificationCollectionHandler
 
 from nailgun.api.handlers.logs import LogEntryCollectionHandler
 from nailgun.api.handlers.logs import LogSourceCollectionHandler
+from nailgun.api.handlers.logs import LogSourceByNodeCollectionHandler
 
 urls = (
     r'/releases/?$',
@@ -60,6 +61,8 @@ urls = (
     'LogEntryCollectionHandler',
     r'/logs/sources/?$',
     'LogSourceCollectionHandler',
+    r'/logs/sources/nodes/(?P<node_id>\d+)/?$',
+    'LogSourceByNodeCollectionHandler',
 )
 
 api_app = web.application(urls, locals())

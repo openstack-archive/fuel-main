@@ -52,19 +52,37 @@ class TestLogs(BaseHandlers):
         response = json.loads(resp.body)
         self.assertEquals(response, settings.LOGS)
 
+    def test_log_source_by_node_collection_handler(self):
+        node_ip = '40.30.20.10'
+        node = self.create_default_node(ip=node_ip)
+
+        resp = self.app.get(
+            reverse('LogSourceByNodeCollectionHandler',
+                    kwargs={'node_id': node.id}),
+            headers=self.default_headers
+        )
+        self.assertEquals(200, resp.status)
+        response = json.loads(resp.body)
+        self.assertEquals(response, [])
+
+        log_entry = ['date111', 'level222', 'text333']
+        self._create_logfile_for_node(settings.LOGS[1], log_entry, node)
+        resp = self.app.get(
+            reverse('LogSourceByNodeCollectionHandler',
+                    kwargs={'node_id': node.id}),
+            headers=self.default_headers
+        )
+        self.assertEquals(200, resp.status)
+        response = json.loads(resp.body)
+        self.assertEquals(response, [settings.LOGS[1]])
+
     def test_log_entry_collection_handler(self):
         node_ip = '10.20.30.40'
         log_entry = ['date111', 'LEVEL222', 'text333']
         cluster = self.create_default_cluster()
         node = self.create_default_node(cluster_id=cluster.id, ip=node_ip)
-
-        remote_log_dir = os.path.join(self.log_dir, node_ip)
-        os.makedirs(remote_log_dir)
-        remote_log_file = os.path.join(remote_log_dir,
-                                       settings.LOGS[1]['path'])
-        for log_file in (remote_log_file, self.local_log_file):
-            with open(log_file, 'w') as f:
-                f.write(':'.join(log_entry))
+        self._create_logfile_for_node(settings.LOGS[0], log_entry)
+        self._create_logfile_for_node(settings.LOGS[1], log_entry, node)
 
         resp = self.app.get(
             reverse('LogEntryCollectionHandler'),
@@ -83,3 +101,13 @@ class TestLogs(BaseHandlers):
         self.assertEquals(200, resp.status)
         response = json.loads(resp.body)
         self.assertEquals(response['entries'], [log_entry])
+
+    def _create_logfile_for_node(self, log_config, log_entry, node=None):
+        if log_config['remote']:
+            log_dir = os.path.join(self.log_dir, node.ip)
+            not os.path.isdir(log_dir) and os.makedirs(log_dir)
+            log_file = os.path.join(log_dir, log_config['path'])
+        else:
+            log_file = log_config['path']
+        with open(log_file, 'w') as f:
+            f.write(':'.join(log_entry))
