@@ -573,11 +573,11 @@ h6.page-title {
 }
 
 .nav-tabs > li:last-child {
-  width: 485px;
+  width: 495px;
 }
 
 .nav-tabs > li:last-child .deploying-progress-text-box:first-child {
-  width: 255px;
+  width: 230px;
 }
 
 .nav-tabs li a {
