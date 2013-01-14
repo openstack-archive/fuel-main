@@ -43,7 +43,9 @@
             <i class="icon-attention"></i>Error
           </div>
         <% } else if (status == 'offline') { %>
-          <i class="icon-block"></i>Not available
+          <i class="icon-block"></i>Offline
+        <% } else if (status == 'discover') { %>
+          <i class="icon-ok-circle-empty"></i>Discovered
         <% } else { %>
           <%= status %>
         <% } %>
