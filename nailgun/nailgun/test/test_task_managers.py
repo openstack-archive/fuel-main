@@ -26,10 +26,12 @@ class TestTaskManagers(BaseHandlers):
         import threading
         for thread in threading.enumerate():
             if thread is not threading.currentThread():
-                thread.join(5)
+                thread.join()
 
     @patch('nailgun.task.task.rpc.cast', nailgun.task.task.fake_cast)
     @patch('nailgun.task.task.settings.FAKE_TASKS', True)
+    @patch('nailgun.task.fake.settings.FAKE_TASKS_TICK_COUNT', 80)
+    @patch('nailgun.task.fake.settings.FAKE_TASKS_TICK_INTERVAL', 1)
     def test_deployment_task_managers(self):
         cluster = self.create_cluster_api()
         node1 = self.create_default_node(cluster_id=cluster['id'],
@@ -90,6 +92,8 @@ class TestTaskManagers(BaseHandlers):
 
     @patch('nailgun.task.task.rpc.cast', nailgun.task.task.fake_cast)
     @patch('nailgun.task.task.settings.FAKE_TASKS', True)
+    @patch('nailgun.task.fake.settings.FAKE_TASKS_TICK_COUNT', 80)
+    @patch('nailgun.task.fake.settings.FAKE_TASKS_TICK_INTERVAL', 1)
     def test_redeployment_works(self):
         cluster = self.create_cluster_api(mode="ha")
         node1 = self.create_default_node(cluster_id=cluster['id'],
@@ -164,6 +168,8 @@ class TestTaskManagers(BaseHandlers):
 
     @patch('nailgun.task.task.rpc.cast', nailgun.task.task.fake_cast)
     @patch('nailgun.task.task.settings.FAKE_TASKS', True)
+    @patch('nailgun.task.fake.settings.FAKE_TASKS_TICK_COUNT', 80)
+    @patch('nailgun.task.fake.settings.FAKE_TASKS_TICK_INTERVAL', 1)
     def test_network_verify_task_managers(self):
         cluster = self.create_cluster_api()
         node1 = self.create_default_node(cluster_id=cluster['id'])
@@ -183,6 +189,8 @@ class TestTaskManagers(BaseHandlers):
 
     @patch('nailgun.task.task.rpc.cast', nailgun.task.task.fake_cast)
     @patch('nailgun.task.task.settings.FAKE_TASKS', True)
+    @patch('nailgun.task.fake.settings.FAKE_TASKS_TICK_COUNT', 80)
+    @patch('nailgun.task.fake.settings.FAKE_TASKS_TICK_INTERVAL', 1)
     def test_deletion_empty_cluster_task_manager(self):
         cluster = self.create_cluster_api()
         resp = self.app.delete(
@@ -213,6 +221,8 @@ class TestTaskManagers(BaseHandlers):
 
     @patch('nailgun.task.task.rpc.cast', nailgun.task.task.fake_cast)
     @patch('nailgun.task.task.settings.FAKE_TASKS', True)
+    @patch('nailgun.task.fake.settings.FAKE_TASKS_TICK_COUNT', 80)
+    @patch('nailgun.task.fake.settings.FAKE_TASKS_TICK_INTERVAL', 1)
     def test_deletion_cluster_task_manager(self):
         cluster = self.create_cluster_api()
         node1 = self.create_default_node(cluster_id=cluster['id'],
@@ -255,6 +265,8 @@ class TestTaskManagers(BaseHandlers):
 
     @patch('nailgun.task.task.rpc.cast', nailgun.task.task.fake_cast)
     @patch('nailgun.task.task.settings.FAKE_TASKS', True)
+    @patch('nailgun.task.fake.settings.FAKE_TASKS_TICK_COUNT', 80)
+    @patch('nailgun.task.fake.settings.FAKE_TASKS_TICK_INTERVAL', 1)
     def test_deletion_during_deployment(self):
         cluster = self.create_cluster_api()
         node1 = self.create_default_node(cluster_id=cluster['id'],
@@ -295,6 +307,8 @@ class TestTaskManagers(BaseHandlers):
 
     @patch('nailgun.task.task.rpc.cast', nailgun.task.task.fake_cast)
     @patch('nailgun.task.task.settings.FAKE_TASKS', True)
+    @patch('nailgun.task.fake.settings.FAKE_TASKS_TICK_COUNT', 80)
+    @patch('nailgun.task.fake.settings.FAKE_TASKS_TICK_INTERVAL', 1)
     def test_node_fqdn_is_assigned(self):
         cluster = self.create_cluster_api()
         node1 = self.create_default_node(cluster_id=cluster['id'],
@@ -316,6 +330,8 @@ class TestTaskManagers(BaseHandlers):
 
     @patch('nailgun.task.task.rpc.cast', nailgun.task.task.fake_cast)
     @patch('nailgun.task.task.settings.FAKE_TASKS', True)
+    @patch('nailgun.task.fake.settings.FAKE_TASKS_TICK_COUNT', 80)
+    @patch('nailgun.task.fake.settings.FAKE_TASKS_TICK_INTERVAL', 1)
     def test_no_node_no_cry(self):
         cluster = self.create_cluster_api()
         rcvr = rpc.receiver.NailgunReceiver

@@ -36,7 +36,10 @@ class FakeDeploymentThread(FakeThread):
             'status': 'running'
         }
 
-        tick_count = int(settings.FAKE_TASKS_TICK_COUNT) or 10
+        tick_count = int(settings.FAKE_TASKS_TICK_COUNT) or 20
+        low_tick_count = tick_count - 20
+        if low_tick_count < 0:
+            low_tick_count = 0
         tick_interval = int(settings.FAKE_TASKS_TICK_INTERVAL) or 3
 
         next_st = {
@@ -51,14 +54,17 @@ class FakeDeploymentThread(FakeThread):
             for n in kwargs['nodes']:
                 if not 'progress' in n:
                     n['progress'] = 0
-                elif n['status'] == 'error':
+                elif n['status'] in ('error', 'offline'):
                     ready = True
                     break
                 elif n['status'] == 'discover':
                     n['status'] = next_st[n['status']]
                     n['progress'] = 0
                 elif n['status'] != 'provisioned':
-                    n['progress'] += randrange(0, tick_count)
+                    n['progress'] += randrange(
+                        low_tick_count,
+                        tick_count
+                    )
                     if n['progress'] >= 100:
                         n['progress'] = 100
                         n['status'] = next_st[n['status']]
@@ -77,14 +83,17 @@ class FakeDeploymentThread(FakeThread):
             for n in kwargs['nodes']:
                 if n['status'] == 'ready':
                     continue
-                elif n['status'] == 'error':
+                elif n['status'] in ('error', 'offline'):
                     ready = True
                     break
                 elif n['status'] == 'provisioned':
                     n['status'] = next_st[n['status']]
                     n['progress'] = 0
                 else:
-                    n['progress'] += randrange(0, tick_count)
+                    n['progress'] += randrange(
+                        low_tick_count,
+                        tick_count
+                    )
                     if n['progress'] >= 100:
                         n['progress'] = 100
                         n['status'] = next_st[n['status']]
@@ -97,6 +106,13 @@ class FakeDeploymentThread(FakeThread):
             resp_method = getattr(receiver, self.respond_to)
             resp_method(**kwargs)
             time.sleep(tick_interval)
+
+        if any(map(
+            lambda n: n['status'] == 'offline',
+            kwargs['nodes']
+        )):
+            kwargs['status'] = 'error'
+            kwargs['error'] = 'Cannot provision/deploy offline node'
 
 
 class FakeDeletionThread(FakeThread):
