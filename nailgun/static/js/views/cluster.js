@@ -97,6 +97,7 @@ function(models, commonViews, dialogViews, clusterPageTemplate, deploymentResult
             this.model.bind('change:tasks', this.bindTasksEvents, this);
             this.bindTasksEvents();
             this.model.bind('change:nodes', this.bindNodesEvents, this);
+            this.model.bind('change:changes', this.renderDeploymentControls, this);
             this.bindNodesEvents();
             this.scheduleUpdate();
         },
@@ -868,7 +869,10 @@ function(models, commonViews, dialogViews, clusterPageTemplate, deploymentResult
             this.collectData(this.$('form'), changedData);
             this.model.get('settings').update({editable: changedData}, {
                 url: '/api/clusters/' + this.model.id + '/attributes',
-                complete: _.bind(this.render, this)
+                complete: _.bind(function() {
+                    this.render();
+                    this.model.fetch();
+                }, this)
             });
             this.disableControls();
         },

@@ -36,7 +36,7 @@ define(function() {
             return this.get('tasks') && this.get('tasks').where(options)[0];
         },
         hasChanges: function() {
-            return this.get('nodes').hasChanges();
+            return this.get('nodes').hasChanges() || this.get('changes').length;
         },
         canChangeMode: function(newMode) {
             var nodes = this.get('nodes');
