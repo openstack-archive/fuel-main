@@ -95,6 +95,7 @@ class compact_controller {
       class { compact_controller: }
       class { 'openstack::img::cirros':
         os_password               => $admin_password,
+        os_auth_url               => "http://${management_vip}:5000/v2.0/",
         img_name                  => "TestVM",
       }
 
