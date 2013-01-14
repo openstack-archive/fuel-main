@@ -4,6 +4,7 @@
 		"model": "nailgun.notification",
 		"fields": {
 			"topic": "done",
+			"datetime": "",
 			"message": "Master node installation has been completed successfully. Now you can boot new nodes over PXE, they will be discovered and become available for installing OpenStack on them"
 		}
 	}

@@ -3,7 +3,9 @@
 import json
 import os.path
 import logging
+from datetime import datetime
 
+import sqlalchemy.types
 from nailgun.settings import settings
 from nailgun.api import models
 from sqlalchemy import orm
@@ -63,6 +65,21 @@ def upload_fixture(fileobj):
                         #         fk_model.id.in_(value)
                         #     ):
                         #     getattr(new_obj, field).append(sub)
+                elif isinstance(
+                    f.property.columns[0].type, sqlalchemy.types.DateTime
+                ):
+                    if value:
+                        setattr(
+                            new_obj,
+                            field,
+                            datetime.strptime(value, "%d-%m-%Y %H:%M:%S")
+                        )
+                    else:
+                        setattr(
+                            new_obj,
+                            field,
+                            datetime.now()
+                        )
                 else:
                     setattr(new_obj, field, value)
 
