@@ -4,9 +4,12 @@
 all: iso
 
 ISOROOT:=$/isoroot
+ISOBASENAME:=nailgun-centos-6.3-amd64
+ISONAME:=$/$(ISOBASENAME).iso
+IMGNAME:=$/$(ISOBASENAME).img
 
-iso: $/nailgun-centos-6.3-amd64.iso
-img: $/nailgun-centos-6.3-amd64.img
+iso: $(ISONAME)
+img: $(IMGNAME)
 
 $/isoroot-centos.done: \
 		$(BUILD_DIR)/rpm/rpm.done \
@@ -121,7 +124,7 @@ $/isoroot.done: \
 # from which it builds iso image
 # that is why we need to make $/isoroot.done dependent on some files
 # and then copy these files into another directory
-$/nailgun-centos-6.3-amd64.iso: $/isoroot.done
+$(ISONAME): $/isoroot.done
 	rm -f $@
 	mkdir -p $/isoroot-mkisofs
 	rsync -a --delete $(ISOROOT)/ $/isoroot-mkisofs
@@ -132,7 +135,13 @@ $/nailgun-centos-6.3-amd64.iso: $/isoroot.done
 		-x "lost+found" -o $@ $/isoroot-mkisofs
 	implantisomd5 $@
 
-$/nailgun-centos-6.3-amd64.img: $/nailgun-centos-6.3-amd64.iso
+# IMGSIZE is calculated as a sum of nailgun iso size plus
+# installation images directory size (~165M) and syslinux directory size (~35M)
+# plus a bit of free space for ext2 filesystem data
+# +300M seems reasonable
+IMGSIZE = $(shell echo "$(shell ls -s $(ISONAME) | awk '{print $$1}') / 1024 + 300" | bc)
+
+$(IMGNAME): $(ISONAME)
 	rm -f $/img_loop_device
 	rm -f $/img_loop_partition
 	rm -f $/img_loop_uuid
@@ -144,11 +153,11 @@ $/nailgun-centos-6.3-amd64.img: $/nailgun-centos-6.3-amd64.iso
         sudo losetup -d $$loopdevice; \
     done
 	rm -f $@
-	dd if=/dev/zero of=$/nailgun-centos-6.3-amd64.img bs=1M count=2048
+	dd if=/dev/zero of=$@ bs=1M count=$(IMGSIZE)
 	sudo losetup -f > $/img_loop_device
 	sudo losetup `cat $/img_loop_device` $@
 	sudo parted -s `cat $/img_loop_device` mklabel msdos
-	sudo parted -s `cat $/img_loop_device` unit MB mkpart primary ext2 1 2048 set 1 boot on
+	sudo parted -s `cat $/img_loop_device` unit MB mkpart primary ext2 1 $(IMGSIZE) set 1 boot on
 	sudo kpartx -a -v `cat $/img_loop_device` | awk '{print "/dev/mapper/" $$3}' > $/img_loop_partition
 	sleep 1
 	sudo mkfs.ext2 `cat $/img_loop_partition`
@@ -165,7 +174,7 @@ $/nailgun-centos-6.3-amd64.img: $/nailgun-centos-6.3-amd64.iso
 	sudo sed -i -e "s/will_be_substituted_with_actual_uuid/`cat $/img_loop_uuid`/g" $/imgroot/syslinux/syslinux.cfg
 	sudo cp iso/ks.cfg $/imgroot/ks.cfg
 	sudo sed -i -e "s/will_be_substituted_with_actual_uuid/`cat $/img_loop_uuid`/g" $/imgroot/ks.cfg
-	sudo cp $/nailgun-centos-6.3-amd64.iso $/imgroot/nailgun.iso
+	sudo cp $(ISONAME) $/imgroot/nailgun.iso
 	sudo umount -f `cat $/img_loop_partition`
 	sudo kpartx -d `cat $/img_loop_device`
 	sudo losetup -d `cat $/img_loop_device`
