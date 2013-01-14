@@ -260,6 +260,7 @@ class Network(Base, BasicValidator):
     access = Column(String(20), nullable=False)
     vlan_id = Column(Integer, ForeignKey('vlan.id'))
     cluster_id = Column(Integer, ForeignKey('clusters.id'))
+    network_group_id = Column(Integer, ForeignKey('network_groups.id'))
     cidr = Column(String(25), nullable=False)
     gateway = Column(String(25))
     nodes = relationship(
@@ -280,6 +281,34 @@ class Network(Base, BasicValidator):
                     message="No 'id' param for '%'" % i
                 )
         return d
+
+
+class NetworkGroup(Base, BasicValidator):
+    __tablename__ = 'network_groups'
+    id = Column(Integer, primary_key=True)
+    name = Column(Unicode(100), nullable=False)
+    access = Column(String(20), nullable=False)
+    release = Column(Integer, nullable=False)
+    cluster_id = Column(Integer, nullable=False)
+    cidr = Column(String(25), nullable=False)
+    size_of_net = Column(Integer, default=256)
+    amount = Column(Integer, default=1)
+    vlan_start = Column(Integer, default=1)
+    networks = relationship("Network", backref=backref(
+        "network_groups", cascade="delete"))
+
+    def create_networks(self):
+        for n in xrange(self.amount):
+            vlan_db = Vlan(id=self.vlan_start + n)
+            net_db = Network(
+                release=self.release,
+                cluster_id=self.cluster_id,
+                name=self.name,
+                access=self.access,
+                cidr=self.cidr,
+                vlan_id=vlan_db.id)
+            self.networks.append(net_db)
+        orm().commit()
 
 
 class Attributes(Base, BasicValidator):
