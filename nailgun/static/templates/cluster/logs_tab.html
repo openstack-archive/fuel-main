@@ -5,12 +5,14 @@
     <div class="filter-bar">
       <% var loaded = !sources.deferred || sources.deferred.state() != 'pending' %>
 
-      <div class="filter-bar-item log-source-filter">
-        <div class="filter-bar-label">Log:</div>
-        <select name="source" class="filter-bar-dropdown input-small" <%= loaded ? '' : 'disabled' %>>
-          <% sources.each(function(source) { %>
-            <option value="<%= source.id %>" <%= source.id == chosenSourceId ? 'selected' : '' %>><%- source.get('name') %></option>
-          <% }) %>
+      <div class="filter-bar-item log-type-filter">
+        <div class="filter-bar-label">Logs:</div>
+        <select name="type" class="filter-bar-dropdown input-medium" <%= loaded ? '' : 'disabled' %>>
+	  <% var types = {'nailgun': 'Nailgun logs', 'target': 'Target nodes logs'} %>
+	  <% if (!chosenType) chosenType = 'nailgun' %>
+	  <% _.each(_.keys(types), function(type) { %>
+	    <option value="<%= type %>" <%= chosenType == type ? 'selected' : '' %>><%= types[type] %></option>
+	  <% }) %>
         </select>
       </div>
 
@@ -23,23 +25,32 @@
         </select>
       </div>
 
+      <div class="filter-bar-item log-source-filter">
+        <div class="filter-bar-label">Source:</div>
+        <select name="source" class="filter-bar-dropdown input-medium" <%= loaded ? '' : 'disabled' %>></select>
+      </div>
+
       <div class="filter-bar-item log-level-filter">
         <div class="filter-bar-label">Min. level:</div>
         <select name="level" class="filter-bar-dropdown input-small" <%= loaded ? '' : 'disabled' %>></select>
       </div>
 
       <div class="filter-bar-item">
-        <button class="filter-bar-btn show-logs-btn btn" disabled>Show</button>
+        <button class="filter-bar-btn show-logs-btn btn">Show</button>
       </div>
     </div>
   </div>
 
   <div class="logs-description">
-    Please choose node and log source, then click "Show".
+    Please click "Show" for choosen log type, node and log source.
   </div>
 
   <div class="logs-fetch-error alert alert-error hide">
     Unable to fetch logs.
+  </div>
+  
+  <div class="node-sources-error alert alert-error hide">
+    Unable to fetch node sources.
   </div>
 
   <div class="logs-loading row row-fluid hide">

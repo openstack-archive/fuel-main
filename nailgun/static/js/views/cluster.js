@@ -894,8 +894,10 @@ function(models, commonViews, dialogViews, clusterPageTemplate, deploymentResult
         template: _.template(logsTabTemplate),
         logEntryTemplate: _.template(logEntryTemplate),
         events: {
-            'click .show-logs-btn': 'showLogs',
+            'click .show-logs-btn:not(.disabled)': 'showLogs',
             'change select': 'updateControlsState',
+            'change select[name=type]': 'updateSourcesByType',
+            'change select[name=node]': 'updateSourcesByNode',
             'change select[name=source]': 'updateLevels'
         },
         beforeTearDown: function() {
@@ -914,15 +916,12 @@ function(models, commonViews, dialogViews, clusterPageTemplate, deploymentResult
         },
         updateControlsState: function(e) {
             var nodeSelectBoxVisible = false;
-            var showButtonEnabled = false;
-            var chosenSourceId = this.$('select[name=source]').val();
-            if (chosenSourceId) {
-                showButtonEnabled = true;
-                var source = this.sources.get(chosenSourceId);
-                if (source.get('remote')) {
-                    nodeSelectBoxVisible = true;
-                }
+            var showButtonEnabled = true;
+            var chosenType = this.$('select[name=type]').val();
+            if (chosenType == 'target') {
+                nodeSelectBoxVisible = true;
             }
+            console.log(this.$('select[name=source]').val());
             if (nodeSelectBoxVisible) {
                 var chosenNodeId = this.$('select[name=node]').val();
                 if (!chosenNodeId) {
@@ -930,11 +929,50 @@ function(models, commonViews, dialogViews, clusterPageTemplate, deploymentResult
                 }
             }
             this.$('.log-node-filter').toggle(nodeSelectBoxVisible);
-            this.$('.show-logs-btn').attr('disabled', !showButtonEnabled);
+            this.$('.show-logs-btn').toggleClass('disabled', !showButtonEnabled);
+        },
+        updateSourcesByType: function() {
+            var input = this.$('select[name=source]');
+            input.html('').removeAttr('disabled');
+            var chosenType = this.$('select[name=type]').val();
+            if (chosenType == 'nailgun') {
+                this.sources.each(function(source) {
+                    if (!source.get('remote')) {
+                        input.append('<option value="'+source.id+'">'+source.get('name')+'</option>');
+                    }
+                });
+                this.updateLevels();
+            } else {
+                this.updateSourcesByNode();
+            }
+        },
+        updateSourcesByNode: function() {
+            var chosenNodeId = this.$('select[name=node]').val();
+            var nodeSources = $.ajax({
+                url: '/api/logs/sources/nodes/'+chosenNodeId,
+                success: _.bind(function(sources) {
+                    var input = this.$('select[name=source]');
+                    input.html('');
+                    if (sources.length) {
+                        this.$('select[name=source], select[name=level]').removeAttr('disabled');
+                        _.each(sources, function(source) {
+                            input.append('<option value="'+source.id+'" >'+source.name+'</option>');
+                        });
+                        this.updateLevels();
+                    } else {
+                        this.$('select[name=source], select[name=level]').html('').attr('disabled', true);
+                        this.$('.show-logs-btn').addClass('disabled');
+                    }
+                }, this),
+                error: _.bind(function() {
+                    this.$('.node-sources-error').show();
+                    this.$('.show-logs-btn').addClass('disabled');
+                }, this)
+            });
         },
         updateLevels: function() {
             var input = this.$('select[name=level]');
-            input.html('');
+            input.html('').removeAttr('disabled');
             var chosenSourceId = this.$('select[name=source]').val();
             if (chosenSourceId) {
                 var source = this.sources.get(chosenSourceId);
@@ -962,12 +1000,14 @@ function(models, commonViews, dialogViews, clusterPageTemplate, deploymentResult
                 clearTimeout(this.timeout);
             }
             this.from = 0;
+            this.chosenType = this.$('select[name=type]').val();
             this.chosenNodeId = this.$('select[name=node]').val();
             this.chosenSourceId = this.$('select[name=source]').val();
             this.chosenLevel = this.$('select[name=level]').val();
-            this.$('.logs-description, .table-logs, .logs-fetch-error').hide();
+            this.$('.logs-description, .table-logs, .logs-fetch-error, .node-sources-error').hide();
             this.$('.logs-loading').show();
-            this.$('select, .show-logs-btn').attr('disabled', true);
+            this.$('select').attr('disabled', true);
+            this.$('.show-logs-btn').addClass('disabled');
             this.fetchLogs({
                 complete: _.bind(function() {
                     this.$('.logs-loading').hide();
@@ -1013,11 +1053,13 @@ function(models, commonViews, dialogViews, clusterPageTemplate, deploymentResult
         render: function() {
             this.$el.html(this.template({
                 cluster: this.model,
+                chosenType: this.chosenType,
                 sources: this.sources,
                 chosenNodeId: this.chosenNodeId,
                 chosenSourceId: this.chosenSourceId
             }));
             this.updateControlsState();
+            this.updateSourcesByType();
             this.updateLevels();
             return this;
         }
