@@ -41,6 +41,7 @@ class FakeDeploymentThread(FakeThread):
         if low_tick_count < 0:
             low_tick_count = 0
         tick_interval = int(settings.FAKE_TASKS_TICK_INTERVAL) or 3
+        resp_method = getattr(receiver, self.respond_to)
 
         next_st = {
             "discover": "provisioning",
@@ -68,7 +69,6 @@ class FakeDeploymentThread(FakeThread):
                     if n['progress'] >= 100:
                         n['progress'] = 100
                         n['status'] = next_st[n['status']]
-            resp_method = getattr(receiver, self.respond_to)
             resp_method(**kwargs)
             if all(map(
                 lambda n: n['status'] == 'provisioned',
@@ -103,7 +103,6 @@ class FakeDeploymentThread(FakeThread):
             )):
                 kwargs['status'] = 'ready'
                 ready = True
-            resp_method = getattr(receiver, self.respond_to)
             resp_method(**kwargs)
             time.sleep(tick_interval)
 
@@ -113,7 +112,6 @@ class FakeDeploymentThread(FakeThread):
         )):
             kwargs['status'] = 'error'
             kwargs['error'] = 'Cannot provision/deploy offline node'
-        resp_method = getattr(receiver, self.respond_to)
         resp_method(**kwargs)
 
 
@@ -154,17 +152,27 @@ class FakeVerificationThread(FakeThread):
 
         tick_count = int(settings.FAKE_TASKS_TICK_COUNT) or 10
         tick_interval = int(settings.FAKE_TASKS_TICK_INTERVAL) or 3
+        low_tick_count = tick_count - 20
+        if low_tick_count < 0:
+            low_tick_count = 0
 
         resp_method = getattr(receiver, self.respond_to)
-        for i in range(1, tick_count + 1):
-            kwargs['progress'] = 100 * i / tick_count
+        kwargs['progress'] = 0
+        timeout = 10
+        timer = time.time()
+        ready = False
+        while not ready:
+            kwargs['progress'] += randrange(
+                low_tick_count,
+                tick_count
+            )
+            if kwargs['progress'] >= 100:
+                kwargs['progress'] = 100
+                kwargs['nodes'] = self.data['args']['nodes']
+                kwargs['status'] = 'ready'
+                ready = True
             resp_method(**kwargs)
             time.sleep(tick_interval)
-
-        kwargs['progress'] = 100
-        kwargs['nodes'] = self.data['args']['nodes']
-        kwargs['status'] = 'ready'
-        resp_method(**kwargs)
 
 
 FAKE_THREADS = {
