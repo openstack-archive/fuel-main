@@ -113,6 +113,8 @@ class FakeDeploymentThread(FakeThread):
         )):
             kwargs['status'] = 'error'
             kwargs['error'] = 'Cannot provision/deploy offline node'
+        resp_method = getattr(receiver, self.respond_to)
+        resp_method(**kwargs)
 
 
 class FakeDeletionThread(FakeThread):
