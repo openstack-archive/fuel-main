@@ -172,6 +172,8 @@ class FakeVerificationThread(FakeThread):
                 kwargs['status'] = 'ready'
                 ready = True
             resp_method(**kwargs)
+            if time.time() - timer > timeout:
+                raise Exception("Timeout exceed")
             time.sleep(tick_interval)
 
 
