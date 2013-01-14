@@ -5,6 +5,7 @@ import re
 import json
 import logging
 from random import randint
+from datetime import datetime
 from unittest.case import TestCase
 
 import mock
@@ -171,6 +172,7 @@ class BaseHandlers(TestCase):
         notification.message = "Test message"
         notification.status = "unread"
         notification.cluster_id = cluster_id
+        notification.datetime = datetime.now()
         self.db.add(notification)
         self.db.commit()
         return notification

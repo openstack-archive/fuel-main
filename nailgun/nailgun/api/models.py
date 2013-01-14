@@ -9,7 +9,7 @@ from copy import deepcopy
 import web
 from sqlalchemy import Column, UniqueConstraint, Table
 from sqlalchemy import Integer, String, Unicode, Text, Boolean
-from sqlalchemy import ForeignKey, Enum
+from sqlalchemy import ForeignKey, Enum, DateTime
 from sqlalchemy import create_engine
 from sqlalchemy.orm import relationship, backref
 from sqlalchemy.ext.declarative import declarative_base
@@ -414,6 +414,7 @@ class Notification(Base, BasicValidator):
     message = Column(Text)
     status = Column(Enum(*NOTIFICATION_STATUSES), nullable=False,
                     default='unread')
+    datetime = Column(DateTime, nullable=False)
 
     @classmethod
     def validate_update(cls, data):

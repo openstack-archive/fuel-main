@@ -21,6 +21,20 @@ class NotificationHandler(JSONHandler):
     )
     model = Notification
 
+    @classmethod
+    def render(cls, instance, fields=None):
+        json_data = JSONHandler.render(instance, fields=cls.fields)
+        json_data["date"] = "-".join([
+            str(instance.datetime.hour),
+            str(instance.datetime.minute)
+        ])
+        json_data["time"] = ":".join([
+            str(instance.datetime.day),
+            str(instance.datetime.month),
+            str(instance.datetime.year)
+        ])
+        return json_data
+
     def GET(self, notification_id):
         web.header('Content-Type', 'application/json')
         notification = orm().query(Notification).get(notification_id)

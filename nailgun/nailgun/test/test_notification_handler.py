@@ -28,6 +28,18 @@ class TestHandlers(BaseHandlers):
         self.assertEquals(notification.topic, response['topic'])
         self.assertEquals(notification.message, response['message'])
 
+    def test_notification_datetime(self):
+        node = self.create_default_node_api()
+        resp = self.app.get(
+            reverse('NotificationCollectionHandler'),
+            headers=self.default_headers
+        )
+        notif_api = json.loads(resp.body)[0]
+        self.assertIn('date', notif_api)
+        self.assertNotEqual(notif_api['date'], '')
+        self.assertIn('time', notif_api)
+        self.assertNotEqual(notif_api['time'], '')
+
     def test_notification_get_with_cluster(self):
         cluster = self.create_default_cluster()
         notification = self.create_default_notification(cluster_id=cluster.id)
