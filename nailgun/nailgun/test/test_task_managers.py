@@ -26,7 +26,15 @@ class TestTaskManagers(BaseHandlers):
         import threading
         for thread in threading.enumerate():
             if thread is not threading.currentThread():
-                thread.join()
+                timer = time.time()
+                timeout = 20
+                thread.join(timeout)
+                if time.time() - timer > timeout:
+                    raise Exception(
+                        '{0} seconds is not enough - possible hanging'.format(
+                            timeout
+                        )
+                    )
 
     @patch('nailgun.task.task.rpc.cast', nailgun.task.task.fake_cast)
     @patch('nailgun.task.task.settings.FAKE_TASKS', True)
@@ -89,6 +97,40 @@ class TestTaskManagers(BaseHandlers):
             "Successfully removed 1 node(s). No errors occured; "
             "Deployment of installation '{0}' is done").format(
                 cluster['name']))
+
+    @patch('nailgun.task.task.rpc.cast', nailgun.task.task.fake_cast)
+    @patch('nailgun.task.task.settings.FAKE_TASKS', True)
+    @patch('nailgun.task.fake.settings.FAKE_TASKS_TICK_COUNT', 80)
+    @patch('nailgun.task.fake.settings.FAKE_TASKS_TICK_INTERVAL', 1)
+    def test_deployment_fails_if_node_offline(self):
+        cluster = self.create_cluster_api()
+        node1 = self.create_default_node(cluster_id=cluster['id'],
+                                         role="controller",
+                                         status="offline",
+                                         pending_addition=True)
+        resp = self.app.put(
+            reverse(
+                'ClusterChangesHandler',
+                kwargs={'cluster_id': cluster['id']}),
+            headers=self.default_headers
+        )
+        response = json.loads(resp.body)
+        supertask_uuid = response['uuid']
+        supertask = self.db.query(Task).filter_by(
+            uuid=supertask_uuid
+        ).first()
+        timer = time.time()
+        timeout = 60
+        while supertask.status == 'running':
+            self.db.refresh(supertask)
+            if time.time() - timer > timeout:
+                raise Exception("Deployment seems to be hanged")
+            time.sleep(1)
+        self.assertEqual(supertask.status, 'error')
+        self.assertEqual(
+            supertask.message,
+            'Cannot provision/deploy offline node'
+        )
 
     @patch('nailgun.task.task.rpc.cast', nailgun.task.task.fake_cast)
     @patch('nailgun.task.task.settings.FAKE_TASKS', True)
