@@ -238,10 +238,12 @@ else
 SRC_URLS:=$(shell grep -v ^\\s*\# requirements-src.txt | sed "s=.*/\(.*\)=$(MIRROR_URL)/src/\1=")
 endif
 
-$/src.done:
-	@mkdir -p $/src
-	wget --no-use-server-timestamps -c -P $/src $(SRC_URLS)
+$/src.done: | $(addprefix $/src/, $(notdir $(SRC_URLS)))
 	$(ACTION.TOUCH)
+
+$(addprefix $/src/, $(notdir $(SRC_URLS))):
+	@mkdir -p $/src
+	wget --no-use-server-timestamps -c -P $/src $(shell echo $(SRC_URLS) | grep $(notdir $@))
 
 $/gems-bundle.done: $/gems-bundle-gemfile.done
 	( cd $/gems-bundle && bundle install --path ./ && bundle package )
