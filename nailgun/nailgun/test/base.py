@@ -131,6 +131,21 @@ class BaseHandlers(TestCase):
         self.db.commit()
         return node
 
+    def create_default_node_api(self, **kwargs):
+        node_data = {
+            'mac': self._generate_random_mac(),
+            'release': self.create_default_release().id
+        }
+        if kwargs:
+            node_data.update(kwargs)
+        resp = self.app.post(
+            reverse('NodeCollectionHandler'),
+            json.dumps(node_data),
+            headers=self.default_headers
+        )
+        self.assertEquals(resp.status, 201)
+        return json.loads(resp.body)
+
     def create_default_release(self):
         release = Release()
         release.version = randint(0, 100000000)

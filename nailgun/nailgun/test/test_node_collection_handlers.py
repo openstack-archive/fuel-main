@@ -5,7 +5,7 @@ from paste.fixture import TestApp
 
 from nailgun.test.base import BaseHandlers
 from nailgun.test.base import reverse
-from nailgun.api.models import Node
+from nailgun.api.models import Node, Notification
 
 
 class TestHandlers(BaseHandlers):
@@ -17,6 +17,17 @@ class TestHandlers(BaseHandlers):
         self.assertEquals(200, resp.status)
         response = json.loads(resp.body)
         self.assertEquals([], response)
+
+    def test_notification_node_id(self):
+        node = self.create_default_node_api()
+        notif = self.db.query(Notification).first()
+        self.assertEqual(node['id'], notif.node_id)
+        resp = self.app.get(
+            reverse('NotificationCollectionHandler'),
+            headers=self.default_headers
+        )
+        notif_api = json.loads(resp.body)[0]
+        self.assertEqual(node['id'], notif_api['node_id'])
 
     def test_node_list_big(self):
         for i in range(100):

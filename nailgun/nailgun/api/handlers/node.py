@@ -88,7 +88,7 @@ class NodeCollectionHandler(JSONHandler):
         notifier.notify("discover",
                         "New node with %s CPU core(s) "
                         "and %s GB memory is discovered" %
-                        (cores, ram))
+                        (cores, ram), node_id=node.id)
         raise web.webapi.created(json.dumps(
             NodeHandler.render(node),
             indent=4

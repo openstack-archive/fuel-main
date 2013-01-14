@@ -17,6 +17,7 @@ class NotificationHandler(JSONHandler):
         "topic",
         "message",
         "status",
+        "node_id"
     )
     model = Notification
 
