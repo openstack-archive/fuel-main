@@ -11,6 +11,7 @@ from nailgun.rpc import receiver as rcvr
 from nailgun.test.base import BaseHandlers
 from nailgun.api.models import Node, Task, Notification
 from nailgun.test.base import reverse
+from nailgun.notifier import notifier
 
 
 class TestNotification(BaseHandlers):
@@ -39,6 +40,12 @@ class TestNotification(BaseHandlers):
 
         self.assertEqual(notification.status, "unread")
         self.assertEqual(notification.topic, "done")
+
+    def test_notification_discover_no_node_fails(self):
+        self.assertRaises(
+            Exception,
+            notifier.notify,
+            ("discover"))
 
     def test_notification_deploy_error(self):
         cluster = self.create_default_cluster()

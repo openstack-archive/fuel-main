@@ -13,6 +13,8 @@ class Notifier(object):
 
     def notify(self, topic, message, cluster_id=None, node_id=None):
         db = orm()
+        if topic == 'discover' and node_id is None:
+            raise Exception("No node id in discover notification")
         notification = Notification()
         notification.topic = topic
         notification.message = message
