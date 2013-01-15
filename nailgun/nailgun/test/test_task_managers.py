@@ -252,11 +252,14 @@ class TestTaskManagers(BaseHandlers):
         self.assertIsNotNone(notification)
 
         timer = time.time()
-        timeout = 25
+        timeout = 15
         clstr = self.db.query(Cluster).get(cluster["id"])
         while clstr:
             time.sleep(1)
-            clstr = self.db.query(Cluster).get(cluster["id"])
+            try:
+                self.db.refresh(clstr)
+            except:
+                break
             if time.time() - timer > timeout:
                 raise Exception("Cluster deletion seems to be hanged")
 
