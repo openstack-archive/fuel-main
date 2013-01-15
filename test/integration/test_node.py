@@ -132,14 +132,14 @@ class TestNode(Base):
             ret = ctrl_ssh.execute('/usr/bin/nova-manage service list')
             return (
                 (ret['exit_status'] == 0)
-                and (''.join(ret['stdout']).count(":-)") == 10)
+                and (''.join(ret['stdout']).count(":-)") == 13)
                 and (''.join(ret['stdout']).count("XXX") == 0)
             )
         self._revert_nodes()
         cluster_name = 'ha_cluster'
         nodes = {
-            'controller': ['slave1', 'slave2'],
-            'compute': ['slave3', 'slave4']
+            'controller': ['slave1', 'slave2', 'slave3'],
+            'compute': ['slave4', 'slave5']
         }
         self._basic_provisioning(cluster_name, nodes)
         slave = ci.environment.node['slave1']

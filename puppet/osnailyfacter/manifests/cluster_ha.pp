@@ -12,7 +12,7 @@ $quantum                 = false
 $manage_volumes          = false
 $cinder                  = false
 $auto_assign_floating_ip = false
-$glance_backend          = 'file'
+$glance_backend          = 'swift'
 
 $network_manager = 'nova.network.manager.FlatDHCPManager'
 
@@ -27,6 +27,8 @@ $nova_db_password        = 'nova'
 $nova_user_password      = 'nova'
 $rabbit_password         = 'nova'
 $rabbit_user             = 'nova'
+$swift_shared_secret     = 'changeme'
+$swift_user_password     = 'swift_pass'
 $quantum_user_password   = 'quantum_pass' # Quantum is turned off
 $quantum_db_password     = 'quantum_pass' # Quantum is turned off
 $quantum_db_user         = 'quantum' # Quantum is turned off
@@ -72,7 +74,7 @@ class compact_controller {
     memcached_servers       => $controller_hostnames,
     export_resources        => false,
     glance_backend          => $glance_backend,
-    #swift_proxies           => $swift_proxies,
+    swift_proxies           => $controller_internal_addresses,
     quantum                 => $quantum,
     quantum_user_password   => $quantum_user_password,
     quantum_db_password     => $quantum_db_password,
@@ -85,6 +87,12 @@ class compact_controller {
     galera_nodes            => $galera_nodes,
     nv_physical_volume      => $nv_physical_volume,
   }
+  class { 'swift::keystone::auth':
+     password         => $swift_user_password,
+     public_address   => $public_vip,
+     internal_address => $management_vip,
+     admin_address    => $management_vip,
+  }
 }
 
 
@@ -93,14 +101,29 @@ class compact_controller {
       include osnailyfacter::test_controller
 
       class { compact_controller: }
+      class { 'openstack::swift::storage-node':
+        storage_type => 'loopback',
+        swift_zone => $uid,
+        swift_local_net_ip => $internal_address,
+      }
+      class { 'openstack::swift::proxy':
+        swift_proxies => $controller_internal_addresses,
+        swift_master => $master_hostname,
+        controller_node_address => $management_vip,
+        swift_local_net_ip      => $internal_address,
+      }
       class { 'openstack::img::cirros':
         os_password               => $admin_password,
         os_auth_url               => "http://${management_vip}:5000/v2.0/",
         img_name                  => "TestVM",
       }
 
-      Class[osnailyfacter::network_setup] -> Class[openstack::controller_ha]
-      Class[glance::api]        -> Class[openstack::img::cirros]
+      Class[osnailyfacter::network_setup]   -> Class[openstack::controller_ha]
+      Class[osnailyfacter::network_setup]   -> Class[openstack::swift::storage-node]
+      Class[osnailyfacter::network_setup]   -> Class[openstack::swift::proxy]
+      Class[glance::api]                    -> Class[openstack::img::cirros]
+      Class[openstack::swift::storage-node] -> Class[openstack::img::cirros]
+      Class[openstack::swift::proxy]        -> Class[openstack::img::cirros]
     }
 
     "compute" : {

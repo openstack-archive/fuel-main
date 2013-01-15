@@ -49,8 +49,11 @@ openstack-swift-object
 openstack-swift-proxy
 patch
 policycoreutils
+postgresql-server
 puppet-2.7.19
 puppet-server-2.7.19
+puppetdb
+puppetdb-terminus
 python-amqp
 python-cinder
 python-devel.x86_64
