@@ -48,46 +48,6 @@
     },
     {
         "pk": 1,
-        "model": "nailgun.cluster",
-        "fields": {
-            "name": "Production",
-            "mode": "multinode",
-            "type": "both",
-            "status": "operational",
-            "release": 1
-        }
-    },
-    {
-        "pk": 2,
-        "model": "nailgun.cluster",
-        "fields": {
-            "name": "Staging",
-            "release": 1
-        }
-    },
-    {
-        "pk": 1,
-        "model": "nailgun.attributes",
-        "fields": {
-            "cluster": 1,
-            "editable": {
-                "keystone": {
-                    "admin_tenant": "admin"
-                },
-                "rabbit": {
-                    "user": "nova"
-                },
-                "auto_assign_floating_ip": false
-            },
-            "generated": {
-                "mysql": {
-                    "root_password": "12345"
-                }
-            }
-        }
-    },
-    {
-        "pk": 1,
         "model": "nailgun.node",
         "fields": {
             "status": "ready",
@@ -97,7 +57,6 @@
             "role": "controller",
             "ip": "",
             "fqdn": "",
-            "cluster": 1,
             "mac": "C0:8D:DF:52:76:F1",
             "ip": "10.0.12.45",
             "meta": {
@@ -235,13 +194,12 @@
         "model": "nailgun.node",
         "fields": {
             "status": "error",
-            "name": "",
+            "name": "Bad node",
             "manufacturer": "HP",
             "platform_name": "Model-2",
             "role": "compute",
             "ip": "10.0.12.47",
             "fqdn": "",
-            "cluster": 1,
             "mac": "46:FC:5A:0C:F9:51"
         }
     },
@@ -256,7 +214,6 @@
             "role": "storage",
             "ip": "10.0.12.49",
             "fqdn": "",
-            "cluster": 1,
             "mac": "2E:04:78:86:69:1F",
             "progress": 40
         }
@@ -266,13 +223,12 @@
         "model": "nailgun.node",
         "fields": {
             "status": "offline",
-            "name": "",
+            "name": "Offline node",
             "manufacturer": "Xen",
             "platform_name": "",
             "role": "compute",
             "ip": "10.0.12.41",
             "fqdn": "",
-            "cluster": 1,
             "mac": "BC:10:A1:44:94:A0"
         }
     },
@@ -287,7 +243,6 @@
             "role": "compute",
             "ip": "10.0.12.43",
             "fqdn": "",
-            "cluster": 1,
             "mac": "B6:17:54:39:27:EA"
         }
     },
@@ -302,7 +257,6 @@
             "role": null,
             "ip": "10.0.12.50",
             "fqdn": "",
-            "cluster": null,
             "mac": "47:33:22:46:9B:92"
         }
     },
@@ -317,7 +271,6 @@
             "role": null,
             "ip": "10.0.12.52",
             "fqdn": "",
-            "cluster": null,
             "mac": "84:67:BA:CA:69:95"
         }
     },
@@ -332,7 +285,6 @@
             "role": null,
             "ip": "10.0.12.53",
             "fqdn": "",
-            "cluster": null,
             "mac": "3A:10:EC:04:9A:DE"
         }
     },
@@ -347,7 +299,6 @@
             "role": null,
             "ip": "10.0.12.55",
             "fqdn": "",
-            "cluster": null,
             "mac": "4B:19:FF:55:6D:01"
         }
     },
@@ -362,7 +313,6 @@
             "role": "compute",
             "ip": "10.0.12.61",
             "fqdn": "",
-            "cluster": null,
             "mac": "46:FC:5A:4B:10:CC"
         }
     }
