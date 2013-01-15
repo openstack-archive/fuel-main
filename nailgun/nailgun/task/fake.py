@@ -25,6 +25,11 @@ class FakeThread(threading.Thread):
             'task_uuid'
         )
         self.respond_to = data['respond_to']
+        self.stoprequest = threading.Event()
+
+    def rude_join(self, timeout=None):
+        self.stoprequest.set()
+        super(FakeThread, self).join(timeout)
 
 
 class FakeDeploymentThread(FakeThread):
@@ -51,7 +56,7 @@ class FakeDeploymentThread(FakeThread):
         }
 
         ready = False
-        while not ready:
+        while not ready and not self.stoprequest.isSet():
             for n in kwargs['nodes']:
                 if not 'progress' in n:
                     n['progress'] = 0
@@ -79,7 +84,7 @@ class FakeDeploymentThread(FakeThread):
                 time.sleep(tick_interval)
 
         ready = False
-        while not ready:
+        while not ready and not self.stoprequest.isSet():
             for n in kwargs['nodes']:
                 if n['status'] == 'ready':
                     continue
@@ -161,7 +166,7 @@ class FakeVerificationThread(FakeThread):
         timeout = 10
         timer = time.time()
         ready = False
-        while not ready:
+        while not ready and not self.stoprequest.isSet():
             kwargs['progress'] += randrange(
                 low_tick_count,
                 tick_count

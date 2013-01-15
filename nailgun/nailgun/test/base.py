@@ -35,6 +35,7 @@ class BaseHandlers(TestCase):
         self.mock = mock
         self.here = os.path.abspath(os.path.dirname(__file__))
         self.fixture_dir = os.path.join(self.here, "..", "fixtures")
+        self.app = TestApp(build_app().wsgifunc())
 
     @classmethod
     def setUpClass(cls):
@@ -42,7 +43,6 @@ class BaseHandlers(TestCase):
         syncdb()
 
     def setUp(self):
-        self.app = TestApp(build_app().wsgifunc())
         self.db = orm()  # orm.scoped_session(orm.sessionmaker(bind=engine))()
         self.default_headers = {
             "Content-Type": "application/json"
