@@ -32,7 +32,9 @@
 
 .icon-plus:before { content: '\2b'; } /* '+' */
 .icon-minus:before { content: '\2d'; } /* '-' */
+.icon-settings:before { content: '\2699'; } /* '⚙' */
 .icon-attention:before { content: '\26a0'; } /* '⚠' */
+.icon-edit:before { content: '\270e'; } /* '✎' */
 .icon-ok:before { content: '\2713'; } /* '✓' */
 .icon-ok-circle:before { content: '\2714'; } /* '✔' */
 .icon-cancel:before { content: '\2715'; } /* '✕' */
@@ -40,11 +42,12 @@
 .icon-plus-circle:before { content: '\2795'; } /* '➕' */
 .icon-minus-circle:before { content: '\2796'; } /* '➖' */
 .icon-ok-circle-empty:before { content: '\e702'; } /* '' */
-.icon-cancel-circle2:before { content: '\e703'; } /* '' */
+.icon-cancel-empty:before { content: '\e703'; } /* '' */
 .icon-help-circled:before { content: '\e704'; } /* '' */
 .icon-info-circled:before { content: '\e705'; } /* '' */
 .icon-upload-cloud:before { content: '\e711'; } /* '' */
 .icon-comment:before { content: '\e718'; } /* '' */
+.icon-logs:before { content: '\e730'; } /* '' */
 .icon-arrows-cw:before { content: '\e760'; } /* '' */
 .icon-back-in-time:before { content: '\e771'; } /* '' */
 .icon-bell:before { content: '🔔'; } /* '\1f514' */

@@ -301,12 +301,85 @@ h6.page-title {
   margin-bottom: 20px;
   border: 1px solid #dadada;
   /* border-radius: 4px; */
-  background-color: #eeeeee;
+  /* background-color: #eeeeee;*/
   box-sizing: border-box;
   -moz-box-sizing: border-box;
   -webkit-box-sizing: border-box;
   overflow: hidden;
+  background-image: -webkit-linear-gradient(bottom, #d0d0d0, #f0f0f0 70%);
+  background-image: -moz-linear-gradient(bottom, #d0d0d0, #f0f0f0 70%);
+  background-image: -o-linear-gradient(bottom, #d0d0d0, #f0f0f0 70%);
+  background-image: -ms-linear-gradient(bottom, #d0d0d0, #f0f0f0 70%);
+  background-image: linear-gradient(to top, #d0d0d0, #f0f0f0 70%);
 }
+
+.node-header {
+  display: block;
+  height: 48px;
+  overflow: hidden;
+  box-sizing: border-box;
+  -moz-box-sizing: border-box;
+  -webkit-box-sizing: border-box;
+}
+
+.node-header:after {
+  clear: both;
+  display: table;
+  line-height: 0;
+  content: "";
+}
+
+.node-logo {
+  display: block;
+  margin: 0px;
+  padding: 0px;
+  width: 60px;
+  height: 40px;
+  float: left;  
+  box-sizing: border-box;
+  -moz-box-sizing: border-box;
+  -webkit-box-sizing: border-box;
+}
+
+.node-renameable {
+  display: inline;
+  color: #333333;
+  cursor: pointer;
+  display: inline;
+  font-size: 13px;
+  font-weight: 500;
+  line-height: 16px;
+  border-bottom: 1px dotted #c0c0c0;
+}
+
+
+.node-renameable:hover {
+  display: inline;
+  border-bottom: 1px dotted #337799;
+  color: #337799;
+}
+
+.node-renameable > input {
+  width: 92px;
+  margin-top: 2px;
+}
+
+.node-status:hover > .msg-warning {
+  display: none;
+}
+
+.node-status i {
+  font-size: 12px;
+}
+
+.logs-link {
+  display: block;
+    height: 25px;
+    color: #2c67a0;
+    font-size: 9.5px;
+    text-transform: uppercase;
+}
+
 
 .nodeplaceholder {
   height: 114px;
@@ -378,14 +451,12 @@ h6.page-title {
 }
 
 .node-name {
-  height: 33px;
-  overflow: hidden;
-  padding: 13px 10px 0px 54px;
-  margin-bottom: 13px;
-  font-size: 13px;
-  font-weight: 500;
-  line-height: 16px;
-  color: #333333;
+  display: block;
+  width: 110px;
+  float: left;
+  padding: 0px;
+  margin: 0px;
+  padding-top: 4px;
 }
 
 .node-name .input-medium {
@@ -401,7 +472,13 @@ h6.page-title {
 }
 
 .node-status {
-	height: 30px;
+  display: block;
+  margin: 0px;
+  padding: 0px;
+  height: 25px;
+  margin-top: 16px;
+  cursor: pointer;
+	height: 25px;
 	overflow: hidden;
 	margin-left: 13px;
 	color: #666666;
@@ -409,6 +486,26 @@ h6.page-title {
   text-align: center;
   font-size: 13px;
 }
+
+.node-status > .msg-warning,
+.node-status > .msg-ok,
+.node-status > .msg-provisioned,
+.node-status > .msg-error {
+    display: block;
+    height: 25px;
+    color: #B44200;
+    font-size: 9.5px;
+    text-transform: uppercase;
+}
+
+.node-status > .msg-warning > i,
+.node-status > .msg-ok > i,
+.node-status > .msg-provisioned > i,
+.node-status > .msg-error > i,
+.node-status > .logs-link > i {
+    font-size: 11px;
+}
+
 
 .node-status > .progress {
 	height: 13px;
@@ -503,8 +600,10 @@ h6.page-title {
   cursor: pointer;
 }
 
-.node-list .node-hardware:hover > ul > li {
-  color: #0088cc;
+.node-list .node-hardware:hover  {
+  /* color: #0088cc; */
+  background-color: rgba(0, 0, 0, 0.15);
+  color: #333333;
 }
 
 .node-hardware > ul {list-style: none; margin: 0px; padding: 0px;}
