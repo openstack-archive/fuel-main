@@ -36,6 +36,34 @@ function(models, dialogViews, navbarTemplate, nodesStatsTemplate, notificationsT
         className: 'container',
         template: _.template(navbarTemplate),
         updateInterval: 20000,
+        popoverVisible: false,
+        events: {
+            'click .icon-comment': 'togglePopover',
+            'click .badge': 'togglePopover'
+        },
+        hidePopover: function(e) {
+            if (this.popoverVisible && (!$(e.target).closest($('.message-list-placeholder')).length || $(e.target).parent().hasClass('show-more-notifications'))) {
+                $('html').off(this.eventNamespace);
+                this.popoverVisible = false;
+                $('.message-list-placeholder').parent().remove();
+            }
+        },
+        togglePopover: function(e) {
+            if (!this.popoverVisible && $(e.target).closest(this.$el).length) {
+                $('html').off(this.eventNamespace);
+                $('html').on(this.eventNamespace, _.after(2, _.bind(function(e) {
+                    this.hidePopover(e);
+                }, this)));
+                this.popoverVisible = true;
+                this.notificationsPopover = new views.NotificationsPopover({notifications: this.notifications, displayCount: 5});
+                this.registerSubView(this.notificationsPopover);
+                this.$el.after(this.notificationsPopover.render().el);
+                _.each(this.notifications.where({status : 'unread'}), function(notification) {
+                    notification.set({'status': 'read'});
+                });
+                Backbone.sync('update', this.notifications).done(_.bind(this.render, this));
+            }
+        },
         setActive: function(element) {
             this.$('.nav > li.active').removeClass('active');
             this.$('a[href="#' + element + '"]').parent().addClass('active');
@@ -49,6 +77,7 @@ function(models, dialogViews, navbarTemplate, nodesStatsTemplate, notificationsT
             this.notifications.fetch({complete: complete});
         },
         initialize: function(options) {
+            this.eventNamespace = 'click.click-notifications';
             this.elements = _.isArray(options.elements) ? options.elements : [];
             var complete = _.after(2, _.bind(this.scheduleUpdate, this));
             this.nodes = new models.Nodes();
@@ -57,6 +86,9 @@ function(models, dialogViews, navbarTemplate, nodesStatsTemplate, notificationsT
             this.notifications = new models.Notifications();
             this.notifications.fetch({complete: complete});
             this.notifications.bind('reset', this.render, this);
+        },
+        beforeTearDown: function() {
+            $('html').off(this.eventNamespace);
         },
         render: function() {
             this.$el.html(this.template({elements: this.elements}));
@@ -90,41 +122,22 @@ function(models, dialogViews, navbarTemplate, nodesStatsTemplate, notificationsT
 
     views.Notifications = Backbone.View.extend({
         template: _.template(notificationsTemplate),
-        popoverTemplate: _.template(notificationsPopoverTemplate),
-        popoverVisible: false,
-        events: {
-            'click': 'togglePopover'
-        },
-        hidePopover: function(e) {
-            if (this.popoverVisible && (!$(e.target).closest($('.message-list-placeholder')).length || $(e.target).parent().hasClass('show-more-notifications'))) {
-                $('html').off(this.eventNamespace);
-                this.popoverVisible = false;
-                $('.message-list-placeholder').remove();
-            }
-        },
-        togglePopover: function(e) {
-            if (!this.popoverVisible && $(e.target).closest(this.$el).length) {
-                $('html').off(this.eventNamespace);
-                $('html').on(this.eventNamespace, _.after(2, _.bind(function(e) {
-                    this.hidePopover(e);
-                }, this)));
-                this.popoverVisible = true;
-                $('.navigation-bar').after(this.popoverTemplate({notifications: this.notifications, displayCount: 5}));
-                _.each(this.notifications.where({status : 'unread'}), function(notification) {
-                    notification.set({'status': 'read'});
-                });
-                Backbone.sync('update', this.notifications).done(_.bind(this.render, this));
-            }
-        },
-        beforeTearDown: function() {
-            $('html').off(this.eventNamespace);
-        },
         initialize: function(options) {
             _.defaults(this, options);
-            this.eventNamespace = 'click.click-notifications';
         },
         render: function() {
             this.$el.html(this.template({notifications: this.notifications}));
+            return this;
+        }
+    });
+
+    views.NotificationsPopover = Backbone.View.extend({
+        template: _.template(notificationsPopoverTemplate),
+        initialize: function(options) {
+            _.defaults(this, options);
+        },
+        render: function() {
+            this.$el.html(this.template({notifications: this.notifications, displayCount: 5}));
             return this;
         }
     });

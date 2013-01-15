@@ -2160,6 +2160,12 @@ h6.page-title {
   height: 39px;
   width: 440px;
   text-align: right;
+  position: relative;
+}
+
+.progressbar-wrapper {
+  position: absolute;
+  right: 0;
 }
 
 .deployment-control-box:after {

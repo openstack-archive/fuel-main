@@ -1,13 +1,15 @@
 <% var task = cluster.task('deploy', 'running') %>
 <% if (task) { %>
   <li class="pull-right deployment-control-box">
-    <div class="deploying-progress-text-box"></div>
-    <div class="deploying-progress-bar-box">
-      <div class="progress progress-success progress-striped progress-deploy active">
-        <div class="bar"></div>
+    <div class="progressbar-wrapper">
+      <div class="deploying-progress-text-box"></div>
+      <div class="deploying-progress-bar-box">
+        <div class="progress progress-success progress-striped progress-deploy active">
+          <div class="bar"></div>
+        </div>
       </div>
+      <div class="deploying-progress-text-box percentage">0%</div>
     </div>
-    <div class="deploying-progress-text-box percentage">0%</div>
   </li>
 <% } else { %>
   <% var nodesToAdd = cluster.get('nodes').where({pending_addition: true}) %>
