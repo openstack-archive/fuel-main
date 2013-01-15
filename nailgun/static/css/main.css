@@ -1289,6 +1289,12 @@ h6.page-title {
 }
 
 /* message popup */
+.notifications-list {
+  background-color: #FFFFFF;
+  border-radius: 4px;
+  padding: 20px;
+}
+
 .message-list-placeholder {
   box-sizing: border-box;
   -moz-box-sizing: border-box;
@@ -1332,9 +1338,18 @@ h6.page-title {
   cursor: default;
 }
 
+.notifications-list .message-list > li {
+  text-shadow: none;
+  color: #444;
+}
+
 .message-list > .new {
-  color: #ffffff;
+  color: #fff;
   font-weight: 400;
+}
+
+.message-list .datetime {
+  color: #888;
 }
 
 .message-list > li > i {
@@ -1356,7 +1371,7 @@ h6.page-title {
   text-decoration: none;
 }
 
-.message-list .discover:hover {
+.message-list .discover:hover, .message-list .discover:hover .datetime {
   color: #f99a14;
   cursor: pointer;
 }
