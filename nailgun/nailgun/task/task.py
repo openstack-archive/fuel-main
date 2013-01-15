@@ -303,17 +303,6 @@ class DeletionTask(object):
                                 getattr(node, prop.key)
                             )
                     nodes_to_restore.append(new_node)
-
-                    # FIXME: it should be called in FakeDeletionThread, but
-                    # notifier uses web.ctx.orm, which is unavailable there.
-                    # Should be moved to the thread code after ORM session
-                    # issue is adressed
-                    ram = round(new_node.info.get('ram') or 0, 1)
-                    cores = new_node.info.get('cores') or 'unknown'
-                    notifier.notify("discover",
-                                    "New node with %s CPU core(s) "
-                                    "and %s GB memory is discovered" %
-                                    (cores, ram))
                     # /only fake tasks
         # only real tasks
         if not settings.FAKE_TASKS or not int(settings.FAKE_TASKS):
