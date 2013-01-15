@@ -1,12 +1,15 @@
 # -*- coding: utf-8 -*-
 
+import logging
 import re
 import uuid
 import string
+import math
 from random import choice
 from copy import deepcopy
 
 import web
+import netaddr
 from sqlalchemy import Column, UniqueConstraint, Table
 from sqlalchemy import Integer, String, Unicode, Text, Boolean
 from sqlalchemy import ForeignKey, Enum, DateTime
@@ -19,6 +22,7 @@ from nailgun.api.fields import JSON
 from nailgun.settings import settings
 from nailgun.api.validators import BasicValidator
 
+logger = logging.getLogger(__name__)
 Base = declarative_base()
 
 
@@ -291,21 +295,37 @@ class NetworkGroup(Base, BasicValidator):
     release = Column(Integer, nullable=False)
     cluster_id = Column(Integer, nullable=False)
     cidr = Column(String(25), nullable=False)
-    size_of_net = Column(Integer, default=256)
+    network_size = Column(Integer, default=256)
     amount = Column(Integer, default=1)
     vlan_start = Column(Integer, default=1)
     networks = relationship("Network", backref=backref(
         "network_groups", cascade="delete"))
 
     def create_networks(self):
+        fixnet = netaddr.IPNetwork(self.cidr)
+        if fixnet.size < self.network_size * self.amount:
+            raise ValueError("CIDR size is less than required")
+        subnet_bits = int(math.ceil(math.log(self.network_size, 2)))
+        logger.debug("Specified network size requires %s bits", subnet_bits)
+        subnets = list(fixnet.subnet(32 - subnet_bits,
+                                     count=self.amount))
+        logger.debug("Base CIDR sliced on subnets: %s", subnets)
+        main_bits = int(math.ceil(math.log(
+            self.network_size * self.amount, 2)))
+        logger.debug("Base CIDR can be squeezed to have %s bits", main_bits)
+        main_cidr = list(fixnet.subnet(32 - main_bits,
+                                       count=1))[0]
+        self.cidr = str(main_cidr)
+
         for n in xrange(self.amount):
             vlan_db = Vlan(id=self.vlan_start + n)
+            orm().add(vlan_db)
             net_db = Network(
                 release=self.release,
                 cluster_id=self.cluster_id,
                 name=self.name,
                 access=self.access,
-                cidr=self.cidr,
+                cidr=str(subnets[n]),
                 vlan_id=vlan_db.id)
             self.networks.append(net_db)
         orm().commit()
