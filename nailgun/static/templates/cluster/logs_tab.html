@@ -6,7 +6,7 @@
       <% var loaded = !sources.deferred || sources.deferred.state() != 'pending' %>
 
       <div class="filter-bar-item log-type-filter">
-        <div class="filter-bar-label">Logs:</div>
+        <div class="filter-bar-label">Logs</div>
         <select name="type" class="filter-bar-dropdown input-medium" <%= loaded ? '' : 'disabled' %>>
 	  <% var types = {'nailgun': 'Nailgun logs', 'target': 'Target nodes logs'} %>
 	  <% if (!chosenType) chosenType = 'nailgun' %>
@@ -17,7 +17,7 @@
       </div>
 
       <div class="filter-bar-item log-node-filter" style="display:none">
-        <div class="filter-bar-label">Node:</div>
+        <div class="filter-bar-label">Node</div>
         <select name="node" class="filter-bar-dropdown input-large" <%= loaded ? '' : 'disabled' %>>
           <% _.each(cluster.get('nodes').currentNodes(), function(node) { %>
             <option value="<%= node.id %>" <%= node.id == chosenNodeId ? 'selected' : '' %>><%- node.get('name') || node.get('mac') %></option>
@@ -26,12 +26,12 @@
       </div>
 
       <div class="filter-bar-item log-source-filter">
-        <div class="filter-bar-label">Source:</div>
+        <div class="filter-bar-label">Source</div>
         <select name="source" class="filter-bar-dropdown input-medium" <%= loaded ? '' : 'disabled' %>></select>
       </div>
 
       <div class="filter-bar-item log-level-filter">
-        <div class="filter-bar-label">Min. level:</div>
+        <div class="filter-bar-label">Min. level</div>
         <select name="level" class="filter-bar-dropdown input-small" <%= loaded ? '' : 'disabled' %>></select>
       </div>
 
@@ -41,14 +41,10 @@
     </div>
   </div>
 
-  <div class="logs-description">
-    Please click "Show" for choosen log type, node and log source.
-  </div>
-
   <div class="logs-fetch-error alert alert-error hide">
     Unable to fetch logs.
   </div>
-  
+
   <div class="node-sources-error alert alert-error hide">
     Unable to fetch node sources.
   </div>

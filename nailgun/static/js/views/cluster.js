@@ -1004,7 +1004,7 @@ function(models, commonViews, dialogViews, clusterPageTemplate, deploymentResult
             this.chosenNodeId = this.$('select[name=node]').val();
             this.chosenSourceId = this.$('select[name=source]').val();
             this.chosenLevel = this.$('select[name=level]').val();
-            this.$('.logs-description, .table-logs, .logs-fetch-error, .node-sources-error').hide();
+            this.$('.table-logs, .logs-fetch-error, .node-sources-error').hide();
             this.$('.logs-loading').show();
             this.$('select').attr('disabled', true);
             this.$('.show-logs-btn').addClass('disabled');
