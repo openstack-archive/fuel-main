@@ -55,7 +55,7 @@ function(models, dialogViews, navbarTemplate, nodesStatsTemplate, notificationsT
                     this.hidePopover(e);
                 }, this)));
                 this.popoverVisible = true;
-                this.notificationsPopover = new views.NotificationsPopover({notifications: this.notifications, displayCount: 5});
+                this.notificationsPopover = new views.NotificationsPopover({nodes: this.nodes, notifications: this.notifications, displayCount: 5});
                 this.registerSubView(this.notificationsPopover);
                 this.$el.after(this.notificationsPopover.render().el);
                 _.each(this.notifications.where({status : 'unread'}), function(notification) {
@@ -133,6 +133,17 @@ function(models, dialogViews, navbarTemplate, nodesStatsTemplate, notificationsT
 
     views.NotificationsPopover = Backbone.View.extend({
         template: _.template(notificationsPopoverTemplate),
+        events: {
+            'click .discover' : 'showNodeInfo'
+        },
+        showNodeInfo: function(e) {
+            if ($(e.target).data('node')) {
+                var node = this.nodes.get($(e.target).data('node'));
+                var dialog = new dialogViews.ShowNodeInfoDialog({node: node});
+                this.registerSubView(dialog);
+                dialog.render();
+            }
+        },
         initialize: function(options) {
             _.defaults(this, options);
         },

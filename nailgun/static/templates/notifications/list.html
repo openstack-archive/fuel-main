@@ -8,7 +8,7 @@
     <% if (notifications.length) { %>
       <% _.each(notifications.last(displayCount).reverse(), function(notification, index) { %>
         <% var topic = notification.get('topic') %>
-        <li class="enable-selection <%= notification.get('status') == 'unread' ? 'new' : '' %> <%= topic == 'discover' ? 'discover' : '' %>" data-node="<%- notification.get('node') %>">
+        <li class="enable-selection <%= notification.get('status') == 'unread' ? 'new' : '' %> <%= topic == 'discover' ? 'discover' : '' %>" data-node="<%- notification.get('node_id') %>">
           <i class="<%= topic == 'error' ? 'icon-attention' : topic == 'discover' ? 'icon-bell' : 'icon-info-circled' %>"></i>
           <span class="datetime"><%= notification.escape('date') %> <%= notification.escape('time') %></span>
           <%= app.urlify(notification.escape('message')) %>
