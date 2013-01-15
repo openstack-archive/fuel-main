@@ -1344,12 +1344,17 @@ h6.page-title {
 }
 
 .message-list > .new {
-  color: #fff;
+  color: #55A8E3 !important;
   font-weight: 400;
 }
 
 .message-list .datetime {
   color: #888;
+  padding: 0 4px;
+}
+
+.message-list > .new .datetime {
+  color: #91C7ED;
 }
 
 .message-list > li > i {
@@ -1372,7 +1377,7 @@ h6.page-title {
 }
 
 .message-list .discover:hover, .message-list .discover:hover .datetime {
-  color: #f99a14;
+  color: #f99a14 !important;
   cursor: pointer;
 }
 
@@ -2153,7 +2158,7 @@ h6.page-title {
   -moz-box-sizing: border-box;
   -webkit-box-sizing: border-box;
   height: 39px;
-  width: 450px;
+  width: 440px;
   text-align: right;
 }
 
