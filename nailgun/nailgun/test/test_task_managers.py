@@ -252,7 +252,7 @@ class TestTaskManagers(BaseHandlers):
         self.assertIsNotNone(notification)
 
         timer = time.time()
-        timeout = 15
+        timeout = 25
         clstr = self.db.query(Cluster).get(cluster["id"])
         while clstr:
             time.sleep(1)
