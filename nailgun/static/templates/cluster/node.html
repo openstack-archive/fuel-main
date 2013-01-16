@@ -1,72 +1,15 @@
-<!-- html view -->
-  
-  <div class="span2 nodebox assigned">
-
-    <div class="node-header">
-      <div class="node-logo manufacturer-vmware"></div>
-      <div class="node-name">
-        <div class="node-renameable" title="Edit Name">node virtualbox hello</div>
-      </div>
-    </div>
-
-    <div class="node-status">
-      <div class="msg-warning"><i class="icon-ok-circle-empty"></i>Installing OpenStack</div>
-      <div class="logs-link"><i class="icon-logs"></i>View logs</div>  
-    </div>
-
-    <div class="node-hardware">
-      <ul>
-        <li>CPU: 4</li>
-        <li>HDD: 4 TB</li>
-        <li>RAM: 4 GB</li>
-      </ul>
-    </div>
-
-    <div class="pending-addition-flag"></div>
-  </div>
-
-  <!-- node samle 2 -->
-
-  <div class="span2 nodebox assigned">
-
-    <div class="node-header">
-      <div class="node-logo manufacturer-supermicro"></div>
-      <div class="node-name">
-        <div class="node-renameable"><input type="text" placeholder="node virtualbox hello"></div>
-      </div>
-    </div>
-
-    <div class="node-status">
-      <div class="msg-warning"><i class="icon-ok-circle-empty"></i>Installing OpenStack</div>
-      <div class="logs-link"><i class="icon-logs"></i>View logs</div>  
-    </div>
-
-    <div class="node-hardware">
-      <ul>
-        <li>CPU: 4</li>
-        <li>HDD: 4 TB</li>
-        <li>RAM: 4 GB</li>
-      </ul>
-    </div>
-
-    <div class="pending-addition-flag"></div>
-  </div>
-
-<!-- html view -->
-
-<div class="span2 nodebox
-    <%= selectableForAddition ? 'unassigned node-to-add-unchecked' : selectableForDeletion ? 'unassigned node-to-delete-unchecked' : 'assigned' %>
-    <%- node.get('manufacturer') ? 'manufacturer-' + node.get('manufacturer').toLowerCase() : '' %>
-  " data-node-id="<%= node.id %>">
-
-  <div class="node-name">
+<div class="span2 nodebox <%= selectableForAddition ? 'unassigned node-to-add-unchecked' : selectableForDeletion ? 'unassigned node-to-delete-unchecked' : 'assigned' %>" data-node-id="<%= node.id %>">
+  <div class="node-header">
+    <div class="node-logo <%- node.get('manufacturer') ? 'manufacturer-' + node.get('manufacturer').toLowerCase() : '' %>"></div>
+    <div class="node-name">
     <% if (renaming) { %>
-      <form class="node-name-editable form-inline" onsubmit="return false">
-        <input type="text" class="input-medium" value="<%- node.get('name') || '' %>">
-      </form>
+      <div class="node-renameable">
+        <input type="text" class="input-medium" placeholder="<%- node.get('name') || '' %>" />
+      </div>
     <% } else { %>
-      <div class="<%= renameable ? 'node-renameable' : '' %>"><i class="icon-edit"></i><%- node.get('name') || node.get('mac') %></div>
+      <div <%= renameable ? 'class="node-renameable"  title="Edit Name"' : '' %>><%- node.get('name') || node.get('mac') %></div>
     <% } %>
+    </div>
   </div>
   <div class="node-status">
     <% if (!selectableForAddition) { %>
@@ -100,12 +43,19 @@
             <i class="icon-attention"></i>Error
           </div>
         <% } else if (status == 'offline') { %>
-          <i class="icon-block"></i>Offline
+          <div>
+            <i class="icon-block"></i>Offline
+          </div>
         <% } else if (status == 'discover') { %>
-          <i class="icon-ok-circle-empty"></i>Discovered
+          <div>
+            <i class="icon-ok-circle-empty"></i>Discovered
+          </div>
         <% } else { %>
-          <%= status %>
+          <div>
+            <%= status %>
+          </div>
         <% } %>
+        <div class="logs-link"><i class="icon-logs"></i>View logs</div>
     <% } %>
   </div>
   <div class="node-hardware">

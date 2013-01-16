@@ -335,7 +335,7 @@ h6.page-title {
   padding: 0px;
   width: 60px;
   height: 40px;
-  float: left;  
+  float: left;
   box-sizing: border-box;
   -moz-box-sizing: border-box;
   -webkit-box-sizing: border-box;
@@ -364,7 +364,7 @@ h6.page-title {
   margin-top: 2px;
 }
 
-.node-status:hover > .msg-warning {
+.assigned .node-status:hover > div:first-child {
   display: none;
 }
 
@@ -452,11 +452,15 @@ h6.page-title {
 
 .node-name {
   display: block;
-  width: 110px;
+  width: 107px;
   float: left;
-  padding: 0px;
-  margin: 0px;
+  padding: 0;
+  margin: 0;
   padding-top: 4px;
+}
+
+.node-name div {
+  word-wrap: break-word;
 }
 
 .node-name .input-medium {

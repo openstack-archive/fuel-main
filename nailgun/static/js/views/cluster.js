@@ -536,7 +536,7 @@ function(models, commonViews, dialogViews, clusterPageTemplate, deploymentResult
         template: _.template(nodeTemplate),
         events: {
             'click .node-name': 'startNodeRenaming',
-            'keydown .node-name-editable': 'onNodeNameInputKeydown',
+            'keydown .node-renameable': 'onNodeNameInputKeydown',
             'click .node-hardware': 'showNodeInfo'
         },
         startNodeRenaming: function() {
@@ -549,7 +549,7 @@ function(models, commonViews, dialogViews, clusterPageTemplate, deploymentResult
             }, this)));
             this.renaming = true;
             this.render();
-            this.$('.node-name-editable input').focus();
+            this.$('.node-renameable input').focus();
         },
         endNodeRenaming: function() {
             $('html').off(this.eventNamespace);
@@ -557,9 +557,9 @@ function(models, commonViews, dialogViews, clusterPageTemplate, deploymentResult
             this.render();
         },
         applyNewNodeName: function() {
-            var name = $.trim(this.$('.node-name-editable input').val());
-            if (name != this.model.get('name')) {
-                this.$('.node-name-editable input').attr('disabled', true);
+            var name = $.trim(this.$('.node-renameable input').val());
+            if (name && name != this.model.get('name')) {
+                this.$('.node-renameable input').attr('disabled', true);
                 this.model.update({name: name}, {complete: this.endNodeRenaming, context: this});
             } else {
                 this.endNodeRenaming();
