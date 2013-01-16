@@ -88,6 +88,18 @@ class TestHandlers(BaseHandlers):
         clusters_after = len(self.db.query(Cluster).all())
         self.assertEquals(clusters_before, clusters_after)
 
+    def test_cluster_updates_network_manager(self):
+        cluster = self.create_default_cluster()
+        self.assertEquals(cluster.net_manager, "FlatDHCPManager")
+        resp = self.app.put(
+            reverse('ClusterHandler', kwargs={'cluster_id': cluster.id}),
+            json.dumps({'net_manager': 'VlanManager'}),
+            headers=self.default_headers
+        )
+        self.assertEquals(resp.status, 200)
+        self.db.refresh(cluster)
+        self.assertEquals(cluster.net_manager, "VlanManager")
+
     def test_cluster_node_list_update(self):
         node1 = self.create_default_node()
         node2 = self.create_default_node()
