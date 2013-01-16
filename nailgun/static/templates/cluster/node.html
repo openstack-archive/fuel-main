@@ -1,4 +1,4 @@
-<div class="span2 nodebox <%= selectableForAddition ? 'unassigned node-to-add-unchecked' : selectableForDeletion ? 'unassigned node-to-delete-unchecked' : 'assigned' %>" data-node-id="<%= node.id %>">
+<div class="span2 nodebox <%= renameable ? 'logs-link-allowed' : ''  %> <%= selectableForAddition ? 'unassigned node-to-add-unchecked' : selectableForDeletion ? 'unassigned node-to-delete-unchecked' : 'assigned' %>" data-node-id="<%= node.id %>">
   <div class="node-header">
     <div class="node-logo <%- node.get('manufacturer') ? 'manufacturer-' + node.get('manufacturer').toLowerCase() : '' %>"></div>
     <div class="node-name">

@@ -42,7 +42,7 @@ function(models, dialogViews, navbarTemplate, nodesStatsTemplate, notificationsT
             'click .badge': 'togglePopover'
         },
         hidePopover: function(e) {
-            if (this.popoverVisible && (!$(e.target).closest($('.message-list-placeholder')).length || $(e.target).parent().hasClass('show-more-notifications'))) {
+            if (this.popoverVisible && (!$(e.target).closest($('.message-list-placeholder')).length || $(e.target).parent().hasClass('show-more-notifications')) && !$(e.target).hasClass('node-modal-close')) {
                 $('html').off(this.eventNamespace);
                 this.popoverVisible = false;
                 $('.message-list-placeholder').parent().remove();
