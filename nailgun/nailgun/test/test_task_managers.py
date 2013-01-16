@@ -8,7 +8,7 @@ from nailgun.settings import settings
 
 import nailgun
 import nailgun.rpc as rpc
-from nailgun.db import dropdb, syncdb
+from nailgun.db import dropdb, syncdb, flush
 from nailgun.task.manager import DeploymentTaskManager
 from nailgun.task.fake import FAKE_THREADS
 from nailgun.task.errors import WrongNodeStatus
@@ -18,14 +18,6 @@ from nailgun.api.models import Cluster, Attributes, Task, Notification, Node
 
 
 class TestTaskManagers(BaseHandlers):
-
-    def setUp(self):
-        super(TestTaskManagers, self).setUp()
-
-    @classmethod
-    def setUpClass(cls):
-        dropdb()
-        syncdb()
 
     def tearDown(self):
         # wait for fake task thread termination
@@ -242,6 +234,7 @@ class TestTaskManagers(BaseHandlers):
     @patch('nailgun.task.fake.settings.FAKE_TASKS_TICK_COUNT', 80)
     @patch('nailgun.task.fake.settings.FAKE_TASKS_TICK_INTERVAL', 1)
     def test_deletion_empty_cluster_task_manager(self):
+        flush()
         cluster = self.create_cluster_api()
         resp = self.app.delete(
             reverse(
