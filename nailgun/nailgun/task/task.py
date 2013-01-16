@@ -283,11 +283,12 @@ class DeletionTask(object):
         nodes_to_restore = []
 
         # no need to call naily if there are no nodes in cluster
-        if not task.cluster.nodes:
+        if respond_to == 'remove_cluster_resp' and not task.cluster.nodes:
             rcvr = rpc.receiver.NailgunReceiver
             rcvr.remove_cluster_resp(
                 task_uuid=task.uuid,
-                status='ready'
+                status='ready',
+                progress=100
             )
             return
 

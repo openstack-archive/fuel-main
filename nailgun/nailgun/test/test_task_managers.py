@@ -8,6 +8,7 @@ from nailgun.settings import settings
 
 import nailgun
 import nailgun.rpc as rpc
+from nailgun.db import dropdb, syncdb
 from nailgun.task.manager import DeploymentTaskManager
 from nailgun.task.fake import FAKE_THREADS
 from nailgun.task.errors import WrongNodeStatus
@@ -20,6 +21,11 @@ class TestTaskManagers(BaseHandlers):
 
     def setUp(self):
         super(TestTaskManagers, self).setUp()
+
+    @classmethod
+    def setUpClass(cls):
+        dropdb()
+        syncdb()
 
     def tearDown(self):
         # wait for fake task thread termination
@@ -245,12 +251,6 @@ class TestTaskManagers(BaseHandlers):
         )
         self.assertEquals(202, resp.status)
 
-        notification = self.db.query(Notification)\
-            .filter(Notification.topic == "done")\
-            .filter(Notification.message == "Cluster %s and all cluster "
-                    "nodes are deleted" % cluster["name"])
-        self.assertIsNotNone(notification)
-
         timer = time.time()
         timeout = 15
         clstr = self.db.query(Cluster).get(cluster["id"])
@@ -265,6 +265,12 @@ class TestTaskManagers(BaseHandlers):
 
         tasks = self.db.query(Task).all()
         self.assertEqual(tasks, [])
+
+        notification = self.db.query(Notification)\
+            .filter(Notification.topic == "done")\
+            .filter(Notification.message == "Cluster %s and all cluster "
+                    "nodes are deleted" % cluster["name"])
+        self.assertIsNotNone(notification)
 
     @patch('nailgun.task.task.rpc.cast', nailgun.task.task.fake_cast)
     @patch('nailgun.task.task.settings.FAKE_TASKS', True)
