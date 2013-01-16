@@ -1632,6 +1632,7 @@ h6.page-title {
 }
 .table-logs tbody tr td {
   font-size: 13px;
+  font-family: "Lucida Console", Menlo, Monaco, Consolas, "Courier New", monospace;
 }
 .table-logs .no-logs-msg {
   display: none;
