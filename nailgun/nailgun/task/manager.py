@@ -75,7 +75,7 @@ class DeploymentTaskManager(TaskManager):
             try:
                 task_deployment.execute(tasks.DeploymentTask)
             except (AssignIPError, FailedProvisioning, Exception) as exc:
-                err = str(ex)
+                err = str(exc)
                 logger.error(traceback.format_exc())
             if err:
                 update_task_status(

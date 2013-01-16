@@ -17,7 +17,7 @@ from nailgun.notifier import notifier
 from nailgun.task.errors import WrongNodeStatus
 from nailgun.task.helpers import update_task_status
 from nailgun.network import manager as netmanager
-from nailgun.api.models import Base, Network, Node
+from nailgun.api.models import Base, Network, NetworkGroup, Node
 from nailgun.api.validators import BasicValidator
 from nailgun.provision.cobbler import Cobbler
 from nailgun.task.fake import FAKE_THREADS
@@ -142,8 +142,20 @@ class DeploymentTask(object):
         nets_db = orm().query(Network).filter_by(
             cluster_id=cluster_id).all()
 
-        for net in nets_db:
+        ng_db = orm().query(NetworkGroup).filter_by(
+            cluster_id=cluster_id).all()
+        for net in ng_db:
             cluster_attrs[net.name + '_network_range'] = net.cidr
+
+        fixed_net = orm().query(NetworkGroup).filter_by(
+            cluster_id=cluster_id).filter_by(
+                name='fixed').first()
+
+        if task.cluster.net_manager == "VlanManager":
+            cluster_attrs['vlan_interface'] = 'eth0'
+            cluster_attrs['network_size'] = fixed_net.network_size
+            cluster_attrs['num_networks'] = fixed_net.amount
+            cluster_attrs['vlan_start'] = fixed_net.vlan_start
 
         if task.cluster.mode == 'ha':
             logger.info("HA mode chosen, creating VIP addresses for it..")

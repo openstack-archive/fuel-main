@@ -75,9 +75,12 @@ class Cluster(Base, BasicValidator):
     TYPES = ('compute', 'storage', 'both')
     MODES = ('singlenode', 'multinode', 'ha')
     STATUSES = ('new', 'deployment', 'operational', 'error', 'remove')
+    NET_MANAGERS = ('FlatDHCPManager', 'VlanManager')
     type = Column(Enum(*TYPES), nullable=False, default='compute')
     mode = Column(Enum(*MODES), nullable=False, default='singlenode')
     status = Column(Enum(*STATUSES), nullable=False, default='new')
+    net_manager = Column(Enum(*NET_MANAGERS), nullable=False,
+                         default='FlatDHCPManager')
     id = Column(Integer, primary_key=True)
     name = Column(Unicode(50), unique=True, nullable=False)
     release_id = Column(Integer, ForeignKey('releases.id'), nullable=False)
