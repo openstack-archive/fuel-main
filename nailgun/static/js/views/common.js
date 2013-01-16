@@ -65,8 +65,8 @@ function(models, dialogViews, navbarTemplate, nodesStatsTemplate, notificationsT
             }
         },
         setActive: function(element) {
-            this.$('.nav > li.active').removeClass('active');
-            this.$('a[href="#' + element + '"]').parent().addClass('active');
+            this.$('a.active').removeClass('active');
+            this.$('a[href="#' + element + '"]').addClass('active');
         },
         scheduleUpdate: function() {
             _.delay(_.bind(this.update, this), this.updateInterval);
@@ -91,7 +91,9 @@ function(models, dialogViews, navbarTemplate, nodesStatsTemplate, notificationsT
             $('html').off(this.eventNamespace);
         },
         render: function() {
-            this.$el.html(this.template({elements: this.elements}));
+            if (!this.$('.navigation-bar-ul a').length) {
+                this.$el.html(this.template({elements: this.elements}));
+            }
             this.stats = new views.NodesStats({nodes: this.nodes});
             this.registerSubView(this.stats);
             this.$('.nodes-summary-container').html(this.stats.render().el);
