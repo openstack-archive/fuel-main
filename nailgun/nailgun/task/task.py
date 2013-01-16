@@ -151,6 +151,7 @@ class DeploymentTask(object):
             cluster_id=cluster_id).filter_by(
                 name='fixed').first()
 
+        cluster_attrs['network_manager'] = task.cluster.net_manager
         if task.cluster.net_manager == "VlanManager":
             cluster_attrs['vlan_interface'] = 'eth0'
             cluster_attrs['network_size'] = fixed_net.network_size

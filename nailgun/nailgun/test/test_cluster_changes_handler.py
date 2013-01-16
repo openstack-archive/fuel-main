@@ -66,6 +66,7 @@ class TestHandlers(BaseHandlers):
         cluster_attrs['management_vip'] = management_vip
         cluster_attrs['public_vip'] = public_vip
         cluster_attrs['deployment_mode'] = cluster_depl_mode
+        cluster_attrs['network_manager'] = "FlatDHCPManager"
 
         msg['args']['attributes'] = cluster_attrs
         msg['args']['task_uuid'] = deploy_task_uuid
