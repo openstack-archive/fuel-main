@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 import json
 
-from nailgun.api.models import Network
+from nailgun.api.models import Network, NetworkGroup
 from nailgun.test.base import BaseHandlers
 from nailgun.test.base import reverse
 
@@ -27,43 +27,48 @@ class TestHandlers(BaseHandlers):
         expected = [
             {
                 'id': 1,
+                'amount': 1,
                 'name': u'floating',
                 'cluster_id': cluster['id'],
-                'vlan_id': 100,
+                'vlan_start': 100,
                 'cidr': '240.0.0.0/24',
-                'gateway': '240.0.0.1'
+                'network_size': 256
             },
             {
                 'id': 2,
+                'amount': 1,
                 'name': u'fixed',
                 'cluster_id': cluster['id'],
-                'vlan_id': 101,
+                'vlan_start': 101,
                 'cidr': '10.0.0.0/24',
-                'gateway': '10.0.0.1'
+                'network_size': 256
             },
             {
                 'id': 3,
+                'amount': 1,
                 'name': u'storage',
                 'cluster_id': cluster['id'],
-                'vlan_id': 102,
+                'vlan_start': 102,
                 'cidr': '192.168.0.0/24',
-                'gateway': '192.168.0.1'
+                'network_size': 256
             },
             {
                 'id': 4,
+                'amount': 1,
                 'name': u'management',
                 'cluster_id': cluster['id'],
-                'vlan_id': 103,
+                'vlan_start': 103,
                 'cidr': '172.16.0.0/24',
-                'gateway': '172.16.0.1'
+                'network_size': 256
             },
             {
                 'id': 5,
+                'amount': 1,
                 'name': u'public',
                 'cluster_id': cluster['id'],
-                'vlan_id': 104,
+                'vlan_start': 104,
                 'cidr': '240.0.1.0/24',
-                'gateway': '240.0.1.1'
+                'network_size': 256
             },
         ]
         self.assertEquals(expected, response)
@@ -85,13 +90,14 @@ class TestHandlers(BaseHandlers):
         self.assertEquals(nets_len, len(nets_received))
         self.assertEquals(cluster1['id'], nets_received[0]['cluster_id'])
 
-    def test_networks_update_new_vlan_id(self):
+    def test_networks_squeezed_cidr(self):
         cluster = self.create_cluster_api()
-        net1 = self.db.query(Network).first()
-        new_vlan_id = 500  # non-used vlan id
+        net1 = self.db.query(NetworkGroup).first()
         new_nets = [{
             'id': net1.id,
-            'vlan_id': new_vlan_id}]
+            'cidr': '10.0.0.0/8',
+            'amount': 2,
+            'network_size': 128}]
         resp = self.app.put(
             reverse('NetworkCollectionHandler'),
             json.dumps(new_nets),
@@ -99,9 +105,25 @@ class TestHandlers(BaseHandlers):
         )
         self.assertEquals(200, resp.status)
         nets_received = json.loads(resp.body)
-        self.assertEquals(1, len(nets_received))
-        expected_network_id = net1.id
-        self.assertEquals(expected_network_id, nets_received[0])
+        self.assertEquals(nets_received[0]['cidr'], '10.0.0.0/24')
+
+    def test_network_group_update_changes_network(self):
+        cluster = self.create_cluster_api()
+        net1 = self.db.query(NetworkGroup).first()
+        self.assertIsNotNone(net1)
+        new_vlan_id = 500  # non-used vlan id
+        new_nets = [{
+            'id': net1.id,
+            'vlan_start': new_vlan_id}]
+        resp = self.app.put(
+            reverse('NetworkCollectionHandler'),
+            json.dumps(new_nets),
+            headers=self.default_headers
+        )
+        self.assertEquals(200, resp.status)
+        self.db.refresh(net1)
+        self.assertEquals(len(net1.networks), 1)
+        self.assertEquals(net1.networks[0].vlan_id, 500)
 
     def test_networks_update_fails_with_wrong_net_id(self):
         new_nets = [{

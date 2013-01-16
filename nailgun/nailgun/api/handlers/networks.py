@@ -6,22 +6,23 @@ import web
 
 from nailgun.db import orm
 from nailgun.logger import logger
-from nailgun.api.models import Network
+from nailgun.api.models import NetworkGroup
 from nailgun.api.handlers.base import JSONHandler
 
 
 class NetworkCollectionHandler(JSONHandler):
-    fields = ('id', 'cluster_id', 'name', 'cidr', 'gateway', 'vlan_id')
-    model = Network
+    fields = ('id', 'cluster_id', 'name', 'cidr', 'vlan_start',
+              'network_size', 'amount')
+    model = NetworkGroup
 
     def GET(self):
         web.header('Content-Type', 'application/json')
         user_data = web.input(cluster_id=None)
         if user_data.cluster_id:
-            nets = orm().query(Network).filter(
-                Network.cluster_id == user_data.cluster_id).all()
+            nets = orm().query(NetworkGroup).filter_by(
+                cluster_id=user_data.cluster_id).all()
         else:
-            nets = orm().query(Network).all()
+            nets = orm().query(NetworkGroup).all()
 
         if not nets:
             return web.notfound()
@@ -33,24 +34,24 @@ class NetworkCollectionHandler(JSONHandler):
 
     def PUT(self):
         web.header('Content-Type', 'application/json')
-        new_nets = Network.validate_collection_update(web.data())
+        new_nets = NetworkGroup.validate_collection_update(web.data())
         if not new_nets:
             raise web.badrequest()
 
         nets_to_render = []
-        for network in new_nets:
-            network_db = orm().query(Network).get(network['id'])
-            if not network_db:
+        for ng in new_nets:
+            ng_db = orm().query(NetworkGroup).get(ng['id'])
+            if not ng_db:
                 raise web.badrequest(
-                    message="Network with id=%s not found in DB" %
-                    network['id'])
-            # Check if there is no such object
-            for key, value in network.iteritems():
-                setattr(network_db, key, value)
-            nets_to_render.append(network_db)
+                    message="NetworkGroup with id=%s not found in DB" %
+                    ng['id'])
+            for key, value in ng.iteritems():
+                setattr(ng_db, key, value)
+            orm().commit()
+            ng_db.create_networks()
+            nets_to_render.append(ng_db)
 
-        orm().commit()
         return json.dumps(
-            [n.id for n in nets_to_render],
+            map(self.render, nets_to_render),
             indent=4
         )

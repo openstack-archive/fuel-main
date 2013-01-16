@@ -13,11 +13,9 @@ from nailgun.settings import settings
 from nailgun.logger import logger
 from nailgun.api.models import Cluster
 from nailgun.api.models import Node
-from nailgun.api.models import Network
+from nailgun.api.models import Network, NetworkElement, NetworkGroup, Vlan
 from nailgun.api.models import Release
 from nailgun.api.models import Attributes
-from nailgun.api.models import NetworkElement
-from nailgun.api.models import Vlan
 from nailgun.api.models import Task
 
 from nailgun.api.handlers.base import JSONHandler
@@ -156,12 +154,11 @@ class ClusterCollectionHandler(JSONHandler):
         used_vlans = [v.id for v in orm().query(Vlan).all()]
 
         for network in cluster.release.networks_metadata:
-            new_vlan = sorted(list(set(range(int(settings.VLANS_RANGE_START),
-                                             int(settings.VLANS_RANGE_END))) -
-                                   set(used_vlans)))[0]
-            vlan_db = Vlan(id=new_vlan)
-            orm().add(vlan_db)
-            orm().commit()
+            vlan_start = sorted(list(set(range(int(
+                settings.VLANS_RANGE_START),
+                int(settings.VLANS_RANGE_END))) -
+                set(used_vlans)))[0]
+            logger.debug("Found free vlan: %s", vlan_start)
 
             pool = settings.NETWORK_POOLS[network['access']]
             nets_free_set = netaddr.IPSet(pool) -\
@@ -171,19 +168,21 @@ class ClusterCollectionHandler(JSONHandler):
             free_cidrs = sorted(list(nets_free_set._cidrs))
             new_net = list(free_cidrs[0].subnet(24, count=1))[0]
 
-            nw_db = Network(
+            nw_db = NetworkGroup(
                 release=cluster.release.id,
                 name=network['name'],
                 access=network['access'],
                 cidr=str(new_net),
-                gateway=str(new_net[1]),
+                gateway_ip_index=1,
                 cluster_id=cluster.id,
-                vlan_id=vlan_db.id
+                vlan_start=vlan_start,
+                amount=1
             )
             orm().add(nw_db)
             orm().commit()
+            nw_db.create_networks()
 
-            used_vlans.append(new_vlan)
+            used_vlans.append(vlan_start)
             used_nets.append(str(new_net))
 
         raise web.webapi.created(json.dumps(

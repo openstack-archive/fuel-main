@@ -1,6 +1,5 @@
 # -*- coding: utf-8 -*-
 
-import logging
 import re
 import uuid
 import string
@@ -17,12 +16,12 @@ from sqlalchemy import create_engine
 from sqlalchemy.orm import relationship, backref
 from sqlalchemy.ext.declarative import declarative_base
 
+from nailgun.logger import logger
 from nailgun.db import orm
 from nailgun.api.fields import JSON
 from nailgun.settings import settings
 from nailgun.api.validators import BasicValidator
 
-logger = logging.getLogger(__name__)
 Base = declarative_base()
 
 
@@ -285,8 +284,8 @@ class NetworkGroup(Base, BasicValidator):
     amount = Column(Integer, default=1)
     vlan_start = Column(Integer, default=1)
     gateway_ip_index = Column(Integer)
-    networks = relationship("Network", backref=backref(
-        "network_groups", cascade="delete"))
+    networks = relationship("Network", cascade="delete",
+                            backref="network_groups")
 
     def create_networks(self):
         fixnet = netaddr.IPNetwork(self.cidr)
@@ -304,9 +303,22 @@ class NetworkGroup(Base, BasicValidator):
                                        count=1))[0]
         self.cidr = str(main_cidr)
 
+        for net in self.networks:
+            logger.debug("Deleting old network with id=%s, cidr=%s",
+                         net.id, net.cidr)
+            orm().delete(net)
+        orm().commit()
+        self.networks = []
+
         for n in xrange(self.amount):
-            vlan_db = Vlan(id=self.vlan_start + n)
-            orm().add(vlan_db)
+            vlan_db = orm().query(Vlan).get(self.vlan_start + n)
+            if vlan_db:
+                logger.warning("Intersection with existing vlan_id: %s",
+                               vlan_db.id)
+            else:
+                vlan_db = Vlan(id=self.vlan_start + n)
+                orm().add(vlan_db)
+            logger.debug("Created VLAN object, vlan_id=%s", vlan_db.id)
             gateway = None
             if self.gateway_ip_index:
                 gateway = str(subnets[n][self.gateway_ip_index])
@@ -317,9 +329,10 @@ class NetworkGroup(Base, BasicValidator):
                 access=self.access,
                 cidr=str(subnets[n]),
                 vlan_id=vlan_db.id,
-                gateway=gateway)
-            self.networks.append(net_db)
-        orm().commit()
+                gateway=gateway,
+                network_group_id=self.id)
+            orm().add(net_db)
+            orm().commit()
 
     @classmethod
     def validate_collection_update(cls, data):
