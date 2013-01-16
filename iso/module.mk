@@ -48,7 +48,8 @@ $/isoroot-prepare.done: \
 		$(addprefix $(ISOROOT)/images/,$(IMAGES_FILES)) \
 		$(addprefix $(ISOROOT)/EFI/BOOT/,$(EFI_FILES)) \
 		$(ISOROOT)/ks.cfg \
-		$(ISOROOT)/bootstrap_admin_node.sh
+		$(ISOROOT)/bootstrap_admin_node.sh \
+		$(ISOROOT)/bootstrap_admin_node.conf
 	$(ACTION.TOUCH)
 
 $/isoroot-bootstrap.done: \
@@ -107,6 +108,7 @@ $/isoroot-puppetmod.done: \
 
 $(ISOROOT)/ks.cfg: iso/ks.cfg ; $(ACTION.COPY)
 $(ISOROOT)/bootstrap_admin_node.sh: iso/bootstrap_admin_node.sh ; $(ACTION.COPY)
+$(ISOROOT)/bootstrap_admin_node.conf: iso/bootstrap_admin_node.conf ; $(ACTION.COPY)
 $(ISOROOT)/.discinfo: iso/.discinfo ; $(ACTION.COPY)
 $(ISOROOT)/.treeinfo: iso/.treeinfo ; $(ACTION.COPY)
 

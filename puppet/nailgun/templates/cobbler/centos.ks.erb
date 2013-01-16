@@ -43,7 +43,7 @@ skipx
 # --driveorder=sda,hda
 # APPEND STRING TO KERNEL BOOT COMMAND
 # --append=""
-bootloader --location=mbr --driveorder=sda,hda --append=" crashkernel=auto"
+%include /tmp/bootloader.ks
 
 # PARTITIONING
 # CLEAN ANY INVALID PARTITION TABLE
@@ -52,8 +52,8 @@ zerombr
 # REMOVE ALL PARTITIONS BEFORE CREATING NEW ONES
 clearpart --all --initlabel
 
-# AUTOMATICALLY CREATE / /boot AND swap PARTITIONS
-autopart
+# AUTOMATICALLY CREATE / AND swap PARTITIONS
+%include /tmp/partition.ks
 
 # COBBLER EMBEDDED SNIPPET: 'network_config'
 # CONFIGURES NETWORK INTERFACES DEPENDING ON
@@ -90,6 +90,10 @@ $SNIPPET('kickstart_start')
 # INTO KICKSTART BY 'network_config' SNIPPET
 $SNIPPET('pre_install_network_config')
 
+# COBBLER EMBEDDED SNIPPET: 'pre_install_partition'
+# DETECTS HARD DRIVES AND SETS FIRST OF THEM
+# AS INSTALLATION TARGET AND BOOTLOADER INSTALLATION TARGET
+$SNIPPET('pre_install_partition')
 
 # PACKAGES SECTION
 # HERE ARE LIST OF PACKAGES THAT WILL BE INSTALLED

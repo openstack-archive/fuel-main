@@ -1,0 +1,16 @@
+# hard drives
+tgtdrive="undefined"
+for drv in `ls -1 /sys/block | grep "sd\|hd"`; do
+    if (grep -q 0 /sys/block/${drv}/removable); then
+        tgtdrive="${drv}"
+        break
+    fi
+done
+
+# bootloader
+echo "bootloader --location=mbr --driveorder=${tgtdrive} --append=' crashkernel=auto'" > /tmp/bootloader.ks
+
+# partition
+echo "partition / --fstype=ext4 --ondisk=${tgtdrive} --size=1 --grow --asprimary" > /tmp/partition.ks
+echo "partition swap --recommended --ondisk=${tgtdrive}" >> /tmp/partition.ks
+
