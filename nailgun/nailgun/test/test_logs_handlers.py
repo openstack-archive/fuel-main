@@ -3,6 +3,7 @@
 import unittest
 import tempfile
 import shutil
+import time
 import json
 import os
 
@@ -18,20 +19,24 @@ class TestLogs(BaseHandlers):
         super(TestLogs, self).setUp()
         self.log_dir = tempfile.mkdtemp()
         self.local_log_file = os.path.join(self.log_dir, 'nailgun.log')
+        regexp = (r'^(?P<date>\d{4}-\d{2}-\d{2}\s\d{2}:\d{2}:\d{2}):'
+                 '(?P<level>\w+):(?P<text>\w+)$')
         settings.update({
             'LOGS': [
                 {
                     'id': 'nailgun',
                     'name': 'Nailgun',
                     'remote': False,
-                    'regexp': r'^(?P<date>\w+):(?P<level>\w+):(?P<text>\w+)$',
+                    'regexp': regexp,
+                    'date_format': settings.UI_LOG_DATE_FORMAT,
                     'levels': [],
                     'path': self.local_log_file
                 }, {
                     'id': 'syslog',
                     'name': 'Syslog',
                     'remote': True,
-                    'regexp': r'^(?P<date>\w+):(?P<level>\w+):(?P<text>\w+)$',
+                    'regexp': regexp,
+                    'date_format': settings.UI_LOG_DATE_FORMAT,
                     'base': self.log_dir,
                     'levels': [],
                     'path': 'test-syslog.log'
@@ -78,7 +83,8 @@ class TestLogs(BaseHandlers):
 
     def test_log_entry_collection_handler(self):
         node_ip = '10.20.30.40'
-        log_entry = ['date111', 'LEVEL222', 'text333']
+        log_entry = [time.strftime(settings.UI_LOG_DATE_FORMAT),
+                     'LEVEL222', 'text333']
         cluster = self.create_default_cluster()
         node = self.create_default_node(cluster_id=cluster.id, ip=node_ip)
         self._create_logfile_for_node(settings.LOGS[0], log_entry)
