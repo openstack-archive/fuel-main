@@ -36,7 +36,11 @@ class nailgun::venv(
   }
 
   $databasefiledir = inline_template("<%= databasefile.match(%r!(.+)/.+!)[1] %>")
-  $database_engine = "sqlite:///${databasefile}"
+  $database_engine = "sqlite"
+  $database_host = "localhost"
+  $database_port = "3306"
+  $database_user = "nailgun"
+  $database_passwd = "nailgun"
 
   file { "/etc/nailgun":
     ensure => directory,

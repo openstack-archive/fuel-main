@@ -94,10 +94,12 @@ if int(settings.DEVELOPMENT):
     logging.info("Template dir is %s" % settings.TEMPLATE_DIR)
 
 
+logfile = settings.CUSTOM_LOG if LOGGING_HANDLER == 'file' else None
+
 logging.config.fileConfig(
     cStringIO.StringIO(
         LOGGING.format(
-            logfile=settings.CUSTOM_LOG,
+            logfile=logfile,
             handlers=LOGGING_HANDLER
         )
     )
