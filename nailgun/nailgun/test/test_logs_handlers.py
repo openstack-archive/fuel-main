@@ -20,7 +20,7 @@ class TestLogs(BaseHandlers):
         self.log_dir = tempfile.mkdtemp()
         self.local_log_file = os.path.join(self.log_dir, 'nailgun.log')
         regexp = (r'^(?P<date>\d{4}-\d{2}-\d{2}\s\d{2}:\d{2}:\d{2}):'
-                 '(?P<level>\w+):(?P<text>\w+)$')
+                  '(?P<level>\w+):(?P<text>\w+)$')
         settings.update({
             'LOGS': [
                 {
