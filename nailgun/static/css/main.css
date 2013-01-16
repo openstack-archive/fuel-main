@@ -362,6 +362,10 @@ h6.page-title {
   border-bottom: 1px dotted #c0c0c0;
 }
 
+.unassigned .node-name {
+  font-size: 13px;
+}
+
 
 .node-renameable:hover {
   display: inline;
@@ -501,6 +505,14 @@ h6.page-title {
   font-size: 13px;
 }
 
+.node-status > .msg-offline,
+.node-status > .msg-discover {
+    display: block;
+    height: 25px;
+    font-size: 9.5px;
+    text-transform: uppercase;
+}
+
 .node-status > .msg-warning,
 .node-status > .msg-ok,
 .node-status > .msg-provisioned,
@@ -538,8 +550,6 @@ h6.page-title {
   text-align: left;
   text-shadow: none;
 }
-
-.node-status i {font-size: 15px;}
 
 .checktoinstall {
   display: block;
@@ -582,12 +592,12 @@ h6.page-title {
 }
 */
 
-.msg-ok {color: #17824b;}
-.msg-info {color: #4794cf;}
-.msg-error {color: #8b0000;}
-.msg-warning {color: #b44200;}
-.msg-unimportant {color: #888888;}
-.msg-provisioned {color: #0088cc;}
+.node-status > .msg-ok {color: #17824b;}
+.node-status > .msg-info {color: #4794cf;}
+.node-status > .msg-error {color: #8b0000;}
+.node-status > .msg-warning {color: #b44200;}
+.node-status > .msg-unimportant {color: #888888;}
+.node-status > .msg-provisioned {color: #0088cc;}
 
 
 .assigned {
