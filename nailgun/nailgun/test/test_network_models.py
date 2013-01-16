@@ -113,3 +113,25 @@ class TestNetworkModels(BaseHandlers):
         ng.create_networks()
         self.db.refresh(ng)
         self.assertEquals(ng.cidr, "172.0.0.0/24")
+
+    def test_network_group_sets_correct_gateway_for_few_nets(self):
+        release = self.create_default_release()
+        cluster = self.create_default_cluster()
+        cidr = "10.0.0.0/8"
+        network_size = 128
+        name = "fixed"
+        access = "private"
+        vlan_start = 200
+        amount = 2
+        ng = NetworkGroup(cidr=cidr, network_size=network_size,
+                          name=name, access=access,
+                          release=release.id, cluster_id=cluster.id,
+                          vlan_start=vlan_start, amount=amount,
+                          gateway_ip_index=5)
+        self.db.add(ng)
+        self.db.commit()
+        ng.create_networks()
+        nets_db = self.db.query(Network).all()
+        self.assertEquals(len(nets_db), amount)
+        self.assertEquals(nets_db[0].gateway, "10.0.0.5")
+        self.assertEquals(nets_db[1].gateway, "10.0.0.133")

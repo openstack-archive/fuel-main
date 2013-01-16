@@ -272,20 +272,6 @@ class Network(Base, BasicValidator):
         secondary=NetworkElement.__table__,
         backref="networks")
 
-    @classmethod
-    def validate_collection_update(cls, data):
-        d = cls.validate_json(data)
-        if not isinstance(d, list):
-            raise web.webapi.badrequest(
-                message="It's expected to receive array, not single object"
-            )
-        for i in d:
-            if not 'id' in i:
-                raise web.webapi.badrequest(
-                    message="No 'id' param for '%'" % i
-                )
-        return d
-
 
 class NetworkGroup(Base, BasicValidator):
     __tablename__ = 'network_groups'
@@ -298,6 +284,7 @@ class NetworkGroup(Base, BasicValidator):
     network_size = Column(Integer, default=256)
     amount = Column(Integer, default=1)
     vlan_start = Column(Integer, default=1)
+    gateway_ip_index = Column(Integer)
     networks = relationship("Network", backref=backref(
         "network_groups", cascade="delete"))
 
@@ -320,15 +307,33 @@ class NetworkGroup(Base, BasicValidator):
         for n in xrange(self.amount):
             vlan_db = Vlan(id=self.vlan_start + n)
             orm().add(vlan_db)
+            gateway = None
+            if self.gateway_ip_index:
+                gateway = str(subnets[n][self.gateway_ip_index])
             net_db = Network(
                 release=self.release,
                 cluster_id=self.cluster_id,
                 name=self.name,
                 access=self.access,
                 cidr=str(subnets[n]),
-                vlan_id=vlan_db.id)
+                vlan_id=vlan_db.id,
+                gateway=gateway)
             self.networks.append(net_db)
         orm().commit()
+
+    @classmethod
+    def validate_collection_update(cls, data):
+        d = cls.validate_json(data)
+        if not isinstance(d, list):
+            raise web.webapi.badrequest(
+                message="It's expected to receive array, not single object"
+            )
+        for i in d:
+            if not 'id' in i:
+                raise web.webapi.badrequest(
+                    message="No 'id' param for '%'" % i
+                )
+        return d
 
 
 class Attributes(Base, BasicValidator):
