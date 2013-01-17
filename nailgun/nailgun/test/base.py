@@ -10,7 +10,7 @@ from unittest.case import TestCase
 
 import mock
 from paste.fixture import TestApp
-from sqlalchemy.orm.events import orm
+#from sqlalchemy.orm.events import orm
 
 from nailgun.api.models import Node
 from nailgun.api.models import Release
@@ -22,7 +22,7 @@ from nailgun.api.models import Network
 from nailgun.api.urls import urls
 from nailgun.wsgi import build_app
 from nailgun.db import engine
-from nailgun.db import dropdb, syncdb, flush
+from nailgun.db import dropdb, syncdb, flush, orm
 from nailgun.fixtures.fixman import upload_fixture
 
 
@@ -43,7 +43,7 @@ class BaseHandlers(TestCase):
         syncdb()
 
     def setUp(self):
-        self.db = orm.scoped_session(orm.sessionmaker(bind=engine))()
+        self.db = orm()  # orm.scoped_session(orm.sessionmaker(bind=engine))()
         self.default_headers = {
             "Content-Type": "application/json"
         }

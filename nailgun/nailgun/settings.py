@@ -92,15 +92,12 @@ if int(settings.DEVELOPMENT):
     })
     logging.info("Static dir is %s" % settings.STATIC_DIR)
     logging.info("Template dir is %s" % settings.TEMPLATE_DIR)
-
-
-logfile = settings.CUSTOM_LOG if LOGGING_HANDLER == 'file' else None
-
-logging.config.fileConfig(
-    cStringIO.StringIO(
-        LOGGING.format(
-            logfile=logfile,
-            handlers=LOGGING_HANDLER
+else:
+    logging.config.fileConfig(
+        cStringIO.StringIO(
+            LOGGING.format(
+                logfile=settings.CUSTOM_LOG,
+                handlers=LOGGING_HANDLER
+            )
         )
     )
-)
