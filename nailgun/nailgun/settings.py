@@ -65,14 +65,14 @@ keys=verbose
 [formatter_verbose]
 format=%(asctime)s %(levelname)s (%(module)s) %(message)s
 
-[handlers]
-keys=file,stream
+{handler_config}
+"""
 
-[handler_file]
-level=DEBUG
-class=logging.handlers.WatchedFileHandler
-args=("{logfile}",)
-formatter=verbose
+LOGGING_HANDLER = 'file' if not int(settings.DEVELOPMENT) else 'stream'
+
+if int(settings.DEVELOPMENT):
+    lg_config = """[handlers]
+keys=stream
 
 [handler_stream]
 level=DEBUG
@@ -80,10 +80,14 @@ class=logging.StreamHandler
 formatter=verbose
 args=(sys.stdout,)
 """
-
-LOGGING_HANDLER = 'file' if not int(settings.DEVELOPMENT) else 'stream'
-
-if int(settings.DEVELOPMENT):
+    logging.config.fileConfig(
+        cStringIO.StringIO(
+            LOGGING.format(
+                handler_config=lg_config,
+                handlers=LOGGING_HANDLER
+            )
+        )
+    )
     logging.info("DEVELOPMENT MODE ON:")
     here = os.path.abspath(os.path.join(os.path.dirname(__file__), '..'))
     settings.update({
@@ -93,10 +97,21 @@ if int(settings.DEVELOPMENT):
     logging.info("Static dir is %s" % settings.STATIC_DIR)
     logging.info("Template dir is %s" % settings.TEMPLATE_DIR)
 else:
+    lg_config = """[handlers]
+keys=file
+
+[handler_file]
+level=DEBUG
+class=logging.handlers.WatchedFileHandler
+args=("{logfile}",)
+formatter=verbose
+"""
     logging.config.fileConfig(
         cStringIO.StringIO(
             LOGGING.format(
-                logfile=settings.CUSTOM_LOG,
+                handler_config=lg_config.format(
+                    logfile=settings.CUSTOM_LOG
+                ),
                 handlers=LOGGING_HANDLER
             )
         )

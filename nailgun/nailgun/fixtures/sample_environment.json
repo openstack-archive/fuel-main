@@ -50,12 +50,11 @@
         "pk": 1,
         "model": "nailgun.node",
         "fields": {
-            "status": "ready",
+            "status": "discover",
             "name": "",
             "manufacturer": "Dell",
             "platform_name": "Model-1",
-            "role": "controller",
-            "ip": "",
+            "role": null,
             "fqdn": "",
             "mac": "C0:8D:DF:52:76:F1",
             "ip": "10.0.12.45",
@@ -195,9 +194,9 @@
         "fields": {
             "status": "error",
             "name": "Bad node",
-            "manufacturer": "HP",
+            "manufacturer": "OpenVZ",
             "platform_name": "Model-2",
-            "role": "compute",
+            "role": null,
             "ip": "10.0.12.47",
             "fqdn": "",
             "mac": "46:FC:5A:0C:F9:51"
@@ -207,11 +206,11 @@
         "pk": 3,
         "model": "nailgun.node",
         "fields": {
-            "status": "deploying",
+            "status": "discover",
             "name": "",
             "manufacturer": "OpenVZ",
             "platform_name": "Model-3",
-            "role": "storage",
+            "role": null,
             "ip": "10.0.12.49",
             "fqdn": "",
             "mac": "2E:04:78:86:69:1F",
@@ -226,7 +225,7 @@
             "name": "Offline node",
             "manufacturer": "Xen",
             "platform_name": "",
-            "role": "compute",
+            "role": null,
             "ip": "10.0.12.41",
             "fqdn": "",
             "mac": "BC:10:A1:44:94:A0"
@@ -236,11 +235,11 @@
         "pk": 5,
         "model": "nailgun.node",
         "fields": {
-            "status": "ready",
+            "status": "discover",
             "name": "Node with name",
             "manufacturer": "VMWare",
             "platform_name": "",
-            "role": "compute",
+            "role": null,
             "ip": "10.0.12.43",
             "fqdn": "",
             "mac": "B6:17:54:39:27:EA"
@@ -308,9 +307,9 @@
         "fields": {
             "status": "error",
             "name": "Error node",
-            "manufacturer": "HP",
+            "manufacturer": "QEMU",
             "platform_name": "Model-2",
-            "role": "compute",
+            "role": null,
             "ip": "10.0.12.61",
             "fqdn": "",
             "mac": "46:FC:5A:4B:10:CC"

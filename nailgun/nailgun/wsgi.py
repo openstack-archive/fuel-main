@@ -10,7 +10,7 @@ from nailgun.api.handlers import check_client_content_type
 from nailgun.api.handlers import forbid_client_caching
 from nailgun.db import load_db_driver
 from nailgun.urls import urls
-from nailgun.logger import logger
+from nailgun.logger import logger, FileLoggerMiddleware
 
 
 class FlushingLogger(object):
@@ -58,8 +58,12 @@ def appstart():
         rpc_process.start()
     logger.info("Running WSGI app...")
     # seizes control
+    if not int(settings.DEVELOPMENT):
+        wsgifunc = app.wsgifunc(FileLoggerMiddleware)
+    else:
+        wsgifunc = app.wsgifunc()
     web.httpserver.runsimple(
-        app.wsgifunc(),
+        wsgifunc,
         (
             settings.LISTEN_ADDRESS,
             int(settings.LISTEN_PORT)
