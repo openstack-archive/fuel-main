@@ -76,6 +76,47 @@ describe "NailyFact DeploymentEngine" do
                             "role" => "compute"}]},
               "method" => "deploy",
               "respond_to" => "deploy_resp"}
+      ha_nodes = @data['args']['nodes'] +
+                          [{"mac" => "52:54:00:0E:88:88", "status" => "provisioned",
+                            "uid" => "4", "error_type" => nil,
+                            "fqdn" => "controller-4.mirantis.com",
+                            "network_data" => [{"gateway" => "192.168.0.1",
+                                                "name" => "management", "dev" => "eth0",
+                                                "brd" => "192.168.0.255", "netmask" => "255.255.255.0",
+                                                "vlan" => 102, "ip" => "192.168.0.5/24"},
+                                               {"gateway" => "240.0.1.1",
+                                                "name" => "public", "dev" => "eth0",
+                                                "brd" => "240.0.1.255", "netmask" => "255.255.255.0",
+                                                "vlan" => 101, "ip" => "240.0.1.5/24"},
+                                               {"name" => "floating", "dev" => "eth0", "vlan" => 120},
+                                               {"name" => "fixed", "dev" => "eth0", "vlan" => 103},
+                                               {"name" => "storage", "dev" => "eth0", "vlan" => 104}],
+                            "id" => 4,
+                            "ip" => "10.20.0.205",
+                            "role" => "controller"},
+                           {"mac" => "52:54:00:0E:99:99", "status" => "provisioned",
+                            "uid" => "5", "error_type" => nil,
+                            "fqdn" => "controller-5.mirantis.com",
+                            "network_data" => [{"gateway" => "192.168.0.1",
+                                                "name" => "management", "dev" => "eth0",
+                                                "brd" => "192.168.0.255", "netmask" => "255.255.255.0",
+                                                "vlan" => 102, "ip" => "192.168.0.6/24"},
+                                               {"gateway" => "240.0.1.1",
+                                                "name" => "public", "dev" => "eth0",
+                                                "brd" => "240.0.1.255", "netmask" => "255.255.255.0",
+                                                "vlan" => 101, "ip" => "240.0.1.6/24"},
+                                               {"name" => "floating", "dev" => "eth0", "vlan" => 120},
+                                               {"name" => "fixed", "dev" => "eth0", "vlan" => 103},
+                                               {"name" => "storage", "dev" => "eth0", "vlan" => 104}],
+                            "id" => 5,
+                            "ip" => "10.20.0.206",
+                            "role" => "controller"}]
+      @data_ha = @data
+      @data_ha['args']['nodes'] = ha_nodes
+      @data_ha['args']['attributes']['deployment_mode'] = "ha_compute"
+      # VIPs are required for HA mode and should be passed from Nailgun (only in HA)
+      @data_ha['args']['attributes']['management_vip'] = "192.168.0.111"
+      @data_ha['args']['attributes']['public_vip'] = "240.0.1.111"
     end
 
     it "it should call valid method depends on attrs" do
@@ -105,17 +146,9 @@ describe "NailyFact DeploymentEngine" do
     end
 
     it "ha_compute deploy should not raise any exception" do
-      @data['args']['attributes']['deployment_mode'] = "ha_compute"
-      # VIPs are required for HA mode and should be passed from Nailgun (only in HA)
-      @data['args']['attributes']['management_vip'] = "192.168.0.5"
-      @data['args']['attributes']['public_vip'] = "240.0.1.5"
-
-      Astute::Metadata.expects(:publish_facts).times(@data['args']['nodes'].size)
-      # FIXME: this test should also handle few controllers. If there are more than one controller,
-      #  deployment is called for controllers one by one, and then for computes.
-      # we got two calls, one for controller, and another for all computes
+      Astute::Metadata.expects(:publish_facts).times(@data_ha['args']['nodes'].size)
       Astute::PuppetdDeployer.expects(:deploy).twice
-      @deploy_engine.deploy(@data['args']['nodes'], @data['args']['attributes'])
+      @deploy_engine.deploy(@data_ha['args']['nodes'], @data_ha['args']['attributes'])
     end
 
     it "singlenode_compute deploy should not raise any exception" do

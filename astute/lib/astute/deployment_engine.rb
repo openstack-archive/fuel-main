@@ -100,10 +100,8 @@ module Astute
 
     def deploy_ha_compute(nodes, attrs)
       ctrl_nodes = nodes.select {|n| n['role'] == 'controller'}
-      Astute.logger.info "Starting deployment of controllers one by one"
-      ctrl_nodes.each do |node|
-        deploy_piece([node], attrs)
-      end
+      Astute.logger.info "Starting deployment of controllers"
+      deploy_piece(ctrl_nodes, attrs, retries=6)
 
       # FIXME(mihgen): put right numbers for logs
       @deploy_log_parser.pattern_spec['expected_line_number'] = 380

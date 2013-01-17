@@ -28,7 +28,7 @@ class Astute::DeploymentEngine::NailyFact < Astute::DeploymentEngine
     metapublisher.call(@ctx, node['uid'], metadata)
   end
 
-  def deploy_piece(nodes, attrs)
+  def deploy_piece(nodes, attrs, retries=2)
     return false unless validate_nodes(nodes)
     @ctx.reporter.report nodes_status(nodes, 'deploying')
 
@@ -38,7 +38,7 @@ class Astute::DeploymentEngine::NailyFact < Astute::DeploymentEngine
     end
     Astute.logger.info "#{@ctx.task_id}: All required attrs/metadata passed via facts extension. Starting deployment."
 
-    Astute::PuppetdDeployer.deploy(@ctx, nodes, @deploy_log_parser)
+    Astute::PuppetdDeployer.deploy(@ctx, nodes, @deploy_log_parser, retries)
     nodes_roles = nodes.map { |n| { n['uid'] => n['role'] } }
     Astute.logger.info "#{@ctx.task_id}: Finished deployment of nodes => roles: #{nodes_roles.inspect}"
   end
