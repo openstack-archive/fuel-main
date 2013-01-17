@@ -83,6 +83,6 @@ class TestProvisioning(BaseHandlers):
         self.assertEquals(node_ready.status, 'provisioned')
         self.assertEquals(node_discover.status, 'provisioning')
         self.assertEquals(node_provis.status, 'provisioning')
-        self.assertEquals(node_deploy.status, 'deploying')
+        self.assertEquals(node_deploy.status, 'provisioned')
         self.assertEquals(node_error_deploy.status, 'error')
         self.assertEquals(node_error_provis.status, 'provisioning')
