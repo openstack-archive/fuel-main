@@ -1,9 +1,8 @@
 # -*- coding: utf-8 -*-
 import json
 import time
-import logging
 
-from mock import Mock, patch
+from mock import patch
 
 from nailgun.settings import settings
 
