@@ -2451,3 +2451,70 @@ pre {
 select[name=release] option {
   height: 20px;
 }
+
+/* Header Block */
+.header-box {
+  display: block;
+  width: 100%;
+}
+
+.header-box:after {
+  clear: both;
+}
+
+.header-logo {
+  display: block;
+  float: left;
+  width: 110px;
+  height: 60px;
+  background: url(../img/mirantis-logo-small.png) no-repeat top left;
+  margin: 10px 0px 10px 10px;
+  overflow: hidden;
+  cursor: pointer;
+}
+
+.header-logo:hover {
+  display: block;
+  float: left;
+  width: 110px;
+  height: 60px;
+  background: url(../img/mirantis-logo-small.png) no-repeat 0px -60px;
+  margin: 10px 0px 10px 10px;
+  overflow: hidden;
+}
+
+.header-info {
+  display: block;
+  float: right;
+  padding: 18px 10px 0px 0px;
+}
+
+.header-user {
+  display: block;
+  text-align: right;
+  color: #d3d8d9;
+  font-size: 15px;
+  cursor: pointer;
+}
+
+.header-user:hover {
+  color: #ffffff;
+}
+
+.header-user p {
+  display: inline;
+  margin: 0px;
+  padding: 0px;
+  border-bottom: 1px dotted #7789a0;
+}
+
+.header-user:hover p {
+  border-bottom: 1px dotted #ffffff;
+}
+
+.header-version {
+  display: block;
+  color: #7789a0;
+  font-size: 11px;
+  margin-top: 8px;
+}
