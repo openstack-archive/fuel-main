@@ -356,7 +356,7 @@ h6.page-title {
   color: #333333;
   cursor: pointer;
   display: inline;
-  font-size: 13px;
+  font-size: 12px;
   font-weight: 500;
   line-height: 16px;
   border-bottom: 1px dotted #c0c0c0;
@@ -1204,11 +1204,11 @@ h6.page-title {
 }
 
 .networks-header .size {
-  width: 80px;
+  width: 95px;
 }
 
 .networks-table .network-size select {
-  width: 80px;
+  width: 100px;
 }
 .networks-table .network-name {
   text-align: left;

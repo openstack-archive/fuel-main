@@ -668,15 +668,18 @@ function(models, commonViews, dialogViews, clusterPageTemplate, deploymentResult
             }
             */
         },
-        changeManagerSettings: function() {
+        changeManagerSettings: function(e) {
             this.$('.help-inline').text('');
             this.$('.control-group').removeClass('error');
             this.enableApplyButton();
-            this.$('.network-amount, .amount, .network-size, .size, .network-vlan-end').toggle();
-            if (this.$('.net-manager button.active').data('manager') == 'VlanManager') {
-                this.$('.fixed-header .vlan').text('VLAN ID');
-            } else {
+            this.$('.network-amount, .amount, .network-size, .size').toggle();
+            if (this.$('.network-amount input').val() > 1) {
+                this.$('.network-vlan-end').toggle();
+            }
+            if (this.$(e.target).data('manager') == 'VlanManager' && this.$('.network-amount input').val() > 1) {
                 this.$('.fixed-header .vlan').text('VLAN ID range');
+            } else {
+                this.$('.fixed-header .vlan').text('VLAN ID');
             }
         },
         bindTaskEvents: function() {
