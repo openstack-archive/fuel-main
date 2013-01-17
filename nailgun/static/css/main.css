@@ -1164,6 +1164,10 @@ h6.page-title {
   height: 16px;
 }
 
+.network-tab-content .btn-group {
+  margin: 7px 0 5px 0;
+}
+
 .networks-table {
   width: 100%;
   margin-bottom: 10px;
@@ -1184,39 +1188,56 @@ h6.page-title {
 }
 
 .networks-header .network {
-  width: 100px;
+  width: 90px;
 }
 
-.networks-header .cidr {
-  width: 220px;
+.networks-header .cidr, .networks-header .vlan_cidr {
+  width: 170px;
 }
 
 .networks-header .vlan {
-  width: 60px;
+  width: 170px;
 }
 
+.networks-header .amount {
+  width: 74px;
+}
+
+.networks-header .size {
+  width: 80px;
+}
+
+.networks-table .network-size select {
+  width: 80px;
+}
 .networks-table .network-name {
   text-align: left;
-  width: 100px;
+  width: 90px;
   padding-top: 5px;
   text-transform: capitalize;
 }
 
+.networks-table .fixed-header {
+  margin-top: 20px;
+}
+
+.fixed-row .network-name {
+  font-weight: bold;
+}
+
 .networks-table .network-cidr {
   text-align: center;
-  width: 220px;
+  width: 165px;
   text-transform: capitalize;
 }
 
 .networks-table .network-vlan {
-  text-align: center;
-  width: 60px;
   text-transform: capitalize;
 }
 
 .networks-table .network-error {
   text-align: left;
-  width: 300px;
+  width: 240px;
   padding-top: 5px;
   text-transform: capitalize;
 }
@@ -1224,6 +1245,7 @@ h6.page-title {
 .network-error .help-inline {
   position: relative;
   top: -4px;
+  display: block;
 }
 
 #networkManager {

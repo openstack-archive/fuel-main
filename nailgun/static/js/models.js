@@ -175,7 +175,8 @@ define(function() {
                     var prefix = parseInt(match[1], 10);
                     if (prefix < 2) {
                         errors.cidr = 'Network is too large';
-                    } else if (prefix > 31) {
+                    }
+                    if (prefix > 31) {
                         errors.cidr = 'Network is too small';
                     }
                 } else {
@@ -184,8 +185,11 @@ define(function() {
             } else {
                 errors.cidr = 'Invalid CIDR';
             }
-            if (_.isNaN(attrs.vlan_id) || !_.isNumber(attrs.vlan_id) || attrs.vlan_id < 1 || attrs.vlan_id > 4094) {
-                errors.vlan_id = 'Invalid VLAN ID';
+            if (_.isNaN(attrs.vlan_start) || !_.isNumber(attrs.vlan_start) || attrs.vlan_start < 1 || attrs.vlan_start > 4094) {
+                errors.vlan_start = 'Invalid VLAN ID';
+            }
+            if (attrs.amount && (!_.isNumber(attrs.amount) || attrs.amount < 1 || attrs.amount > 4095 - attrs.vlan_start)) {
+                errors.amount = 'Invalid amount of networks';
             }
             return _.isEmpty(errors) ? null : errors;
         }

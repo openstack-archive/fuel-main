@@ -612,10 +612,16 @@ function(models, commonViews, dialogViews, clusterPageTemplate, deploymentResult
         viewModeTemplate: _.template(networkTabViewModeTemplate),
         events: {
             'keydown .row input': 'enableApplyButton',
+            'change .row select': 'enableApplyButton',
             'click .apply-btn:not([disabled])': 'apply',
-            'click .nav a': 'changeMode'
+            'click .nav a': 'changeMode',
+            'click .net-manager button:not(.active)': 'changeManagerSettings'
         },
-        enableApplyButton: function() {
+        enableApplyButton: function(e) {
+            if (e) {
+                this.$(e.target).parents('.control-group').find('.help-inline').text('');
+                this.$(e.target).parents('.control-group').removeClass('error');
+            }
             this.$('.apply-btn').attr('disabled', false);
             var task = this.model.task('verify_networks');
             if (task && task.get('status') != 'running') {
@@ -631,15 +637,19 @@ function(models, commonViews, dialogViews, clusterPageTemplate, deploymentResult
                 var row = this.$('.control-group[data-network-name=' + network.get('name') + ']');
                 network.on('error', function(model, errors) {
                     valid = false;
-                    $('.network-error .help-inline', row).text(errors.cidr || errors.vlan_id);
+                    $('.network-error .help-inline', row).text(errors.cidr || errors.vlan_start || errors.amount);
                     row.addClass('error');
                 }, this);
                 network.set({
                     cidr: $('.network-cidr input', row).val(),
-                    vlan_id: parseInt($('.network-vlan input', row).val(), 10)
+                    vlan_start: parseInt($('.network-vlan input:first', row).val(), 10),
+                    amount: parseInt($('.network-amount input:first', row).val(), 10),
+                    network_size: parseInt($('.network-size select', row).val(), 10)
                 });
             }, this);
             if (valid) {
+                // FIXME: two requests every time is not a true way
+                this.model.update({net_manager: this.$('.net-manager button.active').data('manager')});
                 Backbone.sync('update', this.networks);
                 this.$('.apply-btn').attr('disabled', true);
             }
@@ -657,6 +667,17 @@ function(models, commonViews, dialogViews, clusterPageTemplate, deploymentResult
                 }
             }
             */
+        },
+        changeManagerSettings: function() {
+            this.$('.help-inline').text('');
+            this.$('.control-group').removeClass('error');
+            this.enableApplyButton();
+            this.$('.network-amount, .amount, .network-size, .size, .network-vlan-end').toggle();
+            if (this.$('.net-manager button.active').data('manager') == 'VlanManager') {
+                this.$('.fixed-header .vlan').text('VLAN ID');
+            } else {
+                this.$('.fixed-header .vlan').text('VLAN ID range');
+            }
         },
         bindTaskEvents: function() {
             var task = this.model.task('deploy', 'running');
