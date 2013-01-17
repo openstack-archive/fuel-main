@@ -36,6 +36,7 @@ class ClusterHandler(JSONHandler):
         "type",
         "mode",
         "status",
+        "net_manager",
         ("nodes", "*"),
         ("release", "*")
     )
