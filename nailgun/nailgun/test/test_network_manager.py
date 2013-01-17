@@ -12,7 +12,8 @@ from nailgun.api.models import Network, Node, NetworkElement
 
 class TestNetworkManager(BaseHandlers):
 
-    def test_assign_ips(self):
+    @patch('nailgun.rpc.cast')
+    def test_assign_ips(self, mocked_rpc):
         cluster = self.create_cluster_api()
         node1 = self.create_default_node(cluster_id=cluster['id'],
                                          pending_addition=True)

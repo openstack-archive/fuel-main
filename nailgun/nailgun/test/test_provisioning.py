@@ -14,7 +14,8 @@ from nailgun.api.models import Cluster
 
 class TestProvisioning(BaseHandlers):
 
-    def test_nodes_in_cluster(self):
+    @patch('nailgun.rpc.cast')
+    def test_nodes_in_cluster(self, mocked_rpc):
         cluster = self.create_cluster_api()
         node = self.create_default_node()
         node2 = self.create_default_node()
@@ -41,7 +42,8 @@ class TestProvisioning(BaseHandlers):
             )
             self.assertEquals(200, resp.status)
 
-    def test_node_status_changes_to_provision(self):
+    @patch('nailgun.rpc.cast')
+    def test_node_status_changes_to_provision(self, mocked_rpc):
         cluster = self.create_cluster_api()
         node_ready = self.create_default_node(cluster_id=cluster['id'],
                                               status='ready',

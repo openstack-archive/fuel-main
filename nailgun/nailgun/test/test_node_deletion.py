@@ -11,7 +11,8 @@ logger = logging.getLogger(__name__)
 
 class TestNodeDeletion(BaseHandlers):
 
-    def test_node_deletion_and_attributes_clearing(self):
+    @patch('nailgun.rpc.cast')
+    def test_node_deletion_and_attributes_clearing(self, mocked_rpc):
         cluster = self.create_cluster_api()
         node = self.create_default_node(cluster_id=cluster['id'],
                                         pending_deletion=True)

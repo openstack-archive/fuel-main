@@ -89,7 +89,7 @@ class NailgunReceiver(object):
         cluster = task.cluster
 
         if task.status in ('ready',):
-            logger.debug("Removing cluster itself")
+            logger.debug("Removing installation itself")
             cluster_name = cluster.name
             orm().delete(cluster)
             orm().commit()

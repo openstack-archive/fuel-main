@@ -278,15 +278,19 @@ class DeletionTask(object):
 
     @classmethod
     def execute(self, task, respond_to='remove_nodes_resp'):
+        task_uuid = task.uuid
         logger.debug("Nodes deletion task is running")
         nodes_to_delete = []
         nodes_to_restore = []
 
+        USE_FAKE = bool(settings.FAKE_TASKS and int(settings.FAKE_TASKS))
+
         # no need to call naily if there are no nodes in cluster
-        if respond_to == 'remove_cluster_resp' and not task.cluster.nodes:
-            rcvr = rpc.receiver.NailgunReceiver
+        if respond_to == 'remove_cluster_resp' and \
+                not list(task.cluster.nodes):
+            rcvr = rpc.receiver.NailgunReceiver()
             rcvr.remove_cluster_resp(
-                task_uuid=task.uuid,
+                task_uuid=task_uuid,
                 status='ready',
                 progress=100
             )
@@ -299,7 +303,7 @@ class DeletionTask(object):
                     'uid': node.id
                 })
 
-                if settings.FAKE_TASKS and int(settings.FAKE_TASKS):
+                if USE_FAKE:
                     # only fake tasks
                     new_node = Node()
                     keep_attrs = (
@@ -320,8 +324,9 @@ class DeletionTask(object):
                             )
                     nodes_to_restore.append(new_node)
                     # /only fake tasks
+
         # only real tasks
-        if not settings.FAKE_TASKS or not int(settings.FAKE_TASKS):
+        if not USE_FAKE:
             if nodes_to_delete:
                 logger.debug("There are nodes to delete")
                 pd = Cobbler(
@@ -381,7 +386,7 @@ class DeletionTask(object):
             }
         }
         # only fake tasks
-        if settings.FAKE_TASKS and nodes_to_restore:
+        if USE_FAKE and nodes_to_restore:
             msg_delete['args']['nodes_to_restore'] = nodes_to_restore
         # /only fake tasks
         logger.debug("Calling rpc remove_nodes method")

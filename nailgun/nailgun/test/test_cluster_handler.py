@@ -8,14 +8,6 @@ from nailgun.test.base import reverse
 
 
 class TestHandlers(BaseHandlers):
-    def test_cluster_delete(self):
-        cluster = self.create_default_cluster()
-        resp = self.app.delete(
-            reverse('ClusterHandler', kwargs={'cluster_id': cluster.id}),
-            headers=self.default_headers
-        )
-        self.assertEquals(202, resp.status)
-        self.assertEquals('', resp.body)
 
     def test_cluster_get(self):
         cluster = self.create_default_cluster()

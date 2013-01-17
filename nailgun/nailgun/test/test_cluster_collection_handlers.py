@@ -2,6 +2,8 @@
 import json
 from paste.fixture import TestApp
 
+from mock import patch
+
 from nailgun.api.models import Release, Network
 from nailgun.test.base import BaseHandlers
 from nailgun.test.base import reverse
@@ -130,7 +132,8 @@ class TestHandlers(BaseHandlers):
         ]
         self.assertEquals(expected, obtained)
 
-    def test_verify_networks(self):
+    @patch('nailgun.rpc.cast')
+    def test_verify_networks(self, mocked_rpc):
         cluster = self.create_cluster_api()
         resp = self.app.put(
             reverse('ClusterNetworksHandler',

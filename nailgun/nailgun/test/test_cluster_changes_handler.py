@@ -2,7 +2,7 @@
 import json
 from paste.fixture import TestApp
 
-from mock import Mock
+from mock import Mock, patch
 from netaddr import IPNetwork
 
 import nailgun
@@ -14,8 +14,8 @@ from nailgun.api.models import Network
 
 class TestHandlers(BaseHandlers):
 
-    def test_deploy_cast_with_right_args(self):
-        nailgun.task.task.rpc = Mock()
+    @patch('nailgun.rpc.cast')
+    def test_deploy_cast_with_right_args(self, mocked_rpc):
         cluster = self.create_cluster_api()
         cluster_db = self.db.query(Cluster).get(cluster['id'])
         cluster_db.mode = 'ha'
@@ -39,7 +39,9 @@ class TestHandlers(BaseHandlers):
         self.assertEquals(200, resp.status)
         response = json.loads(resp.body)
         supertask_uuid = response['uuid']
-        supertask = self.db.query(Task).filter_by(uuid=supertask_uuid).first()
+        supertask = self.db.query(Task).filter_by(
+            uuid=supertask_uuid
+        ).first()
         deploy_task_uuid = [x.uuid for x in supertask.subtasks
                             if x.name == 'deployment'][0]
 
@@ -106,8 +108,8 @@ class TestHandlers(BaseHandlers):
         nailgun.task.task.rpc.cast.assert_called_once_with(
             'naily', msg)
 
-    def test_deploy_and_remove_cast_with_correct_nodes_and_statuses(self):
-        nailgun.task.task.rpc = Mock()
+    @patch('nailgun.rpc.cast')
+    def test_deploy_and_remove_correct_nodes_and_statuses(self, mocked_rpc):
         cluster = self.create_cluster_api()
 
         n_ready = self.create_default_node(cluster_id=cluster['id'],
