@@ -7,8 +7,8 @@ from nailgun.api.models import Vlan, Network, NetworkGroup
 class TestNetworkModels(BaseHandlers):
 
     def test_network_group_size_of_1_creates_1_network(self):
-        release = self.create_default_release()
         cluster = self.create_default_cluster()
+        release_id = cluster.release_id
         cidr = "10.0.0.0/24"
         network_size = 256
         name = "fixed"
@@ -16,7 +16,7 @@ class TestNetworkModels(BaseHandlers):
         vlan_start = 200
         ng = NetworkGroup(cidr=cidr, network_size=network_size,
                           name=name, access=access,
-                          release=release.id, cluster_id=cluster.id,
+                          release=release_id, cluster_id=cluster.id,
                           vlan_start=vlan_start)
         self.db.add(ng)
         self.db.commit()
@@ -29,8 +29,8 @@ class TestNetworkModels(BaseHandlers):
         self.assertEquals(nets_db[0].cidr, cidr)
 
     def test_network_group_creates_several_networks(self):
-        release = self.create_default_release()
         cluster = self.create_default_cluster()
+        release_id = cluster.release_id
         cidr = "10.0.0.0/8"
         network_size = 256
         name = "fixed"
@@ -39,7 +39,7 @@ class TestNetworkModels(BaseHandlers):
         amount = 25
         ng = NetworkGroup(cidr=cidr, network_size=network_size,
                           name=name, access=access,
-                          release=release.id, cluster_id=cluster.id,
+                          release=release_id, cluster_id=cluster.id,
                           vlan_start=vlan_start, amount=amount)
         self.db.add(ng)
         self.db.commit()
@@ -54,8 +54,8 @@ class TestNetworkModels(BaseHandlers):
         self.assertEquals(len(vlans_db), amount)
 
     def test_network_group_slices_cidr_for_networks(self):
-        release = self.create_default_release()
         cluster = self.create_default_cluster()
+        release_id = cluster.release_id
         cidr = "10.0.0.0/8"
         network_size = 128
         name = "fixed"
@@ -64,7 +64,7 @@ class TestNetworkModels(BaseHandlers):
         amount = 2
         ng = NetworkGroup(cidr=cidr, network_size=network_size,
                           name=name, access=access,
-                          release=release.id, cluster_id=cluster.id,
+                          release=release_id, cluster_id=cluster.id,
                           vlan_start=vlan_start, amount=amount)
         self.db.add(ng)
         self.db.commit()
@@ -77,27 +77,27 @@ class TestNetworkModels(BaseHandlers):
         self.assertEquals(ng.cidr, "10.0.0.0/24")
 
     def test_network_group_squeezes_base_cidr(self):
-        release = self.create_default_release()
         cluster = self.create_default_cluster()
+        release_id = cluster.release_id
         cidr = "10.0.0.0/8"
         network_size = 256
         name = "fixed"
         access = "private"
         vlan_start = 200
-        amount = 1
+        amount = 2
         ng = NetworkGroup(cidr=cidr, network_size=network_size,
                           name=name, access=access,
-                          release=release.id, cluster_id=cluster.id,
+                          release=release_id, cluster_id=cluster.id,
                           vlan_start=vlan_start, amount=amount)
         self.db.add(ng)
         self.db.commit()
         ng.create_networks()
         self.db.refresh(ng)
-        self.assertEquals(ng.cidr, "10.0.0.0/24")
+        self.assertEquals(ng.cidr, "10.0.0.0/23")
 
     def test_network_group_does_not_squeezes_base_cidr(self):
-        release = self.create_default_release()
         cluster = self.create_default_cluster()
+        release_id = cluster.release_id
         cidr = "172.0.0.0/24"
         network_size = 64
         name = "fixed"
@@ -106,7 +106,7 @@ class TestNetworkModels(BaseHandlers):
         amount = 3
         ng = NetworkGroup(cidr=cidr, network_size=network_size,
                           name=name, access=access,
-                          release=release.id, cluster_id=cluster.id,
+                          release=release_id, cluster_id=cluster.id,
                           vlan_start=vlan_start, amount=amount)
         self.db.add(ng)
         self.db.commit()
@@ -114,9 +114,28 @@ class TestNetworkModels(BaseHandlers):
         self.db.refresh(ng)
         self.assertEquals(ng.cidr, "172.0.0.0/24")
 
-    def test_network_group_sets_correct_gateway_for_few_nets(self):
-        release = self.create_default_release()
+    def test_network_group_does_not_squeezes_base_cidr_if_amount_1(self):
         cluster = self.create_default_cluster()
+        release_id = cluster.release_id
+        cidr = "172.0.0.0/8"
+        network_size = 256
+        name = "public"
+        access = "private"
+        vlan_start = 200
+        amount = 1
+        ng = NetworkGroup(cidr=cidr, network_size=network_size,
+                          name=name, access=access,
+                          release=release_id, cluster_id=cluster.id,
+                          vlan_start=vlan_start, amount=amount)
+        self.db.add(ng)
+        self.db.commit()
+        ng.create_networks()
+        self.db.refresh(ng)
+        self.assertEquals(ng.cidr, "172.0.0.0/8")
+
+    def test_network_group_sets_correct_gateway_for_few_nets(self):
+        cluster = self.create_default_cluster()
+        release_id = cluster.release_id
         cidr = "10.0.0.0/8"
         network_size = 128
         name = "fixed"
@@ -125,7 +144,7 @@ class TestNetworkModels(BaseHandlers):
         amount = 2
         ng = NetworkGroup(cidr=cidr, network_size=network_size,
                           name=name, access=access,
-                          release=release.id, cluster_id=cluster.id,
+                          release=release_id, cluster_id=cluster.id,
                           vlan_start=vlan_start, amount=amount,
                           gateway_ip_index=5)
         self.db.add(ng)

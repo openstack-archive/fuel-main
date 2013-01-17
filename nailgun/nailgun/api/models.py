@@ -301,10 +301,15 @@ class NetworkGroup(Base, BasicValidator):
         logger.debug("Base CIDR sliced on subnets: %s", subnets)
         main_bits = int(math.ceil(math.log(
             self.network_size * self.amount, 2)))
-        logger.debug("Base CIDR can be squeezed to have %s bits", main_bits)
-        main_cidr = list(fixnet.subnet(32 - main_bits,
-                                       count=1))[0]
-        self.cidr = str(main_cidr)
+
+        # In UI user provides just cidr and vlan for single networks,
+        #  and he will be disappointed if the system squeezes his network
+        if self.amount > 1:
+            logger.debug("Base CIDR can be squeezed to have %s bits",
+                         main_bits)
+            main_cidr = list(fixnet.subnet(32 - main_bits,
+                                           count=1))[0]
+            self.cidr = str(main_cidr)
 
         for net in self.networks:
             logger.debug("Deleting old network with id=%s, cidr=%s",
