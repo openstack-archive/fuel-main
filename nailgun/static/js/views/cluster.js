@@ -616,7 +616,8 @@ function(models, commonViews, dialogViews, clusterPageTemplate, deploymentResult
             'click .apply-btn:not([disabled])': 'apply',
             'click .nav a': 'changeMode',
             'click .net-manager button:not(.active)': 'changeManagerSettings',
-            'keyup .fixed-row .network-amount input': 'displayRange'
+            'keyup .fixed-row .network-amount input': 'displayRange',
+            'keyup .fixed-row .network-vlan input:first': 'displayRange'
         },
         enableApplyButton: function(e) {
             if (e) {
@@ -684,7 +685,10 @@ function(models, commonViews, dialogViews, clusterPageTemplate, deploymentResult
             }
         },
         displayRange: function(e) {
-            var vlanEnd = parseInt(this.$('.fixed-row .network-vlan input:first').val(), 10) + parseInt(this.$(e.target).val(), 10) - 1;
+            var vlanEnd = parseInt(this.$('.fixed-row .network-vlan input:first').val(), 10) + parseInt(this.$('.fixed-row .network-amount input').val(), 10) - 1;
+            if (vlanEnd > 4095) {
+                vlanEnd = 4095;
+            }
             this.$('input.network-vlan-end').val(vlanEnd);
             if (this.$(e.target).val() > 1) {
                 this.$('.fixed-header .vlan').text('VLAN ID range');

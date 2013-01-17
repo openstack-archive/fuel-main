@@ -176,7 +176,7 @@ define(function() {
                     if (prefix < 2) {
                         errors.cidr = 'Network is too large';
                     }
-                    if (prefix > 31) {
+                    if (prefix > 30) {
                         errors.cidr = 'Network is too small';
                     }
                 } else {
@@ -188,8 +188,11 @@ define(function() {
             if (_.isNaN(attrs.vlan_start) || !_.isNumber(attrs.vlan_start) || attrs.vlan_start < 1 || attrs.vlan_start > 4094) {
                 errors.vlan_start = 'Invalid VLAN ID';
             }
-            if (attrs.amount == 0 || (attrs.amount && (!_.isNumber(attrs.amount) || attrs.amount < 1 || attrs.amount > 4095 - attrs.vlan_start))) {
+            if (attrs.amount == 0 || (attrs.amount && (!_.isNumber(attrs.amount) || attrs.amount < 1))) {
                 errors.amount = 'Invalid amount of networks';
+            }
+            if (attrs.amount && attrs.amount > 4095 - attrs.vlan_start) {
+                errors.amount = 'Unable to fit requested amount of networks to available VLANs. Lower VLAN start range or amount of networks';
             }
             return _.isEmpty(errors) ? null : errors;
         }
