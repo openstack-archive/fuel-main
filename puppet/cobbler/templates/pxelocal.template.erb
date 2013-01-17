@@ -6,5 +6,7 @@ ONTIMEOUT local
 
 LABEL local
 # 0x80 works in VirtualBox -1 is the default one
-        LOCALBOOT 0x80
-#       LOCALBOOT -1
+#     LOCALBOOT 0x80
+#     LOCALBOOT -1
+    COM32 chain.c32
+    APPEND hd0

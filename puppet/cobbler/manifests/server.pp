@@ -18,7 +18,7 @@
 # [dhcp_interface] Interface where to bind dhcp and tftp services
 #
 # [cobbler_user] Cobbler web interface username
-# [cobbler_password] Cobbler web interface password 
+# [cobbler_password] Cobbler web interface password
 #
 # [pxetimeout] Pxelinux will wail this count of 1/10 seconds before
 # use default pxe item. To disable it use 0. Required.
@@ -29,13 +29,13 @@ class cobbler::server(
   $domain_name        = 'example.com',
   $name_server        = $ipaddress,
   $next_server        = $ipaddress,
-  
+
   $dhcp_start_address = '10.0.0.201',
   $dhcp_end_address   = '10.0.0.254',
   $dhcp_netmask       = '255.255.255.0',
   $dhcp_gateway       = $ipaddress,
   $dhcp_interface     = 'eth0',
-  
+
   $cobbler_user       = 'cobbler',
   $cobbler_password   = 'cobbler',
 
@@ -71,7 +71,7 @@ class cobbler::server(
 
   cobbler_safe_package { $cobbler_additional_packages : }
   Package<||>
-  
+
   package { $cobbler_package :
     ensure => installed,
     require => [
@@ -87,7 +87,7 @@ class cobbler::server(
   package { $dnsmasq_package:
     ensure => installed
   }
-  
+
   file { "/etc/init.d/dnsmasq":
     content => template("cobbler/dnsmasq.init.erb"),
     owner => root,
@@ -96,17 +96,17 @@ class cobbler::server(
     require => Package[$dnsmasq_package],
     notify => Service["dnsmasq"],
   }
-  
-  
+
+
   define access_to_cobbler_port($port, $protocol='tcp') {
     $rule = "-p $protocol -m state --state NEW -m $protocol --dport $port -j ACCEPT"
-    exec { "access_to_cobbler_${protocol}_port: $port": 
+    exec { "access_to_cobbler_${protocol}_port: $port":
       command => "iptables -t filter -I INPUT 1 $rule; \
       /etc/init.d/iptables save",
       unless => "iptables -t filter -S INPUT | grep -q \"^-A INPUT $rule\""
     }
   }
-  
+
   # OPERATING SYSTEM SPECIFIC ACTIONS
   case $operatingsystem {
     /(?i)(centos|redhat)/:{
@@ -116,7 +116,7 @@ class cobbler::server(
       # yum install policycoreutils-python
       # grep cobblerd /var/log/audit/audit.log | audit2allow -M cobblerpolicy
       # semodule -i cobblerpolicy.pp
-      
+
       exec { "cobbler_disable_selinux":
         command => "setenforce 0",
         onlyif => "getenforce | grep -q Enforcing"
@@ -126,7 +126,7 @@ class cobbler::server(
         command => "sed -ie \"s/^SELINUX=enforcing/SELINUX=disabled/g\" /etc/selinux/config",
         onlyif => "grep -q \"^SELINUX=enforcing\" /etc/selinux/config"
       }
-      
+
 
       # HERE IS IPTABLES RULES TO MAKE COBBLER AVAILABLE FROM OUTSIDE
       # https://github.com/cobbler/cobbler/wiki/Using%20Cobbler%20Import
@@ -166,12 +166,12 @@ class cobbler::server(
         require => Package[$cobbler_additional_packages],
         notify => Service["xinetd"],
       }
-      
+
     }
   }
 
   Service[$cobbler_service] -> Exec["cobbler_sync"] -> Service["dnsmasq"]
-  
+
   service { $cobbler_service:
     enable => true,
     ensure => running,
@@ -205,7 +205,7 @@ class cobbler::server(
     notify => Service["dnsmasq"],
     subscribe => Service[$cobbler_service],
   }
-  
+
   file { "/etc/cobbler/modules.conf":
     content => template("cobbler/modules.conf.erb"),
     owner => root,
@@ -246,7 +246,7 @@ class cobbler::server(
                Exec["cobbler_sync"],
                Service["dnsmasq"],
                ],
-    
+
   }
 
   cobbler_digest_user {"cobbler":
@@ -254,7 +254,7 @@ class cobbler::server(
     require => Package[$cobbler_package],
     notify => Service[$cobbler_service],
   }
-  
+
   file {"/etc/cobbler/pxe/pxedefault.template":
     content => template("cobbler/pxedefault.template.erb"),
     owner => root,
@@ -279,6 +279,16 @@ class cobbler::server(
                ],
   }
 
+  exec { "/var/lib/tftpboot/chain.c32":
+    command => "cp /usr/share/syslinux/chain.c32 /var/lib/tftpboot/chain.c32",
+    unless => "test -e /var/lib/tftpboot/chain.c32",
+    require => [
+                Package[$cobbler_additional_packages],
+                Package[$cobbler_package],
+                ]
+  }
+
+
   define cobbler_snippet(){
     file {"/var/lib/cobbler/snippets/${name}":
       content => template("cobbler/snippets/${name}.erb"),
@@ -288,7 +298,7 @@ class cobbler::server(
       require => Package[$cobbler::server::cobbler_package],
     }
   }
-  
+
   cobbler_snippet {"disable_pxe":}
   cobbler_snippet {"post_part_compute":}
   cobbler_snippet {"post_part_controller":}
@@ -299,4 +309,4 @@ class cobbler::server(
   cobbler_snippet {"puppet_register_if_enabled_fuel":}
   cobbler_snippet {"mcollective_install_if_enabled":}
   cobbler_snippet {"mcollective_conf":}
-  }                               
+  }
