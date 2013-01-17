@@ -615,7 +615,8 @@ function(models, commonViews, dialogViews, clusterPageTemplate, deploymentResult
             'change .row select': 'enableApplyButton',
             'click .apply-btn:not([disabled])': 'apply',
             'click .nav a': 'changeMode',
-            'click .net-manager button:not(.active)': 'changeManagerSettings'
+            'click .net-manager button:not(.active)': 'changeManagerSettings',
+            'keyup .fixed-row .network-amount input': 'displayRange'
         },
         enableApplyButton: function(e) {
             if (e) {
@@ -672,14 +673,25 @@ function(models, commonViews, dialogViews, clusterPageTemplate, deploymentResult
             this.$('.help-inline').text('');
             this.$('.control-group').removeClass('error');
             this.enableApplyButton();
-            this.$('.network-amount, .amount, .network-size, .size').toggle();
-            if (this.$('.network-amount input').val() > 1) {
+            this.$('.fixed-row .network-amount, .fixed-header .amount, .fixed-row .network-size, .fixed-header .size').toggle();
+            if (this.$('.fixed-row .network-amount input').val() > 1) {
                 this.$('.network-vlan-end').toggle();
             }
-            if (this.$(e.target).data('manager') == 'VlanManager' && this.$('.network-amount input').val() > 1) {
+            if (this.$(e.target).data('manager') == 'VlanManager' && this.$('.fixed-row .network-amount input').val() > 1) {
                 this.$('.fixed-header .vlan').text('VLAN ID range');
             } else {
                 this.$('.fixed-header .vlan').text('VLAN ID');
+            }
+        },
+        displayRange: function(e) {
+            var vlanEnd = parseInt(this.$('.fixed-row .network-vlan input:first').val(), 10) + parseInt(this.$(e.target).val(), 10) - 1;
+            this.$('input.network-vlan-end').val(vlanEnd);
+            if (this.$(e.target).val() > 1) {
+                this.$('.fixed-header .vlan').text('VLAN ID range');
+                this.$('.network-vlan-end').show();
+            } else {
+                this.$('.fixed-header .vlan').text('VLAN ID');
+                this.$('.network-vlan-end').hide();
             }
         },
         bindTaskEvents: function() {

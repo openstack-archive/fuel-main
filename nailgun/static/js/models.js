@@ -188,7 +188,7 @@ define(function() {
             if (_.isNaN(attrs.vlan_start) || !_.isNumber(attrs.vlan_start) || attrs.vlan_start < 1 || attrs.vlan_start > 4094) {
                 errors.vlan_start = 'Invalid VLAN ID';
             }
-            if (attrs.amount && (!_.isNumber(attrs.amount) || attrs.amount < 1 || attrs.amount > 4095 - attrs.vlan_start)) {
+            if (attrs.amount == 0 || (attrs.amount && (!_.isNumber(attrs.amount) || attrs.amount < 1 || attrs.amount > 4095 - attrs.vlan_start))) {
                 errors.amount = 'Invalid amount of networks';
             }
             return _.isEmpty(errors) ? null : errors;

@@ -1237,9 +1237,8 @@ h6.page-title {
 
 .networks-table .network-error {
   text-align: left;
-  width: 240px;
+  width: 220px;
   padding-top: 5px;
-  text-transform: capitalize;
 }
 
 .network-error .help-inline {
