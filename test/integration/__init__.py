@@ -134,7 +134,7 @@ vmlinuz initrd=initrd.img ks=cdrom:/ks.cfg
 
         logging.info("Waiting while bootstrapping is in progress")
         ssh = SSHClient()
-        logpath = "/var/log/puppet/firstboot.log"
+        logpath = "/var/log/puppet/bootstrap_admin_node.log"
         str_success = "Finished catalog run"
 
         ssh.connect_ssh(

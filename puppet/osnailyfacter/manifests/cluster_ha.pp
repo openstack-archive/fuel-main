@@ -6,6 +6,15 @@ $controller_hostnames = keys($controller_internal_addresses)
 $galera_nodes = values($controller_internal_addresses)
 
 $create_networks = true
+if $network_manager == 'VlanManager' {
+  $private_interface = $vlan_interface
+}else{
+  $private_interface = $fixed_interface
+}
+$network_config = {
+  'vlan_start'     => $vlan_start,
+}
+
 $external_ipinfo = {}
 $multi_host              = true
 $quantum                 = false
@@ -14,7 +23,7 @@ $cinder                  = false
 $auto_assign_floating_ip = false
 $glance_backend          = 'swift'
 
-$network_manager = 'nova.network.manager.FlatDHCPManager'
+$network_manager = "nova.network.manager.${network_manager}"
 
 $mysql_root_password     = 'nova'
 $admin_email             = 'openstack@openstack.org'
@@ -48,15 +57,18 @@ class compact_controller {
     controller_internal_addresses => $controller_internal_addresses,
     internal_address        => $internal_address,
     public_interface        => $public_interface,
-    internal_interface      => $internal_interface,
+    internal_interface      => $management_interface,
     private_interface       => $private_interface,
     internal_virtual_ip     => $management_vip,
     public_virtual_ip       => $public_vip,
     master_hostname         => $master_hostname,
-    floating_range          => $floating_range,
-    fixed_range             => $fixed_range,
+    floating_range          => $floating_network_range,
+    fixed_range             => $fixed_network_range,
     multi_host              => $multi_host,
     network_manager         => $network_manager,
+    num_networks            => $num_networks,
+    network_size            => $network_size,
+    network_config          => $network_config,
     verbose                 => $verbose,
     auto_assign_floating_ip => $auto_assign_floating_ip,
     mysql_root_password     => $mysql_root_password,
@@ -134,8 +146,9 @@ class compact_controller {
         private_interface      => $private_interface,
         internal_address       => $internal_address,
         libvirt_type           => 'qemu',
-        fixed_range            => $fixed_range,
+        fixed_range            => $fixed_network_range,
         network_manager        => $network_manager,
+        network_config         => $network_config,
         multi_host             => $multi_host,
         sql_connection         => "mysql://nova:${nova_db_password}@${management_vip}/nova",
         rabbit_nodes           => $controller_hostnames,

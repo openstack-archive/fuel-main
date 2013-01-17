@@ -1,6 +1,6 @@
 # hard drives
 tgtdrive="undefined"
-for drv in `ls -1 /sys/block | grep "sd\|hd"`; do
+for drv in `ls -1 /sys/block | grep "sd\|hd\|vd"`; do
     if (grep -q 0 /sys/block/${drv}/removable); then
         tgtdrive="${drv}"
         break

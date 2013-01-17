@@ -32,7 +32,7 @@ module Astute
       succeed_nodes = finished.select { |n|
             n.results[:data][:resources]['failed'] == 0}.map {|x| x.results[:sender]}
 
-      idle_nodes = last_run.map {|n| n.results[:sender]} - finished.map {|n| n.results[:sender]}
+      idle_nodes += last_run.map {|n| n.results[:sender]} - finished.map {|n| n.results[:sender]}
 
       nodes_to_check = idle_nodes + succeed_nodes + error_nodes + hang_nodes
       unless nodes_to_check.size == last_run.size

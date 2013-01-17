@@ -1,12 +1,21 @@
 class osnailyfacter::cluster_simple {
 
+if $network_manager == 'VlanManager' {
+  $private_interface = $vlan_interface
+}else{
+  $private_interface = $fixed_interface
+}
+$network_config = {
+  'vlan_start'     => $vlan_start,
+}
+
 $cinder                  = false
 $multi_host              = true
 $manage_volumes          = false
 $quantum                 = false
 $auto_assign_floating_ip = false
 
-$network_manager      = 'nova.network.manager.FlatDHCPManager'
+$network_manager      = "nova.network.manager.${network_manager}"
 
 $admin_email             = 'root@localhost'
 $admin_password          = 'keystone_admin'
@@ -35,10 +44,13 @@ Exec { logoutput => true }
         public_interface        => $public_interface,
         private_interface       => $private_interface,
         internal_address        => $controller_node_address,
-        floating_range          => $floating_range,
-        fixed_range             => $fixed_range,
+        floating_range          => $floating_network_range,
+        fixed_range             => $fixed_network_range,
         multi_host              => $multi_host,
         network_manager         => $network_manager,
+        num_networks             => $num_networks,
+        network_size            => $network_size,
+        network_config          => $network_config,
         verbose                 => $verbose,
         auto_assign_floating_ip => $auto_assign_floating_ip,
         mysql_root_password     => $mysql_root_password,
@@ -80,10 +92,11 @@ Exec { logoutput => true }
       class { 'openstack::compute':
         public_interface       => $public_interface,
         private_interface      => $private_interface,
-        internal_address       => getvar("::ipaddress_${internal_interface}"),
+        internal_address       => $internal_address,
         libvirt_type           => 'kvm',
-        fixed_range            => $fixed_range,
+        fixed_range            => $fixed_network_range,
         network_manager        => $network_manager,
+        network_config         => $network_config,
         multi_host             => $multi_host,
         sql_connection         => $sql_connection,
         nova_user_password     => $nova_user_password,
