@@ -206,35 +206,41 @@ class NailgunReceiver(object):
             # determining horizon url - it's ip of controller
             # from a public network - works only for simple deployment
             controller = orm().query(Node).filter(
-                Node.cluster_id == task.cluster_id and
-                Node.role == 'controller'
-            ).first()
+                Node.cluster_id == task.cluster_id,
+                Node.role == 'controller').first()
             if controller:
+                logger.debug("role %s is found, node_id=%s, getting "
+                             "it's IP addresses", controller.role,
+                             controller.id)
                 public_net = filter(
                     lambda n: n['name'] == 'public' and 'ip' in n,
                     get_node_networks(controller.id)
                 )
                 if public_net:
                     horizon_ip = public_net[0]['ip'].split('/')[0]
-                    message = "Deployment of installation '{0}' is done. \
-                    Access WebUI of OpenStack at http://{1}/ or via \
-                    internal network at http://{2}/".format(
-                        task.cluster.name,
-                        horizon_ip,
-                        controller.ip
-                    )
+                    if task.cluster.mode in ('singlemode', 'multinode'):
+                        message = (
+                            "Deployment of installation '{0}' is done. "
+                            "Access WebUI of OpenStack at http://{1}/ or via "
+                            "internal network at http://{2}/").format(
+                                task.cluster.name,
+                                horizon_ip,
+                                controller.ip)
+                    else:
+                        message = (
+                            "Deployment of installation '{0}' is done. "
+                            "Access WebUI of OpenStack at http://{1}/").format(
+                                task.cluster.name,
+                                horizon_ip)
                 else:
-                    message = "Deployment of installation '{0}' \
-                        is done".format(
-                        task.cluster.name
-                    )
-                    logger.warning("Public ip for controller node \
-                        not found in '{0}'".format(task.cluster.name))
+                    message = ("Deployment of installation '{0}' "
+                               "is done").format(task.cluster.name)
+                    logger.warning(
+                        "Public ip for controller node "
+                        "not found in '{0}'".format(task.cluster.name))
             else:
-                message = "Deployment of installation"
-                " '{0}' is done".format(
-                    task.cluster.name
-                )
+                message = ("Deployment of installation"
+                           " '{0}' is done").format(task.cluster.name)
                 logger.warning("Controller node not found in '{0}'".format(
                     task.cluster.name
                 ))

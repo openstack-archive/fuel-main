@@ -50,8 +50,8 @@ class Release(Base, BasicValidator):
                 message="No release version specified"
             )
         if orm().query(Release).filter(
-                Release.name == d["name"]
-                and Release.version == d["version"]).first():
+                Release.name == d["name"],
+                Release.version == d["version"]).first():
             raise web.webapi.conflict
         if "networks_metadata" in d:
             for network in d["networks_metadata"]:

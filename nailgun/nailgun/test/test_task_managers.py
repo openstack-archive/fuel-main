@@ -83,6 +83,10 @@ class TestTaskManagers(BaseHandlers):
         self.assertEquals(node2.progress, 100)
         self.assertEquals(supertask.status, 'ready')
         self.assertEquals(supertask.progress, 100)
+        self.assertEquals(supertask.message, (
+            "Successfully removed 1 node(s). No errors occured; "
+            "Deployment of installation '{0}' is done").format(
+                cluster['name']))
 
     @patch('nailgun.task.task.rpc.cast', nailgun.task.task.fake_cast)
     @patch('nailgun.task.task.settings.FAKE_TASKS', True)
