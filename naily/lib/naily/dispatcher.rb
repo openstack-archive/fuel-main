@@ -30,6 +30,8 @@ module Naily
     end
 
     def deploy(data)
+      # Following line fixes issues with uids: it should always be string
+      data['args']['nodes'].map { |x| x['uid'] = x['uid'].to_s }
       reporter = Naily::Reporter.new(@producer, data['respond_to'], data['args']['task_uuid'])
       nodes = data['args']['nodes']
       nodes_uids = nodes.map { |n| n['uid'] }
