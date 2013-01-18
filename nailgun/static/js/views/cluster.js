@@ -616,8 +616,7 @@ function(models, commonViews, dialogViews, clusterPageTemplate, deploymentResult
             'click .apply-btn:not([disabled])': 'apply',
             'click .nav a': 'changeMode',
             'click .net-manager button:not(.active)': 'changeManagerSettings',
-            'keyup .fixed-row .network-amount input': 'displayRange',
-            'keyup .fixed-row .network-vlan input:first': 'displayRange'
+            'keyup .range': 'displayRange'
         },
         enableApplyButton: function(e) {
             if (e) {
@@ -642,18 +641,30 @@ function(models, commonViews, dialogViews, clusterPageTemplate, deploymentResult
                     $('.network-error .help-inline', row).text(errors.cidr || errors.vlan_start || errors.amount);
                     row.addClass('error');
                 }, this);
+                var amount = parseInt($('.network-amount input:first', row).val(), 10);
+                if (this.$('.net-manager .active').data('manager') == 'FlatDHCPManager') {
+                    amount = 1;
+                }
                 network.set({
                     cidr: $('.network-cidr input', row).val(),
                     vlan_start: parseInt($('.network-vlan input:first', row).val(), 10),
-                    amount: parseInt($('.network-amount input:first', row).val(), 10),
+                    amount: amount,
                     network_size: parseInt($('.network-size select', row).val(), 10)
                 });
             }, this);
             if (valid) {
                 // FIXME: two requests every time is not a true way
                 this.model.update({net_manager: this.$('.net-manager button.active').data('manager')});
-                Backbone.sync('update', this.networks);
-                this.$('.apply-btn').attr('disabled', true);
+                Backbone.sync('update', this.networks, {
+                    error: _.bind(function() {
+                        var dialog = new dialogViews.SimpleMessage({error: true, title: 'Networks'});
+                        this.registerSubView(dialog);
+                        dialog.render();
+                    }, this),
+                    success: _.bind(function(data) {
+                        this.$('.apply-btn').attr('disabled', true);
+                    }, this)
+                });
             }
         },
         changeMode: function(e) {
@@ -684,13 +695,15 @@ function(models, commonViews, dialogViews, clusterPageTemplate, deploymentResult
                 this.$('.fixed-header .vlan').text('VLAN ID');
             }
         },
-        displayRange: function(e) {
-            var vlanEnd = parseInt(this.$('.fixed-row .network-vlan input:first').val(), 10) + parseInt(this.$('.fixed-row .network-amount input').val(), 10) - 1;
-            if (vlanEnd > 4095) {
-                vlanEnd = 4095;
+        displayRange: function() {
+            var amount = parseInt(this.$('.fixed-row .network-amount input').val(), 10);
+            var vlanStart = parseInt(this.$('.fixed-row .network-vlan input:first').val(), 10);
+            var vlanEnd =  vlanStart + amount - 1;
+            if (vlanEnd > 4094) {
+                vlanEnd = 4094;
             }
             this.$('input.network-vlan-end').val(vlanEnd);
-            if (this.$(e.target).val() > 1) {
+            if (amount > 1 && vlanStart) {
                 this.$('.fixed-header .vlan').text('VLAN ID range');
                 this.$('.network-vlan-end').show();
             } else {
@@ -762,13 +775,29 @@ function(models, commonViews, dialogViews, clusterPageTemplate, deploymentResult
             });
         },
         verifyNetworks: function() {
-            this.$('.verify-networks-btn').attr('disabled', true);
-            var task = this.model.task('verify_networks');
-            if (task) {
-                this.model.get('tasks').remove(task);
-                task.destroy({complete: _.bind(this.startVerification, this)});
-            } else {
-                this.startVerification();
+            var valid = true;
+            this.options.networks.each(function(network) {
+                var row = $('.control-group[data-network-name=' + network.get('name') + ']');
+                network.on('error', function(model, errors) {
+                    valid = false;
+                    $('.network-error .help-inline', row).text(errors.cidr || errors.vlan_start || errors.amount);
+                    row.addClass('error');
+                }, this);
+                network.set({
+                    cidr: $('.network-cidr input', row).val(),
+                    vlan_start: parseInt($('.network-vlan input:first', row).val(), 10),
+                    amount: parseInt($('.network-amount input:first', row).val(), 10)
+                });
+            }, this);
+            if (valid) {
+                this.$('.verify-networks-btn').attr('disabled', true);
+                var task = this.model.task('verify_networks');
+                if (task) {
+                    this.model.get('tasks').remove(task);
+                    task.destroy({complete: _.bind(this.startVerification, this)});
+                } else {
+                    this.startVerification();
+                }
             }
         },
         updateProgress: function() {

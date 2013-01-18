@@ -8,7 +8,7 @@
     </div>
   <% } else { %>
     <% if (task && task.get('status') == 'ready') { %>
-      <div class="page-control-error-placeholder">
+      <div class="page-control-success-placeholder">
         <div class="msg-ok"></i>Verification Succeeded</div>
       </div>
     <% } else if (task && task.get('status') == 'error') { %>

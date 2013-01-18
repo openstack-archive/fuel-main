@@ -1191,12 +1191,8 @@ h6.page-title {
   width: 90px;
 }
 
-.networks-header .cidr, .networks-header .vlan_cidr {
-  width: 170px;
-}
-
-.networks-header .vlan {
-  width: 170px;
+.networks-header .cidr {
+  width: 140px;
 }
 
 .networks-header .amount {
@@ -1204,12 +1200,21 @@ h6.page-title {
 }
 
 .networks-header .size {
-  width: 95px;
+  width: 90px;
+}
+
+.vlan {
+  width: 160px;
 }
 
 .networks-table .network-size select {
-  width: 100px;
+  width: 90px;
 }
+
+.network-cidr input {
+  width: 130px;
+}
+
 .networks-table .network-name {
   text-align: left;
   width: 90px;
@@ -1227,7 +1232,7 @@ h6.page-title {
 
 .networks-table .network-cidr {
   text-align: center;
-  width: 165px;
+  width: 140px;
   text-transform: capitalize;
 }
 
@@ -1237,7 +1242,7 @@ h6.page-title {
 
 .networks-table .network-error {
   text-align: left;
-  width: 220px;
+  width: 260px;
   padding-top: 5px;
 }
 
@@ -1685,7 +1690,7 @@ h6.page-title {
   clear: both;
 }
 
-.page-control-error-placeholder {
+.page-control-error-placeholder, .page-control-success-placeholder {
     display: block;
     float: left;
     margin: 0px 10px 0px 10px;
@@ -1694,6 +1699,10 @@ h6.page-title {
     font-size: 15px;
     text-shadow: 0 1px 0 rgba(0,0,0,.1);
   }
+
+.page-control-success-placeholder {
+  color: #17824B;
+}
 
 .page-control-button-placeholder {
     /* min-width: 120px; */

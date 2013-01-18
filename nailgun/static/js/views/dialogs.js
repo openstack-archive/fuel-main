@@ -1,6 +1,7 @@
 define(
 [
     'models',
+    'text!templates/dialogs/simple_message.html',
     'text!templates/dialogs/create_cluster.html',
     'text!templates/dialogs/change_cluster_mode.html',
     'text!templates/dialogs/discard_changes.html',
@@ -9,7 +10,7 @@ define(
     'text!templates/dialogs/error_message.html',
     'text!templates/dialogs/show_node.html'
 ],
-function(models, createClusterDialogTemplate, changeClusterModeDialogTemplate, discardChangesDialogTemplate, displayChangesDialogTemplate, removeClusterDialogTemplate, errorMessageTemplate, showNodeInfoTemplate) {
+function(models, simpleMessageTemplate, createClusterDialogTemplate, changeClusterModeDialogTemplate, discardChangesDialogTemplate, displayChangesDialogTemplate, removeClusterDialogTemplate, errorMessageTemplate, showNodeInfoTemplate) {
     'use strict';
 
     var views = {};
@@ -30,6 +31,20 @@ function(models, createClusterDialogTemplate, changeClusterModeDialogTemplate, d
                 this.$el.on('hidden', _.bind(this.tearDown, this));
                 this.$el.modal();
                 this.modalBound = true;
+            }
+            return this;
+        }
+    });
+
+    views.SimpleMessage = views.Dialog.extend({
+        template: _.template(simpleMessageTemplate),
+        initialize: function(options) {
+            _.defaults(this, options);
+        },
+        render: function() {
+            this.constructor.__super__.render.call(this, {title: this.title, message: this.message});
+            if (this.error) {
+                this.displayErrorMessage();
             }
             return this;
         }
