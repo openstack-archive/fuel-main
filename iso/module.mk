@@ -19,7 +19,7 @@ $/isoroot-centos.done: \
 		$(ISOROOT)/.treeinfo
 	mkdir -p $(ISOROOT)/Packages
 	find $(CENTOS_REPO_DIR)Packages -name '*.rpm' -exec cp -u {} $(ISOROOT)/Packages \;
-	createrepo -x 'more_rpm/*' -g `readlink -f "$(ISOROOT)/repodata/comps.xml"` -u media://`head -1 $(ISOROOT)/.discinfo` $(ISOROOT)
+	createrepo -g `readlink -f "$(ISOROOT)/repodata/comps.xml"` -u media://`head -1 $(ISOROOT)/.discinfo` $(ISOROOT)
 	$(ACTION.TOUCH)
 
 $(ISOROOT)/repodata/comps.xml: | $(CENTOS_REPO_DIR)repodata/comps.xml
@@ -94,16 +94,9 @@ $(ISOROOT)/puppet-slave.tgz: \
 	(cd fuel/deployment/puppet && tar rf $(BUILD_DIR)/puppet-slave.tar ./*)
 	gzip -c -9 $(BUILD_DIR)/puppet-slave.tar > $@
 
-FUEL_PACKAGES=http://download.mirantis.com/epel-fuel/x86_64
 $/isoroot-puppetmod.done: \
 		$(ISOROOT)/puppet-nailgun.tgz \
 		$(ISOROOT)/puppet-slave.tgz
-	mkdir -p $(ISOROOT)/more_rpm
-	cd $(ISOROOT)/more_rpm && wget -c \
-		$(FUEL_PACKAGES)/MySQL-shared-5.5.28-1.el6.x86_64.rpm \
-		$(FUEL_PACKAGES)/MySQL-client-5.5.28-1.el6.x86_64.rpm \
-		$(FUEL_PACKAGES)/MySQL-server-5.5.28_wsrep_23.7-1.rhel5.x86_64.rpm \
-		$(FUEL_PACKAGES)/galera-23.2.2-1.rhel5.x86_64.rpm
 	$(ACTION.TOUCH)
 
 $(ISOROOT)/ks.cfg: iso/ks.cfg ; $(ACTION.COPY)
