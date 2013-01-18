@@ -111,7 +111,7 @@ describe "NailyFact DeploymentEngine" do
                             "id" => 5,
                             "ip" => "10.20.0.206",
                             "role" => "controller"}]
-      @data_ha = @data
+      @data_ha = Marshal.load(Marshal.dump(@data))
       @data_ha['args']['nodes'] = ha_nodes
       @data_ha['args']['attributes']['deployment_mode'] = "ha_compute"
       # VIPs are required for HA mode and should be passed from Nailgun (only in HA)
