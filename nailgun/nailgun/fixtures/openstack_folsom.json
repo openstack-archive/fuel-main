@@ -10,8 +10,8 @@
                 {"name": "floating", "access": "public"},
                 {"name": "public", "access": "public"},
                 {"name": "management", "access": "private192"},
-                {"name": "fixed", "access": "private10"},
-                {"name": "storage", "access": "private172"}
+                {"name": "storage", "access": "private172"},
+                {"name": "fixed", "access": "private10"}
             ],
             "attributes_metadata": {
                 "editable": {

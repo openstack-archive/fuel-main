@@ -105,23 +105,18 @@ LOG_TYPES:
 LOGS:
 # Master node logs.
   - id: nailgun
-    name: "Nailgun log"
+    name: "Nailgun"
     <<: *local_log_type
     <<: *python_log_format
     path: *nailgun_log
   - id: naily
-    name: "Naily log"
+    name: "Orchestrator"
     <<: *local_log_type
     <<: *ruby_log_format
     path: '/var/log/naily/naily.log'
-  - id: astute
-    name: "Astute log"
-    <<: *local_log_type
-    <<: *ruby_log_format
-    path: '/var/log/astute.log'
 # Fake target logs.
   - id: 'fake-target-mcollective'
-    name: "Fake target mcollective log"
+    name: "mcollective"
     <<: *remote_log_type
     <<: *remote_syslog_log_format
     fake: True
