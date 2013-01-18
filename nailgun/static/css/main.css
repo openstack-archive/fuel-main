@@ -1639,6 +1639,7 @@ h6.page-title {
   font-size: 13px;
   color: #545a63;
 }
+
 .table-logs tr.critical {
   background-color: #E99292;
   color: #fff;
@@ -2352,4 +2353,15 @@ h6.page-title {
 .deploying-progress-bar-box > .progress-deploy > .bar {
   margin: 0px;
   padding: 0px;
+}
+
+pre {
+  font-size: 13px;
+  border: none;
+  background: none;
+  color: #545A63;
+  font-family: "Lucida Console", Menlo, Monaco, Consolas, "Courier New", monospace;
+  margin: 0;
+  padding: 2px;
+  line-height: 15px;
 }

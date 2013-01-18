@@ -961,7 +961,6 @@ function(models, commonViews, dialogViews, clusterPageTemplate, deploymentResult
             if (chosenType == 'target') {
                 nodeSelectBoxVisible = true;
             }
-            console.log(this.$('select[name=source]').val());
             if (nodeSelectBoxVisible) {
                 var chosenNodeId = this.$('select[name=node]').val();
                 if (!chosenNodeId) {
