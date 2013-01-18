@@ -1525,9 +1525,20 @@ h6.page-title {
   text-decoration: none;
 }
 
+/*
 .message-list .discover:hover, .message-list .discover:hover .datetime {
   color: #f99a14 !important;
+}
+*/
+
+.message-list .discover {
+  color: #6388d4;
   cursor: pointer;
+}
+
+.message-list .discover:hover {
+  color: #005580;
+  text-decoration: underline;
 }
 
 /* Filter Bar */
@@ -1668,6 +1679,47 @@ h6.page-title {
   text-align: center;
   padding: 20px;
 }
+
+/* logs coloring */
+
+.table-logs tbody tr.info td {
+  background-color: #d9edf7;
+}
+
+.table-logs tbody tr.debug td {
+  background-color: #dff0d8;
+}
+
+.table-logs tbody tr.notice td {
+  background-color: #bce3b8;
+}
+
+.table-logs tbody tr.warning td {
+  background-color: #fcf8e3;
+}
+
+.table-logs tbody tr.error td {
+  background-color: #d89d9f;
+}
+
+.table-logs tbody tr.critical td {
+  background-color: #c56d6f;
+  color: #ffffff;
+}
+
+.table-logs tbody tr.alert td {
+  background-color: #eccecf;
+}
+
+.table-logs tbody tr.emergency td {
+  background-color: #ed9a57;
+}
+
+.table-logs tbody tr.fatal td {
+  background-color: #8a080b;
+  color: #ffffff;
+}
+
 
 .page-control-box {
     display: block;
