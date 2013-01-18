@@ -644,6 +644,9 @@ function(models, commonViews, dialogViews, clusterPageTemplate, deploymentResult
                         var dialog = new dialogViews.SimpleMessage({error: true, title: 'Networks'});
                         this.registerSubView(dialog);
                         dialog.render();
+                    }, this),
+                    success: _.bind(function(data) {
+                        this.model.fetch();
                     }, this)
                 });
             }

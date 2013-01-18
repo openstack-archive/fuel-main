@@ -45,11 +45,11 @@ class NetworkCollectionHandler(JSONHandler):
                 raise web.badrequest(
                     message="NetworkGroup with id=%s not found in DB" %
                     ng['id'])
-            network_db.cluster.add_pending_changes("networks")
             for key, value in ng.iteritems():
                 setattr(ng_db, key, value)
             orm().commit()
             ng_db.create_networks()
+            ng_db.networks[0].cluster.add_pending_changes("networks")
             nets_to_render.append(ng_db)
 
         return json.dumps(
