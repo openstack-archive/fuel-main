@@ -24,11 +24,7 @@
       <% var roles = cluster.availableRoles() %>
       <% if (cluster.get('nodes').where({role: 'controller'}).length < size) { %>
         <li>There must be at least <%= size %> controller node<%= size != 1 ? 's' : '' %></li>
-        <% if (!cluster.get('nodes').length) { %>
-          <% canDeploy = false %>
-        <% } else { %>
-          <% warning = 'controller' %>
-        <% } %>
+        <% if (!cluster.get('nodes').length && !cluster.get('changes').length) canDeploy = false; else warning = 'controller' %>
       <% } else {%>
         <% _.each(roles, function(role) { %>
           <% if (warning != 'controller' && !_.filter(cluster.get('nodes').nodesAfterDeployment(), function(node) {return node.get('role') == role}).length) { %>
