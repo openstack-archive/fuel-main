@@ -98,6 +98,8 @@ module Astute
             Astute.logger.info "Retrying to run puppet for following error nodes: #{nodes_to_retry.join(',')}"
             puppetd.discover(:nodes => nodes_to_retry)
             puppetd.runonce
+            prev_summary.delete_if { |x| nodes_to_retry.include?(x.results[:sender]) }
+            prev_summary += last_run.select { |x| nodes_to_retry.include?(x.results[:sender]) }
           end
           # /end of processing retries
 
