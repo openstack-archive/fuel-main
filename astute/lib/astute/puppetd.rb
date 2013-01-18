@@ -45,7 +45,8 @@ module Astute
     end
 
     public
-    def self.deploy(ctx, nodes, deploy_log_parser, retries=2)
+    def self.deploy(ctx, nodes, deploy_log_parser, retries=2, ignore_failure=false)
+      # TODO: can we hide retries, ignore_failure into @ctx ?
       uids = nodes.map {|n| n['uid']}
       puppetd = MClient.new(ctx, "puppetd", uids)
       prev_summary = puppetd.last_run_summary
@@ -89,8 +90,8 @@ module Astute
               Astute.logger.debug "Puppet on node #{uid.inspect} will be restarted. #{node_retries[uid]} retries remained."
               nodes_to_retry << uid
             else
-              Astute.logger.debug "Node #{uid.inspect}. There is no more retries for puppet run."
-              nodes_to_report << {'uid' => uid, 'status' => 'error', 'error_type' => 'deploy'}
+              Astute.logger.debug "Node #{uid.inspect} has failed to deploy. There is no more retries for puppet run."
+              nodes_to_report << {'uid' => uid, 'status' => 'error', 'error_type' => 'deploy'} unless ignore_failure
             end
           end
           if nodes_to_retry.any?

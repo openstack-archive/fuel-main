@@ -101,7 +101,10 @@ module Astute
 
     def deploy_ha_compute(nodes, attrs)
       ctrl_nodes = nodes.select {|n| n['role'] == 'controller'}
-      Astute.logger.info "Starting deployment of controllers"
+      Astute.logger.info "Starting deployment of 1st controller, ignoring failure"
+      deploy_piece([ctrl_nodes[0]], attrs, retries=1, ignore_failure=true)
+
+      Astute.logger.info "Starting deployment of all controllers"
       deploy_piece(ctrl_nodes, attrs, retries=6)
 
       # FIXME(mihgen): put right numbers for logs
