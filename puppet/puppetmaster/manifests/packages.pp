@@ -18,7 +18,7 @@ class puppetmaster::packages(
     }
   }
 
-  puppetmaster_safe_package{ "mysql-devel": }
+#  puppetmaster_safe_package{ "mysql-devel": }
   puppetmaster_safe_package{ "ruby-devel": }
   puppetmaster_safe_package{ "rubygems": }
   puppetmaster_safe_package{ "make": }
@@ -32,7 +32,7 @@ class puppetmaster::packages(
   puppetmaster_safe_package{ "nginx": }
 
 
-  Puppetmaster_safe_package<| title == "mysql-devel" |> ->
+#  Puppetmaster_safe_package<| title == "mysql-devel" |> ->
   Puppetmaster_safe_package<| title == "ruby-devel" |> ->
   Puppetmaster_safe_package<| title == "rubygems" |> ->
   Puppetmaster_safe_package<| title == "make" |> ->
@@ -57,9 +57,9 @@ class puppetmaster::packages(
     source => $gem_source,
   }
 
-  package { "mysql":
-    provider => "gem",
-    ensure => "2.8.1",
-    source => $gem_source,
-  }
+#  package { "mysql":
+#    provider => "gem",
+#    ensure => "2.8.1",
+#    source => $gem_source,
+#  }
 }

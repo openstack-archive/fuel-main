@@ -14,7 +14,7 @@ class puppetmaster (
   Anchor<| title == "puppetmaster-begin" |> ->
   Class["puppetmaster::selinux"] ->
   Class["puppetmaster::iptables"] ->
-  Class["puppetmaster::mysql"] ->
+  #Class["puppetmaster::mysql"] ->
   Class["puppetmaster::packages"] ->
   Class["puppetmaster::master"] ->
   Class["puppetmaster::nginx"] ->
