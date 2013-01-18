@@ -11,20 +11,37 @@ module Astute
               ps.results[:sender] == x.results[:sender]
           }[0].results[:data][:time]['last_run']}
 
-      error_nodes = finished.select { |n|
-            n.results[:data][:resources]['failed'] != 0}.map {|x| x.results[:sender]}
+      failed_nodes = finished.select { |n|
+            n.results[:data][:resources]['failed'] != 0}
+
+      error_nodes = []
+      faiding_out_nodes = []
+      hang_out_nodes = []
+      now = Time.now.to_i
+      failed_nodes.each do |n|
+        if n.results[:data][:status] == 'running'
+          if n.results[:data][:time]['last_run'] - now > PUPPET_FADE_TIMEOUT
+            hang_out_nodes << n.results[:sender]
+          else
+            faiding_out_nodes << n.results[:sender]
+          end
+        else
+          error_nodes << n.results[:sender]
+        end
+      end
 
       succeed_nodes = finished.select { |n|
             n.results[:data][:resources]['failed'] == 0}.map {|x| x.results[:sender]}
 
       idle_nodes = last_run.map {|n| n.results[:sender]} - finished.map {|n| n.results[:sender]}
 
-      nodes_to_check = idle_nodes + succeed_nodes + error_nodes
+      nodes_to_check = idle_nodes + succeed_nodes + error_nodes + faiding_out_nodes + hang_out_nodes
       unless nodes_to_check.size == last_run.size
         raise "Shoud never happen. Internal error in nodes statuses calculation. Statuses calculated for: #{nodes_to_check.inspect},"
                     "nodes passed to check statuses of: #{last_run.map {|n| n.results[:sender]}}"
       end
-      return {'succeed' => succeed_nodes, 'error' => error_nodes, 'idle' => idle_nodes}
+      return {'succeed' => succeed_nodes, 'error' => error_nodes, 'idle' => idle_nodes,
+              'faiding' => faiding_out_nodes, 'hang' => hang_out_nodes}
     end
 
     public
@@ -58,14 +75,21 @@ module Astute
 
           # At least we will report about successfully deployed nodes
           nodes_to_report = calc_nodes['succeed'].map { |n| {'uid' => n, 'status' => 'ready'} }
+          # ... and about nodes which hung out
+          if calc_nodes['hang'].any?
+            Astute.logger.error "Puppet failed and couldn't stop itself on nodes #{calc_nodes['hang'].join(',')}"
+            nodes_to_report += calc_nodes['hang'].map { |n| {'uid' => n, 'status' => 'error', 'error_type' => 'deploy'} }
+          end
 
           # Process retries
           nodes_to_retry = []
           calc_nodes['error'].each do |uid|
             if node_retries[uid] > 0
               node_retries[uid] -= 1
+              Astute.logger.debug "Puppet on node #{uid.inspect} will be restarted. #{node_retries[uid]} retries remained."
               nodes_to_retry << uid
             else
+              Astute.logger.debug "Node #{uid.inspect}. There is no more retries for puppet run."
               nodes_to_report << {'uid' => uid, 'status' => 'error', 'error_type' => 'deploy'}
             end
           end
@@ -89,7 +113,7 @@ module Astute
           end
           ctx.reporter.report('nodes' => nodes_to_report) if nodes_to_report.any?
           # we will iterate only over idle nodes and those that we restart deployment for
-          nodes_to_check = calc_nodes['idle'] + nodes_to_retry
+          nodes_to_check = calc_nodes['idle'] + nodes_to_retry + calc_nodes['faiding']
           break if nodes_to_check.empty?
 
           sleep 2

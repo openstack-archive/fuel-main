@@ -2,6 +2,7 @@ require 'json'
 require 'timeout'
 
 PUPPET_TIMEOUT = 60*60
+PUPPET_FADE_TIMEOUT = 60
 
 module Astute
   class DeploymentEngine

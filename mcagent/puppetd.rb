@@ -28,6 +28,7 @@ module MCollective
 
       action "last_run_summary" do
         last_run_summary
+        set_status
       end
 
       action "enable" do
