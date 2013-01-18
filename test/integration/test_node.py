@@ -290,7 +290,7 @@ class TestNode(Base):
         self.assertEquals(200, resp.getcode())
         for net in json.loads(resp.read()):
             if net['cluster_id'] == cluster_id:
-                return net['vlan_id']
+                return net['vlan_start']
         raise Exception("Can't find vlan for cluster_id %s" % cluster_id)
 
     @staticmethod
