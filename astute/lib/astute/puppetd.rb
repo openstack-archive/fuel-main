@@ -15,15 +15,15 @@ module Astute
             n.results[:data][:resources]['failed'] != 0}
 
       error_nodes = []
-      faiding_out_nodes = []
-      hang_out_nodes = []
+      idle_nodes = []
+      hang_nodes = []
       now = Time.now.to_i
       failed_nodes.each do |n|
         if n.results[:data][:status] == 'running'
-          if n.results[:data][:time]['last_run'] - now > PUPPET_FADE_TIMEOUT
-            hang_out_nodes << n.results[:sender]
+          if n.results[:data][:runtime] > PUPPET_FADE_TIMEOUT
+            hang_nodes << n.results[:sender]
           else
-            faiding_out_nodes << n.results[:sender]
+            idle_nodes << n.results[:sender]
           end
         else
           error_nodes << n.results[:sender]
@@ -35,13 +35,13 @@ module Astute
 
       idle_nodes = last_run.map {|n| n.results[:sender]} - finished.map {|n| n.results[:sender]}
 
-      nodes_to_check = idle_nodes + succeed_nodes + error_nodes + faiding_out_nodes + hang_out_nodes
+      nodes_to_check = idle_nodes + succeed_nodes + error_nodes + hang_nodes
       unless nodes_to_check.size == last_run.size
         raise "Shoud never happen. Internal error in nodes statuses calculation. Statuses calculated for: #{nodes_to_check.inspect},"
                     "nodes passed to check statuses of: #{last_run.map {|n| n.results[:sender]}}"
       end
       return {'succeed' => succeed_nodes, 'error' => error_nodes, 'idle' => idle_nodes,
-              'faiding' => faiding_out_nodes, 'hang' => hang_out_nodes}
+              'hang' => hang_nodes}
     end
 
     public
@@ -113,7 +113,7 @@ module Astute
           end
           ctx.reporter.report('nodes' => nodes_to_report) if nodes_to_report.any?
           # we will iterate only over idle nodes and those that we restart deployment for
-          nodes_to_check = calc_nodes['idle'] + nodes_to_retry + calc_nodes['faiding']
+          nodes_to_check = calc_nodes['idle'] + nodes_to_retry
           break if nodes_to_check.empty?
 
           sleep 2
