@@ -17,7 +17,6 @@ module Astute
       error_nodes = []
       idle_nodes = []
       hang_nodes = []
-      now = Time.now.to_i
       failed_nodes.each do |n|
         if n.results[:data][:status] == 'running'
           if n.results[:data][:runtime] > PUPPET_FADE_TIMEOUT
