@@ -692,6 +692,8 @@ function(models, commonViews, dialogViews, clusterPageTemplate, deploymentResult
             if (this.$(e.target).data('manager') == 'VlanManager' && this.$('.fixed-row .network-amount input').val() > 1) {
                 this.$('.fixed-header .vlan').text('VLAN ID range');
             } else {
+                this.$('.fixed-row .network-vlan input:first').removeClass('range');
+                this.$('.network-vlan-end').hide();
                 this.$('.fixed-header .vlan').text('VLAN ID');
             }
         },

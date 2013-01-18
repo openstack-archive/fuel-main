@@ -60,7 +60,7 @@
           <% }) %>
 
           <% var vlan = net_manager == 'VlanManager' ? '' : 'hide' %>
-          <% var range = vlan && fixedNetwork.get('amount') > 1 ? true : false %>
+          <% var range = net_manager == 'VlanManager' && fixedNetwork.get('amount') > 1 ? true : false %>
 
           <div class="row networks-header fixed-header">
             <div class="network">&nbsp;</div>
