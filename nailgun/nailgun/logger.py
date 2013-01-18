@@ -26,10 +26,11 @@ def _errapp(environ, start_response):
     return [ERRORMSG]
 
 
-class WriteLogger(logging.Logger):
+class WriteLogger(logging.Logger, object):
 
     def __init__(self, logger, level=logging.DEBUG):
         # Set logger level
+        logger.propagate = False
         super(WriteLogger, self).__init__(logger)
         if level == logging.DEBUG:
             self.logger = logger.debug
