@@ -219,7 +219,7 @@ class NailgunReceiver(object):
                 )
                 if public_net:
                     horizon_ip = public_net[0]['ip'].split('/')[0]
-                    if task.cluster.mode in ('singlemode', 'multinode'):
+                    if task.cluster.mode in ('singlenode', 'multinode'):
                         message = (
                             "Deployment of installation '{0}' is done. "
                             "Access WebUI of OpenStack at http://{1}/ or via "
