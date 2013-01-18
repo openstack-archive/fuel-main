@@ -104,8 +104,18 @@ module Astute
       Astute.logger.info "Starting deployment of 1st controller, ignoring failure"
       deploy_piece([ctrl_nodes[0]], attrs, retries=0, ignore_failure=true)
 
-      Astute.logger.info "Starting deployment of all controllers"
-      deploy_piece(ctrl_nodes, attrs, retries=5)
+      Astute.logger.info "Starting deployment of 2nd and 3rd controllers, ignoring failure"
+      deploy_piece(ctrl_nodes[1..2], attrs, retries=0, ignore_failure=true)
+
+      Astute.logger.info "Starting deployment of all controllers, ignoring failure"
+      deploy_piece(ctrl_nodes, attrs, retries=0, ignore_failure=true)
+
+      Astute.logger.info "Starting deployment of 1st controller again, ignoring failure"
+      deploy_piece([ctrl_nodes[0]], attrs, retries=0, ignore_failure=true)
+
+      retries = 1
+      Astute.logger.info "Starting deployment of all controllers until it completes, allowed retries: #{retries}"
+      deploy_piece(ctrl_nodes, attrs, retries=retries)
 
       # FIXME(mihgen): put right numbers for logs
       @deploy_log_parser.pattern_spec['expected_line_number'] = 380
