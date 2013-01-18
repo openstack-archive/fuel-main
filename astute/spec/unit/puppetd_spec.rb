@@ -20,7 +20,15 @@ describe "Puppetd" do
               :version=>{"puppet"=>"3.0.2", "config"=>1356783505},
               :resources=>{"restarted"=>0, "failed"=>0, "changed"=>1, "skipped"=>6,
                   "total"=>9, "out_of_sync"=>1, "scheduled"=>0, "failed_to_restart"=>0}},
-              :sender=>"1"}
+          :status => "running",
+          :running => 1,
+          :enabled => 1,
+          :idling => 0,
+          :stopped => 0,
+          :lastrun => 1358425701,
+          :runtime => 100,
+          :output => "Currently running; last completed run 100 seconds ago",
+          :sender=>"1"}
       last_run_result_new = Marshal.load(Marshal.dump(last_run_result))
       last_run_result_new[:data][:time]['last_run'] = 1358426000
       nodes = [{'uid' => '1'}]
