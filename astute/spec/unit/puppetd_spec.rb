@@ -49,7 +49,8 @@ describe "Puppetd" do
         stubs(:agent).returns('faketest')
       end
 
-      rpcclient.stubs(:last_run_summary).returns([rpcclient_valid_result]).then.returns([rpcclient_new_res])
+      rpcclient.stubs(:last_run_summary).returns([rpcclient_valid_result]).then \
+          .returns([rpcclient_valid_result]).then.returns([rpcclient_new_res])
       rpcclient.expects(:runonce).at_least_once.returns([rpcclient_valid_result])
 
       MClient.any_instance.stubs(:rpcclient).returns(rpcclient)
@@ -102,7 +103,9 @@ describe "Puppetd" do
         stubs(:agent).returns('faketest')
       end
 
-      rpcclient.stubs(:last_run_summary).returns([rpcclient_valid_result]).then.returns([rpcclient_new_res])
+      rpcclient.stubs(:last_run_summary).returns([rpcclient_valid_result]).then.
+          returns([rpcclient_valid_result]).then.
+          returns([rpcclient_new_res])
       rpcclient.expects(:runonce).at_least_once.returns([rpcclient_valid_result])
 
       MClient.any_instance.stubs(:rpcclient).returns(rpcclient)
@@ -165,6 +168,7 @@ describe "Puppetd" do
       end
 
       rpcclient.stubs(:last_run_summary).returns([rpcclient_valid_result]).then.
+          returns([rpcclient_valid_result]).then.
           returns([rpcclient_failed]).then.returns([rpcclient_succeed])
       rpcclient.expects(:runonce).at_least_once.returns([rpcclient_valid_result])
 

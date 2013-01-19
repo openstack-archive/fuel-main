@@ -4,43 +4,55 @@ require 'timeout'
 module Astute
   module PuppetdDeployer
     private
+    # Runs puppetd.runonce only if puppet is not running on the host at the time
+    # If it does running, it waits a bit and tries again.
+    # Returns list of nodes uids which appear to be with hung puppet.
+    def self.puppetd_runonce(puppetd, uids)
+      started = Time.now.to_i
+      while Time.now.to_i - started < PUPPET_FADE_TIMEOUT
+        puppetd.discover(:nodes => uids)
+        last_run = puppetd.last_run_summary
+        running = last_run.select {|x| x.results[:data][:status] == 'running'}.map {|n| n.results[:sender]}
+        not_running = uids - running
+        if not_running.any?
+          puppetd.discover(:nodes => not_running)
+          puppetd.runonce
+        end
+        uids = running
+        break if uids.empty?
+        sleep 1
+      end
+      Astute.logger.debug "puppetd_runonce completed within #{Time.now.to_i - started} seconds."
+      Astute.logger.debug "Following nodes have puppet hung: '#{running.join(',')}'" if running.any?
+      return running
+    end
 
     def self.calc_nodes_status(last_run, prev_run)
+      # Finished are those which are not in running state,
+      #   and changed their last_run time, which is changed after application of catalog,
+      #   at the time of updating last_run_summary file. At that particular time puppet is
+      #   still running, and will finish in a couple of seconds.
       finished = last_run.select {|x| x.results[:data][:time]['last_run'] != 
           prev_run.select {|ps|
               ps.results[:sender] == x.results[:sender]
-          }[0].results[:data][:time]['last_run']}
+          }[0].results[:data][:time]['last_run'] and x.results[:data][:status] != 'running'}
 
-      failed_nodes = finished.select { |n|
-            n.results[:data][:resources]['failed'] != 0}
-
-      error_nodes = []
-      idle_nodes = []
-      hang_nodes = []
-      failed_nodes.each do |n|
-        if n.results[:data][:status] == 'running'
-          if n.results[:data][:runtime] > PUPPET_FADE_TIMEOUT
-            hang_nodes << n.results[:sender]
-          else
-            idle_nodes << n.results[:sender]
-          end
-        else
-          error_nodes << n.results[:sender]
-        end
-      end
+      # Looking for error_nodes among only finished - we don't bother previous failures
+      error_nodes = finished.select { |n|
+            n.results[:data][:resources]['failed'] != 0}.map {|x| x.results[:sender]}
 
       succeed_nodes = finished.select { |n|
             n.results[:data][:resources]['failed'] == 0}.map {|x| x.results[:sender]}
 
-      idle_nodes += last_run.map {|n| n.results[:sender]} - finished.map {|n| n.results[:sender]}
+      # Running are all which didn't appear in finished
+      running_nodes = last_run.map {|n| n.results[:sender]} - finished.map {|n| n.results[:sender]}
 
-      nodes_to_check = idle_nodes + succeed_nodes + error_nodes + hang_nodes
+      nodes_to_check = running_nodes + succeed_nodes + error_nodes
       unless nodes_to_check.size == last_run.size
         raise "Shoud never happen. Internal error in nodes statuses calculation. Statuses calculated for: #{nodes_to_check.inspect},"
                     "nodes passed to check statuses of: #{last_run.map {|n| n.results[:sender]}}"
       end
-      return {'succeed' => succeed_nodes, 'error' => error_nodes, 'idle' => idle_nodes,
-              'hang' => hang_nodes}
+      return {'succeed' => succeed_nodes, 'error' => error_nodes, 'running' => running_nodes}
     end
 
     public
@@ -63,10 +75,7 @@ module Astute
       Astute.logger.debug "Waiting for puppet to finish deployment on all nodes (timeout = #{PUPPET_TIMEOUT} sec)..."
       time_before = Time.now
       Timeout::timeout(PUPPET_TIMEOUT) do  # 30 min for deployment to be done
-        # Yes, we polling here and yes, it's temporary.
-        # As a better implementation we can later use separate queue to get result, ex. http://www.devco.net/archives/2012/08/19/mcollective-async-result-handling.php
-        # or we can rewrite puppet agent not to fork, and increase ttl for mcollective RPC.
-        puppetd.runonce
+        puppetd_runonce(puppetd, uids)
         nodes_to_check = uids
         last_run = prev_summary
         while nodes_to_check.any?
@@ -75,11 +84,6 @@ module Astute
 
           # At least we will report about successfully deployed nodes
           nodes_to_report = calc_nodes['succeed'].map { |n| {'uid' => n, 'status' => 'ready'} }
-          # ... and about nodes which hung out
-          if calc_nodes['hang'].any?
-            Astute.logger.error "Puppet failed and couldn't stop itself on nodes #{calc_nodes['hang'].join(',')}"
-            nodes_to_report += calc_nodes['hang'].map { |n| {'uid' => n, 'status' => 'error', 'error_type' => 'deploy'} }
-          end
 
           # Process retries
           nodes_to_retry = []
@@ -95,27 +99,27 @@ module Astute
           end
           if nodes_to_retry.any?
             Astute.logger.info "Retrying to run puppet for following error nodes: #{nodes_to_retry.join(',')}"
-            puppetd.discover(:nodes => nodes_to_retry)
-            puppetd.runonce
+            puppetd_runonce(puppetd, nodes_to_retry)
+            # We need this magic with prev_summary to reflect new puppetd run statuses..
             prev_summary.delete_if { |x| nodes_to_retry.include?(x.results[:sender]) }
             prev_summary += last_run.select { |x| nodes_to_retry.include?(x.results[:sender]) }
           end
           # /end of processing retries
 
-          if calc_nodes['idle'].any?
+          if calc_nodes['running'].any?
             begin
               # Pass nodes because logs calculation needs IP address of node, not just uid
-              nodes_progress = deploy_log_parser.progress_calculate(calc_nodes['idle'], nodes)
+              nodes_progress = deploy_log_parser.progress_calculate(calc_nodes['running'], nodes)
               Astute.logger.debug "Got progress for nodes: #{nodes_progress.inspect}"
-              # Nodes with progress are idle, so they are not included in nodes_to_report yet
+              # Nodes with progress are running, so they are not included in nodes_to_report yet
               nodes_to_report += nodes_progress
             rescue Exception => e
               Astute.logger.warn "Some error occured when parse logs for nodes progress: #{e.message}, trace: #{e.backtrace.inspect}"
             end
           end
           ctx.reporter.report('nodes' => nodes_to_report) if nodes_to_report.any?
-          # we will iterate only over idle nodes and those that we restart deployment for
-          nodes_to_check = calc_nodes['idle'] + nodes_to_retry
+          # we will iterate only over running nodes and those that we restart deployment for
+          nodes_to_check = calc_nodes['running'] + nodes_to_retry
           break if nodes_to_check.empty?
 
           sleep 2

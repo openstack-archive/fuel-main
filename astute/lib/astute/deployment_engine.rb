@@ -106,7 +106,8 @@ module Astute
 
       except_first_ctrls = ctrl_nodes.clone
       except_first_ctrls.delete_at(0)
-      Astute.logger.info "Starting deployment of controllers: #{except_first_ctrls.map{|x| x['uid']}},"\
+      Astute.logger.info "Starting deployment of controllers: "\
+                         "#{except_first_ctrls.map{|x| x['uid']}.inspect},"\
                          " ignoring failure"
       deploy_piece(except_first_ctrls, attrs, retries=0, ignore_failure=true)
 
