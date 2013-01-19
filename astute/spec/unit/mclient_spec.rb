@@ -5,15 +5,15 @@ include Astute
 describe "MCollectiveClient" do
   context "When MClient is instantiated" do
     it "it should receive method call and process valid result correctly" do
-      @ctx = mock
+      @ctx = mock('context')
       @ctx.stubs(:task_id)
       @ctx.stubs(:reporter)
       nodes = [1, 2, 3]
-      rpcclient = mock
+      rpcclient = mock('rpcclient')
       rpcclient.stubs(:progress=)
       nodes_to_discover = nodes.map { |n| n.to_s }
       rpcclient.expects(:discover).with(:nodes => nodes_to_discover).once #.returns(["foo"])
-      rpcclient_valid_result = mock
+      rpcclient_valid_result = mock('rpcclient_valid_result')
       rpcclient_valid_result.stubs(:results).returns(
           {:statuscode=>0, :statusmsg=>"OK", :data=>{
                 :stopped=>1, :status=>"stopped", :lastrun=>1356502406, :output=>"text msg",
