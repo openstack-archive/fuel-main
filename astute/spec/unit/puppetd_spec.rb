@@ -12,24 +12,18 @@ describe "Puppetd" do
 
       reporter.expects(:report).with('nodes' => [{'uid' => '1', 'status' => 'ready'}])
 
-      last_run_result = {:statusmsg=>"OK", :statuscode=>0, :data=>
-          {:changes=>{"total"=>1}, :time=>{"filebucket"=>0.000971, "last_run"=>1358425701,
-              "file"=>0.000593, "exec"=>3.555788, "config_retrieval"=>0.0796780586242676,
-              "total"=>3.63703005862427}, :events=>{"success"=>1, "failure"=>0, "total"=>1},
-              :version=>{"puppet"=>"3.0.2", "config"=>1356783505},
-              :resources=>{"restarted"=>0, "failed"=>0, "changed"=>1, "skipped"=>6,
-                  "total"=>9, "out_of_sync"=>1, "scheduled"=>0, "failed_to_restart"=>0}},
-          :status => "running",
-          :running => 1,
-          :enabled => 1,
-          :idling => 0,
-          :stopped => 0,
-          :lastrun => 1358425701,
-          :runtime => 100,
-          :output => "Currently running; last completed run 100 seconds ago",
-          :sender=>"1"}
+      last_run_result = {:statuscode=>0, :data=>
+          {:changes=>{"total"=>1}, :time=>{"last_run"=>1358425701},
+           :resources=>{"failed"=>0}, :status => "running",
+           :running => 1, :idling => 0, :runtime => 100},
+         :sender=>"1"}
       last_run_result_new = Marshal.load(Marshal.dump(last_run_result))
       last_run_result_new[:data][:time]['last_run'] = 1358426000
+
+      last_run_result_finished = Marshal.load(Marshal.dump(last_run_result))
+      last_run_result_finished[:data][:status] = 'stopped'
+      last_run_result_finished[:data][:time]['last_run'] = 1358427000
+
       nodes = [{'uid' => '1'}]
 
       deploy_log_parser = mock('deploy_log_parser')
@@ -49,12 +43,20 @@ describe "Puppetd" do
         stubs(:agent).returns('faketest')
       end
 
-      rpcclient.stubs(:last_run_summary).returns([rpcclient_valid_result]).then \
-          .returns([rpcclient_valid_result]).then.returns([rpcclient_new_res])
+      rpcclient_finished_res = mock('rpcclient_finished_res') do
+        stubs(:results).returns(last_run_result_finished)
+        stubs(:agent).returns('faketest')
+      end
+
+      rpcclient.stubs(:last_run_summary).returns([rpcclient_valid_result]).then.
+          returns([rpcclient_valid_result]).then.
+          returns([rpcclient_new_res]).then.
+          returns([rpcclient_finished_res])
+          
       rpcclient.expects(:runonce).at_least_once.returns([rpcclient_valid_result])
 
       MClient.any_instance.stubs(:rpcclient).returns(rpcclient)
-      Astute::PuppetdDeployer.deploy(@ctx, nodes, deploy_log_parser)
+      Astute::PuppetdDeployer.deploy(@ctx, nodes, deploy_log_parser, retries=0)
     end
 
     it "publishes error status for node if puppet failed" do
@@ -65,26 +67,21 @@ describe "Puppetd" do
 
       reporter.expects(:report).with('nodes' => [{'status' => 'error', 'error_type' => 'deploy', 'uid' => '1'}])
 
-      last_run_result = {:statusmsg=>"OK", :statuscode=>0, :data=>
-          {:changes=>{"total"=>1}, :time=>{"filebucket"=>0.000971, "last_run"=>1358425701,
-              "file"=>0.000593, "exec"=>3.555788, "config_retrieval"=>0.0796780586242676,
-              "total"=>3.63703005862427}, :events=>{"success"=>1, "failure"=>0, "total"=>1},
-              :version=>{"puppet"=>"3.0.2", "config"=>1356783505},
-              :resources=>{"restarted"=>0, "failed"=>0, "changed"=>1, "skipped"=>6,
-                  "total"=>9, "out_of_sync"=>1, "scheduled"=>0, "failed_to_restart"=>0}},
-          :status => "running",
-          :running => 1,
-          :enabled => 1,
-          :idling => 0,
-          :stopped => 0,
-          :lastrun => 1358425701,
-          :runtime => 100,
-          :output => "Currently running; last completed run 100 seconds ago",
-          :sender=>"1"}
+      last_run_result = {:statuscode=>0, :data=>
+          {:changes=>{"total"=>1}, :time=>{"last_run"=>1358425701},
+           :resources=>{"failed"=>0}, :status => "running",
+           :running => 1, :idling => 0, :runtime => 100},
+         :sender=>"1"}
       last_run_result_new = Marshal.load(Marshal.dump(last_run_result))
       last_run_result_new[:data][:time]['last_run'] = 1358426000
       last_run_result_new[:data][:resources]['failed'] = 1
+
       nodes = [{'uid' => '1'}]
+
+      last_run_result_finished = Marshal.load(Marshal.dump(last_run_result))
+      last_run_result_finished[:data][:status] = 'stopped'
+      last_run_result_finished[:data][:time]['last_run'] = 1358427000
+      last_run_result_finished[:data][:resources]['failed'] = 1
 
       deploy_log_parser = mock('deploy_log_parser')
       rpcclient = mock('rpcclient') do
@@ -103,9 +100,15 @@ describe "Puppetd" do
         stubs(:agent).returns('faketest')
       end
 
+      rpcclient_finished_res = mock('rpcclient_finished_res') do
+        stubs(:results).returns(last_run_result_finished)
+        stubs(:agent).returns('faketest')
+      end
+
       rpcclient.stubs(:last_run_summary).returns([rpcclient_valid_result]).then.
           returns([rpcclient_valid_result]).then.
-          returns([rpcclient_new_res])
+          returns([rpcclient_new_res]).then.
+          returns([rpcclient_finished_res])
       rpcclient.expects(:runonce).at_least_once.returns([rpcclient_valid_result])
 
       MClient.any_instance.stubs(:rpcclient).returns(rpcclient)
@@ -120,28 +123,24 @@ describe "Puppetd" do
 
       reporter.expects(:report).with('nodes' => [{'uid' => '1', 'status' => 'ready'}])
 
-      last_run_result = {:statusmsg=>"OK", :statuscode=>0, :data=>
-          {:changes=>{"total"=>1}, :time=>{"filebucket"=>0.000971, "last_run"=>1358425701,
-              "file"=>0.000593, "exec"=>3.555788, "config_retrieval"=>0.0796780586242676,
-              "total"=>3.63703005862427}, :events=>{"success"=>1, "failure"=>0, "total"=>1},
-              :version=>{"puppet"=>"3.0.2", "config"=>1356783505},
-              :resources=>{"restarted"=>0, "failed"=>0, "changed"=>1, "skipped"=>6,
-                  "total"=>9, "out_of_sync"=>1, "scheduled"=>0, "failed_to_restart"=>0}},
-          :status => "running",
-          :running => 1,
-          :enabled => 1,
-          :idling => 0,
-          :stopped => 0,
-          :lastrun => 1358425701,
-          :runtime => 100,
-          :output => "Currently running; last completed run 100 seconds ago",
-          :sender=>"1"}
+      last_run_result = {:statuscode=>0, :data=>
+          {:changes=>{"total"=>1}, :time=>{"last_run"=>1358425701},
+           :resources=>{"failed"=>0}, :status => "running",
+           :running => 1, :idling => 0, :runtime => 100},
+         :sender=>"1"}
       last_run_failed = Marshal.load(Marshal.dump(last_run_result))
       last_run_failed[:data][:time]['last_run'] = 1358426000
       last_run_failed[:data][:resources]['failed'] = 1
+      last_run_failed[:data][:status] = 'stopped'
+
+      last_run_fixing = Marshal.load(Marshal.dump(last_run_result))
+      last_run_fixing[:data][:time]['last_run'] = 1358426000
+      last_run_fixing[:data][:resources]['failed'] = 1
+      last_run_fixing[:data][:status] = 'running'
 
       last_run_success = Marshal.load(Marshal.dump(last_run_result))
-      last_run_success[:data][:time]['last_run'] = 1358427000
+      last_run_success[:data][:time]['last_run'] = 1358428000
+      last_run_success[:data][:status] = 'stopped'
 
       nodes = [{'uid' => '1'}]
 
@@ -162,6 +161,11 @@ describe "Puppetd" do
         stubs(:agent).returns('faketest')
       end
 
+      rpcclient_fixing = mock('rpcclient_fixing') do
+        stubs(:results).returns(last_run_fixing)
+        stubs(:agent).returns('faketest')
+      end
+
       rpcclient_succeed = mock('rpcclient_succeed') do
         stubs(:results).returns(last_run_success)
         stubs(:agent).returns('faketest')
@@ -169,7 +173,10 @@ describe "Puppetd" do
 
       rpcclient.stubs(:last_run_summary).returns([rpcclient_valid_result]).then.
           returns([rpcclient_valid_result]).then.
-          returns([rpcclient_failed]).then.returns([rpcclient_succeed])
+          returns([rpcclient_failed]).then.
+          returns([rpcclient_failed]).then.
+          returns([rpcclient_fixing]).then.
+          returns([rpcclient_succeed])
       rpcclient.expects(:runonce).at_least_once.returns([rpcclient_valid_result])
 
       MClient.any_instance.stubs(:rpcclient).returns(rpcclient)
