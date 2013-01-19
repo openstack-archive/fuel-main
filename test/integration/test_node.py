@@ -380,7 +380,7 @@ class TestNode(Base):
         self.assertEquals(200, changes.getcode())
         return json.loads(changes.read())
 
-    def _task_wait(self, task, task_desc, timeout=30 * 60,
+    def _task_wait(self, task, task_desc, timeout=70 * 60,
                    skip_error_status=False):
         timer = time.time()
         ready = False
