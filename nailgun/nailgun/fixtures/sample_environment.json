@@ -1,57 +1,10 @@
 [
     {
         "pk": 1,
-        "model": "nailgun.release",
-        "fields": {
-            "name": "Folsom",
-            "version": "2012.1.3",
-            "description": "Developed by more than 330 contributors who implemented 185 different features, the OpenStack Folsom release continues the themes of stability and extensibility, while adding significant new features like Networking, Block Storage and Hyper-V support. There was also signficiant progress made with localization efforts, including a new translation framework for user-facing guides and documentation.",
-            "networks_metadata": [
-              {"name": "floating", "access": "public"},
-              {"name": "public", "access": "public"},
-              {"name": "management", "access": "private192"},
-              {"name": "fixed", "access": "private10"},
-              {"name": "storage", "access": "private172"}
-            ],
-            "attributes_metadata": {
-                "editable": {
-                    "keystone": {
-                        "admin_tenant": "admin"
-                    },
-                    "rabbit": {
-                        "user": "nova"
-                    },
-                    "auto_assign_floating_ip": false
-                },
-                "generated": {
-                    "mysql": {
-                        "root_password": ""
-                    },
-                    "keystone": {
-                        "db_password": "",
-                        "admin_token": ""
-                    },
-                    "glance": {
-                        "db_password": "",
-                        "user_password": ""
-                    },
-                    "nova": {
-                        "db_password": "",
-                        "user_password": ""
-                    },
-                    "rabbit": {
-                        "password": ""
-                    }
-                }
-            }
-        }
-    },
-    {
-        "pk": 1,
         "model": "nailgun.node",
         "fields": {
             "status": "discover",
-            "name": "",
+            "name": "Untitled (76:F1)",
             "manufacturer": "Dell",
             "platform_name": "Model-1",
             "role": null,
@@ -207,7 +160,7 @@
         "model": "nailgun.node",
         "fields": {
             "status": "discover",
-            "name": "",
+            "name": "Untitled (69:1F)",
             "manufacturer": "OpenVZ",
             "platform_name": "Model-3",
             "role": null,
@@ -250,7 +203,7 @@
         "model": "nailgun.node",
         "fields": {
             "status": "discover",
-            "name": "Node without cluster",
+            "name": "Untitled (9B:92)",
             "manufacturer": "Cisco",
             "platform_name": "",
             "role": null,
@@ -264,7 +217,7 @@
         "model": "nailgun.node",
         "fields": {
             "status": "discover",
-            "name": "Another node without cluster",
+            "name": "Another node",
             "manufacturer": "QEMU",
             "platform_name": "",
             "role": null,
@@ -278,7 +231,7 @@
         "model": "nailgun.node",
         "fields": {
             "status": "discover",
-            "name": "node virtualbox",
+            "name": "Untitled (9A:DE)",
             "manufacturer": "VBOX",
             "platform_name": "",
             "role": null,
@@ -292,7 +245,7 @@
         "model": "nailgun.node",
         "fields": {
             "status": "discover",
-            "name": "Supermicro",
+            "name": "cmp-1-2-1",
             "manufacturer": "Supermicro",
             "platform_name": "",
             "role": null,
