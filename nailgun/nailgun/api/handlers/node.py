@@ -81,6 +81,7 @@ class NodeCollectionHandler(JSONHandler):
         node = Node()
         for key, value in data.iteritems():
             setattr(node, key, value)
+        node.name = "Untitled (%s)" % data['mac'][-5:]
         orm().add(node)
         orm().commit()
         ram = round(node.info.get('ram') or 0, 1)
