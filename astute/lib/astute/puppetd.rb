@@ -112,12 +112,14 @@ module Astute
               nodes_progress = deploy_log_parser.progress_calculate(calc_nodes['running'], nodes)
               Astute.logger.debug "Got progress for nodes: #{nodes_progress.inspect}"
               # Nodes with progress are running, so they are not included in nodes_to_report yet
+              nodes_progress.map! {|x| x.merge!({'status' => 'deploying'})}
               nodes_to_report += nodes_progress
             rescue Exception => e
               Astute.logger.warn "Some error occured when parse logs for nodes progress: #{e.message}, trace: #{e.backtrace.inspect}"
             end
           end
           ctx.reporter.report('nodes' => nodes_to_report) if nodes_to_report.any?
+
           # we will iterate only over running nodes and those that we restart deployment for
           nodes_to_check = calc_nodes['running'] + nodes_to_retry
           break if nodes_to_check.empty?

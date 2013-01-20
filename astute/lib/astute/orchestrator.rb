@@ -13,11 +13,12 @@ module Astute
       return systems.map {|n| {'uid' => n.results[:sender], 'node_type' => n.results[:data][:node_type].chomp}}
     end
 
-    def deploy(reporter, task_id, nodes, attrs)
+    def deploy(up_reporter, task_id, nodes, attrs)
       raise "Nodes to deploy are not provided!" if nodes.empty?
       # Following line fixes issues with uids: it should always be string
       nodes.map { |x| x['uid'] = x['uid'].to_s }
-      context = Context.new(task_id, reporter)
+      proxy_reporter = Reporter.new(up_reporter)
+      context = Context.new(task_id, proxy_reporter)
       deploy_engine_instance = @deploy_engine.new(context)
       deploy_engine_instance.deploy(nodes, attrs)
     end

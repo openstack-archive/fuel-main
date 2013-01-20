@@ -4,14 +4,15 @@ include Astute
 
 describe "Puppetd" do
   context "PuppetdDeployer" do
-    it "reports ready status for node if puppet deploy finished successfully" do
+    before :each do
       @ctx = mock
       @ctx.stubs(:task_id)
-      reporter = mock('reporter')
-      @ctx.stubs(:reporter).returns(reporter)
+      @reporter = mock('reporter')
+      @ctx.stubs(:reporter).returns(Reporter.new(@reporter))
+    end
 
-      reporter.expects(:report).with('nodes' => [{'uid' => '1', 'status' => 'ready'}])
-
+    it "reports ready status for node if puppet deploy finished successfully" do
+      @reporter.expects(:report).with('nodes' => [{'uid' => '1', 'status' => 'ready'}])
       last_run_result = {:statuscode=>0, :data=>
           {:changes=>{"total"=>1}, :time=>{"last_run"=>1358425701},
            :resources=>{"failed"=>0}, :status => "running",
@@ -60,12 +61,7 @@ describe "Puppetd" do
     end
 
     it "publishes error status for node if puppet failed" do
-      @ctx = mock
-      @ctx.stubs(:task_id)
-      reporter = mock('reporter')
-      @ctx.stubs(:reporter).returns(reporter)
-
-      reporter.expects(:report).with('nodes' => [{'status' => 'error', 'error_type' => 'deploy', 'uid' => '1'}])
+      @reporter.expects(:report).with('nodes' => [{'status' => 'error', 'error_type' => 'deploy', 'uid' => '1'}])
 
       last_run_result = {:statuscode=>0, :data=>
           {:changes=>{"total"=>1}, :time=>{"last_run"=>1358425701},
@@ -116,12 +112,7 @@ describe "Puppetd" do
     end
 
     it "retries to run puppet if it fails" do
-      @ctx = mock
-      @ctx.stubs(:task_id)
-      reporter = mock('reporter')
-      @ctx.stubs(:reporter).returns(reporter)
-
-      reporter.expects(:report).with('nodes' => [{'uid' => '1', 'status' => 'ready'}])
+      @reporter.expects(:report).with('nodes' => [{'uid' => '1', 'status' => 'ready'}])
 
       last_run_result = {:statuscode=>0, :data=>
           {:changes=>{"total"=>1}, :time=>{"last_run"=>1358425701},
