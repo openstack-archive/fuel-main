@@ -16,7 +16,7 @@ from nailgun.db import orm, engine
 from nailgun.network.manager import get_node_networks
 from nailgun.settings import settings
 from nailgun.task.helpers import update_task_status
-from nailgun.api.models import Node, Network
+from nailgun.api.models import Node, Network, NetworkGroup
 from nailgun.api.models import Task
 from nailgun.notifier import notifier
 
@@ -279,9 +279,8 @@ class NailgunReceiver(object):
                 if not error_msg:
                     error_msg = 'Received empty node list from orchestrator.'
             else:
-                nets_db = orm().query(Network).filter_by(
-                    cluster_id=task.cluster_id
-                ).all()
+                nets_db = orm().query(Network).join(NetworkGroup).\
+                    filter(NetworkGroup.cluster_id == task.cluster_id).all()
                 vlans_db = [net.vlan_id for net in nets_db]
                 iface_db = {'iface': 'eth0', 'vlans': set(vlans_db)}
                 error_nodes = []

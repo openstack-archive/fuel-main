@@ -7,7 +7,8 @@ from nailgun.test.base import BaseHandlers
 from nailgun.test.base import reverse
 from nailgun.network import manager as netmanager
 from nailgun.db import engine
-from nailgun.api.models import Network, Node, NetworkElement
+from nailgun.api.models import Node, NetworkElement
+from nailgun.api.models import Network, NetworkGroup
 
 
 class TestNetworkManager(BaseHandlers):
@@ -33,8 +34,8 @@ class TestNetworkManager(BaseHandlers):
 
         nodes = self.db.query(Node).filter_by(cluster_id=cluster['id']).all()
 
-        management_net = self.db.query(Network).filter_by(
-            cluster_id=cluster['id']).filter_by(
+        management_net = self.db.query(Network).join(NetworkGroup).\
+            filter(NetworkGroup.cluster_id == cluster['id']).filter_by(
                 name='management').first()
 
         assigned_ips = []
@@ -63,8 +64,8 @@ class TestNetworkManager(BaseHandlers):
     def test_assign_vip(self):
         cluster = self.create_cluster_api()
         vip = netmanager.assign_vip(cluster['id'], "management")
-        management_net = self.db.query(Network).filter_by(
-            cluster_id=cluster['id']).filter_by(
+        management_net = self.db.query(Network).join(NetworkGroup).\
+            filter(NetworkGroup.cluster_id == cluster['id']).filter_by(
                 name='management').first()
         ip_db = IPNetwork(management_net.cidr)[2]
         # TODO(mihgen): we should check DB for correct data!
@@ -74,8 +75,8 @@ class TestNetworkManager(BaseHandlers):
         cluster = self.create_cluster_api()
         vip = netmanager.assign_vip(cluster['id'], "management")
         vip2 = netmanager.assign_vip(cluster['id'], "management")
-        management_net = self.db.query(Network).filter_by(
-            cluster_id=cluster['id']).filter_by(
+        management_net = self.db.query(Network).join(NetworkGroup).\
+            filter(NetworkGroup.cluster_id == cluster['id']).filter_by(
                 name='management').first()
         ip_db = IPNetwork(management_net.cidr)[2]
         # This test may fail when we fix orm issues

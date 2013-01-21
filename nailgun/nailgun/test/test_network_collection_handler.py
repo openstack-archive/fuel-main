@@ -77,8 +77,10 @@ class TestHandlers(BaseHandlers):
         cluster1 = self.create_cluster_api()
         cluster2 = self.create_cluster_api()
         nets_len = len(
-            self.db.query(Network).filter(
-                Network.cluster_id == cluster1['id']).all())
+            self.db.query(Network).join(NetworkGroup).filter(
+                NetworkGroup.cluster_id == cluster1['id']
+            ).all()
+        )
 
         resp = self.app.get(
             reverse('NetworkCollectionHandler'),

@@ -15,6 +15,7 @@ from nailgun.api.models import Cluster
 from nailgun.api.models import Notification
 from nailgun.api.models import Attributes
 from nailgun.api.models import Network
+from nailgun.api.models import NetworkGroup
 from nailgun.api.models import NetworkElement
 from nailgun.api.models import Vlan
 
@@ -231,7 +232,8 @@ class TestConsumer(BaseHandlers):
             cluster_id=cluster['id']
         )
         networks = self.db.query(Network)\
-            .filter_by(cluster_id=cluster['id']).all()
+            .join(NetworkGroup).\
+            filter(NetworkGroup.cluster_id == cluster['id']).all()
 
         vlans = []
         for net in networks:
@@ -278,7 +280,8 @@ class TestConsumer(BaseHandlers):
         self.assertEquals(len(nots_db), 0)
 
         nets_db = self.db.query(Network)\
-            .filter_by(cluster_id=cluster['id']).all()
+            .join(NetworkGroup).\
+            filter(NetworkGroup.cluster_id == cluster['id']).all()
         self.assertEquals(len(nets_db), 0)
 
         task_db = self.db.query(Task)\
@@ -331,5 +334,6 @@ class TestConsumer(BaseHandlers):
         self.assertNotEqual(len(nots_db), 0)
 
         nets_db = self.db.query(Network)\
-            .filter_by(cluster_id=cluster['id']).all()
+            .join(NetworkGroup).\
+            filter(NetworkGroup.cluster_id == cluster['id']).all()
         self.assertNotEqual(len(nets_db), 0)

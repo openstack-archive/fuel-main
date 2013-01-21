@@ -139,8 +139,9 @@ class DeploymentTask(object):
             })
 
         cluster_attrs = task.cluster.attributes.merged_attrs()
-        nets_db = orm().query(Network).filter_by(
-            cluster_id=cluster_id).all()
+
+        nets_db = orm().query(Network).join(NetworkGroup).\
+            filter(NetworkGroup.cluster_id == cluster_id).all()
 
         ng_db = orm().query(NetworkGroup).filter_by(
             cluster_id=cluster_id).all()
@@ -406,8 +407,8 @@ class VerifyNetworksTask(object):
     @classmethod
     def execute(self, task):
         task_uuid = task.uuid
-        nets_db = orm().query(Network).filter_by(
-            cluster_id=task.cluster.id).all()
+        nets_db = orm().query(Network).join(NetworkGroup).\
+            filter(NetworkGroup.cluster_id == task.cluster.id).all()
         vlans_db = [net.vlan_id for net in nets_db]
         iface_db = [{'iface': 'eth0', 'vlans': vlans_db}]
         nodes = [{'networks': iface_db, 'uid': n.id}

@@ -2,7 +2,7 @@
 import json
 from paste.fixture import TestApp
 
-from nailgun.api.models import Cluster, Node
+from nailgun.api.models import Cluster, Node, NetworkGroup
 from nailgun.test.base import BaseHandlers
 from nailgun.test.base import reverse
 
@@ -116,3 +116,14 @@ class TestHandlers(BaseHandlers):
 
         nodes = self.db.query(Node).filter(Node.cluster == cluster)
         self.assertEquals(1, nodes.count())
+
+    def test_cluster_deletion_delete_networks(self):
+        cluster = self.create_cluster_api()
+        cluster_db = self.db.query(Cluster).get(cluster['id'])
+        ngroups = [n.id for n in cluster_db.network_groups]
+        self.db.delete(cluster_db)
+        self.db.commit()
+        ngs = self.db.query(NetworkGroup).filter(
+            NetworkGroup.id.in_(ngroups)
+        ).all()
+        self.assertEqual(ngs, [])

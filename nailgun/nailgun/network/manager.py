@@ -6,7 +6,8 @@ from netaddr import IPSet, IPNetwork
 
 from nailgun.db import orm
 from nailgun.task import errors
-from nailgun.api.models import Network, Node, NetworkElement, Cluster
+from nailgun.api.models import Node, NetworkElement, Cluster
+from nailgun.api.models import Network, NetworkGroup
 
 
 def assign_ips(nodes_ids, network_name):
@@ -25,8 +26,8 @@ def assign_ips(nodes_ids, network_name):
             raise Exception("Node id='%s' doesn't belong to cluster_id='%s'" %
                             (node_id, cluster_id))
 
-    network = orm().query(Network).\
-        filter_by(cluster_id=cluster_id).\
+    network = orm().query(Network).join(NetworkGroup).\
+        filter(NetworkGroup.cluster_id == cluster_id).\
         filter_by(name=network_name).first()
 
     if not network:
@@ -79,8 +80,8 @@ def assign_vip(cluster_id, network_name):
     if not cluster:
         raise Exception("Cluster id='%s' not found" % cluster_id)
 
-    network = orm().query(Network).\
-        filter_by(cluster_id=cluster_id).\
+    network = orm().query(Network).join(NetworkGroup).\
+        filter(NetworkGroup.cluster_id == cluster_id).\
         filter_by(name=network_name).first()
 
     if not network:
@@ -136,7 +137,8 @@ def get_node_networks(node_id):
             'dev': 'eth0'})  # We need to figure out interface
         network_ids.append(net.id)
     # And now let's add networks w/o IP addresses
-    nets = orm().query(Network).filter_by(cluster_id=cluster_id)
+    nets = orm().query(Network).join(NetworkGroup).\
+        filter(NetworkGroup.cluster_id == cluster_id)
     if network_ids:
         nets = nets.filter(not_(Network.id.in_(network_ids)))
     # For now, we pass information about all networks,

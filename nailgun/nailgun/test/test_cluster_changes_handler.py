@@ -9,7 +9,7 @@ import nailgun
 from nailgun.test.base import BaseHandlers
 from nailgun.test.base import reverse
 from nailgun.api.models import Cluster, Attributes, NetworkElement, Task
-from nailgun.api.models import Network
+from nailgun.api.models import Network, NetworkGroup
 
 
 class TestHandlers(BaseHandlers):
@@ -52,17 +52,17 @@ class TestHandlers(BaseHandlers):
             #cluster_id=cluster['id']).first()
         #cluster_attrs = attrs_db.merged_attrs()
 
-        nets_db = self.db.query(Network).filter_by(
-            cluster_id=cluster['id']).all()
+        nets_db = self.db.query(Network).join(NetworkGroup).\
+            filter(NetworkGroup.cluster_id == cluster['id']).all()
         for net in nets_db:
             cluster_attrs[net.name + '_network_range'] = net.cidr
 
-        management_net = self.db.query(Network).filter_by(
-            cluster_id=cluster['id']).filter_by(
+        management_net = self.db.query(Network).join(NetworkGroup).\
+            filter(NetworkGroup.cluster_id == cluster['id']).filter_by(
                 name='management').first()
         management_vip = str(IPNetwork(management_net.cidr)[4])
-        public_net = self.db.query(Network).filter_by(
-            cluster_id=cluster['id']).filter_by(
+        public_net = self.db.query(Network).join(NetworkGroup).\
+            filter(NetworkGroup.cluster_id == cluster['id']).filter_by(
                 name='public').first()
         public_vip = str(IPNetwork(public_net.cidr)[4])
         cluster_attrs['management_vip'] = management_vip

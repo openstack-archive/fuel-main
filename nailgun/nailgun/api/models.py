@@ -76,12 +76,12 @@ class Cluster(Base, BasicValidator):
     MODES = ('singlenode', 'multinode', 'ha')
     STATUSES = ('new', 'deployment', 'operational', 'error', 'remove')
     NET_MANAGERS = ('FlatDHCPManager', 'VlanManager')
+    id = Column(Integer, primary_key=True)
     type = Column(Enum(*TYPES), nullable=False, default='compute')
     mode = Column(Enum(*MODES), nullable=False, default='singlenode')
     status = Column(Enum(*STATUSES), nullable=False, default='new')
     net_manager = Column(Enum(*NET_MANAGERS), nullable=False,
                          default='FlatDHCPManager')
-    id = Column(Integer, primary_key=True)
     name = Column(Unicode(50), unique=True, nullable=False)
     release_id = Column(Integer, ForeignKey('releases.id'), nullable=False)
     nodes = relationship("Node", backref="cluster", cascade="delete")
@@ -95,8 +95,8 @@ class Cluster(Base, BasicValidator):
     # During cluster deletion sqlalchemy engine will set null
     # into cluster foreign key column of notification entity
     notifications = relationship("Notification", backref="cluster")
-    networks = relationship("Network", backref="cluster",
-                            cascade="delete")
+    network_groups = relationship("NetworkGroup", backref="cluster",
+                                  cascade="delete")
 
     @classmethod
     def validate(cls, data):
@@ -265,7 +265,6 @@ class Network(Base, BasicValidator):
     name = Column(Unicode(100), nullable=False)
     access = Column(String(20), nullable=False)
     vlan_id = Column(Integer, ForeignKey('vlan.id'))
-    cluster_id = Column(Integer, ForeignKey('clusters.id'))
     network_group_id = Column(Integer, ForeignKey('network_groups.id'))
     cidr = Column(String(25), nullable=False)
     gateway = Column(String(25))
@@ -281,7 +280,7 @@ class NetworkGroup(Base, BasicValidator):
     name = Column(Unicode(100), nullable=False)
     access = Column(String(20), nullable=False)
     release = Column(Integer, nullable=False)
-    cluster_id = Column(Integer, nullable=False)
+    cluster_id = Column(Integer, ForeignKey('clusters.id'), nullable=False)
     cidr = Column(String(25), nullable=False)
     network_size = Column(Integer, default=256)
     amount = Column(Integer, default=1)
@@ -332,7 +331,6 @@ class NetworkGroup(Base, BasicValidator):
                 gateway = str(subnets[n][self.gateway_ip_index])
             net_db = Network(
                 release=self.release,
-                cluster_id=self.cluster_id,
                 name=self.name,
                 access=self.access,
                 cidr=str(subnets[n]),
