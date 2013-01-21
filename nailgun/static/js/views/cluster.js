@@ -348,7 +348,7 @@ function(models, commonViews, dialogViews, clusterPageTemplate, deploymentResult
             }
         },
         calculateApplyButtonAvailability: function() {
-            this.$('.btn-apply').attr('disabled', !this.getChosenNodesIds());
+            this.$('.btn-apply').attr('disabled', !this.getChosenNodesIds().length);
         },
         discardChanges: function() {
             this.tab.changeScreen(views.NodesByRolesScreen);
