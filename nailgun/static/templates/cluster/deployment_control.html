@@ -1,3 +1,17 @@
+<li class="pull-right deployment-control-box">
+  <div class="deployment-control-item-box"><button class="deploy-btn"><i class="icon-upload-cloud"></i> Deploy Changes</button></div>
+  <div class="deployment-control-item-box"><span class="installation-status" title="Installation Status">Instalation status: Operational</span></div>
+  <div class="deployment-control-item-box"><button class="btn rollback" role="button" title="Discard Changes"><i class="icon-back-in-time"></i></button></div>
+</li>
+
+<li class="pull-right deployment-progress-box">
+  <div class="deployment-control-item-box"><div class="deploying-progress-text-box percentage">100%</div></div>
+  <div class="deployment-control-item-box"><div class="progress progress-success progress-striped progress-deploy active"><div class="bar" style="width: 60%;"></div></div></div>
+  <div class="deployment-control-item-box"><div class="deploying-progress-text-box">OpenStack: installing controller node 3/3 (galera) bla bla bla</div></div>
+</li>
+
+
+<!-- Its old worked block
 <% var task = cluster.task('deploy', 'running') %>
 <% if (task) { %>
   <li class="pull-right deployment-control-box">
@@ -22,3 +36,4 @@
     <button class="deploy-btn <%= cluster.hasChanges() || cluster.needsRedeployment() ? '' : 'disabled' %>"><i class="icon-upload-cloud"></i> Deploy Changes</button>
   </li>
 <% } %>
+-->
