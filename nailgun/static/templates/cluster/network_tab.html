@@ -82,10 +82,10 @@
                   <input class="input-mini range" type="text" value="<%- fixedNetwork.get('amount') %>" maxlength="4" <%= disabled %> />
                 </div>
                 <div class="network-size <%= vlan %>">
-                  <select>
+                  <select <%= disabled %>>
                     <% var network_sizes = [4, 8, 16, 32, 64, 128, 256, 1024, 2048] %>
                     <% _.each(network_sizes, function(size) { %>
-                      <option value="<%= size %>" <%= fixedNetwork.get('network_size') == size ? 'selected' : '' %> <%= disabled %>><%= size %></option>
+                      <option value="<%= size %>" <%= fixedNetwork.get('network_size') == size ? 'selected' : '' %>><%= size %></option>
                     <% }) %>
                   </select>
                 </div>

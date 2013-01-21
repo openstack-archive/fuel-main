@@ -680,7 +680,7 @@ function(models, commonViews, dialogViews, clusterPageTemplate, deploymentResult
             }
             */
         },
-        countVlanEnd: function() {
+        calculateVlanEnd: function() {
             var amount = parseInt(this.$('.fixed-row .network-amount input').val(), 10);
             var vlanStart = parseInt(this.$('.fixed-row .network-vlan input:first').val(), 10);
             var vlanEnd =  vlanStart + amount - 1;
@@ -690,7 +690,7 @@ function(models, commonViews, dialogViews, clusterPageTemplate, deploymentResult
             this.$('input.network-vlan-end').val(vlanEnd);
         },
         changeManagerSettings: function(e) {
-            this.countVlanEnd();
+            this.calculateVlanEnd();
             this.$('.help-inline').text('');
             this.$('.control-group').removeClass('error');
             this.enableApplyButton();
@@ -708,7 +708,7 @@ function(models, commonViews, dialogViews, clusterPageTemplate, deploymentResult
             }
         },
         displayRange: function() {
-            this.countVlanEnd();
+            this.calculateVlanEnd();
             var amount = parseInt(this.$('.fixed-row .network-amount input').val(), 10);
             var vlanStart = parseInt(this.$('.fixed-row .network-vlan input:first').val(), 10);
             if (amount > 1 && vlanStart) {
