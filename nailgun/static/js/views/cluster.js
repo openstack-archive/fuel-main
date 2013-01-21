@@ -575,7 +575,7 @@ function(models, commonViews, dialogViews, clusterPageTemplate, deploymentResult
         showNodeInfo: function() {
             if (this.$('.nodebox').hasClass('unassigned')) {return;}
             var dialog = new dialogViews.ShowNodeInfoDialog({node: this.model});
-            this.registerSubView(dialog);
+            app.page.tab.registerSubView(dialog);
             dialog.render();
         },
         updateProgress: function() {
