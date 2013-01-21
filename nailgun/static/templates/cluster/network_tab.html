@@ -14,11 +14,11 @@
     <% var disabled = cluster.task('deploy', 'running') ? 'disabled' : '' %>
     <fieldset>
 
-      <div class="btn-group net-manager" data-toggle="buttons-radio"  <%= disabled %>>
+      <div class="btn-group net-manager" data-toggle="buttons-radio">
         <% var managers = {'FlatDHCPManager': 'FlatDHCP Manager', 'VlanManager': 'VLAN Manager'} %>
         <% var net_manager = cluster.get('net_manager') %>
         <% _.each(_.keys(managers), function(manager) { %>
-          <button type="button" data-manager="<%= manager %>" class="btn btn-primary <%= net_manager == manager ? 'active' : '' %>"><%= managers[manager] %></button>
+          <button type="button" data-manager="<%= manager %>" class="btn btn-primary <%= net_manager == manager ? 'active' : '' %>" <%= disabled %>><%= managers[manager] %></button>
         <% }) %>
       </div>
 
