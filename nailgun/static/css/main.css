@@ -2498,7 +2498,6 @@ h6.page-title {
   display: block;
   color: #ffffff;
   height: 40px;
-  /* padding: 5px 16px 0px 16px; */
   font-size: 11px;
   text-align: left;
   -webkit-font-smoothing: antialiased;
@@ -2509,12 +2508,10 @@ h6.page-title {
   display: block;
   color: #ffffff;
   height: 34px;
-  /* padding: 5px 16px 0px 16px; */
   font-size: 14px;
   text-align: left;
   -webkit-font-smoothing: antialiased;
   text-shadow: 0 0 0 rgba(0, 0, 0, 0);
-
   line-height: 32px;
   vertical-align: middle;
   margin: 3px 10px 0px 10px;
