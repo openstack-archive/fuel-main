@@ -120,6 +120,14 @@ class NailgunReceiver(object):
         status = kwargs.get('status')
         progress = kwargs.get('progress')
 
+        task = orm().query(Task).filter_by(uuid=task_uuid).first()
+        if not task:
+            logger.warning(
+                "No task with uuid '{0}'' found - nothing changed".format(
+                    task_uuid
+                )
+            )
+
         error_nodes = []
         for node in nodes:
             node_db = orm().query(Node).get(node['uid'])
@@ -159,15 +167,14 @@ class NailgunReceiver(object):
             status = 'error'
             progress = 100
 
-        coeff = settings.PROVISIONING_PROGRESS_COEFF or 0.8
-        if nodes and not progress and not error_nodes:
+        coeff = settings.PROVISIONING_PROGRESS_COEFF or 0.3
+        if nodes and not progress and not error_nodes and task:
             # we should calculate task progress by nodes info
             nodes_progress = []
 
             orm().expire_all()
-            nodes_db = orm().query(Node).filter(
-                Node.id.in_([n['uid'] for n in nodes])
-            ).all()
+            nodes_db = orm().query(Node).filter_by(
+                cluster_id=task.cluster_id).all()
             for node in nodes_db:
                 if node.progress is None:
                     logger.error(
@@ -188,14 +195,6 @@ class NailgunReceiver(object):
                     nodes_progress.append(0)
             if nodes_progress:
                 progress = int(sum(nodes_progress) / len(nodes_progress))
-
-        task = orm().query(Task).filter_by(uuid=task_uuid).first()
-        if not task:
-            logger.warning(
-                "No task with uuid '{0}'' found - nothing changed".format(
-                    task_uuid
-                )
-            )
 
         if status in ('error',) and task:
             notifier.notify(
