@@ -122,8 +122,18 @@ LOGS:
     fake: True
     path: '/var/tmp/fake-target-mcollective.log'
 # Target node installation logs.
+  - id: 'puppet-agent.log'
+    name: "puppet"
+    <<: *remote_log_type
+    <<: *remote_syslog_log_format
+    path: 'puppet-agent.log'
+  - id: 'install/anaconda'
+    name: "anaconda"
+    <<: *remote_log_type
+    <<: *remote_syslog_log_format
+    path: 'install/anaconda.log'
   - id: 'install/syslog'
-    name: "install/syslog.log"
+    name: "syslog"
     <<: *remote_log_type
     <<: *remote_syslog_log_format
     path: 'install/syslog.log'
@@ -132,16 +142,6 @@ LOGS:
     #<<: *remote_log_type
     #<<: *remote_syslog_log_format
     #path: 'install/storage.log'
-  - id: 'install/anaconda'
-    name: "anaconda.log"
-    <<: *remote_log_type
-    <<: *remote_syslog_log_format
-    path: 'install/anaconda.log'
-  - id: 'puppet-agent.log'
-    name: "puppet"
-    <<: *remote_log_type
-    <<: *remote_syslog_log_format
-    path: 'puppet-agent.log'
   #- id: 'install/ks-pre'
     #name: "install/ks-pre"
     #<<: *remote_log_type
