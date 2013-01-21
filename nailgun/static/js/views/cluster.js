@@ -655,14 +655,13 @@ function(models, commonViews, dialogViews, clusterPageTemplate, deploymentResult
             if (valid) {
                 // FIXME: two requests every time is not a true way
                 this.model.update({net_manager: this.$('.net-manager button.active').data('manager')});
+                this.$('.apply-btn').attr('disabled', true);
                 Backbone.sync('update', this.networks, {
                     error: _.bind(function() {
+                        this.$('.apply-btn').attr('disabled', false);
                         var dialog = new dialogViews.SimpleMessage({error: true, title: 'Networks'});
                         this.registerSubView(dialog);
                         dialog.render();
-                    }, this),
-                    success: _.bind(function(data) {
-                        this.$('.apply-btn').attr('disabled', true);
                     }, this)
                 });
             }
@@ -681,7 +680,17 @@ function(models, commonViews, dialogViews, clusterPageTemplate, deploymentResult
             }
             */
         },
+        countVlanEnd: function() {
+            var amount = parseInt(this.$('.fixed-row .network-amount input').val(), 10);
+            var vlanStart = parseInt(this.$('.fixed-row .network-vlan input:first').val(), 10);
+            var vlanEnd =  vlanStart + amount - 1;
+            if (vlanEnd > 4094) {
+                vlanEnd = 4094;
+            }
+            this.$('input.network-vlan-end').val(vlanEnd);
+        },
         changeManagerSettings: function(e) {
+            this.countVlanEnd();
             this.$('.help-inline').text('');
             this.$('.control-group').removeClass('error');
             this.enableApplyButton();
@@ -691,6 +700,7 @@ function(models, commonViews, dialogViews, clusterPageTemplate, deploymentResult
             }
             if (this.$(e.target).data('manager') == 'VlanManager' && this.$('.fixed-row .network-amount input').val() > 1) {
                 this.$('.fixed-header .vlan').text('VLAN ID range');
+                this.$('.fixed-row .network-vlan input:first').addClass('range');
             } else {
                 this.$('.fixed-row .network-vlan input:first').removeClass('range');
                 this.$('.network-vlan-end').hide();
@@ -698,16 +708,13 @@ function(models, commonViews, dialogViews, clusterPageTemplate, deploymentResult
             }
         },
         displayRange: function() {
+            this.countVlanEnd();
             var amount = parseInt(this.$('.fixed-row .network-amount input').val(), 10);
             var vlanStart = parseInt(this.$('.fixed-row .network-vlan input:first').val(), 10);
-            var vlanEnd =  vlanStart + amount - 1;
-            if (vlanEnd > 4094) {
-                vlanEnd = 4094;
-            }
-            this.$('input.network-vlan-end').val(vlanEnd);
             if (amount > 1 && vlanStart) {
                 this.$('.fixed-header .vlan').text('VLAN ID range');
                 this.$('.network-vlan-end').show();
+                this.$('.fixed-row .network-vlan input:first').addClass('range');
             } else {
                 this.$('.fixed-header .vlan').text('VLAN ID');
                 this.$('.network-vlan-end').hide();
