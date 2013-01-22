@@ -10,7 +10,7 @@ STATES = {'offline' => 0,
           'error' => 70}
 
 module Astute
-  class Reporter
+  class ProxyReporter
     def initialize(up_reporter)
       @up_reporter = up_reporter
       @nodes = []

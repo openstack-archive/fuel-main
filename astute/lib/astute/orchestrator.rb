@@ -17,7 +17,7 @@ module Astute
       raise "Nodes to deploy are not provided!" if nodes.empty?
       # Following line fixes issues with uids: it should always be string
       nodes.map { |x| x['uid'] = x['uid'].to_s }
-      proxy_reporter = Reporter.new(up_reporter)
+      proxy_reporter = ProxyReporter.new(up_reporter)
       context = Context.new(task_id, proxy_reporter)
       deploy_engine_instance = @deploy_engine.new(context)
       deploy_engine_instance.deploy(nodes, attrs)

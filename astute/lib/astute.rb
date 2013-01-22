@@ -14,7 +14,7 @@ require 'astute/deployment_engine/nailyfact'
 module Astute
   autoload 'Context', 'astute/context'
   autoload 'MClient', 'astute/mclient'
-  autoload 'Reporter', 'astute/reporter'
+  autoload 'ProxyReporter', 'astute/reporter'
 
   def self.logger
     @logger ||= Logger.new('/var/log/astute.log')

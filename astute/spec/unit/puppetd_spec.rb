@@ -8,7 +8,7 @@ describe "Puppetd" do
       @ctx = mock
       @ctx.stubs(:task_id)
       @reporter = mock('reporter')
-      @ctx.stubs(:reporter).returns(Reporter.new(@reporter))
+      @ctx.stubs(:reporter).returns(ProxyReporter.new(@reporter))
     end
 
     it "reports ready status for node if puppet deploy finished successfully" do

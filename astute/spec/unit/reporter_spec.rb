@@ -2,15 +2,15 @@
 require File.join(File.dirname(__FILE__), "..", "spec_helper")
 include Astute
 
-describe "Reporter" do
-  context "Instance of Reporter class" do
+describe "ProxyReporter" do
+  context "Instance of ProxyReporter class" do
     before :each do
       @msg = {'nodes' => [{'status' => 'ready', 'uid' => '1'}]}
       @msg_pr = {'nodes' => [@msg['nodes'][0],
                              {'status' => 'deploying', 'uid' => '2',
                               'progress' => 54}]}
       @up_reporter = mock('up_reporter')
-      @reporter = Reporter.new(@up_reporter)
+      @reporter = ProxyReporter.new(@up_reporter)
     end
 
     it "reports first-come data" do
