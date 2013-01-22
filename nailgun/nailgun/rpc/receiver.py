@@ -212,12 +212,10 @@ class NailgunReceiver(object):
             ).all()
             for n in error_nodes:
                 nodes_info.append(
-                    unicode({
-                        "MAC": n.mac,
-                        "IP": n.ip or "Unknown",
-                        "NAME": n.name or "Unknown",
-                        "ERROR": n.error_msg or "Unknown error"
-                    })
+                    u"'{0}': {1}".format(
+                        n.name,
+                        n.error_msg
+                    )
                 )
             message = "Failed to deploy nodes:\n%s" % "\n".join(nodes_info)
             notifier.notify(
