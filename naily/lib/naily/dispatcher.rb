@@ -3,7 +3,7 @@ require 'naily/reporter'
 module Naily
   class Dispatcher
     def initialize(producer)
-      @orchestrator = Astute::Orchestrator.new
+      @orchestrator = Astute::Orchestrator.new(nil, log_parsing=true)
       @producer = producer
       @default_result = {'status' => 'ready', 'progress' => 100}
       @pattern_spec = {'type' => 'pattern-list', 'chunk_size' =>  40000, # Size of block which reads for pattern searching.

@@ -9,6 +9,7 @@ describe "Puppetd" do
       @ctx.stubs(:task_id)
       @reporter = mock('reporter')
       @ctx.stubs(:reporter).returns(ProxyReporter.new(@reporter))
+      @ctx.stubs(:deploy_log_parser).returns(Astute::LogParser::NoParsing.new)
     end
 
     it "reports ready status for node if puppet deploy finished successfully" do
@@ -27,7 +28,6 @@ describe "Puppetd" do
 
       nodes = [{'uid' => '1'}]
 
-      deploy_log_parser = mock('deploy_log_parser')
       rpcclient = mock('rpcclient') do
         stubs(:progress=)
         nodes_to_discover = nodes.map { |n| n['uid'] }
@@ -57,7 +57,7 @@ describe "Puppetd" do
       rpcclient.expects(:runonce).at_least_once.returns([rpcclient_valid_result])
 
       MClient.any_instance.stubs(:rpcclient).returns(rpcclient)
-      Astute::PuppetdDeployer.deploy(@ctx, nodes, deploy_log_parser, retries=0)
+      Astute::PuppetdDeployer.deploy(@ctx, nodes, retries=0)
     end
 
     it "publishes error status for node if puppet failed" do
@@ -79,7 +79,6 @@ describe "Puppetd" do
       last_run_result_finished[:data][:time]['last_run'] = 1358427000
       last_run_result_finished[:data][:resources]['failed'] = 1
 
-      deploy_log_parser = mock('deploy_log_parser')
       rpcclient = mock('rpcclient') do
         stubs(:progress=)
         nodes_to_discover = nodes.map { |n| n['uid'] }
@@ -108,7 +107,7 @@ describe "Puppetd" do
       rpcclient.expects(:runonce).at_least_once.returns([rpcclient_valid_result])
 
       MClient.any_instance.stubs(:rpcclient).returns(rpcclient)
-      Astute::PuppetdDeployer.deploy(@ctx, nodes, deploy_log_parser, retries=0)
+      Astute::PuppetdDeployer.deploy(@ctx, nodes, retries=0)
     end
 
     it "retries to run puppet if it fails" do
@@ -135,7 +134,6 @@ describe "Puppetd" do
 
       nodes = [{'uid' => '1'}]
 
-      deploy_log_parser = mock('deploy_log_parser')
       rpcclient = mock('rpcclient') do
         stubs(:progress=)
         nodes_to_discover = nodes.map { |n| n['uid'] }
@@ -171,7 +169,7 @@ describe "Puppetd" do
       rpcclient.expects(:runonce).at_least_once.returns([rpcclient_valid_result])
 
       MClient.any_instance.stubs(:rpcclient).returns(rpcclient)
-      Astute::PuppetdDeployer.deploy(@ctx, nodes, deploy_log_parser, retries=1)
+      Astute::PuppetdDeployer.deploy(@ctx, nodes, retries=1)
     end
   end
 end

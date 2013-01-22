@@ -1,8 +1,13 @@
 module Astute
   class Orchestrator
-    def initialize(deploy_engine=nil)
+    def initialize(deploy_engine=nil, log_parsing=false)
       @deploy_engine = deploy_engine ||= Astute::DeploymentEngine::NailyFact
-      @check_network = Astute::Network.method(:check_network)
+      @check_network = Network.method(:check_network)
+      if log_parsing
+        @log_parser = LogParser::ParseNodeLogs.new('puppet-agent.log')
+      else
+        @log_parser = LogParser::NoParsing.new
+      end
     end
 
     def node_type(reporter, task_id, nodes, timeout=nil)
@@ -10,7 +15,8 @@ module Astute
       uids = nodes.map {|n| n['uid']}
       systemtype = MClient.new(context, "systemtype", uids, check_result=false, timeout)
       systems = systemtype.get_type
-      return systems.map {|n| {'uid' => n.results[:sender], 'node_type' => n.results[:data][:node_type].chomp}}
+      return systems.map {|n| {'uid' => n.results[:sender],
+                               'node_type' => n.results[:data][:node_type].chomp}}
     end
 
     def deploy(up_reporter, task_id, nodes, attrs)
@@ -18,7 +24,7 @@ module Astute
       # Following line fixes issues with uids: it should always be string
       nodes.map { |x| x['uid'] = x['uid'].to_s }
       proxy_reporter = ProxyReporter.new(up_reporter)
-      context = Context.new(task_id, proxy_reporter)
+      context = Context.new(task_id, proxy_reporter, @log_parser)
       deploy_engine_instance = @deploy_engine.new(context)
       deploy_engine_instance.deploy(nodes, attrs)
     end

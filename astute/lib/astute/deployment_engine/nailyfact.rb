@@ -38,7 +38,7 @@ class Astute::DeploymentEngine::NailyFact < Astute::DeploymentEngine
     end
     Astute.logger.info "#{@ctx.task_id}: All required attrs/metadata passed via facts extension. Starting deployment."
 
-    Astute::PuppetdDeployer.deploy(@ctx, nodes, @deploy_log_parser, retries, ignore_failure)
+    Astute::PuppetdDeployer.deploy(@ctx, nodes, retries, ignore_failure)
     nodes_roles = nodes.map { |n| { n['uid'] => n['role'] } }
     Astute.logger.info "#{@ctx.task_id}: Finished deployment of nodes => roles: #{nodes_roles.inspect}"
   end

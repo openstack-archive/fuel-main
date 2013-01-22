@@ -3,12 +3,34 @@ module Astute
     @separator = "SEPARATOR\n"
     @log_portion = 10000
 
+    class NoParsing
+      attr_accessor :pattern_spec
+
+      def initialize(*args)
+        @pattern_spec = {}
+      end
+
+      def method_missing(*args)
+        # We just eat the call if we don't want to deal with logs
+      end
+
+      def progress_calculate(*args)
+        []
+      end
+    end
+
     class ParseNodeLogs
       attr_accessor :pattern_spec
 
-      def initialize(filename, pattern_spec)
+      def initialize(filename, pattern_spec=nil)
         @filename = filename
-        @pattern_spec = pattern_spec
+        if pattern_spec.nil?
+          @pattern_spec = {'type' => 'count-lines',
+          'endlog_patterns' => [{'pattern' => /Finished catalog run in [0-9]+\.[0-9]* seconds\n/, 'progress' => 1.0}],
+          'expected_line_number' => 500}
+        else
+          @pattern_spec = pattern_spec
+        end
       end
 
       def progress_calculate(uids_to_calc, nodes)

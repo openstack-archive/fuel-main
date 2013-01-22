@@ -6,6 +6,7 @@ describe "NailyFact DeploymentEngine" do
     before(:each) do
       @ctx = mock
       @ctx.stubs(:task_id)
+      @ctx.stubs(:deploy_log_parser).returns(Astute::LogParser::NoParsing.new)
       reporter = mock
       @ctx.stubs(:reporter).returns(reporter)
       reporter.stubs(:report)

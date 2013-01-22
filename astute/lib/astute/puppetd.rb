@@ -56,7 +56,7 @@ module Astute
     end
 
     public
-    def self.deploy(ctx, nodes, deploy_log_parser, retries=2, ignore_failure=false)
+    def self.deploy(ctx, nodes, retries=2, ignore_failure=false)
       # TODO: can we hide retries, ignore_failure into @ctx ?
       uids = nodes.map {|n| n['uid']}
       puppetd = MClient.new(ctx, "puppetd", uids)
@@ -67,7 +67,7 @@ module Astute
       uids.each {|x| node_retries.merge!({x => retries}) }
 
       begin
-        deploy_log_parser.add_separator(nodes)
+        ctx.deploy_log_parser.add_separator(nodes)
       rescue Exception => e
         Astute.logger.warn "Some error occured when add separator to logs: #{e.message}, trace: #{e.backtrace.inspect}"
       end
@@ -90,7 +90,8 @@ module Astute
           calc_nodes['error'].each do |uid|
             if node_retries[uid] > 0
               node_retries[uid] -= 1
-              Astute.logger.debug "Puppet on node #{uid.inspect} will be restarted. #{node_retries[uid]} retries remained."
+              Astute.logger.debug "Puppet on node #{uid.inspect} will be restarted. "\
+                                  "#{node_retries[uid]} retries remained."
               nodes_to_retry << uid
             else
               Astute.logger.debug "Node #{uid.inspect} has failed to deploy. There is no more retries for puppet run."
@@ -109,13 +110,16 @@ module Astute
           if calc_nodes['running'].any?
             begin
               # Pass nodes because logs calculation needs IP address of node, not just uid
-              nodes_progress = deploy_log_parser.progress_calculate(calc_nodes['running'], nodes)
-              Astute.logger.debug "Got progress for nodes: #{nodes_progress.inspect}"
-              # Nodes with progress are running, so they are not included in nodes_to_report yet
-              nodes_progress.map! {|x| x.merge!({'status' => 'deploying'})}
-              nodes_to_report += nodes_progress
+              nodes_progress = ctx.deploy_log_parser.progress_calculate(calc_nodes['running'], nodes)
+              if nodes_progress.any?
+                Astute.logger.debug "Got progress for nodes: #{nodes_progress.inspect}"
+                # Nodes with progress are running, so they are not included in nodes_to_report yet
+                nodes_progress.map! {|x| x.merge!({'status' => 'deploying'})}
+                nodes_to_report += nodes_progress
+              end
             rescue Exception => e
-              Astute.logger.warn "Some error occured when parse logs for nodes progress: #{e.message}, trace: #{e.backtrace.inspect}"
+              Astute.logger.warn "Some error occured when parse logs for nodes progress: #{e.message}, "\
+                                 "trace: #{e.backtrace.inspect}"
             end
           end
           ctx.reporter.report('nodes' => nodes_to_report) if nodes_to_report.any?
@@ -130,7 +134,8 @@ module Astute
         end
       end
       time_spent = Time.now - time_before
-      Astute.logger.info "#{ctx.task_id}: Spent #{time_spent} seconds on puppet run for following nodes(uids): #{nodes.map {|n| n['uid']}.join(',')}"
+      Astute.logger.info "#{ctx.task_id}: Spent #{time_spent} seconds on puppet run "\
+                         "for following nodes(uids): #{nodes.map {|n| n['uid']}.join(',')}"
     end
   end
 end
