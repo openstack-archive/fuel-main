@@ -988,7 +988,9 @@ function(models, commonViews, dialogViews, clusterPageTemplate, deploymentResult
         },
         update: function() {
             this.fetchLogs({
-                success: _.bind(this.appendLogEntries, this),
+                success: _.bind(function(data) {
+                    this.appendLogEntries(data, false);
+                }, this),
                 complete: _.bind(this.scheduleUpdate, this)
             });
         },
@@ -1093,7 +1095,7 @@ function(models, commonViews, dialogViews, clusterPageTemplate, deploymentResult
                 success: _.bind(function(data) {
                     this.$('.table-logs .log-entries').html('');
                     if (data.entries.length) {
-                        this.appendLogEntries(data);
+                        this.appendLogEntries(data, true);
                     } else {
                         this.$('.table-logs .no-logs-msg').show();
                     }
@@ -1106,13 +1108,20 @@ function(models, commonViews, dialogViews, clusterPageTemplate, deploymentResult
                 }, this)
             });
         },
-        appendLogEntries: function(data) {
+        appendLogEntries: function(data, doNotScroll) {
             this.from = data.from;
             if (data.entries.length) {
+                // autoscroll only if window is already scrolled to bottom
+                var scrollToBottom = !doNotScroll && $(document).height() == $(window).scrollTop() + $(window).height();
+
                 this.$('.table-logs .no-logs-msg').hide();
                 this.$('.table-logs .log-entries').append(_.map(data.entries, function(entry) {
                     return this.logEntryTemplate({entry: entry});
                 }, this).join(''));
+
+                if (scrollToBottom) {
+                    $(window).scrollTop($(document).height());
+                }
             }
         },
         initialize: function(options) {
