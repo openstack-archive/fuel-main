@@ -88,7 +88,7 @@ function(models, commonViews, clusterViews, clustersViews, releaseViews, notific
         },
         urlify: function (text) {
             var urlRegexp = /http:(\&\#x2F\;){2}(?:(?:[0-9]|[1-9][0-9]|1[0-9]{2}|2[0-4][0-9]|25[0-5])\.){3}(?:[0-9]|[1-9][0-9]|1[0-9]{2}|2[0-4][0-9]|25[0-5])(\&\#x2F\;)/g;
-            return text.replace(urlRegexp, function(url) {
+            return text.replace(/\n/g, '<br/>').replace(urlRegexp, function(url) {
                 return '<a target="_blank" href="' + url + '">' + url + '</a>';
             });
         },
