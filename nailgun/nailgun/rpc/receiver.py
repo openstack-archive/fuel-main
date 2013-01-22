@@ -186,10 +186,16 @@ class NailgunReceiver(object):
                     orm().commit()
 
                 if node.status in ['provisioning', 'provisioned'] or \
-                        node.status == 'error' and node.error_type == 'provision':
+                        (
+                            node.status,
+                            node.error_type
+                        ) == ('error', 'provision'):
                     nodes_progress.append(float(node.progress) * coeff)
                 elif node.status in ['deploying', 'ready'] or \
-                        node.status == 'error' and node.error_type == 'deploy':
+                        (
+                            node.status,
+                            node.error_type
+                        ) == ('error', 'deploy'):
                     nodes_progress.append(
                         100.0 * coeff + float(node.progress) * (1.0 - coeff)
                     )

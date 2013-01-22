@@ -62,7 +62,7 @@ class FakeDeploymentThread(FakeThread):
                     n['progress'] = 0
                 elif n['status'] == 'error':
                     n['progress'] = 100
-                    continue    
+                    continue
                 elif n['status'] == 'offline':
                     ready = True
                     break

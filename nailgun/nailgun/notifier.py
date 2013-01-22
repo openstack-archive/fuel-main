@@ -11,7 +11,8 @@ from nailgun.api.models import Notification
 
 class Notifier(object):
 
-    def notify(self, topic, message, cluster_id=None, node_id=None, task_id=None):
+    def notify(self, topic, message,
+               cluster_id=None, node_id=None, task_id=None):
         db = orm()
         exist = False
         if topic == 'discover' and node_id is None:
@@ -22,7 +23,7 @@ class Notifier(object):
                 task_id=task_id,
                 message=message
             ).first()
-        
+
         if not exist:
             notification = Notification()
             notification.topic = topic
@@ -33,7 +34,9 @@ class Notifier(object):
             notification.datetime = datetime.now()
             db.add(notification)
             db.commit()
-            logger.info("Notification: topic: %s message: %s" % (topic, message))
+            logger.info(
+                "Notification: topic: %s message: %s" % (topic, message)
+            )
 
 
 notifier = Notifier()
