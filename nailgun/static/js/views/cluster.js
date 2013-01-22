@@ -70,7 +70,8 @@ function(models, commonViews, dialogViews, clusterPageTemplate, deploymentResult
             if (task) {
                 task.fetch({complete: complete}).done(_.bind(function(){
                         this.updateTasksAfterDeployment();
-                        this.refreshNotificationsAfterDeployment();
+                        app.navbar.stats.nodes.fetch();
+                        app.navbar.notifications.fetch();
                     }, this));
                 this.model.get('nodes').fetch({data: {cluster_id: this.model.id}, complete: complete});
             }
@@ -84,13 +85,6 @@ function(models, commonViews, dialogViews, clusterPageTemplate, deploymentResult
                     this.model.get('tasks').remove(verificationTask);
                     verificationTask.destroy();
                 }
-            }
-        },
-        refreshNotificationsAfterDeployment: function() {
-            var task = this.model.task('deploy');
-            if (task.get('status') != 'running') {
-                app.navbar.stats.nodes.fetch();
-                app.navbar.notifications.fetch();
             }
         },
         beforeTearDown: function() {
