@@ -378,7 +378,7 @@ h6.page-title {
   margin-top: 2px;
 }
 
-.logs-link-allowed .node-status:hover > div:first-child {
+.assigned .node-status:hover > div:first-child {
   display: none;
 }
 
