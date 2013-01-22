@@ -486,6 +486,7 @@ class Notification(Base, BasicValidator):
     id = Column(Integer, primary_key=True)
     cluster_id = Column(Integer, ForeignKey('clusters.id'))
     node_id = Column(Integer, ForeignKey('nodes.id'))
+    task_id = Column(Integer, ForeignKey('tasks.id'))
     topic = Column(Enum(*NOTIFICATION_TOPICS), nullable=False)
     message = Column(Text)
     status = Column(Enum(*NOTIFICATION_STATUSES), nullable=False,

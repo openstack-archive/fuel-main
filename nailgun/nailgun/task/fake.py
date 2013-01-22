@@ -60,7 +60,10 @@ class FakeDeploymentThread(FakeThread):
             for n in kwargs['nodes']:
                 if not 'progress' in n:
                     n['progress'] = 0
-                elif n['status'] in ('error', 'offline'):
+                elif n['status'] == 'error':
+                    n['progress'] = 100
+                    continue    
+                elif n['status'] == 'offline':
                     ready = True
                     break
                 elif n['status'] == 'discover':
@@ -76,21 +79,43 @@ class FakeDeploymentThread(FakeThread):
                         n['status'] = next_st[n['status']]
             resp_method(**kwargs)
             if all(map(
-                lambda n: n['status'] == 'provisioned',
+                lambda n: n['status'] in ('provisioned', 'error'),
                 kwargs['nodes']
             )):
                 ready = True
             else:
                 time.sleep(tick_interval)
 
+        error_nodes = filter(
+            lambda n: n['status'] == 'error',
+            kwargs['nodes']
+        )
+        offline_nodes = filter(
+            lambda n: n['status'] == 'offline',
+            kwargs['nodes']
+        )
+        if error_nodes:
+            kwargs['status'] = 'error'
+            kwargs['progress'] = 100
+            kwargs['error'] = 'Failed to provision node(s): {0}'.format(
+                ",".join([str(n['uid']) for n in error_nodes])
+            )
+            resp_method(**kwargs)
+            return
+        if offline_nodes:
+            kwargs['status'] = 'error'
+            kwargs['progress'] = 100
+            kwargs['error'] = 'Cannot deploy offline node(s): {0}'.format(
+                ",".join([str(n['uid']) for n in offline_nodes])
+            )
+            resp_method(**kwargs)
+            return
+
         ready = False
         while not ready and not self.stoprequest.isSet():
             for n in kwargs['nodes']:
-                if n['status'] == 'ready':
+                if n['status'] in 'ready':
                     continue
-                elif n['status'] in ('error', 'offline'):
-                    ready = True
-                    break
                 elif n['status'] == 'provisioned':
                     n['status'] = next_st[n['status']]
                     n['progress'] = 0
@@ -110,14 +135,6 @@ class FakeDeploymentThread(FakeThread):
                 ready = True
             resp_method(**kwargs)
             time.sleep(tick_interval)
-
-        if any(map(
-            lambda n: n['status'] == 'offline',
-            kwargs['nodes']
-        )):
-            kwargs['status'] = 'error'
-            kwargs['error'] = 'Cannot provision/deploy offline node'
-        resp_method(**kwargs)
 
 
 class FakeDeletionThread(FakeThread):

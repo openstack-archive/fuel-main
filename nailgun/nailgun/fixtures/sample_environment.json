@@ -146,6 +146,8 @@
         "model": "nailgun.node",
         "fields": {
             "status": "error",
+            "error_type": "provision",
+            "error_msg": "You need more money",
             "name": "Bad node",
             "manufacturer": "OpenVZ",
             "platform_name": "Model-2",
@@ -259,6 +261,8 @@
         "model": "nailgun.node",
         "fields": {
             "status": "error",
+            "error_type": "provision",
+            "error_msg": "All hope is lost",
             "name": "Error node",
             "manufacturer": "QEMU",
             "platform_name": "Model-2",

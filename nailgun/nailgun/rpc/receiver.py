@@ -152,23 +152,23 @@ class NailgunReceiver(object):
                     setattr(node_db, param, node[param])
             orm().add(node_db)
             orm().commit()
-            if node.get('status') and node['status'] == 'error':
-                error_nodes.append(node_db)
 
-        if error_nodes:
-            nodes_info = [
-                unicode({
-                    "MAC": n.mac,
-                    "IP": n.ip or "Unknown",
-                    "NAME": n.name or "Unknown"
-                }) for n in error_nodes
-            ]
-            message = u"Failed to deploy nodes:\n%s" % "\n".join(nodes_info)
-            status = 'error'
-            progress = 100
+            if 'status' in node and node['status'] == 'error':
+                cl_id = task.cluster_id if task else None
+                t_id = task.id if task else None
+                notifier.notify(
+                    "error",
+                    "Failed to deploy node '{0}': {1}".format(
+                        node_db.name,
+                        node_db.error_msg or "Unknown error"
+                    ),
+                    cluster_id=cl_id,
+                    node_id=node['uid'],
+                    task_id=t_id
+                )
 
         coeff = settings.PROVISIONING_PROGRESS_COEFF or 0.3
-        if nodes and not progress and not error_nodes and task:
+        if nodes and not progress:
             # we should calculate task progress by nodes info
             nodes_progress = []
 
@@ -185,9 +185,11 @@ class NailgunReceiver(object):
                     node.progress = 0
                     orm().commit()
 
-                if node.status in ['provisioning', 'provisioned']:
+                if node.status in ['provisioning', 'provisioned'] or \
+                        node.status == 'error' and node.error_type == 'provision':
                     nodes_progress.append(float(node.progress) * coeff)
-                elif node.status in ['deploying', 'ready']:
+                elif node.status in ['deploying', 'ready'] or \
+                        node.status == 'error' and node.error_type == 'deploy':
                     nodes_progress.append(
                         100.0 * coeff + float(node.progress) * (1.0 - coeff)
                     )
@@ -197,6 +199,21 @@ class NailgunReceiver(object):
                 progress = int(sum(nodes_progress) / len(nodes_progress))
 
         if status in ('error',) and task:
+            nodes_info = []
+            error_nodes = orm().query(Node).filter_by(
+                cluster_id=task.cluster_id,
+                status='error'
+            ).all()
+            for n in error_nodes:
+                nodes_info.append(
+                    unicode({
+                        "MAC": n.mac,
+                        "IP": n.ip or "Unknown",
+                        "NAME": n.name or "Unknown",
+                        "ERROR": n.error_msg or "Unknown error"
+                    })
+                )
+            message = "Failed to deploy nodes:\n%s" % "\n".join(nodes_info)
             notifier.notify(
                 "error",
                 message,
