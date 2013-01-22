@@ -120,7 +120,10 @@ def assign_vip(cluster_id, network_name):
 
 
 def get_node_networks(node_id):
-    cluster_id = orm().query(Node).get(node_id).cluster_id
+    cluster_db = orm().query(Node).get(node_id).cluster
+    if cluster_db is None:
+        # Node doesn't belong to any cluster, so it should not have nets
+        return []
     ips = [x for x in orm().query(NetworkElement).filter_by(
         node=node_id).all() if x.ip_addr]  # Got rid of Nones (if x.ip_addr)
     network_data = []
@@ -138,12 +141,16 @@ def get_node_networks(node_id):
         network_ids.append(net.id)
     # And now let's add networks w/o IP addresses
     nets = orm().query(Network).join(NetworkGroup).\
-        filter(NetworkGroup.cluster_id == cluster_id)
+        filter(NetworkGroup.cluster_id == cluster_db.id)
     if network_ids:
         nets = nets.filter(not_(Network.id.in_(network_ids)))
     # For now, we pass information about all networks,
     #    so these vlans will be created on every node we call this func for
+    # However it will end up with errors if we precreate vlans in VLAN mode
+    #   in fixed network. We are skipping fixed nets in Vlan mode.
     for net in nets.all():
+        if net.name == 'fixed' and cluster_db.net_manager == 'VlanManager':
+            continue
         network_data.append({
             'name': net.name,
             'vlan': net.vlan_id,

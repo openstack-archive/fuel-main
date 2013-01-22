@@ -83,3 +83,18 @@ class TestNetworkManager(BaseHandlers):
         # If that happen, the code behavior in netmanager is not idempotent...
         self.assertEquals(str(ip_db), vip)
         self.assertEquals(vip, vip2)
+
+    def test_get_node_networks_for_vlan_manager(self):
+        cluster = self.create_cluster_api(**{'net_manager': 'VlanManager'})
+        node1 = self.create_default_node(cluster_id=cluster['id'],
+                                         pending_addition=True)
+
+        network_data = netmanager.get_node_networks(node1.id)
+        self.assertEquals(len(network_data), 4)
+        fixed_nets = [x for x in network_data if x['name'] == 'fixed']
+        self.assertEquals(fixed_nets, [])
+
+    def test_nets_empty_list_if_node_does_not_belong_to_cluster(self):
+        node = self.create_default_node()
+        network_data = netmanager.get_node_networks(node.id)
+        self.assertEquals(network_data, [])

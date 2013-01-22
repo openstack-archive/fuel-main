@@ -125,8 +125,9 @@ class ClusterCollectionHandler(JSONHandler):
         cluster.release = orm().query(Release).get(data["release"])
 
         # TODO: use fields
-        for field in ('name', 'type', 'mode'):
-            setattr(cluster, field, data.get(field))
+        for field in ('name', 'type', 'mode', 'net_manager'):
+            if data.get(field):
+                setattr(cluster, field, data.get(field))
 
         orm().add(cluster)
         orm().commit()
