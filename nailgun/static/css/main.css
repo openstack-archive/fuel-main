@@ -1656,10 +1656,6 @@ h6.page-title {
   color: #545a63;
 }
 
-.table-logs tr.critical {
-  background-color: #E99292;
-  color: #fff;
-}
 .table-logs tr td {
   padding: 1px 5px;
   line-height: 15px;
@@ -1698,27 +1694,29 @@ h6.page-title {
   background-color: #fcf8e3;
 }
 
-.table-logs tbody tr.error td {
-  background-color: #d89d9f;
+.table-logs tbody tr.error td, .table-logs tbody tr.err td {
+  background-color: #eccecf;
 }
 
-.table-logs tbody tr.critical td {
+ .table-logs tbody tr.critical td, .table-logs tbody tr.crit td, .table-logs tbody tr.fatal td {
   background-color: #c56d6f;
   color: #ffffff;
 }
 
 .table-logs tbody tr.alert td {
-  background-color: #eccecf;
+  background-color: #d89d9f;
 }
 
-.table-logs tbody tr.emergency td {
-  background-color: #ed9a57;
-}
-
-.table-logs tbody tr.fatal td {
+.table-logs tbody tr.emergency td, .table-logs tbody tr.emerg td {
   background-color: #8a080b;
+}
+
+/*
+.table-logs tbody tr.fatal td {
+  background-color: #ed9a57;
   color: #ffffff;
 }
+*/
 
 
 .page-control-box {
