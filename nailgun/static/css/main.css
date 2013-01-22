@@ -2504,6 +2504,7 @@ h6.page-title {
   text-shadow: 0 0 0 rgba(0, 0, 0, 0);
   margin: 9px 0px 0px 12px;
 }
+
 .deploying-progress-status-box {
   display: block;
   color: #ffffff;
@@ -2512,6 +2513,7 @@ h6.page-title {
   text-align: left;
   -webkit-font-smoothing: antialiased;
   text-shadow: 0 0 0 rgba(0, 0, 0, 0);
+
   line-height: 32px;
   vertical-align: middle;
   margin: 3px 10px 0px 10px;
