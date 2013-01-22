@@ -163,7 +163,7 @@ class NailgunReceiver(object):
                     "NAME": n.name or "Unknown"
                 }) for n in error_nodes
             ]
-            message = "Failed to deploy nodes:\n%s" % "\n".join(nodes_info)
+            message = u"Failed to deploy nodes:\n%s" % "\n".join(nodes_info)
             status = 'error'
             progress = 100
 
@@ -209,7 +209,7 @@ class NailgunReceiver(object):
                 Node.cluster_id == task.cluster_id,
                 Node.role == 'controller').first()
             if controller:
-                logger.debug("role %s is found, node_id=%s, getting "
+                logger.debug(u"role %s is found, node_id=%s, getting "
                              "it's IP addresses", controller.role,
                              controller.id)
                 public_net = filter(
@@ -220,7 +220,7 @@ class NailgunReceiver(object):
                     horizon_ip = public_net[0]['ip'].split('/')[0]
                     if task.cluster.mode in ('singlenode', 'multinode'):
                         message = (
-                            "Deployment of installation '{0}' is done. "
+                            u"Deployment of installation '{0}' is done. "
                             "Access WebUI of OpenStack at http://{1}/ or via "
                             "internal network at http://{2}/").format(
                                 task.cluster.name,
@@ -228,7 +228,7 @@ class NailgunReceiver(object):
                                 controller.ip)
                     else:
                         message = (
-                            "Deployment of installation '{0}' is done. "
+                            u"Deployment of installation '{0}' is done. "
                             "Access WebUI of OpenStack at http://{1}/").format(
                                 task.cluster.name,
                                 horizon_ip)
@@ -239,7 +239,7 @@ class NailgunReceiver(object):
                         "Public ip for controller node "
                         "not found in '{0}'".format(task.cluster.name))
             else:
-                message = ("Deployment of installation"
+                message = (u"Deployment of installation"
                            " '{0}' is done").format(task.cluster.name)
                 logger.warning("Controller node not found in '{0}'".format(
                     task.cluster.name
@@ -299,7 +299,7 @@ class NailgunReceiver(object):
                                     absent_vlans)
                                 )
                 if error_nodes:
-                    error_msg = "Following nodes have"\
+                    error_msg = u"Following nodes have"\
                         " network errors:\n%s." % (
                         '; '.join(error_nodes))
                     logger.error(error_msg)

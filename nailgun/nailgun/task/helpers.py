@@ -1,3 +1,5 @@
+# -*- coding: utf-8 -*-
+
 import logging
 
 from nailgun.db import orm
@@ -18,7 +20,7 @@ def update_task_status(uuid, status, progress, msg=""):
         if value is not None:
             setattr(task, key, value)
             logger.info(
-                "Task {0} {1} is set to {2}".format(
+                u"Task {0} {1} is set to {2}".format(
                     task.uuid,
                     key,
                     value
