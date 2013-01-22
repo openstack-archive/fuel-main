@@ -3,6 +3,9 @@
   <h3>Deploy changes</h3>
 </div>
 <div class="modal-body display-changes-dialog">
+  <% if (cluster.needRedeployment()) { %>
+    <div class="alert alert-error">Need to redeploy cluster.</div>
+  <% } %>
   <ul>
     <% var settingsChangesDescriptions = {
       'attributes': 'OpenStack settings were changed',

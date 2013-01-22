@@ -38,6 +38,9 @@ define(function() {
         hasChanges: function() {
             return this.get('nodes').hasChanges() || this.get('changes').length;
         },
+        needRedeployment: function() {
+            return this.get('nodes').currentNodes().length && this.get('nodes').where({status: 'error'}).length;
+        },
         canChangeMode: function(newMode) {
             var nodes = this.get('nodes');
             return !(nodes.currentNodes().length || (nodes.where({role: 'controller'}).length > 1) || (newMode && newMode == 'singlenode' && (nodes.length > 1 || (nodes.length == 1 && !nodes.where({role: 'controller'}).length))));
