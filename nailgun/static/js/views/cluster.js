@@ -539,7 +539,7 @@ function(models, commonViews, dialogViews, clusterPageTemplate, deploymentResult
             if (!this.renameable || this.renaming || this.model.collection.cluster.task('deploy', 'running')) {return;}
             $('html').off(this.eventNamespace);
             $('html').on(this.eventNamespace, _.after(2, _.bind(function(e) {
-                if (!$(e.target).closest(this.$el).length) {
+                if (!$(e.target).closest(this.$('.node-renameable input')).length) {
                     this.endNodeRenaming();
                 }
             }, this)));
