@@ -2405,6 +2405,12 @@ h6.page-title {
   margin-top: 2px;
 }
 
+.page-control-button-placeholder .deploying-progress-text-box {
+  color: #444;
+  padding-top: 2px;
+  font-weight: bold;
+}
+
 .percentage {
   width: 35px;
   padding-left: 10px;
@@ -2415,6 +2421,10 @@ h6.page-title {
   max-width: 100px;
   float: left;
   margin: 10px 0px 8px 0px;
+}
+
+.page-control-button-placeholder .deploying-progress-bar-box {
+  margin: 0;
 }
 
 .deploying-progress-bar-box > .progress-deploy {

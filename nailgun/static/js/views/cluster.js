@@ -809,12 +809,8 @@ function(models, commonViews, dialogViews, clusterPageTemplate, deploymentResult
             var task = this.model.task('verify_networks', 'running');
             if (task) {
                 var progress = task.get('progress') || 0;
-                var progressBar = this.$('.progress');
-                progressBar.attr('data-original-title', 'Verifying networks, ' + progress + '% completed').tooltip('fixTitle').tooltip();
-                if (progressBar.is(':hover')) {
-                    progressBar.tooltip('show');
-                }
                 this.$('.bar').css('width', (progress > 3 ? progress : 3) + '%');
+                this.$('.deploying-progress-text-box').text((progress > 3 ? progress : 3) + '%');
             }
         },
         beforeTearDown: function() {
@@ -831,7 +827,6 @@ function(models, commonViews, dialogViews, clusterPageTemplate, deploymentResult
             }
         },
         render: function() {
-            this.$('.progress').tooltip('destroy');
             this.$el.html(this.template({cluster: this.model, networks: this.options.networks}));
             this.updateProgress();
             return this;
