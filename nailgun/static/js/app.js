@@ -23,7 +23,7 @@ function(models, commonViews, clusterViews, clustersViews, releaseViews, notific
             this.content = $('#content');
             this.navbar = new commonViews.Navbar({elements: [
                 ['OpenStack Installations', '#clusters'],
-                ['Software Updates', '#releases']
+                ['OpenStack Releases', '#releases']
             ]});
             this.content.before(this.navbar.render().el);
             this.breadcrumbs = new commonViews.Breadcrumbs();

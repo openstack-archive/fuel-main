@@ -10,8 +10,8 @@ function(commonViews, releaseListTemplate) {
 
     views.ReleasesPage = commonViews.Page.extend({
         navbarActiveElement: 'releases',
-        breadcrumbsPath: [['Home', '#'], 'Software Updates'],
-        title: 'Software Updates',
+        breadcrumbsPath: [['Home', '#'], 'OpenStack Releases'],
+        title: 'OpenStack Releases',
         template: _.template(releaseListTemplate),
         initialize: function() {
             this.collection.bind('reset', this.render, this);
