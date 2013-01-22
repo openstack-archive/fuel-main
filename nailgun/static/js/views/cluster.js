@@ -239,11 +239,7 @@ function(models, commonViews, dialogViews, clusterPageTemplate, deploymentResult
             this.registerSubView(dialog);
             dialog.render();
         },
-        beforeTearDown: function() {
-            this.$('[rel=tooltip]').tooltip('destroy');
-        },
         render: function() {
-            this.$('[rel=tooltip]').tooltip('destroy');
             this.$el.html(this.template({cluster: this.model}));
             return this;
         }

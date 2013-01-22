@@ -1,11 +1,10 @@
 <div class="navbar summary">
   <div class="navbar-inner">
-    <div class="summary-article"><b>Settings</b></div>
      <ul class="nav">
       <% var modes = {'singlenode': 'Single-node', 'multinode': 'Multi-node', 'ha': 'Multi-node with HA'} %>
       <% var types = {'both': 'Compute and storage', 'compute': 'Compute only', 'storage': 'Storage only'} %>
       <% var configurable = !cluster.task('deploy', 'running') && (cluster.canChangeMode() || cluster.canChangeType()) %>
-      <li class="btn btn-link summary-settings-btn change-cluster-mode-btn <%= configurable ? '' : 'disabled' %>" <%= configurable ? 'rel="tooltip" data-title="Change installation deployment mode"' : '' %>>
+      <li class="btn btn-link summary-settings-btn change-cluster-mode-btn <%= configurable ? '' : 'disabled' %>">
         <b>Deployment Mode: </b><%- modes[cluster.get('mode')] %> <%- cluster.get('mode') != 'singlenode' ? '(' + types[cluster.get('type')] + ')' : '' %>
       </li>
       <li class="btn btn-link summary-settings-btn disabled">

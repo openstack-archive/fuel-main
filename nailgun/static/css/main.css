@@ -683,8 +683,17 @@ h6.page-title {
 
 .breadcrumb > li > a {
     color: #B0B0B0;
+    text-decoration: underline;
 }
-.breadcrumb > .active {color: #d0d0d0;}
+
+.breadcrumb > li > a:hover {
+    color: #d0d0d0;
+}
+
+.breadcrumb > .active {
+  color: #d0d0d0;
+  cursor: default;
+}
 
 .nav-tabs {
     border: none;
@@ -1254,6 +1263,10 @@ h6.page-title {
 
 #networkManager {
   margin-bottom: 30px;
+}
+
+.nodes-summary-container {
+  cursor: default;
 }
 
 .nodes-summary-stat {
@@ -2423,4 +2436,8 @@ pre {
   margin: 0;
   padding: 2px;
   line-height: 15px;
+}
+
+select[name=release] option {
+  height: 20px;
 }
