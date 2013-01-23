@@ -124,18 +124,21 @@ class compact_controller {
         controller_node_address => $management_vip,
         swift_local_net_ip      => $internal_address,
       }
-      class { 'openstack::img::cirros':
-        os_password               => $admin_password,
-        os_auth_url               => "http://${management_vip}:5000/v2.0/",
-        img_name                  => "TestVM",
+      if $hostname == $master_hostname {
+        class { 'openstack::img::cirros':
+          os_password => $admin_password,
+          os_auth_url => "http://${management_vip}:5000/v2.0/",
+          img_name    => "TestVM",
+        }
+        Class[glance::api]                    -> Class[openstack::img::cirros]
+        Class[openstack::swift::storage-node] -> Class[openstack::img::cirros]
+        Class[openstack::swift::proxy]        -> Class[openstack::img::cirros]
+        Service[swift-proxy]                  -> Class[openstack::img::cirros]
       }
 
       Class[osnailyfacter::network_setup]   -> Class[openstack::controller_ha]
       Class[osnailyfacter::network_setup]   -> Class[openstack::swift::storage-node]
       Class[osnailyfacter::network_setup]   -> Class[openstack::swift::proxy]
-      Class[glance::api]                    -> Class[openstack::img::cirros]
-      Class[openstack::swift::storage-node] -> Class[openstack::img::cirros]
-      Class[openstack::swift::proxy]        -> Class[openstack::img::cirros]
     }
 
     "compute" : {
