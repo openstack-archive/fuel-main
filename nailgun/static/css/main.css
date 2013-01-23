@@ -2456,6 +2456,7 @@ select[name=release] option {
 .header-box {
   display: block;
   width: 100%;
+  cursor: default;
 }
 
 .header-box:after {
@@ -2470,9 +2471,10 @@ select[name=release] option {
   background: url(../img/mirantis-logo-small.png) no-repeat top left;
   margin: 10px 0px 10px 10px;
   overflow: hidden;
-  cursor: pointer;
+  /*cursor: pointer;*/
 }
 
+/*
 .header-logo:hover {
   display: block;
   float: left;
@@ -2482,6 +2484,7 @@ select[name=release] option {
   margin: 10px 0px 10px 10px;
   overflow: hidden;
 }
+*/
 
 .header-info {
   display: block;
@@ -2494,12 +2497,14 @@ select[name=release] option {
   text-align: right;
   color: #d3d8d9;
   font-size: 15px;
-  cursor: pointer;
+  /*cursor: pointer;*/
 }
 
+/*
 .header-user:hover {
   color: #ffffff;
 }
+*/
 
 .header-user p {
   display: inline;
@@ -2508,9 +2513,11 @@ select[name=release] option {
   border-bottom: 1px dotted #7789a0;
 }
 
+/*
 .header-user:hover p {
   border-bottom: 1px dotted #ffffff;
 }
+*/
 
 .header-version {
   display: block;
