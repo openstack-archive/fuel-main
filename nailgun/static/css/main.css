@@ -842,14 +842,26 @@ h6.page-title {
 
 .globalalert > h4 {color: #C09853;}
 .global-error > h4 {color: #B94A48;}
-.global-success > h4 {color: #468847;}
+.global-success > h4 {color: #41b142;}
 .global-info > h4 {color: #3A87AD;}
+
+.globalalert > p {color: #C09853;}
+.global-error > p {color: #B94A48;}
+.global-success > p {color: #41b142;}
+.global-info > p {color: #3A87AD;}
 
 .globalalert > p,
 .global-error > p,
 .global-success > p,
 .global-info > p {
   font-style: italic;
+}
+
+.globalalert > p > a,
+.global-error > p > a,
+.global-success > p > a,
+.global-info > p > a {
+  color: #00aeef;
 }
 
 .clusterbox {
@@ -1513,8 +1525,8 @@ h6.page-title {
 }
 
 .message-list > .new {
-  color: #d8efff !important;
-  font-weight: 400;
+  color: #e78715 !important;
+  font-weight: 600;
 }
 
 .message-list .datetime {
@@ -1523,7 +1535,8 @@ h6.page-title {
 }
 
 .message-list > .new .datetime {
-  color: #91C7ED;
+  color: #e78715;
+  font-weight: 600;
 }
 
 .message-list > li > i {
