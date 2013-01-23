@@ -1,33 +1,45 @@
 #!/usr/bin/env ruby
 
-require 'rubygems'
-require 'astute'
+require 'optparse'
+begin
+  require 'astute'
+rescue LoadError
+  require 'rubygems'
+  require 'astute'
+end
 
 class ConsoleReporter
   def report(msg)
-    puts "REPORTING MSG='#{msg.inspect}'"
+    puts msg.inspect
   end
 end
 
+opts = {}
+optparse = OptionParser.new do |o|
+  o.banner = "Usage: bin/astute -f FILENAME"
+
+  o.on("-v", "--[no-]verbose", "Run verbosely") do |v|
+    opts[:verbose] = v
+  end
+
+  o.on("-f FILENAME", "Environment in YAML format. Samples are in examples directory.") do |f|
+    opts[:filename] = f
+  end
+
+  o.on("-h") { puts o; exit }
+end
+optparse.parse!(ARGV)
+
+if opts[:filename].nil?
+  puts optparse
+  exit
+end
+
 reporter = ConsoleReporter.new
-Astute.logger = Logger.new(STDOUT)
+Astute.logger = Logger.new(STDOUT) if opts[:verbose]
 
-network_data = [{'vlan' =>  102, 'dev' => 'eth0', 'ip' => '10.20.20.24/24', 'brd' => '10.20.20.255', 'netmask' => '255.255.255.0', 'name' => 'management'},
-                {'vlan' => 103, 'dev' => 'eth0', 'ip' => '240.12.12.12/24', 'brd' => '240.12.12.255', 'netmask' => '255.255.255.0', 'name' => 'public'},
-                {'vlan' => 104, 'dev' => 'eth0', 'name' => 'floating'},
-                {'vlan' => 101, 'dev' => 'eth0', 'name' => 'fixed'}] 
-nodes = [{'id' => '1', 'ip' => '10.1.1.2', 'uid' => 'devnailgun.mirantis.com', 'role' => 'controller', 'fqdn' => 'devnailgun.mirantis.com',
-          'network_data' => network_data}]
-nodes << {'id' => '1', 'ip' => '10.1.1.2', 'uid' => 'devnailgun.mirantis.com', 'role' => 'compute', 'fqdn' => 'devnailgun.mirantis.com'}
+environment = YAML.load_file(opts[:filename])
 
-networks = [{'id' => 1, 'vlan_id' => 100, 'cidr' => '10.0.0.0/24'},
-            {'id' => 2, 'vlan_id' => 101, 'cidr' => '192.168.0.0/24'}]
-
-task_id = `uuidgen`.strip
 orchestrator = Astute::Orchestrator.new(nil, log_parsing=false)
-
-
-attrs = {'deployment_mode' => 'ha_compute', 'simple_string' => 'just_string', 'list' => ['a','v'], 'hashes' => [{'a' => '1'}],
-         'management_vip' => '192.168.1.4', 'public_vip' => '12.1.1.4'}
-orchestrator.deploy(reporter, task_id, nodes, attrs)
+orchestrator.deploy(reporter, environment['task_uuid'], environment['nodes'], environment['attributes'])
 #orchestrator.verify_networks(reporter, task_id, nodes, networks)

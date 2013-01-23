@@ -1,4 +1,5 @@
 require 'json'
+require 'yaml'
 require 'logger'
 
 require 'astute/logparser'
