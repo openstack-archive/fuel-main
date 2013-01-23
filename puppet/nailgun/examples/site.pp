@@ -55,5 +55,11 @@ node default {
     rabbitmq_naily_user => $rabbitmq_naily_user,
     rabbitmq_naily_password => $rabbitmq_naily_password,
     puppet_master_hostname => $puppet_master_hostname,
+  }->
+  class {"puppetdb::database::postgresql":
+  }->
+  class {"puppetdb::server":
+    listen_port => 8082,
   }
+  Class["puppetdb::database::postgresql"]->Class["puppetdb::server::validate_db"]
 }
