@@ -15,6 +15,7 @@ module Astute
   autoload 'Context', 'astute/context'
   autoload 'MClient', 'astute/mclient'
   autoload 'ProxyReporter', 'astute/reporter'
+  autoload 'NodeRemoval', 'astute/node_removal'
 
   def self.logger
     @logger ||= Logger.new('/var/log/astute.log')

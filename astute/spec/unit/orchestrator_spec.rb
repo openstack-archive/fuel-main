@@ -97,6 +97,10 @@ describe "Orchestrator" do
       res.should eql(expected)
     end
 
+    it "in remove_nodes, it returns empty list if nodes are not provided" do
+      res = @orchestrator.remove_nodes(@reporter, 'task_uuid', [])
+      res.should eql({'nodes' => []})
+    end
   end
 end
 
