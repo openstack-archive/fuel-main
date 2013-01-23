@@ -2,7 +2,6 @@ module Astute
   class Orchestrator
     def initialize(deploy_engine=nil, log_parsing=false)
       @deploy_engine = deploy_engine ||= Astute::DeploymentEngine::NailyFact
-      @check_network = Network.method(:check_network)
       if log_parsing
         @log_parser = LogParser::ParseNodeLogs.new('puppet-agent.log')
       else
@@ -37,24 +36,9 @@ module Astute
     end
 
     def verify_networks(reporter, task_id, nodes, networks)
-      if nodes.empty?
-        Astute.logger.error "#{task_id}: Network checker: nodes list is empty. Nothing to check."
-        return {'status' => 'error', 'error' => "Nodes list is empty. Nothing to check."}
-      elsif nodes.size == 1
-        Astute.logger.info "#{task_id}: Network checker: nodes list contains one node only. Do nothing."
-        return {'nodes' =>
-          [{'uid'=>nodes[0]['uid'],
-            'networks'=>[{'vlans' => networks.map {|n| n['vlan_id'].to_i}, 'iface'=>'eth0'}]
-          }]
-        }
-      end
-
       context = Context.new(task_id, reporter)
-      result = @check_network.call(context, nodes, networks)
-      result.map! { |node| {'uid' => node['sender'],
-                            'networks' => check_vlans_by_traffic(node['sender'], node['data'][:neighbours]) }
-                  }
-      return {'nodes' => result}
+      result = Network.check_network(context, nodes, networks)
+      return result
     end
 
     private
@@ -93,15 +77,5 @@ module Astute
       return answer
     end
 
-    def check_vlans_by_traffic(uid, data)
-      return data.map{|iface, vlans| {
-        'iface' => iface,
-        'vlans' =>
-          vlans.reject{|k,v|
-            v.size==1 and v.has_key?(uid)
-          }.keys.map{|n| n.to_i}
-        }
-      }
-    end
   end
 end
