@@ -91,6 +91,15 @@ function(models, commonViews, clusterViews, clustersViews, releaseViews, notific
             return text.replace(urlRegexp, function(url) {
                 return '<a target="_blank" href="' + url + '">' + url + '</a>';
             });
+        },
+        forceWebkitRedraw: function(el) {
+            if ($.browser.webkit) {
+                el.each(function() {
+                    this.style.webkitTransform = 'scale(1)';
+                    var dummy = this.offsetHeight;
+                    this.style.webkitTransform = '';
+                });
+            }
         }
     });
 

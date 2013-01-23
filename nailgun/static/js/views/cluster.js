@@ -316,22 +316,13 @@ function(models, commonViews, dialogViews, clusterPageTemplate, deploymentResult
             this.calculateSelectAllTumblerState();
             this.calculateNotChosenNodesAvailability();
             this.calculateApplyButtonAvailability();
-            this.forceWebkitRedraw();
+            app.forceWebkitRedraw(this.$('.nodebox'));
         },
         selectAll: function(e) {
             var checked = $(e.currentTarget).is(':checked');
             this.$('.nodebox').toggleClass('node-to-' + this.action + '-checked', checked).toggleClass('node-to-' + this.action + '-unchecked', !checked);
             this.calculateApplyButtonAvailability();
-            this.forceWebkitRedraw();
-        },
-        forceWebkitRedraw: function() {
-            if ($.browser.webkit) {
-                this.$('.nodebox').each(function() {
-                    this.style.webkitTransform = 'scale(1)';
-                    var dummy = this.offsetHeight;
-                    this.style.webkitTransform = '';
-                });
-            }
+            app.forceWebkitRedraw(this.$('.nodebox'));
         },
         calculateSelectAllTumblerState: function() {
             this.$('.select-all-tumbler').attr('checked', this.nodes.length == this.$('.node-to-' + this.action + '-checked').length);
@@ -740,19 +731,11 @@ function(models, commonViews, dialogViews, clusterPageTemplate, deploymentResult
                 this.networks = this.model.get('networks');
             }
         },
-        forceWebkitRedraw: function() {
-            if ($.browser.webkit) {
-                var el = this.$('.page-control-box');
-                el[0].style.webkitTransform = 'scale(1)';
-                var dummy = el[0].offsetHeight;
-                el[0].style.webkitTransform = '';
-            }
-        },
         renderVerificationControls: function() {
             var verificationView = new views.NetworkTabVerification({model: this.model, networks: this.networks});
             this.registerSubView(verificationView);
             this.$('.verify-network').html(verificationView.render().el);
-            this.forceWebkitRedraw();
+            app.forceWebkitRedraw(this.$('.page-control-box'));
         },
         render: function() {
             this.$el.html(this.template({cluster: this.model, networks: this.networks}));
