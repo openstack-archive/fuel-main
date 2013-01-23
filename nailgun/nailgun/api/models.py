@@ -166,6 +166,7 @@ class Node(Base, BasicValidator):
     NODE_ERRORS = (
         'deploy',
         'provision',
+        'deletion'
     )
     id = Column(Integer, primary_key=True)
     cluster_id = Column(Integer, ForeignKey('clusters.id'))
@@ -191,6 +192,18 @@ class Node(Base, BasicValidator):
         #   which must be created on target node
         from nailgun.network import manager as netmanager
         return netmanager.get_node_networks(self.id)
+
+    @property
+    def needs_reprovision(self):
+        return self.status == 'error' and self.error_type == 'provision'
+
+    @property
+    def needs_redeploy(self):
+        return self.status == 'error' and self.error_type == 'deploy'
+
+    @property
+    def needs_redeletion(self):
+        return self.status == 'error' and self.error_type == 'deletion'
 
     @property
     def info(self):
@@ -480,6 +493,10 @@ class Task(Base, BasicValidator):
     subtasks = relationship(
         "Task",
         backref=backref('parent', remote_side=[id])
+    )
+    notifications = relationship(
+        "Notification",
+        backref=backref('task', remote_side=[id])
     )
 
     def __repr__(self):

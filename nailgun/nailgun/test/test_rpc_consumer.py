@@ -185,7 +185,9 @@ class TestConsumer(BaseHandlers):
         self.db.refresh(node2)
         self.db.refresh(task)
         self.assertEqual((node.status, node2.status), ("deploying", "error"))
-        self.assertEqual(task.status, "error")
+        # it is running because we don't stop deployment
+        # if there are error nodes
+        self.assertEqual(task.status, "running")
 
     def test_task_progress(self):
         receiver = rcvr.NailgunReceiver()

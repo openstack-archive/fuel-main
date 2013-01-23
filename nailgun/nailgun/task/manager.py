@@ -45,10 +45,18 @@ class DeploymentTaskManager(TaskManager):
                     orm().delete(subtask)
                 orm().delete(task)
                 orm().commit()
-        nodes_to_delete = filter(lambda n: n.pending_deletion,
-                                 self.cluster.nodes)
-        nodes_to_deploy = filter(lambda n: n.pending_addition,
-                                 self.cluster.nodes)
+        nodes_to_delete = filter(
+            lambda n: any([n.pending_deletion, n.needs_redeletion]),
+            self.cluster.nodes
+        )
+        nodes_to_deploy = filter(
+            lambda n: any([
+                n.pending_addition,
+                n.needs_reprovision,
+                n.needs_redeploy
+            ]),
+            self.cluster.nodes
+        )
         if not nodes_to_deploy and not nodes_to_delete:
             raise WrongNodeStatus("No changes to deploy")
 

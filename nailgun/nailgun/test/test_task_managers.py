@@ -211,6 +211,75 @@ class TestTaskManagers(BaseHandlers):
     @patch('nailgun.task.task.settings.FAKE_TASKS', True)
     @patch('nailgun.task.fake.settings.FAKE_TASKS_TICK_COUNT', 80)
     @patch('nailgun.task.fake.settings.FAKE_TASKS_TICK_INTERVAL', 1)
+    def test_redeployment_error_nodes(self):
+        cluster = self.create_cluster_api(mode="ha")
+        node1 = self.create_default_node(cluster_id=cluster['id'],
+                                         role="controller",
+                                         status="error",
+                                         pending_addition=True)
+        node2 = self.create_default_node(cluster_id=cluster['id'],
+                                         role="compute",
+                                         pending_addition=True)
+        resp = self.app.put(
+            reverse(
+                'ClusterChangesHandler',
+                kwargs={'cluster_id': cluster['id']}),
+            headers=self.default_headers
+        )
+        response = json.loads(resp.body)
+        supertask_uuid = response['uuid']
+        supertask = self.db.query(Task).filter_by(
+            uuid=supertask_uuid
+        ).first()
+
+        timer = time.time()
+        timeout = 60
+        while supertask.status == 'running':
+            self.db.refresh(supertask)
+            if time.time() - timer > timeout:
+                raise Exception("First deployment seems to be hanged")
+            time.sleep(1)
+
+        self.db.refresh(node1)
+        self.db.refresh(node2)
+        self.assertEquals(node1.status, 'error')
+        self.assertEquals(node1.needs_reprovision, True)
+        self.assertEquals(node2.status, 'provisioned')
+        self.assertEquals(supertask.status, 'error')
+        self.assertEquals(supertask.progress, 100)
+        notifications = self.db.query(Notification).all()
+        self.assertEqual(len(notifications), 2)
+        node1.status = 'discover'
+        self.db.add(node1)
+        self.db.commit()
+
+        resp = self.app.put(
+            reverse(
+                'ClusterChangesHandler',
+                kwargs={'cluster_id': cluster['id']}),
+            headers=self.default_headers
+        )
+        response = json.loads(resp.body)
+        supertask_uuid = response['uuid']
+        supertask = self.db.query(Task).filter_by(
+            uuid=supertask_uuid
+        ).first()
+
+        timer = time.time()
+        timeout = 60
+        while supertask.status == 'running':
+            self.db.refresh(supertask)
+            if time.time() - timer > timeout:
+                raise Exception("First deployment seems to be hanged")
+            time.sleep(1)
+
+        self.assertEquals(supertask.status, 'ready')
+        self.assertEquals(supertask.progress, 100)
+
+    @patch('nailgun.task.task.rpc.cast', nailgun.task.task.fake_cast)
+    @patch('nailgun.task.task.settings.FAKE_TASKS', True)
+    @patch('nailgun.task.fake.settings.FAKE_TASKS_TICK_COUNT', 80)
+    @patch('nailgun.task.fake.settings.FAKE_TASKS_TICK_INTERVAL', 1)
     def test_network_verify_task_managers(self):
         cluster = self.create_cluster_api()
         node1 = self.create_default_node(cluster_id=cluster['id'])

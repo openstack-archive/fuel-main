@@ -140,7 +140,7 @@ class NailgunReceiver(object):
                 )
                 continue
 
-            for param in ('status', 'progress'):
+            for param in ('status', 'progress', 'error_msg'):
                 if param in node:
                     logging.debug(
                         "Updating node {0} - set {1} to {2}".format(
@@ -153,19 +153,29 @@ class NailgunReceiver(object):
             orm().add(node_db)
             orm().commit()
 
-            if 'status' in node and node['status'] == 'error':
+            if 'status' in node:
                 cl_id = task.cluster_id if task else None
-                t_id = task.id if task else None
-                notifier.notify(
-                    "error",
-                    "Failed to deploy node '{0}': {1}".format(
-                        node_db.name,
-                        node_db.error_msg or "Unknown error"
-                    ),
-                    cluster_id=cl_id,
-                    node_id=node['uid'],
-                    task_id=t_id
-                )
+                if node['status'] == 'error':
+                    notifier.notify(
+                        "error",
+                        "Failed to deploy node '{0}': {1}".format(
+                            node_db.name,
+                            node_db.error_msg or "Unknown error"
+                        ),
+                        cluster_id=cl_id,
+                        node_id=node['uid'],
+                        task_uuid=task_uuid
+                    )
+                elif node['status'] == 'offline':
+                    notifier.notify(
+                        "error",
+                        "Failed to deploy offline node '{0}'".format(
+                            node_db.name
+                        ),
+                        cluster_id=cl_id,
+                        node_id=node['uid'],
+                        task_uuid=task_uuid
+                    )
 
         coeff = settings.PROVISIONING_PROGRESS_COEFF or 0.3
         if nodes and not progress:
@@ -207,8 +217,9 @@ class NailgunReceiver(object):
         if status in ('error',) and task:
             nodes_info = []
             error_nodes = orm().query(Node).filter_by(
-                cluster_id=task.cluster_id,
-                status='error'
+                cluster_id=task.cluster_id
+            ).filter(
+                Node.status.in_(('error', 'offline'))
             ).all()
             for n in error_nodes:
                 nodes_info.append(
@@ -217,7 +228,9 @@ class NailgunReceiver(object):
                         n.error_msg
                     )
                 )
-            message = "Failed to deploy nodes:\n%s" % "\n".join(nodes_info)
+            message = "Failed to deploy nodes:\n{0}".format(
+                "\n".join(nodes_info)
+            )
             notifier.notify(
                 "error",
                 message,

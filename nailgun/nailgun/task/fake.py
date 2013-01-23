@@ -64,6 +64,7 @@ class FakeDeploymentThread(FakeThread):
                     n['progress'] = 100
                     continue
                 elif n['status'] == 'offline':
+                    n['error_msg'] = 'Node is offline'
                     ready = True
                     break
                 elif n['status'] == 'discover':

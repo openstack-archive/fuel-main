@@ -49,7 +49,7 @@ class NetworkCollectionHandler(JSONHandler):
                 setattr(ng_db, key, value)
             orm().commit()
             ng_db.create_networks()
-            ng_db.networks[0].cluster.add_pending_changes("networks")
+            ng_db.cluster.add_pending_changes("networks")
             nets_to_render.append(ng_db)
 
         return json.dumps(
