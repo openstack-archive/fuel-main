@@ -740,10 +740,19 @@ function(models, commonViews, dialogViews, clusterPageTemplate, deploymentResult
                 this.networks = this.model.get('networks');
             }
         },
+        forceWebkitRedraw: function() {
+            if ($.browser.webkit) {
+                var el = this.$('.page-control-box');
+                el[0].style.webkitTransform = 'scale(1)';
+                var dummy = el[0].offsetHeight;
+                el[0].style.webkitTransform = '';
+            }
+        },
         renderVerificationControls: function() {
             var verificationView = new views.NetworkTabVerification({model: this.model, networks: this.networks});
             this.registerSubView(verificationView);
             this.$('.verify-network').html(verificationView.render().el);
+            this.forceWebkitRedraw();
         },
         render: function() {
             this.$el.html(this.template({cluster: this.model, networks: this.networks}));
