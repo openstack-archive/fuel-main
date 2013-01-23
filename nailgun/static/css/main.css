@@ -1618,6 +1618,15 @@ h6.page-title {
   color: #ffffff;
 }
 
+.message-list .discover {
+  cursor: pointer;
+  text-decoration: underline;
+}
+
+.message-list .discover:hover {
+  text-decoration: none;
+}
+
 /*
 .message-list .discover:hover, .message-list .discover:hover .datetime {
   color: #f99a14 !important;
