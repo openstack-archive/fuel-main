@@ -46,7 +46,10 @@ class DeploymentTaskManager(TaskManager):
                 orm().delete(task)
                 orm().commit()
         nodes_to_delete = filter(
-            lambda n: any([n.pending_deletion, n.needs_redeletion]),
+            lambda n: any([
+                n.pending_deletion,
+                n.needs_redeletion
+            ]),
             self.cluster.nodes
         )
         nodes_to_deploy = filter(

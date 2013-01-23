@@ -178,7 +178,7 @@ class NailgunReceiver(object):
                     )
 
         coeff = settings.PROVISIONING_PROGRESS_COEFF or 0.3
-        if nodes and not progress:
+        if nodes and not progress and task:
             # we should calculate task progress by nodes info
             nodes_progress = []
 
