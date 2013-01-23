@@ -994,10 +994,10 @@ function(models, commonViews, dialogViews, clusterPageTemplate, deploymentResult
             this.$('.show-logs-btn').toggleClass('disabled', !showButtonEnabled);
         },
         updateSourcesByType: function() {
-            var input = this.$('select[name=source]');
-            input.html('').attr('disabled', false);
             var chosenType = this.$('select[name=type]').val();
             if (chosenType == 'nailgun') {
+                var input = this.$('select[name=source]');
+                input.html('').attr('disabled', false);
                 this.sources.each(function(source) {
                     if (!source.get('remote')) {
                         input.append($('<option/>', {value: source.id, text: source.get('name')}));
@@ -1010,19 +1010,35 @@ function(models, commonViews, dialogViews, clusterPageTemplate, deploymentResult
         },
         updateSourcesByNode: function() {
             var chosenNodeId = this.$('select[name=node]').val();
+            var input = this.$('select[name=source]');
+            this.$('select[name=source], select[name=level]').html('').attr('disabled', true);
             (new models.LogSources()).fetch({
                 url: '/api/logs/sources/nodes/' + chosenNodeId,
                 success: _.bind(function(sources) {
-                    var input = this.$('select[name=source]');
-                    input.html('');
                     if (sources.length) {
-                        this.$('select[name=source], select[name=level]').attr('disabled', false);
+                        input.attr('disabled', false);
+
+                        var importantSources = [], unimportantSources = [], sortedSources;
                         sources.each(function(source) {
-                            input.append($('<option/>', {value: source.id, text: source.get('name')}));
+                            (source.get('important') ? importantSources : unimportantSources).push(source);
                         });
+                        if (!importantSources.length) {
+                            sortedSources = unimportantSources;
+                        } else if (!unimportantSources.length) {
+                            sortedSources = importantSources;
+                        } else {
+                            sortedSources = importantSources.concat(null, unimportantSources);
+                        }
+                        _.each(sortedSources, function(source) {
+                            if (source) {
+                                input.append($('<option/>', {value: source.id, text: source.get('name')}));
+                            } else {
+                                input.append($('<optgroup/>', {label: '――――'}));
+                            }
+                        });
+
                         this.updateLevels();
                     } else {
-                        this.$('select[name=source], select[name=level]').html('').attr('disabled', true);
                         this.$('.show-logs-btn').addClass('disabled');
                     }
                 }, this),

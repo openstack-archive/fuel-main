@@ -127,57 +127,60 @@ LOGS:
     <<: *remote_log_type
     <<: *remote_syslog_log_format
     path: 'puppet-agent.log'
+    important: True
   - id: 'install/anaconda'
     name: "anaconda"
     <<: *remote_log_type
     <<: *remote_syslog_log_format
     path: 'install/anaconda.log'
+    important: True
   - id: 'install/syslog'
     name: "syslog"
     <<: *remote_log_type
     <<: *remote_syslog_log_format
     path: 'install/syslog.log'
-  #- id: 'install/storage'
-    #name: "install/storage.log"
-    #<<: *remote_log_type
-    #<<: *remote_syslog_log_format
-    #path: 'install/storage.log'
-  #- id: 'install/ks-pre'
-    #name: "install/ks-pre"
-    #<<: *remote_log_type
-    #<<: *remote_syslog_log_format
-    #path: 'install/ks-pre.log'
-  #- id: 'install/ks-post'
-    #name: "install/ks-post"
-    #<<: *remote_log_type
-    #<<: *remote_syslog_log_format
-    #path: 'install/ks-post.log'
+    important: True
+  - id: 'install/storage'
+    name: "install/storage.log"
+    <<: *remote_log_type
+    <<: *remote_syslog_log_format
+    path: 'install/storage.log'
+  - id: 'install/ks-pre'
+    name: "install/ks-pre"
+    <<: *remote_log_type
+    <<: *remote_syslog_log_format
+    path: 'install/ks-pre.log'
+  - id: 'install/ks-post'
+    name: "install/ks-post"
+    <<: *remote_log_type
+    <<: *remote_syslog_log_format
+    path: 'install/ks-post.log'
 # Bootstrap node logs.
-  #- id: 'bootstrap/dmesg'
-    #name: "bootstrap/dmesg"
-    #<<: *remote_log_type
-    #<<: *remote_syslog_log_format
-    #path: 'bootstrap/dmesg.log'
-  #- id: 'bootstrap/secure'
-    #name: "bootstrap/secure"
-    #<<: *remote_log_type
-    #<<: *remote_syslog_log_format
-    #path: 'bootstrap/secure.log'
-  #- id: 'bootstrap/messages'
-    #name: "bootstrap/messages"
-    #<<: *remote_log_type
-    #<<: *remote_syslog_log_format
-    #path: 'bootstrap/messages.log'
-  #- id: 'bootstrap/mco'
-    #name: "bootstrap/mcollective.log"
-    #<<: *remote_log_type
-    #<<: *remote_syslog_log_format
-    #path: 'bootstrap/mcollective.log'
-  #- id: 'bootstrap/agent'
-    #name: "bootstrap/agent.log"
-    #<<: *remote_log_type
-    #<<: *remote_syslog_log_format
-    #path: 'bootstrap/agent.log'
+  - id: 'bootstrap/dmesg'
+    name: "bootstrap/dmesg"
+    <<: *remote_log_type
+    <<: *remote_syslog_log_format
+    path: 'bootstrap/dmesg.log'
+  - id: 'bootstrap/secure'
+    name: "bootstrap/secure"
+    <<: *remote_log_type
+    <<: *remote_syslog_log_format
+    path: 'bootstrap/secure.log'
+  - id: 'bootstrap/messages'
+    name: "bootstrap/messages"
+    <<: *remote_log_type
+    <<: *remote_syslog_log_format
+    path: 'bootstrap/messages.log'
+  - id: 'bootstrap/mco'
+    name: "bootstrap/mcollective.log"
+    <<: *remote_log_type
+    <<: *remote_syslog_log_format
+    path: 'bootstrap/mcollective.log'
+  - id: 'bootstrap/agent'
+    name: "bootstrap/agent.log"
+    <<: *remote_log_type
+    <<: *remote_syslog_log_format
+    path: 'bootstrap/agent.log'
 
 MCO_PSKEY: "Gie6iega9ohngaenahthohngu8aebohxah9seidi"
 MCO_STOMPHOST: "localhost"
