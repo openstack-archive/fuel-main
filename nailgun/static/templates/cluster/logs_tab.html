@@ -8,11 +8,9 @@
       <div class="filter-bar-item log-type-filter">
         <div class="filter-bar-label">Logs</div>
         <select name="type" class="filter-bar-dropdown input-medium" <%= loaded ? '' : 'disabled' %>>
-	  <% var types = {'nailgun': 'Nailgun logs', 'target': 'Target nodes logs'} %>
-	  <% if (!chosenType) chosenType = 'nailgun' %>
-	  <% _.each(_.keys(types), function(type) { %>
-	    <option value="<%= type %>" <%= chosenType == type ? 'selected' : '' %>><%= types[type] %></option>
-	  <% }) %>
+          <% _.each(types, function(type) { %>
+            <option value="<%= type[0] %>" <%= chosenType == type[0] ? 'selected' : '' %>><%- type[1] %></option>
+          <% }) %>
         </select>
       </div>
 

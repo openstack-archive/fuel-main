@@ -1003,12 +1003,12 @@ function(models, commonViews, dialogViews, clusterPageTemplate, deploymentResult
         },
         updateSourcesByType: function() {
             var input = this.$('select[name=source]');
-            input.html('').removeAttr('disabled');
+            input.html('').attr('disabled', false);
             var chosenType = this.$('select[name=type]').val();
             if (chosenType == 'nailgun') {
                 this.sources.each(function(source) {
                     if (!source.get('remote')) {
-                        input.append('<option value="'+source.id+'">'+source.get('name')+'</option>');
+                        input.append($('<option/>', {value: source.id, text: source.get('name')}));
                     }
                 });
                 this.updateLevels();
@@ -1018,15 +1018,15 @@ function(models, commonViews, dialogViews, clusterPageTemplate, deploymentResult
         },
         updateSourcesByNode: function() {
             var chosenNodeId = this.$('select[name=node]').val();
-            var nodeSources = $.ajax({
-                url: '/api/logs/sources/nodes/'+chosenNodeId,
+            (new models.LogSources()).fetch({
+                url: '/api/logs/sources/nodes/' + chosenNodeId,
                 success: _.bind(function(sources) {
                     var input = this.$('select[name=source]');
                     input.html('');
                     if (sources.length) {
-                        this.$('select[name=source], select[name=level]').removeAttr('disabled');
-                        _.each(sources, function(source) {
-                            input.append('<option value="'+source.id+'" >'+source.name+'</option>');
+                        this.$('select[name=source], select[name=level]').attr('disabled', false);
+                        sources.each(function(source) {
+                            input.append($('<option/>', {value: source.id, text: source.get('name')}));
                         });
                         this.updateLevels();
                     } else {
@@ -1042,7 +1042,7 @@ function(models, commonViews, dialogViews, clusterPageTemplate, deploymentResult
         },
         updateLevels: function() {
             var input = this.$('select[name=level]');
-            input.html('').removeAttr('disabled');
+            input.html('').attr('disabled', false);
             var chosenSourceId = this.$('select[name=source]').val();
             if (chosenSourceId) {
                 var source = this.sources.get(chosenSourceId);
@@ -1118,6 +1118,7 @@ function(models, commonViews, dialogViews, clusterPageTemplate, deploymentResult
         initialize: function(options) {
             _.defaults(this, options);
             this.from = 0;
+
             if (!this.model.get('log_sources')) {
                 this.sources = new models.LogSources();
                 this.sources.deferred = this.sources.fetch();
@@ -1126,12 +1127,18 @@ function(models, commonViews, dialogViews, clusterPageTemplate, deploymentResult
             } else {
                 this.sources = this.model.get('log_sources');
             }
+
+            this.types = [['nailgun', 'Nailgun logs']];
+            if (this.model.get('nodes').currentNodes().length) {
+                this.types.push(['target', 'Target nodes logs']);
+            }
         },
         render: function() {
             this.$el.html(this.template({
                 cluster: this.model,
-                chosenType: this.chosenType,
                 sources: this.sources,
+                types: this.types,
+                chosenType: this.chosenType,
                 chosenNodeId: this.chosenNodeId,
                 chosenSourceId: this.chosenSourceId
             }));
