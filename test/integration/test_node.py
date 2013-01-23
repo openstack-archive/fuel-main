@@ -107,34 +107,16 @@ class TestNode(Base):
 
     @snapshot_errors
     def test_two_nodes_provisioning(self):
-        def _check_nova_status(ip):
-            ctrl_ssh = SSHClient()
-            ctrl_ssh.connect_ssh(ip, 'root', 'r00tme')
-            ret = ctrl_ssh.execute('/usr/bin/nova-manage service list')
-            return (
-                (ret['exit_status'] == 0)
-                and (''.join(ret['stdout']).count(":-)") == 5)
-                and (''.join(ret['stdout']).count("XXX") == 0)
-            )
         self._revert_nodes()
         cluster_name = 'two_nodes'
         nodes = {'controller': ['slave1'], 'compute': ['slave2']}
         self._basic_provisioning(cluster_name, nodes)
         slave = ci.environment.node['slave1']
         node = self._get_slave_node_by_devops_node(slave)
-        wait(lambda: _check_nova_status(node['ip']), timeout=300)
+        wait(lambda: self._check_cluster_status(node['ip']), timeout=300)
 
     @snapshot_errors
     def test_ha_cluster(self):
-        def _check_nova_status(ip):
-            ctrl_ssh = SSHClient()
-            ctrl_ssh.connect_ssh(ip, 'root', 'r00tme')
-            ret = ctrl_ssh.execute('/usr/bin/nova-manage service list')
-            return (
-                (ret['exit_status'] == 0)
-                and (''.join(ret['stdout']).count(":-)") == 13)
-                and (''.join(ret['stdout']).count("XXX") == 0)
-            )
         self._revert_nodes()
         cluster_name = 'ha_cluster'
         nodes = {
@@ -144,7 +126,7 @@ class TestNode(Base):
         self._basic_provisioning(cluster_name, nodes)
         slave = ci.environment.node['slave1']
         node = self._get_slave_node_by_devops_node(slave)
-        wait(lambda: _check_nova_status(node['ip']), timeout=300)
+        wait(lambda: self._check_cluster_status(node['ip']), timeout=300)
 
     @snapshot_errors
     def test_network_config(self):
@@ -522,6 +504,24 @@ node.interfaces[n].mac_address: %r" % str(i.mac_address))
                 logging.info("Waiting for slave agent to run...")
         logging.debug("%d node(s) found" % len(nodes))
         return nodes
+
+    def _check_cluster_status(ip):
+        ctrl_ssh = SSHClient()
+        ctrl_ssh.connect_ssh(ip, 'root', 'r00tme')
+        ret = ctrl_ssh.execute('/usr/bin/nova-manage service list')
+        nova_status = (
+            (ret['exit_status'] == 0)
+            and (''.join(ret['stdout']).count(":-)") == 5)
+            and (''.join(ret['stdout']).count("XXX") == 0)
+        )
+        logging.debug("Nova check status: %d" % nova_status)
+        ret = ctrl_ssh.execute('. /root/openrc; glance index')
+        cirros_status = (
+            (ret['exit_status'] == 0)
+            and (''.join(ret['stdout']).count("TestVM") == 1)
+        )
+        logging.debug("Cirros check status: %d" % cirros_status)
+        return (nova_status and cirros_status)
 
     def _revert_nodes(self):
         logging.info("Reverting to snapshot 'initial'")
