@@ -4,7 +4,7 @@
     <div class="node-name">
     <% if (renaming) { %>
       <div class="node-renameable">
-        <input type="text" class="input-medium" placeholder="<%- node.get('name') || '' %>" />
+        <input type="text" class="input-medium" value="<%- node.get('name') || '' %>" />
       </div>
     <% } else { %>
       <div <%= renameable ? 'class="node-renameable"  title="Edit Name"' : '' %>><%- node.get('name') || node.get('mac') %></div>
