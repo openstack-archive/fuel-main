@@ -97,15 +97,8 @@ module Astute
 
     def deploy_ha_compute(nodes, attrs)
       ctrl_nodes = nodes.select {|n| n['role'] == 'controller'}
-      Astute.logger.info "Starting deployment of 1st controller, ignoring failure"
-      deploy_piece([ctrl_nodes[0]], attrs, retries=0, ignore_failure=true)
-
-      except_first_ctrls = ctrl_nodes.clone
-      except_first_ctrls.delete_at(0)
-      Astute.logger.info "Starting deployment of controllers: "\
-                         "#{except_first_ctrls.map{|x| x['uid']}.inspect},"\
-                         " ignoring failure"
-      deploy_piece(except_first_ctrls, attrs, retries=0, ignore_failure=true)
+      Astute.logger.info "Starting deployment of all controllers one by one, ignoring failure"
+      ctrl_nodes.each {|n| deploy_piece([n], attrs, retries=0, ignore_failure=true)}
 
       Astute.logger.info "Starting deployment of all controllers, ignoring failure"
       deploy_piece(ctrl_nodes, attrs, retries=0, ignore_failure=true)

@@ -148,7 +148,7 @@ describe "NailyFact DeploymentEngine" do
 
     it "ha_compute deploy should not raise any exception" do
       Astute::Metadata.expects(:publish_facts).at_least_once
-      Astute::PuppetdDeployer.expects(:deploy).times(6)
+      Astute::PuppetdDeployer.expects(:deploy).times(7)
       @deploy_engine.deploy(@data_ha['args']['nodes'], @data_ha['args']['attributes'])
     end
 
