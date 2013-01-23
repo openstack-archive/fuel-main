@@ -19,9 +19,10 @@ module Naily
             },
           {'pattern' => 'to step postinstallconfig', 'progress' => 0.87},
           {'pattern' => 'to step dopostaction', 'progress' => 0.92},
-          ].reverse
+          ].reverse,
+        'filename' => 'install/anaconda.log'
         }
-      @provisionLogParser = Astute::LogParser::ParseNodeLogs.new('install/anaconda.log', @pattern_spec)
+      @provisionLogParser = Astute::LogParser::ParseNodeLogs.new(@pattern_spec)
     end
 
     def echo(args)
