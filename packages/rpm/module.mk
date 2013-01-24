@@ -1,83 +1,79 @@
-/:=$(BUILD_DIR)/rpm/
-
-$/%: /:=$/
-
-SANDBOX:=$/SANDBOX/
-CHROOT_BOX:=sudo chroot $(SANDBOX)
-SRC_DIR:=$/SOURCES/
-SAND_YUM:=sudo yum --installroot=`readlink -f $(SANDBOX)` -y --nogpgcheck
-SAND_RPM:=sudo rpm --root=`readlink -f $(SANDBOX)`
-SAND_REQ:=rpm-build tar gcc flex make byacc python-devel.x86_64 glibc-devel \
-	  glibc-headers kernel-headers
-
 .PHONY: clean clean_rpm
 
 clean: clean_rpm
 
 clean_rpm:
-	sudo rm -rf $(BUILD_DIR)/rpm
+	sudo rm -rf $(BUILD_DIR)/packages/rpm
 
-define yum_local_repo
-[mirror]
-name=Mirantis mirror
-baseurl=file://$(shell readlink -f -m $(RPM_DIR))
-gpgcheck=0
-enabled=1
-endef
+SANDBOX:=$(BUILD_DIR)/packages/rpm/SANDBOX
+include $(SOURCE_DIR)/sandbox/module.mk
 
-$(SANDBOX)/etc/yum.repos.d/mirror.repo: export contents:=$(yum_local_repo)
-$(SANDBOX)/etc/yum.repos.d/mirror.repo: packages/rpm/module.mk
-	mkdir -p $(@D) || echo "$(@D) already exists"
-	sudo sh -c "echo \"$${contents}\" > $@"
+RPM_SOURCES:=$(BUILD_DIR)/packages/rpm/SOURCES
 
-$/prep.done: $(LOCAL_MIRROR)/src.done \
-	     $(LOCAL_MIRROR)/repo.done \
-	     $(SANDBOX)/etc/yum.repos.d/mirror.repo
-	mkdir -p $(SRC_DIR)
-	cp -f $(LOCAL_MIRROR)/src/* $(SRC_DIR)
-	find $(LOCAL_MIRROR) -name centos-release* | head | xargs sudo rpm -i --root=$(SANDBOX) || echo "chroot already prepared"
-	sudo rm -f $(SANDBOX)/etc/yum.repos.d/Cent*
-	$(SAND_RPM) --rebuilddb
-	$(SAND_YUM) install $(SAND_REQ)
+$(BUILD_DIR)/packages/rpm/prep.done: $(BUILD_DIR)/mirror/build.done
+	mkdir -p $(RPM_SOURCES)
+	cp -f $(LOCAL_MIRROR_SRC)/* $(RPM_SOURCES)
 	$(ACTION.TOUCH)
 
-$/rpm-cirros.done: $/prep.done packages/rpm/specs/cirros-0.3.0.spec
-	rpmbuild -vv --define "_topdir `readlink -f $/`" -ba packages/rpm/specs/cirros-0.3.0.spec
+$(BUILD_DIR)/packages/rpm/rpm-cirros.done: \
+		$(BUILD_DIR)/packages/rpm/prep.done \
+		$(SOURCE_DIR)/packages/rpm/specs/cirros-0.3.0.spec
+	rpmbuild -vv --define "_topdir `readlink -f $(BUILD_DIR)/packages/rpm`" -ba \
+		$(SOURCE_DIR)/packages/rpm/specs/cirros-0.3.0.spec
 	$(ACTION.TOUCH)
 
-$/rpm-nailgun-agent.done: $/prep.done \
-	    packages/rpm/specs/nailgun-agent.spec \
-	    $(call find-files,bin)
-	cp -f bin/agent bin/nailgun-agent.cron $(SRC_DIR)
-	rpmbuild -vv --define "_topdir `readlink -f $/`" -ba packages/rpm/specs/nailgun-agent.spec
+$(BUILD_DIR)/packages/rpm/rpm-nailgun-agent.done: \
+		$(BUILD_DIR)/packages/rpm/prep.done \
+	    $(SOURCE_DIR)/packages/rpm/specs/nailgun-agent.spec \
+	    $(call find-files,$(SOURCE_DIR)/bin)
+	cp -f bin/agent bin/nailgun-agent.cron $(RPM_SOURCES)
+	rpmbuild -vv --define "_topdir `readlink -f $(BUILD_DIR)/packages/rpm`" -ba \
+		$(SOURCE_DIR)/packages/rpm/specs/nailgun-agent.spec
 	$(ACTION.TOUCH)
 
-$/rpm-nailgun-mcagents.done: $/prep.done \
-	    packages/rpm/specs/nailgun-mcagents.spec \
-	    $(call find-files,mcagent)
-	mkdir -p $/SOURCES/nailgun-mcagents
-	cp -f mcagent/* $(SRC_DIR)nailgun-mcagents
-	rpmbuild -vv --define "_topdir `readlink -f $/`" -ba packages/rpm/specs/nailgun-mcagents.spec
+$(BUILD_DIR)/packages/rpm/rpm-nailgun-mcagents.done: \
+		$(BUILD_DIR)/packages/rpm/prep.done \
+	    $(SOURCE_DIR)/packages/rpm/specs/nailgun-mcagents.spec \
+	    $(call find-files,$(SOURCE_DIR)/mcagent)
+	mkdir -p $(BUILD_DIR)/packages/rpm/SOURCES/nailgun-mcagents
+	cp -f $(SOURCE_DIR)/mcagent/* $(RPM_SOURCES)/nailgun-mcagents
+	rpmbuild -vv --define "_topdir `readlink -f $(BUILD_DIR)/packages/rpm`" -ba \
+		$(SOURCE_DIR)/packages/rpm/specs/nailgun-mcagents.spec
 	$(ACTION.TOUCH)
 
-$/rpm-nailgun-net-check.done: $/prep.done \
-	    packages/rpm/specs/nailgun-net-check.spec \
-	    packages/rpm/nailgun-net-check/net_probe.py
-	cp -f packages/rpm/patches/* $(SRC_DIR)
+
+$(BUILD_DIR)/packages/rpm/rpm-nailgun-net-check.done: export SANDBOX_UP:=$(SANDBOX_UP)
+$(BUILD_DIR)/packages/rpm/rpm-nailgun-net-check.done: export SANDBOX_DOWN:=$(SANDBOX_DOWN)
+$(BUILD_DIR)/packages/rpm/rpm-nailgun-net-check.done: \
+		$(BUILD_DIR)/packages/rpm/prep.done \
+		$(SOURCE_DIR)/packages/rpm/specs/nailgun-net-check.spec \
+		$(SOURCE_DIR)/packages/rpm/nailgun-net-check/net_probe.py
+
+	sudo sh -c "$${SANDBOX_UP}"
+
+	echo 000
+	cp -f $(SOURCE_DIR)/packages/rpm/patches/* $(RPM_SOURCES)
 	sudo mkdir -p $(SANDBOX)/tmp/SOURCES
-	sudo cp packages/rpm/nailgun-net-check/net_probe.py $(SANDBOX)/tmp/SOURCES
-	sudo cp packages/rpm/specs/nailgun-net-check.spec $(SANDBOX)/tmp
-	sudo cp packages/rpm/patches/* $(SANDBOX)/tmp/SOURCES
-	sudo cp $(LOCAL_MIRROR)/src/* $(SANDBOX)/tmp/SOURCES
-	$(CHROOT_BOX) rpmbuild -vv --define "_topdir /tmp" -ba /tmp/nailgun-net-check.spec
-	cp $(SANDBOX)/tmp/RPMS/x86_64/* $/RPMS/x86_64/
+	sudo cp $(SOURCE_DIR)/packages/rpm/nailgun-net-check/net_probe.py $(SANDBOX)/tmp/SOURCES
+	sudo cp $(SOURCE_DIR)/packages/rpm/specs/nailgun-net-check.spec $(SANDBOX)/tmp
+	echo 111
+	sudo cp $(SOURCE_DIR)/packages/rpm/patches/* $(SANDBOX)/tmp/SOURCES
+	sudo cp $(LOCAL_MIRROR_SRC)/* $(SANDBOX)/tmp/SOURCES
+	sudo chroot $(SANDBOX) rpmbuild -vv --define "_topdir /tmp" -ba /tmp/nailgun-net-check.spec
+	cp $(SANDBOX)/tmp/RPMS/x86_64/* $(BUILD_DIR)/packages/rpm/RPMS/x86_64/
+
+	sudo sh -c "$${SANDBOX_DOWN}"
 	$(ACTION.TOUCH)
 
-$(BUILD_DIR)/rpm/rpm.done: $/rpm-cirros.done \
-		$/rpm-nailgun-agent.done \
-		$/rpm-nailgun-mcagents.done \
-		$/rpm-nailgun-net-check.done \
-		| $(CENTOS_REPO_DIR)repodata/comps.xml
-	find $/RPMS -name '*.rpm' -exec cp -u {} $(CENTOS_REPO_DIR)/Packages \;
-	createrepo -g `readlink -f "$(CENTOS_REPO_DIR)repodata/comps.xml"` -o $(CENTOS_REPO_DIR) $(CENTOS_REPO_DIR)
+$(BUILD_DIR)/packages/rpm/repo.done: \
+		$(BUILD_DIR)/packages/rpm/rpm-cirros.done \
+		$(BUILD_DIR)/packages/rpm/rpm-nailgun-agent.done \
+		$(BUILD_DIR)/packages/rpm/rpm-nailgun-mcagents.done \
+		$(BUILD_DIR)/packages/rpm/rpm-nailgun-net-check.done
+	find $(BUILD_DIR)/packages/rpm/RPMS -name '*.rpm' -exec cp -u {} $(LOCAL_MIRROR_CENTOS_OS_BASEURL)/Packages \;
+	createrepo -g `readlink -f "$(LOCAL_MIRROR_CENTOS_OS_BASEURL)/repodata/comps.xml"` \
+		-o $(LOCAL_MIRROR_CENTOS_OS_BASEURL) $(LOCAL_MIRROR_CENTOS_OS_BASEURL)
+	$(ACTION.TOUCH)
+
+$(BUILD_DIR)/packages/rpm/build.done: $(BUILD_DIR)/packages/rpm/repo.done
 	$(ACTION.TOUCH)

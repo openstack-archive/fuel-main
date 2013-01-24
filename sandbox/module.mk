@@ -1,0 +1,30 @@
+define yum_local_repo
+[mirror]
+name=Mirantis mirror
+baseurl=file://$(shell readlink -f -m $(LOCAL_MIRROR_CENTOS_OS_BASEURL))
+gpgcheck=0
+enabled=1
+endef
+
+define SANDBOX_UP
+mkdir -p $(SANDBOX)/etc/yum.repos.d
+cp /etc/resolv.conf $(SANDBOX)/etc/resolv.conf
+cat > $(SANDBOX)/etc/yum.repos.d/base.repo <<EOF
+$(yum_local_repo)
+EOF
+rpm -i --root=$(SANDBOX) `find $(LOCAL_MIRROR_CENTOS_OS_BASEURL) -name "centos-release*rpm" | head -1`
+rm -f $(SANDBOX)/etc/yum.repos.d/Cent*
+rpm --root=$(SANDBOX) --rebuilddb
+yum --installroot=$(SANDBOX) -y --nogpgcheck install \
+rpm-build tar gcc flex make byacc python-devel.x86_64 \
+glibc-devel glibc-headers kernel-headers python-pip
+mount | grep -q $(SANDBOX)/proc || sudo mount --bind /proc $(SANDBOX)/proc
+mount | grep -q $(SANDBOX)/dev || sudo mount --bind /dev $(SANDBOX)/dev
+endef
+
+define SANDBOX_DOWN
+sync
+umount $(SANDBOX)/proc
+umount $(SANDBOX)/dev
+endef
+

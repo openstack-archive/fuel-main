@@ -1,59 +1,93 @@
-/:=$(BUILD_DIR)/iso/
+.PHONY: iso img
+all: iso img
 
-.PHONY: iso
-all: iso
-
-ISOROOT:=$/isoroot
+ISOROOT:=$(BUILD_DIR)/iso/isoroot
 ISOBASENAME:=nailgun-centos-6.3-amd64
-ISONAME:=$/$(ISOBASENAME).iso
-IMGNAME:=$/$(ISOBASENAME).img
+ISONAME:=$(BUILD_DIR)/iso/$(ISOBASENAME).iso
+IMGNAME:=$(BUILD_DIR)/iso/$(ISOBASENAME).img
 
 iso: $(ISONAME)
 img: $(IMGNAME)
 
-$/isoroot-centos.done: \
-		$(BUILD_DIR)/rpm/rpm.done \
-		$(LOCAL_MIRROR)/cache.done \
-		$(ISOROOT)/repodata/comps.xml \
+$(BUILD_DIR)/iso/isoroot-centos.done: \
+		$(BUILD_DIR)/mirror/build.done \
+		$(BUILD_DIR)/packages/build.done
+	mkdir -p $(ISOROOT)
+	rsync -a --delete $(LOCAL_MIRROR_CENTOS_OS_BASEURL)/ $(ISOROOT)
+	$(ACTION.TOUCH)
+
+$(BUILD_DIR)/iso/isoroot-eggs.done: \
+		$(BUILD_DIR)/mirror/build.done \
+		$(BUILD_DIR)/packages/build.done
+	mkdir -p $(ISOROOT)/eggs
+	rsync -a --delete $(LOCAL_MIRROR_EGGS)/ $(ISOROOT)/eggs
+	$(ACTION.TOUCH)
+
+$(BUILD_DIR)/iso/isoroot-gems.done: \
+		$(BUILD_DIR)/mirror/build.done \
+		$(BUILD_DIR)/packages/build.done
+	mkdir -p $(ISOROOT)/gems
+	rsync -a --delete $(LOCAL_MIRROR_GEMS)/ $(ISOROOT)/gems
+	$(ACTION.TOUCH)
+
+
+########################
+# Extra files
+########################
+
+$(BUILD_DIR)/iso/isoroot-files.done: \
 		$(ISOROOT)/.discinfo \
-		$(ISOROOT)/.treeinfo
-	mkdir -p $(ISOROOT)/Packages
-	find $(CENTOS_REPO_DIR)Packages -name '*.rpm' -exec cp -u {} $(ISOROOT)/Packages \;
-	createrepo -g `readlink -f "$(ISOROOT)/repodata/comps.xml"` -u media://`head -1 $(ISOROOT)/.discinfo` $(ISOROOT)
-	$(ACTION.TOUCH)
-
-$(ISOROOT)/repodata/comps.xml: | $(CENTOS_REPO_DIR)repodata/comps.xml
-	mkdir $(@D)
-	cp $(CENTOS_REPO_DIR)repodata/comps.xml $(@D)
-
-$(ISOROOT)/isolinux/isolinux.cfg: iso/isolinux/isolinux.cfg ; $(ACTION.COPY)
-
-$(addprefix $(ISOROOT)/isolinux/,$(ISOLINUX_FILES)): \
-		$(LOCAL_MIRROR)/cache-boot.done \
-		$(ISOROOT)/isolinux/isolinux.cfg
-	cp $(CENTOS_REPO_DIR)/isolinux/$(@F) $(@D)
-
-$/isoroot-isolinux.done: $(addprefix $(ISOROOT)/isolinux/,$(ISOLINUX_FILES))
-	$(ACTION.TOUCH)
-
-$(addprefix $(ISOROOT)/images/,$(IMAGES_FILES)):
-	@mkdir -p $(@D)
-	cp $(CENTOS_REPO_DIR)images/$(@F) $(@D)
-
-$(addprefix $(ISOROOT)/EFI/BOOT/,$(EFI_FILES)):
-	@mkdir -p $(@D)
-	cp $(CENTOS_REPO_DIR)EFI/BOOT/$(@F) $(@D)
-
-$/isoroot-prepare.done: \
-		$(addprefix $(ISOROOT)/images/,$(IMAGES_FILES)) \
-		$(addprefix $(ISOROOT)/EFI/BOOT/,$(EFI_FILES)) \
+		$(ISOROOT)/.treeinfo \
+		$(ISOROOT)/isolinux/isolinux.cfg \
 		$(ISOROOT)/ks.cfg \
 		$(ISOROOT)/bootstrap_admin_node.sh \
 		$(ISOROOT)/bootstrap_admin_node.conf \
 		$(ISOROOT)/version.yaml
+		$(ISOROOT)/puppet-nailgun.tgz \
+		$(ISOROOT)/puppet-slave.tgz
 	$(ACTION.TOUCH)
 
-$/isoroot-bootstrap.done: \
+$(ISOROOT)/.discinfo: $(SOURCE_DIR)/iso/.discinfo ; $(ACTION.COPY)
+$(ISOROOT)/.treeinfo: $(SOURCE_DIR)/iso/.treeinfo ; $(ACTION.COPY)
+$(ISOROOT)/isolinux/isolinux.cfg: $(SOURCE_DIR)/iso/isolinux/isolinux.cfg ; $(ACTION.COPY)
+$(ISOROOT)/ks.cfg: $(SOURCE_DIR)/iso/ks.cfg ; $(ACTION.COPY)
+$(ISOROOT)/bootstrap_admin_node.sh: $(SOURCE_DIR)/iso/bootstrap_admin_node.sh ; $(ACTION.COPY)
+$(ISOROOT)/bootstrap_admin_node.conf: $(SOURCE_DIR)/iso/bootstrap_admin_node.conf ; $(ACTION.COPY)
+$(ISOROOT)/puppet-nailgun.tgz: \
+		$(call find-files,$(SOURCE_DIR)/puppet)
+	(cd puppet && tar chzf $@ *)
+$(ISOROOT)/puppet-slave.tgz: \
+		$(call find-files,$(SOURCE_DIR)/puppet/nailytest) \
+		$(call find-files,$(SOURCE_DIR)/puppet/osnailyfacter) \
+		$(call find-files,$(SOURCE_DIR)/fuel/deployment/puppet)
+	(cd $(SOURCE_DIR)/puppet && tar cf $(BUILD_DIR)/puppet-slave.tar nailytest osnailyfacter)
+	(cd $(SOURCE_DIR)/fuel/deployment/puppet && tar rf $(BUILD_DIR)/puppet-slave.tar ./*)
+	gzip -c -9 $(BUILD_DIR)/puppet-slave.tar > $@
+
+
+########################
+# Ugly hacking. Hope it is temporary.
+########################
+
+FUEL_PACKAGES=http://download.mirantis.com/epel-fuel/x86_64
+$(BUILD_DIR)/iso/isoroot-morerpm.done: \
+		$(BUILD_DIR)/iso/isoroot-centos.done \
+		$(ISOROOT)/.discinfo
+	mkdir -p $(ISOROOT)/more_rpm
+	cd $(ISOROOT)/more_rpm && wget -c \
+		$(FUEL_PACKAGES)/MySQL-shared-5.5.28-1.el6.x86_64.rpm \
+		$(FUEL_PACKAGES)/MySQL-client-5.5.28-1.el6.x86_64.rpm \
+		$(FUEL_PACKAGES)/MySQL-server-5.5.28_wsrep_23.7-1.rhel5.x86_64.rpm \
+		$(FUEL_PACKAGES)/galera-23.2.2-1.rhel5.x86_64.rpm
+	createrepo -x 'more_rpm/*' -g `readlink -f "$(ISOROOT)/repodata/comps.xml"` -u media://`head -1 $(ISOROOT)/.discinfo` $(ISOROOT)
+	$(ACTION.TOUCH)
+
+
+########################
+# Bootstrap image.
+########################
+
+$(BUILD_DIR)/iso/isoroot-bootstrap.done: \
 		$(ISOROOT)/bootstrap/bootstrap.rsa \
 		$(addprefix $(ISOROOT)/bootstrap/, $(BOOTSTRAP_FILES))
 	$(ACTION.TOUCH)
@@ -65,67 +99,35 @@ $(addprefix $(ISOROOT)/bootstrap/, $(BOOTSTRAP_FILES)): \
 
 $(ISOROOT)/bootstrap/bootstrap.rsa: bootstrap/ssh/id_rsa ; $(ACTION.COPY)
 
-$(ISOROOT)/eggs/Nailgun-$(NAILGUN_VERSION).tar.gz: $(BUILD_DIR)/nailgun/Nailgun-$(NAILGUN_VERSION).tar.gz ; $(ACTION.COPY)
-$(ISOROOT)/gems/gems/naily-$(NAILY_VERSION).gem: $(BUILD_DIR)/gems/naily-$(NAILY_VERSION).gem ; $(ACTION.COPY)
-$(ISOROOT)/gems/gems/astute-$(ASTUTE_VERSION).gem: $(BUILD_DIR)/gems/astute-$(ASTUTE_VERSION).gem ; $(ACTION.COPY)
 
-$/isoroot-eggs.done: \
-		$(LOCAL_MIRROR)/eggs.done \
-		$(ISOROOT)/eggs/Nailgun-$(NAILGUN_VERSION).tar.gz
-	cp -r $(LOCAL_MIRROR)/eggs $(ISOROOT)/
+########################
+# Iso image root file system.
+########################
+
+$(BUILD_DIR)/iso/isoroot.done: \
+		$(BUILD_DIR)/mirror/build.done \
+		$(BUILD_DIR)/packages/build.done \
+		$(BUILD_DIR)/iso/isoroot-centos.done \
+		$(BUILD_DIR)/iso/isoroot-eggs.done \
+		$(BUILD_DIR)/iso/isoroot-gems.done \
+		$(BUILD_DIR)/iso/isoroot-files.done \
+		$(BUILD_DIR)/iso/isoroot-morerpm.done \
+		$(BUILD_DIR)/iso/isoroot-bootstrap.done
 	$(ACTION.TOUCH)
 
-$/isoroot-gems.done: \
-		$(LOCAL_MIRROR)/gems.done \
-		$(BUILD_DIR)/gems/naily-$(NAILY_VERSION).gem \
-		$(ISOROOT)/gems/gems/naily-$(NAILY_VERSION).gem \
-		$(ISOROOT)/gems/gems/astute-$(ASTUTE_VERSION).gem
-	cp -r $(LOCAL_MIRROR)/gems $(ISOROOT)/gems
-	(cd $(ISOROOT)/gems && gem generate_index gems)
-	$(ACTION.TOUCH)
 
-$(ISOROOT)/puppet-nailgun.tgz: $(call find-files,puppet)
-	(cd puppet && tar chzf $@ *)
-
-$(ISOROOT)/puppet-slave.tgz: \
-		$(call find-files,puppet/nailytest) \
-		$(call find-files,puppet/osnailyfacter) \
-		$(call find-files,fuel/deployment/puppet)
-	(cd puppet && tar cf $(BUILD_DIR)/puppet-slave.tar nailytest osnailyfacter)
-	(cd fuel/deployment/puppet && tar rf $(BUILD_DIR)/puppet-slave.tar ./*)
-	gzip -c -9 $(BUILD_DIR)/puppet-slave.tar > $@
-
-$/isoroot-puppetmod.done: \
-		$(ISOROOT)/puppet-nailgun.tgz \
-		$(ISOROOT)/puppet-slave.tgz
-	$(ACTION.TOUCH)
-
-$(ISOROOT)/ks.cfg: iso/ks.cfg ; $(ACTION.COPY)
-$(ISOROOT)/bootstrap_admin_node.sh: iso/bootstrap_admin_node.sh ; $(ACTION.COPY)
-$(ISOROOT)/bootstrap_admin_node.conf: iso/bootstrap_admin_node.conf ; $(ACTION.COPY)
-$(ISOROOT)/.discinfo: iso/.discinfo ; $(ACTION.COPY)
-$(ISOROOT)/.treeinfo: iso/.treeinfo ; $(ACTION.COPY)
-$(ISOROOT)/version.yaml:
-	echo "COMMIT_SHA: `git rev-parse --verify HEAD`" > $@
-
-$/isoroot.done: \
-		$/isoroot-bootstrap.done \
-		$/isoroot-puppetmod.done \
-		$/isoroot-eggs.done \
-		$/isoroot-gems.done \
-		$/isoroot-isolinux.done \
-		$/isoroot-centos.done \
-		$/isoroot-prepare.done
-	$(ACTION.TOUCH)
+########################
+# Building CD and USB stick images
+########################
 
 # keep in mind that mkisofs touches some files inside directory
 # from which it builds iso image
 # that is why we need to make $/isoroot.done dependent on some files
 # and then copy these files into another directory
-$(ISONAME): $/isoroot.done
+$(ISONAME): $(BUILD_DIR)/iso/isoroot.done
 	rm -f $@
-	mkdir -p $/isoroot-mkisofs
-	rsync -a --delete $(ISOROOT)/ $/isoroot-mkisofs
+	mkdir -p $(BUILD_DIR)/iso/isoroot-mkisofs
+	rsync -a --delete $(ISOROOT)/ $(BUILD_DIR)/iso/isoroot-mkisofs
 	mkisofs -r -V "Mirantis Nailgun" -p "Mirantis Inc." \
 		-J -T -R -b isolinux/isolinux.bin \
 		-no-emul-boot \
@@ -140,9 +142,9 @@ $(ISONAME): $/isoroot.done
 IMGSIZE = $(shell echo "$(shell ls -s $(ISONAME) | awk '{print $$1}') / 1024 + 300" | bc)
 
 $(IMGNAME): $(ISONAME)
-	rm -f $/img_loop_device
-	rm -f $/img_loop_partition
-	rm -f $/img_loop_uuid
+	rm -f $(BUILD_DIR)/iso/img_loop_device
+	rm -f $(BUILD_DIR)/iso/img_loop_partition
+	rm -f $(BUILD_DIR)/iso/img_loop_uuid
 	sudo losetup -j $@ | awk -F: '{print $$1}' | while read loopdevice; do \
         sudo kpartx -v $$loopdevice | awk '{print "/dev/mapper/" $$1}' | while read looppartition; do \
             sudo umount -f $$looppartition; \
@@ -152,27 +154,27 @@ $(IMGNAME): $(ISONAME)
     done
 	rm -f $@
 	dd if=/dev/zero of=$@ bs=1M count=$(IMGSIZE)
-	sudo losetup -f > $/img_loop_device
-	sudo losetup `cat $/img_loop_device` $@
-	sudo parted -s `cat $/img_loop_device` mklabel msdos
-	sudo parted -s `cat $/img_loop_device` unit MB mkpart primary ext2 1 $(IMGSIZE) set 1 boot on
-	sudo kpartx -a -v `cat $/img_loop_device` | awk '{print "/dev/mapper/" $$3}' > $/img_loop_partition
+	sudo losetup -f > $(BUILD_DIR)/iso/img_loop_device
+	sudo losetup `cat $(BUILD_DIR)/iso/img_loop_device` $@
+	sudo parted -s `cat $(BUILD_DIR)/iso/img_loop_device` mklabel msdos
+	sudo parted -s `cat $(BUILD_DIR)/iso/img_loop_device` unit MB mkpart primary ext2 1 $(IMGSIZE) set 1 boot on
+	sudo kpartx -a -v `cat $(BUILD_DIR)/iso/img_loop_device` | awk '{print "/dev/mapper/" $$3}' > $(BUILD_DIR)/iso/img_loop_partition
 	sleep 1
-	sudo mkfs.ext2 `cat $/img_loop_partition`
-	mkdir -p $/imgroot
-	sudo mount `cat $/img_loop_partition` $/imgroot
+	sudo mkfs.ext2 `cat $(BUILD_DIR)/iso/img_loop_partition`
+	mkdir -p $(BUILD_DIR)/iso/imgroot
+	sudo mount `cat $(BUILD_DIR)/iso/img_loop_partition` $/imgroot
 	sudo extlinux -i $/imgroot
-	sudo /sbin/blkid -s UUID -o value `cat $/img_loop_partition` > $/img_loop_uuid
-	sudo dd conv=notrunc bs=440 count=1 if=/usr/lib/extlinux/mbr.bin of=`cat $/img_loop_device`
-	sudo cp -r $/isoroot/images $/imgroot
-	sudo cp -r $/isoroot/isolinux $/imgroot
-	sudo mv $/imgroot/isolinux $/imgroot/syslinux
-	sudo rm $/imgroot/syslinux/isolinux.cfg
-	sudo cp iso/syslinux/syslinux.cfg $/imgroot/syslinux
-	sudo sed -i -e "s/will_be_substituted_with_actual_uuid/`cat $/img_loop_uuid`/g" $/imgroot/syslinux/syslinux.cfg
-	sudo cp iso/ks.cfg $/imgroot/ks.cfg
-	sudo sed -i -e "s/will_be_substituted_with_actual_uuid/`cat $/img_loop_uuid`/g" $/imgroot/ks.cfg
-	sudo cp $(ISONAME) $/imgroot/nailgun.iso
-	sudo umount -f `cat $/img_loop_partition`
-	sudo kpartx -d `cat $/img_loop_device`
-	sudo losetup -d `cat $/img_loop_device`
+	sudo /sbin/blkid -s UUID -o value `cat $(BUILD_DIR)/iso/img_loop_partition` > $(BUILD_DIR)/iso/img_loop_uuid
+	sudo dd conv=notrunc bs=440 count=1 if=/usr/lib/extlinux/mbr.bin of=`cat $(BUILD_DIR)/iso/img_loop_device`
+	sudo cp -r $(BUILD_DIR)/iso/isoroot/images $/imgroot
+	sudo cp -r $(BUILD_DIR)/iso/isoroot/isolinux $/imgroot
+	sudo mv $(BUILD_DIR)/iso/imgroot/isolinux $/imgroot/syslinux
+	sudo rm $(BUILD_DIR)/iso/imgroot/syslinux/isolinux.cfg
+	sudo cp $(SOURCE_DIR)/iso/syslinux/syslinux.cfg $(BUILD_DIR)/iso/imgroot/syslinux
+	sudo sed -i -e "s/will_be_substituted_with_actual_uuid/`cat $(BUILD_DIR)/iso/img_loop_uuid`/g" $(BUILD_DIR)/iso/imgroot/syslinux/syslinux.cfg
+	sudo cp $(SOURCE_DIR)/iso/ks.cfg $(BUILD_DIR)/iso/imgroot/ks.cfg
+	sudo sed -i -e "s/will_be_substituted_with_actual_uuid/`cat $(BUILD_DIR)/iso/img_loop_uuid`/g" $(BUILD_DIR)/iso/imgroot/ks.cfg
+	sudo cp $(ISONAME) $(BUILD_DIR)/iso/imgroot/nailgun.iso
+	sudo umount -f `cat $(BUILD_DIR)/iso/img_loop_partition`
+	sudo kpartx -d `cat $(BUILD_DIR)/iso/img_loop_device`
+	sudo losetup -d `cat $(BUILD_DIR)/iso/img_loop_device`

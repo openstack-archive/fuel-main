@@ -62,6 +62,8 @@ puppetdb-terminus
 python-amqp
 python-cinder
 python-devel.x86_64
+python-pip
+python-setuptools
 python-virtualenv
 rabbitmq-server-2.8.7
 rpm-build

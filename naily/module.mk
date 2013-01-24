@@ -1,10 +1,9 @@
+NAILY_VERSION:=$(shell ruby -e "require '$(SOURCE_DIR)/naily/lib/naily/version.rb'; puts Naily::VERSION")
 
-/:=$(BUILD_DIR)/gems/
-
-$/naily-0.0.1.gem: naily/naily.gemspec \
-	  $(call find-files,naily/bin) \
-		$(call find-files,naily/lib)
+$(BUILD_DIR)/packages/gems/naily-$(NAILY_VERSION).gem: \
+		$(SOURCE_DIR)/naily/naily.gemspec \
+		$(call find-files,$(SOURCE_DIR)/naily/bin) \
+		$(call find-files,$(SOURCE_DIR)/naily/lib)
 	@mkdir -p $(@D)
-	cd $(<D) && \
-		gem build $(<F)
-	mv $(<D)/naily-*.gem $@
+	cd $(SOURCE_DIR)/naily && gem build naily.gemspec
+	mv $(SOURCE_DIR)/naily/naily-$(NAILY_VERSION).gem $@
