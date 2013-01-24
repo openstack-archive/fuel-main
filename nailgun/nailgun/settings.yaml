@@ -156,13 +156,13 @@ LOGS:
     <<: *install_log_group
     path: 'install/storage.log'
   - id: 'install/ks-pre'
-    name: "ks-pre"
+    name: "kickstart-pre"
     <<: *remote_log_type
     <<: *remote_syslog_log_format
     <<: *install_log_group
     path: 'install/ks-pre.log'
   - id: 'install/ks-post'
-    name: "ks-post"
+    name: "kickstart-post"
     <<: *remote_log_type
     <<: *remote_syslog_log_format
     <<: *install_log_group
