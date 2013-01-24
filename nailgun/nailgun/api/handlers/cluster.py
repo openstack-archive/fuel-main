@@ -193,6 +193,9 @@ class ClusterCollectionHandler(JSONHandler):
             used_vlans.append(vlan_start)
             used_nets.append(str(new_net))
 
+        cluster.add_pending_changes("attributes")
+        cluster.add_pending_changes("networks")
+
         raise web.webapi.created(json.dumps(
             ClusterHandler.render(cluster),
             indent=4

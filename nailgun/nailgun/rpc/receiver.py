@@ -122,13 +122,16 @@ class NailgunReceiver(object):
 
         task = orm().query(Task).filter_by(uuid=task_uuid).first()
         if not task:
+            # No task found - nothing to do here, returning
             logger.warning(
                 "No task with uuid '{0}'' found - nothing changed".format(
                     task_uuid
                 )
             )
+            return
 
         error_nodes = []
+        # First of all, let's update nodes in database
         for node in nodes:
             node_db = orm().query(Node).get(node['uid'])
 
@@ -139,6 +142,24 @@ class NailgunReceiver(object):
                     )
                 )
                 continue
+
+            if 'status' in node:
+                cl_id = task.cluster_id if task else None
+                if node['status'] in ('error', 'offline'):
+                    # If failure occured with node
+                    # it's progress should be 100
+                    node_db.progress = 100
+                    # Notification on particular node failure
+                    notifier.notify(
+                        "error",
+                        "Failed to deploy node '{0}': {1}".format(
+                            node_db.name,
+                            node_db.error_msg or "Unknown error"
+                        ),
+                        cluster_id=cl_id,
+                        node_id=node['uid'],
+                        task_uuid=task_uuid
+                    )
 
             for param in ('status', 'progress', 'error_msg'):
                 if param in node:
@@ -153,33 +174,9 @@ class NailgunReceiver(object):
             orm().add(node_db)
             orm().commit()
 
-            if 'status' in node:
-                cl_id = task.cluster_id if task else None
-                if node['status'] == 'error':
-                    notifier.notify(
-                        "error",
-                        "Failed to deploy node '{0}': {1}".format(
-                            node_db.name,
-                            node_db.error_msg or "Unknown error"
-                        ),
-                        cluster_id=cl_id,
-                        node_id=node['uid'],
-                        task_uuid=task_uuid
-                    )
-                elif node['status'] == 'offline':
-                    notifier.notify(
-                        "error",
-                        "Failed to deploy offline node '{0}'".format(
-                            node_db.name
-                        ),
-                        cluster_id=cl_id,
-                        node_id=node['uid'],
-                        task_uuid=task_uuid
-                    )
-
+        # We should calculate task progress by nodes info
         coeff = settings.PROVISIONING_PROGRESS_COEFF or 0.3
-        if nodes and not progress and task:
-            # we should calculate task progress by nodes info
+        if nodes and not progress:
             nodes_progress = []
 
             orm().expire_all()
@@ -196,16 +193,10 @@ class NailgunReceiver(object):
                     orm().commit()
 
                 if node.status in ['provisioning', 'provisioned'] or \
-                        (
-                            node.status,
-                            node.error_type
-                        ) == ('error', 'provision'):
+                        node.needs_reprovision:
                     nodes_progress.append(float(node.progress) * coeff)
                 elif node.status in ['deploying', 'ready'] or \
-                        (
-                            node.status,
-                            node.error_type
-                        ) == ('error', 'deploy'):
+                        node.needs_redeploy:
                     nodes_progress.append(
                         100.0 * coeff + float(node.progress) * (1.0 - coeff)
                     )
@@ -214,7 +205,8 @@ class NailgunReceiver(object):
             if nodes_progress:
                 progress = int(sum(nodes_progress) / len(nodes_progress))
 
-        if status in ('error',) and task:
+        # First of all, let's update nodes in database
+        if status in ('error',):
             nodes_info = []
             error_nodes = orm().query(Node).filter_by(
                 cluster_id=task.cluster_id
@@ -236,7 +228,7 @@ class NailgunReceiver(object):
                 message,
                 task.cluster_id
             )
-        elif status in ('ready',) and task:
+        elif status in ('ready',):
             # determining horizon url - it's ip of controller
             # from a public network - works only for simple deployment
             controller = orm().query(Node).filter(
@@ -283,8 +275,7 @@ class NailgunReceiver(object):
                 message,
                 task.cluster_id
             )
-        if task:
-            update_task_status(task_uuid, status, progress, message)
+        update_task_status(task_uuid, status, progress, message)
 
     @classmethod
     def verify_networks_resp(cls, **kwargs):

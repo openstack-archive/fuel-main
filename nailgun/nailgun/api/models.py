@@ -395,12 +395,12 @@ class NetworkGroup(Base, BasicValidator):
         d = cls.validate_json(data)
         if not isinstance(d, list):
             raise web.webapi.badrequest(
-                message="It's expected to receive array, not single object"
+                message="It's expected to receive array, not a single object"
             )
         for i in d:
             if not 'id' in i:
                 raise web.webapi.badrequest(
-                    message="No 'id' param for '%'" % i
+                    message="No 'id' param for '{0}'".format(i)
                 )
         return d
 

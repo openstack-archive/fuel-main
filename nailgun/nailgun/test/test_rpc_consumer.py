@@ -172,7 +172,7 @@ class TestConsumer(BaseHandlers):
 
         task = Task(
             uuid=str(uuid.uuid4()),
-            name="super"
+            name="deploy"
         )
         self.db.add(task)
         self.db.commit()
