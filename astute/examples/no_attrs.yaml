@@ -1,0 +1,12 @@
+--- 
+nodes: 
+- status: provisioned
+  role: controller
+  uid: devnailgun.mirantis.com
+- status: provisioned
+  role: compute
+  uid: devnailgun.mirantis.com
+attributes: 
+  deployment_mode: multinode_compute
+  deployment_engine: simplepuppet
+task_uuid: deployment_task

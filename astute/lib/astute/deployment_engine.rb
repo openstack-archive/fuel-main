@@ -7,15 +7,17 @@ PUPPET_FADE_TIMEOUT = 60
 module Astute
   class DeploymentEngine
     def initialize(context)
+      if self.class.superclass.name == 'Object'
+        raise "Instantiation of this superclass is not allowed. Please subclass from #{self.class.name}."
+      end
       @ctx = context
     end
 
     def deploy(nodes, attrs)
+      # See implementation in subclasses, this may be everriden
       attrs['deployment_mode'] ||= 'multinode_compute'  # simple multinode deployment is the default
-      nodes.each {|n| n['uid'] = n['uid'].to_s }  # It may fail if uid is Fixnum
-      Astute.logger.info "Deployment mode #{attrs['deployment_mode']}, using #{self.class} for deployment."
-      attrs_for_mode = self.send("attrs_#{attrs['deployment_mode']}", nodes, attrs)
-      result = self.send("deploy_#{attrs['deployment_mode']}", nodes, attrs_for_mode)
+      Astute.logger.info "Deployment mode #{attrs['deployment_mode']}"
+      result = self.send("deploy_#{attrs['deployment_mode']}", nodes, attrs)
     end
 
     def method_missing(method, *args)

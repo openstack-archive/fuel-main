@@ -1,5 +1,10 @@
 class Astute::DeploymentEngine::NailyFact < Astute::DeploymentEngine
 
+  def deploy(nodes, attrs)
+    attrs_for_mode = self.send("attrs_#{attrs['deployment_mode']}", nodes, attrs)
+    super(nodes, attrs_for_mode)
+  end
+
   def create_facts(node, attrs)
     metapublisher = Astute::Metadata.method(:publish_facts)
     # calculate_networks method is common and you can find it in superclass
