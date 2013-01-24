@@ -1,5 +1,4 @@
-include $(SOURCE_DIR)/mirror/centos/config.mk
-include $(SOURCE_DIR)/mirror/centos/config_yum.mk
+include $(SOURCE_DIR)/mirror/centos/yum_repos.mk
 
 $(BUILD_DIR)/mirror/centos/etc/yum.conf: export contents:=$(yum_conf)
 $(BUILD_DIR)/mirror/centos/etc/yum.conf: \

@@ -8,6 +8,11 @@ define ACTION.TOUCH
 touch $@
 endef
 
+define NEWLINE
+
+
+endef
+
 $(BUILD_DIR)/%/.dir:
 	mkdir -p $(@D)
 	@touch $@

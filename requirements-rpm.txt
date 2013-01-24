@@ -12,6 +12,7 @@ bind-utils
 byacc
 centos-release
 cirros-testvm
+cronie-noanacron
 cman
 cobbler
 cobbler-web

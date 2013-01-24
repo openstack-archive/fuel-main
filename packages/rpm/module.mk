@@ -5,9 +5,6 @@ clean: clean_rpm
 clean_rpm:
 	sudo rm -rf $(BUILD_DIR)/packages/rpm
 
-SANDBOX:=$(BUILD_DIR)/packages/rpm/SANDBOX
-include $(SOURCE_DIR)/sandbox/module.mk
-
 RPM_SOURCES:=$(BUILD_DIR)/packages/rpm/SOURCES
 
 $(BUILD_DIR)/packages/rpm/prep.done: $(BUILD_DIR)/mirror/build.done
@@ -42,6 +39,7 @@ $(BUILD_DIR)/packages/rpm/rpm-nailgun-mcagents.done: \
 	$(ACTION.TOUCH)
 
 
+$(BUILD_DIR)/packages/rpm/rpm-nailgun-net-check.done: SANDBOX:=$(BUILD_DIR)/packages/rpm/SANDBOX
 $(BUILD_DIR)/packages/rpm/rpm-nailgun-net-check.done: export SANDBOX_UP:=$(SANDBOX_UP)
 $(BUILD_DIR)/packages/rpm/rpm-nailgun-net-check.done: export SANDBOX_DOWN:=$(SANDBOX_DOWN)
 $(BUILD_DIR)/packages/rpm/rpm-nailgun-net-check.done: \
@@ -51,12 +49,10 @@ $(BUILD_DIR)/packages/rpm/rpm-nailgun-net-check.done: \
 
 	sudo sh -c "$${SANDBOX_UP}"
 
-	echo 000
 	cp -f $(SOURCE_DIR)/packages/rpm/patches/* $(RPM_SOURCES)
 	sudo mkdir -p $(SANDBOX)/tmp/SOURCES
 	sudo cp $(SOURCE_DIR)/packages/rpm/nailgun-net-check/net_probe.py $(SANDBOX)/tmp/SOURCES
 	sudo cp $(SOURCE_DIR)/packages/rpm/specs/nailgun-net-check.spec $(SANDBOX)/tmp
-	echo 111
 	sudo cp $(SOURCE_DIR)/packages/rpm/patches/* $(SANDBOX)/tmp/SOURCES
 	sudo cp $(LOCAL_MIRROR_SRC)/* $(SANDBOX)/tmp/SOURCES
 	sudo chroot $(SANDBOX) rpmbuild -vv --define "_topdir /tmp" -ba /tmp/nailgun-net-check.spec

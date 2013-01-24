@@ -1,8 +1,4 @@
-include $(SOURCE_DIR)/mirror/eggs/config.mk
-
-SANDBOX:=$(BUILD_DIR)/mirror/eggs/SANDBOX
-include $(SOURCE_DIR)/sandbox/module.mk
-
+$(BUILD_DIR)/mirror/eggs/build.done: SANDBOX:=$(BUILD_DIR)/mirror/eggs/SANDBOX
 $(BUILD_DIR)/mirror/eggs/build.done: export SANDBOX_UP:=$(SANDBOX_UP)
 $(BUILD_DIR)/mirror/eggs/build.done: export SANDBOX_DOWN:=$(SANDBOX_DOWN)
 $(BUILD_DIR)/mirror/eggs/build.done: \
@@ -23,7 +19,7 @@ $(BUILD_DIR)/mirror/eggs/build.done: \
 	# for the same url.
 
 	# Installing new version of pip.
-	sudo chroot $(SANDBOX) pip --version | awk '{if ($$2 != "1.2.1"){exit 1}}' || \
+	sudo chroot $(SANDBOX) pip --version 2>/dev/null |  grep -qE "^1.2.1$$" || \
 		sudo chroot $(SANDBOX) pip-python install \
 		--index-url $(MIRROR_EGGS) \
 		--find-links $(MIRROR_EGGS) \

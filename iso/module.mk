@@ -14,6 +14,8 @@ $(BUILD_DIR)/iso/isoroot-centos.done: \
 		$(BUILD_DIR)/packages/build.done
 	mkdir -p $(ISOROOT)
 	rsync -a --delete $(LOCAL_MIRROR_CENTOS_OS_BASEURL)/ $(ISOROOT)
+	createrepo -g `readlink -f "$(ISOROOT)/repodata/comps.xml"` \
+		-u media://`head -1 $(ISOROOT)/.discinfo` $(ISOROOT)
 	$(ACTION.TOUCH)
 
 $(BUILD_DIR)/iso/isoroot-eggs.done: \
@@ -60,27 +62,10 @@ $(ISOROOT)/puppet-slave.tgz: \
 		$(call find-files,$(SOURCE_DIR)/puppet/nailytest) \
 		$(call find-files,$(SOURCE_DIR)/puppet/osnailyfacter) \
 		$(call find-files,$(SOURCE_DIR)/fuel/deployment/puppet)
-	(cd $(SOURCE_DIR)/puppet && tar cf $(BUILD_DIR)/puppet-slave.tar nailytest osnailyfacter)
-	(cd $(SOURCE_DIR)/fuel/deployment/puppet && tar rf $(BUILD_DIR)/puppet-slave.tar ./*)
-	gzip -c -9 $(BUILD_DIR)/puppet-slave.tar > $@
-
-
-########################
-# Ugly hacking. Hope it is temporary.
-########################
-
-FUEL_PACKAGES=http://download.mirantis.com/epel-fuel/x86_64
-$(BUILD_DIR)/iso/isoroot-morerpm.done: \
-		$(BUILD_DIR)/iso/isoroot-centos.done \
-		$(ISOROOT)/.discinfo
-	mkdir -p $(ISOROOT)/more_rpm
-	cd $(ISOROOT)/more_rpm && wget -c \
-		$(FUEL_PACKAGES)/MySQL-shared-5.5.28-1.el6.x86_64.rpm \
-		$(FUEL_PACKAGES)/MySQL-client-5.5.28-1.el6.x86_64.rpm \
-		$(FUEL_PACKAGES)/MySQL-server-5.5.28_wsrep_23.7-1.rhel5.x86_64.rpm \
-		$(FUEL_PACKAGES)/galera-23.2.2-1.rhel5.x86_64.rpm
-	createrepo -x 'more_rpm/*' -g `readlink -f "$(ISOROOT)/repodata/comps.xml"` -u media://`head -1 $(ISOROOT)/.discinfo` $(ISOROOT)
-	$(ACTION.TOUCH)
+	(cd $(SOURCE_DIR)/puppet && tar cf $(ISOROOT)/puppet-slave.tar nailytest osnailyfacter)
+	(cd $(SOURCE_DIR)/fuel/deployment/puppet && tar rf $(ISOROOT)/puppet-slave.tar ./*)
+	gzip -c -9 $(ISOROOT)/puppet-slave.tar > $@ && \
+		rm $(ISOROOT)/puppet-slave.tar
 
 
 ########################
@@ -111,7 +96,6 @@ $(BUILD_DIR)/iso/isoroot.done: \
 		$(BUILD_DIR)/iso/isoroot-eggs.done \
 		$(BUILD_DIR)/iso/isoroot-gems.done \
 		$(BUILD_DIR)/iso/isoroot-files.done \
-		$(BUILD_DIR)/iso/isoroot-morerpm.done \
 		$(BUILD_DIR)/iso/isoroot-bootstrap.done
 	$(ACTION.TOUCH)
 

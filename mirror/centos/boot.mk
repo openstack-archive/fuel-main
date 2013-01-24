@@ -1,5 +1,3 @@
-include $(SOURCE_DIR)/mirror/centos/config.mk
-
 ISOLINUX_FILES:=boot.msg grub.conf initrd.img isolinux.bin memtest splash.jpg vesamenu.c32 vmlinuz
 IMAGES_FILES:=efiboot.img efidisk.img install.img
 EFI_FILES:=BOOTX64.conf BOOTX64.efi splash.xpm.gz

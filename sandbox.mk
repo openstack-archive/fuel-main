@@ -6,6 +6,20 @@ gpgcheck=0
 enabled=1
 endef
 
+SANDBOX_PACKAGES:=\
+	byacc \
+	flex \
+	gcc \
+	glibc-devel \
+	glibc-headers \
+	kernel-headers \
+	make \
+	python-devel.x86_64 \
+	python-pip \
+	rpm-build \
+	tar \
+
+
 define SANDBOX_UP
 mkdir -p $(SANDBOX)/etc/yum.repos.d
 cp /etc/resolv.conf $(SANDBOX)/etc/resolv.conf
@@ -15,9 +29,7 @@ EOF
 rpm -i --root=$(SANDBOX) `find $(LOCAL_MIRROR_CENTOS_OS_BASEURL) -name "centos-release*rpm" | head -1`
 rm -f $(SANDBOX)/etc/yum.repos.d/Cent*
 rpm --root=$(SANDBOX) --rebuilddb
-yum --installroot=$(SANDBOX) -y --nogpgcheck install \
-rpm-build tar gcc flex make byacc python-devel.x86_64 \
-glibc-devel glibc-headers kernel-headers python-pip
+yum --installroot=$(SANDBOX) -y --nogpgcheck install $(SANDBOX_PACKAGES)
 mount | grep -q $(SANDBOX)/proc || sudo mount --bind /proc $(SANDBOX)/proc
 mount | grep -q $(SANDBOX)/dev || sudo mount --bind /dev $(SANDBOX)/dev
 endef
@@ -27,4 +39,3 @@ sync
 umount $(SANDBOX)/proc
 umount $(SANDBOX)/dev
 endef
-

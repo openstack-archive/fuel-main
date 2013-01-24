@@ -7,6 +7,6 @@ $(BUILD_DIR)/packages/eggs/Nailgun-$(NAILGUN_VERSION).tar.gz: \
 
 test-unit: test-unit-nailgun
 
-.PHONY: test-unit-nailgun
+.PHONY: test-unit test-unit-nailgun
 test-unit-nailgun:
 	cd $(SOURCE_DIR)/nailgun && ./run_tests.sh
