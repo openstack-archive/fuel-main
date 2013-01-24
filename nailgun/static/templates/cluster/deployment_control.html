@@ -19,6 +19,6 @@
   <% } %>
   <li class="pull-right deployment-control-box">
     <div class="deploying-progress-text-box"></div>
-    <button class="deploy-btn <%= cluster.hasChanges() || cluster.needRedeployment() ? '' : 'disabled' %>"><i class="icon-upload-cloud"></i> Deploy Changes</button>
+    <button class="deploy-btn <%= cluster.hasChanges() || cluster.needsRedeployment() ? '' : 'disabled' %>"><i class="icon-upload-cloud"></i> Deploy Changes</button>
   </li>
 <% } %>

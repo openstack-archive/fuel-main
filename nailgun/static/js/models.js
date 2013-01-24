@@ -38,8 +38,8 @@ define(function() {
         hasChanges: function() {
             return this.get('nodes').hasChanges() || this.get('changes').length;
         },
-        needRedeployment: function() {
-            return this.get('nodes').currentNodes().length && this.get('nodes').where({status: 'error'}).length;
+        needsRedeployment: function() {
+            return this.get('nodes').where({pending_addition: false, status: 'error'}).length;
         },
         canChangeMode: function(newMode) {
             var nodes = this.get('nodes');

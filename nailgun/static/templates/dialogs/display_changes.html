@@ -3,13 +3,13 @@
   <h3>Deploy changes</h3>
 </div>
 <div class="modal-body display-changes-dialog">
-  <% if (cluster.needRedeployment()) { %>
-    <div class="alert alert-error">Need to redeploy cluster.</div>
+  <% if (cluster.needsRedeployment()) { %>
+    <div class="alert alert-error">Some nodes have error status after deployment. Redeployment is needed.</div>
   <% } %>
   <ul>
     <% var settingsChangesDescriptions = {
-      'attributes': 'OpenStack settings were changed',
-      'networks': 'Network settings were changed'
+      'attributes': 'OpenStack settings were modified',
+      'networks': 'Network settings were modified'
     } %>
     <% if (cluster.get('changes').length) { %>
       <% _.each(cluster.get('changes'), function(change) { %>
@@ -17,7 +17,7 @@
       <% }) %>
     <% } %>
     <% var warnings = {
-      'controller': 'The cluster will not contain the necessary number of controllers after deployment. Thus, it will not be usable.',
+      'controller': 'Installation will not contain the necessary number of controllers after deployment. Thus, it will not be usable.',
       'compute': 'Compute nodes are recommended for deployment',
       'storage': 'Storage nodes are recommended for deployment',
       'compute-storage': 'Compute and storage nodes are recommended for deployment',
