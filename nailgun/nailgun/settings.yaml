@@ -102,6 +102,14 @@ LOG_TYPES:
     multiline: True
     base: '/var/log/remote/'
 
+LOG_GROUPS:
+  - &main_install_log_group
+    group: ~
+  - &install_log_group
+    group: 'Other install logs'
+  - &bootstrap_log_group
+    group: 'Bootstrap logs'
+
 LOGS:
 # Master node logs.
   - id: nailgun
@@ -119,6 +127,7 @@ LOGS:
     name: "mcollective"
     <<: *remote_log_type
     <<: *remote_syslog_log_format
+    <<: *main_install_log_group
     fake: True
     path: '/var/tmp/fake-target-mcollective.log'
 # Target node installation logs.
@@ -126,60 +135,68 @@ LOGS:
     name: "puppet"
     <<: *remote_log_type
     <<: *remote_syslog_log_format
+    <<: *main_install_log_group
     path: 'puppet-agent.log'
-    important: True
   - id: 'install/anaconda'
     name: "anaconda"
     <<: *remote_log_type
     <<: *remote_syslog_log_format
+    <<: *main_install_log_group
     path: 'install/anaconda.log'
-    important: True
   - id: 'install/syslog'
     name: "syslog"
     <<: *remote_log_type
     <<: *remote_syslog_log_format
+    <<: *main_install_log_group
     path: 'install/syslog.log'
-    important: True
   - id: 'install/storage'
-    name: "install/storage.log"
+    name: "storage"
     <<: *remote_log_type
     <<: *remote_syslog_log_format
+    <<: *install_log_group
     path: 'install/storage.log'
   - id: 'install/ks-pre'
-    name: "install/ks-pre"
+    name: "ks-pre"
     <<: *remote_log_type
     <<: *remote_syslog_log_format
+    <<: *install_log_group
     path: 'install/ks-pre.log'
   - id: 'install/ks-post'
-    name: "install/ks-post"
+    name: "ks-post"
     <<: *remote_log_type
     <<: *remote_syslog_log_format
+    <<: *install_log_group
     path: 'install/ks-post.log'
 # Bootstrap node logs.
   - id: 'bootstrap/dmesg'
-    name: "bootstrap/dmesg"
+    name: "dmesg"
     <<: *remote_log_type
     <<: *remote_syslog_log_format
+    <<: *bootstrap_log_group
     path: 'bootstrap/dmesg.log'
   - id: 'bootstrap/secure'
-    name: "bootstrap/secure"
+    name: "secure"
     <<: *remote_log_type
     <<: *remote_syslog_log_format
+    <<: *bootstrap_log_group
     path: 'bootstrap/secure.log'
   - id: 'bootstrap/messages'
-    name: "bootstrap/messages"
+    name: "messages"
     <<: *remote_log_type
     <<: *remote_syslog_log_format
+    <<: *bootstrap_log_group
     path: 'bootstrap/messages.log'
   - id: 'bootstrap/mco'
-    name: "bootstrap/mcollective.log"
+    name: "mcollective"
     <<: *remote_log_type
     <<: *remote_syslog_log_format
+    <<: *bootstrap_log_group
     path: 'bootstrap/mcollective.log'
   - id: 'bootstrap/agent'
-    name: "bootstrap/agent.log"
+    name: "agent"
     <<: *remote_log_type
     <<: *remote_syslog_log_format
+    <<: *bootstrap_log_group
     path: 'bootstrap/agent.log'
 
 MCO_PSKEY: "Gie6iega9ohngaenahthohngu8aebohxah9seidi"

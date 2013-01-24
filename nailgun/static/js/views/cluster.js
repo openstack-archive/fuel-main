@@ -1018,22 +1018,21 @@ function(models, commonViews, dialogViews, clusterPageTemplate, deploymentResult
                     if (sources.length) {
                         input.attr('disabled', false);
 
-                        var importantSources = [], unimportantSources = [], sortedSources;
+                        var groups = [''], sourcesByGroup = {'': []};
                         sources.each(function(source) {
-                            (source.get('important') ? importantSources : unimportantSources).push(source);
+                            var group = source.get('group') || '';
+                            if (!_.has(sourcesByGroup, group)) {
+                                sourcesByGroup[group] = [];
+                                groups.push(group);
+                            }
+                            sourcesByGroup[group].push(source);
                         });
-                        if (!importantSources.length) {
-                            sortedSources = unimportantSources;
-                        } else if (!unimportantSources.length) {
-                            sortedSources = importantSources;
-                        } else {
-                            sortedSources = importantSources.concat(null, unimportantSources);
-                        }
-                        _.each(sortedSources, function(source) {
-                            if (source) {
-                                input.append($('<option/>', {value: source.id, text: source.get('name')}));
-                            } else {
-                                input.append($('<optgroup/>', {label: '――――'}));
+                        _.each(groups, function(group) {
+                            if (sourcesByGroup[group].length) {
+                                var el = group ? $('<optgroup/>', {label: group}).appendTo(input) : input;
+                                _.each(sourcesByGroup[group], function(source) {
+                                    el.append($('<option/>', {value: source.id, text: source.get('name')}));
+                                });
                             }
                         });
 
