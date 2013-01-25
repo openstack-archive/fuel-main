@@ -35,11 +35,12 @@ class TestNotification(BaseHandlers):
 
         receiver.deploy_resp(**kwargs)
 
-        notification = self.db.query(Notification).filter_by(
-            cluster_id=cluster.id).first()
-
-        self.assertEqual(notification.status, "unread")
-        self.assertEqual(notification.topic, "done")
+        notifications = self.db.query(Notification).filter_by(
+            cluster_id=cluster.id
+        ).all()
+        self.assertEqual(len(notifications), 1)
+        self.assertEqual(notifications[0].status, "unread")
+        self.assertEqual(notifications[0].topic, "done")
 
     def test_notification_discover_no_node_fails(self):
         self.assertRaises(
@@ -66,11 +67,12 @@ class TestNotification(BaseHandlers):
 
         receiver.deploy_resp(**kwargs)
 
-        notification = self.db.query(Notification).filter_by(
-            cluster_id=cluster.id).first()
-
-        self.assertEqual(notification.status, "unread")
-        self.assertEqual(notification.topic, "error")
+        notifications = self.db.query(Notification).filter_by(
+            cluster_id=cluster.id
+        ).all()
+        self.assertEqual(len(notifications), 1)
+        self.assertEqual(notifications[0].status, "unread")
+        self.assertEqual(notifications[0].topic, "error")
 
     def test_notification_node_discover(self):
 
@@ -82,10 +84,10 @@ class TestNotification(BaseHandlers):
             headers=self.default_headers)
         self.assertEquals(resp.status, 201)
 
-        notification = self.db.query(Notification).first()
-
-        self.assertEquals(notification.status, 'unread')
-        self.assertEquals(notification.topic, 'discover')
+        notifications = self.db.query(Notification).all()
+        self.assertEqual(len(notifications), 1)
+        self.assertEqual(notifications[0].status, "unread")
+        self.assertEqual(notifications[0].topic, "discover")
 
     def test_notification_delete_cluster_done(self):
         cluster = self.create_default_cluster()
@@ -107,12 +109,12 @@ class TestNotification(BaseHandlers):
 
         receiver.remove_cluster_resp(**kwargs)
 
-        notification = self.db.query(Notification).first()
-
-        self.assertEqual(notification.status, "unread")
-        self.assertEqual(notification.topic, "done")
+        notifications = self.db.query(Notification).all()
+        self.assertEqual(len(notifications), 1)
+        self.assertEqual(notifications[0].status, "unread")
+        self.assertEqual(notifications[0].topic, "done")
         self.assertEqual(
-            notification.message,
+            notifications[0].message,
             "Installation '%s' and all its nodes "
             "are deleted" % cluster_name
         )
@@ -137,12 +139,14 @@ class TestNotification(BaseHandlers):
 
         receiver.remove_cluster_resp(**kwargs)
 
-        notification = self.db.query(Notification).first()
-
-        self.assertEqual(notification.status, "unread")
-        self.assertEqual(notification.topic, "error")
-        self.assertEqual(notification.cluster_id, cluster.id)
+        notifications = self.db.query(Notification).filter_by(
+            cluster_id=cluster.id
+        ).all()
+        self.assertEqual(len(notifications), 1)
+        self.assertEqual(notifications[0].status, "unread")
+        self.assertEqual(notifications[0].topic, "error")
+        self.assertEqual(notifications[0].cluster_id, cluster.id)
         self.assertEqual(
-            notification.message,
+            notifications[0].message,
             "Cluster deletion fake error"
         )
