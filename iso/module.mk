@@ -11,9 +11,10 @@ img: $(IMGNAME)
 
 $(BUILD_DIR)/iso/isoroot-centos.done: \
 		$(BUILD_DIR)/mirror/build.done \
-		$(BUILD_DIR)/packages/build.done
+		$(BUILD_DIR)/packages/build.done \
+		$(BUILD_DIR)/iso/isoroot-dotfiles.done
 	mkdir -p $(ISOROOT)
-	rsync -a --delete $(LOCAL_MIRROR_CENTOS_OS_BASEURL)/ $(ISOROOT)
+	rsync -rp $(LOCAL_MIRROR_CENTOS_OS_BASEURL)/	$(ISOROOT)
 	createrepo -g `readlink -f "$(ISOROOT)/repodata/comps.xml"` \
 		-u media://`head -1 $(ISOROOT)/.discinfo` $(ISOROOT)
 	$(ACTION.TOUCH)
@@ -37,9 +38,13 @@ $(BUILD_DIR)/iso/isoroot-gems.done: \
 # Extra files
 ########################
 
-$(BUILD_DIR)/iso/isoroot-files.done: \
+$(BUILD_DIR)/iso/isoroot-dotfiles.done: \
 		$(ISOROOT)/.discinfo \
-		$(ISOROOT)/.treeinfo \
+		$(ISOROOT)/.treeinfo
+	$(ACTION.TOUCH)
+
+$(BUILD_DIR)/iso/isoroot-files.done: \
+		$(BUILD_DIR)/iso/isoroot-dotfiles.done \
 		$(ISOROOT)/isolinux/isolinux.cfg \
 		$(ISOROOT)/ks.cfg \
 		$(ISOROOT)/bootstrap_admin_node.sh \

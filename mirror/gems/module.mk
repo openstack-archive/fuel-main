@@ -6,7 +6,8 @@ $(BUILD_DIR)/mirror/gems/gems-bundle/Gemfile: \
 		echo "source \"$$i\"" >> $@; \
 	done
 
-$(BUILD_DIR)/mirror/gems/gems-bundle-gemfile.done: requirements-gems.txt \
+$(BUILD_DIR)/mirror/gems/gems-bundle-gemfile.done: \
+		requirements-gems.txt \
 		$(BUILD_DIR)/mirror/gems/gems-bundle/Gemfile
 	mkdir -p $(BUILD_DIR)/mirror/gems/gems-bundle
 	cat requirements-gems.txt | while read gem ver; do \

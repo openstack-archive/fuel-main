@@ -43,6 +43,13 @@ BOOTSTRAP_RPMS_CUSTOM:=\
 	nailgun-mcagents \
 	nailgun-net-check \
 
+define yum_local_repo
+[mirror]
+name=Mirantis mirror
+baseurl=file://$(shell readlink -f -m $(LOCAL_MIRROR_CENTOS_OS_BASEURL))
+gpgcheck=0
+enabled=1
+endef
 
 YUM:=sudo yum --installroot=`readlink -f $(INITRAMROOT)` -y --nogpgcheck
 
@@ -51,7 +58,7 @@ clean: clean-bootstrap
 clean-bootstrap:
 	sudo rm -rf $(INITRAMROOT)
 
-bootstrap: $(BUILD_DIR)/bootstrap/bootstrap.done
+bootstrap: $(BUILD_DIR)/bootstrap/build.done
 
 $(BUILD_DIR)/bootstrap/build.done: \
 		$(BUILD_DIR)/bootstrap/linux \
@@ -71,13 +78,20 @@ $(BUILD_DIR)/bootstrap/linux: $(BUILD_DIR)/mirror/build.done
 	rm -r $(BUILD_DIR)/bootstrap/boot
 	touch $(BUILD_DIR)/bootstrap/linux
 
+
+$(BUILD_DIR)/bootstrap/customize-initram-root.done: export yum_local_repo:=$(yum_local_repo)
 $(BUILD_DIR)/bootstrap/customize-initram-root.done: \
-		$(BUILD_DIR)/mirror/build.done \
-		$(BUILD_DIR)/packages/build.done \
+		$(BUILD_DIR)/packages/rpm/build.done \
 		$(BUILD_DIR)/bootstrap/prepare-initram-root.done \
 		$(call find-files,$(SOURCE_DIR)/bootstrap/sync) \
 		$(SOURCE_DIR)/bin/send2syslog.py \
 		$(SOURCE_DIR)/bootstrap/ssh/id_rsa.pub
+
+	# Defining local repository
+	sudo sh -c "echo \"$${yum_local_repo}\" > $(INITRAMROOT)/etc/yum.repos.d/mirror.repo"
+
+	# Rebuilding rpmdb
+	sudo rpm --root=`readlink -f $(INITRAMROOT)` --rebuilddb
 
 	# Installing custom rpms
 	$(YUM) install $(BOOTSTRAP_RPMS_CUSTOM)
@@ -110,32 +124,28 @@ $(BUILD_DIR)/bootstrap/customize-initram-root.done: \
 	$(ACTION.TOUCH)
 
 
-define yum_local_repo
-[mirror]
-name=Mirantis mirror
-baseurl=file://$(shell readlink -f -m $(LOCAL_MIRROR_CENTOS_OS_BASEURL))
-gpgcheck=0
-enabled=1
-endef
-
-
 $(BUILD_DIR)/bootstrap/prepare-initram-root.done: export yum_local_repo:=$(yum_local_repo)
 $(BUILD_DIR)/bootstrap/prepare-initram-root.done: \
-		$(BUILD_DIR)/mirror/build.done \
-		$(BUILD_DIR)/packages/build.done
+		$(BUILD_DIR)/mirror/build.done
+
+	# Installing centos-release package
+	sudo rpm -i --root=$(INITRAMROOT) \
+		`find $(LOCAL_MIRROR_CENTOS_OS_BASEURL) -name "centos-release*rpm" | head -1` || \
+		echo "centos-release already installed"
+
+	# Removing default repositories (centos-release package provides them)
+	sudo rm -f $(INITRAMROOT)/etc/yum.repos.d/Cent*
+
+	# Defining local repository
+	sudo sh -c "echo \"$${yum_local_repo}\" > $(INITRAMROOT)/etc/yum.repos.d/mirror.repo"
+
+	# Rebuilding rpmdb
+	sudo rpm --root=`readlink -f $(INITRAMROOT)` --rebuilddb
 
 	# Creating some necessary directories
 	sudo mkdir -p $(INITRAMROOT)/proc
 	sudo mkdir -p $(INITRAMROOT)/dev
 	sudo mkdir -p $(INITRAMROOT)/var/lib/rpm
-
-	# Defining local repository in order to install rpms
-	sudo mkdir -p $(INITRAMROOT)/etc/yum.repos.d
-	sudo sh -c "echo \"$${yum_local_repo}\" > $(INITRAMROOT)/etc/yum.repos.d/mirror.repo"
-
-	# Removing default repositories and rebuilding rpm database
-	sudo rm -f $(INITRAMROOT)/etc/yum.repos.d/Cent*
-	sudo rpm --root=`readlink -f $(INITRAMROOT)` --rebuilddb
 
 	# Installing rpms
 	$(YUM) install $(BOOTSTRAP_RPMS) $(BOOTSTRAP_RPMS_TEMPORARY)
