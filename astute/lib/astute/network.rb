@@ -25,11 +25,11 @@ module Astute
       ctx.reporter.report({'progress' => 60, 'status' => 'verification'})
 
       stats = net_probe.get_probing_info
-      result = stats.map {|node| {'sender' => node.results[:sender], 'data' => node.results[:data]} }
-      Astute.logger.debug "#{ctx.task_id}: Network checking is done. Raw results: #{result.inspect}"
-      result.map! { |node| {'uid' => node['sender'],
-                            'networks' => check_vlans_by_traffic(node['sender'], node['data'][:neighbours]) }
-                  }
+      result = stats.map {|node| {'uid' => node.results[:sender],
+                                  'networks' => check_vlans_by_traffic(
+                                            node.results[:sender],
+                                            node.results[:data][:neighbours])} }
+      Astute.logger.debug "#{ctx.task_id}: Network checking is done. Results: #{result.inspect}"
       return {'nodes' => result}
     end
 
