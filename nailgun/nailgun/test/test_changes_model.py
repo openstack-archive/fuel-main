@@ -170,5 +170,13 @@ class TestClusterChanges(BaseHandlers):
                 raise Exception("Deployment seems to be hanged")
             time.sleep(1)
 
-        cluster_db = self.db.query(Cluster).get(cluster["id"])
-        self.assertEquals(len(cluster_db.changes), 2)
+        attributes_changes = self.db.query(ClusterChanges).filter_by(
+            name="attributes"
+        ).all()
+        self.assertEquals(len(attributes_changes), 1)
+        networks_changes = self.db.query(ClusterChanges).filter_by(
+            name="networks"
+        ).all()
+        self.assertEquals(len(networks_changes), 1)
+        all_changes = self.db.query(ClusterChanges).all()
+        self.assertEquals(len(all_changes), 2)
