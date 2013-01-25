@@ -115,6 +115,61 @@
     </fieldset>
   </div>
 
+  <!-- network scheme -->
+  <div class="row">
+    <div class="page-control-box">
+      <div style="display: block; margin: 10px 20px 10px 20px;">
+
+        <div style="display: block; float: left; width: 580px; height: 172px; margin-right: 20px; position: relative;">
+
+            <div style="display: block; width: 200px; height: 58px; background-color: #dadada; position: relative; top: 4px; left: 190px;">Router</div>
+
+            <div style="display: block; width: 140px; height: 40px; background-color: #dadada; position: relative; top: 60px; left: 0px;">Cluster 1</div>
+
+            <div style="display: block; width: 140px; height: 40px; background-color: #cccccc; position: relative; top: 20px; left: 220px;">Cluster 2</div>
+
+            <div style="display: block; width: 140px; height: 40px; background-color: #cccccc; position: relative; top: -20px; left: 440px;">Cluster 3</div>
+
+            <div style="display: block; width: 156px; height: 56px; background-color: red; position: relative; top: -116px; left: 68px;">Animation 1</div>
+
+            <div style="display: block; width: 4px; height: 56px; background-color: green; position: relative; top: -172px; left: 288px;">2</div>
+
+            <div style="display: block; width: 156px; height: 56px; background-color: red; position: relative; top: -228px; left: 356px;">Animation 3</div>
+
+        </div>
+
+
+        <div style="display: block; float: left; width: 300px; overflow: hidden;">
+            <li><strong>Network Verification is done in 3 steps:</strong></li>
+            <li>1. Every node starts listening for test frames</li>
+            <li>2. On every node via eth0 802.1Q tagget UDP frames are seat</li>
+            <li>3. Listeners register test frames from other nodes</li>
+            <div class="verify-network"></div>
+        </div>
+        
+        <div style="clear: both;">
+
+            <h4>Verification Test Result Table</h4>
+
+            <table class="table table-condensed">
+              <thead>
+                <td>1</td>
+                <td>2</td>
+                <td>3</td>
+              </thead>
+              <tbody>
+                <td>1</td>
+                <td>2</td>
+                <td>3</td>
+              </tbody>
+            </table>
+
+        </div>
+
+      </div>
+    </div>
+  </div>
+
   <!-- page-control box -->
   <div class="row">
     <div class="page-control-box">
