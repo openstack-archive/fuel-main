@@ -139,3 +139,36 @@ class TestClusterChanges(BaseHandlers):
 
         cluster_db = self.db.query(Cluster).get(cluster["id"])
         self.assertEquals(list(cluster_db.changes), [])
+
+    @patch('nailgun.task.task.rpc.cast', nailgun.task.task.fake_cast)
+    @patch('nailgun.task.task.settings.FAKE_TASKS', True)
+    @patch('nailgun.task.fake.settings.FAKE_TASKS_TICK_COUNT', 80)
+    @patch('nailgun.task.fake.settings.FAKE_TASKS_TICK_INTERVAL', 1)
+    def test_failed_deployment_does_nothing_with_changes(self):
+        cluster = self.create_cluster_api()
+        node = self.create_default_node(cluster_id=cluster['id'],
+                                        role="controller",
+                                        status="error",
+                                        error_type="provision")
+        resp = self.app.put(
+            reverse(
+                'ClusterChangesHandler',
+                kwargs={'cluster_id': cluster['id']}),
+            headers=self.default_headers
+        )
+        response = json.loads(resp.body)
+        supertask_uuid = response['uuid']
+        supertask = self.db.query(Task).filter_by(
+            uuid=supertask_uuid
+        ).first()
+
+        timer = time.time()
+        timeout = 60
+        while supertask.status == 'running':
+            self.db.refresh(supertask)
+            if time.time() - timer > timeout:
+                raise Exception("Deployment seems to be hanged")
+            time.sleep(1)
+
+        cluster_db = self.db.query(Cluster).get(cluster["id"])
+        self.assertEquals(len(cluster_db.changes), 2)

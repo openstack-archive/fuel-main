@@ -218,6 +218,7 @@ class TestTaskManagers(BaseHandlers):
                                          role="controller",
                                          status="error",
                                          error_type="provision",
+                                         error_msg="Test Error",
                                          pending_addition=True)
         node2 = self.create_default_node(cluster_id=cluster['id'],
                                          role="compute",
@@ -249,8 +250,22 @@ class TestTaskManagers(BaseHandlers):
         self.assertEquals(node2.status, 'provisioned')
         self.assertEquals(supertask.status, 'error')
         self.assertEquals(supertask.progress, 100)
-        notifications = self.db.query(Notification).all()
-        self.assertEqual(len(notifications), 2)
+        notif_node = self.db.query(Notification).filter_by(
+            topic="error",
+            message="Failed to deploy node '{0}': {1}".format(
+                node1.name,
+                node1.error_msg
+            )
+        ).first()
+        self.assertIsNotNone(notif_node)
+        notif_deploy = self.db.query(Notification).filter_by(
+            topic="error",
+            message="Failed to deploy nodes:\n'{0}': {1}".format(
+                node1.name,
+                node1.error_msg
+            )
+        ).first()
+        self.assertIsNotNone(notif_deploy)
 
         resp = self.app.put(
             reverse(
