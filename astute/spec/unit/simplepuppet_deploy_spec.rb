@@ -24,6 +24,13 @@ describe "SimplePuppet DeploymentEngine" do
       @deploy_engine.deploy(nodes, attrs)
     end
 
+    it "it should raise an exception if deployment mode is unsupported" do
+      nodes = [{'uid' => 1}]
+      attrs = {'deployment_mode' => 'unknown'}
+      expect {@deploy_engine.deploy(nodes, attrs)}.to raise_exception(
+              /Method deploy_unknown is not implemented/)
+    end
+
     it "multinode_compute deploy should not raise any exception" do
       @env['attributes']['deployment_mode'] = "multinode_compute"
       Astute::Metadata.expects(:publish_facts).never  # It is not supported in SimplePuppet
