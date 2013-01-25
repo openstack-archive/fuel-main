@@ -129,6 +129,8 @@ class NailgunReceiver(object):
                 )
             )
             return
+        if not status:
+            status = task.status
 
         error_nodes = []
         # First of all, let's update nodes in database
@@ -143,24 +145,6 @@ class NailgunReceiver(object):
                 )
                 continue
 
-            if 'status' in node:
-                cl_id = task.cluster_id if task else None
-                if node['status'] in ('error', 'offline'):
-                    # If failure occured with node
-                    # it's progress should be 100
-                    node_db.progress = 100
-                    # Notification on particular node failure
-                    notifier.notify(
-                        "error",
-                        "Failed to deploy node '{0}': {1}".format(
-                            node_db.name,
-                            node_db.error_msg or "Unknown error"
-                        ),
-                        cluster_id=cl_id,
-                        node_id=node['uid'],
-                        task_uuid=task_uuid
-                    )
-
             for param in ('status', 'progress', 'error_msg'):
                 if param in node:
                     logging.debug(
@@ -171,6 +155,25 @@ class NailgunReceiver(object):
                         )
                     )
                     setattr(node_db, param, node[param])
+                    if param == 'status' and node['status'] in (
+                        'error',
+                        'offline'
+                    ):
+                        # If failure occured with node
+                        # it's progress should be 100
+                        node_db.progress = 100
+                        # Notification on particular node failure
+                        notifier.notify(
+                            "error",
+                            "Failed to deploy node '{0}': {1}".format(
+                                node_db.name,
+                                node_db.error_msg or "Unknown error"
+                            ),
+                            cluster_id=task.cluster_id,
+                            node_id=node['uid'],
+                            task_uuid=task_uuid
+                        )
+
             orm().add(node_db)
             orm().commit()
 
@@ -183,15 +186,6 @@ class NailgunReceiver(object):
             nodes_db = orm().query(Node).filter_by(
                 cluster_id=task.cluster_id).all()
             for node in nodes_db:
-                if node.progress is None:
-                    logger.error(
-                        "Node {0} has no progress value - assuming 0".format(
-                            node.uid
-                        )
-                    )
-                    node.progress = 0
-                    orm().commit()
-
                 if node.status in ['provisioning', 'provisioned'] or \
                         node.needs_reprovision:
                     nodes_progress.append(float(node.progress) * coeff)
@@ -205,77 +199,93 @@ class NailgunReceiver(object):
             if nodes_progress:
                 progress = int(sum(nodes_progress) / len(nodes_progress))
 
-        # First of all, let's update nodes in database
+        # Let's check the whole task status
         if status in ('error',):
-            nodes_info = []
-            error_nodes = orm().query(Node).filter_by(
-                cluster_id=task.cluster_id
-            ).filter(
-                Node.status.in_(('error', 'offline'))
-            ).all()
-            for n in error_nodes:
-                nodes_info.append(
-                    u"'{0}': {1}".format(
-                        n.name,
-                        n.error_msg
-                    )
-                )
-            message = "Failed to deploy nodes:\n{0}".format(
-                "\n".join(nodes_info)
-            )
-            notifier.notify(
-                "error",
-                message,
-                task.cluster_id
-            )
+            cls._error_action(task, status, progress)
         elif status in ('ready',):
-            # determining horizon url - it's ip of controller
-            # from a public network - works only for simple deployment
-            controller = orm().query(Node).filter(
-                Node.cluster_id == task.cluster_id,
-                Node.role == 'controller').first()
-            if controller:
-                logger.debug(u"role %s is found, node_id=%s, getting "
-                             "it's IP addresses", controller.role,
-                             controller.id)
-                public_net = filter(
-                    lambda n: n['name'] == 'public' and 'ip' in n,
-                    get_node_networks(controller.id)
+            cls._success_action(task, status, progress)
+        else:
+            update_task_status(task.uuid, status, progress, message)
+
+    @classmethod
+    def _error_action(cls, task, status, progress):
+        nodes_info = []
+        error_nodes = orm().query(Node).filter_by(
+            cluster_id=task.cluster_id
+        ).filter(
+            Node.status.in_(('error', 'offline'))
+        ).all()
+        for n in error_nodes:
+            nodes_info.append(
+                u"'{0}': {1}".format(
+                    n.name,
+                    n.error_msg
                 )
-                if public_net:
-                    horizon_ip = public_net[0]['ip'].split('/')[0]
-                    if task.cluster.mode in ('singlenode', 'multinode'):
-                        message = (
-                            u"Deployment of installation '{0}' is done. "
-                            "Access WebUI of OpenStack at http://{1}/ or via "
-                            "internal network at http://{2}/").format(
-                                task.cluster.name,
-                                horizon_ip,
-                                controller.ip)
-                    else:
-                        message = (
-                            u"Deployment of installation '{0}' is done. "
-                            "Access WebUI of OpenStack at http://{1}/").format(
-                                task.cluster.name,
-                                horizon_ip)
-                else:
-                    message = ("Deployment of installation '{0}' "
-                               "is done").format(task.cluster.name)
-                    logger.warning(
-                        "Public ip for controller node "
-                        "not found in '{0}'".format(task.cluster.name))
-            else:
-                message = (u"Deployment of installation"
-                           " '{0}' is done").format(task.cluster.name)
-                logger.warning("Controller node not found in '{0}'".format(
-                    task.cluster.name
-                ))
-            notifier.notify(
-                "done",
-                message,
-                task.cluster_id
             )
-        update_task_status(task_uuid, status, progress, message)
+        message = "Failed to deploy nodes:\n{0}".format(
+            "\n".join(nodes_info)
+        )
+        notifier.notify(
+            "error",
+            message,
+            task.cluster_id
+        )
+        update_task_status(task.uuid, status, progress, message)
+
+    @classmethod
+    def _success_action(cls, task, status, progress):
+        # check if all nodes are ready
+        if any(map(lambda n: n.status == 'error',
+                   task.cluster.nodes)):
+            cls._error_action(task, 'error', 100)
+
+        # determining horizon url - it's ip of controller
+        # from a public network - works only for simple deployment
+        controller = orm().query(Node).filter(
+            Node.cluster_id == task.cluster_id,
+            Node.role == 'controller').first()
+        if controller:
+            logger.debug("role %s is found, node_id=%s, getting "
+                         "it's IP addresses", controller.role,
+                         controller.id)
+            public_net = filter(
+                lambda n: n['name'] == 'public' and 'ip' in n,
+                get_node_networks(controller.id)
+            )
+            if public_net:
+                horizon_ip = public_net[0]['ip'].split('/')[0]
+                if task.cluster.mode in ('singlenode', 'multinode'):
+                    message = (
+                        u"Deployment of installation '{0}' is done. "
+                        "Access WebUI of OpenStack at http://{1}/ or via "
+                        "internal network at http://{2}/").format(
+                            task.cluster.name,
+                            horizon_ip,
+                            controller.ip)
+                else:
+                    message = (
+                        u"Deployment of installation '{0}' is done. "
+                        "Access WebUI of OpenStack at http://{1}/").format(
+                            task.cluster.name,
+                            horizon_ip)
+            else:
+                message = (u"Deployment of installation '{0}' "
+                           "is done").format(task.cluster.name)
+                logger.warning(
+                    "Public ip for controller node "
+                    "not found in '{0}'".format(task.cluster.name))
+        else:
+            message = ("Deployment of installation"
+                       " '{0}' is done").format(task.cluster.name)
+            logger.warning("Controller node not found in '{0}'".format(
+                task.cluster.name
+            ))
+        notifier.notify(
+            "done",
+            message,
+            task.cluster_id
+        )
+        update_task_status(task.uuid, status, progress, message)
 
     @classmethod
     def verify_networks_resp(cls, **kwargs):

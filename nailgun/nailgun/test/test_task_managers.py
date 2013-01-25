@@ -266,6 +266,8 @@ class TestTaskManagers(BaseHandlers):
             )
         ).first()
         self.assertIsNotNone(notif_deploy)
+        all_notif = self.db.query(Notification).all()
+        self.assertEqual(len(all_notif), 2)
 
         resp = self.app.put(
             reverse(
