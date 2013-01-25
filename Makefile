@@ -37,9 +37,9 @@ all: iso
 test: test-unit test-integration
 
 clean:
-	rm -rf $(BUILD_DIR)
+	sudo rm -rf $(BUILD_DIR)
 deep_clean: clean
-	rm -rf $(LOCAL_MIRROR)
+	sudo rm -rf $(LOCAL_MIRROR)
 
 distclean: deep_clean clean-integration-test
 

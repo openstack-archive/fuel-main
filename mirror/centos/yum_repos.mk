@@ -19,7 +19,7 @@ define yum_repo_centos
 [base]
 name=CentOS-$(CENTOS_RELEASE) - Base
 #mirrorlist=http://mirrorlist.centos.org/?release=$(CENTOS_RELEASE)&arch=$(CENTOS_ARCH)&repo=os
-baseurl=$(CENTOS_MIRROR)/$(CENTOS_RELEASE)/os/$(CENTOS_ARCH)
+baseurl=$(MIRROR_CENTOS)/$(CENTOS_RELEASE)/os/$(CENTOS_ARCH)
 gpgcheck=0
 enabled=1
 priority=10
@@ -27,7 +27,7 @@ priority=10
 [updates]
 name=CentOS-$(CENTOS_RELEASE) - Updates
 #mirrorlist=http://mirrorlist.centos.org/?release=$(CENTOS_RELEASE)&arch=$(CENTOS_ARCH)&repo=updates
-baseurl=$(CENTOS_MIRROR)/$(CENTOS_RELEASE)/updates/$(CENTOS_ARCH)
+baseurl=$(MIRROR_CENTOS)/$(CENTOS_RELEASE)/updates/$(CENTOS_ARCH)
 gpgcheck=0
 enabled=1
 priority=10
@@ -35,7 +35,7 @@ priority=10
 [extras]
 name=CentOS-$(CENTOS_RELEASE) - Extras
 #mirrorlist=http://mirrorlist.centos.org/?release=$(CENTOS_RELEASE)&arch=$(CENTOS_ARCH)&repo=extras
-baseurl=$(CENTOS_MIRROR)/$(CENTOS_RELEASE)/extras/$(CENTOS_ARCH)
+baseurl=$(MIRROR_CENTOS)/$(CENTOS_RELEASE)/extras/$(CENTOS_ARCH)
 gpgcheck=0
 enabled=1
 priority=10
@@ -43,7 +43,7 @@ priority=10
 [centosplus]
 name=CentOS-$(CENTOS_RELEASE) - Plus
 #mirrorlist=http://mirrorlist.centos.org/?release=$(CENTOS_RELEASE)&arch=$(CENTOS_ARCH)&repo=centosplus
-baseurl=$(CENTOS_MIRROR)/$(CENTOS_RELEASE)/centosplus/$(CENTOS_ARCH)
+baseurl=$(MIRROR_CENTOS)/$(CENTOS_RELEASE)/centosplus/$(CENTOS_ARCH)
 gpgcheck=0
 enabled=1
 priority=10
@@ -51,7 +51,7 @@ priority=10
 [contrib]
 name=CentOS-$(CENTOS_RELEASE) - Contrib
 #mirrorlist=http://mirrorlist.centos.org/?release=$(CENTOS_RELEASE)&arch=$(CENTOS_ARCH)&repo=contrib
-baseurl=$(CENTOS_MIRROR)/$(CENTOS_RELEASE)/contrib/$(CENTOS_ARCH)
+baseurl=$(MIRROR_CENTOS)/$(CENTOS_RELEASE)/contrib/$(CENTOS_ARCH)
 gpgcheck=0
 enabled=1
 priority=10
@@ -118,4 +118,5 @@ name=CentOS $(CENTOS_RELEASE) - Base
 baseurl=http://srv08-srt.srt.mirantis.net/mirror/centos/$(CENTOS_RELEASE)/$(CENTOS_ARCH)
 gpgcheck=0
 enabled=1
+priority=1
 endef

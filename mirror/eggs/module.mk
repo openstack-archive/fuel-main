@@ -11,7 +11,7 @@ $(BUILD_DIR)/mirror/eggs/build.done: \
 	mkdir -p $(LOCAL_MIRROR_EGGS)
 
 	# Avoiding eggs download duplication.
-	rsync -a --delete $(LOCAL_MIRROR_EGGS) $(SANDBOX)/tmp
+	sudo rsync -a --delete $(LOCAL_MIRROR_EGGS) $(SANDBOX)/tmp
 
 	# Here we don't know if MIRROR_EGGS
 	# is a list of links or a correct pip index.
@@ -19,7 +19,7 @@ $(BUILD_DIR)/mirror/eggs/build.done: \
 	# for the same url.
 
 	# Installing new version of pip.
-	sudo chroot $(SANDBOX) pip --version 2>/dev/null |  grep -qE "^1.2.1$$" || \
+	sudo chroot $(SANDBOX) pip --version 2>/dev/null | awk '{print $$2}' | grep -qE "^1.2.1$$" || \
 		sudo chroot $(SANDBOX) pip-python install \
 		--index-url $(MIRROR_EGGS) \
 		--find-links $(MIRROR_EGGS) \

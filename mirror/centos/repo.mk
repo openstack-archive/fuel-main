@@ -14,7 +14,7 @@ $(BUILD_DIR)/mirror/centos/etc/yum.conf: \
 $(BUILD_DIR)/mirror/centos/etc/yum.repos.d/base.repo: \
 		export contents:=$(foreach repo,$(YUM_REPOS),\n$(yum_repo_$(repo)))
 $(BUILD_DIR)/mirror/centos/etc/yum.repos.d/base.repo: \
-		$(SOURCE_DIR)/mirror/centos/config.mk
+		$(SOURCE_DIR)/mirror/centos/yum_repos.mk
 	@mkdir -p $(@D)
 	echo "$${contents}" > $@
 
@@ -31,12 +31,12 @@ $(BUILD_DIR)/mirror/centos/yum.done: \
 	yumdownloader -q --resolve --archlist=$(CENTOS_ARCH) \
 		-c $(BUILD_DIR)/mirror/centos/etc/yum.conf \
 		--destdir=$(LOCAL_MIRROR_CENTOS_OS_BASEURL)/Packages \
-		$(REQUIRED_PACKAGES) $(RPMFORGE_PACKAGES)
+		$(REQUIRED_RPMS) $(RPMFORGE_RPMS)
 	$(ACTION.TOUCH)
 
 $(LOCAL_MIRROR_CENTOS_OS_BASEURL)/repodata/comps.xml:
 	@mkdir -p $(@D)
-	wget -O $@.gz $(CENTOS_MIRROR_OS_BASEURL)/`wget -qO- $(CENTOS_MIRROR_OS_BASEURL)/repodata/repomd.xml | \
+	wget -O $@.gz $(MIRROR_CENTOS_OS_BASEURL)/`wget -qO- $(MIRROR_CENTOS_OS_BASEURL)/repodata/repomd.xml | \
 	 grep '$(@F)\.gz' | awk -F'"' '{ print $$2 }'`
 	gunzip $(LOCAL_MIRROR_CENTOS_OS_BASEURL)/repodata/$(@F).gz
 

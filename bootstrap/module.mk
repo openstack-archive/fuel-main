@@ -53,7 +53,7 @@ clean-bootstrap:
 
 bootstrap: $(BUILD_DIR)/bootstrap/bootstrap.done
 
-$(BUILD_DIR)/bootstrap/bootstrap.done: \
+$(BUILD_DIR)/bootstrap/build.done: \
 		$(BUILD_DIR)/bootstrap/linux \
 		$(BUILD_DIR)/bootstrap/initramfs.img
 	$(ACTION.TOUCH)
@@ -130,7 +130,7 @@ $(BUILD_DIR)/bootstrap/prepare-initram-root.done: \
 	sudo mkdir -p $(INITRAMROOT)/var/lib/rpm
 
 	# Defining local repository in order to install rpms
-	sudo mkdir -p $(@D)
+	sudo mkdir -p $(INITRAMROOT)/etc/yum.repos.d
 	sudo sh -c "echo \"$${yum_local_repo}\" > $(INITRAMROOT)/etc/yum.repos.d/mirror.repo"
 
 	# Removing default repositories and rebuilding rpm database

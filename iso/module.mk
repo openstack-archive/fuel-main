@@ -72,17 +72,19 @@ $(ISOROOT)/puppet-slave.tgz: \
 # Bootstrap image.
 ########################
 
+BOOTSTRAP_FILES:=initramfs.img linux
+
 $(BUILD_DIR)/iso/isoroot-bootstrap.done: \
 		$(ISOROOT)/bootstrap/bootstrap.rsa \
 		$(addprefix $(ISOROOT)/bootstrap/, $(BOOTSTRAP_FILES))
 	$(ACTION.TOUCH)
 
 $(addprefix $(ISOROOT)/bootstrap/, $(BOOTSTRAP_FILES)): \
-		$(BUILD_DIR)/bootstrap/bootstrap.done
+		$(BUILD_DIR)/bootstrap/build.done
 	@mkdir -p $(@D)
 	cp $(BUILD_DIR)/bootstrap/$(@F) $@
 
-$(ISOROOT)/bootstrap/bootstrap.rsa: bootstrap/ssh/id_rsa ; $(ACTION.COPY)
+$(ISOROOT)/bootstrap/bootstrap.rsa: $(SOURCE_DIR)/bootstrap/ssh/id_rsa ; $(ACTION.COPY)
 
 
 ########################
@@ -116,7 +118,7 @@ $(ISONAME): $(BUILD_DIR)/iso/isoroot.done
 		-J -T -R -b isolinux/isolinux.bin \
 		-no-emul-boot \
 		-boot-load-size 4 -boot-info-table \
-		-x "lost+found" -o $@ $/isoroot-mkisofs
+		-x "lost+found" -o $@ $(BUILD_DIR)/iso/isoroot-mkisofs
 	implantisomd5 $@
 
 # IMGSIZE is calculated as a sum of nailgun iso size plus
@@ -146,13 +148,13 @@ $(IMGNAME): $(ISONAME)
 	sleep 1
 	sudo mkfs.ext2 `cat $(BUILD_DIR)/iso/img_loop_partition`
 	mkdir -p $(BUILD_DIR)/iso/imgroot
-	sudo mount `cat $(BUILD_DIR)/iso/img_loop_partition` $/imgroot
-	sudo extlinux -i $/imgroot
+	sudo mount `cat $(BUILD_DIR)/iso/img_loop_partition` $(BUILD_DIR)/iso/imgroot
+	sudo extlinux -i $(BUILD_DIR)/iso/imgroot
 	sudo /sbin/blkid -s UUID -o value `cat $(BUILD_DIR)/iso/img_loop_partition` > $(BUILD_DIR)/iso/img_loop_uuid
 	sudo dd conv=notrunc bs=440 count=1 if=/usr/lib/extlinux/mbr.bin of=`cat $(BUILD_DIR)/iso/img_loop_device`
-	sudo cp -r $(BUILD_DIR)/iso/isoroot/images $/imgroot
-	sudo cp -r $(BUILD_DIR)/iso/isoroot/isolinux $/imgroot
-	sudo mv $(BUILD_DIR)/iso/imgroot/isolinux $/imgroot/syslinux
+	sudo cp -r $(BUILD_DIR)/iso/isoroot/images $(BUILD_DIR)/iso/imgroot
+	sudo cp -r $(BUILD_DIR)/iso/isoroot/isolinux $(BUILD_DIR)/iso/imgroot
+	sudo mv $(BUILD_DIR)/iso/imgroot/isolinux $(BUILD_DIR)/iso/imgroot/syslinux
 	sudo rm $(BUILD_DIR)/iso/imgroot/syslinux/isolinux.cfg
 	sudo cp $(SOURCE_DIR)/iso/syslinux/syslinux.cfg $(BUILD_DIR)/iso/imgroot/syslinux
 	sudo sed -i -e "s/will_be_substituted_with_actual_uuid/`cat $(BUILD_DIR)/iso/img_loop_uuid`/g" $(BUILD_DIR)/iso/imgroot/syslinux/syslinux.cfg

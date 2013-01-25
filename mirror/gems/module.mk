@@ -1,10 +1,10 @@
-LOCAL_MIRROR_GEMS:=$(LOCAL_MIRROR)/gems
+# define bundle_gemfile_template
+# source "http://rubygems.org"
+# source "http://gems.rubyforge.org"
+# source "http://gemcutter.org"
+# endef
 
-define bundle_gemfile_template
-source "http://rubygems.org"
-source "http://gems.rubyforge.org"
-source "http://gemcutter.org"
-endef
+bundle_gemfile_template:=$(MIRROR_GEMS)
 
 $(BUILD_DIR)/mirror/gems/gems-bundle-gemfile.done: export bundle_gemfile_template:=$(bundle_gemfile_template)
 $(BUILD_DIR)/mirror/gems/gems-bundle-gemfile.done: requirements-gems.txt
