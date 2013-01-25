@@ -3,20 +3,6 @@ PWD:=$(shell pwd -P)
 SOURCE_DIR:=$(PWD)
 BUILD_DIR:=$(PWD)/build
 
-# Common configuration file.
-include $(SOURCE_DIR)/config.mk
-
-# Sandbox macroses.
-include $(SOURCE_DIR)/sandbox.mk
-
-# Modules
-include $(SOURCE_DIR)/mirror/module.mk
-include $(SOURCE_DIR)/packages/module.mk
-include $(SOURCE_DIR)/bootstrap/module.mk
-include $(SOURCE_DIR)/iso/module.mk
-
-include $(SOURCE_DIR)/test/module.mk
-
 .PHONY: all clean test help deep_clean
 
 help:
@@ -42,5 +28,18 @@ deep_clean: clean
 	sudo rm -rf $(LOCAL_MIRROR)
 
 distclean: deep_clean clean-integration-test
+
+# Common configuration file.
+include $(SOURCE_DIR)/config.mk
+
+# Sandbox macroses.
+include $(SOURCE_DIR)/sandbox.mk
+
+# Modules
+include $(SOURCE_DIR)/mirror/module.mk
+include $(SOURCE_DIR)/packages/module.mk
+include $(SOURCE_DIR)/bootstrap/module.mk
+include $(SOURCE_DIR)/iso/module.mk
+include $(SOURCE_DIR)/test/module.mk
 
 include $(SOURCE_DIR)/rules.mk

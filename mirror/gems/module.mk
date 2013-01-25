@@ -1,15 +1,14 @@
-# define bundle_gemfile_template
-# source "http://rubygems.org"
-# source "http://gems.rubyforge.org"
-# source "http://gemcutter.org"
-# endef
+$(BUILD_DIR)/mirror/gems/gems-bundle/Gemfile: \
+		$(SOURCE_DIR)/config.mk
+	mkdir -p $(@D)
+	echo -n > $@
+	for i in $(MIRROR_GEMS); do \
+		echo "source \"$$i\"" >> $@; \
+	done
 
-bundle_gemfile_template:=$(MIRROR_GEMS)
-
-$(BUILD_DIR)/mirror/gems/gems-bundle-gemfile.done: export bundle_gemfile_template:=$(bundle_gemfile_template)
-$(BUILD_DIR)/mirror/gems/gems-bundle-gemfile.done: requirements-gems.txt
-	@mkdir -p $(BUILD_DIR)/mirror/gems/gems-bundle
-	echo "$${bundle_gemfile_template}" > $(BUILD_DIR)/mirror/gems/gems-bundle/Gemfile
+$(BUILD_DIR)/mirror/gems/gems-bundle-gemfile.done: requirements-gems.txt \
+		$(BUILD_DIR)/mirror/gems/gems-bundle/Gemfile
+	mkdir -p $(BUILD_DIR)/mirror/gems/gems-bundle
 	cat requirements-gems.txt | while read gem ver; do \
 		echo "gem \"$${gem}\", \"$${ver}\"" >> $(BUILD_DIR)/mirror/gems/gems-bundle/Gemfile; \
 	done

@@ -1,9 +1,7 @@
-MySQL-client
-MySQL-client-wsrep
-MySQL-python
-MySQL-server
-MySQL-server-wsrep
-MySQL-shared
+MySQL-client-5.5.28_wsrep_23.7
+MySQL-python-1.2.3
+MySQL-server-5.5.28_wsrep_23.7
+MySQL-shared-5.5.28_wsrep_23.7
 autoconf-2.63
 automake-1.11.1
 avahi-0.6.25

@@ -19,14 +19,7 @@ MIRROR_CENTOS:=http://mirror.yandex.ru/centos
 MIRROR_CENTOS_OS_BASEURL:=$(MIRROR_CENTOS)/$(CENTOS_RELEASE)/os/$(CENTOS_ARCH)
 # It can be any a list of links (--find-links) or a pip index (--index-url).
 MIRROR_EGGS:=http://pypi.python.org/simple
-
-# TODO
-# make it able to set MIRROR_GEMS as a list of urls
-define MIRROR_GEMS
-source "http://rubygems.org"
-source "http://gems.rubyforge.org"
-source "http://gemcutter.org"
-endef
+MIRROR_GEMS:=http://rubygems.org http://gems.rubyforge.org http://gemcutter.org
 
 REQUIRED_RPMS:=$(shell grep -v "^\\s*\#" $(SOURCE_DIR)/requirements-rpm.txt)
 RPMFORGE_RPMS:=qemu
