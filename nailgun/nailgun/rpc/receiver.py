@@ -267,6 +267,7 @@ class NailgunReceiver(object):
             logger.error("verify_networks_resp: task \
                     with UUID %s not found!", task_uuid)
             return
+        result = []
         #  We expect that 'nodes' contains all nodes which we test.
         #  Situation when some nodes not answered must be processed
         #  in orchestrator early.
@@ -291,18 +292,16 @@ class NailgunReceiver(object):
                             absent_vlans = list(
                                 iface_db['vlans'] - set(iface['vlans']))
                             if absent_vlans:
-                                error_nodes.append(
-                                    "uid: %r, interface: %s,"
-                                    " absent vlans: %s" %
-                                    (n['uid'],
-                                    iface['iface'],
-                                    absent_vlans)
-                                )
+                                data = {'uid': n['uid'],
+                                        'interface': iface['iface'],
+                                        'absent_vlans': absent_vlans}
+                                node_db = orm().query(Node).get(n['uid'])
+                                if node_db:
+                                    data.update({'name': node_db.name,
+                                                 'mac': node_db.mac})
+                                error_nodes.append(data)
                 if error_nodes:
-                    error_msg = u"Following nodes have"\
-                        " network errors:\n%s." % (
-                        '; '.join(error_nodes))
-                    logger.error(error_msg)
+                    result = error_nodes
                     status = 'error'
         else:
             error_msg = (error_msg or
@@ -311,4 +310,4 @@ class NailgunReceiver(object):
             status = 'error'
             logger.error(error_msg)
 
-        update_task_status(task_uuid, status, progress, error_msg)
+        update_task_status(task_uuid, status, progress, error_msg, result)

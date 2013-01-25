@@ -8,14 +8,15 @@ from nailgun.api.models import Task
 logger = logging.getLogger(__name__)
 
 
-def update_task_status(uuid, status, progress, msg=""):
+def update_task_status(uuid, status, progress, msg="", result=None):
     task = orm().query(Task).filter_by(uuid=uuid).first()
     if not task:
         logger.error("Can't set status='%s', message='%s':no task \
                 with UUID %s found!", status, msg, uuid)
         return
     previous_status = task.status
-    data = {'status': status, 'progress': progress, 'message': msg}
+    data = {'status': status, 'progress': progress,
+            'message': msg, 'result': result}
     for key, value in data.iteritems():
         if value is not None:
             setattr(task, key, value)

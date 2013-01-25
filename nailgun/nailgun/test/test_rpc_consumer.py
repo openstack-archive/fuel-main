@@ -1,5 +1,6 @@
 # -*- coding: utf-8 -*-
 
+import json
 import time
 import uuid
 
@@ -9,6 +10,7 @@ eventlet.monkey_patch()
 import nailgun.rpc as rpc
 from nailgun.rpc import receiver as rcvr
 from nailgun.test.base import BaseHandlers
+from nailgun.test.base import reverse
 from nailgun.api.models import Node
 from nailgun.api.models import Task
 from nailgun.api.models import Cluster
@@ -68,13 +70,50 @@ class TestVerifyNetworks(BaseHandlers):
         receiver.verify_networks_resp(**kwargs)
         self.db.refresh(task)
         self.assertEqual(task.status, "error")
-        error_nodes = ["uid: %r, interface: %s, absent vlans: %s" %
-                       (node1.id, 'eth0', [104]),
-                       "uid: %r, interface: %s, absent vlans: %s" %
-                       (node2.id, 'eth0', [104])]
-        error_msg = "Following nodes have network errors:\n%s." % (
-            '; '.join(error_nodes))
-        self.assertEqual(task.message, error_msg)
+        error_nodes = []
+        for node in (node1, node2):
+            error_nodes.append({'uid': node.id, 'interface': 'eth0',
+                                'name': node.name, 'absent_vlans': [104],
+                                'mac': node.mac})
+        self.assertEqual(task.message, None)
+        self.assertEqual(task.result, error_nodes)
+
+    def test_verify_networks_resp_error_with_removed_node(self):
+        cluster = self.create_cluster_api()
+        node1 = self.create_default_node(cluster_id=cluster['id'])
+        node2 = self.create_default_node(cluster_id=cluster['id'])
+
+        receiver = rcvr.NailgunReceiver()
+
+        task = Task(
+            name="super",
+            cluster_id=cluster['id']
+        )
+        self.db.add(task)
+        self.db.commit()
+
+        nets = [{'iface': 'eth0', 'vlans': range(100, 104)}]
+        kwargs = {'task_uuid': task.uuid,
+                  'status': 'ready',
+                  'nodes': [{'uid': node1.id, 'networks': nets},
+                            {'uid': node2.id, 'networks': nets}]}
+        self.db.delete(node2)
+        self.db.commit()
+        receiver.verify_networks_resp(**kwargs)
+        resp = self.app.get(
+            reverse('TaskHandler', kwargs={'task_id': task.id}),
+            headers=self.default_headers
+        )
+        self.assertEquals(resp.status, 200)
+        task = json.loads(resp.body)
+        self.assertEqual(task['status'], "error")
+        error_nodes = [{'uid': node1.id, 'interface': 'eth0',
+                        'name': node1.name, 'absent_vlans': [104],
+                        'mac': node1.mac},
+                       {'uid': 2, 'interface': 'eth0',
+                        'absent_vlans': [104]}]
+        self.assertEqual(task.get('message'), None)
+        self.assertEqual(task['result'], error_nodes)
 
     def test_verify_networks_resp_empty_nodes_default_error(self):
         cluster = self.create_cluster_api()
