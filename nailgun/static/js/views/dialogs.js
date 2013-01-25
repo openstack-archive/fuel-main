@@ -243,6 +243,7 @@ function(models, simpleMessageTemplate, createClusterDialogTemplate, changeClust
             Backbone.sync('delete', this.model, {
                 success: _.bind(function() {
                     this.$el.modal('hide');
+                    app.navbar.notifications.fetch();
                     app.navigate('#clusters', {trigger: true});
                 }, this),
                 error: _.bind(this.displayErrorMessage, this)

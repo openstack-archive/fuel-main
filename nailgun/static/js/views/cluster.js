@@ -68,23 +68,17 @@ function(models, commonViews, dialogViews, clusterPageTemplate, deploymentResult
             var complete = _.after(2, _.bind(this.scheduleUpdate, this));
             var task = this.model.task('deploy', 'running');
             if (task) {
-                task.fetch({complete: complete}).done(_.bind(function(){
-                        this.updateTasksAfterDeployment();
-                        app.navbar.stats.nodes.fetch();
-                        app.navbar.notifications.fetch();
-                    }, this));
+                task.fetch({complete: complete}).done(_.bind(function() {
+                    this.updateTasksAfterDeployment();
+                    this.refreshNotificationsAfterDeployment();
+                }, this));
                 this.model.get('nodes').fetch({data: {cluster_id: this.model.id}, complete: complete});
             }
         },
         updateTasksAfterDeployment: function() {
             var task = this.model.task('deploy');
             if (task.get('status') != 'running') {
-                this.model.get('tasks').fetch({data: {cluster_id: this.model.id}});
-                var verificationTask = this.model.task('verify_networks');
-                if (verificationTask && verificationTask.get('status') != 'running') {
-                    this.model.get('tasks').remove(verificationTask);
-                    verificationTask.destroy();
-                }
+                this.model.fetch();
             }
         },
         beforeTearDown: function() {
@@ -158,6 +152,7 @@ function(models, commonViews, dialogViews, clusterPageTemplate, deploymentResult
     views.DeploymentControl = Backbone.View.extend({
         template: _.template(deploymentControlTemplate),
         initialize: function(options) {
+            this.model.bind('change:status', this.render, this);
             var task = this.model.task('deploy');
             if (task) {
                 task.bind('change:status', this.render, this);

@@ -34,7 +34,7 @@ function(models, commonViews, dialogViews, clustersPageTemplate, clusterTemplate
         },
         createCluster: function() {
             var createClusterDialogView = new dialogViews.CreateClusterDialog({collection: this.collection});
-            this.registerSubView(createClusterDialogView);
+            app.page.registerSubView(createClusterDialogView);
             createClusterDialogView.render();
         },
         initialize: function() {
