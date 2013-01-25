@@ -205,6 +205,32 @@ class TestConsumer(BaseHandlers):
         self.assertEqual(task.progress, 20)
         self.assertEqual(task.status, "running")
 
+    def test_error_node_progress(self):
+        cluster = self.create_cluster_api()
+        task = Task(
+            uuid=str(uuid.uuid4()),
+            name="super",
+            status="running"
+        )
+        self.db.add(task)
+        self.db.commit()
+        node = self.create_default_node(cluster_id=cluster['id'])
+        receiver = rcvr.NailgunReceiver()
+        kwargs = {
+            'task_uuid': task.uuid,
+            'progress': 20,
+            'nodes': [
+                {
+                    'uid': node.id,
+                    'status': 'error',
+                    'progress': 50
+                }
+            ]
+        }
+        receiver.deploy_resp(**kwargs)
+        self.db.refresh(node)
+        self.assertEqual(node.progress, 100)
+
     def test_remove_nodes_resp(self):
         cluster = self.create_cluster_api()
         node1 = self.create_default_node(cluster_id=cluster['id'])

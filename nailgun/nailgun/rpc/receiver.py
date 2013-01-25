@@ -155,7 +155,8 @@ class NailgunReceiver(object):
                         )
                     )
                     setattr(node_db, param, node[param])
-                    if param == 'status' and node['status'] in (
+
+                    if param == 'progress' and node.get('status') in (
                         'error',
                         'offline'
                     ):
@@ -173,6 +174,7 @@ class NailgunReceiver(object):
                             node_id=node['uid'],
                             task_uuid=task_uuid
                         )
+
 
             orm().add(node_db)
             orm().commit()
