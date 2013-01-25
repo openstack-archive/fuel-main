@@ -1,39 +1,21 @@
-<li class="pull-right deployment-control-box">
-  <div class="deployment-control-item-box"><button class="deploy-btn"><i class="icon-upload-cloud"></i> Deploy Changes</button></div>
-  <div class="deployment-control-item-box"><span class="installation-status" title="Installation Status">Instalation status: Operational</span></div>
-  <div class="deployment-control-item-box"><button class="btn rollback" role="button" title="Discard Changes"><i class="icon-back-in-time"></i></button></div>
-</li>
-
-<li class="pull-right deployment-progress-box">
-  <div class="deployment-control-item-box"><div class="deploying-progress-text-box percentage">100%</div></div>
-  <div class="deployment-control-item-box"><div class="progress progress-success progress-striped progress-deploy active"><div class="bar" style="width: 60%;"></div></div></div>
-  <div class="deployment-control-item-box"><div class="deploying-progress-text-box">OpenStack: installing controller node 3/3 (galera) bla bla bla</div></div>
-</li>
-
-
-<!-- Its old worked block
 <% var task = cluster.task('deploy', 'running') %>
 <% if (task) { %>
-  <li class="pull-right deployment-control-box">
-    <div class="progressbar-wrapper">
-      <div class="deploying-progress-text-box"></div>
-      <div class="deploying-progress-bar-box">
-        <div class="progress progress-success progress-striped progress-deploy active">
-          <div class="bar"></div>
-        </div>
-      </div>
-      <div class="deploying-progress-text-box percentage">0%</div>
-    </div>
+  <li class="pull-right deployment-progress-box">
+    <div class="deployment-control-item-box"><div class="deploying-progress-text-box percentage">0%</div></div>
+    <div class="deployment-control-item-box"><div class="progress progress-success progress-striped progress-deploy active"><div class="bar"></div></div></div>
+    <div class="deployment-control-item-box"><div class="deploying-progress-text-box"></div></div>
   </li>
 <% } else { %>
-  <% var nodesToAdd = cluster.get('nodes').where({pending_addition: true}) %>
-  <% var nodesToDelete = cluster.get('nodes').where({pending_deletion: true}) %>
-  <% if (nodesToAdd.length || nodesToDelete.length) { %>
-    <button class="btn rollback" role="button" title="Discard Changes"><i class="icon-back-in-time"></i></button>
-  <% } %>
   <li class="pull-right deployment-control-box">
-    <div class="deploying-progress-text-box"></div>
-    <button class="deploy-btn <%= cluster.hasChanges() || cluster.needsRedeployment() ? '' : 'disabled' %>"><i class="icon-upload-cloud"></i> Deploy Changes</button>
+    <div class="deployment-control-item-box"><button class="deploy-btn <%= cluster.hasChanges() || cluster.needsRedeployment() ? '' : 'disabled' %>"><i class="icon-upload-cloud"></i> Deploy Changes</button></div>
+    <% var statuses = {'new': 'New', 'deployment': 'Deployment', 'operational': 'Operational', 'error': 'Error', 'remove': 'Removing'} %>
+    <div class="deployment-control-item-box"><span class="installation-status" title="Installation Status">Installation status: <%= statuses[cluster.get('status')] %></span></div>
+    <div class="deployment-control-item-box">
+      <% var nodesToAdd = cluster.get('nodes').where({pending_addition: true}) %>
+      <% var nodesToDelete = cluster.get('nodes').where({pending_deletion: true}) %>
+      <% if (nodesToAdd.length || nodesToDelete.length) { %>
+        <button class="btn rollback" role="button" title="Discard Changes"><i class="icon-back-in-time"></i></button>
+      <% } %>
+    </div>
   </li>
 <% } %>
--->
