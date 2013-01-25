@@ -175,7 +175,6 @@ class NailgunReceiver(object):
                             task_uuid=task_uuid
                         )
 
-
             orm().add(node_db)
             orm().commit()
 
