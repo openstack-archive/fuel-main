@@ -4,8 +4,6 @@ import os
 import web
 import json
 
-from git import Repo
-
 from nailgun.settings import settings
 from nailgun.api.handlers.base import JSONHandler
 
