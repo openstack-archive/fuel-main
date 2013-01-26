@@ -54,11 +54,6 @@ function(models, commonViews, dialogViews, clusterPageTemplate, deploymentResult
             this.registerSubView(dialog);
             dialog.render();
         },
-        deployCluster: function() {
-            var complete = _.after(2, _.bind(this.scheduleUpdate, this));
-            this.model.get('tasks').fetch({data: {cluster_id: this.model.id}, complete: complete});
-            this.model.get('nodes').fetch({data: {cluster_id: this.model.id}, complete: complete});
-        },
         scheduleUpdate: function() {
             if (this.model.task('deploy', 'running')) {
                 this.timeout = _.delay(_.bind(this.update, this), this.updateInterval);
@@ -69,17 +64,23 @@ function(models, commonViews, dialogViews, clusterPageTemplate, deploymentResult
             var task = this.model.task('deploy', 'running');
             if (task) {
                 task.fetch({complete: complete}).done(_.bind(function() {
-                    this.updateTasksAfterDeployment();
-                    this.refreshNotificationsAfterDeployment();
+                    if (task.get('status') != 'running') {
+                        this.deploymentFinished();
+                    }
                 }, this));
                 this.model.get('nodes').fetch({data: {cluster_id: this.model.id}, complete: complete});
             }
         },
-        updateTasksAfterDeployment: function() {
-            var task = this.model.task('deploy');
-            if (task.get('status') != 'running') {
-                this.model.fetch();
-            }
+        deploymentStarted: function() {
+            this.model.fetch().done(_.bind(function() {
+                this.unbindEventsWhileDeploying();
+                this.scheduleUpdate();
+            }, this));
+        },
+        deploymentFinished: function() {
+            this.model.fetch();
+            app.navbar.stats.nodes.fetch();
+            app.navbar.notifications.fetch();
         },
         beforeTearDown: function() {
             if (this.timeout) {
@@ -96,15 +97,41 @@ function(models, commonViews, dialogViews, clusterPageTemplate, deploymentResult
             this.scheduleUpdate();
         },
         bindTasksEvents: function() {
-            this.model.get('tasks').bind('reset', this.renderDeploymentControls, this);
+            this.model.get('tasks').bind('reset', this.renderDeploymentResult, this);
+            this.model.get('tasks').bind('reset', this.renderDeploymentControl, this);
+            if (arguments.length) {
+                this.renderDeploymentResult();
+                this.renderDeploymentControl();
+            }
         },
         bindNodesEvents: function() {
-            this.model.get('nodes').bind('reset', this.renderDeploymentControls, this);
+            this.model.get('nodes').bind('reset', this.renderDeploymentControl, this);
+            if (arguments.length) {
+                this.renderDeploymentControl();
+            }
         },
-        renderDeploymentControls: function() {
+        unbindEventsWhileDeploying: function() {
+            // unbind some events while deploying to make progress bar movement smooth and prevent showing wrong cluster status for a moment.
+            // these events will be rebound automatically by fetching the whole cluster on deployment finish
+            var task = this.model.task('deploy', 'running');
+            if (task) {
+                task.unbind('change:status', this.deploymentResult.render, this.deploymentResult);
+                task.unbind('change:status', this.deploymentControl.render, this.deploymentControl);
+                this.model.get('nodes').unbind('reset', this.renderDeploymentControl, this);
+            }
+        },
+        renderDeploymentResult: function() {
+            if (this.deploymentResult) {
+                this.deploymentResult.tearDown();
+            }
             this.deploymentResult = new views.DeploymentResult({model: this.model});
             this.registerSubView(this.deploymentResult);
             this.$('.deployment-result').html(this.deploymentResult.render().el);
+        },
+        renderDeploymentControl: function() {
+            if (this.deploymentControl) {
+                this.deploymentControl.tearDown();
+            }
             this.deploymentControl = new views.DeploymentControl({model: this.model});
             this.registerSubView(this.deploymentControl);
             this.$('.deployment-control').html(this.deploymentControl.render().el);
@@ -116,7 +143,9 @@ function(models, commonViews, dialogViews, clusterPageTemplate, deploymentResult
                 activeTab: this.activeTab,
                 renaming: this.renaming
             }));
-            this.renderDeploymentControls();
+            this.renderDeploymentResult();
+            this.renderDeploymentControl();
+            this.unbindEventsWhileDeploying();
 
             var tabs = {
                 'nodes': views.NodesTab,

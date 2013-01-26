@@ -75,19 +75,18 @@ function(models, simpleMessageTemplate, createClusterDialogTemplate, changeClust
                 this.$('.create-cluster-btn').addClass('disabled');
                 cluster.save({}, {
                     success: _.bind(function() {
-                                this.$el.modal('hide');
-                                this.collection.fetch();
-                            }, this),
+                        this.$el.modal('hide');
+                        this.collection.fetch();
+                    }, this),
                     error: _.bind(function(model, response, options) {
-                                if (response.status == 409) {
-                                    this.$('.existing-cluster-message').show();
-                                    this.$('.create-cluster-btn').removeClass('disabled');
-                                } else {
-                                    this.displayErrorMessage();
-                                }
-                            }, this)
+                        if (response.status == 409) {
+                            this.$('.existing-cluster-message').show();
+                            this.$('.create-cluster-btn').removeClass('disabled');
+                        } else {
+                            this.displayErrorMessage();
+                        }
+                    }, this)
                 });
-
             }
         },
         onInputKeydown: function(e) {
@@ -219,7 +218,7 @@ function(models, simpleMessageTemplate, createClusterDialogTemplate, changeClust
                 url: '/api/clusters/' + this.model.id + '/changes',
                 success: _.bind(function() {
                     this.$el.modal('hide');
-                    app.page.deployCluster();
+                    app.page.deploymentStarted();
                 }, this),
                 error: _.bind(this.displayErrorMessage, this)
             });
