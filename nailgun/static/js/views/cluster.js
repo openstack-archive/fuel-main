@@ -92,7 +92,7 @@ function(models, commonViews, dialogViews, clusterPageTemplate, deploymentResult
             this.model.bind('change:tasks', this.bindTasksEvents, this);
             this.bindTasksEvents();
             this.model.bind('change:nodes', this.bindNodesEvents, this);
-            this.model.bind('change:changes', this.renderDeploymentControls, this);
+            this.model.bind('change:changes', this.renderDeploymentControl, this);
             this.bindNodesEvents();
             this.scheduleUpdate();
         },
