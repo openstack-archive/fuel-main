@@ -2,6 +2,7 @@
 require File.join(File.dirname(__FILE__), "..", "spec_helper")
 
 describe Astute::Orchestrator do
+  include SpecHelpers
   before(:each) do
     @orchestrator = Astute::Orchestrator.new
     @reporter = mock('reporter')
@@ -9,25 +10,17 @@ describe Astute::Orchestrator do
   end
 
   it "must be able to return node type" do
-    mc_res = {:statuscode => 0,
-              :data => {:node_type => 'target'},
-              :sender=>"1"}
+    nodes = [{'uid' => '1'}]
+    res = {:data => {:node_type => 'target'},
+           :sender=>"1"}
 
+    mc_res = mock_mc_result(res)
     mc_timeout = 5
 
-    rpcclient = mock('rpcclient') do
-      stubs(:progress=)
-      expects(:timeout=).with(mc_timeout)
-      expects(:discover).with(:nodes => ['1']).at_least_once
-    end
-    rpcclient_valid_result = mock('rpcclient_valid_result') do
-      stubs(:results).returns(mc_res)
-      stubs(:agent).returns('node_type')
-    end
-    rpcclient.expects(:get_type).once.returns([rpcclient_valid_result])
-    Astute::MClient.any_instance.stubs(:rpcclient).returns(rpcclient)
+    rpcclient = mock_rpcclient(nodes, mc_timeout)
+    rpcclient.expects(:get_type).once.returns([mc_res])
 
-    types = @orchestrator.node_type(@reporter, 'task_uuid', [{'uid' => 1}], timeout=mc_timeout)
+    types = @orchestrator.node_type(@reporter, 'task_uuid', nodes, mc_timeout)
     types.should eql([{"node_type"=>"target", "uid"=>"1"}])
   end
 
@@ -35,45 +28,32 @@ describe Astute::Orchestrator do
     nodes = [{'uid' => '1'}, {'uid' => '2'}]
     networks = [{'id' => 1, 'vlan_id' => 100, 'cidr' => '10.0.0.0/24'},
                 {'id' => 2, 'vlan_id' => 101, 'cidr' => '192.168.0.0/24'}]
-    mc_res1 = {:statuscode => 0,
-               :data => {:uid=>"1", 
-                         :neighbours => {"eth0" => {"100" => {"1" => ["eth0"], "2" => ["eth0"]},
-                                                    "101" => {"1" => ["eth0"]}
-                                                   }
-                                        }
-                        },
-               :sender=>"1"
-              }
-    mc_res2 = {:statuscode => 0,
-               :data => {:uid=>"2", 
-                         :neighbours => {"eth0" => {"100" => {"1" => ["eth0"], "2" => ["eth0"]},
-                                                    "101" => {"1" => ["eth0"], "2" => ["eth0"]}
-                                                   }
-                                        }
-                        },
-               :sender=>"2"
-              }
-    just_valid_res = {:statuscode => 0, :sender => '1'}
+    res1 = {:data => {:uid=>"1",
+                      :neighbours => {"eth0" => {"100" => {"1" => ["eth0"], "2" => ["eth0"]},
+                                                 "101" => {"1" => ["eth0"]}
+                                                }
+                                     }
+                     },
+            :sender=>"1"
+           }
+    res2 = {:data => {:uid=>"2",
+                      :neighbours => {"eth0" => {"100" => {"1" => ["eth0"], "2" => ["eth0"]},
+                                                 "101" => {"1" => ["eth0"], "2" => ["eth0"]}
+                                                }
+                                     }
+                     },
+            :sender=>"2"
+           }
+    valid_res = {:statuscode => 0, :sender => '1'}
+    mc_res1 = mock_mc_result(res1)
+    mc_res2 = mock_mc_result(res2)
+    mc_valid_res = mock_mc_result
 
-    rpcclient = mock('rpcclient') do
-      stubs(:progress=)
-      expects(:discover).with(:nodes => nodes.map {|x| x['uid']}).at_least_once
-    end
-    valid_res = mock('valid_res') do
-      stubs(:results).returns(just_valid_res)
-      stubs(:agent).returns('net_probe')
-    end
-    net_info_res1 = mock('net_info_res') do
-      stubs(:results).returns(mc_res1)
-      stubs(:agent).returns('net_probe')
-    end
-    net_info_res2 = mock('net_info_res') do
-      stubs(:results).returns(mc_res2)
-      stubs(:agent).returns('net_probe')
-    end
-    rpcclient.expects(:start_frame_listeners).once.returns([valid_res]*2)
-    rpcclient.expects(:send_probing_frames).once.returns([valid_res]*2)
-    rpcclient.expects(:get_probing_info).once.returns([net_info_res1, net_info_res2])
+    rpcclient = mock_rpcclient(nodes)
+
+    rpcclient.expects(:start_frame_listeners).once.returns([mc_valid_res]*2)
+    rpcclient.expects(:send_probing_frames).once.returns([mc_valid_res]*2)
+    rpcclient.expects(:get_probing_info).once.returns([mc_res1, mc_res2])
     Astute::MClient.any_instance.stubs(:rpcclient).returns(rpcclient)
 
     res = @orchestrator.verify_networks(@reporter, 'task_uuid', nodes, networks)
@@ -102,26 +82,17 @@ describe Astute::Orchestrator do
   end
 
   it "remove_nodes cleans nodes and reboots them" do
-    removed_hash = {:statuscode => 0, :sender => '1',
+    removed_hash = {:sender => '1',
                     :data => {:rebooted => true}}
-    error_hash = {:statuscode => 0, :sender => '2',
+    error_hash = {:sender => '2',
                   :data => {:rebooted => false, :error_msg => 'Could not reboot'}}
     nodes = [{'uid' => 1}, {'uid' => 2}]
 
-    rpcclient = mock('rpcclient') do
-      stubs(:progress=)
-      expects(:discover).with(:nodes => nodes.map {|x| x['uid'].to_s}).at_least_once
-    end
-    removed_res = mock('removed_res') do
-      stubs(:results).returns(removed_hash)
-      stubs(:agent).returns('net_probe')
-    end
-    error_res = mock('error_res') do
-      stubs(:results).returns(error_hash)
-      stubs(:agent).returns('net_probe')
-    end
-    rpcclient.expects(:erase_node).once.with(:reboot => true).returns([removed_res, error_res])
-    Astute::MClient.any_instance.stubs(:rpcclient).returns(rpcclient)
+    rpcclient = mock_rpcclient(nodes)
+    mc_removed_res = mock_mc_result(removed_hash)
+    mc_error_res = mock_mc_result(error_hash)
+
+    rpcclient.expects(:erase_node).once.with(:reboot => true).returns([mc_removed_res, mc_error_res])
 
     res = @orchestrator.remove_nodes(@reporter, 'task_uuid', nodes)
     res.should eql({'nodes' => [{'uid' => '1'}], 'status' => 'error',

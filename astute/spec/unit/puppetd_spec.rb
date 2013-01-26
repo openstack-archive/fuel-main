@@ -3,6 +3,7 @@ require File.join(File.dirname(__FILE__), "..", "spec_helper")
 include Astute
 
 describe "Puppetd" do
+  include SpecHelpers
   context "PuppetdDeployer" do
     before :each do
       @ctx = mock
@@ -14,11 +15,11 @@ describe "Puppetd" do
 
     it "reports ready status for node if puppet deploy finished successfully" do
       @reporter.expects(:report).with('nodes' => [{'uid' => '1', 'status' => 'ready'}])
-      last_run_result = {:statuscode=>0, :data=>
-          {:changes=>{"total"=>1}, :time=>{"last_run"=>1358425701},
-           :resources=>{"failed"=>0}, :status => "running",
-           :running => 1, :idling => 0, :runtime => 100},
-         :sender=>"1"}
+      last_run_result = {:data=>
+          {:time=>{"last_run"=>1358425701},
+           :status => "running", :resources => {'failed' => 0},
+           :running => 1, :idling => 0},
+           :sender=>"1"}
       last_run_result_new = Marshal.load(Marshal.dump(last_run_result))
       last_run_result_new[:data][:time]['last_run'] = 1358426000
 
@@ -28,26 +29,11 @@ describe "Puppetd" do
 
       nodes = [{'uid' => '1'}]
 
-      rpcclient = mock('rpcclient') do
-        stubs(:progress=)
-        nodes_to_discover = nodes.map { |n| n['uid'] }
-        expects(:discover).with(:nodes => nodes_to_discover).at_least_once
-      end
+      rpcclient = mock_rpcclient(nodes)
 
-      rpcclient_valid_result = mock('rpcclient_valid_result') do
-        stubs(:results).returns(last_run_result)
-        stubs(:agent).returns('faketest')
-      end
-
-      rpcclient_new_res = mock('rpcclient_new_res') do
-        stubs(:results).returns(last_run_result_new)
-        stubs(:agent).returns('faketest')
-      end
-
-      rpcclient_finished_res = mock('rpcclient_finished_res') do
-        stubs(:results).returns(last_run_result_finished)
-        stubs(:agent).returns('faketest')
-      end
+      rpcclient_valid_result = mock_mc_result(last_run_result)
+      rpcclient_new_res = mock_mc_result(last_run_result_new)
+      rpcclient_finished_res = mock_mc_result(last_run_result_finished)
 
       rpcclient.stubs(:last_run_summary).returns([rpcclient_valid_result]).then.
           returns([rpcclient_valid_result]).then.
@@ -56,7 +42,6 @@ describe "Puppetd" do
           
       rpcclient.expects(:runonce).at_least_once.returns([rpcclient_valid_result])
 
-      MClient.any_instance.stubs(:rpcclient).returns(rpcclient)
       Astute::PuppetdDeployer.deploy(@ctx, nodes, retries=0)
     end
 
@@ -79,26 +64,11 @@ describe "Puppetd" do
       last_run_result_finished[:data][:time]['last_run'] = 1358427000
       last_run_result_finished[:data][:resources]['failed'] = 1
 
-      rpcclient = mock('rpcclient') do
-        stubs(:progress=)
-        nodes_to_discover = nodes.map { |n| n['uid'] }
-        expects(:discover).with(:nodes => nodes_to_discover).at_least_once
-      end
+      rpcclient = mock_rpcclient(nodes)
 
-      rpcclient_valid_result = mock('rpcclient_valid_result') do
-        stubs(:results).returns(last_run_result)
-        stubs(:agent).returns('faketest')
-      end
-
-      rpcclient_new_res = mock('rpcclient_new_res') do
-        stubs(:results).returns(last_run_result_new)
-        stubs(:agent).returns('faketest')
-      end
-
-      rpcclient_finished_res = mock('rpcclient_finished_res') do
-        stubs(:results).returns(last_run_result_finished)
-        stubs(:agent).returns('faketest')
-      end
+      rpcclient_valid_result = mock_mc_result(last_run_result)
+      rpcclient_new_res = mock_mc_result(last_run_result_new)
+      rpcclient_finished_res = mock_mc_result(last_run_result_finished)
 
       rpcclient.stubs(:last_run_summary).returns([rpcclient_valid_result]).then.
           returns([rpcclient_valid_result]).then.
@@ -134,31 +104,12 @@ describe "Puppetd" do
 
       nodes = [{'uid' => '1'}]
 
-      rpcclient = mock('rpcclient') do
-        stubs(:progress=)
-        nodes_to_discover = nodes.map { |n| n['uid'] }
-        expects(:discover).with(:nodes => nodes_to_discover).at_least_once
-      end
+      rpcclient = mock_rpcclient(nodes)
 
-      rpcclient_valid_result = mock('rpcclient_valid_result') do
-        stubs(:results).returns(last_run_result)
-        stubs(:agent).returns('faketest')
-      end
-
-      rpcclient_failed = mock('rpcclient_failed') do
-        stubs(:results).returns(last_run_failed)
-        stubs(:agent).returns('faketest')
-      end
-
-      rpcclient_fixing = mock('rpcclient_fixing') do
-        stubs(:results).returns(last_run_fixing)
-        stubs(:agent).returns('faketest')
-      end
-
-      rpcclient_succeed = mock('rpcclient_succeed') do
-        stubs(:results).returns(last_run_success)
-        stubs(:agent).returns('faketest')
-      end
+      rpcclient_valid_result = mock_mc_result(last_run_result)
+      rpcclient_failed = mock_mc_result(last_run_failed)
+      rpcclient_fixing = mock_mc_result(last_run_fixing)
+      rpcclient_succeed = mock_mc_result(last_run_success)
 
       rpcclient.stubs(:last_run_summary).returns([rpcclient_valid_result]).then.
           returns([rpcclient_valid_result]).then.
