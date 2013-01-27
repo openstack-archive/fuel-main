@@ -3,7 +3,6 @@ require 'mcollective'
 module Astute
   class MClient
     include MCollective::RPC
-    include Astute
 
     attr_accessor :retries
 
@@ -27,6 +26,8 @@ module Astute
         @nodes = args[0][:nodes]
         return res
       end
+      # Enable if needed. In normal case it eats the screen pretty fast
+      log_result(res, method)
       return res unless @check_result
       
       err_msg = ''
@@ -42,6 +43,7 @@ module Astute
           Astute.logger.debug "Retry ##{retry_index} to run mcollective agent on nodes: '#{not_responded.join(',')}'"
           @mc.discover(:nodes => not_responded)
           new_res = @mc.send(method, *args)
+          log_result(new_res, method)
           # new_res can have some nodes which finally responded
           res += new_res
           break if res.length == @nodes.length
@@ -55,16 +57,21 @@ module Astute
       end
       failed = res.select { |x| x.results[:statuscode] != 0 }
       if failed.any?
-        err_msg += "#{@task_id}: MCollective call failed in agent '#{node.agent}', "\
-                     "method '#{method}', results: #{node.results.inspect}"
+        err_msg += "#{@task_id}: MCollective call failed in agent '#{@agent}', "\
+                     "method '#{method}', failed nodes: #{failed.map{|x| x.results[:sender]}.join(',')}"
       end
       raise err_msg unless err_msg.empty?
 
-      # Enable if needed. In normal case it eats the screen pretty fast
-      res.each do |node|
-        Astute.logger.debug "#{@task_id}: MC agent '#{node.agent}', method '#{method}' succeeded, results: #{node.results.inspect}"
-      end
       return res
     end
+
+    private
+    def log_result(result, method)
+      result.each do |node|
+        Astute.logger.debug "#{@task_id}: MC agent '#{node.agent}', method '#{method}', "\
+                            "results: #{node.results.inspect}"
+      end
+    end
+
   end
 end

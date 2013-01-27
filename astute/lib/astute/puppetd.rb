@@ -59,6 +59,7 @@ module Astute
     def self.deploy(ctx, nodes, retries=2, ignore_failure=false)
       # TODO: can we hide retries, ignore_failure into @ctx ?
       uids = nodes.map {|n| n['uid']}
+      # TODO(mihgen): handle exceptions from mclient, raised if agent does not respond or responded with error
       puppetd = MClient.new(ctx, "puppetd", uids)
       prev_summary = puppetd.last_run_summary
 
