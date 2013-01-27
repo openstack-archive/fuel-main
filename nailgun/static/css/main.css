@@ -1462,11 +1462,9 @@ h6.page-title {
   background: url(../img/pending-flags.png) no-repeat 0px -16px;
 }
 
-/* message popup */
-.notifications-list {
-  background-color: #FFFFFF;
-  border-radius: 4px;
-  padding: 20px;
+/* Notifications Popover */
+#notification-wrapper {
+  position: relative;
 }
 
 .message-list-placeholder {
@@ -1490,16 +1488,40 @@ h6.page-title {
   oveflow-y: auto;
 }
 
-.message-list {
+.message-list-popover {
   list-style: none outside none;
   margin: 2px 0 0;
 }
 
-.message-list:after {
+.message-list-popover:after {
   clear: both;
 }
 
-.message-list .divider, .message-list .divider:hover {
+.message-list-popover > li {
+  margin-left: 26px;
+  color: #85a2c8;
+  text-shadow: 0 1px 0 rgba(21, 21, 21, 0.5);
+  font-size: 13px;
+  cursor: default;
+}
+
+.message-list-popover > li > i {
+  display: block;
+  float: left;
+  margin-left: -22px;
+  font-size: 16px;
+}
+
+.message-list-popover > li > a {
+  color: #0088cc;
+}
+
+.message-list-popover > li > a:hover {
+  color: #009be9;
+}
+
+
+.message-list-popover .divider, .message-list-popover .divider:hover {
     background-color: #303a49;
     border-bottom: 1px solid rgba(200, 200, 200, .2);
     height: 1px;
@@ -1508,84 +1530,9 @@ h6.page-title {
     cursor: default;
 }
 
-.message-list > li {
-  margin-left: 26px;
-  color: #85a2c8;
-  text-shadow: 0 1px 0 rgba(21, 21, 21, 0.5);
-  font-size: 13px;
-  cursor: default;
-}
-
-.message-list > li:after {
-  clear: both;
-}
-.notifications-list .message-list > li {
-  text-shadow: none;
-  color: #444;
-}
-
-.message-list > .new {
-  color: #41b142 !important;
-  font-weight: 600;
-}
-
-.message-list .datetime {
-  color: #888;
-  padding: 0 4px;
-}
-
-.message-list > .new .datetime {
-  color: #41b142;
-  font-weight: 600;
-}
-
-.message-list > li > i {
-  display: block;
-  float: left;
-  margin-left: -22px;
-  font-size: 16px;
-}
-
-.notification-box {
-  display: inline-block;
-  border-bottom: 1px dotted #dadada;
-  padding-bottom: 6px;
-}
-.notification-box:after {
-  clear: both;
-}
-
-.notification-box > .icon {
-  display: block;
-  width: 20px;
-  float: left;
-  font-size: 15px;
-}
-
-.notification-box > .datetime {
-  display: block;
-  width: 130px;
-  float: left;
-}
-
-.notification-box > .message {
-  display: block;
-  width: 730px;
-  float: left;
-}
-
-.notification-box > .message:after {
-  clear: both;
-}
-
-#notification-wrapper {
-  position: relative;
-}
-
 .show-more-notifications {
   text-align: center;
   font-weight: 600;
-
 }
 
 .show-more-notifications a {
@@ -1598,50 +1545,114 @@ h6.page-title {
   color: #ffffff;
 }
 
+.message-list-popover > .discover {
+  cursor: pointer;
+  text-decoration: underline;
+}
+
+.message-list-popover > .discover:hover {
+  color: #96b5df;
+  text-decoration: none;
+}
+
+.message-list-popover > .new {
+  color: #a9cdfb;
+  font-weight: 600;
+}
+
+.message-list-popover > .error {
+  color: #db4242;
+}
+
+/* Notifications Page */
+.notifications-list {
+  background-color: #FFFFFF;
+  border-radius: 4px;
+  padding: 20px;
+}
+
+.notifications-list > ul, .notifications-list > ol {
+    margin: 0 0 10px 0px;
+    padding: 0;
+}
+
+.message-list {
+  display: block;
+  list-style: none outside none;
+}
+
+.message-list > li {
+  display: block;
+  clear: both;
+}
+
+.notification-box {
+  display: block;
+  margin: 0px;
+  padding: 0px;
+  font-size: 13px;
+  border-bottom: 1px dotted #dadada;
+  color: #999999;
+}
+
+.notification-box:after{
+  clear: both;
+}
+
+.notification-box:first-child{
+  border-bottom: 0px dotted #ffffff;
+}
+
+.notification-box:last-child{
+  margin-bottom: 40px;
+}
+
+.notification-box > .icon {
+  display: block;
+  width: 30px;
+  float: left;
+  font-size: 15px;
+}
+
+.notification-box > .datetime {
+  display: block;
+  width: 130px;
+  float: left;
+}
+
+.notification-box > .message {
+  display: block;
+  width: 770px;
+  float: left;
+}
+
+.notification-box > .icon, .notification-box > .datetime, .notification-box > .message {
+  margin: 6px 0px 6px 0px;
+}
+
+
+.notification-box > .message:after {
+  clear: both;
+}
+
 .message-list > .discover > .message {
-  display: inline-block;
+  text-decoration: underline;
   cursor: pointer;
+}
+
+.message-list > .discover:hover > .message {
+  text-decoration: none;
   color: #0088cc;
-  text-decoration: none;
-}
-
-.message-list > .discover > .message:hover {
-  color: #005580;
-  text-decoration: underline;
-}
-
-.message-list > li > a {
-  color: #2da4e0;
-}
-
-.message-list > li > a:hover {
-  color: #ffffff;
-}
-
-.message-list .discover {
-  cursor: pointer;
-  text-decoration: underline;
-}
-
-.message-list .discover:hover {
-  text-decoration: none;
-}
-
-/*
-.message-list .discover:hover, .message-list .discover:hover .datetime {
-  color: #f99a14 !important;
-}
-*/
-
-.message-list .discover {
-  color: #6388d4;
   cursor: pointer;
 }
-*/
 
-.message-list .discover:hover {
-  color: #005580;
-  text-decoration: underline;
+.message-list > .new > .message, .message-list > .new > .icon, .message-list > .new > .datetime {
+  color: #333333;
+  font-weight: 600;
+}
+
+.message-list > .error > .message, .message-list > .error > .icon, .message-list > .error > .datetime {
+  color: #cd3500;
 }
 
 /* Filter Bar */

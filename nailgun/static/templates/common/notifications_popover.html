@@ -1,6 +1,6 @@
 <div id="notification-wrapper">
   <div class="message-list-placeholder">
-    <ul class="message-list" role="menu">
+    <ul class="message-list-popover" role="menu">
       <% if (notifications.length) { %>
         <% _.each(notifications.last(displayCount).reverse(), function(notification, index) { %>
           <% var topic = notification.get('topic') %>
