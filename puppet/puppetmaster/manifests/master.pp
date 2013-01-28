@@ -1,10 +1,5 @@
 class puppetmaster::master (
   $puppet_master_hostname,
-  $puppet_stored_dbname,
-  $puppet_stored_dbuser,
-  $puppet_stored_dbpassword,
-  $puppet_stored_dbsocket,
-
   $puppet_master_ports = "18140 18141 18142 18143",
   ){
 

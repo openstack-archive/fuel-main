@@ -34,13 +34,6 @@
 [master]
     autosign = true
     certname = <%= puppet_master_hostname %>
-    
-    storeconfigs = true
-    #dbadapter = mysql
-    #dbname = <%= puppet_stored_dbname %>
-    #dbuser = <%= puppet_stored_dbuser %>
-    #dbpassword = <%= puppet_stored_dbpassword %> 
-    #dbserver = localhost
-    #dbsocket = <%= puppet_stored_dbsocket %>
     configtimeout = 1200
-    
+    storeconfigs = true
+    storeconfigs_backend = puppetdb
