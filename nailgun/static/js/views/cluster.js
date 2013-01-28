@@ -1160,9 +1160,9 @@ function(models, commonViews, dialogViews, clusterPageTemplate, deploymentResult
                 this.sources = this.model.get('log_sources');
             }
 
-            this.types = [['nailgun', 'Nailgun logs']];
-            if (this.model.get('nodes').currentNodes().length) {
-                this.types.push(['target', 'Target nodes logs']);
+            this.types = [['nailgun', 'Admin node']];
+            if (this.model.get('nodes').length) {
+                this.types.push(['target', 'Other servers']);
             }
         },
         render: function() {
