@@ -100,6 +100,19 @@ describe Astute::Orchestrator do
                                                             "with message: Could not reboot"}]})
   end
 
+  it "it calls deploy method with valid arguments" do
+    nodes = [{'uid' => 1}]
+    attrs = {'a' => 'b'}
+    Astute::DeploymentEngine::NailyFact.any_instance.expects(:deploy).
+                                                     with([{'uid' => '1'}], attrs)
+    @orchestrator.deploy(@reporter, 'task_uuid', nodes, attrs)
+  end
+
+  it "deploy method raises error if nodes list is empty" do
+    expect {@orchestrator.deploy(@reporter, 'task_uuid', [], {})}.
+                          to raise_error(/Nodes to deploy are not provided!/)
+  end
+
   it "remove_nodes try to call MCAgent multiple times"
   it "remove_nodes do not fail if any of nodes failed"
 end
