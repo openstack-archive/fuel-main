@@ -1,3 +1,3 @@
 [submodule "fuel"]
 	path = fuel
-	url = ssh://vkozhukalov@gerrit.vm.mirantis.net:29418/fuel/fuel-folsom.git
+	url = ssh://gerrit.vm.mirantis.net:29418/fuel/fuel-folsom.git
