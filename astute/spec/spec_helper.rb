@@ -9,6 +9,11 @@ RSpec.configure do |config|
   config.mock_with :mocha
 end
 
+# NOTE(mihgen): I hate to wait for unit tests to complete,
+#               resetting time to sleep significantly increases tests speed
+Astute.config.PUPPET_DEPLOY_INTERVAL = 0
+Astute.config.PUPPET_FADE_INTERVAL = 0
+
 module SpecHelpers
   def mock_rpcclient(discover_nodes=nil, timeout=nil)
     rpcclient = mock('rpcclient') do

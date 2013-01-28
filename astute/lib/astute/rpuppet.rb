@@ -15,9 +15,9 @@ module Astute
               "classes" => classes,
               "environment" => env}
 
-      Astute.logger.debug "Waiting for puppet to finish deployment on all nodes (timeout = #{PUPPET_TIMEOUT} sec)..."
+      Astute.logger.debug "Waiting for puppet to finish deployment on all nodes (timeout = #{Astute.config.PUPPET_TIMEOUT} sec)..."
       time_before = Time.now
-      Timeout::timeout(PUPPET_TIMEOUT) do  # 30 min for deployment to be done
+      Timeout::timeout(Astute.config.PUPPET_TIMEOUT) do
         rpuppet.run(:data => data.to_json)
       end
       time_spent = Time.now - time_before

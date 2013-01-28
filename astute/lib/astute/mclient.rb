@@ -14,7 +14,7 @@ module Astute
       @mc = rpcclient(agent, :exit_on_failure => false)
       @mc.timeout = timeout if timeout
       @mc.progress = false
-      @retries = 5
+      @retries = Astute.config.MC_RETRIES
       unless @nodes.nil?
         @mc.discover(:nodes => @nodes)
       end

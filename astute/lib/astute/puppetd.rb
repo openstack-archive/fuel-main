@@ -9,7 +9,7 @@ module Astute
     # Returns list of nodes uids which appear to be with hung puppet.
     def self.puppetd_runonce(puppetd, uids)
       started = Time.now.to_i
-      while Time.now.to_i - started < PUPPET_FADE_TIMEOUT
+      while Time.now.to_i - started < Astute.config.PUPPET_FADE_TIMEOUT
         puppetd.discover(:nodes => uids)
         last_run = puppetd.last_run_summary
         running = last_run.select {|x| x.results[:data][:status] == 'running'}.map {|n| n.results[:sender]}
@@ -20,7 +20,7 @@ module Astute
         end
         uids = running
         break if uids.empty?
-        sleep 1
+        sleep Astute.config.PUPPET_FADE_INTERVAL
       end
       Astute.logger.debug "puppetd_runonce completed within #{Time.now.to_i - started} seconds."
       Astute.logger.debug "Following nodes have puppet hung: '#{running.join(',')}'" if running.any?
@@ -73,9 +73,9 @@ module Astute
         Astute.logger.warn "Some error occured when add separator to logs: #{e.message}, trace: #{e.backtrace.inspect}"
       end
 
-      Astute.logger.debug "Waiting for puppet to finish deployment on all nodes (timeout = #{PUPPET_TIMEOUT} sec)..."
+      Astute.logger.debug "Waiting for puppet to finish deployment on all nodes (timeout = #{Astute.config.PUPPET_TIMEOUT} sec)..."
       time_before = Time.now
-      Timeout::timeout(PUPPET_TIMEOUT) do  # 30 min for deployment to be done
+      Timeout::timeout(Astute.config.PUPPET_TIMEOUT) do
         puppetd_runonce(puppetd, uids)
         nodes_to_check = uids
         last_run = prev_summary
@@ -129,7 +129,7 @@ module Astute
           nodes_to_check = calc_nodes['running'] + nodes_to_retry
           break if nodes_to_check.empty?
 
-          sleep 2
+          sleep Astute.config.PUPPET_DEPLOY_INTERVAL
           puppetd.discover(:nodes => nodes_to_check)
           last_run = puppetd.last_run_summary
         end

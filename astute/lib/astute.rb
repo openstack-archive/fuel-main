@@ -1,6 +1,7 @@
 require 'json'
 require 'logger'
 
+require 'astute/config'
 require 'astute/logparser'
 require 'astute/orchestrator'
 require 'astute/metadata'
@@ -24,4 +25,7 @@ module Astute
   def self.logger=(logger)
     @logger = logger
   end
+
+  config_file = '/opt/astute/astute.conf'
+  Astute.config.update(YAML.load(File.read(config_file))) if File.exists?(config_file)
 end
