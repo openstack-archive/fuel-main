@@ -469,3 +469,17 @@ class TestTaskManagers(BaseHandlers):
             {'uid': 666, 'id': 666, 'status': 'discover'}
         ], uuid='no_freaking_way')  # and wrong task also
         self.assertRaises(WrongNodeStatus, manager.execute)
+
+    @patch('nailgun.task.task.rpc.cast', nailgun.task.task.fake_cast)
+    @patch('nailgun.task.task.settings.FAKE_TASKS', True)
+    @patch('nailgun.task.fake.settings.FAKE_TASKS_TICK_COUNT', 80)
+    @patch('nailgun.task.fake.settings.FAKE_TASKS_TICK_INTERVAL', 1)
+    def test_no_changes_no_cry(self):
+        cluster = self.create_cluster_api()
+        node1 = self.create_default_node(cluster_id=cluster['id'],
+                                         role="controller",
+                                         status="ready")
+        cluster_db = self.db.query(Cluster).get(cluster["id"])
+        cluster_db.clear_pending_changes()
+        manager = DeploymentTaskManager(cluster["id"])
+        self.assertRaises(WrongNodeStatus, manager.execute)
