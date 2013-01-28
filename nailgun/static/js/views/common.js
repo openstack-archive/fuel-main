@@ -51,17 +51,24 @@ function(models, dialogViews, navbarTemplate, nodesStatsTemplate, notificationsT
         togglePopover: function(e) {
             if (!this.popoverVisible && $(e.target).closest(this.$el).length) {
                 $('html').off(this.eventNamespace);
-                $('html').on(this.eventNamespace, _.after(2, _.bind(function(e) {
-                    this.hidePopover(e);
-                }, this)));
+                $('html').on(this.eventNamespace, _.after(2, _.bind(this.hidePopover, this)));
                 this.popoverVisible = true;
                 this.notificationsPopover = new views.NotificationsPopover({nodes: this.nodes, notifications: this.notifications, displayCount: 5});
                 this.registerSubView(this.notificationsPopover);
                 this.$el.after(this.notificationsPopover.render().el);
-                _.each(this.notifications.where({status : 'unread'}), function(notification) {
-                    notification.set({'status': 'read'});
-                });
-                Backbone.sync('update', this.notifications).done(_.bind(this.render, this));
+                this.markNotificationsAsRead();
+            }
+        },
+        markNotificationsAsRead: function() {
+            var notificationsToMark = new models.Notifications(this.notifications.where({status : 'unread'}));
+            if (notificationsToMark.length) {
+                notificationsToMark.toJSON = function() {
+                    return notificationsToMark.map(function(notification) {
+                        notification.set({status: 'read'}, {silent: true});
+                        return _.pick(notification.attributes, 'id', 'status');
+                    }, this);
+                };
+                Backbone.sync('update', notificationsToMark).done(_.bind(this.render, this));
             }
         },
         setActive: function(element) {
