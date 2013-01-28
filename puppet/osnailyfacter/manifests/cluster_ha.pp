@@ -97,6 +97,7 @@ class compact_controller {
     cinder                  => $cinder,
     manage_volumes          => $manage_volumes,
     galera_nodes            => $galera_nodes,
+    mysql_skip_name_resolve => true,
     nv_physical_volume      => $nv_physical_volume,
   }
   class { 'swift::keystone::auth':
