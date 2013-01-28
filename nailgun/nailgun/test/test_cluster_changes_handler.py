@@ -146,3 +146,30 @@ class TestHandlers(BaseHandlers):
 
         self.assertEquals(n_provisioned_rpc['status'], 'provisioned')
         self.assertEquals(n_added_rpc['status'], 'provisioning')
+
+    @patch('nailgun.rpc.cast')
+    def test_deploy_reruns_after_network_changes(self, mocked_rpc):
+        cluster = self.create_cluster_api()
+        node1 = self.create_default_node(cluster_id=cluster['id'],
+                                         role='controller',
+                                         status='ready')
+        node2 = self.create_default_node(cluster_id=cluster['id'],
+                                         role='compute',
+                                         status='ready')
+
+        # for clean experiment
+        cluster_db = self.db.query(Cluster).get(cluster['id'])
+        cluster_db.clear_pending_changes()
+        cluster_db.add_pending_changes('networks')
+
+        self.assertEqual(node1.needs_redeploy, True)
+        self.assertEqual(node2.needs_redeploy, True)
+
+        nailgun.task.task.Cobbler = Mock()
+        resp = self.app.put(
+            reverse(
+                'ClusterChangesHandler',
+                kwargs={'cluster_id': cluster['id']}),
+            headers=self.default_headers
+        )
+        self.assertEquals(200, resp.status)
