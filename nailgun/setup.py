@@ -48,8 +48,6 @@ def recursive_data_files(spec_data_files):
 
 
 if __name__ == "__main__":
-    update_commit_sha()
-
     setup(name=name,
           version=version,
           description='Nailgun package',
