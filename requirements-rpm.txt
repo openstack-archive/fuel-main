@@ -1,7 +1,10 @@
 MySQL-client
+MySQL-client-wsrep
 MySQL-python
 MySQL-server
+MySQL-server-wsrep
 MySQL-shared
+MySQL-shared-wsrep
 autoconf
 automake
 avahi
@@ -31,9 +34,6 @@ man
 mcollective
 mcollective-client
 memcached
-mysql
-mysql-devel
-mysql-server
 nginx
 novnc
 ntp

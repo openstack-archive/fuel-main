@@ -99,7 +99,7 @@ priority=20
 
 [openstack-epel-fuel]
 name=Mirantis OpenStack Custom Packages
-mirrorlist=http://download.mirantis.com/epel-fuel-folsom/mirror.external.list
+mirrorlist=http://download.mirantis.com/epel-fuel-folsom/mirror.internal.list
 gpgkey=https://fedoraproject.org/static/0608B895.txt
   http://mirror.centos.org/centos/RPM-GPG-KEY-CentOS-6
   http://download.mirantis.com/epel-fuel-folsom/rabbit.key
@@ -159,6 +159,7 @@ $/cache-extra.done: \
 		$/cache-infra.done \
 		requirements-rpm.txt
 	yum -c $(CENTOS_REPO_DIR)etc/yum-$(REPO_SUFFIX).conf clean all
+	yum -c $(CENTOS_REPO_DIR)etc/yum-$(REPO_SUFFIX).conf clean expire-cache
 	rm -rf /var/tmp/yum-$$USER-*/
 	yumdownloader -q --resolve --archlist=$(CENTOS_ARCH) \
 		-c $(CENTOS_REPO_DIR)etc/yum-$(REPO_SUFFIX).conf \
