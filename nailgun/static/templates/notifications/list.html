@@ -8,7 +8,7 @@
     <% if (notifications.length) { %>
       <% _.each(notifications.last(displayCount).reverse(), function(notification, index) { %>
         <% var topic = notification.get('topic') %>
-        <li class="notification-box enable-selection <%= notification.get('status') == 'unread' ? 'new' : '' %> <%= topic == 'discover' ? 'discover' : '' %>">
+        <li class="notification-box enable-selection <%= notification.get('status') == 'unread' ? 'new' : '' %> <%= topic %>">
           <div class="icon"><i class="<%= topic == 'error' ? 'icon-attention' : topic == 'discover' ? 'icon-bell' : 'icon-info-circled' %>"></i></div>
           <div class="datetime"><%= notification.escape('date') %> <%= notification.escape('time') %></div>
           <div class="message" data-node="<%- notification.get('node_id') %>"><%= app.urlify(notification.escape('message')) %></div>
