@@ -19,6 +19,7 @@ class NailgunSettings:
         settings_files.append(project_settings_file)
 
         settings_files.append('/etc/nailgun/settings.yaml')
+        settings_files.append('/etc/nailgun/version.yaml')
         self.config = {}
 
         for sf in settings_files:

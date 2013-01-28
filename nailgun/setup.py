@@ -37,34 +37,6 @@ name = 'Nailgun'
 version = "%s.%s" % (major_version, minor_version)
 
 
-def update_commit_sha():
-  """
-  Sets COMMIT_SHA in nailgun/settings.yaml into
-  sha sum of last commit
-  """
-  gitproc = subprocess.Popen(shlex.split("git rev-parse --verify HEAD"),
-    stdout=subprocess.PIPE, stderr=subprocess.PIPE)
-  sha, err = gitproc.communicate()
-  shaline = "COMMIT_SHA: \"%s\"\n" % sha.strip()
-
-  with open("nailgun/settings.yaml", "r+") as f:
-    pos = 0
-    while True:
-      line = f.readline()
-      if len(line) == 0:
-        break
-      # we don't use yaml loading and dumping
-      # in order to avoid file structure changing
-      if re.search(ur'^COMMIT_SHA:.*', line):
-        tail = f.read()
-        f.seek(pos)
-        f.write(shaline)
-        f.seek(pos + len(shaline))
-        f.write(tail)
-        f.seek(pos + len(shaline))
-      pos = f.tell()
-
-
 def recursive_data_files(spec_data_files):
     result = []
     for dstdir, srcdir in spec_data_files:

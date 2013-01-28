@@ -49,7 +49,8 @@ $/isoroot-prepare.done: \
 		$(addprefix $(ISOROOT)/EFI/BOOT/,$(EFI_FILES)) \
 		$(ISOROOT)/ks.cfg \
 		$(ISOROOT)/bootstrap_admin_node.sh \
-		$(ISOROOT)/bootstrap_admin_node.conf
+		$(ISOROOT)/bootstrap_admin_node.conf \
+		$(ISOROOT)/etc/nailgun/version.yaml
 	$(ACTION.TOUCH)
 
 $/isoroot-bootstrap.done: \
@@ -104,6 +105,9 @@ $(ISOROOT)/bootstrap_admin_node.sh: iso/bootstrap_admin_node.sh ; $(ACTION.COPY)
 $(ISOROOT)/bootstrap_admin_node.conf: iso/bootstrap_admin_node.conf ; $(ACTION.COPY)
 $(ISOROOT)/.discinfo: iso/.discinfo ; $(ACTION.COPY)
 $(ISOROOT)/.treeinfo: iso/.treeinfo ; $(ACTION.COPY)
+$(ISOROOT)/etc/nailgun/version.yaml:
+	mkdir -p $(@D)
+	echo "COMMIT_SHA: `git rev-parse --verify HEAD` > $@
 
 $/isoroot.done: \
 		$/isoroot-bootstrap.done \
