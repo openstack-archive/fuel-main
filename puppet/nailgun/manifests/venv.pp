@@ -41,7 +41,6 @@ class nailgun::venv(
   $database_port = "3306"
   $database_user = "nailgun"
   $database_passwd = "nailgun"
-  $commit_sha = ""
 
   file { "/etc/nailgun":
     ensure => directory,
