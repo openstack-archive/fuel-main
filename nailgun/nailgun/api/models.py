@@ -199,7 +199,11 @@ class Node(Base, BasicValidator):
 
     @property
     def needs_redeploy(self):
-        return self.status == 'error' and self.error_type == 'deploy'
+        cases = [
+            self.status == 'error' and self.error_type == 'deploy',
+            self.cluster is not None and list(self.cluster.changes) != []
+        ]
+        return any(cases)
 
     @property
     def needs_redeletion(self):

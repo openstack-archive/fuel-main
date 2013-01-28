@@ -60,7 +60,7 @@ class DeploymentTaskManager(TaskManager):
             ]),
             self.cluster.nodes
         )
-        if not nodes_to_deploy and not nodes_to_delete:
+        if not any([nodes_to_deploy, nodes_to_delete]):
             raise WrongNodeStatus("No changes to deploy")
 
         self.cluster.status = 'deployment'
