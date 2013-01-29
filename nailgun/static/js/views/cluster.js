@@ -788,6 +788,7 @@ function(models, commonViews, dialogViews, clusterPageTemplate, deploymentResult
             task.save({}, {
                 type: 'PUT',
                 url: '/api/clusters/' + this.model.id + '/verify/networks',
+                data: JSON.stringify(this.networks),
                 complete: _.bind(function() {
                     this.model.get('tasks').fetch({data: {cluster_id: this.model.id}});
                 }, this)
@@ -795,7 +796,7 @@ function(models, commonViews, dialogViews, clusterPageTemplate, deploymentResult
         },
         verifyNetworks: function() {
             var valid = true;
-            this.options.networks.each(function(network) {
+            this.networks.each(function(network) {
                 var row = $('.control-group[data-network-name=' + network.get('name') + ']');
                 network.on('error', function(model, errors) {
                     valid = false;
@@ -833,6 +834,7 @@ function(models, commonViews, dialogViews, clusterPageTemplate, deploymentResult
             }
         },
         initialize: function(options) {
+            _.defaults(this, options);
             var task = this.model.task('verify_networks');
             if (task) {
                 task.bind('change:status', this.render, this);
@@ -841,7 +843,7 @@ function(models, commonViews, dialogViews, clusterPageTemplate, deploymentResult
             }
         },
         render: function() {
-            this.$el.html(this.template({cluster: this.model, networks: this.options.networks}));
+            this.$el.html(this.template({cluster: this.model, networks: this.networks}));
             this.updateProgress();
             return this;
         }
