@@ -106,9 +106,9 @@ class TestNode(Base):
         self._basic_provisioning('provision', {'controller': ['slave1']})
 
     @snapshot_errors
-    def test_two_nodes_provisioning(self):
+    def test_simple_cluster_flat(self):
         self._revert_nodes()
-        cluster_name = 'two_nodes'
+        cluster_name = 'simple_flat'
         nodes = {'controller': ['slave1'], 'compute': ['slave2']}
         self._basic_provisioning(cluster_name, nodes)
         slave = ci.environment.node['slave1']
@@ -116,9 +116,20 @@ class TestNode(Base):
         wait(lambda: self._check_cluster_status(node['ip'], 5), timeout=300)
 
     @snapshot_errors
-    def test_ha_cluster(self):
+    def test_simple_cluster_vlan(self):
         self._revert_nodes()
-        cluster_name = 'ha_cluster'
+        cluster_name = 'simple_vlan'
+        nodes = {'controller': ['slave1'], 'compute': ['slave2']}
+        self._create_cluster(name=cluster_name, net_manager="VlanManager")
+        self._basic_provisioning(cluster_name, nodes)
+        slave = ci.environment.node['slave1']
+        node = self._get_slave_node_by_devops_node(slave)
+        wait(lambda: self._check_cluster_status(node['ip'], 5, 8), timeout=300)
+
+    @snapshot_errors
+    def test_ha_cluster_flat(self):
+        self._revert_nodes()
+        cluster_name = 'ha_flat'
         nodes = {
             'controller': ['slave1', 'slave2', 'slave3'],
             'compute': ['slave4', 'slave5']
@@ -127,6 +138,23 @@ class TestNode(Base):
         slave = ci.environment.node['slave1']
         node = self._get_slave_node_by_devops_node(slave)
         wait(lambda: self._check_cluster_status(node['ip'], 13), timeout=300)
+
+    @snapshot_errors
+    def test_ha_cluster_vlan(self):
+        self._revert_nodes()
+        cluster_name = 'ha_vlan'
+        nodes = {
+            'controller': ['slave1', 'slave2', 'slave3'],
+            'compute': ['slave4', 'slave5']
+        }
+        self._create_cluster(name=cluster_name, net_manager="VlanManager")
+        self._basic_provisioning(cluster_name, nodes)
+        slave = ci.environment.node['slave1']
+        node = self._get_slave_node_by_devops_node(slave)
+        wait(
+            lambda: self._check_cluster_status(node['ip'], 13, 8),
+            timeout=300
+        )
 
     @snapshot_errors
     def test_network_config(self):
@@ -410,7 +438,8 @@ class TestNode(Base):
             raise Exception("Could not get release id.")
         return release_id
 
-    def _create_cluster(self, name='default', release_id=None):
+    def _create_cluster(self, name='default',
+                        release_id=None, net_manager="FlatDHCPManager"):
         if not release_id:
             release_id = self._upload_sample_release()
 
@@ -432,8 +461,23 @@ class TestNode(Base):
             )
             self.assertEquals(201, resp.getcode())
             cluster_id = _get_cluster_id(name)
+            self.client.put(
+                "/api/clusters/%s/" % cluster_id,
+                {'net_manager': net_manager}
+            )
+            if net_manager == "VlanManager":
+                response = self.client.get("/api/networks/")
+                networks = json.loads(response.read())
+                flat_net = [n for n in networks
+                            if n['name'] == 'fixed'
+                            and n['cluster_id'] == cluster_id
+                            ]
+                flat_net[0]['amount'] = 8
+                flat_net[0]['network_size'] = 16
+                self.client.put("/api/networks/", flat_net)
         if not cluster_id:
             raise Exception("Could not get cluster '%s'" % name)
+
         return cluster_id
 
     def _clean_clusters(self):
@@ -506,7 +550,7 @@ node.interfaces[n].mac_address: %r" % str(i.mac_address))
         logging.debug("%d node(s) found" % len(nodes))
         return nodes
 
-    def _check_cluster_status(self, ip, smiles_count):
+    def _check_cluster_status(self, ip, smiles_count, networks_count=1):
         ctrl_ssh = SSHClient()
         ctrl_ssh.connect_ssh(ip, 'root', 'r00tme')
         ret = ctrl_ssh.execute('/usr/bin/nova-manage service list')
@@ -524,7 +568,14 @@ node.interfaces[n].mac_address: %r" % str(i.mac_address))
         )
         if not cirros_status:
             logging.warn("Cirros check fails:\n%s" % ret['stdout'])
-        return (nova_status and cirros_status)
+        ret = ctrl_ssh.execute('/usr/bin/nova-manage network list')
+        nets_status = (
+            (ret['exit_status'] == 0)
+            and (len(ret['stdout']) == networks_count + 1)
+        )
+        if not nets_status:
+            logging.warn("Networks check fails:\n%s" % ret['stdout'])
+        return (nova_status and cirros_status and nets_status)
 
     def _revert_nodes(self):
         logging.info("Reverting to snapshot 'initial'")
