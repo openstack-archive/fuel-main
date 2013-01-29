@@ -113,7 +113,7 @@ class TestNode(Base):
         self._basic_provisioning(cluster_name, nodes)
         slave = ci.environment.node['slave1']
         node = self._get_slave_node_by_devops_node(slave)
-        wait(lambda: self._check_cluster_status(node['ip']), timeout=300)
+        wait(lambda: self._check_cluster_status(node['ip'], 5), timeout=300)
 
     @snapshot_errors
     def test_ha_cluster(self):
@@ -126,7 +126,7 @@ class TestNode(Base):
         self._basic_provisioning(cluster_name, nodes)
         slave = ci.environment.node['slave1']
         node = self._get_slave_node_by_devops_node(slave)
-        wait(lambda: self._check_cluster_status(node['ip']), timeout=300)
+        wait(lambda: self._check_cluster_status(node['ip'], 13), timeout=300)
 
     @snapshot_errors
     def test_network_config(self):
@@ -505,22 +505,24 @@ node.interfaces[n].mac_address: %r" % str(i.mac_address))
         logging.debug("%d node(s) found" % len(nodes))
         return nodes
 
-    def _check_cluster_status(self, ip):
+    def _check_cluster_status(self, ip, smiles_count):
         ctrl_ssh = SSHClient()
         ctrl_ssh.connect_ssh(ip, 'root', 'r00tme')
         ret = ctrl_ssh.execute('/usr/bin/nova-manage service list')
         nova_status = (
             (ret['exit_status'] == 0)
-            and (''.join(ret['stdout']).count(":-)") == 5)
+            and (''.join(ret['stdout']).count(":-)") == smiles_count)
             and (''.join(ret['stdout']).count("XXX") == 0)
         )
-        logging.debug("Nova check status: %d" % nova_status)
+        if not nova_status:
+            logging.warn("Nova check fails:\n%s" % ret['stdout'])
         ret = ctrl_ssh.execute('. /root/openrc; glance index')
         cirros_status = (
             (ret['exit_status'] == 0)
             and (''.join(ret['stdout']).count("TestVM") == 1)
         )
-        logging.debug("Cirros check status: %d" % cirros_status)
+        if not cirros_status:
+            logging.warn("Cirros check fails:\n%s" % ret['stdout'])
         return (nova_status and cirros_status)
 
     def _revert_nodes(self):
