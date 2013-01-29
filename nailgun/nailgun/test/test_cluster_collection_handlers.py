@@ -138,6 +138,7 @@ class TestHandlers(BaseHandlers):
         resp = self.app.put(
             reverse('ClusterNetworksHandler',
                     kwargs={'cluster_id': cluster['id']}),
+            json.dumps(self.generate_ui_networks(cluster["id"])),
             headers=self.default_headers
         )
         self.assertEquals(200, resp.status)

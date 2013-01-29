@@ -1,13 +1,18 @@
 # -*- coding: utf-8 -*-
 
 import json
+import logging
+import traceback
 
 import web
 
 from nailgun.db import orm
 from nailgun.logger import logger
+from nailgun.notifier import notifier
 from nailgun.api.models import NetworkGroup, ClusterChanges
 from nailgun.api.handlers.base import JSONHandler
+
+logger = logging.getLogger(__name__)
 
 
 class NetworkCollectionHandler(JSONHandler):
@@ -39,6 +44,7 @@ class NetworkCollectionHandler(JSONHandler):
             raise web.badrequest()
 
         nets_to_render = []
+        error = False
         for ng in new_nets:
             ng_db = orm().query(NetworkGroup).get(ng['id'])
             if not ng_db:
@@ -47,10 +53,20 @@ class NetworkCollectionHandler(JSONHandler):
                     ng['id'])
             for key, value in ng.iteritems():
                 setattr(ng_db, key, value)
-            orm().commit()
-            ng_db.create_networks()
-            ng_db.cluster.add_pending_changes("networks")
+            try:
+                ng_db.create_networks()
+                ng_db.cluster.add_pending_changes("networks")
+            except Exception as exc:
+                notifier.notify("error", exc.message)
+                err = str(exc)
+                logger.error(traceback.format_exc())
+                error = True
+                break
             nets_to_render.append(ng_db)
+        if not error:
+            orm().commit()
+        else:
+            orm().rollback()
 
         return json.dumps(
             map(self.render, nets_to_render),

@@ -405,17 +405,12 @@ class ClusterDeletionTask(object):
 class VerifyNetworksTask(object):
 
     @classmethod
-    def execute(self, task):
+    def execute(self, task, data):
         task_uuid = task.uuid
-        nets_db = orm().query(Network).join(NetworkGroup).\
-            filter(NetworkGroup.cluster_id == task.cluster.id).all()
-        vlans_db = [net.vlan_id for net in nets_db]
+        networks = vlans_db = data
         iface_db = [{'iface': 'eth0', 'vlans': vlans_db}]
         nodes = [{'networks': iface_db, 'uid': n.id}
                  for n in task.cluster.nodes]
-        networks = [{
-            'id': n.id, 'vlan_id': n.vlan_id, 'cidr': n.cidr}
-            for n in nets_db]
 
         message = {'method': 'verify_networks',
                    'respond_to': 'verify_networks_resp',

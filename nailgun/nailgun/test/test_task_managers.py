@@ -301,10 +301,12 @@ class TestTaskManagers(BaseHandlers):
         cluster = self.create_cluster_api()
         node1 = self.create_default_node(cluster_id=cluster['id'])
         node2 = self.create_default_node(cluster_id=cluster['id'])
+
         resp = self.app.put(
             reverse(
                 'ClusterNetworksHandler',
                 kwargs={'cluster_id': cluster['id']}),
+            json.dumps(self.generate_ui_networks(cluster['id'])),
             headers=self.default_headers
         )
         self.assertEquals(200, resp.status)

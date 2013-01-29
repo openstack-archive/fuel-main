@@ -102,14 +102,25 @@ class DeploymentTaskManager(TaskManager):
 
 class VerifyNetworksTaskManager(TaskManager):
 
-    def execute(self):
+    def execute(self, data):
         task = Task(
             name="verify_networks",
             cluster=self.cluster
         )
         orm().add(task)
         orm().commit()
-        task.execute(tasks.VerifyNetworksTask)
+        try:
+            task.execute(tasks.VerifyNetworksTask, data)
+        except Exception as exc:
+            err = str(exc)
+            logger.error(traceback.format_exc())
+            update_task_status(
+                task_deployment.uuid,
+                status="error",
+                progress=100,
+                msg=err
+            )
+            orm().commit()
         return task
 
 

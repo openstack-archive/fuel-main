@@ -395,6 +395,16 @@ class NetworkGroup(Base, BasicValidator):
             orm().commit()
 
     @classmethod
+    def generate_vlan_ids_list(cls, data):
+        vlans_db = []
+        for ng in data:
+            current_vlan = ng["vlan_start"]
+            for i in xrange(int(ng['amount'])):
+                vlans_db.append({'vlan_id': current_vlan})
+                current_vlan += 1
+        return vlans_db
+
+    @classmethod
     def validate_collection_update(cls, data):
         d = cls.validate_json(data)
         if not isinstance(d, list):
@@ -511,8 +521,8 @@ class Task(Base, BasicValidator):
             self.status
         )
 
-    def execute(self, instance):
-        return instance.execute(self)
+    def execute(self, instance, *args, **kwargs):
+        return instance.execute(self, *args, **kwargs)
 
     def create_subtask(self, name):
         if not name:

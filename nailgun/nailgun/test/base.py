@@ -101,6 +101,31 @@ class BaseHandlers(TestCase):
             {"name": "public", "access": "public"}
         ]
 
+    def generate_ui_networks(self, cluster_id):
+        net_names = (
+            "floating",
+            "public",
+            "management",
+            "storage",
+            "fixed"
+        )
+        net_cidrs = (
+            "240.0.0.0/24",
+            "240.0.1.0/24",
+            "192.168.0.0/24",
+            "172.16.0.0/24",
+            "10.0.0.0/24"
+        )
+        nets = [{
+            "network_size": 256,
+            "name": nd[0],
+            "amount": 1,
+            "cluster_id": cluster_id,
+            "vlan_start": 100 + i,
+            "cidr": nd[1],
+            "id": i} for i, nd in enumerate(zip(net_names, net_cidrs))]
+        return nets
+
     def get_default_attributes_metadata(self):
         return {
             "editable": {
