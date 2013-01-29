@@ -1017,11 +1017,18 @@ function(models, commonViews, dialogViews, clusterPageTemplate, deploymentResult
             this.$('select[name=source], select[name=level]').html('').attr('disabled', true);
             this.updateShowButtonState();
             this.sources = new models.LogSources();
-            var fetchOptions = {};
             if (type == 'remote') {
-                fetchOptions.url = '/api/logs/sources/nodes/' + this.$('select[name=node]').val();
+                this.sources.deferred = this.sources.fetch({url: '/api/logs/sources/nodes/' + this.$('select[name=node]').val()});
+            } else if (!this.model.get('log_sources')) {
+                this.sources.deferred = this.sources.fetch();
+                this.sources.deferred.done(_.bind(function() {
+                    this.model.set('log_sources', this.sources.toJSON());
+                }, this));
+            } else {
+                this.sources.reset(this.model.get('log_sources'));
+                this.sources.deferred = $.Deferred();
+                this.sources.deferred.resolve();
             }
-            this.sources.deferred = this.sources.fetch(fetchOptions);
             this.sources.deferred.done(_.bind(type == 'local' ? this.updateLocalSources : this.updateRemoteSources, this));
             this.sources.deferred.done(_.bind(function() {
                 if (this.sources.length) {
@@ -1170,13 +1177,8 @@ function(models, commonViews, dialogViews, clusterPageTemplate, deploymentResult
                 options.node = this.chosenNodeId;
             }
             options.source = this.chosenSourceId;
-            options.level = this.chosenLevel;
+            options.level = this.chosenLevel.toLowerCase();
             return options;
-        },
-        setOptions: function(options) {
-            _.each(['type', 'node', 'source', 'level'], function(option) {
-                this.$('select[name=' + option + ']').val(options[option]).trigger('change');
-            }, this);
         },
         initialize: function(params) {
             _.defaults(this, params);
@@ -1212,7 +1214,7 @@ function(models, commonViews, dialogViews, clusterPageTemplate, deploymentResult
                     this.sources.deferred.done(_.bind(function() {
                         this.$('select[name=source]').val(options.source).trigger('change');
                         if (options.level) {
-                            this.$('select[name=level]').val(options.level);
+                            this.$('select[name=level]').val(options.level.toUpperCase());
                         }
                     }, this));
                 }
