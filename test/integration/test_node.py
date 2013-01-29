@@ -505,7 +505,7 @@ node.interfaces[n].mac_address: %r" % str(i.mac_address))
         logging.debug("%d node(s) found" % len(nodes))
         return nodes
 
-    def _check_cluster_status(ip):
+    def _check_cluster_status(self, ip):
         ctrl_ssh = SSHClient()
         ctrl_ssh.connect_ssh(ip, 'root', 'r00tme')
         ret = ctrl_ssh.execute('/usr/bin/nova-manage service list')
