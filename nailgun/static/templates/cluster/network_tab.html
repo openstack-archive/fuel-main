@@ -115,6 +115,124 @@
     </fieldset>
   </div>
 
+<style>
+
+.verification-router {
+  display: block;
+  width: 200px;
+  height: 58px;
+  position: relative;
+  top: 4px;
+  left: 190px;
+  background: url(static/img/router.png) no-repeat top left;
+}
+
+.verification-node-1 {
+  display: block;
+  width: 140px;
+  height: 40px;
+  background-color:
+  #dadada; position:
+  relative;
+  top: 60px;
+  left: 0px;
+}
+
+.verification-node-2 {
+  display: block;
+  width: 140px;
+  height: 40px;
+  background-color: #cccccc;
+  position: relative;
+  top: 20px;
+  left: 220px;
+}
+
+.verification-node-3 {
+  display: block;
+  width: 140px;
+  height: 40px;
+  background-color: #cccccc;
+  position: relative;
+  top: -20px;
+  left: 440px;
+}
+
+
+.verification-node-1, .verification-node-2, .verification-node-3 {
+  background: url(static/img/node-small.png) no-repeat top left;
+}
+
+
+.connect-1-stop, .connect-1-success, .connect-1-error  {
+  display: block;
+  width: 176px;
+  height: 62px;
+  position: relative;
+  top: -122px;
+  left: 62px;
+  overflow: hidden;
+}
+
+.connect-1-stop {
+  background: url(static/img/connect_1_anim.gif) no-repeat top left;
+}
+
+.connect-1-success {
+  background: url(static/img/connect_1_anim.gif) no-repeat 0px -62px;
+}
+
+.connect-1-error {
+  background: url(static/img/connect_1_anim.gif) no-repeat 0px -124px;
+}
+
+.connect-2-stop, .connect-2-success, .connect-2-error  {
+  display: block;
+  width: 8px;
+  height: 62px;
+  background-color: green;
+  position: relative;
+  top: -184px;
+  left: 287px;
+  overflow: hidden;
+}
+
+.connect-2-stop {
+  background: url(static/img/connect_2_anim.gif) no-repeat top left;
+}
+
+.connect-2-success {
+  background: url(static/img/connect_2_anim.gif) no-repeat 0px -62px;
+}
+
+.connect-2-error {
+  background: url(static/img/connect_2_anim.gif) no-repeat 0px -124px;
+}
+
+.connect-3-stop, .connect-3-success, .connect-3-error  {
+  display: block;
+  width: 176px;
+  height: 62px;
+  position: relative;
+  top: -246px;
+  left: 345px;
+  overflow: hidden;
+}
+
+.connect-3-stop {
+  background: url(static/img/connect_3_anim.gif) no-repeat top left;
+}
+
+.connect-3-success {
+  background: url(static/img/connect_3_anim.gif) no-repeat 0px -62px;
+}
+
+.connect-3-error {
+  background: url(static/img/connect_3_anim.gif) no-repeat 0px -124px;
+}
+
+</style>
+
   <!-- network scheme -->
   <div class="row">
     <div class="page-control-box">
@@ -122,19 +240,19 @@
 
         <div style="display: block; float: left; width: 580px; height: 172px; margin-right: 20px; position: relative;">
 
-            <div style="display: block; width: 200px; height: 58px; background-color: #dadada; position: relative; top: 4px; left: 190px;">Router</div>
+            <div class="verification-router"></div>
 
-            <div style="display: block; width: 140px; height: 40px; background-color: #dadada; position: relative; top: 60px; left: 0px;">Cluster 1</div>
+            <div  class="verification-node-1"></div>
 
-            <div style="display: block; width: 140px; height: 40px; background-color: #cccccc; position: relative; top: 20px; left: 220px;">Cluster 2</div>
+            <div  class="verification-node-2"></div>
 
-            <div style="display: block; width: 140px; height: 40px; background-color: #cccccc; position: relative; top: -20px; left: 440px;">Cluster 3</div>
+             <div  class="verification-node-3"></div>
 
-            <div style="display: block; width: 156px; height: 56px; background-color: red; position: relative; top: -116px; left: 68px;">Animation 1</div>
+            <div class="connect-1-success"></div>
 
-            <div style="display: block; width: 4px; height: 56px; background-color: green; position: relative; top: -172px; left: 288px;"></div>
+            <div class="connect-2-success"></div>
 
-            <div style="display: block; width: 156px; height: 56px; background-color: red; position: relative; top: -228px; left: 356px;">Animation 3</div>
+            <div class="connect-3-error"></div>
 
         </div>
 
