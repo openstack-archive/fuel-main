@@ -40,6 +40,15 @@ function(models, commonViews, dialogViews, clusterPageTemplate, deploymentResult
             'click .rollback': 'discardChanges',
             'click .deploy-btn:not(.disabled)': 'displayChanges'
         },
+        removeVerificationTask: function(callback) {
+            var task = this.model.task('verify_networks');
+            if (task && task.get('status') != 'running') {
+                this.model.get('tasks').remove(task);
+                task.destroy({silent: true}).done(callback);
+            } else {
+                callback();
+            }
+        },
         dismissTaskResult: function() {
             this.$('.task-result').remove();
             this.model.task('deploy').destroy();
@@ -368,11 +377,7 @@ function(models, commonViews, dialogViews, clusterPageTemplate, deploymentResult
                 this.tab.changeScreen(views.NodesByRolesScreen);
                 this.model.get('nodes').fetch({data: {cluster_id: this.model.id}});
                 app.navbar.stats.nodes.fetch();
-                var task = this.model.task('verify_networks');
-                if (task && task.get('status') != 'running') {
-                    this.model.get('tasks').remove(task);
-                    task.destroy();
-                }
+                app.page.removeVerificationTask();
             }, this));
         },
         getChosenNodesIds: function() {
@@ -648,11 +653,7 @@ function(models, commonViews, dialogViews, clusterPageTemplate, deploymentResult
             }
             this.networks.hasChanges = true;
             this.$('.apply-btn').attr('disabled', false);
-            var task = this.model.task('verify_networks');
-            if (task) {
-                this.model.get('tasks').remove(task);
-                task.destroy();
-            }
+            app.page.removeVerificationTask();
         },
         calculateVlanEnd: function() {
             if (this.model.get('net_manager') == 'VlanManager') {
@@ -761,13 +762,7 @@ function(models, commonViews, dialogViews, clusterPageTemplate, deploymentResult
             }, this);
             if (valid) {
                 this.$('.verify-networks-btn').attr('disabled', true);
-                var task = this.model.task('verify_networks');
-                if (task) {
-                    this.model.get('tasks').remove(task);
-                    task.destroy({complete: _.bind(this.startVerification, this)});
-                } else {
-                    this.startVerification();
-                }
+                app.page.removeVerificationTask(_.bind(this.startVerification, this));
             }
         },
         beforeTearDown: function() {
