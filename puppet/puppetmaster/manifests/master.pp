@@ -21,12 +21,23 @@ class puppetmaster::master (
     notify => Service["puppetmaster"],
   }
 
+  file { "/etc/puppet/puppetdb.conf":
+    content => template("puppetmaster/puppetdb.conf.erb"),
+    owner => "puppet",
+    group => "puppet",
+    mode => 0600,
+    require => Package["puppet-server"],
+    notify => Service["puppetmaster"],
+  }
+
+
   service { "puppetmaster":
     enable => true,
     ensure => "running",
     require => [
                 Package["puppet-server"],
                 Package["rubygem-mongrel"],
+                Package["puppetdb-terminus"],
                 ],
   }
 

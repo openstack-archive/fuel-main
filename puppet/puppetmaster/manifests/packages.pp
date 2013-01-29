@@ -18,7 +18,6 @@ class puppetmaster::packages(
     }
   }
 
-#  puppetmaster_safe_package{ "mysql-devel": }
   puppetmaster_safe_package{ "ruby-devel": }
   puppetmaster_safe_package{ "rubygems": }
   puppetmaster_safe_package{ "make": }
@@ -30,6 +29,7 @@ class puppetmaster::packages(
   }
   puppetmaster_safe_package{ "rubygem-mongrel": }
   puppetmaster_safe_package{ "nginx": }
+  puppetmaster_safe_package{ "puppetdb-terminus": }
 
 
 #  Puppetmaster_safe_package<| title == "mysql-devel" |> ->
