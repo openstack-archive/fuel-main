@@ -14,13 +14,23 @@
     <% var disabled = cluster.task('deploy', 'running') || cluster.task('verify_networks', 'running') ? 'disabled' : '' %>
     <fieldset>
 
+      <div class="form-inline">
+        <label class="radio"><input type="radio" name="optionsRadios" id="optionsRadios1" value="option1" checked>FlatDHCP Manager</label>
+        <div class="spacer"></div>
+        <label class="radio"><input type="radio" name="optionsRadios" id="optionsRadios2" value="option2">VLAN Manager</label>
+      </div>
+
+      <!--
       <div class="btn-group net-manager" data-toggle="buttons-radio">
         <% var managers = {'FlatDHCPManager': 'FlatDHCP Manager', 'VlanManager': 'VLAN Manager'} %>
         <% var net_manager = cluster.get('net_manager') %>
         <% _.each(_.keys(managers), function(manager) { %>
+
           <button type="button" data-manager="<%= manager %>" class="btn btn-primary <%= net_manager == manager ? 'active' : '' %>" <%= disabled %>><%= managers[manager] %></button>
+        
         <% }) %>
       </div>
+      -->
 
       <% if (networks.deferred.state() != 'pending') { %>
         <form class="form-inline networks-table" onsubmit="return false">
@@ -115,174 +125,91 @@
     </fieldset>
   </div>
 
-<style>
-
-.verification-router {
-  display: block;
-  width: 200px;
-  height: 58px;
-  position: relative;
-  top: 4px;
-  left: 190px;
-  background: url(static/img/router.png) no-repeat top left;
-}
-
-.verification-node-1 {
-  display: block;
-  width: 140px;
-  height: 40px;
-  background-color:
-  #dadada; position:
-  relative;
-  top: 60px;
-  left: 0px;
-}
-
-.verification-node-2 {
-  display: block;
-  width: 140px;
-  height: 40px;
-  background-color: #cccccc;
-  position: relative;
-  top: 20px;
-  left: 220px;
-}
-
-.verification-node-3 {
-  display: block;
-  width: 140px;
-  height: 40px;
-  background-color: #cccccc;
-  position: relative;
-  top: -20px;
-  left: 440px;
-}
-
-
-.verification-node-1, .verification-node-2, .verification-node-3 {
-  background: url(static/img/node-small.png) no-repeat top left;
-}
-
-
-.connect-1-stop, .connect-1-success, .connect-1-error  {
-  display: block;
-  width: 176px;
-  height: 62px;
-  position: relative;
-  top: -122px;
-  left: 62px;
-  overflow: hidden;
-}
-
-.connect-1-stop {
-  background: url(static/img/connect_1_anim.gif) no-repeat top left;
-}
-
-.connect-1-success {
-  background: url(static/img/connect_1_anim.gif) no-repeat 0px -62px;
-}
-
-.connect-1-error {
-  background: url(static/img/connect_1_anim.gif) no-repeat 0px -124px;
-}
-
-.connect-2-stop, .connect-2-success, .connect-2-error  {
-  display: block;
-  width: 8px;
-  height: 62px;
-  background-color: green;
-  position: relative;
-  top: -184px;
-  left: 287px;
-  overflow: hidden;
-}
-
-.connect-2-stop {
-  background: url(static/img/connect_2_anim.gif) no-repeat top left;
-}
-
-.connect-2-success {
-  background: url(static/img/connect_2_anim.gif) no-repeat 0px -62px;
-}
-
-.connect-2-error {
-  background: url(static/img/connect_2_anim.gif) no-repeat 0px -124px;
-}
-
-.connect-3-stop, .connect-3-success, .connect-3-error  {
-  display: block;
-  width: 176px;
-  height: 62px;
-  position: relative;
-  top: -246px;
-  left: 345px;
-  overflow: hidden;
-}
-
-.connect-3-stop {
-  background: url(static/img/connect_3_anim.gif) no-repeat top left;
-}
-
-.connect-3-success {
-  background: url(static/img/connect_3_anim.gif) no-repeat 0px -62px;
-}
-
-.connect-3-error {
-  background: url(static/img/connect_3_anim.gif) no-repeat 0px -124px;
-}
-
-</style>
-
   <!-- network scheme -->
   <div class="row">
     <div class="page-control-box">
-      <div style="display: block; margin: 10px 20px 10px 20px;">
+      <div class="verification-box">
 
-        <div style="display: block; float: left; width: 580px; height: 172px; margin-right: 20px; position: relative;">
+        <div class="verification-network-placeholder">
+         
+            <div class="router-box">
+              <div class="verification-router"></div>
+            </div>
 
-            <div class="verification-router"></div>
+            <div class="animation-box">
+               <div class="connect-1-success"></div>
+               <div class="connect-2-success"></div>
+               <div class="connect-3-error"></div>
+            </div>
 
-            <div  class="verification-node-1"></div>
-
-            <div  class="verification-node-2"></div>
-
-             <div  class="verification-node-3"></div>
-
-            <div class="connect-1-success"></div>
-
-            <div class="connect-2-success"></div>
-
-            <div class="connect-3-error"></div>
+            <div  class="nodex-box">
+              <div  class="verification-node-1"></div>
+              <div  class="verification-node-2"></div>
+              <div  class="verification-node-3"></div>
+            </div>
 
         </div>
 
 
-        <div style="display: block; float: left; width: 300px; overflow: hidden;">
+        <div class="verification-text-placeholder">
             <li><strong>Network Verification is done in 3 steps:</strong></li>
             <li>1. Every node starts listening for test frames</li>
             <li>2. On every node via eth0 802.1Q tagget UDP frames are seat</li>
             <li>3. Listeners register test frames from other nodes</li>
-            <div class="verify-network"></div>
+            <div class="btn">Verify Network</div>
         </div>
         
-        <div style="clear: both;">
 
-            <h4>Verification Test Result Table</h4>
-
-            <table class="table table-condensed">
+        <div class="verification-result-table">
+        <table class="table table-condensed">
               <thead>
-                <td>1</td>
-                <td>2</td>
-                <td>3</td>
+                <tr>
+                  <th>#</th>
+                  <th>Node Name</th>
+                  <th>Node MAC address</th>
+                  <th>Expected, but not received Vlan ID</th>
+                </tr>
               </thead>
               <tbody>
-                <td>1</td>
-                <td>2</td>
-                <td>3</td>
+                <tr>
+                  <td>1</td>
+                  <td>Untitled (69:1F)</td>
+                  <td>2E:04:78:86:69:1F</td>
+                  <td>100, 102-105, 399</td>
+                </tr>
+                <tr>
+                  <td>2</td>
+                  <td>Untitled (69:1F)</td>
+                  <td>2E:04:78:86:69:1F</td>
+                  <td>100, 102-105, 399</td>
+                </tr>
+                <tr>
+                  <td>3</td>
+                  <td>Untitled (69:1F)</td>
+                  <td>2E:04:78:86:69:1F</td>
+                  <td>100, 102-105, 399</td>
+                </tr>
+                <tr>
+                  <td>4</td>
+                  <td>Untitled (69:1F)</td>
+                  <td>2E:04:78:86:69:1F</td>
+                  <td>100, 102-105, 399</td>
+                </tr>
+                <tr>
+                  <td>5</td>
+                  <td>Untitled (69:1F)</td>
+                  <td>2E:04:78:86:69:1F</td>
+                  <td>100, 102-105, 399</td>
+                </tr>
+                <tr>
+                  <td>6</td>
+                  <td>Untitled (69:1F)</td>
+                  <td>2E:04:78:86:69:1F</td>
+                  <td>100, 102-105, 399</td>
+                </tr>
               </tbody>
             </table>
-
-        </div>
+          </div>
 
       </div>
     </div>

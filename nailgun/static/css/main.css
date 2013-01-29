@@ -2677,3 +2677,155 @@ select[name=release] option {
   font-size: 11px;
   margin-top: 8px;
 }
+
+
+/* Verification Block */
+.form-inline > .spacer {
+  display: inline-block;
+  width: 30px;
+}
+
+.verification-box {
+  display: block;
+  margin: 10px 20px 10px 20px;
+  position: relative;
+  top: 0px;
+  left: 0px;
+}
+
+.verification-network-placeholder {
+  display: block;
+  float: left;
+  width: 580px;
+  margin-right: 20px;
+}
+
+.verification-text-placeholder {
+  display: block;
+  float: left;
+  width: 300px;
+  height: auto;
+}
+
+.verification-text-placeholder li {
+  list-style: none outside none;
+  margin: 2px 0 0;
+  margin-bottom: 8px;
+}
+
+.verification-result-table {
+  clear: both;
+  width: 580px;
+  margin-top: 10px;
+}
+
+.verification-router {
+  display: block;
+  width: 200px;
+  height: 58px;
+  margin-left: 190px;
+  background: url(../img/router.png) no-repeat top left;
+}
+
+.verification-node-1 {
+  display: inline-block;
+  width: 140px;
+  height: 40px;
+}
+
+.verification-node-2 {
+  display: inline-block;
+  width: 140px;
+  height: 40px;
+  margin-left: 76px;
+}
+
+.verification-node-3 {
+  display: inline-block;
+  width: 140px;
+  height: 40px;
+  margin-left: 76px;
+}
+
+.verification-node-1, .verification-node-2, .verification-node-3 {
+  background: url(../img/node-small.png) no-repeat top left;
+}
+
+.connect-1-stop, .connect-1-success, .connect-1-error  {
+  display: inline-block;
+  width: 176px;
+  height: 62px;
+  margin-left: 62px;
+  overflow: hidden;
+}
+
+.connect-1-stop {
+  background: url(../img/connect_1_anim.gif) no-repeat top left;
+}
+
+.connect-1-success {
+  background: url(../img/connect_1_anim.gif) no-repeat 0px -62px;
+}
+
+.connect-1-error {
+  background: url(../img/connect_1_anim.gif) no-repeat 0px -124px;
+}
+
+.connect-2-stop, .connect-2-success, .connect-2-error  {
+  display: inline-block;
+  width: 8px;
+  height: 62px;
+  margin-left: 45px;
+  overflow: hidden;
+}
+
+.connect-2-stop {
+  background: url(../img/connect_2_anim.gif) no-repeat top left;
+}
+
+.connect-2-success {
+  background: url(../img/connect_2_anim.gif) no-repeat 0px -62px;
+}
+
+.connect-2-error {
+  background: url(../img/connect_2_anim.gif) no-repeat 0px -124px;
+}
+
+.connect-3-stop, .connect-3-success, .connect-3-error  {
+  display: inline-block;
+  width: 176px;
+  height: 62px;
+  margin-left: 46px;
+  overflow: hidden;
+}
+
+.connect-3-stop {
+  background: url(../img/connect_3_anim.gif) no-repeat top left;
+}
+
+.connect-3-success {
+  background: url(../img/connect_3_anim.gif) no-repeat 0px -62px;
+}
+
+.connect-3-error {
+  background: url(../img/connect_3_anim.gif) no-repeat 0px -124px;
+}
+
+.router-box {
+  display: block;
+  height: 58px;
+  overflow: hidden;
+}
+
+.animation-box {
+  display: block;
+  height: 62px;
+  margin-top: -9px;
+  overflow: hidden;
+}
+
+.nodex-box {
+  display: block;
+  height: 40px;
+  overflow: hidden;
+}
