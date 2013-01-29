@@ -328,6 +328,7 @@ function(models, commonViews, dialogViews, clusterPageTemplate, deploymentResult
             'click .select-all-tumbler': 'selectAll'
         },
         toggleNode: function(e) {
+            if ($(e.target).closest(this.$('.node-hardware')).length) {return;}
             if (this.limit !== null && $(e.currentTarget).is('.node-to-' + this.action + '-unchecked') && this.$('.node-to-' + this.action + '-checked').length >= this.limit) {
                 return;
             }
@@ -579,7 +580,6 @@ function(models, commonViews, dialogViews, clusterPageTemplate, deploymentResult
             }
         },
         showNodeInfo: function() {
-            if (this.$('.nodebox').hasClass('unassigned')) {return;}
             var dialog = new dialogViews.ShowNodeInfoDialog({node: this.model});
             app.page.tab.registerSubView(dialog);
             dialog.render();

@@ -404,7 +404,7 @@ h6.page-title {
 .node-select {
   display: block;
   width: 172px;
-  height: 114px;
+  height: 73px;
   float: left;
   margin-left: -1px;
   margin-top: -114px;
@@ -624,7 +624,7 @@ h6.page-title {
   cursor: pointer;
 }
 
-.node-list .node-hardware:hover  {
+.node-hardware:hover  {
   /* color: #0088cc; */
   background-color: rgba(0, 0, 0, 0.15);
   color: #333333;
