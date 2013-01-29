@@ -213,33 +213,7 @@ class Node(Base, BasicValidator):
 
     @property
     def info(self):
-        """ Safely aggregate metadata to provide short info for UI """
-        result = {}
-
-        try:
-            kilobytes = int(self.meta['memory']['total'][:-2])
-            gigabytes = kilobytes / 1024.0 ** 2
-            result['ram'] = gigabytes
-        except (KeyError, ValueError, TypeError):
-            result['ram'] = None
-
-        try:
-            result['cores'] = self.meta['cpu']['total']
-        except (KeyError, ValueError, TypeError):
-            result['cores'] = None
-
-        # FIXME: disk space calculating may be wrong
-        result['hdd'] = 0
-        try:
-            for name, info in self.meta['block_device'].iteritems():
-                if re.match(r'^sd.$', name):
-                    bytes = int(info['size']) * 512
-                    terabytes = bytes / 1024.0 ** 4
-                    result['hdd'] += terabytes
-        except (AttributeError, KeyError, ValueError, TypeError):
-            result['hdd'] = None
-
-        return result
+        return self.meta
 
     @classmethod
     def validate(cls, data):

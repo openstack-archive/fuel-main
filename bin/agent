@@ -11,6 +11,11 @@ require 'logger'
 require 'optparse'
 require 'yaml'
 
+unless /^root$/.match ENV['USER']
+  puts "You must be root"
+  exit 1
+end
+
 AGENT_CONFIG = "/etc/nailgun-agent/config.yaml"
 
 class McollectiveConfig
@@ -136,6 +141,56 @@ class NodeAgent
     }
   end
 
+  def _detailed
+    detailed_meta = {
+      :System => {
+        :Manufacturer => _manufacturer,
+        :Serial => _serial,
+        :Product => _product_name,
+        :Family => (@os[:dmi][:system][:family] or "Unknown"),
+        :Version => (@os[:dmi][:system][:version] or "Unknown"),
+        },
+      :Interfaces => [],
+      :Cpu => {
+        :Total => @os[:cpu][:total],
+        :Real => @os[:cpu][:real],
+        :Spec => [],
+        },
+      :Disks => [],
+      :Memory => _real_memory,
+    }
+    @os[:network][:interfaces].each do |int, intinfo|
+      intinfo[:addresses].each do |addr, addrinfo|
+        if addrinfo[:family] =~ /lladdr/
+          detailed_meta[:Interfaces] << {
+            :Name => int,
+            :Mac => addr
+          }
+        end
+      end
+    end
+    @os[:cpu].each do |cpu, cpuinfo|
+      if cpu =~ /^[\d]+/
+        detailed_meta[:Cpu][:Spec] << {
+          :Mhz => cpuinfo[:mhz].to_i.to_s,
+          :Model => cpuinfo[:model_name].gsub(/ +/, " ")
+        }
+      end
+    end
+    @os[:block_device].each do |bname, binfo|
+      if bname =~ /^(sd|hd|vd)./
+        detailed_meta[:Disks] << {
+          :Name => bname,
+          :Model => binfo[:model],
+          # 512 bytes is the size of one sector by default
+          # 1000000000 bytes is 1 Gb
+          :Size => (binfo[:size].to_i * 512).to_s,
+        }
+      end
+    end
+    detailed_meta
+  end
+
   def _is_virtual
     @os["virtualization"]["role"] == "guest" rescue false
   end
@@ -162,6 +217,26 @@ class NodeAgent
     @os[:dmi][:system][:serial_number] rescue "Unknown"
   end
 
+  def _real_memory
+    dmi = `dmidecode`
+    mem_mapped = false
+    dmi.each do |line|
+      mem_mapped = true if /^Memory Array Mapped Address$/.match(line)
+      if /^\s*Range Size:\s+(\d+)\s+(mb|gb|kb)/i.match(line) and mem_mapped
+        size, unit = $1, $2
+        case unit
+        when /^kb$/i
+          return (size.to_i * 1024).to_s
+        when /^mb$/i
+          return (size.to_i * 1048576).to_s
+        when /^gb$/i
+          return (size.to_i * 1073741824).to_s
+        end
+        mem_mapped = false
+      end
+    end
+  end
+
   def _data
     res = {
       :mac => @os[:macaddress],
@@ -169,7 +244,7 @@ class NodeAgent
       :manufacturer => _manufacturer,
       :platform_name => _product_name,
       :os_platform => @os[:platform],
-      :meta => _metadata
+      :meta => _detailed
     }
 
     res[:status] = @node_state if @node_state
@@ -221,7 +296,6 @@ begin
 rescue Exception => e
   logger.info("Could not get url from configuration file: #{e.message}, trying other ways..")
 end
-
 
 agent = NodeAgent.new(logger, url)
 agent.update_state

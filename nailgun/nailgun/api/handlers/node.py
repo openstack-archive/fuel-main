@@ -85,11 +85,11 @@ class NodeCollectionHandler(JSONHandler):
         node.name = "Untitled (%s)" % data['mac'][-5:]
         orm().add(node)
         orm().commit()
-        ram = round(node.info.get('ram') or 0, 1)
-        cores = node.info.get('cores') or 'unknown'
+        ram = round(int(node.info.get('Memory')) / 1073741824.0, 1) or "Unknown"
+        cores = node.info.get('Cpu').get('Total') or "Unknown"
         notifier.notify("discover",
                         "New node with %s CPU core(s) "
-                        "and %s GB memory is discovered" %
+                        "and %s  memory is discovered" %
                         (cores, ram), node_id=node.id)
         raise web.webapi.created(json.dumps(
             NodeHandler.render(node),
