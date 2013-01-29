@@ -3,11 +3,9 @@
 
   <div class="row">
     <div class="filter-bar">
-      <% var loaded = !sources.deferred || sources.deferred.state() != 'pending' %>
-
       <div class="filter-bar-item log-type-filter">
         <div class="filter-bar-label">Logs</div>
-        <select name="type" class="filter-bar-dropdown input-medium" <%= loaded ? '' : 'disabled' %>>
+        <select name="type" class="filter-bar-dropdown input-medium">
           <% _.each(types, function(type) { %>
             <option value="<%= type[0] %>" <%= chosenType == type[0] ? 'selected' : '' %>><%- type[1] %></option>
           <% }) %>
@@ -16,7 +14,7 @@
 
       <div class="filter-bar-item log-node-filter" style="display:none">
         <div class="filter-bar-label">Node</div>
-        <select name="node" class="filter-bar-dropdown input-large" <%= loaded ? '' : 'disabled' %>>
+        <select name="node" class="filter-bar-dropdown input-large">
           <% cluster.get('nodes').each(function(node) { %>
             <option value="<%= node.id %>" <%= node.id == chosenNodeId ? 'selected' : '' %>><%- node.get('name') || node.get('mac') %></option>
           <% }) %>
@@ -25,16 +23,16 @@
 
       <div class="filter-bar-item log-source-filter">
         <div class="filter-bar-label">Source</div>
-        <select name="source" class="filter-bar-dropdown input-medium" <%= loaded ? '' : 'disabled' %>></select>
+        <select name="source" class="filter-bar-dropdown input-medium" disabled></select>
       </div>
 
       <div class="filter-bar-item log-level-filter">
         <div class="filter-bar-label">Min. level</div>
-        <select name="level" class="filter-bar-dropdown input-small" <%= loaded ? '' : 'disabled' %>></select>
+        <select name="level" class="filter-bar-dropdown input-small" disabled></select>
       </div>
 
       <div class="filter-bar-item">
-        <button class="filter-bar-btn show-logs-btn btn">Show</button>
+        <button class="filter-bar-btn show-logs-btn btn disabled">Show</button>
       </div>
     </div>
   </div>
@@ -44,7 +42,7 @@
   </div>
 
   <div class="node-sources-error alert alert-error hide">
-    Unable to fetch node sources.
+    Unable to fetch log sources.
   </div>
 
   <div class="logs-loading row row-fluid hide">

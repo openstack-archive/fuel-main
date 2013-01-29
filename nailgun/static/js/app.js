@@ -15,6 +15,7 @@ function(models, commonViews, clusterViews, clustersViews, releaseViews, notific
             'clusters': 'listClusters',
             'cluster/:id': 'showCluster',
             'cluster/:id/:tab': 'showClusterTab',
+            'cluster/:id/:tab/*options': 'showClusterTab',
             'releases': 'listReleases',
             'notifications': 'showNotifications',
             '*default': 'listClusters'
@@ -42,16 +43,15 @@ function(models, commonViews, clusterViews, clustersViews, releaseViews, notific
         showCluster: function(id) {
             this.navigate('#cluster/' + id + '/nodes', {trigger: true, replace: true});
         },
-        showClusterTab: function(id, activeTab) {
+        showClusterTab: function(id, activeTab, tabOptions) {
             if (!_.contains(clusterViews.ClusterPage.prototype.tabs, activeTab)) {
                 this.showCluster(id);
                 return;
             }
 
             var cluster;
-            var tabArguments = _.tail(arguments, 2);
             var render = function() {
-                this.setPage(new clusterViews.ClusterPage({model: cluster, activeTab: activeTab, tabArguments: tabArguments}));
+                this.setPage(new clusterViews.ClusterPage({model: cluster, activeTab: activeTab, tabOptions: tabOptions}));
             };
 
             if (app.page && app.page.constructor == clusterViews.ClusterPage && app.page.model.id == id) {

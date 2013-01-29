@@ -155,7 +155,7 @@ function(models, commonViews, dialogViews, clusterPageTemplate, deploymentResult
                 'logs': views.LogsTab
             };
             if (_.has(tabs, this.activeTab)) {
-                this.tab = new tabs[this.activeTab]({model: this.model, tabArguments: this.tabArguments, page: this});
+                this.tab = new tabs[this.activeTab]({model: this.model, tabOptions: this.tabOptions, page: this});
                 this.$('#tab-' + this.activeTab).html(this.tab.render().el);
                 this.registerSubView(this.tab);
             }
@@ -983,9 +983,9 @@ function(models, commonViews, dialogViews, clusterPageTemplate, deploymentResult
         logEntryTemplate: _.template(logEntryTemplate),
         events: {
             'click .show-logs-btn:not(.disabled)': 'showLogs',
-            'change select': 'updateControlsState',
-            'change select[name=type]': 'updateSourcesByType',
-            'change select[name=node]': 'updateSourcesByNode',
+            'change select': 'updateShowButtonState',
+            'change select[name=type]': 'onTypeChange',
+            'change select[name=node]': 'onNodeChange',
             'change select[name=source]': 'updateLevels'
         },
         beforeTearDown: function() {
@@ -1004,86 +1004,86 @@ function(models, commonViews, dialogViews, clusterPageTemplate, deploymentResult
                 complete: _.bind(this.scheduleUpdate, this)
             });
         },
-        updateControlsState: function(e) {
-            var nodeSelectBoxVisible = false;
-            var showButtonEnabled = true;
+        onTypeChange: function() {
             var chosenType = this.$('select[name=type]').val();
-            if (chosenType == 'target') {
-                nodeSelectBoxVisible = true;
-            }
-            if (nodeSelectBoxVisible) {
-                var chosenNodeId = this.$('select[name=node]').val();
-                if (!chosenNodeId) {
-                    showButtonEnabled = false;
-                }
-            }
-            this.$('.log-node-filter').toggle(nodeSelectBoxVisible);
-            this.$('.show-logs-btn').toggleClass('disabled', !showButtonEnabled);
+            this.$('.log-node-filter').toggle(chosenType == 'remote');
+            this.fetchSources(chosenType);
         },
-        updateSourcesByType: function() {
-            var chosenType = this.$('select[name=type]').val();
-            if (chosenType == 'nailgun') {
-                var input = this.$('select[name=source]');
-                input.html('').attr('disabled', false);
-                this.sources.each(function(source) {
-                    if (!source.get('remote')) {
-                        input.append($('<option/>', {value: source.id, text: source.get('name')}));
-                    }
-                });
-                this.updateLevels();
-            } else {
-                this.updateSourcesByNode();
-            }
+        onNodeChange: function() {
+            this.fetchSources('remote');
         },
-        updateSourcesByNode: function() {
-            var chosenNodeId = this.$('select[name=node]').val();
+        fetchSources: function(type) {
             var input = this.$('select[name=source]');
             this.$('select[name=source], select[name=level]').html('').attr('disabled', true);
-            (new models.LogSources()).fetch({
-                url: '/api/logs/sources/nodes/' + chosenNodeId,
-                success: _.bind(function(sources) {
-                    if (sources.length) {
-                        input.attr('disabled', false);
-
-                        var groups = [''], sourcesByGroup = {'': []};
-                        sources.each(function(source) {
-                            var group = source.get('group') || '';
-                            if (!_.has(sourcesByGroup, group)) {
-                                sourcesByGroup[group] = [];
-                                groups.push(group);
-                            }
-                            sourcesByGroup[group].push(source);
-                        });
-                        _.each(groups, function(group) {
-                            if (sourcesByGroup[group].length) {
-                                var el = group ? $('<optgroup/>', {label: group}).appendTo(input) : input;
-                                _.each(sourcesByGroup[group], function(source) {
-                                    el.append($('<option/>', {value: source.id, text: source.get('name')}));
-                                });
-                            }
-                        });
-
-                        this.updateLevels();
-                    } else {
-                        this.$('.show-logs-btn').addClass('disabled');
-                    }
-                }, this),
-                error: _.bind(function() {
-                    this.$('.node-sources-error').show();
-                    this.$('.show-logs-btn').addClass('disabled');
-                }, this)
+            this.updateShowButtonState();
+            this.sources = new models.LogSources();
+            var fetchOptions = {};
+            if (type == 'remote') {
+                fetchOptions.url = '/api/logs/sources/nodes/' + this.$('select[name=node]').val();
+            }
+            this.sources.deferred = this.sources.fetch(fetchOptions);
+            this.sources.deferred.done(_.bind(type == 'local' ? this.updateLocalSources : this.updateRemoteSources, this));
+            this.sources.deferred.done(_.bind(function() {
+                if (this.sources.length) {
+                    input.attr('disabled', false);
+                    this.updateShowButtonState();
+                    this.updateLevels();
+                }
+            }, this));
+            this.sources.deferred.fail(_.bind(function() {
+                this.$('.node-sources-error').show();
+            }, this));
+            return this.sources.deferred;
+        },
+        updateSources: function() {
+            var chosenType = this.$('select[name=type]').val();
+            if (chosenType == 'local') {
+                this.updateLocalSources();
+            } else {
+                this.updateRemoteSources();
+            }
+        },
+        updateLocalSources: function() {
+            var input = this.$('select[name=source]');
+            this.sources.each(function(source) {
+                if (!source.get('remote')) {
+                    input.append($('<option/>', {value: source.id, text: source.get('name')}));
+                }
+            });
+        },
+        updateRemoteSources: function() {
+            var input = this.$('select[name=source]');
+            var groups = [''], sourcesByGroup = {'': []};
+            this.sources.each(function(source) {
+                var group = source.get('group') || '';
+                if (!_.has(sourcesByGroup, group)) {
+                    sourcesByGroup[group] = [];
+                    groups.push(group);
+                }
+                sourcesByGroup[group].push(source);
+            });
+            _.each(groups, function(group) {
+                if (sourcesByGroup[group].length) {
+                    var el = group ? $('<optgroup/>', {label: group}).appendTo(input) : input;
+                    _.each(sourcesByGroup[group], function(source) {
+                        el.append($('<option/>', {value: source.id, text: source.get('name')}));
+                    });
+                }
             });
         },
         updateLevels: function() {
             var input = this.$('select[name=level]');
-            input.html('').attr('disabled', false);
             var chosenSourceId = this.$('select[name=source]').val();
             if (chosenSourceId) {
+                input.html('').attr('disabled', false);
                 var source = this.sources.get(chosenSourceId);
                 _.each(source.get('levels'), function(level) {
                     input.append($('<option/>').text(level));
                 }, this);
             }
+        },
+        updateShowButtonState: function() {
+            this.$('.show-logs-btn').toggleClass('disabled', !this.$('select[name=source]').val());
         },
         fetchLogs: function(callbacks) {
             var options = {
@@ -1104,14 +1104,18 @@ function(models, commonViews, dialogViews, clusterPageTemplate, deploymentResult
                 clearTimeout(this.timeout);
             }
             this.from = 0;
+
             this.chosenType = this.$('select[name=type]').val();
             this.chosenNodeId = this.$('select[name=node]').val();
             this.chosenSourceId = this.$('select[name=source]').val();
             this.chosenLevel = this.$('select[name=level]').val();
+            app.navigate('#cluster/' + this.model.id + '/logs/' + this.serializeOptions(this.getOptions()), {trigger: false, replace: true});
+
             this.$('.table-logs, .logs-fetch-error, .node-sources-error').hide();
             this.$('.logs-loading').show();
             this.$('select').attr('disabled', true);
             this.$('.show-logs-btn').addClass('disabled');
+
             this.fetchLogs({
                 complete: _.bind(function() {
                     this.$('.logs-loading').hide();
@@ -1129,7 +1133,7 @@ function(models, commonViews, dialogViews, clusterPageTemplate, deploymentResult
                 }, this),
                 error: _.bind(function() {
                     this.$('.logs-fetch-error').show();
-                    this.$('.show-logs-btn').attr('disabled', false);
+                    this.$('.show-logs-btn').removeClass('disabled');
                 }, this)
             });
         },
@@ -1149,36 +1153,78 @@ function(models, commonViews, dialogViews, clusterPageTemplate, deploymentResult
                 }
             }
         },
-        initialize: function(options) {
-            _.defaults(this, options);
-            this.from = 0;
-
-            if (!this.model.get('log_sources')) {
-                this.sources = new models.LogSources();
-                this.sources.deferred = this.sources.fetch();
-                this.sources.deferred.done(_.bind(this.render, this));
-                this.model.set({'log_sources': this.sources}, {silent: true});
-            } else {
-                this.sources = this.model.get('log_sources');
+        serializeOptions: function(options) {
+            return _.map(options, function(value, key) {
+                return key + ':' + value;
+            }).join(',');
+        },
+        deserializeOptions: function(serializedOptions) {
+            return _.object(_.map(serializedOptions.split(','), function(option) {
+                return option.split(':');
+            }));
+        },
+        getOptions: function() {
+            var options = {};
+            options.type = this.chosenType;
+            if (options.type == 'remote') {
+                options.node = this.chosenNodeId;
             }
-
-            this.types = [['nailgun', 'Admin node']];
+            options.source = this.chosenSourceId;
+            options.level = this.chosenLevel;
+            return options;
+        },
+        setOptions: function(options) {
+            _.each(['type', 'node', 'source', 'level'], function(option) {
+                this.$('select[name=' + option + ']').val(options[option]).trigger('change');
+            }, this);
+        },
+        initialize: function(params) {
+            _.defaults(this, params);
+            this.from = 0;
+            this.sources = new models.LogSources();
+            this.types = [['local', 'Admin node']];
             if (this.model.get('nodes').length) {
-                this.types.push(['target', 'Other servers']);
+                this.types.push(['remote', 'Other servers']);
             }
         },
         render: function() {
             this.$el.html(this.template({
                 cluster: this.model,
-                sources: this.sources,
                 types: this.types,
                 chosenType: this.chosenType,
                 chosenNodeId: this.chosenNodeId,
                 chosenSourceId: this.chosenSourceId
             }));
-            this.updateControlsState();
-            this.updateSourcesByType();
-            this.updateLevels();
+            if (!this.sourcesFetched) {
+                this.sourcesFetched = true;
+                // this part is run on first rendering only
+                var options = {};
+                if (this.tabOptions) {
+                    options = this.deserializeOptions(this.tabOptions);
+                }
+                _.each(['type', 'node'], function(option) {
+                    if (options[option]) {
+                        this.$('select[name=' + option + ']').val(options[option]);
+                    }
+                }, this);
+                this.$('select[name=type]').trigger('change'); // starts to fetch sources
+                if (options.source) {
+                    this.sources.deferred.done(_.bind(function() {
+                        this.$('select[name=source]').val(options.source).trigger('change');
+                        if (options.level) {
+                            this.$('select[name=level]').val(options.level);
+                        }
+                    }, this));
+                }
+                if (_.keys(options).length) {
+                    this.sources.deferred.done(_.bind(function() {
+                        this.$('.show-logs-btn:not(.disabled)').click();
+                    }, this));
+                }
+            } else {
+                this.updateSources();
+                this.updateShowButtonState();
+            }
             return this;
         }
     });
