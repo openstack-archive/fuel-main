@@ -4,6 +4,7 @@ import re
 import uuid
 import string
 import math
+import json
 from random import choice
 from copy import deepcopy
 
@@ -213,7 +214,7 @@ class Node(Base, BasicValidator):
 
     @property
     def info(self):
-        return self.meta
+        return self.meta or {}
 
     @classmethod
     def validate(cls, data):

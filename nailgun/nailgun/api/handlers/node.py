@@ -85,8 +85,10 @@ class NodeCollectionHandler(JSONHandler):
         node.name = "Untitled (%s)" % data['mac'][-5:]
         orm().add(node)
         orm().commit()
-        ram = round(int(node.info.get('Memory')) / 1073741824.0, 1) or "Unknown"
-        cores = node.info.get('Cpu').get('Total') or "Unknown"
+        ram = "Unknown"
+        if 'Memory' in node.info and node.info['Memory']:
+            ram = round(int(node.info['Memory']) / 1073741824, 1)
+        cores = node.info.get('Cpu', {}).get('Total', "Unknown")
         notifier.notify("discover",
                         "New node with %s CPU core(s) "
                         "and %s  memory is discovered" %

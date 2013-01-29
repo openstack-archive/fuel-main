@@ -68,12 +68,39 @@ class BaseHandlers(TestCase):
                     upload_fixture(fixture)
 
     def default_metadata(self):
-        metadata = {'block_device':
-                    ['sda', {'size': '16777216'},
-                     'ram0', {'size': '131072'}],
-                    'interfaces': 'd',
-                    'cpu': {'real': 2, 'total': 4},
-                    'memory': {'total': '1594988kB'}}
+        metadata = {
+                "Interfaces": [
+                    {
+                        "Mac": "C0:8D:DF:52:76:F1",
+                        "Name": "eth0"
+                    }
+                ],
+                "Cpu": {
+                    "Real": 1,
+                    "Spec": [
+                        {
+                            "Mhz": "1200",
+                            "Model": "Intel(R) Core(TM)2 Duo CPU T6570 @ 2.10GHz"
+                        }
+                    ],
+                    "Total": 1
+                },
+                "Disks": [
+                    {
+                        "Size": "320072933376",
+                        "Model": "TOSHIBA MK3259GS",
+                        "Name": "sda"
+                    }
+                ],
+                "Memory": "8589934592",
+                "System": {
+                    "Product": "QWERTY",
+                    "Family": "Not Specified",
+                    "Manufacturer": "Dell",
+                    "Serial": "123456",
+                    "Version": "Not Specified"
+                }
+            }
         return metadata
 
     def _generate_random_mac(self):

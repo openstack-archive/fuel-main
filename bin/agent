@@ -179,12 +179,13 @@ class NodeAgent
     end
     @os[:block_device].each do |bname, binfo|
       if bname =~ /^(sd|hd|vd)./
+        block_size = `cat /sys/block/#{bname}/queue/logical_block_size`
         detailed_meta[:Disks] << {
           :Name => bname,
           :Model => binfo[:model],
           # 512 bytes is the size of one sector by default
           # 1000000000 bytes is 1 Gb
-          :Size => (binfo[:size].to_i * 512).to_s,
+          :Size => (binfo[:size].to_i * block_size.to_i).to_s,
         }
       end
     end
