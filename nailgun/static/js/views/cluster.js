@@ -631,29 +631,62 @@ function(models, commonViews, dialogViews, clusterPageTemplate, deploymentResult
         template: _.template(networkTabTemplate),
         viewModeTemplate: _.template(networkTabViewModeTemplate),
         events: {
-            'keydown .row input': 'enableApplyButton',
-            'change .row select': 'enableApplyButton',
+            'keydown .row input': 'makeChanges',
+            'change .row select': 'makeChanges',
             'click .apply-btn:not([disabled])': 'apply',
-            'click .nav a': 'changeMode',
-            'click .net-manager button:not(.active)': 'changeManagerSettings',
+            'click .nav a:not(.active)': 'changeMode',
+            'click .net-manager button:not(.active)': 'changeManager',
             'keyup .range': 'displayRange'
         },
-        enableApplyButton: function(e) {
+        makeChanges: function(e) {
             if (e) {
-                this.$(e.target).parents('.control-group').find('.help-inline').text('');
-                this.$(e.target).parents('.control-group').removeClass('error');
+                this.$(e.target).parents('.control-group').removeClass('error').find('.help-inline').text('');
+            } else {
+                this.$('.control-group').removeClass('error').find('.help-inline').text('');
             }
+            this.networks.hasChanges = true;
             this.$('.apply-btn').attr('disabled', false);
             var task = this.model.task('verify_networks');
-            if (task && task.get('status') != 'running') {
+            if (task) {
                 this.model.get('tasks').remove(task);
-                task.destroy({complete: _.bind(this.renderVerificationControls, this)});
+                task.destroy();
             }
+        },
+        calculateVlanEnd: function() {
+            if (this.model.get('net_manager') == 'VlanManager') {
+                var amount = parseInt(this.$('.fixed-row .network-amount input').val(), 10);
+                var vlanStart = parseInt(this.$('.fixed-row .network-vlan input:first').val(), 10);
+                var vlanEnd =  vlanStart + amount - 1;
+                if (vlanEnd > 4094) {
+                    vlanEnd = 4094;
+                }
+                this.$('input.network-vlan-end').val(vlanEnd);
+            }
+        },
+        displayRange: function() {
+            if (this.model.get('net_manager') == 'VlanManager' && parseInt(this.$('.fixed-row .network-amount input').val(), 10) > 1 && parseInt(this.$('.fixed-row .network-vlan input:first').val(), 10)) {
+                this.$('.fixed-header .vlan').text('VLAN ID range');
+                this.$('.fixed-row .network-vlan input:first').addClass('range');
+                this.calculateVlanEnd();
+                this.$('.network-vlan-end').show();
+            } else {
+                this.$('.fixed-header .vlan').text('VLAN ID');
+                this.$('.fixed-row .network-vlan input:first').removeClass('range');
+                this.$('.network-vlan-end').hide();
+            }
+        },
+        changeManager: function(e) {
+            this.model.set({net_manager: this.$(e.target).data('manager')}, {silent: true});
+            this.makeChanges();
+            this.$('.fixed-row .network-amount, .fixed-header .amount, .fixed-row .network-size, .fixed-header .size').toggle();
+            this.displayRange();
+        },
+        changeMode: function(e) {
+            e.preventDefault();
         },
         apply: function() {
             var valid = true;
-            this.$('.help-inline').text('');
-            this.$('.control-group').removeClass('error');
+            this.$('.control-group').removeClass('error').find('.help-inline').text('');
             this.networks.each(function(network) {
                 var row = this.$('.control-group[data-network-name=' + network.get('name') + ']');
                 network.on('error', function(model, errors) {
@@ -661,92 +694,29 @@ function(models, commonViews, dialogViews, clusterPageTemplate, deploymentResult
                     $('.network-error .help-inline', row).text(errors.cidr || errors.vlan_start || errors.amount);
                     row.addClass('error');
                 }, this);
-                var amount = parseInt($('.network-amount input:first', row).val(), 10);
-                if (this.$('.net-manager .active').data('manager') == 'FlatDHCPManager') {
-                    amount = 1;
-                }
                 network.set({
                     cidr: $('.network-cidr input', row).val(),
                     vlan_start: parseInt($('.network-vlan input:first', row).val(), 10),
-                    amount: amount,
+                    amount: this.model.get('net_manager') == 'FlatDHCPManager' ? 1 : parseInt($('.network-amount input', row).val(), 10),
                     network_size: parseInt($('.network-size select', row).val(), 10)
                 });
             }, this);
             if (valid) {
-                // FIXME: two requests every time is not a true way
-                this.model.update({net_manager: this.$('.net-manager button.active').data('manager')});
                 this.$('.apply-btn').attr('disabled', true);
+                this.model.update({net_manager: this.model.get('net_manager')});
                 Backbone.sync('update', this.networks, {
                     error: _.bind(function() {
                         this.$('.apply-btn').attr('disabled', false);
                         var dialog = new dialogViews.SimpleMessage({error: true, title: 'Networks'});
                         this.registerSubView(dialog);
                         dialog.render();
-                    }, this),
-                    success: _.bind(function(data) {
-                        this.model.fetch();
                     }, this)
                 });
             }
         },
-        changeMode: function(e) {
-            e.preventDefault();
-            /*
-            var targetLi = $(e.currentTarget).parent();
-            if (!targetLi.hasClass('active')) {
-                if (targetLi.hasClass('network-view')) {
-                    this.$('.nav li').toggleClass('active');
-                    this.$('.network-tab-content').html(this.viewModeTemplate({cluster: this.model, networks: this.networks}));
-                } else {
-                    this.render();
-                }
-            }
-            */
-        },
-        calculateVlanEnd: function() {
-            var amount = parseInt(this.$('.fixed-row .network-amount input').val(), 10);
-            var vlanStart = parseInt(this.$('.fixed-row .network-vlan input:first').val(), 10);
-            var vlanEnd =  vlanStart + amount - 1;
-            if (vlanEnd > 4094) {
-                vlanEnd = 4094;
-            }
-            this.$('input.network-vlan-end').val(vlanEnd);
-        },
-        changeManagerSettings: function(e) {
-            this.calculateVlanEnd();
-            this.$('.help-inline').text('');
-            this.$('.control-group').removeClass('error');
-            this.enableApplyButton();
-            this.$('.fixed-row .network-amount, .fixed-header .amount, .fixed-row .network-size, .fixed-header .size').toggle();
-            if (this.$('.fixed-row .network-amount input').val() > 1) {
-                this.$('.network-vlan-end').toggle();
-            }
-            if (this.$(e.target).data('manager') == 'VlanManager' && this.$('.fixed-row .network-amount input').val() > 1) {
-                this.$('.fixed-header .vlan').text('VLAN ID range');
-                this.$('.fixed-row .network-vlan input:first').addClass('range');
-            } else {
-                this.$('.fixed-row .network-vlan input:first').removeClass('range');
-                this.$('.network-vlan-end').hide();
-                this.$('.fixed-header .vlan').text('VLAN ID');
-            }
-        },
-        displayRange: function() {
-            this.calculateVlanEnd();
-            var amount = parseInt(this.$('.fixed-row .network-amount input').val(), 10);
-            var vlanStart = parseInt(this.$('.fixed-row .network-vlan input:first').val(), 10);
-            if (amount > 1 && vlanStart) {
-                this.$('.fixed-header .vlan').text('VLAN ID range');
-                this.$('.network-vlan-end').show();
-                this.$('.fixed-row .network-vlan input:first').addClass('range');
-            } else {
-                this.$('.fixed-header .vlan').text('VLAN ID');
-                this.$('.network-vlan-end').hide();
-            }
-        },
         bindTaskEvents: function() {
-            var task = this.model.task('deploy', 'running');
-            if (task) {
-                task.bind('change:status', this.render, this);
+            if (this.model.task('deploy', 'running') || this.model.task('verify_networks', 'running')) {
+                this.model.get('tasks').bind('change:status', this.render, this);
             }
         },
         bindEvents: function() {
@@ -755,7 +725,8 @@ function(models, commonViews, dialogViews, clusterPageTemplate, deploymentResult
         },
         initialize: function(options) {
             _.defaults(this, options);
-            this.model.get('tasks').bind('remove reset', this.renderVerificationControls, this);
+            this.model.get('tasks').bind('remove', this.renderVerificationControls, this);
+            this.model.get('tasks').bind('reset', this.render, this);
             this.model.bind('change:tasks', this.bindEvents, this);
             this.bindEvents();
             if (!this.model.get('networks')) {
@@ -820,7 +791,8 @@ function(models, commonViews, dialogViews, clusterPageTemplate, deploymentResult
                 network.set({
                     cidr: $('.network-cidr input', row).val(),
                     vlan_start: parseInt($('.network-vlan input:first', row).val(), 10),
-                    amount: parseInt($('.network-amount input:first', row).val(), 10)
+                    amount: parseInt($('.network-amount input:first', row).val(), 10),
+                    network_size: parseInt($('.network-size select', row).val(), 10)
                 });
             }, this);
             if (valid) {

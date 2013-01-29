@@ -204,7 +204,8 @@ define(function() {
     models.Networks = Backbone.Collection.extend({
         constructorName: 'Networks',
         model: models.Network,
-        url: '/api/networks'
+        url: '/api/networks',
+        hasChanges: false
     });
 
     models.LogSource = Backbone.Model.extend({

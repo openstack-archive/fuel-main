@@ -2508,12 +2508,11 @@ h6.page-title {
 .deploying-progress-text-box {
   display: block;
   color: #ffffff;
-  height: 40px;
   font-size: 11px;
   text-align: left;
   -webkit-font-smoothing: antialiased;
   text-shadow: 0 0 0 rgba(0, 0, 0, 0);
-  margin: 9px 0px 0px 12px;
+  margin-left: 12px;
 }
 
 .deploying-progress-status-box {
@@ -2558,8 +2557,9 @@ h6.page-title {
 
 .page-control-button-placeholder .deploying-progress-text-box {
   color: #444;
-  padding-top: 2px;
+  padding-top: 4px;
   font-weight: bold;
+  float: left;
 }
 
 .percentage {
@@ -2569,9 +2569,8 @@ h6.page-title {
 }
 
 .deploying-progress-bar-box {
-  max-width: 100px;
   float: left;
-  margin: 10px 0px 8px 0px;
+  margin-bottom: 8px;
 }
 
 .deployment-control-item-box {
