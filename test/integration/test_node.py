@@ -388,7 +388,8 @@ class TestNode(Base):
                 time.sleep(5)
             else:
                 raise Exception("Task %s failed with status %r and msg: %s!" %
-                    (task_desc, task['status'], task.get('message')))
+                                (task_desc, task['status'],
+                                 task.get('message')))
         return task
 
     def _upload_sample_release(self):
