@@ -703,7 +703,7 @@ function(models, commonViews, dialogViews, clusterPageTemplate, deploymentResult
             }, this);
             if (valid) {
                 this.$('.apply-btn').attr('disabled', true);
-                this.model.update({net_manager: this.model.get('net_manager')});
+                //this.model.update({net_manager: this.model.get('net_manager')});
                 Backbone.sync('update', this.networks, {
                     error: _.bind(function() {
                         this.$('.apply-btn').attr('disabled', false);
@@ -819,14 +819,18 @@ function(models, commonViews, dialogViews, clusterPageTemplate, deploymentResult
                 clearTimeout(this.timeout);
             }
         },
+        bindTaskEvents: function () {
+            var task = this.model.task('verify_networks');
+            task.bind('change:status', this.render, this);
+            task.bind('change:progress', this.updateProgress, this);
+        },
         initialize: function(options) {
             _.defaults(this, options);
-            var task = this.model.task('verify_networks');
-            if (task) {
-                task.bind('change:status', this.render, this);
-                task.bind('change:progress', this.updateProgress, this);
+            if (this.model.task('verify_networks')) {
+                this.bindTaskEvents();
                 this.update(true);
             }
+            this.model.bind('change', this.bindTaskEvents, this);
         },
         render: function() {
             this.$el.html(this.template({cluster: this.model, networks: this.networks}));
