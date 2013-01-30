@@ -131,7 +131,7 @@ LOGS:
     fake: True
     path: '/var/tmp/fake-target-mcollective.log'
 # Target node installation logs.
-  - id: 'puppet-agent.log'
+  - id: 'install/puppet'
     name: "puppet"
     <<: *remote_log_type
     <<: *remote_syslog_log_format

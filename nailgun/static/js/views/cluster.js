@@ -591,6 +591,19 @@ function(models, commonViews, dialogViews, clusterPageTemplate, deploymentResult
                 this.$('.bar').css('width', (progress > 3 ? progress : 3) + '%');
             }
         },
+        getLogsLink: function() {
+            var status = this.model.get('status');
+            var error = this.model.get('error_type');
+            var options = {type: 'remote', node: this.model.id};
+            if (status == 'discover') {
+                options.source = 'bootstrap/messages';
+            } else if (status == 'provisioning' || status == 'provisioned' || status == 'error' && error == 'provision') {
+                options.source = 'install/anaconda';
+            } else if (status == 'deploying' || status == 'ready' || status == 'error' && error == 'deploy') {
+                options.source = 'install/puppet';
+            }
+            return '#cluster/' + app.page.model.id + '/logs/' + views.LogsTab.prototype.serializeOptions(options);
+        },
         beforeTearDown: function() {
             $('html').off(this.eventNamespace);
         },
@@ -606,7 +619,8 @@ function(models, commonViews, dialogViews, clusterPageTemplate, deploymentResult
                 renaming: this.renaming,
                 renameable: this.renameable,
                 selectableForAddition: this.selectableForAddition,
-                selectableForDeletion: this.selectableForDeletion
+                selectableForDeletion: this.selectableForDeletion,
+                logsLink: this.getLogsLink()
             }));
             this.updateProgress();
             return this;
