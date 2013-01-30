@@ -32,7 +32,6 @@ class puppetmaster::packages(
   puppetmaster_safe_package{ "puppetdb-terminus": }
 
 
-#  Puppetmaster_safe_package<| title == "mysql-devel" |> ->
   Puppetmaster_safe_package<| title == "ruby-devel" |> ->
   Puppetmaster_safe_package<| title == "rubygems" |> ->
   Puppetmaster_safe_package<| title == "make" |> ->
@@ -56,10 +55,4 @@ class puppetmaster::packages(
     ensure => "3.0.10",
     source => $gem_source,
   }
-
-#  package { "mysql":
-#    provider => "gem",
-#    ensure => "2.8.1",
-#    source => $gem_source,
-#  }
 }
