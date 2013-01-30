@@ -1130,7 +1130,10 @@ function(models, commonViews, dialogViews, clusterPageTemplate, deploymentResult
             this.chosenNodeId = this.$('select[name=node]').val();
             this.chosenSourceId = this.$('select[name=source]').val();
             this.chosenLevel = this.$('select[name=level]').val();
-            app.navigate('#cluster/' + this.model.id + '/logs/' + this.serializeOptions(this.getOptions()), {trigger: false, replace: true});
+
+            var options = this.getOptions();
+            this.model.set({'log_options': options}, {silent: true});
+            app.navigate('#cluster/' + this.model.id + '/logs/' + this.serializeOptions(options), {trigger: false, replace: true});
 
             this.$('.table-logs, .logs-fetch-error, .node-sources-error').hide();
             this.$('.logs-loading').show();
@@ -1217,6 +1220,8 @@ function(models, commonViews, dialogViews, clusterPageTemplate, deploymentResult
                 var options = {};
                 if (this.tabOptions) {
                     options = this.deserializeOptions(this.tabOptions);
+                } else if (this.model.get('log_options')) {
+                    options = this.model.get('log_options');
                 }
                 _.each(['type', 'node'], function(option) {
                     if (options[option]) {
