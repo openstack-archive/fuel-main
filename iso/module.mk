@@ -106,7 +106,7 @@ $(ISOROOT)/bootstrap_admin_node.conf: iso/bootstrap_admin_node.conf ; $(ACTION.C
 $(ISOROOT)/.discinfo: iso/.discinfo ; $(ACTION.COPY)
 $(ISOROOT)/.treeinfo: iso/.treeinfo ; $(ACTION.COPY)
 $(ISOROOT)/version.yaml:
-	echo "COMMIT_SHA: `git rev-parse --verify HEAD` > $@
+	echo "COMMIT_SHA: `git rev-parse --verify HEAD`" > $@
 
 $/isoroot.done: \
 		$/isoroot-bootstrap.done \
