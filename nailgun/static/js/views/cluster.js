@@ -597,9 +597,9 @@ function(models, commonViews, dialogViews, clusterPageTemplate, deploymentResult
             var options = {type: 'remote', node: this.model.id};
             if (status == 'discover') {
                 options.source = 'bootstrap/messages';
-            } else if (status == 'provisioning' || status == 'provisioned' || status == 'error' && error == 'provision') {
+            } else if (status == 'provisioning' || status == 'provisioned' || (status == 'error' && error == 'provision')) {
                 options.source = 'install/anaconda';
-            } else if (status == 'deploying' || status == 'ready' || status == 'error' && error == 'deploy') {
+            } else if (status == 'deploying' || status == 'ready' || (status == 'error' && error == 'deploy')) {
                 options.source = 'install/puppet';
             }
             return '#cluster/' + app.page.model.id + '/logs/' + views.LogsTab.prototype.serializeOptions(options);
