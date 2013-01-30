@@ -1,28 +1,62 @@
 <% if (networks.deferred.state() != 'pending') { %>
-  <% var task = cluster.task('verify_networks') %>
-  <% if (task && task.get('status') == 'running') { %>
-    <div class="page-control-button-placeholder">
-      <div class="deploying-progress-bar-box">
-        <div class="progress progress-success progress-verify-networks active">
-          <div class="bar"></div>
+  <div class="page-control-box">
+    <div class="verification-box">
+
+      <% var task = cluster.task('verify_networks') %>
+      <% var connectStatus, connectStatusLast %>
+      <% if (!task || (task && task.get('status') == 'ready')) { %>
+        <% connectStatus = 'stop'; connectStatusLast = 'stop'; %>
+      <% } else if (task && task.get('status') == 'running') { %>
+        <% connectStatus = 'success'; connectStatusLast = 'success'; %>
+      <% } else if (task && task.get('status') == 'error') { %>
+        <% if (!task.get('result').length) connectStatus = 'error'; else connectStatus = 'success'; %>
+        <% connectStatusLast = 'error' %>
+      <% } %>
+      <div class="verification-network-placeholder">
+        <div class="router-box">
+          <div class="verification-router"></div>
+        </div>
+        <div class="animation-box">
+          <div class="connect-1-<%= connectStatus %>"></div>
+          <div class="connect-2-<%= connectStatus %>"></div>
+          <div class="connect-3-<%= connectStatusLast %>"></div>
+        </div>
+        <div class="nodex-box">
+          <div class="verification-node-1"></div>
+          <div class="verification-node-2"></div>
+          <div class="verification-node-3"></div>
         </div>
       </div>
-      <div class="deploying-progress-text-box percentage">0%</div>
-    </div>
-  <% } else { %>
-    <% if (task && task.get('status') == 'ready') { %>
-      <div class="page-control-success-placeholder">
-        <div class="msg-ok"></i>Verification Succeeded</div>
+
+      <div class="verification-text-placeholder">
+          <li><strong>Network Verification is done in 3 steps:</strong></li>
+          <li>1. Every node starts listening for test frames</li>
+          <li>2. On every node via eth0 802.1Q tagget UDP frames are seat</li>
+          <li>3. Listeners register test frames from other nodes</li>
       </div>
-    <% } else if (task && task.get('status') == 'error') { %>
-      <div class="page-control-error-placeholder">
-         <%- task.get('message') || 'Verification Failed' %>
-      </div>
-    <% } %>
-    <div class="page-control-button-placeholder">
-      <button class="btn verify-networks-btn" <%= cluster.task('deploy', 'running') ? 'disabled' : '' %>>Verify Settings</button>
+
+      <% if (task && task.get('status') == 'ready') { %>
+        <div class="page-control-success-placeholder">Verification Succeeded</div>
+      <% } else if (task && task.get('status') == 'error') { %>
+        <div class="page-control-error-placeholder">
+          Verification Failed: <%- task.get('message') %>
+        </div>
+        <% if (task.get('result').length) { %>
+          <div class="verification-result-table">
+            <table class="table table-condensed">
+              <thead><tr><th>Node Name</th><th>Node MAC address</th><th>Expected, but not received Vlan ID</th></tr></thead>
+              <tbody>
+                <% _.each(task.get('result').nodes, function(node) { %>
+                  <tr><td><%- node.get('name') %></td><td><%- node.get('mac') %></td><td><%-node.get('vlans') %></td></tr>
+                <% }) %>
+              </tbody>
+            </table>
+          </div>
+        <% } %>
+      <% } %>
+
     </div>
-  <% } %>
+  </div>
 <% } else { %>
   &nbsp;
 <% } %>

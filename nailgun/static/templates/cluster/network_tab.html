@@ -14,23 +14,16 @@
     <% var disabled = cluster.task('deploy', 'running') || cluster.task('verify_networks', 'running') ? 'disabled' : '' %>
     <fieldset>
 
-      <div class="form-inline">
-        <label class="radio"><input type="radio" name="optionsRadios" id="optionsRadios1" value="option1" checked>FlatDHCP Manager</label>
+      <% var net_manager = cluster.get('net_manager') %>
+      <div class="form-inline net-manager">
+        <label class="radio">
+          <input type="radio" name="net-manager" id="optionsRadios1" value="FlatDHCPManager" <%= net_manager == 'FlatDHCPManager' ? 'checked' : '' %>>FlatDHCP Manager
+        </label>
         <div class="spacer"></div>
-        <label class="radio"><input type="radio" name="optionsRadios" id="optionsRadios2" value="option2">VLAN Manager</label>
+        <label class="radio">
+          <input type="radio" name="net-manager" id="optionsRadios2" value="VlanManager" <%= net_manager == 'VlanManager' ? 'checked' : '' %>>VLAN Manager
+        </label>
       </div>
-
-      <!--
-      <div class="btn-group net-manager" data-toggle="buttons-radio">
-        <% var managers = {'FlatDHCPManager': 'FlatDHCP Manager', 'VlanManager': 'VLAN Manager'} %>
-        <% var net_manager = cluster.get('net_manager') %>
-        <% _.each(_.keys(managers), function(manager) { %>
-
-          <button type="button" data-manager="<%= manager %>" class="btn btn-primary <%= net_manager == manager ? 'active' : '' %>" <%= disabled %>><%= managers[manager] %></button>
-        
-        <% }) %>
-      </div>
-      -->
 
       <% if (networks.deferred.state() != 'pending') { %>
         <form class="form-inline networks-table" onsubmit="return false">
@@ -125,103 +118,15 @@
     </fieldset>
   </div>
 
-  <!-- network scheme -->
-  <div class="row">
-    <div class="page-control-box">
-      <div class="verification-box">
-
-        <div class="verification-network-placeholder">
-         
-            <div class="router-box">
-              <div class="verification-router"></div>
-            </div>
-
-            <div class="animation-box">
-               <div class="connect-1-success"></div>
-               <div class="connect-2-success"></div>
-               <div class="connect-3-error"></div>
-            </div>
-
-            <div  class="nodex-box">
-              <div  class="verification-node-1"></div>
-              <div  class="verification-node-2"></div>
-              <div  class="verification-node-3"></div>
-            </div>
-
-        </div>
-
-
-        <div class="verification-text-placeholder">
-            <li><strong>Network Verification is done in 3 steps:</strong></li>
-            <li>1. Every node starts listening for test frames</li>
-            <li>2. On every node via eth0 802.1Q tagget UDP frames are seat</li>
-            <li>3. Listeners register test frames from other nodes</li>
-            <div class="btn">Verify Network</div>
-        </div>
-        
-
-        <div class="verification-result-table">
-        <table class="table table-condensed">
-              <thead>
-                <tr>
-                  <th>#</th>
-                  <th>Node Name</th>
-                  <th>Node MAC address</th>
-                  <th>Expected, but not received Vlan ID</th>
-                </tr>
-              </thead>
-              <tbody>
-                <tr>
-                  <td>1</td>
-                  <td>Untitled (69:1F)</td>
-                  <td>2E:04:78:86:69:1F</td>
-                  <td>100, 102-105, 399</td>
-                </tr>
-                <tr>
-                  <td>2</td>
-                  <td>Untitled (69:1F)</td>
-                  <td>2E:04:78:86:69:1F</td>
-                  <td>100, 102-105, 399</td>
-                </tr>
-                <tr>
-                  <td>3</td>
-                  <td>Untitled (69:1F)</td>
-                  <td>2E:04:78:86:69:1F</td>
-                  <td>100, 102-105, 399</td>
-                </tr>
-                <tr>
-                  <td>4</td>
-                  <td>Untitled (69:1F)</td>
-                  <td>2E:04:78:86:69:1F</td>
-                  <td>100, 102-105, 399</td>
-                </tr>
-                <tr>
-                  <td>5</td>
-                  <td>Untitled (69:1F)</td>
-                  <td>2E:04:78:86:69:1F</td>
-                  <td>100, 102-105, 399</td>
-                </tr>
-                <tr>
-                  <td>6</td>
-                  <td>Untitled (69:1F)</td>
-                  <td>2E:04:78:86:69:1F</td>
-                  <td>100, 102-105, 399</td>
-                </tr>
-              </tbody>
-            </table>
-          </div>
-
-      </div>
-    </div>
-  </div>
-
-  <!-- page-control box -->
+  <!-- Verification control -->
+  <div class="row verification-control"></div>
+  <!-- Buttons -->
   <div class="row">
     <div class="page-control-box">
       <div class="page-control-button-placeholder">
+        <button class="btn verify-networks-btn" <%= disabled %>>Verify Networks</button>
         <button class="btn btn-success apply-btn" <%= !networks.hasChanges || disabled ? 'disabled' : '' %>>Save Settings</button>
       </div>
-      <div class="verify-network"></div>
     </div>
   </div>
 </div>
