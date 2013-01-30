@@ -2,6 +2,7 @@
 
 import json
 import uuid
+import logging
 import itertools
 
 import web
@@ -162,19 +163,38 @@ class ClusterCollectionHandler(JSONHandler):
         used_vlans = [v.id for v in orm().query(Vlan).all()]
 
         for network in cluster.release.networks_metadata:
-            vlan_start = sorted(list(set(range(int(
+            free_vlans = sorted(list(set(range(int(
                 settings.VLANS_RANGE_START),
                 int(settings.VLANS_RANGE_END))) -
-                set(used_vlans)))[0]
+                set(used_vlans)))
+            if not free_vlans:
+                orm().delete(cluster)
+                orm().commit()
+                raise web.conflict("No empty VLAN numbers")
+            vlan_start = free_vlans[0]
             logger.debug("Found free vlan: %s", vlan_start)
 
             pool = settings.NETWORK_POOLS[network['access']]
             nets_free_set = netaddr.IPSet(pool) -\
                 netaddr.IPSet(settings.NET_EXCLUDE) -\
                 netaddr.IPSet(used_nets)
+            if not nets_free_set:
+                orm().delete(cluster)
+                orm().commit()
+                raise web.conflict("No free IP addresses in pool")
 
             free_cidrs = sorted(list(nets_free_set._cidrs))
-            new_net = list(free_cidrs[0].subnet(24, count=1))[0]
+            new_net = None
+            for fcidr in free_cidrs:
+                for n in fcidr.subnet(24, count=1):
+                    new_net = n
+                    break
+                if new_net:
+                    break
+            if not new_net:
+                orm().delete(cluster)
+                orm().commit()
+                raise web.conflict("Cannot find suitable CIDR")
 
             nw_db = NetworkGroup(
                 release=cluster.release.id,

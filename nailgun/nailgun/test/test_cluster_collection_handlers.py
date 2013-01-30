@@ -132,6 +132,20 @@ class TestHandlers(BaseHandlers):
         ]
         self.assertEquals(expected, obtained)
 
+    def test_network_validation_on_cluster_creation(self):
+        cluster = self.create_cluster_api()
+        nets = self.generate_ui_networks(cluster["id"])
+        nets[-1]["network_size"] = 16
+        nets[-1]["amount"] = 3
+        resp = self.app.put(
+            reverse('NetworkCollectionHandler',
+                    kwargs={'cluster_id': cluster['id']}),
+            json.dumps(nets),
+            headers=self.default_headers
+        )
+        self.assertEquals(200, resp.status)
+        cluster2 = self.create_cluster_api()
+
     @patch('nailgun.rpc.cast')
     def test_verify_networks(self, mocked_rpc):
         cluster = self.create_cluster_api()
