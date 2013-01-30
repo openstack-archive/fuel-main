@@ -93,23 +93,6 @@ class TestHandlers(BaseHandlers):
         self.assertEquals(nets_len, len(nets_received))
         self.assertEquals(cluster1['id'], nets_received[0]['cluster_id'])
 
-    def test_networks_squeezed_cidr(self):
-        cluster = self.create_cluster_api()
-        net1 = self.db.query(NetworkGroup).first()
-        new_nets = [{
-            'id': net1.id,
-            'cidr': '10.0.0.0/8',
-            'amount': 2,
-            'network_size': 128}]
-        resp = self.app.put(
-            reverse('NetworkCollectionHandler'),
-            json.dumps(new_nets),
-            headers=self.default_headers
-        )
-        self.assertEquals(200, resp.status)
-        nets_received = json.loads(resp.body)
-        self.assertEquals(nets_received[0]['cidr'], '10.0.0.0/24')
-
     def test_network_group_update_changes_network(self):
         cluster = self.create_cluster_api()
         net1 = self.db.query(NetworkGroup).first()
