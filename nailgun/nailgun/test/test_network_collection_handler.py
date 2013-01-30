@@ -4,6 +4,7 @@ import json
 from nailgun.api.models import Network, NetworkGroup
 from nailgun.test.base import BaseHandlers
 from nailgun.test.base import reverse
+from nailgun.settings import settings
 
 
 class TestHandlers(BaseHandlers):
@@ -138,3 +139,22 @@ class TestHandlers(BaseHandlers):
             expect_errors=True
         )
         self.assertEquals(400, resp.status)
+
+    def test_disallow_intersection_admin_network(self):
+        cluster = self.create_cluster_api()
+        nets = self.generate_ui_networks(cluster["id"])
+        nets[-1]["cidr"] = settings.NET_EXCLUDE[0]
+        resp = self.app.put(
+            reverse('NetworkCollectionHandler',
+                    kwargs={'cluster_id': cluster['id']}),
+            json.dumps(nets),
+            headers=self.default_headers,
+            expect_errors=True
+        )
+        self.assertEquals(400, resp.status)
+        self.assertEquals(
+            resp.body,
+            "Intersection with admin network(s) '{0}' found".format(
+                settings.NET_EXCLUDE
+            )
+        )
