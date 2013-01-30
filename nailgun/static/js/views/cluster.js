@@ -714,14 +714,12 @@ function(models, commonViews, dialogViews, clusterPageTemplate, deploymentResult
                 });
             }
         },
-        bindTaskEvents: function() {
-            if (this.model.task('deploy', 'running') || this.model.task('verify_networks', 'running')) {
-                this.model.get('tasks').bind('change:status', this.render, this);
-            }
-        },
         bindEvents: function() {
-            this.model.get('tasks').bind('reset', this.bindTaskEvents, this);
-            this.bindTaskEvents();
+            this.model.get('tasks').bind('change:status', function(task) {
+                if ((task.get('name') == 'deploy' || task.get('name') == 'verify_networks') && task.get('status') != 'running') {
+                    this.render();
+                }
+            }, this);
         },
         initialize: function(options) {
             _.defaults(this, options);
