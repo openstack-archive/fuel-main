@@ -129,7 +129,7 @@ class TestTaskManagers(BaseHandlers):
         self.assertEqual(supertask.status, 'error')
         self.assertEqual(
             supertask.message,
-            "Failed to deploy nodes:\n'Offline node': Node is offline"
+            u"Deployment has failed:\n'Offline node': Node is offline"
         )
 
     @patch('nailgun.task.task.rpc.cast', nailgun.task.task.fake_cast)
@@ -260,7 +260,7 @@ class TestTaskManagers(BaseHandlers):
         self.assertIsNotNone(notif_node)
         notif_deploy = self.db.query(Notification).filter_by(
             topic="error",
-            message="Failed to deploy nodes:\n'{0}': {1}".format(
+            message="Deployment has failed:\n'{0}': {1}".format(
                 node1.name,
                 node1.error_msg
             )

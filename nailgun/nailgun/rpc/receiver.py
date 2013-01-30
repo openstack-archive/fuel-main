@@ -223,9 +223,12 @@ class NailgunReceiver(object):
                     n.error_msg
                 )
             )
-        message = "Failed to deploy nodes:\n{0}".format(
-            "\n".join(nodes_info)
-        )
+        if nodes_info:
+            message = "Deployment has failed:\n{0}".format(
+                "\n".join(nodes_info)
+            )
+        else:
+            message = "Deployment has failed with unknown error - see logs"
         notifier.notify(
             "error",
             message,
