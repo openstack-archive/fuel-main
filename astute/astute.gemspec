@@ -6,7 +6,7 @@ Gem::Specification.new do |s|
   s.version = Astute::VERSION
 
   s.summary = 'Orchestrator for OpenStack deployment'
-  s.description = 'Deployment Orchestrator of Puppet via MCollective. Works as a library or from CLI."
+  s.description = 'Deployment Orchestrator of Puppet via MCollective. Works as a library or from CLI.'
   s.authors = ['Mike Scherbakov']
   s.email   = ['mscherbakov@mirantis.com']
 
