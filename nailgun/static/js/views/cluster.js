@@ -830,7 +830,6 @@ function(models, commonViews, dialogViews, clusterPageTemplate, deploymentResult
                 this.bindTaskEvents();
                 this.update(true);
             }
-            this.model.bind('change', this.bindTaskEvents, this);
         },
         render: function() {
             this.$el.html(this.template({cluster: this.model, networks: this.networks}));
