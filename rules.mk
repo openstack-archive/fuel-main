@@ -8,6 +8,21 @@ define ACTION.TOUCH
 touch $@
 endef
 
+# This macros is to make targets dependent on variables
+# It writes variable value into temporary file varname.tmp,
+# then it compares temporary file with the varname.dep file.
+# If there is a difference between them, varname.dep will be updated
+# and the target which depends on it will be rebuilt.
+# Example:
+# target: $(call depv,varname)
+define depv
+$(shell mkdir -p $(DEPV_DIR))
+$(shell echo "$($1)" > $(DEPV_DIR)/$1.tmp)
+$(shell diff >/dev/null 2>&1 $(DEPV_DIR)/$1.tmp $(DEPV_DIR)/$1.dep \
+	|| mv $(DEPV_DIR)/$1.tmp $(DEPV_DIR)/$1.dep)
+$(DEPV_DIR)/$1.dep
+endef
+
 define NEWLINE
 
 

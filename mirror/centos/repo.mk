@@ -1,7 +1,9 @@
 include $(SOURCE_DIR)/mirror/centos/yum_repos.mk
 
+$(BUILD_DIR)/mirror/centos/etc/yum.conf: $(call depv,yum_conf)
 $(BUILD_DIR)/mirror/centos/etc/yum.conf: export contents:=$(yum_conf)
 $(BUILD_DIR)/mirror/centos/etc/yum.conf: \
+		$(SOURCE_DIR)/mirror/centos/yum_repos.mk \
 		$(SOURCE_DIR)/mirror/centos/yum-priorities-plugin.py
 	mkdir -p $(BUILD_DIR)/mirror/centos/etc/yum/pluginconf.d
 	echo "[main]\nenabled=1" > $(BUILD_DIR)/mirror/centos/etc/yum/pluginconf.d/priorities.conf
@@ -11,6 +13,7 @@ $(BUILD_DIR)/mirror/centos/etc/yum.conf: \
 	echo "$${contents}" > $@
 
 
+$(BUILD_DIR)/mirror/centos/etc/yum.repos.d/base.repo: $(call depv,YUM_REPOS)
 $(BUILD_DIR)/mirror/centos/etc/yum.repos.d/base.repo: \
 		export contents:=$(foreach repo,$(YUM_REPOS),\n$(yum_repo_$(repo)))
 $(BUILD_DIR)/mirror/centos/etc/yum.repos.d/base.repo: \
