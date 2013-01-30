@@ -1,10 +1,6 @@
 require 'symboltable'
 require 'singleton'
 
-class SymbolTable
-  include Singleton
-end
-
 module Astute
   class ConfigError < StandardError; end
   class UnknownOptionError < ConfigError
@@ -13,6 +9,15 @@ module Astute
     def initialize(name)
       super("Unknown config option #{name}")
       @name = name
+    end
+  end
+
+  class MyConfig
+    include Singleton
+    attr_reader :configtable
+
+    def initialize
+      @configtable = SymbolTable.new
     end
   end
 
@@ -26,7 +31,7 @@ module Astute
   end
 
   def self.config
-    config = SymbolTable.instance
+    config = MyConfig.instance.configtable
     config.update(default_config) if config.empty?
     return config
   end

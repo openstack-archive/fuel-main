@@ -1,10 +1,6 @@
 require 'symboltable'
 require 'singleton'
 
-class SymbolTable
-  include Singleton
-end
-
 module Naily
   class ConfigError < StandardError; end
   class UnknownOptionError < ConfigError
@@ -13,6 +9,17 @@ module Naily
     def initialize(name)
       super("Unknown config option #{name}")
       @name = name
+    end
+  end
+
+  class MyConfig
+    include Singleton
+    attr_reader :configtable
+
+    def initialize
+      # We need new instance of SymbolTable. If we use singleton for SymbolTable,
+      #   the same instance will be used in Astute.
+      @configtable = SymbolTable.new
     end
   end
 
@@ -26,7 +33,7 @@ module Naily
   end
 
   def self.config
-    config = SymbolTable.instance
+    config = MyConfig.instance.configtable
     config.update(default_config) if config.empty?
     return config
   end
