@@ -224,11 +224,11 @@ class NailgunReceiver(object):
                 )
             )
         if nodes_info:
-            message = "Deployment has failed:\n{0}".format(
+            message = u"Deployment has failed:\n{0}".format(
                 "\n".join(nodes_info)
             )
         else:
-            message = "Deployment has failed with unknown error - see logs"
+            message = u"Deployment has failed. Check logs for details."
         notifier.notify(
             "error",
             message,

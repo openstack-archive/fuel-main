@@ -252,7 +252,7 @@ class TestTaskManagers(BaseHandlers):
         self.assertEquals(supertask.progress, 100)
         notif_node = self.db.query(Notification).filter_by(
             topic="error",
-            message="Failed to deploy node '{0}': {1}".format(
+            message=u"Failed to deploy node '{0}': {1}".format(
                 node1.name,
                 node1.error_msg
             )
@@ -260,7 +260,7 @@ class TestTaskManagers(BaseHandlers):
         self.assertIsNotNone(notif_node)
         notif_deploy = self.db.query(Notification).filter_by(
             topic="error",
-            message="Deployment has failed:\n'{0}': {1}".format(
+            message=u"Deployment has failed:\n'{0}': {1}".format(
                 node1.name,
                 node1.error_msg
             )
