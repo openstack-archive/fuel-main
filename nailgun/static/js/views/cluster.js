@@ -637,7 +637,7 @@ function(models, commonViews, dialogViews, clusterPageTemplate, deploymentResult
             'click .apply-btn:not([disabled])': 'apply',
             'click .verify-networks-btn:not([disabled])': 'verifyNetworks',
             'click .nav a:not(.active)': 'changeMode',
-            'click .net-manager input:not([checked=checked])': 'changeManager',
+            'click .net-manager input:not([checked])': 'changeManager',
             'keyup .range': 'displayRange'
         },
         makeChanges: function(e) {
@@ -677,8 +677,8 @@ function(models, commonViews, dialogViews, clusterPageTemplate, deploymentResult
             }
         },
         changeManager: function(e) {
-            this.$('.net-manager input').removeAttr('checked');
-            this.$(e.target).attr('checked', 'checked');
+            this.$('.net-manager input').attr('checked', false);
+            this.$(e.target).attr('checked', true);
             this.model.set({net_manager: this.$(e.target).val()}, {silent: true});
             this.makeChanges();
             this.$('.fixed-row .network-amount, .fixed-header .amount, .fixed-row .network-size, .fixed-header .size').toggle();
@@ -789,7 +789,7 @@ function(models, commonViews, dialogViews, clusterPageTemplate, deploymentResult
         },
         initialize: function(options) {
             _.defaults(this, options);
-            this.model.bind('change', this.bindEvents, this);
+            this.model.bind('change:tasks', this.bindEvents, this);
             this.bindEvents();
             if (!this.model.get('networks')) {
                 this.networks = new models.Networks();
