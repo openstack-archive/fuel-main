@@ -713,6 +713,9 @@ function(models, commonViews, dialogViews, clusterPageTemplate, deploymentResult
                         var dialog = new dialogViews.SimpleMessage({error: true, title: 'Networks'});
                         this.registerSubView(dialog);
                         dialog.render();
+                    }, this),
+                    success: _.bind(function() {
+                        this.networks.hasChanges = false;
                     }, this)
                 });
             }
@@ -773,6 +776,11 @@ function(models, commonViews, dialogViews, clusterPageTemplate, deploymentResult
             }
         },
         bindEvents: function() {
+            this.model.get('tasks').bind('remove', this.renderVerificationControl, this);
+            this.model.get('tasks').bind('reset', function(){
+                this.render();
+                this.update(true);
+            }, this);
             this.model.get('tasks').bind('change:status', function(task) {
                 if ((task.get('name') == 'deploy' || task.get('name') == 'verify_networks') && task.get('status') != 'running') {
                     this.render();
@@ -781,12 +789,7 @@ function(models, commonViews, dialogViews, clusterPageTemplate, deploymentResult
         },
         initialize: function(options) {
             _.defaults(this, options);
-            this.model.get('tasks').bind('remove', this.renderVerificationControl, this);
-            this.model.get('tasks').bind('reset', function(){
-                this.render();
-                this.update(true);
-            }, this);
-            this.model.bind('change:tasks', this.bindEvents, this);
+            this.model.bind('change', this.bindEvents, this);
             this.bindEvents();
             if (!this.model.get('networks')) {
                 this.networks = new models.Networks();
