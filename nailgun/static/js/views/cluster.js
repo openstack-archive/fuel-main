@@ -40,14 +40,17 @@ function(models, commonViews, dialogViews, clusterPageTemplate, deploymentResult
             'click .rollback': 'discardChanges',
             'click .deploy-btn:not(.disabled)': 'displayChanges'
         },
-        removeVerificationTask: function(callback) {
+        removeVerificationTask: function() {
+            var deferred;
             var task = this.model.task('verify_networks');
             if (task && task.get('status') != 'running') {
                 this.model.get('tasks').remove(task);
-                task.destroy({silent: true}).done(callback);
+                deferred = task.destroy({silent: true});
             } else {
-                callback();
+                deferred = new $.Deferred();
+                deferred.resolve();
             }
+            return deferred;
         },
         dismissTaskResult: function() {
             this.$('.task-result').remove();
@@ -762,7 +765,7 @@ function(models, commonViews, dialogViews, clusterPageTemplate, deploymentResult
             }, this);
             if (valid) {
                 this.$('.verify-networks-btn').attr('disabled', true);
-                app.page.removeVerificationTask(_.bind(this.startVerification, this));
+                app.page.removeVerificationTask().done(_.bind(this.startVerification, this));
             }
         },
         beforeTearDown: function() {
