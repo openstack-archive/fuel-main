@@ -15,9 +15,11 @@ help:
 	@echo '  test - run all tests'
 	@echo '  test-unit - run unit tests'
 	@echo '  test-integration - run integration tests'
+	@echo '  test-integration-env - prepares integration test environment'
 	@echo '  clean-integration-test - clean integration test environment'
 	@echo '  clean - remove build directory and resetting .done flags'
 	@echo '  deep_clean - clean + removing $(LOCAL_MIRROR) directory'
+	@echo '  distclean - cleans deep_clean + clean-integration-test'
 
 all: iso
 
