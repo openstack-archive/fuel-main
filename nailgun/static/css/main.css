@@ -2715,8 +2715,7 @@ select[name=release] option {
 
 .verification-result-table {
   clear: both;
-  width: 580px;
-  margin-top: 10px;
+  padding-top: 10px;
 }
 
 .verification-router {

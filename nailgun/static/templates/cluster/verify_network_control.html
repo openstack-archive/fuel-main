@@ -44,10 +44,10 @@
         <% if (task.get('result').length) { %>
           <div class="verification-result-table">
             <table class="table table-condensed">
-              <thead><tr><th>Node Name</th><th>Node MAC address</th><th>Expected, but not received Vlan ID</th></tr></thead>
+              <thead><tr><th>Node Name</th><th>Node MAC address</th><th>Node Interface</th><th>Expected, but not received Vlan ID</th></tr></thead>
               <tbody>
-                <% _.each(task.get('result').nodes, function(node) { %>
-                  <tr><td><%- node.get('name') %></td><td><%- node.get('mac') %></td><td><%-node.get('vlans') %></td></tr>
+                <% _.each(task.get('result'), function(node) { %>
+                  <tr><td><%- node.name ? node.name : 'N/A' %></td><td><%- node.mac ? node.mac : 'N/A' %></td><td><%-node.interface %></td><td><%-node.absent_vlans %></td></tr>
                 <% }) %>
               </tbody>
             </table>
