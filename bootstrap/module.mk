@@ -78,7 +78,7 @@ $(BUILD_DIR)/bootstrap/linux: $(BUILD_DIR)/mirror/build.done
 	rm -r $(BUILD_DIR)/bootstrap/boot
 	touch $(BUILD_DIR)/bootstrap/linux
 
-
+$(BUILD_DIR)/bootstrap/customize-initram-root.done: $(call depv,BOOTSTRAP_RPMS_CUSTOM)
 $(BUILD_DIR)/bootstrap/customize-initram-root.done: export yum_local_repo:=$(yum_local_repo)
 $(BUILD_DIR)/bootstrap/customize-initram-root.done: \
 		$(BUILD_DIR)/packages/rpm/build.done \
@@ -123,7 +123,7 @@ $(BUILD_DIR)/bootstrap/customize-initram-root.done: \
 
 	$(ACTION.TOUCH)
 
-
+$(BUILD_DIR)/bootstrap/prepare-initram-root.done: $(call depv,BOOTSTRAP_RPMS)
 $(BUILD_DIR)/bootstrap/prepare-initram-root.done: export yum_local_repo:=$(yum_local_repo)
 $(BUILD_DIR)/bootstrap/prepare-initram-root.done: \
 		$(BUILD_DIR)/mirror/build.done

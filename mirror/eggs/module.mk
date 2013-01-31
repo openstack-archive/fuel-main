@@ -1,10 +1,11 @@
+$(BUILD_DIR)/mirror/eggs/build.done: $(call depv,LOCAL_MIRROR_EGGS)
+$(BUILD_DIR)/mirror/eggs/build.done: $(call depv,REQUIRED_EGGS)
 $(BUILD_DIR)/mirror/eggs/build.done: SANDBOX:=$(BUILD_DIR)/mirror/eggs/SANDBOX
 $(BUILD_DIR)/mirror/eggs/build.done: export SANDBOX_UP:=$(SANDBOX_UP)
 $(BUILD_DIR)/mirror/eggs/build.done: export SANDBOX_DOWN:=$(SANDBOX_DOWN)
 $(BUILD_DIR)/mirror/eggs/build.done: \
-		$(BUILD_DIR)/mirror/centos/build.done \
-		$(SOURCE_DIR)/requirements-eggs.txt \
-		$(SOURCE_DIR)/config.mk
+		$(BUILD_DIR)/mirror/centos/build.done
+
 	mkdir -p $(@D)
 	sudo sh -c "$${SANDBOX_UP}"
 

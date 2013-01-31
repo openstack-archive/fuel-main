@@ -1,5 +1,5 @@
-$(BUILD_DIR)/mirror/gems/gems-bundle/Gemfile: \
-		$(SOURCE_DIR)/config.mk
+$(BUILD_DIR)/mirror/gems/gems-bundle/Gemfile: $(call depv,MIRROR_GEMS)
+$(BUILD_DIR)/mirror/gems/gems-bundle/Gemfile:
 	mkdir -p $(@D)
 	echo -n > $@
 	for i in $(MIRROR_GEMS); do \
@@ -20,6 +20,7 @@ $(BUILD_DIR)/mirror/gems/gems-bundle.done: $(BUILD_DIR)/mirror/gems/gems-bundle-
 	( cd $(BUILD_DIR)/mirror/gems/gems-bundle/vendor/cache/ && gem fetch -v 1.2.1 bundler )
 	$(ACTION.TOUCH)
 
+$(BUILD_DIR)/mirror/gems/build.done: $(call depv,LOCAL_MIRROR_GEMS)
 $(BUILD_DIR)/mirror/gems/build.done: $(BUILD_DIR)/mirror/gems/gems-bundle.done
 	@mkdir -p $(LOCAL_MIRROR_GEMS)/gems
 	cp $(BUILD_DIR)/mirror/gems/gems-bundle/vendor/cache/*.gem $(LOCAL_MIRROR_GEMS)/gems

@@ -1,7 +1,4 @@
-PWD:=$(shell pwd -P)
-
-SOURCE_DIR:=$(PWD)
-BUILD_DIR:=$(PWD)/build
+COMMIT_SHA:=$(shell git rev-parse --verify HEAD)
 
 CENTOS_MAJOR:=6
 CENTOS_MINOR:=3

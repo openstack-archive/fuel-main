@@ -49,7 +49,7 @@ $(BUILD_DIR)/iso/isoroot-files.done: \
 		$(ISOROOT)/ks.cfg \
 		$(ISOROOT)/bootstrap_admin_node.sh \
 		$(ISOROOT)/bootstrap_admin_node.conf \
-		$(ISOROOT)/version.yaml
+		$(ISOROOT)/version.yaml \
 		$(ISOROOT)/puppet-nailgun.tgz \
 		$(ISOROOT)/puppet-slave.tgz
 	$(ACTION.TOUCH)
@@ -60,9 +60,13 @@ $(ISOROOT)/isolinux/isolinux.cfg: $(SOURCE_DIR)/iso/isolinux/isolinux.cfg ; $(AC
 $(ISOROOT)/ks.cfg: $(SOURCE_DIR)/iso/ks.cfg ; $(ACTION.COPY)
 $(ISOROOT)/bootstrap_admin_node.sh: $(SOURCE_DIR)/iso/bootstrap_admin_node.sh ; $(ACTION.COPY)
 $(ISOROOT)/bootstrap_admin_node.conf: $(SOURCE_DIR)/iso/bootstrap_admin_node.conf ; $(ACTION.COPY)
+$(ISOROOT)/version.yaml: $(call depv,COMMIT_SHA)
+$(ISOROOT)/version.yaml:
+	echo "COMMIT_SHA: $(COMMIT_SHA)" > $@
+
 $(ISOROOT)/puppet-nailgun.tgz: \
 		$(call find-files,$(SOURCE_DIR)/puppet)
-	(cd puppet && tar chzf $@ *)
+	(cd $(SOURCE_DIR)/puppet && tar chzf $@ *)
 $(ISOROOT)/puppet-slave.tgz: \
 		$(call find-files,$(SOURCE_DIR)/puppet/nailytest) \
 		$(call find-files,$(SOURCE_DIR)/puppet/osnailyfacter) \
