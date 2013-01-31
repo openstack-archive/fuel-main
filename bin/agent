@@ -246,11 +246,11 @@ class NodeAgent
 
   def _data
     res = {
-      :mac => @os[:macaddress],
-      :ip  => @os[:ipaddress],
+      :mac => (@os[:macaddress] rescue nil),
+      :ip  => (@os[:ipaddress] rescue nil),
       :manufacturer => _manufacturer,
       :platform_name => _product_name,
-      :os_platform => @os[:platform],
+      :os_platform => (@os[:platform] rescue nil),
       :meta => _detailed
     }
 
