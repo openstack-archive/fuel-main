@@ -248,11 +248,17 @@ class NodeAgent
     res = {
       :mac => (@os[:macaddress] rescue nil),
       :ip  => (@os[:ipaddress] rescue nil),
-      :manufacturer => _manufacturer,
-      :platform_name => _product_name,
-      :os_platform => (@os[:platform] rescue nil),
-      :meta => _detailed
+      :os_platform => (@os[:platform] rescue nil)
     }
+    begin
+      res.merge!({
+        :manufacturer => _manufacturer,
+        :platform_name => _product_name,
+        :meta => _detailed
+      })
+    rescue Exception => e
+      @logger.error("Error '#{e.message}' in metadata calculation: #{e.backtrace}")
+    end
 
     res[:status] = @node_state if @node_state
     res
@@ -311,8 +317,11 @@ post_res = agent.post
 if post_res.status == 409:
   put_res = agent.put
   new_id = JSON.parse(put_res.body)[0]['id']
-else
+elsif post_res.status == 201
   new_id = JSON.parse(post_res.body)['id']
+else
+  logger.error post_res.body
+  exit 1
 end
 
 mc_config = McollectiveConfig.new(logger)
