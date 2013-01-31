@@ -1783,12 +1783,23 @@ h6.page-title {
   font-size: 13px;
   font-family: "Lucida Console", Menlo, Monaco, Consolas, "Courier New", monospace;
 }
-.table-logs .no-logs-msg {
+.table-logs .no-logs-msg, .table-logs .entries-skipped-msg {
   display: none;
 }
 .table-logs .no-logs-msg tr td {
   text-align: center;
   padding: 20px;
+}
+.table-logs .entries-skipped-msg tr td {
+  text-align: center;
+  padding: 5px;
+}
+.table-logs .entries-skipped-msg .show-all-entries {
+  color: #0088cc;
+}
+.table-logs .entries-skipped-msg .show-all-entries:hover {
+  color: #005580;
+  cursor: pointer;
 }
 
 /* logs coloring */

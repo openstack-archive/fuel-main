@@ -114,20 +114,14 @@ class LogEntryCollectionHandler(JSONHandler):
                 'from': log_file_size,
                 'date_max_exceeded': date_max_exceeded,
                 'size': log_file_size,
-                'truncate_log': truncate_log,
             })
 
+        entries_skipped = 0
+        if truncate_log:
+            from_byte = 0
+
         with open(log_file, 'r') as f:
-            # If truncate_log is True we return last part of log without
-            # any filtration.
-            if truncate_log:
-                level = None
-                date_before = None
-                date_after = None
-                if log_file_size > settings.TRUNCATE_LOG_SIZE:
-                    f.seek(-settings.TRUNCATE_LOG_SIZE, os.SEEK_END)
-            else:
-                f.seek(from_byte)
+            f.seek(from_byte)
 
             for line in f:
                 entry = line.rstrip('\n')
@@ -175,13 +169,16 @@ class LogEntryCollectionHandler(JSONHandler):
             # If file size grow up while we read it.
             if from_byte > log_file_size:
                 log_file_size = from_byte
+            if truncate_log and len(entries) > settings.TRUNCATE_LOG_ENTRIES:
+                entries_skipped = len(entries) - settings.TRUNCATE_LOG_ENTRIES
+                entries = entries[-settings.TRUNCATE_LOG_ENTRIES:]
 
         return json.dumps({
             'entries': entries,
             'from': from_byte,
             'date_max_exceeded': date_max_exceeded,
             'size': log_file_size,
-            'truncate_log': truncate_log,
+            'entries_skipped': entries_skipped,
         })
 
 

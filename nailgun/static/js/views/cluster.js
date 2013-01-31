@@ -954,7 +954,8 @@ function(models, commonViews, dialogViews, clusterPageTemplate, deploymentResult
         template: _.template(logsTabTemplate),
         logEntryTemplate: _.template(logEntryTemplate),
         events: {
-            'click .show-logs-btn:not(.disabled)': 'showLogs',
+            'click .show-logs-btn:not(.disabled)': 'onShowButtonClick',
+            'click .show-all-entries': 'onShowAllClick',
             'change select': 'updateShowButtonState',
             'change select[name=type]': 'onTypeChange',
             'change select[name=node]': 'onNodeChange',
@@ -969,7 +970,7 @@ function(models, commonViews, dialogViews, clusterPageTemplate, deploymentResult
             this.timeout = _.delay(_.bind(this.update, this), this.updateInterval);
         },
         update: function() {
-            this.fetchLogs({
+            this.fetchLogs({from: this.from}, {
                 success: _.bind(function(data) {
                     this.appendLogEntries(data, false);
                 }, this),
@@ -1064,21 +1065,27 @@ function(models, commonViews, dialogViews, clusterPageTemplate, deploymentResult
         updateShowButtonState: function() {
             this.$('.show-logs-btn').toggleClass('disabled', !this.$('select[name=source]').val());
         },
-        fetchLogs: function(callbacks) {
+        onShowButtonClick: function() {
+            this.showLogs({truncate_log: true});
+        },
+        onShowAllClick: function() {
+            this.showLogs({});
+        },
+        fetchLogs: function(data, callbacks) {
             var options = {
                 url: '/api/logs',
                 dataType: 'json',
                 data: {
                     node: this.chosenNodeId,
                     source: this.chosenSourceId,
-                    level: this.chosenLevel,
-                    from: this.from
+                    level: this.chosenLevel
                 }
             };
             _.extend(options, callbacks);
+            _.extend(options.data, data);
             return $.ajax(options);
         },
-        showLogs: function() {
+        showLogs: function(params) {
             if (this.timeout) {
                 clearTimeout(this.timeout);
             }
@@ -1098,7 +1105,7 @@ function(models, commonViews, dialogViews, clusterPageTemplate, deploymentResult
             this.$('select').attr('disabled', true);
             this.$('.show-logs-btn').addClass('disabled');
 
-            this.fetchLogs({
+            this.fetchLogs(params, {
                 complete: _.bind(function() {
                     this.$('.logs-loading').hide();
                     this.$('select').attr('disabled', false);
@@ -1109,6 +1116,7 @@ function(models, commonViews, dialogViews, clusterPageTemplate, deploymentResult
                         this.appendLogEntries(data, true);
                     } else {
                         this.$('.table-logs .no-logs-msg').show();
+                        this.$('.table-logs .entries-skipped-msg').hide();
                     }
                     this.$('.table-logs').show();
                     this.scheduleUpdate();
@@ -1126,6 +1134,11 @@ function(models, commonViews, dialogViews, clusterPageTemplate, deploymentResult
                 var scrollToBottom = !doNotScroll && $(document).height() == $(window).scrollTop() + $(window).height();
 
                 this.$('.table-logs .no-logs-msg').hide();
+                if (data.entries_skipped) {
+                    this.$('.table-logs .entries-skipped-msg').show().find('.entries-count').text(data.entries_skipped);
+                } else {
+                    this.$('.table-logs .entries-skipped-msg').hide();
+                }
                 this.$('.table-logs .log-entries').append(_.map(data.entries, function(entry) {
                     return this.logEntryTemplate({entry: entry});
                 }, this).join(''));

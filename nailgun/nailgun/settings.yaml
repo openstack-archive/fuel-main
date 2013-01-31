@@ -47,7 +47,7 @@ COBBLER_USER: "cobbler"
 COBBLER_PASSWORD: "cobbler"
 COBBLER_PROFILE: "centos63-x86_64"
 
-TRUNCATE_LOG_SIZE: 10000
+TRUNCATE_LOG_ENTRIES: 100
 UI_LOG_DATE_FORMAT: '%Y-%m-%d %H:%M:%S'
 LOG_FORMATS:
   - &remote_syslog_log_format
