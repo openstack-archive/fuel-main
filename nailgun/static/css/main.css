@@ -1593,6 +1593,7 @@ h6.page-title {
   font-size: 13px;
   border-bottom: 1px dotted #dadada;
   color: #999999;
+  min-height: 1px;
 }
 
 .notification-box:after{
@@ -1851,6 +1852,11 @@ h6.page-title {
   line-height: 0;
   content: "";
   clear: both;
+}
+
+.verification-control .page-control-box {
+  background-color: transparent;
+  box-shadow: none;
 }
 
 .page-control-error-placeholder, .page-control-success-placeholder {
