@@ -1113,6 +1113,11 @@ function(models, commonViews, dialogViews, clusterPageTemplate, deploymentResult
                 success: _.bind(function(data) {
                     this.$('.table-logs .log-entries').html('');
                     if (data.entries.length) {
+                        if (data.entries_skipped) {
+                            this.$('.table-logs .entries-skipped-msg').show().find('.entries-count').text(data.entries_skipped);
+                        } else {
+                            this.$('.table-logs .entries-skipped-msg').hide();
+                        }
                         this.appendLogEntries(data, true);
                     } else {
                         this.$('.table-logs .no-logs-msg').show();
@@ -1134,11 +1139,6 @@ function(models, commonViews, dialogViews, clusterPageTemplate, deploymentResult
                 var scrollToBottom = !doNotScroll && $(document).height() == $(window).scrollTop() + $(window).height();
 
                 this.$('.table-logs .no-logs-msg').hide();
-                if (data.entries_skipped) {
-                    this.$('.table-logs .entries-skipped-msg').show().find('.entries-count').text(data.entries_skipped);
-                } else {
-                    this.$('.table-logs .entries-skipped-msg').hide();
-                }
                 this.$('.table-logs .log-entries').append(_.map(data.entries, function(entry) {
                     return this.logEntryTemplate({entry: entry});
                 }, this).join(''));

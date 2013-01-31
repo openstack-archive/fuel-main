@@ -6,6 +6,7 @@ import time
 import json
 import logging
 from itertools import dropwhile
+from collections import deque
 
 import web
 
@@ -96,7 +97,7 @@ class LogEntryCollectionHandler(JSONHandler):
                          log_config['id'], e)
             raise web.internalerror("Invalid regular expression in config")
 
-        entries = []
+        entries = deque()
         from_byte = 0
         try:
             from_byte = int(user_data.get('from', 0))
@@ -117,6 +118,7 @@ class LogEntryCollectionHandler(JSONHandler):
             })
 
         entries_skipped = 0
+        max_entries = settings.TRUNCATE_LOG_ENTRIES
         if truncate_log:
             from_byte = 0
 
@@ -165,16 +167,16 @@ class LogEntryCollectionHandler(JSONHandler):
                     entry_level,
                     m.group('text')
                 ])
+                if truncate_log and len(entries) > max_entries:
+                    entries_skipped += 1
+                    entries.popleft()
             from_byte = f.tell()
             # If file size grow up while we read it.
             if from_byte > log_file_size:
                 log_file_size = from_byte
-            if truncate_log and len(entries) > settings.TRUNCATE_LOG_ENTRIES:
-                entries_skipped = len(entries) - settings.TRUNCATE_LOG_ENTRIES
-                entries = entries[-settings.TRUNCATE_LOG_ENTRIES:]
 
         return json.dumps({
-            'entries': entries,
+            'entries': [e for e in entries],
             'from': from_byte,
             'date_max_exceeded': date_max_exceeded,
             'size': log_file_size,
