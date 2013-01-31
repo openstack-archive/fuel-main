@@ -159,8 +159,8 @@ class FakeDeletionThread(FakeThread):
         for node in nodes_to_restore:
             orm.add(node)
             orm.commit()
-            ram = round(node.info.get('ram') or 0, 1)
-            cores = node.info.get('cores') or 'unknown'
+            ram = round(node.meta.get('ram') or 0, 1)
+            cores = node.meta.get('cores') or 'unknown'
             notifier.notify("discover",
                             "New node with %s CPU core(s) "
                             "and %s GB memory is discovered" %

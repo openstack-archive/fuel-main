@@ -48,60 +48,56 @@ class BaseHandlers(TestCase):
             "Content-Type": "application/json"
         }
         flush()
-        for fxtr in self.fixtures:
+        self.upload_fixtures(self.fixtures)
+
+    def fxtr_paths_by_names(self, fxtr_names):
+        for fxtr in fxtr_names:
             fxtr_path = os.path.join(
                 self.fixture_dir,
                 "%s.json" % fxtr
             )
+
             if not os.path.exists(fxtr_path):
                 logging.warning(
-                    "Fixture file not found: %s",
+                    "Fixture file was not found: %s",
                     fxtr_path
                 )
                 break
             else:
-                logging.info(
-                    "Uploading fixture from file: %s",
+                logging.debug(
+                    "Fixture file is found, yielding path: %s",
                     fxtr_path
                 )
-                with open(fxtr_path, "r") as fixture:
-                    upload_fixture(fixture)
+                yield fxtr_path
+
+    def upload_fixtures(self, fxtr_names):
+        for fxtr_path in self.fxtr_paths_by_names(fxtr_names):
+            with open(fxtr_path, "r") as fxtr_file:
+                upload_fixture(fxtr_file)
+
+    def read_fixtures(self, fxtr_names):
+        data = []
+        for fxtr_path in self.fxtr_paths_by_names(fxtr_names):
+            with open(fxtr_path, "r") as fxtr_file:
+                try:
+                    data.extend(json.load(fxtr_file))
+                except:
+                    logging.error(
+                        "Error occured while loading "
+                        "fixture %s" % fxtr_path
+                    )
+        return data
+
+    def find_item_by_pk_model(self, data, pk, model):
+        for item in data:
+            if item.get('pk') == pk and item.get('model') == model:
+                return item
 
     def default_metadata(self):
-        metadata = {
-            "Interfaces": [
-                {
-                    "Mac": "C0:8D:DF:52:76:F1",
-                    "Name": "eth0"
-                }
-            ],
-            "Cpu": {
-                "Real": 1,
-                "Spec": [
-                    {
-                        "Mhz": "1200",
-                        "Model": "Intel(R) Core(TM)2 Duo CPU T6570 @ 2.10GHz"
-                    }
-                ],
-                "Total": 1
-            },
-            "Disks": [
-                {
-                    "Size": "320072933376",
-                    "Model": "TOSHIBA MK3259GS",
-                    "Name": "sda"
-                }
-            ],
-            "Memory": "8589934592",
-            "System": {
-                "Product": "QWERTY",
-                "Family": "Not Specified",
-                "Manufacturer": "Dell",
-                "Serial": "123456",
-                "Version": "Not Specified"
-            }
-        }
-        return metadata
+        item = self.find_item_by_pk_model(
+            self.read_fixtures(("sample_environment",)),
+            1, 'nailgun.node')
+        return item.get('fields').get('meta')
 
     def _generate_random_mac(self):
         mac = [randint(0x00, 0x7f) for _ in xrange(6)]

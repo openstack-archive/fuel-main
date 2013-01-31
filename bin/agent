@@ -143,51 +143,56 @@ class NodeAgent
 
   def _detailed
     detailed_meta = {
-      :System => {
-        :Manufacturer => _manufacturer,
-        :Serial => _serial,
-        :Product => _product_name,
-        :Family => (@os[:dmi][:system][:family] or "Unknown"),
-        :Version => (@os[:dmi][:system][:version] or "Unknown"),
+      :system => {
+        :manufacturer => _manufacturer,
+        :serial => _serial,
+        :product => _product_name,
+        :family => (@os[:dmi][:system][:family] rescue nil),
+        :version => (@os[:dmi][:system][:version] rescue nil),
         },
-      :Interfaces => [],
-      :Cpu => {
-        :Total => @os[:cpu][:total],
-        :Real => @os[:cpu][:real],
-        :Spec => [],
+      :interfaces => [],
+      :cpu => {
+        :total => (@os[:cpu][:total] rescue nil),
+        :real => (@os[:cpu][:real] rescue nil),
+        :spec => [],
         },
-      :Disks => [],
-      :Memory => _real_memory,
+      :disks => [],
+      :memory => _real_memory,
     }
-    @os[:network][:interfaces].each do |int, intinfo|
-      intinfo[:addresses].each do |addr, addrinfo|
-        if addrinfo[:family] =~ /lladdr/
-          detailed_meta[:Interfaces] << {
-            :Name => int,
-            :Mac => addr
+
+    (@os[:network][:interfaces] or {} rescue {}).each do |int, intinfo|
+      (intinfo[:addresses] or {} rescue {}).each do |addr, addrinfo|
+        if (addrinfo[:family] rescue nil) =~ /lladdr/
+          detailed_meta[:interfaces] << {
+            :name => int,
+            :mac => addr
           }
         end
       end
     end
-    @os[:cpu].each do |cpu, cpuinfo|
-      if cpu =~ /^[\d]+/
-        detailed_meta[:Cpu][:Spec] << {
-          :Mhz => cpuinfo[:mhz].to_i.to_s,
-          :Model => cpuinfo[:model_name].gsub(/ +/, " ")
+
+    (@os[:cpu] or {} rescue {}).each do |cpu, cpuinfo|
+      if cpu =~ /^[\d]+/ and cpuinfo
+        detailed_meta[:cpu][:spec] << {
+          # .to_i.to_s is applied in order to round to integer
+          :mhz => (cpuinfo[:mhz].to_i.to_s rescue nil),
+          :model => (cpuinfo[:model_name].gsub(/ +/, " ") rescue nil)
         }
       end
     end
-    @os[:block_device].each do |bname, binfo|
-      if bname =~ /^(sd|hd|vd)./
-        block_size = `cat /sys/block/#{bname}/queue/logical_block_size`
-        detailed_meta[:Disks] << {
-          :Name => bname,
-          :Model => binfo[:model],
-          # 512 bytes is the size of one sector by default
-          # 1000000000 bytes is 1 Gb
-          :Size => (binfo[:size].to_i * block_size.to_i).to_s,
+
+    (@os[:block_device] or {} rescue {}).each do |bname, binfo|
+      if bname =~ /^(sd|hd|vd)./ and binfo
+        # 512 bytes is the size of one sector by default
+        block_size = 512
+        block_size = `cat /sys/block/#{bname}/queue/logical_block_size`.to_i if $?.to_i == 0
+        detailed_meta[:disks] << {
+          :name => bname,
+          :model => binfo[:model],
+          :size => (binfo[:size].to_i * block_size).to_s,
         }
       end
+
     end
     detailed_meta
   end
@@ -202,38 +207,39 @@ class NodeAgent
     else
       # Check in other place for VBox: ohai doesn't show it's virtual with VBox 4.2.4
       return "VBOX" if @os["dmi"]["system"]["product_name"] == "VirtualBox" rescue nil
-      return @os[:dmi][:system][:manufacturer] rescue "Unknown"
+      return @os[:dmi][:system][:manufacturer] rescue nil
     end
   end
 
   def _product_name
     if _is_virtual
-      @os["virtualization"]["role"] rescue "Unknown"
+      @os["virtualization"]["role"] rescue nil
     else
-      @os[:dmi][:system][:product_name] rescue "Unknown"
+      @os[:dmi][:system][:product_name] rescue nil
     end
   end
 
   def _serial
-    @os[:dmi][:system][:serial_number] rescue "Unknown"
+    @os[:dmi][:system][:serial_number] rescue nil
   end
 
   def _real_memory
     dmi = `dmidecode`
+    return nil if $?.to_i != 0
     mem_mapped = false
     dmi.each do |line|
       mem_mapped = true if /^Memory Array Mapped Address$/.match(line)
       if /^\s*Range Size:\s+(\d+)\s+(mb|gb|kb)/i.match(line) and mem_mapped
-        size, unit = $1, $2
+        size, unit = $1.to_i, $2
         case unit
         when /^kb$/i
-          return (size.to_i * 1024).to_s
+          return (size * 1024).to_s
         when /^mb$/i
-          return (size.to_i * 1048576).to_s
+          return (size * 1048576).to_s
         when /^gb$/i
-          return (size.to_i * 1073741824).to_s
+          return (size * 1073741824).to_s
         end
-        mem_mapped = false
+        nil
       end
     end
   end
@@ -299,6 +305,8 @@ rescue Exception => e
 end
 
 agent = NodeAgent.new(logger, url)
+puts JSON.pretty_generate agent._detailed
+exit 0
 agent.update_state
 
 post_res = agent.post

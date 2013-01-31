@@ -27,11 +27,11 @@ class TestHandlers(BaseHandlers):
             node.pending_deletion, response['pending_deletion'])
         self.assertEquals(node.status, response['status'])
         self.assertEquals(
-            node.info['Cpu']['Total'],
-            response['info']['Cpu']['Total']
+            node.meta['cpu']['total'],
+            response['meta']['cpu']['total']
         )
-        self.assertEquals(node.info['Disks'], response['info']['Disks'])
-        self.assertEquals(node.info['Memory'], response['info']['Memory'])
+        self.assertEquals(node.meta['disks'], response['meta']['disks'])
+        self.assertEquals(node.meta['memory'], response['meta']['memory'])
 
     def test_node_creation_with_id(self):
         node_id = '080000000003'

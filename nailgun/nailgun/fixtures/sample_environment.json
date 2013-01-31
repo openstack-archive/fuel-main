@@ -12,45 +12,45 @@
             "mac": "C0:8D:DF:52:76:F1",
             "ip": "10.0.12.45",
             "meta": {
-                "Interfaces": [
-                    {
-                        "Mac": "C0:8D:DF:52:76:F1",
-                        "Name": "eth0"
-                    },
-                    {
-                        "Mac": "C0:8D:DF:52:76:F2",
-                        "Name": "eth1"
-                    }
-                ],
-                "Cpu": {
-                    "Real": 1,
-                    "Spec": [
-                        {
-                            "Mhz": "1200",
-                            "Model": "Intel(R) Core(TM)2 Duo CPU T6570 @ 2.10GHz"
-                        },
-                        {
-                            "Mhz": "2101",
-                            "Model": "Intel(R) Core(TM)2 Duo CPU T6570 @ 2.10GHz"
-                        }
-                    ],
-                    "Total": 2
-                },
-                "Disks": [
-                    {
-                        "Size": "320072933376",
-                        "Model": "TOSHIBA MK3259GS",
-                        "Name": "sda"
-                    }
-                ],
-                "Memory": "8589934592",
-                "System": {
-                    "Product": "QWERTY",
-                    "Family": "Not Specified",
-                    "Manufacturer": "Dell",
-                    "Serial": "123456",
-                    "Version": "Not Specified"
+              "disks": [
+                {
+                  "size": "320072933376",
+                  "model": "TOSHIBA MK3259GS",
+                  "name": "sda"
                 }
+              ],
+              "interfaces": [
+                {
+                  "mac": "52:54:00:96:81:6E",
+                  "name": "eth0"
+                },
+                {
+                  "mac": "C8:0A:A9:A6:FF:28",
+                  "name": "eth1"
+                }
+              ],
+              "cpu": {
+                "total": 2,
+                "real": 1,
+                "spec": [
+                  {
+                    "mhz": "1200",
+                    "model": "Intel(R) Core(TM)2 Duo CPU T6570 @ 2.10GHz"
+                  },
+                  {
+                    "mhz": "1200",
+                    "model": "Intel(R) Core(TM)2 Duo CPU T6570 @ 2.10GHz"
+                  }
+                ]
+              },
+              "memory": 8589934592,
+              "system": {
+                "version": "Power Edge 2970",
+                "manufacturer": "Dell",
+                "product": "QWERTY",
+                "serial": "123456",
+                "family": "Power Edge"
+              }
             }
         }
     },

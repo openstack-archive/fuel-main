@@ -174,7 +174,7 @@ class Node(Base, BasicValidator):
     cluster_id = Column(Integer, ForeignKey('clusters.id'))
     name = Column(Unicode(100))
     status = Column(Enum(*NODE_STATUSES), nullable=False, default='discover')
-    meta = Column(JSON)
+    meta = Column(JSON, default={})
     mac = Column(String(17), nullable=False, unique=True)
     ip = Column(String(15))
     fqdn = Column(String(255))
@@ -210,10 +210,6 @@ class Node(Base, BasicValidator):
     @property
     def needs_redeletion(self):
         return self.status == 'error' and self.error_type == 'deletion'
-
-    @property
-    def info(self):
-        return self.meta or {}
 
     @classmethod
     def validate(cls, data):

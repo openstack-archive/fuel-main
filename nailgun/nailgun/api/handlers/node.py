@@ -12,7 +12,7 @@ from nailgun.api.handlers.base import JSONHandler
 
 
 class NodeHandler(JSONHandler):
-    fields = ('id', 'name', 'info', 'network_data', 'role', 'progress',
+    fields = ('id', 'name', 'meta', 'network_data', 'role', 'progress',
               'status', 'mac', 'fqdn', 'ip', 'manufacturer', 'platform_name',
               'pending_addition', 'pending_deletion', 'os_platform',
               'error_type')
@@ -85,13 +85,14 @@ class NodeCollectionHandler(JSONHandler):
         node.name = "Untitled (%s)" % data['mac'][-5:]
         orm().add(node)
         orm().commit()
-        ram = "Unknown"
-        if 'Memory' in node.info and node.info['Memory']:
-            ram = round(int(node.info['Memory']) / 1073741824, 1)
-        cores = node.info.get('Cpu', {}).get('Total', "Unknown")
+        try:
+            ram = round(int(node.meta['memory']) / 1073741824, 1)
+        except (KeyError, TypeError):
+            ram = "unknown"
+        cores = node.meta.get('cpu', {}).get('total', "unknown")
         notifier.notify("discover",
                         "New node with %s CPU core(s) "
-                        "and %s  memory is discovered" %
+                        "and %s GB memory is discovered" %
                         (cores, ram), node_id=node.id)
         raise web.webapi.created(json.dumps(
             NodeHandler.render(node),
