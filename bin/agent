@@ -305,8 +305,6 @@ rescue Exception => e
 end
 
 agent = NodeAgent.new(logger, url)
-puts JSON.pretty_generate agent._detailed
-exit 0
 agent.update_state
 
 post_res = agent.post
