@@ -138,7 +138,7 @@ class TestHandlers(BaseHandlers):
         nets[-1]["network_size"] = 16
         nets[-1]["amount"] = 3
         resp = self.app.put(
-            reverse('NetworkCollectionHandler',
+            reverse('ClusterSaveNetworksHandler',
                     kwargs={'cluster_id': cluster['id']}),
             json.dumps(nets),
             headers=self.default_headers

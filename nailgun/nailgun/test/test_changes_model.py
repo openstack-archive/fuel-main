@@ -95,7 +95,7 @@ class TestClusterChanges(BaseHandlers):
         self.assertEquals(len(all_changes), 0)
         resp = self.app.put(
             reverse(
-                'NetworkCollectionHandler',
+                'ClusterSaveNetworksHandler',
                 kwargs={'cluster_id': cluster['id']}),
             json.dumps([
                 {"id": "1", "access": "restricted"}

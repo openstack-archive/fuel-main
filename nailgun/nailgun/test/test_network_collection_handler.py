@@ -102,7 +102,7 @@ class TestHandlers(BaseHandlers):
             'id': net1.id,
             'vlan_start': new_vlan_id}]
         resp = self.app.put(
-            reverse('NetworkCollectionHandler'),
+            reverse('ClusterSaveNetworksHandler'),
             json.dumps(new_nets),
             headers=self.default_headers
         )
@@ -116,7 +116,7 @@ class TestHandlers(BaseHandlers):
             'id': 500,
             'vlan_id': 500}]
         resp = self.app.put(
-            reverse('NetworkCollectionHandler'),
+            reverse('ClusterSaveNetworksHandler'),
             json.dumps(new_nets),
             headers=self.default_headers,
             expect_errors=True
