@@ -157,7 +157,7 @@ class NodeAgent
         :spec => [],
         },
       :disks => [],
-      :memory => _real_memory,
+      :memory => (_dmi_memory or _ohai_memory),
     }
 
     (@os[:network][:interfaces] or {} rescue {}).each do |int, intinfo|
@@ -223,7 +223,7 @@ class NodeAgent
     @os[:dmi][:system][:serial_number] rescue nil
   end
 
-  def _real_memory
+  def _dmi_memory
     dmi = `dmidecode`
     return nil if $?.to_i != 0
     mem_mapped = false
@@ -242,6 +242,21 @@ class NodeAgent
         nil
       end
     end
+    nil
+  end
+
+  def _ohai_memory
+    size = @os['memory']['total'].gsub(/(kb|mb|gb)$/i, "").to_i rescue (return nil)
+    unit = $1
+    case unit
+    when /^kb$/i
+      return (size * 1024)
+    when /^mb$/i
+      return (size * 1048576)
+    when /^gb$/i
+      return (size * 1073741824)
+    end
+    nil
   end
 
   def _data
