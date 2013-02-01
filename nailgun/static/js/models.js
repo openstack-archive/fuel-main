@@ -112,18 +112,20 @@ define(function() {
         },
         resource: function(resourceName) {
             var resource = 0;
-            if (resourceName == 'cores') {
-                resource = this.get('meta').cpu.total;
-            } else if (resourceName == 'hdd') {
-                var hdd = 0;
-                _.each(this.get('meta').disks, function(disk) {
-                    if (_.isNumber(disk.size)) {
-                        hdd += disk.size;
-                    }
-                });
-                resource = hdd/Math.pow(1000, 4);
-            } else if (resourceName == 'ram') {
-                resource = this.get('meta').memory/Math.pow(1024, 3);
+            if (!_.isEmpty(this.get('meta'))) {
+                if (resourceName == 'cores') {
+                    resource = this.get('meta').cpu.total;
+                } else if (resourceName == 'hdd') {
+                    var hdd = 0;
+                    _.each(this.get('meta').disks, function(disk) {
+                        if (_.isNumber(disk.size)) {
+                            hdd += disk.size;
+                        }
+                    });
+                    resource = hdd/Math.pow(1000, 4);
+                } else if (resourceName == 'ram') {
+                    resource = this.get('meta').memory/Math.pow(1024, 3);
+                }
             }
             return resource;
         }
