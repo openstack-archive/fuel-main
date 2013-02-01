@@ -20,6 +20,10 @@ module Astute
 
   def self.logger
     @logger ||= Logger.new('/var/log/astute.log')
+    @logger.formatter = proc {|severity, datetime, progname, msg|
+      "#{datetime.strftime("%Y-%m-%dT%H:%M:%S")} #{severity.downcase}: #{msg}\n"
+    }
+    @logger
   end
 
   def self.logger=(logger)

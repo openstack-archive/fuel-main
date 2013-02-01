@@ -12,6 +12,9 @@ module Naily
   autoload 'Reporter', 'naily/reporter'
 
   @logger ||= Logger.new(STDOUT)
+  @logger.formatter = proc {|severity, datetime, progname, msg|
+    "#{datetime.strftime("%Y-%m-%dT%H:%M:%S")} #{severity.downcase}: #{msg}\n"
+  }
   Astute.logger = @logger
 
   def self.logger
