@@ -418,14 +418,6 @@ class NetworkGroup(Base, BasicValidator):
                 raise web.webapi.badrequest(
                     message="No 'id' param for '{0}'".format(i)
                 )
-            if 'cidr' in i and netaddr.IPSet([i['cidr']]) & \
-                    netaddr.IPSet(settings.NET_EXCLUDE):
-                raise web.webapi.badrequest(
-                    message="Intersection with admin "
-                            "network(s) '{0}' found".format(
-                                settings.NET_EXCLUDE
-                            )
-                )
         return d
 
 

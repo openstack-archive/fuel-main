@@ -21,6 +21,7 @@ from nailgun.api.models import Task
 from nailgun.api.handlers.base import JSONHandler
 from nailgun.api.handlers.node import NodeHandler
 from nailgun.api.handlers.tasks import TaskHandler
+from nailgun.task.helpers import update_task_status
 from nailgun.task.manager import DeploymentTaskManager
 from nailgun.task.manager import ClusterDeletionManager
 from nailgun.task.manager import VerifyNetworksTaskManager
@@ -294,9 +295,38 @@ class ClusterSaveNetworksHandler(JSONHandler):
         cluster = orm().query(Cluster).get(cluster_id)
         if not cluster:
             return web.notfound()
-        data = NetworkGroup.validate_collection_update(web.data())
+        new_nets = NetworkGroup.validate_collection_update(web.data())
+        if not new_nets:
+            raise web.badrequest()
         task_manager = CheckNetworksTaskManager(cluster_id=cluster.id)
-        task = task_manager.execute(data)
+        task = task_manager.execute(new_nets)
+
+        nets_to_render = []
+        error = False
+        for ng in new_nets:
+            ng_db = orm().query(NetworkGroup).get(ng['id'])
+            for key, value in ng.iteritems():
+                setattr(ng_db, key, value)
+            try:
+                ng_db.create_networks()
+                ng_db.cluster.add_pending_changes("networks")
+            except Exception as exc:
+                err = str(exc)
+                update_task_status(
+                    task.uuid,
+                    status="error",
+                    progress=100,
+                    msg=err
+                )
+                logger.error(traceback.format_exc())
+                error = True
+                break
+            nets_to_render.append(ng_db)
+
+        if task.status == 'error':
+            orm().rollback()
+        else:
+            orm().commit()
 
         return json.dumps(
             TaskHandler.render(task),

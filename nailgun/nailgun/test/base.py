@@ -103,11 +103,11 @@ class BaseHandlers(TestCase):
 
     def generate_ui_networks(self, cluster_id):
         net_names = (
-            "floating",
-            "public",
-            "management",
-            "storage",
-            "fixed"
+            "floating_test",
+            "public_test",
+            "management_test",
+            "storage_test",
+            "fixed_test"
         )
         net_cidrs = (
             "240.0.0.0/24",

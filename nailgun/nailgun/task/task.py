@@ -8,6 +8,7 @@ import subprocess
 import shlex
 
 import web
+import netaddr
 from sqlalchemy.orm import object_mapper, ColumnProperty
 
 import nailgun.rpc as rpc
@@ -425,3 +426,18 @@ class CheckNetworksTask(object):
     @classmethod
     def execute(self, task, data):
         task_uuid = task.uuid
+        for ng in data:
+            if 'cidr' in ng and netaddr.IPSet([ng['cidr']]) & \
+                    netaddr.IPSet(settings.NET_EXCLUDE):
+                raise Exception(
+                    "Intersection with admin "
+                    "network(s) '{0}' found".format(
+                        settings.NET_EXCLUDE
+                    )
+                )
+            ng_db = orm().query(NetworkGroup).get(ng['id'])
+            if not ng_db:
+                raise Exception(
+                    "NetworkGroup with id=%s "
+                    "not found in DB" % ng['id']
+                )

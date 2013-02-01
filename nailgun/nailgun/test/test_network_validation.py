@@ -28,6 +28,10 @@ class TestHandlers(BaseHandlers):
         self.assertEquals(task['status'], 'ready')
         self.assertEquals(task['progress'], 100)
         self.assertEquals(task['name'], 'check_networks')
+        ngs_created = self.db.query(NetworkGroup).filter(
+            NetworkGroup.name.in_([n['name'] for n in nets])
+        ).all()
+        self.assertEquals(len(ngs_created), len(nets))
 
     def test_network_checking_fails_if_admin_intersection(self):
         cluster = self.create_cluster_api()
@@ -43,32 +47,13 @@ class TestHandlers(BaseHandlers):
             headers=self.default_headers,
             expect_errors=True
         )
-        self.assertEquals(resp.status, 400)
+        self.assertEquals(resp.status, 200)
+        task = json.loads(resp.body)
+        self.assertEquals(task['status'], 'error')
+        self.assertEquals(task['progress'], 100)
+        self.assertEquals(task['name'], 'check_networks')
         self.assertEquals(
-            resp.body,
-            "Intersection with admin "
-            "network(s) '{0}' found".format(
-                settings.NET_EXCLUDE
-            )
-        )
-
-    def test_network_checking_fails_if_admin_intersection(self):
-        cluster = self.create_cluster_api()
-        node = self.create_default_node(cluster_id=cluster['id'],
-                                        role="controller",
-                                        pending_addition=True)
-        nets = self.generate_ui_networks(cluster["id"])
-        nets[-1]["cidr"] = settings.NET_EXCLUDE[0]
-        resp = self.app.put(
-            reverse('ClusterSaveNetworksHandler',
-                    kwargs={'cluster_id': cluster['id']}),
-            json.dumps(nets),
-            headers=self.default_headers,
-            expect_errors=True
-        )
-        self.assertEquals(resp.status, 400)
-        self.assertEquals(
-            resp.body,
+            task['message'],
             "Intersection with admin "
             "network(s) '{0}' found".format(
                 settings.NET_EXCLUDE
