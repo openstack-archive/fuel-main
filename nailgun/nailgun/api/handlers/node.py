@@ -86,10 +86,10 @@ class NodeCollectionHandler(JSONHandler):
         orm().add(node)
         orm().commit()
         try:
-            ram = round(int(node.meta['memory']) / 1073741824, 1)
-        except (KeyError, TypeError):
+            ram = str(round(int(node.meta['memory']) / 1073741824, 1))
+        except (KeyError, TypeError, ValueError):
             ram = "unknown"
-        cores = node.meta.get('cpu', {}).get('total', "unknown")
+        cores = str(node.meta.get('cpu', {}).get('total', "unknown"))
         notifier.notify("discover",
                         "New node with %s CPU core(s) "
                         "and %s GB memory is discovered" %

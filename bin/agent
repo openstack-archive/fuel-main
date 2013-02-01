@@ -152,8 +152,8 @@ class NodeAgent
         },
       :interfaces => [],
       :cpu => {
-        :total => (@os[:cpu][:total] rescue nil),
-        :real => (@os[:cpu][:real] rescue nil),
+        :total => (@os[:cpu][:total].to_i rescue nil),
+        :real => (@os[:cpu][:real].to_i rescue nil),
         :spec => [],
         },
       :disks => [],
@@ -175,7 +175,7 @@ class NodeAgent
       if cpu =~ /^[\d]+/ and cpuinfo
         detailed_meta[:cpu][:spec] << {
           # .to_i.to_s is applied in order to round to integer
-          :mhz => (cpuinfo[:mhz].to_i.to_s rescue nil),
+          :mhz => (cpuinfo[:mhz].to_i rescue nil),
           :model => (cpuinfo[:model_name].gsub(/ +/, " ") rescue nil)
         }
       end
@@ -189,7 +189,7 @@ class NodeAgent
         detailed_meta[:disks] << {
           :name => bname,
           :model => binfo[:model],
-          :size => (binfo[:size].to_i * block_size).to_s,
+          :size => (binfo[:size].to_i * block_size),
         }
       end
 
@@ -233,11 +233,11 @@ class NodeAgent
         size, unit = $1.to_i, $2
         case unit
         when /^kb$/i
-          return (size * 1024).to_s
+          return (size * 1024)
         when /^mb$/i
-          return (size * 1048576).to_s
+          return (size * 1048576)
         when /^gb$/i
-          return (size * 1073741824).to_s
+          return (size * 1073741824)
         end
         nil
       end

@@ -14,7 +14,7 @@
             "meta": {
               "disks": [
                 {
-                  "size": "320072933376",
+                  "size": 320072933376,
                   "model": "TOSHIBA MK3259GS",
                   "name": "sda"
                 }
@@ -34,11 +34,11 @@
                 "real": 1,
                 "spec": [
                   {
-                    "mhz": "1200",
+                    "mhz": 1200,
                     "model": "Intel(R) Core(TM)2 Duo CPU T6570 @ 2.10GHz"
                   },
                   {
-                    "mhz": "1200",
+                    "mhz": 1200,
                     "model": "Intel(R) Core(TM)2 Duo CPU T6570 @ 2.10GHz"
                   }
                 ]
