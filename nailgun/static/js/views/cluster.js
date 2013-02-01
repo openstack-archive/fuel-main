@@ -1143,7 +1143,7 @@ function(models, commonViews, dialogViews, clusterPageTemplate, deploymentResult
             el.find('.show-more-entries').remove();
             _.each([100, 500, 1000, 5000, 10000], function(count) {
                 if (count < entriesCount) {
-                    el.find('.show-all-entries').before($('<span/>', {class: 'show-more-entries', text: count}));
+                    el.find('.show-all-entries').before($('<span/>', {'class': 'show-more-entries', text: count}));
                 }
             }, this);
         },
