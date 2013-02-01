@@ -17,11 +17,11 @@
       <% var net_manager = cluster.get('net_manager') %>
       <div class="form-inline net-manager">
         <label class="radio">
-          <input type="radio" name="net-manager" id="optionsRadios1" value="FlatDHCPManager" <%= net_manager == 'FlatDHCPManager' ? 'checked' : '' %>>FlatDHCP Manager
+          <input type="radio" name="net-manager" id="optionsRadios1" value="FlatDHCPManager" <%= net_manager == 'FlatDHCPManager' ? 'checked' : '' %> <%= disabled %>>FlatDHCP Manager
         </label>
         <div class="spacer"></div>
         <label class="radio">
-          <input type="radio" name="net-manager" id="optionsRadios2" value="VlanManager" <%= net_manager == 'VlanManager' ? 'checked' : '' %>>VLAN Manager
+          <input type="radio" name="net-manager" id="optionsRadios2" value="VlanManager" <%= net_manager == 'VlanManager' ? 'checked' : '' %> <%= disabled %>>VLAN Manager
         </label>
       </div>
 
