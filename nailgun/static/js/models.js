@@ -112,7 +112,7 @@ define(function() {
         },
         resource: function(resourceName) {
             var resource = 0;
-            if (!_.isEmpty(this.get('meta'))) {
+            try {
                 if (resourceName == 'cores') {
                     resource = this.get('meta').cpu.total;
                 } else if (resourceName == 'hdd') {
@@ -126,6 +126,9 @@ define(function() {
                 } else if (resourceName == 'ram') {
                     resource = this.get('meta').memory/Math.pow(1024, 3);
                 }
+            } catch (e) {}
+            if (_.isNaN(resource)) {
+                resource = 0;
             }
             return resource;
         }
