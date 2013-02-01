@@ -183,7 +183,7 @@ class FakeVerificationThread(FakeThread):
 
         resp_method = getattr(receiver, self.respond_to)
         kwargs['progress'] = 0
-        timeout = 10
+        timeout = 30
         timer = time.time()
         ready = False
         while not ready and not self.stoprequest.isSet():

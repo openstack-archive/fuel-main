@@ -33,39 +33,3 @@ class NetworkCollectionHandler(JSONHandler):
             map(self.render, nets),
             indent=4
         )
-
-    def PUT(self):
-        web.header('Content-Type', 'application/json')
-        new_nets = NetworkGroup.validate_collection_update(web.data())
-        if not new_nets:
-            raise web.badrequest()
-
-        nets_to_render = []
-        error = False
-        for ng in new_nets:
-            ng_db = orm().query(NetworkGroup).get(ng['id'])
-            if not ng_db:
-                raise web.badrequest(
-                    message="NetworkGroup with id=%s not found in DB" %
-                    ng['id'])
-            for key, value in ng.iteritems():
-                setattr(ng_db, key, value)
-            try:
-                ng_db.create_networks()
-                ng_db.cluster.add_pending_changes("networks")
-            except Exception as exc:
-                notifier.notify("error", exc.message)
-                err = str(exc)
-                logger.error(traceback.format_exc())
-                error = True
-                break
-            nets_to_render.append(ng_db)
-        if not error:
-            orm().commit()
-        else:
-            orm().rollback()
-
-        return json.dumps(
-            map(self.render, nets_to_render),
-            indent=4
-        )
