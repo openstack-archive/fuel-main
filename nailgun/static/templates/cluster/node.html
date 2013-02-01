@@ -58,9 +58,11 @@
   </div>
   <div class="node-hardware">
     <ul>
-      <li>CPU: <%= _.isNumber(node.resource('cores')) ? node.resource('cores') : '?' %></li>
-      <li>HDD: <%= _.isNumber(node.resource('hdd')) ? node.resource('hdd').toFixed(1) : '?' %> TB</li>
-      <li>RAM: <%= _.isNumber(node.resource('ram')) ? node.resource('ram').toFixed(1) : '?' %> GB</li>
+      <% if (!_.isEmpty(node.get('meta'))) { %>
+        <li>CPU: <%= _.isNumber(node.resource('cores')) ? node.resource('cores') : '?' %></li>
+        <li>HDD: <%= node.resource('hdd') ? node.resource('hdd').toFixed(1) : '?' %> TB</li>
+        <li>RAM: <%= _.isNumber(node.resource('ram')) ? node.resource('ram').toFixed(1) : '?' %> GB</li>
+      <% } %>
     </ul>
   </div>
 
