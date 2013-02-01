@@ -144,7 +144,7 @@ class VerifyNetworksTaskManager(TaskManager):
             err = str(exc)
             logger.error(traceback.format_exc())
             update_task_status(
-                task_deployment.uuid,
+                task.uuid,
                 status="error",
                 progress=100,
                 msg=err
