@@ -725,13 +725,20 @@ function(models, commonViews, dialogViews, clusterPageTemplate, deploymentResult
                 this.$('.apply-btn').attr('disabled', true);
                 this.model.update({net_manager: this.$('.net-manager input[checked]').val()});
                 Backbone.sync('update', this.networks, {
+                    url: '/api/clusters/' + this.model.id + '/save/networks',
                     error: _.bind(function() {
                         this.$('.apply-btn').attr('disabled', false);
                         var dialog = new dialogViews.SimpleMessage({error: true, title: 'Networks'});
                         this.registerSubView(dialog);
                         dialog.render();
                     }, this),
-                    success: _.bind(function() {
+                    success: _.bind(function(task) {
+                        if (task.status == 'error') {
+                            this.$('.apply-btn').attr('disabled', false);
+                            var dialog = new dialogViews.SimpleMessage({title: 'Networks', message: task.message});
+                            this.registerSubView(dialog);
+                            dialog.render();
+                        }
                         this.networks.hasChanges = false;
                         this.settingsSaved = this.networks.toJSON();
                     }, this)
