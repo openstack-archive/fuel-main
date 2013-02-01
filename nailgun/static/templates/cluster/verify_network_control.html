@@ -36,14 +36,14 @@
       </div>
 
       <% if (task && task.get('status') == 'ready') { %>
-        <div class="page-control-success-placeholder">Verification Succeeded</div>
+        <div class="page-control-success-placeholder enable-selection">Verification Succeeded</div>
       <% } else if (task && task.get('status') == 'error') { %>
-        <div class="page-control-error-placeholder">
+        <div class="page-control-error-placeholder enable-selection">
           Verification Failed: <%- task.get('message') %>
         </div>
         <% if (task.get('result').length) { %>
           <div class="verification-result-table">
-            <table class="table table-condensed">
+            <table class="table table-condensed enable-selection">
               <thead><tr><th>Node Name</th><th>Node MAC address</th><th>Node Interface</th><th>Expected, but not received Vlan ID</th></tr></thead>
               <tbody>
                 <% _.each(task.get('result'), function(node) { %>
