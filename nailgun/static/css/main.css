@@ -1794,12 +1794,15 @@ h6.page-title {
   text-align: center;
   padding: 5px;
 }
-.table-logs .entries-skipped-msg .show-all-entries {
+.table-logs .entries-skipped-msg .show-all-entries, .table-logs .entries-skipped-msg .show-more-entries {
   color: #0088cc;
 }
-.table-logs .entries-skipped-msg .show-all-entries:hover {
+.table-logs .entries-skipped-msg .show-all-entries:hover, .table-logs .entries-skipped-msg .show-more-entries:hover {
   color: #005580;
   cursor: pointer;
+}
+.table-logs .entries-skipped-msg .show-more-entries {
+  margin-right: 10px;
 }
 
 /* logs coloring */

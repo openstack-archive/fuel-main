@@ -117,8 +117,13 @@ class LogEntryCollectionHandler(JSONHandler):
                 'size': log_file_size,
             })
 
+        try:
+            max_entries = int(user_data.get('max_entries',
+                                            settings.TRUNCATE_LOG_ENTRIES))
+        except ValueError:
+            logger.debug("Invalid 'max_entries' value: %d", max_entries)
+            raise web.badrequest("Invalid 'max_entries' value")
         entries_skipped = 0
-        max_entries = settings.TRUNCATE_LOG_ENTRIES
         if truncate_log:
             from_byte = 0
 

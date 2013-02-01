@@ -954,6 +954,7 @@ function(models, commonViews, dialogViews, clusterPageTemplate, deploymentResult
         logEntryTemplate: _.template(logEntryTemplate),
         events: {
             'click .show-logs-btn:not(.disabled)': 'onShowButtonClick',
+            'click .show-more-entries': 'onShowMoreClick',
             'click .show-all-entries': 'onShowAllClick',
             'change select': 'updateShowButtonState',
             'change select[name=type]': 'onTypeChange',
@@ -1067,6 +1068,10 @@ function(models, commonViews, dialogViews, clusterPageTemplate, deploymentResult
         onShowButtonClick: function() {
             this.showLogs({truncate_log: true});
         },
+        onShowMoreClick: function(e) {
+            var count = parseInt($(e.currentTarget).text(), 10) + this.$('.table-logs .log-entries tr').length;
+            this.showLogs({truncate_log: true, max_entries: count});
+        },
         onShowAllClick: function() {
             this.showLogs({});
         },
@@ -1113,7 +1118,7 @@ function(models, commonViews, dialogViews, clusterPageTemplate, deploymentResult
                     this.$('.table-logs .log-entries').html('');
                     if (data.entries.length) {
                         if (data.entries_skipped) {
-                            this.$('.table-logs .entries-skipped-msg').show().find('.entries-count').text(data.entries_skipped);
+                            this.showEntriesSkippedMsg(data.entries_skipped);
                         } else {
                             this.$('.table-logs .entries-skipped-msg').hide();
                         }
@@ -1130,6 +1135,17 @@ function(models, commonViews, dialogViews, clusterPageTemplate, deploymentResult
                     this.$('.show-logs-btn').removeClass('disabled');
                 }, this)
             });
+        },
+        showEntriesSkippedMsg: function(entriesCount) {
+            var el = this.$('.table-logs .entries-skipped-msg');
+            el.show();
+            el.find('.entries-count').text(entriesCount);
+            el.find('.show-more-entries').remove();
+            _.each([100, 500, 1000, 5000, 10000], function(count) {
+                if (count < entriesCount) {
+                    el.find('.show-all-entries').before($('<span/>', {class: 'show-more-entries', text: count}));
+                }
+            }, this);
         },
         appendLogEntries: function(data, doNotScroll) {
             this.from = data.from;
