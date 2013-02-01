@@ -2,7 +2,6 @@
 
 import json
 import uuid
-import logging
 import itertools
 
 import web
@@ -25,6 +24,7 @@ from nailgun.api.handlers.tasks import TaskHandler
 from nailgun.task.manager import DeploymentTaskManager
 from nailgun.task.manager import ClusterDeletionManager
 from nailgun.task.manager import VerifyNetworksTaskManager
+from nailgun.task.manager import CheckNetworksTaskManager
 from nailgun.task.errors import FailedProvisioning
 from nailgun.task.errors import DeploymentAlreadyStarted
 from nailgun.task.errors import WrongNodeStatus
@@ -170,7 +170,10 @@ class ClusterCollectionHandler(JSONHandler):
             if not free_vlans:
                 orm().delete(cluster)
                 orm().commit()
-                raise web.conflict("No empty VLAN numbers")
+                raise web.conflict(
+                    "There is not enough available VLAN IDs "
+                    "to create the cluster"
+                )
             vlan_start = free_vlans[0]
             logger.debug("Found free vlan: %s", vlan_start)
 
@@ -257,7 +260,7 @@ class ClusterChangesHandler(JSONHandler):
         )
 
 
-class ClusterNetworksHandler(JSONHandler):
+class ClusterVerifyNetworksHandler(JSONHandler):
     fields = (
         "id",
         "name",
@@ -273,6 +276,27 @@ class ClusterNetworksHandler(JSONHandler):
 
         task_manager = VerifyNetworksTaskManager(cluster_id=cluster.id)
         task = task_manager.execute(vlan_ids)
+
+        return json.dumps(
+            TaskHandler.render(task),
+            indent=4
+        )
+
+
+class ClusterSaveNetworksHandler(JSONHandler):
+    fields = (
+        "id",
+        "name",
+    )
+
+    def PUT(self, cluster_id):
+        web.header('Content-Type', 'application/json')
+        cluster = orm().query(Cluster).get(cluster_id)
+        if not cluster:
+            return web.notfound()
+        data = NetworkGroup.validate_collection_update(web.data())
+        task_manager = CheckNetworksTaskManager(cluster_id=cluster.id)
+        task = task_manager.execute(data)
 
         return json.dumps(
             TaskHandler.render(task),

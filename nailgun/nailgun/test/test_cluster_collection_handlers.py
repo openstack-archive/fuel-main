@@ -150,7 +150,7 @@ class TestHandlers(BaseHandlers):
     def test_verify_networks(self, mocked_rpc):
         cluster = self.create_cluster_api()
         resp = self.app.put(
-            reverse('ClusterNetworksHandler',
+            reverse('ClusterVerifyNetworksHandler',
                     kwargs={'cluster_id': cluster['id']}),
             json.dumps(self.generate_ui_networks(cluster["id"])),
             headers=self.default_headers

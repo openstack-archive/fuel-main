@@ -117,7 +117,9 @@ class Cluster(Base, BasicValidator):
         if orm().query(Cluster).filter(
             Cluster.name == d["name"]
         ).first():
-            raise web.webapi.conflict
+            raise web.webapi.conflict(
+                "Installation with this name already exists"
+            )
         if d.get("release"):
             release = orm().query(Release).get(d.get("release"))
             if not release:
@@ -396,13 +398,13 @@ class NetworkGroup(Base, BasicValidator):
 
     @classmethod
     def generate_vlan_ids_list(cls, data):
-        vlans_db = []
+        vlans = []
         for ng in data:
             current_vlan = ng["vlan_start"]
             for i in xrange(int(ng['amount'])):
-                vlans_db.append({'vlan_id': current_vlan})
+                vlans.append({'vlan_id': current_vlan})
                 current_vlan += 1
-        return vlans_db
+        return vlans
 
     @classmethod
     def validate_collection_update(cls, data):
@@ -500,6 +502,7 @@ class Task(Base, BasicValidator):
         'deployment',
         'node_deletion',
         'cluster_deletion',
+        'check_networks',
         'verify_networks'
     )
     id = Column(Integer, primary_key=True)

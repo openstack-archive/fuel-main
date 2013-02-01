@@ -135,7 +135,8 @@ class TestVerifyNetworks(BaseHandlers):
         receiver.verify_networks_resp(**kwargs)
         self.db.refresh(task)
         self.assertEqual(task.status, "error")
-        error_msg = "Received empty node list from orchestrator."
+        error_msg = 'Deployment Orchestrator failed to perform ' \
+                    'network connectivity check. See logs for details.'
         self.assertEqual(task.message, error_msg)
 
     def test_verify_networks_resp_empty_nodes_custom_error(self):

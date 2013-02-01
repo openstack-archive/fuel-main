@@ -5,7 +5,8 @@ import web
 from nailgun.api.handlers.cluster import ClusterHandler
 from nailgun.api.handlers.cluster import ClusterCollectionHandler
 from nailgun.api.handlers.cluster import ClusterChangesHandler
-from nailgun.api.handlers.cluster import ClusterNetworksHandler
+from nailgun.api.handlers.cluster import ClusterVerifyNetworksHandler
+from nailgun.api.handlers.cluster import ClusterSaveNetworksHandler
 from nailgun.api.handlers.cluster import ClusterAttributesHandler
 from nailgun.api.handlers.cluster import ClusterAttributesDefaultsHandler
 
@@ -44,7 +45,9 @@ urls = (
     r'/clusters/(?P<cluster_id>\d+)/attributes/defaults/?$',
     'ClusterAttributesDefaultsHandler',
     r'/clusters/(?P<cluster_id>\d+)/verify/networks/?$',
-    'ClusterNetworksHandler',
+    'ClusterVerifyNetworksHandler',
+    r'/clusters/(?P<cluster_id>\d+)/save/networks/?$',
+    'ClusterSaveNetworksHandler',
     r'/nodes/?$',
     'NodeCollectionHandler',
     r'/nodes/(?P<node_id>\d+)/?$',

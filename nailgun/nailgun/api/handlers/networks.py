@@ -1,7 +1,6 @@
 # -*- coding: utf-8 -*-
 
 import json
-import logging
 import traceback
 
 import web
@@ -11,8 +10,6 @@ from nailgun.logger import logger
 from nailgun.notifier import notifier
 from nailgun.api.models import NetworkGroup, ClusterChanges
 from nailgun.api.handlers.base import JSONHandler
-
-logger = logging.getLogger(__name__)
 
 
 class NetworkCollectionHandler(JSONHandler):

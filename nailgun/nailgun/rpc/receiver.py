@@ -105,6 +105,13 @@ class NailgunReceiver(object):
             cluster.status = 'error'
             orm().add(cluster)
             orm().commit()
+            if not task.message:
+                task.message = "Failed to delete nodes:\n{0}".format(
+                    cls._generate_error_message(
+                        task,
+                        error_types=('deletion',)
+                    )
+                )
             notifier.notify(
                 "error",
                 task.message,
@@ -145,7 +152,7 @@ class NailgunReceiver(object):
                 )
                 continue
 
-            for param in ('status', 'progress', 'error_msg'):
+            for param in ('status', 'progress', 'error_msg', 'error_type'):
                 if param in node:
                     logging.debug(
                         "Updating node {0} - set {1} to {2}".format(
@@ -209,12 +216,14 @@ class NailgunReceiver(object):
             update_task_status(task.uuid, status, progress, message)
 
     @classmethod
-    def _error_action(cls, task, status, progress):
+    def _generate_error_message(cls, task, error_types):
         nodes_info = []
         error_nodes = orm().query(Node).filter_by(
             cluster_id=task.cluster_id
         ).filter(
             Node.status.in_(('error', 'offline'))
+        ).filter(
+            Node.error_type.in_(error_types)
         ).all()
         for n in error_nodes:
             nodes_info.append(
@@ -229,6 +238,16 @@ class NailgunReceiver(object):
             )
         else:
             message = u"Deployment has failed. Check logs for details."
+        return u"\n".join(nodes_info)
+
+    @classmethod
+    def _error_action(cls, task, status, progress):
+        message = u"Deployment has failed:\n{0}".format(
+            cls._generate_error_message(
+                task,
+                error_types=('deploy', 'provision')
+            )
+        )
         notifier.notify(
             "error",
             message,
@@ -279,7 +298,7 @@ class NailgunReceiver(object):
                     "Public ip for controller node "
                     "not found in '{0}'".format(task.cluster.name))
         else:
-            message = ("Deployment of installation"
+            message = (u"Deployment of installation"
                        " '{0}' is done").format(task.cluster.name)
             logger.warning("Controller node not found in '{0}'".format(
                 task.cluster.name
@@ -317,7 +336,9 @@ class NailgunReceiver(object):
             if len(nodes) == 0:
                 status = 'error'
                 if not error_msg:
-                    error_msg = 'Received empty node list from orchestrator.'
+                    error_msg = 'Deployment Orchestrator failed to perform ' \
+                                'network connectivity check. ' \
+                                'See logs for details.'
             else:
                 nets_db = orm().query(Network).join(NetworkGroup).\
                     filter(NetworkGroup.cluster_id == task.cluster_id).all()

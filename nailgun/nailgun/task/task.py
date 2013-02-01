@@ -418,3 +418,10 @@ class VerifyNetworksTask(object):
                             'networks': networks,
                             'nodes': nodes}}
         rpc.cast('naily', message)
+
+
+class CheckNetworksTask(object):
+
+    @classmethod
+    def execute(self, task, data):
+        task_uuid = task.uuid

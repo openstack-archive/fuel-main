@@ -8,6 +8,7 @@ import traceback
 import web
 
 from nailgun.db import orm
+from nailgun.logger import logger
 from nailgun.settings import settings
 from nailgun.api.models import Cluster
 from nailgun.api.models import Task
@@ -20,8 +21,6 @@ from nailgun.task.errors import AssignIPError
 from nailgun.task.errors import FailedProvisioning
 
 from nailgun.task import task as tasks
-
-logger = logging.getLogger(__name__)
 
 
 class TaskManager(object):
@@ -98,6 +97,36 @@ class DeploymentTaskManager(TaskManager):
                 orm().commit()
 
         return supertask
+
+
+class CheckNetworksTaskManager(TaskManager):
+
+    def execute(self, data):
+        task = Task(
+            name="check_networks",
+            cluster=self.cluster
+        )
+        orm().add(task)
+        orm().commit()
+        try:
+            task.execute(tasks.CheckNetworksTask, data)
+            update_task_status(
+                task.uuid,
+                status="ready",
+                progress=100
+            )
+            orm().commit()
+        except Exception as exc:
+            err = str(exc)
+            logger.error(traceback.format_exc())
+            update_task_status(
+                task.uuid,
+                status="error",
+                progress=100,
+                msg=err
+            )
+            orm().commit()
+        return task
 
 
 class VerifyNetworksTaskManager(TaskManager):
