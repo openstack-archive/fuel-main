@@ -651,66 +651,79 @@ function(models, commonViews, dialogViews, clusterPageTemplate, deploymentResult
         makeChanges: function(e) {
             if (e) {
                 this.$(e.target).parents('.control-group').removeClass('error').find('.help-inline').text('');
+                var attribute = $.trim(this.$(e.target).parent().attr('class'));
+                var network = this.$(e.target).parents('.control-group').data('network-id');
+                var newValue = this.$(e.target).val();
+                if (attribute != 'cidr') {
+                    newValue = parseInt(newValue, 10);
+                }
+                this.networks.get(network).set(attribute, newValue);
             } else {
                 this.$('.control-group').removeClass('error').find('.help-inline').text('');
             }
+            if (_.isEqual(this.networks.toJSON(), this.settingsSaved) && this.model.get('net_manager') == this.$('.net-manager input[checked]').val()) {
+                this.$('.apply-btn').attr('disabled', true);
+            } else {
+                this.$('.apply-btn').attr('disabled', false);
+            }
             this.networks.hasChanges = true;
-            this.$('.apply-btn').attr('disabled', false);
             app.page.removeVerificationTask();
         },
         calculateVlanEnd: function() {
-            if (this.model.get('net_manager') == 'VlanManager') {
-                var amount = parseInt(this.$('.fixed-row .network-amount input').val(), 10);
-                var vlanStart = parseInt(this.$('.fixed-row .network-vlan input:first').val(), 10);
+            if (this.$('.net-manager input[checked]').val() == 'VlanManager') {
+                var amount = parseInt(this.$('.fixed-row .amount input').val(), 10);
+                var vlanStart = parseInt(this.$('.fixed-row .vlan_start input:first').val(), 10);
                 var vlanEnd =  vlanStart + amount - 1;
                 if (vlanEnd > 4094) {
                     vlanEnd = 4094;
                 }
-                this.$('input.network-vlan-end').val(vlanEnd);
+                this.$('input.vlan-end').val(vlanEnd);
             }
         },
         displayRange: function() {
-            if (this.model.get('net_manager') == 'VlanManager' && parseInt(this.$('.fixed-row .network-amount input').val(), 10) > 1 && parseInt(this.$('.fixed-row .network-vlan input:first').val(), 10)) {
+            if (this.$('.net-manager input[checked]').val() == 'VlanManager' && parseInt(this.$('.fixed-row .amount input').val(), 10) > 1 && parseInt(this.$('.fixed-row .vlan_start input:first').val(), 10)) {
                 this.$('.fixed-header .vlan').text('VLAN ID range');
-                this.$('.fixed-row .network-vlan input:first').addClass('range');
+                this.$('.fixed-row .vlan_start input:first').addClass('range');
                 this.calculateVlanEnd();
-                this.$('.network-vlan-end').show();
+                this.$('.vlan-end').show();
             } else {
                 this.$('.fixed-header .vlan').text('VLAN ID');
-                this.$('.network-vlan-end').hide();
+                this.$('.vlan-end').hide();
             }
         },
         changeManager: function(e) {
             this.$('.net-manager input').attr('checked', false);
             this.$(e.target).attr('checked', true);
-            this.model.set({net_manager: this.$(e.target).val()}, {silent: true});
             this.makeChanges();
-            this.$('.fixed-row .network-amount, .fixed-header .amount, .fixed-row .network-size, .fixed-header .size').toggle();
+            this.$('.fixed-row .amount, .fixed-header .amount, .fixed-row .network_size, .fixed-header .size').toggle();
             this.displayRange();
         },
-        changeMode: function(e) {
-            e.preventDefault();
-        },
-        apply: function() {
+        setValues: function() {
             var valid = true;
             this.$('.control-group').removeClass('error').find('.help-inline').text('');
             this.networks.each(function(network) {
                 var row = this.$('.control-group[data-network-name=' + network.get('name') + ']');
                 network.on('error', function(model, errors) {
                     valid = false;
-                    $('.network-error .help-inline', row).text(errors.cidr || errors.vlan_start || errors.amount);
+                    $('.error .help-inline', row).text(errors.cidr || errors.vlan_start || errors.amount);
                     row.addClass('error');
                 }, this);
                 network.set({
-                    cidr: $('.network-cidr input', row).val(),
-                    vlan_start: parseInt($('.network-vlan input:first', row).val(), 10),
-                    amount: this.model.get('net_manager') == 'FlatDHCPManager' ? 1 : parseInt($('.network-amount input', row).val(), 10),
-                    network_size: parseInt($('.network-size select', row).val(), 10)
+                    cidr: $('.cidr input', row).val(),
+                    vlan_start: parseInt($('.vlan_start input:first', row).val(), 10),
+                    amount: this.$('.net-manager input[checked]').val() == 'FlatDHCPManager' ? 1 : parseInt($('.amount input', row).val(), 10),
+                    network_size: parseInt($('.network_size select', row).val(), 10)
                 });
             }, this);
-            if (valid) {
+            return valid;
+        },
+        changeMode: function(e) {
+            e.preventDefault();
+        },
+        apply: function() {
+            if (this.setValues()) {
                 this.$('.apply-btn').attr('disabled', true);
-                this.model.update({net_manager: this.model.get('net_manager')});
+                this.model.update({net_manager: this.$('.net-manager input[checked]').val()});
                 Backbone.sync('update', this.networks, {
                     error: _.bind(function() {
                         this.$('.apply-btn').attr('disabled', false);
@@ -720,6 +733,7 @@ function(models, commonViews, dialogViews, clusterPageTemplate, deploymentResult
                     }, this),
                     success: _.bind(function() {
                         this.networks.hasChanges = false;
+                        this.settingsSaved = this.networks.toJSON();
                     }, this)
                 });
             }
@@ -747,23 +761,7 @@ function(models, commonViews, dialogViews, clusterPageTemplate, deploymentResult
             });
         },
         verifyNetworks: function() {
-            var valid = true;
-            this.$('.control-group').removeClass('error').find('.help-inline').text('');
-            this.networks.each(function(network) {
-                var row = this.$('.control-group[data-network-name=' + network.get('name') + ']');
-                network.on('error', function(model, errors) {
-                    valid = false;
-                    $('.network-error .help-inline', row).text(errors.cidr || errors.vlan_start || errors.amount);
-                    row.addClass('error');
-                }, this);
-                network.set({
-                    cidr: $('.network-cidr input', row).val(),
-                    vlan_start: parseInt($('.network-vlan input:first', row).val(), 10),
-                    amount: parseInt($('.network-amount input', row).val(), 10),
-                    network_size: parseInt($('.network-size select', row).val(), 10)
-                });
-            }, this);
-            if (valid) {
+            if (this.setValues()) {
                 this.$('.verify-networks-btn').attr('disabled', true);
                 app.page.removeVerificationTask().done(_.bind(this.startVerification, this));
             }
@@ -804,6 +802,7 @@ function(models, commonViews, dialogViews, clusterPageTemplate, deploymentResult
             this.$('.verification-control').html(verificationView.render().el);
         },
         render: function() {
+            this.settingsSaved = this.networks.toJSON();
             this.$el.html(this.template({cluster: this.model, networks: this.networks}));
             this.renderVerificationControl();
             return this;

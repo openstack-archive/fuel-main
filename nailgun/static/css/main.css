@@ -1228,15 +1228,15 @@ h6.page-title {
   width: 160px;
 }
 
-.networks-table .network-size select {
+.networks-table .network_size select {
   width: 90px;
 }
 
-.network-cidr input {
+.cidr input {
   width: 130px;
 }
 
-.networks-table .network-name {
+.networks-table .name {
   text-align: left;
   width: 90px;
   padding-top: 5px;
@@ -1247,27 +1247,27 @@ h6.page-title {
   margin-top: 20px;
 }
 
-.fixed-row .network-name {
+.fixed-row .name {
   font-weight: bold;
 }
 
-.networks-table .network-cidr {
+.networks-table .cidr {
   text-align: center;
   width: 140px;
   text-transform: capitalize;
 }
 
-.networks-table .network-vlan {
+.networks-table .vlan_start {
   text-transform: capitalize;
 }
 
-.networks-table .network-error {
+.networks-table .error {
   text-align: left;
   width: 260px;
   padding-top: 5px;
 }
 
-.network-error .help-inline {
+.error .help-inline {
   position: relative;
   top: -4px;
   display: block;

@@ -38,23 +38,23 @@
           <% networks.each(function(network) { %>
             <% if (network.get('name') != 'fixed') { %>
               <div class="row">
-                <div class="control-group" data-network-name="<%- network.get('name') %>">
-                  <div class="network-name"><%- network.get('name') %></div>
-                  <div class="network-cidr">
+                <div class="control-group" data-network-name="<%- network.get('name') %>" data-network-id="<%- network.get('id') %>">
+                  <div class="name"><%- network.get('name') %></div>
+                  <div class="cidr">
                     <input class="input-medium" type="text" value="<%- network.get('cidr') %>" maxlength="18" <%= disabled %> />
                   </div>
-                  <div class="network-amount hide">
+                  <div class="amount hide">
                     <input class="input-mini" type="text" value="<%- network.get('amount') %>" />
                   </div>
-                  <div class="network-size hide">
+                  <div class="network_size hide">
                     <select>
                       <option value="<%= network.get('network_size') %>" selected><%= network.get('network_size') %></option>
                     </select>
                   </div>
-                  <div class="network-vlan">
+                  <div class="vlan_start">
                     <input class="input-mini" type="text" value="<%- network.get('vlan_start') %>" maxlength="4" <%= disabled %> />
                   </div>
-                  <div class="network-error">
+                  <div class="error">
                     <span class="help-inline"></span>
                   </div>
                 </div>
@@ -76,15 +76,15 @@
             </div>
 
             <div class="row fixed-row">
-              <div class="control-group" data-network-name="<%- fixedNetwork.get('name') %>">
-                <div class="network-name">VM networks</div>
-                <div class="network-cidr">
+              <div class="control-group" data-network-name="<%- fixedNetwork.get('name') %>" data-network-id="<%- fixedNetwork.get('id') %>">
+                <div class="name">VM networks</div>
+                <div class="cidr">
                   <input class="input-medium" type="text" value="<%- fixedNetwork.get('cidr') %>" maxlength="18" <%= disabled %> />
                 </div>
-                <div class="network-amount <%= vlan %>">
+                <div class="amount <%= vlan %>">
                   <input class="input-mini range" type="text" value="<%- fixedNetwork.get('amount') %>" maxlength="4" <%= disabled %> />
                 </div>
-                <div class="network-size <%= vlan %>">
+                <div class="network_size <%= vlan %>">
                   <select <%= disabled %>>
                     <% var network_sizes = [4, 8, 16, 32, 64, 128, 256, 1024, 2048] %>
                     <% _.each(network_sizes, function(size) { %>
@@ -92,13 +92,13 @@
                     <% }) %>
                   </select>
                 </div>
-                <div class="network-vlan">
+                <div class="vlan_start">
                   <input class="input-mini <%= vlan ? '' : 'range' %>" type="text" value="<%- fixedNetwork.get('vlan_start') %>" maxlength="4" <%= disabled %> />
                   <% var vlan_end = fixedNetwork.get('vlan_start')+ fixedNetwork.get('amount') - 1 %>
-                  <span class="network-vlan-end <%= range ? '' : 'hide' %>">-</span>
-                  <input class="network-vlan-end input-mini <%= range  ? '' : 'hide' %>" type="text" value="<%= vlan_end %>" disabled />
+                  <span class="vlan-end <%= range ? '' : 'hide' %>">-</span>
+                  <input class="vlan-end input-mini <%= range  ? '' : 'hide' %>" type="text" value="<%= vlan_end %>" disabled />
                 </div>
-                <div class="network-error">
+                <div class="error">
                   <span class="help-inline"></span>
                 </div>
               </div>
