@@ -108,6 +108,8 @@ module Astute
       end
 
       chunk = get_chunk(fo, pattern_spec['chunk_size'])
+      # NOTE(mihgen): Following line fixes "undefined method `rindex' for nil:NilClass" for empty log file
+      return 0 unless chunk
       pos = chunk.rindex(separator)
       chunk = chunk.slice((pos + separator.size)..-1) if pos
       block = chunk.split("\n")
