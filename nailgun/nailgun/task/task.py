@@ -408,7 +408,8 @@ class VerifyNetworksTask(object):
     @classmethod
     def execute(self, task, data):
         task_uuid = task.uuid
-        networks = vlans_db = data
+        vlans_db = data.values()
+        networks = data
         iface_db = [{'iface': 'eth0', 'vlans': vlans_db}]
         nodes = [{'networks': iface_db, 'uid': n.id}
                  for n in task.cluster.nodes]

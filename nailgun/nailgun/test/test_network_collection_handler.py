@@ -102,7 +102,8 @@ class TestHandlers(BaseHandlers):
             'id': net1.id,
             'vlan_start': new_vlan_id}]
         resp = self.app.put(
-            reverse('ClusterSaveNetworksHandler'),
+            reverse('ClusterSaveNetworksHandler',
+                    kwargs={'cluster_id': cluster['id']}),
             json.dumps(new_nets),
             headers=self.default_headers
         )
@@ -112,11 +113,13 @@ class TestHandlers(BaseHandlers):
         self.assertEquals(net1.networks[0].vlan_id, 500)
 
     def test_networks_update_fails_with_wrong_net_id(self):
+        cluster = self.create_cluster_api()
         new_nets = [{
             'id': 500,
             'vlan_id': 500}]
         resp = self.app.put(
-            reverse('ClusterSaveNetworksHandler'),
+            reverse('ClusterSaveNetworksHandler',
+                    kwargs={'cluster_id': cluster['id']}),
             json.dumps(new_nets),
             headers=self.default_headers,
             expect_errors=True
