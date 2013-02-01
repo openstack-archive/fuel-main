@@ -80,7 +80,7 @@ function(models, simpleMessageTemplate, createClusterDialogTemplate, changeClust
                     }, this),
                     error: _.bind(function(model, response, options) {
                         if (response.status == 409) {
-                            this.$('.existing-cluster-message').show();
+                            this.$('.text-error').text(response.responseText).show();
                             this.$('.create-cluster-btn').removeClass('disabled');
                         } else {
                             this.displayErrorMessage();
@@ -90,7 +90,7 @@ function(models, simpleMessageTemplate, createClusterDialogTemplate, changeClust
             }
         },
         onInputKeydown: function(e) {
-            this.$('.existing-cluster-message').hide();
+            this.$('.text-error').hide();
             if (e.which == 13) {
                 this.createCluster();
             }
