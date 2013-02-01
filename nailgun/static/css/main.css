@@ -198,7 +198,6 @@ h6.page-title {
   left: 36px;
   padding: 1px 6px 1px 5px;
   cursor: pointer;
-  border-radius: 3px;
   -webkit-border-radius: 3px;
      -moz-border-radius: 3px;
           border-radius: 3px;
@@ -2491,10 +2490,6 @@ h6.page-title {
   text-transform: capitalize;
 }
 
-.modal-body {
-    max-height: 450px;
-}
-
 .label-info {
   margin-bottom: 10px;
 }
@@ -2698,7 +2693,6 @@ select[name=release] option {
   margin-top: 8px;
 }
 
-
 /* Verification Block */
 .form-inline > .spacer {
   display: inline-block;
@@ -2847,4 +2841,53 @@ select[name=release] option {
   display: block;
   height: 40px;
   overflow: hidden;
+}
+
+#nodeDetailsAccordion a {
+  text-transform: capitalize;
+  font-weight: bold;
+  color: #333;
+  background-color: #ececec;
+}
+
+#nodeDetailsAccordion a:hover {
+  text-decoration: none;
+}
+
+#nodeDetailsAccordion .accordion-inner div {
+  clear: both;
+  font-size: 12px;
+  line-height: 12px;
+  font-weight: bold;
+  padding: 4px;
+}
+
+#nodeDetailsAccordion .accordion-inner div label {
+  text-transform: uppercase;
+  display: inline-block;
+  float: left;
+  width: 30%;
+  font-size: 12px;
+  font-weight: bold;
+  line-height: 12px;
+}
+
+#nodeDetailsAccordion .nested-object {
+  border: 1px solid #ececec;
+  -webkit-border-radius: 3px;
+     -moz-border-radius: 3px;
+          border-radius: 3px;
+  margin-top: 3px;
+}
+
+#nodeDetailsAccordion .nested-object div {
+  padding: 0;
+}
+
+#nodeDetailsAccordion .nested-object div, #nodeDetailsAccordion .nested-object div label {
+  font-weight: normal;
+}
+
+.accordion-heading a {
+  cursor: default;
 }

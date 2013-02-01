@@ -1,4 +1,4 @@
-<div class="modal-body enable-selection">
+<div class="modal-body node-popup enable-selection">
   <div class="row-fluid">
     <div class="span5"><div class="node-image-outline"></div></div>
     <div class="span7">
@@ -7,19 +7,55 @@
       <div><strong>MAC Address: </strong><%- node.get('mac') ? node.get('mac') : '?' %></div>
     </div>
   </div>
-  <table class="table table-bordered table-condensed table-logs">
-    <thead><tr><th colspan="2">Hardware</th></tr></thead>
-    <tbody>
-      <tr><td>CPU</td><td><%= _.isNumber(node.resource('cores')) ? node.resource('cores') : '?' %></td></tr>
-      <tr><td>HDD</td><td><%= _.isNumber(node.resource('hdd')) ? node.resource('hdd').toFixed(1) : '?' %> TB</td></tr>
-      <tr><td>RAM</td><td><%= _.isNumber(node.resource('ram')) ? node.resource('ram').toFixed(1) : '?' %> GB</td></tr>
-    </tbody>
-    <thead><tr><th colspan="2">Other</th></tr></thead>
-    <tbody>
-      <tr><td>IP address</td><td><%- node.get('ip') ? node.get('ip') : '?' %></td></tr>
-      <tr><td>Platform name</td><td><%- node.get('platform_name') ? node.get('platform_name') : '?' %></td></tr>
-    </tbody>
-  </table>
+  <div class="accordion" id="nodeDetailsAccordion">
+    <% var meta = node.get('meta') %>
+      <% _.each(_.keys(meta), function(field) { %>
+        <div class="accordion-group">
+          <div class="accordion-heading"><a class="accordion-toggle" data-toggle="collapse" data-parent="#nodeDetailsAccordion" href="#"><%- field %></a></div>
+          <div class="accordion-body collapse in" id="<%- field %>">
+            <div class="accordion-inner">
+              <% if (_.isArray(meta[field])) { %>
+                <% _.each(meta[field], function(el) { %>
+                  <% if (!_.isArray(el) && _.isObject(el)) { %>
+                    <div class="nested-object">
+                      <% _.each(_.keys(el), function(key) { %>
+                        <% if (field == 'disks' && key == 'size') { %>
+                          <div><label><%- key %></label><%- (el[key]/Math.pow(1000, 4)).toFixed(1) %> TB</div>
+                        <% } else { %>
+                          <div><label><%- key %></label><%- el[key] %></div>
+                        <% } %>
+                      <% }) %>
+                    </div>
+                  <% } %>
+                <% }) %>
+              <% } else if (_.isObject(meta[field])) { %>
+                <% _.each(_.keys(meta[field]), function(key) { %>
+                  <% if (!_.isArray(meta[field][key]) && !_.isObject(meta[field][key])) { %>
+                    <div><label><%- key %></label><%- meta[field][key] %></div>
+                  <% } else if (_.isArray(meta[field][key])) { %>
+                    <% _.each(meta[field][key], function(el) { %>
+                      <% if (!_.isArray(el) && _.isObject(el)) { %>
+                        <div class="nested-object">
+                          <% _.each(_.keys(el), function(key) { %>
+                            <div><label><%- key %></label><%- el[key] %></div>
+                          <% }) %>
+                        </div>
+                      <% } %>
+                    <% }) %>
+                  <% } %>
+                <% }) %>
+              <% } else { %>
+                <% if (field == 'memory') { %>
+                  <div><%- (meta[field]/Math.pow(1024, 3)).toFixed(1) %> GB</div>
+                <% } else { %>
+                  <div><%- meta[field] %></div>
+                <% } %>
+              <% } %>
+            </div>
+          </div>
+        </div>
+      <% }) %>
+  </div>
 </div>
 <div class="modal-footer">
   <button class="btn node-modal-close" data-dismiss="modal">Close</button>
