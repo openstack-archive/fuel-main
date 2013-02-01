@@ -2581,8 +2581,8 @@ h6.page-title {
 
 .percentage {
   width: 35px;
-  padding-left: 10px;
-  padding-right: 0;
+  margin: 14px 0 0 12px;
+  line-height: 11px;
 }
 
 .deploying-progress-bar-box {
