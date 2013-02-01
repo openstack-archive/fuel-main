@@ -121,7 +121,8 @@ class TestHandlers(BaseHandlers):
             reverse('ClusterSaveNetworksHandler',
                     kwargs={'cluster_id': cluster['id']}),
             json.dumps(new_nets),
-            headers=self.default_headers,
-            expect_errors=True
+            headers=self.default_headers
         )
-        self.assertEquals(400, resp.status)
+        self.assertEquals(200, resp.status)
+        task = json.loads(resp.body)
+        self.assertEquals(task['message'], 'Invalid network ID')

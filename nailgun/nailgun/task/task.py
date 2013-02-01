@@ -428,6 +428,9 @@ class CheckNetworksTask(object):
     def execute(self, task, data):
         task_uuid = task.uuid
         for ng in data:
+            ng_db = orm().query(NetworkGroup).get(ng['id'])
+            if not ng_db:
+                raise Exception("Invalid network ID")
             if 'cidr' in ng and netaddr.IPSet([ng['cidr']]) & \
                     netaddr.IPSet(settings.NET_EXCLUDE):
                 raise Exception(

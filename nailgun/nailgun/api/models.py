@@ -117,7 +117,7 @@ class Cluster(Base, BasicValidator):
         if orm().query(Cluster).filter(
             Cluster.name == d["name"]
         ).first():
-            c =  web.webapi.conflict
+            c = web.webapi.conflict
             c.message = "Installation with this name already exists"
             raise c()
         if d.get("release"):

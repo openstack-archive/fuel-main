@@ -300,33 +300,33 @@ class ClusterSaveNetworksHandler(JSONHandler):
             raise web.badrequest()
         task_manager = CheckNetworksTaskManager(cluster_id=cluster.id)
         task = task_manager.execute(new_nets)
+        if task.status != 'error':
+            nets_to_render = []
+            error = False
+            for ng in new_nets:
+                ng_db = orm().query(NetworkGroup).get(ng['id'])
+                for key, value in ng.iteritems():
+                    setattr(ng_db, key, value)
+                try:
+                    ng_db.create_networks()
+                    ng_db.cluster.add_pending_changes("networks")
+                except Exception as exc:
+                    err = str(exc)
+                    update_task_status(
+                        task.uuid,
+                        status="error",
+                        progress=100,
+                        msg=err
+                    )
+                    logger.error(traceback.format_exc())
+                    error = True
+                    break
+                nets_to_render.append(ng_db)
 
-        nets_to_render = []
-        error = False
-        for ng in new_nets:
-            ng_db = orm().query(NetworkGroup).get(ng['id'])
-            for key, value in ng.iteritems():
-                setattr(ng_db, key, value)
-            try:
-                ng_db.create_networks()
-                ng_db.cluster.add_pending_changes("networks")
-            except Exception as exc:
-                err = str(exc)
-                update_task_status(
-                    task.uuid,
-                    status="error",
-                    progress=100,
-                    msg=err
-                )
-                logger.error(traceback.format_exc())
-                error = True
-                break
-            nets_to_render.append(ng_db)
-
-        if task.status == 'error':
-            orm().rollback()
-        else:
-            orm().commit()
+            if task.status == 'error':
+                orm().rollback()
+            else:
+                orm().commit()
 
         return json.dumps(
             TaskHandler.render(task),
