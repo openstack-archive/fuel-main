@@ -1260,16 +1260,9 @@ h6.page-title {
   text-transform: capitalize;
 }
 
-.networks-table .error {
-  text-align: left;
-  width: 260px;
-  padding-top: 5px;
-}
-
-.error .help-inline {
-  position: relative;
-  top: -4px;
+.networks-table .error .help-inline {
   display: block;
+  padding-top: 4px;
 }
 
 #networkManager {
@@ -2710,14 +2703,12 @@ select[name=release] option {
 .verification-network-placeholder {
   display: block;
   float: left;
-  width: 580px;
+  width: 590px;
   margin-right: 20px;
 }
 
 .verification-text-placeholder {
   display: block;
-  float: left;
-  width: 300px;
   height: auto;
 }
 
