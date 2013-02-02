@@ -11,10 +11,13 @@ require 'logger'
 require 'optparse'
 require 'yaml'
 
-unless /^root$/.match ENV['USER']
-  puts "You must be root"
-  exit 1
-end
+# The following check doesn't pass on bootstrap,
+#  and node will not be discovered. Disabling this
+#  until issue is found and resolved.
+#unless /^root$/.match ENV['USER']
+  #puts "You must be root"
+  #exit 1
+#end
 
 AGENT_CONFIG = "/etc/nailgun-agent/config.yaml"
 
