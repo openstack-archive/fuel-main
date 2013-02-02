@@ -31,8 +31,8 @@
       <div class="verification-text-placeholder">
           <li><strong>Network Verification is done in 3 steps:</strong></li>
           <li>1. Every node starts listening for test frames</li>
-          <li>2. On every node via eth0 802.1Q tagget UDP frames are seat</li>
-          <li>3. Listeners register test frames from other nodes</li>
+          <li>2. From every node 802.1Q tagged UDP frames are sent out</li>
+          <li>3. Nodes listeners register test frames from other nodes</li>
       </div>
 
       <% if (task && task.get('status') == 'ready') { %>
