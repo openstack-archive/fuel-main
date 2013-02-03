@@ -12,7 +12,7 @@ sed 's/HOSTNAME=.*/HOSTNAME=devnailgun.mirantis.com/' -i /etc/sysconfig/network
 echo "Installing puppet..."
 rpm -Uhv http://fedora-mirror02.rbc.ru/pub/epel/6/i386/epel-release-6-8.noarch.rpm
 rpm -ivh http://yum.puppetlabs.com/el/6/products/i386/puppetlabs-release-6-6.noarch.rpm
-#for pkg in `grep puppet /vagrant/requirements-rpm.txt`; do yum -y install $pkg; done
+for pkg in `grep puppet /vagrant/requirements-rpm.txt`; do yum -y install $pkg; done
 
 echo "Configuring puppet..."
 grep -q devnailgun /etc/puppet/puppet.conf || echo "    server = devnailgun.mirantis.com" >> /etc/puppet/puppet.conf
