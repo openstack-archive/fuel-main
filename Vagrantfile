@@ -1,21 +1,29 @@
 # -*- mode: ruby -*-
 # vi: set ft=ruby :
 
+
 ENVIRONMENT_SETUP_SCRIPT = <<-EOS
+# To use this script, you must fetch fuel submodule:
+#   git submodule update
 #!/bin/bash
-echo "10.0.2.15 devnailgun.mirantis.com devnailgun" >> /etc/hosts
+grep -q devnailgun /etc/hosts || echo "10.0.2.15 devnailgun.mirantis.com devnailgun" >> /etc/hosts
 sed 's/HOSTNAME=.*/HOSTNAME=devnailgun.mirantis.com/' -i /etc/sysconfig/network
-rpm -Uhv http://fedora-mirror02.rbc.ru/pub/epel/6/i386/epel-release-6-7.noarch.rpm
+
+echo "Installing puppet..."
+rpm -Uhv http://fedora-mirror02.rbc.ru/pub/epel/6/i386/epel-release-6-8.noarch.rpm
 rpm -ivh http://yum.puppetlabs.com/el/6/products/i386/puppetlabs-release-6-6.noarch.rpm
-yum -y install puppet-server puppet-2.7.19
-echo "    server = devnailgun.mirantis.com" >> /etc/puppet/puppet.conf
-echo "    certname = custom_id" >> /etc/puppet/puppet.conf
-chkconfig puppetmaster on; service puppetmaster start
-puppet agent --test
-puppet cert sign custom_id
+#for pkg in `grep puppet /vagrant/requirements-rpm.txt`; do yum -y install $pkg; done
+
+echo "Configuring puppet..."
+grep -q devnailgun /etc/puppet/puppet.conf || echo "    server = devnailgun.mirantis.com" >> /etc/puppet/puppet.conf
+grep -q autosign /etc/puppet/puppet.conf || echo "\n[master]\n    autosign = true" >> /etc/puppet/puppet.conf
+chkconfig puppetmaster on; service puppetmaster restart
 
 echo "Use fuel puppet modules to install mcollective&rabbitmq"
+rm -f /etc/puppet/modules.old || :
+mv /etc/puppet/modules /etc/puppet/modules.old || :
 ln -sfT /fuel/deployment/puppet /etc/puppet/modules
+mv /etc/puppet/manifests/site.pp /etc/puppet/manifests/site.pp.old || :
 cat > /etc/puppet/manifests/site.pp << EOF
 node default {
 
@@ -23,13 +31,13 @@ node default {
 
   class { mcollective::rabbitmq:
     stompuser => "mcollective",
-    stomppassword => "guest",
+    stomppassword => "mcollective",
   }
 
   class { mcollective::client:
     pskey => "noset",
     stompuser => "mcollective",
-    stomppassword => "guest",
+    stomppassword => "mcollective",
     stomphost => "127.0.0.1",
     stompport => "61613"
   }
@@ -37,7 +45,13 @@ node default {
 }
 EOF
 puppet agent --test
-yum -y install mcollective
+
+echo "Restoring site.pp and modules to previously set.."
+mv /etc/puppet/modules.old /etc/puppet/modules || :
+mv /etc/puppet/manifests/site.pp.old /etc/puppet/manifests/site.pp || :
+
+echo "Installing mcollective..."
+for pkg in `grep mcollective /vagrant/requirements-rpm.txt`; do yum -y install $pkg; done
 chkconfig mcollective on
 service mcollective start
 
@@ -56,8 +70,7 @@ Vagrant::Config.run do |config|
     # Boot with a GUI so you can see the screen. (Default is headless)
     #config.vm.boot_mode = :gui
 
-    config.vm.share_folder "v-data", "/opt", "."
-    config.vm.share_folder "v-data", "/fuel", "../fuel-folsom"
+    config.vm.share_folder "v-data", "/fuel", "./fuel"
     
     # extra network for testing
     vm_config.vm.network :hostonly, '10.1.1.2', :adapter => 2
