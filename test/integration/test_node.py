@@ -29,7 +29,7 @@ REMOTE_PYTHON = "/opt/nailgun/bin/python"
 
 
 def snapshot_errors(func):
-    """ Decorator to snapshot nodes when error occured in test.
+    """ Decorator to snapshot nodes when error occurred in test.
     """
     def decorator(*args, **kwagrs):
         ss_name = 'error-%d' % int(time.time())
@@ -39,7 +39,7 @@ def snapshot_errors(func):
         except Exception, e:
             exc = list(sys.exc_info())
             exc[2] = exc[2].tb_next
-            logging.warn('Some raise occered in method "%s"' % func.__name__)
+            logging.warn('Some raise occurred in method "%s"' % func.__name__)
             logging.warn(''.join(traceback.format_exception(*exc)))
             for node in ci.environment.nodes:
                 logging.info("Creating snapshot '%s' for node %s" %

@@ -41,7 +41,7 @@ module Naily
       begin
         @provisionLogParser.add_separator(nodes)
       rescue Exception => e
-        Naily.logger.warn "Some error occured when add separator to logs: #{e.message}, trace: #{e.backtrace.inspect}"
+        Naily.logger.warn "Some error occurred when add separator to logs: #{e.message}, trace: #{e.backtrace.inspect}"
       end
       time = 10 + time - Time::now.to_f
       sleep (time) if time > 0 # Wait while nodes going to reboot. Sleep not greater than 10 sec.
@@ -68,7 +68,7 @@ module Naily
               end
               reporter.report({'nodes' => nodes_progress})
             rescue Exception => e
-              Naily.logger.warn "Some error occured when parse logs for nodes progress: #{e.message}, trace: #{e.backtrace.inspect}"
+              Naily.logger.warn "Some error occurred when parse logs for nodes progress: #{e.message}, trace: #{e.backtrace.inspect}"
             end
             time = 5 + time - Time::now.to_f
             sleep (time) if time > 0 # Sleep not greater than 5 sec.

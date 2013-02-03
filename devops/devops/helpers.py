@@ -299,7 +299,7 @@ def xmlrpctoken(uri, login, password):
     try:
         return server.login(login, password)
     except:
-        raise AuthenticationError, "Error occured while login process"
+        raise AuthenticationError, "Error occurred while login process"
 
 
 def xmlrpcmethod(uri, method):
@@ -307,7 +307,7 @@ def xmlrpcmethod(uri, method):
     try:
         return getattr(server, method)
     except:
-        raise AttributeError, "Error occured while getting server method"
+        raise AttributeError, "Error occurred while getting server method"
 
 def retry(count, func, **kwargs):
     i = 0

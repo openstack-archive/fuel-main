@@ -62,7 +62,7 @@ class NailgunReceiver(object):
         orm().commit()
 
         success_msg = "No nodes were removed"
-        err_msg = "No errors occured"
+        err_msg = "No errors occurred"
         if nodes:
             success_msg = "Successfully removed {0} node(s)".format(
                 len(nodes)
@@ -167,7 +167,7 @@ class NailgunReceiver(object):
                         'error',
                         'offline'
                     ):
-                        # If failure occured with node
+                        # If failure occurred with node
                         # it's progress should be 100
                         node_db.progress = 100
                         # Notification on particular node failure

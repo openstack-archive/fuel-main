@@ -70,7 +70,7 @@ module Astute
       begin
         ctx.deploy_log_parser.add_separator(nodes)
       rescue Exception => e
-        Astute.logger.warn "Some error occured when add separator to logs: #{e.message}, trace: #{e.backtrace.inspect}"
+        Astute.logger.warn "Some error occurred when add separator to logs: #{e.message}, trace: #{e.backtrace.inspect}"
       end
 
       Astute.logger.debug "Waiting for puppet to finish deployment on all nodes (timeout = #{Astute.config.PUPPET_TIMEOUT} sec)..."
@@ -119,7 +119,7 @@ module Astute
                 nodes_to_report += nodes_progress
               end
             rescue Exception => e
-              Astute.logger.warn "Some error occured when parse logs for nodes progress: #{e.message}, "\
+              Astute.logger.warn "Some error occurred when parse logs for nodes progress: #{e.message}, "\
                                  "trace: #{e.backtrace.inspect}"
             end
           end

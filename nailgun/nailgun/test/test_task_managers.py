@@ -93,7 +93,7 @@ class TestTaskManagers(BaseHandlers):
         self.assertEquals(supertask.status, 'ready')
         self.assertEquals(supertask.progress, 100)
         self.assertEquals(supertask.message, (
-            "Successfully removed 1 node(s). No errors occured; "
+            "Successfully removed 1 node(s). No errors occurred; "
             "Deployment of installation '{0}' is done").format(
                 cluster['name']))
 

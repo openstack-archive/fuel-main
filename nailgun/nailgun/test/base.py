@@ -83,7 +83,7 @@ class BaseHandlers(TestCase):
                     data.extend(json.load(fxtr_file))
                 except:
                     logging.error(
-                        "Error occured while loading "
+                        "Error occurred while loading "
                         "fixture %s" % fxtr_path
                     )
         return data

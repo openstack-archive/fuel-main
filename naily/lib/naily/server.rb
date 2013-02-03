@@ -52,7 +52,7 @@ module Naily
         Naily.logger.error "Error running RPC method #{data['method']}: #{e.message}, trace: #{e.backtrace.inspect}"
         if data['respond_to']
           reporter = Naily::Reporter.new(@producer, data['respond_to'], data['args']['task_uuid'])
-          reporter.report({'status' => 'error', 'error' => "Error occured while running method '#{data['method']}'. See logs of Naily for details."})
+          reporter.report({'status' => 'error', 'error' => "Error occurred while running method '#{data['method']}'. See logs of Naily for details."})
         end
         return
       end

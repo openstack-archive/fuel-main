@@ -373,7 +373,7 @@ class DeletionTask(object):
                             )
                         )
                     except Exception as e:
-                        logger.warning("Exception occured while trying to \
+                        logger.warning("Exception occurred while trying to \
                                 remove the system from Cobbler: '{0}'".format(
                             e.message))
 
