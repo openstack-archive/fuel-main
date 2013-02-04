@@ -111,14 +111,15 @@ function(models, commonViews, dialogViews, networkTabTemplate, networkTabViewMod
                         dialog.render();
                     }, this),
                     success: _.bind(function(task) {
-                        if (task.status == 'error') {
+                        if (task && task.status == 'error') {
                             this.$('.apply-btn').attr('disabled', false);
-                            var dialog = new dialogViews.SimpleMessage({title: 'Networks', message: task.message});
-                            this.registerSubView(dialog);
-                            dialog.render();
+                        } else {
+                            this.networks.hasChanges = false;
+                            this.settingsSaved = this.networks.toJSON();
                         }
-                        this.networks.hasChanges = false;
-                        this.settingsSaved = this.networks.toJSON();
+                    }, this),
+                    complete: _.bind(function() {
+                        this.model.get('tasks').fetch({data: {cluster_id: this.model.id}});
                     }, this)
                 });
             }
@@ -140,6 +141,12 @@ function(models, commonViews, dialogViews, networkTabTemplate, networkTabViewMod
                 type: 'PUT',
                 url: '/api/clusters/' + this.model.id + '/verify/networks',
                 data: JSON.stringify(this.networks),
+                error:  _.bind(function() {
+                        this.$('.verify-networks-btn').attr('disabled', false);
+                        var dialog = new dialogViews.SimpleMessage({error: true, title: 'Network verification'});
+                        this.registerSubView(dialog);
+                        dialog.render();
+                    }, this),
                 complete: _.bind(function() {
                     this.model.get('tasks').fetch({data: {cluster_id: this.model.id}});
                 }, this)

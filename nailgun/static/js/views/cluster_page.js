@@ -35,6 +35,9 @@ function(models, commonViews, dialogViews, NodesTab, NetworkTab, SettingsTab, Lo
         removeVerificationTask: function() {
             var deferred;
             var task = this.model.task('verify_networks');
+            if (!task) {
+                task = this.model.task('check_networks');
+            }
             if (task && task.get('status') != 'running') {
                 this.model.get('tasks').remove(task);
                 deferred = task.destroy({silent: true});

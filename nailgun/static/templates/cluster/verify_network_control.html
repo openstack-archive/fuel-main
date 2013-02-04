@@ -3,13 +3,14 @@
     <div class="verification-box">
 
       <% var task = cluster.task('verify_networks') %>
+      <% if (!task) task = cluster.task('check_networks') %>
       <% var connectStatus, connectStatusLast %>
       <% if (!task || (task && task.get('status') == 'ready')) { %>
         <% connectStatus = 'stop'; connectStatusLast = 'stop'; %>
       <% } else if (task && task.get('status') == 'running') { %>
         <% connectStatus = 'success'; connectStatusLast = 'success'; %>
       <% } else if (task && task.get('status') == 'error') { %>
-        <% if (!task.get('result').length) connectStatus = 'error'; else connectStatus = 'success'; %>
+        <% if (task.get('name') == 'verify_networks' && !task.get('result').length) connectStatus = 'error'; else connectStatus = 'success'; %>
         <% connectStatusLast = 'error' %>
       <% } %>
       <div class="verification-network-placeholder">
