@@ -6,9 +6,7 @@ define(
 function(commonViews, releaseListTemplate) {
     'use strict';
 
-    var views = {};
-
-    views.ReleasesPage = commonViews.Page.extend({
+    var ReleasesPage = commonViews.Page.extend({
         navbarActiveElement: 'releases',
         breadcrumbsPath: [['Home', '#'], 'OpenStack Releases'],
         title: 'OpenStack Releases',
@@ -22,5 +20,5 @@ function(commonViews, releaseListTemplate) {
         }
     });
 
-    return views;
+    return ReleasesPage;
 });

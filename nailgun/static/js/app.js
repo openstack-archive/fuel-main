@@ -2,12 +2,12 @@ define(
 [
     'models',
     'views/common',
-    'views/cluster',
-    'views/clusters',
-    'views/release',
-    'views/notifications'
+    'views/cluster_page',
+    'views/clusters_page',
+    'views/releases_page',
+    'views/notifications_page'
 ],
-function(models, commonViews, clusterViews, clustersViews, releaseViews, notificationsViews) {
+function(models, commonViews, ClusterPage, ClustersPage, ReleasesPage, NotificationsPage) {
     'use strict';
 
     var AppRouter = Backbone.Router.extend({
@@ -44,17 +44,17 @@ function(models, commonViews, clusterViews, clustersViews, releaseViews, notific
             this.navigate('#cluster/' + id + '/nodes', {trigger: true, replace: true});
         },
         showClusterTab: function(id, activeTab, tabOptions) {
-            if (!_.contains(clusterViews.ClusterPage.prototype.tabs, activeTab)) {
+            if (!_.contains(ClusterPage.prototype.tabs, activeTab)) {
                 this.showCluster(id);
                 return;
             }
 
             var cluster;
             var render = function() {
-                this.setPage(new clusterViews.ClusterPage({model: cluster, activeTab: activeTab, tabOptions: tabOptions}));
+                this.setPage(new ClusterPage({model: cluster, activeTab: activeTab, tabOptions: tabOptions}));
             };
 
-            if (app.page && app.page.constructor == clusterViews.ClusterPage && app.page.model.id == id) {
+            if (app.page && app.page.constructor == ClusterPage && app.page.model.id == id) {
                 // just another tab has been chosen, do not load cluster again
                 cluster = app.page.model;
                 render.call(this);
@@ -71,7 +71,7 @@ function(models, commonViews, clusterViews, clustersViews, releaseViews, notific
             var clusters = new models.Clusters();
             clusters.fetch({
                 success: _.bind(function() {
-                    this.setPage(new clustersViews.ClustersPage({collection: clusters}));
+                    this.setPage(new ClustersPage({collection: clusters}));
                 }, this)
             });
         },
@@ -79,12 +79,12 @@ function(models, commonViews, clusterViews, clustersViews, releaseViews, notific
             var releases = new models.Releases();
             releases.fetch({
                 success: _.bind(function() {
-                    this.setPage(new releaseViews.ReleasesPage({collection: releases}));
+                    this.setPage(new ReleasesPage({collection: releases}));
                 }, this)
             });
         },
         showNotifications: function() {
-            this.setPage(new notificationsViews.NotificationsPage({collection: app.navbar.notifications, nodes: app.navbar.stats.nodes}));
+            this.setPage(new NotificationsPage({collection: app.navbar.notifications, nodes: app.navbar.stats.nodes}));
         },
         urlify: function (text) {
             var urlRegexp = /http:(\&\#x2F\;){2}(?:(?:[0-9]|[1-9][0-9]|1[0-9]{2}|2[0-4][0-9]|25[0-5])\.){3}(?:[0-9]|[1-9][0-9]|1[0-9]{2}|2[0-4][0-9]|25[0-5])(\&\#x2F\;)/g;

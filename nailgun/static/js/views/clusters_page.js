@@ -9,24 +9,23 @@ define(
 ],
 function(models, commonViews, dialogViews, clustersPageTemplate, clusterTemplate, newClusterTemplate) {
     'use strict';
+    var ClustersPage, ClusterList, Cluster;
 
-    var views = {};
-
-    views.ClustersPage = commonViews.Page.extend({
+    ClustersPage = commonViews.Page.extend({
         navbarActiveElement: 'clusters',
         breadcrumbsPath: [['Home', '#'], 'OpenStack Installations'],
         title: 'OpenStack Installations',
         template: _.template(clustersPageTemplate),
         render: function() {
             this.$el.html(this.template({clusters: this.collection}));
-            var clustersView = new views.ClusterList({collection: this.collection});
+            var clustersView = new ClusterList({collection: this.collection});
             this.registerSubView(clustersView);
             this.$('.cluster-list').html(clustersView.render().el);
             return this;
         }
     });
 
-    views.ClusterList = Backbone.View.extend({
+    ClusterList = Backbone.View.extend({
         className: 'roles-block-row',
         newClusterTemplate: _.template(newClusterTemplate),
         events: {
@@ -44,7 +43,7 @@ function(models, commonViews, dialogViews, clustersPageTemplate, clusterTemplate
             this.tearDownRegisteredSubViews();
             this.$el.html('');
             this.collection.each(_.bind(function(cluster) {
-                var clusterView = new views.Cluster({model: cluster});
+                var clusterView = new Cluster({model: cluster});
                 this.registerSubView(clusterView);
                 this.$el.append(clusterView.render().el);
             }, this));
@@ -53,7 +52,7 @@ function(models, commonViews, dialogViews, clustersPageTemplate, clusterTemplate
         }
     });
 
-    views.Cluster = Backbone.View.extend({
+    Cluster = Backbone.View.extend({
         tagName: 'a',
         className: 'span3 clusterbox',
         template: _.template(clusterTemplate),
@@ -119,5 +118,5 @@ function(models, commonViews, dialogViews, clustersPageTemplate, clusterTemplate
         }
     });
 
-    return views;
+    return ClustersPage;
 });

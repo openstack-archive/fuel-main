@@ -32,6 +32,12 @@ function(models, dialogViews, navbarTemplate, nodesStatsTemplate, notificationsT
         }
     });
 
+    views.Tab = Backbone.View.extend({
+        initialize: function(options) {
+            _.defaults(this, options);
+        }
+    });
+
     views.Navbar = Backbone.View.extend({
         className: 'container',
         template: _.template(navbarTemplate),

@@ -8,9 +8,7 @@ define(
 function(models, commonViews, dialogViews, notificationsListTemplate) {
     'use strict';
 
-    var views = {};
-
-    views.NotificationsPage = commonViews.Page.extend({
+    var NotificationsPage = commonViews.Page.extend({
         navbarActiveElement: null,
         breadcrumbsPath: [['Home', '#'], 'Notifications'],
         title: 'Notifications',
@@ -36,5 +34,5 @@ function(models, commonViews, dialogViews, notificationsListTemplate) {
         }
     });
 
-    return views;
+    return NotificationsPage;
 });
