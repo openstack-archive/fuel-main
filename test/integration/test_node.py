@@ -466,15 +466,16 @@ class TestNode(Base):
                 {'net_manager': net_manager}
             )
             if net_manager == "VlanManager":
-                response = self.client.get("/api/networks/")
+                response = self.client.get(
+                    "/api/networks/?cluster_id=%d" % cluster_id
+                )
                 networks = json.loads(response.read())
-                flat_net = [n for n in networks
-                            if n['name'] == 'fixed'
-                            and n['cluster_id'] == cluster_id
-                            ]
+                flat_net = [n for n in networks if n['name'] == 'fixed']
                 flat_net[0]['amount'] = 8
                 flat_net[0]['network_size'] = 16
-                self.client.put("/api/networks/", flat_net)
+                self.client.put(
+                    "/api/clusters/%d/save/networks/" % cluster_id, flat_net
+                )
         if not cluster_id:
             raise Exception("Could not get cluster '%s'" % name)
 
