@@ -190,7 +190,7 @@ class NodeAgent
       if cpu =~ /^[\d]+/ and cpuinfo
         detailed_meta[:cpu][:spec] << {
           # .to_i.to_s is applied in order to round to integer
-          :mhz => (cpuinfo[:mhz].to_i rescue nil),
+          :frequency => (cpuinfo[:mhz].to_i rescue nil),
           :model => (cpuinfo[:model_name].gsub(/ +/, " ") rescue nil)
         }
       end
