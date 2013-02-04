@@ -316,11 +316,11 @@ class TestTaskManagers(BaseHandlers):
         self.assertEquals(task.name, 'verify_networks')
         self.assertIn(task.status, ('running', 'ready'))
 
-    @patch('nailgun.task.task.rpc.cast', nailgun.task.task.fake_cast)
+    @patch('nailgun.task.task.rpc.cast')
     @patch('nailgun.task.task.settings.FAKE_TASKS', True)
     @patch('nailgun.task.fake.settings.FAKE_TASKS_TICK_COUNT', 80)
     @patch('nailgun.task.fake.settings.FAKE_TASKS_TICK_INTERVAL', 1)
-    def test_network_verify_fails_if_admin_intersection(self):
+    def test_network_verify_fails_if_admin_intersection(self, mocked_rpc):
         cluster = self.create_cluster_api()
         node1 = self.create_default_node(cluster_id=cluster['id'])
         node2 = self.create_default_node(cluster_id=cluster['id'])
@@ -347,6 +347,7 @@ class TestTaskManagers(BaseHandlers):
                 settings.NET_EXCLUDE
             )
         )
+        self.assertEquals(mocked_rpc.called, False)
 
     def test_deletion_empty_cluster_task_manager(self):
         cluster = self.create_cluster_api()
