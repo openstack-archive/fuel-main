@@ -11,13 +11,12 @@ require 'logger'
 require 'optparse'
 require 'yaml'
 
-# The following check doesn't pass on bootstrap,
-#  and node will not be discovered. Disabling this
-#  until issue is found and resolved.
-#unless /^root$/.match ENV['USER']
-  #puts "You must be root"
-  #exit 1
-#end
+unless Process.euid == 0
+  puts "You must be root"
+  exit 1
+end
+
+ENV['PATH'] = "/bin:/usr/bin:/sbin:/usr/sbin:/usr/local/bin:/usr/local/sbin"
 
 AGENT_CONFIG = "/etc/nailgun-agent/config.yaml"
 
@@ -164,14 +163,17 @@ class NodeAgent
     }
 
     (@os[:network][:interfaces] or {} rescue {}).each do |int, intinfo|
+      next if int =~ /^lo[:]?/
+      int_meta = {:name => int}
       (intinfo[:addresses] or {} rescue {}).each do |addr, addrinfo|
         if (addrinfo[:family] rescue nil) =~ /lladdr/
-          detailed_meta[:interfaces] << {
-            :name => int,
-            :mac => addr
-          }
+          int_meta[:mac] = addr
+        elsif (addrinfo[:family] rescue nil) =~ /^inet$/
+          int_meta[:ip] = addr
+          int_meta[:netmask] = addrinfo[:netmask] if addrinfo[:netmask]
         end
       end
+      detailed_meta[:interfaces] << int_meta
     end
 
     (@os[:cpu] or {} rescue {}).each do |cpu, cpuinfo|
@@ -188,7 +190,7 @@ class NodeAgent
       if bname =~ /^(sd|hd|vd)./ and binfo
         # 512 bytes is the size of one sector by default
         block_size = 512
-        block_size = `cat /sys/block/#{bname}/queue/logical_block_size`.to_i if $?.to_i == 0
+        block_size = `/bin/cat /sys/block/#{bname}/queue/logical_block_size`.to_i if $?.to_i == 0
         detailed_meta[:disks] << {
           :name => bname,
           :model => binfo[:model],
@@ -227,7 +229,7 @@ class NodeAgent
   end
 
   def _dmi_memory
-    dmi = `dmidecode`
+    dmi = `/usr/sbin/dmidecode`
     return nil if $?.to_i != 0
     mem_mapped = false
     dmi.each do |line|
