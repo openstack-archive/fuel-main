@@ -168,6 +168,8 @@ class NodeAgent
       (intinfo[:addresses] or {} rescue {}).each do |addr, addrinfo|
         if (addrinfo[:family] rescue nil) =~ /lladdr/
           int_meta[:mac] = addr
+          int_bandwidth = `/bin/cat /sys/class/net/#{int}/speed`.to_i if $?.to_i == 0
+          int_meta[:bandwidth] = int_bandwidth
         elsif (addrinfo[:family] rescue nil) =~ /^inet$/
           int_meta[:ip] = addr
           int_meta[:netmask] = addrinfo[:netmask] if addrinfo[:netmask]
