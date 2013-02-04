@@ -28,6 +28,21 @@ class TaskManager(object):
     def __init__(self, cluster_id):
         self.cluster = orm().query(Cluster).get(cluster_id)
 
+    def _run_silently(self, task, instance, *args, **kwargs):
+        if task.status == 'error':
+            return
+        try:
+            task.execute(instance, *args, **kwargs)
+        except Exception as exc:
+            err = str(exc)
+            logger.error(traceback.format_exc())
+            update_task_status(
+                task.uuid,
+                status="error",
+                progress=100,
+                msg=err
+            )
+
 
 class DeploymentTaskManager(TaskManager):
 
@@ -79,22 +94,15 @@ class DeploymentTaskManager(TaskManager):
             task_deployment = supertask.create_subtask("deployment")
 
         if task_deletion:
-            task_deletion.execute(tasks.DeletionTask)
+            self._run_silently(
+                task_deletion,
+                tasks.DeletionTask
+            )
         if task_deployment:
-            err = None
-            try:
-                task_deployment.execute(tasks.DeploymentTask)
-            except (AssignIPError, FailedProvisioning, Exception) as exc:
-                err = str(exc)
-                logger.error(traceback.format_exc())
-            if err:
-                update_task_status(
-                    task_deployment.uuid,
-                    status="error",
-                    progress=100,
-                    msg=err
-                )
-                orm().commit()
+            self._run_silently(
+                task_deployment,
+                tasks.DeploymentTask
+            )
 
         return supertask
 
@@ -108,48 +116,40 @@ class CheckNetworksTaskManager(TaskManager):
         )
         orm().add(task)
         orm().commit()
-        try:
-            task.execute(tasks.CheckNetworksTask, data)
+        self._run_silently(
+            task,
+            tasks.CheckNetworksTask,
+            data
+        )
+        orm().refresh(task)
+        if task.status == 'running':
             update_task_status(
                 task.uuid,
                 status="ready",
                 progress=100
             )
-            orm().commit()
-        except Exception as exc:
-            err = str(exc)
-            logger.error(traceback.format_exc())
-            update_task_status(
-                task.uuid,
-                status="error",
-                progress=100,
-                msg=err
-            )
-            orm().commit()
         return task
 
 
 class VerifyNetworksTaskManager(TaskManager):
 
-    def execute(self, data):
+    def execute(self, nets, vlan_ids):
         task = Task(
             name="verify_networks",
             cluster=self.cluster
         )
         orm().add(task)
         orm().commit()
-        try:
-            task.execute(tasks.VerifyNetworksTask, data)
-        except Exception as exc:
-            err = str(exc)
-            logger.error(traceback.format_exc())
-            update_task_status(
-                task.uuid,
-                status="error",
-                progress=100,
-                msg=err
-            )
-            orm().commit()
+        self._run_silently(
+            task,
+            tasks.CheckNetworksTask,
+            nets
+        )
+        self._run_silently(
+            task,
+            tasks.VerifyNetworksTask,
+            vlan_ids
+        )
         return task
 
 
@@ -159,7 +159,7 @@ class ClusterDeletionManager(TaskManager):
         current_cluster_tasks = orm().query(Task).filter_by(
             cluster=self.cluster,
             name='cluster_deletion'
-        )
+        ).all()
         deploy_running = orm().query(Task).filter_by(
             cluster=self.cluster,
             name='deploy',
@@ -197,5 +197,8 @@ class ClusterDeletionManager(TaskManager):
         task = Task(name="cluster_deletion", cluster=self.cluster)
         orm().add(task)
         orm().commit()
-        task.execute(tasks.ClusterDeletionTask)
+        self._run_silently(
+            task,
+            tasks.ClusterDeletionTask
+        )
         return task

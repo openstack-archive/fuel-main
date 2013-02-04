@@ -316,6 +316,38 @@ class TestTaskManagers(BaseHandlers):
         self.assertEquals(task.name, 'verify_networks')
         self.assertIn(task.status, ('running', 'ready'))
 
+    @patch('nailgun.task.task.rpc.cast', nailgun.task.task.fake_cast)
+    @patch('nailgun.task.task.settings.FAKE_TASKS', True)
+    @patch('nailgun.task.fake.settings.FAKE_TASKS_TICK_COUNT', 80)
+    @patch('nailgun.task.fake.settings.FAKE_TASKS_TICK_INTERVAL', 1)
+    def test_network_verify_fails_if_admin_intersection(self):
+        cluster = self.create_cluster_api()
+        node1 = self.create_default_node(cluster_id=cluster['id'])
+        node2 = self.create_default_node(cluster_id=cluster['id'])
+        nets = self.generate_ui_networks(cluster['id'])
+        nets[-1]['cidr'] = settings.NET_EXCLUDE[0]
+
+        resp = self.app.put(
+            reverse(
+                'ClusterVerifyNetworksHandler',
+                kwargs={'cluster_id': cluster['id']}),
+            json.dumps(nets),
+            headers=self.default_headers
+        )
+        self.assertEquals(200, resp.status)
+        response = json.loads(resp.body)
+        task_uuid = response['uuid']
+        task = self.db.query(Task).filter_by(uuid=task_uuid).first()
+        self.assertEquals(task.name, 'verify_networks')
+        self.assertIn(task.status, 'error')
+        self.assertIn(
+            task.message,
+            "Intersection with admin "
+            "network(s) '{0}' found".format(
+                settings.NET_EXCLUDE
+            )
+        )
+
     def test_deletion_empty_cluster_task_manager(self):
         cluster = self.create_cluster_api()
         resp = self.app.delete(

@@ -273,11 +273,13 @@ class ClusterVerifyNetworksHandler(JSONHandler):
         cluster = orm().query(Cluster).get(cluster_id)
         if not cluster:
             return web.notfound()
-        data = NetworkGroup.validate_collection_update(web.data())
-        vlan_ids = NetworkGroup.generate_vlan_ids_list(data)
+        nets = NetworkGroup.validate_collection_update(web.data())
+        if not nets:
+            raise web.badrequest()
+        vlan_ids = NetworkGroup.generate_vlan_ids_list(nets)
 
         task_manager = VerifyNetworksTaskManager(cluster_id=cluster.id)
-        task = task_manager.execute(vlan_ids)
+        task = task_manager.execute(nets, vlan_ids)
 
         return json.dumps(
             TaskHandler.render(task),
