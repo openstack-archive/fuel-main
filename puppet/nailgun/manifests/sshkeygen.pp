@@ -17,7 +17,6 @@ define nailgun::sshkeygen (
     owner => $username,
     group => $groupname,
     ensure => directory,
-    recurse => true,
   }
 
   file { "${homedir}/.ssh" :
