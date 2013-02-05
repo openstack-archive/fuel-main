@@ -94,7 +94,7 @@ class TestTaskManagers(BaseHandlers):
         self.assertEquals(supertask.progress, 100)
         self.assertEquals(supertask.message, (
             "Successfully removed 1 node(s). No errors occurred; "
-            "Deployment of installation '{0}' is done").format(
+            "Deployment of environment '{0}' is done").format(
                 cluster['name']))
 
     @patch('nailgun.task.task.rpc.cast', nailgun.task.task.fake_cast)
@@ -340,7 +340,7 @@ class TestTaskManagers(BaseHandlers):
 
         notification = self.db.query(Notification)\
             .filter(Notification.topic == "done")\
-            .filter(Notification.message == "Installation '%s' and all its "
+            .filter(Notification.message == "Environment '%s' and all its "
                     "nodes are deleted" % cluster["name"]).first()
         self.assertIsNotNone(notification)
 
@@ -387,7 +387,7 @@ class TestTaskManagers(BaseHandlers):
 
         notification = self.db.query(Notification)\
             .filter(Notification.topic == "done")\
-            .filter(Notification.message == "Installation '%s' and all its "
+            .filter(Notification.message == "Environment '%s' and all its "
                     "nodes are deleted" % cluster["name"]).first()
         self.assertIsNotNone(notification)
 
