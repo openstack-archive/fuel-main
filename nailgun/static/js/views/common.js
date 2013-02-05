@@ -92,6 +92,12 @@ function(models, dialogViews, navbarTemplate, nodesStatsTemplate, notificationsT
         initialize: function(options) {
             this.eventNamespace = 'click.click-notifications';
             this.elements = _.isArray(options.elements) ? options.elements : [];
+            $.ajax({
+                url: '/api/version',
+                success: _.bind(function(data) {
+                    this.version = data.release;
+                }, this)
+            });
             var complete = _.after(2, _.bind(this.scheduleUpdate, this));
             this.nodes = new models.Nodes();
             this.nodes.fetch({complete: complete});
@@ -106,6 +112,9 @@ function(models, dialogViews, navbarTemplate, nodesStatsTemplate, notificationsT
         render: function() {
             if (!this.$('.navigation-bar-ul a').length) {
                 this.$el.html(this.template({elements: this.elements}));
+            }
+            if (this.version) {
+                this.$('.header-version').html('Release version: ' + this.version);
             }
             this.stats = new views.NodesStats({nodes: this.nodes});
             this.registerSubView(this.stats);
