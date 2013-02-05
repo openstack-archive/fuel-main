@@ -53,6 +53,7 @@ describe LogParser do
       # FIXME(mihgen): I hope this calculation can be much simplified: needs refactoring
       # Assuming server was in reboot for reboot_time
       reboot_time = 30
+      # period will be useful for other test cases
       period_in_sec = hours * 60 * 60 + mins * 60 + secs + reboot_time
 
       # Let's normalize the time in table
@@ -67,8 +68,6 @@ describe LogParser do
 
     it "new progress must be equal or greater than previous" do
       progress_table, period_in_sec = test_supposed_time_parser(@pattern_spec)
-      t0 = progress_table[0]['time']
-      p0 = progress_table[0]['progress']
       progress_table.each_cons(2) do |el|
         el[1]['progress'].should be >= el[0]['progress']
         el[0]['progress'].should be >= 0
