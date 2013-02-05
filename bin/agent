@@ -169,13 +169,9 @@ class NodeAgent
         if (addrinfo[:family] rescue nil) =~ /lladdr/
           int_meta[:mac] = addr
 
-          int_bandwidth = nil
           fn = "/sys/class/net/#{int}/speed"
-          if int =~ /^eth[\d]+$/ and File.exist? fn
-            open(fn, "r") do |f|
-              int_bandwidth = lambda { |arg| arg.to_i if arg }.call f.gets
-            end
-          end
+          int_bandwidth = File.read(fn).to_i if int =~ /^eth[\d]+$/ and File.exist? fn
+          int_bandwidth = nil if int_bandwidth == 0
           int_meta[:bandwidth] = int_bandwidth
 
         elsif (addrinfo[:family] rescue nil) =~ /^inet$/
@@ -201,11 +197,8 @@ class NodeAgent
         # 512 bytes is the size of one sector by default
         block_size = 512
         fn = "/sys/block/#{bname}/queue/logical_block_size"
-        if File.exist? fn
-          open(fn, "r") do |f|
-            block_size = lambda { |arg| arg ? arg.to_i : block_size }.call f.gets
-          end
-        end
+        block_size = File.read(fn).to_i if File.exist? fn
+        block_size = 512 if block_size == 0
         detailed_meta[:disks] << {
           :name => bname,
           :model => binfo[:model],
