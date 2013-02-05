@@ -430,18 +430,21 @@ class CheckNetworksTask(object):
         for ng in data:
             ng_db = orm().query(NetworkGroup).get(ng['id'])
             if not ng_db:
-                raise Exception("Invalid network ID")
-            if 'cidr' in ng and netaddr.IPSet([ng['cidr']]) & \
-                    netaddr.IPSet(settings.NET_EXCLUDE):
-                raise Exception(
-                    "Intersection with admin "
-                    "network(s) '{0}' found".format(
-                        settings.NET_EXCLUDE
+                raise ValueError("Invalid network ID")
+            if 'cidr' in ng:
+                fnet = netaddr.IPSet([ng['cidr']])
+                if fnet & netaddr.IPSet(settings.NET_EXCLUDE):
+                    raise Exception(
+                        "Intersection with admin "
+                        "network(s) '{0}' found".format(
+                            settings.NET_EXCLUDE
+                        )
                     )
-                )
+                if fnet.size < ng['network_size'] * ng['amount']:
+                    raise ValueError("CIDR size is less than required")
             ng_db = orm().query(NetworkGroup).get(ng['id'])
             if not ng_db:
-                raise Exception(
+                raise KeyError(
                     "NetworkGroup with id=%s "
                     "not found in DB" % ng['id']
                 )

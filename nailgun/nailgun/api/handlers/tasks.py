@@ -33,8 +33,7 @@ class TaskHandler(JSONHandler):
         )
 
     def DELETE(self, task_id):
-        q = orm().query(Task)
-        task = q.get(task_id)
+        task = orm().query(Task).get(task_id)
         if not task:
             return web.notfound()
         if task.status not in ("ready", "error"):
