@@ -14,11 +14,11 @@ function(models, commonViews, settingsTabTemplate, settingsGroupTemplate) {
         events: {
             'click .btn-apply-changes:not([disabled])': 'applyChanges',
             'click .btn-revert-changes:not([disabled])': 'revertChanges',
-            'click .btn-set-defaults:not([disabled])': 'setDefaults'
+            'click .btn-load-defaults:not([disabled])': 'loadDefaults'
         },
         defaultButtonsState: function(buttonState) {
             this.$('.btn').attr('disabled', buttonState);
-            this.$('.btn-set-defaults').attr('disabled', !buttonState);
+            this.$('.btn-load-defaults').attr('disabled', !buttonState);
         },
         disableControls: function() {
             this.$('.btn, input').attr('disabled', true);
@@ -79,12 +79,13 @@ function(models, commonViews, settingsTabTemplate, settingsGroupTemplate) {
             this.parseSettings(this.model.get('settings').get('editable'));
             this.defaultButtonsState(true);
         },
-        setDefaults: function() {
-            this.model.get('settings').update({}, {
+        loadDefaults: function() {
+            this.model.get('settings').fetch({
                 url: '/api/clusters/' + this.model.id + '/attributes/defaults',
                 complete: _.bind(function() {
                     this.settingsSaved = this.model.get('settings').get('editable');
                     this.render();
+                    this.defaultButtonsState(false);
                 }, this)
             });
             this.disableControls();

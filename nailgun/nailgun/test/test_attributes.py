@@ -105,6 +105,23 @@ class TestAttributes(BaseHandlers):
         )
         self.assertEquals(400, resp.status)
 
+    def test_get_default_attributes(self):
+        cluster = self.create_cluster_api()
+        release = self.db.query(Release).get(
+            cluster['release']['id']
+        )
+        resp = self.app.put(
+            reverse(
+                'ClusterAttributesDefaultsHandler',
+                kwargs={'cluster_id': cluster['id']}),
+            headers=self.default_headers
+        )
+        self.assertEquals(200, resp.status)
+        self.assertEquals(
+            json.loads(resp.body)['editable'],
+            release.attributes_metadata['editable']
+        )
+
     def test_attributes_set_defaults(self):
         cluster = self.create_cluster_api()
         # Change editable attributes.

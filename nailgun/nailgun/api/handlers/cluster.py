@@ -389,6 +389,18 @@ class ClusterAttributesDefaultsHandler(JSONHandler):
         "editable",
     )
 
+    def GET(self, cluster_id):
+        web.header('Content-Type', 'application/json')
+        cluster = orm().query(Cluster).get(cluster_id)
+        if not cluster:
+            return web.notfound()
+
+        attrs = cluster.release.attributes_metadata.get("editable")
+        if not attrs:
+            raise web.internalerror("No attributes found!")
+
+        return json.dumps({"editable": attrs}, indent=4)
+
     def PUT(self, cluster_id):
         logger.debug('ClusterAttributesDefaultsHandler:'
                      ' PUT request with cluster_id %s' % cluster_id)
