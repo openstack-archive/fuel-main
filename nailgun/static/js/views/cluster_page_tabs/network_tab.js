@@ -33,6 +33,10 @@ function(models, commonViews, dialogViews, networkTabTemplate, networkTabViewMod
                 if (attribute != 'cidr') {
                     newValue = parseInt(newValue, 10);
                 }
+                this.networks.get(network).on('error', function(model, errors) {
+                    this.$(e.target).parents('.control-group').find('.error .help-inline').text(errors.cidr || errors.vlan_start || errors.amount);
+                    this.$(e.target).parents('.control-group').addClass('error');
+                }, this);
                 this.networks.get(network).set(attribute, newValue);
             } else {
                 this.$('.control-group').removeClass('error').find('.help-inline').text('');
@@ -71,7 +75,7 @@ function(models, commonViews, dialogViews, networkTabTemplate, networkTabViewMod
             this.$('.net-manager input').attr('checked', false);
             this.$(e.target).attr('checked', true);
             this.makeChanges();
-            this.$('.fixed-row .amount, .fixed-header .amount, .fixed-row .network_size, .fixed-header .size').toggle();
+            this.$('.fixed-row .amount, .fixed-header .amount, .fixed-row .network_size, .fixed-header .size').toggle().removeClass('hide');
             this.displayRange();
         },
         setValues: function() {
@@ -81,8 +85,6 @@ function(models, commonViews, dialogViews, networkTabTemplate, networkTabViewMod
                 var row = this.$('.control-group[data-network-name=' + network.get('name') + ']');
                 network.on('error', function(model, errors) {
                     valid = false;
-                    $('.error .help-inline', row).text(errors.cidr || errors.vlan_start || errors.amount);
-                    row.addClass('error');
                 }, this);
                 network.set({
                     cidr: $('.cidr input', row).val(),
