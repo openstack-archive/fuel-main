@@ -1,4 +1,5 @@
 COMMIT_SHA:=$(shell git rev-parse --verify HEAD)
+PRODUCT_VERSION:=0.1b
 
 CENTOS_MAJOR:=6
 CENTOS_MINOR:=3

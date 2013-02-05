@@ -60,9 +60,10 @@ $(ISOROOT)/isolinux/isolinux.cfg: $(SOURCE_DIR)/iso/isolinux/isolinux.cfg ; $(AC
 $(ISOROOT)/ks.cfg: $(SOURCE_DIR)/iso/ks.cfg ; $(ACTION.COPY)
 $(ISOROOT)/bootstrap_admin_node.sh: $(SOURCE_DIR)/iso/bootstrap_admin_node.sh ; $(ACTION.COPY)
 $(ISOROOT)/bootstrap_admin_node.conf: $(SOURCE_DIR)/iso/bootstrap_admin_node.conf ; $(ACTION.COPY)
-$(ISOROOT)/version.yaml: $(call depv,COMMIT_SHA)
+$(ISOROOT)/version.yaml: $(call depv,COMMIT_SHA) $(call depv,PRODUCT_VERSION)
 $(ISOROOT)/version.yaml:
 	echo "COMMIT_SHA: $(COMMIT_SHA)" > $@
+	echo "PRODUCT_VERSION: $(PRODUCT_VERSION)" > $@
 
 $(ISOROOT)/puppet-nailgun.tgz: \
 		$(call find-files,$(SOURCE_DIR)/puppet)

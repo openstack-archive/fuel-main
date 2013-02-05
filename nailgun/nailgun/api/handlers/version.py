@@ -13,5 +13,6 @@ class VersionHandler(JSONHandler):
     def GET(self):
         web.header('Content-Type', 'application/json')
         return json.dumps({
-            "sha": str(settings.COMMIT_SHA or "Unknown")
+            "sha": str(settings.COMMIT_SHA or "Unknown"),
+            "version": str(settings.PRODUCT_VERSION or "Unknown")
         })
