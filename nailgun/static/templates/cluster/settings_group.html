@@ -10,7 +10,7 @@
       <% } else { %>
           <div class="fieldset-group wrapper" data-nested="false">
             <% if (_.isBoolean(settings[key])) { %>
-              <label class="checkbox" for="<%- key %>"><%- key %>
+              <label class="checkbox"><%- key %>
                 <input type="checkbox" name="<%- key %>" <%= settings[key] ? 'checked' : '' %> <%= deployment ? 'disabled ' : '' %>/>
               </label>
             <% } else if (_.isArray(settings[key])) { %>
@@ -29,7 +29,7 @@
     <% }) %>
   <% } else { %>
     <% if (_.isBoolean(settings)) { %>
-      <label class="checkbox" for="<%- legend %>"><%- legend %>
+      <label class="checkbox"><%- legend %>
         <input type="checkbox" name="<%- legend %>" <%= settings ? 'checked' : '' %> <%= deployment ? 'disabled ' : '' %>/>
       </label>
     <% } else if (_.isArray(settings)) { %>
