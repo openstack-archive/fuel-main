@@ -43,7 +43,7 @@ define(function() {
         },
         canChangeMode: function(newMode) {
             var nodes = this.get('nodes');
-            return !(nodes.currentNodes().length || (nodes.where({role: 'controller'}).length > 1) || (newMode && newMode == 'singlenode' && (nodes.length > 1 || (nodes.length == 1 && !nodes.where({role: 'controller'}).length))));
+            return !(nodes.currentNodes().length || nodes.where({role: 'controller'}).length > 1 || (newMode && newMode == 'singlenode' && (nodes.length > 1 || (nodes.length == 1 && !nodes.where({role: 'controller'}).length))));
         },
         canChangeType: function(newType) {
             // FIXME: algorithmic complexity is very high
@@ -70,7 +70,7 @@ define(function() {
             return canChange;
         },
         availableModes: function() {
-            return ['singlenode', 'multinode', 'ha'];
+            return ['multinode', 'ha'];
         },
         availableTypes: function() {
             return ['compute', 'storage', 'both'];

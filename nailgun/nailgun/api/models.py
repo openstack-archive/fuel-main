@@ -89,7 +89,7 @@ class Cluster(Base, BasicValidator):
     NET_MANAGERS = ('FlatDHCPManager', 'VlanManager')
     id = Column(Integer, primary_key=True)
     type = Column(Enum(*TYPES), nullable=False, default='compute')
-    mode = Column(Enum(*MODES), nullable=False, default='singlenode')
+    mode = Column(Enum(*MODES), nullable=False, default='multinode')
     status = Column(Enum(*STATUSES), nullable=False, default='new')
     net_manager = Column(Enum(*NET_MANAGERS), nullable=False,
                          default='FlatDHCPManager')

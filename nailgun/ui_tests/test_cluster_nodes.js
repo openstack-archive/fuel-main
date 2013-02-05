@@ -15,7 +15,7 @@ casper.then(function() {
     this.test.assertDoesntExist('.node-list .btn-add-nodes.disabled', 'All Add Node buttons are enabled');
     this.test.assertDoesntExist('.node-list .btn-delete-nodes:not(.disabled)', 'All Delete Node buttons are disabled');
     this.test.assertExists('.node-list-controller .nodebox.nodeplaceholder', 'Placeholder for controller node presents');
-    this.test.assertEvalEquals(function() {return $('.node-list').length}, 1, 'Number of available roles is correct');
+    this.test.assertEvalEquals(function() {return $('.node-list').length}, 2, 'Number of available roles is correct');
 });
 
 casper.then(function() {
@@ -23,8 +23,8 @@ casper.then(function() {
     this.click('.summary .change-cluster-mode-btn');
     this.test.assertSelectorAppears('.modal', 'Cluster deployment mode dialog opens');
     this.then(function() {
-        this.test.assertExists('.modal input[type=radio][name=mode][value=singlenode]:checked', 'Singlenode deployment mode chosen');
-        this.test.assertNotVisible('.modal .type-control-group', 'Cluster types radio group is not visible if deployment mode is Singlenode');
+        this.test.assertExists('.modal input[type=radio][name=mode][value=multinode]:checked', 'Multinode deployment mode chosen');
+        //this.test.assertNotVisible('.modal .type-control-group', 'Cluster types radio group is not visible if deployment mode is Singlenode');
         this.click('.modal input[type=radio][name=mode][value=ha]');
         //this.test.assertVisible('.modal .type-control-group', 'Cluster types radio group is visible if deployment mode is Multi-node with HA');
         //this.test.assertDoesntExist('.modal input[type=radio][name=type][disabled]', 'All cluster type radio buttons are enabled');
