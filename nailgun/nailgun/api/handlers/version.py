@@ -14,5 +14,5 @@ class VersionHandler(JSONHandler):
         web.header('Content-Type', 'application/json')
         return json.dumps({
             "sha": str(settings.COMMIT_SHA or "Unknown"),
-            "version": str(settings.PRODUCT_VERSION or "Unknown")
+            "release": str(settings.PRODUCT_VERSION or "Unknown")
         })
