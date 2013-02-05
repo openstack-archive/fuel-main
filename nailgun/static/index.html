@@ -1,6 +1,6 @@
 <!DOCTYPE html>
-<html lang="en">
-  <head>
+  <html lang="en">
+    <head>
     <meta charset="utf-8">
     <title>Nailgun Dashboard</title>
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -9,6 +9,7 @@
     <link href="/static/css/bootstrap.css" rel="stylesheet">
     <link href="/static/css/fonticon.css" rel="stylesheet">
     <link href="/static/css/main.css" rel="stylesheet">
+
     <!--[if IE 7]>
       <link rel="stylesheet" href="css/fontello-ie7.css">
     <![endif]-->
@@ -16,13 +17,28 @@
     <!--[if lt IE 9]>
       <script src="http://html5shim.googlecode.com/svn/trunk/html5.js"></script>
     <![endif]-->
+
     <script data-main="/static/js/main" src="/static/js/libs/require.js"></script>
   </head>
+
   <body>
-    <div class="container">
-      <div id="content">
-        <div class="loading"></div>
+    <div id="wrap">
+      <div class="container">
+        <div id="content">
+          <div class="loading"></div>
+        </div>
+        <div id="push"></div>
       </div>
     </div>
-  </body>
+    
+    <div id="footer">
+      <div class="footer-box">
+        <div class="footer-logo"></div>
+          <div class="footer-info">
+            <div class="footer-version">Release version: 0.1 beta</div>
+          </div>
+      </div>
+    </div>
+
+    </body>
 </html>
