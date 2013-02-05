@@ -24,7 +24,7 @@ function(models, commonViews, ClusterPage, ClustersPage, ReleasesPage, Notificat
             this.content = $('#content');
             this.navbar = new commonViews.Navbar({elements: [
                 ['OpenStack Environments', '#clusters'],
-                ['OpenStack Releases', '#releases']
+                ['Support', 'http://fuel.mirantis.com/support/']
             ]});
             this.content.before(this.navbar.render().el);
             this.breadcrumbs = new commonViews.Breadcrumbs();

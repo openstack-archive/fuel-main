@@ -8,7 +8,7 @@
         <b>Deployment Mode: </b><%- modes[cluster.get('mode')] %> <%- cluster.get('mode') != 'singlenode' ? '(' + types[cluster.get('type')] + ')' : '' %>
       </li>
       <li class="btn btn-link summary-settings-btn disabled">
-        <b>Release: </b><%- cluster.get('release').get('name') %> <%- cluster.get('release').get('version') %>
+        <b>Version: </b><%- cluster.get('release').get('name') %> <%- cluster.get('release').get('version') %>
       </li>
     </ul>
   </div>
