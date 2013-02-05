@@ -19,13 +19,14 @@
       </span>-->
     </h3>
   </div>
+  <% var tasks = nodes.cluster.task('deploy', 'running') || nodes.cluster.task('verify_networks', 'running') ? true : false %>
   <div class="span2 roles-action-link">
-    <button class="btn btn-add-nodes btn-link pull-right <%= nodes.cluster.task('deploy', 'running') || size && nodesAfterDeployment.length >= size ? 'disabled' : '' %>">
+    <button class="btn btn-add-nodes btn-link pull-right <%= tasks || size && nodesAfterDeployment.length >= size ? 'disabled' : '' %>">
       <i class="icon-plus-circle"></i>Add
     </button>
   </div>
   <div class="span2 roles-action-link">
-    <button class="btn btn-delete-nodes btn-link pull-right <%= nodes.cluster.task('deploy', 'running') || !nodesAfterDeployment.length ? 'disabled' : '' %>">
+    <button class="btn btn-delete-nodes btn-link pull-right <%= tasks || !nodesAfterDeployment.length ? 'disabled' : '' %>">
       <i class="icon-cancel-circle"></i>Delete
     </button>
   </div>
