@@ -59,7 +59,8 @@
   <div class="node-hardware">
     <ul>
       <li>CPU: <%= node.resource('cores') && _.isNumber(node.resource('cores')) ? node.resource('cores') : '?' %></li>
-      <li>HDD: <%= node.resource('hdd') ? node.resource('hdd').toFixed(1) : '?' %> TB</li>
+      <% if (node.resource('hdd')) var hdd = node.resource('hdd')/Math.pow(1000, 3) %>
+      <li>HDD: <%= hdd ? hdd < 100 ? hdd.toFixed(1) + ' GB' : (hdd/1000).toFixed(1) + ' TB' : '? TB' %> </li>
       <li>RAM: <%= node.resource('ram') && _.isNumber(node.resource('ram')) ? node.resource('ram').toFixed(1) : '?' %> GB</li>
     </ul>
   </div>

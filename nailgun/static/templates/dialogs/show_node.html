@@ -15,12 +15,16 @@
           <div class="accordion-body collapse in" id="<%- field %>">
             <div class="accordion-inner">
               <% if (_.isArray(meta[field])) { %>
+                <% if (field == 'interfaces') meta[field] = _.sortBy(meta[field], function(el) {return el.name;}) %>
                 <% _.each(meta[field], function(el) { %>
                   <% if (!_.isArray(el) && _.isObject(el)) { %>
                     <div class="nested-object">
                       <% _.each(_.keys(el), function(key) { %>
                         <% if (field == 'disks' && key == 'size') { %>
-                          <div><label><%- key %></label><%- (el[key]/Math.pow(1000, 4)).toFixed(1) %> TB</div>
+                          <% var diskSize = el[key]/Math.pow(1000, 3) %>
+                          <div><label><%- key %></label><%- diskSize < 100 ? (diskSize).toFixed(1) + ' GB' : (diskSize/1000).toFixed(1) + ' TB' %></div>
+                        <% } else if (field == 'interfaces' && key == 'bandwidth') { %>
+                          <div><label><%- key %></label><%- (el[key]/1000).toFixed(1) %> Gbps</div>
                         <% } else { %>
                           <div><label><%- key %></label><%- el[key] %></div>
                         <% } %>
@@ -37,7 +41,7 @@
                       <% if (!_.isArray(el) && _.isObject(el)) { %>
                         <div class="nested-object">
                           <% _.each(_.keys(el), function(key) { %>
-                            <div><label><%- key %></label><%- el[key] %></div>
+                            <div><label><%- key %></label><%- field == 'cpu' && key == 'frequency' ? el[key] + ' MHz' : el[key] %></div>
                           <% }) %>
                         </div>
                       <% } %>
@@ -45,11 +49,7 @@
                   <% } %>
                 <% }) %>
               <% } else { %>
-                <% if (field == 'memory') { %>
-                  <div><%- (meta[field]/Math.pow(1024, 3)).toFixed(1) %> GB</div>
-                <% } else { %>
-                  <div><%- meta[field] %></div>
-                <% } %>
+                <div><%- field == 'memory' ? (meta[field]/Math.pow(1024, 3)).toFixed(1) +' GB' : meta[field] %></div>
               <% } %>
             </div>
           </div>

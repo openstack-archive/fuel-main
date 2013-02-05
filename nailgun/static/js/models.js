@@ -122,7 +122,7 @@ define(function() {
                             hdd += disk.size;
                         }
                     });
-                    resource = hdd/Math.pow(1000, 4);
+                    resource = hdd;
                 } else if (resourceName == 'ram') {
                     resource = this.get('meta').memory/Math.pow(1024, 3);
                 }

@@ -22,11 +22,13 @@
               "interfaces": [
                 {
                   "mac": "52:54:00:96:81:6E",
-                  "name": "eth0"
+                  "name": "eth0",
+                  "bandwidth": 1000
                 },
                 {
                   "mac": "C8:0A:A9:A6:FF:28",
-                  "name": "eth1"
+                  "name": "eth1",
+                  "bandwidth": 1000
                 }
               ],
               "cpu": {
@@ -34,11 +36,11 @@
                 "real": 1,
                 "spec": [
                   {
-                    "mhz": 1200,
+                    "frequency": 1200,
                     "model": "Intel(R) Core(TM)2 Duo CPU T6570 @ 2.10GHz"
                   },
                   {
-                    "mhz": 1200,
+                    "frequency": 1200,
                     "model": "Intel(R) Core(TM)2 Duo CPU T6570 @ 2.10GHz"
                   }
                 ]
