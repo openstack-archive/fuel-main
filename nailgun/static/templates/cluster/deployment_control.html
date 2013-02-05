@@ -9,7 +9,7 @@
   <li class="pull-right deployment-control-box">
     <div class="deployment-control-item-box"><button class="deploy-btn <%= cluster.hasChanges() || cluster.needsRedeployment() ? '' : 'disabled' %>"><i class="icon-upload-cloud"></i> Deploy Changes</button></div>
     <% var statuses = {'new': 'New', 'deployment': 'Deployment', 'operational': 'Operational', 'error': 'Error', 'remove': 'Removing'} %>
-    <div class="deployment-control-item-box"><span class="installation-status" title="Installation Status">Installation status: <%= statuses[cluster.get('status')] %></span></div>
+    <div class="deployment-control-item-box"><span class="installation-status" title="Environment Status">Environment status: <%= statuses[cluster.get('status')] %></span></div>
     <div class="deployment-control-item-box">
       <% var nodesToAdd = cluster.get('nodes').where({pending_addition: true}) %>
       <% var nodesToDelete = cluster.get('nodes').where({pending_deletion: true}) %>

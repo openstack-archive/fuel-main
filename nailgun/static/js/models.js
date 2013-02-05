@@ -21,7 +21,7 @@ define(function() {
         validate: function(attrs) {
             var errors = {};
             if (!$.trim(attrs.name) || $.trim(attrs.name).length == 0) {
-                errors.name = 'Installation name cannot be empty';
+                errors.name = 'Environment name cannot be empty';
             }
             if (!attrs.release) {
                 errors.release = 'Please choose OpenStack release';

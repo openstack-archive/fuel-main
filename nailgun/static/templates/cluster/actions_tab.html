@@ -2,14 +2,14 @@
   <h3 class="span12">Actions</h3>
 
   <form class="rename-cluster-form" onsubmit="return false">
-    <legend>Rename installation</legend>
+    <legend>Rename environment</legend>
     <input type="text" class="input-large" maxlength="50" value="<%- cluster.get('name') %>">
     <button class="btn btn-success apply-name-btn" style="margin-top: -10px;"><i class="icon-ok"></i></button>
   </form>
 
   <form class="delete-cluster-form" onsubmit="return false">
-    <legend>Delete installation</legend>
-    <div class="msg-error cluster-removing-description"><span class="label label-important">Important</span> With installation removal all nodes will be cleaned up and returned to the pool of unallocated nodes.</div>
-    <button class="btn btn-danger delete-cluster-btn">Delete installation</button>
+    <legend>Delete environment</legend>
+    <div class="msg-error cluster-removing-description"><span class="label label-important">Important</span> With environment removal all nodes will be cleaned up and returned to the pool of unallocated nodes.</div>
+    <button class="btn btn-danger delete-cluster-btn">Delete environment</button>
   </form>
 </div>

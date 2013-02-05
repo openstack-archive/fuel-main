@@ -19,7 +19,7 @@ function(models, commonViews, dialogViews, NodesTab, NetworkTab, SettingsTab, Lo
     ClusterPage = commonViews.Page.extend({
         navbarActiveElement: 'clusters',
         breadcrumbsPath: function() {
-            return [['Home', '#'], ['OpenStack Installations', '#clusters'], this.model.get('name')];
+            return [['Home', '#'], ['OpenStack Environments', '#clusters'], this.model.get('name')];
         },
         title: function() {
             return this.model.get('name');

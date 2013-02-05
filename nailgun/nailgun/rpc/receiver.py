@@ -89,14 +89,14 @@ class NailgunReceiver(object):
         cluster = task.cluster
 
         if task.status in ('ready',):
-            logger.debug("Removing installation itself")
+            logger.debug("Removing environment itself")
             cluster_name = cluster.name
             orm().delete(cluster)
             orm().commit()
 
             notifier.notify(
                 "done",
-                "Installation '%s' and all its nodes are deleted" % (
+                "Environment '%s' and all its nodes are deleted" % (
                     cluster_name
                 )
             )
@@ -279,7 +279,7 @@ class NailgunReceiver(object):
                 horizon_ip = public_net[0]['ip'].split('/')[0]
                 if task.cluster.mode in ('singlenode', 'multinode'):
                     message = (
-                        u"Deployment of installation '{0}' is done. "
+                        u"Deployment of environment '{0}' is done. "
                         "Access WebUI of OpenStack at http://{1}/ or via "
                         "internal network at http://{2}/").format(
                             task.cluster.name,
@@ -287,18 +287,18 @@ class NailgunReceiver(object):
                             controller.ip)
                 else:
                     message = (
-                        u"Deployment of installation '{0}' is done. "
+                        u"Deployment of environment '{0}' is done. "
                         "Access WebUI of OpenStack at http://{1}/").format(
                             task.cluster.name,
                             horizon_ip)
             else:
-                message = (u"Deployment of installation '{0}' "
+                message = (u"Deployment of environment '{0}' "
                            "is done").format(task.cluster.name)
                 logger.warning(
                     "Public ip for controller node "
                     "not found in '{0}'".format(task.cluster.name))
         else:
-            message = (u"Deployment of installation"
+            message = (u"Deployment of environment"
                        " '{0}' is done").format(task.cluster.name)
             logger.warning("Controller node not found in '{0}'".format(
                 task.cluster.name

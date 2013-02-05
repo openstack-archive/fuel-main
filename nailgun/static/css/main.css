@@ -1251,7 +1251,6 @@ h6.page-title {
 }
 
 .networks-table .cidr {
-  text-align: center;
   width: 140px;
   text-transform: capitalize;
 }
