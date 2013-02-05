@@ -59,6 +59,7 @@ function(models, commonViews, settingsTabTemplate, settingsGroupTemplate) {
             this.model.get('settings').update({editable: changedData}, {
                 url: '/api/clusters/' + this.model.id + '/attributes',
                 complete: _.bind(function() {
+                    this.settingsSaved = this.model.get('settings').get('editable');
                     this.render();
                     this.model.fetch();
                 }, this)
@@ -69,7 +70,7 @@ function(models, commonViews, settingsTabTemplate, settingsGroupTemplate) {
             this.tearDownRegisteredSubViews();
             this.$('form').html('');
             _.each(_.keys(settings), function(setting) {
-                var settingsGroupView = new SettingsGroup({legend: setting, settings: settings[setting], model: this.model});
+                var settingsGroupView = new SettingsGroup({legend: setting, settings: settings[setting], model: this.model, tab: this});
                 this.registerSubView(settingsGroupView);
                 this.$('form').append(settingsGroupView.render().el);
             }, this);
@@ -81,15 +82,17 @@ function(models, commonViews, settingsTabTemplate, settingsGroupTemplate) {
         setDefaults: function() {
             this.model.get('settings').update({}, {
                 url: '/api/clusters/' + this.model.id + '/attributes/defaults',
-                complete: _.bind(this.render, this)
+                complete: _.bind(function() {
+                    this.settingsSaved = this.model.get('settings').get('editable');
+                    this.render();
+                }, this)
             });
             this.disableControls();
         },
         render: function () {
             this.$el.html(this.template({cluster: this.model}));
             if (this.model.get('settings').deferred.state() != 'pending') {
-                var settings = this.model.get('settings').get('editable');
-                this.parseSettings(settings);
+                this.parseSettings(this.model.get('settings').get('editable'));
             }
             return this;
         },
@@ -112,7 +115,10 @@ function(models, commonViews, settingsTabTemplate, settingsGroupTemplate) {
                 this.model.get('settings').deferred = this.model.get('settings').fetch({
                     url: '/api/clusters/' + this.model.id + '/attributes'
                 });
-                this.model.get('settings').deferred.done(_.bind(this.render, this));
+                this.model.get('settings').deferred.done(_.bind(function() {
+                    this.settingsSaved = this.model.get('settings').get('editable');
+                    this.render();
+                }, this));
             }
         }
     });
@@ -121,11 +127,17 @@ function(models, commonViews, settingsTabTemplate, settingsGroupTemplate) {
         template: _.template(settingsGroupTemplate),
         className: 'fieldset-group wrapper',
         events: {
-            'keydown input[type=text]': 'hasChanges',
+            'keyup input[type=text]': 'hasChanges',
             'change input[type=checkbox], select': 'hasChanges'
         },
         hasChanges: function() {
-            $('.openstack-settings .btn').attr('disabled', false);
+            var changedData = {};
+            this.tab.collectData($('.openstack-settings form'), changedData);
+            if (_.isEqual(this.tab.settingsSaved, changedData)) {
+                this.tab.defaultButtonsState(true);
+            } else {
+                $('.openstack-settings .btn').attr('disabled', false);
+            }
         },
         initialize: function(options) {
             _.defaults(this, options);
