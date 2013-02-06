@@ -262,10 +262,10 @@ h6.page-title {
 .footer-logo {
   display: block;
   float: left;
-  width: 110px;
-  height: 44px;
+  width: 67px;
+  height: 34px;
   background: url(../img/mirantis-logo-small2.png) no-repeat top left;
-  margin: 6px 0px 6px 10px;
+  margin: 8px 0px 0px 10px;
   overflow: hidden;
   cursor: pointer;
 }
@@ -273,21 +273,24 @@ h6.page-title {
 .footer-logo:hover {
   display: block;
   float: left;
-  width: 110px;
-  height: 44px;
-  background: url(../img/mirantis-logo-small2.png) no-repeat 0px -44px;
-  margin: 6px 0px 6px 10px;
+  width: 67px;
+  height: 34px;
+  background: url(../img/mirantis-logo-small2.png) no-repeat 0px -34px;
+  margin: 8px 0px 0px 10px;
   overflow: hidden;
 }
 
-.footer-info {
+.footer-copyright {
   display: block;
-  float: right;
-  padding: 14px 20px 0px 0px;
+  padding: 14px 20px 0px 20px;
+  color: #f0f0f0;
+  font-size: 11px;
+  margin-top: 0px;
 }
 
 .footer-version {
   display: block;
+  padding: 14px 20px 0px 20px;
   color: #7789a0;
   font-size: 11px;
   margin-top: 0px;
@@ -393,11 +396,26 @@ h6.page-title {
   -moz-box-sizing: border-box;
   -webkit-box-sizing: border-box;
   overflow: hidden;
+  /*
   background-image: -webkit-linear-gradient(bottom, #d0d0d0, #f0f0f0 70%);
   background-image: -moz-linear-gradient(bottom, #d0d0d0, #f0f0f0 70%);
   background-image: -o-linear-gradient(bottom, #d0d0d0, #f0f0f0 70%);
   background-image: -ms-linear-gradient(bottom, #d0d0d0, #f0f0f0 70%);
   background-image: linear-gradient(to top, #d0d0d0, #f0f0f0 70%);
+  */
+  -moz-box-sizing: border-box;
+  background: url(../img/texture.png) repeat scroll 0 0 #E8E4E3;
+  /*box-shadow: 0 1px 6px rgba(0, 0, 0, 0.25), 0 1px 2px rgba(255, 255, 255, 0.23) inset, 0 0 5px rgba(0, 0, 0, 0.13) inset; */
+  /* box-shadow: 0 1px 3px rgba(0, 0, 0, 0.4), 0 0 0 1px rgba(0, 0, 0, 0.08); */
+}
+
+.nodebox-gradient {
+  background: rgba(255, 255, 255, 0.102);
+  background: -webkit-gradient(linear,left top,left bottom,from(rgba(255, 255, 255, 0.1)),to(rgba(0, 0, 0, 0.15)));
+  background: -moz-linear-gradient(top,rgba(255, 255, 255, 0.1),rgba(0, 0, 0, 0.15));
+  background: -ms-linear-gradient(top,rgba(255, 255, 255, 0.1),rgba(0, 0, 0, 0.15));
+  background: linear-gradient(top,rgba(255, 255, 255, 0.1),rgba(0, 0, 0, 0.15));
+  height: 100%;
 }
 
 .node-header {
@@ -436,7 +454,7 @@ h6.page-title {
   font-size: 12px;
   font-weight: 500;
   line-height: 16px;
-  border-bottom: 1px dotted #c0c0c0;
+  border-bottom: 1px dotted #b0b0b0;
 }
 
 .unassigned .node-name {
@@ -485,7 +503,6 @@ h6.page-title {
   float: left;
   margin-left: -1px;
   margin-top: -114px;
-  border-radius: 4px;
   line-height: 52px;
   font-size: 60px;
   text-align: center;
@@ -556,9 +573,10 @@ h6.page-title {
 
 .node-name .input-medium {
   margin: 0px;
+  margin-top: 6px;
   padding: 0px;
   height: 24px;
-  width: 104px;
+  width: 100px;
   font-size: 12px;
 }
 
@@ -693,54 +711,59 @@ h6.page-title {
 
 .node-hardware {
   height: 24px;
-  background-color: rgba(0, 0, 0, 0.09);
-  border-top: 1px solid #afafaf;
+  /* background-color: rgba(0, 0, 0, 0.05); */
+  border-top: 1px dotted #afafaf;
   font-size: 9px;
-  color: #666666;
-  text-shadow: 0 1px 0 rgba(255, 255, 255, 0.45);
+  color: #255888;
+  text-shadow: 0 1px 0 rgba(255, 255, 255, 0.25);
   cursor: pointer;
 }
 
 .node-hardware:hover  {
   /* color: #0088cc; */
-  background-color: rgba(0, 0, 0, 0.15);
-  color: #333333;
+  background-color: rgba(0, 0, 0, 0.1);
+  color: #255888;
+  text-shadow: 0 1px 0 rgba(255, 255, 255, 0.1);
+}
+
+.node-hardware:hover > ul > li  {
+  color: #1e486f;
 }
 
 .node-hardware > ul {list-style: none; margin: 0px; padding: 0px;}
-.node-hardware > ul > li {display: block; width: 60px; float: left; margin-right: 0px; margin-top: 1px; text-align: center;}
+.node-hardware > ul > li {display: inline; width: 60px; float: left; margin-right: 0px; margin-top: 1px; text-align: center;}
 .node-hardware > ul > li:first-child {width: 48px; text-align: right;}
 .node-hardware > ul > li:last-child {text-align: left;}
 
 .manufacturer-hp {
-  background: #efefef url(../img/node_manufacturer_logos.png) 0px 0px no-repeat;
+  background: url(../img/node_manufacturer_logos.png) 0px 0px no-repeat;
 }
 .manufacturer-dell {
-  background: #efefef url(../img/node_manufacturer_logos.png) 0px -120px no-repeat;
+  background: url(../img/node_manufacturer_logos.png) 0px -120px no-repeat;
 }
 .manufacturer-vbox {
-  background: #efefef url(../img/node_manufacturer_logos.png) 0px -240px no-repeat;
+  background: url(../img/node_manufacturer_logos.png) 0px -240px no-repeat;
 }
 .manufacturer-vmware {
-  background: #efefef url(../img/node_manufacturer_logos.png) 0px -360px no-repeat;
+  background: url(../img/node_manufacturer_logos.png) 0px -360px no-repeat;
 }
 .manufacturer-xen {
-  background: #efefef url(../img/node_manufacturer_logos.png) 0px -480px no-repeat;
+  background: url(../img/node_manufacturer_logos.png) 0px -480px no-repeat;
 }
 .manufacturer-openvz {
-  background: #efefef url(../img/node_manufacturer_logos.png) 0px -600px no-repeat;
+  background: url(../img/node_manufacturer_logos.png) 0px -600px no-repeat;
 }
 .manufacturer-cisco {
-  background: #efefef url(../img/node_manufacturer_logos.png) 0px -720px no-repeat;
+  background: url(../img/node_manufacturer_logos.png) 0px -720px no-repeat;
 }
 .manufacturer-qemu {
-  background: #efefef url(../img/node_manufacturer_logos.png) 0px -840px no-repeat;
+  background: url(../img/node_manufacturer_logos.png) 0px -840px no-repeat;
 }
 .manufacturer-supermicro {
-  background: #efefef url(../img/node_manufacturer_logos.png) 0px -960px no-repeat;
+  background: url(../img/node_manufacturer_logos.png) 0px -960px no-repeat;
 }
 .manufacturer-kvm {
-  background: #efefef url(../img/node_manufacturer_logos.png) 0px -1080px no-repeat;
+  background: url(../img/node_manufacturer_logos.png) 0px -1080px no-repeat;
 }
 .openstack {
   background: url(../img/cluster_logos.png) 0px 0px no-repeat;
