@@ -10,6 +10,7 @@ function(models, commonViews, logsTabTemplate, logEntryTemplate) {
 
     var LogsTab = commonViews.Tab.extend({
         updateInterval: 5000,
+        reversed: true,
         template: _.template(logsTabTemplate),
         logEntryTemplate: _.template(logEntryTemplate),
         events: {
@@ -164,7 +165,12 @@ function(models, commonViews, logsTabTemplate, logEntryTemplate) {
             this.model.set({'log_options': options}, {silent: true});
             app.navigate('#cluster/' + this.model.id + '/logs/' + this.serializeOptions(options), {trigger: false, replace: true});
 
-            this.$('.table-logs, .logs-fetch-error, .node-sources-error').hide();
+            this.$('.logs-fetch-error, .node-sources-error').hide();
+            if (!this.reversed) {
+                this.$('.table-logs').hide();
+            } else {
+                this.$('.table-logs .entries-skipped-msg').hide();
+            }
             this.$('.logs-loading').show();
             this.$('select').attr('disabled', true);
             this.$('.show-logs-btn').addClass('disabled');
@@ -210,11 +216,14 @@ function(models, commonViews, logsTabTemplate, logEntryTemplate) {
         appendLogEntries: function(data, doNotScroll) {
             this.from = data.from;
             if (data.entries.length) {
+                if (this.reversed) {
+                    data.entries.reverse();
+                }
                 // autoscroll only if window is already scrolled to bottom
-                var scrollToBottom = !doNotScroll && $(document).height() == $(window).scrollTop() + $(window).height();
+                var scrollToBottom = !this.reversed && !doNotScroll && $(document).height() == $(window).scrollTop() + $(window).height();
 
                 this.$('.table-logs .no-logs-msg').hide();
-                this.$('.table-logs .log-entries').append(_.map(data.entries, function(entry) {
+                this.$('.table-logs .log-entries')[this.reversed ? 'prepend' : 'append'](_.map(data.entries, function(entry) {
                     return this.logEntryTemplate({entry: entry});
                 }, this).join(''));
 
@@ -260,6 +269,9 @@ function(models, commonViews, logsTabTemplate, logEntryTemplate) {
                 chosenNodeId: this.chosenNodeId,
                 chosenSourceId: this.chosenSourceId
             }));
+            if (this.reversed) {
+                this.$('.table-logs').append(this.$('.table-logs .entries-skipped-msg').detach());
+            }
             if (!this.sourcesFetched) {
                 this.sourcesFetched = true;
                 // this part is run on first rendering only
