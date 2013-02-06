@@ -35,7 +35,7 @@ node default {
   }
 
   class { mcollective::client:
-    pskey => "noset",
+    pskey => "unset",
     stompuser => "mcollective",
     stomppassword => "mcollective",
     stomphost => "127.0.0.1",
