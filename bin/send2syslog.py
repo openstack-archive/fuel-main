@@ -149,6 +149,11 @@ class WatchedGroup:
             for line in watchedfile.readLines():
                 line = line.strip()
                 level = self._get_msg_level(line, self.log_type)
+                line = re.sub(
+                    msg_levels[self.log_type]['regex'] + "\s*:?\s?",
+                    "",
+                    line
+                )
                 self.logger.log(level, line)
                 main_logger and main_logger.log(
                     level,
