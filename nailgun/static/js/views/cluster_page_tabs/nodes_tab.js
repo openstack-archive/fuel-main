@@ -61,6 +61,9 @@ function(models, commonViews, dialogViews, LogsTab, nodesTabSummaryTemplate, edi
             this.registerSubView(dialog);
             dialog.render();
         },
+        initialize: function(options) {
+            this.model.bind('change:status', this.render, this);
+        },
         render: function() {
             this.$el.html(this.template({cluster: this.model}));
             return this;

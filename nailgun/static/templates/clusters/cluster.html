@@ -16,7 +16,7 @@
   </div>
 </div>
 <div class="cluster-status">
-  <% var statuses = {'new': 'New', 'deployment': 'Deployment', 'operational': 'Operational', 'error': 'Error', 'remove': 'Removing'} %>
+  <% var statuses = {'new': 'New', 'deployment': 'Deploying', 'operational': 'Operational', 'error': 'Error', 'remove': 'Removing'} %>
   <% var task = cluster.task('deploy') %>
   <% var taskStatus = task ? task.get('status') : null %>
   <% if (taskStatus =='running') { %>
