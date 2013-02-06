@@ -4,11 +4,11 @@ import json
 import time
 import uuid
 
-import eventlet
-eventlet.monkey_patch()
+from mock import patch
 
 import nailgun.rpc as rpc
 from nailgun.rpc import receiver as rcvr
+from nailgun.task.task import VerifyNetworksTask
 from nailgun.test.base import BaseHandlers
 from nailgun.test.base import reverse
 from nailgun.api.models import Node
@@ -28,17 +28,25 @@ class TestVerifyNetworks(BaseHandlers):
         cluster = self.create_cluster_api()
         node1 = self.create_default_node(cluster_id=cluster['id'])
         node2 = self.create_default_node(cluster_id=cluster['id'])
+        vlans = NetworkGroup.generate_vlan_ids_list(
+            self.generate_ui_networks(cluster["id"])
+        )
 
         receiver = rcvr.NailgunReceiver()
 
         task = Task(
-            name="super",
+            name="verify_networks",
             cluster_id=cluster['id']
         )
+        task.cache = {
+            "args": {
+                "networks": [{'vlan_id': i} for i in xrange(100, 105)]
+            }
+        }
         self.db.add(task)
         self.db.commit()
 
-        nets = [{'iface': 'eth0', 'vlans': range(100, 105)}]
+        nets = [{'iface': 'eth0', 'vlans': xrange(100, 105)}]
         kwargs = {'task_uuid': task.uuid,
                   'status': 'ready',
                   'nodes': [{'uid': node1.id, 'networks': nets},
@@ -59,6 +67,11 @@ class TestVerifyNetworks(BaseHandlers):
             name="super",
             cluster_id=cluster['id']
         )
+        task.cache = {
+            "args": {
+                "networks": [{'vlan_id': i} for i in xrange(100, 105)]
+            }
+        }
         self.db.add(task)
         self.db.commit()
 
@@ -89,6 +102,11 @@ class TestVerifyNetworks(BaseHandlers):
             name="super",
             cluster_id=cluster['id']
         )
+        task.cache = {
+            "args": {
+                "networks": [{'vlan_id': i} for i in xrange(100, 105)]
+            }
+        }
         self.db.add(task)
         self.db.commit()
 
@@ -126,6 +144,11 @@ class TestVerifyNetworks(BaseHandlers):
             name="super",
             cluster_id=cluster['id']
         )
+        task.cache = {
+            "args": {
+                "networks": [{'vlan_id': i} for i in xrange(100, 105)]
+            }
+        }
         self.db.add(task)
         self.db.commit()
 
@@ -150,6 +173,11 @@ class TestVerifyNetworks(BaseHandlers):
             name="super",
             cluster_id=cluster['id']
         )
+        task.cache = {
+            "args": {
+                "networks": [{'vlan_id': i} for i in xrange(100, 105)]
+            }
+        }
         self.db.add(task)
         self.db.commit()
 

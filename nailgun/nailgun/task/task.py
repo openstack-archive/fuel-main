@@ -419,6 +419,9 @@ class VerifyNetworksTask(object):
                    'args': {'task_uuid': task.uuid,
                             'networks': networks,
                             'nodes': nodes}}
+        task.cache = message
+        orm().add(task)
+        orm().commit()
         rpc.cast('naily', message)
 
 

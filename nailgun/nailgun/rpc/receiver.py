@@ -340,17 +340,17 @@ class NailgunReceiver(object):
                                 'network connectivity check. ' \
                                 'See logs for details.'
             else:
-                nets_db = orm().query(Network).join(NetworkGroup).\
-                    filter(NetworkGroup.cluster_id == task.cluster_id).all()
-                vlans_db = [net.vlan_id for net in nets_db]
-                iface_db = {'iface': 'eth0', 'vlans': set(vlans_db)}
+                vlans_sent = [
+                    n['vlan_id'] for n in task.cache['args']['networks']
+                ]
+                iface_sent = {'iface': 'eth0', 'vlans': set(vlans_sent)}
                 error_nodes = []
                 for n in nodes:
                     # Now - for all interfaces (eth0, eth1, etc.)
                     for iface in n['networks']:
-                        if iface['iface'] == iface_db['iface']:
+                        if iface['iface'] == iface_sent['iface']:
                             absent_vlans = list(
-                                iface_db['vlans'] - set(iface['vlans']))
+                                iface_sent['vlans'] - set(iface['vlans']))
                             if absent_vlans:
                                 data = {'uid': n['uid'],
                                         'interface': iface['iface'],

@@ -475,6 +475,7 @@ class Task(Base, BasicValidator):
     message = Column(Text)
     status = Column(Enum(*TASK_STATUSES), nullable=False, default='running')
     progress = Column(Integer)
+    cache = Column(JSON, default={})
     result = Column(JSON, default={})
     parent_id = Column(Integer, ForeignKey('tasks.id'))
     subtasks = relationship(

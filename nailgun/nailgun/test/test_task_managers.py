@@ -314,7 +314,49 @@ class TestTaskManagers(BaseHandlers):
         task_uuid = response['uuid']
         task = self.db.query(Task).filter_by(uuid=task_uuid).first()
         self.assertEquals(task.name, 'verify_networks')
-        self.assertIn(task.status, ('running', 'ready'))
+
+        timer = time.time()
+        timeout = 30
+        while task.status == 'running':
+            self.db.refresh(task)
+            if time.time() - timer > timeout:
+                raise Exception("Verificaton seems to be hanged")
+            time.sleep(1)
+
+        self.assertEquals(task.status, 'ready')
+
+    @patch('nailgun.task.task.rpc.cast', nailgun.task.task.fake_cast)
+    @patch('nailgun.task.task.settings.FAKE_TASKS', True)
+    @patch('nailgun.task.fake.settings.FAKE_TASKS_TICK_COUNT', 80)
+    @patch('nailgun.task.fake.settings.FAKE_TASKS_TICK_INTERVAL', 1)
+    def test_network_verify_compares_db_data(self):
+        cluster = self.create_cluster_api()
+        node1 = self.create_default_node(cluster_id=cluster['id'])
+        node2 = self.create_default_node(cluster_id=cluster['id'])
+        nets = self.generate_ui_networks(cluster['id'])
+        nets[-1]["vlan_start"] = 500
+
+        resp = self.app.put(
+            reverse(
+                'ClusterVerifyNetworksHandler',
+                kwargs={'cluster_id': cluster['id']}),
+            json.dumps(nets),
+            headers=self.default_headers
+        )
+        self.assertEquals(200, resp.status)
+        response = json.loads(resp.body)
+        task_uuid = response['uuid']
+        task = self.db.query(Task).filter_by(uuid=task_uuid).first()
+
+        timer = time.time()
+        timeout = 30
+        while task.status == 'running':
+            self.db.refresh(task)
+            if time.time() - timer > timeout:
+                raise Exception("Verificaton seems to be hanged")
+            time.sleep(1)
+
+        self.assertEquals(task.status, 'ready')
 
     @patch('nailgun.task.task.rpc.cast')
     @patch('nailgun.task.task.settings.FAKE_TASKS', True)
