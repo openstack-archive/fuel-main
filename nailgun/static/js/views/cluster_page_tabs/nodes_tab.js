@@ -40,7 +40,6 @@ function(models, commonViews, dialogViews, LogsTab, nodesTabSummaryTemplate, edi
             this.registerSubView(this.screen);
         },
         render: function() {
-            this.$el.html('');
             this.changeScreen(NodesByRolesScreen);
             return this;
         }
@@ -86,6 +85,9 @@ function(models, commonViews, dialogViews, LogsTab, nodesTabSummaryTemplate, edi
         },
         bindTaskEvents: function() {
             var task = this.model.task('deploy', 'running');
+            if (!task) {
+                task = this.model.task('verify_networks', 'running');
+            }
             if (task) {
                 task.bind('change:status', this.render, this);
                 this.render();

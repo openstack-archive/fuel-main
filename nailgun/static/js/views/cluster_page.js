@@ -59,20 +59,24 @@ function(models, commonViews, dialogViews, NodesTab, NetworkTab, SettingsTab, Lo
             dialog.render();
         },
         scheduleUpdate: function() {
-            if (this.model.task('deploy', 'running')) {
+            if (this.model.task('deploy', 'running') || this.model.task('verify_networks', 'running')) {
                 this.timeout = _.delay(_.bind(this.update, this), this.updateInterval);
             }
         },
         update: function() {
             var complete = _.after(2, _.bind(this.scheduleUpdate, this));
-            var task = this.model.task('deploy', 'running');
-            if (task) {
-                task.fetch({complete: complete}).done(_.bind(function() {
-                    if (task.get('status') != 'running') {
+            var deploymentTask = this.model.task('deploy', 'running');
+            if (deploymentTask) {
+                deploymentTask.fetch({complete: complete}).done(_.bind(function() {
+                    if (deploymentTask.get('status') != 'running') {
                         this.deploymentFinished();
                     }
                 }, this));
                 this.model.get('nodes').fetch({data: {cluster_id: this.model.id}, complete: complete});
+            }
+            var verificationTask = this.model.task('verify_networks', 'running');
+            if (verificationTask) {
+                verificationTask.fetch({complete: _.bind(this.scheduleUpdate, this)});
             }
         },
         deploymentStarted: function() {
