@@ -329,7 +329,7 @@ class TestTaskManagers(BaseHandlers):
     @patch('nailgun.task.task.settings.FAKE_TASKS', True)
     @patch('nailgun.task.fake.settings.FAKE_TASKS_TICK_COUNT', 80)
     @patch('nailgun.task.fake.settings.FAKE_TASKS_TICK_INTERVAL', 1)
-    def test_network_verify_compares_db_data(self):
+    def test_network_verify_compares_received_with_cached(self):
         cluster = self.create_cluster_api()
         node1 = self.create_default_node(cluster_id=cluster['id'])
         node2 = self.create_default_node(cluster_id=cluster['id'])
