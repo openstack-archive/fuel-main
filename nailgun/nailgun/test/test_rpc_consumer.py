@@ -18,7 +18,7 @@ from nailgun.api.models import Notification
 from nailgun.api.models import Attributes
 from nailgun.api.models import Network
 from nailgun.api.models import NetworkGroup
-from nailgun.api.models import NetworkElement
+from nailgun.api.models import IPAddr
 from nailgun.api.models import Vlan
 
 
@@ -359,8 +359,8 @@ class TestConsumer(BaseHandlers):
             .filter_by(cluster_id=cluster['id']).all()
         self.assertEquals(len(nodes_db), 0)
 
-        ip_db = self.db.query(NetworkElement)\
-            .filter(NetworkElement.node.in_([node1_id, node2_id])).all()
+        ip_db = self.db.query(IPAddr)\
+            .filter(IPAddr.node.in_([node1_id, node2_id])).all()
         self.assertEquals(len(ip_db), 0)
 
         vlan_db = self.db.query(Vlan)\

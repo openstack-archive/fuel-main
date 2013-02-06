@@ -6,7 +6,7 @@ from netaddr import IPSet, IPNetwork
 
 from nailgun.db import orm
 from nailgun.task import errors
-from nailgun.api.models import Node, NetworkElement, Cluster
+from nailgun.api.models import Node, IPAddr, Cluster
 from nailgun.api.models import Network, NetworkGroup
 
 
@@ -36,11 +36,11 @@ def assign_ips(nodes_ids, network_name):
             (network_name, cluster_id)
         )
 
-    used_ips = [ne.ip_addr for ne in orm().query(NetworkElement).all()
+    used_ips = [ne.ip_addr for ne in orm().query(IPAddr).all()
                 if ne.ip_addr]
 
     for node_id in nodes_ids:
-        node_ips = [ne.ip_addr for ne in orm().query(NetworkElement).
+        node_ips = [ne.ip_addr for ne in orm().query(IPAddr).
                     filter_by(node=node_id).
                     filter_by(network=network.id).all() if ne.ip_addr]
         # check if any of node_ips in required cidr: network.cidr
@@ -59,8 +59,7 @@ def assign_ips(nodes_ids, network_name):
                 raise Exception(
                     "Network pool %s ran out of free ips." % network.cidr)
 
-            ip_db = NetworkElement(network=network.id, node=node_id,
-                                   ip_addr=free_ip)
+            ip_db = IPAddr(network=network.id, node=node_id, ip_addr=free_ip)
             orm().add(ip_db)
             orm().commit()
             used_ips.append(free_ip)
@@ -88,12 +87,12 @@ def assign_vip(cluster_id, network_name):
         raise Exception("Network '%s' for cluster_id=%s not found." %
                         (network_name, cluster_id))
 
-    used_ips = [ne.ip_addr for ne in orm().query(NetworkElement).all()
-                if ne.ip_addr]
+    used_ips = orm().query(IPAddr).all()
 
-    cluster_ips = [ne.ip_addr for ne in orm().query(NetworkElement).
-                   filter_by(network=network.id).
-                   filter_by(node=None).all() if ne.ip_addr]
+    cluster_ips = [ne.ip_addr for ne in orm().query(IPAddr).filter_by(
+        network=network.id,
+        node=None
+    ).all()]
     # check if any of used_ips in required cidr: network.cidr
     ips_belongs_to_net = IPSet(IPNetwork(network.cidr))\
         .intersection(IPSet(cluster_ips))
@@ -112,7 +111,7 @@ def assign_vip(cluster_id, network_name):
         if not free_ip:
             raise Exception(
                 "Network pool %s ran out of free ips." % network.cidr)
-        ne_db = NetworkElement(network=network.id, ip_addr=free_ip)
+        ne_db = IPAddr(network=network.id, ip_addr=free_ip)
         orm().add(ne_db)
         orm().commit()
         vip = free_ip
@@ -124,8 +123,8 @@ def get_node_networks(node_id):
     if cluster_db is None:
         # Node doesn't belong to any cluster, so it should not have nets
         return []
-    ips = [x for x in orm().query(NetworkElement).filter_by(
-        node=node_id).all() if x.ip_addr]  # Got rid of Nones (if x.ip_addr)
+    # Got rid of Nones (if x.ip_addr)
+    ips = orm().query(IPAddr).filter_by(node=node_id).all()
     network_data = []
     network_ids = []
     for i in ips:

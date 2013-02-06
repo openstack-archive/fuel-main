@@ -14,7 +14,7 @@ from nailgun.settings import settings
 from nailgun.logger import logger
 from nailgun.api.models import Cluster
 from nailgun.api.models import Node
-from nailgun.api.models import Network, NetworkElement, NetworkGroup, Vlan
+from nailgun.api.models import Network, NetworkGroup, Vlan
 from nailgun.api.models import Release
 from nailgun.api.models import Attributes
 from nailgun.api.models import Task

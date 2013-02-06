@@ -269,12 +269,12 @@ class Node(Base, BasicValidator):
         return d
 
 
-class NetworkElement(Base):
-    __tablename__ = 'net_elements'
+class IPAddr(Base):
+    __tablename__ = 'ip_addrs'
     id = Column(Integer, primary_key=True)
     network = Column(Integer, ForeignKey('networks.id'))
     node = Column(Integer, ForeignKey('nodes.id'))
-    ip_addr = Column(String(25))
+    ip_addr = Column(String(25), nullable=False)
 
 
 class Vlan(Base, BasicValidator):
@@ -296,7 +296,7 @@ class Network(Base, BasicValidator):
     gateway = Column(String(25))
     nodes = relationship(
         "Node",
-        secondary=NetworkElement.__table__,
+        secondary=IPAddr.__table__,
         backref="networks")
 
 
@@ -324,17 +324,6 @@ class NetworkGroup(Base, BasicValidator):
         subnets = list(fixnet.subnet(32 - subnet_bits,
                                      count=self.amount))
         logger.debug("Base CIDR sliced on subnets: %s", subnets)
-        main_bits = int(math.ceil(math.log(
-            self.network_size * self.amount, 2)))
-
-        # In UI user provides just cidr and vlan for single networks,
-        #  and he will be disappointed if the system squeezes his network
-        if self.amount > 1:
-            logger.debug("Base CIDR can be squeezed to have %s bits",
-                         main_bits)
-            main_cidr = list(fixnet.subnet(32 - main_bits,
-                                           count=1))[0]
-            self.cidr = str(main_cidr)
 
         for net in self.networks:
             logger.debug("Deleting old network with id=%s, cidr=%s",

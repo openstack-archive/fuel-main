@@ -8,7 +8,7 @@ from netaddr import IPNetwork
 import nailgun
 from nailgun.test.base import BaseHandlers
 from nailgun.test.base import reverse
-from nailgun.api.models import Cluster, Attributes, NetworkElement, Task
+from nailgun.api.models import Cluster, Attributes, IPAddr, Task
 from nailgun.api.models import Network, NetworkGroup
 
 
@@ -74,8 +74,7 @@ class TestHandlers(BaseHandlers):
         msg['args']['task_uuid'] = deploy_task_uuid
         nodes = []
         for n in (node1, node2):
-            node_ips = [x for x in self.db.query(NetworkElement).filter_by(
-                node=n.id).all() if x.ip_addr]
+            node_ips = self.db.query(IPAddr).filter_by(node=n.id).all()
             node_ip = [ne.ip_addr + "/24" for ne in node_ips]
             nodes.append({'uid': n.id, 'status': n.status, 'ip': n.ip,
                           'error_type': n.error_type, 'mac': n.mac,

@@ -4,7 +4,7 @@ from mock import patch
 
 from nailgun.test.base import BaseHandlers
 from nailgun.test.base import reverse
-from nailgun.api.models import Node, NetworkElement
+from nailgun.api.models import Node, IPAddr
 from nailgun.api.models import Network, NetworkGroup
 
 logger = logging.getLogger(__name__)
@@ -44,8 +44,7 @@ class TestNodeDeletion(BaseHandlers):
             filter(NetworkGroup.cluster_id == cluster['id']).filter_by(
                 name='management').first()
 
-        ipaddrs = [x for x in self.db.query(NetworkElement).filter_by(
-            node=node.id).all() if x.ip_addr]
+        ipaddrs = self.db.query(IPAddr).filter_by(node=node.id).all()
 
         self.assertEquals(list(management_net.nodes), [])
         self.assertEquals(list(ipaddrs), [])
