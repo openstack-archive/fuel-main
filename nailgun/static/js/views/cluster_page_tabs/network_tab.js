@@ -25,22 +25,22 @@ function(models, commonViews, dialogViews, networkTabTemplate, networkTabViewMod
             'keyup .range': 'displayRange'
         },
         makeChanges: function(e) {
+            var row;
             if (e) {
-                this.$(e.target).parents('.control-group').removeClass('error').find('.help-inline').text('');
-                var attribute = $.trim(this.$(e.target).parent().attr('class'));
-                var network = this.$(e.target).parents('.control-group').data('network-id');
-                var newValue = this.$(e.target).val();
-                if (attribute != 'cidr') {
-                    newValue = parseInt(newValue, 10);
-                }
-                this.networks.get(network).on('error', function(model, errors) {
-                    this.$(e.target).parents('.control-group').find('.error .help-inline').text(errors.cidr || errors.vlan_start || errors.amount);
-                    this.$(e.target).parents('.control-group').addClass('error');
-                }, this);
-                this.networks.get(network).set(attribute, newValue);
+                row = this.$(e.target).parents('.control-group');
             } else {
-                this.$('.control-group').removeClass('error').find('.help-inline').text('');
+                row = this.$('.control-group[data-network-name=fixed]');
             }
+            row.removeClass('error').find('.help-inline').text('');
+            this.networks.get(row.data('network-id')).on('error', function(model, errors) {
+                row.addClass('error').find('.help-inline').text(errors.cidr || errors.vlan_start || errors.amount);
+            }, this);
+            this.networks.get(row.data('network-id')).set({
+                cidr: $('.cidr input', row).val(),
+                vlan_start: parseInt($('.vlan_start input:first', row).val(), 10),
+                amount: this.$('.net-manager input[checked]').val() == 'FlatDHCPManager' ? 1 : parseInt($('.amount input', row).val(), 10),
+                network_size: parseInt($('.network_size select', row).val(), 10)
+            });
             if (_.isEqual(this.networks.toJSON(), this.settingsSaved) && this.model.get('net_manager') == this.$('.net-manager input[checked]').val()) {
                 this.$('.apply-btn').attr('disabled', true);
             } else {
