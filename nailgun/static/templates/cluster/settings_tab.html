@@ -1,5 +1,123 @@
+  
+  <div class="roles-block-row nodesbox-header">
+  <div class="span10"><h3>OpenStack Settings</h3></div>
+  
+  <div class="span2 roles-action-link">
+    <button class="btn btn-delete-nodes btn-link pull-right">
+      <i class="icon-expand"></i>Expand All
+    </button>
+  </div>
+</div>
+
 <div class="wrapper">
-  <h3>OpenStack Settings</h3>
+
+  <style>
+  .accordion-group {
+    margin-bottom: 10px;
+    border: 1px solid #dadada;
+  }
+  .accordion-heading {
+    font-size: 18px;
+    color: #333333;
+    height: 36px;
+    overflow: hidden;
+    background: rgb(230,230,230); /* Old browsers */
+    background: -moz-linear-gradient(top,  rgba(230,230,230,1) 1%, rgba(187,187,187,1) 100%); /* FF3.6+ */
+    background: -webkit-gradient(linear, left top, left bottom, color-stop(1%,rgba(230,230,230,1)), color-stop(100%,rgba(187,187,187,1))); /* Chrome,Safari4+ */
+    background: -webkit-linear-gradient(top,  rgba(230,230,230,1) 1%,rgba(187,187,187,1) 100%); /* Chrome10+,Safari5.1+ */
+    background: -o-linear-gradient(top,  rgba(230,230,230,1) 1%,rgba(187,187,187,1) 100%); /* Opera 11.10+ */
+    background: -ms-linear-gradient(top,  rgba(230,230,230,1) 1%,rgba(187,187,187,1) 100%); /* IE10+ */
+    background: linear-gradient(to bottom,  rgba(230,230,230,1) 1%,rgba(187,187,187,1) 100%); /* W3C */
+    filter: progid:DXImageTransform.Microsoft.gradient( startColorstr='#e6e6e6', endColorstr='#bbbbbb',GradientType=0 ); /* IE6-9 */
+
+    /* background: url(../static/img/texture.png) repeat scroll 0 0 #E8E4E3; */
+  }
+  .accordion-heading .accordion-toggle {
+    box-sizing: border-box;
+    -moz-box-sizing: border-box;
+    -webkit-box-sizing: border-box;
+    padding: 6px 15px 11px 15px;
+    color: #444444;
+    text-shadow: 0 1px 0 rgba(255, 255, 255, 0.25);
+  }
+
+  .accordion-heading a {
+    cursor: pointer;
+  }
+
+  .accordion-heading a:hover {
+    text-decoration: none;
+    color: #005580;
+  }
+
+  .accordion-body {
+    background: #fafafa;
+  }
+
+  </style>
+
+  <div class="openstack-settings">
+
+  <div class="accordion" id="accordion2">
+
+  <!-- Group I -->
+  <div class="accordion-group">
+    <div class="accordion-heading">
+      <a class="accordion-toggle" data-toggle="collapse" data-parent="#accordion2" href="#collapseOne">
+        Base Settings
+      </a>
+    </div>
+    <div id="collapseOne" class="accordion-body collapse in">
+      <div class="accordion-inner">
+        
+          <label class="checkbox"><input type="checkbox">Auto_assign_floating_ip</label>
+
+      </div>
+    </div>
+  </div>
+
+  <!-- Group II -->
+  <div class="accordion-group">
+    <div class="accordion-heading">
+      <a class="accordion-toggle" data-toggle="collapse" data-parent="#accordion2" href="#collapseTwo">
+        Keystone
+      </a>
+    </div>
+    <div id="collapseTwo" class="accordion-body collapse">
+      <div class="accordion-inner">
+        
+          <label>Admin_Tenant</label>
+          <input type="text" placeholder="Admin">
+
+          <label>Label Sample 2</label>
+          <input type="text" placeholder="Label 2">
+
+      </div>
+    </div>
+  </div>
+
+  <!-- Group III -->
+  <div class="accordion-group">
+    <div class="accordion-heading">
+      <a class="accordion-toggle" data-toggle="collapse" data-parent="#accordion2" href="#collapseThree">
+        Rabbit
+      </a>
+    </div>
+    <div id="collapseThree" class="accordion-body collapse">
+      <div class="accordion-inner">
+        
+        <label>User</label>
+        <input type="text" placeholder="Nova">
+
+      </div>
+    </div>
+  </div>
+
+</div>
+
+</div>
+
+<!--
   <div class="openstack-settings">
     <% if (cluster.get('settings').deferred.state() != 'pending') { %>
       <form class="form-horizontal" onsubmit="return false"></form>
@@ -13,6 +131,8 @@
         </div>
       </div>
     <% } %>
+-->
+
 
     <!-- page-control box -->
     <div class="row">

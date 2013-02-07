@@ -32,6 +32,9 @@
 
 .icon-plus:before { content: '\2b'; } /* '+' */
 .icon-minus:before { content: '\2d'; } /* '-' */
+.icon-expand:before { content: '\229e'; } /* '⊞' */
+.icon-collapse:before { content: '\229f'; } /* '⊟' */
+.icon-flag:before { content: '\2691'; } /* '⚑' */
 .icon-settings:before { content: '\2699'; } /* '⚙' */
 .icon-attention:before { content: '\26a0'; } /* '⚠' */
 .icon-edit:before { content: '\270e'; } /* '✎' */
