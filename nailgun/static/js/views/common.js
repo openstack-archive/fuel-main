@@ -6,9 +6,10 @@ define(
     'text!templates/common/nodes_stats.html',
     'text!templates/common/notifications.html',
     'text!templates/common/notifications_popover.html',
-    'text!templates/common/breadcrumb.html'
+    'text!templates/common/breadcrumb.html',
+    'text!templates/common/footer.html'
 ],
-function(models, dialogViews, navbarTemplate, nodesStatsTemplate, notificationsTemplate, notificationsPopoverTemplate, breadcrumbsTemplate) {
+function(models, dialogViews, navbarTemplate, nodesStatsTemplate, notificationsTemplate, notificationsPopoverTemplate, breadcrumbsTemplate, footerTemplate) {
     'use strict';
 
     var views = {};
@@ -92,12 +93,6 @@ function(models, dialogViews, navbarTemplate, nodesStatsTemplate, notificationsT
         initialize: function(options) {
             this.eventNamespace = 'click.click-notifications';
             this.elements = _.isArray(options.elements) ? options.elements : [];
-            $.ajax({
-                url: '/api/version',
-                success: _.bind(function(data) {
-                    this.version = data.release;
-                }, this)
-            });
             var complete = _.after(2, _.bind(this.scheduleUpdate, this));
             this.nodes = new models.Nodes();
             this.nodes.fetch({complete: complete});
@@ -112,9 +107,6 @@ function(models, dialogViews, navbarTemplate, nodesStatsTemplate, notificationsT
         render: function() {
             if (!this.$('.navigation-bar-ul a').length) {
                 this.$el.html(this.template({elements: this.elements}));
-            }
-            if (this.version) {
-                this.$('.header-version').html('Release version: ' + this.version);
             }
             this.stats = new views.NodesStats({nodes: this.nodes});
             this.registerSubView(this.stats);
@@ -187,6 +179,23 @@ function(models, dialogViews, navbarTemplate, nodesStatsTemplate, notificationsT
         },
         render: function() {
             this.$el.html(this.template({path: this.path}));
+            return this;
+        }
+    });
+
+    views.Footer = Backbone.View.extend({
+        template: _.template(footerTemplate),
+        initialize: function(options) {
+            $.ajax({
+                url: '/api/version',
+                success: _.bind(function(data) {
+                    this.version = data.release;
+                    this.render();
+                }, this)
+            });
+        },
+        render: function() {
+            this.$el.html(this.template({version: this.version}));
             return this;
         }
     });

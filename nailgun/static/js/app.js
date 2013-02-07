@@ -29,6 +29,8 @@ function(models, commonViews, ClusterPage, ClustersPage, ReleasesPage, Notificat
             this.content.before(this.navbar.render().el);
             this.breadcrumbs = new commonViews.Breadcrumbs();
             this.content.before(this.breadcrumbs.render().el);
+            this.footer = new commonViews.Footer();
+            $('#footer').html(this.footer.render().el);
         },
         setPage: function(newPage) {
             if (this.page) {
