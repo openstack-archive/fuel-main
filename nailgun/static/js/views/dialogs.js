@@ -26,9 +26,13 @@ function(models, simpleMessageTemplate, createClusterDialogTemplate, changeClust
             this.$('.modal-body').html(this.errorMessageTemplate());
         },
         render: function(options) {
+            this.$el.attr('tabindex', -1);
             this.$el.html(this.template(options));
             if (!this.modalBound) {
                 this.$el.on('hidden', _.bind(this.tearDown, this));
+                this.$el.on('shown', _.bind(function() {
+                    this.$('[autofocus]:first').focus();
+                }, this));
                 this.$el.modal();
                 this.modalBound = true;
             }
