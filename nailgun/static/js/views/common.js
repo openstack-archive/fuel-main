@@ -95,7 +95,7 @@ function(models, dialogViews, navbarTemplate, nodesStatsTemplate, notificationsT
             this.elements = _.isArray(options.elements) ? options.elements : [];
             var complete = _.after(2, _.bind(this.scheduleUpdate, this));
             this.nodes = new models.Nodes();
-            this.nodes.fetch({complete: complete});
+            this.nodes.deferred = this.nodes.fetch({complete: complete});
             this.nodes.bind('reset', this.render, this);
             this.notifications = new models.Notifications();
             this.notifications.fetch({complete: complete});
@@ -124,14 +124,19 @@ function(models, dialogViews, navbarTemplate, nodesStatsTemplate, notificationsT
         initialize: function(options) {
             _.defaults(this, options);
         },
-        render: function() {
+        calculateStats: function() {
             var roles = ['controller', 'compute', 'storage'];
             _.each(roles, function(role) {
                 this.stats[role] = this.nodes.where({role: role}).length;
             }, this);
             this.stats.total = this.nodes.length;
             this.stats.unallocated = this.stats.total - this.stats.controller - this.stats.compute - this.stats.storage;
-            this.$el.html(this.template({stats: this.stats}));
+        },
+        render: function() {
+            if (this.nodes.deferred.state() == 'resolved') {
+                this.calculateStats();
+                this.$el.html(this.template({stats: this.stats}));
+            }
             return this;
         }
     });

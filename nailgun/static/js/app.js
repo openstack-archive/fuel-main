@@ -31,6 +31,7 @@ function(models, commonViews, ClusterPage, ClustersPage, ReleasesPage, Notificat
             this.content.before(this.breadcrumbs.render().el);
             this.footer = new commonViews.Footer();
             $('#footer').html(this.footer.render().el);
+            this.content.find('.loading').addClass('layout-loaded');
         },
         setPage: function(newPage) {
             if (this.page) {

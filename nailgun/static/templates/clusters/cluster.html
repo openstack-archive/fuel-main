@@ -16,14 +16,14 @@
   </div>
 </div>
 <div class="cluster-status">
-  <% var statuses = {'new': 'New', 'deployment': 'Deploying', 'operational': 'Operational', 'error': 'Error', 'remove': 'Removing'} %>
-  <% var task = cluster.task('deploy') %>
-  <% var taskStatus = task ? task.get('status') : null %>
-  <% if (taskStatus =='running') { %>
+  <% if (cluster.task('cluster_deletion', 'running')) { %>
+    Removing
+  <% } else if (cluster.task('deploy', 'running')) { %>
     <div class="cluster-status-deploy">
       <div class="bar"></div>
     </div>
   <% } else { %>
-    <%= cluster.task('cluster_deletion', 'running') ? 'Removing' : statuses[cluster.get('status')] %>
+    <% var statuses = {'new': 'New', 'deployment': 'Deploying', 'operational': 'Operational', 'error': 'Error', 'remove': 'Removing'} %>
+    <%= statuses[cluster.get('status')] %>
   <% } %>
 </div>
