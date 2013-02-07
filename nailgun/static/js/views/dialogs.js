@@ -8,9 +8,10 @@ define(
     'text!templates/dialogs/display_changes.html',
     'text!templates/dialogs/remove_cluster.html',
     'text!templates/dialogs/error_message.html',
-    'text!templates/dialogs/show_node.html'
+    'text!templates/dialogs/show_node.html',
+    'text!templates/dialogs/dismiss_settings.html'
 ],
-function(models, simpleMessageTemplate, createClusterDialogTemplate, changeClusterModeDialogTemplate, discardChangesDialogTemplate, displayChangesDialogTemplate, removeClusterDialogTemplate, errorMessageTemplate, showNodeInfoTemplate) {
+function(models, simpleMessageTemplate, createClusterDialogTemplate, changeClusterModeDialogTemplate, discardChangesDialogTemplate, displayChangesDialogTemplate, removeClusterDialogTemplate, errorMessageTemplate, showNodeInfoTemplate, dismissSettingsTemplate) {
     'use strict';
 
     var views = {};
@@ -268,6 +269,24 @@ function(models, simpleMessageTemplate, createClusterDialogTemplate, changeClust
         },
         render: function() {
             this.constructor.__super__.render.call(this, {node: this.node});
+            return this;
+        }
+    });
+
+    views.DismissSettingsDialog = views.Dialog.extend({
+        template: _.template(dismissSettingsTemplate),
+        events: {
+            'click .dismiss-settings': 'leaveTab'
+        },
+        leaveTab: function() {
+            this.$el.modal('hide');
+            app.navigate(this.href, {trigger: true});
+        },
+        initialize: function(options) {
+            _.defaults(this, options);
+        },
+        render: function() {
+            this.constructor.__super__.render.call(this);
             return this;
         }
     });

@@ -111,10 +111,6 @@ function(models, commonViews, ClusterPage, ClustersPage, ReleasesPage, Notificat
             var app = new AppRouter();
             window.app = app;
             Backbone.history.start();
-
-            // tooltips
-            $('body').tooltip({selector: "[rel=tooltip]"});
-            app.bind('all', function(route) {$('.tooltip').remove();});
         }
     };
 });

@@ -11,6 +11,7 @@ function(models, commonViews, settingsTabTemplate, settingsGroupTemplate) {
 
     SettingsTab = commonViews.Tab.extend({
         template: _.template(settingsTabTemplate),
+        hasChanges: false,
         events: {
             'click .btn-apply-changes:not([disabled])': 'applyChanges',
             'click .btn-revert-changes:not([disabled])': 'revertChanges',
@@ -58,8 +59,11 @@ function(models, commonViews, settingsTabTemplate, settingsGroupTemplate) {
             this.collectData(this.$('form'), changedData);
             this.model.get('settings').update({editable: changedData}, {
                 url: '/api/clusters/' + this.model.id + '/attributes',
-                complete: _.bind(function() {
+                success: _.bind(function() {
+                    this.hasChanges = false;
                     this.settingsSaved = this.model.get('settings').get('editable');
+                }, this),
+                complete: _.bind(function() {
                     this.render();
                     this.model.fetch();
                 }, this)
@@ -77,6 +81,7 @@ function(models, commonViews, settingsTabTemplate, settingsGroupTemplate) {
         },
         revertChanges: function() {
             this.parseSettings(this.model.get('settings').get('editable'));
+            this.hasChanges = false;
             this.defaultButtonsState(true);
         },
         loadDefaults: function() {
@@ -88,6 +93,7 @@ function(models, commonViews, settingsTabTemplate, settingsGroupTemplate) {
                     this.defaultButtonsState(false);
                 }, this)
             });
+            this.hasChanges = false;
             this.disableControls();
         },
         render: function () {
@@ -139,8 +145,10 @@ function(models, commonViews, settingsTabTemplate, settingsGroupTemplate) {
             this.tab.collectData($('.openstack-settings form'), changedData);
             if (_.isEqual(this.tab.settingsSaved, changedData)) {
                 this.tab.defaultButtonsState(true);
+                this.tab.hasChanges = false;
             } else {
                 $('.openstack-settings .btn').attr('disabled', false);
+                this.tab.hasChanges = true;
             }
         },
         initialize: function(options) {

@@ -16,6 +16,7 @@ function(models, commonViews, dialogViews, networkTabTemplate, networkTabViewMod
         viewModeTemplate: _.template(networkTabViewModeTemplate),
         updateInterval: 3000,
         dataDbState: {},
+        hasChanges: false,
         events: {
             'keyup .row input': 'makeChanges',
             'change .row select': 'makeChanges',
@@ -44,10 +45,11 @@ function(models, commonViews, dialogViews, networkTabTemplate, networkTabViewMod
             });
             if (_.isEqual(this.networks.toJSON(), this.dataDbState.settings) && this.model.get('net_manager') == this.dataDbState.manager) {
                 this.$('.apply-btn').attr('disabled', true);
+                this.hasChanges = false;
             } else {
                 this.$('.apply-btn').attr('disabled', false);
+                this.hasChanges = true;
             }
-            this.networks.hasChanges = true;
             app.page.removeVerificationTask();
         },
         calculateVlanEnd: function() {
@@ -116,7 +118,7 @@ function(models, commonViews, dialogViews, networkTabTemplate, networkTabViewMod
                         if (task && task.status == 'error') {
                             this.$('.apply-btn').attr('disabled', false);
                         } else {
-                            this.networks.hasChanges = false;
+                            this.hasChanges = false;
                             this.dataDbState.settings = this.networks.toJSON();
                             this.dataDbState.manager = this.model.get('net_manager');
                         }
@@ -205,7 +207,7 @@ function(models, commonViews, dialogViews, networkTabTemplate, networkTabViewMod
         render: function() {
             this.dataDbState.settings = this.networks.toJSON();
             this.dataDbState.manager = this.model.get('net_manager');
-            this.$el.html(this.template({cluster: this.model, networks: this.networks}));
+            this.$el.html(this.template({cluster: this.model, networks: this.networks, hasChanges: this.hasChanges}));
             this.renderVerificationControl();
             return this;
         }

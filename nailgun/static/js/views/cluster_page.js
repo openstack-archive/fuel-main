@@ -30,7 +30,8 @@ function(models, commonViews, dialogViews, NodesTab, NetworkTab, SettingsTab, Lo
         events: {
             'click .task-result .close': 'dismissTaskResult',
             'click .rollback': 'discardChanges',
-            'click .deploy-btn:not(.disabled)': 'displayChanges'
+            'click .deploy-btn:not(.disabled)': 'displayChanges',
+            'click .nav-tabs li:not(.active) a': 'dismissSettings'
         },
         removeVerificationTask: function() {
             var deferred;
@@ -60,6 +61,15 @@ function(models, commonViews, dialogViews, NodesTab, NetworkTab, SettingsTab, Lo
             var dialog = new dialogViews.DisplayChangesDialog({model: this.model});
             this.registerSubView(dialog);
             dialog.render();
+        },
+        dismissSettings: function(e) {
+            if (this.tab.hasChanges) {
+                e.preventDefault();
+                var href = $(e.target).attr('href') || $(e.target).parent().attr('href');
+                var dismissSettingsDialogView = new dialogViews.DismissSettingsDialog({href: href});
+                app.page.registerSubView(dismissSettingsDialogView);
+                dismissSettingsDialogView.render();
+            }
         },
         scheduleUpdate: function() {
             if (this.model.task('deploy', 'running') || this.model.task('verify_networks', 'running')) {
@@ -97,6 +107,12 @@ function(models, commonViews, dialogViews, NodesTab, NetworkTab, SettingsTab, Lo
             if (this.timeout) {
                 clearTimeout(this.timeout);
             }
+            $(window).unbind('beforeunload');
+        },
+        onBeforeunloadEvent: function() {
+            if (this.tab.hasChanges) {
+                return 'Settings were modified. Do you really want to leave the tab and dismiss changes?';
+            }
         },
         initialize: function(options) {
             _.defaults(this, options);
@@ -106,6 +122,7 @@ function(models, commonViews, dialogViews, NodesTab, NetworkTab, SettingsTab, Lo
             this.model.bind('change:changes', this.renderDeploymentControl, this);
             this.bindNodesEvents();
             this.scheduleUpdate();
+            $(window).bind('beforeunload', _.bind(this.onBeforeunloadEvent, this));
         },
         bindTasksEvents: function() {
             this.model.get('tasks').bind('reset', this.renderDeploymentResult, this);
