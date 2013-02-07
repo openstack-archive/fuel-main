@@ -36,8 +36,8 @@
           <li>3. Nodes listeners register test frames from other nodes</li>
       </div>
 
-      <% if (task && task.get('status') == 'ready') { %>
-        <div class="page-control-success-placeholder enable-selection">Verification Succeeded</div>
+      <% if (cluster.task('verify_networks', 'ready')) { %>
+        <div class="page-control-success-placeholder enable-selection">Verification Succeeded. Your network is configured correctly.</div>
       <% } else if (task && task.get('status') == 'error') { %>
         <div class="page-control-error-placeholder enable-selection">
           Verification Failed: <%- task.get('message') %>

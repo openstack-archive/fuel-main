@@ -569,6 +569,7 @@ h6.page-title {
 
 .node-name div {
   word-wrap: break-word;
+  font-size: 12px;
 }
 
 .node-name .input-medium {
