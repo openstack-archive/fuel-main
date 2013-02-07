@@ -170,8 +170,12 @@ class NodeAgent
           int_meta[:mac] = addr
 
           fn = "/sys/class/net/#{int}/speed"
-          int_bandwidth = File.read(fn).to_i if int =~ /^eth[\d]+$/ and File.exist? fn
-          int_bandwidth = nil if int_bandwidth == 0
+          begin
+            int_bandwidth = File.read(fn).to_i if int =~ /^eth[\d]+$/ and File.exist? fn
+            int_bandwidth = nil if int_bandwidth == 0
+          rescue
+            int_bandwidth = nil
+          end
           int_meta[:bandwidth] = int_bandwidth
 
         elsif (addrinfo[:family] rescue nil) =~ /^inet$/
