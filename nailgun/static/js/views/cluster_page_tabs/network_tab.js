@@ -15,6 +15,7 @@ function(models, commonViews, dialogViews, networkTabTemplate, networkTabViewMod
         template: _.template(networkTabTemplate),
         viewModeTemplate: _.template(networkTabViewModeTemplate),
         updateInterval: 3000,
+        dataDbState: {},
         events: {
             'keyup .row input': 'makeChanges',
             'change .row select': 'makeChanges',
@@ -41,7 +42,7 @@ function(models, commonViews, dialogViews, networkTabTemplate, networkTabViewMod
                 amount: this.$('.net-manager input[checked]').val() == 'FlatDHCPManager' ? 1 : parseInt($('.amount input', row).val(), 10),
                 network_size: parseInt($('.network_size select', row).val(), 10)
             });
-            if (_.isEqual(this.networks.toJSON(), this.settingsSaved) && this.model.get('net_manager') == this.$('.net-manager input[checked]').val()) {
+            if (_.isEqual(this.networks.toJSON(), this.dataDbState.settings) && this.model.get('net_manager') == this.dataDbState.manager) {
                 this.$('.apply-btn').attr('disabled', true);
             } else {
                 this.$('.apply-btn').attr('disabled', false);
@@ -74,6 +75,7 @@ function(models, commonViews, dialogViews, networkTabTemplate, networkTabViewMod
         changeManager: function(e) {
             this.$('.net-manager input').attr('checked', false);
             this.$(e.target).attr('checked', true);
+            this.model.set({net_manager: this.$(e.target).val()}, {silent: true});
             this.makeChanges();
             this.$('.fixed-row .amount, .fixed-header .amount, .fixed-row .network_size, .fixed-header .size').toggle().removeClass('hide');
             this.displayRange();
@@ -115,7 +117,8 @@ function(models, commonViews, dialogViews, networkTabTemplate, networkTabViewMod
                             this.$('.apply-btn').attr('disabled', false);
                         } else {
                             this.networks.hasChanges = false;
-                            this.settingsSaved = this.networks.toJSON();
+                            this.dataDbState.settings = this.networks.toJSON();
+                            this.dataDbState.manager = this.model.get('net_manager');
                         }
                     }, this),
                     complete: _.bind(function() {
@@ -194,7 +197,8 @@ function(models, commonViews, dialogViews, networkTabTemplate, networkTabViewMod
             this.$('.verification-control').html(verificationView.render().el);
         },
         render: function() {
-            this.settingsSaved = this.networks.toJSON();
+            this.dataDbState.settings = this.networks.toJSON();
+            this.dataDbState.manager = this.model.get('net_manager');
             this.$el.html(this.template({cluster: this.model, networks: this.networks}));
             this.renderVerificationControl();
             return this;
