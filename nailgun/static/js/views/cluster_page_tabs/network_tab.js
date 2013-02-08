@@ -194,14 +194,12 @@ function(models, commonViews, dialogViews, networkTabTemplate, networkTabViewMod
             _.defaults(this, options);
             this.model.bind('change:tasks', this.bindEvents, this);
             this.bindEvents();
-            if (!this.model.get('networks')) {
-                this.networks = new models.Networks();
-                this.networks.deferred = this.networks.fetch({data: {cluster_id: this.model.id}});
-                this.networks.deferred.done(_.bind(this.render, this));
-                this.model.set({'networks': this.networks}, {silent: true});
-            } else {
-                this.networks = this.model.get('networks');
-            }
+            var complete = _.after(2, _.bind(this.render, this));
+            this.model.fetch().done(complete);
+            this.networks = new models.Networks();
+            this.networks.deferred = this.networks.fetch({data: {cluster_id: this.model.id}});
+            this.networks.deferred.done(complete);
+            this.model.set({'networks': this.networks}, {silent: true});
         },
         renderVerificationControl: function() {
             var verificationView = new NetworkTabVerificationControl({model: this.model, networks: this.networks});
