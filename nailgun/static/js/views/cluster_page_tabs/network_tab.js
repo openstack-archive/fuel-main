@@ -26,6 +26,16 @@ function(models, commonViews, dialogViews, networkTabTemplate, networkTabViewMod
             'click .net-manager input:not([checked])': 'changeManager',
             'keyup .range': 'displayRange'
         },
+        isChanges: function() {
+            this.setValues();
+            if (_.isEqual(this.networks.toJSON(), this.dataDbState.settings) && this.model.get('net_manager') == this.dataDbState.manager) {
+                this.$('.apply-btn').attr('disabled', true);
+                this.hasChanges = false;
+            } else {
+                this.$('.apply-btn').attr('disabled', false);
+                this.hasChanges = true;
+            }
+        },
         makeChanges: function(e) {
             var row;
             if (e) {
@@ -43,13 +53,7 @@ function(models, commonViews, dialogViews, networkTabTemplate, networkTabViewMod
                 amount: this.$('.net-manager input[checked]').val() == 'FlatDHCPManager' ? 1 : $('.amount input', row).val(),
                 network_size: parseInt($('.network_size select', row).val(), 10)
             });
-            if (_.isEqual(this.networks.toJSON(), this.dataDbState.settings) && this.model.get('net_manager') == this.dataDbState.manager) {
-                this.$('.apply-btn').attr('disabled', true);
-                this.hasChanges = false;
-            } else {
-                this.$('.apply-btn').attr('disabled', false);
-                this.hasChanges = true;
-            }
+            this.isChanges();
             app.page.removeVerificationTask();
         },
         calculateVlanEnd: function() {
@@ -78,7 +82,7 @@ function(models, commonViews, dialogViews, networkTabTemplate, networkTabViewMod
             this.$('.net-manager input').attr('checked', false);
             this.$(e.target).attr('checked', true);
             this.model.set({net_manager: this.$(e.target).val()}, {silent: true});
-            this.makeChanges();
+            this.isChanges();
             this.$('.fixed-row .amount, .fixed-header .amount, .fixed-row .network_size, .fixed-header .size').toggle().removeClass('hide');
             this.displayRange();
         },
