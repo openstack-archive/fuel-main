@@ -13,6 +13,7 @@ module Astute
     def deploy(nodes, attrs)
       # See implementation in subclasses, this may be everriden
       attrs['deployment_mode'] ||= 'multinode_compute'  # simple multinode deployment is the default
+      @ctx.deploy_log_parser.deploy_type = attrs['deployment_mode']
       Astute.logger.info "Deployment mode #{attrs['deployment_mode']}"
       result = self.send("deploy_#{attrs['deployment_mode']}", nodes, attrs)
     end
@@ -32,7 +33,7 @@ module Astute
 
     def deploy_singlenode_compute(nodes, attrs)
       # TODO(mihgen) some real stuff is needed
-      Astute.logger.info "Starting deployment of single node OpenStack"
+       Astute.logger.info "Starting deployment of single node OpenStack"
       deploy_piece(nodes, attrs)
     end
 
@@ -61,12 +62,10 @@ module Astute
       Astute.logger.info "Starting deployment of controllers"
       deploy_piece(ctrl_nodes, attrs)
 
-      @ctx.deploy_log_parser.pattern_spec['expected_line_number'] = 380
       compute_nodes = nodes.select {|n| n['role'] == 'compute'}
       Astute.logger.info "Starting deployment of computes"
       deploy_piece(compute_nodes, attrs)
 
-      @ctx.deploy_log_parser.pattern_spec['expected_line_number'] = 300
       other_nodes = nodes - ctrl_nodes - compute_nodes
       Astute.logger.info "Starting deployment of other nodes"
       deploy_piece(other_nodes, attrs)
@@ -113,12 +112,10 @@ module Astute
       deploy_piece(ctrl_nodes, attrs, retries=retries)
 
       # FIXME(mihgen): put right numbers for logs
-      @ctx.deploy_log_parser.pattern_spec['expected_line_number'] = 380
       compute_nodes = nodes.select {|n| n['role'] == 'compute'}
       Astute.logger.info "Starting deployment of computes"
       deploy_piece(compute_nodes, attrs)
 
-      @ctx.deploy_log_parser.pattern_spec['expected_line_number'] = 300
       other_nodes = nodes - ctrl_nodes - compute_nodes
       Astute.logger.info "Starting deployment of other nodes"
       deploy_piece(other_nodes, attrs)

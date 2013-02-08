@@ -3,7 +3,6 @@ require 'logger'
 
 require 'astute/config'
 require 'astute/logparser'
-require 'astute/logparser_patterns'
 require 'astute/orchestrator'
 require 'astute/metadata'
 require 'astute/deployment_engine'

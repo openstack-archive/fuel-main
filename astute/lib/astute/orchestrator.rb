@@ -2,10 +2,8 @@ module Astute
   class Orchestrator
     def initialize(deploy_engine=nil, log_parsing=false)
       @deploy_engine = deploy_engine ||= Astute::DeploymentEngine::NailyFact
-      @check_network = Network.method(:check_network)
-      @pattern_spec = LogParser.get_default_pattern('puppet-log-components-list')
       if log_parsing
-        @log_parser = LogParser::ParseNodeLogs.new(@pattern_spec)
+        @log_parser = LogParser::ParseDeployLogs.new
       else
         @log_parser = LogParser::NoParsing.new
       end

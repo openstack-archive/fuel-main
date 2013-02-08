@@ -2,14 +2,14 @@ require 'date'
 
 module Astute
   module LogParser
+    # Default values. Can be overrided by pattern_spec.
+    # E.g. pattern_spec = {'separator' => 'new_separator', ...}
     @separator = "SEPARATOR\n"
     @log_portion = 10000
+    @path_prefix = '/var/log/remote/'
 
     class NoParsing
-      attr_accessor :pattern_spec
-
-      def initialize(pattern_spec, *args)
-        @pattern_spec = pattern_spec
+      def initialize(*args)
       end
 
       def method_missing(*args)
@@ -22,21 +22,29 @@ module Astute
     end
 
     class ParseNodeLogs
+      require 'astute/logparser_patterns'
       attr_reader :pattern_spec
 
       def initialize(pattern_spec)
-        @pattern_spec = pattern_spec
         @nodes_states = {}
+        pattern_spec['path_prefix'] ||= @path_prefix
+        @pattern_spec = pattern_spec
       end
 
       def progress_calculate(uids_to_calc, nodes)
         nodes_progress = []
         uids_to_calc.each do |uid|
           node = nodes.select {|n| n['uid'] == uid}[0]
-          path = "/var/log/remote/#{node['ip']}/#{@pattern_spec['filename']}"
+          path = "#{@pattern_spec['path_prefix']}#{node['ip']}/#{@pattern_spec['filename']}"
+          node_pattern_spec = @nodes_states[uid]
+          unless node_pattern_spec
+            node_pattern_spec = Marshal.load(Marshal.dump(@pattern_spec))
+            @nodes_states[uid] = node_pattern_spec
+          end
+
           nodes_progress << {
             'uid' => uid,
-            'progress' => (LogParser::get_log_progress(path, @pattern_spec, @nodes_states)*100).to_i # Return percent of progress
+            'progress' => (LogParser::get_log_progress(path, node_pattern_spec)*100).to_i # Return percent of progress
           }
         end
         return nodes_progress
@@ -44,14 +52,50 @@ module Astute
 
       def pattern_spec= (pattern_spec)
         @nodes_states = {}
+        pattern_spec['path_prefix'] ||= @path_prefix
         @pattern_spec = pattern_spec
       end
 
       def add_separator(nodes)
         nodes.each do |node|
-          path = "/var/log/remote/#{node['ip']}/#{@pattern_spec['filename']}"
+          path = "#{@pattern_spec['path_prefix']}#{node['ip']}/#{@pattern_spec['filename']}"
           LogParser::add_log_separator(path)
         end
+      end
+    end
+
+    class ParseDeployLogs <ParseNodeLogs
+      attr_reader :deploy_type
+      def initialize(deploy_type='multinode_compute')
+        @deploy_type = deploy_type
+        pattern_spec = LogParser::get_default_pattern(
+          "puppet-log-components-list-#{@deploy_type}-controller")
+        super(pattern_spec)
+      end
+
+      def deploy_type= (deploy_type)
+        @deploy_type = deploy_type
+        @nodes_states = {}
+      end
+
+      def progress_calculate(uids_to_calc, nodes)
+        # Just create correct pattern for each node and then call parent method.
+        uids_to_calc.each do |uid|
+          node = nodes.select {|n| n['uid'] == uid}[0]
+          unless @nodes_states[uid]
+            @nodes_states[uid] = LogParser::get_default_pattern(
+              "puppet-log-components-list-#{@deploy_type}-#{node['role']}")
+          end
+        end
+        super(uids_to_calc, nodes)
+      end
+
+    end
+
+    class ParseProvisionLogs <ParseNodeLogs
+      def initialize
+        pattern_spec = LogParser.get_default_pattern('anaconda-log-supposed-time')
+        super(pattern_spec)
       end
     end
 
@@ -61,15 +105,16 @@ module Astute
       File.open(path, 'a') {|fo| fo.write separator } if File.readable?(path)
     end
 
-    def self.get_log_progress(path, pattern_spec, nodes_states)
-      return 0 unless File.readable?(path)
-      progress = nil
-      node_pattern_spec = nodes_states[path]
-      unless node_pattern_spec
-        node_pattern_spec = Marshal.load(Marshal.dump(pattern_spec))
-        nodes_states[path] = node_pattern_spec
+    def self.get_log_progress(path, node_pattern_spec)
+      unless File.readable?(path)
+        Astute.logger.debug "Can't read file with logs: #{path}"
+        return 0
       end
-
+      if node_pattern_spec.nil?
+        Astute.logger.warn "Can't parse logs. Pattern_spec is empty."
+        return 0
+      end
+      progress = nil
       File.open(path) do |fo|
         # Try to find well-known ends of log.
         endlog = find_endlog_patterns(fo, node_pattern_spec)
@@ -77,7 +122,7 @@ module Astute
         # Start reading from end of file.
         fo.pos = fo.stat.size
 
-        case pattern_spec['type']
+        case node_pattern_spec['type']
         when 'count-lines'
           progress = simple_line_counter(fo, node_pattern_spec)
         when 'pattern-list'
@@ -281,6 +326,10 @@ module Astute
     end
 
     def self.find_endlog_patterns(fo, pattern_spec)
+      # Pattern example:
+      # pattern_spec = {...,
+      #   'endlog_patterns' => [{'pattern' => /Finished catalog run in [0-9]+\.[0-9]* seconds\n/, 'progress' => 1.0}],
+      # }      
       endlog_patterns = pattern_spec['endlog_patterns']
       return nil unless endlog_patterns
       fo.pos = fo.stat.size
