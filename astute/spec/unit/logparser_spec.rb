@@ -66,6 +66,83 @@ describe LogParser do
       return progress_table, period_in_sec
     end
 
+    def test_independed_parser(pattern_spec, logfile,
+        date_regexp='^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}',
+        date_format='%Y-%m-%dT%H:%M:%S')
+      # Copy logs line by line from example logfile to tempfile and collect progress for each step.
+      # Also calculate some statistics variables: expectancy, standart deviation and
+      # correlation coefficient between real and ideal progress calculation.
+      fo = Tempfile.new('logparse')
+      path = fo.path
+      initial_progress = Astute::LogParser.get_log_progress(path, pattern_spec)
+      initial_progress.should eql(0)
+
+      progress_table = []
+      reboot_time = 30
+      first_event_date = nil
+      total_time = 0
+      real_expectancy = 0
+      real_sqr_expectancy = 0
+      File.open(logfile).each do |line|
+        fo.write(line)
+        fo.flush
+        date_string = line.match(date_regexp)
+        if date_string
+          date = DateTime.strptime(date_string[0], date_format)
+          prev_event_date = date unless prev_event_date
+          progress = Astute::LogParser.get_log_progress(path, pattern_spec)
+          period = date - prev_event_date
+          hours, mins, secs, frac = Date::day_fraction_to_time(period)
+          period_in_sec = hours * 60 * 60 + mins * 60 + secs + reboot_time
+          total_time += period_in_sec
+          real_expectancy += period_in_sec * progress
+          real_sqr_expectancy += period_in_sec * progress ** 2
+          progress_table << {'time_delta' => period_in_sec, 'progress' => progress}
+        end
+      end
+      fo.close!
+
+      # Calculate standart deviation for real progress distibution.
+      real_expectancy = real_expectancy.to_f / total_time
+      real_sqr_expectancy = real_sqr_expectancy.to_f / total_time
+      real_standart_deviation = (real_sqr_expectancy - real_expectancy ** 2) ** 0.5
+
+      # Calculate PCC (correlation coefficient).
+      ideal_sqr_expectancy = 0
+      t = 0
+      ideal_delta = 1.0 / total_time
+      mixed_expectancy = 0
+      progress_table.each do |el|
+        t += el['time_delta']
+        ideal_progress = t * ideal_delta
+        ideal_sqr_expectancy += ideal_progress ** 2 * el['time_delta']
+        el['ideal_progress'] = ideal_progress
+        mixed_expectancy += el['progress'] * ideal_progress * el['time_delta']
+      end
+
+      ideal_expectancy = 0.5
+      ideal_sqr_expectancy = ideal_sqr_expectancy / total_time
+      mixed_expectancy = mixed_expectancy / total_time
+      ideal_standart_deviation = (ideal_sqr_expectancy - ideal_expectancy ** 2) ** 0.5
+      covariance = mixed_expectancy - ideal_expectancy * real_expectancy
+      pcc = covariance / (ideal_standart_deviation * real_standart_deviation)
+
+      statistics = {
+        'real_expectancy' => real_expectancy,
+        'real_sqr_expectancy' => real_sqr_expectancy,
+        'real_standart_deviation' => real_standart_deviation,
+        'ideal_sqr_expectancy' => ideal_sqr_expectancy,
+        'ideal_standart_deviation' => ideal_standart_deviation,
+        'mixed_expectancy' => mixed_expectancy,
+        'covariance' => covariance,
+        'pcc' => pcc,
+        'total_time' => total_time,
+        'progress_table' => progress_table
+      }
+
+      return statistics
+    end
+
     it "new progress must be equal or greater than previous" do
       progress_table, period_in_sec = test_supposed_time_parser(@pattern_spec)
       progress_table.each_cons(2) do |el|
@@ -74,6 +151,23 @@ describe LogParser do
         el[1]['progress'].should be <= 1
       end
     end
+
+    it "test component based progress calculation with different logfiles" do
+      default_patterns = Astute::LogParser.list_default_patterns
+      default_patterns.each do |pattern_name|
+        pattern_spec = Astute::LogParser.get_default_pattern(pattern_name)
+        filenames = Dir.glob(File.join(File.dirname(__FILE__), "..", "example-logs", "puppet-agent*"))
+        filenames.each do |logfile|
+          statistics = test_independed_parser(pattern_spec, logfile)
+          statistics.delete('progress_table')
+          p "\n#{logfile}"
+          p statistics
+        end
+      end
+    end
+
+
+
 
     it "it should move smoothly"
     it "it must be updated at least 5 times" do

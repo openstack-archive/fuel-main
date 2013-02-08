@@ -8,8 +8,8 @@ module Astute
     class NoParsing
       attr_accessor :pattern_spec
 
-      def initialize(*args)
-        @pattern_spec = {}
+      def initialize(pattern_spec, *args)
+        @pattern_spec = pattern_spec
       end
 
       def method_missing(*args)
@@ -22,10 +22,11 @@ module Astute
     end
 
     class ParseNodeLogs
-      attr_accessor :pattern_spec
+      attr_reader :pattern_spec
 
       def initialize(pattern_spec)
         @pattern_spec = pattern_spec
+        @nodes_states = {}
       end
 
       def progress_calculate(uids_to_calc, nodes)
@@ -35,15 +36,20 @@ module Astute
           path = "/var/log/remote/#{node['ip']}/#{@pattern_spec['filename']}"
           nodes_progress << {
             'uid' => uid,
-            'progress' => (LogParser::get_log_progress(path, @pattern_spec)*100).to_i # Return percent of progress
+            'progress' => (LogParser::get_log_progress(path, @pattern_spec, @nodes_states)*100).to_i # Return percent of progress
           }
         end
         return nodes_progress
       end
 
+      def pattern_spec= (pattern_spec)
+        @nodes_states = {}
+        @pattern_spec = pattern_spec
+      end
+
       def add_separator(nodes)
         nodes.each do |node|
-          path = "/var/log/remote/#{node['ip']}/#{@filename}"
+          path = "/var/log/remote/#{node['ip']}/#{@pattern_spec['filename']}"
           LogParser::add_log_separator(path)
         end
       end
@@ -55,16 +61,13 @@ module Astute
       File.open(path, 'a') {|fo| fo.write separator } if File.readable?(path)
     end
 
-    def self.get_log_progress(path, pattern_spec)
+    def self.get_log_progress(path, pattern_spec, nodes_states)
       return 0 unless File.readable?(path)
       progress = nil
-      pattern_spec['_nodes'] ||= {}
-      node_pattern_spec = pattern_spec['_nodes'][path]
+      node_pattern_spec = nodes_states[path]
       unless node_pattern_spec
-        node_pattern_spec = pattern_spec.dup
-        node_pattern_spec.delete('_nodes')
-        node_pattern_spec = Marshal.load(Marshal.dump(node_pattern_spec))
-        pattern_spec['_nodes'][path] = node_pattern_spec
+        node_pattern_spec = Marshal.load(Marshal.dump(pattern_spec))
+        nodes_states[path] = node_pattern_spec
       end
 
       File.open(path) do |fo|
@@ -74,13 +77,14 @@ module Astute
         # Start reading from end of file.
         fo.pos = fo.stat.size
 
-        if pattern_spec['type'] == 'count-lines'
-          progress = simple_line_counter(fo, pattern_spec)
-        elsif pattern_spec['type'] == 'pattern-list'
-          progress = simple_pattern_finder(fo, pattern_spec)
-        elsif pattern_spec['type'] == 'supposed-time'
+        case pattern_spec['type']
+        when 'count-lines'
+          progress = simple_line_counter(fo, node_pattern_spec)
+        when 'pattern-list'
+          progress = simple_pattern_finder(fo, node_pattern_spec)
+        when 'supposed-time'
           progress = supposed_time_parser(fo, node_pattern_spec)
-        elsif pattern_spec['type'] == 'components-list'
+        when 'components-list'
           progress = component_parser(fo, node_pattern_spec)
         end
       end

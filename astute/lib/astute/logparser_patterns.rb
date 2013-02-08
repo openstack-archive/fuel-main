@@ -4,6 +4,10 @@ module Astute
       return Marshal.load(Marshal.dump(@default_patterns[key]))
     end
 
+    def self.list_default_patterns
+      return @default_patterns.keys
+    end
+
     @default_patterns = {
       'puppet-log-components-list' =>   # key for default pattern
         {'type' => 'components-list',

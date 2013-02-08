@@ -1,0 +1,231 @@
+2013-02-07T09:48:00 notice: Reopening log files
+2013-02-07T09:48:24 notice: (/Stage[main]/Nova::Utilities/Package[euca2ools]/ensure) created
+2013-02-07T09:48:27 notice: (/Stage[main]/Mysql::Python/Package[python-mysqldb]/ensure) created
+2013-02-07T09:48:30 notice: (/Stage[main]/Nova::Utilities/Package[screen]/ensure) created
+2013-02-07T09:48:30 notice: (/Stage[main]/Memcached/User[memcached]/ensure) created
+2013-02-07T09:48:33 notice: (/Stage[main]/Memcached/Package[memcached]/ensure) created
+2013-02-07T09:48:33 notice: (/Stage[main]/Memcached/File[/etc/sysconfig/memcached]/content) content changed '{md5}05503957e3796fbe6fddd756a7a102a0' to '{md5}3a3961445528bdeda6d7b8b5564dfcfc'
+2013-02-07T09:48:34 notice: (/Stage[main]/Memcached/Service[memcached]/ensure) ensure changed 'stopped' to 'running'
+2013-02-07T09:48:34 notice: (/Stage[main]/Memcached/Service[memcached]) Triggered 'refresh' from 1 events
+2013-02-07T09:48:34 notice: (/Stage[main]/Osnailyfacter::Test_controller/File[/tmp/controller-file]/ensure) defined content as '{md5}7f5c51282c4b1242e12addba8cc331fa'
+2013-02-07T09:48:43 notice: (/Stage[main]/Horizon/Package[mod_wsgi]/ensure) created
+2013-02-07T09:48:48 notice: (/Stage[main]/Nova::Utilities/Package[parted]/ensure) created
+2013-02-07T09:48:54 notice: (/Stage[main]/Mysql/Package[mysql_client]/ensure) created
+2013-02-07T09:49:19 notice: (/Stage[main]/Mysql::Server/Package[mysql-server]/ensure) created
+2013-02-07T09:49:52 notice: (/Stage[main]/Mysql::Server/Service[mysqld]/ensure) ensure changed 'stopped' to 'running'
+2013-02-07T09:50:21 notice: (/Stage[main]/Keystone::Python/Package[python-keystone]/ensure) created
+2013-02-07T09:50:23 notice: (/Stage[main]/Osnailyfacter::Network_setup/Network_config[eth0.104]/ensure) created
+2013-02-07T09:51:25 notice: (/Stage[main]/Nova::Api/Nova::Generic_service[api]/Package[nova-api]/ensure) created
+2013-02-07T09:51:26 notice: (/Stage[main]/Glance::Db::Mysql/Mysql::Db[glance]/Database[glance]/ensure) created
+2013-02-07T09:51:26 notice: (/Stage[main]/Nova::Db::Mysql/Mysql::Db[nova]/Database[nova]/ensure) created
+2013-02-07T09:51:26 notice: (/Stage[main]/Nova::Db::Mysql/Mysql::Db[nova]/Database_user[nova@127.0.0.1]/ensure) created
+2013-02-07T09:51:28 notice: (/Stage[main]/Nova/Package[python-amqp]/ensure) created
+2013-02-07T09:51:28 notice: (/Stage[main]/Nova::Db::Mysql/Nova::Db::Mysql::Host_access[slave-1]/Database_user[nova@slave-1]/ensure) created
+2013-02-07T09:51:29 notice: (/Stage[main]/Nova::Db::Mysql/Nova::Db::Mysql::Host_access[slave-1]/Database_grant[nova@slave-1/nova]/privileges) privileges changed '' to 'all'
+2013-02-07T09:51:31 notice: (/Stage[main]/Nova::Utilities/Package[unzip]/ensure) created
+2013-02-07T09:51:31 notice: (/Stage[main]/Openstack::Auth_file/File[/root/openrc]/ensure) defined content as '{md5}08262b4756f32b16740cb81596c8c607'
+2013-02-07T09:51:46 notice: (/Stage[main]/Horizon/Package[openstack-dashboard]/ensure) created
+2013-02-07T09:51:46 notice: (/Stage[main]/Horizon/File[/var/log/horizon]/ensure) created
+2013-02-07T09:51:46 notice: (/Stage[main]/Horizon/File_line[horizon_redirect_rule]/ensure) created
+2013-02-07T09:51:46 notice: (/Stage[main]/Glance::Db::Mysql/Glance::Db::Mysql::Host_access[slave-1]/Database_user[glance@slave-1]/ensure) created
+2013-02-07T09:51:46 notice: (/Stage[main]/Glance::Db::Mysql/Glance::Db::Mysql::Host_access[slave-1]/Database_grant[glance@slave-1/glance]/privileges) privileges changed '' to 'all'
+2013-02-07T09:51:46 notice: (/Stage[main]/Horizon/File[/etc/openstack-dashboard/local_settings]/content) content changed '{md5}d114fa06522fa1016ab2bdede4cfd7bf' to '{md5}4966b1e7a0c22c25b1c69f149d9ae92b'
+2013-02-07T09:51:46 notice: (/Stage[main]/Horizon/File[/etc/openstack-dashboard/local_settings]/owner) owner changed 'root' to 'apache'
+2013-02-07T09:51:46 notice: (/Stage[main]/Horizon/File[/etc/openstack-dashboard/local_settings]/group) group changed 'root' to 'apache'
+2013-02-07T09:51:54 notice: (/Stage[main]/Nova::Vncproxy/Package[python-numpy]/ensure) created
+2013-02-07T09:53:27 notice: (/Stage[main]/Nova::Utilities/Package[libguestfs-tools-c]/ensure) created
+2013-02-07T09:53:27 notice: (/Stage[main]/Nova::Network/Sysctl::Value[net.ipv4.ip_forward]/Sysctl[net.ipv4.ip_forward]/val) val changed '0' to '1'
+2013-02-07T09:53:28 notice: (/Stage[main]/Nova::Db::Mysql/Mysql::Db[nova]/Database_grant[nova@127.0.0.1/nova]/privileges) privileges changed '' to 'all'
+2013-02-07T09:53:28 notice: (/Stage[main]/Nova::Network/Sysctl::Value[net.ipv4.ip_forward]/Exec[exec_sysctl_net.ipv4.ip_forward]/returns) net.ipv4.ip_forward = 1
+2013-02-07T09:53:28 notice: (/Stage[main]/Nova::Network/Sysctl::Value[net.ipv4.ip_forward]/Exec[exec_sysctl_net.ipv4.ip_forward]/returns) executed successfully
+2013-02-07T09:53:28 notice: (/Stage[main]/Mysql::Config/File[/etc/mysql]/ensure) created
+2013-02-07T09:53:28 notice: (/Stage[main]/Mysql::Config/File[/etc/my.cnf]/ensure) defined content as '{md5}7ae09a894eebe7ed3b5fc3b8ca8b445e'
+2013-02-07T09:53:28 notice: (/Stage[main]/Mysql::Config/File[/etc/mysql/conf.d]/ensure) created
+2013-02-07T09:54:31 notice: (/Stage[main]/Mysql::Config/Exec[mysqld-restart]) Triggered 'refresh' from 3 events
+2013-02-07T09:54:31 notice: (/Stage[main]/Glance::Db::Mysql/Glance::Db::Mysql::Host_access[]/Database_user[glance@]/ensure) created
+2013-02-07T09:54:32 notice: (/Stage[main]/Glance::Db::Mysql/Glance::Db::Mysql::Host_access[]/Database_grant[glance@/glance]/privileges) privileges changed '' to 'all'
+2013-02-07T09:54:32 notice: (/Stage[main]/Horizon/File_line[httpd_listen_on_internal_network_only]/ensure) created
+2013-02-07T09:54:32 notice: (/Stage[main]/Horizon/Service[$::horizon::params::http_service]/ensure) ensure changed 'stopped' to 'running'
+2013-02-07T09:54:34 notice: (/Stage[main]/Horizon/Service[$::horizon::params::http_service]) Triggered 'refresh' from 6 events
+2013-02-07T09:54:34 notice: (/Stage[main]/Glance/Group[glance]/ensure) created
+2013-02-07T09:54:34 notice: (/Stage[main]/Glance/User[glance]/ensure) created
+2013-02-07T09:54:40 notice: (/Stage[main]/Glance/Package[glance]/ensure) created
+2013-02-07T09:54:40 notice: (/Stage[main]/Glance::Api/Glance_api_config[keystone_authtoken/signing_dirname]/ensure) created
+2013-02-07T09:54:40 notice: (/Stage[main]/Glance::Api/Glance_api_config[DEFAULT/debug]/value) value changed 'False' to 'true'
+2013-02-07T09:54:40 notice: (/Stage[main]/Glance::Api/Glance_cache_config[DEFAULT/admin_user]/ensure) created
+2013-02-07T09:54:40 notice: (/Stage[main]/Glance::Api/Glance_api_config[DEFAULT/sql_connection]/value) value changed 'mysql://glance:glance@localhost/glance' to 'mysql://glance:glance_pass@127.0.0.1/glance'
+2013-02-07T09:54:40 notice: (/Stage[main]/Glance::Api/Glance_api_config[paste_deploy/flavor]/ensure) created
+2013-02-07T09:54:40 notice: (/Stage[main]/Glance::Api/Glance_cache_config[DEFAULT/verbose]/value) value changed 'True' to 'true'
+2013-02-07T09:54:40 notice: (/Stage[main]/Glance::Api/Glance_api_config[keystone_authtoken/admin_password]/value) value changed '%SERVICE_PASSWORD%' to 'glance_pass'
+2013-02-07T09:54:40 notice: (/Stage[main]/Glance::Api/Glance_cache_config[DEFAULT/admin_tenant_name]/ensure) created
+2013-02-07T09:54:40 notice: (/Stage[main]/Glance::Api/Glance_api_config[keystone_authtoken/admin_tenant_name]/value) value changed '%SERVICE_TENANT_NAME%' to 'services'
+2013-02-07T09:54:40 notice: (/Stage[main]/Glance::Api/Glance_cache_config[DEFAULT/admin_password]/ensure) created
+2013-02-07T09:54:40 notice: (/Stage[main]/Glance::Api/Glance_api_config[DEFAULT/registry_host]/value) value changed '0.0.0.0' to '127.0.0.1'
+2013-02-07T09:54:40 notice: (/Stage[main]/Glance::Api/Glance_api_config[keystone_authtoken/auth_uri]/ensure) created
+2013-02-07T09:54:40 notice: (/Stage[main]/Glance/File[/etc/glance/]/owner) owner changed 'root' to 'glance'
+2013-02-07T09:54:40 notice: (/Stage[main]/Glance/File[/etc/glance/]/mode) mode changed '0755' to '0770'
+2013-02-07T09:54:40 notice: (/Stage[main]/Glance::Api/Glance_api_config[keystone_authtoken/admin_user]/value) value changed '%SERVICE_USER%' to 'glance'
+2013-02-07T09:54:40 notice: (/Stage[main]/Glance::Api/Glance_api_config[keystone_authtoken/signing_dir]/ensure) created
+2013-02-07T09:54:40 notice: (/Stage[main]/Glance::Api/Glance_cache_config[DEFAULT/registry_host]/value) value changed '0.0.0.0' to '127.0.0.1'
+2013-02-07T09:54:40 notice: (/Stage[main]/Glance/File[glance-logging.conf]/ensure) defined content as '{md5}71fa2daa8e89a992f4225e850fd879e4'
+2013-02-07T09:54:40 notice: (/Stage[main]/Glance::Api/File[/etc/glance/glance-cache.conf]/owner) owner changed 'root' to 'glance'
+2013-02-07T09:54:40 notice: (/Stage[main]/Glance::Api/File[/etc/glance/glance-api.conf]/owner) owner changed 'root' to 'glance'
+2013-02-07T09:54:40 notice: (/Stage[main]/Glance::Api/Glance_cache_config[DEFAULT/debug]/value) value changed 'False' to 'true'
+2013-02-07T09:54:40 notice: (/Stage[main]/Glance::Api/Glance_api_config[DEFAULT/verbose]/value) value changed 'True' to 'true'
+2013-02-07T09:54:41 notice: (/Stage[main]/Nova::Db::Mysql/Nova::Db::Mysql::Host_access[]/Database_user[nova@]/ensure) created
+2013-02-07T09:54:41 notice: (/Stage[main]/Nova::Db::Mysql/Nova::Db::Mysql::Host_access[]/Database_grant[nova@/nova]/privileges) privileges changed '' to 'all'
+2013-02-07T09:54:42 notice: (/Stage[main]/Keystone::Db::Mysql/Mysql::Db[keystone]/Database[keystone]/ensure) created
+2013-02-07T09:54:42 notice: (/Stage[main]/Keystone::Db::Mysql/Mysql::Db[keystone]/Database_user[keystone@127.0.0.1]/ensure) created
+2013-02-07T09:54:42 notice: (/Stage[main]/Keystone::Db::Mysql/Keystone::Db::Mysql::Host_access[]/Database_user[keystone@]/ensure) created
+2013-02-07T09:54:42 notice: (/Stage[main]/Keystone::Db::Mysql/Mysql::Db[keystone]/Database_grant[keystone@127.0.0.1/keystone]/privileges) privileges changed '' to 'all'
+2013-02-07T09:54:42 notice: (/Stage[main]/Keystone::Db::Mysql/Keystone::Db::Mysql::Host_access[]/Database_grant[keystone@/keystone]/privileges) privileges changed '' to 'all'
+2013-02-07T09:54:42 notice: (/Stage[main]/Keystone::Db::Mysql/Keystone::Db::Mysql::Host_access[slave-1]/Database_user[keystone@slave-1]/ensure) created
+2013-02-07T09:54:43 notice: (/Stage[main]/Keystone::Db::Mysql/Keystone::Db::Mysql::Host_access[slave-1]/Database_grant[keystone@slave-1/keystone]/privileges) privileges changed '' to 'all'
+2013-02-07T09:54:43 notice: (/Stage[main]/Glance::Db::Mysql/Mysql::Db[glance]/Database_user[glance@127.0.0.1]/ensure) created
+2013-02-07T09:54:43 notice: (/Stage[main]/Glance::Db::Mysql/Mysql::Db[glance]/Database_grant[glance@127.0.0.1/glance]/privileges) privileges changed '' to 'all'
+2013-02-07T09:54:43 notice: (/Stage[main]/Glance::Registry/Glance_registry_config[keystone_authtoken/signing_dir]/ensure) created
+2013-02-07T09:54:43 notice: (/Stage[main]/Glance::Registry/File[/etc/glance/glance-registry.conf]/owner) owner changed 'root' to 'glance'
+2013-02-07T09:54:43 notice: (/Stage[main]/Glance::Registry/Glance_registry_config[keystone_authtoken/admin_password]/value) value changed '%SERVICE_PASSWORD%' to 'glance_pass'
+2013-02-07T09:54:43 notice: (/Stage[main]/Glance::Registry/Glance_registry_config[paste_deploy/flavor]/ensure) created
+2013-02-07T09:54:43 notice: (/Stage[main]/Glance::Registry/Glance_registry_config[keystone_authtoken/signing_dirname]/ensure) created
+2013-02-07T09:54:43 notice: (/Stage[main]/Glance::Registry/Glance_registry_config[DEFAULT/sql_connection]/value) value changed 'mysql://glance:glance@localhost/glance' to 'mysql://glance:glance_pass@127.0.0.1/glance'
+2013-02-07T09:54:43 notice: (/Stage[main]/Glance::Registry/Glance_registry_config[DEFAULT/debug]/value) value changed 'False' to 'true'
+2013-02-07T09:54:43 notice: (/Stage[main]/Glance::Registry/Glance_registry_config[DEFAULT/verbose]/value) value changed 'True' to 'true'
+2013-02-07T09:54:43 notice: (/Stage[main]/Glance::Registry/Glance_registry_config[keystone_authtoken/admin_tenant_name]/value) value changed '%SERVICE_TENANT_NAME%' to 'services'
+2013-02-07T09:54:43 notice: (/Stage[main]/Glance::Registry/Glance_registry_config[keystone_authtoken/admin_user]/value) value changed '%SERVICE_USER%' to 'glance'
+2013-02-07T09:54:45 notice: (/Stage[main]/Keystone/Package[keystone]/ensure) created
+2013-02-07T09:54:45 notice: (/Stage[main]/Keystone/Keystone_config[sql/connection]/value) value changed 'mysql://keystone:keystone@localhost/keystone' to 'mysql://keystone:keystone_db_pass@127.0.0.1/keystone'
+2013-02-07T09:54:45 notice: (/Stage[main]/Keystone/Keystone_config[DEFAULT/public_port]/ensure) created
+2013-02-07T09:54:45 notice: (/Stage[main]/Keystone/Keystone_config[DEFAULT/compute_port]/ensure) created
+2013-02-07T09:54:45 notice: (/Stage[main]/Keystone/Keystone_config[DEFAULT/debug]/ensure) created
+2013-02-07T09:54:45 notice: (/Stage[main]/Keystone/Keystone_config[policy/driver]/ensure) created
+2013-02-07T09:54:45 notice: (/Stage[main]/Keystone/Keystone_config[sql/idle_timeout]/ensure) created
+2013-02-07T09:54:45 notice: (/Stage[main]/Keystone/Keystone_config[DEFAULT/admin_token]/ensure) created
+2013-02-07T09:54:45 notice: (/Stage[main]/Keystone/Keystone_config[DEFAULT/bind_host]/ensure) created
+2013-02-07T09:54:45 notice: (/Stage[main]/Keystone/Keystone_config[DEFAULT/admin_port]/ensure) created
+2013-02-07T09:54:45 notice: (/Stage[main]/Keystone/File[/etc/keystone]/owner) owner changed 'root' to 'keystone'
+2013-02-07T09:54:45 notice: (/Stage[main]/Keystone/File[/etc/keystone]/group) group changed 'root' to 'keystone'
+2013-02-07T09:54:45 notice: (/Stage[main]/Mysql::Server::Account_security/Database_user[@slave-1.domain.tld]/ensure) removed
+2013-02-07T09:54:45 notice: (/Stage[main]/Mysql::Server::Account_security/Database_user[@localhost]/ensure) removed
+2013-02-07T09:54:45 notice: (/Stage[main]/Mysql::Server::Account_security/Database[test]/ensure) removed
+2013-02-07T09:54:45 notice: (/Stage[main]/Mysql::Server::Account_security/Database_user[root@slave-1.domain.tld]/ensure) removed
+2013-02-07T09:54:45 notice: (/Stage[main]/Mysql::Server::Account_security/Database_user[root@127.0.0.1]/ensure) removed
+2013-02-07T09:54:46 notice: (/Stage[main]/Rabbitmq::Server/Package[qpid-cpp-server]/ensure) created
+2013-02-07T09:56:47 notice: (/Stage[main]/Rabbitmq::Server/Package[rabbitmq-server]/ensure) created
+2013-02-07T09:56:48 notice: (/Stage[main]/Rabbitmq::Server/Exec[rabbitmq_stop]/returns) Stopping rabbitmq-server: RabbitMQ is not running
+2013-02-07T09:56:48 notice: (/Stage[main]/Rabbitmq::Server/Exec[rabbitmq_stop]/returns) rabbitmq-server.
+2013-02-07T09:56:48 notice: (/Stage[main]/Rabbitmq::Server/Exec[rabbitmq_stop]/returns) executed successfully
+2013-02-07T09:56:48 notice: (/Stage[main]/Rabbitmq::Server/File[erlang_cookie]/content) content changed '{md5}8be1bf5048c306fa9b40c631203d8300' to '{md5}b28788594da393660db1e4f20d296c10'
+2013-02-07T09:56:48 notice: (/Stage[main]/Rabbitmq::Server/File[rabbitmq.config]/ensure) defined content as '{md5}017a023ed429c071bf945a706be7fb13'
+2013-02-07T09:56:48 notice: (/Stage[main]/Rabbitmq::Server/File[rabbitmq-env.config]/ensure) defined content as '{md5}2980dac99b8f2195a50ef6e459ffedae'
+2013-02-07T09:56:51 notice: (/Stage[main]/Rabbitmq::Service/Service[rabbitmq-server]/ensure) ensure changed 'stopped' to 'running'
+2013-02-07T09:56:56 notice: (/Stage[main]/Rabbitmq::Service/Service[rabbitmq-server]) Triggered 'refresh' from 1 events
+2013-02-07T09:56:56 notice: (/Stage[main]/Rabbitmq::Server/Rabbitmq_user[guest]/ensure) removed
+2013-02-07T09:56:57 notice: (/Stage[main]/Nova::Rabbitmq/Rabbitmq_user[openstack_rabbit_user]/ensure) created
+2013-02-07T09:56:57 notice: (/Stage[main]/Nova::Rabbitmq/Rabbitmq_user_permissions[openstack_rabbit_user@/]/ensure) created
+2013-02-07T09:56:58 notice: (/Stage[main]/Nova::Network::Flatdhcp/Nova_config[DEFAULT/flat_interface]/ensure) created
+2013-02-07T09:56:58 notice: (/Stage[main]/Nova::Network/Nova_config[DEFAULT/floating_range]/ensure) created
+2013-02-07T09:56:58 notice: (/Stage[main]/Nova/Nova_config[DEFAULT/rabbit_hosts]/ensure) created
+2013-02-07T09:56:58 notice: (/Stage[main]/Nova::Quota/Nova_config[DEFAULT/quota_volumes]/ensure) created
+2013-02-07T09:56:58 notice: (/Stage[main]/Nova/Nova_config[DEFAULT/osapi_compute_listen]/ensure) created
+2013-02-07T09:56:58 notice: (/Stage[main]/Nova::Network::Flatdhcp/Nova_config[DEFAULT/flat_network_bridge]/ensure) created
+2013-02-07T09:56:58 notice: (/Stage[main]/Openstack::Controller/Nova_config[DEFAULT/memcached_servers]/ensure) created
+2013-02-07T09:56:58 notice: (/Stage[main]/Nova/Nova_config[DEFAULT/ec2_listen]/ensure) created
+2013-02-07T09:56:58 notice: (/Stage[main]/Nova::Api/Nova_config[keystone_authtoken/admin_password]/value) value changed '%SERVICE_PASSWORD%' to 'nova_pass'
+2013-02-07T09:56:58 notice: (/Stage[main]/Nova::Quota/Nova_config[DEFAULT/quota_max_injected_file_content_bytes]/ensure) created
+2013-02-07T09:56:58 notice: (/Stage[main]/Nova::Api/Nova_config[keystone_authtoken/admin_user]/value) value changed '%SERVICE_USER%' to 'nova'
+2013-02-07T09:56:59 notice: (/Stage[main]/Nova/Nova_config[DEFAULT/glance_api_servers]/ensure) created
+2013-02-07T09:56:59 notice: (/Stage[main]/Nova::Vncproxy/Nova_config[DEFAULT/novncproxy_host]/ensure) created
+2013-02-07T09:56:59 notice: (/Stage[main]/Nova/Nova_config[DEFAULT/rabbit_userid]/ensure) created
+2013-02-07T09:56:59 notice: (/Stage[main]/Nova/Nova_config[DEFAULT/rabbit_ha_queues]/ensure) created
+2013-02-07T09:56:59 notice: (/Stage[main]/Nova/Nova_config[DEFAULT/rabbit_password]/ensure) created
+2013-02-07T09:56:59 notice: (/Stage[main]/Nova/Nova_config[DEFAULT/verbose]/ensure) created
+2013-02-07T09:56:59 notice: (/Stage[main]/Nova::Quota/Nova_config[DEFAULT/quota_cores]/ensure) created
+2013-02-07T09:57:01 notice: (/Stage[main]/Nova::Consoleauth/Nova::Generic_service[consoleauth]/Package[nova-consoleauth]/ensure) created
+2013-02-07T09:57:01 notice: (/Stage[main]/Nova::Api/Nova_config[DEFAULT/enabled_apis]/ensure) created
+2013-02-07T09:57:01 notice: (/Stage[main]/Nova/Nova_config[DEFAULT/sql_connection]/value) value changed 'mysql://nova:nova@localhost/nova' to 'mysql://nova:nova_pass@127.0.0.1/nova'
+2013-02-07T09:57:01 notice: (/Stage[main]/Nova/Nova_config[DEFAULT/rabbit_virtual_host]/ensure) created
+2013-02-07T09:57:01 notice: (/Stage[main]/Nova/Nova_config[DEFAULT/image_service]/ensure) created
+2013-02-07T09:57:01 notice: (/Stage[main]/Nova::Api/Nova_config[DEFAULT/volume_api_class]/ensure) created
+2013-02-07T09:57:01 notice: (/Stage[main]/Nova::Quota/Nova_config[DEFAULT/quota_max_injected_files]/ensure) created
+2013-02-07T09:57:01 notice: (/Stage[main]/Nova::Vncproxy/Nova_config[DEFAULT/novncproxy_port]/ensure) created
+2013-02-07T09:57:01 notice: (/Stage[main]/Nova::Network::Flatdhcp/Nova_config[DEFAULT/force_dhcp_release]/value) value changed 'True' to 'true'
+2013-02-07T09:57:01 notice: (/Stage[main]/Nova/Nova_config[DEFAULT/rabbit_port]/ensure) created
+2013-02-07T09:57:42 notice: (/Stage[main]/Nova::Vncproxy/Nova::Generic_service[vncproxy]/Package[nova-vncproxy]/ensure) created
+2013-02-07T09:57:42 notice: (/Stage[main]/Nova/User[nova]/shell) shell changed '/sbin/nologin' to '/bin/bash'
+2013-02-07T09:57:42 notice: (/Stage[main]/Nova/File[/var/log/nova]/group) group changed 'root' to 'nova'
+2013-02-07T09:57:42 notice: (/Stage[main]/Nova/File[/var/log/nova]/mode) mode changed '0755' to '0751'
+2013-02-07T09:57:42 notice: (/Stage[main]/Nova::Quota/Nova_config[DEFAULT/quota_max_injected_file_path_bytes]/ensure) created
+2013-02-07T09:57:42 notice: (/Stage[main]/Nova::Api/Nova_config[DEFAULT/api_paste_config]/ensure) created
+2013-02-07T09:57:42 notice: (/Stage[main]/Nova::Quota/Nova_config[DEFAULT/quota_floating_ips]/ensure) created
+2013-02-07T09:57:42 notice: (/Stage[main]/Openstack::Nova::Controller/Nova_config[DEFAULT/multi_host]/ensure) created
+2013-02-07T09:57:42 notice: (/Stage[main]/Nova::Network::Flatdhcp/Nova_config[DEFAULT/public_interface]/ensure) created
+2013-02-07T09:57:42 notice: (/Stage[main]/Nova/Nova_config[DEFAULT/service_down_time]/ensure) created
+2013-02-07T09:57:42 notice: (/Stage[main]/Nova::Api/Nova_config[keystone_authtoken/admin_tenant_name]/value) value changed '%SERVICE_TENANT_NAME%' to 'services'
+2013-02-07T09:57:42 notice: (/Stage[main]/Nova::Quota/Nova_config[DEFAULT/quota_gigabytes]/ensure) created
+2013-02-07T09:57:42 notice: (/Stage[main]/Nova::Quota/Nova_config[DEFAULT/quota_instances]/ensure) created
+2013-02-07T09:57:42 notice: (/Stage[main]/Nova/Nova_config[DEFAULT/osapi_volume_listen]/ensure) created
+2013-02-07T09:57:42 notice: (/Stage[main]/Nova::Api/Nova_config[keystone_authtoken/signing_dir]/ensure) created
+2013-02-07T09:57:42 notice: (/Stage[main]/Nova/Nova_config[DEFAULT/metadata_listen]/ensure) created
+2013-02-07T09:57:42 notice: (/Stage[main]/Nova/Nova_config[DEFAULT/auth_strategy]/ensure) created
+2013-02-07T09:57:42 notice: (/Stage[main]/Nova::Quota/Nova_config[DEFAULT/quota_metadata_items]/ensure) created
+2013-02-07T09:57:42 notice: (/Stage[main]/Nova/Nova_config[DEFAULT/rpc_backend]/value) value changed 'nova.openstack.common.rpc.impl_qpid' to 'nova.rpc.impl_kombu'
+2013-02-07T09:57:42 notice: (/Stage[main]/Nova::Network::Flatdhcp/Nova_config[DEFAULT/fixed_range]/ensure) created
+2013-02-07T09:57:42 notice: (/Stage[main]/Nova::Network::Flatdhcp/Nova_config[DEFAULT/dhcp_domain]/ensure) created
+2013-02-07T09:57:42 notice: (/Stage[main]/Nova/Nova_config[DEFAULT/allow_resize_to_same_host]/ensure) created
+2013-02-07T09:57:42 notice: (/Stage[main]/Nova::Network::Flatdhcp/Nova_config[DEFAULT/flat_injected]/ensure) created
+2013-02-07T09:57:42 notice: (/Stage[main]/Nova/File[/etc/nova/nova.conf]/owner) owner changed 'root' to 'nova'
+2013-02-07T09:57:42 notice: (/Stage[main]/Keystone/Keystone_config[DEFAULT/verbose]/ensure) created
+2013-02-07T09:57:46 notice: (/Stage[main]/Keystone/Exec[keystone-manage db_sync]) Triggered 'refresh' from 12 events
+2013-02-07T09:57:47 notice: (/Stage[main]/Keystone/Service[keystone]/ensure) ensure changed 'stopped' to 'running'
+2013-02-07T09:57:47 notice: (/Stage[main]/Keystone/Service[keystone]) Triggered 'refresh' from 13 events
+2013-02-07T09:57:59 notice: (/Stage[main]/Nova::Keystone::Auth/Keystone_service[nova_volume]/ensure) created
+2013-02-07T09:57:59 notice: (/Stage[main]/Keystone::Roles::Admin/Keystone_tenant[admin]/ensure) created
+2013-02-07T09:57:59 notice: (/Stage[main]/Keystone::Roles::Admin/Keystone_role[Member]/ensure) created
+2013-02-07T09:58:00 notice: (/Stage[main]/Nova::Keystone::Auth/Keystone_service[nova_ec2]/ensure) created
+2013-02-07T09:58:00 notice: (/Stage[main]/Nova::Keystone::Auth/Keystone_endpoint[nova_volume]/ensure) created
+2013-02-07T09:58:00 notice: (/Stage[main]/Nova::Keystone::Auth/Keystone_endpoint[nova_ec2]/ensure) created
+2013-02-07T09:58:01 notice: (/Stage[main]/Keystone::Roles::Admin/Keystone_tenant[services]/ensure) created
+2013-02-07T09:58:01 notice: (/Stage[main]/Nova::Keystone::Auth/Keystone_user[nova]/ensure) created
+2013-02-07T09:58:02 notice: (/Stage[main]/Glance::Keystone::Auth/Keystone_user[glance]/ensure) created
+2013-02-07T09:58:02 notice: (/Stage[main]/Keystone::Roles::Admin/Keystone_role[admin]/ensure) created
+2013-02-07T09:58:04 notice: (/Stage[main]/Glance::Keystone::Auth/Keystone_user_role[glance@services]/ensure) created
+2013-02-07T09:58:05 notice: (/Stage[main]/Keystone::Endpoint/Keystone_service[keystone]/ensure) created
+2013-02-07T09:58:05 notice: (/Stage[main]/Keystone::Endpoint/Keystone_endpoint[keystone]/ensure) created
+2013-02-07T09:58:05 notice: (/Stage[main]/Glance::Keystone::Auth/Keystone_service[glance]/ensure) created
+2013-02-07T09:58:05 notice: (/Stage[main]/Glance::Keystone::Auth/Keystone_endpoint[glance]/ensure) created
+2013-02-07T09:58:06 notice: (/Stage[main]/Nova::Keystone::Auth/Keystone_user_role[nova@services]/ensure) created
+2013-02-07T09:58:07 notice: (/Stage[main]/Keystone::Roles::Admin/Keystone_user[admin]/ensure) created
+2013-02-07T09:58:07 notice: (/Stage[main]/Keystone::Roles::Admin/Keystone_user_role[admin@admin]/ensure) created
+2013-02-07T09:58:08 notice: (/Stage[main]/Nova::Keystone::Auth/Keystone_service[nova]/ensure) created
+2013-02-07T09:58:08 notice: (/Stage[main]/Nova::Keystone::Auth/Keystone_endpoint[nova]/ensure) created
+2013-02-07T09:58:08 notice: (/Stage[main]/Glance::Api/Glance_cache_config[DEFAULT/auth_url]/ensure) created
+2013-02-07T09:58:22 notice: (/Stage[main]/Glance::Registry/Exec[glance-manage db_sync]) Triggered 'refresh' from 30 events
+2013-02-07T09:58:22 notice: (/Stage[main]/Glance::Registry/Service[glance-registry]/ensure) ensure changed 'stopped' to 'running'
+2013-02-07T09:58:22 notice: (/Stage[main]/Glance::Registry/Service[glance-registry]) Triggered 'refresh' from 11 events
+2013-02-07T09:58:24 notice: (/Stage[main]/Glance::Api/Service[glance-api]/ensure) ensure changed 'stopped' to 'running'
+2013-02-07T09:58:24 notice: (/Stage[main]/Glance::Api/Service[glance-api]) Triggered 'refresh' from 21 events
+2013-02-07T09:58:27 notice: (/Stage[main]/Openstack::Img::Cirros/Package[cirros-testvm]/ensure) created
+2013-02-07T09:58:29 notice: (/Stage[main]/Openstack::Img::Cirros/Exec[upload-img]/returns) Added new image with ID: 71bfad1f-74d4-4b6f-8b08-605bc3e782c7
+2013-02-07T09:58:29 notice: (/Stage[main]/Openstack::Img::Cirros/Exec[upload-img]/returns) executed successfully
+2013-02-07T09:58:30 notice: (/Stage[main]/Nova/Exec[post-nova_config]/returns) Nova config has changed
+2013-02-07T09:58:30 notice: (/Stage[main]/Nova/Exec[post-nova_config]) Triggered 'refresh' from 92 events
+2013-02-07T09:59:20 notice: (/Stage[main]/Nova::Api/Exec[nova-db-sync]/returns) 2013-02-07 09:58:30 DEBUG nova.utils [-] backend <module 'nova.db.sqlalchemy.migration' from '/usr/lib/python2.6/site-packages/nova/db/sqlalchemy/migration.pyc'> from (pid=6121) __get_backend /usr/lib/python2.6/site-packages/nova/utils.py:494
+2013-02-07T09:59:20 notice: (/Stage[main]/Nova::Api/Exec[nova-db-sync]/returns) executed successfully
+2013-02-07T09:59:21 notice: (/Stage[main]/Nova::Api/Exec[nova-db-sync]/returns) 2013-02-07 09:59:21 DEBUG nova.utils [-] backend <module 'nova.db.sqlalchemy.migration' from '/usr/lib/python2.6/site-packages/nova/db/sqlalchemy/migration.pyc'> from (pid=6191) __get_backend /usr/lib/python2.6/site-packages/nova/utils.py:494
+2013-02-07T09:59:21 notice: (/Stage[main]/Nova::Api/Exec[nova-db-sync]) Triggered 'refresh' from 2 events
+2013-02-07T09:59:21 notice: (/Stage[main]/Nova::Cert/Nova::Generic_service[cert]/Service[nova-cert]/ensure) ensure changed 'stopped' to 'running'
+2013-02-07T09:59:22 notice: (/Stage[main]/Nova::Cert/Nova::Generic_service[cert]/Service[nova-cert]) Triggered 'refresh' from 3 events
+2013-02-07T09:59:22 notice: (/Stage[main]/Nova::Vncproxy/Nova::Generic_service[vncproxy]/Service[nova-vncproxy]/ensure) ensure changed 'stopped' to 'running'
+2013-02-07T09:59:22 notice: (/Stage[main]/Nova::Vncproxy/Nova::Generic_service[vncproxy]/Service[nova-vncproxy]) Triggered 'refresh' from 4 events
+2013-02-07T09:59:23 notice: (/Stage[main]/Nova::Objectstore/Nova::Generic_service[objectstore]/Service[nova-objectstore]/ensure) ensure changed 'stopped' to 'running'
+2013-02-07T09:59:24 notice: (/Stage[main]/Nova::Objectstore/Nova::Generic_service[objectstore]/Service[nova-objectstore]) Triggered 'refresh' from 3 events
+2013-02-07T09:59:26 notice: (/Stage[main]/Nova::Network/Nova::Manage::Floating[nova-vm-floating]/Nova_floating[nova-vm-floating]/ensure) created
+2013-02-07T09:59:26 notice: (/Stage[main]/Nova::Consoleauth/Nova::Generic_service[consoleauth]/Service[nova-consoleauth]/ensure) ensure changed 'stopped' to 'running'
+2013-02-07T09:59:27 notice: (/Stage[main]/Nova::Consoleauth/Nova::Generic_service[consoleauth]/Service[nova-consoleauth]) Triggered 'refresh' from 4 events
+2013-02-07T09:59:27 notice: (/Stage[main]/Nova::Api/Nova::Generic_service[api]/Service[nova-api]/ensure) ensure changed 'stopped' to 'running'
+2013-02-07T09:59:27 notice: (/Stage[main]/Nova::Api/Nova::Generic_service[api]/Service[nova-api]) Triggered 'refresh' from 50 events
+2013-02-07T09:59:28 notice: (/Stage[main]/Nova::Scheduler/Nova::Generic_service[scheduler]/Service[nova-scheduler]/ensure) ensure changed 'stopped' to 'running'
+2013-02-07T09:59:28 notice: (/Stage[main]/Nova::Scheduler/Nova::Generic_service[scheduler]/Service[nova-scheduler]) Triggered 'refresh' from 3 events
+2013-02-07T09:59:31 notice: (/Stage[main]/Nova::Network/Nova::Manage::Network[nova-vm-net]/Nova_network[nova-vm-net]/ensure) created
+2013-02-07T09:59:31 notice: Finished catalog run in 674.93 seconds

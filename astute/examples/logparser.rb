@@ -1,5 +1,7 @@
 #!/usr/bin/env ruby
 
+# This script for test and example cases only.
+
 require 'rubygems'
 require 'astute'
 require 'tempfile'

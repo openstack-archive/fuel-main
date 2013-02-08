@@ -1,0 +1,86 @@
+2013-01-30T11:46:13 notice: Reopening log files
+2013-01-30T11:46:37 notice: (/Stage[main]/Nova::Utilities/Package[euca2ools]/ensure) created
+2013-01-30T11:46:39 notice: (/Stage[main]/Nova::Compute/Package[bridge-utils]/ensure) created
+2013-01-30T11:46:51 notice: (/Stage[main]/Mysql::Python/Package[python-mysqldb]/ensure) created
+2013-01-30T11:46:54 notice: (/Stage[main]/Nova::Utilities/Package[screen]/ensure) created
+2013-01-30T11:46:54 notice: (/Stage[main]/Nova::Compute::Libvirt/Exec[symlink-qemu-kvm]/returns) executed successfully
+2013-01-30T11:46:59 notice: (/Stage[main]/Nova::Utilities/Package[parted]/ensure) created
+2013-01-30T11:48:03 notice: (/Stage[main]/Nova::Compute::Libvirt/Package[libvirt]/ensure) created
+2013-01-30T11:48:33 notice: (/Stage[main]/Keystone::Python/Package[python-keystone]/ensure) created
+2013-01-30T11:49:33 notice: (/Stage[main]/Nova::Api/Nova::Generic_service[api]/Package[nova-api]/ensure) created
+2013-01-30T11:49:35 notice: (/Stage[main]/Nova::Compute::Libvirt/Package[dnsmasq-utils]/ensure) created
+2013-01-30T11:49:35 notice: (/Stage[main]/Nova::Network::Vlan/Nova_config[DEFAULT/network_manager]/value) value changed 'nova.network.manager.FlatDHCPManager' to 'nova.network.manager.VlanManager'
+2013-01-30T11:49:35 notice: (/Stage[main]/Nova::Compute/Nova_config[DEFAULT/vncserver_proxyclient_address]/ensure) created
+2013-01-30T11:49:35 notice: (/Stage[main]/Nova/Nova_config[DEFAULT/rabbit_hosts]/ensure) created
+2013-01-30T11:49:35 notice: (/Stage[main]/Nova/Nova_config[DEFAULT/osapi_compute_listen]/ensure) created
+2013-01-30T11:49:35 notice: (/Stage[main]/Nova/Nova_config[DEFAULT/ec2_listen]/ensure) created
+2013-01-30T11:49:35 notice: (/Stage[main]/Nova::Api/Nova_config[keystone_authtoken/admin_password]/value) value changed '%SERVICE_PASSWORD%' to 'nova'
+2013-01-30T11:49:35 notice: (/Stage[main]/Nova::Api/Nova_config[keystone_authtoken/admin_user]/value) value changed '%SERVICE_USER%' to 'nova'
+2013-01-30T11:49:35 notice: (/Stage[main]/Nova/Nova_config[DEFAULT/glance_api_servers]/ensure) created
+2013-01-30T11:49:35 notice: (/Stage[main]/Nova/Nova_config[DEFAULT/rabbit_userid]/ensure) created
+2013-01-30T11:49:35 notice: (/Stage[main]/Nova/Nova_config[DEFAULT/rabbit_ha_queues]/ensure) created
+2013-01-30T11:49:35 notice: (/Stage[main]/Nova/Nova_config[DEFAULT/rabbit_password]/ensure) created
+2013-01-30T11:49:35 notice: (/Stage[main]/Nova/Nova_config[DEFAULT/verbose]/ensure) created
+2013-01-30T11:49:35 notice: (/Stage[main]/Nova::Api/Nova_config[DEFAULT/enabled_apis]/ensure) created
+2013-01-30T11:49:35 notice: (/Stage[main]/Nova/Nova_config[DEFAULT/sql_connection]/value) value changed 'mysql://nova:nova@localhost/nova' to 'mysql://nova:nova@192.168.0.6/nova'
+2013-01-30T11:49:35 notice: (/Stage[main]/Nova::Compute/Nova_config[DEFAULT/vnc_enabled]/ensure) created
+2013-01-30T11:49:35 notice: (/Stage[main]/Nova/Nova_config[DEFAULT/rabbit_virtual_host]/ensure) created
+2013-01-30T11:49:35 notice: (/Stage[main]/Nova/Nova_config[DEFAULT/image_service]/ensure) created
+2013-01-30T11:49:35 notice: (/Stage[main]/Nova::Api/Nova_config[DEFAULT/volume_api_class]/ensure) created
+2013-01-30T11:49:35 notice: (/Stage[main]/Nova::Api/Nova_config[keystone_authtoken/auth_host]/value) value changed '127.0.0.1' to '192.168.0.6'
+2013-01-30T11:49:35 notice: (/Stage[main]/Nova::Network::Vlan/Nova_config[DEFAULT/force_dhcp_release]/value) value changed 'True' to 'true'
+2013-01-30T11:49:35 notice: (/Stage[main]/Nova/Nova_config[DEFAULT/rabbit_port]/ensure) created
+2013-01-30T11:49:35 notice: (/Stage[main]/Nova::Network::Vlan/Nova_config[DEFAULT/vlan_start]/ensure) created
+2013-01-30T11:49:36 notice: (/Stage[main]/Nova/User[nova]/shell) shell changed '/sbin/nologin' to '/bin/bash'
+2013-01-30T11:49:36 notice: (/Stage[main]/Nova/File[/var/log/nova]/group) group changed 'root' to 'nova'
+2013-01-30T11:49:36 notice: (/Stage[main]/Nova/File[/var/log/nova]/mode) mode changed '0755' to '0751'
+2013-01-30T11:49:36 notice: (/Stage[main]/Nova::Api/Nova_config[DEFAULT/api_paste_config]/ensure) created
+2013-01-30T11:49:36 notice: (/Stage[main]/Nova::Compute/Nova_config[DEFAULT/novncproxy_base_url]/ensure) created
+2013-01-30T11:49:36 notice: (/Stage[main]/Nova::Network::Vlan/Nova_config[DEFAULT/public_interface]/ensure) created
+2013-01-30T11:49:36 notice: (/Stage[main]/Nova/Nova_config[DEFAULT/service_down_time]/ensure) created
+2013-01-30T11:49:36 notice: (/Stage[main]/Nova::Api/Nova_config[keystone_authtoken/admin_tenant_name]/value) value changed '%SERVICE_TENANT_NAME%' to 'services'
+2013-01-30T11:49:38 notice: (/Stage[main]/Nova/Package[python-amqp]/ensure) created
+2013-01-30T11:49:39 notice: (/Stage[main]/Nova::Compute::Libvirt/Nova_config[DEFAULT/vncserver_listen]/ensure) created
+2013-01-30T11:50:44 notice: (/Stage[main]/Nova::Compute/Nova::Generic_service[compute]/Package[nova-compute]/ensure) created
+2013-01-30T11:50:44 notice: (/Stage[main]/Nova/Nova_config[DEFAULT/osapi_volume_listen]/ensure) created
+2013-01-30T11:50:44 notice: (/Stage[main]/Nova::Api/Nova_config[keystone_authtoken/signing_dir]/ensure) created
+2013-01-30T11:50:44 notice: (/Stage[main]/Nova/Nova_config[DEFAULT/metadata_listen]/ensure) created
+2013-01-30T11:50:44 notice: (/Stage[main]/Nova/Nova_config[DEFAULT/auth_strategy]/ensure) created
+2013-01-30T11:50:48 notice: (/Stage[main]/Nova::Compute::Libvirt/Package[avahi]/ensure) created
+2013-01-30T11:50:53 notice: (/Stage[main]/Nova::Utilities/Package[unzip]/ensure) created
+2013-01-30T11:50:53 notice: (/Stage[main]/Osnailyfacter::Test_compute/File[/tmp/compute-file]/ensure) defined content as '{md5}1b7628cdc1398d36048932f1eff47a63'
+2013-01-30T11:50:53 notice: (/Stage[main]/Nova/Nova_config[DEFAULT/rpc_backend]/value) value changed 'nova.openstack.common.rpc.impl_qpid' to 'nova.rpc.impl_kombu'
+2013-01-30T11:50:53 notice: (/Stage[main]/Nova::Network::Vlan/Nova_config[DEFAULT/fixed_range]/ensure) created
+2013-01-30T11:50:53 notice: (/Stage[main]/Nova::Network::Vlan/Nova_config[DEFAULT/dhcp_domain]/ensure) created
+2013-01-30T11:50:53 notice: (/Stage[main]/Nova::Network/Sysctl::Value[net.ipv4.ip_forward]/Sysctl[net.ipv4.ip_forward]/val) val changed '0' to '1'
+2013-01-30T11:50:56 notice: (/Stage[main]/Nova::Network/Nova::Generic_service[network]/Package[nova-network]/ensure) created
+2013-01-30T11:50:56 notice: (/Stage[main]/Openstack::Compute/Nova_config[DEFAULT/metadata_host]/ensure) created
+2013-01-30T11:50:56 notice: (/Stage[main]/Openstack::Compute/Nova_config[DEFAULT/memcached_servers]/ensure) created
+2013-01-30T11:50:58 notice: (/Stage[main]/Openstack::Compute/Augeas[sysconfig-libvirt]/returns) executed successfully
+2013-01-30T11:50:58 notice: (/Stage[main]/Openstack::Compute/Nova_config[DEFAULT/send_arp_for_ha]/ensure) created
+2013-01-30T11:50:58 notice: (/Stage[main]/Openstack::Compute/Nova_config[DEFAULT/multi_host]/ensure) created
+2013-01-30T11:50:58 notice: (/Stage[main]/Nova/Nova_config[DEFAULT/allow_resize_to_same_host]/ensure) created
+2013-01-30T11:50:58 notice: (/Stage[main]/Nova::Network/Sysctl::Value[net.ipv4.ip_forward]/Exec[exec_sysctl_net.ipv4.ip_forward]/returns) net.ipv4.ip_forward = 1
+2013-01-30T11:50:58 notice: (/Stage[main]/Nova::Network/Sysctl::Value[net.ipv4.ip_forward]/Exec[exec_sysctl_net.ipv4.ip_forward]/returns) executed successfully
+2013-01-30T11:50:59 notice: (/Stage[main]/Openstack::Compute/Augeas[libvirt-conf]/returns) executed successfully
+2013-01-30T11:50:59 notice: (/Stage[main]/Nova::Compute::Libvirt/Service[messagebus]/ensure) ensure changed 'stopped' to 'running'
+2013-01-30T11:50:59 notice: (/Stage[main]/Nova::Compute::Libvirt/Service[avahi-daemon]/ensure) ensure changed 'stopped' to 'running'
+2013-01-30T11:50:59 notice: (/Stage[main]/Nova::Compute::Libvirt/Service[libvirt]/ensure) ensure changed 'stopped' to 'running'
+2013-01-30T11:51:00 notice: (/Stage[main]/Nova::Compute::Libvirt/Service[libvirt]) Triggered 'refresh' from 1 events
+2013-01-30T11:51:00 notice: (/Stage[main]/Nova::Compute::Libvirt/Nova_config[DEFAULT/libvirt_type]/ensure) created
+2013-01-30T11:51:00 notice: (/Stage[main]/Nova::Network::Vlan/Nova_config[DEFAULT/vlan_interface]/ensure) created
+2013-01-30T11:51:00 notice: (/Stage[main]/Nova::Compute::Libvirt/Nova_config[DEFAULT/connection_type]/ensure) created
+2013-01-30T11:51:00 notice: (/Stage[main]/Nova/File[/etc/nova/nova.conf]/owner) owner changed 'root' to 'nova'
+2013-01-30T11:51:00 notice: (/Stage[main]/Nova/Exec[post-nova_config]/returns) Nova config has changed
+2013-01-30T11:51:00 notice: (/Stage[main]/Nova/Exec[post-nova_config]) Triggered 'refresh' from 86 events
+2013-01-30T11:51:01 notice: (/Stage[main]/Nova::Api/Exec[nova-db-sync]/returns) 2013-01-30 11:51:01 DEBUG nova.utils [-] backend <module 'nova.db.sqlalchemy.migration' from '/usr/lib/python2.6/site-packages/nova/db/sqlalchemy/migration.pyc'> from (pid=4334) __get_backend /usr/lib/python2.6/site-packages/nova/utils.py:494
+2013-01-30T11:51:01 notice: (/Stage[main]/Nova::Api/Exec[nova-db-sync]/returns) executed successfully
+2013-01-30T11:51:02 notice: (/Stage[main]/Nova::Api/Exec[nova-db-sync]/returns) 2013-01-30 11:51:02 DEBUG nova.utils [-] backend <module 'nova.db.sqlalchemy.migration' from '/usr/lib/python2.6/site-packages/nova/db/sqlalchemy/migration.pyc'> from (pid=4398) __get_backend /usr/lib/python2.6/site-packages/nova/utils.py:494
+2013-01-30T11:51:02 notice: (/Stage[main]/Nova::Api/Exec[nova-db-sync]) Triggered 'refresh' from 1 events
+2013-01-30T11:51:02 notice: (/Stage[main]/Nova::Api/Nova::Generic_service[api]/Service[nova-api]/ensure) ensure changed 'stopped' to 'running'
+2013-01-30T11:51:03 notice: (/Stage[main]/Nova::Api/Nova::Generic_service[api]/Service[nova-api]) Triggered 'refresh' from 47 events
+2013-01-30T11:51:05 notice: (/Stage[main]/Nova::Compute/Nova::Generic_service[compute]/Service[nova-compute]/ensure) ensure changed 'stopped' to 'running'
+2013-01-30T11:51:07 notice: (/Stage[main]/Nova::Compute/Nova::Generic_service[compute]/Service[nova-compute]) Triggered 'refresh' from 4 events
+2013-01-30T11:51:09 notice: (/Stage[main]/Nova::Network/Nova::Generic_service[network]/Service[nova-network]/ensure) ensure changed 'stopped' to 'running'
+2013-01-30T11:51:11 notice: (/Stage[main]/Nova::Network/Nova::Generic_service[network]/Service[nova-network]) Triggered 'refresh' from 4 events
+2013-01-30T11:51:12 notice: Finished catalog run in 287.81 seconds
