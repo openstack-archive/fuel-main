@@ -128,7 +128,7 @@ function(models, commonViews, dialogViews, networkTabTemplate, networkTabViewMod
                         }
                     }, this),
                     complete: _.bind(function() {
-                        this.model.get('tasks').fetch({data: {cluster_id: this.model.id}});
+                        this.model.fetch();
                     }, this)
                 });
             }
