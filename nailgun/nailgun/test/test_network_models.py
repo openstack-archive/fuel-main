@@ -69,24 +69,7 @@ class TestNetworkModels(BaseHandlers):
         self.assertEquals(nets_db[0].cidr, '10.0.0.0/25')
         self.assertEquals(nets_db[1].cidr, '10.0.0.128/25')
         self.db.refresh(ng)
-        self.assertEquals(ng.cidr, '10.0.0.0/24')
-
-    def test_network_group_squeezes_base_cidr(self):
-        cluster = self.create_default_cluster()
-        kw = {'release': cluster.release_id,
-              'cidr': '10.0.0.0/8',
-              'network_size': 256,
-              'name': 'fixed',
-              'access': 'private',
-              'vlan_start': 200,
-              'amount': 2,
-              'cluster_id': cluster.id}
-        ng = NetworkGroup(**kw)
-        self.db.add(ng)
-        self.db.commit()
-        ng.create_networks()
-        self.db.refresh(ng)
-        self.assertEquals(ng.cidr, "10.0.0.0/23")
+        self.assertEquals(ng.cidr, '10.0.0.0/8')
 
     def test_network_group_does_not_squeezes_base_cidr(self):
         cluster = self.create_default_cluster()

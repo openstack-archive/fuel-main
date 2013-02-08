@@ -194,7 +194,9 @@ class NailgunReceiver(object):
             nodes_db = orm().query(Node).filter_by(
                 cluster_id=task.cluster_id).all()
             for node in nodes_db:
-                if node.status in ['provisioning', 'provisioned'] or \
+                if node.status == "discover":
+                    nodes_progress.append(0)
+                elif node.status in ['provisioning', 'provisioned'] or \
                         node.needs_reprovision:
                     nodes_progress.append(float(node.progress) * coeff)
                 elif node.status in ['deploying', 'ready'] or \
@@ -202,10 +204,10 @@ class NailgunReceiver(object):
                     nodes_progress.append(
                         100.0 * coeff + float(node.progress) * (1.0 - coeff)
                     )
-                elif node.status == "discover":
-                    nodes_progress.append(0)
             if nodes_progress:
-                progress = int(sum(nodes_progress) / len(nodes_progress))
+                progress = int(
+                    float(sum(nodes_progress)) / float(len(nodes_progress))
+                )
 
         # Let's check the whole task status
         if status in ('error',):
@@ -262,47 +264,73 @@ class NailgunReceiver(object):
                    task.cluster.nodes)):
             cls._error_action(task, 'error', 100)
 
-        # determining horizon url - it's ip of controller
-        # from a public network - works only for simple deployment
-        controller = orm().query(Node).filter(
-            Node.cluster_id == task.cluster_id,
-            Node.role == 'controller').first()
-        if controller:
-            logger.debug("role %s is found, node_id=%s, getting "
-                         "it's IP addresses", controller.role,
-                         controller.id)
-            public_net = filter(
-                lambda n: n['name'] == 'public' and 'ip' in n,
-                get_node_networks(controller.id)
-            )
-            if public_net:
-                horizon_ip = public_net[0]['ip'].split('/')[0]
-                if task.cluster.mode in ('singlenode', 'multinode'):
+        if task.cluster.mode in ('singlenode', 'multinode'):
+            # determining horizon url - it's an IP
+            # of a first cluster controller
+            controller = orm().query(Node).filter_by(
+                cluster_id=task.cluster_id,
+                role='controller'
+            ).first()
+            if controller:
+                logger.debug(
+                    "Controller is found, node_id=%s, "
+                    "getting it's IP addresses",
+                    controller.id
+                )
+                public_net = filter(
+                    lambda n: n['name'] == 'public' and 'ip' in n,
+                    get_node_networks(controller.id)
+                )
+                if public_net:
+                    horizon_ip = public_net[0]['ip'].split('/')[0]
                     message = (
                         u"Deployment of environment '{0}' is done. "
                         "Access WebUI of OpenStack at http://{1}/ or via "
-                        "internal network at http://{2}/").format(
-                            task.cluster.name,
-                            horizon_ip,
-                            controller.ip)
+                        "internal network at http://{2}/"
+                    ).format(
+                        task.cluster.name,
+                        horizon_ip,
+                        controller.ip
+                    )
                 else:
                     message = (
-                        u"Deployment of environment '{0}' is done. "
-                        "Access WebUI of OpenStack at http://{1}/").format(
-                            task.cluster.name,
-                            horizon_ip)
+                        u"Deployment of environment '{0}' is done"
+                    ).format(task.cluster.name)
+                    logger.warning(
+                        "Public ip for controller node "
+                        "not found in '{0}'".format(task.cluster.name)
+                    )
             else:
-                message = (u"Deployment of environment '{0}' "
-                           "is done").format(task.cluster.name)
+                message = (
+                    u"Deployment of environment"
+                    " '{0}' is done"
+                ).format(task.cluster.name)
+                logger.warning("Controller node not found in '{0}'".format(
+                    task.cluster.name
+                ))
+        elif task.cluster.mode == 'ha':
+            # determining horizon url in HA mode - it's vip
+            # from a public network saved in task cache
+            args = task.cache.get('args')
+            if not args:
+                message = (
+                    u"Deployment of environment"
+                    " '{0}' is done"
+                ).format(task.cluster.name)
                 logger.warning(
-                    "Public ip for controller node "
-                    "not found in '{0}'".format(task.cluster.name))
-        else:
-            message = (u"Deployment of environment"
-                       " '{0}' is done").format(task.cluster.name)
-            logger.warning("Controller node not found in '{0}'".format(
-                task.cluster.name
-            ))
+                    "Cannot find virtual IP for '{0}'".format(
+                        task.cluster.name
+                    )
+                )
+            else:
+                vip = args['attributes']['public_vip']
+                message = (
+                    u"Deployment of environment '{0}' is done. "
+                    "Access WebUI of OpenStack at http://{1}/"
+                ).format(
+                    task.cluster.name,
+                    vip
+                )
         notifier.notify(
             "done",
             message,

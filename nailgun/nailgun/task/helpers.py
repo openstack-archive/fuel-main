@@ -63,9 +63,9 @@ def update_parent_task(uuid):
                 subtasks
             )
             if subtasks_with_progress:
-                task.progress = int(sum(
+                task.progress = int(float(sum(
                     [s.progress for s in subtasks_with_progress]
-                ) / len(subtasks_with_progress))
+                )) / float(len(subtasks_with_progress)))
             else:
                 task.progress = 0
             orm().add(task)

@@ -179,6 +179,9 @@ class DeploymentTask(object):
                 'attributes': cluster_attrs
             }
         }
+        task.cache = message
+        orm().add(task)
+        orm().commit()
         rpc.cast('naily', message)
 
     @classmethod

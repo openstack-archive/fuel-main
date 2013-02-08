@@ -463,7 +463,7 @@ class Task(Base, BasicValidator):
     name = Column(Enum(*TASK_NAMES), nullable=False, default='super')
     message = Column(Text)
     status = Column(Enum(*TASK_STATUSES), nullable=False, default='running')
-    progress = Column(Integer)
+    progress = Column(Integer, default=0)
     cache = Column(JSON, default={})
     result = Column(JSON, default={})
     parent_id = Column(Integer, ForeignKey('tasks.id'))
