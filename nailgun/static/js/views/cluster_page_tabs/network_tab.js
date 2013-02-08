@@ -166,17 +166,23 @@ function(models, commonViews, dialogViews, networkTabTemplate, networkTabViewMod
                 clearTimeout(this.timeout);
             }
         },
-        bindEvents: function() {
-            this.model.get('tasks').bind('remove', this.renderVerificationControl, this);
-            this.model.get('tasks').bind('reset', function(){
-                this.render();
-                this.update(true);
-            }, this);
-            this.model.get('tasks').bind('change:status', function(task) {
-                if ((task.get('name') == 'deploy' || task.get('name') == 'verify_networks') && task.get('status') != 'running') {
+        bindTaskEvents: function() {
+            this.update(true);
+            var task = this.model.task('deploy', 'running');
+            if (!task) {
+                task = this.model.task('verify_networks', 'running');
+            }
+            if (task) {
+                task.bind('change:status', this.render, this);
+                if (this.networks) {
                     this.render();
                 }
-            }, this);
+            }
+        },
+        bindEvents: function() {
+            this.model.get('tasks').bind('remove', this.renderVerificationControl, this);
+            this.model.get('tasks').bind('reset', this.bindTaskEvents, this);
+            this.bindTaskEvents();
         },
         initialize: function(options) {
             _.defaults(this, options);

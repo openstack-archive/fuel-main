@@ -101,6 +101,9 @@ function(models, commonViews, settingsTabTemplate, settingsGroupTemplate) {
             var task = this.model.task('deploy', 'running');
             if (task) {
                 task.bind('change:status', this.render, this);
+                if (this.model.get('settings')) {
+                    this.render();
+                }
             }
         },
         bindEvents: function() {
