@@ -61,7 +61,6 @@ function(models, commonViews, settingsTabTemplate, settingsGroupTemplate) {
                 url: '/api/clusters/' + this.model.id + '/attributes',
                 success: _.bind(function() {
                     this.hasChanges = false;
-                    this.settingsSaved = this.model.get('settings').get('editable');
                 }, this),
                 complete: _.bind(function() {
                     this.render();
@@ -88,7 +87,6 @@ function(models, commonViews, settingsTabTemplate, settingsGroupTemplate) {
             this.model.get('settings').fetch({
                 url: '/api/clusters/' + this.model.id + '/attributes/defaults',
                 complete: _.bind(function() {
-                    this.settingsSaved = this.model.get('settings').get('editable');
                     this.render();
                     this.defaultButtonsState(false);
                 }, this)
@@ -99,6 +97,7 @@ function(models, commonViews, settingsTabTemplate, settingsGroupTemplate) {
         render: function () {
             this.$el.html(this.template({cluster: this.model}));
             if (this.model.get('settings').deferred.state() != 'pending') {
+                this.settingsSaved = this.model.get('settings').get('editable');
                 this.parseSettings(this.model.get('settings').get('editable'));
             }
             return this;
@@ -125,10 +124,7 @@ function(models, commonViews, settingsTabTemplate, settingsGroupTemplate) {
                 this.model.get('settings').deferred = this.model.get('settings').fetch({
                     url: '/api/clusters/' + this.model.id + '/attributes'
                 });
-                this.model.get('settings').deferred.done(_.bind(function() {
-                    this.settingsSaved = this.model.get('settings').get('editable');
-                    this.render();
-                }, this));
+                this.model.get('settings').deferred.done(_.bind(this.render, this));
             }
         }
     });
