@@ -297,7 +297,7 @@ class NailgunReceiver(object):
                         u"Deployment of environment '{0}' is done"
                     ).format(task.cluster.name)
                     logger.warning(
-                        "Public ip for controller node "
+                        u"Public ip for controller node "
                         "not found in '{0}'".format(task.cluster.name)
                     )
             else:
@@ -318,7 +318,7 @@ class NailgunReceiver(object):
                     " '{0}' is done"
                 ).format(task.cluster.name)
                 logger.warning(
-                    "Cannot find virtual IP for '{0}'".format(
+                    u"Cannot find virtual IP for '{0}'".format(
                         task.cluster.name
                     )
                 )
