@@ -1,8 +1,11 @@
+<div class="modal-header">
+  <button type="button" class="close" data-dismiss="modal">&times;</button>
+  <h3><%- node.get('name') %></h3>
+</div>
 <div class="modal-body node-popup enable-selection">
   <div class="row-fluid">
     <div class="span5"><div class="node-image-outline"></div></div>
     <div class="span7">
-      <h4><%- node.get('name') %></h4>
       <div><strong>Manufacturer: </strong><%- node.get('manufacturer') ? node.get('manufacturer') : '?' %></div>
       <div><strong>MAC Address: </strong><%- node.get('mac') ? node.get('mac') : '?' %></div>
     </div>
@@ -11,8 +14,8 @@
     <% var meta = node.get('meta') %>
       <% _.each(_.keys(meta), function(field) { %>
         <div class="accordion-group">
-          <div class="accordion-heading"><a class="accordion-toggle" data-toggle="collapse" data-parent="#nodeDetailsAccordion" href="#"><%- field %></a></div>
-          <div class="accordion-body collapse in" id="<%- field %>">
+          <div class="accordion-heading"><a class="accordion-toggle" data-toggle="collapse" data-parent="#nodeDetailsAccordion" href="#<%- field %>"><%- field %></a></div>
+          <div class="accordion-body collapse" id="<%- field %>">
             <div class="accordion-inner">
               <% if (_.isArray(meta[field])) { %>
                 <% if (field == 'interfaces') meta[field] = _.sortBy(meta[field], function(el) {return el.name;}) %>

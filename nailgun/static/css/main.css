@@ -2408,8 +2408,11 @@ h6.page-title {
   height: 62px;
   overflow: hidden;
   background: url(../img/node_image_outline.png) no-repeat top left;
-  margin-top: 10px;
-  margin-bottom: 20px;
+  margin-bottom: 10px;
+}
+
+.node-popup .span7 {
+  padding-top: 17px;
 }
 
 .simple-mode-title, .simple-type-title {
@@ -2987,8 +2990,4 @@ select[name=release] option {
 
 #nodeDetailsAccordion .nested-object div, #nodeDetailsAccordion .nested-object div label {
   font-weight: normal;
-}
-
-.accordion-heading a {
-  cursor: default;
 }
