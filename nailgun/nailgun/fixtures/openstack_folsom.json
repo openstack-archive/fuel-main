@@ -34,6 +34,10 @@
                             "description": "Sample description."
                         }
                     },
+                    "admin": {
+                        "email": "admin@example.org",
+                        "password": "admin"
+                    },
                     "rabbit": {
                         "user": {
                             "value": "nova",
@@ -109,6 +113,9 @@
                     },
                     "rabbit": {
                         "password": ""
+                    },
+                    "swift": {
+                        "user_password": ""
                     }
                 }
             }

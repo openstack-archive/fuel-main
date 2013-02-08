@@ -20,24 +20,18 @@ $multi_host              = true
 $quantum                 = false
 $manage_volumes          = false
 $cinder                  = false
-$auto_assign_floating_ip = false
 $glance_backend          = 'swift'
 
 $network_manager = "nova.network.manager.${network_manager}"
 
-$mysql_root_password     = 'nova'
-$admin_email             = 'openstack@openstack.org'
-$admin_password          = 'nova'
-$keystone_db_password    = 'nova'
-$keystone_admin_token    = 'nova'
-$glance_db_password      = 'nova'
-$glance_user_password    = 'nova'
-$nova_db_password        = 'nova'
-$nova_user_password      = 'nova'
-$rabbit_password         = 'nova'
-$rabbit_user             = 'nova'
-$swift_shared_secret     = 'changeme'
-$swift_user_password     = 'swift_pass'
+$nova_hash     = parsejson($nova)
+$mysql_hash    = parsejson($mysql)
+$rabbit_hash   = parsejson($rabbit)
+$glance_hash   = parsejson($glance)
+$keystone_hash = parsejson($keystone)
+$swift_hash    = parsejson($swift)
+$admin_hash    = parsejson($admin)
+
 $quantum_user_password   = 'quantum_pass' # Quantum is turned off
 $quantum_db_password     = 'quantum_pass' # Quantum is turned off
 $quantum_db_user         = 'quantum' # Quantum is turned off
@@ -71,17 +65,18 @@ class compact_controller {
     network_config          => $network_config,
     verbose                 => $verbose,
     auto_assign_floating_ip => $auto_assign_floating_ip,
-    mysql_root_password     => $mysql_root_password,
-    admin_email             => $admin_email,
-    admin_password          => $admin_password,
-    keystone_db_password    => $keystone_db_password,
-    keystone_admin_token    => $keystone_admin_token,
-    glance_db_password      => $glance_db_password,
-    glance_user_password    => $glance_user_password,
-    nova_db_password        => $nova_db_password,
-    nova_user_password      => $nova_user_password,
-    rabbit_password         => $rabbit_password,
-    rabbit_user             => $rabbit_user,
+    mysql_root_password     => $mysql_hash[root_password],
+    admin_email             => $admin_hash[email],
+    admin_password          => $admin_hash[password],
+    keystone_db_password    => $keystone_hash[db_password],
+    keystone_admin_token    => $keystone_hash[admin_token],
+    keystone_admin_tenant   => $keystone_hash[admin_tenant],
+    glance_db_password      => $glance_hash[db_password],
+    glance_user_password    => $glance_hash[user_password],
+    nova_db_password        => $nova_hash[db_password],
+    nova_user_password      => $nova_hash[user_password],
+    rabbit_password         => $rabbit_hash[password],
+    rabbit_user             => $rabbit_hash[user],
     rabbit_nodes            => $controller_hostnames,
     memcached_servers       => $controller_hostnames,
     export_resources        => false,
@@ -101,7 +96,7 @@ class compact_controller {
     nv_physical_volume      => $nv_physical_volume,
   }
   class { 'swift::keystone::auth':
-     password         => $swift_user_password,
+     password         => $swift_hash[user_password],
      public_address   => $public_vip,
      internal_address => $management_vip,
      admin_address    => $management_vip,
@@ -125,9 +120,13 @@ class compact_controller {
         controller_node_address => $management_vip,
         swift_local_net_ip      => $internal_address,
       }
+      nova_config { 'DEFAULT/start_guests_on_host_boot': value => $start_guests_on_host_boot }
+      nova_config { 'DEFAULT/use_cow_images': value => $use_cow_images }
+      nova_config { 'DEFAULT/compute_scheduler_driver': value => $compute_scheduler_driver }
       if $hostname == $master_hostname {
         class { 'openstack::img::cirros':
-          os_password => $admin_password,
+          os_password => $admin_hash[password],
+          os_tenant_name => $keystone_hash[admin_tenant],
           os_auth_url => "http://${management_vip}:5000/v2.0/",
           img_name    => "TestVM",
         }
@@ -149,21 +148,21 @@ class compact_controller {
         public_interface       => $public_interface,
         private_interface      => $private_interface,
         internal_address       => $internal_address,
-        libvirt_type           => 'qemu',
+        libvirt_type           => $libvirt_type,
         fixed_range            => $fixed_network_range,
         network_manager        => $network_manager,
         network_config         => $network_config,
         multi_host             => $multi_host,
         sql_connection         => "mysql://nova:${nova_db_password}@${management_vip}/nova",
         rabbit_nodes           => $controller_hostnames,
-        rabbit_password        => $rabbit_password,
-        rabbit_user            => $rabbit_user,
+        rabbit_password        => $rabbit_hash[password],
+        rabbit_user            => $rabbit_hash[user],
         glance_api_servers     => "${management_vip}:9292",
         vncproxy_host          => $public_vip,
         verbose                => $verbose,
         vnc_enabled            => true,
         manage_volumes         => false,
-        nova_user_password     => $nova_user_password,
+        nova_user_password     => $nova_hash[user_password],
         cache_server_ip        => $controller_hostnames,
         service_endpoint       => $management_vip,
         quantum                => $quantum,
@@ -175,6 +174,9 @@ class compact_controller {
         cinder                 => $cinder,
         db_host                => $internal_virtual_ip,
       }
+      nova_config { 'DEFAULT/start_guests_on_host_boot': value => $start_guests_on_host_boot }
+      nova_config { 'DEFAULT/use_cow_images': value => $use_cow_images }
+      nova_config { 'DEFAULT/compute_scheduler_driver': value => $compute_scheduler_driver }
 
       Class[osnailyfacter::network_setup] -> Class[openstack::compute]
     }
