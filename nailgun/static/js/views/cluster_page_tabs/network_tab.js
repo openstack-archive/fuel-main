@@ -38,8 +38,8 @@ function(models, commonViews, dialogViews, networkTabTemplate, networkTabViewMod
             }, this);
             this.networks.get(row.data('network-id')).set({
                 cidr: $('.cidr input', row).val(),
-                vlan_start: parseInt($('.vlan_start input:first', row).val(), 10),
-                amount: this.$('.net-manager input[checked]').val() == 'FlatDHCPManager' ? 1 : parseInt($('.amount input', row).val(), 10),
+                vlan_start: $('.vlan_start input:first', row).val(),
+                amount: this.$('.net-manager input[checked]').val() == 'FlatDHCPManager' ? 1 : $('.amount input', row).val(),
                 network_size: parseInt($('.network_size select', row).val(), 10)
             });
             if (_.isEqual(this.networks.toJSON(), this.dataDbState.settings) && this.model.get('net_manager') == this.dataDbState.manager) {

@@ -718,6 +718,7 @@ h6.page-title {
   color: #255888;
   text-shadow: 0 1px 0 rgba(255, 255, 255, 0.25);
   cursor: pointer;
+  text-align: center;
 }
 
 .node-hardware:hover  {
@@ -727,14 +728,22 @@ h6.page-title {
   text-shadow: 0 1px 0 rgba(255, 255, 255, 0.1);
 }
 
-.node-hardware:hover > ul > li  {
-  color: #1e486f;
+.node-hardware > span  {
+  display: inline-block;
+  padding: 0 3px;
 }
 
-.node-hardware > ul {list-style: none; margin: 0px; padding: 0px;}
-.node-hardware > ul > li {display: inline; width: 60px; float: left; margin-right: 0px; margin-top: 1px; text-align: center;}
-.node-hardware > ul > li:first-child {width: 48px; text-align: right;}
-.node-hardware > ul > li:last-child {text-align: left;}
+.node-hardware > span:first-child  {
+  padding-left: 0;
+}
+
+.node-hardware > span:last-child  {
+  padding-right: 0;
+}
+
+.node-hardware:hover > span  {
+  color: #1e486f;
+}
 
 .manufacturer-hp {
   background: url(../img/node_manufacturer_logos.png) 0px 0px no-repeat;

@@ -58,12 +58,10 @@
     <a href="<%- logsLink %>" class="logs-link"><i class="icon-logs"></i>View logs</a>
   </div>
   <div class="node-hardware">
-    <ul>
-      <li>CPU: <%= node.resource('cores') && _.isNumber(node.resource('cores')) ? node.resource('cores') : '?' %></li>
+      <span>CPU: <%= node.resource('cores') && _.isNumber(node.resource('cores')) ? node.resource('cores') : '?' %></span>
       <% if (node.resource('hdd')) var hdd = node.resource('hdd')/Math.pow(1000, 3) %>
-      <li>HDD: <%= hdd ? hdd < 100 ? hdd.toFixed(1) + ' GB' : (hdd/1000).toFixed(1) + ' TB' : '? TB' %> </li>
-      <li>RAM: <%= node.resource('ram') && _.isNumber(node.resource('ram')) ? node.resource('ram').toFixed(1) : '?' %> GB</li>
-    </ul>
+      <span>HDD: <%= hdd ? hdd < 100 ? hdd.toFixed(1) + 'GB' : (hdd/1000).toFixed(1) + 'TB' : '?TB' %></span>
+      <span>RAM: <%= node.resource('ram') && _.isNumber(node.resource('ram')) ? node.resource('ram').toFixed(1) : '?' %>GB</span>
   </div>
 
   <% if (!selectableForAddition && !selectableForDeletion) { %>

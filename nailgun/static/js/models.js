@@ -190,9 +190,10 @@ define(function() {
         urlRoot: '/api/networks',
         validate: function(attrs) {
             var errors = {};
+            var match;
             if (_.isString(attrs.cidr)) {
                 var cidrRegexp = /^(?:(?:[0-9]|[1-9][0-9]|1[0-9]{2}|2[0-4][0-9]|25[0-5])\.){3}(?:[0-9]|[1-9][0-9]|1[0-9]{2}|2[0-4][0-9]|25[0-5])\/([1-9]|[1-2]\d|3[0-2])$/;
-                var match = attrs.cidr.match(cidrRegexp);
+                match = attrs.cidr.match(cidrRegexp);
                 if (match) {
                     var prefix = parseInt(match[1], 10);
                     if (prefix < 2) {
@@ -207,8 +208,24 @@ define(function() {
             } else {
                 errors.cidr = 'Invalid CIDR';
             }
+            if (_.isString(attrs.vlan_start)) {
+                match = attrs.vlan_start.match(/^[0-9]+$/);
+                if (match) {
+                    attrs.vlan_start = parseInt(match[0], 10);
+                } else {
+                    errors.vlan_start = 'Invalid VLAN ID';
+                }
+            }
             if (_.isNaN(attrs.vlan_start) || !_.isNumber(attrs.vlan_start) || attrs.vlan_start < 1 || attrs.vlan_start > 4094) {
                 errors.vlan_start = 'Invalid VLAN ID';
+            }
+            if (_.isString(attrs.amount)) {
+                match = attrs.amount.match(/^[0-9]+$/);
+                if (match) {
+                    attrs.amount = parseInt(match[0], 10);
+                } else {
+                    errors.amount = 'Invalid amount of networks';
+                }
             }
             if (!attrs.amount || (attrs.amount && (!_.isNumber(attrs.amount) || attrs.amount < 1))) {
                 errors.amount = 'Invalid amount of networks';
