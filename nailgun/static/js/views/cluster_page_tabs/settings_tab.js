@@ -54,6 +54,17 @@ function(models, commonViews, settingsTabTemplate, settingsGroupTemplate) {
                 }
             });
         },
+        checkForChanges: function() {
+            var changedData = {};
+            this.collectData($('.openstack-settings form'), changedData);
+            if (_.isEqual(this.model.get('settings').get('editable'), changedData)) {
+                this.defaultButtonsState(true);
+                this.hasChanges = false;
+            } else {
+                this.$('.openstack-settings .btn').attr('disabled', false);
+                this.hasChanges = true;
+            }
+        },
         applyChanges: function() {
             var changedData = {};
             this.collectData(this.$('form'), changedData);
@@ -84,20 +95,19 @@ function(models, commonViews, settingsTabTemplate, settingsGroupTemplate) {
             this.defaultButtonsState(true);
         },
         loadDefaults: function() {
-            this.model.get('settings').fetch({
+            var defaults = new models.Settings();
+            defaults.fetch({
                 url: '/api/clusters/' + this.model.id + '/attributes/defaults',
                 complete: _.bind(function() {
-                    this.render();
-                    this.defaultButtonsState(false);
+                    this.parseSettings(defaults.get('editable'));
+                    this.checkForChanges();
                 }, this)
             });
-            this.hasChanges = false;
             this.disableControls();
         },
         render: function () {
             this.$el.html(this.template({cluster: this.model}));
             if (this.model.get('settings').deferred.state() != 'pending') {
-                this.settingsSaved = this.model.get('settings').get('editable');
                 this.parseSettings(this.model.get('settings').get('editable'));
             }
             return this;
@@ -133,19 +143,11 @@ function(models, commonViews, settingsTabTemplate, settingsGroupTemplate) {
         template: _.template(settingsGroupTemplate),
         className: 'fieldset-group wrapper',
         events: {
-            'keyup input[type=text]': 'hasChanges',
-            'change input[type=checkbox], select': 'hasChanges'
+            'keyup input[type=text]': 'checkForChanges',
+            'change input[type=checkbox], select': 'checkForChanges'
         },
-        hasChanges: function() {
-            var changedData = {};
-            this.tab.collectData($('.openstack-settings form'), changedData);
-            if (_.isEqual(this.tab.settingsSaved, changedData)) {
-                this.tab.defaultButtonsState(true);
-                this.tab.hasChanges = false;
-            } else {
-                $('.openstack-settings .btn').attr('disabled', false);
-                this.tab.hasChanges = true;
-            }
+        checkForChanges: function() {
+            this.tab.checkForChanges();
         },
         initialize: function(options) {
             _.defaults(this, options);
