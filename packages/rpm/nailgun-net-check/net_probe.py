@@ -61,23 +61,37 @@ Full frame generation config file example is:
 def error(msg):
     sys.stderr.write(msg)
 
-def vlan_iface_name(iface, vid):
+def vlan_iface_if_exist(iface, vid):
     if not os.access("/proc/net/vlan/config", os.R_OK):
         error('Error: can not access /proc/net/vlan/config\n')
         exit(1)
+    re_iface_line = re.compile(ur'()\s+\|()\s+\|()\s*$')
+    re_filter = re.compile(ur'^(Name-Type:\s|VLAN\sDev\sname)')
     with open("/proc/net/vlan/config", "r") as f:
         for line in f:
-            if re.search(ur'^Name-Type: ', line):
-                vlan_name_model = line.split('Name-Type: ')[1]
-                if vlan_name_model == 'VLAN_NAME_TYPE_RAW_PLUS_VID_NO_PAD':
-                    return "%s.%d" % (iface, vid)
-                elif vlan_name_model == 'VLAN_NAME_TYPE_RAW_PLUS_VID':
-                    return "%s%04d" % (iface, vid)
-                elif vlan_name_model == 'VLAN_NAME_TYPE_PLUS_VID_NO_PAD':
-                    return "vlan%d" % vid
-                elif vlan_name_model == 'VLAN_NAME_TYPE_PLUS_VID':
-                    return "vlan%04d" % vid
+            if not re.search(re_filter, line):
+                matched = re.search(re_iface_line)
+                if matched and int(matched.group(1)) == vid and matched.group(2) == iface:
+                    return matched.group(0)
+    return None
 
+def create_vlan_iface(iface, vid):
+    call(('/sbin/vconfig', 'add', iface, vid), shell=True)
+    call(('/sbin/ifconfig', iface, 'up'), shell=True)
+    vlan_iface = vlan_iface_if_exist(iface, vid)
+    if vlan_iface in None:
+        error('Error: can not create vlan %s on '
+            'interface %s\n' % (vid, iface))
+        exit(1)
+    return vlan_iface
+
+def remove_vlan_iface(vlan_iface):
+    call(('/sbin/ifconfig', vlan_iface, 'down'), shell=True)
+    call(('/sbin/vconfig', 'rem', vlan_iface), shell=True)
+    if not vlan_iface_if_exist(iface, vid) is None:
+        error('Error: can not remove vlan interface '
+            '%s\n' % vlan_iface)
+        exit(1)
 
 def parse_vlan_list(vlan_string):
     validate = lambda x: (x >= 0) and (x < 4095)
@@ -139,15 +153,12 @@ def get_probe_frames(iface):
 
 def send_probe_frame(**props):
     for vlan in props['vlan']:
+        vlan_iface_remove_after_send = False
         if vlan > 0:
-            # it is supposed that vconfig name_type flag is the same
-            # now as it was during creating vlan interface which we
-            # are checking for its exsistance
-            iface = vlan_iface_name(props['iface'], vlan)
-            iface_already_exist = not call('/sbin/ifconfig %s' % iface, shell=True)
-            if not iface_already_exist:
-                call(('/sbin/vconfig', 'add', props['iface'], str(vlan)))
-                call(('/sbin/ifconfig', iface, 'up'))
+            iface = _vlan_iface_if_exist(props['iface'], vlan)
+            if iface is None:
+                vlan_iface_remove_after_send = True
+                iface = create_vlan_iface(props['iface'], vlan)
         else:
             iface = props['iface']
         p = scapy.Ether(src=props['src_mac'], dst="ff:ff:ff:ff:ff:ff")
@@ -158,10 +169,8 @@ def send_probe_frame(**props):
                 scapy.sendp(p, iface=iface)
         except socket.error, e:
             print e, iface
-        if vlan > 0 and not iface_already_exist:
-            call(('/sbin/ifconfig', iface, 'down'))
-            call(('/sbin/vconfig', 'rem', iface))
-
+        if vlan > 0 and vlan_iface_remove_after_send:
+            remove_vlan_iface(iface)
 
 
 def addpid(piddir):
