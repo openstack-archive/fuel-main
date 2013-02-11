@@ -2411,8 +2411,19 @@ h6.page-title {
   margin-bottom: 10px;
 }
 
+.node-popup .span5 {
+  width: 204px;
+}
+
 .node-popup .span7 {
-  padding-top: 17px;
+  padding-top: 22px;
+  width: 295px;
+  margin-left: 15px;
+  margin-bottom: 10px;
+}
+
+.node-popup .span7 div {
+  word-break: break-all;
 }
 
 .simple-mode-title, .simple-type-title {
@@ -2970,10 +2981,12 @@ select[name=release] option {
   text-transform: uppercase;
   display: inline-block;
   float: left;
-  width: 30%;
+  width: 150px;
   font-size: 12px;
   font-weight: bold;
   line-height: 12px;
+  padding-right: 10px;
+  word-break: break-all;
 }
 
 #nodeDetailsAccordion .nested-object {
