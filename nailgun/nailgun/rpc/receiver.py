@@ -213,7 +213,7 @@ class NailgunReceiver(object):
                     )
             if nodes_progress:
                 progress = int(
-                    float(sum(nodes_progress)) / float(len(nodes_progress))
+                    float(sum(nodes_progress)) / len(nodes_progress)
                 )
 
         # Let's check the whole task status
@@ -326,7 +326,16 @@ class NailgunReceiver(object):
             # determining horizon url in HA mode - it's vip
             # from a public network saved in task cache
             args = task.cache.get('args')
-            if not args:
+            try:
+                vip = args['attributes']['public_vip']
+                message = (
+                    u"Deployment of environment '{0}' is done. "
+                    "Access WebUI of OpenStack at http://{1}/"
+                ).format(
+                    task.cluster.name,
+                    vip
+                )
+            except Exception:
                 message = (
                     u"Deployment of environment"
                     " '{0}' is done"
@@ -336,15 +345,7 @@ class NailgunReceiver(object):
                         task.cluster.name
                     )
                 )
-            else:
-                vip = args['attributes']['public_vip']
-                message = (
-                    u"Deployment of environment '{0}' is done. "
-                    "Access WebUI of OpenStack at http://{1}/"
-                ).format(
-                    task.cluster.name,
-                    vip
-                )
+
         notifier.notify(
             "done",
             message,
