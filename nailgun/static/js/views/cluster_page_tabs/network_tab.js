@@ -28,13 +28,9 @@ function(models, commonViews, dialogViews, networkTabTemplate, networkTabViewMod
         },
         checkForChanges: function() {
             this.setValues();
-            if (_.isEqual(this.networks.toJSON(), this.dataDbState.settings) && this.model.get('net_manager') == this.dataDbState.manager) {
-                this.$('.apply-btn').attr('disabled', true);
-                this.hasChanges = false;
-            } else {
-                this.$('.apply-btn').attr('disabled', false);
-                this.hasChanges = true;
-            }
+            var noChanges = _.isEqual(this.networks.toJSON(), this.dataDbState.settings) && this.model.get('net_manager') == this.dataDbState.manager;
+            this.$('.apply-btn').attr('disabled', noChanges);
+            this.hasChanges = !noChanges;
         },
         makeChanges: function(e) {
             var row;
@@ -50,14 +46,14 @@ function(models, commonViews, dialogViews, networkTabTemplate, networkTabViewMod
             this.networks.get(row.data('network-id')).set({
                 cidr: $('.cidr input', row).val(),
                 vlan_start: $('.vlan_start input:first', row).val(),
-                amount: this.$('.net-manager input[checked]').val() == 'FlatDHCPManager' ? 1 : $('.amount input', row).val(),
+                amount: this.model.get('net_manager') == 'FlatDHCPManager' ? 1 : $('.amount input', row).val(),
                 network_size: parseInt($('.network_size select', row).val(), 10)
             });
             this.checkForChanges();
             app.page.removeVerificationTask();
         },
         calculateVlanEnd: function() {
-            if (this.$('.net-manager input[checked]').val() == 'VlanManager') {
+            if (this.model.get('net_manager') == 'VlanManager') {
                 var amount = parseInt(this.$('.fixed-row .amount input').val(), 10);
                 var vlanStart = parseInt(this.$('.fixed-row .vlan_start input:first').val(), 10);
                 var vlanEnd =  vlanStart + amount - 1;
@@ -68,7 +64,7 @@ function(models, commonViews, dialogViews, networkTabTemplate, networkTabViewMod
             }
         },
         displayRange: function() {
-            if (this.$('.net-manager input[checked]').val() == 'VlanManager' && parseInt(this.$('.fixed-row .amount input').val(), 10) > 1 && parseInt(this.$('.fixed-row .vlan_start input:first').val(), 10)) {
+            if (this.model.get('net_manager') == 'VlanManager' && parseInt(this.$('.fixed-row .amount input').val(), 10) > 1 && parseInt(this.$('.fixed-row .vlan_start input:first').val(), 10)) {
                 this.$('.fixed-header .vlan').text('VLAN ID range');
                 this.$('.fixed-row .vlan_start input:first').addClass('range');
                 this.calculateVlanEnd();
@@ -83,12 +79,12 @@ function(models, commonViews, dialogViews, networkTabTemplate, networkTabViewMod
             this.$(e.target).attr('checked', true);
             this.model.set({net_manager: this.$(e.target).val()}, {silent: true});
             this.checkForChanges();
+            app.page.removeVerificationTask();
             this.$('.fixed-row .amount, .fixed-header .amount, .fixed-row .network_size, .fixed-header .size').toggle().removeClass('hide');
             this.displayRange();
         },
         setValues: function() {
             var valid = true;
-            this.$('.control-group').removeClass('error').find('.help-inline').text('');
             this.networks.each(function(network) {
                 var row = this.$('.control-group[data-network-name=' + network.get('name') + ']');
                 network.on('error', function(model, errors) {
@@ -97,7 +93,7 @@ function(models, commonViews, dialogViews, networkTabTemplate, networkTabViewMod
                 network.set({
                     cidr: $('.cidr input', row).val(),
                     vlan_start: parseInt($('.vlan_start input:first', row).val(), 10),
-                    amount: this.$('.net-manager input[checked]').val() == 'FlatDHCPManager' ? 1 : parseInt($('.amount input', row).val(), 10),
+                    amount: this.model.get('net_manager') == 'FlatDHCPManager' ? 1 : parseInt($('.amount input', row).val(), 10),
                     network_size: parseInt($('.network_size select', row).val(), 10)
                 });
             }, this);
@@ -173,10 +169,11 @@ function(models, commonViews, dialogViews, networkTabTemplate, networkTabViewMod
             }
         },
         bindTaskEvents: function() {
-            this.update(true);
-            var task = this.model.task('deploy', 'running');
-            if (!task) {
-                task = this.model.task('verify_networks', 'running');
+            var task = this.model.task('verify_networks');
+            if (task && task.get('status') == 'running') {
+                this.update(true);
+            } else if (!task) {
+                task = this.model.task('check_networks', 'error') || this.model.task('deploy', 'running');
             }
             if (task) {
                 task.bind('change:status', this.render, this);
@@ -194,7 +191,11 @@ function(models, commonViews, dialogViews, networkTabTemplate, networkTabViewMod
             _.defaults(this, options);
             this.model.bind('change:tasks', this.bindEvents, this);
             this.bindEvents();
-            var complete = _.after(2, _.bind(this.render, this));
+            var complete = _.after(2, _.bind(function() {
+                this.dataDbState.settings = this.networks.toJSON();
+                this.dataDbState.manager = this.model.get('net_manager');
+                this.render();
+            }, this));
             this.model.fetch().done(complete);
             this.networks = new models.Networks();
             this.networks.deferred = this.networks.fetch({data: {cluster_id: this.model.id}});
@@ -207,8 +208,6 @@ function(models, commonViews, dialogViews, networkTabTemplate, networkTabViewMod
             this.$('.verification-control').html(verificationView.render().el);
         },
         render: function() {
-            this.dataDbState.settings = this.networks.toJSON();
-            this.dataDbState.manager = this.model.get('net_manager');
             this.$el.html(this.template({cluster: this.model, networks: this.networks, hasChanges: this.hasChanges}));
             this.renderVerificationControl();
             return this;
