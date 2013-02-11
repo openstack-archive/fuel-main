@@ -135,7 +135,7 @@ class DeploymentTask(object):
             nodes_with_attrs.append({
                 'id': n.id, 'status': n.status, 'error_type': n.error_type,
                 'uid': n.id, 'ip': n.ip, 'mac': n.mac, 'role': n.role,
-                'fqdn': n.fqdn,
+                'fqdn': n.fqdn, 'progress': n.progress,
                 'network_data': netmanager.get_node_networks(n.id)
             })
 

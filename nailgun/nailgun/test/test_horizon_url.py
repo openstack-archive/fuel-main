@@ -20,21 +20,7 @@ from nailgun.api.models import IPAddr, NetworkGroup, Network
 class TestHorizonURL(BaseHandlers):
 
     def tearDown(self):
-        # wait for fake task thread termination
-        import threading
-        for thread in threading.enumerate():
-            if thread is not threading.currentThread():
-                if hasattr(thread, "rude_join"):
-                    timer = time.time()
-                    timeout = 25
-                    thread.rude_join(timeout)
-                    if time.time() - timer > timeout:
-                        raise Exception(
-                            '{0} seconds is not enough'
-                            ' - possible hanging'.format(
-                                timeout
-                            )
-                        )
+        self._wait_for_threads()
 
     @patch('nailgun.task.task.rpc.cast', nailgun.task.task.fake_cast)
     @patch('nailgun.task.task.settings.FAKE_TASKS', True)

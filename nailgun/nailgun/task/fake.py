@@ -58,17 +58,10 @@ class FakeDeploymentThread(FakeThread):
         ready = False
         while not ready and not self.stoprequest.isSet():
             for n in kwargs['nodes']:
-                if not 'progress' in n:
-                    n['progress'] = 0
-                elif n['status'] == 'error':
+                if n['status'] in ('error', 'offline'):
                     n['progress'] = 100
                     n['error_type'] = 'provision'
                     continue
-                elif n['status'] == 'offline':
-                    n['error_msg'] = 'Node is offline'
-                    n['error_type'] = 'provision'
-                    ready = True
-                    break
                 elif n['status'] == 'discover':
                     n['status'] = next_st[n['status']]
                     n['progress'] = 0
@@ -82,7 +75,11 @@ class FakeDeploymentThread(FakeThread):
                         n['status'] = next_st[n['status']]
             resp_method(**kwargs)
             if all(map(
-                lambda n: n['status'] in ('provisioned', 'error'),
+                lambda n: n['status'] in (
+                    'provisioned',
+                    'error',
+                    'offline'
+                ),
                 kwargs['nodes']
             )):
                 ready = True
@@ -97,20 +94,9 @@ class FakeDeploymentThread(FakeThread):
             lambda n: n['status'] == 'offline',
             kwargs['nodes']
         )
-        if error_nodes:
+        if error_nodes or offline_nodes:
             kwargs['status'] = 'error'
             kwargs['progress'] = 100
-            kwargs['error'] = 'Failed to provision node(s): {0}'.format(
-                ",".join([str(n['uid']) for n in error_nodes])
-            )
-            resp_method(**kwargs)
-            return
-        if offline_nodes:
-            kwargs['status'] = 'error'
-            kwargs['progress'] = 100
-            kwargs['error'] = 'Cannot deploy offline node(s): {0}'.format(
-                ",".join([str(n['uid']) for n in offline_nodes])
-            )
             resp_method(**kwargs)
             return
 

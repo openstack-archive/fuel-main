@@ -19,21 +19,7 @@ from nailgun.api.models import Cluster, Task, ClusterChanges
 class TestClusterChanges(BaseHandlers):
 
     def tearDown(self):
-        # wait for fake task thread termination
-        import threading
-        for thread in threading.enumerate():
-            if thread is not threading.currentThread():
-                if hasattr(thread, "rude_join"):
-                    timer = time.time()
-                    timeout = 25
-                    thread.rude_join(timeout)
-                    if time.time() - timer > timeout:
-                        raise Exception(
-                            '{0} seconds is not enough'
-                            ' - possible hanging'.format(
-                                timeout
-                            )
-                        )
+        self._wait_for_threads()
 
     def test_cluster_creation_adds_pending_changes(self):
         cluster = self.create_cluster_api()

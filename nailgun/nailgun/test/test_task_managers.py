@@ -19,21 +19,7 @@ from nailgun.api.models import Cluster, Attributes, Task, Notification, Node
 class TestTaskManagers(BaseHandlers):
 
     def tearDown(self):
-        # wait for fake task thread termination
-        import threading
-        for thread in threading.enumerate():
-            if thread is not threading.currentThread():
-                if hasattr(thread, "rude_join"):
-                    timer = time.time()
-                    timeout = 25
-                    thread.rude_join(timeout)
-                    if time.time() - timer > timeout:
-                        raise Exception(
-                            '{0} seconds is not enough'
-                            ' - possible hanging'.format(
-                                timeout
-                            )
-                        )
+        self._wait_for_threads()
 
     @patch('nailgun.task.task.rpc.cast', nailgun.task.task.fake_cast)
     @patch('nailgun.task.task.settings.FAKE_TASKS', True)
@@ -129,7 +115,8 @@ class TestTaskManagers(BaseHandlers):
         self.assertEqual(supertask.status, 'error')
         self.assertEqual(
             supertask.message,
-            u"Deployment has failed:\n'Offline node': Node is offline"
+            u"Deployment has failed. Check these nodes:\n"
+            "'Offline node'"
         )
 
     @patch('nailgun.task.task.rpc.cast', nailgun.task.task.fake_cast)
@@ -260,9 +247,9 @@ class TestTaskManagers(BaseHandlers):
         self.assertIsNotNone(notif_node)
         notif_deploy = self.db.query(Notification).filter_by(
             topic="error",
-            message=u"Deployment has failed:\n'{0}': {1}".format(
-                node1.name,
-                node1.error_msg
+            message=u"Deployment has failed. "
+            "Check these nodes:\n'{0}'".format(
+                node1.name
             )
         ).first()
         self.assertIsNotNone(notif_deploy)

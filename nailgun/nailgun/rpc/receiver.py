@@ -43,7 +43,8 @@ class NailgunReceiver(object):
             node_db = orm().query(Node).get(node['uid'])
             if not node_db:
                 logger.error(
-                    "Failed to delete node '%s': node doesn't exist", str(node)
+                    u"Failed to delete node '%s': node doesn't exist",
+                    str(node)
                 )
                 break
             orm().delete(node_db)
@@ -52,7 +53,7 @@ class NailgunReceiver(object):
             node_db = orm().query(Node).get(node['uid'])
             if not node_db:
                 logger.error(
-                    "Failed to delete node '%s' marked as error from Naily:"
+                    u"Failed to delete node '%s' marked as error from Naily:"
                     " node doesn't exist", str(node)
                 )
                 break
@@ -61,15 +62,15 @@ class NailgunReceiver(object):
             orm().add(node_db)
         orm().commit()
 
-        success_msg = "No nodes were removed"
-        err_msg = "No errors occurred"
+        success_msg = u"No nodes were removed"
+        err_msg = u"No errors occurred"
         if nodes:
-            success_msg = "Successfully removed {0} node(s)".format(
+            success_msg = u"Successfully removed {0} node(s)".format(
                 len(nodes)
             )
             notifier.notify("done", success_msg)
         if error_nodes:
-            err_msg = "Failed to remove {0} node(s)".format(
+            err_msg = u"Failed to remove {0} node(s)".format(
                 len(error_nodes)
             )
             notifier.notify("error", err_msg)
@@ -96,7 +97,7 @@ class NailgunReceiver(object):
 
             notifier.notify(
                 "done",
-                "Environment '%s' and all its nodes are deleted" % (
+                u"Environment '%s' and all its nodes are deleted" % (
                     cluster_name
                 )
             )
@@ -131,7 +132,7 @@ class NailgunReceiver(object):
         if not task:
             # No task found - nothing to do here, returning
             logger.warning(
-                "No task with uuid '{0}'' found - nothing changed".format(
+                u"No task with uuid '{0}'' found - nothing changed".format(
                     task_uuid
                 )
             )
@@ -146,16 +147,16 @@ class NailgunReceiver(object):
 
             if not node_db:
                 logger.warning(
-                    "No node found with uid '{0}' - nothing changed".format(
+                    u"No node found with uid '{0}' - nothing changed".format(
                         node['uid']
                     )
                 )
                 continue
 
-            for param in ('status', 'progress', 'error_msg', 'error_type'):
+            for param in ('error_msg', 'error_type', 'status', 'progress'):
                 if param in node:
                     logging.debug(
-                        "Updating node {0} - set {1} to {2}".format(
+                        u"Updating node {0} - set {1} to {2}".format(
                             node['uid'],
                             param,
                             node[param]
@@ -170,10 +171,14 @@ class NailgunReceiver(object):
                         # If failure occurred with node
                         # it's progress should be 100
                         node_db.progress = 100
+                        # Setting node error_msg for offline nodes
+                        if node.get('status') == 'offline' \
+                                and not node_db.error_msg:
+                            node_db.error_msg = u"Node is offline"
                         # Notification on particular node failure
                         notifier.notify(
                             "error",
-                            "Failed to deploy node '{0}': {1}".format(
+                            u"Failed to deploy node '{0}': {1}".format(
                                 node_db.name,
                                 node_db.error_msg or "Unknown error"
                             ),
@@ -196,6 +201,8 @@ class NailgunReceiver(object):
             for node in nodes_db:
                 if node.status == "discover":
                     nodes_progress.append(0)
+                elif node.status == "offline":
+                    nodes_progress.append(100)
                 elif node.status in ['provisioning', 'provisioned'] or \
                         node.needs_reprovision:
                     nodes_progress.append(float(node.progress) * coeff)
@@ -218,7 +225,7 @@ class NailgunReceiver(object):
             update_task_status(task.uuid, status, progress, message)
 
     @classmethod
-    def _generate_error_message(cls, task, error_types):
+    def _generate_error_message(cls, task, error_types, names_only=False):
         nodes_info = []
         error_nodes = orm().query(Node).filter_by(
             cluster_id=task.cluster_id
@@ -228,26 +235,33 @@ class NailgunReceiver(object):
             Node.error_type.in_(error_types)
         ).all()
         for n in error_nodes:
-            nodes_info.append(
-                u"'{0}': {1}".format(
-                    n.name,
-                    n.error_msg
+            if names_only:
+                nodes_info.append(
+                    "'{0}'".format(n.name)
                 )
-            )
+            else:
+                nodes_info.append(
+                    u"'{0}': {1}".format(
+                        n.name,
+                        n.error_msg
+                    )
+                )
         if nodes_info:
-            message = u"Deployment has failed:\n{0}".format(
-                "\n".join(nodes_info)
-            )
+            if names_only:
+                message = u", ".join(nodes_info)
+            else:
+                message = u"\n".join(nodes_info)
         else:
-            message = u"Deployment has failed. Check logs for details."
-        return u"\n".join(nodes_info)
+            message = u"Unknown error"
+        return message
 
     @classmethod
     def _error_action(cls, task, status, progress):
-        message = u"Deployment has failed:\n{0}".format(
+        message = u"Deployment has failed. Check these nodes:\n{0}".format(
             cls._generate_error_message(
                 task,
-                error_types=('deploy', 'provision')
+                error_types=('deploy', 'provision'),
+                names_only=True
             )
         )
         notifier.notify(
@@ -273,7 +287,7 @@ class NailgunReceiver(object):
             ).first()
             if controller:
                 logger.debug(
-                    "Controller is found, node_id=%s, "
+                    u"Controller is found, node_id=%s, "
                     "getting it's IP addresses",
                     controller.id
                 )

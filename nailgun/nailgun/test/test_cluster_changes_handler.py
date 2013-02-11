@@ -26,8 +26,10 @@ class TestHandlers(BaseHandlers):
         self.db.commit()
 
         node1 = self.create_default_node(cluster_id=cluster['id'],
+                                         role='controller',
                                          pending_addition=True)
         node2 = self.create_default_node(cluster_id=cluster['id'],
+                                         role='controller',
                                          pending_addition=True)
 
         nailgun.task.task.Cobbler = Mock()
@@ -66,14 +68,14 @@ class TestHandlers(BaseHandlers):
             filter(NetworkGroup.cluster_id == cluster['id']).filter_by(
                 name='public').first()
         public_vip = str(IPNetwork(public_net.cidr)[4])
-        # cluster_attrs['management_vip'] = management_vip
-        # cluster_attrs['public_vip'] = public_vip
-        cluster_attrs['management_vip'] = netmanager.assign_vip(
-            cluster['id'], "management"
-        )
-        cluster_attrs['public_vip'] = netmanager.assign_vip(
-            cluster['id'], "public"
-        )
+        cluster_attrs['management_vip'] = management_vip
+        cluster_attrs['public_vip'] = public_vip
+        # cluster_attrs['management_vip'] = netmanager.assign_vip(
+        #     cluster['id'], "management"
+        # )
+        # cluster_attrs['public_vip'] = netmanager.assign_vip(
+        #     cluster['id'], "public"
+        # )
         cluster_attrs['deployment_mode'] = cluster_depl_mode
         cluster_attrs['network_manager'] = "FlatDHCPManager"
 
@@ -86,6 +88,7 @@ class TestHandlers(BaseHandlers):
             nodes.append({'uid': n.id, 'status': n.status, 'ip': n.ip,
                           'error_type': n.error_type, 'mac': n.mac,
                           'role': n.role, 'id': n.id, 'fqdn': n.fqdn,
+                          'progress': 0,
                           'network_data': [{'brd': '172.16.0.255',
                                             'ip': node_ip[0],
                                             'vlan': 103,

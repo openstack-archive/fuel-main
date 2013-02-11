@@ -3,6 +3,7 @@
 import os
 import re
 import json
+import time
 import logging
 from random import randint
 from datetime import datetime
@@ -36,6 +37,23 @@ class BaseHandlers(TestCase):
         self.here = os.path.abspath(os.path.dirname(__file__))
         self.fixture_dir = os.path.join(self.here, "..", "fixtures")
         self.app = TestApp(build_app().wsgifunc())
+
+    def _wait_for_threads(self):
+        # wait for fake task thread termination
+        import threading
+        for thread in threading.enumerate():
+            if thread is not threading.currentThread():
+                if hasattr(thread, "rude_join"):
+                    timer = time.time()
+                    timeout = 25
+                    thread.rude_join(timeout)
+                    if time.time() - timer > timeout:
+                        raise Exception(
+                            '{0} seconds is not enough'
+                            ' - possible hanging'.format(
+                                timeout
+                            )
+                        )
 
     @classmethod
     def setUpClass(cls):

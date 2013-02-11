@@ -87,7 +87,7 @@ def assign_vip(cluster_id, network_name):
         raise Exception("Network '%s' for cluster_id=%s not found." %
                         (network_name, cluster_id))
 
-    used_ips = orm().query(IPAddr).all()
+    used_ips = [n.ip_addr for n in orm().query(IPAddr).all()]
 
     cluster_ips = [ne.ip_addr for ne in orm().query(IPAddr).filter_by(
         network=network.id,
@@ -123,7 +123,6 @@ def get_node_networks(node_id):
     if cluster_db is None:
         # Node doesn't belong to any cluster, so it should not have nets
         return []
-    # Got rid of Nones (if x.ip_addr)
     ips = orm().query(IPAddr).filter_by(node=node_id).all()
     network_data = []
     network_ids = []
