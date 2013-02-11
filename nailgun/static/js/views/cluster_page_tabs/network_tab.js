@@ -153,7 +153,9 @@ function(models, commonViews, dialogViews, networkTabTemplate, networkTabViewMod
                         dialog.render();
                     }, this),
                 complete: _.bind(function() {
-                    this.model.get('tasks').fetch({data: {cluster_id: this.model.id}});
+                    this.model.get('tasks')
+                        .fetch({data: {cluster_id: this.model.id}})
+                        .done(_.bind(this.scheduleUpdate, this));
                 }, this)
             });
         },
@@ -169,12 +171,7 @@ function(models, commonViews, dialogViews, networkTabTemplate, networkTabViewMod
             }
         },
         bindTaskEvents: function() {
-            var task = this.model.task('verify_networks');
-            if (task && task.get('status') == 'running') {
-                this.update(true);
-            } else if (!task) {
-                task = this.model.task('check_networks', 'error') || this.model.task('deploy', 'running');
-            }
+            var task = this.model.task('verify_networks') || this.model.task('check_networks', 'error') || this.model.task('deploy', 'running');
             if (task) {
                 task.bind('change:status', this.render, this);
                 if (this.networks) {
