@@ -9,6 +9,8 @@ import sys
 import signal
 import json
 import socket
+import time
+import re
 
 from subprocess import call
 from optparse import OptionParser
@@ -36,11 +38,11 @@ Example run to capture frames:
 net_probe -l eth0 &
 
 Capture frames config file example is:
-{"action": "listen", "interface": "eth0", 
+{"action": "listen", "interface": "eth0",
  "dump_file": "/var/tmp/net-probe-dump-eth0"}
 
 Simple frame generation config file example is:
-{"action": "generate", "uid": "aaa-bb-cccccc", 
+{"action": "generate", "uid": "aaa-bb-cccccc",
  "interfaces": { "eth0": "1-4094"}}
 
 Full frame generation config file example is:
@@ -49,7 +51,7 @@ Full frame generation config file example is:
     "src_mac": "11:22:33:44:55:66",
     "src": "10.0.0.1", "dst": "10.255.255.255",
     "sport": 4056, "dport": 4057,
-    "interfaces": { 
+    "interfaces": {
         "eth0": "10, 15, 20, 201-210, 301-310, 1000-2000",
         "eth1": "1-4094"
     }
@@ -58,6 +60,24 @@ Full frame generation config file example is:
 
 def error(msg):
     sys.stderr.write(msg)
+
+def vlan_iface_name(iface, vid):
+    if not os.access("/proc/net/vlan/config", os.R_OK):
+        error('Error: can not access /proc/net/vlan/config\n')
+        exit(1)
+    with open("/proc/net/vlan/config", "r") as f:
+        for line in f:
+            if re.search(ur'^Name-Type: ', line):
+                vlan_name_model = line.split('Name-Type: ')[1]
+                if vlan_name_model == 'VLAN_NAME_TYPE_RAW_PLUS_VID_NO_PAD':
+                    return "%s.%d" % (iface, vid)
+                elif vlan_name_model == 'VLAN_NAME_TYPE_RAW_PLUS_VID':
+                    return "%s%04d" % (iface, vid)
+                elif vlan_name_model == 'VLAN_NAME_TYPE_PLUS_VID_NO_PAD':
+                    return "vlan%d" % vid
+                elif vlan_name_model == 'VLAN_NAME_TYPE_PLUS_VID':
+                    return "vlan%04d" % vid
+
 
 def parse_vlan_list(vlan_string):
     validate = lambda x: (x >= 0) and (x < 4095)
@@ -90,6 +110,8 @@ def get_probe_frames(iface):
     neigbors = {}
     neigbors[iface] = {}
     neigbor_dict = neigbors[iface]
+    vlan_package_counter = {}
+
     for p in packets:
         if scapy.Dot1Q in p:
             vlan = p[scapy.Dot1Q].vlan
@@ -106,12 +128,22 @@ def get_probe_frames(iface):
             iface_list = neigbor_dict[vlan][uid]
             if riface not in iface_list:
                 iface_list.append(riface)
+
+        if vlan not in vlan_package_counter:
+            vlan_package_counter[vlan] = {}
+        if uid not in vlan_package_counter[vlan]:
+            vlan_package_counter[vlan][uid] = 0
+        vlan_package_counter[vlan][uid] += 1
+    neigbors[iface]["counter"] = vlan_package_counter
     return neigbors
 
 def send_probe_frame(**props):
     for vlan in props['vlan']:
         if vlan > 0:
-            iface = '%s.%d' % (props['iface'], vlan)
+            # it is supposed that vconfig name_type flag is the same
+            # now as it was during creating vlan interface which we
+            # are checking for its exsistance
+            iface = vlan_iface_name(props['iface'], vlan)
             iface_already_exist = not call('/sbin/ifconfig %s' % iface, shell=True)
             if not iface_already_exist:
                 call(('/sbin/vconfig', 'add', props['iface'], str(vlan)))
@@ -161,7 +193,7 @@ config = {'src_mac': None,
           'sport': 31337, 'dport': 31337,
           'cookie': cookie}
 
-if opts.config_file or '-' in args:    
+if opts.config_file or '-' in args:
     try:
         if '-' in args:
             fo = sys.stdin
