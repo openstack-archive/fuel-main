@@ -4,6 +4,7 @@ import time
 import Queue
 import types
 import logging
+import traceback
 import itertools
 
 import greenlet
@@ -335,7 +336,11 @@ class NailgunReceiver(object):
                     task.cluster.name,
                     vip
                 )
-            except Exception:
+            except Exception as exc:
+                logger.error(": ".join([
+                    str(exc),
+                    traceback.format_exc()
+                ]))
                 message = (
                     u"Deployment of environment"
                     " '{0}' is done"
