@@ -14,7 +14,7 @@
             "meta": {
               "disks": [
                 {
-                  "size": 320072933376,
+                  "size": 64022933376,
                   "model": "TOSHIBA MK3259GS",
                   "name": "sda"
                 }
@@ -45,7 +45,7 @@
                   }
                 ]
               },
-              "memory": 8589934592,
+              "memory": 17189934592,
               "system": {
                 "version": "Power Edge 2970",
                 "manufacturer": "Dell",
