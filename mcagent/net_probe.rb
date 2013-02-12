@@ -40,7 +40,7 @@ module MCollective
         end
         iflist = JSON.parse(request[:iflist])
         iflist.each do |iface|
-          cmd = "net_probe.py -l #{iface}"
+          cmd = "net_probe.py listen -i #{iface}"
           pid = fork { `#{cmd}` }
           Process.detach(pid)
           # It raises Errno::ESRCH if there is no process, so we check that it runs
@@ -60,7 +60,7 @@ module MCollective
         if request.data.key?('config')
           config.merge!(JSON.parse(request[:config]))
         end
-        cmd = "net_probe.py -"
+        cmd = "net_probe.py -c -"
         status = run(cmd, :stdin => config.to_json, :stdout => :out, :stderr => :error)
         reply.fail "Failed to send probing frames, cmd='#{cmd}' failed, config: #{config.inspect}" if status != 0
       end
