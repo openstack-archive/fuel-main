@@ -21,7 +21,12 @@ class cobbler::profile::centos63-x86_64(
               {
               "name" => "Stanford",
               "url"  => "http://mirror.stanford.edu/yum/pub/centos/6.3/os/x86_64",
+              },
+              {
+              "name" => "epel-fuel-folsom",
+              "url"  => "http://\$server/cblr/repo_mirror/epel-fuel-folsom/",
               }],
+
               
   $ks_system_timezone         = "America/Los_Angeles",
 

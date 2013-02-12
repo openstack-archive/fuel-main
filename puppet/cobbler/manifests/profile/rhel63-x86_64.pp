@@ -17,7 +17,12 @@ class cobbler::profile::rhel63-x86_64(
               {
               "name" => "Puppet",
               "url"  => "http://yum.puppetlabs.com/el/6/products/x86_64",
+              },
+              {
+              "name" => "epel-fuel-folsom",
+              "url"  => "http://\$server/cblr/repo_mirror/epel-fuel-folsom/",
               }],
+
               
   $ks_system_timezone         = "America/Los_Angeles",
 
