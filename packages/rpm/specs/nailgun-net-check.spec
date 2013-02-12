@@ -10,6 +10,7 @@ BuildRoot: %{_tmppath}/%{name}-%{version}-%{release}-build
 URL:       http://github.com/Mirantis
 Requires:  vconfig
 Requires:  scapy
+Requires:  python-argparse
 
 %define pypcapver 1.1
 %define libpcapver 1.3.0

@@ -63,6 +63,7 @@ puppet-2.7.19-1.el6
 puppet-server-2.7.19-1.el6
 puppetdb-1.0.5-1.el6
 puppetdb-terminus-1.0.5-1.el6
+python-argparse-1.2.1-2.el6
 python-amqp-1.2.0-6.el6
 python-cinder-2012.2-6.mira
 python-devel-2.6.6-29.el6_3.3
