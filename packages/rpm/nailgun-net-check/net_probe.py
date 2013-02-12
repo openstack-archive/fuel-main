@@ -31,7 +31,7 @@ logger.addHandler(console)
 
 class ActorFabric(object):
     @classmethod
-    def getInstance(config):
+    def getInstance(cls, config):
         if not config.get('action'):
             logger.error('Wrong config, you need define valid action')
             raise Exception('Wrong config, you need define valid action')
@@ -43,7 +43,7 @@ class ActorFabric(object):
 
 class Actor(object):
     def __init__(self, config=None):
-        default_config = {
+        self.config = {
             'src_mac': None,
             'src': '1.0.0.0',
             'dst': '1.0.0.0',
@@ -52,9 +52,8 @@ class Actor(object):
             'cookie': "Nailgun:",
         }
         if config:
-            self.config = default_config.update(config)
-        else:
-            self.config = default_config
+            self.config.update(config)
+        self._execute(["modprobe", "8021q"])
 
     def _viface_by_vid(self, vid):
         return "netprobe%d" % vid
@@ -63,23 +62,24 @@ class Actor(object):
         logger.debug("Running command: %s" % " ".join(command))
         env = os.environ
         env["PATH"] = "/bin:/usr/bin:/sbin:/usr/sbin"
-        exit_code = call(command, shell=True, env=env)
+        exit_code = call(command, shell=False, env=env)
         if not exit_code in expected_exit_codes:
-            logger.error("Command exited with error: %s" % " ".join(command))
+            logger.error("Command exited with error: %s: %s" % (" ".join(command), exit_code))
+
 
     def _viface(self, iface, vid):
         with open("/proc/net/vlan/config", "r") as f:
             for line in f:
-                m = re.search(ur'(.+?)\s+\|(.+?)\s+\|(.+?)\s*$'))
-                if m and m.group(1) == str(vid) and m.group(2) == iface:
-                    return m.group(0)
+                m = re.search(ur'(.+?)\s+\|\s+(.+?)\s+\|\s+(.+?)\s*$', line)
+                if m and m.group(2) == str(vid) and m.group(3) == iface:
+                    return m.group(1)
             return None
 
 
 class Sender(Actor):
 
     def __init__(self, config=None):
-        super(Sender, cls).__init__(config)
+        super(Sender, self).__init__(config)
         self.viface_remove_after = {}
 
     def ensure_vlan_iface_up(self, iface, vid):
@@ -91,7 +91,7 @@ class Sender(Actor):
                 "link", iface,
                 "name", self._viface_by_vid(vid),
                 "type", "vlan",
-                "id", vid])
+                "id", str(vid)])
             # brining vlan interface up
             self._execute([
                 "ip",
@@ -103,9 +103,9 @@ class Sender(Actor):
         viface = self._viface(iface, vid)
         if not viface:
             logger.error("Can not create vlan %d on "
-                            "interface %s" % iface)
+                            "interface %s" % (vid, iface))
             raise Exception("Can not create vlan %d on "
-                            "interface %s" % iface)
+                            "interface %s" % (vid, iface))
         return viface
 
     def ensure_vlan_iface_down(self, vid):
@@ -123,7 +123,7 @@ class Sender(Actor):
                 "dev", self._viface_by_vid(vid)])
 
 
-    def parse_vlan_list(vlan_string):
+    def parse_vlan_list(self, vlan_string):
         validate = lambda x: (x >= 0) and (x < 4095)
         chunks = vlan_string.split(",")
         vlan_list = []
@@ -153,7 +153,7 @@ class Sender(Actor):
             props = dict(self.config)
             props['iface'] = iface
             props['data'] = str(''.join((self.config['cookie'], iface, ' ', self.config['uid'])))
-            props['vlan'] = parse_vlan_list(vlan_list)
+            props['vlan'] = self.parse_vlan_list(vlan_list)
 
             for vlan in props['vlan']:
 
@@ -167,14 +167,14 @@ class Sender(Actor):
                 try:
                     for i in xrange(5):
                         scapy.sendp(p, iface=viface)
-                except socket.error, e:
-                    logger.error("Socket error: %s, %s" (e, viface))
+                except socket.error as e:
+                    logger.error("Socket error: %s, %s", e, viface)
                 if vlan > 0:
-                    ensure_vlan_iface_down(vlan)
+                    self.ensure_vlan_iface_down(vlan)
 
 class Listener(Actor):
     def __init__(self, config=None):
-        super(Listener, cls).__init__(config)
+        super(Listener, self).__init__(config)
         self.pidfile = self.addpid('/var/run/net_probe')
 
     def addpid(self, piddir):
@@ -188,7 +188,7 @@ class Listener(Actor):
         return pidfile
 
     def run(self):
-        neigbors = get_probe_frames(config['interface'])
+        neigbors = self.get_probe_frames(config['interface'])
         with open(config['dump_file'], 'w') as fo:
             fo.write(json.dumps(neigbors))
         os.unlink(self.pidfile)
@@ -298,17 +298,14 @@ if __name__ == "__main__":
     params, other_params = parser.parse_known_args()
 
     config = {}
-    if not params.config:
-        define_subparsers(parser)
-        params, other_params = parser.parse_known_args()
-    else:
+    if params.config:
         # if config file is set then we discard all other
         # command line parameters
         try:
             if params.config == '-':
                 fo = sys.stdin
             else:
-                fo = open(params.config, 'r'):
+                fo = open(params.config, 'r')
             config = json.load(fo)
             fo.close()
         except IOError:
@@ -318,20 +315,24 @@ if __name__ == "__main__":
             logger.error("Can not parse config file: %s" % e.message)
             exit(1)
 
-    if params.action == 'listen':
-        config['action'] = 'listen'
-        config['interface'] = params.interface
-        if params.dump_file:
-            config['dump_file'] = params.dump_file
-        else:
-            config['dump_file'] = "/var/tmp/net-probe-dump-%s" % config['interface']
+    else:
+        define_subparsers(parser)
+        params, other_params = parser.parse_known_args()
 
-    elif params.action == 'generate':
-        config['action'] = 'generate'
-        config['interfaces'] = {}
-        config['interfaces'][params.interface] = params.vlan_list
-        config['uid'] = params.uid
-        config['cookie'] = params.cookie
+        if params.action == 'listen':
+            config['action'] = 'listen'
+            config['interface'] = params.interface
+            if params.dump_file:
+                config['dump_file'] = params.dump_file
+            else:
+                config['dump_file'] = "/var/tmp/net-probe-dump-%s" % config['interface']
+
+        elif params.action == 'generate':
+            config['action'] = 'generate'
+            config['interfaces'] = {}
+            config['interfaces'][params.interface] = params.vlan_list
+            config['uid'] = params.uid
+            config['cookie'] = params.cookie
 
     actor = ActorFabric.getInstance(config)
     actor.run()
