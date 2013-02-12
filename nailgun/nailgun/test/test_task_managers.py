@@ -367,7 +367,7 @@ class TestTaskManagers(BaseHandlers):
         response = json.loads(resp.body)
         task_uuid = response['uuid']
         task = self.db.query(Task).filter_by(uuid=task_uuid).first()
-        self.assertEquals(task.name, 'verify_networks')
+        self.assertEquals(task.name, 'check_networks')
         self.assertIn(task.status, 'error')
         self.assertIn(
             task.message,

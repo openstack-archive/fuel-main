@@ -440,7 +440,7 @@ class CheckNetworksTask(object):
             ng_db = orm().query(NetworkGroup).get(ng['id'])
             if not ng_db:
                 net_errors.append("id")
-                err_msgs.append("Invalid network ID: {0}".format(ng_db.id))
+                err_msgs.append("Invalid network ID: {0}".format(ng['id']))
             if 'cidr' in ng:
                 fnet = netaddr.IPSet([ng['cidr']])
                 if fnet & netaddr.IPSet(settings.NET_EXCLUDE):
@@ -461,7 +461,7 @@ class CheckNetworksTask(object):
                     )
             if net_errors:
                 result.append({
-                    "id": ng_db.id,
+                    "id": int(ng["id"]),
                     "errors": net_errors
                 })
         if err_msgs:

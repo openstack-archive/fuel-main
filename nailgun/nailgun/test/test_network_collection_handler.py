@@ -125,4 +125,7 @@ class TestHandlers(BaseHandlers):
         )
         self.assertEquals(200, resp.status)
         task = json.loads(resp.body)
-        self.assertEquals(task['message'], 'Invalid network ID')
+        self.assertEquals(
+            task['message'],
+            'Invalid network ID: 500'
+        )
