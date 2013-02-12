@@ -24,6 +24,7 @@ from nailgun.api.handlers.notifications import NotificationHandler
 from nailgun.api.handlers.notifications import NotificationCollectionHandler
 
 from nailgun.api.handlers.logs import LogEntryCollectionHandler
+from nailgun.api.handlers.logs import LogPackageHandler
 from nailgun.api.handlers.logs import LogSourceCollectionHandler
 from nailgun.api.handlers.logs import LogSourceByNodeCollectionHandler
 
@@ -64,6 +65,8 @@ urls = (
     'NotificationHandler',
     r'/logs/?$',
     'LogEntryCollectionHandler',
+    r'/logs/package/?$',
+    'LogPackageHandler',
     r'/logs/sources/?$',
     'LogSourceCollectionHandler',
     r'/logs/sources/nodes/(?P<node_id>\d+)/?$',

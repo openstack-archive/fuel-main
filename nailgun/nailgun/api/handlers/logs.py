@@ -5,6 +5,8 @@ import os
 import time
 import json
 import logging
+import tarfile
+import tempfile
 from itertools import dropwhile
 from collections import deque
 
@@ -187,6 +189,24 @@ class LogEntryCollectionHandler(JSONHandler):
             'size': log_file_size,
             'entries_skipped': entries_skipped,
         })
+
+
+class LogPackageHandler(object):
+
+    def GET(self):
+        f = tempfile.TemporaryFile(mode='r+b')
+        tf = tarfile.open(fileobj=f, mode='w:gz')
+        tf.add('/var/log')
+        tf.close()
+
+        filename = 'fuelweb-logs-%s.tar.gz' % (
+            time.strftime('%Y-%m-%d_%H:%M:%S', time.localtime()))
+        web.header('Content-Type', 'application/octet-stream')
+        web.header('Content-Disposition', 'attachment; filename="%s"' % (
+            filename))
+        web.header('Content-Length', f.tell())
+        f.seek(0)
+        return f
 
 
 class LogSourceCollectionHandler(JSONHandler):

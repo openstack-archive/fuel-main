@@ -5,9 +5,10 @@ define(
     'views/cluster_page',
     'views/clusters_page',
     'views/releases_page',
-    'views/notifications_page'
+    'views/notifications_page',
+    'views/support_page'
 ],
-function(models, commonViews, ClusterPage, ClustersPage, ReleasesPage, NotificationsPage) {
+function(models, commonViews, ClusterPage, ClustersPage, ReleasesPage, NotificationsPage, SupportPage) {
     'use strict';
 
     var AppRouter = Backbone.Router.extend({
@@ -18,13 +19,14 @@ function(models, commonViews, ClusterPage, ClustersPage, ReleasesPage, Notificat
             'cluster/:id/:tab/*options': 'showClusterTab',
             'releases': 'listReleases',
             'notifications': 'showNotifications',
+            'support': 'showSupportPage',
             '*default': 'listClusters'
         },
         initialize: function() {
             this.content = $('#content');
             this.navbar = new commonViews.Navbar({elements: [
                 ['OpenStack Environments', '#clusters'],
-                ['Support', 'http://fuel.mirantis.com/support/']
+                ['Support', '#support']
             ]});
             this.content.before(this.navbar.render().el);
             this.breadcrumbs = new commonViews.Breadcrumbs();
@@ -88,6 +90,9 @@ function(models, commonViews, ClusterPage, ClustersPage, ReleasesPage, Notificat
         },
         showNotifications: function() {
             this.setPage(new NotificationsPage({collection: app.navbar.notifications, nodes: app.navbar.stats.nodes}));
+        },
+        showSupportPage: function() {
+            this.setPage(new SupportPage());
         },
         urlify: function (text) {
             var urlRegexp = /http:(\&\#x2F\;){2}(?:(?:[0-9]|[1-9][0-9]|1[0-9]{2}|2[0-4][0-9]|25[0-5])\.){3}(?:[0-9]|[1-9][0-9]|1[0-9]{2}|2[0-4][0-9]|25[0-5])(\&\#x2F\;)/g;
