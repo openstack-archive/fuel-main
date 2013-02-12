@@ -41,7 +41,7 @@
       <% } else if (task && task.get('status') == 'error') { %>
         <div class="page-control-error-placeholder enable-selection">
           Verification Failed:<br/>
-          <%- task.get('message').replace(/\n/g, '<br/>') %>
+          <%= task.escape('message').replace(/\n/g, '<br/>') %>
         </div>
         <% if (task.get('result').length) { %>
           <div class="verification-result-table">
