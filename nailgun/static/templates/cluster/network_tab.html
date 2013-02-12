@@ -77,7 +77,7 @@
 
             <div class="row fixed-row">
               <div class="control-group" data-network-name="<%- fixedNetwork.get('name') %>" data-network-id="<%- fixedNetwork.get('id') %>">
-                <div class="name">VM networks</div>
+                <div class="name">VM networks (fixed)</div>
                 <div class="cidr">
                   <input class="input-medium" type="text" value="<%- fixedNetwork.get('cidr') %>" maxlength="18" <%= disabled %> />
                 </div>
@@ -120,6 +120,7 @@
 
   <!-- Verification control -->
   <div class="row verification-control"></div>
+  <div class="verification-result-table"></div>
   <!-- Buttons -->
   <div class="row">
     <div class="page-control-box">

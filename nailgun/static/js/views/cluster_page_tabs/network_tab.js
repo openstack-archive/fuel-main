@@ -5,11 +5,12 @@ define(
     'views/dialogs',
     'text!templates/cluster/network_tab.html',
     'text!templates/cluster/network_tab_view.html',
-    'text!templates/cluster/verify_network_control.html'
+    'text!templates/cluster/verify_network_control.html',
+    'text!templates/cluster/verify_network_failed.html'
 ],
-function(models, commonViews, dialogViews, networkTabTemplate, networkTabViewModeTemplate, networkTabVerificationControlTemplate) {
+function(models, commonViews, dialogViews, networkTabTemplate, networkTabViewModeTemplate, networkTabVerificationControlTemplate, networkTabVerificationFailedTableTemplate) {
     'use strict';
-    var NetworkTab, NetworkTabVerificationControl;
+    var NetworkTab, NetworkTabVerificationControl, NetworkTabVerificationFailedTable;
 
     NetworkTab = commonViews.Tab.extend({
         template: _.template(networkTabTemplate),
@@ -135,9 +136,11 @@ function(models, commonViews, dialogViews, networkTabTemplate, networkTabViewMod
             }
         },
         update: function(force) {
-            var task = this.model.task('verify_networks', 'running');
-            if (task && (force || app.page.$el.find(this.el).length)) {
+            var task = this.model.task('verify_networks');
+            if (task && task.get('status') == 'running' && (force || app.page.$el.find(this.el).length)) {
                 task.fetch({complete: _.bind(this.scheduleUpdate, this)});
+            } else if (task && task.get('status') == 'error') {
+                this.renderVerificationFailedTable();
             }
         },
         startVerification: function() {
@@ -198,10 +201,27 @@ function(models, commonViews, dialogViews, networkTabTemplate, networkTabViewMod
             this.networks.deferred.done(complete);
             this.model.set({'networks': this.networks}, {silent: true});
         },
+        renderVerificationFailedTable: function() {
+            var verificationFailedTableView = new NetworkTabVerificationFailedTable({model: this.model, networks: this.networks});
+            this.registerSubView(verificationFailedTableView);
+            this.$('.verification-result-table').html(verificationFailedTableView.render().el);
+        },
+        showVerificationErrors: function() {
+            var task = this.model.task('verify_networks', 'error') || this.model.task('check_networks', 'error');
+            if (task && task.get('result').length) {
+                var verificationResult = task.get('result');
+                _.each(verificationResult, function(failedNetwork) {
+                    _.each(failedNetwork['errors'], function(field) {
+                        this.$('.control-group[data-network-id=' + failedNetwork['id'] + ']').find('.' + field).children().addClass('error');
+                    }, this);
+                }, this);
+            }
+        },
         renderVerificationControl: function() {
             var verificationView = new NetworkTabVerificationControl({model: this.model, networks: this.networks});
             this.registerSubView(verificationView);
             this.$('.verification-control').html(verificationView.render().el);
+            this.showVerificationErrors();
         },
         render: function() {
             this.$el.html(this.template({cluster: this.model, networks: this.networks, hasChanges: this.hasChanges}));
@@ -225,6 +245,17 @@ function(models, commonViews, dialogViews, networkTabTemplate, networkTabViewMod
         render: function() {
             this.$el.html(this.template({cluster: this.model, networks: this.networks}));
             this.removeVerificationTask();
+            return this;
+        }
+    });
+
+    NetworkTabVerificationFailedTable = Backbone.View.extend({
+        template: _.template(networkTabVerificationFailedTableTemplate),
+        initialize: function(options) {
+            _.defaults(this, options);
+        },
+        render: function() {
+            this.$el.html(this.template({cluster: this.model, networks: this.networks}));
             return this;
         }
     });
