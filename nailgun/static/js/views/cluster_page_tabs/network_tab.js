@@ -201,11 +201,6 @@ function(models, commonViews, dialogViews, networkTabTemplate, networkTabViewMod
             this.networks.deferred.done(complete);
             this.model.set({'networks': this.networks}, {silent: true});
         },
-        renderVerificationFailedTable: function() {
-            var verificationFailedTableView = new NetworkTabVerificationFailedTable({model: this.model, networks: this.networks});
-            this.registerSubView(verificationFailedTableView);
-            this.$('.verification-result-table').html(verificationFailedTableView.render().el);
-        },
         showVerificationErrors: function() {
             var task = this.model.task('verify_networks', 'error') || this.model.task('check_networks', 'error');
             if (task && task.get('result').length) {
