@@ -40,7 +40,8 @@
         <div class="page-control-success-placeholder enable-selection">Verification Succeeded. Your network is configured correctly.</div>
       <% } else if (task && task.get('status') == 'error') { %>
         <div class="page-control-error-placeholder enable-selection">
-          Verification Failed: <%- task.get('message') %>
+          Verification Failed:<br/>
+          <%- task.get('message').replace(/\n/g, '<br/>') %>
         </div>
         <% if (task.get('result').length) { %>
           <div class="verification-result-table">
