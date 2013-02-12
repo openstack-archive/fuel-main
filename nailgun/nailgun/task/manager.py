@@ -135,7 +135,7 @@ class VerifyNetworksTaskManager(TaskManager):
 
     def execute(self, nets, vlan_ids):
         task = Task(
-            name="verify_networks",
+            name="check_networks",
             cluster=self.cluster
         )
         orm().add(task)
@@ -145,6 +145,9 @@ class VerifyNetworksTaskManager(TaskManager):
             tasks.CheckNetworksTask,
             nets
         )
+        task.name = "verify_networks"
+        orm().add(task)
+        orm().commit()
         self._run_silently(
             task,
             tasks.VerifyNetworksTask,
