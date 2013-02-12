@@ -111,10 +111,23 @@ class TestNode(Base):
         self._revert_nodes()
         cluster_name = 'simple_flat'
         nodes = {'controller': ['slave1'], 'compute': ['slave2']}
-        self._basic_provisioning(cluster_name, nodes)
+        cluster_id = self._basic_provisioning(cluster_name, nodes)
         slave = ci.environment.node['slave1']
         node = self._get_slave_node_by_devops_node(slave)
         wait(lambda: self._check_cluster_status(node['ip'], 5), timeout=300)
+
+        logging.info("Verifying networks for simple flat installation.")
+        vlans = self._get_cluster_vlans(cluster_id)
+        slave2 = ci.environment.node['slave2']
+        for vlan in vlans:
+            for n in (slave, slave2):
+                self._restore_vlan_in_ebtables(
+                    n.interfaces[0].target_dev,
+                    vlan,
+                    False
+                )
+        task = self._run_network_verify(cluster_id)
+        self._task_wait(task, 'Verify network simple flat', 60 * 2)
 
     @snapshot_errors
     def test_simple_cluster_vlan(self):
@@ -123,25 +136,54 @@ class TestNode(Base):
         cluster_name = 'simple_vlan'
         nodes = {'controller': ['slave1'], 'compute': ['slave2']}
         self._create_cluster(name=cluster_name, net_manager="VlanManager")
-        self._basic_provisioning(cluster_name, nodes)
+        cluster_id = self._basic_provisioning(cluster_name, nodes)
         slave = ci.environment.node['slave1']
         node = self._get_slave_node_by_devops_node(slave)
         wait(lambda: self._check_cluster_status(node['ip'], 5, 8), timeout=300)
 
+        logging.info("Verifying networks for simple vlan installation.")
+        vlans = self._get_cluster_vlans(cluster_id)
+        slave2 = ci.environment.node['slave2']
+        for vlan in vlans:
+            for n in (slave, slave2):
+                self._restore_vlan_in_ebtables(
+                    n.interfaces[0].target_dev,
+                    vlan,
+                    False
+                )
+        task = self._run_network_verify(cluster_id)
+        self._task_wait(task, 'Verify network simple vlan', 60 * 2)
+
     @snapshot_errors
     def test_ha_cluster_flat(self):
-        logging.info("Testing ha flat installation")
+        logging.info("Testing ha flat installation.")
         self._revert_nodes()
         cluster_name = 'ha_flat'
         nodes = {
             'controller': ['slave1', 'slave2', 'slave3'],
             'compute': ['slave4', 'slave5']
         }
-        self._basic_provisioning(cluster_name, nodes)
+        cluster_id = self._basic_provisioning(cluster_name, nodes)
         logging.info("Checking cluster status on slave1")
         slave = ci.environment.node['slave1']
         node = self._get_slave_node_by_devops_node(slave)
         wait(lambda: self._check_cluster_status(node['ip'], 13), timeout=300)
+
+        logging.info("Verifying networks for ha flat installation.")
+        vlans = self._get_cluster_vlans(cluster_id)
+        slave2 = ci.environment.node['slave2']
+        slave3 = ci.environment.node['slave3']
+        slave4 = ci.environment.node['slave4']
+        slave5 = ci.environment.node['slave5']
+        for vlan in vlans:
+            for n in (slave, slave2, slave3, slave4, slave5):
+                self._restore_vlan_in_ebtables(
+                    n.interfaces[0].target_dev,
+                    vlan,
+                    False
+                )
+        task = self._run_network_verify(cluster_id)
+        self._task_wait(task, 'Verify network ha flat', 60 * 2)
 
     @snapshot_errors
     def test_ha_cluster_vlan(self):
@@ -153,13 +195,29 @@ class TestNode(Base):
             'compute': ['slave4', 'slave5']
         }
         self._create_cluster(name=cluster_name, net_manager="VlanManager")
-        self._basic_provisioning(cluster_name, nodes)
+        cluster_id = self._basic_provisioning(cluster_name, nodes)
         slave = ci.environment.node['slave1']
         node = self._get_slave_node_by_devops_node(slave)
         wait(
             lambda: self._check_cluster_status(node['ip'], 13, 8),
             timeout=300
         )
+
+        logging.info("Verifying networks for ha vlan installation.")
+        vlans = self._get_cluster_vlans(cluster_id)
+        slave2 = ci.environment.node['slave2']
+        slave3 = ci.environment.node['slave3']
+        slave4 = ci.environment.node['slave4']
+        slave5 = ci.environment.node['slave5']
+        for vlan in vlans:
+            for n in (slave, slave2, slave3, slave4, slave5):
+                self._restore_vlan_in_ebtables(
+                    n.interfaces[0].target_dev,
+                    vlan,
+                    False
+                )
+        task = self._run_network_verify(cluster_id)
+        self._task_wait(task, 'Verify network ha flat', 60 * 2)
 
     @snapshot_errors
     def test_network_config(self):
@@ -262,16 +320,18 @@ class TestNode(Base):
         self._task_wait(task, 'Verify network in cluster with one node', 20)
         # Check network with two nodes.
         logging.info("Clear BROUTING table entries.")
-        vlan = self._get_common_vlan(cluster_id)
-        for node in devops_nodes:
-            self._restore_vlan_in_ebtables(node.interfaces[0].target_dev,
-                                           vlan, False)
+        vlans = self._get_cluster_vlans(cluster_id)
+        for vlan in vlans:
+            for node in devops_nodes:
+                self._restore_vlan_in_ebtables(node.interfaces[0].target_dev,
+                                               vlan, False)
         self._update_nodes_in_cluster(cluster_id, nailgun_slave_nodes)
         task = self._run_network_verify(cluster_id)
         self._task_wait(task, 'Verify network in cluster with two nodes',
                         60 * 2)
         # Check network with one blocked vlan.
-        self._block_vlan_in_ebtables(devops_nodes, vlan)
+        for vlan in vlans:
+            self._block_vlan_in_ebtables(devops_nodes, vlan)
         task = self._run_network_verify(cluster_id)
         task = self._task_wait(task,
                                'Verify network in cluster with blocked vlan',
@@ -307,6 +367,15 @@ class TestNode(Base):
             if net['cluster_id'] == cluster_id:
                 return net['vlan_start']
         raise Exception("Can't find vlan for cluster_id %s" % cluster_id)
+
+    def _get_cluster_vlans(self, cluster_id):
+        resp = self.client.get("/api/networks/?cluster_id=%d" % cluster_id)
+        self.assertEquals(200, resp.getcode())
+        cluster_vlans = []
+        for n in json.loads(resp.read()):
+            cluster_vlans.append(n['vlan_start'])
+        self.assertNotEqual(cluster_vlans, [])
+        return cluster_vlans
 
     @staticmethod
     def _restore_vlan_in_ebtables(target_dev, vlan, log=True):
