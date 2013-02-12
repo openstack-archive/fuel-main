@@ -172,6 +172,10 @@ class FakeVerificationThread(FakeThread):
         timeout = 30
         timer = time.time()
         ready = False
+        for n in self.data['args']['nodes']:
+            for iface in n['networks']:
+                iface['vlans'] = list(set(iface['vlans']) ^ set([404]))
+
         while not ready and not self.stoprequest.isSet():
             kwargs['progress'] += randrange(
                 low_tick_count,

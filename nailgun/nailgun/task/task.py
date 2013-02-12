@@ -464,7 +464,6 @@ class CheckNetworksTask(object):
                     "id": ng_db.id,
                     "errors": net_errors
                 })
-
         if err_msgs:
             task.result = result
             orm().add(task)
