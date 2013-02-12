@@ -317,8 +317,6 @@ class NetworkGroup(Base, BasicValidator):
 
     def create_networks(self):
         fixnet = netaddr.IPNetwork(self.cidr)
-        if fixnet.size < self.network_size * self.amount:
-            raise ValueError("CIDR size is less than required")
         subnet_bits = int(math.ceil(math.log(self.network_size, 2)))
         logger.debug("Specified network size requires %s bits", subnet_bits)
         subnets = list(fixnet.subnet(32 - subnet_bits,
