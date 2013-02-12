@@ -145,14 +145,16 @@ class VerifyNetworksTaskManager(TaskManager):
             tasks.CheckNetworksTask,
             nets
         )
-        task.name = "verify_networks"
-        orm().add(task)
-        orm().commit()
-        self._run_silently(
-            task,
-            tasks.VerifyNetworksTask,
-            vlan_ids
-        )
+        orm().refresh(task)
+        if task.status != 'error':
+            task.name = "verify_networks"
+            orm().add(task)
+            orm().commit()
+            self._run_silently(
+                task,
+                tasks.VerifyNetworksTask,
+                vlan_ids
+            )
         return task
 
 
