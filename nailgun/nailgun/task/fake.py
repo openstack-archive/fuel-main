@@ -172,6 +172,9 @@ class FakeVerificationThread(FakeThread):
         timeout = 30
         timer = time.time()
         ready = False
+
+        # some kinda hack for debugging in fake tasks:
+        # verification will fail if you specified 404 as VLAN id in any net
         for n in self.data['args']['nodes']:
             for iface in n['networks']:
                 iface['vlans'] = list(set(iface['vlans']) ^ set([404]))
