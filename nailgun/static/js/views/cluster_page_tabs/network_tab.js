@@ -206,8 +206,8 @@ function(models, commonViews, dialogViews, networkTabTemplate, networkTabViewMod
             if (task && task.get('result').length) {
                 var verificationResult = task.get('result');
                 _.each(verificationResult, function(failedNetwork) {
-                    _.each(failedNetwork['errors'], function(field) {
-                        this.$('.control-group[data-network-id=' + failedNetwork['id'] + ']').find('.' + field).children().addClass('error');
+                    _.each(failedNetwork.errors, function(field) {
+                        this.$('.control-group[data-network-id=' + failedNetwork.id + ']').find('.' + field).children().addClass('error');
                     }, this);
                 }, this);
             }
