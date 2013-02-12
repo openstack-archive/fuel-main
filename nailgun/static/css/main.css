@@ -1324,7 +1324,7 @@ h6.page-title {
 }
 
 .networks-header .network {
-  width: 90px;
+  width: 140px;
 }
 
 .networks-header .cidr {
@@ -1353,7 +1353,7 @@ h6.page-title {
 
 .networks-table .name {
   text-align: left;
-  width: 90px;
+  width: 140px;
   padding-top: 5px;
   text-transform: capitalize;
 }
@@ -1378,7 +1378,7 @@ h6.page-title {
 .networks-table .error .help-inline {
   display: block;
   padding-top: 4px;
-  width: 255px;
+  width: 200px;
 }
 
 #networkManager {
@@ -2840,6 +2840,7 @@ select[name=release] option {
   list-style: none outside none;
   margin: 2px 0 0;
   margin-bottom: 8px;
+  line-height: 17px;
 }
 
 .verification-result-table {
