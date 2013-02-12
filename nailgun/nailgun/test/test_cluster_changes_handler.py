@@ -6,7 +6,6 @@ from mock import Mock, patch
 from netaddr import IPNetwork
 
 import nailgun
-from nailgun.network import manager as netmanager
 from nailgun.test.base import BaseHandlers
 from nailgun.test.base import reverse
 from nailgun.api.models import Cluster, Attributes, IPAddr, Task
@@ -70,12 +69,6 @@ class TestHandlers(BaseHandlers):
         public_vip = str(IPNetwork(public_net.cidr)[4])
         cluster_attrs['management_vip'] = management_vip
         cluster_attrs['public_vip'] = public_vip
-        # cluster_attrs['management_vip'] = netmanager.assign_vip(
-        #     cluster['id'], "management"
-        # )
-        # cluster_attrs['public_vip'] = netmanager.assign_vip(
-        #     cluster['id'], "public"
-        # )
         cluster_attrs['deployment_mode'] = cluster_depl_mode
         cluster_attrs['network_manager'] = "FlatDHCPManager"
 
