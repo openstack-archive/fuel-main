@@ -59,8 +59,6 @@ node fuel-cobbler {
     pxetimeout          => $pxetimeout,
   }
 
-    class { 'cobbler::repo::epel-fuel-folsom': }
-
   Class[cobbler::server] ->
     Class[cobbler::distro::centos63-x86_64]
 

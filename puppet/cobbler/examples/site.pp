@@ -42,8 +42,6 @@ node /^(fuel-pm|fuel-cobbler).mirantis.com/ {
     pxetimeout          => '0'
   }
 
-  class { 'cobbler::repo::epel-fuel-folsom': }
-
   Class[cobbler::server] ->
   Class[cobbler::distro::centos63-x86_64]
 
