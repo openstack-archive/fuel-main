@@ -14,7 +14,38 @@
     <% var meta = node.get('meta') %>
       <% _.each(_.keys(meta), function(field) { %>
         <div class="accordion-group">
-          <div class="accordion-heading"><a class="accordion-toggle" data-toggle="collapse" data-parent="#nodeDetailsAccordion" href="#<%- field %>"><%- field %></a></div>
+          <div class="accordion-heading">
+            <%
+              var summary = '';
+              if (field == 'memory') {
+                summary = (meta[field]/Math.pow(1024, 3)).toFixed(1) + ' GB total';
+              } else if (field == 'system') {
+                summary = meta[field]['product'];
+              } else if (field == 'disks') {
+                var totalSize = _.reduce(meta[field].map(function(disk) {return disk['size']}), function(sum, n) {return sum + n}, 0);
+                totalSize = totalSize/Math.pow(1000, 3);
+                summary = meta[field].length + ' driver';
+                summary += meta[field].length == 1 ? ', ' : 's, ';
+                summary += totalSize < 100 ? (totalSize).toFixed(1) + ' GB total' : (totalSize/1000).toFixed(1) + ' TB total';
+              } else if (field == 'cpu') {
+                var frequencies = _.groupBy(meta[field]['spec'].map(function(cpu) {return cpu['frequency']}), function(el){return el;});
+                _.each(_.keys(frequencies), function(frequency) {
+                  summary += frequencies[frequency].length + ' x ' + frequency + ' MHz';
+                  if (_.indexOf(_.keys(frequencies), frequency) != _.keys(frequencies).length - 1) summary += ', ';
+                });
+              } else if (field == 'interfaces') {
+                var bandwidths = _.groupBy(meta[field].map(function(interface) {return interface['bandwidth']}), function(el){return el;});
+                _.each(_.keys(bandwidths), function(bandwidth) {
+                  summary += bandwidths[bandwidth].length + ' x ' + (bandwidth/1000).toFixed(1) + ' Gbps';
+                  if (_.indexOf(_.keys(bandwidths), bandwidth) != _.keys(bandwidths).length - 1) summary += ', ';
+                });
+              };
+            %>
+            <a class="accordion-toggle accordion-clickable" data-toggle="collapse" data-parent="#nodeDetailsAccordion" href="#<%- field %>">
+              <%- field %>
+              <span class="accordion-clickable"><%- summary %></span>
+            </a>
+          </div>
           <div class="accordion-body collapse" id="<%- field %>">
             <div class="accordion-inner">
               <% if (_.isArray(meta[field])) { %>
@@ -52,7 +83,7 @@
                   <% } %>
                 <% }) %>
               <% } else { %>
-                <div><%- field == 'memory' ? (meta[field]/Math.pow(1024, 3)).toFixed(1) +' GB' : meta[field] %></div>
+                <div><%- field == 'memory' ? (meta[field]/Math.pow(1024, 3)).toFixed(1) + ' GB' : meta[field] %></div>
               <% } %>
             </div>
           </div>

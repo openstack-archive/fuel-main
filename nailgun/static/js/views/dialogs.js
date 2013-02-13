@@ -265,10 +265,10 @@ function(models, simpleMessageTemplate, createClusterDialogTemplate, changeClust
     views.ShowNodeInfoDialog = views.Dialog.extend({
         template: _.template(showNodeInfoTemplate),
         events: {
-            'click a.accordion-toggle': 'stopHiddenEventPropagation'
+            'click .accordion-clickable': 'stopHiddenEventPropagation'
         },
         stopHiddenEventPropagation: function(e) {
-            this.$(e.target).parent().siblings('.accordion-body').on('hidden', function(e) {
+            this.$(e.target).parents('.accordion-heading').next().on('hidden', function(e) {
                 e.stopPropagation();
             });
         },
