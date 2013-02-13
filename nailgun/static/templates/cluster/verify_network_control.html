@@ -37,10 +37,10 @@
       </div>
 
       <% if (cluster.task('verify_networks', 'ready')) { %>
-        <div class="page-control-success-placeholder enable-selection">Verification Succeeded. Your network is configured correctly.</div>
+        <div class="page-control-success-placeholder enable-selection">Verification succeeded. Your network is configured correctly.</div>
       <% } else if (task && task.get('status') == 'error') { %>
         <div class="page-control-error-placeholder enable-selection">
-          Verification Failed.<br/>
+          Verification failed.<br/>
           <%= task.escape('message').replace(/\n/g, '<br/>') %>
         </div>
         <% if (task.get('name') == 'verify_networks' && task.get('result').length) { %>

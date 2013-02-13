@@ -5,12 +5,11 @@ define(
     'views/dialogs',
     'text!templates/cluster/network_tab.html',
     'text!templates/cluster/network_tab_view.html',
-    'text!templates/cluster/verify_network_control.html',
-    'text!templates/cluster/verify_network_failed.html'
+    'text!templates/cluster/verify_network_control.html'
 ],
-function(models, commonViews, dialogViews, networkTabTemplate, networkTabViewModeTemplate, networkTabVerificationControlTemplate, networkTabVerificationFailedTableTemplate) {
+function(models, commonViews, dialogViews, networkTabTemplate, networkTabViewModeTemplate, networkTabVerificationControlTemplate) {
     'use strict';
-    var NetworkTab, NetworkTabVerificationControl, NetworkTabVerificationFailedTable;
+    var NetworkTab, NetworkTabVerificationControl;
 
     NetworkTab = commonViews.Tab.extend({
         template: _.template(networkTabTemplate),
@@ -136,11 +135,9 @@ function(models, commonViews, dialogViews, networkTabTemplate, networkTabViewMod
             }
         },
         update: function(force) {
-            var task = this.model.task('verify_networks');
-            if (task && task.get('status') == 'running' && (force || app.page.$el.find(this.el).length)) {
+            var task = this.model.task('verify_networks', 'running');
+            if (task && (force || app.page.$el.find(this.el).length)) {
                 task.fetch({complete: _.bind(this.scheduleUpdate, this)});
-            } else if (task && task.get('status') == 'error') {
-                this.renderVerificationFailedTable();
             }
         },
         startVerification: function() {
@@ -240,17 +237,6 @@ function(models, commonViews, dialogViews, networkTabTemplate, networkTabViewMod
         render: function() {
             this.$el.html(this.template({cluster: this.model, networks: this.networks}));
             this.removeVerificationTask();
-            return this;
-        }
-    });
-
-    NetworkTabVerificationFailedTable = Backbone.View.extend({
-        template: _.template(networkTabVerificationFailedTableTemplate),
-        initialize: function(options) {
-            _.defaults(this, options);
-        },
-        render: function() {
-            this.$el.html(this.template({cluster: this.model, networks: this.networks}));
             return this;
         }
     });

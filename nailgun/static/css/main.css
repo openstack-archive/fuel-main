@@ -1324,7 +1324,7 @@ h6.page-title {
 }
 
 .networks-header .network {
-  width: 140px;
+  width: 145px;
 }
 
 .networks-header .cidr {
@@ -1353,7 +1353,7 @@ h6.page-title {
 
 .networks-table .name {
   text-align: left;
-  width: 140px;
+  width: 145px;
   padding-top: 5px;
   text-transform: capitalize;
 }
@@ -1984,7 +1984,7 @@ h6.page-title {
 .page-control-error-placeholder, .page-control-success-placeholder {
     display: block;
     float: left;
-    margin: 15px 5px 5px;
+    margin: 5px;
     max-width: 640px;
     color: #b60007;
     font-size: 15px;
@@ -2833,7 +2833,7 @@ select[name=release] option {
 
 .verification-text-placeholder {
   display: block;
-  height: auto;
+  height: 160px;
 }
 
 .verification-text-placeholder li {
