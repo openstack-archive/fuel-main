@@ -85,82 +85,6 @@ describe LogParser do
 
   end
   context "Component-based progress bar calculation" do
-    def test_independed_parser(pattern_spec, logfile,
-        date_regexp='^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}',
-        date_format='%Y-%m-%dT%H:%M:%S')
-      # Copy logs line by line from example logfile to tempfile and collect progress for each step.
-      # Also calculate some statistics variables: expectancy, standart deviation and
-      # correlation coefficient between real and ideal progress calculation.
-      fo = Tempfile.new('logparse')
-      path = fo.path
-      initial_progress = Astute::LogParser.get_log_progress(path, pattern_spec)
-      initial_progress.should eql(0)
-
-      progress_table = []
-      reboot_time = 30
-      total_time = 0
-      real_expectancy = 0
-      real_sqr_expectancy = 0
-      File.open(logfile).each do |line|
-        fo.write(line)
-        fo.flush
-        date_string = line.match(date_regexp)
-        if date_string
-          date = DateTime.strptime(date_string[0], date_format)
-          prev_event_date = date unless prev_event_date
-          progress = Astute::LogParser.get_log_progress(path, pattern_spec)
-          period = date - prev_event_date
-          hours, mins, secs, frac = Date::day_fraction_to_time(period)
-          period_in_sec = hours * 60 * 60 + mins * 60 + secs + reboot_time
-          total_time += period_in_sec
-          real_expectancy += period_in_sec * progress
-          real_sqr_expectancy += period_in_sec * progress ** 2
-          progress_table << {'time_delta' => period_in_sec, 'progress' => progress}
-        end
-      end
-      fo.close!
-
-      # Calculate standart deviation for real progress distibution.
-      real_expectancy = real_expectancy.to_f / total_time
-      real_sqr_expectancy = real_sqr_expectancy.to_f / total_time
-      real_standart_deviation = (real_sqr_expectancy - real_expectancy ** 2) ** 0.5
-
-      # Calculate PCC (correlation coefficient).
-      ideal_sqr_expectancy = 0
-      t = 0
-      ideal_delta = 1.0 / total_time
-      mixed_expectancy = 0
-      progress_table.each do |el|
-        t += el['time_delta']
-        ideal_progress = t * ideal_delta
-        ideal_sqr_expectancy += ideal_progress ** 2 * el['time_delta']
-        el['ideal_progress'] = ideal_progress
-        mixed_expectancy += el['progress'] * ideal_progress * el['time_delta']
-      end
-
-      ideal_expectancy = 0.5
-      ideal_sqr_expectancy = ideal_sqr_expectancy / total_time
-      mixed_expectancy = mixed_expectancy / total_time
-      ideal_standart_deviation = (ideal_sqr_expectancy - ideal_expectancy ** 2) ** 0.5
-      covariance = mixed_expectancy - ideal_expectancy * real_expectancy
-      pcc = covariance / (ideal_standart_deviation * real_standart_deviation)
-
-      statistics = {
-        'real_expectancy' => real_expectancy,
-        'real_sqr_expectancy' => real_sqr_expectancy,
-        'real_standart_deviation' => real_standart_deviation,
-        'ideal_sqr_expectancy' => ideal_sqr_expectancy,
-        'ideal_standart_deviation' => ideal_standart_deviation,
-        'mixed_expectancy' => mixed_expectancy,
-        'covariance' => covariance,
-        'pcc' => pcc,
-        'total_time' => total_time,
-        'progress_table' => progress_table
-      }
-
-      return statistics
-    end
-
     def get_statistics_variables(progress_table)
       # Calculate some statistics variables: expectancy, standart deviation and
       # correlation coefficient between real and ideal progress calculation.
@@ -225,16 +149,10 @@ describe LogParser do
       return statistics
     end
 
-    it "test component based progress calculation for HA deployment" do
-      nodes = [
-        {'uid' => '1', 'ip' => '1.0.0.1', 'role' => 'controller', 'src_filename' => 'puppet-agent.log.2'},
-#        {'uid' => '2', 'ip' => '1.0.0.2', 'role' => 'compute', 'src_filename' => 'puppet-agent.log.4'},
-#        {'uid' => '3', 'ip' => '1.0.0.3', 'role' => 'controller', 'src_filename' => 'puppet-agent.log.1'},
-      ]
-
+    def test_ParseDeployLogs(cluster_type, nodes)
       uids = nodes.map{|n| n['uid']}
 
-      deploy_parser = LogParser::ParseDeployLogs.new('ha_compute')
+      deploy_parser = LogParser::ParseDeployLogs.new(cluster_type)
       pattern_spec = deploy_parser.pattern_spec
       date_regexp = '^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}'
       date_format = '%Y-%m-%dT%H:%M:%S'
@@ -279,13 +197,6 @@ describe LogParser do
         nodes.each do |node|
           node['statistics'] = get_statistics_variables(node['progress_table'])
         end
-
-#        nodes[0]['progress_table'].each {|el| print  "#{el.inspect}\n"}
-        print "\n"
-        nodes.each do |node|
-          print node['statistics'].inspect, "\n", node['statistics']['pcc'], "\n", node['progress_table'][-1][:progress], "\n"
-        end
-
         # Clear temp files.
         nodes.each do |n|
           n['file'].close
@@ -293,7 +204,48 @@ describe LogParser do
           Dir.unlink(File.dirname(n['file'].path))
         end
       end
+
+      return nodes
     end
+
+    it "tests component based progress calculation for HA deployment" do
+      nodes = [
+        {'uid' => '1', 'ip' => '1.0.0.1', 'role' => 'controller', 'src_filename' => 'puppet-agent.log.ha.contr.2'},
+        {'uid' => '2', 'ip' => '1.0.0.2', 'role' => 'compute', 'src_filename' => 'puppet-agent.log.ha.compute'},
+      ]
+
+      calculated_nodes = test_ParseDeployLogs('ha_compute', nodes)
+      print "\n"
+      calculated_nodes.each do |node|
+        print node['statistics'].inspect, "\n", node['statistics']['pcc'], "\n", node['progress_table'][-1][:progress], "\n"
+      end
+    end
+
+    it "tests component based progress calculation for singlenode deployment" do
+      nodes = [
+        {'uid' => '1', 'ip' => '1.0.0.1', 'role' => 'controller', 'src_filename' => 'puppet-agent.log.singlenode'},
+      ]
+
+      calculated_nodes = test_ParseDeployLogs('singlenode_compute', nodes)
+
+      calculated_nodes.each do |node|
+        print node['statistics'].inspect, "\n", node['statistics']['pcc'], "\n", node['progress_table'][-1][:progress], "\n"
+      end
+    end
+
+    it "tests component based progress calculation for multinode deployment" do
+      nodes = [
+        {'uid' => '1', 'ip' => '1.0.0.1', 'role' => 'controller', 'src_filename' => 'puppet-agent.log.multi.contr'},
+        {'uid' => '2', 'ip' => '1.0.0.2', 'role' => 'compute', 'src_filename' => 'puppet-agent.log.multi.compute'},
+      ]
+
+      calculated_nodes = test_ParseDeployLogs('multinode_compute', nodes)
+
+      calculated_nodes.each do |node|
+        print node['statistics'].inspect, "\n", node['statistics']['pcc'], "\n", node['progress_table'][-1][:progress], "\n"
+      end
+    end
+
   end
 end
 

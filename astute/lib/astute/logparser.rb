@@ -6,7 +6,6 @@ module Astute
     # E.g. pattern_spec = {'separator' => 'new_separator', ...}
     @separator = "SEPARATOR\n"
     @log_portion = 10000
-    @path_prefix = '/var/log/remote/'
 
     class NoParsing
       def initialize(*args)
@@ -24,10 +23,11 @@ module Astute
     class ParseNodeLogs
       require 'astute/logparser_patterns'
       attr_reader :pattern_spec
+      @@path_prefix = '/var/log/remote/'
 
       def initialize(pattern_spec)
         @nodes_states = {}
-        pattern_spec['path_prefix'] ||= @path_prefix
+        pattern_spec['path_prefix'] ||= @@path_prefix.dup
         @pattern_spec = pattern_spec
       end
 
@@ -52,7 +52,7 @@ module Astute
 
       def pattern_spec= (pattern_spec)
         @nodes_states = {}
-        pattern_spec['path_prefix'] ||= @path_prefix
+        pattern_spec['path_prefix'] ||= @@path_prefix.dup
         @pattern_spec = pattern_spec
       end
 
@@ -132,6 +132,7 @@ module Astute
         when 'components-list'
           progress = component_parser(fo, node_pattern_spec)
         end
+      node_pattern_spec['file_pos'] = fo.pos
       end
       unless progress
         Astute.logger.warn("Wrong pattern #{node_pattern_spec.inspect} defined for calculating progress via logs.")
@@ -382,7 +383,11 @@ module Astute
       return progress
     end
 
-    def self.get_chunk(fo, size=nil)
+    def self.get_chunk(fo, size=nil, pos=nil)
+      if pos
+        fo.pos = pos
+        return fo.read
+      end
       size = @log_portion unless size
       return nil if fo.pos == 0
       size = fo.pos if fo.pos < size
@@ -417,7 +422,7 @@ module Astute
         return 0
       end
 
-      chunk = get_chunk(fo, pattern_spec['chunk_size'])
+      chunk = get_chunk(fo, pos=pattern_spec['file_pos'])
       return 0 unless chunk
       pos = chunk.rindex(separator)
       chunk = chunk.slice((pos + separator.size)..-1) if pos

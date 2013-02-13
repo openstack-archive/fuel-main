@@ -136,19 +136,19 @@ module Astute
                            'regexp' => true, 'progress' => 0.33},
              {'pattern' => "/Stage[main]/Swift::Storage::Account/Swift::Storage::Generic[account]/File[/etc/swift/"\
                            "account-server/]/group) group changed 'root' to 'swift'", 'progress' => 0.36},
-             # {'pattern' => '/Stage[main]/Swift::Ringbuilder/Swift::Ringbuilder::Rebalance[object]/Exec'\
-             #               '[hours_passed_object]/returns) executed successfully', 'progress' => 0.39},
-             # {'pattern' => '/Stage[main]/Swift::Ringbuilder/Swift::Ringbuilder::Rebalance[account]/Exec'\
-             #               '[hours_passed_account]/returns) executed successfully', 'progress' => 0.42},
-             # {'pattern' => '/Stage[main]/Swift::Ringbuilder/Swift::Ringbuilder::Rebalance[account]/Exec'\
-             #               '[rebalance_account]/returns) executed successfully', 'progress' => 0.44},
-             # {'pattern' => '/Stage[main]/Swift::Ringbuilder/Swift::Ringbuilder::Rebalance[container]/Exec'\
-             #               '[hours_passed_container]/returns) executed successfully', 'progress' => 0.49},
-             # {'pattern' => '/Stage[main]/Swift::Ringbuilder/Swift::Ringbuilder::Rebalance[container]/Exec'\
-             #               '[rebalance_container]/returns) executed successfully', 'progress' => 0.52},
-             # {'pattern' => '/Stage[main]/Swift::Proxy/Package[swift-proxy]/ensure) created', 'progress' => 0.55},
-             # {'pattern' => '/Service[swift-container-replicator]/ensure) ensure changed \'stopped\'', 'progress' => 0.9},
-             # {'pattern' => '/Service[swift-accaunt-replicator]/ensure) ensure changed \'stopped\'', 'progress' => 0.95},
+             {'pattern' => '/Stage[main]/Swift::Ringbuilder/Swift::Ringbuilder::Rebalance[object]/Exec'\
+                           '[hours_passed_object]/returns) executed successfully', 'progress' => 0.39},
+             {'pattern' => '/Stage[main]/Swift::Ringbuilder/Swift::Ringbuilder::Rebalance[account]/Exec'\
+                           '[hours_passed_account]/returns) executed successfully', 'progress' => 0.42},
+             {'pattern' => '/Stage[main]/Swift::Ringbuilder/Swift::Ringbuilder::Rebalance[account]/Exec'\
+                           '[rebalance_account]/returns) executed successfully', 'progress' => 0.44},
+             {'pattern' => '/Stage[main]/Swift::Ringbuilder/Swift::Ringbuilder::Rebalance[container]/Exec'\
+                           '[hours_passed_container]/returns) executed successfully', 'progress' => 0.49},
+             {'pattern' => '/Stage[main]/Swift::Ringbuilder/Swift::Ringbuilder::Rebalance[container]/Exec'\
+                           '[rebalance_container]/returns) executed successfully', 'progress' => 0.52},
+             {'pattern' => '/Stage[main]/Swift::Proxy/Package[swift-proxy]/ensure) created', 'progress' => 0.55},
+             {'pattern' => '/Service[swift-container-replicator]/ensure) ensure changed \'stopped\'', 'progress' => 0.9},
+             {'pattern' => '/Service[swift-accaunt-replicator]/ensure) ensure changed \'stopped\'', 'progress' => 0.95},
              {'pattern' => '/Service[swift-object-replicator]/ensure) ensure changed \'stopped\'', 'progress' => 1},
              ]
           },
