@@ -147,6 +147,9 @@ class VerifyNetworksTaskManager(TaskManager):
         )
         orm().refresh(task)
         if task.status != 'error':
+            # this one is connected with UI issues - we need to
+            # separate if error happened inside nailgun or somewhere
+            # in the orchestrator, and UI does it by task name.
             task.name = "verify_networks"
             orm().add(task)
             orm().commit()
