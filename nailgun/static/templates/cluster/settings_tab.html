@@ -1,241 +1,139 @@
   <div class="roles-block-row nodesbox-header">
-  <div class="span10"><h3>OpenStack Settings</h3></div>
-  
-  <div class="span2 roles-action-link">
-    <button class="btn btn-delete-nodes btn-link pull-right">
-      <i class="icon-expand"></i>Expand All
-    </button>
+    <div class="span10"><h3>OpenStack Settings</h3></div>
   </div>
-</div>
 
 <div class="wrapper">
 
-  <style>
-  .accordion-group {
-    margin-bottom: 10px;
-    border: 1px solid #dadada;
-  }
-  .accordion-heading {
-    font-size: 18px;
-    color: #333333;
-    height: 36px;
-    overflow: hidden;
-    background: rgb(230,230,230); /* Old browsers */
-    background: -moz-linear-gradient(top,  rgba(230,230,230,1) 1%, rgba(187,187,187,1) 100%); /* FF3.6+ */
-    background: -webkit-gradient(linear, left top, left bottom, color-stop(1%,rgba(230,230,230,1)), color-stop(100%,rgba(187,187,187,1))); /* Chrome,Safari4+ */
-    background: -webkit-linear-gradient(top,  rgba(230,230,230,1) 1%,rgba(187,187,187,1) 100%); /* Chrome10+,Safari5.1+ */
-    background: -o-linear-gradient(top,  rgba(230,230,230,1) 1%,rgba(187,187,187,1) 100%); /* Opera 11.10+ */
-    background: -ms-linear-gradient(top,  rgba(230,230,230,1) 1%,rgba(187,187,187,1) 100%); /* IE10+ */
-    background: linear-gradient(to bottom,  rgba(230,230,230,1) 1%,rgba(187,187,187,1) 100%); /* W3C */
-    filter: progid:DXImageTransform.Microsoft.gradient( startColorstr='#e6e6e6', endColorstr='#bbbbbb',GradientType=0 ); /* IE6-9 */
-
-    /* background: url(../static/img/texture.png) repeat scroll 0 0 #E8E4E3; */
-  }
-  .accordion-heading .accordion-toggle {
-    box-sizing: border-box;
-    -moz-box-sizing: border-box;
-    -webkit-box-sizing: border-box;
-    padding: 6px 15px 11px 15px;
-    color: #444444;
-    text-shadow: 0 1px 0 rgba(255, 255, 255, 0.25);
-  }
-
-  .accordion-heading a {
-    cursor: pointer;
-  }
-
-  .accordion-heading a:hover {
-    text-decoration: none;
-    color: #005580;
-  }
-
-  .accordion-body {
-    background: #fafafa;
-  }
-
-  .btn-group > .btn + .btn {
-    margin-left: -4px;
-  }
-
-  #nodeDetailsAccordion .accordion-inner div {
-    clear: none;
-    padding: 0px;
-    font-size: 14px;
-    font-weight: 400;
-    line-height: 16px;
-    color: #333333;
-  }
-
-  /* custom checkbox & radio */
-  .custom-tumbler {
-    width:102px;
-    height:32px;
-    overflow:hidden;
-    position:relative;
-  }
-  
-  .custom-tumbler input[type=checkbox]{width:102px;height:32px;overflow:hidden;position:absolute;filter:alpha(opacity=0);-moz-opacity:0;-khtml-opacity:0;opacity:0; cursor: pointer;}
-  .custom-tumbler input[type=checkbox] + span{display:block;width:102px;height:32px;overflow:hidden;font-size:1px;line-height:0;background:transparent url(../static/img/radio_checkbox.png) no-repeat scroll 0 -32px;}
-  .custom-tumbler input[type=checkbox]:checked + span{background-position:0 0px;}
-  .custom-tumbler input[disabled] + span{filter:alpha(opacity=50);-moz-opacity:0.5;-khtml-opacity:0.5;opacity:0.5;}
-  .custom-tumbler input[type=checkbox] + span.checked{background-position:0 -32px;}
-
-  
-  .custom-tumbler input[type=radio]{width:102px;height:32px;overflow:hidden;position:absolute;filter:alpha(opacity=0);-moz-opacity:0;-khtml-opacity:0;opacity:0; cursor: pointer;}
-  .custom-tumbler input[type=radio] + span{display:block;width:102px;height:32px;overflow:hidden;font-size:1px;line-height:0;background:transparent url(../static/img/radio_checkbox.png) no-repeat scroll 0px -96px;}
-  .custom-tumbler input[type=radio]:checked + span{background-position:0px -64px;}
-  .custom-tumbler input[disabled] + span{filter:alpha(opacity=50);-moz-opacity:0.5;-khtml-opacity:0.5;opacity:0.5;}
-  .custom-tumbler input[type=radio] + span.checked{background-position:0px -96px;}
-
-.parameter-box {
-  display: block;
-}
-
-.parameter-name {
-  display: block;
-  float: left;
-  min-width: 100px;
-  min-height: 40px;
-  box-sizing: border-box;
-  -moz-box-sizing: border-box;
-  -webkit-box-sizing: border-box;
-  padding: 7px 0px 0px 0px !important;
-  font-weight: 100 !important;
-}
-
-.parameter-control {
-  display: block;
-  float: left;
-  padding: 0px;
-}
-
-
-  </style>
-
-<!--
-  <div class="openstack-settings">
-
-  <div class="accordion" id="accordion2">
-
-  <div class="accordion-group">
-    <div class="accordion-heading">
-      <a class="accordion-toggle" data-toggle="collapse" data-parent="#accordion2" href="#collapseOne">
-        Base Settings
-      </a>
-    </div>
-    <div id="collapseOne" class="accordion-body collapse in">
-      <div class="accordion-inner">
-        
-          <label class="checkbox"><input type="checkbox">Auto_assign_floating_ip</label>
-
-      </div>
-    </div>
-  </div>
-
-
-  <div class="accordion-group">
-    <div class="accordion-heading">
-      <a class="accordion-toggle" data-toggle="collapse" data-parent="#accordion2" href="#collapseTwo">
-        Keystone
-      </a>
-    </div>
-    <div id="collapseTwo" class="accordion-body collapse">
-      <div class="accordion-inner">
-        
-          <label>Admin_Tenant</label>
-          <input type="text" placeholder="Admin">
-
-          <label>Label Sample 2</label>
-          <input type="text" placeholder="Label 2">
-
-      </div>
-    </div>
-  </div>
-
-
-  <div class="accordion-group">
-    <div class="accordion-heading">
-      <a class="accordion-toggle" data-toggle="collapse" data-parent="#accordion2" href="#collapseThree">
-        Rabbit
-      </a>
-    </div>
-    <div id="collapseThree" class="accordion-body collapse">
-      <div class="accordion-inner">
-        
-        <label>User</label>
-        <input type="text" placeholder="Nova">
-
-      </div>
-    </div>
-  </div>
-
-</div>
-
-</div>
--->
-<!-- sample -->
-<div id="nodeDetailsAccordion" class="accordion">
-    
-      
-        <div class="accordion-group">
-          <div class="accordion-heading"><a href="#memory" data-parent="#nodeDetailsAccordion" data-toggle="collapse" class="accordion-toggle">Nova</a></div>
-          <div id="memory" class="accordion-body in collapse" style="height: auto;">
-            <div class="accordion-inner">
-              
-                <h4>Scheduler</h4>
-
-                <div class="parameter-box clearfix">
-                  <div class="parameter-name">Simple</div>
-                  <div class="parameter-control">
-                    <div class="custom-tumbler">
-                      <input type="radio" name="radio" checked="checked">
-                      <!--[if !IE |(gte IE 9)]>--><span>&nbsp;</span><!--<![endif]-->
-                    </div>
-                  </div>
-                </div>
-
-                <div class="parameter-box clearfix">
-                  <div class="parameter-name">Multi</div>
-                  <div class="parameter-control">
-                    <div class="custom-tumbler">
-                      <input type="radio" name="radio">
-                      <!--[if !IE |(gte IE 9)]>--><span>&nbsp;</span><!--<![endif]-->
-                    </div>
-                  </div>
-                </div>
-
-                <div>Description: Lorem ipsum dolor sit amet, consectetur adipiscing elit. Curabitur id lacus quis nibh volutpat interdum eu nec velit. Duis cursus egestas libero et molestie. Ut porttitor turpis at lorem tincidunt condimentum. Aliquam vestibulum dolor eget eros molestie non mattis purus sagittis.</div>
-            
-            </div>
+      <legend class="openstack-settings">Keystone</legend>
+      <div class="parameter-box clearfix">
+        <div class="parameter-control">
+          <div class="custom-tumbler">
+            <input type="checkbox" name="checkbox" checked="checked">
+            <!--[if !IE |(gte IE 9)]>--><span>&nbsp;</span><!--<![endif]-->
           </div>
         </div>
+        <div class="parameter-name">Admin Tenant</div>
+        <div class="parameter-description">Sample Description</div>
+      </div>
 
-        <div class="accordion-group">
-          <div class="accordion-heading"><a href="#memory" data-parent="#nodeDetailsAccordion" data-toggle="collapse" class="accordion-toggle">Glance</a></div>
-          <div id="memory" class="accordion-body in collapse" style="height: auto;">
-            <div class="accordion-inner">
-              
-                <h4>API</h4>
-
-                <div class="parameter-box clearfix">
-                  <div class="parameter-name">Def</div>
-                  <div class="parameter-control">
-                    <div class="custom-tumbler">
-                      <input type="checkbox" name="checkbox" checked="checked">
-                      <!--[if !IE |(gte IE 9)]>--><span>&nbsp;</span><!--<![endif]-->
-                    </div>
-                  </div>
-                </div>
-
-                <div>Description: Lorem ipsum dolor sit amet, consectetur adipiscing elit. Curabitur id lacus quis nibh volutpat interdum eu nec velit. Duis cursus egestas libero et molestie. Ut porttitor turpis at lorem tincidunt condimentum. Aliquam vestibulum dolor eget eros molestie non mattis purus sagittis.</div>
-            
-            </div>
+      <legend class="openstack-settings">Admin</legend>
+      <div class="parameter-box clearfix">
+        <div class="parameter-name">Email</div>
+        <div class="parameter-control">
+          <div class="parameter-control">
+            <input type="text" placeholder="admin@example.org">
           </div>
         </div>
-      
-  </div>
+        <div class="parameter-description">Sample Description</div>
+      </div>
+      <div class="parameter-box clearfix">
+        <div class="parameter-name">Password</div>
+        <div class="parameter-control">
+          <div class="parameter-control">
+            <input type="password" placeholder="admin">
+          </div>
+        </div>
+        <div class="parameter-description">Sample Description</div>
+      </div>
 
-  <!-- sample -->
+      <legend class="openstack-settings">Rabbit</legend>
+      <div class="parameter-box clearfix">
+        <div class="parameter-name">User</div>
+        <div class="parameter-control">
+          <div class="parameter-control">
+            <input type="text" placeholder="nova">
+          </div>
+        </div>
+        <div class="parameter-description">Sample Description</div>
+      </div>
+      
+
+      <legend class="openstack-settings">Floating IP</legend>
+      <div class="parameter-box clearfix">
+        <div class="parameter-control">
+          <div class="custom-tumbler">
+            <input type="checkbox" name="checkbox" checked="checked">
+            <!--[if !IE |(gte IE 9)]>--><span>&nbsp;</span><!--<![endif]-->
+          </div>
+        </div>
+        <div class="parameter-name">Auto Assign</div>
+        <div class="parameter-description">Autoassigning floating IP to VM</div>
+      </div>
+      
+
+      <legend class="openstack-settings">Libvirt Type</legend>
+      <div class="parameter-box clearfix">
+        <div class="parameter-control">
+          <div class="custom-tumbler">
+            <input type="radio" name="radio" checked="checked">
+            <!--[if !IE |(gte IE 9)]>--><span>&nbsp;</span><!--<![endif]-->
+          </div>
+        </div>
+        <div class="parameter-name">KVM</div>
+        <div class="parameter-description">Start Guests on Host Boot</div>
+      </div>
+      <div class="parameter-box clearfix">
+          <div class="parameter-control">
+            <div class="custom-tumbler">
+              <input type="radio" name="radio">
+              <!--[if !IE |(gte IE 9)]>--><span>&nbsp;</span><!--<![endif]-->
+            </div>
+          </div>
+          <div class="parameter-name">QEMU</div>
+          <div class="parameter-description">Start Guests on Host Boot</div>
+        </div>
+      
+
+      <legend class="openstack-settings">Start Guests on Host Boot</legend>
+      <div class="parameter-box clearfix">
+        
+          <div class="parameter-control">
+            <div class="custom-tumbler">
+              <input type="checkbox" name="checkbox">
+              <!--[if !IE |(gte IE 9)]>--><span>&nbsp;</span><!--<![endif]-->
+            </div>
+          </div>
+          <div class="parameter-name">Start Guests on Host Boot</div>
+        <div class="parameter-description">Autoassigning floating IP to VM</div>
+        </div>
+
+      <legend class="openstack-settings">Use Cow Images</legend>
+      <div class="parameter-box clearfix">
+          <div class="parameter-control">
+            <div class="custom-tumbler">
+              <input type="checkbox" name="checkbox">
+              <!--[if !IE |(gte IE 9)]>--><span>&nbsp;</span><!--<![endif]-->
+            </div>
+          </div>
+          <div class="parameter-name">Use Cow Images</div>
+          <div class="parameter-description">Sample Description</div>
+        </div>
+      
+
+      <legend class="openstack-settings">Compute Scheduler Driver</legend>
+      <div class="parameter-box clearfix">
+        <div class="parameter-control">
+          <div class="custom-tumbler">
+            <input type="radio" name="radio2" checked="checked">
+            <!--[if !IE |(gte IE 9)]>--><span>&nbsp;</span><!--<![endif]-->
+          </div>
+        </div>
+        <div class="parameter-name">Nova Scheduler Filter</div>
+        <div class="parameter-description">Driver to use for scheduling compute calls</div>
+      </div>
+      <div class="parameter-box clearfix">
+        <div class="parameter-control">
+          <div class="custom-tumbler">
+            <input type="radio" name="radio2">
+            <!--[if !IE |(gte IE 9)]>--><span>&nbsp;</span><!--<![endif]-->
+          </div>
+        </div>
+        <div class="parameter-name">Nova Scheduler Simple</div>
+        <div class="parameter-description">Driver to use for scheduling compute calls</div>
+      </div>
+      
+
+
 
 <!--
   <div class="openstack-settings">

@@ -3098,3 +3098,87 @@ select[name=release] option {
 .rename-cluster-form .control-group {
   margin-bottom: 0;
 }
+
+.accordion-heading a {
+  cursor: default;
+}
+
+/* custom checkbox & radio */
+  .custom-tumbler {
+    width:30px;
+    height:24px;
+    overflow:hidden;
+    position:relative;
+  }
+
+  .custom-tumbler input[type=checkbox]{width:24px;height:24px;overflow:hidden;position:absolute;filter:alpha(opacity=0);-moz-opacity:0;-khtml-opacity:0;opacity:0; cursor: pointer;}
+  .custom-tumbler input[type=checkbox] + span{display:block;width:24px;height:24px;overflow:hidden;font-size:1px;line-height:0;background:transparent url(../img/radio_checkbox.png) no-repeat scroll -24px 0px;}
+  .custom-tumbler input[type=checkbox]:checked + span{background-position:0 0px;}
+  .custom-tumbler input[disabled] + span{filter:alpha(opacity=50);-moz-opacity:0.5;-khtml-opacity:0.5;opacity:0.5;}
+  .custom-tumbler input[type=checkbox] + span.checked{background-position:0 0px;}
+
+
+  .custom-tumbler input[type=radio]{width:24px;height:24px;overflow:hidden;position:absolute;filter:alpha(opacity=0);-moz-opacity:0;-khtml-opacity:0;opacity:0; cursor: pointer;}
+  .custom-tumbler input[type=radio] + span{display:block;width:24px;height:24px;overflow:hidden;font-size:1px;line-height:0;background:transparent url(../img/radio_checkbox.png) no-repeat scroll -24px -24px;}
+  .custom-tumbler input[type=radio]:checked + span{background-position:0px -24px;}
+  .custom-tumbler input[disabled] + span{filter:alpha(opacity=50);-moz-opacity:0.5;-khtml-opacity:0.5;opacity:0.5;}
+  .custom-tumbler input[type=radio] + span.checked{background-position:0px -24px;}
+
+.parameter-box {
+  display: block;
+  margin-left: 12px;
+  margin-bottom: 12px;
+}
+
+
+.parameter-name {
+  display: block;
+  float: left;
+  min-width: 100px;
+  max-height: 30px;
+  box-sizing: border-box;
+  -moz-box-sizing: border-box;
+  -webkit-box-sizing: border-box;
+  font-weight: 600;
+  margin-top: 0px;
+  overflow: hidden;
+}
+
+.parameter-control {
+  display: block;
+  float: left;
+  padding: 0px;
+  margin-right: 10px;
+  max-height: 40px;
+}
+
+.parameter-description {
+  display: block;
+  float: left;
+  color: #999999;
+  max-height: 30px;
+  box-sizing: border-box;
+  -moz-box-sizing: border-box;
+  -webkit-box-sizing: border-box;
+  margin-left: 20px;
+  overflow: hidden;
+}
+
+legend.openstack-settings {
+  display: block;
+  padding: 0;
+  margin-bottom: 20px;
+  font-size: 18px;
+  line-height: 18px;
+  color: #333333;
+  border: 0;
+  background-color: #ececec;
+  border: 1px solid #e5e5e5;
+  border-radius: 4px;
+  padding: 10px 12px 12px 12px;
+  box-sizing: border-box;
+  -moz-box-sizing: border-box;
+  -webkit-box-sizing: border-box;
+  height: 42px;
+  margin-top: 20px;
+}
