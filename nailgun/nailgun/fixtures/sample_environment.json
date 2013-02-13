@@ -29,18 +29,31 @@
                   "mac": "C8:0A:A9:A6:FF:28",
                   "name": "eth1",
                   "bandwidth": 1000
+                },
+                {
+                  "mac": "D4:56:C3:88:99:DF",
+                  "name": "eth0:1",
+                  "bandwidth": 2000
                 }
               ],
               "cpu": {
-                "total": 2,
-                "real": 1,
+                "total": 4,
+                "real": 2,
                 "spec": [
                   {
                     "frequency": 1200,
-                    "model": "Intel(R) Core(TM)2 Duo CPU T6570 @ 2.10GHz"
+                    "model": "Intel(R) Core(TM)2 Duo CPU T6570 @ 1.20GHz"
                   },
                   {
                     "frequency": 1200,
+                    "model": "Intel(R) Core(TM)2 Duo CPU T6570 @ 1.20GHz"
+                  },
+                  {
+                    "frequency": 2100,
+                    "model": "Intel(R) Core(TM)2 Duo CPU T6570 @ 2.10GHz"
+                  },
+                  {
+                    "frequency": 2100,
                     "model": "Intel(R) Core(TM)2 Duo CPU T6570 @ 2.10GHz"
                   }
                 ]
