@@ -33,21 +33,6 @@ function(models, commonViews, dialogViews, NodesTab, NetworkTab, SettingsTab, Lo
             'click .deploy-btn:not(.disabled)': 'displayChanges',
             'click .nav-tabs li:not(.active) a': 'dismissSettings'
         },
-        removeVerificationTask: function() {
-            var deferred;
-            var task = this.model.task('verify_networks');
-            if (!task) {
-                task = this.model.task('check_networks');
-            }
-            if (task && task.get('status') != 'running') {
-                this.model.get('tasks').remove(task);
-                deferred = task.destroy({silent: true});
-            } else {
-                deferred = new $.Deferred();
-                deferred.resolve();
-            }
-            return deferred;
-        },
         dismissTaskResult: function() {
             this.$('.task-result').remove();
             this.model.task('deploy').destroy();

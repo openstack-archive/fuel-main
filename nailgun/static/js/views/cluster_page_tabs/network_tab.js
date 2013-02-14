@@ -50,7 +50,7 @@ function(models, commonViews, dialogViews, networkTabTemplate, networkTabViewMod
                 network_size: parseInt($('.network_size select', row).val(), 10)
             });
             this.checkForChanges();
-            app.page.removeVerificationTask();
+            this.renderVerificationControl();
         },
         calculateVlanEnd: function() {
             if (this.model.get('net_manager') == 'VlanManager') {
@@ -79,9 +79,9 @@ function(models, commonViews, dialogViews, networkTabTemplate, networkTabViewMod
             this.$(e.target).attr('checked', true);
             this.model.set({net_manager: this.$(e.target).val()}, {silent: true});
             this.checkForChanges();
-            app.page.removeVerificationTask();
             this.$('.fixed-row .amount, .fixed-header .amount, .fixed-row .network_size, .fixed-header .size').toggle().removeClass('hide');
             this.displayRange();
+            this.renderVerificationControl();
         },
         setValues: function() {
             var valid = true;
@@ -162,7 +162,7 @@ function(models, commonViews, dialogViews, networkTabTemplate, networkTabViewMod
         verifyNetworks: function() {
             if (this.setValues()) {
                 this.$('.verify-networks-btn').attr('disabled', true);
-                app.page.removeVerificationTask().done(_.bind(this.startVerification, this));
+                this.startVerification();
             }
         },
         beforeTearDown: function() {
@@ -180,7 +180,6 @@ function(models, commonViews, dialogViews, networkTabTemplate, networkTabViewMod
             }
         },
         bindEvents: function() {
-            this.model.get('tasks').bind('remove', this.renderVerificationControl, this);
             this.model.get('tasks').bind('reset', this.bindTaskEvents, this);
             this.bindTaskEvents();
         },
@@ -216,8 +215,16 @@ function(models, commonViews, dialogViews, networkTabTemplate, networkTabViewMod
         initialize: function(options) {
             _.defaults(this, options);
         },
+        removeVerificationTask: function() {
+            var task = this.model.task('verify_networks') || this.model.task('check_networks');
+            if (task && task.get('status') != 'running') {
+                this.model.get('tasks').remove(task);
+                task.destroy({silent: true});
+            }
+        },
         render: function() {
             this.$el.html(this.template({cluster: this.model, networks: this.networks}));
+            this.removeVerificationTask();
             return this;
         }
     });

@@ -288,7 +288,6 @@ function(models, simpleMessageTemplate, createClusterDialogTemplate, changeClust
         },
         leaveTab: function() {
             this.$el.modal('hide');
-            app.page.removeVerificationTask();
             app.navigate(this.href, {trigger: true});
         },
         initialize: function(options) {
