@@ -16,12 +16,80 @@
             "attributes_metadata": {
                 "editable": {
                     "keystone": {
-                        "admin_tenant": "admin"
+                        "admin_tenant": {
+                            "value": "admin",
+                            "label": "Admin tenant",
+                            "description": ""
+                        }
+                    },
+                    "admin": {
+                        "email": {
+                            "value": "admin@example.org",
+                            "label": "Email",
+                            "description": ""
+                        },
+                        "password": {
+                            "value": "admin",
+                            "label": "Password",
+                            "description": ""
+                        }
                     },
                     "rabbit": {
-                        "user": "nova"
+                        "user": {
+                            "value": "nova",
+                            "label": "User",
+                            "description": ""
+                        }
                     },
-                    "auto_assign_floating_ip": false
+                    "common": {
+                        "auto_assign_floating_ip": {
+                            "value": false,
+                            "label": "Auto assign floating IP",
+                            "description": "Autoassigning floating IP to VM."
+                        },
+                        "libvirt_type": {
+                            "value": "kvm",
+                            "values": [
+                                {
+                                    "data": "kvm",
+                                    "display_name": "KVM"
+                                },
+                                {
+                                    "data": "qemu",
+                                    "display_name": "QEMU"
+                                }
+                            ],
+                            "label": "Libvirt domain type",
+                            "description": "Libvirt domain type."
+                        },
+                        "start_guests_on_host_boot": {
+                            "value": true,
+                            "label": "Start guests on host boot",
+                            "description": "Whether to (re-)start guests when the host reboots. If enabled, this option causes guests assigned to the host to be unconditionally restarted when nova-compute starts. If the guest is found to be stopped, it starts. If it is found to be running, it reboots."
+                        },
+                        "use_cow_images": {
+                            "value": true,
+                            "label": "Use cow images",
+                            "description": "Whether to use cow images"
+                        },
+                        "compute_scheduler_driver": {
+                            "value": "nova.scheduler.filter_scheduler.FilterScheduler",
+                            "values": [
+                                {
+                                    "data": "nova.scheduler.filter_scheduler.FilterScheduler",
+                                    "display_name": "Filter scheduler",
+                                    "description": ""
+                                },
+                                {
+                                    "data": "nova.scheduler.simple.SimpleScheduler",
+                                    "display_name": "Simple scheduler",
+                                    "description": ""
+                                }
+                            ],
+                            "label": "Scheduler driver",
+                            "description": "Driver to use for scheduling compute calls."
+                        }
+                    }
                 },
                 "generated": {
                     "mysql": {

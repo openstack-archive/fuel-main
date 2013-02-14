@@ -82,11 +82,11 @@ function(models, commonViews, settingsTabTemplate, settingsGroupTemplate) {
         },
         parseSettings: function(settings) {
             this.tearDownRegisteredSubViews();
-            this.$('form').html('');
+            this.$('.settings').html('');
             _.each(_.keys(settings), function(setting) {
                 var settingsGroupView = new SettingsGroup({legend: setting, settings: settings[setting], model: this.model, tab: this});
                 this.registerSubView(settingsGroupView);
-                this.$('form').append(settingsGroupView.render().el);
+                this.$('.settings').append(settingsGroupView.render().el);
             }, this);
         },
         revertChanges: function() {
@@ -108,7 +108,7 @@ function(models, commonViews, settingsTabTemplate, settingsGroupTemplate) {
         render: function () {
             this.$el.html(this.template({cluster: this.model}));
             if (this.model.get('settings').deferred.state() != 'pending') {
-                this.parseSettings(this.model.get('settings').get('editable'));
+            this.parseSettings(this.model.get('settings').get('editable'));
             }
             return this;
         },

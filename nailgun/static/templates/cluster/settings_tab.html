@@ -1,167 +1,30 @@
-  <div class="roles-block-row nodesbox-header">
-    <div class="span10"><h3>OpenStack Settings</h3></div>
-  </div>
-
+<div class="roles-block-row nodesbox-header">
+  <div class="span10"><h3>OpenStack Settings</h3></div>
+</div>
 <div class="wrapper">
 
-      <legend class="openstack-settings">Keystone</legend>
-      <div class="parameter-box clearfix">
-        <div class="parameter-control">
-          <div class="custom-tumbler">
-            <input type="checkbox" name="checkbox" checked="checked">
-            <!--[if !IE |(gte IE 9)]>--><span>&nbsp;</span><!--<![endif]-->
-          </div>
-        </div>
-        <div class="parameter-name">Admin Tenant</div>
-        <div class="parameter-description">Sample Description</div>
-      </div>
-      <div class="global-description">Lorem ipsum dolor sit amet, consectetur adipiscing elit. Pellentesque ac nulla ipsum. Pellentesque viverra elit eu quam vehicula non elementum sem vulputate. Mauris consequat, ligula at placerat lacinia, orci tortor mollis tortor, vel volutpat diam mauris sed mi. Morbi nec leo ut neque tempus cursus eleifend a quam.</div>
-
-      <legend class="openstack-settings">Admin</legend>
-      <div class="parameter-box clearfix">
-        <div class="parameter-name">Email</div>
-        <div class="parameter-control">
-          <div class="parameter-control">
-            <input type="text" placeholder="admin@example.org">
-          </div>
-        </div>
-        <div class="parameter-description">Sample Description</div>
-      </div>
-      <div class="parameter-box clearfix">
-        <div class="parameter-name">Password</div>
-        <div class="parameter-control">
-          <div class="parameter-control">
-            <input type="password" placeholder="admin">
-          </div>
-        </div>
-        <div class="parameter-description">Sample Description</div>
-      </div>
-
-      <legend class="openstack-settings">Rabbit</legend>
-      <div class="parameter-box clearfix">
-        <div class="parameter-name">User</div>
-        <div class="parameter-control">
-          <div class="parameter-control">
-            <input type="text" placeholder="nova">
-          </div>
-        </div>
-        <div class="parameter-description">Sample Description</div>
-      </div>
-      
-
-      <legend class="openstack-settings">Floating IP</legend>
-      <div class="parameter-box clearfix">
-        <div class="parameter-control">
-          <div class="custom-tumbler">
-            <input type="checkbox" name="checkbox" checked="checked">
-            <!--[if !IE |(gte IE 9)]>--><span>&nbsp;</span><!--<![endif]-->
-          </div>
-        </div>
-        <div class="parameter-name">Auto Assign</div>
-        <div class="parameter-description">Autoassigning floating IP to VM</div>
-      </div>
-      
-
-      <legend class="openstack-settings">Libvirt Type</legend>
-      <div class="parameter-box clearfix">
-        <div class="parameter-control">
-          <div class="custom-tumbler">
-            <input type="radio" name="radio" checked="checked">
-            <!--[if !IE |(gte IE 9)]>--><span>&nbsp;</span><!--<![endif]-->
-          </div>
-        </div>
-        <div class="parameter-name">KVM</div>
-        <div class="parameter-description">Start Guests on Host Boot</div>
-      </div>
-      <div class="parameter-box clearfix">
-          <div class="parameter-control">
-            <div class="custom-tumbler">
-              <input type="radio" name="radio">
-              <!--[if !IE |(gte IE 9)]>--><span>&nbsp;</span><!--<![endif]-->
-            </div>
-          </div>
-          <div class="parameter-name">QEMU</div>
-          <div class="parameter-description">Start Guests on Host Boot</div>
-        </div>
-      
-
-      <legend class="openstack-settings">Start Guests on Host Boot</legend>
-      <div class="parameter-box clearfix">
-        
-          <div class="parameter-control">
-            <div class="custom-tumbler">
-              <input type="checkbox" name="checkbox">
-              <!--[if !IE |(gte IE 9)]>--><span>&nbsp;</span><!--<![endif]-->
-            </div>
-          </div>
-          <div class="parameter-name">Start Guests on Host Boot</div>
-        <div class="parameter-description">Autoassigning floating IP to VM</div>
-        </div>
-
-      <legend class="openstack-settings">Use Cow Images</legend>
-      <div class="parameter-box clearfix">
-          <div class="parameter-control">
-            <div class="custom-tumbler">
-              <input type="checkbox" name="checkbox">
-              <!--[if !IE |(gte IE 9)]>--><span>&nbsp;</span><!--<![endif]-->
-            </div>
-          </div>
-          <div class="parameter-name">Use Cow Images</div>
-          <div class="parameter-description">Sample Description</div>
-        </div>
-      
-
-      <legend class="openstack-settings">Compute Scheduler Driver</legend>
-      <div class="parameter-box clearfix">
-        <div class="parameter-control">
-          <div class="custom-tumbler">
-            <input type="radio" name="radio2" checked="checked">
-            <!--[if !IE |(gte IE 9)]>--><span>&nbsp;</span><!--<![endif]-->
-          </div>
-        </div>
-        <div class="parameter-name">Nova Scheduler Filter</div>
-        <div class="parameter-description">Driver to use for scheduling compute calls</div>
-      </div>
-      <div class="parameter-box clearfix">
-        <div class="parameter-control">
-          <div class="custom-tumbler">
-            <input type="radio" name="radio2">
-            <!--[if !IE |(gte IE 9)]>--><span>&nbsp;</span><!--<![endif]-->
-          </div>
-        </div>
-        <div class="parameter-name">Nova Scheduler Simple</div>
-        <div class="parameter-description">Driver to use for scheduling compute calls</div>
-      </div>
-      
-
-
-
-<!--
-  <div class="openstack-settings">
-    <% if (cluster.get('settings').deferred.state() != 'pending') { %>
-      <form class="form-horizontal" onsubmit="return false"></form>
-    <% } else { %>
-      <div class="row row-fluid">
-        <div class="span4"></div>
-        <div class="span4">
-          <div class="progress progress-striped progress-success active">
-            <div class="bar" style="width: 100%"></div>
-          </div>
-        </div>
-      </div>
-    <% } %>
--->
-
-
-    <!-- page-control box -->
-    <div class="row">
-      <div class="page-control-box">
-        <div class="page-control-button-placeholder">
-          <button class="btn btn-load-defaults"<%= cluster.task('deploy', 'running') || cluster.get('settings').deferred.state() == 'pending' ? ' disabled' : '' %>>Load defaults</button>
-          <button class="btn btn-revert-changes" disabled>Cancel changes</button>
-          <button class="btn btn-success btn-apply-changes" disabled>Save Settings</button>
+  <% if (cluster.get('settings').deferred.state() != 'pending') { %>
+    <div class="settings"></div>
+  <% } else { %>
+    <div class="row row-fluid">
+      <div class="span4"></div>
+      <div class="span4">
+        <div class="progress progress-striped progress-success active">
+          <div class="bar" style="width: 100%"></div>
         </div>
       </div>
     </div>
+  <% } %>
+
+  <!-- page-control box -->
+  <div class="row">
+    <div class="page-control-box">
+      <div class="page-control-button-placeholder">
+        <button class="btn btn-load-defaults"<%= cluster.task('deploy', 'running') || cluster.get('settings').deferred.state() == 'pending' ? ' disabled' : '' %>>Load defaults</button>
+        <button class="btn btn-revert-changes" disabled>Cancel changes</button>
+        <button class="btn btn-success btn-apply-changes" disabled>Save Settings</button>
+      </div>
+    </div>
   </div>
+
 </div>

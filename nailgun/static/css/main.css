@@ -3187,4 +3187,5 @@ legend.openstack-settings {
   -webkit-box-sizing: border-box;
   height: 42px;
   margin-top: 20px;
+  text-transform: capitalize;
 }
