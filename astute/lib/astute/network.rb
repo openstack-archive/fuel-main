@@ -16,9 +16,10 @@ module Astute
       # TODO Everything breakes if agent not found. We have to handle that
       net_probe = MClient.new(ctx, "net_probe", uids)
 
-      net_probe.start_frame_listeners(:iflist => ['eth0'].to_json)
+      data_to_send = {'eth0' => networks.map {|n| n['vlan_id']}.join(',')}
+      net_probe.start_frame_listeners(:interfaces => data_to_send.to_json)
       ctx.reporter.report({'progress' => 30, 'status' => 'verification'})
-      
+
       # Interface name is hardcoded for now. Later we expect it to be passed from Nailgun backend
       data_to_send = {'eth0' => networks.map {|n| n['vlan_id']}.join(',')}
       net_probe.send_probing_frames(:interfaces => data_to_send.to_json)

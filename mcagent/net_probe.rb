@@ -4,7 +4,7 @@ module MCollective
   module Agent
     class Net_probe<RPC::Agent
       def startup_hook
-        @pattern = "/var/tmp/net-probe-dump-*"
+        @pattern = "/var/tmp/net-probe-dump*"
       end
 
       action "start_frame_listeners" do
@@ -33,23 +33,34 @@ module MCollective
       end
 
       def start_frame_listeners
-        validate :iflist, String
+        # validate :interfaces, String
+        config = {
+          "action" => "listen",
+          "interfaces" => JSON.parse(request[:interfaces]),
+          "dump_file" => "/var/tmp/net-probe-dump" }
+
+        if request.data.key?('config')
+          config.merge!(JSON.parse(request[:config]))
+        end
+
         # wipe out old stuff before start
         Dir.glob(@pattern).each do |file|
           File.delete file
         end
-        iflist = JSON.parse(request[:iflist])
-        iflist.each do |iface|
-          cmd = "net_probe.py listen -i #{iface}"
-          pid = fork { `#{cmd}` }
-          Process.detach(pid)
-          # It raises Errno::ESRCH if there is no process, so we check that it runs
-          sleep 1
-          begin
-            Process.kill(0, pid)
-          rescue Errno::ESRCH => e
-            reply.fail "Failed to run '#{cmd}'"
-          end
+
+        pid = nil
+        IO.popen("net_probe.py -c -", "w") do |io|
+          io.write config.to_json
+          pid = io.pid
+        end
+
+        Process.detach(pid)
+        # It raises Errno::ESRCH if there is no process, so we check that it runs
+        sleep 1
+        begin
+          Process.kill(0, pid)
+        rescue Errno::ESRCH => e
+          reply.fail "Failed to run '#{cmd}'"
         end
       end
 
