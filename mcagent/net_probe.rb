@@ -1,4 +1,5 @@
 require "json"
+require "tempfile"
 
 module MCollective
   module Agent
@@ -33,7 +34,7 @@ module MCollective
       end
 
       def start_frame_listeners
-        # validate :interfaces, String
+        validate :interfaces, String
         config = {
           "action" => "listen",
           "interfaces" => JSON.parse(request[:interfaces]),
@@ -48,13 +49,15 @@ module MCollective
           File.delete file
         end
 
-        pid = nil
-        IO.popen("net_probe.py -c -", "w") do |io|
-          io.write config.to_json
-          pid = io.pid
-        end
+        f = Tempfile.new "net_probe"
+        f.write config.to_json
+        fpath = f.path
+        f.close
 
+        cmd = "net_probe.py -c #{fpath}"
+        pid = fork { `#{cmd}` }
         Process.detach(pid)
+
         # It raises Errno::ESRCH if there is no process, so we check that it runs
         sleep 1
         begin
