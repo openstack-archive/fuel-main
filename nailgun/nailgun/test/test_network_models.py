@@ -7,7 +7,7 @@ from nailgun.api.models import Vlan, Network, NetworkGroup
 class TestNetworkModels(BaseHandlers):
 
     def test_network_group_size_of_1_creates_1_network(self):
-        cluster = self.create_default_cluster()
+        cluster = self.env.create_cluster(api=False)
         kw = {'release': cluster.release_id,
               'cidr': '10.0.0.0/24',
               'network_size': 256,
@@ -27,7 +27,7 @@ class TestNetworkModels(BaseHandlers):
         self.assertEquals(nets_db[0].cidr, kw['cidr'])
 
     def test_network_group_creates_several_networks(self):
-        cluster = self.create_default_cluster()
+        cluster = self.env.create_cluster(api=False)
         kw = {'release': cluster.release_id,
               'cidr': '10.0.0.0/8',
               'network_size': 256,
@@ -51,7 +51,7 @@ class TestNetworkModels(BaseHandlers):
         self.assertEquals(len(vlans_db), kw['amount'])
 
     def test_network_group_slices_cidr_for_networks(self):
-        cluster = self.create_default_cluster()
+        cluster = self.env.create_cluster(api=False)
         kw = {'release': cluster.release_id,
               'cidr': '10.0.0.0/8',
               'network_size': 128,
@@ -72,7 +72,7 @@ class TestNetworkModels(BaseHandlers):
         self.assertEquals(ng.cidr, '10.0.0.0/8')
 
     def test_network_group_does_not_squeezes_base_cidr(self):
-        cluster = self.create_default_cluster()
+        cluster = self.env.create_cluster(api=False)
         kw = {'release': cluster.release_id,
               'cidr': '172.0.0.0/24',
               'network_size': 64,
@@ -89,7 +89,7 @@ class TestNetworkModels(BaseHandlers):
         self.assertEquals(ng.cidr, "172.0.0.0/24")
 
     def test_network_group_does_not_squeezes_base_cidr_if_amount_1(self):
-        cluster = self.create_default_cluster()
+        cluster = self.env.create_cluster(api=False)
         kw = {'release': cluster.release_id,
               'cidr': '172.0.0.0/8',
               'network_size': 256,
@@ -106,7 +106,7 @@ class TestNetworkModels(BaseHandlers):
         self.assertEquals(ng.cidr, "172.0.0.0/8")
 
     def test_network_group_sets_correct_gateway_for_few_nets(self):
-        cluster = self.create_default_cluster()
+        cluster = self.env.create_cluster(api=False)
         kw = {'release': cluster.release_id,
               'cidr': '10.0.0.0/8',
               'network_size': 128,

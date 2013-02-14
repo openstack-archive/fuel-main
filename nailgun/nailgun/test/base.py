@@ -13,12 +13,14 @@ import mock
 from paste.fixture import TestApp
 #from sqlalchemy.orm.events import orm
 
+import nailgun
 from nailgun.api.models import Node
 from nailgun.api.models import Release
 from nailgun.api.models import Cluster
 from nailgun.api.models import Notification
 from nailgun.api.models import Attributes
 from nailgun.api.models import Network
+from nailgun.api.models import Task
 
 from nailgun.api.urls import urls
 from nailgun.wsgi import build_app
@@ -27,89 +29,142 @@ from nailgun.db import dropdb, syncdb, flush, orm
 from nailgun.fixtures.fixman import upload_fixture
 
 
-class BaseHandlers(TestCase):
+class Environment(object):
 
-    fixtures = []
-
-    def __init__(self, *args, **kwargs):
-        super(BaseHandlers, self).__init__(*args, **kwargs)
-        self.mock = mock
+    def __init__(self, app, db=None):
+        self.db = db or orm()
+        self.app = app
+        self.tester = TestCase
+        self.tester.runTest = lambda a: None
+        self.tester = self.tester()
         self.here = os.path.abspath(os.path.dirname(__file__))
         self.fixture_dir = os.path.join(self.here, "..", "fixtures")
-        self.app = TestApp(build_app().wsgifunc())
-
-    def _wait_for_threads(self):
-        # wait for fake task thread termination
-        import threading
-        for thread in threading.enumerate():
-            if thread is not threading.currentThread():
-                if hasattr(thread, "rude_join"):
-                    timer = time.time()
-                    timeout = 25
-                    thread.rude_join(timeout)
-                    if time.time() - timer > timeout:
-                        raise Exception(
-                            '{0} seconds is not enough'
-                            ' - possible hanging'.format(
-                                timeout
-                            )
-                        )
-
-    @classmethod
-    def setUpClass(cls):
-        dropdb()
-        syncdb()
-
-    def setUp(self):
-        self.db = orm()  # orm.scoped_session(orm.sessionmaker(bind=engine))()
         self.default_headers = {
             "Content-Type": "application/json"
         }
-        flush()
-        self.upload_fixtures(self.fixtures)
+        self.releases = []
+        self.clusters = []
+        self.nodes = []
 
-    def fxtr_paths_by_names(self, fxtr_names):
-        for fxtr in fxtr_names:
-            fxtr_path = os.path.join(
-                self.fixture_dir,
-                "%s.json" % fxtr
+    def create(self, **kwargs):
+        cluster = self.create_cluster(
+            **kwargs.pop('cluster_kwargs', {})
+        )
+        for node_kwargs in kwargs.pop('nodes_kwargs', []):
+            if "cluster_id" not in node_kwargs:
+                if isinstance(cluster, dict):
+                    node_kwargs["cluster_id"] = cluster["id"]
+                else:
+                    node_kwargs["cluster_id"] = cluster.id
+            node_kwargs.setdefault("api", False)
+            self.create_node(
+                **node_kwargs
             )
 
-            if not os.path.exists(fxtr_path):
-                logging.warning(
-                    "Fixture file was not found: %s",
-                    fxtr_path
-                )
-                break
-            else:
-                logging.debug(
-                    "Fixture file is found, yielding path: %s",
-                    fxtr_path
-                )
-                yield fxtr_path
+    def create_release(self, api=False, **kwargs):
+        version = str(randint(0, 100000000))
+        release_data = {
+            'name': u"release_name_" + version,
+            'version': version,
+            'description': u"release_desc" + version,
+            'networks_metadata': self.get_default_networks_metadata(),
+            'attributes_metadata': self.get_default_attributes_metadata()
+        }
+        if kwargs:
+            release_data.update(kwargs)
+        if api:
+            resp = self.app.post(
+                reverse('ReleaseCollectionHandler'),
+                params=json.dumps(release_data),
+                headers=self.default_headers
+            )
+            self.tester.assertEquals(resp.status, 201)
+            release = json.loads(resp.body)
+            self.releases.append(
+                self.db.query(Release).get(release['id'])
+            )
+        else:
+            release = Release()
+            for field, value in release_data.iteritems():
+                setattr(release, field, value)
+            self.db.add(release)
+            self.db.commit()
+            self.releases.append(release)
+        return release
 
-    def upload_fixtures(self, fxtr_names):
-        for fxtr_path in self.fxtr_paths_by_names(fxtr_names):
-            with open(fxtr_path, "r") as fxtr_file:
-                upload_fixture(fxtr_file)
+    def create_cluster(self, api=True, **kwargs):
+        cluster_data = {
+            'name': 'cluster-api-' + str(randint(0, 1000000))
+        }
+        if kwargs:
+            cluster_data.update(kwargs)
+        if api:
+            cluster_data['release'] = self.create_release(api=False).id
+            resp = self.app.post(
+                reverse('ClusterCollectionHandler'),
+                json.dumps(cluster_data),
+                headers=self.default_headers
+            )
+            self.tester.assertEquals(resp.status, 201)
+            cluster = json.loads(resp.body)
+            self.clusters.append(
+                self.db.query(Cluster).get(cluster['id'])
+            )
+        else:
+            cluster_data['release'] = self.create_release(api=False)
+            cluster = Cluster()
+            for field, value in cluster_data.iteritems():
+                setattr(cluster, field, value)
+            self.db.add(cluster)
+            self.db.commit()
+            self.clusters.append(cluster)
+        return cluster
 
-    def read_fixtures(self, fxtr_names):
-        data = []
-        for fxtr_path in self.fxtr_paths_by_names(fxtr_names):
-            with open(fxtr_path, "r") as fxtr_file:
-                try:
-                    data.extend(json.load(fxtr_file))
-                except:
-                    logging.error(
-                        "Error occurred while loading "
-                        "fixture %s" % fxtr_path
-                    )
-        return data
+    def create_node(self, api=False, **kwargs):
+        node_data = {
+            'mac': self._generate_random_mac(),
+            'role': 'controller',
+            'status': 'discover'
+        }
+        if kwargs:
+            node_data.update(kwargs)
+        if api:
+            resp = self.app.post(
+                reverse('NodeCollectionHandler'),
+                json.dumps(node_data),
+                headers=self.default_headers
+            )
+            self.tester.assertEquals(resp.status, 201)
+            node = json.loads(resp.body)
+            self.nodes.append(
+                self.db.query(Node).get(node['id'])
+            )
+        else:
+            node = Node()
+            node.meta = self.default_metadata()
+            for key, value in node_data.iteritems():
+                setattr(node, key, value)
+            self.db.add(node)
+            self.db.commit()
+            self.nodes.append(node)
+        return node
 
-    def find_item_by_pk_model(self, data, pk, model):
-        for item in data:
-            if item.get('pk') == pk and item.get('model') == model:
-                return item
+    def create_notification(self, **kwargs):
+        notif_data = {
+            "topic": "discover",
+            "message": "Test message",
+            "status": "unread",
+            "datetime": datetime.now()
+        }
+        if kwargs:
+            notif_data.update(kwargs)
+        notification = Notification()
+        notification.cluster_id = notif_data.get("cluster_id")
+        for f, v in notif_data.iteritems():
+            setattr(notification, f, v)
+        self.db.add(notification)
+        self.db.commit()
+        return notification
 
     def default_metadata(self):
         item = self.find_item_by_pk_model(
@@ -120,27 +175,6 @@ class BaseHandlers(TestCase):
     def _generate_random_mac(self):
         mac = [randint(0x00, 0x7f) for _ in xrange(6)]
         return ':'.join(map(lambda x: "%02x" % x, mac))
-
-    def create_release_api(self):
-        resp = self.app.post(
-            reverse('ReleaseCollectionHandler'),
-            params=json.dumps({
-                'name': 'Another test release',
-                'version': '1.0'
-            }),
-            headers=self.default_headers
-        )
-        self.assertEquals(resp.status, 201)
-        return json.loads(resp.body)
-
-    def get_default_networks_metadata(self):
-        return [
-            {"name": "floating", "access": "public"},
-            {"name": "fixed", "access": "private10"},
-            {"name": "storage", "access": "private192"},
-            {"name": "management", "access": "private172"},
-            {"name": "public", "access": "public"}
-        ]
 
     def generate_ui_networks(self, cluster_id):
         net_names = (
@@ -167,6 +201,15 @@ class BaseHandlers(TestCase):
             "id": i + 1} for i, nd in enumerate(zip(net_names, net_cidrs))]
         return nets
 
+    def get_default_networks_metadata(self):
+        return [
+            {"name": "floating", "access": "public"},
+            {"name": "fixed", "access": "private10"},
+            {"name": "storage", "access": "private192"},
+            {"name": "management", "access": "private172"},
+            {"name": "public", "access": "public"}
+        ]
+
     def get_default_attributes_metadata(self):
         return {
             "editable": {
@@ -188,75 +231,155 @@ class BaseHandlers(TestCase):
             }
         }
 
-    def create_default_node(self, **kwargs):
-        node = Node()
-        node.mac = self._generate_random_mac()
-        node.meta = self.default_metadata()
-        for key, value in kwargs.iteritems():
-            setattr(node, key, value)
-        self.db.add(node)
-        self.db.commit()
-        return node
+    def upload_fixtures(self, fxtr_names):
+        for fxtr_path in self.fxtr_paths_by_names(fxtr_names):
+            with open(fxtr_path, "r") as fxtr_file:
+                upload_fixture(fxtr_file)
 
-    def create_default_node_api(self, **kwargs):
-        node_data = {
-            'mac': self._generate_random_mac(),
-            'release': self.create_default_release().id
+    def read_fixtures(self, fxtr_names):
+        data = []
+        for fxtr_path in self.fxtr_paths_by_names(fxtr_names):
+            with open(fxtr_path, "r") as fxtr_file:
+                try:
+                    data.extend(json.load(fxtr_file))
+                except:
+                    logging.error(
+                        "Error occurred while loading "
+                        "fixture %s" % fxtr_path
+                    )
+        return data
+
+    def fxtr_paths_by_names(self, fxtr_names):
+        for fxtr in fxtr_names:
+            fxtr_path = os.path.join(
+                self.fixture_dir,
+                "%s.json" % fxtr
+            )
+
+            if not os.path.exists(fxtr_path):
+                logging.warning(
+                    "Fixture file was not found: %s",
+                    fxtr_path
+                )
+                break
+            else:
+                logging.debug(
+                    "Fixture file is found, yielding path: %s",
+                    fxtr_path
+                )
+                yield fxtr_path
+
+    def find_item_by_pk_model(self, data, pk, model):
+        for item in data:
+            if item.get('pk') == pk and item.get('model') == model:
+                return item
+
+    def launch_deployment(self):
+        if self.clusters:
+            resp = self.app.put(
+                reverse(
+                    'ClusterChangesHandler',
+                    kwargs={'cluster_id': self.clusters[0].id}),
+                headers=self.default_headers
+            )
+            self.tester.assertEquals(200, resp.status)
+            response = json.loads(resp.body)
+            return self.db.query(Task).filter_by(
+                uuid=response['uuid']
+            ).first()
+        else:
+            raise NotImplementedError(
+                "Nothing to deploy - try creating cluster"
+            )
+
+    def refresh_nodes(self):
+        map(self.db.refresh, self.nodes)
+
+    def refresh_clusters(self):
+        map(self.db.refresh, self.clusters)
+
+    def _wait_task(self, task, timeout):
+        timer = time.time()
+        while task.status == 'running':
+            self.db.refresh(task)
+            if time.time() - timer > timeout:
+                raise Exception(
+                    "Task '{0}' seems to be hanged".format(
+                        task.name
+                    )
+                )
+            time.sleep(1)
+        self.tester.assertEquals(task.progress, 100)
+
+    def wait_ready(self, task, timeout=60):
+        self._wait_task(task, timeout)
+        self.tester.assertEquals(task.status, 'ready')
+
+    def wait_error(self, task, timeout=60, message=None):
+        self._wait_task(task, timeout)
+        self.tester.assertEquals(task.status, 'error')
+        if message:
+            self.tester.assertEquals(task.message, message)
+
+
+class BaseHandlers(TestCase):
+
+    fixtures = []
+
+    def __init__(self, *args, **kwargs):
+        super(BaseHandlers, self).__init__(*args, **kwargs)
+        self.mock = mock
+        self.app = TestApp(build_app().wsgifunc())
+        self.db = orm()
+        self.env = Environment(app=self.app, db=self.db)
+        self.default_headers = {
+            "Content-Type": "application/json"
         }
-        if kwargs:
-            node_data.update(kwargs)
-        resp = self.app.post(
-            reverse('NodeCollectionHandler'),
-            json.dumps(node_data),
-            headers=self.default_headers
-        )
-        self.assertEquals(resp.status, 201)
-        return json.loads(resp.body)
 
-    def create_default_release(self):
-        release = Release()
-        release.version = randint(0, 100000000)
-        release.name = u"release_name_" + str(release.version)
-        release.description = u"release_desc" + str(release.version)
-        release.networks_metadata = self.get_default_networks_metadata()
-        release.attributes_metadata = self.get_default_attributes_metadata()
-        self.db.add(release)
-        self.db.commit()
-        return release
+    def _wait_for_threads(self):
+        # wait for fake task thread termination
+        import threading
+        for thread in threading.enumerate():
+            if thread is not threading.currentThread():
+                if hasattr(thread, "rude_join"):
+                    timer = time.time()
+                    timeout = 25
+                    thread.rude_join(timeout)
+                    if time.time() - timer > timeout:
+                        raise Exception(
+                            '{0} seconds is not enough'
+                            ' - possible hanging'.format(
+                                timeout
+                            )
+                        )
 
-    def create_default_cluster(self):
-        cluster = Cluster()
-        cluster.name = u"cluster_name_" + str(randint(0, 100000000))
-        cluster.release = self.create_default_release()
-        self.db.add(cluster)
-        self.db.commit()
-        return cluster
+    @classmethod
+    def setUpClass(cls):
+        dropdb()
+        syncdb()
 
-    def create_default_notification(self, cluster_id=None):
-        notification = Notification()
-        notification.topic = "discover"
-        notification.message = "Test message"
-        notification.status = "unread"
-        notification.cluster_id = cluster_id
-        notification.datetime = datetime.now()
-        self.db.add(notification)
-        self.db.commit()
-        return notification
-
-    def create_cluster_api(self, **kwargs):
-        cluster_data = {
-            'name': 'cluster-api-' + str(randint(0, 1000000)),
-            'release': self.create_default_release().id
+    def setUp(self):
+        self.default_headers = {
+            "Content-Type": "application/json"
         }
-        if kwargs:
-            cluster_data.update(kwargs)
-        resp = self.app.post(
-            reverse('ClusterCollectionHandler'),
-            json.dumps(cluster_data),
-            headers=self.default_headers
-        )
-        self.assertEquals(resp.status, 201)
-        return json.loads(resp.body)
+        flush()
+        self.env.upload_fixtures(self.fixtures)
+
+
+def fake_tasks(func):
+    patches = (
+        ('nailgun.task.task.rpc.cast',
+         nailgun.task.task.fake_cast),
+        ('nailgun.task.task.settings.FAKE_TASKS',
+         True),
+        ('nailgun.task.fake.settings.FAKE_TASKS_TICK_COUNT',
+         99),
+        ('nailgun.task.fake.settings.FAKE_TASKS_TICK_INTERVAL',
+         1)
+    )
+    for method, mocked in patches:
+        func = mock.patch(method, mocked)(func)
+    return func
 
 
 def reverse(name, kwargs=None):

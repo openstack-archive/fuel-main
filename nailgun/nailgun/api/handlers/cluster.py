@@ -155,11 +155,7 @@ class ClusterCollectionHandler(JSONHandler):
             generated=cluster.release.attributes_metadata.get("generated"),
             cluster=cluster
         )
-        orm().add(attributes)
-        orm().commit()
         attributes.generate_fields()
-        orm().add(attributes)
-        orm().commit()
 
         used_nets = [n.cidr for n in orm().query(Network).all()]
         used_vlans = [v.id for v in orm().query(Vlan).all()]

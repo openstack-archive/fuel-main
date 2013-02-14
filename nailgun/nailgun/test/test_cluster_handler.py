@@ -10,7 +10,7 @@ from nailgun.test.base import reverse
 class TestHandlers(BaseHandlers):
 
     def test_cluster_get(self):
-        cluster = self.create_default_cluster()
+        cluster = self.env.create_cluster(api=False)
         resp = self.app.get(
             reverse('ClusterHandler', kwargs={'cluster_id': cluster.id}),
             headers=self.default_headers
@@ -23,7 +23,7 @@ class TestHandlers(BaseHandlers):
         self.assertEquals(cluster.release.id, response['release']['id'])
 
     def test_cluster_creation_without_nodes(self):
-        release = self.create_default_release()
+        release = self.env.create_release(api=False)
         yet_another_cluster_name = 'Yet another cluster'
         resp = self.app.post(
             reverse('ClusterCollectionHandler'),
@@ -40,8 +40,8 @@ class TestHandlers(BaseHandlers):
         self.assertEquals(release.id, response['release']['id'])
 
     def test_cluster_creation_with_nodes(self):
-        release = self.create_default_release()
-        node = self.create_default_node()
+        release = self.env.create_release(api=False)
+        node = self.env.create_node(api=False)
         yet_another_cluster_name = u'Yet another cluster'
         resp = self.app.post(
             reverse('ClusterCollectionHandler'),
@@ -60,7 +60,7 @@ class TestHandlers(BaseHandlers):
 
     def test_cluster_update(self):
         updated_name = u'Updated cluster'
-        cluster = self.create_default_cluster()
+        cluster = self.env.create_cluster(api=False)
 
         clusters_before = len(self.db.query(Cluster).all())
 
@@ -81,7 +81,7 @@ class TestHandlers(BaseHandlers):
         self.assertEquals(clusters_before, clusters_after)
 
     def test_cluster_updates_network_manager(self):
-        cluster = self.create_default_cluster()
+        cluster = self.env.create_cluster(api=False)
         self.assertEquals(cluster.net_manager, "FlatDHCPManager")
         resp = self.app.put(
             reverse('ClusterHandler', kwargs={'cluster_id': cluster.id}),
@@ -93,9 +93,9 @@ class TestHandlers(BaseHandlers):
         self.assertEquals(cluster.net_manager, "VlanManager")
 
     def test_cluster_node_list_update(self):
-        node1 = self.create_default_node()
-        node2 = self.create_default_node()
-        cluster = self.create_default_cluster()
+        node1 = self.env.create_node(api=False)
+        node2 = self.env.create_node(api=False)
+        cluster = self.env.create_cluster(api=False)
         resp = self.app.put(
             reverse('ClusterHandler', kwargs={'cluster_id': cluster.id}),
             json.dumps({'nodes': [node1.id]}),
@@ -118,7 +118,7 @@ class TestHandlers(BaseHandlers):
         self.assertEquals(1, nodes.count())
 
     def test_cluster_deletion_delete_networks(self):
-        cluster = self.create_cluster_api()
+        cluster = self.env.create_cluster(api=True)
         cluster_db = self.db.query(Cluster).get(cluster['id'])
         ngroups = [n.id for n in cluster_db.network_groups]
         self.db.delete(cluster_db)

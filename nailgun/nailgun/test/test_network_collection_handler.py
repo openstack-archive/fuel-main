@@ -17,7 +17,7 @@ class TestHandlers(BaseHandlers):
         self.assertEquals(404, resp.status)
 
     def test_valid_nets_returned_after_cluster_create(self):
-        cluster = self.create_cluster_api()
+        cluster = self.env.create_cluster(api=True)
         resp = self.app.get(
             reverse('NetworkCollectionHandler'),
             headers=self.default_headers
@@ -75,8 +75,8 @@ class TestHandlers(BaseHandlers):
         self.assertEquals(expected, response)
 
     def test_get_networks_by_cluster_id(self):
-        cluster1 = self.create_cluster_api()
-        cluster2 = self.create_cluster_api()
+        cluster1 = self.env.create_cluster(api=True)
+        cluster2 = self.env.create_cluster(api=True)
         nets_len = len(
             self.db.query(Network).join(NetworkGroup).filter(
                 NetworkGroup.cluster_id == cluster1['id']
@@ -94,7 +94,7 @@ class TestHandlers(BaseHandlers):
         self.assertEquals(cluster1['id'], nets_received[0]['cluster_id'])
 
     def test_network_group_update_changes_network(self):
-        cluster = self.create_cluster_api()
+        cluster = self.env.create_cluster(api=True)
         net1 = self.db.query(NetworkGroup).first()
         self.assertIsNotNone(net1)
         new_vlan_id = 500  # non-used vlan id
@@ -113,7 +113,7 @@ class TestHandlers(BaseHandlers):
         self.assertEquals(net1.networks[0].vlan_id, 500)
 
     def test_networks_update_fails_with_wrong_net_id(self):
-        cluster = self.create_cluster_api()
+        cluster = self.env.create_cluster(api=True)
         new_nets = [{
             'id': 500,
             'vlan_id': 500}]

@@ -20,9 +20,9 @@ class TestHandlers(BaseHandlers):
         self.assertEquals([], response)
 
     def test_not_empty(self):
-        c = self.create_default_cluster()
-        n0 = self.create_default_notification()
-        n1 = self.create_default_notification(cluster_id=c.id)
+        c = self.env.create_cluster(api=False)
+        n0 = self.env.create_notification()
+        n1 = self.env.create_notification(cluster_id=c.id)
         resp = self.app.get(
             reverse('NotificationCollectionHandler'),
             headers=self.default_headers
@@ -40,9 +40,9 @@ class TestHandlers(BaseHandlers):
         self.assertIsNone(rn0.get('cluster', None))
 
     def test_update(self):
-        c = self.create_default_cluster()
-        n0 = self.create_default_notification()
-        n1 = self.create_default_notification(cluster_id=c.id)
+        c = self.env.create_cluster(api=False)
+        n0 = self.env.create_notification()
+        n1 = self.env.create_notification(cluster_id=c.id)
         notification_update = [
             {
                 'id': n0.id,

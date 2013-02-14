@@ -351,7 +351,7 @@ class NetworkGroup(Base, BasicValidator):
                 gateway=gateway,
                 network_group_id=self.id)
             orm().add(net_db)
-            orm().commit()
+        orm().commit()
 
     @classmethod
     def generate_vlan_ids_list(cls, data):

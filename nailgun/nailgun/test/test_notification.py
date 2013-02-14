@@ -17,7 +17,7 @@ from nailgun.notifier import notifier
 class TestNotification(BaseHandlers):
 
     def test_notification_deploy_done(self):
-        cluster = self.create_default_cluster()
+        cluster = self.env.create_cluster(api=False)
         receiver = rcvr.NailgunReceiver()
 
         task = Task(
@@ -49,7 +49,7 @@ class TestNotification(BaseHandlers):
             ("discover"))
 
     def test_notification_deploy_error(self):
-        cluster = self.create_default_cluster()
+        cluster = self.env.create_cluster(api=False)
         receiver = rcvr.NailgunReceiver()
 
         task = Task(
@@ -79,7 +79,7 @@ class TestNotification(BaseHandlers):
         resp = self.app.post(
             reverse('NodeCollectionHandler'),
             json.dumps({'mac': 'AADFAAAADFAA',
-                        'meta': self.default_metadata(),
+                        'meta': self.env.default_metadata(),
                         'status': 'discover'}),
             headers=self.default_headers)
         self.assertEquals(resp.status, 201)
@@ -90,7 +90,7 @@ class TestNotification(BaseHandlers):
         self.assertEqual(notifications[0].topic, "discover")
 
     def test_notification_delete_cluster_done(self):
-        cluster = self.create_default_cluster()
+        cluster = self.env.create_cluster(api=False)
         cluster_name = cluster.name
         receiver = rcvr.NailgunReceiver()
 
@@ -120,7 +120,7 @@ class TestNotification(BaseHandlers):
         )
 
     def test_notification_delete_cluster_failed(self):
-        cluster = self.create_default_cluster()
+        cluster = self.env.create_cluster(api=False)
         receiver = rcvr.NailgunReceiver()
 
         task = Task(

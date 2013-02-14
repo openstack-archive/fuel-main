@@ -2,6 +2,7 @@ import web
 import time
 import logging
 import threading
+from itertools import repeat
 from random import randrange
 
 from sqlalchemy.orm import object_mapper, ColumnProperty, \
@@ -31,6 +32,12 @@ class FakeThread(threading.Thread):
         self.stoprequest.set()
         super(FakeThread, self).join(timeout)
 
+    def sleep(self, timeout):
+        map(
+            lambda i: not self.stoprequest.isSet() and time.sleep(i),
+            repeat(1, timeout)
+        )
+
 
 class FakeDeploymentThread(FakeThread):
     def run(self):
@@ -42,7 +49,7 @@ class FakeDeploymentThread(FakeThread):
         }
 
         tick_count = int(settings.FAKE_TASKS_TICK_COUNT) or 20
-        low_tick_count = tick_count - 20
+        low_tick_count = tick_count - 10
         if low_tick_count < 0:
             low_tick_count = 0
         tick_interval = int(settings.FAKE_TASKS_TICK_INTERVAL) or 3
@@ -84,7 +91,7 @@ class FakeDeploymentThread(FakeThread):
             )):
                 ready = True
             else:
-                time.sleep(tick_interval)
+                self.sleep(tick_interval)
 
         error_nodes = filter(
             lambda n: n['status'] == 'error',
@@ -123,7 +130,7 @@ class FakeDeploymentThread(FakeThread):
                 kwargs['status'] = 'ready'
                 ready = True
             resp_method(**kwargs)
-            time.sleep(tick_interval)
+            self.sleep(tick_interval)
 
 
 class FakeDeletionThread(FakeThread):
@@ -136,7 +143,6 @@ class FakeDeletionThread(FakeThread):
         }
         nodes_to_restore = self.data['args'].get('nodes_to_restore', [])
         tick_interval = int(settings.FAKE_TASKS_TICK_INTERVAL) or 3
-        time.sleep(tick_interval)
         resp_method = getattr(receiver, self.respond_to)
         resp_method(**kwargs)
         orm = scoped_session(
@@ -192,7 +198,7 @@ class FakeVerificationThread(FakeThread):
             resp_method(**kwargs)
             if time.time() - timer > timeout:
                 raise Exception("Timeout exceed")
-            time.sleep(tick_interval)
+            self.sleep(tick_interval)
 
 
 FAKE_THREADS = {

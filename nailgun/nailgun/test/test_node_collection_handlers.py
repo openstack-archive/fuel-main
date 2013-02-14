@@ -19,7 +19,7 @@ class TestHandlers(BaseHandlers):
         self.assertEquals([], response)
 
     def test_notification_node_id(self):
-        node = self.create_default_node_api()
+        node = self.env.create_node(api=True)
         notif = self.db.query(Notification).first()
         self.assertEqual(node['id'], notif.node_id)
         resp = self.app.get(
@@ -29,21 +29,15 @@ class TestHandlers(BaseHandlers):
         notif_api = json.loads(resp.body)[0]
         self.assertEqual(node['id'], notif_api['node_id'])
 
-    def test_node_list_big(self):
-        for i in range(100):
-            self.create_default_node()
-        resp = self.app.get(
-            reverse('NodeCollectionHandler'),
-            headers=self.default_headers
-        )
-        self.assertEquals(200, resp.status)
-        response = json.loads(resp.body)
-        self.assertEquals(100, len(response))
-
     def test_node_get_with_cluster(self):
-        cluster = self.create_default_cluster()
-        node1 = self.create_default_node()
-        node2 = self.create_default_node(cluster_id=cluster.id)
+        self.env.create(
+            cluster_kwargs={"api": False},
+            nodes_kwargs=[
+                {"cluster_id": None},
+                {},
+            ]
+        )
+        cluster = self.env.clusters[0]
 
         resp = self.app.get(
             reverse('NodeCollectionHandler'),
@@ -53,12 +47,19 @@ class TestHandlers(BaseHandlers):
         self.assertEquals(200, resp.status)
         response = json.loads(resp.body)
         self.assertEquals(1, len(response))
-        self.assertEquals(node2.id, response[0]['id'])
+        self.assertEquals(
+            self.env.nodes[1].id,
+            response[0]['id']
+        )
 
     def test_node_get_with_cluster_None(self):
-        cluster = self.create_default_cluster()
-        node1 = self.create_default_node()
-        node2 = self.create_default_node(cluster_id=cluster.id)
+        self.env.create(
+            cluster_kwargs={"api": False},
+            nodes_kwargs=[
+                {"cluster_id": None},
+                {},
+            ]
+        )
 
         resp = self.app.get(
             reverse('NodeCollectionHandler'),
@@ -68,12 +69,16 @@ class TestHandlers(BaseHandlers):
         self.assertEquals(200, resp.status)
         response = json.loads(resp.body)
         self.assertEquals(1, len(response))
-        self.assertEquals(node1.id, response[0]['id'])
+        self.assertEquals(self.env.nodes[0].id, response[0]['id'])
 
     def test_node_get_without_cluster_specification(self):
-        cluster = self.create_default_cluster()
-        node1 = self.create_default_node()
-        node2 = self.create_default_node(cluster_id=cluster.id)
+        self.env.create(
+            cluster_kwargs={"api": False},
+            nodes_kwargs=[
+                {"cluster_id": None},
+                {},
+            ]
+        )
 
         resp = self.app.get(
             reverse('NodeCollectionHandler'),
@@ -87,7 +92,7 @@ class TestHandlers(BaseHandlers):
         resp = self.app.post(
             reverse('NodeCollectionHandler'),
             json.dumps({'mac': 'ASDFAAASDFAA',
-                        'meta': self.default_metadata()}),
+                        'meta': self.env.default_metadata()}),
             headers=self.default_headers)
         self.assertEquals(resp.status, 201)
         node = self.db.query(Node).filter(Node.mac == 'ASDFAAASDFAA').one()
@@ -95,7 +100,7 @@ class TestHandlers(BaseHandlers):
         self.assertEquals('discover', response['status'])
 
     def test_node_update(self):
-        node = self.create_default_node()
+        node = self.env.create_node(api=False)
         resp = self.app.put(
             reverse('NodeCollectionHandler'),
             json.dumps([{'mac': node.mac, 'manufacturer': 'new'}]),
@@ -106,11 +111,10 @@ class TestHandlers(BaseHandlers):
             headers=self.default_headers
         )
         self.db.refresh(node)
-        node_db = self.db.query(Node).filter_by(id=node.id).first()
-        self.assertEquals('new', node_db.manufacturer)
+        self.assertEquals('new', node.manufacturer)
 
     def test_duplicated_node_create_fails(self):
-        node = self.create_default_node()
+        node = self.env.create_node(api=False)
         resp = self.app.post(
             reverse('NodeCollectionHandler'),
             json.dumps({'mac': node.mac}),

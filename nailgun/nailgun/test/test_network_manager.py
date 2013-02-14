@@ -1,8 +1,9 @@
 import json
 
-from mock import patch
+from mock import Mock, patch
 from netaddr import IPNetwork, IPAddress
 
+import nailgun
 from nailgun.test.base import BaseHandlers
 from nailgun.test.base import reverse
 from nailgun.network import manager as netmanager
@@ -15,28 +16,29 @@ class TestNetworkManager(BaseHandlers):
 
     @patch('nailgun.rpc.cast')
     def test_assign_ips(self, mocked_rpc):
-        cluster = self.create_cluster_api()
-        node1 = self.create_default_node(cluster_id=cluster['id'],
-                                         pending_addition=True)
-        node2 = self.create_default_node(cluster_id=cluster['id'],
-                                         pending_addition=True)
+        self.env.create(
+            cluster_kwargs={},
+            nodes_kwargs=[
+                {"pending_addition": True},
+                {"pending_addition": True}
+            ]
+        )
         # TODO(mihgen): it should be separeted call of network manager,
         #  not via API. It's impossible now because of issues with web.ctx.orm
 
-        with patch('nailgun.task.task.Cobbler'):
-            resp = self.app.put(
-                reverse(
-                    'ClusterChangesHandler',
-                    kwargs={'cluster_id': cluster['id']}),
-                headers=self.default_headers
-            )
-            self.assertEquals(200, resp.status)
+        nailgun.task.task.Cobbler = Mock()
+        self.env.launch_deployment()
 
-        nodes = self.db.query(Node).filter_by(cluster_id=cluster['id']).all()
+        nodes = self.db.query(Node).filter_by(
+            cluster_id=self.env.clusters[0].id
+        ).all()
 
         management_net = self.db.query(Network).join(NetworkGroup).\
-            filter(NetworkGroup.cluster_id == cluster['id']).filter_by(
-                name='management').first()
+            filter(
+                NetworkGroup.cluster_id == self.env.clusters[0].id
+            ).filter_by(
+                name='management'
+            ).first()
 
         assigned_ips = []
         for node in nodes:
@@ -62,7 +64,7 @@ class TestNetworkManager(BaseHandlers):
         self.assertEquals(False, broadcast in assigned_ips)
 
     def test_assign_vip(self):
-        cluster = self.create_cluster_api()
+        cluster = self.env.create_cluster(api=True)
         vip = netmanager.assign_vip(cluster['id'], "management")
         management_net = self.db.query(Network).join(NetworkGroup).\
             filter(NetworkGroup.cluster_id == cluster['id']).filter_by(
@@ -72,7 +74,7 @@ class TestNetworkManager(BaseHandlers):
         #  can't do it now because of issues with orm
 
     def test_assign_vip_is_idempotent(self):
-        cluster = self.create_cluster_api()
+        cluster = self.env.create_cluster(api=True)
         vip = netmanager.assign_vip(cluster['id'], "management")
         vip2 = netmanager.assign_vip(cluster['id'], "management")
         management_net = self.db.query(Network).join(NetworkGroup).\
@@ -85,16 +87,19 @@ class TestNetworkManager(BaseHandlers):
         self.assertEquals(vip, vip2)
 
     def test_get_node_networks_for_vlan_manager(self):
-        cluster = self.create_cluster_api(**{'net_manager': 'VlanManager'})
-        node1 = self.create_default_node(cluster_id=cluster['id'],
-                                         pending_addition=True)
+        self.env.create(
+            cluster_kwargs={'net_manager': 'VlanManager'},
+            nodes_kwargs=[
+                {"pending_addition": True},
+            ]
+        )
 
-        network_data = netmanager.get_node_networks(node1.id)
+        network_data = netmanager.get_node_networks(self.env.nodes[0].id)
         self.assertEquals(len(network_data), 4)
         fixed_nets = [x for x in network_data if x['name'] == 'fixed']
         self.assertEquals(fixed_nets, [])
 
     def test_nets_empty_list_if_node_does_not_belong_to_cluster(self):
-        node = self.create_default_node()
+        node = self.env.create_node(api=False)
         network_data = netmanager.get_node_networks(node.id)
         self.assertEquals(network_data, [])

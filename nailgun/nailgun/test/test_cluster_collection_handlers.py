@@ -1,5 +1,6 @@
 # -*- coding: utf-8 -*-
 import json
+import unittest
 from paste.fixture import TestApp
 
 from mock import patch
@@ -19,19 +20,8 @@ class TestHandlers(BaseHandlers):
         response = json.loads(resp.body)
         self.assertEquals([], response)
 
-    def test_cluster_list_big(self):
-        for i in range(100):
-            self.create_default_cluster()
-        resp = self.app.get(
-            reverse('ClusterCollectionHandler'),
-            headers=self.default_headers
-        )
-        self.assertEquals(200, resp.status)
-        response = json.loads(resp.body)
-        self.assertEquals(100, len(response))
-
     def test_cluster_create(self):
-        release_id = self.create_default_release().id
+        release_id = self.env.create_release(api=False).id
         resp = self.app.post(
             reverse('ClusterCollectionHandler'),
             json.dumps({
@@ -133,8 +123,8 @@ class TestHandlers(BaseHandlers):
         self.assertEquals(expected, obtained)
 
     def test_network_validation_on_cluster_creation(self):
-        cluster = self.create_cluster_api()
-        nets = self.generate_ui_networks(cluster["id"])
+        cluster = self.env.create_cluster(api=True)
+        nets = self.env.generate_ui_networks(cluster["id"])
         nets[-1]["network_size"] = 16
         nets[-1]["amount"] = 3
         resp = self.app.put(
@@ -144,15 +134,14 @@ class TestHandlers(BaseHandlers):
             headers=self.default_headers
         )
         self.assertEquals(200, resp.status)
-        cluster2 = self.create_cluster_api()
 
     @patch('nailgun.rpc.cast')
     def test_verify_networks(self, mocked_rpc):
-        cluster = self.create_cluster_api()
+        cluster = self.env.create_cluster(api=True)
         resp = self.app.put(
             reverse('ClusterVerifyNetworksHandler',
                     kwargs={'cluster_id': cluster['id']}),
-            json.dumps(self.generate_ui_networks(cluster["id"])),
+            json.dumps(self.env.generate_ui_networks(cluster["id"])),
             headers=self.default_headers
         )
         self.assertEquals(200, resp.status)

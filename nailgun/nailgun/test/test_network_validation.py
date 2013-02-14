@@ -11,15 +11,18 @@ from nailgun.settings import settings
 class TestHandlers(BaseHandlers):
 
     def test_network_checking(self):
-        cluster = self.create_cluster_api()
-        node = self.create_default_node(cluster_id=cluster['id'],
-                                        role="controller",
-                                        pending_addition=True)
+        self.env.create(
+            cluster_kwargs={},
+            nodes_kwargs=[
+                {"pending_addition": True},
+            ]
+        )
+        cluster = self.env.clusters[0]
 
-        nets = self.generate_ui_networks(cluster["id"])
+        nets = self.env.generate_ui_networks(cluster.id)
         resp = self.app.put(
             reverse('ClusterSaveNetworksHandler',
-                    kwargs={'cluster_id': cluster['id']}),
+                    kwargs={'cluster_id': cluster.id}),
             json.dumps(nets),
             headers=self.default_headers
         )
@@ -34,15 +37,18 @@ class TestHandlers(BaseHandlers):
         self.assertEquals(len(ngs_created), len(nets))
 
     def test_network_checking_fails_if_admin_intersection(self):
-        cluster = self.create_cluster_api()
-        node = self.create_default_node(cluster_id=cluster['id'],
-                                        role="controller",
-                                        pending_addition=True)
-        nets = self.generate_ui_networks(cluster["id"])
+        self.env.create(
+            cluster_kwargs={},
+            nodes_kwargs=[
+                {"pending_addition": True},
+            ]
+        )
+        cluster = self.env.clusters[0]
+        nets = self.env.generate_ui_networks(cluster.id)
         nets[-1]["cidr"] = settings.NET_EXCLUDE[0]
         resp = self.app.put(
             reverse('ClusterSaveNetworksHandler',
-                    kwargs={'cluster_id': cluster['id']}),
+                    kwargs={'cluster_id': cluster.id}),
             json.dumps(nets),
             headers=self.default_headers,
             expect_errors=True

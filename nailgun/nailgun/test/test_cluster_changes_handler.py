@@ -16,55 +16,40 @@ class TestHandlers(BaseHandlers):
 
     @patch('nailgun.rpc.cast')
     def test_deploy_cast_with_right_args(self, mocked_rpc):
-        cluster = self.create_cluster_api()
-        cluster_db = self.db.query(Cluster).get(cluster['id'])
-        cluster_db.mode = 'ha'
-        cluster_db.type = 'compute'
-        cluster_depl_mode = 'ha_compute'
-        self.db.add(cluster_db)
-        self.db.commit()
+        self.env.create(
+            cluster_kwargs={
+                "mode": "ha",
+                "type": "compute"
+            },
+            nodes_kwargs=[
+                {"role": "controller", "pending_addition": True},
+                {"role": "controller", "pending_addition": True},
+            ]
+        )
+        cluster_db = self.env.clusters[0]
 
-        node1 = self.create_default_node(cluster_id=cluster['id'],
-                                         role='controller',
-                                         pending_addition=True)
-        node2 = self.create_default_node(cluster_id=cluster['id'],
-                                         role='controller',
-                                         pending_addition=True)
+        cluster_depl_mode = 'ha_compute'
 
         nailgun.task.task.Cobbler = Mock()
-        resp = self.app.put(
-            reverse(
-                'ClusterChangesHandler',
-                kwargs={'cluster_id': cluster['id']}),
-            headers=self.default_headers
-        )
-        self.assertEquals(200, resp.status)
-        response = json.loads(resp.body)
-        supertask_uuid = response['uuid']
-        supertask = self.db.query(Task).filter_by(
-            uuid=supertask_uuid
-        ).first()
+        supertask = self.env.launch_deployment()
         deploy_task_uuid = [x.uuid for x in supertask.subtasks
                             if x.name == 'deployment'][0]
 
         msg = {'method': 'deploy', 'respond_to': 'deploy_resp',
                'args': {}}
-        cluster_attrs = cluster_db.attributes.merged_attrs()
-        #attrs_db = self.db.query(Attributes).filter_by(
-            #cluster_id=cluster['id']).first()
-        #cluster_attrs = attrs_db.merged_attrs()
+        cluster_attrs = self.env.clusters[0].attributes.merged_attrs()
 
         nets_db = self.db.query(Network).join(NetworkGroup).\
-            filter(NetworkGroup.cluster_id == cluster['id']).all()
+            filter(NetworkGroup.cluster_id == cluster_db.id).all()
         for net in nets_db:
             cluster_attrs[net.name + '_network_range'] = net.cidr
 
         management_net = self.db.query(Network).join(NetworkGroup).\
-            filter(NetworkGroup.cluster_id == cluster['id']).filter_by(
+            filter(NetworkGroup.cluster_id == cluster_db.id).filter_by(
                 name='management').first()
         management_vip = str(IPNetwork(management_net.cidr)[4])
         public_net = self.db.query(Network).join(NetworkGroup).\
-            filter(NetworkGroup.cluster_id == cluster['id']).filter_by(
+            filter(NetworkGroup.cluster_id == cluster_db.id).filter_by(
                 name='public').first()
         public_vip = str(IPNetwork(public_net.cidr)[4])
         cluster_attrs['management_vip'] = management_vip
@@ -75,7 +60,7 @@ class TestHandlers(BaseHandlers):
         msg['args']['attributes'] = cluster_attrs
         msg['args']['task_uuid'] = deploy_task_uuid
         nodes = []
-        for n in (node1, node2):
+        for n in self.env.nodes:
             node_ips = self.db.query(IPAddr).filter_by(node=n.id).all()
             node_ip = [ne.ip_addr + "/24" for ne in node_ips]
             nodes.append({'uid': n.id, 'status': n.status, 'ip': n.ip,
@@ -112,30 +97,23 @@ class TestHandlers(BaseHandlers):
 
     @patch('nailgun.rpc.cast')
     def test_deploy_and_remove_correct_nodes_and_statuses(self, mocked_rpc):
-        cluster = self.create_cluster_api()
-
-        n_ready = self.create_default_node(cluster_id=cluster['id'],
-                                           status='ready')
-        n_added = self.create_default_node(cluster_id=cluster['id'],
-                                           pending_addition=True,
-                                           status='discover')
-        n_removed = self.create_default_node(cluster_id=cluster['id'],
-                                             pending_deletion=True,
-                                             status='error')
+        self.env.create(
+            cluster_kwargs={},
+            nodes_kwargs=[
+                {"status": "ready"},
+                {"pending_addition": True},
+                {"pending_deletion": True, "status": "error"},
+            ]
+        )
 
         nailgun.task.task.Cobbler = Mock()
-        resp = self.app.put(
-            reverse(
-                'ClusterChangesHandler',
-                kwargs={'cluster_id': cluster['id']}),
-            headers=self.default_headers
-        )
+        self.env.launch_deployment()
 
         # remove_nodes method call
         n_rpc = nailgun.task.task.rpc.cast. \
             call_args_list[0][0][1]['args']['nodes']
         self.assertEquals(len(n_rpc), 1)
-        n_removed_rpc = [n for n in n_rpc if n['uid'] == n_removed.id][0]
+        n_removed_rpc = [n for n in n_rpc if n['uid'] == self.env.nodes[2].id][0]
         # object is found, so we passed the right node for removal
         self.assertIsNotNone(n_removed_rpc)
 
@@ -143,35 +121,29 @@ class TestHandlers(BaseHandlers):
         n_rpc = nailgun.task.task.rpc.cast. \
             call_args_list[1][0][1]['args']['nodes']
         self.assertEquals(len(n_rpc), 2)
-        n_provisioned_rpc = [n for n in n_rpc if n['uid'] == n_ready.id][0]
-        n_added_rpc = [n for n in n_rpc if n['uid'] == n_added.id][0]
+        n_provisioned_rpc = [n for n in n_rpc if n['uid'] == self.env.nodes[0].id][0]
+        n_added_rpc = [n for n in n_rpc if n['uid'] == self.env.nodes[1].id][0]
 
         self.assertEquals(n_provisioned_rpc['status'], 'provisioned')
         self.assertEquals(n_added_rpc['status'], 'provisioning')
 
     @patch('nailgun.rpc.cast')
     def test_deploy_reruns_after_network_changes(self, mocked_rpc):
-        cluster = self.create_cluster_api()
-        node1 = self.create_default_node(cluster_id=cluster['id'],
-                                         role='controller',
-                                         status='ready')
-        node2 = self.create_default_node(cluster_id=cluster['id'],
-                                         role='compute',
-                                         status='ready')
+        self.env.create(
+            cluster_kwargs={},
+            nodes_kwargs=[
+                {"status": "ready"},
+                {"pending_deletion": True, "status": "ready", "role": "compute"},
+            ]
+        )
 
         # for clean experiment
-        cluster_db = self.db.query(Cluster).get(cluster['id'])
+        cluster_db = self.env.clusters[0]
         cluster_db.clear_pending_changes()
         cluster_db.add_pending_changes('networks')
 
-        self.assertEqual(node1.needs_redeploy, True)
-        self.assertEqual(node2.needs_redeploy, True)
+        for n in self.env.nodes:
+            self.assertEqual(n.needs_redeploy, True)
 
         nailgun.task.task.Cobbler = Mock()
-        resp = self.app.put(
-            reverse(
-                'ClusterChangesHandler',
-                kwargs={'cluster_id': cluster['id']}),
-            headers=self.default_headers
-        )
-        self.assertEquals(200, resp.status)
+        self.env.launch_deployment()

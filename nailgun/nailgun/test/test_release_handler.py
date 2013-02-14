@@ -9,7 +9,7 @@ from nailgun.test.base import reverse
 
 class TestHandlers(BaseHandlers):
     def test_release_put_change_name_and_version(self):
-        release = self.create_default_release()
+        release = self.env.create_release(api=False)
         resp = self.app.put(
             reverse('ReleaseHandler', kwargs={'release_id': release.id}),
             params=json.dumps({
@@ -27,7 +27,7 @@ class TestHandlers(BaseHandlers):
         self.assertEquals('modified release', response['name'])
 
     def test_release_put_returns_400_if_no_body(self):
-        release = self.create_default_release()
+        release = self.env.create_release(api=False)
         resp = self.app.put(
             reverse('ReleaseHandler', kwargs={'release_id': release.id}),
             "",
@@ -36,7 +36,7 @@ class TestHandlers(BaseHandlers):
         self.assertEquals(resp.status, 400)
 
     def test_release_delete(self):
-        release = self.create_default_release()
+        release = self.env.create_release(api=False)
         resp = self.app.delete(
             reverse('ReleaseHandler', kwargs={'release_id': release.id}),
             params=json.dumps({

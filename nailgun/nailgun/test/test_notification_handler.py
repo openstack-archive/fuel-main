@@ -11,7 +11,7 @@ from nailgun.test.base import reverse
 class TestHandlers(BaseHandlers):
 
     def test_notification_get_without_cluster(self):
-        notification = self.create_default_notification()
+        notification = self.env.create_notification()
         resp = self.app.get(
             reverse(
                 'NotificationHandler',
@@ -29,7 +29,7 @@ class TestHandlers(BaseHandlers):
         self.assertEquals(notification.message, response['message'])
 
     def test_notification_datetime(self):
-        node = self.create_default_node_api()
+        node = self.env.create_node(api=True)
         resp = self.app.get(
             reverse('NotificationCollectionHandler'),
             headers=self.default_headers
@@ -41,8 +41,8 @@ class TestHandlers(BaseHandlers):
         self.assertNotEqual(notif_api['time'], '')
 
     def test_notification_get_with_cluster(self):
-        cluster = self.create_default_cluster()
-        notification = self.create_default_notification(cluster_id=cluster.id)
+        cluster = self.env.create_cluster(api=False)
+        notification = self.env.create_notification(cluster_id=cluster.id)
         resp = self.app.get(
             reverse(
                 'NotificationHandler',
@@ -60,7 +60,7 @@ class TestHandlers(BaseHandlers):
         self.assertEquals(notification.message, response['message'])
 
     def test_notification_update(self):
-        notification = self.create_default_notification()
+        notification = self.env.create_notification()
         notification_update = {
             'status': 'read'
         }
@@ -79,7 +79,7 @@ class TestHandlers(BaseHandlers):
         self.assertEquals(notification.message, response['message'])
 
     def test_notification_not_found(self):
-        notification = self.create_default_notification()
+        notification = self.env.create_notification()
         resp = self.app.get(
             reverse(
                 'NotificationHandler',

@@ -13,6 +13,7 @@ from nailgun.task.fake import FAKE_THREADS
 from nailgun.task.errors import WrongNodeStatus
 from nailgun.test.base import BaseHandlers
 from nailgun.test.base import reverse
+from nailgun.test.base import fake_tasks
 from nailgun.api.models import Cluster, Attributes, Task, Notification, Node
 from nailgun.api.models import IPAddr, NetworkGroup, Network
 
@@ -22,41 +23,20 @@ class TestHorizonURL(BaseHandlers):
     def tearDown(self):
         self._wait_for_threads()
 
-    @patch('nailgun.task.task.rpc.cast', nailgun.task.task.fake_cast)
-    @patch('nailgun.task.task.settings.FAKE_TASKS', True)
-    @patch('nailgun.task.fake.settings.FAKE_TASKS_TICK_COUNT', 80)
-    @patch('nailgun.task.fake.settings.FAKE_TASKS_TICK_INTERVAL', 1)
+    @fake_tasks
     def test_horizon_url_ha_mode(self):
-        cluster = self.create_cluster_api(mode="ha")
-        node = self.create_default_node(cluster_id=cluster['id'],
-                                        status="discover",
-                                        role="controller",
-                                        pending_addition=True)
-        resp = self.app.put(
-            reverse(
-                'ClusterChangesHandler',
-                kwargs={'cluster_id': cluster['id']}),
-            headers=self.default_headers
+        self.env.create(
+            cluster_kwargs={"mode": "ha"},
+            nodes_kwargs=[
+                {"pending_addition": True},
+            ]
         )
-        response = json.loads(resp.body)
-        supertask_uuid = response['uuid']
-        supertask = self.db.query(Task).filter_by(
-            uuid=supertask_uuid
-        ).first()
 
-        timer = time.time()
-        timeout = 60
-        while supertask.status == 'running':
-            self.db.refresh(supertask)
-            if time.time() - timer > timeout:
-                raise Exception("Deployment seems to be hanged")
-            time.sleep(1)
-        self.db.refresh(node)
-        self.assertEquals(supertask.status, 'ready')
-        self.assertEquals(supertask.progress, 100)
+        supertask = self.env.launch_deployment()
+        self.env.wait_ready(supertask, 60)
 
         network = self.db.query(Network).join(NetworkGroup).\
-            filter(NetworkGroup.cluster_id == cluster["id"]).\
+            filter(NetworkGroup.cluster_id == self.env.clusters[0].id).\
             filter_by(name="public").first()
         lost_ips = self.db.query(IPAddr).filter_by(
             network=network.id,
@@ -68,6 +48,6 @@ class TestHorizonURL(BaseHandlers):
             u"Deployment of environment '{0}' is done. "
             "Access WebUI of OpenStack at http://{1}/"
         ).format(
-            cluster['name'],
+            self.env.clusters[0].name,
             lost_ips[0].ip_addr
         ))

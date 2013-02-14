@@ -61,7 +61,7 @@ class TestLogs(BaseHandlers):
 
     def test_log_source_by_node_collection_handler(self):
         node_ip = '40.30.20.10'
-        node = self.create_default_node(ip=node_ip)
+        node = self.env.create_node(api=False, ip=node_ip)
 
         resp = self.app.get(
             reverse('LogSourceByNodeCollectionHandler',
@@ -87,8 +87,8 @@ class TestLogs(BaseHandlers):
         node_ip = '10.20.30.40'
         log_entry = [time.strftime(settings.UI_LOG_DATE_FORMAT),
                      'LEVEL222', 'text333']
-        cluster = self.create_default_cluster()
-        node = self.create_default_node(cluster_id=cluster.id, ip=node_ip)
+        cluster = self.env.create_cluster(api=False)
+        node = self.env.create_node(api=False, cluster_id=cluster.id, ip=node_ip)
         self._create_logfile_for_node(settings.LOGS[0], log_entry)
         self._create_logfile_for_node(settings.LOGS[1], log_entry, node)
 
