@@ -35,6 +35,12 @@ class ActorFabric(object):
             return Sender(config)
 
 
+class ActorException(Exception):
+    def __init__(self, logger, message='', level='error'):
+        getattr(logger, level, logger.error)(message)
+        super(ActorException, self).__init__(message)
+
+
 class Actor(object):
     def __init__(self, config=None):
         self.config = {
@@ -70,9 +76,9 @@ class Actor(object):
         env["PATH"] = "/bin:/usr/bin:/sbin:/usr/sbin"
         exit_code = call(command, shell=False, env=env)
         if not exit_code in expected_exit_codes:
-            self.logger.error("Command exited with error: %s: %s",
-                " ".join(command),
-                exit_code
+            raise ActorException(
+                self.logger,
+                "Command exited with error: %s: %s" % (" ".join(command), exit_code)
             )
 
     def _viface(self, iface, vid):
@@ -81,7 +87,6 @@ class Actor(object):
                 m = re.search(ur'(.+?)\s+\|\s+(.+?)\s+\|\s+(.+?)\s*$', line)
                 if m and m.group(2) == str(vid) and m.group(3) == iface:
                     return m.group(1)
-            return None
 
     def _parse_vlan_list(self, vlan_string):
         self.logger.debug("Parsing vlan list: %s", vlan_string)
@@ -105,16 +110,15 @@ class Actor(object):
                     else:
                         raise ValueError
             except ValueError:
-                self.logger.error("Incorrect vlan: %s" % chunk)
-                raise Exception("Incorrect vlan: %s" % chunk)
+                raise ActorException(self.logger, "Incorrect vlan: %s" % chunk)
         self.logger.debug("Parsed vlans: %s", str(vlan_list))
         return vlan_list
 
     def _ensure_vlan_iface_up(self, iface, vid):
-        self.logger.debug("Checking if vlan %s interface "
-            "on %s already exist", str(vid), iface)
+        self.logger.debug("Checking if vlan %s "
+            "on interface %s already exists", str(vid), iface)
         if not self._viface(iface, vid):
-            self.logger.debug("Creating vlan %s interface on %s", str(vid), iface)
+            self.logger.debug("Creating vlan %s on interface %s", str(vid), iface)
             # creating vlan interface
             self._execute([
                 "ip",
@@ -133,10 +137,10 @@ class Actor(object):
 
         viface = self._viface(iface, vid)
         if not viface:
-            self.logger.error("Can not create vlan %d on "
-                            "interface %s" % (vid, iface))
-            raise Exception("Can not create vlan %d on "
-                            "interface %s" % (vid, iface))
+            raise ActorException(
+                self.logger,
+                "Can not create vlan %d on interface %s" % (vid, iface)
+            )
         return viface
 
     def _ensure_vlan_iface_down(self, iface, vid):
@@ -204,10 +208,6 @@ class Listener(Actor):
         self.logger.info("=== Starting Listener ===")
         self.pidfile = self.addpid('/var/run/net_probe')
 
-        def term_handler(signum, sigframe):
-            sys.exit()
-
-        signal.signal(signal.SIGTERM, term_handler)
         self.neighbours = {}
 
     def addpid(self, piddir):
@@ -215,9 +215,8 @@ class Listener(Actor):
         if not os.path.exists(piddir):
             os.mkdir(piddir)
         pidfile = os.path.join(piddir, str(pid))
-        fo = open(pidfile, 'w')
-        fo.write('')
-        fo.close()
+        with open(pidfile, 'w') as fo:
+            fo.write('')
         return pidfile
 
     def run(self):
@@ -267,14 +266,10 @@ class Listener(Actor):
         riface, uid = rmsg.split(' ', 1)
         uid = uid.strip('\x00\n')
 
-        if vlan not in self.neighbours[iface]:
-            self.neighbours[iface][vlan] = {}
+        self.neighbours[iface].setdefault(vlan, {})
 
-        if uid not in self.neighbours[iface][vlan]:
-            self.neighbours[iface][vlan][uid] = [riface]
-        else:
-            if riface not in self.neighbours[iface][vlan][uid]:
-                self.neighbours[iface][vlan][uid].append(riface)
+        if riface not in self.neighbours[iface][vlan].setdefault(uid, []):
+            self.neighbours[iface][vlan][uid].append(riface)
 
     def get_probe_frames(self, iface):
         if not iface in self.neighbours:
@@ -370,9 +365,12 @@ def define_subparsers(parser):
         help='uid to insert into probe packets payload', default='1'
     )
 
-
+def term_handler(signum, sigframe):
+    sys.exit()
 
 if __name__ == "__main__":
+    signal.signal(signal.SIGTERM, term_handler)
+
     parser = define_parser()
     params, other_params = parser.parse_known_args()
 
