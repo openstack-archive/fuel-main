@@ -25,33 +25,31 @@ function(models, commonViews, settingsTabTemplate, settingsGroupTemplate) {
             this.$('.btn, input').attr('disabled', true);
         },
         collectData: function(parentEl, changedData) {
-            var model = this, param;
-            _.each(parentEl.children('.wrapper'), function(el) {
-                if ($(el).data('nested')) {
-                    param = $(el).find('h4:first').text();
-                    changedData[param] = {};
-                    model.collectData($(el), changedData[param]);
-                } else {
-                    var value;
-                    if ($(el).find('input[type=text]').length) {
-                        param = $(el).find('input[type=text]');
-                        value = param.val();
-                    } else if ($(el).find('input[type=checkbox]').length) {
-                        param = $(el).find('input[type=checkbox]');
-                        value = param.attr('checked') == 'checked' ? true : false;
+            _.each(parentEl.children('legend'), function(legend) {
+                var param = $(legend).text();
+                changedData[param] = {};
+                _.each(legend.next().find('.parameter-name'), function(settingLabel) {
+                    var setting = $(settingLabel).data('setting');
+                    changedData[param][setting] = {};
+                    changedData[param][setting].label = $(settingLabel).text();
+                    var controls = $(settingLabel).siblings('.parameter-control').find('input');
+                    if (controls.length == 1) {
+                        changedData[param][setting].value = controls.val();
                     } else {
-                        param = $(el).find('select');
-                        value = [];
-                        _.each(param.children('option'), function(option) {
-                            value.push({
-                                "id": $(option).attr('value'),
-                                "name": $(option).text(),
-                                "chosen": $(option).attr('selected') == 'selected' ? true : false
-                            });
+                        changedData[param][setting].values = [];
+                        _.each(controls, function(control) {
+                            var option = {};
+                            option.data = control.data('dataValue');
+                            option.display_name = $(control).parents('.parameter-control').siblings('.parameter-name').text();
+                            option.description = $(control).parents('.parameter-control').siblings('.parameter-description').text();
+                            changedData[param][setting].values.push(option);
+                            if (control.val()) {
+                                changedData[param][setting].value = control.data('dataValue');
+                            }
                         });
                     }
-                    changedData[param.attr('name')] = value;
-                }
+                    changedData[param][setting].description = $(settingLabel).siblings('.parameter-description').text();
+                });
             });
         },
         checkForChanges: function() {
@@ -67,7 +65,7 @@ function(models, commonViews, settingsTabTemplate, settingsGroupTemplate) {
         },
         applyChanges: function() {
             var changedData = {};
-            this.collectData(this.$('form'), changedData);
+            this.collectData(this.$('.settings'), changedData);
             this.model.get('settings').update({editable: changedData}, {
                 url: '/api/clusters/' + this.model.id + '/attributes',
                 success: _.bind(function() {
@@ -108,7 +106,7 @@ function(models, commonViews, settingsTabTemplate, settingsGroupTemplate) {
         render: function () {
             this.$el.html(this.template({cluster: this.model}));
             if (this.model.get('settings').deferred.state() != 'pending') {
-            this.parseSettings(this.model.get('settings').get('editable'));
+                this.parseSettings(this.model.get('settings').get('editable'));
             }
             return this;
         },
@@ -154,7 +152,6 @@ function(models, commonViews, settingsTabTemplate, settingsGroupTemplate) {
         },
         render: function() {
             this.$el.html(this.template({settings: this.settings, legend: this.legend, cluster: this.model}));
-            this.$el.attr('data-nested', !_.isArray(this.settings) && _.isObject(this.settings));
             return this;
         }
     });

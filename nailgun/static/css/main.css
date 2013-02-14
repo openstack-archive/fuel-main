@@ -3142,6 +3142,7 @@ select[name=release] option {
   font-weight: 600;
   margin-top: 0px;
   overflow: hidden;
+  cursor: default;
 }
 
 .parameter-control {

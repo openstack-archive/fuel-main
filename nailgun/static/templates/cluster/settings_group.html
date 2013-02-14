@@ -6,11 +6,11 @@
       <div class="parameter-box clearfix">
         <div class="parameter-control">
           <div class="custom-tumbler">
-            <input type="checkbox" name="checkbox" <%= settings[setting]['value'] ? 'checked' : '' %> />
+            <input type="checkbox" name="checkbox" <%= settings[setting]['value'] ? 'checked' : '' %> <%= disabled %> />
             <!--[if !IE |(gte IE 9)]>--><span>&nbsp;</span><!--<![endif]-->
           </div>
         </div>
-        <div class="parameter-name"><%- settings[setting]['label'] %></div>
+        <div class="parameter-name" data-setting="<%- setting %>"><%- settings[setting]['label'] %></div>
         <div class="parameter-description"><%- settings[setting]['description'] %></div>
       </div>
     <% } else if (settings[setting]['values']) { %>
@@ -18,20 +18,20 @@
         <div class="parameter-box clearfix">
           <div class="parameter-control">
             <div class="custom-tumbler">
-              <input type="radio" name="<%- option['data'] %>" <%= option['data'] == settings[setting]['value'] ? 'checked' : '' %> />
+              <input type="radio" name="<%- option['data'] %>" data-dataValue="<%- option['data'] %>" <%= option['data'] == settings[setting]['value'] ? 'checked' : '' %> <%= disabled %> />
               <!--[if !IE |(gte IE 9)]>--><span>&nbsp;</span><!--<![endif]-->
             </div>
           </div>
-          <div class="parameter-name"><%- option['display_name'] %></div>
+          <div class="parameter-name" data-setting="<%- setting %>"><%- option['display_name'] %></div>
           <div class="parameter-description"><%- option['description'] %></div>
         </div>
       <% }) %>
     <% } else { %>
       <div class="parameter-box clearfix">
-        <div class="parameter-name"><%- settings[setting]['label'] %></div>
+        <div class="parameter-name" data-setting="<%- setting %>"><%- settings[setting]['label'] %></div>
         <div class="parameter-control">
           <div class="parameter-control">
-            <input type="text" value="<%- settings[setting]['value'] %>">
+            <input type="text" value="<%- settings[setting]['value'] %>" <%= disabled %> />
           </div>
         </div>
         <div class="parameter-description"><%- settings[setting]['description'] %></div>
