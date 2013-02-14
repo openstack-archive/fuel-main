@@ -3105,14 +3105,14 @@ select[name=release] option {
 
 /* custom checkbox & radio */
   .custom-tumbler {
-    width:30px;
+    width:42px;
     height:24px;
     overflow:hidden;
     position:relative;
   }
 
-  .custom-tumbler input[type=checkbox]{width:24px;height:24px;overflow:hidden;position:absolute;filter:alpha(opacity=0);-moz-opacity:0;-khtml-opacity:0;opacity:0; cursor: pointer;}
-  .custom-tumbler input[type=checkbox] + span{display:block;width:24px;height:24px;overflow:hidden;font-size:1px;line-height:0;background:transparent url(../img/radio_checkbox.png) no-repeat scroll -24px 0px;}
+  .custom-tumbler input[type=checkbox]{width:42px;height:24px;overflow:hidden;position:absolute;filter:alpha(opacity=0);-moz-opacity:0;-khtml-opacity:0;opacity:0; cursor: pointer;}
+  .custom-tumbler input[type=checkbox] + span{display:block;width:42px;height:24px;overflow:hidden;font-size:1px;line-height:0;background:transparent url(../img/radio_checkbox.png) no-repeat scroll -42px 0px;}
   .custom-tumbler input[type=checkbox]:checked + span{background-position:0 0px;}
   .custom-tumbler input[disabled] + span{filter:alpha(opacity=50);-moz-opacity:0.5;-khtml-opacity:0.5;opacity:0.5;}
   .custom-tumbler input[type=checkbox] + span.checked{background-position:0 0px;}
@@ -3162,6 +3162,12 @@ select[name=release] option {
   -webkit-box-sizing: border-box;
   margin-left: 20px;
   overflow: hidden;
+}
+
+.global-description {
+  display: block;
+  color: #999999;
+  margin-left: 13px;
 }
 
 legend.openstack-settings {
