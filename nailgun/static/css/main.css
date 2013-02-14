@@ -2979,7 +2979,6 @@ select[name=release] option {
   clear: both;
   font-size: 12px;
   line-height: 12px;
-  font-weight: bold;
   padding: 4px;
 }
 
@@ -2989,7 +2988,6 @@ select[name=release] option {
   float: left;
   width: 150px;
   font-size: 12px;
-  font-weight: bold;
   line-height: 12px;
   padding-right: 10px;
   word-break: break-all;

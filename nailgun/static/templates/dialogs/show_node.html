@@ -24,7 +24,7 @@
               } else if (field == 'disks') {
                 var totalSize = _.reduce(meta[field].map(function(disk) {return disk['size']}), function(sum, n) {return sum + n}, 0);
                 totalSize = totalSize/Math.pow(1000, 3);
-                summary = meta[field].length + ' driver';
+                summary = meta[field].length + ' drive';
                 summary += meta[field].length == 1 ? ', ' : 's, ';
                 summary += totalSize < 100 ? (totalSize).toFixed(1) + ' GB total' : (totalSize/1000).toFixed(1) + ' TB total';
               } else if (field == 'cpu') {
