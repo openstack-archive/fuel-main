@@ -63,10 +63,10 @@ class TestHandlers(BaseHandlers):
         )
         self.assertEquals(resp.status, 409)
 
-        release_from_db = self.db.query(Release).filter(
-            Release.name == release_name,
-            Release.version == release_version,
-            Release.description == release_description
+        release_from_db = self.db.query(Release).filter_by(
+            name=release_name,
+            version=release_version,
+            description=release_description
         ).all()
         self.assertEquals(len(release_from_db), 1)
 

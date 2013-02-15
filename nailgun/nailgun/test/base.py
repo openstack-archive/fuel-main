@@ -292,6 +292,30 @@ class Environment(object):
                 "Nothing to deploy - try creating cluster"
             )
 
+    def launch_verify_networks(self, data=None):
+        if self.clusters:
+            if data:
+                nets = json.dumps(data)
+            else:
+                nets = json.dumps(self.generate_ui_networks(
+                    self.clusters[0].id
+                ))
+            resp = self.app.put(
+                reverse(
+                    'ClusterVerifyNetworksHandler',
+                    kwargs={'cluster_id': self.clusters[0].id}),
+                nets,
+                headers=self.default_headers
+            )
+            self.tester.assertEquals(200, resp.status)
+            response = json.loads(resp.body)
+            task_uuid = response['uuid']
+            return self.db.query(Task).filter_by(uuid=task_uuid).first()
+        else:
+            raise NotImplementedError(
+                "Nothing to verify - try creating cluster"
+            )
+
     def refresh_nodes(self):
         map(self.db.refresh, self.nodes)
 
@@ -311,9 +335,11 @@ class Environment(object):
             time.sleep(1)
         self.tester.assertEquals(task.progress, 100)
 
-    def wait_ready(self, task, timeout=60):
+    def wait_ready(self, task, timeout=60, message=None):
         self._wait_task(task, timeout)
         self.tester.assertEquals(task.status, 'ready')
+        if message:
+            self.tester.assertEquals(task.message, message)
 
     def wait_error(self, task, timeout=60, message=None):
         self._wait_task(task, timeout)
@@ -366,20 +392,31 @@ class BaseHandlers(TestCase):
         self.env.upload_fixtures(self.fixtures)
 
 
-def fake_tasks(func):
-    patches = (
-        ('nailgun.task.task.rpc.cast',
-         nailgun.task.task.fake_cast),
-        ('nailgun.task.task.settings.FAKE_TASKS',
-         True),
-        ('nailgun.task.fake.settings.FAKE_TASKS_TICK_COUNT',
-         99),
-        ('nailgun.task.fake.settings.FAKE_TASKS_TICK_INTERVAL',
-         1)
-    )
-    for method, mocked in patches:
-        func = mock.patch(method, mocked)(func)
-    return func
+def fake_tasks(fake_rpc=True):
+    def wrapper(func):
+        func = mock.patch(
+            'nailgun.task.task.settings.FAKE_TASKS',
+            True
+        )(func)
+        func = mock.patch(
+            'nailgun.task.fake.settings.FAKE_TASKS_TICK_COUNT',
+            99
+        )(func)
+        func = mock.patch(
+            'nailgun.task.fake.settings.FAKE_TASKS_TICK_INTERVAL',
+            1
+        )(func)
+        if fake_rpc:
+            func = mock.patch(
+                'nailgun.task.task.rpc.cast',
+                nailgun.task.task.fake_cast
+            )(func)
+        else:
+            func = mock.patch(
+                'nailgun.task.task.rpc.cast'
+            )(func)
+        return func
+    return wrapper
 
 
 def reverse(name, kwargs=None):

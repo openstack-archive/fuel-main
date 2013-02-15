@@ -113,7 +113,9 @@ class TestHandlers(BaseHandlers):
         n_rpc = nailgun.task.task.rpc.cast. \
             call_args_list[0][0][1]['args']['nodes']
         self.assertEquals(len(n_rpc), 1)
-        n_removed_rpc = [n for n in n_rpc if n['uid'] == self.env.nodes[2].id][0]
+        n_removed_rpc = [
+            n for n in n_rpc if n['uid'] == self.env.nodes[2].id
+        ][0]
         # object is found, so we passed the right node for removal
         self.assertIsNotNone(n_removed_rpc)
 
@@ -121,8 +123,12 @@ class TestHandlers(BaseHandlers):
         n_rpc = nailgun.task.task.rpc.cast. \
             call_args_list[1][0][1]['args']['nodes']
         self.assertEquals(len(n_rpc), 2)
-        n_provisioned_rpc = [n for n in n_rpc if n['uid'] == self.env.nodes[0].id][0]
-        n_added_rpc = [n for n in n_rpc if n['uid'] == self.env.nodes[1].id][0]
+        n_provisioned_rpc = [
+            n for n in n_rpc if n['uid'] == self.env.nodes[0].id
+        ][0]
+        n_added_rpc = [
+            n for n in n_rpc if n['uid'] == self.env.nodes[1].id
+        ][0]
 
         self.assertEquals(n_provisioned_rpc['status'], 'provisioned')
         self.assertEquals(n_added_rpc['status'], 'provisioning')
@@ -133,7 +139,11 @@ class TestHandlers(BaseHandlers):
             cluster_kwargs={},
             nodes_kwargs=[
                 {"status": "ready"},
-                {"pending_deletion": True, "status": "ready", "role": "compute"},
+                {
+                    "pending_deletion": True,
+                    "status": "ready",
+                    "role": "compute"
+                },
             ]
         )
 

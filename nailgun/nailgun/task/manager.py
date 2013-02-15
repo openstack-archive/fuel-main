@@ -47,9 +47,9 @@ class TaskManager(object):
 class DeploymentTaskManager(TaskManager):
 
     def execute(self):
-        current_tasks = orm().query(Task).filter(
-            Task.cluster == self.cluster,
-            Task.name == "deploy"
+        current_tasks = orm().query(Task).filter_by(
+            cluster_id=self.cluster.id,
+            name="deploy"
         )
         for task in current_tasks:
             if task.status == "running":

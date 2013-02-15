@@ -25,18 +25,24 @@ from nailgun.api.models import Vlan
 class TestVerifyNetworks(BaseHandlers):
 
     def test_verify_networks_resp(self):
-        cluster = self.create_cluster_api()
-        node1 = self.create_default_node(cluster_id=cluster['id'])
-        node2 = self.create_default_node(cluster_id=cluster['id'])
+        self.env.create(
+            cluster_kwargs={},
+            nodes_kwargs=[
+                {"api": False},
+                {"api": False}
+            ]
+        )
+        cluster_db = self.env.clusters[0]
+        node1, node2 = self.env.nodes
         vlans = NetworkGroup.generate_vlan_ids_list(
-            self.generate_ui_networks(cluster["id"])
+            self.env.generate_ui_networks(cluster_db.id)
         )
 
         receiver = rcvr.NailgunReceiver()
 
         task = Task(
             name="verify_networks",
-            cluster_id=cluster['id']
+            cluster_id=cluster_db.id
         )
         task.cache = {
             "args": {
@@ -57,15 +63,20 @@ class TestVerifyNetworks(BaseHandlers):
         self.assertEqual(task.message, None)
 
     def test_verify_networks_resp_error(self):
-        cluster = self.create_cluster_api()
-        node1 = self.create_default_node(cluster_id=cluster['id'])
-        node2 = self.create_default_node(cluster_id=cluster['id'])
-
+        self.env.create(
+            cluster_kwargs={},
+            nodes_kwargs=[
+                {"api": False},
+                {"api": False}
+            ]
+        )
+        cluster_db = self.env.clusters[0]
+        node1, node2 = self.env.nodes
         receiver = rcvr.NailgunReceiver()
 
         task = Task(
             name="super",
-            cluster_id=cluster['id']
+            cluster_id=cluster_db.id
         )
         task.cache = {
             "args": {
@@ -84,7 +95,7 @@ class TestVerifyNetworks(BaseHandlers):
         self.db.refresh(task)
         self.assertEqual(task.status, "error")
         error_nodes = []
-        for node in (node1, node2):
+        for node in self.env.nodes:
             error_nodes.append({'uid': node.id, 'interface': 'eth0',
                                 'name': node.name, 'absent_vlans': [104],
                                 'mac': node.mac})
@@ -92,15 +103,21 @@ class TestVerifyNetworks(BaseHandlers):
         self.assertEqual(task.result, error_nodes)
 
     def test_verify_networks_resp_error_with_removed_node(self):
-        cluster = self.create_cluster_api()
-        node1 = self.create_default_node(cluster_id=cluster['id'])
-        node2 = self.create_default_node(cluster_id=cluster['id'])
+        self.env.create(
+            cluster_kwargs={},
+            nodes_kwargs=[
+                {"api": False},
+                {"api": False}
+            ]
+        )
 
         receiver = rcvr.NailgunReceiver()
+        cluster_db = self.env.clusters[0]
+        node1, node2 = self.env.nodes
 
         task = Task(
             name="super",
-            cluster_id=cluster['id']
+            cluster_id=cluster_db.id
         )
         task.cache = {
             "args": {
@@ -134,15 +151,21 @@ class TestVerifyNetworks(BaseHandlers):
         self.assertEqual(task['result'], error_nodes)
 
     def test_verify_networks_resp_empty_nodes_default_error(self):
-        cluster = self.create_cluster_api()
-        node1 = self.create_default_node(cluster_id=cluster['id'])
-        node2 = self.create_default_node(cluster_id=cluster['id'])
+        self.env.create(
+            cluster_kwargs={},
+            nodes_kwargs=[
+                {"api": False},
+                {"api": False}
+            ]
+        )
+        cluster_db = self.env.clusters[0]
+        node1, node2 = self.env.nodes
 
         receiver = rcvr.NailgunReceiver()
 
         task = Task(
             name="super",
-            cluster_id=cluster['id']
+            cluster_id=cluster_db.id
         )
         task.cache = {
             "args": {
@@ -163,15 +186,21 @@ class TestVerifyNetworks(BaseHandlers):
         self.assertEqual(task.message, error_msg)
 
     def test_verify_networks_resp_empty_nodes_custom_error(self):
-        cluster = self.create_cluster_api()
-        node1 = self.create_default_node(cluster_id=cluster['id'])
-        node2 = self.create_default_node(cluster_id=cluster['id'])
+        self.env.create(
+            cluster_kwargs={},
+            nodes_kwargs=[
+                {"api": False},
+                {"api": False}
+            ]
+        )
+        cluster_db = self.env.clusters[0]
+        node1, node2 = self.env.nodes
 
         receiver = rcvr.NailgunReceiver()
 
         task = Task(
             name="super",
-            cluster_id=cluster['id']
+            cluster_id=cluster_db.id
         )
         task.cache = {
             "args": {
@@ -195,8 +224,8 @@ class TestVerifyNetworks(BaseHandlers):
 class TestConsumer(BaseHandlers):
 
     def test_node_deploy_resp(self):
-        node = self.create_default_node()
-        node2 = self.create_default_node()
+        node = self.env.create_node(api=False)
+        node2 = self.env.create_node(api=False)
         receiver = rcvr.NailgunReceiver()
 
         task = Task(
@@ -235,7 +264,12 @@ class TestConsumer(BaseHandlers):
         self.assertEqual(task.status, "running")
 
     def test_error_node_progress(self):
-        cluster = self.create_cluster_api()
+        self.env.create(
+            cluster_kwargs={},
+            nodes_kwargs=[
+                {"api": False}
+            ]
+        )
         task = Task(
             uuid=str(uuid.uuid4()),
             name="super",
@@ -243,34 +277,39 @@ class TestConsumer(BaseHandlers):
         )
         self.db.add(task)
         self.db.commit()
-        node = self.create_default_node(cluster_id=cluster['id'])
         receiver = rcvr.NailgunReceiver()
         kwargs = {
             'task_uuid': task.uuid,
             'progress': 20,
             'nodes': [
                 {
-                    'uid': node.id,
+                    'uid': self.env.nodes[0].id,
                     'status': 'error',
                     'progress': 50
                 }
             ]
         }
         receiver.deploy_resp(**kwargs)
-        self.db.refresh(node)
-        self.assertEqual(node.progress, 100)
+        self.db.refresh(self.env.nodes[0])
+        self.assertEqual(self.env.nodes[0].progress, 100)
 
     def test_remove_nodes_resp(self):
-        cluster = self.create_cluster_api()
-        node1 = self.create_default_node(cluster_id=cluster['id'])
-        node2 = self.create_default_node(cluster_id=cluster['id'])
+        self.env.create(
+            cluster_kwargs={},
+            nodes_kwargs=[
+                {"api": False},
+                {"api": False}
+            ]
+        )
+        cluster_db = self.env.clusters[0]
+        node1, node2 = self.env.nodes
 
         receiver = rcvr.NailgunReceiver()
 
         task = Task(
             uuid=str(uuid.uuid4()),
             name="super",
-            cluster_id=cluster['id']
+            cluster_id=cluster_db.id
         )
         self.db.add(task)
         self.db.commit()
@@ -288,16 +327,22 @@ class TestConsumer(BaseHandlers):
         self.assertEquals(len(nodes_db), 0)
 
     def test_remove_nodes_resp_failure(self):
-        cluster = self.create_cluster_api()
-        node1 = self.create_default_node(cluster_id=cluster['id'])
-        node2 = self.create_default_node(cluster_id=cluster['id'])
+        self.env.create(
+            cluster_kwargs={},
+            nodes_kwargs=[
+                {"api": False},
+                {"api": False}
+            ]
+        )
+        cluster_db = self.env.clusters[0]
+        node1, node2 = self.env.nodes
 
         receiver = rcvr.NailgunReceiver()
 
         task = Task(
             uuid=str(uuid.uuid4()),
             name="super",
-            cluster_id=cluster['id']
+            cluster_id=cluster_db.id
         )
         self.db.add(task)
         self.db.commit()
@@ -319,17 +364,22 @@ class TestConsumer(BaseHandlers):
         self.assertEquals(error_node.status, "error")
 
     def test_remove_cluster_resp(self):
-        cluster = self.create_cluster_api()
-        node1 = self.create_default_node(cluster_id=cluster['id'])
-        node1_id = node1.id
-        node2 = self.create_default_node(cluster_id=cluster['id'])
-        node2_id = node2.id
-        notification = self.create_default_notification(
-            cluster_id=cluster['id']
+        self.env.create(
+            cluster_kwargs={},
+            nodes_kwargs=[
+                {"api": False},
+                {"api": False}
+            ]
+        )
+        cluster_id = self.env.clusters[0].id
+        node1, node2 = self.env.nodes
+        node1_id, node2_id = [n.id for n in self.env.nodes]
+        notification = self.env.create_notification(
+            cluster_id=cluster_id
         )
         networks = self.db.query(Network)\
             .join(NetworkGroup).\
-            filter(NetworkGroup.cluster_id == cluster['id']).all()
+            filter(NetworkGroup.cluster_id == cluster_id).all()
 
         vlans = []
         for net in networks:
@@ -340,7 +390,7 @@ class TestConsumer(BaseHandlers):
         task = Task(
             uuid=str(uuid.uuid4()),
             name="cluster_deletion",
-            cluster_id=cluster['id']
+            cluster_id=cluster_id
         )
         self.db.add(task)
         self.db.commit()
@@ -356,7 +406,7 @@ class TestConsumer(BaseHandlers):
         receiver.remove_cluster_resp(**kwargs)
 
         nodes_db = self.db.query(Node)\
-            .filter_by(cluster_id=cluster['id']).all()
+            .filter_by(cluster_id=cluster_id).all()
         self.assertEquals(len(nodes_db), 0)
 
         ip_db = self.db.query(IPAddr)\
@@ -368,31 +418,37 @@ class TestConsumer(BaseHandlers):
         self.assertEquals(len(vlan_db), 0)
 
         attrs_db = self.db.query(Attributes)\
-            .filter_by(cluster_id=cluster['id']).all()
+            .filter_by(cluster_id=cluster_id).all()
         self.assertEquals(len(attrs_db), 0)
 
         nots_db = self.db.query(Notification)\
-            .filter_by(cluster_id=cluster['id']).all()
+            .filter_by(cluster_id=cluster_id).all()
         self.assertEquals(len(nots_db), 0)
 
         nets_db = self.db.query(Network)\
             .join(NetworkGroup).\
-            filter(NetworkGroup.cluster_id == cluster['id']).all()
+            filter(NetworkGroup.cluster_id == cluster_id).all()
         self.assertEquals(len(nets_db), 0)
 
         task_db = self.db.query(Task)\
-            .filter_by(cluster_id=cluster['id']).all()
+            .filter_by(cluster_id=cluster_id).all()
         self.assertEquals(len(task_db), 0)
 
-        cluster_db = self.db.query(Cluster).get(cluster['id'])
+        cluster_db = self.db.query(Cluster).get(cluster_id)
         self.assertIsNone(cluster_db)
 
     def test_remove_cluster_resp_failed(self):
-        cluster = self.create_cluster_api()
-        node1 = self.create_default_node(cluster_id=cluster['id'])
-        node2 = self.create_default_node(cluster_id=cluster['id'])
-        notification = self.create_default_notification(
-            cluster_id=cluster['id']
+        self.env.create(
+            cluster_kwargs={},
+            nodes_kwargs=[
+                {"api": False},
+                {"api": False}
+            ]
+        )
+        cluster_db = self.env.clusters[0]
+        node1, node2 = self.env.nodes
+        notification = self.env.create_notification(
+            cluster_id=cluster_db.id
         )
 
         receiver = rcvr.NailgunReceiver()
@@ -400,7 +456,7 @@ class TestConsumer(BaseHandlers):
         task = Task(
             uuid=str(uuid.uuid4()),
             name="cluster_deletion",
-            cluster_id=cluster['id']
+            cluster_id=cluster_db.id
         )
         self.db.add(task)
         self.db.commit()
@@ -418,18 +474,18 @@ class TestConsumer(BaseHandlers):
         self.assertEqual(task.status, "error")
 
         nodes_db = self.db.query(Node)\
-            .filter_by(cluster_id=cluster['id']).all()
+            .filter_by(cluster_id=cluster_db.id).all()
         self.assertNotEqual(len(nodes_db), 0)
 
         attrs_db = self.db.query(Attributes)\
-            .filter_by(cluster_id=cluster['id']).all()
+            .filter_by(cluster_id=cluster_db.id).all()
         self.assertNotEqual(len(attrs_db), 0)
 
         nots_db = self.db.query(Notification)\
-            .filter_by(cluster_id=cluster['id']).all()
+            .filter_by(cluster_id=cluster_db.id).all()
         self.assertNotEqual(len(nots_db), 0)
 
         nets_db = self.db.query(Network)\
             .join(NetworkGroup).\
-            filter(NetworkGroup.cluster_id == cluster['id']).all()
+            filter(NetworkGroup.cluster_id == cluster_db.id).all()
         self.assertNotEqual(len(nets_db), 0)

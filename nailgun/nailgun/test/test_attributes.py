@@ -13,7 +13,7 @@ from nailgun.test.base import reverse
 class TestAttributes(BaseHandlers):
 
     def test_attributes_creation(self):
-        cluster = self.create_cluster_api()
+        cluster = self.env.create_cluster(api=True)
         resp = self.app.get(
             reverse(
                 'ClusterAttributesHandler',
@@ -38,7 +38,7 @@ class TestAttributes(BaseHandlers):
         )
 
     def test_500_if_no_attributes(self):
-        cluster = self.create_default_cluster()
+        cluster = self.env.create_cluster(api=False)
         resp = self.app.put(
             reverse(
                 'ClusterAttributesHandler',
@@ -54,7 +54,7 @@ class TestAttributes(BaseHandlers):
         self.assertEquals(500, resp.status)
 
     def test_attributes_update(self):
-        cluster_id = self.create_cluster_api()['id']
+        cluster_id = self.env.create_cluster(api=True)['id']
         resp = self.app.get(
             reverse(
                 'ClusterAttributesHandler',
@@ -106,7 +106,7 @@ class TestAttributes(BaseHandlers):
         self.assertEquals(400, resp.status)
 
     def test_get_default_attributes(self):
-        cluster = self.create_cluster_api()
+        cluster = self.env.create_cluster(api=True)
         release = self.db.query(Release).get(
             cluster['release']['id']
         )
@@ -123,7 +123,7 @@ class TestAttributes(BaseHandlers):
         )
 
     def test_attributes_set_defaults(self):
-        cluster = self.create_cluster_api()
+        cluster = self.env.create_cluster(api=True)
         # Change editable attributes.
         resp = self.app.put(
             reverse(

@@ -23,7 +23,7 @@ class TestHorizonURL(BaseHandlers):
     def tearDown(self):
         self._wait_for_threads()
 
-    @fake_tasks
+    @fake_tasks()
     def test_horizon_url_ha_mode(self):
         self.env.create(
             cluster_kwargs={"mode": "ha"},

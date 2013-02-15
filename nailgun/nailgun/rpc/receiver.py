@@ -195,8 +195,6 @@ class NailgunReceiver(object):
         coeff = settings.PROVISIONING_PROGRESS_COEFF or 0.3
         if nodes and not progress:
             nodes_progress = []
-
-            orm().expire_all()
             nodes_db = orm().query(Node).filter_by(
                 cluster_id=task.cluster_id).all()
             for node in nodes_db:

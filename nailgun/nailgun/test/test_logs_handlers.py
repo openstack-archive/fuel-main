@@ -88,7 +88,7 @@ class TestLogs(BaseHandlers):
         log_entry = [time.strftime(settings.UI_LOG_DATE_FORMAT),
                      'LEVEL222', 'text333']
         cluster = self.env.create_cluster(api=False)
-        node = self.env.create_node(api=False, cluster_id=cluster.id, ip=node_ip)
+        node = self.env.create_node(cluster_id=cluster.id, ip=node_ip)
         self._create_logfile_for_node(settings.LOGS[0], log_entry)
         self._create_logfile_for_node(settings.LOGS[1], log_entry, node)
 

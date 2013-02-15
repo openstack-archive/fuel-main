@@ -94,7 +94,7 @@ class TestClusterChanges(BaseHandlers):
         ).all()
         self.assertEquals(len(pending_changes), 1)
 
-    @fake_tasks
+    @fake_tasks()
     def test_successful_deployment_drops_all_changes(self):
         cluster = self.env.create_cluster(api=True)
         node = self.env.create_node(cluster_id=cluster["id"])
@@ -105,7 +105,7 @@ class TestClusterChanges(BaseHandlers):
         cluster_db = self.db.query(Cluster).get(cluster["id"])
         self.assertEquals(list(cluster_db.changes), [])
 
-    @fake_tasks
+    @fake_tasks()
     def test_failed_deployment_does_nothing_with_changes(self):
         cluster = self.env.create_cluster(api=True)
         node = self.env.create_node(

@@ -24,7 +24,7 @@ class TestCharsetIssues(BaseHandlers):
     def tearDown(self):
         self._wait_for_threads()
 
-    @fake_tasks
+    @fake_tasks()
     def test_deployment_cyrillic_names(self):
         self.env.create(
             cluster_kwargs={"name": u"Тестовый кластер"},
