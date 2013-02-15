@@ -3191,3 +3191,9 @@ legend.openstack-settings {
   margin-top: 20px;
   text-transform: capitalize;
 }
+
+legend.openstack-sub-title {
+  font-size: 16px;
+  margin: 20px 0px 10px 14px;
+  line-height: 30px;
+}
