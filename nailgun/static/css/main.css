@@ -3105,14 +3105,15 @@ select[name=release] option {
 
 /* custom checkbox & radio */
   .custom-tumbler {
-    width:42px;
+    margin-top: 4px;
+    width:24px;
     height:24px;
-    overflow:hidden;
+    /* overflow:hidden; */
     position:relative;
   }
 
-  .custom-tumbler input[type=checkbox]{width:42px;height:24px;overflow:hidden;position:absolute;filter:alpha(opacity=0);-moz-opacity:0;-khtml-opacity:0;opacity:0; cursor: pointer;}
-  .custom-tumbler input[type=checkbox] + span{display:block;width:42px;height:24px;overflow:hidden;font-size:1px;line-height:0;background:transparent url(../img/radio_checkbox.png) no-repeat scroll -42px 0px;}
+  .custom-tumbler input[type=checkbox]{width:24px;height:24px;overflow:hidden;position:absolute;filter:alpha(opacity=0);-moz-opacity:0;-khtml-opacity:0;opacity:0; cursor: pointer;}
+  .custom-tumbler input[type=checkbox] + span{display:block;width:24px;height:24px;overflow:hidden;font-size:1px;line-height:0;background:transparent url(../img/radio_checkbox.png) no-repeat scroll -24px 0px;}
   .custom-tumbler input[type=checkbox]:checked + span{background-position:0 0px;}
   .custom-tumbler input[disabled] + span{filter:alpha(opacity=50);-moz-opacity:0.5;-khtml-opacity:0.5;opacity:0.5;}
   .custom-tumbler input[type=checkbox] + span.checked{background-position:0 0px;}
@@ -3140,7 +3141,7 @@ select[name=release] option {
   -moz-box-sizing: border-box;
   -webkit-box-sizing: border-box;
   font-weight: 600;
-  margin-top: 0px;
+  margin-top: 4px;
   overflow: hidden;
   cursor: default;
 }
@@ -3157,12 +3158,12 @@ select[name=release] option {
   display: block;
   float: left;
   color: #999999;
-  max-height: 30px;
+  max-width: 700px;
   box-sizing: border-box;
   -moz-box-sizing: border-box;
   -webkit-box-sizing: border-box;
   margin-left: 20px;
-  overflow: hidden;
+  margin-top: 4px;
 }
 
 .global-description {

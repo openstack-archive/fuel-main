@@ -3,7 +3,7 @@
   <legend class="openstack-settings"><%- legend %></legend>
   <% _.each(_.keys(settings), function(setting) { %>
     <% if (_.isBoolean(settings[setting]['value'])) { %>
-      <div class="parameter-box clearfix">
+      <label class="parameter-box clearfix">
         <div class="parameter-control">
           <div class="custom-tumbler">
             <input type="checkbox" name="checkbox" <%= settings[setting]['value'] ? 'checked' : '' %> <%= disabled %> />
@@ -12,7 +12,7 @@
         </div>
         <div class="parameter-name" data-setting="<%- setting %>"><%- settings[setting]['label'] %></div>
         <div class="parameter-description"><%- settings[setting]['description'] %></div>
-      </div>
+      </label>
     <% } else if (settings[setting]['values']) { %>
       <% _.each(settings[setting]['values'], function(option) { %>
         <div class="parameter-box clearfix">
