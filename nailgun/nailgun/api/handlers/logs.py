@@ -196,7 +196,8 @@ class LogPackageHandler(object):
     def GET(self):
         f = tempfile.TemporaryFile(mode='r+b')
         tf = tarfile.open(fileobj=f, mode='w:gz')
-        tf.add('/var/log')
+        for arcname, path in settings.LOGS_TO_PACK_FOR_SUPPORT.items():
+            tf.add(path, arcname)
         tf.close()
 
         filename = 'fuelweb-logs-%s.tar.gz' % (

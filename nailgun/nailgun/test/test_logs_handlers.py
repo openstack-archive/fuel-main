@@ -6,6 +6,8 @@ import shutil
 import time
 import json
 import os
+import tarfile
+from StringIO import StringIO
 
 from nailgun.test.base import BaseHandlers
 from nailgun.test.base import reverse
@@ -117,3 +119,16 @@ class TestLogs(BaseHandlers):
             log_file = log_config['path']
         with open(log_file, 'w') as f:
             f.write(':'.join(log_entry))
+
+    def test_log_package_handler(self):
+        f = tempfile.NamedTemporaryFile(mode='r+b')
+        f.write('testcontent')
+        f.flush()
+        settings.LOGS_TO_PACK_FOR_SUPPORT = {'test': f.name}
+        resp = self.app.get(reverse('LogPackageHandler'))
+        self.assertEquals(200, resp.status)
+        tf = tarfile.open(fileobj=StringIO(resp.body), mode='r:gz')
+        m = tf.extractfile('test')
+        self.assertEquals(m.read(), 'testcontent')
+        f.close()
+        m.close()

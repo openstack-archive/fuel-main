@@ -27,7 +27,7 @@ server {
 
     location / {
         proxy_pass http://nailgun-application;
-        proxy_read_timeout 15;
+        proxy_read_timeout 2m;
         proxy_redirect off;
         proxy_set_header Host $host;
         proxy_set_header X-Real-IP $remote_addr;

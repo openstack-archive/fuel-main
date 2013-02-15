@@ -189,6 +189,9 @@ LOGS:
     <<: *bootstrap_log_group
     path: 'bootstrap/agent.log'
 
+LOGS_TO_PACK_FOR_SUPPORT:
+  logs: '/var/log'
+
 MCO_PSKEY: "Gie6iega9ohngaenahthohngu8aebohxah9seidi"
 MCO_STOMPHOST: "localhost"
 MCO_STOMPPORT: "61613"
