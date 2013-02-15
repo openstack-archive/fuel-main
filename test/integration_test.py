@@ -11,8 +11,6 @@ sys.path[:0] = [
     root('devops'),
 ]
 
-import integration
-
 
 def main():
     parser = argparse.ArgumentParser(description="Integration test suite")
@@ -36,6 +34,9 @@ def main():
     parser.add_argument('--suite', dest='test_suite', type=str,
                         help='Test suite to run', choices=["integration"],
                         default="integration")
+    parser.add_argument('--method', dest='test_method', type=str,
+                        help='Run definite test method in module',
+                        default=None)
     parser.add_argument('command', choices=('setup', 'destroy', 'test'),
                         default='test', help="command to execute")
     parser.add_argument(
@@ -51,7 +52,12 @@ def main():
     paramiko_logger = logging.getLogger('paramiko')
     paramiko_logger.setLevel(numeric_level + 1)
 
-    suite = integration
+    suite = __import__(params.test_suite)
+
+    method = '.'
+    if params.test_method:
+        method = "%s:%s" % (params.test_suite, params.test_method)
+
 #   todo fix default values
     if params.no_forward_network:
         ci = suite.Ci(params.iso, forward=None)
@@ -79,7 +85,7 @@ def main():
                 params.test_suite
             )
         )
-        nose.main(module=suite, config=nc, argv=[
+        nose.main(module=suite, defaultTest=method, config=nc, argv=[
             __file__,
             "--with-xunit",
             "--xunit-file=nosetests.xml"

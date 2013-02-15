@@ -107,6 +107,7 @@ class TestNode(Base):
 
     @snapshot_errors
     def test_simple_cluster_flat(self):
+        logging.info("Testing simple flat installation.")
         self._revert_nodes()
         cluster_name = 'simple_flat'
         nodes = {'controller': ['slave1'], 'compute': ['slave2']}
@@ -117,6 +118,7 @@ class TestNode(Base):
 
     @snapshot_errors
     def test_simple_cluster_vlan(self):
+        logging.info("Testing simple vlan installation.")
         self._revert_nodes()
         cluster_name = 'simple_vlan'
         nodes = {'controller': ['slave1'], 'compute': ['slave2']}
@@ -128,6 +130,7 @@ class TestNode(Base):
 
     @snapshot_errors
     def test_ha_cluster_flat(self):
+        logging.info("Testing ha flat installation")
         self._revert_nodes()
         cluster_name = 'ha_flat'
         nodes = {
@@ -135,12 +138,14 @@ class TestNode(Base):
             'compute': ['slave4', 'slave5']
         }
         self._basic_provisioning(cluster_name, nodes)
+        logging.info("Checking cluster status on slave1")
         slave = ci.environment.node['slave1']
         node = self._get_slave_node_by_devops_node(slave)
         wait(lambda: self._check_cluster_status(node['ip'], 13), timeout=300)
 
     @snapshot_errors
     def test_ha_cluster_vlan(self):
+        logging.info("Testing ha vlan installation.")
         self._revert_nodes()
         cluster_name = 'ha_vlan'
         nodes = {
@@ -371,8 +376,10 @@ class TestNode(Base):
 
         self._task_wait(task, 'Installation')
 
+        logging.info("Checking role files on slave nodes")
         for role in nodes_dict:
             for n in nodes_dict[role]:
+                logging.info("Checking /tmp/%s-file on %s" % (role, n))
                 slave = ci.environment.node[n]
                 node = self._get_slave_node_by_devops_node(slave)
                 ctrl_ssh = SSHClient()
@@ -555,6 +562,8 @@ node.interfaces[n].mac_address: %r" % str(i.mac_address))
         return nodes
 
     def _check_cluster_status(self, ip, smiles_count, networks_count=1):
+        logging.info("Checking cluster status: ip=%s smiles=%s networks=%s" % \
+            (ip, smiles_count, networks_count))
         ctrl_ssh = SSHClient()
         ctrl_ssh.connect_ssh(ip, 'root', 'r00tme')
         ret = ctrl_ssh.execute('/usr/bin/nova-manage service list')
