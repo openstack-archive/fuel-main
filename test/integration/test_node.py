@@ -217,7 +217,7 @@ class TestNode(Base):
                     False
                 )
         task = self._run_network_verify(cluster_id)
-        self._task_wait(task, 'Verify network ha flat', 60 * 2)
+        self._task_wait(task, 'Verify network ha vlan', 60 * 2)
 
     @snapshot_errors
     def test_network_config(self):
@@ -330,8 +330,7 @@ class TestNode(Base):
         self._task_wait(task, 'Verify network in cluster with two nodes',
                         60 * 2)
         # Check network with one blocked vlan.
-        for vlan in vlans:
-            self._block_vlan_in_ebtables(devops_nodes, vlan)
+        self._block_vlan_in_ebtables(devops_nodes, vlans[0])
         task = self._run_network_verify(cluster_id)
         task = self._task_wait(task,
                                'Verify network in cluster with blocked vlan',
@@ -373,7 +372,8 @@ class TestNode(Base):
         self.assertEquals(200, resp.getcode())
         cluster_vlans = []
         for n in json.loads(resp.read()):
-            cluster_vlans.append(n['vlan_start'])
+            amount = n.get('amount', 1)
+            cluster_vlans.extend(range(n['vlan_start'], n['vlan_start'] + amount))
         self.assertNotEqual(cluster_vlans, [])
         return cluster_vlans
 
