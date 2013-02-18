@@ -1,49 +1,48 @@
 <% var disabled = cluster.task('deploy', 'running') ? 'disabled' : '' %>
 
-<% if (!_.isArray(settings) && _.isObject(settings)) { %>
-  <legend class="openstack-settings"><%- legend %></legend>
-  <div>
-    <% var sortedSettings = _.sortBy(_.keys(settings), function(setting) {return setting;}) %>
-    <% _.each(sortedSettings, function(setting) { %>
-      <% if (_.isBoolean(settings[setting]['value'])) { %>
-        <label class="parameter-box clearfix setting" data-setting="<%- setting %>">
+<legend class="openstack-settings"><%- legend %></legend>
+<div>
+  <% var sortedSettings = _.sortBy(_.keys(settings), function(setting) {return setting;}) %>
+  <% _.each(sortedSettings, function(setting) { %>
+    <% var settingDetails = settings[setting] %>
+    <% if (_.isBoolean(settingDetails.value)) { %>
+      <label class="parameter-box clearfix setting" data-setting="<%- setting %>">
+        <div class="parameter-control">
+          <div class="custom-tumbler">
+            <input type="checkbox" name="checkbox" <%= settingDetails.value ? 'checked' : '' %> <%= disabled %> />
+            <!--[if !IE |(gte IE 9)]>--><span>&nbsp;</span><!--<![endif]-->
+          </div>
+        </div>
+        <div class="openstack-sub-title parameter-name"><%- settingDetails.label %></div>
+      </label>
+      <div class="global-description description"><%- settingDetails.description %></div>
+    <% } else if (settingDetails.values) { %>
+      <legend class="openstack-sub-title setting" data-setting="<%- setting %>"><%- settingDetails.label %></legend>
+      <div>
+      <% _.each(settingDetails.values, function(option) { %>
+        <label class="parameter-box clearfix">
           <div class="parameter-control">
             <div class="custom-tumbler">
-              <input type="checkbox" name="checkbox" <%= settings[setting]['value'] ? 'checked' : '' %> <%= disabled %> />
+              <input type="radio" name="<%- setting %>" value="<%- option['data'] %>" <%= option['data'] == settingDetails.value ? 'checked' : '' %> <%= disabled %> />
               <!--[if !IE |(gte IE 9)]>--><span>&nbsp;</span><!--<![endif]-->
             </div>
           </div>
-          <div class="openstack-sub-title parameter-name"><%- settings[setting]['label'] %></div>
+          <div class="parameter-name"><%- option['display_name'] %></div>
         </label>
-        <div class="global-description description"><%- settings[setting]['description'] %></div>
-      <% } else if (settings[setting]['values']) { %>
-        <legend class="openstack-sub-title setting" data-setting="<%- setting %>"><%- settings[setting]['label'] %></legend>
-        <div>
-        <% _.each(settings[setting]['values'], function(option) { %>
-          <label class="parameter-box clearfix">
-            <div class="parameter-control">
-              <div class="custom-tumbler">
-                <input type="radio" name="<%- setting %>" value="<%- option['data'] %>" <%= option['data'] == settings[setting]['value'] ? 'checked' : '' %> <%= disabled %> />
-                <!--[if !IE |(gte IE 9)]>--><span>&nbsp;</span><!--<![endif]-->
-              </div>
-            </div>
-            <div class="parameter-name"><%- option['display_name'] %></div>
-          </label>
-          <div class="global-description description"><%- option['description'] %></div>
-        <% }) %>
-        </div>
-        <div class="parameter-spacer"></div>
-      <% } else { %>
-        <label class="parameter-box clearfix setting" data-setting="<%- setting %>">
-          <div class="openstack-sub-title parameter-name"><%- settings[setting]['label'] %></div>
+        <div class="global-description description"><%- option['description'] %></div>
+      <% }) %>
+      </div>
+      <div class="parameter-spacer"></div>
+    <% } else { %>
+      <label class="parameter-box clearfix setting" data-setting="<%- setting %>">
+        <div class="openstack-sub-title parameter-name"><%- settingDetails.label %></div>
+        <div class="parameter-control">
           <div class="parameter-control">
-            <div class="parameter-control">
-              <input type="text" value="<%- settings[setting]['value'] %>" <%= disabled %> />
-            </div>
+            <input type="text" value="<%- settingDetails.value %>" <%= disabled %> />
           </div>
-          <div class="parameter-description description"><%- settings[setting]['description'] %></div>
-        </label>
-      <% } %>
-    <% }) %>
-  </div>
-<% } %>
+        </div>
+        <div class="parameter-description description"><%- settingDetails.description %></div>
+      </label>
+    <% } %>
+  <% }) %>
+</div>

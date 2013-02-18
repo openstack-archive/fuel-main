@@ -32,6 +32,7 @@ body {
           user-select: text;
 }
 
+/*
 .clearfix:after {
   clear:both;
   content:' ';
@@ -54,6 +55,7 @@ body {
 .clearfix{
   display:block;
 }
+*/
 
 h1,
 h2,
