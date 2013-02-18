@@ -158,6 +158,14 @@ class TestAttributes(BaseHandlers):
             release.attributes_metadata['editable']
         )
 
+    def test_attributes_merged_values(self):
+        cluster = self.create_cluster_api()
+        cluster_db = self.db.query(Cluster).get(cluster['id'])
+        attrs = cluster_db.attributes.merged_attrs_values()
+        for group_attrs in attrs.itervalues():
+            for value in group_attrs.itervalues():
+                self.assertFalse(isinstance(value, dict) and 'value' in value)
+
     def _compare(self, d1, d2):
         if isinstance(d1, dict) and isinstance(d2, dict):
             for s_field, s_value in d1.iteritems():
