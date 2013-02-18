@@ -55,12 +55,12 @@ function(models, commonViews, settingsTabTemplate, settingsGroupTemplate) {
         },
         checkForChanges: function() {
             var data = {};
-            this.collectData($('.openstack-settings form'), data);
+            this.collectData($('.settings'), data);
             if (_.isEqual(this.model.get('settings').get('editable'), data)) {
                 this.defaultButtonsState(true);
                 this.hasChanges = false;
             } else {
-                this.$('.openstack-settings .btn').attr('disabled', false);
+                this.$('.btn').attr('disabled', false);
                 this.hasChanges = true;
             }
         },
@@ -143,7 +143,7 @@ function(models, commonViews, settingsTabTemplate, settingsGroupTemplate) {
         className: 'fieldset-group wrapper',
         events: {
             'keyup input[type=text]': 'checkForChanges',
-            'change input[type=checkbox], select': 'checkForChanges'
+            'change input[type=checkbox], input[type=radio]': 'checkForChanges'
         },
         checkForChanges: function() {
             this.tab.checkForChanges();

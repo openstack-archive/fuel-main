@@ -1,4 +1,5 @@
 <% var disabled = cluster.task('deploy', 'running') ? 'disabled' : '' %>
+
 <% if (!_.isArray(settings) && _.isObject(settings)) { %>
   <legend class="openstack-settings"><%- legend %></legend>
   <div>
