@@ -431,6 +431,8 @@ class Attributes(Base, BasicValidator):
             for attr, value in group_attrs.iteritems():
                 if isinstance(value, dict) and 'value' in value:
                     group_attrs[attr] = value['value']
+        if 'common' in attrs:
+            attrs.update(attrs.pop('common'))
         return attrs
 
     def _dict_merge(self, a, b):

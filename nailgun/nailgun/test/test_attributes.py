@@ -164,11 +164,12 @@ class TestAttributes(BaseHandlers):
         original_attrs = cluster_db.attributes.merged_attrs()
         attrs = cluster_db.attributes.merged_attrs_values()
         for group, group_attrs in original_attrs.iteritems():
-            for attr, value in group_attrs.iteritems():
+            for attr, original_value in group_attrs.iteritems():
+                value = group == 'common' and attrs[attr] or attrs[group][attr]
                 if isinstance(value, dict) and 'value' in value:
-                    self.assertEquals(value['value'], attrs[group][attr])
+                    self.assertEquals(original_value['value'], value)
                 else:
-                    self.assertEquals(value, attrs[group][attr])
+                    self.assertEquals(original_value, value)
 
     def _compare(self, d1, d2):
         if isinstance(d1, dict) and isinstance(d2, dict):
