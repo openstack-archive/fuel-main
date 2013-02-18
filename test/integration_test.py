@@ -13,6 +13,7 @@ sys.path[:0] = [
 
 import integration
 
+
 def main():
     parser = argparse.ArgumentParser(description="Integration test suite")
     parser.add_argument("-i", "--iso", dest="iso",
