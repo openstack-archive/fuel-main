@@ -4,6 +4,7 @@ import json
 
 import web
 
+from nailgun.keepalive import keep_alive
 from nailgun.db import orm
 from nailgun.notifier import notifier
 from nailgun.logger import logger

@@ -14,6 +14,10 @@ DATABASE:
   user: null
   passwd: null
 
+KEEPALIVE:
+  timeout: 60
+  maxtime: 900
+
 STATIC_DIR: "/var/tmp/nailgun_static"
 TEMPLATE_DIR: "/var/tmp/nailgun_static"
 NETWORK_POOLS:

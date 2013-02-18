@@ -4,6 +4,7 @@ import re
 import uuid
 import string
 import math
+from datetime import datetime
 from random import choice
 from copy import deepcopy
 
@@ -189,6 +190,7 @@ class Node(Base, BasicValidator):
     pending_deletion = Column(Boolean, default=False)
     error_type = Column(Enum(*NODE_ERRORS))
     error_msg = Column(String(255))
+    timestamp = Column(DateTime, nullable=False, default=datetime.now())
 
     @property
     def network_data(self):
