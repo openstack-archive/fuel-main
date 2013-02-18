@@ -373,7 +373,8 @@ class TestNode(Base):
         cluster_vlans = []
         for n in json.loads(resp.read()):
             amount = n.get('amount', 1)
-            cluster_vlans.extend(range(n['vlan_start'], n['vlan_start'] + amount))
+            cluster_vlans.extend(range(n['vlan_start'],
+                                       n['vlan_start'] + amount))
         self.assertNotEqual(cluster_vlans, [])
         return cluster_vlans
 
