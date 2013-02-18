@@ -39,6 +39,7 @@ function(models, commonViews, dialogViews, networkTabTemplate, networkTabViewMod
             } else {
                 row = this.$('.control-group[data-network-name=fixed]');
             }
+            this.$('.control-group .error').removeClass('error');
             row.removeClass('error').find('.help-inline').text('');
             this.networks.get(row.data('network-id')).on('error', function(model, errors) {
                 row.addClass('error').find('.help-inline').text(errors.cidr || errors.vlan_start || errors.amount);
@@ -78,6 +79,7 @@ function(models, commonViews, dialogViews, networkTabTemplate, networkTabViewMod
             this.$('.net-manager input').attr('checked', false);
             this.$(e.target).attr('checked', true);
             this.model.set({net_manager: this.$(e.target).val()}, {silent: true});
+            this.$('.control-group .error').removeClass('error');
             this.checkForChanges();
             this.$('.fixed-row .amount, .fixed-header .amount, .fixed-row .network_size, .fixed-header .size').toggle().removeClass('hide');
             this.displayRange();
@@ -198,6 +200,13 @@ function(models, commonViews, dialogViews, networkTabTemplate, networkTabViewMod
             this.networks.deferred.done(complete);
             this.model.set({'networks': this.networks}, {silent: true});
         },
+        removeVerificationTask: function() {
+            var task = this.model.task('verify_networks') || this.model.task('check_networks');
+            if (task && task.get('status') != 'running') {
+                this.model.get('tasks').remove(task);
+                task.destroy({silent: true});
+            }
+        },
         showVerificationErrors: function() {
             var task = this.model.task('verify_networks', 'error') || this.model.task('check_networks', 'error');
             if (task && task.get('result').length) {
@@ -214,6 +223,7 @@ function(models, commonViews, dialogViews, networkTabTemplate, networkTabViewMod
             this.registerSubView(verificationView);
             this.$('.verification-control').html(verificationView.render().el);
             this.showVerificationErrors();
+            this.removeVerificationTask();
         },
         render: function() {
             this.$el.html(this.template({cluster: this.model, networks: this.networks, hasChanges: this.hasChanges}));
@@ -227,16 +237,8 @@ function(models, commonViews, dialogViews, networkTabTemplate, networkTabViewMod
         initialize: function(options) {
             _.defaults(this, options);
         },
-        removeVerificationTask: function() {
-            var task = this.model.task('verify_networks') || this.model.task('check_networks');
-            if (task && task.get('status') != 'running') {
-                this.model.get('tasks').remove(task);
-                task.destroy({silent: true});
-            }
-        },
         render: function() {
             this.$el.html(this.template({cluster: this.model, networks: this.networks}));
-            this.removeVerificationTask();
             return this;
         }
     });
