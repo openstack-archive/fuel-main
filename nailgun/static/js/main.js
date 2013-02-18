@@ -4,7 +4,7 @@ requirejs.config({
     waitSeconds: 60,
     paths: {
         jquery: 'js/libs/jquery-1.7.2.min',
-        checkbox: 'js/libs/jquery.checkbox.js',
+        checkbox: 'js/libs/jquery.checkbox',
         underscore: 'js/libs/underscore-min',
         backbone: 'js/libs/backbone-min',
         'backbone-model-update': 'js/libs/backbone-model-update',
@@ -37,7 +37,7 @@ requirejs.config({
             deps: ['jquery']
         },
         app: {
-            deps: ['jquery', 'underscore', 'backbone', 'backbone-model-update', 'coccyx', 'bootstrap']
+            deps: ['jquery', 'underscore', 'backbone', 'backbone-model-update', 'coccyx', 'bootstrap', 'checkbox']
         }
     }
 });

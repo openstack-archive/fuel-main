@@ -24,8 +24,9 @@ function(models, commonViews, settingsTabTemplate, settingsGroupTemplate) {
         disableControls: function() {
             this.$('.btn, input').attr('disabled', true);
         },
-        collectData: function(parentEl, data) {
-            _.each(parentEl.find('legend.openstack-settings'), function(legend) {
+        collectData: function() {
+            var data = {};
+            _.each(this.$('legend.openstack-settings'), function(legend) {
                 var param = $(legend).text();
                 data[param] = {};
                 _.each($(legend).next().find('.setting'), function(settingDom) {
@@ -52,10 +53,10 @@ function(models, commonViews, settingsTabTemplate, settingsGroupTemplate) {
                     }
                 });
             });
+            return data;
         },
         checkForChanges: function() {
-            var equal = true, data = {};
-            this.collectData($('.settings'), data);
+            var equal = true, data = this.collectData();
             var previousSettings = this.model.get('settings').get('editable');
             _.each(_.keys(previousSettings), function(settings) {
                 _.each(_.keys(previousSettings[settings]), function(setting) {
@@ -73,8 +74,7 @@ function(models, commonViews, settingsTabTemplate, settingsGroupTemplate) {
             }
         },
         applyChanges: function() {
-            var data = {};
-            this.collectData(this.$('.settings'), data);
+            var data = this.collectData();
             this.model.get('settings').update({editable: data}, {
                 url: '/api/clusters/' + this.model.id + '/attributes',
                 success: _.bind(function() {
