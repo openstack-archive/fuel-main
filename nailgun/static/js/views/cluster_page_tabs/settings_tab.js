@@ -24,38 +24,39 @@ function(models, commonViews, settingsTabTemplate, settingsGroupTemplate) {
         disableControls: function() {
             this.$('.btn, input').attr('disabled', true);
         },
-        collectData: function(parentEl, changedData) {
-            _.each(parentEl.children('legend'), function(legend) {
+        collectData: function(parentEl, data) {
+            _.each(parentEl.find('legend.openstack-settings'), function(legend) {
                 var param = $(legend).text();
-                changedData[param] = {};
-                _.each(legend.next().find('.parameter-name'), function(settingLabel) {
-                    var setting = $(settingLabel).data('setting');
-                    changedData[param][setting] = {};
-                    changedData[param][setting].label = $(settingLabel).text();
-                    var controls = $(settingLabel).siblings('.parameter-control').find('input');
-                    if (controls.length == 1) {
-                        changedData[param][setting].value = controls.val();
-                    } else {
-                        changedData[param][setting].values = [];
-                        _.each(controls, function(control) {
+                data[param] = {};
+                _.each($(legend).next().find('.setting'), function(settingDom) {
+                    var setting = $(settingDom).data('setting');
+                    data[param][setting] = {};
+                    if ($(settingDom).hasClass('openstack-sub-title')) {
+                        data[param][setting].label = $(settingDom).text();
+                        data[param][setting].value = $(settingDom).next().find('input[type=radio]:checked').val();
+                        data[param][setting].values = [];
+                        _.each($(settingDom).next().find('input[type=radio]'), function(input) {
                             var option = {};
-                            option.data = control.data('dataValue');
-                            option.display_name = $(control).parents('.parameter-control').siblings('.parameter-name').text();
-                            option.description = $(control).parents('.parameter-control').siblings('.parameter-description').text();
-                            changedData[param][setting].values.push(option);
-                            if (control.val()) {
-                                changedData[param][setting].value = control.data('dataValue');
-                            }
+                            option.data = $(input).val();
+                            option.display_name = $(input).parents('.parameter-control').siblings('.parameter-name').text();
+                            option.description = $(input).parents('.parameter-control').siblings('.parameter-description').text();
+                            data[param][setting].values.push(option);
                         });
+                    } else {
+                        data[param][setting].label = $(settingDom).find('.openstack-sub-title').text();
+                        data[param][setting].description = $(settingDom).find('.parameter-description').text();
+                        data[param][setting].value = $(settingDom).find('input[type=text]').val();
+                        if (!data[param][setting].value) {
+                            data[param][setting].value = $(settingDom).find('input[type=checkbox]:checked').length ? true : false;
+                        }
                     }
-                    changedData[param][setting].description = $(settingLabel).siblings('.parameter-description').text();
                 });
             });
         },
         checkForChanges: function() {
-            var changedData = {};
-            this.collectData($('.openstack-settings form'), changedData);
-            if (_.isEqual(this.model.get('settings').get('editable'), changedData)) {
+            var data = {};
+            this.collectData($('.openstack-settings form'), data);
+            if (_.isEqual(this.model.get('settings').get('editable'), data)) {
                 this.defaultButtonsState(true);
                 this.hasChanges = false;
             } else {
@@ -64,9 +65,9 @@ function(models, commonViews, settingsTabTemplate, settingsGroupTemplate) {
             }
         },
         applyChanges: function() {
-            var changedData = {};
-            this.collectData(this.$('.settings'), changedData);
-            this.model.get('settings').update({editable: changedData}, {
+            var data = {};
+            this.collectData(this.$('.settings'), data);
+            this.model.get('settings').update({editable: data}, {
                 url: '/api/clusters/' + this.model.id + '/attributes',
                 success: _.bind(function() {
                     this.hasChanges = false;

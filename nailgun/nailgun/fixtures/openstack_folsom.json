@@ -19,26 +19,26 @@
                         "admin_tenant": {
                             "value": "admin",
                             "label": "Admin tenant",
-                            "description": ""
+                            "description": "Sample description."
                         }
                     },
                     "admin": {
                         "email": {
                             "value": "admin@example.org",
                             "label": "Email",
-                            "description": ""
+                            "description": "Sample description."
                         },
                         "password": {
                             "value": "admin",
                             "label": "Password",
-                            "description": ""
+                            "description": "Sample description."
                         }
                     },
                     "rabbit": {
                         "user": {
                             "value": "nova",
                             "label": "User",
-                            "description": ""
+                            "description": "Sample description."
                         }
                     },
                     "common": {
@@ -52,15 +52,16 @@
                             "values": [
                                 {
                                     "data": "kvm",
-                                    "display_name": "KVM"
+                                    "display_name": "KVM",
+                                    "description": "Sample description."
                                 },
                                 {
                                     "data": "qemu",
-                                    "display_name": "QEMU"
+                                    "display_name": "QEMU",
+                                    "description": "Sample description."
                                 }
                             ],
-                            "label": "Libvirt domain type",
-                            "description": "Libvirt domain type."
+                            "label": "Libvirt domain type"
                         },
                         "start_guests_on_host_boot": {
                             "value": true,
@@ -78,16 +79,15 @@
                                 {
                                     "data": "nova.scheduler.filter_scheduler.FilterScheduler",
                                     "display_name": "Filter scheduler",
-                                    "description": ""
+                                    "description": "Sample description."
                                 },
                                 {
                                     "data": "nova.scheduler.simple.SimpleScheduler",
                                     "display_name": "Simple scheduler",
-                                    "description": ""
+                                    "description": "Sample description."
                                 }
                             ],
-                            "label": "Scheduler driver",
-                            "description": "Driver to use for scheduling compute calls."
+                            "label": "Scheduler driver"
                         }
                     }
                 },

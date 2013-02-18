@@ -3158,12 +3158,10 @@ select[name=release] option {
   display: block;
   float: left;
   color: #999999;
-  max-width: 700px;
   box-sizing: border-box;
   -moz-box-sizing: border-box;
   -webkit-box-sizing: border-box;
-  margin-left: 20px;
-  margin-top: 4px;
+  width: 927px;
 }
 
 .global-description {
@@ -3194,6 +3192,6 @@ legend.openstack-settings {
 
 legend.openstack-sub-title {
   font-size: 16px;
-  margin: 20px 0px 10px 14px;
+  margin: 25px 0px 6px 14px;
   line-height: 30px;
 }
