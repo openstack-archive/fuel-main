@@ -3,7 +3,8 @@
 <% if (!_.isArray(settings) && _.isObject(settings)) { %>
   <legend class="openstack-settings"><%- legend %></legend>
   <div>
-    <% _.each(_.keys(settings), function(setting) { %>
+    <% var sortedSettings = _.sortBy(_.keys(settings), function(setting) {return setting;}) %>
+    <% _.each(sortedSettings, function(setting) { %>
       <% if (_.isBoolean(settings[setting]['value'])) { %>
         <label class="parameter-box clearfix setting" data-setting="<%- setting %>">
           <div class="parameter-control">
