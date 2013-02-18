@@ -213,17 +213,39 @@ class Environment(object):
     def get_default_attributes_metadata(self):
         return {
             "editable": {
-                "keystone": {
-                    "admin_tenant": "admin"
+                "admin_tenant": {
+                    "value": "admin",
+                    "label": "Admin tenant",
+                    "description": "Tenant(project) name for Administrator"
+                },
+                "common": {
+                    "auto_assign_floating_ip": {
+                        "value": False,
+                        "label": "Auto assign floating IP",
+                        "description": "Description"
+                    },
+                    "libvirt_type": {
+                        "value": "kvm",
+                        "values": [
+                            {
+                                "data": "kvm",
+                                "display_name": "KVM",
+                                "description": "Choose this type..."
+                            },
+                            {
+                                "data": "qemu",
+                                "display_name": "QEMU",
+                                "description": "Choose this type..."
+                            }
+                        ],
+                        "label": "Hypervisor type"
+                    },
                 }
             },
             "generated": {
                 "mysql": {
                     "root_password": "",
-                    "predefined": "i am value",
-                    "db": {
-                        "generated_db": ""
-                    }
+                    "predefined": "i am value"
                 },
                 "keystone": {
                     "token": ""
