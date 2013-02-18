@@ -4,7 +4,7 @@
         "model": "nailgun.release",
         "fields": {
             "name": "Folsom",
-            "version": "2012.1.3",
+            "version": "2012.2",
             "description": "This option will install OpenStack Folsom packages using CentOS as a base operating system. With high availability features built in, you are getting a robust, enterprise-grade OpenStack deployment.",
             "networks_metadata": [
                 {"name": "floating", "access": "public"},
@@ -19,37 +19,26 @@
                         "admin_tenant": {
                             "value": "admin",
                             "label": "Admin tenant",
-                            "description": "Sample description."
+                            "description": "Tenant(project) name for Administrator"
                         }
                     },
                     "admin": {
                         "email": {
                             "value": "admin@example.org",
-                            "label": "Email",
-                            "description": "Sample description."
+                            "label": "Admin email",
+                            "description": "Email address of admin user"
                         },
                         "password": {
                             "value": "admin",
                             "label": "Password",
-                            "description": "Sample description."
-                        }
-                    },
-                    "admin": {
-                        "email": "admin@example.org",
-                        "password": "admin"
-                    },
-                    "rabbit": {
-                        "user": {
-                            "value": "nova",
-                            "label": "User",
-                            "description": "Sample description."
+                            "description": "Password for admin user"
                         }
                     },
                     "common": {
                         "auto_assign_floating_ip": {
                             "value": false,
                             "label": "Auto assign floating IP",
-                            "description": "Autoassigning floating IP to VM."
+                            "description": "If true, it will automatically associate public IP address with the instance"
                         },
                         "libvirt_type": {
                             "value": "kvm",
@@ -57,15 +46,15 @@
                                 {
                                     "data": "kvm",
                                     "display_name": "KVM",
-                                    "description": "Sample description."
+                                    "description": "Choose this type of hypervisor if you run OpenStack on hardware"
                                 },
                                 {
                                     "data": "qemu",
                                     "display_name": "QEMU",
-                                    "description": "Sample description."
+                                    "description": "Choose this type of hypervisor if you run OpenStack on hosts with no virtualization support"
                                 }
                             ],
-                            "label": "Libvirt domain type"
+                            "label": "Hypervisor type"
                         },
                         "start_guests_on_host_boot": {
                             "value": true,
@@ -74,8 +63,8 @@
                         },
                         "use_cow_images": {
                             "value": true,
-                            "label": "Use cow images",
-                            "description": "Whether to use cow images"
+                            "label": "Use qcow format for images",
+                            "description": "For most cases you will want qcow format. If it's set to false, raw image format will be used to run VMs. OpenStack with raw format currently does not support snapshotting."
                         },
                         "compute_scheduler_driver": {
                             "value": "nova.scheduler.filter_scheduler.FilterScheduler",
@@ -83,12 +72,12 @@
                                 {
                                     "data": "nova.scheduler.filter_scheduler.FilterScheduler",
                                     "display_name": "Filter scheduler",
-                                    "description": "Sample description."
+                                    "description": "Currently it is the most advanced scheduler. Check OpenStack documentation for details."
                                 },
                                 {
                                     "data": "nova.scheduler.simple.SimpleScheduler",
                                     "display_name": "Simple scheduler",
-                                    "description": "Sample description."
+                                    "description": "This is 'naive' scheduler which tries to find the least loaded host"
                                 }
                             ],
                             "label": "Scheduler driver"
