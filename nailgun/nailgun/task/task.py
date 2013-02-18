@@ -139,7 +139,7 @@ class DeploymentTask(object):
                 'network_data': netmanager.get_node_networks(n.id)
             })
 
-        cluster_attrs = task.cluster.attributes.merged_attrs()
+        cluster_attrs = task.cluster.attributes.merged_attrs_values()
 
         nets_db = orm().query(Network).join(NetworkGroup).\
             filter(NetworkGroup.cluster_id == cluster_id).all()

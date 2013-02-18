@@ -425,6 +425,14 @@ class Attributes(Base, BasicValidator):
     def merged_attrs(self):
         return self._dict_merge(self.generated, self.editable)
 
+    def merged_attrs_values(self):
+        attrs = self.merged_attrs()
+        for group_attrs in attrs.itervalues():
+            for attr, value in group_attrs.iteritems():
+                if isinstance(value, dict) and 'value' in value:
+                    group_attrs[attr] = value['value']
+        return attrs
+
     def _dict_merge(self, a, b):
         '''recursively merges dict's. not just simple a['key'] = b['key'], if
         both a and bhave a key who's value is a dict then dict_merge is called

@@ -37,7 +37,7 @@ class TestHandlers(BaseHandlers):
 
         msg = {'method': 'deploy', 'respond_to': 'deploy_resp',
                'args': {}}
-        cluster_attrs = self.env.clusters[0].attributes.merged_attrs()
+        cluster_attrs = cluster_db.attributes.merged_attrs_values()
 
         nets_db = self.db.query(Network).join(NetworkGroup).\
             filter(NetworkGroup.cluster_id == cluster_db.id).all()
