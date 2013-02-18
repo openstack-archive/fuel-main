@@ -3127,14 +3127,13 @@ select[name=release] option {
 .parameter-box {
   display: block;
   margin-left: 12px;
-  margin-bottom: 12px;
 }
 
 
 .parameter-name {
   display: block;
   float: left;
-  min-width: 100px;
+  min-width: 120px;
   max-height: 30px;
   box-sizing: border-box;
   -moz-box-sizing: border-box;
@@ -3160,13 +3159,18 @@ select[name=release] option {
   box-sizing: border-box;
   -moz-box-sizing: border-box;
   -webkit-box-sizing: border-box;
-  width: 927px;
+  width: 560px;
+  margin-top: 4px;
+}
+
+.parameter-spacer {
+  height: 8px;
 }
 
 .global-description {
   display: block;
   color: #999999;
-  margin-left: 13px;
+  margin: -6px 20px 8px 46px;
 }
 
 legend.openstack-settings {
@@ -3190,7 +3194,7 @@ legend.openstack-settings {
 }
 
 legend.openstack-sub-title {
-  font-size: 16px;
+  font-size: 17px;
   margin: 25px 0px 6px 14px;
   line-height: 30px;
 }

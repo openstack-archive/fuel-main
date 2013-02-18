@@ -14,8 +14,8 @@
             </div>
           </div>
           <div class="openstack-sub-title parameter-name"><%- settings[setting]['label'] %></div>
-          <div class="parameter-description"><%- settings[setting]['description'] %></div>
         </label>
+        <div class="global-description"><%- settings[setting]['description'] %></div>
       <% } else if (settings[setting]['values']) { %>
         <legend class="openstack-sub-title setting" data-setting="<%- setting %>"><%- settings[setting]['label'] %></legend>
         <div>
@@ -28,10 +28,11 @@
               </div>
             </div>
             <div class="parameter-name"><%- option['display_name'] %></div>
-            <div class="parameter-description"><%- option['description'] %></div>
           </label>
+          <div class="global-description"><%- option['description'] %></div>
         <% }) %>
         </div>
+        <div class="parameter-spacer"></div>
       <% } else { %>
         <label class="parameter-box clearfix setting" data-setting="<%- setting %>">
           <div class="openstack-sub-title parameter-name"><%- settings[setting]['label'] %></div>
