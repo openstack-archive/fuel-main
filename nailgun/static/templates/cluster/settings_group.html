@@ -15,7 +15,7 @@
           </div>
           <div class="openstack-sub-title parameter-name"><%- settings[setting]['label'] %></div>
         </label>
-        <div class="global-description"><%- settings[setting]['description'] %></div>
+        <div class="global-description description"><%- settings[setting]['description'] %></div>
       <% } else if (settings[setting]['values']) { %>
         <legend class="openstack-sub-title setting" data-setting="<%- setting %>"><%- settings[setting]['label'] %></legend>
         <div>
@@ -29,7 +29,7 @@
             </div>
             <div class="parameter-name"><%- option['display_name'] %></div>
           </label>
-          <div class="global-description"><%- option['description'] %></div>
+          <div class="global-description description"><%- option['description'] %></div>
         <% }) %>
         </div>
         <div class="parameter-spacer"></div>
@@ -41,7 +41,7 @@
               <input type="text" value="<%- settings[setting]['value'] %>" <%= disabled %> />
             </div>
           </div>
-          <div class="parameter-description"><%- settings[setting]['description'] %></div>
+          <div class="parameter-description description"><%- settings[setting]['description'] %></div>
         </label>
       <% } %>
     <% }) %>

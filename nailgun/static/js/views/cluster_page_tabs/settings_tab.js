@@ -39,12 +39,12 @@ function(models, commonViews, settingsTabTemplate, settingsGroupTemplate) {
                             var option = {};
                             option.data = $(input).val();
                             option.display_name = $(input).parents('.parameter-control').siblings('.parameter-name').text();
-                            option.description = $(input).parents('.parameter-control').siblings('.parameter-description').text();
+                            option.description = $(input).parents('.parameter-box').next('.description').text();
                             data[param][setting].values.push(option);
                         });
                     } else {
                         data[param][setting].label = $(settingDom).find('.openstack-sub-title').text();
-                        data[param][setting].description = $(settingDom).find('.parameter-description').text();
+                        data[param][setting].description = $(settingDom).find('.description').text() || $(settingDom).next('.description').text();
                         data[param][setting].value = $(settingDom).find('input[type=text]').val();
                         if (!data[param][setting].value) {
                             data[param][setting].value = $(settingDom).find('input[type=checkbox]:checked').length ? true : false;
@@ -54,9 +54,17 @@ function(models, commonViews, settingsTabTemplate, settingsGroupTemplate) {
             });
         },
         checkForChanges: function() {
-            var data = {};
+            var equal = true, data = {};
             this.collectData($('.settings'), data);
-            if (_.isEqual(this.model.get('settings').get('editable'), data)) {
+            var previousSettings = this.model.get('settings').get('editable');
+            _.each(_.keys(previousSettings), function(settings) {
+                _.each(_.keys(previousSettings[settings]), function(setting) {
+                    if (previousSettings[settings][setting].value != data[settings][setting].value) {
+                        equal = false;
+                    }
+                });
+            });
+            if (equal) {
                 this.defaultButtonsState(true);
                 this.hasChanges = false;
             } else {
