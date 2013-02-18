@@ -38,3 +38,11 @@ class TestKeepalive(BaseHandlers):
         time.sleep(self.watcher.timeout + 1)
         self.db.refresh(node)
         self.assertEqual(node.status, "offline")
+
+    def test_provisioning_node_not_becomes_offline(self):
+        node = self.create_default_node(status="provisioning",
+                                        role="controller",
+                                        name="Dead or alive")
+        time.sleep(self.watcher.timeout + 1)
+        self.db.refresh(node)
+        self.assertEqual(node.status, "provisioning")

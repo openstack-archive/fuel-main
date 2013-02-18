@@ -1,6 +1,7 @@
 # -*- coding: utf-8 -*-
 
 import json
+from datetime import datetime
 
 import web
 
@@ -112,6 +113,7 @@ class NodeCollectionHandler(JSONHandler):
                 node = q.get(nd["id"])
             for key, value in nd.iteritems():
                 setattr(node, key, value)
+            node.timestamp = datetime.now()
             nodes_updated.append(node)
             orm().add(node)
         orm().commit()

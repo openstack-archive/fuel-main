@@ -6,6 +6,8 @@ import threading
 from datetime import datetime
 from itertools import repeat
 
+from sqlalchemy.sql import not_
+
 from nailgun.db import orm
 from nailgun.settings import settings
 from nailgun.api.models import Node
@@ -33,7 +35,10 @@ class KeepAliveThread(threading.Thread):
 
     def run(self):
         while not self.stoprequest.isSet():
-            for node_db in self.db.query(Node).all():
+            for node_db in self.db.query(Node).filter(
+                # nodes may become unresponsive while provisioning
+                not_(Node.status == 'provisioning')
+            ):
                 now = datetime.now()
                 if (now - node_db.timestamp).seconds > self.maxtime:
                     logger.warning(
