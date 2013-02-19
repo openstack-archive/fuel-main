@@ -1673,7 +1673,7 @@ h6.page-title {
 }
 
 /* Notifications Page */
-.notifications-list {
+.page-wrapper {
   background-color: #FFFFFF;
   border-radius: 4px;
   padding: 20px;
@@ -3058,4 +3058,16 @@ select[name=release] option {
     padding: 0px;
     overflow: hidden;
     margin: 20px 20px 0px 20px;
+}
+
+.support {
+  min-height: 220px;
+}
+
+.support .span12 {
+  margin-top: 10px;
+}
+
+.support p:nth-child(even) {
+  padding-bottom: 30px;
 }

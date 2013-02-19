@@ -3,7 +3,7 @@
     <h3 class="page-title">Notifications</h3>
   </div>
 </div>
-<div class="notifications-list">
+<div class="notifications-list page-wrapper">
   <ul class="message-list" role="menu">
     <% if (notifications.length) { %>
       <% _.each(notifications.last(displayCount).reverse(), function(notification, index) { %>
