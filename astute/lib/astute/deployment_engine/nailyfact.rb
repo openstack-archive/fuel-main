@@ -35,7 +35,7 @@ class Astute::DeploymentEngine::NailyFact < Astute::DeploymentEngine
 
   def deploy_piece(nodes, attrs, retries=2, ignore_failure=false)
     return false unless validate_nodes(nodes)
-    @ctx.reporter.report nodes_status(nodes, 'deploying').map {|n| n.merge({'progress' => 100})}
+    @ctx.reporter.report nodes_status(nodes, 'deploying',{'progress' => 100})
 
     Astute.logger.info "#{@ctx.task_id}: Calculation of required attributes to pass, include netw.settings"
     nodes.each do |node|

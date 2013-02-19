@@ -122,8 +122,8 @@ module Astute
     end
 
     private
-    def nodes_status(nodes, status)
-      {'nodes' => nodes.map { |n| {'uid' => n['uid'], 'status' => status} }}
+    def nodes_status(nodes, status, data_to_merge)
+      {'nodes' => nodes.map { |n| {'uid' => n['uid'], 'status' => status}.merge(data_to_merge) }}
     end
 
     def validate_nodes(nodes)
