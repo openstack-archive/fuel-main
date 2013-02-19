@@ -85,7 +85,7 @@ module MCollective
             reply.fail "Listener did not reported status."
           end
         ensure
-          s.close
+          socket.close
         end
       end
 
