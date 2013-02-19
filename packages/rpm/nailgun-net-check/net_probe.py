@@ -236,6 +236,23 @@ class Listener(Actor):
                 sniffers[iface] = t
 
         try:
+            s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+            s.connect((self.config['ready_address'], self.config['ready_port']))
+        except socket.error as e:
+            self.logger.error("Socket error: %s", e)
+        else:
+            msg = "READY"
+            total_sent = 0
+            while total_sent < len(msg):
+                sent = s.send(msg[total_sent:])
+                if sent == 0:
+                    raise ActorException(
+                        self.logger,
+                        "Socket broken. Cannot send %s status." % msg
+                    )
+                total_sent += sent
+
+        try:
             while True:
                 time.sleep(1)
         except KeyboardInterrupt:
@@ -345,6 +362,14 @@ def define_subparsers(parser):
         '-o', '--file', dest='dump_file', action='store', type=str,
         help='file to dump captured packets', default=None
     )
+    listen_parser.add_argument(
+        '-a', '--address', dest='ready_address', action='store', type=str,
+        help='address to report listener ready state', default='localhost'
+    )
+    listen_parser.add_argument(
+        '-p', '--port', dest='ready_port', action='store', type=int,
+        help='port to report listener ready state', default=31338
+    )
     generate_parser = subparsers.add_parser(
         'generate', help='generate and send probe packets'
     )
@@ -401,6 +426,8 @@ if __name__ == "__main__":
             config['interfaces'] = {}
             config['interfaces'][params.interface] = params.vlan_list
             config['cookie'] = params.cookie
+            config['ready_address'] = params.ready_address
+            config['ready_port'] = params.ready_port
             if params.dump_file:
                 config['dump_file'] = params.dump_file
             else:

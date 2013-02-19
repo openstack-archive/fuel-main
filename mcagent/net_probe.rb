@@ -1,5 +1,6 @@
 require "json"
 require "tempfile"
+require "socket"
 
 module MCollective
   module Agent
@@ -38,7 +39,10 @@ module MCollective
         config = {
           "action" => "listen",
           "interfaces" => JSON.parse(request[:interfaces]),
-          "dump_file" => "/var/tmp/net-probe-dump" }
+          "dump_file" => "/var/tmp/net-probe-dump",
+          "ready_address" => "localhost",
+          "ready_port" => 31338,
+        }
 
         if request.data.key?('config')
           config.merge!(JSON.parse(request[:config]))
@@ -54,6 +58,11 @@ module MCollective
         fpath = f.path
         f.close
 
+        socket = Socket.new( Socket::AF_INET, Socket::SOCK_STREAM, 0)
+        sockaddr = Socket.pack_sockaddr_in(config['ready_port'], config['ready_address'])
+        socket.bind(sockaddr)
+        socket.listen(1)
+
         cmd = "net_probe.py -c #{fpath}"
         pid = fork { `#{cmd}` }
         Process.detach(pid)
@@ -64,6 +73,13 @@ module MCollective
           Process.kill(0, pid)
         rescue Errno::ESRCH => e
           reply.fail "Failed to run '#{cmd}'"
+        else
+          client, clientaddr = socket.accept
+          status = client.read
+          reply.fail "Wrong listener status: '#{status}'" unless status =~ /READY/
+          s.close
+        ensure
+          s.close
         end
       end
 
