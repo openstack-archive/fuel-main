@@ -38,9 +38,6 @@ function(models, commonViews, dialogViews, actionsTabTemplate) {
         onClusterNameInputKeydown: function(e) {
             this.$('.rename-cluster-form input').removeClass('error');
             this.$('.text-error').hide();
-            if (e.which == 13) {
-                this.applyNewClusterName();
-            }
         },
         deleteCluster: function() {
             var deleteClusterDialogView = new dialogViews.RemoveClusterDialog({model: this.model});
