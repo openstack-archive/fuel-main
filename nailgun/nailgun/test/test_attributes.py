@@ -159,17 +159,20 @@ class TestAttributes(BaseHandlers):
         )
 
     def test_attributes_merged_values(self):
-        cluster = self.create_cluster_api()
+        cluster = self.env.create_cluster(api=True)
         cluster_db = self.db.query(Cluster).get(cluster['id'])
-        original_attrs = cluster_db.attributes.merged_attrs()
+        orig_attrs = cluster_db.attributes.merged_attrs()
         attrs = cluster_db.attributes.merged_attrs_values()
-        for group, group_attrs in original_attrs.iteritems():
-            for attr, original_value in group_attrs.iteritems():
-                value = group == 'common' and attrs[attr] or attrs[group][attr]
-                if isinstance(value, dict) and 'value' in value:
-                    self.assertEquals(original_value['value'], value)
+        for group, group_attrs in orig_attrs.iteritems():
+            for attr, orig_value in group_attrs.iteritems():
+                if group == 'common':
+                    value = attrs[attr]
                 else:
-                    self.assertEquals(original_value, value)
+                    value = attrs[group][attr]
+                if isinstance(orig_value, dict) and 'value' in orig_value:
+                    self.assertEquals(orig_value['value'], value)
+                else:
+                    self.assertEquals(orig_value, value)
 
     def _compare(self, d1, d2):
         if isinstance(d1, dict) and isinstance(d2, dict):
