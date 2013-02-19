@@ -148,13 +148,13 @@ describe "NailyFact DeploymentEngine" do
 
     it "ha_compute deploy should not raise any exception" do
       Astute::Metadata.expects(:publish_facts).at_least_once
-      Astute::PuppetdDeployer.expects(:deploy).times(7)
+      Astute::PuppetdDeployer.expects(:deploy).times(8)
       @deploy_engine.deploy(@data_ha['args']['nodes'], @data_ha['args']['attributes'])
     end
 
     it "ha_compute deploy should not raise any exception if there are only one controller" do
       Astute::Metadata.expects(:publish_facts).at_least_once
-      Astute::PuppetdDeployer.expects(:deploy).times(4)
+      Astute::PuppetdDeployer.expects(:deploy).times(5)
       ctrl = @data_ha['args']['nodes'].select {|n| n['role'] == 'controller'}[0]
       @deploy_engine.deploy([ctrl], @data_ha['args']['attributes'])
     end

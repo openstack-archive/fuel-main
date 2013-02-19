@@ -105,7 +105,9 @@ module Astute
       Astute.logger.info "Starting deployment of 1st controller again, ignoring failure"
       deploy_piece([ctrl_nodes[0]], attrs, retries=0, ignore_failure=true)
 
-      retries = 1
+      Astute.logger.info "Starting deployment of all controllers, retries=0"
+      deploy_piece(ctrl_nodes, attrs, retries=0, ignore_failure=true)
+      retries = 3
       Astute.logger.info "Starting deployment of all controllers until it completes, "\
                          "allowed retries: #{retries}"
       deploy_piece(ctrl_nodes, attrs, retries=retries)
