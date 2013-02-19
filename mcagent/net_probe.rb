@@ -1,6 +1,7 @@
 require "json"
 require "tempfile"
 require "socket"
+require "timeout"
 
 module MCollective
   module Agent
@@ -74,9 +75,15 @@ module MCollective
         rescue Errno::ESRCH => e
           reply.fail "Failed to run '#{cmd}'"
         else
-          client, clientaddr = socket.accept
-          status = client.read
-          reply.fail "Wrong listener status: '#{status}'" unless status =~ /READY/
+          begin
+            Timeout::timeout(120) do
+              client, clientaddr = socket.accept
+              status = client.read
+              reply.fail "Wrong listener status: '#{status}'" unless status =~ /READY/
+            end
+          rescue Timeout::Error
+            reply.fail "Listener did not reported status."
+          end
         ensure
           s.close
         end
