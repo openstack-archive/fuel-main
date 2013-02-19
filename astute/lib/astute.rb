@@ -17,6 +17,9 @@ module Astute
   autoload 'MClient', 'astute/mclient'
   autoload 'ProxyReporter', 'astute/reporter'
   autoload 'NodeRemoval', 'astute/node_removal'
+  LogParser.autoload :ParseDeployLogs, 'astute/logparser/deployment'
+  LogParser.autoload :ParseProvisionLogs, 'astute/logparser/provision'
+  LogParser.autoload :Patterns, 'astute/logparser/parser_patterns'
 
   def self.logger
     @logger ||= Logger.new('/var/log/astute.log')

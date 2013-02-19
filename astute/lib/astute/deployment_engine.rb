@@ -33,7 +33,7 @@ module Astute
 
     def deploy_singlenode_compute(nodes, attrs)
       # TODO(mihgen) some real stuff is needed
-       Astute.logger.info "Starting deployment of single node OpenStack"
+      Astute.logger.info "Starting deployment of single node OpenStack"
       deploy_piece(nodes, attrs)
     end
 

@@ -67,12 +67,6 @@ module Astute
       node_retries = {}
       uids.each {|x| node_retries.merge!({x => retries}) }
 
-      begin
-        ctx.deploy_log_parser.add_separator(nodes)
-      rescue Exception => e
-        Astute.logger.warn "Some error occurred when add separator to logs: #{e.message}, trace: #{e.backtrace.inspect}"
-      end
-
       Astute.logger.debug "Waiting for puppet to finish deployment on all nodes (timeout = #{Astute.config.PUPPET_TIMEOUT} sec)..."
       time_before = Time.now
       Timeout::timeout(Astute.config.PUPPET_TIMEOUT) do

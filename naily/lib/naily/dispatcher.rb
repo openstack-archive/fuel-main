@@ -6,23 +6,7 @@ module Naily
       @orchestrator = Astute::Orchestrator.new(nil, log_parsing=true)
       @producer = producer
       @default_result = {'status' => 'ready', 'progress' => 100}
-      @pattern_spec = {'type' => 'pattern-list', 'chunk_size' =>  40000, # Size of block which reads for pattern searching.
-        'pattern_list' => [
-          {'pattern' => 'Running kickstart %%pre script', 'progress' => 0.08},
-          {'pattern' => 'to step enablefilesystems', 'progress' => 0.09},
-          {'pattern' => 'to step reposetup', 'progress' => 0.13},
-          {'pattern' => 'to step installpackages', 'progress' => 0.16},
-          {'pattern' => 'Installing',
-            'number' => 210, # Now it install 205 packets. Add 5 packets for growth in future.
-            'p_min' => 0.16, # min percent
-            'p_max' => 0.87 # max percent
-            },
-          {'pattern' => 'to step postinstallconfig', 'progress' => 0.87},
-          {'pattern' => 'to step dopostaction', 'progress' => 0.92},
-          ].reverse,
-        'filename' => 'install/anaconda.log'
-        }
-      @provisionLogParser = Astute::LogParser::ParseNodeLogs.new(@pattern_spec)
+      @provisionLogParser = Astute::LogParser::ParseProvisionLogs.new
     end
 
     def echo(args)
@@ -40,9 +24,9 @@ module Naily
       nodes_not_booted = nodes.map { |n| n['uid'] }
       Naily.logger.info "Starting OS provisioning for nodes: #{nodes_not_booted.join(',')}" 
       begin
-        @provisionLogParser.add_separator(nodes)
+        @provisionLogParser.prepare(nodes)
       rescue Exception => e
-        Naily.logger.warn "Some error occurred when add separator to logs: #{e.message}, trace: #{e.backtrace.inspect}"
+        Naily.logger.warn "Some error occurred when prepare LogParser: #{e.message}, trace: #{e.backtrace.inspect}"
       end
       time = 10 + time - Time::now.to_f
       sleep (time) if time > 0 # Wait while nodes going to reboot. Sleep not greater than 10 sec.

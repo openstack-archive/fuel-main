@@ -26,6 +26,11 @@ module Astute
       context = Context.new(task_id, proxy_reporter, @log_parser)
       deploy_engine_instance = @deploy_engine.new(context)
       Astute.logger.info "Using #{deploy_engine_instance.class} for deployment."
+      begin
+        @log_parser.prepare(nodes)
+      rescue Exception => e
+        Astute.logger.warn "Some error occurred when prepare LogParser: #{e.message}, trace: #{e.backtrace.inspect}"
+      end
       deploy_engine_instance.deploy(nodes, attrs)
     end
 
