@@ -77,7 +77,7 @@ class ClusterHandler(JSONHandler):
         if not cluster:
             return web.notfound()
         # additional validation needed?
-        data = Cluster.validate_json(web.data())
+        data = Cluster.validate(web.data())
         # /additional validation needed?
         for key, value in data.iteritems():
             if key == "nodes":

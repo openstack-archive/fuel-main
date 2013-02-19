@@ -115,8 +115,8 @@ class Cluster(Base, BasicValidator):
     @classmethod
     def validate(cls, data):
         d = cls.validate_json(data)
-        if orm().query(Cluster).filter(
-            Cluster.name == d["name"]
+        if orm().query(Cluster).filter_by(
+            name=d["name"]
         ).first():
             c = web.webapi.conflict
             c.message = "Environment with this name already exists"
