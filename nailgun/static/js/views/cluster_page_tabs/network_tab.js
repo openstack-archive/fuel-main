@@ -176,7 +176,7 @@ function(models, commonViews, dialogViews, networkTabTemplate, networkTabViewMod
             var task = this.model.task('verify_networks') || this.model.task('check_networks', 'error') || this.model.task('deploy', 'running');
             if (task) {
                 task.bind('change:status', this.render, this);
-                if (this.networks) {
+                if (this.networks && task.get('status') == 'running') {
                     this.render();
                 }
             }
