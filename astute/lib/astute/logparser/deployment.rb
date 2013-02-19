@@ -19,8 +19,11 @@ module Astute
         uids_to_calc.each do |uid|
           node = nodes.select {|n| n['uid'] == uid}[0]
           unless @nodes_states[uid]
-            @nodes_states[uid] = Patterns::get_default_pattern(
+            pattern_spec = Patterns::get_default_pattern(
               "puppet-log-components-list-#{@deploy_type}-#{node['role']}")
+            pattern_spec['path_prefix'] ||= PATH_PREFIX.to_s
+            pattern_spec['separator'] ||= SEPARATOR.to_s
+            @nodes_states[uid] = pattern_spec
           end
         end
         super(uids_to_calc, nodes)

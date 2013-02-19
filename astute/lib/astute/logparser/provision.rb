@@ -36,9 +36,12 @@ module Astute
         else
           pattern_spec = Patterns::get_default_pattern('anaconda-log-supposed-time-baremetal')
         end
+        pattern_spec['path_prefix'] ||= PATH_PREFIX.to_s
+        pattern_spec['separator'] ||= SEPARATOR.to_s
 
         hdd = node['meta']['disks'].select{|disk| not disk['removable']}[0]
         if hdd
+          # Convert size from bytes to GB
           hdd_size = hdd['size'] / 10 ** 9
         else
           # Default hdd size is 20 GB

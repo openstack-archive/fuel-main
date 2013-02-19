@@ -1,5 +1,11 @@
 module Astute
   module LogParser
+    LOG_PORTION = 10000
+    # Default values. Can be overrided by pattern_spec.
+    # E.g. pattern_spec = {'separator' => 'new_separator', ...}
+    PATH_PREFIX = '/var/log/remote/'
+    SEPARATOR = "SEPARATOR\n"
+
     class NoParsing
       def initialize(*args)
       end
@@ -15,30 +21,24 @@ module Astute
 
     class ParseNodeLogs
       attr_reader :pattern_spec
-      @@LOG_PORTION = 10000
-
-      # Default values. Can be overrided by pattern_spec.
-      # E.g. pattern_spec = {'separator' => 'new_separator', ...}
-      PATH_PREFIX = '/var/log/remote/'
-      SEPARATOR = "SEPARATOR\n"
 
       def initialize(pattern_spec)
         @nodes_states = {}
         @pattern_spec = pattern_spec
+        @pattern_spec['path_prefix'] ||= PATH_PREFIX.to_s
+        @pattern_spec['separator'] ||= SEPARATOR.to_s
       end
 
       def progress_calculate(uids_to_calc, nodes)
         nodes_progress = []
         uids_to_calc.each do |uid|
           node = nodes.select {|n| n['uid'] == uid}[0]
-          path = "#{@pattern_spec['path_prefix']}#{node['ip']}/#{@pattern_spec['filename']}"
           node_pattern_spec = @nodes_states[uid]
           unless node_pattern_spec
             node_pattern_spec = Marshal.load(Marshal.dump(@pattern_spec))
             @nodes_states[uid] = node_pattern_spec
           end
-          node_pattern_spec['path_prefix'] ||= PATH_PREFIX.dup
-          node_pattern_spec['separator'] ||= SEPARATOR.dup
+          path = "#{@pattern_spec['path_prefix']}#{node['ip']}/#{@pattern_spec['filename']}"
 
           begin
             progress = (get_log_progress(path, node_pattern_spec)*100).to_i # Return percent of progress
@@ -57,12 +57,14 @@ module Astute
 
       def prepare(nodes)
         @nodes_states = {}
-        add_separator(nodes)
+        nodes.each do |node|
+          path = "#{@pattern_spec['path_prefix']}#{node['ip']}/#{@pattern_spec['filename']}"
+          File.open(path, 'a') {|fo| fo.write @pattern_spec['separator'] } if File.writable?(path)
+        end
       end
 
       def pattern_spec= (pattern_spec)
-        @nodes_states = {}
-        @pattern_spec = pattern_spec
+        initialise(pattern_spec)
       end
 
       private
@@ -115,7 +117,7 @@ module Astute
           fo.pos = pos
           return fo.read
         end
-        size = @@LOG_PORTION unless size
+        size = LOG_PORTION unless size
         return nil if fo.pos == 0
         size = fo.pos if fo.pos < size
         next_pos = fo.pos - size
@@ -124,15 +126,6 @@ module Astute
         fo.pos = next_pos
         return block
       end
-
-      def add_separator(nodes)
-        nodes.each do |node|
-          path = "#{@pattern_spec['path_prefix']}#{node['ip']}/#{@pattern_spec['filename']}"
-          File.open(path, 'a') {|fo| fo.write @pattern_spec['separator'] } if File.readable?(path)
-        end
-      end
-
-
     end
 
   end

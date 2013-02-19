@@ -111,7 +111,6 @@ module Astute
                          "allowed retries: #{retries}"
       deploy_piece(ctrl_nodes, attrs, retries=retries)
 
-      # FIXME(mihgen): put right numbers for logs
       compute_nodes = nodes.select {|n| n['role'] == 'compute'}
       Astute.logger.info "Starting deployment of computes"
       deploy_piece(compute_nodes, attrs)

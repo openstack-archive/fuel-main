@@ -28,6 +28,7 @@ module Astute
             {'pattern' => 'leaving (1) step installpackages', 'supposed_time' => 60},
             {'pattern' => 'moving (1) to step postscripts', 'supposed_time' => 4},
             {'pattern' => 'leaving (1) step postscripts', 'supposed_time' => 130},
+            {'pattern' => 'wait while node rebooting', 'supposed_time' => 20},
             ].reverse,
           'filename' => 'install/anaconda.log'
           },
@@ -50,6 +51,7 @@ module Astute
             {'pattern' => 'leaving (1) step installpackages', 'supposed_time' => 100},
             {'pattern' => 'moving (1) to step postscripts', 'supposed_time' => 4},
             {'pattern' => 'leaving (1) step postscripts', 'supposed_time' => 200},
+            {'pattern' => 'wait while node rebooting', 'supposed_time' => 20},
             ].reverse,
           'filename' => 'install/anaconda.log'
           },
