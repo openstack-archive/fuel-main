@@ -8,6 +8,7 @@ import logging
 from random import randint
 from datetime import datetime
 from unittest.case import TestCase
+from functools import partial, wraps
 
 import mock
 from paste.fixture import TestApp
@@ -344,7 +345,7 @@ class Environment(object):
     def refresh_clusters(self):
         map(self.db.refresh, self.clusters)
 
-    def _wait_task(self, task, timeout):
+    def _wait_task(self, task, timeout, message):
         timer = time.time()
         while task.status == 'running':
             self.db.refresh(task)
@@ -356,18 +357,19 @@ class Environment(object):
                 )
             time.sleep(1)
         self.tester.assertEquals(task.progress, 100)
+        if isinstance(message, type(re.compile("regexp"))):
+            self.tester.assertIsNotNone(re.match(message, task.message))
+        elif isinstance(message, str):
+            self.tester.assertEquals(task.message, message)
 
     def wait_ready(self, task, timeout=60, message=None):
-        self._wait_task(task, timeout)
+        self._wait_task(task, timeout, message)
         self.tester.assertEquals(task.status, 'ready')
-        if message:
-            self.tester.assertEquals(task.message, message)
+        
 
     def wait_error(self, task, timeout=60, message=None):
-        self._wait_task(task, timeout)
+        self._wait_task(task, timeout, message)
         self.tester.assertEquals(task.status, 'error')
-        if message:
-            self.tester.assertEquals(task.message, message)
 
 
 class BaseHandlers(TestCase):
@@ -414,7 +416,7 @@ class BaseHandlers(TestCase):
         self.env.upload_fixtures(self.fixtures)
 
 
-def fake_tasks(fake_rpc=True):
+def fake_tasks(fake_rpc=True, **kwargs):
     def wrapper(func):
         func = mock.patch(
             'nailgun.task.task.settings.FAKE_TASKS',
@@ -428,10 +430,18 @@ def fake_tasks(fake_rpc=True):
             'nailgun.task.fake.settings.FAKE_TASKS_TICK_INTERVAL',
             1
         )(func)
-        if fake_rpc:
+        if fake_rpc and not kwargs:
             func = mock.patch(
                 'nailgun.task.task.rpc.cast',
                 nailgun.task.task.fake_cast
+            )(func)
+        elif fake_rpc and kwargs:
+            func = mock.patch(
+                'nailgun.task.task.rpc.cast',
+                partial(
+                    nailgun.task.task.fake_cast,
+                    **kwargs
+                )
             )(func)
         else:
             func = mock.patch(

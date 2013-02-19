@@ -3,7 +3,7 @@ import time
 import logging
 import threading
 from itertools import repeat
-from random import randrange
+from random import randrange, shuffle
 
 from sqlalchemy.orm import object_mapper, ColumnProperty, \
     scoped_session, sessionmaker
@@ -18,11 +18,12 @@ from nailgun.rpc.threaded import NailgunReceiver
 
 
 class FakeThread(threading.Thread):
-    def __init__(self, data=None, group=None, target=None, name=None,
-                 verbose=None):
+    def __init__(self, data=None, params=None, group=None, target=None,
+                 name=None, verbose=None):
         threading.Thread.__init__(self, group=group, target=target, name=name,
                                   verbose=verbose)
         self.data = data
+        self.params = params
         self.task_uuid = data['args'].get(
             'task_uuid'
         )
@@ -42,6 +43,8 @@ class FakeThread(threading.Thread):
 
 class FakeDeploymentThread(FakeThread):
     def run(self):
+        error = self.params.get("error")
+
         receiver = NailgunReceiver()
         kwargs = {
             'task_uuid': self.task_uuid,
@@ -81,6 +84,11 @@ class FakeDeploymentThread(FakeThread):
                     if n['progress'] >= 100:
                         n['progress'] = 100
                         n['status'] = next_st[n['status']]
+            if error == "provisioning":
+                shuffle(kwargs['nodes'])
+                kwargs['nodes'][0]['status'] = "error"
+                kwargs['nodes'][0]['error_type'] = "provision"
+                error = None
             resp_method(**kwargs)
             if all(map(
                 lambda n: n['status'] in (
@@ -124,11 +132,22 @@ class FakeDeploymentThread(FakeThread):
                     if n['progress'] >= 100:
                         n['progress'] = 100
                         n['status'] = next_st[n['status']]
+            if error == "deployment":
+                shuffle(kwargs['nodes'])
+                kwargs['nodes'][0]['status'] = "error"
+                kwargs['nodes'][0]['error_type'] = "deploy"
+                error = None
             if all(map(
                 lambda n: n['progress'] == 100 and n['status'] == 'ready',
                 kwargs['nodes']
             )):
                 kwargs['status'] = 'ready'
+                ready = True
+            if any(map(
+                lambda n: n['status'] == 'error',
+                kwargs['nodes']
+            )):
+                kwargs['status'] = 'error'
                 ready = True
             resp_method(**kwargs)
             self.sleep(tick_interval)

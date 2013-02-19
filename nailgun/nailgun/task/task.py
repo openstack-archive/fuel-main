@@ -29,9 +29,10 @@ from nailgun.task.errors import WrongNodeStatus
 logger = logging.getLogger(__name__)
 
 
-def fake_cast(queue, message):
+def fake_cast(queue, message, **kwargs):
     thread = FAKE_THREADS[message['method']](
-        data=message
+        data=message,
+        params=kwargs
     )
     thread.start()
     thread.name = message['method'].upper()
