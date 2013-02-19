@@ -1,15 +1,33 @@
 <div class="wrapper">
   <h3 class="span12">Actions</h3>
 
-  <form class="rename-cluster-form" onsubmit="return false">
-    <legend>Rename environment</legend>
-    <input type="text" class="input-large" maxlength="50" value="<%- cluster.get('name') %>">
-    <button class="btn btn-success apply-name-btn" style="margin-top: -10px;"><i class="icon-ok"></i></button>
-  </form>
+  <div class="row-fluid">
+    
+    <div class="span6 action-item-placeholder">
+      <form class="rename-cluster-form" onsubmit="return false">
+        <h4>Rename Environment</h4>
+        <div class="action-item-description">
+          <div class="alert alert-error">Environment with name already exist</div>
+        </div>
+        <div class="action-item-controls">
+          <input type="text" class="input-xlarge" maxlength="50" value="<%- cluster.get('name') %>">
+          <button class="btn btn-success apply-name-btn" style="margin-top: -10px;">Rename</button>
+        </div>
+      </form>
+    </div>
 
-  <form class="delete-cluster-form" onsubmit="return false">
-    <legend>Delete environment</legend>
-    <div class="msg-error cluster-removing-description"><span class="label label-important">Important</span> With environment removal all nodes will be cleaned up and returned to the pool of unallocated nodes.</div>
-    <button class="btn btn-danger delete-cluster-btn">Delete environment</button>
-  </form>
+    <div class="span6 action-item-placeholder">
+      <form class="delete-cluster-form" onsubmit="return false">
+        <h4>Delete Environment</h4>
+        <div class="action-item-description important">
+          With environment removal all nodes will be cleaned up and returned to the pool of unallocated nodes.
+        </div>
+        <div class="action-item-controls">
+          <button class="btn btn-danger delete-cluster-btn">Delete Environment</button>
+        </div>
+      </form>
+    </div>
+
+  </div>
+
 </div>

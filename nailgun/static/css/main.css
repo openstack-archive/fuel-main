@@ -3015,3 +3015,48 @@ select[name=release] option {
 #nodeDetailsAccordion .nested-object div, #nodeDetailsAccordion .nested-object div label {
   font-weight: normal;
 }
+
+.action-item-placeholder {
+    border: 1px solid #e0e0e0;
+    border-radius: 4px;
+    /* padding: 10px 20px 10px 20px; */
+    background-color: #f0f0f0;
+    height: 160px !Important;
+    box-sizing: border-box;
+    -moz-box-sizing: border-box;
+    -webkit-box-sizing: border-box;
+    text-shadow: 0 1px 0 rgba(255, 255, 255, 0.5);
+    overflow: hidden;
+}
+
+.action-item-placeholder > form > h4 {
+    display: block;
+    margin: 0px;
+    padding: 0px;
+    height: 24px;
+    overflow: hidden;
+    margin: 17px 20px 12px 20px;
+}
+
+.action-item-placeholder > form > .action-item-description {
+    display: block;
+    margin: 0px;
+    padding: 0px;
+    height: 42px;
+    overflow: hidden;
+    margin: 0px 20px 12px 20px; 
+
+}
+
+.action-item-placeholder > form > .important {
+    color: #c03832;
+    font-style: italic;
+}
+
+.action-item-placeholder > form > .action-item-controls {
+    display: block;
+    margin: 0px;
+    padding: 0px;
+    overflow: hidden;
+    margin: 0px 20px 20px 20px;
+}
