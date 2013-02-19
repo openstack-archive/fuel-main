@@ -3019,7 +3019,6 @@ select[name=release] option {
 .action-item-placeholder {
     border: 1px solid #e0e0e0;
     border-radius: 4px;
-    /* padding: 10px 20px 10px 20px; */
     background-color: #f0f0f0;
     height: 160px !Important;
     box-sizing: border-box;
@@ -3035,7 +3034,7 @@ select[name=release] option {
     padding: 0px;
     height: 24px;
     overflow: hidden;
-    margin: 17px 20px 12px 20px;
+    margin: 17px 20px 10px 20px;
 }
 
 .action-item-placeholder > form > .action-item-description {
@@ -3044,7 +3043,7 @@ select[name=release] option {
     padding: 0px;
     height: 42px;
     overflow: hidden;
-    margin: 0px 20px 12px 20px; 
+    margin: 0px 20px 0px 20px;
 
 }
 
@@ -3058,5 +3057,5 @@ select[name=release] option {
     margin: 0px;
     padding: 0px;
     overflow: hidden;
-    margin: 0px 20px 20px 20px;
+    margin: 20px 20px 0px 20px;
 }
