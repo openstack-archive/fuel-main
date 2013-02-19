@@ -193,7 +193,7 @@ function(models, commonViews, dialogViews, LogsTab, nodesTabSummaryTemplate, edi
         renderNodes: function() {
             this.tearDownRegisteredSubViews();
             var nodesContainer = this.$('.available-nodes');
-            this.nodes.models = _.sortBy(this.nodes.models, function(node) {return node.get('mac')});
+            this.nodes.models = _.sortBy(this.nodes.models, function(node) {return node.get('mac');});
             if (this.nodes.length) {
                 nodesContainer.html('');
                 this.nodes.each(function(node) {

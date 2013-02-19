@@ -3071,3 +3071,15 @@ select[name=release] option {
 .support p:nth-child(even) {
   padding-bottom: 30px;
 }
+
+.rename-cluster-form .control-group {
+  margin-bottom: 0;
+}
+
+.rename-cluster-form .text-error {
+  width: 600px;
+  display: inline-block;
+  padding-left: 10px;
+  position: relative;
+  top: -2px;
+}

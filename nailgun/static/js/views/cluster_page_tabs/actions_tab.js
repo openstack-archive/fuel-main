@@ -18,18 +18,26 @@ function(models, commonViews, dialogViews, actionsTabTemplate) {
         applyNewClusterName: function() {
             var name = $.trim(this.$('.rename-cluster-form input').val());
             if (name != '' && name != this.model.get('name')) {
-                this.$('.rename-cluster-form input, .rename-cluster-form .apply-name-btn').attr('disabled', true);
+                this.$('.rename-cluster-form').children().attr('disabled', true);
                 this.model.update({name: name}, {
-                    complete: function() {
+                    success: _.bind(function() {
                         this.page.updateBreadcrumbs();
                         this.page.updateTitle();
                         this.render();
-                    },
-                    context: this
+                    }, this),
+                    error: _.bind(function(model, response, options) {
+                        this.$('.rename-cluster-form input').addClass('error');
+                        this.$('.rename-cluster-form').children().attr('disabled', false);
+                        if (response.status == 409) {
+                            this.$('.text-error').text(response.responseText).show();
+                        }
+                    }, this)
                 });
             }
         },
         onClusterNameInputKeydown: function(e) {
+            this.$('.rename-cluster-form input').removeClass('error');
+            this.$('.text-error').hide();
             if (e.which == 13) {
                 this.applyNewClusterName();
             }
