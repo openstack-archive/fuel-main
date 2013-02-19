@@ -9,6 +9,7 @@ from sqlalchemy.orm import object_mapper, ColumnProperty, \
     scoped_session, sessionmaker
 from nailgun.db import NoCacheQuery, orm, engine
 from nailgun.settings import settings
+from nailgun.logger import logger
 from nailgun.notifier import notifier
 from nailgun.api.models import Network, Node
 from nailgun.task.errors import WrongNodeStatus
@@ -183,7 +184,8 @@ class FakeVerificationThread(FakeThread):
         # verification will fail if you specified 404 as VLAN id in any net
         for n in self.data['args']['nodes']:
             for iface in n['networks']:
-                iface['vlans'] = list(set(iface['vlans']) ^ set([404]))
+                if 404 in iface['vlans']:
+                    iface['vlans'] = list(set(iface['vlans']) ^ set([404]))
 
         while not ready and not self.stoprequest.isSet():
             kwargs['progress'] += randrange(
