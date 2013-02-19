@@ -9,14 +9,7 @@
   </p>
   <ul>
     <!-- Nodes changes -->
-    <% var warnings = {
-      'controller': 'Environment will not contain the necessary number of controllers after deployment. Thus, it will not be usable.',
-      'compute': 'Compute nodes are recommended for deployment',
-      'storage': 'Storage nodes are recommended for deployment',
-      'compute-storage': 'Compute and storage nodes are recommended for deployment',
-    } %>
-    <% var warning = null, canDeploy = true, roles = cluster.availableRoles() %>
-
+    <% var roles = cluster.availableRoles() %>
     <% var nodesToAdd = cluster.get('nodes').where({pending_addition: true}) %>
     <% if (nodesToAdd.length) { %>
       <li>added:
