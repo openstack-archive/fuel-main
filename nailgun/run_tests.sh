@@ -150,7 +150,7 @@ fi
 function run_tests {
   clean
   [ -z "$noseargs" ] && test_args=. || test_args="$noseargs"
-  nosetests $noseopts $test_args
+  nosetests $noseopts $test_args --verbosity=2
 }
 
 errors=''
