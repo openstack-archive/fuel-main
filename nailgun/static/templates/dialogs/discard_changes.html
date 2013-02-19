@@ -3,10 +3,43 @@
   <h3>Discard Changes</h3>
 </div>
 <div class="modal-body">
-  <div class="msg-error">
+  <p>
     <span class="label label-important">Important</span>
     Are you sure you want to discard all the changes you made?
-  </div>
+  </p>
+  <ul>
+    <!-- Nodes changes -->
+    <% var warnings = {
+      'controller': 'Environment will not contain the necessary number of controllers after deployment. Thus, it will not be usable.',
+      'compute': 'Compute nodes are recommended for deployment',
+      'storage': 'Storage nodes are recommended for deployment',
+      'compute-storage': 'Compute and storage nodes are recommended for deployment',
+    } %>
+    <% var warning = null, canDeploy = true, roles = cluster.availableRoles() %>
+
+    <% var nodesToAdd = cluster.get('nodes').where({pending_addition: true}) %>
+    <% if (nodesToAdd.length) { %>
+      <li>added:
+          <% _.each(roles, function(role) { %>
+            <% var count = _.filter(nodesToAdd, function(node) {return node.get('role') == role}).length %>
+            <% if (count) { %>
+              <%= count %> <%= role %> node<%= count != 1 ? 's' : '' %>;
+            <% } %>
+          <% }) %>
+      </li>
+    <% } %>
+    <% var nodesToDelete = cluster.get('nodes').where({pending_deletion: true}) %>
+    <% if (nodesToDelete.length) { %>
+      <li>deleted:
+          <% _.each(roles, function(role) { %>
+            <% var count = _.filter(nodesToDelete, function(node) {return node.get('role') == role}).length %>
+            <% if (count) { %>
+              <%= count %> <%= role %> node<%= count != 1 ? 's' : '' %>;
+            <% } %>
+          <% }) %>
+      </li>
+    <% } %>
+  </ul>
 </div>
 <div class="modal-footer">
   <button class="btn" data-dismiss="modal">Cancel</button>

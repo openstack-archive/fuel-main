@@ -1,74 +1,81 @@
 <div class="modal-header">
   <button type="button" class="close" data-dismiss="modal">×</button>
-  <h3>Deploy changes</h3>
+  <h3>Deploy Changes</h3>
 </div>
 <div class="modal-body display-changes-dialog">
 
   <!-- Needs to redeploy cluster -->
   <% if (cluster.needsRedeployment()) { %>
-    <div class="alert alert-error">Some nodes have error status after deployment. Redeployment is needed.</div>
+    <p>
+      <span class="label label-important">Important</span>
+      Some nodes have error status after deployment. Redeployment is needed.
+    </p>
   <% } %>
 
-  <!-- Network & OpanStack changes -->
-  <% if (cluster.get('changes').length) { %>
-    <% var settingsChangesDescriptions = {
-      'attributes': 'OpenStack settings',
-      'networks': 'Network settings'
+  <ul>
+
+    <!-- Nodes changes -->
+    <% var warnings = {
+      'controller': 'Environment will not contain the necessary number of controllers after deployment. Thus, it will not be usable.',
+      'compute': 'Compute nodes are recommended for deployment',
+      'storage': 'Storage nodes are recommended for deployment',
+      'compute-storage': 'Compute and storage nodes are recommended for deployment',
     } %>
-    <p>Changes to apply:</p>
-    <ul>
-      <% _.each(cluster.get('changes'), function(change) { %>
-        <li><%= settingsChangesDescriptions[change] %></li>
-      <% }) %>
-    </ul>
-  <% } %>
+    <% var warning = null, canDeploy = true, roles = cluster.availableRoles() %>
 
-  <!-- Nodes changes -->
-  <% var warnings = {
-    'controller': 'Environment will not contain the necessary number of controllers after deployment. Thus, it will not be usable.',
-    'compute': 'Compute nodes are recommended for deployment',
-    'storage': 'Storage nodes are recommended for deployment',
-    'compute-storage': 'Compute and storage nodes are recommended for deployment',
-  } %>
-  <% var warning = null %>
-  <% var canDeploy = true %>
-  <% var roles = cluster.availableRoles() %>
-  <% if (cluster.get('nodes').where({role: 'controller'}).length < size) { %>
-    <p class="text-error">There must be at least <%= size %> controller node<%= size != 1 ? 's' : '' %></p>
-    <% if (!cluster.get('nodes').length && !cluster.get('changes').length) canDeploy = false; else warning = 'controller' %>
-  <% } else {%>
-    <% _.each(roles, function(role) { %>
-      <% if (warning != 'controller' && !_.filter(cluster.get('nodes').nodesAfterDeployment(), function(node) {return node.get('role') == role}).length) { %>
-        <% role == 'controller' ? warning = 'controller' : role == 'compute' ? warning = 'compute' : warning == 'compute' ? warning = 'compute-storage' : warning = 'storage' %>
-      <% } %>
-    <% }) %>
-  <% } %>
-  <% var nodesToAdd = cluster.get('nodes').where({pending_addition: true}) %>
-  <% if (nodesToAdd.length) { %>
-    <p>Add nodes:</p>
-      <ul>
-        <% _.each(roles, function(role) { %>
-          <% var count = _.filter(nodesToAdd, function(node) {return node.get('role') == role}).length %>
-          <% if (count) { %><li><%= count %> <%= role %> node<%= count != 1 ? 's' : '' %></li><% } %>
+    <% var nodesToAdd = cluster.get('nodes').where({pending_addition: true}) %>
+    <% if (nodesToAdd.length) { %>
+      <li>added:
+          <% _.each(roles, function(role) { %>
+            <% var count = _.filter(nodesToAdd, function(node) {return node.get('role') == role}).length %>
+            <% if (count) { %>
+              <%= count %> <%= role %> node<%= count != 1 ? 's' : '' %>;
+            <% } %>
+          <% }) %>
+      </li>
+    <% } %>
+    <% var nodesToDelete = cluster.get('nodes').where({pending_deletion: true}) %>
+    <% if (nodesToDelete.length) { %>
+      <li>deleted:
+          <% _.each(roles, function(role) { %>
+            <% var count = _.filter(nodesToDelete, function(node) {return node.get('role') == role}).length %>
+            <% if (count) { %>
+              <%= count %> <%= role %> node<%= count != 1 ? 's' : '' %>;
+            <% } %>
+          <% }) %>
+      </li>
+    <% } %>
+
+    <!-- Network & OpanStack changes -->
+    <% if (cluster.get('changes').length) { %>
+      <li> changed:
+        <% var settingsChangesDescriptions = {'attributes': 'OpenStack settings', 'networks': 'network settings'} %>
+        <% _.each(cluster.get('changes'), function(change) { %>
+          <%= settingsChangesDescriptions[change] %>;
         <% }) %>
-      </ul>
-  <% } %>
-  <% var nodesToDelete = cluster.get('nodes').where({pending_deletion: true}) %>
-  <% if (nodesToDelete.length) { %>
-    <p>Delete nodes:</p>
-      <ul>
-        <% _.each(roles, function(role) { %>
-          <% var count = _.filter(nodesToDelete, function(node) {return node.get('role') == role}).length %>
-          <% if (count) { %><li><%= count %> <%= role %> node<%= count != 1 ? 's' : '' %></li><% } %>
-        <% }) %>
-      </ul>
-  <% } %>
+      </li>
+    <% } %>
+
+  </ul>
+
+  <!-- Warnings -->
+  <%
+    if (cluster.get('nodes').where({role: 'controller'}).length < size) {
+      if (!cluster.get('nodes').length && !cluster.get('changes').length) canDeploy = false; else warning = 'controller';
+    } else {
+      _.each(roles, function(role) {
+        if (warning != 'controller' && !_.filter(cluster.get('nodes').nodesAfterDeployment(), function(node) {return node.get('role') == role}).length) {
+          role == 'controller' ? warning = 'controller' : role == 'compute' ? warning = 'compute' : warning == 'compute' ? warning = 'compute-storage' : warning = 'storage';
+        }
+      })
+    }
+  %>
   <% if (warning) { %>
-    <div class="alert"><%- warnings[warning] %></div>
+    <div class="alert alert-error"><%- warnings[warning] %></div>
   <% } %>
 
 </div>
 <div class="modal-footer">
   <button class="btn" data-dismiss="modal">Cancel</button>
-  <button class="btn btn-<%= warning ? warning == 'controller' ? 'danger' : 'warning' : 'success' %> start-deployment-btn<%= canDeploy ? '' : ' disabled' %>">Start</button>
+  <button class="btn btn-<%= warning ? 'danger' : 'success' %> start-deployment-btn<%= canDeploy ? '' : ' disabled' %>">Deploy</button>
 </div>

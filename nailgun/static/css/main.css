@@ -127,7 +127,6 @@ h6.page-title {
   font-weight: 800;
   font-size: 16px;
   color: #ffffff;
-  padding: 10px 20px 0px 20px;
   text-shadow: 0 1px 0 rgba(0, 0, 0, 0.5);
 }
 
@@ -147,6 +146,10 @@ h6.page-title {
   padding: 10px 20px 0px 20px;
   color: #bbbbbb;
   text-shadow: 0 1px 0 rgba(0, 0, 0, 0.5);
+}
+
+.navigation-bar-ul li.product-logo a {
+  color: #FFFFFF;
 }
 
 .navigation-bar-ul li a:hover {
@@ -1324,7 +1327,7 @@ h6.page-title {
 }
 
 .networks-header .network {
-  width: 145px;
+  width: 152px;
 }
 
 .networks-header .cidr {
@@ -1353,17 +1356,13 @@ h6.page-title {
 
 .networks-table .name {
   text-align: left;
-  width: 145px;
+  width: 151px;
   padding-top: 5px;
   text-transform: capitalize;
 }
 
 .networks-table .fixed-header {
   margin-top: 20px;
-}
-
-.fixed-row .name {
-  font-weight: bold;
 }
 
 .networks-table .cidr {
@@ -1378,7 +1377,7 @@ h6.page-title {
 .networks-table .error .help-inline {
   display: block;
   padding-top: 4px;
-  width: 200px;
+  width: 198px;
 }
 
 #networkManager {
@@ -1534,6 +1533,7 @@ h6.page-title {
 .wrapper {
   margin: 0 20px;
   overflow-x: hidden;
+  padding-left: 3px;
 }
 
 .wrapper h3 {
