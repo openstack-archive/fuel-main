@@ -251,6 +251,8 @@ class Listener(Actor):
                         "Socket broken. Cannot send %s status." % msg
                     )
                 total_sent += sent
+        finally:
+            s.close()
 
         try:
             while True:

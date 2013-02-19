@@ -77,7 +77,6 @@ module MCollective
           client, clientaddr = socket.accept
           status = client.read
           reply.fail "Wrong listener status: '#{status}'" unless status =~ /READY/
-          s.close
         ensure
           s.close
         end
