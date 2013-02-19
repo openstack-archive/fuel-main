@@ -32,6 +32,8 @@ $keystone_hash = parsejson($keystone)
 $swift_hash    = parsejson($swift)
 $admin_hash    = parsejson($admin)
 
+$rabbit_user   = 'nova'
+
 $quantum_user_password   = 'quantum_pass' # Quantum is turned off
 $quantum_db_password     = 'quantum_pass' # Quantum is turned off
 $quantum_db_user         = 'quantum' # Quantum is turned off
@@ -76,7 +78,7 @@ class compact_controller {
     nova_db_password        => $nova_hash[db_password],
     nova_user_password      => $nova_hash[user_password],
     rabbit_password         => $rabbit_hash[password],
-    rabbit_user             => $rabbit_hash[user],
+    rabbit_user             => $rabbit_user,
     rabbit_nodes            => $controller_hostnames,
     memcached_servers       => $controller_hostnames,
     export_resources        => false,
@@ -153,10 +155,10 @@ class compact_controller {
         network_manager        => $network_manager,
         network_config         => $network_config,
         multi_host             => $multi_host,
-        sql_connection         => "mysql://nova:${nova_db_password}@${management_vip}/nova",
+        sql_connection         => "mysql://nova:${nova_hash[db_password]}@${management_vip}/nova",
         rabbit_nodes           => $controller_hostnames,
         rabbit_password        => $rabbit_hash[password],
-        rabbit_user            => $rabbit_hash[user],
+        rabbit_user            => $rabbit_user,
         glance_api_servers     => "${management_vip}:9292",
         vncproxy_host          => $public_vip,
         verbose                => $verbose,

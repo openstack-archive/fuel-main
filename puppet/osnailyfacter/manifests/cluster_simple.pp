@@ -24,7 +24,9 @@ $keystone_hash = parsejson($keystone)
 $swift_hash    = parsejson($swift)
 $admin_hash    = parsejson($admin)
 
-$sql_connection           = "mysql://nova:${nova_db_password}@${controller_node_address}/nova"
+$rabbit_user   = 'nova'
+
+$sql_connection           = "mysql://nova:${nova_hash[db_password]}@${controller_node_address}/nova"
 $mirror_type = 'external'
 
 $verbose = true
@@ -60,7 +62,7 @@ Exec { logoutput => true }
         nova_db_password        => $nova_hash[db_password],
         nova_user_password      => $nova_hash[user_password],
         rabbit_password         => $rabbit_hash[password],
-        rabbit_user             => $rabbit_hash[user],
+        rabbit_user             => $rabbit_user,
         export_resources        => false,
         quantum                 => $quantum,
         cinder                  => $cinder,
@@ -104,7 +106,7 @@ Exec { logoutput => true }
         nova_user_password     => $nova_hash[user_password],
         rabbit_nodes           => [$controller_node_address],
         rabbit_password        => $rabbit_hash[password],
-        rabbit_user            => $rabbit_hash[user],
+        rabbit_user            => $rabbit_user,
         glance_api_servers     => "${controller_node_address}:9292",
         vncproxy_host          => $controller_node_public,
         vnc_enabled            => true,
