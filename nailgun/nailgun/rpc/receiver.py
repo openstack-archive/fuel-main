@@ -276,6 +276,7 @@ class NailgunReceiver(object):
         if any(map(lambda n: n.status == 'error',
                    task.cluster.nodes)):
             cls._error_action(task, 'error', 100)
+            return
 
         if task.cluster.mode in ('singlenode', 'multinode'):
             # determining horizon url - it's an IP

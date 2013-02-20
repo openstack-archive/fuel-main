@@ -43,7 +43,12 @@ class FakeThread(threading.Thread):
 
 class FakeDeploymentThread(FakeThread):
     def run(self):
+        # TEST: we can fail at any stage:
+        # "provisioning" or "deployment"
         error = self.params.get("error")
+        # TEST: we can set task to ready no matter what
+        # True or False
+        task_ready = self.params.get("task_ready")
 
         receiver = NailgunReceiver()
         kwargs = {
@@ -112,6 +117,9 @@ class FakeDeploymentThread(FakeThread):
         )
         if error_nodes or offline_nodes:
             kwargs['status'] = 'error'
+            # TEST: set task to ready no matter what
+            if task_ready:
+                kwargs['status'] = 'ready'
             kwargs['progress'] = 100
             resp_method(**kwargs)
             return
@@ -149,6 +157,9 @@ class FakeDeploymentThread(FakeThread):
             )):
                 kwargs['status'] = 'error'
                 ready = True
+            # TEST: set task to ready no matter what
+            if task_ready:
+                kwargs['status'] = 'ready'
             resp_method(**kwargs)
             self.sleep(tick_interval)
 

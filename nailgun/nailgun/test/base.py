@@ -365,7 +365,6 @@ class Environment(object):
     def wait_ready(self, task, timeout=60, message=None):
         self._wait_task(task, timeout, message)
         self.tester.assertEquals(task.status, 'ready')
-        
 
     def wait_error(self, task, timeout=60, message=None):
         self._wait_task(task, timeout, message)
