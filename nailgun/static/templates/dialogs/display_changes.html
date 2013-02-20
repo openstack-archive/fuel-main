@@ -4,86 +4,52 @@
 </div>
 <div class="modal-body display-changes-dialog">
 
-  <!-- start new -->
+  <!-- Nodes changes -->
+  <% var warnings = {
+    'controller': 'Environment will not contain the necessary number of controllers after deployment. Thus, it will not be usable.',
+    'compute': 'Compute nodes are recommended for deployment.',
+    'storage': 'Storage nodes are recommended for deployment.',
+    'compute-storage': 'Compute and storage nodes are recommended for deployment.',
+  } %>
+  <% var warning = null, canDeploy = true, roles = cluster.availableRoles() %>
 
-  <style>
-
-  </style>
-
-  <div class="deploy-task-name">Added:</div>
-
-  <div class="deploy-task-item">1 Controller Node</div>
-  <div class="deploy-task-item">6 Compute Node</div>
-
-  <div class="deploy-task-name">Deleted:</div>
-  <div class="deploy-task-item">6 Compute Node</div>
-  <div class="deploy-task-item">1 Controller Node</div>
-
-  <div class="deploy-task-name">Changed:</div>
-  <div class="deploy-task-item">OpenStack Settings</div>
-  <div class="deploy-task-item">Network Settings</div>
-  <hr class="slim">
-  <div class="deploy-task-notice"><i class="icon-attention"></i> Some nodes have error status after deployment. Redeployment is needed.</div>
-  <hr class="slim">
-  <div class="alert alert-error" style="">Environment will not contain the necessary number of controllers after deployment. Thus, it will not be usable.</div>
-
-  <!-- end   new -->
-
-  <!-- Needs to redeploy cluster 
-  <% if (cluster.needsRedeployment()) { %>
-    <p>
-      <span class="label label-important">Important</span>
-      Some nodes have error status after deployment. Redeployment is needed.
-    </p>
+  <% var nodesToAdd = cluster.get('nodes').where({pending_addition: true}) %>
+  <% if (nodesToAdd.length) { %>
+    <div class="deploy-task-name">Added:</div>
+    <% _.each(roles, function(role) { %>
+      <% var count = _.filter(nodesToAdd, function(node) {return node.get('role') == role}).length %>
+      <% if (count) { %>
+        <div class="deploy-task-item"><%= count %> <%= role %> node<%= count != 1 ? 's' : '' %></div>
+      <% } %>
+    <% }) %>
+  <% } %>
+  <% var nodesToDelete = cluster.get('nodes').where({pending_deletion: true}) %>
+  <% if (nodesToDelete.length) { %>
+    <div class="deploy-task-name">Deleted:</div>
+    <% _.each(roles, function(role) { %>
+      <% var count = _.filter(nodesToDelete, function(node) {return node.get('role') == role}).length %>
+      <% if (count) { %>
+        <div class="deploy-task-item"><%= count %> <%= role %> node<%= count != 1 ? 's' : '' %></div>
+      <% } %>
+    <% }) %>
   <% } %>
 
-  <ul>
+  <!-- Network & OpenStack changes -->
+  <% if (cluster.get('changes').length) { %>
+    <div class="deploy-task-name">Changed:</div>
+    <% var settingsChangesDescriptions = {'attributes': 'OpenStack settings', 'networks': 'Network settings'} %>
+    <% _.each(cluster.get('changes'), function(change) { %>
+      <div class="deploy-task-item"><%= settingsChangesDescriptions[change] %></div>
+    <% }) %>
+  <% } %>
 
-    <!-- Nodes changes 
-    <% var warnings = {
-      'controller': 'Environment will not contain the necessary number of controllers after deployment. Thus, it will not be usable.',
-      'compute': 'Compute nodes are recommended for deployment',
-      'storage': 'Storage nodes are recommended for deployment',
-      'compute-storage': 'Compute and storage nodes are recommended for deployment',
-    } %>
-    <% var warning = null, canDeploy = true, roles = cluster.availableRoles() %>
+  <hr class="slim">
 
-    <% var nodesToAdd = cluster.get('nodes').where({pending_addition: true}) %>
-    <% if (nodesToAdd.length) { %>
-      <li>added:
-          <% _.each(roles, function(role) { %>
-            <% var count = _.filter(nodesToAdd, function(node) {return node.get('role') == role}).length %>
-            <% if (count) { %>
-              <%= count %> <%= role %> node<%= count != 1 ? 's' : '' %>;
-            <% } %>
-          <% }) %>
-      </li>
-    <% } %>
-    <% var nodesToDelete = cluster.get('nodes').where({pending_deletion: true}) %>
-    <% if (nodesToDelete.length) { %>
-      <li>deleted:
-          <% _.each(roles, function(role) { %>
-            <% var count = _.filter(nodesToDelete, function(node) {return node.get('role') == role}).length %>
-            <% if (count) { %>
-              <%= count %> <%= role %> node<%= count != 1 ? 's' : '' %>;
-            <% } %>
-          <% }) %>
-      </li>
-    <% } %>
-
-    <!-- Network & OpanStack changes 
-    <% if (cluster.get('changes').length) { %>
-      <li> changed:
-        <% var settingsChangesDescriptions = {'attributes': 'OpenStack settings', 'networks': 'network settings'} %>
-        <% _.each(cluster.get('changes'), function(change) { %>
-          <%= settingsChangesDescriptions[change] %>;
-        <% }) %>
-      </li>
-    <% } %>
-
-  </ul>
-
-  <!-- Warnings 
+  <!-- Warnings -->
+  <% if (cluster.needsRedeployment()) { %>
+    <div class="deploy-task-notice"><i class="icon-attention"></i> Some nodes have error status after deployment. Redeployment is needed.</div>
+    <hr class="slim">
+  <% } %>
   <%
     if (cluster.get('nodes').where({role: 'controller'}).length < size) {
       if (!cluster.get('nodes').length && !cluster.get('changes').length) canDeploy = false; else warning = 'controller';
@@ -98,7 +64,7 @@
   <% if (warning) { %>
     <div class="alert alert-error"><%- warnings[warning] %></div>
   <% } %>
--->
+
 </div>
 <div class="modal-footer">
   <button class="btn" data-dismiss="modal">Cancel</button>

@@ -3,36 +3,33 @@
   <h3>Discard Changes</h3>
 </div>
 <div class="modal-body">
-  <p>
-    <span class="label label-important">Important</span>
-    Are you sure you want to discard all the changes you made?
-  </p>
-  <ul>
-    <!-- Nodes changes -->
-    <% var roles = cluster.availableRoles() %>
-    <% var nodesToAdd = cluster.get('nodes').where({pending_addition: true}) %>
-    <% if (nodesToAdd.length) { %>
-      <li>added:
-          <% _.each(roles, function(role) { %>
-            <% var count = _.filter(nodesToAdd, function(node) {return node.get('role') == role}).length %>
-            <% if (count) { %>
-              <%= count %> <%= role %> node<%= count != 1 ? 's' : '' %>;
-            <% } %>
-          <% }) %>
-      </li>
-    <% } %>
-    <% var nodesToDelete = cluster.get('nodes').where({pending_deletion: true}) %>
-    <% if (nodesToDelete.length) { %>
-      <li>deleted:
-          <% _.each(roles, function(role) { %>
-            <% var count = _.filter(nodesToDelete, function(node) {return node.get('role') == role}).length %>
-            <% if (count) { %>
-              <%= count %> <%= role %> node<%= count != 1 ? 's' : '' %>;
-            <% } %>
-          <% }) %>
-      </li>
-    <% } %>
-  </ul>
+
+  <!-- Nodes changes -->
+  <% var roles = cluster.availableRoles() %>
+  <% var nodesToAdd = cluster.get('nodes').where({pending_addition: true}) %>
+  <% if (nodesToAdd.length) { %>
+    <div class="deploy-task-name">Added:</div>
+    <% _.each(roles, function(role) { %>
+      <% var count = _.filter(nodesToAdd, function(node) {return node.get('role') == role}).length %>
+      <% if (count) { %>
+        <div class="deploy-task-item"><%= count %> <%= role %> node<%= count != 1 ? 's' : '' %></div>
+      <% } %>
+    <% }) %>
+  <% } %>
+  <% var nodesToDelete = cluster.get('nodes').where({pending_deletion: true}) %>
+  <% if (nodesToDelete.length) { %>
+    <div class="deploy-task-name">Deleted:</div>
+    <% _.each(roles, function(role) { %>
+      <% var count = _.filter(nodesToDelete, function(node) {return node.get('role') == role}).length %>
+      <% if (count) { %>
+        <div class="deploy-task-item"><%= count %> <%= role %> node<%= count != 1 ? 's' : '' %></div>
+      <% } %>
+    <% }) %>
+  <% } %>
+
+  <hr class="slim">
+
+  <div class="deploy-task-notice"><i class="icon-attention"></i> Are you sure you want to discard all the changes you made?</div>
 </div>
 <div class="modal-footer">
   <button class="btn" data-dismiss="modal">Cancel</button>

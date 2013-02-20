@@ -1402,7 +1402,7 @@ h6.page-title {
 .networks-table .error .help-inline {
   display: block;
   padding-top: 4px;
-  width: 198px;
+  width: 190px;
 }
 
 #networkManager {
@@ -3202,7 +3202,7 @@ legend.openstack-sub-title {
 }
 
 .deploy-task-name {
-  font-size: 13px; 
+  font-size: 13px;
   font-weight: bold;
   padding: 8px 10px 1px 10px;
 }
@@ -3228,4 +3228,8 @@ legend.openstack-sub-title {
 
 hr.slim {
   margin: 10px;
+}
+
+.display-changes-dialog .alert-error {
+  margin-top: 10px;
 }
