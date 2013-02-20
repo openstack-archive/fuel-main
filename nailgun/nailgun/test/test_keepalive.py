@@ -23,8 +23,8 @@ class TestKeepalive(BaseHandlers):
     def setUp(self):
         super(TestKeepalive, self).setUp()
         self.watcher = KeepAliveThread(
-            timeout=2,
-            maxtime=1
+            interval=2,
+            timeout=1
         )
         self.watcher.start()
 
@@ -35,7 +35,7 @@ class TestKeepalive(BaseHandlers):
         node = self.create_default_node(status="discover",
                                         role="controller",
                                         name="Dead or alive")
-        time.sleep(self.watcher.timeout + 1)
+        time.sleep(self.watcher.interval + 1)
         self.db.refresh(node)
         self.assertEqual(node.status, "offline")
 
@@ -43,6 +43,6 @@ class TestKeepalive(BaseHandlers):
         node = self.create_default_node(status="provisioning",
                                         role="controller",
                                         name="Dead or alive")
-        time.sleep(self.watcher.timeout + 1)
+        time.sleep(self.watcher.interval + 1)
         self.db.refresh(node)
         self.assertEqual(node.status, "provisioning")
