@@ -15,8 +15,8 @@ DATABASE:
   passwd: null
 
 KEEPALIVE:
-  timeout: 60
-  maxtime: 900
+  interval: 30
+  timeout: 180
 
 STATIC_DIR: "/var/tmp/nailgun_static"
 TEMPLATE_DIR: "/var/tmp/nailgun_static"

@@ -16,21 +16,21 @@ from nailgun.logger import logger
 
 class KeepAliveThread(threading.Thread):
 
-    def __init__(self, timeout=None, maxtime=None):
+    def __init__(self, interval=None, timeout=None):
         super(KeepAliveThread, self).__init__()
         self.stoprequest = threading.Event()
+        self.interval = interval or settings.KEEPALIVE['interval']
         self.timeout = timeout or settings.KEEPALIVE['timeout']
-        self.maxtime = maxtime or settings.KEEPALIVE['maxtime']
         self.db = orm()
 
     def join(self, timeout=None):
         self.stoprequest.set()
         super(KeepAliveThread, self).join(timeout)
 
-    def sleep(self, timeout=None):
+    def sleep(self, interval=None):
         map(
             lambda i: not self.stoprequest.isSet() and time.sleep(i),
-            repeat(1, timeout or self.timeout)
+            repeat(1, interval or self.interval)
         )
 
     def run(self):
@@ -40,7 +40,7 @@ class KeepAliveThread(threading.Thread):
                 not_(Node.status == 'provisioning')
             ):
                 now = datetime.now()
-                if (now - node_db.timestamp).seconds > self.maxtime:
+                if (now - node_db.timestamp).seconds > self.timeout:
                     logger.warning(
                         "Node '{0}' seems to be offline "
                         "for {1} seconds...".format(
