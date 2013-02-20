@@ -26,6 +26,9 @@ function(models, commonViews, logsTabTemplate, logEntryTemplate) {
             if (this.timeout) {
                 clearTimeout(this.timeout);
             }
+            if (this.fetchLogsRequest && this.fetchLogsRequest.state() == 'pending') {
+                this.fetchLogsRequest.abort();
+            }
         },
         scheduleUpdate: function() {
             this.timeout = _.delay(_.bind(this.update, this), this.updateInterval);
@@ -148,7 +151,8 @@ function(models, commonViews, logsTabTemplate, logEntryTemplate) {
             };
             _.extend(options, callbacks);
             _.extend(options.data, data);
-            return $.ajax(options);
+            this.fetchLogsRequest = $.ajax(options);
+            return this.fetchLogsRequest;
         },
         showLogs: function(params) {
             if (this.timeout) {
