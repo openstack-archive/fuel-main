@@ -66,7 +66,7 @@ function(models, commonViews, dialogViews, clustersPageTemplate, clusterTemplate
             var deletionTask = this.model.task('cluster_deletion');
             var deploymentTask = this.model.task('deploy');
             if (deletionTask) {
-                deletionTask.fetch()
+                this.taskFetchRequest = deletionTask.fetch()
                     .done(_.bind(this.scheduleUpdate, this))
                     .fail(_.bind(function(response) {
                         if (response.status == 404) {
@@ -76,7 +76,7 @@ function(models, commonViews, dialogViews, clustersPageTemplate, clusterTemplate
                         }
                     }, this));
             } else if (deploymentTask) {
-                deploymentTask.fetch().done(_.bind(function() {
+                this.taskFetchRequest = deploymentTask.fetch().done(_.bind(function() {
                     if (deploymentTask.get('status') == 'running') {
                         this.updateProgress();
                         this.scheduleUpdate();
@@ -98,6 +98,9 @@ function(models, commonViews, dialogViews, clustersPageTemplate, clusterTemplate
         beforeTearDown: function() {
             if (this.timeout) {
                 clearTimeout(this.timeout);
+            }
+            if (this.taskFetchRequest && this.taskFetchRequest.state() == 'pending') {
+                this.taskFetchRequest.abort();
             }
         },
         initialize: function() {

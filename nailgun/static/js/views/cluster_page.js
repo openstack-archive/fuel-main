@@ -69,24 +69,27 @@ function(models, commonViews, dialogViews, NodesTab, NetworkTab, SettingsTab, Lo
             }
         },
         scheduleUpdate: function() {
-            if (this.model.task('deploy', 'running') || this.model.task('verify_networks', 'running')) {
+            if (!this.pollingAborted && (this.model.task('deploy', 'running') || this.model.task('verify_networks', 'running'))) {
                 this.timeout = _.delay(_.bind(this.update, this), this.updateInterval);
             }
         },
         update: function() {
+            if (this.pollingAborted) {
+                return;
+            }
             var complete = _.after(2, _.bind(this.scheduleUpdate, this));
             var deploymentTask = this.model.task('deploy', 'running');
             if (deploymentTask) {
-                deploymentTask.fetch({complete: complete}).done(_.bind(function() {
+                this.deploymentTaskFetchRequest = deploymentTask.fetch({complete: complete}).done(_.bind(function() {
                     if (deploymentTask.get('status') != 'running') {
                         this.deploymentFinished();
                     }
                 }, this));
-                this.model.get('nodes').fetch({data: {cluster_id: this.model.id}, complete: complete});
+                this.nodesFetchRequest = this.model.get('nodes').fetch({data: {cluster_id: this.model.id}, complete: complete});
             }
             var verificationTask = this.model.task('verify_networks', 'running');
             if (verificationTask) {
-                verificationTask.fetch({complete: _.bind(this.scheduleUpdate, this)});
+                this.verificationTaskFetchRequest = verificationTask.fetch({complete: _.bind(this.scheduleUpdate, this)});
             }
         },
         deploymentStarted: function() {
@@ -104,6 +107,12 @@ function(models, commonViews, dialogViews, NodesTab, NetworkTab, SettingsTab, Lo
             if (this.timeout) {
                 clearTimeout(this.timeout);
             }
+            _.each(['deploymentTaskFetchRequest', 'verificationTaskFetchRequest', 'nodesFetchRequest'], function(request) {
+                if (this[request] && this[request].state() == 'pending') {
+                    this[request].abort();
+                }
+            }, this);
+            this.pollingAborted = true;
             $(window).unbind('beforeunload');
         },
         onBeforeunloadEvent: function() {
