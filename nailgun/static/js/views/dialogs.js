@@ -271,6 +271,10 @@ function(models, simpleMessageTemplate, createClusterDialogTemplate, changeClust
             this.$(e.target).parents('.accordion-heading').next().on('hidden', function(e) {
                 e.stopPropagation();
             });
+            this.$('i').removeClass('icon-collapse').addClass('icon-expand');
+            if (!this.$(e.target).parents('.accordion-heading').next().hasClass('in')) {
+                this.$(e.target).parents('.accordion-heading').find('i.accordion-clickable').addClass('icon-collapse');
+            }
         },
         initialize: function(options) {
             _.defaults(this, options);
