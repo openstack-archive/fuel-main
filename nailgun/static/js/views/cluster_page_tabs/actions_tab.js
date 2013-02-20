@@ -26,18 +26,16 @@ function(models, commonViews, dialogViews, actionsTabTemplate) {
                         this.render();
                     }, this),
                     error: _.bind(function(model, response, options) {
-                        this.$('.rename-cluster-form input').addClass('error');
                         this.$('.rename-cluster-form').children().attr('disabled', false);
                         if (response.status == 409) {
-                            this.$('.text-error').text(response.responseText).show();
+                            this.$('.alert-error').text(response.responseText).show();
                         }
                     }, this)
                 });
             }
         },
         onClusterNameInputKeydown: function(e) {
-            this.$('.rename-cluster-form input').removeClass('error');
-            this.$('.text-error').hide();
+            this.$('.alert-error').hide();
         },
         deleteCluster: function() {
             var deleteClusterDialogView = new dialogViews.RemoveClusterDialog({model: this.model});
