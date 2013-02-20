@@ -32,17 +32,17 @@ class TestKeepalive(BaseHandlers):
         self.watcher.join()
 
     def test_node_becomes_offline(self):
-        node = self.create_default_node(status="discover",
-                                        role="controller",
-                                        name="Dead or alive")
+        node = self.env.create_node(status="discover",
+                                    role="controller",
+                                    name="Dead or alive")
         time.sleep(self.watcher.interval + 1)
-        self.db.refresh(node)
+        self.env.refresh_nodes()
         self.assertEqual(node.status, "offline")
 
     def test_provisioning_node_not_becomes_offline(self):
-        node = self.create_default_node(status="provisioning",
-                                        role="controller",
-                                        name="Dead or alive")
+        node = self.env.create_node(status="provisioning",
+                                    role="controller",
+                                    name="Dead or alive")
         time.sleep(self.watcher.interval + 1)
-        self.db.refresh(node)
+        self.env.refresh_nodes()
         self.assertEqual(node.status, "provisioning")
