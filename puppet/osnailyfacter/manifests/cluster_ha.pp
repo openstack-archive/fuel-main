@@ -121,6 +121,7 @@ class compact_controller {
         swift_master => $master_hostname,
         controller_node_address => $management_vip,
         swift_local_net_ip      => $internal_address,
+        swift_user_password     => $swift_hash[user_password],
       }
       nova_config { 'DEFAULT/start_guests_on_host_boot': value => $start_guests_on_host_boot }
       nova_config { 'DEFAULT/use_cow_images': value => $use_cow_images }
