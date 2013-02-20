@@ -177,6 +177,7 @@ function(models, commonViews, dialogViews, LogsTab, nodesTabSummaryTemplate, edi
                 this.tab.changeScreen(NodesByRolesScreen);
                 this.model.get('nodes').fetch({data: {cluster_id: this.model.id}});
                 app.navbar.stats.nodes.fetch();
+                app.page.removeVerificationTask();
             }, this));
         },
         getChosenNodesIds: function() {
