@@ -4,7 +4,32 @@
 </div>
 <div class="modal-body display-changes-dialog">
 
-  <!-- Needs to redeploy cluster -->
+  <!-- start new -->
+
+  <style>
+
+  </style>
+
+  <div class="deploy-task-name">Added:</div>
+
+  <div class="deploy-task-item">1 Controller Node</div>
+  <div class="deploy-task-item">6 Compute Node</div>
+
+  <div class="deploy-task-name">Deleted:</div>
+  <div class="deploy-task-item">6 Compute Node</div>
+  <div class="deploy-task-item">1 Controller Node</div>
+
+  <div class="deploy-task-name">Changed:</div>
+  <div class="deploy-task-item">OpenStack Settings</div>
+  <div class="deploy-task-item">Network Settings</div>
+  <hr class="slim">
+  <div class="deploy-task-notice"><i class="icon-attention"></i> Some nodes have error status after deployment. Redeployment is needed.</div>
+  <hr class="slim">
+  <div class="alert alert-error" style="">Environment will not contain the necessary number of controllers after deployment. Thus, it will not be usable.</div>
+
+  <!-- end   new -->
+
+  <!-- Needs to redeploy cluster 
   <% if (cluster.needsRedeployment()) { %>
     <p>
       <span class="label label-important">Important</span>
@@ -14,7 +39,7 @@
 
   <ul>
 
-    <!-- Nodes changes -->
+    <!-- Nodes changes 
     <% var warnings = {
       'controller': 'Environment will not contain the necessary number of controllers after deployment. Thus, it will not be usable.',
       'compute': 'Compute nodes are recommended for deployment',
@@ -46,7 +71,7 @@
       </li>
     <% } %>
 
-    <!-- Network & OpanStack changes -->
+    <!-- Network & OpanStack changes 
     <% if (cluster.get('changes').length) { %>
       <li> changed:
         <% var settingsChangesDescriptions = {'attributes': 'OpenStack settings', 'networks': 'network settings'} %>
@@ -58,7 +83,7 @@
 
   </ul>
 
-  <!-- Warnings -->
+  <!-- Warnings 
   <%
     if (cluster.get('nodes').where({role: 'controller'}).length < size) {
       if (!cluster.get('nodes').length && !cluster.get('changes').length) canDeploy = false; else warning = 'controller';
@@ -73,7 +98,7 @@
   <% if (warning) { %>
     <div class="alert alert-error"><%- warnings[warning] %></div>
   <% } %>
-
+-->
 </div>
 <div class="modal-footer">
   <button class="btn" data-dismiss="modal">Cancel</button>

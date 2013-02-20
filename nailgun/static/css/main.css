@@ -3200,3 +3200,32 @@ legend.openstack-sub-title {
   margin: 25px 0px 6px 14px;
   line-height: 30px;
 }
+
+.deploy-task-name {
+  font-size: 13px; 
+  font-weight: bold;
+  padding: 8px 10px 1px 10px;
+}
+
+.deploy-task-item {
+  padding: 4px 10px;
+}
+
+/*
+.deploy-task-item:hover {
+  background-color: #eeeeee;
+  border-radius: 3px;
+}
+*/
+
+.deploy-task-notice {
+  margin: 0px;
+  padding: 0px 10px;
+  color: #C03832;
+  font-style: italic;
+  text-align: center;
+}
+
+hr.slim {
+  margin: 10px;
+}
