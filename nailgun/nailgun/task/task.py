@@ -101,8 +101,8 @@ class DeploymentTask(object):
             logger.info("Entered to processing of 'real' tasks, not 'fake'..")
             nodes_to_provision = []
             for node in nodes:
-                if node.status == 'offline':
-                    raise Exception("Node '%s' (id=%s) is in offline status."
+                if not node.online:
+                    raise Exception("Node '%s' (id=%s) is offline."
                                     " Remove it from cluster and try again." %
                                     (node.name, node.id))
                 if node.status in ('discover', 'provisioning') or \
@@ -137,7 +137,8 @@ class DeploymentTask(object):
                 'id': n.id, 'status': n.status, 'error_type': n.error_type,
                 'uid': n.id, 'ip': n.ip, 'mac': n.mac, 'role': n.role,
                 'fqdn': n.fqdn, 'progress': n.progress, 'meta': n.meta,
-                'network_data': netmanager.get_node_networks(n.id)
+                'network_data': netmanager.get_node_networks(n.id),
+                'online': n.online
             })
 
         cluster_attrs = task.cluster.attributes.merged_attrs_values()

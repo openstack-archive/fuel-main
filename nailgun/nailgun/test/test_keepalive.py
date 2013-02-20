@@ -37,7 +37,7 @@ class TestKeepalive(BaseHandlers):
                                     name="Dead or alive")
         time.sleep(self.watcher.interval + 1)
         self.env.refresh_nodes()
-        self.assertEqual(node.status, "offline")
+        self.assertEqual(node.online, False)
 
     def test_provisioning_node_not_becomes_offline(self):
         node = self.env.create_node(status="provisioning",
@@ -45,4 +45,4 @@ class TestKeepalive(BaseHandlers):
                                     name="Dead or alive")
         time.sleep(self.watcher.interval + 1)
         self.env.refresh_nodes()
-        self.assertEqual(node.status, "provisioning")
+        self.assertEqual(node.online, False)

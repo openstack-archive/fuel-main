@@ -8,6 +8,7 @@ from itertools import repeat
 
 from sqlalchemy.sql import not_
 
+from nailgun.notifier import notifier
 from nailgun.db import orm
 from nailgun.settings import settings
 from nailgun.api.models import Node
@@ -42,14 +43,20 @@ class KeepAliveThread(threading.Thread):
                 now = datetime.now()
                 if (now - node_db.timestamp).seconds > self.timeout:
                     logger.warning(
-                        "Node '{0}' seems to be offline "
+                        u"Node '{0}' seems to be offline "
                         "for {1} seconds...".format(
                             node_db.name,
                             (now - node_db.timestamp).seconds
                         )
                     )
-                    if node_db.status != 'offline':
-                        node_db.status = 'offline'
+                    if node_db.online:
+                        node_db.online = False
                         self.db.add(node_db)
                         self.db.commit()
+                        notifier.notify(
+                            "error",
+                            u"Node '{0}' became offline".format(
+                                node_db.name or node_db.id
+                            )
+                        )
             self.sleep()

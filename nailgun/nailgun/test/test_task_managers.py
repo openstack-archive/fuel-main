@@ -70,7 +70,7 @@ class TestTaskManagers(BaseHandlers):
         cluster = self.env.create_cluster(api=True)
         node1 = self.env.create_node(cluster_id=cluster['id'],
                                      role="controller",
-                                     status="offline",
+                                     online=False,
                                      name="Offline node",
                                      pending_addition=True)
         supertask = self.env.launch_deployment()

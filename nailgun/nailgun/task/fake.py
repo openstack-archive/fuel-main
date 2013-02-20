@@ -46,6 +46,9 @@ class FakeDeploymentThread(FakeThread):
         # TEST: we can fail at any stage:
         # "provisioning" or "deployment"
         error = self.params.get("error")
+        # TEST: we can set node offline at any stage:
+        # "provisioning" or "deployment"
+        offline = self.params.get("offline")
         # TEST: we can set task to ready no matter what
         # True or False
         task_ready = self.params.get("task_ready")
@@ -74,7 +77,7 @@ class FakeDeploymentThread(FakeThread):
         ready = False
         while not ready and not self.stoprequest.isSet():
             for n in kwargs['nodes']:
-                if n['status'] in ('error', 'offline'):
+                if n['status'] == 'error' or not n['online']:
                     n['progress'] = 100
                     n['error_type'] = 'provision'
                     continue
@@ -98,9 +101,8 @@ class FakeDeploymentThread(FakeThread):
             if all(map(
                 lambda n: n['status'] in (
                     'provisioned',
-                    'error',
-                    'offline'
-                ),
+                    'error'
+                ) or not n['online'],
                 kwargs['nodes']
             )):
                 ready = True
@@ -112,7 +114,7 @@ class FakeDeploymentThread(FakeThread):
             kwargs['nodes']
         )
         offline_nodes = filter(
-            lambda n: n['status'] == 'offline',
+            lambda n: n['online'] is False,
             kwargs['nodes']
         )
         if error_nodes or offline_nodes:

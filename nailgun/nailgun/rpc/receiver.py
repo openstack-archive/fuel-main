@@ -11,6 +11,7 @@ import greenlet
 import eventlet
 from web.utils import ThreadedDict
 from sqlalchemy.orm import scoped_session, sessionmaker
+from sqlalchemy import or_
 
 import nailgun.rpc as rpc
 from nailgun.db import orm, engine
@@ -154,7 +155,14 @@ class NailgunReceiver(object):
                 )
                 continue
 
-            for param in ('error_msg', 'error_type', 'status', 'progress'):
+            update_fields = (
+                'error_msg',
+                'error_type',
+                'status',
+                'progress',
+                'online'
+            )
+            for param in update_fields:
                 if param in node:
                     logging.debug(
                         u"Updating node {0} - set {1} to {2}".format(
@@ -165,15 +173,13 @@ class NailgunReceiver(object):
                     )
                     setattr(node_db, param, node[param])
 
-                    if param == 'progress' and node.get('status') in (
-                        'error',
-                        'offline'
-                    ):
+                    if param == 'progress' and node.get('status') == 'error' \
+                            or node.get('online') is False:
                         # If failure occurred with node
                         # it's progress should be 100
                         node_db.progress = 100
                         # Setting node error_msg for offline nodes
-                        if node.get('status') == 'offline' \
+                        if node.get('online') is False \
                                 and not node_db.error_msg:
                             node_db.error_msg = u"Node is offline"
                         # Notification on particular node failure
@@ -200,7 +206,7 @@ class NailgunReceiver(object):
             for node in nodes_db:
                 if node.status == "discover":
                     nodes_progress.append(0)
-                elif node.status == "offline":
+                elif not node.online:
                     nodes_progress.append(100)
                 elif node.status in ['provisioning', 'provisioned'] or \
                         node.needs_reprovision:
@@ -229,7 +235,7 @@ class NailgunReceiver(object):
         error_nodes = orm().query(Node).filter_by(
             cluster_id=task.cluster_id
         ).filter(
-            Node.status.in_(('error', 'offline'))
+            or_(Node.status == 'error', not Node.online)
         ).filter(
             Node.error_type.in_(error_types)
         ).all()

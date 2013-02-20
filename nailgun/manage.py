@@ -35,6 +35,11 @@ if __name__ == "__main__":
         '--fake-tasks', action='store_true', help='fake tasks'
     )
     run_parser.add_argument(
+        '--keepalive',
+        action='store_true',
+        help='run keep alive thread'
+    )
+    run_parser.add_argument(
         '-c', '--config', dest='config_file', action='store', type=str,
         help='custom config file', default=None
     )
@@ -100,7 +105,7 @@ if __name__ == "__main__":
         if params.config_file:
             settings.update_from_file(params.config_file)
         from nailgun.wsgi import appstart
-        appstart()
+        appstart(keepalive=params.keepalive)
     elif params.action == "shell":
         if params.config_file:
             settings.update_from_file(params.config_file)

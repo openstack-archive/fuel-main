@@ -114,6 +114,8 @@ class NodeCollectionHandler(JSONHandler):
             for key, value in nd.iteritems():
                 setattr(node, key, value)
             node.timestamp = datetime.now()
+            if not node.online:
+                node.online = True
             nodes_updated.append(node)
             orm().add(node)
         orm().commit()

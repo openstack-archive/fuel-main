@@ -104,7 +104,7 @@
         "pk": 4,
         "model": "nailgun.node",
         "fields": {
-            "status": "offline",
+            "online": false,
             "name": "Offline node",
             "manufacturer": "Xen",
             "platform_name": "",

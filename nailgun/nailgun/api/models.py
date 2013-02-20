@@ -155,7 +155,6 @@ class Cluster(Base, BasicValidator):
 class Node(Base, BasicValidator):
     __tablename__ = 'nodes'
     NODE_STATUSES = (
-        'offline',
         'ready',
         'discover',
         'provisioning',
@@ -191,6 +190,7 @@ class Node(Base, BasicValidator):
     error_type = Column(Enum(*NODE_ERRORS))
     error_msg = Column(String(255))
     timestamp = Column(DateTime, nullable=False, default=datetime.now())
+    online = Column(Boolean, default=True)
 
     @property
     def network_data(self):

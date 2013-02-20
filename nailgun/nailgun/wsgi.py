@@ -48,7 +48,7 @@ def build_app():
     return app
 
 
-def appstart():
+def appstart(keepalive):
     logger.info("Fuel-Web {0} ({1})".format(
         settings.PRODUCT_VERSION,
         settings.COMMIT_SHA
@@ -57,9 +57,14 @@ def appstart():
     from nailgun.keepalive import keep_alive
     app = build_app()
 
-    if not settings.FAKE_TASKS:
+    if keepalive:
         logger.info("Running KeepAlive watcher...")
         keep_alive.start()
+
+    if not settings.FAKE_TASKS:
+        if not keepalive.is_alive():
+            logger.info("Running KeepAlive watcher...")
+            keep_alive.start()
         rpc_process = processed.RPCProcess()
         logger.info("Running RPC process...")
         rpc_process.start()
@@ -77,9 +82,10 @@ def appstart():
         )
     )
     logger.info("Stopping WSGI app...")
-    if not settings.FAKE_TASKS:
+    if keep_alive.is_alive():
         logger.info("Stopping KeepAlive watcher...")
         keep_alive.join()
+    if not settings.FAKE_TASKS:
         logger.info("Stopping RPC process...")
         rpc_process.terminate()
     logger.info("Done")
