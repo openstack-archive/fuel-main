@@ -87,7 +87,7 @@ class TestErrors(BaseHandlers):
         ))
         self.env.refresh_nodes()
         self.env.refresh_clusters()
-        n_error = lambda n: (n.status, n.error_type) == ('error', 'provision')
+        n_error = lambda n: (n.status, n.error_type) == ('error', 'deploy')
         self.assertEqual(
             sum(map(n_error, self.env.nodes)),
             1
