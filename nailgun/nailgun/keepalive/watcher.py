@@ -57,6 +57,7 @@ class KeepAliveThread(threading.Thread):
                             "error",
                             u"Node '{0}' became offline".format(
                                 node_db.name or node_db.id
-                            )
+                            ),
+                            node_id=node_db.id
                         )
             self.sleep()
