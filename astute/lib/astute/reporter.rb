@@ -2,7 +2,6 @@ require 'set'
 
 STATES = {'offline' => 0,
           'discover' => 10,
-          'verification' => 20,
           'provisioning' => 30,
           'provisioned' => 40,
           'deploying' => 50,
@@ -81,10 +80,6 @@ module Astute
             Astute.logger.error("In ready state node should have progress 100, "\
                                 "but node passed: #{node.inspect}. Setting it to 100")
             node['progress'] = 100
-          end
-          if node['status'] == 'verification'
-            # FIXME(mihgen): Currently our backend doesn't support such status. So let's just remove it...
-            node.delete('status')
           end
         end
       end

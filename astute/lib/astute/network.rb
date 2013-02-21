@@ -18,12 +18,12 @@ module Astute
 
       data_to_send = {'eth0' => networks.map {|n| n['vlan_id']}.join(',')}
       net_probe.start_frame_listeners(:interfaces => data_to_send.to_json)
-      ctx.reporter.report({'progress' => 30, 'status' => 'verification'})
+      ctx.reporter.report({'progress' => 30})
 
       # Interface name is hardcoded for now. Later we expect it to be passed from Nailgun backend
       data_to_send = {'eth0' => networks.map {|n| n['vlan_id']}.join(',')}
       net_probe.send_probing_frames(:interfaces => data_to_send.to_json)
-      ctx.reporter.report({'progress' => 60, 'status' => 'verification'})
+      ctx.reporter.report({'progress' => 60})
 
       stats = net_probe.get_probing_info
       result = stats.map {|node| {'uid' => node.results[:sender],
