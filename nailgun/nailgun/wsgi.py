@@ -62,7 +62,7 @@ def appstart(keepalive):
         keep_alive.start()
 
     if not settings.FAKE_TASKS:
-        if not keepalive.is_alive():
+        if not keep_alive.is_alive():
             logger.info("Running KeepAlive watcher...")
             keep_alive.start()
         rpc_process = processed.RPCProcess()
