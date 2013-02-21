@@ -17,7 +17,7 @@ class NodeHandler(JSONHandler):
     fields = ('id', 'name', 'meta', 'network_data', 'role', 'progress',
               'status', 'mac', 'fqdn', 'ip', 'manufacturer', 'platform_name',
               'pending_addition', 'pending_deletion', 'os_platform',
-              'error_type')
+              'error_type', 'online')
     model = Node
 
     def GET(self, node_id):
