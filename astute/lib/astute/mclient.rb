@@ -11,7 +11,15 @@ module Astute
       @agent = agent
       @nodes = nodes.map { |n| n.to_s }
       @check_result = check_result
-      @mc = rpcclient(agent, :exit_on_failure => false)
+      unless Thread.current['semaphore'].nil?
+        Thread.current['semaphore'].synchronize do
+          Thread.current['mclient'] = rpcclient(agent, :exit_on_failure => false)
+        end
+      else
+        Thread.current['mclient'] = rpcclient(agent, :exit_on_failure => false)
+      end
+      @mc = Thread.current['mclient']
+
       @mc.timeout = timeout if timeout
       @mc.progress = false
       @retries = Astute.config.MC_RETRIES
@@ -21,7 +29,15 @@ module Astute
     end
 
     def method_missing(method, *args)
-      res = @mc.send(method, *args)
+      unless Thread.current['semaphore'].nil?
+        Thread.current['semaphore'].synchronize do
+          Thread.current['mc_res'] = @mc.send(method, *args)
+        end
+      else
+        Thread.current['mc_res'] = @mc.send(method, *args)
+      end
+      res = Thread.current['mc_res']
+
       if method == :discover
         @nodes = args[0][:nodes]
         return res
@@ -42,7 +58,16 @@ module Astute
           not_responded = @nodes - nodes_responded
           Astute.logger.debug "Retry ##{retry_index} to run mcollective agent on nodes: '#{not_responded.join(',')}'"
           @mc.discover(:nodes => not_responded)
-          new_res = @mc.send(method, *args)
+
+          unless Thread.current['semaphore'].nil?
+            Thread.current['semaphore'].synchronize do
+              Thread.current['mc_new_res'] = @mc.send(method, *args)
+            end
+          else
+            Thread.current['mc_new_res'] = @mc.send(method, *args)
+          end
+          new_res = Thread.current['mc_new_res']
+
           log_result(new_res, method)
           # new_res can have some nodes which finally responded
           res += new_res
