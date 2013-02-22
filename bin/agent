@@ -307,6 +307,7 @@ class NodeAgent
     end
 
     res[:status] = @node_state if @node_state
+    res[:is_agent] = true
     res
   end
 

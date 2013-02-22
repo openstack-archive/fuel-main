@@ -112,9 +112,10 @@ class NodeCollectionHandler(JSONHandler):
             else:
                 node = q.get(nd["id"])
             for key, value in nd.iteritems():
-                setattr(node, key, value)
+                if key != "is_agent":
+                    setattr(node, key, value)
             node.timestamp = datetime.now()
-            if not node.online:
+            if not node.online and "is_agent" in nd:
                 node.online = True
             nodes_updated.append(node)
             orm().add(node)
