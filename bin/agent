@@ -162,56 +162,68 @@ class NodeAgent
       :memory => (_dmi_memory or _ohai_memory),
     }
 
-    (@os[:network][:interfaces] or {} rescue {}).each do |int, intinfo|
-      next if int =~ /^lo[:]?/
-      next if int =~ /\d+\.\d+$/
-      int_meta = {:name => int}
-      (intinfo[:addresses] or {} rescue {}).each do |addr, addrinfo|
-        if (addrinfo[:family] rescue nil) =~ /lladdr/
-          int_meta[:mac] = addr
+    begin
+      (@os[:network][:interfaces] or {} rescue {}).each do |int, intinfo|
+        next if int =~ /^lo[:]?/
+        next if int =~ /\d+\.\d+$/
+        int_meta = {:name => int}
+        (intinfo[:addresses] or {} rescue {}).each do |addr, addrinfo|
+          if (addrinfo[:family] rescue nil) =~ /lladdr/
+            int_meta[:mac] = addr
 
-          fn = "/sys/class/net/#{int}/speed"
-          begin
-            int_bandwidth = File.read(fn).to_i if int =~ /^eth[\d]+$/ and File.exist? fn
-            int_bandwidth = nil if int_bandwidth == 0
-          rescue
-            int_bandwidth = nil
+            fn = "/sys/class/net/#{int}/speed"
+            begin
+              int_bandwidth = File.read(fn).to_i if int =~ /^eth[\d]+$/ and File.exist? fn
+              int_bandwidth = nil if int_bandwidth == 0
+            rescue
+              int_bandwidth = nil
+            end
+            int_meta[:bandwidth] = int_bandwidth
+
+          elsif (addrinfo[:family] rescue nil) =~ /^inet$/
+            int_meta[:ip] = addr
+            int_meta[:netmask] = addrinfo[:netmask] if addrinfo[:netmask]
           end
-          int_meta[:bandwidth] = int_bandwidth
+        end
+        detailed_meta[:interfaces] << int_meta
+      end
+    rescue Exception => e
+      @logger.error("Error '#{e.message}' in gathering interfaces metadata: #{e.backtrace}")
+    end
 
-        elsif (addrinfo[:family] rescue nil) =~ /^inet$/
-          int_meta[:ip] = addr
-          int_meta[:netmask] = addrinfo[:netmask] if addrinfo[:netmask]
+    begin
+      (@os[:cpu] or {} rescue {}).each do |cpu, cpuinfo|
+        if cpu =~ /^[\d]+/ and cpuinfo
+          detailed_meta[:cpu][:spec] << {
+            # .to_i.to_s is applied in order to round to integer
+            :frequency => (cpuinfo[:mhz].to_i rescue nil),
+            :model => (cpuinfo[:model_name].gsub(/ +/, " ") rescue nil)
+          }
         end
       end
-      detailed_meta[:interfaces] << int_meta
+    rescue Exception => e
+      @logger.error("Error '#{e.message}' in gathering cpu metadata: #{e.backtrace}")
     end
 
-    (@os[:cpu] or {} rescue {}).each do |cpu, cpuinfo|
-      if cpu =~ /^[\d]+/ and cpuinfo
-        detailed_meta[:cpu][:spec] << {
-          # .to_i.to_s is applied in order to round to integer
-          :frequency => (cpuinfo[:mhz].to_i rescue nil),
-          :model => (cpuinfo[:model_name].gsub(/ +/, " ") rescue nil)
-        }
+    begin
+      (@os[:block_device] or {} rescue {}).each do |bname, binfo|
+        if bname =~ /^(sd|hd|vd)./ and binfo
+          # 512 bytes is the size of one sector by default
+          block_size = 512
+          fn = "/sys/block/#{bname}/queue/logical_block_size"
+          block_size = File.read(fn).to_i if File.exist? fn
+          block_size = 512 if block_size == 0
+          detailed_meta[:disks] << {
+            :name => bname,
+            :model => binfo[:model],
+            :size => (binfo[:size].to_i * block_size),
+          }
+        end
       end
+    rescue Exception => e
+      @logger.error("Error '#{e.message}' in gathering disks metadata: #{e.backtrace}")
     end
 
-    (@os[:block_device] or {} rescue {}).each do |bname, binfo|
-      if bname =~ /^(sd|hd|vd)./ and binfo
-        # 512 bytes is the size of one sector by default
-        block_size = 512
-        fn = "/sys/block/#{bname}/queue/logical_block_size"
-        block_size = File.read(fn).to_i if File.exist? fn
-        block_size = 512 if block_size == 0
-        detailed_meta[:disks] << {
-          :name => bname,
-          :model => binfo[:model],
-          :size => (binfo[:size].to_i * block_size),
-        }
-      end
-
-    end
     detailed_meta
   end
 
