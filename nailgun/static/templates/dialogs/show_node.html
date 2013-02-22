@@ -36,7 +36,7 @@
               } else if (field == 'interfaces') {
                 var bandwidths = _.groupBy(meta[field].map(function(interface) {return interface['bandwidth']}), function(el){return el;});
                 _.each(_.keys(bandwidths), function(bandwidth) {
-                  summary += bandwidths[bandwidth].length + ' x ' + (bandwidth/1000).toFixed(1) + ' Gbps';
+                  summary += bandwidths[bandwidth].length + ' x ' + (bandwidth === 'null' ? 'N/A' : (bandwidth/1000).toFixed(1)) + ' Gbps';
                   if (_.indexOf(_.keys(bandwidths), bandwidth) != _.keys(bandwidths).length - 1) summary += ', ';
                 });
               };
