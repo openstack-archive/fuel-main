@@ -164,6 +164,7 @@ class NodeAgent
 
     (@os[:network][:interfaces] or {} rescue {}).each do |int, intinfo|
       next if int =~ /^lo[:]?/
+      next if int =~ /\d+\.\d+$/
       int_meta = {:name => int}
       (intinfo[:addresses] or {} rescue {}).each do |addr, addrinfo|
         if (addrinfo[:family] rescue nil) =~ /lladdr/
