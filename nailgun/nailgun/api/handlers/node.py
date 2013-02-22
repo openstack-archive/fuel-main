@@ -117,11 +117,13 @@ class NodeCollectionHandler(JSONHandler):
             node.timestamp = datetime.now()
             if not node.online and "is_agent" in nd:
                 node.online = True
+                msg = u"Node '{0}' is back online".format(
+                    node.name or node.mac
+                )
+                logger.info(msg)
                 notifier.notify(
                     "done",
-                    u"Node '{0}' is back online".format(
-                        node.name or node.mac
-                    ),
+                    msg,
                     node_id=node.id
                 )
             nodes_updated.append(node)
