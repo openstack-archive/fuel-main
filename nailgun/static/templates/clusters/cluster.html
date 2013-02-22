@@ -20,7 +20,7 @@
     Removing
   <% } else if (cluster.task('deploy', 'running')) { %>
     <div class="cluster-status-deploy">
-      <div class="bar"></div>
+      <div class="bar" style="width:0"></div>
     </div>
   <% } else { %>
     <% var statuses = {'new': 'New', 'deployment': 'Deploying', 'operational': 'Operational', 'error': 'Error', 'remove': 'Removing'} %>
