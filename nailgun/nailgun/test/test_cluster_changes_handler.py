@@ -66,7 +66,7 @@ class TestHandlers(BaseHandlers):
             nodes.append({'uid': n.id, 'status': n.status, 'ip': n.ip,
                           'error_type': n.error_type, 'mac': n.mac,
                           'role': n.role, 'id': n.id, 'fqdn': n.fqdn,
-                          'progress': 0, 'meta': n.meta,
+                          'progress': 0, 'meta': n.meta, 'online': True,
                           'network_data': [{'brd': '172.16.0.255',
                                             'ip': node_ip[0],
                                             'vlan': 103,

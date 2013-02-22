@@ -45,4 +45,4 @@ class TestKeepalive(BaseHandlers):
                                     name="Dead or alive")
         time.sleep(self.watcher.interval + 1)
         self.env.refresh_nodes()
-        self.assertEqual(node.online, False)
+        self.assertEqual(node.online, True)
