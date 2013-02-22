@@ -55,8 +55,8 @@ class KeepAliveThread(threading.Thread):
                         self.db.commit()
                         notifier.notify(
                             "error",
-                            u"Node '{0}' became offline".format(
-                                node_db.name or node_db.id
+                            u"Node '{0}' has gone away".format(
+                                node_db.name or node_db.mac
                             ),
                             node_id=node_db.id
                         )
