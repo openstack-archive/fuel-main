@@ -48,7 +48,7 @@ def build_app():
     return app
 
 
-def appstart(keepalive):
+def appstart(keepalive=False):
     logger.info("Fuel-Web {0} ({1})".format(
         settings.PRODUCT_VERSION,
         settings.COMMIT_SHA
