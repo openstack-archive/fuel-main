@@ -102,9 +102,11 @@ class DeploymentTask(object):
             nodes_to_provision = []
             for node in nodes:
                 if not node.online:
-                    raise Exception("Node '%s' (id=%s) is offline."
-                                    " Remove it from cluster and try again." %
-                                    (node.name, node.id))
+                    raise Exception(
+                        "Node '%s' (id=%s) is offline."
+                        " Remove it from environment and try again." %
+                        (node.name, node.id)
+                    )
                 if node.status in ('discover', 'provisioning') or \
                         (node.status == 'error' and
                          node.error_type == 'provision'):
