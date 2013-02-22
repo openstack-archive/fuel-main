@@ -107,7 +107,7 @@ LOG_GROUPS:
 LOGS:
 # Master node logs.
   - id: nailgun
-    name: "Nailgun"
+    name: "FuelWeb"
     <<: *local_log_type
     <<: *python_log_format
     path: *nailgun_log
