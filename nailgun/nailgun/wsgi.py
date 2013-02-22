@@ -49,6 +49,10 @@ def build_app():
 
 
 def appstart():
+    logger.info("Fuel-Web {0} ({1})".format(
+        settings.PRODUCT_VERSION or "Beta",
+        settings.COMMIT_SHA or "Unknown Build"
+    ))
     from nailgun.rpc import processed
     from nailgun.keepalive import keep_alive
     app = build_app()
