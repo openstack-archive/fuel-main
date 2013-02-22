@@ -2,6 +2,9 @@ LISTEN_ADDRESS: "0.0.0.0"
 LISTEN_PORT: "8000"
 DEVELOPMENT: "1"
 
+COMMIT_SHA: "Unknown build"
+PRODUCT_VERSION: "0.1-beta"
+
 FIXTURES_TO_UPLOAD:
   - "openstack_folsom.json"
   - "start_notification.json"
