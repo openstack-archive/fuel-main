@@ -229,10 +229,11 @@ function(models, commonViews, dialogViews, LogsTab, nodesTabSummaryTemplate, edi
         action: 'add',
         flag: 'pending_addition',
         initialize: function(options) {
+            _.defaults(this, options);
             this.constructor.__super__.initialize.apply(this, arguments);
             this.nodes = new models.Nodes();
             this.nodes.deferred = this.nodes.fetch({data: {cluster_id: ''}}).done(_.bind(function() {
-                this.nodes.add(this.model.get('nodes').where({role: options.role, pending_deletion: true}), {at: 0});
+                this.nodes.add(this.model.get('nodes').where({role: this.role, pending_deletion: true}), {at: 0});
                 this.render();
             }, this));
         },
@@ -261,10 +262,11 @@ function(models, commonViews, dialogViews, LogsTab, nodesTabSummaryTemplate, edi
         action: 'delete',
         flag: 'pending_deletion',
         initialize: function(options) {
+            _.defaults(this, options);
             this.constructor.__super__.initialize.apply(this, arguments);
-            this.nodes = new models.Nodes(this.model.get('nodes').filter(function(node) {
-                return node.get('role') == options.role && (node.get('pending_addition') || !node.get('pending_deletion'));
-            }));
+            this.nodes = new models.Nodes(this.model.get('nodes').filter(_.bind(function(node) {
+                return node.get('role') == this.role && (node.get('pending_addition') || !node.get('pending_deletion'));
+            }, this)));
         },
         modifyNodes: function(nodes) {
             nodes.each(function(node) {
@@ -413,11 +415,19 @@ function(models, commonViews, dialogViews, LogsTab, nodesTabSummaryTemplate, edi
         beforeTearDown: function() {
             $('html').off(this.eventNamespace);
         },
+        checkForOfflineEvent: function() {
+            var updatedNode = app.navbar.nodes.get(this.model.id);
+            if (updatedNode && updatedNode.get('online') != this.model.get('online')) {
+                this.model.set({online: updatedNode.get('online')});
+                this.render();
+            }
+        },
         initialize: function(options) {
             _.defaults(this, options);
             this.renaming = false;
             this.eventNamespace = 'click.editnodename' + this.model.id;
             this.model.bind('change', this.render, this);
+            app.navbar.nodes.bind('reset', this.checkForOfflineEvent, this);
         },
         render: function() {
             this.$el.html(this.template({

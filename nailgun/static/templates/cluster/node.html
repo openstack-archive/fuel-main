@@ -22,6 +22,10 @@
       <div class="msg-warning">
         <i class="icon-cancel-circle"></i>Pending Deletion
       </div>
+    <% } else if (!node.get('online')) { %>
+      <div class="msg-offline">
+        <i class="icon-block"></i>Offline
+      </div>
     <% } else if (status == 'ready') { %>
       <div class="msg-ok">
         <i class="icon-ok"></i>Ready
@@ -41,10 +45,6 @@
     <% } else if (status == 'error') { %>
       <div class="msg-error">
         <i class="icon-attention"></i>Error
-      </div>
-    <% } else if (status == 'offline') { %>
-      <div class="msg-offline">
-        <i class="icon-block"></i>Offline
       </div>
     <% } else if (status == 'discover') { %>
       <div class="msg-discover">
