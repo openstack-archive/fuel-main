@@ -68,7 +68,7 @@ function(models, commonViews, dialogViews, clustersPageTemplate, clusterTemplate
             var request;
             if (deletionTask) {
                 request = deletionTask.fetch();
-                request.done(_.bind(this.scheduleUpdate, this))
+                request.done(_.bind(this.scheduleUpdate, this));
                 request.fail(_.bind(function(response) {
                     if (response.status == 404) {
                         this.model.collection.remove(this.model);
@@ -78,7 +78,7 @@ function(models, commonViews, dialogViews, clustersPageTemplate, clusterTemplate
                 }, this));
                 this.registerDeferred(request);
             } else if (deploymentTask) {
-                request = deploymentTask.fetch()
+                request = deploymentTask.fetch();
                 request.done(_.bind(function() {
                     if (deploymentTask.get('status') == 'running') {
                         this.updateProgress();
