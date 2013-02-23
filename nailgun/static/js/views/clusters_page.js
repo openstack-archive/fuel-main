@@ -59,24 +59,27 @@ function(models, commonViews, dialogViews, clustersPageTemplate, clusterTemplate
         updateInterval: 3000,
         scheduleUpdate: function() {
             if (this.model.task('cluster_deletion', 'running') || this.model.task('deploy', 'running')) {
-                this.timeout = _.delay(_.bind(this.update, this), this.updateInterval);
+                this.registerDeferred($.timeout(this.updateInterval).done(_.bind(this.update, this)));
             }
         },
         update: function() {
             var deletionTask = this.model.task('cluster_deletion');
             var deploymentTask = this.model.task('deploy');
+            var request;
             if (deletionTask) {
-                this.taskFetchRequest = deletionTask.fetch()
-                    .done(_.bind(this.scheduleUpdate, this))
-                    .fail(_.bind(function(response) {
-                        if (response.status == 404) {
-                            this.model.collection.remove(this.model);
-                            app.navbar.stats.nodes.fetch();
-                            app.navbar.notifications.fetch();
-                        }
-                    }, this));
+                request = deletionTask.fetch();
+                request.done(_.bind(this.scheduleUpdate, this))
+                request.fail(_.bind(function(response) {
+                    if (response.status == 404) {
+                        this.model.collection.remove(this.model);
+                        app.navbar.stats.nodes.fetch();
+                        app.navbar.notifications.fetch();
+                    }
+                }, this));
+                this.registerDeferred(request);
             } else if (deploymentTask) {
-                this.taskFetchRequest = deploymentTask.fetch().done(_.bind(function() {
+                request = deploymentTask.fetch()
+                request.done(_.bind(function() {
                     if (deploymentTask.get('status') == 'running') {
                         this.updateProgress();
                         this.scheduleUpdate();
@@ -86,6 +89,7 @@ function(models, commonViews, dialogViews, clustersPageTemplate, clusterTemplate
                         app.navbar.notifications.fetch();
                     }
                 }, this));
+                this.registerDeferred(request);
             }
         },
         updateProgress: function() {
@@ -95,19 +99,12 @@ function(models, commonViews, dialogViews, clustersPageTemplate, clusterTemplate
                 this.$('.bar').css('width', (progress > 3 ? progress : 3) + '%');
             }
         },
-        beforeTearDown: function() {
-            if (this.timeout) {
-                clearTimeout(this.timeout);
-            }
-            if (this.taskFetchRequest && this.taskFetchRequest.state() == 'pending') {
-                this.taskFetchRequest.abort();
-            }
-        },
         initialize: function() {
             this.model.bind('change', this.render, this);
         },
         render: function() {
             this.$el.html(this.template({cluster: this.model}));
+            this.updateProgress();
             if (this.model.task('cluster_deletion', 'running')) {
                 this.$el.addClass('disabled-cluster');
                 this.update();

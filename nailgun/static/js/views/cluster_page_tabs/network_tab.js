@@ -133,13 +133,13 @@ function(models, commonViews, dialogViews, networkTabTemplate, networkTabViewMod
         },
         scheduleUpdate: function() {
             if (this.model.task('verify_networks', 'running')) {
-                this.timeout = _.delay(_.bind(this.update, this), this.updateInterval);
+                this.registerDeferred($.timeout(this.updateInterval).done(_.bind(this.update, this)));
             }
         },
         update: function(force) {
             var task = this.model.task('verify_networks', 'running');
             if (task && (force || app.page.$el.find(this.el).length)) {
-                this.taskFetchRequest = task.fetch({complete: _.bind(this.scheduleUpdate, this)});
+                this.registerDeferred(task.fetch({complete: _.bind(this.scheduleUpdate, this)}));
             }
         },
         startVerification: function() {
@@ -155,9 +155,9 @@ function(models, commonViews, dialogViews, networkTabTemplate, networkTabViewMod
                         dialog.render();
                     }, this),
                 complete: _.bind(function() {
-                    this.taskFetchRequest = this.model.get('tasks')
-                        .fetch({data: {cluster_id: this.model.id}})
-                        .done(_.bind(this.scheduleUpdate, this));
+                    var request = this.model.get('tasks').fetch({data: {cluster_id: this.model.id}});
+                    request.done(_.bind(this.scheduleUpdate, this));
+                    this.registerDeferred(request);
                 }, this)
             });
         },
@@ -165,14 +165,6 @@ function(models, commonViews, dialogViews, networkTabTemplate, networkTabViewMod
             if (this.setValues()) {
                 this.$('.verify-networks-btn').attr('disabled', true);
                 app.page.removeVerificationTask().done(_.bind(this.startVerification, this));
-            }
-        },
-        beforeTearDown: function() {
-            if (this.timeout) {
-                clearTimeout(this.timeout);
-            }
-            if (this.taskFetchRequest && this.taskFetchRequest.state() == 'pending') {
-                this.taskFetchRequest.abort();
             }
         },
         bindTaskEvents: function() {

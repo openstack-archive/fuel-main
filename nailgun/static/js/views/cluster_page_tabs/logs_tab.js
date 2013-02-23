@@ -22,16 +22,8 @@ function(models, commonViews, logsTabTemplate, logEntryTemplate) {
             'change select[name=node]': 'onNodeChange',
             'change select[name=source]': 'updateLevels'
         },
-        beforeTearDown: function() {
-            if (this.timeout) {
-                clearTimeout(this.timeout);
-            }
-            if (this.fetchLogsRequest && this.fetchLogsRequest.state() == 'pending') {
-                this.fetchLogsRequest.abort();
-            }
-        },
         scheduleUpdate: function() {
-            this.timeout = _.delay(_.bind(this.update, this), this.updateInterval);
+            this.registerDeferred($.timeout(this.updateInterval).done(_.bind(this.update, this)));
         },
         update: function() {
             this.fetchLogs({from: this.from}, {
@@ -151,13 +143,10 @@ function(models, commonViews, logsTabTemplate, logEntryTemplate) {
             };
             _.extend(options, callbacks);
             _.extend(options.data, data);
-            this.fetchLogsRequest = $.ajax(options);
-            return this.fetchLogsRequest;
+            return this.registerDeferred($.ajax(options));
         },
         showLogs: function(params) {
-            if (this.timeout) {
-                clearTimeout(this.timeout);
-            }
+            this.rejectRegisteredDeferreds();
             this.from = 0;
 
             this.chosenType = this.$('select[name=type]').val();

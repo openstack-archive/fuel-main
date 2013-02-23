@@ -63,16 +63,37 @@
       delete this.subViews[subView.cid];
     },
 
+    registerDeferred: function(deferred) {
+      var that = this;
+      this.deferreds = this.deferreds || {};
+      deferred._coccyxId = deferred._coccyxId || _.uniqueId('coccyx');
+      this.deferreds[deferred._coccyxId] = deferred;
+      deferred.always(function() {
+        delete that.deferreds[deferred._coccyxId];
+      });
+      return deferred;
+    },
+
+    unregisterDeferred: function(deferred) {
+      delete this.deferreds[deferred._coccyxId];
+    },
+
     tearDown: function() {
       this._tearDown();
       this.$el.remove();
       return this;
     },
-    
+
     tearDownRegisteredSubViews: function() {
       _(this.subViews).invoke('_tearDown');
     },
-    
+
+    rejectRegisteredDeferreds: function() {
+      _(this.deferreds).each(function(deferred) {
+        deferred[_(['abort', 'clear', 'reject']).find(function(method) {return deferred[method]})]();
+      });
+    },
+
     _tearDown: function() {
       var that = this;
       if (this.beforeTearDown) this.beforeTearDown();
@@ -85,7 +106,10 @@
 
       _(this.eventDispatchers).invoke('off', null, null, this);
       this.eventDispatchers = {};
-      
+
+      this.rejectRegisteredDeferreds();
+      this.deferreds = {};
+
       _(this.subViews).invoke('_tearDown');
       this.subViews = {};
     }
@@ -102,6 +126,6 @@
     });
     _.extend(root.View.prototype, coccyxViewExtensions);
   }
-  
+
   coccyxify(Backbone);
 })();

@@ -83,7 +83,7 @@ function(models, dialogViews, navbarTemplate, nodesStatsTemplate, notificationsT
             this.$('a[href="#' + element + '"]').addClass('active');
         },
         scheduleUpdate: function() {
-            _.delay(_.bind(this.update, this), this.updateInterval);
+            this.registerDeferred($.timeout(this.updateInterval).done(_.bind(this.update, this)));
         },
         update: function() {
             var complete = _.after(2, _.bind(this.scheduleUpdate, this));
