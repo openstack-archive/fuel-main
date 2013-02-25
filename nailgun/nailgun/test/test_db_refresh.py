@@ -1,5 +1,7 @@
 # -*- coding: utf-8 -*-
 
+from datetime import datetime
+
 from unittest import TestCase
 
 from paste.fixture import TestApp
@@ -33,6 +35,7 @@ class TestDBRefresh(TestCase):
     def test_session_update(self):
         node = Node()
         node.mac = u"ASDFGHJKLMNOPR"
+        node.timestamp = datetime.now()
         self.db.add(node)
         self.db.commit()
 
