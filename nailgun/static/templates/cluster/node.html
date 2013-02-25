@@ -14,17 +14,17 @@
   </div>
   <div class="node-status">
     <% var status = node.get('status') %>
-    <% if (node.get('pending_addition')) { %>
+    <% if (!node.get('online')) { %>
+      <div class="msg-offline">
+        <i class="icon-block"></i>Offline
+      </div>
+    <% } else if (node.get('pending_addition')) { %>
       <div class="msg-warning">
         <i class="icon-ok-circle-empty"></i>Pending Addition
       </div>
     <% } else if (node.get('pending_deletion')) { %>
       <div class="msg-warning">
         <i class="icon-cancel-circle"></i>Pending Deletion
-      </div>
-    <% } else if (!node.get('online')) { %>
-      <div class="msg-offline">
-        <i class="icon-block"></i>Offline
       </div>
     <% } else if (status == 'ready') { %>
       <div class="msg-ok">
