@@ -189,7 +189,7 @@ class Node(Base, BasicValidator):
     pending_deletion = Column(Boolean, default=False)
     error_type = Column(Enum(*NODE_ERRORS))
     error_msg = Column(String(255))
-    timestamp = Column(DateTime, nullable=False, default=datetime.now())
+    timestamp = Column(DateTime, nullable=False)
     online = Column(Boolean, default=True)
 
     @property

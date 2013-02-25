@@ -5,6 +5,7 @@
         "fields": {
             "status": "discover",
             "name": "Untitled (76:F1)",
+            "timestamp": "",
             "manufacturer": "Dell",
             "platform_name": "Model-1",
             "role": null,
@@ -75,6 +76,7 @@
         "fields": {
             "status": "error",
             "error_type": "provision",
+            "timestamp": "",
             "error_msg": "You need more money",
             "name": "Bad node",
             "manufacturer": "OpenVZ",
@@ -91,6 +93,7 @@
         "fields": {
             "status": "discover",
             "name": "Untitled (69:1F)",
+            "timestamp": "",
             "manufacturer": "OpenVZ",
             "platform_name": "Model-3",
             "role": null,
@@ -106,6 +109,7 @@
         "fields": {
             "online": false,
             "name": "Offline node",
+            "timestamp": "",
             "manufacturer": "Xen",
             "platform_name": "",
             "role": null,
@@ -120,6 +124,7 @@
         "fields": {
             "status": "discover",
             "name": "Node with name",
+            "timestamp": "",
             "manufacturer": "VMWare",
             "platform_name": "",
             "role": null,
@@ -134,6 +139,7 @@
         "fields": {
             "status": "discover",
             "name": "Untitled (9B:92)",
+            "timestamp": "",
             "manufacturer": "Cisco",
             "platform_name": "",
             "role": null,
@@ -148,6 +154,7 @@
         "fields": {
             "status": "discover",
             "name": "Another node",
+            "timestamp": "",
             "manufacturer": "QEMU",
             "platform_name": "",
             "role": null,
@@ -162,6 +169,7 @@
         "fields": {
             "status": "discover",
             "name": "Untitled (9A:DE)",
+            "timestamp": "",
             "manufacturer": "VBOX",
             "platform_name": "",
             "role": null,
@@ -177,6 +185,7 @@
             "status": "discover",
             "name": "cmp-1-2-1",
             "manufacturer": "Supermicro",
+            "timestamp": "",
             "platform_name": "",
             "role": null,
             "ip": "10.0.12.55",
@@ -192,6 +201,7 @@
             "error_type": "provision",
             "error_msg": "All hope is lost",
             "name": "Error node",
+            "timestamp": "",
             "manufacturer": "QEMU",
             "platform_name": "Model-2",
             "role": null,
