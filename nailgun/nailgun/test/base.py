@@ -143,6 +143,7 @@ class Environment(object):
         else:
             node = Node()
             node.meta = self.default_metadata()
+            node.timestamp = datetime.now()
             for key, value in node_data.iteritems():
                 setattr(node, key, value)
             self.db.add(node)
