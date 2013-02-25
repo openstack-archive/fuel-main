@@ -62,7 +62,8 @@ module Naily
         end
       rescue Timeout::Error
         Naily.logger.error "Provisioning has timed out"
-        error_msg = "Timeout of provisioning is exceeded for nodes: '#{nodes_not_booted.join(',')}'"
+        nodenames_not_booted = nodes.select{|n| nodes_not_booted.index{|nb| n['uid']==nb}}.map{|n| n['name']}.join(',')
+        error_msg = "Timeout of provisioning is exceeded for nodes: '#{nodenames_not_booted}'"
         error_nodes = nodes_not_booted.map { |n| {'uid' => n,
                                                   'status' => 'error',
                                                   'progress' => 100,

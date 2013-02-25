@@ -77,15 +77,15 @@ module Astute
         if res.length < @nodes.length
           nodes_responded = res.map { |n| n.results[:sender] }
           not_responded = @nodes - nodes_responded
-          err_msg += "#{@task_id}: MCollective agents '#{not_responded.join(',')}' didn't respond.\n"
+          err_msg += "MCollective agents '#{not_responded.join(',')}' didn't respond. \n"
         end
       end
       failed = res.select { |x| x.results[:statuscode] != 0 }
       if failed.any?
-        err_msg += "#{@task_id}: MCollective call failed in agent '#{@agent}', "\
-                     "method '#{method}', failed nodes: #{failed.map{|x| x.results[:sender]}.join(',')}"
+        err_msg += "MCollective call failed in agent '#{@agent}', "\
+                     "method '#{method}', failed nodes: #{failed.map{|x| x.results[:sender]}.join(',')} \n"
       end
-      raise err_msg unless err_msg.empty?
+      raise "#{@task_id}: #{err_msg}" unless err_msg.empty?
 
       return res
     end

@@ -74,6 +74,6 @@ describe MClient do
     mclient = MClient.new(@ctx, "faketest", nodes.map {|x| x['uid']})
     mclient.retries = 1
     expect { mclient.echo(:msg => 'hello world') }.to \
-        raise_error(/MCollective agents '3' didn't respond.\n.* failed nodes: 2/)
+        raise_error(/MCollective agents '3' didn't respond. \n.* failed nodes: 2/)
   end
 end
