@@ -85,6 +85,7 @@ class NodeCollectionHandler(JSONHandler):
         for key, value in data.iteritems():
             setattr(node, key, value)
         node.name = "Untitled (%s)" % data['mac'][-5:]
+        node.timestamp = datetime.now()
         orm().add(node)
         orm().commit()
         try:

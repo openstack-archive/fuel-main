@@ -40,13 +40,13 @@ class KeepAliveThread(threading.Thread):
                 # nodes may become unresponsive while provisioning
                 not_(Node.status == 'provisioning')
             ):
-                now = datetime.now()
-                if (now - node_db.timestamp).seconds > self.timeout:
+                timedelta = (datetime.now() - node_db.timestamp).seconds
+                if timedelta > self.timeout:
                     logger.warning(
                         u"Node '{0}' seems to be offline "
                         "for {1} seconds...".format(
                             node_db.name,
-                            (now - node_db.timestamp).seconds
+                            timedelta
                         )
                     )
                     if node_db.online:
