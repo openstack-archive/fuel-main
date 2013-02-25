@@ -3100,7 +3100,7 @@ select[name=release] option {
   margin-bottom: 0;
 }
 
-.accordion-heading a {
+.accordion-inner, .accordion-inner label {
   cursor: default;
 }
 
