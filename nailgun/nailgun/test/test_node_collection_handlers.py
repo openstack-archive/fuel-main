@@ -150,6 +150,7 @@ class TestHandlers(BaseHandlers):
         response = json.loads(resp.body)
         self.assertEqual(node1.mac, response[0]["mac"])
         self.assertNotEqual(node1_json["mac"], response[0]["mac"])
+        self.assertEqual(meta, response[0]["meta"])
 
     def test_duplicated_node_create_fails(self):
         node = self.env.create_node(api=False)
