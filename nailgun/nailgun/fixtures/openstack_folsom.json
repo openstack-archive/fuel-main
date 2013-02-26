@@ -41,7 +41,7 @@
                             "description": "If true, it will automatically associate public IP address with the instance"
                         },
                         "libvirt_type": {
-                            "value": "kvm",
+                            "value": "qemu",
                             "values": [
                                 {
                                     "data": "kvm",
