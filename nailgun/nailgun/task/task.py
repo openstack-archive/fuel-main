@@ -191,8 +191,12 @@ class DeploymentTask(object):
     def _provision(cls, nodes):
         logger.info("Requested to provision nodes: %s",
                     ','.join([str(n.id) for n in nodes]))
-        pd = Cobbler(settings.COBBLER_URL,
-                     settings.COBBLER_USER, settings.COBBLER_PASSWORD)
+        pd = Cobbler(
+            settings.COBBLER_URL,
+            settings.COBBLER_USER,
+            settings.COBBLER_PASSWORD,
+            logger=logger
+        )
         nd_dict = {
             'profile': settings.COBBLER_PROFILE,
             'power_type': 'ssh',

@@ -14,8 +14,8 @@ class Cobbler:
         'ip_address': ['ip'],
     }
 
-    def __init__(self, cobbler_api_url, username, password):
-        self.logger = logging.getLogger(__name__)
+    def __init__(self, cobbler_api_url, username, password, logger=None):
+        self.logger = logger or logging.getLogger(__name__)
         try:
             self.remote = xmlrpclib.Server(cobbler_api_url, allow_none=True)
             self.token = self.remote.login(username, password)
