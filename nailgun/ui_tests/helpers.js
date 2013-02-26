@@ -52,30 +52,19 @@ casper.createNode = function(options) {
         },
         "interfaces": [
             {
-                "addresses": {
-                    "fe80::5054:ff:fe28:16c3": {
-                        "prefixlen": "64",
-                        "scope": "Link",
-                        "family": "inet6"
-                    },
-                    "52:54:00:28:16:C3": {
-                        "family": "lladdr"
-                    },
-                    "10.20.0.229": {
-                        "prefixlen": "24",
-                        "scope": "Global",
-                        "netmask": "255.255.255.0",
-                        "broadcast": "10.20.0.255",
-                        "family": "inet"
-                    }
-                },
-                "name": "eth0"
+              "mac": "52:54:00:96:81:6E",
+              "name": "eth0",
+              "bandwidth": 1000
             },
             {
-                "default_interface": "eth0"
+              "mac": "C8:0A:A9:A6:FF:28",
+              "name": "eth1",
+              "bandwidth": 1000
             },
             {
-                "default_gateway": "10.20.0.2"
+              "mac": "D4:56:C3:88:99:DF",
+              "name": "eth0:1",
+              "bandwidth": 2000
             }
         ],
         "cpu": {
