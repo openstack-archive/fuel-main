@@ -594,10 +594,12 @@ class TestNode(Base):
         for n in nodes:
             for i in devops_node.interfaces:
                 logging.debug("get_slave_node_by_devops_node: \
-node.interfaces[n].mac_address: %r" % str(i.mac_address))
+check if %r eq %r" % (str(n['mac']), str(i.mac_address)))
                 if n['mac'].capitalize() == i.mac_address.capitalize():
                     n['devops_name'] = devops_node.name
                     return n
+        logging.warn("get_slave_node_by_devops_node: node %s not found" %
+                     devops_node.name)
         return None
 
     def _bootstrap_nodes(self, devops_node_names=[]):
