@@ -73,7 +73,9 @@ class NailgunReceiver(object):
         if error_nodes:
             err_msg = u"Failed to remove {0} node(s): {1}".format(
                 len(error_nodes),
-                ', '.join([n['name'] for n in error_nodes])
+                ', '.join(
+                    [n.get('name') or "ID: {0}".format(n['uid'])
+                        for n in error_nodes])
             )
             notifier.notify("error", err_msg)
         if not error_msg:
