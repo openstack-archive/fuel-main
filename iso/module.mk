@@ -67,7 +67,8 @@ $(ISOROOT)/version.yaml:
 	echo "PRODUCT_VERSION: $(PRODUCT_VERSION)" >> $@
 
 $(ISOROOT)/puppet-nailgun.tgz: \
-		$(call find-files,$(SOURCE_DIR)/puppet)
+		$(call find-files,$(SOURCE_DIR)/puppet) \
+		bin/send2syslog.py
 	(cd $(SOURCE_DIR)/puppet && tar chzf $@ *)
 $(ISOROOT)/puppet-slave.tgz: \
 		$(call find-files,$(SOURCE_DIR)/puppet/nailytest) \

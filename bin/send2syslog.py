@@ -60,6 +60,21 @@ msg_levels = {'ruby': {'regex': '(?P<level>[DIWEF]), \[[0-9-]{10}T',
                                       }
                            }
               }
+relevel_errors = {
+    'anaconda': [
+        {
+            'regex': 'Error downloading \
+http://.*/images/(product|updates).img: HTTP response code said error',
+            'levelfrom': logging.ERROR,
+            'levelto': logging.WARNING
+        },
+        {
+            'regex': 'got to setupCdrom without a CD device',
+            'levelfrom': logging.ERROR,
+            'levelto': logging.WARNING
+        }
+    ]
+}
 # Create a main logger.
 logging.basicConfig(format='%(levelname)s: %(message)s')
 main_logger = logging.getLogger()
@@ -149,11 +164,20 @@ class WatchedGroup:
             for line in watchedfile.readLines():
                 line = line.strip()
                 level = self._get_msg_level(line, self.log_type)
+                # Get rid of duplicated information in anaconda logs
                 line = re.sub(
                     msg_levels[self.log_type]['regex'] + "\s*:?\s?",
                     "",
                     line
                 )
+                # Ignore meaningless errors
+                try:
+                    for r in relevel_errors[self.log_type]:
+                        if level == r['levelfrom'] and \
+                                re.match(r['regex'], line):
+                            level = r['levelto']
+                except KeyError:
+                    pass
                 self.logger.log(level, line)
                 main_logger and main_logger.log(
                     level,

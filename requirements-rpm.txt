@@ -5,6 +5,7 @@ MySQL-server-5.5.28-6
 MySQL-server-wsrep-5.5.28_wsrep_23.7-11
 MySQL-shared-5.5.28-6
 MySQL-shared-wsrep-5.5.28_wsrep_23.7-11
+authconfig-6.1.12-10.el6
 autoconf-2.63-5.1.el6
 automake-1.11.1-1.2.el6
 avahi-0.6.25-11.el6
@@ -12,11 +13,11 @@ bind-utils-9.8.2-0.10.rc1.el6_3.6
 byacc-1.9.20070509-7.el6
 centos-release-6-3.el6.centos.9
 cirros-testvm-0.3.0-2
-cronie-noanacron-1.4.4-7.el6
 cman-3.0.12.1-32.el6_3.2
 cobbler-2.2.3-2.el6
 cobbler-web-2.2.3-2.el6
 cronie-1.4.4-7.el6
+cronie-noanacron-1.4.4-7.el6
 crontabs-1.10-33.el6
 curl-7.19.7-26.el6_2.4
 dhclient-4.1.1-31.0.1.P1.el6.centos.1
@@ -63,8 +64,8 @@ puppet-2.7.19-1.el6
 puppet-server-2.7.19-1.el6
 puppetdb-1.0.5-1.el6
 puppetdb-terminus-1.0.5-1.el6
-python-argparse-1.2.1-2.el6
 python-amqp-1.2.0-6.el6
+python-argparse-1.2.1-2.el6
 python-cinder-2012.2-6.mira
 python-devel-2.6.6-29.el6_3.3
 python-pip-0.8-1.el6
@@ -84,9 +85,11 @@ rubygem-mongrel-1.1.5-3.el6
 rubygems-1.3.7-1.el6
 scapy-2.0.0.10-5.el6
 screen-4.0.3-16.el6
+selinux-policy-targeted-3.7.19-154.el6
 socat-1.7.2.1-1.el6
 supervisor-2.1-8.el6
 syslinux-4.02-8.el6
+system-config-firewall-base-1.2.27-5.el6
 tcpdump-4.0.0-3.20090921gitdf3cb4.2.el6
 tftp-server-0.49-7.el6
 unzip-6.0-1.el6

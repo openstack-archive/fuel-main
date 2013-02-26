@@ -87,7 +87,6 @@ $SNIPPET('pre_install_network_config')
 # HERE ARE LIST OF PACKAGES THAT WILL BE INSTALLED
 # FIXME --ignoremissing
 %packages --nobase --ignoremissing 
-@Core
 yum
 openssh-server
 openssh
@@ -97,6 +96,10 @@ wget
 crontabs
 cronie
 ruby-augeas
+authconfig
+system-config-firewall-base
+policycoreutils
+selinux-policy-targeted
 # COBBLER EMBEDDED SNIPPET: 'puppet_install_if_enabled'
 # LISTS puppet PACKAGE IF puppet_auto_setup VARIABLE IS SET TO 1
 $SNIPPET('puppet_install_if_enabled')
@@ -138,3 +141,5 @@ $SNIPPET('mcollective_conf')
 # COBBLER EMBEDDED SNIPPET: 'kickstart_done'
 # DISABLES PXE BOOTING
 $SNIPPET('kickstart_done')
+
+%end
