@@ -60,6 +60,7 @@ class NailgunReceiver(object):
             node_db.pending_deletion = False
             node_db.status = 'error'
             orm().add(node_db)
+            node['name'] = node_db.name
         orm().commit()
 
         success_msg = u"No nodes were removed"
@@ -70,8 +71,9 @@ class NailgunReceiver(object):
             )
             notifier.notify("done", success_msg)
         if error_nodes:
-            err_msg = u"Failed to remove {0} node(s)".format(
-                len(error_nodes)
+            err_msg = u"Failed to remove {0} node(s): {1}".format(
+                len(error_nodes),
+                ', '.join([n['name'] for n in error_nodes])
             )
             notifier.notify("error", err_msg)
         if not error_msg:
