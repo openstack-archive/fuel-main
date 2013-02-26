@@ -166,4 +166,11 @@ class nailgun(
     require => Class["nailgun::cobbler"],
   }
 
+  file { "/etc/ssh/sshd_config":
+    content => template("nailgun/sshd_config.erb"),
+    owner => root,
+    group => root,
+    mode => 0600,
+  }
+
 }
