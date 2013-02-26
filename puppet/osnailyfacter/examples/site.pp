@@ -7,7 +7,6 @@ $openstack_version = {
   'cinder'     => 'latest',
 }
 
-$deployment_id = '1'
 tag("${::deployment_id}::${::environment}")
 
 node default {

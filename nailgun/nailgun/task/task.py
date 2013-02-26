@@ -173,6 +173,7 @@ class DeploymentTask(object):
 
         cluster_attrs['deployment_mode'] = '_'.join(
             [task.cluster.mode, task.cluster.type])
+        cluster_attrs['deployment_id'] = cluster_id
 
         message = {
             'method': 'deploy',
