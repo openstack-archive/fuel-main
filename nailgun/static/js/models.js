@@ -134,7 +134,7 @@ define(function() {
                     });
                     resource = hdd;
                 } else if (resourceName == 'ram') {
-                    resource = this.get('meta').memory/Math.pow(1024, 3);
+                    resource = this.get('meta').memory.total / Math.pow(1024, 3);
                 }
             } catch (e) {}
             if (_.isNaN(resource)) {

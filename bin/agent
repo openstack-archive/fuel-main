@@ -149,8 +149,8 @@ class NodeAgent
         :manufacturer => _manufacturer,
         :serial => _serial,
         :product => _product_name,
-        :family => (@os[:dmi][:system][:family] rescue nil),
-        :version => (@os[:dmi][:system][:version] rescue nil),
+        :family => (@os[:dmi][:system][:family].strip rescue nil),
+        :version => (@os[:dmi][:system][:version].strip rescue nil),
         },
       :interfaces => [],
       :cpu => {
@@ -234,51 +234,27 @@ class NodeAgent
 
   def _manufacturer
     if _is_virtual
-      return @os["virtualization"]["system"].upcase rescue "Unknown"
+      return @os["virtualization"]["system"].upcase.strip rescue "Unknown"
     else
       # Check in other place for VBox: ohai doesn't show it's virtual with VBox 4.2.4
       return "VBOX" if @os["dmi"]["system"]["product_name"] == "VirtualBox" rescue nil
-      return @os[:dmi][:system][:manufacturer] rescue nil
+      return @os[:dmi][:system][:manufacturer].strip rescue nil
     end
   end
 
   def _product_name
     if _is_virtual
-      @os["virtualization"]["role"] rescue nil
+      @os["virtualization"]["role"].strip rescue nil
     else
-      @os[:dmi][:system][:product_name] rescue nil
+      @os[:dmi][:system][:product_name].strip rescue nil
     end
   end
 
   def _serial
-    @os[:dmi][:system][:serial_number] rescue nil
+    @os[:dmi][:system][:serial_number].strip rescue nil
   end
 
-  def _dmi_memory
-    dmi = `/usr/sbin/dmidecode`
-    return nil if $?.to_i != 0
-    mem_mapped = false
-    dmi.each do |line|
-      mem_mapped = true if /^Memory Array Mapped Address$/.match(line)
-      if /^\s*Range Size:\s+(\d+)\s+(mb|gb|kb)/i.match(line) and mem_mapped
-        size, unit = $1.to_i, $2
-        case unit
-        when /^kb$/i
-          return (size * 1024)
-        when /^mb$/i
-          return (size * 1048576)
-        when /^gb$/i
-          return (size * 1073741824)
-        end
-        nil
-      end
-    end
-    nil
-  end
-
-  def _ohai_memory
-    size = @os['memory']['total'].gsub(/(kb|mb|gb)$/i, "").to_i rescue (return nil)
-    unit = $1
+  def _size(size, unit)
     case unit
     when /^kb$/i
       return (size * 1024)
@@ -288,6 +264,48 @@ class NodeAgent
       return (size * 1073741824)
     end
     nil
+  end
+
+  def _dmi_memory
+    dmi = `/usr/sbin/dmidecode`
+    info = {:devices => [], :total => 0}
+    return nil if $?.to_i != 0
+    mem_mapped = false
+    dmi.split(/\n\n/).each do |group|
+      if /^Physical Memory Array$/.match(group)
+        if /^\s*Maximum Capacity:\s+(\d+)\s+(mb|gb|kb)/i.match(group)
+          info[:maximum_capacity] = _size($1.to_i, $2)
+        end
+        if /^\s*Number Of Devices:\s+(\d+)/i.match(group)
+          info[:slots] = $1.to_i
+        end
+      elsif /^Memory Device$/.match(group)
+        device_info = {}
+        if /^\s*Size:\s+(\d+)\s+(mb|gb|kb)/i.match(group)
+          size = _size($1.to_i, $2)
+          device_info[:size] = size
+          info[:total] += size
+        end
+        if /^\s*Speed:\s+(\d+)\s+MHz/i.match(group)
+          device_info[:frequency] = $1.to_i
+        end
+        if /^\s*Type:\s+(.*?)$/i.match(group)
+          device_info[:type] = $1
+        end
+        #if /^\s*Locator:\s+(.*?)$/i.match(group)
+        #  device_info[:locator] = $1
+        #end
+        info[:devices].push(device_info)
+      end
+    end
+    info
+  end
+
+  def _ohai_memory
+    info = {}
+    size = @os['memory']['total'].gsub(/(kb|mb|gb)$/i, "").to_i rescue (return nil)
+    info[:total] = _size(size, $1)
+    info
   end
 
   def _data
@@ -336,7 +354,7 @@ def write_data_to_file(logger, filename, data)
       File.open(filename, 'w') do |fo|
         fo.write(data)
       end
-      logger.info("Writed data to file '#{filename}'. Data: #{data}")
+      logger.info("Wrote data to file '#{filename}'. Data: #{data}")
     rescue Exception => e
       logger.warning("Can't write data to file '#{filename}'. Reason: #{e.message}")
     end

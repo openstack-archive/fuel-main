@@ -1,3 +1,62 @@
+<%
+  var showFrequency = function(freq) {
+    return freq + ' MHz';
+  };
+  var showBandwidth = function(bandwidth) {
+    return (bandwidth / 1000).toFixed(1) + ' Gbps';
+  };
+  var showSize = function(bytes, base) {
+    var result = bytes;
+    base = base || 1024;
+    var gigabytes = (bytes / Math.pow(base, 3));
+    if (gigabytes < 100) {
+      result = gigabytes.toFixed(1) + ' GB';
+    } else {
+      result = (gigabytes / 1000).toFixed(1) + ' TB';
+    }
+    return result;
+  };
+  var showPropertyName = function(propertyName) {
+    return propertyName.replace(/_/g, ' ');
+  };
+  var showPropertyValue = function(group, name, value) {
+    try {
+      if (name == 'size' || (group == 'memory' && (name == 'total' || name == 'maximum_capacity'))) {
+        value = showSize(value);
+      } else if (name == 'frequency') {
+        value = showFrequency(value);
+      } else if (name == 'bandwidth') {
+        value = showBandwidth(value);
+      }
+    } catch (e) {};
+    return value;
+  };
+  var showSummary = function(meta, group) {
+    var summary = '';
+    try {
+      if (group == 'system') {
+        summary = meta.system.product;
+      } else if (group == 'memory') {
+        if (_.isArray(meta.memory.devices) && meta.memory.devices.length) {
+          var sizes = _.groupBy(_.pluck(meta.memory.devices, 'size'), function(el) {return el});
+          summary = _.map(_.keys(sizes), function(size) {return sizes[size].length + ' x ' + showSize(size)}).join(', ');
+          summary += ', ' + showSize(meta.memory.total) + ' total';
+        }
+      } else if (group == 'disks') {
+        summary = meta.disks.length + ' drive';
+        summary += meta.disks.length == 1 ? ', ' : 's, ';
+        summary += showSize(_.reduce(_.pluck(meta.disks, 'size'), function(sum, n) {return sum + n}, 0), 1000) + ' total';
+      } else if (group == 'cpu') {
+        var frequencies = _.groupBy(_.pluck(meta.cpu.spec, 'frequency'), function(el) {return el});
+        summary = _.map(_.keys(frequencies), function(frequency) {return frequencies[frequency].length + ' x ' + showFrequency(frequency)}).join(', ');
+      } else if (group == 'interfaces') {
+        var bandwidths = _.groupBy(_.pluck(meta.interfaces, 'bandwidth'), function(el) {return el});
+        summary = _.map(_.keys(bandwidths), function(bandwidth) {return bandwidths[bandwidth].length + ' x ' + (bandwidth === 'null' ? 'N/A' : showBandwidth(bandwidth))}).join(', ');
+      }
+    } catch (e) {};
+    return summary;
+  };
+%>
 <div class="modal-header">
   <button type="button" class="close" data-dismiss="modal">&times;</button>
   <h3><%- node.get('name') %></h3>
@@ -6,90 +65,56 @@
   <div class="row-fluid">
     <div class="span5"><div class="node-image-outline"></div></div>
     <div class="span7">
-      <div><strong>Manufacturer: </strong><%- node.get('manufacturer') ? node.get('manufacturer') : '?' %></div>
-      <div><strong>MAC Address: </strong><%- node.get('mac') ? node.get('mac') : '?' %></div>
+      <div><strong>Manufacturer: </strong><%- node.get('manufacturer') ? node.get('manufacturer') : 'N/A' %></div>
+      <div><strong>MAC Address: </strong><%- node.get('mac') ? node.get('mac') : 'N/A' %></div>
+      <div><strong>FQDN: </strong><%- node.get('fqdn') ? node.get('fqdn') : 'N/A' %></div>
     </div>
   </div>
   <div class="accordion" id="nodeDetailsAccordion">
     <% var meta = node.get('meta') %>
-      <% _.each(_.keys(meta), function(field) { %>
-        <div class="accordion-group">
-          <div class="accordion-heading">
-            <%
-              var summary = '';
-              if (field == 'memory') {
-                summary = (meta[field]/Math.pow(1024, 3)).toFixed(1) + ' GB total';
-              } else if (field == 'system') {
-                summary = meta[field]['product'];
-              } else if (field == 'disks') {
-                var totalSize = _.reduce(meta[field].map(function(disk) {return disk['size']}), function(sum, n) {return sum + n}, 0);
-                totalSize = totalSize/Math.pow(1000, 3);
-                summary = meta[field].length + ' drive';
-                summary += meta[field].length == 1 ? ', ' : 's, ';
-                summary += totalSize < 100 ? (totalSize).toFixed(1) + ' GB total' : (totalSize/1000).toFixed(1) + ' TB total';
-              } else if (field == 'cpu') {
-                var frequencies = _.groupBy(meta[field]['spec'].map(function(cpu) {return cpu['frequency']}), function(el){return el;});
-                _.each(_.keys(frequencies), function(frequency) {
-                  summary += frequencies[frequency].length + ' x ' + frequency + ' MHz';
-                  if (_.indexOf(_.keys(frequencies), frequency) != _.keys(frequencies).length - 1) summary += ', ';
-                });
-              } else if (field == 'interfaces') {
-                var bandwidths = _.groupBy(meta[field].map(function(interface) {return interface['bandwidth']}), function(el){return el;});
-                _.each(_.keys(bandwidths), function(bandwidth) {
-                  summary += bandwidths[bandwidth].length + ' x ' + (bandwidth === 'null' ? 'N/A' : (bandwidth/1000).toFixed(1)) + ' Gbps';
-                  if (_.indexOf(_.keys(bandwidths), bandwidth) != _.keys(bandwidths).length - 1) summary += ', ';
-                });
-              };
-            %>
-            <a class="accordion-toggle accordion-clickable" data-toggle="collapse" data-parent="#nodeDetailsAccordion" href="#<%- field %>">
-              <%- field %>
-              <span class="accordion-clickable"><%- summary %></span>
-              <i class="icon-expand pull-right accordion-clickable"></i>
-            </a>
-          </div>
-          <div class="accordion-body collapse" id="<%- field %>">
-            <div class="accordion-inner">
-              <% if (_.isArray(meta[field])) { %>
-                <% if (field == 'interfaces') meta[field] = _.sortBy(meta[field], function(el) {return el.name;}) %>
-                <% _.each(meta[field], function(el) { %>
-                  <% if (!_.isArray(el) && _.isObject(el)) { %>
-                    <div class="nested-object">
-                      <% _.each(_.keys(el), function(key) { %>
-                        <% if (field == 'disks' && key == 'size') { %>
-                          <% var diskSize = el[key]/Math.pow(1000, 3) %>
-                          <div><label><%- key %></label><%- diskSize < 100 ? (diskSize).toFixed(1) + ' GB' : (diskSize/1000).toFixed(1) + ' TB' %></div>
-                        <% } else if (field == 'interfaces' && key == 'bandwidth') { %>
-                          <div><label><%- key %></label><%- (el[key]/1000).toFixed(1) %> Gbps</div>
-                        <% } else { %>
-                          <div><label><%- key %></label><%- el[key] %></div>
-                        <% } %>
-                      <% }) %>
-                    </div>
-                  <% } %>
-                <% }) %>
-              <% } else if (_.isObject(meta[field])) { %>
-                <% _.each(_.keys(meta[field]), function(key) { %>
-                  <% if (!_.isArray(meta[field][key]) && !_.isObject(meta[field][key])) { %>
-                    <div><label><%- key %></label><%- meta[field][key] %></div>
-                  <% } else if (_.isArray(meta[field][key])) { %>
-                    <% _.each(meta[field][key], function(el) { %>
-                      <% if (!_.isArray(el) && _.isObject(el)) { %>
-                        <div class="nested-object">
-                          <% _.each(_.keys(el), function(key) { %>
-                            <div><label><%- key %></label><%- field == 'cpu' && key == 'frequency' ? el[key] + ' MHz' : el[key] %></div>
-                          <% }) %>
-                        </div>
-                      <% } %>
+    <% _.each(meta, function(groupEntries, group) { %>
+      <div class="accordion-group">
+        <div class="accordion-heading">
+          <a class="accordion-toggle accordion-clickable" data-toggle="collapse" data-parent="#nodeDetailsAccordion" href="#<%- group %>">
+            <%- group %>
+            <span class="accordion-clickable"><%- showSummary(meta, group) %></span>
+            <i class="icon-expand pull-right accordion-clickable"></i>
+          </a>
+        </div>
+        <div class="accordion-body collapse" id="<%- group %>">
+          <div class="accordion-inner">
+            <% if (_.isArray(groupEntries)) { %>
+              <% if (group == 'interfaces') groupEntries = _.sortBy(groupEntries, 'name') %>
+              <% _.each(groupEntries, function(entry) { %>
+                <div class="nested-object">
+                  <% _.each(entry, function(propertyValue, propertyName) { %>
+                    <div><label><%- showPropertyName(propertyName) %></label><%- showPropertyValue(group, propertyName, propertyValue) %></div>
+                  <% }) %>
+                </div>
+              <% }) %>
+            <% } else if (_.isObject(groupEntries)) { %>
+              <% var subentries = _.find(_.values(groupEntries), _.isArray) %>
+              <% _.each(groupEntries, function(propertyValue, propertyName) { %>
+                <% if (!_.isArray(propertyValue)) { %>
+                  <div><label><%- showPropertyName(propertyName) %></label><%- showPropertyValue(group, propertyName, propertyValue) %></div>
+                <% } %>
+              <% }) %>
+              <% if (_.isArray(subentries)) { %>
+                <% _.each(subentries, function(subentry) { %>
+                  <div class="nested-object">
+                    <% _.each(subentry, function(propertyValue, propertyName) { %>
+                      <div><label><%- showPropertyName(propertyName) %></label><%- showPropertyValue(group, propertyName, propertyValue) %></div>
                     <% }) %>
-                  <% } %>
+                  </div>
                 <% }) %>
-              <% } else { %>
-                <div><%- field == 'memory' ? (meta[field]/Math.pow(1024, 3)).toFixed(1) + ' GB' : meta[field] %></div>
               <% } %>
-            </div>
+            <% } else { %>
+              <div><%- groupEntries %></div>
+            <% } %>
           </div>
         </div>
-      <% }) %>
+      </div>
+    <% }) %>
   </div>
 </div>
 <div class="modal-footer">

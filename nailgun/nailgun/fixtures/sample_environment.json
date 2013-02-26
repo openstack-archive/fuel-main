@@ -59,7 +59,17 @@
                   }
                 ]
               },
-              "memory": 17189934592,
+              "memory": {
+                "devices": [
+                    {"size": 1073741824},
+                    {"size": 1073741824},
+                    {"size": 1073741824},
+                    {"size": 1073741824}
+                  ],
+                  "slots": 6,
+                  "total": 4294967296,
+                  "maximum_capacity": 8589934592
+              },
               "system": {
                 "version": "Power Edge 2970",
                 "manufacturer": "Dell",

@@ -89,7 +89,8 @@ class NodeCollectionHandler(JSONHandler):
         orm().add(node)
         orm().commit()
         try:
-            ram = str(round(float(node.meta['memory']) / 1073741824, 1))
+            ram = str(round(float(
+                node.meta['memory']['total']) / 1073741824, 1))
         except (KeyError, TypeError, ValueError):
             ram = "unknown"
         cores = str(node.meta.get('cpu', {}).get('total', "unknown"))
