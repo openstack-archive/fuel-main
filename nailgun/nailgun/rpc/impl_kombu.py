@@ -12,10 +12,9 @@ import kombu.entity
 import kombu.messaging
 import kombu.connection
 
+from nailgun.logger import logger
 from nailgun.rpc import amqp as rpc_amqp
 from nailgun.settings import settings
-
-LOG = logging.getLogger(__name__)
 
 
 class ConsumerBase(object):
@@ -72,7 +71,7 @@ class ConsumerBase(object):
                 callback(message.payload)
                 message.ack()
             except Exception:
-                LOG.exception("Failed to process message... skipping it.")
+                logger.exception("Failed to process message... skipping it.")
 
         self.queue.consume(*args, callback=_callback, **options)
 
@@ -266,7 +265,7 @@ class Connection(object):
         be handled by the caller.
         """
         if self.connection:
-            LOG.info(
+            logger.info(
                 "Reconnecting to AMQP server on "
                 "%(hostname)s:%(port)d" % self.params)
             try:
@@ -289,7 +288,7 @@ class Connection(object):
             self.channel._new_queue('ae.undeliver')
         for consumer in self.consumers:
             consumer.reconnect(self.channel)
-        LOG.info(
+        logger.info(
             'Connected to AMQP server on '
             '%(hostname)s:%(port)d' % self.params)
 
@@ -326,7 +325,7 @@ class Connection(object):
             log_info.update(self.params)
 
             if self.max_retries and attempt == self.max_retries:
-                LOG.exception(
+                logger.exception(
                     'Unable to connect to AMQP server on '
                     '%(hostname)s:%(port)d after %(max_retries)d '
                     'tries: %(err_str)s' % log_info)
@@ -343,7 +342,7 @@ class Connection(object):
                 sleep_time = min(sleep_time, self.interval_max)
 
             log_info['sleep_time'] = sleep_time
-            LOG.exception(
+            logger.exception(
                 'AMQP server on %(hostname)s:%(port)d is'
                 ' unreachable: %(err_str)s. Trying again in '
                 '%(sleep_time)d seconds.' % log_info)
@@ -395,7 +394,7 @@ class Connection(object):
 
         def _connect_error(exc):
             log_info = {'topic': topic, 'err_str': str(exc)}
-            LOG.error(
+            logger.error(
                 "Failed to declare consumer for topic '%(topic)s': "
                 "%(err_str)s" % log_info)
 
@@ -415,13 +414,13 @@ class Connection(object):
 
         def _error_callback(exc):
             if isinstance(exc, socket.timeout):
-                LOG.exception(
+                logger.exception(
                     'Timed out waiting for RPC response: %s' % str(exc))
                 #raise rpc_common.Timeout()
                 raise Exception(
                     "Timed out waiting for RPC response: %s" % str(exc))
             else:
-                LOG.exception(
+                logger.exception(
                     'Failed to consume message from queue: %s' % str(exc))
                 raise
                 info['do_consume'] = True
@@ -456,7 +455,7 @@ class Connection(object):
 
         def _error_callback(exc):
             log_info = {'topic': topic, 'err_str': str(exc)}
-            LOG.exception(
+            logger.exception(
                 "Failed to publish message to topic "
                 "'%(topic)s': %(err_str)s" % log_info)
 

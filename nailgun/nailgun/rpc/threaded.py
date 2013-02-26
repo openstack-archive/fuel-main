@@ -5,9 +5,8 @@ import logging
 import threading
 
 import nailgun.rpc as rpc
+from nailgun.logger import logger
 from nailgun.rpc.receiver import NailgunReceiver
-
-logger = logging.getLogger(__name__)
 
 rpc_queue = Queue.Queue()
 

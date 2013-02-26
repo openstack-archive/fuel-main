@@ -2,7 +2,6 @@
 
 import uuid
 import itertools
-import logging
 import traceback
 import subprocess
 import shlex
@@ -13,6 +12,7 @@ from sqlalchemy.orm import object_mapper, ColumnProperty
 
 import nailgun.rpc as rpc
 from nailgun.db import orm
+from nailgun.logger import logger
 from nailgun.settings import settings
 from nailgun.notifier import notifier
 from nailgun.task.errors import WrongNodeStatus
@@ -25,8 +25,6 @@ from nailgun.task.fake import FAKE_THREADS
 from nailgun.task.errors import DeploymentAlreadyStarted
 from nailgun.task.errors import FailedProvisioning
 from nailgun.task.errors import WrongNodeStatus
-
-logger = logging.getLogger(__name__)
 
 
 def fake_cast(queue, message, **kwargs):

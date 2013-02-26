@@ -3,7 +3,6 @@
 import time
 import Queue
 import types
-import logging
 import traceback
 import itertools
 
@@ -14,6 +13,7 @@ from sqlalchemy.orm import scoped_session, sessionmaker
 from sqlalchemy import or_
 
 import nailgun.rpc as rpc
+from nailgun.logger import logger
 from nailgun.db import orm, engine
 from nailgun.network.manager import get_node_networks
 from nailgun.settings import settings
@@ -21,8 +21,6 @@ from nailgun.task.helpers import update_task_status
 from nailgun.api.models import Node, Network, NetworkGroup
 from nailgun.api.models import Task
 from nailgun.notifier import notifier
-
-logger = logging.getLogger(__name__)
 
 
 class TaskNotFound(Exception):
@@ -164,7 +162,7 @@ class NailgunReceiver(object):
             )
             for param in update_fields:
                 if param in node:
-                    logging.debug(
+                    logger.debug(
                         u"Updating node {0} - set {1} to {2}".format(
                             node['uid'],
                             param,

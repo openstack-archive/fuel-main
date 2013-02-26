@@ -3,9 +3,8 @@
 import logging
 
 from nailgun.db import orm
+from nailgun.logger import logger
 from nailgun.api.models import Task
-
-logger = logging.getLogger(__name__)
 
 
 def update_task_status(uuid, status, progress, msg="", result=None):

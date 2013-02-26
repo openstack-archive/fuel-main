@@ -10,8 +10,7 @@ import logging
 from eventlet import greenpool
 from eventlet import pools
 
-
-LOG = logging.getLogger(__name__)
+from nailgun.logger import logger
 
 
 class Pool(pools.Pool):
@@ -24,7 +23,7 @@ class Pool(pools.Pool):
 
     # TODO(comstud): Timeout connections not used in a while
     def create(self):
-        LOG.debug('Pool creating new connection')
+        logger.debug('Pool creating new connection')
         return self.connection_cls()
 
     def empty(self):
@@ -112,8 +111,8 @@ def msg_reply(msg_id, connection_pool, reply=None, failure=None, ending=False):
         if failure:
             message = str(failure[1])
             tb = traceback.format_exception(*failure)
-            LOG.error("Returning exception %s to caller", message)
-            LOG.error(tb)
+            logger.error("Returning exception %s to caller", message)
+            logger.error(tb)
             failure = (failure[0].__name__, str(failure[1]), tb)
 
         try:
@@ -153,13 +152,13 @@ class ProxyCallback(object):
         # the previous context is stored in local.store.context
         #if hasattr(local.store, 'context'):
             #del local.store.context
-        LOG.debug('received %s' % message_data)
+        logger.debug('received %s' % message_data)
         #ctxt = unpack_context(message_data)
         method = message_data.get('method')
         msg_id = message_data.pop('msg_id', None)
         args = message_data.get('args', {})
         if not method:
-            LOG.warn('no method for message: %s' % message_data)
+            logger.warn('no method for message: %s' % message_data)
             reply = 'No method for message: %s' % message_data
             msg_reply(
                 msg_id, self.connection_pool, reply=reply,
@@ -187,7 +186,7 @@ class ProxyCallback(object):
             # This final None tells multicall that it is done.
             msg_reply(msg_id, self.connection_pool, ending=True)
         except Exception as e:
-            LOG.exception('Exception during message handling')
+            logger.exception('Exception during message handling')
             msg_reply(
                 msg_id, self.connection_pool, reply=None,
                 failure=sys.exc_info(), ending=False)
@@ -244,10 +243,10 @@ def multicall(topic, msg, timeout, connection_pool):
     # that will continue to use the connection.  When it's done,
     # connection.close() will get called which will put it back into
     # the pool
-    LOG.debug('Making asynchronous call on %s ...', topic)
+    logger.debug('Making asynchronous call on %s ...', topic)
     msg_id = uuid.uuid4().hex
     msg.update({'msg_id': msg_id})
-    LOG.debug('MSG_ID is %s' % (msg_id))
+    logger.debug('MSG_ID is %s' % (msg_id))
 
     conn = ConnectionContext(connection_pool)
     wait_msg = MulticallWaiter(conn, timeout)
@@ -273,7 +272,7 @@ def create_connection(new, connection_pool):
 
 def cast(topic, msg, connection_pool):
     """Sends a message on a topic without waiting for a response."""
-    LOG.debug('Making asynchronous cast on %s with msg=%s', topic, msg)
+    logger.debug('Making asynchronous cast on %s with msg=%s', topic, msg)
     with ConnectionContext(connection_pool) as conn:
         conn.topic_send(topic, msg)
 
