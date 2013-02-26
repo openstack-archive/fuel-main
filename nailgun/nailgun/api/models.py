@@ -226,11 +226,20 @@ class Node(Base, BasicValidator):
             q = orm().query(Node)
             if q.filter(Node.mac == d["mac"]).first():
                 raise web.webapi.conflict()
+            if cls.validate_existent_node_mac(d):
+                raise web.webapi.conflict()
         if "id" in d:
             raise web.webapi.badrequest(
                 message="Manual ID setting is prohibited"
             )
         return d
+
+    @classmethod
+    def validate_existent_node_mac(cls, data):
+        if 'meta' in data and 'interfaces' in data['meta']:
+            existent_node = orm().query(Node).filter(Node.mac.in_(
+                [n['mac'] for n in data['meta']['interfaces']])).first()
+            return existent_node
 
     @classmethod
     def validate_update(cls, data):
@@ -260,12 +269,15 @@ class Node(Base, BasicValidator):
                     "MAC or ID is not specified"
                 )
             else:
-                if "mac" in nd and not q.filter(
-                    Node.mac == nd["mac"]
-                ).first():
-                    raise web.badrequest(
-                        "Invalid MAC specified"
-                    )
+                if "mac" in nd:
+                    existent_node = q.filter_by(mac=nd["mac"]).first() \
+                        or cls.validate_existent_node_mac(nd)
+                    if existent_node:
+                        nd["mac"] = existent_node.mac
+                    else:
+                        raise web.badrequest(
+                            "Invalid MAC specified"
+                        )
                 if "id" in nd and not q.get(nd["id"]):
                     raise web.badrequest(
                         "Invalid ID specified"

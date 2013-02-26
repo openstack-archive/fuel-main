@@ -82,11 +82,6 @@ class NodeCollectionHandler(JSONHandler):
         web.header('Content-Type', 'application/json')
         data = Node.validate(web.data())
         node = Node()
-        if 'meta' in data and 'interfaces' in data:
-            existent_node = orm().query(Node).filter(Node.mac.in_(
-                [n['mac'] for n in data['meta']['interfaces']])).first()
-            if existent_node:
-                data['mac'] = existent_node.mac
         for key, value in data.iteritems():
             setattr(node, key, value)
         node.name = "Untitled (%s)" % data['mac'][-5:]
@@ -115,14 +110,7 @@ class NodeCollectionHandler(JSONHandler):
         for nd in data:
             node = None
             if "mac" in nd:
-                if 'meta' in nd and 'interfaces' in nd:
-                    existent_node = orm().query(Node).filter(Node.mac.in_(
-                        [n['mac'] for n in nd['meta']['interfaces']])).first()
-                    if existent_node:
-                        nd['mac'] = existent_node.mac
-                        node = existent_node
-                if not node:
-                    node = q.filter_by(mac=nd["mac"]).first()
+                node = q.filter_by(mac=nd["mac"]).first()
             else:
                 node = q.get(nd["id"])
             for key, value in nd.iteritems():

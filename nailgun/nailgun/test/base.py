@@ -142,8 +142,9 @@ class Environment(object):
             )
         else:
             node = Node()
-            node.meta = self.default_metadata()
             node.timestamp = datetime.now()
+            if not 'meta' in node_data:
+                node.meta = self.default_metadata()
             for key, value in node_data.iteritems():
                 setattr(node, key, value)
             self.db.add(node)
@@ -176,7 +177,7 @@ class Environment(object):
 
     def _generate_random_mac(self):
         mac = [randint(0x00, 0x7f) for _ in xrange(6)]
-        return ':'.join(map(lambda x: "%02x" % x, mac))
+        return ':'.join(map(lambda x: "%02x" % x, mac)).upper()
 
     def generate_ui_networks(self, cluster_id):
         net_names = (

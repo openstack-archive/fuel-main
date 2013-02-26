@@ -113,6 +113,44 @@ class TestHandlers(BaseHandlers):
         self.db.refresh(node)
         self.assertEquals('new', node.manufacturer)
 
+    def test_node_create_ext_mac(self):
+        node1 = self.env.create_node(
+            api=False
+        )
+        node2_json = {
+            "mac": self.env._generate_random_mac(),
+            "meta": self.env.default_metadata()
+        }
+        node2_json["meta"]["interfaces"][0]["mac"] = node1.mac
+        resp = self.app.post(
+            reverse('NodeCollectionHandler'),
+            json.dumps(node2_json),
+            headers=self.default_headers,
+            expect_errors=True)
+        self.assertEquals(resp.status, 409)
+
+    def test_node_update_ext_mac(self):
+        meta = self.env.default_metadata()
+        node1 = self.env.create_node(
+            api=False,
+            mac=meta["interfaces"][0]["mac"],
+            meta={}
+        )
+        node1_json = {
+            "mac": self.env._generate_random_mac(),
+            "meta": meta
+        }
+        resp = self.app.put(
+            reverse('NodeCollectionHandler'),
+            json.dumps([node1_json]),
+            headers=self.default_headers,
+            expect_errors=True
+        )
+        self.assertEqual(resp.status, 200)
+        response = json.loads(resp.body)
+        self.assertEqual(node1.mac, response[0]["mac"])
+        self.assertNotEqual(node1_json["mac"], response[0]["mac"])
+
     def test_duplicated_node_create_fails(self):
         node = self.env.create_node(api=False)
         resp = self.app.post(
