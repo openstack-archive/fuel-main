@@ -27,7 +27,7 @@ function(models, dialogViews, navbarTemplate, nodesStatsTemplate, notificationsT
             app.breadcrumbs.setPath(breadcrumbsPath);
         },
         updateTitle: function() {
-            var defaultTitle = 'Nailgun Dashboard';
+            var defaultTitle = 'FuelWeb Dashboard';
             var title = _.isFunction(this.title) ? this.title() : this.title;
             document.title = title ? defaultTitle + ' - ' + title : defaultTitle;
         }
