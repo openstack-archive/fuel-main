@@ -18,6 +18,6 @@ dhcp-option=6,<%= name_server %>
 
 dhcp-range=internal,<%= dhcp_start_address %>,<%= dhcp_end_address %>,<%= dhcp_netmask %>
 dhcp-option=net:internal,option:router,<%= dhcp_gateway %>
-dhcp-boot=net:internal,pxelinux.0,boothost,<%= next_server %>
+pxe-service=x86PC,"Install",pxelinux,<%= next_server %>
 
 $insert_cobbler_system_definitions
