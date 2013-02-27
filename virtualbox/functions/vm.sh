@@ -90,7 +90,8 @@ start_vm() {
     name=$1
 
     # Just start it
-    VBoxManage startvm $name --type headless
+    #VBoxManage startvm $name --type headless
+    VBoxManage startvm $name
 }
 
 mount_iso_to_vm() {
