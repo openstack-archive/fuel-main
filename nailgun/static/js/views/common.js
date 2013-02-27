@@ -155,7 +155,7 @@ function(models, dialogViews, navbarTemplate, nodesStatsTemplate, notificationsT
     views.NotificationsPopover = Backbone.View.extend({
         template: _.template(notificationsPopoverTemplate),
         events: {
-            'click .discover, .error, .done' : 'showNodeInfo'
+            'click .discover, .error' : 'showNodeInfo'
         },
         showNodeInfo: function(e) {
             if ($(e.target).data('node')) {
