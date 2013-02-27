@@ -23,6 +23,13 @@ class KeepAliveThread(threading.Thread):
         self.interval = interval or settings.KEEPALIVE['interval']
         self.timeout = timeout or settings.KEEPALIVE['timeout']
         self.db = orm()
+        self.reset_nodes_timestamp()
+
+    def reset_nodes_timestamp(self):
+        for node_db in self.db.query(Node).all():
+            node_db.timestamp = datetime.now()
+            self.db.add(node_db)
+        self.db.commit()
 
     def join(self, timeout=None):
         self.stoprequest.set()
