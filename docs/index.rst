@@ -4,3 +4,4 @@
    logical_arch
    sequence
    vbox-install
+   networks
