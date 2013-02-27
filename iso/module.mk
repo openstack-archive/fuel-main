@@ -7,7 +7,7 @@ ISONAME:=$(BUILD_DIR)/iso/$(ISOBASENAME).iso
 IMGNAME:=$(BUILD_DIR)/iso/$(ISOBASENAME).img
 
 iso: $(ISONAME)
-img: $(IMGNAME)
+img: $(BUILD_DIR)/iso/image.done
 
 $(BUILD_DIR)/iso/isoroot-centos.done: \
 		$(BUILD_DIR)/mirror/build.done \
@@ -139,21 +139,21 @@ $(ISONAME): $(BUILD_DIR)/iso/isoroot.done
 # +300M seems reasonable
 IMGSIZE = $(shell echo "$(shell ls -s $(ISONAME) | awk '{print $$1}') / 1024 + 300" | bc)
 
-$(IMGNAME): $(ISONAME)
+$(BUILD_DIR)/iso/image.done: $(ISONAME) iso/module.mk
 	rm -f $(BUILD_DIR)/iso/img_loop_device
 	rm -f $(BUILD_DIR)/iso/img_loop_partition
 	rm -f $(BUILD_DIR)/iso/img_loop_uuid
-	sudo losetup -j $@ | awk -F: '{print $$1}' | while read loopdevice; do \
+	sudo losetup -j $(IMGNAME) | awk -F: '{print $$1}' | while read loopdevice; do \
         sudo kpartx -v $$loopdevice | awk '{print "/dev/mapper/" $$1}' | while read looppartition; do \
             sudo umount -f $$looppartition; \
         done; \
         sudo kpartx -d $$loopdevice; \
         sudo losetup -d $$loopdevice; \
     done
-	rm -f $@
-	dd if=/dev/zero of=$@ bs=1M count=$(IMGSIZE)
+	rm -f $(IMGNAME)
+	dd if=/dev/zero of=$(IMGNAME) bs=1M count=$(IMGSIZE)
 	sudo losetup -f > $(BUILD_DIR)/iso/img_loop_device
-	sudo losetup `cat $(BUILD_DIR)/iso/img_loop_device` $@
+	sudo losetup `cat $(BUILD_DIR)/iso/img_loop_device` $(IMGNAME)
 	sudo parted -s `cat $(BUILD_DIR)/iso/img_loop_device` mklabel msdos
 	sudo parted -s `cat $(BUILD_DIR)/iso/img_loop_device` unit MB mkpart primary ext2 1 $(IMGSIZE) set 1 boot on
 	sudo kpartx -a -v `cat $(BUILD_DIR)/iso/img_loop_device` | awk '{print "/dev/mapper/" $$3}' > $(BUILD_DIR)/iso/img_loop_partition
@@ -173,6 +173,8 @@ $(IMGNAME): $(ISONAME)
 	sudo cp $(SOURCE_DIR)/iso/ks.cfg $(BUILD_DIR)/iso/imgroot/ks.cfg
 	sudo sed -i -e "s/will_be_substituted_with_actual_uuid/`cat $(BUILD_DIR)/iso/img_loop_uuid`/g" $(BUILD_DIR)/iso/imgroot/ks.cfg
 	sudo cp $(ISONAME) $(BUILD_DIR)/iso/imgroot/nailgun.iso
-	sudo umount -f `cat $(BUILD_DIR)/iso/img_loop_partition`
+	sudo sync
+	sudo umount `cat $(BUILD_DIR)/iso/img_loop_partition`
 	sudo kpartx -d `cat $(BUILD_DIR)/iso/img_loop_device`
 	sudo losetup -d `cat $(BUILD_DIR)/iso/img_loop_device`
+	$(ACTION.TOUCH)
