@@ -191,7 +191,8 @@ as tagged (trunk) ports.
 Scheme
 ^^^^^^
 
-First of all you need to realize the whole network scheme of your future cloud and then to configure your equipment according to this scheme.
+First of all you need to realize the whole network scheme of your future cloud and then to configure your equipment according to this scheme. Note that the IP addresses in your case will differ from those shown
+on the scheme.
 
 .. image:: _static/flat.png
 
