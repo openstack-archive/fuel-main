@@ -197,11 +197,11 @@ First of all you need to realize the whole network scheme of your future cloud a
 
 By default we use several predefined networks:
 
-* FuelWeb network is used for internal FuelWeb communications only (untagged on the scheme).
-* Floating network is used to get access to virtual machines from outside openstack cluster (vlan 100 on the scheme)
-* Public network used to get access from virtual machines to outside openstack cluster (vlan 101 on the scheme)
-* Management network is used for internal openstack communications (vlan 102 on the scheme)
-* Storage network is used for storage traffic (vlan 103 on the scheme)
+* **FuelWeb** network is used for internal FuelWeb communications only (untagged on the scheme).
+* **Floating** network is used to get access to virtual machines from outside openstack cluster (vlan 100 on the scheme)
+* **Public** network used to get access from virtual machines to outside openstack cluster (vlan 101 on the scheme)
+* **Management** network is used for internal openstack communications (vlan 102 on the scheme)
+* **Storage** network is used for storage traffic (vlan 103 on the scheme)
 * One (for flat mode) or more (for vlan mode) virtual machine network(s). (vlan 104 on the scheme)
 
 Switch
@@ -220,10 +220,10 @@ Router
 ^^^^^^
 
 To make virtual machines able to get access to the outside of openstack cluster it is needed to configure
-address 240.0.1.1 on the public (vlan 101) router interface. Cluster nodes will use this address as
+address 240.0.1.1 on the "**Public**" (vlan 101) router interface. Cluster nodes will use this address as
 default gateway. In turn, to get access from the outside of cluster to virtual machine via, for example,
-ssh you need to use floating IP address which could be assigned to given virtual machine via openstack
-dashboard. You also need to configure corresponding IP address 240.0.0.1 on the floating (vlan 100)
+ssh you need to use "**Floating**" IP address which could be assigned to given virtual machine via openstack
+dashboard. You also need to configure corresponding IP address 240.0.0.1 on the "**Floating**" (vlan 100)
 router interface. Besides, to get access from the outside to http://10.20.0.2:8000 you also need to
 configure gateway address 10.20.0.1 on FuelWeb vlan interface (untagged on the scheme). Private
 openstack networks (vlans 102, 103, 104) should not be configured on router as they used completely
