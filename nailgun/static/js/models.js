@@ -29,11 +29,21 @@ define(function() {
             return _.isEmpty(errors) ? null : errors;
         },
         task: function(taskName, status) {
-            var options = {name: taskName};
-            if (status) {
-                options.status = status;
-            }
-            return this.get('tasks') && this.get('tasks').where(options)[0];
+            return this.get('tasks') && this.get('tasks').find(function(task) {
+                var result = false;
+                if (task.get('name') == taskName) {
+                    if (status) {
+                        if (_.isArray(status)) {
+                            result = _.contains(status, task.get('status'));
+                        } else {
+                            result = status == task.get('status');
+                        }
+                    } else {
+                        result = true;
+                    }
+                }
+                return result;
+            });
         },
         hasChanges: function() {
             return this.get('nodes').hasChanges() || (this.get('changes').length && this.get('nodes').currentNodes().length);

@@ -58,7 +58,7 @@ function(models, commonViews, dialogViews, clustersPageTemplate, clusterTemplate
         template: _.template(clusterTemplate),
         updateInterval: 3000,
         scheduleUpdate: function() {
-            if (this.model.task('cluster_deletion', 'running') || this.model.task('deploy', 'running')) {
+            if (this.model.task('cluster_deletion', ['running', 'ready']) || this.model.task('deploy', 'running')) {
                 this.registerDeferred($.timeout(this.updateInterval).done(_.bind(this.update, this)));
             }
         },
@@ -105,7 +105,7 @@ function(models, commonViews, dialogViews, clustersPageTemplate, clusterTemplate
         render: function() {
             this.$el.html(this.template({cluster: this.model}));
             this.updateProgress();
-            if (this.model.task('cluster_deletion', 'running')) {
+            if (this.model.task('cluster_deletion', ['running', 'ready'])) {
                 this.$el.addClass('disabled-cluster');
                 this.update();
             } else {
