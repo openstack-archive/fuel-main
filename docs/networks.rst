@@ -209,7 +209,7 @@ Switch
 ^^^^^^
 
 Now is the point where you need to configure L2 switch so that all nodes are connected to switch
-ports where FuelWeb vlan frames untagged (without vlan tags) and all other frames tagged (with vlan
+ports where "**FuelWeb**" vlan frames untagged (without vlan tags) and all other frames tagged (with vlan
 tags). Vlans 100-104 must not be filtered on those ports. It is crucial to isolate all used vlans
 from the rest of your network on L2 because in other case DHCP server on master node can send
 invalid DHCP offers to DHCP clients inside your network and vise versa slave nodes can get invalid
@@ -226,7 +226,7 @@ default gateway. In turn, to get access from the outside of cluster to virtual m
 ssh you need to use "**Floating**" IP address which could be assigned to given virtual machine via openstack
 dashboard. You also need to configure corresponding IP address 240.0.0.1 on the "**Floating**" (vlan 100)
 router interface. Besides, to get access from the outside to http://10.20.0.2:8000 you also need to
-configure gateway address 10.20.0.1 on FuelWeb vlan interface (untagged on the scheme). Private
+configure gateway address 10.20.0.1 on "**FuelWeb**" vlan interface (untagged on the scheme). Private
 openstack networks (vlans 102, 103, 104) should not be configured on router as they used completely
 inside cluster.
 
