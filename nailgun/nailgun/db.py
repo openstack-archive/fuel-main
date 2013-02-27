@@ -62,6 +62,7 @@ def load_db_driver(handler):
 
 def syncdb():
     from nailgun.api.models import Base
+    orm().commit()
     Base.metadata.create_all(engine)
 
 

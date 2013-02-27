@@ -391,6 +391,7 @@ class BaseHandlers(TestCase):
 
     app = TestApp(build_app().wsgifunc())
     fixtures = []
+    db = orm()
 
     def __init__(self, *args, **kwargs):
         super(BaseHandlers, self).__init__(*args, **kwargs)
