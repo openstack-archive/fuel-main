@@ -9,8 +9,8 @@ the following blog posts.
 * `Openstack Networking for Scalability and Multi-tenancy with VlanManager <http://www.mirantis.com/blog/openstack-networking-vlanmanager/>`_
 
 
-1. Flat Manager (multi-interface scheme)
-----------------------------------------
+Flat Manager (multi-interface scheme)
+-------------------------------------
 
 The main idea behind flat network manager is to configure bridge (let say **br100**) on every compute
 node and to connect it to some interface. Once virtual machine is launched its virtual interface is
@@ -70,8 +70,8 @@ be used as default gateway on virtual machines. Besides it is crucial that the *
 on all compute nodes have promiscuous mode enabled. Promiscuous mode allows the interface to receive
 packets not targeted to this interface’s MAC address but to vm's MAC address.
 
-2. Flat Manager (single-interface scheme)
------------------------------------------
+Flat Manager (single-interface scheme)
+--------------------------------------
 
 However we use a bit different scheme for flat manager mode. It is supposed that all compute nodes are
 connected to the network with only one physical interface **eth0**. In order to split virtual machines
@@ -127,8 +127,8 @@ if they on different compute nodes. However if virtual machine sends IP packets 
 they will be routed on the host machine.
 
 
-2. Vlan manager
----------------
+Vlan manager
+------------
 
 Vlan manager mode is more suitable for large scale clouds. The idea behind this mode is to define vlan
 range and assign those vlans to given tenants. So virtual machines inside given tenant communicate with
@@ -185,8 +185,8 @@ as tagged (trunk) ports.
     compute2_eth0 -up- [L2 switch]
 
 
-3. Step-by-Step configuration
------------------------------
+Step-by-Step configuration
+--------------------------
 
 Scheme
 ^^^^^^
