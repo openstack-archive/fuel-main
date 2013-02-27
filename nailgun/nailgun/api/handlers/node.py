@@ -125,7 +125,7 @@ class NodeCollectionHandler(JSONHandler):
                 )
                 logger.info(msg)
                 notifier.notify(
-                    "done",
+                    "discover",
                     msg,
                     node_id=node.id
                 )
