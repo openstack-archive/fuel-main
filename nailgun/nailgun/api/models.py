@@ -80,7 +80,10 @@ class ClusterChanges(Base, BasicValidator):
     )
     id = Column(Integer, primary_key=True)
     cluster_id = Column(Integer, ForeignKey('clusters.id'))
-    name = Column(Enum(*POSSIBLE_CHANGES), nullable=False)
+    name = Column(
+        Enum(*POSSIBLE_CHANGES, name='possible_changes'),
+        nullable=False
+    )
 
 
 class Cluster(Base, BasicValidator):
@@ -90,11 +93,26 @@ class Cluster(Base, BasicValidator):
     STATUSES = ('new', 'deployment', 'operational', 'error', 'remove')
     NET_MANAGERS = ('FlatDHCPManager', 'VlanManager')
     id = Column(Integer, primary_key=True)
-    type = Column(Enum(*TYPES), nullable=False, default='compute')
-    mode = Column(Enum(*MODES), nullable=False, default='multinode')
-    status = Column(Enum(*STATUSES), nullable=False, default='new')
-    net_manager = Column(Enum(*NET_MANAGERS), nullable=False,
-                         default='FlatDHCPManager')
+    type = Column(
+        Enum(*TYPES, name='cluster_type'),
+        nullable=False,
+        default='compute'
+    )
+    mode = Column(
+        Enum(*MODES, name='cluster_mode'),
+        nullable=False,
+        default='multinode'
+    )
+    status = Column(
+        Enum(*STATUSES, name='cluster_status'),
+        nullable=False,
+        default='new'
+    )
+    net_manager = Column(
+        Enum(*NET_MANAGERS, name='cluster_net_manager'),
+        nullable=False,
+        default='FlatDHCPManager'
+    )
     name = Column(Unicode(50), unique=True, nullable=False)
     release_id = Column(Integer, ForeignKey('releases.id'), nullable=False)
     nodes = relationship("Node", backref="cluster", cascade="delete")
@@ -175,7 +193,11 @@ class Node(Base, BasicValidator):
     id = Column(Integer, primary_key=True)
     cluster_id = Column(Integer, ForeignKey('clusters.id'))
     name = Column(Unicode(100))
-    status = Column(Enum(*NODE_STATUSES), nullable=False, default='discover')
+    status = Column(
+        Enum(*NODE_STATUSES, name='node_status'),
+        nullable=False,
+        default='discover'
+    )
     meta = Column(JSON, default={})
     mac = Column(String(17), nullable=False, unique=True)
     ip = Column(String(15))
@@ -184,10 +206,10 @@ class Node(Base, BasicValidator):
     platform_name = Column(String(150))
     progress = Column(Integer, default=0)
     os_platform = Column(String(150))
-    role = Column(Enum(*NODE_ROLES))
+    role = Column(Enum(*NODE_ROLES, name='node_role'))
     pending_addition = Column(Boolean, default=False)
     pending_deletion = Column(Boolean, default=False)
-    error_type = Column(Enum(*NODE_ERRORS))
+    error_type = Column(Enum(*NODE_ERRORS, name='node_error_type'))
     error_msg = Column(String(255))
     timestamp = Column(DateTime, nullable=False)
     online = Column(Boolean, default=True)
@@ -484,9 +506,17 @@ class Task(Base, BasicValidator):
     cluster_id = Column(Integer, ForeignKey('clusters.id'))
     uuid = Column(String(36), nullable=False,
                   default=lambda: str(uuid.uuid4()))
-    name = Column(Enum(*TASK_NAMES), nullable=False, default='super')
+    name = Column(
+        Enum(*TASK_NAMES, name='task_name'),
+        nullable=False,
+        default='super'
+    )
     message = Column(Text)
-    status = Column(Enum(*TASK_STATUSES), nullable=False, default='running')
+    status = Column(
+        Enum(*TASK_STATUSES, name='task_status'),
+        nullable=False,
+        default='running'
+    )
     progress = Column(Integer, default=0)
     cache = Column(JSON, default={})
     result = Column(JSON, default={})
@@ -540,10 +570,16 @@ class Notification(Base, BasicValidator):
     cluster_id = Column(Integer, ForeignKey('clusters.id'))
     node_id = Column(Integer, ForeignKey('nodes.id'))
     task_id = Column(Integer, ForeignKey('tasks.id'))
-    topic = Column(Enum(*NOTIFICATION_TOPICS), nullable=False)
+    topic = Column(
+        Enum(*NOTIFICATION_TOPICS, name='notif_topic'),
+        nullable=False
+    )
     message = Column(Text)
-    status = Column(Enum(*NOTIFICATION_STATUSES), nullable=False,
-                    default='unread')
+    status = Column(
+        Enum(*NOTIFICATION_STATUSES, name='notif_status'),
+        nullable=False,
+        default='unread'
+    )
     datetime = Column(DateTime, nullable=False)
 
     @classmethod

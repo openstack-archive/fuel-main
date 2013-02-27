@@ -376,12 +376,12 @@ class Environment(object):
 class BaseHandlers(TestCase):
 
     fixtures = []
+    db = orm()
 
     def __init__(self, *args, **kwargs):
         super(BaseHandlers, self).__init__(*args, **kwargs)
         self.mock = mock
         self.app = TestApp(build_app().wsgifunc())
-        self.db = orm()
         self.env = Environment(app=self.app, db=self.db)
         self.default_headers = {
             "Content-Type": "application/json"
@@ -408,6 +408,11 @@ class BaseHandlers(TestCase):
     def setUpClass(cls):
         dropdb()
         syncdb()
+
+    @classmethod
+    def tearDownClass(cls):
+        cls.db.commit()
+        cls.db.close()
 
     def setUp(self):
         self.default_headers = {

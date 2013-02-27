@@ -10,12 +10,12 @@ FIXTURES_TO_UPLOAD:
   - "start_notification.json"
 
 DATABASE:
-  engine: "sqlite"
-  name: "nailgun.sqlite"
+  engine: "postgresql"
+  name: "nailgun"
   host: "localhost"
-  port: "3306"
-  user: null
-  passwd: null
+  port: "5432"
+  user: "nailgun"
+  passwd: "nailgun"
 
 KEEPALIVE:
   interval: 30

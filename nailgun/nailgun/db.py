@@ -1,5 +1,6 @@
 # -*- coding: utf-8 -*-
 
+import logging
 
 import web
 from sqlalchemy.orm import scoped_session, sessionmaker
@@ -8,17 +9,15 @@ from sqlalchemy import create_engine
 
 from nailgun.settings import settings
 
-db_str = "{engine}://{path}"
 if settings.DATABASE['engine'] == 'sqlite':
-    db_str = db_str.format(
+    db_str = "{engine}://{path}".format(
         engine='sqlite',
         path="/" + settings.DATABASE['name']
     )
 else:
-    db_str = db_str.replace(
-        '{path}',
-        '{user}:{passwd}@{host}:{port}/{name}'
-    ).format(settings.DATABASE)
+    db_str = "{engine}://{user}:{passwd}@{host}:{port}/{name}".format(
+        **settings.DATABASE
+    )
 
 engine = create_engine(db_str)
 
@@ -63,11 +62,13 @@ def load_db_driver(handler):
 
 def syncdb():
     from nailgun.api.models import Base
+    orm().commit()
     Base.metadata.create_all(engine)
 
 
 def dropdb():
     from nailgun.api.models import Base
+    orm().commit()
     Base.metadata.drop_all(engine)
 
 
