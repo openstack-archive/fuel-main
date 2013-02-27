@@ -53,20 +53,45 @@ describe "ProxyReporter" do
     end
 
     it "adjusts progress to 100 if passed greater" do
-      expected_msg = Marshal.load(Marshal.dump(@msg_pr))
-      expected_msg['nodes'][1]['progress'] = 100
-      @msg_pr['nodes'][1]['progress'] = 120
+      input_msg = {'nodes' => [{'uid' => 1, 'status' => 'deploying', 'progress' => 120}]}
+      expected_msg = {'nodes' => [{'uid' => 1, 'status' => 'deploying', 'progress' => 100}]}
       @up_reporter.expects(:report).with(expected_msg)
-      @reporter.report(@msg_pr)
+      @reporter.report(input_msg)
     end
 
-    it "adjusts progress to 100 if status ready" do
-      expected_msg = Marshal.load(Marshal.dump(@msg_pr))
-      expected_msg['nodes'][1]['progress'] = 100
-      expected_msg['nodes'][1]['status'] = 'ready'
-      @msg_pr['nodes'][1]['status'] = 'ready'
+    it "adjusts progress to 0 if passed less" do
+      input_msg = {'nodes' => [{'uid' => 1, 'status' => 'deploying', 'progress' => -20}]}
+      expected_msg = {'nodes' => [{'uid' => 1, 'status' => 'deploying', 'progress' => 0}]}
       @up_reporter.expects(:report).with(expected_msg)
-      @reporter.report(@msg_pr)
+      @reporter.report(input_msg)
+    end
+
+    it "adjusts progress to 100 if status provisioned and no progress given" do
+      input_msg = {'nodes' => [{'uid' => 1, 'status' => 'provisioned'}]}
+      expected_msg = {'nodes' => [{'uid' => 1, 'status' => 'provisioned', 'progress' => 100}]}
+      @up_reporter.expects(:report).with(expected_msg)
+      @reporter.report(input_msg)
+    end
+
+    it "adjusts progress to 100 if status ready and no progress given" do
+      input_msg = {'nodes' => [{'uid' => 1, 'status' => 'ready'}]}
+      expected_msg = {'nodes' => [{'uid' => 1, 'status' => 'ready', 'progress' => 100}]}
+      @up_reporter.expects(:report).with(expected_msg)
+      @reporter.report(input_msg)
+    end
+
+    it "adjusts progress to 100 if status provisioned with progress" do
+      input_msg = {'nodes' => [{'uid' => 1, 'status' => 'provisioned', 'progress' => 50}]}
+      expected_msg = {'nodes' => [{'uid' => 1, 'status' => 'provisioned', 'progress' => 100}]}
+      @up_reporter.expects(:report).with(expected_msg)
+      @reporter.report(input_msg)
+    end
+
+    it "adjusts progress to 100 if status ready with progress" do
+      input_msg = {'nodes' => [{'uid' => 1, 'status' => 'ready', 'progress' => 50}]}
+      expected_msg = {'nodes' => [{'uid' => 1, 'status' => 'ready', 'progress' => 100}]}
+      @up_reporter.expects(:report).with(expected_msg)
+      @reporter.report(input_msg)
     end
 
     it "does not report if node was in ready, and trying to set is deploying" do
@@ -125,5 +150,41 @@ describe "ProxyReporter" do
       @up_reporter.expects(:report).with(msgs[3])
       msgs.each {|msg| @reporter.report(msg)}
     end
+
+    it "doesn't update progress if it less than previous progress with same status" do
+      msgs = [{'nodes' => [{'uid' => 1, 'status' => 'provisioning', 'progress' => 50}]},
+              {'nodes' => [{'uid' => 1, 'status' => 'provisioning', 'progress' => 10}]},
+              {'nodes' => [{'uid' => 1, 'status' => 'deploying', 'progress' => 50}]},
+              {'nodes' => [{'uid' => 1, 'status' => 'deploying', 'progress' => 10}]}]
+      @up_reporter.expects(:report).with(msgs[0])
+      @up_reporter.expects(:report).with(msgs[2])
+      @up_reporter.expects(:report).never
+      msgs.each {|msg| @reporter.report(msg)}
+    end
+
+    it "updates progress if it less than previous progress when changing status" do
+      msgs = [{'nodes' => [{'uid' => 1, 'status' => 'provisioning', 'progress' => 50}]},
+              {'nodes' => [{'uid' => 1, 'status' => 'provisioned'}]},
+              {'nodes' => [{'uid' => 1, 'status' => 'provisioned', 'progress' => 100}]},
+              {'nodes' => [{'uid' => 1, 'status' => 'deploying', 'progress' => 0}]}]
+      @up_reporter.expects(:report).with(msgs[0])
+      @up_reporter.expects(:report).with(msgs[2])
+      @up_reporter.expects(:report).with(msgs[3])
+      @up_reporter.expects(:report).never
+      msgs.each {|msg| @reporter.report(msg)}
+    end
+
+    it "doesn't forget previously reported attributes" do
+      msgs = [{'nodes' => [{'uid' => 1, 'status' => 'provisioning', 'progress' => 50}]},
+              {'nodes' => [{'uid' => 1, 'status' => 'provisioning'}]},
+              {'nodes' => [{'uid' => 1, 'status' => 'provisioning', 'key' => 'value'}]},
+              {'nodes' => [{'uid' => 1, 'status' => 'provisioning', 'progress' => 0}]},
+            ]
+      @up_reporter.expects(:report).with(msgs[0])
+      @up_reporter.expects(:report).with(msgs[2])
+      @up_reporter.expects(:report).never
+      msgs.each {|msg| @reporter.report(msg)}
+    end
+
   end
 end
