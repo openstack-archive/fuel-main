@@ -15,23 +15,26 @@
             ],
             "attributes_metadata": {
                 "editable": {
-                    "keystone": {
-                        "admin_tenant": {
+                    "access": {
+                        "user": {
                             "value": "admin",
-                            "label": "Admin tenant",
-                            "description": "Tenant(project) name for Administrator"
-                        }
-                    },
-                    "admin": {
+                            "label": "username",
+                            "description": "Username for Administrator"
+                        },
                         "email": {
                             "value": "admin@example.org",
-                            "label": "Admin email",
-                            "description": "Email address of admin user"
+                            "label": "email",
+                            "description": "Email address for Administrator"
+                        },
+                        "tenant": {
+                            "value": "admin",
+                            "label": "tenant",
+                            "description": "Tenant(project) name for Administrator"
                         },
                         "password": {
                             "value": "admin",
-                            "label": "Password",
-                            "description": "Password for admin user"
+                            "label": "password",
+                            "description": "Password for Administrator"
                         }
                     },
                     "common": {

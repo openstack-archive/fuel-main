@@ -30,7 +30,7 @@ $rabbit_hash   = parsejson($rabbit)
 $glance_hash   = parsejson($glance)
 $keystone_hash = parsejson($keystone)
 $swift_hash    = parsejson($swift)
-$admin_hash    = parsejson($admin)
+$access_hash    = parsejson($access)
 
 $rabbit_user   = 'nova'
 
@@ -68,11 +68,12 @@ class compact_controller {
     verbose                 => $verbose,
     auto_assign_floating_ip => $auto_assign_floating_ip,
     mysql_root_password     => $mysql_hash[root_password],
-    admin_email             => $admin_hash[email],
-    admin_password          => $admin_hash[password],
+    admin_email             => $access_hash[email],
+    admin_user              => $access_hash[user],
+    admin_password          => $access_hash[password],
     keystone_db_password    => $keystone_hash[db_password],
     keystone_admin_token    => $keystone_hash[admin_token],
-    keystone_admin_tenant   => $keystone_hash[admin_tenant],
+    keystone_admin_tenant   => $access_hash[tenant],
     glance_db_password      => $glance_hash[db_password],
     glance_user_password    => $glance_hash[user_password],
     nova_db_password        => $nova_hash[db_password],
@@ -128,8 +129,9 @@ class compact_controller {
       nova_config { 'DEFAULT/compute_scheduler_driver': value => $compute_scheduler_driver }
       if $hostname == $master_hostname {
         class { 'openstack::img::cirros':
-          os_password => $admin_hash[password],
-          os_tenant_name => $keystone_hash[admin_tenant],
+          os_username => $access_hash[user],
+          os_password => $access_hash[password],
+          os_tenant_name => $access_hash[tenant],
           os_auth_url => "http://${management_vip}:5000/v2.0/",
           img_name    => "TestVM",
         }
