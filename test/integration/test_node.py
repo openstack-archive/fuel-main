@@ -397,7 +397,7 @@ class TestNode(Base):
 
     def _run_network_verify(self, cluster_id):
         logging.info(
-            "Run network verifty in cluster %d",
+            "Run network verify in cluster %d",
             cluster_id
         )
         resp = self.client.get("/api/networks/?cluster_id=%d" % cluster_id)
@@ -452,6 +452,7 @@ class TestNode(Base):
                 logging.info("Checking /tmp/%s-file on %s" % (role, n))
                 slave = ci.environment.node[n]
                 node = self._get_slave_node_by_devops_node(slave)
+                logging.debug("Trying to connect to %s via ssh" % node['ip'])
                 ctrl_ssh = SSHClient()
                 ctrl_ssh.connect_ssh(node['ip'], 'root', 'r00tme')
                 ret = ctrl_ssh.execute('test -f /tmp/%s-file' % role)
@@ -472,17 +473,22 @@ class TestNode(Base):
 
     def _task_wait(self, task, task_desc, timeout=70 * 60,
                    skip_error_status=False):
+
         timer = time.time()
+        logtimer = timer
         ready = False
         task_id = task['id']
         logging.info("Waiting task %r ..." % task_desc)
+
         while not ready:
+
             try:
                 task = json.loads(
                     self.client.get("/api/tasks/%s" % task_id).read()
                 )
             except ValueError:
                 task = {'status': 'running'}
+
             if task['status'] == 'ready':
                 logging.info("Task %r complete" % task_desc)
                 ready = True
@@ -498,6 +504,15 @@ class TestNode(Base):
                 raise Exception("Task %s failed with status %r and msg: %s!" %
                                 (task_desc, task['status'],
                                  task.get('message')))
+
+            if (time.time() - logtimer) > 120:
+                logtimer = time.time()
+                logging.debug("Task %s status: %s progress: %s timer: %s",
+                              task.get('id'),
+                              task.get('status'),
+                              task.get('progress'),
+                              (time.time() - timer))
+
         return task
 
     def _upload_sample_release(self):
@@ -588,14 +603,22 @@ class TestNode(Base):
         """
         response = self.client.get("/api/nodes/")
         nodes = json.loads(response.read())
-        logging.debug("get_slave_node_by_devops_node: nodes at nailgun: %r" %
-                      str(nodes))
+
+        logging.debug("get_slave_node_by_devops_node: "
+                      "found nodes: %s", str([n['mac'] for n in nodes]))
 
         for n in nodes:
+            logging.debug("get_slave_node_by_devops_node: looking for %s",
+                          n['mac'])
             for i in devops_node.interfaces:
-                logging.debug("get_slave_node_by_devops_node: \
-check if %r eq %r" % (str(n['mac']), str(i.mac_address)))
+                logging.debug("get_slave_node_by_devops_node: checking: %s",
+                              str(i.mac_address))
+
                 if n['mac'].capitalize() == i.mac_address.capitalize():
+                    logging.debug("get_slave_node_by_devops_node: matched")
+                    logging.debug("get_slave_node_by_devops_node: %s",
+                                  json.dumps(n, indent=4))
+
                     n['devops_name'] = devops_node.name
                     return n
         logging.warn("get_slave_node_by_devops_node: node %s not found" %
@@ -618,19 +641,29 @@ check if %r eq %r" % (str(n['mac']), str(i.mac_address)))
             slaves.append(slave)
 
         nodes = []
-        while len(nodes) < len(slaves):
-            nodes = []
-            for slave in slaves:
+        full_nodes_len = len(slaves)
+        while True:
+            for slave in list(slaves):
                 node = self._get_slave_node_by_devops_node(slave)
                 if node is not None:
                     nodes.append(node)
+                    slaves.remove(slave)
+                    logging.debug("Node %s found", node['mac'])
                 else:
-                    logging.debug("Node %r not found" % node_name)
-                if (time.time() - timer) > timeout:
-                    raise Exception("Slave node agent failed to execute!")
-                time.sleep(15)
-                logging.info("Waiting for slave agent to run...")
-        logging.debug("%d node(s) found" % len(nodes))
+                    logging.debug("Node %s not bootstrapped yet", slave.name)
+
+            logging.debug("Bootstrapped nodes: %s",
+                          str([n['mac'] for n in nodes]))
+            if (time.time() - timer) > timeout:
+                raise Exception("Slave node agent failed to execute!")
+
+            if len(nodes) == full_nodes_len:
+                break
+
+            logging.info("Waiting bootstraping slave nodes: timer: %s",
+                         (time.time() - timer))
+            time.sleep(15)
+
         return nodes
 
     def _check_cluster_status(self, ip, smiles_count, networks_count=1):

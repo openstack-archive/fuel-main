@@ -10,6 +10,7 @@ require 'httpclient'
 require 'logger'
 require 'optparse'
 require 'yaml'
+require 'ipaddr'
 
 unless Process.euid == 0
   puts "You must be root"
@@ -89,16 +90,17 @@ class NodeAgent
 
     if @api_url
       @api_url.chomp!('/')
+      @api_ip = @api_url.match(/\bhttp:\/\/((\d{1,3}\.){3}\d{1,3})/)[1]
     else
       begin
         cmdline = ::File.read("/proc/cmdline")
-        api_ip = cmdline.match(/\burl=http:\/\/((\d{1,3}\.){3}\d{1,3})/)[1]
-        @logger.info("Found admin node IP address in kernel cmdline: #{api_ip}")
+        @api_ip = cmdline.match(/\burl=http:\/\/((\d{1,3}\.){3}\d{1,3})/)[1]
+        @logger.info("Found admin node IP address in kernel cmdline: #{@api_ip}")
       rescue
         @logger.info("Can't get API url from /proc/cmdline. Will use localhost.")
-        api_ip = "127.0.0.1"
+        @api_ip = "127.0.0.1"
       end
-      @api_url = "http://#{api_ip}:#{@api_default_port}/api"
+      @api_url = "http://#{@api_ip}:#{@api_default_port}/api"
     end
 
     @os = Ohai::System.new()
@@ -308,6 +310,18 @@ class NodeAgent
     info
   end
 
+  def _master_ip detailed_data
+    detailed_data.each do |k, v|
+      if k.to_s =~ /^interfaces$/
+        detailed_data[k].each do |i|
+          net = IPAddr.new "#{i[:ip]}/#{i[:netmask]}"
+          return i[:ip] if net.include? @api_ip
+        end
+      end
+    end
+    nil
+  end
+
   def _data
     res = {
       :mac => (@os[:macaddress] rescue nil),
@@ -315,11 +329,15 @@ class NodeAgent
       :os_platform => (@os[:platform] rescue nil)
     }
     begin
+      detailed_data = _detailed
       res.merge!({
+        :ip  => ((_master_ip detailed_data or @os[:ipaddress]) rescue nil),
         :manufacturer => _manufacturer,
         :platform_name => _product_name,
-        :meta => _detailed
+        :meta => detailed_data
       })
+
+
     rescue Exception => e
       @logger.error("Error '#{e.message}' in metadata calculation: #{e.backtrace}")
     end

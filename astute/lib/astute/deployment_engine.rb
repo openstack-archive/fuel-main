@@ -157,6 +157,9 @@ module Astute
             interfaces[name]['broadcast'] = iface['brd']
           end
         end
+        if iface['gateway'] and iface['name'] =~ /^public$/i
+          interfaces[name]['gateway'] = iface['gateway']
+        end
         interfaces[name]['ensure'] = 'present'
         Astute.logger.debug "Calculated network for interface: #{name}, data: #{interfaces[name].inspect}"
       end
@@ -171,4 +174,4 @@ module Astute
     end
   end
 end
-  
+
