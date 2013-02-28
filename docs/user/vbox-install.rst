@@ -1,5 +1,5 @@
-Using VirtualBox to deploy nailgun and slave nodes.
-===================================================
+Using VirtualBox to deploy nailgun and slave nodes
+==================================================
 
 Pre-requirements
 ----------------

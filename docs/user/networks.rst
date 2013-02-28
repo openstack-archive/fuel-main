@@ -1,4 +1,4 @@
-Network configuration.
+Network configuration
 ===================================================
 
 There are two basic types of network managers used in OpenStack clusters. The first one is so called
