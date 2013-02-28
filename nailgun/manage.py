@@ -9,7 +9,7 @@ import code
 import web
 from sqlalchemy.orm import scoped_session, sessionmaker
 
-from nailgun.db import syncdb, orm
+from nailgun.db import syncdb, orm, dropdb
 from nailgun.settings import settings
 from nailgun.unit_test import TestRunner
 from nailgun.logger import logger
@@ -57,6 +57,9 @@ if __name__ == "__main__":
     syncdb_parser = subparsers.add_parser(
         'syncdb', help='sync application database'
     )
+    dropdb_parser = subparsers.add_parser(
+        'dropdb', help='drop application database'
+    )
     shell_parser = subparsers.add_parser(
         'shell', help='open python REPL'
     )
@@ -79,6 +82,10 @@ if __name__ == "__main__":
     if params.action == "syncdb":
         logger.info("Syncing database...")
         syncdb()
+        logger.info("Done")
+    elif params.action == "dropdb":
+        logger.info("Dropping database...")
+        dropdb()
         logger.info("Done")
     elif params.action == "test":
         logger.info("Running tests...")
