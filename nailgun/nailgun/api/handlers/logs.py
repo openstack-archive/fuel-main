@@ -8,7 +8,6 @@ import logging
 import tarfile
 import tempfile
 from itertools import dropwhile
-from collections import deque
 
 import web
 
@@ -18,6 +17,37 @@ from nailgun.api.models import Node
 from nailgun.api.handlers.base import JSONHandler
 
 logger = logging.getLogger(__name__)
+
+
+def read_backwards(file, bufsize=4096):
+    buf = ""
+    try:
+        file.seek(-1, 1)
+    except IOError:
+        return
+    trailing_newline = False
+    if file.read(1) == "\n":
+        trailing_newline = True
+        file.seek(-1, 1)
+
+    while True:
+        newline_pos = buf.rfind("\n")
+        pos = file.tell()
+        if newline_pos != -1:
+            line = buf[newline_pos + 1:]
+            buf = buf[:newline_pos]
+            if pos or newline_pos or trailing_newline:
+                line += "\n"
+            yield line
+        elif pos:
+            toread = min(bufsize, pos)
+            file.seek(-toread, 1)
+            buf = file.read(toread) + buf
+            file.seek(-toread, 1)
+            if pos == toread:
+                buf = "\n" + buf
+        else:
+            return
 
 
 class LogEntryCollectionHandler(JSONHandler):
@@ -103,24 +133,20 @@ class LogEntryCollectionHandler(JSONHandler):
                          log_config['id'], e)
             raise web.internalerror("Invalid regular expression in config")
 
-        entries = deque()
-        from_byte = 0
+        entries = []
+        to_byte = None
         try:
-            from_byte = int(user_data.get('from', 0))
+            to_byte = int(user_data.get('to', 0))
         except ValueError:
-            logger.debug("Invalid 'from' value: %d", from_byte)
-            raise web.badrequest("Invalid 'from' value")
+            logger.debug("Invalid 'to' value: %d", to_byte)
+            raise web.badrequest("Invalid 'to' value")
 
-        # Will be True if date_before not empty and log file contains entries
-        # which date exceed date_before.
-        date_max_exceeded = False
         log_file_size = os.stat(log_file).st_size
-        if from_byte > log_file_size:
+        if to_byte >= log_file_size:
             return json.dumps({
                 'entries': [],
-                'from': log_file_size,
-                'date_max_exceeded': date_max_exceeded,
-                'size': log_file_size,
+                'to': log_file_size,
+                'has_more': False,
             })
 
         try:
@@ -129,14 +155,12 @@ class LogEntryCollectionHandler(JSONHandler):
         except ValueError:
             logger.debug("Invalid 'max_entries' value: %d", max_entries)
             raise web.badrequest("Invalid 'max_entries' value")
-        entries_skipped = 0
-        if truncate_log:
-            from_byte = 0
 
+        has_more = False
         with open(log_file, 'r') as f:
-            f.seek(from_byte)
-
-            for line in f:
+            f.seek(0, 2)
+            multilinebuf = []
+            for line in read_backwards(f):
                 entry = line.rstrip('\n')
                 if not len(entry):
                     continue
@@ -147,13 +171,16 @@ class LogEntryCollectionHandler(JSONHandler):
                 if m is None:
                     if log_config.get('multiline'):
                         #  Add next multiline part to last entry if it exist.
-                        if len(entries):
-                            entries[-1][2] = '\n'.join((entries[-1][2],
-                                                        entry))
+                        multilinebuf.append(entry)
                     else:
                         logger.debug("Unable to parse log entry '%s' from %s",
                                      entry, log_file)
                     continue
+                entry_text = m.group('text')
+                if len(multilinebuf):
+                    multilinebuf.reverse()
+                    entry_text += '\n' + '\n'.join(multilinebuf)
+                    multilinebuf = []
                 entry_level = m.group('level').upper() or 'INFO'
                 if level and not (entry_level in allowed_levels):
                     continue
@@ -166,32 +193,22 @@ class LogEntryCollectionHandler(JSONHandler):
                                  log_config['date_format'],
                                  m.group('date'))
                     continue
-                if date_after and date_after > entry_date:
-                    continue
-                if date_before and date_before < entry_date:
-                    date_max_exceeded = True
-                    f.seek(-len(line), os.SEEK_CUR)
-                    break
-
                 entries.append([
                     time.strftime(settings.UI_LOG_DATE_FORMAT, entry_date),
                     entry_level,
-                    m.group('text')
+                    entry_text
                 ])
-                if truncate_log and len(entries) > max_entries:
-                    entries_skipped += 1
-                    entries.popleft()
-            from_byte = f.tell()
-            # If file size grow up while we read it.
-            if from_byte > log_file_size:
-                log_file_size = from_byte
+                if truncate_log and len(entries) >= max_entries:
+                    has_more = True
+                    break
+                elif not truncate_log and f.tell() < to_byte:
+                    has_more = True
+                    break
 
         return json.dumps({
-            'entries': [e for e in entries],
-            'from': from_byte,
-            'date_max_exceeded': date_max_exceeded,
-            'size': log_file_size,
-            'entries_skipped': entries_skipped,
+            'entries': entries,
+            'to': log_file_size,
+            'has_more': has_more,
         })
 
 

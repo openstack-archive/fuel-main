@@ -73,7 +73,7 @@ class TestLogs(BaseHandlers):
         self.assertEquals(response, [])
 
         log_entry = ['date111', 'level222', 'text333']
-        self._create_logfile_for_node(settings.LOGS[1], log_entry, node)
+        self._create_logfile_for_node(settings.LOGS[1], [log_entry], node)
         resp = self.app.get(
             reverse('LogSourceByNodeCollectionHandler',
                     kwargs={'node_id': node.id}),
@@ -85,12 +85,22 @@ class TestLogs(BaseHandlers):
 
     def test_log_entry_collection_handler(self):
         node_ip = '10.20.30.40'
-        log_entry = [time.strftime(settings.UI_LOG_DATE_FORMAT),
-                     'LEVEL222', 'text333']
+        log_entries = [
+            [
+                time.strftime(settings.UI_LOG_DATE_FORMAT),
+                'LEVEL111',
+                'text1',
+            ],
+            [
+                time.strftime(settings.UI_LOG_DATE_FORMAT),
+                'LEVEL222',
+                'text2',
+            ],
+        ]
         cluster = self.env.create_cluster(api=False)
         node = self.env.create_node(cluster_id=cluster.id, ip=node_ip)
-        self._create_logfile_for_node(settings.LOGS[0], log_entry)
-        self._create_logfile_for_node(settings.LOGS[1], log_entry, node)
+        self._create_logfile_for_node(settings.LOGS[0], log_entries)
+        self._create_logfile_for_node(settings.LOGS[1], log_entries, node)
 
         resp = self.app.get(
             reverse('LogEntryCollectionHandler'),
@@ -99,7 +109,8 @@ class TestLogs(BaseHandlers):
         )
         self.assertEquals(200, resp.status)
         response = json.loads(resp.body)
-        self.assertEquals(response['entries'], [log_entry])
+        response['entries'].reverse()
+        self.assertEquals(response['entries'], log_entries)
 
         resp = self.app.get(
             reverse('LogEntryCollectionHandler'),
@@ -108,9 +119,43 @@ class TestLogs(BaseHandlers):
         )
         self.assertEquals(200, resp.status)
         response = json.loads(resp.body)
-        self.assertEquals(response['entries'], [log_entry])
+        response['entries'].reverse()
+        self.assertEquals(response['entries'], log_entries)
 
-    def _create_logfile_for_node(self, log_config, log_entry, node=None):
+    def test_multiline_log_entry(self):
+        settings.LOGS[0]['multiline'] = True
+        log_entries = [
+            [
+                time.strftime(settings.UI_LOG_DATE_FORMAT),
+                'LEVEL111',
+                'text1',
+            ],
+            [
+                time.strftime(settings.UI_LOG_DATE_FORMAT),
+                'LEVEL222',
+                'text\nmulti\nline',
+            ],
+            [
+                time.strftime(settings.UI_LOG_DATE_FORMAT),
+                'LEVEL333',
+                'text3',
+            ],
+        ]
+        cluster = self.env.create_cluster(api=False)
+        self._create_logfile_for_node(settings.LOGS[0], log_entries)
+
+        resp = self.app.get(
+            reverse('LogEntryCollectionHandler'),
+            params={'source': settings.LOGS[0]['id']},
+            headers=self.default_headers
+        )
+        self.assertEquals(200, resp.status)
+        response = json.loads(resp.body)
+        response['entries'].reverse()
+        self.assertEquals(response['entries'], log_entries)
+        settings.LOGS[0]['multiline'] = False
+
+    def _create_logfile_for_node(self, log_config, log_entries, node=None):
         if log_config['remote']:
             log_dir = os.path.join(self.log_dir, node.ip)
             not os.path.isdir(log_dir) and os.makedirs(log_dir)
@@ -118,7 +163,8 @@ class TestLogs(BaseHandlers):
         else:
             log_file = log_config['path']
         with open(log_file, 'w') as f:
-            f.write(':'.join(log_entry))
+            for log_entry in log_entries:
+                f.write(':'.join(log_entry) + '\n')
 
     def test_log_package_handler(self):
         f = tempfile.NamedTemporaryFile(mode='r+b')

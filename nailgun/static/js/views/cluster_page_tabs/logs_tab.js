@@ -26,7 +26,7 @@ function(models, commonViews, logsTabTemplate, logEntryTemplate) {
             this.registerDeferred($.timeout(this.updateInterval).done(_.bind(this.update, this)));
         },
         update: function() {
-            this.fetchLogs({from: this.from}, {
+            this.fetchLogs({to: this.to}, {
                 success: _.bind(function(data) {
                     this.appendLogEntries(data, false);
                 }, this),
@@ -147,7 +147,7 @@ function(models, commonViews, logsTabTemplate, logEntryTemplate) {
         },
         showLogs: function(params) {
             this.rejectRegisteredDeferreds();
-            this.from = 0;
+            this.to = 0;
 
             this.chosenType = this.$('select[name=type]').val();
             this.chosenNodeId = this.$('select[name=node]').val();
@@ -176,8 +176,8 @@ function(models, commonViews, logsTabTemplate, logEntryTemplate) {
                 success: _.bind(function(data) {
                     this.$('.table-logs .log-entries').html('');
                     if (data.entries.length) {
-                        if (data.entries_skipped) {
-                            this.showEntriesSkippedMsg(data.entries_skipped);
+                        if (data.has_more) {
+                            this.showEntriesSkippedMsg();
                         } else {
                             this.$('.table-logs .entries-skipped-msg').hide();
                         }
@@ -195,21 +195,18 @@ function(models, commonViews, logsTabTemplate, logEntryTemplate) {
                 }, this)
             });
         },
-        showEntriesSkippedMsg: function(entriesCount) {
+        showEntriesSkippedMsg: function() {
             var el = this.$('.table-logs .entries-skipped-msg');
             el.show();
-            el.find('.entries-count').text(entriesCount);
             el.find('.show-more-entries').remove();
-            _.each([100, 500, 1000, 5000, 10000], function(count) {
-                if (count < entriesCount) {
-                    el.find('.show-all-entries').before($('<span/>', {'class': 'show-more-entries', text: count}));
-                }
+            _.each([100, 500, 1000, 5000], function(count) {
+                el.find('.show-all-entries').before($('<span/>', {'class': 'show-more-entries', text: count}));
             }, this);
         },
         appendLogEntries: function(data, doNotScroll) {
-            this.from = data.from;
+            this.to = data.to;
             if (data.entries.length) {
-                if (this.reversed) {
+                if (!this.reversed) {
                     data.entries.reverse();
                 }
                 // autoscroll only if window is already scrolled to bottom
@@ -247,7 +244,7 @@ function(models, commonViews, logsTabTemplate, logEntryTemplate) {
         },
         initialize: function(params) {
             _.defaults(this, params);
-            this.from = 0;
+            this.to = 0;
             this.sources = new models.LogSources();
             this.types = [['local', 'Admin node']];
             if (this.model.get('nodes').length) {
