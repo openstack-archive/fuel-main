@@ -14,6 +14,8 @@ from nailgun.test.base import reverse
 
 from nailgun.settings import settings
 
+from nailgun.api.handlers.logs import read_backwards
+
 
 class TestLogs(BaseHandlers):
 
@@ -154,6 +156,52 @@ class TestLogs(BaseHandlers):
         response['entries'].reverse()
         self.assertEquals(response['entries'], log_entries)
         settings.LOGS[0]['multiline'] = False
+
+    def test_backward_reader(self):
+        f = tempfile.TemporaryFile(mode='r+')
+        forward_lines = []
+        backward_lines = []
+
+        # test empty files
+        forward_lines = list(f)
+        backward_lines = list(read_backwards(f))
+        backward_lines.reverse()
+        self.assertEquals(forward_lines, backward_lines)
+
+        # filling file with content
+        contents = [
+            'Lorem ipsum dolor sit amet, consectetur adipisicing elit, sed do',
+            'eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut',
+            'enim ad minim veniam, quis nostrud exercitation ullamco laboris',
+            'nisi ut aliquip ex ea commodo consequat. Duis aute irure dolor',
+            'in reprehenderit in voluptate velit esse cillum dolore eu fugiat',
+            'nulla pariatur. Excepteur sint occaecat cupidatat non proident,',
+            'sunt in culpa qui officia deserunt mollit anim id est laborum.',
+        ]
+        for i in range(5):
+            for line in contents:
+                f.write('%s\n' % line)
+
+        # test with different buffer sizes
+        for bufsize in (1, 5000):
+            f.seek(0)
+
+            # test full file reading
+            forward_lines = list(f)
+            backward_lines = list(read_backwards(f, bufsize))
+            backward_lines.reverse()
+            self.assertEquals(forward_lines, backward_lines)
+
+            # test partial file reading from middle to beginning
+            forward_lines = []
+            for i in range(2 * len(contents)):
+                forward_lines.append(f.readline())
+            backward_lines = list(read_backwards(f, bufsize))
+            backward_lines.reverse()
+            self.assertEquals(forward_lines, backward_lines)
+
+        f.close()
+
 
     def _create_logfile_for_node(self, log_config, log_entries, node=None):
         if log_config['remote']:
