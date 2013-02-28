@@ -56,7 +56,7 @@ module Astute
     end
 
     public
-    def self.deploy(ctx, nodes, retries=2, ignore_failure=false)
+    def self.deploy(ctx, nodes, retries=2, change_node_status=true)
       # TODO: can we hide retries, ignore_failure into @ctx ?
       uids = nodes.map {|n| n['uid']}
       # TODO(mihgen): handle exceptions from mclient, raised if agent does not respond or responded with error
@@ -78,7 +78,8 @@ module Astute
           Astute.logger.debug "Nodes statuses: #{calc_nodes.inspect}"
 
           # At least we will report about successfully deployed nodes
-          nodes_to_report = calc_nodes['succeed'].map { |n| {'uid' => n, 'status' => 'ready'} }
+          nodes_to_report = []
+          nodes_to_report.concat(calc_nodes['succeed'].map { |n| {'uid' => n, 'status' => 'ready'} }) if change_node_status
 
           # Process retries
           nodes_to_retry = []
@@ -90,7 +91,7 @@ module Astute
               nodes_to_retry << uid
             else
               Astute.logger.debug "Node #{uid.inspect} has failed to deploy. There is no more retries for puppet run."
-              nodes_to_report << {'uid' => uid, 'status' => 'error', 'error_type' => 'deploy'} unless ignore_failure
+              nodes_to_report << {'uid' => uid, 'status' => 'error', 'error_type' => 'deploy'} if change_node_status
             end
           end
           if nodes_to_retry.any?

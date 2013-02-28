@@ -96,16 +96,16 @@ module Astute
     def deploy_ha_compute(nodes, attrs)
       ctrl_nodes = nodes.select {|n| n['role'] == 'controller'}
       Astute.logger.info "Starting deployment of all controllers one by one, ignoring failure"
-      ctrl_nodes.each {|n| deploy_piece([n], attrs, retries=0, ignore_failure=true)}
+      ctrl_nodes.each {|n| deploy_piece([n], attrs, retries=0, change_node_status=false)}
 
       Astute.logger.info "Starting deployment of all controllers, ignoring failure"
-      deploy_piece(ctrl_nodes, attrs, retries=0, ignore_failure=true)
+      deploy_piece(ctrl_nodes, attrs, retries=0, change_node_status=false)
 
       Astute.logger.info "Starting deployment of 1st controller again, ignoring failure"
-      deploy_piece([ctrl_nodes[0]], attrs, retries=0, ignore_failure=true)
+      deploy_piece([ctrl_nodes[0]], attrs, retries=0, change_node_status=false)
 
       Astute.logger.info "Starting deployment of all controllers, retries=0"
-      deploy_piece(ctrl_nodes, attrs, retries=0, ignore_failure=true)
+      deploy_piece(ctrl_nodes, attrs, retries=0, change_node_status=false)
       retries = 3
       Astute.logger.info "Starting deployment of all controllers until it completes, "\
                          "allowed retries: #{retries}"
