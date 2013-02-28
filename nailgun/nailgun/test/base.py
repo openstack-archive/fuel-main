@@ -21,6 +21,7 @@ from nailgun.api.models import Cluster
 from nailgun.api.models import Notification
 from nailgun.api.models import Attributes
 from nailgun.api.models import Network
+from nailgun.api.models import NetworkGroup
 from nailgun.api.models import Task
 
 from nailgun.api.urls import urls
@@ -180,6 +181,10 @@ class Environment(object):
         return ':'.join(map(lambda x: "%02x" % x, mac)).upper()
 
     def generate_ui_networks(self, cluster_id):
+        start_id = self.db.query(NetworkGroup.id).order_by(
+            NetworkGroup.id
+        ).first()
+        start_id = 0 if not start_id else start_id[0]
         net_names = (
             "floating_test",
             "public_test",
@@ -201,7 +206,8 @@ class Environment(object):
             "cluster_id": cluster_id,
             "vlan_start": 100 + i,
             "cidr": nd[1],
-            "id": i + 1} for i, nd in enumerate(zip(net_names, net_cidrs))]
+            "id": start_id + i
+        } for i, nd in enumerate(zip(net_names, net_cidrs))]
         return nets
 
     def get_default_networks_metadata(self):
@@ -342,10 +348,18 @@ class Environment(object):
             )
 
     def refresh_nodes(self):
-        map(self.db.refresh, self.nodes)
+        for i, n in enumerate(self.nodes[:]):
+            try:
+                self.db.refresh(n)
+            except:
+                del self.nodes[i]
 
     def refresh_clusters(self):
-        map(self.db.refresh, self.clusters)
+        for i, n in enumerate(self.clusters[:]):
+            try:
+                self.db.refresh(n)
+            except:
+                del self.nodes[i]
 
     def _wait_task(self, task, timeout, message):
         timer = time.time()
@@ -375,14 +389,12 @@ class Environment(object):
 
 class BaseHandlers(TestCase):
 
+    app = TestApp(build_app().wsgifunc())
     fixtures = []
-    db = orm()
 
     def __init__(self, *args, **kwargs):
         super(BaseHandlers, self).__init__(*args, **kwargs)
         self.mock = mock
-        self.app = TestApp(build_app().wsgifunc())
-        self.env = Environment(app=self.app, db=self.db)
         self.default_headers = {
             "Content-Type": "application/json"
         }
@@ -406,7 +418,8 @@ class BaseHandlers(TestCase):
 
     @classmethod
     def setUpClass(cls):
-        dropdb()
+        cls.db = orm()
+        #dropdb()
         syncdb()
 
     @classmethod
@@ -419,6 +432,7 @@ class BaseHandlers(TestCase):
             "Content-Type": "application/json"
         }
         flush()
+        self.env = Environment(app=self.app, db=self.db)
         self.env.upload_fixtures(self.fixtures)
 
 

@@ -19,7 +19,7 @@ else:
         **settings.DATABASE
     )
 
-engine = create_engine(db_str)
+engine = create_engine(db_str, client_encoding='utf8')
 
 
 class NoCacheQuery(Query):
@@ -62,13 +62,11 @@ def load_db_driver(handler):
 
 def syncdb():
     from nailgun.api.models import Base
-    orm().commit()
     Base.metadata.create_all(engine)
 
 
 def dropdb():
     from nailgun.api.models import Base
-    orm().commit()
     Base.metadata.drop_all(engine)
 
 
@@ -77,4 +75,4 @@ def flush():
     session = scoped_session(sessionmaker(bind=engine))
     for table in reversed(Base.metadata.sorted_tables):
         session.execute(table.delete())
-        session.commit()
+    session.commit()

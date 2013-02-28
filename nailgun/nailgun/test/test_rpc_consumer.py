@@ -145,7 +145,7 @@ class TestVerifyNetworks(BaseHandlers):
         error_nodes = [{'uid': node1.id, 'interface': 'eth0',
                         'name': node1.name, 'absent_vlans': [104],
                         'mac': node1.mac},
-                       {'uid': 2, 'interface': 'eth0',
+                       {'uid': node2.id, 'interface': 'eth0',
                         'absent_vlans': [104]}]
         self.assertEqual(task.get('message'), None)
         self.assertEqual(task['result'], error_nodes)

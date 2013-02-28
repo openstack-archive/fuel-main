@@ -24,10 +24,11 @@ class TestHandlers(BaseHandlers):
         )
         self.assertEquals(200, resp.status)
         response = json.loads(resp.body)
+        start_id = response[0]["id"]
 
         expected = [
             {
-                'id': 1,
+                'id': start_id,
                 'amount': 1,
                 'name': u'floating',
                 'cluster_id': cluster['id'],
@@ -36,7 +37,7 @@ class TestHandlers(BaseHandlers):
                 'network_size': 256
             },
             {
-                'id': 2,
+                'id': start_id + 1,
                 'amount': 1,
                 'name': u'fixed',
                 'cluster_id': cluster['id'],
@@ -45,7 +46,7 @@ class TestHandlers(BaseHandlers):
                 'network_size': 256
             },
             {
-                'id': 3,
+                'id': start_id + 2,
                 'amount': 1,
                 'name': u'storage',
                 'cluster_id': cluster['id'],
@@ -54,7 +55,7 @@ class TestHandlers(BaseHandlers):
                 'network_size': 256
             },
             {
-                'id': 4,
+                'id': start_id + 3,
                 'amount': 1,
                 'name': u'management',
                 'cluster_id': cluster['id'],
@@ -63,7 +64,7 @@ class TestHandlers(BaseHandlers):
                 'network_size': 256
             },
             {
-                'id': 5,
+                'id': start_id + 4,
                 'amount': 1,
                 'name': u'public',
                 'cluster_id': cluster['id'],

@@ -61,7 +61,7 @@ class TestHandlers(BaseHandlers):
         msg['args']['attributes'] = cluster_attrs
         msg['args']['task_uuid'] = deploy_task_uuid
         nodes = []
-        for n in self.env.nodes:
+        for n in sorted(self.env.nodes, key=lambda n: n.id):
             node_ips = self.db.query(IPAddr).filter_by(node=n.id).all()
             node_ip = [ne.ip_addr + "/24" for ne in node_ips]
             nodes.append({'uid': n.id, 'status': n.status, 'ip': n.ip,

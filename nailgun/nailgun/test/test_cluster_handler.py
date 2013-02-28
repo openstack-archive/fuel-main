@@ -108,7 +108,7 @@ class TestHandlers(BaseHandlers):
         self.assertEquals(nodes[0].id, node1.id)
 
         resp = self.app.put(
-            reverse('ClusterHandler', kwargs={'cluster_id': 1}),
+            reverse('ClusterHandler', kwargs={'cluster_id': cluster.id}),
             json.dumps({'nodes': [node2.id]}),
             headers=self.default_headers
         )

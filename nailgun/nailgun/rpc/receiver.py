@@ -40,14 +40,15 @@ class NailgunReceiver(object):
         progress = kwargs.get('progress')
 
         for node in nodes:
-            node_db = orm().query(Node).get(node['uid'])
+            db = orm()
+            node_db = db.query(Node).get(node['uid'])
             if not node_db:
                 logger.error(
                     u"Failed to delete node '%s': node doesn't exist",
                     str(node)
                 )
                 break
-            orm().delete(node_db)
+            db.delete(node_db)
 
         for node in error_nodes:
             node_db = orm().query(Node).get(node['uid'])
@@ -148,6 +149,7 @@ class NailgunReceiver(object):
         # First of all, let's update nodes in database
         for node in nodes:
             node_db = orm().query(Node).get(node['uid'])
+            orm().expunge(node_db)
 
             if not node_db:
                 logger.warning(
@@ -200,6 +202,7 @@ class NailgunReceiver(object):
             orm().commit()
 
         # We should calculate task progress by nodes info
+        task = orm().query(Task).filter_by(uuid=task_uuid).first()
         coeff = settings.PROVISIONING_PROGRESS_COEFF or 0.3
         if nodes and not progress:
             nodes_progress = []

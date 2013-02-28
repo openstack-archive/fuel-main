@@ -19,7 +19,9 @@ class TestHandlers(BaseHandlers):
         )
         cluster = self.env.clusters[0]
 
-        nets = self.env.generate_ui_networks(cluster.id)
+        nets = self.env.generate_ui_networks(
+            cluster.id
+        )
         resp = self.app.put(
             reverse('ClusterSaveNetworksHandler',
                     kwargs={'cluster_id': cluster.id}),

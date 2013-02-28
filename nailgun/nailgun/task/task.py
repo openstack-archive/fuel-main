@@ -85,7 +85,7 @@ class DeploymentTask(object):
         cluster_id = task.cluster.id
         nodes = orm().query(Node).filter_by(
             cluster_id=task.cluster.id,
-            pending_deletion=False)
+            pending_deletion=False).order_by(Node.id)
 
         for node in nodes:
             nd_name = TaskHelper.slave_name_by_id(node.id)

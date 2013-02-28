@@ -80,12 +80,17 @@ class TestClusterChanges(BaseHandlers):
         cluster_db.clear_pending_changes()
         all_changes = self.db.query(ClusterChanges).all()
         self.assertEquals(len(all_changes), 0)
+        resp = self.app.get(
+            reverse('NetworkCollectionHandler'),
+            headers=self.default_headers
+        )
+        net_id = json.loads(resp.body)[0]["id"]
         resp = self.app.put(
             reverse(
                 'ClusterSaveNetworksHandler',
                 kwargs={'cluster_id': cluster['id']}),
             json.dumps([
-                {"id": "1", "access": "restricted"}
+                {"id": net_id, "access": "restricted"}
             ]),
             headers=self.default_headers
         )
@@ -98,10 +103,8 @@ class TestClusterChanges(BaseHandlers):
     def test_successful_deployment_drops_all_changes(self):
         cluster = self.env.create_cluster(api=True)
         node = self.env.create_node(cluster_id=cluster["id"])
-
         supertask = self.env.launch_deployment()
         self.env.wait_ready(supertask, 60)
-
         cluster_db = self.db.query(Cluster).get(cluster["id"])
         self.assertEquals(list(cluster_db.changes), [])
 
@@ -113,7 +116,6 @@ class TestClusterChanges(BaseHandlers):
             status="error",
             error_type="provision"
         )
-
         supertask = self.env.launch_deployment()
         self.env.wait_error(supertask, 60)
         attributes_changes = self.db.query(ClusterChanges).filter_by(
