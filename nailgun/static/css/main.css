@@ -155,6 +155,11 @@ h6.page-title {
   text-shadow: 0 1px 0 rgba(0, 0, 0, 0.5);
 }
 
+.navigation-bar-ul > .product-logo a {
+  margin: 0px;
+  padding: 0px 20px 0px 20px;
+}
+
 .navigation-bar-ul > li:first-child {border-left: none;}
 
 
