@@ -30,6 +30,7 @@ def update_task_status(uuid, status, progress, msg="", result=None):
     orm().commit()
     if previous_status != status:
         update_cluster_status(uuid)
+    task = orm().query(Task).filter_by(uuid=uuid).first()
     if task.parent:
         update_parent_task(task.parent.uuid)
 

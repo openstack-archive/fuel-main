@@ -27,7 +27,8 @@ node default {
   $pip_repo = "/var/www/nailgun/eggs"
   $gem_source = "http://$ipaddress:8080/gems/"
 
-
+  class {"puppetdb::database::postgresql":
+  }->
   class { "nailgun":
     package => "Nailgun",
     version => "0.1.0",
@@ -40,7 +41,14 @@ node default {
     pip_find_links => "-f file://${pip_repo}",
     gem_source => $gem_source,
 
-    databasefile => "/var/lib/nailgun/nailgun.sqlite",
+    # it will be path to database file while using sqlite
+    database_name => "nailgun",
+    database_engine => "postgresql",
+    database_host => "localhost",
+    database_port => "5432",
+    database_user => "nailgun",
+    database_passwd => "nailgun",
+
     staticdir => "/opt/nailgun/usr/share/nailgun/static",
     templatedir => "/opt/nailgun/usr/share/nailgun/static",
 
@@ -55,8 +63,6 @@ node default {
     rabbitmq_naily_user => $rabbitmq_naily_user,
     rabbitmq_naily_password => $rabbitmq_naily_password,
     puppet_master_hostname => $puppet_master_hostname,
-  }->
-  class {"puppetdb::database::postgresql":
   }->
   class {"puppetdb::server":
     listen_port => 8082,

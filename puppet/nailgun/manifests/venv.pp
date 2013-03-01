@@ -7,7 +7,14 @@ class nailgun::venv(
 
   $nailgun_user,
   $nailgun_group,
-  $databasefile,
+  
+  $database_name,
+  $database_engine,
+  $database_host,
+  $database_port,
+  $database_user,
+  $database_passwd,
+
   $staticdir,
   $templatedir,
 
@@ -35,12 +42,7 @@ class nailgun::venv(
                 ]
   }
 
-  $databasefiledir = inline_template("<%= databasefile.match(%r!(.+)/.+!)[1] %>")
-  $database_engine = "sqlite"
-  $database_host = "localhost"
-  $database_port = "3306"
-  $database_user = "nailgun"
-  $database_passwd = "nailgun"
+  $databasefiledir = inline_template("<%= database_name.match(%r!(.+)/.+!)[1] %>")
 
   file { "/etc/nailgun":
     ensure => directory,
@@ -67,13 +69,17 @@ class nailgun::venv(
     }
   }
 
+  if $database_engine == 'sqlite' {
+    Exec["nailgun_syncdb"] { creates => $database_name }
+  }
+  
   exec {"nailgun_syncdb":
     command => "${venv}/bin/nailgun_syncdb",
-    creates => $databasefile,
     require => [
                 File["/etc/nailgun/settings.yaml"],
                 File[$databasefiledir],
                 Nailgun::Venv::Pip["$venv_$package"],
+                Class["nailgun::database"],
                 ],
   }
 

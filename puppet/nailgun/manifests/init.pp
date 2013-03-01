@@ -10,7 +10,13 @@ class nailgun(
   $pip_find_links = "",
   $gem_source = "http://localhost/gems/",
 
-  $databasefile = "/var/lib/nailgun/nailgun.sqlite",
+  $database_name = "nailgun",
+  $database_engine = "postgresql",
+  $database_host = "localhost",
+  $database_port = "5432",
+  $database_user = "nailgun",
+  $database_passwd = "nailgun",
+
   $staticdir = "/opt/nailgun/usr/share/nailgun/static",
   $templatedir = "/opt/nailgun/usr/share/nailgun/static",
 
@@ -85,7 +91,14 @@ class nailgun(
     pip_opts => "${pip_index} ${pip_find_links}",
     nailgun_user => $nailgun_user,
     nailgun_group => $nailgun_group,
-    databasefile => $databasefile,
+    
+    database_name => "nailgun",
+    database_engine => "postgresql",
+    database_host => "localhost",
+    database_port => "5432",
+    database_user => "nailgun",
+    database_passwd => "nailgun",
+
     staticdir => $staticdir,
     templatedir => $templatedir,
     rabbitmq_naily_user => $rabbitmq_naily_user,
@@ -134,6 +147,12 @@ class nailgun(
     mco_pskey => $mco_pskey,
     mco_stompuser => $mco_stompuser,
     mco_stomppassword => $mco_stomppassword,
+  }
+
+  class { "nailgun::database": 
+    user      => $database_user,
+    password  => $database_passwd,
+    dbname    => $database_name,
   }
 
   rabbitmq_user { $rabbitmq_naily_user:

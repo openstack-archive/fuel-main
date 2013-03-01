@@ -148,8 +148,8 @@ class NailgunReceiver(object):
         error_nodes = []
         # First of all, let's update nodes in database
         for node in nodes:
-            node_db = orm().query(Node).get(node['uid'])
-            orm().expunge(node_db)
+            db = orm()
+            node_db = db.query(Node).get(node['uid'])
 
             if not node_db:
                 logger.warning(
@@ -198,8 +198,8 @@ class NailgunReceiver(object):
                             task_uuid=task_uuid
                         )
 
-            orm().add(node_db)
-            orm().commit()
+            db.add(node_db)
+            db.commit()
 
         # We should calculate task progress by nodes info
         task = orm().query(Task).filter_by(uuid=task_uuid).first()
