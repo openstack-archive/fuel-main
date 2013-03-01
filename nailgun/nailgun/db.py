@@ -67,6 +67,7 @@ def syncdb():
 
 def dropdb():
     from nailgun.api.models import Base
+    flush()
     Base.metadata.drop_all(engine)
 
 
