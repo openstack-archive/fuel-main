@@ -154,7 +154,7 @@ $(BUILD_DIR)/bootstrap/prepare-initram-root.done: \
 	sudo mkdir -p $(INITRAMROOT)/tmp/gems
 	sudo rsync -a --delete $(LOCAL_MIRROR_GEMS)/ $(INITRAMROOT)/tmp/gems
 	sudo chroot $(INITRAMROOT) gem install --no-rdoc --no-ri --source file:///tmp/gems \
-		httpclient ohai json_pure ipaddress
+		httpclient ohai json_pure ipaddress rethtool
 	sudo rm -rf \
 		$(INITRAMROOT)/tmp/gems \
 		$(INITRAMROOT)/usr/lib/ruby/gems/1.8/cache/*

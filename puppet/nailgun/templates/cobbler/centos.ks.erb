@@ -130,7 +130,7 @@ $SNIPPET('mcollective_install_if_enabled')
 # INSTALLATION ITSELF COMPLETED
 %post
 
-gem install ohai httpclient json --source <%= gem_source %> --no-ri --no-rdoc
+gem install ohai httpclient json rethtool --source <%= gem_source %> --no-ri --no-rdoc
 mkdir -p /etc/nailgun-agent/
 cat > /etc/nailgun-agent/config.yaml << EOA
 ---

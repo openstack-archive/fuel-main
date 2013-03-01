@@ -11,6 +11,7 @@ require 'logger'
 require 'optparse'
 require 'yaml'
 require 'ipaddr'
+require 'rethtool'
 
 unless Process.euid == 0
   puts "You must be root"
@@ -173,16 +174,9 @@ class NodeAgent
         (intinfo[:addresses] or {} rescue {}).each do |addr, addrinfo|
           if (addrinfo[:family] rescue nil) =~ /lladdr/
             int_meta[:mac] = addr
-
-            fn = "/sys/class/net/#{int}/speed"
-            begin
-              int_bandwidth = File.read(fn).to_i if int =~ /^eth[\d]+$/ and File.exist? fn
-              int_bandwidth = nil if int_bandwidth == 0
-            rescue
-              int_bandwidth = nil
-            end
-            int_meta[:bandwidth] = int_bandwidth
-
+            int_info = Rethtool::InterfaceSettings.new(int)
+            int_meta[:max_speed] = int_info.best_mode.speed
+            int_meta[:current_speed] = int_info.current_mode.speed
           elsif (addrinfo[:family] rescue nil) =~ /^inet$/
             int_meta[:ip] = addr
             int_meta[:netmask] = addrinfo[:netmask] if addrinfo[:netmask]

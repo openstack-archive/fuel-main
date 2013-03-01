@@ -3,7 +3,8 @@
     return freq + ' MHz';
   };
   var showBandwidth = function(bandwidth) {
-    return (bandwidth / 1000).toFixed(1) + ' Gbps';
+    if (bandwidth) return (bandwidth / 1000).toFixed(1) + ' Gbps';
+    return 'N/A';
   };
   var showSize = function(bytes, base) {
     var result = bytes;
@@ -25,7 +26,7 @@
         value = showSize(value);
       } else if (name == 'frequency') {
         value = showFrequency(value);
-      } else if (name == 'bandwidth') {
+      } else if (name == 'max_speed' || name == 'current_speed') {
         value = showBandwidth(value);
       }
     } catch (e) {};
@@ -50,7 +51,7 @@
         var frequencies = _.groupBy(_.pluck(meta.cpu.spec, 'frequency'), function(el) {return el});
         summary = _.map(_.keys(frequencies), function(frequency) {return frequencies[frequency].length + ' x ' + showFrequency(frequency)}).join(', ');
       } else if (group == 'interfaces') {
-        var bandwidths = _.groupBy(_.pluck(meta.interfaces, 'bandwidth'), function(el) {return el});
+        var bandwidths = _.groupBy(_.pluck(meta.interfaces, 'current_speed'), function(el) {return el});
         summary = _.map(_.keys(bandwidths), function(bandwidth) {return bandwidths[bandwidth].length + ' x ' + (bandwidth === 'null' ? 'N/A' : showBandwidth(bandwidth))}).join(', ');
       }
     } catch (e) {};

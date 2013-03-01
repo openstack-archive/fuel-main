@@ -54,17 +54,20 @@ casper.createNode = function(options) {
             {
               "mac": "52:54:00:96:81:6E",
               "name": "eth0",
-              "bandwidth": 1000
+              "max_speed": 1000,
+              "current_speed": 100
             },
             {
               "mac": "C8:0A:A9:A6:FF:28",
               "name": "eth1",
-              "bandwidth": 1000
+              "max_speed": 1000,
+              "current_speed": 1000
             },
             {
               "mac": "D4:56:C3:88:99:DF",
               "name": "eth0:1",
-              "bandwidth": 2000
+              "max_speed": 2000,
+              "current_speed": null
             }
         ],
         "cpu": {
