@@ -127,7 +127,7 @@ class NailgunReceiver(object):
 
     @classmethod
     def deploy_resp(cls, **kwargs):
-        db = db
+        db = orm()
         logger.info("RPC method deploy_resp received: %s" % kwargs)
         task_uuid = kwargs.get('task_uuid')
         nodes = kwargs.get('nodes') or []
