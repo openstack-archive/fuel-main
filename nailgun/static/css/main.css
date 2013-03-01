@@ -1683,7 +1683,7 @@ h6.page-title {
   color: #ffffff;
 }
 
-.message-list-popover > .discover, .message-list-popover > .error {
+.message-list-popover > .discover {
   cursor: pointer;
   text-decoration: underline;
 }
@@ -1774,7 +1774,7 @@ h6.page-title {
   clear: both;
 }
 
-.message-list > .discover > .message, .message-list > .error > .message {
+.message-list > .discover > .message {
   text-decoration: underline;
   cursor: pointer;
 }

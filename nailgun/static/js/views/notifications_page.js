@@ -14,7 +14,7 @@ function(models, commonViews, dialogViews, notificationsListTemplate) {
         title: 'Notifications',
         template: _.template(notificationsListTemplate),
         events: {
-            'click .discover, .error' : 'showNodeInfo'
+            'click .discover' : 'showNodeInfo'
         },
         showNodeInfo: function(e) {
             if ($(e.target).data('node')) {
