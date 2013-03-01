@@ -252,6 +252,7 @@ class Listener(Actor):
                     )
                 total_sent += sent
         finally:
+            s.shutdown(socket.SHUT_RDWR)
             s.close()
 
         try:

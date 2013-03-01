@@ -59,32 +59,39 @@ module MCollective
         fpath = f.path
         f.close
 
-        socket = Socket.new( Socket::AF_INET, Socket::SOCK_STREAM, 0)
-        sockaddr = Socket.pack_sockaddr_in(config['ready_port'], config['ready_address'])
-        socket.bind(sockaddr)
-        socket.listen(1)
-
-        cmd = "net_probe.py -c #{fpath}"
-        pid = fork { `#{cmd}` }
-        Process.detach(pid)
-
-        # It raises Errno::ESRCH if there is no process, so we check that it runs
-        sleep 1
         begin
-          Process.kill(0, pid)
-        rescue Errno::ESRCH => e
-          reply.fail "Failed to run '#{cmd}'"
+          socket = Socket.new( Socket::AF_INET, Socket::SOCK_STREAM, 0)
+          sockaddr = Socket.pack_sockaddr_in(config['ready_port'], config['ready_address'])
+          socket.bind(sockaddr)
+          socket.listen(1)
+        rescue Exception => e
+          reply.fail "Socket error: #{e.to_s}"
         else
+
+          cmd = "net_probe.py -c #{fpath}"
+          pid = fork { `#{cmd}` }
+          Process.detach(pid)
+
+          # It raises Errno::ESRCH if there is no process, so we check that it runs
+          sleep 1
           begin
-            Timeout::timeout(120) do
-              client, clientaddr = socket.accept
-              status = client.read
-              reply.fail "Wrong listener status: '#{status}'" unless status =~ /READY/
+            Process.kill(0, pid)
+          rescue Errno::ESRCH => e
+            reply.fail "Failed to run '#{cmd}'"
+          else
+            begin
+              Timeout::timeout(120) do
+                client, clientaddr = socket.accept
+                status = client.read
+                reply.fail "Wrong listener status: '#{status}'" unless status =~ /READY/
+                client.close
+              end
+            rescue Timeout::Error
+              reply.fail "Listener did not reported status."
             end
-          rescue Timeout::Error
-            reply.fail "Listener did not reported status."
           end
         ensure
+          socket.shutdown
           socket.close
         end
       end
