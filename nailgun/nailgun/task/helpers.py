@@ -8,7 +8,8 @@ from nailgun.api.models import Task
 
 
 def update_task_status(uuid, status, progress, msg="", result=None):
-    task = orm().query(Task).filter_by(uuid=uuid).first()
+    db = orm()
+    task = db.query(Task).filter_by(uuid=uuid).first()
     if not task:
         logger.error("Can't set status='%s', message='%s':no task \
                 with UUID %s found!", status, msg, uuid)
@@ -26,17 +27,17 @@ def update_task_status(uuid, status, progress, msg="", result=None):
                     value
                 )
             )
-    orm().add(task)
-    orm().commit()
+    db.add(task)
+    db.commit()
     if previous_status != status:
         update_cluster_status(uuid)
-    task = orm().query(Task).filter_by(uuid=uuid).first()
     if task.parent:
         update_parent_task(task.parent.uuid)
 
 
 def update_parent_task(uuid):
-    task = orm().query(Task).filter_by(uuid=uuid).first()
+    db = orm()
+    task = db.query(Task).filter_by(uuid=uuid).first()
     subtasks = task.subtasks
     if len(subtasks):
         if all(map(lambda s: s.status == 'ready', subtasks)):
@@ -45,8 +46,8 @@ def update_parent_task(uuid):
             task.message = '; '.join(map(
                 lambda s: s.message, filter(
                     lambda s: s.message is not None, subtasks)))
-            orm().add(task)
-            orm().commit()
+            db.add(task)
+            db.commit()
             update_cluster_status(uuid)
         elif all(map(lambda s: s.status in ('ready', 'error'), subtasks)):
             task.status = 'error'
@@ -54,8 +55,8 @@ def update_parent_task(uuid):
             task.message = '; '.join(map(
                 lambda s: s.message, filter(
                     lambda s: s.status == 'error', subtasks)))
-            orm().add(task)
-            orm().commit()
+            db.add(task)
+            db.commit()
             update_cluster_status(uuid)
         else:
             subtasks_with_progress = filter(
@@ -68,12 +69,13 @@ def update_parent_task(uuid):
                 )) / len(subtasks_with_progress))
             else:
                 task.progress = 0
-            orm().add(task)
-            orm().commit()
+            db.add(task)
+            db.commit()
 
 
 def update_cluster_status(uuid):
-    task = orm().query(Task).filter_by(uuid=uuid).first()
+    db = orm()
+    task = db.query(Task).filter_by(uuid=uuid).first()
     # FIXME: should be moved to task/manager "finish" method after
     # web.ctx.orm issue is addressed
     if task.name == 'deploy':
@@ -88,5 +90,5 @@ def update_cluster_status(uuid):
             cluster.clear_pending_changes()
         elif task.status == 'error':
             cluster.status = 'error'
-        orm().add(cluster)
-        orm().commit()
+        db.add(cluster)
+        db.commit()
