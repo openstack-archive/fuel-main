@@ -60,6 +60,7 @@ class LogEntryCollectionHandler(JSONHandler):
         # If it is 'remote' and not 'fake' log source then calculate log file
         # path by base dir, node IP and relative path to file.
         # Otherwise return absolute path.
+        node = None
         if log_config['remote'] and not log_config.get('fake'):
             if not user_data.get('node'):
                 raise web.badrequest("'node' must be specified")
@@ -81,8 +82,11 @@ class LogEntryCollectionHandler(JSONHandler):
             log_file = log_config['path']
 
         if not os.path.exists(log_file):
-            logger.debug("Log file %r for node %s not found",
-                         log_file, node.id)
+            if node:
+                logger.debug("Log file %r for node %s not found",
+                             log_file, node.id)
+            else:
+                logger.debug("Log file %r not found", log_file)
             return web.notfound("Log file not found")
 
         level = user_data.get('level')
