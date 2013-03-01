@@ -202,7 +202,6 @@ class TestLogs(BaseHandlers):
 
         f.close()
 
-
     def _create_logfile_for_node(self, log_config, log_entries, node=None):
         if log_config['remote']:
             log_dir = os.path.join(self.log_dir, node.ip)

@@ -4,9 +4,6 @@ import time
 import uuid
 import json
 
-import eventlet
-eventlet.monkey_patch()
-
 from nailgun.rpc import receiver as rcvr
 from nailgun.test.base import BaseHandlers
 from nailgun.api.models import Node, Task, Notification
