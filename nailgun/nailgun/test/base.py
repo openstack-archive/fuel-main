@@ -359,7 +359,7 @@ class Environment(object):
             try:
                 self.db.refresh(n)
             except:
-                del self.nodes[i]
+                del self.clusters[i]
 
     def _wait_task(self, task, timeout, message):
         timer = time.time()
