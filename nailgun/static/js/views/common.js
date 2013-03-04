@@ -125,12 +125,8 @@ function(models, dialogViews, navbarTemplate, nodesStatsTemplate, notificationsT
             _.defaults(this, options);
         },
         calculateStats: function() {
-            var roles = ['controller', 'compute', 'storage'];
-            _.each(roles, function(role) {
-                this.stats[role] = this.nodes.where({role: role}).length;
-            }, this);
             this.stats.total = this.nodes.length;
-            this.stats.unallocated = this.stats.total - this.stats.controller - this.stats.compute - this.stats.storage;
+            this.stats.unallocated = this.nodes.filter(function(node) {return node.get('online') && !node.get('role');}).length;
         },
         render: function() {
             if (this.nodes.deferred.state() == 'resolved') {
