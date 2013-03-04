@@ -389,7 +389,6 @@ class Environment(object):
 
 class BaseHandlers(TestCase):
 
-    app = TestApp(build_app().wsgifunc())
     fixtures = []
 
     def __init__(self, *args, **kwargs):
@@ -419,6 +418,7 @@ class BaseHandlers(TestCase):
     @classmethod
     def setUpClass(cls):
         cls.db = orm()
+        cls.app = TestApp(build_app().wsgifunc())
         #dropdb()
         syncdb()
 
