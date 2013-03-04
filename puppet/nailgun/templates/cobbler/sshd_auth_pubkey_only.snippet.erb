@@ -1,0 +1,4 @@
+# Allow ssh auth PubKey only.
+sed -i 's/^\s*PubkeyAuthentication\s+no/PubkeyAuthentication yes/' /etc/ssh/sshd_config
+sed -i '/^\s*PasswordAuthentication/d' /etc/ssh/sshd_config
+echo 'PasswordAuthentication no' >> /etc/ssh/sshd_config

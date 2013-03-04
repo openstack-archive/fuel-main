@@ -199,6 +199,14 @@ class nailgun::cobbler(
     require => Class["cobbler::server"],
   }
 
+  file { "/var/lib/cobbler/snippets/sshd_auth_pubkey_only":
+    content => template("nailgun/cobbler/sshd_auth_pubkey_only.snippet.erb"),
+    owner => root,
+    group => root,
+    mode => 0644,
+    require => Class["cobbler::server"],
+  }
+
   Package<| title == "cman" |>
   Package<| title == "fence-agents"|>
 }
