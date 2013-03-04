@@ -388,12 +388,11 @@ class NailgunReceiver(object):
             # If no nodes in kwargs then we update progress or status only.
             pass
         elif isinstance(nodes, list):
-            if len(nodes) == 0:
+            if len(nodes) < 2:
                 status = 'error'
                 if not error_msg:
-                    error_msg = 'Deployment Orchestrator failed to perform ' \
-                                'network connectivity check. ' \
-                                'See logs for details.'
+                    error_msg = 'Please add more nodes to the environment ' \
+                                'before performing network verification.'
             else:
                 vlans_sent = [
                     n['vlan_id'] for n in task.cache['args']['networks']
