@@ -142,13 +142,25 @@ describe "NailyFact DeploymentEngine" do
       @data['args']['attributes']['deployment_mode'] = "multinode_compute"
       Astute::Metadata.expects(:publish_facts).times(@data['args']['nodes'].size)
       # we got two calls, one for controller, and another for all computes
-      Astute::PuppetdDeployer.expects(:deploy).twice
+      controller_nodes = @data['args']['nodes'].select{|n| n['role'] == 'controller'}
+      compute_nodes = @data['args']['nodes'].select{|n| n['role'] == 'compute'}
+      Astute::PuppetdDeployer.expects(:deploy).with(@ctx, controller_nodes, instance_of(Fixnum), true).once
+      Astute::PuppetdDeployer.expects(:deploy).with(@ctx, compute_nodes, instance_of(Fixnum), true).once
       @deploy_engine.deploy(@data['args']['nodes'], @data['args']['attributes'])
     end
 
     it "ha_compute deploy should not raise any exception" do
       Astute::Metadata.expects(:publish_facts).at_least_once
-      Astute::PuppetdDeployer.expects(:deploy).times(8)
+      controller_nodes = @data_ha['args']['nodes'].select{|n| n['role'] == 'controller'}
+      compute_nodes = @data_ha['args']['nodes'].select{|n| n['role'] == 'compute'}
+      controller_nodes.each do |n|
+        Astute::PuppetdDeployer.expects(:deploy).with(@ctx, [n], 0, false).once
+      end
+      Astute::PuppetdDeployer.expects(:deploy).with(@ctx, controller_nodes, 0, false).once
+      Astute::PuppetdDeployer.expects(:deploy).with(@ctx, [controller_nodes.first], 0, false).once
+      Astute::PuppetdDeployer.expects(:deploy).with(@ctx, controller_nodes, 0, false).once
+      Astute::PuppetdDeployer.expects(:deploy).with(@ctx, controller_nodes, 3, true).once
+      Astute::PuppetdDeployer.expects(:deploy).with(@ctx, compute_nodes, instance_of(Fixnum), true).once
       @deploy_engine.deploy(@data_ha['args']['nodes'], @data_ha['args']['attributes'])
     end
 
@@ -163,7 +175,7 @@ describe "NailyFact DeploymentEngine" do
       @data['args']['attributes']['deployment_mode'] = "singlenode_compute"
       @data['args']['nodes'] = [@data['args']['nodes'][0]]  # We have only one node in singlenode
       Astute::Metadata.expects(:publish_facts).times(@data['args']['nodes'].size)
-      Astute::PuppetdDeployer.expects(:deploy).once  # one call for one node
+      Astute::PuppetdDeployer.expects(:deploy).with(@ctx, @data['args']['nodes'], instance_of(Fixnum), true).once
       @deploy_engine.deploy(@data['args']['nodes'], @data['args']['attributes'])
     end
   end
