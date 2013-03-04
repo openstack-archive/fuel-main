@@ -424,6 +424,7 @@ class BaseHandlers(TestCase):
 
     @classmethod
     def tearDownClass(cls):
+        flush()
         cls.db.commit()
         cls.db.close()
 
