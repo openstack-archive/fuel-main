@@ -63,6 +63,7 @@ class nailgun::venv(
   exec {"nailgun_syncdb":
     command => "${venv}/bin/nailgun_syncdb",
     require => [
+                Package["python-psycopg2"],
                 File["/etc/nailgun/settings.yaml"],
                 Nailgun::Venv::Pip["$venv_$package"],
                 Class["nailgun::database"],

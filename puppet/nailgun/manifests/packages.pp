@@ -12,6 +12,8 @@ class nailgun::packages(
   nailgun_safe_package { "nginx": }
   nailgun_safe_package { "python-virtualenv": }
   nailgun_safe_package { "python-devel": }
+  nailgun_safe_package { "python-psycopg2": }
+  nailgun_safe_package { "postgresql-libs": }
   nailgun_safe_package { "gcc": }
   nailgun_safe_package { "make": }
   nailgun_safe_package { "rsyslog": }
