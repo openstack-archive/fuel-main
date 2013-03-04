@@ -181,8 +181,8 @@ class TestVerifyNetworks(BaseHandlers):
         receiver.verify_networks_resp(**kwargs)
         self.db.refresh(task)
         self.assertEqual(task.status, "error")
-        error_msg = 'Deployment Orchestrator failed to perform ' \
-                    'network connectivity check. See logs for details.'
+        error_msg = 'Please add more nodes to the environment ' \
+                    'before performing network verification.'
         self.assertEqual(task.message, error_msg)
 
     def test_verify_networks_resp_empty_nodes_custom_error(self):
