@@ -173,4 +173,11 @@ class nailgun(
     mode => 0600,
   }
 
+  file { "/root/.ssh/config":
+    content => template("nailgun/root_ssh_config.erb"),
+    owner => root,
+    group => root,
+    mode => 0600,
+  }
+
 }
