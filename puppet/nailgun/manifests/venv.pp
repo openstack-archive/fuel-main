@@ -42,8 +42,6 @@ class nailgun::venv(
                 ]
   }
 
-  $databasefiledir = inline_template("<%= database_name.match(%r!(.+)/.+!)[1] %>")
-
   file { "/etc/nailgun":
     ensure => directory,
     owner => 'root',
@@ -61,23 +59,11 @@ class nailgun::venv(
     mode => 0644,
     require => File["/etc/nailgun"],
   }
-
-  if ! defined(File[$databasefiledir]){
-    file { $databasefiledir:
-      ensure => directory,
-      recurse => true,
-    }
-  }
-
-  if $database_engine == 'sqlite' {
-    Exec["nailgun_syncdb"] { creates => $database_name }
-  }
   
   exec {"nailgun_syncdb":
     command => "${venv}/bin/nailgun_syncdb",
     require => [
                 File["/etc/nailgun/settings.yaml"],
-                File[$databasefiledir],
                 Nailgun::Venv::Pip["$venv_$package"],
                 Class["nailgun::database"],
                 ],

@@ -42,6 +42,7 @@ node default {
     gem_source => $gem_source,
 
     # it will be path to database file while using sqlite
+    # (this is not implemented now)
     database_name => "nailgun",
     database_engine => "postgresql",
     database_host => "localhost",
