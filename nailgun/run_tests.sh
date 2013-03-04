@@ -126,6 +126,7 @@ function run_ui_tests {
         ui_test_files=$ui_tests_dir/test_*.js
     fi
     result=0
+    sleep 5
     RUNNING=`ps aux | grep "manage.py run --port=5544" | grep -v grep | awk '{ print $2 }'`
     if [ -n "$RUNNING" ]; then
       kill $RUNNING
