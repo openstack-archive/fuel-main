@@ -160,6 +160,14 @@ h6.page-title {
   padding: 0px 20px 0px 20px;
 }
 
+.navigation-bar-ul > .product-logo a .logo {
+  display: block;
+  width: 90px;
+  height: 40px;
+  background: url(../img/product-logo.png) no-repeat top left;
+
+}
+
 .navigation-bar-ul > li:first-child {border-left: none;}
 
 
