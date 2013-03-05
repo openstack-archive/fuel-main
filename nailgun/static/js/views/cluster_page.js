@@ -30,8 +30,8 @@ function(models, commonViews, dialogViews, NodesTab, NetworkTab, SettingsTab, Lo
         events: {
             'click .task-result .close': 'dismissTaskResult',
             'click .rollback': 'discardChanges',
-            'click .deploy-btn:not(.disabled)': 'displayChanges',
-            'click .nav-tabs li:not(.active) a': 'dismissSettings'
+            'click .deploy-btn:not(.disabled)': 'onDeployRequest',
+            'click .nav-tabs li:not(.active) a': 'onTabChange'
         },
         removeVerificationTask: function() {
             var deferred;
@@ -59,13 +59,25 @@ function(models, commonViews, dialogViews, NodesTab, NetworkTab, SettingsTab, Lo
             this.registerSubView(dialog);
             dialog.render();
         },
-        dismissSettings: function(e) {
+        discardSettingsChanges: function(options) {
+            var dialog = new dialogViews.DiscardSettingsChangesDialog(options);
+            this.registerSubView(dialog);
+            dialog.render();
+        },
+        onDeployRequest: function() {
+            if (this.tab.hasChanges) {
+                this.discardSettingsChanges({cb: _.bind(this.displayChanges, this)});
+            } else {
+                this.displayChanges();
+            }
+        },
+        onTabChange: function(e) {
             if (this.tab.hasChanges) {
                 e.preventDefault();
                 var href = $(e.target).attr('href') || $(e.target).parent().attr('href');
-                var dismissSettingsDialogView = new dialogViews.DismissSettingsDialog({href: href});
-                app.page.registerSubView(dismissSettingsDialogView);
-                dismissSettingsDialogView.render();
+                this.discardSettingsChanges({cb: _.bind(function() {
+                    app.navigate(href, {trigger: true});
+                }, this)});
             }
         },
         scheduleUpdate: function() {
@@ -109,7 +121,7 @@ function(models, commonViews, dialogViews, NodesTab, NetworkTab, SettingsTab, Lo
         },
         onBeforeunloadEvent: function() {
             if (this.tab.hasChanges) {
-                return 'Settings were modified. Do you really want to leave the tab and dismiss changes?';
+                return dialogViews.DiscardSettingsChangesDialog.prototype.defaultMessage;
             }
         },
         initialize: function(options) {

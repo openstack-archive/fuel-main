@@ -11,7 +11,7 @@ define(
     'text!templates/dialogs/show_node.html',
     'text!templates/dialogs/dismiss_settings.html'
 ],
-function(models, simpleMessageTemplate, createClusterDialogTemplate, changeClusterModeDialogTemplate, discardChangesDialogTemplate, displayChangesDialogTemplate, removeClusterDialogTemplate, errorMessageTemplate, showNodeInfoTemplate, dismissSettingsTemplate) {
+function(models, simpleMessageTemplate, createClusterDialogTemplate, changeClusterModeDialogTemplate, discardChangesDialogTemplate, displayChangesDialogTemplate, removeClusterDialogTemplate, errorMessageTemplate, showNodeInfoTemplate, disacardSettingsChangesTemplate) {
     'use strict';
 
     var views = {};
@@ -285,21 +285,23 @@ function(models, simpleMessageTemplate, createClusterDialogTemplate, changeClust
         }
     });
 
-    views.DismissSettingsDialog = views.Dialog.extend({
-        template: _.template(dismissSettingsTemplate),
+    views.DiscardSettingsChangesDialog = views.Dialog.extend({
+        template: _.template(disacardSettingsChangesTemplate),
+        defaultMessage: 'Settings were modified but not saved. Changes will be lost. Do you want to proceed?',
         events: {
-            'click .dismiss-settings': 'leaveTab'
+            'click .proceed-btn': 'proceed'
         },
-        leaveTab: function() {
+        proceed: function() {
             this.$el.modal('hide');
-            app.page.removeVerificationTask();
-            app.navigate(this.href, {trigger: true});
+            this.cb();
         },
         initialize: function(options) {
             _.defaults(this, options);
         },
         render: function() {
-            this.constructor.__super__.render.call(this);
+            this.constructor.__super__.render.call(this, {
+                message: this.message || this.defaultMessage
+            });
             return this;
         }
     });

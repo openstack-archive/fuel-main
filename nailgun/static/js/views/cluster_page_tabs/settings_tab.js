@@ -116,6 +116,7 @@ function(models, commonViews, settingsTabTemplate, settingsGroupTemplate) {
             this.$el.html(this.template({cluster: this.model}));
             if (this.model.get('settings').deferred.state() != 'pending') {
                 this.parseSettings(this.model.get('settings').get('editable'));
+                this.hasChanges = false;
             }
             return this;
         },

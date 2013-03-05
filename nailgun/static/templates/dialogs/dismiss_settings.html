@@ -5,10 +5,10 @@
 <div class="modal-body">
   <div class="msg-error">
     <span class="label label-important">Important</span>
-    Settings were modified. Do you really want to leave the tab and dismiss changes?
+    <%- message %>
   </div>
 </div>
 <div class="modal-footer">
-  <button class="btn" data-dismiss="modal">Cancel</button>
-  <button class="btn btn-danger dismiss-settings">Leave the tab</button>
+  <button class="btn" data-dismiss="modal">Return</button>
+  <button class="btn btn-danger proceed-btn">Proceed without saving</button>
 </div>
