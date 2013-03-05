@@ -42,18 +42,18 @@
                 <div class="control-group" data-network-name="<%- network.get('name') %>" data-network-id="<%- network.get('id') %>">
                   <div class="name"><%- network.get('name') %></div>
                   <div class="cidr">
-                    <input class="input-medium" type="text" value="<%- network.get('cidr') %>" maxlength="18" <%= disabled %> />
+                    <input class="input-medium" type="text" name="<%- network.get('name') %>-cidr" value="<%- network.get('cidr') %>" maxlength="18" <%= disabled %> />
                   </div>
                   <div class="amount hide">
-                    <input class="input-mini" type="text" value="<%- network.get('amount') %>" />
+                    <input class="input-mini" type="text" name="<%- network.get('name') %>-amount" value="<%- network.get('amount') %>" />
                   </div>
                   <div class="network_size hide">
-                    <select>
+                    <select name="<%- network.get('name') %>-network_size">
                       <option value="<%= network.get('network_size') %>" selected><%= network.get('network_size') %></option>
                     </select>
                   </div>
                   <div class="vlan_start">
-                    <input class="input-mini" type="text" value="<%- network.get('vlan_start') %>" maxlength="4" <%= disabled %> />
+                    <input class="input-mini" type="text"  name="<%- network.get('name') %>-vlan_start"value="<%- network.get('vlan_start') %>" maxlength="4" <%= disabled %> />
                   </div>
                   <div class="error">
                     <span class="help-inline"></span>
@@ -83,7 +83,7 @@
                   <input class="input-medium" type="text" value="<%- fixedNetwork.get('cidr') %>" maxlength="18" <%= disabled %> />
                 </div>
                 <div class="amount <%= vlan %>">
-                  <input class="input-mini range" type="text" value="<%- fixedNetwork.get('amount') %>" maxlength="4" <%= disabled %> />
+                  <input class="input-mini range" type="text" name="<%- fixedNetwork.get('name') %>-amount" value="<%- fixedNetwork.get('amount') %>" maxlength="4" <%= disabled %> />
                 </div>
                 <div class="network_size <%= vlan %>">
                   <select <%= disabled %>>

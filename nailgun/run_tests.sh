@@ -143,7 +143,7 @@ function run_ui_tests {
         for test_file in $ui_test_files; do
             rm -f nailgun.sqlite
             ./manage.py syncdb > /dev/null
-            ./manage.py loaddata $ui_tests_dir/fixture.json > /dev/null
+            ./manage.py loaddata nailgun/fixtures/openstack_folsom.json > /dev/null
             casperjs test --includes=$ui_tests_dir/helpers.js --fail-fast $test_file
             result=$(($result + $?))
         done
