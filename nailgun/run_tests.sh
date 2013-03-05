@@ -129,16 +129,31 @@ function run_ui_tests {
     RUNNING=`ps aux | grep "manage.py run --port=5544" | grep -v grep | awk '{ print $2 }'`
     if [ -n "$RUNNING" ]; then
       kill $RUNNING
+      echo -n "Killing old test server... "
+      sleep 5
     fi
-    ./manage.py run --port=5544 --fake-tasks --fake-tasks-tick-count=80 --fake-tasks-tick-interval=1 > /dev/null 2>&1 &
-    for test_file in $ui_test_files; do
-        rm -f nailgun.sqlite
-        ./manage.py syncdb > /dev/null
-        ./manage.py loaddata $ui_tests_dir/fixture.json > /dev/null
-        casperjs test --includes=$ui_tests_dir/helpers.js --fail-fast $test_file
-        result=$(($result + $?))
-    done
-    ps aux | grep "manage.py run --port=5544" | grep -v grep | awk '{ print $2 }' | xargs kill
+    test_server_log_file=/tmp/test_server.log
+    echo -n "Starting test server... "
+    ./manage.py run --port=5544 --fake-tasks --fake-tasks-tick-count=80 --fake-tasks-tick-interval=1 > $test_server_log_file 2>&1 &
+    server_pid=$!
+    sleep 3 # wait until test server completely starts before dropping the database
+    kill -0 $server_pid 2> /dev/null
+    if [ $? -eq 0 ]; then
+        echo "Test server started"
+        for test_file in $ui_test_files; do
+            rm -f nailgun.sqlite
+            ./manage.py syncdb > /dev/null
+            ./manage.py loaddata $ui_tests_dir/fixture.json > /dev/null
+            casperjs test --includes=$ui_tests_dir/helpers.js --fail-fast $test_file
+            result=$(($result + $?))
+        done
+        ps aux | grep "manage.py run --port=5544" | grep -v grep | awk '{ print $2 }' | xargs kill
+    else
+        echo "Test server failed to start!"
+        cat $test_server_log_file
+        result=1
+    fi
+    rm $test_server_log_file
     return $result
 }
 
