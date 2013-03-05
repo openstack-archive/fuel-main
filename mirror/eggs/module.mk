@@ -1,5 +1,6 @@
 $(BUILD_DIR)/mirror/eggs/build.done: $(call depv,LOCAL_MIRROR_EGGS)
 $(BUILD_DIR)/mirror/eggs/build.done: $(call depv,REQUIRED_EGGS)
+$(BUILD_DIR)/mirror/eggs/build.done: $(call depv,SANDBOX_PACKAGES)
 $(BUILD_DIR)/mirror/eggs/build.done: SANDBOX:=$(BUILD_DIR)/mirror/eggs/SANDBOX
 $(BUILD_DIR)/mirror/eggs/build.done: export SANDBOX_UP:=$(SANDBOX_UP)
 $(BUILD_DIR)/mirror/eggs/build.done: export SANDBOX_DOWN:=$(SANDBOX_DOWN)

@@ -17,3 +17,4 @@ simplejson==2.6.2
 web.py==0.37
 wsgilog==0.3
 wsgiref==0.1.2
+psycopg2==2.4.6

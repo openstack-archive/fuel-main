@@ -30,16 +30,30 @@ class nailgun::venv(
     pip_opts => $pip_opts,
   }
 
-  nailgun::venv::pip { "$venv_$package":
-    package => "$package==$version",
+  Nailgun::Venv::Pip {
+    require => [
+      Nailgun::Venv::Venv[$venv],
+      Package["python-devel"],
+      Package["gcc"],
+      Package["make"],
+    ],
     opts => $pip_opts,
     venv => $venv,
+  }
+
+  nailgun::venv::pip { "$venv_$package":
+    package => "$package==$version",
+  }
+
+  nailgun::venv::pip { "psycopg2":
+    package => "psycopg2==2.4.6",
     require => [
-                Nailgun::Venv::Venv[$venv],
-                Package["python-devel"],
-                Package["gcc"],
-                Package["make"],
-                ]
+      Package["postgresql-devel"],
+      Nailgun::Venv::Venv[$venv],
+      Package["python-devel"],
+      Package["gcc"],
+      Package["make"],
+    ],
   }
 
   file { "/etc/nailgun":
@@ -63,9 +77,9 @@ class nailgun::venv(
   exec {"nailgun_syncdb":
     command => "${venv}/bin/nailgun_syncdb",
     require => [
-                Package["python-psycopg2"],
                 File["/etc/nailgun/settings.yaml"],
                 Nailgun::Venv::Pip["$venv_$package"],
+                Nailgun::Venv::Pip["psycopg2"],
                 Class["nailgun::database"],
                 ],
   }

@@ -18,6 +18,7 @@ SANDBOX_PACKAGES:=\
 	python-pip \
 	rpm-build \
 	tar \
+	postgresql-devel \
 
 
 define SANDBOX_UP
