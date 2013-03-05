@@ -13,7 +13,7 @@
     if (gigabytes < 100) {
       result = gigabytes.toFixed(1) + ' GB';
     } else {
-      result = (gigabytes / 1000).toFixed(1) + ' TB';
+      result = (gigabytes / base).toFixed(1) + ' TB';
     }
     return result;
   };
@@ -22,8 +22,10 @@
   };
   var showPropertyValue = function(group, name, value) {
     try {
-      if (name == 'size' || (group == 'memory' && (name == 'total' || name == 'maximum_capacity'))) {
+      if (group == 'memory' && (name == 'total' || name == 'maximum_capacity')) {
         value = showSize(value);
+      } else if (group == 'disks' && name == 'size') {
+        value = showSize(value, 1000);
       } else if (name == 'frequency') {
         value = showFrequency(value);
       } else if (name == 'max_speed' || name == 'current_speed') {
@@ -68,7 +70,7 @@
     <div class="span7">
       <div><strong>Manufacturer: </strong><%- node.get('manufacturer') ? node.get('manufacturer') : 'N/A' %></div>
       <div><strong>MAC Address: </strong><%- node.get('mac') ? node.get('mac') : 'N/A' %></div>
-      <div><strong>FQDN: </strong><%- node.get('fqdn') ? node.get('fqdn') : 'N/A' %></div>
+      <div><strong>FQDN: </strong><%- node.get('meta').system.fqdn || node.get('fqdn') || 'N/A' %></div>
     </div>
   </div>
   <div class="accordion" id="nodeDetailsAccordion">

@@ -136,16 +136,6 @@ class NodeAgent
     interfaces
   end
 
-  def _metadata
-    {
-      :block_device => @os["block_device"].to_hash,
-      :interfaces => _interfaces,
-      :cpu => @os["cpu"].to_hash,
-      :memory => @os["memory"].to_hash,
-      :serial => _serial
-    }
-  end
-
   def _detailed
     detailed_meta = {
       :system => {
@@ -154,6 +144,7 @@ class NodeAgent
         :product => _product_name,
         :family => (@os[:dmi][:system][:family].strip rescue nil),
         :version => (@os[:dmi][:system][:version].strip rescue nil),
+        :fqdn => (@os[:fqdn].strip rescue @os[:hostname].strip rescue nil),
         },
       :interfaces => [],
       :cpu => {
@@ -294,7 +285,11 @@ class NodeAgent
         info[:devices].push(device_info)
       end
     end
-    info
+    if info[:total] == 0
+      nil
+    else
+      info
+    end
   end
 
   def _ohai_memory
