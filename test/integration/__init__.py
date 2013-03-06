@@ -150,6 +150,8 @@ vmlinuz initrd=initrd.img ks=cdrom:/ks.cfg
             timeout=self.puppet_timeout
         )
 
+        # Copy all private ssh keys from admin node to temp dir and save
+        # path to these files to admin node metadata.
         keyfiles = ssh.execute('ls -1 /root/.ssh/*rsa')['stdout']
         keyfiles = [os.path.join('/root/.ssh', name.strip())
                     for name in keyfiles]
