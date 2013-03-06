@@ -182,14 +182,17 @@ vmlinuz initrd=initrd.img ks=cdrom:/ks.cfg
 
     def destroy_environment(self):
         # remove keyfiles and tempdir.
-        keyfiles = self.environment.node['admin'].metadata.get('keyfiles', ())
-        for name in keyfiles:
+        try:
+            keyfiles = self.environment.node['admin'].metadata['keyfiles']
+            for name in keyfiles:
+                try:
+                    os.unlink(name)
+                except:
+                    pass
             try:
-                os.unlink(name)
+                os.rmdir(os.path.dirname(name))
             except:
                 pass
-        try:
-            os.rmdir(os.path.dirname(name))
         except:
             pass
 
