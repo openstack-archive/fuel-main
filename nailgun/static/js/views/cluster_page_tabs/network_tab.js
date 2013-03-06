@@ -69,7 +69,7 @@ function(models, commonViews, dialogViews, networkTabTemplate, networkTabViewMod
                 this.$('.fixed-header .vlan').text('VLAN ID range');
                 this.$('.fixed-row .vlan_start input:first').addClass('range');
                 this.calculateVlanEnd();
-                this.$('.vlan-end').show();
+                this.$('.vlan-end').removeClass('hide').show();
             } else {
                 this.$('.fixed-header .vlan').text('VLAN ID');
                 this.$('.vlan-end').hide();
