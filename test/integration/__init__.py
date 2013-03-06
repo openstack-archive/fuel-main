@@ -188,13 +188,13 @@ vmlinuz initrd=initrd.img ks=cdrom:/ks.cfg
                 try:
                     os.unlink(name)
                 except:
-                    pass
+                    logging.info("Can't remove keyfile %r" % name)
             try:
                 os.rmdir(os.path.dirname(name))
             except:
-                pass
-        except:
-            pass
+                logging.info("Can't remove tempdir %r" % os.path.dirname(name))
+        except Exception, e:
+            logging.info("Can't get keyfiles list: %s" % str(e))
 
         if self.environment:
             devops.destroy(self.environment)
