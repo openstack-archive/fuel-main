@@ -227,9 +227,7 @@ class NodeAgent
   end
 
   def _product_name
-    if _is_virtual
-      nil
-    else
+    unless _is_virtual
       @os[:dmi][:system][:product_name].strip rescue nil
     end
   end
@@ -239,20 +237,14 @@ class NodeAgent
   end
 
   def _system_info
-    system_info = {
+    {
       :manufacturer => _manufacturer,
       :serial => _serial,
       :product => _product_name,
       :family => (@os[:dmi][:system][:family].strip rescue nil),
       :version => (@os[:dmi][:system][:version].strip rescue nil),
       :fqdn => (@os[:fqdn].strip rescue @os[:hostname].strip rescue nil),
-    }
-    system_info.each do |key, value|
-      if value.nil? or value.empty? or value == "Not Specified"
-        system_info.delete(key)
-      end
-    end
-    system_info
+    }.delete_if { |key, value| value.nil? or value.empty? or value == "Not Specified" }
   end
 
   def _size(size, unit)
