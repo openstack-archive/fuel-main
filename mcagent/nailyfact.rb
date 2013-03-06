@@ -20,6 +20,7 @@ module MCollective
           else
             f = File.open(fname,'w')
             f.close
+            File.open("/var/log/facter.log", "a") {|f| f.write("#{Time.now} EMPTY facts saved\n")}
             return {}
           end             
         rescue
@@ -39,8 +40,10 @@ module MCollective
             f.puts("#{k} = #{v}")
           end
           f.close
+          File.open("/var/log/facter.log", "a") {|f| f.write("#{Time.now} facts saved\n")}
           return true
         rescue
+          File.open("/var/log/facter.log", "a") {|f| f.write("#{Time.now} facts NOT saved\n")}
           return false
         end
       end

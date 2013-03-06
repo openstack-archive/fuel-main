@@ -7,7 +7,7 @@ $openstack_version = {
   'cinder'     => 'latest',
 }
 
-tag("x${deployment_id}::${::environment}")
+tag("${deployment_id}::${::environment}")
 
 node default {
   include osnailyfacter
