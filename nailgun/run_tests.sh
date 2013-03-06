@@ -132,7 +132,7 @@ function run_ui_tests {
       echo -n "Killing old test server... "
       sleep 5
     fi
-    test_server_log_file=/tmp/test_server.log
+    test_server_log_file=`tempfile`
     echo -n "Starting test server... "
     ./manage.py run --port=5544 --fake-tasks --fake-tasks-tick-count=80 --fake-tasks-tick-interval=1 > $test_server_log_file 2>&1 &
     server_pid=$!
