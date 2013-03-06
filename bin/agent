@@ -138,14 +138,7 @@ class NodeAgent
 
   def _detailed
     detailed_meta = {
-      :system => {
-        :manufacturer => _manufacturer,
-        :serial => _serial,
-        :product => _product_name,
-        :family => (@os[:dmi][:system][:family].strip rescue nil),
-        :version => (@os[:dmi][:system][:version].strip rescue nil),
-        :fqdn => (@os[:fqdn].strip rescue @os[:hostname].strip rescue nil),
-        },
+      :system => _system_info,
       :interfaces => [],
       :cpu => {
         :total => (@os[:cpu][:total].to_i rescue nil),
@@ -235,7 +228,7 @@ class NodeAgent
 
   def _product_name
     if _is_virtual
-      @os["virtualization"]["role"].strip rescue nil
+      nil
     else
       @os[:dmi][:system][:product_name].strip rescue nil
     end
@@ -243,6 +236,23 @@ class NodeAgent
 
   def _serial
     @os[:dmi][:system][:serial_number].strip rescue nil
+  end
+
+  def _system_info
+    system_info = {
+      :manufacturer => _manufacturer,
+      :serial => _serial,
+      :product => _product_name,
+      :family => (@os[:dmi][:system][:family].strip rescue nil),
+      :version => (@os[:dmi][:system][:version].strip rescue nil),
+      :fqdn => (@os[:fqdn].strip rescue @os[:hostname].strip rescue nil),
+    }
+    system_info.each do |key, value|
+      if value.nil? or value.empty? or value == "Not Specified"
+        system_info.delete(key)
+      end
+    end
+    system_info
   end
 
   def _size(size, unit)

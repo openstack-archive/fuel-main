@@ -40,7 +40,7 @@
     var summary = '';
     try {
       if (group == 'system') {
-        summary = meta.system.product;
+        summary = (meta.system.manufacturer || '') + ' ' + (meta.system.product || '');
       } else if (group == 'memory') {
         if (_.isArray(meta.memory.devices) && meta.memory.devices.length) {
           var sizes = _.groupBy(_.pluck(meta.memory.devices, 'size'), function(el) {return el});
@@ -74,7 +74,7 @@
     <div class="span7">
       <div><strong>Manufacturer: </strong><%- node.get('manufacturer') ? node.get('manufacturer') : 'N/A' %></div>
       <div><strong>MAC Address: </strong><%- node.get('mac') ? node.get('mac') : 'N/A' %></div>
-      <div><strong>FQDN: </strong><%- node.get('meta').system.fqdn || node.get('fqdn') || 'N/A' %></div>
+      <div><strong>FQDN: </strong><%- (node.get('meta').system || {}).fqdn || node.get('fqdn') || 'N/A' %></div>
     </div>
   </div>
   <div class="accordion" id="nodeDetailsAccordion">
