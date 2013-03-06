@@ -181,7 +181,9 @@ vmlinuz initrd=initrd.img ks=cdrom:/ks.cfg
         return True
 
     def destroy_environment(self):
-        for name in self.environment.node['admin'].metadata['keyfiles']:
+        # remove keyfiles and tempdir.
+        keyfiles = self.environment.node['admin'].metadata.get('keyfiles', ())
+        for name in keyfiles:
             try:
                 os.unlink(name)
             except:
@@ -190,6 +192,7 @@ vmlinuz initrd=initrd.img ks=cdrom:/ks.cfg
             os.rmdir(os.path.dirname(name))
         except:
             pass
+
         if self.environment:
             devops.destroy(self.environment)
         return True
