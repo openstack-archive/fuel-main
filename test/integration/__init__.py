@@ -1,5 +1,6 @@
 import os
 import time
+import tempfile
 
 from devops.model import Environment, Network, Node, Disk, Cdrom, Interface
 from devops.helpers import tcp_ping, wait
@@ -148,6 +149,23 @@ vmlinuz initrd=initrd.img ks=cdrom:/ks.cfg
             )['exit_status'],
             timeout=self.puppet_timeout
         )
+
+        keyfiles = ssh.execute('ls -1 /root/.ssh/*rsa')['stdout']
+        keyfiles = [os.path.join('/root/.ssh', name.strip())
+                    for name in keyfiles]
+        local_keyfiles = []
+        node.metadata['keyfiles'] = local_keyfiles
+        tempdir = tempfile.mkdtemp()
+        for name in keyfiles:
+            local_name = os.path.join(tempdir, os.path.basename(name))
+            local_keyfiles.append(local_name)
+            with open(local_name, 'w') as local_fd:
+                fd = ssh.open(name)
+                for line in fd:
+                    local_fd.write(line)
+                fd.close()
+            os.chmod(local_name, 0600)
+            logging.info("SSH keyfile %r saved." % local_name)
         ssh.disconnect()
 
         for node in self.environment.nodes:
@@ -155,11 +173,21 @@ vmlinuz initrd=initrd.img ks=cdrom:/ks.cfg
             node.save_snapshot('initial')
             logging.info("Test node is ready at %s" % node.ip_address)
 
+        devops.save(self.environment)
         logger.info("Admin node software is installed and ready for use")
 
         return True
 
     def destroy_environment(self):
+        for name in self.environment.node['admin'].metadata['keyfiles']:
+            try:
+                os.unlink(name)
+            except:
+                pass
+        try:
+            os.rmdir(os.path.dirname(name))
+        except:
+            pass
         if self.environment:
             devops.destroy(self.environment)
         return True

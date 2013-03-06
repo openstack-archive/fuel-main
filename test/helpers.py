@@ -65,7 +65,8 @@ class SSHClient(object):
         self.sudo = self.get_sudo(self)
         self.established = False
 
-    def connect_ssh(self, host, username, password):
+    def connect_ssh(self, host, username=None, password=None,
+                    key_filename=None):
         if not self.established:
             self.ssh_client = paramiko.SSHClient()
             self.ssh_client.set_missing_host_key_policy(
@@ -74,7 +75,9 @@ class SSHClient(object):
             self.host = host
             self.username = username
             self.password = password
-            self.ssh_client.connect(host, username=username, password=password)
+            self.key_filename = key_filename
+            self.ssh_client.connect(host, username=username, password=password,
+                                    key_filename=key_filename)
             self.sftp_client = self.ssh_client.open_sftp()
             self.established = True
 

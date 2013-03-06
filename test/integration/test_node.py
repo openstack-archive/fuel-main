@@ -226,9 +226,10 @@ class TestNode(Base):
         self._basic_provisioning('network_config', {'controller': ['slave1']})
 
         slave = ci.environment.node['slave1']
+        keyfiles = ci.environment.node['admin'].metadata['keyfiles']
         node = self._get_slave_node_by_devops_node(slave)
         ctrl_ssh = SSHClient()
-        ctrl_ssh.connect_ssh(node['ip'], 'root', 'r00tme')
+        ctrl_ssh.connect_ssh(node['ip'], 'root', key_filename=keyfiles)
         ifaces_fail = False
         for iface in node['network_data']:
             try:
@@ -447,6 +448,7 @@ class TestNode(Base):
         self._task_wait(task, 'Installation')
 
         logging.info("Checking role files on slave nodes")
+        keyfiles = ci.environment.node['admin'].metadata['keyfiles']
         for role in nodes_dict:
             for n in nodes_dict[role]:
                 logging.info("Checking /tmp/%s-file on %s" % (role, n))
@@ -454,7 +456,7 @@ class TestNode(Base):
                 node = self._get_slave_node_by_devops_node(slave)
                 logging.debug("Trying to connect to %s via ssh" % node['ip'])
                 ctrl_ssh = SSHClient()
-                ctrl_ssh.connect_ssh(node['ip'], 'root', 'r00tme')
+                ctrl_ssh.connect_ssh(node['ip'], 'root', key_filename=keyfiles)
                 ret = ctrl_ssh.execute('test -f /tmp/%s-file' % role)
                 self.assertEquals(ret['exit_status'], 0)
         return cluster_id
@@ -671,8 +673,9 @@ class TestNode(Base):
         logging.info("Checking cluster status: ip=%s smiles=%s networks=%s",
                      ip, smiles_count, networks_count)
 
+        keyfiles = ci.environment.node['admin'].metadata['keyfiles']
         ctrl_ssh = SSHClient()
-        ctrl_ssh.connect_ssh(ip, 'root', 'r00tme')
+        ctrl_ssh.connect_ssh(ip, 'root', key_filename=keyfiles)
         ret = ctrl_ssh.execute('/usr/bin/nova-manage service list')
         nova_status = (
             (ret['exit_status'] == 0)
