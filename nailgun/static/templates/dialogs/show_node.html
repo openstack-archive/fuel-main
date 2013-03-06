@@ -26,6 +26,8 @@
         value = showSize(value);
       } else if (group == 'disks' && name == 'size') {
         value = showSize(value, 1000);
+      } else if (name == 'size') {
+        value = showSize(value);
       } else if (name == 'frequency') {
         value = showFrequency(value);
       } else if (name == 'max_speed' || name == 'current_speed') {
@@ -44,6 +46,8 @@
           var sizes = _.groupBy(_.pluck(meta.memory.devices, 'size'), function(el) {return el});
           summary = _.map(_.keys(sizes), function(size) {return sizes[size].length + ' x ' + showSize(size)}).join(', ');
           summary += ', ' + showSize(meta.memory.total) + ' total';
+        } else {
+          summary = showSize(meta.memory.total) + ' total';
         }
       } else if (group == 'disks') {
         summary = meta.disks.length + ' drive';
