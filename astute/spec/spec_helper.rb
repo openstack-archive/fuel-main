@@ -13,6 +13,7 @@ end
 #               resetting time to sleep significantly increases tests speed
 Astute.config.PUPPET_DEPLOY_INTERVAL = 0
 Astute.config.PUPPET_FADE_INTERVAL = 0
+Astute.config.MC_RETRY_INTERVAL = 0
 
 module SpecHelpers
   def mock_rpcclient(discover_nodes=nil, timeout=nil)
@@ -22,7 +23,7 @@ module SpecHelpers
         expects(:timeout=).with(timeout)
       end
       unless discover_nodes.nil?
-        expects(:discover).with(:nodes => discover_nodes.map {|x| x['uid'].to_s}).at_least_once
+        expects(:discover).with(:nodes => discover_nodes.map{|x| x['uid'].to_s}).at_least_once
       else
         stubs(:discover)
       end

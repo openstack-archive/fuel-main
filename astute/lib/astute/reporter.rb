@@ -1,12 +1,14 @@
 require 'set'
 
-STATES = {'offline' => 0,
-          'discover' => 10,
-          'provisioning' => 30,
-          'provisioned' => 40,
-          'deploying' => 50,
-          'ready' => 60,
-          'error' => 70}
+STATES = {
+  'offline'      => 0,
+  'discover'     => 10,
+  'provisioning' => 30,
+  'provisioned'  => 40,
+  'deploying'    => 50,
+  'ready'        => 60,
+  'error'        => 70
+}
 
 module Astute
   class ProxyReporter
@@ -28,7 +30,7 @@ module Astute
         @up_reporter.report(data)
         # Update nodes attributes in @nodes.
         nodes_to_report.each do |node|
-          saved_node = @nodes.select {|x| x['uid'] == node['uid']}.first
+          saved_node = @nodes.select {|x| x['uid'] == node['uid']}.first  # NOTE: use nodes hash
           if saved_node
             node.each {|k, v| saved_node[k] = v}
           else
@@ -38,7 +40,8 @@ module Astute
       end
     end
 
-    private
+  private
+
     def node_validate(node)
       # Validate basic correctness of attributes.
       err = []
@@ -100,7 +103,7 @@ module Astute
         return if node.select{|k, v| not saved_node[k].eql?(v)}.empty?
       end
 
-      return node
+      node
     end
   end
 end

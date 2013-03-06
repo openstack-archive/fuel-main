@@ -127,4 +127,4 @@ EM.run do
   end
 end
 
-File.unlink(options.pidfile) if options.daemonize
+File.unlink(options.pidfile) if options.daemonize # NOTE: bug?

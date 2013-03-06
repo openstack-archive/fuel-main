@@ -12,7 +12,11 @@ class Astute::DeploymentEngine::NailyFact < Astute::DeploymentEngine
     #   otherwise we will get KeyError
     node_network_data = node['network_data'].nil? ? [] : node['network_data']
     network_data_puppet = calculate_networks(node_network_data)
-    metadata = {'role' => node['role'], 'uid' => node['uid'], 'network_data' => network_data_puppet.to_json }
+    metadata = {
+      'role' => node['role'],
+      'uid'  => node['uid'],
+      'network_data' => network_data_puppet.to_json
+    }
     attrs.each do |k, v|
       if v.is_a? String
         metadata[k] = v
@@ -23,12 +27,16 @@ class Astute::DeploymentEngine::NailyFact < Astute::DeploymentEngine
     end
     # Let's calculate interface settings we need for OpenStack:
     node_network_data.each do |iface|
-      device = (iface['vlan'] and iface['vlan'] > 0) ? [iface['dev'], iface['vlan']].join('.') : iface['dev']
-      metadata[iface['name'] + '_interface'] = device
+      device = if iface['vlan'] && iface['vlan'] > 0
+        [iface['dev'], iface['vlan']].join('.')
+      else
+        iface['dev']
+      end
+      metadata["#{iface['name']}_interface"] = device
     end
 
     # internal_address is required for HA..
-    metadata['internal_address'] = node['network_data'].select {|nd| nd['name'] == 'management'}[0]['ip'].split(/\//)[0]
+    metadata['internal_address'] = node['network_data'].select{|nd| nd['name'] == 'management' }[0]['ip'].split('/')[0]
 
     metapublisher.call(@ctx, node['uid'], metadata)
   end

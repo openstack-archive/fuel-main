@@ -1,3 +1,5 @@
+require 'rubygems'
+
 require 'json'
 require 'logger'
 
@@ -16,7 +18,9 @@ module Astute
   autoload 'Context', 'astute/context'
   autoload 'MClient', 'astute/mclient'
   autoload 'ProxyReporter', 'astute/reporter'
-  autoload 'NodeRemoval', 'astute/node_removal'
+  autoload 'NodesRemover', 'astute/nodes_remover'
+  autoload 'Node', 'astute/node'
+  autoload 'NodesHash', 'astute/node'
   LogParser.autoload :ParseDeployLogs, 'astute/logparser/deployment'
   LogParser.autoload :ParseProvisionLogs, 'astute/logparser/provision'
   LogParser.autoload :Patterns, 'astute/logparser/parser_patterns'

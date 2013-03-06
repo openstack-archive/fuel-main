@@ -31,19 +31,20 @@ module Astute
                                             node.results[:sender],
                                             node.results[:data][:neighbours])} }
       Astute.logger.debug "#{ctx.task_id}: Network checking is done. Results: #{result.inspect}"
-      return {'nodes' => result}
+      {'nodes' => result}
     end
 
-    private
+  private
+
     def self.check_vlans_by_traffic(uid, data)
-      return data.map{|iface, vlans| {
-        'iface' => iface,
-        'vlans' =>
-          vlans.reject{|k,v|
-            v.size==1 and v.has_key?(uid)
-          }.keys.map{|n| n.to_i}
+      data.map do |iface, vlans|
+        {
+          'iface' => iface,
+          'vlans' => vlans.reject{ |k, v|
+            v.size == 1 && v.has_key?(uid)
+          }.keys.map(&:to_i)
         }
-      }
+      end
     end
   end
 end

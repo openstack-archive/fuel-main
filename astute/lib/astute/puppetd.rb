@@ -24,7 +24,7 @@ module Astute
       end
       Astute.logger.debug "puppetd_runonce completed within #{Time.now.to_i - started} seconds."
       Astute.logger.debug "Following nodes have puppet hung: '#{running.join(',')}'" if running.any?
-      return running
+      running
     end
 
     def self.calc_nodes_status(last_run, prev_run)
@@ -52,7 +52,7 @@ module Astute
         raise "Shoud never happen. Internal error in nodes statuses calculation. Statuses calculated for: #{nodes_to_check.inspect},"
                     "nodes passed to check statuses of: #{last_run.map {|n| n.results[:sender]}}"
       end
-      return {'succeed' => succeed_nodes, 'error' => error_nodes, 'running' => running_nodes}
+      {'succeed' => succeed_nodes, 'error' => error_nodes, 'running' => running_nodes}
     end
 
     public

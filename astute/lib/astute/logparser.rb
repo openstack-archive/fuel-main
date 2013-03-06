@@ -32,7 +32,7 @@ module Astute
       def progress_calculate(uids_to_calc, nodes)
         nodes_progress = []
         uids_to_calc.each do |uid|
-          node = nodes.select {|n| n['uid'] == uid}[0]
+          node = nodes.select {|n| n['uid'] == uid}[0]  # NOTE: use nodes hash
           node_pattern_spec = @nodes_states[uid]
           unless node_pattern_spec
             node_pattern_spec = Marshal.load(Marshal.dump(@pattern_spec))
@@ -52,7 +52,7 @@ module Astute
             'progress' => progress
           }
         end
-        return nodes_progress
+        nodes_progress
       end
 
       def prepare(nodes)
@@ -64,10 +64,11 @@ module Astute
       end
 
       def pattern_spec= (pattern_spec)
-        initialise(pattern_spec)
+        initialise(pattern_spec) # NOTE: bug?
       end
 
-      private
+    private
+
       def get_log_progress(path, node_pattern_spec)
         unless File.readable?(path)
           Astute.logger.debug "Can't read file with logs: #{path}"
@@ -93,7 +94,7 @@ module Astute
           Astute.logger.warn("Wrong pattern #{node_pattern_spec.inspect} defined for calculating progress via logs.")
           return 0
         end
-        return progress
+        progress
       end
 
       def find_endlog_patterns(fo, pattern_spec)
@@ -109,7 +110,7 @@ module Astute
         endlog_patterns.each do |pattern|
           return pattern['progress'] if chunk.end_with?(pattern['pattern'])
         end
-        return nil
+        nil
       end
 
       def get_chunk(fo, size=nil, pos=nil)
@@ -124,9 +125,8 @@ module Astute
         fo.pos = next_pos
         block = fo.read(size)
         fo.pos = next_pos
-        return block
+        block
       end
     end
-
   end
 end

@@ -11,12 +11,12 @@ module Astute
       @agent = agent
       @nodes = nodes.map { |n| n.to_s }
       @check_result = check_result
-      unless Thread.current['semaphore'].nil?
+      if Thread.current['semaphore'].nil?
+        Thread.current['mclient'] = rpcclient(agent, :exit_on_failure => false)
+      else
         Thread.current['semaphore'].synchronize do
           Thread.current['mclient'] = rpcclient(agent, :exit_on_failure => false)
         end
-      else
-        Thread.current['mclient'] = rpcclient(agent, :exit_on_failure => false)
       end
       @mc = Thread.current['mclient']
 
@@ -29,12 +29,12 @@ module Astute
     end
 
     def method_missing(method, *args)
-      unless Thread.current['semaphore'].nil?
+      if Thread.current['semaphore'].nil?
+        Thread.current['mc_res'] = @mc.send(method, *args)
+      else
         Thread.current['semaphore'].synchronize do
           Thread.current['mc_res'] = @mc.send(method, *args)
         end
-      else
-        Thread.current['mc_res'] = @mc.send(method, *args)
       end
       res = Thread.current['mc_res']
 
@@ -59,12 +59,12 @@ module Astute
           Astute.logger.debug "Retry ##{retry_index} to run mcollective agent on nodes: '#{not_responded.join(',')}'"
           @mc.discover(:nodes => not_responded)
 
-          unless Thread.current['semaphore'].nil?
+          if Thread.current['semaphore'].nil?
+            Thread.current['mc_new_res'] = @mc.send(method, *args)
+          else
             Thread.current['semaphore'].synchronize do
               Thread.current['mc_new_res'] = @mc.send(method, *args)
             end
-          else
-            Thread.current['mc_new_res'] = @mc.send(method, *args)
           end
           new_res = Thread.current['mc_new_res']
 
@@ -90,16 +90,16 @@ module Astute
         raise "#{@task_id}: #{err_msg}"
       end
 
-      return res
+      res
     end
 
-    private
+  private
+
     def log_result(result, method)
       result.each do |node|
         Astute.logger.debug "#{@task_id}: MC agent '#{node.agent}', method '#{method}', "\
                             "results: #{node.results.inspect}"
       end
     end
-
   end
 end
