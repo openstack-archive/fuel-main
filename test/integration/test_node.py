@@ -303,23 +303,13 @@ class TestNode(Base):
             time.sleep(5)
 
     @snapshot_errors
-    def test_network_verify(self):
+    def test_network_verify_with_blocked_vlan(self):
         self._revert_nodes()
         cluster_name = 'net_verify'
         cluster_id = self._create_cluster(name=cluster_name)
-        # Check network in empty cluster.
-        task = self._run_network_verify(cluster_id)
-        task = self._task_wait(task, 'Verify network in empty cluster',
-                               20, True)
-        self.assertEquals(task['status'], 'error')
-        # Check network with one node.
         node_names = ['slave1', 'slave2']
         nailgun_slave_nodes = self._bootstrap_nodes(node_names)
         devops_nodes = [ci.environment.node[n] for n in node_names]
-        self._update_nodes_in_cluster(cluster_id, [nailgun_slave_nodes[0]])
-        task = self._run_network_verify(cluster_id)
-        self._task_wait(task, 'Verify network in cluster with one node', 20)
-        # Check network with two nodes.
         logging.info("Clear BROUTING table entries.")
         vlans = self._get_cluster_vlans(cluster_id)
         for vlan in vlans:
@@ -327,10 +317,6 @@ class TestNode(Base):
                 self._restore_vlan_in_ebtables(node.interfaces[0].target_dev,
                                                vlan, False)
         self._update_nodes_in_cluster(cluster_id, nailgun_slave_nodes)
-        task = self._run_network_verify(cluster_id)
-        self._task_wait(task, 'Verify network in cluster with two nodes',
-                        60 * 2)
-        # Check network with one blocked vlan.
         self._block_vlan_in_ebtables(devops_nodes, vlans[0])
         task = self._run_network_verify(cluster_id)
         task = self._task_wait(task,
