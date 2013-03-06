@@ -165,9 +165,13 @@ class NodeAgent
         (intinfo[:addresses] or {} rescue {}).each do |addr, addrinfo|
           if (addrinfo[:family] rescue nil) =~ /lladdr/
             int_meta[:mac] = addr
-            int_info = Rethtool::InterfaceSettings.new(int)
-            int_meta[:max_speed] = int_info.best_mode.speed
-            int_meta[:current_speed] = int_info.current_mode.speed
+            begin
+              int_info = Rethtool::InterfaceSettings.new(int)
+              int_meta[:max_speed] = int_info.best_mode.speed
+              int_meta[:current_speed] = int_info.current_mode.speed
+            rescue
+              int_meta[:current_speed] = nil
+            end
           elsif (addrinfo[:family] rescue nil) =~ /^inet$/
             int_meta[:ip] = addr
             int_meta[:netmask] = addrinfo[:netmask] if addrinfo[:netmask]
