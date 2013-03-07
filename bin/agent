@@ -213,17 +213,21 @@ class NodeAgent
     detailed_meta
   end
 
+  def _is_virtualbox
+    @os[:dmi][:system][:product_name] == "VirtualBox" rescue false
+  end
+
   def _is_virtual
-    @os["virtualization"]["role"] == "guest" rescue false
+    _is_virtualbox or @os[:virtualization][:role] == "guest" rescue false
   end
 
   def _manufacturer
-    if _is_virtual
-      return @os["virtualization"]["system"].upcase.strip rescue "Unknown"
+    if _is_virtualbox
+      @os[:dmi][:system][:product_name] rescue nil
+    elsif _is_virtual
+      @os[:virtualization][:system].upcase.strip rescue nil
     else
-      # Check in other place for VBox: ohai doesn't show it's virtual with VBox 4.2.4
-      return "VBOX" if @os["dmi"]["system"]["product_name"] == "VirtualBox" rescue nil
-      return @os[:dmi][:system][:manufacturer].strip rescue nil
+      @os[:dmi][:system][:manufacturer].strip rescue nil
     end
   end
 

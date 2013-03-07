@@ -792,7 +792,7 @@ h6.page-title {
 .manufacturer-dell {
   background: url(../img/node_manufacturer_logos.png) 0px -120px no-repeat;
 }
-.manufacturer-vbox {
+.manufacturer-vbox, .manufacturer-virtualbox {
   background: url(../img/node_manufacturer_logos.png) 0px -240px no-repeat;
 }
 .manufacturer-vmware {
