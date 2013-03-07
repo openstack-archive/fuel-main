@@ -3,17 +3,21 @@
     return freq + ' MHz';
   };
   var showBandwidth = function(bandwidth) {
-    if (bandwidth) return (bandwidth / 1000).toFixed(1) + ' Gbps';
-    return 'N/A';
+    bandwidth = parseInt(bandwidth, 10);
+    if (!_.isNumber(bandwidth) || _.isNaN(bandwidth)) return 'N/A';
+    return (bandwidth / 1000).toFixed(1) + ' Gbps';
   };
-  var showSize = function(bytes, base) {
-    var result = bytes;
+  var showSize = function(bytes, base, treshold) {
+    bytes = parseInt(bytes, 10);
+    if (!_.isNumber(bytes) || _.isNaN(bytes)) return 'N/A';
     base = base || 1024;
-    var gigabytes = (bytes / Math.pow(base, 3));
-    if (gigabytes < 100) {
-      result = gigabytes.toFixed(1) + ' GB';
-    } else {
-      result = (gigabytes / base).toFixed(1) + ' TB';
+    treshold = treshold || 256;
+    var units = ['bytes', 'KB', 'MB', 'GB', 'TB'];
+    for (var i = 0; i < units.length; i++) {
+      var result = bytes / Math.pow(base, i);
+      if (result < treshold) {
+        return (result ? result.toFixed(1) : result) + ' ' + units[i];
+      }
     }
     return result;
   };
@@ -43,8 +47,8 @@
         summary = (meta.system.manufacturer || '') + ' ' + (meta.system.product || '');
       } else if (group == 'memory') {
         if (_.isArray(meta.memory.devices) && meta.memory.devices.length) {
-          var sizes = _.groupBy(_.pluck(meta.memory.devices, 'size'), function(el) {return el});
-          summary = _.map(_.keys(sizes), function(size) {return sizes[size].length + ' x ' + showSize(size)}).join(', ');
+          var sizes = _.groupBy(_.pluck(meta.memory.devices, 'size'), function(el) {return showSize(el)});
+          summary = _.map(_.keys(sizes), function(size) {return sizes[size].length + ' x ' + size}).join(', ');
           summary += ', ' + showSize(meta.memory.total) + ' total';
         } else {
           summary = showSize(meta.memory.total) + ' total';
@@ -54,11 +58,11 @@
         summary += meta.disks.length == 1 ? ', ' : 's, ';
         summary += showSize(_.reduce(_.pluck(meta.disks, 'size'), function(sum, n) {return sum + n}, 0), 1000) + ' total';
       } else if (group == 'cpu') {
-        var frequencies = _.groupBy(_.pluck(meta.cpu.spec, 'frequency'), function(el) {return el});
-        summary = _.map(_.keys(frequencies), function(frequency) {return frequencies[frequency].length + ' x ' + showFrequency(frequency)}).join(', ');
+        var frequencies = _.groupBy(_.pluck(meta.cpu.spec, 'frequency'), showFrequency);
+        summary = _.map(_.keys(frequencies), function(frequency) {return frequencies[frequency].length + ' x ' + frequency}).join(', ');
       } else if (group == 'interfaces') {
-        var bandwidths = _.groupBy(_.pluck(meta.interfaces, 'current_speed'), function(el) {return el});
-        summary = _.map(_.keys(bandwidths), function(bandwidth) {return bandwidths[bandwidth].length + ' x ' + (bandwidth === 'null' ? 'N/A' : showBandwidth(bandwidth))}).join(', ');
+        var bandwidths = _.groupBy(_.pluck(meta.interfaces, 'current_speed'), showBandwidth);
+        summary = _.map(_.keys(bandwidths), function(bandwidth) {return bandwidths[bandwidth].length + ' x ' + bandwidth}).join(', ');
       }
     } catch (e) {};
     return summary;
