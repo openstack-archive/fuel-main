@@ -126,7 +126,7 @@ function(models, dialogViews, navbarTemplate, nodesStatsTemplate, notificationsT
         },
         calculateStats: function() {
             this.stats.total = this.nodes.length;
-            this.stats.unallocated = this.nodes.filter(function(node) {return node.get('online') && !node.get('role');}).length;
+            this.stats.unallocated = this.nodes.filter(function(node) {return !node.get('role');}).length;
         },
         render: function() {
             if (this.nodes.deferred.state() == 'resolved') {
