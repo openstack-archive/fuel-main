@@ -5,8 +5,10 @@ import threading
 from itertools import repeat
 from random import randrange, shuffle
 
+from kombu import Connection, Exchange, Queue
 from sqlalchemy.orm import object_mapper, ColumnProperty, \
     scoped_session, sessionmaker
+
 from nailgun.db import NoCacheQuery, orm, engine
 from nailgun.settings import settings
 from nailgun.logger import logger
@@ -24,6 +26,12 @@ class FakeThread(threading.Thread):
                                   verbose=verbose)
         self.data = data
         self.params = params
+        self.tick_count = int(settings.FAKE_TASKS_TICK_COUNT) or 20
+        self.low_tick_count = self.tick_count - 10
+        if self.low_tick_count < 0:
+            self.low_tick_count = 0
+        self.tick_interval = int(settings.FAKE_TASKS_TICK_INTERVAL) or 3
+
         self.task_uuid = data['args'].get(
             'task_uuid'
         )
@@ -42,7 +50,7 @@ class FakeThread(threading.Thread):
 
 
 class FakeDeploymentThread(FakeThread):
-    def run(self):
+    def message_gen(self):
         # TEST: we can fail at any stage:
         # "provisioning" or "deployment"
         error = self.params.get("error")
@@ -53,19 +61,11 @@ class FakeDeploymentThread(FakeThread):
         # True or False
         task_ready = self.params.get("task_ready")
 
-        receiver = NailgunReceiver()
         kwargs = {
             'task_uuid': self.task_uuid,
             'nodes': self.data['args']['nodes'],
             'status': 'running'
         }
-
-        tick_count = int(settings.FAKE_TASKS_TICK_COUNT) or 20
-        low_tick_count = tick_count - 10
-        if low_tick_count < 0:
-            low_tick_count = 0
-        tick_interval = int(settings.FAKE_TASKS_TICK_INTERVAL) or 3
-        resp_method = getattr(receiver, self.respond_to)
 
         next_st = {
             "discover": "provisioning",
@@ -86,8 +86,8 @@ class FakeDeploymentThread(FakeThread):
                     n['progress'] = 0
                 elif n['status'] != 'provisioned':
                     n['progress'] += randrange(
-                        low_tick_count,
-                        tick_count
+                        self.low_tick_count,
+                        self.tick_count
                     )
                     if n['progress'] >= 100:
                         n['progress'] = 100
@@ -97,7 +97,7 @@ class FakeDeploymentThread(FakeThread):
                 kwargs['nodes'][0]['status'] = "error"
                 kwargs['nodes'][0]['error_type'] = "provision"
                 error = None
-            resp_method(**kwargs)
+            yield kwargs
             if all(map(
                 lambda n: n['status'] in (
                     'provisioned',
@@ -107,7 +107,7 @@ class FakeDeploymentThread(FakeThread):
             )):
                 ready = True
             else:
-                self.sleep(tick_interval)
+                self.sleep(self.tick_interval)
 
         error_nodes = filter(
             lambda n: n['status'] == 'error',
@@ -123,7 +123,7 @@ class FakeDeploymentThread(FakeThread):
             if task_ready:
                 kwargs['status'] = 'ready'
             kwargs['progress'] = 100
-            resp_method(**kwargs)
+            yield kwargs
             return
 
         ready = False
@@ -136,8 +136,8 @@ class FakeDeploymentThread(FakeThread):
                     n['progress'] = 0
                 else:
                     n['progress'] += randrange(
-                        low_tick_count,
-                        tick_count
+                        self.low_tick_count,
+                        self.tick_count
                     )
                     if n['progress'] >= 100:
                         n['progress'] = 100
@@ -162,13 +162,45 @@ class FakeDeploymentThread(FakeThread):
             # TEST: set task to ready no matter what
             if task_ready:
                 kwargs['status'] = 'ready'
-            resp_method(**kwargs)
-            self.sleep(tick_interval)
+            yield kwargs
+            self.sleep(self.tick_interval)
+
+    def run(self):
+        if settings.FAKE_TASKS_AMQP:
+            nailgun_exchange = Exchange(
+                'nailgun',
+                'topic',
+                durable=True
+            )
+            nailgun_queue = Queue(
+                'nailgun',
+                exchange=nailgun_exchange,
+                routing_key='nailgun'
+            )
+            with Connection('amqp://guest:guest@localhost//') as conn:
+                with conn.Producer(serializer='json') as producer:
+                    for msg in self.message_gen():
+                        producer.publish(
+                            {
+                                "method": self.respond_to,
+                                "args": msg
+                            },
+                            exchange=nailgun_exchange,
+                            routing_key='nailgun',
+                            declare=[nailgun_queue]
+                        )
+        else:
+            receiver = NailgunReceiver()
+            receiver.initialize()
+            resp_method = getattr(receiver, self.respond_to)
+            for msg in self.message_gen():
+                resp_method(**msg)
 
 
 class FakeDeletionThread(FakeThread):
     def run(self):
         receiver = NailgunReceiver()
+        receiver.initialize()
         kwargs = {
             'task_uuid': self.task_uuid,
             'nodes': self.data['args']['nodes'],
@@ -195,6 +227,7 @@ class FakeDeletionThread(FakeThread):
 class FakeVerificationThread(FakeThread):
     def run(self):
         receiver = NailgunReceiver()
+        receiver.initialize()
         kwargs = {
             'task_uuid': self.task_uuid,
             'progress': 0

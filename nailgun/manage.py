@@ -9,7 +9,7 @@ import code
 import web
 from sqlalchemy.orm import scoped_session, sessionmaker
 
-from nailgun.db import syncdb, orm, dropdb
+from nailgun.db import syncdb, dropdb, orm
 from nailgun.settings import settings
 from nailgun.unit_test import TestRunner
 from nailgun.logger import logger
@@ -33,6 +33,10 @@ if __name__ == "__main__":
     )
     run_parser.add_argument(
         '--fake-tasks', action='store_true', help='fake tasks'
+    )
+    run_parser.add_argument(
+        '--fake-tasks-amqp', action='store_true',
+        help='fake tasks with real AMQP'
     )
     run_parser.add_argument(
         '--keepalive',
@@ -105,7 +109,7 @@ if __name__ == "__main__":
             'LISTEN_ADDRESS': params.address,
         })
         for attr in ['FAKE_TASKS', 'FAKE_TASKS_TICK_COUNT',
-                     'FAKE_TASKS_TICK_INTERVAL']:
+                     'FAKE_TASKS_TICK_INTERVAL', 'FAKE_TASKS_AMQP']:
             param = getattr(params, attr.lower())
             if param is not None:
                 settings.update({attr: param})

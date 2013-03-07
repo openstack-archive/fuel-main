@@ -106,10 +106,10 @@ class ClusterHandler(JSONHandler):
         try:
             logger.debug('Trying to execute cluster deletion task')
             task = task_manager.execute()
-            logger.debug('Cluster deletion task: %s' % task.uuid)
         except Exception as e:
             logger.warn('Error while execution '
                         'cluster deletion task: %s' % str(e))
+            logger.warn(traceback.format_exc())
             raise web.badrequest(str(e))
 
         raise web.webapi.HTTPError(

@@ -1,20 +1,18 @@
 # -*- coding: utf-8 -*-
 
-import Queue
 import logging
 import threading
+
+from kombu import Connection, Exchange, Queue
 
 import nailgun.rpc as rpc
 from nailgun.logger import logger
 from nailgun.rpc.receiver import NailgunReceiver
 
-rpc_queue = Queue.Queue()
-
 
 class RPCThread(threading.Thread):
     def __init__(self, rec_class=NailgunReceiver):
         super(RPCThread, self).__init__()
-        self.queue = rpc_queue
         self.receiver = rec_class()
         self.conn = rpc.create_connection(True)
         self.conn.create_consumer('nailgun', self.receiver)

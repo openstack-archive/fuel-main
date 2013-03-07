@@ -14,7 +14,7 @@ from sqlalchemy import or_
 
 import nailgun.rpc as rpc
 from nailgun.logger import logger
-from nailgun.db import orm, engine
+from nailgun.db import engine, NoCacheQuery
 from nailgun.network.manager import get_node_networks
 from nailgun.settings import settings
 from nailgun.task.helpers import update_task_status
@@ -29,9 +29,16 @@ class TaskNotFound(Exception):
 
 class NailgunReceiver(object):
 
+    db = None
+
+    @classmethod
+    def initialize(cls):
+        cls.db = scoped_session(
+            sessionmaker(bind=engine, query_cls=NoCacheQuery)
+        )
+
     @classmethod
     def remove_nodes_resp(cls, **kwargs):
-        db = orm()
         logger.info("RPC method remove_nodes_resp received: %s" % kwargs)
         task_uuid = kwargs.get('task_uuid')
         nodes = kwargs.get('nodes') or []
@@ -41,17 +48,17 @@ class NailgunReceiver(object):
         progress = kwargs.get('progress')
 
         for node in nodes:
-            node_db = db.query(Node).get(node['uid'])
+            node_db = cls.db.query(Node).get(node['uid'])
             if not node_db:
                 logger.error(
                     u"Failed to delete node '%s': node doesn't exist",
                     str(node)
                 )
                 break
-            db.delete(node_db)
+            cls.db.delete(node_db)
 
         for node in error_nodes:
-            node_db = db.query(Node).get(node['uid'])
+            node_db = cls.db.query(Node).get(node['uid'])
             if not node_db:
                 logger.error(
                     u"Failed to delete node '%s' marked as error from Naily:"
@@ -60,9 +67,9 @@ class NailgunReceiver(object):
                 break
             node_db.pending_deletion = False
             node_db.status = 'error'
-            db.add(node_db)
+            cls.db.add(node_db)
             node['name'] = node_db.name
-        db.commit()
+        cls.db.commit()
 
         success_msg = u"No nodes were removed"
         err_msg = u"No errors occurred"
@@ -86,20 +93,19 @@ class NailgunReceiver(object):
 
     @classmethod
     def remove_cluster_resp(cls, **kwargs):
-        db = orm()
         logger.info("RPC method remove_cluster_resp received: %s" % kwargs)
         task_uuid = kwargs.get('task_uuid')
 
         cls.remove_nodes_resp(**kwargs)
 
-        task = db.query(Task).filter_by(uuid=task_uuid).first()
+        task = cls.db.query(Task).filter_by(uuid=task_uuid).first()
         cluster = task.cluster
 
         if task.status in ('ready',):
             logger.debug("Removing environment itself")
             cluster_name = cluster.name
-            db.delete(cluster)
-            db.commit()
+            cls.db.delete(cluster)
+            cls.db.commit()
 
             notifier.notify(
                 "done",
@@ -110,8 +116,8 @@ class NailgunReceiver(object):
 
         elif task.status in ('error',):
             cluster.status = 'error'
-            db.add(cluster)
-            db.commit()
+            cls.db.add(cluster)
+            cls.db.commit()
             if not task.message:
                 task.message = "Failed to delete nodes:\n{0}".format(
                     cls._generate_error_message(
@@ -127,7 +133,6 @@ class NailgunReceiver(object):
 
     @classmethod
     def deploy_resp(cls, **kwargs):
-        db = orm()
         logger.info("RPC method deploy_resp received: %s" % kwargs)
         task_uuid = kwargs.get('task_uuid')
         nodes = kwargs.get('nodes') or []
@@ -135,7 +140,7 @@ class NailgunReceiver(object):
         status = kwargs.get('status')
         progress = kwargs.get('progress')
 
-        task = db.query(Task).filter_by(uuid=task_uuid).first()
+        task = cls.db.query(Task).filter_by(uuid=task_uuid).first()
         if not task:
             # No task found - nothing to do here, returning
             logger.warning(
@@ -150,7 +155,7 @@ class NailgunReceiver(object):
         error_nodes = []
         # First of all, let's update nodes in database
         for node in nodes:
-            node_db = db.query(Node).get(node['uid'])
+            node_db = cls.db.query(Node).get(node['uid'])
 
             if not node_db:
                 logger.warning(
@@ -199,15 +204,15 @@ class NailgunReceiver(object):
                             task_uuid=task_uuid
                         )
 
-            db.add(node_db)
-            db.commit()
+            cls.db.add(node_db)
+            cls.db.commit()
 
         # We should calculate task progress by nodes info
-        task = db.query(Task).filter_by(uuid=task_uuid).first()
+        task = cls.db.query(Task).filter_by(uuid=task_uuid).first()
         coeff = settings.PROVISIONING_PROGRESS_COEFF or 0.3
         if nodes and not progress:
             nodes_progress = []
-            nodes_db = db.query(Node).filter_by(
+            nodes_db = cls.db.query(Node).filter_by(
                 cluster_id=task.cluster_id).all()
             for node in nodes_db:
                 if node.status == "discover":
@@ -237,9 +242,8 @@ class NailgunReceiver(object):
 
     @classmethod
     def _generate_error_message(cls, task, error_types, names_only=False):
-        db = orm()
         nodes_info = []
-        error_nodes = db.query(Node).filter_by(
+        error_nodes = cls.db.query(Node).filter_by(
             cluster_id=task.cluster_id
         ).filter(
             or_(Node.status == 'error', not Node.online)
@@ -285,7 +289,6 @@ class NailgunReceiver(object):
 
     @classmethod
     def _success_action(cls, task, status, progress):
-        db = orm()
         # check if all nodes are ready
         if any(map(lambda n: n.status == 'error',
                    task.cluster.nodes)):
@@ -295,7 +298,7 @@ class NailgunReceiver(object):
         if task.cluster.mode in ('singlenode', 'multinode'):
             # determining horizon url - it's an IP
             # of a first cluster controller
-            controller = db.query(Node).filter_by(
+            controller = cls.db.query(Node).filter_by(
                 cluster_id=task.cluster_id,
                 role='controller'
             ).first()
@@ -373,7 +376,6 @@ class NailgunReceiver(object):
 
     @classmethod
     def verify_networks_resp(cls, **kwargs):
-        db = orm()
         logger.info("RPC method verify_networks_resp received: %s" % kwargs)
         task_uuid = kwargs.get('task_uuid')
         nodes = kwargs.get('nodes')
@@ -382,7 +384,7 @@ class NailgunReceiver(object):
         progress = kwargs.get('progress')
 
         # We simply check that each node received all vlans for cluster
-        task = db.query(Task).filter_by(uuid=task_uuid).first()
+        task = cls.db.query(Task).filter_by(uuid=task_uuid).first()
         if not task:
             logger.error("verify_networks_resp: task \
                     with UUID %s not found!", task_uuid)
@@ -416,7 +418,7 @@ class NailgunReceiver(object):
                                 data = {'uid': n['uid'],
                                         'interface': iface['iface'],
                                         'absent_vlans': absent_vlans}
-                                node_db = db.query(Node).get(n['uid'])
+                                node_db = cls.db.query(Node).get(n['uid'])
                                 if node_db:
                                     data.update({'name': node_db.name,
                                                  'mac': node_db.mac})

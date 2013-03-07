@@ -65,7 +65,7 @@ def appstart(keepalive=False):
         if not keep_alive.is_alive():
             logger.info("Running KeepAlive watcher...")
             keep_alive.start()
-        rpc_process = processed.RPCProcess()
+        rpc_process = processed.RPCKombuProcess()
         logger.info("Running RPC process...")
         rpc_process.start()
     logger.info("Running WSGI app...")
