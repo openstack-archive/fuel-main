@@ -272,13 +272,13 @@ class NodeAgent
 
   def _dmi_memory
     dmi = `/usr/sbin/dmidecode`
-    info = {:devices => [], :total => 0}
+    info = {:devices => [], :total => 0, :maximum_capacity => 0}
     return nil if $?.to_i != 0
     mem_mapped = false
     dmi.split(/\n\n/).each do |group|
       if /^Physical Memory Array$/.match(group)
         if /^\s*Maximum Capacity:\s+(\d+)\s+(mb|gb|kb)/i.match(group)
-          info[:maximum_capacity] = _size($1.to_i, $2)
+          info[:maximum_capacity] += _size($1.to_i, $2)
         end
         if /^\s*Number Of Devices:\s+(\d+)/i.match(group)
           info[:slots] = $1.to_i

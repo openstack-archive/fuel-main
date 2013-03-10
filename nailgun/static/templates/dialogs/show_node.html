@@ -35,7 +35,7 @@
   var showPropertyValue = function(group, name, value) {
     try {
       if (group == 'memory' && (name == 'total' || name == 'maximum_capacity')) {
-        value = showSize(value);
+        value = showSize(value, 1024, 1024);
       } else if (group == 'disks' && name == 'size') {
         value = showSize(value, 1000);
       } else if (name == 'size') {
