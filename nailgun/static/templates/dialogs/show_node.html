@@ -1,6 +1,14 @@
 <%
-  var showFrequency = function(freq) {
-    return freq + ' MHz';
+  var showFrequency = function(frequency) {
+    frequency = parseInt(frequency, 10);
+    if (!_.isNumber(frequency) || _.isNaN(frequency)) return 'N/A';
+    var base = 1000;
+    var treshold = 1000;
+    if (frequency >= treshold) {
+      return (frequency / base).toFixed(2) + ' GHz';
+    } else {
+      return frequency + ' MHz';
+    }
   };
   var showBandwidth = function(bandwidth) {
     bandwidth = parseInt(bandwidth, 10);

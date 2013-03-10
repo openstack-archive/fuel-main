@@ -180,9 +180,15 @@ class NodeAgent
     begin
       (@os[:cpu] or {} rescue {}).each do |cpu, cpuinfo|
         if cpu =~ /^[\d]+/ and cpuinfo
+          frequency = cpuinfo[:mhz].to_i rescue nil
+          begin
+            # ohai returns current frequency, try to get max if possible
+            max_frequency = `cat /sys/devices/system/cpu/cpu#{cpu}/cpufreq/cpuinfo_max_freq 2>/dev/null`.to_i / 1000
+            frequency = max_frequency if max_frequency > 0
+          rescue
+          end
           detailed_meta[:cpu][:spec] << {
-            # .to_i.to_s is applied in order to round to integer
-            :frequency => (cpuinfo[:mhz].to_i rescue nil),
+            :frequency => frequency,
             :model => (cpuinfo[:model_name].gsub(/ +/, " ") rescue nil)
           }
         end
