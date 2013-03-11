@@ -43,6 +43,7 @@ class KeepAliveThread(threading.Thread):
 
     def run(self):
         while not self.stoprequest.isSet():
+            self.db.expire_all()
             for node_db in self.db.query(Node).filter(
                 # nodes may become unresponsive while provisioning
                 not_(Node.status == 'provisioning')

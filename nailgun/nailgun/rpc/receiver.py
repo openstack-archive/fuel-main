@@ -38,6 +38,11 @@ class NailgunReceiver(object):
         )
 
     @classmethod
+    def stop(cls):
+        cls.db.commit()
+        cls.db.close()
+
+    @classmethod
     def remove_nodes_resp(cls, **kwargs):
         logger.info("RPC method remove_nodes_resp received: %s" % kwargs)
         task_uuid = kwargs.get('task_uuid')

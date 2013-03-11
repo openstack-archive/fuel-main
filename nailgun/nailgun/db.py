@@ -58,6 +58,7 @@ def load_db_driver(handler):
         raise
     finally:
         web.ctx.orm.commit()
+        web.ctx.orm.expire_all()
 
 
 def syncdb():

@@ -190,16 +190,17 @@ class FakeDeploymentThread(FakeThread):
                             declare=[nailgun_queue]
                         )
         else:
-            receiver = NailgunReceiver()
+            receiver = NailgunReceiver
             receiver.initialize()
             resp_method = getattr(receiver, self.respond_to)
             for msg in self.message_gen():
                 resp_method(**msg)
+            receiver.stop()
 
 
 class FakeDeletionThread(FakeThread):
     def run(self):
-        receiver = NailgunReceiver()
+        receiver = NailgunReceiver
         receiver.initialize()
         kwargs = {
             'task_uuid': self.task_uuid,
@@ -222,11 +223,12 @@ class FakeDeletionThread(FakeThread):
                             "New node with %s CPU core(s) "
                             "and %s GB memory is discovered" %
                             (cores, ram), node_id=node.id)
+        receiver.stop()
 
 
 class FakeVerificationThread(FakeThread):
     def run(self):
-        receiver = NailgunReceiver()
+        receiver = NailgunReceiver
         receiver.initialize()
         kwargs = {
             'task_uuid': self.task_uuid,
@@ -266,6 +268,7 @@ class FakeVerificationThread(FakeThread):
             if time.time() - timer > timeout:
                 raise Exception("Timeout exceed")
             self.sleep(tick_interval)
+        receiver.stop()
 
 
 FAKE_THREADS = {
