@@ -1,0 +1,73 @@
+# This is example environment configuration file for Astute.
+---
+# `task_uuid' is used for logging purposes only. You can use it to tag log
+# messages which relaited to different Astute runs.
+task_uuid: deployment_task
+
+# `attributes' section describe attributes of OpenStack installation.
+attributes:
+  # `deployment_mode' shows what type of installation you choose.
+  # Can be:
+  #   `singlenode_compute' - means only one node will be deployed. It will
+  #      contain Controller and Compute components of OpenStack.
+  #   `multinode_compute' - means one Controller node and some Compute nodes
+  #      will be deployed.
+  #   `ha_compute' - means at least three Controller nodes and some Compute
+  #      nodes will be deployed in High Availability mode of Controller
+  #      components.
+  #   In last two cases Astute first of all deployes Contoller components,
+  #   after that it deployes Compute components and finaly deployes other
+  #   components if they exist.
+  deployment_mode: multinode_compute
+  # `deployment_engine' - shows how you will handle attributes for Puppet
+  # manifests.
+  #   `simplepuppet' - means you should manualy set up all necessary attributes
+  #      in your site.pp file. This engine simply run Puppet agent on the
+  #      client's side. In this case Puppet agent uses attributes from site.pp.
+  #   `nailyfact' - means it automaticaly calculate some necessary attributes
+  #      e.g. `controller_node_public' address. Also it store necessary
+  #      attributes on the node's side. In this case Puppet agent uses these
+  #      attributes via `facts'.
+  deployment_engine: simplepuppet
+
+  # All other attributes are optional and make sence for `nailyfact' deployment
+  # engine only.
+  glance:
+    db_password: glance
+    user_password: glance
+  mysql:
+    root_password: nova
+  keystone:
+    db_password: admin
+    admin_tenant: admin
+    admin_token: admin
+  rabbit:
+    password: nova
+    user: nova
+  nova:
+    db_password: nova
+    user_password: nova
+  auto_assign_floating_ip: false
+  fixed_network_range: 10.0.0.0/24
+  storage_network_range: 172.16.0.0/24
+  floating_network_range: 240.0.0.0/24
+  management_network_range: 192.168.0.0/24
+  public_network_range: 240.0.1.0/24
+
+# `nodes' section obviously describe your nodes.
+nodes:
+  # `role' attribute can be:
+  #    `controller' - node should include Controller component of OpenStack.
+  #    `compute' - node should include Compute component of OpenStack.
+  #    other values - any other components.
+  # Nodes with different roles should be deployed in determinate order.
+  # See `deployment_mode' for explanations.
+- role: controller
+  # `uid' is unique identifier of node. Can be any string. It's used to call
+  # particular node via MCollective.
+  uid: devnailgun1.mirantis.com
+  # All other node's attributes are optional and make sence for `nailyfact'
+  # deployment engine only.
+
+- role: compute
+  uid: devnailgun2.mirantis.com

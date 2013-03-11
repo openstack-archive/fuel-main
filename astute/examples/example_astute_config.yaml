@@ -1,0 +1,22 @@
+# This is example config file for Astute. Your config file should be placed
+# to /opt/astute/astute.conf. You can check default values in config.rb file.
+---
+# MC_RETRIES is used in mclient.rb file.
+# MClient tries MC_RETRIES times to call MCagent before failure.
+MC_RETRIES: 5
+# PUPPET_TIMEOUT is used in puppetd.rb file.
+# Maximum time (in seconds) Astute waits for the whole deployment.
+PUPPET_TIMEOUT: 3600
+# PUPPET_DEPLOY_INTERVAL is used in puppetd.rb file.
+# Astute sleeps for PUPPET_DEPLOY_INTERVAL seconds, then check Puppet agents
+# statuses again.
+PUPPET_DEPLOY_INTERVAL: 2
+# PUPPET_FADE_TIMEOUT is used in puppetd.rb file.
+# After Puppet agent has finished real work it spend some time to graceful exit.
+# PUPPET_FADE_TIMEOUT means how long (in seconds) Astute can take for Puppet
+# to exit after real work has finished.
+PUPPET_FADE_TIMEOUT: 60
+# PUPPET_FADE_INTERVAL is used in puppetd.rb file.
+# Retry every PUPPET_FADE_INTERVAL seconds to check puppet state if it was
+# in 'running' state.
+PUPPET_FADE_INTERVAL: 1
