@@ -3008,6 +3008,10 @@ select[name=release] option {
   background-color: #ececec;
 }
 
+#nodeDetailsAccordion a[href="#cpu"] {
+  text-transform: uppercase;
+}
+
 #nodeDetailsAccordion a:hover {
   text-decoration: none;
 }
