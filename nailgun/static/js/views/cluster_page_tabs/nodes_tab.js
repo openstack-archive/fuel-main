@@ -87,7 +87,7 @@ function(models, commonViews, dialogViews, LogsTab, nodesTabSummaryTemplate, edi
             this.bindTaskEvents();
         },
         bindTaskEvents: function() {
-            var task = this.model.task('deploy', 'running');
+            var task = this.model.task('deploy');
             if (!task) {
                 task = this.model.task('verify_networks', 'running');
             }
