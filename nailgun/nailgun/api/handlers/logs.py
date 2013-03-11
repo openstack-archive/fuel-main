@@ -159,8 +159,15 @@ class LogEntryCollectionHandler(JSONHandler):
         has_more = False
         with open(log_file, 'r') as f:
             f.seek(0, 2)
+            # we need to calculate current position manually instead of using
+            # tell() because read_backwards uses buffering
+            pos = f.tell()
             multilinebuf = []
             for line in read_backwards(f):
+                pos -= len(line)
+                if not truncate_log and pos < to_byte:
+                    has_more = pos > 0
+                    break
                 entry = line.rstrip('\n')
                 if not len(entry):
                     continue
@@ -199,9 +206,6 @@ class LogEntryCollectionHandler(JSONHandler):
                     entry_text
                 ])
                 if truncate_log and len(entries) >= max_entries:
-                    has_more = True
-                    break
-                elif not truncate_log and f.tell() < to_byte:
                     has_more = True
                     break
 
