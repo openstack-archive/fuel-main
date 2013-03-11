@@ -4,6 +4,7 @@ User Guide
 ==========
 
 .. toctree::
+   :maxdepth: 3
 
-   user/networks
    user/vbox-install
+   user/networks

@@ -1,5 +1,7 @@
-Network configuration
-===================================================
+Understanding and configuring network
+=====================================
+
+.. contents:: :local:
 
 There are two basic types of network managers used in OpenStack clusters. The first one is so called
 flat manager and the second one is vlan manager. For more information about how they work one can read
@@ -8,9 +10,11 @@ the following blog posts.
 * `OpenStack Networking – FlatManager and FlatDHCPManager <http://www.mirantis.com/blog/openstack-networking-flatmanager-and-flatdhcpmanager/>`_
 * `Openstack Networking for Scalability and Multi-tenancy with VlanManager <http://www.mirantis.com/blog/openstack-networking-vlanmanager/>`_
 
+Available Options
+-----------------
 
 Flat Manager (multi-interface scheme)
--------------------------------------
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
 The main idea behind flat network manager is to configure bridge (let say **br100**) on every compute
 node and to connect it to some interface. Once virtual machine is launched its virtual interface is
@@ -71,7 +75,7 @@ on all compute nodes have promiscuous mode enabled. Promiscuous mode allows the 
 packets not targeted to this interface’s MAC address but to vm's MAC address.
 
 Flat Manager (single-interface scheme)
---------------------------------------
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
 However we use a bit different scheme for flat manager mode. It is supposed that all compute nodes are
 connected to the network with only one physical interface **eth0**. In order to split virtual machines
@@ -127,8 +131,8 @@ if they on different compute nodes. However if virtual machine sends IP packets 
 they will be routed on the host machine.
 
 
-Vlan manager
-------------
+VLAN manager
+^^^^^^^^^^^^
 
 Vlan manager mode is more suitable for large scale clouds. The idea behind this mode is to define vlan
 range and assign those vlans to given tenants. So virtual machines inside given tenant communicate with
@@ -185,14 +189,13 @@ as tagged (trunk) ports.
     compute2_eth0 -up- [L2 switch]
 
 
-Step-by-Step configuration
---------------------------
+Making Configuration
+--------------------
 
 Scheme
 ^^^^^^
 
-First of all you need to realize the whole network scheme of your future cloud and then to configure your equipment according to this scheme. Note that the IP addresses in your case will differ from those shown
-on the scheme.
+Once you figure out whe network scheme for your future cloud, you need to configure your equipment according to this scheme. Note that the IP addresses in your case will differ from those shown in the diagrams.
 
 .. image:: _static/flat.png
 
@@ -231,10 +234,11 @@ openstack networks (vlans 102, 103, 104) should not be configured on router as t
 inside cluster.
 
 
-Master Node
-^^^^^^^^^^^
+Admin Node
+^^^^^^^^^^
 
-During master node installation it is supposed by default that on 10.20.0.1 there is a recursive DNS service.
+During master node installation it is assumed that there is a recursive DNS service on 10.20.0.1.
+
 If you want to make slave nodes able to resolve public names you need to change this default value to
 point on actual DNS service. This value can be changed via text based dialog provided by anaconda.
 It is implemented in anaconda kickstart in post install section. Slave nodes use DNS service running
@@ -248,5 +252,4 @@ on the network tab you choose configuration shown on the following figure.
 
 .. image:: _static/web_network_tab.png
 
-Once cluster installation is finished you can get access to openstack dashboard via url http://240.0.1.100/
 
