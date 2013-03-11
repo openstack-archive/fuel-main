@@ -22,14 +22,18 @@ function(models, commonViews, dialogViews, networkTabTemplate, networkTabViewMod
             'change .row select': 'makeChanges',
             'click .apply-btn:not([disabled])': 'apply',
             'click .verify-networks-btn:not([disabled])': 'verifyNetworks',
+            'click .btn-revert-changes:not([disabled])': 'revertChanges',
             'click .nav a:not(.active)': 'changeMode',
             'click .net-manager input:not([checked])': 'changeManager',
             'keyup .range': 'displayRange'
         },
+        defaultButtonsState: function(buttonState) {
+            this.$('.btn:not(.verify-networks-btn)').attr('disabled', buttonState);
+        },
         checkForChanges: function() {
             this.setValues();
             var noChanges = _.isEqual(this.networks.toJSON(), this.dataDbState.settings) && this.model.get('net_manager') == this.dataDbState.manager;
-            this.$('.apply-btn').attr('disabled', noChanges);
+            this.defaultButtonsState(noChanges);
             this.hasChanges = !noChanges;
         },
         makeChanges: function(e) {
@@ -106,19 +110,19 @@ function(models, commonViews, dialogViews, networkTabTemplate, networkTabViewMod
         },
         apply: function() {
             if (this.setValues()) {
-                this.$('.apply-btn').attr('disabled', true);
+                this.defaultButtonsState(true);
                 this.model.update({net_manager: this.$('.net-manager input[checked]').val()});
                 Backbone.sync('update', this.networks, {
                     url: '/api/clusters/' + this.model.id + '/save/networks',
                     error: _.bind(function() {
-                        this.$('.apply-btn').attr('disabled', false);
+                        this.defaultButtonsState(false);
                         var dialog = new dialogViews.SimpleMessage({error: true, title: 'Networks'});
                         this.registerSubView(dialog);
                         dialog.render();
                     }, this),
                     success: _.bind(function(task) {
                         if (task && task.status == 'error') {
-                            this.$('.apply-btn').attr('disabled', false);
+                            this.defaultButtonsState(false);
                         } else {
                             this.hasChanges = false;
                             this.dataDbState.settings = this.networks.toJSON();
@@ -166,6 +170,17 @@ function(models, commonViews, dialogViews, networkTabTemplate, networkTabViewMod
                 this.$('.verify-networks-btn').attr('disabled', true);
                 app.page.removeVerificationTask().done(_.bind(this.startVerification, this));
             }
+        },
+        revertChanges: function() {
+            this.hasChanges = false;
+            this.model.set({net_manager: this.dataDbState.manager});
+            this.networks = new models.Networks(this.dataDbState.settings);
+            this.networks.deferred = new $.Deferred();
+            this.networks.deferred.resolve();
+            app.page.removeVerificationTask().done(_.bind(function(){
+                this.render();
+                this.defaultButtonsState(true);
+            }, this));
         },
         bindTaskEvents: function() {
             var task = this.model.task('verify_networks') || this.model.task('check_networks', 'error') || this.model.task('deploy', 'running');
