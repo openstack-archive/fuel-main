@@ -1358,6 +1358,7 @@ h6.page-title {
 .networks-table .control-group > div, .networks-table .networks-header > div {
   float: left;
   margin-left: 20px;
+  font-size: 11px;
 }
 
 .networks-header {
@@ -2884,6 +2885,14 @@ select[name=release] option {
   padding-top: 10px;
 }
 
+.verification-box > .alert {
+  margin-bottom: 0px;
+  margin-top: 10px;
+  padding: 8px 35px 10px 14px;
+  width: 529px;
+}
+
+
 .verification-router {
   display: block;
   width: 200px;
@@ -3248,4 +3257,41 @@ hr.slim {
 
 .display-changes-dialog .alert-error {
   margin-top: 10px;
+}
+
+.radio-checkbox-group {
+  margin: 0;
+  padding: 0;
+  margin-top: 10px;
+}
+
+.radio-checkbox-group:before, .radio-checkbox-group:after {
+  display: table;
+  line-height: 0;
+  content: "";
+}
+
+.radio-checkbox-group:after {
+  clear: both;
+}
+
+.radio-checkbox-group > .item-box {
+  width: auto;
+  float: left;
+  margin-left: 0px;
+  padding:0px;
+  min-height: 1px;
+}
+
+.radio-checkbox-group > .item-box > .parameter-box {
+  margin: 0px;
+  margin-right: 20px;
+}
+
+.radio-checkbox-group > .item-box > .parameter-box > .parameter-control {
+  margin-right: 5px;
+}
+
+.radio-checkbox-group > .item-box > .parameter-box > .parameter-name {
+  min-width: 10px;
 }

@@ -1,14 +1,16 @@
 <div class="wrapper">
   <h3>Network Settings</h3>
 
-  <!--<ul class="nav nav-pills">
+  <!--
+  <ul class="nav nav-pills">
     <li class="active network-setup">
       <a href="#">Network Setup</a>
     </li>
     <li class="network-view">
       <a href="#">Network View</a>
     </li>
-  </ul>-->
+  </ul>
+  -->
 
   <div class="network-tab-content">
     <% var disabled = cluster.task('deploy', 'running') || cluster.task('verify_networks', 'running') ? 'disabled' : '' %>
@@ -17,15 +19,49 @@
       <% if (networks.deferred.state() != 'pending') { %>
 
         <% var net_manager = cluster.get('net_manager') %>
-        <div class="form-inline net-manager">
-          <label class="radio">
-            <input type="radio" name="net-manager" id="optionsRadios1" value="FlatDHCPManager" <%= net_manager == 'FlatDHCPManager' ? 'checked' : '' %> <%= disabled %>>FlatDHCP Manager
-          </label>
-          <div class="spacer"></div>
-          <label class="radio">
-            <input type="radio" name="net-manager" id="optionsRadios2" value="VlanManager" <%= net_manager == 'VlanManager' ? 'checked' : '' %> <%= disabled %>>VLAN Manager
-          </label>
+
+        <div class="radio-checkbox-group">
+
+          <div class="item-box">
+            <label class="parameter-box clearfix">
+              <div class="parameter-control">
+                <div class="custom-tumbler">
+                  <input type="radio" checked="" value="nova.scheduler.filter_scheduler.FilterScheduler" name=" compute_scheduler_driver">
+                  <!--[if !IE |(gte IE 9)]>--><span>&nbsp;</span><!--<![endif]-->
+                </div>
+              </div>
+              <div class="parameter-name">FlatDHCP Manager</div>
+            </label>
+          </div>
+
+          <div class="item-box">
+            <label class="parameter-box clearfix">
+              <div class="parameter-control">
+                <div class="custom-tumbler">
+                  <input type="radio" value="nova.scheduler.filter_scheduler.FilterScheduler" name=" compute_scheduler_driver">
+                  <!--[if !IE |(gte IE 9)]>--><span>&nbsp;</span><!--<![endif]-->
+                </div>
+              </div>
+              <div class="parameter-name">VLAN Manager</div>
+            </label>
+          </div>
+
+          <div class="item-box">
+            <label class="parameter-box clearfix">
+              <div class="parameter-control">
+                <div class="custom-tumbler">
+                  <input type="radio" value="nova.scheduler.filter_scheduler.FilterScheduler" name=" compute_scheduler_driver">
+                  <!--[if !IE |(gte IE 9)]>--><span>&nbsp;</span><!--<![endif]-->
+                </div>
+              </div>
+              <div class="parameter-name">Other Option</div>
+            </label>
+          </div>
+
+          
         </div>
+
+        <hr>
 
         <form class="form-inline networks-table" onsubmit="return false">
 
@@ -99,6 +135,7 @@
                   <span class="vlan-end <%= range ? '' : 'hide' %>">-</span>
                   <input class="vlan-end input-mini <%= range  ? '' : 'hide' %>" type="text" value="<%= vlan_end %>" disabled />
                 </div>
+
                 <div class="error">
                   <span class="help-inline"></span>
                 </div>
@@ -118,6 +155,8 @@
       <% } %>
     </fieldset>
   </div>
+
+  <hr>
 
   <!-- Verification control -->
   <div class="row verification-control"></div>
