@@ -42,8 +42,8 @@ When you unpack the scripts, there will be the following important files:
 
 * iso
 
-  * this directory needs to contain a single ISO image for Fuel Web
-  * once you download the ISO from the portal, put it into this directory
+  * this directory will initially be empty. if it does not exist, it has to be created
+  * it needs to contain a single ISO image for Fuel Web. once you download ISO from the portal, put it into this directory
 
 * config.sh
 
