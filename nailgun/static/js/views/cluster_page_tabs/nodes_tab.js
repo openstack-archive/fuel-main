@@ -87,7 +87,7 @@ function(models, commonViews, dialogViews, LogsTab, nodesTabSummaryTemplate, edi
             this.bindTaskEvents();
         },
         bindTaskEvents: function() {
-            var task = this.model.task('deploy');
+            var task = this.model.task('deploy', 'running');
             if (!task) {
                 task = this.model.task('verify_networks', 'running');
             }
@@ -98,6 +98,9 @@ function(models, commonViews, dialogViews, LogsTab, nodesTabSummaryTemplate, edi
         },
         bindNodesEvents: function() {
             this.model.get('nodes').bind('reset', this.render, this);
+            if (arguments.length) {
+                this.render();
+            }
         },
         render: function() {
             this.tearDownRegisteredSubViews();
