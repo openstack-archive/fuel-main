@@ -19,52 +19,33 @@
       <% if (networks.deferred.state() != 'pending') { %>
 
         <% var net_manager = cluster.get('net_manager') %>
-
-        <div class="radio-checkbox-group">
-
+        <div class="radio-checkbox-group net-manager">
           <div class="item-box">
             <label class="parameter-box clearfix">
               <div class="parameter-control">
                 <div class="custom-tumbler">
-                  <input type="radio" checked="" value="nova.scheduler.filter_scheduler.FilterScheduler" name=" compute_scheduler_driver">
+                  <input type="radio" value="FlatDHCPManager" name="net-manager" <%= net_manager == 'FlatDHCPManager' ? 'checked' : '' %> <%= disabled %>>
                   <!--[if !IE |(gte IE 9)]>--><span>&nbsp;</span><!--<![endif]-->
                 </div>
               </div>
               <div class="parameter-name">FlatDHCP Manager</div>
             </label>
           </div>
-
           <div class="item-box">
             <label class="parameter-box clearfix">
               <div class="parameter-control">
                 <div class="custom-tumbler">
-                  <input type="radio" value="nova.scheduler.filter_scheduler.FilterScheduler" name=" compute_scheduler_driver">
+                  <input type="radio" value="VlanManager" name="net-manager" <%= net_manager == 'VlanManager' ? 'checked' : '' %> <%= disabled %>>
                   <!--[if !IE |(gte IE 9)]>--><span>&nbsp;</span><!--<![endif]-->
                 </div>
               </div>
               <div class="parameter-name">VLAN Manager</div>
             </label>
           </div>
-
-          <div class="item-box">
-            <label class="parameter-box clearfix">
-              <div class="parameter-control">
-                <div class="custom-tumbler">
-                  <input type="radio" value="nova.scheduler.filter_scheduler.FilterScheduler" name=" compute_scheduler_driver">
-                  <!--[if !IE |(gte IE 9)]>--><span>&nbsp;</span><!--<![endif]-->
-                </div>
-              </div>
-              <div class="parameter-name">Other Option</div>
-            </label>
-          </div>
-
-          
         </div>
-
         <hr>
 
         <form class="form-inline networks-table" onsubmit="return false">
-
           <div class="row networks-header">
             <div class="network">Network</div>
             <div class="cidr">CIDR</div>
