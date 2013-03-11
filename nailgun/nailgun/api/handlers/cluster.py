@@ -8,7 +8,6 @@ import traceback
 import web
 import netaddr
 
-import nailgun.rpc as rpc
 from nailgun.db import orm
 from nailgun.settings import settings
 from nailgun.logger import logger

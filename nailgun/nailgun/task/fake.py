@@ -16,7 +16,7 @@ from nailgun.notifier import notifier
 from nailgun.api.models import Network, Node
 from nailgun.task.errors import WrongNodeStatus
 from nailgun.network import manager as netmanager
-from nailgun.rpc.threaded import NailgunReceiver
+from nailgun.rpc.receiver import NailgunReceiver
 
 
 class FakeThread(threading.Thread):
