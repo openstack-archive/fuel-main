@@ -122,6 +122,8 @@ module Astute
     end
 
     def deploy_ha_compact(nodes, attrs)
+      # Added for backward compatibility with FUEL.
+      # FIXIT: add some unittests.
       ctrl_nodes = nodes.select {|n| n['role'] == 'controller'}
       compute_nodes = nodes.select {|n| n['role'] == 'compute'}
       other_nodes = nodes - ctrl_nodes - compute_nodes
@@ -150,6 +152,8 @@ module Astute
     end
 
     def deploy_ha_full(nodes, attrs)
+      # Added for backward compatibility with FUEL.
+      # FIXIT: add some unittests.
       ctrl_nodes = nodes.select {|n| n['role'] == 'controller'}
       compute_nodes = nodes.select {|n| n['role'] == 'compute'}
       quantum_nodes = nodes.select {|n| n['role'] == 'quantum'}
@@ -164,7 +168,7 @@ module Astute
       deploy_piece(ctrl_nodes[0..0], attrs, retries=0)
 
       unless quantum_nodes.empty?
-        Astute.logger.info "Starting deployment of 1st controller again"
+        Astute.logger.info "Starting deployment of Quantum nodes"
         deploy_piece(quantum_nodes, attrs, retries=0)
       end
 
