@@ -31,10 +31,17 @@
 # check_obsoletes=1
 #
 # By default, this plugin excludes packages from lower priority repositories
-# based on the package name. If you want to exclude packages based ony the
+# based on the package name. If you want to exclude packages based only the
 # package name and architecture, enable the 'only_samearch' bool:
 #
-# only_samearch=N
+# only_samearch=1
+#
+# If you want to be able to set package as the fully qualified package name
+# including architecture and package version, enable 'full_match' bool:
+#
+# full_match=1
+#
+# If full_match is enabled then check_obsoletes will be forced to disable
 #
 # You can add priorities to repositories, by adding the line:
 #
@@ -53,6 +60,7 @@ import yum
 
 check_obsoletes = False
 only_samearch = False
+full_match = False
 
 requires_api_version = '2.1'
 plugin_type = (TYPE_CORE,)
@@ -60,10 +68,15 @@ plugin_type = (TYPE_CORE,)
 def config_hook(conduit):
     global check_obsoletes
     global only_samearch
+    global full_match
 
     # Plugin configuration
     check_obsoletes = conduit.confBool('main', 'check_obsoletes', default = False)
     only_samearch = conduit.confBool('main', 'only_samearch', default = False)
+    full_match = conduit.confBool('main', 'full_match', default = False)
+
+    if full_match:
+        check_obsoletes = False
 
     # Repo priorities
     if yum.__version__ >= '2.5.0':
@@ -83,7 +96,7 @@ def config_hook(conduit):
             help="Priority-exclude packages based on name + arch")
 
 def _all_repo_priorities_same(allrepos):
-    """ Are all repos are at the same priority """
+    """ Are all repos at the same priority """
     first = None
     for repo in allrepos:
         if first is None:
@@ -95,6 +108,7 @@ def _all_repo_priorities_same(allrepos):
 def exclude_hook(conduit):
     global only_samearch
     global check_obsoletes
+    global full_match
 
     allrepos = conduit.getRepos().listEnabled()
 
@@ -135,12 +149,17 @@ def exclude_hook(conduit):
             for po in conduit.getPackages(repo):
                 delPackage = False
 
+                if full_match:
+                    pname = str(po)
+                else:
+                    pname = po.name
+
                 if only_samearch:
-                    key = "%s.%s" % (po.name,po.arch)
+                    key = "%s.%s" % (pname,po.arch)
                     if key in pkg_priorities and pkg_priorities[key] < repo.priority:
                         delPackage = True
                 else:
-                    key = "%s" % po.name
+                    key = "%s" % pname
                     if key in pkg_priorities_archless and pkg_priorities_archless[key] < repo.priority:
                         delPackage = True
 
@@ -170,13 +189,18 @@ def exclude_hook(conduit):
         conduit._base.up = None
 
 def _pkglist_to_dict(pl, priority, addArch = False):
+    global full_match
     out = dict()
     for p in pl:
+        if full_match:
+            pname = str(p)
+        else:
+            pname = p.name
         if addArch:
-            key = "%s.%s" % (p.name,p.arch)
+            key = "%s.%s" % (pname,p.arch)
             out[key] = priority
         else:
-            out[p.name] = priority
+            out[pname] = priority
     return out
 
 def _mergeprioritydicts(dict1, dict2):

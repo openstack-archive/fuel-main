@@ -11,7 +11,7 @@ gpgcheck=0
 plugins=1
 pluginpath=$(shell readlink -f -m $(BUILD_DIR)/mirror/centos/etc/yum-plugins)
 pluginconfpath=$(shell readlink -f -m $(BUILD_DIR)/mirror/centos/etc/yum/pluginconf.d)
-reposdir=$(BUILD_DIR)/mirror/centos/etc/yum.repos.d
+reposdir=$(shell readlink -f -m $(BUILD_DIR)/mirror/centos/etc/yum.repos.d)
 endef
 
 

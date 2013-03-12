@@ -2,28 +2,31 @@ include $(SOURCE_DIR)/mirror/centos/yum_repos.mk
 
 $(BUILD_DIR)/mirror/centos/etc/yum.conf: $(call depv,yum_conf)
 $(BUILD_DIR)/mirror/centos/etc/yum.conf: export contents:=$(yum_conf)
-$(BUILD_DIR)/mirror/centos/etc/yum.conf: \
-		$(SOURCE_DIR)/mirror/centos/yum_repos.mk \
-		$(SOURCE_DIR)/mirror/centos/yum-priorities-plugin.py
-	mkdir -p $(BUILD_DIR)/mirror/centos/etc/yum/pluginconf.d
-	echo "[main]\nenabled=1" > $(BUILD_DIR)/mirror/centos/etc/yum/pluginconf.d/priorities.conf
-	mkdir -p $(BUILD_DIR)/mirror/centos/etc/yum-plugins
-	cp $(SOURCE_DIR)/mirror/centos/yum-priorities-plugin.py $(BUILD_DIR)/mirror/centos/etc/yum-plugins/priorities.py
+$(BUILD_DIR)/mirror/centos/etc/yum.conf:
 	mkdir -p $(@D)
 	echo "$${contents}" > $@
 
+$(BUILD_DIR)/mirror/centos/etc/yum-plugins/priorities.py: \
+		$(SOURCE_DIR)/mirror/centos/yum-priorities-plugin.py
+	mkdir -p $(@D)
+	cp $(SOURCE_DIR)/mirror/centos/yum-priorities-plugin.py $@
+
+$(BUILD_DIR)/mirror/centos/etc/yum/pluginconf.d/priorities.conf:
+	mkdir -p $(@D)
+	echo "[main]\nenabled=1\ncheck_obsoletes=1\nfull_match=1" > $@
 
 $(BUILD_DIR)/mirror/centos/etc/yum.repos.d/base.repo: $(call depv,YUM_REPOS)
 $(BUILD_DIR)/mirror/centos/etc/yum.repos.d/base.repo: \
 		export contents:=$(foreach repo,$(YUM_REPOS),\n$(yum_repo_$(repo)))
-$(BUILD_DIR)/mirror/centos/etc/yum.repos.d/base.repo: \
-		$(SOURCE_DIR)/mirror/centos/yum_repos.mk
+$(BUILD_DIR)/mirror/centos/etc/yum.repos.d/base.repo:
 	@mkdir -p $(@D)
 	echo "$${contents}" > $@
 
 $(BUILD_DIR)/mirror/centos/yum-config.done: \
 		$(BUILD_DIR)/mirror/centos/etc/yum.conf \
-		$(BUILD_DIR)/mirror/centos/etc/yum.repos.d/base.repo
+		$(BUILD_DIR)/mirror/centos/etc/yum.repos.d/base.repo \
+		$(BUILD_DIR)/mirror/centos/etc/yum-plugins/priorities.py \
+		$(BUILD_DIR)/mirror/centos/etc/yum/pluginconf.d/priorities.conf
 	$(ACTION.TOUCH)
 
 $(BUILD_DIR)/mirror/centos/yum.done: \

@@ -51,7 +51,23 @@ gpgcheck=0
 enabled=1
 endef
 
-YUM:=sudo yum --installroot=`readlink -f $(INITRAMROOT)` -y --nogpgcheck
+define bootstrap_yum_conf
+[main]
+cachedir=$(BUILD_DIR)/bootstrap/cache
+keepcache=0
+debuglevel=6
+logfile=$(BUILD_DIR)/bootstrap/yum.log
+exclude=*.i686.rpm
+exactarch=1
+obsoletes=1
+gpgcheck=0
+plugins=1
+pluginpath=$(shell readlink -f -m $(BUILD_DIR)/bootstrap/etc/yum-plugins)
+pluginconfpath=$(shell readlink -f -m $(BUILD_DIR)/bootstrap/etc/yum/pluginconf.d)
+reposdir=$(shell readlink -f -m $(BUILD_DIR)/bootstrap/etc/yum.repos.d)
+endef
+
+YUM:=sudo yum -c $(BUILD_DIR)/bootstrap/etc/yum.conf --installroot=`readlink -f $(INITRAMROOT)` -y --nogpgcheck
 
 clean: clean-bootstrap
 
@@ -78,17 +94,19 @@ $(BUILD_DIR)/bootstrap/linux: $(BUILD_DIR)/mirror/build.done
 	rm -r $(BUILD_DIR)/bootstrap/boot
 	touch $(BUILD_DIR)/bootstrap/linux
 
+$(BUILD_DIR)/bootstrap/etc/yum.conf: export contents:=$(bootstrap_yum_conf)
+$(BUILD_DIR)/bootstrap/etc/yum.repos.d/base.repo: export contents:=$(yum_local_repo)
+$(BUILD_DIR)/bootstrap/etc/yum.conf $(BUILD_DIR)/bootstrap/etc/yum.repos.d/base.repo:
+	mkdir -p $(@D)
+	echo "$${contents}" > $@
+
 $(BUILD_DIR)/bootstrap/customize-initram-root.done: $(call depv,BOOTSTRAP_RPMS_CUSTOM)
-$(BUILD_DIR)/bootstrap/customize-initram-root.done: export yum_local_repo:=$(yum_local_repo)
 $(BUILD_DIR)/bootstrap/customize-initram-root.done: \
 		$(BUILD_DIR)/packages/rpm/build.done \
 		$(BUILD_DIR)/bootstrap/prepare-initram-root.done \
 		$(call find-files,$(SOURCE_DIR)/bootstrap/sync) \
 		$(SOURCE_DIR)/bin/send2syslog.py \
 		$(SOURCE_DIR)/bootstrap/ssh/id_rsa.pub
-
-	# Defining local repository
-	sudo sh -c "echo \"$${yum_local_repo}\" > $(INITRAMROOT)/etc/yum.repos.d/mirror.repo"
 
 	# Rebuilding rpmdb
 	sudo rpm --root=`readlink -f $(INITRAMROOT)` --rebuilddb
@@ -125,8 +143,11 @@ $(BUILD_DIR)/bootstrap/customize-initram-root.done: \
 
 $(BUILD_DIR)/bootstrap/prepare-initram-root.done: $(call depv,BOOTSTRAP_RPMS)
 $(BUILD_DIR)/bootstrap/prepare-initram-root.done: export yum_local_repo:=$(yum_local_repo)
+$(BUILD_DIR)/bootstrap/prepare-initram-root.done: export yum_local_repo:=$(bootstrap_yum_conf)
 $(BUILD_DIR)/bootstrap/prepare-initram-root.done: \
-		$(BUILD_DIR)/mirror/build.done
+		$(BUILD_DIR)/mirror/build.done \
+		$(BUILD_DIR)/bootstrap/etc/yum.conf \
+		$(BUILD_DIR)/bootstrap/etc/yum.repos.d/base.repo
 
 	# Installing centos-release package
 	sudo rpm -i --root=$(INITRAMROOT) \
@@ -135,9 +156,6 @@ $(BUILD_DIR)/bootstrap/prepare-initram-root.done: \
 
 	# Removing default repositories (centos-release package provides them)
 	sudo rm -f $(INITRAMROOT)/etc/yum.repos.d/Cent*
-
-	# Defining local repository
-	sudo sh -c "echo \"$${yum_local_repo}\" > $(INITRAMROOT)/etc/yum.repos.d/mirror.repo"
 
 	# Rebuilding rpmdb
 	sudo rpm --root=`readlink -f $(INITRAMROOT)` --rebuilddb
