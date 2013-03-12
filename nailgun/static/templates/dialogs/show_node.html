@@ -55,7 +55,7 @@
         summary = (meta.system.manufacturer || '') + ' ' + (meta.system.product || '');
       } else if (group == 'memory') {
         if (_.isArray(meta.memory.devices) && meta.memory.devices.length) {
-          var sizes = _.groupBy(_.pluck(meta.memory.devices, 'size'), function(el) {return showSize(el)});
+          var sizes = _.groupBy(_.pluck(meta.memory.devices, 'size'), function(value) {return showSize(value, 1024, 1024)});
           summary = _.map(_.keys(sizes), function(size) {return sizes[size].length + ' x ' + size}).join(', ');
           summary += ', ' + showSize(meta.memory.total) + ' total';
         } else {
