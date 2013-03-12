@@ -36,7 +36,7 @@ class McollectiveConfig
       # strip blank spaces, tabs etc off the end of all lines
       line.gsub!(/\s*$/, "")
       unless line =~ /^#|^$/
-        if (line =~ /(.+?)\s*=\s*(.+)/)
+        if line =~ /(.+?)\s*=\s*(.+)/
           key = $1
           val = $2
           if key == find_key
@@ -47,11 +47,7 @@ class McollectiveConfig
       end
     end
 
-    if found_key
-      return found_value
-    else
-      return nil
-    end
+    found_value if found_key
   end
 
   def replace_identity(new_id)
@@ -64,14 +60,14 @@ class McollectiveConfig
       @logger.info "MCollective is up to date with identity = #{new_id}"
     else
       config = File.open(@configfile, "rb").read
-      unless value_from_config  # if key was not found
-        config += "\nidentity = #{new_id}\n"
-        @logger.info "Identity in mcollective server.cfg has not been found. Setting to '#{new_id}'"
-        File.open(@configfile, "w") { |f| f.write(config) }
-      else
+      if value_from_config
         # Key found, but it has other value
         @logger.info "Replacing identity in mcollective server.cfg to new value = '#{new_id}'"
         config.gsub!(/^identity[ =].*$/, "identity = #{new_id}")
+        File.open(@configfile, "w") { |f| f.write(config) }
+      else # if key was not found
+        config += "\nidentity = #{new_id}\n"
+        @logger.info "Identity in mcollective server.cfg has not been found. Setting to '#{new_id}'"
         File.open(@configfile, "w") { |f| f.write(config) }
       end
       puts `/sbin/service mcollective restart`
@@ -116,7 +112,7 @@ class NodeAgent
     if res.status < 200 or res.status >= 300
       @logger.error("HTTP PUT failed: #{res.inspect}")
     end
-    return res
+    res
   end
 
   def post
@@ -124,7 +120,7 @@ class NodeAgent
     htclient = HTTPClient.new
     @logger.debug("Trying to create host using #{@api_url}")
     res = htclient.post("#{@api_url}/nodes/", _data.to_json, headers)
-    return res
+    res
   end
 
   def _interfaces
@@ -132,7 +128,7 @@ class NodeAgent
       result << { :name => elm[0], :addresses => elm[1]["addresses"] }
     end
     interfaces << { "default_interface" => @os["network"]["default_interface"] }
-    interfaces << { "default_gateway" => @os["network"]["default_gateway"] }
+    interfaces << { "default_gateway"   => @os["network"]["default_gateway"] }
     interfaces
   end
 
@@ -144,7 +140,7 @@ class NodeAgent
         :total => (@os[:cpu][:total].to_i rescue nil),
         :real => (@os[:cpu][:real].to_i rescue nil),
         :spec => [],
-        },
+      },
       :disks => [],
       :memory => (_dmi_memory or _ohai_memory),
     }
@@ -260,21 +256,19 @@ class NodeAgent
 
   def _size(size, unit)
     case unit
-    when /^kb$/i
-      return (size * 1024)
-    when /^mb$/i
-      return (size * 1048576)
-    when /^gb$/i
-      return (size * 1073741824)
+      when /^kb$/i
+        size * 1024
+      when /^mb$/i
+        size * 1048576
+      when /^gb$/i
+        size * 1073741824
     end
-    nil
   end
 
   def _dmi_memory
     dmi = `/usr/sbin/dmidecode`
     info = {:devices => [], :total => 0, :maximum_capacity => 0}
     return nil if $?.to_i != 0
-    mem_mapped = false
     dmi.split(/\n\n/).each do |group|
       if /^Physical Memory Array$/.match(group)
         if /^\s*Maximum Capacity:\s+(\d+)\s+(mb|gb|kb)/i.match(group)
@@ -342,8 +336,6 @@ class NodeAgent
         :platform_name => _product_name,
         :meta => detailed_data
       })
-
-
     rescue Exception => e
       @logger.error("Error '#{e.message}' in metadata calculation: #{e.backtrace}")
     end
@@ -362,6 +354,9 @@ class NodeAgent
     end
   end
 
+  def prevent_discover?
+    File.exist?('/var/run/nodiscover')
+  end
 end
 
 def write_data_to_file(logger, filename, data)
@@ -400,10 +395,14 @@ rescue Exception => e
 end
 
 agent = NodeAgent.new(logger, url)
+if agent.prevent_discover?
+  logger.info("Discover prevented by /var/run/nodiscover presence.")
+  exit 1
+end
 agent.update_state
 
 post_res = agent.post
-if post_res.status == 409:
+if post_res.status == 409
   put_res = agent.put
   new_id = JSON.parse(put_res.body)[0]['id']
 elsif post_res.status == 201

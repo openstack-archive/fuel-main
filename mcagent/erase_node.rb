@@ -1,5 +1,6 @@
 require "json"
 require "base64"
+require 'fileutils'
 
 module MCollective
   module Agent
@@ -12,13 +13,15 @@ module MCollective
         reboot
       end
 
-      private
+    private
 
       def erase_node
         request_reboot = request.data[:reboot]
         dry_run = request.data[:dry_run]
         error_msg = []
         reply[:status] = 0  # Shell exitcode behaviour
+
+        prevent_discover unless dry_run
 
         begin
           boot_device = get_boot_device
@@ -86,7 +89,7 @@ module MCollective
         fd.seek(offset)
         ret = fd.sysread(length)
         fd.close
-        return ret
+        ret
       end
 
       def erase_data(file, length, offset=0)
@@ -96,7 +99,9 @@ module MCollective
         fd.close
       end
 
+      def prevent_discover
+        FileUtils.touch '/var/run/nodiscover'
+      end
     end
   end
 end
-# vi:tabstop=2:expandtab:ai:filetype=ruby
