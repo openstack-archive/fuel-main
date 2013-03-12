@@ -293,7 +293,7 @@ function(models, simpleMessageTemplate, createClusterDialogTemplate, changeClust
         },
         proceed: function() {
             this.$el.modal('hide');
-            this.cb();
+            app.page.removeVerificationTask().done(_.bind(this.cb, this));
         },
         initialize: function(options) {
             _.defaults(this, options);
