@@ -32,7 +32,7 @@ function(models, commonViews, dialogViews, networkTabTemplate, networkTabViewMod
         },
         checkForChanges: function() {
             this.setValues();
-            var noChanges = _.isEqual(this.networks.toJSON(), this.dataDbState.settings) && this.model.get('net_manager') == this.dataDbState.manager;
+            var noChanges = _.isEqual(this.model.get('networks').toJSON(), this.model.get('networksDbState').settings) && this.model.get('net_manager') == this.model.get('networksDbState').manager;
             this.defaultButtonsState(noChanges);
             this.hasChanges = !noChanges;
         },
@@ -45,10 +45,10 @@ function(models, commonViews, dialogViews, networkTabTemplate, networkTabViewMod
             }
             this.$('.control-group .error').removeClass('error');
             row.removeClass('error').find('.help-inline').text('');
-            this.networks.get(row.data('network-id')).on('error', function(model, errors) {
+            this.model.get('networks').get(row.data('network-id')).on('error', function(model, errors) {
                 row.addClass('error').find('.help-inline').text(errors.cidr || errors.vlan_start || errors.amount);
             }, this);
-            this.networks.get(row.data('network-id')).set({
+            this.model.get('networks').get(row.data('network-id')).set({
                 cidr: $('.cidr input', row).val(),
                 vlan_start: $('.vlan_start input:first', row).val(),
                 amount: this.model.get('net_manager') == 'FlatDHCPManager' ? 1 : $('.amount input', row).val(),
@@ -91,7 +91,7 @@ function(models, commonViews, dialogViews, networkTabTemplate, networkTabViewMod
         },
         setValues: function() {
             var valid = true;
-            this.networks.each(function(network) {
+            this.model.get('networks').each(function(network) {
                 var row = this.$('.control-group[data-network-name=' + network.get('name') + ']');
                 network.on('error', function(model, errors) {
                     valid = false;
@@ -112,7 +112,7 @@ function(models, commonViews, dialogViews, networkTabTemplate, networkTabViewMod
             if (this.setValues()) {
                 this.defaultButtonsState(true);
                 this.model.update({net_manager: this.$('.net-manager input[checked]').val()});
-                Backbone.sync('update', this.networks, {
+                Backbone.sync('update', this.model.get('networks'), {
                     url: '/api/clusters/' + this.model.id + '/save/networks',
                     error: _.bind(function() {
                         this.defaultButtonsState(false);
@@ -125,8 +125,8 @@ function(models, commonViews, dialogViews, networkTabTemplate, networkTabViewMod
                             this.defaultButtonsState(false);
                         } else {
                             this.hasChanges = false;
-                            this.dataDbState.settings = this.networks.toJSON();
-                            this.dataDbState.manager = this.model.get('net_manager');
+                            this.model.get('networksDbState').settings = this.model.get('networks').toJSON();
+                            this.model.get('networksDbState').manager = this.model.get('net_manager');
                         }
                     }, this),
                     complete: _.bind(function() {
@@ -151,7 +151,7 @@ function(models, commonViews, dialogViews, networkTabTemplate, networkTabViewMod
             task.save({}, {
                 type: 'PUT',
                 url: '/api/clusters/' + this.model.id + '/verify/networks',
-                data: JSON.stringify(this.networks),
+                data: JSON.stringify(this.model.get('networks')),
                 error:  _.bind(function() {
                         this.$('.verify-networks-btn').attr('disabled', false);
                         var dialog = new dialogViews.SimpleMessage({error: true, title: 'Network verification'});
@@ -173,10 +173,10 @@ function(models, commonViews, dialogViews, networkTabTemplate, networkTabViewMod
         },
         revertChanges: function() {
             this.hasChanges = false;
-            this.model.set({net_manager: this.dataDbState.manager});
-            this.networks = new models.Networks(this.dataDbState.settings);
-            this.networks.deferred = new $.Deferred();
-            this.networks.deferred.resolve();
+            this.model.set({net_manager: this.model.get('networksDbState').manager});
+            this.model.set({networks: new models.Networks(this.model.get('networksDbState').settings)}, {silent: true});
+            this.model.get('networks').deferred = new $.Deferred();
+            this.model.get('networks').deferred.resolve();
             app.page.removeVerificationTask().done(_.bind(function(){
                 this.render();
                 this.defaultButtonsState(true);
@@ -186,7 +186,7 @@ function(models, commonViews, dialogViews, networkTabTemplate, networkTabViewMod
             var task = this.model.task('verify_networks') || this.model.task('check_networks', 'error') || this.model.task('deploy', 'running');
             if (task) {
                 task.bind('change:status', this.render, this);
-                if (this.networks) {
+                if (this.model.get('networks')) {
                     this.render();
                 }
             }
@@ -200,16 +200,24 @@ function(models, commonViews, dialogViews, networkTabTemplate, networkTabViewMod
             _.defaults(this, options);
             this.model.bind('change:tasks', this.bindEvents, this);
             this.bindEvents();
-            var complete = _.after(2, _.bind(function() {
-                this.dataDbState.settings = this.networks.toJSON();
-                this.dataDbState.manager = this.model.get('net_manager');
-                this.render();
-            }, this));
-            this.model.fetch().done(complete);
-            this.networks = new models.Networks();
-            this.networks.deferred = this.networks.fetch({data: {cluster_id: this.model.id}});
-            this.networks.deferred.done(complete);
-            this.model.set({'networks': this.networks}, {silent: true});
+            if (!this.model.get('networks')) {
+                this.model.set({'networks': new models.Networks()}, {silent: true});
+                this.model.get('networks').deferred = this.model.get('networks').fetch({
+                    data: {cluster_id: this.model.id}
+                });
+                this.model.get('networks').deferred.done(_.bind(function() {
+                    var networksDbState = {};
+                    networksDbState.settings = this.model.get('networks').toJSON();
+                    networksDbState.manager = this.model.get('net_manager');
+                    this.model.set({'networksDbState': networksDbState}, {silent: true});
+                    this.render();
+                }, this));
+            } else {
+                this.model.set({net_manager: this.model.get('networksDbState').manager}, {silent: true});
+                this.model.set({networks: new models.Networks(this.model.get('networksDbState').settings)}, {silent: true});
+                this.model.get('networks').deferred = new $.Deferred();
+                this.model.get('networks').deferred.resolve();
+            }
         },
         showVerificationErrors: function() {
             var task = this.model.task('verify_networks', 'error') || this.model.task('check_networks', 'error');
@@ -223,13 +231,13 @@ function(models, commonViews, dialogViews, networkTabTemplate, networkTabViewMod
             }
         },
         renderVerificationControl: function() {
-            var verificationView = new NetworkTabVerificationControl({model: this.model, networks: this.networks});
+            var verificationView = new NetworkTabVerificationControl({model: this.model, networks: this.model.get('networks')});
             this.registerSubView(verificationView);
             this.$('.verification-control').html(verificationView.render().el);
             this.showVerificationErrors();
         },
         render: function() {
-            this.$el.html(this.template({cluster: this.model, networks: this.networks, hasChanges: this.hasChanges}));
+            this.$el.html(this.template({cluster: this.model, networks: this.model.get('networks'), hasChanges: this.hasChanges}));
             this.renderVerificationControl();
             return this;
         }
