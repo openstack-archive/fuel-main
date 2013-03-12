@@ -85,7 +85,10 @@ module Astute
         err_msg += "MCollective call failed in agent '#{@agent}', "\
                      "method '#{method}', failed nodes: #{failed.map{|x| x.results[:sender]}.join(',')} \n"
       end
-      raise "#{@task_id}: #{err_msg}" unless err_msg.empty?
+      unless err_msg.empty?
+        Astute.logger.error err_msg
+        raise "#{@task_id}: #{err_msg}"
+      end
 
       return res
     end
