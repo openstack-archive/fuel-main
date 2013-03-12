@@ -169,16 +169,6 @@ function(models, commonViews, dialogViews, networkTabTemplate, networkTabViewMod
                 app.page.removeVerificationTask().done(_.bind(this.startVerification, this));
             }
         },
-        revertChanges: function() {
-            this.hasChanges = false;
-            this.model.set({
-                net_manager: this.model.get('networksDbState').manager,
-                networks: new models.Networks(this.model.get('networksDbState').settings)
-            }, {silent: true});
-            this.model.get('networks').deferred = new $.Deferred();
-            this.model.get('networks').deferred.resolve();
-            app.page.removeVerificationTask().done(_.bind(this.render, this));
-        },
         bindTaskEvents: function() {
             var task = this.model.task('verify_networks') || this.model.task('check_networks', 'error') || this.model.task('deploy', 'running');
             if (task) {
@@ -192,6 +182,16 @@ function(models, commonViews, dialogViews, networkTabTemplate, networkTabViewMod
             this.model.get('tasks').bind('remove', this.renderVerificationControl, this);
             this.model.get('tasks').bind('reset', this.bindTaskEvents, this);
             this.bindTaskEvents();
+        },
+        revertChanges: function() {
+            this.hasChanges = false;
+            this.model.set({
+                net_manager: this.model.get('networksDbState').manager,
+                networks: new models.Networks(this.model.get('networksDbState').settings)
+            }, {silent: true});
+            this.model.get('networks').deferred = new $.Deferred();
+            this.model.get('networks').deferred.resolve();
+            app.page.removeVerificationTask().done(_.bind(this.render, this));
         },
         initialize: function(options) {
             _.defaults(this, options);
@@ -209,12 +209,7 @@ function(models, commonViews, dialogViews, networkTabTemplate, networkTabViewMod
                     this.render();
                 }, this));
             } else {
-                this.model.set({
-                    net_manager: this.model.get('networksDbState').manager,
-                    networks: new models.Networks(this.model.get('networksDbState').settings)
-                }, {silent: true});
-                this.model.get('networks').deferred = new $.Deferred();
-                this.model.get('networks').deferred.resolve();
+                this.revertChanges();
             }
         },
         showVerificationErrors: function() {
