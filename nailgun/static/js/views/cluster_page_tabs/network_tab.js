@@ -108,9 +108,12 @@ function(models, commonViews, dialogViews, networkTabTemplate, networkTabViewMod
         changeMode: function(e) {
             e.preventDefault();
         },
+        disableControls: function() {
+            this.$('.btn, input, select').attr('disabled', true);
+        },
         apply: function() {
             if (this.setValues()) {
-                this.defaultButtonsState(true);
+                this.disableControls();
                 this.model.update({net_manager: this.$('.net-manager input[checked]').val()});
                 Backbone.sync('update', this.model.get('networks'), {
                     url: '/api/clusters/' + this.model.id + '/save/networks',
@@ -130,6 +133,7 @@ function(models, commonViews, dialogViews, networkTabTemplate, networkTabViewMod
                         }
                     }, this),
                     complete: _.bind(function() {
+                        this.render();
                         this.model.fetch();
                     }, this)
                 });
