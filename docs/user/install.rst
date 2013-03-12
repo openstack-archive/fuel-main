@@ -15,6 +15,10 @@ On Physical Hardware
 
 If you are going to install Fuel Web on physical hardware, you have to burn the provided ISO to a CD/DVD or USB stick and start the installation process by booting from this media, very much like any other OS.
 
+Linux users can prepare installation USB stick with dd command. For example, if your flash is /dev/sdb, you can use following command line: ``dd if=fuelweb.img of=/dev/sdb``. Actual device name you can find in output of ``dmesg`` command.
+
+On Windows you can write installation image with `Win32 Disk Imager <http://sourceforge.net/projects/win32diskimager/>`_.
+
 After the installation is complete, you will need to allocate physical nodes for your OpenStack cluster, put them on the same L2 network and PXE boot from the admin node. They will get discovered in the UI and become available for installing OpenStack on them. 
 
 On VirtualBox
