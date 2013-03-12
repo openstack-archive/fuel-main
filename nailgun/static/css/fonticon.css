@@ -2,11 +2,21 @@
 
 @font-face {
   font-family: 'fontello';
-  src: url("../font/fontello.eot");
-  src: url("../font/fontello.eot?#iefix") format('embedded-opentype'), url("../font/fontello.woff") format('woff'), url("../font/fontello.ttf") format('truetype'), url("../font/fontello.svg#fontello") format('svg');
+  src: url("../font/fontello.eot?67295312");
+  src: url("../font/fontello.eot?67295312#iefix") format('embedded-opentype'), url("../font/fontello.woff?67295312") format('woff'), url("../font/fontello.ttf?67295312") format('truetype'), url("../font/fontello.svg?67295312#fontello") format('svg');
   font-weight: normal;
   font-style: normal;
 }
+/* Chrome hack: SVG is rendered more smooth in Windozze. 100% magic, uncomment if you need it. */
+/* Note, that will break hinting! In other OS-es font will be not as sharp as it could be */
+/*
+@media screen and (-webkit-min-device-pixel-ratio:0) {
+  @font-face {
+    font-family: 'fontello';
+    src: url('../font/fontello.svg?67295312#fontello') format('svg');
+  }
+}
+*/
 [class^="icon-"]:before,
 [class*=" icon-"]:before {
   font-family: 'fontello';
@@ -18,7 +28,10 @@
   width: 1em;
   margin-right: 0.2em;
   text-align: center;
-  opacity: 0.8;
+/* opacity .8 */
+/* For safety - reset parent styles, that can break glyph codes*/
+  font-variant: normal;
+  text-transform: none;
 /* fix buttons height, for twitter bootstrap */
   line-height: 1em;
 /* Animation center compensation - magrins should be symmetric */
@@ -34,7 +47,6 @@
 .icon-minus:before { content: '\2d'; } /* '-' */
 .icon-expand:before { content: '\229e'; } /* '⊞' */
 .icon-collapse:before { content: '\229f'; } /* '⊟' */
-.icon-flag:before { content: '\2691'; } /* '⚑' */
 .icon-settings:before { content: '\2699'; } /* '⚙' */
 .icon-attention:before { content: '\26a0'; } /* '⚠' */
 .icon-edit:before { content: '\270e'; } /* '✎' */
@@ -53,6 +65,7 @@
 .icon-logs:before { content: '\e730'; } /* '' */
 .icon-arrows-cw:before { content: '\e760'; } /* '' */
 .icon-back-in-time:before { content: '\e771'; } /* '' */
+.icon-install:before { content: '\e778'; } /* '' */
 .icon-user:before { content: '👤'; } /* '\1f464' */
 .icon-bell:before { content: '🔔'; } /* '\1f514' */
 .icon-clock:before { content: '🕔'; } /* '\1f554' */
