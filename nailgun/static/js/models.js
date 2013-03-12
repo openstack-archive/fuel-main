@@ -12,7 +12,10 @@ define(function() {
     models.Releases = Backbone.Collection.extend({
         constructorName: 'Releases',
         model: models.Release,
-        url: '/api/releases'
+        url: '/api/releases',
+        comparator: function(release) {
+            return release.get('id');
+        }
     });
 
     models.Cluster = Backbone.Model.extend({
@@ -111,7 +114,10 @@ define(function() {
     models.Clusters = Backbone.Collection.extend({
         constructorName: 'Clusters',
         model: models.Cluster,
-        url: '/api/clusters'
+        url: '/api/clusters',
+        comparator: function(cluster) {
+            return cluster.get('id');
+        }
     });
 
     models.Node = Backbone.Model.extend({
@@ -149,7 +155,7 @@ define(function() {
         model: models.Node,
         url: '/api/nodes',
         comparator: function(node) {
-            return node.get('mac');
+            return node.get('id');
         },
         hasChanges: function() {
             return !!this.filter(function(node) {
@@ -179,6 +185,9 @@ define(function() {
         url: '/api/tasks',
         toJSON: function(options) {
             return this.pluck('id');
+        },
+        comparator: function(task) {
+            return task.get('id');
         }
     });
 
@@ -190,7 +199,10 @@ define(function() {
     models.Notifications = Backbone.Collection.extend({
         constructorName: 'Notifications',
         model: models.Notification,
-        url: '/api/notifications'
+        url: '/api/notifications',
+        comparator: function(notification) {
+            return notification.get('id');
+        }
     });
 
     models.Settings = Backbone.Model.extend({
@@ -254,7 +266,10 @@ define(function() {
         constructorName: 'Networks',
         model: models.Network,
         url: '/api/networks',
-        hasChanges: false
+        hasChanges: false,
+        comparator: function(network) {
+            return network.get('id');
+        }
     });
 
     models.LogSource = Backbone.Model.extend({
