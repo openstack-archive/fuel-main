@@ -1,4 +1,5 @@
---- 
+# This example environment config is used in unittest simplepuppet_deploy_spec.
+---
 nodes: 
 - status: provisioned
   role: controller

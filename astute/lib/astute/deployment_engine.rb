@@ -123,7 +123,7 @@ module Astute
 
     def deploy_ha_compact(nodes, attrs)
       # Added for backward compatibility with FUEL.
-      # FIXIT: add some unittests.
+      # Should be used with `simplepuppet' engine only.
       ctrl_nodes = nodes.select {|n| n['role'] == 'controller'}
       compute_nodes = nodes.select {|n| n['role'] == 'compute'}
       other_nodes = nodes - ctrl_nodes - compute_nodes
@@ -137,7 +137,7 @@ module Astute
       Astute.logger.info "Starting deployment of controllers exclude first, ignoring failure"
       deploy_piece(ctrl_nodes[1..-1], attrs, retries=0, change_node_status=false)
 
-      Astute.logger.info "Starting deployment of 1st controller again, ignoring failure"
+      Astute.logger.info "Starting deployment of 1st controller again"
       deploy_piece(ctrl_nodes[0..0], attrs, retries=0)
 
       Astute.logger.info "Starting deployment of controllers exclude first"
@@ -153,7 +153,7 @@ module Astute
 
     def deploy_ha_full(nodes, attrs)
       # Added for backward compatibility with FUEL.
-      # FIXIT: add some unittests.
+      # Should be used with `simplepuppet' engine only.
       ctrl_nodes = nodes.select {|n| n['role'] == 'controller'}
       compute_nodes = nodes.select {|n| n['role'] == 'compute'}
       quantum_nodes = nodes.select {|n| n['role'] == 'quantum'}
@@ -176,10 +176,10 @@ module Astute
       deploy_piece(compute_nodes, attrs)
 
       Astute.logger.info "Starting deployment of storages, ignoring failure"
-      deploy_piece(storage_nodes, attrs, change_node_status=false)
+      deploy_piece(storage_nodes, attrs, 2, change_node_status=false)
 
       Astute.logger.info "Starting deployment of storages, ignoring failure"
-      deploy_piece(storage_nodes, attrs, change_node_status=false)
+      deploy_piece(storage_nodes, attrs, 2, change_node_status=false)
 
       Astute.logger.info "Starting deployment of all proxies one by one, ignoring failure"
       proxy_nodes.each {|n| deploy_piece([n], attrs, retries=0, change_node_status=false)}
