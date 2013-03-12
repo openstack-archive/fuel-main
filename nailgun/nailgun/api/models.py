@@ -69,6 +69,13 @@ class Release(Base, BasicValidator):
             d["networks_metadata"] = []
         if not "attributes_metadata" in d:
             d["attributes_metadata"] = {}
+        else:
+            try:
+                Attributes.validate_fixture(d["attributes_metadata"])
+            except:
+                raise web.webapi.badrequest(
+                    message="Invalid logical structure of attributes metadata"
+                )
         return d
 
 
@@ -416,6 +423,27 @@ class NetworkGroup(Base, BasicValidator):
         return d
 
 
+class AttributesGenerators(object):
+    @classmethod
+    def password(cls, arg=None):
+        try:
+            length = int(arg)
+        except:
+            length = 8
+        chars = string.letters + string.digits
+        return u''.join([choice(chars) for _ in xrange(length)])
+
+    @classmethod
+    def ip(cls, arg=None):
+        if str(arg) in ("admin", "master"):
+            return settings.MASTER_IP
+        return "127.0.0.1"
+
+    @classmethod
+    def identical(cls, arg=None):
+        return str(arg)
+
+
 class Attributes(Base, BasicValidator):
     __tablename__ = 'attributes'
     id = Column(Integer, primary_key=True)
@@ -424,26 +452,41 @@ class Attributes(Base, BasicValidator):
     generated = Column(JSON)
 
     def generate_fields(self):
-        def traverse(cdict):
-            new_dict = {}
-            if cdict:
-                for i, val in cdict.iteritems():
-                    if isinstance(val, str) or isinstance(val, unicode):
-                        if val in ["", u""]:
-                            new_dict[i] = self._generate_pwd()
-                        else:
-                            new_dict[i] = val
-                    elif isinstance(val, dict):
-                        new_dict[i] = traverse(val)
-            return new_dict
-        self.generated = traverse(self.generated)
-
+        self.generated = self.traverse(self.generated)
         orm().add(self)
         orm().commit()
 
-    def _generate_pwd(self, length=8):
-        chars = string.letters + string.digits
-        return u''.join([choice(chars) for _ in xrange(length)])
+    @classmethod
+    def traverse(cls, cdict):
+        new_dict = {}
+        if cdict:
+            for i, val in cdict.iteritems():
+                if isinstance(val, dict) and "generator" in val:
+                    try:
+                        generator = getattr(
+                            AttributesGenerators,
+                            val["generator"]
+                        )
+                    except AttributeError:
+                        logger.error("Attribute error: %s" % val["generator"])
+                        raise
+                    else:
+                        new_dict[i] = generator(val.get("generator_arg"))
+                else:
+                    new_dict[i] = cls.traverse(val)
+        return new_dict
+
+    @classmethod
+    def validate_fixture(cls, data):
+        """
+        Here we just want to be sure that data is logically valid.
+        We try to generate "generated" parameters. If there will not
+        be any error during generating then we assume data is
+        logically valid.
+        """
+        d = cls.validate_json(data)
+        if "generated" in d:
+            cls.traverse(d["generated"])
 
     @classmethod
     def validate(cls, data):

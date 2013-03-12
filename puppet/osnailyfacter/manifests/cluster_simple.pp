@@ -23,6 +23,7 @@ $glance_hash   = parsejson($glance)
 $keystone_hash = parsejson($keystone)
 $swift_hash    = parsejson($swift)
 $access_hash    = parsejson($access)
+$rsyslog_hash   = parsejson($rsyslog)
 
 $rabbit_user   = 'nova'
 
@@ -69,7 +70,16 @@ Exec { logoutput => true }
         cinder                  => $cinder,
         manage_volumes          => $manage_volumes,
         nv_physical_volume      => $nv_physical_volume,
+        use_syslog              => true,
       }
+
+      class { "::rsyslog::client":
+        log_local => true,
+        log_auth_local => true,
+        server => $rsyslog_hash["server_address"],
+        port => $rsyslog_hash["server_port"]
+      }
+
       nova_config { 'DEFAULT/start_guests_on_host_boot': value => $start_guests_on_host_boot }
       nova_config { 'DEFAULT/use_cow_images': value => $use_cow_images }
       nova_config { 'DEFAULT/compute_scheduler_driver': value => $compute_scheduler_driver }
@@ -123,7 +133,16 @@ Exec { logoutput => true }
         service_endpoint       => $controller_node_address,
         db_host                => $conrtoller_node_address,
         verbose                => $verbose,
+        use_syslog             => true,
       }
+
+      class { "::rsyslog::client":
+        log_local => true,
+        log_auth_local => true,
+        server => $rsyslog_hash["server_address"],
+        port => $rsyslog_hash["server_port"]
+      }
+
       nova_config { 'DEFAULT/start_guests_on_host_boot': value => $start_guests_on_host_boot }
       nova_config { 'DEFAULT/use_cow_images': value => $use_cow_images }
       nova_config { 'DEFAULT/compute_scheduler_driver': value => $compute_scheduler_driver }

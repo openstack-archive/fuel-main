@@ -89,25 +89,53 @@
                 },
                 "generated": {
                     "mysql": {
-                        "root_password": ""
+                        "root_password": {
+                            "generator": "password"
+                        }
                     },
                     "keystone": {
-                        "db_password": "",
-                        "admin_token": ""
+                        "db_password": {
+                            "generator": "password"
+                        },
+                        "admin_token": {
+                            "generator": "password"
+                        }
                     },
                     "glance": {
-                        "db_password": "",
-                        "user_password": ""
+                        "db_password": {
+                            "generator": "password"
+                        },
+                        "user_password": {
+                            "generator": "password"
+                        }
                     },
                     "nova": {
-                        "db_password": "",
-                        "user_password": ""
+                        "db_password": {
+                            "generator": "password"
+                        },
+                        "user_password": {
+                            "generator": "password"
+                        }
                     },
                     "rabbit": {
-                        "password": ""
+                        "password": {
+                            "generator": "password"
+                        }
                     },
                     "swift": {
-                        "user_password": ""
+                        "user_password": {
+                            "generator": "password"
+                        }
+                    },
+                    "rsyslog": {
+                        "server_address": {
+                            "generator": "ip",
+                            "generator_arg": "admin"
+                        },
+                        "server_port": {
+                            "generator": "identical",
+                            "generator_arg": "514"
+                        }
                     }
                 }
             }

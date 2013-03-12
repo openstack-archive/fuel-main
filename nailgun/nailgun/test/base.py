@@ -253,11 +253,18 @@ class Environment(object):
             },
             "generated": {
                 "mysql": {
-                    "root_password": "",
-                    "predefined": "i am value"
+                    "root_password": {
+                        "generator": "password"
+                    },
+                    "predefined": {
+                        "generator": "identical",
+                        "generator_args": "i am value"
+                    }
                 },
                 "keystone": {
-                    "token": ""
+                    "token": {
+                        "generator": "password"
+                    }
                 }
             }
         }
