@@ -64,7 +64,7 @@ casper.then(function() {
         $('input[name=public-cidr]').keyup();
     });
     this.click('.apply-btn:not(:disabled)');
-    this.waitForSelector('.page-control-error-placeholder');
+    this.waitForSelector('.alert-error');
     this.then(function() {
         this.test.assertExists('.cidr .error', 'Changes were not saved due to verification error. An appropriate message is presented and a field with verification error is highlighted');
     });
@@ -74,7 +74,8 @@ casper.then(function() {
             $('input[name=public-cidr]').keyup();
         });
         this.click('.apply-btn:not(:disabled)');
-        this.test.assertDoesntExist('.page-control-error-placeholder', 'Correct settings were saved successfully');
+        this.waitForSelector('input:not(:disabled)');
+        this.test.assertDoesntExist('.alert-error', 'Correct settings were saved successfully');
     });
 });
 
