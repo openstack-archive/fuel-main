@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 
-import logging
+import traceback
 from multiprocessing import Process
 
 from kombu import Connection, Exchange, Queue
@@ -19,6 +19,7 @@ class RPCKombuProcess(Process):
         try:
             callback(**body["args"])
         except Exception as exc:
+            logger.error(traceback.format_exc())
             self.receiver.db.rollback()
         finally:
             self.receiver.db.commit()

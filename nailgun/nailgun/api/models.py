@@ -567,9 +567,12 @@ class Notification(Base, BasicValidator):
     )
 
     id = Column(Integer, primary_key=True)
-    cluster_id = Column(Integer, ForeignKey('clusters.id'))
-    node_id = Column(Integer, ForeignKey('nodes.id'))
-    task_id = Column(Integer, ForeignKey('tasks.id'))
+    cluster_id = Column(
+        Integer,
+        ForeignKey('clusters.id', ondelete='SET NULL')
+    )
+    node_id = Column(Integer, ForeignKey('nodes.id', ondelete='SET NULL'))
+    task_id = Column(Integer, ForeignKey('tasks.id', ondelete='SET NULL'))
     topic = Column(
         Enum(*NOTIFICATION_TOPICS, name='notif_topic'),
         nullable=False

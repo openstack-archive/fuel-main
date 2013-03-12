@@ -27,7 +27,7 @@ def cast(name, message):
         exchange=nailgun_exchange,
         routing_key='naily'
     )
-    with Connection(rpc.conn_str) as conn:
+    with Connection(conn_str) as conn:
         with conn.Producer(serializer='json') as producer:
             producer.publish(message,
                              exchange=nailgun_exchange, routing_key='naily',
