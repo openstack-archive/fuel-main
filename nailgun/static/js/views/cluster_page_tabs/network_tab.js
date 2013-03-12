@@ -15,20 +15,25 @@ function(models, commonViews, dialogViews, networkTabTemplate, networkTabViewMod
         template: _.template(networkTabTemplate),
         viewModeTemplate: _.template(networkTabViewModeTemplate),
         updateInterval: 3000,
-        dataDbState: {},
         hasChanges: false,
         events: {
             'keyup .row input': 'makeChanges',
             'change .row select': 'makeChanges',
-            'click .apply-btn:not([disabled])': 'apply',
+            'click .apply-btn:not([disabled])': 'applyChanges',
             'click .verify-networks-btn:not([disabled])': 'verifyNetworks',
             'click .btn-revert-changes:not([disabled])': 'revertChanges',
             'click .nav a:not(.active)': 'changeMode',
             'click .net-manager input:not([checked])': 'changeManager',
             'keyup .range': 'displayRange'
         },
+        changeMode: function(e) {
+            e.preventDefault();
+        },
         defaultButtonsState: function(buttonState) {
             this.$('.btn:not(.verify-networks-btn)').attr('disabled', buttonState);
+        },
+        disableControls: function() {
+            this.$('.btn, input, select').attr('disabled', true);
         },
         checkForChanges: function() {
             this.setValues();
@@ -37,12 +42,7 @@ function(models, commonViews, dialogViews, networkTabTemplate, networkTabViewMod
             this.hasChanges = !noChanges;
         },
         makeChanges: function(e) {
-            var row;
-            if (e) {
-                row = this.$(e.target).parents('.control-group');
-            } else {
-                row = this.$('.control-group[data-network-name=fixed]');
-            }
+            var row = e ? this.$(e.target).parents('.control-group') : this.$('.control-group[data-network-name=fixed]');
             this.$('.control-group .error').removeClass('error');
             row.removeClass('error').find('.help-inline').text('');
             this.model.get('networks').get(row.data('network-id')).on('error', function(model, errors) {
@@ -105,13 +105,7 @@ function(models, commonViews, dialogViews, networkTabTemplate, networkTabViewMod
             }, this);
             return valid;
         },
-        changeMode: function(e) {
-            e.preventDefault();
-        },
-        disableControls: function() {
-            this.$('.btn, input, select').attr('disabled', true);
-        },
-        apply: function() {
+        applyChanges: function() {
             if (this.setValues()) {
                 this.disableControls();
                 this.model.update({net_manager: this.$('.net-manager input[checked]').val()});
@@ -177,14 +171,13 @@ function(models, commonViews, dialogViews, networkTabTemplate, networkTabViewMod
         },
         revertChanges: function() {
             this.hasChanges = false;
-            this.model.set({net_manager: this.model.get('networksDbState').manager});
-            this.model.set({networks: new models.Networks(this.model.get('networksDbState').settings)}, {silent: true});
+            this.model.set({
+                net_manager: this.model.get('networksDbState').manager,
+                networks: new models.Networks(this.model.get('networksDbState').settings)
+            }, {silent: true});
             this.model.get('networks').deferred = new $.Deferred();
             this.model.get('networks').deferred.resolve();
-            app.page.removeVerificationTask().done(_.bind(function(){
-                this.render();
-                this.defaultButtonsState(true);
-            }, this));
+            app.page.removeVerificationTask().done(_.bind(this.render, this));
         },
         bindTaskEvents: function() {
             var task = this.model.task('verify_networks') || this.model.task('check_networks', 'error') || this.model.task('deploy', 'running');
@@ -206,19 +199,20 @@ function(models, commonViews, dialogViews, networkTabTemplate, networkTabViewMod
             this.bindEvents();
             if (!this.model.get('networks')) {
                 this.model.set({'networks': new models.Networks()}, {silent: true});
-                this.model.get('networks').deferred = this.model.get('networks').fetch({
-                    data: {cluster_id: this.model.id}
-                });
+                this.model.get('networks').deferred = this.model.get('networks').fetch({data: {cluster_id: this.model.id}});
                 this.model.get('networks').deferred.done(_.bind(function() {
-                    var networksDbState = {};
-                    networksDbState.settings = this.model.get('networks').toJSON();
-                    networksDbState.manager = this.model.get('net_manager');
+                    var networksDbState = {
+                        settings: this.model.get('networks').toJSON(),
+                        manager: this.model.get('net_manager')
+                    };
                     this.model.set({'networksDbState': networksDbState}, {silent: true});
                     this.render();
                 }, this));
             } else {
-                this.model.set({net_manager: this.model.get('networksDbState').manager}, {silent: true});
-                this.model.set({networks: new models.Networks(this.model.get('networksDbState').settings)}, {silent: true});
+                this.model.set({
+                    net_manager: this.model.get('networksDbState').manager,
+                    networks: new models.Networks(this.model.get('networksDbState').settings)
+                }, {silent: true});
                 this.model.get('networks').deferred = new $.Deferred();
                 this.model.get('networks').deferred.resolve();
             }

@@ -3141,14 +3141,14 @@ select[name=release] option {
   .custom-tumbler input[type=checkbox]{width:24px;height:24px;overflow:hidden;position:absolute;filter:alpha(opacity=0);-moz-opacity:0;-khtml-opacity:0;opacity:0; cursor: pointer;}
   .custom-tumbler input[type=checkbox] + span{display:block;width:24px;height:24px;overflow:hidden;font-size:1px;line-height:0;background:transparent url(../img/radio_checkbox.png) no-repeat scroll -24px 0px;}
   .custom-tumbler input[type=checkbox]:checked + span{background-position:0 0px;}
-  .custom-tumbler input[disabled] + span{filter:alpha(opacity=50);-moz-opacity:0.5;-khtml-opacity:0.5;opacity:0.5;}
+  .custom-tumbler input[disabled] + span{filter:alpha(opacity=50);-moz-opacity:0.5;-khtml-opacity:0.5;opacity:0.5;cursor: not-allowed;}
   .custom-tumbler input[type=checkbox] + span.checked{background-position:0 0px;}
 
 
   .custom-tumbler input[type=radio]{width:24px;height:24px;overflow:hidden;position:absolute;filter:alpha(opacity=0);-moz-opacity:0;-khtml-opacity:0;opacity:0; cursor: pointer;}
   .custom-tumbler input[type=radio] + span{display:block;width:24px;height:24px;overflow:hidden;font-size:1px;line-height:0;background:transparent url(../img/radio_checkbox.png) no-repeat scroll -24px -24px;}
   .custom-tumbler input[type=radio]:checked + span{background-position:0px -24px;}
-  .custom-tumbler input[disabled] + span{filter:alpha(opacity=50);-moz-opacity:0.5;-khtml-opacity:0.5;opacity:0.5;}
+  .custom-tumbler input[disabled] + span{filter:alpha(opacity=50);-moz-opacity:0.5;-khtml-opacity:0.5;opacity:0.5;cursor: not-allowed;}
   .custom-tumbler input[type=radio] + span.checked{background-position:0px -24px;}
 
 .parameter-box {

@@ -2,10 +2,11 @@ define(
 [
     'models',
     'views/common',
+    'views/dialogs',
     'text!templates/cluster/settings_tab.html',
     'text!templates/cluster/settings_group.html'
 ],
-function(models, commonViews, settingsTabTemplate, settingsGroupTemplate) {
+function(models, commonViews, dialogViews, settingsTabTemplate, settingsGroupTemplate) {
     'use strict';
     var SettingsTab, SettingsGroup;
 
@@ -18,11 +19,10 @@ function(models, commonViews, settingsTabTemplate, settingsGroupTemplate) {
             'click .btn-load-defaults:not([disabled])': 'loadDefaults'
         },
         defaultButtonsState: function(buttonState) {
-            this.$('.btn').attr('disabled', buttonState);
-            this.$('.btn-load-defaults').attr('disabled', !buttonState);
+            this.$('.btn:not(.btn-load-defaults)').attr('disabled', buttonState);
         },
         disableControls: function() {
-            this.$('.btn, input').attr('disabled', true);
+            this.$('.btn, input, select').attr('disabled', true);
         },
         collectData: function() {
             var data = {};
@@ -65,18 +65,19 @@ function(models, commonViews, settingsTabTemplate, settingsGroupTemplate) {
                     }
                 });
             });
-            if (equal) {
-                this.defaultButtonsState(true);
-                this.hasChanges = false;
-            } else {
-                this.$('.btn').attr('disabled', false);
-                this.hasChanges = true;
-            }
+            this.defaultButtonsState(equal);
+            this.hasChanges = !equal;
         },
         applyChanges: function() {
             var data = this.collectData();
             this.model.get('settings').update({editable: data}, {
                 url: '/api/clusters/' + this.model.id + '/attributes',
+                error: _.bind(function() {
+                    this.defaultButtonsState(false);
+                    var dialog = new dialogViews.SimpleMessage({error: true, title: 'OpenStack Settings'});
+                    this.registerSubView(dialog);
+                    dialog.render();
+                }, this),
                 success: _.bind(function() {
                     this.hasChanges = false;
                 }, this),
