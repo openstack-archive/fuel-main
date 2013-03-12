@@ -148,6 +148,9 @@ define(function() {
         constructorName: 'Nodes',
         model: models.Node,
         url: '/api/nodes',
+        comparator: function(node) {
+            return node.get('mac');
+        },
         hasChanges: function() {
             return !!this.filter(function(node) {
                 return node.get('pending_addition') || node.get('pending_deletion');
