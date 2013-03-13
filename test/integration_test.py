@@ -36,6 +36,8 @@ def main():
     parser.add_argument('--suite', dest='test_suite', type=str,
                         help='Test suite to run', choices=["integration"],
                         default="integration")
+    parser.add_argument('--environment', dest='environment', type=str,
+                        help='Environment name', default="integration")
     parser.add_argument('command', choices=('setup', 'destroy', 'test'),
                         default='test', help="command to execute")
     parser.add_argument(
@@ -55,9 +57,9 @@ def main():
 
 #   todo fix default values
     if params.no_forward_network:
-        ci = suite.Ci(params.iso, forward=None)
+        ci = suite.Ci(params.iso, forward=None, env_name=params.environment)
     else:
-        ci = suite.Ci(params.iso)
+        ci = suite.Ci(params.iso, env_name=params.environment)
 
     if not params.deployment_timeout is None:
         ci.deployment_timeout = params.deployment_timeout

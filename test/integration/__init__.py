@@ -20,16 +20,19 @@ class Ci(object):
     deployment_timeout = 1800
     puppet_timeout = 1000
 
-    def __init__(self, iso=None, forward='nat'):
+    def __init__(self, iso=None, forward='nat', env_name='integration'):
         self.iso = iso
+        self.env_name = env_name
         self.environment = None
         self.forward = forward
         try:
-            self.environment = devops.load('integration')
-            logger.info("Successfully loaded existing environment")
+            self.environment = devops.load(self.env_name)
+            logger.info("Successfully loaded existing environment %r" %
+                        self.env_name)
         except Exception, e:
             logger.info(
-                "Failed to load existing integration environment: %s",
+                "Failed to load existing integration environment %r: %s",
+                self.env_name,
                 str(e)
             )
             pass
@@ -45,10 +48,10 @@ class Ci(object):
             )
             return False
 
-        logger.info("Building integration environment")
+        logger.info("Building integration environment %r" % self.env_name)
 
         try:
-            environment = Environment('integration')
+            environment = Environment(self.env_name)
 
             network = Network('default', forward=self.forward)
             environment.networks.append(network)
@@ -79,7 +82,8 @@ class Ci(object):
             self.environment = environment
         except Exception, e:
             logger.error(
-                "Failed to build environment: %s\n%s",
+                "Failed to build environment %r: %s\n%s",
+                self.env_name,
                 str(e),
                 traceback.format_exc()
             )
@@ -87,7 +91,7 @@ class Ci(object):
 
         node.interfaces[0].ip_addresses = network.ip_addresses[2]
         devops.save(self.environment)
-        logger.info("Environment has been saved")
+        logger.info("Environment %r has been saved", self.env_name)
 
         logger.info("Starting admin node")
         node.start()
