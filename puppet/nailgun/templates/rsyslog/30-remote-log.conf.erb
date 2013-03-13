@@ -1,6 +1,7 @@
 # provides UDP syslog reception
 $ModLoad imudp
 $UDPServerRun 514
+$EscapeControlCharactersOnReceive off
 
 # remote anaconda logs
 $template RemoteLog, "%$NOW%T%TIMESTAMP:8:$% %syslogseverity-text%: %msg%\n"
