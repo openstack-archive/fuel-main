@@ -97,7 +97,7 @@ function(models, commonViews, dialogViews, networkTabTemplate, networkTabViewMod
                     vlan_start: parseInt($('.vlan_start input:first', row).val(), 10),
                     amount: this.model.get('net_manager') == 'FlatDHCPManager' ? 1 : parseInt($('.amount input', row).val(), 10),
                     network_size: parseInt($('.network_size select', row).val(), 10)
-                });
+                }, {silent: true});
             }, this);
             return valid;
         },
@@ -123,8 +123,7 @@ function(models, commonViews, dialogViews, networkTabTemplate, networkTabViewMod
                         }
                     }, this),
                     complete: _.bind(function() {
-                        this.render();
-                        this.model.fetch();
+                        this.model.fetch().done(_.bind(this.render, this));
                     }, this)
                 });
             }
