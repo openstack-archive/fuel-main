@@ -126,7 +126,8 @@ function run_ui_tests {
         ui_test_files=$ui_tests_dir/test_*.js
     fi
     result=0
-    test_server_cmd="./manage.py run --port=5544 --fake-tasks --fake-tasks-tick-count=80 --fake-tasks-tick-interval=1"
+    test_server_port=5544
+    test_server_cmd="./manage.py run --port=$test_server_port --fake-tasks --fake-tasks-tick-count=80 --fake-tasks-tick-interval=1"
     old_server_pid=`ps aux | grep "$test_server_cmd" | grep -v grep | awk '{ print $2 }'`
     if [ -n "$old_server_pid" ]; then
         kill $old_server_pid
@@ -141,7 +142,18 @@ function run_ui_tests {
         ./manage.py loaddata nailgun/fixtures/openstack_folsom.json > /dev/null
         $test_server_cmd >> $test_server_log_file 2>&1 &
         server_pid=$!
-        sleep 3 # wait until test server completely starts
+        which nc > /dev/null
+        if [ $? -eq 0 ]; then
+            # nc is available, use it to check test server readiness
+            for i in {1..50}; do
+                nc -vz localhost $test_server_port 2> /dev/null
+                if [ $? -eq 0 ]; then break; fi
+                sleep 0.1
+            done
+        else
+            # nc is not available, use sleep
+            sleep 5
+        fi
         kill -0 $server_pid 2> /dev/null
         if [ $? -eq 0 ]; then
             echo "Test server started"
