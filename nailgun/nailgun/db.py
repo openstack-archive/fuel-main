@@ -1,12 +1,12 @@
 # -*- coding: utf-8 -*-
 
-import logging
-
 import web
 from sqlalchemy.orm import scoped_session, sessionmaker
 from sqlalchemy.orm.query import Query
+from sqlalchemy.exc import ProgrammingError
 from sqlalchemy import create_engine
 
+from nailgun.logger import logger
 from nailgun.settings import settings
 
 if settings.DATABASE['engine'] == 'sqlite':
@@ -68,9 +68,16 @@ def syncdb():
 
 def dropdb():
     from nailgun.api.models import Base
-    flush()
-    orm().commit()
-    Base.metadata.drop_all(engine)
+    try:
+        flush()
+        orm().commit()
+        Base.metadata.drop_all(engine)
+    except ProgrammingError:
+        logger.info("Schema has changed, deleting tables manually...")
+        tables = [name for (name,) in engine.execute(
+            "SELECT tablename FROM pg_tables WHERE schemaname = 'public'")]
+        for table in tables:
+            engine.execute("DROP TABLE %s CASCADE" % table)
 
 
 def flush():
