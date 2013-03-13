@@ -239,7 +239,7 @@ class NailgunReceiver(object):
 
         # Let's check the whole task status
         if status in ('error',):
-            cls._error_action(task, status, progress)
+            cls._error_action(task, status, progress, message)
         elif status in ('ready',):
             cls._success_action(task, status, progress)
         else:
@@ -277,14 +277,17 @@ class NailgunReceiver(object):
         return message
 
     @classmethod
-    def _error_action(cls, task, status, progress):
-        message = u"Deployment has failed. Check these nodes:\n{0}".format(
-            cls._generate_error_message(
-                task,
-                error_types=('deploy', 'provision'),
-                names_only=True
+    def _error_action(cls, task, status, progress, message):
+        if message:
+            message = u"Deployment has failed. {0}".format(message)
+        else:
+            message = u"Deployment has failed. Check these nodes:\n{0}".format(
+                cls._generate_error_message(
+                    task,
+                    error_types=('deploy', 'provision'),
+                    names_only=True
+                )
             )
-        )
         notifier.notify(
             "error",
             message,
