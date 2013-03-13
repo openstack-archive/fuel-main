@@ -231,7 +231,7 @@ function(models, commonViews, dialogViews, NodesTab, NetworkTab, SettingsTab, Lo
             if (task) {
                 var progress = task.get('progress') || 0;
                 this.$('.bar').css('width', (progress > 3 ? progress : 3) + '%');
-                this.$('.percentage').text((progress > 3 ? progress : 3) + '%');
+                this.$('.percentage').text(progress + '%');
             }
         },
         render: function() {
