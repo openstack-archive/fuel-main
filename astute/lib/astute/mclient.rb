@@ -1,25 +1,21 @@
 require 'mcollective'
+require 'active_support/core_ext/class/attribute_accessors'
 
 module Astute
   class MClient
     include MCollective::RPC
 
     attr_accessor :retries
+    cattr_accessor :semaphore
 
     def initialize(ctx, agent, nodes=nil, check_result=true, timeout=nil)
       @task_id = ctx.task_id
       @agent = agent
       @nodes = nodes.map { |n| n.to_s }
       @check_result = check_result
-      if Thread.current['semaphore'].nil?
-        Thread.current['mclient'] = rpcclient(agent, :exit_on_failure => false)
-      else
-        Thread.current['semaphore'].synchronize do
-          Thread.current['mclient'] = rpcclient(agent, :exit_on_failure => false)
-        end
+      try_synchronize do
+        @mc = rpcclient(agent, :exit_on_failure => false)
       end
-      @mc = Thread.current['mclient']
-
       @mc.timeout = timeout if timeout
       @mc.progress = false
       @retries = Astute.config.MC_RETRIES
@@ -29,58 +25,48 @@ module Astute
     end
 
     def method_missing(method, *args)
-      if Thread.current['semaphore'].nil?
-        Thread.current['mc_res'] = @mc.send(method, *args)
-      else
-        Thread.current['semaphore'].synchronize do
-          Thread.current['mc_res'] = @mc.send(method, *args)
-        end
+      try_synchronize do
+        @mc_res = @mc.send(method, *args)
       end
-      res = Thread.current['mc_res']
 
       if method == :discover
         @nodes = args[0][:nodes]
-        return res
+        return @mc_res
       end
       # Enable if needed. In normal case it eats the screen pretty fast
-      log_result(res, method)
-      return res unless @check_result
+      log_result(@mc_res, method)
+      return @mc_res unless @check_result
       
       err_msg = ''
       # Following error might happen because of misconfiguration, ex. direct_addressing = 1 only on client
       #  or.. could be just some hang? Let's retry if @retries is set
-      if res.length < @nodes.length
+      if @mc_res.length < @nodes.length
         # some nodes didn't respond
         retry_index = 1
         while retry_index <= @retries
           sleep rand
-          nodes_responded = res.map { |n| n.results[:sender] }
+          nodes_responded = @mc_res.map { |n| n.results[:sender] }
           not_responded = @nodes - nodes_responded
           Astute.logger.debug "Retry ##{retry_index} to run mcollective agent on nodes: '#{not_responded.join(',')}'"
           @mc.discover(:nodes => not_responded)
 
-          if Thread.current['semaphore'].nil?
-            Thread.current['mc_new_res'] = @mc.send(method, *args)
-          else
-            Thread.current['semaphore'].synchronize do
-              Thread.current['mc_new_res'] = @mc.send(method, *args)
-            end
+          try_synchronize do
+            @new_res = @mc.send(method, *args)
           end
-          new_res = Thread.current['mc_new_res']
 
-          log_result(new_res, method)
-          # new_res can have some nodes which finally responded
-          res += new_res
-          break if res.length == @nodes.length
+          log_result(@new_res, method)
+          # @new_res can have some nodes which finally responded
+          @mc_res += @new_res
+          break if @mc_res.length == @nodes.length
           retry_index += 1
         end
-        if res.length < @nodes.length
-          nodes_responded = res.map { |n| n.results[:sender] }
+        if @mc_res.length < @nodes.length
+          nodes_responded = @mc_res.map { |n| n.results[:sender] }
           not_responded = @nodes - nodes_responded
           err_msg += "MCollective agents '#{not_responded.join(',')}' didn't respond. \n"
         end
       end
-      failed = res.select { |x| x.results[:statuscode] != 0 }
+      failed = @mc_res.select{|x| x.results[:statuscode] != 0 }
       if failed.any?
         err_msg += "MCollective call failed in agent '#{@agent}', "\
                      "method '#{method}', failed nodes: #{failed.map{|x| x.results[:sender]}.join(',')} \n"
@@ -90,7 +76,7 @@ module Astute
         raise "#{@task_id}: #{err_msg}"
       end
 
-      res
+      @mc_res
     end
 
   private
@@ -99,6 +85,16 @@ module Astute
       result.each do |node|
         Astute.logger.debug "#{@task_id}: MC agent '#{node.agent}', method '#{method}', "\
                             "results: #{node.results.inspect}"
+      end
+    end
+
+    def try_synchronize
+      if self.semaphore
+        self.semaphore.synchronize do
+          yield
+        end
+      else
+        yield
       end
     end
   end

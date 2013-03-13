@@ -31,6 +31,7 @@ module Naily
       time = 10 + time - Time::now.to_f
       sleep (time) if time > 0 # Wait while nodes going to reboot. Sleep not greater than 10 sec.
       begin
+
         Timeout::timeout(45 * 60) do  # 45 min for booting target OS
           while true
             time = Time::now.to_f

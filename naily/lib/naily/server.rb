@@ -14,10 +14,9 @@ module Naily
       queue = @channel.queue(Naily.config.broker_queue, :durable => true)
       queue.bind(@exchange, :routing_key => Naily.config.broker_queue)
 
-      semaphore = Mutex.new
+      Astute::MClient.semaphore = Mutex.new
       queue.subscribe do |header, payload|
         Thread.new do
-          Thread.current['semaphore'] = semaphore
           dispatch payload
         end
       end
