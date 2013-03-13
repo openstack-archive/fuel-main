@@ -106,7 +106,9 @@ $(BUILD_DIR)/bootstrap/customize-initram-root.done: \
 		$(BUILD_DIR)/bootstrap/prepare-initram-root.done \
 		$(call find-files,$(SOURCE_DIR)/bootstrap/sync) \
 		$(SOURCE_DIR)/bin/send2syslog.py \
-		$(SOURCE_DIR)/bootstrap/ssh/id_rsa.pub
+		$(SOURCE_DIR)/bootstrap/ssh/id_rsa.pub \
+		$(BUILD_DIR)/bootstrap/etc/yum.conf \
+		$(BUILD_DIR)/bootstrap/etc/yum.repos.d/base.repo
 
 	# Rebuilding rpmdb
 	sudo rpm --root=`readlink -f $(INITRAMROOT)` --rebuilddb
@@ -142,8 +144,6 @@ $(BUILD_DIR)/bootstrap/customize-initram-root.done: \
 	$(ACTION.TOUCH)
 
 $(BUILD_DIR)/bootstrap/prepare-initram-root.done: $(call depv,BOOTSTRAP_RPMS)
-$(BUILD_DIR)/bootstrap/prepare-initram-root.done: export yum_local_repo:=$(yum_local_repo)
-$(BUILD_DIR)/bootstrap/prepare-initram-root.done: export yum_local_repo:=$(bootstrap_yum_conf)
 $(BUILD_DIR)/bootstrap/prepare-initram-root.done: \
 		$(BUILD_DIR)/mirror/build.done \
 		$(BUILD_DIR)/bootstrap/etc/yum.conf \
