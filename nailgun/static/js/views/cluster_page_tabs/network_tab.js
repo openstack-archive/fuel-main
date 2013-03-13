@@ -22,12 +22,8 @@ function(models, commonViews, dialogViews, networkTabTemplate, networkTabViewMod
             'click .apply-btn:not([disabled])': 'applyChanges',
             'click .verify-networks-btn:not([disabled])': 'verifyNetworks',
             'click .btn-revert-changes:not([disabled])': 'revertChanges',
-            'click .nav a:not(.active)': 'changeMode',
             'click .net-manager input:not([checked])': 'changeManager',
             'keyup .range': 'displayRange'
-        },
-        changeMode: function(e) {
-            e.preventDefault();
         },
         defaultButtonsState: function(buttonState) {
             this.$('.btn:not(.verify-networks-btn)').attr('disabled', buttonState);

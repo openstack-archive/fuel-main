@@ -67,9 +67,7 @@ function(models, commonViews, dialogViews, NodesTab, NetworkTab, SettingsTab, Lo
         onDeployRequest: function() {
             if (this.tab.hasChanges) {
                 this.discardSettingsChanges({cb: _.bind(function() {
-                    if (this.tab.constructor == NetworkTab) {
-                        this.tab.revertChanges();
-                    }
+                    this.tab.revertChanges();
                     this.displayChanges();
                 }, this)});
             } else {

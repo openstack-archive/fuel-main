@@ -1,17 +1,6 @@
 <div class="wrapper">
   <h3>Network Settings</h3>
 
-  <!--
-  <ul class="nav nav-pills">
-    <li class="active network-setup">
-      <a href="#">Network Setup</a>
-    </li>
-    <li class="network-view">
-      <a href="#">Network View</a>
-    </li>
-  </ul>
-  -->
-
   <div class="network-tab-content">
     <% var disabled = cluster.task('deploy', 'running') || cluster.task('verify_networks', 'running') ? 'disabled' : '' %>
     <fieldset>

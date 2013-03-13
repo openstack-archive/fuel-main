@@ -75,7 +75,9 @@ casper.then(function() {
         });
         this.click('.apply-btn:not(:disabled)');
         this.waitForSelector('input:not(:disabled)');
-        this.test.assertDoesntExist('.alert-error', 'Correct settings were saved successfully');
+        this.then(function() {
+            this.test.assertDoesntExist('.alert-error', 'Correct settings were saved successfully');
+        });
     });
 });
 
