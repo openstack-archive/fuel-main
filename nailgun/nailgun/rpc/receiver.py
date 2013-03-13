@@ -277,7 +277,7 @@ class NailgunReceiver(object):
         return message
 
     @classmethod
-    def _error_action(cls, task, status, progress, message):
+    def _error_action(cls, task, status, progress, message=None):
         if message:
             message = u"Deployment has failed. {0}".format(message)
         else:
