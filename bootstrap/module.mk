@@ -134,7 +134,6 @@ $(BUILD_DIR)/bootstrap/customize-initram-root.done: \
 
 	# Removing garbage
 	sudo rm -rf $(INITRAMROOT)/home/*
-	sudo rm -f $(INITRAMROOT)/etc/yum.repos.d/mirror.repo
 	sudo rm -rf \
 		$(INITRAMROOT)/var/cache/yum \
 		$(INITRAMROOT)/var/lib/yum \
