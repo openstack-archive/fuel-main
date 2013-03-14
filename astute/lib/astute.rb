@@ -1,5 +1,3 @@
-require 'rubygems'
-
 require 'json'
 require 'logger'
 
