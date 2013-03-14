@@ -82,6 +82,8 @@ def main():
                 params.test_suite
             )
         )
+
+        suite.ci = ci
         nose.main(module=suite, config=nc, argv=[
             __file__,
             "--with-xunit",

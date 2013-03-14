@@ -203,5 +203,3 @@ vmlinuz initrd=initrd.img ks=cdrom:/ks.cfg
         if self.environment:
             devops.destroy(self.environment)
         return True
-
-ci = Ci()
