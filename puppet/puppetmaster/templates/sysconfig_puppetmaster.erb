@@ -3,7 +3,7 @@
 
 # Where to log general messages to.
 # Specify syslog to send log messages to the system log.
-#PUPPETMASTER_LOG=syslog
+PUPPETMASTER_LOG=<%= puppet_master_log %>
 
 # You may specify an alternate port or an array of ports on which
 # puppetmaster should listen. Default is: 8140
@@ -28,4 +28,4 @@
 PUPPETMASTER_PORTS=( <%= puppet_master_ports %> )
 
 # You may specify other parameters to the puppetmaster here
-PUPPETMASTER_EXTRA_OPTS=""
+PUPPETMASTER_EXTRA_OPTS="<%= puppet_master_extra_opts %>"

@@ -1,6 +1,8 @@
 class puppetmaster::master (
   $puppet_master_hostname,
   $puppet_master_ports = "18140 18141 18142 18143",
+  $puppet_master_log = "syslog",
+  $puppet_master_extra_opts = "",
   ){
 
   file { "/etc/sysconfig/puppetmaster":
@@ -10,6 +12,15 @@ class puppetmaster::master (
     mode => 0644,
     require => Package["puppet-server"],
     notify => Service["puppetmaster"],
+  }
+
+  if $puppet_master_log == "syslog" {
+    file { "/etc/rsyslog.d/40-puppet-master.conf":
+      content => "if \$programname == 'puppet-master' then /var/log/puppet/master.log",
+      owner => "root",
+      group => "root",
+      mode => 0644,
+    }->Service["rsyslog"]->Service["puppetmaster"]
   }
 
   file { "/etc/puppet/puppet.conf":
@@ -41,4 +52,4 @@ class puppetmaster::master (
                 ],
   }
 
-  }
+}

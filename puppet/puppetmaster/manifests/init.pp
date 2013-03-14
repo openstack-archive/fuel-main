@@ -27,6 +27,7 @@ class puppetmaster (
   class { "puppetmaster::master":
     puppet_master_hostname => $puppet_master_hostname,
     puppet_master_ports => "18140 18141 18142 18143",
+    puppet_master_extra_opts => "--debug",
   }
 
   class { "puppetmaster::nginx":
