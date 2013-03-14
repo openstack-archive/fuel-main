@@ -103,7 +103,7 @@ class TestErrors(BaseHandlers):
         n_error = lambda n: (n.status, n.error_type) == ('error', 'provision')
         self.assertEqual(
             sum(map(n_error, self.env.nodes)),
-            1
+            2
         )
         self.assertEquals(supertask.cluster.status, 'error')
 
