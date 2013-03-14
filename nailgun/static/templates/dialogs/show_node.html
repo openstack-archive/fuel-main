@@ -94,13 +94,13 @@
     <% _.each(meta, function(groupEntries, group) { %>
       <div class="accordion-group">
         <div class="accordion-heading">
-          <b class="accordion-toggle accordion-clickable" data-toggle="collapse" data-parent="#nodeDetailsAccordion" href="#<%- group %>">
+          <div class="accordion-toggle" data-group="<%- group %>">
             <%- group %>
-            <span class="accordion-clickable"><%- showSummary(meta, group) %></span>
-            <i class="icon-expand pull-right accordion-clickable"></i>
-          </b>
+            <span><%- showSummary(meta, group) %></span>
+            <i class="icon-expand pull-right"></i>
+          </div>
         </div>
-        <div class="accordion-body collapse" id="<%- group %>">
+        <div class="accordion-body collapse">
           <div class="accordion-inner">
             <% if (_.isArray(groupEntries)) { %>
               <% if (group == 'interfaces') groupEntries = _.sortBy(groupEntries, 'name') %>

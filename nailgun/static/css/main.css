@@ -3022,22 +3022,22 @@ select[name=release] option {
   box-shadow: 0 1px 1px rgba(0, 0, 0, 0.075) inset;
 }
 
-#nodeDetailsAccordion b {
+#nodeDetailsAccordion .accordion-toggle {
   text-transform: capitalize;
   font-weight: bold;
   color: #333;
   background-color: #ececec;
 }
 
-#nodeDetailsAccordion b[href="#cpu"] {
+#nodeDetailsAccordion .accordion-toggle[data-group=cpu] {
   text-transform: uppercase;
 }
 
-#nodeDetailsAccordion b:hover {
+#nodeDetailsAccordion .accordion-toggle:hover {
   text-decoration: none;
 }
 
-#nodeDetailsAccordion b span {
+#nodeDetailsAccordion .accordion-toggle span {
   font-weight: normal;
   padding-left: 5px;
   text-transform: none;

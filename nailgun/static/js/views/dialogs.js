@@ -265,22 +265,26 @@ function(models, simpleMessageTemplate, createClusterDialogTemplate, changeClust
     views.ShowNodeInfoDialog = views.Dialog.extend({
         template: _.template(showNodeInfoTemplate),
         events: {
-            'click .accordion-clickable': 'stopHiddenEventPropagation'
+            'click .accordion-heading': 'toggle'
         },
-        stopHiddenEventPropagation: function(e) {
-            this.$(e.target).parents('.accordion-heading').next().on('hidden', function(e) {
-                e.stopPropagation();
-            });
-            this.$('i').removeClass('icon-collapse').addClass('icon-expand');
-            if (!this.$(e.target).parents('.accordion-heading').next().hasClass('in')) {
-                this.$(e.target).parents('.accordion-heading').find('i.accordion-clickable').addClass('icon-collapse');
-            }
+        toggle: function(e) {
+            $(e.currentTarget).siblings('.accordion-body').collapse('toggle');
         },
         initialize: function(options) {
             _.defaults(this, options);
         },
         render: function() {
             this.constructor.__super__.render.call(this, {node: this.node});
+            this.$('.accordion-body').collapse({
+                parent: this.$('.accordion'),
+                toggle: false
+            }).on('show', function(e) {
+                $(e.currentTarget).siblings('.accordion-heading').find('i').removeClass('icon-expand').addClass('icon-collapse');
+            }).on('hide', function(e) {
+                $(e.currentTarget).siblings('.accordion-heading').find('i').removeClass('icon-collapse').addClass('icon-expand');
+            }).on('hidden', function(e) {
+                e.stopPropagation();
+            });
             return this;
         }
     });
