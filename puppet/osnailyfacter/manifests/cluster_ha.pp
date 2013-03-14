@@ -102,6 +102,7 @@ class compact_controller {
   }
 
   class { "::rsyslog::client":
+    remote_type = 'udp',
     log_local => true,
     log_auth_local => true,
     server => $rsyslog_hash["server_address"],
@@ -192,6 +193,7 @@ class compact_controller {
       }
 
       class { "::rsyslog::client":
+        remote_type = 'udp',
         log_local => true,
         log_auth_local => true,
         server => $rsyslog_hash["server_address"],
