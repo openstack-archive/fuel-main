@@ -16,6 +16,7 @@ function(models, commonViews, dialogViews, networkTabTemplate, networkTabViewMod
         viewModeTemplate: _.template(networkTabViewModeTemplate),
         updateInterval: 3000,
         hasChanges: false,
+        fixedAmount: 1,
         events: {
             'keyup .row input': 'makeChanges',
             'change .row select': 'makeChanges',
@@ -23,7 +24,8 @@ function(models, commonViews, dialogViews, networkTabTemplate, networkTabViewMod
             'click .verify-networks-btn:not([disabled])': 'verifyNetworks',
             'click .btn-revert-changes:not([disabled])': 'revertChanges',
             'click .net-manager input:not([checked])': 'changeManager',
-            'keyup .range': 'displayRange'
+            'keyup .range': 'displayRange',
+            'keyup input[name=fixed-amount]': 'setFixedAmount'
         },
         defaultButtonsState: function(buttonState) {
             this.$('.btn:not(.verify-networks-btn)').attr('disabled', buttonState);
@@ -82,8 +84,16 @@ function(models, commonViews, dialogViews, networkTabTemplate, networkTabViewMod
             this.$('.control-group .error').removeClass('error');
             this.checkForChanges();
             this.$('.fixed-row .amount, .fixed-header .amount, .fixed-row .network_size, .fixed-header .size').toggle().removeClass('hide');
+            if (this.model.get('net_manager') == 'VlanManager') {
+                this.$('input[name=fixed-amount]').val(this.fixedAmount);
+            } else {
+                this.$('input[name=fixed-amount]').val(1);
+            }
             this.displayRange();
             app.page.removeVerificationTask();
+        },
+        setFixedAmount: function() {
+            this.fixedAmount = parseInt(this.$('input[name=fixed-amount]').val(), 10);
         },
         setValues: function() {
             var valid = true;
@@ -95,7 +105,7 @@ function(models, commonViews, dialogViews, networkTabTemplate, networkTabViewMod
                 network.set({
                     cidr: $('.cidr input', row).val(),
                     vlan_start: parseInt($('.vlan_start input:first', row).val(), 10),
-                    amount: this.model.get('net_manager') == 'FlatDHCPManager' ? 1 : parseInt($('.amount input', row).val(), 10),
+                    amount: this.model.get('net_manager') == 'FlatDHCPManager' || network.get('name') != 'fixed' ? 1 : this.fixedAmount,
                     network_size: parseInt($('.network_size select', row).val(), 10)
                 });
             }, this);
