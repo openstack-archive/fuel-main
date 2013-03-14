@@ -114,7 +114,7 @@ function(models, commonViews, dialogViews, NodesTab, NetworkTab, SettingsTab, Lo
         },
         deploymentFinished: function() {
             this.model.fetch();
-            app.navbar.stats.nodes.fetch();
+            app.navbar.nodes.fetch();
             app.navbar.notifications.fetch();
         },
         beforeTearDown: function() {

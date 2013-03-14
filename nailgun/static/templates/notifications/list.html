@@ -5,7 +5,7 @@
 </div>
 <div class="notifications-list page-wrapper">
   <ul class="message-list" role="menu">
-    <% if (notifications.length) { %>
+    <% if (notifications.deferred.state() != 'pending') { %>
       <% _.each(notifications.last(displayCount).reverse(), function(notification, index) { %>
         <% var topic = notification.get('topic') %>
         <li class="notification-box enable-selection <%= notification.get('status') == 'unread' ? 'new' : '' %> <%= topic %>">

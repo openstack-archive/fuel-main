@@ -43,41 +43,6 @@ function(models, dialogViews, navbarTemplate, nodesStatsTemplate, notificationsT
         className: 'container',
         template: _.template(navbarTemplate),
         updateInterval: 20000,
-        popoverVisible: false,
-        events: {
-            'click .icon-comment': 'togglePopover',
-            'click .badge': 'togglePopover'
-        },
-        hidePopover: function(e) {
-            if (this.popoverVisible && (!$(e.target).closest($('.message-list-placeholder')).length || $(e.target).parent().hasClass('show-more-notifications')) && !$(e.target).hasClass('node-modal-close')) {
-                $('html').off(this.eventNamespace);
-                this.popoverVisible = false;
-                $('.message-list-placeholder').parent().remove();
-            }
-        },
-        togglePopover: function(e) {
-            if (!this.popoverVisible && $(e.target).closest(this.$el).length) {
-                $('html').off(this.eventNamespace);
-                $('html').on(this.eventNamespace, _.after(2, _.bind(this.hidePopover, this)));
-                this.popoverVisible = true;
-                this.notificationsPopover = new views.NotificationsPopover({nodes: this.nodes, notifications: this.notifications, displayCount: 5});
-                this.registerSubView(this.notificationsPopover);
-                this.$el.after(this.notificationsPopover.render().el);
-                this.markNotificationsAsRead();
-            }
-        },
-        markNotificationsAsRead: function() {
-            var notificationsToMark = new models.Notifications(this.notifications.where({status : 'unread'}));
-            if (notificationsToMark.length) {
-                notificationsToMark.toJSON = function() {
-                    return notificationsToMark.map(function(notification) {
-                        notification.set({status: 'read'}, {silent: true});
-                        return _.pick(notification.attributes, 'id', 'status');
-                    }, this);
-                };
-                Backbone.sync('update', notificationsToMark).done(_.bind(this.render, this));
-            }
-        },
         setActive: function(element) {
             this.$('a.active').removeClass('active');
             this.$('a[href="#' + element + '"]').addClass('active');
@@ -91,29 +56,27 @@ function(models, dialogViews, navbarTemplate, nodesStatsTemplate, notificationsT
             this.notifications.fetch({complete: complete});
         },
         initialize: function(options) {
-            this.eventNamespace = 'click.click-notifications';
             this.elements = _.isArray(options.elements) ? options.elements : [];
             var complete = _.after(2, _.bind(this.scheduleUpdate, this));
             this.nodes = new models.Nodes();
             this.nodes.deferred = this.nodes.fetch({complete: complete});
-            this.nodes.bind('reset', this.render, this);
             this.notifications = new models.Notifications();
-            this.notifications.fetch({complete: complete});
-            this.notifications.bind('reset', this.render, this);
-        },
-        beforeTearDown: function() {
-            $('html').off(this.eventNamespace);
+            this.notifications.deferred = this.notifications.fetch({complete: complete});
         },
         render: function() {
+            this.tearDownRegisteredSubViews();
             if (!this.$('.navigation-bar-ul a').length) {
                 this.$el.html(this.template({elements: this.elements}));
             }
-            this.stats = new views.NodesStats({nodes: this.nodes});
+            this.stats = new views.NodesStats({collection: this.nodes, navbar: this});
             this.registerSubView(this.stats);
             this.$('.nodes-summary-container').html(this.stats.render().el);
-            this.notificationsBar = new views.Notifications({notifications: this.notifications});
-            this.registerSubView(this.notificationsBar);
-            this.$('.notifications').html(this.notificationsBar.render().el);
+            this.notificationsButton = new views.Notifications({collection: this.notifications, navbar: this});
+            this.registerSubView(this.notificationsButton);
+            this.$('.notifications').html(this.notificationsButton.render().el);
+            this.popover = new views.NotificationsPopover({nodes: this.nodes, collection: this.notifications, navbar: this});
+            this.registerSubView(this.popover);
+            this.$('.notification-wrapper').html(this.popover.render().el);
             return this;
         }
     });
@@ -123,13 +86,14 @@ function(models, dialogViews, navbarTemplate, nodesStatsTemplate, notificationsT
         stats: {},
         initialize: function(options) {
             _.defaults(this, options);
+            this.collection.bind('reset', this.render, this);
         },
         calculateStats: function() {
-            this.stats.total = this.nodes.length;
-            this.stats.unallocated = this.nodes.filter(function(node) {return !node.get('role');}).length;
+            this.stats.total = this.collection.length;
+            this.stats.unallocated = this.collection.filter(function(node) {return !node.get('role');}).length;
         },
         render: function() {
-            if (this.nodes.deferred.state() == 'resolved') {
+            if (this.collection.deferred.state() == 'resolved') {
                 this.calculateStats();
                 this.$el.html(this.template({stats: this.stats}));
             }
@@ -139,33 +103,91 @@ function(models, dialogViews, navbarTemplate, nodesStatsTemplate, notificationsT
 
     views.Notifications = Backbone.View.extend({
         template: _.template(notificationsTemplate),
+        events: {
+            'click .icon-comment': 'togglePopover',
+            'click .badge': 'togglePopover'
+        },
+        togglePopover: function(e) {
+            this.navbar.popover.toggle();
+        },
         initialize: function(options) {
             _.defaults(this, options);
+            this.collection.bind('reset', this.render, this);
         },
         render: function() {
-            this.$el.html(this.template({notifications: this.notifications}));
+            this.$el.html(this.template({notifications: this.collection}));
             return this;
         }
     });
 
     views.NotificationsPopover = Backbone.View.extend({
         template: _.template(notificationsPopoverTemplate),
+        visible: false,
         events: {
-            'click .discover' : 'showNodeInfo'
+            'click .discover' : 'showNodeInfo',
+            'click .show-more-notifications a': 'toggle'
         },
         showNodeInfo: function(e) {
             if ($(e.target).data('node')) {
+                this.toggle();
                 var node = this.nodes.get($(e.target).data('node'));
                 var dialog = new dialogViews.ShowNodeInfoDialog({node: node});
                 this.registerSubView(dialog);
                 dialog.render();
             }
         },
+        toggle: function() {
+            this.visible = !this.visible;
+            this.render();
+            if (this.visible) {
+                this.markAsRead();
+            }
+        },
+        hide: function(e) {
+            if (this.visible && !$(e.target).closest(this.navbar.notificationsButton.el).length && !$(e.target).closest(this.el).length) {
+                this.visible = false;
+                this.render();
+            }
+        },
+        markAsRead: function() {
+            var notificationsToMark = new models.Notifications(this.collection.where({status : 'unread'}));
+            if (notificationsToMark.length) {
+                notificationsToMark.toJSON = function() {
+                    return notificationsToMark.map(function(notification) {
+                        notification.set({status: 'read'}, {silent: true});
+                        return _.pick(notification.attributes, 'id', 'status');
+                    }, this);
+                };
+                Backbone.sync('update', notificationsToMark).done(_.bind(function() {
+                    this.collection.trigger('reset');
+                }, this));
+            }
+        },
+        beforeTearDown: function() {
+            this.unbindEvents();
+        },
         initialize: function(options) {
             _.defaults(this, options);
+            // listening for 'reset' is not a good solution. we should listen
+            // for 'add' after updating backbone and getting smart collection
+            // merging feature
+            //this.collection.bind('reset', this.render, this);
+            this.eventNamespace = 'click.click-notifications';
+        },
+        bindEvents: function() {
+            $('html').on(this.eventNamespace, _.bind(this.hide, this));
+        },
+        unbindEvents: function() {
+            $('html').off(this.eventNamespace);
         },
         render: function() {
-            this.$el.html(this.template({notifications: this.notifications, displayCount: 5}));
+            if (this.visible) {
+                this.$el.html(this.template({notifications: this.collection, displayCount: 5}));
+                this.bindEvents();
+            } else {
+                this.$el.html('');
+                this.unbindEvents();
+            }
             return this;
         }
     });

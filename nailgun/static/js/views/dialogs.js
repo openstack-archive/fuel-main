@@ -197,7 +197,7 @@ function(models, simpleMessageTemplate, createClusterDialogTemplate, changeClust
             Backbone.sync('update', nodes)
                 .done(_.bind(function() {
                     this.model.get('nodes').fetch({data: {cluster_id: this.model.id}});
-                    app.navbar.stats.nodes.fetch();
+                    app.navbar.nodes.fetch();
                 }, this))
                 .fail(_.bind(this.displayErrorMessage, this));
         },

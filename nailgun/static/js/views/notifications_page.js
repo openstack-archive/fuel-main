@@ -26,10 +26,10 @@ function(models, commonViews, dialogViews, notificationsListTemplate) {
         },
         initialize: function(options) {
             _.defaults(this, options);
-            this.collection.bind('reset', this.render, this);
+            this.notifications.bind('reset', this.render, this);
         },
         render: function() {
-            this.$el.html(this.template({notifications: this.collection, displayCount: this.collection.length}));
+            this.$el.html(this.template({notifications: this.notifications, displayCount: this.notifications.length}));
             return this;
         }
     });

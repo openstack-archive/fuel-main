@@ -89,7 +89,7 @@ function(models, commonViews, ClusterPage, ClustersPage, ReleasesPage, Notificat
             });
         },
         showNotifications: function() {
-            this.setPage(new NotificationsPage({collection: app.navbar.notifications, nodes: app.navbar.stats.nodes}));
+            this.setPage(new NotificationsPage({notifications: app.navbar.notifications, nodes: app.navbar.nodes}));
         },
         showSupportPage: function() {
             this.setPage(new SupportPage());

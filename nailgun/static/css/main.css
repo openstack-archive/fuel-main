@@ -1618,7 +1618,7 @@ h6.page-title {
 }
 
 /* Notifications Popover */
-#notification-wrapper {
+.notification-wrapper {
   position: relative;
 }
 

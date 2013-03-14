@@ -179,7 +179,7 @@ function(models, commonViews, dialogViews, LogsTab, nodesTabSummaryTemplate, edi
             Backbone.sync('update', nodes).done(_.bind(function() {
                 this.tab.changeScreen(NodesByRolesScreen);
                 this.model.get('nodes').fetch({data: {cluster_id: this.model.id}});
-                app.navbar.stats.nodes.fetch();
+                app.navbar.nodes.fetch();
                 app.page.removeVerificationTask();
             }, this));
         },
