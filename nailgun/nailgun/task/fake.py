@@ -54,6 +54,8 @@ class FakeDeploymentThread(FakeThread):
         # TEST: we can fail at any stage:
         # "provisioning" or "deployment"
         error = self.params.get("error")
+        # TEST: error message from "orchestrator"
+        error_msg = self.params.get("error_msg", "")
         # TEST: we can set node offline at any stage:
         # "provisioning" or "deployment"
         offline = self.params.get("offline")
@@ -96,6 +98,7 @@ class FakeDeploymentThread(FakeThread):
                 shuffle(kwargs['nodes'])
                 kwargs['nodes'][0]['status'] = "error"
                 kwargs['nodes'][0]['error_type'] = "provision"
+                kwargs['error'] = error_msg
                 error = None
             yield kwargs
             if all(map(
@@ -146,6 +149,7 @@ class FakeDeploymentThread(FakeThread):
                 shuffle(kwargs['nodes'])
                 kwargs['nodes'][0]['status'] = "error"
                 kwargs['nodes'][0]['error_type'] = "deploy"
+                kwargs['error'] = error_msg
                 error = None
             if all(map(
                 lambda n: n['progress'] == 100 and n['status'] == 'ready',

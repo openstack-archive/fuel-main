@@ -69,6 +69,30 @@ class TestErrors(BaseHandlers):
         )
         self.assertEquals(supertask.cluster.status, 'error')
 
+    @fake_tasks(error="provisioning", error_msg="Terrible error")
+    def test_deployment_error_from_orchestrator(self):
+        self.env.create(
+            cluster_kwargs={},
+            nodes_kwargs=[
+                {"name": "First",
+                 "pending_addition": True},
+                {"name": "Second",
+                 "role": "compute",
+                 "pending_addition": True}
+            ]
+        )
+        supertask = self.env.launch_deployment()
+        self.env.wait_error(supertask, 60,
+                            "Deployment has failed. Terrible error")
+        self.env.refresh_nodes()
+        self.env.refresh_clusters()
+        n_error = lambda n: (n.status, n.error_type) == ('error', 'provision')
+        self.assertEqual(
+            sum(map(n_error, self.env.nodes)),
+            1
+        )
+        self.assertEquals(supertask.cluster.status, 'error')
+
     @fake_tasks(error="deployment")
     def test_deployment_error_during_deployment(self):
         self.env.create(
