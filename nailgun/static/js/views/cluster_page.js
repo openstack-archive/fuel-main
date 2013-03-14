@@ -30,8 +30,7 @@ function(models, commonViews, dialogViews, NodesTab, NetworkTab, SettingsTab, Lo
         events: {
             'click .task-result .close': 'dismissTaskResult',
             'click .rollback': 'discardChanges',
-            'click .deploy-btn:not(.disabled)': 'onDeployRequest',
-            'click .nav-tabs li:not(.active) a': 'onTabChange'
+            'click .deploy-btn:not(.disabled)': 'onDeployRequest'
         },
         removeVerificationTask: function() {
             var deferred;
@@ -74,10 +73,9 @@ function(models, commonViews, dialogViews, NodesTab, NetworkTab, SettingsTab, Lo
                 this.displayChanges();
             }
         },
-        onTabChange: function(e) {
-            if (this.tab.hasChanges) {
+        onTabLeave: function(e) {
+            if ($(e.currentTarget).attr('href') != document.location.hash && this.tab.hasChanges) {
                 e.preventDefault();
-                var href = $(e.target).attr('href') || $(e.target).parent().attr('href');
                 this.discardSettingsChanges({cb: _.bind(function() {
                     app.navigate(href, {trigger: true});
                 }, this)});
@@ -120,7 +118,8 @@ function(models, commonViews, dialogViews, NodesTab, NetworkTab, SettingsTab, Lo
         },
         beforeTearDown: function() {
             this.pollingAborted = true;
-            $(window).unbind('beforeunload');
+            $(window).off('beforeunload.' + this.eventNamespace);
+            $('body').off('click.' + this.eventNamespace);
         },
         onBeforeunloadEvent: function() {
             if (this.tab.hasChanges) {
@@ -135,7 +134,9 @@ function(models, commonViews, dialogViews, NodesTab, NetworkTab, SettingsTab, Lo
             this.model.bind('change:changes', this.renderDeploymentControl, this);
             this.bindNodesEvents();
             this.scheduleUpdate();
-            $(window).bind('beforeunload', _.bind(this.onBeforeunloadEvent, this));
+            this.eventNamespace = 'unsavedchanges' + this.activeTab;
+            $(window).on('beforeunload.' + this.eventNamespace, _.bind(this.onBeforeunloadEvent, this));
+            $('body').on('click.' + this.eventNamespace, 'a[href^=#]', _.bind(this.onTabLeave, this));
         },
         bindTasksEvents: function() {
             this.model.get('tasks').bind('reset', this.renderDeploymentResult, this);
