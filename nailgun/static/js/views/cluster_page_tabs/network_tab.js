@@ -16,7 +16,6 @@ function(models, commonViews, dialogViews, networkTabTemplate, networkTabViewMod
         viewModeTemplate: _.template(networkTabViewModeTemplate),
         updateInterval: 3000,
         hasChanges: false,
-        fixedAmount: 1,
         events: {
             'keyup .row input': 'makeChanges',
             'change .row select': 'makeChanges',
@@ -24,8 +23,7 @@ function(models, commonViews, dialogViews, networkTabTemplate, networkTabViewMod
             'click .verify-networks-btn:not([disabled])': 'verifyNetworks',
             'click .btn-revert-changes:not([disabled])': 'revertChanges',
             'click .net-manager input:not([checked])': 'changeManager',
-            'keyup .range': 'displayRange',
-            'keyup input[name=fixed-amount]': 'setFixedAmount'
+            'keyup .range': 'displayRange'
         },
         defaultButtonsState: function(buttonState) {
             this.$('.btn:not(.verify-networks-btn)').attr('disabled', buttonState);
@@ -40,7 +38,7 @@ function(models, commonViews, dialogViews, networkTabTemplate, networkTabViewMod
             this.hasChanges = !noChanges;
         },
         makeChanges: function(e) {
-            var row = e ? this.$(e.target).parents('.control-group') : this.$('.control-group[data-network-name=fixed]');
+            var row = e ? this.$(e.currentTarget).parents('.control-group') : this.$('.control-group[data-network-name=fixed]');
             this.$('.control-group .error').removeClass('error');
             row.removeClass('error').find('.help-inline').text('');
             this.model.get('networks').get(row.data('network-id')).on('error', function(model, errors) {
@@ -52,6 +50,9 @@ function(models, commonViews, dialogViews, networkTabTemplate, networkTabViewMod
                 amount: this.model.get('net_manager') == 'FlatDHCPManager' ? 1 : $('.amount input', row).val(),
                 network_size: parseInt($('.network_size select', row).val(), 10)
             });
+            if (this.$(e.currentTarget).attr('name') == 'fixed-amount') {
+                this.fixedAmount = parseInt(this.$(e.currentTarget).val(), 10);
+            }
             this.checkForChanges();
             app.page.removeVerificationTask();
         },
@@ -91,9 +92,6 @@ function(models, commonViews, dialogViews, networkTabTemplate, networkTabViewMod
             }
             this.displayRange();
             app.page.removeVerificationTask();
-        },
-        setFixedAmount: function() {
-            this.fixedAmount = parseInt(this.$('input[name=fixed-amount]').val(), 10);
         },
         setValues: function() {
             var valid = true;
@@ -198,6 +196,10 @@ function(models, commonViews, dialogViews, networkTabTemplate, networkTabViewMod
             this.model.get('networks').deferred.resolve();
             app.page.removeVerificationTask().done(_.bind(this.render, this));
         },
+        getFixedAmount: function() {
+            var fixedNetwork = _.first(_.filter(this.model.get('networksDbState').settings, function(network) {return network.name == 'fixed';}));
+            this.fixedAmount = fixedNetwork.amount;
+        },
         initialize: function(options) {
             _.defaults(this, options);
             this.model.bind('change:tasks', this.bindEvents, this);
@@ -211,9 +213,11 @@ function(models, commonViews, dialogViews, networkTabTemplate, networkTabViewMod
                         manager: this.model.get('net_manager')
                     };
                     this.model.set({'networksDbState': networksDbState}, {silent: true});
+                    this.getFixedAmount();
                     this.render();
                 }, this));
             } else {
+                this.getFixedAmount();
                 this.revertChanges();
             }
         },
