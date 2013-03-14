@@ -10,25 +10,15 @@
         <div class="span4">
            <% var modes = {'singlenode': 'Single-node', 'multinode': 'Multi-node', 'ha': 'Multi-node with HA'} %>
           <% _.each(cluster.availableModes(), function(mode) { %>
-            
-            <!--
-            <label class="radio">
-              <input type="radio" name="mode" value="<%= mode %>" <%= cluster.get('mode') == mode ? 'checked' : '' %> <%= cluster.canChangeMode(mode) ? '' : 'disabled' %>>
-              <%= modes[mode] || mode %>
-            </label>
-          -->
-
-          <label class="parameter-box clearfix setting" >
-            <div class="parameter-control">
-              <div class="custom-tumbler">
-                <input type="radio" name="mode" value="<%= mode %>" <%= cluster.get('mode') == mode ? 'checked' : '' %> <%= cluster.canChangeMode(mode) ? '' : 'disabled' %>>
-              
-                <!--[if !IE |(gte IE 9)]>--><span>&nbsp;</span><!--<![endif]-->
+            <label class="parameter-box clearfix setting" >
+              <div class="parameter-control">
+                <div class="custom-tumbler">
+                  <input type="radio" name="mode" value="<%= mode %>" <%= cluster.get('mode') == mode ? 'checked' : '' %> <%= cluster.canChangeMode(mode) ? '' : 'disabled' %>>
+                  <!--[if !IE |(gte IE 9)]>--><span>&nbsp;</span><!--<![endif]-->
+                </div>
               </div>
-            </div>
-            <div class="openstack-sub-title parameter-name"><%= modes[mode] || mode %></div>
-          </label>
-
+              <div class="openstack-sub-title parameter-name"><%= modes[mode] || mode %></div>
+            </label>
           <% }) %>
         </div>
         <div class="span8">
