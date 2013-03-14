@@ -94,11 +94,11 @@
     <% _.each(meta, function(groupEntries, group) { %>
       <div class="accordion-group">
         <div class="accordion-heading">
-          <a class="accordion-toggle accordion-clickable" data-toggle="collapse" data-parent="#nodeDetailsAccordion" href="#<%- group %>">
+          <b class="accordion-toggle accordion-clickable" data-toggle="collapse" data-parent="#nodeDetailsAccordion" href="#<%- group %>">
             <%- group %>
             <span class="accordion-clickable"><%- showSummary(meta, group) %></span>
             <i class="icon-expand pull-right accordion-clickable"></i>
-          </a>
+          </b>
         </div>
         <div class="accordion-body collapse" id="<%- group %>">
           <div class="accordion-inner">

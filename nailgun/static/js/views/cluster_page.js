@@ -74,7 +74,8 @@ function(models, commonViews, dialogViews, NodesTab, NetworkTab, SettingsTab, Lo
             }
         },
         onTabLeave: function(e) {
-            if ($(e.currentTarget).attr('href') != document.location.hash && this.tab.hasChanges) {
+            var href = $(e.currentTarget).attr('href');
+            if (href != document.location.hash && this.tab.hasChanges) {
                 e.preventDefault();
                 this.discardSettingsChanges({cb: _.bind(function() {
                     app.navigate(href, {trigger: true});

@@ -3022,22 +3022,22 @@ select[name=release] option {
   box-shadow: 0 1px 1px rgba(0, 0, 0, 0.075) inset;
 }
 
-#nodeDetailsAccordion a {
+#nodeDetailsAccordion b {
   text-transform: capitalize;
   font-weight: bold;
   color: #333;
   background-color: #ececec;
 }
 
-#nodeDetailsAccordion a[href="#cpu"] {
+#nodeDetailsAccordion b[href="#cpu"] {
   text-transform: uppercase;
 }
 
-#nodeDetailsAccordion a:hover {
+#nodeDetailsAccordion b:hover {
   text-decoration: none;
 }
 
-#nodeDetailsAccordion a span {
+#nodeDetailsAccordion b span {
   font-weight: normal;
   padding-left: 5px;
   text-transform: none;
