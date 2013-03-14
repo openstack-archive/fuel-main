@@ -2498,6 +2498,10 @@ h6.page-title {
   margin: 0;
 
 }
+.mode-control-group .span7{
+  margin-left: 0;
+  margin-right: 10px;
+}
 
 .pull-right-help {
   margin: 0;

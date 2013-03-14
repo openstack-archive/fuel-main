@@ -7,7 +7,7 @@
     <fieldset>
       <h4>Deployment Mode:</h4>
       <div class="row-fluid control-group mode-control-group">
-        <div class="span4">
+        <div class="span5">
            <% var modes = {'singlenode': 'Single-node', 'multinode': 'Multi-node', 'ha': 'Multi-node with HA'} %>
           <% _.each(cluster.availableModes(), function(mode) { %>
             <label class="parameter-box clearfix setting" >
@@ -21,7 +21,7 @@
             </label>
           <% }) %>
         </div>
-        <div class="span8">
+        <div class="span7">
           <p class="help-block hide mode-description help-mode-singlenode">
             This simple configuration is for you if you want to give OpenStack a test drive. You will get a fully functional private cloud, with all OpenStack components installed on one node. The node will also act as a compute node.
           </p>
