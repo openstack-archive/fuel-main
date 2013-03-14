@@ -1384,6 +1384,15 @@ h6.page-title {
   width: 160px;
 }
 
+/* *** */
+.networks-header > .network,
+.networks-header > .cidr,
+.networks-header > .amount,
+.networks-header > .size,
+.networks-header > .vlan {
+  font-size: 11px; line-height: 14px;
+}
+
 .networks-table .network_size select {
   width: 90px;
 }
@@ -3152,9 +3161,15 @@ select[name=release] option {
 
 .parameter-box {
   display: block;
+  /*
   margin-left: 12px;
+  */
 }
 
+.fieldset-group > div > .parameter-box,
+.fieldset-group > div > div > .parameter-box  {
+  margin-left: 12px;
+}
 
 .parameter-name {
   display: block;
