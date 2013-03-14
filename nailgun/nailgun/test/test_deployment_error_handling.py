@@ -78,12 +78,26 @@ class TestErrors(BaseHandlers):
                  "pending_addition": True},
                 {"name": "Second",
                  "role": "compute",
-                 "pending_addition": True}
+                 "pending_addition": True},
+                {"name": "Third",
+                 "role": "compute",
+                 "status": "error",
+                 "error_type": "provision",
+                 "error_msg": "I forgot about teapot!"}
             ]
         )
         supertask = self.env.launch_deployment()
-        self.env.wait_error(supertask, 60,
-                            "Deployment has failed. Terrible error")
+        err_msg = "Deployment has failed. Terrible error"
+        self.env.wait_error(supertask, 60, err_msg)
+        self.assertIsNotNone(
+            self.db.query(Notification).filter_by(message=err_msg).first()
+        )
+        self.assertEqual(
+            self.db.query(Notification).filter_by(
+                node_id=self.env.nodes[2].id
+            ).first().message,
+            "Failed to deploy node 'Third': I forgot about teapot!"
+        )
         self.env.refresh_nodes()
         self.env.refresh_clusters()
         n_error = lambda n: (n.status, n.error_type) == ('error', 'provision')
