@@ -101,9 +101,9 @@ class TestErrors(BaseHandlers):
         self.env.refresh_nodes()
         self.env.refresh_clusters()
         n_error = lambda n: (n.status, n.error_type) == ('error', 'provision')
-        self.assertEqual(
+        self.assertIn(
             sum(map(n_error, self.env.nodes)),
-            2
+            [1, 2]
         )
         self.assertEquals(supertask.cluster.status, 'error')
 
