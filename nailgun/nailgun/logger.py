@@ -90,7 +90,6 @@ class FileLoggerMiddleware(object):
         All exceptions should be in nailgun log
         '''
         # Log exception
-        self.nailgun_logger.info("OLOLO")
         if self.log:
             self.nailgun_logger.exception(self.message)
         # Return error handler

@@ -52,7 +52,7 @@ def load_db_driver(handler):
     )
     try:
         return handler()
-    except web.HTTPError as exc:
+    except web.HTTPError:
         web.ctx.orm.commit()
         raise
     except:
