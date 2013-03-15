@@ -8,10 +8,10 @@ endef
 
 define sandbox_yum_conf
 [main]
-cachedir=/tmp/sandbox_cache
+cachedir=$(SANDBOX)/cache
 keepcache=0
 debuglevel=6
-logfile=/tmp/sandbox_yum.log
+logfile=$(SANDBOX)/yum.log
 exclude=*.i686.rpm
 exactarch=1
 obsoletes=1

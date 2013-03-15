@@ -52,10 +52,10 @@ endef
 
 define bootstrap_yum_conf
 [main]
-cachedir=/tmp/bootstrap_cache
+cachedir=$(BUILD_DIR)/bootstrap/cache
 keepcache=0
 debuglevel=6
-logfile=/tmp/bootstrap_yum.log
+logfile=$(BUILD_DIR)/bootstrap/yum.log
 exclude=*.i686.rpm
 exactarch=1
 obsoletes=1
