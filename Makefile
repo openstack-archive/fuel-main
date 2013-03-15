@@ -20,6 +20,23 @@ help:
 	@echo '  clean - remove build directory and resetting .done flags'
 	@echo '  deep_clean - clean + removing $(LOCAL_MIRROR) directory'
 	@echo '  distclean - cleans deep_clean + clean-integration-test'
+	@echo
+	@echo 'To build system using one of the proprietary mirrors use '
+	@echo 'the following commands:'
+	@echo
+	@echo 'Saratov office:'
+	@echo 'make iso YUM_REPOS=proprietary \
+MIRROR_CENTOS=http://srv08-srt.srt.mirantis.net/fwm/centos \
+MIRROR_EGGS=http://srv08-srt.srt.mirantis.net/fwm/eggs \
+MIRROR_GEMS=http://srv08-srt.srt.mirantis.net/fwm/gems \
+MIRROR_SRC=http://srv08-srt.srt.mirantis.net/fwm/src'
+	@echo
+	@echo 'Moscow office:'
+	@echo 'make iso YUM_REPOS=proprietary \
+MIRROR_CENTOS=http://172.18.8.46/fwm/centos \
+MIRROR_EGGS=http://172.18.8.46/fwm/eggs \
+MIRROR_GEMS=http://172.18.8.46/fwm/gems \
+MIRROR_SRC=http://172.18.8.46/fwm/src'
 
 all: iso
 
