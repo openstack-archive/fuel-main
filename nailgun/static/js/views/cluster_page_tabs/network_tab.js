@@ -194,6 +194,7 @@ function(models, commonViews, dialogViews, networkTabTemplate, networkTabViewMod
             }, {silent: true});
             this.model.get('networks').deferred = new $.Deferred();
             this.model.get('networks').deferred.resolve();
+            this.getFixedAmount();
             app.page.removeVerificationTask().done(_.bind(this.render, this));
         },
         getFixedAmount: function() {
