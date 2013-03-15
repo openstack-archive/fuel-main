@@ -24,7 +24,7 @@ test: test-integration
 test-integration: test-integration-env
 	python test/integration_test.py -l $(LEVEL) --installation-timeout=$(INSTALLATION_TIMEOUT) --deployment-timeout=$(DEPLOYMENT_TIMEOUT) --iso $(abspath $(iso.path)) test $(NOSEARGS)
 
-test-integration-env: | $(iso.path)
+test-integration-env: $(BUILD_DIR)/iso/iso.done
 	@mkdir -p $(@D)
 	python test/integration_test.py -l $(LEVEL) destroy
 	python test/integration_test.py -l $(LEVEL) $(NOFORWARD_CLI_ARG) --iso $(abspath $(iso.path)) setup
