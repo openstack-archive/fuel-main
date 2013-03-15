@@ -1,6 +1,6 @@
 LISTEN_ADDRESS: "0.0.0.0"
 LISTEN_PORT: "8000"
-DEVELOPMENT: "1"
+DEVELOPMENT: 1
 
 COMMIT_SHA: "Unknown build"
 PRODUCT_VERSION: "0.1-beta"
@@ -81,7 +81,7 @@ LOG_FORMATS:
       - ALERT
       - EMERG
   - &python_log_format
-    regexp: '^(?P<date>\d{4}-\d{2}-\d{2}\s\d{2}:\d{2}:\d{2}),\d{3}\s(?P<level>[A-Z]+)\s(?P<text>.*)$'
+    regexp: '^(?P<date>\d{4}-\d{2}-\d{2}\s\d{2}:\d{2}:\d{2})\s(?P<level>[A-Z]+)\s(?P<text>.*)$'
     date_format: '%Y-%m-%d %H:%M:%S'
     levels:
       - DEBUG

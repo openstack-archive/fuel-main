@@ -1,5 +1,7 @@
 # -*- coding: utf-8 -*-
 
+import traceback
+
 import web
 from sqlalchemy.orm import scoped_session, sessionmaker
 from sqlalchemy.orm.query import Query
@@ -50,7 +52,7 @@ def load_db_driver(handler):
     )
     try:
         return handler()
-    except web.HTTPError:
+    except web.HTTPError as exc:
         web.ctx.orm.commit()
         raise
     except:

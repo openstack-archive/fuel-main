@@ -1,19 +1,29 @@
-import yaml
+import sys
 import cStringIO
 import os.path
 import logging
 import logging.config
 
+import yaml
+
 from pkg_resources import resource_filename
 
 
-class NailgunSettings:
+class NailgunSettings(object):
     def __init__(self):
-        self.logger = logging.getLogger(__name__)
+        logger = logging.getLogger("nailgun")
+        logger.setLevel(logging.DEBUG)
+        formatter = logging.Formatter(
+            "%(asctime)s %(levelname)s (%(module)s) %(message)s",
+            "%Y-%m-%d %H:%M:%S"
+        )
+        handler = logging.StreamHandler(sys.stdout)
+        handler.setFormatter(formatter)
+        logger.addHandler(handler)
 
         settings_files = []
-        self.logger.debug("Looking for settings.yaml package config "
-                          "using old style __file__")
+        logger.debug("Looking for settings.yaml package config "
+                     "using old style __file__")
         project_path = os.path.dirname(__file__)
         project_settings_file = os.path.join(project_path, 'settings.yaml')
         settings_files.append(project_settings_file)
@@ -24,12 +34,30 @@ class NailgunSettings:
 
         for sf in settings_files:
             try:
-                self.logger.debug("Trying to read config file %s" % sf)
-                with open(sf, 'r') as f:
-                    self.config.update(yaml.load(f.read()))
+                logger.debug("Trying to read config file %s" % sf)
+                self.update_from_file(sf)
             except Exception as e:
-                self.logger.debug("Error while reading config file %s: %s" %
-                                  (sf, str(e)))
+                logger.debug("Error while reading config file %s: %s" %
+                             (sf, str(e)))
+
+        if not int(self.config.get("DEVELOPMENT")):
+            logger.removeHandler(handler)
+            handler = logging.handlers.WatchedFileHandler(
+                self.config.get("CUSTOM_LOG")
+            )
+            handler.setFormatter(formatter)
+            logger.addHandler(handler)
+        else:
+            logger.info("DEVELOPMENT MODE ON:")
+            here = os.path.abspath(
+                os.path.join(os.path.dirname(__file__), '..')
+            )
+            self.config.update({
+                'STATIC_DIR': os.path.join(here, 'static'),
+                'TEMPLATE_DIR': os.path.join(here, 'static')
+            })
+            logger.info("Static dir is %s" % self.config.get("STATIC_DIR"))
+            logger.info("Template dir is %s" % self.config.get("TEMPLATE_DIR"))
 
     def update(self, dct):
         self.config.update(dct)
@@ -51,69 +79,3 @@ class NailgunSettings:
 
 
 settings = NailgunSettings()
-
-LOGGING = """
-[loggers]
-keys=root
-
-[logger_root]
-level=DEBUG
-handlers={handlers}
-
-[formatters]
-keys=verbose
-
-[formatter_verbose]
-format=%(asctime)s %(levelname)s (%(module)s) %(message)s
-
-{handler_config}
-"""
-
-LOGGING_HANDLER = 'file' if not int(settings.DEVELOPMENT) else 'stream'
-
-if int(settings.DEVELOPMENT):
-    lg_config = """[handlers]
-keys=stream
-
-[handler_stream]
-level=DEBUG
-class=logging.StreamHandler
-formatter=verbose
-args=(sys.stdout,)
-"""
-    logging.config.fileConfig(
-        cStringIO.StringIO(
-            LOGGING.format(
-                handler_config=lg_config,
-                handlers=LOGGING_HANDLER
-            )
-        )
-    )
-    logging.info("DEVELOPMENT MODE ON:")
-    here = os.path.abspath(os.path.join(os.path.dirname(__file__), '..'))
-    settings.update({
-        'STATIC_DIR': os.path.join(here, 'static'),
-        'TEMPLATE_DIR': os.path.join(here, 'static')
-    })
-    logging.info("Static dir is %s" % settings.STATIC_DIR)
-    logging.info("Template dir is %s" % settings.TEMPLATE_DIR)
-else:
-    lg_config = """[handlers]
-keys=file
-
-[handler_file]
-level=DEBUG
-class=logging.handlers.WatchedFileHandler
-args=("{logfile}",)
-formatter=verbose
-"""
-    logging.config.fileConfig(
-        cStringIO.StringIO(
-            LOGGING.format(
-                handler_config=lg_config.format(
-                    logfile=settings.CUSTOM_LOG
-                ),
-                handlers=LOGGING_HANDLER
-            )
-        )
-    )

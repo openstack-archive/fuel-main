@@ -9,6 +9,7 @@ from logging.handlers import TimedRotatingFileHandler, SMTPHandler
 from nailgun.settings import settings
 
 logger = logging.getLogger("nailgun")
+http_logger = logging.getLogger("http")
 
 CATCHID = 'wsgi.catch'
 LOGGERID = 'wsgi.errors'
@@ -56,9 +57,7 @@ class FileLoggerMiddleware(object):
         self.log = kw.get('log', True)
         if self.log:
             self.message = kw.get('logmessage', ERRORMSG)
-            logger = logging.getLogger(
-                kw.get('logname', 'nailgun')
-            )
+            logger = http_logger
             logger.setLevel(
                 kw.get('loglevel', logging.DEBUG)
             )
@@ -74,6 +73,7 @@ class FileLoggerMiddleware(object):
             filelogger.setFormatter(format)
             logger.addHandler(filelogger)
             self.logger = WriteLogger(logger)
+            self.nailgun_logger = logging.getLogger("nailgun")
 
     def __call__(self, environ, start_response):
         if self.log:
@@ -85,9 +85,13 @@ class FileLoggerMiddleware(object):
             return self.catch(environ, start_response)
 
     def catch(self, environ, start_response):
-        '''Exception catcher.'''
+        '''
+        Exception catcher.
+        All exceptions should be in nailgun log
+        '''
         # Log exception
+        self.nailgun_logger.info("OLOLO")
         if self.log:
-            self.logger.exception(self.message)
+            self.nailgun_logger.exception(self.message)
         # Return error handler
         return self._errapp(environ, start_response)

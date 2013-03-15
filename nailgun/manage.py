@@ -9,10 +9,10 @@ import code
 import web
 from sqlalchemy.orm import scoped_session, sessionmaker
 
-from nailgun.db import syncdb, dropdb, orm
-from nailgun.settings import settings
-from nailgun.unit_test import TestRunner
 from nailgun.logger import logger
+from nailgun.settings import settings
+from nailgun.db import syncdb, dropdb, orm
+from nailgun.unit_test import TestRunner
 
 
 if __name__ == "__main__":
