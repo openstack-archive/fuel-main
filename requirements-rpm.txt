@@ -74,6 +74,9 @@ python-devel-2.6.6-29.el6_3.3
 python-pip-0.8-1.el6
 python-setuptools-0.6.10-3.el6
 python-virtualenv-1.7-1.el6
+qemu-0.15.0-1.el6.rfx
+qemu-img-0.12.1.2-2.295.el6_3.10
+qemu-kvm-0.12.1.2-2.295.el6_3.10
 rabbitmq-server-2.8.7-2.el6
 rpm-build-4.8.0-27.el6
 rsyslog-5.8.10-2.el6
