@@ -117,7 +117,7 @@ class NodeCollectionHandler(JSONHandler):
                 node = q.get(nd["id"])
             for key, value in nd.iteritems():
                 if key != "is_agent":
-                    if is_agent and ng.get("status") == "discover" \
+                    if is_agent and (key, value) == ("status", "discover") \
                             and node.status == "provisioning":
                         # We don't update any status back to discover
                         continue
