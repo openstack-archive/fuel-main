@@ -37,7 +37,7 @@ $(BUILD_DIR)/mirror/centos/yum.done: \
 	yumdownloader -q --resolve --archlist=$(CENTOS_ARCH) \
 		-c $(BUILD_DIR)/mirror/centos/etc/yum.conf \
 		--destdir=$(LOCAL_MIRROR_CENTOS_OS_BASEURL)/Packages \
-		$(REQUIRED_RPMS) $(RPMFORGE_RPMS)
+		$(REQUIRED_RPMS)
 	$(ACTION.TOUCH)
 
 $(LOCAL_MIRROR_CENTOS_OS_BASEURL)/repodata/comps.xml: \

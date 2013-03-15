@@ -21,7 +21,6 @@ MIRROR_EGGS:=http://pypi.python.org/simple
 MIRROR_GEMS:=http://rubygems.org http://gems.rubyforge.org
 
 REQUIRED_RPMS:=$(shell grep -v "^\\s*\#" $(SOURCE_DIR)/requirements-rpm.txt)
-RPMFORGE_RPMS:=qemu
 REQUIRED_EGGS:=$(shell grep -v "^\\s*\#" $(SOURCE_DIR)/requirements-eggs.txt)
 REQUIRED_SRCS:=$(shell grep -v ^\\s*\# $(SOURCE_DIR)/requirements-src.txt)
 
