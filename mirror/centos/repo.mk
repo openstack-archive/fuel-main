@@ -40,11 +40,16 @@ $(BUILD_DIR)/mirror/centos/yum.done: \
 		$(REQUIRED_RPMS) $(RPMFORGE_RPMS)
 	$(ACTION.TOUCH)
 
+$(LOCAL_MIRROR_CENTOS_OS_BASEURL)/repodata/comps.xml: \
+		export COMPSXML=$(shell wget -qO- $(MIRROR_CENTOS_OS_BASEURL)/repodata/repomd.xml | grep '$(@F)' | awk -F'"' '{ print $$2 }')
 $(LOCAL_MIRROR_CENTOS_OS_BASEURL)/repodata/comps.xml:
 	@mkdir -p $(@D)
-	wget -O $@.gz $(MIRROR_CENTOS_OS_BASEURL)/`wget -qO- $(MIRROR_CENTOS_OS_BASEURL)/repodata/repomd.xml | \
-	 grep '$(@F)\.gz' | awk -F'"' '{ print $$2 }'`
-	gunzip $(LOCAL_MIRROR_CENTOS_OS_BASEURL)/repodata/$(@F).gz
+	if ( echo $${COMPSXML} | grep -q '\.gz$$' ); then \
+		wget -O $@.gz $(MIRROR_CENTOS_OS_BASEURL)/$${COMPSXML}; \
+		gunzip $@.gz; \
+	else \
+		wget -O $@ $(MIRROR_CENTOS_OS_BASEURL)/$${COMPSXML}; \
+	fi
 
 $(BUILD_DIR)/mirror/centos/repo.done: \
 		$(BUILD_DIR)/mirror/centos/yum.done \

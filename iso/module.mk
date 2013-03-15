@@ -6,8 +6,8 @@ ISOBASENAME:=nailgun-centos-6.3-amd64
 ISONAME:=$(BUILD_DIR)/iso/$(ISOBASENAME).iso
 IMGNAME:=$(BUILD_DIR)/iso/$(ISOBASENAME).img
 
-iso: $(ISONAME)
-img: $(BUILD_DIR)/iso/image.done
+iso: $(BUILD_DIR)/iso/iso.done
+img: $(BUILD_DIR)/iso/img.done
 
 $(BUILD_DIR)/iso/isoroot-centos.done: \
 		$(BUILD_DIR)/mirror/build.done \
@@ -120,9 +120,9 @@ $(BUILD_DIR)/iso/isoroot.done: \
 
 # keep in mind that mkisofs touches some files inside directory
 # from which it builds iso image
-# that is why we need to make $/isoroot.done dependent on some files
+# that is why we need to make isoroot.done dependent on some files
 # and then copy these files into another directory
-$(ISONAME): $(BUILD_DIR)/iso/isoroot.done
+$(BUILD_DIR)/iso/iso.done: $(BUILD_DIR)/iso/isoroot.done
 	rm -f $@
 	mkdir -p $(BUILD_DIR)/iso/isoroot-mkisofs
 	rsync -a --delete $(ISOROOT)/ $(BUILD_DIR)/iso/isoroot-mkisofs
@@ -132,6 +132,7 @@ $(ISONAME): $(BUILD_DIR)/iso/isoroot.done
 		-boot-load-size 4 -boot-info-table \
 		-x "lost+found" -o $@ $(BUILD_DIR)/iso/isoroot-mkisofs
 	implantisomd5 $@
+	$(ACTION.TOUCH)
 
 # IMGSIZE is calculated as a sum of nailgun iso size plus
 # installation images directory size (~165M) and syslinux directory size (~35M)
@@ -139,7 +140,7 @@ $(ISONAME): $(BUILD_DIR)/iso/isoroot.done
 # +300M seems reasonable
 IMGSIZE = $(shell echo "$(shell ls -s $(ISONAME) | awk '{print $$1}') / 1024 + 300" | bc)
 
-$(BUILD_DIR)/iso/image.done: $(ISONAME) iso/module.mk
+$(BUILD_DIR)/iso/img.done: $(BUILD_DIR)/iso/iso.done $(SOURCE_DIR)/iso/module.mk
 	rm -f $(BUILD_DIR)/iso/img_loop_device
 	rm -f $(BUILD_DIR)/iso/img_loop_partition
 	rm -f $(BUILD_DIR)/iso/img_loop_uuid

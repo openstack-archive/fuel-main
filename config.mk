@@ -30,8 +30,7 @@ REQUIRED_SRCS:=$(shell grep -v ^\\s*\# $(SOURCE_DIR)/requirements-src.txt)
 # The actual name will be constracted wich prepending "yum_repo_" prefix.
 # Example: YUM_REPOS:=centos epel => yum_repo_centos and yum_repo_epel
 # will be used.
-YUM_REPOS:=centos epel fuel_folsom puppetlabs rpmforge
-
+YUM_REPOS:=official epel fuel_folsom puppetlabs rpmforge
 
 # INTEGRATION TEST CONFIG
 NOFORWARD:=1

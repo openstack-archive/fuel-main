@@ -1,5 +1,4 @@
-.PHONY: bootstrap clean
-all: bootstrap
+.PHONY: bootstrap clean clean-bootstrap
 
 INITRAMROOT:=$(BUILD_DIR)/bootstrap/initram-root
 
@@ -53,10 +52,10 @@ endef
 
 define bootstrap_yum_conf
 [main]
-cachedir=$(BUILD_DIR)/bootstrap/cache
+cachedir=/tmp/bootstrap_cache
 keepcache=0
 debuglevel=6
-logfile=$(BUILD_DIR)/bootstrap/yum.log
+logfile=/tmp/bootstrap_yum.log
 exclude=*.i686.rpm
 exactarch=1
 obsoletes=1

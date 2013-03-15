@@ -1,8 +1,10 @@
-.PHONY: clean clean_rpm
+.PHONY: clean clean-rpm
 
-clean: clean_rpm
+clean: clean-rpm
 
-clean_rpm:
+clean-rpm:
+	-sudo umount $(shell readlink -f -m $(BUILD_DIR)/packages/rpm/SANDBOX/proc)
+	-sudo umount $(shell readlink -f -m $(BUILD_DIR)/packages/rpm/SANDBOX/dev)
 	sudo rm -rf $(BUILD_DIR)/packages/rpm
 
 RPM_SOURCES:=$(BUILD_DIR)/packages/rpm/SOURCES

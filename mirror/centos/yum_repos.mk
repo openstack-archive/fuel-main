@@ -14,8 +14,7 @@ pluginconfpath=$(shell readlink -f -m $(BUILD_DIR)/mirror/centos/etc/yum/pluginc
 reposdir=$(shell readlink -f -m $(BUILD_DIR)/mirror/centos/etc/yum.repos.d)
 endef
 
-
-define yum_repo_centos
+define yum_repo_official
 [base]
 name=CentOS-$(CENTOS_RELEASE) - Base
 #mirrorlist=http://mirrorlist.centos.org/?release=$(CENTOS_RELEASE)&arch=$(CENTOS_ARCH)&repo=os
@@ -57,7 +56,6 @@ enabled=1
 priority=10
 endef
 
-
 define yum_repo_epel
 [epel]
 name=Extra Packages for Enterprise Linux $(CENTOS_MAJOR) - $(CENTOS_ARCH)
@@ -81,7 +79,6 @@ enabled=1
 priority=1
 endef
 
-
 define yum_repo_puppetlabs
 [puppetlabs]
 name=Puppet Labs Packages
@@ -91,7 +88,6 @@ gpgcheck=1
 gpgkey=http://yum.puppetlabs.com/RPM-GPG-KEY-puppetlabs
 priority=1
 endef
-
 
 define yum_repo_rpmforge
 [rpmforge]
@@ -110,12 +106,11 @@ enabled = 1
 priority=95
 endef
 
-
-define yum_repo_mirantis
-[mirror]
-name=CentOS $(CENTOS_RELEASE) - Base
-baseurl=http://srv08-srt.srt.mirantis.net/mirror/centos/$(CENTOS_RELEASE)/$(CENTOS_ARCH)
-gpgcheck=0
-enabled=1
+define yum_repo_proprietary
+[proprietary]
+name = RHEL $(CENTOS_RELEASE) - Proprietary
+baseurl = $(MIRROR_CENTOS)/$(CENTOS_RELEASE)/os/$(CENTOS_ARCH)
+gpgcheck = 0
+enabled = 1
 priority=1
 endef

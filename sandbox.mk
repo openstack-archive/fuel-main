@@ -1,4 +1,3 @@
-
 define yum_local_repo
 [mirror]
 name=Mirantis mirror
@@ -9,10 +8,10 @@ endef
 
 define sandbox_yum_conf
 [main]
-cachedir=$(SANDBOX)/cache
+cachedir=/tmp/sandbox_cache
 keepcache=0
 debuglevel=6
-logfile=$(SANDBOX)/yum.log
+logfile=/tmp/sandbox_yum.log
 exclude=*.i686.rpm
 exactarch=1
 obsoletes=1
