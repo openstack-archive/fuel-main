@@ -314,8 +314,11 @@ class NodeAgent
     detailed_data.each do |k, v|
       if k.to_s =~ /^interfaces$/
         detailed_data[k].each do |i|
-          net = IPAddr.new "#{i[:ip]}/#{i[:netmask]}"
-          return i[:ip] if net.include? @api_ip
+          begin
+            net = IPAddr.new "#{i[:ip]}/#{i[:netmask]}"
+            return i[:ip] if net.include? @api_ip
+          rescue
+          end
         end
       end
     end
