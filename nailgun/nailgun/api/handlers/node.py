@@ -109,6 +109,7 @@ class NodeCollectionHandler(JSONHandler):
         q = orm().query(Node)
         nodes_updated = []
         for nd in data:
+            is_agent = nd.get("is_agent")
             node = None
             if "mac" in nd:
                 node = q.filter_by(mac=nd["mac"]).first()
@@ -116,9 +117,13 @@ class NodeCollectionHandler(JSONHandler):
                 node = q.get(nd["id"])
             for key, value in nd.iteritems():
                 if key != "is_agent":
+                    if is_agent and ng.get("status") == "discover" \
+                            and node.status == "provisioning":
+                        # We don't update any status back to discover
+                        continue
                     setattr(node, key, value)
             node.timestamp = datetime.now()
-            if not node.online and "is_agent" in nd:
+            if not node.online and is_agent:
                 node.online = True
                 msg = u"Node '{0}' is back online".format(
                     node.name or node.mac

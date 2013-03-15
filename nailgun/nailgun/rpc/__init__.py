@@ -15,20 +15,34 @@ conn_str = 'amqp://{0}:{1}@{2}:{3}//'.format(
     *[settings.RABBITMQ.get(*cred) for cred in creds]
 )
 
+naily_exchange = Exchange(
+    'naily',
+    'topic',
+    durable=True
+)
+
+naily_queue = Queue(
+    'naily',
+    exchange=naily_exchange,
+    routing_key='naily'
+)
+
+nailgun_exchange = Exchange(
+    'nailgun',
+    'topic',
+    durable=True
+)
+
+nailgun_queue = Queue(
+    'nailgun',
+    exchange=nailgun_exchange,
+    routing_key='nailgun'
+)
+
 
 def cast(name, message):
-    nailgun_exchange = Exchange(
-        'naily',
-        'topic',
-        durable=True
-    )
-    nailgun_queue = Queue(
-        'naily',
-        exchange=nailgun_exchange,
-        routing_key='naily'
-    )
     with Connection(conn_str) as conn:
         with conn.Producer(serializer='json') as producer:
             producer.publish(message,
-                             exchange=nailgun_exchange, routing_key='naily',
-                             declare=[nailgun_queue])
+                             exchange=naily_exchange, routing_key=name,
+                             declare=[naily_queue])

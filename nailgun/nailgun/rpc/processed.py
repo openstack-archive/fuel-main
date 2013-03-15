@@ -23,7 +23,7 @@ class RPCKombuProcess(Process):
             self.receiver.db.rollback()
         finally:
             self.receiver.db.commit()
-            self.receiver.db.expunge_all()
+            self.receiver.db.expire_all()
         msg.ack()
 
     def receive(self, rec_class):
