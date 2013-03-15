@@ -138,6 +138,7 @@ $(BUILD_DIR)/bootstrap/customize-initram-root.done: \
 		$(INITRAMROOT)/var/lib/yum \
 		$(INITRAMROOT)/usr/share/doc \
         $(INITRAMROOT)/usr/share/locale \
+	sudo rm -rf $(INITRAMROOT)/tmp/*
 
 	$(ACTION.TOUCH)
 

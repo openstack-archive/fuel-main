@@ -122,7 +122,7 @@ $(BUILD_DIR)/iso/isoroot.done: \
 # from which it builds iso image
 # that is why we need to make isoroot.done dependent on some files
 # and then copy these files into another directory
-$(BUILD_DIR)/iso/iso.done: $(BUILD_DIR)/iso/isoroot.done
+$(BUILD_DIR)/iso/iso.done: $(BUILD_DIR)/iso/isoroot.done | $(ISONAME)
 	rm -f $(ISONAME)
 	mkdir -p $(BUILD_DIR)/iso/isoroot-mkisofs
 	rsync -a --delete $(ISOROOT)/ $(BUILD_DIR)/iso/isoroot-mkisofs
@@ -140,7 +140,7 @@ $(BUILD_DIR)/iso/iso.done: $(BUILD_DIR)/iso/isoroot.done
 # +300M seems reasonable
 IMGSIZE = $(shell echo "$(shell ls -s $(ISONAME) | awk '{print $$1}') / 1024 + 300" | bc)
 
-$(BUILD_DIR)/iso/img.done: $(BUILD_DIR)/iso/iso.done $(SOURCE_DIR)/iso/module.mk
+$(BUILD_DIR)/iso/img.done: $(BUILD_DIR)/iso/iso.done | $(IMGNAME)
 	rm -f $(BUILD_DIR)/iso/img_loop_device
 	rm -f $(BUILD_DIR)/iso/img_loop_partition
 	rm -f $(BUILD_DIR)/iso/img_loop_uuid
