@@ -123,15 +123,15 @@ $(BUILD_DIR)/iso/isoroot.done: \
 # that is why we need to make isoroot.done dependent on some files
 # and then copy these files into another directory
 $(BUILD_DIR)/iso/iso.done: $(BUILD_DIR)/iso/isoroot.done
-	rm -f $@
+	rm -f $(ISONAME)
 	mkdir -p $(BUILD_DIR)/iso/isoroot-mkisofs
 	rsync -a --delete $(ISOROOT)/ $(BUILD_DIR)/iso/isoroot-mkisofs
 	mkisofs -r -V "Mirantis FuelWeb" -p "Mirantis Inc." \
 		-J -T -R -b isolinux/isolinux.bin \
 		-no-emul-boot \
 		-boot-load-size 4 -boot-info-table \
-		-x "lost+found" -o $@ $(BUILD_DIR)/iso/isoroot-mkisofs
-	implantisomd5 $@
+		-x "lost+found" -o $(ISONAME) $(BUILD_DIR)/iso/isoroot-mkisofs
+	implantisomd5 $(ISONAME)
 	$(ACTION.TOUCH)
 
 # IMGSIZE is calculated as a sum of nailgun iso size plus
