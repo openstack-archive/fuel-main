@@ -2,8 +2,8 @@ import logging
 
 import xmlrpclib
 
-from test.integration.base import Base
-from test.helpers import SSHClient
+from fuelweb_test.integration.base import Base
+from fuelweb_test.helpers import SSHClient
 
 
 class TestNailyd(Base):

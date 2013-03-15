@@ -3,8 +3,8 @@ import logging
 import xmlrpclib
 from devops.helpers import wait, tcp_ping
 
-from test.integration.base import Base
-from test.helpers import SSHClient
+from fuelweb_test.integration.base import Base
+from fuelweb_test.helpers import SSHClient
 
 
 class TestPuppetMaster(Base):

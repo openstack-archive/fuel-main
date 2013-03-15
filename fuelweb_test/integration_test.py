@@ -4,14 +4,15 @@ import logging
 import argparse
 from nose.plugins.manager import PluginManager
 from nose.plugins.xunit import Xunit
-from root import root
+from root import root, REPOSITORY_ROOT
 
 
 sys.path[:0] = [
+    REPOSITORY_ROOT,
     root('devops'),
 ]
 
-import integration
+import fuelweb_test.integration
 
 
 def main():
@@ -53,7 +54,7 @@ def main():
     paramiko_logger = logging.getLogger('paramiko')
     paramiko_logger.setLevel(numeric_level + 1)
 
-    suite = integration
+    suite = fuelweb_test.integration
 
 #   todo fix default values
     if params.no_forward_network:

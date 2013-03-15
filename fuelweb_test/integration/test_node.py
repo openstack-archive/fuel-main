@@ -11,10 +11,10 @@ import subprocess
 from time import sleep
 
 from devops.helpers import wait, tcp_ping, http
-from integration import ci
-from integration.base import Base
-from helpers import SSHClient, HTTPClient
-from root import root
+from fuelweb_test.integration import ci
+from fuelweb_test.integration.base import Base
+from fuelweb_test.helpers import SSHClient, HTTPClient
+from fuelweb_test.root import root
 
 logging.basicConfig(
     format=':%(lineno)d: %(asctime)s %(message)s',

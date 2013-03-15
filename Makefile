@@ -62,4 +62,4 @@ include $(SOURCE_DIR)/mirror/module.mk
 include $(SOURCE_DIR)/packages/module.mk
 include $(SOURCE_DIR)/bootstrap/module.mk
 include $(SOURCE_DIR)/iso/module.mk
-include $(SOURCE_DIR)/test/module.mk
+include $(SOURCE_DIR)/fuelweb_test/module.mk

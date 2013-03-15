@@ -3,8 +3,8 @@ import time
 
 from unittest.case import TestCase
 
-from integration import ci
-from helpers import HTTPClient, SSHClient
+from fuelweb_test.integration import ci
+from fuelweb_test.helpers import HTTPClient, SSHClient
 logging.basicConfig(format=':%(lineno)d: %(asctime)s %(message)s',
                     level=logging.DEBUG)
 

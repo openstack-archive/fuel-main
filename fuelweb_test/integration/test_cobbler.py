@@ -4,8 +4,8 @@ from time import sleep
 import xmlrpclib
 from devops.helpers import wait, tcp_ping, http, ssh
 
-from test.integration.base import Base
-from test.helpers import SSHClient
+from fuelweb_test.integration.base import Base
+from fuelweb_test.helpers import SSHClient
 
 
 class TestCobbler(Base):
