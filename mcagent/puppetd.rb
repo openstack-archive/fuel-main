@@ -106,20 +106,20 @@ module MCollective
 
         locked = File.exists?(@lockfile)
         disabled = locked && File::Stat.new(@lockfile).zero?
-        if locked && ! disabled && ! alive
+        if locked && !disabled && !alive
           err_msg << "Process not running but not empty lockfile is present. Trying to remove lockfile..."
-          err_msg << (rm_file(@lockfile) ? "ok. " : "failed. ")
+          err_msg << (rm_file(@lockfile) ? "ok." : "failed.")
         end
 
         reply[:err_msg] = err_msg if err_msg.any?
 
         if disabled
           'disabled'
-        elsif locked && alive
+        elsif alive && locked
           'running'
-        elsif ! locked && alive
+        elsif alive && !locked
           'idling'
-        elsif ! alive
+        elsif !alive
           'stopped'
         end
       end
