@@ -23,7 +23,20 @@ $glance_hash   = parsejson($glance)
 $keystone_hash = parsejson($keystone)
 $swift_hash    = parsejson($swift)
 $access_hash    = parsejson($access)
-$rsyslog_hash   = parsejson($rsyslog)
+$extra_rsyslog_hash = parsejson($syslog)
+$rsyslog_hash  = parsejson($rsyslog)
+$rservers      = [
+                  {
+                  'remote_type' => 'udp',
+                  'server' => $rsyslog_hash['server_address'],
+                  'port' => $rsyslog_hash['server_port'],
+                  },
+                  {
+                  'remote_type' => $extra_rsyslog_hash['syslog_transport'],
+                  'server' => $extra_rsyslog_hash['syslog_server'],
+                  'port' => $extra_rsyslog_hash['syslog_port'],
+                  }
+                  ]
 
 $rabbit_user   = 'nova'
 
@@ -74,11 +87,9 @@ Exec { logoutput => true }
       }
 
       class { "::rsyslog::client":
-        remote_type = 'udp',
         log_local => true,
         log_auth_local => true,
-        server => $rsyslog_hash["server_address"],
-        port => $rsyslog_hash["server_port"]
+        rservers => $rservers,
       }
 
       nova_config { 'DEFAULT/start_guests_on_host_boot': value => $start_guests_on_host_boot }
@@ -138,11 +149,9 @@ Exec { logoutput => true }
       }
 
       class { "::rsyslog::client":
-        remote_type = 'udp',
         log_local => true,
         log_auth_local => true,
-        server => $rsyslog_hash["server_address"],
-        port => $rsyslog_hash["server_port"]
+        rservers => $rservers,
       }
 
       nova_config { 'DEFAULT/start_guests_on_host_boot': value => $start_guests_on_host_boot }

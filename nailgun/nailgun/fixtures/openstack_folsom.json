@@ -85,6 +85,34 @@
                             ],
                             "label": "Scheduler driver"
                         }
+                    },
+                    "syslog": {
+                        "syslog_transport": {
+                            "value": "udp",
+                            "values": [
+                                {
+                                    "data": "udp",
+                                    "display_name": "UDP",
+                                    "description": ""
+                                },
+                                {
+                                    "data": "tcp",
+                                    "display_name": "TCP",
+                                    "description": ""
+                                }
+                            ],
+                            "label": "Syslog transport protocol"
+                        },
+                        "syslog_server": {
+                            "value": "log",
+                            "label": "Hostname",
+                            "description": "Remote syslog hostname"
+                        },
+                        "syslog_port": {
+                            "value": "514",
+                            "label": "Port",
+                            "description": "Remote syslog port"
+                        }
                     }
                 },
                 "generated": {
