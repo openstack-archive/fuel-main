@@ -41,7 +41,7 @@ $(BUILD_DIR)/mirror/centos/yum.done: \
 	$(ACTION.TOUCH)
 
 $(LOCAL_MIRROR_CENTOS_OS_BASEURL)/repodata/comps.xml: \
-		export COMPSXML=$(shell wget -qO- $(MIRROR_CENTOS_OS_BASEURL)/repodata/repomd.xml | grep '$(@F)' | awk -F'"' '{ print $$2 }')
+		export COMPSXML=$(shell wget -qO- $(MIRROR_CENTOS_OS_BASEURL)/repodata/repomd.xml | grep -m 1 '$(@F)' | awk -F'"' '{ print $$2 }')
 $(LOCAL_MIRROR_CENTOS_OS_BASEURL)/repodata/comps.xml:
 	@mkdir -p $(@D)
 	if ( echo $${COMPSXML} | grep -q '\.gz$$' ); then \
