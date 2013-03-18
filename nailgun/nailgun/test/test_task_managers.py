@@ -70,8 +70,14 @@ class TestTaskManagers(BaseHandlers):
         cluster = self.env.create_cluster(api=True)
         node1 = self.env.create_node(cluster_id=cluster['id'],
                                      role="controller",
+                                     pending_addition=True)
+        node2 = self.env.create_node(cluster_id=cluster['id'],
+                                     role="compute",
                                      online=False,
                                      name="Offline node",
+                                     pending_addition=True)
+        node3 = self.env.create_node(cluster_id=cluster['id'],
+                                     role="compute",
                                      pending_addition=True)
         supertask = self.env.launch_deployment()
         self.env.wait_error(
