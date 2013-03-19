@@ -131,6 +131,32 @@ class TestHandlers(BaseHandlers):
         self.assertEquals('new', node.manufacturer)
         self.assertEquals('provisioning', node.status)
 
+    def test_node_timestamp_updated_only_by_agent(self):
+        node = self.env.create_node(api=False)
+        timestamp = node.timestamp
+        resp = self.app.put(
+            reverse('NodeCollectionHandler'),
+            json.dumps([
+                {'mac': node.mac, 'status': 'discover',
+                 'manufacturer': 'old'}
+            ]),
+            headers=self.default_headers)
+        self.assertEquals(resp.status, 200)
+        self.db.refresh(node)
+        self.assertEquals(node.timestamp, timestamp)
+
+        resp = self.app.put(
+            reverse('NodeCollectionHandler'),
+            json.dumps([
+                {'mac': node.mac, 'status': 'discover',
+                 'manufacturer': 'new', 'is_agent': True}
+            ]),
+            headers=self.default_headers)
+        self.assertEquals(resp.status, 200)
+        self.db.refresh(node)
+        self.assertNotEquals(node.timestamp, timestamp)
+        self.assertEquals('new', node.manufacturer)
+
     def test_node_create_ext_mac(self):
         node1 = self.env.create_node(
             api=False

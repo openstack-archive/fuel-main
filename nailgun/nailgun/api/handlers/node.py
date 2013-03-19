@@ -119,21 +119,26 @@ class NodeCollectionHandler(JSONHandler):
                 if key != "is_agent":
                     if is_agent and (key, value) == ("status", "discover") \
                             and node.status == "provisioning":
-                        # We don't update any status back to discover
+                        # We don't update provisioning back to discover
+                        logger.debug(
+                            "Node is already provisioning - "
+                            "status not updated by agent"
+                        )
                         continue
                     setattr(node, key, value)
-            node.timestamp = datetime.now()
-            if not node.online and is_agent:
-                node.online = True
-                msg = u"Node '{0}' is back online".format(
-                    node.name or node.mac
-                )
-                logger.info(msg)
-                notifier.notify(
-                    "discover",
-                    msg,
-                    node_id=node.id
-                )
+            if is_agent:
+                node.timestamp = datetime.now()
+                if not node.online:
+                    node.online = True
+                    msg = u"Node '{0}' is back online".format(
+                        node.name or node.mac
+                    )
+                    logger.info(msg)
+                    notifier.notify(
+                        "discover",
+                        msg,
+                        node_id=node.id
+                    )
             nodes_updated.append(node)
             orm().add(node)
         orm().commit()
