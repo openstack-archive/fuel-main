@@ -40,12 +40,11 @@ class RPCConsumer(ConsumerMixin):
 
 class RPCKombuThread(threading.Thread):
 
-    def __init__(self, rec_class=NailgunReceiver):
+    def __init__(self, rcvr_class=NailgunReceiver):
         super(RPCKombuThread, self).__init__()
         self.stoprequest = threading.Event()
-        self.receiver = rec_class
+        self.receiver = rcvr_class
         self.connection = None
-        self.sleep_reconnect = 3
 
     def join(self, timeout=None):
         self.stoprequest.set()
