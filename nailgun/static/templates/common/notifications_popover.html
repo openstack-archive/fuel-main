@@ -2,9 +2,9 @@
   <ul class="message-list-popover" role="menu">
     <% if (notifications.length) { %>
       <% _.each(notifications.last(displayCount).reverse(), function(notification, index) { %>
-        <% var topic = notification.get('topic') %>
+        <% var topic = notification.get('topic'), icons = {'error': 'icon-attention', 'discover': 'icon-bell'} %>
         <li class="enable-selection <%= notification.get('status') == 'unread' ? 'new' : '' %> <%= topic %>" data-node="<%- notification.get('node_id') %>">
-          <i class="<%= topic == 'error' ? 'icon-attention' : topic == 'discover' ? 'icon-bell' : 'icon-info-circled' %>"></i>
+          <i class="<%= icons[topic] || 'icon-info-circled' %>"></i>
           <%= app.urlify(notification.escape('message')) %>
         </li>
         <li class="divider"></li>

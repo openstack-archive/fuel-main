@@ -124,12 +124,19 @@ define(function() {
         resource: function(resourceName) {
             var resource = 0;
             try {
-                var resources = {
-                    'cores': this.get('meta').cpu.total,
-                    'ram' : this.get('meta').memory.total / Math.pow(1024, 3),
-                    'hdd': _.reduce(_.pluck(this.get('meta').disks, 'size'), function(sum, size) {return _.isNumber(size) ? sum + size : sum;}, 0)
-                };
-                resource = resources[resourceName];
+                if (resourceName == 'cores') {
+                    resource = this.get('meta').cpu.total;
+                } else if (resourceName == 'hdd') {
+                    var hdd = 0;
+                    _.each(this.get('meta').disks, function(disk) {
+                        if (_.isNumber(disk.size)) {
+                            hdd += disk.size;
+                        }
+                    });
+                    resource = hdd;
+                } else if (resourceName == 'ram') {
+                    resource = this.get('meta').memory.total / Math.pow(1024, 3);
+                }
             } catch (e) {}
             if (_.isNaN(resource)) {
                 resource = 0;
