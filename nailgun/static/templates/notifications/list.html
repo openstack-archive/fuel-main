@@ -6,7 +6,7 @@
 <div class="notifications-list page-wrapper">
   <ul class="message-list" role="menu">
     <% if (notifications.deferred.state() != 'pending') { %>
-      <% _.each(notifications.models.reverse(), function(notification) { %>
+      <% _.each(notifications.last(notifications.length).reverse(), function(notification) { %>
         <% var topic = notification.get('topic'), icons = {'error': 'icon-attention', 'discover': 'icon-bell'} %>
         <li class="notification-box enable-selection <%= notification.get('status') == 'unread' ? 'new' : '' %> <%= topic %>">
           <div class="icon"><i class="<%= icons[topic] || 'icon-info-circled' %>"></i></div>
