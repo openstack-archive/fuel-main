@@ -268,7 +268,6 @@ class NailgunReceiver(object):
         ).filter(
             Node.error_type.in_(error_types)
         ).all()
-        logger.info(error_nodes)
         for n in error_nodes:
             if names_only:
                 nodes_info.append(
