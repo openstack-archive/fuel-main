@@ -441,6 +441,7 @@ class CheckNetworksTask(object):
     @classmethod
     def execute(self, task, data):
         task_uuid = task.uuid
+        netmanager = task.cluster.net_manager
         result = []
         err_msgs = []
         for ng in data:
@@ -465,9 +466,17 @@ class CheckNetworksTask(object):
                         err_msgs.append(
                             "CIDR size for network '{0}' "
                             "is less than required".format(
-                                ng_db.name or ng_db.id
+                                ng.get('name') or ng_db.name or ng_db.id
                             )
                         )
+                if ng.get('amount') > 1 and netmanager == 'FlatDHCPManager':
+                    net_errors.append("amount")
+                    err_msgs.append(
+                        "Network amount for '{0}' is more than 1 "
+                        "while using FlatDHCP manager.".format(
+                            ng.get('name') or ng_db.name or ng_db.id
+                        )
+                    )
             if net_errors:
                 result.append({
                     "id": int(ng["id"]),

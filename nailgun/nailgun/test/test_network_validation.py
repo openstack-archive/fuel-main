@@ -67,3 +67,34 @@ class TestHandlers(BaseHandlers):
                 settings.NET_EXCLUDE
             )
         )
+
+    def test_network_checking_fails_if_amount_flatdhcp(self):
+        self.env.create(
+            cluster_kwargs={},
+            nodes_kwargs=[
+                {"pending_addition": True},
+            ]
+        )
+        cluster = self.env.clusters[0]
+
+        nets = self.env.generate_ui_networks(
+            cluster.id
+        )
+        nets[-1]["amount"] = 2
+        nets[-1]["cidr"] = "10.0.0.0/23"
+        resp = self.app.put(
+            reverse('ClusterSaveNetworksHandler',
+                    kwargs={'cluster_id': cluster.id}),
+            json.dumps(nets),
+            headers=self.default_headers
+        )
+        self.assertEquals(resp.status, 200)
+        task = json.loads(resp.body)
+        self.assertEquals(task['status'], 'error')
+        self.assertEquals(task['progress'], 100)
+        self.assertEquals(task['name'], 'check_networks')
+        self.assertEquals(
+            task['message'],
+            "Network amount for '{0}' is more than 1 "
+            "while using FlatDHCP manager.".format(nets[-1]["name"])
+        )
