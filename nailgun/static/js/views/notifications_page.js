@@ -29,7 +29,7 @@ function(models, commonViews, dialogViews, notificationsListTemplate) {
             this.notifications.bind('reset', this.render, this);
         },
         render: function() {
-            this.$el.html(this.template({notifications: this.notifications, displayCount: this.notifications.length}));
+            this.$el.html(this.template({notifications: this.notifications}));
             return this;
         }
     });

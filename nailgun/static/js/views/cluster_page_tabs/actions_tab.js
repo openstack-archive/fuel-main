@@ -23,7 +23,6 @@ function(models, commonViews, dialogViews, actionsTabTemplate) {
                     success: _.bind(function() {
                         this.page.updateBreadcrumbs();
                         this.page.updateTitle();
-                        this.render();
                     }, this),
                     error: _.bind(function(model, response, options) {
                         this.$('.rename-cluster-form').children().attr('disabled', false);

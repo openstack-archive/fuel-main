@@ -26,6 +26,9 @@ function(models, simpleMessageTemplate, createClusterDialogTemplate, changeClust
         displayErrorMessage: function () {
             this.$('.modal-body').html(this.errorMessageTemplate());
         },
+        initialize: function(options) {
+            _.defaults(this, options);
+        },
         render: function(options) {
             this.$el.attr('tabindex', -1);
             this.$el.html(this.template(options));
@@ -43,9 +46,6 @@ function(models, simpleMessageTemplate, createClusterDialogTemplate, changeClust
 
     views.SimpleMessage = views.Dialog.extend({
         template: _.template(simpleMessageTemplate),
-        initialize: function(options) {
-            _.defaults(this, options);
-        },
         render: function() {
             this.constructor.__super__.render.call(this, {title: this.title, message: this.message});
             if (this.error) {
@@ -63,13 +63,11 @@ function(models, simpleMessageTemplate, createClusterDialogTemplate, changeClust
             'change select[name=release]': 'updateReleaseDescription'
         },
         createCluster: function() {
-            this.$('.help-inline').text('');
-            this.$('.control-group').removeClass('error');
+            this.$('.control-group').removeClass('error').find('.help-inline').text('');
             var cluster = new models.Cluster();
             cluster.on('error', function(model, error) {
                 _.each(error, function(message, field) {
-                    this.$('*[name=' + field + '] ~ .help-inline').text(message);
-                    this.$('*[name=' + field + ']').closest('.control-group').addClass('error');
+                    this.$('*[name=' + field + ']').closest('.control-group').addClass('error').find('.help-inline').text(message);
                 }, this);
             }, this);
             cluster.set({
@@ -131,23 +129,13 @@ function(models, simpleMessageTemplate, createClusterDialogTemplate, changeClust
         },
         apply: function() {
             var cluster = this.model;
-            var valid = true;
             var mode = this.$('input[name=mode]:checked').val();
             var type = this.$('input[name=type]:checked').val();
             if (cluster.get('mode') == mode && cluster.get('type') == type) {
                 this.$el.modal('hide');
             } else {
-                cluster.on('error', function(model, errors) {
-                    valid = false;
-                    _.each(errors, function(message, field) {
-                        this.$('*[name=' + field + '] ~ .help-inline').text(message);
-                        this.$('*[name=' + field + ']').closest('.control-group').addClass('error');
-                    }, this);
-                }, this);
-                if (valid) {
-                    this.$('.apply-btn').addClass('disabled');
-                    cluster.update({mode: mode, type: type}).fail(_.bind(this.displayErrorMessage, this));
-                }
+                this.$('.apply-btn').addClass('disabled');
+                cluster.update({mode: mode, type: type}).fail(_.bind(this.displayErrorMessage, this));
             }
         },
         toggleTypes: function() {
@@ -196,13 +184,11 @@ function(models, simpleMessageTemplate, createClusterDialogTemplate, changeClust
             };
             Backbone.sync('update', nodes)
                 .done(_.bind(function() {
+                    this.$el.modal('hide');
                     this.model.get('nodes').fetch({data: {cluster_id: this.model.id}});
                     app.navbar.nodes.fetch();
                 }, this))
                 .fail(_.bind(this.displayErrorMessage, this));
-        },
-        initialize: function(options) {
-            _.defaults(this, options);
         },
         render: function() {
             this.constructor.__super__.render.call(this, {cluster: this.model});
@@ -253,9 +239,6 @@ function(models, simpleMessageTemplate, createClusterDialogTemplate, changeClust
                 error: _.bind(this.displayErrorMessage, this)
             });
         },
-        initialize: function(options) {
-            _.defaults(this, options);
-        },
         render: function() {
             this.constructor.__super__.render.call(this, {cluster: this.model});
             return this;
@@ -269,9 +252,6 @@ function(models, simpleMessageTemplate, createClusterDialogTemplate, changeClust
         },
         toggle: function(e) {
             $(e.currentTarget).siblings('.accordion-body').collapse('toggle');
-        },
-        initialize: function(options) {
-            _.defaults(this, options);
         },
         render: function() {
             this.constructor.__super__.render.call(this, {node: this.node});
@@ -298,9 +278,6 @@ function(models, simpleMessageTemplate, createClusterDialogTemplate, changeClust
         proceed: function() {
             this.$el.modal('hide');
             app.page.removeVerificationTask().done(_.bind(this.cb, this));
-        },
-        initialize: function(options) {
-            _.defaults(this, options);
         },
         render: function() {
             this.constructor.__super__.render.call(this, {

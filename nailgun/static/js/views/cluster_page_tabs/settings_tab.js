@@ -46,10 +46,7 @@ function(models, commonViews, dialogViews, settingsTabTemplate, settingsGroupTem
                     } else {
                         data[param][setting].label = $(settingDom).find('.openstack-sub-title').text();
                         data[param][setting].description = $(settingDom).find('.description').text() || $(settingDom).next('.description').text();
-                        data[param][setting].value = $(settingDom).find('input[type=text]').val();
-                        if (!data[param][setting].value) {
-                            data[param][setting].value = $(settingDom).find('input[type=checkbox]:checked').length ? true : false;
-                        }
+                        data[param][setting].value = $(settingDom).find('input[type=text]').val() || !!$(settingDom).find('input[type=checkbox]:checked').length;
                     }
                 });
             });
@@ -70,6 +67,7 @@ function(models, commonViews, dialogViews, settingsTabTemplate, settingsGroupTem
         },
         applyChanges: function() {
             var data = this.collectData();
+            this.disableControls();
             this.model.get('settings').update({editable: data}, {
                 url: '/api/clusters/' + this.model.id + '/attributes',
                 error: _.bind(function() {
@@ -86,7 +84,6 @@ function(models, commonViews, dialogViews, settingsTabTemplate, settingsGroupTem
                     this.model.fetch();
                 }, this)
             });
-            this.disableControls();
         },
         parseSettings: function(settings) {
             this.tearDownRegisteredSubViews();
@@ -104,6 +101,7 @@ function(models, commonViews, dialogViews, settingsTabTemplate, settingsGroupTem
         },
         loadDefaults: function() {
             var defaults = new models.Settings();
+            this.disableControls();
             defaults.fetch({
                 url: '/api/clusters/' + this.model.id + '/attributes/defaults',
                 complete: _.bind(function() {
@@ -111,7 +109,6 @@ function(models, commonViews, dialogViews, settingsTabTemplate, settingsGroupTem
                     this.checkForChanges();
                 }, this)
             });
-            this.disableControls();
         },
         render: function () {
             this.$el.html(this.template({cluster: this.model}));
@@ -135,7 +132,6 @@ function(models, commonViews, dialogViews, settingsTabTemplate, settingsGroupTem
             this.bindTaskEvents();
         },
         initialize: function(options) {
-            _.defaults(this, options);
             this.model.bind('change:tasks', this.bindEvents, this);
             this.bindEvents();
             if (!this.model.get('settings')) {

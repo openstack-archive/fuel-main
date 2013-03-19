@@ -89,15 +89,13 @@ define(function() {
             return ['compute', 'storage', 'both'];
         },
         availableRoles: function() {
-            var roles = [];
-            if (this.get('mode') == 'singlenode') {
-                roles = ['controller'];
-            } else if (this.get('type') == 'storage') {
-                roles = ['controller', 'storage'];
-            } else if (this.get('type') == 'compute') {
-                roles = ['controller', 'compute'];
-            } else {
-                roles = ['controller', 'compute', 'storage'];
+            var roles = ['controller'];
+            if (this.get('mode') != 'singlenode') {
+                if (this.get('type') == 'both') {
+                    roles.push('storage', 'compute');
+                } else {
+                    roles.push(this.get('type'));
+                }
             }
             return roles;
         },
@@ -123,25 +121,15 @@ define(function() {
     models.Node = Backbone.Model.extend({
         constructorName: 'Node',
         urlRoot: '/api/nodes',
-        fullProductName: function() {
-            return (this.get('manufacturer') ? this.get('manufacturer') + ' ' + this.get('platform_name') : this.get('platform_name')) || 'Unknown Platform';
-        },
         resource: function(resourceName) {
             var resource = 0;
             try {
-                if (resourceName == 'cores') {
-                    resource = this.get('meta').cpu.total;
-                } else if (resourceName == 'hdd') {
-                    var hdd = 0;
-                    _.each(this.get('meta').disks, function(disk) {
-                        if (_.isNumber(disk.size)) {
-                            hdd += disk.size;
-                        }
-                    });
-                    resource = hdd;
-                } else if (resourceName == 'ram') {
-                    resource = this.get('meta').memory.total / Math.pow(1024, 3);
-                }
+                var resources = {
+                    'cores': this.get('meta').cpu.total,
+                    'ram' : this.get('meta').memory.total / Math.pow(1024, 3),
+                    'hdd': _.reduce(_.pluck(this.get('meta').disks, 'size'), function(sum, size) {return _.isNumber(size) ? sum + size : sum;}, 0)
+                };
+                resource = resources[resourceName];
             } catch (e) {}
             if (_.isNaN(resource)) {
                 resource = 0;
@@ -266,7 +254,6 @@ define(function() {
         constructorName: 'Networks',
         model: models.Network,
         url: '/api/networks',
-        hasChanges: false,
         comparator: function(network) {
             return network.get('id');
         }
