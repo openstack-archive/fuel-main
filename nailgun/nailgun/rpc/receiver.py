@@ -19,7 +19,7 @@ from nailgun.network.manager import get_node_networks
 from nailgun.settings import settings
 from nailgun.task.helpers import update_task_status
 from nailgun.api.models import Node, Network, NetworkGroup
-from nailgun.api.models import Task
+from nailgun.api.models import IPAddr, Task
 from nailgun.notifier import notifier
 
 
@@ -109,6 +109,16 @@ class NailgunReceiver(object):
         if task.status in ('ready',):
             logger.debug("Removing environment itself")
             cluster_name = cluster.name
+
+            nws = itertools.chain(
+                *[n.networks for n in cluster.network_groups]
+            )
+            ips = cls.db.query(IPAddr).filter(
+                IPAddr.network.in_([n.id for n in nws])
+            )
+            map(cls.db.delete, ips)
+            cls.db.commit()
+
             cls.db.delete(cluster)
             cls.db.commit()
 
