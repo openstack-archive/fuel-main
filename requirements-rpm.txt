@@ -57,6 +57,7 @@ openstack-swift-account-1.7.4-3.mira
 openstack-swift-container-1.7.4-3.mira
 openstack-swift-object-1.7.4-3.mira
 openstack-swift-proxy-1.7.4-3.mira
+openstack-utils-2012.2-5.el6
 patch-2.6-6.el6
 policycoreutils-2.0.83-19.24.el6
 postgresql-8.4.13-1.el6_3
@@ -72,6 +73,7 @@ python-argparse-1.2.1-2.el6
 python-cinder-2012.2-6.mira
 python-devel-2.6.6-29.el6_3.3
 python-keystone-2012.2-3.mira.el6
+python-novaclient-2.9.0-1.el6
 python-pip-0.8-1.el6
 python-setuptools-0.6.10-3.el6
 python-virtualenv-1.7-1.el6
