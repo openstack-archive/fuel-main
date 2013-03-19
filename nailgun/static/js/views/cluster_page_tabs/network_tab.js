@@ -50,7 +50,7 @@ function(models, commonViews, dialogViews, networkTabTemplate, networkTabViewMod
                 amount: this.model.get('net_manager') == 'FlatDHCPManager' ? 1 : $('.amount input', row).val(),
                 network_size: parseInt($('.network_size select', row).val(), 10)
             });
-            if (this.$(e.currentTarget).attr('name') == 'fixed-amount') {
+            if (e && this.$(e.currentTarget).attr('name') == 'fixed-amount' && parseInt(this.$(e.currentTarget).val(), 10)) {
                 this.fixedAmount = parseInt(this.$(e.currentTarget).val(), 10);
             }
             this.checkForChanges();
@@ -82,8 +82,7 @@ function(models, commonViews, dialogViews, networkTabTemplate, networkTabViewMod
             this.$('.net-manager input').attr('checked', false);
             this.$(e.target).attr('checked', true);
             this.model.set({net_manager: this.$(e.target).val()}, {silent: true});
-            this.$('.control-group .error').removeClass('error');
-            this.checkForChanges();
+            this.makeChanges();
             this.$('.fixed-row .amount, .fixed-header .amount, .fixed-row .network_size, .fixed-header .size').toggle().removeClass('hide');
             if (this.model.get('net_manager') == 'VlanManager') {
                 this.$('input[name=fixed-amount]').val(this.fixedAmount);
@@ -91,15 +90,10 @@ function(models, commonViews, dialogViews, networkTabTemplate, networkTabViewMod
                 this.$('input[name=fixed-amount]').val(1);
             }
             this.displayRange();
-            app.page.removeVerificationTask();
         },
         setValues: function() {
-            var valid = true;
             this.model.get('networks').each(function(network) {
                 var row = this.$('.control-group[data-network-name=' + network.get('name') + ']');
-                network.on('error', function(model, errors) {
-                    valid = false;
-                }, this);
                 network.set({
                     cidr: $('.cidr input', row).val(),
                     vlan_start: parseInt($('.vlan_start input:first', row).val(), 10),
@@ -107,7 +101,7 @@ function(models, commonViews, dialogViews, networkTabTemplate, networkTabViewMod
                     network_size: parseInt($('.network_size select', row).val(), 10)
                 });
             }, this);
-            return valid;
+            return this.model.isValid();
         },
         applyChanges: function() {
             if (this.setValues()) {
