@@ -318,6 +318,53 @@ class TestTaskManagers(BaseHandlers):
         self.assertIsNone(cluster_db)
 
     @fake_tasks()
+    def test_deletion_cluster_ha_3x3(self):
+        self.env.create(
+            cluster_kwargs={
+                "api": True,
+                "mode": "ha"
+            },
+            nodes_kwargs=[
+                {"role": "controller", "pending_addition": True},
+                {"role": "compute", "pending_addition": True}
+            ] * 3
+        )
+        cluster_id = self.env.clusters[0].id
+        cluster_name = self.env.clusters[0].name
+        supertask = self.env.launch_deployment()
+        self.env.wait_ready(supertask)
+
+        nodes_ids = [n.id for n in self.env.nodes]
+        resp = self.app.delete(
+            reverse(
+                'ClusterHandler',
+                kwargs={'cluster_id': cluster_id}),
+            headers=self.default_headers
+        )
+        self.assertEquals(202, resp.status)
+
+        timer = time.time()
+        timeout = 15
+        clstr = self.db.query(Cluster).get(cluster_id)
+        while clstr:
+            time.sleep(1)
+            try:
+                self.db.refresh(clstr)
+            except:
+                break
+            if time.time() - timer > timeout:
+                raise Exception("Cluster deletion seems to be hanged")
+
+        notification = self.db.query(Notification)\
+            .filter(Notification.topic == "done")\
+            .filter(Notification.message == "Environment '%s' and all its "
+                    "nodes are deleted" % cluster_name).first()
+        self.assertIsNotNone(notification)
+
+        tasks = self.db.query(Task).all()
+        self.assertEqual(tasks, [])
+
+    @fake_tasks()
     def test_node_fqdn_is_assigned(self):
         self.env.create(
             cluster_kwargs={},
