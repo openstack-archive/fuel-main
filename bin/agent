@@ -283,6 +283,8 @@ class NodeAgent
           size = _size($1.to_i, $2)
           device_info[:size] = size
           info[:total] += size
+        else
+          next
         end
         if /^\s*Speed:\s+(\d+)\s+MHz/i.match(group)
           device_info[:frequency] = $1.to_i
