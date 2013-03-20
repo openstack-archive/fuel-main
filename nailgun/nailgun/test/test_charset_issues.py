@@ -53,3 +53,48 @@ class TestCharsetIssues(BaseHandlers):
             time.sleep(1)
 
         self.env.wait_ready(supertask, 60)
+
+    @fake_tasks()
+    def test_deletion_during_deployment(self):
+        self.env.create(
+            cluster_kwargs={
+                "name": u"Вася"
+            },
+            nodes_kwargs=[
+                {"status": "ready",  "pending_addition": True},
+            ]
+        )
+        cluster_id = self.env.clusters[0].id
+        resp = self.app.put(
+            reverse(
+                'ClusterChangesHandler',
+                kwargs={'cluster_id': cluster_id}),
+            headers=self.default_headers
+        )
+        deploy_uuid = json.loads(resp.body)['uuid']
+        resp = self.app.delete(
+            reverse(
+                'ClusterHandler',
+                kwargs={'cluster_id': cluster_id}),
+            headers=self.default_headers
+        )
+        timeout = 120
+        timer = time.time()
+        while True:
+            task_deploy = self.db.query(Task).filter_by(
+                uuid=deploy_uuid
+            ).first()
+            task_delete = self.db.query(Task).filter_by(
+                cluster_id=cluster_id,
+                name="cluster_deletion"
+            ).first()
+            if not task_delete:
+                break
+            self.db.expire(task_deploy)
+            self.db.expire(task_delete)
+            if (time.time() - timer) > timeout:
+                break
+            time.sleep(0.24)
+
+        cluster_db = self.db.query(Cluster).get(cluster_id)
+        self.assertIsNone(cluster_db)
