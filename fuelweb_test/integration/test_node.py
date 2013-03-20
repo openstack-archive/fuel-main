@@ -8,6 +8,7 @@ import pprint
 import posixpath
 import re
 import subprocess
+import urllib2
 from time import sleep
 
 from devops.helpers import wait, tcp_ping, http
@@ -32,20 +33,45 @@ def snapshot_errors(func):
     """ Decorator to snapshot nodes when error occurred in test.
     """
     def decorator(*args, **kwagrs):
-        ss_name = 'error-%d' % int(time.time())
-        desc = "Failed in method '%s'" % func.__name__
+        def save_logs(filename):
+            try:
+                logfile_name = os.path.abspath(
+                    os.path.join(ci.export_logs_dir, filename + ".tar.gz")
+                )
+                if not os.path.isdir(os.path.dirname(logfile_name)):
+                    os.makedirs(os.path.dirname(logfile_name))
+                logging.info('Saving logs to "%s" file' % logfile_name)
+                remote_log = urllib2.urlopen(
+                    "http://%s:8000/api/logs/package"
+                    % ci.environment.node['admin'].ip_address
+                )
+                local_log = open(logfile_name, 'w')
+                local_log.write(remote_log.read())
+                local_log.close()
+            except AttributeError:
+                pass
+            except Exception, e:
+                logging.warn(
+                    'Cannot save logfile "%s": %s' % (logfile_name, e)
+                )
+
+        timestamp = str(int(time.time() * 100))
         try:
             func(*args, **kwagrs)
         except Exception, e:
+            ss_name = 'error-%s' % timestamp
+            desc = "Failed in method '%s'" % func.__name__
             exc = list(sys.exc_info())
             exc[2] = exc[2].tb_next
             logging.warn('Some raise occurred in method "%s"' % func.__name__)
             logging.warn(''.join(traceback.format_exception(*exc)))
+            save_logs("failed-%s-%s" % (func.__name__, timestamp))
             for node in ci.environment.nodes:
                 logging.info("Creating snapshot '%s' for node %s" %
                              (ss_name, node.name))
                 node.save_snapshot(ss_name, desc)
             raise e, None, sys.exc_info()[2].tb_next
+        save_logs("ok-%s-%s" % (func.__name__, timestamp))
     newfunc = decorator
     newfunc.__dict__ = func.__dict__
     newfunc.__doc__ = func.__doc__

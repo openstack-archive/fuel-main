@@ -30,6 +30,8 @@ def main():
     parser.add_argument('--no-forward-network', dest='no_forward_network',
                         action="store_true", default=False,
                         help='do not forward environment netork')
+    parser.add_argument('--export-logs-dir', dest='export_logs_dir', type=str,
+                        help='directory to save fuelweb logs')
     parser.add_argument('--installation-timeout', dest='installation_timeout',
                         type=int, help='admin node installation timeout')
     parser.add_argument('--deployment-timeout', dest='deployment_timeout',
@@ -61,6 +63,9 @@ def main():
         ci = suite.Ci(params.iso, forward=None, env_name=params.environment)
     else:
         ci = suite.Ci(params.iso, env_name=params.environment)
+
+    if not params.export_logs_dir is None:
+        ci.export_logs_dir = params.export_logs_dir
 
     if not params.deployment_timeout is None:
         ci.deployment_timeout = params.deployment_timeout
