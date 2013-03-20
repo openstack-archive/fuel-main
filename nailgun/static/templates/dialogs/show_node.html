@@ -29,15 +29,21 @@
     }
     return result;
   };
+  var showMemorySize = function(bytes) {
+    return showSize(bytes, 1024, 1024);
+  };
+  var showDiskSize = function(bytes) {
+    return showSize(bytes, 1000);
+  };
   var showPropertyName = function(propertyName) {
     return propertyName.replace(/_/g, ' ');
   };
   var showPropertyValue = function(group, name, value) {
     try {
-      if (group == 'memory' && (name == 'total' || name == 'maximum_capacity')) {
-        value = showSize(value, 1024, 1024);
+      if (group == 'memory' && (name == 'total' || name == 'maximum_capacity' || name == 'size')) {
+        value = showMemorySize(value);
       } else if (group == 'disks' && name == 'size') {
-        value = showSize(value, 1000);
+        value = showDiskSize(value);
       } else if (name == 'size') {
         value = showSize(value);
       } else if (name == 'frequency') {
@@ -55,16 +61,16 @@
         summary = (meta.system.manufacturer || '') + ' ' + (meta.system.product || '');
       } else if (group == 'memory') {
         if (_.isArray(meta.memory.devices) && meta.memory.devices.length) {
-          var sizes = _.groupBy(_.pluck(meta.memory.devices, 'size'), function(value) {return showSize(value, 1024, 1024)});
+          var sizes = _.groupBy(_.pluck(meta.memory.devices, 'size'), showMemorySize);
           summary = _.map(_.keys(sizes), function(size) {return sizes[size].length + ' x ' + size}).join(', ');
-          summary += ', ' + showSize(meta.memory.total) + ' total';
+          summary += ', ' + showMemorySize(meta.memory.total) + ' total';
         } else {
-          summary = showSize(meta.memory.total) + ' total';
+          summary = showMemorySize(meta.memory.total) + ' total';
         }
       } else if (group == 'disks') {
         summary = meta.disks.length + ' drive';
         summary += meta.disks.length == 1 ? ', ' : 's, ';
-        summary += showSize(_.reduce(_.pluck(meta.disks, 'size'), function(sum, n) {return sum + n}, 0), 1000) + ' total';
+        summary += showDiskSize(_.reduce(_.pluck(meta.disks, 'size'), function(sum, n) {return sum + n}, 0)) + ' total';
       } else if (group == 'cpu') {
         var frequencies = _.groupBy(_.pluck(meta.cpu.spec, 'frequency'), showFrequency);
         summary = _.map(_.keys(frequencies), function(frequency) {return frequencies[frequency].length + ' x ' + frequency}).join(', ');
