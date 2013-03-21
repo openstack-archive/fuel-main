@@ -62,7 +62,7 @@
       } else if (group == 'memory') {
         if (_.isArray(meta.memory.devices) && meta.memory.devices.length) {
           var sizes = _.groupBy(_.pluck(meta.memory.devices, 'size'), showMemorySize);
-          summary = _.map(_.keys(sizes), function(size) {return sizes[size].length + ' x ' + size}).join(', ');
+          summary = _.map(_.keys(sizes).sort(), function(size) {return sizes[size].length + ' x ' + size}).join(', ');
           summary += ', ' + showMemorySize(meta.memory.total) + ' total';
         } else {
           summary = showMemorySize(meta.memory.total) + ' total';
@@ -73,10 +73,10 @@
         summary += showDiskSize(_.reduce(_.pluck(meta.disks, 'size'), function(sum, n) {return sum + n}, 0)) + ' total';
       } else if (group == 'cpu') {
         var frequencies = _.groupBy(_.pluck(meta.cpu.spec, 'frequency'), showFrequency);
-        summary = _.map(_.keys(frequencies), function(frequency) {return frequencies[frequency].length + ' x ' + frequency}).join(', ');
+        summary = _.map(_.keys(frequencies).sort(), function(frequency) {return frequencies[frequency].length + ' x ' + frequency}).join(', ');
       } else if (group == 'interfaces') {
         var bandwidths = _.groupBy(_.pluck(meta.interfaces, 'current_speed'), showBandwidth);
-        summary = _.map(_.keys(bandwidths), function(bandwidth) {return bandwidths[bandwidth].length + ' x ' + bandwidth}).join(', ');
+        summary = _.map(_.keys(bandwidths).sort(), function(bandwidth) {return bandwidths[bandwidth].length + ' x ' + bandwidth}).join(', ');
       }
     } catch (e) {};
     return summary;
