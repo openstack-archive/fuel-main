@@ -116,8 +116,11 @@ $(BUILD_DIR)/bootstrap/customize-initram-root.done: \
 	$(YUM) install $(BOOTSTRAP_RPMS_CUSTOM)
 
 	# Copying custom files
-	sudo rsync -a $(SOURCE_DIR)/bootstrap/sync/ $(INITRAMROOT)
+	sudo rsync -aK $(SOURCE_DIR)/bootstrap/sync/ $(INITRAMROOT)
 	sudo cp -r $(SOURCE_DIR)/bin/send2syslog.py $(INITRAMROOT)/usr/bin
+
+	# Enabling pre-init boot interface discovery
+	sudo chroot $(INITRAMROOT) chkconfig setup-bootdev on
 
 	# Setting root password into r00tme
 	sudo sed -i -e '/^root/c\root:$$6$$oC7haQNQ$$LtVf6AI.QKn9Jb89r83PtQN9fBqpHT9bAFLzy.YVxTLiFgsoqlPY3awKvbuSgtxYHx4RUcpUqMotp.WZ0Hwoj.:15441:0:99999:7:::' $(INITRAMROOT)/etc/shadow

@@ -1,0 +1,81 @@
+#! /bin/bash
+#
+# setup-bootdev       Setup necessary network interface to DHCP
+#
+# chkconfig: 2345 05 90
+# description: Setup necessary network interface to DHCP.
+#
+### BEGIN INIT INFO
+# Provides: $(setup-bootdev)
+# Short-Description: Setup necessary network interface to DHCP
+# Description: Setup necessary network interface to DHCP
+### END INIT INFO
+
+# Source function library.
+. /etc/init.d/functions
+
+cd /etc/sysconfig/network-scripts
+. ./network-functions
+
+
+get_bootdev() {
+    bootaddr=$(ruby -e \
+    'File.open("/proc/cmdline") { |fo|
+      l = fo.read
+      m = l.match( /BOOTIF=([0-9A-Fa-f]{2}(-[0-9A-Fa-f]{2})+)/ )
+      print m[1].split("-")[-6..-1].join(".")
+    }' 2> /dev/null)
+
+    if [ -z "$bootaddr" ]; then
+        return 1
+    fi
+
+    dev=$(get_device_by_hwaddr $bootaddr)
+    if [ -z "$dev" ]; then
+        return 2
+    fi
+
+    echo $dev
+}
+
+get_alldevs() {
+    ip link|grep -oE 'eth[0-9]+'|sort|uniq
+}
+
+# See how we were called.
+case "$1" in
+  start)
+    rc=1
+    echo -n "Obtain boot interface name..."
+    dev=$(get_bootdev)
+
+    if [ -z "$dev" ]; then
+        echo "failed."
+        echo -en "Obtain all eth interfaces..."
+        dev=$(get_alldevs)
+        if [ -z "$dev" ]; then
+            echo "failed."
+        else
+            rc=0
+            dev_str=$(echo "$dev"|tr "\n" " "|sed 's/ *$//')
+            echo "ok ($dev_str)."
+        fi
+    else
+        rc=0
+        echo "ok ($dev)."
+    fi
+
+    if [ $rc -eq 0 ]; then
+        for name in $dev; do
+            content="DEVICE=$name\nBOOTPROTO=dhcp\nONBOOT=yes"
+            echo -e "$content" > "./ifcfg-$name"
+        done
+    fi
+    action $"Update network interfaces settings: " [ $rc -eq 0 ]
+    ;;
+  *)
+    rc=0
+    ;;
+esac
+
+exit $rc
