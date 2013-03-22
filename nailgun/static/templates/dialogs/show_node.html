@@ -81,6 +81,13 @@
     } catch (e) {};
     return summary;
   };
+  var sortEntryProperties = function(entry) {
+    var properties = _.keys(entry);
+    if (_.has(entry, 'name')) {
+      properties = ['name'].concat(_.keys(_.omit(entry, 'name')));
+    }
+    return properties;
+  };
 %>
 <div class="modal-header">
   <button type="button" class="close" data-dismiss="modal">&times;</button>
@@ -109,11 +116,11 @@
         <div class="accordion-body collapse">
           <div class="accordion-inner">
             <% if (_.isArray(groupEntries)) { %>
-              <% if (group == 'interfaces') groupEntries = _.sortBy(groupEntries, 'name') %>
+              <% if (group == 'interfaces' || group == 'disks') groupEntries = _.sortBy(groupEntries, 'name') %>
               <% _.each(groupEntries, function(entry) { %>
                 <div class="nested-object">
-                  <% _.each(entry, function(propertyValue, propertyName) { %>
-                    <div><label><%- showPropertyName(propertyName) %></label><%- showPropertyValue(group, propertyName, propertyValue) %></div>
+                  <% _.each(sortEntryProperties(entry), function(propertyName) { %>
+                    <div><label><%- showPropertyName(propertyName) %></label><%- showPropertyValue(group, propertyName, entry[propertyName]) %></div>
                   <% }) %>
                 </div>
               <% }) %>
@@ -127,8 +134,8 @@
               <% if (_.isArray(subentries)) { %>
                 <% _.each(subentries, function(subentry) { %>
                   <div class="nested-object">
-                    <% _.each(subentry, function(propertyValue, propertyName) { %>
-                      <div><label><%- showPropertyName(propertyName) %></label><%- showPropertyValue(group, propertyName, propertyValue) %></div>
+                    <% _.each(sortEntryProperties(subentry), function(propertyName) { %>
+                      <div><label><%- showPropertyName(propertyName) %></label><%- showPropertyValue(group, propertyName, subentry[propertyName]) %></div>
                     <% }) %>
                   </div>
                 <% }) %>
