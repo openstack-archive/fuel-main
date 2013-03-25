@@ -16,8 +16,8 @@ $(BUILD_DIR)/mirror/gems/gems-bundle-gemfile.done: \
 	$(ACTION.TOUCH)
 
 $(BUILD_DIR)/mirror/gems/gems-bundle.done: $(BUILD_DIR)/mirror/gems/gems-bundle-gemfile.done
-	( cd $(BUILD_DIR)/mirror/gems/gems-bundle && bundle install --path ./ && bundle package )
-	( cd $(BUILD_DIR)/mirror/gems/gems-bundle/vendor/cache/ && gem fetch -v 1.2.1 bundler )
+	( cd $(BUILD_DIR)/mirror/gems/gems-bundle && bundle package )
+	( cd $(BUILD_DIR)/mirror/gems/gems-bundle/vendor/cache/ && gem fetch -v 1.3.4 bundler )
 	$(ACTION.TOUCH)
 
 $(BUILD_DIR)/mirror/gems/build.done: $(call depv,LOCAL_MIRROR_GEMS)

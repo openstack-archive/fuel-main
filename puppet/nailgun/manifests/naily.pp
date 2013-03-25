@@ -5,10 +5,18 @@ class nailgun::naily(
   $gem_source = "http://rubygems.org/",
   ){
 
-  package { "naily":
-    provider => "gem",
-    ensure => $version,
-    source => $gem_source,
+  package { 'rbenv-ruby-1.9.3-p392-0.0.1-1': }
+
+  exec { "rbenv exec gem install naily --source #{$gem_source} --version #{$version} --no-ri --no-rdoc":
+    environment => ['RBENV_ROOT=/opt/rbenv', 'RBENV_VERSION=1.9.3-p392'],
+    path => ['/opt/rbenv/bin']
+  }
+
+  file { '/usr/bin/nailyd':
+    content => template('nailgun/nailyd.erb'),
+    owner => 'root',
+    group => 'root',
+    mode => 0755,
   }
 
   file {"/etc/naily":

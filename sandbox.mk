@@ -35,6 +35,7 @@ SANDBOX_PACKAGES:=\
 	rpm-build \
 	tar \
 	postgresql-devel \
+	openssl-devel \
 
 
 define SANDBOX_UP
