@@ -1,14 +1,17 @@
 class mcollective::client(
   $pskey = "secret",
-  $stompuser = "mcollective",
-  $stomppassword = "mcollective",
-  $stomphost = "127.0.0.1",
+  $user = "mcollective",
+  $password = "mcollective",
+  $host = "127.0.0.1",
   $stompport = "61613",
+  $port = "5672",
+  $vhost = "mcollective",
+  $stomp = false,
   ){
 
   case $operatingsystem {
     /(?i)(centos|redhat)/:  {
-      # THIS PACKAGE ALSO INSTALLS REQUIREMENTS 
+      # THIS PACKAGE ALSO INSTALLS REQUIREMENTS
       # mcollective-common
       # rubygems
       # rubygem-stomp
@@ -29,5 +32,5 @@ class mcollective::client(
     mode => 0600,
     require => Package[$mcollective_client_package],
   }
-  
-}
+
+  }

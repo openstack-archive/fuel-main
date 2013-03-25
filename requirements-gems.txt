@@ -11,7 +11,6 @@ httpclient	2.2.5
 ipaddress	0.8.0
 json	1.6.1
 json_pure	1.7.5
-mcollective-client	2.2.1
 mime-types	1.19
 mixlib-authentication	1.1.4
 mixlib-cli	1.2.2
@@ -28,7 +27,7 @@ polyglot	0.3.3
 rails 3.0.10
 rest-client	1.6.7
 rethtool	0.0.3
-stomp	1.2.6
+stomp	1.2.8
 symboltable	1.0.2
 systemu	2.5.2
 treetop	1.4.10

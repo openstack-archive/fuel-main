@@ -55,10 +55,10 @@ COBBLER_PASSWORD: "<%= cobbler_password %>"
 COBBLER_PROFILE: "centos63-x86_64"
 
 MCO_PSKEY: "<%= mco_pskey %>"
-MCO_STOMPHOST: <%= scope.lookupvar('nailgun::mco_stomphost') %>
-MCO_STOMPPORT: "61613"
-MCO_STOMPUSER: "<%= mco_stompuser %>"
-MCO_STOMPPASSWORD: "<%= mco_stomppassword %>"
+MCO_HOST: <%= scope.lookupvar('nailgun::mco_host') %>
+MCO_USER: "<%= mco_user %>"
+MCO_PASSWORD: "<%= mco_password %>"
+MCO_CONNECTOR: "<%= mco_connector %>"
 
 PUPPET_MASTER_HOST: "<%= puppet_master_hostname %>"
 PUPPET_VERSION: "2.7.19"

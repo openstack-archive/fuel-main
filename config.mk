@@ -48,9 +48,9 @@ REQUIRED_SRCS:=$(shell grep -v ^\\s*\# $(SOURCE_DIR)/requirements-src.txt)
 # Which repositories to use for making local centos mirror.
 # Possible values you can find out from mirror/centos/yum_repos.mk file.
 # The actual name will be constracted wich prepending "yum_repo_" prefix.
-# Example: YUM_REPOS:=centos epel => yum_repo_centos and yum_repo_epel
+# Example: YUM_REPOS?=official epel => yum_repo_official and yum_repo_epel
 # will be used.
-YUM_REPOS?=official epel fuel_folsom puppetlabs rpmforge
+YUM_REPOS?=official epel fuel_folsom puppetlabs rpmforge devel_puppetlabs
 
 # Mirror of source packages. Bareword 'internet' is used to download packages
 # directly from the internet

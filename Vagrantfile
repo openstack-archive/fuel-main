@@ -30,16 +30,16 @@ node default {
   Exec {path => '/usr/bin:/bin:/usr/sbin:/sbin'}
 
   class { mcollective::rabbitmq:
-    stompuser => "mcollective",
-    stomppassword => "mcollective",
+    user => "mcollective",
+    password => "marionette",
   }
 
   class { mcollective::client:
     pskey => "unset",
-    stompuser => "mcollective",
-    stomppassword => "mcollective",
-    stomphost => "127.0.0.1",
-    stompport => "61613"
+    user => "mcollective",
+    password => "marionette",
+    host => "127.0.0.1",
+    port => "61613"
   }
 
 }

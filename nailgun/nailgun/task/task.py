@@ -309,18 +309,18 @@ puppet_enable=0
 mco_auto_setup=1
 install_log_2_syslog=1
 mco_pskey=%(mco_pskey)s
-mco_stomphost=%(mco_stomp_host)s
-mco_stompport=%(mco_stomp_port)s
-mco_stompuser=%(mco_stomp_user)s
-mco_stomppassword=%(mco_stomp_password)s
+mco_host=%(mco_host)s
+mco_user=%(mco_user)s
+mco_password=%(mco_password)s
+mco_connector=%(mco_connector)s
 mco_enable=1
             """ % {'puppet_master_host': settings.PUPPET_MASTER_HOST,
                    'puppet_version': settings.PUPPET_VERSION,
                    'mco_pskey': settings.MCO_PSKEY,
-                   'mco_stomp_host': settings.MCO_STOMPHOST,
-                   'mco_stomp_port': settings.MCO_STOMPPORT,
-                   'mco_stomp_user': settings.MCO_STOMPUSER,
-                   'mco_stomp_password': settings.MCO_STOMPPASSWORD,
+                   'mco_host': settings.MCO_HOST,
+                   'mco_user': settings.MCO_USER,
+                   'mco_connector': settings.MCO_CONNECTOR,
+                   'mco_password': settings.MCO_PASSWORD,
                    }
 
             logger.debug("Node %s\nks_meta without extra params: %s" %

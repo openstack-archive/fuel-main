@@ -89,6 +89,16 @@ gpgkey=http://yum.puppetlabs.com/RPM-GPG-KEY-puppetlabs
 priority=1
 endef
 
+define yum_repo_devel_puppetlabs
+[devel_puppetlabs]
+name=Puppet Labs Packages
+baseurl=http://yum.puppetlabs.com/el/$(CENTOS_MAJOR)/devel/$(CENTOS_ARCH)/
+enabled=1
+gpgcheck=1
+gpgkey=http://yum.puppetlabs.com/RPM-GPG-KEY-puppetlabs
+priority=2
+endef
+
 define yum_repo_rpmforge
 [rpmforge]
 name=RHEL $(CENTOS_RELEASE) - RPMforge.net - dag

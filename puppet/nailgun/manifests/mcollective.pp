@@ -1,20 +1,21 @@
 class nailgun::mcollective(
   $mco_pskey = "unset",
-  $mco_stompuser = "mcollective",
-  $mco_stomppassword = "marionette",
+  $mco_user = "mcollective",
+  $mco_password = "marionette",
   ){
 
   class { "mcollective::rabbitmq":
-    stompuser => $mco_stompuser,
-    stomppassword => $mco_stomppassword,
+    user => $mco_user,
+    password => $mco_password,
+    stomp = false,
   }
 
   class { "mcollective::client":
     pskey => $mco_pskey,
-    stompuser => $mco_stompuser,
-    stomppassword => $mco_stomppassword,
-    stomphost => $ipaddress,
-    stompport => "61613"
+    user => $mco_user,
+    password => $mco_password,
+    host => $ipaddress,
+    stomp = false,
   }
 
 }

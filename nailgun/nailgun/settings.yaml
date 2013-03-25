@@ -208,10 +208,10 @@ LOGS_TO_PACK_FOR_SUPPORT:
   logs: '/var/log'
 
 MCO_PSKEY: "Gie6iega9ohngaenahthohngu8aebohxah9seidi"
-MCO_STOMPHOST: "localhost"
-MCO_STOMPPORT: "61613"
-MCO_STOMPUSER: "guest"
-MCO_STOMPPASSWORD: "guest"
+MCO_HOST: "localhost"
+MCO_USER: "guest"
+MCO_PASSWORD: "guest"
+MCO_CONNECTOR: "rabbitmq"
 
 PUPPET_MASTER_HOST: "localhost"
 PUPPET_VERSION: "2.7.19"

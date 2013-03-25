@@ -25,9 +25,10 @@ class nailgun(
   $cobbler_password = "cobbler",
 
   $mco_pskey = "unset",
-  $mco_stomphost = $ipaddress,
-  $mco_stompuser = "mcollective",
-  $mco_stomppassword = "marionette",
+  $mco_host = $ipaddress,
+  $mco_user = "mcollective",
+  $mco_password = "marionette",
+  $mco_connector = "rabbitmq",
 
   $naily_version,
   $nailgun_api_url = "http://$ipaddress:8000/api",
@@ -145,8 +146,8 @@ class nailgun(
 
   class { "nailgun::mcollective":
     mco_pskey => $mco_pskey,
-    mco_stompuser => $mco_stompuser,
-    mco_stomppassword => $mco_stomppassword,
+    mco_user => $mco_user,
+    mco_password => $mco_password,
   }
 
   class { "nailgun::database": 

@@ -33,8 +33,9 @@ haproxy-1.4.19-1.el6
 keepalived-1.2.4-1.el6
 make-3.81-20.el6
 man-1.6f-30.el6
-mcollective-2.2.2-1.el6
-mcollective-client-2.2.2-1.el6
+mcollective-common-2.3.1-2.el6
+mcollective-2.3.1-2.el6
+mcollective-client-2.3.1-2.el6
 memcached-1.4.4-3.el6
 mysql-5.1.66-2.el6_3
 mysql-devel-5.1.66-2.el6_3

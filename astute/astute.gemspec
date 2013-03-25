@@ -10,12 +10,9 @@ Gem::Specification.new do |s|
   s.authors = ['Mike Scherbakov']
   s.email   = ['mscherbakov@mirantis.com']
 
-  s.add_dependency 'mcollective-client', '> 2.0.0'
-  s.add_dependency 'symboltable', '>= 1.0.2'
-  s.add_dependency 'activesupport', '~> 3.0.10'
-
-  s.add_development_dependency 'rspec'
-  s.add_development_dependency 'mocha'
+  s.add_dependency 'activesupport', '3.0.10'
+  s.add_dependency 'mcollective-client', '2.3.1'
+  s.add_dependency 'symboltable', '1.0.2'
 
   s.files   = Dir.glob("{bin,lib,spec}/**/*")
   s.executables = ['astute']
