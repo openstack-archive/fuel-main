@@ -31,20 +31,27 @@ $glance_hash   = parsejson($glance)
 $keystone_hash = parsejson($keystone)
 $swift_hash    = parsejson($swift)
 $access_hash   = parsejson($access)
-$extra_rsyslog_hash = parsejson($syslog)
-$rsyslog_hash  = parsejson($rsyslog)
-$rservers      = [
-                  {
-                  'remote_type' => 'udp',
-                  'server' => $rsyslog_hash['server_address'],
-                  'port' => $rsyslog_hash['server_port'],
-                  },
-                  {
-                  'remote_type' => $extra_rsyslog_hash['syslog_transport'],
-                  'server' => $extra_rsyslog_hash['syslog_server'],
-                  'port' => $extra_rsyslog_hash['syslog_port'],
-                  }
-                  ]
+
+$base_syslog_hash  = parsejson($base_syslog)
+$base_syslog_rserver  = {
+  'remote_type' => 'udp',
+  'server' => $base_syslog_hash['syslog_server'],
+  'port' => $base_syslog_hash['syslog_port']
+}
+
+$syslog_hash   = parsejson($syslog)
+$syslog_rserver = {
+  'remote_type' => $syslog_hash['syslog_transport'],
+  'server' => $syslog_hash['syslog_server'],
+  'port' => $syslog_hash['syslog_port'],
+}
+
+if $syslog_hash['syslog_server'] != "" and $syslog_hash['syslog_port'] != "" and $syslog_hash['syslog_transport'] != "" {
+  $rservers = [$base_syslog_rserver, $syslog_rserver]
+}
+else {
+  $rservers = [$base_syslog_rserver]
+}
 
 $rabbit_user   = 'nova'
 

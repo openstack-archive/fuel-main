@@ -104,7 +104,7 @@
                             "label": "Syslog transport protocol"
                         },
                         "syslog_server": {
-                            "value": "log",
+                            "value": "",
                             "label": "Hostname",
                             "description": "Remote syslog hostname"
                         },
@@ -155,12 +155,12 @@
                             "generator": "password"
                         }
                     },
-                    "rsyslog": {
-                        "server_address": {
+                    "base_syslog": {
+                        "syslog_server": {
                             "generator": "ip",
                             "generator_arg": "admin"
                         },
-                        "server_port": {
+                        "syslog_port": {
                             "generator": "identical",
                             "generator_arg": "514"
                         }
