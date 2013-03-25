@@ -1,5 +1,4 @@
 require 'json'
-require 'thread'
 
 module Naily
   class Server
@@ -14,11 +13,8 @@ module Naily
       queue = @channel.queue(Naily.config.broker_queue, :durable => true)
       queue.bind(@exchange, :routing_key => Naily.config.broker_queue)
 
-      Astute::MClient.semaphore = Mutex.new
       queue.subscribe do |header, payload|
-        Thread.new do
-          dispatch payload
-        end
+        dispatch payload
       end
 
       Naily.logger.info "Server started"
@@ -49,14 +45,13 @@ module Naily
       Naily.logger.info "Processing RPC call #{data['method']}"
 
       begin
-        result = @delegate.send(data['method'], data)
+        @delegate.send(data['method'], data)
       rescue Exception => e
         Naily.logger.error "Error running RPC method #{data['method']}: #{e.message}, trace: #{e.backtrace.inspect}"
         if data['respond_to']
           reporter = Naily::Reporter.new(@producer, data['respond_to'], data['args']['task_uuid'])
           reporter.report({'status' => 'error', 'error' => "Error occurred while running method '#{data['method']}'. See logs of Orchestrator for details."})
         end
-        return
       end
     end
   end
