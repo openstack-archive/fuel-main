@@ -156,7 +156,7 @@ function(models, commonViews, logsTabTemplate, logEntryTemplate) {
 
             var options = this.getOptions();
             this.model.set({'log_options': options}, {silent: true});
-            app.navigate('#cluster/' + this.model.id + '/logs/' + this.serializeOptions(options), {trigger: false, replace: true});
+            app.navigate('#cluster/' + this.model.id + '/logs/' + app.serializeTabOptions(options), {trigger: false, replace: true});
 
             this.$('.logs-fetch-error, .node-sources-error').hide();
             if (!this.reversed) {
@@ -222,16 +222,6 @@ function(models, commonViews, logsTabTemplate, logEntryTemplate) {
                 }
             }
         },
-        serializeOptions: function(options) {
-            return _.map(options, function(value, key) {
-                return key + ':' + value;
-            }).join(',');
-        },
-        deserializeOptions: function(serializedOptions) {
-            return _.object(_.map(serializedOptions.split(','), function(option) {
-                return option.split(':');
-            }));
-        },
         getOptions: function() {
             var options = {};
             options.type = this.chosenType;
@@ -267,7 +257,7 @@ function(models, commonViews, logsTabTemplate, logEntryTemplate) {
                 // this part is run on first rendering only
                 var options = {};
                 if (this.tabOptions) {
-                    options = this.deserializeOptions(this.tabOptions);
+                    options = app.deserializeTabOptions(this.tabOptions);
                 } else if (this.model.get('log_options')) {
                     options = this.model.get('log_options');
                 }

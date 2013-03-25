@@ -24,7 +24,14 @@ function(models, simpleMessageTemplate, createClusterDialogTemplate, changeClust
             this.$el.modal('hide');
         },
         displayErrorMessage: function () {
-            this.$('.modal-body').html(this.errorMessageTemplate());
+            var logsLink;
+            try {
+                if (app.page.model.constructor == models.Cluster) {
+                    var options = {type: 'local', source: 'nailgun', level: 'error'};
+                    logsLink = '#cluster/' + app.page.model.id + '/logs/' + app.serializeTabOptions(options);
+                }
+            } catch(e) {}
+            this.$('.modal-body').html(this.errorMessageTemplate({logsLink: logsLink}));
         },
         initialize: function(options) {
             _.defaults(this, options);

@@ -3,13 +3,12 @@ define(
     'models',
     'views/common',
     'views/dialogs',
-    'views/cluster_page_tabs/logs_tab',
     'text!templates/cluster/nodes_tab_summary.html',
     'text!templates/cluster/edit_nodes_screen.html',
     'text!templates/cluster/node_list.html',
     'text!templates/cluster/node.html'
 ],
-function(models, commonViews, dialogViews, LogsTab, nodesTabSummaryTemplate, editNodesScreenTemplate, nodeListTemplate, nodeTemplate) {
+function(models, commonViews, dialogViews, nodesTabSummaryTemplate, editNodesScreenTemplate, nodeListTemplate, nodeTemplate) {
     'use strict';
     var NodesTab, NodesByRolesScreen, EditNodesScreen, AddNodesScreen, DeleteNodesScreen, NodeList, Node;
 
@@ -412,7 +411,7 @@ function(models, commonViews, dialogViews, LogsTab, nodesTabSummaryTemplate, edi
             } else if (status == 'deploying' || status == 'ready' || (status == 'error' && error == 'deploy')) {
                 options.source = 'install/puppet';
             }
-            return '#cluster/' + app.page.model.id + '/logs/' + LogsTab.prototype.serializeOptions(options);
+            return '#cluster/' + app.page.model.id + '/logs/' + app.serializeTabOptions(options);
         },
         beforeTearDown: function() {
             $('html').off(this.eventNamespace);

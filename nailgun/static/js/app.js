@@ -94,6 +94,16 @@ function(models, commonViews, ClusterPage, ClustersPage, ReleasesPage, Notificat
         showSupportPage: function() {
             this.setPage(new SupportPage());
         },
+        serializeTabOptions: function(options) {
+            return _.map(options, function(value, key) {
+                return key + ':' + value;
+            }).join(',');
+        },
+        deserializeTabOptions: function(serializedOptions) {
+            return _.object(_.map(serializedOptions.split(','), function(option) {
+                return option.split(':');
+            }));
+        },
         urlify: function (text) {
             var urlRegexp = /http:(\&\#x2F\;){2}(?:(?:[0-9]|[1-9][0-9]|1[0-9]{2}|2[0-4][0-9]|25[0-5])\.){3}(?:[0-9]|[1-9][0-9]|1[0-9]{2}|2[0-4][0-9]|25[0-5])(\&\#x2F\;)/g;
             return text.replace(/\n/g, '<br/>').replace(urlRegexp, function(url) {
