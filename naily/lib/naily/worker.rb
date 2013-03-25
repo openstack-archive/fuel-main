@@ -20,8 +20,12 @@ module Naily
 
     def run
       EM.run do
-        initialize_server.run
+        run_server
       end
+    rescue => ex
+      Naily.logger.error "Exception during worker initialization: #{ex.inspect}"
+      sleep 5
+      retry
     end
 
   private
@@ -33,32 +37,27 @@ module Naily
       end
     end
 
-    def initialize_server
-      initialize_amqp
-      @server = Naily::Server.new(@channel, @exchange, @delegate, @producer)
-    end
-
-    def initialize_amqp
+    def run_server
       AMQP.logging = true
-      @connection = AMQP.connect(connection_options)
-      create_channel
-      @exchange = @channel.topic(Naily.config.broker_exchange, :durable => true)
-      @producer = Naily::Producer.new(@exchange)
-      @delegate = Naily.config.delegate || Naily::Dispatcher.new(@producer)
-    rescue => ex
-      Naily.logger.error "Exception during AMQP connection initialization: #{ex}"
-      sleep 15
-      retry
+      AMQP.connect(connection_options) do |connection|
+        @connection = connection
+        @channel = create_channel(@connection)
+        @exchange = @channel.topic(Naily.config.broker_exchange, :durable => true)
+        @producer = Naily::Producer.new(@exchange)
+        @delegate = Naily.config.delegate || Naily::Dispatcher.new(@producer)
+        @server = Naily::Server.new(@channel, @exchange, @delegate, @producer)
+        @server.run
+      end
     end
 
-    def create_channel
-      @channel = AMQP::Channel.new(@connection)
-      @channel.prefetch 1
-      @channel.on_error do |ch, error|
+    def create_channel(connection)
+      channel = AMQP::Channel.new(connection)
+      channel.prefetch 1
+      channel.on_error do |ch, error|
         Naily.logger.fatal "Channel error #{error.inspect}"
         stop
       end
-      @channel
+      channel
     end
 
     def connection_options
