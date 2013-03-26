@@ -19,16 +19,15 @@ function(models, dialogViews, navbarTemplate, nodesStatsTemplate, notificationsT
         breadcrumbsPath: null,
         title: null,
         updateNavbar: function() {
-            var navbarActiveElement = _.isFunction(this.navbarActiveElement) ? this.navbarActiveElement() : this.navbarActiveElement;
-            app.navbar.setActive(navbarActiveElement);
+            app.navbar.setActive(_.result(this, 'navbarActiveElement'));
         },
         updateBreadcrumbs: function() {
             var breadcrumbsPath = _.isFunction(this.breadcrumbsPath) ? this.breadcrumbsPath() : this.breadcrumbsPath;
-            app.breadcrumbs.setPath(breadcrumbsPath);
+            app.breadcrumbs.setPath(_.result(this, 'breadcrumbsPath'));
         },
         updateTitle: function() {
             var defaultTitle = 'FuelWeb Dashboard';
-            var title = _.isFunction(this.title) ? this.title() : this.title;
+            var title = _.result(this, 'title');
             document.title = title ? defaultTitle + ' - ' + title : defaultTitle;
         }
     });
@@ -52,16 +51,16 @@ function(models, dialogViews, navbarTemplate, nodesStatsTemplate, notificationsT
         },
         update: function() {
             var complete = _.after(2, _.bind(this.scheduleUpdate, this));
-            this.nodes.fetch({complete: complete});
-            this.notifications.fetch({complete: complete});
+            this.nodes.fetch({update: true}).always(complete);
+            this.notifications.fetch({update: true}).always(complete);
         },
         initialize: function(options) {
             this.elements = _.isArray(options.elements) ? options.elements : [];
             var complete = _.after(2, _.bind(this.scheduleUpdate, this));
             this.nodes = new models.Nodes();
-            this.nodes.deferred = this.nodes.fetch({complete: complete});
+            this.nodes.deferred = this.nodes.fetch().always(complete);
             this.notifications = new models.Notifications();
-            this.notifications.deferred = this.notifications.fetch({complete: complete});
+            this.notifications.deferred = this.notifications.fetch().always(complete);
         },
         render: function() {
             this.tearDownRegisteredSubViews();
@@ -86,7 +85,7 @@ function(models, dialogViews, navbarTemplate, nodesStatsTemplate, notificationsT
         stats: {},
         initialize: function(options) {
             _.defaults(this, options);
-            this.collection.bind('reset', this.render, this);
+            this.collection.bind('sync', this.render, this);
         },
         calculateStats: function() {
             this.stats.total = this.collection.length;
@@ -112,7 +111,7 @@ function(models, dialogViews, navbarTemplate, nodesStatsTemplate, notificationsT
         },
         initialize: function(options) {
             _.defaults(this, options);
-            this.collection.bind('reset', this.render, this);
+            this.collection.bind('sync', this.render, this);
         },
         render: function() {
             this.$el.html(this.template({notifications: this.collection}));
@@ -124,8 +123,7 @@ function(models, dialogViews, navbarTemplate, nodesStatsTemplate, notificationsT
         template: _.template(notificationsPopoverTemplate),
         visible: false,
         events: {
-            'click .discover' : 'showNodeInfo',
-            'click .show-more-notifications a': 'toggle'
+            'click .discover' : 'showNodeInfo'
         },
         showNodeInfo: function(e) {
             if ($(e.target).data('node')) {
@@ -144,7 +142,7 @@ function(models, dialogViews, navbarTemplate, nodesStatsTemplate, notificationsT
             }
         },
         hide: function(e) {
-            if (this.visible && !$(e.target).closest(this.navbar.notificationsButton.el).length && !$(e.target).closest(this.el).length) {
+            if (this.visible && (!e || !$(e.target).closest(this.navbar.notificationsButton.el).length && !$(e.target).closest(this.el).length)) {
                 this.visible = false;
                 this.render();
             }
@@ -159,7 +157,7 @@ function(models, dialogViews, navbarTemplate, nodesStatsTemplate, notificationsT
                     }, this);
                 };
                 Backbone.sync('update', notificationsToMark).done(_.bind(function() {
-                    this.collection.trigger('reset');
+                    this.collection.trigger('sync');
                 }, this));
             }
         },
@@ -168,21 +166,25 @@ function(models, dialogViews, navbarTemplate, nodesStatsTemplate, notificationsT
         },
         initialize: function(options) {
             _.defaults(this, options);
-            // listening for 'reset' is not a good solution. we should listen
-            // for 'add' after updating backbone and getting smart collection
-            // merging feature
+            // listening for 'reset' is not a good solution. we should listen for 'add'
             //this.collection.bind('reset', this.render, this);
             this.eventNamespace = 'click.click-notifications';
         },
         bindEvents: function() {
             $('html').on(this.eventNamespace, _.bind(this.hide, this));
+            Backbone.history.on('route', this.hide, this);
         },
         unbindEvents: function() {
             $('html').off(this.eventNamespace);
+            Backbone.history.off('route', this.hide, this);
         },
         render: function() {
             if (this.visible) {
-                this.$el.html(this.template({notifications: this.collection, displayCount: 5}));
+                this.$el.html(this.template({
+                    notifications: this.collection,
+                    displayCount: 5,
+                    showMore: (Backbone.history.getHash() != 'notifications') && this.collection.length
+                }));
                 this.bindEvents();
             } else {
                 this.$el.html('');
@@ -209,13 +211,10 @@ function(models, dialogViews, navbarTemplate, nodesStatsTemplate, notificationsT
     views.Footer = Backbone.View.extend({
         template: _.template(footerTemplate),
         initialize: function(options) {
-            $.ajax({
-                url: '/api/version',
-                success: _.bind(function(data) {
-                    this.version = data.release;
-                    this.render();
-                }, this)
-            });
+            $.ajax({url: '/api/version'}).done(_.bind(function(data) {
+                this.version = data.release;
+                this.render();
+            }, this));
         },
         render: function() {
             this.$el.html(this.template({version: this.version}));

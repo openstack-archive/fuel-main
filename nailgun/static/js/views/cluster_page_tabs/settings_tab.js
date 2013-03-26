@@ -69,22 +69,20 @@ function(models, commonViews, dialogViews, settingsTabTemplate, settingsGroupTem
         applyChanges: function() {
             var data = this.collectData();
             this.disableControls();
-            this.model.get('settings').update({editable: data}, {
-                url: '/api/clusters/' + this.model.id + '/attributes',
-                error: _.bind(function() {
+            this.model.get('settings').save({editable: data}, {patch: true, wait: true, url: _.result(this.model, 'url') + '/attributes'})
+                .done(_.bind(function() {
+                    this.hasChanges = false;
+                }, this))
+                .fail(_.bind(function() {
                     this.defaultButtonsState(false);
                     var dialog = new dialogViews.SimpleMessage({error: true, title: 'OpenStack Settings'});
-                    this.registerSubView(dialog);
+                    app.page.registerSubView(dialog);
                     dialog.render();
-                }, this),
-                success: _.bind(function() {
-                    this.hasChanges = false;
-                }, this),
-                complete: _.bind(function() {
+                }, this))
+                .always(_.bind(function() {
                     this.render();
                     this.model.fetch();
-                }, this)
-            });
+                }, this));
         },
         parseSettings: function(settings) {
             this.tearDownRegisteredSubViews();
@@ -103,13 +101,10 @@ function(models, commonViews, dialogViews, settingsTabTemplate, settingsGroupTem
         loadDefaults: function() {
             var defaults = new models.Settings();
             this.disableControls();
-            defaults.fetch({
-                url: '/api/clusters/' + this.model.id + '/attributes/defaults',
-                complete: _.bind(function() {
-                    this.parseSettings(defaults.get('editable'));
-                    this.checkForChanges();
-                }, this)
-            });
+            defaults.fetch({url: _.result(this.model, 'url') + '/attributes/defaults'}).always(_.bind(function() {
+                this.parseSettings(defaults.get('editable'));
+                this.checkForChanges();
+            }, this));
         },
         render: function () {
             this.$el.html(this.template({cluster: this.model}));
@@ -137,9 +132,7 @@ function(models, commonViews, dialogViews, settingsTabTemplate, settingsGroupTem
             this.bindEvents();
             if (!this.model.get('settings')) {
                 this.model.set({'settings': new models.Settings()}, {silent: true});
-                this.model.get('settings').deferred = this.model.get('settings').fetch({
-                    url: '/api/clusters/' + this.model.id + '/attributes'
-                });
+                this.model.get('settings').deferred = this.model.get('settings').fetch({url: _.result(this.model, 'url') + '/attributes'});
                 this.model.get('settings').deferred.done(_.bind(this.render, this));
             }
         }

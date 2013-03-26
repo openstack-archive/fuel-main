@@ -37,13 +37,13 @@ casper.then(function() {
     this.evaluate(function() {
         $('input[name=public-cidr]').keyup();
     });
-    this.test.assertExists('.networks-table .row .error', 'Field validation has worked');
+    this.test.assertExists('.control-group.error', 'Field validation has worked');
     this.test.assertExists('.apply-btn:disabled', 'Save networks button is disabled if there is validation error');
     this.fill('.networks-table', {'public-cidr': initialValue});
     this.evaluate(function() {
         $('input[name=public-cidr]').keyup();
     });
-    this.test.assertDoesntExist('.networks-table .row .error', 'Field validation works properly');
+    this.test.assertDoesntExist('.control-group.error', 'Field validation works properly');
 });
 
 casper.then(function() {

@@ -1,81 +1,37 @@
 <div class="span2 nodebox <%= selectableForAddition ? 'unassigned node-to-add-unchecked' : selectableForDeletion ? 'unassigned node-to-delete-unchecked' : 'assigned' %>" data-node-id="<%= node.id %>">
   <div class="nodebox-gradient">
-  <div class="node-header">
-    <div class="node-logo <%- node.get('manufacturer') ? 'manufacturer-' + node.get('manufacturer').toLowerCase() : '' %>"></div>
-    <div class="node-name">
-    <% if (renaming) { %>
-      <div class="node-renameable">
-        <input type="text" class="input-medium" value="<%- node.get('name') || '' %>" />
+    <div class="node-header">
+      <div class="node-logo <%- node.get('manufacturer') ? 'manufacturer-' + node.get('manufacturer').toLowerCase() : '' %>"></div>
+      <div class="node-name">
+      <% if (renaming) { %>
+        <div class="node-renameable">
+          <input type="text" class="input-medium" value="<%- node.get('name') || '' %>" />
+        </div>
+      <% } else { %>
+        <div <%= renameable ? 'class="node-renameable"  title="Edit Name"' : '' %>><%- node.get('name') || node.get('mac') %></div>
+      <% } %>
       </div>
-    <% } else { %>
-      <div <%= renameable ? 'class="node-renameable"  title="Edit Name"' : '' %>><%- node.get('name') || node.get('mac') %></div>
-    <% } %>
     </div>
-  </div>
-  <div class="node-status">
-    <% var status = node.get('status') %>
-    <% if (!node.get('online')) { %>
-      <div class="msg-offline">
-        <i class="icon-block"></i>Offline
-      </div>
-    <% } else if (node.get('pending_addition')) { %>
-      <div class="msg-warning">
-        <i class="icon-ok-circle-empty"></i>Pending Addition
-      </div>
-    <% } else if (node.get('pending_deletion')) { %>
-      <div class="msg-warning">
-        <i class="icon-cancel-circle"></i>Pending Deletion
-      </div>
-    <% } else if (status == 'ready') { %>
-      <div class="msg-ok">
-        <i class="icon-ok"></i>Ready
-      </div>
-    <% } else if (status == 'provisioning') { %>
-      <div class="progress">
-        <div class="bar"><p>Installing CentOS</p></div>
-      </div>
-    <% } else if (status == 'provisioned') { %>
-      <div class="msg-provisioned">
-        <i class="icon-install"></i>CentOS is installed
-      </div>
-    <% } else if (status == 'deploying') { %>
-      <div class="progress progress-success">
-        <div class="bar"><p>Installing OpenStack</p></div>
-      </div>
-    <% } else if (status == 'error') { %>
-      <div class="msg-error">
-        <i class="icon-attention"></i>Error
-      </div>
-    <% } else if (status == 'discover') { %>
-      <div class="msg-discover">
-        <i class="icon-ok-circle-empty"></i>Discovered
-      </div>
-    <% } else { %>
-      <div>
-        <%= status %>
-      </div>
-    <% } %>
-    <a href="<%- logsLink %>" class="logs-link"><i class="icon-logs"></i>View logs</a>
-  </div>
-  <div class="node-hardware">
+    <div class="node-status"></div>
+    <div class="node-hardware">
       <span>CPU: <%= node.resource('cores') && _.isNumber(node.resource('cores')) ? node.resource('cores') : '?' %></span>
       <% if (node.resource('hdd')) var hdd = node.resource('hdd')/Math.pow(1000, 3) %>
       <span>HDD: <%= hdd ? hdd < 100 ? hdd.toFixed(1) + 'GB' : (hdd/1000).toFixed(1) + 'TB' : '?TB' %></span>
       <span>RAM: <%= node.resource('ram') && _.isNumber(node.resource('ram')) ? node.resource('ram').toFixed(1) : '?' %>GB</span>
-  </div>
+    </div>
 
-  <% if (!selectableForAddition && !selectableForDeletion) { %>
-    <% if (node.get('pending_addition')) { %>
-      <div class="pending-addition-flag"></div>
-    <% } else if (node.get('pending_deletion')) { %>
-      <div class="pending-deletion-flag"></div>
+    <% if (!selectableForAddition && !selectableForDeletion) { %>
+      <% if (node.get('pending_addition')) { %>
+        <div class="pending-addition-flag"></div>
+      <% } else if (node.get('pending_deletion')) { %>
+        <div class="pending-deletion-flag"></div>
+      <% } %>
     <% } %>
-  <% } %>
 
-  <% if (selectableForAddition) { %>
-    <div class="node-select"><i class="icon-ok"></i></div>
-  <% } else if (selectableForDeletion) { %>
-    <div class="node-select"><i class="icon-cancel"></i></div>
-  <% } %>
-</div>
+    <% if (selectableForAddition) { %>
+      <div class="node-select"><i class="icon-ok"></i></div>
+    <% } else if (selectableForDeletion) { %>
+      <div class="node-select"><i class="icon-cancel"></i></div>
+    <% } %>
+  </div>
 </div>

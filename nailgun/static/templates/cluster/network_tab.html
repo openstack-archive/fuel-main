@@ -5,32 +5,23 @@
     <% var disabled = cluster.task('deploy', 'running') || cluster.task('verify_networks', 'running') ? 'disabled' : '' %>
     <fieldset>
 
-      <% if (networks.deferred.state() != 'pending') { %>
+      <% if (networks) { %>
 
-        <% var net_manager = cluster.get('net_manager') %>
+        <% var managers = {'FlatDHCPManager': 'FlatDHCP Manager', 'VlanManager': 'VLAN Manager'} %>
         <div class="radio-checkbox-group net-manager">
+        <% _.each(_.keys(managers), function(manager) { %>
           <div class="item-box">
             <label class="parameter-box clearfix">
               <div class="parameter-control">
                 <div class="custom-tumbler">
-                  <input type="radio" value="FlatDHCPManager" name="net-manager" <%= net_manager == 'FlatDHCPManager' ? 'checked' : '' %> <%= disabled %>>
+                  <input type="radio" value="<%= manager %>" name="net-manager" <%= net_manager == manager ? 'checked' : '' %> <%= disabled %>>
                   <!--[if !IE |(gte IE 9)]>--><span>&nbsp;</span><!--<![endif]-->
                 </div>
               </div>
-              <div class="parameter-name">FlatDHCP Manager</div>
+              <div class="parameter-name"><%= managers[manager] %></div>
             </label>
           </div>
-          <div class="item-box">
-            <label class="parameter-box clearfix">
-              <div class="parameter-control">
-                <div class="custom-tumbler">
-                  <input type="radio" value="VlanManager" name="net-manager" <%= net_manager == 'VlanManager' ? 'checked' : '' %> <%= disabled %>>
-                  <!--[if !IE |(gte IE 9)]>--><span>&nbsp;</span><!--<![endif]-->
-                </div>
-              </div>
-              <div class="parameter-name">VLAN Manager</div>
-            </label>
-          </div>
+        <% }) %>
         </div>
         <hr>
 
@@ -41,69 +32,67 @@
             <div class="vlan">VLAN ID</div>
           </div>
 
-          <% var fixedNetwork %>
-          <% networks.each(function(network) { %>
-            <% if (network.get('name') != 'fixed') { %>
-              <div class="row">
-                <div class="control-group" data-network-name="<%- network.get('name') %>" data-network-id="<%- network.get('id') %>">
-                  <div class="name"><%- network.get('name') %></div>
-                  <div class="cidr">
-                    <input class="input-medium" type="text" name="<%- network.get('name') %>-cidr" value="<%- network.get('cidr') %>" maxlength="18" <%= disabled %> />
-                  </div>
-                  <div class="amount hide">
-                    <input class="input-mini" type="text" name="<%- network.get('name') %>-amount" value="<%- network.get('amount') %>" />
-                  </div>
-                  <div class="network_size hide">
-                    <select name="<%- network.get('name') %>-network_size">
-                      <option value="<%= network.get('network_size') %>" selected><%= network.get('network_size') %></option>
-                    </select>
-                  </div>
-                  <div class="vlan_start">
-                    <input class="input-mini" type="text"  name="<%- network.get('name') %>-vlan_start"value="<%- network.get('vlan_start') %>" maxlength="4" <%= disabled %> />
-                  </div>
-                  <div class="error">
-                    <span class="help-inline"></span>
-                  </div>
+          <% _.each(_.filter(networks.models, function(network){return network.get('name') != 'fixed'; }), function(network) { %>
+            <div class="row">
+              <div class="control-group" data-network-id="<%- network.id %>">
+                <div class="name"><%- network.get('name') %></div>
+                <div class="cidr">
+                  <input class="input-medium" type="text" name="<%- network.get('name') %>-cidr" value="<%- network.get('cidr') %>" maxlength="18" <%= disabled %> />
+                </div>
+                <div class="amount hide">
+                  <input class="input-mini" type="text" name="<%- network.get('name') %>-amount" value="<%- network.get('amount') %>" />
+                </div>
+                <div class="network_size hide">
+                  <select name="<%- network.get('name') %>-network_size">
+                    <option value="<%= network.get('network_size') %>" selected><%= network.get('network_size') %></option>
+                  </select>
+                </div>
+                <div class="vlan_start">
+                  <input class="input-mini" type="text" name="<%- network.get('name') %>-vlan_start" value="<%- network.get('vlan_start') %>" maxlength="4" <%= disabled %> />
+                </div>
+                <div class="error">
+                  <span class="help-inline"></span>
                 </div>
               </div>
-            <% } else fixedNetwork = network %>
+            </div>
           <% }) %>
 
+          <% var fixedNetwork = _.find(networks.models, function(network){return network.get('name') == 'fixed'; }) %>
           <% if (fixedNetwork) { %>
 
             <% var vlan = net_manager == 'VlanManager' ? '' : 'hide' %>
-            <% var range = net_manager == 'VlanManager' && fixedNetwork.get('amount') > 1 ? true : false %>
+            <% var range = net_manager == 'VlanManager' && fixedNetwork.get('amount') > 1 ? '' : 'hide' %>
 
             <div class="row networks-header fixed-header">
-              <div class="network">&nbsp;</div>
+              <div class="network">Network</div>
               <div class="cidr">CIDR</div>
               <div class="amount <%= vlan %>">Amount of networks</div>
               <div class="size <%= vlan %>">Size of network (IPs)</div>
-              <div class="vlan"><%= range ? 'VLAN ID range' : 'VLAN ID' %></div>
+              <div class="vlan"><%= range ? 'VLAN ID' : 'VLAN ID range' %></div>
             </div>
 
             <div class="row fixed-row">
-              <div class="control-group" data-network-name="<%- fixedNetwork.get('name') %>" data-network-id="<%- fixedNetwork.get('id') %>">
+              <div class="control-group fixed-network" data-network-id="<%- fixedNetwork.id %>">
                 <div class="name">VM networks (fixed)</div>
                 <div class="cidr">
-                  <input class="input-medium" type="text" value="<%- fixedNetwork.get('cidr') %>" maxlength="18" <%= disabled %> />
+                  <input class="input-medium" type="text" name="fixed-cidr" value="<%- fixedNetwork.get('cidr') %>" maxlength="18" <%= disabled %> />
                 </div>
                 <div class="amount <%= vlan %>">
-                  <input class="input-mini range" type="text" name="<%- fixedNetwork.get('name') %>-amount" value="<%- fixedNetwork.get('amount') %>" maxlength="4" <%= disabled %> />
+                  <input class="input-mini range" type="text" name="fixed-amount" value="<%- fixedNetwork.get('amount') %>" maxlength="4" <%= disabled %> />
                 </div>
                 <div class="network_size <%= vlan %>">
-                  <select <%= disabled %>>
-                    <% var network_sizes = [4, 8, 16, 32, 64, 128, 256, 1024, 2048] %>
+                  <select name="fixed-network_size" <%= disabled %>>
+                    <% var network_sizes = [4, 8, 16, 32, 64, 128, 256, 512, 1024, 2048] %>
                     <% _.each(network_sizes, function(size) { %>
                       <option value="<%= size %>" <%= fixedNetwork.get('network_size') == size ? 'selected' : '' %>><%= size %></option>
                     <% }) %>
                   </select>
                 </div>
                 <div class="vlan_start">
-                  <input class="input-mini <%= vlan ? '' : 'range' %>" type="text" value="<%- fixedNetwork.get('vlan_start') %>" maxlength="4" <%= disabled %> />
+                  <input class="input-mini <%= vlan ? '' : 'range' %>" name="fixed-vlan_start" type="text" value="<%- fixedNetwork.get('vlan_start') %>" maxlength="4" <%= disabled %> />
                   <% var vlan_end = fixedNetwork.get('vlan_start')+ fixedNetwork.get('amount') - 1 %>
-                  <span class="vlan-end <%= range ? '' : 'hide' %>">-</span>
-                  <input class="vlan-end input-mini <%= range  ? '' : 'hide' %>" type="text" value="<%= vlan_end %>" disabled />
+                  <span class="vlan-end <%= range %>">-</span>
+                  <input class="vlan-end input-mini <%= range %>" name="fixed-vlan-end" type="text" value="<%= vlan_end %>" disabled />
                 </div>
 
                 <div class="error">

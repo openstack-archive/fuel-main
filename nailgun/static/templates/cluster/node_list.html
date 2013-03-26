@@ -1,23 +1,6 @@
 <div class="roles-block-row nodesbox-header">
   <div class="span8">
-    <h3>
-      <%= {'controller': 'Controllers', 'compute': 'Computes', 'storage': 'Storages'}[role] || role %>
-      <!--<span>
-        <% if (size) { %>
-          <% if (hasChanges) { %>
-            (<%= currentNodes.length %> node<%= currentNodes.length != 1 ? 's' : '' %> currently, <%= nodesAfterDeployment.length %> node<%= nodesAfterDeployment.length != 1 ? 's' : '' %> after deployment, <%= size %> node<%= size != 1 ? 's' : '' %> max)
-          <% } else { %>
-            (<%= nodes.length %> of <%= size %> node<%= size != 1 ? 's' : '' %>)
-          <% } %>
-        <% } else { %>
-          <% if (hasChanges) { %>
-            (<%= currentNodes.length %> node<%= currentNodes.length != 1 ? 's' : '' %> currently, <%= nodesAfterDeployment.length %> node<%= nodesAfterDeployment.length != 1 ? 's' : '' %> after deployment)
-          <% } else { %>
-            (<%= nodes.length %> node<%= nodes.length != 1 ? 's' : '' %>)
-          <% } %>
-        <% } %>
-      </span>-->
-    </h3>
+    <h3><%= {'controller': 'Controllers', 'compute': 'Computes', 'storage': 'Storages'}[role] || role %></h3>
   </div>
   <% var tasks = nodes.cluster.task('deploy', 'running') || nodes.cluster.task('verify_networks', 'running') ? true : false %>
   <div class="span2 roles-action-link">

@@ -6,9 +6,10 @@ define(
     'text!templates/cluster/nodes_tab_summary.html',
     'text!templates/cluster/edit_nodes_screen.html',
     'text!templates/cluster/node_list.html',
-    'text!templates/cluster/node.html'
+    'text!templates/cluster/node.html',
+    'text!templates/cluster/node_status.html'
 ],
-function(models, commonViews, dialogViews, nodesTabSummaryTemplate, editNodesScreenTemplate, nodeListTemplate, nodeTemplate) {
+function(models, commonViews, dialogViews, nodesTabSummaryTemplate, editNodesScreenTemplate, nodeListTemplate, nodeTemplate, nodeStatusTemplate) {
     'use strict';
     var NodesTab, NodesByRolesScreen, EditNodesScreen, AddNodesScreen, DeleteNodesScreen, NodeList, Node;
 
@@ -177,7 +178,7 @@ function(models, commonViews, dialogViews, nodesTabSummaryTemplate, editNodesScr
             this.modifyNodes(nodes);
             Backbone.sync('update', nodes).done(_.bind(function() {
                 this.tab.changeScreen(NodesByRolesScreen);
-                this.model.get('nodes').fetch({data: {cluster_id: this.model.id}});
+                this.model.get('nodes').fetch({data: {cluster_id: this.model.id}, reset: true});
                 app.navbar.nodes.fetch();
                 app.page.removeVerificationTask();
             }, this));
@@ -350,6 +351,7 @@ function(models, commonViews, dialogViews, nodesTabSummaryTemplate, editNodesScr
 
     Node = Backbone.View.extend({
         template: _.template(nodeTemplate),
+        nodeStatusTemplate: _.template(nodeStatusTemplate),
         events: {
             'click .node-name': 'startNodeRenaming',
             'keydown .node-renameable': 'onNodeNameInputKeydown',
@@ -376,7 +378,7 @@ function(models, commonViews, dialogViews, nodesTabSummaryTemplate, editNodesScr
             var name = $.trim(this.$('.node-renameable input').val());
             if (name && name != this.model.get('name')) {
                 this.$('.node-renameable input').attr('disabled', true);
-                this.model.update({name: name}, {complete: this.endNodeRenaming, context: this});
+                this.model.save({name: name}, {patch: true, wait: true}).always(_.bind(this.endNodeRenaming, this));
             } else {
                 this.endNodeRenaming();
             }
@@ -394,11 +396,17 @@ function(models, commonViews, dialogViews, nodesTabSummaryTemplate, editNodesScr
             dialog.render();
         },
         updateProgress: function() {
-            var nodeStatus = this.model.get('status');
             if (this.model.get('status') == 'provisioning' || this.model.get('status') == 'deploying') {
                 var progress = this.model.get('progress') || 0;
                 this.$('.bar').css('width', (progress > 3 ? progress : 3) + '%');
             }
+        },
+        updateStatus: function() {
+            this.$('.node-status').html(this.nodeStatusTemplate({
+                node: this.model,
+                logsLink: this.getLogsLink()
+            }));
+            this.updateProgress();
         },
         getLogsLink: function() {
             var status = this.model.get('status');
@@ -427,8 +435,10 @@ function(models, commonViews, dialogViews, nodesTabSummaryTemplate, editNodesScr
             _.defaults(this, options);
             this.renaming = false;
             this.eventNamespace = 'click.editnodename' + this.model.id;
-            this.model.bind('change', this.render, this);
-            app.navbar.nodes.bind('reset', this.checkForOfflineEvent, this);
+            this.model.bind('change:name change:pending_addition change:pending_deletion', this.render, this);
+            this.model.bind('change:status change:online', this.updateStatus, this);
+            this.model.bind('change:progress', this.updateProgress, this);
+            app.navbar.nodes.bind('sync', this.checkForOfflineEvent, this);
         },
         render: function() {
             this.$el.html(this.template({
@@ -436,10 +446,9 @@ function(models, commonViews, dialogViews, nodesTabSummaryTemplate, editNodesScr
                 renaming: this.renaming,
                 renameable: this.renameable,
                 selectableForAddition: this.selectableForAddition,
-                selectableForDeletion: this.selectableForDeletion,
-                logsLink: this.getLogsLink()
+                selectableForDeletion: this.selectableForDeletion
             }));
-            this.updateProgress();
+            this.updateStatus();
             return this;
         }
     });

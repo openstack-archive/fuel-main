@@ -26,12 +26,11 @@ function(models, commonViews, logsTabTemplate, logEntryTemplate) {
             this.registerDeferred($.timeout(this.updateInterval).done(_.bind(this.update, this)));
         },
         update: function() {
-            this.fetchLogs({to: this.to}, {
-                success: _.bind(function(data) {
+            this.fetchLogs({to: this.to})
+                .done(_.bind(function(data) {
                     this.appendLogEntries(data, false);
-                }, this),
-                complete: _.bind(this.scheduleUpdate, this)
-            });
+                }, this))
+                .always(_.bind(this.scheduleUpdate, this));
         },
         onTypeChange: function() {
             var chosenType = this.$('select[name=type]').val();
@@ -168,12 +167,8 @@ function(models, commonViews, logsTabTemplate, logEntryTemplate) {
             this.$('select').attr('disabled', true);
             this.$('.show-logs-btn').addClass('disabled');
 
-            this.fetchLogs(params, {
-                complete: _.bind(function() {
-                    this.$('.logs-loading').hide();
-                    this.$('select').attr('disabled', false);
-                }, this),
-                success: _.bind(function(data) {
+            this.fetchLogs(params)
+                .done(_.bind(function(data) {
                     this.$('.table-logs .log-entries').html('');
                     if (data.entries.length) {
                         if (data.has_more) {
@@ -188,12 +183,15 @@ function(models, commonViews, logsTabTemplate, logEntryTemplate) {
                     }
                     this.$('.table-logs').show();
                     this.scheduleUpdate();
-                }, this),
-                error: _.bind(function() {
+                }, this))
+                .fail(_.bind(function() {
                     this.$('.logs-fetch-error').show();
                     this.$('.show-logs-btn').removeClass('disabled');
-                }, this)
-            });
+                }, this))
+                .always(_.bind(function() {
+                    this.$('.logs-loading').hide();
+                    this.$('select').attr('disabled', false);
+                }, this));
         },
         showEntriesSkippedMsg: function() {
             var el = this.$('.table-logs .entries-skipped-msg');

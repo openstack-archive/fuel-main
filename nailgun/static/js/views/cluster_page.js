@@ -63,6 +63,10 @@ function(models, commonViews, dialogViews, NodesTab, NetworkTab, SettingsTab, Lo
             this.registerSubView(dialog);
             dialog.render();
         },
+        onNameChange: function() {
+            this.updateBreadcrumbs();
+            this.updateTitle();
+        },
         onDeployRequest: function() {
             if (this.tab.hasChanges) {
                 this.discardSettingsChanges({cb: _.bind(function() {
@@ -75,7 +79,7 @@ function(models, commonViews, dialogViews, NodesTab, NetworkTab, SettingsTab, Lo
         },
         onTabLeave: function(e) {
             var href = $(e.currentTarget).attr('href');
-            if (href != document.location.hash && this.tab.hasChanges) {
+            if (Backbone.history.getHash() != href.substr(1) && this.tab.hasChanges) {
                 e.preventDefault();
                 this.discardSettingsChanges({cb: _.bind(function() {
                     app.navigate(href, {trigger: true});
@@ -94,16 +98,16 @@ function(models, commonViews, dialogViews, NodesTab, NetworkTab, SettingsTab, Lo
             var complete = _.after(2, _.bind(this.scheduleUpdate, this));
             var deploymentTask = this.model.task('deploy', 'running');
             if (deploymentTask) {
-                this.registerDeferred(deploymentTask.fetch({complete: complete}).done(_.bind(function() {
+                this.registerDeferred(deploymentTask.fetch().done(_.bind(function() {
                     if (deploymentTask.get('status') != 'running') {
                         this.deploymentFinished();
                     }
-                }, this)));
-                this.registerDeferred(this.model.get('nodes').fetch({data: {cluster_id: this.model.id}, complete: complete}));
+                }, this)).always(complete));
+                this.registerDeferred(this.model.get('nodes').fetch({data: {cluster_id: this.model.id}}).always(complete));
             }
             var verificationTask = this.model.task('verify_networks', 'running');
             if (verificationTask) {
-                this.registerDeferred(verificationTask.fetch({complete: _.bind(this.scheduleUpdate, this)}));
+                this.registerDeferred(verificationTask.fetch().always(_.bind(this.scheduleUpdate, this)));
             }
         },
         deploymentStarted: function() {
@@ -129,6 +133,7 @@ function(models, commonViews, dialogViews, NodesTab, NetworkTab, SettingsTab, Lo
         },
         initialize: function(options) {
             _.defaults(this, options);
+            this.model.bind('change:name', this.onNameChange, this);
             this.model.bind('change:tasks', this.bindTasksEvents, this);
             this.bindTasksEvents();
             this.model.bind('change:nodes', this.bindNodesEvents, this);

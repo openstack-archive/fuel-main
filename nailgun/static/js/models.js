@@ -14,7 +14,7 @@ define(function() {
         model: models.Release,
         url: '/api/releases',
         comparator: function(release) {
-            return release.get('id');
+            return release.id;
         }
     });
 
@@ -114,7 +114,7 @@ define(function() {
         model: models.Cluster,
         url: '/api/clusters',
         comparator: function(cluster) {
-            return cluster.get('id');
+            return cluster.id;
         }
     });
 
@@ -150,7 +150,7 @@ define(function() {
         model: models.Node,
         url: '/api/nodes',
         comparator: function(node) {
-            return node.get('id');
+            return node.id;
         },
         hasChanges: function() {
             return !!this.filter(function(node) {
@@ -182,7 +182,7 @@ define(function() {
             return this.pluck('id');
         },
         comparator: function(task) {
-            return task.get('id');
+            return task.id;
         }
     });
 
@@ -196,13 +196,16 @@ define(function() {
         model: models.Notification,
         url: '/api/notifications',
         comparator: function(notification) {
-            return notification.get('id');
+            return notification.id;
         }
     });
 
     models.Settings = Backbone.Model.extend({
         constructorName: 'Settings',
-        urlRoot: '/api/clusters/'
+        urlRoot: '/api/clusters/',
+        isNew: function() {
+            return false;
+        }
     });
 
     models.Network = Backbone.Model.extend({
@@ -262,7 +265,7 @@ define(function() {
         model: models.Network,
         url: '/api/networks',
         comparator: function(network) {
-            return network.get('id');
+            return network.id;
         }
     });
 

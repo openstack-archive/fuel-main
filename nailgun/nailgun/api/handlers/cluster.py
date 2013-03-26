@@ -113,7 +113,7 @@ class ClusterHandler(JSONHandler):
 
         raise web.webapi.HTTPError(
             status="202 Accepted",
-            data=""
+            data="{}"
         )
 
 

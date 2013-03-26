@@ -3,12 +3,11 @@ requirejs.config({
     urlArgs: '_=' +  (new Date()).getTime(),
     waitSeconds: 60,
     paths: {
-        jquery: 'js/libs/jquery-1.7.2.min',
+        jquery: 'js/libs/jquery-1.9.1',
         'jquery-checkbox': 'js/libs/jquery.checkbox',
         'jquery-timeout': 'js/libs/jquery.timeout',
-        underscore: 'js/libs/underscore-min',
-        backbone: 'js/libs/backbone-min',
-        'backbone-model-update': 'js/libs/backbone-model-update',
+        underscore: 'js/libs/lodash.underscore',
+        backbone: 'js/libs/backbone',
         coccyx: 'js/libs/coccyx',
         bootstrap: 'js/libs/bootstrap.min',
         text: 'js/libs/text',
@@ -25,9 +24,6 @@ requirejs.config({
             deps: ['underscore', 'jquery'],
             exports: 'Backbone'
         },
-        'backbone-model-update': {
-            deps: ['backbone']
-        },
         coccyx: {
             deps: ['underscore', 'backbone']
         },
@@ -41,7 +37,7 @@ requirejs.config({
             deps: ['jquery']
         },
         app: {
-            deps: ['jquery', 'underscore', 'backbone', 'backbone-model-update', 'coccyx', 'bootstrap', 'jquery-checkbox', 'jquery-timeout']
+            deps: ['jquery', 'underscore', 'backbone', 'coccyx', 'bootstrap', 'jquery-checkbox', 'jquery-timeout']
         }
     }
 });

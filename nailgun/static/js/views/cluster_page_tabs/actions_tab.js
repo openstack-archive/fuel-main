@@ -17,21 +17,25 @@ function(models, commonViews, dialogViews, actionsTabTemplate) {
         },
         applyNewClusterName: function() {
             var name = $.trim(this.$('.rename-cluster-form input').val());
-            if (name != '' && name != this.model.get('name')) {
-                this.$('.rename-cluster-form').children().attr('disabled', true);
-                this.model.update({name: name}, {
-                    success: _.bind(function() {
-                        this.page.updateBreadcrumbs();
-                        this.page.updateTitle();
-                    }, this),
-                    error: _.bind(function(model, response, options) {
-                        this.$('.rename-cluster-form').children().attr('disabled', false);
-                        if (response.status == 409) {
-                            this.$('.alert-error').text(response.responseText).show();
-                        }
-                    }, this)
-                });
+            if (name != this.model.get('name')) {
+                var deferred = this.model.save({name: name}, {patch: true, wait: true});
+                if (deferred) {
+                    var controls = this.$('.rename-cluster-form input, .rename-cluster-form button');
+                    controls.attr('disabled', true);
+                    deferred
+                        .fail(_.bind(function(response) {
+                            if (response.status == 409) {
+                                this.model.trigger('invalid', this.model, {name: response.responseText});
+                            }
+                        }, this))
+                        .always(_.bind(function() {
+                            controls.attr('disabled', false);
+                        }, this));
+                }
             }
+        },
+        showValidationError: function(model, error) {
+            this.$('.alert-error').text(_.values(error).join('; ')).show();
         },
         onClusterNameInputKeydown: function(e) {
             this.$('.alert-error').hide();
@@ -44,6 +48,7 @@ function(models, commonViews, dialogViews, actionsTabTemplate) {
         initialize: function(options) {
             _.defaults(this, options);
             this.model.bind('change:name', this.render, this);
+            this.model.bind('invalid', this.showValidationError, this);
         },
         render: function() {
             this.$el.html(this.template({cluster: this.model}));

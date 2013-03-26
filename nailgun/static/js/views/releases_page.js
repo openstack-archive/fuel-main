@@ -12,7 +12,7 @@ function(commonViews, releaseListTemplate) {
         title: 'OpenStack Releases',
         template: _.template(releaseListTemplate),
         initialize: function() {
-            this.collection.bind('reset', this.render, this);
+            this.collection.bind('sync', this.render, this);
         },
         render: function() {
             this.$el.html(this.template({releases: this.collection}));

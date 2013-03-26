@@ -65,28 +65,21 @@ function(models, commonViews, ClusterPage, ClustersPage, ReleasesPage, Notificat
                 render.call(this);
             } else {
                 cluster = new models.Cluster({id: id});
-                cluster.fetch({
-                    success: _.bind(render, this),
-                    error: _.bind(this.listClusters, this)
-                });
+                cluster.fetch().done(_.bind(render, this)).fail(_.bind(this.listClusters, this));
             }
         },
         listClusters: function() {
             this.navigate('#clusters', {replace: true});
             var clusters = new models.Clusters();
-            clusters.fetch({
-                success: _.bind(function() {
-                    this.setPage(new ClustersPage({collection: clusters}));
-                }, this)
-            });
+            clusters.fetch().done(_.bind(function() {
+                this.setPage(new ClustersPage({collection: clusters}));
+            }, this));
         },
         listReleases: function() {
             var releases = new models.Releases();
-            releases.fetch({
-                success: _.bind(function() {
-                    this.setPage(new ReleasesPage({collection: releases}));
-                }, this)
-            });
+            releases.fetch().done(_.bind(function() {
+                this.setPage(new ReleasesPage({collection: releases}));
+            }, this));
         },
         showNotifications: function() {
             this.setPage(new NotificationsPage({notifications: app.navbar.notifications, nodes: app.navbar.nodes}));
@@ -105,13 +98,13 @@ function(models, commonViews, ClusterPage, ClustersPage, ReleasesPage, Notificat
             }));
         },
         urlify: function (text) {
-            var urlRegexp = /http:(\&\#x2F\;){2}(?:(?:[0-9]|[1-9][0-9]|1[0-9]{2}|2[0-4][0-9]|25[0-5])\.){3}(?:[0-9]|[1-9][0-9]|1[0-9]{2}|2[0-4][0-9]|25[0-5])(\&\#x2F\;)/g;
+            var urlRegexp = /http:\/\/(?:(?:[0-9]|[1-9][0-9]|1[0-9]{2}|2[0-4][0-9]|25[0-5])\.){3}(?:[0-9]|[1-9][0-9]|1[0-9]{2}|2[0-4][0-9]|25[0-5])\//g;
             return text.replace(/\n/g, '<br/>').replace(urlRegexp, function(url) {
                 return '<a target="_blank" href="' + url + '">' + url + '</a>';
             });
         },
         forceWebkitRedraw: function(el) {
-            if ($.browser.webkit) {
+            if (window.isWebkit) {
                 el.each(function() {
                     this.style.webkitTransform = 'scale(1)';
                     var dummy = this.offsetHeight;
@@ -123,8 +116,21 @@ function(models, commonViews, ClusterPage, ClustersPage, ReleasesPage, Notificat
 
     return {
         initialize: function() {
+            // our server doesn't support PATCH, so use PUT instead
+            var originalSync = Backbone.sync;
+            Backbone.sync = function() {
+                var args = arguments;
+                if (args[0] == 'patch') {
+                    args[0] = 'update';
+                }
+                return originalSync.apply(this, args);
+            };
+
+            window.isWebkit = navigator.userAgent.indexOf('AppleWebKit/') !== -1;
+
             var app = new AppRouter();
             window.app = app;
+
             Backbone.history.start();
         }
     };
