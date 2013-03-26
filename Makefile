@@ -33,10 +33,10 @@ MIRROR_SRC=http://srv08-srt.srt.mirantis.net/fwm/src'
 	@echo
 	@echo 'Moscow office:'
 	@echo 'make iso YUM_REPOS=proprietary \
-MIRROR_CENTOS=http://172.18.8.46/fwm/centos \
-MIRROR_EGGS=http://172.18.8.46/fwm/eggs \
-MIRROR_GEMS=http://172.18.8.46/fwm/gems \
-MIRROR_SRC=http://172.18.8.46/fwm/src'
+MIRROR_CENTOS=http://172.18.8.209/fwm/centos \
+MIRROR_EGGS=http://172.18.8.209/fwm/eggs \
+MIRROR_GEMS=http://172.18.8.209/fwm/gems \
+MIRROR_SRC=http://172.18.8.209/fwm/src'
 
 all: iso
 
