@@ -274,13 +274,29 @@ function(models, simpleMessageTemplate, createClusterDialogTemplate, changeClust
 
     views.DiscardSettingsChangesDialog = views.Dialog.extend({
         template: _.template(disacardSettingsChangesTemplate),
-        defaultMessage: 'Settings were modified but not saved. Changes will be lost. Do you want to proceed?',
+        defaultMessage: 'Settings were modified but not saved. Changes will be lost. Do you want to proceed without saving?',
         events: {
-            'click .proceed-btn': 'proceed'
+            'click .proceed-btn': 'proceed',
+            'click .save-btn': 'save'
         },
         proceed: function() {
             this.$el.modal('hide');
             app.page.removeVerificationTask().done(_.bind(this.cb, this));
+        },
+        save: function() {
+            if (app.page.tab.setValues()) {
+                this.$('.btn').attr('disabled', true);
+                app.page.tab.applyChanges()
+                    .done(_.bind(function(task) {
+                        if (task && task.status == 'error') {
+                            this.$el.modal('hide');
+                        } else {
+                            this.cb();
+                        }
+                    }, this));
+            } else {
+                this.$el.modal('hide');
+            }
         },
         render: function() {
             this.constructor.__super__.render.call(this, {

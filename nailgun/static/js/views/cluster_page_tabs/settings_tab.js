@@ -25,6 +25,9 @@ function(models, commonViews, dialogViews, settingsTabTemplate, settingsGroupTem
         disableControls: function() {
             this.$('.btn, input, select').attr('disabled', true);
         },
+        setValues: function() {
+            return true;
+        },
         collectData: function() {
             var data = {};
             _.each(this.$('legend.openstack-settings'), function(legend) {
@@ -68,8 +71,12 @@ function(models, commonViews, dialogViews, settingsTabTemplate, settingsGroupTem
         },
         applyChanges: function() {
             var data = this.collectData();
-            this.disableControls();
-            this.model.get('settings').save({editable: data}, {patch: true, wait: true, url: _.result(this.model, 'url') + '/attributes'})
+            var deferred;
+            deferred = this.model.get('settings').save({editable: data}, {patch: true, wait: true, url: _.result(this.model, 'url') + '/attributes'})
+                .always(_.bind(function() {
+                    this.render();
+                    this.model.fetch();
+                }, this))
                 .done(_.bind(function() {
                     this.hasChanges = false;
                 }, this))
@@ -78,11 +85,9 @@ function(models, commonViews, dialogViews, settingsTabTemplate, settingsGroupTem
                     var dialog = new dialogViews.SimpleMessage({error: true, title: 'OpenStack Settings'});
                     app.page.registerSubView(dialog);
                     dialog.render();
-                }, this))
-                .always(_.bind(function() {
-                    this.render();
-                    this.model.fetch();
                 }, this));
+            this.disableControls();
+            return deferred;
         },
         parseSettings: function(settings) {
             this.tearDownRegisteredSubViews();

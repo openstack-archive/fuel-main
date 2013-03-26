@@ -97,7 +97,8 @@ function(models, commonViews, dialogViews, networkTabTemplate, networkTabVerific
             if (!this.$('.control-group.error').length) {
                 this.disableControls();
                 this.model.save({net_manager: this.manager}, {patch: true, wait: true});
-                Backbone.sync('update', this.networks, {url: _.result(this.model, 'url') + '/save/networks'})
+                var deferred;
+                deferred = Backbone.sync('update', this.networks, {url: _.result(this.model, 'url') + '/save/networks'})
                     .always(_.bind(function() {
                         this.model.fetch().done(_.bind(this.render, this));
                     }, this))
@@ -115,6 +116,7 @@ function(models, commonViews, dialogViews, networkTabTemplate, networkTabVerific
                         app.page.registerSubView(dialog);
                         dialog.render();
                     }, this));
+                return deferred;
             }
         },
         scheduleUpdate: function() {
