@@ -20,6 +20,7 @@ function(models, commonViews, dialogViews, settingsTabTemplate, settingsGroupTem
         },
         defaultButtonsState: function(buttonState) {
             this.$('.btn:not(.btn-load-defaults)').attr('disabled', buttonState);
+            this.$('.btn-load-defaults').attr('disabled', false);
         },
         disableControls: function() {
             this.$('.btn, input, select').attr('disabled', true);
