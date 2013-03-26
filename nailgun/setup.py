@@ -75,5 +75,5 @@ if __name__ == "__main__":
                   'nailgund = nailgun.wsgi:appstart',
               ],
           },
-          data_files=recursive_data_files([('usr/share/nailgun', 'static')])
+          data_files=recursive_data_files([('share/nailgun', 'static')])
           )

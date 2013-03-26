@@ -17,8 +17,8 @@ class nailgun(
   $database_user = "nailgun",
   $database_passwd = "nailgun",
 
-  $staticdir = "/opt/nailgun/usr/share/nailgun/static",
-  $templatedir = "/opt/nailgun/usr/share/nailgun/static",
+  $staticdir = "/opt/nailgun/share/nailgun/static",
+  $templatedir = "/opt/nailgun/share/nailgun/static",
 
   $cobbler_url = "http://localhost/cobbler_api",
   $cobbler_user = "cobbler",
