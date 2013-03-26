@@ -3,6 +3,11 @@ import urllib2
 import logging
 import posixpath
 import json
+import socket
+import threading
+import sys
+import select
+import time
 
 import paramiko
 
@@ -144,3 +149,44 @@ class SSHClient(object):
         self.sftp_client.close()
         self.ssh_client.close()
         self.established = False
+
+
+class LogServer(threading.Thread):
+    def __init__(self, address="localhost", port=5514):
+        logger.debug("Initializing LogServer: %s:%s",
+                     str(address), str(port))
+        threading.Thread.__init__(self)
+        self.socket = socket.socket(
+            socket.AF_INET, socket.SOCK_DGRAM
+        )
+        self.socket.bind((str(address), port))
+        self.rlist = [self.socket]
+        self._stop = threading.Event()
+        self._handler = self.default_handler
+
+    @classmethod
+    def default_handler(cls, message):
+        pass
+
+    def set_handler(self, handler):
+        self._handler = handler
+
+    def stop(self):
+        self.socket.close()
+        self._stop.set()
+
+    def rude_join(self, timeout=None):
+        self._stop.set()
+        super(LogServer, self).join(timeout)
+
+    def join(self, timeout=None):
+        self.rude_join(timeout)
+
+    def run(self):
+        logger.debug("LogServer is listening for messages ...")
+        while not self._stop.is_set():
+            r, w, e = select.select(self.rlist, [], [], 1)
+            if self.socket in r:
+                message, addr = self.socket.recvfrom(2048)
+                self._handler(message)
+

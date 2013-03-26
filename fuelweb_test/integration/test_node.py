@@ -13,7 +13,7 @@ from time import sleep
 from devops.helpers import wait, tcp_ping, http
 from fuelweb_test.integration import ci
 from fuelweb_test.integration.base import Base
-from fuelweb_test.helpers import SSHClient, HTTPClient
+from fuelweb_test.helpers import SSHClient, HTTPClient, LogServer
 from fuelweb_test.root import root
 
 logging.basicConfig(
@@ -77,6 +77,34 @@ class TestNode(Base):
     def setUp(self):
         pass
 
+    def tearDown(self):
+        self._wait_for_threads()
+
+    def _start_logserver(self, handler=None):
+        self._logserver_status = False
+        if not handler:
+            """
+            We define log message handler in such a way
+            assuming that if at least one message is received
+            logging works ok.
+            """
+            def handler(message):
+                self._logserver_status = True
+
+        self.logserver = LogServer(
+            address=self.get_host_hode_ip(),
+            port=5514
+        )
+        self.logserver.set_handler(handler)
+        self.logserver.start()
+
+    def _stop_logserver(self):
+        self.logserver.stop()
+        self._logserver_status = False
+
+    def _status_logserver(self):
+        return self._logserver_status
+
     def test_release_upload(self):
         self._upload_sample_release()
 
@@ -108,6 +136,7 @@ class TestNode(Base):
     @snapshot_errors
     def test_simple_cluster_flat(self):
         logging.info("Testing simple flat installation.")
+        self._start_logserver()
         self._revert_nodes()
         cluster_name = 'simple_flat'
         nodes = {'controller': ['slave1'], 'compute': ['slave2']}
@@ -128,10 +157,12 @@ class TestNode(Base):
                 )
         task = self._run_network_verify(cluster_id)
         self._task_wait(task, 'Verify network simple flat', 60 * 2)
+        self._stop_logserver()
 
     @snapshot_errors
     def test_simple_cluster_vlan(self):
         logging.info("Testing simple vlan installation.")
+        self._start_logserver()
         self._revert_nodes()
         cluster_name = 'simple_vlan'
         nodes = {'controller': ['slave1'], 'compute': ['slave2']}
@@ -153,10 +184,12 @@ class TestNode(Base):
                 )
         task = self._run_network_verify(cluster_id)
         self._task_wait(task, 'Verify network simple vlan', 60 * 2)
+        self._stop_logserver()
 
     @snapshot_errors
     def test_ha_cluster_flat(self):
         logging.info("Testing ha flat installation.")
+        self._start_logserver()
         self._revert_nodes()
         cluster_name = 'ha_flat'
         nodes = {
@@ -184,10 +217,12 @@ class TestNode(Base):
                 )
         task = self._run_network_verify(cluster_id)
         self._task_wait(task, 'Verify network ha flat', 60 * 2)
+        self._stop_logserver()
 
     @snapshot_errors
     def test_ha_cluster_vlan(self):
         logging.info("Testing ha vlan installation.")
+        self._start_logserver()
         self._revert_nodes()
         cluster_name = 'ha_vlan'
         nodes = {
@@ -218,6 +253,7 @@ class TestNode(Base):
                 )
         task = self._run_network_verify(cluster_id)
         self._task_wait(task, 'Verify network ha vlan', 60 * 2)
+        self._stop_logserver()
 
     @snapshot_errors
     def test_network_config(self):
@@ -399,6 +435,21 @@ class TestNode(Base):
     def _basic_provisioning(self, cluster_name, nodes_dict):
         self._clean_clusters()
         cluster_id = self._create_cluster(name=cluster_name)
+
+        # Here we updating cluster editable attributes
+        # In particular we set extra syslog server
+        response = self.client.get(
+            "/api/clusters/%s/attributes/" % cluster_id
+        )
+        attrs = json.loads(response.read())
+        attrs["editable"]["syslog"]["syslog_server"]["value"] = \
+          self.get_host_hode_ip()
+        attrs["editable"]["syslog"]["syslog_port"]["value"] = 5514
+        self.client.put(
+            "/api/clusters/%s/attributes/" % cluster_id,
+            attrs
+        )
+
         node_names = []
         for role in nodes_dict:
             node_names += nodes_dict[role]
@@ -684,7 +735,11 @@ class TestNode(Base):
         )
         if not nets_status:
             logging.warn("Networks check fails:\n%s" % ret['stdout'])
-        return (nova_status and cirros_status and nets_status)
+        return (nova_status and
+                cirros_status and
+                nets_status and
+                self._status_logserver()
+                )
 
     def _revert_nodes(self):
         logging.info("Reverting to snapshot 'initial'")

@@ -16,3 +16,17 @@ class Base(TestCase):
 
     def get_admin_node_ip(self):
         return str(ci.environment.node['admin'].ip_address)
+
+    def get_host_hode_ip(self):
+        return str(ci.environment.networks[0].ip_addresses[1])
+
+    def _wait_for_threads(self):
+        import threading
+        for thread in threading.enumerate():
+            if thread is not threading.currentThread():
+                if hasattr(thread, "rude_join"):
+                    timer = time.time()
+                    timeout = 25
+                    thread.rude_join(timeout)
+                    if time.time() - timer > timeout:
+                        raise Exception("Thread stopping timed out")
