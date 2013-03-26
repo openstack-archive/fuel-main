@@ -78,7 +78,7 @@ class TestCharsetIssues(BaseHandlers):
                 kwargs={'cluster_id': cluster_id}),
             headers=self.default_headers
         )
-        timeout = 120
+        timeout = 10
         timer = time.time()
         while True:
             task_deploy = self.db.query(Task).filter_by(
@@ -93,7 +93,7 @@ class TestCharsetIssues(BaseHandlers):
             self.db.expire(task_deploy)
             self.db.expire(task_delete)
             if (time.time() - timer) > timeout:
-                break
+                raise Exception("Cluster deletion timeout")
             time.sleep(0.24)
 
         cluster_db = self.db.query(Cluster).get(cluster_id)
