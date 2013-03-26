@@ -129,8 +129,10 @@ $SNIPPET('mcollective_install_if_enabled')
 # HERE ARE COMMANDS THAT WILL BE LAUNCHED JUST AFTER
 # INSTALLATION ITSELF COMPLETED
 %post
-
-gem install ohai httpclient json rethtool --source <%= gem_source %> --no-ri --no-rdoc
+gem install httpclient --version 2.2.5  --source <%= gem_source %> --no-ri --no-rdoc
+gem install json       --version 1.6.1  --source <%= gem_source %> --no-ri --no-rdoc
+gem install ohai       --version 6.14.0 --source <%= gem_source %> --no-ri --no-rdoc
+gem install rethtool   --version 0.0.3  --source <%= gem_source %> --no-ri --no-rdoc
 mkdir -p /etc/nailgun-agent/
 cat > /etc/nailgun-agent/config.yaml << EOA
 ---

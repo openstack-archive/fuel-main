@@ -2,7 +2,6 @@ activerecord 3.0.10
 amq-client	0.9.5
 amq-protocol	0.9.5
 amqp	0.9.8
-bundler 1.2.1
 bunny	0.8.0
 cstruct	1.0.1
 daemons	1.1.9
