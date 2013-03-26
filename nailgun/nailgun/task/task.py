@@ -113,7 +113,9 @@ class DeploymentTask(object):
             try:
                 DeploymentTask._provision(nodes_to_provision)
             except Exception as err:
-                error = "Failed to call cobbler: {0}".format(str(err))
+                error = "Failed to call cobbler: {0}".format(
+                    str(err) or "see logs for details"
+                )
                 logger.error("Provision error: %s\n%s",
                              error, traceback.format_exc())
                 update_task_status(task.uuid, "error", 100, error)

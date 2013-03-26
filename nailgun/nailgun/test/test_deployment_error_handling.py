@@ -23,6 +23,7 @@ def raise_(*args, **kwargs):
     raise kwargs.pop("ex")
 
 alert = partial(raise_, ex=Exception("ALERT"))
+no_message_alert = partial(raise_, ex=Exception(""))
 
 
 class TestErrors(BaseHandlers):
@@ -43,6 +44,19 @@ class TestErrors(BaseHandlers):
         self.env.wait_error(supertask, 60, "Failed to call cobbler: ALERT")
         self.db.refresh(supertask.cluster)
         self.assertEquals(supertask.cluster.status, 'error')
+
+    @patch('nailgun.task.task.rpc.cast')
+    @patch('nailgun.task.task.DeploymentTask._provision', no_message_alert)
+    def test_deployment_cobbler_no_message(self, mocked_rpc):
+        self.env.create(
+            cluster_kwargs={},
+            nodes_kwargs=[
+                {"pending_addition": True},
+            ]
+        )
+        supertask = self.env.launch_deployment()
+        self.env.wait_error(supertask, 60,
+                            "Failed to call cobbler: see logs for details")
 
     @fake_tasks(error="provisioning")
     def test_deployment_error_during_provisioning(self):
