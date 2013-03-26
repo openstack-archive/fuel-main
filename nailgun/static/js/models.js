@@ -82,6 +82,28 @@ define(function() {
             }
             return canChange;
         },
+        canAddNodes: function(role) {
+            // forbid adding when tasks are running
+            if (this.task('deploy', 'running') || this.task('verify_networks', 'running')) {
+                return false;
+            }
+            // forbid add more than 1 controller in simple mode
+            if (role == 'controller' && this.get('mode') != 'ha' && _.filter(this.get('nodes').nodesAfterDeployment({role: role}), function(node) {return node.get('role') == role;}).length >= 1) {
+                return false;
+            }
+            return true;
+        },
+        canDeleteNodes: function(role) {
+            // forbid deleting when tasks are running
+            if (this.task('deploy', 'running') || this.task('verify_networks', 'running')) {
+                return false;
+            }
+            // forbid deleting when there is nothing to delete
+            if (!_.filter(this.get('nodes').nodesAfterDeployment(), function(node) {return node.get('role') == role;}).length) {
+                return false;
+            }
+            return true;
+        },
         availableModes: function() {
             return ['multinode', 'ha'];
         },
@@ -157,10 +179,10 @@ define(function() {
                 return node.get('pending_addition') || node.get('pending_deletion');
             }).length;
         },
-        currentNodes: function() {
+        currentNodes: function(options) {
             return this.filter(function(node) {return !node.get('pending_addition');});
         },
-        nodesAfterDeployment: function() {
+        nodesAfterDeployment: function(options) {
             return this.filter(function(node) {return node.get('pending_addition') || !node.get('pending_deletion');});
         },
         resources: function(resourceName) {

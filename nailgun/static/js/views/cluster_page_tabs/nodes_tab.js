@@ -115,8 +115,7 @@ function(models, commonViews, dialogViews, nodesTabSummaryTemplate, editNodesScr
                 var nodeListView = new NodeList({
                     collection: nodes,
                     role: role,
-                    tab: this.tab,
-                    size: role == 'controller' ? this.model.get('mode') == 'ha' ? 0 : 1 : 0
+                    tab: this.tab
                 });
                 this.registerSubView(nodeListView);
                 this.$el.append(nodeListView.render().el);
@@ -299,11 +298,8 @@ function(models, commonViews, dialogViews, nodesTabSummaryTemplate, editNodesScr
         },
         addNodes: function() {
             var limit = null;
-            if (this.size && this.collection.cluster.get('mode') != 'ha') {
-                limit = this.size - this.collection.nodesAfterDeployment().length;
-                if (limit <= 0) {
-                    limit = 0;
-                }
+            if (this.role == 'controller' && this.collection.cluster.get('mode') != 'ha') {
+                limit = this.collection.nodesAfterDeployment().length ? 0 : 1;
             }
             this.tab.changeScreen(AddNodesScreen, {role: this.role, limit: limit});
         },
@@ -314,24 +310,20 @@ function(models, commonViews, dialogViews, nodesTabSummaryTemplate, editNodesScr
             _.defaults(this, options);
         },
         render: function() {
+            var placeholders = this.role == 'controller' ? this.collection.cluster.get('mode') == 'ha' ? 3 : 1 : 0;
             var hasChanges = this.collection.hasChanges();
             var currentNodes = this.collection.currentNodes();
             var nodesAfterDeployment = this.collection.nodesAfterDeployment();
             this.$el.html(this.template({
+                cluster: this.collection.cluster,
                 nodes: this.collection,
                 role: this.role,
-                size: this.size,
+                placeholders: placeholders,
                 hasChanges: hasChanges,
                 currentNodes: currentNodes,
                 nodesAfterDeployment: nodesAfterDeployment
             }));
             this.$el.addClass('node-list-' + this.role);
-            var placeholders;
-            if (this.collection.cluster.get('mode') == 'ha' && this.role == 'controller') {
-                placeholders = 3;
-            } else {
-                placeholders = this.size;
-            }
             if (this.collection.length || placeholders) {
                 var container = this.$('.node-list-container');
                 this.collection.each(function(node) {
