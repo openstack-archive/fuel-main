@@ -142,7 +142,7 @@ function(models, dialogViews, navbarTemplate, nodesStatsTemplate, notificationsT
             }
         },
         hide: function(e) {
-            if (this.visible && (!e || !$(e.target).closest(this.navbar.notificationsButton.el).length && !$(e.target).closest(this.el).length)) {
+            if (this.visible && (!e || (!$(e.target).closest(this.navbar.notificationsButton.el).length && !$(e.target).closest(this.el).length))) {
                 this.visible = false;
                 this.render();
             }
