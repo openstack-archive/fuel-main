@@ -284,7 +284,7 @@ function(models, simpleMessageTemplate, createClusterDialogTemplate, changeClust
             app.page.removeVerificationTask().done(_.bind(this.cb, this));
         },
         save: function() {
-            if (app.page.tab.setValues()) {
+            if (!$('.control-group.error').length) {
                 this.$('.btn').attr('disabled', true);
                 app.page.tab.applyChanges()
                     .done(_.bind(function(task) {

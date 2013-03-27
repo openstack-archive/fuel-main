@@ -25,9 +25,6 @@ function(models, commonViews, dialogViews, settingsTabTemplate, settingsGroupTem
         disableControls: function() {
             this.$('.btn, input, select').attr('disabled', true);
         },
-        setValues: function() {
-            return true;
-        },
         collectData: function() {
             var data = {};
             _.each(this.$('legend.openstack-settings'), function(legend) {
