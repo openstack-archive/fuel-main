@@ -185,21 +185,22 @@ vmlinuz initrd=initrd.img ks=cdrom:/ks.cfg
         return True
 
     def destroy_environment(self):
-        # remove keyfiles and tempdir.
-        try:
-            keyfiles = self.environment.node['admin'].metadata['keyfiles']
-            for name in keyfiles:
-                try:
-                    os.unlink(name)
-                except:
-                    logging.info("Can't remove keyfile %r" % name)
-            try:
-                os.rmdir(os.path.dirname(name))
-            except:
-                logging.info("Can't remove tempdir %r" % os.path.dirname(name))
-        except Exception, e:
-            logging.info("Can't get keyfiles list: %s" % str(e))
-
         if self.environment:
+            # remove keyfiles and tempdir.
+            try:
+                keyfiles = self.environment.node['admin'].metadata['keyfiles']
+                for name in keyfiles:
+                    try:
+                        os.unlink(name)
+                    except:
+                        logging.info("Can't remove keyfile %r" % name)
+                try:
+                    os.rmdir(os.path.dirname(name))
+                except:
+                    logging.info("Can't remove tempdir %r",
+                                 os.path.dirname(name))
+            except Exception, e:
+                logging.info("Can't get keyfiles list: %s" % str(e))
+
             devops.destroy(self.environment)
         return True
