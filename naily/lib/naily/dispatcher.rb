@@ -62,14 +62,14 @@ module Naily
           # We are here if jumped by break from while cycle
         end
       rescue Timeout::Error
-        Naily.logger.error "Provisioning has timed out"
-        error_msg = "Timeout of provisioning is exceeded."
+        msg = "Timeout of provisioning is exceeded"
+        Naily.logger.error msg
         error_nodes = nodes_not_booted.map { |n| {'uid' => n,
                                                   'status' => 'error',
-                                                  'error_msg' => 'Provisioning of node has timed out',
+                                                  'error_msg' => msg,
                                                   'progress' => 100,
                                                   'error_type' => 'provision'} }
-        reporter.report({'status' => 'error', 'error' => error_msg, 'nodes' => error_nodes})
+        reporter.report({'status' => 'error', 'error' => msg, 'nodes' => error_nodes})
         return
       end
 
