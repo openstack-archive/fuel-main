@@ -15,12 +15,31 @@ LOCAL_MIRROR_GEMS:=$(LOCAL_MIRROR)/gems
 LOCAL_MIRROR_CENTOS:=$(LOCAL_MIRROR)/centos
 LOCAL_MIRROR_CENTOS_OS_BASEURL:=$(LOCAL_MIRROR_CENTOS)/$(CENTOS_RELEASE)/os/$(CENTOS_ARCH)
 
-MIRROR_CENTOS:=http://mirror.yandex.ru/centos
+# Use srv08 mirrors by default. Other possible default is 'msk'.
+# Setting any other value or removing of this variable will cause
+# download of all the packages directly from internet
+USE_MIRROR:=srv08
+ifeq ($(USE_MIRROR),srv08)
+YUM_REPOS=proprietary
+MIRROR_CENTOS=http://srv08-srt.srt.mirantis.net/fwm/centos
+MIRROR_EGGS=http://srv08-srt.srt.mirantis.net/fwm/eggs
+MIRROR_GEMS=http://srv08-srt.srt.mirantis.net/fwm/gems
+MIRROR_SRC=http://srv08-srt.srt.mirantis.net/fwm/src
+endif
+ifeq ($(USE_MIRROR),msk)
+YUM_REPOS=proprietary
+MIRROR_CENTOS=http://172.18.8.209/fwm/centos
+MIRROR_EGGS=http://172.18.8.209/fwm/eggs
+MIRROR_GEMS=http://172.18.8.209/fwm/gems
+MIRROR_SRC=http://172.18.8.209/fwm/src
+endif
+
+MIRROR_CENTOS?=http://mirror.yandex.ru/centos
 MIRROR_CENTOS_OS_BASEURL:=$(MIRROR_CENTOS)/$(CENTOS_RELEASE)/os/$(CENTOS_ARCH)
 # It can be any a list of links (--find-links) or a pip index (--index-url).
-MIRROR_EGGS:=http://pypi.python.org/simple
+MIRROR_EGGS?=http://pypi.python.org/simple
 # NOTE(mihgen): removed gemcutter - it redirects to rubygems.org and has issues w/certificate now
-MIRROR_GEMS:=http://rubygems.org http://gems.rubyforge.org
+MIRROR_GEMS?=http://rubygems.org http://gems.rubyforge.org
 
 REQUIRED_RPMS:=$(shell grep -v "^\\s*\#" $(SOURCE_DIR)/requirements-rpm.txt)
 REQUIRED_EGGS:=$(shell grep -v "^\\s*\#" $(SOURCE_DIR)/requirements-eggs.txt)
@@ -31,7 +50,7 @@ REQUIRED_SRCS:=$(shell grep -v ^\\s*\# $(SOURCE_DIR)/requirements-src.txt)
 # The actual name will be constracted wich prepending "yum_repo_" prefix.
 # Example: YUM_REPOS:=centos epel => yum_repo_centos and yum_repo_epel
 # will be used.
-YUM_REPOS:=official epel fuel_folsom puppetlabs rpmforge
+YUM_REPOS?=official epel fuel_folsom puppetlabs rpmforge
 
 # INTEGRATION TEST CONFIG
 NOFORWARD:=1
