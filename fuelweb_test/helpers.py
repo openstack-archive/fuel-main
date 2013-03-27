@@ -172,6 +172,7 @@ class LogServer(threading.Thread):
         self._handler = handler
 
     def stop(self):
+        logger.debug("LogServer is stopping ...")
         self.socket.close()
         self._stop.set()
 
