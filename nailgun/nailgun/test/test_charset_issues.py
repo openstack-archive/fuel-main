@@ -71,7 +71,6 @@ class TestCharsetIssues(BaseHandlers):
                 kwargs={'cluster_id': cluster_id}),
             headers=self.default_headers
         )
-        deploy_uuid = json.loads(resp.body)['uuid']
         resp = self.app.delete(
             reverse(
                 'ClusterHandler',
@@ -81,16 +80,12 @@ class TestCharsetIssues(BaseHandlers):
         timeout = 10
         timer = time.time()
         while True:
-            task_deploy = self.db.query(Task).filter_by(
-                uuid=deploy_uuid
-            ).first()
             task_delete = self.db.query(Task).filter_by(
                 cluster_id=cluster_id,
                 name="cluster_deletion"
             ).first()
             if not task_delete:
                 break
-            self.db.expire(task_deploy)
             self.db.expire(task_delete)
             if (time.time() - timer) > timeout:
                 raise Exception("Cluster deletion timeout")
