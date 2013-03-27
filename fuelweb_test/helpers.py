@@ -155,7 +155,7 @@ class LogServer(threading.Thread):
     def __init__(self, address="localhost", port=5514):
         logger.debug("Initializing LogServer: %s:%s",
                      str(address), str(port))
-        threading.Thread.__init__(self)
+        super(LogServer, self).__init__()
         self.socket = socket.socket(
             socket.AF_INET, socket.SOCK_DGRAM
         )
