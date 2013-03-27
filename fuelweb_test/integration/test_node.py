@@ -45,7 +45,7 @@ def snapshot_errors(func):
                 logging.info("Creating snapshot '%s' for node %s" %
                              (ss_name, node.name))
                 node.save_snapshot(ss_name, desc)
-            raise Exception(e), None, sys.exc_info()[2].tb_next
+            raise e, None, sys.exc_info()[2].tb_next
     newfunc = decorator
     newfunc.__dict__ = func.__dict__
     newfunc.__doc__ = func.__doc__
