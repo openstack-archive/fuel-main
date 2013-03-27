@@ -88,7 +88,7 @@ define(function() {
                 return false;
             }
             // forbid add more than 1 controller in simple mode
-            if (role == 'controller' && this.get('mode') != 'ha' && _.filter(this.get('nodes').nodesAfterDeployment({role: role}), function(node) {return node.get('role') == role;}).length >= 1) {
+            if (role == 'controller' && this.get('mode') != 'ha' && _.filter(this.get('nodes').nodesAfterDeployment(), function(node) {return node.get('role') == role;}).length >= 1) {
                 return false;
             }
             return true;
@@ -179,10 +179,10 @@ define(function() {
                 return node.get('pending_addition') || node.get('pending_deletion');
             }).length;
         },
-        currentNodes: function(options) {
+        currentNodes: function() {
             return this.filter(function(node) {return !node.get('pending_addition');});
         },
-        nodesAfterDeployment: function(options) {
+        nodesAfterDeployment: function() {
             return this.filter(function(node) {return node.get('pending_addition') || !node.get('pending_deletion');});
         },
         resources: function(resourceName) {

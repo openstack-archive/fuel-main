@@ -17,20 +17,20 @@ function(models, commonViews, dialogViews, nodesTabSummaryTemplate, editNodesScr
         screen: null,
         scrollPositions: {},
         changeScreen: function(NewScreenView, screenOptions) {
-            var options = _.extend({model: this.model, tab: this}, screenOptions || {});
+            var options = _.extend({model: this.model, tab: this, screenOptions: screenOptions || []});
             var newScreen = new NewScreenView(options);
             var oldScreen = this.screen;
             if (oldScreen) {
                 if (oldScreen.keepScrollPosition) {
-                    this.scrollPositions[oldScreen.screenName] = $(window).scrollTop();
+                    this.scrollPositions[oldScreen.constructorName] = $(window).scrollTop();
                 }
                 oldScreen.$el.fadeOut('fast', _.bind(function() {
                     oldScreen.tearDown();
                     newScreen.render();
                     newScreen.$el.hide().fadeIn('fast');
                     this.$el.html(newScreen.el);
-                    if (newScreen.keepScrollPosition && this.scrollPositions[newScreen.screenName]) {
-                        $(window).scrollTop(this.scrollPositions[newScreen.screenName]);
+                    if (newScreen.keepScrollPosition && this.scrollPositions[newScreen.constructorName]) {
+                        $(window).scrollTop(this.scrollPositions[newScreen.constructorName]);
                     }
                 }, this));
             } else {
@@ -39,8 +39,19 @@ function(models, commonViews, dialogViews, nodesTabSummaryTemplate, editNodesScr
             this.screen = newScreen;
             this.registerSubView(this.screen);
         },
+        initialize: function(options) {
+            _.defaults(this, options);
+        },
+        routeScreen: function() {
+            var screens = {
+                'list': NodesByRolesScreen,
+                'add': AddNodesScreen,
+                'delete': DeleteNodesScreen
+            };
+            this.changeScreen(screens[this.tabOptions[0]] || screens.list, this.tabOptions.slice(1));
+        },
         render: function() {
-            this.changeScreen(NodesByRolesScreen);
+            this.routeScreen();
             return this;
         }
     });
@@ -72,7 +83,7 @@ function(models, commonViews, dialogViews, nodesTabSummaryTemplate, editNodesScr
 
     NodesByRolesScreen = Backbone.View.extend({
         className: 'nodes-by-roles-screen',
-        screenName: 'nodes-by-roles',
+        constructorName: 'NodesByRolesScreen',
         keepScrollPosition: true,
         initialize: function(options) {
             this.tab = options.tab;
@@ -129,7 +140,7 @@ function(models, commonViews, dialogViews, nodesTabSummaryTemplate, editNodesScr
 
     EditNodesScreen = Backbone.View.extend({
         className: 'edit-nodes-screen',
-        screenName: 'edit-nodes',
+        constructorName: 'EditNodesScreen',
         keepScrollPosition: false,
         template: _.template(editNodesScreenTemplate),
         events: {
@@ -169,14 +180,14 @@ function(models, commonViews, dialogViews, nodesTabSummaryTemplate, editNodesScr
             this.$('.btn-apply').attr('disabled', !this.getChosenNodesIds().length);
         },
         discardChanges: function() {
-            this.tab.changeScreen(NodesByRolesScreen);
+            app.navigate('#cluster/' + this.model.id + '/nodes', {trigger: true});
         },
         applyChanges: function(e) {
             this.$('.btn-apply').attr('disabled', true);
             var nodes = new models.Nodes(this.getChosenNodes());
             this.modifyNodes(nodes);
             Backbone.sync('update', nodes).done(_.bind(function() {
-                this.tab.changeScreen(NodesByRolesScreen);
+                app.navigate('#cluster/' + this.model.id + '/nodes', {trigger: true});
                 this.model.get('nodes').fetch({data: {cluster_id: this.model.id}, reset: true});
                 app.navbar.nodes.fetch();
                 app.page.removeVerificationTask();
@@ -191,12 +202,16 @@ function(models, commonViews, dialogViews, nodesTabSummaryTemplate, editNodesScr
         },
         initialize: function(options) {
             _.defaults(this, options);
-            this.nodes = new models.Nodes();
+            if (_.contains(this.model.availableRoles(), this.screenOptions[0])) {
+                this.role = this.screenOptions[0];
+            } else {
+                app.navigate('#cluster/' + this.model.id + '/nodes', {trigger: true, replace: true});
+            }
         },
         renderNodes: function() {
             this.tearDownRegisteredSubViews();
             var nodesContainer = this.$('.available-nodes');
-            if (this.nodes.length) {
+            if (this.nodes.length && this.limit !== 0) {
                 nodesContainer.html('');
                 this.nodes.each(function(node) {
                     var options = {model: node};
@@ -227,11 +242,15 @@ function(models, commonViews, dialogViews, nodesTabSummaryTemplate, editNodesScr
 
     AddNodesScreen = EditNodesScreen.extend({
         className: 'add-nodes-screen',
+        constructorName: 'AddNodesScreen',
         action: 'add',
         flag: 'pending_addition',
         initialize: function(options) {
-            _.defaults(this, options);
             this.constructor.__super__.initialize.apply(this, arguments);
+            this.limit = null;
+            if (this.role == 'controller' && this.model.get('mode') != 'ha') {
+                this.limit = _.filter(this.model.get('nodes').nodesAfterDeployment(), function(node) {return node.get('role') == this.role;}, this).length ? 0 : 1;
+            }
             this.nodes = new models.Nodes();
             this.nodes.deferred = this.nodes.fetch({data: {cluster_id: ''}}).done(_.bind(function() {
                 this.nodes.add(this.model.get('nodes').where({role: this.role, pending_deletion: true}), {at: 0});
@@ -260,10 +279,12 @@ function(models, commonViews, dialogViews, nodesTabSummaryTemplate, editNodesScr
 
     DeleteNodesScreen = EditNodesScreen.extend({
         className: 'delete-nodes-screen',
+        constructorName: 'DeleteNodesScreen',
         action: 'delete',
         flag: 'pending_deletion',
         initialize: function(options) {
             _.defaults(this, options);
+            this.limit = null;
             this.constructor.__super__.initialize.apply(this, arguments);
             this.nodes = new models.Nodes(this.model.get('nodes').filter(_.bind(function(node) {
                 return node.get('role') == this.role && (node.get('pending_addition') || !node.get('pending_deletion'));
@@ -292,36 +313,16 @@ function(models, commonViews, dialogViews, nodesTabSummaryTemplate, editNodesScr
     NodeList = Backbone.View.extend({
         className: 'node-list',
         template: _.template(nodeListTemplate),
-        events: {
-            'click .btn-add-nodes:not(.disabled)': 'addNodes',
-            'click .btn-delete-nodes:not(.disabled)': 'deleteNodes'
-        },
-        addNodes: function() {
-            var limit = null;
-            if (this.role == 'controller' && this.collection.cluster.get('mode') != 'ha') {
-                limit = this.collection.nodesAfterDeployment().length ? 0 : 1;
-            }
-            this.tab.changeScreen(AddNodesScreen, {role: this.role, limit: limit});
-        },
-        deleteNodes: function() {
-            this.tab.changeScreen(DeleteNodesScreen, {role: this.role, limit: null});
-        },
         initialize: function(options) {
             _.defaults(this, options);
         },
         render: function() {
             var placeholders = this.role == 'controller' ? this.collection.cluster.get('mode') == 'ha' ? 3 : 1 : 0;
-            var hasChanges = this.collection.hasChanges();
-            var currentNodes = this.collection.currentNodes();
-            var nodesAfterDeployment = this.collection.nodesAfterDeployment();
             this.$el.html(this.template({
                 cluster: this.collection.cluster,
                 nodes: this.collection,
                 role: this.role,
-                placeholders: placeholders,
-                hasChanges: hasChanges,
-                currentNodes: currentNodes,
-                nodesAfterDeployment: nodesAfterDeployment
+                placeholders: placeholders
             }));
             this.$el.addClass('node-list-' + this.role);
             if (this.collection.length || placeholders) {
@@ -331,8 +332,9 @@ function(models, commonViews, dialogViews, nodesTabSummaryTemplate, editNodesScr
                     this.registerSubView(nodeView);
                     container.append(nodeView.render().el);
                 }, this);
-                if (nodesAfterDeployment.length < placeholders) {
-                    _(placeholders - nodesAfterDeployment.length).times(function() {
+                var placeholdersToRender = placeholders - this.collection.nodesAfterDeployment();
+                if (placeholdersToRender > 0) {
+                    _(placeholdersToRender).times(function() {
                         container.append('<div class="span2 nodebox nodeplaceholder"></div>');
                     });
                 }

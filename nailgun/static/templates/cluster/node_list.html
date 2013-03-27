@@ -3,14 +3,24 @@
     <h3><%= {'controller': 'Controllers', 'compute': 'Computes', 'storage': 'Storages'}[role] || role %></h3>
   </div>
   <div class="span2 roles-action-link">
-    <button class="btn btn-add-nodes btn-link pull-right <%= cluster.canAddNodes(role) ? '' : 'disabled' %>">
-      <i class="icon-plus-circle"></i>Add
-    </button>
+    <% var canAdd = cluster.canAddNodes(role) %>
+    <% if (canAdd) { %>
+      <a class="btn btn-link pull-right btn-add-nodes" href="#cluster/<%= cluster.id %>/nodes/add/<%= role %>">
+    <% } else { %>
+      <button class="btn btn-link pull-right disabled">
+    <% } %>
+        <i class="icon-plus-circle"></i>Add
+    </<%= canAdd ? 'a' : 'button' %>>
   </div>
   <div class="span2 roles-action-link">
-    <button class="btn btn-delete-nodes btn-link pull-right <%= cluster.canDeleteNodes(role) ? '' : 'disabled' %>">
-      <i class="icon-cancel-circle"></i>Delete
-    </button>
+    <% var canDelete = cluster.canDeleteNodes(role) %>
+    <% if (canDelete) { %>
+      <a class="btn btn-link pull-right btn-delete-nodes" href="#cluster/<%= cluster.id %>/nodes/delete/<%= role %>">
+    <% } else { %>
+      <button class="btn btn-link pull-right disabled">
+    <% } %>
+        <i class="icon-cancel-circle"></i>Delete
+    </<%= canDelete ? 'a' : 'button' %>>
   </div>
 </div>
 <% if (nodes.length || placeholders) { %>

@@ -254,8 +254,8 @@ function(models, commonViews, logsTabTemplate, logEntryTemplate) {
                 this.sourcesFetched = true;
                 // this part is run on first rendering only
                 var options = {};
-                if (this.tabOptions) {
-                    options = app.deserializeTabOptions(this.tabOptions);
+                if (this.tabOptions[0]) {
+                    options = app.deserializeTabOptions(this.tabOptions[0]);
                 } else if (this.model.get('log_options')) {
                     options = this.model.get('log_options');
                 }

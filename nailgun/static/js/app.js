@@ -3,20 +3,20 @@ define(
     'models',
     'views/common',
     'views/cluster_page',
+    'views/cluster_page_tabs/nodes_tab',
     'views/clusters_page',
     'views/releases_page',
     'views/notifications_page',
     'views/support_page'
 ],
-function(models, commonViews, ClusterPage, ClustersPage, ReleasesPage, NotificationsPage, SupportPage) {
+function(models, commonViews, ClusterPage, NodesTab, ClustersPage, ReleasesPage, NotificationsPage, SupportPage) {
     'use strict';
 
     var AppRouter = Backbone.Router.extend({
         routes: {
             'clusters': 'listClusters',
             'cluster/:id': 'showCluster',
-            'cluster/:id/:tab': 'showClusterTab',
-            'cluster/:id/:tab/*options': 'showClusterTab',
+            'cluster/:id/:tab(/:opt1)(/:opt2)': 'showClusterTab',
             'releases': 'listReleases',
             'notifications': 'showNotifications',
             'support': 'showSupportPage',
@@ -48,10 +48,23 @@ function(models, commonViews, ClusterPage, ClustersPage, ReleasesPage, Notificat
         showCluster: function(id) {
             this.navigate('#cluster/' + id + '/nodes', {trigger: true, replace: true});
         },
-        showClusterTab: function(id, activeTab, tabOptions) {
+        showClusterTab: function(id, activeTab) {
             if (!_.contains(ClusterPage.prototype.tabs, activeTab)) {
                 this.showCluster(id);
                 return;
+            }
+
+            var tabOptions = _.toArray(arguments).slice(2);
+
+            if (activeTab == 'nodes') {
+                // special case for nodes tab screen change
+                try {
+                    if (app.page.constructor == ClusterPage && app.page.model.id == id && app.page.tab.constructor == NodesTab) {
+                        app.page.tab.tabOptions = tabOptions;
+                        app.page.tab.routeScreen();
+                        return;
+                    }
+                } catch(e) {}
             }
 
             var cluster;
