@@ -81,9 +81,12 @@ function(models, commonViews, dialogViews, NodesTab, NetworkTab, SettingsTab, Lo
             var href = $(e.currentTarget).attr('href');
             if (Backbone.history.getHash() != href.substr(1) && this.tab.hasChanges) {
                 e.preventDefault();
-                this.discardSettingsChanges({cb: _.bind(function() {
-                    app.navigate(href, {trigger: true});
-                }, this)});
+                this.discardSettingsChanges({
+                    verification: !!(this.model.task('verify_networks', 'running') || this.model.task('check_networks', 'running')),
+                    cb: _.bind(function() {
+                        app.navigate(href, {trigger: true});
+                    }, this)
+                });
             }
         },
         scheduleUpdate: function() {

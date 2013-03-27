@@ -275,6 +275,7 @@ function(models, simpleMessageTemplate, createClusterDialogTemplate, changeClust
     views.DiscardSettingsChangesDialog = views.Dialog.extend({
         template: _.template(disacardSettingsChangesTemplate),
         defaultMessage: 'Settings were modified but not saved. Changes will be lost. Do you want to proceed without saving?',
+        verificationMessage: 'Network verification is in progress. You should save changes or stay on the tab.',
         events: {
             'click .proceed-btn': 'proceed',
             'click .save-btn': 'save'
@@ -288,9 +289,8 @@ function(models, simpleMessageTemplate, createClusterDialogTemplate, changeClust
                 this.$('.btn').attr('disabled', true);
                 app.page.tab.applyChanges()
                     .done(_.bind(function(task) {
-                        if (task && task.status == 'error') {
-                            this.$el.modal('hide');
-                        } else {
+                        this.$el.modal('hide');
+                        if (!(task && task.status == 'error')) {
                             this.cb();
                         }
                     }, this));
@@ -299,8 +299,12 @@ function(models, simpleMessageTemplate, createClusterDialogTemplate, changeClust
             }
         },
         render: function() {
+            if (this.verification) {
+                this.message = this.verificationMessage;
+            }
             this.constructor.__super__.render.call(this, {
-                message: this.message || this.defaultMessage
+                message: this.message || this.defaultMessage,
+                verification: this.verification || false
             });
             return this;
         }
