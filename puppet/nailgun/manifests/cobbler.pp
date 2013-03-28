@@ -19,6 +19,8 @@ class nailgun::cobbler(
   Class["cobbler::server"] ->
   Anchor<| title == "nailgun-cobbler-end" |>
 
+  $half_of_network = ipcalc_network_count_addresses($ipaddress, $netmask) / 2
+
   class { "cobbler::server":
     server              => $ipaddress,
 
@@ -27,7 +29,7 @@ class nailgun::cobbler(
     next_server         => $ipaddress,
 
     dhcp_start_address  => ipcalc_network_nth_address($ipaddress, $netmask, "first"),
-    dhcp_end_address    => ipcalc_network_nth_address($ipaddress, $netmask, "last"),
+    dhcp_end_address    => ipcalc_network_nth_address($ipaddress, $netmask, $half_of_network),
     dhcp_netmask        => $netmask,
     dhcp_gateway        => $ipaddress,
     dhcp_interface      => 'eth0',

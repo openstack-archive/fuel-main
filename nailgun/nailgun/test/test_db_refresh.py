@@ -14,10 +14,6 @@ from nailgun.wsgi import build_app
 
 
 class TestDBRefresh(TestCase):
-    @classmethod
-    def setUpClass(cls):
-        dropdb()
-        syncdb()
 
     def setUp(self):
         self.app = TestApp(build_app().wsgifunc())

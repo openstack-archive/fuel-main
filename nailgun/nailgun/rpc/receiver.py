@@ -115,7 +115,7 @@ class NailgunReceiver(object):
             )
             ips = cls.db.query(IPAddr).filter(
                 IPAddr.network.in_([n.id for n in nws])
-            )
+            ).filter_by(admin=False)
             map(cls.db.delete, ips)
             cls.db.commit()
 

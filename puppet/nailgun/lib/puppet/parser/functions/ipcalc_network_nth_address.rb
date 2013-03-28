@@ -11,18 +11,18 @@ Returns N-th address of network.
             "given #{arguments.size} for 3")
     end
 
-    begin 
+    begin
       ip = IPAddr.new("#{arguments[0]}/#{arguments[1]}")
     rescue ArgumentError
       raise(Puppet::ParseError, "ipcalc_network_nth_address(): bad arguments #{arguments[0]} #{arguments[1]} #{arguments[2]}")
     end
 
-    if arguments[2] =~ /^last$/ 
+    if arguments[2].to_s =~ /^last$/
       return ip.to_range.to_a[-2].to_s
-    elsif arguments[2] =~ /^first$/
+    elsif arguments[2].to_s =~ /^first$/
       return ip.to_range.to_a[1].to_s
-    else  
-      return ip.to_range.to_a[arguments[2]].to_s
+    else
+      return ip.to_range.to_a[arguments[2].to_i].to_s
     end
   end
 end

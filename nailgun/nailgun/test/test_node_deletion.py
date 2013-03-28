@@ -45,7 +45,9 @@ class TestNodeDeletion(BaseHandlers):
             filter(NetworkGroup.cluster_id == cluster.id).filter_by(
                 name='management').first()
 
-        ipaddrs = self.db.query(IPAddr).filter_by(node=node.id).all()
+        ipaddrs = self.db.query(IPAddr).\
+            filter_by(node=node.id).\
+            filter_by(admin=False).all()
 
         self.assertEquals(list(management_net.nodes), [])
         self.assertEquals(list(ipaddrs), [])

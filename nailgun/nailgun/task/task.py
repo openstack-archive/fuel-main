@@ -18,7 +18,11 @@ from nailgun.notifier import notifier
 from nailgun.task.errors import WrongNodeStatus
 from nailgun.task.helpers import update_task_status
 from nailgun.network import manager as netmanager
-from nailgun.api.models import Base, Network, NetworkGroup, Node
+from nailgun.api.models import Base
+from nailgun.api.models import Network
+from nailgun.api.models import NetworkGroup
+from nailgun.api.models import Node
+from nailgun.api.models import IPAddr
 from nailgun.api.validators import BasicValidator
 from nailgun.provision.cobbler import Cobbler
 from nailgun.task.fake import FAKE_THREADS
@@ -234,19 +238,29 @@ class DeploymentTask(object):
             nd_dict['name_servers'] = '\"%s\"' % settings.DNS_SERVERS
             nd_dict['name_servers_search'] = '\"%s\"' % settings.DNS_SEARCH
 
-            nd_dict['interfaces'] = {
-                'eth0': {
-                    'mac_address': node.mac,
+            netmanager.assign_admin_ips(
+                node.id,
+                len(node.meta.get('interfaces', []))
+            )
+            admin_ips = set([i.ip_addr for i in orm().query(IPAddr).
+                            filter_by(node=node.id).
+                            filter_by(admin=True)])
+            for i in node.meta.get('interfaces', []):
+                if 'interfaces' not in nd_dict:
+                    nd_dict['interfaces'] = {}
+                nd_dict['interfaces'][i['name']] = {
+                    'mac_address': i['mac'],
                     'static': '0',
                     'dns_name': node.fqdn,
-                    'ip_address': node.ip,
-                },
-            }
-            nd_dict['interfaces_extra'] = {
-                'eth0': {
+                    'netmask': settings.ADMIN_NETWORK['netmask'],
+                    'ip_address': admin_ips.pop(),
+                }
+                if 'interfaces_extra' not in nd_dict:
+                    nd_dict['interfaces_extra'] = {}
+                nd_dict['interfaces_extra'][i['name']] = {
                     'peerdns': 'no'
                 }
-            }
+
             nd_dict['netboot_enabled'] = '1'
             nd_dict['ks_meta'] = """
 puppet_auto_setup=1

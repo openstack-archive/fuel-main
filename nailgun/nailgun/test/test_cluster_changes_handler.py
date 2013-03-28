@@ -1,15 +1,15 @@
 # -*- coding: utf-8 -*-
 import json
 from paste.fixture import TestApp
-
 from mock import Mock, patch
-from netaddr import IPNetwork
+from netaddr import IPNetwork, IPAddress
 
 import nailgun
 from nailgun.test.base import BaseHandlers
 from nailgun.test.base import reverse
 from nailgun.api.models import Cluster, Attributes, IPAddr, Task
 from nailgun.api.models import Network, NetworkGroup
+from nailgun.network import manager as netmanager
 
 
 class TestHandlers(BaseHandlers):
@@ -44,14 +44,9 @@ class TestHandlers(BaseHandlers):
         for net in nets_db:
             cluster_attrs[net.name + '_network_range'] = net.cidr
 
-        management_net = self.db.query(Network).join(NetworkGroup).\
-            filter(NetworkGroup.cluster_id == cluster_db.id).filter_by(
-                name='management').first()
-        management_vip = str(IPNetwork(management_net.cidr)[4])
-        public_net = self.db.query(Network).join(NetworkGroup).\
-            filter(NetworkGroup.cluster_id == cluster_db.id).filter_by(
-                name='public').first()
-        public_vip = str(IPNetwork(public_net.cidr)[4])
+        management_vip = netmanager.assign_vip(cluster_db.id, 'management')
+        public_vip = netmanager.assign_vip(cluster_db.id, 'public')
+
         cluster_attrs['management_vip'] = management_vip
         cluster_attrs['public_vip'] = public_vip
         cluster_attrs['deployment_mode'] = cluster_depl_mode
@@ -61,22 +56,38 @@ class TestHandlers(BaseHandlers):
         msg['args']['attributes'] = cluster_attrs
         msg['args']['task_uuid'] = deploy_task_uuid
         nodes = []
+
+        def ip_from_ips_by_net(ips, net, append_prefixlen=True):
+            append = ""
+            if append_prefixlen:
+                append = "/%s" % IPNetwork(net).prefixlen
+            ip_list = ["%s%s" % (i, append) for i in filter(
+                lambda ip: (IPAddress(ip) in IPNetwork(net)),
+                ips
+            )]
+            if ip_list:
+                return ip_list[0]
+
         for n in sorted(self.env.nodes, key=lambda n: n.id):
-            node_ips = self.db.query(IPAddr).filter_by(node=n.id).all()
-            node_ip = [ne.ip_addr + "/24" for ne in node_ips]
+            node_ips = [i.ip_addr for i in self.db.query(IPAddr).
+                        filter_by(node=n.id).
+                        filter_by(admin=False)]
+            node_ip_management = ip_from_ips_by_net(node_ips, '172.16.0.0/24')
+            node_ip_public = ip_from_ips_by_net(node_ips, '240.0.1.0/24')
+
             nodes.append({'uid': n.id, 'status': n.status, 'ip': n.ip,
                           'error_type': n.error_type, 'mac': n.mac,
                           'role': n.role, 'id': n.id, 'fqdn': n.fqdn,
                           'progress': 0, 'meta': n.meta, 'online': True,
                           'network_data': [{'brd': '172.16.0.255',
-                                            'ip': node_ip[0],
+                                            'ip': node_ip_management,
                                             'vlan': 103,
                                             'gateway': '172.16.0.1',
                                             'netmask': '255.255.255.0',
                                             'dev': 'eth0',
                                             'name': 'management'},
                                            {'brd': '240.0.1.255',
-                                            'ip': node_ip[1],
+                                            'ip': node_ip_public,
                                             'vlan': 104,
                                             'gateway': '240.0.1.1',
                                             'netmask': '255.255.255.0',

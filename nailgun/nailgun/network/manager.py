@@ -2,12 +2,50 @@
 
 import web
 from sqlalchemy.sql import not_
-from netaddr import IPSet, IPNetwork
+from netaddr import IPSet, IPNetwork, iter_iprange
 
 from nailgun.db import orm
 from nailgun.task import errors
+from nailgun.settings import settings
 from nailgun.api.models import Node, IPAddr, Cluster
 from nailgun.api.models import Network, NetworkGroup
+
+
+def is_ip_used(ip):
+    used = orm().query(IPAddr).filter_by(ip_addr=ip).first()
+    return (used is not None)
+
+
+def get_free_ip_from_range(iterable, num=1):
+    from_range = set(iterable)
+    diff = from_range - set(
+        [i.ip_addr for i in orm().query(IPAddr).
+         filter(IPAddr.ip_addr.in_(from_range))]
+    )
+    try:
+        return [diff.pop() for i in xrange(num)]
+    except KeyError:
+        raise Exception(
+            "Not enough free ip addresses in ip pool"
+        )
+
+
+def assign_admin_ips(node_id, num=1):
+    node_admin_ips = orm().query(IPAddr).\
+        filter_by(admin=True).filter_by(node=node_id).all()
+
+    if not node_admin_ips or len(node_admin_ips) < num:
+        free_ips = get_free_ip_from_range(
+            [str(i) for i in iter_iprange(
+                settings.ADMIN_NETWORK['first'],
+                settings.ADMIN_NETWORK['last']
+            )],
+            num=num - len(node_admin_ips)
+        )
+        for ip in free_ips:
+            ip_db = IPAddr(node=node_id, ip_addr=ip, admin=True)
+            orm().add(ip_db)
+        orm().commit()
 
 
 def assign_ips(nodes_ids, network_name):
@@ -36,12 +74,10 @@ def assign_ips(nodes_ids, network_name):
             (network_name, cluster_id)
         )
 
-    used_ips = [ne.ip_addr for ne in orm().query(IPAddr).all()
-                if ne.ip_addr]
-
     for node_id in nodes_ids:
         node_ips = [ne.ip_addr for ne in orm().query(IPAddr).
                     filter_by(node=node_id).
+                    filter_by(admin=False).
                     filter_by(network=network.id).all() if ne.ip_addr]
         # check if any of node_ips in required cidr: network.cidr
         ips_belongs_to_net = IPSet(IPNetwork(network.cidr))\
@@ -49,20 +85,17 @@ def assign_ips(nodes_ids, network_name):
 
         if not ips_belongs_to_net:
             # IP address has not been assigned, let's do it
-            free_ip = None
-            for ip in IPNetwork(network.cidr).iter_hosts():
-                # iter_hosts iterates over network, excludes net & broadcast
-                if str(ip) != network.gateway and str(ip) not in used_ips:
-                    free_ip = str(ip)
-                    break
-            if not free_ip:
-                raise Exception(
-                    "Network pool %s ran out of free ips." % network.cidr)
-
-            ip_db = IPAddr(network=network.id, node=node_id, ip_addr=free_ip)
+            from_range = set(
+                [str(i) for i in IPNetwork(network.cidr).iter_hosts()]
+            ) - set((network.gateway,))
+            free_ips = get_free_ip_from_range(from_range)
+            ip_db = IPAddr(
+                network=network.id,
+                node=node_id,
+                ip_addr=free_ips[0]
+            )
             orm().add(ip_db)
             orm().commit()
-            used_ips.append(free_ip)
 
 
 def assign_vip(cluster_id, network_name):
@@ -87,11 +120,10 @@ def assign_vip(cluster_id, network_name):
         raise Exception("Network '%s' for cluster_id=%s not found." %
                         (network_name, cluster_id))
 
-    used_ips = [n.ip_addr for n in orm().query(IPAddr).all()]
-
     cluster_ips = [ne.ip_addr for ne in orm().query(IPAddr).filter_by(
         network=network.id,
-        node=None
+        node=None,
+        admin=False
     ).all()]
     # check if any of used_ips in required cidr: network.cidr
     ips_belongs_to_net = IPSet(IPNetwork(network.cidr))\
@@ -101,20 +133,14 @@ def assign_vip(cluster_id, network_name):
         vip = cluster_ips[0]
     else:
         # IP address has not been assigned, let's do it
-        free_ip = None
-        for ip in IPNetwork(network.cidr).iter_hosts():
-            # iter_hosts iterates over network, excludes net & broadcast
-            if str(ip) != network.gateway and str(ip) not in used_ips:
-                free_ip = str(ip)
-                break
-
-        if not free_ip:
-            raise Exception(
-                "Network pool %s ran out of free ips." % network.cidr)
-        ne_db = IPAddr(network=network.id, ip_addr=free_ip)
+        from_range = set(
+            [str(i) for i in IPNetwork(network.cidr).iter_hosts()]
+        ) - set((network.gateway,))
+        free_ips = get_free_ip_from_range(from_range)
+        ne_db = IPAddr(network=network.id, ip_addr=free_ips[0])
         orm().add(ne_db)
         orm().commit()
-        vip = free_ip
+        vip = free_ips[0]
     return vip
 
 
@@ -123,7 +149,9 @@ def get_node_networks(node_id):
     if cluster_db is None:
         # Node doesn't belong to any cluster, so it should not have nets
         return []
-    ips = orm().query(IPAddr).filter_by(node=node_id).all()
+    ips = orm().query(IPAddr).\
+        filter_by(node=node_id).\
+        filter_by(admin=False).all()
     network_data = []
     network_ids = []
     for i in ips:

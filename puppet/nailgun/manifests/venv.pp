@@ -7,7 +7,7 @@ class nailgun::venv(
 
   $nailgun_user,
   $nailgun_group,
-  
+
   $database_name,
   $database_engine,
   $database_host,
@@ -66,6 +66,11 @@ class nailgun::venv(
   $exclude_network = ipcalc_network_by_address_netmask($ipaddress, $netmask)
   $exclude_cidr = ipcalc_network_cidr_by_netmask($netmask)
 
+  $first_in_second_half = ipcalc_network_count_addresses($ipaddress, $netmask) / 2 + 1
+  $admin_network_first = ipcalc_network_nth_address($ipaddress, $netmask, $first_in_second_half)
+  $admin_network_last = ipcalc_network_nth_address($ipaddress, $netmask, "last")
+  $admin_network_netmask = $netmask
+
   file { "/etc/nailgun/settings.yaml":
     content => template("nailgun/settings.yaml.erb"),
     owner => 'root',
@@ -73,7 +78,7 @@ class nailgun::venv(
     mode => 0644,
     require => File["/etc/nailgun"],
   }
-  
+
   exec {"nailgun_syncdb":
     command => "${venv}/bin/nailgun_syncdb",
     require => [

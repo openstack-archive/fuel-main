@@ -322,8 +322,9 @@ class IPAddr(Base):
     __tablename__ = 'ip_addrs'
     id = Column(Integer, primary_key=True)
     network = Column(Integer, ForeignKey('networks.id'))
-    node = Column(Integer, ForeignKey('nodes.id'))
+    node = Column(Integer, ForeignKey('nodes.id', ondelete="CASCADE"))
     ip_addr = Column(String(25), nullable=False)
+    admin = Column(Boolean, nullable=False, default=False)
 
 
 class Vlan(Base, BasicValidator):
