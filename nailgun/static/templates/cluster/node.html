@@ -3,9 +3,9 @@
     <div class="node-header">
       <div class="node-logo <%- node.get('manufacturer') ? 'manufacturer-' + node.get('manufacturer').toLowerCase() : '' %>"></div>
       <% if (!selectableForAddition && !selectableForDeletion) { %>
-        <div class="node-actions">
+        <a class="node-actions" href="#cluster/<%= node.collection.cluster.id %>/nodes/disks/<%= node.id %>">
           <i class="icon-plus-circle"></i>Edit
-        </div>
+        </a>
       <% } %>
       <div class="node-name">
       <% if (renaming) { %>
