@@ -254,7 +254,7 @@ class Libvirt:
             network_id = interface_element.find('source/@network')
 
             interface = find(
-                lambda i: i.network.id == network_id,
+                lambda i: i.network.id == network_id and i.mac_address is None,
                 node.interfaces)
             if interface is None:
                 continue
@@ -277,9 +277,9 @@ class Libvirt:
         for interface_element in domain.find_all(
             'devices/interface[@type="network"]'
         ):
-            network_id = interface_element.find('source/@network')
+            mac_address = interface_element.find('mac/@address')
             interface = find(
-                lambda i: i.network.id == network_id,
+                lambda i: i.mac_address == mac_address,
                 node.interfaces)
             if interface is None:
                 continue

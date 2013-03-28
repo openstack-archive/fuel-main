@@ -75,6 +75,7 @@ class Ci(object):
                     Disk(size=30 * 1024 ** 3)
                 )
                 nodex.interfaces.append(Interface(network))
+                nodex.interfaces.append(Interface(network))
                 nodex.boot = ['network']
                 environment.nodes.append(nodex)
 

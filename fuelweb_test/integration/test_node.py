@@ -375,33 +375,90 @@ class TestNode(Base):
         vlans = self._get_cluster_vlans(cluster_id)
         for vlan in vlans:
             for node in devops_nodes:
-                self._restore_vlan_in_ebtables(node.interfaces[0].target_dev,
-                                               vlan, False)
+                for interface in node.interfaces:
+                    self._restore_vlan_in_ebtables(interface.target_dev,
+                                                   vlan, False)
         self._update_nodes_in_cluster(cluster_id, nailgun_slave_nodes)
-        self._block_vlan_in_ebtables(devops_nodes, vlans[0])
+        for node in devops_nodes:
+            for interface in node.interfaces:
+                self._block_vlan_in_ebtables(interface.target_dev, vlans[0])
         task = self._run_network_verify(cluster_id)
         task = self._task_wait(task,
                                'Verify network in cluster with blocked vlan',
                                60 * 2, True)
         self.assertEquals(task['status'], 'error')
 
-    def _block_vlan_in_ebtables(self, devops_nodes, vlan):
+    @snapshot_errors
+    def test_multinic_bootstrap_booting(self):
+        self._revert_nodes()
+        slave = filter(lambda n: n.name != 'admin' and len(n.interfaces) > 1,
+                       ci.environment.nodes)[0]
+        nodename = slave.name
+        logging.info("Using node %r with %d interfaces", nodename,
+                     len(slave.interfaces))
+        slave.stop()
+        admin = ci.environment.node['admin']
+        macs = [i.mac_address for i in slave.interfaces]
+        logging.info("Block all MACs: %s.",
+                     ', '.join([m for m in macs]))
+        for mac in macs:
+            self._block_mac_in_ebtables(mac)
+            self.addCleanup(self._restore_mac_in_ebtables, mac)
+        for mac in macs:
+            logging.info("Trying to boot node %r via interface with MAC %s...",
+                         nodename, mac)
+            self._restore_mac_in_ebtables(mac)
+            slave.start()
+            nailgun_slave = self._bootstrap_nodes([nodename], 300)[0]
+            self.assertEqual(mac.upper(), nailgun_slave['mac'].upper())
+            slave.stop()
+            admin.restore_snapshot('initial')
+            self._block_mac_in_ebtables(mac)
+
+    @staticmethod
+    def _block_mac_in_ebtables(mac):
         try:
-            for node in devops_nodes:
-                subprocess.check_output(
-                    'sudo ebtables -t broute -A BROUTING -i %s -p 8021Q'
-                    ' --vlan-id %s -j DROP' % (
-                        node.interfaces[0].target_dev, vlan
-                    ),
-                    stderr=subprocess.STDOUT,
-                    shell=True
-                )
-                self.addCleanup(self._restore_vlan_in_ebtables,
-                                node.interfaces[0].target_dev, vlan)
+            subprocess.check_output(
+                'sudo ebtables -t filter -A FORWARD -s %s -j DROP' % mac,
+                stderr=subprocess.STDOUT,
+                shell=True
+            )
+            logging.debug("MAC %s blocked via ebtables.", mac)
+        except subprocess.CalledProcessError as e:
+            raise Exception("Can't block mac %s via ebtables: %s",
+                            mac, e.output)
+
+    @staticmethod
+    def _restore_mac_in_ebtables(mac):
+        try:
+            subprocess.check_output(
+                'sudo ebtables -t filter -D FORWARD -s %s -j DROP' % mac,
+                stderr=subprocess.STDOUT,
+                shell=True
+            )
+            logging.debug("MAC %s unblocked via ebtables.", mac)
+        except subprocess.CalledProcessError as e:
+            logging.warn("Can't restore mac %s via ebtables: %s",
+                         mac, e.output)
+
+    def _block_vlan_in_ebtables(self, target_dev, vlan):
+        try:
+            subprocess.check_output(
+                'sudo ebtables -t broute -A BROUTING -i %s -p 8021Q'
+                ' --vlan-id %s -j DROP' % (
+                    target_dev, vlan
+                ),
+                stderr=subprocess.STDOUT,
+                shell=True
+            )
+            self.addCleanup(self._restore_vlan_in_ebtables,
+                            target_dev, vlan)
+            logging.debug("Vlan %s on interface %s blocked via ebtables.",
+                          vlan, target_dev)
         except subprocess.CalledProcessError as e:
             raise Exception("Can't block vlan %s for interface %s"
                             " via ebtables: %s" %
-                            (vlan, node.interfaces[0].target_dev, e.output))
+                            (vlan, target_dev, e.output))
 
     def _get_common_vlan(self, cluster_id):
         """Find vlan that must be at all two nodes.
@@ -437,6 +494,8 @@ class TestNode(Base):
                 stderr=subprocess.STDOUT,
                 shell=True
             )
+            logging.debug("Vlan %s on interface %s unblocked via ebtables.",
+                          vlan, target_dev)
         except subprocess.CalledProcessError as e:
             if log:
                 logging.warn("Can't restore vlan %s for interface %s"
@@ -557,8 +616,8 @@ class TestNode(Base):
                 logging.info("Task %r complete" % task_desc)
                 ready = True
             elif task['status'] == 'error' and skip_error_status:
-                logging.info("Task %r ended with error: %s" %
-                             (task_desc, task.get('message')))
+                logging.info("Task %r failed with message: %s",
+                             task_desc, task.get('message'))
                 ready = True
             elif task['status'] == 'running':
                 if (time.time() - timer) > timeout:
@@ -685,22 +744,21 @@ class TestNode(Base):
 
                     n['devops_name'] = devops_node.name
                     return n
-        logging.warn("get_slave_node_by_devops_node: node %s not found" %
-                     devops_node.name)
+        logging.debug("get_slave_node_by_devops_node: node %s not found",
+                      devops_node.name)
         return None
 
-    def _bootstrap_nodes(self, devops_node_names=[]):
+    def _bootstrap_nodes(self, devops_node_names=[], timeout=600):
         """Start devops nodes and wait while they load boodstrap image
         and register on nailgun. Returns list of hashes with registred nailgun
         slave node descpriptions.
         """
         timer = time.time()
-        timeout = 600
 
         slaves = []
         for node_name in devops_node_names:
             slave = ci.environment.node[node_name]
-            logging.info("Starting slave node %r" % node_name)
+            logging.info("Starting slave node %r", node_name)
             slave.start()
             slaves.append(slave)
 
