@@ -68,8 +68,8 @@ function(models, commonViews, dialogViews, settingsTabTemplate, settingsGroupTem
         },
         applyChanges: function() {
             var data = this.collectData();
-            var deferred;
-            deferred = this.model.get('settings').save({editable: data}, {patch: true, wait: true, url: _.result(this.model, 'url') + '/attributes'})
+            this.disableControls();
+            return this.model.get('settings').save({editable: data}, {patch: true, wait: true, url: _.result(this.model, 'url') + '/attributes'})
                 .always(_.bind(function() {
                     this.render();
                     this.model.fetch();
@@ -83,8 +83,6 @@ function(models, commonViews, dialogViews, settingsTabTemplate, settingsGroupTem
                     app.page.registerSubView(dialog);
                     dialog.render();
                 }, this));
-            this.disableControls();
-            return deferred;
         },
         parseSettings: function(settings) {
             this.tearDownRegisteredSubViews();

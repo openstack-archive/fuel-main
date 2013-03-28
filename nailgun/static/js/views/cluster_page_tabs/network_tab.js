@@ -94,10 +94,10 @@ function(models, commonViews, dialogViews, networkTabTemplate, networkTabVerific
             }
         },
         applyChanges: function() {
-            if (!this.$('.control-group.error').length) {
+            var deferred;
+            if (!_.some(this.networks.models, 'validationError')) {
                 this.disableControls();
                 this.model.save({net_manager: this.manager}, {patch: true, wait: true});
-                var deferred;
                 deferred = Backbone.sync('update', this.networks, {url: _.result(this.model, 'url') + '/save/networks'})
                     .always(_.bind(function() {
                         this.model.fetch().done(_.bind(this.render, this));
@@ -116,8 +116,12 @@ function(models, commonViews, dialogViews, networkTabTemplate, networkTabVerific
                         app.page.registerSubView(dialog);
                         dialog.render();
                     }, this));
-                return deferred;
+
+            } else {
+                deferred = new $.Deferred();
+                deferred.reject();
             }
+            return deferred;
         },
         scheduleUpdate: function() {
             if (this.model.task('verify_networks', 'running')) {

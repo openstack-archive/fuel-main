@@ -285,18 +285,14 @@ function(models, simpleMessageTemplate, createClusterDialogTemplate, changeClust
             app.page.removeVerificationTask().done(_.bind(this.cb, this));
         },
         save: function() {
-            if (!(app.page.tab.networks && _.some(app.page.tab.networks.models, function(network) {return network.validationError;}))) {
-                this.$('.btn').attr('disabled', true);
-                app.page.tab.applyChanges()
-                    .done(_.bind(function(task) {
-                        this.$el.modal('hide');
-                        if (!(task && task.status == 'error')) {
-                            this.cb();
-                        }
-                    }, this));
-            } else {
-                this.$el.modal('hide');
-            }
+            this.$('.btn').attr('disabled', true);
+            app.page.tab.applyChanges()
+                .done(_.bind(function(task) {
+                    if (!(task && task.status == 'error')) {
+                        this.cb();
+                    }
+                }, this))
+                .always(_.bind(function() {this.$el.modal('hide');}, this));
         },
         render: function() {
             if (this.verification) {
