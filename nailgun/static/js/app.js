@@ -60,8 +60,7 @@ function(models, commonViews, ClusterPage, NodesTab, ClustersPage, ReleasesPage,
                 // special case for nodes tab screen change
                 try {
                     if (app.page.constructor == ClusterPage && app.page.model.id == id && app.page.tab.constructor == NodesTab) {
-                        app.page.tab.tabOptions = tabOptions;
-                        app.page.tab.routeScreen();
+                        app.page.tab.routeScreen(tabOptions);
                         return;
                     }
                 } catch(e) {}
