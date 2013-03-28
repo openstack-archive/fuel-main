@@ -7,11 +7,13 @@ define(
     'text!templates/cluster/edit_nodes_screen.html',
     'text!templates/cluster/node_list.html',
     'text!templates/cluster/node.html',
-    'text!templates/cluster/node_status.html'
+    'text!templates/cluster/node_status.html',
+    'text!templates/cluster/edit_node_disks.html',
+    'text!templates/cluster/node_disk.html'
 ],
-function(models, commonViews, dialogViews, nodesTabSummaryTemplate, editNodesScreenTemplate, nodeListTemplate, nodeTemplate, nodeStatusTemplate) {
+function(models, commonViews, dialogViews, nodesTabSummaryTemplate, editNodesScreenTemplate, nodeListTemplate, nodeTemplate, nodeStatusTemplate, editNodeDisksScreenTemplate, nodeDisksTemplate) {
     'use strict';
-    var NodesTab, NodesByRolesScreen, EditNodesScreen, AddNodesScreen, DeleteNodesScreen, NodeList, Node;
+    var NodesTab, NodesByRolesScreen, EditNodesScreen, AddNodesScreen, DeleteNodesScreen, NodeList, Node, EditNodeDisksScreen, NodeDisk;
 
     NodesTab = commonViews.Tab.extend({
         screen: null,
@@ -339,7 +341,8 @@ function(models, commonViews, dialogViews, nodesTabSummaryTemplate, editNodesScr
         events: {
             'click .node-name': 'startNodeRenaming',
             'keydown .node-renameable': 'onNodeNameInputKeydown',
-            'click .node-hardware': 'showNodeInfo'
+            'click .node-hardware': 'showNodeInfo',
+            'click .node-actions': 'editNodeDisks'
         },
         startNodeRenaming: function() {
             if (!this.renameable || this.renaming || this.model.collection.cluster.task('deploy', 'running')) {return;}
@@ -378,6 +381,9 @@ function(models, commonViews, dialogViews, nodesTabSummaryTemplate, editNodesScr
             var dialog = new dialogViews.ShowNodeInfoDialog({node: this.model});
             app.page.tab.registerSubView(dialog);
             dialog.render();
+        },
+        editNodeDisks: function() {
+            app.page.tab.changeScreen(EditNodeDisksScreen, {node: this.model});
         },
         updateProgress: function() {
             if (this.model.get('status') == 'provisioning' || this.model.get('status') == 'deploying') {
@@ -432,6 +438,94 @@ function(models, commonViews, dialogViews, nodesTabSummaryTemplate, editNodesScr
                 selectableForDeletion: this.selectableForDeletion
             }));
             this.updateStatus();
+            return this;
+        }
+    });
+
+    EditNodeDisksScreen = Backbone.View.extend({
+        className: 'edit-node-disks-screen',
+        screenName: 'edit-node-disks',
+        keepScrollPosition: false,
+        template: _.template(editNodeDisksScreenTemplate),
+        events: {
+            'click .btn-defaults': 'loadDefaults',
+            'click .btn-revert-changes': 'revertChanges',
+            'click .btn-apply': 'applyChanges'
+        },
+        loadDefaults: function() {
+            /*$.ajax({
+                url: '/api/nodes' + this.node.id + '/defaults',
+                success: _.bind(function(data) {
+                    this.renderDisks(data);
+                }, this)
+            });*/
+        },
+        revertChanges: function() {
+            //console.log(this.previousDisksData);
+            this.renderDisks(this.previousDisksData);
+        },
+        applyChanges: function() {
+            /*this.node.save({}, {patch: true}, {wait: true});*/
+        },
+        initialize: function(options) {
+            _.defaults(this, options);
+            this.constructor.__super__.initialize.apply(this, arguments);
+            this.previousDisksData = _.clone(this.node.get('meta').disks);
+        },
+        renderDisks: function(disks) {
+            this.$('.node-disks').html('');
+            _.each(disks, _.bind(function(disk) {
+                var nodeDisk = new NodeDisk({node: this.node, disk: disk});
+                this.registerSubView(nodeDisk);
+                this.$('.node-disks').append(nodeDisk.render().el);
+            }, this));
+        },
+        render: function() {
+            this.$el.html(this.template({node: this.node}));
+            this.renderDisks(this.node.get('meta').disks);
+            return this;
+        }
+    });
+
+    NodeDisk = Backbone.View.extend({
+        template: _.template(nodeDisksTemplate),
+        events: {
+            'click .disk-visual': 'toggleEditDiskForm',
+            'click .delete-volume-group': 'deleteVolumeGroup',
+            'click .btn-create-volume-group': 'createVolumeGroup',
+            'click .btn-edit-volume-group': 'editVolumeGroup'
+        },
+        toggleEditDiskForm: function(e) {
+            this.$('.disk-edit-volume-group-form, .delete-volume-group').toggle();
+        },
+        deleteVolumeGroup: function(e) {
+            var group = this.$(e.currentTarget).parent().attr('class');
+            this.disk.volume_groups[group] = 0;
+            this.allocatedVolumeGroups = _.without(this.allocatedVolumeGroups, group);
+            this.render();
+        },
+        updateVolumeGroup: function(group) {
+            var newVolumeGroupSize = parseInt(this.$('.disk-edit-volume-group-form input').val(), 10);
+            this.disk.volume_groups[group] = newVolumeGroupSize * Math.pow(1000, 3);
+            this.render();
+        },
+        createVolumeGroup: function() {
+            var group = this.$('.disk-edit-volume-group-form select').val();
+            this.allocatedVolumeGroups.push(group);
+            this.updateVolumeGroup(group);
+        },
+        editVolumeGroup: function() {
+            this.updateVolumeGroup(this.$('.disk-visual > div.active').data('group'));
+        },
+        initialize: function(options) {
+            _.defaults(this, options);
+        },
+        render: function() {
+            this.$el.html(this.template({
+                disk: this.disk,
+                volumeGroups: this.node.volumeGroups(),
+                nodeRole: this.node.get('role')
+            }));
             return this;
         }
     });

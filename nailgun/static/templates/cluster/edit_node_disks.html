@@ -1,0 +1,16 @@
+<div class="roles-block-row nodesbox-header">
+  <div class="span12"><h3>Configure <%- node.get('name') %> node disk<%= node.get('meta').disks.length == 1 ? '' : 's' %></h3></div>
+</div>
+
+<div class="roles-block-row node-disks"></div>
+<hr class="breaker">
+
+<div class="roles-block-row">
+  <div class="page-control-box">
+    <div class="page-control-button-placeholder">
+      <button class="btn btn-defaults">Load Defaults</button>
+      <button class="btn btn-revert-changes">Cancel Changes</button>
+      <button class="btn btn-success btn-apply">Apply</button>
+    </div>
+  </div>
+</div>

@@ -2,6 +2,11 @@
   <div class="nodebox-gradient">
     <div class="node-header">
       <div class="node-logo <%- node.get('manufacturer') ? 'manufacturer-' + node.get('manufacturer').toLowerCase() : '' %>"></div>
+      <% if (!selectableForAddition && !selectableForDeletion) { %>
+        <div class="node-actions">
+          <i class="icon-plus-circle"></i>Edit
+        </div>
+      <% } %>
       <div class="node-name">
       <% if (renaming) { %>
         <div class="node-renameable">

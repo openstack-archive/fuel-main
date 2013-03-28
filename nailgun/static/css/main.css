@@ -464,7 +464,7 @@ h6.page-title {
 
 .node-header {
   display: block;
-  height: 48px;
+  height: 62px;
   overflow: hidden;
   box-sizing: border-box;
   -moz-box-sizing: border-box;
@@ -492,7 +492,7 @@ h6.page-title {
 
 .node-renameable {
   display: inline;
-  color: #333333;
+  color: #111;
   cursor: pointer;
   display: inline;
   font-size: 12px;
@@ -603,12 +603,12 @@ h6.page-title {
 }
 
 .node-name {
+  clear: both;
   display: block;
-  width: 107px;
-  float: left;
+  width: 100%;
   padding: 0;
   margin: 0;
-  padding-top: 4px;
+  text-align: center;
 }
 
 .node-name div {
@@ -629,18 +629,28 @@ h6.page-title {
   cursor: pointer;
 }
 
+.node-actions {
+  height: 31px;
+  padding: 9px 0 0 117px;
+  cursor: pointer;
+}
+
+.node-actions, .node-actions i {
+  color: #888;
+}
+
+.node-actions:hover, .node-actions:hover i {
+  color: #333;
+}
+
 .node-status {
   display: block;
-  margin: 0px;
-  padding: 0px;
+  margin: 4px 0 0;
+  padding: 0 14px 0 10px;
   height: 25px;
-  margin-top: 16px;
   cursor: pointer;
-  height: 25px;
   overflow: hidden;
-  margin-left: 13px;
-  color: #666666;
-  padding-right: 14px;
+  color: #666;
   text-align: center;
   font-size: 13px;
 }
@@ -850,20 +860,20 @@ h6.page-title {
   cursor: default;
 }
 
-.nav-tabs {
+.whitebox > .nav-tabs {
     border: none;
     margin-top: -70px;
 }
 
-.nav-tabs li {
+.whitebox > .nav-tabs li {
   margin-left: -1px;
 }
 
-.nav-tabs > li:last-child {
+.whitebox > .nav-tabs > li:last-child {
   width: 495px;
 }
 
-.nav-tabs li a {
+.whitebox > .nav-tabs li a {
   height: 50px;
   box-sizing: border-box;
   -moz-box-sizing: border-box;
@@ -888,8 +898,8 @@ h6.page-title {
 
 }
 
-.nav-tabs > li > a { margin-right: 3px; /* margin: -3px 12px 0px 12px; */}
-.nav-tabs > li > a > b {display: block; width: 30px; height: 30px; margin: -4px 12px 0px 12px;}
+.whitebox > .nav-tabs > li > a { margin-right: 3px; /* margin: -3px 12px 0px 12px; */}
+.whitebox > .nav-tabs > li > a > b {display: block; width: 30px; height: 30px; margin: -4px 12px 0px 12px;}
 .tab-nodes-normal    {background: url(../img/tab_icons.png) no-repeat   0px   0px;}
 .tab-nodes-good      {background: url(../img/tab_icons.png) no-repeat -30px   0px;}
 .tab-nodes-bad       {background: url(../img/tab_icons.png) no-repeat -60px   0px;}
@@ -910,7 +920,7 @@ h6.page-title {
 .tab-logs-good   {background: url(../img/tab_icons.png) no-repeat -30px -120px;}
 .tab-logs-bad    {background: url(../img/tab_icons.png) no-repeat -60px -120px;}
 
-.nav-tabs li a:hover {
+.whitebox > .nav-tabs li a:hover {
   border-color: #404c5c #404c5c #404c5c;
   background-image: -webkit-linear-gradient(bottom, #b8b8b8, #e8e8e8 30%);
   background-image: -moz-linear-gradient(bottom, #b8b8b8, #e8e8e8 30%);
@@ -919,8 +929,8 @@ h6.page-title {
   background-image: linear-gradient(to top, #b8b8b8, #e8e8e8 30%);
 }
 
-.nav-tabs > .active > a,
-.nav-tabs > .active > a:hover {
+.whitebox > .nav-tabs > .active > a,
+.whitebox > .nav-tabs > .active > a:hover {
   background-image: none;
   color: #555555;
   cursor: default;
@@ -1612,7 +1622,7 @@ h6.page-title {
 .pending-addition-flag {
   display: block;
   position: relative;
-  top: -114px;
+  top: -118px;
   left: -1px;
   z-index: 100;
   width: 16px;
@@ -3319,4 +3329,58 @@ hr.slim {
 
 .radio-checkbox-group > .item-box > .parameter-box > .parameter-name {
   min-width: 10px;
+}
+
+.disk {
+  padding-left: 20px;
+  margin-bottom: 15px;
+}
+
+.disk-edit-volume-group-form {
+  margin-bottom: 20px;
+}
+
+.disk-edit-volume-group-form button {
+  display: block;
+}
+
+.disk-visual {
+  clear: both;
+  border: 1px solid #888;
+  padding: 1px;
+  height: 35px;
+}
+
+.disk-visual > div {
+  color: #fff;
+  background-color: #ccc;
+  float: left;
+  height: 35px;
+  font-size: 11px;
+  line-height: 16px;
+  text-align: center;
+  cursor: pointer;
+  position: relative;
+}
+
+.disk-visual > div.base {
+  background-color: green;
+}
+
+.disk-visual > div.vm {
+  background-color: blue;
+}
+
+.disk-visual > div.cinder {
+  background-color: yellow;
+}
+
+.delete-volume-group {
+  position: absolute;
+  top: 1px; right: 3px;
+  font-size: 14px;
+  height: 14px; width: 14px;
+  line-height: 14px;
+  font-weight: bold;
+  color: red;
 }
