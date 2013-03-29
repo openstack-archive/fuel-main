@@ -3375,11 +3375,11 @@ hr.slim {
   position: relative;
 }
 
-.disk-visual > div.base {
+.disk-visual > div.os {
   background-color: green;
 }
 
-.disk-visual > div.vm {
+.disk-visual > div.vms {
   background-color: blue;
 }
 

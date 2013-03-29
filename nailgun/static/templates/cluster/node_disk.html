@@ -7,7 +7,7 @@
   </div>
 
   <div class="disk-visual">
-    <% var volumeGroupsLabels = {base: 'Base system', vm: 'Virtual Storage', cinder: 'Cinder'} %>
+    <% var volumeGroupsLabels = {os: 'Base system', vms: 'Virtual Storage', cinder: 'Cinder'} %>
     <% _.each(volumeGroups, function(group) { %>
       <div class="<%= group %>" style="width:0">
         <div class="group">
@@ -61,7 +61,7 @@
         <div class="<%= group %>">
           <label><%= volumeGroupsLabels[group] %></label>
           <span class="use-all-ullocated">Use all allocated space</span>
-          <input type="text" class="input-mini" name="<%= group %>" value="<%= Math.round(disk.volume_groups[group] / Math.pow(1000, 3)) %>" /> GB
+          <input type="text" class="input-mini" name="<%= group %>" value="<%= Math.round(volumes[group] / Math.pow(1000, 3)) %>" /> GB
         </div>
       <% }) %>
     </div>

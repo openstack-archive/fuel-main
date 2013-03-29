@@ -150,9 +150,9 @@ define(function() {
         urlRoot: '/api/nodes',
         volumeGroupsByRoles: function(role) {
             var volumeGroups =  {
-                controller: ['base'],
-                compute: ['base', 'vm'],
-                storage: ['base', 'cinder']
+                controller: ['os'],
+                compute: ['os', 'vms'],
+                storage: ['os', 'cinder']
             };
             return volumeGroups[role];
         },
@@ -240,6 +240,19 @@ define(function() {
         urlRoot: '/api/clusters/',
         isNew: function() {
             return false;
+        }
+    });
+
+    models.Attributes = Backbone.Model.extend({
+        constructorName: 'Attributes',
+        urlRoot: '/api/nodes/',
+        isNew: function() {
+            return false;
+        },
+        validate: function(attrs) {
+            var errors = {};
+            console.log(attrs);
+            return _.isEmpty(errors) ? null : errors;
         }
     });
 
