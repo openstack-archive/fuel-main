@@ -5,6 +5,7 @@ import itertools
 import traceback
 import subprocess
 import shlex
+import os
 
 import web
 import netaddr
@@ -194,6 +195,32 @@ class DeploymentTask(object):
         rpc.cast('naily', message)
 
     @classmethod
+    def _syslog_dir(cls, node, prefix=None):
+        if not prefix:
+            prefix = settings.SYSLOG_DIR
+
+        # if settings.FAKE_TASKS or settings.FAKE_TASKS_AMQP:
+        #     return
+        old = os.path.join(prefix, node.ip)
+        bak = os.path.join(prefix, "%s.bak" % node.fqnd)
+        new = os.path.join(prefix, node.fqdn)
+        links = map(
+            lambda i: os.path.join(prefix, *i),
+            orm().query(IPAddr.ip_addr).
+            filter_by(node=node.id).
+            filter_by(admin=True)
+        )
+        # backup directory if it exists
+        if os.path.isdir(new):
+            os.rename(new, bak)
+        # rename bootstrap directory into fqdn
+        if os.path.isdir(old):
+            os.rename(old, new)
+            for l in links:
+                os.symlink(new, l)
+        # kill -HUP rsyslog process
+
+    @classmethod
     def _provision(cls, nodes):
         logger.info("Requested to provision nodes: %s",
                     ','.join([str(n.id) for n in nodes]))
@@ -299,6 +326,7 @@ mco_enable=1
                 nd_dict.get('power_type', 'unknown')
             )
             pd.power_reboot(nd_name)
+            DeploymentTask._syslog_dir(node)
         pd.sync()
 
 
