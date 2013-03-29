@@ -1,3 +1,5 @@
+require 'astute/ruby_removed_functions'
+
 require 'json'
 require 'logger'
 
