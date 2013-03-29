@@ -3340,8 +3340,20 @@ hr.slim {
   margin-bottom: 20px;
 }
 
-.disk-edit-volume-group-form button {
-  display: block;
+.disk-edit-volume-group-form > div {
+ width: 50%;
+ float: left;
+}
+
+.disk-form label {
+  display: inline-block;
+  width: 200px;
+}
+
+.use-all-ullocated {
+  color: blue;
+  text-decoration: underline;
+  cursor: pointer;
 }
 
 .disk-visual {
@@ -3383,4 +3395,5 @@ hr.slim {
   line-height: 14px;
   font-weight: bold;
   color: red;
+  z-index: 100;
 }

@@ -1,41 +1,71 @@
 <div class="disk" data-disk="<%- disk.name %>">
+
   <div class="disk-header">
     <div class="disk-name pull-left"><%- disk.name %></div>
     <% var diskSize = disk.size ? disk.size / Math.pow(1000, 3) : 0 %>
     <div class="disk-size pull-right">Total space: <%= diskSize ? diskSize < 100 ? diskSize.toFixed(1) + 'GB' : (diskSize / 1000).toFixed(1) + 'TB' : '?TB' %></div>
   </div>
+
   <div class="disk-visual">
-    <% var unallocatedWidth = 100, unallocatedSize = Math.round(diskSize) %>
-    <% _.each(_.keys(volumeGroups), function(group) { %>
-      <% var width = disk.size ? Math.round(disk.volume_groups[group] / disk.size * 100) : 0 %>
-      <% if (group != 'unallocated') unallocatedWidth -= width %>
-      <div class="<%= group %>" data-group="<%= group %>" style="width: <%= _.isNaN(width) ? unallocatedWidth : width %>%">
-        <% var groupSize = Math.round(disk.volume_groups[group] / Math.pow(1000, 3)) %>
-        <% if (group != 'unallocated') unallocatedSize -= groupSize %>
-        <%= volumeGroups[group].label %><br/><%= _.isNaN(groupSize) ? unallocatedSize : groupSize %>GB
-        <% if (group != 'unallocated') { %>
-          <span class="delete-volume-group hide">&times;</span>
-        <% } %>
+    <% var volumeGroupsLabels = {base: 'Base system', vm: 'Virtual Storage', cinder: 'Cinder'} %>
+    <% _.each(volumeGroups, function(group) { %>
+      <div class="<%= group %>" style="width:0">
+        <div class="group">
+          <%= volumeGroupsLabels[group] %><br/>
+          <span>0</span>GB
+        </div>
+        <div class="delete-volume-group hide">&times;</div>
       </div>
     <% }) %>
+    <div class="unallocated" style="width: 100%">
+      <div class="group">
+        Unallocated Space<br/>
+        <span><%= Math.round(diskSize) %></span>GB
+      </div>
+    </div>
   </div>
+
   <div class="disk-edit-volume-group-form hide">
-    <fieldset>
-    <legend>Volume Groups</legend>
-    <label>Select Group Purpose</label>
-    <select>
-      <% _.each(_.keys(volumeGroups), function(group) { %>
-        <% if (_.contains(volumeGroups[group].roles, nodeRole)) { %>
-          <option value="<%= group %>"><%= volumeGroups[group].label %></option>
-        <% } %>
+
+    <div class="disk-info">
+      <h4>Disk Information</h4>
+      <%
+        var sortEntryProperties = function(entry) {
+          var properties = _.keys(entry);
+          if (_.has(entry, 'name')) {
+            properties = ['name'].concat(_.keys(_.omit(entry, 'name')));
+          }
+          return properties;
+        };
+        var showSize = function(bytes) {
+          bytes = parseInt(bytes, 10);
+          if (!_.isNumber(bytes) || _.isNaN(bytes)) return 'N/A';
+          var units = ['bytes', 'KB', 'MB', 'GB', 'TB'];
+          for (var i = 0; i < units.length; i++) {
+            var result = bytes / Math.pow(1000, i);
+            if (result < 256) {
+              return (result ? result.toFixed(1) : result) + ' ' + units[i];
+            }
+          }
+          return result;
+        };
+      %>
+      <% _.each(sortEntryProperties(disk), function(propertyName) { %>
+        <div><span><%- propertyName.replace(/_/g, ' ') %></span> <%- propertyName == 'size' ? showSize(disk[propertyName]) : disk[propertyName] %></div>
       <% }) %>
-    </select>
-    <% _.each(_.keys(volumeGroups), function(group) { %>
-      <% if (_.contains(volumeGroups[group].roles, nodeRole)) { %>
-        <label>Enter Volume Group Size, GB</label>
-        <input type="text" class="input-mini" value="<%= Math.round(volumeGroups[group].size / Math.pow(1000, 3)) %>" />
-      <% } %>
-    <% }) %>
-  </fieldset>
+    </div>
+
+    <div class="disk-form">
+      <h4>Volume Groups</h4>
+      <% _.each(volumeGroups, function(group) { %>
+        <div class="<%= group %>">
+          <label><%= volumeGroupsLabels[group] %></label>
+          <span class="use-all-ullocated">Use all allocated space</span>
+          <input type="text" class="input-mini" name="<%= group %>" value="<%= Math.round(disk.volume_groups[group] / Math.pow(1000, 3)) %>" /> GB
+        </div>
+      <% }) %>
+    </div>
+
   </div>
+
 </div>

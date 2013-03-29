@@ -347,7 +347,8 @@ function(models, commonViews, dialogViews, nodesTabSummaryTemplate, editNodesScr
         events: {
             'click .node-name': 'startNodeRenaming',
             'keydown .node-renameable': 'onNodeNameInputKeydown',
-            'click .node-hardware': 'showNodeInfo'
+            'click .node-hardware': 'showNodeInfo',
+            'click .node-actions': 'editNodeDisks'
         },
         startNodeRenaming: function() {
             if (!this.renameable || this.renaming || this.model.collection.cluster.task('deploy', 'running')) {return;}
@@ -386,6 +387,9 @@ function(models, commonViews, dialogViews, nodesTabSummaryTemplate, editNodesScr
             var dialog = new dialogViews.ShowNodeInfoDialog({node: this.model});
             app.page.tab.registerSubView(dialog);
             dialog.render();
+        },
+        editNodeDisks: function() {
+            app.page.tab.changeScreen(EditNodeDisksScreen, {node: this.model});
         },
         updateProgress: function() {
             if (this.model.get('status') == 'provisioning' || this.model.get('status') == 'deploying') {
@@ -454,32 +458,28 @@ function(models, commonViews, dialogViews, nodesTabSummaryTemplate, editNodesScr
         keepScrollPosition: false,
         template: _.template(editNodeDisksScreenTemplate),
         events: {
+            'click .btn-expand': 'expandAll',
             'click .btn-defaults': 'loadDefaults',
             'click .btn-revert-changes': 'revertChanges',
             'click .btn-apply': 'applyChanges'
         },
+        expandAll: function() {
+            $('.disk-edit-volume-group-form, .delete-volume-group').show();
+        },
         loadDefaults: function() {
-            /*$.ajax({
-                url: '/api/nodes' + this.node.id + '/defaults',
-                success: _.bind(function(data) {
-                    this.renderDisks(data);
-                }, this)
-            });*/
         },
         revertChanges: function() {
-            //console.log(this.previousDisksData);
-            this.renderDisks(this.previousDisksData);
+            this.tab.changeScreen(NodesByRolesScreen);
         },
         applyChanges: function() {
-            /*this.node.save({}, {patch: true}, {wait: true});*/
         },
         initialize: function(options) {
             _.defaults(this, options);
-            if ((this.node = this.model.get('nodes').get(this.screenOptions[0]))) {
+            /*if ((this.node = this.model.get('nodes').get(this.screenOptions[0]))) {
                 this.previousDisksData = _.clone(this.node.get('meta').disks);
             } else {
                 app.navigate('#cluster/' + this.model.id + '/nodes', {trigger: true, replace: true});
-            }
+            }*/
         },
         renderDisks: function(disks) {
             this.tearDownRegisteredSubViews();
@@ -500,42 +500,63 @@ function(models, commonViews, dialogViews, nodesTabSummaryTemplate, editNodesScr
     NodeDisk = Backbone.View.extend({
         template: _.template(nodeDisksTemplate),
         events: {
-            'click .disk-visual': 'toggleEditDiskForm',
+            'click .group': 'toggleEditDiskForm',
             'click .delete-volume-group': 'deleteVolumeGroup',
-            'click .btn-create-volume-group': 'createVolumeGroup',
-            'click .btn-edit-volume-group': 'editVolumeGroup'
+            'keyup .disk-form input': 'editVolumeGroups',
+            'click .use-all-ullocated': 'useAllUnallocatedSpace'
         },
         toggleEditDiskForm: function(e) {
             this.$('.disk-edit-volume-group-form, .delete-volume-group').toggle();
         },
         deleteVolumeGroup: function(e) {
-            var group = this.$(e.currentTarget).parent().attr('class');
+            var group = this.$(e.currentTarget).parent().attr('class'); console.log(group);
             this.disk.volume_groups[group] = 0;
-            this.allocatedVolumeGroups = _.without(this.allocatedVolumeGroups, group);
-            this.render();
+            this.renderVisualGraph();
+            this.$('input[name=' + group + ']').val(0);
+            this.$('.disk-visual .' + group + ' .delete-volume-group').hide();
         },
-        updateVolumeGroup: function(group) {
-            var newVolumeGroupSize = parseInt(this.$('.disk-edit-volume-group-form input').val(), 10);
-            this.disk.volume_groups[group] = newVolumeGroupSize * Math.pow(1000, 3);
-            this.render();
+        editVolumeGroups: function(e) {
+            var group = this.$(e.currentTarget).parent().attr('class');
+            var newSize = parseInt(this.$(e.currentTarget).val(), 10) || 0;
+            var total = Math.round((this.disk.size - this.countAllocatedSpace() + this.disk.volume_groups[this.$(e.currentTarget).parent().attr('class')]) / Math.pow(1000, 3));
+            if (newSize > total) {
+                newSize = total;
+            }
+            this.disk.volume_groups[this.$(e.currentTarget).parent().attr('class')] = newSize * Math.pow(1000, 3);
+            this.renderVisualGraph();
+            this.$('.disk-visual .' + group + ' .delete-volume-group').show();
         },
-        createVolumeGroup: function() {
-            var group = this.$('.disk-edit-volume-group-form select').val();
-            this.allocatedVolumeGroups.push(group);
-            this.updateVolumeGroup(group);
+        countAllocatedSpace: function() {
+            return _.reduce(_.keys(this.disk.volume_groups), _.bind(function(sum, group) {
+                    return sum + this.disk.volume_groups[group];
+                }, this), 0);
         },
-        editVolumeGroup: function() {
-            this.updateVolumeGroup(this.$('.disk-visual > div.active').data('group'));
+        useAllUnallocatedSpace: function(e) {
+            var group = this.$(e.currentTarget).parent().attr('class');
+            this.disk.volume_groups[group] += this.disk.size - this.countAllocatedSpace();
+            this.renderVisualGraph();
+            this.$('input[name=' + group + ']').val(Math.round(this.disk.volume_groups[group] / Math.pow(1000, 3)));
+            this.$('.disk-visual .' + group + ' .delete-volume-group').show();
         },
         initialize: function(options) {
             _.defaults(this, options);
         },
+        renderVisualGraph: function() {
+            var unallocatedWidth = 100, unallocatedSize = Math.round(this.disk.size / Math.pow(1000, 3));
+            _.each(this.node.volumeGroupsByRoles(this.node.get('role')), _.bind(function(group) {
+                var width = Math.round(this.disk.volume_groups[group] / this.disk.size * 100);
+                var size = Math.round(this.disk.volume_groups[group] / Math.pow(1000, 3));
+                this.$('.disk-visual .' + group).css('width', width + '%').find('span:not(.delete-volume-group)').text(size);
+                unallocatedWidth -= width; unallocatedSize -= size;
+            }, this));
+            this.$('.disk-visual .unallocated').css('width', unallocatedWidth + '%').find('span').text(unallocatedSize);
+        },
         render: function() {
             this.$el.html(this.template({
                 disk: this.disk,
-                volumeGroups: this.node.volumeGroups(),
-                nodeRole: this.node.get('role')
+                volumeGroups: this.node.volumeGroupsByRoles(this.node.get('role'))
             }));
+            this.renderVisualGraph();
             return this;
         }
     });

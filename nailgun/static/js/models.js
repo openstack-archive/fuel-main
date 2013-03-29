@@ -148,13 +148,13 @@ define(function() {
     models.Node = Backbone.Model.extend({
         constructorName: 'Node',
         urlRoot: '/api/nodes',
-        volumeGroups: function() {
-            return {
-                base: {label: 'Base system', roles: ['controller', 'compute', 'storage']},
-                vm: {label: 'Virtual Storage', roles: ['compute']},
-                cinder: {label: 'Cinder', roles: ['storage']},
-                unallocated: {label: 'Unallocated', roles: []}
+        volumeGroupsByRoles: function(role) {
+            var volumeGroups =  {
+                controller: ['base'],
+                compute: ['base', 'vm'],
+                storage: ['base', 'cinder']
             };
+            return volumeGroups[role];
         },
         resource: function(resourceName) {
             var resource = 0;
