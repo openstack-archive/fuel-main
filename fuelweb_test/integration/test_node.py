@@ -409,7 +409,7 @@ class TestNode(Base):
                          nodename, mac)
             self._restore_mac_in_ebtables(mac)
             slave.start()
-            nailgun_slave = self._bootstrap_nodes([nodename], 300)[0]
+            nailgun_slave = self._bootstrap_nodes([nodename])[0]
             self.assertEqual(mac.upper(), nailgun_slave['mac'].upper())
             slave.stop()
             admin.restore_snapshot('initial')
@@ -777,7 +777,9 @@ class TestNode(Base):
             logging.debug("Bootstrapped nodes: %s",
                           str([n['mac'] for n in nodes]))
             if (time.time() - timer) > timeout:
-                raise Exception("Slave node agent failed to execute!")
+                raise Exception("Bootstrap nodes discovery failed by timeout."
+                                " Nodes: %s" %
+                                ', '.join([n.name for n in slaves]))
 
             if len(nodes) == full_nodes_len:
                 break
