@@ -64,7 +64,6 @@ function clean {
   rm -f *.json
   rm -f *.log
   rm -f *.pid
-  ./manage.py syncdb > /dev/null
 }
 
 if [ $clean -eq 1 ]; then
@@ -181,6 +180,7 @@ fi
 
 function run_tests {
   clean
+  ./manage.py syncdb > /dev/null
   [ -z "$noseargs" ] && test_args=. || test_args="$noseargs"
   nosetests $noseopts $test_args --verbosity=2
 }
