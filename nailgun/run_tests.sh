@@ -64,6 +64,7 @@ function clean {
   rm -f *.json
   rm -f *.log
   rm -f *.pid
+  ./manage.py syncdb > /dev/null
 }
 
 if [ $clean -eq 1 ]; then
@@ -168,6 +169,7 @@ function run_ui_tests {
             break
         fi
     done
+    ./manage.py dropdb >> /dev/null
     rm $test_server_log_file
     return $result
 }
@@ -184,6 +186,13 @@ function run_tests {
 }
 
 errors=''
+
+trap drop_db INT
+
+function drop_db {
+  ./manage.py dropdb >> /dev/null
+  exit 1
+}
 
 run_tests || errors+=' unittests'
 
