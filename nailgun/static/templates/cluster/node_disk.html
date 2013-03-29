@@ -61,7 +61,8 @@
         <div class="<%= group %>">
           <label><%= volumeGroupsLabels[group] %></label>
           <span class="use-all-ullocated">Use all allocated space</span>
-          <input type="text" class="input-mini" name="<%= group %>" value="<%= Math.round(volumes[group] / Math.pow(1000, 3)) %>" /> GB
+          <% var volume = _.find(volumes, {name: group}) %>
+          <input type="text" class="input-mini" name="<%= group %>" value="<%= Math.round(volume.size / Math.pow(1000, 3)) %>" /> GB
         </div>
       <% }) %>
     </div>

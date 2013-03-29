@@ -243,16 +243,21 @@ define(function() {
         }
     });
 
-    models.Attributes = Backbone.Model.extend({
-        constructorName: 'Attributes',
+    models.Disk = Backbone.Model.extend({
+        constructorName: 'Disk',
         urlRoot: '/api/nodes/',
-        isNew: function() {
-            return false;
-        },
         validate: function(attrs) {
             var errors = {};
-            console.log(attrs);
             return _.isEmpty(errors) ? null : errors;
+        }
+    });
+
+    models.Disks = Backbone.Collection.extend({
+        constructorName: 'Disks',
+        model: models.Disk,
+        url: '/api/nodes/',
+        comparator: function(disk) {
+            return disk.id;
         }
     });
 
