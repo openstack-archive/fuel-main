@@ -1,9 +1,2 @@
-PyYAML==3.10
-distribute==0.6.24
-ipaddr==2.1.10
-lxml==2.3
 nose==1.1.2
-paramiko==1.7.7.2
-pycrypto==2.3
-simplejson==2.6.1
-xmlbuilder==1.0
+git+ssh://git@github.com/Mirantis/devops.git

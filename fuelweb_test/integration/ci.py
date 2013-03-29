@@ -1,6 +1,7 @@
 import os
 import time
 import tempfile
+import random
 
 from devops.model import Environment, Network, Node, Disk, Cdrom, Interface
 from devops.helpers import tcp_ping, wait
@@ -37,6 +38,25 @@ class Ci(object):
             )
             pass
 
+    def configure_iso_network(self, network, node):
+        params = {
+            'ip': node.ip_address,
+            'mask': network.ip_addresses.netmask,
+            'gw': network.ip_addresses[1],
+            'hostname': '.'.join((self.hostname, self.domain))
+        }
+        keys = """<Esc><Enter>
+<Wait>
+vmlinuz initrd=initrd.img ks=cdrom:/ks.cfg
+ ip=%(ip)s
+ netmask=%(mask)s
+ gw=%(gw)s
+ dns1=%(gw)s
+ hostname=%(hostname)s
+ <Enter>
+""" % params
+        node.send_keys(keys)
+
     def setup_environment(self):
         if self.environment:
             return True
@@ -60,21 +80,25 @@ class Ci(object):
             node.memory = 1024
             node.vnc = True
             node.disks.append(
-                Disk(size=30 * 1024 ** 3)
+                Disk(size=10 * 1024 ** 3)
             )
             node.interfaces.append(Interface(network))
             node.cdrom = Cdrom(isopath=self.iso)
             node.boot = ['disk', 'cdrom']
             environment.nodes.append(node)
 
-            for n in range(5):
+            for n in range(9):
                 nodex = Node('slave%d' % (n + 1))
                 nodex.memory = 768
                 nodex.vnc = True
                 nodex.disks.append(
-                    Disk(size=30 * 1024 ** 3)
+                    Disk(size=20 * 1024 ** 3)
                 )
-                nodex.interfaces.append(Interface(network))
+                nodex.disks.append(
+                    Disk(size=10 * 1024 ** 3)
+                )
+                for i in xrange(random.randint(1,4)):
+                    nodex.interfaces.append(Interface(network))
                 nodex.boot = ['network']
                 environment.nodes.append(nodex)
 
@@ -101,23 +125,7 @@ class Ci(object):
         time.sleep(10)
 
         logger.info("Executing admin node software installation")
-        params = {
-            'ip': node.ip_address,
-            'mask': network.ip_addresses.netmask,
-            'gw': network.ip_addresses[1],
-            'hostname': '.'.join((self.hostname, self.domain))
-        }
-        keys = """<Esc><Enter>
-<Wait>
-vmlinuz initrd=initrd.img ks=cdrom:/ks.cfg
- ip=%(ip)s
- netmask=%(mask)s
- gw=%(gw)s
- dns1=%(gw)s
- hostname=%(hostname)s
- <Enter>
-""" % params
-        node.send_keys(keys)
+        self.configure_iso_network(network, node)
 
         logger.info(
             "Waiting for completion of admin node software installation"
@@ -185,22 +193,21 @@ vmlinuz initrd=initrd.img ks=cdrom:/ks.cfg
         return True
 
     def destroy_environment(self):
-        if self.environment:
-            # remove keyfiles and tempdir.
-            try:
-                keyfiles = self.environment.node['admin'].metadata['keyfiles']
-                for name in keyfiles:
-                    try:
-                        os.unlink(name)
-                    except:
-                        logging.info("Can't remove keyfile %r" % name)
+        # remove keyfiles and tempdir.
+        try:
+            keyfiles = self.environment.node['admin'].metadata['keyfiles']
+            for name in keyfiles:
                 try:
-                    os.rmdir(os.path.dirname(name))
+                    os.unlink(name)
                 except:
-                    logging.info("Can't remove tempdir %r",
-                                 os.path.dirname(name))
-            except Exception, e:
-                logging.info("Can't get keyfiles list: %s" % str(e))
+                    logging.info("Can't remove keyfile %r" % name)
+            try:
+                os.rmdir(os.path.dirname(name))
+            except:
+                logging.info("Can't remove tempdir %r" % os.path.dirname(name))
+        except Exception, e:
+            logging.info("Can't get keyfiles list: %s" % str(e))
 
+        if self.environment:
             devops.destroy(self.environment)
         return True
