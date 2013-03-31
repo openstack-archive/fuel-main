@@ -199,8 +199,6 @@ class DeploymentTask(object):
         if not prefix:
             prefix = settings.SYSLOG_DIR
 
-        # if settings.FAKE_TASKS or settings.FAKE_TASKS_AMQP:
-        #     return
         old = os.path.join(prefix, node.ip)
         bak = os.path.join(prefix, "%s.bak" % node.fqnd)
         new = os.path.join(prefix, node.fqdn)
@@ -218,7 +216,7 @@ class DeploymentTask(object):
             os.rename(old, new)
             for l in links:
                 os.symlink(new, l)
-        # kill -HUP rsyslog process
+        os.system("/usr/bin/pkill -HUP rsyslog")
 
     @classmethod
     def _provision(cls, nodes):
@@ -326,7 +324,7 @@ mco_enable=1
                 nd_dict.get('power_type', 'unknown')
             )
             pd.power_reboot(nd_name)
-            DeploymentTask._syslog_dir(node)
+            cls._syslog_dir(node)
         pd.sync()
 
 

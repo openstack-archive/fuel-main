@@ -458,10 +458,6 @@ def fake_tasks(fake_rpc=True, **kwargs):
             'nailgun.task.fake.settings.FAKE_TASKS_TICK_INTERVAL',
             1
         )(func)
-        # func = mock.patch(
-        #     'nailgun.task.task.DeploymentTask._syslog_dir',
-        #     lambda *x, **y: None
-        # )(func)
         if fake_rpc and not kwargs:
             func = mock.patch(
                 'nailgun.task.task.rpc.cast',

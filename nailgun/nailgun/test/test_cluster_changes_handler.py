@@ -57,23 +57,21 @@ class TestHandlers(BaseHandlers):
         msg['args']['task_uuid'] = deploy_task_uuid
         nodes = []
 
-        def ip_from_ips_by_net(ips, net, append_prefixlen=True):
-            append = ""
-            if append_prefixlen:
-                append = "/%s" % IPNetwork(net).prefixlen
-            ip_list = ["%s%s" % (i, append) for i in filter(
-                lambda ip: (IPAddress(ip) in IPNetwork(net)),
-                ips
-            )]
-            if ip_list:
-                return ip_list[0]
-
         for n in sorted(self.env.nodes, key=lambda n: n.id):
-            node_ips = [i.ip_addr for i in self.db.query(IPAddr).
-                        filter_by(node=n.id).
-                        filter_by(admin=False)]
-            node_ip_management = ip_from_ips_by_net(node_ips, '172.16.0.0/24')
-            node_ip_public = ip_from_ips_by_net(node_ips, '240.0.1.0/24')
+
+            nq = self.db.query(Network)
+            q = self.db.query(IPAddr).join(Network).\
+              filter(IPAddr.node == n.id, IPAddr.admin == False)
+
+            """
+            Here we want to get node IP addresses which belong
+            to management and public networks respectively
+            """
+            node_ip_management, node_ip_public = map(
+                lambda x: q.filter_by(name=x).first().ip_addr \
+                + "/" + nq.filter_by(name=x).first().cidr.split('/')[1],
+                ('management', 'public')
+            )
 
             nodes.append({'uid': n.id, 'status': n.status, 'ip': n.ip,
                           'error_type': n.error_type, 'mac': n.mac,
@@ -118,8 +116,17 @@ class TestHandlers(BaseHandlers):
             ]
         )
 
+        nailgun.task.task.DeploymentTask._syslog_dir = Mock()
         nailgun.task.task.Cobbler = Mock()
         self.env.launch_deployment()
+
+        # launch_deployment kicks ClusterChangesHandler
+        # which in turns launches DeploymentTaskManager
+        # which runs DeletionTask and DeploymentTask.
+        # That is why we expect here list of two sets of
+        # arguments in mocked nailgun.rpc.cast
+        # The first set of args is for deletion task and
+        # the second one is for deployment.
 
         # remove_nodes method call
         n_rpc = nailgun.task.task.rpc.cast. \

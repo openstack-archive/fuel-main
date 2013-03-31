@@ -42,10 +42,10 @@ class TestNetworkManager(BaseHandlers):
 
         assigned_ips = []
         for node in nodes:
-            ips = [x for x in self.db.query(IPAddr).
-                   filter_by(node=node.id).
-                   filter_by(network=management_net.id).
-                   filter_by(admin=False).all() if x.ip_addr]
+            ips = self.db.query(IPAddr).\
+              filter_by(node=node.id).\
+              filter_by(network=management_net.id).\
+              filter_by(admin=False).all()
 
             self.assertEquals(1, len(ips))
             self.assertEquals(
@@ -77,9 +77,7 @@ class TestNetworkManager(BaseHandlers):
     def test_assign_vip_is_idempotent(self):
         cluster = self.env.create_cluster(api=True)
         vip = netmanager.assign_vip(cluster['id'], "management")
-        print "vip = %s" % vip
         vip2 = netmanager.assign_vip(cluster['id'], "management")
-        print "vip2 = %s" % vip2
         self.assertEquals(vip, vip2)
 
     def test_get_node_networks_for_vlan_manager(self):
