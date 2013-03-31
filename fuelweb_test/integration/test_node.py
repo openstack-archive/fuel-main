@@ -443,7 +443,7 @@ class TestNode(Base):
         )
         attrs = json.loads(response.read())
         attrs["editable"]["syslog"]["syslog_server"]["value"] = \
-          self.get_host_hode_ip()
+            self.get_host_hode_ip()
         attrs["editable"]["syslog"]["syslog_port"]["value"] = 5514
         self.client.put(
             "/api/clusters/%s/attributes/" % cluster_id,
