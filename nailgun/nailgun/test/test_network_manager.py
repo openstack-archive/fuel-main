@@ -46,9 +46,9 @@ class TestNetworkManager(BaseHandlers):
         assigned_ips = []
         for node in nodes:
             ips = self.db.query(IPAddr).\
-              filter_by(node=node.id).\
-              filter_by(network=management_net.id).\
-              filter_by(admin=False).all()
+                filter_by(node=node.id).\
+                filter_by(network=management_net.id).\
+                filter_by(admin=False).all()
 
             self.assertEquals(1, len(ips))
             self.assertEquals(
@@ -109,8 +109,8 @@ class TestNetworkManager(BaseHandlers):
         netmanager.assign_admin_ips(node.id, 2)
 
         admin_ips = self.db.query(IPAddr).\
-          filter_by(node=node.id).\
-          filter_by(admin=True).all()
+            filter_by(node=node.id).\
+            filter_by(admin=True).all()
         self.assertEquals(len(admin_ips), 2)
         map(
             lambda x: self.assertIn(
@@ -164,7 +164,6 @@ class TestNetworkManager(BaseHandlers):
             ]
         )
 
-
         nailgun.task.task.Cobbler = Mock()
         nailgun.task.task.Cobbler().item_from_dict = Mock()
         nailgun.task.task.DeploymentTask._syslog_dir = Mock()
@@ -173,8 +172,9 @@ class TestNetworkManager(BaseHandlers):
         map(
             lambda i: self.assertIn(
                 IPAddress(
-                    nailgun.task.task.Cobbler().item_from_dict.\
-                    call_args_list[i[0]][0][2]['interfaces'][i[1]]['ip_address']
+                    nailgun.task.task.Cobbler().item_from_dict.
+                    call_args_list[i[0]][0][2]['interfaces']
+                    [i[1]]['ip_address']
                 ),
                 iter_iprange(
                     settings.ADMIN_NETWORK['first'],

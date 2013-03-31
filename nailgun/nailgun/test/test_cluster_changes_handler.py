@@ -61,14 +61,14 @@ class TestHandlers(BaseHandlers):
 
             nq = self.db.query(Network)
             q = self.db.query(IPAddr).join(Network).\
-              filter(IPAddr.node == n.id, IPAddr.admin == False)
+                filter(IPAddr.node == n.id, False == IPAddr.admin)
 
             """
             Here we want to get node IP addresses which belong
             to management and public networks respectively
             """
             node_ip_management, node_ip_public = map(
-                lambda x: q.filter_by(name=x).first().ip_addr \
+                lambda x: q.filter_by(name=x).first().ip_addr
                 + "/" + nq.filter_by(name=x).first().cidr.split('/')[1],
                 ('management', 'public')
             )

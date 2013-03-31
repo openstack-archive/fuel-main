@@ -200,7 +200,7 @@ class DeploymentTask(object):
             prefix = settings.SYSLOG_DIR
 
         old = os.path.join(prefix, node.ip)
-        bak = os.path.join(prefix, "%s.bak" % node.fqnd)
+        bak = os.path.join(prefix, "%s.bak" % node.fqdn)
         new = os.path.join(prefix, node.fqdn)
         links = map(
             lambda i: os.path.join(prefix, *i),
