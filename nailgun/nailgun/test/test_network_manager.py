@@ -1,7 +1,8 @@
 import json
+import itertools
 
 from mock import Mock, patch
-from netaddr import IPNetwork, IPAddress
+from netaddr import IPNetwork, IPAddress, iter_iprange
 
 import nailgun
 from nailgun.test.base import BaseHandlers
@@ -10,6 +11,7 @@ from nailgun.network import manager as netmanager
 from nailgun.db import engine
 from nailgun.api.models import Node, IPAddr
 from nailgun.api.models import Network, NetworkGroup
+from nailgun.settings import settings
 
 
 class TestNetworkManager(BaseHandlers):
@@ -27,6 +29,7 @@ class TestNetworkManager(BaseHandlers):
         #  not via API. It's impossible now because of issues with web.ctx.orm
 
         nailgun.task.task.Cobbler = Mock()
+        nailgun.task.task.DeploymentTask._syslog_dir = Mock()
         self.env.launch_deployment()
 
         nodes = self.db.query(Node).filter_by(
@@ -97,3 +100,86 @@ class TestNetworkManager(BaseHandlers):
         node = self.env.create_node(api=False)
         network_data = netmanager.get_node_networks(node.id)
         self.assertEquals(network_data, [])
+
+    def test_assign_admin_ips(self):
+        """
+        This test checks nailgun.network.manager.assign_admin_ips method
+        """
+        node = self.env.create_node()
+        netmanager.assign_admin_ips(node.id, 2)
+
+        admin_ips = self.db.query(IPAddr).\
+          filter_by(node=node.id).\
+          filter_by(admin=True).all()
+        self.assertEquals(len(admin_ips), 2)
+        map(
+            lambda x: self.assertIn(
+                IPAddress(x.ip_addr),
+                iter_iprange(
+                    settings.ADMIN_NETWORK['first'],
+                    settings.ADMIN_NETWORK['last']
+                )
+            ),
+            admin_ips
+        )
+
+    def test_admin_ip_cobbler(self):
+        """
+        This test is intended for checking if deployment task
+        adds systems to cobbler with multiple interfaces.
+        """
+        self.env.create(
+            cluster_kwargs={},
+            nodes_kwargs=[
+                {
+                    "pending_addition": True,
+                    "meta": {
+                        "interfaces": [
+                            {
+                                "name": "eth0",
+                                "mac": "00:00:00:00:00:00",
+                            },
+                            {
+                                "name": "eth1",
+                                "mac": "00:00:00:00:00:01",
+                            }
+                        ]
+                    }
+                },
+                {
+                    "pending_addition": True,
+                    "meta": {
+                        "interfaces": [
+                            {
+                                "name": "eth0",
+                                "mac": "00:00:00:00:00:02",
+                            },
+                            {
+                                "name": "eth1",
+                                "mac": "00:00:00:00:00:03",
+                            }
+                        ]
+                    }
+                }
+            ]
+        )
+
+
+        nailgun.task.task.Cobbler = Mock()
+        nailgun.task.task.Cobbler().item_from_dict = Mock()
+        nailgun.task.task.DeploymentTask._syslog_dir = Mock()
+        self.env.launch_deployment()
+
+        map(
+            lambda i: self.assertIn(
+                IPAddress(
+                    nailgun.task.task.Cobbler().item_from_dict.\
+                    call_args_list[i[0]][0][2]['interfaces'][i[1]]['ip_address']
+                ),
+                iter_iprange(
+                    settings.ADMIN_NETWORK['first'],
+                    settings.ADMIN_NETWORK['last']
+                )
+            ),
+            itertools.product((0, 1), ('eth0', 'eth1'))
+        )
