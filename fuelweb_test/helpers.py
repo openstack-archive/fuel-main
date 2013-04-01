@@ -1,17 +1,15 @@
-import os
+import socket
+import subprocess
 import urllib2
 import logging
-import posixpath
 import json
-import socket
 import threading
-import sys
 import select
-import time
+from fuelweb_test.integration.decorators import debug
 
-import paramiko
 
 logger = logging.getLogger(__name__)
+logwrap = debug(logger)
 
 """
 Integration test helpers
@@ -27,172 +25,57 @@ class HTTPClient(object):
         req = urllib2.Request(self.url + endpoint)
         return self._open(req)
 
-    def post(self, endpoint, data={}, content_type="application/json"):
+    def post(self, endpoint, data=None, content_type="application/json"):
+        if not data:
+            data = {}
         req = urllib2.Request(self.url + endpoint, data=json.dumps(data))
         req.add_header('Content-Type', content_type)
         return self._open(req)
 
-    def put(self, endpoint, data={}, content_type="application/json"):
+    def put(self, endpoint, data=None, content_type="application/json"):
+        if not data:
+            data = {}
         req = urllib2.Request(self.url + endpoint, data=json.dumps(data))
         req.add_header('Content-Type', content_type)
         req.get_method = lambda: 'PUT'
         return self._open(req)
 
     def _open(self, req):
-        try:
-            res = self.opener.open(req)
-        except urllib2.HTTPError as err:
-            res = type(
-                'HTTPError',
-                (object,),
-                {
-                    'read': lambda s: str(err),
-                    'getcode': lambda s: err.code
-                }
-            )()
-        return res
-
-
-class SSHClient(object):
-    class get_sudo(object):
-        def __init__(self, client):
-            self.client = client
-
-        def __enter__(self):
-            self.client.sudo_mode = True
-
-        def __exit__(self, type, value, traceback):
-            self.client.sudo_mode = False
-
-    def __init__(self):
-        self.channel = None
-        self.sudo_mode = False
-        self.sudo = self.get_sudo(self)
-        self.established = False
-
-    def connect_ssh(self, host, username=None, password=None,
-                    key_filename=None):
-        if not self.established:
-            self.ssh_client = paramiko.SSHClient()
-            self.ssh_client.set_missing_host_key_policy(
-                paramiko.AutoAddPolicy()
-            )
-            self.host = host
-            self.username = username
-            self.password = password
-            self.key_filename = key_filename
-            self.ssh_client.connect(host, username=username, password=password,
-                                    key_filename=key_filename)
-            self.sftp_client = self.ssh_client.open_sftp()
-            self.established = True
-
-    def execute(self, command):
-        logger.debug("Executing command: '%s'" % command.rstrip())
-        chan = self.ssh_client.get_transport().open_session()
-        stdin = chan.makefile('wb')
-        stdout = chan.makefile('rb')
-        stderr = chan.makefile_stderr('rb')
-        cmd = "%s\n" % command
-        if self.sudo_mode:
-            cmd = 'sudo -S bash -c "%s"' % cmd.replace('"', '\\"')
-        chan.exec_command(cmd)
-        if stdout.channel.closed is False:
-            stdin.write('%s\n' % self.password)
-            stdin.flush()
-        result = {
-            'stdout': [],
-            'stderr': [],
-            'exit_status': chan.recv_exit_status()
-        }
-        for line in stdout:
-            result['stdout'].append(line)
-        for line in stderr:
-            result['stderr'].append(line)
-
-        return result
-
-    def mkdir(self, path):
-        logger.debug("Creating directory: %s" % path)
-        return self.execute("mkdir %s\n" % path)
-
-    def rmdir(self, path):
-        logger.debug("Removing directory: %s" % path)
-        return self.execute("rm -rf %s" % path)
-
-    def open(self, path, mode='r'):
-        return self.sftp_client.open(path, mode)
-
-    def scp(self, frm, to):
-        logger.debug("Copying file: %s -> %s" % (frm, to))
-        self.sftp_client.put(frm, to)
-
-    def scp_d(self, frm, to):
-        logger.debug("Copying directory: %s -> %s" % (frm, to))
-        remote_root = posixpath.join(
-            to,
-            os.path.basename(frm)
-        )
-        for root, dirs, fls in os.walk(frm):
-            rel = os.path.relpath(root, frm).replace('\\', '/')
-            if rel == ".":
-                curdir = remote_root
-            else:
-                curdir = posixpath.join(remote_root, rel)
-            self.mkdir(curdir)
-            for fl in fls:
-                self.scp(
-                    os.path.join(root, fl),
-                    posixpath.join(curdir, fl)
-                )
-
-    def disconnect(self):
-        self.sftp_client.close()
-        self.ssh_client.close()
-        self.established = False
+        return self.opener.open(req)
 
 
 class LogServer(threading.Thread):
+    @logwrap
     def __init__(self, address="localhost", port=5514):
-        self.port = port
-        logger.debug("Initializing LogServer: %s:%s",
-                     str(address), str(port))
         super(LogServer, self).__init__()
         self.socket = socket.socket(
             socket.AF_INET, socket.SOCK_DGRAM
         )
-        while True:
-            try:
-                logger.debug("Trying to bind port %s", str(self.port))
-                self.socket.bind((str(address), self.port))
-            except socket.error:
-                logger.debug(
-                    "Socket error occured while binding port %s",
-                    str(self.port)
-                )
-                self.port += 1
-                if self.port > port + 1000:
-                    raise
-                continue
-            else:
-                break
+        self.socket.bind((str(address), port))
         self.rlist = [self.socket]
         self._stop = threading.Event()
-        self._handler = self.default_handler
+        self._handler = self.handler
+        self._status = False
 
-    def bound_port(self):
-        return self.port
-
-    @classmethod
-    def default_handler(cls, message):
+    def handler(self, messages):
         pass
+
+    def set_status(self, status):
+        self._status = status
+
+    def get_status(self):
+        return self._status
 
     def set_handler(self, handler):
         self._handler = handler
 
+    @logwrap
     def stop(self):
-        logger.debug("LogServer is stopping ...")
         self.socket.close()
         self._stop.set()
+
+    def started(self):
+        return not self._stop.is_set()
 
     def rude_join(self, timeout=None):
         self._stop.set()
@@ -201,17 +84,80 @@ class LogServer(threading.Thread):
     def join(self, timeout=None):
         self.rude_join(timeout)
 
+    @logwrap
     def run(self):
-        logger.debug("LogServer is listening for messages ...")
-        while not self._stop.is_set():
+        while self.started():
             r, w, e = select.select(self.rlist, [], [], 1)
             if self.socket in r:
                 message, addr = self.socket.recvfrom(2048)
                 self._handler(message)
 
-    def __enter__(self):
-        self.start()
-        return self
 
-    def __exit__(self, type, value, traceback):
-        self.rude_join()
+class TriggeredLogServer(LogServer):
+    def __init__(self, address="localhost", port=5514):
+        super(TriggeredLogServer, self).__init__(address, port)
+        self.set_handler(self.handler)
+
+    def handler(self, message):
+        self.set_status(True)
+
+
+class Ebtables(object):
+    def __init__(self, target_devs, vlans):
+        super(Ebtables, self).__init__()
+        self.target_devs = target_devs
+        self.vlans = vlans
+
+    @logwrap
+    def restore_vlans(self):
+        for vlan in self.vlans:
+            for target_dev in self.target_devs:
+                Ebtables.restore_vlan(target_dev, vlan)
+
+    @logwrap
+    def restore_first_vlan(self):
+        for target_dev in self.target_devs:
+            Ebtables.restore_vlan(target_dev, self.vlans[0])
+
+    @logwrap
+    def block_first_vlan(self):
+        for target_dev in self.target_devs:
+            Ebtables.block_vlan(target_dev, self.vlans[0])
+
+    @staticmethod
+    @logwrap
+    def block_mac(mac):
+        return subprocess.check_output(
+            ['sudo', 'ebtables', '-t', 'filter', '-A', 'FORWARD', '-s',
+             mac, '-j', 'DROP'],
+            stderr=subprocess.STDOUT
+        )
+
+    @staticmethod
+    @logwrap
+    def restore_mac(mac):
+        return subprocess.call(
+            [
+                'sudo', 'ebtables', '-t', 'filter',
+                '-D', 'FORWARD', '-s', mac, '-j', 'DROP'
+            ],
+            stderr=subprocess.STDOUT,
+        )
+
+    @staticmethod
+    @logwrap
+    def restore_vlan(target_dev, vlan):
+        return subprocess.call(
+            ['sudo', 'ebtables', '-t', 'broute', '-D', 'BROUTING', '-i',
+             target_dev, '-p', '8021Q', '--vlan-id', str(vlan), '-j', 'DROP'],
+            stderr=subprocess.STDOUT,
+        )
+
+    @staticmethod
+    @logwrap
+    def block_vlan(target_dev, vlan):
+        return subprocess.check_output(
+            ['sudo', 'ebtables', '-t', 'broute', '-A', 'BROUTING', '-i',
+             target_dev, '-p', '8021Q', '--vlan-id',  str(vlan), '-j', 'DROP'],
+            stderr=subprocess.STDOUT
+        )
