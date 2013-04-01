@@ -214,9 +214,13 @@ class DeploymentTask(object):
         # rename bootstrap directory into fqdn
         if os.path.isdir(old):
             os.rename(old, new)
-            for l in links:
+        else:
+            os.makedirs(new)
+        # creating symlinks
+        for l in links:
+            if os.access(l, os.F_OK):
                 os.remove(l)
-                os.symlink(new, l)
+            os.symlink(new, l)
         os.system("/usr/bin/pkill -HUP rsyslog")
 
     @classmethod
