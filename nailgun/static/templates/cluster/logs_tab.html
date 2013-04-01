@@ -1,135 +1,3 @@
-<style>
-.disk-box {
-  display: block;
-  margin-left: 20px;
-  margin-bottom: 30px;
-  margin-top: 10px;
-}
-
-.disk-box-name {
-  font-size: 18px;
-  color: #333333;
-  margin-bottom: 8px;
-}
-
-.disk-box-size {
-  font-size: 14px;
-  color: #555555;
-  margin-bottom: 8px;
-}
-
-.disk-map-short {
-  clear: both;
-  display: block;
-  height: 60px;
-  background-color: #ffffff;
-  border: 1px solid #999999;
-  padding: 1px;
-  box-sizing: border-box;
-  -moz-box-sizing: border-box;
-  -webkit-box-sizing: border-box;
-}
-.disk-map-short:hover {
-  -webkit-box-shadow: 0 0 8px rgba(0,0,0,.3);
-  -moz-box-shadow: 0 0 8px rgba(0,0,0,.3);
-  box-shadow: 0 0 8px rgba(0,0,0,.3);
-  cursor: pointer;
-  border-color: #777777;
-}
-.disk-map-full {
-  clear: both;
-  display: block;
-  background-color: #ffffff;
-  border: 1px solid #999999;
-  padding: 1px;
-  box-sizing: border-box;
-  -moz-box-sizing: border-box;
-  -webkit-box-sizing: border-box;
-}
-.disk-map-full:hover {
-  cursor: pointer;
-}
-.disk-map-details {
-  border-left: 1px solid #999999;
-  border-right: 1px solid #999999;
-  border-bottom: 1px solid #999999;
-  background-color: #f0f0f0;
-}
-.volume-group {
-  display: inline-block;
-  float: left;
-  height: 56px;
-  text-align: center;
-  color: #ffffff;
-}
-.base-system {
-  overflow: hidden;
-  background: #23a85e; /* Old browsers */
-  /* IE9 SVG, needs conditional override of 'filter' to 'none' */
-  background: url(data:image/svg+xml;base64,PD94bWwgdmVyc2lvbj0iMS4wIiA/Pgo8c3ZnIHhtbG5zPSJodHRwOi8vd3d3LnczLm9yZy8yMDAwL3N2ZyIgd2lkdGg9IjEwMCUiIGhlaWdodD0iMTAwJSIgdmlld0JveD0iMCAwIDEgMSIgcHJlc2VydmVBc3BlY3RSYXRpbz0ibm9uZSI+CiAgPGxpbmVhckdyYWRpZW50IGlkPSJncmFkLXVjZ2ctZ2VuZXJhdGVkIiBncmFkaWVudFVuaXRzPSJ1c2VyU3BhY2VPblVzZSIgeDE9IjAlIiB5MT0iMCUiIHgyPSIwJSIgeTI9IjEwMCUiPgogICAgPHN0b3Agb2Zmc2V0PSIwJSIgc3RvcC1jb2xvcj0iIzIzYTg1ZSIgc3RvcC1vcGFjaXR5PSIxIi8+CiAgICA8c3RvcCBvZmZzZXQ9IjEwMCUiIHN0b3AtY29sb3I9IiMxZDhhNGQiIHN0b3Atb3BhY2l0eT0iMSIvPgogIDwvbGluZWFyR3JhZGllbnQ+CiAgPHJlY3QgeD0iMCIgeT0iMCIgd2lkdGg9IjEiIGhlaWdodD0iMSIgZmlsbD0idXJsKCNncmFkLXVjZ2ctZ2VuZXJhdGVkKSIgLz4KPC9zdmc+);
-  background: -moz-linear-gradient(top,  #23a85e 0%, #1d8a4d 100%); /* FF3.6+ */
-  background: -webkit-gradient(linear, left top, left bottom, color-stop(0%,#23a85e), color-stop(100%,#1d8a4d)); /* Chrome,Safari4+ */
-  background: -webkit-linear-gradient(top,  #23a85e 0%,#1d8a4d 100%); /* Chrome10+,Safari5.1+ */
-  background: -o-linear-gradient(top,  #23a85e 0%,#1d8a4d 100%); /* Opera 11.10+ */
-  background: -ms-linear-gradient(top,  #23a85e 0%,#1d8a4d 100%); /* IE10+ */
-  background: linear-gradient(to bottom,  #23a85e 0%,#1d8a4d 100%); /* W3C */
-  filter: progid:DXImageTransform.Microsoft.gradient( startColorstr='#23a85e', endColorstr='#1d8a4d',GradientType=0 ); /* IE6-8 */
-}
-.virtual-storage {
-  overflow: hidden;
-  background: #3582ce; /* Old browsers */
-  /* IE9 SVG, needs conditional override of 'filter' to 'none' */
-  background: url(data:image/svg+xml;base64,PD94bWwgdmVyc2lvbj0iMS4wIiA/Pgo8c3ZnIHhtbG5zPSJodHRwOi8vd3d3LnczLm9yZy8yMDAwL3N2ZyIgd2lkdGg9IjEwMCUiIGhlaWdodD0iMTAwJSIgdmlld0JveD0iMCAwIDEgMSIgcHJlc2VydmVBc3BlY3RSYXRpbz0ibm9uZSI+CiAgPGxpbmVhckdyYWRpZW50IGlkPSJncmFkLXVjZ2ctZ2VuZXJhdGVkIiBncmFkaWVudFVuaXRzPSJ1c2VyU3BhY2VPblVzZSIgeDE9IjAlIiB5MT0iMCUiIHgyPSIwJSIgeTI9IjEwMCUiPgogICAgPHN0b3Agb2Zmc2V0PSIwJSIgc3RvcC1jb2xvcj0iIzM1ODJjZSIgc3RvcC1vcGFjaXR5PSIxIi8+CiAgICA8c3RvcCBvZmZzZXQ9IjEwMCUiIHN0b3AtY29sb3I9IiMyYjZiYTkiIHN0b3Atb3BhY2l0eT0iMSIvPgogIDwvbGluZWFyR3JhZGllbnQ+CiAgPHJlY3QgeD0iMCIgeT0iMCIgd2lkdGg9IjEiIGhlaWdodD0iMSIgZmlsbD0idXJsKCNncmFkLXVjZ2ctZ2VuZXJhdGVkKSIgLz4KPC9zdmc+);
-  background: -moz-linear-gradient(top,  #3582ce 0%, #2b6ba9 100%); /* FF3.6+ */
-  background: -webkit-gradient(linear, left top, left bottom, color-stop(0%,#3582ce), color-stop(100%,#2b6ba9)); /* Chrome,Safari4+ */
-  background: -webkit-linear-gradient(top,  #3582ce 0%,#2b6ba9 100%); /* Chrome10+,Safari5.1+ */
-  background: -o-linear-gradient(top,  #3582ce 0%,#2b6ba9 100%); /* Opera 11.10+ */
-  background: -ms-linear-gradient(top,  #3582ce 0%,#2b6ba9 100%); /* IE10+ */
-  background: linear-gradient(to bottom,  #3582ce 0%,#2b6ba9 100%); /* W3C */
-  filter: progid:DXImageTransform.Microsoft.gradient( startColorstr='#3582ce', endColorstr='#2b6ba9',GradientType=0 ); /* IE6-8 */
-}
-.cinder {
-  overflow: hidden;
-  background: #eea616; /* Old browsers */
-  /* IE9 SVG, needs conditional override of 'filter' to 'none' */
-  background: url(data:image/svg+xml;base64,PD94bWwgdmVyc2lvbj0iMS4wIiA/Pgo8c3ZnIHhtbG5zPSJodHRwOi8vd3d3LnczLm9yZy8yMDAwL3N2ZyIgd2lkdGg9IjEwMCUiIGhlaWdodD0iMTAwJSIgdmlld0JveD0iMCAwIDEgMSIgcHJlc2VydmVBc3BlY3RSYXRpbz0ibm9uZSI+CiAgPGxpbmVhckdyYWRpZW50IGlkPSJncmFkLXVjZ2ctZ2VuZXJhdGVkIiBncmFkaWVudFVuaXRzPSJ1c2VyU3BhY2VPblVzZSIgeDE9IjAlIiB5MT0iMCUiIHgyPSIwJSIgeTI9IjEwMCUiPgogICAgPHN0b3Agb2Zmc2V0PSIwJSIgc3RvcC1jb2xvcj0iI2VlYTYxNiIgc3RvcC1vcGFjaXR5PSIxIi8+CiAgICA8c3RvcCBvZmZzZXQ9IjEwMCUiIHN0b3AtY29sb3I9IiNjMzg4MTIiIHN0b3Atb3BhY2l0eT0iMSIvPgogIDwvbGluZWFyR3JhZGllbnQ+CiAgPHJlY3QgeD0iMCIgeT0iMCIgd2lkdGg9IjEiIGhlaWdodD0iMSIgZmlsbD0idXJsKCNncmFkLXVjZ2ctZ2VuZXJhdGVkKSIgLz4KPC9zdmc+);
-  background: -moz-linear-gradient(top,  #eea616 0%, #c38812 100%); /* FF3.6+ */
-  background: -webkit-gradient(linear, left top, left bottom, color-stop(0%,#eea616), color-stop(100%,#c38812)); /* Chrome,Safari4+ */
-  background: -webkit-linear-gradient(top,  #eea616 0%,#c38812 100%); /* Chrome10+,Safari5.1+ */
-  background: -o-linear-gradient(top,  #eea616 0%,#c38812 100%); /* Opera 11.10+ */
-  background: -ms-linear-gradient(top,  #eea616 0%,#c38812 100%); /* IE10+ */
-  background: linear-gradient(to bottom,  #eea616 0%,#c38812 100%); /* W3C */
-  filter: progid:DXImageTransform.Microsoft.gradient( startColorstr='#eea616', endColorstr='#c38812',GradientType=0 ); /* IE6-8 */
-}
-.unallocated {
-  overflow: hidden;
-  background: #afafaf; /* Old browsers */
-  /* IE9 SVG, needs conditional override of 'filter' to 'none' */
-  background: url(data:image/svg+xml;base64,PD94bWwgdmVyc2lvbj0iMS4wIiA/Pgo8c3ZnIHhtbG5zPSJodHRwOi8vd3d3LnczLm9yZy8yMDAwL3N2ZyIgd2lkdGg9IjEwMCUiIGhlaWdodD0iMTAwJSIgdmlld0JveD0iMCAwIDEgMSIgcHJlc2VydmVBc3BlY3RSYXRpbz0ibm9uZSI+CiAgPGxpbmVhckdyYWRpZW50IGlkPSJncmFkLXVjZ2ctZ2VuZXJhdGVkIiBncmFkaWVudFVuaXRzPSJ1c2VyU3BhY2VPblVzZSIgeDE9IjAlIiB5MT0iMCUiIHgyPSIwJSIgeTI9IjEwMCUiPgogICAgPHN0b3Agb2Zmc2V0PSIwJSIgc3RvcC1jb2xvcj0iI2FmYWZhZiIgc3RvcC1vcGFjaXR5PSIxIi8+CiAgICA8c3RvcCBvZmZzZXQ9IjEwMCUiIHN0b3AtY29sb3I9IiNkNWQ1ZDUiIHN0b3Atb3BhY2l0eT0iMSIvPgogIDwvbGluZWFyR3JhZGllbnQ+CiAgPHJlY3QgeD0iMCIgeT0iMCIgd2lkdGg9IjEiIGhlaWdodD0iMSIgZmlsbD0idXJsKCNncmFkLXVjZ2ctZ2VuZXJhdGVkKSIgLz4KPC9zdmc+);
-  background: -moz-linear-gradient(top,  #afafaf 0%, #d5d5d5 100%); /* FF3.6+ */
-  background: -webkit-gradient(linear, left top, left bottom, color-stop(0%,#afafaf), color-stop(100%,#d5d5d5)); /* Chrome,Safari4+ */
-  background: -webkit-linear-gradient(top,  #afafaf 0%,#d5d5d5 100%); /* Chrome10+,Safari5.1+ */
-  background: -o-linear-gradient(top,  #afafaf 0%,#d5d5d5 100%); /* Opera 11.10+ */
-  background: -ms-linear-gradient(top,  #afafaf 0%,#d5d5d5 100%); /* IE10+ */
-  background: linear-gradient(to bottom,  #afafaf 0%,#d5d5d5 100%); /* W3C */
-  filter: progid:DXImageTransform.Microsoft.gradient( startColorstr='#afafaf', endColorstr='#d5d5d5',GradientType=0 ); /* IE6-8 */
-  color: #555555;
-}
-.volume-group-name {
-  font-size: 16px;
-  margin-top: 8px;
-  text-shadow: 0 0 2px rgba(0,0,0,.5);
-}
-.volume-group-size {
-  font-size: 11px; 
-  text-shadow: 0 0 2px rgba(0,0,0,.5);
-}
-.unallocated > .volume-group-name {
-  text-shadow: 1px 0 0 rgba(255,255,255,.3);
-  margin-top: 16px;
-}
-</style>
-
 <div class="wrapper">
   <h3 class="span12">Disk Utility</h3>
 
@@ -141,27 +9,33 @@
       <div class="disk-box-size pull-right">Total Space: 500 GB</div>
       
       <div class="disk-map-short">
+
+        <div class="disk-map-image">
         
-        <div class="volume-group base-system" style="width: 30%;">
-          <div class="volume-group-name">Base System</div>
-          <div class="volume-group-size">300 GB</div>
-        </div>
+          <!-- base system -->
+          <div class="volume-group base-system" style="width: 30%;">
+            <div class="volume-group-name">Base System</div>
+            <div class="volume-group-size">300 GB</div>
+          </div>
 
-        <div class="volume-group cinder" style="width: 10%;">
-          <div class="volume-group-name">Cinder</div>
-          <div class="volume-group-size">100 GB</div>
-        </div>
+          <!-- cinder -->
+          <div class="volume-group cinder" style="width: 10%;">
+            <div class="volume-group-name">Cinder</div>
+            <div class="volume-group-size">100 GB</div>
+          </div>
 
-        <div class="volume-group virtual-storage" style="width: 40%;">
-          <div class="volume-group-name">Virtual Storage</div>
-          <div class="volume-group-size">400 GB</div>
-        </div>
+          <!-- Virtual Storage -->
+          <div class="volume-group virtual-storage" style="width: 40%;">
+            <div class="volume-group-name">Virtual Storage</div>
+            <div class="volume-group-size">400 GB</div>
+          </div>
 
-        <div class="volume-group unallocated" style="width: 20%;">
-          <div class="volume-group-name">Unallocated</div>
-        </div>
+          <!-- unallocated -->
+          <div class="volume-group unallocated" style="width: 20%;">
+            <div class="volume-group-name">Unallocated</div>
+          </div>
 
-        <div class="clearfix"></div>
+        </div>
 
       </div>
     </div>
@@ -173,55 +47,80 @@
       <div class="disk-box-size pull-right">Total Space: 4 TB</div>
       
       <div class="disk-map-full">
+
+        <div class="disk-map-image">
         
-        <div class="volume-group base-system" style="width: 15%;">
-          <div class="volume-group-name">Base System</div>
-          <div class="volume-group-size">100 GB</div>
-        </div>
+          <div class="volume-group base-system" style="width: 15%;">
+            <div class="volume-group-name">Base System</div>
+            <div class="volume-group-size">100 GB</div>
+          </div>
 
-        <div class="volume-group virtual-storage" style="width: 45%;">
-          <div class="volume-group-name">Virtual Storage</div>
-          <div class="volume-group-size">200 GB</div>
-        </div>
+          <div class="volume-group virtual-storage" style="width: 45%;">
+            <div class="volume-group-name">Virtual Storage</div>
+            <div class="volume-group-size">200 GB</div>
+          </div>
 
-        <div class="volume-group unallocated" style="width: 40%;">
-          <div class="volume-group-name">Unallocated</div>
-        </div>
+          <div class="volume-group unallocated" style="width: 40%;">
+            <div class="volume-group-name">Unallocated</div>
+          </div>
 
-        <div class="clearfix"></div>
+        </div>
 
       </div>
 
       <div class="disk-map-details">
-        <div class="" style="width: 45%; float: left; padding: 14px; box-sizing: border-box; -moz-box-sizing: border-box; -webkit-box-sizing: border-box;">
-          <div class="" style="font-size: 16px; color: #555555; text-shadow: 1px 0 0 rgba(255,255,255,1); margin-bottom: 10px;">Disk Information</div>
+        <div class="disk-info-box">
+          <div class="disk-box-title">Disk Information</div>
           
-          <div class="" style="display: block; clear: both; min-height: 12px; margin-bottom: 18px;">
-            <div class="" style="font-size: 14px; color: #555555; width: 60px; float:left;">Name:</div>
-            <div class="" style="font-size: 16px; color: #333333; float: left;">V_Storage2</div>
+          <div class="disk-map-details-item">
+            <div class="disk-map-details-name">Name:</div>
+            <div class="disk-map-details-parameter">V_Storage2</div>
           </div>
-          <div class="" style="display: block; clear: both; min-height: 12px; margin-bottom: 18px;">
-            <div class="" style="font-size: 14px; color: #555555; width: 60px; float:left;">Type:</div>
-            <div class="" style="font-size: 16px; color: #333333; float: left;">HDD</div>
+          <div class="disk-map-details-item">
+            <div class="disk-map-details-name">Type:</div>
+            <div class="disk-map-details-parameter">HDD</div>
           </div>
-          <div class="" style="display: block; clear: both; min-height: 12px; margin-bottom: 18px;">
-            <div class="" style="font-size: 14px; color: #555555; width: 60px; float:left;">Model:</div>
-            <div class="" style="font-size: 16px; color: #333333; float: left;">WD Caviar Green WD15EZRX</div>
+          <div class="disk-map-details-item">
+            <div class="disk-map-details-name">Model:</div>
+            <div class="disk-map-details-parameter">WD Caviar Green WD15EZRX</div>
           </div>
-          <div class="" style="display: block; clear: both; min-height: 12px; margin-bottom: 18px;">
-            <div class="" style="font-size: 14px; color: #555555; width: 60px; float:left;">Size:</div>
-            <div class="" style="font-size: 16px; color: #333333; float: left;">1,5 TB</div>
+          <div class="disk-map-details-item">
+            <div class="disk-map-details-name">Size:</div>
+            <div class="disk-map-details-parameter">4 TB</div>
           </div>
-          <div class="" style="display: block; clear: both; min-height: 12px; margin-bottom: 18px;">
-            <div class="" style="font-size: 14px; color: #555555; width: 60px; float:left;">Speed:</div>
-            <div class="" style="font-size: 16px; color: #333333; float: left;">7200 rpm</div>
+          <div class="disk-map-details-item">
+            <div class="disk-map-details-name">Speed:</div>
+            <div class="disk-map-details-parameter">7200 rpm</div>
           </div>
         </div>
-        <div class="" style="width: 55%; float: left; padding: 14px; box-sizing: border-box; -moz-box-sizing: border-box; -webkit-box-sizing: border-box;">
-          <div class="" style="font-size: 16px; color: #555555; text-shadow: 1px 0 0 rgba(255,255,255,1); margin-bottom: 10px;">Disk Utility</div>
-          <div style="display: block; height: 50px; border: 1px solid #d0d0d0; background-color: #e5e5e5; margin-bottom: 10px;">111</div>
-          <div style="display: block; height: 50px; border: 1px solid #d0d0d0; background-color: #e5e5e5; margin-bottom: 10px;">222</div>
-          <div style="display: block; height: 50px; border: 1px solid #d0d0d0; background-color: #e5e5e5; margin-bottom: 10px;">333</div>
+
+        <div class="disk-utility-box">
+          <div class="disk-box-title">Disk Utility</div>
+          
+          <div class="volume-group-box">
+            <div class="volume-group-box-flag-basesystem"></div>
+            <div class="volume-group-box-name">Base System</div>
+            <div class="volume-group-box-edit"><a href="#">Use All Unallocated Space</a></div>
+            <div class="volume-group-box-input"><input class="span1" type="text" placeholder="100"></div>
+            <div class="volume-group-box-sizetype">GB</div>
+          </div>
+
+          <div class="volume-group-box">
+            <div class="volume-group-box-flag-cinder"></div>
+            <div class="volume-group-box-name">Cinder</div>
+            <div class="volume-group-box-edit"><a href="#">Use All Unallocated Space</a></div>
+            <div class="volume-group-box-input"><input class="span1" type="text" placeholder="0"></div>
+            <div class="volume-group-box-sizetype">GB</div>
+          </div>
+
+          <div class="volume-group-box">
+            <div class="volume-group-box-flag-virtualstorage"></div>
+            <div class="volume-group-box-name">Virtual Storage</div>
+            <div class="volume-group-box-edit"><a href="#">Use All Unallocated Space</a></div>
+            <div class="volume-group-box-input"><input class="span1" type="text" placeholder="200"></div>
+            <div class="volume-group-box-sizetype">GB</div>
+          </div>
+          
         </div>
         <div class="clearfix"></div>
       </div>
@@ -236,22 +135,23 @@
       
       <div class="disk-map-short">
         
+        <div class="disk-map-image">
 
-        <div class="volume-group cinder" style="width: 10%;">
-          <div class="volume-group-name">Cinder</div>
-          <div class="volume-group-size">100 GB</div>
+          <div class="volume-group cinder" style="width: 10%;">
+            <div class="volume-group-name">Cinder</div>
+            <div class="volume-group-size">100 GB</div>
+          </div>
+
+          <div class="volume-group virtual-storage" style="width: 40%;">
+            <div class="volume-group-name">Virtual Storage</div>
+            <div class="volume-group-size">400 GB</div>
+          </div>
+
+          <div class="volume-group unallocated" style="width: 50%;">
+            <div class="volume-group-name">Unallocated</div>
+          </div>
+
         </div>
-
-        <div class="volume-group virtual-storage" style="width: 40%;">
-          <div class="volume-group-name">Virtual Storage</div>
-          <div class="volume-group-size">400 GB</div>
-        </div>
-
-        <div class="volume-group unallocated" style="width: 50%;">
-          <div class="volume-group-name">Unallocated</div>
-        </div>
-
-        <div class="clearfix"></div>
 
       </div>
     </div>
@@ -264,19 +164,32 @@
       
       <div class="disk-map-short">
         
+        <div class="disk-map-image">
+      
+          <div class="volume-group cinder" style="width: 100%;">
+            <div class="volume-group-name">Cinder</div>
+            <div class="volume-group-size">200 GB</div>
+          </div>
 
-        <div class="volume-group cinder" style="width: 100%;">
-          <div class="volume-group-name">Cinder</div>
-          <div class="volume-group-size">200 GB</div>
         </div>
-
-        <div class="clearfix"></div>
 
       </div>
     </div>
     <!-- disk block short end -->
 
   </div>
+
+  <!-- page-control box -->
+  <div class="row">
+    <div class="page-control-box">
+      <div class="page-control-button-placeholder">
+        <button class="btn btn-load-defaults">Load Defaults</button>
+        <button class="btn btn-revert-changes" disabled>Cancel Changes</button>
+        <button class="btn btn-success btn-apply-changes" disabled>Save Settings</button>
+      </div>
+    </div>
+  </div>
+
 </div>
 
 <!-- ORIGINAL CONTENT -->
