@@ -94,7 +94,7 @@ class JSONHandler(object):
             else:
                 value = getattr(instance, field)
                 if value is None:
-                    pass
+                    json_data[field] = value
                 else:
                     f = getattr(instance.__class__, field)
                     if hasattr(f, "impl"):
