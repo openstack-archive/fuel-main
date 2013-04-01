@@ -17,7 +17,8 @@
                 {
                   "size": 100000022933376,
                   "model": "TOSHIBA MK3259GS",
-                  "name": "sda"
+                  "name": "sda",
+                  "disk": "blablabla1"
                 }
               ],
               "interfaces": [
@@ -97,7 +98,74 @@
             "role": null,
             "ip": "10.0.12.47",
             "fqdn": "",
-            "mac": "46:FC:5A:0C:F9:51"
+            "mac": "46:FC:5A:0C:F9:51",
+            "meta": {
+              "disks": [
+                {
+                    "size": 2147483648000,
+                    "model": "HITACHI LOL404",
+                    "name": "sda",
+                    "disk": "blablabla2"
+                },
+                {
+                    "model": "SEAGATE B00B135",
+                    "name": "vda",
+                    "size": 2147483648000,
+                    "disk": "blablabla3"
+                }
+              ],
+              "interfaces": [
+                {
+                  "mac": "46:FC:5A:0C:F9:51",
+                  "name": "eth0",
+                  "max_speed": 1000,
+                  "current_speed": 100
+                },
+                {
+                  "mac": "D4:56:C3:88:99:92",
+                  "name": "eth0:1",
+                  "max_speed": 2000,
+                  "current_speed": null
+                }
+              ],
+              "cpu": {
+                "total": 4,
+                "real": 2,
+                "spec": [
+                  {
+                    "frequency": 1200,
+                    "model": "Intel(R) Core(TM)2 Duo CPU T6570 @ 1.20GHz"
+                  },
+                  {
+                    "frequency": 1200,
+                    "model": "Intel(R) Core(TM)2 Duo CPU T6570 @ 1.20GHz"
+                  },
+                  {
+                    "frequency": 2100,
+                    "model": "Intel(R) Core(TM)2 Duo CPU T6570 @ 2.10GHz"
+                  },
+                  {
+                    "frequency": 2100,
+                    "model": "Intel(R) Core(TM)2 Duo CPU T6570 @ 2.10GHz"
+                  }
+                ]
+              },
+              "memory": {
+                "devices": [
+                    {"size": 805306368}
+                  ],
+                  "slots": 1,
+                  "total": 805306368,
+                  "maximum_capacity": 805306368
+              },
+              "system": {
+                "version": "Power Edge 2970",
+                "manufacturer": "Dell",
+                "product": "QWERTY",
+                "serial": "123456",
+                "family": "Power Edge"
+              }
+            }
         }
     },
     {
@@ -113,7 +181,75 @@
             "ip": "10.0.12.49",
             "fqdn": "",
             "mac": "2E:04:78:86:69:1F",
-            "progress": 40
+            "progress": 40,
+            "meta": {
+              "disks": [
+                {
+                    "size": 1073741824000,
+                    "model": "SAMSUNG OMG777",
+                    "name": "sda",
+                    "disk": "blablabla4"
+                },
+                {
+                    "model": "MAXTOR D3ADB33F",
+                    "name": "vda",
+                    "size": 1073741824000,
+                    "disk": "blablabla5"
+                }
+              ],
+              "interfaces": [
+                {
+                  "mac": "2E:04:78:86:69:1F",
+                  "name": "eth0",
+                  "max_speed": 1000,
+                  "current_speed": 100
+                },
+                {
+                  "mac": "C8:01:E9:A7:33:25",
+                  "name": "eth1",
+                  "max_speed": 100,
+                  "current_speed": 100
+                }
+              ],
+              "cpu": {
+                "total": 4,
+                "real": 2,
+                "spec": [
+                  {
+                    "frequency": 1200,
+                    "model": "Intel(R) Core(TM)2 Duo CPU T6570 @ 1.20GHz"
+                  },
+                  {
+                    "frequency": 1200,
+                    "model": "Intel(R) Core(TM)2 Duo CPU T6570 @ 1.20GHz"
+                  },
+                  {
+                    "frequency": 2100,
+                    "model": "Intel(R) Core(TM)2 Duo CPU T6570 @ 2.10GHz"
+                  },
+                  {
+                    "frequency": 2100,
+                    "model": "Intel(R) Core(TM)2 Duo CPU T6570 @ 2.10GHz"
+                  }
+                ]
+              },
+              "memory": {
+                "devices": [
+                    {"size": 805306368},
+                    {"size": 1073741824}
+                  ],
+                  "slots": 2,
+                  "total": 1879048192,
+                  "maximum_capacity": 1879048192
+              },
+              "system": {
+                "version": "Power Edge 2970",
+                "manufacturer": "Dell",
+                "product": "QWERTY",
+                "serial": "123456",
+                "family": "Power Edge"
+              }
+            }
         }
     },
     {
@@ -128,7 +264,76 @@
             "role": null,
             "ip": "10.0.12.41",
             "fqdn": "",
-            "mac": "BC:10:A1:44:94:A0"
+            "mac": "BC:10:A1:44:94:A0",
+            "meta": {
+              "disks": [
+                {
+                    "size": 2147483648000,
+                    "model": "MAXTOR D3ADB33F",
+                    "name": "sda",
+                    "disk": "blablabla6"
+                },
+                {
+                    "model": "SEAGATE B00B135",
+                    "name": "vda",
+                    "size": 1073741824000,
+                    "disk": "blablabla7"
+                }
+              ],
+              "interfaces": [
+                {
+                  "mac": "BC:10:A1:44:94:A0",
+                  "name": "eth0",
+                  "max_speed": 1000,
+                  "current_speed": 100
+                },
+                {
+                  "mac": "D4:64:A1:78:02:56",
+                  "name": "eth1",
+                  "max_speed": 1000,
+                  "current_speed": null
+                }
+              ],
+              "cpu": {
+                "total": 4,
+                "real": 2,
+                "spec": [
+                  {
+                    "frequency": 1200,
+                    "model": "Intel(R) Core(TM)2 Duo CPU T6570 @ 1.20GHz"
+                  },
+                  {
+                    "frequency": 1200,
+                    "model": "Intel(R) Core(TM)2 Duo CPU T6570 @ 1.20GHz"
+                  },
+                  {
+                    "frequency": 2100,
+                    "model": "Intel(R) Core(TM)2 Duo CPU T6570 @ 2.10GHz"
+                  },
+                  {
+                    "frequency": 2100,
+                    "model": "Intel(R) Core(TM)2 Duo CPU T6570 @ 2.10GHz"
+                  }
+                ]
+              },
+              "memory": {
+                "devices": [
+                    {"size": 805306368},
+                    {"size": 805306368},
+                    {"size": 805306368}
+                  ],
+                  "slots": 3,
+                  "total": 2415919104,
+                  "maximum_capacity": 4831838208
+              },
+              "system": {
+                "version": "Power Edge 2970",
+                "manufacturer": "Dell",
+                "product": "QWERTY",
+                "serial": "123456",
+                "family": "Power Edge"
+              }
+            }
         }
     },
     {
@@ -143,7 +348,76 @@
             "role": null,
             "ip": "10.0.12.43",
             "fqdn": "",
-            "mac": "B6:17:54:39:27:EA"
+            "mac": "B6:17:54:39:27:EA",
+            "meta": {
+              "disks": [
+                {
+                    "size": 2147483648000,
+                    "model": "HITACHI LOL404",
+                    "name": "sda",
+                    "disk": "blablabla8"
+                },
+                {
+                    "model": "SEAGATE B00B135",
+                    "name": "vda",
+                    "size": 2147483648000,
+                    "disk": "blablabla9"
+                }
+              ],
+              "interfaces": [
+                {
+                  "mac": "B6:17:54:39:27:EA",
+                  "name": "eth0",
+                  "max_speed": 1000,
+                  "current_speed": 100
+                },
+                {
+                  "mac": "D4:71:2B:89:01:65",
+                  "name": "eth1",
+                  "max_speed": 1000,
+                  "current_speed": null
+                }
+              ],
+              "cpu": {
+                "total": 4,
+                "real": 2,
+                "spec": [
+                  {
+                    "frequency": 1200,
+                    "model": "Intel(R) Core(TM)2 Duo CPU T6570 @ 1.20GHz"
+                  },
+                  {
+                    "frequency": 1200,
+                    "model": "Intel(R) Core(TM)2 Duo CPU T6570 @ 1.20GHz"
+                  },
+                  {
+                    "frequency": 2100,
+                    "model": "Intel(R) Core(TM)2 Duo CPU T6570 @ 2.10GHz"
+                  },
+                  {
+                    "frequency": 2100,
+                    "model": "Intel(R) Core(TM)2 Duo CPU T6570 @ 2.10GHz"
+                  }
+                ]
+              },
+              "memory": {
+                "devices": [
+                    {"size": 805306368},
+                    {"size": 805306368},
+                    {"size": 805306368}
+                  ],
+                  "slots": 3,
+                  "total": 2415919104,
+                  "maximum_capacity": 4831838208
+              },
+              "system": {
+                "version": "Power Edge 2970",
+                "manufacturer": "Dell",
+                "product": "QWERTY",
+                "serial": "123456",
+                "family": "Power Edge"
+              }
+            }
         }
     },
     {
@@ -158,7 +432,82 @@
             "role": null,
             "ip": "10.0.12.50",
             "fqdn": "",
-            "mac": "47:33:22:46:9B:92"
+            "mac": "47:33:22:46:9B:92",
+            "meta": {
+              "disks": [
+                {
+                    "size": 2147483648000,
+                    "model": "WD PWN3D",
+                    "name": "sda",
+                    "disk": "blablabla10"
+                },
+                {
+                    "model": "SEAGATE Q1W2E3",
+                    "name": "vda",
+                    "size": 5368709120000,
+                    "disk": "blablabla11"
+                },
+                {
+                    "model": "IPOD CLASSIC",
+                    "name": "vda",
+                    "size": 5368709120000,
+                    "disk": "blablabla12"
+                }
+              ],
+              "interfaces": [
+                {
+                  "mac": "47:33:22:46:9B:92",
+                  "name": "eth0",
+                  "max_speed": 100,
+                  "current_speed": 100
+                },
+                {
+                  "mac": "D4:34:B6:6B:01:77",
+                  "name": "eth1",
+                  "max_speed": 1000,
+                  "current_speed": null
+                }
+              ],
+              "cpu": {
+                "total": 4,
+                "real": 2,
+                "spec": [
+                  {
+                    "frequency": 1200,
+                    "model": "Intel(R) Core(TM)2 Duo CPU T6570 @ 1.20GHz"
+                  },
+                  {
+                    "frequency": 1200,
+                    "model": "Intel(R) Core(TM)2 Duo CPU T6570 @ 1.20GHz"
+                  },
+                  {
+                    "frequency": 2100,
+                    "model": "Intel(R) Core(TM)2 Duo CPU T6570 @ 2.10GHz"
+                  },
+                  {
+                    "frequency": 2100,
+                    "model": "Intel(R) Core(TM)2 Duo CPU T6570 @ 2.10GHz"
+                  }
+                ]
+              },
+              "memory": {
+                "devices": [
+                    {"size": 805306368},
+                    {"size": 805306368},
+                    {"size": 805306368}
+                  ],
+                  "slots": 3,
+                  "total": 2415919104,
+                  "maximum_capacity": 4831838208
+              },
+              "system": {
+                "version": "Power Edge 2970",
+                "manufacturer": "Dell",
+                "product": "QWERTY",
+                "serial": "123456",
+                "family": "Power Edge"
+              }
+            }
         }
     },
     {
@@ -173,7 +522,69 @@
             "role": null,
             "ip": "10.0.12.52",
             "fqdn": "",
-            "mac": "84:67:BA:CA:69:95"
+            "mac": "84:67:BA:CA:69:95",
+            "meta": {
+              "disks": [
+                {
+                    "model": "DVD-RW",
+                    "name": "vda",
+                    "size": 4831838208000,
+                    "disk": "blablabla13"
+                }
+              ],
+              "interfaces": [
+                {
+                  "mac": "84:67:BA:CA:69:95",
+                  "name": "eth0",
+                  "max_speed": 1000,
+                  "current_speed": 100
+                },
+                {
+                  "mac": "D5:45:6B:4A:15:66",
+                  "name": "eth1",
+                  "max_speed": 1000,
+                  "current_speed": null
+                }
+              ],
+              "cpu": {
+                "total": 4,
+                "real": 2,
+                "spec": [
+                  {
+                    "frequency": 1200,
+                    "model": "Intel(R) Core(TM)2 Duo CPU T6570 @ 1.20GHz"
+                  },
+                  {
+                    "frequency": 1200,
+                    "model": "Intel(R) Core(TM)2 Duo CPU T6570 @ 1.20GHz"
+                  },
+                  {
+                    "frequency": 2100,
+                    "model": "Intel(R) Core(TM)2 Duo CPU T6570 @ 2.10GHz"
+                  },
+                  {
+                    "frequency": 2100,
+                    "model": "Intel(R) Core(TM)2 Duo CPU T6570 @ 2.10GHz"
+                  }
+                ]
+              },
+              "memory": {
+                "devices": [
+                    {"size": 805306368},
+                    {"size": 805306368}
+                  ],
+                  "slots": 2,
+                  "total": 1610612736,
+                  "maximum_capacity": 4831838208
+              },
+              "system": {
+                "version": "Power Edge 2970",
+                "manufacturer": "Dell",
+                "product": "QWERTY",
+                "serial": "123456",
+                "family": "Power Edge"
+              }
+            }
         }
     },
     {
@@ -188,7 +599,69 @@
             "role": null,
             "ip": "10.0.12.53",
             "fqdn": "",
-            "mac": "3A:10:EC:04:9A:DE"
+            "mac": "3A:10:EC:04:9A:DE",
+            "meta": {
+              "disks": [
+                {
+                    "model": "Transcend Micro SD",
+                    "name": "sda",
+                    "size": 9663676416000,
+                    "disk": "blablabla14"
+                }
+              ],
+              "interfaces": [
+                {
+                  "mac": "47:33:22:46:9B:92",
+                  "name": "eth0",
+                  "max_speed": 100,
+                  "current_speed": 100
+                },
+                {
+                  "mac": "D4:34:B6:6B:01:77",
+                  "name": "eth1",
+                  "max_speed": 1000,
+                  "current_speed": null
+                }
+              ],
+              "cpu": {
+                "total": 4,
+                "real": 2,
+                "spec": [
+                  {
+                    "frequency": 1200,
+                    "model": "Intel(R) Core(TM)2 Duo CPU T6570 @ 1.20GHz"
+                  },
+                  {
+                    "frequency": 1200,
+                    "model": "Intel(R) Core(TM)2 Duo CPU T6570 @ 1.20GHz"
+                  },
+                  {
+                    "frequency": 2100,
+                    "model": "Intel(R) Core(TM)2 Duo CPU T6570 @ 2.10GHz"
+                  },
+                  {
+                    "frequency": 2100,
+                    "model": "Intel(R) Core(TM)2 Duo CPU T6570 @ 2.10GHz"
+                  }
+                ]
+              },
+              "memory": {
+                "devices": [
+                    {"size": 805306368},
+                    {"size": 805306368}
+                  ],
+                  "slots": 2,
+                  "total": 1610612736,
+                  "maximum_capacity": 4831838208
+              },
+              "system": {
+                "version": "Power Edge 2970",
+                "manufacturer": "Dell",
+                "product": "QWERTY",
+                "serial": "123456",
+                "family": "Power Edge"
+              }
+            }
         }
     },
     {
@@ -203,7 +676,76 @@
             "role": null,
             "ip": "10.0.12.55",
             "fqdn": "",
-            "mac": "4B:19:FF:55:6D:01"
+            "mac": "4B:19:FF:55:6D:01",
+            "meta": {
+              "disks": [
+                {
+                    "model": "Verbatim 3.5 Discette",
+                    "name": "hda",
+                    "size": 9663676416000,
+                    "disk": "blablabla15"
+                },
+
+                {
+                    "model": "SanDisk MMC Memory Card",
+                    "name": "sda",
+                    "size": 9663676416000,
+                    "disk": "blablabla16"
+                }
+              ],
+              "interfaces": [
+                {
+                  "mac": "4B:19:FF:55:6D:01",
+                  "name": "eth0",
+                  "max_speed": 1000,
+                  "current_speed": 100
+                },
+                {
+                  "mac": "D1:99:AA:10:45:71",
+                  "name": "eth1",
+                  "max_speed": 1000,
+                  "current_speed": null
+                }
+              ],
+              "cpu": {
+                "total": 4,
+                "real": 2,
+                "spec": [
+                  {
+                    "frequency": 1200,
+                    "model": "Intel(R) Core(TM)2 Duo CPU T6570 @ 1.20GHz"
+                  },
+                  {
+                    "frequency": 1200,
+                    "model": "Intel(R) Core(TM)2 Duo CPU T6570 @ 1.20GHz"
+                  },
+                  {
+                    "frequency": 2100,
+                    "model": "Intel(R) Core(TM)2 Duo CPU T6570 @ 2.10GHz"
+                  },
+                  {
+                    "frequency": 2100,
+                    "model": "Intel(R) Core(TM)2 Duo CPU T6570 @ 2.10GHz"
+                  }
+                ]
+              },
+              "memory": {
+                "devices": [
+                    {"size": 805306368},
+                    {"size": 805306368}
+                  ],
+                  "slots": 2,
+                  "total": 1610612736,
+                  "maximum_capacity": 4831838208
+              },
+              "system": {
+                "version": "Power Edge 2970",
+                "manufacturer": "Dell",
+                "product": "QWERTY",
+                "serial": "123456",
+                "family": "Power Edge"
+              }
+            }
         }
     },
     {
@@ -220,7 +762,146 @@
             "role": null,
             "ip": "10.0.12.61",
             "fqdn": "",
-            "mac": "46:FC:5A:4B:10:CC"
+            "mac": "46:FC:5A:4B:10:CC",
+            "meta": {
+              "disks": [
+                {
+                    "model": "Verbatim 3.5 Discette",
+                    "name": "hda",
+                    "size": 9663676416000,
+                    "disk": "blablabla17"
+                },
+
+                {
+                    "model": "SanDisk MMC Memory Card",
+                    "name": "sda",
+                    "size": 9663676416000,
+                    "disk": "blablabla18"
+                }
+              ],
+              "interfaces": [
+                {
+                  "mac": "46:FC:5A:4B:10:CC",
+                  "name": "eth0",
+                  "max_speed": 1000,
+                  "current_speed": 100
+                },
+                {
+                  "mac": "D3:89:12:12:45:11",
+                  "name": "eth1",
+                  "max_speed": 1000,
+                  "current_speed": null
+                }
+              ],
+              "cpu": {
+                "total": 4,
+                "real": 2,
+                "spec": [
+                  {
+                    "frequency": 1200,
+                    "model": "Intel(R) Core(TM)2 Duo CPU T6570 @ 1.20GHz"
+                  },
+                  {
+                    "frequency": 1200,
+                    "model": "Intel(R) Core(TM)2 Duo CPU T6570 @ 1.20GHz"
+                  },
+                  {
+                    "frequency": 2100,
+                    "model": "Intel(R) Core(TM)2 Duo CPU T6570 @ 2.10GHz"
+                  },
+                  {
+                    "frequency": 2100,
+                    "model": "Intel(R) Core(TM)2 Duo CPU T6570 @ 2.10GHz"
+                  }
+                ]
+              },
+              "memory": {
+                "devices": [
+                    {"size": 805306368},
+                    {"size": 805306368}
+                  ],
+                  "slots": 2,
+                  "total": 1610612736,
+                  "maximum_capacity": 4831838208
+              },
+              "system": {
+                "version": "Power Edge 2970",
+                "manufacturer": "Dell",
+                "product": "QWERTY",
+                "serial": "123456",
+                "family": "Power Edge"
+              }
+            }
+        }
+    },
+    {
+        "pk": 1,
+        "model": "nailgun.node_attributes",
+        "fields": {
+            "node_id": 1
+        }
+    },
+    {
+        "pk": 2,
+        "model": "nailgun.node_attributes",
+        "fields": {
+            "node_id": 2
+        }
+    },
+    {
+        "pk": 3,
+        "model": "nailgun.node_attributes",
+        "fields": {
+            "node_id": 3
+        }
+    },
+    {
+        "pk": 4,
+        "model": "nailgun.node_attributes",
+        "fields": {
+            "node_id": 4
+        }
+    },
+    {
+        "pk": 5,
+        "model": "nailgun.node_attributes",
+        "fields": {
+            "node_id": 5
+        }
+    },
+    {
+        "pk": 6,
+        "model": "nailgun.node_attributes",
+        "fields": {
+            "node_id": 6
+        }
+    },
+    {
+        "pk": 7,
+        "model": "nailgun.node_attributes",
+        "fields": {
+            "node_id": 7
+        }
+    },
+    {
+        "pk": 8,
+        "model": "nailgun.node_attributes",
+        "fields": {
+            "node_id": 8
+        }
+    },
+    {
+        "pk": 9,
+        "model": "nailgun.node_attributes",
+        "fields": {
+            "node_id": 9
+        }
+    },
+    {
+        "pk": 10,
+        "model": "nailgun.node_attributes",
+        "fields": {
+            "node_id": 10
         }
     }
 ]

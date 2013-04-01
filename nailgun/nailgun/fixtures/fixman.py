@@ -3,6 +3,7 @@
 import json
 import os.path
 import logging
+import itertools
 from datetime import datetime
 
 import sqlalchemy.types
@@ -10,9 +11,9 @@ from nailgun.settings import settings
 from nailgun.api import models
 from sqlalchemy import orm
 from nailgun.db import orm as ormgen
+from nailgun.logger import logger
 from sqlalchemy.exc import IntegrityError
 
-logger = logging.getLogger(__name__)
 db = ormgen()
 
 
@@ -25,7 +26,17 @@ def upload_fixture(fileobj):
         pk = obj["pk"]
         model_name = obj["model"].split(".")[1]
 
-        obj['model'] = getattr(models, model_name.capitalize())
+        try:
+            model = itertools.dropwhile(
+                lambda m: not hasattr(models, m),
+                [model_name.capitalize(),
+                 "".join(map(lambda n: n.capitalize(), model_name.split("_")))]
+            ).next()
+        except StopIteration:
+            raise Exception("Couldn't find model {0}".format(model_name))
+
+        obj['model'] = getattr(models, model)
+
         # Check if it's already uploaded
         obj_from_db = db.query(obj['model']).get(pk)
         if obj_from_db:
@@ -91,9 +102,11 @@ def upload_fixture(fileobj):
                         getattr(new_obj, field).append(
                             db.query(data[1]).get(v)
                         )
-
             db.add(new_obj)
             db.commit()
+            # UGLY HACK
+            if new_obj.__class__.__name__ == 'NodeAttributes':
+                new_obj.generate_volumes_info()
 
 
 def upload_fixtures():

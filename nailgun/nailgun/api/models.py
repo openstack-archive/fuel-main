@@ -37,6 +37,7 @@ class Release(Base):
     description = Column(Unicode)
     networks_metadata = Column(JSON, default=[])
     attributes_metadata = Column(JSON, default={})
+    volumes_metadata = Column(JSON, default=[])
     clusters = relationship("Cluster", backref="release")
 
 
@@ -165,6 +166,9 @@ class Node(Base):
     error_msg = Column(String(255))
     timestamp = Column(DateTime, nullable=False)
     online = Column(Boolean, default=True)
+    attributes = relationship("NodeAttributes",
+                              backref=backref("node"),
+                              uselist=False)
 
     @property
     def needs_reprovision(self):
@@ -181,6 +185,72 @@ class Node(Base):
     @property
     def needs_redeletion(self):
         return self.status == 'error' and self.error_type == 'deletion'
+
+
+class NodeAttributes(Base):
+    __tablename__ = 'node_attributes'
+    id = Column(Integer, primary_key=True)
+    node_id = Column(Integer, ForeignKey('nodes.id'))
+    volumes = Column(JSON, default={})
+
+    def _traverse(self, cdict):
+        new_dict = {}
+        if isinstance(cdict, dict):
+            for i, val in cdict.iteritems():
+                if isinstance(val, str) or isinstance(val, unicode):
+                    new_dict[i] = val
+                elif isinstance(val, dict):
+                    if "generator" in val:
+                        new_dict[i] = self.field_generator(
+                            val["generator"],
+                            val.get("generator_args", [])
+                        )
+                    else:
+                        new_dict[i] = self._traverse(val)
+                elif isinstance(val, list):
+                    for d in val:
+                        new_dict.setdefault(i, []).append(self._traverse(d))
+        elif isinstance(cdict, list):
+            new_dict = []
+            for d in cdict:
+                new_dict.append(self._traverse(d))
+        return new_dict
+
+    def field_generator(self, generator, args):
+        generators = {
+            # swap = memory + 1Gb
+            "calc_swap_size": lambda:
+            self.node.meta["memory"]["total"] + 1024**3,
+            # root = 10Gb
+            "calc_root_size": lambda: 1024**3 * 10
+        }
+        generators["calc_os_size"] = lambda: sum([
+            generators["calc_root_size"](),
+            generators["calc_swap_size"]()
+        ])
+        return generators.get(generator, lambda: None)(*args)
+
+    def generate_volumes_info(self):
+        discs = self.node.meta["disks"]
+        self.volumes = []
+        for i, disk in enumerate(self.node.meta["disks"]):
+            self.volumes.append(
+                {
+                    "id": disk["disk"],
+                    "volume_groups": [
+                        {"name": "os", "size": 0},
+                        {"name": "vms", "size": 0},
+                        {"name": "cinder", "size": 0}
+                    ]
+                }
+            )
+            if i == 0:
+                self.volumes[-1]["volume_groups"][0]["size"] = {
+                    "generator": "calc_os_size"
+                }
+        self.volumes = self._traverse(self.volumes)
+        orm().add(self)
+        orm().commit()
 
 
 class IPAddr(Base):
