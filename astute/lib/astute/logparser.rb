@@ -1,3 +1,4 @@
+# -*- coding: utf-8 -*-
 module Astute
   module LogParser
     LOG_PORTION = 10000
@@ -38,7 +39,7 @@ module Astute
             node_pattern_spec = Marshal.load(Marshal.dump(@pattern_spec))
             @nodes_states[uid] = node_pattern_spec
           end
-          path = "#{@pattern_spec['path_prefix']}#{node['ip']}/#{@pattern_spec['filename']}"
+          path = "#{@pattern_spec['path_prefix']}#{node['fqdn']}/#{@pattern_spec['filename']}"
 
           begin
             progress = (get_log_progress(path, node_pattern_spec)*100).to_i # Return percent of progress
@@ -101,7 +102,7 @@ module Astute
         # Pattern example:
         # pattern_spec = {...,
         #   'endlog_patterns' => [{'pattern' => /Finished catalog run in [0-9]+\.[0-9]* seconds\n/, 'progress' => 1.0}],
-        # }      
+        # }
         endlog_patterns = pattern_spec['endlog_patterns']
         return nil unless endlog_patterns
         fo.pos = fo.stat.size
