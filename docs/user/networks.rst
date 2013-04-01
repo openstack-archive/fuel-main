@@ -195,25 +195,25 @@ Making Configuration
 Scheme
 ^^^^^^
 
-Once you figure out whe network scheme for your future cloud, you need to configure your equipment according to this scheme. Note that the IP addresses in your case will differ from those shown in the diagrams.
+Once you figure out the network scheme for your future cloud, you need to configure your equipment according to this scheme. Note that the IP addresses in your case will differ from those shown in the diagrams.
 
 .. image:: _static/flat.png
 
 By default we use several predefined networks:
 
-* **FuelWeb** network is used for internal FuelWeb communications only (untagged on the scheme).
-* **Floating** network is used to get access to virtual machines from outside openstack cluster (vlan 100 on the scheme)
-* **Public** network used to get access from virtual machines to outside openstack cluster (vlan 101 on the scheme)
-* **Management** network is used for internal openstack communications (vlan 102 on the scheme)
-* **Storage** network is used for storage traffic (vlan 103 on the scheme)
-* One (for flat mode) or more (for vlan mode) virtual machine network(s). (vlan 104 on the scheme)
+* **FuelWeb** network is used for internal FuelWeb communications only (untagged on the scheme);
+* **Public** network used to get access from virtual machines to outside OpenStack cluster (vlan 101 on the scheme);
+* **Floating** network is used to get access to virtual machines from outside OpenStack cluster (shared L2-interface with **Public** network, in this case it's vlan 101);
+* **Management** network is used for internal OpenStack communications (vlan 102 on the scheme);
+* **Storage** network is used for storage traffic (vlan 103 on the scheme);
+* One (for flat mode) or more (for vlan mode) virtual machine network(s). (vlan 104 on the scheme).
 
 Switch
 ^^^^^^
 
 Now is the point where you need to configure L2 switch so that all nodes are connected to switch
 ports where "**FuelWeb**" vlan frames untagged (without vlan tags) and all other frames tagged (with vlan
-tags). Vlans 100-104 must not be filtered on those ports. It is crucial to isolate all used vlans
+tags). Vlans 101-104 must not be filtered on those ports. It is crucial to isolate all used vlans
 from the rest of your network on L2 because in other case DHCP server on master node can send
 invalid DHCP offers to DHCP clients inside your network and vise versa slave nodes can get invalid
 DHCP offers from DHCP servers outside scheme. Once master node is installed and slave nodes are
@@ -223,14 +223,14 @@ validity of vlan configuration on L2 switch.
 Router
 ^^^^^^
 
-To make virtual machines able to get access to the outside of openstack cluster it is needed to configure
+To make virtual machines able to get access to the outside of OpenStack cluster it is needed to configure
 address 240.0.1.1 on the "**Public**" (vlan 101) router interface. Cluster nodes will use this address as
 default gateway. In turn, to get access from the outside of cluster to virtual machine via, for example,
-ssh you need to use "**Floating**" IP address which could be assigned to given virtual machine via openstack
-dashboard. You also need to configure corresponding IP address 240.0.0.1 on the "**Floating**" (vlan 100)
+ssh you need to use "**Floating**" IP address which could be assigned to given virtual machine via OpenStack
+dashboard. You also need to configure corresponding IP address 240.0.0.1 on the "**Floating**" (vlan 101)
 router interface. Besides, to get access from the outside to http://10.20.0.2:8000 you also need to
 configure gateway address 10.20.0.1 on "**FuelWeb**" vlan interface (untagged on the scheme). Private
-openstack networks (vlans 102, 103, 104) should not be configured on router as they used completely
+OpenStack networks (vlans 102, 103, 104) should not be configured on router as they used completely
 inside cluster.
 
 
