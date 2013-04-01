@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 
-from itertools import imap, ifilter, islice, chain
+from itertools import imap, ifilter, islice, chain, tee
 
 import web
 from sqlalchemy.sql import not_
@@ -16,7 +16,8 @@ from nailgun.api.models import Network, NetworkGroup
 def chunked_range(iterable, chunksize=1024):
     idx = 0
     while True:
-        s = islice(iterable, idx, idx + chunksize)
+        iterable, iterable2 = tee(iterable)
+        s = islice(iterable2, idx, idx + chunksize)
         yield chain([s.next()], s)
         idx += chunksize
 
