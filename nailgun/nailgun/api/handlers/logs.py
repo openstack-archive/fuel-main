@@ -100,7 +100,7 @@ class LogEntryCollectionHandler(JSONHandler):
                 logger.error('Node %r has no assigned ip', node.id)
                 raise web.internalerror("Node has no assigned ip")
 
-            remote_log_dir = os.path.join(log_config['base'], node.ip)
+            remote_log_dir = os.path.join(log_config['base'], node.fqdn)
             if not os.path.exists(remote_log_dir):
                 logger.debug("Log files dir %r for node %s not found",
                              remote_log_dir, node.id)
@@ -254,7 +254,7 @@ class LogSourceByNodeCollectionHandler(JSONHandler):
                 else:
                     return ''
             else:
-                return os.path.join(x['base'], node.ip, x['path'])
+                return os.path.join(x['base'], node.fqdn, x['path'])
 
         f = lambda x: (
             x.get('remote') and x.get('path') and x.get('base') and
