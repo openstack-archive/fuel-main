@@ -14,15 +14,25 @@ from nailgun.api.models import Network, NetworkGroup
 
 
 def chunked_range(iterable, chunksize=1024):
-    idx = 0
+    """
+    We want to be able to iterate over iterable chunk by chunk.
+    We instantiate iter object from itarable. We then yield
+    iter instance slice in infinite loop. Iter slice starts
+    from the last used position and finishes on the position
+    which is offset with chunksize from the last used position.
+    """
+    it = iter(iterable)
     while True:
-        iterable, iterable2 = tee(iterable)
-        s = islice(iterable2, idx, idx + chunksize)
+        s = islice(it, chunksize)
+        # Here we check if iterator is not empty calling
+        # next() method which raises StopInteration if
+        # iter is empty. If iter is not empty we yield
+        # iterator which is concatenation of fisrt element in
+        # slice and the ramained elements.
         yield chain([s.next()], s)
-        idx += chunksize
 
 
-def get_free_ip_from_range(iterable, num=1):
+def get_free_ips_from_range(iterable, num=1):
     free_ips = []
     for chunk in chunked_range(iterable):
         from_range = set(chunk)
@@ -47,7 +57,7 @@ def assign_admin_ips(node_id, num=1):
         filter_by(admin=True).filter_by(node=node_id).all()
 
     if not node_admin_ips or len(node_admin_ips) < num:
-        free_ips = get_free_ip_from_range(
+        free_ips = get_free_ips_from_range(
             imap(str, iter_iprange(
                 settings.ADMIN_NETWORK['first'],
                 settings.ADMIN_NETWORK['last']
@@ -104,7 +114,7 @@ def assign_ips(nodes_ids, network_name):
                     IPNetwork(network.cidr).iter_hosts()
                 )
             )
-            free_ips = get_free_ip_from_range(from_range)
+            free_ips = get_free_ips_from_range(from_range)
             ip_db = IPAddr(
                 network=network.id,
                 node=node_id,
@@ -156,7 +166,7 @@ def assign_vip(cluster_id, network_name):
                 IPNetwork(network.cidr).iter_hosts()
             )
         )
-        free_ips = get_free_ip_from_range(from_range)
+        free_ips = get_free_ips_from_range(from_range)
         ne_db = IPAddr(network=network.id, ip_addr=free_ips[0])
         orm().add(ne_db)
         orm().commit()
