@@ -19,7 +19,7 @@ $external_ipinfo = {}
 $multi_host              = true
 $quantum                 = false
 $manage_volumes          = false
-$cinder                  = false
+$use_cinder              = false
 $glance_backend          = 'swift'
 
 $network_manager = "nova.network.manager.${network_manager}"
@@ -30,6 +30,7 @@ $rabbit_hash   = parsejson($rabbit)
 $glance_hash   = parsejson($glance)
 $keystone_hash = parsejson($keystone)
 $swift_hash    = parsejson($swift)
+$cinder_hash   = parsejson($cinder)
 $access_hash   = parsejson($access)
 
 $base_syslog_hash  = parsejson($base_syslog)
@@ -113,11 +114,12 @@ class compact_controller {
     quantum_db_dbname       => $quantum_db_dbname,
     tenant_network_type     => $tenant_network_type,
     segment_range           => $segment_range,
-    cinder                  => $cinder,
-    manage_volumes          => $manage_volumes,
+    cinder                  => $use_cinder,
+    cinder_user_password    => $cinder_hash[user_password],
+    cinder_db_password      => $cinder_hash[db_password],
+    manage_volumes          => false,
     galera_nodes            => $galera_nodes,
     mysql_skip_name_resolve => true,
-    nv_physical_volume      => $nv_physical_volume,
     use_syslog              => true,
   }
 
@@ -195,6 +197,9 @@ class compact_controller {
         vncproxy_host          => $public_vip,
         verbose                => $verbose,
         vnc_enabled            => true,
+        cinder                 => $use_cinder,
+        cinder_user_password   => $cinder_hash[user_password],
+        cinder_db_password     => $cinder_hash[db_password],
         manage_volumes         => false,
         nova_user_password     => $nova_hash[user_password],
         cache_server_ip        => $controller_hostnames,
@@ -205,8 +210,7 @@ class compact_controller {
         quantum_user_password  => $quantum_user_password,
         tenant_network_type    => $tenant_network_type,
         segment_range          => $segment_range,
-        cinder                 => $cinder,
-        db_host                => $internal_virtual_ip,
+        db_host                => $management_vip,
         use_syslog             => true,
       }
 
@@ -221,6 +225,31 @@ class compact_controller {
       nova_config { 'DEFAULT/compute_scheduler_driver': value => $compute_scheduler_driver }
 
       Class[osnailyfacter::network_setup] -> Class[openstack::compute]
+    }
+
+    "cinder" : {
+      include keystone::python
+      package { 'python-amqp':
+        ensure => present
+      }
+      class { 'openstack::cinder':
+        sql_connection       => "mysql://cinder:${cinder_hash[db_password]}@${management_vip}/cinder?charset=utf8",
+        rabbit_password      => $rabbit_hash[password],
+        rabbit_host          => false,
+        rabbit_nodes         => $controller_hostnames,
+        volume_group         => 'cinder-volumes',
+        manage_volumes       => true,
+        enabled              => true,
+        auth_host            => $service_endpoint,
+        iscsi_bind_host      => $internal_address,
+        cinder_user_password => $cinder_hash[user_password],
+        use_syslog           => true,
+      }
+      class { "::rsyslog::client":
+        log_local => true,
+        log_auth_local => true,
+        rservers => $rservers,
+      }
     }
   }
 }

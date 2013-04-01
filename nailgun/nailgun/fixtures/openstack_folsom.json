@@ -155,6 +155,14 @@
                             "generator": "password"
                         }
                     },
+                    "cinder": {
+                        "db_password": {
+                            "generator": "password"
+                        },
+                        "user_password": {
+                            "generator": "password"
+                        }
+                    },
                     "base_syslog": {
                         "syslog_server": {
                             "generator": "ip",

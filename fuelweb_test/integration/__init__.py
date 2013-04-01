@@ -60,19 +60,22 @@ class Ci(object):
             node.memory = 1024
             node.vnc = True
             node.disks.append(
-                Disk(size=30 * 1024 ** 3)
+                Disk(size=20 * 1024 ** 3)
             )
             node.interfaces.append(Interface(network))
             node.cdrom = Cdrom(isopath=self.iso)
             node.boot = ['disk', 'cdrom']
             environment.nodes.append(node)
 
-            for n in range(5):
+            for n in xrange(5):
                 nodex = Node('slave%d' % (n + 1))
                 nodex.memory = 768
                 nodex.vnc = True
                 nodex.disks.append(
-                    Disk(size=30 * 1024 ** 3)
+                    Disk(size=20 * 1024 ** 3)
+                )
+                nodex.disks.append(
+                    Disk(size=10 * 1024 ** 3)
                 )
                 nodex.interfaces.append(Interface(network))
                 nodex.interfaces.append(Interface(network))

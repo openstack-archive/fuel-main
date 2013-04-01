@@ -9,10 +9,9 @@ $network_config = {
   'vlan_start'     => $vlan_start,
 }
 
-$cinder                  = false
 $multi_host              = true
-$manage_volumes          = false
 $quantum                 = false
+$use_cinder              = false
 
 $network_manager      = "nova.network.manager.${network_manager}"
 
@@ -22,7 +21,8 @@ $rabbit_hash   = parsejson($rabbit)
 $glance_hash   = parsejson($glance)
 $keystone_hash = parsejson($keystone)
 $swift_hash    = parsejson($swift)
-$access_hash    = parsejson($access)
+$cinder_hash   = parsejson($cinder)
+$access_hash   = parsejson($access)
 $extra_rsyslog_hash = parsejson($syslog)
 
 $base_syslog_hash  = parsejson($base_syslog)
@@ -88,9 +88,10 @@ Exec { logoutput => true }
         rabbit_user             => $rabbit_user,
         export_resources        => false,
         quantum                 => $quantum,
-        cinder                  => $cinder,
-        manage_volumes          => $manage_volumes,
-        nv_physical_volume      => $nv_physical_volume,
+        cinder                  => $use_cinder,
+        cinder_user_password    => $cinder_hash[user_password],
+        cinder_db_password      => $cinder_hash[db_password],
+        manage_volumes          => false,
         use_syslog              => true,
       }
 
@@ -151,7 +152,11 @@ Exec { logoutput => true }
         #quantum_user_password  => $quantum_user_password,
         #tenant_network_type    => $tenant_network_type,
         service_endpoint       => $controller_node_address,
-        db_host                => $conrtoller_node_address,
+        cinder                 => $use_cinder,
+        cinder_user_password   => $cinder_hash[user_password],
+        cinder_db_password     => $cinder_hash[db_password],
+        manage_volumes         => false,
+        db_host                => $controller_node_address,
         verbose                => $verbose,
         use_syslog             => true,
       }
@@ -167,6 +172,31 @@ Exec { logoutput => true }
       nova_config { 'DEFAULT/compute_scheduler_driver': value => $compute_scheduler_driver }
 
       Class[osnailyfacter::network_setup] -> Class[openstack::compute]
+    }
+
+    "cinder" : {
+      include keystone::python
+      package { 'python-amqp':
+        ensure => present
+      }
+      class { 'openstack::cinder':
+        sql_connection       => "mysql://cinder:${cinder_hash[db_password]}@${controller_node_address}/cinder?charset=utf8",
+        rabbit_password      => $rabbit_hash[password],
+        rabbit_host          => false,
+        rabbit_nodes         => [$controller_node_address],
+        volume_group         => 'cinder-volumes',
+        manage_volumes       => true,
+        enabled              => true,
+        auth_host            => $service_endpoint,
+        iscsi_bind_host      => $internal_address,
+        cinder_user_password => $cinder_hash[user_password],
+        use_syslog           => true,
+      }
+      class { "::rsyslog::client":
+        log_local => true,
+        log_auth_local => true,
+        rservers => $rservers,
+      }
     }
   }
 }
