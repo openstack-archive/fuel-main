@@ -52,6 +52,10 @@ REQUIRED_SRCS:=$(shell grep -v ^\\s*\# $(SOURCE_DIR)/requirements-src.txt)
 # will be used.
 YUM_REPOS?=official epel fuel_folsom puppetlabs rpmforge
 
+# Mirror of source packages. Bareword 'internet' is used to download packages
+# directly from the internet
+MIRROR_SRC?=internet
+
 # INTEGRATION TEST CONFIG
 NOFORWARD:=1
 iso.path:=$(BUILD_DIR)/iso/nailgun-centos-6.3-amd64.iso

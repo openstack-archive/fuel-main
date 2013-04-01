@@ -24,19 +24,18 @@ help:
 	@echo 'To build system using one of the proprietary mirrors use '
 	@echo 'the following commands:'
 	@echo
-	@echo 'Saratov office:'
-	@echo 'make iso YUM_REPOS=proprietary \
-MIRROR_CENTOS=http://srv08-srt.srt.mirantis.net/fwm/centos \
-MIRROR_EGGS=http://srv08-srt.srt.mirantis.net/fwm/eggs \
-MIRROR_GEMS=http://srv08-srt.srt.mirantis.net/fwm/gems \
-MIRROR_SRC=http://srv08-srt.srt.mirantis.net/fwm/src'
+	@echo 'Saratov office (default):'
+	@echo 'make iso
 	@echo
 	@echo 'Moscow office:'
-	@echo 'make iso YUM_REPOS=proprietary \
-MIRROR_CENTOS=http://172.18.8.209/fwm/centos \
-MIRROR_EGGS=http://172.18.8.209/fwm/eggs \
-MIRROR_GEMS=http://172.18.8.209/fwm/gems \
-MIRROR_SRC=http://172.18.8.209/fwm/src'
+	@echo 'make iso USE_MIRROR=msk
+	@echo
+	@echo 'Custom location:'
+	@echo 'make iso USE_MIRROR=msk YUM_REPOS=proprietary \
+MIRROR_CENTOS=http://<your_mirror>/centos \
+MIRROR_EGGS=http://<your_mirror>/eggs \
+MIRROR_GEMS=http://<your_mirror>/gems \
+MIRROR_SRC=http://<your_mirror>/src'
 
 all: iso
 
