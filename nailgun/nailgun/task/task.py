@@ -215,6 +215,7 @@ class DeploymentTask(object):
         if os.path.isdir(old):
             os.rename(old, new)
             for l in links:
+                os.remove(l)
                 os.symlink(new, l)
         os.system("/usr/bin/pkill -HUP rsyslog")
 

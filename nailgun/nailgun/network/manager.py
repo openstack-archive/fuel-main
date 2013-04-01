@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 
-from itertools import imap, ifilter
+from itertools import imap, ifilter, islice, chain
 
 import web
 from sqlalchemy.sql import not_
@@ -13,36 +13,18 @@ from nailgun.api.models import Node, IPAddr, Cluster
 from nailgun.api.models import Network, NetworkGroup
 
 
-class ChunkedRange(object):
-    def __init__(self, iterable, chunksize=1024):
-        self.generator = iterable.__iter__()
-        self.idx = 0
-        self.chunksize = chunksize
-        self._stop = False
-
-    def __iter__(self):
-        return self
-
-    def empty(self):
-        return self._stop
-
-    def next(self):
-        if self.idx < self.chunksize:
-            self.idx += 1
-            try:
-                return self.generator.next()
-            except StopIteration:
-                self._stop = True
-                raise StopIteration
-        self.idx = 0
-        raise StopIteration
+def chunked_range(iterable, chunksize=1024):
+    idx = 0
+    while True:
+        s = islice(iterable, idx, idx + chunksize)
+        yield chain([s.next()], s)
+        idx += chunksize
 
 
 def get_free_ip_from_range(iterable, num=1):
     free_ips = []
-    gen = ChunkedRange(iterable)
-    while not gen.empty():
-        from_range = set(gen)
+    for chunk in chunked_range(iterable):
+        from_range = set(chunk)
         diff = from_range - set(
             [i.ip_addr for i in orm().query(IPAddr).
              filter(IPAddr.ip_addr.in_(from_range))]
