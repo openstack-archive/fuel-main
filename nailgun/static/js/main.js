@@ -6,7 +6,7 @@ requirejs.config({
         jquery: 'js/libs/jquery-1.9.1',
         'jquery-checkbox': 'js/libs/jquery.checkbox',
         'jquery-timeout': 'js/libs/jquery.timeout',
-        underscore: 'js/libs/lodash.underscore',
+        lodash: 'js/libs/lodash',
         backbone: 'js/libs/backbone',
         coccyx: 'js/libs/coccyx',
         bootstrap: 'js/libs/bootstrap.min',
@@ -17,15 +17,15 @@ requirejs.config({
         views: 'js/views'
     },
     shim: {
-        underscore: {
+        lodash: {
             exports: '_'
         },
         backbone: {
-            deps: ['underscore', 'jquery'],
+            deps: ['lodash', 'jquery'],
             exports: 'Backbone'
         },
         coccyx: {
-            deps: ['underscore', 'backbone']
+            deps: ['lodash', 'backbone']
         },
         bootstrap: {
             deps: ['jquery']
@@ -37,7 +37,7 @@ requirejs.config({
             deps: ['jquery']
         },
         app: {
-            deps: ['jquery', 'underscore', 'backbone', 'coccyx', 'bootstrap', 'jquery-checkbox', 'jquery-timeout']
+            deps: ['jquery', 'lodash', 'backbone', 'coccyx', 'bootstrap', 'jquery-checkbox', 'jquery-timeout']
         }
     }
 });

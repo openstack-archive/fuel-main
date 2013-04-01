@@ -60,9 +60,9 @@
       <% _.each(volumeGroups, function(group) { %>
         <div class="<%= group %>">
           <label><%= volumeGroupsLabels[group] %></label>
-          <span class="use-all-ullocated">Use all allocated space</span>
+          <span class="use-all-ullocated">Use all unallocated space</span>
           <% var volume = _.find(volumes, {name: group}) %>
-          <input type="text" class="input-mini" name="<%= group %>" value="<%= Math.round(volume.size / Math.pow(1000, 3)) %>" /> GB
+          <input type="text" class="input-mini" name="<%= group %>" value="<%= volume.size %>" /> GB
         </div>
       <% }) %>
     </div>
