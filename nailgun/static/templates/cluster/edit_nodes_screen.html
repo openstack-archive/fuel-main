@@ -1,7 +1,7 @@
 <div class="roles-block-row nodesbox-header">
   <div class="span10">
     <h3>
-      <%= {add: 'Add', delete: 'Delete'}[action] || action %> <%= role == 'storage' ? 'Cinder' : role %> nodes
+      <%= {add: 'Add', delete: 'Delete'}[action] || action %> <%= {'controller': 'controller', 'compute': 'compute', 'storage': 'Cinder'}[role] || role %> nodes
       <span>
         <% if (limit !== null) { %>
           (<%= limit %> node<%= limit != 1 ? 's' : '' %> max)
