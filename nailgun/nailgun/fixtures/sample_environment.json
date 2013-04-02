@@ -15,8 +15,7 @@
             "meta": {
               "disks": [
                 {
-                  "id": "123456",
-                  "size": 100000022933376,
+                  "size": 100000022933,
                   "model": "TOSHIBA MK3259GS",
                   "name": "sda",
                   "disk": "blablabla1"

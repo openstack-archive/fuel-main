@@ -245,11 +245,7 @@ define(function() {
 
     models.Disk = Backbone.Model.extend({
         constructorName: 'Disk',
-        urlRoot: '/api/nodes/',
-        validate: function(attrs) {
-            var errors = {};
-            return _.isEmpty(errors) ? null : errors;
-        }
+        urlRoot: '/api/nodes/'
     });
 
     models.Disks = Backbone.Collection.extend({

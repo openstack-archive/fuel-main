@@ -469,8 +469,11 @@ function(models, commonViews, dialogViews, nodesTabSummaryTemplate, editNodesScr
         loadDefaults: function() {
             this.disableControls();
             this.disks = new models.Disks();
-            this.disks.fetch({url: _.result(this.model, 'url') + '/defaults/disks'})
-                .always(_.bind(this.render, this));
+            this.disks.fetch({url: _.result(this.node, 'url') + '/defaults/volumes'})
+                .always(_.bind(function() {
+                    this.render();
+                    this.$('.btn-apply').attr('disabled', _.isEqual(this.disks.toJSON(), this.initialData));
+                }, this));
         },
         returnToNodesTab: function() {
             app.navigate('#cluster/' + this.model.id + '/nodes', {trigger: true, replace: true});
@@ -483,30 +486,30 @@ function(models, commonViews, dialogViews, nodesTabSummaryTemplate, editNodesScr
                     group.size *= Math.pow(1000, 3);
                 });
             });
-            Backbone.sync('update', this.disks, {url: _.result(this.model, 'url') + '/attributes/disks'})
+            Backbone.sync('update', this.disks, {url: _.result(this.node, 'url') + '/attributes/volumes'})
                 .done(_.bind(this.returnToNodesTab, this));
+        },
+        setInitialData: function() {
+            // round bytes to Gb for displaying on UI
+            _.each(this.disks.models, function(disk) {
+                _.each(disk.get('volume_groups'), function(group) {
+                    group.size = Math.round(group.size / Math.pow(1000, 3));
+                });
+            });
+            this.initialData = _.cloneDeep(this.disks.toJSON());
         },
         initialize: function(options) {
             _.defaults(this, options);
-            this.model = this.model.get('nodes').get(this.screenOptions[0]);
-            if (this.model) {
-                var fake = [{id: "123456", volume_groups: [{name: "os", size: 10002293030376}, {name: "vms", size: 25002293300376}, {name: "cinder", size: 0}]}];
-                this.disks = new models.Disks(fake);
-                // round bytes to Gb for displaying on UI
-                _.each(this.disks.models, function(disk) {
-                    _.each(disk.get('volume_groups'), function(group) {
-                        group.size = Math.round(group.size / Math.pow(1000, 3));
-                    });
-                });
-                this.initialData = _.cloneDeep(this.disks.toJSON());
-                //this.disks.fetch({url: _.result(this.model, 'url') + '/attributes/disks'})
-                //    .done(_.bind(function(data) {
-                //        this.initialData = new models.Disks(data);
-                //        this.render();
-                //    , this));
-                this.disks.on('invalid', function(model, errors) {
-                    //this.$('.control-group[data-network-id=' + model.id + ']').addClass('error').find('.help-inline').text(errors.cidr || errors.vlan_start || errors.amount);
-                }, this);
+            this.node = this.model.get('nodes').get(this.screenOptions[0]);
+            if (this.node) {
+                //var fake = [{id: "123456", volume_groups: [{name: "os", size: 10002293030376}, {name: "vms", size: 25002293300376}, {name: "cinder", size: 0}]}];
+                //this.disks = new models.Disks(fake);
+                this.disks = new models.Disks();
+                this.disks.fetch({url: _.result(this.node, 'url') + '/attributes/volumes'})
+                    .done(_.bind(function() {
+                        this.setInitialData();
+                        this.render();
+                    }, this));
             } else {
                 this.returnToNodesTab();
             }
@@ -516,7 +519,7 @@ function(models, commonViews, dialogViews, nodesTabSummaryTemplate, editNodesScr
             this.$('.node-disks').html('');
             _.each(this.disks.models, _.bind(function(disk) {
                 var nodeDisk = new NodeDisk({
-                    node: this.model,
+                    node: this.node,
                     diskId: disk.id,
                     disk: disk,
                     screen: this
@@ -526,7 +529,7 @@ function(models, commonViews, dialogViews, nodesTabSummaryTemplate, editNodesScr
             }, this));
         },
         render: function() {
-            this.$el.html(this.template({node: this.model}));
+            this.$el.html(this.template({node: this.node}));
             this.renderDisks();
             return this;
         }
@@ -535,7 +538,7 @@ function(models, commonViews, dialogViews, nodesTabSummaryTemplate, editNodesScr
     NodeDisk = Backbone.View.extend({
         template: _.template(nodeDisksTemplate),
         events: {
-            'click .disk-visual': 'toggleEditDiskForm',
+            'click .toggle-volume': 'toggleEditDiskForm',
             'click .close-btn': 'deleteVolumeGroup',
             'keyup input': 'editVolumeGroups',
             'click .use-all-ullocated': 'useAllUnallocatedSpace'
@@ -555,9 +558,8 @@ function(models, commonViews, dialogViews, nodesTabSummaryTemplate, editNodesScr
             $('.btn-apply').attr('disabled', _.isEqual(this.screen.disks.toJSON(), this.screen.initialData));
         },
         editVolumeGroups: function(e) {
-            this.$(e.currentTarget).removeClass('error');
             var group = this.$(e.currentTarget).parents('.volume-group-box').data('group');
-            var newSize = parseInt(this.$(e.currentTarget).val(), 10) || 0;
+            var newSize = parseInt(this.$(e.currentTarget).val(), 10);
             var volume = _.find(this.volumes, {name: group});
             var total = this.diskSize - this.countAllocatedSpace() + volume.size;
             if (newSize > total) {
@@ -588,7 +590,7 @@ function(models, commonViews, dialogViews, nodesTabSummaryTemplate, editNodesScr
         },
         initialize: function(options) {
             _.defaults(this, options);
-            this.diskMetaData = _.find(this.node.get('meta').disks, {id: this.diskId});
+            this.diskMetaData = _.find(this.node.get('meta').disks, {disk: this.diskId});
             this.diskSize = Math.round(this.diskMetaData.size / Math.pow(1000, 3));
             this.volumes = this.disk.get('volume_groups');
         },

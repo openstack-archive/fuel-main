@@ -10,14 +10,18 @@
       <% var volumeGroupsLabels = {os: 'Base system', vms: 'Virtual Storage', cinder: 'Cinder'} %>
       <% _.each(volumeGroups, function(group) { %>
         <div class="volume-group <%= group %>" data-group="<%= group %>" style="width:0">
-          <div class="volume-group-name"><%= volumeGroupsLabels[group] %></div>
-          <div class="volume-group-size">0 GB</div>
+          <div class="toggle-volume">
+            <div class="volume-group-name"><%= volumeGroupsLabels[group] %></div>
+            <div class="volume-group-size">0 GB</div>
+          </div>
           <div class="close-btn hide"></div>
         </div>
       <% }) %>
       <div class="volume-group unallocated" style="width: 100%">
-        <div class="volume-group-name">Unallocated</div>
-        <div class="volume-group-size"><%= Math.round(diskSize) %> GB</div>
+        <div class="toggle-volume">
+          <div class="volume-group-name">Unallocated</div>
+          <div class="volume-group-size"><%= Math.round(diskSize) %> GB</div>
+        </div>
       </div>
     </div>
   </div>

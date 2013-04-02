@@ -2,11 +2,6 @@
   <div class="nodebox-gradient">
     <div class="node-header">
       <div class="node-logo <%- node.get('manufacturer') ? 'manufacturer-' + node.get('manufacturer').toLowerCase() : '' %>"></div>
-      <% if (!selectableForAddition && !selectableForDeletion) { %>
-        <a class="node-actions" href="#cluster/<%= node.collection.cluster.id %>/nodes/disks/<%= node.id %>">
-          <i class="icon-plus-circle"></i>Edit
-        </a>
-      <% } %>
       <div class="node-name">
       <% if (renaming) { %>
         <div class="node-renameable">
