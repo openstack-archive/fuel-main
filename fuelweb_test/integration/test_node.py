@@ -35,6 +35,8 @@ def snapshot_errors(func):
     def decorator(*args, **kwagrs):
         def save_logs(filename):
             try:
+                if not hasattr(ci, 'export_logs_dir'):
+                    return
                 logfile_name = os.path.abspath(
                     os.path.join(ci.export_logs_dir, filename + ".tar.gz")
                 )
@@ -45,11 +47,8 @@ def snapshot_errors(func):
                     "http://%s:8000/api/logs/package"
                     % ci.environment.node['admin'].ip_address
                 )
-                local_log = open(logfile_name, 'w')
-                local_log.write(remote_log.read())
-                local_log.close()
-            except AttributeError:
-                pass
+                with open(logfile_name, 'w') as f:
+                    f.write(remote_log.read())
             except Exception, e:
                 logging.warn(
                     'Cannot save logfile "%s": %s' % (logfile_name, e)

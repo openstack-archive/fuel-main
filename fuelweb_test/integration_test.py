@@ -64,10 +64,10 @@ def main():
     else:
         ci = suite.Ci(params.iso, env_name=params.environment)
 
-    if not params.export_logs_dir is None:
+    if params.export_logs_dir is not None:
         ci.export_logs_dir = params.export_logs_dir
 
-    if not params.deployment_timeout is None:
+    if params.deployment_timeout is not None:
         ci.deployment_timeout = params.deployment_timeout
 
     if params.command == 'setup':
