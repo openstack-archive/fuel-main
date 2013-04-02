@@ -1,17 +1,15 @@
-<div class="roles-block-row nodesbox-header">
-  <div class="span12"><h3>Configure <%- node.get('name') %> node disk<%= node.get('meta').disks.length == 1 ? '' : 's' %></h3></div>
-</div>
+<div class="wrapper">
+  <h3 class="span12">Configure <%- node.get('name') %> node disk<%= node.get('meta').disks.length == 1 ? '' : 's' %></h3>
 
-<div class="roles-block-row node-disks"></div>
-<hr class="breaker">
+  <div class="row node-disks"></div>
 
-<div class="roles-block-row">
-  <div class="page-control-box">
-    <div class="page-control-button-placeholder">
-      <!--<button class="btn btn-expand">Expand All</button>-->
-      <button class="btn btn-defaults">Load Defaults</button>
-      <button class="btn btn-revert-changes">Cancel</button>
-      <button class="btn btn-success btn-apply" disabled>Apply</button>
+  <!-- page-control box -->
+  <div class="row">
+    <div class="page-control-box">
+      <div class="page-control-button-placeholder">
+        <button class="btn btn-defaults">Load Defaults</button>
+        <button class="btn btn-revert-changes">Cancel</button>
+        <button class="btn btn-success btn-apply" disabled>Apply</button>
+      </div>
     </div>
   </div>
-</div>

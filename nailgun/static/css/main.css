@@ -3520,6 +3520,7 @@ disk-form .error:focus {
   color: #555555;
   width: 60px;
   float:left;
+  text-transform: capitalize;
 }
 
 .disk-map-details-parameter {
@@ -3538,7 +3539,8 @@ disk-form .error:focus {
   -moz-box-sizing: border-box;
   -webkit-box-sizing: border-box;
 }
-.base-system {
+
+.disk-visual .os {
   overflow: hidden;
   background: #23a85e; /* Old browsers */
   /* IE9 SVG, needs conditional override of 'filter' to 'none' */
@@ -3551,7 +3553,7 @@ disk-form .error:focus {
   background: linear-gradient(to bottom,  #23a85e 0%,#1d8a4d 100%); /* W3C */
   filter: progid:DXImageTransform.Microsoft.gradient( startColorstr='#23a85e', endColorstr='#1d8a4d',GradientType=0 ); /* IE6-8 */
 }
-.virtual-storage {
+.disk-visual .vms {
   overflow: hidden;
   background: #3582ce; /* Old browsers */
   /* IE9 SVG, needs conditional override of 'filter' to 'none' */
@@ -3564,7 +3566,8 @@ disk-form .error:focus {
   background: linear-gradient(to bottom,  #3582ce 0%,#2b6ba9 100%); /* W3C */
   filter: progid:DXImageTransform.Microsoft.gradient( startColorstr='#3582ce', endColorstr='#2b6ba9',GradientType=0 ); /* IE6-8 */
 }
-.cinder {
+
+.disk-visual .cinder {
   overflow: hidden;
   background: #eea616; /* Old browsers */
   /* IE9 SVG, needs conditional override of 'filter' to 'none' */
@@ -3600,9 +3603,9 @@ disk-form .error:focus {
   font-size: 11px;
   text-shadow: 0 0 2px rgba(0,0,0,.5);
 }
-.unallocated > .volume-group-name {
+.unallocated > .volume-group-name, .unallocated > .volume-group-size {
   text-shadow: 1px 0 0 rgba(255,255,255,.3);
-  margin-top: 16px;
+  /*margin-top: 16px;*/
 }
 .volume-group-box {
   display: block;
@@ -3624,7 +3627,7 @@ disk-form .error:focus {
   clear: both;
 }
 
-.volume-group-box-flag-basesystem {
+.volume-group-box-flag-os {
   width: 6px;
   height: 44px;
   background: #1a7f47;
@@ -3660,7 +3663,7 @@ disk-form .error:focus {
   filter: progid:DXImageTransform.Microsoft.gradient( startColorstr='#b17b10', endColorstr='#d79614',GradientType=0 ); /* IE6-8 */
 }
 
-.volume-group-box-flag-virtualstorage {
+.volume-group-box-flag-vms {
   width: 6px;
   height: 44px;
   background: #1a7f47;

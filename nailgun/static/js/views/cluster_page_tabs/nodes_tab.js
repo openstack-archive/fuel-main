@@ -535,9 +535,9 @@ function(models, commonViews, dialogViews, nodesTabSummaryTemplate, editNodesScr
     NodeDisk = Backbone.View.extend({
         template: _.template(nodeDisksTemplate),
         events: {
-            'click .group': 'toggleEditDiskForm',
+            'click .disk-visual': 'toggleEditDiskForm',
             'click .delete-volume-group': 'deleteVolumeGroup',
-            'keyup .disk-form input': 'editVolumeGroups',
+            'keyup input': 'editVolumeGroups',
             'click .use-all-ullocated': 'useAllUnallocatedSpace'
         },
         toggleEditDiskForm: function(e) {
@@ -556,10 +556,10 @@ function(models, commonViews, dialogViews, nodesTabSummaryTemplate, editNodesScr
         },
         editVolumeGroups: function(e) {
             this.$(e.currentTarget).removeClass('error');
-            var group = this.$(e.currentTarget).parent().attr('class');
+            var group = this.$(e.currentTarget).parents('.volume-group-box').data('group');
             var newSize = parseInt(this.$(e.currentTarget).val(), 10) || 0;
             var volume = _.find(this.volumes, {name: group});
-            var total = Math.round(this.diskMetaData.size / Math.pow(1000, 3)) - this.countAllocatedSpace() + volume.size;
+            var total = this.diskSize - this.countAllocatedSpace() + volume.size;
             if (newSize > total) {
                 newSize = total;
                 this.$(e.currentTarget).addClass('error');
@@ -576,9 +576,10 @@ function(models, commonViews, dialogViews, nodesTabSummaryTemplate, editNodesScr
                 }, this), 0);
         },
         useAllUnallocatedSpace: function(e) {
-            var group = this.$(e.currentTarget).parent().attr('class');
+            e.preventDefault();
+            var group = this.$(e.currentTarget).parents('.volume-group-box').data('group');
             var volume = _.find(this.volumes, {name: group});
-            volume.size += Math.round(this.diskMetaData.size / Math.pow(1000, 3)) - this.countAllocatedSpace();
+            volume.size += this.diskSize - this.countAllocatedSpace();
             this.renderVisualGraph();
             this.$('input[name=' + group + ']').val(volume.size);
             this.$('.disk-visual .' + group + ' .delete-volume-group').show();
@@ -588,18 +589,18 @@ function(models, commonViews, dialogViews, nodesTabSummaryTemplate, editNodesScr
         initialize: function(options) {
             _.defaults(this, options);
             this.diskMetaData = _.find(this.node.get('meta').disks, {id: this.diskId});
+            this.diskSize = Math.round(this.diskMetaData.size / Math.pow(1000, 3));
             this.volumes = this.disk.get('volume_groups');
         },
         renderVisualGraph: function() {
-            var diskSize = Math.round(this.diskMetaData.size / Math.pow(1000, 3));
-            var unallocatedWidth = 100, unallocatedSize = diskSize;
+            var unallocatedWidth = 100, unallocatedSize = this.diskSize;
             _.each(this.node.volumeGroupsByRoles(this.node.get('role')), _.bind(function(group) {
                 var volume = _.find(this.volumes, {name: group});
-                var width = (volume.size / diskSize * 100).toPrecision(4);
-                this.$('.disk-visual .' + group).css('width', width + '%').find('span:not(.delete-volume-group)').text(volume.size);
+                var width = (volume.size / this.diskSize * 100).toPrecision(4);
+                this.$('.disk-visual .' + group).css('width', width + '%').find('.volume-group-size').text(volume.size + ' GB');
                 unallocatedWidth -= width; unallocatedSize -= volume.size;
             }, this));
-            this.$('.disk-visual .unallocated').css('width', unallocatedWidth + '%').find('span').text(unallocatedSize);
+            this.$('.disk-visual .unallocated').css('width', unallocatedWidth + '%').find('.volume-group-size').text(unallocatedSize + ' GB');
         },
         render: function() {
             this.$el.html(this.template({
