@@ -9,10 +9,10 @@
     <div class="disk-map-image disk-visual">
       <% var volumeGroupsLabels = {os: 'Base system', vms: 'Virtual Storage', cinder: 'Cinder'} %>
       <% _.each(volumeGroups, function(group) { %>
-        <div class="volume-group <%= group %>" style="width:0">
+        <div class="volume-group <%= group %>" data-group="<%= group %>" style="width:0">
           <div class="volume-group-name"><%= volumeGroupsLabels[group] %></div>
           <div class="volume-group-size">0 GB</div>
-          <!--<div class="delete-volume-group hide">&times;</div>-->
+          <div class="close-btn hide"></div>
         </div>
       <% }) %>
       <div class="volume-group unallocated" style="width: 100%">

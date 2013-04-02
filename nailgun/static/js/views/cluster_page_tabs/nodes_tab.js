@@ -536,21 +536,21 @@ function(models, commonViews, dialogViews, nodesTabSummaryTemplate, editNodesScr
         template: _.template(nodeDisksTemplate),
         events: {
             'click .disk-visual': 'toggleEditDiskForm',
-            'click .delete-volume-group': 'deleteVolumeGroup',
+            'click .close-btn': 'deleteVolumeGroup',
             'keyup input': 'editVolumeGroups',
             'click .use-all-ullocated': 'useAllUnallocatedSpace'
         },
         toggleEditDiskForm: function(e) {
-            this.$('.delete-volume-group').toggle();
+            this.$('.close-btn').toggle();
             this.$('.disk-edit-volume-group-form').collapse('toggle');
         },
         deleteVolumeGroup: function(e) {
-            var group = this.$(e.currentTarget).parent().attr('class');
+            var group = this.$(e.currentTarget).parent().data('group');
             var volume = _.find(this.volumes, {name: group});
             volume.size = 0;
             this.renderVisualGraph();
             this.$('input[name=' + group + ']').val(0);
-            this.$('.disk-visual .' + group + ' .delete-volume-group').hide();
+            this.$('.disk-visual .' + group + ' .close-btn').hide();
             this.disk.set({volume_groups: this.volumes});
             $('.btn-apply').attr('disabled', _.isEqual(this.screen.disks.toJSON(), this.screen.initialData));
         },
@@ -566,7 +566,7 @@ function(models, commonViews, dialogViews, nodesTabSummaryTemplate, editNodesScr
             }
             volume.size = newSize;
             this.renderVisualGraph();
-            this.$('.disk-visual .' + group + ' .delete-volume-group').show();
+            this.$('.disk-visual .' + group + ' .close-btn').show();
             this.disk.set({volume_groups: this.volumes}, {validate: true});
             $('.btn-apply').attr('disabled', _.isEqual(this.screen.disks.toJSON(), this.screen.initialData));
         },
@@ -582,7 +582,7 @@ function(models, commonViews, dialogViews, nodesTabSummaryTemplate, editNodesScr
             volume.size += this.diskSize - this.countAllocatedSpace();
             this.renderVisualGraph();
             this.$('input[name=' + group + ']').val(volume.size);
-            this.$('.disk-visual .' + group + ' .delete-volume-group').show();
+            this.$('.disk-visual .' + group + ' .close-btn').show();
             this.disk.set({volume_groups: this.volumes});
             $('.btn-apply').attr('disabled', _.isEqual(this.screen.disks.toJSON(), this.screen.initialData));
         },
