@@ -7,15 +7,10 @@ import web
 
 from nailgun.notifier import notifier
 from nailgun.logger import logger
-<<<<<<< HEAD
-from nailgun.api.models import Node
 from nailgun.api.validators import NodeValidator
 from nailgun.network.manager import NetworkManager
-from nailgun.api.handlers.base import JSONHandler, content_json
-=======
 from nailgun.api.models import Node, NodeAttributes
-from nailgun.api.handlers.base import JSONHandler
->>>>>>> initial volume backend
+from nailgun.api.handlers.base import JSONHandler, content_json
 
 
 class NodeHandler(JSONHandler):
@@ -138,54 +133,49 @@ class NodeCollectionHandler(JSONHandler):
                         node_id=node.id
                     )
             nodes_updated.append(node)
-<<<<<<< HEAD
             self.db.add(node)
             self.db.commit()
         return map(NodeHandler.render, nodes_updated)
-=======
-            orm().add(node)
-        orm().commit()
-        return json.dumps(map(
-            NodeHandler.render,
-            nodes_updated), indent=4)
 
 
 class NodeAttributesHandler(JSONHandler):
     fields = ('node_id', 'volumes')
 
+    @content_json
     def GET(self, node_id):
-        web.header('Content-Type', 'application/json')
-        node_attrs = orm().query(Node).get(node_id).attributes
+        node = self.get_object_or_404(Node, node_id)
+        node_attrs = node.attributes
         if not node_attrs:
             return web.notfound()
-        return json.dumps(
-            self.render(node_attrs),
-            indent=4
-        )
+        return self.render(node_attrs)
 
+    @content_json
     def PUT(self):
-        web.header('Content-Type', 'application/json')
-        node_attrs = orm().query(Node).get(node_id).attributes
+        node = self.get_object_or_404(Node, node_id)
+        node_attrs = node.attributes
         if not node_attrs:
             return web.notfound()
         for key, value in web.data().iteritems():
             setattr(node_attrs, key, value)
-        orm().commit()
-        return json.dumps(
-            self.render(node_attrs),
-            indent=4
-        )
+        self.db.commit()
+        return self.render(node_attrs)
 
 
 class NodeAttributesByNameHandler(JSONHandler):
 
+    @content_json
     def GET(self, node_id, attr_name):
-        web.header('Content-Type', 'application/json')
-        node_attrs = orm().query(Node).get(node_id).attributes
-        if not hasattr(node_attrs, attr_name):
+        node = self.get_object_or_404(Node, node_id)
+        node_attrs = node.attributes
+        if not node_attrs or not hasattr(node_attrs, attr_name):
             raise web.notfound()
-        return json.dumps(
-            getattr(node_attrs, attr_name),
-            indent=4
-        )
->>>>>>> initial volume backend
+        return getattr(node_attrs, attr_name)
+
+    @content_json
+    def PUT(self, node_id, attr_name):
+        node = self.get_object_or_404(Node, node_id)
+        node_attrs = node.attributes
+        if not node_attrs or not hasattr(node_attrs, attr_name):
+            raise web.notfound()
+        setattr(node_attrs, attr_name, web.data())
+        return getattr(node_attrs, attr_name)
