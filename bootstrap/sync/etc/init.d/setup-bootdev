@@ -23,7 +23,7 @@ get_bootdev() {
     'File.open("/proc/cmdline") { |fo|
       l = fo.read
       m = l.match( /BOOTIF=([0-9A-Fa-f]{2}(-[0-9A-Fa-f]{2})+)/ )
-      print m[1].split("-")[-6..-1].join(".")
+      print m[1].split("-")[-6..-1].join(":")
     }' 2> /dev/null)
 
     if [ -z "$bootaddr" ]; then
@@ -45,15 +45,16 @@ get_alldevs() {
 # See how we were called.
 case "$1" in
   start)
-    rc=1
     echo -n "Obtain boot interface name..."
     dev=$(get_bootdev)
+    rc=$?
 
-    if [ -z "$dev" ]; then
+    if [ $rc -ne 0 ]; then
         echo "failed."
         echo -en "Obtain all eth interfaces..."
         dev=$(get_alldevs)
         if [ -z "$dev" ]; then
+            rc=1
             echo "failed."
         else
             rc=0
@@ -61,7 +62,6 @@ case "$1" in
             echo "ok ($dev_str)."
         fi
     else
-        rc=0
         echo "ok ($dev)."
     fi
 
