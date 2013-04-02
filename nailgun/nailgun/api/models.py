@@ -197,7 +197,7 @@ class NodeAttributes(Base):
         new_dict = {}
         if isinstance(cdict, dict):
             for i, val in cdict.iteritems():
-                if isinstance(val, str) or isinstance(val, unicode):
+                if type(val) in (str, unicode, int, float):
                     new_dict[i] = val
                 elif isinstance(val, dict):
                     if "generator" in val:
