@@ -108,13 +108,13 @@ define(function() {
             return ['multinode', 'ha'];
         },
         availableTypes: function() {
-            return ['compute', 'storage', 'both'];
+            return ['compute', 'both'];
         },
         availableRoles: function() {
             var roles = ['controller'];
             if (this.get('mode') != 'singlenode') {
                 if (this.get('type') == 'both') {
-                    roles.push('storage', 'compute');
+                    roles.push('compute', 'storage');
                 } else {
                     roles.push(this.get('type'));
                 }

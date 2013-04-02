@@ -2497,11 +2497,15 @@ h6.page-title {
   height: 90px;
 }
 
+.mode-control-group {
+  height: 90px;
+}
+
 .mode-control-group, .type-control-group {
   margin: 0;
-
 }
-.mode-control-group .span7{
+
+.mode-control-group .span7, .type-control-group .span7{
   margin-left: 0;
   margin-right: 10px;
 }

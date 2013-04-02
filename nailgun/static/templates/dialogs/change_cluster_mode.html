@@ -13,7 +13,7 @@
             <label class="parameter-box clearfix setting" >
               <div class="parameter-control">
                 <div class="custom-tumbler">
-                  <input type="radio" name="mode" value="<%= mode %>" <%= cluster.get('mode') == mode ? 'checked' : '' %> <%= cluster.canChangeMode(mode) ? '' : 'disabled' %>>
+                  <input type="radio" name="mode" value="<%= mode %>" <%= cluster.get('mode') == mode ? 'checked' : '' %> <%= cluster.canChangeMode(mode) ? '' : 'disabled' %> />
                   <!--[if !IE |(gte IE 9)]>--><span>&nbsp;</span><!--<![endif]-->
                 </div>
               </div>
@@ -33,19 +33,24 @@
           </p>
         </div>
       </div>
-       <h4 class="simple-type-title hide">Deployment Type:</h4>
-       <span class="label label-info hide">This functionality will be available in the next release</span>
-       <div class="row-fluid control-group type-control-group hide">
-        <div class="span4">
-          <% var types = {'compute': 'Compute only', 'storage': 'Storage only', 'both': 'Compute and storage'} %>
+       <h4 class="simple-type-title">Deployment Type:</h4>
+       <!--<span class="label label-info">This functionality will be available in the next release</span>-->
+       <div class="row-fluid control-group type-control-group">
+        <div class="span5">
+          <% var types = {'compute': 'Compute only', 'storage': 'Storage only', 'both': 'Compute with Cinder'} %>
           <% _.each(cluster.availableTypes(), function(type) { %>
-            <label class="radio">
-              <input type="radio" name="type" value="<%= type %>" <%= cluster.get('type') == type ? 'checked' : '' %> disabled>
-              <%= types[type] || type %>
+            <label class="parameter-box clearfix setting" >
+              <div class="parameter-control">
+                <div class="custom-tumbler">
+                  <input type="radio" name="type" value="<%= type %>" <%= cluster.get('type') == type ? 'checked' : '' %> <%= cluster.canChangeType(type) ? '' : 'disabled' %> />
+                  <!--[if !IE |(gte IE 9)]>--><span>&nbsp;</span><!--<![endif]-->
+                </div>
+              </div>
+              <div class="openstack-sub-title parameter-name"><%= types[type] || type %></div>
             </label>
           <% }) %>
         </div>
-        <div class="span8">
+        <div class="span7">
           <p class="help-block hide type-description help-type-compute">
             In this deployment type your environment will have only computes to run VMs on them. There will be no storage (Swift) nodes.
           </p>
@@ -53,7 +58,7 @@
             Choose this deployment type if you don't need to run virtual machines and need only storage (Swift) nodes.
           </p>
           <p class="help-block hide type-description help-type-both">
-            Choose this deployment type if you need both compute and storage nodes, to run VMs and store objects into Swift.
+            Give me Cinder description please.
           </p>
         </div>
       </div>

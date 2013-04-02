@@ -131,7 +131,7 @@ function(models, simpleMessageTemplate, createClusterDialogTemplate, changeClust
         template: _.template(changeClusterModeDialogTemplate),
         events: {
             'change input[name=mode]': 'toggleTypes',
-            /*'change input[name=type]': 'toggleTypeDescription',*/
+            'change input[name=type]': 'toggleTypeDescription',
             'click .apply-btn:not(.disabled)': 'apply'
         },
         apply: function() {
@@ -146,7 +146,7 @@ function(models, simpleMessageTemplate, createClusterDialogTemplate, changeClust
             }
         },
         toggleTypes: function() {
-            //this.$('.type-control-group, .simple-type-title, .label-info').toggleClass('hide', this.$('input[name=mode]:checked').val() == 'singlenode');
+            this.$('.type-control-group, .simple-type-title, .label-info').toggleClass('hide', this.$('input[name=mode]:checked').val() == 'singlenode');
             this.$('.mode-description').addClass('hide');
             this.$('.help-mode-' + this.$('input[name=mode]:checked').val()).removeClass('hide');
         },
