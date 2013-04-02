@@ -64,6 +64,13 @@ $(BUILD_DIR)/packages/rpm/sandbox-packages.done: \
 	sudo cp $(SOURCE_DIR)/packages/rpm/specs/rbenv-ruby-1.9.3-p392.spec $(SANDBOX)/tmp
 	sudo chroot $(SANDBOX) rpmbuild -vv --define "_topdir /tmp" -ba /tmp/rbenv-ruby-1.9.3-p392.spec
 
+	sudo unzip -q $(SANDBOX)/tmp/SOURCES/9f8d2ec75ba326d2a37884224698f3f96ff01629.zip -d $(SANDBOX)/tmp/SOURCES
+	sudo rm -rf $(SANDBOX)/tmp/SOURCES/mcollective
+	sudo mv $(SANDBOX)/tmp/SOURCES/marionette-collective-9f8d2ec75ba326d2a37884224698f3f96ff01629 $(SANDBOX)/tmp/SOURCES/mcollective
+	sudo chroot $(SANDBOX) sh -c "mkdir -p ~/rpmbuild/SOURCES ~/rpmbuild/SPECS && cd /tmp/SOURCES/mcollective && rake rpm && rake gem"
+	cp $(SANDBOX)/tmp/SOURCES/mcollective/build/*.rpm $(BUILD_DIR)/packages/rpm/RPMS/x86_64/
+	cp $(SANDBOX)/tmp/SOURCES/mcollective/build/*.gem $(LOCAL_MIRROR_GEMS)/gems/
+
 	cp $(SANDBOX)/tmp/RPMS/x86_64/* $(BUILD_DIR)/packages/rpm/RPMS/x86_64/
 	sudo sh -c "$${SANDBOX_DOWN}"
 	$(ACTION.TOUCH)

@@ -44,10 +44,10 @@ class mcollective::rabbitmq(
       notify => Service["rabbitmq-server"],
     }
 
-    $actualvhost = "/"
+    $actual_vhost = "/"
   }
   else {
-    access_to_rabbimq_port { "${port}_tcp": port => $port }
+    access_to_rabbitmq_port { "${port}_tcp": port => $port }
 
     class { 'rabbitmq::server':
       service_ensure     => 'running',
@@ -69,7 +69,7 @@ class mcollective::rabbitmq(
     require   => Class['rabbitmq::server'],
   }
 
-  rabbitmq_user_permissions { "${user}@${actualvhost}":
+  rabbitmq_user_permissions { "${user}@${actual_vhost}":
     configure_permission => '.*',
     write_permission     => '.*',
     read_permission      => '.*',

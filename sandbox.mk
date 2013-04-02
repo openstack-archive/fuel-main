@@ -36,6 +36,11 @@ SANDBOX_PACKAGES:=\
 	tar \
 	postgresql-devel \
 	openssl-devel \
+	ruby \
+	ruby-devel \
+	rubygems \
+	rubygem-rake \
+	which \
 
 
 define SANDBOX_UP

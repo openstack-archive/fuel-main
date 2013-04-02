@@ -7,7 +7,7 @@ class nailgun::mcollective(
   class { "mcollective::rabbitmq":
     user => $mco_user,
     password => $mco_password,
-    stomp = false,
+    stomp => false,
   }
 
   class { "mcollective::client":
@@ -15,7 +15,7 @@ class nailgun::mcollective(
     user => $mco_user,
     password => $mco_password,
     host => $ipaddress,
-    stomp = false,
+    stomp => false,
   }
 
 }
