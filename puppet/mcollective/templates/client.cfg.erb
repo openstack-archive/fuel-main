@@ -1,4 +1,3 @@
-topicprefix = /topic/
 main_collective = mcollective
 collectives = mcollective
 libdir = /usr/libexec/mcollective
@@ -18,10 +17,10 @@ plugin.stomp.user = <%= scope.lookupvar('mcollective::client::user') %>
 plugin.stomp.password = <%= scope.lookupvar('mcollective::client::password') %>
 <% else -%>
 connector = rabbitmq
-plugin.rabbitmq.vhost = /<%= scope.lookupvar('mcollective::client::vhost') %>
+plugin.rabbitmq.vhost = <%= scope.lookupvar('mcollective::client::vhost') %>
 plugin.rabbitmq.pool.size = 1
 plugin.rabbitmq.pool.1.host = <%= scope.lookupvar('mcollective::client::host') %>
-plugin.rabbitmq.pool.1.port = <%= scope.lookupvar('mcollective::client::port') %>
+plugin.rabbitmq.pool.1.port = <%= scope.lookupvar('mcollective::client::stompport') %>
 plugin.rabbitmq.pool.1.user = <%= scope.lookupvar('mcollective::client::user') %>
 plugin.rabbitmq.pool.1.password = <%= scope.lookupvar('mcollective::client::password') %>
 <% end -%>

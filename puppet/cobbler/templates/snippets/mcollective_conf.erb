@@ -1,7 +1,6 @@
 #if $str($getVar('mco_auto_setup','')) == "1"
 mkdir -p /etc/mcollective
 cat <<EOCONF > /etc/mcollective/server.cfg
-topicprefix = /topic/
 main_collective = mcollective
 collectives = mcollective
 libdir = /usr/libexec/mcollective

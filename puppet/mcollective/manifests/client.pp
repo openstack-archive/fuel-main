@@ -4,7 +4,6 @@ class mcollective::client(
   $password = "mcollective",
   $host = "127.0.0.1",
   $stompport = "61613",
-  $port = "5672",
   $vhost = "mcollective",
   $stomp = false,
   ){
@@ -33,4 +32,4 @@ class mcollective::client(
     require => Package[$mcollective_client_package],
   }
 
-  }
+}

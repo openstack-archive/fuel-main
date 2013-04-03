@@ -35,6 +35,7 @@ class rabbitmq::service(
     enable     => $enable_real,
     hasstatus  => true,
     hasrestart => true,
+    require    => File['/etc/rabbitmq/enabled_plugins'],
   }
 
 }
