@@ -165,11 +165,15 @@ class NodeAttributesByNameHandler(JSONHandler):
 
     @content_json
     def GET(self, node_id, attr_name):
+        attr_params = web.input()
         node = self.get_object_or_404(Node, node_id)
         node_attrs = node.attributes
         if not node_attrs or not hasattr(node_attrs, attr_name):
             raise web.notfound()
-        return getattr(node_attrs, attr_name)
+        attr = getattr(node_attrs, attr_name)
+        if hasattr(attr_params, "type"):
+            attr = filter(lambda a: a["type"] == attr_params.type, attr)
+        return attr
 
     @content_json
     def PUT(self, node_id, attr_name):
@@ -178,4 +182,8 @@ class NodeAttributesByNameHandler(JSONHandler):
         if not node_attrs or not hasattr(node_attrs, attr_name):
             raise web.notfound()
         setattr(node_attrs, attr_name, json.loads(web.data()))
-        return getattr(node_attrs, attr_name)
+        attr = getattr(node_attrs, attr_name)
+        attr_params = web.input()
+        if hasattr(attr_params, "type"):
+            attr = filter(lambda a: a["type"] == attr_params.type, attr)
+        return attr

@@ -8,7 +8,7 @@ sys.path.insert(0, curdir)
 from nailgun.settings import settings
 from nailgun.api.handlers import check_client_content_type
 from nailgun.api.handlers import forbid_client_caching
-from nailgun.db import load_db_driver
+from nailgun.db import load_db_driver, engine
 from nailgun.urls import urls
 from nailgun.logger import logger, FileLoggerMiddleware, HTTPLoggerMiddleware
 
@@ -66,6 +66,11 @@ def appstart(keepalive=False):
         settings.PRODUCT_VERSION,
         settings.COMMIT_SHA
     ))
+    if not engine.dialect.has_table(engine.connect(), "nodes"):
+        logger.error(
+            "Database tables not created. Try './manage.py syncdb' first"
+        )
+        sys.exit(1)
     from nailgun.rpc import threaded
     from nailgun.keepalive import keep_alive
     app = build_app()

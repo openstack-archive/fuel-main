@@ -233,21 +233,50 @@ class NodeAttributes(Base):
     def generate_volumes_info(self):
         discs = self.node.meta["disks"]
         self.volumes = []
-        for i, disk in enumerate(self.node.meta["disks"]):
+        for disk in self.node.meta["disks"]:
             self.volumes.append(
                 {
                     "id": disk["disk"],
-                    "volume_groups": [
-                        {"name": "os", "size": 0},
-                        {"name": "vms", "size": 0},
-                        {"name": "cinder", "size": 0}
+                    "type": "disk",
+                    "volumes": [
+                        {"type": "pv", "vg": "os", "size": 0},
+                        {"type": "pv", "vg": "vm", "size": 0},
+                        {"type": "pv", "vg": "cinder", "size": 0}
                     ]
                 }
             )
-            if i == 0:
-                self.volumes[-1]["volume_groups"][0]["size"] = {
-                    "generator": "calc_os_size"
-                }
+
+        # auto assigning all stuff to first disk
+        self.volumes[0]["volumes"][0]["size"] = {
+            "generator": "calc_os_size"
+        }
+        self.volumes[0]["volumes"].append(
+            {"type": "partition", "mount": "/boot", "size": 200}
+        )
+        self.volumes[0]["volumes"].append(
+            {"type": "mbr"}
+        )
+
+        # creating volume groups
+        self.volumes.extend([
+            {
+                "id": "os",
+                "type": "vg",
+                "volumes": [
+                    {"mount": "/", "size": 0, "name": "root", "type": "lv"},
+                    {"mount": "swap", "size": 0, "name": "swap", "type": "lv"}
+                ]
+            },
+            {
+                "id": "vms",
+                "type": "vg",
+                "volumes": [
+                    {"mount": "/var/lib/libvirt", "size": 0,
+                     "name": "vm", "type": "lv"}
+                ]
+            }
+        ])
+
         self.volumes = self._traverse(self.volumes)
         orm().add(self)
         orm().commit()

@@ -48,11 +48,10 @@ class RPCKombuThread(threading.Thread):
 
     def join(self, timeout=None):
         self.stoprequest.set()
+        self.consumer.should_stop = True
         super(RPCKombuThread, self).join(timeout)
 
     def run(self):
         with Connection(rpc.conn_str) as conn:
-            try:
-                RPCConsumer(conn, self.receiver).run()
-            except KeyboardInterrupt:
-                return
+            self.consumer = RPCConsumer(conn, self.receiver)
+            self.consumer.run()
