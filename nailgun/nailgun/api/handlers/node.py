@@ -134,6 +134,8 @@ class NodeCollectionHandler(JSONHandler):
                     continue
                 setattr(node, key, value)
             if is_agent:
+                if not node.attributes.volumes:
+                    node.attributes.generate_volumes_info()
                 node.timestamp = datetime.now()
                 if not node.online:
                     node.online = True

@@ -29,6 +29,41 @@ class TestHandlers(BaseHandlers):
             1
         )
 
+    def test_attrs_creation_put(self):
+        node = self.env.create_node(
+            api=True,
+            meta=self.env.default_metadata()
+        )
+        node_db = self.env.nodes[0]
+        resp = self.app.put(
+            reverse('NodeAttributesHandler', kwargs={'node_id': node_db.id}),
+            json.dumps({"volumes": []}),
+            headers=self.default_headers
+        )
+        self.assertEquals(200, resp.status)
+        response = json.loads(resp.body)
+        self.assertEquals(response["volumes"], [])
+        resp = self.app.get(
+            reverse('NodeAttributesHandler', kwargs={'node_id': node_db.id}),
+            headers=self.default_headers
+        )
+        self.assertEquals(200, resp.status)
+        response = json.loads(resp.body)
+        self.assertEquals(response["volumes"], [])
+        resp = self.app.put(
+            reverse('NodeCollectionHandler'),
+            json.dumps([{"mac": node_db.mac, "is_agent": True}]),
+            headers=self.default_headers
+        )
+        self.assertEquals(200, resp.status)
+        resp = self.app.get(
+            reverse('NodeAttributesHandler', kwargs={'node_id': node_db.id}),
+            headers=self.default_headers
+        )
+        self.assertEquals(200, resp.status)
+        response = json.loads(resp.body)
+        self.assertNotEquals(response["volumes"], [])
+
     def test_attrs_updating(self):
         node = self.env.create_node(
             api=True,
