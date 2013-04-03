@@ -5,6 +5,22 @@
   <% var diskSize = disk.size ? disk.size / Math.pow(1000, 3) : 0 %>
   <div class="disk-box-size pull-right">Total Space: <%= diskSize ? diskSize < 100 ? diskSize.toFixed(1) + 'GB' : (diskSize / 1000).toFixed(1) + 'TB' : '?TB' %></div>
 
+  <div class="disk-tumbler pull-left">
+    <label class="parameter-box clearfix">
+      <div class="parameter-control">
+        <div class="custom-tumbler">
+          <input type="radio" name="booting" value="<%- disk.name %>" checked />
+          <!--[if !IE |(gte IE 9)]>--><span>&nbsp;</span><!--<![endif]-->
+        </div>
+      </div>
+      <div class="parameter-name">Bootable disk</div>
+    </label>
+    <div class="alert">
+      <button type="button" class="close" data-dismiss="alert">&times;</button>
+      <strong>Warning!</strong> Some alert message.
+    </div>
+  </div>
+
   <div class="disk-map-short disk-map-full">
     <div class="disk-map-image disk-visual">
       <% var volumeGroupsLabels = {os: 'Base system', vms: 'Virtual Storage', cinder: 'Cinder'} %>
@@ -61,10 +77,10 @@
     <div class="disk-utility-box">
       <div class="disk-box-title">Volume Groups</div>
       <% _.each(volumeGroups, function(group) { %>
-        <div class="volume-group-box" data-group="<%= group %>">
+        <div class="volume-group-box volume-group" data-group="<%= group %>">
           <div class="volume-group-box-flag-<%= group %>"></div>
           <div class="volume-group-box-name"><%= volumeGroupsLabels[group] %></div>
-          <div class="volume-group-box-edit use-all-ullocated"><a href="#">Use All Unallocated Space</a></div>
+          <div class="volume-group-box-edit use-all-unallocated"><a href="#">Use All Unallocated Space</a></div>
           <% var volume = _.find(volumes, {name: group}) %>
           <div class="volume-group-box-input"><input class="span1" type="text" name="<%= group %>" value="<%= volume.size %>" /></div>
           <div class="volume-group-box-sizetype">GB</div>

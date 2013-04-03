@@ -3479,7 +3479,7 @@ hr.slim {
   float: left;
 }
 
-.volume-group {
+.disk-visual > .volume-group {
   display: inline-block;
   float: left;
   height: 56px;
@@ -3548,6 +3548,9 @@ hr.slim {
   font-size: 16px;
   margin-top: 8px;
   text-shadow: 0 0 2px rgba(0,0,0,.5);
+  text-overflow: ellipsis;
+  overflow: hidden;
+  padding: 3px;
   white-space: nowrap;
 }
 .volume-group-size {
@@ -3663,3 +3666,7 @@ hr.slim {
   color: #777777;
 }
 /* Disk Utility End */
+
+.disk-tumbler {
+  width: 100%;
+}
