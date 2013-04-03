@@ -255,7 +255,7 @@ class NodeAttributes(Base):
             "generator": "calc_os_size"
         }
         self.volumes[0]["volumes"].append(
-            {"type": "partition", "mount": "/boot", "size": 200}
+            {"type": "partition", "mount": "/boot", "size": 200 * 1024 ** 2}
         )
         self.volumes[0]["volumes"].append(
             {"type": "mbr"}
@@ -267,8 +267,18 @@ class NodeAttributes(Base):
                 "id": "os",
                 "type": "vg",
                 "volumes": [
-                    {"mount": "/", "size": 0, "name": "root", "type": "lv"},
-                    {"mount": "swap", "size": 0, "name": "swap", "type": "lv"}
+                    {
+                        "mount": "/",
+                        "size": {"generator": "calc_root_size"},
+                        "name": "root",
+                        "type": "lv"
+                    },
+                    {
+                        "mount": "swap",
+                        "size": {"generator": "calc_swap_size"},
+                        "name": "swap",
+                        "type": "lv"
+                    }
                 ]
             },
             {
