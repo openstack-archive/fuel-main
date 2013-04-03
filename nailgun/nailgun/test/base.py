@@ -489,6 +489,11 @@ def reverse(name, kwargs=None):
     for kwarg in urlregex.groupindex:
         if not kwarg in kwargs:
             raise KeyError("Invalid argument specified")
-        url = re.sub(r"\(.+\)", str(kwargs[kwarg]), url, 1)
+        url = re.sub(
+            r"\(\?P<{0}>[^)]+\)".format(kwarg),
+            str(kwargs[kwarg]),
+            url,
+            1
+        )
     url = re.sub(r"\??\$", "", url)
     return "/api" + url

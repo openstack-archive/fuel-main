@@ -81,6 +81,20 @@ class NodeCollectionHandler(JSONHandler):
         node.timestamp = datetime.now()
         self.db.add(node)
         self.db.commit()
+        node.attributes = node.create_default_attrs()
+        try:
+            node.attributes.generate_volumes_info()
+        except Exception as exc:
+            logger.warning(
+                "Failed to get volumes info for node '{0}': '{1}'".format(
+                    data.get("mac"),
+                    str(exc)
+                )
+            )
+            raise web.badrequest(str(exc))
+        self.db.add(node)
+        self.db.commit()
+
         try:
             ram = str(round(float(
                 node.meta['memory']['total']) / 1073741824, 1))
@@ -150,12 +164,13 @@ class NodeAttributesHandler(JSONHandler):
         return self.render(node_attrs)
 
     @content_json
-    def PUT(self):
+    def PUT(self, node_id):
         node = self.get_object_or_404(Node, node_id)
         node_attrs = node.attributes
         if not node_attrs:
             return web.notfound()
-        for key, value in web.data().iteritems():
+        # NO data validation yet
+        for key, value in json.loads(web.data()).iteritems():
             setattr(node_attrs, key, value)
         self.db.commit()
         return self.render(node_attrs)
@@ -181,6 +196,8 @@ class NodeAttributesByNameHandler(JSONHandler):
         node_attrs = node.attributes
         if not node_attrs or not hasattr(node_attrs, attr_name):
             raise web.notfound()
+        # WARNING: all attributes will be updated now, not those by type
+        # NO data validation yet
         setattr(node_attrs, attr_name, json.loads(web.data()))
         attr = getattr(node_attrs, attr_name)
         attr_params = web.input()

@@ -19,7 +19,10 @@ class TestHandlers(BaseHandlers):
         self.assertEquals([], response)
 
     def test_notification_node_id(self):
-        node = self.env.create_node(api=True)
+        node = self.env.create_node(
+            api=True,
+            meta=self.env.default_metadata()
+        )
         notif = self.db.query(Notification).first()
         self.assertEqual(node['id'], notif.node_id)
         resp = self.app.get(

@@ -170,6 +170,9 @@ class Node(Base):
                               backref=backref("node"),
                               uselist=False)
 
+    def create_default_attrs(self):
+        return NodeAttributes(node_id=self.id)
+
     @property
     def needs_reprovision(self):
         return self.status == 'error' and self.error_type == 'provision'
@@ -231,7 +234,8 @@ class NodeAttributes(Base):
         return generators.get(generator, lambda: None)(*args)
 
     def generate_volumes_info(self):
-        discs = self.node.meta["disks"]
+        if not "disks" in self.node.meta:
+            raise Exception("No disk metadata specified for node")
         self.volumes = []
         for disk in self.node.meta["disks"]:
             self.volumes.append(
@@ -278,8 +282,6 @@ class NodeAttributes(Base):
         ])
 
         self.volumes = self._traverse(self.volumes)
-        orm().add(self)
-        orm().commit()
 
 
 class IPAddr(Base):

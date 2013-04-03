@@ -29,7 +29,10 @@ class TestHandlers(BaseHandlers):
         self.assertEquals(notification.message, response['message'])
 
     def test_notification_datetime(self):
-        node = self.env.create_node(api=True)
+        node = self.env.create_node(
+            api=True,
+            meta=self.env.default_metadata()
+        )
         resp = self.app.get(
             reverse('NotificationCollectionHandler'),
             headers=self.default_headers
