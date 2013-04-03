@@ -223,9 +223,9 @@ class NodeAttributes(Base):
         generators = {
             # swap = memory + 1Gb
             "calc_swap_size": lambda:
-            self.node.meta["memory"]["total"] + 1024**3,
+            self.node.meta["memory"]["total"] + 1024 ** 3,
             # root = 10Gb
-            "calc_root_size": lambda: 1024**3 * 10
+            "calc_root_size": lambda: 1024 ** 3 * 10
         }
         generators["calc_os_size"] = lambda: sum([
             generators["calc_root_size"](),
