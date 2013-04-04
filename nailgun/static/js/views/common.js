@@ -137,9 +137,6 @@ function(models, dialogViews, navbarTemplate, nodesStatsTemplate, notificationsT
         toggle: function() {
             this.visible = !this.visible;
             this.render();
-            if (this.visible) {
-                this.markAsRead();
-            }
         },
         hide: function(e) {
             if (this.visible && (!e || (!$(e.target).closest(this.navbar.notificationsButton.el).length && !$(e.target).closest(this.el).length))) {
@@ -166,8 +163,7 @@ function(models, dialogViews, navbarTemplate, nodesStatsTemplate, notificationsT
         },
         initialize: function(options) {
             _.defaults(this, options);
-            // listening for 'reset' is not a good solution. we should listen for 'add'
-            //this.collection.bind('reset', this.render, this);
+            this.collection.bind('add', this.render, this);
             this.eventNamespace = 'click.click-notifications';
         },
         bindEvents: function() {
@@ -185,6 +181,7 @@ function(models, dialogViews, navbarTemplate, nodesStatsTemplate, notificationsT
                     displayCount: 5,
                     showMore: (Backbone.history.getHash() != 'notifications') && this.collection.length
                 }));
+                this.markAsRead();
                 this.bindEvents();
             } else {
                 this.$el.html('');
