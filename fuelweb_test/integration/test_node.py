@@ -111,7 +111,7 @@ class TestNode(Base):
             """
             We define log message handler in such a way
             assuming that if at least one message is received
-            logging works ok.
+            logging works fine.
             """
             def handler(message):
                 self._logserver_status = True
@@ -528,7 +528,8 @@ class TestNode(Base):
         attrs = json.loads(response.read())
         attrs["editable"]["syslog"]["syslog_server"]["value"] = \
             self.get_host_hode_ip()
-        attrs["editable"]["syslog"]["syslog_port"]["value"] = 5514
+        attrs["editable"]["syslog"]["syslog_port"]["value"] = \
+            self.logserver.bound_port()
         self.client.put(
             "/api/clusters/%s/attributes/" % cluster_id,
             attrs

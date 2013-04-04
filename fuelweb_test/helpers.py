@@ -153,16 +153,34 @@ class SSHClient(object):
 
 class LogServer(threading.Thread):
     def __init__(self, address="localhost", port=5514):
+        self.port = port
         logger.debug("Initializing LogServer: %s:%s",
                      str(address), str(port))
         super(LogServer, self).__init__()
         self.socket = socket.socket(
             socket.AF_INET, socket.SOCK_DGRAM
         )
-        self.socket.bind((str(address), port))
+        while True:
+            try:
+                logger.debug("Trying to bind port %s", str(self.port))
+                self.socket.bind((str(address), self.port))
+            except socket.error:
+                logger.debug(
+                    "Socket error occured while binding port %s",
+                    str(self.port)
+                )
+                self.port += 1
+                if self.port > port + 1000:
+                    raise
+                continue
+            else:
+                break
         self.rlist = [self.socket]
         self._stop = threading.Event()
         self._handler = self.default_handler
+
+    def bound_port(self):
+        return self.port
 
     @classmethod
     def default_handler(cls, message):
