@@ -210,6 +210,8 @@ class DeploymentTask(object):
         )
         # backup directory if it exists
         if os.path.isdir(new):
+            if os.path.isdir(bak):
+                os.rmdir(bak)
             os.rename(new, bak)
         # rename bootstrap directory into fqdn
         if os.path.isdir(old):
