@@ -570,14 +570,17 @@ function(models, commonViews, dialogViews, nodesTabSummaryTemplate, editNodesScr
             this.$('.disk-edit-volume-group-form').collapse('toggle');
         },
         setVolumes: function(e, size, allUnallocated) {
+            this.$('input.error').removeClass('error');
             var group = this.$(e.currentTarget).parents('.volume-group').data('group');
             var volume = _.find(this.volumes, {vg: group});
-            var total = this.diskSize - this.countAllocatedSpace() + volume.size;
-            if (size > total) {
-                size = total;
-            }
+            var unallocated = this.diskSize - this.countAllocatedSpace() + volume.size;
             volume.size = allUnallocated ? volume.size + size : size;
-            this.disk.set({volumes: this.volumes}, {validate: true});
+            console.log(this.disk.get('volumes'));
+            this.disk.set({volumes: this.volumes}, {validate: true, unallocated: unallocated});
+            console.log(this.disk.get('volumes'));
+            if (this.disk.validationError) {
+                this.volumes = this.disk.get('volumes');
+            }
             if (allUnallocated || !size) {
                 this.$('input[name=' + group + ']').val(volume.size);
             }
@@ -604,7 +607,7 @@ function(models, commonViews, dialogViews, nodesTabSummaryTemplate, editNodesScr
             _.each(this.screen.disks.models, function(disk) {
                 disk.set({volumes: _.filter(disk.get('volumes'), {type: 'pv'})});
             });
-            this.disk.set({volumes: _.union(this.volumes, [{type: 'partition', mount: '/boot', size: 20}, {type: 'mbr'}])});
+            this.disk.set({volumes: _.union(this.volumes, [{type: 'partition', mount: '/boot', size: this.screen.partitionSize}, {type: 'mbr'}])});
             this.screen.renderDisks();
             this.screen.checkForChanges();
         },
@@ -613,6 +616,11 @@ function(models, commonViews, dialogViews, nodesTabSummaryTemplate, editNodesScr
             this.diskSize = Math.round(this.diskMetaData.size / Math.pow(1000, 3));
             this.volumes = this.disk.get('volumes');
             this.partition = _.find(this.volumes, {type: 'partition'});
+            this.disk.on('invalid', function(model, errors) {
+                _.each(errors, _.bind(function(error) {
+                    this.$('input[name=' + error + ']').addClass('error');
+                }, this));
+            }, this);
         },
         volumesToDisplay: function() {
             return _.filter(this.volumes, _.bind(function(volume) {return _.contains(this.volumeGroups, volume.vg);}, this));
