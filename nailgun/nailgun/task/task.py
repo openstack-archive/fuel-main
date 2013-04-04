@@ -195,7 +195,7 @@ class DeploymentTask(object):
         rpc.cast('naily', message)
 
     @classmethod
-    def _syslog_dir(cls, node, prefix=None):
+    def _prepare_syslog_dir(cls, node, prefix=None):
         if not prefix:
             prefix = settings.SYSLOG_DIR
 
@@ -331,7 +331,7 @@ mco_enable=1
                 nd_dict.get('power_type', 'unknown')
             )
             pd.power_reboot(nd_name)
-            cls._syslog_dir(node)
+            cls._prepare_syslog_dir(node)
         pd.sync()
 
 
