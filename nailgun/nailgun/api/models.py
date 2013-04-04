@@ -324,6 +324,8 @@ class IPAddr(Base):
     network = Column(Integer, ForeignKey('networks.id'))
     node = Column(Integer, ForeignKey('nodes.id', ondelete="CASCADE"))
     ip_addr = Column(String(25), nullable=False)
+    # admin field is for mark IPAddr instance as address
+    # allocated in fuelweb (admin) network
     admin = Column(Boolean, nullable=False, default=False)
 
 
