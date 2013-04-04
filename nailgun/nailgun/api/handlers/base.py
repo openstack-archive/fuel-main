@@ -9,6 +9,7 @@ import web
 import netaddr
 
 import nailgun.rpc as rpc
+from nailgun.db import orm
 from nailgun.settings import settings
 from nailgun.logger import logger
 from nailgun.api.models import Release
@@ -40,6 +41,17 @@ def forbid_client_caching(handler):
         web.header('Expires', dt)
     return handler()
 
+
+def content_json(func):
+    def json_header(*args, **kwargs):
+        web.header('Content-Type', 'application/json')
+        data = func(*args, **kwargs)
+        if type(data) in (dict, list):
+            return json.dumps(data, indent=4)
+        return data
+    return json_header
+
+
 handlers = {}
 
 
@@ -59,6 +71,30 @@ class JSONHandler(object):
     __metaclass__ = HandlerRegistrator
 
     fields = []
+
+    def __init__(self, *args, **kwargs):
+        super(JSONHandler, self).__init__(*args, **kwargs)
+        self.db = orm()
+
+    def get_object_or_404(self, model, *args, **kwargs):
+        # should be in ('warning', 'Log message') format
+        # (loglevel, message)
+        log_404 = kwargs.pop("log_404") if "log_404" in kwargs else None
+        log_get = kwargs.pop("log_get") if "log_get" in kwargs else None
+        if "id" in kwargs:
+            obj = self.db.query(model).get(kwargs["id"])
+        elif len(args) > 0:
+            obj = self.db.query(model).get(args[0])
+        else:
+            obj = self.db.query(model).filter(**kwargs).all()
+        if not obj:
+            if log_404:
+                getattr(logger, log_404[0])(log_404[0])
+            raise web.notfound()
+        else:
+            if log_get:
+                getattr(logger, log_get[0])(log_get[0])
+        return obj
 
     @classmethod
     def render(cls, instance, fields=None):

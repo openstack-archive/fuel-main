@@ -281,6 +281,10 @@ class Node(Base, BasicValidator):
             raise web.webapi.badrequest(
                 message="Manual ID setting is prohibited"
             )
+        if not d:
+            raise web.webapi.badrequest(
+                message="No valid data received"
+            )
         return d
 
     @classmethod
@@ -420,6 +424,10 @@ class NetworkGroup(Base, BasicValidator):
                 raise web.webapi.badrequest(
                     message="No 'id' param for '{0}'".format(i)
                 )
+        if not d:
+            raise web.webapi.badrequest(
+                message="No valid data received"
+            )
         return d
 
 

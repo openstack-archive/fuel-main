@@ -11,10 +11,9 @@ from itertools import dropwhile
 
 import web
 
-from nailgun.db import orm
 from nailgun.settings import settings
 from nailgun.api.models import Node
-from nailgun.api.handlers.base import JSONHandler
+from nailgun.api.handlers.base import JSONHandler, content_json
 
 logger = logging.getLogger(__name__)
 
@@ -52,8 +51,8 @@ def read_backwards(file, bufsize=4096):
 
 class LogEntryCollectionHandler(JSONHandler):
 
+    @content_json
     def GET(self):
-        web.header('Content-Type', 'application/json')
         user_data = web.input()
         date_before = user_data.get('date_before')
         if date_before:
@@ -94,7 +93,7 @@ class LogEntryCollectionHandler(JSONHandler):
         if log_config['remote'] and not log_config.get('fake'):
             if not user_data.get('node'):
                 raise web.badrequest("'node' must be specified")
-            node = orm().query(Node).get(user_data.node)
+            node = self.db.query(Node).get(user_data.node)
             if not node:
                 return web.notfound("Node not found")
             if not node.ip:
@@ -209,11 +208,11 @@ class LogEntryCollectionHandler(JSONHandler):
                     has_more = True
                     break
 
-        return json.dumps({
+        return {
             'entries': entries,
             'to': log_file_size,
             'has_more': has_more,
-        })
+        }
 
 
 class LogPackageHandler(object):
@@ -237,18 +236,16 @@ class LogPackageHandler(object):
 
 class LogSourceCollectionHandler(JSONHandler):
 
+    @content_json
     def GET(self):
-        web.header('Content-Type', 'application/json')
-        return json.dumps(settings.LOGS, indent=4)
+        return settings.LOGS
 
 
 class LogSourceByNodeCollectionHandler(JSONHandler):
 
+    @content_json
     def GET(self, node_id):
-        web.header('Content-Type', 'application/json')
-        node = orm().query(Node).get(node_id)
-        if not node:
-            return web.notfound()
+        node = self.get_object_or_404(Node, node_id)
 
         def getpath(x):
             if x.get('fake'):
@@ -264,4 +261,4 @@ class LogSourceByNodeCollectionHandler(JSONHandler):
             os.access(getpath(x), os.R_OK) and os.path.isfile(getpath(x))
         )
         sources = filter(f, settings.LOGS)
-        return json.dumps(sources, indent=4)
+        return sources

@@ -4,9 +4,8 @@ import json
 
 import web
 
-from nailgun.db import orm
 from nailgun.api.models import Release
-from nailgun.api.handlers.base import JSONHandler
+from nailgun.api.handlers.base import JSONHandler, content_json
 
 
 class ReleaseHandler(JSONHandler):
@@ -18,40 +17,24 @@ class ReleaseHandler(JSONHandler):
     )
     model = Release
 
+    @content_json
     def GET(self, release_id):
-        web.header('Content-Type', 'application/json')
-        q = orm().query(Release)
-        release = q.get(release_id)
-        if not release:
-            return web.notfound()
-        return json.dumps(
-            self.render(release),
-            indent=4
-        )
+        release = self.get_object_or_404(Release, release_id)
+        return self.render(release)
 
+    @content_json
     def PUT(self, release_id):
-        web.header('Content-Type', 'application/json')
-        q = orm().query(Release)
-        release = q.get(release_id)
-        if not release:
-            return web.notfound()
-        # additional validation needed?
+        release = self.get_object_or_404(Release, release_id)
         data = Release.validate_json(web.data())
-        # /additional validation needed?
         for key, value in data.iteritems():
             setattr(release, key, value)
-        orm().commit()
-        return json.dumps(
-            self.render(release),
-            indent=4
-        )
+        self.db.commit()
+        return self.render(release)
 
     def DELETE(self, release_id):
-        release = orm().query(Release).get(release_id)
-        if not release:
-            return web.notfound()
-        orm().delete(release)
-        orm().commit()
+        release = self.get_object_or_404(Release, release_id)
+        self.db.delete(release)
+        self.db.commit()
         raise web.webapi.HTTPError(
             status="204 No Content",
             data=""
@@ -59,21 +42,22 @@ class ReleaseHandler(JSONHandler):
 
 
 class ReleaseCollectionHandler(JSONHandler):
-    def GET(self):
-        web.header('Content-Type', 'application/json')
-        return json.dumps(map(
-            ReleaseHandler.render,
-            orm().query(Release).all()
-        ), indent=4)
 
+    @content_json
+    def GET(self):
+        return map(
+            ReleaseHandler.render,
+            self.db.query(Release).all()
+        )
+
+    @content_json
     def POST(self):
-        web.header('Content-Type', 'application/json')
         data = Release.validate(web.data())
         release = Release()
         for key, value in data.iteritems():
             setattr(release, key, value)
-        orm().add(release)
-        orm().commit()
+        self.db.add(release)
+        self.db.commit()
         raise web.webapi.created(json.dumps(
             ReleaseHandler.render(release),
             indent=4

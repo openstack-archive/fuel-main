@@ -47,6 +47,11 @@ class TaskManager(object):
 class DeploymentTaskManager(TaskManager):
 
     def execute(self):
+        logger.info(
+            u"Trying to start deployment at cluster '{0}'".format(
+                self.cluster.name or self.cluster.id,
+            )
+        )
         current_tasks = orm().query(Task).filter_by(
             cluster_id=self.cluster.id,
             name="deploy"
@@ -103,6 +108,12 @@ class DeploymentTaskManager(TaskManager):
                 task_deployment,
                 tasks.DeploymentTask
             )
+        logger.debug(
+            u"Deployment: task to deploy cluster '{0}' is {1}".format(
+                self.cluster.name or self.cluster.id,
+                supertask.uuid
+            )
+        )
 
         return supertask
 

@@ -5,14 +5,14 @@ import web
 import json
 
 from nailgun.settings import settings
-from nailgun.api.handlers.base import JSONHandler
+from nailgun.api.handlers.base import JSONHandler, content_json
 
 
 class VersionHandler(JSONHandler):
 
+    @content_json
     def GET(self):
-        web.header('Content-Type', 'application/json')
-        return json.dumps({
+        return {
             "sha": str(settings.COMMIT_SHA),
             "release": str(settings.PRODUCT_VERSION)
-        })
+        }

@@ -5,11 +5,10 @@ import traceback
 
 import web
 
-from nailgun.db import orm
 from nailgun.logger import logger
 from nailgun.notifier import notifier
 from nailgun.api.models import NetworkGroup, ClusterChanges
-from nailgun.api.handlers.base import JSONHandler
+from nailgun.api.handlers.base import JSONHandler, content_json
 
 
 class NetworkCollectionHandler(JSONHandler):
@@ -17,19 +16,16 @@ class NetworkCollectionHandler(JSONHandler):
               'network_size', 'amount')
     model = NetworkGroup
 
+    @content_json
     def GET(self):
-        web.header('Content-Type', 'application/json')
         user_data = web.input(cluster_id=None)
         if user_data.cluster_id:
-            nets = orm().query(NetworkGroup).filter_by(
+            nets = self.db.query(NetworkGroup).filter_by(
                 cluster_id=user_data.cluster_id).all()
         else:
-            nets = orm().query(NetworkGroup).all()
+            nets = self.db.query(NetworkGroup).all()
 
         if not nets:
             return web.notfound()
 
-        return json.dumps(
-            map(self.render, nets),
-            indent=4
-        )
+        return map(self.render, nets)

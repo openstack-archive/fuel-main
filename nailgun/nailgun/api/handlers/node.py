@@ -5,12 +5,10 @@ from datetime import datetime
 
 import web
 
-from nailgun.keepalive import keep_alive
-from nailgun.db import orm
 from nailgun.notifier import notifier
 from nailgun.logger import logger
 from nailgun.api.models import Node
-from nailgun.api.handlers.base import JSONHandler
+from nailgun.api.handlers.base import JSONHandler, content_json
 
 
 class NodeHandler(JSONHandler):
@@ -20,41 +18,24 @@ class NodeHandler(JSONHandler):
               'error_type', 'online')
     model = Node
 
+    @content_json
     def GET(self, node_id):
-        web.header('Content-Type', 'application/json')
-        node = orm().query(Node).get(node_id)
-        if not node:
-            return web.notfound()
+        node = self.get_object_or_404(Node, node_id)
+        return self.render(node)
 
-        return json.dumps(
-            self.render(node),
-            indent=4
-        )
-
+    @content_json
     def PUT(self, node_id):
-        web.header('Content-Type', 'application/json')
-        node = orm().query(Node).get(node_id)
-        if not node:
-            return web.notfound()
-        # additional validation needed?
+        node = self.get_object_or_404(Node, node_id)
         data = Node.validate_update(web.data())
-        if not data:
-            raise web.badrequest()
-        # /additional validation needed?
         for key, value in data.iteritems():
             setattr(node, key, value)
-        orm().commit()
-        return json.dumps(
-            self.render(node),
-            indent=4
-        )
+        self.db.commit()
+        return self.render(node)
 
     def DELETE(self, node_id):
-        node = orm().query(Node).get(node_id)
-        if not node:
-            return web.notfound()
-        orm().delete(node)
-        orm().commit()
+        node = self.get_object_or_404(Node, node_id)
+        self.db.delete(node)
+        self.db.commit()
         raise web.webapi.HTTPError(
             status="204 No Content",
             data=""
@@ -63,31 +44,29 @@ class NodeHandler(JSONHandler):
 
 class NodeCollectionHandler(JSONHandler):
 
+    @content_json
     def GET(self):
-        web.header('Content-Type', 'application/json')
         user_data = web.input(cluster_id=None)
         if user_data.cluster_id == '':
-            nodes = orm().query(Node).filter_by(
+            nodes = self.db.query(Node).filter_by(
                 cluster_id=None).all()
         elif user_data.cluster_id:
-            nodes = orm().query(Node).filter_by(
+            nodes = self.db.query(Node).filter_by(
                 cluster_id=user_data.cluster_id).all()
         else:
-            nodes = orm().query(Node).all()
-        return json.dumps(map(
-            NodeHandler.render,
-            nodes), indent=4)
+            nodes = self.db.query(Node).all()
+        return map(NodeHandler.render, nodes)
 
+    @content_json
     def POST(self):
-        web.header('Content-Type', 'application/json')
         data = Node.validate(web.data())
         node = Node()
         for key, value in data.iteritems():
             setattr(node, key, value)
         node.name = "Untitled (%s)" % data['mac'][-5:]
         node.timestamp = datetime.now()
-        orm().add(node)
-        orm().commit()
+        self.db.add(node)
+        self.db.commit()
         try:
             ram = str(round(float(
                 node.meta['memory']['total']) / 1073741824, 1))
@@ -103,29 +82,28 @@ class NodeCollectionHandler(JSONHandler):
             indent=4
         ))
 
+    @content_json
     def PUT(self):
-        web.header('Content-Type', 'application/json')
         data = Node.validate_collection_update(web.data())
-        q = orm().query(Node)
+        q = self.db.query(Node)
         nodes_updated = []
         for nd in data:
-            is_agent = nd.get("is_agent")
+            is_agent = nd.pop("is_agent") if "is_agent" in nd else False
             node = None
             if "mac" in nd:
                 node = q.filter_by(mac=nd["mac"]).first()
             else:
                 node = q.get(nd["id"])
             for key, value in nd.iteritems():
-                if key != "is_agent":
-                    if is_agent and (key, value) == ("status", "discover") \
-                            and node.status == "provisioning":
-                        # We don't update provisioning back to discover
-                        logger.debug(
-                            "Node is already provisioning - "
-                            "status not updated by agent"
-                        )
-                        continue
-                    setattr(node, key, value)
+                if is_agent and (key, value) == ("status", "discover") \
+                        and node.status == "provisioning":
+                    # We don't update provisioning back to discover
+                    logger.debug(
+                        "Node is already provisioning - "
+                        "status not updated by agent"
+                    )
+                    continue
+                setattr(node, key, value)
             if is_agent:
                 node.timestamp = datetime.now()
                 if not node.online:
@@ -140,8 +118,6 @@ class NodeCollectionHandler(JSONHandler):
                         node_id=node.id
                     )
             nodes_updated.append(node)
-            orm().add(node)
-        orm().commit()
-        return json.dumps(map(
-            NodeHandler.render,
-            nodes_updated), indent=4)
+            self.db.add(node)
+            self.db.commit()
+        return map(NodeHandler.render, nodes_updated)

@@ -5,9 +5,8 @@ import logging
 
 import web
 
-from nailgun.db import orm
 from nailgun.api.models import Notification
-from nailgun.api.handlers.base import JSONHandler
+from nailgun.api.handlers.base import JSONHandler, content_json
 
 
 class NotificationHandler(JSONHandler):
@@ -37,38 +36,28 @@ class NotificationHandler(JSONHandler):
         ])
         return json_data
 
+    @content_json
     def GET(self, notification_id):
-        web.header('Content-Type', 'application/json')
-        notification = orm().query(Notification).get(notification_id)
-        if not notification:
-            return web.notfound()
-        return json.dumps(
-            self.render(notification),
-            indent=4
-        )
+        notification = self.get_object_or_404(Notification, notification_id)
+        return self.render(notification)
 
+    @content_json
     def PUT(self, notification_id):
-        web.header('Content-Type', 'application/json')
-        notification = orm().query(Notification).get(notification_id)
-        if not notification:
-            return web.notfound()
+        notification = self.get_object_or_404(Notification, notification_id)
         data = Notification.validate_update(web.data())
         for key, value in data.iteritems():
             setattr(notification, key, value)
-        orm().add(notification)
-        orm().commit()
-        return json.dumps(
-            self.render(notification),
-            indent=4
-        )
+        self.db.add(notification)
+        self.db.commit()
+        return self.render(notification)
 
 
 class NotificationCollectionHandler(JSONHandler):
 
+    @content_json
     def GET(self):
-        web.header('Content-Type', 'application/json')
         user_data = web.input(cluster_id=None)
-        query = orm().query(Notification)
+        query = self.db.query(Notification)
         if user_data.cluster_id:
             query = query.filter_by(cluster_id=user_data.cluster_id)
         # Temporarly limit notifications number to prevent bloating UI by
@@ -77,22 +66,24 @@ class NotificationCollectionHandler(JSONHandler):
         # list of all notifications
         query = query.limit(1000)
         notifications = query.all()
-        return json.dumps(map(
+        return map(
             NotificationHandler.render,
-            notifications), indent=4)
+            notifications
+        )
 
+    @content_json
     def PUT(self):
-        web.header('Content-Type', 'application/json')
         data = Notification.validate_collection_update(web.data())
-        q = orm().query(Notification)
+        q = self.db.query(Notification)
         notifications_updated = []
         for nd in data:
             notification = q.get(nd["id"])
             for key, value in nd.iteritems():
                 setattr(notification, key, value)
             notifications_updated.append(notification)
-            orm().add(notification)
-        orm().commit()
-        return json.dumps(map(
+            self.db.add(notification)
+        self.db.commit()
+        return map(
             NotificationHandler.render,
-            notifications_updated), indent=4)
+            notifications_updated
+        )

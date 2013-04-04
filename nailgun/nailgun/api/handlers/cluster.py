@@ -8,7 +8,6 @@ import traceback
 import web
 import netaddr
 
-from nailgun.db import orm
 from nailgun.settings import settings
 from nailgun.logger import logger
 from nailgun.api.models import Cluster
@@ -18,7 +17,7 @@ from nailgun.api.models import Release
 from nailgun.api.models import Attributes
 from nailgun.api.models import Task
 
-from nailgun.api.handlers.base import JSONHandler
+from nailgun.api.handlers.base import JSONHandler, content_json
 from nailgun.api.handlers.node import NodeHandler
 from nailgun.api.handlers.tasks import TaskHandler
 from nailgun.task.helpers import update_task_status
@@ -59,48 +58,31 @@ class ClusterHandler(JSONHandler):
             json_data["changes"] = []
         return json_data
 
+    @content_json
     def GET(self, cluster_id):
-        web.header('Content-Type', 'application/json')
-        q = orm().query(Cluster)
-        cluster = q.get(cluster_id)
-        if not cluster:
-            return web.notfound()
-        return json.dumps(
-            self.render(cluster),
-            indent=4
-        )
+        cluster = self.get_object_or_404(Cluster, cluster_id)
+        return self.render(cluster)
 
+    @content_json
     def PUT(self, cluster_id):
-        web.header('Content-Type', 'application/json')
-        cluster = orm().query(Cluster).get(cluster_id)
-        if not cluster:
-            return web.notfound()
-        # additional validation needed?
+        cluster = self.get_object_or_404(Cluster, cluster_id)
         data = Cluster.validate(web.data())
-        # /additional validation needed?
         for key, value in data.iteritems():
             if key == "nodes":
                 map(cluster.nodes.remove, cluster.nodes)
-                nodes = orm().query(Node).filter(
+                nodes = self.db.query(Node).filter(
                     Node.id.in_(value)
                 )
                 map(cluster.nodes.append, nodes)
             else:
                 setattr(cluster, key, value)
-        orm().add(cluster)
-        orm().commit()
-        return json.dumps(
-            self.render(cluster),
-            indent=4
-        )
+        self.db.add(cluster)
+        self.db.commit()
+        return self.render(cluster)
 
+    @content_json
     def DELETE(self, cluster_id):
-        web.header('Content-Type', 'application/json')
-
-        cluster = orm().query(Cluster).get(cluster_id)
-        if not cluster:
-            return web.notfound()
-
+        cluster = self.get_object_or_404(Cluster, cluster_id)
         task_manager = ClusterDeletionManager(cluster_id=cluster.id)
         try:
             logger.debug('Trying to execute cluster deletion task')
@@ -110,7 +92,6 @@ class ClusterHandler(JSONHandler):
                         'cluster deletion task: %s' % str(e))
             logger.warn(traceback.format_exc())
             raise web.badrequest(str(e))
-
         raise web.webapi.HTTPError(
             status="202 Accepted",
             data="{}"
@@ -118,36 +99,33 @@ class ClusterHandler(JSONHandler):
 
 
 class ClusterCollectionHandler(JSONHandler):
-    def GET(self):
-        web.header('Content-Type', 'application/json')
-        return json.dumps(map(
-            ClusterHandler.render,
-            orm().query(Cluster).all()
-        ), indent=4)
 
+    @content_json
+    def GET(self):
+        return map(
+            ClusterHandler.render,
+            self.db.query(Cluster).all()
+        )
+
+    @content_json
     def POST(self):
-        web.header('Content-Type', 'application/json')
         data = Cluster.validate(web.data())
 
         cluster = Cluster()
-        cluster.release = orm().query(Release).get(data["release"])
-
+        cluster.release = self.db.query(Release).get(data["release"])
         # TODO: use fields
         for field in ('name', 'type', 'mode', 'net_manager'):
             if data.get(field):
                 setattr(cluster, field, data.get(field))
+        self.db.add(cluster)
+        self.db.commit()
 
-        orm().add(cluster)
-        orm().commit()
-
-        # TODO: discover how to add multiple objects
         if 'nodes' in data and data['nodes']:
-            nodes = orm().query(Node).filter(
+            nodes = self.db.query(Node).filter(
                 Node.id.in_(data['nodes'])
             ).all()
             map(cluster.nodes.append, nodes)
-        orm().add(cluster)
-        orm().commit()
+        self.db.commit()
 
         attributes = Attributes(
             editable=cluster.release.attributes_metadata.get("editable"),
@@ -156,8 +134,8 @@ class ClusterCollectionHandler(JSONHandler):
         )
         attributes.generate_fields()
 
-        used_nets = [n.cidr for n in orm().query(Network).all()]
-        used_vlans = [v.id for v in orm().query(Vlan).all()]
+        used_nets = [n.cidr for n in self.db.query(Network).all()]
+        used_vlans = [v.id for v in self.db.query(Vlan).all()]
 
         for network in cluster.release.networks_metadata:
             free_vlans = sorted(list(set(range(int(
@@ -165,8 +143,8 @@ class ClusterCollectionHandler(JSONHandler):
                 int(settings.VLANS_RANGE_END))) -
                 set(used_vlans)))
             if not free_vlans:
-                orm().delete(cluster)
-                orm().commit()
+                self.db.delete(cluster)
+                self.db.commit()
                 raise web.conflict(
                     "There is not enough available VLAN IDs "
                     "to create the cluster"
@@ -179,8 +157,8 @@ class ClusterCollectionHandler(JSONHandler):
                 netaddr.IPSet(settings.NET_EXCLUDE) -\
                 netaddr.IPSet(used_nets)
             if not nets_free_set:
-                orm().delete(cluster)
-                orm().commit()
+                self.db.delete(cluster)
+                self.db.commit()
                 raise web.conflict("No free IP addresses in pool")
 
             free_cidrs = sorted(list(nets_free_set._cidrs))
@@ -192,8 +170,8 @@ class ClusterCollectionHandler(JSONHandler):
                 if new_net:
                     break
             if not new_net:
-                orm().delete(cluster)
-                orm().commit()
+                self.db.delete(cluster)
+                self.db.commit()
                 raise web.conflict("Cannot find suitable CIDR")
 
             nw_db = NetworkGroup(
@@ -206,8 +184,8 @@ class ClusterCollectionHandler(JSONHandler):
                 vlan_start=vlan_start,
                 amount=1
             )
-            orm().add(nw_db)
-            orm().commit()
+            self.db.add(nw_db)
+            self.db.commit()
             nw_db.create_networks()
 
             used_vlans.append(vlan_start)
@@ -228,33 +206,26 @@ class ClusterChangesHandler(JSONHandler):
         "name",
     )
 
+    @content_json
     def PUT(self, cluster_id):
-        web.header('Content-Type', 'application/json')
-        cluster = orm().query(Cluster).get(cluster_id)
-        logger.debug('ClusterChangesHandler: PUT request with cluster_id %s' %
-                     cluster_id)
-        if not cluster:
-            logger.warn('ClusterChangesHandler: there is'
-                        ' no cluster with id %s in DB.' % cluster_id)
-            return web.notfound()
+        cluster = self.get_object_or_404(
+            Cluster,
+            cluster_id,
+            log_404=(
+                "warning",
+                "Error: there is no cluster "
+                "with id '{0}' in DB.".format(cluster_id)
+            )
+        )
 
         task_manager = DeploymentTaskManager(cluster_id=cluster.id)
         try:
-            logger.debug('ClusterChangesHandler: trying to execute task...')
             task = task_manager.execute()
-            logger.debug('ClusterChangesHandler: task to deploy is %s' %
-                         task.uuid)
-        except (DeploymentAlreadyStarted,
-                FailedProvisioning,
-                WrongNodeStatus) as exc:
-            logger.warn('ClusterChangesHandler: error while execution'
-                        ' deploy task: %s' % exc.message)
+        except Exception as exc:
+            logger.warn(u'ClusterChangesHandler: error while execution'
+                        ' deploy task: {0}'.format(exc.message))
             raise web.badrequest(exc.message)
-
-        return json.dumps(
-            TaskHandler.render(task),
-            indent=4
-        )
+        return TaskHandler.render(task)
 
 
 class ClusterVerifyNetworksHandler(JSONHandler):
@@ -263,23 +234,14 @@ class ClusterVerifyNetworksHandler(JSONHandler):
         "name",
     )
 
+    @content_json
     def PUT(self, cluster_id):
-        web.header('Content-Type', 'application/json')
-        cluster = orm().query(Cluster).get(cluster_id)
-        if not cluster:
-            return web.notfound()
+        cluster = self.get_object_or_404(Cluster, cluster_id)
         nets = NetworkGroup.validate_collection_update(web.data())
-        if not nets:
-            raise web.badrequest()
         vlan_ids = NetworkGroup.generate_vlan_ids_list(nets)
-
         task_manager = VerifyNetworksTaskManager(cluster_id=cluster.id)
         task = task_manager.execute(nets, vlan_ids)
-
-        return json.dumps(
-            TaskHandler.render(task),
-            indent=4
-        )
+        return TaskHandler.render(task)
 
 
 class ClusterSaveNetworksHandler(JSONHandler):
@@ -288,21 +250,17 @@ class ClusterSaveNetworksHandler(JSONHandler):
         "name",
     )
 
+    @content_json
     def PUT(self, cluster_id):
-        web.header('Content-Type', 'application/json')
-        cluster = orm().query(Cluster).get(cluster_id)
-        if not cluster:
-            return web.notfound()
+        cluster = self.get_object_or_404(Cluster, cluster_id)
         new_nets = NetworkGroup.validate_collection_update(web.data())
-        if not new_nets:
-            raise web.badrequest()
         task_manager = CheckNetworksTaskManager(cluster_id=cluster.id)
         task = task_manager.execute(new_nets)
         if task.status != 'error':
             nets_to_render = []
             error = False
             for ng in new_nets:
-                ng_db = orm().query(NetworkGroup).get(ng['id'])
+                ng_db = self.db.query(NetworkGroup).get(ng['id'])
                 for key, value in ng.iteritems():
                     setattr(ng_db, key, value)
                 try:
@@ -322,14 +280,11 @@ class ClusterSaveNetworksHandler(JSONHandler):
                 nets_to_render.append(ng_db)
 
             if task.status == 'error':
-                orm().rollback()
+                self.db.rollback()
             else:
-                orm().commit()
+                self.db.commit()
 
-        return json.dumps(
-            TaskHandler.render(task),
-            indent=4
-        )
+        return TaskHandler.render(task)
 
 
 class ClusterAttributesHandler(JSONHandler):
@@ -337,48 +292,30 @@ class ClusterAttributesHandler(JSONHandler):
         "editable",
     )
 
+    @content_json
     def GET(self, cluster_id):
-        web.header('Content-Type', 'application/json')
-        cluster = orm().query(Cluster).get(cluster_id)
-        if not cluster:
-            return web.notfound()
-
-        attrs = cluster.attributes
-        if not attrs:
+        cluster = self.get_object_or_404(Cluster, cluster_id)
+        if not cluster.attributes:
             raise web.internalerror("No attributes found!")
 
-        return json.dumps(
-            {
-                "editable": attrs.editable
-            },
-            indent=4
-        )
+        return {
+            "editable": cluster.attributes.editable
+        }
 
+    @content_json
     def PUT(self, cluster_id):
-        web.header('Content-Type', 'application/json')
-        cluster = orm().query(Cluster).get(cluster_id)
-        if not cluster:
-            return web.notfound()
-
-        attrs = cluster.attributes
-        if not attrs:
+        cluster = self.get_object_or_404(Cluster, cluster_id)
+        if not cluster.attributes:
             raise web.internalerror("No attributes found!")
 
         data = Attributes.validate(web.data())
 
         for key, value in data.iteritems():
-            setattr(attrs, key, value)
+            setattr(cluster.attributes, key, value)
         cluster.add_pending_changes("attributes")
 
-        orm().add(attrs)
-        orm().commit()
-
-        return json.dumps(
-            {
-                "editable": attrs.editable
-            },
-            indent=4
-        )
+        self.db.commit()
+        return {"editable": cluster.attributes.editable}
 
 
 class ClusterAttributesDefaultsHandler(JSONHandler):
@@ -386,45 +323,38 @@ class ClusterAttributesDefaultsHandler(JSONHandler):
         "editable",
     )
 
+    @content_json
     def GET(self, cluster_id):
-        web.header('Content-Type', 'application/json')
-        cluster = orm().query(Cluster).get(cluster_id)
-        if not cluster:
-            return web.notfound()
-
+        cluster = self.get_object_or_404(Cluster, cluster_id)
         attrs = cluster.release.attributes_metadata.get("editable")
         if not attrs:
             raise web.internalerror("No attributes found!")
+        return {"editable": attrs}
 
-        return json.dumps({"editable": attrs}, indent=4)
-
+    @content_json
     def PUT(self, cluster_id):
-        logger.debug('ClusterAttributesDefaultsHandler:'
-                     ' PUT request with cluster_id %s' % cluster_id)
-        web.header('Content-Type', 'application/json')
-        cluster = orm().query(Cluster).get(cluster_id)
-        if not cluster:
-            logger.warn('ClusterAttributesDefaultsHandler: there is'
-                        ' no cluster with id %s in DB.' % cluster_id)
-            return web.notfound()
+        cluster = self.get_object_or_404(
+            Cluster,
+            cluster_id,
+            log_404=(
+                "warning",
+                "Error: there is no cluster "
+                "with id '{0}' in DB.".format(cluster_id)
+            )
+        )
 
-        attrs = cluster.attributes
-        if not attrs:
+        if not cluster.attributes:
             logger.error('ClusterAttributesDefaultsHandler: no attributes'
                          ' found for cluster_id %s' % cluster_id)
             raise web.internalerror("No attributes found!")
 
-        attrs.editable = cluster.release.attributes_metadata.get("editable")
-        orm().add(attrs)
-        orm().commit()
+        cluster.attributes.editable = cluster.release.attributes_metadata.get(
+            "editable"
+        )
+        self.db.commit()
         cluster.add_pending_changes("attributes")
 
         logger.debug('ClusterAttributesDefaultsHandler:'
                      ' editable attributes for cluster_id %s were reset'
                      ' to default' % cluster_id)
-        return json.dumps(
-            {
-                "editable": attrs.editable
-            },
-            indent=4
-        )
+        return {"editable": cluster.attributes.editable}
