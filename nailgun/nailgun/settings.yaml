@@ -50,7 +50,7 @@ RABBITMQ:
 
 CUSTOM_LOG: &nailgun_log "/var/log/nailgun.log"
 ACCESS_LOG: "/var/log/nailgun_access.log"
-SYSLOG_DIR: "/var/log/remote"
+SYSLOG_DIR: &remote_syslog_dir "/var/log/remote/"
 
 PATH_TO_SSH_KEY: = "/root/.ssh/id_rsa"
 PATH_TO_BOOTSTRAP_SSH_KEY: "/root/.ssh/bootstrap.rsa"
@@ -105,7 +105,7 @@ LOG_TYPES:
   - &remote_log_type
     remote: True
     multiline: True
-    base: '/var/log/remote/'
+    base: *remote_syslog_dir
 
 LOG_GROUPS:
   - &main_install_log_group
