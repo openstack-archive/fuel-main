@@ -151,7 +151,7 @@ define(function() {
         volumeGroupsByRoles: function(role) {
             var volumeGroups =  {
                 controller: ['os'],
-                compute: ['os', 'vms'],
+                compute: ['os', 'vm'],
                 storage: ['os', 'cinder']
             };
             return volumeGroups[role];

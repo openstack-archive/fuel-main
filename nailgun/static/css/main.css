@@ -3503,7 +3503,7 @@ hr.slim {
   background: linear-gradient(to bottom,  #23a85e 0%,#1d8a4d 100%); /* W3C */
   filter: progid:DXImageTransform.Microsoft.gradient( startColorstr='#23a85e', endColorstr='#1d8a4d',GradientType=0 ); /* IE6-8 */
 }
-.disk-visual .vms {
+.disk-visual .vm {
   overflow: hidden;
   background: #3582ce; /* Old browsers */
   /* IE9 SVG, needs conditional override of 'filter' to 'none' */
@@ -3530,6 +3530,12 @@ hr.slim {
   background: linear-gradient(to bottom,  #eea616 0%,#c38812 100%); /* W3C */
   filter: progid:DXImageTransform.Microsoft.gradient( startColorstr='#eea616', endColorstr='#c38812',GradientType=0 ); /* IE6-8 */
 }
+
+.disk-visual .partition {
+  overflow: hidden;
+  background: red;
+}
+
 .unallocated {
   overflow: hidden;
   background: #afafaf; /* Old browsers */
@@ -3546,7 +3552,7 @@ hr.slim {
 }
 .volume-group-name {
   font-size: 16px;
-  margin-top: 8px;
+  margin-top: 4px;
   text-shadow: 0 0 2px rgba(0,0,0,.5);
   text-overflow: ellipsis;
   overflow: hidden;
@@ -3618,7 +3624,7 @@ hr.slim {
   filter: progid:DXImageTransform.Microsoft.gradient( startColorstr='#b17b10', endColorstr='#d79614',GradientType=0 ); /* IE6-8 */
 }
 
-.volume-group-box-flag-vms {
+.volume-group-box-flag-vm {
   width: 6px;
   height: 44px;
   background: #1a7f47;
@@ -3666,7 +3672,3 @@ hr.slim {
   color: #777777;
 }
 /* Disk Utility End */
-
-.disk-tumbler {
-  width: 100%;
-}

@@ -253,10 +253,14 @@ function(models, simpleMessageTemplate, createClusterDialogTemplate, changeClust
     views.ShowNodeInfoDialog = views.Dialog.extend({
         template: _.template(showNodeInfoTemplate),
         events: {
-            'click .accordion-heading': 'toggle'
+            'click .accordion-heading': 'toggle',
+            'click .btn-edit-disks': 'goToDisksConfiguration'
         },
         toggle: function(e) {
             $(e.currentTarget).siblings('.accordion-body').collapse('toggle');
+        },
+        goToDisksConfiguration: function() {
+            app.navigate('#cluster/' + this.clusterId + '/nodes/disks/' + this.node.id, {trigger: true, replace: true});
         },
         render: function() {
             this.constructor.__super__.render.call(this, {node: this.node});
