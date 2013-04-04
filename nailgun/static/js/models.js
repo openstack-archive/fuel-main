@@ -70,7 +70,7 @@ define(function() {
                 }, this);
             } else {
                 canChange = true;
-                var clusterTypesToNodesRoles = {'both': [], 'compute': ['storage'], 'storage': ['compute']};
+                var clusterTypesToNodesRoles = {'both': [], 'compute': ['cinder'], 'cinder': ['compute']};
                 _.each(clusterTypesToNodesRoles[newType], function(nodeRole) {
                     if (nodes.where({role: nodeRole}).length) {
                         canChange = false;
@@ -114,7 +114,7 @@ define(function() {
             var roles = ['controller'];
             if (this.get('mode') != 'singlenode') {
                 if (this.get('type') == 'both') {
-                    roles.push('compute', 'storage');
+                    roles.push('compute', 'cinder');
                 } else {
                     roles.push(this.get('type'));
                 }

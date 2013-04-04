@@ -1,6 +1,6 @@
 <div class="roles-block-row nodesbox-header">
   <div class="span8">
-    <h3><%= {'controller': 'Controllers', 'compute': 'Computes', 'storage': 'Cinder volumes'}[role] || role %></h3>
+    <h3><%= {'controller': 'Controllers', 'compute': 'Computes', 'cinder': 'Cinder volumes'}[role] || role %></h3>
   </div>
   <div class="span2 roles-action-link">
     <% var canAdd = cluster.canAddNodes(role) %>

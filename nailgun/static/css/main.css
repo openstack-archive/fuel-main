@@ -1547,7 +1547,7 @@ h6.page-title {
   background: #fa9f24;
 }
 
-.nodes-stat-popover tr.storage div {
+.nodes-stat-popover tr.cinder div {
   background: #d3473f;
 }
 

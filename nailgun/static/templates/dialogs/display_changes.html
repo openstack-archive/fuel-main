@@ -8,8 +8,8 @@
   <% var warnings = {
     'controller': 'Environment will not contain the necessary number of controllers after deployment. Thus, it will not be usable.',
     'compute': 'Compute nodes are recommended for deployment.',
-    'storage': 'Storage nodes are recommended for deployment.',
-    'compute-storage': 'Compute and storage nodes are recommended for deployment.',
+    'cinder': 'Cinder nodes are recommended for deployment.',
+    'compute-cinder': 'Compute and cinder nodes are recommended for deployment.',
   } %>
   <% var warning = null, canDeploy = true, roles = cluster.availableRoles() %>
 
@@ -56,7 +56,7 @@
     } else {
       _.each(roles, function(role) {
         if (warning != 'controller' && !_.filter(cluster.get('nodes').nodesAfterDeployment(), function(node) {return node.get('role') == role}).length) {
-          role == 'controller' ? warning = 'controller' : role == 'compute' ? warning = 'compute' : warning == 'compute' ? warning = 'compute-storage' : warning = 'storage';
+          role == 'controller' ? warning = 'controller' : role == 'compute' ? warning = 'compute' : warning == 'compute' ? warning = 'compute-cinder' : warning = 'cinder';
         }
       })
     }
