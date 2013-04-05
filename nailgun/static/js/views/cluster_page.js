@@ -217,7 +217,7 @@ function(models, commonViews, dialogViews, NodesTab, NetworkTab, SettingsTab, Lo
             this.model.on('change:status', this.render, this);
             this.model.get('tasks').each(this.bindTaskEvents, this);
             this.model.get('tasks').on('add', this.onNewTask, this);
-            this.model.get('nodes').on('add remove change:pending_addition change:pending_deletion', this.render, this);
+            this.model.get('nodes').on('resize change:pending_addition change:pending_deletion', this.render, this);
         },
         bindTaskEvents: function(task) {
             if (task.get('name') == 'deploy') {

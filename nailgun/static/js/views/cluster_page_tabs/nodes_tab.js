@@ -88,7 +88,7 @@ function(models, commonViews, dialogViews, nodesTabSummaryTemplate, editNodesScr
         initialize: function(options) {
             this.tab = options.tab;
             this.model.on('change:mode change:type', this.render, this);
-            this.model.get('nodes').on('reset', this.render, this);
+            this.model.get('nodes').on('resize', this.render, this);
             this.model.get('tasks').each(this.bindTaskEvents, this);
             this.model.get('tasks').on('add', this.onNewTask, this);
         },
@@ -173,7 +173,7 @@ function(models, commonViews, dialogViews, nodesTabSummaryTemplate, editNodesScr
             this.modifyNodes(nodes);
             nodes.sync('update', nodes).done(_.bind(function() {
                 app.navigate('#cluster/' + this.model.id + '/nodes', {trigger: true});
-                this.model.get('nodes').fetch({data: {cluster_id: this.model.id}, reset: true});
+                this.model.get('nodes').fetch({data: {cluster_id: this.model.id}});
                 app.navbar.nodes.fetch();
                 app.page.removeVerificationTask();
             }, this));
@@ -237,7 +237,7 @@ function(models, commonViews, dialogViews, nodesTabSummaryTemplate, editNodesScr
                 this.limit = _.filter(this.model.get('nodes').nodesAfterDeployment(), function(node) {return node.get('role') == this.role;}, this).length ? 0 : 1;
             }
             this.nodes = new models.Nodes();
-            this.nodes.deferred = this.nodes.fetch({data: {cluster_id: ''}, reset: true}).done(_.bind(function() {
+            this.nodes.deferred = this.nodes.fetch({data: {cluster_id: ''}}).done(_.bind(function() {
                 this.nodes.add(this.model.get('nodes').where({role: this.role, pending_deletion: true}), {at: 0});
                 this.render();
             }, this));

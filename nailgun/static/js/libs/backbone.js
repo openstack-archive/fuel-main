@@ -726,6 +726,8 @@
         (model = toAdd[i]).trigger('add', model, this, options);
       }
 
+      if (toRemove.length || toAdd.length) this.trigger('resize', this, options);
+
       // Trigger `sort` if the collection was sorted.
       if (sort) this.trigger('sort', this, options);
       return this;
