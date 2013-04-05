@@ -134,8 +134,13 @@ class NodeCollectionHandler(JSONHandler):
                     continue
                 setattr(node, key, value)
             if is_agent:
-                if not node.attributes.volumes:
+                if not node.attributes:
+                    node.attributes = node.create_default_attrs()
+                    self.db.commit()
+                if not node.attributes.volumes \
+                        and not node.status in ('provisioning', 'deploying'):
                     node.attributes.generate_volumes_info()
+                    self.db.commit()
                 node.timestamp = datetime.now()
                 if not node.online:
                     node.online = True
