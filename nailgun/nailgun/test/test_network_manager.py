@@ -122,6 +122,37 @@ class TestNetworkManager(BaseHandlers):
             admin_ips
         )
 
+    @patch.dict(
+        nailgun.settings.settings.config,
+        {
+            'ADMIN_NETWORK': {
+                'first': '10.0.0.1',
+                'last': '10.255.255.254',
+                'netmask': '255.0.0.0'
+            }
+        }
+    )
+    def test_assign_admin_ips_large_range(self):
+        """
+        This test checks if it possible to assign admin
+        ips when the range of admin network is very large.
+        """
+        # Creating two nodes
+        n1 = self.env.create_node()
+        n2 = self.env.create_node()
+        nc = zip([n1.id, n2.id], [2048, 2])
+
+        # Assinging admin IPs on created nodes
+        map(lambda (n, c): netmanager.assign_admin_ips(n, c), nc)
+
+        # Asserting count of admin node IPs
+        def asserter(x):
+            n, c = x
+            l = len(self.db.query(IPAddr).filter_by(admin=True).
+                    filter_by(node=n).all())
+            self.assertEquals(l, c)
+        map(asserter, nc)
+
     def test_admin_ip_cobbler(self):
         """
         This test is intended for checking if deployment task
@@ -167,8 +198,8 @@ class TestNetworkManager(BaseHandlers):
         nailgun.task.task.Cobbler().item_from_dict = Mock()
         self.env.launch_deployment()
 
-        itertools.starmap(
-            lambda x, y: self.assertIn(
+        map(
+            lambda (x, y): self.assertIn(
                 IPAddress(
                     nailgun.task.task.Cobbler().item_from_dict.
                     call_args_list[x][0][2]['interfaces']

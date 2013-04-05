@@ -4,16 +4,17 @@ from itertools import imap, ifilter, islice, chain, tee
 
 import web
 from sqlalchemy.sql import not_
-from netaddr import IPSet, IPNetwork, iter_iprange
+from netaddr import IPSet, IPNetwork, IPRange
 
 from nailgun.db import orm
 from nailgun.task import errors
+from nailgun.logger import logger
 from nailgun.settings import settings
 from nailgun.api.models import Node, IPAddr, Cluster
 from nailgun.api.models import Network, NetworkGroup
 
 
-def chunked_range(iterable, chunksize=1024):
+def chunked_range(iterable, chunksize=64):
     """
     We want to be able to iterate over iterable chunk by chunk.
     We instantiate iter object from itarable. We then yield
@@ -57,8 +58,13 @@ def assign_admin_ips(node_id, num=1):
         filter_by(admin=True).filter_by(node=node_id).all()
 
     if not node_admin_ips or len(node_admin_ips) < num:
+        logger.debug(
+            "Trying to assign admin ips: node=%s count=%s",
+            node_id,
+            num - len(node_admin_ips)
+        )
         free_ips = get_free_ips_from_range(
-            imap(str, iter_iprange(
+            imap(str, IPRange(
                 settings.ADMIN_NETWORK['first'],
                 settings.ADMIN_NETWORK['last']
             )),
@@ -67,7 +73,7 @@ def assign_admin_ips(node_id, num=1):
         for ip in free_ips:
             ip_db = IPAddr(node=node_id, ip_addr=ip, admin=True)
             orm().add(ip_db)
-            orm().commit()
+        orm().commit()
 
 
 def assign_ips(nodes_ids, network_name):
