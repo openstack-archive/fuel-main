@@ -59,7 +59,6 @@ class TestHandlers(BaseHandlers):
 
         for n in sorted(self.env.nodes, key=lambda n: n.id):
 
-            nq = self.db.query(Network)
             q = self.db.query(IPAddr).join(Network).\
                 filter(IPAddr.node == n.id, False == IPAddr.admin)
 
@@ -69,7 +68,7 @@ class TestHandlers(BaseHandlers):
             """
             node_ip_management, node_ip_public = map(
                 lambda x: q.filter_by(name=x).first().ip_addr
-                + "/" + nq.filter_by(name=x).first().cidr.split('/')[1],
+                + "/" + cluster_attrs[x + '_network_range'].split('/')[1],
                 ('management', 'public')
             )
 
@@ -116,7 +115,6 @@ class TestHandlers(BaseHandlers):
             ]
         )
 
-        nailgun.task.task.DeploymentTask._prepare_syslog_dir = Mock()
         nailgun.task.task.Cobbler = Mock()
         self.env.launch_deployment()
 

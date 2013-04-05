@@ -410,8 +410,7 @@ class TestConsumer(BaseHandlers):
         self.assertEquals(len(nodes_db), 0)
 
         ip_db = self.db.query(IPAddr)\
-            .filter(IPAddr.node.in_([node1_id, node2_id])).\
-            filter_by(admin=False).all()
+            .filter(IPAddr.node.in_([node1_id, node2_id])).all()
         self.assertEquals(len(ip_db), 0)
 
         vlan_db = self.db.query(Vlan)\

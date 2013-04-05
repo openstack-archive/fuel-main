@@ -426,6 +426,7 @@ class BaseHandlers(TestCase):
     def setUpClass(cls):
         cls.db = orm()
         cls.app = TestApp(build_app().wsgifunc())
+        nailgun.task.task.DeploymentTask._prepare_syslog_dir = mock.Mock()
         #dropdb()
         syncdb()
 

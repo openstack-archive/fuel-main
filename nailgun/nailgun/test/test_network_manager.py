@@ -29,7 +29,6 @@ class TestNetworkManager(BaseHandlers):
         #  not via API. It's impossible now because of issues with web.ctx.orm
 
         nailgun.task.task.Cobbler = Mock()
-        nailgun.task.task.DeploymentTask._prepare_syslog_dir = Mock()
         self.env.launch_deployment()
 
         nodes = self.db.query(Node).filter_by(
@@ -166,7 +165,6 @@ class TestNetworkManager(BaseHandlers):
 
         nailgun.task.task.Cobbler = Mock()
         nailgun.task.task.Cobbler().item_from_dict = Mock()
-        nailgun.task.task.DeploymentTask._prepare_syslog_dir = Mock()
         self.env.launch_deployment()
 
         itertools.starmap(

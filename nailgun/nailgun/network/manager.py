@@ -167,10 +167,10 @@ def assign_vip(cluster_id, network_name):
             )
         )
         free_ips = get_free_ips_from_range(from_range)
-        ne_db = IPAddr(network=network.id, ip_addr=free_ips[0])
+        vip = free_ips[0]
+        ne_db = IPAddr(network=network.id, ip_addr=vip)
         orm().add(ne_db)
         orm().commit()
-        vip = free_ips[0]
     return vip
 
 
