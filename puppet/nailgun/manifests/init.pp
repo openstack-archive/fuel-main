@@ -25,6 +25,7 @@ class nailgun(
   $cobbler_password = "cobbler",
 
   $mco_pskey = "unset",
+  $mco_vhost = "mcollective",
   $mco_host = $ipaddress,
   $mco_user = "mcollective",
   $mco_password = "marionette",
@@ -92,7 +93,7 @@ class nailgun(
     pip_opts => "${pip_index} ${pip_find_links}",
     nailgun_user => $nailgun_user,
     nailgun_group => $nailgun_group,
-    
+
     database_name => "nailgun",
     database_engine => "postgresql",
     database_host => "localhost",
@@ -148,9 +149,10 @@ class nailgun(
     mco_pskey => $mco_pskey,
     mco_user => $mco_user,
     mco_password => $mco_password,
+    mco_vhost => $mco_vhost,
   }
 
-  class { "nailgun::database": 
+  class { "nailgun::database":
     user      => $database_user,
     password  => $database_passwd,
     dbname    => $database_name,

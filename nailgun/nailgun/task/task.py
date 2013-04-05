@@ -309,6 +309,7 @@ puppet_enable=0
 mco_auto_setup=1
 install_log_2_syslog=1
 mco_pskey=%(mco_pskey)s
+mco_vhost=%(mco_vhost)s
 mco_host=%(mco_host)s
 mco_user=%(mco_user)s
 mco_password=%(mco_password)s
@@ -318,6 +319,7 @@ mco_enable=1
                    'puppet_version': settings.PUPPET_VERSION,
                    'mco_pskey': settings.MCO_PSKEY,
                    'mco_host': settings.MCO_HOST,
+                   'mco_vhost': settings.MCO_VHOST,
                    'mco_user': settings.MCO_USER,
                    'mco_connector': settings.MCO_CONNECTOR,
                    'mco_password': settings.MCO_PASSWORD,

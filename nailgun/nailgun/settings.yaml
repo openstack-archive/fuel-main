@@ -208,6 +208,7 @@ LOGS_TO_PACK_FOR_SUPPORT:
   logs: '/var/log'
 
 MCO_PSKEY: "Gie6iega9ohngaenahthohngu8aebohxah9seidi"
+MCO_VHOST: "mcollective"
 MCO_HOST: "localhost"
 MCO_USER: "guest"
 MCO_PASSWORD: "guest"

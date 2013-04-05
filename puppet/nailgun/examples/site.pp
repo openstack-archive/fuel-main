@@ -17,6 +17,7 @@ node default {
   $puppet_master_hostname = "${hostname}.${domain}"
 
   $mco_pskey = "unset"
+  $mco_vhost = "mcollective"
   $mco_user = "mcollective"
   $mco_password = "marionette"
   $mco_connector = "rabbitmq"
@@ -59,6 +60,7 @@ node default {
     cobbler_password => $cobbler_password,
 
     mco_pskey => $mco_pskey,
+    mco_vhost => $mco_vhost,
     mco_user => $mco_user,
     mco_password => $mco_password,
     mco_connector => "rabbitmq",
