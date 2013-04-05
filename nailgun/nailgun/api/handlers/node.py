@@ -1,6 +1,7 @@
 # -*- coding: utf-8 -*-
 
 import json
+import traceback
 from datetime import datetime
 
 import web
@@ -85,13 +86,12 @@ class NodeCollectionHandler(JSONHandler):
         try:
             node.attributes.generate_volumes_info()
         except Exception as exc:
-            logger.warning(
-                "Failed to get volumes info for node '{0}': '{1}'".format(
-                    data.get("mac"),
-                    str(exc)
-                )
+            msg = "Failed to get volumes info for node '{0}': '{1}'".format(
+                data.get("mac"),
+                str(exc) or "see logs for details"
             )
-            raise web.badrequest(str(exc))
+            logger.warning(traceback.format_exc())
+            notifier.notify("error", msg, node_id=node.id)
         self.db.add(node)
         self.db.commit()
 
