@@ -89,11 +89,11 @@ class JSONHandler(object):
             obj = self.db.query(model).filter(**kwargs).all()
         if not obj:
             if log_404:
-                getattr(logger, log_404[0])(log_404[0])
+                getattr(logger, log_404[0])(log_404[1])
             raise web.notfound()
         else:
             if log_get:
-                getattr(logger, log_get[0])(log_get[0])
+                getattr(logger, log_get[0])(log_get[1])
         return obj
 
     @classmethod
