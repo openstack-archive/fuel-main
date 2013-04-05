@@ -2,7 +2,7 @@ import json
 import itertools
 
 from mock import Mock, patch
-from netaddr import IPNetwork, IPAddress, iter_iprange
+from netaddr import IPNetwork, IPAddress, IPRange
 
 import nailgun
 from nailgun.test.base import BaseHandlers
@@ -29,7 +29,7 @@ class TestNetworkManager(BaseHandlers):
         #  not via API. It's impossible now because of issues with web.ctx.orm
 
         nailgun.task.task.Cobbler = Mock()
-        nailgun.task.task.DeploymentTask._syslog_dir = Mock()
+        nailgun.task.task.DeploymentTask._prepare_syslog_dir = Mock()
         self.env.launch_deployment()
 
         nodes = self.db.query(Node).filter_by(
@@ -115,7 +115,7 @@ class TestNetworkManager(BaseHandlers):
         map(
             lambda x: self.assertIn(
                 IPAddress(x.ip_addr),
-                iter_iprange(
+                IPRange(
                     settings.ADMIN_NETWORK['first'],
                     settings.ADMIN_NETWORK['last']
                 )
@@ -166,17 +166,17 @@ class TestNetworkManager(BaseHandlers):
 
         nailgun.task.task.Cobbler = Mock()
         nailgun.task.task.Cobbler().item_from_dict = Mock()
-        nailgun.task.task.DeploymentTask._syslog_dir = Mock()
+        nailgun.task.task.DeploymentTask._prepare_syslog_dir = Mock()
         self.env.launch_deployment()
 
-        map(
-            lambda i: self.assertIn(
+        itertools.starmap(
+            lambda x, y: self.assertIn(
                 IPAddress(
                     nailgun.task.task.Cobbler().item_from_dict.
-                    call_args_list[i[0]][0][2]['interfaces']
-                    [i[1]]['ip_address']
+                    call_args_list[x][0][2]['interfaces']
+                    [y]['ip_address']
                 ),
-                iter_iprange(
+                IPRange(
                     settings.ADMIN_NETWORK['first'],
                     settings.ADMIN_NETWORK['last']
                 )

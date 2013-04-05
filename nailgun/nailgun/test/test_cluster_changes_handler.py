@@ -116,7 +116,7 @@ class TestHandlers(BaseHandlers):
             ]
         )
 
-        nailgun.task.task.DeploymentTask._syslog_dir = Mock()
+        nailgun.task.task.DeploymentTask._prepare_syslog_dir = Mock()
         nailgun.task.task.Cobbler = Mock()
         self.env.launch_deployment()
 
