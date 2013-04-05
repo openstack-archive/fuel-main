@@ -37,7 +37,7 @@ function(models, commonViews, dialogViews, clustersPageTemplate, clusterTemplate
             createClusterDialogView.render();
         },
         initialize: function() {
-            this.collection.bind('sync', this.render, this);
+            this.collection.on('sync', this.render, this);
         },
         render: function() {
             this.tearDownRegisteredSubViews();
@@ -101,7 +101,7 @@ function(models, commonViews, dialogViews, clustersPageTemplate, clusterTemplate
             }
         },
         initialize: function() {
-            this.model.bind('change', this.render, this);
+            this.model.on('change', this.render, this);
         },
         render: function() {
             this.$el.html(this.template({cluster: this.model}));

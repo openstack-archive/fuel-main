@@ -85,7 +85,7 @@ function(models, commonViews, dialogViews, networkTabTemplate, networkTabVerific
                         dialog.render();
                     }, this))
                 .always(_.bind(function() {
-                    this.model.get('tasks').fetch({data: {cluster_id: this.model.id}, reset: true}).done(_.bind(this.scheduleUpdate, this));
+                    this.model.get('tasks').fetch({data: {cluster_id: this.model.id}}).done(_.bind(this.scheduleUpdate, this));
                 }, this));
         },
         verifyNetworks: function() {
@@ -137,15 +137,15 @@ function(models, commonViews, dialogViews, networkTabTemplate, networkTabVerific
         bindTaskEvents: function() {
             var task = this.model.task('verify_networks') || this.model.task('check_networks', 'error') || this.model.task('deploy', 'running');
             if (task) {
-                task.bind('change:status', this.render, this);
+                task.on('change:status', this.render, this);
                 if (this.networks) {
                     this.render();
                 }
             }
         },
         bindEvents: function() {
-            this.model.get('tasks').bind('remove', this.renderVerificationControl, this);
-            this.model.get('tasks').bind('reset', this.bindTaskEvents, this);
+            this.model.get('tasks').on('remove', this.renderVerificationControl, this);
+            this.model.get('tasks').on('reset', this.bindTaskEvents, this);
             this.bindTaskEvents();
         },
         setInitialData: function() {
@@ -168,7 +168,7 @@ function(models, commonViews, dialogViews, networkTabTemplate, networkTabVerific
         },
         initialize: function(options) {
             _.defaults(this, options);
-            this.model.bind('change:tasks', this.bindEvents, this);
+            this.model.on('change:tasks', this.bindEvents, this);
             this.bindEvents();
             if (!this.model.get('networks')) {
                 this.model.set({networks: new models.Networks()});

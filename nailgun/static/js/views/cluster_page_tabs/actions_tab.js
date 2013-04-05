@@ -47,8 +47,8 @@ function(models, commonViews, dialogViews, actionsTabTemplate) {
         },
         initialize: function(options) {
             _.defaults(this, options);
-            this.model.bind('change:name', this.render, this);
-            this.model.bind('invalid', this.showValidationError, this);
+            this.model.on('change:name', this.render, this);
+            this.model.on('invalid', this.showValidationError, this);
         },
         render: function() {
             this.$el.html(this.template({cluster: this.model}));

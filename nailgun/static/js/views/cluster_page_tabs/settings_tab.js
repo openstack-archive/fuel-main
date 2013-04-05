@@ -109,7 +109,7 @@ function(models, commonViews, dialogViews, settingsTabTemplate, settingsGroupTem
                 this.checkForChanges();
             }, this));
         },
-        render: function () {
+        render: function() {
             this.$el.html(this.template({cluster: this.model}));
             if (this.model.get('settings').deferred.state() != 'pending') {
                 this.parseSettings(this.model.get('settings').get('editable'));
@@ -117,22 +117,15 @@ function(models, commonViews, dialogViews, settingsTabTemplate, settingsGroupTem
             }
             return this;
         },
-        bindTaskEvents: function() {
-            var task = this.model.task('deploy', 'running');
-            if (task) {
-                task.bind('change:status', this.render, this);
-                if (this.model.get('settings')) {
-                    this.render();
-                }
-            }
+        bindTaskEvents: function(task) {
+            return task.get('name') == 'deploy' ? task.on('change:status', this.render, this) : null;
         },
-        bindEvents: function() {
-            this.model.get('tasks').bind('reset', this.bindTaskEvents, this);
-            this.bindTaskEvents();
+        onNewTask: function(task) {
+            return this.bindTaskEvents(task) && this.render();
         },
         initialize: function(options) {
-            this.model.bind('change:tasks', this.bindEvents, this);
-            this.bindEvents();
+            this.model.get('tasks').each(this.bindTaskEvents, this);
+            this.model.get('tasks').on('add', this.onNewTask, this);
             if (!this.model.get('settings')) {
                 this.model.set({'settings': new models.Settings()}, {silent: true});
                 this.model.get('settings').deferred = this.model.get('settings').fetch({url: _.result(this.model, 'url') + '/attributes'});

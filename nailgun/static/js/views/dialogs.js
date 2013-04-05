@@ -123,7 +123,7 @@ function(models, simpleMessageTemplate, createClusterDialogTemplate, changeClust
         initialize: function() {
             this.releases = new models.Releases();
             this.releases.fetch();
-            this.releases.bind('sync', this.renderReleases, this);
+            this.releases.on('sync', this.renderReleases, this);
         }
     });
 
@@ -192,7 +192,7 @@ function(models, simpleMessageTemplate, createClusterDialogTemplate, changeClust
             Backbone.sync('update', nodes)
                 .done(_.bind(function() {
                     this.$el.modal('hide');
-                    this.model.get('nodes').fetch({data: {cluster_id: this.model.id}, reset: true});
+                    this.model.get('nodes').fetch({data: {cluster_id: this.model.id}});
                     app.navbar.nodes.fetch();
                 }, this))
                 .fail(_.bind(this.displayErrorMessage, this));

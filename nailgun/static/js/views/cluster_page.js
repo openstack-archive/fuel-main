@@ -136,66 +136,43 @@ function(models, commonViews, dialogViews, NodesTab, NetworkTab, SettingsTab, Lo
         },
         initialize: function(options) {
             _.defaults(this, options);
-            this.model.bind('change:name', this.onNameChange, this);
-            this.model.bind('change:tasks', this.bindTasksEvents, this);
-            this.bindTasksEvents();
-            this.model.bind('change:nodes', this.bindNodesEvents, this);
-            this.model.bind('change:changes', this.renderDeploymentControl, this);
-            this.bindNodesEvents();
+            _(['nodes', 'tasks']).each(function(attribute) {
+                this.model.on('change:' + attribute, function(model, collection, options) {
+                    model.attributes[attribute] = model.previous(attribute);
+                    model.attributes[attribute].set(collection.models);
+                }, this);
+            }, this);
+            this.model.on('change:name', this.onNameChange, this);
             this.scheduleUpdate();
             this.eventNamespace = 'unsavedchanges' + this.activeTab;
             $(window).on('beforeunload.' + this.eventNamespace, _.bind(this.onBeforeunloadEvent, this));
             $('body').on('click.' + this.eventNamespace, 'a[href^=#]', _.bind(this.onTabLeave, this));
-        },
-        bindTasksEvents: function() {
-            this.model.get('tasks').bind('reset', this.renderDeploymentResult, this);
-            this.model.get('tasks').bind('reset', this.renderDeploymentControl, this);
-            if (arguments.length) {
-                this.renderDeploymentResult();
-                this.renderDeploymentControl();
-            }
-        },
-        bindNodesEvents: function() {
-            this.model.get('nodes').bind('reset', this.renderDeploymentControl, this);
-            if (arguments.length) {
-                this.renderDeploymentControl();
-            }
         },
         unbindEventsWhileDeploying: function() {
             // unbind some events while deploying to make progress bar movement smooth and prevent showing wrong cluster status for a moment.
             // these events will be rebound automatically by fetching the whole cluster on deployment finish
             var task = this.model.task('deploy', 'running');
             if (task) {
-                task.unbind('change:status', this.deploymentResult.render, this.deploymentResult);
-                task.unbind('change:status', this.deploymentControl.render, this.deploymentControl);
-                this.model.get('nodes').unbind('reset', this.renderDeploymentControl, this);
+                //task.off('change:status', this.deploymentResult.render, this.deploymentResult);
+                //task.off('change:status', this.deploymentControl.render, this.deploymentControl);
+                //this.model.get('nodes').off('reset', this.renderDeploymentControl, this);
             }
-        },
-        renderDeploymentResult: function() {
-            if (this.deploymentResult) {
-                this.deploymentResult.tearDown();
-            }
-            this.deploymentResult = new DeploymentResult({model: this.model});
-            this.registerSubView(this.deploymentResult);
-            this.$('.deployment-result').html(this.deploymentResult.render().el);
-        },
-        renderDeploymentControl: function() {
-            if (this.deploymentControl) {
-                this.deploymentControl.tearDown();
-            }
-            this.deploymentControl = new DeploymentControl({model: this.model});
-            this.registerSubView(this.deploymentControl);
-            this.$('.deployment-control').html(this.deploymentControl.render().el);
         },
         render: function() {
+            this.tearDownRegisteredSubViews();
             this.$el.html(this.template({
                 cluster: this.model,
                 tabs: this.tabs,
                 activeTab: this.activeTab,
                 renaming: this.renaming
             }));
-            this.renderDeploymentResult();
-            this.renderDeploymentControl();
+
+            this.deploymentResult = new DeploymentResult({model: this.model});
+            this.registerSubView(this.deploymentResult);
+            this.$('.deployment-result').html(this.deploymentResult.render().el);
+            this.deploymentControl = new DeploymentControl({model: this.model});
+            this.registerSubView(this.deploymentControl);
+            this.$('.deployment-control').html(this.deploymentControl.render().el);
             this.unbindEventsWhileDeploying();
 
             var tabs = {
@@ -218,10 +195,15 @@ function(models, commonViews, dialogViews, NodesTab, NetworkTab, SettingsTab, Lo
     DeploymentResult = Backbone.View.extend({
         template: _.template(deploymentResultTemplate),
         initialize: function(options) {
-            var task = this.model.task('deploy');
-            if (task) {
-                task.bind('change:status', this.render, this);
-            }
+            this.model.on('change:changes', this.render, this);
+            this.model.get('tasks').each(this.bindTaskEvents, this);
+            this.model.get('tasks').on('add', this.onNewTask, this);
+        },
+        bindTaskEvents: function(task) {
+            return task.get('name') == 'deploy' ? task.on('change:status', this.render, this) : null;
+        },
+        onNewTask: function(task) {
+            return this.bindTaskEvents(task) && this.render();
         },
         render: function() {
             this.$el.html(this.template({cluster: this.model}));
@@ -232,12 +214,21 @@ function(models, commonViews, dialogViews, NodesTab, NetworkTab, SettingsTab, Lo
     DeploymentControl = Backbone.View.extend({
         template: _.template(deploymentControlTemplate),
         initialize: function(options) {
-            this.model.bind('change:status', this.render, this);
-            var task = this.model.task('deploy');
-            if (task) {
-                task.bind('change:status', this.render, this);
-                task.bind('change:progress', this.updateProgress, this);
+            this.model.on('change:status', this.render, this);
+            this.model.get('tasks').each(this.bindTaskEvents, this);
+            this.model.get('tasks').on('add', this.onNewTask, this);
+            this.model.get('nodes').on('add remove change:pending_addition change:pending_deletion', this.render, this);
+        },
+        bindTaskEvents: function(task) {
+            if (task.get('name') == 'deploy') {
+                task.on('change:status', this.render, this);
+                task.on('change:progress', this.updateProgress, this);
+                return task;
             }
+            return null;
+        },
+        onNewTask: function(task) {
+            return this.bindTaskEvents(task) && this.render();
         },
         updateProgress: function() {
             var task = this.model.task('deploy', 'running');

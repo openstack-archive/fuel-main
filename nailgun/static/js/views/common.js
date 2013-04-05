@@ -85,7 +85,7 @@ function(models, dialogViews, navbarTemplate, nodesStatsTemplate, notificationsT
         stats: {},
         initialize: function(options) {
             _.defaults(this, options);
-            this.collection.bind('sync', this.render, this);
+            this.collection.on('sync', this.render, this);
         },
         calculateStats: function() {
             this.stats.total = this.collection.length;
@@ -111,7 +111,7 @@ function(models, dialogViews, navbarTemplate, nodesStatsTemplate, notificationsT
         },
         initialize: function(options) {
             _.defaults(this, options);
-            this.collection.bind('sync', this.render, this);
+            this.collection.on('sync', this.render, this);
         },
         render: function() {
             this.$el.html(this.template({notifications: this.collection}));

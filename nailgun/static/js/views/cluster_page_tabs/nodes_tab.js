@@ -73,7 +73,7 @@ function(models, commonViews, dialogViews, nodesTabSummaryTemplate, editNodesScr
             dialog.render();
         },
         initialize: function(options) {
-            this.model.bind('change:status', this.render, this);
+            this.model.on('change:status', this.render, this);
         },
         render: function() {
             this.$el.html(this.template({cluster: this.model}));
@@ -87,31 +87,16 @@ function(models, commonViews, dialogViews, nodesTabSummaryTemplate, editNodesScr
         keepScrollPosition: true,
         initialize: function(options) {
             this.tab = options.tab;
-            this.model.bind('change:mode change:type', this.render, this);
-            this.model.bind('change:nodes', this.bindNodesEvents, this);
-            this.bindNodesEvents();
-            this.model.bind('change:tasks', this.bindTasksEvents, this);
-            this.bindTasksEvents();
+            this.model.on('change:mode change:type', this.render, this);
+            this.model.get('nodes').on('reset', this.render, this);
+            this.model.get('tasks').each(this.bindTaskEvents, this);
+            this.model.get('tasks').on('add', this.onNewTask, this);
         },
-        bindTasksEvents: function() {
-            this.model.get('tasks').bind('reset', this.bindTaskEvents, this);
-            this.bindTaskEvents();
+        bindTaskEvents: function(task) {
+            return (task.get('name') == 'deploy' || task.get('name') == 'verify_networks') ? task.on('change:status', this.render, this) : null;
         },
-        bindTaskEvents: function() {
-            var task = this.model.task('deploy', 'running');
-            if (!task) {
-                task = this.model.task('verify_networks', 'running');
-            }
-            if (task) {
-                task.bind('change:status', this.render, this);
-                this.render();
-            }
-        },
-        bindNodesEvents: function() {
-            this.model.get('nodes').bind('reset', this.render, this);
-            if (arguments.length) {
-                this.render();
-            }
+        onNewTask: function(task) {
+            return this.bindTaskEvents(task) && this.render();
         },
         render: function() {
             this.tearDownRegisteredSubViews();
@@ -186,7 +171,7 @@ function(models, commonViews, dialogViews, nodesTabSummaryTemplate, editNodesScr
             this.$('.btn-apply').attr('disabled', true);
             var nodes = new models.Nodes(this.getChosenNodes());
             this.modifyNodes(nodes);
-            Backbone.sync('update', nodes).done(_.bind(function() {
+            nodes.sync('update', nodes).done(_.bind(function() {
                 app.navigate('#cluster/' + this.model.id + '/nodes', {trigger: true});
                 this.model.get('nodes').fetch({data: {cluster_id: this.model.id}, reset: true});
                 app.navbar.nodes.fetch();
@@ -252,7 +237,7 @@ function(models, commonViews, dialogViews, nodesTabSummaryTemplate, editNodesScr
                 this.limit = _.filter(this.model.get('nodes').nodesAfterDeployment(), function(node) {return node.get('role') == this.role;}, this).length ? 0 : 1;
             }
             this.nodes = new models.Nodes();
-            this.nodes.deferred = this.nodes.fetch({data: {cluster_id: ''}}).done(_.bind(function() {
+            this.nodes.deferred = this.nodes.fetch({data: {cluster_id: ''}, reset: true}).done(_.bind(function() {
                 this.nodes.add(this.model.get('nodes').where({role: this.role, pending_deletion: true}), {at: 0});
                 this.render();
             }, this));
@@ -422,17 +407,16 @@ function(models, commonViews, dialogViews, nodesTabSummaryTemplate, editNodesScr
             var updatedNode = app.navbar.nodes.get(this.model.id);
             if (updatedNode && updatedNode.get('online') != this.model.get('online')) {
                 this.model.set({online: updatedNode.get('online')});
-                this.render();
             }
         },
         initialize: function(options) {
             _.defaults(this, options);
             this.renaming = false;
             this.eventNamespace = 'click.editnodename' + this.model.id;
-            this.model.bind('change:name change:pending_addition change:pending_deletion', this.render, this);
-            this.model.bind('change:status change:online', this.updateStatus, this);
-            this.model.bind('change:progress', this.updateProgress, this);
-            app.navbar.nodes.bind('sync', this.checkForOfflineEvent, this);
+            this.model.on('change:name change:pending_addition change:pending_deletion', this.render, this);
+            this.model.on('change:status change:online', this.updateStatus, this);
+            this.model.on('change:progress', this.updateProgress, this);
+            app.navbar.nodes.on('sync', this.checkForOfflineEvent, this);
         },
         render: function() {
             this.$el.html(this.template({

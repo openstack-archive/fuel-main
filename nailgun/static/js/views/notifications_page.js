@@ -26,7 +26,7 @@ function(models, commonViews, dialogViews, notificationsListTemplate) {
         },
         initialize: function(options) {
             _.defaults(this, options);
-            this.notifications.bind('sync', this.render, this);
+            this.notifications.on('sync', this.render, this);
         },
         render: function() {
             this.$el.html(this.template({notifications: this.notifications}));
