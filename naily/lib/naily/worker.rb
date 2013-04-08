@@ -43,7 +43,7 @@ module Naily
       @connection = AMQP.connect(connection_options)
       create_channel
       @exchange = @channel.topic(Naily.config.broker_exchange, :durable => true)
-      @producer = Naily::Producer.new(@channel, @exchange)
+      @producer = Naily::Producer.new(@exchange)
       @delegate = Naily.config.delegate || Naily::Dispatcher.new(@producer)
     rescue => ex
       Naily.logger.error "Exception during AMQP connection initialization: #{ex}"
@@ -53,10 +53,12 @@ module Naily
 
     def create_channel
       @channel = AMQP::Channel.new(@connection)
+      @channel.prefetch 1
       @channel.on_error do |ch, error|
         Naily.logger.fatal "Channel error #{error.inspect}"
         stop
       end
+      @channel
     end
 
     def connection_options

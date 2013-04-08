@@ -1,14 +1,7 @@
 module Naily
   class Producer
-    def initialize(channel, exchange)
-      @channel = channel
+    def initialize(exchange)
       @exchange = exchange
-      begin
-        queue = @channel.queue(Naily.config.broker_publisher_queue, :durable => true)
-        queue.bind(@exchange, :routing_key => Naily.config.broker_publisher_queue)
-      rescue
-        Naily.logger.error "Error creating AMQP queue: #{$!}"
-      end
     end
 
     def publish(message, options={})
