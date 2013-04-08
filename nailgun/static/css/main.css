@@ -3402,7 +3402,7 @@ hr.slim {
   height: 16px;
   background-image: url(data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABAAAAAQCAYAAAAf8/9hAAAAGXRFWHRTb2Z0d2FyZQBBZG9iZSBJbWFnZVJlYWR5ccllPAAAAH1JREFUeNrEU8ENwCAI1E7iCI7EZozICBQbml6QV2nSSwhEvANRu6q2CnpVoC0BFLF4mLGZ6APxtbHxUMD8DMSIlZupgFcW2JiRbz8yAcYqZgRkCt1xJoBVydukEGM3m0AEwcAoyV+8o1Xx5RHKQ6xdY/khvX3K/fffeAowAHqsOyt5zY/NAAAAAElFTkSuQmCC);
   position: relative;
-  top: -48px;
+  top: -60px;
   left: 100%;
   margin-left: -18px;
   margin-top: 2px;
@@ -3672,3 +3672,10 @@ hr.slim {
   color: #777777;
 }
 /* Disk Utility End */
+
+.toggle-volume {
+  height: 57px;
+  position: relative;
+  top: -4px;
+  padding-top: 4px;
+}

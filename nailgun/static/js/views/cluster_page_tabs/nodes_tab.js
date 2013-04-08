@@ -505,7 +505,7 @@ function(models, commonViews, dialogViews, nodesTabSummaryTemplate, editNodesScr
             // round bytes to Gb for displaying on UI
             _.each(this.disks.models, _.bind(function(disk) {
                 _.each(disk.get('volumes'), _.bind(function(group) {
-                    if (group.type != 'mbr') {
+                    if (group.type == 'pv') {
                         group.size = Math.round(group.size / Math.pow(1000, 3));
                     }
                     if (group.type == 'partition') {
@@ -558,6 +558,7 @@ function(models, commonViews, dialogViews, nodesTabSummaryTemplate, editNodesScr
 
     NodeDisk = Backbone.View.extend({
         template: _.template(nodeDisksTemplate),
+        visible: false,
         events: {
             'click .toggle-volume': 'toggleEditDiskForm',
             'click .close-btn': 'deleteVolumeGroup',
@@ -566,23 +567,21 @@ function(models, commonViews, dialogViews, nodesTabSummaryTemplate, editNodesScr
             'click .btn-bootable:not(:disabled)': 'switchBootableDisk'
         },
         toggleEditDiskForm: function(e) {
+            this.visible = !this.visible;
             this.$('.close-btn').toggle();
             this.$('.disk-edit-volume-group-form').collapse('toggle');
         },
         setVolumes: function(e, size, allUnallocated) {
-            this.$('input.error').removeClass('error');
             var group = this.$(e.currentTarget).parents('.volume-group').data('group');
-            var volume = _.find(this.volumes, {vg: group});
+            this.$('input[name=' + group + ']').removeClass('error');
+            var volumes = _.cloneDeep(this.volumes);
+            var volume = _.find(volumes, {vg: group});
             var unallocated = this.diskSize - this.countAllocatedSpace() + volume.size;
-            volume.size = allUnallocated ? volume.size + size : size;
-            console.log(this.disk.get('volumes'));
-            this.disk.set({volumes: this.volumes}, {validate: true, unallocated: unallocated});
-            console.log(this.disk.get('volumes'));
-            if (this.disk.validationError) {
-                this.volumes = this.disk.get('volumes');
-            }
-            if (allUnallocated || !size) {
-                this.$('input[name=' + group + ']').val(volume.size);
+            volume.size = allUnallocated ? volume.size + parseInt(size, 10) : parseInt(size, 10);
+            this.disk.set({volumes: volumes}, {validate: true, unallocated: unallocated, group: group});
+            this.volumes = this.disk.get('volumes');
+            if (allUnallocated || size === 0) {
+                this.$('input[name=' + group + ']').val(_.find(this.volumes, {vg: group}).size);
             }
             this.renderVisualGraph();
             this.screen.checkForChanges();
@@ -591,10 +590,14 @@ function(models, commonViews, dialogViews, nodesTabSummaryTemplate, editNodesScr
             this.setVolumes(e, 0);
         },
         editVolumeGroups: function(e) {
-            this.setVolumes(e, parseInt(this.$(e.currentTarget).val(), 10));
+            this.setVolumes(e, this.$(e.currentTarget).val());
         },
         countAllocatedSpace: function() {
-            var volumes = !!this.partition ? _.union(this.volumesToDisplay(), this.partition) : this.volumesToDisplay();
+            var volumes = this.volumesToDisplay();
+            if (this.partition) {
+                this.partition.size = Math.round(this.partition.size / Math.pow(1000, 3));
+                volumes = _.union(volumes, this.partition);
+            }
             return _.reduce(volumes, _.bind(function(sum, volume) {
                     return sum + volume.size;
                 }, this), 0);
@@ -607,15 +610,17 @@ function(models, commonViews, dialogViews, nodesTabSummaryTemplate, editNodesScr
             _.each(this.screen.disks.models, function(disk) {
                 disk.set({volumes: _.filter(disk.get('volumes'), {type: 'pv'})});
             });
-            this.disk.set({volumes: _.union(this.volumes, [{type: 'partition', mount: '/boot', size: this.screen.partitionSize}, {type: 'mbr'}])});
-            this.screen.renderDisks();
+            this.disk.set({volumes: _.union(this.disk.get('volumes'), [{type: 'partition', mount: '/boot', size: this.screen.partitionSize}, {type: 'mbr'}])});
+            _.invoke(this.screen.subViews, 'renderVisualGraph');
+            $('.btn-bootable').attr('disabled', false);
+            this.$('.btn-bootable').attr('disabled', true);
             this.screen.checkForChanges();
         },
         initialize: function(options) {
             _.defaults(this, options);
             this.diskSize = Math.round(this.diskMetaData.size / Math.pow(1000, 3));
             this.volumes = this.disk.get('volumes');
-            this.partition = _.find(this.volumes, {type: 'partition'});
+            this.partition = _.find(this.disk.get('volumes'), {type: 'partition'});
             this.disk.on('invalid', function(model, errors) {
                 _.each(errors, _.bind(function(error) {
                     this.$('input[name=' + error + ']').addClass('error');
@@ -636,13 +641,8 @@ function(models, commonViews, dialogViews, nodesTabSummaryTemplate, editNodesScr
                 unallocatedWidth -= width; unallocatedSize -= size;
                 this.$('.disk-visual .' + volume.vg).css('width', width + '%').find('.volume-group-size').text(size + ' GB');
             }, this));
-            if (!!this.partition) {
-                var bootableWidth = (this.partition.size / this.diskSize * 100).toPrecision(4);
-                this.$('.disk-visual .partition').css('width', bootableWidth + '%').find('.volume-group-size').text(this.partition.size + ' GB');
-                unallocatedWidth -= bootableWidth; unallocatedSize -= this.partition.size;
-            }
             this.$('.disk-visual .unallocated').css('width', unallocatedWidth + '%').find('.volume-group-size').text(unallocatedSize + ' GB');
-            this.$('.btn-bootable').attr('disabled', unallocatedSize < this.screen.partitionSize);
+            this.$('.btn-bootable').attr('disabled', this.partition || unallocatedSize < Math.round(this.screen.partitionSize / Math.pow(1000, 3)));
         },
         render: function() {
             this.$el.html(this.template({
@@ -650,7 +650,8 @@ function(models, commonViews, dialogViews, nodesTabSummaryTemplate, editNodesScr
                 volumes: this.volumesToDisplay(),
                 partition: !!this.partition
             }));
-            this.$('.disk-edit-volume-group-form').collapse({toggle: false});
+            this.$('.disk-edit-volume-group-form').collapse({toggle: this.visible});
+            this.$('.close-btn').toggle(this.visible);
             this.renderVisualGraph();
             return this;
         }

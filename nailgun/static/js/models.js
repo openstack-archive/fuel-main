@@ -248,11 +248,10 @@ define(function() {
         urlRoot: '/api/nodes/',
         validate: function(attrs, options) {
             var errors = [];
-            _.each(attrs.volumes, function(volume) {
-                if (volume.size > options.unallocated) {
-                   errors.push(volume.vg);
-                }
-            });
+            var volume = _.find(attrs.volumes, {vg: options.group});
+            if (_.isNaN(volume.size) || volume.size > options.unallocated) {
+                errors.push(volume.vg);
+            }
             return _.isEmpty(errors) ? null : errors;
         }
     });

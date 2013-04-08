@@ -7,13 +7,6 @@
   <div class="disk-map-short disk-map-full">
     <div class="disk-map-image disk-visual">
 
-      <div class="volume-group partition" style="width:0">
-        <div class="toggle-volume">
-          <div class="volume-group-name">Partition</div>
-          <div class="volume-group-size">0 GB</div>
-        </div>
-      </div>
-
       <% var volumeGroupsLabels = {os: 'Base system', vm: 'Virtual Storage', cinder: 'Cinder'} %>
       <% _.each(volumes, function(volume) { %>
         <div class="volume-group <%= volume.vg %>" data-group="<%= volume.vg %>" style="width:0">
@@ -66,7 +59,7 @@
         </div>
       <% }) %>
       <div class="disk-map-details-item">
-        <button class="btn btn-bootable" <%= partition ? 'disabled' : '' %>>Make bootable</button>
+        <button class="btn btn-bootable" <%= partition ? 'disabled' : '' %>>Make Bootable</button>
       </div>
     </div>
 
