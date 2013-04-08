@@ -147,3 +147,66 @@ class TestHandlers(BaseHandlers):
             response,
             test_data
         )
+
+    def test_attrs_update_by_name_type(self):
+        node = self.env.create_node(
+            api=True,
+            meta=self.env.default_metadata()
+        )
+        node_db = self.env.nodes[0]
+        test_data1 = [
+            {
+                "id": "test",
+                "type": "disk",
+                "volumes": [
+                    {"test": "ololo"}
+                ]
+            },
+            {
+                "id": "test2",
+                "type": "vg",
+                "volumes": [
+                    {"test": "ololo2"}
+                ]
+            }
+        ]
+        resp = self.app.put(
+            reverse('NodeAttributesByNameHandler',
+                    kwargs={'node_id': node_db.id,
+                            'attr_name': 'volumes'}),
+            json.dumps(test_data1),
+            headers=self.default_headers
+        )
+        test_data2 = [{
+            "id": "test",
+            "type": "disk",
+            "volumes": [
+                {"test": "derp"}
+            ]
+        }]
+        resp = self.app.put(
+            reverse('NodeAttributesByNameHandler',
+                    kwargs={'node_id': node_db.id,
+                            'attr_name': 'volumes'})+"?type=disk",
+            json.dumps(test_data2),
+            headers=self.default_headers
+        )
+        response = json.loads(resp.body)
+        self.assertEquals(response, test_data2)
+        self.assertEquals(len(response), 1)
+        self.env.refresh_nodes()
+        self.assertEquals(len(node_db.attributes.volumes), 2)
+        self.assertEquals(
+            len(
+                filter(lambda t: t["type"] == "disk",
+                       node_db.attributes.volumes)
+            ),
+            1
+        )
+        self.assertEquals(
+            filter(
+                lambda t: t["type"] == "disk",
+                node_db.attributes.volumes
+            )[0]["volumes"][0]["test"],
+            "derp"
+        )

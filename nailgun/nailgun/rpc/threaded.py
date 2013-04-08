@@ -48,6 +48,8 @@ class RPCKombuThread(threading.Thread):
 
     def join(self, timeout=None):
         self.stoprequest.set()
+        # this should interrupt inner kombu event loop
+        # actually, it doesn't
         self.consumer.should_stop = True
         super(RPCKombuThread, self).join(timeout)
 

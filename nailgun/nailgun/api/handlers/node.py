@@ -139,6 +139,7 @@ class NodeCollectionHandler(JSONHandler):
                     self.db.commit()
                 if not node.attributes.volumes \
                         and not node.status in ('provisioning', 'deploying'):
+                    # TODO: improve logic
                     node.attributes.generate_volumes_info()
                     self.db.commit()
                 node.timestamp = datetime.now()
@@ -173,11 +174,12 @@ class NodeAttributesHandler(JSONHandler):
     @content_json
     def PUT(self, node_id):
         node = self.get_object_or_404(Node, node_id)
+        # NO serious data validation yet
+        data = NodeAttributes.validate_json(web.data())
         node_attrs = node.attributes
         if not node_attrs:
             return web.notfound()
-        # NO data validation yet
-        for key, value in json.loads(web.data()).iteritems():
+        for key, value in data.iteritems():
             setattr(node_attrs, key, value)
         self.db.commit()
         return self.render(node_attrs)
@@ -200,14 +202,30 @@ class NodeAttributesByNameHandler(JSONHandler):
     @content_json
     def PUT(self, node_id, attr_name):
         node = self.get_object_or_404(Node, node_id)
+        # NO serious data validation yet
+        data = NodeAttributes.validate_json(web.data())
+        attr_params = web.input()
         node_attrs = node.attributes
         if not node_attrs or not hasattr(node_attrs, attr_name):
             raise web.notfound()
-        # WARNING: all attributes will be updated now, not those by type
-        # NO data validation yet
-        setattr(node_attrs, attr_name, json.loads(web.data()))
+
         attr = getattr(node_attrs, attr_name)
-        attr_params = web.input()
         if hasattr(attr_params, "type"):
-            attr = filter(lambda a: a["type"] == attr_params.type, attr)
+            if isinstance(attr, list):
+                setattr(
+                    node_attrs,
+                    attr_name,
+                    filter(
+                        lambda a: a["type"] != attr_params.type,
+                        attr
+                    )
+                )
+                getattr(node_attrs, attr_name).extend(data)
+                attr = filter(
+                    lambda a: a["type"] == attr_params.type,
+                    getattr(node_attrs, attr_name)
+                )
+        else:
+            setattr(node_attrs, attr_name, data)
+            attr = getattr(node_attrs, attr_name)
         return attr
