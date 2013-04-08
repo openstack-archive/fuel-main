@@ -101,9 +101,6 @@ class TestNetworkManager(BaseHandlers):
         self.assertEquals(network_data, [])
 
     def test_assign_admin_ips(self):
-        """
-        This test checks nailgun.network.manager.assign_admin_ips method
-        """
         node = self.env.create_node()
         netmanager.assign_admin_ips(node.id, 2)
 
@@ -133,10 +130,6 @@ class TestNetworkManager(BaseHandlers):
         }
     )
     def test_assign_admin_ips_large_range(self):
-        """
-        This test checks if it possible to assign admin
-        ips when the range of admin network is very large.
-        """
         # Creating two nodes
         n1 = self.env.create_node()
         n2 = self.env.create_node()
@@ -152,6 +145,37 @@ class TestNetworkManager(BaseHandlers):
                     filter_by(node=n).all())
             self.assertEquals(l, c)
         map(asserter, nc)
+
+    def test_assign_admin_ips_idempotent(self):
+        node = self.env.create_node()
+        netmanager.assign_admin_ips(node.id, 2)
+        admin_ips = set([i.ip_addr for i in self.db.query(IPAddr).
+                         filter_by(node=node.id).
+                         filter_by(admin=True).all()])
+        netmanager.assign_admin_ips(node.id, 2)
+        admin_ips2 = set([i.ip_addr for i in self.db.query(IPAddr).
+                          filter_by(node=node.id).
+                          filter_by(admin=True).all()])
+        self.assertEquals(admin_ips, admin_ips2)
+
+    @patch.dict(
+        nailgun.settings.settings.config,
+        {
+            'ADMIN_NETWORK': {
+                'first': '10.0.0.1',
+                'last': '10.0.0.1',
+                'netmask': '255.255.255.0'
+            }
+        }
+    )
+    def test_assign_admin_ips_only_one(self):
+        node = self.env.create_node()
+        netmanager.assign_admin_ips(node.id, 1)
+        admin_ips = self.db.query(IPAddr).\
+            filter_by(node=node.id).\
+            filter_by(admin=True).all()
+        self.assertEquals(len(admin_ips), 1)
+        self.assertEquals(admin_ips[0].ip_addr, '10.0.0.1')
 
     def test_admin_ip_cobbler(self):
         """
