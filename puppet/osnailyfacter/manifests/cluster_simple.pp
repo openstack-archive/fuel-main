@@ -11,7 +11,6 @@ $network_config = {
 
 $multi_host              = true
 $quantum                 = false
-$use_cinder              = false
 
 $network_manager      = "nova.network.manager.${network_manager}"
 

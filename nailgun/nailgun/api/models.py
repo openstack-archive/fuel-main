@@ -190,7 +190,7 @@ class Node(Base, BasicValidator):
     NODE_ROLES = (
         'controller',
         'compute',
-        'storage',
+        'cinder',
     )
     NODE_ERRORS = (
         'deploy',

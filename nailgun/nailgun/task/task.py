@@ -176,8 +176,7 @@ class DeploymentTask(object):
             cluster_attrs['public_vip'] = netmanager.assign_vip(
                 cluster_id, "public")
 
-        cluster_attrs['deployment_mode'] = '_'.join(
-            [task.cluster.mode, task.cluster.type])
+        cluster_attrs['deployment_mode'] = task.cluster.mode
         cluster_attrs['deployment_id'] = cluster_id
 
         message = {

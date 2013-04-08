@@ -19,7 +19,6 @@ $external_ipinfo = {}
 $multi_host              = true
 $quantum                 = false
 $manage_volumes          = false
-$use_cinder              = false
 $glance_backend          = 'swift'
 
 $network_manager = "nova.network.manager.${network_manager}"

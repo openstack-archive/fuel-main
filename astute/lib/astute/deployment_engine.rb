@@ -13,6 +13,7 @@ module Astute
     def deploy(nodes, attrs)
       # See implementation in subclasses, this may be everriden
       attrs['deployment_mode'] ||= 'multinode_compute'  # simple multinode deployment is the default
+      attrs['use_cinder'] ||= nodes.any?{|n| n['role'] == 'cinder'}
       @ctx.deploy_log_parser.deploy_type = attrs['deployment_mode']
       Astute.logger.info "Deployment mode #{attrs['deployment_mode']}"
       result = self.send("deploy_#{attrs['deployment_mode']}", nodes, attrs)
@@ -23,7 +24,7 @@ module Astute
       raise "Method #{method} is not implemented for #{self.class}"
     end
 
-    def attrs_singlenode_compute(nodes, attrs)
+    def attrs_singlenode(nodes, attrs)
       ctrl_management_ip = nodes[0]['network_data'].select {|nd| nd['name'] == 'management'}[0]['ip']
       ctrl_public_ip = nodes[0]['network_data'].select {|nd| nd['name'] == 'public'}[0]['ip']
       attrs['controller_node_address'] = ctrl_management_ip.split('/')[0]
@@ -31,7 +32,7 @@ module Astute
       attrs
     end
 
-    def deploy_singlenode_compute(nodes, attrs)
+    def deploy_singlenode(nodes, attrs)
       # TODO(mihgen) some real stuff is needed
       Astute.logger.info "Starting deployment of single node OpenStack"
       deploy_piece(nodes, attrs)
@@ -39,7 +40,7 @@ module Astute
 
     # we mix all attrs and prepare them for Puppet
     # Works for multinode_compute deployment mode
-    def attrs_multinode_compute(nodes, attrs)
+    def attrs_multinode(nodes, attrs)
       ctrl_nodes = nodes.select {|n| n['role'] == 'controller'}
       # TODO(mihgen): we should report error back if there are not enough metadata passed
       ctrl_management_ips = []
@@ -57,7 +58,7 @@ module Astute
     # This method is called by Ruby metaprogramming magic from deploy method
     # It should not contain any magic with attributes, and should not directly run any type of MC plugins
     # It does only support of deployment sequence. See deploy_piece implementation in subclasses.
-    def deploy_multinode_compute(nodes, attrs)
+    def deploy_multinode(nodes, attrs)
       ctrl_nodes = nodes.select {|n| n['role'] == 'controller'}
       Astute.logger.info "Starting deployment of controllers"
       deploy_piece(ctrl_nodes, attrs)
@@ -72,7 +73,7 @@ module Astute
       return
     end
 
-    def attrs_ha_compute(nodes, attrs)
+    def attrs_ha(nodes, attrs)
       # TODO(mihgen): we should report error back if there are not enough metadata passed
       ctrl_nodes = nodes.select {|n| n['role'] == 'controller'}
       ctrl_manag_addrs = {}
@@ -93,7 +94,7 @@ module Astute
       attrs
     end
 
-    def deploy_ha_compute(nodes, attrs)
+    def deploy_ha(nodes, attrs)
       ctrl_nodes = nodes.select {|n| n['role'] == 'controller'}
       Astute.logger.info "Starting deployment of all controllers one by one, ignoring failure"
       ctrl_nodes.each {|n| deploy_piece([n], attrs, retries=0, change_node_status=false)}
