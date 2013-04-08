@@ -287,6 +287,14 @@ class DeploymentTask(object):
                     'netmask': settings.ADMIN_NETWORK['netmask'],
                     'ip_address': admin_ips.pop(),
                 }
+
+                # interfaces_extra field in cobbler ks_meta
+                # means some extra data for network interfaces
+                # configuration. It is used by cobbler snippet.
+                # For example, cobbler interface model does not
+                # have 'peerdns' field, but we need this field
+                # to be configured. So we use interfaces_extra
+                # branch in order to set this unsupported field.
                 if 'interfaces_extra' not in nd_dict:
                     nd_dict['interfaces_extra'] = {}
                 nd_dict['interfaces_extra'][i['name']] = {
