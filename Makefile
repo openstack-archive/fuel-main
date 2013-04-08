@@ -25,10 +25,10 @@ help:
 	@echo 'the following commands:'
 	@echo
 	@echo 'Saratov office (default):'
-	@echo 'make iso
+	@echo 'make iso'
 	@echo
 	@echo 'Moscow office:'
-	@echo 'make iso USE_MIRROR=msk
+	@echo 'make iso USE_MIRROR=msk'
 	@echo
 	@echo 'Custom location:'
 	@echo 'make iso USE_MIRROR=msk YUM_REPOS=proprietary \

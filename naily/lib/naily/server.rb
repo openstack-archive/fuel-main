@@ -25,8 +25,10 @@ module Naily
           consume_one do |message|
             dispatch message
           end
-          stop
+          Thread.stop
         end
+      rescue => ex
+        Naily.logger.error "Exception in server loop: #{ex.inspect}"
       ensure
         Naily.logger.info "Server loop finished"
       end

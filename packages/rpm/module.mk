@@ -9,7 +9,7 @@ clean-rpm:
 
 RPM_SOURCES:=$(BUILD_DIR)/packages/rpm/SOURCES
 
-$(BUILD_DIR)/packages/rpm/prep.done: $(BUILD_DIR)/mirror/build.done
+$(BUILD_DIR)/packages/rpm/prep.done: $(BUILD_DIR)/mirror/src/build.done
 	mkdir -p $(RPM_SOURCES)
 	cp -f $(LOCAL_MIRROR_SRC)/* $(RPM_SOURCES)
 	$(ACTION.TOUCH)
@@ -70,6 +70,7 @@ $(BUILD_DIR)/packages/rpm/sandbox-packages.done: \
 	sudo chroot $(SANDBOX) sh -c "mkdir -p ~/rpmbuild/SOURCES ~/rpmbuild/SPECS && cd /tmp/SOURCES/mcollective && rake rpm && rake gem"
 	cp $(SANDBOX)/tmp/SOURCES/mcollective/build/*.rpm $(BUILD_DIR)/packages/rpm/RPMS/x86_64/
 	cp $(SANDBOX)/tmp/SOURCES/mcollective/build/*.gem $(LOCAL_MIRROR_GEMS)/gems/
+	(cd $(LOCAL_MIRROR_GEMS) && gem generate_index gems)
 
 	cp $(SANDBOX)/tmp/RPMS/x86_64/* $(BUILD_DIR)/packages/rpm/RPMS/x86_64/
 	sudo sh -c "$${SANDBOX_DOWN}"

@@ -7,10 +7,13 @@ $(BUILD_DIR)/mirror/gems/gems-bundle/Gemfile:
 	done
 
 $(BUILD_DIR)/mirror/gems/gems-bundle/naily/Gemfile: $(call depv,MIRROR_GEMS)
-$(BUILD_DIR)/mirror/gems/gems-bundle/naily/Gemfile: $(BUILD_DIR)/packages/gems/build.done
+$(BUILD_DIR)/mirror/gems/gems-bundle/naily/Gemfile: \
+		$(BUILD_DIR)/packages/gems/build.done \
+		$(BUILD_DIR)/packages/rpm/build.done
 	mkdir -p $(@D)
 	echo -n > $@
 	for i in $(MIRROR_GEMS); do \
+		echo "source \"file://$(SOURCE_DIR)/$(LOCAL_MIRROR_GEMS)\"" >> $@; \
 		echo "source \"$$i\"" >> $@; \
 	done
 	echo "gem 'naily', '$(NAILY_VERSION)'" >> $@
@@ -27,8 +30,8 @@ $(BUILD_DIR)/mirror/gems/gems-bundle-gemfile.done: \
 	$(ACTION.TOUCH)
 
 $(BUILD_DIR)/mirror/gems/gems-bundle.done: $(BUILD_DIR)/mirror/gems/gems-bundle-gemfile.done
-	( cd $(BUILD_DIR)/mirror/gems/gems-bundle && bundle package )
-	( cd $(BUILD_DIR)/mirror/gems/gems-bundle/naily && bundle package )
+	( cd $(BUILD_DIR)/mirror/gems/gems-bundle && bundle install --path=. && bundle package )
+	( cd $(BUILD_DIR)/mirror/gems/gems-bundle/naily && bundle install --path=. && bundle package )
 	( cd $(BUILD_DIR)/mirror/gems/gems-bundle/vendor/cache/ && \
 		gem fetch `for i in $(MIRROR_GEMS); do echo -n "--source $$i "; done` -v 1.3.4 bundler )
 	$(ACTION.TOUCH)
