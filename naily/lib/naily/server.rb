@@ -12,7 +12,6 @@ module Naily
     def run
       @queue = @channel.queue(Naily.config.broker_queue, :durable => true)
       @queue.bind @exchange, :routing_key => Naily.config.broker_queue
-      @consumer = AMQP::Consumer.new(@channel, @queue)
       @loop = Thread.new(&method(:server_loop))
     end
 
@@ -35,6 +34,7 @@ module Naily
     end
 
     def consume_one
+      @consumer = AMQP::Consumer.new(@channel, @queue)
       @consumer.on_delivery do |message|
         Thread.new do
           yield message
