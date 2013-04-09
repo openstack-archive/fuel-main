@@ -187,7 +187,7 @@ class TestHandlers(BaseHandlers):
         resp = self.app.put(
             reverse('NodeAttributesByNameHandler',
                     kwargs={'node_id': node_db.id,
-                            'attr_name': 'volumes'})+"?type=disk",
+                            'attr_name': 'volumes'}) + "?type=disk",
             json.dumps(test_data2),
             headers=self.default_headers
         )
