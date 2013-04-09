@@ -112,7 +112,7 @@ describe LogParser do
       Dir.mktmpdir do |dir|
         # Create temp log files and structures.
         pattern_spec['path_prefix'] = "#{dir}/"
-        path = "#{pattern_spec['path_prefix']}#{node['ip']}/#{pattern_spec['filename']}"
+        path = "#{pattern_spec['path_prefix']}#{node['fqdn']}/#{pattern_spec['filename']}"
         Dir.mkdir(File.dirname(File.dirname(path)))
         Dir.mkdir(File.dirname(path))
         node['file'] = File.open(path, 'w')
@@ -136,7 +136,7 @@ describe LogParser do
           node['progress_table'] << {:date => node['now'], :progress => node_progress['progress']}
           node['now'] += time_delta
         end
-      
+
         nodes.each do |node|
           node['statistics'] = get_statistics_variables(node['progress_table'])
         end
@@ -150,8 +150,8 @@ describe LogParser do
     end
 
     it "should be greather than 0.96" do
-      node = {'uid' => '1', 'ip' => '1.0.0.1', 'role' => 'controller', 'src_filename' => 'anaconda.log_',
-        'meta' => { 'disks' => 
+      node = {'uid' => '1', 'ip' => '1.0.0.1', 'fqdn' => 'slave-1.domain.tld', 'role' => 'controller', 'src_filename' => 'anaconda.log_',
+        'meta' => { 'disks' =>
           [
           {'name' => 'flash drive', 'removable' => true, 'size' => 1000},
           {'name' => 'sda', 'removable'=> false, 'size' => 32*1000*1000*1000},
@@ -181,7 +181,7 @@ describe LogParser do
         # Create temp log files and structures.
         pattern_spec['path_prefix'] = "#{dir}/"
         nodes.each do |node|
-          path = "#{pattern_spec['path_prefix']}#{node['ip']}/#{pattern_spec['filename']}"
+          path = "#{pattern_spec['path_prefix']}#{node['fqdn']}/#{pattern_spec['filename']}"
           Dir.mkdir(File.dirname(path))
           node['file'] = File.open(path, 'w')
           src_filename = File.join(File.dirname(__FILE__), "..", "example-logs", node['src_filename'])
@@ -213,7 +213,7 @@ describe LogParser do
             end
           end
         end
-      
+
         nodes.each do |node|
           node['statistics'] = get_statistics_variables(node['progress_table'])
         end
@@ -230,8 +230,8 @@ describe LogParser do
 
     it "should be greather than 0.85 for HA deployment" do
       nodes = [
-        {'uid' => '1', 'ip' => '1.0.0.1', 'role' => 'controller', 'src_filename' => 'puppet-agent.log.ha.contr.2'},
-        {'uid' => '2', 'ip' => '1.0.0.2', 'role' => 'compute', 'src_filename' => 'puppet-agent.log.ha.compute'},
+        {'uid' => '1', 'ip' => '1.0.0.1', 'fqdn' => 'slave-1.domain.tld', 'role' => 'controller', 'src_filename' => 'puppet-agent.log.ha.contr.2'},
+        {'uid' => '2', 'ip' => '1.0.0.2', 'fqdn' => 'slave-2.domain.tld', 'role' => 'compute', 'src_filename' => 'puppet-agent.log.ha.compute'},
       ]
 
       calculated_nodes = deployment_parser_wrapper('ha_compute', nodes)
@@ -246,7 +246,7 @@ describe LogParser do
 
     it "should be greather than 0.97 for singlenode deployment" do
       nodes = [
-        {'uid' => '1', 'ip' => '1.0.0.1', 'role' => 'controller', 'src_filename' => 'puppet-agent.log.singlenode'},
+        {'uid' => '1', 'ip' => '1.0.0.1', 'fqdn' => 'slave-1.domain.tld', 'role' => 'controller', 'src_filename' => 'puppet-agent.log.singlenode'},
       ]
 
       calculated_nodes = deployment_parser_wrapper('singlenode_compute', nodes)
@@ -255,8 +255,8 @@ describe LogParser do
 
     it "should be greather than 0.94 for multinode deployment" do
       nodes = [
-        {'uid' => '1', 'ip' => '1.0.0.1', 'role' => 'controller', 'src_filename' => 'puppet-agent.log.multi.contr'},
-        {'uid' => '2', 'ip' => '1.0.0.2', 'role' => 'compute', 'src_filename' => 'puppet-agent.log.multi.compute'},
+        {'uid' => '1', 'ip' => '1.0.0.1', 'fqdn' => 'slave-1.domain.tld', 'role' => 'controller', 'src_filename' => 'puppet-agent.log.multi.contr'},
+        {'uid' => '2', 'ip' => '1.0.0.2', 'fqdn' => 'slave-2.domain.tld', 'role' => 'compute', 'src_filename' => 'puppet-agent.log.multi.compute'},
       ]
 
       calculated_nodes = deployment_parser_wrapper('multinode_compute', nodes)
