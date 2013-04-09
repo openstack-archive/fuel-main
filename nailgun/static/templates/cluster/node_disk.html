@@ -2,11 +2,10 @@
 
   <div class="disk-box-name pull-left"><%- disk.name %></div>
   <% var diskSize = disk.size / Math.pow(1000, 3) %>
-  <div class="disk-box-size pull-right">Total Space: <%= diskSize < 100 ? diskSize.toFixed(1) + 'GB' : (diskSize / 1000).toFixed(1) + 'TB' %></div>
+  <div class="disk-box-size pull-right">Total Space: <%= diskSize < 100 ? diskSize.toFixed(2) + ' GB' : (diskSize / 1000).toFixed(1) + ' TB' %></div>
 
   <div class="disk-map-short disk-map-full">
     <div class="disk-map-image disk-visual">
-
       <% var volumeGroupsLabels = {os: 'Base System', vm: 'Virtual Storage', cinder: 'Cinder'} %>
       <% _.each(volumes, function(volume) { %>
         <div class="volume-group <%= volume.vg %>" data-group="<%= volume.vg %>" style="width:0">
@@ -17,14 +16,12 @@
           <div class="close-btn hide"></div>
         </div>
       <% }) %>
-
       <div class="volume-group unallocated" style="width: 100%">
         <div class="toggle-volume">
           <div class="volume-group-name">Unallocated</div>
           <div class="volume-group-size"><%= Math.round(diskSize) %> GB</div>
         </div>
       </div>
-
     </div>
   </div>
 
@@ -46,7 +43,7 @@
           for (var i = 0; i < units.length; i++) {
             var result = bytes / Math.pow(1000, i);
             if (result < 256) {
-              return (result ? result.toFixed(1) : result) + ' ' + units[i];
+              return (result ? result.toFixed(2) : result) + ' ' + units[i];
             }
           }
           return result;
