@@ -1,3 +1,3 @@
 #!/bin/bash
-RBENV_ROOT=/opt/rbenv RBENV_VERSION=1.9.3-p392 /opt/rbenv/bin/rbenv exec \
+RBENV_ROOT=/opt/rbenv RBENV_VERSION=1.9.3-p392 exec /opt/rbenv/bin/rbenv exec \
   ruby -r 'rubygems' -e "gem 'naily', '>= 0'; load Gem.bin_path('naily', 'nailyd', '>= 0')" -- $@
