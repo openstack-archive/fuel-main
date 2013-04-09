@@ -232,6 +232,129 @@ class NodeAttributes(Base):
     id = Column(Integer, primary_key=True)
     node_id = Column(Integer, ForeignKey('nodes.id'))
     volumes = Column(JSON, default=[])
+    interfaces = Column(JSON, default={})
+
+    def _traverse(self, cdict):
+        new_dict = {}
+        if isinstance(cdict, dict):
+            for i, val in cdict.iteritems():
+                if type(val) in (str, unicode, int, float):
+                    new_dict[i] = val
+                elif isinstance(val, dict):
+                    if "generator" in val:
+                        new_dict[i] = self.field_generator(
+                            val["generator"],
+                            val.get("generator_args", [])
+                        )
+                    else:
+                        new_dict[i] = self._traverse(val)
+                elif isinstance(val, list):
+                    for d in val:
+                        new_dict.setdefault(i, []).append(self._traverse(d))
+        elif isinstance(cdict, list):
+            new_dict = []
+            for d in cdict:
+                new_dict.append(self._traverse(d))
+        return new_dict
+
+    def field_generator(self, generator, args):
+        generators = {
+            # swap = memory + 1Gb
+            "calc_swap_size": lambda:
+            self.node.meta["memory"]["total"] + 1024 ** 3,
+            # root = 10Gb
+            "calc_root_size": lambda: 1024 ** 3 * 10
+        }
+        generators["calc_os_size"] = lambda: sum([
+            generators["calc_root_size"](),
+            generators["calc_swap_size"]()
+        ])
+        return generators.get(generator, lambda: None)(*args)
+
+    def generate_volumes_info(self):
+        if not "disks" in self.node.meta:
+            raise Exception("No disk metadata specified for node")
+        self.volumes = []
+        for disk in self.node.meta["disks"]:
+            self.volumes.append(
+                {
+                    "id": disk["disk"],
+                    "type": "disk",
+                    "volumes": [
+                        {"type": "pv", "vg": "os", "size": 0},
+                        {"type": "pv", "vg": "vm", "size": 0},
+                        {"type": "pv", "vg": "cinder", "size": 0}
+                    ]
+                }
+            )
+
+        # auto assigning all stuff to first disk
+        self.volumes[0]["volumes"][0]["size"] = {
+            "generator": "calc_os_size"
+        }
+        self.volumes[0]["volumes"].append(
+            {"type": "partition", "mount": "/boot", "size": 200 * 1024 ** 2}
+        )
+        self.volumes[0]["volumes"].append(
+            {"type": "mbr"}
+        )
+
+        # creating volume groups
+        self.volumes.extend([
+            {
+                "id": "os",
+                "type": "vg",
+                "volumes": [
+                    {
+                        "mount": "/",
+                        "size": {"generator": "calc_root_size"},
+                        "name": "root",
+                        "type": "lv"
+                    },
+                    {
+                        "mount": "swap",
+                        "size": {"generator": "calc_swap_size"},
+                        "name": "swap",
+                        "type": "lv"
+                    }
+                ]
+            },
+            {
+                "id": "vms",
+                "type": "vg",
+                "volumes": [
+                    {"mount": "/var/lib/libvirt", "size": 0,
+                     "name": "vm", "type": "lv"}
+                ]
+            }
+        ])
+
+        self.volumes = self._traverse(self.volumes)
+
+    def generate_interfaces_info(self):
+        if not "interfaces" in self.node.meta:
+            raise Exception("No interfaces metadata specified for node")
+        self.interfaces = []
+        for interface in self.node.meta["interfaces"]:
+            self.interfaces.append(
+                {
+                    "mac": interface["mac"],
+                    "speed": interface["max_speed"],
+                    "name": interface["name"],
+                    "current_speed": interface["current_speed"],
+                    "types": []
+                }
+            )
+
+        # auto assigning all stuff to first interface
+        self.interfaces[0]["types"] = [
+                                        {"name": "Management"},
+                                        {"name": "Floating"},
+                                        {"name": "Public"},
+                                        {"name": "Admin"}
+                                      ]
+        self.interfaces[1]["types"] = [{"name": "Fixed"}, {"name": "Storage"}]
+        self.interfaces = self._traverse(self.interfaces)
 
 
 class IPAddr(Base):

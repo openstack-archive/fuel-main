@@ -114,6 +114,8 @@ def upload_fixture(fileobj):
                 new_obj.attributes.volumes = \
                     new_obj.volume_manager.gen_default_volumes_info()
                 db.commit()
+                new_obj.attributes.generate_volumes_info()
+                new_obj.attributes.generate_interfaces_info()
 
 
 def upload_fixtures():

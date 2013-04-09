@@ -269,6 +269,29 @@ define(function() {
         }
     });
 
+    models.Interface = Backbone.Model.extend({
+        constructorName: 'Interface',
+        urlRoot: '/api/nodes/',
+        validate: function(attrs, options) {
+            var errors = [];
+            // var volume = _.find(attrs.volumes, {vg: options.group});
+            // if (_.isNaN(volume.size) || volume.size > options.unallocated) {
+            //     errors.push(volume.vg);
+            // }
+            return _.isEmpty(errors) ? null : errors;
+        }
+    });
+
+    models.Interfaces = Backbone.Collection.extend({
+        constructorName: 'Interfaces',
+        model: models.Interface,
+        url: '/api/nodes/',
+        comparator: function(ifc) {
+            // TODO: implement this
+            return ifc.name;
+        }
+    });
+
     models.Network = Backbone.Model.extend({
         constructorName: 'Network',
         validate: function(attrs) {

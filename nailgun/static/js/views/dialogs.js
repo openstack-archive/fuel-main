@@ -310,13 +310,17 @@ function(utils, models, simpleMessageTemplate, createClusterDialogTemplate, chan
         },
         events: {
             'click .accordion-heading': 'toggle',
-            'click .btn-edit-disks': 'goToDisksConfiguration'
+            'click .btn-edit-disks': 'goToDisksConfiguration',
+            'click .btn-edit-networks': 'goToInterfacesConfiguration'
         },
         toggle: function(e) {
             $(e.currentTarget).siblings('.accordion-body').collapse('toggle');
         },
         goToDisksConfiguration: function() {
             app.navigate('#cluster/' + this.clusterId + '/nodes/disks/' + this.node.id, {trigger: true});
+        },
+        goToInterfacesConfiguration: function() {
+            app.navigate('#cluster/' + this.clusterId + '/nodes/interfaces/' + this.node.id, {trigger: true, replace: true});
         },
         render: function() {
             this.constructor.__super__.render.call(this, _.extend({

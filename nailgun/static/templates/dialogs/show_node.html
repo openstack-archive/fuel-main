@@ -59,6 +59,8 @@
   </div>
 </div>
 <div class="modal-footer">
+  <% var configurationPossible = node.get('role') && node.get('pending_addition') && !deployment %>
+  <button class="btn btn-edit-networks" data-dismiss="modal" <%= node.get('role') && node.get('pending_addition') && !deployment ? '' : 'disabled' %>>Configure Networks</button>
   <button class="btn btn-edit-disks" data-dismiss="modal" <%= node.get('role') && node.get('pending_addition') && !deployment ? '' : 'disabled' %>>Configure Disks</button>
   <button class="btn node-modal-close" data-dismiss="modal">Close</button>
 </div>

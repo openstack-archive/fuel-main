@@ -10,11 +10,13 @@ define(
     'text!templates/cluster/node.html',
     'text!templates/cluster/node_status.html',
     'text!templates/cluster/edit_node_disks.html',
-    'text!templates/cluster/node_disk.html'
+    'text!templates/cluster/node_disk.html',
+    'text!templates/cluster/edit_node_interfaces.html',
+    'text!templates/cluster/node_interfaces.html'
 ],
-function(utils, models, commonViews, dialogViews, nodesTabSummaryTemplate, editNodesScreenTemplate, nodeListTemplate, nodeTemplate, nodeStatusTemplate, editNodeDisksScreenTemplate, nodeDisksTemplate) {
+function(models, commonViews, dialogViews, nodesTabSummaryTemplate, editNodesScreenTemplate, nodeListTemplate, nodeTemplate, nodeStatusTemplate, editNodeDisksScreenTemplate, nodeDisksTemplate, editNodeInterfacesScreenTemplate, nodeInterfacesTemplate) {
     'use strict';
-    var NodesTab, Screen, NodesByRolesScreen, EditNodesScreen, AddNodesScreen, DeleteNodesScreen, NodeList, Node, EditNodeScreen, EditNodeDisksScreen, NodeDisk;
+    var NodesTab, Screen, NodesByRolesScreen, EditNodesScreen, AddNodesScreen, DeleteNodesScreen, NodeList, Node, EditNodeScreen, EditNodeDisksScreen, NodeDisk, EditNodeInterfacesScreen, NodeInterface;
 
     NodesTab = commonViews.Tab.extend({
         screen: null,
@@ -50,7 +52,8 @@ function(utils, models, commonViews, dialogViews, nodesTabSummaryTemplate, editN
                 'list': NodesByRolesScreen,
                 'add': AddNodesScreen,
                 'delete': DeleteNodesScreen,
-                'disks': EditNodeDisksScreen
+                'disks': EditNodeDisksScreen,
+                'interfaces': EditNodeInterfacesScreen
             };
             this.changeScreen(screens[options[0]] || screens.list, options.slice(1));
         },
@@ -774,6 +777,102 @@ function(utils, models, commonViews, dialogViews, nodesTabSummaryTemplate, editN
             }, this.templateHelpers)));
             this.$('.disk-edit-volume-group-form').collapse({toggle: false}).addClass('hidden');
             this.renderVisualGraph();
+            return this;
+        }
+    });
+
+    EditNodeInterfacesScreen = EditNodeScreen.extend({
+        className: 'edit-node-networks-screen',
+        constructorName: 'EditInterfacesScreen',
+        template: _.template(editNodeInterfacesScreenTemplate),
+        events: {
+            /*'click .btn-defaults': 'loadDefaults',*/
+            'click .btn-revert-changes': 'returnToNodesTab',
+            'click .btn-apply:not(:disabled)': 'applyChanges'
+        },
+        disableControls: function() {
+            this.$('.btn, input').attr('disabled', true);
+        },
+        checkForChanges: function() {
+            this.$('.btn-apply').attr('disabled', _.isEqual(this.interfaces.toJSON(), this.initialData));
+        },
+        loadDefaults: function() {
+            // TODO (Ivan K): implement this
+            /*this.disableControls();
+            this.interfaces = new models.Interfaces();
+            this.interfaces.fetch({
+                url: _.result(this.node, 'url') + '/defaults/interfaces'
+            }).always(_.bind(function() {
+                    this.render();
+                    this.checkForChanges();
+                }, this));*/
+        },
+        returnToNodesTab: function() {
+            app.navigate('#cluster/' + this.model.id + '/nodes', {trigger: true, replace: true});
+        },
+        applyChanges: function() {
+            // TODO (Ivan K): implement this
+        },
+        setInitialData: function() {
+            // TODO (Ivan K): implement this
+            this.initialData = _.cloneDeep(this.interfaces.toJSON());
+        },
+        initialize: function(options) {
+            _.defaults(this, options);
+            this.node = this.model.get('nodes').get(this.screenOptions[0]);
+            if (this.node) {
+                this.interfaces = new models.Interfaces();
+                this.interfaces.fetch({
+                    url: _.result(this.node, 'url') + '/attributes/interfaces'
+                }).done(_.bind(function() {
+                        this.setInitialData();
+                        this.render();
+                        $(function() {
+                            $( ".logical-network-box" ).sortable({
+                                connectWith: ".connectedSortable"
+                            }).disableSelection();
+                        });
+                   }, this))
+                .fail(_.bind(this.returnToNodesTab, this));
+            } else {
+                this.returnToNodesTab();
+            }
+        },
+        renderInterfaces: function() {
+            this.tearDownRegisteredSubViews();
+            this.$('.node-networks').html('');
+            _.each(this.interfaces.models, _.bind(function(ifc) {
+                var interfaceMetaData = _.find(this.node.get('meta').interfaces, {ifc: ifc.name});
+                
+                var nodeDisk = new NodeInterface({
+                    ifc: ifc,
+                    screen: this
+                });
+                this.registerSubView(nodeDisk);
+                this.$('.node-networks').append(nodeDisk.render().el);
+                
+            }, this));
+        },
+        render: function() {
+            this.$el.html(this.template({node: this.node}));
+            this.renderInterfaces();
+            return this;
+        }
+    });
+
+    NodeInterface = Backbone.View.extend({
+        template: _.template(nodeInterfacesTemplate),
+        visible: false,
+        events: {
+        },
+        initialize: function(options) {
+            _.defaults(this, options);
+            // TODO (Ivan K): implement this
+        },
+        render: function() {
+            this.$el.html(this.template({
+                ifc: this.ifc,
+            }));
             return this;
         }
     });
