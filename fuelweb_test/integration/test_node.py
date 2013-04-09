@@ -104,6 +104,10 @@ class TestNode(Base):
 
     def tearDown(self):
         self._wait_for_threads()
+        try:
+            self._stop_logserver()
+        except AttributeError:
+            pass
 
     def _start_logserver(self, handler=None):
         self._logserver_status = False
@@ -182,7 +186,6 @@ class TestNode(Base):
                 )
         task = self._run_network_verify(cluster_id)
         self._task_wait(task, 'Verify network simple flat', 60 * 2)
-        self._stop_logserver()
 
     @snapshot_errors
     def test_simple_cluster_vlan(self):
@@ -209,7 +212,6 @@ class TestNode(Base):
                 )
         task = self._run_network_verify(cluster_id)
         self._task_wait(task, 'Verify network simple vlan', 60 * 2)
-        self._stop_logserver()
 
     @snapshot_errors
     def test_ha_cluster_flat(self):
@@ -242,7 +244,6 @@ class TestNode(Base):
                 )
         task = self._run_network_verify(cluster_id)
         self._task_wait(task, 'Verify network ha flat', 60 * 2)
-        self._stop_logserver()
 
     @snapshot_errors
     def test_ha_cluster_vlan(self):
@@ -278,7 +279,6 @@ class TestNode(Base):
                 )
         task = self._run_network_verify(cluster_id)
         self._task_wait(task, 'Verify network ha vlan', 60 * 2)
-        self._stop_logserver()
 
     @snapshot_errors
     def test_network_config(self):

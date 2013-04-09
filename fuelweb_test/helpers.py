@@ -208,3 +208,10 @@ class LogServer(threading.Thread):
             if self.socket in r:
                 message, addr = self.socket.recvfrom(2048)
                 self._handler(message)
+
+    def __enter__(self):
+        self.start()
+        return self
+
+    def __exit__(self, type, value, traceback):
+        self.rude_join()
