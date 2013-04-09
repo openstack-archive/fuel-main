@@ -28,15 +28,27 @@ test: test-integration
 
 .PHONY: test-integration test-integration-env
 test-integration: test-integration-env
-	python fuelweb_test/integration_test.py -l $(LEVEL) $(ENV_NAME_CLI_ARG) --installation-timeout=$(INSTALLATION_TIMEOUT) \
-		--deployment-timeout=$(DEPLOYMENT_TIMEOUT) --iso $(abspath $(iso.path)) test $(NOSEARGS)
+	python fuelweb_test/integration_test.py \
+		-l $(LEVEL) $(ENV_NAME_CLI_ARG) \
+		--installation-timeout=$(INSTALLATION_TIMEOUT) \
+		--deployment-timeout=$(DEPLOYMENT_TIMEOUT) \
+		--export-logs-dir=$(LOGS_DIR) \
+		test $(NOSEARGS)
 
 test-integration-env: $(BUILD_DIR)/iso/iso.done
 	@mkdir -p $(@D)
-	python fuelweb_test/integration_test.py -l $(LEVEL) $(ENV_NAME_CLI_ARG) destroy
-	python fuelweb_test/integration_test.py -l $(LEVEL) $(ENV_NAME_CLI_ARG) $(NOFORWARD_CLI_ARG) --iso $(abspath $(iso.path)) setup
+	python fuelweb_test/integration_test.py \
+		-l $(LEVEL) $(ENV_NAME_CLI_ARG) \
+		destroy
+	python fuelweb_test/integration_test.py \
+		-l $(LEVEL) $(ENV_NAME_CLI_ARG) \
+		$(NOFORWARD_CLI_ARG) \
+		--iso $(abspath $(iso.path)) \
+		setup
 
 .PHONY: clean-integration-test
 clean-integration-test: /:=$/
 clean-integration-test:
-	python fuelweb_test/integration_test.py -l $(LEVEL) $(ENV_NAME_CLI_ARG) destroy
+	python fuelweb_test/integration_test.py \
+		-l $(LEVEL) $(ENV_NAME_CLI_ARG) \
+		destroy

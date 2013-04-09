@@ -35,7 +35,7 @@ def snapshot_errors(func):
     def decorator(*args, **kwagrs):
         def save_logs(filename):
             try:
-                if not hasattr(ci, 'export_logs_dir'):
+                if not getattr(ci, 'export_logs_dir', ''):
                     return
                 logfile_name = os.path.abspath(
                     os.path.join(ci.export_logs_dir, filename + ".tar.gz")
