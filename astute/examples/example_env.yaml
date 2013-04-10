@@ -8,17 +8,17 @@ task_uuid: deployment_task
 attributes:
   # `deployment_mode' shows what type of installation you choose.
   # Can be:
-  #   `singlenode_compute' - means only one node will be deployed. It will
+  #   `singlenode' - means only one node will be deployed. It will
   #      contain Controller and Compute components of OpenStack.
-  #   `multinode_compute' - means one Controller node and some Compute nodes
+  #   `multinode' - means one Controller node and some Compute nodes
   #      will be deployed.
-  #   `ha_compute' - means at least three Controller nodes and some Compute
+  #   `ha' - means at least three Controller nodes and some Compute
   #      nodes will be deployed in High Availability mode of Controller
   #      components.
   #   In last two cases Astute first of all deployes Contoller components,
   #   after that it deployes Compute components and finaly deployes other
   #   components if they exist.
-  deployment_mode: multinode_compute
+  deployment_mode: multinode
   # `deployment_engine' - shows how you will handle attributes for Puppet
   # manifests.
   #   `simplepuppet' - means you should manualy set up all necessary attributes

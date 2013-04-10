@@ -114,7 +114,7 @@ describe "NailyFact DeploymentEngine" do
                             "role" => "controller"}]
       @data_ha = Marshal.load(Marshal.dump(@data))
       @data_ha['args']['nodes'] = ha_nodes
-      @data_ha['args']['attributes']['deployment_mode'] = "ha_compute"
+      @data_ha['args']['attributes']['deployment_mode'] = "ha"
       # VIPs are required for HA mode and should be passed from Nailgun (only in HA)
       @data_ha['args']['attributes']['management_vip'] = "192.168.0.111"
       @data_ha['args']['attributes']['public_vip'] = "240.0.1.111"
@@ -122,11 +122,11 @@ describe "NailyFact DeploymentEngine" do
 
     it "it should call valid method depends on attrs" do
       nodes = [{'uid' => 1}]
-      attrs = {'deployment_mode' => 'ha_compute'}
+      attrs = {'deployment_mode' => 'ha'}
       attrs_modified = attrs.merge({'some' => 'somea'})
       
-      @deploy_engine.expects(:attrs_ha_compute).with(nodes, attrs).returns(attrs_modified)
-      @deploy_engine.expects(:deploy_ha_compute).with(nodes, attrs_modified)
+      @deploy_engine.expects(:attrs_ha).with(nodes, attrs).returns(attrs_modified)
+      @deploy_engine.expects(:deploy_ha).with(nodes, attrs_modified)
       # All implementations of deploy_piece go to subclasses
       @deploy_engine.respond_to?(:deploy_piece).should be_true
       @deploy_engine.deploy(nodes, attrs)
@@ -138,8 +138,8 @@ describe "NailyFact DeploymentEngine" do
       expect {@deploy_engine.deploy(nodes, attrs)}.to raise_exception(/Method attrs_unknown is not implemented/)
     end
 
-    it "multinode_compute deploy should not raise any exception" do
-      @data['args']['attributes']['deployment_mode'] = "multinode_compute"
+    it "multinode deploy should not raise any exception" do
+      @data['args']['attributes']['deployment_mode'] = "multinode"
       Astute::Metadata.expects(:publish_facts).times(@data['args']['nodes'].size)
       # we got two calls, one for controller, and another for all computes
       controller_nodes = @data['args']['nodes'].select{|n| n['role'] == 'controller'}
@@ -149,7 +149,7 @@ describe "NailyFact DeploymentEngine" do
       @deploy_engine.deploy(@data['args']['nodes'], @data['args']['attributes'])
     end
 
-    it "ha_compute deploy should not raise any exception" do
+    it "ha deploy should not raise any exception" do
       Astute::Metadata.expects(:publish_facts).at_least_once
       controller_nodes = @data_ha['args']['nodes'].select{|n| n['role'] == 'controller'}
       compute_nodes = @data_ha['args']['nodes'].select{|n| n['role'] == 'compute'}
@@ -164,15 +164,15 @@ describe "NailyFact DeploymentEngine" do
       @deploy_engine.deploy(@data_ha['args']['nodes'], @data_ha['args']['attributes'])
     end
 
-    it "ha_compute deploy should not raise any exception if there are only one controller" do
+    it "ha deploy should not raise any exception if there are only one controller" do
       Astute::Metadata.expects(:publish_facts).at_least_once
       Astute::PuppetdDeployer.expects(:deploy).times(5)
       ctrl = @data_ha['args']['nodes'].select {|n| n['role'] == 'controller'}[0]
       @deploy_engine.deploy([ctrl], @data_ha['args']['attributes'])
     end
 
-    it "singlenode_compute deploy should not raise any exception" do
-      @data['args']['attributes']['deployment_mode'] = "singlenode_compute"
+    it "singlenode deploy should not raise any exception" do
+      @data['args']['attributes']['deployment_mode'] = "singlenode"
       @data['args']['nodes'] = [@data['args']['nodes'][0]]  # We have only one node in singlenode
       Astute::Metadata.expects(:publish_facts).times(@data['args']['nodes'].size)
       Astute::PuppetdDeployer.expects(:deploy).with(@ctx, @data['args']['nodes'], instance_of(Fixnum), true).once

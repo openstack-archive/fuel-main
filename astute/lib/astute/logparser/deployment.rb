@@ -2,7 +2,7 @@ module Astute
   module LogParser
     class ParseDeployLogs <ParseNodeLogs
       attr_reader :deploy_type
-      def initialize(deploy_type='multinode_compute')
+      def initialize(deploy_type='multinode')
         @deploy_type = deploy_type
         pattern_spec = Patterns::get_default_pattern(
           "puppet-log-components-list-#{@deploy_type}-controller")

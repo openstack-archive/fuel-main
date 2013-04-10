@@ -234,7 +234,7 @@ describe LogParser do
         {'uid' => '2', 'ip' => '1.0.0.2', 'fqdn' => 'slave-2.domain.tld', 'role' => 'compute', 'src_filename' => 'puppet-agent.log.ha.compute'},
       ]
 
-      calculated_nodes = deployment_parser_wrapper('ha_compute', nodes)
+      calculated_nodes = deployment_parser_wrapper('ha', nodes)
       calculated_nodes.each {|node| node['statistics']['pcc'].should > 0.85}
 
       # For debug purposes.
@@ -249,7 +249,7 @@ describe LogParser do
         {'uid' => '1', 'ip' => '1.0.0.1', 'fqdn' => 'slave-1.domain.tld', 'role' => 'controller', 'src_filename' => 'puppet-agent.log.singlenode'},
       ]
 
-      calculated_nodes = deployment_parser_wrapper('singlenode_compute', nodes)
+      calculated_nodes = deployment_parser_wrapper('singlenode', nodes)
       calculated_nodes.each {|node| node['statistics']['pcc'].should > 0.97}
     end
 
@@ -259,7 +259,7 @@ describe LogParser do
         {'uid' => '2', 'ip' => '1.0.0.2', 'fqdn' => 'slave-2.domain.tld', 'role' => 'compute', 'src_filename' => 'puppet-agent.log.multi.compute'},
       ]
 
-      calculated_nodes = deployment_parser_wrapper('multinode_compute', nodes)
+      calculated_nodes = deployment_parser_wrapper('multinode', nodes)
       calculated_nodes.each {|node| node['statistics']['pcc'].should > 0.94}
     end
 

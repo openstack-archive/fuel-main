@@ -16,9 +16,9 @@ describe "SimplePuppet DeploymentEngine" do
 
     it "it should call valid method depends on attrs" do
       nodes = [{'uid' => 1}]
-      attrs = {'deployment_mode' => 'ha_compute'}
-      @deploy_engine.expects(:attrs_ha_compute).never  # It is not supported in SimplePuppet
-      @deploy_engine.expects(:deploy_ha_compute).with(nodes, attrs)
+      attrs = {'deployment_mode' => 'ha'}
+      @deploy_engine.expects(:attrs_ha).never  # It is not supported in SimplePuppet
+      @deploy_engine.expects(:deploy_ha).with(nodes, attrs)
       # All implementations of deploy_piece go to subclasses
       @deploy_engine.respond_to?(:deploy_piece).should be_true
       @deploy_engine.deploy(nodes, attrs)
@@ -31,23 +31,23 @@ describe "SimplePuppet DeploymentEngine" do
               /Method deploy_unknown is not implemented/)
     end
 
-    it "multinode_compute deploy should not raise any exception" do
-      @env['attributes']['deployment_mode'] = "multinode_compute"
+    it "multinode deploy should not raise any exception" do
+      @env['attributes']['deployment_mode'] = "multinode"
       Astute::Metadata.expects(:publish_facts).never  # It is not supported in SimplePuppet
       # we got two calls, one for controller, and another for all computes
       Astute::PuppetdDeployer.expects(:deploy).twice
       @deploy_engine.deploy(@env['nodes'], @env['attributes'])
     end
 
-    it "ha_compute deploy should not raise any exception" do
-      @env['attributes']['deployment_mode'] = "ha_compute"
+    it "ha deploy should not raise any exception" do
+      @env['attributes']['deployment_mode'] = "ha"
       Astute::Metadata.expects(:publish_facts).never
       Astute::PuppetdDeployer.expects(:deploy).times(6)
       @deploy_engine.deploy(@env['nodes'], @env['attributes'])
     end
 
-    it "singlenode_compute deploy should not raise any exception" do
-      @env['attributes']['deployment_mode'] = "singlenode_compute"
+    it "singlenode deploy should not raise any exception" do
+      @env['attributes']['deployment_mode'] = "singlenode"
       @env['nodes'] = [@env['nodes'][0]]  # We have only one node in singlenode
       Astute::Metadata.expects(:publish_facts).never
       Astute::PuppetdDeployer.expects(:deploy).once  # one call for one node

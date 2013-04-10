@@ -56,7 +56,7 @@ module Astute
           'filename' => 'install/anaconda.log'
           },
 
-        'puppet-log-components-list-ha_compute-controller' =>   # key for default HA deploy pattern
+        'puppet-log-components-list-ha-controller' =>   # key for default HA deploy pattern
           {'type' => 'components-list',
           'endlog_patterns' => [{'pattern' => /Finished catalog run in [0-9]+\.[0-9]* seconds\n/, 'progress' => 1.0}],
           'chunk_size' => 40000,
@@ -220,7 +220,7 @@ module Astute
             ]
           },
 
-        'puppet-log-components-list-ha_compute-compute' =>
+        'puppet-log-components-list-ha-compute' =>
           {'type' => 'components-list',
           'endlog_patterns' => [{'pattern' => /Finished catalog run in [0-9]+\.[0-9]* seconds\n/, 'progress' => 1.0}],
           'chunk_size' => 40000,
@@ -272,7 +272,7 @@ module Astute
             ]
           },
 
-        'puppet-log-components-list-singlenode_compute-controller' =>
+        'puppet-log-components-list-singlenode-controller' =>
           {'type' => 'components-list',
           'endlog_patterns' => [{'pattern' => /Finished catalog run in [0-9]+\.[0-9]* seconds\n/, 'progress' => 1.0}],
           'chunk_size' => 40000,
@@ -358,7 +358,7 @@ module Astute
             ]
           },
 
-        'puppet-log-components-list-multinode_compute-controller' =>
+        'puppet-log-components-list-multinode-controller' =>
           {'type' => 'components-list',
           'endlog_patterns' => [{'pattern' => /Finished catalog run in [0-9]+\.[0-9]* seconds\n/, 'progress' => 1.0}],
           'chunk_size' => 40000,
@@ -444,7 +444,7 @@ module Astute
             ]
           },
 
-        'puppet-log-components-list-multinode_compute-compute' =>
+        'puppet-log-components-list-multinode-compute' =>
           {'type' => 'components-list',
           'endlog_patterns' => [{'pattern' => /Finished catalog run in [0-9]+\.[0-9]* seconds\n/, 'progress' => 1.0}],
           'chunk_size' => 40000,

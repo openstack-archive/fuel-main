@@ -8,6 +8,6 @@ nodes:
   role: compute
   uid: devnailgun.mirantis.com
 attributes: 
-  deployment_mode: multinode_compute
+  deployment_mode: multinode
   deployment_engine: simplepuppet
 task_uuid: deployment_task

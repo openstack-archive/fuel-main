@@ -59,7 +59,7 @@ nodes:
   uid: devnailgun.mirantis.com
   mac: 52:54:00:50:91:DD
 attributes: 
-  deployment_mode: multinode_compute
+  deployment_mode: multinode
   deployment_engine: nailyfact
   glance: 
     db_password: glance

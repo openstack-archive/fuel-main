@@ -12,7 +12,7 @@ module Astute
 
     def deploy(nodes, attrs)
       # See implementation in subclasses, this may be everriden
-      attrs['deployment_mode'] ||= 'multinode_compute'  # simple multinode deployment is the default
+      attrs['deployment_mode'] ||= 'multinode'  # simple multinode deployment is the default
       attrs['use_cinder'] ||= nodes.any?{|n| n['role'] == 'cinder'}
       @ctx.deploy_log_parser.deploy_type = attrs['deployment_mode']
       Astute.logger.info "Deployment mode #{attrs['deployment_mode']}"
@@ -39,7 +39,7 @@ module Astute
     end
 
     # we mix all attrs and prepare them for Puppet
-    # Works for multinode_compute deployment mode
+    # Works for multinode deployment mode
     def attrs_multinode(nodes, attrs)
       ctrl_nodes = nodes.select {|n| n['role'] == 'controller'}
       # TODO(mihgen): we should report error back if there are not enough metadata passed

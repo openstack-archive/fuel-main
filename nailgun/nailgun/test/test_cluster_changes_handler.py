@@ -28,7 +28,7 @@ class TestHandlers(BaseHandlers):
         )
         cluster_db = self.env.clusters[0]
 
-        cluster_depl_mode = 'ha_compute'
+        cluster_depl_mode = 'ha'
 
         nailgun.task.task.Cobbler = Mock()
         supertask = self.env.launch_deployment()
