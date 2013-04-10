@@ -1,6 +1,6 @@
 <div class="disk-box disk" data-disk="<%- disk.name %>">
 
-  <div class="disk-box-name pull-left"><%- disk.name %> <div class="bootable-marker <%= partition ? '' : 'hide' %>">[Bootable]</div></div>
+  <div class="disk-box-name pull-left"><%- disk.name %><span class="bootable-marker <%= partition ? '' : 'hide' %>">[Bootable]</span></div>
   <% var diskSize = disk.size / Math.pow(1000, 3) %>
   <div class="disk-box-size pull-right">Total Space: <%= diskSize < 100 ? diskSize.toFixed(2) + ' GB' : (diskSize / 1000).toFixed(2) + ' TB' %></div>
 

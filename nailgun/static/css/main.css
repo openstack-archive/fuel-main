@@ -3334,6 +3334,7 @@ hr.slim {
   font-size: 18px;
   color: #333333;
   margin-bottom: 8px;
+  height: 20px;
 }
 
 .disk-box-size {
@@ -3686,7 +3687,6 @@ hr.slim {
 }
 
 .bootable-marker {
-  display: inline-block;
   margin-left: 14px;
   font-size: 14px;
   font-weight: 800;
