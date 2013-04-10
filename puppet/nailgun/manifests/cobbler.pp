@@ -185,6 +185,14 @@ class nailgun::cobbler(
     require => Class["cobbler::server"],
   }
 
+  file {"/var/lib/cobbler/snippets/pre_install_partition_lvm":
+    content => template("nailgun/cobbler/pre_install_partition_lvm.snippet.erb"),
+    owner => root,
+    group => root,
+    mode => 0644,
+    require => Class["cobbler::server"],
+  }
+
   file { "/var/lib/cobbler/snippets/nailgun_repo":
     content => template("nailgun/cobbler/nailgun_repo.snippet.erb"),
     owner => root,
