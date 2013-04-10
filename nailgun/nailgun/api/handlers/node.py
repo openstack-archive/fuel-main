@@ -82,9 +82,10 @@ class NodeCollectionHandler(JSONHandler):
         node.timestamp = datetime.now()
         self.db.add(node)
         self.db.commit()
-        node.attributes = node.create_default_attrs()
+        node.attributes = NodeAttributes()
         try:
-            node.attributes.generate_volumes_info()
+            node.attributes.volumes = \
+                node.attributes.gen_default_volumes_info()
         except Exception as exc:
             msg = "Failed to get volumes info for node '{0}': '{1}'".format(
                 data.get("mac"),
@@ -135,12 +136,12 @@ class NodeCollectionHandler(JSONHandler):
                 setattr(node, key, value)
             if is_agent:
                 if not node.attributes:
-                    node.attributes = node.create_default_attrs()
+                    node.attributes = NodeAttributes()
                     self.db.commit()
                 if not node.attributes.volumes \
                         and not node.status in ('provisioning', 'deploying'):
-                    # TODO: improve logic
-                    node.attributes.generate_volumes_info()
+                    node.attributes.volumes = \
+                        node.attributes.gen_default_volumes_info()
                     self.db.commit()
                 node.timestamp = datetime.now()
                 if not node.online:
@@ -183,6 +184,32 @@ class NodeAttributesHandler(JSONHandler):
             setattr(node_attrs, key, value)
         self.db.commit()
         return self.render(node_attrs)
+
+
+class NodeAttributesDefaultsHandler(JSONHandler):
+    fields = ('node_id', 'volumes')
+
+    @content_json
+    def GET(self, node_id):
+        node = self.get_object_or_404(Node, node_id)
+        if not node.attributes:
+            return web.notfound()
+        return NodeAttributesHandler.render(
+            NodeAttributes(
+                node_id=node.id,
+                volumes=node.attributes.gen_default_volumes_info()
+            )
+        )
+
+    @content_json
+    def PUT(self, node_id):
+        node = self.get_object_or_404(Node, node_id)
+        if not node.attributes:
+            return web.notfound()
+        node.attributes = NodeAttributes()
+        node.attributes.volumes = node.attributes.gen_default_volumes_info()
+        self.db.commit()
+        return self.render(node.attributes)
 
 
 class NodeAttributesByNameHandler(JSONHandler):

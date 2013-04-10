@@ -64,6 +64,54 @@ class TestHandlers(BaseHandlers):
         response = json.loads(resp.body)
         self.assertNotEquals(response["volumes"], [])
 
+    def test_get_default_attrs(self):
+        node = self.env.create_node(
+            api=True,
+            meta=self.env.default_metadata()
+        )
+        node_db = self.env.nodes[0]
+        resp = self.app.get(
+            reverse('NodeAttributesDefaultsHandler',
+                    kwargs={'node_id': node_db.id}),
+            headers=self.default_headers
+        )
+        self.assertEquals(200, resp.status)
+        response = json.loads(resp.body)
+        self.assertEquals(
+            response['volumes'],
+            node_db.attributes.gen_default_volumes_info()
+        )
+
+    def test_reset_attrs_to_default(self):
+        node = self.env.create_node(
+            api=True,
+            meta=self.env.default_metadata()
+        )
+        node_db = self.env.nodes[0]
+        test_data = {"volumes": "test"}
+        resp = self.app.put(
+            reverse('NodeAttributesHandler', kwargs={'node_id': node_db.id}),
+            json.dumps(test_data),
+            headers=self.default_headers
+        )
+        response = json.loads(resp.body)
+        self.assertNotEquals(
+            response['volumes'],
+            node_db.attributes.gen_default_volumes_info()
+        )
+        resp = self.app.put(
+            reverse('NodeAttributesDefaultsHandler',
+                    kwargs={'node_id': node_db.id}),
+            json.dumps({}),
+            headers=self.default_headers
+        )
+        self.assertEquals(200, resp.status)
+        response = json.loads(resp.body)
+        self.assertEquals(
+            response['volumes'],
+            node_db.attributes.gen_default_volumes_info()
+        )
+
     def test_attrs_updating(self):
         node = self.env.create_node(
             api=True,

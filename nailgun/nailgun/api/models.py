@@ -170,9 +170,6 @@ class Node(Base):
                               backref=backref("node"),
                               uselist=False)
 
-    def create_default_attrs(self):
-        return NodeAttributes(node_id=self.id)
-
     @property
     def needs_reprovision(self):
         return self.status == 'error' and self.error_type == 'provision'
@@ -233,12 +230,12 @@ class NodeAttributes(Base, BasicValidator):
         ])
         return generators.get(generator, lambda: None)(*args)
 
-    def generate_volumes_info(self):
+    def gen_default_volumes_info(self):
         if not "disks" in self.node.meta:
             raise Exception("No disk metadata specified for node")
-        self.volumes = []
+        volumes = []
         for disk in self.node.meta["disks"]:
-            self.volumes.append(
+            volumes.append(
                 {
                     "id": disk["disk"],
                     "type": "disk",
@@ -251,18 +248,18 @@ class NodeAttributes(Base, BasicValidator):
             )
 
         # auto assigning all stuff to first disk
-        self.volumes[0]["volumes"][0]["size"] = {
+        volumes[0]["volumes"][0]["size"] = {
             "generator": "calc_os_size"
         }
-        self.volumes[0]["volumes"].append(
+        volumes[0]["volumes"].append(
             {"type": "partition", "mount": "/boot", "size": 200 * 1024 ** 2}
         )
-        self.volumes[0]["volumes"].append(
+        volumes[0]["volumes"].append(
             {"type": "mbr"}
         )
 
         # creating volume groups
-        self.volumes.extend([
+        volumes.extend([
             {
                 "id": "os",
                 "type": "vg",
@@ -291,7 +288,7 @@ class NodeAttributes(Base, BasicValidator):
             }
         ])
 
-        self.volumes = self._traverse(self.volumes)
+        return self._traverse(volumes)
 
 
 class IPAddr(Base):
