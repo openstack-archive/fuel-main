@@ -32,7 +32,7 @@
         var sortEntryProperties = function(entry) {
           var properties = _.keys(entry);
           if (_.has(entry, 'name')) {
-            properties = ['name'].concat(_.without(_.keys(_.omit(entry, 'name')), 'disk'));
+            properties = ['name'].concat(_.keys(_.omit(entry, ['name', 'disk'])));
           }
           return properties;
         };

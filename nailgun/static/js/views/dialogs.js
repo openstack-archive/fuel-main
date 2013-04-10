@@ -260,12 +260,12 @@ function(models, simpleMessageTemplate, createClusterDialogTemplate, changeClust
             $(e.currentTarget).siblings('.accordion-body').collapse('toggle');
         },
         goToDisksConfiguration: function() {
-            app.navigate('#cluster/' + this.cluster.id + '/nodes/disks/' + this.node.id, {trigger: true, replace: true});
+            app.navigate('#cluster/' + this.clusterId + '/nodes/disks/' + this.node.id, {trigger: true, replace: true});
         },
         render: function() {
             this.constructor.__super__.render.call(this, {
                 node: this.node,
-                task: this.cluster.task('deploy', 'running')
+                deployment: this.deployment
             });
             this.$('.accordion-body').collapse({
                 parent: this.$('.accordion'),

@@ -383,11 +383,16 @@ function(models, commonViews, dialogViews, nodesTabSummaryTemplate, editNodesScr
             }
         },
         showNodeInfo: function() {
-            var cluster;
-            if (this.model.get('role')) {
-                cluster = app.page.tab.model;
-            }
-            var dialog = new dialogViews.ShowNodeInfoDialog({node: this.model, cluster: cluster});
+            var clusterId, deployment = false;
+            try {
+                clusterId = app.page.tab.model.id;
+                deployment = !!app.page.tab.model.task('deploy', 'running');
+            } catch(e) {}
+            var dialog = new dialogViews.ShowNodeInfoDialog({
+                node: this.model,
+                clusterId: clusterId,
+                deployment: deployment
+            });
             app.page.tab.registerSubView(dialog);
             dialog.render();
         },
@@ -457,6 +462,7 @@ function(models, commonViews, dialogViews, nodesTabSummaryTemplate, editNodesScr
         className: 'edit-node-disks-screen',
         constructorName: 'EditNodeDisksScreen',
         template: _.template(editNodeDisksScreenTemplate),
+        pow: Math.pow(1000, 3),
         events: {
             'click .btn-defaults': 'loadDefaults',
             'click .btn-revert-changes': 'returnToNodesTab',
@@ -498,7 +504,7 @@ function(models, commonViews, dialogViews, nodesTabSummaryTemplate, editNodesScr
             _.each(this.disks.models, _.bind(function(disk) {
                 _.each(_.filter(disk.get('volumes'), {type: 'pv'}), _.bind(function(group) {
                     group.size += this.remainders[disk.id][group.vg];
-                    group.size *= Math.pow(1000, 3);
+                    group.size *= this.pow;
                 }, this));
             }, this));
             Backbone.sync('update', this.disks, {url: _.result(this.node, 'url') + '/attributes/volumes?type=disk'})
@@ -516,11 +522,11 @@ function(models, commonViews, dialogViews, nodesTabSummaryTemplate, editNodesScr
             this.remainders = {};
             _.each(this.disks.models, _.bind(function(disk) {
                 this.remainders[disk.id] = {};
-                this.remainders[disk.id].unallocated = (_.find(this.node.get('meta').disks, {disk: disk.id}).size / Math.pow(1000, 3)) % 0.01;
+                this.remainders[disk.id].unallocated = (_.find(this.node.get('meta').disks, {disk: disk.id}).size / this.pow) % 0.01;
                 _.each(disk.get('volumes'), _.bind(function(group) {
                     if (group.type == 'pv') {
-                        var roundedSize = parseFloat((group.size / Math.pow(1000, 3)).toFixed(2));
-                        this.remainders[disk.id][group.vg] = group.size / Math.pow(1000, 3) - roundedSize;
+                        var roundedSize = parseFloat((group.size /this.pow).toFixed(2));
+                        this.remainders[disk.id][group.vg] = group.size / this.pow - roundedSize;
                         this.remainders[disk.id].unallocated -= this.remainders[disk.id][group.vg];
                         group.size = roundedSize;
                     }
@@ -528,7 +534,7 @@ function(models, commonViews, dialogViews, nodesTabSummaryTemplate, editNodesScr
                         this.partitionSize = group.size;
                     }
                 }, this));
-                this.remainders[disk.id].unallocated -= (this.partitionSize / Math.pow(1000, 3)) % 0.01;
+                this.remainders[disk.id].unallocated -= (this.partitionSize / this.pow) % 0.01;
             }, this));
         },
         initialize: function(options) {
@@ -585,7 +591,7 @@ function(models, commonViews, dialogViews, nodesTabSummaryTemplate, editNodesScr
             'click .btn-bootable:not(:disabled)': 'switchBootableDisk'
         },
         formatFloat: function(value) {
-            return parseFloat((value / Math.pow(1000, 3)).toFixed(2));
+            return parseFloat((value / this.screen.pow).toFixed(2));
         },
         toggleEditDiskForm: function(e) {
             this.$('.close-btn').toggle();
@@ -675,13 +681,13 @@ function(models, commonViews, dialogViews, nodesTabSummaryTemplate, editNodesScr
                 this.$('.disk-visual .' + volume.vg).toggleClass('hidden-titles', width < 6).css('width', width + '%').find('.volume-group-size').text(size.toFixed(2) + ' GB');
             }, this));
             this.$('.disk-visual .unallocated').css('width', unallocatedWidth + '%').find('.volume-group-size').text(unallocatedSize.toFixed(2) + ' GB');
-            this.$('.btn-bootable').attr('disabled', this.partition || unallocatedSize < (this.partitionSize / Math.pow(1000, 3)).toFixed(2));
+            this.$('.btn-bootable').attr('disabled', this.partition || unallocatedSize < this.formatFloat(this.partitionSize));
         },
         render: function() {
             this.$el.html(this.template({
                 disk: this.diskMetaData,
                 volumes: this.volumesToDisplay(),
-                partition: !!this.partition
+                partition: this.partition
             }));
             this.$('.disk-edit-volume-group-form').collapse({toggle: false});
             this.renderVisualGraph();
