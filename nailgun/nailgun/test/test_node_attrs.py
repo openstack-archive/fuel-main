@@ -129,6 +129,56 @@ class TestHandlers(BaseHandlers):
         test_data.update({"node_id": node_db.id})
         self.assertEquals(response, test_data)
 
+    def test_node_disk_amount_regenerates_volumes_info(self):
+        node = self.env.create_node(
+            api=True,
+            meta=self.env.default_metadata()
+        )
+        node_db = self.env.nodes[0]
+        resp = self.app.get(
+            reverse(
+                'NodeAttributesHandler',
+                kwargs={
+                    'node_id': node_db.id,
+                    'attr_name': 'volumes'
+                }
+            ),
+            headers=self.default_headers
+        )
+        response = json.loads(resp.body)
+        self.assertEquals(len(response["volumes"]), 3)
+        new_meta = node_db.meta.copy()
+        new_meta["disks"].append({
+            "size": 1000022933376,
+            "model": "SAMSUNG B00B135",
+            "name": "sda",
+            "disk": "disk/id/b00b135"
+        })
+        resp = self.app.put(
+            reverse('NodeCollectionHandler'),
+            json.dumps([
+                {
+                    "mac": node_db.mac,
+                    "meta": new_meta,
+                    "is_agent": True
+                }
+            ]),
+            headers=self.default_headers
+        )
+        self.env.refresh_nodes()
+        resp = self.app.get(
+            reverse(
+                'NodeAttributesHandler',
+                kwargs={
+                    'node_id': node_db.id,
+                    'attr_name': 'volumes'
+                }
+            ),
+            headers=self.default_headers
+        )
+        response = json.loads(resp.body)
+        self.assertEquals(len(response["volumes"]), 4)
+
     def test_attrs_get_by_name(self):
         node = self.env.create_node(
             api=True,

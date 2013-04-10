@@ -138,10 +138,16 @@ class NodeCollectionHandler(JSONHandler):
                 if not node.attributes:
                     node.attributes = NodeAttributes()
                     self.db.commit()
-                if not node.attributes.volumes \
-                        and not node.status in ('provisioning', 'deploying'):
-                    node.attributes.volumes = \
-                        node.attributes.gen_default_volumes_info()
+                if not node.status in ('provisioning', 'deploying'):
+                    variants = (
+                        not node.attributes.volumes,
+                        "disks" in node.meta and
+                        len(node.meta["disks"]) != len(node.attributes.volumes)
+                    )
+                    if any(variants):
+                        node.attributes.volumes = \
+                            node.attributes.gen_default_volumes_info()
+
                     self.db.commit()
                 node.timestamp = datetime.now()
                 if not node.online:
