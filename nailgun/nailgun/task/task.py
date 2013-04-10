@@ -7,6 +7,7 @@ import subprocess
 import shlex
 import shutil
 import os
+import json
 
 import web
 import netaddr
@@ -202,10 +203,10 @@ class DeploymentTask(object):
         bak = os.path.join(prefix, "%s.bak" % node.fqdn)
         new = os.path.join(prefix, node.fqdn)
         links = map(
-            lambda i: os.path.join(prefix, *i),
+            lambda i: os.path.join(prefix, i.ip_addr),
             orm().query(IPAddr.ip_addr).
             filter_by(node=node.id).
-            filter_by(admin=True)
+            filter_by(admin=True).all()
         )
         # backup directory if it exists
         if os.path.isdir(new):
@@ -333,6 +334,7 @@ mco_password=%(mco_password)s
 mco_connector=%(mco_connector)s
 mco_enable=1
 auth_key="%(auth_key)s"
+ks_spaces="%(ks_spaces)s"
             """ % {'puppet_master_host': settings.PUPPET_MASTER_HOST,
                    'puppet_version': settings.PUPPET_VERSION,
                    'mco_pskey': settings.MCO_PSKEY,
@@ -341,7 +343,9 @@ auth_key="%(auth_key)s"
                    'mco_user': settings.MCO_USER,
                    'mco_connector': settings.MCO_CONNECTOR,
                    'mco_password': settings.MCO_PASSWORD,
-                   'auth_key': cluster_attrs.get('auth_key', '')
+                   'auth_key': cluster_attrs.get('auth_key', ''),
+                   'ks_spaces': json.dumps(
+                       node.attributes.volumes).replace("\"", "\\\""),
                    }
 
             logger.debug("Node %s\nks_meta without extra params: %s" %
