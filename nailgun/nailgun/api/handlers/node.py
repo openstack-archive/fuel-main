@@ -200,12 +200,19 @@ class NodeAttributesDefaultsHandler(JSONHandler):
         node = self.get_object_or_404(Node, node_id)
         if not node.attributes:
             return web.notfound()
-        return NodeAttributesHandler.render(
+        attr_params = web.input()
+        json_data = NodeAttributesHandler.render(
             NodeAttributes(
                 node_id=node.id,
                 volumes=node.attributes.gen_default_volumes_info()
             )
         )
+        if hasattr(attr_params, "type"):
+            json_data["volumes"] = filter(
+                lambda a: a["type"] == attr_params.type,
+                json_data["volumes"]
+            )
+        return json_data
 
     @content_json
     def PUT(self, node_id):
