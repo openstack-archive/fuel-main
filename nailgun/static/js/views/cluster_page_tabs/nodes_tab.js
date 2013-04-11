@@ -468,11 +468,14 @@ function(models, commonViews, dialogViews, nodesTabSummaryTemplate, editNodesScr
             'click .btn-revert-changes': 'returnToNodesTab',
             'click .btn-apply:not(:disabled)': 'applyChanges'
         },
+        formatFloat: function(value) {
+            return parseFloat((value / this.pow).toFixed(2));
+        },
         disableControls: function(disable) {
             this.$('.btn, input').attr('disabled', disable);
         },
         checkForChanges: function() {
-            this.$('.btn-apply').attr('disabled', _.isEqual(this.disks.toJSON(), this.initialData));
+            this.$('.btn-apply').attr('disabled', _.isEqual(this.disks.toJSON(), this.initialData) || _.some(this.disks.models, 'validationError'));
         },
         loadDefaults: function() {
             this.disableControls(true);
@@ -527,7 +530,7 @@ function(models, commonViews, dialogViews, nodesTabSummaryTemplate, editNodesScr
                 this.remainders[disk.id].unallocated = (_.find(this.node.get('meta').disks, {disk: disk.id}).size / this.pow) % 0.01;
                 _.each(disk.get('volumes'), _.bind(function(group) {
                     if (group.type == 'pv') {
-                        var roundedSize = parseFloat((group.size /this.pow).toFixed(2));
+                        var roundedSize = this.formatFloat(group.size);
                         this.remainders[disk.id][group.vg] = group.size / this.pow - roundedSize;
                         this.remainders[disk.id].unallocated -= this.remainders[disk.id][group.vg];
                         group.size = roundedSize;
@@ -547,7 +550,7 @@ function(models, commonViews, dialogViews, nodesTabSummaryTemplate, editNodesScr
                     minimalSize += _.find(group.get('volumes'), {name: 'root'}).size;
                     minimalSize += _.find(group.get('volumes'), {name: 'swap'}).size;
                 } catch(e) {}
-                this.minimalSizes[group.id] = parseFloat((minimalSize / this.pow).toFixed(2));
+                this.minimalSizes[group.id] = this.formatFloat(minimalSize);
             }, this));
         },
         getDisks: function() {
@@ -608,7 +611,7 @@ function(models, commonViews, dialogViews, nodesTabSummaryTemplate, editNodesScr
             'click .btn-bootable:not(:disabled)': 'switchBootableDisk'
         },
         formatFloat: function(value) {
-            return parseFloat((value / this.screen.pow).toFixed(2));
+            return this.screen.formatFloat(value);
         },
         toggleEditDiskForm: function(e) {
             this.$('.close-btn').toggle();
@@ -663,7 +666,7 @@ function(models, commonViews, dialogViews, nodesTabSummaryTemplate, editNodesScr
             this.disk.set({volumes: _.union(this.disk.get('volumes'), [{type: 'partition', mount: '/boot', size: this.partitionSize}, {type: 'mbr'}])});
             _.invoke(this.screen.subViews, 'getPartition');
             _.invoke(this.screen.subViews, 'renderVisualGraph');
-            $('.bootable-marker').hide();
+            this.screen.$('.bootable-marker').hide();
             this.$('.bootable-marker').show();
             this.screen.checkForChanges();
         },
