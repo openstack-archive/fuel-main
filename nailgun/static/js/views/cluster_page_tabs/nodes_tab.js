@@ -478,7 +478,7 @@ function(models, commonViews, dialogViews, nodesTabSummaryTemplate, editNodesScr
             this.disableControls(true);
             var defaultDisks = new models.Disks();
             defaultDisks.fetch({
-                url: _.result(this.node, 'url') + '/defaults/volumes',
+                url: _.result(this.node, 'url') + '/attributes/volumes/defaults/',
                 data: {type: 'disk'}
             })
             .done(_.bind(function() {
