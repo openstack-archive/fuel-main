@@ -249,7 +249,7 @@ define(function() {
         validate: function(attrs, options) {
             var errors = [];
             var volume = _.find(attrs.volumes, {vg: options.group});
-            if (_.isNaN(volume.size) || volume.size > options.unallocated) {
+            if (_.isNaN(volume.size) || volume.size > options.unallocated  || volume.size < options.min) {
                 errors.push(volume.vg);
             }
             return _.isEmpty(errors) ? null : errors;
