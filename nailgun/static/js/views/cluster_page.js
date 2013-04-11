@@ -195,7 +195,6 @@ function(models, commonViews, dialogViews, NodesTab, NetworkTab, SettingsTab, Lo
     DeploymentResult = Backbone.View.extend({
         template: _.template(deploymentResultTemplate),
         initialize: function(options) {
-            this.model.on('change:changes', this.render, this);
             this.model.get('tasks').each(this.bindTaskEvents, this);
             this.model.get('tasks').on('add', this.onNewTask, this);
         },
@@ -214,10 +213,12 @@ function(models, commonViews, dialogViews, NodesTab, NetworkTab, SettingsTab, Lo
     DeploymentControl = Backbone.View.extend({
         template: _.template(deploymentControlTemplate),
         initialize: function(options) {
-            this.model.on('change:status', this.render, this);
+            this.model.on('change:changes', this.render, this);
             this.model.get('tasks').each(this.bindTaskEvents, this);
             this.model.get('tasks').on('add', this.onNewTask, this);
-            this.model.get('nodes').on('resize change:pending_addition change:pending_deletion', this.render, this);
+            this.model.get('nodes').each(this.bindNodeEvents, this);
+            this.model.get('nodes').on('resize', this.render, this);
+            this.model.get('nodes').on('add', this.onNewNode, this);
         },
         bindTaskEvents: function(task) {
             if (task.get('name') == 'deploy') {
@@ -227,8 +228,14 @@ function(models, commonViews, dialogViews, NodesTab, NetworkTab, SettingsTab, Lo
             }
             return null;
         },
+        bindNodeEvents: function(node) {
+            return node.on('change:pending_addition change:pending_deletion', this.render, this);
+        },
         onNewTask: function(task) {
             return this.bindTaskEvents(task) && this.render();
+        },
+        onNewNode: function(node) {
+            return this.bindNodeEvents(node) && this.render();
         },
         updateProgress: function() {
             var task = this.model.task('deploy', 'running');

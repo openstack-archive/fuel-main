@@ -35,11 +35,11 @@ function(models, commonViews, ClusterPage, NodesTab, ClustersPage, ReleasesPage,
             $('#footer').html(this.footer.render().el);
             this.content.find('.loading').addClass('layout-loaded');
         },
-        setPage: function(newPage) {
+        setPage: function(NewPage, options) {
             if (this.page) {
                 this.page.tearDown();
             }
-            this.page = newPage;
+            this.page = new NewPage(options);
             this.page.updateNavbar();
             this.page.updateBreadcrumbs();
             this.page.updateTitle();
@@ -69,7 +69,7 @@ function(models, commonViews, ClusterPage, NodesTab, ClustersPage, ReleasesPage,
 
             var cluster;
             var render = function() {
-                this.setPage(new ClusterPage({model: cluster, activeTab: activeTab, tabOptions: tabOptions}));
+                this.setPage(ClusterPage, {model: cluster, activeTab: activeTab, tabOptions: tabOptions});
             };
 
             if (app.page && app.page.constructor == ClusterPage && app.page.model.id == id) {
@@ -85,20 +85,20 @@ function(models, commonViews, ClusterPage, NodesTab, ClustersPage, ReleasesPage,
             this.navigate('#clusters', {replace: true});
             var clusters = new models.Clusters();
             clusters.fetch().done(_.bind(function() {
-                this.setPage(new ClustersPage({collection: clusters}));
+                this.setPage(ClustersPage, {collection: clusters});
             }, this));
         },
         listReleases: function() {
             var releases = new models.Releases();
             releases.fetch().done(_.bind(function() {
-                this.setPage(new ReleasesPage({collection: releases}));
+                this.setPage(ReleasesPage, {collection: releases});
             }, this));
         },
         showNotifications: function() {
-            this.setPage(new NotificationsPage({notifications: app.navbar.notifications, nodes: app.navbar.nodes}));
+            this.setPage(NotificationsPage, {notifications: app.navbar.notifications, nodes: app.navbar.nodes});
         },
         showSupportPage: function() {
-            this.setPage(new SupportPage());
+            this.setPage(SupportPage);
         },
         serializeTabOptions: function(options) {
             return _.map(options, function(value, key) {

@@ -193,6 +193,8 @@ function(models, simpleMessageTemplate, createClusterDialogTemplate, changeClust
                 .done(_.bind(function() {
                     this.$el.modal('hide');
                     this.model.get('nodes').fetch({data: {cluster_id: this.model.id}});
+                    // we set node flags silently, so trigger resize event to redraw node list
+                    this.model.get('nodes').trigger('resize');
                     app.navbar.nodes.fetch();
                 }, this))
                 .fail(_.bind(this.displayErrorMessage, this));

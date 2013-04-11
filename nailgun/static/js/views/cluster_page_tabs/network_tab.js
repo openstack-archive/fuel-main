@@ -63,7 +63,7 @@ function(models, commonViews, dialogViews, networkTabTemplate, networkTabVerific
             var noChanges = (_.isEqual(this.model.get('networks').toJSON(), this.networks.toJSON()) && this.model.get('net_manager') == this.manager) || _.some(this.networks.models, 'validationError');
             this.defaultButtonsState(noChanges);
             this.hasChanges = !noChanges;
-            app.page.removeVerificationTask();
+            this.page.removeVerificationTask();
         },
         changeManager: function(e) {
             this.manager = this.$(e.currentTarget).val();
@@ -90,7 +90,7 @@ function(models, commonViews, dialogViews, networkTabTemplate, networkTabVerific
         },
         verifyNetworks: function() {
             if (!this.$('.control-group.error').length) {
-                app.page.removeVerificationTask().done(_.bind(this.startVerification, this));
+                this.page.removeVerificationTask().done(_.bind(this.startVerification, this));
             }
         },
         applyChanges: function() {
@@ -134,19 +134,15 @@ function(models, commonViews, dialogViews, networkTabTemplate, networkTabVerific
                 this.registerDeferred(task.fetch().always(_.bind(this.scheduleUpdate, this)));
             }
         },
-        bindTaskEvents: function() {
-            var task = this.model.task('verify_networks') || this.model.task('check_networks', 'error') || this.model.task('deploy', 'running');
-            if (task) {
-                task.on('change:status', this.render, this);
-                if (this.networks) {
-                    this.render();
-                }
+        bindTaskEvents: function(task) {
+            //var task = this.model.task('verify_networks') || this.model.task('check_networks', 'error') || this.model.task('deploy', 'running');
+            if (task.get('name') == 'verify_networks' || task.get('name') == 'deploy' || task.get('name') == 'check_networks') {
+                return task.on('change:status', this.render, this);
             }
+            return null;
         },
-        bindEvents: function() {
-            this.model.get('tasks').on('remove', this.renderVerificationControl, this);
-            this.model.get('tasks').on('reset', this.bindTaskEvents, this);
-            this.bindTaskEvents();
+        onNewTask: function(task) {
+            return this.bindTaskEvents(task) && this.render();
         },
         setInitialData: function() {
             this.hasChanges = false;
@@ -164,12 +160,13 @@ function(models, commonViews, dialogViews, networkTabTemplate, networkTabVerific
         },
         revertChanges: function() {
             this.setInitialData();
-            app.page.removeVerificationTask().done(_.bind(this.render, this));
+            this.page.removeVerificationTask().done(_.bind(this.render, this));
         },
         initialize: function(options) {
             _.defaults(this, options);
-            this.model.on('change:tasks', this.bindEvents, this);
-            this.bindEvents();
+            this.model.get('tasks').each(this.bindTaskEvents, this);
+            this.model.get('tasks').on('add', this.onNewTask, this);
+            this.model.get('tasks').on('remove', this.renderVerificationControl, this);
             if (!this.model.get('networks')) {
                 this.model.set({networks: new models.Networks()});
                 this.model.get('networks').fetch({data: {cluster_id: this.model.id}})

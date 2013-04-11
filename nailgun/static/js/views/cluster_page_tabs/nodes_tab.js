@@ -87,16 +87,12 @@ function(models, commonViews, dialogViews, nodesTabSummaryTemplate, editNodesScr
         keepScrollPosition: true,
         initialize: function(options) {
             this.tab = options.tab;
-            this.model.on('change:mode change:type', this.render, this);
+            this.model.on('change:mode change:type change:status', this.render, this);
             this.model.get('nodes').on('resize', this.render, this);
             this.model.get('tasks').each(this.bindTaskEvents, this);
-            this.model.get('tasks').on('add', this.onNewTask, this);
         },
         bindTaskEvents: function(task) {
             return (task.get('name') == 'deploy' || task.get('name') == 'verify_networks') ? task.on('change:status', this.render, this) : null;
-        },
-        onNewTask: function(task) {
-            return this.bindTaskEvents(task) && this.render();
         },
         render: function() {
             this.tearDownRegisteredSubViews();
@@ -170,6 +166,10 @@ function(models, commonViews, dialogViews, nodesTabSummaryTemplate, editNodesScr
         applyChanges: function(e) {
             this.$('.btn-apply').attr('disabled', true);
             var nodes = new models.Nodes(this.getChosenNodes());
+            // remove change events to prevent ugly rerendering right before changing the screen
+            _(this.subViews).each(function(view) {
+                view.model.off('change:pending_addition change:pending_deletion', view.render, view);
+            }, this);
             this.modifyNodes(nodes);
             nodes.sync('update', nodes).done(_.bind(function() {
                 app.navigate('#cluster/' + this.model.id + '/nodes', {trigger: true});
@@ -245,13 +245,13 @@ function(models, commonViews, dialogViews, nodesTabSummaryTemplate, editNodesScr
         modifyNodes: function(nodes) {
             nodes.each(function(node) {
                 if (node.get('pending_deletion')) {
-                    node.set({pending_deletion: false}, {silent: true});
+                    node.set({pending_deletion: false});
                 } else {
                     node.set({
                         cluster_id: this.model.id,
                         role: this.role,
                         pending_addition: true
-                    }, {silent: true});
+                    });
                 }
             }, this);
             nodes.toJSON = function(options) {
@@ -282,9 +282,9 @@ function(models, commonViews, dialogViews, nodesTabSummaryTemplate, editNodesScr
                         cluster_id: null,
                         role: null,
                         pending_addition: false
-                    }, {silent: true});
+                    });
                 } else {
-                    node.set({pending_deletion: true}, {silent: true});
+                    node.set({pending_deletion: true});
                 }
             }, this);
             nodes.toJSON = function(options) {
@@ -302,6 +302,7 @@ function(models, commonViews, dialogViews, nodesTabSummaryTemplate, editNodesScr
             _.defaults(this, options);
         },
         render: function() {
+            this.tearDownRegisteredSubViews();
             var placeholders = this.role == 'controller' ? this.collection.cluster.get('mode') == 'ha' ? 3 : 1 : 0;
             this.$el.html(this.template({
                 cluster: this.collection.cluster,
