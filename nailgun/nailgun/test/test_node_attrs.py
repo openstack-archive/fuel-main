@@ -79,7 +79,7 @@ class TestHandlers(BaseHandlers):
         response = json.loads(resp.body)
         self.assertEquals(
             response['volumes'],
-            node_db.attributes.gen_default_volumes_info()
+            node_db.volume_manager.gen_default_volumes_info()
         )
 
     def test_get_default_attrs_volumes(self):
@@ -100,7 +100,7 @@ class TestHandlers(BaseHandlers):
         response = json.loads(resp.body)
         self.assertEquals(
             response,
-            node_db.attributes.gen_default_volumes_info()
+            node_db.volume_manager.gen_default_volumes_info()
         )
 
     def test_reset_attrs_to_default(self):
@@ -118,7 +118,7 @@ class TestHandlers(BaseHandlers):
         response = json.loads(resp.body)
         self.assertNotEquals(
             response['volumes'],
-            node_db.attributes.gen_default_volumes_info()
+            node_db.volume_manager.gen_default_volumes_info()
         )
         resp = self.app.put(
             reverse('NodeAttributesDefaultsHandler',
@@ -130,7 +130,7 @@ class TestHandlers(BaseHandlers):
         response = json.loads(resp.body)
         self.assertEquals(
             response['volumes'],
-            node_db.attributes.gen_default_volumes_info()
+            node_db.volume_manager.gen_default_volumes_info()
         )
 
     def test_attrs_updating(self):

@@ -13,6 +13,95 @@
                 {"name": "storage", "access": "private172"},
                 {"name": "fixed", "access": "private10"}
             ],
+            "volumes_metadata": {
+                "controller": [
+                    {
+                        "type": "vg", 
+                        "id": "os", 
+                        "volumes": [
+                            {
+                                "mount": "/", 
+                                "type": "lv", 
+                                "name": "root", 
+                                "size": 10737418240
+                            }, 
+                            {
+                                "mount": "swap", 
+                                "type": "lv", 
+                                "name": "swap", 
+                                "size": 5368709120
+                            }
+                        ]
+                    }, 
+                    {
+                        "type": "vg", 
+                        "id": "cinder", 
+                        "volumes": []
+                    }
+                ],
+                "compute": [
+                    {
+                        "type": "vg", 
+                        "id": "os", 
+                        "volumes": [
+                            {
+                                "mount": "/", 
+                                "type": "lv", 
+                                "name": "root", 
+                                "size": 10737418240
+                            }, 
+                            {
+                                "mount": "swap", 
+                                "type": "lv", 
+                                "name": "swap", 
+                                "size": 5368709120
+                            }
+                        ]
+                    },
+                    {
+                        "type": "vg", 
+                        "id": "vms", 
+                        "volumes": [
+                            {
+                                "mount": "/var/lib/libvirt", 
+                                "type": "lv", 
+                                "name": "vm", 
+                                "size": 0
+                            }
+                        ]
+                    },
+                    {
+                        "type": "vg", 
+                        "id": "cinder", 
+                        "volumes": []
+                    }
+                ],
+                "cinder": [
+                    {
+                        "type": "vg", 
+                        "id": "os", 
+                        "volumes": [
+                            {
+                                "mount": "/", 
+                                "type": "lv", 
+                                "name": "root", 
+                                "size": 10737418240
+                            }, 
+                            {
+                                "mount": "swap", 
+                                "type": "lv", 
+                                "name": "swap", 
+                                "size": 5368709120
+                            }
+                        ]
+                    },
+                    {
+                        "type": "vg", 
+                        "id": "cinder", 
+                        "volumes": []
+                    }
+                ]
+            },
             "attributes_metadata": {
                 "editable": {
                     "access": {
