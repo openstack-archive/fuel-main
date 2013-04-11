@@ -788,7 +788,7 @@ function(models, commonViews, dialogViews, nodesTabSummaryTemplate, editNodesScr
         events: {
             /*'click .btn-defaults': 'loadDefaults',*/
             'click .btn-revert-changes': 'returnToNodesTab',
-            'click .btn-apply:not(:disabled)': 'applyChanges'
+            'click .btn-apply:not(:disabled)': 'applyChanges',
         },
         disableControls: function() {
             this.$('.btn, input').attr('disabled', true);
@@ -807,12 +807,34 @@ function(models, commonViews, dialogViews, nodesTabSummaryTemplate, editNodesScr
                     this.checkForChanges();
                 }, this));*/
         },
+        removeLogicalInterface: function(phisical, logical){
+            var ethIfc = _.find(this.interfaces.models,function(ifc){return ifc.get("name")==phisical})
+            var ifType = _.first(_.where(ethIfc.get("types"), {"name":logical}))
+            ethIfc.attributes.types=_.reject(ethIfc.get("types"), {"name":logical})  
+            return ifType;
+        },
+        addLogicalInterface: function(phisical, logical){
+            var ethIfc = _.find(this.interfaces.models,
+                                function(ifc){ return ifc.get("name")==phisical });
+            if (_.isUndefined(ethIfc.attributes.types)){
+                ethIfc.attributes.types = [];
+            }
+            ethIfc.attributes.types.push(logical);
+        },
         returnToNodesTab: function() {
             app.navigate('#cluster/' + this.model.id + '/nodes', {trigger: true, replace: true});
         },
         applyChanges: function() {
-            // TODO (Ivan K): implement this
-        },
+            Backbone.sync('update', this.interfaces, {url: _.result(this.node, 'url') + '/attributes/interfaces'})
+                .done(_.bind(this.returnToNodesTab, this))
+                .fail(_.bind(function() {
+                    this.$('.btn, input').attr('disabled', false);
+                    var dialog = new dialogViews.SimpleMessage({error: true, 
+                                                                title: 'Node network interfaces configuration error'});
+                    app.page.registerSubView(dialog);
+                    dialog.render();
+                }, this));
+       },
         setInitialData: function() {
             // TODO (Ivan K): implement this
             this.initialData = _.cloneDeep(this.interfaces.toJSON());
@@ -824,15 +846,29 @@ function(models, commonViews, dialogViews, nodesTabSummaryTemplate, editNodesScr
                 this.interfaces = new models.Interfaces();
                 this.interfaces.fetch({
                     url: _.result(this.node, 'url') + '/attributes/interfaces'
-                }).done(_.bind(function() {
-                        this.setInitialData();
-                        this.render();
-                        $(function() {
-                            $( ".logical-network-box" ).sortable({
-                                connectWith: ".connectedSortable"
-                            }).disableSelection();
-                        });
-                   }, this))
+                }).done(_.bind(function(){
+                                this.setInitialData();
+                                this.render();
+                                var ifType;
+                                $( ".logical-network-box" ).sortable({
+                                    connectWith: ".connectedSortable",
+                                    receive: _.bind(function(event, ui){
+                                        var obj = $(event.target);
+                                        obj.children(".network-help-message").css("display", "none");
+                                        var ifcName = obj.parent().parent().children(".network-box-name").html();
+                                        this.addLogicalInterface(ifcName, ifType)	
+                                    }, this),
+                                    remove: _.bind(function(event, ui){
+                                        var obj = $(event.target);
+                                        var ifcName = obj.parent().parent().children(".network-box-name").html();
+                                        ifType=this.removeLogicalInterface(ifcName, ui.item.html())
+                                        var children = obj.children(".network-help-message")
+                                        if (obj.children().length == 1){
+                                            children.css("display", "block")
+                                        }
+                                    },this)
+                                }).disableSelection();
+                }, this))
                 .fail(_.bind(this.returnToNodesTab, this));
             } else {
                 this.returnToNodesTab();

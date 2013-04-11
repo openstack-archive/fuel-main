@@ -2,7 +2,7 @@
 
     <!-- network block start -->
     <div class="physical-network-box">
-      <div class="network-box-name"><%- ifc.name %></div>
+      <div class="network-box-name"><%- ifc.get('name') %></div>
       <div class="network-box-item">
         
         <div class="network-info-box online">
@@ -11,11 +11,12 @@
         </div>
 
         <div class="logical-network-box connectedSortable">
-          <% _.each(ifc.attributes.types, function(option) { %>
-              <div class="logical-network-item"><%- option.name %></div>
-          <% }) %>
+              <% _.each(ifc.get('types'), function(option) { %>
+                  <div class="logical-network-item"><%- option.name %></div>
+              <% }) %>
+              <% var hasTypes = ifc.get('types') %>
+              <div class="network-help-message" style="display:<%= hasTypes ? 'none' : 'block' %>">Use drag-and-drop for placing logical interfaces here</div>
         </div>
-
       </div>
     </div>
     <!-- network block end -->
