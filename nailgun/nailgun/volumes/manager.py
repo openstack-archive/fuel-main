@@ -29,8 +29,9 @@ class VolumeManager(object):
                     else:
                         new_dict[i] = self._traverse(val)
                 elif isinstance(val, list):
+                    new_dict[i] = []
                     for d in val:
-                        new_dict.setdefault(i, []).append(self._traverse(d))
+                        new_dict[i].append(self._traverse(d))
         elif isinstance(cdict, list):
             new_dict = []
             for d in cdict:
@@ -64,14 +65,15 @@ class VolumeManager(object):
         if not self.node.cluster:
             return default_volumes
         volumes_metadata = self.node.cluster.release.volumes_metadata
-        disks = filter(
+        volumes = filter(
             lambda a: a["type"] == "disk",
             default_volumes
         )
-        disks.extend(
+        volumes.extend(
             volumes_metadata[self.node.role]
         )
-        return disks
+        volumes = self._traverse(volumes)
+        return volumes
 
     def gen_default_volumes_info(self):
         if not "disks" in self.node.meta:

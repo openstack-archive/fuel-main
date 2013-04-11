@@ -23,13 +23,13 @@
                                 "mount": "/", 
                                 "type": "lv", 
                                 "name": "root", 
-                                "size": 10737418240
+                                "size": {"generator": "calc_root_size"}
                             }, 
                             {
                                 "mount": "swap", 
                                 "type": "lv", 
                                 "name": "swap", 
-                                "size": 5368709120
+                                "size": {"generator": "calc_swap_size"}
                             }
                         ]
                     }, 
@@ -48,13 +48,13 @@
                                 "mount": "/", 
                                 "type": "lv", 
                                 "name": "root", 
-                                "size": 10737418240
+                                "size": {"generator": "calc_root_size"}
                             }, 
                             {
                                 "mount": "swap", 
                                 "type": "lv", 
                                 "name": "swap", 
-                                "size": 5368709120
+                                "size": {"generator": "calc_swap_size"}
                             }
                         ]
                     },
@@ -85,13 +85,13 @@
                                 "mount": "/", 
                                 "type": "lv", 
                                 "name": "root", 
-                                "size": 10737418240
+                                "size": {"generator": "calc_root_size"}
                             }, 
                             {
                                 "mount": "swap", 
                                 "type": "lv", 
                                 "name": "swap", 
-                                "size": 5368709120
+                                "size": {"generator": "calc_swap_size"}
                             }
                         ]
                     },
