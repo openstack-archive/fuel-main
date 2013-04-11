@@ -541,17 +541,17 @@ function(models, commonViews, dialogViews, nodesTabSummaryTemplate, editNodesScr
         },
         setMinimalSizes: function() {
             this.minimalSizes = {};
-            _.each(_.filter(this.disks.models, function(disk) {return disk.get('type') == 'vg'}), _.bind(function(group) {
+            _.each(this.disks.where({'type': 'vg'}), _.bind(function(group) {
                 var minimalSize = 0;
                 try {
                     minimalSize += _.find(group.get('volumes'), {name: 'root'}).size;
                     minimalSize += _.find(group.get('volumes'), {name: 'swap'}).size;
-                } catch(e) {};
+                } catch(e) {}
                 this.minimalSizes[group.id] = parseFloat((minimalSize / this.pow).toFixed(2));
             }, this));
         },
         getDisks: function() {
-            return _.filter(this.disks.models, function(disk) {return disk.get('type') == 'disk'});
+            return this.disks.where({'type': 'disk'});
         },
         initialize: function(options) {
             _.defaults(this, options);
