@@ -120,9 +120,21 @@ function(models, commonViews, dialogViews, NodesTab, NetworkTab, SettingsTab, Lo
             }, this));
         },
         deploymentFinished: function() {
-            this.model.fetch();
+            this.model.fetch().done(_.bind(this.rebindEventsAfterDeployment, this));
             app.navbar.nodes.fetch();
             app.navbar.notifications.fetch();
+        },
+        unbindEventsWhileDeploying: function() {
+            // unbind some events while deploying to make progress bar movement smooth and prevent showing wrong cluster status for a moment.
+            var task = this.model.task('deploy', 'running');
+            if (task) {
+                task.off('change:status', this.deploymentResult.render, this.deploymentResult);
+                task.off('change:status', this.deploymentControl.render, this.deploymentControl);
+            }
+        },
+        rebindEventsAfterDeployment: function() {
+            // rebind temporarily unbound events
+            _([this.deploymentResult, this.deploymentControl]).invoke('onNewTask', this.model.task('deploy'));
         },
         beforeTearDown: function() {
             this.pollingAborted = true;
@@ -140,6 +152,9 @@ function(models, commonViews, dialogViews, NodesTab, NetworkTab, SettingsTab, Lo
                 this.model.on('change:' + attribute, function(model, collection, options) {
                     model.attributes[attribute] = model.previous(attribute);
                     model.attributes[attribute].set(collection.models);
+                    if (model.attributes[attribute].length) {
+                        console.log('events', _.clone(model.attributes[attribute].at(0)._events));
+                    }
                 }, this);
             }, this);
             this.model.on('change:name', this.onNameChange, this);
@@ -147,16 +162,6 @@ function(models, commonViews, dialogViews, NodesTab, NetworkTab, SettingsTab, Lo
             this.eventNamespace = 'unsavedchanges' + this.activeTab;
             $(window).on('beforeunload.' + this.eventNamespace, _.bind(this.onBeforeunloadEvent, this));
             $('body').on('click.' + this.eventNamespace, 'a[href^=#]', _.bind(this.onTabLeave, this));
-        },
-        unbindEventsWhileDeploying: function() {
-            // unbind some events while deploying to make progress bar movement smooth and prevent showing wrong cluster status for a moment.
-            // these events will be rebound automatically by fetching the whole cluster on deployment finish
-            var task = this.model.task('deploy', 'running');
-            if (task) {
-                //task.off('change:status', this.deploymentResult.render, this.deploymentResult);
-                //task.off('change:status', this.deploymentControl.render, this.deploymentControl);
-                //this.model.get('nodes').off('reset', this.renderDeploymentControl, this);
-            }
         },
         render: function() {
             this.tearDownRegisteredSubViews();
@@ -167,10 +172,10 @@ function(models, commonViews, dialogViews, NodesTab, NetworkTab, SettingsTab, Lo
                 renaming: this.renaming
             }));
 
-            this.deploymentResult = new DeploymentResult({model: this.model});
+            this.deploymentResult = new DeploymentResult({model: this.model, page: this});
             this.registerSubView(this.deploymentResult);
             this.$('.deployment-result').html(this.deploymentResult.render().el);
-            this.deploymentControl = new DeploymentControl({model: this.model});
+            this.deploymentControl = new DeploymentControl({model: this.model, page: this});
             this.registerSubView(this.deploymentControl);
             this.$('.deployment-control').html(this.deploymentControl.render().el);
             this.unbindEventsWhileDeploying();
