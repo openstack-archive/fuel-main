@@ -499,22 +499,24 @@ function(models, commonViews, dialogViews, nodesTabSummaryTemplate, editNodesScr
             app.navigate('#cluster/' + this.model.id + '/nodes', {trigger: true, replace: true});
         },
         applyChanges: function() {
-            this.disableControls(true);
-            // revert sizes to bytes
-            _.each(this.disks.models, _.bind(function(disk) {
-                _.each(_.filter(disk.get('volumes'), {type: 'pv'}), _.bind(function(group) {
-                    group.size += this.remainders[disk.id][group.vg];
-                    group.size *= this.pow;
+            if (!_.some(this.disks.models, 'validationError'))  {
+                this.disableControls(true);
+                // revert sizes to bytes
+                _.each(this.disks.models, _.bind(function(disk) {
+                    _.each(_.filter(disk.get('volumes'), {type: 'pv'}), _.bind(function(group) {
+                        group.size += this.remainders[disk.id][group.vg];
+                        group.size *= this.pow;
+                    }, this));
                 }, this));
-            }, this));
-            Backbone.sync('update', this.disks, {url: _.result(this.node, 'url') + '/attributes/volumes?type=disk'})
-                .done(_.bind(this.returnToNodesTab, this))
-                .fail(_.bind(function() {
-                    this.disableControls(false);
-                    var dialog = new dialogViews.SimpleMessage({error: true, title: 'Node disks configuration'});
-                    app.page.registerSubView(dialog);
-                    dialog.render();
-                }, this));
+                Backbone.sync('update', this.disks, {url: _.result(this.node, 'url') + '/attributes/volumes?type=disk'})
+                    .done(_.bind(this.returnToNodesTab, this))
+                    .fail(_.bind(function() {
+                        this.disableControls(false);
+                        var dialog = new dialogViews.SimpleMessage({error: true, title: 'Node disks configuration'});
+                        app.page.registerSubView(dialog);
+                        dialog.render();
+                    }, this));
+            }
         },
         setRoundedValues: function() {
             // reduce volume group sizes to two decimal places
@@ -644,18 +646,20 @@ function(models, commonViews, dialogViews, nodesTabSummaryTemplate, editNodesScr
                 disk.set({volumes: _.filter(disk.get('volumes'), {type: 'pv'})});
             });
             this.disk.set({volumes: _.union(this.disk.get('volumes'), [{type: 'partition', mount: '/boot', size: this.partitionSize}, {type: 'mbr'}])});
+            _.invoke(this.screen.subViews, 'getPartition');
             _.invoke(this.screen.subViews, 'renderVisualGraph');
-            $('.btn-bootable').attr('disabled', false);
-            this.$('.btn-bootable').attr('disabled', true);
             $('.bootable-marker').hide();
             this.$('.bootable-marker').show();
             this.screen.checkForChanges();
+        },
+        getPartition: function() {
+            this.partition = _.find(this.disk.get('volumes'), {type: 'partition'});
         },
         initialize: function(options) {
             _.defaults(this, options);
             this.diskSize = this.formatFloat(this.diskMetaData.size);
             this.volumes = this.disk.get('volumes');
-            this.partition = _.find(this.disk.get('volumes'), {type: 'partition'});
+            this.getPartition();
             this.disk.on('invalid', function(model, errors) {
                 _.each(errors, _.bind(function(error) {
                     this.$('input[name=' + error + ']').addClass('error');
@@ -667,7 +671,7 @@ function(models, commonViews, dialogViews, nodesTabSummaryTemplate, editNodesScr
         },
         renderVisualGraph: function() {
             var diskSize = this.diskSize;
-            if (_.some(this.disk.get('volumes'), {type: 'partition'})) {
+            if (this.partition) {
                 diskSize -= this.formatFloat(this.partitionSize);
             }
             var unallocatedWidth = 100, unallocatedSize = diskSize;
