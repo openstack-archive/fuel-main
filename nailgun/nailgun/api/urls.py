@@ -18,6 +18,7 @@ from nailgun.api.handlers.node import NodeCollectionHandler
 from nailgun.api.handlers.node import NodeAttributesHandler
 from nailgun.api.handlers.node import NodeAttributesDefaultsHandler
 from nailgun.api.handlers.node import NodeAttributesByNameHandler
+from nailgun.api.handlers.node import NodeAttributesByNameDefaultsHandler
 
 from nailgun.api.handlers.networks import NetworkCollectionHandler
 from nailgun.api.handlers.tasks import TaskHandler
@@ -62,6 +63,8 @@ urls = (
     'NodeAttributesDefaultsHandler',
     r'/nodes/(?P<node_id>\d+)/attributes/(?P<attr_name>[-\w]+)/?$',
     'NodeAttributesByNameHandler',
+    r'/nodes/(?P<node_id>\d+)/attributes/(?P<attr_name>[-\w]+)/defaults/?$',
+    'NodeAttributesByNameDefaultsHandler',
     r'/networks/?$',
     'NetworkCollectionHandler',
     r'/tasks/?$',

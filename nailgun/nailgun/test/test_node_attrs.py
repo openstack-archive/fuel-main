@@ -82,6 +82,27 @@ class TestHandlers(BaseHandlers):
             node_db.attributes.gen_default_volumes_info()
         )
 
+    def test_get_default_attrs_volumes(self):
+        node = self.env.create_node(
+            api=True,
+            meta=self.env.default_metadata()
+        )
+        node_db = self.env.nodes[0]
+        resp = self.app.get(
+            reverse('NodeAttributesByNameDefaultsHandler',
+                    kwargs={
+                        'node_id': node_db.id,
+                        'attr_name': 'volumes'
+                    }),
+            headers=self.default_headers
+        )
+        self.assertEquals(200, resp.status)
+        response = json.loads(resp.body)
+        self.assertEquals(
+            response,
+            node_db.attributes.gen_default_volumes_info()
+        )
+
     def test_reset_attrs_to_default(self):
         node = self.env.create_node(
             api=True,

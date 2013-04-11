@@ -225,6 +225,21 @@ class NodeAttributesDefaultsHandler(JSONHandler):
         return self.render(node.attributes)
 
 
+class NodeAttributesByNameDefaultsHandler(JSONHandler):
+
+    @content_json
+    def GET(self, node_id, attr_name):
+        attr_params = web.input()
+        node = self.get_object_or_404(Node, node_id)
+        if attr_name == "volumes":
+            attr = node.attributes.gen_default_volumes_info()
+        else:
+            raise web.notfound()
+        if hasattr(attr_params, "type"):
+            attr = filter(lambda a: a["type"] == attr_params.type, attr)
+        return attr
+
+
 class NodeAttributesByNameHandler(JSONHandler):
 
     @content_json
