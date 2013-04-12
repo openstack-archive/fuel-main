@@ -502,24 +502,22 @@ function(models, commonViews, dialogViews, nodesTabSummaryTemplate, editNodesScr
             app.navigate('#cluster/' + this.model.id + '/nodes', {trigger: true, replace: true});
         },
         applyChanges: function() {
-            if (!_.some(this.disks.models, 'validationError'))  {
-                this.disableControls(true);
-                // revert sizes to bytes
-                _.each(this.getDisks(), _.bind(function(disk) {
-                    _.each(_.filter(disk.get('volumes'), {type: 'pv'}), _.bind(function(group) {
-                        group.size += this.remainders[disk.id][group.vg];
-                        group.size *= this.pow;
-                    }, this));
+            this.disableControls(true);
+            // revert sizes to bytes
+            _.each(this.getDisks(), _.bind(function(disk) {
+                _.each(_.filter(disk.get('volumes'), {type: 'pv'}), _.bind(function(group) {
+                    group.size += this.remainders[disk.id][group.vg];
+                    group.size *= this.pow;
                 }, this));
-                Backbone.sync('update', this.disks, {url: _.result(this.node, 'url') + '/attributes/volumes?type=disk'})
-                    .done(_.bind(this.returnToNodesTab, this))
-                    .fail(_.bind(function() {
-                        this.disableControls(false);
-                        var dialog = new dialogViews.SimpleMessage({error: true, title: 'Node disks configuration'});
-                        app.page.registerSubView(dialog);
-                        dialog.render();
-                    }, this));
-            }
+            }, this));
+            Backbone.sync('update', this.disks, {url: _.result(this.node, 'url') + '/attributes/volumes?type=disk'})
+                .done(_.bind(this.returnToNodesTab, this))
+                .fail(_.bind(function() {
+                    this.disableControls(false);
+                    var dialog = new dialogViews.SimpleMessage({error: true, title: 'Node disks configuration'});
+                    app.page.registerSubView(dialog);
+                    dialog.render();
+                }, this));
         },
         setRoundedValues: function() {
             // reduce volume group sizes to two decimal places
@@ -625,7 +623,7 @@ function(models, commonViews, dialogViews, nodesTabSummaryTemplate, editNodesScr
             var unallocated = this.diskSize - this.countAllocatedSpace() + volume.size;
             volume.size = allUnallocated ? volume.size + parseFloat(size) : parseFloat(size);
             this.disk.set({volumes: volumes}, {validate: true, unallocated: unallocated, group: group, min: this.minimalSizes[group]});
-            this.volumes = this.disk.get('volumes');
+            this.getVolumes();
             if (allUnallocated || size === 0) {
                 this.$('input[name=' + group + ']').val(_.find(this.volumes, {vg: group}).size.toFixed(2));
                 if (allUnallocated) {
@@ -661,10 +659,11 @@ function(models, commonViews, dialogViews, nodesTabSummaryTemplate, editNodesScr
         },
         switchBootableDisk: function(e) {
             _.each(this.screen.disks.models, function(disk) {
-                disk.set({volumes: _.filter(disk.get('volumes'), {type: 'pv'})});
+                disk.set({volumes: _.filter(disk.get('volumes'), function(group) { return group.type == 'pv' || group.type == 'lv'; })});
             });
             this.disk.set({volumes: _.union(this.disk.get('volumes'), [{type: 'partition', mount: '/boot', size: this.partitionSize}, {type: 'mbr'}])});
             _.invoke(this.screen.subViews, 'getPartition');
+            _.invoke(this.screen.subViews, 'getVolumes');
             _.invoke(this.screen.subViews, 'renderVisualGraph');
             this.screen.$('.bootable-marker').hide();
             this.$('.bootable-marker').show();
@@ -673,11 +672,14 @@ function(models, commonViews, dialogViews, nodesTabSummaryTemplate, editNodesScr
         getPartition: function() {
             this.partition = _.find(this.disk.get('volumes'), {type: 'partition'});
         },
+        getVolumes: function() {
+            this.volumes = this.disk.get('volumes');
+        },
         initialize: function(options) {
             _.defaults(this, options);
             this.diskSize = this.formatFloat(this.diskMetaData.size);
-            this.volumes = this.disk.get('volumes');
             this.getPartition();
+            this.getVolumes();
             this.disk.on('invalid', function(model, errors) {
                 _.each(errors, _.bind(function(error) {
                     this.$('input[name=' + error + ']').addClass('error');
