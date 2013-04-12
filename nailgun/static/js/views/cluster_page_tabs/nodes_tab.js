@@ -693,7 +693,7 @@ function(models, commonViews, dialogViews, nodesTabSummaryTemplate, editNodesScr
         },
         initialize: function(options) {
             _.defaults(this, options);
-            this.diskSize = this.formatFloat(this.diskMetaData.size - this.partitionSize);
+            this.diskSize = this.formatFloat(this.diskMetaData.size - 1000000);
             this.getPartition();
             this.getVolumes();
             this.disk.on('invalid', function(model, errors) {
@@ -706,7 +706,11 @@ function(models, commonViews, dialogViews, nodesTabSummaryTemplate, editNodesScr
             return _.filter(this.volumes, _.bind(function(volume) {return _.contains(this.volumeGroups, volume.vg);}, this));
         },
         renderVisualGraph: function() {
-            var unallocatedWidth = 100, unallocatedSize = this.diskSize;
+            var diskSize = this.diskSize;
+            if (this.partition) {
+                diskSize -= this.formatFloat(this.partitionSize);
+            }
+            var unallocatedWidth = 100, unallocatedSize = diskSize;
             _.each(this.volumesToDisplay(), _.bind(function(volume) {
                 var width = 0, size = 0;
                 if (volume) {
