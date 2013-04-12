@@ -45,7 +45,7 @@ BOOTSTRAP_RPMS_CUSTOM:=\
 define yum_local_repo
 [mirror]
 name=Mirantis mirror
-baseurl=file://$(shell readlink -f -m $(LOCAL_MIRROR_CENTOS_OS_BASEURL))
+baseurl=file://$(LOCAL_MIRROR_CENTOS_OS_BASEURL)
 gpgcheck=0
 enabled=1
 endef
@@ -61,12 +61,12 @@ exactarch=1
 obsoletes=1
 gpgcheck=0
 plugins=1
-pluginpath=$(shell readlink -f -m $(BUILD_DIR)/bootstrap/etc/yum-plugins)
-pluginconfpath=$(shell readlink -f -m $(BUILD_DIR)/bootstrap/etc/yum/pluginconf.d)
-reposdir=$(shell readlink -f -m $(BUILD_DIR)/bootstrap/etc/yum.repos.d)
+pluginpath=$(BUILD_DIR)/bootstrap/etc/yum-plugins
+pluginconfpath=$(BUILD_DIR)/bootstrap/etc/yum/pluginconf.d
+reposdir=$(BUILD_DIR)/bootstrap/etc/yum.repos.d
 endef
 
-YUM:=sudo yum -c $(BUILD_DIR)/bootstrap/etc/yum.conf --installroot=`readlink -f $(INITRAMROOT)` -y --nogpgcheck
+YUM:=sudo yum -c $(BUILD_DIR)/bootstrap/etc/yum.conf --installroot=$(INITRAMROOT) -y --nogpgcheck
 
 clean: clean-bootstrap
 
@@ -83,7 +83,7 @@ $(BUILD_DIR)/bootstrap/build.done: \
 $(BUILD_DIR)/bootstrap/initramfs.img: \
 		$(BUILD_DIR)/bootstrap/customize-initram-root.done
 	sudo sh -c "cd $(INITRAMROOT) && find . -xdev | cpio --create \
-        --format='newc' | gzip -9 > `readlink -f $(BUILD_DIR)/bootstrap/initramfs.img`"
+        --format='newc' | gzip -9 > $(BUILD_DIR)/bootstrap/initramfs.img"
 
 $(BUILD_DIR)/bootstrap/linux: $(BUILD_DIR)/mirror/build.done
 	mkdir -p $(BUILD_DIR)/bootstrap
@@ -110,7 +110,7 @@ $(BUILD_DIR)/bootstrap/customize-initram-root.done: \
 		$(BUILD_DIR)/bootstrap/etc/yum.repos.d/base.repo
 
 	# Rebuilding rpmdb
-	sudo rpm --root=`readlink -f $(INITRAMROOT)` --rebuilddb
+	sudo rpm --root=$(INITRAMROOT) --rebuilddb
 
 	# Installing custom rpms
 	$(YUM) install $(BOOTSTRAP_RPMS_CUSTOM)
@@ -160,7 +160,7 @@ $(BUILD_DIR)/bootstrap/prepare-initram-root.done: \
 	sudo rm -f $(INITRAMROOT)/etc/yum.repos.d/Cent*
 
 	# Rebuilding rpmdb
-	sudo rpm --root=`readlink -f $(INITRAMROOT)` --rebuilddb
+	sudo rpm --root=$(INITRAMROOT) --rebuilddb
 
 	# Creating some necessary directories
 	sudo mkdir -p $(INITRAMROOT)/proc

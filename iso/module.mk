@@ -15,7 +15,7 @@ $(BUILD_DIR)/iso/isoroot-centos.done: \
 		$(BUILD_DIR)/iso/isoroot-dotfiles.done
 	mkdir -p $(ISOROOT)
 	rsync -rp $(LOCAL_MIRROR_CENTOS_OS_BASEURL)/	$(ISOROOT)
-	createrepo -g `readlink -f "$(ISOROOT)/repodata/comps.xml"` \
+	createrepo -g $(ISOROOT)/repodata/comps.xml \
 		-u media://`head -1 $(ISOROOT)/.discinfo` $(ISOROOT)
 	$(ACTION.TOUCH)
 
@@ -68,7 +68,7 @@ $(ISOROOT)/version.yaml:
 
 $(ISOROOT)/puppet-nailgun.tgz: \
 		$(call find-files,$(SOURCE_DIR)/puppet) \
-		bin/send2syslog.py
+		$(SOURCE_DIR)/bin/send2syslog.py
 	(cd $(SOURCE_DIR)/puppet && tar chzf $@ *)
 $(ISOROOT)/puppet-slave.tgz: \
 		$(call find-files,$(SOURCE_DIR)/puppet/nailytest) \

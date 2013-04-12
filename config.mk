@@ -8,7 +8,6 @@ CENTOS_ARCH:=x86_64
 
 NO_UI_OPTIMIZE:=0
 
-LOCAL_MIRROR:=local_mirror
 LOCAL_MIRROR_SRC:=$(LOCAL_MIRROR)/src
 LOCAL_MIRROR_EGGS:=$(LOCAL_MIRROR)/eggs
 LOCAL_MIRROR_GEMS:=$(LOCAL_MIRROR)/gems
@@ -18,20 +17,20 @@ LOCAL_MIRROR_CENTOS_OS_BASEURL:=$(LOCAL_MIRROR_CENTOS)/$(CENTOS_RELEASE)/os/$(CE
 # Use srv08 mirrors by default. Other possible default is 'msk'.
 # Setting any other value or removing of this variable will cause
 # download of all the packages directly from internet
-USE_MIRROR:=srv08
+USE_MIRROR?=srv08
 ifeq ($(USE_MIRROR),srv08)
-YUM_REPOS=proprietary
-MIRROR_CENTOS=http://srv08-srt.srt.mirantis.net/fwm/centos
-MIRROR_EGGS=http://srv08-srt.srt.mirantis.net/fwm/eggs
-MIRROR_GEMS=http://srv08-srt.srt.mirantis.net/fwm/gems
-MIRROR_SRC=http://srv08-srt.srt.mirantis.net/fwm/src
+YUM_REPOS?=proprietary
+MIRROR_CENTOS?=http://srv08-srt.srt.mirantis.net/fwm/centos
+MIRROR_EGGS?=http://srv08-srt.srt.mirantis.net/fwm/eggs
+MIRROR_GEMS?=http://srv08-srt.srt.mirantis.net/fwm/gems
+MIRROR_SRC?=http://srv08-srt.srt.mirantis.net/fwm/src
 endif
 ifeq ($(USE_MIRROR),msk)
-YUM_REPOS=proprietary
-MIRROR_CENTOS=http://172.18.8.209/fwm/centos
-MIRROR_EGGS=http://172.18.8.209/fwm/eggs
-MIRROR_GEMS=http://172.18.8.209/fwm/gems
-MIRROR_SRC=http://172.18.8.209/fwm/src
+YUM_REPOS?=proprietary
+MIRROR_CENTOS?=http://172.18.8.209/fwm/centos
+MIRROR_EGGS?=http://172.18.8.209/fwm/eggs
+MIRROR_GEMS?=http://172.18.8.209/fwm/gems
+MIRROR_SRC?=http://172.18.8.209/fwm/src
 endif
 
 MIRROR_CENTOS?=http://mirror.yandex.ru/centos

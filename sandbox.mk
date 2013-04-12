@@ -1,7 +1,7 @@
 define yum_local_repo
 [mirror]
 name=Mirantis mirror
-baseurl=file://$(shell readlink -f -m $(LOCAL_MIRROR_CENTOS_OS_BASEURL))
+baseurl=file://$(LOCAL_MIRROR_CENTOS_OS_BASEURL)
 gpgcheck=0
 enabled=1
 endef
@@ -17,9 +17,9 @@ exactarch=1
 obsoletes=1
 gpgcheck=0
 plugins=1
-pluginpath=$(shell readlink -f -m $(SANDBOX)/etc/yum-plugins)
-pluginconfpath=$(shell readlink -f -m $(SANDBOX)/etc/yum/pluginconf.d)
-reposdir=$(shell readlink -f -m $(SANDBOX)/etc/yum.repos.d)
+pluginpath=$(SANDBOX)/etc/yum-plugins
+pluginconfpath=$(SANDBOX)/etc/yum/pluginconf.d
+reposdir=$(SANDBOX)/etc/yum.repos.d
 endef
 
 SANDBOX_PACKAGES:=\

@@ -9,9 +9,9 @@ exactarch=1
 obsoletes=1
 gpgcheck=0
 plugins=1
-pluginpath=$(shell readlink -f -m $(BUILD_DIR)/mirror/centos/etc/yum-plugins)
-pluginconfpath=$(shell readlink -f -m $(BUILD_DIR)/mirror/centos/etc/yum/pluginconf.d)
-reposdir=$(shell readlink -f -m $(BUILD_DIR)/mirror/centos/etc/yum.repos.d)
+pluginpath=$(BUILD_DIR)/mirror/centos/etc/yum-plugins
+pluginconfpath=$(BUILD_DIR)/mirror/centos/etc/yum/pluginconf.d
+reposdir=$(BUILD_DIR)/mirror/centos/etc/yum.repos.d
 endef
 
 define yum_repo_official

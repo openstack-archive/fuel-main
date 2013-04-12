@@ -1,12 +1,28 @@
-PWD:=$(shell pwd -P)
-
-SOURCE_DIR:=$(PWD)
-BUILD_DIR:=$(PWD)/build
-DEPV_DIR:=$(BUILD_DIR)/depv
+SOURCE_DIR?=$(dir $(lastword $(MAKEFILE_LIST)))
+SOURCE_DIR:=$(abspath $(SOURCE_DIR))
+TOP_DIR?=$(PWD)
+TOP_DIR:=$(abspath $(TOP_DIR))
+BUILD_DIR?=$(TOP_DIR)/build
+BUILD_DIR:=$(abspath $(BUILD_DIR))
+LOCAL_MIRROR?=$(TOP_DIR)/local_mirror
+LOCAL_MIRROR:=$(abspath $(LOCAL_MIRROR))
+DEPV_DIR?=$(BUILD_DIR)/depv
+DEPV_DIR:=$(abspath $(DEPV_DIR))
 
 .PHONY: all clean test help deep_clean
 
 help:
+	@echo 'Build directives (can be overrided by environment variables'
+	@echo 'or by command line parameters):'
+	@echo '  SOURCE_DIR: $(SOURCE_DIR)'
+	@echo '  BUILD_DIR: $(BUILD_DIR)'
+	@echo '  LOCAL_MIRROR: $(LOCAL_MIRROR)'
+	@echo '  YUM_REPOS: $(YUM_REPOS)'
+	@echo '  MIRROR_CENTOS: $(MIRROR_CENTOS)'
+	@echo '  MIRROR_EGGS: $(MIRROR_EGGS)'
+	@echo '  MIRROR_GEMS: $(MIRROR_GEMS)'
+	@echo '  MIRROR_SRC: $(MIRROR_SRC)'
+	@echo
 	@echo 'Available targets:'
 	@echo '  all  - build product'
 	@echo '  bootstrap  - build bootstrap'
@@ -31,7 +47,7 @@ help:
 	@echo 'make iso USE_MIRROR=msk'
 	@echo
 	@echo 'Custom location:'
-	@echo 'make iso USE_MIRROR=msk YUM_REPOS=proprietary \
+	@echo 'make iso YUM_REPOS=proprietary \
 MIRROR_CENTOS=http://<your_mirror>/centos \
 MIRROR_EGGS=http://<your_mirror>/eggs \
 MIRROR_GEMS=http://<your_mirror>/gems \

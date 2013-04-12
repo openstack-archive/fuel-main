@@ -13,18 +13,18 @@ $(BUILD_DIR)/mirror/gems/gems-bundle/naily/Gemfile: \
 	mkdir -p $(@D)
 	echo -n > $@
 	for i in $(MIRROR_GEMS); do \
-		echo "source \"file://$(SOURCE_DIR)/$(LOCAL_MIRROR_GEMS)\"" >> $@; \
+		echo "source \"file://$(LOCAL_MIRROR_GEMS)\"" >> $@; \
 		echo "source \"$$i\"" >> $@; \
 	done
 	echo "gem 'naily', '$(NAILY_VERSION)'" >> $@
 	$(ACTION.TOUCH)
 
 $(BUILD_DIR)/mirror/gems/gems-bundle-gemfile.done: \
-		requirements-gems.txt \
+		$(SOURCE_DIR)/requirements-gems.txt \
 		$(BUILD_DIR)/mirror/gems/gems-bundle/Gemfile \
 		$(BUILD_DIR)/mirror/gems/gems-bundle/naily/Gemfile
 	mkdir -p $(BUILD_DIR)/mirror/gems/gems-bundle
-	cat requirements-gems.txt | while read gem ver; do \
+	cat $(SOURCE_DIR)/requirements-gems.txt | while read gem ver; do \
 		echo "gem \"$${gem}\", \"$${ver}\"" >> $(BUILD_DIR)/mirror/gems/gems-bundle/Gemfile; \
 	done
 	$(ACTION.TOUCH)

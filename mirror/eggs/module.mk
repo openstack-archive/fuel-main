@@ -5,8 +5,8 @@ mirror-eggs: $(BUILD_DIR)/mirror/eggs/build.done
 clean: clean-mirror-eggs
 
 clean-mirror-eggs:
-	-sudo umount $(shell readlink -f -m $(BUILD_DIR)/mirror/eggs/SANDBOX/proc)
-	-sudo umount $(shell readlink -f -m $(BUILD_DIR)/mirror/eggs/SANDBOX/dev)
+	-sudo umount $(BUILD_DIR)/mirror/eggs/SANDBOX/proc
+	-sudo umount $(BUILD_DIR)/mirror/eggs/SANDBOX/dev
 	sudo rm -rf $(BUILD_DIR)/mirror/eggs
 
 $(BUILD_DIR)/mirror/eggs/build.done: $(call depv,LOCAL_MIRROR_EGGS)

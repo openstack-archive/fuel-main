@@ -54,6 +54,6 @@ $(LOCAL_MIRROR_CENTOS_OS_BASEURL)/repodata/comps.xml:
 $(BUILD_DIR)/mirror/centos/repo.done: \
 		$(BUILD_DIR)/mirror/centos/yum.done \
 		| $(LOCAL_MIRROR_CENTOS_OS_BASEURL)/repodata/comps.xml
-	createrepo -g `readlink -f "$(LOCAL_MIRROR_CENTOS_OS_BASEURL)/repodata/comps.xml"` \
+	createrepo -g $(LOCAL_MIRROR_CENTOS_OS_BASEURL)/repodata/comps.xml \
 		-o $(LOCAL_MIRROR_CENTOS_OS_BASEURL)/ $(LOCAL_MIRROR_CENTOS_OS_BASEURL)/
 	$(ACTION.TOUCH)
