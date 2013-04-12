@@ -13,6 +13,7 @@ class VolumeManager(object):
             raise Exception(
                 "Invalid node - can't generate volumes info"
             )
+        self.volumes = []
 
     def _traverse(self, cdict):
         new_dict = {}
@@ -38,13 +39,18 @@ class VolumeManager(object):
                 new_dict.append(self._traverse(d))
         return new_dict
 
-    def field_generator(self, generator, args):
+    def field_generator(self, generator, args=None):
+        if not args:
+            args = []
         generators = {
             # swap = memory + 1Gb
             "calc_swap_size": lambda:
             self.node.meta["memory"]["total"] + 1024 ** 3,
             # root = 10Gb
-            "calc_root_size": lambda: 1024 ** 3 * 10
+            "calc_root_size": lambda: 1024 ** 3 * 10,
+            "calc_boot_size": lambda: 1024 ** 2 * 200,
+            # let's think that size of mbr is 2Mb (more than usual, for safety)
+            "calc_mbr_size": lambda: 1024 ** 2 * 2,
         }
         generators["calc_os_size"] = lambda: sum([
             generators["calc_root_size"](),
@@ -61,29 +67,29 @@ class VolumeManager(object):
                 self.node.role
             )
         )
-        default_volumes = self.gen_default_volumes_info()
+        self.volumes = self.gen_default_volumes_info()
         if not self.node.cluster:
-            return default_volumes
+            return self.volumes
         volumes_metadata = self.node.cluster.release.volumes_metadata
-        volumes = filter(
+        self.volumes = filter(
             lambda a: a["type"] == "disk",
             default_volumes
         )
-        volumes.extend(
+        self.volumes.extend(
             volumes_metadata[self.node.role]
         )
-        volumes = self._traverse(volumes)
-        return volumes
+        self.volumes = self._traverse(self.volumes)
+        return self.volumes
 
     def gen_default_volumes_info(self):
         if not "disks" in self.node.meta:
             raise Exception("No disk metadata specified for node")
-        volumes = []
         for disk in self.node.meta["disks"]:
-            volumes.append(
+            self.volumes.append(
                 {
                     "id": disk["disk"],
                     "type": "disk",
+                    "size": disk["size"],
                     "volumes": [
                         {"type": "pv", "vg": "os", "size": 0},
                         {"type": "pv", "vg": "vm", "size": 0},
@@ -92,19 +98,68 @@ class VolumeManager(object):
                 }
             )
 
-        # auto assigning all stuff to first disk
-        volumes[0]["volumes"][0]["size"] = {
-            "generator": "calc_os_size"
-        }
-        volumes[0]["volumes"].append(
-            {"type": "partition", "mount": "/boot", "size": 200 * 1024 ** 2}
-        )
-        volumes[0]["volumes"].append(
-            {"type": "mbr"}
-        )
+        # minimal space for OS + boot
+        os_size = sum([
+            self.field_generator("calc_os_size"),
+            self.field_generator("calc_boot_size"),
+            self.field_generator("calc_mbr_size")
+        ])
+
+        disk_size = sum([
+            disk["size"] for disk in self.node.meta["disks"]
+        ])
+
+        if disk_size < os_size:
+            raise Exception("Insufficient disk space for OS")
+
+        def create_boot_sector(v):
+            v["volumes"].append(
+                {
+                    "type": "partition",
+                    "mount": "/boot",
+                    "size": {"generator": "calc_boot_size"}
+                }
+            )
+            # let's think that size of mbr is 2Mb (more than usual, for safety)
+            v["volumes"].append(
+                {"type": "mbr"}
+            )
+
+        os_space = os_size
+        for i, vol in enumerate(self.volumes):
+            if vol["type"] != "disk":
+                continue
+            if i == 0 and vol["size"] > os_space:
+                # all OS and boot on first disk
+                vol["volumes"][0]["size"] = os_space - (
+                    self.field_generator("calc_boot_size") +
+                    self.field_generator("calc_mbr_size")
+                )
+                create_boot_sector(vol)
+                break
+            elif i == 0:
+                # first disk: boot + part of OS
+                vol["volumes"][0]["size"] = vol["size"] - (
+                    self.field_generator("calc_boot_size") +
+                    self.field_generator("calc_mbr_size")
+                )
+                create_boot_sector(vol)
+                os_space = os_space - (
+                    vol["volumes"][0]["size"] +
+                    self.field_generator("calc_boot_size") +
+                    self.field_generator("calc_mbr_size")
+                )
+            elif vol["size"] > os_space:
+                # another disk: remaining OS
+                vol["volumes"][0]["size"] = os_space
+                break
+            else:
+                # another disk: part of OS
+                vol["volumes"][0]["size"] = vol["size"]
+                os_space = os_space - vol["volumes"][0]["size"]
 
         # creating volume groups
-        volumes.extend([
+        self.volumes.extend([
             {
                 "id": "os",
                 "type": "vg",
@@ -124,7 +179,7 @@ class VolumeManager(object):
                 ]
             },
             {
-                "id": "vms",
+                "id": "vm",
                 "type": "vg",
                 "volumes": [
                     {"mount": "/var/lib/libvirt", "size": 0,
@@ -133,4 +188,4 @@ class VolumeManager(object):
             }
         ])
 
-        return self._traverse(volumes)
+        return self._traverse(self.volumes)

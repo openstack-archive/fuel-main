@@ -3,7 +3,7 @@ import unittest
 import json
 from paste.fixture import TestApp
 
-from nailgun.api.models import Node
+from nailgun.api.models import Node, Notification
 from nailgun.test.base import BaseHandlers
 from nailgun.test.base import reverse
 
@@ -199,6 +199,54 @@ class TestHandlers(BaseHandlers):
         )
         response = json.loads(resp.body)
         self.assertEquals(len(response["volumes"]), 4)
+
+    def test_node_insufficient_disk_space(self):
+        meta = self.env.default_metadata()
+        for d in meta["disks"]:
+            d["size"] = 1000
+        node = self.env.create_node(
+            api=True,
+            meta=meta
+        )
+        node_db = self.env.nodes[0]
+        notif = self.db.query(Notification).filter_by(
+            message="Failed to generate volumes info for node '{0}': "
+            "'Insufficient disk space for OS'".format(
+                node_db.name
+            )
+        ).first()
+        self.assertIsNotNone(notif)
+
+    def test_node_os_many_disks(self):
+        meta = self.env.default_metadata()
+        meta["memory"]["total"] = 4294967296
+        meta["disks"] = [
+            {
+                "size": 7483648000,
+                "model": "HITACHI LOL404",
+                "name": "sda",
+                "disk": "blablabla2"
+            },
+            {
+                "model": "SEAGATE B00B135",
+                "name": "vda",
+                "size": 2147483648000,
+                "disk": "blablabla3"
+            }
+        ]
+        node = self.env.create_node(
+            api=True,
+            meta=meta
+        )
+        node_db = self.env.nodes[0]
+        volumes = node_db.attributes.volumes
+        os_pv_sum = 0
+        os_lv_sum = 0
+        for v in filter(lambda v: v["type"] == "disk", volumes):
+            os_pv_sum += v["volumes"][0]["size"]
+        os_vg = filter(lambda v: v["type"] == "vg", volumes)[0]
+        os_lv_sum += sum([v["size"] for v in os_vg["volumes"]])
+        self.assertEquals(os_pv_sum, os_lv_sum)
 
     def test_attrs_get_by_name(self):
         node = self.env.create_node(
