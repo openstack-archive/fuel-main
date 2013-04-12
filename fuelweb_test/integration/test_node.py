@@ -165,7 +165,6 @@ class TestNode(Base):
     @snapshot_errors
     def test_simple_cluster_flat(self):
         logging.info("Testing simple flat installation.")
-        self._start_logserver()
         self._revert_nodes()
         cluster_name = 'simple_flat'
         nodes = {'controller': ['slave1'], 'compute': ['slave2']}
@@ -190,7 +189,6 @@ class TestNode(Base):
     @snapshot_errors
     def test_simple_cluster_vlan(self):
         logging.info("Testing simple vlan installation.")
-        self._start_logserver()
         self._revert_nodes()
         cluster_name = 'simple_vlan'
         nodes = {'controller': ['slave1'], 'compute': ['slave2']}
@@ -216,7 +214,6 @@ class TestNode(Base):
     @snapshot_errors
     def test_ha_cluster_flat(self):
         logging.info("Testing ha flat installation.")
-        self._start_logserver()
         self._revert_nodes()
         cluster_name = 'ha_flat'
         nodes = {
@@ -248,7 +245,6 @@ class TestNode(Base):
     @snapshot_errors
     def test_ha_cluster_vlan(self):
         logging.info("Testing ha vlan installation.")
-        self._start_logserver()
         self._revert_nodes()
         cluster_name = 'ha_vlan'
         nodes = {
@@ -517,6 +513,7 @@ class TestNode(Base):
         return json.loads(changes.read())
 
     def _basic_provisioning(self, cluster_name, nodes_dict):
+        self._start_logserver()
         self._clean_clusters()
         cluster_id = self._create_cluster(name=cluster_name)
 
