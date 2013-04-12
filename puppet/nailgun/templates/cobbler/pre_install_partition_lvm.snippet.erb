@@ -58,10 +58,7 @@ echo "bootloader --location=mbr --driveorder=$space_id --append=' crashkernel=au
             ## Parsing logical volumes
             #if $space_type == "vg" and $volume_type == "lv"
                 #set $volume_mount = $volume.get("mount")
-                ## we set volume size 64 megabytes less than it is set in ks_spaces
-                ## we need to do this in order to make sure that sum of logical volume
-                ## sizes plus lvm metadata are not oversized disk size
-                #set $volume_size = $int($volume.get("size")) / 1024 ** 2 - 64
+                #set $volume_size = $int($volume.get("size")) / 1024 ** 2
                 #set $volume_name = $volume.get("name")
                 #if $volume_size > 0
                     $logical_volumes.append("logvol %s --vgname=%s --size=%s --name=%s" % ($volume_mount, $space_id, $volume_size, $volume_name))
