@@ -26,9 +26,9 @@ $(BUILD_DIR)/packages/rpm/rpm-nailgun-agent.done: \
 $(BUILD_DIR)/packages/rpm/rpm-nailgun-mcagents.done: \
 		$(BUILD_DIR)/packages/rpm/prep.done \
 		$(SOURCE_DIR)/packages/rpm/specs/nailgun-mcagents.spec \
-		$(call find-files,$(SOURCE_DIR)/mcagent)
+		$(call find-files,$(SOURCE_DIR)/astute/mcagents)
 	mkdir -p $(BUILD_DIR)/packages/rpm/SOURCES/nailgun-mcagents
-	cp -f $(SOURCE_DIR)/mcagent/* $(RPM_SOURCES)/nailgun-mcagents
+	cp -f $(SOURCE_DIR)/astute/mcagents/* $(RPM_SOURCES)/nailgun-mcagents
 	rpmbuild -vv --define "_topdir $(BUILD_DIR)/packages/rpm" -ba \
 		$(SOURCE_DIR)/packages/rpm/specs/nailgun-mcagents.spec
 	$(ACTION.TOUCH)
