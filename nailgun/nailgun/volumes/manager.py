@@ -49,8 +49,8 @@ class VolumeManager(object):
             # root = 10Gb
             "calc_root_size": lambda: 1024 ** 3 * 10,
             "calc_boot_size": lambda: 1024 ** 2 * 200,
-            # let's think that size of mbr is 2Mb (more than usual, for safety)
-            "calc_mbr_size": lambda: 1024 ** 2 * 2,
+            # let's think that size of mbr is 1Mb
+            "calc_mbr_size": lambda: 1024 ** 2,
         }
         generators["calc_os_size"] = lambda: sum([
             generators["calc_root_size"](),
@@ -100,17 +100,16 @@ class VolumeManager(object):
             )
 
         # minimal space for OS + boot
-        os_size = sum([
-            self.field_generator("calc_os_size"),
-            self.field_generator("calc_boot_size"),
-            self.field_generator("calc_mbr_size")
+        os_size = self.field_generator("calc_os_size")
+        boot_size = self.field_generator("calc_boot_size")
+        mbr_size = self.field_generator("calc_mbr_size")
+
+        free_space = sum([
+            disk["size"] - mbr_size
+            for disk in self.node.meta["disks"]
         ])
 
-        disk_size = sum([
-            disk["size"] for disk in self.node.meta["disks"]
-        ])
-
-        if disk_size < os_size:
+        if free_space < (os_size + boot_size):
             raise Exception("Insufficient disk space for OS")
 
         def create_boot_sector(v):
@@ -126,38 +125,37 @@ class VolumeManager(object):
                 {"type": "mbr"}
             )
 
-        os_space = os_size
-        for i, vol in enumerate(self.volumes):
-            if vol["type"] != "disk":
+        os_vg_size_left = os_size
+        for i, disk in enumerate(self.volumes):
+            if disk["type"] != "disk":
                 continue
-            if i == 0 and vol["size"] > os_space:
+            # current hard disk size - mbr size
+            free_disk_space = disk["size"] - mbr_size
+
+            if i == 0 and free_disk_space > (os_size + boot_size):
                 # all OS and boot on first disk
-                vol["volumes"][0]["size"] = os_space - (
-                    self.field_generator("calc_boot_size") +
-                    self.field_generator("calc_mbr_size")
+                disk["volumes"][0]["size"] = os_vg_size_left
+                create_boot_sector(disk)
+                free_disk_space = free_disk_space - (
+                    os_vg_size_left + boot_size
                 )
-                create_boot_sector(vol)
                 break
             elif i == 0:
                 # first disk: boot + part of OS
-                vol["volumes"][0]["size"] = vol["size"] - (
-                    self.field_generator("calc_boot_size") +
-                    self.field_generator("calc_mbr_size")
-                )
-                create_boot_sector(vol)
-                os_space = os_space - (
-                    vol["volumes"][0]["size"] +
-                    self.field_generator("calc_boot_size") +
-                    self.field_generator("calc_mbr_size")
-                )
-            elif vol["size"] > os_space:
+                disk["volumes"][0]["size"] = free_disk_space - boot_size
+                create_boot_sector(disk)
+                free_disk_space = 0
+                os_vg_size_left = os_vg_size_left - disk["volumes"][0]["size"]
+            elif free_disk_space > os_vg_size_left:
                 # another disk: remaining OS
-                vol["volumes"][0]["size"] = os_space
+                disk["volumes"][0]["size"] = os_vg_size_left
+                free_disk_space = free_disk_space - os_vg_size_left
                 break
             else:
                 # another disk: part of OS
-                vol["volumes"][0]["size"] = vol["size"]
-                os_space = os_space - vol["volumes"][0]["size"]
+                disk["volumes"][0]["size"] = free_disk_space
+                os_vg_size_left = os_vg_size_left - disk["volumes"][0]["size"]
+                free_disk_space = 0
 
         # creating volume groups
         self.volumes.extend([
