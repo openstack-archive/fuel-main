@@ -521,7 +521,10 @@ function(models, commonViews, dialogViews, nodesTabSummaryTemplate, editNodesScr
         getGroupAllocatedSpace: function(group) {
             var allocatedSpace = 0;
             _.each(this.getDisks(), _.bind(function(disk) {
-                allocatedSpace += _.find(disk.get('volumes'), {vg: group}).size;
+                var size = _.find(disk.get('volumes'), {vg: group}).size;
+                if (size) {
+                    allocatedSpace += size + 0.064;
+                }
             }, this));
             return allocatedSpace;
         },
@@ -556,7 +559,7 @@ function(models, commonViews, dialogViews, nodesTabSummaryTemplate, editNodesScr
                 } catch(e) {}
                 this.minimalSizes[group.id] = this.formatFloat(minimalSize);
             }, this));
-            this.minimalSizes.os += this.formatFloat(this.partitionSize) + 0.02;
+            this.minimalSizes.os += this.formatFloat(this.partitionSize) + 0.002;
         },
         getDisks: function() {
             return this.disks.where({'type': 'disk'});
@@ -629,18 +632,17 @@ function(models, commonViews, dialogViews, nodesTabSummaryTemplate, editNodesScr
             var volume = _.find(volumes, {vg: group});
             var unallocated = this.diskSize - this.countAllocatedSpace() + volume.size;
             volume.size = allUnallocated ? volume.size + parseFloat(size) : parseFloat(size);
-            if (allUnallocated || size === 0) {
+            var min = this.minimalSizes[group] - this.screen.getGroupAllocatedSpace(group) + _.find(this.disk.get('volumes'), {vg: group}).size;
+            if (size === 0) {
                 this.$('input[name=' + group + ']').val(size.toFixed(2));
+            } else {
+                min += 0.064;
             }
-            this.disk.set({volumes: volumes}, {
-                validate: true,
-                unallocated: unallocated,
-                group: group,
-                min: this.minimalSizes[group] - this.screen.getGroupAllocatedSpace(group) + _.find(this.disk.get('volumes'), {vg: group}).size
-            });
+            this.disk.set({volumes: volumes}, {validate: true, unallocated: unallocated, group: group, min: min});
             this.getVolumes();
             if (allUnallocated || size === 0) {
                 if (allUnallocated) {
+                    this.$('input[name=' + group + ']').val(_.find(this.volumes, {vg: group}).size.toFixed(2));
                     this.remainders[volume.vg] += this.remainders.unallocated;
                     this.remainders.unallocated = 0;
                 }
@@ -691,7 +693,7 @@ function(models, commonViews, dialogViews, nodesTabSummaryTemplate, editNodesScr
         },
         initialize: function(options) {
             _.defaults(this, options);
-            this.diskSize = this.formatFloat(this.diskMetaData.size);
+            this.diskSize = this.formatFloat(this.diskMetaData.size - this.partitionSize);
             this.getPartition();
             this.getVolumes();
             this.disk.on('invalid', function(model, errors) {
@@ -704,15 +706,11 @@ function(models, commonViews, dialogViews, nodesTabSummaryTemplate, editNodesScr
             return _.filter(this.volumes, _.bind(function(volume) {return _.contains(this.volumeGroups, volume.vg);}, this));
         },
         renderVisualGraph: function() {
-            var diskSize = this.diskSize;
-            if (this.partition) {
-                diskSize -= this.formatFloat(this.partitionSize);
-            }
-            var unallocatedWidth = 100, unallocatedSize = diskSize;
+            var unallocatedWidth = 100, unallocatedSize = this.diskSize;
             _.each(this.volumesToDisplay(), _.bind(function(volume) {
                 var width = 0, size = 0;
                 if (volume) {
-                    width = (volume.size / diskSize * 100).toPrecision(4);
+                    width = (volume.size / this.diskSize * 100).toPrecision(4);
                     size = volume.size;
                 }
                 unallocatedWidth -= width; unallocatedSize -= size;
