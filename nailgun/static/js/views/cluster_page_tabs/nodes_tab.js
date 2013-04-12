@@ -519,6 +519,13 @@ function(models, commonViews, dialogViews, nodesTabSummaryTemplate, editNodesScr
                     dialog.render();
                 }, this));
         },
+        getGroupAllocatedSpace: function(group) {
+            var allocatedSpace = 0;
+            _.each(this.getDisks(), _.bind(function(disk) {
+                allocatedSpace += _.find(disk.get('volumes'), {vg: group}).size;
+            }, this));
+            return allocatedSpace;
+        },
         setRoundedValues: function() {
             // reduce volume group sizes to two decimal places
             // for better representation on UI
@@ -550,6 +557,7 @@ function(models, commonViews, dialogViews, nodesTabSummaryTemplate, editNodesScr
                 } catch(e) {}
                 this.minimalSizes[group.id] = this.formatFloat(minimalSize);
             }, this));
+            this.minimalSizes.os += this.formatFloat(this.partitionSize) + 0.02;
         },
         getDisks: function() {
             return this.disks.where({'type': 'disk'});
@@ -562,8 +570,8 @@ function(models, commonViews, dialogViews, nodesTabSummaryTemplate, editNodesScr
                 this.disks.fetch({
                     url: _.result(this.node, 'url') + '/attributes/volumes'
                 }).done(_.bind(function() {
-                        this.setMinimalSizes();
                         this.setRoundedValues();
+                        this.setMinimalSizes();
                         this.initialData = _.cloneDeep(this.disks.toJSON());
                         this.render();
                     }, this))
@@ -622,10 +630,17 @@ function(models, commonViews, dialogViews, nodesTabSummaryTemplate, editNodesScr
             var volume = _.find(volumes, {vg: group});
             var unallocated = this.diskSize - this.countAllocatedSpace() + volume.size;
             volume.size = allUnallocated ? volume.size + parseFloat(size) : parseFloat(size);
-            this.disk.set({volumes: volumes}, {validate: true, unallocated: unallocated, group: group, min: this.minimalSizes[group]});
+            if (allUnallocated || size === 0) {
+                this.$('input[name=' + group + ']').val(size.toFixed(2));
+            }
+            this.disk.set({volumes: volumes}, {
+                validate: true,
+                unallocated: unallocated,
+                group: group,
+                min: this.minimalSizes[group] - this.screen.getGroupAllocatedSpace(group) + _.find(this.disk.get('volumes'), {vg: group}).size
+            });
             this.getVolumes();
             if (allUnallocated || size === 0) {
-                this.$('input[name=' + group + ']').val(_.find(this.volumes, {vg: group}).size.toFixed(2));
                 if (allUnallocated) {
                     this.remainders[volume.vg] += this.remainders.unallocated;
                     this.remainders.unallocated = 0;
