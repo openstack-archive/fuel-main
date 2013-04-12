@@ -506,8 +506,7 @@ function(models, commonViews, dialogViews, nodesTabSummaryTemplate, editNodesScr
             // revert sizes to bytes
             _.each(this.getDisks(), _.bind(function(disk) {
                 _.each(_.filter(disk.get('volumes'), {type: 'pv'}), _.bind(function(group) {
-                    group.size += this.remainders[disk.id][group.vg];
-                    group.size *= this.pow;
+                    group.size = Math.round((group.size + this.remainders[disk.id][group.vg]) * this.pow);
                 }, this));
             }, this));
             Backbone.sync('update', this.disks, {url: _.result(this.node, 'url') + '/attributes/volumes?type=disk'})
