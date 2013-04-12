@@ -1,3 +1,6 @@
 [submodule "fuel"]
 	path = fuel
 	url = git@github.com:Mirantis/fuel.git
+[submodule "astute"]
+	path = astute
+	url = git@github.com:Mirantis/astute.git
