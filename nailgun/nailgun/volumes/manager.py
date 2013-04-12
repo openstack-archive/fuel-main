@@ -51,6 +51,7 @@ class VolumeManager(object):
             "calc_boot_size": lambda: 1024 ** 2 * 200,
             # let's think that size of mbr is 1Mb
             "calc_mbr_size": lambda: 1024 ** 2,
+            "calc_lvm_meta_size": lambda: 1024 ** 2 * 64
         }
         generators["calc_os_size"] = lambda: sum([
             generators["calc_root_size"](),
@@ -103,6 +104,7 @@ class VolumeManager(object):
         os_size = self.field_generator("calc_os_size")
         boot_size = self.field_generator("calc_boot_size")
         mbr_size = self.field_generator("calc_mbr_size")
+        lvm_meta_size = self.field_generator("calc_lvm_meta_size")
 
         free_space = sum([
             disk["size"] - mbr_size
@@ -126,36 +128,60 @@ class VolumeManager(object):
             )
 
         os_vg_size_left = os_size
+        ready = False
         for i, disk in enumerate(self.volumes):
             if disk["type"] != "disk":
                 continue
             # current hard disk size - mbr size
             free_disk_space = disk["size"] - mbr_size
 
-            if i == 0 and free_disk_space > (os_size + boot_size):
+            if i == 0 and free_disk_space > (
+                os_vg_size_left + boot_size + lvm_meta_size
+            ):
                 # all OS and boot on first disk
-                disk["volumes"][0]["size"] = os_vg_size_left
+                disk["volumes"][0]["size"] = os_vg_size_left + lvm_meta_size
                 create_boot_sector(disk)
                 free_disk_space = free_disk_space - (
-                    os_vg_size_left + boot_size
+                    disk["volumes"][0]["size"] + boot_size
                 )
-                break
+                ready = True
             elif i == 0:
                 # first disk: boot + part of OS
                 disk["volumes"][0]["size"] = free_disk_space - boot_size
                 create_boot_sector(disk)
                 free_disk_space = 0
-                os_vg_size_left = os_vg_size_left - disk["volumes"][0]["size"]
-            elif free_disk_space > os_vg_size_left:
+                os_vg_size_left = os_vg_size_left - (
+                    disk["volumes"][0]["size"] - lvm_meta_size
+                )
+            elif free_disk_space > (os_vg_size_left + lvm_meta_size):
                 # another disk: remaining OS
-                disk["volumes"][0]["size"] = os_vg_size_left
-                free_disk_space = free_disk_space - os_vg_size_left
-                break
+                disk["volumes"][0]["size"] = os_vg_size_left + lvm_meta_size
+                free_disk_space = free_disk_space - disk["volumes"][0]["size"]
+                ready = True
             else:
                 # another disk: part of OS
                 disk["volumes"][0]["size"] = free_disk_space
-                os_vg_size_left = os_vg_size_left - disk["volumes"][0]["size"]
+                os_vg_size_left = os_vg_size_left - (
+                    disk["volumes"][0]["size"] - lvm_meta_size
+                )
                 free_disk_space = 0
+
+            info = [
+                mbr_size,
+                boot_size,
+                disk["volumes"][0]["size"]
+            ]
+            logger.debug(
+                "Disk '{0}' space ({1} total): "
+                "| {2} MBR | {3} BOOT | {4} OS |".format(
+                    disk["id"],
+                    sum(info),
+                    *info
+                )
+            )
+
+            if ready:
+                break
 
         # creating volume groups
         self.volumes.extend([

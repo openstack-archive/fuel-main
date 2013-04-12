@@ -224,7 +224,7 @@ class TestHandlers(BaseHandlers):
             {
                 "size": 7483648000,
                 "model": "HITACHI LOL404",
-                "name": "sda",
+                "name": "sda8",
                 "disk": "blablabla2"
             },
             {
@@ -244,6 +244,9 @@ class TestHandlers(BaseHandlers):
         os_lv_sum = 0
         for v in filter(lambda v: v["type"] == "disk", volumes):
             os_pv_sum += v["volumes"][0]["size"]
+            os_pv_sum -= node_db.volume_manager.field_generator(
+                "calc_lvm_meta_size"
+            )
         os_vg = filter(lambda v: v["type"] == "vg", volumes)[0]
         os_lv_sum += sum([v["size"] for v in os_vg["volumes"]])
         self.assertEquals(os_pv_sum, os_lv_sum)
