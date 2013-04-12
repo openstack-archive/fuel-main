@@ -184,6 +184,10 @@ class TestHandlers(BaseHandlers):
             "mac": self.env._generate_random_mac(),
             "meta": meta
         }
+        # We want to be sure that new mac is not equal to old one
+        self.assertNotEqual(node1.mac, node1_json["mac"])
+
+        # Here we are trying to update node
         resp = self.app.put(
             reverse('NodeCollectionHandler'),
             json.dumps([node1_json]),
@@ -192,8 +196,8 @@ class TestHandlers(BaseHandlers):
         )
         self.assertEqual(resp.status, 200)
         response = json.loads(resp.body)
-        self.assertEqual(node1.mac, response[0]["mac"])
-        self.assertNotEqual(node1_json["mac"], response[0]["mac"])
+        # Here we are checking if node mac is successfully updated
+        self.assertEqual(node1_json["mac"], response[0]["mac"])
         self.assertEqual(meta, response[0]["meta"])
 
     def test_duplicated_node_create_fails(self):

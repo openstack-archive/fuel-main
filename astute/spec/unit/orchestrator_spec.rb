@@ -25,7 +25,26 @@ describe Astute::Orchestrator do
   end
 
   it "must be able to complete verify_networks" do
-    nodes = [{'uid' => '1'}, {'uid' => '2'}]
+    nodes = [
+      {
+        'uid' => '1',
+        'networks' => [
+          {
+            'iface' => 'eth0',
+            'vlans' => ['100', '101']
+          }
+        ]
+      },
+      {
+        'uid' => '2',
+        'networks' => [
+          {
+            'iface' => 'eth0',
+            'vlans' => ['100', '101']
+          }
+        ]
+      },
+    ]
     networks = [{'id' => 1, 'vlan_id' => 100, 'cidr' => '10.0.0.0/24'},
                 {'id' => 2, 'vlan_id' => 101, 'cidr' => '192.168.0.0/24'}]
     res1 = {:data => {:uid=>"1",
@@ -51,9 +70,17 @@ describe Astute::Orchestrator do
 
     rpcclient = mock_rpcclient(nodes)
 
-    rpcclient.expects(:start_frame_listeners).once.returns([mc_valid_res]*2)
-    rpcclient.expects(:send_probing_frames).once.returns([mc_valid_res]*2)
     rpcclient.expects(:get_probing_info).once.returns([mc_res1, mc_res2])
+    nodes.each do |n|
+
+      rpcclient.expects(:discover).with(:nodes => [n['uid'].to_s]).at_least_once
+
+      data_to_send = {}
+      n['networks'].each{|net| data_to_send[net['iface']] = net['vlans'].join(",") }
+      rpcclient.expects(:start_frame_listeners).with(:interfaces => data_to_send.to_json).returns([mc_valid_res]*2)
+      rpcclient.expects(:send_probing_frames).with(:interfaces => data_to_send.to_json).returns([mc_valid_res]*2)
+
+    end
     Astute::MClient.any_instance.stubs(:rpcclient).returns(rpcclient)
 
     res = @orchestrator.verify_networks(@reporter, 'task_uuid', nodes, networks)
@@ -68,11 +95,21 @@ describe Astute::Orchestrator do
   end
 
   it "verify_network returns all vlans passed if only one node provided" do
-    nodes = [{'uid' => '1'}]
+    nodes = [
+      {
+        'uid' => '1',
+        'networks' => [
+          {
+            'iface' => 'eth0',
+            'vlans' => ['100', '101']
+          }
+        ]
+      }
+    ]
     networks = [{'id' => 1, 'vlan_id' => 100, 'cidr' => '10.0.0.0/24'},
                 {'id' => 2, 'vlan_id' => 101, 'cidr' => '192.168.0.0/24'}]
     res = @orchestrator.verify_networks(@reporter, 'task_uuid', nodes, networks)
-    expected = {"nodes" => [{"networks" => [{"iface"=>"eth0", "vlans"=>[100,101]}], "uid"=>"1"}]}
+    expected = {"nodes" => [{"networks" => [{"iface"=>"eth0", "vlans"=>["100","101"]}], "uid"=>"1"}]}
     res.should eql(expected)
   end
 
