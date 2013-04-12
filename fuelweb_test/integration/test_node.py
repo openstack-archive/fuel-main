@@ -68,6 +68,11 @@ def snapshot_errors(func):
             for node in ci.environment.nodes:
                 logging.info("Creating snapshot '%s' for node %s" %
                              (ss_name, node.name))
+                logging.debug(
+                    "virsh snapshot-revert %s %s",
+                    node.name,
+                    ss_name
+                )
                 node.save_snapshot(ss_name, desc)
             raise e, None, sys.exc_info()[2].tb_next
         save_logs("ok-%s-%s" % (func.__name__, timestamp))

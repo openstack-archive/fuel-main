@@ -91,7 +91,8 @@ class NodeCollectionHandler(JSONHandler):
             is_agent = nd.pop("is_agent") if "is_agent" in nd else False
             node = None
             if "mac" in nd:
-                node = q.filter_by(mac=nd["mac"]).first()
+                node = q.filter_by(mac=nd["mac"]).first() \
+                    or Node.validate_existent_node_mac(nd)
             else:
                 node = q.get(nd["id"])
             for key, value in nd.iteritems():

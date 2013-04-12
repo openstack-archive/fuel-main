@@ -181,10 +181,18 @@ def assign_vip(cluster_id, network_name):
 
 
 def get_node_networks(node_id):
-    cluster_db = orm().query(Node).get(node_id).cluster
+    node_db = orm().query(Node).get(node_id)
+    cluster_db = node_db.cluster
     if cluster_db is None:
         # Node doesn't belong to any cluster, so it should not have nets
         return []
+
+    interface_name = 'eth0'
+    for i in node_db.meta.get('interfaces', []):
+        if i['mac'] == node_db.mac:
+            interface_name = i['name']
+            break
+
     ips = orm().query(IPAddr).\
         filter_by(node=node_id).\
         filter_by(admin=False).all()
@@ -199,7 +207,7 @@ def get_node_networks(node_id):
             'netmask': str(IPNetwork(net.cidr).netmask),
             'brd': str(IPNetwork(net.cidr).broadcast),
             'gateway': net.gateway,
-            'dev': 'eth0'})  # We need to figure out interface
+            'dev': interface_name})
         network_ids.append(net.id)
     # And now let's add networks w/o IP addresses
     nets = orm().query(Network).join(NetworkGroup).\
@@ -216,6 +224,6 @@ def get_node_networks(node_id):
         network_data.append({
             'name': net.name,
             'vlan': net.vlan_id,
-            'dev': 'eth0'})
+            'dev': interface_name})
 
     return network_data

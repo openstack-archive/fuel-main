@@ -49,6 +49,9 @@ module MCollective
           config.merge!(JSON.parse(request[:config]))
         end
 
+        # we want to be sure that there is no frame listeners running
+        stop_frame_listeners
+
         # wipe out old stuff before start
         Dir.glob(@pattern).each do |file|
           File.delete file

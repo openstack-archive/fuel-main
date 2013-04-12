@@ -289,10 +289,17 @@ class DeploymentTask(object):
                 nd_dict['interfaces'][i['name']] = {
                     'mac_address': i['mac'],
                     'static': '0',
-                    'dns_name': node.fqdn,
                     'netmask': settings.ADMIN_NETWORK['netmask'],
                     'ip_address': admin_ips.pop(),
                 }
+                # We want node to be able to PXE boot via any of its
+                # interfaces. That is why we add all discovered
+                # interfaces into cobbler system. But we want
+                # assignted fqdn to be resolved into one IP address
+                # because we don't completely support multiinterface
+                # configuration yet.
+                if i['mac'] == node.mac:
+                    nd_dict['interfaces'][i['name']]['dns_name'] = node.fqdn
 
                 # interfaces_extra field in cobbler ks_meta
                 # means some extra data for network interfaces
@@ -485,16 +492,36 @@ class VerifyNetworksTask(object):
     def execute(self, task, data):
         task_uuid = task.uuid
         vlans_db = [d['vlan_id'] for d in data]
+
+        # data here is something like
+        # [{'vlan_id': 100}, {'vlan_id': 101}]
         networks = data
-        iface_db = [{'iface': 'eth0', 'vlans': vlans_db}]
-        nodes = [{'networks': iface_db, 'uid': n.id}
-                 for n in task.cluster.nodes]
+
+        nodes = []
+        for n in task.cluster.nodes:
+            iface = 'eth0'
+
+            for i in n.meta.get('interfaces', []):
+                if i['mac'] == n.mac:
+                    iface = i['name']
+                    break
+            nodes.append({
+                'uid': n.id,
+                'networks': [
+                    {
+                        'iface': iface,
+                        'vlans': vlans_db
+                    }
+                ]
+            })
 
         message = {'method': 'verify_networks',
                    'respond_to': 'verify_networks_resp',
                    'args': {'task_uuid': task.uuid,
                             'networks': networks,
                             'nodes': nodes}}
+        logger.debug("Network verification is called with: %s", message)
+
         task.cache = message
         orm().add(task)
         orm().commit()

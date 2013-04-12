@@ -305,9 +305,7 @@ class Node(Base, BasicValidator):
                 if "mac" in nd:
                     existent_node = q.filter_by(mac=nd["mac"]).first() \
                         or cls.validate_existent_node_mac(nd)
-                    if existent_node:
-                        nd["mac"] = existent_node.mac
-                    else:
+                    if not existent_node:
                         raise web.badrequest(
                             "Invalid MAC specified"
                         )
