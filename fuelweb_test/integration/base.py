@@ -17,7 +17,7 @@ class Base(TestCase):
     def get_admin_node_ip(self):
         return str(ci.environment.node['admin'].ip_address)
 
-    def get_host_hode_ip(self):
+    def get_host_node_ip(self):
         return str(ci.environment.networks[0].ip_addresses[1])
 
     def _wait_for_threads(self):

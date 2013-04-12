@@ -121,7 +121,7 @@ class TestNode(Base):
                 self._logserver_status = True
 
         self.logserver = LogServer(
-            address=self.get_host_hode_ip(),
+            address=self.get_host_node_ip(),
             port=5514
         )
         self.logserver.set_handler(handler)
@@ -524,7 +524,7 @@ class TestNode(Base):
         )
         attrs = json.loads(response.read())
         attrs["editable"]["syslog"]["syslog_server"]["value"] = \
-            self.get_host_hode_ip()
+            self.get_host_node_ip()
         attrs["editable"]["syslog"]["syslog_port"]["value"] = \
             self.logserver.bound_port()
         self.client.put(
