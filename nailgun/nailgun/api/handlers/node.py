@@ -316,7 +316,12 @@ class NodeAttributesByNameHandler(JSONHandler):
                         attr
                     )
                 )
-                getattr(node_attrs, attr_name).extend(data)
+                attr = getattr(node_attrs, attr_name)
+                for a in data:
+                    if a in attr:
+                        continue
+                    attr.append(a)
+
                 attr = filter(
                     lambda a: a["type"] == attr_params.type,
                     getattr(node_attrs, attr_name)

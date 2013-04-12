@@ -73,7 +73,7 @@ class VolumeManager(object):
         volumes_metadata = self.node.cluster.release.volumes_metadata
         self.volumes = filter(
             lambda a: a["type"] == "disk",
-            default_volumes
+            self.volumes
         )
         self.volumes.extend(
             volumes_metadata[self.node.role]
@@ -82,6 +82,7 @@ class VolumeManager(object):
         return self.volumes
 
     def gen_default_volumes_info(self):
+        self.volumes = []
         if not "disks" in self.node.meta:
             raise Exception("No disk metadata specified for node")
         for disk in self.node.meta["disks"]:
