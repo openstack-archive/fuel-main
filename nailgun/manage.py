@@ -1,19 +1,10 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
-
 import os
 import sys
 import argparse
 import code
-
 import web
-from sqlalchemy.orm import scoped_session, sessionmaker
-
-from nailgun.logger import logger
-from nailgun.settings import settings
-from nailgun.db import syncdb, dropdb, orm
-from nailgun.unit_test import TestRunner
-
 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser()
@@ -77,22 +68,41 @@ if __name__ == "__main__":
     loaddata_parser.add_argument(
         'fixture', action='store', help='json fixture to load'
     )
+    dumpdata_parser = subparsers.add_parser(
+        'dumpdata', help='dump models as fixture'
+    )
+    dumpdata_parser.add_argument(
+        'model', action='store', help='model name to dump'
+    )
     dump_settings = subparsers.add_parser(
         'dump_settings', help='dump current settings to YAML'
     )
     params, other_params = parser.parse_known_args()
     sys.argv.pop(1)
 
+    if params.action == "dumpdata":
+        import logging
+        logging.disable(logging.WARNING)
+        from nailgun.fixtures import fixman
+        fixman.dump_fixture(params.model)
+        sys.exit(0)
+
+    from nailgun.logger import logger
+    from nailgun.settings import settings
+
     if params.action == "syncdb":
         logger.info("Syncing database...")
+        from nailgun.db import syncdb
         syncdb()
         logger.info("Done")
     elif params.action == "dropdb":
         logger.info("Dropping database...")
+        from nailgun.db import dropdb
         dropdb()
         logger.info("Done")
     elif params.action == "test":
         logger.info("Running tests...")
+        from nailgun.unit_test import TestRunner
         TestRunner.run()
         logger.info("Done")
     elif params.action == "loaddata":
@@ -118,6 +128,7 @@ if __name__ == "__main__":
         from nailgun.wsgi import appstart
         appstart(keepalive=params.keepalive)
     elif params.action == "shell":
+        from nailgun.db import orm
         if params.config_file:
             settings.update_from_file(params.config_file)
         try:

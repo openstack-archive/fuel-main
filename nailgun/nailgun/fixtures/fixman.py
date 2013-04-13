@@ -124,3 +124,26 @@ def upload_fixtures():
         with open(fn, "r") as fileobj:
             upload_fixture(fileobj)
         logger.info("Fixture has been uploaded from file: %s" % fn)
+
+
+def dump_fixture(model_name):
+    dump = []
+    app_name = 'nailgun'
+    model = getattr(models, model_name.capitalize())
+    for obj in db.query(model).all():
+        obj_dump = {}
+        obj_dump['pk'] = getattr(obj, model.__mapper__.primary_key[0].name)
+        obj_dump['model'] = "%s.%s" % (app_name, model_name)
+        obj_dump['fields'] = {}
+        dump.append(obj_dump)
+        for prop in model.__mapper__.iterate_properties:
+            if isinstance(prop, sqlalchemy.orm.ColumnProperty):
+                field = str(prop.key)
+                value = getattr(obj, field)
+                if value is None:
+                    continue
+                if not isinstance(value, (
+                        list, dict, str, unicode, int, float, bool)):
+                    value = ""
+                obj_dump['fields'][field] = value
+    print json.dumps(dump, indent=4)
