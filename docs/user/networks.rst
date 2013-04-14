@@ -216,9 +216,9 @@ ports where "**FuelWeb**" vlan frames untagged (without vlan tags) and all other
 tags). Vlans 101-104 must not be filtered on those ports. It is crucial to isolate all used vlans
 from the rest of your network on L2 because in other case DHCP server on master node can send
 invalid DHCP offers to DHCP clients inside your network and vise versa slave nodes can get invalid
-DHCP offers from DHCP servers outside scheme. Also you need to configure all switch's ports connected
-to nodes as a "STP Edge port" (or a "spanning-tree portfast trunk" according to Cisco terminology).
-If you don't do that, some DHCP timeout issues can occure. Once master node is installed and slave nodes are
+DHCP offers from DHCP servers outside scheme. Also you need to configure each of the switch's ports connected
+to nodes as an "STP Edge port" (or a "spanning-tree portfast trunk" according to Cisco terminology).
+If you don't do that, some DHCP timeout issues can occur. Once master node is installed and slave nodes are
 booted in bootstrap mode you are able to use "Network Verification" feature in order to check
 validity of vlan configuration on L2 switch.
 
