@@ -35,9 +35,6 @@ sed -i '46 a logger -t ntpdate-log -- `echo /usr/sbin/ntpdate $OPTIONS $tickers`
 #
 # Update mcollective config
 #
-sed -i "s/^plugin.stomp.host\b.*$/plugin.stomp.host = $masternode_ip/" /etc/mcollective/server.cfg
-sed -i "s/^plugin.stomp.password\b.*$/plugin.stomp.password = marionette/" /etc/mcollective/server.cfg
-sed -i "s/^loglevel\b.*$/loglevel = debug/" /etc/mcollective/server.cfg
-echo "direct_addressing = 1" >> /etc/mcollective/server.cfg
+sed -i "s/^plugin.rabbitmq.pool.1.host\b.*$/plugin.rabbitmq.pool.1.host = $masternode_ip/" /etc/mcollective/server.cfg
 
 service mcollective restart
