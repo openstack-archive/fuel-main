@@ -174,7 +174,12 @@ class NodeCollectionHandler(JSONHandler):
                 variants = (
                     not node.attributes.volumes,
                     "disks" in node.meta and
-                    len(node.meta["disks"]) != len(node.attributes.volumes),
+                    len(node.meta["disks"]) != len(
+                        filter(
+                            lambda d: d["type"] == "disk",
+                            node.attributes.volumes
+                        )
+                    ),
                     "role" in nd,
                     "cluster_id" in nd
                 )

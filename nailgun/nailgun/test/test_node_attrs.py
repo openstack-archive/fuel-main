@@ -158,16 +158,17 @@ class TestHandlers(BaseHandlers):
         node_db = self.env.nodes[0]
         resp = self.app.get(
             reverse(
-                'NodeAttributesHandler',
+                'NodeAttributesByNameHandler',
                 kwargs={
                     'node_id': node_db.id,
                     'attr_name': 'volumes'
                 }
-            ),
+            ) + "?type=disk",
             headers=self.default_headers
         )
         response = json.loads(resp.body)
-        self.assertEquals(len(response["volumes"]), 3)
+        self.assertEquals(len(response), 1)
+
         new_meta = node_db.meta.copy()
         new_meta["disks"].append({
             "size": 1000022933376,
@@ -189,16 +190,16 @@ class TestHandlers(BaseHandlers):
         self.env.refresh_nodes()
         resp = self.app.get(
             reverse(
-                'NodeAttributesHandler',
+                'NodeAttributesByNameHandler',
                 kwargs={
                     'node_id': node_db.id,
                     'attr_name': 'volumes'
                 }
-            ),
+            ) + "?type=disk",
             headers=self.default_headers
         )
         response = json.loads(resp.body)
-        self.assertEquals(len(response["volumes"]), 4)
+        self.assertEquals(len(response), 2)
 
     def test_node_insufficient_disk_space(self):
         meta = self.env.default_metadata()
