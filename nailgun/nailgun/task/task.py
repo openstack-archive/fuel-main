@@ -491,7 +491,7 @@ class VerifyNetworksTask(object):
     @classmethod
     def execute(self, task, data):
         task_uuid = task.uuid
-        vlans_db = [d['vlan_id'] for d in data]
+        vlans_db = [int(d['vlan_id']) for d in data]
 
         # data here is something like
         # [{'vlan_id': 100}, {'vlan_id': 101}]

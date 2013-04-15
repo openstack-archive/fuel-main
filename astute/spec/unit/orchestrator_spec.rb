@@ -31,7 +31,7 @@ describe Astute::Orchestrator do
         'networks' => [
           {
             'iface' => 'eth0',
-            'vlans' => ['100', '101']
+            'vlans' => [100, 101]
           }
         ]
       },
@@ -40,7 +40,7 @@ describe Astute::Orchestrator do
         'networks' => [
           {
             'iface' => 'eth0',
-            'vlans' => ['100', '101']
+            'vlans' => [100, 101]
           }
         ]
       },
@@ -101,7 +101,7 @@ describe Astute::Orchestrator do
         'networks' => [
           {
             'iface' => 'eth0',
-            'vlans' => ['100', '101']
+            'vlans' => [100, 101]
           }
         ]
       }
@@ -109,7 +109,7 @@ describe Astute::Orchestrator do
     networks = [{'id' => 1, 'vlan_id' => 100, 'cidr' => '10.0.0.0/24'},
                 {'id' => 2, 'vlan_id' => 101, 'cidr' => '192.168.0.0/24'}]
     res = @orchestrator.verify_networks(@reporter, 'task_uuid', nodes, networks)
-    expected = {"nodes" => [{"networks" => [{"iface"=>"eth0", "vlans"=>["100","101"]}], "uid"=>"1"}]}
+    expected = {"nodes" => [{"networks" => [{"iface"=>"eth0", "vlans"=>[100, 101]}], "uid"=>"1"}]}
     res.should eql(expected)
   end
 
