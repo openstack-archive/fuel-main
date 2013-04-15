@@ -25,7 +25,6 @@ module Astute
       end
       ctx.reporter.report({'progress' => 30})
 
-      # Interface name is hardcoded for now. Later we expect it to be passed from Nailgun backend
       nodes.each do |node|
         data_to_send = {}
         node['networks'].each{|net| data_to_send[net['iface']] = net['vlans'].join(",") }

@@ -166,6 +166,7 @@ class TestVerifyNetworks(BaseHandlers):
         )
         cluster_db = self.env.clusters[0]
         node1, node2 = self.env.nodes
+        nets_sent = [{'iface': 'eth0', 'vlans': range(100, 105)}]
 
         task = Task(
             name="super",
@@ -173,7 +174,8 @@ class TestVerifyNetworks(BaseHandlers):
         )
         task.cache = {
             "args": {
-                "nodes": []
+                'nodes': [{'uid': node1.id, 'networks': nets_sent},
+                          {'uid': node2.id, 'networks': nets_sent}]
             }
         }
         self.db.add(task)
@@ -199,6 +201,7 @@ class TestVerifyNetworks(BaseHandlers):
         )
         cluster_db = self.env.clusters[0]
         node1, node2 = self.env.nodes
+        nets_sent = [{'iface': 'eth0', 'vlans': range(100, 105)}]
 
         task = Task(
             name="super",
@@ -206,7 +209,8 @@ class TestVerifyNetworks(BaseHandlers):
         )
         task.cache = {
             "args": {
-                "nodes": []
+                'nodes': [{'uid': node1.id, 'networks': nets_sent},
+                          {'uid': node2.id, 'networks': nets_sent}]
             }
         }
         self.db.add(task)
