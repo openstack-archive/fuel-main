@@ -24,7 +24,7 @@ class Disk(object):
             size = size + self.vm.field_generator(
                 "calc_lvm_meta_size"
             )
-        else:
+        elif size is None:
             size = self.free_space
         self.free_space = self.free_space - size
 
@@ -150,19 +150,20 @@ class VolumeManager(object):
             else:
                 disk.create_mbr()
 
+            if os_vg_size_left == 0:
+                disk.create_pv("os", 0)
+                continue
+
             if disk.free_space > (
                 os_vg_size_left + lvm_meta_size
             ):
                 disk.create_pv("os", os_vg_size_left)
-                ready = True
+                os_vg_size_left = 0
             else:
                 os_vg_size_left = os_vg_size_left - (
                     disk.free_space - lvm_meta_size
                 )
                 disk.create_pv("os")
-
-            if ready:
-                break
 
     def gen_volumes_info(self):
         if not "disks" in self.node.meta:
@@ -194,7 +195,7 @@ class VolumeManager(object):
     def gen_default_volumes_info(self):
         if not "disks" in self.node.meta:
             raise Exception("No disk metadata specified for node")
-        for disk in self.node.meta["disks"]:
+        for disk in sorted(self.node.meta["disks"], key=lambda i: i["name"]):
             self.disks.append(Disk(self, disk["disk"], disk["size"]))
 
         self._allocate_os()
