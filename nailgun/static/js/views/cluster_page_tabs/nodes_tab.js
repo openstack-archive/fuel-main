@@ -807,15 +807,16 @@ function(models, commonViews, dialogViews, nodesTabSummaryTemplate, editNodesScr
                     this.checkForChanges();
                 }, this));*/
         },
-        removeLogicalInterface: function(phisical, logical){
-            var ethIfc = _.find(this.interfaces.models,function(ifc){return ifc.get("name")==phisical})
-            var ifType = _.first(_.where(ethIfc.get("types"), {"name":logical}))
-            ethIfc.attributes.types=_.reject(ethIfc.get("types"), {"name":logical})  
+        removeLogicalInterface: function(physical, logical){
+            var ethIfc = this.interfaces.findWhere({name: physical}); //_.find(this.interfaces.models,function(ifc){return ifc.get("name")==physical})
+            var ifType = _.first(_.where(ethIfc.get("types"), {"name":logical}));
+            var types=ethIfc.get('types');
+            ethIfc.set("types", _.reject(ethIfc.get("types"), {"name":logical}));
             return ifType;
         },
-        addLogicalInterface: function(phisical, logical){
+        addLogicalInterface: function(physical, logical){
             var ethIfc = _.find(this.interfaces.models,
-                                function(ifc){ return ifc.get("name")==phisical });
+                                function(ifc){ return ifc.get("name")==physical });
             if (_.isUndefined(ethIfc.attributes.types)){
                 ethIfc.attributes.types = [];
             }
@@ -848,15 +849,16 @@ function(models, commonViews, dialogViews, nodesTabSummaryTemplate, editNodesScr
                     url: _.result(this.node, 'url') + '/attributes/interfaces'
                 }).done(_.bind(function(){
                                 this.setInitialData();
-                                this.render();
+                                this.renderInterfaces();
                                 var ifType;
-                                $( ".logical-network-box" ).sortable({
+                                this.$( ".logical-network-box" ).sortable({
                                     connectWith: ".connectedSortable",
+                                    { appendTo: 'body' }
                                     receive: _.bind(function(event, ui){
                                         var obj = $(event.target);
-                                        obj.children(".network-help-message").css("display", "none");
+                                        obj.children(".network-help-message").addClass("hide");
                                         var ifcName = obj.parent().parent().children(".network-box-name").html();
-                                        this.addLogicalInterface(ifcName, ifType)	
+                                        this.addLogicalInterface(ifcName, ifType)
                                     }, this),
                                     remove: _.bind(function(event, ui){
                                         var obj = $(event.target);
@@ -864,7 +866,7 @@ function(models, commonViews, dialogViews, nodesTabSummaryTemplate, editNodesScr
                                         ifType=this.removeLogicalInterface(ifcName, ui.item.html())
                                         var children = obj.children(".network-help-message")
                                         if (obj.children().length == 1){
-                                            children.css("display", "block")
+                                            children.removeClass("hide")
                                         }
                                     },this)
                                 }).disableSelection();
@@ -878,14 +880,12 @@ function(models, commonViews, dialogViews, nodesTabSummaryTemplate, editNodesScr
             this.tearDownRegisteredSubViews();
             this.$('.node-networks').html('');
             _.each(this.interfaces.models, _.bind(function(ifc) {
-                var interfaceMetaData = _.find(this.node.get('meta').interfaces, {ifc: ifc.name});
-                
-                var nodeDisk = new NodeInterface({
+                var nodeInterface = new NodeInterface({
                     ifc: ifc,
                     screen: this
                 });
-                this.registerSubView(nodeDisk);
-                this.$('.node-networks').append(nodeDisk.render().el);
+                this.registerSubView(nodeInterface);
+                this.$('.node-networks').append(nodeInterface.render().el);
                 
             }, this));
         },
@@ -915,3 +915,4 @@ function(models, commonViews, dialogViews, nodesTabSummaryTemplate, editNodesScr
 
     return NodesTab;
 });
+
