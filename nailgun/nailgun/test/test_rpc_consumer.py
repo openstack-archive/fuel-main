@@ -24,6 +24,11 @@ from nailgun.api.models import Vlan
 
 class TestVerifyNetworks(BaseHandlers):
 
+    def setUp(self):
+        super(TestVerifyNetworks, self).setUp()
+        self.receiver = rcvr.NailgunReceiver()
+        self.receiver.initialize()
+
     def test_verify_networks_resp(self):
         self.env.create(
             cluster_kwargs={},
@@ -37,8 +42,7 @@ class TestVerifyNetworks(BaseHandlers):
         vlans = NetworkGroup.generate_vlan_ids_list(
             self.env.generate_ui_networks(cluster_db.id)
         )
-
-        receiver = rcvr.NailgunReceiver()
+        nets = [{'iface': 'eth0', 'vlans': range(100, 105)}]
 
         task = Task(
             name="verify_networks",
@@ -46,18 +50,18 @@ class TestVerifyNetworks(BaseHandlers):
         )
         task.cache = {
             "args": {
-                "networks": [{'vlan_id': i} for i in xrange(100, 105)]
+                "nodes": [{'uid': node1.id, 'networks': nets},
+                          {'uid': node2.id, 'networks': nets}]
             }
         }
         self.db.add(task)
         self.db.commit()
 
-        nets = [{'iface': 'eth0', 'vlans': xrange(100, 105)}]
         kwargs = {'task_uuid': task.uuid,
                   'status': 'ready',
                   'nodes': [{'uid': node1.id, 'networks': nets},
                             {'uid': node2.id, 'networks': nets}]}
-        receiver.verify_networks_resp(**kwargs)
+        self.receiver.verify_networks_resp(**kwargs)
         self.db.refresh(task)
         self.assertEqual(task.status, "ready")
         self.assertEqual(task.message, None)
@@ -72,7 +76,8 @@ class TestVerifyNetworks(BaseHandlers):
         )
         cluster_db = self.env.clusters[0]
         node1, node2 = self.env.nodes
-        receiver = rcvr.NailgunReceiver()
+        nets_sent = [{'iface': 'eth0', 'vlans': range(100, 105)}]
+        nets_resp = [{'iface': 'eth0', 'vlans': range(100, 104)}]
 
         task = Task(
             name="super",
@@ -80,18 +85,18 @@ class TestVerifyNetworks(BaseHandlers):
         )
         task.cache = {
             "args": {
-                "networks": [{'vlan_id': i} for i in xrange(100, 105)]
+                'nodes': [{'uid': node1.id, 'networks': nets_sent},
+                          {'uid': node2.id, 'networks': nets_sent}]
             }
         }
         self.db.add(task)
         self.db.commit()
 
-        nets = [{'iface': 'eth0', 'vlans': range(100, 104)}]
         kwargs = {'task_uuid': task.uuid,
                   'status': 'ready',
-                  'nodes': [{'uid': node1.id, 'networks': nets},
-                            {'uid': node2.id, 'networks': nets}]}
-        receiver.verify_networks_resp(**kwargs)
+                  'nodes': [{'uid': node1.id, 'networks': nets_resp},
+                            {'uid': node2.id, 'networks': nets_resp}]}
+        self.receiver.verify_networks_resp(**kwargs)
         self.db.refresh(task)
         self.assertEqual(task.status, "error")
         error_nodes = []
@@ -111,9 +116,10 @@ class TestVerifyNetworks(BaseHandlers):
             ]
         )
 
-        receiver = rcvr.NailgunReceiver()
         cluster_db = self.env.clusters[0]
         node1, node2 = self.env.nodes
+        nets_sent = [{'iface': 'eth0', 'vlans': range(100, 105)}]
+        nets_resp = [{'iface': 'eth0', 'vlans': range(100, 104)}]
 
         task = Task(
             name="super",
@@ -121,20 +127,20 @@ class TestVerifyNetworks(BaseHandlers):
         )
         task.cache = {
             "args": {
-                "networks": [{'vlan_id': i} for i in xrange(100, 105)]
+                'nodes': [{'uid': node1.id, 'networks': nets_sent},
+                          {'uid': node2.id, 'networks': nets_sent}]
             }
         }
         self.db.add(task)
         self.db.commit()
 
-        nets = [{'iface': 'eth0', 'vlans': range(100, 104)}]
         kwargs = {'task_uuid': task.uuid,
                   'status': 'ready',
-                  'nodes': [{'uid': node1.id, 'networks': nets},
-                            {'uid': node2.id, 'networks': nets}]}
+                  'nodes': [{'uid': node1.id, 'networks': nets_resp},
+                            {'uid': node2.id, 'networks': nets_resp}]}
         self.db.delete(node2)
         self.db.commit()
-        receiver.verify_networks_resp(**kwargs)
+        self.receiver.verify_networks_resp(**kwargs)
         resp = self.app.get(
             reverse('TaskHandler', kwargs={'task_id': task.id}),
             headers=self.default_headers
@@ -161,15 +167,13 @@ class TestVerifyNetworks(BaseHandlers):
         cluster_db = self.env.clusters[0]
         node1, node2 = self.env.nodes
 
-        receiver = rcvr.NailgunReceiver()
-
         task = Task(
             name="super",
             cluster_id=cluster_db.id
         )
         task.cache = {
             "args": {
-                "networks": [{'vlan_id': i} for i in xrange(100, 105)]
+                "nodes": []
             }
         }
         self.db.add(task)
@@ -178,7 +182,7 @@ class TestVerifyNetworks(BaseHandlers):
         kwargs = {'task_uuid': task.uuid,
                   'status': 'ready',
                   'nodes': []}
-        receiver.verify_networks_resp(**kwargs)
+        self.receiver.verify_networks_resp(**kwargs)
         self.db.refresh(task)
         self.assertEqual(task.status, "error")
         error_msg = 'Please add more nodes to the environment ' \
@@ -196,15 +200,13 @@ class TestVerifyNetworks(BaseHandlers):
         cluster_db = self.env.clusters[0]
         node1, node2 = self.env.nodes
 
-        receiver = rcvr.NailgunReceiver()
-
         task = Task(
             name="super",
             cluster_id=cluster_db.id
         )
         task.cache = {
             "args": {
-                "networks": [{'vlan_id': i} for i in xrange(100, 105)]
+                "nodes": []
             }
         }
         self.db.add(task)
@@ -215,7 +217,7 @@ class TestVerifyNetworks(BaseHandlers):
                   'status': 'ready',
                   'nodes': [],
                   'error': error_msg}
-        receiver.verify_networks_resp(**kwargs)
+        self.receiver.verify_networks_resp(**kwargs)
         self.db.refresh(task)
         self.assertEqual(task.status, "error")
         self.assertEqual(task.message, error_msg)
@@ -223,10 +225,14 @@ class TestVerifyNetworks(BaseHandlers):
 
 class TestConsumer(BaseHandlers):
 
+    def setUp(self):
+        super(TestConsumer, self).setUp()
+        self.receiver = rcvr.NailgunReceiver()
+        self.receiver.initialize()
+
     def test_node_deploy_resp(self):
         node = self.env.create_node(api=False)
         node2 = self.env.create_node(api=False)
-        receiver = rcvr.NailgunReceiver()
 
         task = Task(
             uuid=str(uuid.uuid4()),
@@ -238,7 +244,7 @@ class TestConsumer(BaseHandlers):
         kwargs = {'task_uuid': task.uuid,
                   'nodes': [{'uid': node.id, 'status': 'deploying'},
                             {'uid': node2.id, 'status': 'error'}]}
-        receiver.deploy_resp(**kwargs)
+        self.receiver.deploy_resp(**kwargs)
         self.db.refresh(node)
         self.db.refresh(node2)
         self.db.refresh(task)
@@ -248,7 +254,6 @@ class TestConsumer(BaseHandlers):
         self.assertEqual(task.status, "running")
 
     def test_task_progress(self):
-        receiver = rcvr.NailgunReceiver()
 
         task = Task(
             uuid=str(uuid.uuid4()),
@@ -258,7 +263,7 @@ class TestConsumer(BaseHandlers):
         self.db.add(task)
         self.db.commit()
         kwargs = {'task_uuid': task.uuid, 'progress': 20}
-        receiver.deploy_resp(**kwargs)
+        self.receiver.deploy_resp(**kwargs)
         self.db.refresh(task)
         self.assertEqual(task.progress, 20)
         self.assertEqual(task.status, "running")
@@ -277,7 +282,6 @@ class TestConsumer(BaseHandlers):
         )
         self.db.add(task)
         self.db.commit()
-        receiver = rcvr.NailgunReceiver()
         kwargs = {
             'task_uuid': task.uuid,
             'progress': 20,
@@ -289,7 +293,7 @@ class TestConsumer(BaseHandlers):
                 }
             ]
         }
-        receiver.deploy_resp(**kwargs)
+        self.receiver.deploy_resp(**kwargs)
         self.db.refresh(self.env.nodes[0])
         self.assertEqual(self.env.nodes[0].progress, 100)
 
@@ -303,8 +307,6 @@ class TestConsumer(BaseHandlers):
         )
         cluster_db = self.env.clusters[0]
         node1, node2 = self.env.nodes
-
-        receiver = rcvr.NailgunReceiver()
 
         task = Task(
             uuid=str(uuid.uuid4()),
@@ -320,7 +322,7 @@ class TestConsumer(BaseHandlers):
                   'nodes': [{'uid': node1.id},
                             {'uid': str(node2.id)}]}
 
-        receiver.remove_nodes_resp(**kwargs)
+        self.receiver.remove_nodes_resp(**kwargs)
         self.db.refresh(task)
         self.assertEqual(task.status, "ready")
         nodes_db = self.db.query(Node).all()
@@ -337,8 +339,6 @@ class TestConsumer(BaseHandlers):
         cluster_db = self.env.clusters[0]
         node1, node2 = self.env.nodes
 
-        receiver = rcvr.NailgunReceiver()
-
         task = Task(
             uuid=str(uuid.uuid4()),
             name="super",
@@ -354,7 +354,7 @@ class TestConsumer(BaseHandlers):
                   'error_nodes': [{'uid': node1.id,
                                    'error': "RPC method failed"}]}
 
-        receiver.remove_nodes_resp(**kwargs)
+        self.receiver.remove_nodes_resp(**kwargs)
         self.db.refresh(task)
         self.assertEqual(task.status, "error")
         nodes_db = self.db.query(Node).all()
@@ -385,8 +385,6 @@ class TestConsumer(BaseHandlers):
         for net in networks:
             vlans.append(net.vlan_id)
 
-        receiver = rcvr.NailgunReceiver()
-
         task = Task(
             uuid=str(uuid.uuid4()),
             name="cluster_deletion",
@@ -403,7 +401,7 @@ class TestConsumer(BaseHandlers):
                   'error_nodes': []
                   }
 
-        receiver.remove_cluster_resp(**kwargs)
+        self.receiver.remove_cluster_resp(**kwargs)
 
         nodes_db = self.db.query(Node)\
             .filter_by(cluster_id=cluster_id).all()
@@ -451,8 +449,6 @@ class TestConsumer(BaseHandlers):
             cluster_id=cluster_db.id
         )
 
-        receiver = rcvr.NailgunReceiver()
-
         task = Task(
             uuid=str(uuid.uuid4()),
             name="cluster_deletion",
@@ -469,7 +465,7 @@ class TestConsumer(BaseHandlers):
                                    'error': "RPC method failed"}],
                   }
 
-        receiver.remove_cluster_resp(**kwargs)
+        self.receiver.remove_cluster_resp(**kwargs)
         self.db.refresh(task)
         self.assertEqual(task.status, "error")
 

@@ -83,14 +83,14 @@ describe Astute::Orchestrator do
     end
     Astute::MClient.any_instance.stubs(:rpcclient).returns(rpcclient)
 
-    res = @orchestrator.verify_networks(@reporter, 'task_uuid', nodes, networks)
+    res = @orchestrator.verify_networks(@reporter, 'task_uuid', nodes)
     expected = {"nodes" => [{"networks" => [{"iface"=>"eth0", "vlans"=>[100]}], "uid"=>"1"},
                             {"networks"=>[{"iface"=>"eth0", "vlans"=>[100, 101]}], "uid"=>"2"}]}
     res.should eql(expected)
   end
 
   it "verify_network returns error if nodes list is empty" do
-    res = @orchestrator.verify_networks(@reporter, 'task_uuid', [], [])
+    res = @orchestrator.verify_networks(@reporter, 'task_uuid', [])
     res.should eql({'status' => 'error', 'error' => "Nodes list is empty. Nothing to check."})
   end
 
@@ -108,7 +108,7 @@ describe Astute::Orchestrator do
     ]
     networks = [{'id' => 1, 'vlan_id' => 100, 'cidr' => '10.0.0.0/24'},
                 {'id' => 2, 'vlan_id' => 101, 'cidr' => '192.168.0.0/24'}]
-    res = @orchestrator.verify_networks(@reporter, 'task_uuid', nodes, networks)
+    res = @orchestrator.verify_networks(@reporter, 'task_uuid', nodes)
     expected = {"nodes" => [{"networks" => [{"iface"=>"eth0", "vlans"=>[100, 101]}], "uid"=>"1"}]}
     res.should eql(expected)
   end

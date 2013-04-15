@@ -424,26 +424,50 @@ class NailgunReceiver(object):
                     error_msg = 'Please add more nodes to the environment ' \
                                 'before performing network verification.'
             else:
-                vlans_sent = [
-                    n['vlan_id'] for n in task.cache['args']['networks']
-                ]
-                iface_sent = {'iface': 'eth0', 'vlans': set(vlans_sent)}
                 error_nodes = []
-                for n in nodes:
-                    # Now - for all interfaces (eth0, eth1, etc.)
-                    for iface in n['networks']:
-                        if iface['iface'] == iface_sent['iface']:
-                            absent_vlans = list(
-                                iface_sent['vlans'] - set(iface['vlans']))
-                            if absent_vlans:
-                                data = {'uid': n['uid'],
-                                        'interface': iface['iface'],
-                                        'absent_vlans': absent_vlans}
-                                node_db = cls.db.query(Node).get(n['uid'])
-                                if node_db:
-                                    data.update({'name': node_db.name,
-                                                 'mac': node_db.mac})
-                                error_nodes.append(data)
+                for node in nodes:
+                    sent_nodes_filtered = filter(
+                        lambda n: n['uid'] == node['uid'],
+                        task.cache['args']['nodes']
+                    )
+
+                    if not sent_nodes_filtered:
+                        logger.warning(
+                            "verify_networks_resp: arguments contain data "
+                            "which is not in task cache uid=%s",
+                            node['uid']
+                        )
+                        continue
+
+                    sent_node = sent_nodes_filtered[0]
+
+                    for network in node['networks']:
+                        sent_networks_filtered = filter(
+                            lambda n: n['iface'] == network['iface'],
+                            sent_node.get('networks', [])
+                        )
+
+                        if not sent_networks_filtered:
+                            logger.warning(
+                                "verify_networks_resp: arguments contain data "
+                                "which is not in task cache uid=%s iface=%s",
+                                node['uid'], network['iface']
+                            )
+                            continue
+
+                        sent_network = sent_networks_filtered[0]
+
+                        absent_vlans = list(
+                            set(sent_network['vlans']) - set(network['vlans']))
+                        if absent_vlans:
+                            data = {'uid': node['uid'],
+                                    'interface': network['iface'],
+                                    'absent_vlans': absent_vlans}
+                            node_db = cls.db.query(Node).get(node['uid'])
+                            if node_db:
+                                data.update({'name': node_db.name,
+                                             'mac': node_db.mac})
+                            error_nodes.append(data)
                 if error_nodes:
                     result = error_nodes
                     status = 'error'

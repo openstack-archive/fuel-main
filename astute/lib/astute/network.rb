@@ -1,6 +1,6 @@
 module Astute
   module Network
-    def self.check_network(ctx, nodes, networks)
+    def self.check_network(ctx, nodes)
       if nodes.empty?
         Astute.logger.info "#{ctx.task_id}: Network checker: nodes list is empty. Nothing to check."
         return {'status' => 'error', 'error' => "Nodes list is empty. Nothing to check."}

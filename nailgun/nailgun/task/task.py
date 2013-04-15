@@ -491,11 +491,7 @@ class VerifyNetworksTask(object):
     @classmethod
     def execute(self, task, data):
         task_uuid = task.uuid
-        vlans_db = [int(d['vlan_id']) for d in data]
-
-        # data here is something like
-        # [{'vlan_id': 100}, {'vlan_id': 101}]
-        networks = data
+        vlans = [int(d['vlan_id']) for d in data]
 
         nodes = []
         for n in task.cluster.nodes:
@@ -510,7 +506,7 @@ class VerifyNetworksTask(object):
                 'networks': [
                     {
                         'iface': iface,
-                        'vlans': vlans_db
+                        'vlans': vlans
                     }
                 ]
             })
@@ -518,7 +514,6 @@ class VerifyNetworksTask(object):
         message = {'method': 'verify_networks',
                    'respond_to': 'verify_networks_resp',
                    'args': {'task_uuid': task.uuid,
-                            'networks': networks,
                             'nodes': nodes}}
         logger.debug("Network verification is called with: %s", message)
 
