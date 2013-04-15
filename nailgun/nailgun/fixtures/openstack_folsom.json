@@ -60,13 +60,13 @@
                     },
                     {
                         "type": "vg", 
-                        "id": "vms", 
+                        "id": "vm", 
                         "volumes": [
                             {
                                 "mount": "/var/lib/libvirt", 
                                 "type": "lv", 
                                 "name": "vm", 
-                                "size": 0
+                                "size": {"generator": "calc_all_free"}
                             }
                         ]
                     },
@@ -97,7 +97,7 @@
                     },
                     {
                         "type": "vg", 
-                        "id": "cinder", 
+                        "id": "cinder",
                         "volumes": []
                     }
                 ]

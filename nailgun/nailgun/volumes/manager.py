@@ -1,7 +1,70 @@
 # -*- coding: utf-8 -*-
 
+import json
+
 from nailgun.db import orm
 from nailgun.logger import logger
+
+
+class Disk(object):
+
+    def __init__(self, vm, disk_id, size):
+        self.vm = vm
+        self.id = disk_id
+        self.size = size
+        self.free_space = size
+        self.volumes = []
+
+    def clear(self):
+        self.volumes = []
+        self.free_space = self.size
+
+    def create_pv(self, vg, size=None):
+        if size:
+            size = size + self.vm.field_generator(
+                "calc_lvm_meta_size"
+            )
+        else:
+            size = self.free_space
+        self.free_space = self.free_space - size
+
+        self.volumes.append({
+            "type": "pv",
+            "vg": vg,
+            "size": size
+        })
+
+    def create_partition(self, mount, size):
+        self.volumes.append({
+            "type": "partition",
+            "mount": mount,
+            "size": size
+        })
+        self.free_space = self.free_space - size
+
+    def create_mbr(self, boot=False):
+        if boot:
+            self.volumes.append({"type": "mbr"})
+        self.free_space = self.free_space - \
+            self.vm.field_generator("calc_mbr_size")
+
+    def make_bootable(self):
+        self.create_partition(
+            "/boot",
+            self.vm.field_generator("calc_boot_size")
+        )
+        self.create_mbr(True)
+
+    def render(self):
+        return {
+            "id": self.id,
+            "type": "disk",
+            "size": self.size,
+            "volumes": self.volumes
+        }
+
+    def __repr__(self):
+        return json.dumps(self.render(), indent=4)
 
 
 class VolumeManager(object):
@@ -14,6 +77,7 @@ class VolumeManager(object):
                 "Invalid node - can't generate volumes info"
             )
         self.volumes = []
+        self.disks = []
 
     def _traverse(self, cdict):
         new_dict = {}
@@ -59,6 +123,47 @@ class VolumeManager(object):
         ])
         return generators.get(generator, lambda: None)(*args)
 
+    def _allocate_vg(self, name, size=None, use_existing_space=True):
+        free_space = sum([d.free_space for d in self.disks])
+        # TODO: size
+        if use_existing_space:
+            for i, disk in enumerate(self.disks):
+                if disk.free_space > 0:
+                    disk.create_pv(name)
+
+    def _allocate_os(self):
+        os_size = self.field_generator("calc_os_size")
+        boot_size = self.field_generator("calc_boot_size")
+        mbr_size = self.field_generator("calc_mbr_size")
+        lvm_meta_size = self.field_generator("calc_lvm_meta_size")
+
+        free_space = sum([d.size - mbr_size for d in self.disks])
+
+        if free_space < (os_size + boot_size):
+            raise Exception("Insufficient disk space for OS")
+
+        ready = False
+        os_vg_size_left = os_size
+        for i, disk in enumerate(self.disks):
+            if i == 0:
+                disk.make_bootable()
+            else:
+                disk.create_mbr()
+
+            if disk.free_space > (
+                os_vg_size_left + lvm_meta_size
+            ):
+                disk.create_pv("os", os_vg_size_left)
+                ready = True
+            else:
+                os_vg_size_left = os_vg_size_left - (
+                    disk.free_space - lvm_meta_size
+                )
+                disk.create_pv("os")
+
+            if ready:
+                break
+
     def gen_volumes_info(self):
         if not "disks" in self.node.meta:
             raise Exception("No disk metadata specified for node")
@@ -69,120 +174,31 @@ class VolumeManager(object):
             )
         )
         self.volumes = self.gen_default_volumes_info()
-        if not self.node.cluster:
-            return self.volumes
-        volumes_metadata = self.node.cluster.release.volumes_metadata
-        self.volumes = filter(
-            lambda a: a["type"] == "disk",
-            self.volumes
-        )
-        self.volumes.extend(
-            volumes_metadata[self.node.role]
-        )
-        self.volumes = self._traverse(self.volumes)
+        if self.node.cluster:
+            volumes_metadata = self.node.cluster.release.volumes_metadata
+            map(lambda d: d.clear(), self.disks)
+            self._allocate_os()
+            self.volumes = [d.render() for d in self.disks]
+            self.volumes.extend(
+                volumes_metadata[self.node.role]
+            )
+            # UGLY HACK HERE
+            # generate volume groups for node by role
+            if self.node.role == "compute":
+                self._allocate_vg("vm")
+            elif self.node.role == "cinder":
+                self._allocate_vg("cinder")
+            self.volumes = self._traverse(self.volumes)
         return self.volumes
 
     def gen_default_volumes_info(self):
-        self.volumes = []
         if not "disks" in self.node.meta:
             raise Exception("No disk metadata specified for node")
         for disk in self.node.meta["disks"]:
-            self.volumes.append(
-                {
-                    "id": disk["disk"],
-                    "type": "disk",
-                    "size": disk["size"],
-                    "volumes": [
-                        {"type": "pv", "vg": "os", "size": 0},
-                        {"type": "pv", "vg": "vm", "size": 0},
-                        {"type": "pv", "vg": "cinder", "size": 0}
-                    ]
-                }
-            )
+            self.disks.append(Disk(self, disk["disk"], disk["size"]))
 
-        # minimal space for OS + boot
-        os_size = self.field_generator("calc_os_size")
-        boot_size = self.field_generator("calc_boot_size")
-        mbr_size = self.field_generator("calc_mbr_size")
-        lvm_meta_size = self.field_generator("calc_lvm_meta_size")
-
-        free_space = sum([
-            disk["size"] - mbr_size
-            for disk in self.node.meta["disks"]
-        ])
-
-        if free_space < (os_size + boot_size):
-            raise Exception("Insufficient disk space for OS")
-
-        def create_boot_sector(v):
-            v["volumes"].append(
-                {
-                    "type": "partition",
-                    "mount": "/boot",
-                    "size": {"generator": "calc_boot_size"}
-                }
-            )
-            # let's think that size of mbr is 2Mb (more than usual, for safety)
-            v["volumes"].append(
-                {"type": "mbr"}
-            )
-
-        os_vg_size_left = os_size
-        ready = False
-        for i, disk in enumerate(self.volumes):
-            if disk["type"] != "disk":
-                continue
-            # current hard disk size - mbr size
-            free_disk_space = disk["size"] - mbr_size
-
-            if i == 0 and free_disk_space > (
-                os_vg_size_left + boot_size + lvm_meta_size
-            ):
-                # all OS and boot on first disk
-                disk["volumes"][0]["size"] = os_vg_size_left + lvm_meta_size
-                create_boot_sector(disk)
-                free_disk_space = free_disk_space - (
-                    disk["volumes"][0]["size"] + boot_size
-                )
-                ready = True
-            elif i == 0:
-                # first disk: boot + part of OS
-                disk["volumes"][0]["size"] = free_disk_space - boot_size
-                create_boot_sector(disk)
-                free_disk_space = 0
-                os_vg_size_left = os_vg_size_left - (
-                    disk["volumes"][0]["size"] - lvm_meta_size
-                )
-            elif free_disk_space > (os_vg_size_left + lvm_meta_size):
-                # another disk: remaining OS
-                disk["volumes"][0]["size"] = os_vg_size_left + lvm_meta_size
-                free_disk_space = free_disk_space - disk["volumes"][0]["size"]
-                ready = True
-            else:
-                # another disk: part of OS
-                disk["volumes"][0]["size"] = free_disk_space
-                os_vg_size_left = os_vg_size_left - (
-                    disk["volumes"][0]["size"] - lvm_meta_size
-                )
-                free_disk_space = 0
-
-            info = [
-                mbr_size,
-                boot_size,
-                disk["volumes"][0]["size"]
-            ]
-            logger.debug(
-                "Disk '{0}' space ({1} total): "
-                "| {2} MBR | {3} BOOT | {4} OS |".format(
-                    disk["id"],
-                    sum(info),
-                    *info
-                )
-            )
-
-            if ready:
-                break
-
+        self._allocate_os()
+        self.volumes = [d.render() for d in self.disks]
         # creating volume groups
         self.volumes.extend([
             {
