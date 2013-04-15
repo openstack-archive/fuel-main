@@ -8,16 +8,21 @@ $(BUILD_DIR)/mirror/gems/gems-bundle/Gemfile:
 
 $(BUILD_DIR)/mirror/gems/gems-bundle/naily/Gemfile: $(call depv,MIRROR_GEMS)
 $(BUILD_DIR)/mirror/gems/gems-bundle/naily/Gemfile: \
+		$(BUILD_DIR)/mirror/gems/gems-bundle/naily/Gemfile.lock \
 		$(BUILD_DIR)/packages/gems/build.done \
 		$(BUILD_DIR)/packages/rpm/build.done
 	mkdir -p $(@D)
 	echo -n > $@
 	for i in $(MIRROR_GEMS); do \
-		echo "source \"file://$(LOCAL_MIRROR_GEMS)\"" >> $@; \
 		echo "source \"$$i\"" >> $@; \
 	done
-	echo "gem 'naily', '$(NAILY_VERSION)'" >> $@
+	echo "source \"file://$(LOCAL_MIRROR_GEMS)\"" >> $@
+	echo "gemspec :path => \"$(SOURCE_DIR)/naily\"" >> $@
 	$(ACTION.TOUCH)
+
+$(BUILD_DIR)/mirror/gems/gems-bundle/naily/Gemfile.lock: \
+		$(SOURCE_DIR)/naily/Gemfile.lock
+	cp $(SOURCE_DIR)/naily/Gemfile.lock $@
 
 $(BUILD_DIR)/mirror/gems/gems-bundle-gemfile.done: \
 		$(SOURCE_DIR)/requirements-gems.txt \
@@ -30,6 +35,7 @@ $(BUILD_DIR)/mirror/gems/gems-bundle-gemfile.done: \
 	$(ACTION.TOUCH)
 
 $(BUILD_DIR)/mirror/gems/gems-bundle.done: $(BUILD_DIR)/mirror/gems/gems-bundle-gemfile.done
+	find $(BUILD_DIR)/mirror/gems \( -name "naily*.gem*" -o -name "astute*.gem*" \) -exec rm '{}' \+
 	( cd $(BUILD_DIR)/mirror/gems/gems-bundle && bundle install --path=. && bundle package )
 	( cd $(BUILD_DIR)/mirror/gems/gems-bundle/naily && bundle install --path=. && bundle package )
 	( cd $(BUILD_DIR)/mirror/gems/gems-bundle/vendor/cache/ && \
