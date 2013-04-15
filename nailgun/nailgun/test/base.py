@@ -72,7 +72,8 @@ class Environment(object):
             'version': version,
             'description': u"release_desc" + version,
             'networks_metadata': self.get_default_networks_metadata(),
-            'attributes_metadata': self.get_default_attributes_metadata()
+            'attributes_metadata': self.get_default_attributes_metadata(),
+            'volumes_metadata': self.get_default_volumes_metadata()
         }
         if kwargs:
             release_data.update(kwargs)
@@ -211,6 +212,97 @@ class Environment(object):
             "id": start_id + i
         } for i, nd in enumerate(zip(net_names, net_cidrs))]
         return nets
+
+    def get_default_volumes_metadata(self):
+        return {
+            "controller": [
+                {
+                    "type": "vg",
+                    "id": "os",
+                    "volumes": [
+                        {
+                            "mount": "/",
+                            "type": "lv",
+                            "name": "root",
+                            "size": {"generator": "calc_root_size"}
+                        },
+                        {
+                            "mount": "swap",
+                            "type": "lv",
+                            "name": "swap",
+                            "size": {"generator": "calc_swap_size"}
+                        }
+                    ]
+                },
+                {
+                    "type": "vg",
+                    "id": "cinder",
+                    "volumes": []
+                }
+            ],
+            "compute": [
+                {
+                    "type": "vg",
+                    "id": "os",
+                    "volumes": [
+                        {
+                            "mount": "/",
+                            "type": "lv",
+                            "name": "root",
+                            "size": {"generator": "calc_root_size"}
+                        },
+                        {
+                            "mount": "swap",
+                            "type": "lv",
+                            "name": "swap",
+                            "size": {"generator": "calc_swap_size"}
+                        }
+                    ]
+                },
+                {
+                    "type": "vg",
+                    "id": "vm",
+                    "volumes": [
+                        {
+                            "mount": "/var/lib/libvirt",
+                            "type": "lv",
+                            "name": "vm",
+                            "size": {"generator": "calc_all_free"}
+                        }
+                    ]
+                },
+                {
+                    "type": "vg",
+                    "id": "cinder",
+                    "volumes": []
+                }
+            ],
+            "cinder": [
+                {
+                    "type": "vg",
+                    "id": "os",
+                    "volumes": [
+                        {
+                            "mount": "/",
+                            "type": "lv",
+                            "name": "root",
+                            "size": {"generator": "calc_root_size"}
+                        },
+                        {
+                            "mount": "swap",
+                            "type": "lv",
+                            "name": "swap",
+                            "size": {"generator": "calc_swap_size"}
+                        }
+                    ]
+                },
+                {
+                    "type": "vg",
+                    "id": "cinder",
+                    "volumes": []
+                }
+            ]
+        }
 
     def get_default_networks_metadata(self):
         return [

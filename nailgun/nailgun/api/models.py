@@ -46,10 +46,12 @@ class ClusterChanges(Base):
     __tablename__ = 'cluster_changes'
     POSSIBLE_CHANGES = (
         'networks',
-        'attributes'
+        'attributes',
+        'disks'
     )
     id = Column(Integer, primary_key=True)
     cluster_id = Column(Integer, ForeignKey('clusters.id'))
+    node_id = Column(Integer, ForeignKey('nodes.id'))
     name = Column(
         Enum(*POSSIBLE_CHANGES, name='possible_changes'),
         nullable=False
@@ -101,11 +103,31 @@ class Cluster(Base):
     network_groups = relationship("NetworkGroup", backref="cluster",
                                   cascade="delete")
 
-    def add_pending_changes(self, changes_type):
+    @classmethod
+    def validate(cls, data):
+        d = cls.validate_json(data)
+        if d.get("name"):
+            if orm().query(Cluster).filter_by(
+                name=d["name"]
+            ).first():
+                c = web.webapi.conflict
+                c.message = "Environment with this name already exists"
+                raise c()
+        if d.get("release"):
+            release = orm().query(Release).get(d.get("release"))
+            if not release:
+                raise web.webapi.badrequest(message="Invalid release id")
+        return d
+
+    def add_pending_changes(self, changes_type, node_id=None):
         ex_chs = orm().query(ClusterChanges).filter_by(
             cluster=self,
             name=changes_type
-        ).first()
+        )
+        if not node_id:
+            ex_chs = ex_chs.first()
+        else:
+            ex_chs = ex_chs.filter_by(node_id=node_id).first()
         # do nothing if changes with the same name already pending
         if ex_chs:
             return
@@ -113,6 +135,8 @@ class Cluster(Base):
             cluster_id=self.id,
             name=changes_type
         )
+        if node_id:
+            ch.node_id = node_id
         orm().add(ch)
         orm().commit()
 
