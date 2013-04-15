@@ -715,7 +715,7 @@ function(models, commonViews, dialogViews, nodesTabSummaryTemplate, editNodesScr
             _.each(this.volumesToDisplay(), _.bind(function(volume) {
                 var width = 0, size = 0;
                 if (volume) {
-                    width = (volume.size / this.diskSize * 100).toPrecision(4);
+                    width = (volume.size / diskSize * 100).toPrecision(4);
                     size = volume.size;
                 }
                 unallocatedWidth -= width; unallocatedSize -= size;
