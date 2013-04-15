@@ -5,6 +5,7 @@ import itertools
 import traceback
 import subprocess
 import shlex
+import shutil
 import os
 
 import web
@@ -209,10 +210,14 @@ class DeploymentTask(object):
         )
         # backup directory if it exists
         if os.path.isdir(new):
-            if os.path.isdir(bak):
-                os.rmdir(bak)
+            if os.path.islink(bak):
+                os.unlink(bak)
+            elif os.path.isdir(bak):
+                shutil.rmtree(bak)
             os.rename(new, bak)
         # rename bootstrap directory into fqdn
+        if os.path.islink(old):
+            os.unlink(old)
         if os.path.isdir(old):
             os.rename(old, new)
         else:
