@@ -19,7 +19,7 @@ module Astute
       nodes.each do |node|
         data_to_send = {}
         node['networks'].each{|net| data_to_send[net['iface']] = net['vlans'].join(",") }
-        Astute.logger.info "#{ctx.task_id}: Network checker listen: node: #{node['uid']} data: #{data_to_send.inspect}"
+        Astute.logger.debug "#{ctx.task_id}: Network checker listen: node: #{node['uid']} data: #{data_to_send.inspect}"
         net_probe.discover(:nodes => [node['uid'].to_s])
         net_probe.start_frame_listeners(:interfaces => data_to_send.to_json)
       end
@@ -29,7 +29,7 @@ module Astute
       nodes.each do |node|
         data_to_send = {}
         node['networks'].each{|net| data_to_send[net['iface']] = net['vlans'].join(",") }
-        Astute.logger.info "#{ctx.task_id}: Network checker send: node: #{node['uid']} data: #{data_to_send.inspect}"
+        Astute.logger.debug "#{ctx.task_id}: Network checker send: node: #{node['uid']} data: #{data_to_send.inspect}"
         net_probe.discover(:nodes => [node['uid'].to_s])
         net_probe.send_probing_frames(:interfaces => data_to_send.to_json)
       end
