@@ -627,8 +627,10 @@ function(models, commonViews, dialogViews, nodesTabSummaryTemplate, editNodesScr
             this.$('.close-btn').toggle();
             this.$('.disk-edit-volume-group-form').collapse('toggle');
         },
-        setVolumes: function(e, size, allUnallocated) {
-            var group = this.$(e.currentTarget).parents('.volume-group').data('group');
+        setVolumes: function(group, size, allUnallocated) {
+            if (_.isUndefined(size)) {
+                size = this.$('input[name=' + group + ']').val();
+            }
             this.$('input[name=' + group + ']').removeClass('error').parents('.volume-group').next().text('');
             var volumes = _.cloneDeep(this.volumes);
             var volume = _.find(volumes, {vg: group});
@@ -657,12 +659,16 @@ function(models, commonViews, dialogViews, nodesTabSummaryTemplate, editNodesScr
             this.renderVisualGraph();
             this.screen.checkForChanges();
         },
+        makeChanges: function(e, value, allUnallocated) {
+            var group = this.$(e.currentTarget).parents('.volume-group').data('group');
+            this.setVolumes(group, value, allUnallocated);
+            _.invoke(this.screen.subViews, 'setVolumes', group);
+        },
         deleteVolumeGroup: function(e) {
-            this.setVolumes(e, 0);
+            this.makeChanges(e, 0);
         },
         editVolumeGroups: function(e) {
-            var value = this.$(e.currentTarget).val();
-            this.setVolumes(e, value.replace(',', '.'));
+            this.makeChanges(e, (this.$(e.currentTarget).val()).replace(',', '.'));
         },
         countAllocatedSpace: function() {
             var volumes = this.volumesToDisplay();
@@ -674,7 +680,7 @@ function(models, commonViews, dialogViews, nodesTabSummaryTemplate, editNodesScr
         },
         useAllUnallocatedSpace: function(e) {
             e.preventDefault();
-            this.setVolumes(e, this.diskSize - this.countAllocatedSpace(), true);
+            this.makeChanges(e, this.diskSize - this.countAllocatedSpace(), true);
         },
         switchBootableDisk: function(e) {
             _.each(this.screen.disks.models, function(disk) {
