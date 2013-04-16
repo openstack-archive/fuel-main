@@ -662,7 +662,9 @@ function(models, commonViews, dialogViews, nodesTabSummaryTemplate, editNodesScr
         makeChanges: function(e, value, allUnallocated) {
             var group = this.$(e.currentTarget).parents('.volume-group').data('group');
             this.setVolumes(group, value, allUnallocated);
-            _.invoke(this.screen.subViews, 'setVolumes', group);
+            _.each(this.volumesToDisplay(), _.bind(function(volume) {
+                _.invoke(this.screen.subViews, 'setVolumes', volume.vg);
+            }, this));
         },
         deleteVolumeGroup: function(e) {
             this.makeChanges(e, 0);
