@@ -60,7 +60,7 @@ function(models, commonViews, dialogViews, networkTabTemplate, networkTabVerific
                 network_size: parseInt($('.network_size select', row).val(), 10)
             }, {validate: true});
             // check for changes
-            var noChanges = _.isEqual(this.model.get('networks').toJSON(), this.networks.toJSON()) && this.model.get('net_manager') == this.manager || _.some(this.networks.models, 'validationError');
+            var noChanges = (_.isEqual(this.model.get('networks').toJSON(), this.networks.toJSON()) && this.model.get('net_manager') == this.manager) || _.some(this.networks.models, 'validationError');
             this.defaultButtonsState(noChanges);
             this.hasChanges = !noChanges;
             app.page.removeVerificationTask();
