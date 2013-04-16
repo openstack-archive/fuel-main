@@ -72,6 +72,7 @@ function(models, commonViews, dialogViews, clustersPageTemplate, clusterTemplate
                 request.fail(_.bind(function(response) {
                     if (response.status == 404) {
                         this.model.collection.remove(this.model);
+                        this.remove();
                         app.navbar.nodes.fetch();
                         app.navbar.notifications.fetch();
                     }
