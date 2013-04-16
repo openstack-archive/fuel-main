@@ -215,32 +215,41 @@ module Astute
       Astute.logger.info "calculate_networks function was provided with #{data.size} interfaces"
       data.each do |iface|
         Astute.logger.debug "Calculating network for #{iface.inspect}"
-        if iface['vlan'] and iface['vlan'] != 0
-          name = [iface['dev'], iface['vlan']].join('.')
-          interfaces[name] = {"vlan" => "yes"}
+        # here we define so called 'admin' interface which is
+        # in not tagged fuelweb vlan
+        if iface['name'] == 'admin'
+          interfaces[iface['dev']] = {'bootproto' => 'dhcp',
+            'ensure' => 'present'}
+
+        # here we define all other interfaces which are not 'admin'
         else
-          name = iface['dev']
-          interfaces[name] = {}
-        end
-        interfaces[name]['bootproto'] = 'none'
-        if iface['ip']
-          ipaddr = iface['ip'].split('/')[0]
-          interfaces[name]['ipaddr'] = ipaddr
-          interfaces[name]['netmask'] = iface['netmask']  #=IPAddr.new('255.255.255.255').mask(ipmask[1]).to_s
-          interfaces[name]['bootproto'] = 'static'
-          if iface['brd']
-            interfaces[name]['broadcast'] = iface['brd']
+
+          if iface['vlan'] and iface['vlan'] != 0
+            name = [iface['dev'], iface['vlan']].join('.')
+            interfaces[name] = {"vlan" => "yes"}
+          else
+            name = iface['dev']
+            interfaces[name] = {}
           end
+          interfaces[name]['bootproto'] = 'none'
+          if iface['ip']
+            ipaddr = iface['ip'].split('/')[0]
+            interfaces[name]['ipaddr'] = ipaddr
+            interfaces[name]['netmask'] = iface['netmask']  #=IPAddr.new('255.255.255.255').mask(ipmask[1]).to_s
+            interfaces[name]['bootproto'] = 'static'
+            if iface['brd']
+              interfaces[name]['broadcast'] = iface['brd']
+            end
+          end
+          if iface['gateway'] and iface['name'] =~ /^public$/i
+            interfaces[name]['gateway'] = iface['gateway']
+          end
+          interfaces[name]['ensure'] = 'present'
+          Astute.logger.debug "Calculated network for interface: #{name}, data: #{interfaces[name].inspect}"
         end
-        if iface['gateway'] and iface['name'] =~ /^public$/i
-          interfaces[name]['gateway'] = iface['gateway']
-        end
-        interfaces[name]['ensure'] = 'present'
-        Astute.logger.debug "Calculated network for interface: #{name}, data: #{interfaces[name].inspect}"
       end
       interfaces['lo'] = {} unless interfaces.has_key?('lo')
-      interfaces['eth0'] = {'bootproto' => 'dhcp',
-                            'ensure' => 'present'} unless interfaces.has_key?('eth0')
+
       # Example of return:
       # {"eth0":{"ensure":"present","bootproto":"dhcp"},"lo":{},
       # "eth0.102":{"ipaddr":"10.20.20.20","ensure":"present","vlan":"yes",

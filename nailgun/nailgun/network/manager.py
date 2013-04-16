@@ -226,4 +226,8 @@ def get_node_networks(node_id):
             'vlan': net.vlan_id,
             'dev': interface_name})
 
+    network_data.append({
+        'name': 'admin',
+        'dev': interface_name})
+
     return network_data
