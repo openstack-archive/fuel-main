@@ -714,13 +714,13 @@ function(models, commonViews, dialogViews, nodesTabSummaryTemplate, editNodesScr
             _.each(this.volumesToDisplay(), _.bind(function(volume) {
                 var width = 0, size = 0;
                 if (volume) {
-                    width = (volume.size / diskSize * 100).toPrecision(4);
+                    width = (volume.size / diskSize * 100).toFixed(2);
                     size = volume.size;
                 }
                 unallocatedWidth -= width; unallocatedSize -= size;
                 this.$('.disk-visual .' + volume.vg).toggleClass('hidden-titles', width < 6).css('width', width + '%').find('.volume-group-size').text(size.toFixed(2) + ' GB');
             }, this));
-            this.$('.disk-visual .unallocated').toggleClass('hidden-titles', unallocatedWidth < 6).css('width', unallocatedWidth + '%').find('.volume-group-size').text(unallocatedSize.toFixed(2) + ' GB');
+            this.$('.disk-visual .unallocated').toggleClass('hidden-titles', unallocatedWidth < 6).css('width', unallocatedWidth.toFixed(2) + '%').find('.volume-group-size').text(unallocatedSize.toFixed(2) + ' GB');
             this.$('.btn-bootable').attr('disabled', this.partition || unallocatedSize < this.formatFloat(this.partitionSize));
         },
         render: function() {
