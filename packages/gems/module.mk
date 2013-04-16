@@ -8,12 +8,13 @@ RAEMON_VERSION:=0.3.0
 RAEMON_COMMIT:=b78eaae57c8e836b8018386dd96527b8d9971acc
 
 $(BUILD_DIR)/packages/gems/build.done: \
+		$(call depv,BUILD_MIRROR_GEMS) \
 		$(BUILD_DIR)/packages/gems/naily-$(NAILY_VERSION).gem \
 		$(BUILD_DIR)/packages/gems/astute-$(ASTUTE_VERSION).gem \
 		$(BUILD_DIR)/packages/gems/raemon-$(RAEMON_VERSION).gem
-	mkdir -p $(LOCAL_MIRROR_GEMS)/gems
-	cp $(BUILD_DIR)/packages/gems/*.gem $(LOCAL_MIRROR_GEMS)/gems
-	(cd $(LOCAL_MIRROR_GEMS) && gem generate_index gems)
+	mkdir -p $(BUILD_MIRROR_GEMS)/gems
+	cp $(BUILD_DIR)/packages/gems/*.gem $(BUILD_MIRROR_GEMS)/gems
+	(cd $(BUILD_MIRROR_GEMS) && gem generate_index gems)
 	$(ACTION.TOUCH)
 
 astute: $(BUILD_DIR)/packages/gems/astute-$(ASTUTE_VERSION).gem

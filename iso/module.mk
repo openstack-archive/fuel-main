@@ -31,6 +31,8 @@ $(BUILD_DIR)/iso/isoroot-gems.done: \
 		$(BUILD_DIR)/packages/build.done
 	mkdir -p $(ISOROOT)/gems
 	rsync -a --delete $(LOCAL_MIRROR_GEMS)/ $(ISOROOT)/gems
+	rsync -a $(BUILD_MIRROR_GEMS)/gems/ $(ISOROOT)/gems/gems
+	(cd $(ISOROOT)/gems && gem generate_index gems)
 	$(ACTION.TOUCH)
 
 

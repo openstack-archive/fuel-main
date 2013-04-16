@@ -78,8 +78,9 @@ $(BUILD_DIR)/packages/rpm/rpm-mcollective.done: \
 	sudo chroot $(SANDBOX) sh -c "mkdir -p ~/rpmbuild/SOURCES ~/rpmbuild/SPECS"
 	sudo chroot $(SANDBOX) sh -c "cd /tmp/marionette-collective-$(MCOLLECTIVE_COMMIT) && rake rpm && rake gem"
 	cp $(SANDBOX)/tmp/marionette-collective-$(MCOLLECTIVE_COMMIT)/build/*.rpm $(BUILD_DIR)/packages/rpm/RPMS/x86_64/
-	cp $(SANDBOX)/tmp/marionette-collective-$(MCOLLECTIVE_COMMIT)/build/*.gem $(LOCAL_MIRROR_GEMS)/gems/
-	(cd $(LOCAL_MIRROR_GEMS) && gem generate_index gems)
+	mkdir -p $(BUILD_MIRROR_GEMS)/gems
+	cp $(SANDBOX)/tmp/marionette-collective-$(MCOLLECTIVE_COMMIT)/build/*.gem $(BUILD_MIRROR_GEMS)/gems/
+	(cd $(BUILD_MIRROR_GEMS) && gem generate_index gems)
 	sudo sh -c "$${SANDBOX_DOWN}"
 	$(ACTION.TOUCH)
 

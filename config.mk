@@ -14,6 +14,8 @@ LOCAL_MIRROR_GEMS:=$(LOCAL_MIRROR)/gems
 LOCAL_MIRROR_CENTOS:=$(LOCAL_MIRROR)/centos
 LOCAL_MIRROR_CENTOS_OS_BASEURL:=$(LOCAL_MIRROR_CENTOS)/$(CENTOS_RELEASE)/os/$(CENTOS_ARCH)
 
+BUILD_MIRROR_GEMS:=$(BUILD_DIR)/packages/gems
+
 # Use srv08 mirrors by default. Other possible default is 'msk'.
 # Setting any other value or removing of this variable will cause
 # download of all the packages directly from internet
