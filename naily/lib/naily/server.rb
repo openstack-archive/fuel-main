@@ -13,38 +13,18 @@ module Naily
       @queue = @channel.queue(Naily.config.broker_queue, :durable => true)
       @queue.bind @exchange, :routing_key => Naily.config.broker_queue
       @loop = Thread.new(&method(:server_loop))
+      @consumer = AMQP::Consumer.new(@channel, @queue)
+      @consumer.on_delivery do |metadata, message|
+        Thread.new do
+          dispatch message
+          metadata.ack
+          Naily.logger.info "Message acknowledged"
+        end
+      end
+      @consumer.consume
     end
 
   private
-
-    def server_loop
-      Naily.logger.info "Server loop started"
-      begin
-        loop do
-          consume_one do |message|
-            dispatch message
-          end
-          Thread.stop
-        end
-      rescue => ex
-        Naily.logger.error "Exception in server loop: #{ex.inspect}"
-      ensure
-        Naily.logger.info "Server loop finished"
-      end
-    end
-
-    def consume_one
-      @consumer = AMQP::Consumer.new(@channel, @queue)
-      @consumer.on_delivery do |message|
-        Thread.new do
-          yield message
-          @loop.wakeup
-        end
-        @consumer.cancel
-      end
-      Naily.logger.info "Waiting for a message"
-      @consumer.consume
-    end
 
     def dispatch(payload)
       Naily.logger.debug "Got message with payload #{payload.inspect}"
