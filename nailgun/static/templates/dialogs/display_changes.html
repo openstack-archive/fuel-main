@@ -34,13 +34,28 @@
     <% }) %>
   <% } %>
 
-  <!-- Network & OpenStack changes -->
+  <!-- Networks, OpenStack settings, nodes disks changes -->
   <% if (cluster.get('changes').length) { %>
     <div class="deploy-task-name">Changed:</div>
-    <% var settingsChangesDescriptions = {'attributes': 'OpenStack settings', 'networks': 'Network settings'} %>
+    <% var settingsChangesDescriptions = {
+      'attributes': 'OpenStack settings',
+      'networks': 'Network settings',
+      'disks': 'Volume groups were reconfigured on the folowing nodes:'
+    } %>
+    <% var nodes = [] %>
     <% _.each(cluster.get('changes'), function(change) { %>
-      <div class="deploy-task-item"><%= settingsChangesDescriptions[change] %></div>
+      <% if (_.isArray(change)) {nodes.push(_.last(change));} else { %>
+        <div class="deploy-task-item"><%= settingsChangesDescriptions[change] %></div>
+      <% } %>
     <% }) %>
+    <% if (nodes.length) { %>
+      <div class="deploy-task-item"><%= settingsChangesDescriptions.disks %></div>
+      <ul>
+        <% _.each(nodes, function(node) { %>
+          <li><%= node %></li>
+        <% }) %>
+      </ul>
+    <% } %>
   <% } %>
 
   <hr class="slim">

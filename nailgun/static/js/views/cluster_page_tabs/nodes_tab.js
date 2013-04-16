@@ -510,7 +510,10 @@ function(models, commonViews, dialogViews, nodesTabSummaryTemplate, editNodesScr
                 }, this));
             }, this));
             Backbone.sync('update', this.disks, {url: _.result(this.node, 'url') + '/attributes/volumes?type=disk'})
-                .done(_.bind(this.returnToNodesTab, this))
+                .done(_.bind(function() {
+                    this.model.fetch();
+                    this.returnToNodesTab();
+                }, this))
                 .fail(_.bind(function() {
                     this.disableControls(false);
                     var dialog = new dialogViews.SimpleMessage({error: true, title: 'Node disks configuration'});
