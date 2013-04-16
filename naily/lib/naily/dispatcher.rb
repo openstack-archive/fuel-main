@@ -22,7 +22,7 @@ module Naily
       nodes_uids = nodes.map { |n| n['uid'] }
       time = Time::now.to_f
       nodes_not_booted = nodes.map { |n| n['uid'] }
-      Naily.logger.info "Starting OS provisioning for nodes: #{nodes_not_booted.join(',')}" 
+      Naily.logger.info "Starting OS provisioning for nodes: #{nodes_not_booted.join(',')}"
       begin
         @provisionLogParser.prepare(nodes)
       rescue Exception => e
@@ -36,7 +36,7 @@ module Naily
             time = Time::now.to_f
             types = @orchestrator.node_type(reporter, data['args']['task_uuid'], nodes, 2)
             target_uids = types.reject{|n| n['node_type'] != 'target'}.map{|n| n['uid']}
-            Naily.logger.debug "Not provisioned: #{nodes_not_booted.join(',')}, got target OSes: #{target_uids.join(',')}" 
+            Naily.logger.debug "Not provisioned: #{nodes_not_booted.join(',')}, got target OSes: #{target_uids.join(',')}"
             if nodes.length == target_uids.length
               Naily.logger.info "All nodes #{target_uids.join(',')} are provisioned."
               break
@@ -84,7 +84,7 @@ module Naily
     def verify_networks(data)
       reporter = Naily::Reporter.new(@producer, data['respond_to'], data['args']['task_uuid'])
       args = data['args']
-      result = @orchestrator.verify_networks(reporter, data['args']['task_uuid'], args['nodes'], args['networks'])
+      result = @orchestrator.verify_networks(reporter, data['args']['task_uuid'], args['nodes'])
       report_result(result, reporter)
     end
 

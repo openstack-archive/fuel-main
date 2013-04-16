@@ -14,7 +14,7 @@ module Astute
       end
       uids = nodes.map {|n| n['uid']}
       # TODO Everything breakes if agent not found. We have to handle that
-      net_probe = MClient.new(ctx, "net_probe", uids)
+      net_probe = MClient.new(ctx, "net_probe", uids.map(&:to_s))
 
       nodes.each do |node|
         data_to_send = {}
