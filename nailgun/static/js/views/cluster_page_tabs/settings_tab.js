@@ -47,7 +47,10 @@ function(models, commonViews, dialogViews, settingsTabTemplate, settingsGroupTem
                     } else {
                         data[param][setting].label = $(settingDom).find('.openstack-sub-title').text();
                         data[param][setting].description = $(settingDom).find('.description').text() || $(settingDom).next('.description').text();
-                        data[param][setting].value = $(settingDom).find('input[type=text]').val() || !!$(settingDom).find('input[type=checkbox]:checked').length;
+                        data[param][setting].value = $(settingDom).find('input[type=text]').val();
+                        if ($(settingDom).find('input[type=checkbox]').length) {
+                            data[param][setting].value = !!$(settingDom).find('input[type=checkbox]:checked').length;
+                        }
                     }
                 });
             });
