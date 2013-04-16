@@ -224,8 +224,10 @@ class DeploymentTask(object):
             os.makedirs(new)
         # creating symlinks
         for l in links:
-            if os.access(l, os.F_OK):
-                os.remove(l)
+            if os.path.islink(l) or os.path.isfile(l):
+                os.unlink(l)
+            if os.path.isdir(l):
+                shutil.rmtree(l)
             os.symlink(new, l)
         os.system("/usr/bin/pkill -HUP rsyslog")
 
