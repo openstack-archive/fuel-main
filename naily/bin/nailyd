@@ -14,7 +14,7 @@ options.pidfile = '/var/run/nailyd.pid'
 options.config_path = '/etc/naily/nailyd.conf'
 options.log_path = nil
 options.log_level = 'debug'
-options.workers = 10
+options.workers = 1
 
 OptionParser.new do |opts|
   opts.banner = 'Usage: nailyd [options]'
