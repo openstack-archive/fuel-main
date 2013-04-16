@@ -559,7 +559,6 @@ function(models, commonViews, dialogViews, nodesTabSummaryTemplate, editNodesScr
                 } catch(e) {}
                 this.minimalSizes[group.id] = this.formatFloat(minimalSize);
             }, this));
-            this.minimalSizes.os += this.formatFloat(this.partitionSize) + 0.002;
         },
         getDisks: function() {
             return this.disks.where({'type': 'disk'});
