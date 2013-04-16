@@ -332,12 +332,10 @@ function(models, commonViews, dialogViews, nodesTabSummaryTemplate, editNodesScr
                     this.registerSubView(nodeView);
                     container.append(nodeView.render().el);
                 }, this);
-                var placeholdersToRender = placeholders - this.collection.nodesAfterDeployment();
-                if (placeholdersToRender > 0) {
-                    _(placeholdersToRender).times(function() {
-                        container.append('<div class="span2 nodebox nodeplaceholder"></div>');
-                    });
-                }
+                var placeholdersToRender = placeholders - this.collection.nodesAfterDeployment().length;
+                _(placeholdersToRender).times(function() {
+                    container.append('<div class="span2 nodebox nodeplaceholder"></div>');
+                });
             }
             return this;
         }
