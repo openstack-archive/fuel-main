@@ -850,26 +850,6 @@ function(models, commonViews, dialogViews, nodesTabSummaryTemplate, editNodesScr
                 }).done(_.bind(function(){
                                 this.setInitialData();
                                 this.renderInterfaces();
-                                var ifType;
-                                this.$( ".logical-network-box" ).sortable({
-                                    connectWith: ".connectedSortable",
-                                    { appendTo: 'body' }
-                                    receive: _.bind(function(event, ui){
-                                        var obj = $(event.target);
-                                        obj.children(".network-help-message").addClass("hide");
-                                        var ifcName = obj.parent().parent().children(".network-box-name").html();
-                                        this.addLogicalInterface(ifcName, ifType)
-                                    }, this),
-                                    remove: _.bind(function(event, ui){
-                                        var obj = $(event.target);
-                                        var ifcName = obj.parent().parent().children(".network-box-name").html();
-                                        ifType=this.removeLogicalInterface(ifcName, ui.item.html())
-                                        var children = obj.children(".network-help-message")
-                                        if (obj.children().length == 1){
-                                            children.removeClass("hide")
-                                        }
-                                    },this)
-                                }).disableSelection();
                 }, this))
                 .fail(_.bind(this.returnToNodesTab, this));
             } else {
@@ -886,6 +866,26 @@ function(models, commonViews, dialogViews, nodesTabSummaryTemplate, editNodesScr
                 });
                 this.registerSubView(nodeInterface);
                 this.$('.node-networks').append(nodeInterface.render().el);
+                var ifType;
+                this.$( ".logical-network-box" ).sortable({
+                    connectWith: ".connectedSortable",
+                    { appendTo: 'body' }
+                    receive: _.bind(function(event, ui){
+                        var obj = $(event.target);
+                        obj.children(".network-help-message").addClass("hide");
+                        var ifcName = obj.parent().parent().children(".network-box-name").html();
+                        this.addLogicalInterface(ifcName, ifType)
+                    }, this),
+                    remove: _.bind(function(event, ui){
+                        var obj = $(event.target);
+                        var ifcName = obj.parent().parent().children(".network-box-name").html();
+                        ifType = this.removeLogicalInterface(ifcName, ui.item.html())
+                        var children = obj.children(".network-help-message")
+                        if (obj.children().length == 1){
+                            children.removeClass("hide")
+                        }
+                    },this)
+                }).disableSelection();
                 
             }, this));
         },
