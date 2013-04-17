@@ -51,7 +51,7 @@ class ClusterChanges(Base):
     )
     id = Column(Integer, primary_key=True)
     cluster_id = Column(Integer, ForeignKey('clusters.id'))
-    node_id = Column(Integer, ForeignKey('nodes.id'))
+    node_id = Column(Integer, ForeignKey('nodes.id', ondelete='CASCADE'))
     name = Column(
         Enum(*POSSIBLE_CHANGES, name='possible_changes'),
         nullable=False
