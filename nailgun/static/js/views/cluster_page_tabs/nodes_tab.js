@@ -475,7 +475,7 @@ function(models, commonViews, dialogViews, nodesTabSummaryTemplate, editNodesScr
             this.$('.btn, input').attr('disabled', disable);
         },
         checkForChanges: function() {
-            this.$('.btn-apply').attr('disabled', _.isEqual(this.disks.toJSON(), this.initialData) || _.some(this.disks.models, 'validationError'));
+            this.$('.btn-apply').attr('disabled', _.isEqual(_.where(this.disks.toJSON(), {'type': 'disk'}), _.where(this.initialData, {'type': 'disk'})) || _.some(this.disks.models, 'validationError'));
         },
         loadDefaults: function() {
             this.disableControls(true);
@@ -629,7 +629,7 @@ function(models, commonViews, dialogViews, nodesTabSummaryTemplate, editNodesScr
         },
         setVolumes: function(group, size, allUnallocated) {
             if (_.isUndefined(size)) {
-                size = this.$('input[name=' + group + ']').val();
+                size = parseFloat(this.$('input[name=' + group + ']').val());
             }
             this.$('input[name=' + group + ']').removeClass('error').parents('.volume-group').next().text('');
             var volumes = _.cloneDeep(this.volumes);
