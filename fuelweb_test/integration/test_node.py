@@ -578,11 +578,30 @@ class TestNode(Base):
                 logging.info("Checking /tmp/%s-file on %s" % (role, n))
                 slave = ci.environment.node[n]
                 node = self._get_slave_node_by_devops_node(slave)
-                logging.debug("Trying to connect to %s via ssh" % node['ip'])
                 ctrl_ssh = SSHClient()
-                ctrl_ssh.connect_ssh(node['ip'], 'root', key_filename=keyfiles)
-                ret = ctrl_ssh.execute('test -f /tmp/%s-file' % role)
-                self.assertEquals(ret['exit_status'], 0)
+                for i in node['meta']['interfaces']:
+                    ip = i.get('ip', None)
+                    if ip:
+                        logging.debug("Trying to connect to %s via ssh", ip)
+                        try:
+                            ctrl_ssh.connect_ssh(ip, 'root',
+                                                 key_filename=keyfiles)
+                        except Exception, e:
+                            logging.debug("Unable to connect to %s: %s", ip,
+                                          str(e))
+                            continue
+                        ret = ctrl_ssh.execute('test -f /tmp/%s-file' % role)
+                        self.assertEquals(ret['exit_status'], 0,
+                                          ("File '/tmp/%s-file' not found" %
+                                           role))
+                        ctrl_ssh.disconnect()
+                        break
+                    else:
+                        i_name = i.get('name') or i.get('mac') or str(i)
+                        logging.debug("Interface doesn't have an IP: %r",
+                                      i_name)
+                self.assertNotEqual(ip, None, "Unable to fing a valid IP"
+                                    " for node %s" % n)
         return cluster_id
 
     def _launch_provisioning(self, cluster_id):

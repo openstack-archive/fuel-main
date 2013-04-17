@@ -427,7 +427,7 @@ class NailgunReceiver(object):
                 error_nodes = []
                 for node in nodes:
                     sent_nodes_filtered = filter(
-                        lambda n: n['uid'] == node['uid'],
+                        lambda n: str(n['uid']) == node['uid'],
                         task.cache['args']['nodes']
                     )
 
