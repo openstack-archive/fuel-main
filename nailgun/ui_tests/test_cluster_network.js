@@ -59,25 +59,14 @@ casper.then(function() {
 
 casper.then(function() {
     this.test.comment('Testing cluster networks: save changes');
-    this.fill('.networks-table', {'public-cidr': '240.0.1.0/30'});
+    this.fill('.networks-table', {'public-cidr': '240.0.1.0/23'});
     this.evaluate(function() {
         $('input[name=public-cidr]').keyup();
     });
     this.click('.apply-btn:not(:disabled)');
-    this.waitForSelector('.alert-error');
+    this.waitForSelector('input:not(:disabled)');
     this.then(function() {
-        this.test.assertExists('.cidr .error', 'Changes were not saved due to verification error. An appropriate message is presented and a field with verification error is highlighted');
-    });
-    this.then(function() {
-        this.fill('.networks-table', {'public-cidr': '240.0.1.0/23'});
-        this.evaluate(function() {
-            $('input[name=public-cidr]').keyup();
-        });
-        this.click('.apply-btn:not(:disabled)');
-        this.waitForSelector('input:not(:disabled)');
-        this.then(function() {
-            this.test.assertDoesntExist('.alert-error', 'Correct settings were saved successfully');
-        });
+        this.test.assertDoesntExist('.alert-error', 'Correct settings were saved successfully');
     });
 });
 
