@@ -5,7 +5,6 @@ $(BUILD_DIR)/mirror/gems/gems-bundle/Gemfile:
 	for i in $(MIRROR_GEMS); do \
 		echo "source \"$$i\"" >> $@; \
 	done
-	echo "source \"file://$(BUILD_MIRROR_GEMS)\"" >> $@
 
 $(BUILD_DIR)/mirror/gems/gems-bundle/naily/Gemfile: $(call depv,MIRROR_GEMS)
 $(BUILD_DIR)/mirror/gems/gems-bundle/naily/Gemfile: \
@@ -36,8 +35,8 @@ $(BUILD_DIR)/mirror/gems/gems-bundle-gemfile.done: \
 	$(ACTION.TOUCH)
 
 $(BUILD_DIR)/mirror/gems/gems-bundle.done: $(BUILD_DIR)/mirror/gems/gems-bundle-gemfile.done
-	find $(BUILD_DIR)/mirror/gems \( -name "naily*.gem*" -o -name "astute*.gem*" \) -exec rm '{}' \+
 	( cd $(BUILD_DIR)/mirror/gems/gems-bundle && bundle install --path=. && bundle package )
+	find $(BUILD_DIR)/mirror/gems/gems-bundle/naily \( -name "astute*.gem*" \) -exec rm '{}' \+
 	( cd $(BUILD_DIR)/mirror/gems/gems-bundle/naily && bundle install --path=. && bundle package )
 	( cd $(BUILD_DIR)/mirror/gems/gems-bundle/vendor/cache/ && \
 		gem fetch `for i in $(MIRROR_GEMS); do echo -n "--source $$i "; done` -v 1.3.4 bundler )
