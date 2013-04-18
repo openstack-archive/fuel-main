@@ -136,14 +136,13 @@ mv /etc/sysconfig/network.cobbler /etc/sysconfig/network
         ## Things every interface get, no matter what
         ## ===================================================================
 echo "DEVICE=$iname" > $devfile
+        #set $interface_extra_param_pattern = $re.compile("interface_extra_%s_.+" % $iname)
         #for $mgmt_param in $mgmt_parameters
-            #set $interface_extra_param_pattern = $re.compile("interface_extra_%s_.+" % $iname)
             #if $interface_extra_param_pattern.match($mgmt_param)
                 #set $interface_extra = $re.split("interface_extra_%s_" % $iname, $mgmt_param)[1]
 echo "$interface_extra.upper()=$mgmt_parameters.get($mgmt_param)" >> $devfile
             #end if
         #end for
-echo "ONBOOT=yes" >> $devfile
             #if $mac != "" and $iface_type not in ("master","bond","bridge")
             ## virtual interfaces don't get MACs
 echo "HWADDR=$mac" >> $devfile

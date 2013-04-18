@@ -292,15 +292,6 @@ class DeploymentTask(object):
                     'netmask': settings.ADMIN_NETWORK['netmask'],
                     'ip_address': admin_ips.pop(),
                 }
-                # We want node to be able to PXE boot via any of its
-                # interfaces. That is why we add all discovered
-                # interfaces into cobbler system. But we want
-                # assignted fqdn to be resolved into one IP address
-                # because we don't completely support multiinterface
-                # configuration yet.
-                if i['mac'] == node.mac:
-                    nd_dict['interfaces'][i['name']]['dns_name'] = node.fqdn
-
                 # interfaces_extra field in cobbler ks_meta
                 # means some extra data for network interfaces
                 # configuration. It is used by cobbler snippet.
@@ -311,8 +302,19 @@ class DeploymentTask(object):
                 if 'interfaces_extra' not in nd_dict:
                     nd_dict['interfaces_extra'] = {}
                 nd_dict['interfaces_extra'][i['name']] = {
-                    'peerdns': 'no'
+                    'peerdns': 'no',
+                    'onboot': 'no'
                 }
+
+                # We want node to be able to PXE boot via any of its
+                # interfaces. That is why we add all discovered
+                # interfaces into cobbler system. But we want
+                # assignted fqdn to be resolved into one IP address
+                # because we don't completely support multiinterface
+                # configuration yet.
+                if i['mac'] == node.mac:
+                    nd_dict['interfaces'][i['name']]['dns_name'] = node.fqdn
+                    nd_dict['interfaces_extra'][i['name']]['onboot'] = 'yes'
 
             nd_dict['netboot_enabled'] = '1'
             nd_dict['ks_meta'] = """

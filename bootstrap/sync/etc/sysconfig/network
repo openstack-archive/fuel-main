@@ -1,2 +1,3 @@
 HOSTNAME=bootstrap
 NETWORKING=yes
+VLAN=yes
