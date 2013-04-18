@@ -98,6 +98,10 @@ function(models, commonViews, dialogViews, networkTabTemplate, networkTabVerific
             if (!_.some(this.networks.models, 'validationError')) {
                 this.disableControls();
                 this.model.save({net_manager: this.manager}, {patch: true, wait: true});
+                _.each(_.filter(this.networks.models, function(network) {return network.get('name') != 'fixed';}), function(network) {
+                    var cidr = $('div[data-network-id=' + network.id + '] .cidr input').val();
+                    network.set({network_size: Math.pow(2, 32 - parseInt(_.last(cidr.split('/')), 10))});
+                });
                 deferred = Backbone.sync('update', this.networks, {url: _.result(this.model, 'url') + '/save/networks'})
                     .always(_.bind(function() {
                         this.model.fetch().done(_.bind(this.render, this));
