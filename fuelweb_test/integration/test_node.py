@@ -225,7 +225,7 @@ class TestNode(Base):
             'controller': ['slave1', 'slave2', 'slave3'],
             'compute': ['slave4', 'slave5']
         }
-        cluster_id = self._basic_provisioning(cluster_name, nodes)
+        cluster_id = self._basic_provisioning(cluster_name, nodes, 90 * 60)
         logging.info("Checking cluster status on slave1")
         slave = ci.environment.node['slave1']
         node = self._get_slave_node_by_devops_node(slave)
@@ -257,7 +257,7 @@ class TestNode(Base):
             'compute': ['slave4', 'slave5']
         }
         self._create_cluster(name=cluster_name, net_manager="VlanManager")
-        cluster_id = self._basic_provisioning(cluster_name, nodes)
+        cluster_id = self._basic_provisioning(cluster_name, nodes, 90 * 60)
         slave = ci.environment.node['slave1']
         node = self._get_slave_node_by_devops_node(slave)
         wait(
@@ -350,10 +350,10 @@ class TestNode(Base):
         self.client.put("/api/nodes/%s/" % node['id'],
                         {'pending_deletion': True})
         task = self._launch_provisioning(cluster_id)
-        self._task_wait(task, 'Node deletion')
+        self._task_wait(task, 'Node deletion', 60)
 
         timer = time.time()
-        timeout = 3 * 60
+        timeout = 5 * 60
         while True:
             response = self.client.get("/api/nodes/")
             nodes = json.loads(response.read())
@@ -517,7 +517,8 @@ class TestNode(Base):
         self.assertEquals(200, changes.getcode())
         return json.loads(changes.read())
 
-    def _basic_provisioning(self, cluster_name, nodes_dict):
+    def _basic_provisioning(self, cluster_name, nodes_dict,
+                            task_timeout=30 * 60):
         self._start_logserver()
         self._clean_clusters()
         cluster_id = self._create_cluster(name=cluster_name)
@@ -569,7 +570,7 @@ class TestNode(Base):
         self._update_nodes_in_cluster(cluster_id, nodes)
         task = self._launch_provisioning(cluster_id)
 
-        self._task_wait(task, 'Installation')
+        self._task_wait(task, 'Installation', task_timeout)
 
         logging.info("Checking role files on slave nodes")
         keyfiles = ci.environment.node['admin'].metadata['keyfiles']
@@ -616,9 +617,7 @@ class TestNode(Base):
         self.assertEquals(200, changes.getcode())
         return json.loads(changes.read())
 
-    def _task_wait(self, task, task_desc, timeout=70 * 60,
-                   skip_error_status=False):
-
+    def _task_wait(self, task, task_desc, timeout, skip_error_status=False):
         timer = time.time()
         logtimer = timer
         ready = False
