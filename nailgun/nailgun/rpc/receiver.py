@@ -443,7 +443,7 @@ class NailgunReceiver(object):
 
                     for network in node['networks']:
                         sent_networks_filtered = filter(
-                            lambda n: str(n['iface']) == str(network['iface']),
+                            lambda n: n['iface'] == network['iface'],
                             sent_node.get('networks', [])
                         )
 
