@@ -427,7 +427,7 @@ class NailgunReceiver(object):
                 error_nodes = []
                 for node in nodes:
                     sent_nodes_filtered = filter(
-                        lambda n: str(n['uid']) == node['uid'],
+                        lambda n: str(n['uid']) == str(node['uid']),
                         task.cache['args']['nodes']
                     )
 
@@ -443,7 +443,7 @@ class NailgunReceiver(object):
 
                     for network in node['networks']:
                         sent_networks_filtered = filter(
-                            lambda n: n['iface'] == network['iface'],
+                            lambda n: str(n['iface']) == str(network['iface']),
                             sent_node.get('networks', [])
                         )
 

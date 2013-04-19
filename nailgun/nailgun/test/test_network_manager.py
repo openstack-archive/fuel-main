@@ -91,7 +91,7 @@ class TestNetworkManager(BaseHandlers):
         )
 
         network_data = netmanager.get_node_networks(self.env.nodes[0].id)
-        self.assertEquals(len(network_data), 4)
+        self.assertEquals(len(network_data), 5)
         fixed_nets = [x for x in network_data if x['name'] == 'fixed']
         self.assertEquals(fixed_nets, [])
 

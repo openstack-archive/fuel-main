@@ -98,6 +98,8 @@ class TestHandlers(BaseHandlers):
                                             'dev': 'eth0'},
                                            {'vlan': 102,
                                             'name': 'storage',
+                                            'dev': 'eth0'},
+                                            {'name': 'admin',
                                             'dev': 'eth0'}]})
         msg['args']['nodes'] = nodes
 
