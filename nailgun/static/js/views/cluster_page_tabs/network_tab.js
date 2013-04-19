@@ -57,7 +57,7 @@ function(models, commonViews, dialogViews, networkTabTemplate, networkTabVerific
                 cidr: $('.cidr input', row).val(),
                 vlan_start: parseInt($('.vlan_start input:first', row).val(), 10),
                 amount: this.manager == 'FlatDHCPManager' || this.networks.get(row.data('network-id')).get('name') != 'fixed' ? 1: parseInt(this.$('input[name=fixed-amount]').val(), 10),
-                network_size: parseInt($('.network_size select', row).val(), 10)
+                network_size: e && this.$(e.currentTarget).parent().hasClass('cidr') && this.$(e.currentTarget).attr('name') != 'fixed-cidr' ? Math.pow(2, 32 - parseInt(_.last($('.cidr input', row).val().split('/')), 10)) : parseInt($('.network_size select', row).val(), 10)
             }, {validate: true});
             // check for changes
             var noChanges = (_.isEqual(this.model.get('networks').toJSON(), this.networks.toJSON()) && this.model.get('net_manager') == this.manager) || _.some(this.networks.models, 'validationError');
@@ -98,10 +98,6 @@ function(models, commonViews, dialogViews, networkTabTemplate, networkTabVerific
             if (!_.some(this.networks.models, 'validationError')) {
                 this.disableControls();
                 this.model.save({net_manager: this.manager}, {patch: true, wait: true});
-                _.each(_.filter(this.networks.models, function(network) {return network.get('name') != 'fixed';}), function(network) {
-                    var cidr = $('div[data-network-id=' + network.id + '] .cidr input').val();
-                    network.set({network_size: Math.pow(2, 32 - parseInt(_.last(cidr.split('/')), 10))});
-                });
                 deferred = Backbone.sync('update', this.networks, {url: _.result(this.model, 'url') + '/save/networks'})
                     .always(_.bind(function() {
                         this.model.fetch().done(_.bind(this.render, this));
@@ -161,6 +157,10 @@ function(models, commonViews, dialogViews, networkTabTemplate, networkTabVerific
             this.manager = this.model.get('net_manager');
             var fixedNetwork = _.find(this.model.get('networks').models, function(network) {return network.get('name') == 'fixed';});
             this.fixedAmount = fixedNetwork.get('amount') || 1;
+            _.each(_.filter(this.networks.models, function(network) {return network.get('name') != 'fixed';}), function(network) {
+                var cidr = network.get('cidr');
+                network.set({network_size: Math.pow(2, 32 - parseInt(_.last(cidr.split('/')), 10))});
+            });
         },
         revertChanges: function() {
             this.setInitialData();
