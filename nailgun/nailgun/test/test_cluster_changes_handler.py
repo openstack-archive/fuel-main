@@ -99,7 +99,7 @@ class TestHandlers(BaseHandlers):
                                            {'vlan': 102,
                                             'name': 'storage',
                                             'dev': 'eth0'},
-                                            {'name': 'admin',
+                                           {'name': 'admin',
                                             'dev': 'eth0'}]})
         msg['args']['nodes'] = nodes
 
