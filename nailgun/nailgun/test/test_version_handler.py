@@ -8,7 +8,6 @@ from mock import patch
 from nailgun.settings import settings
 from nailgun.test.base import BaseHandlers
 from nailgun.test.base import reverse
-from nailgun.network import manager as netmanager
 from nailgun.api.models import Cluster
 
 

@@ -9,16 +9,26 @@ from nailgun.notifier import notifier
 from nailgun.logger import logger
 from nailgun.api.models import Node
 from nailgun.api.validators import NodeValidator
+from nailgun.network.manager import NetworkManager
 from nailgun.api.handlers.base import JSONHandler, content_json
 
 
 class NodeHandler(JSONHandler):
-    fields = ('id', 'name', 'meta', 'network_data', 'role', 'progress',
+    fields = ('id', 'name', 'meta', 'role', 'progress',
               'status', 'mac', 'fqdn', 'ip', 'manufacturer', 'platform_name',
               'pending_addition', 'pending_deletion', 'os_platform',
               'error_type', 'online', 'cluster')
     model = Node
     validator = NodeValidator
+
+    @classmethod
+    def render(cls, instance, fields=None):
+        json_data = JSONHandler.render(instance, fields=cls.fields)
+        network_manager = NetworkManager()
+        json_data['network_data'] = network_manager.get_node_networks(
+            instance.id
+        )
+        return json_data
 
     @content_json
     def GET(self, node_id):

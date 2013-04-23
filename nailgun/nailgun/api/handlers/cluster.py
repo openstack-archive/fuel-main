@@ -21,7 +21,10 @@ from nailgun.api.models import Task
 from nailgun.api.validators import ClusterValidator
 from nailgun.api.validators import NetworkGroupValidator
 from nailgun.api.validators import AttributesValidator
-
+from nailgun.network.manager import NetworkManager
+from nailgun.network.errors import OutOfVLANs
+from nailgun.network.errors import OutOfIPs
+from nailgun.network.errors import NoSuitableCIDR
 from nailgun.api.handlers.base import JSONHandler, content_json
 from nailgun.api.handlers.node import NodeHandler
 from nailgun.api.handlers.tasks import TaskHandler
@@ -134,62 +137,8 @@ class ClusterCollectionHandler(JSONHandler):
         )
         attributes.generate_fields()
 
-        used_nets = [n.cidr for n in self.db.query(Network).all()]
-        used_vlans = [v.id for v in self.db.query(Vlan).all()]
-
-        for network in cluster.release.networks_metadata:
-            free_vlans = sorted(list(set(range(int(
-                settings.VLANS_RANGE_START),
-                int(settings.VLANS_RANGE_END))) -
-                set(used_vlans)))
-            if not free_vlans:
-                self.db.delete(cluster)
-                self.db.commit()
-                raise web.conflict(
-                    "There is not enough available VLAN IDs "
-                    "to create the cluster"
-                )
-            vlan_start = free_vlans[0]
-            logger.debug("Found free vlan: %s", vlan_start)
-
-            pool = settings.NETWORK_POOLS[network['access']]
-            nets_free_set = netaddr.IPSet(pool) -\
-                netaddr.IPSet(settings.NET_EXCLUDE) -\
-                netaddr.IPSet(used_nets)
-            if not nets_free_set:
-                self.db.delete(cluster)
-                self.db.commit()
-                raise web.conflict("No free IP addresses in pool")
-
-            free_cidrs = sorted(list(nets_free_set._cidrs))
-            new_net = None
-            for fcidr in free_cidrs:
-                for n in fcidr.subnet(24, count=1):
-                    new_net = n
-                    break
-                if new_net:
-                    break
-            if not new_net:
-                self.db.delete(cluster)
-                self.db.commit()
-                raise web.conflict("Cannot find suitable CIDR")
-
-            nw_db = NetworkGroup(
-                release=cluster.release.id,
-                name=network['name'],
-                access=network['access'],
-                cidr=str(new_net),
-                gateway_ip_index=1,
-                cluster_id=cluster.id,
-                vlan_start=vlan_start,
-                amount=1
-            )
-            self.db.add(nw_db)
-            self.db.commit()
-            nw_db.create_networks()
-
-            used_vlans.append(vlan_start)
-            used_nets.append(str(new_net))
+        netmanager = NetworkManager(cluster.id)
+        netmanager.create_network_groups()
 
         cluster.add_pending_changes("attributes")
         cluster.add_pending_changes("networks")
@@ -257,6 +206,7 @@ class ClusterSaveNetworksHandler(JSONHandler):
     @content_json
     def PUT(self, cluster_id):
         cluster = self.get_object_or_404(Cluster, cluster_id)
+        network_manager = NetworkManager(cluster_id)
         new_nets = self.validator.validate_collection_update(web.data())
         task_manager = CheckNetworksTaskManager(cluster_id=cluster.id)
         task = task_manager.execute(new_nets)
@@ -268,7 +218,7 @@ class ClusterSaveNetworksHandler(JSONHandler):
                 for key, value in ng.iteritems():
                     setattr(ng_db, key, value)
                 try:
-                    ng_db.create_networks()
+                    network_manager.create_networks(ng_db)
                     ng_db.cluster.add_pending_changes("networks")
                 except Exception as exc:
                     err = str(exc)

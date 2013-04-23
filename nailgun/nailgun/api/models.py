@@ -22,6 +22,7 @@ from nailgun.db import orm
 from nailgun.api.fields import JSON
 from nailgun.settings import settings
 
+
 Base = declarative_base()
 
 
@@ -166,13 +167,6 @@ class Node(Base):
     online = Column(Boolean, default=True)
 
     @property
-    def network_data(self):
-        # It is required for integration tests; to get info about nets
-        #   which must be created on target node
-        from nailgun.network import manager as netmanager
-        return netmanager.get_node_networks(self.id)
-
-    @property
     def needs_reprovision(self):
         return self.status == 'error' and self.error_type == 'provision'
 
@@ -204,7 +198,7 @@ class Vlan(Base):
     __tablename__ = 'vlan'
     id = Column(Integer, primary_key=True)
     network = relationship("Network",
-                           backref=backref("vlan", cascade="delete"))
+                           backref=backref("vlan"))
 
 
 class Network(Base):
@@ -237,48 +231,6 @@ class NetworkGroup(Base):
     gateway_ip_index = Column(Integer)
     networks = relationship("Network", cascade="delete",
                             backref="network_groups")
-
-    def create_networks(self):
-        fixnet = netaddr.IPNetwork(self.cidr)
-        subnet_bits = int(math.ceil(math.log(self.network_size, 2)))
-        logger.debug("Specified network size requires %s bits", subnet_bits)
-        subnets = list(fixnet.subnet(32 - subnet_bits,
-                                     count=self.amount))
-        logger.debug("Base CIDR sliced on subnets: %s", subnets)
-
-        for net in self.networks:
-            logger.debug("Deleting old network with id=%s, cidr=%s",
-                         net.id, net.cidr)
-            ips = orm().query(IPAddr).filter(
-                IPAddr.network == net.id
-            ).filter_by(admin=False)
-            map(orm().delete, ips)
-            orm().delete(net)
-            orm().commit()
-        self.networks = []
-
-        for n in xrange(self.amount):
-            vlan_db = orm().query(Vlan).get(self.vlan_start + n)
-            if vlan_db:
-                logger.warning("Intersection with existing vlan_id: %s",
-                               vlan_db.id)
-            else:
-                vlan_db = Vlan(id=self.vlan_start + n)
-                orm().add(vlan_db)
-            logger.debug("Created VLAN object, vlan_id=%s", vlan_db.id)
-            gateway = None
-            if self.gateway_ip_index:
-                gateway = str(subnets[n][self.gateway_ip_index])
-            net_db = Network(
-                release=self.release,
-                name=self.name,
-                access=self.access,
-                cidr=str(subnets[n]),
-                vlan_id=vlan_db.id,
-                gateway=gateway,
-                network_group_id=self.id)
-            orm().add(net_db)
-        orm().commit()
 
     @classmethod
     def generate_vlan_ids_list(cls, data):

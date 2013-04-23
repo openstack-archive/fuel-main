@@ -7,9 +7,8 @@ from netaddr import IPNetwork, IPAddress, IPRange
 import nailgun
 from nailgun.test.base import BaseHandlers
 from nailgun.test.base import reverse
-from nailgun.network import manager as netmanager
 from nailgun.db import engine
-from nailgun.api.models import Node, IPAddr
+from nailgun.api.models import Node, IPAddr, Vlan
 from nailgun.api.models import Network, NetworkGroup
 from nailgun.settings import settings
 
@@ -68,7 +67,7 @@ class TestNetworkManager(BaseHandlers):
 
     def test_assign_vip(self):
         cluster = self.env.create_cluster(api=True)
-        vip = netmanager.assign_vip(cluster['id'], "management")
+        vip = self.env.network_manager.assign_vip(cluster['id'], "management")
         management_net = self.db.query(Network).join(NetworkGroup).\
             filter(NetworkGroup.cluster_id == cluster['id']).filter_by(
                 name='management').first()
@@ -78,8 +77,14 @@ class TestNetworkManager(BaseHandlers):
 
     def test_assign_vip_is_idempotent(self):
         cluster = self.env.create_cluster(api=True)
-        vip = netmanager.assign_vip(cluster['id'], "management")
-        vip2 = netmanager.assign_vip(cluster['id'], "management")
+        vip = self.env.network_manager.assign_vip(
+            cluster['id'],
+            "management"
+        )
+        vip2 = self.env.network_manager.assign_vip(
+            cluster['id'],
+            "management"
+        )
         self.assertEquals(vip, vip2)
 
     def test_get_node_networks_for_vlan_manager(self):
@@ -90,19 +95,21 @@ class TestNetworkManager(BaseHandlers):
             ]
         )
 
-        network_data = netmanager.get_node_networks(self.env.nodes[0].id)
+        network_data = self.env.network_manager.get_node_networks(
+            self.env.nodes[0].id
+        )
         self.assertEquals(len(network_data), 5)
         fixed_nets = [x for x in network_data if x['name'] == 'fixed']
         self.assertEquals(fixed_nets, [])
 
     def test_nets_empty_list_if_node_does_not_belong_to_cluster(self):
         node = self.env.create_node(api=False)
-        network_data = netmanager.get_node_networks(node.id)
+        network_data = self.env.network_manager.get_node_networks(node.id)
         self.assertEquals(network_data, [])
 
     def test_assign_admin_ips(self):
         node = self.env.create_node()
-        netmanager.assign_admin_ips(node.id, 2)
+        self.env.network_manager.assign_admin_ips(node.id, 2)
 
         admin_ips = self.db.query(IPAddr).\
             filter_by(node=node.id).\
@@ -136,7 +143,7 @@ class TestNetworkManager(BaseHandlers):
         nc = zip([n1.id, n2.id], [2048, 2])
 
         # Assinging admin IPs on created nodes
-        map(lambda (n, c): netmanager.assign_admin_ips(n, c), nc)
+        map(lambda (n, c): self.env.network_manager.assign_admin_ips(n, c), nc)
 
         # Asserting count of admin node IPs
         def asserter(x):
@@ -148,11 +155,11 @@ class TestNetworkManager(BaseHandlers):
 
     def test_assign_admin_ips_idempotent(self):
         node = self.env.create_node()
-        netmanager.assign_admin_ips(node.id, 2)
+        self.env.network_manager.assign_admin_ips(node.id, 2)
         admin_ips = set([i.ip_addr for i in self.db.query(IPAddr).
                          filter_by(node=node.id).
                          filter_by(admin=True).all()])
-        netmanager.assign_admin_ips(node.id, 2)
+        self.env.network_manager.assign_admin_ips(node.id, 2)
         admin_ips2 = set([i.ip_addr for i in self.db.query(IPAddr).
                           filter_by(node=node.id).
                           filter_by(admin=True).all()])
@@ -170,12 +177,56 @@ class TestNetworkManager(BaseHandlers):
     )
     def test_assign_admin_ips_only_one(self):
         node = self.env.create_node()
-        netmanager.assign_admin_ips(node.id, 1)
+        self.env.network_manager.assign_admin_ips(node.id, 1)
         admin_ips = self.db.query(IPAddr).\
             filter_by(node=node.id).\
             filter_by(admin=True).all()
         self.assertEquals(len(admin_ips), 1)
         self.assertEquals(admin_ips[0].ip_addr, '10.0.0.1')
+
+    def test_vlan_set_null(self):
+        cluster = self.env.create_cluster(api=True)
+        cluster_db = self.env.clusters[0]
+        same_vlan = 100
+        resp = self.app.get(
+            reverse(
+                'NetworkCollectionHandler'
+            ) + "?cluster_id={0}".format(cluster_db.id),
+            headers=self.default_headers
+        )
+        networks_data = json.loads(resp.body)
+        networks_data[1]["vlan_start"] = same_vlan
+        resp = self.app.put(
+            reverse(
+                'ClusterSaveNetworksHandler',
+                kwargs={"cluster_id": cluster_db.id}
+            ),
+            json.dumps(networks_data),
+            headers=self.default_headers
+        )
+        response = json.loads(resp.body)
+
+        resp = self.app.get(
+            reverse(
+                'NetworkCollectionHandler'
+            ) + "?cluster_id={0}".format(cluster_db.id),
+            headers=self.default_headers
+        )
+        networks_data = json.loads(resp.body)
+        same_vlan_nets = [
+            net for net in networks_data if net["vlan_start"] == same_vlan
+        ]
+        self.assertEquals(len(same_vlan_nets), 2)
+
+        vlan_db = self.db.query(Vlan).get(same_vlan)
+        self.assertEquals(len(vlan_db.network), 2)
+
+        net1, net2 = vlan_db.network
+        self.db.delete(net1)
+        self.db.delete(net2)
+        self.db.commit()
+        self.db.refresh(vlan_db)
+        self.assertEquals(vlan_db.network, [])
 
     def test_admin_ip_cobbler(self):
         """

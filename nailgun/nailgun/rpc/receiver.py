@@ -15,7 +15,7 @@ from sqlalchemy import or_
 import nailgun.rpc as rpc
 from nailgun.logger import logger
 from nailgun.db import engine, NoCacheQuery
-from nailgun.network.manager import get_node_networks
+from nailgun.network.manager import NetworkManager
 from nailgun.settings import settings
 from nailgun.task.helpers import update_task_status
 from nailgun.api.models import Node, Network, NetworkGroup
@@ -30,12 +30,14 @@ class TaskNotFound(Exception):
 class NailgunReceiver(object):
 
     db = None
+    network_manager = None
 
     @classmethod
     def initialize(cls):
         cls.db = scoped_session(
             sessionmaker(bind=engine, query_cls=NoCacheQuery)
         )
+        cls.network_manager = NetworkManager()
 
     @classmethod
     def stop(cls):
@@ -121,6 +123,9 @@ class NailgunReceiver(object):
 
             cls.db.delete(cluster)
             cls.db.commit()
+
+            # Dmitry's hack for clearing VLANs without networks
+            cls.network_manager.clear_vlans()
 
             notifier.notify(
                 "done",
@@ -331,7 +336,7 @@ class NailgunReceiver(object):
                 )
                 public_net = filter(
                     lambda n: n['name'] == 'public' and 'ip' in n,
-                    get_node_networks(controller.id)
+                    cls.network_manager.get_node_networks(controller.id)
                 )
                 if public_net:
                     horizon_ip = public_net[0]['ip'].split('/')[0]

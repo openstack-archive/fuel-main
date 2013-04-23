@@ -9,7 +9,7 @@ from nailgun.test.base import BaseHandlers
 from nailgun.test.base import reverse
 from nailgun.api.models import Cluster, Attributes, IPAddr, Task
 from nailgun.api.models import Network, NetworkGroup
-from nailgun.network import manager as netmanager
+from nailgun.network.manager import NetworkManager
 
 
 class TestHandlers(BaseHandlers):
@@ -44,8 +44,14 @@ class TestHandlers(BaseHandlers):
         for net in nets_db:
             cluster_attrs[net.name + '_network_range'] = net.cidr
 
-        management_vip = netmanager.assign_vip(cluster_db.id, 'management')
-        public_vip = netmanager.assign_vip(cluster_db.id, 'public')
+        management_vip = self.env.network_manager.assign_vip(
+            cluster_db.id,
+            'management'
+        )
+        public_vip = self.env.network_manager.assign_vip(
+            cluster_db.id,
+            'public'
+        )
 
         cluster_attrs['management_vip'] = management_vip
         cluster_attrs['public_vip'] = public_vip

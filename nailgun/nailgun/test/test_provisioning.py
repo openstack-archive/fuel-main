@@ -8,7 +8,6 @@ from mock import patch
 from nailgun.settings import settings
 from nailgun.test.base import BaseHandlers
 from nailgun.test.base import reverse
-from nailgun.network import manager as netmanager
 from nailgun.api.models import Cluster
 
 
@@ -31,7 +30,7 @@ class TestProvisioning(BaseHandlers):
 
         self.assertEqual(len(cluster_db.nodes), 2)
 
-        netmanager.assign_ips = self.mock.MagicMock()
+        self.env.network_manager.assign_ips = self.mock.MagicMock()
 
         with patch('nailgun.task.task.Cobbler'):
             self.env.launch_deployment()
@@ -50,7 +49,7 @@ class TestProvisioning(BaseHandlers):
             ]
         )
         cluster = self.env.clusters[0]
-        netmanager.assign_ips = self.mock.MagicMock()
+        self.env.network_manager.assign_ips = self.mock.MagicMock()
 
         with patch('nailgun.task.task.Cobbler'):
             self.env.launch_deployment()

@@ -18,7 +18,7 @@ from nailgun.logger import logger
 from nailgun.settings import settings
 from nailgun.notifier import notifier
 from nailgun.task.helpers import update_task_status
-from nailgun.network import manager as netmanager
+from nailgun.network.manager import NetworkManager
 from nailgun.api.models import Base
 from nailgun.api.models import Network
 from nailgun.api.models import NetworkGroup
@@ -87,6 +87,7 @@ class DeploymentTask(object):
     def execute(cls, task):
         task_uuid = task.uuid
         cluster_id = task.cluster.id
+        netmanager = NetworkManager(cluster_id)
         nodes = orm().query(Node).filter_by(
             cluster_id=task.cluster.id,
             pending_deletion=False).order_by(Node.id)
@@ -115,7 +116,7 @@ class DeploymentTask(object):
                     nodes_to_provision.append(node)
 
             try:
-                DeploymentTask._provision(nodes_to_provision)
+                DeploymentTask._provision(nodes_to_provision, netmanager)
             except Exception as err:
                 error = "Failed to call cobbler: {0}".format(
                     str(err) or "see logs for details"
@@ -230,7 +231,7 @@ class DeploymentTask(object):
         os.system("/usr/bin/pkill -HUP rsyslog")
 
     @classmethod
-    def _provision(cls, nodes):
+    def _provision(cls, nodes, netmanager):
         logger.info("Requested to provision nodes: %s",
                     ','.join([str(n.id) for n in nodes]))
         pd = Cobbler(
