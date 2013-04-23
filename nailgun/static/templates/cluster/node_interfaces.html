@@ -9,10 +9,10 @@
     </div>
 
     <div class="logical-network-box connectedSortable">
-          <% _.each(ifc.get('types'), function(option) { %>
+          <% _.each(ifc.get('networks'), function(option) { %>
               <div class="logical-network-item"><%- option.name %></div>
           <% }) %>
-          <% var hasTypes = ifc.get('types').length %>
+          <% var hasTypes = ifc.get('networks').length %>
           <div class="network-help-message <%= hasTypes ? 'hide' : '' %>">Use drag-and-drop for placing logical interfaces here</div>
     </div>
   </div>

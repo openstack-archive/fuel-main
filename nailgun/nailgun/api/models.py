@@ -342,18 +342,39 @@ class NodeAttributes(Base):
                     "speed": interface["max_speed"],
                     "name": interface["name"],
                     "current_speed": interface["current_speed"],
-                    "types": []
+                    "networks": []
                 }
             )
 
         # auto assigning all stuff to first interface
-        self.interfaces[0]["types"] = [
-                                        {"name": "Management"},
-                                        {"name": "Floating"},
-                                        {"name": "Public"},
-                                        {"name": "Admin"}
-                                      ]
-        self.interfaces[1]["types"] = [{"name": "Fixed"}, {"name": "Storage"}]
+        self.interfaces[0]["networks"] = [
+            {
+                "id": 1,
+                "name": "Management",
+                "allowed_interfaces": ["eth0", "eth1"]
+            },
+            {
+                "id": 2,
+                "name": "Floating",
+                "allowed_interfaces": ["eth0"]
+            },
+            {
+                "id": 3,
+                "name": "Public",
+                "allowed_interfaces": ["eth1"]
+            },
+            {
+                "id": 4,
+                "name": "Admin",
+                "allowed_interfaces": ["eth0", "eth1"]
+            }
+        ]
+        self.interfaces[1]["networks"] = [{"id": 5,
+                                           "name": "Fixed",
+                                           "allowed_interfaces": ["eth1"]},
+                                          {"id": 6,
+                                           "name": "Storage",
+                                           "allowed_interfaces": ["eth0"]}]
         self.interfaces = self._traverse(self.interfaces)
 
 

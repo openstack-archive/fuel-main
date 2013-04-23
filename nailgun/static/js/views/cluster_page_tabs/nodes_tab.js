@@ -807,25 +807,28 @@ function(models, commonViews, dialogViews, nodesTabSummaryTemplate, editNodesScr
                     this.checkForChanges();
                 }, this));*/
         },
-        removeLogicalInterface: function(physical, logical){
+        removeNetwork: function(physical, logical){
             var ethIfc = this.interfaces.findWhere({name: physical}); //_.find(this.interfaces.models,function(ifc){return ifc.get("name")==physical})
-            var ifType = _.first(_.where(ethIfc.get("types"), {"name":logical}));
-            var types=ethIfc.get('types');
-            ethIfc.set("types", _.reject(ethIfc.get("types"), {"name":logical}));
+            var ifType = _.first(_.where(ethIfc.get("networks"), {"name":logical}));
+            ethIfc.set("networks", _.reject(ethIfc.get("networks"), {"name":logical}));
             return ifType;
         },
-        addLogicalInterface: function(physical, logical){
+        addNetwork: function(physical, logical){
             var ethIfc = _.find(this.interfaces.models,
                                 function(ifc){ return ifc.get("name")==physical });
-            if (_.isUndefined(ethIfc.attributes.types)){
-                ethIfc.attributes.types = [];
+            if (_.isUndefined(ethIfc.get("networks"))){
+                ethIfc.set("networks"[]);
             }
-            ethIfc.attributes.types.push(logical);
+            ethIfc.get("networks").push(logical);
         },
         returnToNodesTab: function() {
             app.navigate('#cluster/' + this.model.id + '/nodes', {trigger: true, replace: true});
         },
         applyChanges: function() {
+            // var dialog = new dialogViews.UpdateInterfacesDialog({model: this.model});
+            // this.registerSubView(dialog);
+            // dialog.render();
+            
             Backbone.sync('update', this.interfaces, {url: _.result(this.node, 'url') + '/attributes/interfaces'})
                 .done(_.bind(this.returnToNodesTab, this))
                 .fail(_.bind(function() {
@@ -866,7 +869,7 @@ function(models, commonViews, dialogViews, nodesTabSummaryTemplate, editNodesScr
                 });
                 this.registerSubView(nodeInterface);
                 this.$('.node-networks').append(nodeInterface.render().el);
-                var ifType;
+                var ifNetwork;
                 this.$( ".logical-network-box" ).sortable({
                     connectWith: ".connectedSortable",
                     { appendTo: 'body' }
@@ -874,12 +877,12 @@ function(models, commonViews, dialogViews, nodesTabSummaryTemplate, editNodesScr
                         var obj = $(event.target);
                         obj.children(".network-help-message").addClass("hide");
                         var ifcName = obj.parent().parent().children(".network-box-name").html();
-                        this.addLogicalInterface(ifcName, ifType)
+                        this.addNetwork(ifcName, ifNetwork)
                     }, this),
                     remove: _.bind(function(event, ui){
                         var obj = $(event.target);
                         var ifcName = obj.parent().parent().children(".network-box-name").html();
-                        ifType = this.removeLogicalInterface(ifcName, ui.item.html())
+                        ifNetwork = this.removeNetwork(ifcName, ui.item.html())
                         var children = obj.children(".network-help-message")
                         if (obj.children().length == 1){
                             children.removeClass("hide")
