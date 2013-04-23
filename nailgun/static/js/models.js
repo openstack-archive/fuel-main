@@ -123,11 +123,18 @@ define(function() {
         },
         parse: function(response) {
             response.release = new models.Release(response.release);
-            response.nodes = new models.Nodes(response.nodes);
-            response.nodes.cluster = this;
-            response.tasks = new models.Tasks(response.tasks);
-            response.tasks.cluster = this;
             return response;
+        },
+        fetchRelated: function(related, options) {
+            var relatedModels = {
+                nodes: models.Nodes,
+                tasks: models.Tasks
+            };
+            if (!this.get(related)) {
+                this.set(related, new relatedModels[related]());
+                this.get(related).cluster = this;
+            }
+            return this.get(related).fetch(_.extend({data: {cluster_id: this.id}}, options));
         }
     });
 

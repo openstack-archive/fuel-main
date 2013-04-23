@@ -148,15 +148,6 @@ function(models, commonViews, dialogViews, NodesTab, NetworkTab, SettingsTab, Lo
         },
         initialize: function(options) {
             _.defaults(this, options);
-            _(['nodes', 'tasks']).each(function(attribute) {
-                this.model.on('change:' + attribute, function(model, collection, options) {
-                    model.attributes[attribute] = model.previous(attribute);
-                    model.attributes[attribute].set(collection.models);
-                    if (model.attributes[attribute].length) {
-                        console.log('events', _.clone(model.attributes[attribute].at(0)._events));
-                    }
-                }, this);
-            }, this);
             this.model.on('change:name', this.onNameChange, this);
             this.scheduleUpdate();
             this.eventNamespace = 'unsavedchanges' + this.activeTab;

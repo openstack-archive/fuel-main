@@ -15,7 +15,7 @@ class NodeHandler(JSONHandler):
     fields = ('id', 'name', 'meta', 'network_data', 'role', 'progress',
               'status', 'mac', 'fqdn', 'ip', 'manufacturer', 'platform_name',
               'pending_addition', 'pending_deletion', 'os_platform',
-              'error_type', 'online')
+              'error_type', 'online', 'cluster')
     model = Node
 
     @content_json

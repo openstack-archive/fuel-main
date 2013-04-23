@@ -78,13 +78,21 @@ function(models, commonViews, ClusterPage, NodesTab, ClustersPage, ReleasesPage,
                 render.call(this);
             } else {
                 cluster = new models.Cluster({id: id});
-                cluster.fetch().done(_.bind(render, this)).fail(_.bind(this.listClusters, this));
+                $.when(cluster.fetch(), cluster.fetchRelated('nodes'), cluster.fetchRelated('tasks'))
+                    .done(_.bind(render, this))
+                    .fail(_.bind(this.listClusters, this));
             }
         },
         listClusters: function() {
             this.navigate('#clusters', {replace: true});
             var clusters = new models.Clusters();
-            clusters.fetch().done(_.bind(function() {
+            var nodes = new models.Nodes();
+            var tasks = new models.Tasks();
+            $.when(clusters.fetch(), nodes.fetch(), tasks.fetch()).done(_.bind(function() {
+                clusters.each(function(cluster) {
+                    cluster.set('nodes', new models.Nodes(nodes.where({cluster: cluster.id})));
+                    cluster.set('tasks', new models.Tasks(tasks.where({cluster: cluster.id})));
+                }, this);
                 this.setPage(ClustersPage, {collection: clusters});
             }, this));
         },

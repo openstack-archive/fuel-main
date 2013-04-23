@@ -38,7 +38,6 @@ class ClusterHandler(JSONHandler):
         "mode",
         "status",
         "net_manager",
-        ("nodes", "*"),
         ("release", "*")
     )
     model = Cluster
@@ -46,10 +45,6 @@ class ClusterHandler(JSONHandler):
     @classmethod
     def render(cls, instance, fields=None):
         json_data = JSONHandler.render(instance, fields=cls.fields)
-        json_data["tasks"] = map(
-            TaskHandler.render,
-            instance.tasks
-        )
         if instance.changes:
             json_data["changes"] = [
                 i.name for i in instance.changes

@@ -90,9 +90,13 @@ function(models, commonViews, dialogViews, nodesTabSummaryTemplate, editNodesScr
             this.model.on('change:mode change:type change:status', this.render, this);
             this.model.get('nodes').on('resize', this.render, this);
             this.model.get('tasks').each(this.bindTaskEvents, this);
+            this.model.get('tasks').on('add', this.onNewTask, this);
         },
         bindTaskEvents: function(task) {
             return (task.get('name') == 'deploy' || task.get('name') == 'verify_networks') ? task.on('change:status', this.render, this) : null;
+        },
+        onNewTask: function(task) {
+            return this.bindTaskEvents(task) && this.render();
         },
         render: function() {
             this.tearDownRegisteredSubViews();
