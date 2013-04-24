@@ -40,7 +40,7 @@ module Naily
     def run_server
       AMQP.logging = true
       AMQP.connect(connection_options) do |connection|
-        @connection = connection
+        @connection = configure_connection(connection)
         @channel = create_channel(@connection)
         @exchange = @channel.topic(Naily.config.broker_exchange, :durable => true)
         @producer = Naily::Producer.new(@exchange)
@@ -50,9 +50,17 @@ module Naily
       end
     end
 
+    def configure_connection(connection)
+      connection.on_tcp_connection_loss do |conn, settings|
+        Naily.logger.warn "Trying to reconnect to message broker..."
+        conn.reconnect
+      end
+      connection
+    end
+
     def create_channel(connection)
-      channel = AMQP::Channel.new(connection)
-      channel.prefetch 1
+      channel = AMQP::Channel.new(connection, AMQP::Channel.next_channel_id, :prefetch => 1)
+      channel.auto_recovery = true
       channel.on_error do |ch, error|
         Naily.logger.fatal "Channel error #{error.inspect}"
         stop
