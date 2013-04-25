@@ -12,18 +12,33 @@ module Naily
     def run
       @queue = @channel.queue(Naily.config.broker_queue, :durable => true)
       @queue.bind @exchange, :routing_key => Naily.config.broker_queue
-      @consumer = AMQP::Consumer.new(@channel, @queue)
-      @consumer.on_delivery do |metadata, message|
-        Thread.new do
-          dispatch message
-          metadata.ack
-          Naily.logger.info "Message acknowledged"
-        end
-      end
-      @consumer.consume
+      @loop = Thread.new(&method(:server_loop))
+      self
     end
 
   private
+
+    def server_loop
+      loop do
+        consume_one do |payload|
+          dispatch payload
+        end
+        Thread.stop
+      end
+    end
+
+    def consume_one
+      @consumer = AMQP::Consumer.new(@channel, @queue)
+      @consumer.on_delivery do |metadata, payload|
+        metadata.ack
+        Thread.new do
+          yield payload
+          @loop.wakeup
+        end
+        @consumer.cancel
+      end
+      @consumer.consume
+    end
 
     def dispatch(payload)
       Naily.logger.debug "Got message with payload #{payload.inspect}"
