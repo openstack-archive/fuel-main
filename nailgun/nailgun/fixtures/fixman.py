@@ -1,5 +1,6 @@
 # -*- coding: utf-8 -*-
 
+import sys
 import json
 import os.path
 import itertools
@@ -14,6 +15,10 @@ from nailgun.logger import logger
 from sqlalchemy.exc import IntegrityError
 
 db = ormgen()
+
+
+def capitalize_model_name(model_name):
+    return ''.join(map(lambda s: s.capitalize(), model_name.split('_')))
 
 
 def upload_fixture(fileobj):
@@ -34,7 +39,7 @@ def upload_fixture(fileobj):
         except StopIteration:
             raise Exception("Couldn't find model {0}".format(model_name))
 
-        obj['model'] = getattr(models, model)
+        obj['model'] = getattr(models, capitalize_model_name(model_name))
 
         # Check if it's already uploaded
         obj_from_db = db.query(obj['model']).get(pk)
@@ -129,7 +134,7 @@ def upload_fixtures():
 def dump_fixture(model_name):
     dump = []
     app_name = 'nailgun'
-    model = getattr(models, model_name.capitalize())
+    model = getattr(models, capitalize_model_name(model_name))
     for obj in db.query(model).all():
         obj_dump = {}
         obj_dump['pk'] = getattr(obj, model.__mapper__.primary_key[0].name)
@@ -146,4 +151,4 @@ def dump_fixture(model_name):
                         list, dict, str, unicode, int, float, bool)):
                     value = ""
                 obj_dump['fields'][field] = value
-    print json.dumps(dump, indent=4)
+    sys.stdout.write(json.dumps(dump, indent=4))
