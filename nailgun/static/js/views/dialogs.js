@@ -375,5 +375,38 @@ function(utils, models, simpleMessageTemplate, createClusterDialogTemplate, chan
         }
     });
 
+<<<<<<< HEAD
+=======
+    views.UpdateInterfacesDialog = views.Dialog.extend({
+        template: _.template(updateInterfacesTemplate),
+        events: {
+            'click .change-interfaces-btn:not(.disabled)': 'applyInterfaces',
+            'click .force-apply-btn': 'forceApply',
+            'click .net-topology': 'selectTypology',
+        },
+        applyInterfaces: function() {
+            this.$('.change-interfaces-btn').addClass('disabled');
+            var topology = new models.NetworkTopology();
+            topology.save({}, {url: _.result(this.node, 'url') + '/attributes/interfaces', type: 'POST'})
+                 .done(_.bind(function() {
+                     this.$el.modal('hide');
+                 }, this))
+                 .fail(_.bind(this.displayErrorMessage, this));
+        },
+        forceApply: function(){
+            Backbone.sync('update', this.interfaces, {url: _.result(this.node, 'url') + '/attributes/interfaces?force=true'})
+        },
+        selectTypology: function() {
+            this.$('.change-interfaces-btn').removeAttr("disabled");
+        },
+        render: function() {
+            this.constructor.__super__.render.call(this, {
+                topologies: this.model,
+            });
+            return this;
+        }
+    });
+
+>>>>>>> Edit Node Interfaces front-end implementation
     return views;
 });

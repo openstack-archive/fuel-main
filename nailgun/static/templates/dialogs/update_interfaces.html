@@ -1,0 +1,38 @@
+<div class="modal-header">
+  <button type="button" class="close" data-dismiss="modal">×</button>
+  <h3>Update network interfaces</h3>
+</div>
+<div class="modal-body display-changes-dialog">
+  <div>
+    <span class="label label-warning">Warning</span>
+    Your congiguration could not work with current network topology.
+    You could select one from the proposed or force apply yours.
+  </div>
+  <% _.each(topologies, function(topology) { %>  
+    <div>
+        <input type="radio" value="<%= topology.id %>" name="network-topology" class="net-topology" /> 
+         Chanded nodes: 
+         <% _.each(topology.nodes, function(node) { %>
+           <div>
+             Node '<%= node.node_id %>'
+               Interfaces 
+               <ul>
+                 <% _.each(node.interfaces, function(interface) { %>
+                   <li> 
+                     <%= interface.name %>:
+                       <% _.each(interface.natworks, function(network) {%>
+                         <%= network %>&nbsp;
+                       <% })%>
+                   </li>
+                 <% }) %>
+               </ul>
+           </div>
+         <%})%>
+    </div>
+  <% })%>
+</div>
+<div class="modal-footer">
+  <button class="btn" data-dismiss="modal">Cancel</button>
+  <button class="btn btn-success change-interfaces-btn" disabled>Apply</button>
+  <button class="btn btn-danger force-apply-btn">Force Apply</button>
+</div>
