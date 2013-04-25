@@ -15,12 +15,16 @@ class TestHandlers(BaseHandlers):
 
     @patch('nailgun.rpc.cast')
     def test_deploy_cast_with_right_args(self, mocked_rpc):
-        self.env.create(
-            cluster_kwargs={
-                "mode": "ha",
-                "type": "compute"
-            },
-            nodes_kwargs=[
+        cluster = self.env.create_cluster(
+            mode="ha",
+            type="compute"
+        )
+        map(
+            lambda x: self.env.create_node(
+                api=True,
+                cluster_id=cluster['id'],
+                **x),
+            [
                 {"role": "controller", "pending_addition": True},
                 {"role": "controller", "pending_addition": True},
             ]
@@ -77,32 +81,33 @@ class TestHandlers(BaseHandlers):
                 ('management', 'public')
             )
 
-            nodes.append({'uid': n.id, 'status': n.status, 'ip': n.ip,
+            nodes.append({'uid': n.id, 'status': 'provisioning', 'ip': n.ip,
                           'error_type': n.error_type, 'mac': n.mac,
-                          'role': n.role, 'id': n.id, 'fqdn': n.fqdn,
+                          'role': n.role, 'id': n.id, 'fqdn':
+                          'slave-%d.example.com' % n.id,
                           'progress': 0, 'meta': n.meta, 'online': True,
                           'network_data': [{'brd': '172.16.0.255',
                                             'ip': node_ip_management,
                                             'vlan': 103,
-                                            'gateway': '172.16.0.1',
+                                            'gateway': u'172.16.0.1',
                                             'netmask': '255.255.255.0',
                                             'dev': 'eth0',
-                                            'name': 'management'},
+                                            'name': u'management'},
                                            {'brd': '240.0.1.255',
                                             'ip': node_ip_public,
                                             'vlan': 104,
-                                            'gateway': '240.0.1.1',
+                                            'gateway': u'240.0.1.1',
                                             'netmask': '255.255.255.0',
                                             'dev': 'eth0',
-                                            'name': 'public'},
+                                            'name': u'public'},
                                            {'vlan': 100,
-                                            'name': 'floating',
+                                            'name': u'floating',
                                             'dev': 'eth0'},
                                            {'vlan': 101,
-                                            'name': 'fixed',
+                                            'name': u'fixed',
                                             'dev': 'eth0'},
                                            {'vlan': 102,
-                                            'name': 'storage',
+                                            'name': u'storage',
                                             'dev': 'eth0'},
                                            {'name': 'admin',
                                             'dev': 'eth0'}]})
@@ -113,9 +118,13 @@ class TestHandlers(BaseHandlers):
 
     @patch('nailgun.rpc.cast')
     def test_deploy_and_remove_correct_nodes_and_statuses(self, mocked_rpc):
-        self.env.create(
-            cluster_kwargs={},
-            nodes_kwargs=[
+        cluster = self.env.create_cluster()
+        map(
+            lambda x: self.env.create_node(
+                api=True,
+                cluster_id=cluster['id'],
+                **x),
+            [
                 {"status": "ready"},
                 {"pending_addition": True},
                 {"pending_deletion": True, "status": "error"},

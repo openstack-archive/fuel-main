@@ -37,9 +37,13 @@ class TestProvisioning(BaseHandlers):
 
     @patch('nailgun.rpc.cast')
     def test_node_status_changes_to_provision(self, mocked_rpc):
-        self.env.create(
-            cluster_kwargs={},
-            nodes_kwargs=[
+        cluster = self.env.create_cluster()
+        map(
+            lambda x: self.env.create_node(
+                api=True,
+                cluster_id=cluster['id'],
+                **x),
+            [
                 {"status": "ready", "pending_addition": True},
                 {"pending_addition": True},
                 {"status": "provisioning", "pending_addition": True},

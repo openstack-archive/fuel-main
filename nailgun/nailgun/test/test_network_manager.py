@@ -17,9 +17,13 @@ class TestNetworkManager(BaseHandlers):
 
     @patch('nailgun.rpc.cast')
     def test_assign_ips(self, mocked_rpc):
-        self.env.create(
-            cluster_kwargs={},
-            nodes_kwargs=[
+        cluster = self.env.create_cluster()
+        map(
+            lambda x: self.env.create_node(
+                api=True,
+                cluster_id=cluster['id'],
+                **x),
+            [
                 {"pending_addition": True},
                 {"pending_addition": True}
             ]
@@ -231,9 +235,13 @@ class TestNetworkManager(BaseHandlers):
         This test is intended for checking if deployment task
         adds systems to cobbler with multiple interfaces.
         """
-        self.env.create(
-            cluster_kwargs={},
-            nodes_kwargs=[
+        cluster = self.env.create_cluster()
+        map(
+            lambda x: self.env.create_node(
+                api=True,
+                cluster_id=cluster['id'],
+                **x),
+            [
                 {
                     "pending_addition": True,
                     "meta": {
