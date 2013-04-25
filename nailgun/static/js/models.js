@@ -291,6 +291,23 @@ define(function() {
         }
     });
 
+    models.NetworkTopology = Backbone.Model.extend({
+        constructorName: 'NetworkTopology',
+        urlRoot: '/api/nodes'
+    });
+
+    models.NetworkTopologies = Backbone.Collection.extend({
+        constructorName: 'NetworkTopologies',
+        model: models.NetworkTopology,
+        url: '/api/nodes/',
+        parse: function(response){
+            return $.parseJSON(response.responseText)
+        }/*,
+        comparator: function(ifc) {
+            return ifc.name;
+        }*/
+    });
+
     models.Network = Backbone.Model.extend({
         constructorName: 'Network',
         validate: function(attrs) {
