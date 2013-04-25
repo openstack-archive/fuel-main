@@ -825,14 +825,17 @@ function(models, commonViews, dialogViews, nodesTabSummaryTemplate, editNodesScr
         },
         applyChanges: function() {
              Backbone.sync('update', this.interfaces, {url: _.result(this.node, 'url') + '/attributes/interfaces'})
-                 .always(_.bind(function(response, statusType, statusText) {
-                    if (response.status == 200) {
-                        this.this.returnToNodesTab();
-                    } else {
+                 .done(_.bind(function(){
+                     this.returnToNodesTab();
+                 }, this))
+                 .error(_.bind(function(response, statusType, statusText) {
+                    if (response.status == 409) {
                         this.topologies.models = this.topologies.parse(response);
                         var dialog = new dialogViews.UpdateInterfacesDialog({model: this.topologies.models, interfaces: this.interfaces, node: this.node});
                         this.registerSubView(dialog);
                         dialog.render();
+                    } else {
+                        //TODO: show error
                     }
                  }, this));
 /*                 .fail(_.bind(function() {
