@@ -3825,3 +3825,24 @@ hr.slim {
   color: #cc3f14;
 }
 /* Disk Utility End */
+
+.toggle-volume {
+  height: 56px;
+  position: relative;
+  top: -4px;
+  padding-top: 4px;
+}
+
+.network-interfaces-modal-info {
+  margin-left: 34px;
+}
+.network-interfaces-modal-info > p {
+  margin: 0px;
+  font-weight: 600;
+  color: #666666;
+}
+.network-interfaces-modal-info > ul > li {
+  margin: 0px;
+  font-weight: 600;
+  color: #666666;
+}

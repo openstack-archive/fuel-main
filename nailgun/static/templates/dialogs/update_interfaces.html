@@ -2,12 +2,63 @@
   <button type="button" class="close" data-dismiss="modal">×</button>
   <h3>Update network interfaces</h3>
 </div>
+
 <div class="modal-body display-changes-dialog">
-  <div>
+      <label class="parameter-box clearfix setting">
+        <div class="parameter-control">
+          <div class="custom-tumbler">
+            <input type="radio" checked="" value="changednode" name="mode">
+            <!--[if !IE |(gte IE 9)]>--><span>&nbsp;</span><!--<![endif]-->
+          </div>
+        </div>
+        <div class="openstack-sub-title parameter-name">Option 1</div>
+      </label>
+
+      <div class="network-interfaces-modal-info">
+        <p>Node '1' Interfaces</p>
+        <ul>
+          <li>eth0</li>
+          <li>eth1</li>
+        </ul>
+        <p>Node '2' Interfaces</p>
+        <ul>
+          <li>eth0</li>
+          <li>eth1</li>
+        </ul>
+      </div>
+          
+      <label class="parameter-box clearfix setting">
+        <div class="parameter-control">
+          <div class="custom-tumbler">
+            <input type="radio" value="ha" name="mode">
+            <!--[if !IE |(gte IE 9)]>--><span>&nbsp;</span><!--<![endif]-->
+          </div>
+        </div>
+        <div class="openstack-sub-title parameter-name">Option 2</div>
+      </label>
+
+      <div class="network-interfaces-modal-info">
+        <p>Node '1' Interfaces</p>
+        <ul>
+          <li>eth0</li>
+        </ul>
+      </div>
+
+
+
+    
+
+
+    <hr class="slim">
+    <div class="deploy-task-notice">
+      <i class="icon-attention"></i> Your congiguration could not work with current network topology.<br> You could select one from the proposed or force apply yours.
+    </div>
+
+    <!--
     <span class="label label-warning">Warning</span>
-    Your congiguration could not work with current network topology.
-    You could select one from the proposed or force apply yours.
-  </div>
+    <span>Your congiguration could not work with current network topology.<br>You could select one from the proposed or force apply yours.</span>
+    -->
+  <!--
   <% _.each(topologies, function(topology) { %>  
     <div>
         <input type="radio" value="<%= topology.id %>" name="network-topology" class="net-topology" /> 
@@ -30,7 +81,9 @@
          <%})%>
     </div>
   <% })%>
-</div>
+  -->
+
+</div>  
 <div class="modal-footer">
   <button class="btn" data-dismiss="modal">Cancel</button>
   <button class="btn btn-success change-interfaces-btn" disabled>Apply</button>
