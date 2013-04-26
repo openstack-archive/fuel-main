@@ -19,10 +19,9 @@ class TestHandlers(BaseHandlers):
         response = json.loads(resp.body)
         self.assertEquals(cluster.id, response['id'])
         self.assertEquals(cluster.name, response['name'])
-        self.assertEquals(cluster.nodes, response['nodes'])
         self.assertEquals(cluster.release.id, response['release']['id'])
 
-    def test_cluster_creation_without_nodes(self):
+    def test_cluster_creation(self):
         release = self.env.create_release(api=False)
         yet_another_cluster_name = 'Yet another cluster'
         resp = self.app.post(
@@ -36,26 +35,6 @@ class TestHandlers(BaseHandlers):
         self.assertEquals(201, resp.status)
         response = json.loads(resp.body)
         self.assertEquals(yet_another_cluster_name, response['name'])
-        self.assertEquals([], response['nodes'])
-        self.assertEquals(release.id, response['release']['id'])
-
-    def test_cluster_creation_with_nodes(self):
-        release = self.env.create_release(api=False)
-        node = self.env.create_node(api=False)
-        yet_another_cluster_name = u'Yet another cluster'
-        resp = self.app.post(
-            reverse('ClusterCollectionHandler'),
-            params=json.dumps({
-                'name': yet_another_cluster_name,
-                'release': release.id,
-                'nodes': [node.id]
-            }),
-            headers=self.default_headers
-        )
-        self.assertEquals(201, resp.status)
-        response = json.loads(resp.body)
-        self.assertEquals(yet_another_cluster_name, response['name'])
-        self.assertEquals(1, len(response['nodes']))
         self.assertEquals(release.id, response['release']['id'])
 
     def test_cluster_update(self):
