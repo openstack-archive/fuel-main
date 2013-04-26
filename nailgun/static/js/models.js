@@ -21,6 +21,14 @@ define(function() {
     models.Cluster = Backbone.Model.extend({
         constructorName: 'Cluster',
         urlRoot: '/api/clusters',
+        defaults: function() {
+            var defaults = {
+                nodes: new models.Nodes(),
+                tasks: new models.Tasks()
+            };
+            defaults.nodes.cluster = defaults.tasks.cluster = this;
+            return defaults;
+        },
         validate: function(attrs) {
             var errors = {};
             if (!$.trim(attrs.name) || $.trim(attrs.name).length == 0) {
@@ -126,14 +134,6 @@ define(function() {
             return response;
         },
         fetchRelated: function(related, options) {
-            var relatedModels = {
-                nodes: models.Nodes,
-                tasks: models.Tasks
-            };
-            if (!this.get(related)) {
-                this.set(related, new relatedModels[related]());
-                this.get(related).cluster = this;
-            }
             return this.get(related).fetch(_.extend({data: {cluster_id: this.id}}, options));
         }
     });

@@ -114,13 +114,13 @@ function(models, commonViews, dialogViews, NodesTab, NetworkTab, SettingsTab, Lo
             }
         },
         deploymentStarted: function() {
-            this.model.fetch().done(_.bind(function() {
+            $.when(this.model.fetch(), this.model.fetchRelated('nodes'), this.model.fetchRelated('tasks')).done(_.bind(function() {
                 this.unbindEventsWhileDeploying();
                 this.scheduleUpdate();
             }, this));
         },
         deploymentFinished: function() {
-            this.model.fetch().done(_.bind(this.rebindEventsAfterDeployment, this));
+            $.when(this.model.fetch(), this.model.fetchRelated('nodes'), this.model.fetchRelated('tasks')).done(_.bind(this.rebindEventsAfterDeployment, this));
             app.navbar.nodes.fetch();
             app.navbar.notifications.fetch();
         },
