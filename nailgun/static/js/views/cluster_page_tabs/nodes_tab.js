@@ -629,17 +629,15 @@ function(models, commonViews, dialogViews, nodesTabSummaryTemplate, editNodesScr
         },
         setVolumes: function(group, size, allUnallocated) {
             if (_.isUndefined(size)) {
-                size = parseFloat(this.$('input[name=' + group + ']').val());
+                size = Number((this.$('input[name=' + group + ']').val()).replace(',', '.'));
             }
             this.$('input[name=' + group + ']').removeClass('error').parents('.volume-group').next().text('');
             var volumes = _.cloneDeep(this.volumes);
             var volume = _.find(volumes, {vg: group});
             var unallocated = this.diskSize - this.countAllocatedSpace() + volume.size;
-            volume.size = allUnallocated ? volume.size + parseFloat(size) : parseFloat(size);
+            volume.size = allUnallocated ? volume.size + Number(size) : Number(size);
             var min = this.minimalSizes[group] - this.screen.getGroupAllocatedSpace(group) + _.find(this.disk.get('volumes'), {vg: group}).size;
-            if (size === 0) {
-                this.$('input[name=' + group + ']').val(size.toFixed(2));
-            } else {
+            if (size !== 0) {
                 min += 0.064;
             }
             this.disk.set({volumes: volumes}, {validate: true, unallocated: unallocated, group: group, min: min});
@@ -659,18 +657,22 @@ function(models, commonViews, dialogViews, nodesTabSummaryTemplate, editNodesScr
             this.renderVisualGraph();
             this.screen.checkForChanges();
         },
-        makeChanges: function(e, value, allUnallocated) {
+        makeChanges: function(e, value, allUnallocated, deleteGroup) {
             var group = this.$(e.currentTarget).parents('.volume-group').data('group');
+            if (deleteGroup) {
+                this.$('input[name=' + group + ']').val('0.00');
+            }
             this.setVolumes(group, value, allUnallocated);
             _.each(this.volumesToDisplay(), _.bind(function(volume) {
                 _.invoke(this.screen.subViews, 'setVolumes', volume.vg);
             }, this));
         },
         deleteVolumeGroup: function(e) {
-            this.makeChanges(e, 0);
+            this.makeChanges(e, 0, false, true);
+
         },
         editVolumeGroups: function(e) {
-            this.makeChanges(e, (this.$(e.currentTarget).val()).replace(',', '.'));
+            this.makeChanges(e, Number((this.$(e.currentTarget).val()).replace(',', '.')));
         },
         countAllocatedSpace: function() {
             var volumes = this.volumesToDisplay();
