@@ -28,7 +28,7 @@ echo > /tmp/partition.ks
             ## Parsing volume groups and physical volumes
             #if $space_type == "disk" and $volume_type == "pv"
                 #set $volume_vg = $volume.get("vg")
-                #set $volume_size = $int($volume.get("size")) / 1024 ** 2
+                #set $volume_size = $int($volume.get("size") or 0) / 1024 ** 2
                 #set $volume_name = "pv.%03d" % $pvnum
                 #if $volume_size > 0
                     $physical_volumes.append("partition %s --size=%s --ondisk=%s" % ($volume_name, $volume_size, $space_id))
@@ -44,7 +44,7 @@ echo > /tmp/partition.ks
             ## Parsing bare partitions
             #if $space_type == "disk" and $volume_type == "partition"
                 #set $volume_mount = $volume.get("mount")
-                #set $volume_size = $int($volume.get("size")) / 1024 ** 2
+                #set $volume_size = $int($volume.get("size") or 0) / 1024 ** 2
                 #if $volume_size > 0
                     $partitions.append("partition %s --size=%s --ondisk=%s" % ($volume_mount, $volume_size, $space_id))
                 #end if
@@ -58,7 +58,7 @@ echo "bootloader --location=mbr --driveorder=$space_id --append=' crashkernel=au
             ## Parsing logical volumes
             #if $space_type == "vg" and $volume_type == "lv"
                 #set $volume_mount = $volume.get("mount")
-                #set $volume_size = $int($volume.get("size")) / 1024 ** 2
+                #set $volume_size = $int($volume.get("size") or 0) / 1024 ** 2
                 #set $volume_name = $volume.get("name")
                 #if $volume_size > 0
                     $logical_volumes.append("logvol %s --vgname=%s --size=%s --name=%s" % ($volume_mount, $space_id, $volume_size, $volume_name))
