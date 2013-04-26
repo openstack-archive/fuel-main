@@ -55,8 +55,8 @@ function(models, commonViews, dialogViews, networkTabTemplate, networkTabVerific
             // validate data per each change
             this.networks.get(row.data('network-id')).set({
                 cidr: $('.cidr input', row).val(),
-                vlan_start: parseInt($('.vlan_start input:first', row).val(), 10),
-                amount: this.manager == 'FlatDHCPManager' || this.networks.get(row.data('network-id')).get('name') != 'fixed' ? 1: parseInt(this.$('input[name=fixed-amount]').val(), 10),
+                vlan_start: Number($('.vlan_start input:first', row).val()),
+                amount: this.manager == 'FlatDHCPManager' || this.networks.get(row.data('network-id')).get('name') != 'fixed' ? 1: Number(this.$('input[name=fixed-amount]').val()),
                 network_size: e && this.$(e.currentTarget).parent().hasClass('cidr') && this.$(e.currentTarget).attr('name') != 'fixed-cidr' ? Math.pow(2, 32 - parseInt(_.last($('.cidr input', row).val().split('/')), 10)) : parseInt($('.network_size select', row).val(), 10)
             }, {validate: true});
             // check for changes
