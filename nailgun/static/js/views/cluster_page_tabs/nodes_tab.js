@@ -624,8 +624,17 @@ function(models, commonViews, dialogViews, nodesTabSummaryTemplate, editNodesScr
             return this.screen.formatFloat(value);
         },
         toggleEditDiskForm: function(e) {
-            this.$('.close-btn').toggle();
-            this.$('.disk-edit-volume-group-form').collapse('toggle');
+            this.$('.disk-edit-volume-group-form').collapse('toggle').toggleClass('hidden');
+            _.each(this.volumesToDisplay(), _.bind(function(group) {
+                this.checkForAvailableDeletion(group.vg);
+            }, this));
+        },
+        checkForAvailableDeletion: function(group) {
+            var groupSize = 0;
+            _.each(_.filter(this.screen.disks.models, _.bind(function(disk) {return disk.id != this.disk.id && disk.get('type') == 'disk';}, this)), function(disk) {
+                groupSize += _.find(disk.get('volumes'), {vg: group}).size;
+            });
+            this.$('.disk-visual .' + group + ' .close-btn').toggle(groupSize >= this.minimalSizes[group] && !this.$('.disk-edit-volume-group-form').hasClass('hidden'));
         },
         setVolumes: function(group, size, allUnallocated) {
             if (_.isUndefined(size)) {
@@ -655,6 +664,7 @@ function(models, commonViews, dialogViews, nodesTabSummaryTemplate, editNodesScr
                 }
             }
             this.renderVisualGraph();
+            this.checkForAvailableDeletion(group);
             this.screen.checkForChanges();
         },
         makeChanges: function(e, value, allUnallocated, deleteGroup) {
@@ -742,7 +752,7 @@ function(models, commonViews, dialogViews, nodesTabSummaryTemplate, editNodesScr
                 volumes: this.volumesToDisplay(),
                 partition: this.partition
             }));
-            this.$('.disk-edit-volume-group-form').collapse({toggle: false});
+            this.$('.disk-edit-volume-group-form').collapse({toggle: false}).addClass('hidden');
             this.renderVisualGraph();
             return this;
         }
