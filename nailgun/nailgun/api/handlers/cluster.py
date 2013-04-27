@@ -1,10 +1,7 @@
 # -*- coding: utf-8 -*-
 
 import json
-import uuid
-import itertools
 import traceback
-
 import web
 import netaddr
 
@@ -17,7 +14,6 @@ from nailgun.api.models import Network, NetworkGroup, Vlan
 from nailgun.api.models import Release
 from nailgun.api.models import Attributes
 from nailgun.api.models import Task
-
 from nailgun.api.validators import ClusterValidator
 from nailgun.api.validators import NetworkGroupValidator
 from nailgun.api.validators import AttributesValidator
@@ -31,8 +27,6 @@ from nailgun.api.handlers.tasks import TaskHandler
 from nailgun.task.helpers import update_task_status
 from nailgun.task.manager import DeploymentTaskManager
 from nailgun.task.manager import ClusterDeletionManager
-from nailgun.task.manager import VerifyNetworksTaskManager
-from nailgun.task.manager import CheckNetworksTaskManager
 
 
 class ClusterHandler(JSONHandler):
@@ -42,7 +36,6 @@ class ClusterHandler(JSONHandler):
         "type",
         "mode",
         "status",
-        "net_manager",
         ("release", "*")
     )
     model = Cluster
@@ -177,70 +170,6 @@ class ClusterChangesHandler(JSONHandler):
             logger.warn(u'ClusterChangesHandler: error while execution'
                         ' deploy task: {0}'.format(exc.message))
             raise web.badrequest(exc.message)
-        return TaskHandler.render(task)
-
-
-class ClusterVerifyNetworksHandler(JSONHandler):
-    fields = (
-        "id",
-        "name",
-    )
-
-    validator = NetworkGroupValidator
-
-    @content_json
-    def PUT(self, cluster_id):
-        cluster = self.get_object_or_404(Cluster, cluster_id)
-        nets = self.validator.validate_collection_update(web.data())
-        vlan_ids = NetworkGroup.generate_vlan_ids_list(nets)
-        task_manager = VerifyNetworksTaskManager(cluster_id=cluster.id)
-        task = task_manager.execute(nets, vlan_ids)
-        return TaskHandler.render(task)
-
-
-class ClusterSaveNetworksHandler(JSONHandler):
-    fields = (
-        "id",
-        "name",
-    )
-
-    validator = NetworkGroupValidator
-
-    @content_json
-    def PUT(self, cluster_id):
-        cluster = self.get_object_or_404(Cluster, cluster_id)
-        network_manager = NetworkManager()
-        new_nets = self.validator.validate_collection_update(web.data())
-        task_manager = CheckNetworksTaskManager(cluster_id=cluster.id)
-        task = task_manager.execute(new_nets)
-        if task.status != 'error':
-            nets_to_render = []
-            error = False
-            for ng in new_nets:
-                ng_db = self.db.query(NetworkGroup).get(ng['id'])
-                for key, value in ng.iteritems():
-                    setattr(ng_db, key, value)
-                try:
-                    network_manager.create_networks(ng_db)
-                    ng_db.cluster.add_pending_changes("networks")
-                except Exception as exc:
-                    err = str(exc)
-                    update_task_status(
-                        task.uuid,
-                        status="error",
-                        progress=100,
-                        msg=err
-                    )
-                    logger.error(traceback.format_exc())
-                    error = True
-                    break
-                nets_to_render.append(ng_db)
-
-            if task.status == 'error':
-                self.db.rollback()
-            else:
-                self.db.commit()
-
         return TaskHandler.render(task)
 
 

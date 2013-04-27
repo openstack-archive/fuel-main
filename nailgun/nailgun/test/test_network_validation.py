@@ -23,7 +23,7 @@ class TestHandlers(BaseHandlers):
             cluster.id
         )
         resp = self.app.put(
-            reverse('ClusterSaveNetworksHandler',
+            reverse('NetworkConfigurationHandler',
                     kwargs={'cluster_id': cluster.id}),
             json.dumps(nets),
             headers=self.default_headers
@@ -34,9 +34,9 @@ class TestHandlers(BaseHandlers):
         self.assertEquals(task['progress'], 100)
         self.assertEquals(task['name'], 'check_networks')
         ngs_created = self.db.query(NetworkGroup).filter(
-            NetworkGroup.name.in_([n['name'] for n in nets])
+            NetworkGroup.name.in_([n['name'] for n in nets['networks']])
         ).all()
-        self.assertEquals(len(ngs_created), len(nets))
+        self.assertEquals(len(ngs_created), len(nets['networks']))
 
     def test_network_checking_fails_if_admin_intersection(self):
         self.env.create(
@@ -47,9 +47,9 @@ class TestHandlers(BaseHandlers):
         )
         cluster = self.env.clusters[0]
         nets = self.env.generate_ui_networks(cluster.id)
-        nets[-1]["cidr"] = settings.NET_EXCLUDE[0]
+        nets['networks'][-1]["cidr"] = settings.NET_EXCLUDE[0]
         resp = self.app.put(
-            reverse('ClusterSaveNetworksHandler',
+            reverse('NetworkConfigurationHandler',
                     kwargs={'cluster_id': cluster.id}),
             json.dumps(nets),
             headers=self.default_headers,
@@ -80,10 +80,10 @@ class TestHandlers(BaseHandlers):
         nets = self.env.generate_ui_networks(
             cluster.id
         )
-        nets[-1]["amount"] = 2
-        nets[-1]["cidr"] = "10.0.0.0/23"
+        nets['networks'][-1]["amount"] = 2
+        nets['networks'][-1]["cidr"] = "10.0.0.0/23"
         resp = self.app.put(
-            reverse('ClusterSaveNetworksHandler',
+            reverse('NetworkConfigurationHandler',
                     kwargs={'cluster_id': cluster.id}),
             json.dumps(nets),
             headers=self.default_headers
@@ -96,5 +96,5 @@ class TestHandlers(BaseHandlers):
         self.assertEquals(
             task['message'],
             "Network amount for '{0}' is more than 1 "
-            "while using FlatDHCP manager.".format(nets[-1]["name"])
-        )
+            "while using FlatDHCP manager.".format(
+                nets['networks'][-1]["name"]))

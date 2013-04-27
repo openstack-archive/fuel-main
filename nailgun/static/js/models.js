@@ -271,7 +271,6 @@ define(function() {
 
     models.Network = Backbone.Model.extend({
         constructorName: 'Network',
-        urlRoot: '/api/networks',
         validate: function(attrs) {
             var errors = {};
             var match;
@@ -324,9 +323,26 @@ define(function() {
     models.Networks = Backbone.Collection.extend({
         constructorName: 'Networks',
         model: models.Network,
-        url: '/api/networks',
         comparator: function(network) {
             return network.id;
+        }
+    });
+
+    models.NetworkConfiguration = Backbone.Model.extend({
+        constructorName: 'NetworkConfiguration',
+        urlRoot: '/api/clusters',
+        parse: function(response) {
+            response.networks = new models.Networks(response.networks);
+            return response;
+        },
+        toJSON: function() {
+            return {
+                net_manager: this.get('net_manager'),
+                networks: this.get('networks').toJSON()
+            };
+        },
+        isNew: function() {
+            return false;
         }
     });
 

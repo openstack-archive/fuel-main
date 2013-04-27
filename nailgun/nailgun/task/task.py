@@ -537,10 +537,21 @@ class CheckNetworksTask(object):
     @classmethod
     def execute(self, task, data):
         task_uuid = task.uuid
-        netmanager = task.cluster.net_manager
+
+        # If not set in data then fetch from db
+        if 'net_manager' in data:
+            netmanager = data['net_manager']
+        else:
+            netmanager = task.cluster.net_manager
+
+        if 'networks' in data:
+            networks = data['networks']
+        else:
+            networks = map(lambda x: x.__dict__, task.cluster.network_groups)
+
         result = []
         err_msgs = []
-        for ng in data:
+        for ng in networks:
             net_errors = []
             ng_db = orm().query(NetworkGroup).get(ng['id'])
             if not ng_db:
@@ -549,6 +560,7 @@ class CheckNetworksTask(object):
             else:
                 if 'cidr' in ng:
                     fnet = netaddr.IPSet([ng['cidr']])
+
                     if fnet & netaddr.IPSet(settings.NET_EXCLUDE):
                         net_errors.append("cidr")
                         err_msgs.append(

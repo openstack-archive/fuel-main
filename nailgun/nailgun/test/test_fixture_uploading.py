@@ -34,6 +34,7 @@ class TestFixture(BaseHandlers):
                 ]
             }
         }]'''
+
         upload_fixture(cStringIO.StringIO(data))
         check = self.db.query(Release).filter(
             Release.name == u"CustomFixtureRelease"

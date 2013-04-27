@@ -103,17 +103,19 @@ class TestClusterChanges(BaseHandlers):
         all_changes = self.db.query(ClusterChanges).all()
         self.assertEquals(len(all_changes), 0)
         resp = self.app.get(
-            reverse('NetworkCollectionHandler'),
+            reverse(
+                'NetworkConfigurationHandler',
+                kwargs={'cluster_id': cluster['id']}),
             headers=self.default_headers
         )
-        net_id = json.loads(resp.body)[0]["id"]
+        net_id = json.loads(resp.body)['networks'][0]["id"]
         resp = self.app.put(
             reverse(
-                'ClusterSaveNetworksHandler',
+                'NetworkConfigurationHandler',
                 kwargs={'cluster_id': cluster['id']}),
-            json.dumps([
-                {"id": net_id, "access": "restricted"}
-            ]),
+            json.dumps({'networks': [{
+                "id": net_id, "access": "restricted"}
+            ]}),
             headers=self.default_headers
         )
         pending_changes = self.db.query(ClusterChanges).filter_by(

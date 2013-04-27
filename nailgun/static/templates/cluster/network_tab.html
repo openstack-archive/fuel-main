@@ -2,7 +2,7 @@
   <h3>Network Settings</h3>
 
   <div class="network-tab-content">
-    <% var disabled = cluster.task('deploy', 'running') || cluster.task('verify_networks', 'running') ? 'disabled' : '' %>
+    <% var disabled = task ? 'disabled' : '' %>
     <fieldset>
 
       <% if (networks) { %>
@@ -57,7 +57,7 @@
             </div>
           <% }) %>
 
-          <% var fixedNetwork = _.find(networks.models, function(network){return network.get('name') == 'fixed'; }) %>
+          <% var fixedNetwork = networks.findWhere({name: 'fixed'}) %>
           <% if (fixedNetwork) { %>
 
             <% var vlan = net_manager == 'VlanManager' ? '' : 'hide' %>

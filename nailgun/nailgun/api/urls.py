@@ -5,10 +5,13 @@ import web
 from nailgun.api.handlers.cluster import ClusterHandler
 from nailgun.api.handlers.cluster import ClusterCollectionHandler
 from nailgun.api.handlers.cluster import ClusterChangesHandler
-from nailgun.api.handlers.cluster import ClusterVerifyNetworksHandler
-from nailgun.api.handlers.cluster import ClusterSaveNetworksHandler
 from nailgun.api.handlers.cluster import ClusterAttributesHandler
 from nailgun.api.handlers.cluster import ClusterAttributesDefaultsHandler
+
+from nailgun.api.handlers.network_configuration \
+    import NetworkConfigurationHandler
+from nailgun.api.handlers.network_configuration \
+    import NetworkConfigurationVerifyHandler
 
 from nailgun.api.handlers.release import ReleaseHandler
 from nailgun.api.handlers.release import ReleaseCollectionHandler
@@ -20,7 +23,6 @@ from nailgun.api.handlers.node import NodeAttributesDefaultsHandler
 from nailgun.api.handlers.node import NodeAttributesByNameHandler
 from nailgun.api.handlers.node import NodeAttributesByNameDefaultsHandler
 
-from nailgun.api.handlers.networks import NetworkCollectionHandler
 from nailgun.api.handlers.tasks import TaskHandler
 from nailgun.api.handlers.tasks import TaskCollectionHandler
 
@@ -49,10 +51,10 @@ urls = (
     'ClusterAttributesHandler',
     r'/clusters/(?P<cluster_id>\d+)/attributes/defaults/?$',
     'ClusterAttributesDefaultsHandler',
-    r'/clusters/(?P<cluster_id>\d+)/verify/networks/?$',
-    'ClusterVerifyNetworksHandler',
-    r'/clusters/(?P<cluster_id>\d+)/save/networks/?$',
-    'ClusterSaveNetworksHandler',
+    r'/clusters/(?P<cluster_id>\d+)/network_configuration/?$',
+    'NetworkConfigurationHandler',
+    r'/clusters/(?P<cluster_id>\d+)/network_configuration/verify/?$',
+    'NetworkConfigurationVerifyHandler',
     r'/nodes/?$',
     'NodeCollectionHandler',
     r'/nodes/(?P<node_id>\d+)/?$',
@@ -65,8 +67,6 @@ urls = (
     'NodeAttributesByNameHandler',
     r'/nodes/(?P<node_id>\d+)/attributes/(?P<attr_name>[-\w]+)/defaults/?$',
     'NodeAttributesByNameDefaultsHandler',
-    r'/networks/?$',
-    'NetworkCollectionHandler',
     r'/tasks/?$',
     'TaskCollectionHandler',
     r'/tasks/(?P<task_id>\d+)/?$',

@@ -20,7 +20,7 @@ casper.then(function() {
     this.evaluate(function() {
         $('input[name=public-cidr]').keyup();
     });
-    this.test.assertDoesntExist('.apply-btn:disabled', 'Save networks button is enabled if there are changes');
+    this.test.assertExist('.apply-btn:not(:disabled)', 'Save networks button is enabled if there are changes');
     this.fill('.networks-table', {'public-cidr': initialValue});
     this.evaluate(function() {
         $('input[name=public-cidr]').keyup();

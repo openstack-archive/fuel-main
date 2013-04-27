@@ -23,7 +23,6 @@ def capitalize_model_name(model_name):
 
 def upload_fixture(fileobj):
     fixture = json.load(fileobj)
-
     known_objects = {}
 
     for obj in fixture:

@@ -179,7 +179,7 @@ class TestTaskManagers(BaseHandlers):
         nets = self.env.generate_ui_networks(
             self.env.clusters[0].id
         )
-        nets[-1]["vlan_start"] = 500
+        nets['networks'][-1]["vlan_start"] = 500
         task = self.env.launch_verify_networks(nets)
         self.env.wait_ready(task, 30)
 
@@ -195,7 +195,8 @@ class TestTaskManagers(BaseHandlers):
         nets = self.env.generate_ui_networks(
             self.env.clusters[0].id
         )
-        nets[-1]['cidr'] = settings.NET_EXCLUDE[0]
+        nets['networks'][-1]['cidr'] = settings.NET_EXCLUDE[0]
+
         task = self.env.launch_verify_networks(nets)
         self.env.wait_error(task, 30)
         self.assertIn(

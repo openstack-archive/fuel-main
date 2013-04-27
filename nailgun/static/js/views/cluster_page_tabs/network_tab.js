@@ -62,52 +62,51 @@ function(models, commonViews, dialogViews, networkTabTemplate, networkTabVerific
                 }, {validate: true});
             }
             // validate data per each change
-            this.networks.get(row.data('network-id')).set({
+            this.networkConfiguration.get('networks').get(row.data('network-id')).set({
                 cidr: $('.cidr input', row).val(),
                 vlan_start: Number($('.vlan_start input:first', row).val()),
-                amount: this.manager == 'FlatDHCPManager' || this.networks.get(row.data('network-id')).get('name') != 'fixed' ? 1: Number(this.$('input[name=fixed-amount]').val()),
+                amount: this.networkConfiguration.get('net_manager') == 'FlatDHCPManager' || this.networkConfiguration.get('networks').get(row.data('network-id')).get('name') != 'fixed' ? 1: parseInt(this.$('input[name=fixed-amount]').val(), 10),
                 network_size: e && this.$(e.currentTarget).parent().hasClass('cidr') && this.$(e.currentTarget).attr('name') != 'fixed-cidr' ? Math.pow(2, 32 - parseInt(_.last($('.cidr input', row).val().split('/')), 10)) : parseInt($('.network_size select', row).val(), 10)
             }, {validate: true});
             // check for changes
-            var noChanges = (_.isEqual(this.model.get('networks').toJSON(), this.networks.toJSON()) && this.model.get('net_manager') == this.manager) || _.some(this.networks.models, 'validationError');
+            var noChanges = _.isEqual(this.model.get('networkConfiguration').toJSON(), this.networkConfiguration.toJSON()) || _.some(this.networkConfiguration.get('networks').models, 'validationError');
             this.defaultButtonsState(noChanges);
             this.hasChanges = !noChanges;
             this.page.removeVerificationTask();
         },
         changeManager: function(e) {
-            this.manager = this.$(e.currentTarget).val();
+            this.networkConfiguration.set({net_manager: this.$(e.currentTarget).val()});
+            this.$('input[name=fixed-amount]').val(this.fixedAmount);
             this.changeNetworks();
             this.render();
-            this.$('input[name=fixed-amount]').val(this.fixedAmount);
         },
         startVerification: function() {
             var task = new models.Task();
             var options = {
                 method: 'PUT',
-                url: _.result(this.model, 'url') + '/verify/networks',
-                data: JSON.stringify(this.networks)
+                url: _.result(this.model, 'url') + '/network_configuration/verify',
+                data: JSON.stringify(this.networkConfiguration)
             };
             task.save({}, options)
                 .fail(_.bind(function() {
-                        var dialog = new dialogViews.SimpleMessage({error: true, title: 'Network verification'});
-                        app.page.registerSubView(dialog);
-                        dialog.render();
-                    }, this))
+                    var dialog = new dialogViews.SimpleMessage({error: true, title: 'Network verification'});
+                    app.page.registerSubView(dialog);
+                    dialog.render();
+                }, this))
                 .always(_.bind(function() {
                     this.model.get('tasks').fetch({data: {cluster_id: this.model.id}}).done(_.bind(this.scheduleUpdate, this));
                 }, this));
         },
         verifyNetworks: function() {
-            if (!this.$('.control-group.error').length) {
+            if (!_.some(this.networkConfiguration.get('networks').models, 'validationError')) {
                 this.page.removeVerificationTask().done(_.bind(this.startVerification, this));
             }
         },
         applyChanges: function() {
             var deferred;
-            if (!_.some(this.networks.models, 'validationError')) {
+            if (!_.some(this.networkConfiguration.get('networks').models, 'validationError')) {
                 this.disableControls();
-                this.model.save({net_manager: this.manager}, {patch: true, wait: true});
-                deferred = Backbone.sync('update', this.networks, {url: _.result(this.model, 'url') + '/save/networks'})
+                deferred = Backbone.sync('update', this.networkConfiguration, {url: _.result(this.model, 'url') + '/network_configuration'})
                     .always(_.bind(function() {
                         this.model.fetch();
                         this.model.fetchRelated('tasks');
@@ -116,8 +115,11 @@ function(models, commonViews, dialogViews, networkTabTemplate, networkTabVerific
                         if (task && task.status == 'error') {
                             this.defaultButtonsState(false);
                         } else {
-                            this.model.set({networks: this.networks.clone()});
-                            this.setInitialData();
+                            this.hasChanges = false;
+                            this.model.get('networkConfiguration').set({
+                                net_manager: this.networkConfiguration.get('net_manager'),
+                                networks: new models.Networks(this.networkConfiguration.get('networks').toJSON())
+                            });
                         }
                     }, this))
                     .fail(_.bind(function() {
@@ -154,14 +156,17 @@ function(models, commonViews, dialogViews, networkTabTemplate, networkTabVerific
         },
         setInitialData: function() {
             this.hasChanges = false;
-            this.networks = new models.Networks(this.model.get('networks').toJSON());
-            this.networks.on('invalid', function(model, errors) {
+            this.networkConfiguration.set({
+                net_manager: this.model.get('networkConfiguration').get('net_manager'),
+                networks: new models.Networks(this.model.get('networkConfiguration').get('networks').toJSON())
+            });
+            this.networkConfiguration.get('networks').on('invalid', function(model, errors) {
                 this.$('.control-group[data-network-id=' + model.id + ']').addClass('error').find('.help-inline').text(errors.cidr || errors.vlan_start || errors.amount);
             }, this);
-            this.manager = this.model.get('net_manager');
-            var fixedNetwork = _.find(this.model.get('networks').models, function(network) {return network.get('name') == 'fixed';});
-            this.fixedAmount = fixedNetwork.get('amount') || 1;
-            _.each(_.filter(this.networks.models, function(network) {return network.get('name') != 'fixed';}), function(network) {
+            console.log(_.reject(this.networkConfiguration.get('networks').models, function(network) {return network.get('name') == 'fixed';}).length);
+            console.log(_.reject(this.networkConfiguration.get('networks').models, {name: 'fixed'}).length);
+            this.fixedAmount = this.networkConfiguration.get('networks').findWhere({name: 'fixed'}).get('amount') || 1;
+            _.each(_.filter(this.networkConfiguration.get('networks').models, function(network) {return network.get('name') != 'fixed';}), function(network) {
                 var cidr = network.get('cidr');
                 network.set({network_size: Math.pow(2, 32 - parseInt(_.last(cidr.split('/')), 10))});
             });
@@ -172,12 +177,13 @@ function(models, commonViews, dialogViews, networkTabTemplate, networkTabVerific
         },
         initialize: function(options) {
             _.defaults(this, options);
+            this.networkConfiguration = new models.NetworkConfiguration();
             this.model.get('tasks').each(this.bindTaskEvents, this);
             this.model.get('tasks').on('add', this.onNewTask, this);
             this.model.get('tasks').on('remove', this.renderVerificationControl, this);
-            if (!this.model.get('networks')) {
-                this.model.set({networks: new models.Networks()});
-                this.model.get('networks').fetch({data: {cluster_id: this.model.id}})
+            if (!this.model.get('networkConfiguration')) {
+                this.model.set({networkConfiguration: new models.NetworkConfiguration()});
+                this.model.get('networkConfiguration').fetch({url: _.result(this.model, 'url') + '/network_configuration'})
                     .done(_.bind(function() {
                         this.setInitialData();
                         this.render();
@@ -197,13 +203,21 @@ function(models, commonViews, dialogViews, networkTabTemplate, networkTabVerific
             }
         },
         renderVerificationControl: function() {
-            var verificationView = new NetworkTabVerificationControl({model: this.model, networks: this.networks});
+            var verificationView = new NetworkTabVerificationControl({
+                cluster: this.model,
+                networks: this.networkConfiguration.get('networks')
+            });
             this.registerSubView(verificationView);
             this.$('.verification-control').html(verificationView.render().el);
             this.showVerificationErrors();
         },
         render: function() {
-            this.$el.html(this.template({cluster: this.model, networks: this.networks, net_manager: this.manager, hasChanges: this.hasChanges}));
+            this.$el.html(this.template({
+                networks: this.networkConfiguration.get('networks'),
+                net_manager: this.networkConfiguration.get('net_manager'),
+                hasChanges: this.hasChanges,
+                task: this.model.task('deploy', 'running') || this.model.task('verify_networks', 'running')
+            }));
             this.renderVerificationControl();
             return this;
         }
@@ -215,7 +229,10 @@ function(models, commonViews, dialogViews, networkTabTemplate, networkTabVerific
             _.defaults(this, options);
         },
         render: function() {
-            this.$el.html(this.template({cluster: this.model, networks: this.networks}));
+            this.$el.html(this.template({
+                cluster: this.cluster,
+                networks: this.networks
+            }));
             return this;
         }
     });

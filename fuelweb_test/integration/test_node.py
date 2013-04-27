@@ -461,23 +461,13 @@ class TestNode(Base):
                             " via ebtables: %s" %
                             (vlan, target_dev, e.output))
 
-    def _get_common_vlan(self, cluster_id):
-        """Find vlan that must be at all two nodes.
-        """
-        resp = self.client.get(
-            "/api/networks/"
-        )
-        self.assertEquals(200, resp.getcode())
-        for net in json.loads(resp.read()):
-            if net['cluster_id'] == cluster_id:
-                return net['vlan_start']
-        raise Exception("Can't find vlan for cluster_id %s" % cluster_id)
-
     def _get_cluster_vlans(self, cluster_id):
-        resp = self.client.get("/api/networks/?cluster_id=%d" % cluster_id)
+        resp = self.client.get(
+            '/api/clusters/%d/network_configuration/' % cluster_id)
         self.assertEquals(200, resp.getcode())
         cluster_vlans = []
-        for n in json.loads(resp.read()):
+        networks = json.loads(resp.read())['networks']
+        for n in networks:
             amount = n.get('amount', 1)
             cluster_vlans.extend(range(n['vlan_start'],
                                        n['vlan_start'] + amount))
@@ -508,11 +498,13 @@ class TestNode(Base):
             "Run network verify in cluster %d",
             cluster_id
         )
-        resp = self.client.get("/api/networks/?cluster_id=%d" % cluster_id)
+        resp = self.client.get(
+            '/api/clusters/%d/network_configuration/' % cluster_id)
         self.assertEquals(200, resp.getcode())
-        networks = json.loads(resp.read())
+        network_configuration = json.loads(resp.read())
         changes = self.client.put(
-            "/api/clusters/%d/verify/networks/" % cluster_id, networks
+            '/api/clusters/%d/network_configuration/verify/' % cluster_id,
+            network_configuration
         )
         self.assertEquals(200, changes.getcode())
         return json.loads(changes.read())
@@ -611,9 +603,7 @@ class TestNode(Base):
             "Launching provisioning on cluster %d",
             cluster_id
         )
-        changes = self.client.put(
-            "/api/clusters/%d/changes/" % cluster_id
-        )
+        changes = self.client.put('/api/clusters/%d/changes/' % cluster_id)
         self.assertEquals(200, changes.getcode())
         return json.loads(changes.read())
 
@@ -700,20 +690,26 @@ class TestNode(Base):
             )
             self.assertEquals(201, resp.getcode())
             cluster_id = _get_cluster_id(name)
-            self.client.put(
-                "/api/clusters/%s/" % cluster_id,
+
+            changes = self.client.put(
+                '/api/clusters/%d/network_configuration/' % cluster_id,
                 {'net_manager': net_manager}
             )
+
             if net_manager == "VlanManager":
                 response = self.client.get(
-                    "/api/networks/?cluster_id=%d" % cluster_id
+                    '/api/clusters/%d/network_configuration/' % cluster_id
                 )
-                networks = json.loads(response.read())
-                flat_net = [n for n in networks if n['name'] == 'fixed']
-                flat_net[0]['amount'] = 8
-                flat_net[0]['network_size'] = 16
+                networks = json.loads(response.read())['networks']
+                flat_net = {
+                    'networks': [n for n in networks if n['name'] == 'fixed']
+                }
+                flat_net['networks'][0]['amount'] = 8
+                flat_net['networks'][0]['network_size'] = 16
+
                 self.client.put(
-                    "/api/clusters/%d/save/networks/" % cluster_id, flat_net
+                    '/api/clusters/%d/network_configuration/' % cluster_id,
+                    flat_net
                 )
         if not cluster_id:
             raise Exception("Could not get cluster '%s'" % name)

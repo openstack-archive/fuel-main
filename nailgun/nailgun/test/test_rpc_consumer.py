@@ -40,7 +40,7 @@ class TestVerifyNetworks(BaseHandlers):
         cluster_db = self.env.clusters[0]
         node1, node2 = self.env.nodes
         vlans = NetworkGroup.generate_vlan_ids_list(
-            self.env.generate_ui_networks(cluster_db.id)
+            self.env.generate_ui_networks(cluster_db.id)['networks']
         )
         nets = [{'iface': 'eth0', 'vlans': range(100, 105)}]
 

@@ -1,18 +1,21 @@
 # -*- coding: utf-8 -*-
 
+try:
+    from unittest.case import TestCase
+except ImportError:
+    # Runing unit-tests in production environment
+    from unittest2.case import TestCase
+
 import os
 import re
 import json
 import time
 import logging
+import mock
 from random import randint
 from datetime import datetime
-from unittest.case import TestCase
 from functools import partial, wraps
-
-import mock
 from paste.fixture import TestApp, AppError
-#from sqlalchemy.orm.events import orm
 
 import nailgun
 from nailgun.api.models import Node
@@ -23,7 +26,6 @@ from nailgun.api.models import Attributes
 from nailgun.api.models import Network
 from nailgun.api.models import NetworkGroup
 from nailgun.api.models import Task
-
 from nailgun.api.urls import urls
 from nailgun.wsgi import build_app
 from nailgun.db import engine
@@ -225,7 +227,7 @@ class Environment(object):
             "172.16.0.0/24",
             "10.0.0.0/24"
         )
-        nets = [{
+        nets = {'networks': [{
             "network_size": 256,
             "name": nd[0],
             "amount": 1,
@@ -233,7 +235,7 @@ class Environment(object):
             "vlan_start": 100 + i,
             "cidr": nd[1],
             "id": start_id + i
-        } for i, nd in enumerate(zip(net_names, net_cidrs))]
+        } for i, nd in enumerate(zip(net_names, net_cidrs))]}
         return nets
 
     def get_default_volumes_metadata(self):
@@ -455,9 +457,10 @@ class Environment(object):
                 nets = json.dumps(self.generate_ui_networks(
                     self.clusters[0].id
                 ))
+
             resp = self.app.put(
                 reverse(
-                    'ClusterVerifyNetworksHandler',
+                    'NetworkConfigurationVerifyHandler',
                     kwargs={'cluster_id': self.clusters[0].id}),
                 nets,
                 headers=self.default_headers
@@ -489,6 +492,7 @@ class Environment(object):
         timer = time.time()
         while task.status == 'running':
             self.db.refresh(task)
+
             if time.time() - timer > timeout:
                 raise Exception(
                     "Task '{0}' seems to be hanged".format(
