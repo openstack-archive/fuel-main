@@ -643,7 +643,7 @@ function(models, commonViews, dialogViews, nodesTabSummaryTemplate, editNodesScr
             this.$('input[name=' + group + ']').removeClass('error').parents('.volume-group').next().text('');
             var volumes = _.cloneDeep(this.volumes);
             var volume = _.find(volumes, {vg: group});
-            var unallocated = this.diskSize - this.countAllocatedSpace() + volume.size;
+            var unallocated = (this.diskSize - this.countAllocatedSpace() + volume.size).toFixed(2);
             volume.size = allUnallocated ? volume.size + Number(size) : Number(size);
             var min = this.minimalSizes[group] - this.screen.getGroupAllocatedSpace(group) + _.find(this.disk.get('volumes'), {vg: group}).size;
             if (size !== 0) {
