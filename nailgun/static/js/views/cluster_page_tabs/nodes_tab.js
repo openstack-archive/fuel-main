@@ -694,7 +694,7 @@ function(models, commonViews, dialogViews, nodesTabSummaryTemplate, editNodesScr
         },
         useAllUnallocatedSpace: function(e) {
             e.preventDefault();
-            this.makeChanges(e, this.diskSize - this.countAllocatedSpace(), true);
+            this.makeChanges(e, (this.diskSize - this.countAllocatedSpace()).toFixed(2), true);
         },
         switchBootableDisk: function(e) {
             _.each(this.screen.disks.models, function(disk) {
