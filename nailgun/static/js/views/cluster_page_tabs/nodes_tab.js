@@ -854,7 +854,8 @@ function(models, commonViews, dialogViews, nodesTabSummaryTemplate, editNodesScr
         template: _.template(nodeInterfaceTemplate),
         events: {
             'sortremove .logical-network-box': 'dragStart',
-            'sortreceive .logical-network-box': 'dragStop'
+            'sortreceive .logical-network-box': 'dragStop',
+            'sortstop .logical-network-box': 'dragStop' 
         },
         dragStart: function(event, ui) {
             var network = this.model.get('networks').findWhere({name: $(ui.item).data('name')});
@@ -863,7 +864,10 @@ function(models, commonViews, dialogViews, nodesTabSummaryTemplate, editNodesScr
         },
         dragStop: function(event, ui) {
             var network = this.screen.draggedNetwork;
-            this.model.get('networks').add(network);
+            if (event.type == 'sortreceive') {
+                this.model.get('networks').add(network);
+            }
+            this.render();
             this.screen.draggedNetwork = null;
         },
         checkIfEmpty: function() {
