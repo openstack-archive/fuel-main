@@ -69,17 +69,10 @@ def syncdb():
 
 
 def dropdb():
-    from nailgun.api.models import Base
-    try:
-        flush()
-        orm().commit()
-        Base.metadata.drop_all(engine)
-    except ProgrammingError:
-        logger.info("Schema has changed, deleting tables manually...")
-        tables = [name for (name,) in engine.execute(
-            "SELECT tablename FROM pg_tables WHERE schemaname = 'public'")]
-        for table in tables:
-            engine.execute("DROP TABLE %s CASCADE" % table)
+    tables = [name for (name,) in engine.execute(
+        "SELECT tablename FROM pg_tables WHERE schemaname = 'public'")]
+    for table in tables:
+        engine.execute("DROP TABLE IF EXISTS %s CASCADE" % table)
 
 
 def flush():
