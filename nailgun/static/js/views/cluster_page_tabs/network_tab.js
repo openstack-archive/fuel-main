@@ -100,7 +100,8 @@ function(models, commonViews, dialogViews, networkTabTemplate, networkTabVerific
                 this.model.save({net_manager: this.manager}, {patch: true, wait: true});
                 deferred = Backbone.sync('update', this.networks, {url: _.result(this.model, 'url') + '/save/networks'})
                     .always(_.bind(function() {
-                        this.model.fetch().done(_.bind(this.render, this));
+                        this.model.fetch();
+                        this.model.fetchRelated('tasks');
                     }, this))
                     .done(_.bind(function(task) {
                         if (task && task.status == 'error') {
@@ -116,7 +117,6 @@ function(models, commonViews, dialogViews, networkTabTemplate, networkTabVerific
                         app.page.registerSubView(dialog);
                         dialog.render();
                     }, this));
-
             } else {
                 deferred = new $.Deferred();
                 deferred.reject();
@@ -135,7 +135,6 @@ function(models, commonViews, dialogViews, networkTabTemplate, networkTabVerific
             }
         },
         bindTaskEvents: function(task) {
-            //var task = this.model.task('verify_networks') || this.model.task('check_networks', 'error') || this.model.task('deploy', 'running');
             if (task.get('name') == 'verify_networks' || task.get('name') == 'deploy' || task.get('name') == 'check_networks') {
                 return task.on('change:status', this.render, this);
             }
