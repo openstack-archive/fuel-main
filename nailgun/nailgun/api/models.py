@@ -493,3 +493,56 @@ class Notification(Base):
         default='unread'
     )
     datetime = Column(DateTime, nullable=False)
+
+
+class NodePhyInterface(Base, BasicValidator):
+    __tablename__ = 'node_phy_interfaces'
+    id = Column(Integer, primary_key=True)
+    node_id = Column(Integer, ForeignKey('nodes.id'), nullable=False)
+    name = Column(String(32), nullable=False)
+    mac_address = Column(String(16))
+    max_speed = Column(Integer)
+    current_speed = Column(Integer)
+
+
+class L2Topology(Base, BasicValidator):
+    __tablename__ = 'l2_topologies'
+    id = Column(Integer, primary_key=True)
+    network_id = Column(Integer, ForeignKey('networks.id'), nullable=False)
+
+
+class L2Connection(Base, BasicValidator):
+    __tablename__ = 'l2_connections'
+    id = Column(Integer, primary_key=True)
+    topology_id = Column(
+        Integer,
+        ForeignKey('l2_topologies.id'),
+        nullable=False
+    )
+    interface_id = Column(
+        Integer,
+        ForeignKey('node_phy_interfaces.id'),
+        nullable=False
+    )
+
+
+class NetworkAssignment(Base, BasicValidator):
+    __tablename__ = 'net_assignments'
+    id = Column(Integer, primary_key=True)
+    network_id = Column(Integer, ForeignKey('networks.id'), nullable=False)
+    interface_id = Column(
+        Integer,
+        ForeignKey('node_phy_interfaces.id'),
+        nullable=False
+    )
+
+
+class AllowedNetworks(Base, BasicValidator):
+    __tablename__ = 'allowed_networks'
+    id = Column(Integer, primary_key=True)
+    network_id = Column(Integer, ForeignKey('networks.id'), nullable=False)
+    interface_id = Column(
+        Integer,
+        ForeignKey('node_phy_interfaces.id'),
+        nullable=False
+    )
