@@ -499,7 +499,7 @@ function(models, commonViews, dialogViews, nodesTabSummaryTemplate, editNodesScr
             }, this));
         },
         returnToNodesTab: function() {
-            app.navigate('#cluster/' + this.model.id + '/nodes', {trigger: true, replace: true});
+            app.navigate('#cluster/' + this.model.id + '/nodes', {trigger: true});
         },
         applyChanges: function() {
             this.disableControls(true);
