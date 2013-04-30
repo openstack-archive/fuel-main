@@ -15,6 +15,7 @@ endef
 # and the target which depends on it will be rebuilt.
 # Example:
 # target: $(call depv,varname)
+DEPV_DIR:=$(BUILD_DIR)/depv
 define depv
 $(shell mkdir -p $(DEPV_DIR))
 $(shell echo "$($1)" > $(DEPV_DIR)/$1.tmp)

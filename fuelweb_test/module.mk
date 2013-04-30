@@ -1,4 +1,4 @@
-$(call assert-variable,iso.path)
+$(call assert-variable,ISO_PATH)
 
 LEVEL ?= INFO
 
@@ -37,7 +37,7 @@ test-integration-env: $(BUILD_DIR)/iso/iso.done
 	python $(SOURCE_DIR)/fuelweb_test/integration_test.py \
 		-l $(LEVEL) $(ENV_NAME_CLI_ARG) \
 		$(NOFORWARD_CLI_ARG) \
-		--iso $(iso.path) \
+		--iso $(ISO_PATH) \
 		setup
 
 .PHONY: clean-integration-test

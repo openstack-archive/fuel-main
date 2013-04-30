@@ -1,3 +1,18 @@
+#
+# Build directives. Can be overrided by environment variables.
+#
+
+# Base path for build and mirror directories.
+# Default value: current directory
+TOP_DIR?=$(PWD)
+TOP_DIR:=$(abspath $(TOP_DIR))
+# Path for build artifacts
+BUILD_DIR?=$(TOP_DIR)/build
+BUILD_DIR:=$(abspath $(BUILD_DIR))
+# Path for cache of downloaded packages
+LOCAL_MIRROR?=$(TOP_DIR)/local_mirror
+LOCAL_MIRROR:=$(abspath $(LOCAL_MIRROR))
+
 COMMIT_SHA:=$(shell git rev-parse --verify HEAD)
 PRODUCT_VERSION:=1.0-rc1
 
@@ -6,6 +21,13 @@ CENTOS_MINOR:=3
 CENTOS_RELEASE:=$(CENTOS_MAJOR).$(CENTOS_MINOR)
 CENTOS_ARCH:=x86_64
 
+ISO_NAME?=fuelweb-centos-$(CENTOS_RELEASE)-$(CENTOS_ARCH)
+ISO_DIR?=$(BUILD_DIR)/iso
+ISO_DIR:=$(abspath $(ISO_DIR))
+ISO_PATH:=$(ISO_DIR)/$(ISO_NAME).iso
+IMG_PATH:=$(ISO_DIR)/$(ISO_NAME).img
+
+# Do not compress javascript and css files
 NO_UI_OPTIMIZE:=0
 
 LOCAL_MIRROR_SRC:=$(LOCAL_MIRROR)/src
@@ -59,4 +81,3 @@ MIRROR_SRC?=internet
 
 # INTEGRATION TEST CONFIG
 NOFORWARD:=1
-iso.path:=$(BUILD_DIR)/iso/nailgun-centos-6.3-amd64.iso

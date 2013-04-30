@@ -2,9 +2,6 @@
 all: iso img
 
 ISOROOT:=$(BUILD_DIR)/iso/isoroot
-ISOBASENAME:=nailgun-centos-6.3-amd64
-ISONAME:=$(BUILD_DIR)/iso/$(ISOBASENAME).iso
-IMGNAME:=$(BUILD_DIR)/iso/$(ISOBASENAME).img
 
 iso: $(BUILD_DIR)/iso/iso.done
 img: $(BUILD_DIR)/iso/img.done
@@ -125,38 +122,38 @@ $(BUILD_DIR)/iso/isoroot.done: \
 # that is why we need to make isoroot.done dependent on some files
 # and then copy these files into another directory
 $(BUILD_DIR)/iso/iso.done: $(BUILD_DIR)/iso/isoroot.done
-	rm -f $(ISONAME)
+	rm -f $(ISO_PATH)
 	mkdir -p $(BUILD_DIR)/iso/isoroot-mkisofs
 	rsync -a --delete $(ISOROOT)/ $(BUILD_DIR)/iso/isoroot-mkisofs
 	mkisofs -r -V "Mirantis FuelWeb" -p "Mirantis Inc." \
 		-J -T -R -b isolinux/isolinux.bin \
 		-no-emul-boot \
 		-boot-load-size 4 -boot-info-table \
-		-x "lost+found" -o $(ISONAME) $(BUILD_DIR)/iso/isoroot-mkisofs
-	implantisomd5 $(ISONAME)
+		-x "lost+found" -o $(ISO_PATH) $(BUILD_DIR)/iso/isoroot-mkisofs
+	implantisomd5 $(ISO_PATH)
 	$(ACTION.TOUCH)
 
 # IMGSIZE is calculated as a sum of nailgun iso size plus
 # installation images directory size (~165M) and syslinux directory size (~35M)
 # plus a bit of free space for ext2 filesystem data
 # +300M seems reasonable
-IMGSIZE = $(shell echo "$(shell ls -s $(ISONAME) | awk '{print $$1}') / 1024 + 300" | bc)
+IMGSIZE = $(shell echo "$(shell ls -s $(ISO_PATH) | awk '{print $$1}') / 1024 + 300" | bc)
 
 $(BUILD_DIR)/iso/img.done: $(BUILD_DIR)/iso/iso.done
 	rm -f $(BUILD_DIR)/iso/img_loop_device
 	rm -f $(BUILD_DIR)/iso/img_loop_partition
 	rm -f $(BUILD_DIR)/iso/img_loop_uuid
-	sudo losetup -j $(IMGNAME) | awk -F: '{print $$1}' | while read loopdevice; do \
+	sudo losetup -j $(IMG_PATH) | awk -F: '{print $$1}' | while read loopdevice; do \
         sudo kpartx -v $$loopdevice | awk '{print "/dev/mapper/" $$1}' | while read looppartition; do \
             sudo umount -f $$looppartition; \
         done; \
         sudo kpartx -d $$loopdevice; \
         sudo losetup -d $$loopdevice; \
     done
-	rm -f $(IMGNAME)
-	dd if=/dev/zero of=$(IMGNAME) bs=1M count=$(IMGSIZE)
+	rm -f $(IMG_PATH)
+	dd if=/dev/zero of=$(IMG_PATH) bs=1M count=$(IMGSIZE)
 	sudo losetup -f > $(BUILD_DIR)/iso/img_loop_device
-	sudo losetup `cat $(BUILD_DIR)/iso/img_loop_device` $(IMGNAME)
+	sudo losetup `cat $(BUILD_DIR)/iso/img_loop_device` $(IMG_PATH)
 	sudo parted -s `cat $(BUILD_DIR)/iso/img_loop_device` mklabel msdos
 	sudo parted -s `cat $(BUILD_DIR)/iso/img_loop_device` unit MB mkpart primary ext2 1 $(IMGSIZE) set 1 boot on
 	sudo kpartx -a -v `cat $(BUILD_DIR)/iso/img_loop_device` | awk '{print "/dev/mapper/" $$3}' > $(BUILD_DIR)/iso/img_loop_partition
@@ -175,7 +172,7 @@ $(BUILD_DIR)/iso/img.done: $(BUILD_DIR)/iso/iso.done
 	sudo sed -i -e "s/will_be_substituted_with_actual_uuid/`cat $(BUILD_DIR)/iso/img_loop_uuid`/g" $(BUILD_DIR)/iso/imgroot/syslinux/syslinux.cfg
 	sudo cp $(SOURCE_DIR)/iso/ks.cfg $(BUILD_DIR)/iso/imgroot/ks.cfg
 	sudo sed -i -e "s/will_be_substituted_with_actual_uuid/`cat $(BUILD_DIR)/iso/img_loop_uuid`/g" $(BUILD_DIR)/iso/imgroot/ks.cfg
-	sudo cp $(ISONAME) $(BUILD_DIR)/iso/imgroot/nailgun.iso
+	sudo cp $(ISO_PATH) $(BUILD_DIR)/iso/imgroot/nailgun.iso
 	sudo sync
 	sudo umount `cat $(BUILD_DIR)/iso/img_loop_partition`
 	sudo kpartx -d `cat $(BUILD_DIR)/iso/img_loop_device`
