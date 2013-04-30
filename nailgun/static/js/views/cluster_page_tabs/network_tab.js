@@ -52,6 +52,15 @@ function(models, commonViews, dialogViews, networkTabTemplate, networkTabVerific
                     this.fixedAmount = parseInt(this.$(e.currentTarget).val(), 10);
                 }
             }
+            // set floating vlan
+            if (e && this.$(e.currentTarget).attr('name') == 'public-vlan_start') {
+                var floatingNetwork = this.networks.findWhere({name: 'floating'});
+                this.$('.control-group[data-network-id=' + floatingNetwork.id + ']').removeClass('error').find('.help-inline').text('');
+                this.$('input[name=floating-vlan_start]').val(this.$(e.currentTarget).val());
+                floatingNetwork.set({
+                    vlan_start: parseInt($('input[name=floating-vlan_start]').val(), 10)
+                }, {validate: true});
+            }
             // validate data per each change
             this.networks.get(row.data('network-id')).set({
                 cidr: $('.cidr input', row).val(),

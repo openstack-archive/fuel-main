@@ -48,7 +48,7 @@
                   </select>
                 </div>
                 <div class="vlan_start">
-                  <input class="input-mini" type="text" name="<%- network.get('name') %>-vlan_start" value="<%- network.get('vlan_start') %>" maxlength="4" <%= disabled %> />
+                  <input class="input-mini" type="text" name="<%- network.get('name') %>-vlan_start" value="<%- network.get('name') == 'floating' ? networks.findWhere({name: 'public'}).get('vlan_start') : network.get('vlan_start') %>" maxlength="4" <%= disabled || network.get('name') == 'floating' ? 'disabled' : '' %> />
                 </div>
                 <div class="error">
                   <span class="help-inline"></span>
