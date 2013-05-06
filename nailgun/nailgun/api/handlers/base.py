@@ -44,14 +44,8 @@ def forbid_client_caching(handler):
 
 def content_json(func):
     def json_header(*args, **kwargs):
-        handler_name = '%s %s' % (args, func.__name__)
-        logger.info('Handled request %s %s ' % (handler_name, web.data()))
-
         web.header('Content-Type', 'application/json')
         data = func(*args, **kwargs)
-
-        logger.info('Response %s %s' % (handler_name, data))
-
         if type(data) in (dict, list):
             return json.dumps(data, indent=4)
         return data
