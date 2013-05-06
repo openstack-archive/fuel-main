@@ -2,6 +2,7 @@
 
 import sys
 import logging
+from StringIO import StringIO
 from cgitb import html
 from logging.handlers import HTTPHandler, SysLogHandler
 from logging.handlers import TimedRotatingFileHandler, SMTPHandler
@@ -75,16 +76,51 @@ class FileLoggerMiddleware(object):
             self.logger = WriteLogger(logger)
             self.nailgun_logger = logging.getLogger("nailgun")
 
-    def __call__(self, environ, start_response):
-        if self.log:
-            environ[LOGGERID] = self.logger
-        environ[CATCHID] = self.catch
-        try:
-            return self.application(environ, start_response)
-        except:
-            return self.catch(environ, start_response)
+    def __call__(self, env, start_response):
+        self.__logging_request(env)
 
-    def catch(self, environ, start_response):
+        if self.log:
+            env[LOGGERID] = self.logger
+        env[CATCHID] = self.catch
+        try:
+            def start_response_with_logging(status, headers, *args):
+                self.__logging_response(env, status)
+                return start_response(status, headers, *args)
+
+            return self.application(env, start_response_with_logging)
+        except:
+            return self.catch(env, start_response)
+
+    def __logging_response(self, env, response_code):
+        response_info = "Response code '%s' for %s %s from %s:%s" % (
+            response_code,
+            env['REQUEST_METHOD'],
+            env['REQUEST_URI'],
+            env['HTTP_X_REAL_IP'],
+            env['REMOTE_PORT'],
+        )
+
+        logger.debug(response_info)
+
+    def __logging_request(self, env):
+        length = int(env.get('CONTENT_LENGTH', 0))
+        body = ''
+
+        if length != 0:
+            body = env['wsgi.input'].read(length)
+            env['wsgi.input'] = StringIO(body)
+
+        request_info = "Request %s %s from %s:%s %s" % (
+            env['REQUEST_METHOD'],
+            env['REQUEST_URI'],
+            env['HTTP_X_REAL_IP'],
+            env['REMOTE_PORT'],
+            body
+        )
+
+        logger.debug(request_info)
+
+    def catch(self, env, start_response):
         '''
         Exception catcher.
         All exceptions should be in nailgun log
@@ -93,4 +129,4 @@ class FileLoggerMiddleware(object):
         if self.log:
             self.nailgun_logger.exception(self.message)
         # Return error handler
-        return self._errapp(environ, start_response)
+        return self._errapp(env, start_response)
