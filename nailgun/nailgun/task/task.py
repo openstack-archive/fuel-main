@@ -316,6 +316,9 @@ class DeploymentTask(object):
                     nd_dict['interfaces'][i['name']]['dns_name'] = node.fqdn
                     nd_dict['interfaces_extra'][i['name']]['onboot'] = 'yes'
 
+
+            cluster_attrs = node.cluster.attributes.merged_attrs_values()
+
             nd_dict['netboot_enabled'] = '1'
             nd_dict['ks_meta'] = """
 puppet_auto_setup=1
@@ -331,6 +334,7 @@ mco_user=%(mco_user)s
 mco_password=%(mco_password)s
 mco_connector=%(mco_connector)s
 mco_enable=1
+auth_key="%(auth_key)s"
             """ % {'puppet_master_host': settings.PUPPET_MASTER_HOST,
                    'puppet_version': settings.PUPPET_VERSION,
                    'mco_pskey': settings.MCO_PSKEY,
@@ -339,6 +343,7 @@ mco_enable=1
                    'mco_user': settings.MCO_USER,
                    'mco_connector': settings.MCO_CONNECTOR,
                    'mco_password': settings.MCO_PASSWORD,
+                   'auth_key': cluster_attrs['auth_key'],
                    }
 
             logger.debug("Node %s\nks_meta without extra params: %s" %

@@ -84,6 +84,11 @@
                                 }
                             ],
                             "label": "Scheduler driver"
+                        },
+                        "auth_key": {
+                            "value": "",
+                            "label": "Public Key",
+                            "description": "Public key(s) to include in authorized_keys on deployed nodes"
                         }
                     },
                     "syslog": {
