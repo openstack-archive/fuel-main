@@ -316,8 +316,10 @@ class DeploymentTask(object):
                     nd_dict['interfaces'][i['name']]['dns_name'] = node.fqdn
                     nd_dict['interfaces_extra'][i['name']]['onboot'] = 'yes'
 
-
             cluster_attrs = node.cluster.attributes.merged_attrs_values()
+            auth_key = ''
+            if 'auth_key' in cluster_attrs:
+                auth_key = cluster_attrs['auth_key']
 
             nd_dict['netboot_enabled'] = '1'
             nd_dict['ks_meta'] = """
@@ -343,7 +345,7 @@ auth_key="%(auth_key)s"
                    'mco_user': settings.MCO_USER,
                    'mco_connector': settings.MCO_CONNECTOR,
                    'mco_password': settings.MCO_PASSWORD,
-                   'auth_key': cluster_attrs['auth_key'],
+                   'auth_key': auth_key,
                    }
 
             logger.debug("Node %s\nks_meta without extra params: %s" %
