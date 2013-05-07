@@ -17,7 +17,6 @@ from nailgun.db import orm
 from nailgun.logger import logger
 from nailgun.settings import settings
 from nailgun.notifier import notifier
-from nailgun.task.errors import WrongNodeStatus
 from nailgun.task.helpers import update_task_status
 from nailgun.network import manager as netmanager
 from nailgun.api.models import Base
@@ -28,9 +27,8 @@ from nailgun.api.models import IPAddr
 from nailgun.api.validators import BasicValidator
 from nailgun.provision.cobbler import Cobbler
 from nailgun.task.fake import FAKE_THREADS
-from nailgun.task.errors import DeploymentAlreadyStarted
-from nailgun.task.errors import FailedProvisioning
-from nailgun.task.errors import WrongNodeStatus
+
+from nailgun.errors import errors
 
 
 def fake_cast(queue, message, **kwargs):
@@ -106,7 +104,7 @@ class DeploymentTask(object):
             nodes_to_provision = []
             for node in nodes:
                 if not node.online:
-                    raise Exception(
+                    raise errors.NodeOffline(
                         "Node '%s' (id=%s) is offline."
                         " Remove it from environment and try again." %
                         (node.name, node.id)
@@ -125,7 +123,7 @@ class DeploymentTask(object):
                 logger.error("Provision error: %s\n%s",
                              error, traceback.format_exc())
                 update_task_status(task.uuid, "error", 100, error)
-                raise FailedProvisioning(error)
+                raise errors.FailedProvisioning(error)
             # /only real tasks
 
         nodes_ids = [n.id for n in nodes]
@@ -580,4 +578,4 @@ class CheckNetworksTask(object):
             orm().add(task)
             orm().commit()
             full_err_msg = "\n".join(err_msgs)
-            raise Exception(full_err_msg)
+            raise errors.NetworkCheckError(full_err_msg, log_traceback=True)

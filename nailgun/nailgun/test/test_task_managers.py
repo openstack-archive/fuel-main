@@ -10,7 +10,7 @@ import nailgun
 import nailgun.rpc as rpc
 from nailgun.task.manager import DeploymentTaskManager
 from nailgun.task.fake import FAKE_THREADS
-from nailgun.task.errors import WrongNodeStatus
+from nailgun.errors import errors
 from nailgun.test.base import BaseHandlers
 from nailgun.test.base import reverse
 from nailgun.test.base import fake_tasks
@@ -393,7 +393,7 @@ class TestTaskManagers(BaseHandlers):
         rcvr.deploy_resp(nodes=[
             {'uid': 666, 'id': 666, 'status': 'discover'}
         ], uuid='no_freaking_way')  # and wrong task also
-        self.assertRaises(WrongNodeStatus, manager.execute)
+        self.assertRaises(errors.WrongNodeStatus, manager.execute)
 
     @fake_tasks()
     def test_no_changes_no_cry(self):
@@ -406,4 +406,4 @@ class TestTaskManagers(BaseHandlers):
         cluster_db = self.env.clusters[0]
         cluster_db.clear_pending_changes()
         manager = DeploymentTaskManager(cluster_db.id)
-        self.assertRaises(WrongNodeStatus, manager.execute)
+        self.assertRaises(errors.WrongNodeStatus, manager.execute)

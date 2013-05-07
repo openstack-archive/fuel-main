@@ -12,9 +12,9 @@ from sqlalchemy.orm import object_mapper, ColumnProperty, \
 from nailgun.db import NoCacheQuery, orm, engine
 from nailgun.settings import settings
 from nailgun.logger import logger
+from nailgun.errors import errors
 from nailgun.notifier import notifier
 from nailgun.api.models import Network, Node
-from nailgun.task.errors import WrongNodeStatus
 from nailgun.network import manager as netmanager
 from nailgun.rpc.receiver import NailgunReceiver
 

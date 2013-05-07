@@ -9,16 +9,12 @@ import web
 
 from nailgun.db import orm
 from nailgun.logger import logger
+from nailgun.errors import errors
 from nailgun.settings import settings
 from nailgun.api.models import Cluster
 from nailgun.api.models import Task
 from nailgun.api.models import Network
 from nailgun.task.helpers import update_task_status
-from nailgun.task.errors import DeploymentAlreadyStarted
-from nailgun.task.errors import WrongNodeStatus
-from nailgun.task.errors import DeletionAlreadyStarted
-from nailgun.task.errors import AssignIPError
-from nailgun.task.errors import FailedProvisioning
 
 from nailgun.task import task as tasks
 
@@ -35,7 +31,11 @@ class TaskManager(object):
             task.execute(instance, *args, **kwargs)
         except Exception as exc:
             err = str(exc)
-            logger.error(traceback.format_exc())
+            if any([
+                not hasattr(exc, "log_traceback"),
+                hasattr(exc, "log_traceback") and exc.log_traceback
+            ]):
+                logger.error(traceback.format_exc())
             update_task_status(
                 task.uuid,
                 status="error",
@@ -58,7 +58,7 @@ class DeploymentTaskManager(TaskManager):
         )
         for task in current_tasks:
             if task.status == "running":
-                raise DeploymentAlreadyStarted()
+                raise errors.DeploymentAlreadyStarted()
             elif task.status in ("ready", "error"):
                 for subtask in task.subtasks:
                     orm().delete(subtask)
@@ -80,7 +80,7 @@ class DeploymentTaskManager(TaskManager):
             self.cluster.nodes
         )
         if not any([nodes_to_deploy, nodes_to_delete]):
-            raise WrongNodeStatus("No changes to deploy")
+            raise errors.WrongNodeStatus("No changes to deploy")
 
         self.cluster.status = 'deployment'
         orm().add(self.cluster)
@@ -195,7 +195,7 @@ class ClusterDeletionManager(TaskManager):
         logger.debug("Removing cluster tasks")
         for task in current_cluster_tasks:
             if task.status == "running":
-                raise DeletionAlreadyStarted()
+                raise errors.DeletionAlreadyStarted()
             elif task.status in ("ready", "error"):
                 for subtask in task.subtasks:
                     orm().delete(subtask)

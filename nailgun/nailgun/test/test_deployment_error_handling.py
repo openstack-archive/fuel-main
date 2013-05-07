@@ -12,7 +12,6 @@ import nailgun
 import nailgun.rpc as rpc
 from nailgun.task.manager import DeploymentTaskManager
 from nailgun.task.fake import FAKE_THREADS
-from nailgun.task.errors import WrongNodeStatus
 from nailgun.test.base import BaseHandlers
 from nailgun.test.base import reverse
 from nailgun.test.base import fake_tasks

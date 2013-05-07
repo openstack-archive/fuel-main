@@ -7,7 +7,7 @@ from sqlalchemy.sql import not_
 from netaddr import IPSet, IPNetwork, IPRange
 
 from nailgun.db import orm
-from nailgun.task import errors
+from nailgun.errors import errors
 from nailgun.logger import logger
 from nailgun.settings import settings
 from nailgun.api.models import Node, IPAddr, Cluster
