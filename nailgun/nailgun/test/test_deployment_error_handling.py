@@ -10,6 +10,7 @@ from nailgun.settings import settings
 
 import nailgun
 import nailgun.rpc as rpc
+from nailgun.logger import logger
 from nailgun.task.manager import DeploymentTaskManager
 from nailgun.task.fake import FAKE_THREADS
 from nailgun.test.base import BaseHandlers
@@ -18,45 +19,11 @@ from nailgun.test.base import fake_tasks
 from nailgun.api.models import Cluster, Attributes, Task, Notification, Node
 
 
-def raise_(*args, **kwargs):
-    raise kwargs.pop("ex")
-
-alert = partial(raise_, ex=Exception("ALERT"))
-no_message_alert = partial(raise_, ex=Exception(""))
-
-
 class TestErrors(BaseHandlers):
 
     def tearDown(self):
         self._wait_for_threads()
         super(TestErrors, self).tearDown()
-
-    @patch('nailgun.task.task.rpc.cast')
-    @patch('nailgun.task.task.DeploymentTask._provision', alert)
-    def test_deployment_errors_update_cluster(self, mocked_rpc):
-        self.env.create(
-            cluster_kwargs={},
-            nodes_kwargs=[
-                {"pending_addition": True},
-            ]
-        )
-        supertask = self.env.launch_deployment()
-        self.env.wait_error(supertask, 60, "Failed to call cobbler: ALERT")
-        self.db.refresh(supertask.cluster)
-        self.assertEquals(supertask.cluster.status, 'error')
-
-    @patch('nailgun.task.task.rpc.cast')
-    @patch('nailgun.task.task.DeploymentTask._provision', no_message_alert)
-    def test_deployment_cobbler_no_message(self, mocked_rpc):
-        self.env.create(
-            cluster_kwargs={},
-            nodes_kwargs=[
-                {"pending_addition": True},
-            ]
-        )
-        supertask = self.env.launch_deployment()
-        self.env.wait_error(supertask, 60,
-                            "Failed to call cobbler: see logs for details")
 
     @fake_tasks(error="provisioning")
     def test_deployment_error_during_provisioning(self):
@@ -77,6 +44,12 @@ class TestErrors(BaseHandlers):
         self.env.refresh_nodes()
         self.env.refresh_clusters()
         n_error = lambda n: (n.status, n.error_type) == ('error', 'provision')
+        # Why sum is equal 1? It is NOT OBVIOUS that error occures only on one
+        # of nodes and the choice is random. It is coded inside
+        # nailgun.task.fake.FakeDeploymentThread. As this method is
+        # decorated with fake_tasks(error="provisioning")
+        # FakeDeploymentThread shuffles nodes and sets provisioning
+        # error on one of those nodes
         self.assertEqual(
             sum(map(n_error, self.env.nodes)),
             1

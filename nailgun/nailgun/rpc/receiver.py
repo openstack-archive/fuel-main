@@ -17,7 +17,7 @@ from nailgun.logger import logger
 from nailgun.db import engine, NoCacheQuery
 from nailgun.network.manager import NetworkManager
 from nailgun.settings import settings
-from nailgun.task.helpers import update_task_status
+from nailgun.task.helpers import TaskHelper
 from nailgun.api.models import Node, Network, NetworkGroup
 from nailgun.api.models import IPAddr, Task
 from nailgun.notifier import notifier
@@ -96,7 +96,7 @@ class NailgunReceiver(object):
         if not error_msg:
             error_msg = ". ".join([success_msg, err_msg])
 
-        update_task_status(task_uuid, status, progress, error_msg)
+        TaskHelper.update_task_status(task_uuid, status, progress, error_msg)
 
     @classmethod
     def remove_cluster_resp(cls, **kwargs):
@@ -258,7 +258,26 @@ class NailgunReceiver(object):
         elif status in ('ready',):
             cls._success_action(task, status, progress)
         else:
-            update_task_status(task.uuid, status, progress, message)
+            TaskHelper.update_task_status(task.uuid, status, progress, message)
+
+    @classmethod
+    def provision_resp(cls, **kwargs):
+        # For now provision task is nothing more than just adding
+        # system into cobbler and rebooting node. Then we think task
+        # is ready. We don't wait for end of node provisioning.
+        logger.info("RPC method provision_resp received: %s" % kwargs)
+        task_uuid = kwargs.get('task_uuid')
+        nodes = kwargs.get('nodes') or []
+        message = kwargs.get('error')
+        status = kwargs.get('status')
+        progress = kwargs.get('progress')
+
+        task = cls.db.query(Task).filter_by(uuid=task_uuid).first()
+        if not task:
+            logger.warning(u"No task with uuid %s found", task_uuid)
+            return
+
+        TaskHelper.update_task_status(task.uuid, status, progress, message)
 
     @classmethod
     def _generate_error_message(cls, task, error_types, names_only=False):
@@ -311,7 +330,7 @@ class NailgunReceiver(object):
             message,
             task.cluster_id
         )
-        update_task_status(task.uuid, status, progress, message)
+        TaskHelper.update_task_status(task.uuid, status, progress, message)
 
     @classmethod
     def _success_action(cls, task, status, progress):
@@ -398,7 +417,7 @@ class NailgunReceiver(object):
             message,
             task.cluster_id
         )
-        update_task_status(task.uuid, status, progress, message)
+        TaskHelper.update_task_status(task.uuid, status, progress, message)
 
     @classmethod
     def verify_networks_resp(cls, **kwargs):
@@ -483,4 +502,5 @@ class NailgunReceiver(object):
             status = 'error'
             logger.error(error_msg)
 
-        update_task_status(task_uuid, status, progress, error_msg, result)
+        TaskHelper.update_task_status(task_uuid, status,
+                                      progress, error_msg, result)

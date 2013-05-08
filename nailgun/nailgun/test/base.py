@@ -30,6 +30,7 @@ from nailgun.api.models import NetworkGroup
 from nailgun.api.models import Task
 from nailgun.api.models import IPAddr
 from nailgun.api.models import Vlan
+from nailgun.logger import logger
 from nailgun.api.urls import urls
 from nailgun.wsgi import build_app
 from nailgun.db import engine, NoCacheQuery
@@ -603,6 +604,7 @@ class BaseHandlers(TestCase):
         )
         cls.app = TestApp(build_app().wsgifunc())
         nailgun.task.task.DeploymentTask._prepare_syslog_dir = mock.Mock()
+        # dropdb()
         syncdb()
 
     @classmethod
@@ -623,7 +625,9 @@ class BaseHandlers(TestCase):
         self.db.close()
 
 
-def fake_tasks(fake_rpc=True, **kwargs):
+def fake_tasks(fake_rpc=True,
+               mock_rpc=True,
+               **kwargs):
     def wrapper(func):
         func = mock.patch(
             'nailgun.task.task.settings.FAKE_TASKS',
@@ -650,7 +654,7 @@ def fake_tasks(fake_rpc=True, **kwargs):
                     **kwargs
                 )
             )(func)
-        else:
+        elif mock_rpc:
             func = mock.patch(
                 'nailgun.task.task.rpc.cast'
             )(func)
@@ -673,3 +677,45 @@ def reverse(name, kwargs=None):
         )
     url = re.sub(r"\??\$", "", url)
     return "/api" + url
+
+# this method is for development and troubleshooting purposes
+def datadiff(data1, data2, branch):
+    def iterator(data1, data2):
+        if isinstance(data1, (list,)) and isinstance(data2, (list,)):
+            return xrange(max(len(data1), len(data2)))
+        elif isinstance(data1, (dict,)) and isinstance(data2, (dict,)):
+            return (set(data1.keys()) | set(data2.keys()))
+        else:
+            raise TypeError
+
+    diff = []
+    if data1 != data2:
+        try:
+            it = iterator(data1, data2)
+        except:
+            return [(branch, data1, data2)]
+
+        for k in it:
+            newbranch = branch[:]
+            newbranch.append(k)
+
+            try:
+                try:
+                    v1 = data1[k]
+                except (KeyError, IndexError):
+                    diff.append((newbranch, None, data2[k]))
+                    continue
+                try:
+                    v2 = data2[k]
+                except (KeyError, IndexError):
+                    diff.append((newbranch, data1[k], None))
+                    continue
+
+            except Exception as e:
+                return diff.append((newbranch, data1, data2))
+
+            else:
+                if v1 != v2:
+                    diff.extend(datadiff(v1, v2, newbranch))
+    return diff
+

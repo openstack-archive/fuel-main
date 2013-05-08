@@ -7,12 +7,14 @@ from nailgun.test.base import BaseHandlers
 from nailgun.test.base import reverse
 from nailgun.api.models import Node, IPAddr
 from nailgun.api.models import Network, NetworkGroup
+from nailgun.test.base import fake_tasks
 
 logger = logging.getLogger(__name__)
 
 
 class TestNodeDeletion(BaseHandlers):
 
+    @fake_tasks(fake_rpc=False, mock_rpc=False)
     @patch('nailgun.rpc.cast')
     def test_node_deletion_and_attributes_clearing(self, mocked_rpc):
         self.env.create(
@@ -22,8 +24,7 @@ class TestNodeDeletion(BaseHandlers):
             ]
         )
 
-        with patch('nailgun.task.task.Cobbler'):
-            self.env.launch_deployment()
+        self.env.launch_deployment()
 
         cluster = self.env.clusters[0]
         node = self.env.nodes[0]

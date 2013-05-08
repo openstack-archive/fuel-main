@@ -35,7 +35,11 @@ class TestTaskManagers(BaseHandlers):
         supertask = self.env.launch_deployment()
         self.assertEquals(supertask.name, 'deploy')
         self.assertIn(supertask.status, ('running', 'ready'))
-        self.assertEquals(len(supertask.subtasks), 2)
+        # we have three subtasks here
+        # deletion
+        # provision
+        # deployment
+        self.assertEquals(len(supertask.subtasks), 3)
 
         self.env.wait_for_nodes_status([self.env.nodes[0]], 'provisioning')
         self.env.wait_ready(

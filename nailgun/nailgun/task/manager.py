@@ -8,13 +8,13 @@ import traceback
 import web
 
 from nailgun.db import orm
+import nailgun.rpc as rpc
 from nailgun.logger import logger
 from nailgun.errors import errors
-from nailgun.settings import settings
 from nailgun.api.models import Cluster
 from nailgun.api.models import Task
 from nailgun.api.models import Network
-from nailgun.task.helpers import update_task_status
+from nailgun.task.task import TaskHelper
 
 from nailgun.task import task as tasks
 
@@ -36,7 +36,7 @@ class TaskManager(object):
                 hasattr(exc, "log_traceback") and exc.log_traceback
             ]):
                 logger.error(traceback.format_exc())
-            update_task_status(
+            TaskHelper.update_task_status(
                 task.uuid,
                 status="error",
                 progress=100,
@@ -64,6 +64,7 @@ class DeploymentTaskManager(TaskManager):
                     orm().delete(subtask)
                 orm().delete(task)
                 orm().commit()
+
         nodes_to_delete = filter(
             lambda n: any([
                 n.pending_deletion,
@@ -71,6 +72,7 @@ class DeploymentTaskManager(TaskManager):
             ]),
             self.cluster.nodes
         )
+
         nodes_to_deploy = filter(
             lambda n: any([
                 n.pending_addition,
@@ -93,30 +95,35 @@ class DeploymentTaskManager(TaskManager):
         )
         orm().add(supertask)
         orm().commit()
+        task_deletion, task_provision, task_deployment = None, None, None
 
-        task_deletion, task_deployment = None, None
         if nodes_to_delete:
             task_deletion = supertask.create_subtask("node_deletion")
-        if nodes_to_deploy:
-            task_deployment = supertask.create_subtask("deployment")
+            self._run_silently(task_deletion, tasks.DeletionTask)
 
-        if task_deletion:
-            self._run_silently(
-                task_deletion,
-                tasks.DeletionTask
-            )
-        if task_deployment:
-            self._run_silently(
-                task_deployment,
-                tasks.DeploymentTask
-            )
+        if nodes_to_deploy:
+            TaskHelper.update_slave_nodes_fqdn(nodes_to_deploy)
+
+            task_provision = supertask.create_subtask("provision")
+            provision_message = tasks.ProvisionTask.message(task_provision)
+            task_provision.cache = provision_message
+            orm().add(task_provision)
+            orm().commit()
+
+            task_deployment = supertask.create_subtask("deployment")
+            deployment_message = tasks.DeploymentTask.message(task_deployment)
+            task_deployment.cache = deployment_message
+            orm().add(task_deployment)
+            orm().commit()
+
+            rpc.cast('naily', [provision_message, deployment_message])
+
         logger.debug(
             u"Deployment: task to deploy cluster '{0}' is {1}".format(
                 self.cluster.name or self.cluster.id,
                 supertask.uuid
             )
         )
-
         return supertask
 
 
@@ -136,7 +143,7 @@ class CheckNetworksTaskManager(TaskManager):
         )
         orm().refresh(task)
         if task.status == 'running':
-            update_task_status(
+            TaskHelper.update_task_status(
                 task.uuid,
                 status="ready",
                 progress=100

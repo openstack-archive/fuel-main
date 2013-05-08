@@ -23,7 +23,7 @@ from nailgun.network.errors import NoSuitableCIDR
 from nailgun.api.handlers.base import JSONHandler, content_json
 from nailgun.api.handlers.node import NodeHandler
 from nailgun.api.handlers.tasks import TaskHandler
-from nailgun.task.helpers import update_task_status
+from nailgun.task.helpers import TaskHelper
 from nailgun.task.manager import DeploymentTaskManager
 from nailgun.task.manager import ClusterDeletionManager
 

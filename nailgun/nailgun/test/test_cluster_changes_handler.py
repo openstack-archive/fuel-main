@@ -7,15 +7,19 @@ from netaddr import IPNetwork, IPAddress
 from sqlalchemy.sql import not_
 
 import nailgun
+from nailgun.logger import logger
+from nailgun.task.helpers import TaskHelper
+from nailgun.settings import settings
 from nailgun.test.base import BaseHandlers
+from nailgun.test.base import fake_tasks
 from nailgun.test.base import reverse
 from nailgun.api.models import Cluster, Attributes, IPAddr, Task
 from nailgun.api.models import Network, NetworkGroup
-from nailgun.settings import settings
-
+from nailgun.network import manager as netmanager
 
 class TestHandlers(BaseHandlers):
 
+    @fake_tasks(fake_rpc=False, mock_rpc=False)
     @patch('nailgun.rpc.cast')
     def test_deploy_cast_with_right_args(self, mocked_rpc):
         cluster = self.env.create_cluster(
@@ -36,7 +40,6 @@ class TestHandlers(BaseHandlers):
 
         cluster_depl_mode = 'ha'
 
-        nailgun.task.task.Cobbler = Mock()
         supertask = self.env.launch_deployment()
         deploy_task_uuid = [x.uuid for x in supertask.subtasks
                             if x.name == 'deployment'][0]
@@ -69,6 +72,7 @@ class TestHandlers(BaseHandlers):
         msg['args']['attributes'] = cluster_attrs
         msg['args']['task_uuid'] = deploy_task_uuid
         nodes = []
+        provision_nodes = []
 
         admin_net_id = self.env.network_manager.get_admin_network_id()
 
@@ -124,16 +128,90 @@ class TestHandlers(BaseHandlers):
                                            {'name': 'admin',
                                             'dev': 'eth0'}]})
 
+            pnd = {
+                'profile': settings.COBBLER_PROFILE,
+                'power_type': 'ssh',
+                'power_user': 'root',
+                'power_address': n.ip,
+                'power_pass': settings.PATH_TO_BOOTSTRAP_SSH_KEY,
+                'name': TaskHelper.slave_name_by_id(n.id),
+                'hostname': n.fqdn,
+                'name_servers': '\"%s\"' % settings.DNS_SERVERS,
+                'name_servers_search': '\"%s\"' % settings.DNS_SEARCH,
+                'netboot_enabled': '1',
+                'ks_meta': {
+                    'puppet_auto_setup': 1,
+                    'puppet_master': settings.PUPPET_MASTER_HOST,
+                    'puppet_version': settings.PUPPET_VERSION,
+                    'puppet_enable': 0,
+                    'mco_auto_setup': 1,
+                    'install_log_2_syslog': 1,
+                    'mco_pskey': settings.MCO_PSKEY,
+                    'mco_vhost': settings.MCO_VHOST,
+                    'mco_host': settings.MCO_HOST,
+                    'mco_user': settings.MCO_USER,
+                    'mco_password': settings.MCO_PASSWORD,
+                    'mco_connector': settings.MCO_CONNECTOR,
+                    'mco_enable': 1
+                }
+            }
+
+            netmanager.assign_admin_ips(
+                n.id,
+                len(n.meta.get('interfaces', []))
+            )
+            admin_ips = set([i.ip_addr for i in self.db.query(IPAddr).
+                            filter_by(node=n.id).
+                            filter_by(admin=True)])
+            for i in n.meta.get('interfaces', []):
+                if 'interfaces' not in pnd:
+                    pnd['interfaces'] = {}
+                pnd['interfaces'][i['name']] = {
+                    'mac_address': i['mac'],
+                    'static': '0',
+                    'netmask': settings.ADMIN_NETWORK['netmask'],
+                    'ip_address': admin_ips.pop(),
+                }
+                if 'interfaces_extra' not in pnd:
+                    pnd['interfaces_extra'] = {}
+                pnd['interfaces_extra'][i['name']] = {
+                    'peerdns': 'no',
+                    'onboot': 'no'
+                }
+
+                if i['mac'] == n.mac:
+                    pnd['interfaces'][i['name']]['dns_name'] = n.fqdn
+                    pnd['interfaces_extra'][i['name']]['onboot'] = 'yes'
+
+
+            provision_nodes.append(pnd)
+
         controller_nodes = filter(
             lambda node: node['role'] == 'controller',
             nodes)
-
         msg['args']['attributes']['controller_nodes'] = controller_nodes
         msg['args']['nodes'] = nodes
 
-        nailgun.task.task.rpc.cast.assert_called_once_with(
-            'naily', msg)
+        provision_task_uuid = [x.uuid for x in supertask.subtasks
+                            if x.name == 'provision'][0]
+        provision_msg = {
+            'method': 'provision',
+            'respond_to': 'provision_resp',
+            'args': {
+                'task_uuid': provision_task_uuid,
+                'engine': {
+                    'url': settings.COBBLER_URL,
+                    'username': settings.COBBLER_USER,
+                    'password': settings.COBBLER_PASSWORD,
+                },
+                'nodes': provision_nodes,
+            }
+        }
 
+        nailgun.task.task.rpc.cast.assert_called_once_with(
+            'naily', [provision_msg, msg])
+
+    @fake_tasks(fake_rpc=False, mock_rpc=False)
     @patch('nailgun.rpc.cast')
     def test_deploy_and_remove_correct_nodes_and_statuses(self, mocked_rpc):
         cluster = self.env.create_cluster()
@@ -147,16 +225,18 @@ class TestHandlers(BaseHandlers):
                 {"pending_deletion": True, "status": "error"},
             ]
         )
-        nailgun.task.task.Cobbler = Mock()
         self.env.launch_deployment()
 
         # launch_deployment kicks ClusterChangesHandler
         # which in turns launches DeploymentTaskManager
-        # which runs DeletionTask and DeploymentTask.
+        # which runs DeletionTask, ProvisionTask and DeploymentTask.
+        # DeletionTask is sent to one orchestrator worker and
+        # ProvisionTask and DeploymentTask messages are sent to
+        # another orchestrator worker.
         # That is why we expect here list of two sets of
         # arguments in mocked nailgun.rpc.cast
         # The first set of args is for deletion task and
-        # the second one is for deployment.
+        # the second one is for provisioning and deployment.
 
         # remove_nodes method call
         n_rpc = nailgun.task.task.rpc.cast. \
@@ -169,16 +249,31 @@ class TestHandlers(BaseHandlers):
         # object is found, so we passed the right node for removal
         self.assertIsNotNone(n_removed_rpc)
 
+        # provision method call
+        n_rpc_provision = nailgun.task.manager.rpc.cast. \
+            call_args_list[1][0][1][0]['args']['nodes']
+        # Nodes will be appended in provision list if
+        # they 'pending_deletion' = False and
+        # 'status' in ('discover', 'provisioning') or
+        # 'status' = 'error' and 'error_type' = 'provision'
+        # So, only one node from our list will be appended to
+        # provision list.
+        self.assertEquals(len(n_rpc_provision), 1)
+
         # deploy method call
-        n_rpc = nailgun.task.task.rpc.cast. \
-            call_args_list[1][0][1]['args']['nodes']
-        self.assertEquals(len(n_rpc), 1)
+        n_rpc = nailgun.task.manager.rpc.cast. \
+            call_args_list[1][0][1][1]['args']['nodes']
+        self.assertEquals(len(n_rpc), 2)
+        n_provisioned_rpc = [
+            n for n in n_rpc if n['uid'] == self.env.nodes[0].id
+        ][0]
+        n_added_rpc = [
+            n for n in n_rpc if n['uid'] == self.env.nodes[1].id
+        ][0]
 
-        provisioning_node = filter(
-            lambda x: x['uid'] == self.env.nodes[0].id, n_rpc)[0]
+        self.assertEquals(n_provisioned_rpc['status'], 'provisioned')
 
-        self.assertEquals(provisioning_node['status'], 'provisioning')
-
+    @fake_tasks(fake_rpc=False, mock_rpc=False)
     @patch('nailgun.rpc.cast')
     def test_deploy_reruns_after_network_changes(self, mocked_rpc):
         self.env.create(
@@ -198,8 +293,7 @@ class TestHandlers(BaseHandlers):
         cluster_db.clear_pending_changes()
         cluster_db.add_pending_changes('networks')
 
-        for n in self.env.nodes:
-            self.assertEqual(n.needs_redeploy, True)
+        nodes = sorted(cluster_db.nodes, key=lambda n: n.id)
+        self.assertEqual(nodes[0].needs_redeploy, True)
 
-        nailgun.task.task.Cobbler = Mock()
         self.env.launch_deployment()

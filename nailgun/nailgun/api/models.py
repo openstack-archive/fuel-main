@@ -220,14 +220,15 @@ class Node(Base):
         if self.cluster is not None:
             def check_change(change):
                 return change.name != 'disks' or change.node_id == self.id
-
             changes = filter(check_change, self.cluster.changes)
-
         cases = [
             self.status == 'error' and self.error_type == 'deploy',
             changes != []
         ]
-        return any(cases)
+        and_cases = [
+            not self.pending_deletion
+        ]
+        return any(cases) and all(and_cases)
 
     @property
     def needs_redeletion(self):
@@ -429,6 +430,7 @@ class Task(Base):
         'super',
         'deploy',
         'deployment',
+        'provision',
         'node_deletion',
         'cluster_deletion',
         'check_networks',

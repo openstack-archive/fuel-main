@@ -3,6 +3,7 @@
 from kombu import Connection, Exchange, Queue
 
 from nailgun.settings import settings
+from nailgun.logger import logger
 
 creds = (
     ("userid", "guest"),
@@ -38,7 +39,6 @@ nailgun_queue = Queue(
     exchange=nailgun_exchange,
     routing_key='nailgun'
 )
-
 
 def cast(name, message):
     with Connection(conn_str) as conn:

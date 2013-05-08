@@ -202,6 +202,28 @@ class FakeDeploymentThread(FakeThread):
             receiver.stop()
 
 
+class FakeProvisionThread(FakeThread):
+    def run(self):
+        receiver = NailgunReceiver
+        receiver.initialize()
+
+        # Since we just add systems to cobbler and reboot nodes
+        # We think this task is always successful if it is launched.
+        kwargs = {
+            'task_uuid': self.task_uuid,
+            'status': 'ready',
+            'progress': 100
+        }
+
+        tick_interval = int(settings.FAKE_TASKS_TICK_INTERVAL) or 3
+        resp_method = getattr(receiver, self.respond_to)
+        resp_method(**kwargs)
+        orm = scoped_session(
+            sessionmaker(bind=engine, query_cls=NoCacheQuery)
+        )
+        receiver.stop()
+
+
 class FakeDeletionThread(FakeThread):
     def run(self):
         receiver = NailgunReceiver
@@ -284,6 +306,7 @@ class FakeVerificationThread(FakeThread):
 
 
 FAKE_THREADS = {
+    'provision': FakeProvisionThread,
     'deploy': FakeDeploymentThread,
     'remove_nodes': FakeDeletionThread,
     'verify_networks': FakeVerificationThread

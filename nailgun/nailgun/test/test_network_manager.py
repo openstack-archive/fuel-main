@@ -11,10 +11,12 @@ from nailgun.db import engine
 from nailgun.api.models import Node, IPAddr, Vlan
 from nailgun.api.models import Network, NetworkGroup
 from nailgun.settings import settings
+from nailgun.test.base import fake_tasks
 
 
 class TestNetworkManager(BaseHandlers):
 
+    @fake_tasks(fake_rpc=False, mock_rpc=False)
     @patch('nailgun.rpc.cast')
     def test_assign_ips(self, mocked_rpc):
         cluster = self.env.create_cluster()
@@ -182,6 +184,7 @@ class TestNetworkManager(BaseHandlers):
             }
         }
     )
+
     def test_assign_admin_ips_only_one(self):
         node = self.env.create_node()
         self.env.network_manager.assign_admin_ips(node.id, 1)
@@ -236,18 +239,12 @@ class TestNetworkManager(BaseHandlers):
         self.db.refresh(vlan_db)
         self.assertEquals(vlan_db.network, [])
 
-    def test_admin_ip_cobbler(self):
-        """
-        This test is intended for checking if deployment task
-        adds systems to cobbler with multiple interfaces.
-        """
-        cluster = self.env.create_cluster()
-        map(
-            lambda x: self.env.create_node(
-                api=True,
-                cluster_id=cluster['id'],
-                **x),
-            [
+    @fake_tasks(fake_rpc=False, mock_rpc=False)
+    @patch('nailgun.rpc.cast')
+    def test_admin_ip_cobbler(self, mocked_rpc):
+        self.env.create(
+            cluster_kwargs={},
+            nodes_kwargs=[
                 {
                     "pending_addition": True,
                     "meta": {
@@ -281,16 +278,14 @@ class TestNetworkManager(BaseHandlers):
             ]
         )
 
-        nailgun.task.task.Cobbler = Mock()
-        nailgun.task.task.Cobbler().item_from_dict = Mock()
         self.env.launch_deployment()
+        rpc_nodes_provision = nailgun.task.manager.rpc.cast. \
+            call_args_list[0][0][1][0]['args']['nodes']
 
         map(
             lambda (x, y): self.assertIn(
                 IPAddress(
-                    nailgun.task.task.Cobbler().item_from_dict.
-                    call_args_list[x][0][2]['interfaces']
-                    [y]['ip_address']
+                    rpc_nodes_provision[x]['interfaces'][y]['ip_address']
                 ),
                 IPRange(
                     settings.ADMIN_NETWORK['first'],
