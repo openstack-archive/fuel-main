@@ -40,6 +40,7 @@ nailgun_queue = Queue(
     routing_key='nailgun'
 )
 
+
 def cast(name, message):
     with Connection(conn_str) as conn:
         with conn.Producer(serializer='json') as producer:

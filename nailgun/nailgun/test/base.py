@@ -678,6 +678,7 @@ def reverse(name, kwargs=None):
     url = re.sub(r"\??\$", "", url)
     return "/api" + url
 
+
 # this method is for development and troubleshooting purposes
 def datadiff(data1, data2, branch):
     def iterator(data1, data2):
@@ -718,4 +719,3 @@ def datadiff(data1, data2, branch):
                 if v1 != v2:
                     diff.extend(datadiff(v1, v2, newbranch))
     return diff
-

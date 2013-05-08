@@ -31,6 +31,7 @@ from nailgun.task.errors import FailedProvisioning
 from nailgun.task.errors import WrongNodeStatus
 from nailgun.task.helpers import TaskHelper
 
+
 def fake_cast(queue, messages, **kwargs):
     def make_thread(message):
         thread = FAKE_THREADS[message['method']](
@@ -258,7 +259,6 @@ class ProvisionTask(object):
                 }
             }
 
-
             if node.status == "discover":
                 logger.info(
                     "Node %s seems booted with bootstrap image",
@@ -323,7 +323,6 @@ class ProvisionTask(object):
                 if i['mac'] == node.mac:
                     node_data['interfaces'][i['name']]['dns_name'] = node.fqdn
                     node_data['interfaces_extra'][i['name']]['onboot'] = 'yes'
-
 
             nodes_data.append(node_data)
             if not USE_FAKE:

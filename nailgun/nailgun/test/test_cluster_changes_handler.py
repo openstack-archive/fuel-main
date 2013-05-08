@@ -17,6 +17,7 @@ from nailgun.api.models import Cluster, Attributes, IPAddr, Task
 from nailgun.api.models import Network, NetworkGroup
 from nailgun.network import manager as netmanager
 
+
 class TestHandlers(BaseHandlers):
 
     @fake_tasks(fake_rpc=False, mock_rpc=False)
@@ -183,7 +184,6 @@ class TestHandlers(BaseHandlers):
                     pnd['interfaces'][i['name']]['dns_name'] = n.fqdn
                     pnd['interfaces_extra'][i['name']]['onboot'] = 'yes'
 
-
             provision_nodes.append(pnd)
 
         controller_nodes = filter(
@@ -193,7 +193,7 @@ class TestHandlers(BaseHandlers):
         msg['args']['nodes'] = nodes
 
         provision_task_uuid = [x.uuid for x in supertask.subtasks
-                            if x.name == 'provision'][0]
+                               if x.name == 'provision'][0]
         provision_msg = {
             'method': 'provision',
             'respond_to': 'provision_resp',
