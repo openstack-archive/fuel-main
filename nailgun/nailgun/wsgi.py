@@ -48,6 +48,19 @@ def build_app():
     return app
 
 
+def build_middleware(app):
+    middleware_list = [
+        HTTPLoggerMiddleware,
+    ]
+    if not int(settings.DEVELOPMENT):
+        middleware_list.append(FileLoggerMiddleware)
+
+    logger.debug('Initialize middleware: %s' %
+                 (map(lambda x: x.__name__, middleware_list)))
+
+    return app(*middleware_list)
+
+
 def appstart(keepalive=False):
     logger.info("Fuel-Web {0} ({1})".format(
         settings.PRODUCT_VERSION,
@@ -69,13 +82,8 @@ def appstart(keepalive=False):
         logger.info("Running RPC consumer...")
         rpc_process.start()
     logger.info("Running WSGI app...")
-    # seizes control
-    if not int(settings.DEVELOPMENT):
-        wsgifunc = app.wsgifunc(FileLoggerMiddleware)
-    else:
-        wsgifunc = app.wsgifunc()
 
-    wsgifunc = HTTPLoggerMiddleware(wsgifunc)
+    wsgifunc = build_middleware(app.wsgifunc)
 
     web.httpserver.runsimple(
         wsgifunc,

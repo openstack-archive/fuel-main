@@ -49,6 +49,7 @@ class WriteLogger(logging.Logger, object):
         if info.lstrip().rstrip() != '':
             self.logger(info)
 
+
 class HTTPLoggerMiddleware(object):
     def __init__(self, application, **kw):
         self.application = application
@@ -90,6 +91,7 @@ class HTTPLoggerMiddleware(object):
         )
 
         logger.debug(request_info)
+
 
 class FileLoggerMiddleware(object):
 
