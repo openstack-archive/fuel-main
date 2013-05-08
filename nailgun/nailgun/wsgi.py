@@ -10,7 +10,7 @@ from nailgun.api.handlers import check_client_content_type
 from nailgun.api.handlers import forbid_client_caching
 from nailgun.db import load_db_driver
 from nailgun.urls import urls
-from nailgun.logger import logger, FileLoggerMiddleware
+from nailgun.logger import logger, FileLoggerMiddleware, HTTPLoggerMiddleware
 
 
 class FlushingLogger(object):
@@ -74,6 +74,9 @@ def appstart(keepalive=False):
         wsgifunc = app.wsgifunc(FileLoggerMiddleware)
     else:
         wsgifunc = app.wsgifunc()
+
+    wsgifunc = HTTPLoggerMiddleware(wsgifunc)
+
     web.httpserver.runsimple(
         wsgifunc,
         (

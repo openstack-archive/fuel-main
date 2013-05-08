@@ -49,47 +49,18 @@ class WriteLogger(logging.Logger, object):
         if info.lstrip().rstrip() != '':
             self.logger(info)
 
-
-class FileLoggerMiddleware(object):
-
+class HTTPLoggerMiddleware(object):
     def __init__(self, application, **kw):
         self.application = application
-        self._errapp = kw.get('errapp', _errapp)
-        self.log = kw.get('log', True)
-        if self.log:
-            self.message = kw.get('logmessage', ERRORMSG)
-            logger = http_logger
-            logger.setLevel(
-                kw.get('loglevel', logging.DEBUG)
-            )
-            format = logging.Formatter(
-                kw.get('logformat', LOGFORMAT),
-                kw.get('datefmt', DATEFORMAT)
-            )
-            filelogger = TimedRotatingFileHandler(
-                kw.get('file', settings.ACCESS_LOG),
-                kw.get('interval', 'h'),
-                kw.get('backups', 1)
-            )
-            filelogger.setFormatter(format)
-            logger.addHandler(filelogger)
-            self.logger = WriteLogger(logger)
-            self.nailgun_logger = logging.getLogger("nailgun")
 
     def __call__(self, env, start_response):
         self.__logging_request(env)
 
-        if self.log:
-            env[LOGGERID] = self.logger
-        env[CATCHID] = self.catch
-        try:
-            def start_response_with_logging(status, headers, *args):
-                self.__logging_response(env, status)
-                return start_response(status, headers, *args)
+        def start_response_with_logging(status, headers, *args):
+            self.__logging_response(env, status)
+            return start_response(status, headers, *args)
 
-            return self.application(env, start_response_with_logging)
-        except:
-            return self.catch(env, start_response)
+        return self.application(env, start_response_with_logging)
 
     def __logging_response(self, env, response_code):
         response_info = "Response code '%s' for %s %s from %s:%s" % (
@@ -119,6 +90,41 @@ class FileLoggerMiddleware(object):
         )
 
         logger.debug(request_info)
+
+class FileLoggerMiddleware(object):
+
+    def __init__(self, application, **kw):
+        self.application = application
+        self._errapp = kw.get('errapp', _errapp)
+        self.log = kw.get('log', True)
+        if self.log:
+            self.message = kw.get('logmessage', ERRORMSG)
+            logger = http_logger
+            logger.setLevel(
+                kw.get('loglevel', logging.DEBUG)
+            )
+            format = logging.Formatter(
+                kw.get('logformat', LOGFORMAT),
+                kw.get('datefmt', DATEFORMAT)
+            )
+            filelogger = TimedRotatingFileHandler(
+                kw.get('file', settings.ACCESS_LOG),
+                kw.get('interval', 'h'),
+                kw.get('backups', 1)
+            )
+            filelogger.setFormatter(format)
+            logger.addHandler(filelogger)
+            self.logger = WriteLogger(logger)
+            self.nailgun_logger = logging.getLogger("nailgun")
+
+    def __call__(self, env, start_response):
+        if self.log:
+            env[LOGGERID] = self.logger
+        env[CATCHID] = self.catch
+        try:
+            return self.application(env, start_response)
+        except:
+            return self.catch(env, start_response)
 
     def catch(self, env, start_response):
         '''
