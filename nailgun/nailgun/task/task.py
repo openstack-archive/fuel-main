@@ -578,4 +578,4 @@ class CheckNetworksTask(object):
             orm().add(task)
             orm().commit()
             full_err_msg = "\n".join(err_msgs)
-            raise errors.NetworkCheckError(full_err_msg, log_traceback=True)
+            raise errors.NetworkCheckError(full_err_msg)
