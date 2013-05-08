@@ -1,10 +1,15 @@
 import json
 
+from nailgun.test.base import reverse
+from nailgun.test.base import fake_tasks
 from nailgun.test.base import BaseHandlers
 from nailgun.api.models import Vlan, Network, NetworkGroup
 
 
 class TestNetworkModels(BaseHandlers):
+
+    def tearDown(self):
+        self._wait_for_threads()
 
     def test_network_group_size_of_1_creates_1_network(self):
         cluster = self.env.create_cluster(api=False)
@@ -25,6 +30,36 @@ class TestNetworkModels(BaseHandlers):
         self.assertEquals(nets_db[0].name, kw['name'])
         self.assertEquals(nets_db[0].access, kw['access'])
         self.assertEquals(nets_db[0].cidr, kw['cidr'])
+
+    @fake_tasks()
+    def test_network_recreating_on_env(self):
+        self.env.create(
+            cluster_kwargs={
+                "mode": "ha"
+            },
+            nodes_kwargs=[
+                {"pending_addition": True},
+                {"pending_addition": True},
+                {"pending_deletion": True},
+            ]
+        )
+        supertask = self.env.launch_deployment()
+        self.env.wait_ready(supertask, 60)
+
+        test_nets = self.env.generate_ui_networks(
+            self.env.clusters[0].id
+        )
+        for n in test_nets[:2]:
+            n["cidr"] = "240.0.0.0/24"
+
+        resp = self.app.put(
+            reverse(
+                'ClusterSaveNetworksHandler',
+                kwargs={'cluster_id': self.env.clusters[0].id}),
+            json.dumps(test_nets),
+            headers=self.default_headers
+        )
+        self.assertEquals(resp.status, 200)
 
     def test_network_group_creates_several_networks(self):
         cluster = self.env.create_cluster(api=False)

@@ -376,6 +376,11 @@ class NetworkGroup(Base, BasicValidator):
         for net in self.networks:
             logger.debug("Deleting old network with id=%s, cidr=%s",
                          net.id, net.cidr)
+            ips = orm().query(IPAddr).filter(
+                IPAddr.network == net.id
+            ).filter_by(admin=False)
+            map(orm().delete, ips)
+            orm().commit()
             orm().delete(net)
         orm().commit()
         self.networks = []
