@@ -51,6 +51,32 @@ module Naily
         return
       end
 
+      if Naily.config.empty_dispatch_message
+        m = "empty_dispatch_message"
+      else
+        m = "dispatch_message"
+      end
+
+      if data.kind_of?(Array)
+        Naily.logger.debug "Message seems to be an array"
+        data.each do |message|
+          Naily.logger.debug "Dispatching message: #{message.inspect}"
+          self.send(m, message)
+        end
+      else
+        Naily.logger.debug "Message seems to be plain message"
+        Naily.logger.debug "Dispatching message: #{data.inspect}"
+        self.send(m, data)
+      end
+    end
+
+    def empty_dispatch_message(data)
+      Naily.logger.debug "empty_dispatch_message called: #{data.inspect}"
+    end
+
+    def dispatch_message(data)
+
+      Naily.logger.debug "dispatch_message called: #{data.inspect}"
       unless @delegate.respond_to?(data['method'])
         Naily.logger.error "Unsupported RPC call #{data['method']}"
         if data['respond_to']

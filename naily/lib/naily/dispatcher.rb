@@ -14,7 +14,45 @@ module Naily
       args
     end
 
+    def provision(data)
+      Naily.logger.info("'provision' method called with data: #{data.inspect}")
+
+      reporter = Naily::Reporter.new(@producer, data['respond_to'], data['args']['task_uuid'])
+
+      begin
+        Naily.logger.info("Trying to instantiate cobbler engine: #{data['args']['engine'].inspect}")
+        engine = Astute::Provision::Cobbler.new(data['args']['engine'])
+      rescue
+        Naily.logger.error("Error occured during cobbler initializing")
+        reporter.report({
+                          'status' => 'error',
+                          'error' => 'Cobbler can not be initialized',
+                          'progress' => 100
+                        })
+      end
+
+      begin
+        data['args']['nodes'].each do |node|
+          Naily.logger.info("Adding #{node['name']} into cobbler")
+          engine.item_from_hash('system', node['name'], node,
+                           :item_preremove => true)
+          engine.power_reboot(node['name'])
+        end
+      rescue
+        reporter.report({
+                          'status' => 'error',
+                          'error' => 'Cobbler error',
+                          'progress' => 100
+                        })
+        return
+      end
+      engine.sync
+      report_result({}, reporter)
+    end
+
     def deploy(data)
+      Naily.logger.info("'deploy' method called with data: #{data.inspect}")
+
       # Following line fixes issues with uids: it should always be string
       data['args']['nodes'].map { |x| x['uid'] = x['uid'].to_s }
       reporter = Naily::Reporter.new(@producer, data['respond_to'], data['args']['task_uuid'])
@@ -91,6 +129,14 @@ module Naily
     def remove_nodes(data)
       reporter = Naily::Reporter.new(@producer, data['respond_to'], data['args']['task_uuid'])
       nodes = data['args']['nodes']
+      provision_engine = Astute::Provision::Cobbler.new(data['args']['provision_engine'])
+      data['args']['provision_nodes'].each do |name|
+        if provision_engine.system_exists(name)
+          Naily.logger.info("Removing system from cobbler: #{name}")
+          provision_engine.remove_system(name)
+        end
+      end
+      provision_engine.sync
       result = @orchestrator.remove_nodes(reporter, data['args']['task_uuid'], nodes)
       report_result(result, reporter)
     end
