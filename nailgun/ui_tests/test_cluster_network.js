@@ -57,43 +57,69 @@ casper.then(function() {
         return __utils__.getFieldValue('fixed-vlan_start');
     });
 
-    casper.then(function() {
-	this.fill('.networks-table', {'fixed-amount': ' '});
-	this.evaluate(function() {
-	    $('input[name=fixed-amount]').keyup();
-	});
-	this.test.assertExists('.control-group.error', 'Field validation has worked with empty field');
-	this.test.assertExists('.apply-btn:disabled', 'Save networks button is disabled if there is validation error');
-    });
+    var fixtures = [
+        {
+            'amount': ' ',
+            'vlanStart': '',
+            'vlanEnd':'',
+            'validationMessage': 'with empty field'
+        },
+        {
+            'amount': '-10',
+            'vlanStart': '',
+            'vlanEnd':'',
+            'validationMessage': 'when use negative number'
+        },
+        {
+            'amount': '0',
+            'vlanStart': '',
+            'vlanEnd':'',
+            'validationMessage': 'when use 0'
+        },
+        {
+            'amount': '2',
+            'vlanStart': '4094',
+            'vlanEnd':'',
+            'validationMessage': 'if amount more than 4095 - VLAN ID'
+        },
 
-    casper.then(function() {
-        this.fill('.networks-table', {'fixed-amount': '-10'});
-        this.evaluate(function() {
-            $('input[name=fixed-amount]').keyup();
-        });
-        this.test.assertExists('.control-group.error', 'Field validation has worked when use negative number');
-        this.test.assertExists('.apply-btn:disabled', 'Save networks button is disabled if there is validation error');
-    });
+        {
+            'amount': '2',
+            'vlanStart': '4093',
+            'vlanEnd':'4094',
+            'validationMessage': ''
+        },
+        {
+            'amount': '4094',
+            'vlanStart': '1',
+            'vlanEnd':'4094',
+            'validationMessage': ''
+        },
+        {
+            'amount': '10',
+            'vlanStart': '250',
+            'vlanEnd':'259',
+            'validationMessage': ''
+        }
 
-    casper.then(function() {
-	this.fill('.networks-table', {'fixed-amount': '0'});
-        this.evaluate(function() {
-            $('input[name=fixed-amount]').keyup();
-        });
-	this.test.assertExists('.control-group.error', 'Field validation has worked when use 0');
-        this.test.assertExists('.apply-btn:disabled', 'Save networks button is disabled if there is validation error');
-    });
+    ];
 
-    casper.then(function() {
-	this.fill('.networks-table', {
-            'fixed-amount': '2',
-            'fixed-vlan_start': '4094'
+    this.each(fixtures, function(self, fixture) {
+        self.then(function() {
+            this.fill('.networks-table', {'fixed-amount': fixture.amount});
+            if (fixture.vlanStart != '') {
+                this.fill('.networks-table', {'fixed-vlan_start': fixture.vlanStart});
+            }
+            this.evaluate(function() {
+                $('input[name=fixed-amount]').keyup();
+            });
+            if (fixture.vlanEnd == '') {
+                this.test.assertExists('.control-group.error', 'Field validation has worked ' + fixture.validationMessage);
+                this.test.assertExists('.apply-btn:disabled', 'Apply button is disabled if there is validation error');
+            } else {
+                this.test.assertEvalEquals(function() {return $('input[name=fixed-vlan-end]').val()}, fixture.vlanEnd, 'End value is correct');
+                this.test.assertDoesntExist('.control-group.error', 'Field validation works properly with correct value');}
         });
-        this.evaluate(function() {
-            $('input[name=fixed-amount]').keyup();
-        });
-	this.test.assertExists('.control-group.error', 'Field validation has worked if amount more than 4095 - VLAN ID');
-        this.test.assertExists('.apply-btn:disabled', 'Save networks button is disabled if there is validation error');
     });
 
     casper.then(function() {
@@ -106,42 +132,6 @@ casper.then(function() {
         });
         this.test.assertDoesntExist('.control-group.error', 'Field validation works properly');
         this.test.assertDoesntExist('.networks-table.fixed-vlan-end', 'Field end vlan value works properly');
-    });
-
-    casper.then(function() {
-        this.fill('.networks-table', {
-            'fixed-amount': '2',
-            'fixed-vlan_start': '4093'
-        });
-        this.evaluate(function() {
-            $('input[name=fixed-amount]').keyup();
-        });
-	this.test.assertEvalEquals(function() {return $('input[name=fixed-vlan-end]').val()}, '4094', 'End value is correct');
-        this.test.assertDoesntExist('.control-group.error', 'Field validation works properly');
-    });
-
-    casper.then(function() {
-        this.fill('.networks-table', {
-            'fixed-amount': '4094',
-            'fixed-vlan_start': '1'
-        });
-        this.evaluate(function() {
-            $('input[name=fixed-amount]').keyup();
-        });
-	this.test.assertEvalEquals(function() {return $('input[name=fixed-vlan-end]').val()}, '4094', 'End value is correct');
-        this.test.assertDoesntExist('.control-group.error', 'Field validation works properly');
-    });
-
-    casper.then(function() {
-        this.fill('.networks-table', {
-            'fixed-amount': '10',
-            'fixed-vlan_start': '250'
-        });
-        this.evaluate(function() {
-            $('input[name=fixed-amount]').keyup();
-        });
-	this.test.assertEvalEquals(function() {return $('input[name=fixed-vlan-end]').val()}, '259', 'End value is correct');
-        this.test.assertDoesntExist('.control-group.error', 'Field validation works properly');
     });
 
     casper.then(function() {
@@ -160,93 +150,65 @@ casper.then(function() {
         return __utils__.getFieldValue('public-cidr');
     });
 
-    casper.then(function() {
-        this.fill('.networks-table', {'public-cidr': ' '});
-        this.evaluate(function() {
-            $('input[name=public-cidr]').keyup();
+    var fixtures = [
+        {
+            'cidr': ' ',
+            'validationMessage': 'empty field'
+        },
+        {
+            'cidr': '0.10.-1.255/15',
+            'validationMessage': 'negative number -1'
+        },
+        {
+            'cidr': '0.-100.240.255/15',
+            'validationMessage': 'negative number -100'
+        },
+        {
+            'cidr': '0.256.240.255/15',
+            'validationMessage': 'number out of area 255'
+        },
+
+        {
+            'cidr': '0.750.240.255/15',
+            'validationMessage': 'number 750'
+        },
+        {
+            'cidr': '0.01.240.255/15',
+            'validationMessage': 'number starts with 0'
+        },
+        {
+            'cidr': '0.000.240.255/15',
+            'validationMessage': 'number 000'
+        },
+        {
+            'cidr': '0.50.240.255.45/15',
+            'validationMessage': 'big amount of decimals groups'
+        },
+        {
+            'cidr': '0.240.255/15',
+            'validationMessage': 'little amount of decimals groups'
+        },
+        {
+            'cidr': '0.1000.240.255/15',
+            'validationMessage': 'bigger number of symbols in group'
+        },
+        {
+            'cidr': '0..240.255/15',
+            'validationMessage': 'any empty group'
+        }
+
+    ];
+
+    this.each(fixtures, function(self, fixture) {
+        self.then(function() {
+            this.fill('.networks-table', {'public-cidr': fixture.cidr});
+            this.evaluate(function() {
+                $('input[name=public-cidr]').keyup();
+            });
+            this.test.assertExists('.control-group.error', 'Field validation has worked properly in case of ' + fixture.validationMessage);
         });
-	this.test.assertExists('.control-group.error', 'Field validation has worked properly in case of empty field');
     });
 
-    casper.then(function() {
-	this.fill('.networks-table', {'public-cidr': '0.10.-1.255/15'});
-        this.evaluate(function() {
-            $('input[name=public-cidr]').keyup();
-        });
-	this.test.assertExists('.control-group.error', 'Field validation has worked properly in case of negative number -1');
-    });
-
-    casper.then(function() {
-	this.fill('.networks-table', {'public-cidr': '0.-100.240.255/15'});
-        this.evaluate(function() {
-            $('input[name=public-cidr]').keyup();
-        });
-	this.test.assertExists('.control-group.error', 'Field validation has worked properly in case of negative number -100');
-    });
-
-    casper.then(function() {
-	this.fill('.networks-table', {'public-cidr': '0.256.240.255/15'});
-        this.evaluate(function() {
-            $('input[name=public-cidr]').keyup();
-        });
-	this.test.assertExists('.control-group.error', 'Field validation has worked properly in case of number out of area 255');
-    });
-
-    casper.then(function() {
-	this.fill('.networks-table', {'public-cidr': '0.750.240.255/15'});
-        this.evaluate(function() {
-            $('input[name=public-cidr]').keyup();
-        });
-	this.test.assertExists('.control-group.error', 'Field validation has worked properly in case of number 750');
-    });
-
-    casper.then(function() {
-	this.fill('.networks-table', {'public-cidr': '0.01.240.255/15'});
-        this.evaluate(function() {
-            $('input[name=public-cidr]').keyup();
-        });
-	this.test.assertExists('.control-group.error', 'Field validation has worked properly in case of number starts with 0');
-    });
-
-    casper.then(function() {
-	this.fill('.networks-table', {'public-cidr': '0.000.240.255/15'});
-        this.evaluate(function() {
-            $('input[name=public-cidr]').keyup();
-        });
-	this.test.assertExists('.control-group.error', 'Field validation has worked properly in case of number 000');
-    });
-
-    casper.then(function() {
-	this.fill('.networks-table', {'public-cidr': '0.50.240.255.45/15'});
-        this.evaluate(function() {
-            $('input[name=public-cidr]').keyup();
-        });
-	this.test.assertExists('.control-group.error', 'Field validation has worked properly in case of big amount of decimals groups');
-    });
-
-    casper.then(function() {
-	this.fill('.networks-table', {'public-cidr': '0.240.255/15'});
-        this.evaluate(function() {
-            $('input[name=public-cidr]').keyup();
-        });
-	this.test.assertExists('.control-group.error', 'Field validation has worked properly in case of little amount of decimals groups');
-    });
-
-    casper.then(function() {
-	this.fill('.networks-table', {'public-cidr': '0.1000.240.255/15'});
-        this.evaluate(function() {
-            $('input[name=public-cidr]').keyup();
-        });
-	this.test.assertExists('.control-group.error', 'Field validation has worked properly in case of bigger number of symbols in group');
-    });
-
-    casper.then(function() {
-	this.fill('.networks-table', {'public-cidr': '0..240.255/15'});
-        this.evaluate(function() {
-            $('input[name=public-cidr]').keyup();
-        });
-	this.test.assertExists('.control-group.error', 'Field validation has worked properly in case of any empty group');
-    });
 
     casper.then(function() {
 	this.fill('.networks-table', {'public-cidr': '0.10.100.255/15'});
@@ -271,78 +233,23 @@ casper.then(function() {
         return __utils__.getFieldValue('public-cidr');
     });
 
-    casper.then(function() {
-	this.fill('.networks-table', {'public-cidr': '240.0.1.0/1'});
-        this.evaluate(function() {
-            $('input[name=public-cidr]').keyup();
+    function testCIDRprefix (fixtures, negativeTests) {
+        casper.each(fixtures, function(self, fixture) {
+            self.then(function() {
+                this.fill('.networks-table', {'public-cidr': '240.0.1.0/' + fixture});
+                this.evaluate(function() {
+                    $('input[name=public-cidr]').keyup();
+                });
+                if (negativeTests) {
+                    this.test.assertExists('.control-group.error', 'Field validation has worked properly in case of prefix ' + fixture);
+                } else {
+                    this.test.assertDoesntExist('.control-group.error', 'Field validation works properly in case of no errors (prefix ' + fixture +')');
+                }
+            });
         });
-	this.test.assertExists('.control-group.error', 'Field validation has worked properly in case of prefix "1"');
-    });
-
-    casper.then(function() {
-	this.fill('.networks-table', {'public-cidr': '240.0.1.0/-10'});
-        this.evaluate(function() {
-            $('input[name=public-cidr]').keyup();
-        });
-	this.test.assertExists('.control-group.error', 'Field validation has worked properly in case of prefix "-10"');
-    });
-
-    casper.then(function() {
-	this.fill('.networks-table', {'public-cidr': '240.0.1.0/0'});
-        this.evaluate(function() {
-            $('input[name=public-cidr]').keyup();
-        });
-	this.test.assertExists('.control-group.error', 'Field validation has worked properly in case of prefix "0"');
-    });
-
-
-    casper.then(function() {
-	this.fill('.networks-table', {'public-cidr': '240.0.1.0/31'});
-        this.evaluate(function() {
-            $('input[name=public-cidr]').keyup();
-        });
-	this.test.assertExists('.control-group.error', 'Field validation has worked properly in case of prefix "31"');
-    });
-
-    casper.then(function() {
-	this.fill('.networks-table', {'public-cidr': '240.0.1.0/75'});
-        this.evaluate(function() {
-            $('input[name=public-cidr]').keyup();
-        });
-	this.test.assertExists('.control-group.error', 'Field validation has worked properly in case of prefix "75"');
-    });
-
-    casper.then(function() {
-	this.fill('.networks-table', {'public-cidr': '240.0.1.0/test'});
-        this.evaluate(function() {
-            $('input[name=public-cidr]').keyup();
-        });
-	this.test.assertExists('.control-group.error', 'Field validation has worked properly in case of prefix "test"');
-    });
-
-    casper.then(function() {
-	this.fill('.networks-table', {'public-cidr': '240.0.1.0/2'});
-        this.evaluate(function() {
-            $('input[name=public-cidr]').keyup();
-        });
-        this.test.assertDoesntExist('.control-group.error', 'Field validation works properly in case of no errors (prefix "2")');
-    });
-
-    casper.then(function() {
-	this.fill('.networks-table', {'public-cidr': '240.0.1.0/30'});
-        this.evaluate(function() {
-            $('input[name=public-cidr]').keyup();
-        });
-        this.test.assertDoesntExist('.control-group.error', 'Field validation works properly in case of no errors (prefix "30")');
-    });
-
-    casper.then(function() {
-	this.fill('.networks-table', {'public-cidr': '240.0.1.0/15'});
-        this.evaluate(function() {
-            $('input[name=public-cidr]').keyup();
-        });
-        this.test.assertDoesntExist('.control-group.error', 'Field validation works properly in case of no errors (prefix "15")');
-    });
+    }
+    testCIDRprefix (['1', '-10', '0', '31', '75', 'test'], true);
+    testCIDRprefix (['2', '30', '15'], false);
 
     casper.then(function() {
 	this.fill('.networks-table', {'public-cidr': initialCIDRValue});
@@ -358,61 +265,23 @@ casper.then(function() {
         return __utils__.getFieldValue('public-vlan_start');
     });
 
-    casper.then(function() {
-	this.fill('.networks-table', {'public-vlan_start': '0'});
-	this.evaluate(function() {
-	    $('input[name=public-vlan_start]').keyup();
-	});
-        this.test.assertExists('.control-group.error', 'Field validation has worked properly in case of 0 value');
-    });
-
-    casper.then(function() {
-        this.fill('.networks-table', {'public-vlan_start': '4095'});
-        this.evaluate(function() {
-                $('input[name=public-vlan_start]').keyup();
+    function testVlanID (fixtures, negativeTests) {
+        casper.each(fixtures, function(self, fixture) {
+            self.then(function() {
+                this.fill('.networks-table', {'public-vlan_start': fixture});
+                this.evaluate(function() {
+                    $('input[name=public-vlan_start]').keyup();
+                });
+                if (negativeTests) {
+                    this.test.assertExists('.control-group.error', 'Field validation has worked properly in case of ' + fixture + ' value');
+                } else {
+                    this.test.assertDoesntExist('.control-group.error', 'No validation errors in case of ' + fixture + ' value');
+                }
+            });
         });
-        this.test.assertExists('.control-group.error', 'Field validation has worked properly in case of 4095 value');
-    });
-
-    casper.then(function() {
-        this.fill('.networks-table', {'public-vlan_start': '-100'});
-        this.evaluate(function() {
-                $('input[name=public-vlan_start]').keyup();
-        });
-        this.test.assertExists('.control-group.error', 'Field validation has worked properly in case of -100 value');
-    });
-
-    casper.then(function() {
-        this.fill('.networks-table', {'public-vlan_start': '5000'});
-        this.evaluate(function() {
-            $('input[name=public-vlan_start]').keyup();
-        });
-        this.test.assertExists('.control-group.error', 'Field validation has worked properly in case of 5000 value');
-    });
-
-    casper.then(function() {
-        this.fill('.networks-table', {'public-vlan_start': '1'});
-        this.evaluate(function() {
-            $('input[name=public-vlan_start]').keyup();
-        });
-        this.test.assertDoesntExist('.control-group.error', 'No validation errors in case of 1 value');
-    });
-
-    casper.then(function() {
-        this.fill('.networks-table', {'public-vlan_start': '4094'});
-        this.evaluate(function() {
-            $('input[name=public-vlan_start]').keyup();
-        });
-        this.test.assertDoesntExist('.control-group.error', 'No validation errors in case of 4094 value');
-    });
-
-    casper.then(function() {
-        this.fill('.networks-table', {'public-vlan_start': '2000'});
-        this.evaluate(function() {
-            $('input[name=public-vlan_start]').keyup();
-        });
-        this.test.assertDoesntExist('.control-group.error', 'No validation errors in case of 2000 value');
-    });
+    }
+    testVlanID (['0', '4095', '-100', '5000'], true);
+    testVlanID (['1', '4094', '2000'], false);
 
     casper.then(function() {
         this.fill('.networks-table', {'public-vlan_start': initialVlanIDValue});
