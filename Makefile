@@ -59,10 +59,11 @@ deep_clean: clean
 
 distclean: deep_clean clean-integration-test
 
-include $(SOURCE_DIR)/rules.mk
-
 # Common configuration file.
 include $(SOURCE_DIR)/config.mk
+
+# Macroses for make
+include $(SOURCE_DIR)/rules.mk
 
 # Sandbox macroses.
 include $(SOURCE_DIR)/sandbox.mk
