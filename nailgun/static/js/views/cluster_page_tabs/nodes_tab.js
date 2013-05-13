@@ -178,7 +178,7 @@ function(models, commonViews, dialogViews, nodesTabSummaryTemplate, editNodesScr
             nodes.sync('update', nodes).done(_.bind(function() {
                 app.navigate('#cluster/' + this.model.id + '/nodes', {trigger: true});
                 this.model.get('nodes').fetch({data: {cluster_id: this.model.id}});
-                app.navbar.nodes.fetch();
+                app.navbar.refresh();
                 app.page.removeVerificationTask();
             }, this));
         },

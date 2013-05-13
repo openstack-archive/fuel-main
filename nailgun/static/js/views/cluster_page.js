@@ -120,9 +120,10 @@ function(models, commonViews, dialogViews, NodesTab, NetworkTab, SettingsTab, Lo
             }, this));
         },
         deploymentFinished: function() {
-            $.when(this.model.fetch(), this.model.fetchRelated('nodes'), this.model.fetchRelated('tasks')).done(_.bind(this.rebindEventsAfterDeployment, this));
-            app.navbar.nodes.fetch();
-            app.navbar.notifications.fetch();
+            $.when(this.model.fetch(), this.model.fetchRelated('nodes'), this.model.fetchRelated('tasks')).done(_.bind(function() {
+                this.rebindEventsAfterDeployment();
+                app.navbar.refresh();
+            }, this));
         },
         unbindEventsWhileDeploying: function() {
             // unbind some events while deploying to make progress bar movement smooth and prevent showing wrong cluster status for a moment.

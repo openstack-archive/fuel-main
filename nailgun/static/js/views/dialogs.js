@@ -195,7 +195,7 @@ function(models, simpleMessageTemplate, createClusterDialogTemplate, changeClust
                     this.model.get('nodes').fetch({data: {cluster_id: this.model.id}});
                     // we set node flags silently, so trigger resize event to redraw node list
                     this.model.get('nodes').trigger('resize');
-                    app.navbar.nodes.fetch();
+                    app.navbar.refresh();
                 }, this))
                 .fail(_.bind(this.displayErrorMessage, this));
         },
@@ -239,7 +239,7 @@ function(models, simpleMessageTemplate, createClusterDialogTemplate, changeClust
             this.model.destroy({wait: true})
                 .done(_.bind(function() {
                     this.$el.modal('hide');
-                    app.navbar.notifications.fetch();
+                    app.navbar.refresh();
                     app.navigate('#clusters', {trigger: true});
                 }, this))
                 .fail(_.bind(this.displayErrorMessage, this));

@@ -50,17 +50,16 @@ function(models, dialogViews, navbarTemplate, nodesStatsTemplate, notificationsT
             this.registerDeferred($.timeout(this.updateInterval).done(_.bind(this.update, this)));
         },
         update: function() {
-            var complete = _.after(2, _.bind(this.scheduleUpdate, this));
-            this.nodes.fetch({update: true}).always(complete);
-            this.notifications.fetch({update: true}).always(complete);
+            this.refresh().always(_.bind(this.scheduleUpdate, this));
+        },
+        refresh: function() {
+            return $.when(this.nodes.fetch(), this.notifications.fetch());
         },
         initialize: function(options) {
             this.elements = _.isArray(options.elements) ? options.elements : [];
-            var complete = _.after(2, _.bind(this.scheduleUpdate, this));
             this.nodes = new models.Nodes();
-            this.nodes.deferred = this.nodes.fetch().always(complete);
             this.notifications = new models.Notifications();
-            this.notifications.deferred = this.notifications.fetch().always(complete);
+            $.when(this.nodes.deferred = this.nodes.fetch(), this.notifications.deferred = this.notifications.fetch()).done(_.bind(this.scheduleUpdate, this));
         },
         render: function() {
             this.tearDownRegisteredSubViews();
