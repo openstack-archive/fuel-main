@@ -279,6 +279,12 @@ define(function() {
             //     errors.push(volume.vg);
             // }
             return _.isEmpty(errors) ? null : errors;
+        },
+        generateId: function() {
+            return this.get('name').replace(':','');
+        },
+        sortedNetworks: function() {
+            return _.sortBy(this.get('networks'), 'name');
         }
     });
 

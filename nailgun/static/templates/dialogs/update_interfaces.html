@@ -17,18 +17,20 @@
 
       <div class="network-interfaces-modal-info">
         <% _.each(topology.nodes, function(node) { %>
-          <p>Node '<%= node.node_id %>' Interfaces</p>
-          <ul>
-            <% _.each(node.interfaces, function(interface) { %>
-              <li><%= interface.name %>: 
-                    <% _.each(interface.natworks, function(network) {%>
-                      <%= network %>&nbsp;
-                    <% })%></li>
-            <% }) %>
-          </ul>
+        <p>Node '<%= node.node_id %>' Interfaces</p>
+        <ul>
+          <% _.each(node.interfaces, function(interface) { %>
+          <li><%= interface.name %>: <% _.each(interface.networks, function(network) {%>
+                         <%= network %>&nbsp;
+                       <% })%></li>
+          <% }) %>
+        </ul>
         <%})%>
       </div>
       <% })%>
+
+    
+
 
     <hr class="slim">
     <div class="deploy-task-notice">
@@ -41,3 +43,4 @@
   <button class="btn btn-success change-interfaces-btn" disabled>Apply</button>
   <button class="btn btn-danger force-apply-btn">Force Apply</button>
 </div>
+

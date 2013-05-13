@@ -3418,7 +3418,7 @@ hr.slim {
   background-image: -o-linear-gradient(bottom, #a7a6a6, #cdcccc);
   background-image: -ms-linear-gradient(bottom, #a7a6a6, #cdcccc);
   background-image: linear-gradient(to top, #a7a6a6, #cdcccc);
-  cursor: move;
+  cursor: hand;cursor:pointer;
 }
 
 .network-help-message {

@@ -1,0 +1,10 @@
+<% _.each(networks, function(option) { %>
+    <div class="logical-network-item"><%- option.name %></div>
+<% }) %>
+<% 
+  var hasNetworks = true;
+  if (_.isUndefined(networks) || networks.length == 0){
+      hasNetworks = false;
+  }
+%>
+<div class="network-help-message <%= hasNetworks ? 'hide' : '' %>">Use drag-and-drop for placing logical interfaces here</div>

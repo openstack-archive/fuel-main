@@ -12,11 +12,12 @@ define(
     'text!templates/cluster/edit_node_disks.html',
     'text!templates/cluster/node_disk.html',
     'text!templates/cluster/edit_node_interfaces.html',
-    'text!templates/cluster/node_interfaces.html'
+    'text!templates/cluster/node_interfaces.html',
+    'text!templates/cluster/node_interface_networks.html'
 ],
-function(models, commonViews, dialogViews, nodesTabSummaryTemplate, editNodesScreenTemplate, nodeListTemplate, nodeTemplate, nodeStatusTemplate, editNodeDisksScreenTemplate, nodeDisksTemplate, editNodeInterfacesScreenTemplate, nodeInterfacesTemplate) {
+function(models, commonViews, dialogViews, nodesTabSummaryTemplate, editNodesScreenTemplate, nodeListTemplate, nodeTemplate, nodeStatusTemplate, editNodeDisksScreenTemplate, nodeDisksTemplate, editNodeInterfacesScreenTemplate, nodeInterfacesTemplate, nodeInterfaceNetworksTemplate) {
     'use strict';
-    var NodesTab, Screen, NodesByRolesScreen, EditNodesScreen, AddNodesScreen, DeleteNodesScreen, NodeList, Node, EditNodeScreen, EditNodeDisksScreen, NodeDisk, EditNodeInterfacesScreen, NodeInterface;
+    var NodesTab, Screen, NodesByRolesScreen, EditNodesScreen, AddNodesScreen, DeleteNodesScreen, NodeList, Node, EditNodeScreen, EditNodeDisksScreen, NodeDisk, NodeInterfaceNetworks, EditNodeInterfacesScreen, NodeInterface;
 
     NodesTab = commonViews.Tab.extend({
         screen: null,
@@ -780,6 +781,11 @@ function(models, commonViews, dialogViews, nodesTabSummaryTemplate, editNodesScr
         }
     });
 
+    NodeInterfaceNetworks = EditNodeScreen.extend({
+        constructorName: 'NodeInterfaceNetworks',
+        template: _.template(nodeInterfaceNetworksTemplate)
+    });
+
     EditNodeInterfacesScreen = EditNodeScreen.extend({
         className: 'edit-node-networks-screen',
         constructorName: 'EditInterfacesScreen',
@@ -807,7 +813,7 @@ function(models, commonViews, dialogViews, nodesTabSummaryTemplate, editNodesScr
                 }, this));*/
         },
         removeNetwork: function(physical, logical){
-            var ethIfc = this.interfaces.findWhere({name: physical}); //_.find(this.interfaces.models,function(ifc){return ifc.get("name")==physical})
+            var ethIfc = this.interfaces.findWhere({name: physical});
             var ifType = _.first(_.where(ethIfc.get("networks"), {"name":logical}));
             ethIfc.set("networks", _.reject(ethIfc.get("networks"), {"name":logical}));
             return ifType;
@@ -877,27 +883,39 @@ function(models, commonViews, dialogViews, nodesTabSummaryTemplate, editNodesScr
                 });
                 this.registerSubView(nodeInterface);
                 this.$('.node-networks').append(nodeInterface.render().el);
+                this.renderNetworks(ifc);
                 var ifNetwork;
                 this.$( ".logical-network-box" ).sortable({
                     connectWith: ".connectedSortable",
+                    cursor: "move",
                     receive: _.bind(function(event, ui){
                         var obj = $(event.target);
                         obj.children(".network-help-message").addClass("hide");
                         var ifcName = obj.parent().parent().children(".network-box-name").html();
-                        this.addNetwork(ifcName, ifNetwork)
+                        this.addNetwork(ifcName, ifNetwork);
+                        var ifc = _.find(this.interfaces.models,
+                                function(ifc){ return ifc.get("name")==ifcName });
+                        this.renderNetworks(ifc);
                     }, this),
                     remove: _.bind(function(event, ui){
                         var obj = $(event.target);
                         var ifcName = obj.parent().parent().children(".network-box-name").html();
-                        ifNetwork = this.removeNetwork(ifcName, ui.item.html())
-                        var children = obj.children(".network-help-message")
+                        ifNetwork = this.removeNetwork(ifcName, ui.item.html());
+                        var children = obj.children(".network-help-message");
                         if (obj.children().length == 1){
-                            children.removeClass("hide")
+                            children.removeClass("hide");
                         }
                     },this)
                 }).disableSelection();
 
             }, this));
+        },
+        renderNetworks: function(ifc){
+            var html =  _.template(nodeInterfaceNetworksTemplate,{networks: ifc.sortedNetworks()});
+            var ifcId = ifc.generateId();
+            var networksElem = this.$("#"+ifcId);
+            networksElem.html('');
+            networksElem.append(html);
         },
         render: function() {
             this.$el.html(this.template({node: this.node}));
