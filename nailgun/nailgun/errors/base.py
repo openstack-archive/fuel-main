@@ -5,9 +5,10 @@ from nailgun.logger import logger
 
 class NailgunException(Exception):
 
-    def __init__(self, message, log_traceback=False):
+    def __init__(self, message="", log_traceback=False):
         self.log_traceback = log_traceback
-        self.message = message
+        if message:
+            self.message = message
         super(NailgunException, self).__init__()
 
     def __str__(self):

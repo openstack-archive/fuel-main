@@ -120,7 +120,11 @@ if __name__ == "__main__":
     elif params.action == "shell":
         if params.config_file:
             settings.update_from_file(params.config_file)
-        code.interact(local={'orm': orm, 'settings': settings})
+        try:
+            from IPython import embed
+            embed()
+        except ImportError:
+            code.interact(local={'orm': orm, 'settings': settings})
         orm().commit()
     else:
         parser.print_help()
