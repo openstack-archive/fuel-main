@@ -160,8 +160,8 @@ class TaskHelper(object):
                             sum(
                                 [s.weight for s
                                  in subtasks_with_progress]
-                            )
-                    ), 0)
+                            ), 0)
+                    )
                 else:
                     task.progress = 0
                 db.add(task)
