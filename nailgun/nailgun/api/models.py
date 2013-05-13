@@ -350,31 +350,26 @@ class NodeAttributes(Base):
         self.interfaces[0]["networks"] = [
             {
                 "id": 1,
-                "name": "Management",
-                "allowed_interfaces": ["eth0", "eth1"]
+                "name": "Management"
             },
             {
                 "id": 2,
-                "name": "Floating",
-                "allowed_interfaces": ["eth0"]
+                "name": "Floating"
             },
             {
                 "id": 3,
-                "name": "Public",
-                "allowed_interfaces": ["eth1"]
+                "name": "Public"
             },
             {
                 "id": 4,
-                "name": "Admin",
-                "allowed_interfaces": ["eth0", "eth1"]
+                "name": "Admin"
             }
         ]
-        self.interfaces[1]["networks"] = [{"id": 5,
-                                           "name": "Fixed",
-                                           "allowed_interfaces": ["eth1"]},
-                                          {"id": 6,
-                                           "name": "Storage",
-                                           "allowed_interfaces": ["eth0"]}]
+        if len(self.interfaces) > 1:
+            self.interfaces[1]["networks"] = [{"id": 5,
+                                               "name": "Fixed"},
+                                              {"id": 6,
+                                               "name": "Storage"}]
         self.interfaces = self._traverse(self.interfaces)
 
 

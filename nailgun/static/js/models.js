@@ -274,10 +274,7 @@ define(function() {
         urlRoot: '/api/nodes/',
         validate: function(attrs, options) {
             var errors = [];
-            // var volume = _.find(attrs.volumes, {vg: options.group});
-            // if (_.isNaN(volume.size) || volume.size > options.unallocated) {
-            //     errors.push(volume.vg);
-            // }
+            // NOTE: TBD
             return _.isEmpty(errors) ? null : errors;
         },
         generateId: function() {
@@ -295,23 +292,6 @@ define(function() {
         comparator: function(ifc) {
             return ifc.name;
         }
-    });
-
-    models.NetworkTopology = Backbone.Model.extend({
-        constructorName: 'NetworkTopology',
-        urlRoot: '/api/nodes'
-    });
-
-    models.NetworkTopologies = Backbone.Collection.extend({
-        constructorName: 'NetworkTopologies',
-        model: models.NetworkTopology,
-        url: '/api/nodes/',
-        parse: function(response){
-            return $.parseJSON(response.responseText)
-        }/*,
-        comparator: function(ifc) {
-            return ifc.name;
-        }*/
     });
 
     models.Network = Backbone.Model.extend({

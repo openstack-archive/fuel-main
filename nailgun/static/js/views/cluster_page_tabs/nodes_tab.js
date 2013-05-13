@@ -818,9 +818,7 @@ function(models, commonViews, dialogViews, nodesTabSummaryTemplate, editNodesScr
             ethIfc.set("networks", _.reject(ethIfc.get("networks"), {"name":logical}));
             return ifType;
         },
-        addNetwork: function(physical, logical){
-            var ethIfc = _.find(this.interfaces.models,
-                                function(ifc){ return ifc.get("name")==physical });
+        addNetwork: function(ethIfc, logical){
             if (_.isUndefined(ethIfc.get("networks"))){
                 ethIfc.set("networks", []);
             }
@@ -834,38 +832,23 @@ function(models, commonViews, dialogViews, nodesTabSummaryTemplate, editNodesScr
                  .done(_.bind(function(){
                      this.returnToNodesTab();
                  }, this))
-                 .error(_.bind(function(response, statusType, statusText) {
-                    if (response.status == 409) {
-                        this.topologies.models = this.topologies.parse(response);
-                        var dialog = new dialogViews.UpdateInterfacesDialog({model: this.topologies.models, interfaces: this.interfaces, node: this.node});
-                        this.registerSubView(dialog);
-                        dialog.render();
-                    } else {
-                        //TODO: show error
-                    }
-                 }, this));
-/*                 .fail(_.bind(function() {
+                 .fail(_.bind(function() {
                      this.$('.btn, input').attr('disabled', false);
                      var dialog = new dialogViews.SimpleMessage({error: true,
                                                                  title: 'Node network interfaces configuration error'});
                      app.page.registerSubView(dialog);
                      dialog.render();
-                 }, this));*/
-       },
-        setInitialData: function() {
-            // TODO (Ivan K): implement this
-            this.initialData = _.cloneDeep(this.interfaces.toJSON());
+                 }, this));
         },
         initialize: function(options) {
             _.defaults(this, options);
             this.node = this.model.get('nodes').get(this.screenOptions[0]);
             if (this.node) {
                 this.interfaces = new models.Interfaces();
-                this.topologies = new models.NetworkTopologies();
+
                 this.interfaces.fetch({
                     url: _.result(this.node, 'url') + '/attributes/interfaces'
                 }).done(_.bind(function(){
-                                this.setInitialData();
                                 this.renderInterfaces();
                 }, this))
                 .fail(_.bind(this.returnToNodesTab, this));
@@ -892,9 +875,9 @@ function(models, commonViews, dialogViews, nodesTabSummaryTemplate, editNodesScr
                         var obj = $(event.target);
                         obj.children(".network-help-message").addClass("hide");
                         var ifcName = obj.parent().parent().children(".network-box-name").html();
-                        this.addNetwork(ifcName, ifNetwork);
-                        var ifc = _.find(this.interfaces.models,
+                        physicalIfc = _.find(this.interfaces.models,
                                 function(ifc){ return ifc.get("name")==ifcName });
+                        this.addNetwork(physicalIfc, ifNetwork);
                         this.renderNetworks(ifc);
                     }, this),
                     remove: _.bind(function(event, ui){
@@ -911,11 +894,9 @@ function(models, commonViews, dialogViews, nodesTabSummaryTemplate, editNodesScr
             }, this));
         },
         renderNetworks: function(ifc){
-            var html =  _.template(nodeInterfaceNetworksTemplate,{networks: ifc.sortedNetworks()});
+            var html = _.template(nodeInterfaceNetworksTemplate,{networks: ifc.sortedNetworks()});
             var ifcId = ifc.generateId();
-            var networksElem = this.$("#"+ifcId);
-            networksElem.html('');
-            networksElem.append(html);
+            this.$("#"+ifcId).html(html);
         },
         render: function() {
             this.$el.html(this.template({node: this.node}));
@@ -931,7 +912,6 @@ function(models, commonViews, dialogViews, nodesTabSummaryTemplate, editNodesScr
         },
         initialize: function(options) {
             _.defaults(this, options);
-            // TODO (Ivan K): implement this
         },
         render: function() {
             this.$el.html(this.template({
