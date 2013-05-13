@@ -105,6 +105,9 @@ class DeploymentTaskManager(TaskManager):
             TaskHelper.update_slave_nodes_fqdn(nodes_to_deploy)
 
             task_provision = supertask.create_subtask("provision")
+            # we assume here that task_provision just adds system to
+            # cobbler and reboots systems, so it has extreamly small weight
+            task_provision.weight = 0.05
             provision_message = tasks.ProvisionTask.message(task_provision)
             task_provision.cache = provision_message
             orm().add(task_provision)

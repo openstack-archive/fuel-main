@@ -151,9 +151,17 @@ class TaskHelper(object):
                     subtasks
                 )
                 if subtasks_with_progress:
-                    task.progress = int(float(sum(
-                        [s.progress for s in subtasks_with_progress]
-                    )) / len(subtasks_with_progress))
+                    task.progress = int(
+                        round(
+                            sum(
+                                [s.weight * s.progress for s
+                                 in subtasks_with_progress]
+                            ) /
+                            sum(
+                                [s.weight for s
+                                 in subtasks_with_progress]
+                            )
+                    ), 0)
                 else:
                     task.progress = 0
                 db.add(task)

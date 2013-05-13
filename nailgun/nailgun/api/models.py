@@ -11,7 +11,7 @@ from copy import deepcopy
 import web
 import netaddr
 from sqlalchemy import Column, UniqueConstraint, Table
-from sqlalchemy import Integer, String, Unicode, Text, Boolean
+from sqlalchemy import Integer, String, Unicode, Text, Boolean, Float
 from sqlalchemy import ForeignKey, Enum, DateTime
 from sqlalchemy import create_engine
 from sqlalchemy.orm import relationship, backref
@@ -463,6 +463,10 @@ class Task(Base):
         "Notification",
         backref=backref('task', remote_side=[id])
     )
+    # Task weight is used to calculate supertask progress
+    # sum([t.progress * t.weight for t in supertask.subtasks]) /
+    # sum([t.weight for t in supertask.subtasks])
+    weight = Column(Float, default=1.0)
 
     def __repr__(self):
         return "<Task '{0}' {1} ({2}) {3}>".format(
