@@ -12,14 +12,12 @@ define setup_interfaces (
   }
 }
 
-
-
 define check_base_interfaces (
   $interface = $name,
 ) {
   $b_iface = split($interface, '.')
   if size($b_iface) > 1 {
-    if ! defined(L23network::L3::Ifconfig[$n_iface]) {
+    if ! defined(L23network::L3::Ifconfig[$b_iface]) {
       l23network::l3::ifconfig{$b_iface:
         ipaddr        => 'none',
       }
