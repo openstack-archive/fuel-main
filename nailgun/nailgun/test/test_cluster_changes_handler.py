@@ -9,7 +9,6 @@ from nailgun.test.base import BaseHandlers
 from nailgun.test.base import reverse
 from nailgun.api.models import Cluster, Attributes, IPAddr, Task
 from nailgun.api.models import Network, NetworkGroup
-from nailgun.network.manager import NetworkManager
 
 
 class TestHandlers(BaseHandlers):
