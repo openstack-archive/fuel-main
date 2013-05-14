@@ -204,8 +204,6 @@ class TestNetworkManager(BaseHandlers):
             json.dumps(networks_data),
             headers=self.default_headers
         )
-        response = json.loads(resp.body)
-
         resp = self.app.get(
             reverse(
                 'NetworkCollectionHandler'
