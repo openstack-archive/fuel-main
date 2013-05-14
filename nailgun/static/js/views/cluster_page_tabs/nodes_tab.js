@@ -845,7 +845,6 @@ function(models, commonViews, dialogViews, nodesTabSummaryTemplate, editNodesScr
             this.node = this.model.get('nodes').get(this.screenOptions[0]);
             if (this.node) {
                 this.interfaces = new models.Interfaces();
-
                 this.interfaces.fetch({
                     url: _.result(this.node, 'url') + '/attributes/interfaces'
                 }).done(_.bind(function(){
@@ -875,10 +874,10 @@ function(models, commonViews, dialogViews, nodesTabSummaryTemplate, editNodesScr
                         var obj = $(event.target);
                         obj.children(".network-help-message").addClass("hide");
                         var ifcName = obj.parent().parent().children(".network-box-name").html();
-                        physicalIfc = _.find(this.interfaces.models,
+                        var physicalIfc = _.find(this.interfaces.models,
                                 function(ifc){ return ifc.get("name")==ifcName });
                         this.addNetwork(physicalIfc, ifNetwork);
-                        this.renderNetworks(ifc);
+                        this.renderNetworks(physicalIfc);
                     }, this),
                     remove: _.bind(function(event, ui){
                         var obj = $(event.target);
@@ -923,4 +922,5 @@ function(models, commonViews, dialogViews, nodesTabSummaryTemplate, editNodesScr
 
     return NodesTab;
 });
+
 
