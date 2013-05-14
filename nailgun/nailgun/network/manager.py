@@ -20,18 +20,16 @@ from nailgun.network.errors import NoSuitableCIDR
 
 class NetworkManager(object):
 
-    def __init__(self, cluster_id=None, db=None):
+    def __init__(self, db=None):
         self.db = db or orm()
-        if cluster_id:
-            self.cluster = self.db.query(Cluster).get(cluster_id)
-        else:
-            self.cluster = None
 
-    def create_network_groups(self):
+    def create_network_groups(self, cluster_id):
         used_nets = [n.cidr for n in self.db.query(Network).all()]
         used_vlans = [v.id for v in self.db.query(Vlan).all()]
 
-        for network in self.cluster.release.networks_metadata:
+        cluster_db = self.db.query(Cluster).get(cluster_id)
+
+        for network in cluster_db.release.networks_metadata:
             free_vlans = sorted(list(set(range(int(
                 settings.VLANS_RANGE_START),
                 int(settings.VLANS_RANGE_END))) -
@@ -60,12 +58,12 @@ class NetworkManager(object):
                 raise NoSuitableCIDR()
 
             nw_group = NetworkGroup(
-                release=self.cluster.release.id,
+                release=cluster_db.release.id,
                 name=network['name'],
                 access=network['access'],
                 cidr=str(new_net),
                 gateway_ip_index=1,
-                cluster_id=self.cluster.id,
+                cluster_id=cluster_id,
                 vlan_start=vlan_start,
                 amount=1
             )

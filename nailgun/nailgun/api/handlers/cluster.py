@@ -137,8 +137,8 @@ class ClusterCollectionHandler(JSONHandler):
         )
         attributes.generate_fields()
 
-        netmanager = NetworkManager(cluster.id)
-        netmanager.create_network_groups()
+        netmanager = NetworkManager()
+        netmanager.create_network_groups(cluster.id)
 
         cluster.add_pending_changes("attributes")
         cluster.add_pending_changes("networks")
