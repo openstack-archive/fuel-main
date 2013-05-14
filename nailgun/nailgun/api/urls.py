@@ -22,7 +22,13 @@ from nailgun.api.handlers.node import NodeAttributesHandler
 from nailgun.api.handlers.node import NodeAttributesDefaultsHandler
 from nailgun.api.handlers.node import NodeAttributesByNameHandler
 from nailgun.api.handlers.node import NodeAttributesByNameDefaultsHandler
+from nailgun.api.handlers.node import NodeNICsHandler
+from nailgun.api.handlers.node import NodeNICsDefaultHandler
+from nailgun.api.handlers.node import NodeCollectionNICsHandler
+from nailgun.api.handlers.node import NodeCollectionNICsDefaultHandler
+from nailgun.api.handlers.node import NodeNICsVerifyHandler
 
+from nailgun.api.handlers.networks import NetworkCollectionHandler
 from nailgun.api.handlers.tasks import TaskHandler
 from nailgun.api.handlers.tasks import TaskCollectionHandler
 
@@ -67,6 +73,18 @@ urls = (
     'NodeAttributesByNameHandler',
     r'/nodes/(?P<node_id>\d+)/attributes/(?P<attr_name>[-\w]+)/defaults/?$',
     'NodeAttributesByNameDefaultsHandler',
+    r'/nodes/interfaces/?$',
+    'NodeCollectionNICsHandler',
+    r'/nodes/interfaces/default_assignment?$',
+    'NodeCollectionNICsDefaultHandler',
+    r'/nodes/(?P<node_id>\d+)/interfaces/?$',
+    'NodeNICsHandler',
+    r'/nodes/(?P<node_id>\d+)/interfaces/default_assignment?$',
+    'NodeNICsDefaultHandler',
+    r'/nodes/interfaces_verify/?$',
+    'NodeNICsVerifyHandler',
+    r'/networks/?$',
+    'NetworkCollectionHandler',
     r'/tasks/?$',
     'TaskCollectionHandler',
     r'/tasks/(?P<task_id>\d+)/?$',

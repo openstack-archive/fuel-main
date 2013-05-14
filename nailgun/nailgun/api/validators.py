@@ -271,3 +271,74 @@ class NetworkConfigurationValidator(BasicValidator):
                     message="No 'id' param for '{0}'".format(i)
                 )
         return d
+
+class NetAssignmentValidator(BasicValidator):
+    @classmethod
+    def validate(cls, node):
+        if not isinstance(node, dict):
+            raise web.webapi.badrequest(message="Each node should be dict")
+        if 'id' not in node:
+            raise web.webapi.badrequest(message="Each node should have ID")
+        if 'interfaces' not in node or \
+                not isinstance(node['interfaces'], list):
+            raise web.webapi.badrequest(
+                message="There is no 'interfaces' list in node '%d'" %
+                        node['id']
+            )
+
+        net_ids = set()
+        for iface in interfaces:
+            if not isinstance(iface, dict):
+                raise web.webapi.badrequest(
+                    message="Node '%d': each interface should be dict" %
+                            node['id']
+                )
+            if 'id' not in iface:
+                raise web.webapi.badrequest(
+                    message="Node '%d': each interface should have ID" %
+                            node['id']
+                )
+            if 'assigned_networks' not in iface or \
+                    not isinstance(iface['assigned_networks'], list):
+                raise web.webapi.badrequest(
+                    message="There is no 'assigned_networks' list"
+                            " in interface '%d' in node '%d'" %
+                            (iface['id'], node['id'])
+                )
+
+            for net in iface['assigned_networks']:
+                if not isinstance(net, dict):
+                    raise web.webapi.badrequest(
+                        message="Node '%d', interface '%d':"
+                                " each assigned network should be dict" %
+                                (iface['id'], node['id'])
+                    )
+                if 'id' not in net:
+                    raise web.webapi.badrequest(
+                        message="Node '%d', interface '%d':"
+                                " each assigned network should have ID" %
+                                (iface['id'], node['id'])
+                    )
+                if net['id'] in net_ids:
+                    raise web.webapi.badrequest(
+                        message="Assigned networks for node '%d' have"
+                                " a duplicate network '%d' (second"
+                                " occurrence in interface '%d')" %
+                                (node['id'], net['id'], iface['id'])
+                    )
+                net_ids.add(net['id'])
+        return node
+
+    @classmethod
+    def validate_structure(cls, webdata):
+        node_data = cls.validate_json(webdata)
+        return cls.validate(node_data)
+
+    @classmethod
+    def validate_collection_structure(cls, webdata):
+        data = cls.validate_json(webdata)
+        if not isinstance(data, list):
+            raise web.webapi.badrequest(message="Data should be list of nodes")
+        for node_data in data:
+            cls.validate(node_data)
+        return data

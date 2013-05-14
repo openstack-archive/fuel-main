@@ -8,6 +8,10 @@ import web
 
 from nailgun.notifier import notifier
 from nailgun.logger import logger
+from nailgun.api.models import Network
+from nailgun.api.models import NetworkAssignment
+from nailgun.api.models import NodeNICInterface
+from nailgun.network.topology import TopoChecker, NICUtils
 from nailgun.api.validators import NodeValidator
 from nailgun.api.validators import NodeAttributesValidator
 from nailgun.network.manager import NetworkManager
@@ -74,7 +78,7 @@ class NodeHandler(JSONHandler):
         )
 
 
-class NodeCollectionHandler(JSONHandler):
+class NodeCollectionHandler(JSONHandler, NICUtils):
 
     validator = NodeValidator
 
@@ -122,6 +126,11 @@ class NodeCollectionHandler(JSONHandler):
         self.db.add(node)
         self.db.commit()
 
+        # Add interfaces for node from 'meta'.
+        if node.meta and node.meta.get('interfaces'):
+            nics = self.get_nics_from_meta(node)
+            map(self.db.add, nics)
+            self.db.commit()
         try:
             ram = str(round(float(
                 node.meta['memory']['total']) / 1073741824, 1))
@@ -148,7 +157,6 @@ class NodeCollectionHandler(JSONHandler):
             if "mac" in nd:
                 node = q.filter_by(mac=nd["mac"]).first() \
                     or self.validator.validate_existent_node_mac(nd)
-                self.db.add(node)
             else:
                 node = q.get(nd["id"])
             if nd.get("cluster_id") is None and node.cluster:
@@ -213,6 +221,11 @@ class NodeCollectionHandler(JSONHandler):
                         msg,
                         node_id=node.id
                     )
+                if node.meta and node.meta.get('interfaces'):
+                    db_nics = list(node.interfaces)
+                    nics = get_nics_from_meta(node)
+                    map(self.db.add, nics)
+
             nodes_updated.append(node)
             self.db.add(node)
             self.db.commit()
@@ -362,3 +375,139 @@ class NodeAttributesByNameHandler(JSONHandler):
             setattr(node_attrs, attr_name, data)
             attr = getattr(node_attrs, attr_name)
         return attr
+
+
+class NodeNICsHandler(JSONHandler):
+    fields = (
+        'id', (
+            'interfaces',
+            'id',
+            'mac',
+            'name',
+            'current_speed',
+            'max_speed',
+            ('assigned_networks', 'id', 'name'),
+            ('allowed_networks', 'id', 'name')
+        )
+    )
+
+    model = NodeNICInterface
+
+    @content_json
+    def GET(self, node_id):
+        node = self.get_object_or_404(Node, node_id)
+        return self.render(node)
+
+    @content_json
+    def PUT(self, node_id):
+        data = self.validate_json(web.data())
+        node = {'id': node_id, 'interfaces': data}
+        data = NetworkAssignment.validate(node)
+        NetworkAssignment.update_attributes(node)
+
+
+class NodeCollectionNICsHandler(NodeNICsHandler):
+    @content_json
+    def GET(self):
+        user_data = web.input(cluster_id=None)
+        if user_data.cluster_id == '':
+            nodes = self.get_object_or_404(Node, cluster_id=None)
+        elif user_data.cluster_id:
+            nodes = self.get_object_or_404(
+                Node,
+                cluster_id=user_data.cluster_id
+            )
+        else:
+            nodes = self.get_object_or_404(Node)
+        return map(self.render, nodes)
+
+    @content_json
+    def PUT(self):
+        data = NetworkAssignment.validate_collection_structure(web.data())
+        NetworkAssignment.update_collection_attributes(data)
+
+
+class NodeNICsDefaultHandler(JSONHandler):
+    fields = (
+        'id', (
+            'interfaces',
+            'id',
+            'mac',
+            'name',
+            'current_speed',
+            'max_speed',
+            ('assigned_interfaces', 'id', 'name'),
+            ('allowed_interfaces', 'id', 'name')
+        )
+    )
+
+    @content_json
+    def GET(self, node_id):
+        node = self.render(self.get_object_or_404(Node, node_id))
+        default_nets = NetworkAssignment.get_default(node)
+        return self.render(node)
+
+    @content_json
+    def PUT(self, node_id):
+        node = self.render(self.get_object_or_404(Node, node_id))
+        node = NetworkAssignment.get_default(node)
+        NetworkAssignment.update_attributes(node)
+
+
+class NodeCollectionNICsDefaultHandler(NodeNICsDefaultHandler):
+    @content_json
+    def GET(self):
+        user_data = web.input(cluster_id=None)
+        if user_data.cluster_id == '':
+            nodes = self.get_object_or_404(Node, cluster_id=None)
+        elif user_data.cluster_id:
+            nodes = self.get_object_or_404(
+                Node,
+                cluster_id=user_data.cluster_id
+            )
+        else:
+            nodes = self.get_object_or_404(Node)
+        def_net_nodes = []
+        for node in nodes:
+            rendered_node = NetworkAssignment.get_default(self.render(node))
+            def_net_nodes.append(rendered_node)
+        return map(self.render, nodes)
+
+    @content_json
+    def PUT(self):
+        data = NetworkAssignment.validate_collection_structure(web.data())
+        NetworkAssignment.update_collection_attributes(data)
+
+
+class NodeNICsVerifyHandler(JSONHandler):
+    fields = (
+        'id', (
+            'interfaces',
+            'id',
+            'mac',
+            'name',
+            ('assigned_interfaces', 'id', 'name'),
+            ('allowed_interfaces', 'id', 'name')
+        )
+    )
+
+    fields_with_conflicts = (
+        'id', (
+            'interfaces',
+            'id',
+            'mac',
+            'name',
+            ('assigned_interfaces', 'id', 'name'),
+            ('allowed_interfaces', 'id', 'name')
+        ),
+        # ('conflicted_networks', '*')
+    )
+
+    @content_json
+    def POST(self):
+        data = NetworkAssignment.validate_structure(web.data())
+        if TopoChecker.is_assignment_allowed(data):
+            return map(self.render, nodes)
+        topo = TopoChecker.resolve_topo_conflicts(data)
+        ret = map(self.render, topo, fields=fields_with_conflicts)
+        return map(self.render, topo, fields=fields_with_conflicts)
