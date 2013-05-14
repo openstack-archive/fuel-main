@@ -72,7 +72,8 @@ if __name__ == "__main__":
         'dumpdata', help='dump models as fixture'
     )
     dumpdata_parser.add_argument(
-        'model', action='store', help='model name to dump'
+        'model', action='store', help='model name to dump; underscored name'
+        'should be used, e.g. network_group for NetworkGroup model'
     )
     dump_settings = subparsers.add_parser(
         'dump_settings', help='dump current settings to YAML'
