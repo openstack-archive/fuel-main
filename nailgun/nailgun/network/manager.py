@@ -85,7 +85,12 @@ class NetworkManager(object):
         for net in nw_group.networks:
             logger.debug("Deleting old network with id=%s, cidr=%s",
                          net.id, net.cidr)
+            ips = self.db.query(IPAddr).filter(
+                IPAddr.network == net.id
+            ).filter_by(admin=False)
+            map(self.db.delete, ips)
             self.db.delete(net)
+            self.db.commit()
         # Dmitry's hack for clearing VLANs without networks
         self.clear_vlans()
         self.db.commit()
