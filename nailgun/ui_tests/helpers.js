@@ -35,21 +35,20 @@ casper.createCluster = function(options) {
 
 casper.createNode = function(options) {
     options.meta = {
-        "block_device": {
-            "ram0": {
-                "removable": "0",
-                "size": "1228800"
+        "disks": [
+            {
+                "model": "TOSHIBA MK3259GS",
+                "disk": "blablabla1",
+                "name": "sda",
+                "size": 100000022933
             },
-            "sda": {
-                "vendor": "ATA",
-                "removable": "0",
-                "rev": "0.14",
-                "state": "running",
-                "timeout": "30",
-                "model": "QEMU HARDDISK",
-                "size": "16777216"
+            {
+                "model": "TOSHIBA",
+                "disk": "blablabla2",
+                "name": "vda",
+                "size": 80000022933
             }
-        },
+        ],
         "interfaces": [
             {
               "mac": "52:54:00:96:81:6E",
@@ -88,56 +87,23 @@ casper.createNode = function(options) {
             "total": 1
         },
         "memory": {
-            "anon_pages": "16420kB",
-            "vmalloc_total": "34359738367kB",
-            "bounce": "0kB",
-            "active": "28576kB",
-            "inactive": "20460kB",
-            "nfs_unstable": "0kB",
-            "vmalloc_used": "7160kB",
-            "total": "1019548kB",
-            "slab": "16260kB",
-            "buffers": "4888kB",
-            "slab_unreclaim": "7180kB",
-            "swap": {
-                "cached": "0kB",
-                "total": "0kB",
-                "free": "0kB"
-            },
-            "dirty": "84kB",
-            "writeback": "0kB",
-            "vmalloc_chunk": "34359729156kB",
-            "free": "322008kB",
-            "page_tables": "1328kB",
-            "cached": "27728kB",
-            "commit_limit": "509772kB",
-            "committed_as": "54864kB",
-            "mapped": "5380kB",
-            "slab_reclaimable": "9080kB"
-        },
-        "serial": "Unknown",
-        "networks": {
-            "floating": {
-                "access": "public",
-                "device": "eth0",
-                "netmask": "255.255.255.0",
-                "vlan_id": 300,
-                "address": "172.18.0.2"
-            },
-            "management": {
-                "access": "private172",
-                "device": "eth0",
-                "netmask": "255.255.255.0",
-                "vlan_id": 100,
-                "address": "10.0.0.2"
-            },
-            "storage": {
-                "access": "private192",
-                "device": "eth0",
-                "netmask": "255.255.255.0",
-                "vlan_id": 200,
-                "address": "10.0.1.2"
-            }
+            "slots": 6,
+            "total": 4294967296,
+            "maximum_capacity": 8589934592,
+            "devices": [
+                {
+                    "size": 1073741824
+                },
+                {
+                    "size": 1073741824
+                },
+                {
+                    "size": 1073741824
+                },
+                {
+                    "size": 1073741824
+                }
+            ]
         }
     };
     return this.thenOpen(baseUrl + 'api/nodes', {

@@ -634,7 +634,8 @@ function(models, commonViews, dialogViews, nodesTabSummaryTemplate, editNodesScr
             _.each(_.filter(this.screen.disks.models, _.bind(function(disk) {return disk.id != this.disk.id && disk.get('type') == 'disk';}, this)), function(disk) {
                 groupSize += _.find(disk.get('volumes'), {vg: group}).size;
             });
-            this.$('.disk-visual .' + group + ' .close-btn').toggle(groupSize >= this.minimalSizes[group] && !this.$('.disk-edit-volume-group-form').hasClass('hidden'));
+            var toggle = groupSize >= this.minimalSizes[group] && !this.$('.disk-edit-volume-group-form').hasClass('hidden');
+            this.$('.disk-visual .' + group + ' .close-btn').toggle(toggle).toggleClass('hide', !toggle);
         },
         setVolumes: function(group, size, allUnallocated) {
             if (_.isUndefined(size)) {
