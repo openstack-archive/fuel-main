@@ -380,9 +380,8 @@ class NetworkGroup(Base, BasicValidator):
                 IPAddr.network == net.id
             ).filter_by(admin=False)
             map(orm().delete, ips)
-            orm().commit()
             orm().delete(net)
-        orm().commit()
+            orm().commit()
         self.networks = []
 
         for n in xrange(self.amount):
