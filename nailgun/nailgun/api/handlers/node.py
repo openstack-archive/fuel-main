@@ -8,6 +8,7 @@ import web
 from nailgun.notifier import notifier
 from nailgun.logger import logger
 from nailgun.api.models import Node
+from nailgun.api.validators import NodeValidator
 from nailgun.api.handlers.base import JSONHandler, content_json
 
 
@@ -17,6 +18,7 @@ class NodeHandler(JSONHandler):
               'pending_addition', 'pending_deletion', 'os_platform',
               'error_type', 'online', 'cluster')
     model = Node
+    validator = NodeValidator
 
     @content_json
     def GET(self, node_id):
@@ -26,7 +28,7 @@ class NodeHandler(JSONHandler):
     @content_json
     def PUT(self, node_id):
         node = self.get_object_or_404(Node, node_id)
-        data = Node.validate_update(web.data())
+        data = self.validator.validate_update(web.data())
         for key, value in data.iteritems():
             setattr(node, key, value)
         self.db.commit()
@@ -44,6 +46,8 @@ class NodeHandler(JSONHandler):
 
 class NodeCollectionHandler(JSONHandler):
 
+    validator = NodeValidator
+
     @content_json
     def GET(self):
         user_data = web.input(cluster_id=None)
@@ -59,7 +63,7 @@ class NodeCollectionHandler(JSONHandler):
 
     @content_json
     def POST(self):
-        data = Node.validate(web.data())
+        data = self.validator.validate(web.data())
         node = Node()
         for key, value in data.iteritems():
             setattr(node, key, value)
@@ -84,7 +88,7 @@ class NodeCollectionHandler(JSONHandler):
 
     @content_json
     def PUT(self):
-        data = Node.validate_collection_update(web.data())
+        data = self.validator.validate_collection_update(web.data())
         q = self.db.query(Node)
         nodes_updated = []
         for nd in data:
@@ -92,7 +96,7 @@ class NodeCollectionHandler(JSONHandler):
             node = None
             if "mac" in nd:
                 node = q.filter_by(mac=nd["mac"]).first() \
-                    or Node.validate_existent_node_mac(nd)
+                    or self.validator.validate_existent_node_mac(nd)
             else:
                 node = q.get(nd["id"])
             for key, value in nd.iteritems():

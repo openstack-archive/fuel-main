@@ -5,6 +5,7 @@ import json
 import web
 
 from nailgun.api.models import Release
+from nailgun.api.validators import ReleaseValidator
 from nailgun.api.handlers.base import JSONHandler, content_json
 
 
@@ -16,6 +17,7 @@ class ReleaseHandler(JSONHandler):
         "description"
     )
     model = Release
+    validator = ReleaseValidator
 
     @content_json
     def GET(self, release_id):
@@ -25,7 +27,7 @@ class ReleaseHandler(JSONHandler):
     @content_json
     def PUT(self, release_id):
         release = self.get_object_or_404(Release, release_id)
-        data = Release.validate_json(web.data())
+        data = self.validator.validate_json(web.data())
         for key, value in data.iteritems():
             setattr(release, key, value)
         self.db.commit()
@@ -43,6 +45,8 @@ class ReleaseHandler(JSONHandler):
 
 class ReleaseCollectionHandler(JSONHandler):
 
+    validator = ReleaseValidator
+
     @content_json
     def GET(self):
         return map(
@@ -52,7 +56,7 @@ class ReleaseCollectionHandler(JSONHandler):
 
     @content_json
     def POST(self):
-        data = Release.validate(web.data())
+        data = self.validator.validate(web.data())
         release = Release()
         for key, value in data.iteritems():
             setattr(release, key, value)

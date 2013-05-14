@@ -17,6 +17,10 @@ from nailgun.api.models import Release
 from nailgun.api.models import Attributes
 from nailgun.api.models import Task
 
+from nailgun.api.validators import ClusterValidator
+from nailgun.api.validators import NetworkGroupValidator
+from nailgun.api.validators import AttributesValidator
+
 from nailgun.api.handlers.base import JSONHandler, content_json
 from nailgun.api.handlers.node import NodeHandler
 from nailgun.api.handlers.tasks import TaskHandler
@@ -41,6 +45,7 @@ class ClusterHandler(JSONHandler):
         ("release", "*")
     )
     model = Cluster
+    validator = ClusterValidator
 
     @classmethod
     def render(cls, instance, fields=None):
@@ -61,7 +66,7 @@ class ClusterHandler(JSONHandler):
     @content_json
     def PUT(self, cluster_id):
         cluster = self.get_object_or_404(Cluster, cluster_id)
-        data = Cluster.validate(web.data())
+        data = self.validator.validate(web.data())
         for key, value in data.iteritems():
             if key == "nodes":
                 map(cluster.nodes.remove, cluster.nodes)
@@ -95,6 +100,8 @@ class ClusterHandler(JSONHandler):
 
 class ClusterCollectionHandler(JSONHandler):
 
+    validator = ClusterValidator
+
     @content_json
     def GET(self):
         return map(
@@ -104,7 +111,7 @@ class ClusterCollectionHandler(JSONHandler):
 
     @content_json
     def POST(self):
-        data = Cluster.validate(web.data())
+        data = self.validator.validate(web.data())
 
         cluster = Cluster()
         cluster.release = self.db.query(Release).get(data["release"])
@@ -229,10 +236,12 @@ class ClusterVerifyNetworksHandler(JSONHandler):
         "name",
     )
 
+    validator = NetworkGroupValidator
+
     @content_json
     def PUT(self, cluster_id):
         cluster = self.get_object_or_404(Cluster, cluster_id)
-        nets = NetworkGroup.validate_collection_update(web.data())
+        nets = self.validator.validate_collection_update(web.data())
         vlan_ids = NetworkGroup.generate_vlan_ids_list(nets)
         task_manager = VerifyNetworksTaskManager(cluster_id=cluster.id)
         task = task_manager.execute(nets, vlan_ids)
@@ -245,10 +254,12 @@ class ClusterSaveNetworksHandler(JSONHandler):
         "name",
     )
 
+    validator = NetworkGroupValidator
+
     @content_json
     def PUT(self, cluster_id):
         cluster = self.get_object_or_404(Cluster, cluster_id)
-        new_nets = NetworkGroup.validate_collection_update(web.data())
+        new_nets = self.validator.validate_collection_update(web.data())
         task_manager = CheckNetworksTaskManager(cluster_id=cluster.id)
         task = task_manager.execute(new_nets)
         if task.status != 'error':
@@ -287,6 +298,8 @@ class ClusterAttributesHandler(JSONHandler):
         "editable",
     )
 
+    validator = AttributesValidator
+
     @content_json
     def GET(self, cluster_id):
         cluster = self.get_object_or_404(Cluster, cluster_id)
@@ -303,7 +316,7 @@ class ClusterAttributesHandler(JSONHandler):
         if not cluster.attributes:
             raise web.internalerror("No attributes found!")
 
-        data = Attributes.validate(web.data())
+        data = self.validator.validate(web.data())
 
         for key, value in data.iteritems():
             setattr(cluster.attributes, key, value)

@@ -6,6 +6,7 @@ import logging
 import web
 
 from nailgun.api.models import Notification
+from nailgun.api.validators import NotificationValidator
 from nailgun.api.handlers.base import JSONHandler, content_json
 
 
@@ -20,6 +21,7 @@ class NotificationHandler(JSONHandler):
         "task_id"
     )
     model = Notification
+    validator = NotificationValidator
 
     @classmethod
     def render(cls, instance, fields=None):
@@ -44,7 +46,7 @@ class NotificationHandler(JSONHandler):
     @content_json
     def PUT(self, notification_id):
         notification = self.get_object_or_404(Notification, notification_id)
-        data = Notification.validate_update(web.data())
+        data = self.validator.validate_update(web.data())
         for key, value in data.iteritems():
             setattr(notification, key, value)
         self.db.add(notification)
@@ -53,6 +55,8 @@ class NotificationHandler(JSONHandler):
 
 
 class NotificationCollectionHandler(JSONHandler):
+
+    validator = NotificationValidator
 
     @content_json
     def GET(self):
@@ -73,7 +77,7 @@ class NotificationCollectionHandler(JSONHandler):
 
     @content_json
     def PUT(self):
-        data = Notification.validate_collection_update(web.data())
+        data = self.validator.validate_collection_update(web.data())
         q = self.db.query(Notification)
         notifications_updated = []
         for nd in data:

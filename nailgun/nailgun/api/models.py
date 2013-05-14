@@ -21,12 +21,11 @@ from nailgun.logger import logger
 from nailgun.db import orm
 from nailgun.api.fields import JSON
 from nailgun.settings import settings
-from nailgun.api.validators import BasicValidator
 
 Base = declarative_base()
 
 
-class Release(Base, BasicValidator):
+class Release(Base):
     __tablename__ = 'releases'
     __table_args__ = (
         UniqueConstraint('name', 'version'),
@@ -39,47 +38,8 @@ class Release(Base, BasicValidator):
     attributes_metadata = Column(JSON, default={})
     clusters = relationship("Cluster", backref="release")
 
-    @classmethod
-    def validate(cls, data):
-        d = cls.validate_json(data)
-        if not "name" in d:
-            raise web.webapi.badrequest(
-                message="No release name specified"
-            )
-        if not "version" in d:
-            raise web.webapi.badrequest(
-                message="No release version specified"
-            )
-        if orm().query(Release).filter_by(
-            name=d["name"],
-            version=d["version"]
-        ).first():
-            raise web.webapi.conflict
-        if "networks_metadata" in d:
-            for network in d["networks_metadata"]:
-                if not "name" in network or not "access" in network:
-                    raise web.webapi.badrequest(
-                        message="Invalid network data: %s" % str(network)
-                    )
-                if network["access"] not in settings.NETWORK_POOLS:
-                    raise web.webapi.badrequest(
-                        message="Invalid access mode for network"
-                    )
-        else:
-            d["networks_metadata"] = []
-        if not "attributes_metadata" in d:
-            d["attributes_metadata"] = {}
-        else:
-            try:
-                Attributes.validate_fixture(d["attributes_metadata"])
-            except:
-                raise web.webapi.badrequest(
-                    message="Invalid logical structure of attributes metadata"
-                )
-        return d
 
-
-class ClusterChanges(Base, BasicValidator):
+class ClusterChanges(Base):
     __tablename__ = 'cluster_changes'
     POSSIBLE_CHANGES = (
         'networks',
@@ -93,7 +53,7 @@ class ClusterChanges(Base, BasicValidator):
     )
 
 
-class Cluster(Base, BasicValidator):
+class Cluster(Base):
     __tablename__ = 'clusters'
     TYPES = ('compute', 'storage', 'both')
     MODES = ('singlenode', 'multinode', 'ha')
@@ -138,22 +98,6 @@ class Cluster(Base, BasicValidator):
     network_groups = relationship("NetworkGroup", backref="cluster",
                                   cascade="delete")
 
-    @classmethod
-    def validate(cls, data):
-        d = cls.validate_json(data)
-        if d.get("name"):
-            if orm().query(Cluster).filter_by(
-                name=d["name"]
-            ).first():
-                c = web.webapi.conflict
-                c.message = "Environment with this name already exists"
-                raise c()
-        if d.get("release"):
-            release = orm().query(Release).get(d.get("release"))
-            if not release:
-                raise web.webapi.badrequest(message="Invalid release id")
-        return d
-
     def add_pending_changes(self, changes_type):
         ex_chs = orm().query(ClusterChanges).filter_by(
             cluster=self,
@@ -177,7 +121,7 @@ class Cluster(Base, BasicValidator):
         orm().commit()
 
 
-class Node(Base, BasicValidator):
+class Node(Base):
     __tablename__ = 'nodes'
     NODE_STATUSES = (
         'ready',
@@ -244,77 +188,6 @@ class Node(Base, BasicValidator):
     def needs_redeletion(self):
         return self.status == 'error' and self.error_type == 'deletion'
 
-    @classmethod
-    def validate(cls, data):
-        d = cls.validate_json(data)
-        if not "mac" in d:
-            raise web.webapi.badrequest(
-                message="No mac address specified"
-            )
-        else:
-            q = orm().query(Node)
-            if q.filter(Node.mac == d["mac"]).first():
-                raise web.webapi.conflict()
-            if cls.validate_existent_node_mac(d):
-                raise web.webapi.conflict()
-        if "id" in d:
-            raise web.webapi.badrequest(
-                message="Manual ID setting is prohibited"
-            )
-        return d
-
-    @classmethod
-    def validate_existent_node_mac(cls, data):
-        if 'meta' in data and 'interfaces' in data['meta']:
-            existent_node = orm().query(Node).filter(Node.mac.in_(
-                [n['mac'] for n in data['meta']['interfaces']])).first()
-            return existent_node
-
-    @classmethod
-    def validate_update(cls, data):
-        d = cls.validate_json(data)
-        if "status" in d and d["status"] not in cls.NODE_STATUSES:
-            raise web.webapi.badrequest(
-                message="Invalid status for node"
-            )
-        if "id" in d:
-            raise web.webapi.badrequest(
-                message="Manual ID setting is prohibited"
-            )
-        if not d:
-            raise web.webapi.badrequest(
-                message="No valid data received"
-            )
-        return d
-
-    @classmethod
-    def validate_collection_update(cls, data):
-        d = cls.validate_json(data)
-        if not isinstance(d, list):
-            raise web.badrequest(
-                "Invalid json list"
-            )
-
-        q = orm().query(Node)
-        for nd in d:
-            if not "mac" in nd and not "id" in nd:
-                raise web.badrequest(
-                    "MAC or ID is not specified"
-                )
-            else:
-                if "mac" in nd:
-                    existent_node = q.filter_by(mac=nd["mac"]).first() \
-                        or cls.validate_existent_node_mac(nd)
-                    if not existent_node:
-                        raise web.badrequest(
-                            "Invalid MAC specified"
-                        )
-                if "id" in nd and not q.get(nd["id"]):
-                    raise web.badrequest(
-                        "Invalid ID specified"
-                    )
-        return d
-
 
 class IPAddr(Base):
     __tablename__ = 'ip_addrs'
@@ -327,14 +200,14 @@ class IPAddr(Base):
     admin = Column(Boolean, nullable=False, default=False)
 
 
-class Vlan(Base, BasicValidator):
+class Vlan(Base):
     __tablename__ = 'vlan'
     id = Column(Integer, primary_key=True)
     network = relationship("Network",
                            backref=backref("vlan", cascade="delete"))
 
 
-class Network(Base, BasicValidator):
+class Network(Base):
     __tablename__ = 'networks'
     id = Column(Integer, primary_key=True)
     release = Column(Integer, ForeignKey('releases.id'), nullable=False)
@@ -350,7 +223,7 @@ class Network(Base, BasicValidator):
         backref="networks")
 
 
-class NetworkGroup(Base, BasicValidator):
+class NetworkGroup(Base):
     __tablename__ = 'network_groups'
     id = Column(Integer, primary_key=True)
     name = Column(Unicode(100), nullable=False)
@@ -417,24 +290,6 @@ class NetworkGroup(Base, BasicValidator):
                 current_vlan += 1
         return vlans
 
-    @classmethod
-    def validate_collection_update(cls, data):
-        d = cls.validate_json(data)
-        if not isinstance(d, list):
-            raise web.webapi.badrequest(
-                message="It's expected to receive array, not a single object"
-            )
-        for i in d:
-            if not 'id' in i:
-                raise web.webapi.badrequest(
-                    message="No 'id' param for '{0}'".format(i)
-                )
-        if not d:
-            raise web.webapi.badrequest(
-                message="No valid data received"
-            )
-        return d
-
 
 class AttributesGenerators(object):
     @classmethod
@@ -457,7 +312,7 @@ class AttributesGenerators(object):
         return str(arg)
 
 
-class Attributes(Base, BasicValidator):
+class Attributes(Base):
     __tablename__ = 'attributes'
     id = Column(Integer, primary_key=True)
     cluster_id = Column(Integer, ForeignKey('clusters.id'))
@@ -489,31 +344,6 @@ class Attributes(Base, BasicValidator):
                     new_dict[i] = cls.traverse(val)
         return new_dict
 
-    @classmethod
-    def validate_fixture(cls, data):
-        """
-        Here we just want to be sure that data is logically valid.
-        We try to generate "generated" parameters. If there will not
-        be any error during generating then we assume data is
-        logically valid.
-        """
-        d = cls.validate_json(data)
-        if "generated" in d:
-            cls.traverse(d["generated"])
-
-    @classmethod
-    def validate(cls, data):
-        d = cls.validate_json(data)
-        if "generated" in d:
-            raise web.webapi.badrequest(
-                message="It is not allowed to update generated attributes"
-            )
-        if "editable" in d and not isinstance(d["editable"], dict):
-            raise web.webapi.badrequest(
-                message="Editable attributes should be a dictionary"
-            )
-        return d
-
     def merged_attrs(self):
         return self._dict_merge(self.generated, self.editable)
 
@@ -542,7 +372,7 @@ class Attributes(Base, BasicValidator):
         return result
 
 
-class Task(Base, BasicValidator):
+class Task(Base):
     __tablename__ = 'tasks'
     TASK_STATUSES = (
         'ready',
@@ -608,7 +438,7 @@ class Task(Base, BasicValidator):
         return task
 
 
-class Notification(Base, BasicValidator):
+class Notification(Base):
     __tablename__ = 'notifications'
 
     NOTIFICATION_STATUSES = (
@@ -640,46 +470,3 @@ class Notification(Base, BasicValidator):
         default='unread'
     )
     datetime = Column(DateTime, nullable=False)
-
-    @classmethod
-    def validate_update(cls, data):
-
-        valid = {}
-        d = cls.validate_json(data)
-
-        status = d.get("status", None)
-        if status in cls.NOTIFICATION_STATUSES:
-            valid["status"] = status
-        else:
-            raise web.webapi.badrequest("Bad status")
-
-        return valid
-
-    @classmethod
-    def validate_collection_update(cls, data):
-
-        d = cls.validate_json(data)
-        if not isinstance(d, list):
-            raise web.badrequest(
-                "Invalid json list"
-            )
-
-        q = orm().query(Notification)
-
-        valid_d = []
-        for nd in d:
-            valid_nd = {}
-            if "id" not in nd:
-                raise web.badrequest("ID is not set correctly")
-
-            if "status" not in nd:
-                raise web.badrequest("ID is not set correctly")
-
-            if not q.get(nd["id"]):
-                raise web.badrequest("Invalid ID specified")
-
-            valid_nd["id"] = nd["id"]
-            valid_nd["status"] = nd["status"]
-            valid_d.append(valid_nd)
-
-        return valid_d
