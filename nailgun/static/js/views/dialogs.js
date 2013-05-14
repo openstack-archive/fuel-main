@@ -320,7 +320,7 @@ function(utils, models, simpleMessageTemplate, createClusterDialogTemplate, chan
             app.navigate('#cluster/' + this.clusterId + '/nodes/disks/' + this.node.id, {trigger: true});
         },
         goToInterfacesConfiguration: function() {
-            app.navigate('#cluster/' + this.clusterId + '/nodes/interfaces/' + this.node.id, {trigger: true, replace: true});
+            app.navigate('#cluster/' + this.clusterId + '/nodes/interfaces/' + this.node.id, {trigger: true});
         },
         render: function() {
             this.constructor.__super__.render.call(this, _.extend({
@@ -382,7 +382,7 @@ function(utils, models, simpleMessageTemplate, createClusterDialogTemplate, chan
         events: {
             'click .change-interfaces-btn:not(.disabled)': 'applyInterfaces',
             'click .force-apply-btn': 'forceApply',
-            'click .net-topology': 'selectTypology',
+            'click .net-topology': 'selectTopology'
         },
         applyInterfaces: function() {
             this.$('.change-interfaces-btn').addClass('disabled');
@@ -394,14 +394,14 @@ function(utils, models, simpleMessageTemplate, createClusterDialogTemplate, chan
                  .fail(_.bind(this.displayErrorMessage, this));
         },
         forceApply: function(){
-            Backbone.sync('update', this.interfaces, {url: _.result(this.node, 'url') + '/attributes/interfaces?force=true'})
+            Backbone.sync('update', this.interfaces, {url: _.result(this.node, 'url') + '/attributes/interfaces?force=true'});
         },
-        selectTypology: function() {
+        selectTopology: function() {
             this.$('.change-interfaces-btn').removeAttr("disabled");
         },
         render: function() {
             this.constructor.__super__.render.call(this, {
-                topologies: this.model,
+                topologies: this.model
             });
             return this;
         }

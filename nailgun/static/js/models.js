@@ -277,11 +277,9 @@ define(function() {
             // NOTE: TBD
             return _.isEmpty(errors) ? null : errors;
         },
-        generateId: function() {
-            return this.get('name').replace(':','');
-        },
-        sortedNetworks: function() {
-            return _.sortBy(this.get('networks'), 'name');
+        parse: function(response) {
+            response.networks = new models.InterfaceNetworks(response.networks);
+            return response;
         }
     });
 
@@ -290,7 +288,19 @@ define(function() {
         model: models.Interface,
         url: '/api/nodes/',
         comparator: function(ifc) {
-            return ifc.name;
+            return ifc.get('name');
+        },
+    });
+
+    models.InterfaceNetwork = Backbone.Model.extend({
+        constructorName: 'InterfaceNetwork'
+    });
+
+    models.InterfaceNetworks = Backbone.Collection.extend({
+        constructorName: 'InterfaceNetworks',
+        model: models.InterfaceNetwork,
+        comparator: function(network) {
+            return network.get('name');
         }
     });
 

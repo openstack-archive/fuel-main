@@ -2,13 +2,17 @@
 <div class="physical-network-box">
   <div class="network-box-name"><%- ifc.get('name') %></div>
   <div class="network-box-item">
-    
+
     <div class="network-info-box online">
       <div>MAC: <%- ifc.get('mac') %></div>
       <div>Speed: <%- ifc.get('speed') %>gb</div>
     </div>
 
-    <div id="<%- ifc.generateId() %>" class="logical-network-box connectedSortable">
+    <div class="logical-network-box">
+      <% ifc.get('networks').each(function(network) { %>
+        <div class="logical-network-item" data-name="<%- network.get('name') %>"><%- network.get('name') %></div>
+      <% }) %>
+      <div class="network-help-message hide">Use drag-and-drop for placing logical interfaces here</div>
     </div>
   </div>
 </div>

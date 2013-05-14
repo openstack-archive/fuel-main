@@ -12,12 +12,11 @@ define(
     'text!templates/cluster/edit_node_disks.html',
     'text!templates/cluster/node_disk.html',
     'text!templates/cluster/edit_node_interfaces.html',
-    'text!templates/cluster/node_interfaces.html',
-    'text!templates/cluster/node_interface_networks.html'
+    'text!templates/cluster/node_interface.html'
 ],
-function(models, commonViews, dialogViews, nodesTabSummaryTemplate, editNodesScreenTemplate, nodeListTemplate, nodeTemplate, nodeStatusTemplate, editNodeDisksScreenTemplate, nodeDisksTemplate, editNodeInterfacesScreenTemplate, nodeInterfacesTemplate, nodeInterfaceNetworksTemplate) {
+function(models, commonViews, dialogViews, nodesTabSummaryTemplate, editNodesScreenTemplate, nodeListTemplate, nodeTemplate, nodeStatusTemplate, editNodeDisksScreenTemplate, nodeDisksTemplate, editNodeInterfacesScreenTemplate, nodeInterfaceTemplate) {
     'use strict';
-    var NodesTab, Screen, NodesByRolesScreen, EditNodesScreen, AddNodesScreen, DeleteNodesScreen, NodeList, Node, EditNodeScreen, EditNodeDisksScreen, NodeDisk, NodeInterfaceNetworks, EditNodeInterfacesScreen, NodeInterface;
+    var NodesTab, Screen, NodesByRolesScreen, EditNodesScreen, AddNodesScreen, DeleteNodesScreen, NodeList, Node, EditNodeScreen, EditNodeDisksScreen, NodeDisk, EditNodeInterfacesScreen, NodeInterface;
 
     NodesTab = commonViews.Tab.extend({
         screen: null,
@@ -781,11 +780,6 @@ function(models, commonViews, dialogViews, nodesTabSummaryTemplate, editNodesScr
         }
     });
 
-    NodeInterfaceNetworks = EditNodeScreen.extend({
-        constructorName: 'NodeInterfaceNetworks',
-        template: _.template(nodeInterfaceNetworksTemplate)
-    });
-
     EditNodeInterfacesScreen = EditNodeScreen.extend({
         className: 'edit-node-networks-screen',
         constructorName: 'EditInterfacesScreen',
@@ -793,7 +787,7 @@ function(models, commonViews, dialogViews, nodesTabSummaryTemplate, editNodesScr
         events: {
             /*'click .btn-defaults': 'loadDefaults',*/
             'click .btn-revert-changes': 'returnToNodesTab',
-            'click .btn-apply:not(:disabled)': 'applyChanges',
+            'click .btn-apply:not(:disabled)': 'applyChanges'
         },
         disableControls: function() {
             this.$('.btn, input').attr('disabled', true);
@@ -812,33 +806,19 @@ function(models, commonViews, dialogViews, nodesTabSummaryTemplate, editNodesScr
                     this.checkForChanges();
                 }, this));*/
         },
-        removeNetwork: function(physical, logical){
-            var ethIfc = this.interfaces.findWhere({name: physical});
-            var ifType = _.first(_.where(ethIfc.get("networks"), {"name":logical}));
-            ethIfc.set("networks", _.reject(ethIfc.get("networks"), {"name":logical}));
-            return ifType;
-        },
-        addNetwork: function(ethIfc, logical){
-            if (_.isUndefined(ethIfc.get("networks"))){
-                ethIfc.set("networks", []);
-            }
-            ethIfc.get("networks").push(logical);
-        },
         returnToNodesTab: function() {
-            app.navigate('#cluster/' + this.model.id + '/nodes', {trigger: true, replace: true});
+            app.navigate('#cluster/' + this.model.id + '/nodes', {trigger: true});
         },
         applyChanges: function() {
-             Backbone.sync('update', this.interfaces, {url: _.result(this.node, 'url') + '/attributes/interfaces'})
-                 .done(_.bind(function(){
-                     this.returnToNodesTab();
-                 }, this))
-                 .fail(_.bind(function() {
-                     this.$('.btn, input').attr('disabled', false);
-                     var dialog = new dialogViews.SimpleMessage({error: true,
-                                                                 title: 'Node network interfaces configuration error'});
-                     app.page.registerSubView(dialog);
-                     dialog.render();
-                 }, this));
+            Backbone.sync('update', this.interfaces, {url: _.result(this.node, 'url') + '/attributes/interfaces'})
+                .done(_.bind(this.returnToNodesTab, this))
+                .fail(_.bind(function() {
+                    this.$('.btn, input').attr('disabled', false);
+                    var dialog = new dialogViews.SimpleMessage({error: true,
+                                                                title: 'Node network interfaces configuration error'});
+                    app.page.registerSubView(dialog);
+                    dialog.render();
+                }, this));
         },
         initialize: function(options) {
             _.defaults(this, options);
@@ -847,9 +827,8 @@ function(models, commonViews, dialogViews, nodesTabSummaryTemplate, editNodesScr
                 this.interfaces = new models.Interfaces();
                 this.interfaces.fetch({
                     url: _.result(this.node, 'url') + '/attributes/interfaces'
-                }).done(_.bind(function(){
-                                this.renderInterfaces();
-                }, this))
+                })
+                .done(_.bind(this.renderInterfaces, this))
                 .fail(_.bind(this.returnToNodesTab, this));
             } else {
                 this.returnToNodesTab();
@@ -858,44 +837,11 @@ function(models, commonViews, dialogViews, nodesTabSummaryTemplate, editNodesScr
         renderInterfaces: function() {
             this.tearDownRegisteredSubViews();
             this.$('.node-networks').html('');
-            _.each(this.interfaces.models, _.bind(function(ifc) {
-                var nodeInterface = new NodeInterface({
-                    ifc: ifc,
-                    screen: this
-                });
+            this.interfaces.each(_.bind(function(ifc) {
+                var nodeInterface = new NodeInterface({model: ifc, screen: this});
                 this.registerSubView(nodeInterface);
                 this.$('.node-networks').append(nodeInterface.render().el);
-                this.renderNetworks(ifc);
-                var ifNetwork;
-                this.$( ".logical-network-box" ).sortable({
-                    connectWith: ".connectedSortable",
-                    cursor: "move",
-                    receive: _.bind(function(event, ui){
-                        var obj = $(event.target);
-                        obj.children(".network-help-message").addClass("hide");
-                        var ifcName = obj.parent().parent().children(".network-box-name").html();
-                        var physicalIfc = _.find(this.interfaces.models,
-                                function(ifc){ return ifc.get("name")==ifcName });
-                        this.addNetwork(physicalIfc, ifNetwork);
-                        this.renderNetworks(physicalIfc);
-                    }, this),
-                    remove: _.bind(function(event, ui){
-                        var obj = $(event.target);
-                        var ifcName = obj.parent().parent().children(".network-box-name").html();
-                        ifNetwork = this.removeNetwork(ifcName, ui.item.html());
-                        var children = obj.children(".network-help-message");
-                        if (obj.children().length == 1){
-                            children.removeClass("hide");
-                        }
-                    },this)
-                }).disableSelection();
-
             }, this));
-        },
-        renderNetworks: function(ifc){
-            var html = _.template(nodeInterfaceNetworksTemplate,{networks: ifc.sortedNetworks()});
-            var ifcId = ifc.generateId();
-            this.$("#"+ifcId).html(html);
         },
         render: function() {
             this.$el.html(this.template({node: this.node}));
@@ -905,22 +851,39 @@ function(models, commonViews, dialogViews, nodesTabSummaryTemplate, editNodesScr
     });
 
     NodeInterface = Backbone.View.extend({
-        template: _.template(nodeInterfacesTemplate),
-        visible: false,
+        template: _.template(nodeInterfaceTemplate),
         events: {
+            'sortremove .logical-network-box': 'dragStart',
+            'sortreceive .logical-network-box': 'dragStop'
+        },
+        dragStart: function(event, ui) {
+            var network = this.model.get('networks').findWhere({name: $(ui.item).data('name')});
+            this.model.get('networks').remove(network);
+            this.screen.draggedNetwork = network;
+        },
+        dragStop: function(event, ui) {
+            var network = this.screen.draggedNetwork;
+            this.model.get('networks').add(network);
+            this.screen.draggedNetwork = null;
+        },
+        checkIfEmpty: function() {
+            this.$('.network-help-message').toggleClass('hide', !!this.model.get('networks').length)
         },
         initialize: function(options) {
             _.defaults(this, options);
+            this.model.get('networks').on('add remove', this.checkIfEmpty, this);
         },
         render: function() {
-            this.$el.html(this.template({
-                ifc: this.ifc,
-            }));
+            this.$el.html(this.template({ifc: this.model}));
+            this.checkIfEmpty();
+            this.$('.logical-network-box').sortable({
+                connectWith: '.logical-network-box',
+                containment: this.screen.$('.node-networks'),
+                cursor: 'move',
+            }).disableSelection();
             return this;
         }
     });
 
     return NodesTab;
 });
-
-

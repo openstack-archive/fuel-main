@@ -3372,6 +3372,7 @@ hr.slim {
   display: block;
   float: left;
   width: 600px;
+  min-height: 68px;
   margin-bottom: 10px;
   text-align: center;
 }
