@@ -28,7 +28,6 @@ class TestTaskManagers(BaseHandlers):
             cluster_kwargs={},
             nodes_kwargs=[
                 {"pending_addition": True},
-                {"status": "ready", "pending_addition": True},
                 {"pending_deletion": True},
             ]
         )
@@ -37,18 +36,7 @@ class TestTaskManagers(BaseHandlers):
         self.assertIn(supertask.status, ('running', 'ready'))
         self.assertEquals(len(supertask.subtasks), 2)
 
-        timer = time.time()
-        timeout = 10
-        while True:
-            self.env.refresh_nodes()
-            if self.env.nodes[0].status in \
-                    ('provisioning', 'provisioned') and \
-                    self.env.nodes[1].status == 'provisioned':
-                break
-            if time.time() - timer > timeout:
-                raise Exception("Something wrong with the statuses")
-            time.sleep(1)
-
+        self.env.wait_for_nodes_status([self.env.nodes[0]], 'provisioning')
         self.env.wait_ready(
             supertask,
             60,

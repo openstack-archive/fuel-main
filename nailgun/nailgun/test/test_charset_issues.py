@@ -29,8 +29,7 @@ class TestCharsetIssues(BaseHandlers):
             cluster_kwargs={"name": u"Тестовый кластер"},
             nodes_kwargs=[
                 {"name": u"Контроллер", "pending_addition": True},
-                {"name": u"Компьют", "status": "ready",
-                 "pending_addition": True},
+                {"name": u"Компьют", "pending_addition": True},
                 {"pending_deletion": True},
             ]
         )
@@ -39,18 +38,7 @@ class TestCharsetIssues(BaseHandlers):
         self.assertIn(supertask.status, ('running', 'ready'))
         self.assertEquals(len(supertask.subtasks), 2)
 
-        timer = time.time()
-        timeout = 10
-        while True:
-            self.env.refresh_nodes()
-            if self.env.nodes[0].status in \
-                    ('provisioning', 'provisioned') and \
-                    self.env.nodes[1].status == 'provisioned':
-                break
-            if time.time() - timer > timeout:
-                raise Exception("Something wrong with the statuses")
-            time.sleep(1)
-
+        self.env.wait_for_nodes_status(self.env.nodes, 'provisioning')
         self.env.wait_ready(supertask, 60)
 
     @fake_tasks()

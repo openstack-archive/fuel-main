@@ -62,10 +62,10 @@ class DeploymentTask(object):
 #   Run provisioning first and then deployment for nodes which are in
 #   discover system type.
 #   Q: Should we care about node status (provisioning, error, deploying)?
-#   A: offline-when node doesn't respond (agent doesn't run, not implemented);
-#              let's say user should remove this node from cluster before
-#              deployment.
-#      ready - target OS is loaded and node is Ok, we can just redeploy
+#   A: offline - when node doesn't respond (agent doesn't run, not implemented);
+#                let's say user should remove this node from cluster before
+#                deployment.
+#      ready - target OS is loaded and node is Ok, we do nothing
 #      discover - in discovery mode, provisioning is required
 #      provisioning - at the time of task execution there should not be such
 #                     case. If there is - previous provisioning has failed.
@@ -91,7 +91,8 @@ class DeploymentTask(object):
         netmanager = NetworkManager()
         nodes = orm().query(Node).filter_by(
             cluster_id=task.cluster.id,
-            pending_deletion=False).order_by(Node.id)
+            pending_deletion=False).\
+            filter(Node.status!='ready').order_by(Node.id)
 
         for node in nodes:
             nd_name = TaskHelper.slave_name_by_id(node.id)

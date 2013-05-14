@@ -125,12 +125,10 @@ class TestHandlers(BaseHandlers):
                 cluster_id=cluster['id'],
                 **x),
             [
-                {"status": "ready"},
                 {"pending_addition": True},
                 {"pending_deletion": True, "status": "error"},
             ]
         )
-
         nailgun.task.task.Cobbler = Mock()
         self.env.launch_deployment()
 
@@ -146,8 +144,9 @@ class TestHandlers(BaseHandlers):
         n_rpc = nailgun.task.task.rpc.cast. \
             call_args_list[0][0][1]['args']['nodes']
         self.assertEquals(len(n_rpc), 1)
+
         n_removed_rpc = [
-            n for n in n_rpc if n['uid'] == self.env.nodes[2].id
+            n for n in n_rpc if n['uid'] == self.env.nodes[1].id
         ][0]
         # object is found, so we passed the right node for removal
         self.assertIsNotNone(n_removed_rpc)
@@ -155,16 +154,13 @@ class TestHandlers(BaseHandlers):
         # deploy method call
         n_rpc = nailgun.task.task.rpc.cast. \
             call_args_list[1][0][1]['args']['nodes']
-        self.assertEquals(len(n_rpc), 2)
-        n_provisioned_rpc = [
-            n for n in n_rpc if n['uid'] == self.env.nodes[0].id
-        ][0]
-        n_added_rpc = [
-            n for n in n_rpc if n['uid'] == self.env.nodes[1].id
-        ][0]
+        self.assertEquals(len(n_rpc), 1)
 
-        self.assertEquals(n_provisioned_rpc['status'], 'provisioned')
-        self.assertEquals(n_added_rpc['status'], 'provisioning')
+        provisioning_node = filter(
+            lambda x: x['uid'] == self.env.nodes[0].id
+            , n_rpc)[0]
+
+        self.assertEquals(provisioning_node['status'], 'provisioning')
 
     @patch('nailgun.rpc.cast')
     def test_deploy_reruns_after_network_changes(self, mocked_rpc):

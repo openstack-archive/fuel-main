@@ -59,7 +59,7 @@ class TestProvisioning(BaseHandlers):
             self.env.launch_deployment()
 
         self.env.refresh_nodes()
-        self.assertEquals(self.env.nodes[0].status, 'provisioned')
+        self.assertEquals(self.env.nodes[0].status, 'ready')
         self.assertEquals(self.env.nodes[1].status, 'provisioning')
         self.assertEquals(self.env.nodes[2].status, 'provisioning')
         self.assertEquals(self.env.nodes[3].status, 'provisioned')

@@ -34,6 +34,10 @@ from nailgun.fixtures.fixman import upload_fixture
 from nailgun.network.manager import NetworkManager
 
 
+class TimeoutError(Exception):
+    pass
+
+
 class Environment(object):
 
     def __init__(self, app, db=None):
@@ -513,6 +517,33 @@ class Environment(object):
     def wait_error(self, task, timeout=60, message=None):
         self._wait_task(task, timeout, message)
         self.tester.assertEquals(task.status, 'error')
+
+    def wait_for_nodes_status(self, nodes, status):
+        def check_statuses():
+            self.refresh_nodes()
+
+            nodes_with_status = filter(
+                lambda x: x.status == status,
+                nodes)
+
+            return len(nodes) == len(nodes_with_status)
+
+        self._wait_for_success(
+            check_statuses,
+            error_message='Something wrong with the statuses')
+
+    def _wait_for_success(self, func, args=[], kwargs={},
+                          seconds=10, error_message='Timeout error'):
+
+        start_time = time.time()
+
+        while True:
+            result = func(*args, **kwargs)
+            if result:
+                return result
+            if time.time() - start_time > seconds:
+                raise TimeoutError(error_message)
+            time.sleep(0.5)
 
 
 class BaseHandlers(TestCase):
