@@ -68,7 +68,7 @@ class HTTPLoggerMiddleware(object):
             response_code,
             env['REQUEST_METHOD'],
             env['REQUEST_URI'],
-            env['HTTP_X_REAL_IP'],
+            self.__get_remote_ip(env),
             env['REMOTE_PORT'],
         )
 
@@ -85,12 +85,20 @@ class HTTPLoggerMiddleware(object):
         request_info = "Request %s %s from %s:%s %s" % (
             env['REQUEST_METHOD'],
             env['REQUEST_URI'],
-            env['HTTP_X_REAL_IP'],
+            self.__get_remote_ip(env),
             env['REMOTE_PORT'],
             body
         )
 
         logger.debug(request_info)
+
+    def __get_remote_ip(self, env):
+        if 'HTTP_X_REAL_IP' in env:
+            return env['HTTP_X_REAL_IP']
+        elif 'REMOTE_ADDR' in env:
+            return env['REMOTE_ADDR']
+        else:
+            return 'can not determine ip'
 
 
 class FileLoggerMiddleware(object):
