@@ -84,9 +84,7 @@ define(function() {
                         canChange = false;
                     }
                 }, this);
-                if (canChange && (nodes.where({role: 'controller'}).length > 1 || nodes.currentNodes().length)) {
-                    canChange = false;
-                }
+                canChange = canChange && !nodes.currentNodes().length;
             }
             return canChange;
         },
