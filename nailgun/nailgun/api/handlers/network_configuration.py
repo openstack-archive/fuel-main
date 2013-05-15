@@ -15,6 +15,7 @@ from nailgun.task.helpers import update_task_status
 from nailgun.task.manager import CheckNetworksTaskManager
 from nailgun.task.manager import VerifyNetworksTaskManager
 
+
 class NetworkConfigurationVerifyHandler(JSONHandler):
 
     validator = NetworkGroupValidator
