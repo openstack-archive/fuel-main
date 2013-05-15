@@ -30,17 +30,18 @@ SANDBOX_PACKAGES:=\
 	glibc-headers \
 	kernel-headers \
 	make \
+	openssl-devel \
+	postgresql-devel \
 	python-devel.x86_64 \
 	python-pip \
 	rpm-build \
-	tar \
-	postgresql-devel \
-	openssl-devel \
 	ruby \
 	ruby-devel \
-	rubygems \
 	rubygem-rake \
+	rubygems \
+	tar \
 	which \
+	zlib-devel
 
 
 define SANDBOX_UP

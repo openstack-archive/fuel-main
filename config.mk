@@ -44,20 +44,30 @@ BUILD_MIRROR_GEMS:=$(BUILD_DIR)/packages/gems
 USE_MIRROR?=srv08
 ifeq ($(USE_MIRROR),srv08)
 YUM_REPOS?=proprietary
-MIRROR_CENTOS?=http://srv08-srt.srt.mirantis.net/fwm/centos
-MIRROR_EGGS?=http://srv08-srt.srt.mirantis.net/fwm/eggs
-MIRROR_GEMS?=http://srv08-srt.srt.mirantis.net/fwm/gems
-MIRROR_SRC?=http://srv08-srt.srt.mirantis.net/fwm/src
+MIRROR_BASE?=http://srv08-srt.srt.mirantis.net/fwm
+MIRROR_CENTOS?=$(MIRROR_BASE)/centos
+MIRROR_EGGS?=$(MIRROR_BASE)/eggs
+MIRROR_GEMS?=$(MIRROR_BASE)/gems
+MIRROR_SRC?=$(MIRROR_BASE)/src
 endif
 ifeq ($(USE_MIRROR),msk)
 YUM_REPOS?=proprietary
-MIRROR_CENTOS?=http://172.18.8.209/fwm/centos
-MIRROR_EGGS?=http://172.18.8.209/fwm/eggs
-MIRROR_GEMS?=http://172.18.8.209/fwm/gems
-MIRROR_SRC?=http://172.18.8.209/fwm/src
+MIRROR_BASE?=http://172.18.8.209/fwm
+MIRROR_CENTOS?=$(MIRROR_BASE)/centos
+MIRROR_EGGS?=$(MIRROR_BASE)/eggs
+MIRROR_GEMS?=$(MIRROR_BASE)/gems
+MIRROR_SRC?=$(MIRROR_BASE)/src
+endif
+ifeq ($(USE_MIRROR),msk2)
+YUM_REPOS?=proprietary
+MIRROR_BASE?=http://172.18.8.207/fwm
+MIRROR_CENTOS?=$(MIRROR_BASE)/centos
+MIRROR_EGGS?=$(MIRROR_BASE)/eggs
+MIRROR_GEMS?=$(MIRROR_BASE)/gems
+MIRROR_SRC?=$(MIRROR_BASE)/src
 endif
 
-MIRROR_CENTOS?=http://mirror.yandex.ru/centos
+MIRROR_CENTOS?=http://archive.kernel.org/centos
 MIRROR_CENTOS_OS_BASEURL:=$(MIRROR_CENTOS)/$(CENTOS_RELEASE)/os/$(CENTOS_ARCH)
 # It can be any a list of links (--find-links) or a pip index (--index-url).
 MIRROR_EGGS?=http://pypi.python.org/simple
@@ -73,7 +83,7 @@ REQUIRED_SRCS:=$(shell grep -v ^\\s*\# $(SOURCE_DIR)/requirements-src.txt)
 # The actual name will be constracted wich prepending "yum_repo_" prefix.
 # Example: YUM_REPOS?=official epel => yum_repo_official and yum_repo_epel
 # will be used.
-YUM_REPOS?=official epel fuel_folsom puppetlabs rpmforge devel_puppetlabs
+YUM_REPOS?=official fuel_folsom_2_1 puppetlabs
 
 # Mirror of source packages. Bareword 'internet' is used to download packages
 # directly from the internet

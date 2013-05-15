@@ -150,6 +150,7 @@ class DeploymentTask(object):
             logger.info("Assigning IP addresses to nodes..")
             netmanager.assign_ips(nodes_ids, "management")
             netmanager.assign_ips(nodes_ids, "public")
+            netmanager.assign_ips(nodes_ids, "storage")
 
         nodes_with_attrs = []
         for n in nodes:

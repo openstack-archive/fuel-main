@@ -12,6 +12,7 @@ help:
 	@echo '  MIRROR_GEMS:      $(MIRROR_GEMS)'
 	@echo '  MIRROR_SRC:       $(MIRROR_SRC)'
 	@echo '  ISO_DIR/ISO_NAME: $(ISO_PATH)'
+	@echo '  ENV_NAME:         $(ENV_NAME)'
 	@echo
 	@echo 'Available targets:'
 	@echo '  all  - build product'

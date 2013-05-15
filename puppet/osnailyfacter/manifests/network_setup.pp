@@ -29,7 +29,7 @@ define check_base_interfaces (
 
 class osnailyfacter::network_setup (
   interfaces = keys(parsejson($network_data)),
-  network_settings = parsejson($network_data)
+  network_settings = parsejson($network_data),
 ) {
   setup_interfaces{$interfaces: network_settings=>$network_settings} ->
   check_base_interfaces{$interfaces:}

@@ -26,7 +26,16 @@ class nailgun::supervisor(
     require => [
                 Package["supervisor"],
                 Service["rabbitmq-server"],
+                File["/var/log/nailgun"],
+                File["/var/log/naily"],
                 ],
+  }
+
+  file {"/var/log/nailgun":
+    ensure => directory,
+    owner => 'root',
+    group => 'root',
+    mode => 0755,
   }
 
 }

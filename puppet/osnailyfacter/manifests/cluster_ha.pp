@@ -32,6 +32,14 @@ $swift_hash    = parsejson($swift)
 $cinder_hash   = parsejson($cinder)
 $access_hash   = parsejson($access)
 
+if $::hostname == $master_hostname {
+  $primary_proxy = true
+  $primary_controller = true
+} else {
+  $primary_proxy = false
+  $primary_controller = false
+}
+
 $base_syslog_hash  = parsejson($base_syslog)
 $base_syslog_rserver  = {
   'remote_type' => 'udp',
@@ -72,54 +80,55 @@ class compact_controller {
   class { 'openstack::controller_ha':
     controller_public_addresses   => $controller_public_addresses,
     controller_internal_addresses => $controller_internal_addresses,
-    internal_address        => $internal_address,
-    public_interface        => $public_interface,
-    internal_interface      => $management_interface,
-    private_interface       => $private_interface,
-    internal_virtual_ip     => $management_vip,
-    public_virtual_ip       => $public_vip,
-    master_hostname         => $master_hostname,
-    floating_range          => $floating_network_range,
-    fixed_range             => $fixed_network_range,
-    multi_host              => $multi_host,
-    network_manager         => $network_manager,
-    num_networks            => $num_networks,
-    network_size            => $network_size,
-    network_config          => $network_config,
-    verbose                 => $verbose,
-    auto_assign_floating_ip => $auto_assign_floating_ip,
-    mysql_root_password     => $mysql_hash[root_password],
-    admin_email             => $access_hash[email],
-    admin_user              => $access_hash[user],
-    admin_password          => $access_hash[password],
-    keystone_db_password    => $keystone_hash[db_password],
-    keystone_admin_token    => $keystone_hash[admin_token],
-    keystone_admin_tenant   => $access_hash[tenant],
-    glance_db_password      => $glance_hash[db_password],
-    glance_user_password    => $glance_hash[user_password],
-    nova_db_password        => $nova_hash[db_password],
-    nova_user_password      => $nova_hash[user_password],
-    rabbit_password         => $rabbit_hash[password],
-    rabbit_user             => $rabbit_user,
-    rabbit_nodes            => $controller_hostnames,
-    memcached_servers       => $controller_hostnames,
-    export_resources        => false,
-    glance_backend          => $glance_backend,
-    swift_proxies           => $controller_internal_addresses,
-    quantum                 => $quantum,
-    quantum_user_password   => $quantum_user_password,
-    quantum_db_password     => $quantum_db_password,
-    quantum_db_user         => $quantum_db_user,
-    quantum_db_dbname       => $quantum_db_dbname,
-    tenant_network_type     => $tenant_network_type,
-    segment_range           => $segment_range,
-    cinder                  => $use_cinder,
-    cinder_user_password    => $cinder_hash[user_password],
-    cinder_db_password      => $cinder_hash[db_password],
-    manage_volumes          => false,
-    galera_nodes            => $galera_nodes,
-    mysql_skip_name_resolve => true,
-    use_syslog              => true,
+    internal_address              => $internal_address,
+    public_interface              => $public_interface,
+    internal_interface            => $management_interface,
+    private_interface             => $private_interface,
+    internal_virtual_ip           => $management_vip,
+    public_virtual_ip             => $public_vip,
+    primary_controller            => $primary_controller,
+    floating_range                => $floating_network_range,
+    fixed_range                   => $fixed_network_range,
+    multi_host                    => $multi_host,
+    network_manager               => $network_manager,
+    num_networks                  => $num_networks,
+    network_size                  => $network_size,
+    network_config                => $network_config,
+    verbose                       => $verbose,
+    auto_assign_floating_ip       => $auto_assign_floating_ip,
+    mysql_root_password           => $mysql_hash[root_password],
+    admin_email                   => $access_hash[email],
+    admin_user                    => $access_hash[user],
+    admin_password                => $access_hash[password],
+    keystone_db_password          => $keystone_hash[db_password],
+    keystone_admin_token          => $keystone_hash[admin_token],
+    keystone_admin_tenant         => $access_hash[tenant],
+    glance_db_password            => $glance_hash[db_password],
+    glance_user_password          => $glance_hash[user_password],
+    nova_db_password              => $nova_hash[db_password],
+    nova_user_password            => $nova_hash[user_password],
+    rabbit_password               => $rabbit_hash[password],
+    rabbit_user                   => $rabbit_user,
+    rabbit_nodes                  => $controller_hostnames,
+    memcached_servers             => $controller_hostnames,
+    export_resources              => false,
+    glance_backend                => $glance_backend,
+    swift_proxies                 => $controller_internal_addresses,
+    quantum                       => $quantum,
+    quantum_user_password         => $quantum_user_password,
+    quantum_db_password           => $quantum_db_password,
+    quantum_db_user               => $quantum_db_user,
+    quantum_db_dbname             => $quantum_db_dbname,
+    tenant_network_type           => $tenant_network_type,
+    segment_range                 => $segment_range,
+    cinder                        => $use_cinder,
+    cinder_user_password          => $cinder_hash[user_password],
+    cinder_iscsi_bind_addr        => $internal_address,
+    cinder_db_password            => $cinder_hash[db_password],
+    manage_volumes                => false,
+    galera_nodes                  => $galera_nodes,
+    mysql_skip_name_resolve       => true,
+    use_syslog                    => true,
   }
 
   class { "::rsyslog::client":
@@ -142,17 +151,25 @@ class compact_controller {
       include osnailyfacter::test_controller
 
       class { compact_controller: }
-      class { 'openstack::swift::storage-node':
-        storage_type => 'loopback',
-        swift_zone => $uid,
-        swift_local_net_ip => $internal_address,
+      class { 'openstack::swift::storage_node':
+        storage_type          => 'loopback',
+        swift_zone            => $uid,
+        swift_local_net_ip    => $internal_address,
+        master_swift_proxy_ip => $controller_internal_addresses[$master_hostname],
+        sync_rings            => ! $primary_proxy
+      }
+      if $primary_proxy {
+        ring_devices {'all':
+          storages => parsejson($nodes)
+        }
       }
       class { 'openstack::swift::proxy':
-        swift_proxies => $controller_internal_addresses,
-        swift_master => $master_hostname,
+        swift_user_password     => $swift_hash[user_password],
+        swift_proxies           => $controller_internal_addresses,
+        primary_proxy                  => $primary_proxy,
         controller_node_address => $management_vip,
         swift_local_net_ip      => $internal_address,
-        swift_user_password     => $swift_hash[user_password],
+        master_swift_proxy_ip => $controller_internal_addresses[$master_hostname],
       }
       nova_config { 'DEFAULT/start_guests_on_host_boot': value => $start_guests_on_host_boot }
       nova_config { 'DEFAULT/use_cow_images': value => $use_cow_images }
@@ -166,13 +183,13 @@ class compact_controller {
           img_name    => "TestVM",
         }
         Class[glance::api]                    -> Class[openstack::img::cirros]
-        Class[openstack::swift::storage-node] -> Class[openstack::img::cirros]
+        Class[openstack::swift::storage_node] -> Class[openstack::img::cirros]
         Class[openstack::swift::proxy]        -> Class[openstack::img::cirros]
         Service[swift-proxy]                  -> Class[openstack::img::cirros]
       }
 
       Class[osnailyfacter::network_setup]   -> Class[openstack::controller_ha]
-      Class[osnailyfacter::network_setup]   -> Class[openstack::swift::storage-node]
+      Class[osnailyfacter::network_setup]   -> Class[openstack::swift::storage_node]
       Class[osnailyfacter::network_setup]   -> Class[openstack::swift::proxy]
     }
 
@@ -192,24 +209,26 @@ class compact_controller {
         rabbit_nodes           => $controller_hostnames,
         rabbit_password        => $rabbit_hash[password],
         rabbit_user            => $rabbit_user,
+        rabbit_ha_virtual_ip   => $management_vip,
         glance_api_servers     => "${management_vip}:9292",
         vncproxy_host          => $public_vip,
         verbose                => $verbose,
         vnc_enabled            => true,
-        cinder                 => $use_cinder,
-        cinder_user_password   => $cinder_hash[user_password],
-        cinder_db_password     => $cinder_hash[db_password],
         manage_volumes         => false,
         nova_user_password     => $nova_hash[user_password],
         cache_server_ip        => $controller_hostnames,
         service_endpoint       => $management_vip,
+        cinder                 => $use_cinder,
+        cinder_iscsi_bind_addr => $internal_address,
+        cinder_user_password   => $cinder_hash[user_password],
+        cinder_db_password     => $cinder_hash[db_password],
+        db_host                => $management_vip,
         quantum                => $quantum,
         quantum_host           => $quantum_host,
         quantum_sql_connection => $quantum_sql_connection,
         quantum_user_password  => $quantum_user_password,
         tenant_network_type    => $tenant_network_type,
         segment_range          => $segment_range,
-        db_host                => $management_vip,
         use_syslog             => true,
       }
 
@@ -236,7 +255,7 @@ class compact_controller {
         rabbit_password      => $rabbit_hash[password],
         rabbit_host          => false,
         rabbit_nodes         => $controller_hostnames,
-        volume_group         => 'cinder-volumes',
+        volume_group         => 'cinder',
         manage_volumes       => true,
         enabled              => true,
         auth_host            => $service_endpoint,

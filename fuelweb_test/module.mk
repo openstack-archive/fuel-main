@@ -9,6 +9,7 @@ else
 NOFORWARD_CLI_ARG=
 endif
 
+ENV_NAME?=integration
 ifeq ($(ENV_NAME),)
 ENV_NAME_CLI_ARG=
 else

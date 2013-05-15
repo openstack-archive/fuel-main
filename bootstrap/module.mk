@@ -185,8 +185,9 @@ $(BUILD_DIR)/bootstrap/prepare-initram-root.done: \
 	# Removing temporary rpms (devel packages, they were needed to install gems)
 	$(YUM) erase $(BOOTSTRAP_RPMS_GARBAGE)
 
-	# Disabling exim (it have been installed as a dependency)
-	sudo chroot $(INITRAMROOT) chkconfig exim off
+	# Disabling mail server (it have been installed as a dependency)
+	-sudo chroot $(INITRAMROOT) chkconfig exim off
+	-sudo chroot $(INITRAMROOT) chkconfig postfix off
 
 	# Installing kernel modules
 	find $(LOCAL_MIRROR_CENTOS_OS_BASEURL) -name 'kernel-2.*' | xargs rpm2cpio | \
