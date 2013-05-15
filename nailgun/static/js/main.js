@@ -8,6 +8,7 @@ requirejs.config({
         'jquery-timeout': 'js/libs/jquery.timeout',
         utils: 'js/utils',
         'jquery-ui': 'js/libs/jquery-ui-1.10.2.custom',
+        'utils': 'js/utils',
         lodash: 'js/libs/lodash',
         backbone: 'js/libs/backbone',
         coccyx: 'js/libs/coccyx',
@@ -42,7 +43,7 @@ requirejs.config({
             deps: ['jquery']
         },
         app: {
-            deps: ['jquery', 'lodash', 'backbone', 'coccyx', 'bootstrap', 'jquery-checkbox', 'jquery-timeout', 'jquery-ui']
+            deps: ['jquery', 'lodash', 'backbone', 'coccyx', 'bootstrap', 'jquery-checkbox', 'jquery-timeout', 'jquery-ui', 'utils  ']
         }
     }
 });
