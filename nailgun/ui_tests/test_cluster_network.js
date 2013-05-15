@@ -29,6 +29,17 @@ casper.then(function() {
 });
 
 casper.then(function() {
+    this.test.comment('Testing cluster networks: change network manager');
+    this.click('.net-manager input[type=radio]:not(:checked)');
+    this.test.assertDoesntExist('.fixed-row dive.hide', 'Amount and size fields for a fixed network are presented in VLAN mode');
+    this.test.assertExists('.apply-btn:not(:disabled)', 'Save networks button is enabled after manager was changed');
+    this.click('.net-manager input[type=radio]:not(:checked)');
+    this.test.assertDoesntExist('.fixed-row .amount:visible', 'Amount field was hidden after revert to FlatDHCP');
+    this.test.assertDoesntExist('.fixed-row .network_size:visible', 'Size field was hidden after revert to FlatDHCP');
+    this.test.assertExists('.apply-btn:disabled', 'Save networks button is disabled again after revert to FlatDHCP');
+});
+
+casper.then(function() {
     this.test.comment('Testing cluster networks: data validation');
     var initialValue = this.evaluate(function(initialValue) {
             return __utils__.getFieldValue('public-cidr');
@@ -289,17 +300,6 @@ casper.then(function() {
             $('input[name=public-vlan_start]').keyup();
         });
     });
-});
-
-casper.then(function() {
-    this.test.comment('Testing cluster networks: change network manager');
-    this.click('.net-manager input[type=radio]:not(:checked)');
-    this.test.assertDoesntExist('.fixed-row dive.hide', 'Amount and size fields for a fixed network are presented in VLAN mode');
-    this.test.assertExists('.apply-btn:not(:disabled)', 'Save networks button is enabled after manager was changed');
-    this.click('.net-manager input[type=radio]:not(:checked)');
-    this.test.assertDoesntExist('.fixed-row .amount:visible', 'Amount field was hidden after revert to FlatDHCP');
-    this.test.assertDoesntExist('.fixed-row .network_size:visible', 'Size field was hidden after revert to FlatDHCP');
-    this.test.assertExists('.apply-btn:disabled', 'Save networks button is disabled again after revert to FlatDHCP');
 });
 
 casper.then(function() {
