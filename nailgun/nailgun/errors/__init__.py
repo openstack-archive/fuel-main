@@ -5,13 +5,19 @@ from nailgun.errors.base import NailgunException
 
 
 default_messages = {
+    # deployment errors
     "DeploymentAlreadyStarted": "Deployment already started",
     "DeletionAlreadyStarted": "Environment removal already started",
     "FailedProvisioning": "Failed to start provisioning",
     "WrongNodeStatus": "Wrong node status",
+    "NodeOffline": "Node is offline",
+    # network errors
     "AssignIPError": "Failed to assign IP to node",
     "NetworkCheckError": "Network checking failed",
-    "NodeOffline": "Node is offline",
+    "OutOfVLANs": "Not enough available VLAN IDs",
+    "OutOfIPs": "Not enough free IP addresses in pool",
+    "NoSuitableCIDR": "Cannot find suitable CIDR",
+    # unknown
     "UnknownError": "Unknown error"
 }
 

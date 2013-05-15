@@ -13,9 +13,6 @@ from nailgun.logger import logger
 from nailgun.settings import settings
 from nailgun.api.models import Node, IPAddr, Cluster, Vlan
 from nailgun.api.models import Network, NetworkGroup
-from nailgun.network.errors import OutOfVLANs
-from nailgun.network.errors import OutOfIPs
-from nailgun.network.errors import NoSuitableCIDR
 
 
 class NetworkManager(object):
@@ -35,7 +32,7 @@ class NetworkManager(object):
                 int(settings.VLANS_RANGE_END))) -
                 set(used_vlans)))
             if not free_vlans:
-                raise OutOfVLANs()
+                raise errors.OutOfVLANs()
             vlan_start = free_vlans[0]
             logger.debug("Found free vlan: %s", vlan_start)
 
@@ -44,7 +41,7 @@ class NetworkManager(object):
                 IPSet(settings.NET_EXCLUDE) -\
                 IPSet(used_nets)
             if not nets_free_set:
-                raise OutOfIPs()
+                raise errors.OutOfIPs()
 
             free_cidrs = sorted(list(nets_free_set._cidrs))
             new_net = None
@@ -55,7 +52,7 @@ class NetworkManager(object):
                 if new_net:
                     break
             if not new_net:
-                raise NoSuitableCIDR()
+                raise errors.NoSuitableCIDR()
 
             nw_group = NetworkGroup(
                 release=cluster_db.release.id,
@@ -293,9 +290,7 @@ class NetworkManager(object):
                     break
             if len(free_ips) == num:
                 return free_ips
-        raise Exception(
-            "Not enough free ip addresses in ip pool"
-        )
+        raise errors.OutOfIPs()
 
     def get_node_networks(self, node_id):
         node_db = self.db.query(Node).get(node_id)
