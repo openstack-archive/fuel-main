@@ -60,7 +60,7 @@ class TestNetworkModels(BaseHandlers):
             json.dumps(test_nets),
             headers=self.default_headers
         )
-        self.assertEquals(resp.status, 200)
+        self.assertEquals(resp.status, 202)
 
     def test_network_group_creates_several_networks(self):
         cluster = self.env.create_cluster(api=False)

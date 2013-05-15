@@ -14,13 +14,14 @@ class TestNetworkConfigurationHandler(BaseHandlers):
         cluster = self.env.create_cluster(api=True)
         self.cluster = self.db.query(Cluster).get(cluster['id'])
 
-    def put(self, cluster_id, data):
+    def put(self, cluster_id, data, expect_errors=False):
         url = reverse(
             'NetworkConfigurationHandler',
             kwargs={'cluster_id': cluster_id})
         return self.app.put(
             url, json.dumps(data),
-            headers=self.default_headers)
+            headers=self.default_headers,
+            expect_errors=expect_errors)
 
     def get(self, cluster_id, expect_errors=False):
         url = reverse(
@@ -70,7 +71,7 @@ class TestNetworkConfigurationHandler(BaseHandlers):
         network = self.db.query(NetworkGroup).first()
         new_net_manager = {'net_manager': 'VlanManager',
                            'networks': [{'id': 500, 'vlan_start': 500}]}
-        resp = self.put(self.cluster.id, new_net_manager)
+        resp = self.put(self.cluster.id, new_net_manager, expect_errors=True)
 
         self.db.refresh(self.cluster)
         self.assertNotEquals(
@@ -86,7 +87,7 @@ class TestNetworkConfigurationHandler(BaseHandlers):
             'vlan_start': new_vlan_id}]}
 
         resp = self.put(self.cluster.id, new_nets)
-        self.assertEquals(200, resp.status)
+        self.assertEquals(resp.status, 202)
         self.db.refresh(network)
         self.assertEquals(len(network.networks), 1)
         self.assertEquals(network.networks[0].vlan_id, 500)
@@ -110,8 +111,8 @@ class TestNetworkConfigurationHandler(BaseHandlers):
             'id': 500,
             'vlan_start': 500}]}
 
-        resp = self.put(self.cluster.id, new_nets)
-        self.assertEquals(200, resp.status)
+        resp = self.put(self.cluster.id, new_nets, expect_errors=True)
+        self.assertEquals(400, resp.status)
         task = json.loads(resp.body)
         self.assertEquals(
             task['message'],

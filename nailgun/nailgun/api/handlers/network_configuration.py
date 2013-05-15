@@ -47,7 +47,6 @@ class NetworkConfigurationHandler(JSONHandler):
 
         return result
 
-    @content_json
     def PUT(self, cluster_id):
         data = json.loads(web.data())
         cluster = self.get_object_or_404(Cluster, cluster_id)
@@ -81,9 +80,10 @@ class NetworkConfigurationHandler(JSONHandler):
                     logger.error(traceback.format_exc())
                     break
 
+        data = content_json(lambda : TaskHandler.render(task))()
         if task.status == 'error':
             self.db.rollback()
-        else:
-            self.db.commit()
+            raise web.badrequest(message=data)
 
-        return TaskHandler.render(task)
+        self.db.commit()
+        raise web.accepted(data=data)

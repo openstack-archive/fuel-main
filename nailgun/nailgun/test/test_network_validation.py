@@ -28,7 +28,7 @@ class TestHandlers(BaseHandlers):
             json.dumps(nets),
             headers=self.default_headers
         )
-        self.assertEquals(resp.status, 200)
+        self.assertEquals(resp.status, 202)
         task = json.loads(resp.body)
         self.assertEquals(task['status'], 'ready')
         self.assertEquals(task['progress'], 100)
@@ -55,7 +55,7 @@ class TestHandlers(BaseHandlers):
             headers=self.default_headers,
             expect_errors=True
         )
-        self.assertEquals(resp.status, 200)
+        self.assertEquals(resp.status, 400)
         task = json.loads(resp.body)
         self.assertEquals(task['status'], 'error')
         self.assertEquals(task['progress'], 100)
@@ -86,9 +86,10 @@ class TestHandlers(BaseHandlers):
             reverse('NetworkConfigurationHandler',
                     kwargs={'cluster_id': cluster.id}),
             json.dumps(nets),
-            headers=self.default_headers
+            headers=self.default_headers,
+            expect_errors=True
         )
-        self.assertEquals(resp.status, 200)
+        self.assertEquals(resp.status, 400)
         task = json.loads(resp.body)
         self.assertEquals(task['status'], 'error')
         self.assertEquals(task['progress'], 100)
