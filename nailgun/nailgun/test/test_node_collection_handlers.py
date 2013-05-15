@@ -202,6 +202,7 @@ class TestHandlers(BaseHandlers):
             headers=self.default_headers,
             expect_errors=True
         )
+
         self.assertEqual(resp.status, 200)
         response = json.loads(resp.body)
         # Here we are checking if node mac is successfully updated

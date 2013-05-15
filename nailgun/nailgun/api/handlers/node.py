@@ -8,13 +8,10 @@ import web
 
 from nailgun.notifier import notifier
 from nailgun.logger import logger
-<<<<<<< HEAD
 from nailgun.api.validators import NodeValidator
+from nailgun.api.validators import NodeAttributesValidator
 from nailgun.network.manager import NetworkManager
-=======
 from nailgun.volumes.manager import VolumeManager
-
->>>>>>> volume manager and auto generation
 from nailgun.api.models import Node, NodeAttributes
 from nailgun.api.handlers.base import JSONHandler, content_json
 
@@ -44,13 +41,9 @@ class NodeHandler(JSONHandler):
     @content_json
     def PUT(self, node_id):
         node = self.get_object_or_404(Node, node_id)
-<<<<<<< HEAD
-        data = self.validator.validate_update(web.data())
-=======
         if not node.attributes:
             node.attributes = NodeAttributes(node_id=node.id)
-        data = Node.validate_update(web.data())
->>>>>>> volume manager and auto generation
+        data = self.validator.validate_update(web.data())
         for key, value in data.iteritems():
             setattr(node, key, value)
         if not node.status in ('provisioning', 'deploying') \
@@ -155,6 +148,7 @@ class NodeCollectionHandler(JSONHandler):
             if "mac" in nd:
                 node = q.filter_by(mac=nd["mac"]).first() \
                     or self.validator.validate_existent_node_mac(nd)
+                self.db.add(node)
             else:
                 node = q.get(nd["id"])
             for key, value in nd.iteritems():
@@ -226,6 +220,8 @@ class NodeCollectionHandler(JSONHandler):
 class NodeAttributesHandler(JSONHandler):
     fields = ('node_id', 'volumes')
 
+    validator = NodeAttributesValidator
+
     @content_json
     def GET(self, node_id):
         node = self.get_object_or_404(Node, node_id)
@@ -238,7 +234,7 @@ class NodeAttributesHandler(JSONHandler):
     def PUT(self, node_id):
         node = self.get_object_or_404(Node, node_id)
         # NO serious data validation yet
-        data = NodeAttributes.validate_json(web.data())
+        data = self.validator.validate_json(web.data())
         if "volumes" in data:
             if node.cluster:
                 node.cluster.add_pending_changes(
@@ -309,6 +305,8 @@ class NodeAttributesByNameDefaultsHandler(JSONHandler):
 
 class NodeAttributesByNameHandler(JSONHandler):
 
+    validator = NodeAttributesValidator
+
     @content_json
     def GET(self, node_id, attr_name):
         attr_params = web.input()
@@ -325,7 +323,7 @@ class NodeAttributesByNameHandler(JSONHandler):
     def PUT(self, node_id, attr_name):
         node = self.get_object_or_404(Node, node_id)
         # NO serious data validation yet
-        data = NodeAttributes.validate_json(web.data())
+        data = NodeAttributesValidator.validate_json(web.data())
         attr_params = web.input()
         node_attrs = node.attributes
         if not node_attrs or not hasattr(node_attrs, attr_name):

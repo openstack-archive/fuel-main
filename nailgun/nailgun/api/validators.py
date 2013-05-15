@@ -204,6 +204,10 @@ class NodeValidator(BasicValidator):
         return d
 
 
+class NodeAttributesValidator(BasicValidator):
+    pass
+
+
 class NotificationValidator(BasicValidator):
     @classmethod
     def validate_update(cls, data):

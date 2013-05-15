@@ -223,7 +223,7 @@ class Node(Base):
         return self.status == 'error' and self.error_type == 'deletion'
 
 
-class NodeAttributes(Base, BasicValidator):
+class NodeAttributes(Base):
     __tablename__ = 'node_attributes'
     id = Column(Integer, primary_key=True)
     node_id = Column(Integer, ForeignKey('nodes.id'))
