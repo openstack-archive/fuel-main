@@ -49,12 +49,13 @@ class TestNetworkModels(BaseHandlers):
         test_nets = self.env.generate_ui_networks(
             self.env.clusters[0].id
         )
-        for n in test_nets[:2]:
+
+        for n in test_nets['networks'][:2]:
             n["cidr"] = "240.0.0.0/24"
 
         resp = self.app.put(
             reverse(
-                'ClusterSaveNetworksHandler',
+                'NetworkConfigurationHandler',
                 kwargs={'cluster_id': self.env.clusters[0].id}),
             json.dumps(test_nets),
             headers=self.default_headers

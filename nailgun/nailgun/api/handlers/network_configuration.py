@@ -5,6 +5,8 @@ import traceback
 import web
 
 from nailgun.logger import logger
+from nailgun.network.manager import NetworkManager
+from nailgun.api.validators import NetworkGroupValidator
 from nailgun.api.models import Cluster
 from nailgun.api.models import NetworkGroup
 from nailgun.api.handlers.base import JSONHandler, content_json
@@ -13,14 +15,16 @@ from nailgun.task.helpers import update_task_status
 from nailgun.task.manager import CheckNetworksTaskManager
 from nailgun.task.manager import VerifyNetworksTaskManager
 
-
 class NetworkConfigurationVerifyHandler(JSONHandler):
+
+    validator = NetworkGroupValidator
+
     @content_json
     def PUT(self, cluster_id):
         cluster = self.get_object_or_404(Cluster, cluster_id)
         data = json.loads(web.data())
         networks = data['networks']
-        nets = NetworkGroup.validate_collection_update(json.dumps(networks))
+        self.validator.validate_collection_update(json.dumps(networks))
         vlan_ids = NetworkGroup.generate_vlan_ids_list(networks)
         task_manager = VerifyNetworksTaskManager(cluster_id=cluster.id)
         task = task_manager.execute(data, vlan_ids)
@@ -30,6 +34,8 @@ class NetworkConfigurationVerifyHandler(JSONHandler):
 class NetworkConfigurationHandler(JSONHandler):
     fields = ('id', 'cluster_id', 'name', 'cidr',
               'vlan_start', 'network_size', 'amount')
+
+    validator = NetworkGroupValidator
 
     @content_json
     def GET(self, cluster_id):
@@ -45,6 +51,7 @@ class NetworkConfigurationHandler(JSONHandler):
         data = json.loads(web.data())
         cluster = self.get_object_or_404(Cluster, cluster_id)
 
+        network_manager = NetworkManager()
         task_manager = CheckNetworksTaskManager(cluster_id=cluster.id)
         task = task_manager.execute(data)
 
@@ -52,7 +59,7 @@ class NetworkConfigurationHandler(JSONHandler):
             setattr(cluster, 'net_manager', data['net_manager'])
 
         if 'networks' in data and task.status != 'error':
-            new_nets = NetworkGroup.validate_collection_update(
+            new_nets = self.validator.validate_collection_update(
                 json.dumps(data['networks']))
 
             for ng in new_nets:
@@ -60,7 +67,7 @@ class NetworkConfigurationHandler(JSONHandler):
                 for key, value in ng.iteritems():
                     setattr(ng_db, key, value)
                 try:
-                    ng_db.create_networks()
+                    network_manager.create_networks(ng_db)
                     ng_db.cluster.add_pending_changes('networks')
                 except Exception as exc:
                     err = str(exc)

@@ -194,15 +194,15 @@ class TestNetworkManager(BaseHandlers):
         same_vlan = 100
         resp = self.app.get(
             reverse(
-                'NetworkCollectionHandler'
-            ) + "?cluster_id={0}".format(cluster_db.id),
+                'NetworkConfigurationHandler',
+                kwargs={'cluster_id': cluster_db.id}),
             headers=self.default_headers
         )
         networks_data = json.loads(resp.body)
-        networks_data[1]["vlan_start"] = same_vlan
+        networks_data['networks'][1]["vlan_start"] = same_vlan
         resp = self.app.put(
             reverse(
-                'ClusterSaveNetworksHandler',
+                'NetworkConfigurationHandler',
                 kwargs={"cluster_id": cluster_db.id}
             ),
             json.dumps(networks_data),
@@ -210,11 +210,11 @@ class TestNetworkManager(BaseHandlers):
         )
         resp = self.app.get(
             reverse(
-                'NetworkCollectionHandler'
-            ) + "?cluster_id={0}".format(cluster_db.id),
+                'NetworkConfigurationHandler',
+                kwargs={'cluster_id': cluster_db.id}),
             headers=self.default_headers
         )
-        networks_data = json.loads(resp.body)
+        networks_data = json.loads(resp.body)['networks']
         same_vlan_nets = [
             net for net in networks_data if net["vlan_start"] == same_vlan
         ]
