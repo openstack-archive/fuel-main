@@ -206,7 +206,7 @@ class ClusterSaveNetworksHandler(JSONHandler):
     @content_json
     def PUT(self, cluster_id):
         cluster = self.get_object_or_404(Cluster, cluster_id)
-        network_manager = NetworkManager(cluster_id)
+        network_manager = NetworkManager()
         new_nets = self.validator.validate_collection_update(web.data())
         task_manager = CheckNetworksTaskManager(cluster_id=cluster.id)
         task = task_manager.execute(new_nets)
