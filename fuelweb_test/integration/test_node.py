@@ -4,9 +4,6 @@ import traceback
 import logging
 import time
 import json
-import pprint
-import posixpath
-import re
 import subprocess
 import urllib2
 from time import sleep
@@ -32,6 +29,7 @@ REMOTE_PYTHON = "/opt/nailgun/bin/python"
 def snapshot_errors(func):
     """ Decorator to snapshot nodes when error occurred in test.
     """
+
     def decorator(*args, **kwagrs):
         def save_logs(filename):
             try:
@@ -76,6 +74,7 @@ def snapshot_errors(func):
                 node.save_snapshot(ss_name, desc)
             raise e, None, sys.exc_info()[2].tb_next
         save_logs("ok-%s-%s" % (func.__name__, timestamp))
+
     newfunc = decorator
     newfunc.__dict__ = func.__dict__
     newfunc.__doc__ = func.__doc__
@@ -122,6 +121,7 @@ class TestNode(Base):
             assuming that if at least one message is received
             logging works fine.
             """
+
             def handler(message):
                 self._logserver_status = True
 
@@ -602,7 +602,7 @@ class TestNode(Base):
                         logging.debug("Interface doesn't have an IP: %r",
                                       i_name)
                 self.assertNotEqual(ip, None, "Unable to fing a valid IP"
-                                    " for node %s" % n)
+                                              " for node %s" % n)
         return cluster_id
 
     def _launch_provisioning(self, cluster_id):
@@ -736,9 +736,10 @@ class TestNode(Base):
             "/api/clusters/%s" % cluster_id,
             data={"nodes": node_ids})
         self.assertEquals(200, resp.getcode())
-        cluster = json.loads(self.client.get(
-            "/api/clusters/%s" % cluster_id).read())
-        nodes_in_cluster = [str(n['id']) for n in cluster['nodes']]
+
+        nodes = json.loads(self.client.get("/api/nodes?cluster_id=%s" % cluster_id).read())
+
+        nodes_in_cluster = [str(n['id']) for n in nodes]
         self.assertEquals(sorted(node_ids), sorted(nodes_in_cluster))
 
     def _get_slave_node_by_devops_node(self, devops_node):
@@ -845,7 +846,7 @@ class TestNode(Base):
                 cirros_status and
                 nets_status and
                 self._status_logserver()
-                )
+        )
 
     def _revert_nodes(self):
         logging.info("Reverting to snapshot 'initial'")
