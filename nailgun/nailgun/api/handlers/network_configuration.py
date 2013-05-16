@@ -14,7 +14,7 @@ from nailgun.task.helpers import update_task_status
 from nailgun.task.manager import CheckNetworksTaskManager
 from nailgun.task.manager import VerifyNetworksTaskManager
 from nailgun.api.handlers.base \
-     import JSONHandler, content_json, build_json_response
+    import JSONHandler, content_json, build_json_response
 
 
 class NetworkConfigurationVerifyHandler(JSONHandler):
