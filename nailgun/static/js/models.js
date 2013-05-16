@@ -289,7 +289,7 @@ define(function() {
         url: '/api/nodes/',
         comparator: function(ifc) {
             return ifc.get('name');
-        },
+        }
     });
 
     models.InterfaceNetwork = Backbone.Model.extend({

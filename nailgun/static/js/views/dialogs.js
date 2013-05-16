@@ -375,8 +375,6 @@ function(utils, models, simpleMessageTemplate, createClusterDialogTemplate, chan
         }
     });
 
-<<<<<<< HEAD
-=======
     views.UpdateInterfacesDialog = views.Dialog.extend({
         template: _.template(updateInterfacesTemplate),
         events: {
@@ -407,6 +405,5 @@ function(utils, models, simpleMessageTemplate, createClusterDialogTemplate, chan
         }
     });
 
->>>>>>> Edit Node Interfaces front-end implementation
     return views;
 });

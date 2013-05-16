@@ -14,7 +14,7 @@ define(
     'text!templates/cluster/edit_node_interfaces.html',
     'text!templates/cluster/node_interface.html'
 ],
-function(models, commonViews, dialogViews, nodesTabSummaryTemplate, editNodesScreenTemplate, nodeListTemplate, nodeTemplate, nodeStatusTemplate, editNodeDisksScreenTemplate, nodeDisksTemplate, editNodeInterfacesScreenTemplate, nodeInterfaceTemplate) {
+function(utils, models, commonViews, dialogViews, nodesTabSummaryTemplate, editNodesScreenTemplate, nodeListTemplate, nodeTemplate, nodeStatusTemplate, editNodeDisksScreenTemplate, nodeDisksTemplate, editNodeInterfacesScreenTemplate, nodeInterfaceTemplate) {
     'use strict';
     var NodesTab, Screen, NodesByRolesScreen, EditNodesScreen, AddNodesScreen, DeleteNodesScreen, NodeList, Node, EditNodeScreen, EditNodeDisksScreen, NodeDisk, EditNodeInterfacesScreen, NodeInterface;
 
@@ -852,10 +852,11 @@ function(models, commonViews, dialogViews, nodesTabSummaryTemplate, editNodesScr
 
     NodeInterface = Backbone.View.extend({
         template: _.template(nodeInterfaceTemplate),
+        templateHelpers: _.pick(utils, 'showBandwidth'),
         events: {
             'sortremove .logical-network-box': 'dragStart',
             'sortreceive .logical-network-box': 'dragStop',
-            'sortstop .logical-network-box': 'dragStop' 
+            'sortstop .logical-network-box': 'dragStop'
         },
         dragStart: function(event, ui) {
             var network = this.model.get('networks').findWhere({name: $(ui.item).data('name')});
@@ -871,19 +872,19 @@ function(models, commonViews, dialogViews, nodesTabSummaryTemplate, editNodesScr
             this.screen.draggedNetwork = null;
         },
         checkIfEmpty: function() {
-            this.$('.network-help-message').toggleClass('hide', !!this.model.get('networks').length)
+            this.$('.network-help-message').toggleClass('hide', !!this.model.get('networks').length);
         },
         initialize: function(options) {
             _.defaults(this, options);
             this.model.get('networks').on('add remove', this.checkIfEmpty, this);
         },
         render: function() {
-            this.$el.html(this.template({ifc: this.model}));
+            this.$el.html(this.template(_.extend({ifc: this.model}, this.templateHelpers)));
             this.checkIfEmpty();
             this.$('.logical-network-box').sortable({
                 connectWith: '.logical-network-box',
                 containment: this.screen.$('.node-networks'),
-                cursor: 'move',
+                cursor: 'move'
             }).disableSelection();
             return this;
         }
