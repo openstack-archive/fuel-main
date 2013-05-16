@@ -46,10 +46,15 @@ def content_json(func):
     def json_header(*args, **kwargs):
         web.header('Content-Type', 'application/json')
         data = func(*args, **kwargs)
-        if type(data) in (dict, list):
-            return json.dumps(data, indent=4)
-        return data
+        return build_json_response(data)
     return json_header
+
+
+def build_json_response(data):
+    web.header('Content-Type', 'application/json')
+    if type(data) in (dict, list):
+        return json.dumps(data, indent=4)
+    return data
 
 
 handlers = {}

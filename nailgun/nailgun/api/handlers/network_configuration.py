@@ -9,11 +9,12 @@ from nailgun.network.manager import NetworkManager
 from nailgun.api.validators import NetworkGroupValidator
 from nailgun.api.models import Cluster
 from nailgun.api.models import NetworkGroup
-from nailgun.api.handlers.base import JSONHandler, content_json
 from nailgun.api.handlers.tasks import TaskHandler
 from nailgun.task.helpers import update_task_status
 from nailgun.task.manager import CheckNetworksTaskManager
 from nailgun.task.manager import VerifyNetworksTaskManager
+from nailgun.api.handlers.base \
+     import JSONHandler, content_json, build_json_response
 
 
 class NetworkConfigurationVerifyHandler(JSONHandler):
@@ -80,7 +81,7 @@ class NetworkConfigurationHandler(JSONHandler):
                     logger.error(traceback.format_exc())
                     break
 
-        data = content_json(lambda : TaskHandler.render(task))()
+        data = build_json_response(TaskHandler.render(task))
         if task.status == 'error':
             self.db.rollback()
             raise web.badrequest(message=data)
