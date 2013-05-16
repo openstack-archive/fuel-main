@@ -2,7 +2,6 @@
 import unittest
 import json
 
-from nailgun.api.models import Node
 from nailgun.test.base import BaseHandlers
 from nailgun.test.base import reverse
 

@@ -99,11 +99,13 @@ class NICUtils(object):
             if node.mac == nic.mac:
                 return nic
 
+    def get_all_cluster_networkgroups(self, node):
+        return node.cluster.network_groups
+
     def allow_network_assignment_to_all_interfaces(self, node):
-        main_nic = self.get_main_nic(node)
         for nic in node.interfaces:
-            for net_group in node.cluster.network_groups:
-                nic.allowed_networks.add(net_group)
+            for net_group in self.get_all_cluster_networkgroups(node):
+                nic.allowed_networks.append(net_group)
 
     def clear_assigned_networks(self, node):
         for nic in node.interfaces:
@@ -118,5 +120,7 @@ class NICUtils(object):
     def assign_networks_to_main_interface(self, node):
         self.clear_assigned_networks(node)
         main_nic = self.get_main_nic(node)
-        for net_group in node.cluster.network_groups:
-            main_nic.allowed_networks.add(net_group)
+        print main_nic.mac
+        if main_nic:
+            for net_group in self.get_all_cluster_networkgroups(node):
+                main_nic.allowed_networks.append(net_group)

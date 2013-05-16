@@ -84,8 +84,10 @@ class ClusterHandler(JSONHandler, NICUtils):
                 for node in nodes_to_add:
                     self.allow_network_assignment_to_all_interfaces(node)
                     self.assign_networks_to_main_interface(node)
+                self.assign_networks_to_main_interface(node)
             else:
                 setattr(cluster, key, value)
+            self.assign_networks_to_main_interface(node)
         self.db.commit()
         return self.render(cluster)
 
