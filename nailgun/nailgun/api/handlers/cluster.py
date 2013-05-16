@@ -27,8 +27,10 @@ from nailgun.task.helpers import update_task_status
 from nailgun.task.manager import DeploymentTaskManager
 from nailgun.task.manager import ClusterDeletionManager
 
+from nailgun.network.topology import NICUtils
 
-class ClusterHandler(JSONHandler):
+
+class ClusterHandler(JSONHandler, NICUtils):
     fields = (
         "id",
         "name",
@@ -66,14 +68,23 @@ class ClusterHandler(JSONHandler):
         data = self.validator.validate(web.data())
         for key, value in data.iteritems():
             if key == "nodes":
-                map(cluster.nodes.remove, cluster.nodes)
-                nodes = self.db.query(Node).filter(
+                # Todo: sepatate nodes for deletion and addition by set().
+                new_nodes = self.db.query(Node).filter(
                     Node.id.in_(value)
                 )
-                map(cluster.nodes.append, nodes)
+                nodes_to_remove = [n for n in cluster.nodes \
+                                   if n not in new_nodes]
+                nodes_to_add = [n for n in new_nodes \
+                                   if n not in cluster.nodes]
+                map(cluster.nodes.remove, nodes_to_remove)
+                map(cluster.nodes.append, nodes_to_add)
+                for node in nodes_to_remove:
+                    self.clear_all_assignment_and_allowed_networks(node)
+                for node in nodes_to_add:
+                    self.allow_network_assignment_to_all_interfaces(node)
+                    self.create_network_assignment_if_not_exist(node)
             else:
                 setattr(cluster, key, value)
-        self.db.add(cluster)
         self.db.commit()
         return self.render(cluster)
 
@@ -95,7 +106,7 @@ class ClusterHandler(JSONHandler):
         )
 
 
-class ClusterCollectionHandler(JSONHandler):
+class ClusterCollectionHandler(JSONHandler, NICUtils):
 
     validator = ClusterValidator
 
@@ -108,6 +119,7 @@ class ClusterCollectionHandler(JSONHandler):
 
     @content_json
     def POST(self):
+        # It's used for cluster creating only.
         data = self.validator.validate(web.data())
 
         cluster = Cluster()
@@ -124,6 +136,9 @@ class ClusterCollectionHandler(JSONHandler):
                 Node.id.in_(data['nodes'])
             ).all()
             map(cluster.nodes.append, nodes)
+            for node in nodes:
+                self.allow_network_assignment_to_all_interfaces(node)
+                self.create_network_assignment_if_not_exist(node)
         self.db.commit()
 
         attributes = Attributes(

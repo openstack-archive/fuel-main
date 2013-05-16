@@ -61,3 +61,44 @@ class NICUtils(object):
                     continue
                 nics.append(nic)
         return nics
+
+    def _update_attrs(self, node):
+        db_node = self.db.query(Node).filter_by(id=node['id']).first()
+        interfaces = node['interfaces']
+        db_interfaces = db_node.interfaces
+        for iface in interfaces:
+            db_iface = filter(
+                lambda i: i.id == iface['id'],
+                db_interfaces
+            )
+            db_iface = db_iface[0]
+            # Remove all old network's assignment for this interface.
+            old_assignment = self.db.query(NetworkAssignment).filter_by(
+                interface_id=db_iface.id,
+            ).all()
+            map(self.db.delete, old_assignment)
+            for net in iface['assigned_networks']:
+                net_assignment = NetworkAssignment()
+                net_assignment.network_id = net['id']
+                net_assignment.interface_id = db_iface.id
+                self.db.add(net_assignment)
+
+    def update_attributes(self, node):
+        self.validator.verify_data_correctness(node)
+        self._update_attrs(node)
+        self.db.commit()
+
+    def update_collection_attributes(self, data):
+        for node in data:
+            self.validator.verify_data_correctness(node)
+            self._update_attrs(node)
+        self.db.commit()
+
+    def allow_network_assignment_to_all_interfaces(self, node):
+        pass
+
+    def create_network_assignment_if_not_exist(self, node):
+        pass
+
+    def clear_all_assignment_and_allowed_networks(self, node):
+        pass

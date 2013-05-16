@@ -1,6 +1,7 @@
 # -*- coding: utf-8 -*-
 
 import json
+import types
 
 import web
 
@@ -37,6 +38,41 @@ class BasicValidator(object):
     @classmethod
     def validate(cls, data):
         raise NotImplementedError("You should override this method")
+
+
+class MetaInterfacesValidator(BasicValidator):
+    @classmethod
+    def validate(cls, interfaces):
+        if not isinstance(interfaces, list):
+            raise web.webapi.badrequest(
+                message="Meta.interfaces should be list"
+            )
+        for nic in interfaces:
+            for key in ('mac', 'name'):
+                if key in nic and isinstance(nic[key], basestring) and\
+                        nic[key]:
+                    continue
+                raise web.webapi.badrequest(
+                    message="Interface in meta.interfaces should have"
+                            " key %r with nonempty string value" % key
+                )
+            for key in ('max_speed', 'current_speed'):
+                if key not in nic or isinstance(nic[key], types.NoneType) or\
+                        (isinstance(nic[key], int) and nic[key] > 0):
+                    continue
+                raise web.webapi.badrequest(
+                    message="Interface in meta.interfaces should have key %r"
+                            " with positive integer or Null value" % key
+                )
+
+
+class MetaValidator(BasicValidator):
+    @classmethod
+    def validate(cls, meta):
+        if not isinstance(meta, dict):
+            raise web.webapi.badrequest(message="Meta should be dict")
+        if 'interfaces' in meta:
+            MetaInterfacesValidator.validate(meta['interfaces'])
 
 
 class ReleaseValidator(BasicValidator):
@@ -132,6 +168,10 @@ class NodeValidator(BasicValidator):
     @classmethod
     def validate(cls, data):
         d = cls.validate_json(data)
+        if not d:
+            raise web.webapi.badrequest(
+                message="No valid data received"
+            )
         if not "mac" in d:
             raise web.webapi.badrequest(
                 message="No mac address specified"
@@ -146,20 +186,28 @@ class NodeValidator(BasicValidator):
             raise web.webapi.badrequest(
                 message="Manual ID setting is prohibited"
             )
+        if 'meta' in d:
+            MetaValidator.validate(d['meta'])
         cls.db.expunge_all()
         return d
 
     @classmethod
     def validate_existent_node_mac(cls, data):
-        if 'meta' in data and 'interfaces' in data['meta']:
-            existent_node = cls.db.query(Node).filter(Node.mac.in_(
-                [n['mac'] for n in data['meta']['interfaces']])).first()
-            cls.db.expunge_all()
-            return existent_node
+        if 'meta' in data:
+            MetaValidator.validate(data['meta'])
+            if 'interfaces' in data['meta']:
+                existent_node = cls.db.query(Node).filter(Node.mac.in_(
+                    [n['mac'] for n in data['meta']['interfaces']])).first()
+                cls.db.expunge_all()
+                return existent_node
 
     @classmethod
     def validate_update(cls, data):
         d = cls.validate_json(data)
+        if not d:
+            raise web.webapi.badrequest(
+                message="No valid data received"
+            )
         if "status" in d and d["status"] not in Node.NODE_STATUSES:
             raise web.webapi.badrequest(
                 message="Invalid status for node"
@@ -168,10 +216,8 @@ class NodeValidator(BasicValidator):
             raise web.webapi.badrequest(
                 message="Manual ID setting is prohibited"
             )
-        if not d:
-            raise web.webapi.badrequest(
-                message="No valid data received"
-            )
+        if 'meta' in d:
+            MetaValidator.validate(d['meta'])
         return d
 
     @classmethod
@@ -200,6 +246,8 @@ class NodeValidator(BasicValidator):
                     raise web.badrequest(
                         "Invalid ID specified"
                     )
+            if 'meta' in nd:
+                MetaValidator.validate(nd['meta'])
         cls.db.expunge_all()
         return d
 
@@ -342,3 +390,58 @@ class NetAssignmentValidator(BasicValidator):
         for node_data in data:
             cls.validate(node_data)
         return data
+
+    @classmethod
+    def verify_data_correctness(cls, node):
+        db_node = cls.db.query(Node).filter_by(id=node['id']).first()
+        if not db_node:
+            raise web.webapi.badrequest(
+                message="There is no node with ID '%d' in DB" % node['id']
+            )
+        interfaces = node['interfaces']
+        db_interfaces = db_node.interfaces
+        if len(interfaces) != len(db_interfaces):
+            raise web.webapi.badrequest(
+                message="Node '%d' has different amount of interfaces" %
+                        node['id']
+            )
+        # FIXIT: we should use not all networks but appropriate for this
+        # node only.
+        db_network_group = cls.db.query(NetworkGroup).filter_by(
+            cluster_id=db_node.cluster_id
+        ).first()
+        if not db_network_group:
+            raise web.webapi.badrequest(
+                message="There are no networks related to"
+                        " node '%d' in DB" % node['id']
+            )
+        network_ids = set([n.id for n in db_network_group.networks])
+
+        for iface in interfaces:
+            db_iface = filter(
+                lambda i: i.id == iface['id'],
+                db_interfaces
+            )
+            if not db_iface:
+                raise web.webapi.badrequest(
+                    message="There is no interface with ID '%d'"
+                            " for node '%d' in DB" %
+                            (iface['id'], node['id'])
+                )
+            db_iface = db_iface[0]
+
+            for net in iface['assigned_networks']:
+                if net['id'] not in network_ids:
+                    raise web.webapi.badrequest(
+                        message="Node '%d' shouldn't be connected to"
+                                " network with ID '%d'" %
+                                (node['id'], net['id'])
+                    )
+                network_ids.remove(net['id'])
+
+        # Check if there are unassigned networks for this node.
+        if network_ids:
+            raise web.webapi.badrequest(
+                message="Too few neworks to assign to node '%d'" %
+                        node['id']
+            )

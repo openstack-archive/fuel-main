@@ -8,11 +8,12 @@ import web
 
 from nailgun.notifier import notifier
 from nailgun.logger import logger
+from nailgun.api.models import Node
 from nailgun.api.models import Network
 from nailgun.api.models import NetworkAssignment
 from nailgun.api.models import NodeNICInterface
 from nailgun.network.topology import TopoChecker, NICUtils
-from nailgun.api.validators import NodeValidator
+from nailgun.api.validators import NodeValidator, NetAssignmentValidator
 from nailgun.api.validators import NodeAttributesValidator
 from nailgun.network.manager import NetworkManager
 from nailgun.volumes.manager import VolumeManager
@@ -20,7 +21,7 @@ from nailgun.api.models import Node, NodeAttributes
 from nailgun.api.handlers.base import JSONHandler, content_json
 
 
-class NodeHandler(JSONHandler):
+class NodeHandler(JSONHandler, NICUtils):
     fields = ('id', 'name', 'meta', 'role', 'progress',
               'status', 'mac', 'fqdn', 'ip', 'manufacturer', 'platform_name',
               'pending_addition', 'pending_deletion', 'os_platform',
@@ -50,6 +51,12 @@ class NodeHandler(JSONHandler):
         data = self.validator.validate_update(web.data())
         for key, value in data.iteritems():
             setattr(node, key, value)
+            if key == 'cluster_id':
+                if key:
+                    self.allow_network_assignment_to_all_interfaces(node)
+                    self.create_network_assignment_if_not_exist(node)
+                else:
+                    self.clear_all_assignment_and_allowed_networks(node)
         if not node.status in ('provisioning', 'deploying') \
                 and "role" in data or "cluster_id" in data:
             try:
@@ -130,6 +137,13 @@ class NodeCollectionHandler(JSONHandler, NICUtils):
         if node.meta and node.meta.get('interfaces'):
             nics = self.get_nics_from_meta(node)
             map(self.db.add, nics)
+            self.db.commit()
+        if key == 'cluster_id':
+            if key:
+                self.allow_network_assignment_to_all_interfaces(node)
+                self.create_network_assignment_if_not_exist(node)
+            else:
+                self.clear_all_assignment_and_allowed_networks(node)
             self.db.commit()
         try:
             ram = str(round(float(
@@ -221,14 +235,31 @@ class NodeCollectionHandler(JSONHandler, NICUtils):
                         msg,
                         node_id=node.id
                     )
-                if node.meta and node.meta.get('interfaces'):
+                # Update node's NICs.
+                if node.meta and 'interfaces' in node.meta:
                     db_nics = list(node.interfaces)
-                    nics = get_nics_from_meta(node)
-                    map(self.db.add, nics)
+                    nics = self.get_nics_from_meta(node)
+                    for nic in nics:
+                        db_nic = filter(lambda i: i.mac == nic.mac, db_nics)
+                        if not db_nic:
+                            self.db.add(nic)
+                            continue
+                        db_nic = db_nic[0]
+                        for key in ('name', 'current_speed', 'max_speed'):
+                            setattr(db_nic, key, getattr(nic, key))
+                        db_nics.remove(db_nic)
+                    map(self.db.delete, db_nics)
 
             nodes_updated.append(node)
             self.db.add(node)
             self.db.commit()
+            if 'cluster_id' in node:
+                if key:
+                    self.allow_network_assignment_to_all_interfaces(node)
+                    self.create_network_assignment_if_not_exist(node)
+                else:
+                    self.clear_all_assignment_and_allowed_networks(node)
+                self.db.commit()
         return map(NodeHandler.render, nodes_updated)
 
 
@@ -377,7 +408,7 @@ class NodeAttributesByNameHandler(JSONHandler):
         return attr
 
 
-class NodeNICsHandler(JSONHandler):
+class NodeNICsHandler(JSONHandler, NICUtils):
     fields = (
         'id', (
             'interfaces',
@@ -392,6 +423,7 @@ class NodeNICsHandler(JSONHandler):
     )
 
     model = NodeNICInterface
+    validator = NetAssignmentValidator
 
     @content_json
     def GET(self, node_id):
@@ -402,32 +434,34 @@ class NodeNICsHandler(JSONHandler):
     def PUT(self, node_id):
         data = self.validate_json(web.data())
         node = {'id': node_id, 'interfaces': data}
-        data = NetworkAssignment.validate(node)
-        NetworkAssignment.update_attributes(node)
+        data = self.validator.validate(node)
+        self.update_attributes(node)
 
 
 class NodeCollectionNICsHandler(NodeNICsHandler):
+
+    validator = NetAssignmentValidator
+
     @content_json
     def GET(self):
         user_data = web.input(cluster_id=None)
         if user_data.cluster_id == '':
-            nodes = self.get_object_or_404(Node, cluster_id=None)
+            nodes = self.db.query(Node).filter_by(
+                cluster_id=None).all()
         elif user_data.cluster_id:
-            nodes = self.get_object_or_404(
-                Node,
-                cluster_id=user_data.cluster_id
-            )
+            nodes = self.db.query(Node).filter_by(
+                cluster_id=user_data.cluster_id).all()
         else:
-            nodes = self.get_object_or_404(Node)
+            nodes = self.db.query(Node).all()
         return map(self.render, nodes)
 
     @content_json
     def PUT(self):
-        data = NetworkAssignment.validate_collection_structure(web.data())
-        NetworkAssignment.update_collection_attributes(data)
+        data = self.validator.validate_collection_structure(web.data())
+        self.update_collection_attributes(data)
 
 
-class NodeNICsDefaultHandler(JSONHandler):
+class NodeNICsDefaultHandler(JSONHandler, NICUtils):
     fields = (
         'id', (
             'interfaces',
@@ -436,25 +470,30 @@ class NodeNICsDefaultHandler(JSONHandler):
             'name',
             'current_speed',
             'max_speed',
-            ('assigned_interfaces', 'id', 'name'),
-            ('allowed_interfaces', 'id', 'name')
+            ('assigned_networks', 'id', 'name'),
+            ('allowed_networks', 'id', 'name')
         )
     )
+
+    validator = NetAssignmentValidator
 
     @content_json
     def GET(self, node_id):
         node = self.render(self.get_object_or_404(Node, node_id))
-        default_nets = NetworkAssignment.get_default(node)
+        default_nets = self.get_default(node)
         return self.render(node)
 
     @content_json
     def PUT(self, node_id):
         node = self.render(self.get_object_or_404(Node, node_id))
-        node = NetworkAssignment.get_default(node)
-        NetworkAssignment.update_attributes(node)
+        node = self.get_default(node)
+        self.update_attributes(node)
 
 
 class NodeCollectionNICsDefaultHandler(NodeNICsDefaultHandler):
+
+    validator = NetAssignmentValidator
+
     @content_json
     def GET(self):
         user_data = web.input(cluster_id=None)
@@ -469,43 +508,33 @@ class NodeCollectionNICsDefaultHandler(NodeNICsDefaultHandler):
             nodes = self.get_object_or_404(Node)
         def_net_nodes = []
         for node in nodes:
-            rendered_node = NetworkAssignment.get_default(self.render(node))
+            rendered_node = self.get_default(self.render(node))
             def_net_nodes.append(rendered_node)
         return map(self.render, nodes)
 
     @content_json
     def PUT(self):
-        data = NetworkAssignment.validate_collection_structure(web.data())
-        NetworkAssignment.update_collection_attributes(data)
+        data = self.validator.validate_collection_structure(web.data())
+        self.update_collection_attributes(data)
 
 
-class NodeNICsVerifyHandler(JSONHandler):
+class NodeNICsVerifyHandler(JSONHandler, NICUtils):
     fields = (
         'id', (
             'interfaces',
             'id',
             'mac',
             'name',
-            ('assigned_interfaces', 'id', 'name'),
-            ('allowed_interfaces', 'id', 'name')
+            ('assigned_networks', 'id', 'name'),
+            ('allowed_networks', 'id', 'name')
         )
     )
 
-    fields_with_conflicts = (
-        'id', (
-            'interfaces',
-            'id',
-            'mac',
-            'name',
-            ('assigned_interfaces', 'id', 'name'),
-            ('allowed_interfaces', 'id', 'name')
-        ),
-        # ('conflicted_networks', '*')
-    )
+    validator = NetAssignmentValidator
 
     @content_json
     def POST(self):
-        data = NetworkAssignment.validate_structure(web.data())
+        data = self.validator.validate_structure(web.data())
         if TopoChecker.is_assignment_allowed(data):
             return map(self.render, nodes)
         topo = TopoChecker.resolve_topo_conflicts(data)

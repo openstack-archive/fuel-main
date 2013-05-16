@@ -496,7 +496,7 @@ class Notification(Base):
     datetime = Column(DateTime, nullable=False)
 
 
-class L2Topology(Base, BasicValidator):
+class L2Topology(Base):
     __tablename__ = 'l2_topologies'
     id = Column(Integer, primary_key=True)
     network_id = Column(
@@ -506,7 +506,7 @@ class L2Topology(Base, BasicValidator):
     )
 
 
-class L2Connection(Base, BasicValidator):
+class L2Connection(Base):
     __tablename__ = 'l2_connections'
     id = Column(Integer, primary_key=True)
     topology_id = Column(
@@ -523,7 +523,7 @@ class L2Connection(Base, BasicValidator):
     )
 
 
-class AllowedNetworks(Base, BasicValidator):
+class AllowedNetworks(Base):
     __tablename__ = 'allowed_networks'
     id = Column(Integer, primary_key=True)
     network_id = Column(
@@ -538,7 +538,7 @@ class AllowedNetworks(Base, BasicValidator):
     )
 
 
-class NetworkAssignment(Base, NetAssignmentValidator):
+class NetworkAssignment(Base):
     __tablename__ = 'net_assignments'
     id = Column(Integer, primary_key=True)
     network_id = Column(
@@ -552,98 +552,8 @@ class NetworkAssignment(Base, NetAssignmentValidator):
         nullable=False
     )
 
-    @classmethod
-    def verify_data_correctness(cls, node):
-        db_node = cls.db.query(Node).filter_by(id=node['id']).first()
-        if not db_node:
-            raise web.webapi.badrequest(
-                message="There is no node with ID '%d' in DB" % node['id']
-            )
-        interfaces = node['interfaces']
-        db_interfaces = db_node.interfaces
-        if len(interfaces) != len(db_interfaces):
-            raise web.webapi.badrequest(
-                message="Node '%d' has different amount of interfaces" %
-                        node['id']
-            )
-        # FIXIT: we should use not all networks but appropriate for this
-        # node only.
-        db_network_group = cls.db.query(NetworkGroup).filter_by(
-            cluster_id=db_node.cluster_id
-        ).first()
-        if not db_network_group:
-            raise web.webapi.badrequest(
-                message="There are no networks related to"
-                        " node '%d' in DB" % node['id']
-            )
-        network_ids = set([n.id for n in db_network_group.networks])
 
-        for iface in interfaces:
-            db_iface = filter(
-                lambda i: i.id == iface['id'],
-                db_interfaces
-            )
-            if not db_iface:
-                raise web.webapi.badrequest(
-                    message="There is no interface with ID '%d'"
-                            " for node '%d' in DB" %
-                            (iface['id'], node['id'])
-                )
-            db_iface = db_iface[0]
-
-            for net in iface['assigned_networks']:
-                if net['id'] not in network_ids:
-                    raise web.webapi.badrequest(
-                        message="Node '%d' shouldn't be connected to"
-                                " network with ID '%d'" %
-                                (node['id'], net['id'])
-                    )
-                network_ids.remove(net['id'])
-
-        # Check if there are unassigned networks for this node.
-        if network_ids:
-            raise web.webapi.badrequest(
-                message="Too few neworks to assign to node '%d'" %
-                        node['id']
-            )
-
-    @classmethod
-    def _update_attrs(cls, node):
-        db_node = cls.db.query(Node).filter_by(id=node['id']).first()
-        interfaces = node['interfaces']
-        db_interfaces = db_node.interfaces
-        for iface in interfaces:
-            db_iface = filter(
-                lambda i: i.id == iface['id'],
-                db_interfaces
-            )
-            db_iface = db_iface[0]
-            # Remove all old network's assignment for this interface.
-            old_assignment = cls.db.query(NetworkAssignment).filter_by(
-                interface_id=db_iface.id,
-            ).all()
-            map(cls.db.delete, old_assignment)
-            for net in iface['assigned_networks']:
-                net_assignment = NetworkAssignment()
-                net_assignment.network_id = net['id']
-                net_assignment.interface_id = db_iface.id
-                cls.db.add(net_assignment)
-
-    @classmethod
-    def update_attributes(cls, node):
-        cls.verify_data_correctness(node)
-        cls._update_attrs(node)
-        cls.db.commit()
-
-    @classmethod
-    def update_collection_attributes(cls, data):
-        for node in data:
-            cls.verify_data_correctness(node)
-            cls._update_attrs(node)
-        cls.db.commit()
-
-
-class NodeNICInterface(Base, BasicValidator):
+class NodeNICInterface(Base):
     __tablename__ = 'node_nic_interfaces'
     id = Column(Integer, primary_key=True)
     node_id = Column(
@@ -651,8 +561,8 @@ class NodeNICInterface(Base, BasicValidator):
         ForeignKey('nodes.id', ondelete="CASCADE"),
         nullable=False
     )
-    name = Column(String(128), nullable=False) #eth0
-    mac = Column(String(32), nullable=False) #aa:00:00
+    name = Column(String(128), nullable=False)
+    mac = Column(String(32), nullable=False)
     max_speed = Column(Integer)
     current_speed = Column(Integer)
     allowed_networks = relationship(
