@@ -54,9 +54,10 @@ class NodeHandler(JSONHandler, NICUtils):
             if key == 'cluster_id':
                 if key:
                     self.allow_network_assignment_to_all_interfaces(node)
-                    self.create_network_assignment_if_not_exist(node)
+                    self.assign_networks_to_main_interface(node)
                 else:
-                    self.clear_all_assignment_and_allowed_networks(node)
+                    self.clear_assigned_networks(node)
+                    self.clear_all_allowed_networks(node)
         if not node.status in ('provisioning', 'deploying') \
                 and "role" in data or "cluster_id" in data:
             try:
@@ -141,9 +142,10 @@ class NodeCollectionHandler(JSONHandler, NICUtils):
         if key == 'cluster_id':
             if key:
                 self.allow_network_assignment_to_all_interfaces(node)
-                self.create_network_assignment_if_not_exist(node)
+                self.assign_networks_to_main_interface(node)
             else:
-                self.clear_all_assignment_and_allowed_networks(node)
+                self.clear_assigned_networks(node)
+                self.clear_all_allowed_networks(node)
             self.db.commit()
         try:
             ram = str(round(float(
@@ -175,6 +177,7 @@ class NodeCollectionHandler(JSONHandler, NICUtils):
                 node = q.get(nd["id"])
             if nd.get("cluster_id") is None and node.cluster:
                 node.cluster.clear_pending_changes(node_id=node.id)
+            old_cluster_id = node.cluster_id
             for key, value in nd.iteritems():
                 if is_agent and (key, value) == ("status", "discover") \
                         and node.status == "provisioning":
@@ -253,13 +256,15 @@ class NodeCollectionHandler(JSONHandler, NICUtils):
             nodes_updated.append(node)
             self.db.add(node)
             self.db.commit()
-            if 'cluster_id' in node:
-                if key:
-                    self.allow_network_assignment_to_all_interfaces(node)
-                    self.create_network_assignment_if_not_exist(node)
-                else:
-                    self.clear_all_assignment_and_allowed_networks(node)
-                self.db.commit()
+            if 'cluster_id' in nd:
+                if nd['cluster_id'] != old_cluster_id:
+                    if old_cluster_id:
+                        self.clear_assigned_networks(node)
+                        self.clear_all_allowed_networks(node)
+                    if nd['cluster_id']:
+                        self.allow_network_assignment_to_all_interfaces(node)
+                        self.assign_networks_to_main_interface(node)
+                    self.db.commit()
         return map(NodeHandler.render, nodes_updated)
 
 

@@ -94,11 +94,29 @@ class NICUtils(object):
             self._update_attrs(node)
         self.db.commit()
 
+    def get_main_nic(self, node):
+        for nic in node.interfaces:
+            if node.mac == nic.mac:
+                return nic
+
     def allow_network_assignment_to_all_interfaces(self, node):
-        pass
+        main_nic = self.get_main_nic(node)
+        for nic in node.interfaces:
+            for net_group in node.cluster.network_groups:
+                nic.allowed_networks.add(net_group)
 
-    def create_network_assignment_if_not_exist(self, node):
-        pass
+    def clear_assigned_networks(self, node):
+        for nic in node.interfaces:
+            while nic.assigned_networks:
+                nic.assigned_networks.pop()
 
-    def clear_all_assignment_and_allowed_networks(self, node):
-        pass
+    def clear_all_allowed_networks(self, node):
+        for nic in node.interfaces:
+            while nic.allowed_networks:
+                nic.allowed_networks.pop()
+
+    def assign_networks_to_main_interface(self, node):
+        self.clear_assigned_networks(node)
+        main_nic = self.get_main_nic(node)
+        for net_group in node.cluster.network_groups:
+            main_nic.allowed_networks.add(net_group)

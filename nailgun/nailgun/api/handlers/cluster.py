@@ -79,10 +79,11 @@ class ClusterHandler(JSONHandler, NICUtils):
                 map(cluster.nodes.remove, nodes_to_remove)
                 map(cluster.nodes.append, nodes_to_add)
                 for node in nodes_to_remove:
-                    self.clear_all_assignment_and_allowed_networks(node)
+                    self.clear_assigned_networks(node)
+                    self.clear_all_allowed_networks(node)
                 for node in nodes_to_add:
                     self.allow_network_assignment_to_all_interfaces(node)
-                    self.create_network_assignment_if_not_exist(node)
+                    self.assign_networks_to_main_interface(node)
             else:
                 setattr(cluster, key, value)
         self.db.commit()
@@ -138,7 +139,7 @@ class ClusterCollectionHandler(JSONHandler, NICUtils):
             map(cluster.nodes.append, nodes)
             for node in nodes:
                 self.allow_network_assignment_to_all_interfaces(node)
-                self.create_network_assignment_if_not_exist(node)
+                self.assign_networks_to_main_interface(node)
         self.db.commit()
 
         attributes = Attributes(
