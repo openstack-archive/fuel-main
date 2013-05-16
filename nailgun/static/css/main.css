@@ -1794,6 +1794,10 @@ h6.page-title {
   clear: both;
 }
 
+.message-list > .new {
+  cursor: default;
+}
+
 .message-list > .discover > .message {
   text-decoration: underline;
   cursor: pointer;

@@ -16,7 +16,18 @@ function(utils, models, commonViews, dialogViews, notificationsListTemplate) {
         template: _.template(notificationsListTemplate),
         templateHelpers: _.pick(utils, 'urlify'),
         events: {
+            'click .new' : 'markAsRead',
             'click .discover' : 'showNodeInfo'
+        },
+        markAsRead: function(e) {
+            var notification = this.notifications.get($(e.currentTarget).data('id'));
+            notification.toJSON = function() {
+                return _.pick(notification.attributes, 'id', 'status');
+            };
+            notification.save({status: 'read'})
+                .done(_.bind(function() {
+                    this.notifications.trigger('sync');
+                }, this));
         },
         showNodeInfo: function(e) {
             if ($(e.target).data('node')) {
