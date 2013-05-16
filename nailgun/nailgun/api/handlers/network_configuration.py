@@ -6,7 +6,7 @@ import web
 
 from nailgun.logger import logger
 from nailgun.network.manager import NetworkManager
-from nailgun.api.validators import NetworkGroupValidator
+from nailgun.api.validators import NetworkConfigurationValidator
 from nailgun.api.models import Cluster
 from nailgun.api.models import NetworkGroup
 from nailgun.api.handlers.tasks import TaskHandler
@@ -19,17 +19,16 @@ from nailgun.api.handlers.base \
 
 class NetworkConfigurationVerifyHandler(JSONHandler):
 
-    validator = NetworkGroupValidator
+    validator = NetworkConfigurationValidator
 
     @content_json
     def PUT(self, cluster_id):
         cluster = self.get_object_or_404(Cluster, cluster_id)
-        data = json.loads(web.data())
-        networks = data['networks']
-        self.validator.validate_collection_update(json.dumps(networks))
-        vlan_ids = NetworkGroup.generate_vlan_ids_list(networks)
+        data = self.validator.validate_networks_update(web.data())
+        vlan_ids = NetworkGroup.generate_vlan_ids_list(data['networks'])
         task_manager = VerifyNetworksTaskManager(cluster_id=cluster.id)
         task = task_manager.execute(data, vlan_ids)
+
         return TaskHandler.render(task)
 
 
@@ -37,7 +36,7 @@ class NetworkConfigurationHandler(JSONHandler):
     fields = ('id', 'cluster_id', 'name', 'cidr',
               'vlan_start', 'network_size', 'amount')
 
-    validator = NetworkGroupValidator
+    validator = NetworkConfigurationValidator
 
     @content_json
     def GET(self, cluster_id):
@@ -60,8 +59,9 @@ class NetworkConfigurationHandler(JSONHandler):
             setattr(cluster, 'net_manager', data['net_manager'])
 
         if 'networks' in data and task.status != 'error':
-            new_nets = self.validator.validate_collection_update(
-                json.dumps(data['networks']))
+            new_nets = self.validator.validate_networks_update(
+                json.dumps(data))['networks']
+
 
             for ng in new_nets:
                 ng_db = self.db.query(NetworkGroup).get(ng['id'])

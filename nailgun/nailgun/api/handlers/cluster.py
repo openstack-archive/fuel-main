@@ -15,7 +15,6 @@ from nailgun.api.models import Release
 from nailgun.api.models import Attributes
 from nailgun.api.models import Task
 from nailgun.api.validators import ClusterValidator
-from nailgun.api.validators import NetworkGroupValidator
 from nailgun.api.validators import AttributesValidator
 from nailgun.network.manager import NetworkManager
 from nailgun.network.errors import OutOfVLANs

@@ -251,21 +251,23 @@ class NotificationValidator(BasicValidator):
         return valid_d
 
 
-class NetworkGroupValidator(BasicValidator):
+class NetworkConfigurationValidator(BasicValidator):
     @classmethod
-    def validate_collection_update(cls, data):
+    def validate_networks_update(cls, data):
         d = cls.validate_json(data)
-        if not isinstance(d, list):
-            raise web.webapi.badrequest(
-                message="It's expected to receive array, not a single object"
-            )
-        for i in d:
-            if not 'id' in i:
-                raise web.webapi.badrequest(
-                    message="No 'id' param for '{0}'".format(i)
-                )
+        networks = d['networks']
+
         if not d:
             raise web.webapi.badrequest(
                 message="No valid data received"
             )
+        if not isinstance(networks, list):
+            raise web.webapi.badrequest(
+                message="It's expected to receive array, not a single object"
+            )
+        for i in networks:
+            if not 'id' in i:
+                raise web.webapi.badrequest(
+                    message="No 'id' param for '{0}'".format(i)
+                )
         return d
