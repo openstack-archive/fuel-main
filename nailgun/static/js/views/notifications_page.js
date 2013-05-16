@@ -1,11 +1,12 @@
 define(
 [
+    'utils',
     'models',
     'views/common',
     'views/dialogs',
     'text!templates/notifications/list.html'
 ],
-function(models, commonViews, dialogViews, notificationsListTemplate) {
+function(utils, models, commonViews, dialogViews, notificationsListTemplate) {
     'use strict';
 
     var NotificationsPage = commonViews.Page.extend({
@@ -13,6 +14,7 @@ function(models, commonViews, dialogViews, notificationsListTemplate) {
         breadcrumbsPath: [['Home', '#'], 'Notifications'],
         title: 'Notifications',
         template: _.template(notificationsListTemplate),
+        templateHelpers: _.pick(utils, 'urlify'),
         events: {
             'click .discover' : 'showNodeInfo'
         },
@@ -29,7 +31,7 @@ function(models, commonViews, dialogViews, notificationsListTemplate) {
             this.notifications.on('sync', this.render, this);
         },
         render: function() {
-            this.$el.html(this.template({notifications: this.notifications}));
+            this.$el.html(this.template(_.extend({notifications: this.notifications}, this.templateHelpers)));
             return this;
         }
     });

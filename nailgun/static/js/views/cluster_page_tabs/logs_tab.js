@@ -1,11 +1,12 @@
 define(
 [
+    'utils',
     'models',
     'views/common',
     'text!templates/cluster/logs_tab.html',
     'text!templates/cluster/log_entry.html'
 ],
-function(models, commonViews, logsTabTemplate, logEntryTemplate) {
+function(utils, models, commonViews, logsTabTemplate, logEntryTemplate) {
     'use strict';
 
     var LogsTab = commonViews.Tab.extend({
@@ -155,7 +156,7 @@ function(models, commonViews, logsTabTemplate, logEntryTemplate) {
 
             var options = this.getOptions();
             this.model.set({'log_options': options}, {silent: true});
-            app.navigate('#cluster/' + this.model.id + '/logs/' + app.serializeTabOptions(options), {trigger: false, replace: true});
+            app.navigate('#cluster/' + this.model.id + '/logs/' + utils.serializeTabOptions(options), {trigger: false, replace: true});
 
             this.$('.logs-fetch-error, .node-sources-error').hide();
             if (!this.reversed) {
@@ -255,7 +256,7 @@ function(models, commonViews, logsTabTemplate, logEntryTemplate) {
                 // this part is run on first rendering only
                 var options = {};
                 if (this.tabOptions[0]) {
-                    options = app.deserializeTabOptions(this.tabOptions[0]);
+                    options = utils.deserializeTabOptions(this.tabOptions[0]);
                 } else if (this.model.get('log_options')) {
                     options = this.model.get('log_options');
                 }

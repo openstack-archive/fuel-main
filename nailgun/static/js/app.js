@@ -106,31 +106,6 @@ function(models, commonViews, ClusterPage, NodesTab, ClustersPage, ReleasesPage,
         },
         showSupportPage: function() {
             this.setPage(SupportPage);
-        },
-        serializeTabOptions: function(options) {
-            return _.map(options, function(value, key) {
-                return key + ':' + value;
-            }).join(',');
-        },
-        deserializeTabOptions: function(serializedOptions) {
-            return _.object(_.map(serializedOptions.split(','), function(option) {
-                return option.split(':');
-            }));
-        },
-        urlify: function (text) {
-            var urlRegexp = /http:\/\/(?:(?:[0-9]|[1-9][0-9]|1[0-9]{2}|2[0-4][0-9]|25[0-5])\.){3}(?:[0-9]|[1-9][0-9]|1[0-9]{2}|2[0-4][0-9]|25[0-5])\//g;
-            return text.replace(/\n/g, '<br/>').replace(urlRegexp, function(url) {
-                return '<a target="_blank" href="' + url + '">' + url + '</a>';
-            });
-        },
-        forceWebkitRedraw: function(el) {
-            if (window.isWebkit) {
-                el.each(function() {
-                    this.style.webkitTransform = 'scale(1)';
-                    var dummy = this.offsetHeight;
-                    this.style.webkitTransform = '';
-                });
-            }
         }
     });
 

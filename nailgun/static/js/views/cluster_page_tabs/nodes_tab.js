@@ -1,5 +1,6 @@
 define(
 [
+    'utils',
     'models',
     'views/common',
     'views/dialogs',
@@ -11,7 +12,7 @@ define(
     'text!templates/cluster/edit_node_disks.html',
     'text!templates/cluster/node_disk.html'
 ],
-function(models, commonViews, dialogViews, nodesTabSummaryTemplate, editNodesScreenTemplate, nodeListTemplate, nodeTemplate, nodeStatusTemplate, editNodeDisksScreenTemplate, nodeDisksTemplate) {
+function(utils, models, commonViews, dialogViews, nodesTabSummaryTemplate, editNodesScreenTemplate, nodeListTemplate, nodeTemplate, nodeStatusTemplate, editNodeDisksScreenTemplate, nodeDisksTemplate) {
     'use strict';
     var NodesTab, Screen, NodesByRolesScreen, EditNodesScreen, AddNodesScreen, DeleteNodesScreen, NodeList, Node, EditNodeScreen, EditNodeDisksScreen, NodeDisk;
 
@@ -151,13 +152,13 @@ function(models, commonViews, dialogViews, nodesTabSummaryTemplate, editNodesScr
             this.calculateSelectAllTumblerState();
             this.calculateNotChosenNodesAvailability();
             this.calculateApplyButtonAvailability();
-            app.forceWebkitRedraw(this.$('.nodebox'));
+            utils.forceWebkitRedraw(this.$('.nodebox'));
         },
         selectAll: function(e) {
             var checked = $(e.currentTarget).is(':checked');
             this.$('.nodebox').toggleClass('node-to-' + this.action + '-checked', checked).toggleClass('node-to-' + this.action + '-unchecked', !checked);
             this.calculateApplyButtonAvailability();
-            app.forceWebkitRedraw(this.$('.nodebox'));
+            utils.forceWebkitRedraw(this.$('.nodebox'));
         },
         calculateSelectAllTumblerState: function() {
             this.$('.select-all-tumbler').attr('checked', this.nodes.length == this.$('.node-to-' + this.action + '-checked').length);
@@ -420,7 +421,7 @@ function(models, commonViews, dialogViews, nodesTabSummaryTemplate, editNodesScr
             } else if (status == 'deploying' || status == 'ready' || (status == 'error' && error == 'deploy')) {
                 options.source = 'install/puppet';
             }
-            return '#cluster/' + app.page.model.id + '/logs/' + app.serializeTabOptions(options);
+            return '#cluster/' + app.page.model.id + '/logs/' + utils.serializeTabOptions(options);
         },
         beforeTearDown: function() {
             $('html').off(this.eventNamespace);
@@ -613,6 +614,16 @@ function(models, commonViews, dialogViews, nodesTabSummaryTemplate, editNodesScr
 
     NodeDisk = Backbone.View.extend({
         template: _.template(nodeDisksTemplate),
+        templateHelpers: {
+            sortEntryProperties: function(entry) {
+                var properties = _.keys(entry);
+                if (_.has(entry, 'name')) {
+                    properties = ['name'].concat(_.keys(_.omit(entry, ['name', 'disk'])));
+                }
+                return properties;
+            },
+            showDiskSize: utils.showDiskSize
+        },
         events: {
             'click .toggle-volume': 'toggleEditDiskForm',
             'click .close-btn': 'deleteVolumeGroup',
@@ -680,7 +691,6 @@ function(models, commonViews, dialogViews, nodesTabSummaryTemplate, editNodesScr
         },
         deleteVolumeGroup: function(e) {
             this.makeChanges(e, 0, false, true);
-
         },
         editVolumeGroups: function(e) {
             this.makeChanges(e, Number((this.$(e.currentTarget).val()).replace(',', '.')));
@@ -748,11 +758,11 @@ function(models, commonViews, dialogViews, nodesTabSummaryTemplate, editNodesScr
             this.$('.btn-bootable').attr('disabled', this.partition || unallocatedSize < this.formatFloat(this.partitionSize));
         },
         render: function() {
-            this.$el.html(this.template({
+            this.$el.html(this.template(_.extend({
                 disk: this.diskMetaData,
                 volumes: this.volumesToDisplay(),
                 partition: this.partition
-            }));
+            }, this.templateHelpers)));
             this.$('.disk-edit-volume-group-form').collapse({toggle: false}).addClass('hidden');
             this.renderVisualGraph();
             return this;

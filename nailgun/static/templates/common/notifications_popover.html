@@ -5,7 +5,7 @@
         <% var topic = notification.get('topic'), icons = {'error': 'icon-attention', 'discover': 'icon-bell'} %>
         <li class="enable-selection <%= notification.get('status') == 'unread' ? 'new' : '' %> <%= topic %>" data-node="<%- notification.get('node_id') %>">
           <i class="<%= icons[topic] || 'icon-info-circled' %>"></i>
-          <%= app.urlify(notification.escape('message')) %>
+          <%= urlify(notification.escape('message')) %>
         </li>
         <% if (showMore || index < (collection.length - 1)) { %>
           <li class="divider"></li>

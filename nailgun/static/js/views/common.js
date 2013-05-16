@@ -1,5 +1,6 @@
 define(
 [
+    'utils',
     'models',
     'views/dialogs',
     'text!templates/common/navbar.html',
@@ -9,7 +10,7 @@ define(
     'text!templates/common/breadcrumb.html',
     'text!templates/common/footer.html'
 ],
-function(models, dialogViews, navbarTemplate, nodesStatsTemplate, notificationsTemplate, notificationsPopoverTemplate, breadcrumbsTemplate, footerTemplate) {
+function(utils, models, dialogViews, navbarTemplate, nodesStatsTemplate, notificationsTemplate, notificationsPopoverTemplate, breadcrumbsTemplate, footerTemplate) {
     'use strict';
 
     var views = {};
@@ -120,6 +121,7 @@ function(models, dialogViews, navbarTemplate, nodesStatsTemplate, notificationsT
 
     views.NotificationsPopover = Backbone.View.extend({
         template: _.template(notificationsPopoverTemplate),
+        templateHelpers: _.pick(utils, 'urlify'),
         visible: false,
         events: {
             'click .discover' : 'showNodeInfo'
@@ -175,11 +177,11 @@ function(models, dialogViews, navbarTemplate, nodesStatsTemplate, notificationsT
         },
         render: function() {
             if (this.visible) {
-                this.$el.html(this.template({
+                this.$el.html(this.template(_.extend({
                     notifications: this.collection,
                     displayCount: 5,
                     showMore: (Backbone.history.getHash() != 'notifications') && this.collection.length
-                }));
+                }, this.templateHelpers)));
                 this.markAsRead();
                 this.bindEvents();
             } else {

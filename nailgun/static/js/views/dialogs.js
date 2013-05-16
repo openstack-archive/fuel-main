@@ -1,5 +1,6 @@
 define(
 [
+    'utils',
     'models',
     'text!templates/dialogs/simple_message.html',
     'text!templates/dialogs/create_cluster.html',
@@ -11,7 +12,7 @@ define(
     'text!templates/dialogs/show_node.html',
     'text!templates/dialogs/dismiss_settings.html'
 ],
-function(models, simpleMessageTemplate, createClusterDialogTemplate, changeClusterModeDialogTemplate, discardChangesDialogTemplate, displayChangesDialogTemplate, removeClusterDialogTemplate, errorMessageTemplate, showNodeInfoTemplate, disacardSettingsChangesTemplate) {
+function(utils, models, simpleMessageTemplate, createClusterDialogTemplate, changeClusterModeDialogTemplate, discardChangesDialogTemplate, displayChangesDialogTemplate, removeClusterDialogTemplate, errorMessageTemplate, showNodeInfoTemplate, disacardSettingsChangesTemplate) {
     'use strict';
 
     var views = {};
@@ -28,7 +29,7 @@ function(models, simpleMessageTemplate, createClusterDialogTemplate, changeClust
             try {
                 if (app.page.model.constructor == models.Cluster) {
                     var options = {type: 'local', source: 'nailgun', level: 'error'};
-                    logsLink = '#cluster/' + app.page.model.id + '/logs/' + app.serializeTabOptions(options);
+                    logsLink = '#cluster/' + app.page.model.id + '/logs/' + utils.serializeTabOptions(options);
                 }
             } catch(e) {}
             this.$('.modal-body').html(this.errorMessageTemplate({logsLink: logsLink}));
@@ -252,6 +253,61 @@ function(models, simpleMessageTemplate, createClusterDialogTemplate, changeClust
 
     views.ShowNodeInfoDialog = views.Dialog.extend({
         template: _.template(showNodeInfoTemplate),
+        templateHelpers: {
+            showPropertyName: function(propertyName) {
+                return propertyName.replace(/_/g, ' ');
+            },
+            showPropertyValue: function(group, name, value) {
+                try {
+                    if (group == 'memory' && (name == 'total' || name == 'maximum_capacity' || name == 'size')) {
+                        value = utils.showMemorySize(value);
+                    } else if (group == 'disks' && name == 'size') {
+                        value = utils.showDiskSize(value);
+                    } else if (name == 'size') {
+                        value = utils.showSize(value);
+                    } else if (name == 'frequency') {
+                        value = utils.showFrequency(value);
+                    } else if (name == 'max_speed' || name == 'current_speed') {
+                        value = utils.showBandwidth(value);
+                    }
+                } catch (e) {}
+                return value;
+            },
+            showSummary: function(meta, group) {
+                var summary = '';
+                try {
+                    if (group == 'system') {
+                        summary = (meta.system.manufacturer || '') + ' ' + (meta.system.product || '');
+                    } else if (group == 'memory') {
+                        if (_.isArray(meta.memory.devices) && meta.memory.devices.length) {
+                            var sizes = _.groupBy(_.pluck(meta.memory.devices, 'size'), utils.showMemorySize);
+                            summary = _.map(_.keys(sizes).sort(), function(size) {return sizes[size].length + ' x ' + size;}).join(', ');
+                            summary += ', ' + utils.showMemorySize(meta.memory.total) + ' total';
+                        } else {
+                            summary = utils.showMemorySize(meta.memory.total) + ' total';
+                        }
+                    } else if (group == 'disks') {
+                        summary = meta.disks.length + ' drive';
+                        summary += meta.disks.length == 1 ? ', ' : 's, ';
+                        summary += utils.showDiskSize(_.reduce(_.pluck(meta.disks, 'size'), function(sum, n) {return sum + n;}, 0)) + ' total';
+                    } else if (group == 'cpu') {
+                        var frequencies = _.groupBy(_.pluck(meta.cpu.spec, 'frequency'), utils.showFrequency);
+                        summary = _.map(_.keys(frequencies).sort(), function(frequency) {return frequencies[frequency].length + ' x ' + frequency;}).join(', ');
+                    } else if (group == 'interfaces') {
+                        var bandwidths = _.groupBy(_.pluck(meta.interfaces, 'current_speed'), utils.showBandwidth);
+                        summary = _.map(_.keys(bandwidths).sort(), function(bandwidth) {return bandwidths[bandwidth].length + ' x ' + bandwidth;}).join(', ');
+                    }
+                } catch (e) {}
+                return summary;
+            },
+            sortEntryProperties: function(entry) {
+                var properties = _.keys(entry);
+                if (_.has(entry, 'name')) {
+                    properties = ['name'].concat(_.keys(_.omit(entry, 'name')));
+                }
+                return properties;
+            }
+        },
         events: {
             'click .accordion-heading': 'toggle',
             'click .btn-edit-disks': 'goToDisksConfiguration'
@@ -263,10 +319,10 @@ function(models, simpleMessageTemplate, createClusterDialogTemplate, changeClust
             app.navigate('#cluster/' + this.clusterId + '/nodes/disks/' + this.node.id, {trigger: true});
         },
         render: function() {
-            this.constructor.__super__.render.call(this, {
+            this.constructor.__super__.render.call(this, _.extend({
                 node: this.node,
                 deployment: this.deployment
-            });
+            }, this.templateHelpers));
             this.$('.accordion-body').collapse({
                 parent: this.$('.accordion'),
                 toggle: false

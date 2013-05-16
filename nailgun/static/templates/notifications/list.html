@@ -11,7 +11,7 @@
         <li class="notification-box enable-selection <%= notification.get('status') == 'unread' ? 'new' : '' %> <%= topic %>">
           <div class="icon"><i class="<%= icons[topic] || 'icon-info-circled' %>"></i></div>
           <div class="datetime"><%= notification.escape('date') %> <%= notification.escape('time') %></div>
-          <div class="message" data-node="<%- notification.get('node_id') %>"><%= app.urlify(notification.escape('message')) %></div>
+          <div class="message" data-node="<%- notification.get('node_id') %>"><%= urlify(notification.escape('message')) %></div>
         </li>
       <% }) %>
     <% } else { %>

@@ -6,6 +6,7 @@ requirejs.config({
         jquery: 'js/libs/jquery-1.9.1',
         'jquery-checkbox': 'js/libs/jquery.checkbox',
         'jquery-timeout': 'js/libs/jquery.timeout',
+        utils: 'js/utils',
         lodash: 'js/libs/lodash',
         backbone: 'js/libs/backbone',
         coccyx: 'js/libs/coccyx',

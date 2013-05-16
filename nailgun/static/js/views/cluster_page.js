@@ -1,5 +1,6 @@
 define(
 [
+    'utils',
     'models',
     'views/common',
     'views/dialogs',
@@ -12,7 +13,7 @@ define(
     'text!templates/cluster/deployment_result.html',
     'text!templates/cluster/deployment_control.html'
 ],
-function(models, commonViews, dialogViews, NodesTab, NetworkTab, SettingsTab, LogsTab, ActionsTab, clusterPageTemplate, deploymentResultTemplate, deploymentControlTemplate) {
+function(utils, models, commonViews, dialogViews, NodesTab, NetworkTab, SettingsTab, LogsTab, ActionsTab, clusterPageTemplate, deploymentResultTemplate, deploymentControlTemplate) {
     'use strict';
     var ClusterPage, DeploymentResult, DeploymentControl;
 
@@ -191,6 +192,7 @@ function(models, commonViews, dialogViews, NodesTab, NetworkTab, SettingsTab, Lo
 
     DeploymentResult = Backbone.View.extend({
         template: _.template(deploymentResultTemplate),
+        templateHelpers: _.pick(utils, 'urlify'),
         initialize: function(options) {
             this.model.get('tasks').each(this.bindTaskEvents, this);
             this.model.get('tasks').on('add', this.onNewTask, this);
@@ -202,7 +204,7 @@ function(models, commonViews, dialogViews, NodesTab, NetworkTab, SettingsTab, Lo
             return this.bindTaskEvents(task) && this.render();
         },
         render: function() {
-            this.$el.html(this.template({cluster: this.model}));
+            this.$el.html(this.template(_.extend({cluster: this.model}, this.templateHelpers)));
             return this;
         }
     });

@@ -28,31 +28,10 @@
   <div class="disk-map-details disk-edit-volume-group-form collapse">
     <div class="disk-info-box">
       <div class="disk-box-title">Disk Information</div>
-      <%
-        var sortEntryProperties = function(entry) {
-          var properties = _.keys(entry);
-          if (_.has(entry, 'name')) {
-            properties = ['name'].concat(_.keys(_.omit(entry, ['name', 'disk'])));
-          }
-          return properties;
-        };
-        var showSize = function(bytes) {
-          bytes = parseInt(bytes, 10);
-          if (!_.isNumber(bytes) || _.isNaN(bytes)) return 'N/A';
-          var units = ['bytes', 'KB', 'MB', 'GB', 'TB'];
-          for (var i = 0; i < units.length; i++) {
-            var result = bytes / Math.pow(1000, i);
-            if (result < 256) {
-              return (result ? result.toFixed(2) : result) + ' ' + units[i];
-            }
-          }
-          return result;
-        };
-      %>
       <% _.each(sortEntryProperties(disk), function(propertyName) { %>
         <div class="disk-map-details-item">
           <div class="disk-map-details-name"><%- propertyName.replace(/_/g, ' ') %></div>
-          <div class="disk-map-details-parameter"><%- propertyName == 'size' ? showSize(disk[propertyName]) : disk[propertyName] %></div>
+          <div class="disk-map-details-parameter"><%- propertyName == 'size' ? showDiskSize(disk[propertyName]) : disk[propertyName] %></div>
         </div>
       <% }) %>
       <div class="disk-map-details-item">
