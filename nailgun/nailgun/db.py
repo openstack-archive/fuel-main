@@ -74,6 +74,23 @@ def dropdb():
     for table in tables:
         engine.execute("DROP TABLE IF EXISTS %s CASCADE" % table)
 
+    # sql query to list all types, equivalent to psql's \dT+
+    types = [name for (name,) in engine.execute("""
+        SELECT t.typname as type FROM pg_type t
+        LEFT JOIN pg_catalog.pg_namespace n ON n.oid = t.typnamespace
+        WHERE (t.typrelid = 0 OR (
+            SELECT c.relkind = 'c' FROM pg_catalog.pg_class c
+            WHERE c.oid = t.typrelid
+        ))
+        AND NOT EXISTS(
+            SELECT 1 FROM pg_catalog.pg_type el
+            WHERE el.oid = t.typelem AND el.typarray = t.oid
+        )
+        AND n.nspname = 'public'
+        """)]
+    for type_ in types:
+        engine.execute("DROP TYPE IF EXISTS %s CASCADE" % type_)
+
 
 def flush():
     from nailgun.api.models import Base
