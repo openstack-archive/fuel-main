@@ -139,13 +139,9 @@ class NodeCollectionHandler(JSONHandler, NICUtils):
             nics = self.get_nics_from_meta(node)
             map(self.db.add, nics)
             self.db.commit()
-        if key == 'cluster_id':
-            if key:
-                self.allow_network_assignment_to_all_interfaces(node)
-                self.assign_networks_to_main_interface(node)
-            else:
-                self.clear_assigned_networks(node)
-                self.clear_all_allowed_networks(node)
+        if node.cluster_id:
+            self.allow_network_assignment_to_all_interfaces(node)
+            self.assign_networks_to_main_interface(node)
             self.db.commit()
         try:
             ram = str(round(float(
