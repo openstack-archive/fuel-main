@@ -75,6 +75,11 @@ if __name__ == "__main__":
         'model', action='store', help='model name to dump; underscored name'
         'should be used, e.g. network_group for NetworkGroup model'
     )
+    loaddefault_parser = subparsers.add_parser(
+        'loaddefault',
+        help='load data from default fixtures '
+             '(settings.FIXTURES_TO_IPLOAD)'
+    )
     dump_settings = subparsers.add_parser(
         'dump_settings', help='dump current settings to YAML'
     )
@@ -111,6 +116,11 @@ if __name__ == "__main__":
         from nailgun.fixtures import fixman
         with open(params.fixture, "r") as fileobj:
             fixman.upload_fixture(fileobj)
+        logger.info("Done")
+    elif params.action == "loaddefault":
+        logger.info("Uploading fixture...")
+        from nailgun.fixtures import fixman
+        fixman.upload_fixtures()
         logger.info("Done")
     elif params.action == "dump_settings":
         sys.stdout.write(settings.dump())

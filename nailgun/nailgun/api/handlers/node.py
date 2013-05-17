@@ -124,7 +124,7 @@ class NodeCollectionHandler(JSONHandler, NICUtils):
                 )
         except Exception as exc:
             msg = (
-                "Failed to generate volumes "
+                u"Failed to generate volumes "
                 "info for node '{0}': '{1}'"
             ).format(
                 node.name or data.get("mac") or data.get("id"),

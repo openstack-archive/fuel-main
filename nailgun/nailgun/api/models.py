@@ -241,9 +241,15 @@ class IPAddr(Base):
     network = Column(Integer, ForeignKey('networks.id'))
     node = Column(Integer, ForeignKey('nodes.id', ondelete="CASCADE"))
     ip_addr = Column(String(25), nullable=False)
-    # admin field is for mark IPAddr instance as address
-    # allocated in fuelweb (admin) network
-    admin = Column(Boolean, nullable=False, default=False)
+
+
+class IPAddrRange(Base):
+    __tablename__ = 'ip_addr_ranges'
+    id = Column(Integer, primary_key=True)
+    network_group_id = Column(Integer, ForeignKey('network_groups.id'))
+    first = Column(String(25), nullable=False)
+    last = Column(String(25), nullable=False)
+    netmask = Column(String(25), nullable=False)
 
 
 class Vlan(Base):
@@ -256,7 +262,8 @@ class Vlan(Base):
 class Network(Base):
     __tablename__ = 'networks'
     id = Column(Integer, primary_key=True)
-    release = Column(Integer, ForeignKey('releases.id'), nullable=False)
+     # can be nullable only for fuelweb admin net
+    release = Column(Integer, ForeignKey('releases.id'))
     name = Column(Unicode(100), nullable=False)
     access = Column(String(20), nullable=False)
     vlan_id = Column(Integer, ForeignKey('vlan.id'))
@@ -274,8 +281,10 @@ class NetworkGroup(Base):
     id = Column(Integer, primary_key=True)
     name = Column(Unicode(100), nullable=False)
     access = Column(String(20), nullable=False)
-    release = Column(Integer, nullable=False)
-    cluster_id = Column(Integer, ForeignKey('clusters.id'), nullable=False)
+    # can be nullable only for fuelweb admin net
+    release = Column(Integer, ForeignKey('releases.id'))
+    # can be nullable only for fuelweb admin net
+    cluster_id = Column(Integer, ForeignKey('clusters.id'))
     cidr = Column(String(25), nullable=False)
     network_size = Column(Integer, default=256)
     amount = Column(Integer, default=1)
@@ -283,6 +292,10 @@ class NetworkGroup(Base):
     gateway_ip_index = Column(Integer)
     networks = relationship("Network", cascade="delete",
                             backref="network_groups")
+    ip_ranges = relationship(
+        "IPAddrRange",
+        backref="network_group"
+    )
 
     @classmethod
     def generate_vlan_ids_list(cls, ng):
