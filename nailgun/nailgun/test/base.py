@@ -229,7 +229,7 @@ class Environment(object):
         start_id = self.db.query(NetworkGroup.id).order_by(
             NetworkGroup.id
         ).first()
-        start_id = 0 if not start_id else start_id[0]
+        start_id = 0 if not start_id else start_id[-1] + 1
         net_names = (
             "floating_test",
             "public_test",

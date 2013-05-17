@@ -57,8 +57,7 @@ class NetworkManager(object):
             new_ip_range = IPAddrRange(
                 first=str(new_net[2]),
                 last=str(new_net[-2]),
-                netmask=str(new_net.netmask),
-                gateway=str(new_net[1])
+                netmask=str(new_net.netmask)
             )
 
             nw_group = NetworkGroup(
@@ -93,7 +92,7 @@ class NetworkManager(object):
                          net.id, net.cidr)
             ips = self.db.query(IPAddr).filter(
                 IPAddr.network == net.id
-            ).filter_by(admin=False)
+            ).all()
             map(self.db.delete, ips)
             self.db.delete(net)
             self.db.commit()
@@ -129,7 +128,9 @@ class NetworkManager(object):
         node_admin_ips = self._get_ips_except_admin(node_id=node_id)
 
         if not node_admin_ips or len(node_admin_ips) < num:
-            admin_net = self.db.query(Network).filter_by(name="fuelweb_admin").one()
+            admin_net = self.db.query(Network).filter_by(
+                name="fuelweb_admin"
+            ).one()
             logger.debug(
                 "Trying to assign admin ips: node=%s count=%s",
                 node_id,
@@ -239,7 +240,9 @@ class NetworkManager(object):
             raise Exception("Network '%s' for cluster_id=%s not found." %
                             (network_name, cluster_id))
 
-        admin_net = self.db.query(Network).filter_by(name="fuelweb_admin").one()
+        admin_net = self.db.query(Network).filter_by(
+            name="fuelweb_admin"
+        ).one()
         cluster_ips = [ne.ip_addr for ne in self.db.query(IPAddr).filter_by(
             network=network.id,
             node=None
@@ -313,7 +316,9 @@ class NetworkManager(object):
 
     def _get_ips_except_admin(self, node_id=None, network_id=None):
         node_db = self.db.query(Node).get(node_id)
-        admin_net = self.db.query(Network).filter_by(name="fuelweb_admin").one()
+        admin_net = self.db.query(Network).filter_by(
+            name="fuelweb_admin"
+        ).one()
         ips = self.db.query(IPAddr)
 
         if node_id:

@@ -23,7 +23,7 @@
         "fields": {
             "name": "fuelweb_admin",
             "access": "admin",
-            "network_group_id": 1,
+            "network_groups": 1,
             "cidr": "10.20.0.0/24",
             "vlan_id": 1
         }
@@ -32,7 +32,7 @@
         "pk": 1,
         "model": "nailgun.i_p_addr_range",
         "fields": {
-            "network_group_id": 1,
+            "network_group": 1,
             "first": "10.20.0.128",
             "last": "10.20.0.254",
             "netmask": "255.255.255.0"
