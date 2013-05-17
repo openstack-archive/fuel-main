@@ -3375,6 +3375,7 @@ hr.slim {
   box-sizing: border-box;
   -moz-box-sizing: border-box;
   -webkit-box-sizing: border-box;
+  overflow: hidden;
 }
 
 .disk-map-full > .disk-map-image > .volume-group > .close-btn {
@@ -3664,7 +3665,7 @@ hr.slim {
 .volume-group-box-sizetype {
   display: inline-block;
   float: left;
-  margin: 13px 0px 0px 0px;
+  margin: 13px 8px 0px 0px;
   color: #777777;
 }
 

@@ -45,9 +45,11 @@
         <div class="volume-group-box volume-group" data-group="<%= volume.vg %>">
           <div class="volume-group-box-flag-<%= volume.vg %>"></div>
           <div class="volume-group-box-name"><%= volumeGroupsLabels[volume.vg] %></div>
-          <div class="volume-group-box-edit use-all-unallocated"><a href="#">Use All Unallocated Space</a></div>
-          <div class="volume-group-box-input"><input class="span2" type="text" name="<%= volume.vg %>" value="<%= volume.size.toFixed(2) %>" /></div>
-          <div class="volume-group-box-sizetype">GB</div>
+          <div class="pull-right">
+            <div class="volume-group-box-edit use-all-unallocated"><a href="#">Use All Unallocated Space</a></div>
+            <div class="volume-group-box-input"><input class="input-mini" type="text" name="<%= volume.vg %>" value="<%= volume.size.toFixed(2) %>" /></div>
+            <div class="volume-group-box-sizetype">GB</div>
+          </div>
         </div>
         <div class="volume-group-error-message"></div>
       <% }) %>

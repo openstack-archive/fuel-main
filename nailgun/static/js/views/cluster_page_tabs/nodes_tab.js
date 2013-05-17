@@ -572,9 +572,8 @@ function(utils, models, commonViews, dialogViews, nodesTabSummaryTemplate, editN
             this.node = this.model.get('nodes').get(this.screenOptions[0]);
             if (this.node) {
                 this.disks = new models.Disks();
-                this.disks.fetch({
-                    url: _.result(this.node, 'url') + '/attributes/volumes'
-                }).done(_.bind(function() {
+                $.when(this.node.fetch(), this.disks.fetch({url: _.result(this.node, 'url') + '/attributes/volumes'}))
+                .done(_.bind(function() {
                         this.setRoundedValues();
                         this.setMinimalSizes();
                         this.initialData = _.cloneDeep(this.disks.toJSON());
