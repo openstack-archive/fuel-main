@@ -466,8 +466,9 @@ function(utils, models, commonViews, dialogViews, nodesTabSummaryTemplate, editN
         pow: Math.pow(1000, 3),
         events: {
             'click .btn-defaults': 'loadDefaults',
-            'click .btn-revert-changes': 'returnToNodesTab',
-            'click .btn-apply:not(:disabled)': 'applyChanges'
+            'click .btn-revert-changes': 'revertChanges',
+            'click .btn-apply:not(:disabled)': 'applyChanges',
+            'click .btn-back-to-cluster:not(:disabled)': 'backToCluster'
         },
         formatFloat: function(value) {
             return parseFloat((value / this.pow).toFixed(2));
@@ -499,8 +500,9 @@ function(utils, models, commonViews, dialogViews, nodesTabSummaryTemplate, editN
                 dialog.render();
             }, this));
         },
-        returnToNodesTab: function() {
-            app.navigate('#cluster/' + this.model.id + '/nodes', {trigger: true});
+        revertChanges: function() {
+            this.disks = new models.Disks(this.initialData);
+            this.render();
         },
         applyChanges: function() {
             this.disableControls(true);
@@ -513,7 +515,9 @@ function(utils, models, commonViews, dialogViews, nodesTabSummaryTemplate, editN
             Backbone.sync('update', this.disks, {url: _.result(this.node, 'url') + '/attributes/volumes?type=disk'})
                 .done(_.bind(function() {
                     this.model.fetch();
-                    this.returnToNodesTab();
+                    this.setRoundedValues();
+                    this.initialData = _.cloneDeep(this.disks.toJSON());
+                    this.render();
                 }, this))
                 .fail(_.bind(function() {
                     this.disableControls(false);
@@ -521,6 +525,9 @@ function(utils, models, commonViews, dialogViews, nodesTabSummaryTemplate, editN
                     app.page.registerSubView(dialog);
                     dialog.render();
                 }, this));
+        },
+        backToCluster: function() {
+            app.navigate('#cluster/' + this.model.id + '/nodes', {trigger: true});
         },
         getGroupAllocatedSpace: function(group) {
             var allocatedSpace = 0;
@@ -579,9 +586,9 @@ function(utils, models, commonViews, dialogViews, nodesTabSummaryTemplate, editN
                         this.initialData = _.cloneDeep(this.disks.toJSON());
                         this.render();
                     }, this))
-                .fail(_.bind(this.returnToNodesTab, this));
+                .fail(_.bind(this.backToCluster, this));
             } else {
-                this.returnToNodesTab();
+                this.backToCluster();
             }
         },
         renderDisks: function() {
