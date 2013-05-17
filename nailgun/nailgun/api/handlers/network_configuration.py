@@ -62,7 +62,6 @@ class NetworkConfigurationHandler(JSONHandler):
             new_nets = self.validator.validate_networks_update(
                 json.dumps(data))['networks']
 
-
             for ng in new_nets:
                 ng_db = self.db.query(NetworkGroup).get(ng['id'])
                 for key, value in ng.iteritems():
