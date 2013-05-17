@@ -97,23 +97,9 @@ casper.then(function() {
         },{sdaDiskVM: sdaDiskVM});
 
         this.test.assertEvalEquals(function(sdaDiskVM) {return $(sdaDiskVM + ' input').val()}, '50', 'Volume group input control VM contains correct value', {sdaDiskVM:sdaDiskVM});
-
         this.test.assertExists('.btn-revert-changes:not(:disabled)', 'Cancel button is enabled');
         this.click('.btn-revert-changes');
-        this.waitForSelector('.nodes-by-roles-screen');
-        this.then(function() {
-            this.click('.node-hardware');
-            this.waitForSelector('.modal');
-            this.then(function() {
-                this.click('.btn-edit-disks');
-                this.waitForSelector('.nodes-by-roles-screen');
-                this.then(function() {
-                    this.click(sdaDisk + ' .toggle-volume');
-                    this.test.assertEvalEquals(function(sdaDiskVM) {return $(sdaDiskVM + ' input').val()}, vmSDA, 'Volume group input control VM contains default value', {sdaDiskVM:sdaDiskVM});
-                    this.test.assertEvalEquals(function(sdaDiskOS) {return $(sdaDiskOS + ' input').val()}, osSDA, 'Volume group input control OS contains default value', {sdaDiskOS:sdaDiskOS});
-                });
-            });
-        });
+        this.test.assertEvalEquals(function(sdaDiskVM) {return $(sdaDiskVM + ' input').val()}, vmSDA, 'Volume group input control VM contains default value', {sdaDiskVM:sdaDiskVM});
     });
 
     this.then(function() {
@@ -195,20 +181,6 @@ casper.then(function() {
         },{sdaDiskVM:sdaDiskVM});
         this.test.assertExists(sdaDiskVM + ' input.error', 'Field validation has worked in case of number that bigger than available space on disk');
     });
-
-    this.then(function() {
-        this.test.comment('Testing Apply button: back to nodes tab');
-        this.fill(sdaDiskVM + '', {'vm': '80'});
-        this.evaluate(function(sdaDiskVM) {
-            $(sdaDiskVM + ' input').keyup();
-        },{sdaDiskVM:sdaDiskVM});
-        this.click('.btn-apply');
-        this.waitForSelector('.nodes-by-roles-screen');
-        this.then(function() {
-            this.test.assertExists('.node-list', 'Back to nodes tab (correct)');
-        });
-    });
-
 
 });
 
