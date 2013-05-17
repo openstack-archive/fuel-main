@@ -5,12 +5,13 @@ import traceback
 import web
 
 from nailgun.logger import logger
-from nailgun.network.manager import NetworkManager
 from nailgun.api.validators import NetworkConfigurationValidator
 from nailgun.api.models import Cluster
 from nailgun.api.models import NetworkGroup
+from nailgun.api.models import NetworkConfiguration
 from nailgun.api.handlers.tasks import TaskHandler
 from nailgun.task.helpers import update_task_status
+from nailgun.network.manager import NetworkManager
 from nailgun.task.manager import CheckNetworksTaskManager
 from nailgun.task.manager import VerifyNetworksTaskManager
 from nailgun.api.handlers.base \
@@ -51,34 +52,24 @@ class NetworkConfigurationHandler(JSONHandler):
         data = json.loads(web.data())
         cluster = self.get_object_or_404(Cluster, cluster_id)
 
-        network_manager = NetworkManager()
         task_manager = CheckNetworksTaskManager(cluster_id=cluster.id)
         task = task_manager.execute(data)
 
-        if 'net_manager' in data:
-            setattr(cluster, 'net_manager', data['net_manager'])
-
-        if 'networks' in data and task.status != 'error':
-            new_nets = self.validator.validate_networks_update(
-                json.dumps(data))['networks']
-
-            for ng in new_nets:
-                ng_db = self.db.query(NetworkGroup).get(ng['id'])
-                for key, value in ng.iteritems():
-                    setattr(ng_db, key, value)
-                try:
-                    network_manager.create_networks(ng_db)
-                    ng_db.cluster.add_pending_changes('networks')
-                except Exception as exc:
-                    err = str(exc)
-                    update_task_status(
-                        task.uuid,
-                        status="error",
-                        progress=100,
-                        msg=err
-                    )
-                    logger.error(traceback.format_exc())
-                    break
+        if task.status != 'error':
+            if 'networks' in data:
+                network_configuration = self.validator.\
+                    validate_networks_update(json.dumps(data))
+            try:
+                NetworkConfiguration.update(cluster, data)
+            except Exception as exc:
+                err = str(exc)
+                update_task_status(
+                    task.uuid,
+                    status="error",
+                    progress=100,
+                    msg=err
+                )
+                logger.error(traceback.format_exc())
 
         data = build_json_response(TaskHandler.render(task))
         if task.status == 'error':

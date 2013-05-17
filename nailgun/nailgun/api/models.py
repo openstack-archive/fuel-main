@@ -23,7 +23,6 @@ from nailgun.volumes.manager import VolumeManager
 from nailgun.api.fields import JSON
 from nailgun.settings import settings
 
-
 Base = declarative_base()
 
 
@@ -288,6 +287,28 @@ class NetworkGroup(Base):
                 vlans.append({'vlan_id': current_vlan})
                 current_vlan += 1
         return vlans
+
+
+class NetworkConfiguration(object):
+    @classmethod
+    def update(cls, cluster, network_configuration):
+        from nailgun.network.manager import NetworkManager
+        network_manager = NetworkManager()
+        if 'net_manager' in network_configuration:
+            setattr(
+                cluster,
+                'net_manager',
+                network_configuration['net_manager'])
+
+        if 'networks' in network_configuration:
+            for ng in network_configuration['networks']:
+                ng_db = orm().query(NetworkGroup).get(ng['id'])
+
+                for key, value in ng.iteritems():
+                    setattr(ng_db, key, value)
+
+                network_manager.create_networks(ng_db)
+                ng_db.cluster.add_pending_changes('networks')
 
 
 class AttributesGenerators(object):
