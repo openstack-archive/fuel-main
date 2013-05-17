@@ -120,7 +120,6 @@ class NICUtils(object):
     def assign_networks_to_main_interface(self, node):
         self.clear_assigned_networks(node)
         main_nic = self.get_main_nic(node)
-        print main_nic.mac
         if main_nic:
             for net_group in self.get_all_cluster_networkgroups(node):
-                main_nic.allowed_networks.append(net_group)
+                main_nic.assigned_networks.append(net_group)
