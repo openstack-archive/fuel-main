@@ -100,22 +100,26 @@ $SNIPPET('pre_install_partition_lvm')
 # FIXME --ignoremissing
 %packages --nobase --ignoremissing
 @Core
-yum
-openssh-server
-openssh
-openssh-clients
-curl
-wget
-crontabs
+authconfig
+bind-utils
 cronie
-ruby-augeas
-ntp
-ruby-devel
-make
+crontabs
+curl
 gcc
+make
+mlocate
 nailgun-agent
 nailgun-mcagents
 nailgun-net-check
+ntp
+openssh
+openssh-clients
+openssh-server
+ruby-augeas
+ruby-devel
+system-config-firewall-base
+wget
+yum
 
 # COBBLER EMBEDDED SNIPPET: 'puppet_install_if_enabled'
 # LISTS puppet PACKAGE IF puppet_auto_setup VARIABLE IS SET TO 1

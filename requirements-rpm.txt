@@ -1,3 +1,5 @@
+@Core
+@Base
 MySQL-client-5.5.28-6
 MySQL-client-wsrep-5.5.28_wsrep_23.7-12
 MySQL-python-1.2.3-0.3.c1.2.el6
