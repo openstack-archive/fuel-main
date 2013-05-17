@@ -737,7 +737,8 @@ class TestNode(Base):
             data={"nodes": node_ids})
         self.assertEquals(200, resp.getcode())
 
-        nodes = json.loads(self.client.get("/api/nodes?cluster_id=%s" % cluster_id).read())
+        nodes = json.loads(self.client.get(
+            "/api/nodes?cluster_id=%s" % cluster_id).read())
 
         nodes_in_cluster = [str(n['id']) for n in nodes]
         self.assertEquals(sorted(node_ids), sorted(nodes_in_cluster))
@@ -842,10 +843,11 @@ class TestNode(Base):
         )
         if not nets_status:
             logging.warn("Networks check fails:\n%s" % ret['stdout'])
-        return (nova_status and
-                cirros_status and
-                nets_status and
-                self._status_logserver()
+        return (
+            nova_status and
+            cirros_status and
+            nets_status and
+            self._status_logserver()
         )
 
     def _revert_nodes(self):
