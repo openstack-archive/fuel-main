@@ -53,6 +53,8 @@ class TestProvisioning(BaseHandlers):
             ]
         )
         cluster = self.env.clusters[0]
+        cluster.clear_pending_changes()
+
         self.env.network_manager.assign_ips = self.mock.MagicMock()
 
         with patch('nailgun.task.task.Cobbler'):
@@ -62,6 +64,7 @@ class TestProvisioning(BaseHandlers):
         self.assertEquals(self.env.nodes[0].status, 'ready')
         self.assertEquals(self.env.nodes[1].status, 'provisioning')
         self.assertEquals(self.env.nodes[2].status, 'provisioning')
+
         self.assertEquals(self.env.nodes[3].status, 'provisioned')
         self.assertEquals(self.env.nodes[4].status, 'error')
         self.assertEquals(self.env.nodes[5].status, 'provisioning')
