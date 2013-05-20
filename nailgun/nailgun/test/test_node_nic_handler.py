@@ -55,8 +55,7 @@ class TestHandlers(BaseHandlers):
             headers=self.default_headers)
         self.assertEquals(resp.status, 200)
         response = json.loads(resp.body)
-        self.assertEquals(response['id'], node['id'])
-        self.assertEquals(response['interfaces'], [])
+        self.assertEquals(response, [])
 
     def test_get_handler_with_NICs(self):
         meta = {'interfaces': [
@@ -70,15 +69,14 @@ class TestHandlers(BaseHandlers):
             headers=self.default_headers)
         self.assertEquals(resp.status, 200)
         response = json.loads(resp.body)
-        self.assertEquals(response['id'], node_db.id)
         self.assertItemsEqual(
-            map(lambda i: i['id'], response['interfaces']),
+            map(lambda i: i['id'], response),
             map(lambda i: i.id, node_db.interfaces)
         )
         for nic in meta['interfaces']:
             filtered_nics = filter(
                 lambda i: i['mac'] == nic['mac'],
-                response['interfaces']
+                response
             )
             resp_nic = filtered_nics[0]
             self.assertEquals(resp_nic['mac'], nic['mac'])
@@ -105,8 +103,7 @@ class TestHandlers(BaseHandlers):
             headers=self.default_headers)
         self.assertEquals(resp.status, 200)
         response = json.loads(resp.body)
-        self.assertEquals(response['id'], node['id'])
-        self.assertEquals(response['interfaces'], [])
+        self.assertEquals(response, [])
 
     def test_NIC_updates_by_agent(self):
         meta = {'interfaces': [
@@ -130,9 +127,8 @@ class TestHandlers(BaseHandlers):
             headers=self.default_headers)
         self.assertEquals(resp.status, 200)
         response = json.loads(resp.body)
-        self.assertEquals(response['id'], node['id'])
-        self.assertEquals(len(response['interfaces']), 1)
-        resp_nic = response['interfaces'][0]
+        self.assertEquals(len(response), 1)
+        resp_nic = response[0]
         nic = new_meta['interfaces'][0]
         self.assertEquals(resp_nic['mac'], nic['mac'])
         self.assertEquals(resp_nic['current_speed'], nic['current_speed'])
@@ -160,12 +156,11 @@ class TestHandlers(BaseHandlers):
             headers=self.default_headers)
         self.assertEquals(resp.status, 200)
         response = json.loads(resp.body)
-        self.assertEquals(response['id'], node['id'])
-        self.assertEquals(len(response['interfaces']), len(meta['interfaces']))
+        self.assertEquals(len(response), len(meta['interfaces']))
         for nic in meta['interfaces']:
             filtered_nics = filter(
                 lambda i: i['mac'] == nic['mac'],
-                response['interfaces']
+                response
             )
             resp_nic = filtered_nics[0]
             self.assertEquals(resp_nic['mac'], nic['mac'])
@@ -186,5 +181,5 @@ class TestHandlers(BaseHandlers):
             headers=self.default_headers)
         self.assertEquals(resp.status, 200)
         response = json.loads(resp.body)
-        self.assertNotEquals(response['interfaces'][0]['id'], fake_id)
+        self.assertNotEquals(response[0]['id'], fake_id)
 

@@ -196,7 +196,7 @@ class NodeCollectionHandler(JSONHandler, NICUtils):
             except Exception as ext:
                 logger.warn('Error while k: %s' % str(ext))
                 logger.warn(traceback.format_exc())
-            print 'status games'
+                print 'status games'
             if not node.status in ('provisioning', 'deploying'):
                 variants = (
                     not node.attributes.volumes,
@@ -443,30 +443,30 @@ class NodeNICsHandler(JSONHandler, NICUtils):
         node = self.get_object_or_404(Node, node_id)
         return self.render(node)['interfaces']
 
-    @content_json
-    def PUT(self, node_id):
-        data = self.validate_json(web.data())
-        node = {'id': node_id, 'interfaces': data}
-        data = self.validator.validate(node)
-        self.update_attributes(node)
+    # @content_json
+    # def PUT(self, node_id):
+    #     data = self.validator.validate_json(web.data())
+    #     node = {'id': node_id, 'interfaces': data}
+    #     data = self.validator.validate(node)
+    #     self.update_attributes(node)
 
 
 class NodeCollectionNICsHandler(NodeNICsHandler):
 
     validator = NetAssignmentValidator
 
-    @content_json
-    def GET(self):
-        user_data = web.input(cluster_id=None)
-        if user_data.cluster_id == '':
-            nodes = self.db.query(Node).filter_by(
-                cluster_id=None).all()
-        elif user_data.cluster_id:
-            nodes = self.db.query(Node).filter_by(
-                cluster_id=user_data.cluster_id).all()
-        else:
-            nodes = self.db.query(Node).all()
-        return map(self.render, nodes)
+        # @content_json
+        # def GET(self):
+        #     user_data = web.input(cluster_id=None)
+        #     if user_data.cluster_id == '':
+        #         nodes = self.db.query(Node).filter_by(
+        #             cluster_id=None).all()
+        #     elif user_data.cluster_id:
+        #         nodes = self.db.query(Node).filter_by(
+        #             cluster_id=user_data.cluster_id).all()
+        #     else:
+        #         nodes = self.db.query(Node).all()
+        #     return map(self.render, nodes)
 
     @content_json
     def PUT(self):
@@ -496,11 +496,11 @@ class NodeNICsDefaultHandler(JSONHandler, NICUtils):
         default_nets = self.get_default(node)
         return self.render(node)['interfaces']
 
-    @content_json
-    def PUT(self, node_id):
-        node = self.render(self.get_object_or_404(Node, node_id))
-        node = self.get_default(node)
-        self.update_attributes(node)
+    # @content_json
+    # def PUT(self, node_id):
+    #     node = self.render(self.get_object_or_404(Node, node_id))
+    #     node = self.get_default(node)
+    #     self.update_attributes(node)
 
 
 class NodeCollectionNICsDefaultHandler(NodeNICsDefaultHandler):
@@ -525,10 +525,10 @@ class NodeCollectionNICsDefaultHandler(NodeNICsDefaultHandler):
             def_net_nodes.append(rendered_node)
         return map(self.render, nodes)
 
-    @content_json
-    def PUT(self):
-        data = self.validator.validate_collection_structure(web.data())
-        self.update_collection_attributes(data)
+    # @content_json
+    # def PUT(self):
+    #     data = self.validator.validate_collection_structure(web.data())
+    #     self.update_collection_attributes(data)
 
 
 class NodeNICsVerifyHandler(JSONHandler, NICUtils):
@@ -548,6 +548,8 @@ class NodeNICsVerifyHandler(JSONHandler, NICUtils):
     @content_json
     def POST(self):
         data = self.validator.validate_structure(web.data())
+        for node in data:
+            self.validator.verify_data_correctness(node)
         if TopoChecker.is_assignment_allowed(data):
             return map(self.render, nodes)
         topo = TopoChecker.resolve_topo_conflicts(data)

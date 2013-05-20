@@ -29,7 +29,6 @@ class TopoChecker(object):
     @classmethod
     def is_assignment_allowed(cls, data):
         for node in data:
-            NetworkAssignment.verify_data_correctness(node)
             if not cls._is_assignment_allowed_for_node(node):
                 return False
         return True
@@ -98,6 +97,8 @@ class NICUtils(object):
         for nic in node.interfaces:
             if node.mac == nic.mac:
                 return nic
+        if node.interfaces:
+            return node.interfaces[0]
 
     def get_all_cluster_networkgroups(self, node):
         return node.cluster.network_groups
