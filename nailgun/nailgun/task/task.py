@@ -63,9 +63,9 @@ class DeploymentTask(object):
 #   Run provisioning first and then deployment for nodes which are in
 #   discover system type.
 #   Q: Should we care about node status (provisioning, error, deploying)?
-#   A: offline - when node doesn't respond (agent doesn't run, not implemented);
-#                let's say user should remove this node from cluster before
-#                deployment.
+#   A: offline - when node doesn't respond (agent doesn't run, not
+#                implemented); let's say user should remove this node from
+#                cluster before deployment.
 #      ready - target OS is loaded and node is Ok, we redeploy
 #              ready nodes only if cluster has pending changes i.e.
 #              network or cluster attrs were changed
@@ -99,7 +99,7 @@ class DeploymentTask(object):
             pending_deletion=False).order_by(Node.id)
 
         if len(cluster.changes) == 0:
-            nodes = nodes.filter(Node.status!='ready')
+            nodes = nodes.filter(Node.status != 'ready')
 
         for node in nodes:
             nd_name = TaskHelper.slave_name_by_id(node.id)

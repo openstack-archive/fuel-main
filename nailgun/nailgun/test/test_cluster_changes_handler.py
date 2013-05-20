@@ -157,8 +157,7 @@ class TestHandlers(BaseHandlers):
         self.assertEquals(len(n_rpc), 1)
 
         provisioning_node = filter(
-            lambda x: x['uid'] == self.env.nodes[0].id
-            , n_rpc)[0]
+            lambda x: x['uid'] == self.env.nodes[0].id, n_rpc)[0]
 
         self.assertEquals(provisioning_node['status'], 'provisioning')
 

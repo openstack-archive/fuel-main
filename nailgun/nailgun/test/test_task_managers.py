@@ -74,9 +74,10 @@ class TestTaskManagers(BaseHandlers):
         self.assertEquals(self.env.nodes[1].status, 'ready')
         self.assertEquals(self.env.nodes[1].progress, 100)
 
-
     @fake_tasks()
-    def test_redeploy_nodes_in_ready_status_if_cluster_network_was_changed(self):
+    def test_redeploy_nodes_in_ready_status_if_cluster_network_was_changed(
+        self
+    ):
         self.env.create(
             nodes_kwargs=[
                 {"status": "ready"},
@@ -108,7 +109,9 @@ class TestTaskManagers(BaseHandlers):
         self.assertEquals(supertask.name, 'deploy')
         self.assertIn(supertask.status, ('running', 'ready'))
 
-        self.env.wait_for_nodes_status(self.env.nodes, ['provisioning', 'provisioned'])
+        self.env.wait_for_nodes_status(
+            self.env.nodes,
+            ['provisioning', 'provisioned'])
 
         self.env.wait_ready(supertask)
         self.env.refresh_nodes()
@@ -120,7 +123,9 @@ class TestTaskManagers(BaseHandlers):
             self.assertEquals(n.progress, 100)
 
     @fake_tasks()
-    def test_redeploy_nodes_in_ready_status_if_cluster_attrs_were_changed(self):
+    def test_redeploy_nodes_in_ready_status_if_cluster_attrs_were_changed(
+        self
+    ):
         self.env.create(
             nodes_kwargs=[
                 {"status": "ready"},
@@ -142,7 +147,9 @@ class TestTaskManagers(BaseHandlers):
         supertask = self.env.launch_deployment()
         self.assertEquals(supertask.name, 'deploy')
         self.assertIn(supertask.status, ('running', 'ready'))
-        self.env.wait_for_nodes_status(self.env.nodes, ['provisioned', 'provisioning'])
+        self.env.wait_for_nodes_status(
+            self.env.nodes,
+            ['provisioned', 'provisioning'])
 
         self.env.wait_ready(supertask)
         self.env.refresh_nodes()
