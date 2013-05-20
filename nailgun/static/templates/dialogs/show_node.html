@@ -59,8 +59,6 @@
   </div>
 </div>
 <div class="modal-footer">
-  <% if (node.get('role') && !deployment) { %>
-    <button class="btn btn-edit-disks" data-dismiss="modal">Configure Disks</button>
-  <% } %>
+  <button class="btn btn-edit-disks" data-dismiss="modal" <%= node.get('role') && node.get('pending_addition') && !deployment ? '' : 'disabled' %>>Configure Disks</button>
   <button class="btn node-modal-close" data-dismiss="modal">Close</button>
 </div>
