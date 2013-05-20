@@ -120,7 +120,7 @@ class TestHandlers(BaseHandlers):
                 'gateway': '172.16.1.1'
             },
         ]
-        self.assertEquals(expected, obtained)
+        self.assertItemsEqual(expected, obtained)
 
     def test_network_validation_on_cluster_creation(self):
         cluster = self.env.create_cluster(api=True)
