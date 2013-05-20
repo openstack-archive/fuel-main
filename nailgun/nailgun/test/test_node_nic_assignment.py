@@ -17,12 +17,19 @@ class TestHandlers(BaseHandlers):
         ]}
         node = self.env.create_node(api=True, meta=meta, mac=mac)
         cluster = self.env.create_cluster(api=True, nodes=[node['id']])
-
+        print 'TEST Cluster: ', cluster
+        resp = self.app.get(
+            reverse('NodeHandler', kwargs={'node_id': node['id']}),
+            headers=self.default_headers)
+        self.assertEquals(resp.status, 200)
+        response = json.loads(resp.body)
+        print 'TEST Node responce: ', response
         resp = self.app.get(
             reverse('NodeNICsHandler', kwargs={'node_id': node['id']}),
             headers=self.default_headers)
         self.assertEquals(resp.status, 200)
         response = json.loads(resp.body)
+        print 'TEST NIChandler responce: ', response
         for resp_nic in response['interfaces']:
             if resp_nic['mac'] == mac:
                 self.assertGreater(len(resp_nic['assigned_networks']), 0)

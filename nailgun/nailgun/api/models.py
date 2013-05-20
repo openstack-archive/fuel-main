@@ -196,7 +196,8 @@ class Node(Base):
     attributes = relationship("NodeAttributes",
                               backref=backref("node"),
                               uselist=False)
-    interfaces = relationship("NodeNICInterface", backref="node")
+    interfaces = relationship("NodeNICInterface", backref="node",
+                              cascade="delete")
 
     @property
     def network_data(self):

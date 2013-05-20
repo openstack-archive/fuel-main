@@ -132,16 +132,6 @@ class ClusterCollectionHandler(JSONHandler, NICUtils):
         self.db.add(cluster)
         self.db.commit()
 
-        if 'nodes' in data and data['nodes']:
-            nodes = self.db.query(Node).filter(
-                Node.id.in_(data['nodes'])
-            ).all()
-            map(cluster.nodes.append, nodes)
-            for node in nodes:
-                self.allow_network_assignment_to_all_interfaces(node)
-                self.assign_networks_to_main_interface(node)
-        self.db.commit()
-
         attributes = Attributes(
             editable=cluster.release.attributes_metadata.get("editable"),
             generated=cluster.release.attributes_metadata.get("generated"),
@@ -154,6 +144,16 @@ class ClusterCollectionHandler(JSONHandler, NICUtils):
 
         cluster.add_pending_changes("attributes")
         cluster.add_pending_changes("networks")
+
+        if 'nodes' in data and data['nodes']:
+            nodes = self.db.query(Node).filter(
+                Node.id.in_(data['nodes'])
+            ).all()
+            map(cluster.nodes.append, nodes)
+            for node in nodes:
+                self.allow_network_assignment_to_all_interfaces(node)
+                self.assign_networks_to_main_interface(node)
+            self.db.commit()
 
         raise web.webapi.created(json.dumps(
             ClusterHandler.render(cluster),
