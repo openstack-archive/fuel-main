@@ -167,7 +167,7 @@ class TestHandlers(BaseHandlers):
             headers=self.default_headers
         )
         response = json.loads(resp.body)
-        self.assertEquals(len(response), 1)
+        self.assertEquals(len(response), 6)
 
         new_meta = node_db.meta.copy()
         new_meta["disks"].append({
@@ -199,7 +199,7 @@ class TestHandlers(BaseHandlers):
             headers=self.default_headers
         )
         response = json.loads(resp.body)
-        self.assertEquals(len(response), 2)
+        self.assertEquals(len(response), 7)
 
     def test_node_insufficient_disk_space(self):
         meta = self.env.default_metadata()
