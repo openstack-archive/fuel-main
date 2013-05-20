@@ -88,22 +88,24 @@ class TestTaskManagers(BaseHandlers):
 
         resp = self.app.get(
             reverse(
-                'NetworkCollectionHandler'
-            ) + "?cluster_id={0}".format(cluster_db.id),
+                'NetworkConfigurationHandler',
+                kwargs={"cluster_id": cluster_db.id}
+            ),
             headers=self.default_headers
         )
-        networks_data = json.loads(resp.body)
-        networks_data[1]["vlan_start"] = 500
+
+        network_configuration = json.loads(resp.body)
+        network_configuration['networks'][0]['vlan_start'] = 500
 
         resp = self.app.put(
             reverse(
-                'ClusterSaveNetworksHandler',
+                'NetworkConfigurationHandler',
                 kwargs={"cluster_id": cluster_db.id}
             ),
-            json.dumps(networks_data),
+            json.dumps(network_configuration),
             headers=self.default_headers
         )
-        self.assertEquals(resp.status, 200)
+        self.assertEquals(resp.status, 202)
 
         supertask = self.env.launch_deployment()
         self.assertEquals(supertask.name, 'deploy')
