@@ -54,6 +54,103 @@ class TestTaskManagers(BaseHandlers):
             self.assertEquals(n.progress, 100)
 
     @fake_tasks()
+    def test_do_not_redeploy_nodes_in_ready_status(self):
+        self.env.create(nodes_kwargs=[
+            {"status": "ready"},
+            {"pending_addition": True}])
+        cluster_db = self.env.clusters[0]
+        cluster_db.clear_pending_changes()
+
+        supertask = self.env.launch_deployment()
+        self.assertEquals(supertask.name, 'deploy')
+        self.assertIn(supertask.status, ('running', 'ready'))
+
+        self.assertEquals(self.env.nodes[0].status, 'ready')
+        self.env.wait_for_nodes_status([self.env.nodes[1]], 'provisioning')
+        self.env.wait_ready(supertask)
+
+        self.env.refresh_nodes()
+
+        self.assertEquals(self.env.nodes[1].status, 'ready')
+        self.assertEquals(self.env.nodes[1].progress, 100)
+
+
+    @fake_tasks()
+    def test_redeploy_nodes_in_ready_status_if_cluster_network_was_changed(self):
+        self.env.create(
+            nodes_kwargs=[
+                {"status": "ready"},
+                {"pending_addition": True}])
+
+        cluster_db = self.env.clusters[0]
+        cluster_db.clear_pending_changes()
+
+        resp = self.app.get(
+            reverse(
+                'NetworkCollectionHandler'
+            ) + "?cluster_id={0}".format(cluster_db.id),
+            headers=self.default_headers
+        )
+        networks_data = json.loads(resp.body)
+        networks_data[1]["vlan_start"] = 500
+
+        resp = self.app.put(
+            reverse(
+                'ClusterSaveNetworksHandler',
+                kwargs={"cluster_id": cluster_db.id}
+            ),
+            json.dumps(networks_data),
+            headers=self.default_headers
+        )
+        self.assertEquals(resp.status, 200)
+
+        supertask = self.env.launch_deployment()
+        self.assertEquals(supertask.name, 'deploy')
+        self.assertIn(supertask.status, ('running', 'ready'))
+
+        self.env.wait_for_nodes_status(self.env.nodes, ['provisioning', 'provisioned'])
+
+        self.env.wait_ready(supertask)
+        self.env.refresh_nodes()
+        for n in filter(
+            lambda n: n.cluster_id == self.env.clusters[0].id,
+            self.env.nodes
+        ):
+            self.assertEquals(n.status, 'ready')
+            self.assertEquals(n.progress, 100)
+
+    @fake_tasks()
+    def test_redeploy_nodes_in_ready_status_if_cluster_attrs_were_changed(self):
+        self.env.create(
+            nodes_kwargs=[
+                {"status": "ready"},
+                {"pending_addition": True}])
+
+        cluster_db = self.env.clusters[0]
+        cluster_db.clear_pending_changes()
+
+        resp = self.app.put(
+            reverse(
+                'ClusterAttributesHandler',
+                kwargs={'cluster_id': cluster_db.id}),
+            headers=self.default_headers,
+            params=json.dumps({'cluster_type': 'both'})
+        )
+
+        self.assertEquals(resp.status, 200)
+
+        supertask = self.env.launch_deployment()
+        self.assertEquals(supertask.name, 'deploy')
+        self.assertIn(supertask.status, ('running', 'ready'))
+        self.env.wait_for_nodes_status(self.env.nodes, ['provisioned', 'provisioning'])
+
+        self.env.wait_ready(supertask)
+        self.env.refresh_nodes()
+        for n in self.env.nodes:
+            self.assertEquals(n.status, 'ready')
+            self.assertEquals(n.progress, 100)
+
+    @fake_tasks()
     def test_deployment_fails_if_node_offline(self):
         cluster = self.env.create_cluster(api=True)
         node1 = self.env.create_node(cluster_id=cluster['id'],

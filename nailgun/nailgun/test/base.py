@@ -523,7 +523,7 @@ class Environment(object):
             self.refresh_nodes()
 
             nodes_with_status = filter(
-                lambda x: x.status == status,
+                lambda x: x.status in status,
                 nodes)
 
             return len(nodes) == len(nodes_with_status)
