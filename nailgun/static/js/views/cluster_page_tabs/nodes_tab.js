@@ -852,6 +852,9 @@ function(models, commonViews, dialogViews, nodesTabSummaryTemplate, editNodesScr
 
     NodeInterface = Backbone.View.extend({
         template: _.template(nodeInterfaceTemplate),
+        templateHelpers: {
+            showBandwidth: utils.showBandwidth
+        },
         events: {
             'sortremove .logical-network-box': 'dragStart',
             'sortreceive .logical-network-box': 'dragStop',
@@ -878,7 +881,7 @@ function(models, commonViews, dialogViews, nodesTabSummaryTemplate, editNodesScr
             this.model.get('assigned_networks').on('add remove', this.checkIfEmpty, this);
         },
         render: function() {
-            this.$el.html(this.template({ifc: this.model, showBandwidth: utils.showBandwidth}));
+            this.$el.html(this.template(_.extend({ifc: this.model}, this.templateHelpers)));
             this.checkIfEmpty();
             this.$('.logical-network-box').sortable({
                 connectWith: '.logical-network-box',
