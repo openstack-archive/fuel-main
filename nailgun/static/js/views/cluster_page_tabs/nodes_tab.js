@@ -826,7 +826,7 @@ function(models, commonViews, dialogViews, nodesTabSummaryTemplate, editNodesScr
             if (this.node) {
                 this.interfaces = new models.Interfaces();
                 this.interfaces.fetch({
-                    url: _.result(this.node, 'url') + '/attributes/interfaces'
+                    url: _.result(this.node, 'url') + '/interfaces'
                 })
                 .done(_.bind(this.renderInterfaces, this))
                 .fail(_.bind(this.returnToNodesTab, this));
@@ -852,38 +852,41 @@ function(models, commonViews, dialogViews, nodesTabSummaryTemplate, editNodesScr
 
     NodeInterface = Backbone.View.extend({
         template: _.template(nodeInterfaceTemplate),
+        templateHelpers: {
+            showBandwidth: utils.showBandwidth
+        },
         events: {
             'sortremove .logical-network-box': 'dragStart',
             'sortreceive .logical-network-box': 'dragStop',
             'sortstop .logical-network-box': 'dragStop'
         },
         dragStart: function(event, ui) {
-            var network = this.model.get('networks').findWhere({name: $(ui.item).data('name')});
-            this.model.get('networks').remove(network);
+            var network = this.model.get('assigned_networks').findWhere({name: $(ui.item).data('name')});
+            this.model.get('assigned_networks').remove(network);
             this.screen.draggedNetwork = network;
         },
         dragStop: function(event, ui) {
             var network = this.screen.draggedNetwork;
             if (event.type == 'sortreceive') {
-                this.model.get('networks').add(network);
+                this.model.get('assigned_networks').add(network);
             }
             this.render();
             this.screen.draggedNetwork = null;
         },
         checkIfEmpty: function() {
-            this.$('.network-help-message').toggleClass('hide', !!this.model.get('networks').length)
+            this.$('.network-help-message').toggleClass('hide', !!this.model.get('assigned_networks').length)
         },
         initialize: function(options) {
             _.defaults(this, options);
-            this.model.get('networks').on('add remove', this.checkIfEmpty, this);
+            this.model.get('assigned_networks').on('add remove', this.checkIfEmpty, this);
         },
         render: function() {
-            this.$el.html(this.template({ifc: this.model}));
+            this.$el.html(this.template({ifc: this.model, templateHelpers: this.templateHelpers}));
             this.checkIfEmpty();
             this.$('.logical-network-box').sortable({
                 connectWith: '.logical-network-box',
                 containment: this.screen.$('.node-networks'),
-                cursor: 'move',
+                cursor: 'move'
             }).disableSelection();
             return this;
         }
