@@ -220,11 +220,14 @@ class DeploymentTask(object):
         old = os.path.join(prefix, node.ip)
         bak = os.path.join(prefix, "%s.bak" % node.fqdn)
         new = os.path.join(prefix, node.fqdn)
+        admin_net = orm().query(Network).filter_by(
+            name="fuelweb_admin"
+        ).one()
         links = map(
             lambda i: os.path.join(prefix, i.ip_addr),
             orm().query(IPAddr.ip_addr).
             filter_by(node=node.id).
-            filter_by(admin=True).all()
+            filter_by(network=admin_net.id).all()
         )
         # backup directory if it exists
         if os.path.isdir(new):
@@ -298,9 +301,12 @@ class DeploymentTask(object):
                 node.id,
                 len(node.meta.get('interfaces', []))
             )
+            admin_net = orm().query(Network).filter_by(
+                name="fuelweb_admin"
+            ).one()
             admin_ips = set([i.ip_addr for i in orm().query(IPAddr).
                             filter_by(node=node.id).
-                            filter_by(admin=True)])
+                            filter_by(network=admin_net.id)])
             for i in node.meta.get('interfaces', []):
                 if 'interfaces' not in nd_dict:
                     nd_dict['interfaces'] = {}

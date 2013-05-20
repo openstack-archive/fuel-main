@@ -4,6 +4,7 @@ import unittest
 from paste.fixture import TestApp
 
 from mock import patch
+from sqlalchemy.sql import not_
 
 from nailgun.api.models import Release, Network
 from nailgun.test.base import BaseHandlers
@@ -67,7 +68,9 @@ class TestHandlers(BaseHandlers):
             headers=self.default_headers
         )
         self.assertEquals(201, resp.status)
-        nets = self.db.query(Network).all()
+        nets = self.db.query(Network).filter(
+            not_(Network.name == "fuelweb_admin")
+        ).all()
         obtained = []
         for net in nets:
             obtained.append({

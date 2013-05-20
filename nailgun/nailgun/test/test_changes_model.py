@@ -19,8 +19,6 @@ from nailgun.api.models import Cluster, Task, ClusterChanges
 
 class TestClusterChanges(BaseHandlers):
 
-    fixtures = ["admin_network"]
-
     def tearDown(self):
         self._wait_for_threads()
 

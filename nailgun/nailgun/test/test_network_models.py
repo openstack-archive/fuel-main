@@ -1,5 +1,7 @@
 import json
 
+from sqlalchemy.sql import not_
+
 from nailgun.test.base import reverse
 from nailgun.test.base import fake_tasks
 from nailgun.test.base import BaseHandlers
@@ -24,7 +26,9 @@ class TestNetworkModels(BaseHandlers):
         self.db.add(ng)
         self.db.commit()
         self.env.network_manager.create_networks(ng)
-        nets_db = self.db.query(Network).all()
+        nets_db = self.db.query(Network).filter(
+            not_(Network.name == "fuelweb_admin")
+        ).all()
         self.assertEquals(len(nets_db), 1)
         self.assertEquals(nets_db[0].vlan_id, kw['vlan_start'])
         self.assertEquals(nets_db[0].name, kw['name'])
@@ -76,7 +80,9 @@ class TestNetworkModels(BaseHandlers):
         self.db.add(ng)
         self.db.commit()
         self.env.network_manager.create_networks(ng)
-        nets_db = self.db.query(Network).all()
+        nets_db = self.db.query(Network).filter(
+            not_(Network.name == "fuelweb_admin")
+        ).all()
         self.assertEquals(len(nets_db), kw['amount'])
         self.assertEquals(nets_db[0].vlan_id, kw['vlan_start'])
         self.assertEquals(nets_db[kw['amount'] - 1].vlan_id,
@@ -84,7 +90,7 @@ class TestNetworkModels(BaseHandlers):
         self.assertEquals(all(x.name == kw['name'] for x in nets_db), True)
         self.assertEquals(all(x.access == kw['access'] for x in nets_db), True)
         vlans_db = self.db.query(Vlan).all()
-        self.assertEquals(len(vlans_db), kw['amount'])
+        self.assertEquals(len(vlans_db), kw['amount'] + 1)  # + 1 for admin net
 
     def test_network_group_slices_cidr_for_networks(self):
         cluster = self.env.create_cluster(api=False)
@@ -100,7 +106,9 @@ class TestNetworkModels(BaseHandlers):
         self.db.add(ng)
         self.db.commit()
         self.env.network_manager.create_networks(ng)
-        nets_db = self.db.query(Network).all()
+        nets_db = self.db.query(Network).filter(
+            not_(Network.name == "fuelweb_admin")
+        ).all()
         self.assertEquals(len(nets_db), kw['amount'])
         self.assertEquals(nets_db[0].cidr, '10.0.0.0/25')
         self.assertEquals(nets_db[1].cidr, '10.0.0.128/25')
@@ -156,7 +164,9 @@ class TestNetworkModels(BaseHandlers):
         self.db.add(ng)
         self.db.commit()
         self.env.network_manager.create_networks(ng)
-        nets_db = self.db.query(Network).all()
+        nets_db = self.db.query(Network).filter(
+            not_(Network.name == "fuelweb_admin")
+        ).all()
         self.assertEquals(len(nets_db), kw['amount'])
         self.assertEquals(nets_db[0].gateway, "10.0.0.5")
         self.assertEquals(nets_db[1].gateway, "10.0.0.133")

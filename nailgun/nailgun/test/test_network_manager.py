@@ -49,8 +49,7 @@ class TestNetworkManager(BaseHandlers):
         for node in nodes:
             ips = self.db.query(IPAddr).\
                 filter_by(node=node.id).\
-                filter_by(network=management_net.id).\
-                filter_by(admin=False).all()
+                filter_by(network=management_net.id).all()
 
             self.assertEquals(1, len(ips))
             self.assertEquals(
@@ -114,10 +113,13 @@ class TestNetworkManager(BaseHandlers):
     def test_assign_admin_ips(self):
         node = self.env.create_node()
         self.env.network_manager.assign_admin_ips(node.id, 2)
+        admin_net = self.db.query(Network).filter_by(
+            name="fuelweb_admin"
+        ).one()
 
         admin_ips = self.db.query(IPAddr).\
             filter_by(node=node.id).\
-            filter_by(admin=True).all()
+            filter_by(network=admin_net.id).all()
         self.assertEquals(len(admin_ips), 2)
         map(
             lambda x: self.assertIn(
@@ -149,10 +151,14 @@ class TestNetworkManager(BaseHandlers):
         # Assinging admin IPs on created nodes
         map(lambda (n, c): self.env.network_manager.assign_admin_ips(n, c), nc)
 
+        admin_net = self.db.query(Network).filter_by(
+            name="fuelweb_admin"
+        ).one()
+
         # Asserting count of admin node IPs
         def asserter(x):
             n, c = x
-            l = len(self.db.query(IPAddr).filter_by(admin=True).
+            l = len(self.db.query(IPAddr).filter_by(network=admin_net.id).
                     filter_by(node=n).all())
             self.assertEquals(l, c)
         map(asserter, nc)
@@ -160,13 +166,16 @@ class TestNetworkManager(BaseHandlers):
     def test_assign_admin_ips_idempotent(self):
         node = self.env.create_node()
         self.env.network_manager.assign_admin_ips(node.id, 2)
+        admin_net_id = self.db.query(Network.id).filter_by(
+            name="fuelweb_admin"
+        ).one()[0]
         admin_ips = set([i.ip_addr for i in self.db.query(IPAddr).
                          filter_by(node=node.id).
-                         filter_by(admin=True).all()])
+                         filter_by(network=admin_net_id).all()])
         self.env.network_manager.assign_admin_ips(node.id, 2)
         admin_ips2 = set([i.ip_addr for i in self.db.query(IPAddr).
                           filter_by(node=node.id).
-                          filter_by(admin=True).all()])
+                          filter_by(network=admin_net_id).all()])
         self.assertEquals(admin_ips, admin_ips2)
 
     @patch.dict(
@@ -182,9 +191,14 @@ class TestNetworkManager(BaseHandlers):
     def test_assign_admin_ips_only_one(self):
         node = self.env.create_node()
         self.env.network_manager.assign_admin_ips(node.id, 1)
+
+        admin_net = self.db.query(Network).filter_by(
+            name="fuelweb_admin"
+        ).one()
+
         admin_ips = self.db.query(IPAddr).\
             filter_by(node=node.id).\
-            filter_by(admin=True).all()
+            filter_by(network=admin_net.id).all()
         self.assertEquals(len(admin_ips), 1)
         self.assertEquals(admin_ips[0].ip_addr, '10.0.0.1')
 
@@ -194,8 +208,13 @@ class TestNetworkManager(BaseHandlers):
         same_vlan = 100
         resp = self.app.get(
             reverse(
+<<<<<<< HEAD
                 'NetworkConfigurationHandler',
                 kwargs={'cluster_id': cluster_db.id}),
+=======
+                'NetworkCollectionHandler'
+            ) + "?cluster_id={0}&admin=0".format(cluster_db.id),
+>>>>>>> unit tests working
             headers=self.default_headers
         )
         networks_data = json.loads(resp.body)
@@ -210,8 +229,13 @@ class TestNetworkManager(BaseHandlers):
         )
         resp = self.app.get(
             reverse(
+<<<<<<< HEAD
                 'NetworkConfigurationHandler',
                 kwargs={'cluster_id': cluster_db.id}),
+=======
+                'NetworkCollectionHandler'
+            ) + "?cluster_id={0}&admin=0".format(cluster_db.id),
+>>>>>>> unit tests working
             headers=self.default_headers
         )
         networks_data = json.loads(resp.body)['networks']

@@ -39,8 +39,7 @@ class TestHorizonURL(BaseHandlers):
             filter_by(name="public").first()
         lost_ips = self.db.query(IPAddr).filter_by(
             network=network.id,
-            node=None,
-            admin=False
+            node=None
         ).all()
         self.assertEquals(len(lost_ips), 1)
 

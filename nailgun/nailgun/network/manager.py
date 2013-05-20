@@ -125,12 +125,15 @@ class NetworkManager(object):
         self.db.commit()
 
     def assign_admin_ips(self, node_id, num=1):
-        node_admin_ips = self._get_ips_except_admin(node_id=node_id)
+        admin_net = self.db.query(Network).filter_by(
+            name="fuelweb_admin"
+        ).one()
+        node_admin_ips = self.db.query(IPAddr).filter_by(
+            node=node_id,
+            network=admin_net.id
+        ).all()
 
         if not node_admin_ips or len(node_admin_ips) < num:
-            admin_net = self.db.query(Network).filter_by(
-                name="fuelweb_admin"
-            ).one()
             logger.debug(
                 "Trying to assign admin ips: node=%s count=%s",
                 node_id,

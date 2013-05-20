@@ -1,8 +1,10 @@
 # -*- coding: utf-8 -*-
 import json
+
 from paste.fixture import TestApp
 from mock import Mock, patch
 from netaddr import IPNetwork, IPAddress
+from sqlalchemy.sql import not_
 
 import nailgun
 from nailgun.test.base import BaseHandlers
@@ -66,10 +68,16 @@ class TestHandlers(BaseHandlers):
         msg['args']['task_uuid'] = deploy_task_uuid
         nodes = []
 
+        admin_net = self.db.query(Network).filter_by(
+            name="fuelweb_admin"
+        ).one()
+
         for n in sorted(self.env.nodes, key=lambda n: n.id):
 
             q = self.db.query(IPAddr).join(Network).\
-                filter(IPAddr.node == n.id, False == IPAddr.admin)
+                filter(IPAddr.node == n.id).filter(
+                    not_(IPAddr.network == admin_net.id)
+                )
 
             """
             Here we want to get node IP addresses which belong
