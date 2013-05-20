@@ -11,7 +11,7 @@ from unittest.case import TestCase
 from functools import partial, wraps
 
 import mock
-from paste.fixture import TestApp
+from paste.fixture import TestApp, AppError
 #from sqlalchemy.orm.events import orm
 
 import nailgun
@@ -97,7 +97,7 @@ class Environment(object):
             self.releases.append(release)
         return release
 
-    def create_cluster(self, api=True, **kwargs):
+    def create_cluster(self, api=True, exclude=None, **kwargs):
         cluster_data = {
             'name': 'cluster-api-' + str(randint(0, 1000000))
         }
@@ -105,6 +105,15 @@ class Environment(object):
             cluster_data.update(kwargs)
         if api:
             cluster_data['release'] = self.create_release(api=False).id
+        else:
+            cluster_data['release'] = self.create_release(api=False)
+        if exclude and isinstance(exclude, list):
+            for ex in exclude:
+                try:
+                    del cluster_data[ex]
+                except KeyError as err:
+                    logging.warning(err)
+        if api:
             resp = self.app.post(
                 reverse('ClusterCollectionHandler'),
                 json.dumps(cluster_data),
@@ -116,7 +125,6 @@ class Environment(object):
                 self.db.query(Cluster).get(cluster['id'])
             )
         else:
-            cluster_data['release'] = self.create_release(api=False)
             cluster = Cluster()
             for field, value in cluster_data.iteritems():
                 setattr(cluster, field, value)
@@ -125,21 +133,38 @@ class Environment(object):
             self.clusters.append(cluster)
         return cluster
 
-    def create_node(self, api=False, **kwargs):
+    def create_node(
+            self, api=False,
+            exclude=None, expect_http=201,
+            expect_message=None,
+            **kwargs):
         node_data = {
             'mac': self._generate_random_mac(),
             'role': 'controller',
-            'status': 'discover'
+            'status': 'discover',
+            'meta': self.default_metadata()
         }
         if kwargs:
             node_data.update(kwargs)
+        if exclude and isinstance(exclude, list):
+            for ex in exclude:
+                try:
+                    del node_data[ex]
+                except KeyError as err:
+                    logging.warning(err)
         if api:
             resp = self.app.post(
                 reverse('NodeCollectionHandler'),
                 json.dumps(node_data),
-                headers=self.default_headers
+                headers=self.default_headers,
+                expect_errors=True
             )
-            self.tester.assertEquals(resp.status, 201)
+            self.tester.assertEquals(resp.status, expect_http)
+            if expect_message:
+                self.tester.assertEquals(resp.body, expect_message)
+            if str(expect_http)[0] != "2":
+                return None
+            self.tester.assertEquals(resp.status, expect_http)
             node = json.loads(resp.body)
             self.nodes.append(
                 self.db.query(Node).get(node['id'])
@@ -147,8 +172,6 @@ class Environment(object):
         else:
             node = Node()
             node.timestamp = datetime.now()
-            if not 'meta' in node_data:
-                node.meta = self.default_metadata()
             for key, value in node_data.iteritems():
                 setattr(node, key, value)
             self.db.add(node)

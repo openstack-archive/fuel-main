@@ -181,6 +181,15 @@ class TestHandlers(BaseHandlers):
             expect_errors=True)
         self.assertEquals(resp.status, 409)
 
+    def test_node_create_without_mac(self):
+        node = self.env.create_node(
+            api=True,
+            exclude=["mac"],
+            expect_http=400,
+            expect_message="No mac address specified"
+        )
+        self.assertEquals(node, None)
+
     def test_node_update_ext_mac(self):
         meta = self.env.default_metadata()
         node1 = self.env.create_node(
