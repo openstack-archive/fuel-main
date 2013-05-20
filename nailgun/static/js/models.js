@@ -278,7 +278,7 @@ define(function() {
             return _.isEmpty(errors) ? null : errors;
         },
         parse: function(response) {
-            response.networks = new models.InterfaceNetworks(response.networks);
+            response.assigned_networks = new models.InterfaceNetworks(response.assigned_networks);
             return response;
         }
     });

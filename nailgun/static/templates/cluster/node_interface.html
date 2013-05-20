@@ -9,7 +9,7 @@
     </div>
 
     <div class="logical-network-box">
-      <% ifc.get('networks').each(function(network) { %>
+      <% ifc.get('assigned_networks').each(function(network) { %>
         <div class="logical-network-item" data-name="<%- network.get('name') %>"><%- network.get('name') %></div>
       <% }) %>
       <div class="network-help-message hide">Use drag-and-drop for placing logical interfaces here</div>
