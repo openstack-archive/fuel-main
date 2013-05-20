@@ -441,7 +441,7 @@ class NodeNICsHandler(JSONHandler, NICUtils):
     @content_json
     def GET(self, node_id):
         node = self.get_object_or_404(Node, node_id)
-        return self.render(node)
+        return self.render(node)['interfaces']
 
     @content_json
     def PUT(self, node_id):
@@ -494,7 +494,7 @@ class NodeNICsDefaultHandler(JSONHandler, NICUtils):
     def GET(self, node_id):
         node = self.render(self.get_object_or_404(Node, node_id))
         default_nets = self.get_default(node)
-        return self.render(node)
+        return self.render(node)['interfaces']
 
     @content_json
     def PUT(self, node_id):
