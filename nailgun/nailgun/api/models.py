@@ -203,7 +203,8 @@ class Node(Base):
     def network_data(self):
         # It is required for integration tests; to get info about nets
         #   which must be created on target node
-        from nailgun.network import manager as netmanager
+        from nailgun.network.manager import NetworkManager
+        netmanager = NetworkManager()
         return netmanager.get_node_networks(self.id)
 
     @property

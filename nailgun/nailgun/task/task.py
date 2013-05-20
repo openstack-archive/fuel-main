@@ -197,6 +197,7 @@ class ProvisionTask(object):
     def message(cls, task):
         task_uuid = task.uuid
         cluster_id = task.cluster.id
+        netmanager = NetworkManager()
         nodes = orm().query(Node).filter_by(
             cluster_id=task.cluster.id,
             pending_deletion=False).order_by(Node.id)

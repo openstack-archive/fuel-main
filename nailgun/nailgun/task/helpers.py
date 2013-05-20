@@ -17,11 +17,11 @@ class TaskHelper(object):
 
     @classmethod
     def slave_name_by_id(cls, nid):
-        return "slave-%s" % str(nid)
+        return u"slave-%s" % str(nid)
 
     @classmethod
     def slave_fqdn_by_id(cls, nid):
-        return "%s.%s" % (cls.slave_name_by_id(nid), settings.DNS_DOMAIN)
+        return u"%s.%s" % (cls.slave_name_by_id(nid), settings.DNS_DOMAIN)
 
     @classmethod
     def update_slave_nodes_fqdn(cls, nodes):

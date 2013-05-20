@@ -15,7 +15,6 @@ from nailgun.logger import logger
 from nailgun.errors import errors
 from nailgun.notifier import notifier
 from nailgun.api.models import Network, Node
-from nailgun.network import manager as netmanager
 from nailgun.rpc.receiver import NailgunReceiver
 
 

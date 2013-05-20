@@ -680,7 +680,7 @@ def reverse(name, kwargs=None):
 
 
 # this method is for development and troubleshooting purposes
-def datadiff(data1, data2, branch):
+def datadiff(data1, data2, branch, p=True):
     def iterator(data1, data2):
         if isinstance(data1, (list,)) and isinstance(data2, (list,)):
             return xrange(max(len(data1), len(data2)))
@@ -700,22 +700,38 @@ def datadiff(data1, data2, branch):
             newbranch = branch[:]
             newbranch.append(k)
 
+            if p:
+                print "Comparing branch: %s" % newbranch
             try:
                 try:
                     v1 = data1[k]
                 except (KeyError, IndexError):
+                    if p:
+                        print "data1 seems does not have key = %s" % k
                     diff.append((newbranch, None, data2[k]))
                     continue
                 try:
                     v2 = data2[k]
                 except (KeyError, IndexError):
+                    if p:
+                        print "data2 seems does not have key = %s" % k
                     diff.append((newbranch, data1[k], None))
                     continue
 
             except Exception as e:
+                if p:
+                    print("data1 and data2 cannot be compared on "
+                          "branch: %s" % newbranch)
                 return diff.append((newbranch, data1, data2))
 
             else:
                 if v1 != v2:
+                    if p:
+                        print("data1 and data2 do not match "
+                              "each other on branch: %s" % newbranch)
+                        print("data1 = %s" % data1)
+                        print("v1 = %s" % v1)
+                        print("data2 = %s" % data2)
+                        print("v2 = %s" % v2)
                     diff.extend(datadiff(v1, v2, newbranch))
     return diff

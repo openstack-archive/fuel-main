@@ -3,7 +3,6 @@
 from kombu import Connection, Exchange, Queue
 
 from nailgun.settings import settings
-from nailgun.logger import logger
 
 creds = (
     ("userid", "guest"),

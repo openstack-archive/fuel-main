@@ -15,7 +15,7 @@ from nailgun.test.base import fake_tasks
 from nailgun.test.base import reverse
 from nailgun.api.models import Cluster, Attributes, IPAddr, Task
 from nailgun.api.models import Network, NetworkGroup
-from nailgun.network import manager as netmanager
+from nailgun.network.manager import NetworkManager
 
 
 class TestHandlers(BaseHandlers):
@@ -23,16 +23,12 @@ class TestHandlers(BaseHandlers):
     @fake_tasks(fake_rpc=False, mock_rpc=False)
     @patch('nailgun.rpc.cast')
     def test_deploy_cast_with_right_args(self, mocked_rpc):
-        cluster = self.env.create_cluster(
-            mode="ha",
-            type="compute"
-        )
-        map(
-            lambda x: self.env.create_node(
-                api=True,
-                cluster_id=cluster['id'],
-                **x),
-            [
+        self.env.create(
+            cluster_kwargs={
+                "mode": "ha",
+                "type": "compute"
+            },
+            nodes_kwargs=[
                 {"role": "controller", "pending_addition": True},
                 {"role": "controller", "pending_addition": True},
             ]
@@ -94,22 +90,21 @@ class TestHandlers(BaseHandlers):
                 ('management', 'public', 'storage')
             )
 
-            nodes.append({'uid': n.id, 'status': 'provisioning', 'ip': n.ip,
+            nodes.append({'uid': n.id, 'status': n.status, 'ip': n.ip,
                           'error_type': n.error_type, 'mac': n.mac,
-                          'role': n.role, 'id': n.id, 'fqdn':
-                          u'slave-%d.%s' % (n.id, settings.DNS_DOMAIN),
+                          'role': n.role, 'id': n.id, 'fqdn': n.fqdn,
                           'progress': 0, 'meta': n.meta, 'online': True,
                           'network_data': [{'brd': '172.16.0.255',
                                             'ip': node_ip_management,
                                             'vlan': 103,
-                                            'gateway': u'172.16.0.1',
+                                            'gateway': '172.16.0.1',
                                             'netmask': '255.255.255.0',
                                             'dev': 'eth0',
-                                            'name': u'management'},
+                                            'name': 'management'},
                                            {'brd': '240.0.1.255',
                                             'ip': node_ip_public,
                                             'vlan': 104,
-                                            'gateway': u'240.0.1.1',
+                                            'gateway': '240.0.1.1',
                                             'netmask': '255.255.255.0',
                                             'dev': 'eth0',
                                             'name': u'public'},
@@ -121,10 +116,10 @@ class TestHandlers(BaseHandlers):
                                             'brd': '192.168.0.255',
                                             'gateway': u'192.168.0.1'},
                                            {'vlan': 100,
-                                            'name': u'floating',
+                                            'name': 'floating',
                                             'dev': 'eth0'},
                                            {'vlan': 101,
-                                            'name': u'fixed',
+                                            'name': 'fixed',
                                             'dev': 'eth0'},
                                            {'name': 'admin',
                                             'dev': 'eth0'}]})
@@ -157,6 +152,7 @@ class TestHandlers(BaseHandlers):
                 }
             }
 
+            netmanager = NetworkManager()
             netmanager.assign_admin_ips(
                 n.id,
                 len(n.meta.get('interfaces', []))
@@ -208,8 +204,8 @@ class TestHandlers(BaseHandlers):
             }
         }
 
-        nailgun.task.task.rpc.cast.assert_called_once_with(
-            'naily', [provision_msg, msg])
+        nailgun.task.manager.rpc.cast.assert_called_once_with(
+             'naily', [provision_msg, msg])
 
     @fake_tasks(fake_rpc=False, mock_rpc=False)
     @patch('nailgun.rpc.cast')
