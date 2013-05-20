@@ -4,834 +4,1247 @@
         "model": "nailgun.node",
         "fields": {
             "status": "discover",
-            "name": "Untitled (76:F1)",
-            "timestamp": "",
-            "manufacturer": "Dell",
-            "platform_name": "Model-1",
-            "role": null,
-            "fqdn": "",
-            "mac": "C0:8D:DF:52:76:F1",
-            "ip": "10.0.12.45",
+            "name": "Supermicro X9DRW",
+            "ip": "172.18.67.168",
+            "online": true,
+            "pending_addition": false,
+            "platform_name": "X9DRW",
+            "mac": "00:25:90:6A:B1:10",
             "meta": {
-              "disks": [
-                {
-                  "size": 100000022933,
-                  "model": "TOSHIBA MK3259GS",
-                  "name": "sda",
-                  "disk": "blablabla1"
-                }
-              ],
-              "interfaces": [
-                {
-                  "mac": "52:54:00:96:81:6E",
-                  "name": "eth0",
-                  "max_speed": 1000,
-                  "current_speed": 100
+                "cpu": {
+                    "real": 2,
+                    "total": 24,
+                    "spec": [
+                        {
+                            "model": "Intel(R) Xeon(R) CPU E5-2620 0 @ 2.00GHz",
+                            "frequency": 2001
+                        },
+                        {
+                            "model": "Intel(R) Xeon(R) CPU E5-2620 0 @ 2.00GHz",
+                            "frequency": 2001
+                        },
+                        {
+                            "model": "Intel(R) Xeon(R) CPU E5-2620 0 @ 2.00GHz",
+                            "frequency": 2001
+                        },
+                        {
+                            "model": "Intel(R) Xeon(R) CPU E5-2620 0 @ 2.00GHz",
+                            "frequency": 2001
+                        },
+                        {
+                            "model": "Intel(R) Xeon(R) CPU E5-2620 0 @ 2.00GHz",
+                            "frequency": 2001
+                        },
+                        {
+                            "model": "Intel(R) Xeon(R) CPU E5-2620 0 @ 2.00GHz",
+                            "frequency": 2001
+                        },
+                        {
+                            "model": "Intel(R) Xeon(R) CPU E5-2620 0 @ 2.00GHz",
+                            "frequency": 2001
+                        },
+                        {
+                            "model": "Intel(R) Xeon(R) CPU E5-2620 0 @ 2.00GHz",
+                            "frequency": 2001
+                        },
+                        {
+                            "model": "Intel(R) Xeon(R) CPU E5-2620 0 @ 2.00GHz",
+                            "frequency": 2001
+                        },
+                        {
+                            "model": "Intel(R) Xeon(R) CPU E5-2620 0 @ 2.00GHz",
+                            "frequency": 2001
+                        },
+                        {
+                            "model": "Intel(R) Xeon(R) CPU E5-2620 0 @ 2.00GHz",
+                            "frequency": 2001
+                        },
+                        {
+                            "model": "Intel(R) Xeon(R) CPU E5-2620 0 @ 2.00GHz",
+                            "frequency": 2001
+                        },
+                        {
+                            "model": "Intel(R) Xeon(R) CPU E5-2620 0 @ 2.00GHz",
+                            "frequency": 2001
+                        },
+                        {
+                            "model": "Intel(R) Xeon(R) CPU E5-2620 0 @ 2.00GHz",
+                            "frequency": 2001
+                        },
+                        {
+                            "model": "Intel(R) Xeon(R) CPU E5-2620 0 @ 2.00GHz",
+                            "frequency": 2001
+                        },
+                        {
+                            "model": "Intel(R) Xeon(R) CPU E5-2620 0 @ 2.00GHz",
+                            "frequency": 2001
+                        },
+                        {
+                            "model": "Intel(R) Xeon(R) CPU E5-2620 0 @ 2.00GHz",
+                            "frequency": 2001
+                        },
+                        {
+                            "model": "Intel(R) Xeon(R) CPU E5-2620 0 @ 2.00GHz",
+                            "frequency": 2001
+                        },
+                        {
+                            "model": "Intel(R) Xeon(R) CPU E5-2620 0 @ 2.00GHz",
+                            "frequency": 2001
+                        },
+                        {
+                            "model": "Intel(R) Xeon(R) CPU E5-2620 0 @ 2.00GHz",
+                            "frequency": 2001
+                        },
+                        {
+                            "model": "Intel(R) Xeon(R) CPU E5-2620 0 @ 2.00GHz",
+                            "frequency": 2001
+                        },
+                        {
+                            "model": "Intel(R) Xeon(R) CPU E5-2620 0 @ 2.00GHz",
+                            "frequency": 2001
+                        },
+                        {
+                            "model": "Intel(R) Xeon(R) CPU E5-2620 0 @ 2.00GHz",
+                            "frequency": 2001
+                        },
+                        {
+                            "model": "Intel(R) Xeon(R) CPU E5-2620 0 @ 2.00GHz",
+                            "frequency": 2001
+                        }
+                    ]
                 },
-                {
-                  "mac": "C8:0A:A9:A6:FF:28",
-                  "name": "eth1",
-                  "max_speed": 1000,
-                  "current_speed": 1000
+                "interfaces": [
+                    {
+                        "mac": "00:25:90:6A:B1:10",
+                        "max_speed": 1000,
+                        "name": "eth0",
+                        "current_speed": 1000
+                    },
+                    {
+                        "mac": "00:25:90:6A:B1:11",
+                        "max_speed": 1000,
+                        "name": "eth1",
+                        "current_speed": "unknown"
+                    },
+                    {
+                        "ip": "172.18.67.168",
+                        "mac": "00:25:90:6A:B1:10",
+                        "netmask": "255.255.255.240",
+                        "current_speed": null,
+                        "name": "br0"
+                    },
+                    {
+                        "ip": "10.20.0.1",
+                        "mac": "FE:54:00:0E:B8:F5",
+                        "netmask": "255.255.255.0",
+                        "current_speed": null,
+                        "name": "brmike"
+                    }
+                ],
+                "disks": [
+                    {
+                        "model": "TOSHIBA MK1002TS",
+                        "name": "sda",
+                        "disk": "sda",
+                        "size": 1000204886016
+                    },
+                    {
+                        "model": "TOSHIBA MK1002TS",
+                        "name": "sdb",
+                        "disk": "sdb",
+                        "size": 1000204886016
+                    },
+                    {
+                        "model": "TOSHIBA MK1002TS",
+                        "name": "sdc",
+                        "disk": "sdc",
+                        "size": 1000204886016
+                    },
+                    {
+                        "model": "TOSHIBA MK1002TS",
+                        "name": "sdd",
+                        "disk": "sdd",
+                        "size": 1000204886016
+                    },
+                    {
+                        "model": "Virtual Floppy0",
+                        "name": "sde",
+                        "disk": "sde",
+                        "size": 0
+                    },
+                    {
+                        "model": "Virtual HDisk0",
+                        "name": "sdf",
+                        "disk": "sdf",
+                        "size": 0
+                    }
+                ],
+                "system": {
+                    "product": "X9DRW",
+                    "family": "To be filled by O.E.M.",
+                    "fqdn": "srv08-srt.srt.mirantis.net",
+                    "version": "0123456789",
+                    "serial": "0123456789",
+                    "manufacturer": "Supermicro"
                 },
-                {
-                  "mac": "D4:56:C3:88:99:DF",
-                  "name": "eth0:1",
-                  "max_speed": 2000,
-                  "current_speed": null
+                "memory": {
+                    "slots": 1,
+                    "total": 137455730688,
+                    "maximum_capacity": 274894684160,
+                    "devices": [
+                        {
+                            "frequency": 1333,
+                            "type": "DDR3",
+                            "size": 8589934592
+                        },
+                        {
+                            "frequency": 1333,
+                            "type": "DDR3",
+                            "size": 8589934592
+                        },
+                        {
+                            "frequency": 1333,
+                            "type": "DDR3",
+                            "size": 8589934592
+                        },
+                        {
+                            "frequency": 1333,
+                            "type": "DDR3",
+                            "size": 8589934592
+                        },
+                        {
+                            "frequency": 1333,
+                            "type": "DDR3",
+                            "size": 8589934592
+                        },
+                        {
+                            "frequency": 1333,
+                            "type": "DDR3",
+                            "size": 8589934592
+                        },
+                        {
+                            "frequency": 1333,
+                            "type": "DDR3",
+                            "size": 8589934592
+                        },
+                        {
+                            "frequency": 1333,
+                            "type": "DDR3",
+                            "size": 8589934592
+                        },
+                        {
+                            "frequency": 1333,
+                            "type": "DDR3",
+                            "size": 8589934592
+                        },
+                        {
+                            "frequency": 1333,
+                            "type": "DDR3",
+                            "size": 8589934592
+                        },
+                        {
+                            "frequency": 1333,
+                            "type": "DDR3",
+                            "size": 8589934592
+                        },
+                        {
+                            "frequency": 1333,
+                            "type": "DDR3",
+                            "size": 8589934592
+                        },
+                        {
+                            "frequency": 1333,
+                            "type": "DDR3",
+                            "size": 8589934592
+                        },
+                        {
+                            "frequency": 1333,
+                            "type": "DDR3",
+                            "size": 8589934592
+                        },
+                        {
+                            "frequency": 1333,
+                            "type": "DDR3",
+                            "size": 8589934592
+                        },
+                        {
+                            "frequency": 1333,
+                            "type": "DDR3",
+                            "size": 8589934592
+                        },
+                        {
+                            "type": "Flash",
+                            "size": 16777216
+                        }
+                    ]
                 }
-              ],
-              "cpu": {
-                "total": 4,
-                "real": 2,
-                "spec": [
-                  {
-                    "frequency": 1200,
-                    "model": "Intel(R) Core(TM)2 Duo CPU T6570 @ 1.20GHz"
-                  },
-                  {
-                    "frequency": 1200,
-                    "model": "Intel(R) Core(TM)2 Duo CPU T6570 @ 1.20GHz"
-                  },
-                  {
-                    "frequency": 2100,
-                    "model": "Intel(R) Core(TM)2 Duo CPU T6570 @ 2.10GHz"
-                  },
-                  {
-                    "frequency": 2100,
-                    "model": "Intel(R) Core(TM)2 Duo CPU T6570 @ 2.10GHz"
-                  }
-                ]
-              },
-              "memory": {
-                "devices": [
-                    {"size": 1073741824},
-                    {"size": 1073741824},
-                    {"size": 1073741824},
-                    {"size": 1073741824}
-                  ],
-                  "slots": 6,
-                  "total": 4294967296,
-                  "maximum_capacity": 8589934592
-              },
-              "system": {
-                "version": "Power Edge 2970",
-                "manufacturer": "Dell",
-                "product": "QWERTY",
-                "serial": "123456",
-                "family": "Power Edge"
-              }
-            }
+            },
+            "timestamp": "",
+            "progress": 0,
+            "pending_deletion": false,
+            "os_platform": "ubuntu",
+            "id": 13,
+            "manufacturer": "Supermicro"
         }
     },
     {
-        "pk": 2,
-        "model": "nailgun.node",
-        "fields": {
-            "status": "error",
-            "error_type": "provision",
-            "timestamp": "",
-            "error_msg": "You need more money",
-            "name": "Bad node",
-            "manufacturer": "OpenVZ",
-            "platform_name": "Model-2",
-            "role": null,
-            "ip": "10.0.12.47",
-            "fqdn": "",
-            "mac": "46:FC:5A:0C:F9:51",
-            "meta": {
-              "disks": [
-                {
-                    "size": 2147483648000,
-                    "model": "HITACHI LOL404",
-                    "name": "sda",
-                    "disk": "blablabla2"
-                },
-                {
-                    "model": "SEAGATE B00B135",
-                    "name": "vda",
-                    "size": 2147483648000,
-                    "disk": "blablabla3"
-                }
-              ],
-              "interfaces": [
-                {
-                  "mac": "46:FC:5A:0C:F9:51",
-                  "name": "eth0",
-                  "max_speed": 1000,
-                  "current_speed": 100
-                },
-                {
-                  "mac": "D4:56:C3:88:99:92",
-                  "name": "eth0:1",
-                  "max_speed": 2000,
-                  "current_speed": null
-                }
-              ],
-              "cpu": {
-                "total": 4,
-                "real": 2,
-                "spec": [
-                  {
-                    "frequency": 1200,
-                    "model": "Intel(R) Core(TM)2 Duo CPU T6570 @ 1.20GHz"
-                  },
-                  {
-                    "frequency": 1200,
-                    "model": "Intel(R) Core(TM)2 Duo CPU T6570 @ 1.20GHz"
-                  },
-                  {
-                    "frequency": 2100,
-                    "model": "Intel(R) Core(TM)2 Duo CPU T6570 @ 2.10GHz"
-                  },
-                  {
-                    "frequency": 2100,
-                    "model": "Intel(R) Core(TM)2 Duo CPU T6570 @ 2.10GHz"
-                  }
-                ]
-              },
-              "memory": {
-                "devices": [
-                    {"size": 805306368}
-                  ],
-                  "slots": 1,
-                  "total": 805306368,
-                  "maximum_capacity": 805306368
-              },
-              "system": {
-                "version": "Power Edge 2970",
-                "manufacturer": "Dell",
-                "product": "QWERTY",
-                "serial": "123456",
-                "family": "Power Edge"
-              }
-            }
-        }
-    },
-    {
-        "pk": 3,
+        "pk": 14,
         "model": "nailgun.node",
         "fields": {
             "status": "discover",
-            "name": "Untitled (69:1F)",
-            "timestamp": "",
-            "manufacturer": "OpenVZ",
-            "platform_name": "Model-3",
-            "role": null,
-            "ip": "10.0.12.49",
-            "fqdn": "",
-            "mac": "2E:04:78:86:69:1F",
-            "progress": 40,
+            "name": "Dell Inspiron",
+            "ip": "10.20.0.1",
+            "online": true,
+            "pending_addition": false,
+            "platform_name": "Inspiron N5110",
+            "mac": "58:91:CF:2A:C4:1B",
             "meta": {
-              "disks": [
-                {
-                    "size": 1073741824000,
-                    "model": "SAMSUNG OMG777",
-                    "name": "sda",
-                    "disk": "blablabla4"
+                "memory": {
+                    "slots": 2,
+                    "total": 8589934592,
+                    "maximum_capacity": 17179869184,
+                    "devices": [
+                        {
+                            "frequency": 1333,
+                            "type": "DDR3",
+                            "size": 4294967296
+                        },
+                        {
+                            "frequency": 1333,
+                            "type": "DDR3",
+                            "size": 4294967296
+                        }
+                    ]
                 },
-                {
-                    "model": "MAXTOR D3ADB33F",
-                    "name": "vda",
-                    "size": 1073741824000,
-                    "disk": "blablabla5"
-                }
-              ],
-              "interfaces": [
-                {
-                  "mac": "2E:04:78:86:69:1F",
-                  "name": "eth0",
-                  "max_speed": 1000,
-                  "current_speed": 100
+                "interfaces": [
+                    {
+                        "ip": "10.20.0.1",
+                        "mac": "0A:00:27:00:00:00",
+                        "netmask": "255.255.255.0",
+                        "current_speed": null,
+                        "name": "vboxnet0"
+                    },
+                    {
+                        "mac": "FA:5F:13:30:9D:46",
+                        "name": "br-int",
+                        "current_speed": null
+                    },
+                    {
+                        "mac": "2E:02:A2:F7:30:6E",
+                        "name": "qr-391c960a-8f",
+                        "current_speed": null
+                    },
+                    {
+                        "mac": "A2:39:BA:E2:71:3F",
+                        "name": "tap5d9691b1-9f",
+                        "current_speed": null
+                    },
+                    {
+                        "ip": "192.168.70.234",
+                        "mac": "58:91:CF:2A:C4:1B",
+                        "netmask": "255.255.255.0",
+                        "current_speed": null,
+                        "name": "wlan0"
+                    },
+                    {
+                        "mac": "F6:62:CC:2A:E6:4F",
+                        "name": "br-tun",
+                        "current_speed": null
+                    },
+                    {
+                        "mac": "86:1A:1D:23:0B:09",
+                        "name": "qg-d648e295-3f",
+                        "current_speed": null
+                    },
+                    {
+                        "mac": "24:B6:FD:53:63:00",
+                        "max_speed": 100,
+                        "name": "eth0",
+                        "current_speed": 10
+                    },
+                    {
+                        "mac": "8E:38:AB:17:E0:47",
+                        "name": "br-ex",
+                        "current_speed": null
+                    }
+                ],
+                "disks": [
+                    {
+                        "model": "Silicon-Power16G",
+                        "name": "sdb",
+                        "disk": "sdb",
+                        "size": 15518924800
+                    },
+                    {
+                        "model": "WDC WD3200BPVT-7",
+                        "name": "sda",
+                        "disk": "sda",
+                        "size": 320072933376
+                    }
+                ],
+                "system": {
+                    "product": "Inspiron N5110",
+                    "serial": "044ED881",
+                    "fqdn": "lab-10",
+                    "manufacturer": "80AD"
                 },
-                {
-                  "mac": "C8:01:E9:A7:33:25",
-                  "name": "eth1",
-                  "max_speed": 100,
-                  "current_speed": 100
+                "cpu": {
+                    "real": 1,
+                    "total": 8,
+                    "spec": [
+                        {
+                            "model": "Intel(R) Core(TM) i7-2670QM CPU @ 2.20GHz",
+                            "frequency": 2201
+                        },
+                        {
+                            "model": "Intel(R) Core(TM) i7-2670QM CPU @ 2.20GHz",
+                            "frequency": 2201
+                        },
+                        {
+                            "model": "Intel(R) Core(TM) i7-2670QM CPU @ 2.20GHz",
+                            "frequency": 2201
+                        },
+                        {
+                            "model": "Intel(R) Core(TM) i7-2670QM CPU @ 2.20GHz",
+                            "frequency": 2201
+                        },
+                        {
+                            "model": "Intel(R) Core(TM) i7-2670QM CPU @ 2.20GHz",
+                            "frequency": 2201
+                        },
+                        {
+                            "model": "Intel(R) Core(TM) i7-2670QM CPU @ 2.20GHz",
+                            "frequency": 2201
+                        },
+                        {
+                            "model": "Intel(R) Core(TM) i7-2670QM CPU @ 2.20GHz",
+                            "frequency": 2201
+                        },
+                        {
+                            "model": "Intel(R) Core(TM) i7-2670QM CPU @ 2.20GHz",
+                            "frequency": 2201
+                        }
+                    ]
                 }
-              ],
-              "cpu": {
-                "total": 4,
-                "real": 2,
-                "spec": [
-                  {
-                    "frequency": 1200,
-                    "model": "Intel(R) Core(TM)2 Duo CPU T6570 @ 1.20GHz"
-                  },
-                  {
-                    "frequency": 1200,
-                    "model": "Intel(R) Core(TM)2 Duo CPU T6570 @ 1.20GHz"
-                  },
-                  {
-                    "frequency": 2100,
-                    "model": "Intel(R) Core(TM)2 Duo CPU T6570 @ 2.10GHz"
-                  },
-                  {
-                    "frequency": 2100,
-                    "model": "Intel(R) Core(TM)2 Duo CPU T6570 @ 2.10GHz"
-                  }
-                ]
-              },
-              "memory": {
-                "devices": [
-                    {"size": 805306368},
-                    {"size": 1073741824}
-                  ],
-                  "slots": 2,
-                  "total": 1879048192,
-                  "maximum_capacity": 1879048192
-              },
-              "system": {
-                "version": "Power Edge 2970",
-                "manufacturer": "Dell",
-                "product": "QWERTY",
-                "serial": "123456",
-                "family": "Power Edge"
-              }
-            }
+            },
+            "timestamp": "",
+            "progress": 0,
+            "pending_deletion": false,
+            "os_platform": "ubuntu",
+            "id": 14,
+            "manufacturer": "80AD"
         }
     },
     {
-        "pk": 4,
+        "pk": 16,
         "model": "nailgun.node",
         "fields": {
+            "status": "discover",
+            "name": "Supermicro X9SCD",
+            "ip": "172.18.67.167",
+            "online": true,
+            "pending_addition": false,
+            "platform_name": "X9SCD",
+            "mac": "00:25:90:67:9F:B7",
+            "meta": {
+                "memory": {
+                    "slots": 4,
+                    "total": 17179869184,
+                    "maximum_capacity": 34359738368,
+                    "devices": [
+                        {
+                            "frequency": 1333,
+                            "type": "DDR3",
+                            "size": 4294967296
+                        },
+                        {
+                            "frequency": 1333,
+                            "type": "DDR3",
+                            "size": 4294967296
+                        },
+                        {
+                            "frequency": 1333,
+                            "type": "DDR3",
+                            "size": 4294967296
+                        },
+                        {
+                            "frequency": 1333,
+                            "type": "DDR3",
+                            "size": 4294967296
+                        }
+                    ]
+                },
+                "interfaces": [
+                    {
+                        "ip": "192.168.125.1",
+                        "mac": "66:0D:6F:A6:6F:FE",
+                        "netmask": "255.255.255.0",
+                        "current_speed": null,
+                        "name": "crowbar-pub.200@crowbar-pub"
+                    },
+                    {
+                        "ip": "192.168.127.1",
+                        "mac": "66:0D:6F:A6:6F:FE",
+                        "netmask": "255.255.255.0",
+                        "current_speed": null,
+                        "name": "crowbar-pub.500@crowbar-pub"
+                    },
+                    {
+                        "name": "eth1",
+                        "ip": "172.18.67.167",
+                        "netmask": "255.255.255.240",
+                        "mac": "00:25:90:67:9F:B7",
+                        "max_speed": 1000,
+                        "current_speed": 1000
+                    },
+                    {
+                        "mac": "00:25:90:67:9F:B6",
+                        "max_speed": 1000,
+                        "name": "eth0",
+                        "current_speed": "unknown"
+                    },
+                    {
+                        "ip": "192.168.126.1",
+                        "mac": "66:0D:6F:A6:6F:FE",
+                        "netmask": "255.255.255.0",
+                        "current_speed": null,
+                        "name": "crowbar-pub.300@crowbar-pub"
+                    },
+                    {
+                        "mac": "76:D7:94:34:DD:0A",
+                        "name": "admin-0-pub",
+                        "current_speed": null
+                    },
+                    {
+                        "ip": "192.168.128.1",
+                        "mac": "66:0D:6F:A6:6F:FE",
+                        "netmask": "255.255.255.0",
+                        "current_speed": null,
+                        "name": "crowbar-pub.600@crowbar-pub"
+                    },
+                    {
+                        "ip": "192.168.124.1",
+                        "mac": "1A:1F:62:98:04:0B",
+                        "netmask": "255.255.255.0",
+                        "current_speed": null,
+                        "name": "crowbar-pub"
+                    },
+                    {
+                        "mac": "96:47:77:AD:5C:FF",
+                        "name": "admin-1-pub",
+                        "current_speed": null
+                    }
+                ],
+                "disks": [
+                    {
+                        "model": "TOSHIBA MK1002TS",
+                        "name": "sdb",
+                        "disk": "sdb",
+                        "size": 1000204886016
+                    },
+                    {
+                        "model": "TOSHIBA MK1002TS",
+                        "name": "sda",
+                        "disk": "sda",
+                        "size": 1000204886016
+                    }
+                ],
+                "system": {
+                    "product": "X9SCD",
+                    "family": "To be filled by O.E.M.",
+                    "fqdn": "mc0n1-srt.srt.mirantis.net",
+                    "version": "0123456789",
+                    "serial": "0123456789",
+                    "manufacturer": "Supermicro"
+                },
+                "cpu": {
+                    "real": 1,
+                    "total": 8,
+                    "spec": [
+                        {
+                            "model": "Intel(R) Xeon(R) CPU E31230 @ 3.20GHz",
+                            "frequency": 3201
+                        },
+                        {
+                            "model": "Intel(R) Xeon(R) CPU E31230 @ 3.20GHz",
+                            "frequency": 3201
+                        },
+                        {
+                            "model": "Intel(R) Xeon(R) CPU E31230 @ 3.20GHz",
+                            "frequency": 3201
+                        },
+                        {
+                            "model": "Intel(R) Xeon(R) CPU E31230 @ 3.20GHz",
+                            "frequency": 3201
+                        },
+                        {
+                            "model": "Intel(R) Xeon(R) CPU E31230 @ 3.20GHz",
+                            "frequency": 3201
+                        },
+                        {
+                            "model": "Intel(R) Xeon(R) CPU E31230 @ 3.20GHz",
+                            "frequency": 3201
+                        },
+                        {
+                            "model": "Intel(R) Xeon(R) CPU E31230 @ 3.20GHz",
+                            "frequency": 3201
+                        },
+                        {
+                            "model": "Intel(R) Xeon(R) CPU E31230 @ 3.20GHz",
+                            "frequency": 3201
+                        }
+                    ]
+                }
+            },
+            "timestamp": "",
+            "progress": 0,
+            "pending_deletion": false,
+            "os_platform": "ubuntu",
+            "id": 16,
+            "manufacturer": "Supermicro"
+        }
+    },
+    {
+        "pk": 17,
+        "model": "nailgun.node",
+        "fields": {
+            "status": "discover",
+            "name": "Supermicro X9SCD (offline)",
+            "ip": "172.18.67.173",
             "online": false,
-            "name": "Offline node",
-            "timestamp": "",
-            "manufacturer": "Xen",
-            "platform_name": "",
-            "role": null,
-            "ip": "10.0.12.41",
-            "fqdn": "",
-            "mac": "BC:10:A1:44:94:A0",
+            "pending_addition": false,
+            "platform_name": "X9SCD",
+            "mac": "00:25:90:67:9D:24",
             "meta": {
-              "disks": [
-                {
-                    "size": 2147483648000,
-                    "model": "MAXTOR D3ADB33F",
-                    "name": "sda",
-                    "disk": "blablabla6"
+                "memory": {
+                    "slots": 4,
+                    "total": 17179869184,
+                    "maximum_capacity": 34359738368,
+                    "devices": [
+                        {
+                            "frequency": 1333,
+                            "type": "DDR3",
+                            "size": 4294967296
+                        },
+                        {
+                            "frequency": 1333,
+                            "type": "DDR3",
+                            "size": 4294967296
+                        },
+                        {
+                            "frequency": 1333,
+                            "type": "DDR3",
+                            "size": 4294967296
+                        },
+                        {
+                            "frequency": 1333,
+                            "type": "DDR3",
+                            "size": 4294967296
+                        }
+                    ]
                 },
-                {
-                    "model": "SEAGATE B00B135",
-                    "name": "vda",
-                    "size": 1073741824000,
-                    "disk": "blablabla7"
-                }
-              ],
-              "interfaces": [
-                {
-                  "mac": "BC:10:A1:44:94:A0",
-                  "name": "eth0",
-                  "max_speed": 1000,
-                  "current_speed": 100
+                "interfaces": [
+                    {
+                        "mac": "00:25:90:67:9D:25",
+                        "max_speed": 1000,
+                        "name": "eth1",
+                        "current_speed": "unknown"
+                    },
+                    {
+                        "name": "eth0",
+                        "ip": "172.18.67.173",
+                        "netmask": "255.255.255.240",
+                        "mac": "00:25:90:67:9D:24",
+                        "max_speed": 1000,
+                        "current_speed": 1000
+                    }
+                ],
+                "disks": [
+                    {
+                        "model": "TOSHIBA MK1002TS",
+                        "name": "sdb",
+                        "disk": "sdb",
+                        "size": 1000204886016
+                    },
+                    {
+                        "model": "TOSHIBA MK1002TS",
+                        "name": "sda",
+                        "disk": "sda",
+                        "size": 1000204886016
+                    }
+                ],
+                "system": {
+                    "product": "X9SCD",
+                    "family": "To be filled by O.E.M.",
+                    "fqdn": "mc0n2-srt",
+                    "version": "0123456789",
+                    "serial": "0123456789",
+                    "manufacturer": "Supermicro"
                 },
-                {
-                  "mac": "D4:64:A1:78:02:56",
-                  "name": "eth1",
-                  "max_speed": 1000,
-                  "current_speed": null
+                "cpu": {
+                    "real": 1,
+                    "total": 8,
+                    "spec": [
+                        {
+                            "model": "Intel(R) Xeon(R) CPU E31230 @ 3.20GHz",
+                            "frequency": 3201
+                        },
+                        {
+                            "model": "Intel(R) Xeon(R) CPU E31230 @ 3.20GHz",
+                            "frequency": 3201
+                        },
+                        {
+                            "model": "Intel(R) Xeon(R) CPU E31230 @ 3.20GHz",
+                            "frequency": 3201
+                        },
+                        {
+                            "model": "Intel(R) Xeon(R) CPU E31230 @ 3.20GHz",
+                            "frequency": 3201
+                        },
+                        {
+                            "model": "Intel(R) Xeon(R) CPU E31230 @ 3.20GHz",
+                            "frequency": 3201
+                        },
+                        {
+                            "model": "Intel(R) Xeon(R) CPU E31230 @ 3.20GHz",
+                            "frequency": 3201
+                        },
+                        {
+                            "model": "Intel(R) Xeon(R) CPU E31230 @ 3.20GHz",
+                            "frequency": 3201
+                        },
+                        {
+                            "model": "Intel(R) Xeon(R) CPU E31230 @ 3.20GHz",
+                            "frequency": 3201
+                        }
+                    ]
                 }
-              ],
-              "cpu": {
-                "total": 4,
-                "real": 2,
-                "spec": [
-                  {
-                    "frequency": 1200,
-                    "model": "Intel(R) Core(TM)2 Duo CPU T6570 @ 1.20GHz"
-                  },
-                  {
-                    "frequency": 1200,
-                    "model": "Intel(R) Core(TM)2 Duo CPU T6570 @ 1.20GHz"
-                  },
-                  {
-                    "frequency": 2100,
-                    "model": "Intel(R) Core(TM)2 Duo CPU T6570 @ 2.10GHz"
-                  },
-                  {
-                    "frequency": 2100,
-                    "model": "Intel(R) Core(TM)2 Duo CPU T6570 @ 2.10GHz"
-                  }
-                ]
-              },
-              "memory": {
-                "devices": [
-                    {"size": 805306368},
-                    {"size": 805306368},
-                    {"size": 805306368}
-                  ],
-                  "slots": 3,
-                  "total": 2415919104,
-                  "maximum_capacity": 4831838208
-              },
-              "system": {
-                "version": "Power Edge 2970",
-                "manufacturer": "Dell",
-                "product": "QWERTY",
-                "serial": "123456",
-                "family": "Power Edge"
-              }
-            }
+            },
+            "timestamp": "",
+            "progress": 0,
+            "pending_deletion": false,
+            "os_platform": "ubuntu",
+            "id": 17,
+            "manufacturer": "Supermicro"
         }
     },
     {
-        "pk": 5,
-        "model": "nailgun.node",
-        "fields": {
-            "status": "discover",
-            "name": "Node with name",
-            "timestamp": "",
-            "manufacturer": "VMWare",
-            "platform_name": "",
-            "role": null,
-            "ip": "10.0.12.43",
-            "fqdn": "",
-            "mac": "B6:17:54:39:27:EA",
-            "meta": {
-              "disks": [
-                {
-                    "size": 2147483648000,
-                    "model": "HITACHI LOL404",
-                    "name": "sda",
-                    "disk": "blablabla8"
-                },
-                {
-                    "model": "SEAGATE B00B135",
-                    "name": "vda",
-                    "size": 2147483648000,
-                    "disk": "blablabla9"
-                }
-              ],
-              "interfaces": [
-                {
-                  "mac": "B6:17:54:39:27:EA",
-                  "name": "eth0",
-                  "max_speed": 1000,
-                  "current_speed": 100
-                },
-                {
-                  "mac": "D4:71:2B:89:01:65",
-                  "name": "eth1",
-                  "max_speed": 1000,
-                  "current_speed": null
-                }
-              ],
-              "cpu": {
-                "total": 4,
-                "real": 2,
-                "spec": [
-                  {
-                    "frequency": 1200,
-                    "model": "Intel(R) Core(TM)2 Duo CPU T6570 @ 1.20GHz"
-                  },
-                  {
-                    "frequency": 1200,
-                    "model": "Intel(R) Core(TM)2 Duo CPU T6570 @ 1.20GHz"
-                  },
-                  {
-                    "frequency": 2100,
-                    "model": "Intel(R) Core(TM)2 Duo CPU T6570 @ 2.10GHz"
-                  },
-                  {
-                    "frequency": 2100,
-                    "model": "Intel(R) Core(TM)2 Duo CPU T6570 @ 2.10GHz"
-                  }
-                ]
-              },
-              "memory": {
-                "devices": [
-                    {"size": 805306368},
-                    {"size": 805306368},
-                    {"size": 805306368}
-                  ],
-                  "slots": 3,
-                  "total": 2415919104,
-                  "maximum_capacity": 4831838208
-              },
-              "system": {
-                "version": "Power Edge 2970",
-                "manufacturer": "Dell",
-                "product": "QWERTY",
-                "serial": "123456",
-                "family": "Power Edge"
-              }
-            }
-        }
-    },
-    {
-        "pk": 6,
-        "model": "nailgun.node",
-        "fields": {
-            "status": "discover",
-            "name": "Untitled (9B:92)",
-            "timestamp": "",
-            "manufacturer": "Cisco",
-            "platform_name": "",
-            "role": null,
-            "ip": "10.0.12.50",
-            "fqdn": "",
-            "mac": "47:33:22:46:9B:92",
-            "meta": {
-              "disks": [
-                {
-                    "size": 2147483648000,
-                    "model": "WD PWN3D",
-                    "name": "sda",
-                    "disk": "blablabla10"
-                },
-                {
-                    "model": "SEAGATE Q1W2E3",
-                    "name": "vda",
-                    "size": 5368709120000,
-                    "disk": "blablabla11"
-                },
-                {
-                    "model": "IPOD CLASSIC",
-                    "name": "vda",
-                    "size": 5368709120000,
-                    "disk": "blablabla12"
-                }
-              ],
-              "interfaces": [
-                {
-                  "mac": "47:33:22:46:9B:92",
-                  "name": "eth0",
-                  "max_speed": 100,
-                  "current_speed": 100
-                },
-                {
-                  "mac": "D4:34:B6:6B:01:77",
-                  "name": "eth1",
-                  "max_speed": 1000,
-                  "current_speed": null
-                }
-              ],
-              "cpu": {
-                "total": 4,
-                "real": 2,
-                "spec": [
-                  {
-                    "frequency": 1200,
-                    "model": "Intel(R) Core(TM)2 Duo CPU T6570 @ 1.20GHz"
-                  },
-                  {
-                    "frequency": 1200,
-                    "model": "Intel(R) Core(TM)2 Duo CPU T6570 @ 1.20GHz"
-                  },
-                  {
-                    "frequency": 2100,
-                    "model": "Intel(R) Core(TM)2 Duo CPU T6570 @ 2.10GHz"
-                  },
-                  {
-                    "frequency": 2100,
-                    "model": "Intel(R) Core(TM)2 Duo CPU T6570 @ 2.10GHz"
-                  }
-                ]
-              },
-              "memory": {
-                "devices": [
-                    {"size": 805306368},
-                    {"size": 805306368},
-                    {"size": 805306368}
-                  ],
-                  "slots": 3,
-                  "total": 2415919104,
-                  "maximum_capacity": 4831838208
-              },
-              "system": {
-                "version": "Power Edge 2970",
-                "manufacturer": "Dell",
-                "product": "QWERTY",
-                "serial": "123456",
-                "family": "Power Edge"
-              }
-            }
-        }
-    },
-    {
-        "pk": 7,
-        "model": "nailgun.node",
-        "fields": {
-            "status": "discover",
-            "name": "Another node",
-            "timestamp": "",
-            "manufacturer": "QEMU",
-            "platform_name": "",
-            "role": null,
-            "ip": "10.0.12.52",
-            "fqdn": "",
-            "mac": "84:67:BA:CA:69:95",
-            "meta": {
-              "disks": [
-                {
-                    "model": "DVD-RW",
-                    "name": "vda",
-                    "size": 4831838208000,
-                    "disk": "blablabla13"
-                }
-              ],
-              "interfaces": [
-                {
-                  "mac": "84:67:BA:CA:69:95",
-                  "name": "eth0",
-                  "max_speed": 1000,
-                  "current_speed": 100
-                },
-                {
-                  "mac": "D5:45:6B:4A:15:66",
-                  "name": "eth1",
-                  "max_speed": 1000,
-                  "current_speed": null
-                }
-              ],
-              "cpu": {
-                "total": 4,
-                "real": 2,
-                "spec": [
-                  {
-                    "frequency": 1200,
-                    "model": "Intel(R) Core(TM)2 Duo CPU T6570 @ 1.20GHz"
-                  },
-                  {
-                    "frequency": 1200,
-                    "model": "Intel(R) Core(TM)2 Duo CPU T6570 @ 1.20GHz"
-                  },
-                  {
-                    "frequency": 2100,
-                    "model": "Intel(R) Core(TM)2 Duo CPU T6570 @ 2.10GHz"
-                  },
-                  {
-                    "frequency": 2100,
-                    "model": "Intel(R) Core(TM)2 Duo CPU T6570 @ 2.10GHz"
-                  }
-                ]
-              },
-              "memory": {
-                "devices": [
-                    {"size": 805306368},
-                    {"size": 805306368}
-                  ],
-                  "slots": 2,
-                  "total": 1610612736,
-                  "maximum_capacity": 4831838208
-              },
-              "system": {
-                "version": "Power Edge 2970",
-                "manufacturer": "Dell",
-                "product": "QWERTY",
-                "serial": "123456",
-                "family": "Power Edge"
-              }
-            }
-        }
-    },
-    {
-        "pk": 8,
-        "model": "nailgun.node",
-        "fields": {
-            "status": "discover",
-            "name": "Untitled (9A:DE)",
-            "timestamp": "",
-            "manufacturer": "VBOX",
-            "platform_name": "",
-            "role": null,
-            "ip": "10.0.12.53",
-            "fqdn": "",
-            "mac": "3A:10:EC:04:9A:DE",
-            "meta": {
-              "disks": [
-                {
-                    "model": "Transcend Micro SD",
-                    "name": "sda",
-                    "size": 9663676416000,
-                    "disk": "blablabla14"
-                }
-              ],
-              "interfaces": [
-                {
-                  "mac": "47:33:22:46:9B:92",
-                  "name": "eth0",
-                  "max_speed": 100,
-                  "current_speed": 100
-                },
-                {
-                  "mac": "D4:34:B6:6B:01:77",
-                  "name": "eth1",
-                  "max_speed": 1000,
-                  "current_speed": null
-                }
-              ],
-              "cpu": {
-                "total": 4,
-                "real": 2,
-                "spec": [
-                  {
-                    "frequency": 1200,
-                    "model": "Intel(R) Core(TM)2 Duo CPU T6570 @ 1.20GHz"
-                  },
-                  {
-                    "frequency": 1200,
-                    "model": "Intel(R) Core(TM)2 Duo CPU T6570 @ 1.20GHz"
-                  },
-                  {
-                    "frequency": 2100,
-                    "model": "Intel(R) Core(TM)2 Duo CPU T6570 @ 2.10GHz"
-                  },
-                  {
-                    "frequency": 2100,
-                    "model": "Intel(R) Core(TM)2 Duo CPU T6570 @ 2.10GHz"
-                  }
-                ]
-              },
-              "memory": {
-                "devices": [
-                    {"size": 805306368},
-                    {"size": 805306368}
-                  ],
-                  "slots": 2,
-                  "total": 1610612736,
-                  "maximum_capacity": 4831838208
-              },
-              "system": {
-                "version": "Power Edge 2970",
-                "manufacturer": "Dell",
-                "product": "QWERTY",
-                "serial": "123456",
-                "family": "Power Edge"
-              }
-            }
-        }
-    },
-    {
-        "pk": 9,
-        "model": "nailgun.node",
-        "fields": {
-            "status": "discover",
-            "name": "cmp-1-2-1",
-            "manufacturer": "Supermicro",
-            "timestamp": "",
-            "platform_name": "",
-            "role": null,
-            "ip": "10.0.12.55",
-            "fqdn": "",
-            "mac": "4B:19:FF:55:6D:01",
-            "meta": {
-              "disks": [
-                {
-                    "model": "Verbatim 3.5 Discette",
-                    "name": "hda",
-                    "size": 9663676416000,
-                    "disk": "blablabla15"
-                },
-
-                {
-                    "model": "SanDisk MMC Memory Card",
-                    "name": "sda",
-                    "size": 9663676416000,
-                    "disk": "blablabla16"
-                }
-              ],
-              "interfaces": [
-                {
-                  "mac": "4B:19:FF:55:6D:01",
-                  "name": "eth0",
-                  "max_speed": 1000,
-                  "current_speed": 100
-                },
-                {
-                  "mac": "D1:99:AA:10:45:71",
-                  "name": "eth1",
-                  "max_speed": 1000,
-                  "current_speed": null
-                }
-              ],
-              "cpu": {
-                "total": 4,
-                "real": 2,
-                "spec": [
-                  {
-                    "frequency": 1200,
-                    "model": "Intel(R) Core(TM)2 Duo CPU T6570 @ 1.20GHz"
-                  },
-                  {
-                    "frequency": 1200,
-                    "model": "Intel(R) Core(TM)2 Duo CPU T6570 @ 1.20GHz"
-                  },
-                  {
-                    "frequency": 2100,
-                    "model": "Intel(R) Core(TM)2 Duo CPU T6570 @ 2.10GHz"
-                  },
-                  {
-                    "frequency": 2100,
-                    "model": "Intel(R) Core(TM)2 Duo CPU T6570 @ 2.10GHz"
-                  }
-                ]
-              },
-              "memory": {
-                "devices": [
-                    {"size": 805306368},
-                    {"size": 805306368}
-                  ],
-                  "slots": 2,
-                  "total": 1610612736,
-                  "maximum_capacity": 4831838208
-              },
-              "system": {
-                "version": "Power Edge 2970",
-                "manufacturer": "Dell",
-                "product": "QWERTY",
-                "serial": "123456",
-                "family": "Power Edge"
-              }
-            }
-        }
-    },
-    {
-        "pk": 10,
+        "pk": 18,
         "model": "nailgun.node",
         "fields": {
             "status": "error",
-            "error_type": "provision",
-            "error_msg": "All hope is lost",
-            "name": "Error node",
-            "timestamp": "",
-            "manufacturer": "QEMU",
-            "platform_name": "Model-2",
-            "role": null,
-            "ip": "10.0.12.61",
-            "fqdn": "",
-            "mac": "46:FC:5A:4B:10:CC",
+            "error_msg": "You need more money",
+            "name": "Supermicro X9SCD (error)",
+            "ip": "172.18.82.135",
+            "online": true,
+            "pending_addition": false,
+            "platform_name": "X9SCD",
+            "mac": "00:25:90:67:9C:9C",
             "meta": {
-              "disks": [
-                {
-                    "model": "Verbatim 3.5 Discette",
-                    "name": "hda",
-                    "size": 9663676416000,
-                    "disk": "blablabla17"
+                "memory": {
+                    "slots": 4,
+                    "total": 17179869184,
+                    "maximum_capacity": 34359738368,
+                    "devices": [
+                        {
+                            "frequency": 1333,
+                            "type": "DDR3",
+                            "size": 4294967296
+                        },
+                        {
+                            "frequency": 1333,
+                            "type": "DDR3",
+                            "size": 4294967296
+                        },
+                        {
+                            "frequency": 1333,
+                            "type": "DDR3",
+                            "size": 4294967296
+                        },
+                        {
+                            "frequency": 1333,
+                            "type": "DDR3",
+                            "size": 4294967296
+                        }
+                    ]
                 },
-
-                {
-                    "model": "SanDisk MMC Memory Card",
-                    "name": "sda",
-                    "size": 9663676416000,
-                    "disk": "blablabla18"
-                }
-              ],
-              "interfaces": [
-                {
-                  "mac": "46:FC:5A:4B:10:CC",
-                  "name": "eth0",
-                  "max_speed": 1000,
-                  "current_speed": 100
+                "interfaces": [
+                    {
+                        "mac": "00:25:90:67:9C:9D",
+                        "max_speed": 1000,
+                        "name": "eth1",
+                        "current_speed": "unknown"
+                    },
+                    {
+                        "name": "eth0",
+                        "ip": "172.18.82.135",
+                        "netmask": "255.255.255.224",
+                        "mac": "00:25:90:67:9C:9C",
+                        "max_speed": 1000,
+                        "current_speed": 1000
+                    }
+                ],
+                "disks": [
+                    {
+                        "model": "TOSHIBA MK1002TS",
+                        "name": "sdb",
+                        "disk": "sdb",
+                        "size": 1000204886016
+                    },
+                    {
+                        "model": "TOSHIBA MK1002TS",
+                        "name": "sda",
+                        "disk": "sda",
+                        "size": 1000204886016
+                    }
+                ],
+                "system": {
+                    "product": "X9SCD",
+                    "family": "To be filled by O.E.M.",
+                    "fqdn": "mc0n6-srt",
+                    "version": "0123456789",
+                    "serial": "0123456789",
+                    "manufacturer": "Supermicro"
                 },
-                {
-                  "mac": "D3:89:12:12:45:11",
-                  "name": "eth1",
-                  "max_speed": 1000,
-                  "current_speed": null
+                "cpu": {
+                    "real": 1,
+                    "total": 8,
+                    "spec": [
+                        {
+                            "model": "Intel(R) Xeon(R) CPU E31230 @ 3.20GHz",
+                            "frequency": 3201
+                        },
+                        {
+                            "model": "Intel(R) Xeon(R) CPU E31230 @ 3.20GHz",
+                            "frequency": 3201
+                        },
+                        {
+                            "model": "Intel(R) Xeon(R) CPU E31230 @ 3.20GHz",
+                            "frequency": 3201
+                        },
+                        {
+                            "model": "Intel(R) Xeon(R) CPU E31230 @ 3.20GHz",
+                            "frequency": 3201
+                        },
+                        {
+                            "model": "Intel(R) Xeon(R) CPU E31230 @ 3.20GHz",
+                            "frequency": 3201
+                        },
+                        {
+                            "model": "Intel(R) Xeon(R) CPU E31230 @ 3.20GHz",
+                            "frequency": 3201
+                        },
+                        {
+                            "model": "Intel(R) Xeon(R) CPU E31230 @ 3.20GHz",
+                            "frequency": 3201
+                        },
+                        {
+                            "model": "Intel(R) Xeon(R) CPU E31230 @ 3.20GHz",
+                            "frequency": 3201
+                        }
+                    ]
                 }
-              ],
-              "cpu": {
-                "total": 4,
-                "real": 2,
-                "spec": [
-                  {
-                    "frequency": 1200,
-                    "model": "Intel(R) Core(TM)2 Duo CPU T6570 @ 1.20GHz"
-                  },
-                  {
-                    "frequency": 1200,
-                    "model": "Intel(R) Core(TM)2 Duo CPU T6570 @ 1.20GHz"
-                  },
-                  {
-                    "frequency": 2100,
-                    "model": "Intel(R) Core(TM)2 Duo CPU T6570 @ 2.10GHz"
-                  },
-                  {
-                    "frequency": 2100,
-                    "model": "Intel(R) Core(TM)2 Duo CPU T6570 @ 2.10GHz"
-                  }
-                ]
-              },
-              "memory": {
-                "devices": [
-                    {"size": 805306368},
-                    {"size": 805306368}
-                  ],
-                  "slots": 2,
-                  "total": 1610612736,
-                  "maximum_capacity": 4831838208
-              },
-              "system": {
-                "version": "Power Edge 2970",
-                "manufacturer": "Dell",
-                "product": "QWERTY",
-                "serial": "123456",
-                "family": "Power Edge"
-              }
-            }
+            },
+            "timestamp": "",
+            "progress": 0,
+            "pending_deletion": false,
+            "os_platform": "ubuntu",
+            "id": 18,
+            "manufacturer": "Supermicro"
+        }
+    },
+    {
+        "pk": 19,
+        "model": "nailgun.node",
+        "fields": {
+            "status": "discover",
+            "name": "VirtualBox",
+            "ip": "10.20.0.63",
+            "online": true,
+            "pending_addition": false,
+            "mac": "08:00:27:22:AB:AA",
+            "meta": {
+                "memory": {
+                    "total": 778887168
+                },
+                "interfaces": [
+                    {
+                        "name": "eth0",
+                        "ip": "10.20.0.63",
+                        "netmask": "255.255.255.0",
+                        "mac": "08:00:27:22:AB:AA",
+                        "max_speed": 100,
+                        "current_speed": 100
+                    }
+                ],
+                "disks": [
+                    {
+                        "model": "VBOX HARDDISK",
+                        "name": "sda",
+                        "disk": "sda",
+                        "size": 68719476736
+                    }
+                ],
+                "system": {
+                    "serial": "0",
+                    "version": "1.2",
+                    "fqdn": "bootstrap",
+                    "family": "Virtual Machine",
+                    "manufacturer": "VirtualBox"
+                },
+                "cpu": {
+                    "real": 0,
+                    "total": 1,
+                    "spec": [
+                        {
+                            "model": "Intel(R) Core(TM) i7-2670QM CPU @ 2.20GHz",
+                            "frequency": 2185
+                        }
+                    ]
+                }
+            },
+            "timestamp": "",
+            "progress": 0,
+            "pending_deletion": false,
+            "os_platform": "centos",
+            "id": 19,
+            "manufacturer": "VirtualBox"
+        }
+    },
+    {
+        "pk": 20,
+        "model": "nailgun.node",
+        "fields": {
+            "status": "discover",
+            "name": "KVM",
+            "ip": "10.20.0.226",
+            "online": true,
+            "pending_addition": false,
+            "mac": "52:54:00:0E:B8:F5",
+            "meta": {
+                "memory": {
+                    "slots": 1,
+                    "total": 10737418240,
+                    "maximum_capacity": 10737418240,
+                    "devices": [
+                        {
+                            "type": "RAM",
+                            "size": 10737418240
+                        }
+                    ]
+                },
+                "interfaces": [
+                    {
+                        "name": "eth0",
+                        "ip": "10.20.0.226",
+                        "netmask": "255.255.255.0",
+                        "mac": "52:54:00:0E:B8:F5",
+                        "max_speed": 100,
+                        "current_speed": 100
+                    }
+                ],
+                "disks": [
+                    {
+                        "model": "QEMU HARDDISK",
+                        "name": "sda",
+                        "disk": "sda",
+                        "size": 68719476736
+                    }
+                ],
+                "system": {
+                    "fqdn": "bootstrap",
+                    "manufacturer": "KVM"
+                },
+                "cpu": {
+                    "real": 0,
+                    "total": 1,
+                    "spec": [
+                        {
+                            "model": "QEMU Virtual CPU version 1.0",
+                            "frequency": 1999
+                        }
+                    ]
+                }
+            },
+            "timestamp": "",
+            "progress": 0,
+            "pending_deletion": false,
+            "os_platform": "centos",
+            "id": 20,
+            "manufacturer": "KVM"
+        }
+    },
+    {
+        "pk": 21,
+        "model": "nailgun.node",
+        "fields": {
+            "status": "discover",
+            "name": "Supermicro X9DRW (srv07)",
+            "ip": "172.18.67.170",
+            "online": true,
+            "pending_addition": false,
+            "fqdn": "slave-15.domain.tld",
+            "platform_name": "X9DRW",
+            "mac": "00:25:90:6A:B1:84",
+            "meta": {
+                "cpu": {
+                    "real": 2,
+                    "total": 24,
+                    "spec": [
+                        {
+                            "model": "Intel(R) Xeon(R) CPU E5-2620 0 @ 2.00GHz",
+                            "frequency": 2001
+                        },
+                        {
+                            "model": "Intel(R) Xeon(R) CPU E5-2620 0 @ 2.00GHz",
+                            "frequency": 2001
+                        },
+                        {
+                            "model": "Intel(R) Xeon(R) CPU E5-2620 0 @ 2.00GHz",
+                            "frequency": 2001
+                        },
+                        {
+                            "model": "Intel(R) Xeon(R) CPU E5-2620 0 @ 2.00GHz",
+                            "frequency": 2001
+                        },
+                        {
+                            "model": "Intel(R) Xeon(R) CPU E5-2620 0 @ 2.00GHz",
+                            "frequency": 2001
+                        },
+                        {
+                            "model": "Intel(R) Xeon(R) CPU E5-2620 0 @ 2.00GHz",
+                            "frequency": 2001
+                        },
+                        {
+                            "model": "Intel(R) Xeon(R) CPU E5-2620 0 @ 2.00GHz",
+                            "frequency": 2001
+                        },
+                        {
+                            "model": "Intel(R) Xeon(R) CPU E5-2620 0 @ 2.00GHz",
+                            "frequency": 2001
+                        },
+                        {
+                            "model": "Intel(R) Xeon(R) CPU E5-2620 0 @ 2.00GHz",
+                            "frequency": 2001
+                        },
+                        {
+                            "model": "Intel(R) Xeon(R) CPU E5-2620 0 @ 2.00GHz",
+                            "frequency": 2001
+                        },
+                        {
+                            "model": "Intel(R) Xeon(R) CPU E5-2620 0 @ 2.00GHz",
+                            "frequency": 2001
+                        },
+                        {
+                            "model": "Intel(R) Xeon(R) CPU E5-2620 0 @ 2.00GHz",
+                            "frequency": 2001
+                        },
+                        {
+                            "model": "Intel(R) Xeon(R) CPU E5-2620 0 @ 2.00GHz",
+                            "frequency": 2001
+                        },
+                        {
+                            "model": "Intel(R) Xeon(R) CPU E5-2620 0 @ 2.00GHz",
+                            "frequency": 2001
+                        },
+                        {
+                            "model": "Intel(R) Xeon(R) CPU E5-2620 0 @ 2.00GHz",
+                            "frequency": 2001
+                        },
+                        {
+                            "model": "Intel(R) Xeon(R) CPU E5-2620 0 @ 2.00GHz",
+                            "frequency": 2001
+                        },
+                        {
+                            "model": "Intel(R) Xeon(R) CPU E5-2620 0 @ 2.00GHz",
+                            "frequency": 2001
+                        },
+                        {
+                            "model": "Intel(R) Xeon(R) CPU E5-2620 0 @ 2.00GHz",
+                            "frequency": 2001
+                        },
+                        {
+                            "model": "Intel(R) Xeon(R) CPU E5-2620 0 @ 2.00GHz",
+                            "frequency": 2001
+                        },
+                        {
+                            "model": "Intel(R) Xeon(R) CPU E5-2620 0 @ 2.00GHz",
+                            "frequency": 2001
+                        },
+                        {
+                            "model": "Intel(R) Xeon(R) CPU E5-2620 0 @ 2.00GHz",
+                            "frequency": 2001
+                        },
+                        {
+                            "model": "Intel(R) Xeon(R) CPU E5-2620 0 @ 2.00GHz",
+                            "frequency": 2001
+                        },
+                        {
+                            "model": "Intel(R) Xeon(R) CPU E5-2620 0 @ 2.00GHz",
+                            "frequency": 2001
+                        },
+                        {
+                            "model": "Intel(R) Xeon(R) CPU E5-2620 0 @ 2.00GHz",
+                            "frequency": 2001
+                        }
+                    ]
+                },
+                "interfaces": [
+                    {
+                        "name": "p2p1",
+                        "ip": "172.18.67.170",
+                        "netmask": "255.255.255.240",
+                        "mac": "00:25:90:6A:B1:84",
+                        "max_speed": 1000,
+                        "current_speed": 1000
+                    },
+                    {
+                        "mac": "00:25:90:6A:B1:85",
+                        "max_speed": 1000,
+                        "name": "p2p2",
+                        "current_speed": "unknown"
+                    }
+                ],
+                "disks": [
+                    {
+                        "model": "Virtual HDisk0",
+                        "name": "sdf",
+                        "disk": "sdf",
+                        "size": 0
+                    },
+                    {
+                        "model": "Virtual Floppy0",
+                        "name": "sde",
+                        "disk": "sde",
+                        "size": 0
+                    },
+                    {
+                        "model": "TOSHIBA MK1002TS",
+                        "name": "sdd",
+                        "disk": "sdd",
+                        "size": 1000204886016
+                    },
+                    {
+                        "model": "TOSHIBA MK1002TS",
+                        "name": "sdc",
+                        "disk": "sdc",
+                        "size": 1000204886016
+                    },
+                    {
+                        "model": "TOSHIBA MK1002TS",
+                        "name": "sdb",
+                        "disk": "sdb",
+                        "size": 1000204886016
+                    },
+                    {
+                        "model": "TOSHIBA MK1002TS",
+                        "name": "sda",
+                        "disk": "sda",
+                        "size": 1000204886016
+                    }
+                ],
+                "system": {
+                    "product": "X9DRW",
+                    "family": "To be filled by O.E.M.",
+                    "fqdn": "srv07-srt.srt.mirantis.net",
+                    "version": "0123456789",
+                    "serial": "0123456789",
+                    "manufacturer": "Supermicro"
+                },
+                "memory": {
+                    "slots": 8,
+                    "total": 137438953472,
+                    "maximum_capacity": 274877906944,
+                    "devices": [
+                        {
+                            "frequency": 1333,
+                            "type": "DDR3",
+                            "size": 8589934592
+                        },
+                        {
+                            "frequency": 1333,
+                            "type": "DDR3",
+                            "size": 8589934592
+                        },
+                        {
+                            "frequency": 1333,
+                            "type": "DDR3",
+                            "size": 8589934592
+                        },
+                        {
+                            "frequency": 1333,
+                            "type": "DDR3",
+                            "size": 8589934592
+                        },
+                        {
+                            "frequency": 1333,
+                            "type": "DDR3",
+                            "size": 8589934592
+                        },
+                        {
+                            "frequency": 1333,
+                            "type": "DDR3",
+                            "size": 8589934592
+                        },
+                        {
+                            "frequency": 1333,
+                            "type": "DDR3",
+                            "size": 8589934592
+                        },
+                        {
+                            "frequency": 1333,
+                            "type": "DDR3",
+                            "size": 8589934592
+                        },
+                        {
+                            "frequency": 1333,
+                            "type": "DDR3",
+                            "size": 8589934592
+                        },
+                        {
+                            "frequency": 1333,
+                            "type": "DDR3",
+                            "size": 8589934592
+                        },
+                        {
+                            "frequency": 1333,
+                            "type": "DDR3",
+                            "size": 8589934592
+                        },
+                        {
+                            "frequency": 1333,
+                            "type": "DDR3",
+                            "size": 8589934592
+                        },
+                        {
+                            "frequency": 1333,
+                            "type": "DDR3",
+                            "size": 8589934592
+                        },
+                        {
+                            "frequency": 1333,
+                            "type": "DDR3",
+                            "size": 8589934592
+                        },
+                        {
+                            "frequency": 1333,
+                            "type": "DDR3",
+                            "size": 8589934592
+                        },
+                        {
+                            "frequency": 1333,
+                            "type": "DDR3",
+                            "size": 8589934592
+                        }
+                    ]
+                }
+            },
+            "timestamp": "",
+            "progress": 0,
+            "pending_deletion": false,
+            "os_platform": "ubuntu",
+            "id": 21,
+            "manufacturer": "Supermicro"
         }
     }
 ]

@@ -16,7 +16,7 @@ class TestFixture(BaseHandlers):
 
     def test_upload_working(self):
         check = self.db.query(Node).all()
-        self.assertEqual(len(list(check)), 10)
+        self.assertEqual(len(list(check)), 8)
 
     def test_custom_fixture(self):
         data = u'''[{
