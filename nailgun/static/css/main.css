@@ -2036,25 +2036,29 @@ h6.page-title {
 }
 
 .page-control-error-placeholder, .page-control-success-placeholder {
-    display: block;
-    float: left;
-    margin: 5px;
-    max-width: 640px;
-    color: #b60007;
-    font-size: 15px;
-    text-shadow: 0 1px 0 rgba(0,0,0,.1);
-  }
+  display: block;
+  float: left;
+  margin: 5px;
+  max-width: 640px;
+  color: #b60007;
+  font-size: 15px;
+  text-shadow: 0 1px 0 rgba(0,0,0,.1);
+}
 
 .page-control-success-placeholder {
   color: #17824B;
 }
 
 .page-control-button-placeholder {
-    /* min-width: 120px; */
-    display: inline-block;
-    float: right;
-    margin: 5px 10px 5px 10px;
-  }
+  /* min-width: 120px; */
+  display: inline-block;
+  float: right;
+  margin: 5px 10px 5px 10px;
+}
+
+.back-button {
+  margin: 5px 10px 5px 10px;
+}
 
 /* buttons facelift */
 .apply-btn {
