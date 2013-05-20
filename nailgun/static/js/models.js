@@ -287,6 +287,9 @@ define(function() {
         constructorName: 'Interfaces',
         model: models.Interface,
         url: '/api/nodes/',
+        toJSON: function(options) {
+            return [{"id": options.node, "interfaces": this.models}];
+        },
         comparator: function(ifc) {
             return ifc.get('name');
         }
