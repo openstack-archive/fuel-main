@@ -160,14 +160,11 @@ class NodeCollectionHandler(JSONHandler, NICUtils):
 
     @content_json
     def PUT(self):
-        print "Entering to NodeColl PUT"
         data = self.validator.validate_collection_update(web.data())
         q = self.db.query(Node)
         nodes_updated = []
-        print "Data validated successfully"
         for nd in data:
             is_agent = nd.pop("is_agent") if "is_agent" in nd else False
-            print 'is_agent ', is_agent
             node = None
             if "mac" in nd:
                 node = q.filter_by(mac=nd["mac"]).first() \
@@ -177,7 +174,6 @@ class NodeCollectionHandler(JSONHandler, NICUtils):
             if nd.get("cluster_id") is None and node.cluster:
                 node.cluster.clear_pending_changes(node_id=node.id)
             old_cluster_id = node.cluster_id
-            print 'node with id ', node.id
             for key, value in nd.iteritems():
                 if is_agent and (key, value) == ("status", "discover") \
                         and node.status == "provisioning":
@@ -188,15 +184,9 @@ class NodeCollectionHandler(JSONHandler, NICUtils):
                     )
                     continue
                 setattr(node, key, value)
-            print 'before attributes'
-            try:
-                if not node.attributes:
-                    node.attributes = NodeAttributes()
-                    self.db.commit()
-            except Exception as ext:
-                logger.warn('Error while k: %s' % str(ext))
-                logger.warn(traceback.format_exc())
-                print 'status games'
+            if not node.attributes:
+                node.attributes = NodeAttributes()
+                self.db.commit()
             if not node.status in ('provisioning', 'deploying'):
                 variants = (
                     not node.attributes.volumes,
@@ -231,7 +221,6 @@ class NodeCollectionHandler(JSONHandler, NICUtils):
                         notifier.notify("error", msg, node_id=node.id)
 
                 self.db.commit()
-            print 'it\'s agent'
             if is_agent:
                 node.timestamp = datetime.now()
                 if not node.online:
@@ -259,11 +248,9 @@ class NodeCollectionHandler(JSONHandler, NICUtils):
                             setattr(db_nic, key, getattr(nic, key))
                         db_nics.remove(db_nic)
                     map(self.db.delete, db_nics)
-            print 'before db.add(node)'
             nodes_updated.append(node)
             self.db.add(node)
             self.db.commit()
-            print 'after it'
             if 'cluster_id' in nd and nd['cluster_id'] != old_cluster_id:
                 if old_cluster_id:
                     self.clear_assigned_networks(node)
@@ -272,7 +259,6 @@ class NodeCollectionHandler(JSONHandler, NICUtils):
                     self.allow_network_assignment_to_all_interfaces(node)
                     self.assign_networks_to_main_interface(node)
                 self.db.commit()
-            print 'end of for cycle'
         return map(NodeHandler.render, nodes_updated)
 
 
