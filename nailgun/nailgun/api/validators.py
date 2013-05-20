@@ -335,7 +335,7 @@ class NetAssignmentValidator(BasicValidator):
             )
 
         net_ids = set()
-        for iface in interfaces:
+        for iface in node['interfaces']:
             if not isinstance(iface, dict):
                 raise web.webapi.badrequest(
                     message="Node '%d': each interface should be dict" %
@@ -407,15 +407,15 @@ class NetAssignmentValidator(BasicValidator):
             )
         # FIXIT: we should use not all networks but appropriate for this
         # node only.
-        db_network_group = cls.db.query(NetworkGroup).filter_by(
+        db_network_groups = cls.db.query(NetworkGroup).filter_by(
             cluster_id=db_node.cluster_id
-        ).first()
-        if not db_network_group:
+        ).all()
+        if not db_network_groups:
             raise web.webapi.badrequest(
                 message="There are no networks related to"
                         " node '%d' in DB" % node['id']
             )
-        network_ids = set([n.id for n in db_network_group.networks])
+        network_group_ids = set([ng.id for ng in db_network_groups])
 
         for iface in interfaces:
             db_iface = filter(
@@ -431,16 +431,16 @@ class NetAssignmentValidator(BasicValidator):
             db_iface = db_iface[0]
 
             for net in iface['assigned_networks']:
-                if net['id'] not in network_ids:
+                if net['id'] not in network_group_ids:
                     raise web.webapi.badrequest(
                         message="Node '%d' shouldn't be connected to"
                                 " network with ID '%d'" %
                                 (node['id'], net['id'])
                     )
-                network_ids.remove(net['id'])
+                network_group_ids.remove(net['id'])
 
         # Check if there are unassigned networks for this node.
-        if network_ids:
+        if network_group_ids:
             raise web.webapi.badrequest(
                 message="Too few neworks to assign to node '%d'" %
                         node['id']

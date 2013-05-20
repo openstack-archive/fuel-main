@@ -471,7 +471,8 @@ class NodeCollectionNICsHandler(NodeNICsHandler):
     @content_json
     def PUT(self):
         data = self.validator.validate_collection_structure(web.data())
-        self.update_collection_attributes(data)
+        nodes = self.update_collection_attributes(data)
+        return map(self.render, nodes)
 
 
 class NodeNICsDefaultHandler(JSONHandler, NICUtils):

@@ -47,6 +47,12 @@ class TestHandlers(BaseHandlers):
                 expect_errors=True,
                 headers=self.default_headers)
             self.assertEquals(resp.status, 400)
+            resp = self.app.get(
+                reverse('NodeNICsHandler', kwargs={'node_id': node['id']}),
+                headers=self.default_headers)
+            self.assertEquals(resp.status, 200)
+            response = json.loads(resp.body)
+            self.assertEquals(response, [])
 
     def test_get_handler_without_NICs(self):
         node = self.env.create_node(api=True)

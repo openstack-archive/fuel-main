@@ -81,6 +81,7 @@ class NICUtils(object):
                 net_assignment.network_id = net['id']
                 net_assignment.interface_id = db_iface.id
                 self.db.add(net_assignment)
+        return db_node
 
     def update_attributes(self, node):
         self.validator.verify_data_correctness(node)
@@ -88,10 +89,13 @@ class NICUtils(object):
         self.db.commit()
 
     def update_collection_attributes(self, data):
+        updated_nodes = []
         for node in data:
             self.validator.verify_data_correctness(node)
-            self._update_attrs(node)
+            db_node = self._update_attrs(node)
+            updated_nodes.append(db_node)
         self.db.commit()
+        return updated_nodes
 
     def get_main_nic(self, node):
         for nic in node.interfaces:
