@@ -66,7 +66,9 @@ class DeploymentTask(object):
 #   A: offline - when node doesn't respond (agent doesn't run, not implemented);
 #                let's say user should remove this node from cluster before
 #                deployment.
-#      ready - target OS is loaded and node is Ok, we do nothing
+#      ready - target OS is loaded and node is Ok, we redeploy
+#              ready nodes only if cluster has pending changes i.e.
+#              network or cluster attrs were changed
 #      discover - in discovery mode, provisioning is required
 #      provisioning - at the time of task execution there should not be such
 #                     case. If there is - previous provisioning has failed.
@@ -96,8 +98,6 @@ class DeploymentTask(object):
             cluster_id=task.cluster.id,
             pending_deletion=False).order_by(Node.id)
 
-        # Redeploy ready nodes only if cluster has pending changes i.e.
-        # network or cluster attrs were changed
         if len(cluster.changes) == 0:
             nodes = nodes.filter(Node.status!='ready')
 
