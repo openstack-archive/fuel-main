@@ -204,6 +204,7 @@ class TestHandlers(BaseHandlers):
             }
         }
 
+        print nailgun.task.manager.rpc.cast.call_args_list
         nailgun.task.manager.rpc.cast.assert_called_once_with(
              'naily', [provision_msg, msg])
 

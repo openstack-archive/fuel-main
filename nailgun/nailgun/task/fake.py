@@ -20,11 +20,12 @@ from nailgun.rpc.receiver import NailgunReceiver
 
 class FakeThread(threading.Thread):
     def __init__(self, data=None, params=None, group=None, target=None,
-                 name=None, verbose=None):
+                 name=None, verbose=None, join_to=None):
         threading.Thread.__init__(self, group=group, target=target, name=name,
                                   verbose=verbose)
         self.data = data
         self.params = params
+        self.join_to = join_to
         self.tick_count = int(settings.FAKE_TASKS_TICK_COUNT) or 20
         self.low_tick_count = self.tick_count - 10
         if self.low_tick_count < 0:
@@ -36,6 +37,10 @@ class FakeThread(threading.Thread):
         )
         self.respond_to = data['respond_to']
         self.stoprequest = threading.Event()
+
+    def run(self):
+        if self.join_to:
+            self.join_to.join()
 
     def rude_join(self, timeout=None):
         self.stoprequest.set()
@@ -169,6 +174,7 @@ class FakeDeploymentThread(FakeThread):
             self.sleep(self.tick_interval)
 
     def run(self):
+        super(FakeDeploymentThread, self).run()
         if settings.FAKE_TASKS_AMQP:
             nailgun_exchange = Exchange(
                 'nailgun',
@@ -203,6 +209,7 @@ class FakeDeploymentThread(FakeThread):
 
 class FakeProvisionThread(FakeThread):
     def run(self):
+        super(FakeProvisionThread, self).run()
         receiver = NailgunReceiver
         receiver.initialize()
 
@@ -225,6 +232,7 @@ class FakeProvisionThread(FakeThread):
 
 class FakeDeletionThread(FakeThread):
     def run(self):
+        super(FakeDeletionThread, self).run()
         receiver = NailgunReceiver
         receiver.initialize()
         kwargs = {
@@ -261,6 +269,7 @@ class FakeDeletionThread(FakeThread):
 
 class FakeVerificationThread(FakeThread):
     def run(self):
+        super(FakeVerificationThread, self).run()
         receiver = NailgunReceiver
         receiver.initialize()
         kwargs = {

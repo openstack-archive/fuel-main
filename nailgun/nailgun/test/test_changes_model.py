@@ -170,7 +170,6 @@ class TestClusterChanges(BaseHandlers):
             error_type="provision"
         )
         supertask = self.env.launch_deployment()
-        # FIXME !!! Here we are testing fake logic not real
         self.env.wait_error(supertask, 60)
         attributes_changes = self.db.query(ClusterChanges).filter_by(
             name="attributes"

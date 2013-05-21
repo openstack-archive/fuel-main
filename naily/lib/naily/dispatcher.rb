@@ -129,8 +129,8 @@ module Naily
     def remove_nodes(data)
       reporter = Naily::Reporter.new(@producer, data['respond_to'], data['args']['task_uuid'])
       nodes = data['args']['nodes']
-      provision_engine = Astute::Provision::Cobbler.new(data['args']['provision_engine'])
-      data['args']['provision_nodes'].each do |name|
+      provision_engine = Astute::Provision::Cobbler.new(data['args']['engine'])
+      data['args']['engine_nodes'].each do |name|
         if provision_engine.system_exists(name)
           Naily.logger.info("Removing system from cobbler: #{name}")
           provision_engine.remove_system(name)

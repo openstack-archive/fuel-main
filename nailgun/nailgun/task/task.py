@@ -33,19 +33,22 @@ from nailgun.task.helpers import TaskHelper
 
 
 def fake_cast(queue, messages, **kwargs):
-    def make_thread(message):
+    def make_thread(message, join_to=None):
         thread = FAKE_THREADS[message['method']](
             data=message,
-            params=kwargs
+            params=kwargs,
+            join_to=join_to
         )
         logger.debug("Fake thread called: data: %s, params: %s",
                      message, kwargs)
         thread.start()
         thread.name = message['method'].upper()
+        return thread
 
     if isinstance(messages, (list,)):
+        thread = None
         for m in messages:
-            make_thread(m)
+            thread = make_thread(m, join_to=thread)
     else:
         make_thread(messages)
 
@@ -90,6 +93,7 @@ class DeploymentTask(object):
 
     @classmethod
     def message(cls, task):
+        logger.debug("DeploymentTask.message(task=%s)" % task.uuid)
         task_uuid = task.uuid
         cluster_id = task.cluster.id
         netmanager = NetworkManager()
@@ -165,6 +169,7 @@ class DeploymentTask(object):
 
     @classmethod
     def execute(cls, task):
+        logger.debug("DeploymentTask.execute(task=%s)" % task.uuid)
         message = cls.message(task)
         task.cache = message
         orm().add(task)
@@ -195,6 +200,7 @@ class DeploymentTask(object):
 class ProvisionTask(object):
     @classmethod
     def message(cls, task):
+        logger.debug("ProvisionTask.message(task=%s)" % task.uuid)
         task_uuid = task.uuid
         cluster_id = task.cluster.id
         netmanager = NetworkManager()
@@ -213,13 +219,13 @@ class ProvisionTask(object):
             if not node.online:
                 if not USE_FAKE:
                     raise Exception(
-                        "Node '%s' (id=%s) is offline."
+                        u"Node '%s' (id=%s) is offline."
                         " Remove it from environment and try again." %
                         (node.name, node.id)
                     )
                 else:
                     logger.warning(
-                        "Node '%s' (id=%s) is offline."
+                        u"Node '%s' (id=%s) is offline."
                         " Remove it from environment and try again." %
                         (node.name, node.id)
                     )
@@ -346,6 +352,7 @@ class ProvisionTask(object):
 
     @classmethod
     def execute(cls, task):
+        logger.debug("ProvisionTask.execute(task=%s)" % task.uuid)
         message = cls.message(task)
         task.cache = message
         orm().add(task)
@@ -357,6 +364,7 @@ class DeletionTask(object):
 
     @classmethod
     def execute(self, task, respond_to='remove_nodes_resp'):
+        logger.debug("DeletionTask.execute(task=%s)" % task.uuid)
         task_uuid = task.uuid
         logger.debug("Nodes deletion task is running")
         nodes_to_delete = []
@@ -421,13 +429,13 @@ class DeletionTask(object):
                     nodes_to_delete.remove(node)
 
         # only real tasks
-        provision_nodes = []
+        engine_nodes = []
         if not USE_FAKE:
             if nodes_to_delete:
                 logger.debug("There are nodes to delete")
                 for node in nodes_to_delete:
                     slave_name = TaskHelper.slave_name_by_id(node['id'])
-                    provision_nodes.append(slave_name)
+                    engine_nodes.append(slave_name)
                     try:
                         logger.info("Deleting old certs from puppet..")
                         node_db = orm().query(Node).get(node['id'])
@@ -471,12 +479,12 @@ class DeletionTask(object):
             'args': {
                 'task_uuid': task.uuid,
                 'nodes': nodes_to_delete,
-                'provision_engine': {
+                'engine': {
                     'url': settings.COBBLER_URL,
                     'username': settings.COBBLER_USER,
                     'password': settings.COBBLER_PASSWORD,
                 },
-                'provision_nodes': provision_nodes
+                'engine_nodes': engine_nodes
             }
         }
         # only fake tasks

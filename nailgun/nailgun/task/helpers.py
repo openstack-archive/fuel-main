@@ -3,7 +3,6 @@
 import os
 import shutil
 import logging
-import itertools
 
 from nailgun.db import orm
 from nailgun.logger import logger
@@ -190,7 +189,7 @@ class TaskHelper(object):
 
     @classmethod
     def nodes_to_delete(cls, cluster):
-        return itertools.ifilter(
+        return filter(
             lambda n: any([
                 n.pending_deletion,
                 n.needs_redeletion
@@ -200,7 +199,7 @@ class TaskHelper(object):
 
     @classmethod
     def nodes_to_deploy(cls, cluster):
-        return itertools.ifilter(
+        return filter(
             lambda n: any([
                 n.pending_addition,
                 n.needs_reprovision,
