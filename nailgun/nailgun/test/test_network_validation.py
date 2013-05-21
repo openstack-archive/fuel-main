@@ -36,12 +36,7 @@ class TestHandlers(BaseHandlers):
         ngs_created = self.db.query(NetworkGroup).filter(
             NetworkGroup.name.in_([n['name'] for n in nets['networks']])
         ).all()
-<<<<<<< HEAD
         self.assertEquals(len(ngs_created), len(nets['networks']))
-=======
-        print self.db.query(NetworkGroup).all()
-        self.assertEquals(len(ngs_created), len(nets))
->>>>>>> unit tests working
 
     def test_network_checking_fails_if_admin_intersection(self):
         self.env.create(
