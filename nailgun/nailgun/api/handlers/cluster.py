@@ -44,12 +44,13 @@ class ClusterHandler(JSONHandler):
     def render(cls, instance, fields=None):
         json_data = JSONHandler.render(instance, fields=cls.fields)
         if instance.changes:
-            json_data["changes"] = [
-                i.name for i in instance.changes if not i.node_id
-            ]
-            json_data["changes"].extend([
-                [i.name, i.node_id] for i in instance.changes if i.node_id
-            ])
+            for i in instance.changes:
+                if not i.node_id:
+                    json_data.setdefault("changes", []).append(i.name)
+                else:
+                    json_data.setdefault("changes", []).append(
+                        [i.name, i.node_id, i.node.name]
+                    )
         else:
             json_data["changes"] = []
         return json_data

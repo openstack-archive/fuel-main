@@ -186,6 +186,7 @@ class Node(Base):
     role = Column(Enum(*NODE_ROLES, name='node_role'))
     pending_addition = Column(Boolean, default=False)
     pending_deletion = Column(Boolean, default=False)
+    changes = relationship("ClusterChanges", backref="node")
     error_type = Column(Enum(*NODE_ERRORS, name='node_error_type'))
     error_msg = Column(String(255))
     timestamp = Column(DateTime, nullable=False)

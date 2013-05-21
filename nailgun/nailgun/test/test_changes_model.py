@@ -55,7 +55,10 @@ class TestClusterChanges(BaseHandlers):
             headers=self.default_headers
         )
         response = json.loads(resp.body)
-        self.assertIn(["disks", node_db.id], response["changes"])
+        self.assertIn(
+            ["disks", node_db.id, node_db.name],
+            response["changes"]
+        )
 
     def test_attributes_changing_adds_pending_changes(self):
         cluster = self.env.create_cluster(api=True)
