@@ -139,11 +139,13 @@ class Cluster(Base):
         orm().add(ch)
         orm().commit()
 
-    def clear_pending_changes(self):
+    def clear_pending_changes(self, node_id=None):
         chs = orm().query(ClusterChanges).filter_by(
             cluster_id=self.id
-        ).all()
-        map(orm().delete, chs)
+        )
+        if node_id:
+            chs = chs.filter_by(node_id=node_id)
+        map(orm().delete, chs.all())
         orm().commit()
 
 

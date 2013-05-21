@@ -60,6 +60,32 @@ class TestClusterChanges(BaseHandlers):
             response["changes"]
         )
 
+    def test_node_volumes_clears_after_deletion_from_cluster(self):
+        cluster = self.env.create_cluster(api=True)
+        node = self.env.create_node(
+            api=True,
+            cluster_id=cluster["id"],
+            meta=self.env.default_metadata()
+        )
+        node_db = self.env.nodes[0]
+        node_disks_changes = self.db.query(ClusterChanges).filter_by(
+            name="disks",
+            node_id=node_db.id
+        ).all()
+        self.assertEquals(len(node_disks_changes), 1)
+        resp = self.app.put(
+            reverse('NodeCollectionHandler'),
+            json.dumps([{"id": node_db.id, "cluster_id": None}]),
+            headers=self.default_headers
+        )
+        self.env.refresh_clusters()
+        node_disks_changes = self.db.query(ClusterChanges).filter_by(
+            name="disks",
+            node_id=node_db.id
+        ).all()
+        self.assertEquals(len(node_disks_changes), 0)
+
+
     def test_attributes_changing_adds_pending_changes(self):
         cluster = self.env.create_cluster(api=True)
         cluster_db = self.env.clusters[0]

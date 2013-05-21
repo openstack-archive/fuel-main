@@ -53,7 +53,7 @@ class NodeHandler(JSONHandler):
                     node.volume_manager.gen_volumes_info()
             except Exception as exc:
                 msg = (
-                    "Failed to generate volumes "
+                    u"Failed to generate volumes "
                     "info for node '{0}': '{1}'"
                 ).format(
                     node.name or data.get("mac") or data.get("id"),
@@ -151,6 +151,8 @@ class NodeCollectionHandler(JSONHandler):
                 self.db.add(node)
             else:
                 node = q.get(nd["id"])
+            if nd.get("cluster_id") is None and node.cluster:
+                node.cluster.clear_pending_changes(node_id=node.id)
             for key, value in nd.iteritems():
                 if is_agent and (key, value) == ("status", "discover") \
                         and node.status == "provisioning":
