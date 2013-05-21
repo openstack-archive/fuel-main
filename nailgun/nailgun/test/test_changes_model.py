@@ -85,7 +85,6 @@ class TestClusterChanges(BaseHandlers):
         ).all()
         self.assertEquals(len(node_disks_changes), 0)
 
-
     def test_attributes_changing_adds_pending_changes(self):
         cluster = self.env.create_cluster(api=True)
         cluster_db = self.env.clusters[0]
