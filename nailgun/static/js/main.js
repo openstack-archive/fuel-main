@@ -6,7 +6,6 @@ requirejs.config({
         jquery: 'js/libs/jquery-1.9.1',
         'jquery-checkbox': 'js/libs/jquery.checkbox',
         'jquery-timeout': 'js/libs/jquery.timeout',
-        utils: 'js/utils',
         'jquery-ui': 'js/libs/jquery-ui-1.10.2.custom',
         utils: 'js/utils',
         lodash: 'js/libs/lodash',
