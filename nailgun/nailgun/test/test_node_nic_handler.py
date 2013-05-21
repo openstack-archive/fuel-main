@@ -17,7 +17,7 @@ class TestHandlers(BaseHandlers):
         self.assertEquals(resp.status, 404)
 
     def test_get_handler_with_incompleted_data(self):
-        node = self.env.create_node(api=True)
+        node = self.env.create_node(api=True, meta={})
         meta_list = [
             {'interfaces': None},
             {'interfaces': {}},
@@ -55,7 +55,7 @@ class TestHandlers(BaseHandlers):
             self.assertEquals(response, [])
 
     def test_get_handler_without_NICs(self):
-        node = self.env.create_node(api=True)
+        node = self.env.create_node(api=True, meta={})
         resp = self.app.get(
             reverse('NodeNICsHandler', kwargs={'node_id': node['id']}),
             headers=self.default_headers)

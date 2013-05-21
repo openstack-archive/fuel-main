@@ -12,6 +12,7 @@ from nailgun.api.models import Node
 from nailgun.api.models import Network
 from nailgun.api.models import NetworkAssignment
 from nailgun.api.models import NodeNICInterface
+from nailgun.api.models import NetworkGroup
 from nailgun.network.topology import TopoChecker, NICUtils
 from nailgun.api.validators import NodeValidator, NetAssignmentValidator
 from nailgun.api.validators import NodeAttributesValidator
@@ -439,6 +440,7 @@ class NodeNICsHandler(JSONHandler, NICUtils):
 
 class NodeCollectionNICsHandler(NodeNICsHandler):
 
+    model = NetworkGroup
     validator = NetAssignmentValidator
 
         # @content_json

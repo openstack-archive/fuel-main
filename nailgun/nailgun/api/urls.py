@@ -28,7 +28,6 @@ from nailgun.api.handlers.node import NodeCollectionNICsHandler
 from nailgun.api.handlers.node import NodeCollectionNICsDefaultHandler
 from nailgun.api.handlers.node import NodeNICsVerifyHandler
 
-from nailgun.api.handlers.networks import NetworkCollectionHandler
 from nailgun.api.handlers.tasks import TaskHandler
 from nailgun.api.handlers.tasks import TaskCollectionHandler
 
@@ -83,8 +82,6 @@ urls = (
     'NodeNICsDefaultHandler',
     r'/nodes/interfaces_verify/?$',
     'NodeNICsVerifyHandler',
-    r'/networks/?$',
-    'NetworkCollectionHandler',
     r'/tasks/?$',
     'TaskCollectionHandler',
     r'/tasks/(?P<task_id>\d+)/?$',
