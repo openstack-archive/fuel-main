@@ -12,6 +12,7 @@ import json
 import web
 import netaddr
 from sqlalchemy.orm import object_mapper, ColumnProperty
+from sqlalchemy import or_
 
 import nailgun.rpc as rpc
 from nailgun.db import orm
@@ -97,8 +98,18 @@ class DeploymentTask(object):
             cluster_id=task.cluster.id,
             pending_deletion=False).order_by(Node.id)
 
-        if len(task.cluster.changes) == 0:
-            nodes = nodes.filter(Node.status != 'ready')
+        # We should not redeploy all cluster
+        # if we have pending changes which
+        # affect only one node
+        changes = filter(
+            lambda x: x.name != 'disks',
+            task.cluster.changes)
+
+        if len(changes) == 0:
+            nodes = nodes.filter(
+                or_(
+                    Node.pending_addition==True,
+                    Node.status != 'ready'))
 
         for node in nodes:
             nd_name = TaskHelper.slave_name_by_id(node.id)
