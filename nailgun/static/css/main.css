@@ -1351,83 +1351,88 @@ h6.page-title {
 .networks-table {
   width: 100%;
   margin-bottom: 10px;
-  margin-left: -20px;
 }
 
-.networks-table .row {
-  margin: 8px 0;
+.networks-table > div {
+  padding-left: 3px;
 }
 
-.networks-table .control-group > div, .networks-table .networks-header > div {
+.networks-table .range-row-header {
+  height: 23px;
+}
+
+.networks-table .range-row-header > div {
   float: left;
-  margin-left: 20px;
+  margin-left: 10px;
+  font-size: 11px;
+  line-height: 14px;
+  width: 220px;
 }
 
-.networks-header {
+.networks-table .range-row label {
+  display: inline-block;
+  margin-bottom: 0;
+  float: left;
+}
+
+.networks-table .range-row-header.mini > div {
+  width: 105px;
+}
+
+.networks-table .range-row-header > div:first-child {
+  margin-left: 153px;
+}
+
+.networks-table .range-row-header {
   font-weight: bold;
 }
 
-.networks-header .network {
-  width: 152px;
+.networks-table label {
+  position: relative;
 }
 
-.networks-header .cidr {
-  width: 140px;
+.networks-table label.hide {
+  display: none;
 }
 
-.networks-header .amount {
-  width: 74px;
+.networks-table input.mini  {
+  width: 91px;
 }
 
-.networks-header .size {
-  width: 90px;
+.networks-table .ip_ranges > div {
+  margin-bottom: 2px;
+  float: left;
 }
 
-.vlan {
-  width: 160px;
+.networks-table .ip-ranges-control {
+  width: 20px;
+  margin-top: 3px;
+  float: left;
+  margin-left: 0 !important;
 }
 
-/* *** */
-.networks-header > .network,
-.networks-header > .cidr,
-.networks-header > .amount,
-.networks-header > .size,
-.networks-header > .vlan {
-  font-size: 11px; line-height: 14px;
+.networks-table .ip-ranges-delete {
+  margin-top: 1px;
 }
 
-.networks-table .network_size select {
-  width: 90px;
+.networks-table .range-row {
+  margin-left: 150px;
+  width: 780px;
 }
 
-.cidr input {
-  width: 130px;
+.networks-table .ip-ranges-control button {
+  padding: 0;
 }
 
-.networks-table .name {
-  text-align: left;
-  width: 151px;
-  padding-top: 5px;
-  text-transform: capitalize;
-}
-
-.networks-table .fixed-header {
-  margin-top: 20px;
-}
-
-.networks-table .cidr {
-  width: 140px;
-  text-transform: capitalize;
-}
-
-.networks-table .vlan_start {
-  text-transform: capitalize;
+.networks-table div.error {
+  float: right;
+  width: 264px;
 }
 
 .networks-table .error .help-inline {
   display: block;
   padding-top: 4px;
-  width: 190px;
+  width: 264px;
 }
 
 #networkManager {
@@ -3233,10 +3238,10 @@ select[name=release] option {
   margin: -6px 20px 8px 46px;
 }
 
-legend.openstack-settings {
+legend.openstack-settings, legend.networks {
   display: block;
   padding: 0;
-  margin-bottom: 20px;
+  margin-bottom: 15px;
   font-size: 18px;
   line-height: 18px;
   color: #333333;
@@ -3257,6 +3262,10 @@ legend.openstack-sub-title {
   font-size: 17px;
   margin: 25px 0px 6px 14px;
   line-height: 30px;
+}
+
+.networks-sub-title {
+  width: 150px;
 }
 
 .deploy-task-name {

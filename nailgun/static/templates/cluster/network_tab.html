@@ -1,124 +1,140 @@
 <div class="wrapper">
   <h3>Network Settings</h3>
 
-  <div class="network-tab-content">
-    <% var disabled = task ? 'disabled' : '' %>
-    <fieldset>
+  <% var disabled = task ? 'disabled' : '' %>
 
-      <% if (networks) { %>
+  <% if (networks) { %>
 
-        <% var managers = {'FlatDHCPManager': 'FlatDHCP Manager', 'VlanManager': 'VLAN Manager'} %>
-        <div class="radio-checkbox-group net-manager">
-        <% _.each(_.keys(managers), function(manager) { %>
-          <div class="item-box">
-            <label class="parameter-box clearfix">
-              <div class="parameter-control">
-                <div class="custom-tumbler">
-                  <input type="radio" value="<%= manager %>" name="net-manager" <%= net_manager == manager ? 'checked' : '' %> <%= disabled %>>
-                  <!--[if !IE |(gte IE 9)]>--><span>&nbsp;</span><!--<![endif]-->
-                </div>
+    <% var managers = {'FlatDHCPManager': 'FlatDHCP Manager', 'VlanManager': 'VLAN Manager'} %>
+    <div class="radio-checkbox-group net-manager">
+      <% _.each(_.keys(managers), function(manager) { %>
+        <div class="item-box">
+          <label class="parameter-box clearfix">
+            <div class="parameter-control">
+              <div class="custom-tumbler">
+                <input type="radio" value="<%= manager %>" name="net-manager" <%= net_manager == manager ? 'checked' : '' %> <%= disabled %>>
+                <!--[if !IE |(gte IE 9)]>--><span>&nbsp;</span><!--<![endif]-->
               </div>
-              <div class="parameter-name"><%= managers[manager] %></div>
-            </label>
-          </div>
-        <% }) %>
+            </div>
+            <div class="parameter-name"><%= managers[manager] %></div>
+          </label>
         </div>
-        <hr>
+      <% }) %>
+    </div>
+    <hr>
 
-        <form class="form-inline networks-table" onsubmit="return false">
-          <div class="row networks-header">
-            <div class="network">Network</div>
-            <div class="cidr">CIDR</div>
-            <div class="vlan">VLAN ID</div>
-          </div>
+    <div class="networks-table">
+      <% _.each(networks.models, function(network) { %>
 
-          <% _.each(_.filter(networks.models, function(network){return network.get('name') != 'fixed'; }), function(network) { %>
-            <div class="row">
-              <div class="control-group" data-network-id="<%- network.id %>">
-                <div class="name"><%- network.get('name') %></div>
-                <div class="cidr">
-                  <input class="input-medium" type="text" name="<%- network.get('name') %>-cidr" value="<%- network.get('cidr') %>" maxlength="18" <%= disabled %> />
-                </div>
-                <div class="amount hide">
-                  <input class="input-mini" type="text" name="<%- network.get('name') %>-amount" value="<%- network.get('amount') %>" />
-                </div>
-                <div class="network_size hide">
-                  <select name="<%- network.get('name') %>-network_size">
-                    <option value="<%= network.get('network_size') %>" selected><%= network.get('network_size') %></option>
-                  </select>
-                </div>
-                <div class="vlan_start">
-                  <input class="input-mini" type="text" name="<%- network.get('name') %>-vlan_start" value="<%- network.get('name') == 'floating' ? networks.findWhere({name: 'public'}).get('vlan_start') : network.get('vlan_start') %>" maxlength="4" <%= disabled || network.get('name') == 'floating' ? 'disabled' : '' %> />
-                </div>
-                <div class="error">
-                  <span class="help-inline"></span>
-                </div>
+        <% var networkName = network.get('name') %>
+        <legend class="networks"><%- networkName != 'fixed' ? networkName : 'VM Networks (Fixed)' %></legend>
+
+        <% var vlanManager = net_manager == 'VlanManager' ? '' : 'hide' %>
+        <% var attributes = {
+          'floating': ['ip_ranges', 'vlan_start'],
+          'public': ['ip_ranges', 'vlan_start', 'netmask', 'gateway'],
+          'management': ['cidr', 'vlan_start'],
+          'storage': ['cidr', 'vlan_start'],
+          'fixed': ['cidr', 'amount', 'network_size', 'vlan_range']
+        } %>
+        <% var labels = {
+          'ip_ranges': 'IP Range',
+          'vlan_start': 'VLAN ID',
+          'netmask': 'Netmask',
+          'gateway': 'Gateway',
+          'cidr': 'CIDR',
+          'amount': 'Amount of Networks',
+          'network_size': 'Size of Networks',
+          'vlan_range': 'VLAN ID range'
+        } %>
+
+        <div data-network-id="<%- network.id %>" class="<%- networkName %>">
+          <% _.each(attributes[networkName], function(attribute) { %>
+            <% if (attribute == 'ip_ranges') { %>
+              <div class="range-row-header">
+                <div>Start</div><div>End</div>
               </div>
-            </div>
-          <% }) %>
-
-          <% var fixedNetwork = networks.findWhere({name: 'fixed'}) %>
-          <% if (fixedNetwork) { %>
-
-            <% var vlan = net_manager == 'VlanManager' ? '' : 'hide' %>
-            <% var range = net_manager == 'VlanManager' && fixedNetwork.get('amount') > 1 ? '' : 'hide' %>
-
-            <div class="row networks-header fixed-header">
-              <div class="network">Network</div>
-              <div class="cidr">CIDR</div>
-              <div class="amount <%= vlan %>">Amount of networks</div>
-              <div class="size <%= vlan %>">Size of network (IPs)</div>
-              <div class="vlan"><%= range ? 'VLAN ID' : 'VLAN ID range' %></div>
-            </div>
-
-            <div class="row fixed-row">
-              <div class="control-group fixed-network" data-network-id="<%- fixedNetwork.id %>">
-                <div class="name">VM networks (fixed)</div>
-                <div class="cidr">
-                  <input class="input-medium" type="text" name="fixed-cidr" value="<%- fixedNetwork.get('cidr') %>" maxlength="18" <%= disabled %> />
+              <div class="networks-sub-title parameter-name range-name"><%= labels[attribute] %></div>
+              <% _.each(network.get(attribute), function(ip_range) { %>
+                <div class="range-row clearfix">
+                  <label class="parameter-box clearfix setting">
+                    <div class="parameter-control <%- attribute %>">
+                      <input type="text" name="<%- networkName %>-<%- attribute %>-start" placeholder="127.0.0.1" value="<%- _.first(ip_range) %>" <%= disabled %> />
+                    </div>
+                  </label>
+                  <label class="parameter-box clearfix setting">
+                  <div class="parameter-control <%- attribute %>">
+                    <input type="text" name="<%- networkName %>-<%- attribute %>-end" placeholder="127.0.0.1" value="<%- _.last(ip_range) %>" <%= disabled %> />
+                  </div>
+                  </label>
+                  <div class="ip-ranges-control">
+                    <button class="btn btn-link ip-ranges-add"><i class="icon-plus-circle"></i></button>
+                  </div>
+                  <% if (network.get(attribute).length > 1) { %>
+                    <div class="ip-ranges-control">
+                      <button class="btn btn-link ip-ranges-delete"><i class="icon-minus-circle"></i></button>
+                    </div>
+                  <% } %>
+                  <div class="error"><span class="help-inline"></span></div>
                 </div>
-                <div class="amount <%= vlan %>">
-                  <input class="input-mini range" type="text" name="fixed-amount" value="<%- fixedNetwork.get('amount') %>" maxlength="4" <%= disabled %> />
+              <% }) %>
+            <% } else if (_.contains(['vlan_start', 'netmask', 'gateway', 'cidr', 'amount'], attribute)) { %>
+              <label class="parameter-box clearfix setting <%= vlanManager && attribute == 'amount' ? 'hide' : '' %>">
+                <div class="networks-sub-title parameter-name"><%= labels[attribute] %></div>
+                <div class="parameter-control <%- attribute %>">
+                  <input type="text" class="<%= !vlanManager && attribute == 'amount' ? 'range' : '' %>" name="<%- networkName %>-<%- attribute %>" value="<%- networkName == 'floating' && attribute == 'vlan_start' ? networks.findWhere({name: 'public'}).get(attribute) : network.get(attribute) %>" <%= disabled || networkName == 'floating' ? 'disabled' : '' %> />
                 </div>
-                <div class="network_size <%= vlan %>">
-                  <select name="fixed-network_size" <%= disabled %>>
-                    <% var network_sizes = [4, 8, 16, 32, 64, 128, 256, 512, 1024, 2048] %>
-                    <% _.each(network_sizes, function(size) { %>
-                      <option value="<%= size %>" <%= fixedNetwork.get('network_size') == size ? 'selected' : '' %>><%= size %></option>
+                <div class="error"><span class="help-inline"></span></div>
+              </label>
+            <% } else if (attribute == 'network_size') { %>
+              <label class="parameter-box clearfix setting <%= vlanManager %>">
+                <div class="networks-sub-title parameter-name"><%= labels[attribute] %></div>
+                <div class="parameter-control <%- attribute %>">
+                  <select name="<%- networkName %>-<%- attribute %>" <%= disabled %>>
+                    <% _.each([4, 8, 16, 32, 64, 128, 256, 512, 1024, 2048], function(size) { %>
+                      <option value="<%= size %>" <%= network.get('network_size') == size ? 'selected' : '' %>><%= size %></option>
                     <% }) %>
                   </select>
                 </div>
-                <div class="vlan_start">
-                  <input class="input-mini <%= vlan ? '' : 'range' %>" name="fixed-vlan_start" type="text" value="<%- fixedNetwork.get('vlan_start') %>" maxlength="4" <%= disabled %> />
-                  <% var vlan_end = fixedNetwork.get('vlan_start')+ fixedNetwork.get('amount') - 1 %>
-                  <span class="vlan-end <%= range %>">-</span>
-                  <input class="vlan-end input-mini <%= range %>" name="fixed-vlan-end" type="text" value="<%= vlan_end %>" disabled />
-                </div>
-
-                <div class="error">
-                  <span class="help-inline"></span>
-                </div>
+                <div class="error"><span class="help-inline"></span></div>
+              </label>
+            <% } else if (attribute == 'vlan_range') { %>
+              <div class="range-row-header mini">
+                <div>Start</div><div>End</div>
               </div>
-            </div>
-          <% } %>
-        </form>
-      <% } else { %>
-        <div class="row row-fluid">
-          <div class="span4"></div>
-          <div class="span4">
-            <div class="progress progress-striped progress-success active">
-              <div class="bar" style="width: 100%"></div>
-            </div>
-          </div>
+              <label class="parameter-box clearfix setting">
+                <div class="networks-sub-title parameter-name"><%= labels[attribute] %></div>
+                <div class="range-row">
+                  <div class="parameter-control <%- attribute %>">
+                    <input type="text" class="mini range" name="<%- networkName %>-<%- attribute %>-start" value="<%- network.get('vlan_start') %>" <%= disabled %> />
+                  </div>
+                  <div class="parameter-control <%- attribute %>">
+                    <input type="text" class="mini" name="<%- networkName %>-<%- attribute %>-end" value="<%- network.get('vlan_start') + network.get('amount') - 1 %>" disabled />
+                  </div>
+                  <div class="error"><span class="help-inline"></span></div>
+                </div>
+              </label>
+            <% } %>
+          <% }) %>
         </div>
-      <% } %>
-    </fieldset>
-  </div>
+      <% }) %>
+    </div>
 
-  <hr>
+  <% } else { %>
+    <div class="row row-fluid">
+      <div class="span4"></div>
+      <div class="span4">
+        <div class="progress progress-striped progress-success active">
+          <div class="bar" style="width: 100%"></div>
+        </div>
+      </div>
+    </div>
+  <% } %>
 
   <!-- Verification control -->
+  <hr>
   <div class="row verification-control"></div>
+
   <!-- Buttons -->
   <div class="row">
     <div class="page-control-box">
