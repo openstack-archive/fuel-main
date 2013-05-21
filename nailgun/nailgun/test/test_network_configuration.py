@@ -1,6 +1,8 @@
 # -*- coding: utf-8 -*-
 import json
 
+from sqlalchemy.sql import not_
+
 from nailgun.api.models import Network, NetworkGroup
 from nailgun.test.base import BaseHandlers
 from nailgun.test.base import reverse
@@ -68,7 +70,9 @@ class TestNetworkConfigurationHandler(BaseHandlers):
             new_net_manager['net_manager'])
 
     def test_do_not_update_net_manager_if_validation_is_failed(self):
-        network = self.db.query(NetworkGroup).first()
+        network = self.db.query(NetworkGroup).filter(
+            not_(NetworkGroup.name == "fuelweb_admin")
+        ).first()
         new_net_manager = {'net_manager': 'VlanManager',
                            'networks': [{'id': 500, 'vlan_start': 500}]}
         resp = self.put(self.cluster.id, new_net_manager, expect_errors=True)
@@ -79,7 +83,9 @@ class TestNetworkConfigurationHandler(BaseHandlers):
             new_net_manager['net_manager'])
 
     def test_network_group_update_changes_network(self):
-        network = self.db.query(NetworkGroup).first()
+        network = self.db.query(NetworkGroup).filter(
+            not_(NetworkGroup.name == "fuelweb_admin")
+        ).first()
         self.assertIsNotNone(network)
         new_vlan_id = 500  # non-used vlan id
         new_nets = {'networks': [{
@@ -93,7 +99,9 @@ class TestNetworkConfigurationHandler(BaseHandlers):
         self.assertEquals(network.networks[0].vlan_id, 500)
 
     def test_update_networks_and_net_manager(self):
-        network = self.db.query(NetworkGroup).first()
+        network = self.db.query(NetworkGroup).filter(
+            not_(NetworkGroup.name == "fuelweb_admin")
+        ).first()
         new_vlan_id = 500  # non-used vlan id
         new_net = {'net_manager': 'VlanManager',
                    'networks': [{'id': network.id, 'vlan_start': new_vlan_id}]}

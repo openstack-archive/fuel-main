@@ -208,13 +208,8 @@ class TestNetworkManager(BaseHandlers):
         same_vlan = 100
         resp = self.app.get(
             reverse(
-<<<<<<< HEAD
                 'NetworkConfigurationHandler',
                 kwargs={'cluster_id': cluster_db.id}),
-=======
-                'NetworkCollectionHandler'
-            ) + "?cluster_id={0}&admin=0".format(cluster_db.id),
->>>>>>> unit tests working
             headers=self.default_headers
         )
         networks_data = json.loads(resp.body)
@@ -229,13 +224,8 @@ class TestNetworkManager(BaseHandlers):
         )
         resp = self.app.get(
             reverse(
-<<<<<<< HEAD
                 'NetworkConfigurationHandler',
                 kwargs={'cluster_id': cluster_db.id}),
-=======
-                'NetworkCollectionHandler'
-            ) + "?cluster_id={0}&admin=0".format(cluster_db.id),
->>>>>>> unit tests working
             headers=self.default_headers
         )
         networks_data = json.loads(resp.body)['networks']
