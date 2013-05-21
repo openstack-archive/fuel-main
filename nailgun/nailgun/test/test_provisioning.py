@@ -44,7 +44,7 @@ class TestProvisioning(BaseHandlers):
                 cluster_id=cluster['id'],
                 **x),
             [
-                {"status": "ready", "pending_addition": True},
+                {"status": "ready"},
                 {"pending_addition": True},
                 {"status": "provisioning", "pending_addition": True},
                 {"status": "deploying", "pending_addition": True},
@@ -64,7 +64,6 @@ class TestProvisioning(BaseHandlers):
         self.assertEquals(self.env.nodes[0].status, 'ready')
         self.assertEquals(self.env.nodes[1].status, 'provisioning')
         self.assertEquals(self.env.nodes[2].status, 'provisioning')
-
         self.assertEquals(self.env.nodes[3].status, 'provisioned')
         self.assertEquals(self.env.nodes[4].status, 'error')
         self.assertEquals(self.env.nodes[5].status, 'provisioning')
