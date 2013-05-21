@@ -172,6 +172,7 @@ class NodeCollectionHandler(JSONHandler, NICUtils):
                     or self.validator.validate_existent_node_mac(nd)
             else:
                 node = q.get(nd["id"])
+            self.db.add(node)
             if nd.get("cluster_id") is None and node.cluster:
                 node.cluster.clear_pending_changes(node_id=node.id)
             old_cluster_id = node.cluster_id

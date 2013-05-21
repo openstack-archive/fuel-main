@@ -113,7 +113,7 @@ class TestHandlers(BaseHandlers):
             reverse('NodeCollectionHandler'),
             headers=self.default_headers
         )
-        self.db.refresh(node)
+        node = self.db.query(Node).get(node.id)
         self.assertEquals('new', node.manufacturer)
 
     def test_node_update_agent_discover(self):
@@ -135,7 +135,7 @@ class TestHandlers(BaseHandlers):
             reverse('NodeCollectionHandler'),
             headers=self.default_headers
         )
-        self.db.refresh(node_db)
+        node_db = self.db.query(Node).get(node_db.id)
         self.assertEquals('new', node_db.manufacturer)
         self.assertEquals('provisioning', node_db.status)
 
@@ -150,7 +150,7 @@ class TestHandlers(BaseHandlers):
             ]),
             headers=self.default_headers)
         self.assertEquals(resp.status, 200)
-        self.db.refresh(node)
+        node = self.db.query(Node).get(node.id)
         self.assertEquals(node.timestamp, timestamp)
 
         resp = self.app.put(
@@ -161,7 +161,7 @@ class TestHandlers(BaseHandlers):
             ]),
             headers=self.default_headers)
         self.assertEquals(resp.status, 200)
-        self.db.refresh(node)
+        node = self.db.query(Node).get(node.id)
         self.assertNotEquals(node.timestamp, timestamp)
         self.assertEquals('new', node.manufacturer)
 
