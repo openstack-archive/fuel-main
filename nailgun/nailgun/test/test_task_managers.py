@@ -106,6 +106,7 @@ class TestTaskManagers(BaseHandlers):
             headers=self.default_headers
         )
         self.assertEquals(resp.status, 202)
+        self.assertEquals(len(cluster_db.changes), 1)
 
         supertask = self.env.launch_deployment()
         self.assertEquals(supertask.name, 'deploy')
@@ -123,6 +124,9 @@ class TestTaskManagers(BaseHandlers):
         ):
             self.assertEquals(n.status, 'ready')
             self.assertEquals(n.progress, 100)
+
+        self.env.db.refresh(cluster_db)
+        self.assertEquals(len(cluster_db.changes), 0)
 
     @fake_tasks()
     def test_redeploy_nodes_in_ready_status_if_cluster_attrs_were_changed(
@@ -145,6 +149,7 @@ class TestTaskManagers(BaseHandlers):
         )
 
         self.assertEquals(resp.status, 200)
+        self.assertEquals(len(cluster_db.changes), 1)
 
         supertask = self.env.launch_deployment()
         self.assertEquals(supertask.name, 'deploy')
@@ -158,6 +163,9 @@ class TestTaskManagers(BaseHandlers):
         for n in self.env.nodes:
             self.assertEquals(n.status, 'ready')
             self.assertEquals(n.progress, 100)
+
+        self.env.db.refresh(cluster_db)
+        self.assertEquals(len(cluster_db.changes), 0)
 
     @fake_tasks()
     def test_deployment_fails_if_node_offline(self):
