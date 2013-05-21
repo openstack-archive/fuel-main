@@ -55,11 +55,6 @@ def upload_fixture(fileobj):
 
         fk_fields = {}
         for field, value in obj["fields"].iteritems():
-            # print "%s.%s = %s" % (
-            #     name.capitalize(),
-            #     field,
-            #     value
-            # )
             f = getattr(obj['model'], field)
             impl = f.impl
             fk_model = None
@@ -72,14 +67,9 @@ def upload_fixture(fileobj):
             if isinstance(impl, orm.attributes.ScalarObjectAttributeImpl):
                 if value:
                     fk_fields[field] = (value, fk_model)
-                    #setattr(new_obj, field, db.query(fk_model).get(value))
             elif isinstance(impl, orm.attributes.CollectionAttributeImpl):
                 if value:
                     fk_fields[field] = (value, fk_model)
-                    # for sub in db.query(fk_model).filter(
-                    #         fk_model.id.in_(value)
-                    #     ):
-                    #     getattr(new_obj, field).append(sub)
             elif isinstance(
                 f.property.columns[0].type, sqlalchemy.types.DateTime
             ):
