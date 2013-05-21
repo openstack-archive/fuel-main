@@ -613,6 +613,12 @@ class BaseHandlers(TestCase):
         }
         flush()
         self.env = Environment(app=self.app, db=self.db)
+        # hack for admin net
+        map(
+            self.db.delete,
+            self.db.query(Network).all(),
+        )
+        self.db.commit()
         self.env.upload_fixtures(self.fixtures)
 
 
