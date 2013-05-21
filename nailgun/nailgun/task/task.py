@@ -91,14 +91,13 @@ class DeploymentTask(object):
     def execute(cls, task):
         task_uuid = task.uuid
         cluster_id = task.cluster.id
-        cluster = orm().query(Cluster).get(cluster_id)
         netmanager = NetworkManager()
 
         nodes = orm().query(Node).filter_by(
             cluster_id=task.cluster.id,
             pending_deletion=False).order_by(Node.id)
 
-        if len(cluster.changes) == 0:
+        if len(task.cluster.changes) == 0:
             nodes = nodes.filter(Node.status != 'ready')
 
         for node in nodes:
