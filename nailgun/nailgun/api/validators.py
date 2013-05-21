@@ -320,6 +320,7 @@ class NetworkConfigurationValidator(BasicValidator):
                 )
         return d
 
+
 class NetAssignmentValidator(BasicValidator):
     @classmethod
     def validate(cls, node):

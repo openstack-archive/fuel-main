@@ -72,10 +72,10 @@ class ClusterHandler(JSONHandler, NICUtils):
                 new_nodes = self.db.query(Node).filter(
                     Node.id.in_(value)
                 )
-                nodes_to_remove = [n for n in cluster.nodes \
+                nodes_to_remove = [n for n in cluster.nodes
                                    if n not in new_nodes]
-                nodes_to_add = [n for n in new_nodes \
-                                   if n not in cluster.nodes]
+                nodes_to_add = [n for n in new_nodes
+                                if n not in cluster.nodes]
                 map(cluster.nodes.remove, nodes_to_remove)
                 map(cluster.nodes.append, nodes_to_add)
                 for node in nodes_to_remove:

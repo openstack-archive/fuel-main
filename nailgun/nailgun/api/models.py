@@ -713,4 +713,3 @@ class NodeNICInterface(Base):
         "NetworkGroup",
         secondary=NetworkAssignment.__table__,
     )
-

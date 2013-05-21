@@ -188,4 +188,3 @@ class TestHandlers(BaseHandlers):
         self.assertEquals(resp.status, 200)
         response = json.loads(resp.body)
         self.assertNotEquals(response[0]['id'], fake_id)
-

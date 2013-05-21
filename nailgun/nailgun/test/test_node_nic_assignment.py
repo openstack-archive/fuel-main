@@ -161,4 +161,3 @@ class TestNodeHandlers(BaseHandlers):
         for resp_nic in response:
             self.assertEquals(resp_nic['assigned_networks'], [])
             self.assertEquals(resp_nic['allowed_networks'], [])
-

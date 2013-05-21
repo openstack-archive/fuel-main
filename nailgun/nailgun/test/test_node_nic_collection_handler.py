@@ -37,4 +37,3 @@ class TestHandlers(BaseHandlers):
         self.assertEquals(resp.status, 200)
         new_response = json.loads(resp.body)
         self.assertEquals(new_response, [node_json])
-
