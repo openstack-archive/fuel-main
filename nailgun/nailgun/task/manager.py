@@ -24,11 +24,12 @@ class TaskManager(object):
     def __init__(self, cluster_id):
         self.cluster = orm().query(Cluster).get(cluster_id)
 
-    def _run_silently(self, task, method, *args, **kwargs):
+    def _call_silently(self, task, instance, *args, **kwargs):
+        method = getattr(instance, kwargs.pop('method_name', 'execute'))
         if task.status == 'error':
             return
         try:
-            return task.call(method, *args, **kwargs)
+            return method(task, *args, **kwargs)
         except Exception as exc:
             err = str(exc)
             if any([
@@ -85,7 +86,10 @@ class DeploymentTaskManager(TaskManager):
 
         if nodes_to_delete:
             task_deletion = supertask.create_subtask("node_deletion")
-            self._run_silently(task_deletion, tasks.DeletionTask.execute)
+            self._call_silently(
+                task_deletion,
+                tasks.DeletionTask
+            )
 
         if nodes_to_deploy:
             TaskHelper.update_slave_nodes_fqdn(nodes_to_deploy)
@@ -94,18 +98,20 @@ class DeploymentTaskManager(TaskManager):
             # we assume here that task_provision just adds system to
             # cobbler and reboots systems, so it has extreamly small weight
             task_provision.weight = 0.05
-            provision_message = self._run_silently(
+            provision_message = self._call_silently(
                 task_provision,
-                tasks.ProvisionTask.message
+                tasks.ProvisionTask,
+                method_name='message'
             )
             task_provision.cache = provision_message
             orm().add(task_provision)
             orm().commit()
 
             task_deployment = supertask.create_subtask("deployment")
-            deployment_message = self._run_silently(
+            deployment_message = self._call_silently(
                 task_deployment,
-                tasks.DeploymentTask.message
+                tasks.DeploymentTask,
+                method_name='message'
             )
             task_deployment.cache = deployment_message
             orm().add(task_deployment)
@@ -131,9 +137,9 @@ class CheckNetworksTaskManager(TaskManager):
         )
         orm().add(task)
         orm().commit()
-        self._run_silently(
+        self._call_silently(
             task,
-            tasks.CheckNetworksTask.execute,
+            tasks.CheckNetworksTask,
             data
         )
         orm().refresh(task)
@@ -155,9 +161,9 @@ class VerifyNetworksTaskManager(TaskManager):
         )
         orm().add(task)
         orm().commit()
-        self._run_silently(
+        self._call_silently(
             task,
-            tasks.CheckNetworksTask.execute,
+            tasks.CheckNetworksTask,
             nets
         )
         orm().refresh(task)
@@ -168,9 +174,9 @@ class VerifyNetworksTaskManager(TaskManager):
             task.name = "verify_networks"
             orm().add(task)
             orm().commit()
-            self._run_silently(
+            self._call_silently(
                 task,
-                tasks.VerifyNetworksTask.execute,
+                tasks.VerifyNetworksTask,
                 vlan_ids
             )
         return task
@@ -220,8 +226,8 @@ class ClusterDeletionManager(TaskManager):
         task = Task(name="cluster_deletion", cluster=self.cluster)
         orm().add(task)
         orm().commit()
-        self._run_silently(
+        self._call_silently(
             task,
-            tasks.ClusterDeletionTask.execute
+            tasks.ClusterDeletionTask
         )
         return task

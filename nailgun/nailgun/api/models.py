@@ -477,9 +477,6 @@ class Task(Base):
             self.status
         )
 
-    def call(self, method, *args, **kwargs):
-        return method(self, *args, **kwargs)
-
     def create_subtask(self, name):
         if not name:
             raise ValueError("Subtask name not specified")
