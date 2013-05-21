@@ -107,8 +107,7 @@ class DeploymentTask(object):
 
         if len(changes) == 0:
             nodes = nodes.filter(
-                or_(
-                    Node.pending_addition==True,
+                or_(True == Node.pending_addition,
                     Node.status != 'ready'))
 
         for node in nodes:
