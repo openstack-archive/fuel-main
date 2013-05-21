@@ -271,25 +271,18 @@ define(function() {
 
     models.Interface = Backbone.Model.extend({
         constructorName: 'Interface',
-        urlRoot: '/api/nodes/',
-        validate: function(attrs, options) {
-            var errors = [];
-            // NOTE: TBD
-            return _.isEmpty(errors) ? null : errors;
-        },
         parse: function(response) {
             response.assigned_networks = new models.InterfaceNetworks(response.assigned_networks);
             return response;
+        },
+        toJSON: function(options) {
+            return _.extend(this.constructor.__super__.toJSON.call(this, options), {assigned_networks: this.get('assigned_networks').toJSON()});
         }
     });
 
     models.Interfaces = Backbone.Collection.extend({
         constructorName: 'Interfaces',
         model: models.Interface,
-        url: '/api/nodes/',
-        toJSON: function(options) {
-            return [{"id": options.node, "interfaces": this.models}];
-        },
         comparator: function(ifc) {
             return ifc.get('name');
         }
@@ -305,6 +298,20 @@ define(function() {
         comparator: function(network) {
             return network.get('name');
         }
+    });
+
+    models.NodeInterfaceConfiguration = Backbone.Model.extend({
+        constructorName: 'NodeInterfaceConfiguration',
+        parse: function(response) {
+            response.interfaces = new models.Interfaces(response.interfaces);
+            return response;
+        }
+    });
+
+    models.NodeInterfaceConfigurations = Backbone.Collection.extend({
+        url: '/api/nodes/interfaces',
+        constructorName: 'NodeInterfaceConfigurations',
+        model: models.NodeInterfaceConfiguration
     });
 
     models.Network = Backbone.Model.extend({

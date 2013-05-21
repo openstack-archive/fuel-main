@@ -90,7 +90,10 @@ function(utils, models, commonViews, dialogViews, nodesTabSummaryTemplate, editN
 
     Screen = Backbone.View.extend({
         constructorName: 'Screen',
-        keepScrollPosition: false
+        keepScrollPosition: false,
+        goToNodeList: function() {
+            app.navigate('#cluster/' + this.model.id + '/nodes', {trigger: true});
+        }
     });
 
     NodesByRolesScreen = Screen.extend({
@@ -141,7 +144,7 @@ function(utils, models, commonViews, dialogViews, nodesTabSummaryTemplate, editN
         keepScrollPosition: false,
         template: _.template(editNodesScreenTemplate),
         events: {
-            'click .btn-discard': 'discardChanges',
+            'click .btn-discard': 'goToNodeList',
             'click .btn-apply:not([disabled])': 'applyChanges',
             'click .nodebox': 'toggleNode',
             'click .select-all-tumbler': 'selectAll'
@@ -175,9 +178,6 @@ function(utils, models, commonViews, dialogViews, nodesTabSummaryTemplate, editN
         },
         calculateApplyButtonAvailability: function() {
             this.$('.btn-apply').attr('disabled', !this.getChosenNodesIds().length);
-        },
-        discardChanges: function() {
-            app.navigate('#cluster/' + this.model.id + '/nodes', {trigger: true});
         },
         applyChanges: function(e) {
             this.$('.btn-apply').attr('disabled', true);
@@ -463,7 +463,10 @@ function(utils, models, commonViews, dialogViews, nodesTabSummaryTemplate, editN
 
     EditNodeScreen = Screen.extend({
         constructorName: 'EditNodeScreen',
-        keepScrollPosition: false
+        keepScrollPosition: false,
+        disableControls: function(disable) {
+            this.$('.btn, input').attr('disabled', disable);
+        }
     });
 
     EditNodeDisksScreen = EditNodeScreen.extend({
@@ -475,13 +478,10 @@ function(utils, models, commonViews, dialogViews, nodesTabSummaryTemplate, editN
             'click .btn-defaults': 'loadDefaults',
             'click .btn-revert-changes': 'revertChanges',
             'click .btn-apply:not(:disabled)': 'applyChanges',
-            'click .btn-back-to-cluster:not(:disabled)': 'backToCluster'
+            'click .btn-return:not(:disabled)': 'goToNodeList'
         },
         formatFloat: function(value) {
             return parseFloat((value / this.pow).toFixed(2));
-        },
-        disableControls: function(disable) {
-            this.$('.btn, input').attr('disabled', disable);
         },
         checkForChanges: function() {
             var noChanges = _.isEqual(_.where(this.disks.toJSON(), {'type': 'disk'}), _.where(this.initialData, {'type': 'disk'}));
@@ -531,9 +531,6 @@ function(utils, models, commonViews, dialogViews, nodesTabSummaryTemplate, editN
                     this.disableControls(false);
                     utils.showErrorDialog({title: 'Node disks configuration'});
                 }, this));
-        },
-        backToCluster: function() {
-            app.navigate('#cluster/' + this.model.id + '/nodes', {trigger: true});
         },
         getGroupAllocatedSpace: function(group) {
             var allocatedSpace = 0;
@@ -592,9 +589,9 @@ function(utils, models, commonViews, dialogViews, nodesTabSummaryTemplate, editN
                         this.initialData = _.cloneDeep(this.disks.toJSON());
                         this.render();
                     }, this))
-                .fail(_.bind(this.backToCluster, this));
+                .fail(_.bind(this.goToNodeList, this));
             } else {
-                this.backToCluster();
+                this.goToNodeList();
             }
         },
         renderDisks: function() {
@@ -782,18 +779,16 @@ function(utils, models, commonViews, dialogViews, nodesTabSummaryTemplate, editN
 
     EditNodeInterfacesScreen = EditNodeScreen.extend({
         className: 'edit-node-networks-screen',
-        constructorName: 'EditInterfacesScreen',
+        constructorName: 'EditNodeInterfacesScreen',
         template: _.template(editNodeInterfacesScreenTemplate),
         events: {
             /*'click .btn-defaults': 'loadDefaults',*/
-            'click .btn-revert-changes': 'returnToNodesTab',
-            'click .btn-apply:not(:disabled)': 'applyChanges'
-        },
-        disableControls: function() {
-            this.$('.btn, input').attr('disabled', true);
+            'click .btn-revert-changes': 'revertChanges',
+            'click .btn-apply:not(:disabled)': 'applyChanges',
+            'click .btn-return:not(:disabled)': 'goToNodeList'
         },
         checkForChanges: function() {
-            this.$('.btn-apply').attr('disabled', _.isEqual(this.interfaces.toJSON(), this.initialData));
+            this.$('.btn-apply, .btn-revert-changes').attr('disabled', _.isEqual(this.interfaces.toJSON(), this.initialData));
         },
         loadDefaults: function() {
             // TODO (Ivan K): implement this
@@ -806,18 +801,24 @@ function(utils, models, commonViews, dialogViews, nodesTabSummaryTemplate, editN
                     this.checkForChanges();
                 }, this));*/
         },
-        returnToNodesTab: function() {
-            app.navigate('#cluster/' + this.model.id + '/nodes', {trigger: true});
+        revertChanges: function() {
+            this.interfaces.reset(_.cloneDeep(this.initialData), {parse: true});
         },
         applyChanges: function() {
-            Backbone.sync('update', this.interfaces, {url: '/api/nodes/interfaces', node: this.node.get("id")})
-                .done(_.bind(this.returnToNodesTab, this))
+            this.disableControls(true);
+            var configuration = new models.NodeInterfaceConfiguration({id: this.node.id, interfaces: this.interfaces});
+            Backbone.sync('update', new models.NodeInterfaceConfigurations(configuration))
+                .done(_.bind(function() {
+                    this.initialData = this.interfaces.toJSON();
+                }, this))
                 .fail(_.bind(function() {
-                    this.$('.btn, input').attr('disabled', false);
-                    var dialog = new dialogViews.SimpleMessage({error: true,
-                                                                title: 'Node network interfaces configuration error'});
+                    var dialog = new dialogViews.SimpleMessage({error: true, title: 'Node network interfaces configuration error'});
                     app.page.registerSubView(dialog);
                     dialog.render();
+                }, this))
+                .always(_.bind(function() {
+                    this.disableControls(false);
+                    this.checkForChanges();
                 }, this));
         },
         initialize: function(options) {
@@ -825,13 +826,16 @@ function(utils, models, commonViews, dialogViews, nodesTabSummaryTemplate, editN
             this.node = this.model.get('nodes').get(this.screenOptions[0]);
             if (this.node) {
                 this.interfaces = new models.Interfaces();
-                this.interfaces.fetch({
-                    url: _.result(this.node, 'url') + '/interfaces'
-                })
-                .done(_.bind(this.renderInterfaces, this))
-                .fail(_.bind(this.returnToNodesTab, this));
+                this.interfaces.on('reset', this.renderInterfaces, this);
+                this.interfaces.on('reset', this.checkForChanges, this);
+                this.interfaces.fetch({url: _.result(this.node, 'url') + '/interfaces', reset: true})
+                    .done(_.bind(function() {
+                        this.initialData = this.interfaces.toJSON();
+                        this.checkForChanges();
+                    } , this))
+                    .fail(_.bind(this.goToNodeList, this));
             } else {
-                this.returnToNodesTab();
+                this.goToNodeList();
             }
         },
         renderInterfaces: function() {
@@ -879,12 +883,14 @@ function(utils, models, commonViews, dialogViews, nodesTabSummaryTemplate, editN
         initialize: function(options) {
             _.defaults(this, options);
             this.model.get('assigned_networks').on('add remove', this.checkIfEmpty, this);
+            this.model.get('assigned_networks').on('add remove', this.screen.checkForChanges, this.screen);
         },
         render: function() {
             this.$el.html(this.template(_.extend({ifc: this.model}, this.templateHelpers)));
             this.checkIfEmpty();
             this.$('.logical-network-box').sortable({
                 connectWith: '.logical-network-box',
+                items: '.logical-network-item',
                 containment: this.screen.$('.node-networks'),
                 cursor: 'move'
             }).disableSelection();
