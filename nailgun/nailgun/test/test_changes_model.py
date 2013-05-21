@@ -73,7 +73,7 @@ class TestClusterChanges(BaseHandlers):
             node_id=node_db.id
         ).all()
         self.assertEquals(len(node_disks_changes), 1)
-        resp = self.app.put(
+        self.app.put(
             reverse('NodeCollectionHandler'),
             json.dumps([{"id": node_db.id, "cluster_id": None}]),
             headers=self.default_headers
