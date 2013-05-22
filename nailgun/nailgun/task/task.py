@@ -441,6 +441,21 @@ class DeletionTask(object):
                     nodes_to_restore.append(new_node)
                     # /only fake tasks
 
+        # Deletion offline nodes from db
+        if nodes_to_delete:
+            for idx, node in enumerate(nodes_to_delete):
+                node_db = orm().query(Node).get(node['id'])
+
+                if not node_db.online:
+                    slave_name = TaskHelper.slave_name_by_id(node['id'])
+                    logger.info(
+                        "Node %s is offline, removing node from db" %
+                        slave_name)
+                    orm().delete(node_db)
+                    orm().commit()
+
+                    del nodes_to_delete[idx]
+
         # only real tasks
         if not USE_FAKE:
             if nodes_to_delete:
@@ -452,6 +467,7 @@ class DeletionTask(object):
                 )
                 for node in nodes_to_delete:
                     slave_name = TaskHelper.slave_name_by_id(node['id'])
+
                     if pd.system_exists(slave_name):
                         logger.debug("Removing system "
                                      "from cobbler: %s" % slave_name)

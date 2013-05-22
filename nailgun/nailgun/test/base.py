@@ -516,7 +516,6 @@ class Environment(object):
         timer = time.time()
         while task.status == 'running':
             self.db.refresh(task)
-
             if time.time() - timer > timeout:
                 raise Exception(
                     "Task '{0}' seems to be hanged".format(
@@ -548,20 +547,20 @@ class Environment(object):
 
             return len(nodes) == len(nodes_with_status)
 
-        self._wait_for_success(
+        self.wait_for_true(
             check_statuses,
             error_message='Something wrong with the statuses')
 
-    def _wait_for_success(self, func, args=[], kwargs={},
-                          seconds=10, error_message='Timeout error'):
+    def wait_for_true(self, check, args=[], kwargs={},
+                      timeout=60, error_message='Timeout error'):
 
         start_time = time.time()
 
         while True:
-            result = func(*args, **kwargs)
+            result = check(*args, **kwargs)
             if result:
                 return result
-            if time.time() - start_time > seconds:
+            if time.time() - start_time > timeout:
                 raise TimeoutError(error_message)
             time.sleep(0.1)
 

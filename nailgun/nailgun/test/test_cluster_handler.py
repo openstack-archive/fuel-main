@@ -1,13 +1,18 @@
 # -*- coding: utf-8 -*-
 import json
-from paste.fixture import TestApp
-
 from nailgun.api.models import Cluster, Node, NetworkGroup
 from nailgun.test.base import BaseHandlers
 from nailgun.test.base import reverse
-
+from nailgun.test.base import fake_tasks
 
 class TestHandlers(BaseHandlers):
+
+    def delete(self, cluster_id):
+        return self.app.delete(
+            reverse('ClusterHandler', kwargs={'cluster_id': cluster_id}),
+            '',
+            headers=self.default_headers
+        )
 
     def test_cluster_get(self):
         cluster = self.env.create_cluster(api=False)
@@ -95,6 +100,57 @@ class TestHandlers(BaseHandlers):
 
         nodes = self.db.query(Node).filter(Node.cluster == cluster)
         self.assertEquals(1, nodes.count())
+
+    def test_empty_cluster_deletion(self):
+        cluster = self.env.create_cluster(api=True)
+        resp = self.delete(cluster['id'])
+
+        self.assertEquals(resp.status, 202)
+        self.assertEquals(self.db.query(Node).count(), 0)
+        self.assertEquals(self.db.query(Cluster).count(), 0)
+
+    @fake_tasks()
+    def test_cluster_deletion(self):
+        self.env.create(
+            cluster_kwargs={},
+            nodes_kwargs=[
+                {"pending_addition": True},
+                {"status": "ready"}])
+
+        resp = self.delete(self.env.clusters[0].id)
+        self.assertEquals(resp.status, 202)
+
+        def cluster_is_empty():
+            return self.db.query(Cluster).count() == 0
+
+        self.env.wait_for_true(cluster_is_empty, timeout=5)
+
+        # Nodes should be in discover status
+        self.assertEquals(self.db.query(Node).count(), 2)
+        for node in self.db.query(Node):
+            self.assertEquals(node.status, 'discover')
+            self.assertEquals(node.cluster_id, None)
+
+    @fake_tasks()
+    def test_cluster_deleteion_with_offline_nodes(self):
+        self.env.create(
+            cluster_kwargs={},
+            nodes_kwargs=[
+                {'pending_addition': True},
+                {'online': False, 'status': 'ready'}])
+
+        resp = self.delete(self.env.clusters[0].id)
+        self.assertEquals(resp.status, 202)
+
+        def cluster_is_empty_and_in_db_one_node():
+            return self.db.query(Cluster).count() == 0 and \
+                   self.db.query(Node).count() == 1
+
+        self.env.wait_for_true(cluster_is_empty_and_in_db_one_node, timeout=5)
+
+        node = self.db.query(Node).first()
+        self.assertEquals(node.status, 'discover')
+        self.assertEquals(node.cluster_id, None)
 
     def test_cluster_deletion_delete_networks(self):
         cluster = self.env.create_cluster(api=True)

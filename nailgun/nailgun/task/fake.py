@@ -218,7 +218,15 @@ class FakeDeletionThread(FakeThread):
         orm = scoped_session(
             sessionmaker(bind=engine, query_cls=NoCacheQuery)
         )
+
         for node in nodes_to_restore:
+            # Offline node just deleted from db
+            # and could not recreated with status
+            # discover
+            if not node.online:
+                continue
+
+            node.status = 'discover'
             orm.add(node)
             orm.commit()
             ram = round(node.meta.get('ram') or 0, 1)
