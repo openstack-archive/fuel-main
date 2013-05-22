@@ -5,6 +5,7 @@ from nailgun.test.base import BaseHandlers
 from nailgun.test.base import reverse
 from nailgun.test.base import fake_tasks
 
+
 class TestHandlers(BaseHandlers):
 
     def delete(self, cluster_id):
@@ -144,7 +145,7 @@ class TestHandlers(BaseHandlers):
 
         def cluster_is_empty_and_in_db_one_node():
             return self.db.query(Cluster).count() == 0 and \
-                   self.db.query(Node).count() == 1
+                self.db.query(Node).count() == 1
 
         self.env.wait_for_true(cluster_is_empty_and_in_db_one_node, timeout=5)
 
