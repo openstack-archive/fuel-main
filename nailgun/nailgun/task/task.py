@@ -26,9 +26,6 @@ from nailgun.api.models import IPAddr
 from nailgun.api.validators import BasicValidator
 from nailgun.task.fake import FAKE_THREADS
 from nailgun.errors import errors
-from nailgun.task.errors import DeploymentAlreadyStarted
-from nailgun.task.errors import FailedProvisioning
-from nailgun.task.errors import WrongNodeStatus
 from nailgun.task.helpers import TaskHelper
 
 
