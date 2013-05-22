@@ -2,7 +2,7 @@
 
 <legend class="openstack-settings"><%- legend %></legend>
 <div>
-  <% var sortedSettings = _.sortBy(_.keys(settings), function(setting) {return setting;}) %>
+  <% var sortedSettings = _.sortBy(_.keys(settings), function(setting) {return settings[setting].weight;}) %>
   <% _.each(sortedSettings, function(setting) { %>
     <% var settingDetails = settings[setting] %>
     <% if (_.isBoolean(settingDetails.value)) { %>
