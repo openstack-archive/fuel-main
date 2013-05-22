@@ -782,7 +782,7 @@ function(utils, models, commonViews, dialogViews, nodesTabSummaryTemplate, editN
         constructorName: 'EditNodeInterfacesScreen',
         template: _.template(editNodeInterfacesScreenTemplate),
         events: {
-            /*'click .btn-defaults': 'loadDefaults',*/
+            'click .btn-defaults': 'loadDefaults',
             'click .btn-revert-changes': 'revertChanges',
             'click .btn-apply:not(:disabled)': 'applyChanges',
             'click .btn-return:not(:disabled)': 'goToNodeList'
@@ -791,15 +791,16 @@ function(utils, models, commonViews, dialogViews, nodesTabSummaryTemplate, editN
             this.$('.btn-apply, .btn-revert-changes').attr('disabled', _.isEqual(this.interfaces.toJSON(), this.initialData));
         },
         loadDefaults: function() {
-            // TODO (Ivan K): implement this
-            /*this.disableControls();
             this.interfaces = new models.Interfaces();
-            this.interfaces.fetch({
-                url: _.result(this.node, 'url') + '/defaults/interfaces'
-            }).always(_.bind(function() {
-                    this.render();
-                    this.checkForChanges();
-                }, this));*/
+            this.interfaces.fetch({url: _.result(this.node, 'url') + '/interfaces/default_assignment', reset: true})
+                    .done(_.bind(function() {
+                        this.checkForChanges();
+                    } , this))
+                    .fail(_.bind(function() {
+                        var dialog = new dialogViews.SimpleMessage({error: true, title: 'Can not load default settings'});
+                        app.page.registerSubView(dialog);
+                        dialog.render();
+                    }, this));
         },
         revertChanges: function() {
             this.interfaces.reset(_.cloneDeep(this.initialData), {parse: true});

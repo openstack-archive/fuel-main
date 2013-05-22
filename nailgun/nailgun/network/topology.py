@@ -107,6 +107,14 @@ class NICUtils(object):
     def get_all_cluster_networkgroups(self, node):
         return node.cluster.network_groups
 
+    def get_default_nic_networkgroups(self, node, nic):
+        main_nic = self.get_main_nic(node)
+        return self.get_all_cluster_networkgroups(node) \
+            if nic.id == main_nic.id else []
+
+    def get_allowed_nic_networkgroups(self, node, nic):
+        return self.get_all_cluster_networkgroups(node)
+
     def allow_network_assignment_to_all_interfaces(self, node):
         for nic in node.interfaces:
             for net_group in self.get_all_cluster_networkgroups(node):

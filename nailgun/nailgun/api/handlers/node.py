@@ -465,32 +465,42 @@ class NodeCollectionNICsHandler(NodeNICsHandler):
 
 
 class NodeNICsDefaultHandler(JSONHandler, NICUtils):
-    fields = (
-        'id', (
-            'interfaces',
-            'id',
-            'mac',
-            'name',
-            'current_speed',
-            'max_speed',
-            ('assigned_networks', 'id', 'name'),
-            ('allowed_networks', 'id', 'name')
-        )
-    )
-
-    validator = NetAssignmentValidator
 
     @content_json
     def GET(self, node_id):
-        node = self.render(self.get_object_or_404(Node, node_id))
+        node = self.get_object_or_404(Node, node_id)
         default_nets = self.get_default(node)
-        return self.render(node)['interfaces']
+        return default_nets
 
-    # @content_json
-    # def PUT(self, node_id):
-    #     node = self.render(self.get_object_or_404(Node, node_id))
-    #     node = self.get_default(node)
-    #     self.update_attributes(node)
+    def _get_nic_dict(self, nic):
+        nic_dict = {
+            "id": nic.id,
+            "name": nic.name,
+            "mac": nic.mac,
+            "max_speed": nic.max_speed,
+            "current_speed": nic.current_speed
+        }
+        return nic_dict
+
+    def _get_networkgroups_list(self, networkgroups):
+        retval = []
+        for networkgroup in networkgroups:
+            retval.append({"id": networkgroup.id, "name": networkgroup.name})
+        return retval
+
+    def get_default(self, node):
+        nics = []
+        for nic in node.interfaces:
+            nic_dict = self._get_nic_dict(nic)
+            assigned_ng = self.get_default_nic_networkgroups(node, nic)
+            nic_dict["assigned_networks"] = \
+                self._get_networkgroups_list(assigned_ng)
+            allowed_ng = self.get_allowed_nic_networkgroups(node, nic)
+            nic_dict["allowed_networks"] = \
+                self._get_networkgroups_list(allowed_ng)
+
+            nics.append(nic_dict)
+        return nics
 
 
 class NodeCollectionNICsDefaultHandler(NodeNICsDefaultHandler):
