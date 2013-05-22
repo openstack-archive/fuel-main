@@ -258,11 +258,15 @@ class TestTaskManagers(BaseHandlers):
 
     @fake_tasks()
     def test_network_verify_task_managers(self):
+        meta1 = self.env.generate_interfaces_in_meta(1)
+        mac1 = meta1['interfaces'][0]['mac']
+        meta2 = self.env.generate_interfaces_in_meta(1)
+        mac2 = meta2['interfaces'][0]['mac']
         self.env.create(
             cluster_kwargs={},
             nodes_kwargs=[
-                {"api": False},
-                {"api": False},
+                {"api": True, "meta": meta1, "mac": mac1},
+                {"api": True, "meta": meta2, "mac": mac2},
             ]
         )
 
@@ -271,32 +275,54 @@ class TestTaskManagers(BaseHandlers):
 
     @fake_tasks()
     def test_network_verify_compares_received_with_cached(self):
+        meta1 = self.env.generate_interfaces_in_meta(1)
+        mac1 = meta1['interfaces'][0]['mac']
+        meta2 = self.env.generate_interfaces_in_meta(1)
+        mac2 = meta2['interfaces'][0]['mac']
         self.env.create(
             cluster_kwargs={},
             nodes_kwargs=[
-                {"api": False},
-                {"api": False},
+                {"api": True, "meta": meta1, "mac": mac1},
+                {"api": True, "meta": meta2, "mac": mac2},
             ]
         )
-        nets = self.env.generate_ui_networks(
-            self.env.clusters[0].id
+        resp = self.app.get(
+            reverse(
+                'NetworkConfigurationHandler',
+                kwargs={'cluster_id': self.env.clusters[0].id}
+            ),
+            headers=self.default_headers
         )
+        self.assertEquals(200, resp.status)
+        nets = json.loads(resp.body)
+
         nets['networks'][-1]["vlan_start"] = 500
         task = self.env.launch_verify_networks(nets)
         self.env.wait_ready(task, 30)
 
     @fake_tasks(fake_rpc=False)
     def test_network_verify_fails_if_admin_intersection(self, mocked_rpc):
+        meta1 = self.env.generate_interfaces_in_meta(1)
+        mac1 = meta1['interfaces'][0]['mac']
+        meta2 = self.env.generate_interfaces_in_meta(1)
+        mac2 = meta2['interfaces'][0]['mac']
         self.env.create(
             cluster_kwargs={},
             nodes_kwargs=[
-                {"api": False},
-                {"api": False},
+                {"api": True, "meta": meta1, "mac": mac1},
+                {"api": True, "meta": meta2, "mac": mac2},
             ]
         )
-        nets = self.env.generate_ui_networks(
-            self.env.clusters[0].id
+        resp = self.app.get(
+            reverse(
+                'NetworkConfigurationHandler',
+                kwargs={'cluster_id': self.env.clusters[0].id}
+            ),
+            headers=self.default_headers
         )
+        self.assertEquals(200, resp.status)
+        nets = json.loads(resp.body)
+
         nets['networks'][-1]['cidr'] = settings.NET_EXCLUDE[0]
 
         task = self.env.launch_verify_networks(nets)

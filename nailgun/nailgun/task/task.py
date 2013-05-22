@@ -518,25 +518,27 @@ class VerifyNetworksTask(object):
     @classmethod
     def execute(self, task, data):
         task_uuid = task.uuid
-        vlans = [int(d['vlan_id']) for d in data]
-
         nodes = []
         for n in task.cluster.nodes:
-            iface = 'eth0'
-
-            for i in n.meta.get('interfaces', []):
-                if i['mac'] == n.mac:
-                    iface = i['name']
-                    break
-            nodes.append({
-                'uid': n.id,
-                'networks': [
-                    {
-                        'iface': iface,
-                        'vlans': vlans
-                    }
-                ]
-            })
+            node_json = {'uid': n.id, 'networks':[]}
+            for nic in n.interfaces:
+                vlans = []
+                for ng in nic.assigned_networks:
+                    # Handle FuelWeb admin network first.
+                    if not ng.cluster_id:
+                        vlans.append(0)
+                        continue
+                    data_ng = filter(
+                        lambda i: i['name'] == ng.name,
+                        data
+                    )[0]
+                    vlans.extend(data_ng['vlans'])
+                if not vlans:
+                    continue
+                node_json['networks'].append(
+                    {'iface': nic.name, 'vlans': vlans}
+                )
+            nodes.append(node_json)
 
         message = {'method': 'verify_networks',
                    'respond_to': 'verify_networks_resp',

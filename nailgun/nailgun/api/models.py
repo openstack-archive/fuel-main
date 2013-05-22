@@ -423,13 +423,13 @@ class NetworkGroup(Base):
                             backref="network_groups")
 
     @classmethod
-    def generate_vlan_ids_list(cls, data):
-        vlans = []
-        for ng in data:
-            current_vlan = ng["vlan_start"]
-            for i in xrange(int(ng['amount'])):
-                vlans.append({'vlan_id': current_vlan})
-                current_vlan += 1
+    def generate_vlan_ids_list(cls, ng):
+        vlans = [
+            i for i in xrange(
+                int(ng["vlan_start"]),
+                int(ng["vlan_start"]) + int(ng["amount"])
+            )
+        ]
         return vlans
 
 

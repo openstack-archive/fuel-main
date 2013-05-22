@@ -26,7 +26,13 @@ class NetworkConfigurationVerifyHandler(JSONHandler):
     def PUT(self, cluster_id):
         cluster = self.get_object_or_404(Cluster, cluster_id)
         data = self.validator.validate_networks_update(web.data())
-        vlan_ids = NetworkGroup.generate_vlan_ids_list(data['networks'])
+        vlan_ids = [
+            {
+                'name': n['name'],
+                'vlans': NetworkGroup.generate_vlan_ids_list(n)
+            }
+            for n in data['networks']
+        ]
         task_manager = VerifyNetworksTaskManager(cluster_id=cluster.id)
         task = task_manager.execute(data, vlan_ids)
 

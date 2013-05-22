@@ -212,6 +212,19 @@ class Environment(object):
         mac = [randint(0x00, 0x7f) for _ in xrange(6)]
         return ':'.join(map(lambda x: "%02x" % x, mac)).upper()
 
+    def generate_interfaces_in_meta(self, amount):
+        nics = []
+        for i in xrange(amount):
+            nics.append(
+                {
+                    'name': 'eth{0}'.format(i),
+                    'mac': self._generate_random_mac(),
+                    'current_speed': 100,
+                    'max_speed': 1000
+                }
+            )
+        return {'interfaces': nics}
+
     def generate_ui_networks(self, cluster_id):
         start_id = self.db.query(NetworkGroup.id).order_by(
             NetworkGroup.id
@@ -458,9 +471,15 @@ class Environment(object):
             if data:
                 nets = json.dumps(data)
             else:
-                nets = json.dumps(self.generate_ui_networks(
-                    self.clusters[0].id
-                ))
+                resp = self.app.get(
+                    reverse(
+                        'NetworkConfigurationHandler',
+                        kwargs={'cluster_id': self.clusters[0].id}
+                    ),
+                    headers=self.default_headers
+                )
+                self.tester.assertEquals(200, resp.status)
+                nets = resp.body
 
             resp = self.app.put(
                 reverse(
