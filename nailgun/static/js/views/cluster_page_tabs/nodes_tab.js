@@ -840,7 +840,7 @@ function(utils, models, commonViews, dialogViews, nodesTabSummaryTemplate, editN
                     .fail(_.bind(this.goToNodeList, this));
 		this.networkConfiguration = new models.NetworkConfiguration();
                 this.networkConfiguration.fetch({url: _.result(this.model, 'url') + '/network_configuration'})
-  		    .done(_.bind(function(){
+                    .done(_.bind(function(){
 			this.networks = this.networkConfiguration.get('networks');
 		    }, this));
 
