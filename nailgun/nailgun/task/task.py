@@ -242,7 +242,7 @@ class ProvisionTask(object):
                 'power_type': 'ssh',
                 'power_user': 'root',
                 'power_address': node.ip,
-                'name': TaskHelper.slave_name_by_id(node.id),
+                'name': TaskHelper.make_slave_name(node.id, node.role),
                 'hostname': node.fqdn,
                 'name_servers': '\"%s\"' % settings.DNS_SERVERS,
                 'name_servers_search': '\"%s\"' % settings.DNS_SEARCH,
@@ -389,7 +389,8 @@ class DeletionTask(object):
             if node.pending_deletion:
                 nodes_to_delete.append({
                     'id': node.id,
-                    'uid': node.id
+                    'uid': node.id,
+                    'role': node.role
                 })
 
                 if USE_FAKE:
@@ -420,7 +421,9 @@ class DeletionTask(object):
                 node_db = orm().query(Node).get(node['id'])
 
                 if not node_db.online:
-                    slave_name = TaskHelper.slave_name_by_id(node['id'])
+                    slave_name = TaskHelper.make_slave_name(
+                        node['id'], node['role']
+                    )
                     logger.info(
                         "Node %s is offline, removing node from db" %
                         slave_name)
@@ -435,7 +438,9 @@ class DeletionTask(object):
             if nodes_to_delete:
                 logger.debug("There are nodes to delete")
                 for node in nodes_to_delete:
-                    slave_name = TaskHelper.slave_name_by_id(node['id'])
+                    slave_name = TaskHelper.make_slave_name(
+                        node['id'], node['role']
+                    )
                     engine_nodes.append(slave_name)
                     try:
                         logger.info("Deleting old certs from puppet..")

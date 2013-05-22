@@ -16,17 +16,17 @@ from nailgun.network.manager import NetworkManager
 class TaskHelper(object):
 
     @classmethod
-    def slave_name_by_id(cls, nid):
-        return u"slave-%s" % str(nid)
+    def make_slave_name(cls, nid, role):
+        return u"%s-%s" % (role, str(nid))
 
     @classmethod
-    def slave_fqdn_by_id(cls, nid):
-        return u"%s.%s" % (cls.slave_name_by_id(nid), settings.DNS_DOMAIN)
+    def slave_fqdn_by_id(cls, nid, role):
+        return u"%s.%s" % (cls.make_slave_name(nid, role), settings.DNS_DOMAIN)
 
     @classmethod
     def update_slave_nodes_fqdn(cls, nodes):
         for n in nodes:
-            n.fqdn = cls.slave_fqdn_by_id(n.id)
+            n.fqdn = cls.slave_fqdn_by_id(n.id, n.role)
             logger.debug("Updating node fqdn: %s %s", n.id, n.fqdn)
             orm().add(n)
             orm().commit()

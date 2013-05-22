@@ -92,7 +92,8 @@ class TestHandlers(BaseHandlers):
 
             nodes.append({'uid': n.id, 'status': n.status, 'ip': n.ip,
                           'error_type': n.error_type, 'mac': n.mac,
-                          'role': n.role, 'id': n.id, 'fqdn': n.fqdn,
+                          'role': n.role, 'id': n.id, 'fqdn':
+                          '%s-%d.example.com' % (n.role, n.id),
                           'progress': 0, 'meta': n.meta, 'online': True,
                           'network_data': [{'brd': '172.16.0.255',
                                             'ip': node_ip_management,
@@ -130,7 +131,7 @@ class TestHandlers(BaseHandlers):
                 'power_user': 'root',
                 'power_address': n.ip,
                 'power_pass': settings.PATH_TO_BOOTSTRAP_SSH_KEY,
-                'name': TaskHelper.slave_name_by_id(n.id),
+                'name': TaskHelper.make_slave_name(n.id, n.role),
                 'hostname': n.fqdn,
                 'name_servers': '\"%s\"' % settings.DNS_SERVERS,
                 'name_servers_search': '\"%s\"' % settings.DNS_SEARCH,
@@ -257,7 +258,8 @@ class TestHandlers(BaseHandlers):
         self.assertEquals(len(n_rpc_provision), 1)
         self.assertEquals(
             n_rpc_provision[0]['name'],
-            TaskHelper.slave_name_by_id(self.env.nodes[0].id)
+            TaskHelper.make_slave_name(self.env.nodes[0].id,
+                                       self.env.nodes[0].role)
         )
 
         # deploy method call [1][0][1][1]
