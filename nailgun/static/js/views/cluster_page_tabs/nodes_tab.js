@@ -830,20 +830,16 @@ function(utils, models, commonViews, dialogViews, nodesTabSummaryTemplate, editN
             this.node = this.model.get('nodes').get(this.screenOptions[0]);
             if (this.configurationAllowed()) {
                 this.interfaces = new models.Interfaces();
-                this.interfaces.on('reset', this.renderInterfaces, this);
-                this.interfaces.on('reset', this.checkForChanges, this);
-                this.interfaces.fetch({url: _.result(this.node, 'url') + '/interfaces', reset: true})
-                    .done(_.bind(function() {
+                this.networkConfiguration = new models.NetworkConfiguration();
+                $.when(this.interfaces.fetch({url: _.result(this.node, 'url') + '/interfaces', reset: true}), this.networkConfiguration.fetch({url: _.result(this.model, 'url') + '/network_configuration'})).done(_.bind(function() {
                         this.initialData = this.interfaces.toJSON();
                         this.checkForChanges();
-                    } , this))
-                    .fail(_.bind(this.goToNodeList, this));
-		this.networkConfiguration = new models.NetworkConfiguration();
-                this.networkConfiguration.fetch({url: _.result(this.model, 'url') + '/network_configuration'})
-                    .done(_.bind(function(){
 			this.networks = this.networkConfiguration.get('networks');
-		    }, this));
-
+                        this.interfaces.on('reset', this.renderInterfaces, this);
+                        this.interfaces.on('reset', this.checkForChanges, this);
+                        this.renderInterfaces();
+		    }, this))
+                    .fail(_.bind(this.goToNodeList, this));
             } else {
                 this.goToNodeList();
             }
