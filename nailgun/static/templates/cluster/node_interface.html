@@ -10,7 +10,7 @@
 
     <div class="logical-network-box">
       <% ifc.get('assigned_networks').each(function(network) { %>
-        <div class="logical-network-item" data-name="<%- network.get('name') %>"><%- network.get('name') %></div>
+        <div class="logical-network-item" data-name="<%- network.get('name') %>"><%- network.get('name') %><br/>VLAN ID: 104</div>
       <% }) %>
       <div class="network-help-message hide">Use drag-and-drop for placing logical interfaces here</div>
     </div>
