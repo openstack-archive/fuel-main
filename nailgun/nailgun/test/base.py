@@ -543,7 +543,7 @@ class Environment(object):
                 return result
             if time.time() - start_time > seconds:
                 raise TimeoutError(error_message)
-            time.sleep(0.5)
+            time.sleep(0.1)
 
 
 class BaseHandlers(TestCase):
