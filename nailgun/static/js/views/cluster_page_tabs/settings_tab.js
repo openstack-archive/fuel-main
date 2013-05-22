@@ -1,12 +1,13 @@
 define(
 [
+    'utils',
     'models',
     'views/common',
     'views/dialogs',
     'text!templates/cluster/settings_tab.html',
     'text!templates/cluster/settings_group.html'
 ],
-function(models, commonViews, dialogViews, settingsTabTemplate, settingsGroupTemplate) {
+function(utils, models, commonViews, dialogViews, settingsTabTemplate, settingsGroupTemplate) {
     'use strict';
     var SettingsTab, SettingsGroup;
 
@@ -82,9 +83,7 @@ function(models, commonViews, dialogViews, settingsTabTemplate, settingsGroupTem
                 }, this))
                 .fail(_.bind(function() {
                     this.defaultButtonsState(false);
-                    var dialog = new dialogViews.SimpleMessage({error: true, title: 'OpenStack Settings'});
-                    app.page.registerSubView(dialog);
-                    dialog.render();
+                    utils.showErrorDialog({title: 'OpenStack Settings'});
                 }, this));
         },
         parseSettings: function(settings) {

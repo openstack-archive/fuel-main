@@ -1,12 +1,13 @@
 define(
 [
+    'utils',
     'models',
     'views/common',
     'views/dialogs',
     'text!templates/cluster/network_tab.html',
     'text!templates/cluster/verify_network_control.html'
 ],
-function(models, commonViews, dialogViews, networkTabTemplate, networkTabVerificationControlTemplate) {
+function(utils, models, commonViews, dialogViews, networkTabTemplate, networkTabVerificationControlTemplate) {
     'use strict';
     var NetworkTab, NetworkTabVerificationControl;
 
@@ -89,9 +90,7 @@ function(models, commonViews, dialogViews, networkTabTemplate, networkTabVerific
             };
             task.save({}, options)
                 .fail(_.bind(function() {
-                    var dialog = new dialogViews.SimpleMessage({error: true, title: 'Network verification'});
-                    app.page.registerSubView(dialog);
-                    dialog.render();
+                    utils.showErrorDialog({title: 'Network verification'});
                 }, this))
                 .always(_.bind(function() {
                     this.model.get('tasks').fetch({data: {cluster_id: this.model.id}}).done(_.bind(this.scheduleUpdate, this));
@@ -124,9 +123,7 @@ function(models, commonViews, dialogViews, networkTabTemplate, networkTabVerific
                     }, this))
                     .fail(_.bind(function() {
                         this.defaultButtonsState(false);
-                        var dialog = new dialogViews.SimpleMessage({error: true, title: 'Networks'});
-                        app.page.registerSubView(dialog);
-                        dialog.render();
+                        utils.showErrorDialog({title: 'Networks'});
                     }, this));
             } else {
                 deferred = new $.Deferred();

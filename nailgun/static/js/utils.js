@@ -27,6 +27,13 @@ define(function() {
                 });
             }
         },
+        showErrorDialog: function(options, parentView) {
+            parentView = parentView || app.page;
+            var dialogViews = require('views/dialogs'); // avoid circular dependencies
+            var dialog = new dialogViews.SimpleMessage(_.extend({error: true}, options));
+            parentView.registerSubView(dialog);
+            dialog.render();
+        },
         showBandwidth: function(bandwidth) {
             bandwidth = parseInt(bandwidth, 10);
             if (!_.isNumber(bandwidth) || _.isNaN(bandwidth)) {return 'N/A';}

@@ -189,6 +189,10 @@ function(utils, models, commonViews, dialogViews, nodesTabSummaryTemplate, editN
                 this.model.get('nodes').fetch({data: {cluster_id: this.model.id}});
                 app.navbar.refresh();
                 app.page.removeVerificationTask();
+            }, this))
+            .fail(_.bind(function() {
+                this.$('.btn-apply').attr('disabled', false);
+                utils.showErrorDialog({title: 'Unable to ' + this.action + ' nodes'});
             }, this));
         },
         getChosenNodesIds: function() {
@@ -495,9 +499,7 @@ function(utils, models, commonViews, dialogViews, nodesTabSummaryTemplate, editN
             .fail(_.bind(function() {
                 this.disableControls(false);
                 this.checkForChanges();
-                var dialog = new dialogViews.SimpleMessage({error: true, title: 'Node disks configuration'});
-                app.page.registerSubView(dialog);
-                dialog.render();
+                utils.showErrorDialog({title: 'Node disks configuration'});
             }, this));
         },
         revertChanges: function() {
@@ -521,9 +523,7 @@ function(utils, models, commonViews, dialogViews, nodesTabSummaryTemplate, editN
                 }, this))
                 .fail(_.bind(function() {
                     this.disableControls(false);
-                    var dialog = new dialogViews.SimpleMessage({error: true, title: 'Node disks configuration'});
-                    app.page.registerSubView(dialog);
-                    dialog.render();
+                    utils.showErrorDialog({title: 'Node disks configuration'});
                 }, this));
         },
         backToCluster: function() {
