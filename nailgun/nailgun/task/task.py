@@ -520,7 +520,7 @@ class VerifyNetworksTask(object):
         task_uuid = task.uuid
         nodes = []
         for n in task.cluster.nodes:
-            node_json = {'uid': n.id, 'networks':[]}
+            node_json = {'uid': n.id, 'networks': []}
             for nic in n.interfaces:
                 vlans = []
                 for ng in nic.assigned_networks:
