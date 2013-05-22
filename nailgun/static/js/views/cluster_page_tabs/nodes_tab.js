@@ -838,6 +838,12 @@ function(utils, models, commonViews, dialogViews, nodesTabSummaryTemplate, editN
                         this.checkForChanges();
                     } , this))
                     .fail(_.bind(this.goToNodeList, this));
+		this.networkConfiguration = new models.NetworkConfiguration();
+                this.networkConfiguration.fetch({url: _.result(this.model, 'url') + '/network_configuration'})
+  		    .done(_.bind(function(){
+			this.networks = this.networkConfiguration.get('networks');
+		    }, this));
+
             } else {
                 this.goToNodeList();
             }
@@ -846,7 +852,7 @@ function(utils, models, commonViews, dialogViews, nodesTabSummaryTemplate, editN
             this.tearDownRegisteredSubViews();
             this.$('.node-networks').html('');
             this.interfaces.each(_.bind(function(ifc) {
-                var nodeInterface = new NodeInterface({model: ifc, screen: this});
+                var nodeInterface = new NodeInterface({model: ifc, screen: this, networks: this.networks});
                 this.registerSubView(nodeInterface);
                 this.$('.node-networks').append(nodeInterface.render().el);
             }, this));
@@ -890,7 +896,7 @@ function(utils, models, commonViews, dialogViews, nodesTabSummaryTemplate, editN
             this.model.get('assigned_networks').on('add remove', this.screen.checkForChanges, this.screen);
         },
         render: function() {
-            this.$el.html(this.template(_.extend({ifc: this.model}, this.templateHelpers)));
+            this.$el.html(this.template(_.extend({ifc: this.model, networks: this.networks}, this.templateHelpers)));
             this.checkIfEmpty();
             this.$('.logical-network-box').sortable({
                 connectWith: '.logical-network-box',
