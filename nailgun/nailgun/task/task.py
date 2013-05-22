@@ -5,6 +5,7 @@ import itertools
 import traceback
 import subprocess
 import shlex
+import json
 
 import web
 import netaddr
@@ -236,6 +237,7 @@ class ProvisionTask(object):
         # need to use more abstract data structure.
         nodes_data = []
         for node in nodes_to_provision:
+            cluster_attrs = node.cluster.attributes.merged_attrs_values()
             node_data = {
                 'profile': settings.COBBLER_PROFILE,
                 'power_type': 'ssh',
@@ -259,7 +261,10 @@ class ProvisionTask(object):
                     'mco_user': settings.MCO_USER,
                     'mco_password': settings.MCO_PASSWORD,
                     'mco_connector': settings.MCO_CONNECTOR,
-                    'mco_enable': 1
+                    'mco_enable': 1,
+                    'auth_key': "\"%s\"" % cluster_attrs.get('auth_key', ''),
+                    'ks_spaces': "\"%s\"" % json.dumps(
+                        node.attributes.volumes).replace("\"", "\\\"")
                 }
             }
 

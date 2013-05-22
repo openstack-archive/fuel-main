@@ -73,11 +73,17 @@ module Naily
           while true
             time = Time::now.to_f
             types = @orchestrator.node_type(reporter, data['args']['task_uuid'], nodes, 2)
+            types.each do |t|
+              Naily.logger.debug("Got node types: uid=#{t['uid']} type=#{t['node_type']}")
+            end
+            Naily.logger.debug("Not target nodes will be rejected")
             target_uids = types.reject{|n| n['node_type'] != 'target'}.map{|n| n['uid']}
             Naily.logger.debug "Not provisioned: #{nodes_not_booted.join(',')}, got target OSes: #{target_uids.join(',')}"
             if nodes.length == target_uids.length
               Naily.logger.info "All nodes #{target_uids.join(',')} are provisioned."
               break
+            else
+              Naily.logger.debug("Nodes list length is not equal to target nodes list length: #{nodes.length} != #{target_uids.length}")
             end
             nodes_not_booted = nodes_uids - types.map { |n| n['uid'] }
             begin
