@@ -791,7 +791,6 @@ function(utils, models, commonViews, dialogViews, nodesTabSummaryTemplate, editN
             this.$('.btn-apply, .btn-revert-changes').attr('disabled', _.isEqual(this.interfaces.toJSON(), this.initialData));
         },
         loadDefaults: function() {
-            this.interfaces = new models.Interfaces();
             this.interfaces.fetch({url: _.result(this.node, 'url') + '/interfaces/default_assignment', reset: true})
                     .done(_.bind(function() {
                         this.checkForChanges();
