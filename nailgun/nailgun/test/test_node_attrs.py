@@ -151,9 +151,12 @@ class TestHandlers(BaseHandlers):
         self.assertEquals(response, test_data)
 
     def test_node_disk_amount_regenerates_volumes_info(self):
+        cluster = self.env.create_cluster(api=False)
         node = self.env.create_node(
             api=True,
-            meta=self.env.default_metadata()
+            meta=self.env.default_metadata(),
+            role="compute",  # vgs: os, vm
+            cluster_id=cluster.id
         )
         node_db = self.env.nodes[0]
         resp = self.app.get(
@@ -200,6 +203,15 @@ class TestHandlers(BaseHandlers):
         )
         response = json.loads(resp.body)
         self.assertEquals(len(response), 7)
+
+        # check all groups on all disks
+        vgs = ["os", "vm"]
+        for disk in response:
+            check_vgs = filter(
+                lambda v: v.get("vg") in vgs,
+                disk['volumes']
+            )
+            self.assertEquals(len(check_vgs), len(vgs))
 
     def test_node_insufficient_disk_space(self):
         meta = self.env.default_metadata()

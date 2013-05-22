@@ -28,6 +28,11 @@ class Disk(object):
             size = self.free_space
         self.free_space = self.free_space - size
 
+        for i, volume in enumerate(self.volumes):
+            if (volume.get("type"), volume.get("vg")) == ("pv", vg):
+                self.volumes[i]["size"] = size
+                return
+
         self.volumes.append({
             "type": "pv",
             "vg": vg,
@@ -125,7 +130,10 @@ class VolumeManager(object):
 
     def _allocate_vg(self, name, size=None, use_existing_space=True):
         free_space = sum([d.free_space for d in self.disks])
-        # TODO: size
+
+        if not size:
+            for i, disk in enumerate(self.disks):
+                disk.create_pv(name, 0)
         if use_existing_space:
             for i, disk in enumerate(self.disks):
                 if disk.free_space > 0:
