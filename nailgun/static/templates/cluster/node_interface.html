@@ -12,6 +12,7 @@
       <% ifc.get('assigned_networks').each(function(network) { %>
         <div class="logical-network-item" data-name="<%- network.get('name') %>">
           <div class="name"><%- network.get('name') %></div>
+          <% var netInfo = networks.find(function(net){ return net.get('name')== network.get('name')})%>
           <div class="id">VLAN ID: <%- netInfo.get('vlan_start') %></div>
         </div>
       <% }) %>
