@@ -106,7 +106,7 @@ def upload_fixture(fileobj):
             new_obj.attributes.volumes = \
                 new_obj.volume_manager.gen_default_volumes_info()
             network_manager = NetworkManager(db)
-            network_manager.gen_interfaces_info(new_obj)
+            network_manager.update_interfaces_info(new_obj)
             db.commit()
 
 

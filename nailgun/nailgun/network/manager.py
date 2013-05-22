@@ -393,7 +393,7 @@ class NetworkManager(object):
             'dev': interface_name})
         return network_data
 
-    def gen_interfaces_info(self, node):
+    def update_interfaces_info(self, node):
         if not "interfaces" in node.meta:
             raise Exception("No interfaces metadata specified for node")
 
