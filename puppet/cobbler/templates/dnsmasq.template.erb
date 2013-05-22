@@ -11,10 +11,15 @@ domain=<%= domain_name %>
 dhcp-lease-max=1000
 server=/<%= domain_name %>/
 resolv-file=/etc/dnsmasq.upstream
-dhcp-no-override
 dhcp-match=gpxe,175
-
 interface=<%= dhcp_interface %>
+
+# This is one of the key options. dnsmasq tries to move out servername
+# and PXE filename from special fields into DHCP options.
+# Some old clients can't understand those DHCP options, so they
+# will not be able to boot via PXE without this option enabled.
+# For example gPXE will not work while iPXE works fine.
+dhcp-no-override
 
 dhcp-option=6,<%= name_server %>
 
