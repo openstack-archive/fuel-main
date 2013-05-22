@@ -791,15 +791,18 @@ function(utils, models, commonViews, dialogViews, nodesTabSummaryTemplate, editN
             this.$('.btn-apply, .btn-revert-changes').attr('disabled', _.isEqual(this.interfaces.toJSON(), this.initialData));
         },
         loadDefaults: function() {
+            this.disableControls(true);
             this.interfaces.fetch({url: _.result(this.node, 'url') + '/interfaces/default_assignment', reset: true})
-                    .done(_.bind(function() {
-                        this.checkForChanges();
-                    } , this))
-                    .fail(_.bind(function() {
-                        var dialog = new dialogViews.SimpleMessage({error: true, title: 'Can not load default settings'});
-                        app.page.registerSubView(dialog);
-                        dialog.render();
-                    }, this));
+                .done(_.bind(function() {
+                    this.disableControls(false);
+                    this.checkForChanges();
+                }, this))
+                .fail(_.bind(function() {
+                    this.disableControls(false);
+                    var dialog = new dialogViews.SimpleMessage({error: true, title: 'Can not load default settings'});
+                    app.page.registerSubView(dialog);
+                    dialog.render();
+                }, this));
         },
         revertChanges: function() {
             this.interfaces.reset(_.cloneDeep(this.initialData), {parse: true});
