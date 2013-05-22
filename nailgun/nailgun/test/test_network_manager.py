@@ -113,9 +113,7 @@ class TestNetworkManager(BaseHandlers):
     def test_assign_admin_ips(self):
         node = self.env.create_node()
         self.env.network_manager.assign_admin_ips(node.id, 2)
-        admin_net = self.db.query(Network).filter_by(
-            name="fuelweb_admin"
-        ).one()
+        admin_net = self.env.network_manager.get_admin_network(expunge=False)
 
         admin_ips = self.db.query(IPAddr).\
             filter_by(node=node.id).\
@@ -151,9 +149,7 @@ class TestNetworkManager(BaseHandlers):
         # Assinging admin IPs on created nodes
         map(lambda (n, c): self.env.network_manager.assign_admin_ips(n, c), nc)
 
-        admin_net = self.db.query(Network).filter_by(
-            name="fuelweb_admin"
-        ).one()
+        admin_net = self.env.network_manager.get_admin_network(expunge=False)
 
         # Asserting count of admin node IPs
         def asserter(x):
@@ -166,9 +162,8 @@ class TestNetworkManager(BaseHandlers):
     def test_assign_admin_ips_idempotent(self):
         node = self.env.create_node()
         self.env.network_manager.assign_admin_ips(node.id, 2)
-        admin_net_id = self.db.query(Network.id).filter_by(
-            name="fuelweb_admin"
-        ).one()[0]
+        admin_net = self.env.network_manager.get_admin_network(expunge=False)
+        admin_net_id = admin_net.id
         admin_ips = set([i.ip_addr for i in self.db.query(IPAddr).
                          filter_by(node=node.id).
                          filter_by(network=admin_net_id).all()])
@@ -192,9 +187,7 @@ class TestNetworkManager(BaseHandlers):
         node = self.env.create_node()
         self.env.network_manager.assign_admin_ips(node.id, 1)
 
-        admin_net = self.db.query(Network).filter_by(
-            name="fuelweb_admin"
-        ).one()
+        admin_net = self.env.network_manager.get_admin_network(expunge=False)
 
         admin_ips = self.db.query(IPAddr).\
             filter_by(node=node.id).\

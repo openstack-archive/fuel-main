@@ -42,6 +42,7 @@ class TestHandlers(BaseHandlers):
 
         msg = {'method': 'deploy', 'respond_to': 'deploy_resp',
                'args': {}}
+        self.db.add(cluster_db)
         cluster_attrs = cluster_db.attributes.merged_attrs_values()
 
         nets_db = self.db.query(Network).join(NetworkGroup).\
@@ -68,9 +69,7 @@ class TestHandlers(BaseHandlers):
         msg['args']['task_uuid'] = deploy_task_uuid
         nodes = []
 
-        admin_net = self.db.query(Network).filter_by(
-            name="fuelweb_admin"
-        ).one()
+        admin_net = self.env.network_manager.get_admin_network(expunge=False)
 
         for n in sorted(self.env.nodes, key=lambda n: n.id):
 
