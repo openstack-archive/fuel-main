@@ -638,7 +638,6 @@ h6.page-title {
   margin: 0px;
   padding: 0px;
   height: 25px;
-  margin-top: 16px;
   cursor: pointer;
   height: 25px;
   overflow: hidden;
@@ -3596,7 +3595,6 @@ hr.slim {
 .changes-locked label {
   cursor: default !important;
 }
-
 
 /* Disk Utility Start*/
 .disk-box {

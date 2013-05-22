@@ -177,6 +177,10 @@ class nailgun(
 
   class { "nailgun::logrotate": }
 
+  class { "nailgun::gateone":
+    pip_opts => "${pip_index} ${pip_find_links}",
+  }
+
   nailgun::sshkeygen { "/root/.ssh/id_rsa":
     homedir => "/root",
     username => "root",

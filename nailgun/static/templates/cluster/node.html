@@ -12,6 +12,11 @@
       <% } %>
       </div>
     </div>
+    <div class="node-connect">
+    <% if (!selectableForAddition && !selectableForDeletion && node.get('ip') !== null) { %>
+        <a href="http://<%= window.location.hostname %>:2443/?ssh=ssh://root@<%= node.get('ip') %>&location=<%= node.get('ip').replace(/\./g,'') %>" target="_blank">Connect to this node</a>
+    <% } %>
+    </div>
     <div class="node-status"></div>
     <div class="node-hardware">
       <span>CPU: <%= node.resource('cores') && _.isNumber(node.resource('cores')) ? node.resource('cores') : '?' %></span>
