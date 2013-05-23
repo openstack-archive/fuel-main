@@ -799,9 +799,7 @@ function(utils, models, commonViews, dialogViews, nodesTabSummaryTemplate, editN
                 }, this))
                 .fail(_.bind(function() {
                     this.disableControls(false);
-                    var dialog = new dialogViews.SimpleMessage({error: true, title: 'Can not load default settings'});
-                    app.page.registerSubView(dialog);
-                    dialog.render();
+                    utils.showErrorDialog({title: 'Unable to load default settings'});
                 }, this));
         },
         revertChanges: function() {

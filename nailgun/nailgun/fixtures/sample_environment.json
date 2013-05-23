@@ -124,7 +124,7 @@
                         "mac": "00:25:90:6A:B1:11",
                         "max_speed": 1000,
                         "name": "eth1",
-                        "current_speed": "unknown"
+                        "current_speed": null
                     },
                     {
                         "ip": "172.18.67.168",
@@ -283,12 +283,12 @@
             "progress": 0,
             "pending_deletion": false,
             "os_platform": "ubuntu",
-            "id": 13,
+            "id": 1,
             "manufacturer": "Supermicro"
         }
     },
     {
-        "pk": 14,
+        "pk": 2,
         "model": "nailgun.node",
         "fields": {
             "status": "discover",
@@ -431,12 +431,12 @@
             "progress": 0,
             "pending_deletion": false,
             "os_platform": "ubuntu",
-            "id": 14,
+            "id": 2,
             "manufacturer": "80AD"
         }
     },
     {
-        "pk": 16,
+        "pk": 3,
         "model": "nailgun.node",
         "fields": {
             "status": "discover",
@@ -501,7 +501,7 @@
                         "mac": "00:25:90:67:9F:B6",
                         "max_speed": 1000,
                         "name": "eth0",
-                        "current_speed": "unknown"
+                        "current_speed": null
                     },
                     {
                         "ip": "192.168.126.1",
@@ -600,12 +600,12 @@
             "progress": 0,
             "pending_deletion": false,
             "os_platform": "ubuntu",
-            "id": 16,
+            "id": 3,
             "manufacturer": "Supermicro"
         }
     },
     {
-        "pk": 17,
+        "pk": 4,
         "model": "nailgun.node",
         "fields": {
             "status": "discover",
@@ -648,7 +648,7 @@
                         "mac": "00:25:90:67:9D:25",
                         "max_speed": 1000,
                         "name": "eth1",
-                        "current_speed": "unknown"
+                        "current_speed": null
                     },
                     {
                         "name": "eth0",
@@ -724,12 +724,12 @@
             "progress": 0,
             "pending_deletion": false,
             "os_platform": "ubuntu",
-            "id": 17,
+            "id": 4,
             "manufacturer": "Supermicro"
         }
     },
     {
-        "pk": 18,
+        "pk": 5,
         "model": "nailgun.node",
         "fields": {
             "status": "error",
@@ -773,7 +773,7 @@
                         "mac": "00:25:90:67:9C:9D",
                         "max_speed": 1000,
                         "name": "eth1",
-                        "current_speed": "unknown"
+                        "current_speed": null
                     },
                     {
                         "name": "eth0",
@@ -849,12 +849,12 @@
             "progress": 0,
             "pending_deletion": false,
             "os_platform": "ubuntu",
-            "id": 18,
+            "id": 5,
             "manufacturer": "Supermicro"
         }
     },
     {
-        "pk": 19,
+        "pk": 6,
         "model": "nailgun.node",
         "fields": {
             "status": "discover",
@@ -907,12 +907,12 @@
             "progress": 0,
             "pending_deletion": false,
             "os_platform": "centos",
-            "id": 19,
+            "id": 6,
             "manufacturer": "VirtualBox"
         }
     },
     {
-        "pk": 20,
+        "pk": 7,
         "model": "nailgun.node",
         "fields": {
             "status": "discover",
@@ -970,12 +970,12 @@
             "progress": 0,
             "pending_deletion": false,
             "os_platform": "centos",
-            "id": 20,
+            "id": 7,
             "manufacturer": "KVM"
         }
     },
     {
-        "pk": 21,
+        "pk": 8,
         "model": "nailgun.node",
         "fields": {
             "status": "discover",
@@ -1102,7 +1102,7 @@
                         "mac": "00:25:90:6A:B1:85",
                         "max_speed": 1000,
                         "name": "p2p2",
-                        "current_speed": "unknown"
+                        "current_speed": null
                     }
                 ],
                 "disks": [
@@ -1243,7 +1243,7 @@
             "progress": 0,
             "pending_deletion": false,
             "os_platform": "ubuntu",
-            "id": 21,
+            "id": 8,
             "manufacturer": "Supermicro"
         }
     }

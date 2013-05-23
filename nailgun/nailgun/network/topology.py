@@ -7,6 +7,8 @@ from nailgun.api.models import NetworkGroup
 from nailgun.api.models import NetworkAssignment
 from nailgun.api.models import NodeNICInterface
 
+from nailgun.logger import logger
+
 
 class TopoChecker(object):
     @classmethod
