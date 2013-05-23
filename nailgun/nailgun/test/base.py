@@ -184,13 +184,10 @@ class Environment(object):
         else:
             node = Node()
             node.timestamp = datetime.now()
-<<<<<<< HEAD
-=======
             if not node_data.get('meta'):
                 node_data['meta'] = self.default_metadata()
             else:
                 node_data['meta'].update(self.default_metadata())
->>>>>>> Fixed unit tests and pep8
             for key, value in node_data.iteritems():
                 setattr(node, key, value)
             node.attributes = self.create_attributes()
