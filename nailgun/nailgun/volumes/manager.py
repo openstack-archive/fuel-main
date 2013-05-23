@@ -132,7 +132,7 @@ class VolumeManager(object):
         free_space = sum([d.free_space for d in self.disks])
 
         if not size:
-            for i, disk in enumerate(self.disks):
+            for disk in self.disks:
                 disk.create_pv(name, 0)
         if use_existing_space:
             for i, disk in enumerate(self.disks):
