@@ -27,6 +27,7 @@ from nailgun.api.models import Notification
 from nailgun.api.models import Attributes
 from nailgun.api.models import Network
 from nailgun.api.models import NetworkGroup
+from nailgun.api.models import NodeAttributes
 from nailgun.api.models import Task
 from nailgun.api.models import IPAddr
 from nailgun.api.models import Vlan
@@ -183,12 +184,24 @@ class Environment(object):
         else:
             node = Node()
             node.timestamp = datetime.now()
+<<<<<<< HEAD
+=======
+            if not node_data.get('meta'):
+                node_data['meta'] = self.default_metadata()
+            else:
+                node_data['meta'].update(self.default_metadata())
+>>>>>>> Fixed unit tests and pep8
             for key, value in node_data.iteritems():
                 setattr(node, key, value)
+            node.attributes = self.create_attributes()
+            node.attributes.volumes = node.volume_manager.gen_volumes_info()
             self.db.add(node)
             self.db.commit()
             self.nodes.append(node)
         return node
+
+    def create_attributes(self):
+        return NodeAttributes()
 
     def create_notification(self, **kwargs):
         notif_data = {

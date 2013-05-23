@@ -201,6 +201,8 @@ class ProvisionTask(object):
         logger.debug("ProvisionTask.message(task=%s)" % task.uuid)
         task_uuid = task.uuid
         cluster_id = task.cluster.id
+        cluster_attrs = task.cluster.attributes.merged_attrs_values()
+
         netmanager = NetworkManager()
         nodes = orm().query(Node).filter_by(
             cluster_id=task.cluster.id,
@@ -237,7 +239,6 @@ class ProvisionTask(object):
         # need to use more abstract data structure.
         nodes_data = []
         for node in nodes_to_provision:
-            cluster_attrs = node.cluster.attributes.merged_attrs_values()
             node_data = {
                 'profile': settings.COBBLER_PROFILE,
                 'power_type': 'ssh',

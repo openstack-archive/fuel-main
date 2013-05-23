@@ -177,7 +177,7 @@ class VolumeManager(object):
         if not "disks" in self.node.meta:
             raise Exception("No disk metadata specified for node")
         logger.debug(
-            "Generating volumes info for node '{0}' (role:{1})".format(
+            u"Generating volumes info for node '{0}' (role:{1})".format(
                 self.node.name or self.node.mac or self.node.id,
                 self.node.role
             )

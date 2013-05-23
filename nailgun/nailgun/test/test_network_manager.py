@@ -184,7 +184,6 @@ class TestNetworkManager(BaseHandlers):
             }
         }
     )
-
     def test_assign_admin_ips_only_one(self):
         node = self.env.create_node()
         self.env.network_manager.assign_admin_ips(node.id, 1)

@@ -148,7 +148,10 @@ class TestHandlers(BaseHandlers):
                     'mco_user': settings.MCO_USER,
                     'mco_password': settings.MCO_PASSWORD,
                     'mco_connector': settings.MCO_CONNECTOR,
-                    'mco_enable': 1
+                    'mco_enable': 1,
+                    'ks_spaces': "\"%s\"" % json.dumps(
+                        n.attributes.volumes).replace("\"", "\\\""),
+                    'auth_key': "\"%s\"" % cluster_attrs.get('auth_key', ''),
                 }
             }
 
@@ -205,7 +208,7 @@ class TestHandlers(BaseHandlers):
         }
 
         nailgun.task.manager.rpc.cast.assert_called_once_with(
-             'naily', [provision_msg, msg])
+            'naily', [provision_msg, msg])
 
     @fake_tasks(fake_rpc=False, mock_rpc=False)
     @patch('nailgun.rpc.cast')
