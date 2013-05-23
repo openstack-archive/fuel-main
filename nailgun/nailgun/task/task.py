@@ -98,8 +98,50 @@ class DeploymentTask(object):
 
         nodes = TaskHelper.nodes_to_deploy(task.cluster)
 
+<<<<<<< HEAD
         logger.info("Associated FQDNs to nodes: %s" %
                     ', '.join([n.fqdn for n in nodes]))
+=======
+        if len(changes) == 0:
+            nodes = nodes.filter(
+                or_(True == Node.pending_addition,
+                    Node.status != 'ready'))
+
+        for node in nodes:
+            nd_name = TaskHelper.make_slave_name(node.id, node.role)
+            node.fqdn = ".".join([nd_name, settings.DNS_DOMAIN])
+            orm().add(node)
+            orm().commit()
+        fqdns = ','.join([n.fqdn for n in nodes])
+        logger.info("Associated FQDNs to nodes: %s" % fqdns)
+
+        if not settings.FAKE_TASKS and not settings.FAKE_TASKS_AMQP:
+            logger.info("Entered to processing of 'real' tasks, not 'fake'..")
+            nodes_to_provision = []
+            for node in nodes:
+                if not node.online:
+                    raise errors.NodeOffline(
+                        "Node '%s' (id=%s) is offline."
+                        " Remove it from environment and try again." %
+                        (node.name, node.id)
+                    )
+                if node.status in ('discover', 'provisioning') or \
+                        (node.status == 'error' and
+                         node.error_type == 'provision'):
+                    nodes_to_provision.append(node)
+
+            try:
+                DeploymentTask._provision(nodes_to_provision, netmanager)
+            except Exception as err:
+                error = "Failed to call cobbler: {0}".format(
+                    str(err) or "see logs for details"
+                )
+                logger.error("Provision error: %s\n%s",
+                             error, traceback.format_exc())
+                update_task_status(task.uuid, "error", 100, error)
+                raise errors.FailedProvisioning(error)
+            # /only real tasks
+>>>>>>> Renamed slave name method
 
         nodes_ids = [n.id for n in nodes]
         if nodes_ids:
