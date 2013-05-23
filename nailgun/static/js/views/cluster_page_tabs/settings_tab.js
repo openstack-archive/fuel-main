@@ -37,6 +37,7 @@ function(utils, models, commonViews, dialogViews, settingsTabTemplate, settingsG
                     if ($(settingDom).hasClass('openstack-sub-title')) {
                         data[param][setting].label = $(settingDom).text();
                         data[param][setting].value = $(settingDom).next().find('input[type=radio]:checked').val();
+                        data[param][setting].weight = $(settingDom).next().find('.weight > input')[0].value;
                         data[param][setting].values = [];
                         _.each($(settingDom).next().find('input[type=radio]'), function(input) {
                             var option = {};
@@ -49,6 +50,7 @@ function(utils, models, commonViews, dialogViews, settingsTabTemplate, settingsG
                         data[param][setting].label = $(settingDom).find('.openstack-sub-title').text();
                         data[param][setting].description = $(settingDom).find('.description').text() || $(settingDom).next('.description').text();
                         data[param][setting].value = $(settingDom).find('input[type=text]').val();
+                        data[param][setting].weight = $(settingDom).find('.weight > input')[0].value;
                         if ($(settingDom).find('input[type=checkbox]').length) {
                             data[param][setting].value = !!$(settingDom).find('input[type=checkbox]:checked').length;
                         }

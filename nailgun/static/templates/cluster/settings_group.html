@@ -14,6 +14,7 @@
           </div>
         </div>
         <div class="openstack-sub-title parameter-name"><%- settingDetails.label %></div>
+        <div class="global-weight weight"><input type="hidden" value="<%- settingDetails.weight %>" /></div>
       </label>
       <div class="global-description description"><%- settingDetails.description %></div>
     <% } else if (settingDetails.values) { %>
@@ -30,6 +31,7 @@
           <div class="parameter-name"><%- option['display_name'] %></div>
         </label>
         <div class="global-description description"><%- option['description'] %></div>
+        <div class="global-weight weight"><input type="hidden" value="<%- settingDetails.weight %>" /></div>
       <% }) %>
       </div>
       <div class="parameter-spacer"></div>
@@ -42,6 +44,7 @@
           </div>
         </div>
         <div class="parameter-description description"><%- settingDetails.description %></div>
+        <div class="parameter-weight weight"><input type="hidden" value="<%- settingDetails.weight %>" /></div>
       </label>
     <% } %>
   <% }) %>
