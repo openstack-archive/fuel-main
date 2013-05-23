@@ -443,7 +443,7 @@ class DeletionTask(object):
 
         # Deletion offline nodes from db
         if nodes_to_delete:
-            for idx, node in enumerate(nodes_to_delete):
+            for node in list(nodes_to_delete):
                 node_db = orm().query(Node).get(node['id'])
 
                 if not node_db.online:
@@ -454,7 +454,7 @@ class DeletionTask(object):
                     orm().delete(node_db)
                     orm().commit()
 
-                    del nodes_to_delete[idx]
+                    nodes_to_delete.remove(node)
 
         # only real tasks
         if not USE_FAKE:

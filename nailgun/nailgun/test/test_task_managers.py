@@ -554,6 +554,28 @@ class TestTaskManagers(BaseHandlers):
         self.assertEquals(self.env.db.query(Node).count(), 1)
 
     @fake_tasks()
+    def test_deletion_three_offline_nodes_and_one_online(self):
+        cluster = self.env.create_cluster()
+        for _ in range(3):
+            self.env.create_node(
+                cluster_id=cluster['id'],
+                online=False,
+                pending_deletion=True)
+
+        self.env.create_node(
+            cluster_id=cluster['id'],
+            online=True,
+            pending_deletion=True)
+
+        supertask = self.env.launch_deployment()
+        self.env.wait_ready(supertask, timeout=5)
+
+        self.assertEquals(self.env.db.query(Node).count(), 1)
+        node = self.db.query(Node).first()
+        self.assertEquals(node.status, 'discover')
+        self.assertEquals(node.cluster_id, None)
+
+    @fake_tasks()
     def test_deletion_offline_node_when_cluster_has_only_one_node(self):
         cluster = self.env.create_cluster()
         self.env.clusters[0].clear_pending_changes()

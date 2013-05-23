@@ -1,0 +1,8 @@
+#!/opt/nailgun/bin/python
+
+import sys
+# from pkg_resources import load_entry_point
+import nailgun.wsgi # appstart
+
+if __name__ == '__main__':
+    nailgun.wsgi.appstart()
