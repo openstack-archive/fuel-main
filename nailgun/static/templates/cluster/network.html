@@ -2,13 +2,6 @@
 <legend class="networks"><%- networkName != 'fixed' ? networkName : 'VM Networks (Fixed)' %></legend>
 
 <% var vlanManager = net_manager == 'VlanManager' ? '' : 'hide' %>
-<% var visibleAttributes = {
-  'floating': ['ip_ranges', 'vlan_start'],
-  'public': ['ip_ranges', 'vlan_start', 'mask', 'gateway'],
-  'management': ['cidr', 'vlan_start'],
-  'storage': ['cidr', 'vlan_start'],
-  'fixed': ['cidr', 'amount', 'network_size', 'vlan_start']
-} %>
 <% var labels = {
   'ip_ranges': 'IP Range',
   'vlan_start': 'VLAN ID',
@@ -22,7 +15,7 @@
 
 <div data-network-id="<%- network.id %>" class="<%- networkName %>">
   <% _.each(_.keys(network.attributes), function(attribute) { %>
-    <% var hidden = _.contains(visibleAttributes[networkName], attribute) ? '' : 'hide' %>
+    <% var hidden = _.contains(network.getAttributes(), attribute) ? '' : 'hide' %>
     <% if (attribute == 'ip_ranges') { %>
       <div class="range-row-header <%= hidden %>">
         <div>Start</div><div>End</div>

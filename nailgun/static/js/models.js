@@ -316,21 +316,24 @@ define(function() {
 
     models.Network = Backbone.Model.extend({
         constructorName: 'Network',
-        validateIP: function(value) {
-            var ipRegexp = /^(([0-9]|[1-9][0-9]|1[0-9]{2}|2[0-4][0-9]|25[0-5])\.){3}([0-9]|[1-9][0-9]|1[0-9]{2}|2[0-4][0-9]|25[0-5])$/;
-            return !_.isString(value) || (_.isString(value) && !value.match(ipRegexp));
-        },
-        validate: function(attrs) {
-            var errors = {};
-            var attributesToCheck = {
+        getAttributes: function() {
+            var attributes = {
                 'floating': ['ip_ranges', 'vlan_start'],
                 'public': ['ip_ranges', 'vlan_start', 'mask', 'gateway'],
                 'management': ['cidr', 'vlan_start'],
                 'storage': ['cidr', 'vlan_start'],
                 'fixed': ['cidr', 'amount', 'vlan_start']
             };
+            return attributes[this.get('name')];
+        },
+        validateIP: function(value) {
+            var ipRegexp = /^(([0-9]|[1-9][0-9]|1[0-9]{2}|2[0-4][0-9]|25[0-5])\.){3}([0-9]|[1-9][0-9]|1[0-9]{2}|2[0-4][0-9]|25[0-5])$/;
+            return _.isString(value) && !value.match(ipRegexp);
+        },
+        validate: function(attrs) {
+            var errors = {};
             var match;
-            _.each(attributesToCheck[attrs.name], _.bind(function(attribute) {
+            _.each(this.getAttributes(), _.bind(function(attribute) {
                 if (attribute == 'ip_ranges') {
                     _.each(attrs.ip_ranges, _.bind(function(range, index) {
                         if (_.first(range) || _.last(range)) {
@@ -405,7 +408,7 @@ define(function() {
         constructorName: 'Networks',
         model: models.Network,
         comparator: function(network) {
-            return network.id;
+            return network.name != 'public';
         }
     });
 
@@ -413,7 +416,7 @@ define(function() {
         constructorName: 'NetworkConfiguration',
         urlRoot: '/api/clusters',
         parse: function(response) {
-            response.networks = new models.Networks(_.sortBy(response.networks, function(network) {return network.name != 'public';}));
+            response.networks = new models.Networks(response.networks);
             return response;
         },
         toJSON: function() {

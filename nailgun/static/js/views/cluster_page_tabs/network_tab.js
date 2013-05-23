@@ -22,18 +22,17 @@ function(utils, models, commonViews, dialogViews, networkTabTemplate, networkTem
             'click .btn-revert-changes:not([disabled])': 'revertChanges',
             'click .apply-btn:not([disabled])': 'applyChanges'
         },
-        defaultButtonsState: function(changes, validationErrors) {
-            this.$('.btn:not(.ip-ranges)').attr('disabled', changes || validationErrors);
+        defaultButtonsState: function(validationErrors) {
+            this.$('.btn:not(.ip-ranges)').attr('disabled', !this.hasChanges || validationErrors);
             this.$('.btn.verify-networks-btn').attr('disabled', validationErrors);
         },
         disableControls: function() {
             this.$('.btn, input, select').attr('disabled', true);
         },
         checkForChanges: function() {
-            var validationErrors = _.some(this.networkConfiguration.get('networks').models, 'validationError');
-            var changes = _.isEqual(this.model.get('networkConfiguration').toJSON(), this.networkConfiguration.toJSON());
-            this.defaultButtonsState(changes, validationErrors);
-            this.hasChanges = !(changes || validationErrors);
+            var noChanges = _.isEqual(this.model.get('networkConfiguration').toJSON(), this.networkConfiguration.toJSON());
+            this.hasChanges = !noChanges;
+            this.defaultButtonsState(_.some(this.networkConfiguration.get('networks').models, 'validationError'));
         },
         changeManager: function(e) {
             this.$('.net-manager input').attr('checked', function(el, oldAttr) {return !oldAttr;});
@@ -177,19 +176,16 @@ function(utils, models, commonViews, dialogViews, networkTabTemplate, networkTem
             if (this.networkConfiguration.get('networks')) {
                 this.tearDownRegisteredSubViews();
                 this.$('.networks-table').html('');
-                _.each(_.pluck(this.networkConfiguration.get('networks').models, 'id'), _.bind(function(networkId) {
-                    this.renderNetwork(networkId, this.disabled);
-                }, this));
+                _.each(this.networkConfiguration.get('networks').models, function(network) {
+                    var networkView = new Network({
+                        tab: this,
+                        networkId: network.id,
+                        disabled: this.disabled
+                    });
+                    this.registerSubView(networkView);
+                    this.$('.networks-table').append(networkView.render().el);
+                }, this);
             }
-        },
-        renderNetwork: function(networkId, disabled) {
-            var networkView = new Network({
-                tab: this,
-                networkId: networkId,
-                disabled: disabled
-            });
-            this.registerSubView(networkView);
-            this.$('.networks-table').append(networkView.render().el);
         },
         render: function() {
             this.disabled = this.model.task('deploy', 'running') || this.model.task('verify_networks', 'running') ? 'disabled' : '';
@@ -227,7 +223,8 @@ function(utils, models, commonViews, dialogViews, networkTabTemplate, networkTem
                 this.tab.networkConfiguration.get('networks').findWhere({name: 'floating'}).set({vlan_start: parseInt(target.val(), 10)});
             }
             if (target.hasClass('range')) {
-                var vlanEnd = (parseInt(this.$('input[name=fixed-vlan_range-start]').val(), 10) + parseInt(this.$('input[name=fixed-amount]').val(), 10) - 1) || 1;
+                var amount = parseInt(this.$('input[name=fixed-amount]').val(), 10) || 1;
+                var vlanEnd = (parseInt(this.$('input[name=fixed-vlan_range-start]').val(), 10) + amount - 1) || 1;
                 vlanEnd = vlanEnd > 4094 ? 4094 : vlanEnd;
                 this.$('input[name=fixed-vlan_range-end]').val(vlanEnd);
             }
@@ -256,7 +253,6 @@ function(utils, models, commonViews, dialogViews, networkTabTemplate, networkTem
                 ip_ranges: add ? _.union(ip_ranges, ['', '']) : _.filter(ip_ranges, _.bind(function(range, index) {return index != this.$(e.currentTarget).data('index');}, this))
             });
             this.render();
-            this.network.validate(this.network.attributes);
             this.tab.checkForChanges();
             this.tab.page.removeVerificationTask();
         },
