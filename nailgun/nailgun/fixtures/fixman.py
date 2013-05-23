@@ -107,15 +107,6 @@ def upload_fixture(fileobj):
                         )
             db.add(new_obj)
             db.commit()
-            # UGLY HACK for testing
-            if new_obj.__class__.__name__ == 'Node':
-                new_obj.attributes = models.NodeAttributes()
-                db.commit()
-                new_obj.attributes.volumes = \
-                    new_obj.volume_manager.gen_default_volumes_info()
-                db.commit()
-                new_obj.attributes.generate_volumes_info()
-                new_obj.attributes.generate_interfaces_info()
 
 
 def upload_fixtures():
