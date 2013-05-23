@@ -27,54 +27,56 @@ function(utils, models, commonViews, dialogViews, networkTabTemplate, networkTab
             'click .apply-btn:not([disabled])': 'applyChanges'
         },
         defaultButtonsState: function(buttonState) {
-            this.$('.btn:not(.verify-networks-btn)').attr('disabled', buttonState);
+            this.$('.btn:not(.verify-networks-btn):not(.ip-ranges)').attr('disabled', buttonState);
         },
         disableControls: function() {
             this.$('.btn, input, select').attr('disabled', true);
         },
+        checkForChanges: function() {
+            var noChanges = _.isEqual(this.model.get('networkConfiguration').toJSON(), this.networkConfiguration.toJSON()) || _.some(this.networkConfiguration.get('networks').models, 'validationError');
+            this.defaultButtonsState(noChanges);
+            this.hasChanges = !noChanges;
+        },
         changeNetworks: function(e) {
-            var target = e ? this.$(e.currentTarget) : {};
-            var block = e ? target.parents('div[data-network-id]') : this.$('div.fixed');
+            var target = this.$(e.currentTarget);
+            var block = target.parents('div[data-network-id]');
             block.find('.help-inline').text('');
-            var ip_ranges = [];
-            if (e) {
-                target.removeClass('error');
-                // vlan ids range
-                if (target.hasClass('range')) {
-                    var vlanEnd =  parseInt(this.$('input[name=fixed-vlan_range-start]').val(), 10) + parseInt(this.$('input[name=fixed-amount]').val(), 10) - 1;
-                    vlanEnd = vlanEnd > 4094 ? 4094 : vlanEnd;
-                    this.$('input[name=fixed-vlan_range-end]').val(vlanEnd);
-                }
-                // set fixedAmount
-                if (target.attr('name') == 'fixed-amount') {
-                    this.fixedAmount = parseInt(target.val(), 10) || this.fixedAmount;
-                // set floating vlan
-                } else if (target.attr('name') == 'public-vlan_start') {
-                    this.$('div.floating').find('.error').removeClass('error');
-                    this.$('div.floating').find('.help-inline').text('');
-                    this.$('input[name=floating-vlan_start]').val(target.val());
-                    this.networkConfiguration.get('networks').findWhere({name: 'floating'}).set({
-                        vlan_start: parseInt(target.val(), 10)
-                    }, {validate: true});
-                }
-                block.find('.range-row').each(function(rangeRow) {
-                    ip_ranges.push([rangeRow.find('input:first').val(), rangeRow.find('input:last').val()]);
+            target.removeClass('error');
+            // vlan ids range
+            if (target.hasClass('range')) {
+                var amount = parseInt(this.$('input[name=fixed-amount]').val(), 10) || 1;
+                var vlan = parseInt(this.$('input[name=fixed-vlan_range-start]').val(), 10) || 1;
+                var vlanEnd = vlan + amount - 1;
+                vlanEnd = vlanEnd > 4094 ? 4094 : vlanEnd;
+                this.$('input[name=fixed-vlan_range-end]').val(vlanEnd);
+            }
+            // set fixedAmount
+            if (target.attr('name') == 'fixed-amount') {
+                this.fixedAmount = parseInt(target.val(), 10) || this.fixedAmount;
+            // set floating vlan
+            } else if (target.attr('name') == 'public-vlan_start') {
+                this.$('div.floating').find('input.error').removeClass('error');
+                this.$('div.floating').find('.help-inline').text('');
+                this.$('input[name=floating-vlan_start]').val(target.val());
+                this.networkConfiguration.get('networks').findWhere({name: 'floating'}).set({
+                    vlan_start: parseInt(target.val(), 10)
                 });
             }
+            var ip_ranges = [];
+            block.find('.range-row').each(function(index, rangeRow) {
+                ip_ranges.push([$(rangeRow).find('input:first').val(), $(rangeRow).find('input:last').val()]);
+            });
             // validate data per each change
             this.networkConfiguration.get('networks').get(block.data('network-id')).set({
                 ip_ranges: ip_ranges,
                 cidr: $('.cidr input', block).val(),
-                vlan_start: Number($('.vlan_range input:first', block).val()),
+                vlan_start: Number($('.vlan_start input', block).val()),
                 netmask: $('.netmask input', block).val(),
                 gateway: $('.gateway input', block).val(),
                 amount: this.networkConfiguration.get('net_manager') == 'FlatDHCPManager' || block.attr('class') != 'fixed' ? 1: parseInt(this.$('input[name=fixed-amount]').val(), 10),
                 network_size: e && target.parent().hasClass('cidr') && target.attr('name') != 'fixed-cidr' ? Math.pow(2, 32 - parseInt(_.last($('.cidr input', block).val().split('/')), 10)) : parseInt($('.network_size select', block).val(), 10)
             }, {validate: true});
-            // check for changes
-            var noChanges = _.isEqual(this.model.get('networkConfiguration').toJSON(), this.networkConfiguration.toJSON()) || _.some(this.networkConfiguration.get('networks').models, 'validationError');
-            this.defaultButtonsState(noChanges);
-            this.hasChanges = !noChanges;
+            this.checkForChanges();
             this.page.removeVerificationTask();
         },
         setIPRangeFocus: function(e) {
@@ -82,8 +84,9 @@ function(utils, models, commonViews, dialogViews, networkTabTemplate, networkTab
         },
         changeManager: function(e) {
             this.networkConfiguration.set({net_manager: this.$(e.currentTarget).val()});
-            this.$('input[name=fixed-amount]').val(this.fixedAmount);
-            this.changeNetworks();
+            this.networkConfiguration.get('networks').findWhere({name: 'fixed'}).set({amount: this.$(e.currentTarget).val() == 'VlanManager' ? this.fixedAmount : 1});
+            this.checkForChanges();
+            this.page.removeVerificationTask();
             this.render();
         },
         editIPRange: function(e, add) {
@@ -181,16 +184,26 @@ function(utils, models, commonViews, dialogViews, networkTabTemplate, networkTab
                 net_manager: this.model.get('networkConfiguration').get('net_manager'),
                 networks: new models.Networks(this.model.get('networkConfiguration').get('networks').toJSON())
             });
+
+                        _.each(this.networkConfiguration.get('networks').models, function(network) {
+                            network.set({
+                                ip_ranges: [['172.56.2.35', '172.56.2.57'], ['', '']],
+                                netmask: '255.67.0.1',
+                                gateway: '102.87.78.9'
+                            });
+                        });
+
             this.networkConfiguration.get('networks').on('invalid', function(model, errors) {
                 _.each(_.without(_.keys(errors), 'ip_ranges'), _.bind(function(field) {
-                    this.$('div[data-network-id=' + model.id + ']').find('.' + field).children().addClass('error');
-                    this.$('div[data-network-id=' + model.id + ']').find('.help-inline').text(errors[field]);
+                    var failedField = this.$('div[data-network-id=' + model.id + ']').find('.' + field);
+                    failedField.children().addClass('error');
+                    failedField.siblings('.error').find('.help-inline').text(errors[field]);
                 }, this));
-                if (errors.ip_ranges.length) {
+                if (errors.ip_ranges) {
                     _.each(errors.ip_ranges, _.bind(function(range) {
                         var row = this.$('div[data-network-id=' + model.id + ']').find('.range-row:eq(' + range.index + ')');
-                        row.find('input:first').addClass('error', range.start);
-                        row.find('input:last').addClass('error', range.end);
+                        row.find('input:first').toggleClass('error', !!range.start);
+                        row.find('input:last').toggleClass('error', !!range.end);
                         row.find('.help-inline').text(range.start || range.end);
                     }, this));
                 }
@@ -242,12 +255,6 @@ function(utils, models, commonViews, dialogViews, networkTabTemplate, networkTab
             this.showVerificationErrors();
         },
         render: function() {
-                if (this.networkConfiguration && this.networkConfiguration.get('networks')) {
-                    _.each(this.networkConfiguration.get('networks').models, function(network) {
-                        network.set({ip_ranges: [['172.56.02.03', '172.56.02.45'], ['', '']]});
-                    });
-                }
-
             this.$el.html(this.template({
                 networks: this.networkConfiguration.get('networks'),
                 net_manager: this.networkConfiguration.get('net_manager'),

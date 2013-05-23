@@ -317,26 +317,29 @@ define(function() {
     models.Network = Backbone.Model.extend({
         constructorName: 'Network',
         validateIP: function(value) {
-            var ipRegexp = /^(?:(?:[0-9]|[1-9][0-9]|1[0-9]{2}|2[0-4][0-9]|25[0-5])\.){3}(?:[0-9]|[1-9][0-9]|1[0-9]{2}|2[0-4][0-9]|25[0-5])$/;
+            var ipRegexp = /^(([0-9]|[1-9][0-9]|1[0-9]{2}|2[0-4][0-9]|25[0-5])\.){3}([0-9]|[1-9][0-9]|1[0-9]{2}|2[0-4][0-9]|25[0-5])$/;
             return !_.isString(value) || (_.isString(value) && !value.match(ipRegexp));
         },
         validate: function(attrs) {
             var errors = {};
             var match;
             var cidrRegexp = /^(?:(?:[0-9]|[1-9][0-9]|1[0-9]{2}|2[0-4][0-9]|25[0-5])\.){3}(?:[0-9]|[1-9][0-9]|1[0-9]{2}|2[0-4][0-9]|25[0-5])\/([1-9]|[1-2]\d|3[0-2])$/;
-            errors.ip_ranges = [];
-            _.each(attrs.ip_ranges, _.bind(function(range, index) {
-                var rangeErrors = {range: index};
-                if (this.validateIP(_.first(range))) {
-                    rangeErrors.start = 'Invalid IP';
-                }
-                if (this.validateIP(_.last(range))) {
-                    rangeErrors.end = 'Invalid IP';
-                }
-                if (rangeErrors.start || rangeErrors.end) {
-                    errors.ip_ranges.push(rangeErrors);
-                }
-            }, this));
+            if (attrs.name == 'public' || attrs.name == 'floating') {
+                _.each(attrs.ip_ranges, _.bind(function(range, index) {
+                    if (_.first(range) || _.last(range)) {
+                        var rangeErrors = {index: index};
+                        if (_.first(range) && this.validateIP(_.first(range))) {
+                            rangeErrors.start = 'Invalid IP';
+                        }
+                        if (_.last(range) && this.validateIP(_.last(range))) {
+                            rangeErrors.end = 'Invalid IP';
+                        }
+                        if (rangeErrors.start || rangeErrors.end) {
+                            errors.ip_ranges = _.compact(_.union([rangeErrors], errors.ip_ranges));
+                        }
+                    }
+                }, this));
+            }
             if (_.isString(attrs.cidr)) {
                 match = attrs.cidr.match(cidrRegexp);
                 if (match) {
@@ -364,10 +367,10 @@ define(function() {
             if (_.isNaN(attrs.vlan_start) || !_.isNumber(attrs.vlan_start) || attrs.vlan_start < 1 || attrs.vlan_start > 4094) {
                 errors.vlan_start = 'Invalid VLAN ID';
             }
-            if (this.validateIP(attrs.netmask)) {
+            if (attrs.name == 'public' && this.validateIP(attrs.netmask)) {
                 errors.netmask = 'Invalid netmask';
             }
-            if (this.validateIP(attrs.gateway)) {
+            if (attrs.name == 'public' && this.validateIP(attrs.gateway)) {
                 errors.gateway = 'Invalid gateway';
             }
             if (_.isString(attrs.amount)) {

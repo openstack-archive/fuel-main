@@ -1420,7 +1420,7 @@ h6.page-title {
   width: 780px;
 }
 
-.networks-table .ip-ranges-control button {
+.networks-table .ip-ranges {
   padding: 0;
 }
 
@@ -1431,8 +1431,9 @@ h6.page-title {
 
 .networks-table .error .help-inline {
   display: block;
-  padding-top: 4px;
+  padding-top: 2px;
   width: 264px;
+  color: #B94A48;
 }
 
 #networkManager {
@@ -3036,7 +3037,7 @@ select[name=release] option {
   overflow: hidden;
 }
 
-.control-group input.error, .control-group select.error {
+input.error, .control-group select.error {
   border-color: #B94A48;
   color: #B94A48;
   box-shadow: 0 1px 1px rgba(0, 0, 0, 0.075) inset;
@@ -3207,6 +3208,10 @@ select[name=release] option {
   margin-top: 4px;
   overflow: hidden;
   cursor: default;
+}
+
+.parameter-name.hide {
+  display: none;
 }
 
 .parameter-control {
