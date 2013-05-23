@@ -10,7 +10,7 @@ from nailgun.api.models import Cluster
 from nailgun.api.models import NetworkGroup
 from nailgun.api.models import NetworkConfiguration
 from nailgun.api.handlers.tasks import TaskHandler
-from nailgun.task.helpers import update_task_status
+from nailgun.task.helpers import TaskHelper
 from nailgun.network.manager import NetworkManager
 from nailgun.task.manager import CheckNetworksTaskManager
 from nailgun.task.manager import VerifyNetworksTaskManager
@@ -69,7 +69,7 @@ class NetworkConfigurationHandler(JSONHandler):
                 NetworkConfiguration.update(cluster, data)
             except Exception as exc:
                 err = str(exc)
-                update_task_status(
+                TaskHelper.update_task_status(
                     task.uuid,
                     status="error",
                     progress=100,

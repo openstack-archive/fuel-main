@@ -26,6 +26,7 @@ class TaskHelper(object):
     def update_slave_nodes_fqdn(cls, nodes):
         for n in nodes:
             n.fqdn = cls.slave_fqdn_by_id(n.id)
+            logger.debug("Updating node fqdn: %s %s", n.id, n.fqdn)
             orm().add(n)
             orm().commit()
 
@@ -199,11 +200,11 @@ class TaskHelper(object):
 
     @classmethod
     def nodes_to_deploy(cls, cluster):
-        return filter(
+        return sorted(filter(
             lambda n: any([
                 n.pending_addition,
                 n.needs_reprovision,
                 n.needs_redeploy
             ]),
             cluster.nodes
-        )
+        ), key=lambda n: n.id)

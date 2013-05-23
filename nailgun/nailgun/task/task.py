@@ -96,9 +96,7 @@ class DeploymentTask(object):
         cluster_id = task.cluster.id
         netmanager = NetworkManager()
 
-        nodes = orm().query(Node).filter_by(
-            cluster_id=task.cluster.id,
-            pending_deletion=False).order_by(Node.id)
+        nodes = TaskHelper.nodes_to_deploy(task.cluster)
 
         logger.info("Associated FQDNs to nodes: %s" %
                     ', '.join([n.fqdn for n in nodes]))

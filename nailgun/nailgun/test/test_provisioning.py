@@ -6,6 +6,7 @@ import unittest
 from mock import patch
 
 from nailgun.settings import settings
+from nailgun.logger import logger
 from nailgun.test.base import BaseHandlers
 from nailgun.test.base import reverse
 from nailgun.api.models import Cluster
@@ -38,7 +39,7 @@ class TestProvisioning(BaseHandlers):
 
     @fake_tasks(fake_rpc=False, mock_rpc=False)
     @patch('nailgun.rpc.cast')
-    def test_node_status_changes_to_provision(self, mocked_rpc):
+    def test_node_status_changes_to_provision(self, mocked_rpc=None):
         cluster = self.env.create_cluster()
         map(
             lambda x: self.env.create_node(
@@ -58,11 +59,10 @@ class TestProvisioning(BaseHandlers):
         cluster.clear_pending_changes()
 
         self.env.network_manager.assign_ips = self.mock.MagicMock()
-
         self.env.launch_deployment()
 
         self.env.refresh_nodes()
-        self.assertEquals(self.env.nodes[0].status, 'provisioned')
+        self.assertEquals(self.env.nodes[0].status, 'ready')
         # FIXME node status is not updated into "provisioning" for fake tasks
         self.assertEquals(self.env.nodes[1].status, 'discover')
         self.assertEquals(self.env.nodes[2].status, 'provisioning')

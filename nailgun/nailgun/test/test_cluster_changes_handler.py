@@ -237,18 +237,13 @@ class TestHandlers(BaseHandlers):
         # The first set of args is for deletion task and
         # the second one is for provisioning and deployment.
 
-        # remove_nodes method call
-        n_rpc = nailgun.task.task.rpc.cast. \
+        # remove_nodes method call [0][0][1]
+        n_rpc_remove = nailgun.task.task.rpc.cast. \
             call_args_list[0][0][1]['args']['nodes']
-        self.assertEquals(len(n_rpc), 1)
+        self.assertEquals(len(n_rpc_remove), 1)
+        self.assertEquals(n_rpc_remove[0]['uid'], self.env.nodes[1].id)
 
-        n_removed_rpc = [
-            n for n in n_rpc if n['uid'] == self.env.nodes[1].id
-        ][0]
-        # object is found, so we passed the right node for removal
-        self.assertIsNotNone(n_removed_rpc)
-
-        # provision method call
+        # provision method call [1][0][1][0]
         n_rpc_provision = nailgun.task.manager.rpc.cast. \
             call_args_list[1][0][1][0]['args']['nodes']
         # Nodes will be appended in provision list if
@@ -258,19 +253,16 @@ class TestHandlers(BaseHandlers):
         # So, only one node from our list will be appended to
         # provision list.
         self.assertEquals(len(n_rpc_provision), 1)
+        self.assertEquals(
+            n_rpc_provision[0]['name'],
+            TaskHelper.slave_name_by_id(self.env.nodes[0].id)
+        )
 
-        # deploy method call
-        n_rpc = nailgun.task.manager.rpc.cast. \
+        # deploy method call [1][0][1][1]
+        n_rpc_deploy = nailgun.task.manager.rpc.cast. \
             call_args_list[1][0][1][1]['args']['nodes']
-        self.assertEquals(len(n_rpc), 2)
-        n_provisioned_rpc = [
-            n for n in n_rpc if n['uid'] == self.env.nodes[0].id
-        ][0]
-        n_added_rpc = [
-            n for n in n_rpc if n['uid'] == self.env.nodes[1].id
-        ][0]
-
-        self.assertEquals(n_provisioned_rpc['status'], 'provisioned')
+        self.assertEquals(len(n_rpc_deploy), 1)
+        self.assertEquals(n_rpc_deploy[0]['uid'], self.env.nodes[0].id)
 
     @fake_tasks(fake_rpc=False, mock_rpc=False)
     @patch('nailgun.rpc.cast')

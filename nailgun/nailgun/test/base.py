@@ -178,9 +178,8 @@ class Environment(object):
                 return None
             self.tester.assertEquals(resp.status, expect_http)
             node = json.loads(resp.body)
-            self.nodes.append(
-                self.db.query(Node).get(node['id'])
-            )
+            node_db = self.db.query(Node).get(node['id'])
+            self.nodes.append(node_db)
         else:
             node = Node()
             node.timestamp = datetime.now()
@@ -515,6 +514,7 @@ class Environment(object):
     def refresh_nodes(self):
         for n in self.nodes[:]:
             try:
+                self.db.add(n)
                 self.db.refresh(n)
             except:
                 self.nodes.remove(n)
