@@ -132,7 +132,6 @@ class ClusterCollectionHandler(JSONHandler, NICUtils):
                 setattr(cluster, field, data.get(field))
         self.db.add(cluster)
         self.db.commit()
-
         attributes = Attributes(
             editable=cluster.release.attributes_metadata.get("editable"),
             generated=cluster.release.attributes_metadata.get("generated"),
@@ -140,27 +139,37 @@ class ClusterCollectionHandler(JSONHandler, NICUtils):
         )
         attributes.generate_fields()
 
-        netmanager = NetworkManager()
-        netmanager.create_network_groups(cluster.id)
+        netmanager = NetworkManager(self.db)
+        try:
+            netmanager.create_network_groups(cluster.id)
+            
+            cluster.add_pending_changes("attributes")
+            cluster.add_pending_changes("networks")
 
-        cluster.add_pending_changes("attributes")
-        cluster.add_pending_changes("networks")
+            if 'nodes' in data and data['nodes']:
+                nodes = self.db.query(Node).filter(
+                    Node.id.in_(data['nodes'])
+                ).all()
+                map(cluster.nodes.append, nodes)
+                for node in nodes:
+                    self.allow_network_assignment_to_all_interfaces(node)
+                    self.assign_networks_to_main_interface(node)
+                self.db.commit()
 
-        if 'nodes' in data and data['nodes']:
-            nodes = self.db.query(Node).filter(
-                Node.id.in_(data['nodes'])
-            ).all()
-            map(cluster.nodes.append, nodes)
-            for node in nodes:
-                self.allow_network_assignment_to_all_interfaces(node)
-                self.assign_networks_to_main_interface(node)
-            self.db.commit()
+            raise web.webapi.created(json.dumps(
+                ClusterHandler.render(cluster),
+                indent=4
+            ))
+        except errors.OutOfVLANs as e:
+            # Cluster was created in this request,
+            # so we no need to use ClusterDeletionManager.
+            # All relations wiil be cascade deleted automaticly.
+            # TODO: investigate transactions
+            self.db.delete(cluster)
 
-        raise web.webapi.created(json.dumps(
-            ClusterHandler.render(cluster),
-            indent=4
-        ))
-
+            raise web.webapi.HTTPError(
+                status="202 Accepted",
+                data=e.message)
 
 class ClusterChangesHandler(JSONHandler):
     fields = (
