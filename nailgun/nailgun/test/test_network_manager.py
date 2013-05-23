@@ -198,7 +198,7 @@ class TestNetworkManager(BaseHandlers):
     def test_vlan_set_null(self):
         cluster = self.env.create_cluster(api=True)
         cluster_db = self.env.clusters[0]
-        same_vlan = 100
+        same_vlan = None
         resp = self.app.get(
             reverse(
                 'NetworkConfigurationHandler',
@@ -206,7 +206,16 @@ class TestNetworkManager(BaseHandlers):
             headers=self.default_headers
         )
         networks_data = json.loads(resp.body)
-        networks_data['networks'][1]["vlan_start"] = same_vlan
+        vlan_changed = False
+        for index, network_data in enumerate(networks_data['networks']):
+            if network_data['name'] == [u'public', u'floating']:
+                network_data["vlan_start"] = same_vlan
+                vlan_changed = True
+            else:
+                if not same_vlan:
+                    same_vlan = network_data["vlan_start"]
+            if vlan_changed and same_vlan:
+                break
         resp = self.app.put(
             reverse(
                 'NetworkConfigurationHandler',
