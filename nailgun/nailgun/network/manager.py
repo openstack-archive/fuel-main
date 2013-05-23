@@ -49,6 +49,12 @@ class NetworkManager(object):
             pool = settings.NETWORK_POOLS[network['access']]
             nets_free_set = IPSet(pool) -\
                 IPSet(settings.NET_EXCLUDE) -\
+                IPSet(
+                    IPRange(
+                        settings.ADMIN_NETWORK["first"],
+                        settings.ADMIN_NETWORK["last"]
+                    )
+                ) -\
                 IPSet(used_nets)
             if not nets_free_set:
                 raise errors.OutOfIPs()
