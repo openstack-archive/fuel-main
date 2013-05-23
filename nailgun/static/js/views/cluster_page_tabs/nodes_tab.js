@@ -481,7 +481,10 @@ function(utils, models, commonViews, dialogViews, nodesTabSummaryTemplate, editN
             this.$('.btn, input').attr('disabled', disable);
         },
         checkForChanges: function() {
-            this.$('.btn-apply').attr('disabled', _.isEqual(_.where(this.disks.toJSON(), {'type': 'disk'}), _.where(this.initialData, {'type': 'disk'})) || _.some(this.disks.models, 'validationError'));
+            var noChanges = _.isEqual(_.where(this.disks.toJSON(), {'type': 'disk'}), _.where(this.initialData, {'type': 'disk'}));
+            var validationErrors = _.some(this.disks.models, 'validationError');
+            this.$('.btn-apply').attr('disabled', noChanges || validationErrors);
+            this.$('.btn-revert-changes').attr('disabled', noChanges && !validationErrors);
         },
         loadDefaults: function() {
             this.disableControls(true);

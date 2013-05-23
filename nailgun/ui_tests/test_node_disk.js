@@ -38,7 +38,7 @@ casper.then(function() {
         this.test.assertEvalEquals(function() {return $('.disk-box').length}, 2, 'Number of disks is correct');
         this.test.assertEvalEquals(function() {return $('.bootable-marker:visible').length}, 1, 'Number of bootable disks is correct');
         this.test.assertExists('.btn-defaults:not(:disabled)', 'Load Defaults button is enabled');
-        this.test.assertExists('.btn-revert-changes:not(:disabled)', 'Cancel button is enabled');
+        this.test.assertExists('.btn-revert-changes:disabled', 'Cancel button is disabled');
         this.test.assertExists('.btn-apply:disabled', 'Apply button is disabled');
     });
 
@@ -74,7 +74,7 @@ casper.then(function() {
 
         this.click(sdaDiskVM + ' .use-all-unallocated a');
         this.test.assertExists('.btn-defaults:not(:disabled)', 'Load Defaults button is enabled');
-        this.test.assertExists('.btn-revert-changes:not(:disabled)', 'Cancel button is enabled');
+        this.test.assertExists('.btn-revert-changes:disabled', 'Cancel button is disabled');
         this.test.assertExists('.btn-apply:disabled', 'Apply button is disabled');
     });
 
