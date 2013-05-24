@@ -17,7 +17,9 @@ class TestHandlers(BaseHandlers):
         self.assertEquals(resp.status, 404)
 
     def test_get_handler_with_incompleted_data(self):
-        node = self.env.create_node(api=True, meta={})
+        meta = self.env.default_metadata()
+        del meta["interfaces"]
+        node = self.env.create_node(api=True, meta=meta)
         meta_list = [
             {'interfaces': None},
             {'interfaces': {}},
@@ -38,7 +40,9 @@ class TestHandlers(BaseHandlers):
             {'interfaces': [{'name': 'eth0', 'mac': '00:00:00',
                              'current_speed': '100'}]},
         ]
-        for meta in meta_list:
+        for nic_meta in meta_list:
+            meta = self.env.default_metadata()
+            meta.update(nic_meta)
             node_data = {'mac': node['mac'], 'is_agent': True,
                          'meta': meta}
             resp = self.app.put(
@@ -55,7 +59,9 @@ class TestHandlers(BaseHandlers):
             self.assertEquals(response, [])
 
     def test_get_handler_without_NICs(self):
-        node = self.env.create_node(api=True, meta={})
+        meta = self.env.default_metadata()
+        del meta["interfaces"]
+        node = self.env.create_node(api=True, meta=meta)
         resp = self.app.get(
             reverse('NodeNICsHandler', kwargs={'node_id': node['id']}),
             headers=self.default_headers)
@@ -64,10 +70,11 @@ class TestHandlers(BaseHandlers):
         self.assertEquals(response, [])
 
     def test_get_handler_with_NICs(self):
-        meta = {'interfaces': [
+        meta = self.env.default_metadata()
+        meta.update({'interfaces': [
             {'name': 'eth0', 'mac': '123', 'current_speed': 1, 'max_speed': 1},
             {'name': 'eth1', 'mac': '678', 'current_speed': 1, 'max_speed': 1},
-        ]}
+        ]})
         node = self.env.create_node(api=True, meta=meta)
         node_db = self.env.nodes[0]
         resp = self.app.get(
@@ -92,9 +99,10 @@ class TestHandlers(BaseHandlers):
                 self.assertEquals(resp_nic[conn], [])
 
     def test_NIC_removes_by_agent(self):
-        meta = {'interfaces': [
+        meta = self.env.default_metadata()
+        meta.update({'interfaces': [
             {'name': 'eth0', 'mac': '12345', 'current_speed': 1},
-        ]}
+        ]})
         node = self.env.create_node(api=True, meta=meta)
 
         node_data = {'mac': node['mac'], 'is_agent': True,
@@ -112,14 +120,16 @@ class TestHandlers(BaseHandlers):
         self.assertEquals(response, [])
 
     def test_NIC_updates_by_agent(self):
-        meta = {'interfaces': [
+        meta = self.env.default_metadata()
+        meta.update({'interfaces': [
             {'name': 'eth0', 'mac': '12345', 'current_speed': 1},
-        ]}
+        ]})
         node = self.env.create_node(api=True, meta=meta)
-        new_meta = {'interfaces': [
+        new_meta = self.env.default_metadata()
+        new_meta.update({'interfaces': [
             {'name': 'new_nic', 'mac': '12345', 'current_speed': 10,
              'max_speed': 10},
-        ]}
+        ]})
         node_data = {'mac': node['mac'], 'is_agent': True,
                      'meta': new_meta}
         resp = self.app.put(
@@ -143,9 +153,10 @@ class TestHandlers(BaseHandlers):
             self.assertEquals(resp_nic[conn], [])
 
     def test_NIC_adds_by_agent(self):
-        meta = {'interfaces': [
+        meta = self.env.default_metadata()
+        meta.update({'interfaces': [
             {'name': 'eth0', 'mac': '12345', 'current_speed': 1},
-        ]}
+        ]})
         node = self.env.create_node(api=True, meta=meta)
 
         meta['interfaces'].append({'name': 'new_nic', 'mac': '643'})
@@ -178,9 +189,10 @@ class TestHandlers(BaseHandlers):
 
     def test_ignore_NIC_id_in_meta(self):
         fake_id = 'some_data'
-        meta = {'interfaces': [
+        meta = self.env.default_metadata()
+        meta.update({'interfaces': [
             {'id': fake_id, 'name': 'eth0', 'mac': '12345'},
-        ]}
+        ]})
         node = self.env.create_node(api=True, meta=meta)
         resp = self.app.get(
             reverse('NodeNICsHandler', kwargs={'node_id': node['id']}),

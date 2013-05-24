@@ -26,6 +26,8 @@ from nailgun.api.models import Attributes
 from nailgun.api.models import Network
 from nailgun.api.models import NetworkGroup
 from nailgun.api.models import Task
+from nailgun.api.models import IPAddr
+from nailgun.api.models import Vlan
 from nailgun.api.urls import urls
 from nailgun.wsgi import build_app
 from nailgun.db import engine
@@ -406,7 +408,6 @@ class Environment(object):
         }
 
     def upload_fixtures(self, fxtr_names):
-        self.db.expire_all()
         for fxtr_path in self.fxtr_paths_by_names(fxtr_names):
             with open(fxtr_path, "r") as fxtr_file:
                 upload_fixture(fxtr_file)
@@ -603,7 +604,6 @@ class BaseHandlers(TestCase):
 
     @classmethod
     def tearDownClass(cls):
-        flush()
         cls.db.commit()
         cls.db.close()
 
@@ -613,13 +613,10 @@ class BaseHandlers(TestCase):
         }
         flush()
         self.env = Environment(app=self.app, db=self.db)
-        # hack for admin net
-        map(
-            self.db.delete,
-            self.db.query(Network).all(),
-        )
-        self.db.commit()
         self.env.upload_fixtures(self.fixtures)
+
+    def tearDown(self):
+        self.db.commit()
 
 
 def fake_tasks(fake_rpc=True, **kwargs):

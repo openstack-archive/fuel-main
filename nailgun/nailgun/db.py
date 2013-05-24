@@ -93,8 +93,14 @@ def dropdb():
 
 
 def flush():
-    from nailgun.api.models import Base
+    import nailgun.api.models as models
+    import sqlalchemy.ext.declarative as dec
     session = scoped_session(sessionmaker(bind=engine))
-    for table in reversed(Base.metadata.sorted_tables):
-        session.execute(table.delete())
+    for attr in dir(models):
+        attr_impl = getattr(models, attr)
+        if isinstance(attr_impl, dec.DeclarativeMeta) \
+                and not attr_impl is models.Base:
+            map(session.delete, session.query(attr_impl).all())
+    # for table in reversed(models.Base.metadata.sorted_tables):
+    #     session.execute(table.delete())
     session.commit()

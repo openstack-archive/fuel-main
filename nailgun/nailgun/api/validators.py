@@ -114,7 +114,6 @@ class ReleaseValidator(BasicValidator):
                 raise web.webapi.badrequest(
                     message="Invalid logical structure of attributes metadata"
                 )
-        cls.db.expunge_all()
         return d
 
 
@@ -133,7 +132,6 @@ class ClusterValidator(BasicValidator):
             release = cls.db.query(Release).get(d.get("release"))
             if not release:
                 raise web.webapi.badrequest(message="Invalid release id")
-        cls.db.expunge_all()
         return d
 
 
@@ -188,7 +186,6 @@ class NodeValidator(BasicValidator):
             )
         if 'meta' in d:
             MetaValidator.validate(d['meta'])
-        cls.db.expunge_all()
         return d
 
     @classmethod
@@ -198,7 +195,6 @@ class NodeValidator(BasicValidator):
             if 'interfaces' in data['meta']:
                 existent_node = cls.db.query(Node).filter(Node.mac.in_(
                     [n['mac'] for n in data['meta']['interfaces']])).first()
-                cls.db.expunge_all()
                 return existent_node
 
     @classmethod
@@ -248,7 +244,6 @@ class NodeValidator(BasicValidator):
                     )
             if 'meta' in nd:
                 MetaValidator.validate(nd['meta'])
-        cls.db.expunge_all()
         return d
 
 
@@ -295,7 +290,6 @@ class NotificationValidator(BasicValidator):
             valid_nd["id"] = nd["id"]
             valid_nd["status"] = nd["status"]
             valid_d.append(valid_nd)
-        cls.db.expunge_all()
         return valid_d
 
 

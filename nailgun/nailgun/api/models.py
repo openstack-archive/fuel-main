@@ -245,7 +245,7 @@ class NodeAttributes(Base):
 class IPAddr(Base):
     __tablename__ = 'ip_addrs'
     id = Column(Integer, primary_key=True)
-    network = Column(Integer, ForeignKey('networks.id'))
+    network = Column(Integer, ForeignKey('networks.id', ondelete="CASCADE"))
     node = Column(Integer, ForeignKey('nodes.id', ondelete="CASCADE"))
     ip_addr = Column(String(25), nullable=False)
 

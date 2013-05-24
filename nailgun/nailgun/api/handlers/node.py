@@ -172,7 +172,6 @@ class NodeCollectionHandler(JSONHandler, NICUtils):
                     or self.validator.validate_existent_node_mac(nd)
             else:
                 node = q.get(nd["id"])
-            self.db.add(node)
             if nd.get("cluster_id") is None and node.cluster:
                 node.cluster.clear_pending_changes(node_id=node.id)
             old_cluster_id = node.cluster_id
@@ -189,9 +188,12 @@ class NodeCollectionHandler(JSONHandler, NICUtils):
             if not node.attributes:
                 node.attributes = NodeAttributes()
                 self.db.commit()
+            if not node.attributes.volumes:
+                node.attributes.volumes = \
+                    node.volume_manager.gen_volumes_info()
+                self.db.commit()
             if not node.status in ('provisioning', 'deploying'):
                 variants = (
-                    not node.attributes.volumes,
                     "disks" in node.meta and
                     len(node.meta["disks"]) != len(
                         filter(
@@ -251,7 +253,6 @@ class NodeCollectionHandler(JSONHandler, NICUtils):
                         db_nics.remove(db_nic)
                     map(self.db.delete, db_nics)
             nodes_updated.append(node)
-            self.db.add(node)
             self.db.commit()
             if 'cluster_id' in nd and nd['cluster_id'] != old_cluster_id:
                 if old_cluster_id:

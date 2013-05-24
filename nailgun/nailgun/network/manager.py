@@ -328,7 +328,7 @@ class NetworkManager(object):
 
     def _get_ips_except_admin(self, node_id=None, network_id=None):
         node_db = self.db.query(Node).get(node_id)
-        ips = self.db.query(IPAddr)
+        ips = self.db.query(IPAddr).order_by(IPAddr.id)
         if node_id:
             ips = ips.filter_by(node=node_id)
         if network_id:
@@ -380,7 +380,7 @@ class NetworkManager(object):
         #    so these vlans will be created on every node we call this func for
         # However it will end up with errors if we precreate vlans in VLAN mode
         #   in fixed network. We are skipping fixed nets in Vlan mode.
-        for net in nets.all():
+        for net in nets.order_by(Network.id).all():
             if net.name == 'fixed' and cluster_db.net_manager == 'VlanManager':
                 continue
             network_data.append({
