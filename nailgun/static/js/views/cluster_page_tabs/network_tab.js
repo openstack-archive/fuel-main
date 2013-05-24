@@ -119,7 +119,7 @@ function(utils, models, commonViews, dialogViews, networkTabTemplate, networkTem
         setInitialData: function() {
             this.hasChanges = false;
 
-                    _.each(this.model.get('networkConfiguration').get('networks').models, function(network) {
+                    this.model.get('networkConfiguration').get('networks').each(function(network) {
                         network.set({
                             ip_ranges: [['172.56.2.35', '172.56.2.57']],
                             mask: '255.67.0.1',
@@ -133,7 +133,7 @@ function(utils, models, commonViews, dialogViews, networkTabTemplate, networkTem
             });
             this.fixedAmount = this.networkConfiguration.get('networks').findWhere({name: 'fixed'}).get('amount') || 1;
             _.each(_.filter(this.networkConfiguration.get('networks').models, function(network) {return network.get('name') != 'fixed';}), function(network) {
-                network.set({network_size: Math.pow(2, 32 - parseInt(_.last(network.get('cidr').split('/')), 10))});
+                network.set({network_size: utils.calculateNetworkSize(network.get('cidr'))});
             });
         },
         initialize: function(options) {
@@ -176,11 +176,11 @@ function(utils, models, commonViews, dialogViews, networkTabTemplate, networkTem
             if (this.networkConfiguration.get('networks')) {
                 this.tearDownRegisteredSubViews();
                 this.$('.networks-table').html('');
-                _.each(this.networkConfiguration.get('networks').models, function(network) {
+                this.networkConfiguration.get('networks').each(function(network) {
                     var networkView = new Network({
                         tab: this,
                         networkId: network.id,
-                        disabled: this.disabled
+                        task: this.task
                     });
                     this.registerSubView(networkView);
                     this.$('.networks-table').append(networkView.render().el);
@@ -188,11 +188,11 @@ function(utils, models, commonViews, dialogViews, networkTabTemplate, networkTem
             }
         },
         render: function() {
-            this.disabled = this.model.task('deploy', 'running') || this.model.task('verify_networks', 'running') ? 'disabled' : '';
+            this.task = this.model.task('deploy', 'running') || this.model.task('verify_networks', 'running');
             this.$el.html(this.template({
                 net_manager: this.networkConfiguration.get('net_manager'),
                 hasChanges: this.hasChanges,
-                disabled: this.disabled
+                task: this.task
             }));
             this.renderNetworks();
             this.renderVerificationControl();
@@ -239,7 +239,7 @@ function(utils, models, commonViews, dialogViews, networkTabTemplate, networkTem
                 mask: $('.mask input', block).val(),
                 gateway: $('.gateway input', block).val(),
                 amount: this.manager == 'FlatDHCPManager' || block.attr('class') != 'fixed' ? 1: parseInt(this.$('input[name=fixed-amount]').val(), 10),
-                network_size: target.parent().hasClass('cidr') && target.attr('name') != 'fixed-cidr' ? Math.pow(2, 32 - parseInt(_.last($('.cidr input', block).val().split('/')), 10)) : parseInt($('.network_size select', block).val(), 10)
+                network_size: target.parent().hasClass('cidr') && target.attr('name') != 'fixed-cidr' ? utils.calculateNetworkSize($('.cidr input', block).val()) : parseInt($('.network_size select', block).val(), 10)
             }, {validate: true});
             this.tab.checkForChanges();
             this.tab.page.removeVerificationTask();
@@ -248,11 +248,19 @@ function(utils, models, commonViews, dialogViews, networkTabTemplate, networkTem
             this.$(e.currentTarget).next().find('input:first').focus();
         },
         editIPRange: function(e, add) {
-            var ip_ranges = this.network.get('ip_ranges');
-            this.network.set({
-                ip_ranges: add ? _.union(ip_ranges, ['', '']) : _.filter(ip_ranges, _.bind(function(range, index) {return index != this.$(e.currentTarget).data('index');}, this))
-            });
-            this.render();
+            var row = this.$(e.currentTarget).parents('.range-row');
+            var index = this.$('.range-row').index(row);
+            if (add) {
+                this.network.get('ip_ranges').splice(index + 1, 0, ['', '']);
+                var newRow = row.clone();
+                newRow.find('input').val('');
+                row.after(newRow);
+                row.parent().find('.ip-ranges-control').removeClass('hide');
+            } else {
+                this.network.get('ip_ranges').splice(index , 1);
+                row.parent().find('.ip-ranges-delete').parent().toggleClass('hide', row.siblings('.range-row').length == 1);
+                row.remove();
+            }
             this.tab.checkForChanges();
             this.tab.page.removeVerificationTask();
         },
@@ -286,7 +294,7 @@ function(utils, models, commonViews, dialogViews, networkTabTemplate, networkTem
                 publicVlan: this.tab.networkConfiguration.get('networks').findWhere({name: 'public'}).get('vlan_start'),
                 network: this.network,
                 net_manager: this.manager,
-                disabled: this.disabled
+                task: this.task
             }));
             return this;
         }

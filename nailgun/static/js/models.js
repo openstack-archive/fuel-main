@@ -408,7 +408,7 @@ define(function() {
         constructorName: 'Networks',
         model: models.Network,
         comparator: function(network) {
-            return network.name != 'public';
+            return network.id && network.get('name') != 'public';
         }
     });
 

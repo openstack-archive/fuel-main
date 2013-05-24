@@ -1,6 +1,8 @@
 <div class="wrapper">
   <h3>Network Settings</h3>
 
+  <% var disabled = task ? 'disabled' : '' %>
+
   <% if (net_manager) { %>
     <% var managers = {'FlatDHCPManager': 'FlatDHCP Manager', 'VlanManager': 'VLAN Manager'} %>
     <div class="radio-checkbox-group net-manager">
@@ -40,8 +42,8 @@
     <div class="page-control-box">
       <div class="page-control-button-placeholder">
         <button class="btn verify-networks-btn" <%= disabled %>>Verify Networks</button>
-        <button class="btn btn-revert-changes" <%= disabled %>>Cancel Changes</button>
-        <button class="btn btn-success apply-btn" <%= disabled %>>Save Settings</button>
+        <button class="btn btn-revert-changes" <%= disabled || !hasChanges? 'disabled' : '' %>>Cancel Changes</button>
+        <button class="btn btn-success apply-btn" <%= disabled || !hasChanges ? 'disabled' : '' %>>Save Settings</button>
       </div>
     </div>
   </div>

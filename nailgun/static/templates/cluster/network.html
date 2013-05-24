@@ -1,6 +1,7 @@
 <% var networkName = network.get('name') %>
 <legend class="networks"><%- networkName != 'fixed' ? networkName : 'VM Networks (Fixed)' %></legend>
 
+<% var disabled = task ? 'disabled' : '' %>
 <% var vlanManager = net_manager == 'VlanManager' ? '' : 'hide' %>
 <% var labels = {
   'ip_ranges': 'IP Range',
@@ -21,26 +22,24 @@
         <div>Start</div><div>End</div>
       </div>
       <div class="networks-sub-title parameter-name range-name <%= hidden %>"><%= labels[attribute] %></div>
-      <% _.each(network.get(attribute), function(ip_range, index) { %>
+      <% _.each(network.get(attribute), function(ip_range) { %>
         <div class="range-row clearfix <%= hidden %>">
           <label class="parameter-box clearfix setting">
             <div class="parameter-control <%- attribute %>">
-              <input type="text" name="<%- networkName %>-<%- attribute %>-start" placeholder="127.0.0.1" value="<%- _.first(ip_range) %>" <%= disabled %> />
+              <input type="text" name="<%- attribute %>-start" placeholder="127.0.0.1" value="<%- _.first(ip_range) %>" <%= disabled %> />
             </div>
           </label>
           <label class="parameter-box clearfix setting">
           <div class="parameter-control <%- attribute %>">
-            <input type="text" name="<%- networkName %>-<%- attribute %>-end" placeholder="127.0.0.1" value="<%- _.last(ip_range) %>" <%= disabled %> />
+            <input type="text" name="<%- attribute %>-end" placeholder="127.0.0.1" value="<%- _.last(ip_range) %>" <%= disabled %> />
           </div>
           </label>
           <div class="ip-ranges-control">
             <button class="btn btn-link ip-ranges ip-ranges-add <%= disabled %>"><i class="icon-plus-circle"></i></button>
           </div>
-          <% if (network.get(attribute).length > 1) { %>
-            <div class="ip-ranges-control">
-              <button class="btn btn-link ip-ranges ip-ranges-delete <%= disabled %>" data-index="<%= index %>"><i class="icon-minus-circle"></i></button>
-            </div>
-          <% } %>
+          <div class="ip-ranges-control <%= network.get(attribute).length > 1 ? '' : 'hide' %>">
+            <button class="btn btn-link ip-ranges ip-ranges-delete <%= disabled %>"><i class="icon-minus-circle"></i></button>
+          </div>
           <div class="error"><span class="help-inline"></span></div>
         </div>
       <% }) %>
