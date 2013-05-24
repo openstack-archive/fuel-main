@@ -79,6 +79,7 @@ class DeploymentTaskManager(TaskManager):
             ]),
             self.cluster.nodes
         )
+
         if not any([nodes_to_deploy, nodes_to_delete]):
             raise errors.WrongNodeStatus("No changes to deploy")
 
@@ -92,6 +93,7 @@ class DeploymentTaskManager(TaskManager):
         )
         orm().add(supertask)
         orm().commit()
+
         task_deletion, task_deployment = None, None
         if nodes_to_delete:
             task_deletion = supertask.create_subtask("node_deletion")

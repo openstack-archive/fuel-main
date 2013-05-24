@@ -160,15 +160,11 @@ class DeploymentTask(object):
             n.progress = 0
             orm().add(n)
             orm().commit()
-            nodes_with_attrs.append({
-                'id': n.id, 'status': n.status, 'error_type': n.error_type,
-                'uid': n.id, 'ip': n.ip, 'mac': n.mac, 'role': n.role,
-                'fqdn': n.fqdn, 'progress': n.progress, 'meta': n.meta,
-                'network_data': netmanager.get_node_networks(n.id),
-                'online': n.online
-            })
+
+            nodes_with_attrs.append(cls.__format_node_for_naily(n))
 
         cluster_attrs = task.cluster.attributes.merged_attrs_values()
+        cluster_attrs['controller_nodes'] = cls.__controller_nodes(cluster_id)
 
         nets_db = orm().query(Network).join(NetworkGroup).\
             filter(NetworkGroup.cluster_id == cluster_id).all()
@@ -212,6 +208,26 @@ class DeploymentTask(object):
         orm().add(task)
         orm().commit()
         rpc.cast('naily', message)
+
+    @classmethod
+    def __format_node_for_naily(cls, n):
+        netmanager = NetworkManager()
+        return {
+            'id': n.id, 'status': n.status, 'error_type': n.error_type,
+            'uid': n.id, 'ip': n.ip, 'mac': n.mac, 'role': n.role,
+            'fqdn': n.fqdn, 'progress': n.progress, 'meta': n.meta,
+            'network_data': netmanager.get_node_networks(n.id),
+            'online': n.online
+        }
+
+    @classmethod
+    def __controller_nodes(cls, cluster_id):
+        nodes = orm().query(Node).filter_by(
+            cluster_id=cluster_id,
+            role='controller',
+            pending_deletion=False).order_by(Node.id)
+
+        return map(cls.__format_node_for_naily, nodes)
 
     @classmethod
     def _prepare_syslog_dir(cls, node, prefix=None):

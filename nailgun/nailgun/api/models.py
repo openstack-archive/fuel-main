@@ -216,9 +216,13 @@ class Node(Base):
 
     @property
     def needs_redeploy(self):
+        changes = filter(
+            lambda change: change.name != 'disks',
+            self.cluster.changes)
+
         cases = [
             self.status == 'error' and self.error_type == 'deploy',
-            self.cluster is not None and list(self.cluster.changes) != []
+            self.cluster is not None and changes != []
         ]
         return any(cases)
 
