@@ -601,6 +601,10 @@ class BaseHandlers(TestCase):
         nailgun.task.task.DeploymentTask._prepare_syslog_dir = mock.Mock()
         syncdb()
 
+    @classmethod
+    def tearDownClass(cls):
+        cls.db.close()
+
     def setUp(self):
         self.default_headers = {
             "Content-Type": "application/json"
