@@ -569,6 +569,7 @@ class Environment(object):
 class BaseHandlers(TestCase):
 
     fixtures = ["admin_network"]
+    db = orm()
 
     def __init__(self, *args, **kwargs):
         super(BaseHandlers, self).__init__(*args, **kwargs)
@@ -596,16 +597,9 @@ class BaseHandlers(TestCase):
 
     @classmethod
     def setUpClass(cls):
-        cls.db = orm()
         cls.app = TestApp(build_app().wsgifunc())
         nailgun.task.task.DeploymentTask._prepare_syslog_dir = mock.Mock()
-        #dropdb()
         syncdb()
-
-    @classmethod
-    def tearDownClass(cls):
-        cls.db.commit()
-        cls.db.close()
 
     def setUp(self):
         self.default_headers = {
@@ -616,7 +610,7 @@ class BaseHandlers(TestCase):
         self.env.upload_fixtures(self.fixtures)
 
     def tearDown(self):
-        self.db.commit()
+        self.db.expunge_all()
 
 
 def fake_tasks(fake_rpc=True, **kwargs):
