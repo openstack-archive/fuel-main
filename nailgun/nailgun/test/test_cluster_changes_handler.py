@@ -118,6 +118,12 @@ class TestHandlers(BaseHandlers):
                                             'dev': 'eth0'},
                                            {'name': 'admin',
                                             'dev': 'eth0'}]})
+
+        controller_nodes = filter(
+            lambda node: node['role'] == 'controller',
+            nodes)
+
+        msg['args']['attributes']['controller_nodes'] = controller_nodes
         msg['args']['nodes'] = nodes
 
         nailgun.task.task.rpc.cast.assert_called_once_with(
