@@ -127,6 +127,7 @@ class TestHandlers(BaseHandlers):
         self.env.wait_for_true(cluster_is_empty, timeout=5)
 
         # Nodes should be in discover status
+        self.env.refresh_nodes()
         self.assertEquals(self.db.query(Node).count(), 2)
         for node in self.db.query(Node):
             self.assertEquals(node.status, 'discover')

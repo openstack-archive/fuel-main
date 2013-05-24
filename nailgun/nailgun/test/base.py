@@ -500,18 +500,18 @@ class Environment(object):
             )
 
     def refresh_nodes(self):
-        for i, n in enumerate(self.nodes[:]):
+        for n in self.nodes[:]:
             try:
                 self.db.refresh(n)
             except:
-                del self.nodes[i]
+                self.nodes.remove(n)
 
     def refresh_clusters(self):
-        for i, n in enumerate(self.clusters[:]):
+        for n in self.clusters[:]:
             try:
                 self.db.refresh(n)
             except:
-                del self.clusters[i]
+                self.nodes.remove(n)
 
     def _wait_task(self, task, timeout, message):
         timer = time.time()
