@@ -406,6 +406,7 @@ class Environment(object):
         }
 
     def upload_fixtures(self, fxtr_names):
+        self.db.expire_all()
         for fxtr_path in self.fxtr_paths_by_names(fxtr_names):
             with open(fxtr_path, "r") as fxtr_file:
                 upload_fixture(fxtr_file)
