@@ -21,6 +21,7 @@ from nailgun.api.models import Cluster, Attributes, Task, Notification, Node
 class TestCharsetIssues(BaseHandlers):
 
     def tearDown(self):
+        super(TestCharsetIssues, self).tearDown()
         self._wait_for_threads()
 
     @fake_tasks()

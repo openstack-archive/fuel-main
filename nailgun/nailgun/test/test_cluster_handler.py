@@ -125,9 +125,9 @@ class TestHandlers(BaseHandlers):
             return self.db.query(Cluster).count() == 0
 
         self.env.wait_for_true(cluster_is_empty, timeout=5)
+        self._wait_for_threads()
 
         # Nodes should be in discover status
-        self.env.refresh_nodes()
         self.assertEquals(self.db.query(Node).count(), 2)
         for node in self.db.query(Node):
             self.assertEquals(node.status, 'discover')
@@ -149,6 +149,7 @@ class TestHandlers(BaseHandlers):
                 self.db.query(Node).count() == 1
 
         self.env.wait_for_true(cluster_is_empty_and_in_db_one_node, timeout=5)
+        self._wait_for_threads()
 
         node = self.db.query(Node).first()
         self.assertEquals(node.status, 'discover')
