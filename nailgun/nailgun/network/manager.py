@@ -20,15 +20,13 @@ class NetworkManager(object):
     def __init__(self, db=None):
         self.db = db or orm()
 
-    def get_admin_network(self, fail_if_not_found=True, expunge=True):
+    def get_admin_network_id(self, fail_if_not_found=True):
         admin_net = self.db.query(Network).filter_by(
             name="fuelweb_admin"
         ).first()
         if not admin_net and fail_if_not_found:
             raise errors.AdminNetworkNotFound()
-        elif admin_net and expunge:
-            self.db.expunge(admin_net)
-        return admin_net
+        return admin_net.id
 
     def create_network_groups(self, cluster_id):
         used_nets = [n.cidr for n in self.db.query(Network).all()]
@@ -141,10 +139,10 @@ class NetworkManager(object):
         self.db.commit()
 
     def assign_admin_ips(self, node_id, num=1):
-        admin_net = self.get_admin_network(expunge=False)
+        admin_net_id = self.get_admin_network_id()
         node_admin_ips = self.db.query(IPAddr).filter_by(
             node=node_id,
-            network=admin_net.id
+            network=admin_net_id
         ).all()
 
         if not node_admin_ips or len(node_admin_ips) < num:
@@ -164,11 +162,10 @@ class NetworkManager(object):
                 ip_db = IPAddr(
                     node=node_id,
                     ip_addr=ip,
-                    network=admin_net.id
+                    network=admin_net_id
                 )
                 self.db.add(ip_db)
             self.db.commit()
-            self.db.expunge(admin_net)
 
     def assign_ips(self, nodes_ids, network_name):
         """
@@ -257,12 +254,12 @@ class NetworkManager(object):
             raise Exception("Network '%s' for cluster_id=%s not found." %
                             (network_name, cluster_id))
 
-        admin_net = self.get_admin_network(expunge=False)
+        admin_net_id = self.get_admin_network_id()
         cluster_ips = [ne.ip_addr for ne in self.db.query(IPAddr).filter_by(
             network=network.id,
             node=None
         ).filter(
-            not_(IPAddr.network == admin_net.id)
+            not_(IPAddr.network == admin_net_id)
         ).all()]
         # check if any of used_ips in required cidr: network.cidr
         ips_belongs_to_net = IPSet(IPNetwork(network.cidr))\
@@ -337,10 +334,10 @@ class NetworkManager(object):
         if network_id:
             ips = ips.filter_by(network=network_id)
 
-        admin_net = self.get_admin_network(False, expunge=False)
-        if admin_net:
+        admin_net_id = self.get_admin_network_id(False)
+        if admin_net_id:
             ips = ips.filter(
-                not_(IPAddr.network == admin_net.id)
+                not_(IPAddr.network == admin_net_id)
             )
 
         return ips.all()
@@ -358,7 +355,7 @@ class NetworkManager(object):
                 interface_name = i['name']
                 break
 
-        admin_net = self.get_admin_network(False, expunge=False)
+        admin_net_id = self.get_admin_network_id(False)
         ips = self._get_ips_except_admin(node_id=node_id)
 
         network_data = []

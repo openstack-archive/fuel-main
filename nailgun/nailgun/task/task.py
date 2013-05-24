@@ -237,13 +237,12 @@ class DeploymentTask(object):
         old = os.path.join(prefix, node.ip)
         bak = os.path.join(prefix, "%s.bak" % node.fqdn)
         new = os.path.join(prefix, node.fqdn)
-        admin_net = NetworkManager().get_admin_network()
-        orm().add(admin_net)
+        admin_net_id = NetworkManager().get_admin_network_id()
         links = map(
             lambda i: os.path.join(prefix, i.ip_addr),
             orm().query(IPAddr.ip_addr).
             filter_by(node=node.id).
-            filter_by(network=admin_net.id).all()
+            filter_by(network=admin_net_id).all()
         )
         # backup directory if it exists
         if os.path.isdir(new):
@@ -317,11 +316,10 @@ class DeploymentTask(object):
                 node.id,
                 len(node.meta.get('interfaces', []))
             )
-            admin_net = netmanager.get_admin_network()
-            orm().add(admin_net)
+            admin_net_id = netmanager.get_admin_network_id()
             admin_ips = set([i.ip_addr for i in orm().query(IPAddr).
                             filter_by(node=node.id).
-                            filter_by(network=admin_net.id)])
+                            filter_by(network=admin_net_id)])
             for i in node.meta.get('interfaces', []):
                 if 'interfaces' not in nd_dict:
                     nd_dict['interfaces'] = {}

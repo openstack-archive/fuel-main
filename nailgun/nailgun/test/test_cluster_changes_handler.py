@@ -70,13 +70,13 @@ class TestHandlers(BaseHandlers):
         msg['args']['task_uuid'] = deploy_task_uuid
         nodes = []
 
-        admin_net = self.env.network_manager.get_admin_network(expunge=False)
+        admin_net_id = self.env.network_manager.get_admin_network_id()
 
         for n in sorted(self.env.nodes, key=lambda n: n.id):
 
             q = self.db.query(IPAddr).join(Network).\
                 filter(IPAddr.node == n.id).filter(
-                    not_(IPAddr.network == admin_net.id)
+                    not_(IPAddr.network == admin_net_id)
                 )
 
             """

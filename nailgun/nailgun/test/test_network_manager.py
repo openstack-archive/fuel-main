@@ -113,11 +113,11 @@ class TestNetworkManager(BaseHandlers):
     def test_assign_admin_ips(self):
         node = self.env.create_node()
         self.env.network_manager.assign_admin_ips(node.id, 2)
-        admin_net = self.env.network_manager.get_admin_network(expunge=False)
+        admin_net_id = self.env.network_manager.get_admin_network_id()
 
         admin_ips = self.db.query(IPAddr).\
             filter_by(node=node.id).\
-            filter_by(network=admin_net.id).all()
+            filter_by(network=admin_net_id).all()
         self.assertEquals(len(admin_ips), 2)
         map(
             lambda x: self.assertIn(
@@ -149,12 +149,12 @@ class TestNetworkManager(BaseHandlers):
         # Assinging admin IPs on created nodes
         map(lambda (n, c): self.env.network_manager.assign_admin_ips(n, c), nc)
 
-        admin_net = self.env.network_manager.get_admin_network(expunge=False)
+        admin_net_id = self.env.network_manager.get_admin_network_id()
 
         # Asserting count of admin node IPs
         def asserter(x):
             n, c = x
-            l = len(self.db.query(IPAddr).filter_by(network=admin_net.id).
+            l = len(self.db.query(IPAddr).filter_by(network=admin_net_id).
                     filter_by(node=n).all())
             self.assertEquals(l, c)
         map(asserter, nc)
@@ -162,8 +162,7 @@ class TestNetworkManager(BaseHandlers):
     def test_assign_admin_ips_idempotent(self):
         node = self.env.create_node()
         self.env.network_manager.assign_admin_ips(node.id, 2)
-        admin_net = self.env.network_manager.get_admin_network(expunge=False)
-        admin_net_id = admin_net.id
+        admin_net_id = self.env.network_manager.get_admin_network_id()
         admin_ips = set([i.ip_addr for i in self.db.query(IPAddr).
                          filter_by(node=node.id).
                          filter_by(network=admin_net_id).all()])
@@ -187,11 +186,11 @@ class TestNetworkManager(BaseHandlers):
         node = self.env.create_node()
         self.env.network_manager.assign_admin_ips(node.id, 1)
 
-        admin_net = self.env.network_manager.get_admin_network(expunge=False)
+        admin_net_id = self.env.network_manager.get_admin_network_id()
 
         admin_ips = self.db.query(IPAddr).\
             filter_by(node=node.id).\
-            filter_by(network=admin_net.id).all()
+            filter_by(network=admin_net_id).all()
         self.assertEquals(len(admin_ips), 1)
         self.assertEquals(admin_ips[0].ip_addr, '10.0.0.1')
 
