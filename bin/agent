@@ -158,7 +158,11 @@ class NodeAgent
             begin
               int_info = Rethtool::InterfaceSettings.new(int)
               int_meta[:max_speed] = int_info.best_mode.speed
-              int_meta[:current_speed] = int_info.current_mode.speed
+              if int_info.current_mode.speed == :unknown
+                int_meta[:current_speed] = nil 
+              else
+                int_meta[:current_speed] = int_info.current_mode.speed
+              end
             rescue
               int_meta[:current_speed] = nil
             end
