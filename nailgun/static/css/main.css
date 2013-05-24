@@ -3375,6 +3375,7 @@ hr.slim {
   min-height: 68px;
   margin-bottom: 10px;
   text-align: center;
+  position: relative;
 }
 
 .logical-network-box:after {
@@ -3426,6 +3427,8 @@ hr.slim {
   font-size: 16px;
   color: #555555;
   margin-top: 26px;
+  position: absolute;
+  margin-left: 10px;
 }
 .network-offline-message {
   font-size: 16px;
