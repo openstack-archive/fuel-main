@@ -466,6 +466,9 @@ function(utils, models, commonViews, dialogViews, nodesTabSummaryTemplate, editN
         keepScrollPosition: false,
         disableControls: function(disable) {
             this.$('.btn, input').attr('disabled', disable);
+        },
+        configurationAllowed: function () {
+            return this.node && this.node.get('role') && this.node.get('pending_addition') && !this.model.task('deploy', 'running');
         }
     });
 
@@ -580,7 +583,7 @@ function(utils, models, commonViews, dialogViews, nodesTabSummaryTemplate, editN
         initialize: function(options) {
             _.defaults(this, options);
             this.node = this.model.get('nodes').get(this.screenOptions[0]);
-            if (this.node) {
+            if (this.configurationAllowed()) {
                 this.disks = new models.Disks();
                 $.when(this.node.fetch(), this.disks.fetch({url: _.result(this.node, 'url') + '/attributes/volumes'}))
                 .done(_.bind(function() {
@@ -825,7 +828,7 @@ function(utils, models, commonViews, dialogViews, nodesTabSummaryTemplate, editN
         initialize: function(options) {
             _.defaults(this, options);
             this.node = this.model.get('nodes').get(this.screenOptions[0]);
-            if (this.node) {
+            if (this.configurationAllowed()) {
                 this.interfaces = new models.Interfaces();
                 this.interfaces.on('reset', this.renderInterfaces, this);
                 this.interfaces.on('reset', this.checkForChanges, this);
