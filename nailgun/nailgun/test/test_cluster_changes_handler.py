@@ -11,6 +11,7 @@ from nailgun.test.base import BaseHandlers
 from nailgun.test.base import reverse
 from nailgun.api.models import Cluster, Attributes, IPAddr, Task
 from nailgun.api.models import Network, NetworkGroup
+from nailgun.settings import settings
 
 
 class TestHandlers(BaseHandlers):
@@ -91,7 +92,7 @@ class TestHandlers(BaseHandlers):
             nodes.append({'uid': n.id, 'status': 'provisioning', 'ip': n.ip,
                           'error_type': n.error_type, 'mac': n.mac,
                           'role': n.role, 'id': n.id, 'fqdn':
-                          u'slave-%d.example.com' % n.id,
+                          u'slave-%d.%s' % (n.id, settings.DNS_DOMAIN),
                           'progress': 0, 'meta': n.meta, 'online': True,
                           'network_data': [{'brd': '172.16.0.255',
                                             'ip': node_ip_management,
