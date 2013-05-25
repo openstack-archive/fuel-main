@@ -82,16 +82,16 @@ class TestHandlers(BaseHandlers):
             Here we want to get node IP addresses which belong
             to management and public networks respectively
             """
-            node_ip_management, node_ip_public = map(
+            node_ip_management, node_ip_public, node_ip_storage = map(
                 lambda x: q.filter_by(name=x).first().ip_addr
                 + "/" + cluster_attrs[x + '_network_range'].split('/')[1],
-                ('management', 'public')
+                ('management', 'public', 'storage')
             )
 
             nodes.append({'uid': n.id, 'status': 'provisioning', 'ip': n.ip,
                           'error_type': n.error_type, 'mac': n.mac,
                           'role': n.role, 'id': n.id, 'fqdn':
-                          'slave-%d.example.com' % n.id,
+                          u'slave-%d.example.com' % n.id,
                           'progress': 0, 'meta': n.meta, 'online': True,
                           'network_data': [{'brd': '172.16.0.255',
                                             'ip': node_ip_management,
@@ -107,14 +107,18 @@ class TestHandlers(BaseHandlers):
                                             'netmask': '255.255.255.0',
                                             'dev': 'eth0',
                                             'name': u'public'},
+                                           {'name': u'storage',
+                                            'ip': node_ip_storage,
+                                            'vlan': 102,
+                                            'dev': 'eth0',
+                                            'netmask': '255.255.255.0',
+                                            'brd': '192.168.0.255',
+                                            'gateway': u'192.168.0.1'},
                                            {'vlan': 100,
                                             'name': u'floating',
                                             'dev': 'eth0'},
                                            {'vlan': 101,
                                             'name': u'fixed',
-                                            'dev': 'eth0'},
-                                           {'vlan': 102,
-                                            'name': u'storage',
                                             'dev': 'eth0'},
                                            {'name': 'admin',
                                             'dev': 'eth0'}]})
