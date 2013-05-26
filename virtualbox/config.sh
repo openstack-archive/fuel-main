@@ -32,7 +32,10 @@ vm_master_prompt='root@fuelweb ~]#'
 
 # Slave node settings
 vm_slave_cpu_cores=1
-vm_slave_memory_mb=768    # PXE boot might not work with lower values
-vm_slave_compute_mb=1024  # VM in OpenStack may not not boot with lower values
+vm_slave_memory_mb[1]=768   # PXE boot might not work with lower values
+vm_slave_memory_mb[2]=1024  # VM in OpenStack may not not boot with lower values, use this for Compute
+vm_slave_memory_mb[3]=768   # If not specified, 768Mb is default
 vm_slave_disk_mb=16384
+vm_slave_disk2_mb=512000
+vm_slave_disk3_mb=2300000
 

@@ -28,14 +28,10 @@ is_vm_running() {
 
 create_vm() {
     name=$1
-    nic1=$2
-    nic2=$3
-    nic3=$4
-    cpu_cores=$5
-    memory_mb=$6
-    disk_mb=$7
-    vm_base_path=$(get_vm_base_path)
-    vm_disk_path="$vm_base_path/$name/$name.vdi"
+    nic=$2
+    cpu_cores=$3
+    memory_mb=$4
+    disk_mb=$5
    
     # Create virtual machine with the right name and type (assuming CentOS) 
     VBoxManage createvm --name $name --ostype RedHat_64 --register
@@ -43,24 +39,41 @@ create_vm() {
     # Set the real-time clock (RTC) operate in UTC time
     VBoxManage modifyvm $name --rtcuseutc on --memory $memory_mb --cpus $cpu_cores
 
-    # Configure network interfaces
-    VBoxManage modifyvm $name --nic1 hostonly --hostonlyadapter1 $nic1 --nictype1 Am79C973 \
-                        --cableconnected1 on --macaddress1 auto
-    VBoxManage controlvm $name setlinkstate1 on
-    VBoxManage modifyvm $name --nic2 hostonly --hostonlyadapter2 $nic2 --nictype2 Am79C973 \
-                        --cableconnected2 on --macaddress2 auto
-    VBoxManage controlvm $name setlinkstate2 on
-    VBoxManage modifyvm $name --nic3 hostonly --hostonlyadapter3 $nic3 --nictype3 Am79C973 \
-                        --cableconnected3 on --macaddress3 auto
-    VBoxManage controlvm $name setlinkstate3 on
+    # Configure main network interface
+    add_nic $name 1 $nic
 
     # Configure storage controllers
     VBoxManage storagectl $name --name 'IDE' --add ide
     VBoxManage storagectl $name --name 'SATA' --add sata
 
     # Create and attach the main hard drive
-    VBoxManage createhd --filename "$vm_base_path/$name/$name" --size $disk_mb --format VDI
-    VBoxManage storageattach $name --storagectl 'SATA' --port 0 --device 0 --type hdd --medium "$vm_disk_path"
+    add_disk $name 0 $disk_mb
+}
+
+add_nic() {
+    name=$1
+    id=$2
+    nic=$3
+    echo "Adding NIC to $name and bridging with host NIC $nic..."
+
+    # Configure network interfaces
+    VBoxManage modifyvm $name --nic${id} hostonly --hostonlyadapter${id} $nic --nictype${id} Am79C973 \
+                        --cableconnected${id} on --macaddress${id} auto
+    VBoxManage controlvm $name setlinkstate${id} on
+}
+
+add_disk() {
+    vm_name=$1
+    port=$2
+    disk_mb=$3
+
+    echo "Adding disk to $vm_name, with size $disk_mb Mb..."
+
+    vm_disk_path="$(get_vm_base_path)/$vm_name/"
+    disk_name="${vm_name}_${port}"
+    disk_filename="${disk_name}.vdi"
+    VBoxManage createhd --filename "$vm_disk_path/$disk_name" --size $disk_mb --format VDI
+    VBoxManage storageattach $vm_name --storagectl 'SATA' --port $port --device 0 --type hdd --medium "$vm_disk_path/$disk_filename"
 }
 
 delete_vm() {

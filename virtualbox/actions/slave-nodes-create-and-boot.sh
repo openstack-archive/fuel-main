@@ -12,13 +12,29 @@ source functions/vm.sh
 # Create and start slave nodes
 for idx in $(seq 1 $cluster_size); do
     name="${vm_name_prefix}slave-${idx}"
+    echo
     delete_vm $name
-    create_vm $name ${host_nic_name[0]} ${host_nic_name[1]} ${host_nic_name[2]} $vm_slave_cpu_cores $vm_slave_memory_mb $vm_slave_disk_mb
+    vm_ram=${vm_slave_memory_mb[$idx]}
+    [ -z $vm_ram ] && vm_ram=768  # 768 Mb by default
+    echo
+    create_vm $name ${host_nic_name[0]} $vm_slave_cpu_cores $vm_ram $vm_slave_disk_mb
+
+    # Add additional NICs to VM
+    echo
+    add_nic $name 2 ${host_nic_name[1]}
+    add_nic $name 3 ${host_nic_name[2]}
+
+    # Add additional disks to VM
+    echo
+    add_disk $name 1 $vm_slave_disk2_mb
+    add_disk $name 2 $vm_slave_disk3_mb
+
     enable_network_boot_for_vm $name 
     start_vm $name
 done
 
 # Report success
+echo
 echo "Slave nodes have been created. They will boot over PXE and get discovered by the master node."
 echo "To access master node, please point your browser to:"
 echo "    http://${vm_master_ip}:8000/"
