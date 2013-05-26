@@ -28,10 +28,12 @@ is_vm_running() {
 
 create_vm() {
     name=$1
-    main_network_interface=$2
-    cpu_cores=$3
-    memory_mb=$4
-    disk_mb=$5
+    nic1=$2
+    nic2=$3
+    nic3=$4
+    cpu_cores=$5
+    memory_mb=$6
+    disk_mb=$7
     vm_base_path=$(get_vm_base_path)
     vm_disk_path="$vm_base_path/$name/$name.vdi"
    
@@ -42,9 +44,15 @@ create_vm() {
     VBoxManage modifyvm $name --rtcuseutc on --memory $memory_mb --cpus $cpu_cores
 
     # Configure network interfaces
-    VBoxManage modifyvm $name --nic1 hostonly --hostonlyadapter1 $main_network_interface --nictype1 Am79C973 \
+    VBoxManage modifyvm $name --nic1 hostonly --hostonlyadapter1 $nic1 --nictype1 Am79C973 \
                         --cableconnected1 on --macaddress1 auto
     VBoxManage controlvm $name setlinkstate1 on
+    VBoxManage modifyvm $name --nic2 hostonly --hostonlyadapter2 $nic2 --nictype2 Am79C973 \
+                        --cableconnected2 on --macaddress2 auto
+    VBoxManage controlvm $name setlinkstate2 on
+    VBoxManage modifyvm $name --nic3 hostonly --hostonlyadapter3 $nic3 --nictype3 Am79C973 \
+                        --cableconnected3 on --macaddress3 auto
+    VBoxManage controlvm $name setlinkstate3 on
 
     # Configure storage controllers
     VBoxManage storagectl $name --name 'IDE' --add ide

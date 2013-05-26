@@ -38,8 +38,10 @@ delete_vms_multiple $vm_name_prefix
 # Delete all host-only interfaces
 delete_all_hostonly_interfaces
 
-# Create the required host-only interface
-create_hostonly_interface $hostonly_interface_name $hostonly_interface_ip $hostonly_interface_mask
+# Create the required host-only interfaces
+for idx in $(seq 0 2); do
+  create_hostonly_interface ${host_nic_name[$idx]} ${host_nic_ip[$idx]} ${host_nic_mask[$idx]}
+done
 
 # Report success
 echo "Setup is done."

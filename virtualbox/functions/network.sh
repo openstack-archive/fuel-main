@@ -22,6 +22,7 @@ create_hostonly_interface() {
     name=$1
     ip=$2
     mask=$3
+    echo "Creating host-only interface (name ip netmask): $name  $ip  $mask"
 
     # Exit if the interface already exists (deleting it here is not safe, as VirtualBox creates hostonly adapters sequentially)
     if is_hostonly_interface_present $name; then
@@ -29,8 +30,6 @@ create_hostonly_interface() {
         exit 1
     fi
 
-    # Create the interface
-    echo "Creating host-only interface: $name..."
     VBoxManage hostonlyif create
 
     # If it does not exist after creation, let's abort

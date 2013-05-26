@@ -2,8 +2,9 @@
 
 # The number of nodes for installing OpenStack on
 #   - for minimal non-HA installation, specify 2 (1 controller + 1 compute)
+#   - for minimal non-HA with Cinder installation, specify 3 (1 ctrl + 1 compute + 1 cinder)
 #   - for minimal HA installation, specify 4 (3 controllers + 1 compute)
-cluster_size=2
+cluster_size=3
 
 # Get the first available ISO from the directory 'iso'
 iso_path=`ls -1 iso/*.iso 2>/dev/null | head -1`
@@ -11,10 +12,14 @@ iso_path=`ls -1 iso/*.iso 2>/dev/null | head -1`
 # Every Fuel Web machine name will start from this prefix  
 vm_name_prefix=fuel-web-
 
-# This host-only interface will be created and all networking will be done throught it
-hostonly_interface_name=vboxnet0
-hostonly_interface_ip=10.20.0.1
-hostonly_interface_mask=255.255.255.0
+# Host interfaces to bridge VMs interfaces with
+idx=0
+for ip in 10.20.0.1 240.0.1.1 172.16.0.1; do
+  host_nic_name[$idx]=vboxnet$idx
+  host_nic_ip[$idx]=$ip
+  host_nic_mask[$idx]=255.255.255.0
+  idx=$((idx+1))
+done
 
 # Master node settings
 vm_master_cpu_cores=1
@@ -23,10 +28,11 @@ vm_master_disk_mb=16384
 vm_master_ip=10.20.0.2
 vm_master_username=root
 vm_master_password=r00tme
-vm_master_prompt='root@nailgun ~]#'
+vm_master_prompt='root@fuelweb ~]#'
 
 # Slave node settings
 vm_slave_cpu_cores=1
-vm_slave_memory_mb=768 # PXE boot might not work with lower values  
+vm_slave_memory_mb=768    # PXE boot might not work with lower values
+vm_slave_compute_mb=1024  # VM in OpenStack may not not boot with lower values
 vm_slave_disk_mb=16384
 

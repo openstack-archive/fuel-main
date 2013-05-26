@@ -13,7 +13,7 @@ source functions/vm.sh
 for idx in $(seq 1 $cluster_size); do
     name="${vm_name_prefix}slave-${idx}"
     delete_vm $name
-    create_vm $name $hostonly_interface_name $vm_slave_cpu_cores $vm_slave_memory_mb $vm_slave_disk_mb
+    create_vm $name ${host_nic_name[0]} ${host_nic_name[1]} ${host_nic_name[2]} $vm_slave_cpu_cores $vm_slave_memory_mb $vm_slave_disk_mb
     enable_network_boot_for_vm $name 
     start_vm $name
 done

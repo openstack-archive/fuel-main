@@ -13,7 +13,7 @@ source functions/product.sh
 # Create master node for the product
 name="${vm_name_prefix}master"
 delete_vm $name
-create_vm $name $hostonly_interface_name $vm_master_cpu_cores $vm_master_memory_mb $vm_master_disk_mb
+create_vm $name ${host_nic_name[0]} ${host_nic_name[1]} ${host_nic_name[2]} $vm_master_cpu_cores $vm_master_memory_mb $vm_master_disk_mb
 mount_iso_to_vm $name $iso_path
 
 # Start virtual machine with the master node
