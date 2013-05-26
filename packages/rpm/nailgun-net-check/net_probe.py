@@ -15,7 +15,7 @@ import logging
 import argparse
 import functools
 import threading
-from subprocess import call
+from subprocess import Popen, PIPE
 
 
 import scapy.config as scapy
@@ -56,6 +56,7 @@ class Actor(object):
 
         self.logger.debug("Running with config: %s", json.dumps(self.config))
         self._execute(["modprobe", "8021q"])
+        self.iface_down_after = {}
         self.viface_remove_after = {}
 
     def _define_logger(self, filename, level=logging.DEBUG):
@@ -67,26 +68,175 @@ class Actor(object):
         l.setLevel(level)
         return l
 
-    def _viface_by_iface_vid(self, iface, vid):
-        return "%s.%d" % (iface, vid)
-
     def _execute(self, command, expected_exit_codes=(0,)):
         self.logger.debug("Running command: %s" % " ".join(command))
         env = os.environ
         env["PATH"] = "/bin:/usr/bin:/sbin:/usr/sbin"
-        exit_code = call(command, shell=False, env=env)
-        if not exit_code in expected_exit_codes:
+        p = Popen(command, shell=False, env=env, stdout=PIPE)
+        p.wait()
+        if p.returncode not in expected_exit_codes:
             raise ActorException(
                 self.logger,
-                "Command exited with error: %s: %s" % (" ".join(command), exit_code)
+                "Command exited with error: %s: %s" % (" ".join(command), p.returncode)
+            )
+        return p.stdout
+
+    def _viface_by_iface_vid(self, iface, vid):
+        return (self._try_viface_create(iface, vid) or "%s.%d" % (iface, vid))
+
+    def _look_for_link(self, iface, vid=None):
+        viface = None
+        if vid:
+            viface = self._viface_by_iface_vid(iface, vid)
+
+        command = ['ip', 'link']
+        r = re.compile(ur"(\d+?):\s+((?P<viface>[^:@]+)@)?(?P<iface>[^:]+?):.+?(?P<state>UP|DOWN|UNKNOWN).*$")
+        for line in self._execute(command):
+            m = r.search(line)
+            if m:
+                md = m.groupdict()
+                if (iface == md.get('iface') and
+                    viface == md.get('viface') and md.get('state')):
+                    return (iface, viface, md.get('state'))
+        # if we are here that means we are not able to say if iface with vid is up
+        raise ActorException(
+            self.logger,
+            "Cannot find interface %s with vid=%s" % (iface, vid)
+        )
+
+    def _try_iface_up(self, iface, vid=None):
+        if vid and not self._try_viface_create(iface, vid):
+            # if viface does not exist we raise exception
+            raise ActorException(
+                self.logger,
+                "Vlan %s on interface %s does not exist" % (str(vid), iface)
             )
 
-    def _viface(self, iface, vid):
+        self.logger.debug("Checking if interface %s with vid %s is up",
+                          iface, str(vid))
+        i, v, s = self._look_for_link(iface, vid)
+        return (s == 'UP')
+
+    def _iface_up(self, iface, vid=None):
+        """
+        Brings interface with vid up
+        """
+        if vid and not self._try_viface_create(iface, vid):
+            # if viface does not exist we raise exception
+            raise ActorException(
+                self.logger,
+                "Vlan %s on interface %s does not exist" % (str(vid), iface)
+            )
+
+        if vid:
+            set_iface = self._viface_by_iface_vid(iface, vid)
+        else:
+            set_iface = iface
+
+        self.logger.debug("Brining interface %s with vid %s up",
+                          set_iface, str(vid))
+        self._execute([
+            "ip",
+            "link", "set",
+            "dev", set_iface,
+            "up"])
+
+    def _ensure_iface_up(self, iface, vid=None):
+        """
+        Ensures interface is with vid up.
+        """
+        if not self._try_iface_up(iface, vid):
+            # if iface is not up we try to bring it up
+            self._iface_up(iface, vid)
+            if self._try_iface_up(iface, vid):
+                # if iface was down and we have brought it up
+                # we should mark it to be brought down after probing
+                if vid:
+                    self.iface_down_after[self._viface_by_iface_vid(iface, vid)] = True
+                else:
+                    self.iface_down_after[iface] = True
+            else:
+                # if viface is still down we raise exception
+                raise ActorException(
+                    self.logger,
+                    "Can not bring interface %s with vid %s up" % (iface, str(vid))
+                )
+
+    def _ensure_iface_down(self, iface, vid=None):
+        if vid:
+            set_iface = self._viface_by_iface_vid(iface, vid)
+        else:
+            set_iface = iface
+        if self.iface_down_after.get(set_iface, False):
+            # if iface with vid have been marked to be brought down
+            # after probing we try to bring it down
+            self.logger.debug("Brining down interface %s with vid %s", iface, str(vid))
+            self._execute([
+                "ip",
+                "link", "set",
+                "dev", set_iface,
+                "down"])
+
+    def _try_viface_create(self, iface, vid):
+        """
+        Tries to find vlan interface on iface with VLAN_ID=vid and returns it
+        :returns:
+        name of vlan interface if it exists or None
+        """
+        self.logger.debug("Checking if vlan %s on interface %s exists",
+                          str(vid), iface)
         with open("/proc/net/vlan/config", "r") as f:
             for line in f:
                 m = re.search(ur'(.+?)\s+\|\s+(.+?)\s+\|\s+(.+?)\s*$', line)
                 if m and m.group(2) == str(vid) and m.group(3) == iface:
                     return m.group(1)
+
+    def _viface_create(self, iface, vid):
+        """
+        Creates VLAN interface with VLAN_ID=vid on interface iface
+        :returns:
+        None
+        """
+        self.logger.debug("Creating vlan %s on interface %s", str(vid), iface)
+        self._execute([
+            "ip",
+            "link", "add",
+            "link", iface,
+            "name", self._viface_by_iface_vid(iface, vid),
+            "type", "vlan",
+            "id", str(vid)])
+
+    def _ensure_viface_create(self, iface, vid):
+        """
+        Ensures that vlan interface exists. If it does not already
+        exist, then we need it to be created. It also marks newly created
+        vlan interface to remove it after probing procedure.
+        """
+        if not self._try_viface_create(iface, vid):
+            # if viface does not exist we try to create it
+            self._viface_create(iface, vid)
+            if self._try_viface_create(iface, vid):
+                # if viface had not existed and have been created
+                # we mark it to be removed after probing procedure
+                self.viface_remove_after[self._viface_by_iface_vid(iface, vid)] = True
+            else:
+                # if viface had not existed and still does not
+                # we raise exception
+                raise ActorException(
+                    self.logger,
+                    "Can not create vlan %d on interface %s" % (vid, iface)
+                )
+
+    def _ensure_viface_remove(self, iface, vid):
+        if self.viface_remove_after.get(
+            self._viface_by_iface_vid(iface, vid), False):
+            # if viface have been marked to be removed after probing
+            # we try to remove it
+            self.logger.debug("Removing vlan %s on interface %s", str(vid), iface)
+            self._execute([
+                "ip",
+                "link", "del",
+                "dev", self._viface_by_iface_vid(iface, vid)])
 
     def _parse_vlan_list(self, vlan_string):
         self.logger.debug("Parsing vlan list: %s", vlan_string)
@@ -114,58 +264,22 @@ class Actor(object):
         self.logger.debug("Parsed vlans: %s", str(vlan_list))
         return vlan_list
 
-    def _ensure_vlan_iface_up(self, iface, vid):
-        self.logger.debug("Checking if vlan %s "
-            "on interface %s already exists", str(vid), iface)
-        if not self._viface(iface, vid):
-            self.logger.debug("Creating vlan %s on interface %s", str(vid), iface)
-            # creating vlan interface
-            self._execute([
-                "ip",
-                "link", "add",
-                "link", iface,
-                "name", self._viface_by_iface_vid(iface, vid),
-                "type", "vlan",
-                "id", str(vid)])
-            # brining vlan interface up
-            self._execute([
-                "ip",
-                "link", "set",
-                "dev", self._viface_by_iface_vid(iface, vid),
-                "up"])
-            self.viface_remove_after[self._viface_by_iface_vid(iface, vid)] = True
+    def _ensure_viface_create_and_up(self, iface, vid):
+        self._ensure_viface_create(iface, vid)
+        self._ensure_iface_up(iface, vid)
 
-        viface = self._viface(iface, vid)
-        if not viface:
-            raise ActorException(
-                self.logger,
-                "Can not create vlan %d on interface %s" % (vid, iface)
-            )
-        return viface
-
-    def _ensure_vlan_iface_down(self, iface, vid):
-        if self.viface_remove_after.get(
-                self._viface_by_iface_vid(iface, vid), False):
-            self.logger.debug("Removing vlan interface %s",
-                self._viface_by_iface_vid(iface, vid)
-            )
-            # bringing vlan interface down
-            self._execute([
-                "ip",
-                "link", "set",
-                "dev", self._viface_by_iface_vid(iface, vid),
-                "down"])
-            # removing vlan interface
-            self._execute([
-                "ip",
-                "link", "del",
-                "dev", self._viface_by_iface_vid(iface, vid)])
+    def _ensure_viface_down_and_remove(self, iface, vid):
+        self._ensure_iface_down(iface, vid)
+        self._ensure_viface_remove(iface, vid)
 
     def _iface_vlan_iterator(self):
         for iface, vlan_list in self.config['interfaces'].iteritems():
             for vlan in self._parse_vlan_list(vlan_list):
                 yield (iface, vlan)
 
+    def _iface_iterator(self):
+        for iface in self.config['interfaces']:
+            yield iface
 
 class Sender(Actor):
 
@@ -176,12 +290,14 @@ class Sender(Actor):
 
     def run(self):
         for iface, vlan in self._iface_vlan_iterator():
+            self._ensure_iface_up(iface)
             data = str(''.join((self.config['cookie'], iface, ' ', self.config['uid'])))
             self.logger.debug("Sending packets: iface=%s vlan=%s", iface, str(vlan))
 
             if vlan > 0:
                 self.logger.debug("Ensure up: %s, %s", iface, str(vlan))
-                viface = self._ensure_vlan_iface_up(iface, vlan)
+                self._ensure_viface_create_and_up(iface, vlan)
+                viface = self._viface_by_iface_vid(iface, vlan)
             else:
                 viface = iface
 
@@ -198,7 +314,10 @@ class Sender(Actor):
 
             if vlan > 0:
                 self.logger.debug("Ensure down: %s, %s", iface, str(vlan))
-                self._ensure_vlan_iface_down(iface, vlan)
+                self._ensure_viface_down_and_remove(iface, vlan)
+
+        for iface in self._iface_iterator():
+            self._ensure_iface_down(iface)
 
 
 class Listener(Actor):
@@ -223,9 +342,11 @@ class Listener(Actor):
         sniffers = {}
 
         for iface, vlan in self._iface_vlan_iterator():
+            self._ensure_iface_up(iface)
             if vlan > 0:
                 self.logger.debug("Ensure up: %s, %s", iface, str(vlan))
-                viface = self._ensure_vlan_iface_up(iface, vlan)
+                self._ensure_viface_create_and_up(iface, vlan)
+                viface = self._viface_by_iface_vid(iface, vlan)
             if not iface in sniffers:
                 t = threading.Thread(
                     target=self.get_probe_frames,
@@ -237,7 +358,8 @@ class Listener(Actor):
 
         try:
             s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-            s.connect((self.config['ready_address'], self.config['ready_port']))
+            s.connect((self.config.get('ready_address', 'locahost'),
+                       self.config.get('ready_port', 31338)))
         except socket.error as e:
             self.logger.error("Socket error: %s", e)
         else:
@@ -251,7 +373,6 @@ class Listener(Actor):
                         "Socket broken. Cannot send %s status." % msg
                     )
                 total_sent += sent
-        finally:
             s.shutdown(socket.SHUT_RDWR)
             s.close()
 
@@ -266,7 +387,10 @@ class Listener(Actor):
         for iface, vlan in self._iface_vlan_iterator():
             if vlan > 0:
                 self.logger.debug("Ensure down: %s, %s", iface, str(vlan))
-                self._ensure_vlan_iface_down(iface, vlan)
+                self._ensure_viface_down_and_remove(iface, vlan)
+
+        for iface in self._iface_iterator():
+            self._ensure_iface_down(iface)
 
         with open(self.config['dump_file'], 'w') as fo:
             fo.write(json.dumps(self.neighbours))
