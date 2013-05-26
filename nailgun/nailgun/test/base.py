@@ -603,6 +603,7 @@ class BaseHandlers(TestCase):
 
     @classmethod
     def tearDownClass(cls):
+        cls.db.commit()
         cls.db.close()
 
     def setUp(self):
@@ -615,6 +616,7 @@ class BaseHandlers(TestCase):
 
     def tearDown(self):
         self.db.expunge_all()
+        self.db.close()
 
 
 def fake_tasks(fake_rpc=True, **kwargs):
