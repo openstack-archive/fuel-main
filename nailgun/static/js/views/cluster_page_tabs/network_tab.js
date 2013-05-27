@@ -118,21 +118,12 @@ function(utils, models, commonViews, dialogViews, networkTabTemplate, networkTem
         },
         setInitialData: function() {
             this.hasChanges = false;
-
-                    // this.model.get('networkConfiguration').get('networks').each(function(network) {
-                    //     network.set({
-                    //         ip_ranges: [['172.56.2.35', '172.56.2.57']],
-                    //         mask: '255.67.0.1',
-                    //         gateway: '102.87.78.9'
-                    //     });
-                    // });
-
             this.networkConfiguration.set({
                 net_manager: this.model.get('networkConfiguration').get('net_manager'),
                 networks: new models.Networks(this.model.get('networkConfiguration').get('networks').toJSON())
             });
             this.fixedAmount = this.networkConfiguration.get('networks').findWhere({name: 'fixed'}).get('amount') || 1;
-            _.each(_.filter(this.networkConfiguration.get('networks').models, function(network) {return network.get('name') != 'fixed';}), function(network) {
+            _.each(this.networkConfiguration.get('networks').filter(function(network) {return network.get('name') != 'fixed';}), function(network) {
                 network.set({network_size: utils.calculateNetworkSize(network.get('cidr'))});
             });
         },
