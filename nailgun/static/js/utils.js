@@ -1,4 +1,4 @@
-define(function() {
+define(['require'], function(require) {
     'use strict';
 
     var utils = {
