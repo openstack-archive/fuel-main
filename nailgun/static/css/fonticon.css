@@ -66,7 +66,7 @@
 .icon-arrows-cw:before { content: '\e760'; } /* '' */
 .icon-back-in-time:before { content: '\e771'; } /* '' */
 .icon-install:before { content: '\e778'; } /* '' */
-.icon-user:before { content: '👤'; } /* '\1f464' */
-.icon-bell:before { content: '🔔'; } /* '\1f514' */
-.icon-clock:before { content: '🕔'; } /* '\1f554' */
-.icon-block:before { content: '🚫'; } /* '\1f6ab' */
+.icon-user:before { content: '\1f464'; } /* '👤' */
+.icon-bell:before { content: '\1f514'; } /* '🔔' */
+.icon-clock:before { content: '\1f554'; } /* '🕔' */
+.icon-block:before { content: '\1f6ab'; } /* '🚫' */
