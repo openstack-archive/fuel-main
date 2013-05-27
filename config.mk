@@ -44,7 +44,7 @@ BUILD_MIRROR_GEMS:=$(BUILD_DIR)/packages/gems
 USE_MIRROR?=srv08
 ifeq ($(USE_MIRROR),srv08)
 YUM_REPOS?=proprietary
-MIRROR_BASE?=http://srv08-srt.srt.mirantis.net/fwm
+MIRROR_BASE?=http://srv08-srt.srt.mirantis.net/fwm/2.2
 MIRROR_CENTOS?=$(MIRROR_BASE)/centos
 MIRROR_EGGS?=$(MIRROR_BASE)/eggs
 MIRROR_GEMS?=$(MIRROR_BASE)/gems
@@ -52,7 +52,7 @@ MIRROR_SRC?=$(MIRROR_BASE)/src
 endif
 ifeq ($(USE_MIRROR),msk)
 YUM_REPOS?=proprietary
-MIRROR_BASE?=http://172.18.8.209/fwm
+MIRROR_BASE?=http://172.18.8.209/fwm/2.2
 MIRROR_CENTOS?=$(MIRROR_BASE)/centos
 MIRROR_EGGS?=$(MIRROR_BASE)/eggs
 MIRROR_GEMS?=$(MIRROR_BASE)/gems
@@ -60,7 +60,7 @@ MIRROR_SRC?=$(MIRROR_BASE)/src
 endif
 ifeq ($(USE_MIRROR),msk2)
 YUM_REPOS?=proprietary
-MIRROR_BASE?=http://172.18.8.207/fwm
+MIRROR_BASE?=http://172.18.8.207/fwm/2.2
 MIRROR_CENTOS?=$(MIRROR_BASE)/centos
 MIRROR_EGGS?=$(MIRROR_BASE)/eggs
 MIRROR_GEMS?=$(MIRROR_BASE)/gems
