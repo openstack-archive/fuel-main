@@ -10,6 +10,7 @@ from nailgun.api.models import Task
 from nailgun.api.models import IPAddr
 from nailgun.api.models import Node
 from nailgun.settings import settings
+from nailgun.network.manager import NetworkManager
 
 
 class TaskHelper(object):
@@ -40,11 +41,14 @@ class TaskHelper(object):
         old = os.path.join(prefix, str(node.ip))
         bak = os.path.join(prefix, "%s.bak" % str(node.fqdn))
         new = os.path.join(prefix, str(node.fqdn))
+
+        netmanager = NetworkManager()
+        admin_net_id = netmanager.get_admin_network_id()
         links = map(
             lambda i: os.path.join(prefix, i.ip_addr),
             orm().query(IPAddr.ip_addr).
             filter_by(node=node.id).
-            filter_by(admin=True).all()
+            filter_by(network=admin_net_id).all()
         )
 
         logger.debug("prepare_syslog_dir old=%s", old)
