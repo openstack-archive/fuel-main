@@ -12,7 +12,7 @@ from nailgun.api import models
 from sqlalchemy import orm
 from nailgun.db import orm as ormgen
 from nailgun.logger import logger
-from sqlalchemy.exc import IntegrityError
+from nailgun.network.manager import NetworkManager
 
 db = ormgen()
 
@@ -105,6 +105,8 @@ def upload_fixture(fileobj):
             db.commit()
             new_obj.attributes.volumes = \
                 new_obj.volume_manager.gen_default_volumes_info()
+            network_manager = NetworkManager(db)
+            network_manager.gen_interfaces_info(new_obj)
             db.commit()
 
 

@@ -11,7 +11,7 @@ from nailgun.db import orm
 from nailgun.errors import errors
 from nailgun.logger import logger
 from nailgun.settings import settings
-from nailgun.api.models import Node, IPAddr, Cluster, Vlan
+from nailgun.api.models import Node, NodeNICInterface, IPAddr, Cluster, Vlan
 from nailgun.api.models import Network, NetworkGroup, IPAddrRange
 
 
@@ -392,3 +392,21 @@ class NetworkManager(object):
             'name': 'admin',
             'dev': interface_name})
         return network_data
+
+    def gen_interfaces_info(self, node):
+        if not "interfaces" in node.meta:
+            raise Exception("No disk metadata specified for node")
+
+        for interface in node.meta["interfaces"]:
+            nicInterface = NodeNICInterface()
+            nicInterface.node_id = node.id
+            nicInterface.name = interface["name"]
+            nicInterface.mac = interface["mac"]
+            if "max_speed" in interface:
+                nicInterface.max_speed = interface["max_speed"]
+            if "current_speed" in interface:
+                nicInterface.current_speed = interface["current_speed"]
+            self.db.add(nicInterface)
+            self.db.commit()
+            node.interfaces.append(nicInterface)
+
