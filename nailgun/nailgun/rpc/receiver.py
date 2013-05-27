@@ -33,8 +33,8 @@ class NailgunReceiver(object):
     network_manager = None
 
     @classmethod
-    def initialize(cls):
-        cls.db = scoped_session(
+    def initialize(cls, db=None):
+        cls.db = db or scoped_session(
             sessionmaker(bind=engine, query_cls=NoCacheQuery)
         )
         cls.network_manager = NetworkManager()
