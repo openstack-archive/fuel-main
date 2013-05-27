@@ -19,7 +19,7 @@ class TestFixture(BaseHandlers):
         self.assertEqual(len(list(check)), 8)
 
     def test_custom_fixture(self):
-        data = u'''[{
+        data = '''[{
             "pk": 2,
             "model": "nailgun.release",
             "fields": {

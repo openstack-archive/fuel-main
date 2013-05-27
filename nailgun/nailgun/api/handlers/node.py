@@ -115,6 +115,7 @@ class NodeCollectionHandler(JSONHandler, NICUtils):
         self.db.add(node)
         self.db.commit()
         node.attributes = NodeAttributes()
+
         try:
             node.attributes.volumes = node.volume_manager.gen_volumes_info()
             if node.cluster:
@@ -140,15 +141,18 @@ class NodeCollectionHandler(JSONHandler, NICUtils):
             nics = self.get_nics_from_meta(node)
             map(self.db.add, nics)
             self.db.commit()
+
         if node.cluster_id:
             self.allow_network_assignment_to_all_interfaces(node)
             self.assign_networks_to_main_interface(node)
             self.db.commit()
+
         try:
             ram = str(round(float(
                 node.meta['memory']['total']) / 1073741824, 1))
         except (KeyError, TypeError, ValueError):
             ram = "unknown"
+
         cores = str(node.meta.get('cpu', {}).get('total', "unknown"))
         notifier.notify("discover",
                         "New node with %s CPU core(s) "

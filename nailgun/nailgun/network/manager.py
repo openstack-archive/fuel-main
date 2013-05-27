@@ -343,25 +343,22 @@ class NetworkManager(object):
         return ips.all()
 
     def get_node_networks(self, node_id):
+        """
+        Get dictionary with all networks of specified node
+        """
         node_db = self.db.query(Node).get(node_id)
         cluster_db = node_db.cluster
         if cluster_db is None:
             # Node doesn't belong to any cluster, so it should not have nets
             return []
 
-        interface_name = 'eth0'
-        for i in node_db.meta.get('interfaces', []):
-            if i['mac'] == node_db.mac:
-                interface_name = i['name']
-                break
-
-        admin_net_id = self.get_admin_network_id(False)
         ips = self._get_ips_except_admin(node_id=node_id)
-
         network_data = []
         network_ids = []
         for i in ips:
             net = self.db.query(Network).get(i.network)
+            interface = self._get_interface_by_network_name(node_db, net.name)
+
             network_data.append({
                 'name': net.name,
                 'vlan': net.vlan_id,
@@ -369,28 +366,29 @@ class NetworkManager(object):
                 'netmask': str(IPNetwork(net.cidr).netmask),
                 'brd': str(IPNetwork(net.cidr).broadcast),
                 'gateway': net.gateway,
-                'dev': interface_name})
+                'dev': interface.name})
             network_ids.append(net.id)
+
         # And now let's add networks w/o IP addresses
         nets = self.db.query(Network).join(NetworkGroup).\
             filter(NetworkGroup.cluster_id == cluster_db.id)
         if network_ids:
             nets = nets.filter(not_(Network.id.in_(network_ids)))
+
         # For now, we pass information about all networks,
         #    so these vlans will be created on every node we call this func for
         # However it will end up with errors if we precreate vlans in VLAN mode
         #   in fixed network. We are skipping fixed nets in Vlan mode.
         for net in nets.order_by(Network.id).all():
+            interface = self._get_interface_by_network_name(node_db, net.name)
+
             if net.name == 'fixed' and cluster_db.net_manager == 'VlanManager':
                 continue
             network_data.append({
                 'name': net.name,
                 'vlan': net.vlan_id,
-                'dev': interface_name})
+                'dev': interface.name})
 
-        network_data.append({
-            'name': 'admin',
-            'dev': interface_name})
         return network_data
 
     def update_interfaces_info(self, node):
@@ -409,3 +407,13 @@ class NetworkManager(object):
             self.db.add(nicInterface)
             self.db.commit()
             node.interfaces.append(nicInterface)
+
+    def _get_interface_by_network_name(self, node, network_name):
+        """
+        Return network device which has appointed
+        network with specified network name
+        """
+        for interface in node.interfaces:
+            for network in interface.assigned_networks:
+                if network.name == network_name:
+                    return interface

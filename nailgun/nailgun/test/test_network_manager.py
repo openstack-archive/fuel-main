@@ -103,8 +103,9 @@ class TestNetworkManager(BaseHandlers):
         network_data = self.env.network_manager.get_node_networks(
             self.env.nodes[0].id
         )
-        self.assertEquals(len(network_data), 5)
-        fixed_nets = [x for x in network_data if x['name'] == 'fixed']
+
+        self.assertEquals(len(network_data), 4)
+        fixed_nets = filter(lambda net: net['name'] == 'fixed', network_data)
         self.assertEquals(fixed_nets, [])
 
     def test_nets_empty_list_if_node_does_not_belong_to_cluster(self):

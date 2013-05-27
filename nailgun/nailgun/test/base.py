@@ -21,6 +21,7 @@ from paste.fixture import TestApp, AppError
 
 import nailgun
 from nailgun.api.models import Node
+from nailgun.api.models import NodeNICInterface
 from nailgun.api.models import Release
 from nailgun.api.models import Cluster
 from nailgun.api.models import Notification
@@ -38,6 +39,7 @@ from nailgun.db import engine, NoCacheQuery
 from nailgun.db import dropdb, syncdb, flush, orm
 from nailgun.fixtures.fixman import upload_fixture
 from nailgun.network.manager import NetworkManager
+from nailgun.network.topology import TopoChecker, NICUtils
 
 
 class TimeoutError(Exception):
@@ -194,6 +196,8 @@ class Environment(object):
             self.db.add(node)
             self.db.commit()
             self.nodes.append(node)
+            self._add_interfaces_to_node(node)
+
         return node
 
     def create_attributes(self):
@@ -238,6 +242,33 @@ class Environment(object):
                 }
             )
         return {'interfaces': nics}
+
+    def _add_interfaces_to_node(self, node, count=2):
+        interfaces = []
+        nic_utils = NICUtils()
+        allowed_networks = nic_utils.get_all_cluster_networkgroups(node)
+
+        for i in xrange(count):
+            nic_dict = {
+                'node_id': node.id,
+                'name': 'eth{0}'.format(i),
+                'mac': self._generate_random_mac(),
+                'current_speed': 100,
+                'max_speed': 1000,
+                'allowed_networks': allowed_networks,
+                'assigned_networks': allowed_networks
+            }
+
+            interface = NodeNICInterface()
+            for k, v in nic_dict.iteritems():
+                setattr(interface, k, v)
+
+            self.db.add(interface)
+            self.db.commit()
+
+            interfaces.append(interface)
+
+        return interfaces
 
     def generate_ui_networks(self, cluster_id):
         start_id = self.db.query(NetworkGroup.id).order_by(

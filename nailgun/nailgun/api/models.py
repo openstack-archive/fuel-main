@@ -271,7 +271,7 @@ class Vlan(Base):
 class Network(Base):
     __tablename__ = 'networks'
     id = Column(Integer, primary_key=True)
-     # can be nullable only for fuelweb admin net
+    # can be nullable only for fuelweb admin net
     release = Column(Integer, ForeignKey('releases.id'))
     name = Column(Unicode(100), nullable=False)
     access = Column(String(20), nullable=False)

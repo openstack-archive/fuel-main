@@ -3,7 +3,6 @@
 import web
 
 from nailgun.api.models import Node
-from nailgun.api.models import NetworkGroup
 from nailgun.api.models import NetworkAssignment
 from nailgun.api.models import NodeNICInterface
 
@@ -107,7 +106,9 @@ class NICUtils(object):
             return node.interfaces[0]
 
     def get_all_cluster_networkgroups(self, node):
-        return node.cluster.network_groups
+        if node.cluster_id:
+            return node.cluster.network_groups
+        return []
 
     def get_default_nic_networkgroups(self, node, nic):
         main_nic = self.get_main_nic(node)
@@ -118,6 +119,11 @@ class NICUtils(object):
         return self.get_all_cluster_networkgroups(node)
 
     def allow_network_assignment_to_all_interfaces(self, node):
+        """
+        Add all network groups from cluster
+        to allowed_networks list for all interfaces
+        of specified node
+        """
         for nic in node.interfaces:
             for net_group in self.get_all_cluster_networkgroups(node):
                 nic.allowed_networks.append(net_group)
