@@ -21,6 +21,7 @@ class TestClusterChanges(BaseHandlers):
 
     def tearDown(self):
         self._wait_for_threads()
+        super(TestClusterChanges, self).tearDown()
 
     def test_cluster_creation_adds_pending_changes(self):
         cluster = self.env.create_cluster(api=True)

@@ -21,8 +21,8 @@ from nailgun.api.models import Cluster, Attributes, Task, Notification, Node
 class TestCharsetIssues(BaseHandlers):
 
     def tearDown(self):
-        super(TestCharsetIssues, self).tearDown()
         self._wait_for_threads()
+        super(TestCharsetIssues, self).tearDown()
 
     @fake_tasks()
     def test_deployment_cyrillic_names(self):

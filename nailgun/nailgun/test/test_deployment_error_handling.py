@@ -29,6 +29,7 @@ class TestErrors(BaseHandlers):
 
     def tearDown(self):
         self._wait_for_threads()
+        super(TestErrors, self).tearDown()
 
     @patch('nailgun.task.task.rpc.cast')
     @patch('nailgun.task.task.DeploymentTask._provision', alert)

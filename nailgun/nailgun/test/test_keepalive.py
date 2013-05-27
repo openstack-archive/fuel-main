@@ -29,6 +29,7 @@ class TestKeepalive(BaseHandlers):
 
     def tearDown(self):
         self.watcher.join()
+        super(TestKeepalive, self).tearDown()
 
     def test_node_becomes_offline(self):
         node = self.env.create_node(status="discover",

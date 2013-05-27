@@ -21,6 +21,7 @@ class TestTaskManagers(BaseHandlers):
 
     def tearDown(self):
         self._wait_for_threads()
+        super(TestTaskManagers, self).tearDown()
 
     @fake_tasks()
     def test_deployment_task_managers(self):

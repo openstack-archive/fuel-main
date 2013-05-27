@@ -15,6 +15,8 @@ import mock
 from random import randint
 from datetime import datetime
 from functools import partial, wraps
+
+from sqlalchemy.orm import scoped_session, sessionmaker
 from paste.fixture import TestApp, AppError
 
 import nailgun
@@ -30,7 +32,7 @@ from nailgun.api.models import IPAddr
 from nailgun.api.models import Vlan
 from nailgun.api.urls import urls
 from nailgun.wsgi import build_app
-from nailgun.db import engine
+from nailgun.db import engine, NoCacheQuery
 from nailgun.db import dropdb, syncdb, flush, orm
 from nailgun.fixtures.fixman import upload_fixture
 from nailgun.network.manager import NetworkManager
@@ -596,7 +598,9 @@ class BaseHandlers(TestCase):
 
     @classmethod
     def setUpClass(cls):
-        cls.db = orm()
+        cls.db = scoped_session(
+            sessionmaker(bind=engine, query_cls=NoCacheQuery)
+        )
         cls.app = TestApp(build_app().wsgifunc())
         nailgun.task.task.DeploymentTask._prepare_syslog_dir = mock.Mock()
         syncdb()
@@ -604,7 +608,7 @@ class BaseHandlers(TestCase):
     @classmethod
     def tearDownClass(cls):
         cls.db.commit()
-        cls.db.close()
+        cls.db.remove()
 
     def setUp(self):
         self.default_headers = {

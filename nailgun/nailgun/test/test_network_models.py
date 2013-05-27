@@ -12,6 +12,7 @@ class TestNetworkModels(BaseHandlers):
 
     def tearDown(self):
         self._wait_for_threads()
+        super(TestNetworkModels, self).tearDown()
 
     def test_network_group_size_of_1_creates_1_network(self):
         cluster = self.env.create_cluster(api=False)
