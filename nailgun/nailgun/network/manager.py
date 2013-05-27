@@ -409,4 +409,3 @@ class NetworkManager(object):
             self.db.add(nicInterface)
             self.db.commit()
             node.interfaces.append(nicInterface)
-
