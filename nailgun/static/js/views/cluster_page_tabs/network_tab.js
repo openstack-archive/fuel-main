@@ -119,13 +119,13 @@ function(utils, models, commonViews, dialogViews, networkTabTemplate, networkTem
         setInitialData: function() {
             this.hasChanges = false;
 
-                    this.model.get('networkConfiguration').get('networks').each(function(network) {
-                        network.set({
-                            ip_ranges: [['172.56.2.35', '172.56.2.57']],
-                            mask: '255.67.0.1',
-                            gateway: '102.87.78.9'
-                        });
-                    });
+                    // this.model.get('networkConfiguration').get('networks').each(function(network) {
+                    //     network.set({
+                    //         ip_ranges: [['172.56.2.35', '172.56.2.57']],
+                    //         mask: '255.67.0.1',
+                    //         gateway: '102.87.78.9'
+                    //     });
+                    // });
 
             this.networkConfiguration.set({
                 net_manager: this.model.get('networkConfiguration').get('net_manager'),

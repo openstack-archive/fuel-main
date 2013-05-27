@@ -258,7 +258,6 @@ class IPAddrRange(Base):
     network_group_id = Column(Integer, ForeignKey('network_groups.id'))
     first = Column(String(25), nullable=False)
     last = Column(String(25), nullable=False)
-    netmask = Column(String(25), nullable=False)
 
 
 class Vlan(Base):
@@ -309,6 +308,7 @@ class NetworkGroup(Base):
     # can be nullable only for fuelweb admin net
     cluster_id = Column(Integer, ForeignKey('clusters.id'))
     cidr = Column(String(25), nullable=False)
+    netmask = Column(String(25), nullable=False)
     network_size = Column(Integer, default=256)
     amount = Column(Integer, default=1)
     vlan_start = Column(Integer, default=1)
@@ -347,7 +347,24 @@ class NetworkConfiguration(object):
                 ng_db = orm().query(NetworkGroup).get(ng['id'])
 
                 for key, value in ng.iteritems():
-                    setattr(ng_db, key, value)
+                    if key == "ip_ranges":
+                        # deleting old ip ranges
+                        map(
+                            orm().delete,
+                            orm().query(IPAddrRange).filter_by(
+                                network_group_id=ng['id']
+                            )
+                        )
+                        for r in value:
+                            new_ip_range = IPAddrRange(
+                                first=r[0],
+                                last=r[1],
+                                network_group_id=ng['id']
+                            )
+                            orm().add(new_ip_range)
+                            orm().commit()
+                    else:
+                        setattr(ng_db, key, value)
 
                 network_manager.create_networks(ng_db)
                 ng_db.cluster.add_pending_changes('networks')

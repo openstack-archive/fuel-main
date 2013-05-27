@@ -40,8 +40,16 @@ class NetworkConfigurationVerifyHandler(JSONHandler):
 
 
 class NetworkConfigurationHandler(JSONHandler):
-    fields = ('id', 'cluster_id', 'name', 'cidr',
+    fields = ('id', 'cluster_id', 'name', 'cidr', 'netmask',
               'vlan_start', 'network_size', 'amount')
+
+    @classmethod
+    def render(cls, instance, fields=None):
+        json_data = JSONHandler.render(instance, fields=cls.fields)
+        json_data["ip_ranges"] = [
+            [ir.first, ir.last] for ir in instance.ip_ranges
+        ]
+        return json_data
 
     validator = NetworkConfigurationValidator
 

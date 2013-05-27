@@ -70,8 +70,7 @@ class NetworkManager(object):
 
             new_ip_range = IPAddrRange(
                 first=str(new_net[2]),
-                last=str(new_net[-2]),
-                netmask=str(new_net.netmask)
+                last=str(new_net[-2])
             )
 
             nw_group = NetworkGroup(
@@ -79,6 +78,7 @@ class NetworkManager(object):
                 name=network['name'],
                 access=network['access'],
                 cidr=str(new_net),
+                netmask=str(new_net.netmask),
                 gateway_ip_index=1,
                 cluster_id=cluster_id,
                 vlan_start=vlan_start,
