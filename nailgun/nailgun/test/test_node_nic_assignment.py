@@ -14,15 +14,19 @@ class TestClusterHandlers(BaseHandlers):
         meta = self.env.default_metadata()
         meta['interfaces'] = [
             {'name': 'eth0', 'mac': mac},
-            {'name': 'eth1', 'mac': '654'},
-        ]
+            {'name': 'eth1', 'mac': '654'}]
+
         node = self.env.create_node(api=True, meta=meta, mac=mac)
         cluster = self.env.create_cluster(api=True, nodes=[node['id']])
+
         resp = self.app.get(
             reverse('NodeNICsHandler', kwargs={'node_id': node['id']}),
             headers=self.default_headers)
+
         self.assertEquals(resp.status, 200)
+
         response = json.loads(resp.body)
+
         for resp_nic in response:
             if resp_nic['mac'] == mac:
                 self.assertGreater(len(resp_nic['assigned_networks']), 0)
@@ -44,6 +48,7 @@ class TestClusterHandlers(BaseHandlers):
             headers=self.default_headers)
         self.assertEquals(resp.status, 200)
         response = json.loads(resp.body)
+
         for resp_nic in response:
             self.assertGreater(len(resp_nic['allowed_networks']), 0)
 

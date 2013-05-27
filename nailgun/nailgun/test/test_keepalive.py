@@ -35,7 +35,7 @@ class TestKeepalive(BaseHandlers):
         node = self.env.create_node(status="discover",
                                     role="controller",
                                     name="Dead or alive")
-        time.sleep(self.watcher.interval + 1)
+        time.sleep(self.watcher.interval + 2)
         self.env.refresh_nodes()
         self.assertEqual(node.online, False)
 
@@ -43,6 +43,6 @@ class TestKeepalive(BaseHandlers):
         node = self.env.create_node(status="provisioning",
                                     role="controller",
                                     name="Dead or alive")
-        time.sleep(self.watcher.interval + 1)
+        time.sleep(self.watcher.interval + 2)
         self.env.refresh_nodes()
         self.assertEqual(node.online, True)

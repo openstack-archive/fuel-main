@@ -106,7 +106,7 @@ class NICUtils(object):
             return node.interfaces[0]
 
     def get_all_cluster_networkgroups(self, node):
-        if node.cluster_id:
+        if node.cluster:
             return node.cluster.network_groups
         return []
 
