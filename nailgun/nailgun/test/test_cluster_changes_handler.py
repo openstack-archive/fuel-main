@@ -160,9 +160,11 @@ class TestHandlers(BaseHandlers):
                 n.id,
                 len(n.meta.get('interfaces', []))
             )
+
             admin_ips = set([i.ip_addr for i in self.db.query(IPAddr).
                             filter_by(node=n.id).
-                            filter_by(admin=True)])
+                            filter_by(network=admin_net_id)])
+
             for i in n.meta.get('interfaces', []):
                 if 'interfaces' not in pnd:
                     pnd['interfaces'] = {}
@@ -206,6 +208,13 @@ class TestHandlers(BaseHandlers):
                 'nodes': provision_nodes,
             }
         }
+
+        from base import datadiff
+        from pprint import pprint
+        # provision_msg
+        called_provision_msg = nailgun.task.manager.rpc.cast.call_args_list[0][0][1][0]
+        datadiff(called_provision_msg['args'], provision_msg['args'], [])
+#        pprint(nailgun.task.manager.rpc.cast.call_args_list[0][0][1][0]['args'])
 
         nailgun.task.manager.rpc.cast.assert_called_once_with(
             'naily', [provision_msg, msg])

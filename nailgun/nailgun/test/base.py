@@ -739,9 +739,9 @@ def datadiff(data1, data2, branch, p=True):
                     if p:
                         print("data1 and data2 do not match "
                               "each other on branch: %s" % newbranch)
-                        print("data1 = %s" % data1)
+                        # print("data1 = %s" % data1)
                         print("v1 = %s" % v1)
-                        print("data2 = %s" % data2)
+                        # print("data2 = %s" % data2)
                         print("v2 = %s" % v2)
                     diff.extend(datadiff(v1, v2, newbranch))
     return diff
