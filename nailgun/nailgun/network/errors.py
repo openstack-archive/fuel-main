@@ -22,4 +22,4 @@ class NoSuitableCIDR(Exception):
     def __init__(self, message, *args, **kwargs):
         if not message:
             message = u"Cannot find suitable CIDR"
-        super(OutOfIPs, self).__init__(message, *args, **kwargs)
+        super(NoSuitableCIDR, self).__init__(message, *args, **kwargs)
