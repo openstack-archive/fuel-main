@@ -152,14 +152,20 @@ class Environment(object):
             exclude=None, expect_http=201,
             expect_message=None,
             **kwargs):
+
+        default_metadata = self.default_metadata()
+        mac = self._generate_random_mac()
+        default_metadata['interfaces'][0]['mac'] = mac
+
         node_data = {
-            'mac': self._generate_random_mac(),
+            'mac': mac,
             'role': 'controller',
             'status': 'discover',
-            'meta': self.default_metadata()
+            'meta': default_metadata
         }
         if kwargs:
             node_data.update(kwargs)
+
         if exclude and isinstance(exclude, list):
             for ex in exclude:
                 try:
