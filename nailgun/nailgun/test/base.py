@@ -187,6 +187,9 @@ class Environment(object):
             self.tester.assertEquals(resp.status, expect_http)
             node = json.loads(resp.body)
             node_db = self.db.query(Node).get(node['id'])
+            self._set_interfaces_if_not_set_in_meta(
+                node_db,
+                kwargs.get('meta', None))
             self.nodes.append(node_db)
         else:
             node = Node()
@@ -202,7 +205,9 @@ class Environment(object):
             self.db.add(node)
             self.db.commit()
             self.nodes.append(node)
-            self._add_interfaces_to_node(node)
+            self._set_interfaces_if_not_set_in_meta(
+                node,
+                kwargs.get('meta', None))
 
         return node
 
@@ -249,7 +254,11 @@ class Environment(object):
             )
         return {'interfaces': nics}
 
-    def _add_interfaces_to_node(self, node, count=2):
+    def _set_interfaces_if_not_set_in_meta(self, node, meta):
+        if not meta or not 'interfaces' in meta:
+            self._add_interfaces_to_node(node)
+
+    def _add_interfaces_to_node(self, node, count=1):
         interfaces = []
         nic_utils = NICUtils()
         allowed_networks = nic_utils.get_all_cluster_networkgroups(node)
