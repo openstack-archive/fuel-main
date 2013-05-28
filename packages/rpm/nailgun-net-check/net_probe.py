@@ -84,6 +84,11 @@ class Actor(object):
     def _viface_by_iface_vid(self, iface, vid):
         return (self._try_viface_create(iface, vid) or "%s.%d" % (iface, vid))
 
+    def _iface_name(self, iface, vid=None):
+        if vid:
+            return self._viface_by_iface_vid(iface, vid)
+        return iface
+
     def _look_for_link(self, iface, vid=None):
         viface = None
         if vid:
@@ -114,8 +119,8 @@ class Actor(object):
 
         self.logger.debug("Checking if interface %s with vid %s is up",
                           iface, str(vid))
-        i, v, s = self._look_for_link(iface, vid)
-        return (s == 'UP')
+        _, _, state = self._look_for_link(iface, vid)
+        return (state == 'UP')
 
     def _iface_up(self, iface, vid=None):
         """
@@ -128,10 +133,7 @@ class Actor(object):
                 "Vlan %s on interface %s does not exist" % (str(vid), iface)
             )
 
-        if vid:
-            set_iface = self._viface_by_iface_vid(iface, vid)
-        else:
-            set_iface = iface
+        set_iface = self._iface_name(iface, vid)
 
         self.logger.debug("Brining interface %s with vid %s up",
                           set_iface, str(vid))
@@ -151,10 +153,7 @@ class Actor(object):
             if self._try_iface_up(iface, vid):
                 # if iface was down and we have brought it up
                 # we should mark it to be brought down after probing
-                if vid:
-                    self.iface_down_after[self._viface_by_iface_vid(iface, vid)] = True
-                else:
-                    self.iface_down_after[iface] = True
+                self.iface_down_after[self._iface_name(iface, vid)] = True
             else:
                 # if viface is still down we raise exception
                 raise ActorException(
@@ -163,10 +162,7 @@ class Actor(object):
                 )
 
     def _ensure_iface_down(self, iface, vid=None):
-        if vid:
-            set_iface = self._viface_by_iface_vid(iface, vid)
-        else:
-            set_iface = iface
+        set_iface = self._iface_name(iface, vid)
         if self.iface_down_after.get(set_iface, False):
             # if iface with vid have been marked to be brought down
             # after probing we try to bring it down
