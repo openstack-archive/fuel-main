@@ -834,11 +834,11 @@ function(utils, models, commonViews, dialogViews, nodesTabSummaryTemplate, editN
                 $.when(this.interfaces.fetch({url: _.result(this.node, 'url') + '/interfaces', reset: true}), this.networkConfiguration.fetch({url: _.result(this.model, 'url') + '/network_configuration'})).done(_.bind(function() {
                         this.initialData = this.interfaces.toJSON();
                         this.checkForChanges();
-			this.networks = this.networkConfiguration.get('networks');
+                        this.networks = this.networkConfiguration.get('networks');
                         this.interfaces.on('reset', this.renderInterfaces, this);
                         this.interfaces.on('reset', this.checkForChanges, this);
                         this.renderInterfaces();
-		    }, this))
+                    }, this))
                     .fail(_.bind(this.goToNodeList, this));
             } else {
                 this.goToNodeList();
