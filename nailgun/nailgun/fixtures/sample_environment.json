@@ -125,20 +125,6 @@
                         "max_speed": 1000,
                         "name": "eth1",
                         "current_speed": null
-                    },
-                    {
-                        "ip": "172.18.67.168",
-                        "mac": "00:25:90:6A:B1:10",
-                        "netmask": "255.255.255.240",
-                        "current_speed": null,
-                        "name": "br0"
-                    },
-                    {
-                        "ip": "10.20.0.1",
-                        "mac": "FE:54:00:0E:B8:F5",
-                        "netmask": "255.255.255.0",
-                        "current_speed": null,
-                        "name": "brmike"
                     }
                 ],
                 "disks": [
@@ -318,28 +304,6 @@
                 },
                 "interfaces": [
                     {
-                        "ip": "10.20.0.1",
-                        "mac": "0A:00:27:00:00:00",
-                        "netmask": "255.255.255.0",
-                        "current_speed": null,
-                        "name": "vboxnet0"
-                    },
-                    {
-                        "mac": "FA:5F:13:30:9D:46",
-                        "name": "br-int",
-                        "current_speed": null
-                    },
-                    {
-                        "mac": "2E:02:A2:F7:30:6E",
-                        "name": "qr-391c960a-8f",
-                        "current_speed": null
-                    },
-                    {
-                        "mac": "A2:39:BA:E2:71:3F",
-                        "name": "tap5d9691b1-9f",
-                        "current_speed": null
-                    },
-                    {
                         "ip": "192.168.70.234",
                         "mac": "58:91:CF:2A:C4:1B",
                         "netmask": "255.255.255.0",
@@ -347,25 +311,10 @@
                         "name": "wlan0"
                     },
                     {
-                        "mac": "F6:62:CC:2A:E6:4F",
-                        "name": "br-tun",
-                        "current_speed": null
-                    },
-                    {
-                        "mac": "86:1A:1D:23:0B:09",
-                        "name": "qg-d648e295-3f",
-                        "current_speed": null
-                    },
-                    {
                         "mac": "24:B6:FD:53:63:00",
                         "max_speed": 100,
                         "name": "eth0",
                         "current_speed": 10
-                    },
-                    {
-                        "mac": "8E:38:AB:17:E0:47",
-                        "name": "br-ex",
-                        "current_speed": null
                     }
                 ],
                 "disks": [
@@ -476,20 +425,6 @@
                 },
                 "interfaces": [
                     {
-                        "ip": "192.168.125.1",
-                        "mac": "66:0D:6F:A6:6F:FE",
-                        "netmask": "255.255.255.0",
-                        "current_speed": null,
-                        "name": "crowbar-pub.200@crowbar-pub"
-                    },
-                    {
-                        "ip": "192.168.127.1",
-                        "mac": "66:0D:6F:A6:6F:FE",
-                        "netmask": "255.255.255.0",
-                        "current_speed": null,
-                        "name": "crowbar-pub.500@crowbar-pub"
-                    },
-                    {
                         "name": "eth1",
                         "ip": "172.18.67.167",
                         "netmask": "255.255.255.240",
@@ -501,37 +436,6 @@
                         "mac": "00:25:90:67:9F:B6",
                         "max_speed": 1000,
                         "name": "eth0",
-                        "current_speed": null
-                    },
-                    {
-                        "ip": "192.168.126.1",
-                        "mac": "66:0D:6F:A6:6F:FE",
-                        "netmask": "255.255.255.0",
-                        "current_speed": null,
-                        "name": "crowbar-pub.300@crowbar-pub"
-                    },
-                    {
-                        "mac": "76:D7:94:34:DD:0A",
-                        "name": "admin-0-pub",
-                        "current_speed": null
-                    },
-                    {
-                        "ip": "192.168.128.1",
-                        "mac": "66:0D:6F:A6:6F:FE",
-                        "netmask": "255.255.255.0",
-                        "current_speed": null,
-                        "name": "crowbar-pub.600@crowbar-pub"
-                    },
-                    {
-                        "ip": "192.168.124.1",
-                        "mac": "1A:1F:62:98:04:0B",
-                        "netmask": "255.255.255.0",
-                        "current_speed": null,
-                        "name": "crowbar-pub"
-                    },
-                    {
-                        "mac": "96:47:77:AD:5C:FF",
-                        "name": "admin-1-pub",
                         "current_speed": null
                     }
                 ],
