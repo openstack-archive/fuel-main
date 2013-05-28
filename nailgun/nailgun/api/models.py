@@ -287,8 +287,20 @@ class Network(Base):
 
 class NetworkGroup(Base):
     __tablename__ = 'network_groups'
+    NAMES = (
+        # Node networks
+        'fuelweb_admin',
+        'storage',
+        'management', #  internal in terms of fuel
+        'public',
+
+        # VM networks
+        'floating',
+        'fixed' # private in terms of fuel
+    )
+
     id = Column(Integer, primary_key=True)
-    name = Column(Unicode(100), nullable=False)
+    name = Column(Enum(*NAMES, name='network_group_name'), nullable=False)
     access = Column(String(20), nullable=False)
     # can be nullable only for fuelweb admin net
     release = Column(Integer, ForeignKey('releases.id'))
