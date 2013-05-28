@@ -738,7 +738,7 @@ function(utils, models, commonViews, dialogViews, nodesTabSummaryTemplate, editN
         },
         initialize: function(options) {
             _.defaults(this, options);
-            this.diskSize = this.formatFloat(this.diskMetaData.size - 1000000);
+            this.diskSize = this.formatFloat(this.diskMetaData.size - 10 * 1048576);
             this.getPartition();
             this.getVolumes();
             this.disk.on('invalid', function(model, errors) {
