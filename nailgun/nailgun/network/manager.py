@@ -395,7 +395,7 @@ class NetworkManager(object):
 
     def gen_interfaces_info(self, node):
         if not "interfaces" in node.meta:
-            raise Exception("No disk metadata specified for node")
+            raise Exception("No interfaces metadata specified for node")
 
         for interface in node.meta["interfaces"]:
             nicInterface = NodeNICInterface()
