@@ -3,9 +3,9 @@
         "pk": 1,
         "model": "nailgun.release",
         "fields": {
-            "name": "Folsom",
-            "version": "2012.2",
-            "description": "This option will install OpenStack Folsom packages using CentOS as a base operating system. With high availability features built in, you are getting a robust, enterprise-grade OpenStack deployment.",
+            "name": "Grizzly",
+            "version": "2013.1.1",
+            "description": "This option will install OpenStack Grizzly packages using CentOS as a base operating system. With high availability features built in, you are getting a robust, enterprise-grade OpenStack deployment.",
             "networks_metadata": [
                 {"name": "floating", "access": "public"},
                 {"name": "public", "access": "public"},
