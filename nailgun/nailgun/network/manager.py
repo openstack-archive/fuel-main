@@ -5,7 +5,7 @@ from itertools import imap, ifilter, islice, chain, tee
 
 import web
 from sqlalchemy.sql import not_
-from netaddr import IPSet, IPNetwork, IPRange
+from netaddr import IPSet, IPNetwork, IPRange, IPAddress
 
 from nailgun.db import orm
 from nailgun.errors import errors
@@ -191,18 +191,17 @@ class NetworkManager(object):
         ).all()
 
         if not node_admin_ips or len(node_admin_ips) < num:
+            admin_net = self.db.query(Network).get(admin_net_id)
             logger.debug(
-                "Trying to assign admin ips: node=%s count=%s",
+                u"Trying to assign admin ips: node=%s count=%s",
                 node_id,
                 num - len(node_admin_ips)
             )
-            free_ips = self._get_free_ips_from_range(
-                imap(str, IPRange(
-                    settings.ADMIN_NETWORK['first'],
-                    settings.ADMIN_NETWORK['last']
-                )),
+            free_ips = self.get_free_ips(
+                admin_net.network_group.id,
                 num=num - len(node_admin_ips)
             )
+            logger.info(len(free_ips))
             for ip in free_ips:
                 ip_db = IPAddr(
                     node=node_id,
@@ -247,39 +246,39 @@ class NetworkManager(object):
 
         if not network:
             raise errors.AssignIPError(
-                "Network '%s' for cluster_id=%s not found." %
+                u"Network '%s' for cluster_id=%s not found." %
                 (network_name, cluster_id)
             )
 
         for node_id in nodes_ids:
-            node_ips = map(
+            node_ips = imap(
                 lambda i: i.ip_addr,
                 self._get_ips_except_admin(
                     node_id=node_id,
                     network_id=network.id
                 )
             )
-            # check if any of node_ips in required cidr: network.cidr
-            ips_belongs_to_net = IPSet(IPNetwork(network.cidr))\
-                .intersection(IPSet(node_ips))
-
-            if not ips_belongs_to_net:
-                # IP address has not been assigned, let's do it
-                from_range = ifilter(
-                    lambda x: x not in (network.gateway,),
-                    imap(
-                        str,
-                        IPNetwork(network.cidr).iter_hosts()
+            # check if any of node_ips in required ranges
+            for ip in node_ips:
+                if self.check_ip_belongs_to_net(ip, network):
+                    logger.info(
+                        u"Node id='{0}' already has an IP address "
+                        "inside '{1}' network.".format(
+                            node.id,
+                            network.name
+                        )
                     )
-                )
-                free_ips = self._get_free_ips_from_range(from_range)
-                ip_db = IPAddr(
-                    network=network.id,
-                    node=node_id,
-                    ip_addr=free_ips[0]
-                )
-                self.db.add(ip_db)
-                self.db.commit()
+                    continue
+
+            # IP address has not been assigned, let's do it
+            free_ip = self.get_free_ips(network.network_group.id)[0]
+            ip_db = IPAddr(
+                network=network.id,
+                node=node_id,
+                ip_addr=free_ip
+            )
+            self.db.add(ip_db)
+            self.db.commit()
 
     def assign_vip(self, cluster_id, network_name):
         """
@@ -377,6 +376,47 @@ class NetworkManager(object):
             # iterator which is concatenation of fisrt element in
             # slice and the ramained elements.
             yield chain([s.next()], s)
+
+    def check_ip_belongs_to_net(self, ip_addr, network):
+        addr = IPAddress(ip_addr)
+        ipranges = imap(
+            lambda ir: IPRange(ir.first, ir.last),
+            network.network_group.ip_ranges
+        )
+        for r in ipranges:
+            if addr in r:
+                return True
+        return False
+
+    def _iter_free_ips(self, network_group):
+        """
+        Represents iterator over free IP addresses
+        in all ranges for given Network Group
+        """
+        for ip_addr in ifilter(
+            lambda ip: self.db.query(IPAddr).filter_by(
+                ip_addr=str(ip)
+            ).first() is None,
+            chain(*[
+                IPRange(ir.first, ir.last)
+                for ir in network_group.ip_ranges
+            ])
+        ):
+            yield ip_addr
+
+    def get_free_ips(self, network_group_id, num=1):
+        """
+        Returns list of free IP addresses for given Network Group
+        """
+        ng = self.db.query(NetworkGroup).get(network_group_id)
+        free_ips = []
+        for ip in self._iter_free_ips(ng):
+            free_ips.append(str(ip))
+            if len(free_ips) == num:
+                break
+        if len(free_ips) < num:
+            raise errors.OutOfIPs()
+        return free_ips
 
     def _get_free_ips_from_range(self, iterable, num=1):
         """

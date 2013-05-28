@@ -314,7 +314,7 @@ class NetworkGroup(Base):
     vlan_start = Column(Integer, default=1)
     gateway_ip_index = Column(Integer)
     networks = relationship("Network", cascade="delete",
-                            backref="network_groups")
+                            backref="network_group")
     ip_ranges = relationship(
         "IPAddrRange",
         backref="network_group"

@@ -24,7 +24,7 @@
         "fields": {
             "name": "fuelweb_admin",
             "access": "admin",
-            "network_groups": 1,
+            "network_group": 1,
             "cidr": "10.20.0.0/24",
             "vlan_id": 1
         }

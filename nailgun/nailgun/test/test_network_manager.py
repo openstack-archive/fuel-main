@@ -8,7 +8,8 @@ import nailgun
 from nailgun.test.base import BaseHandlers
 from nailgun.test.base import reverse
 from nailgun.db import engine
-from nailgun.api.models import Node, IPAddr, Vlan
+from nailgun.errors import errors
+from nailgun.api.models import Node, IPAddr, Vlan, IPAddrRange
 from nailgun.api.models import Network, NetworkGroup
 from nailgun.settings import settings
 from nailgun.test.base import fake_tasks
@@ -19,26 +20,20 @@ class TestNetworkManager(BaseHandlers):
     @fake_tasks(fake_rpc=False, mock_rpc=False)
     @patch('nailgun.rpc.cast')
     def test_assign_ips(self, mocked_rpc):
-        cluster = self.env.create_cluster()
-        map(
-            lambda x: self.env.create_node(
-                api=True,
-                cluster_id=cluster['id'],
-                **x),
-            [
-                {"pending_addition": True},
-                {"pending_addition": True}
+        self.env.create(
+            cluster_kwargs={},
+            nodes_kwargs=[
+                {"pending_addition": True, "api": True},
+                {"pending_addition": True, "api": True}
             ]
         )
-        # TODO(mihgen): it should be separeted call of network manager,
-        #  not via API. It's impossible now because of issues with web.ctx.orm
 
         nailgun.task.task.Cobbler = Mock()
-        self.env.launch_deployment()
 
-        nodes = self.db.query(Node).filter_by(
-            cluster_id=self.env.clusters[0].id
-        ).all()
+        self.env.network_manager.assign_ips(
+            [n.id for n in self.env.nodes],
+            "management"
+        )
 
         management_net = self.db.query(Network).join(NetworkGroup).\
             filter(
@@ -48,15 +43,19 @@ class TestNetworkManager(BaseHandlers):
             ).first()
 
         assigned_ips = []
-        for node in nodes:
+        for node in self.env.nodes:
             ips = self.db.query(IPAddr).\
                 filter_by(node=node.id).\
                 filter_by(network=management_net.id).all()
 
             self.assertEquals(1, len(ips))
             self.assertEquals(
-                True, IPAddress(ips[0].ip_addr) in
-                IPNetwork(management_net.cidr).iter_hosts())
+                True,
+                self.env.network_manager.check_ip_belongs_to_net(
+                    ips[0].ip_addr,
+                    management_net
+                )
+            )
             assigned_ips.append(ips[0].ip_addr)
 
         # check for uniqueness of IPs:
@@ -133,17 +132,17 @@ class TestNetworkManager(BaseHandlers):
             admin_ips
         )
 
-    @patch.dict(
-        nailgun.settings.settings.config,
-        {
-            'ADMIN_NETWORK': {
-                'first': '10.0.0.1',
-                'last': '10.255.255.254',
-                'netmask': '255.0.0.0'
-            }
-        }
-    )
     def test_assign_admin_ips_large_range(self):
+        map(self.db.delete, self.db.query(IPAddrRange).all())
+        admin_net_id = self.env.network_manager.get_admin_network_id()
+        admin_ng = self.db.query(Network).get(admin_net_id).network_group
+        mock_range = IPAddrRange(
+            first='10.0.0.1',
+            last='10.255.255.254',
+            network_group_id=admin_ng.id
+        )
+        self.db.add(mock_range)
+        self.db.commit()
         # Creating two nodes
         n1 = self.env.create_node()
         n2 = self.env.create_node()
@@ -151,8 +150,6 @@ class TestNetworkManager(BaseHandlers):
 
         # Assinging admin IPs on created nodes
         map(lambda (n, c): self.env.network_manager.assign_admin_ips(n, c), nc)
-
-        admin_net_id = self.env.network_manager.get_admin_network_id()
 
         # Asserting count of admin node IPs
         def asserter(x):
@@ -175,17 +172,18 @@ class TestNetworkManager(BaseHandlers):
                           filter_by(network=admin_net_id).all()])
         self.assertEquals(admin_ips, admin_ips2)
 
-    @patch.dict(
-        nailgun.settings.settings.config,
-        {
-            'ADMIN_NETWORK': {
-                'first': '10.0.0.1',
-                'last': '10.0.0.1',
-                'netmask': '255.255.255.0'
-            }
-        }
-    )
     def test_assign_admin_ips_only_one(self):
+        map(self.db.delete, self.db.query(IPAddrRange).all())
+        admin_net_id = self.env.network_manager.get_admin_network_id()
+        admin_ng = self.db.query(Network).get(admin_net_id).network_group
+        mock_range = IPAddrRange(
+            first='10.0.0.1',
+            last='10.0.0.1',
+            network_group_id=admin_ng.id
+        )
+        self.db.add(mock_range)
+        self.db.commit()
+
         node = self.env.create_node()
         self.env.network_manager.assign_admin_ips(node.id, 1)
 
