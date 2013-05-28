@@ -29,7 +29,7 @@
             In this configuration OpenStack controller is deployed separately from compute and nodes. The mode assumes presence of 1 controller node and 1 or more compute/cinder nodes. You can add more nodes as you go and scale your cloud.
           </p>
           <p class="help-block hide mode-description help-mode-ha">
-            This configuration requires multiple OpenStack controllers (3+) and provides high availability for all OpenStack components, including MySQL/Galera, RabbitMQ, Quantum, Cinder, as well as OpenStack API services. Select this configuration if you want to build a production-grade OpenStack cloud with 6 nodes or more.
+            This configuration requires multiple OpenStack controllers (3+) and provides high availability for all OpenStack components, including MySQL/Galera, RabbitMQ, Cinder, as well as OpenStack API services. Select this configuration if you want to build a production-grade OpenStack cloud with 6 nodes or more.
           </p>
         </div>
       </div>
@@ -51,7 +51,7 @@
         </div>
         <div class="span7">
           <p class="help-block hide type-description help-type-compute">
-            In this deployment type your environment will have only computes to run VMs on them. There will be no cinder nodes.
+            In this deployment type your environment will have only computes to run VMs on them. There will be no Cinder nodes.
           </p>
           <p class="help-block hide type-description help-type-cinder">
             Choose this deployment type if you don't need to run virtual machines and need only cinder nodes.
