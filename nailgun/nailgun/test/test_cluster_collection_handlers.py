@@ -141,7 +141,6 @@ class TestHandlers(BaseHandlers):
         task = json.loads(resp.body)
         self.assertEquals(task['status'], 'error')
 
-
     @patch('nailgun.rpc.cast')
     def test_verify_networks(self, mocked_rpc):
         cluster = self.env.create_cluster(api=True)
