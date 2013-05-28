@@ -21,6 +21,15 @@ class NetworkManager(object):
         self.db = db or orm()
 
     def get_admin_network_id(self, fail_if_not_found=True):
+        '''
+        Method for receiving Admin Network ID.
+
+        :param fail_if_not_found: Raise an error
+        if admin network is not found in database.
+        :type  fail_if_not_found: bool
+        :returns: Admin Network ID or None.
+        :raises: errors.AdminNetworkNotFound
+        '''
         admin_net = self.db.query(Network).filter_by(
             name="fuelweb_admin"
         ).first()
@@ -29,22 +38,42 @@ class NetworkManager(object):
         return admin_net.id
 
     def create_network_groups(self, cluster_id):
+        '''
+        Method for creation of network groups for cluster.
+
+        :param cluster_id: Cluster database ID.
+        :type  cluster_id: int
+        :returns: None
+        :raises: errors.OutOfVLANs, errors.OutOfIPs,
+        errors.NoSuitableCIDR
+        '''
         used_nets = [n.cidr for n in self.db.query(Network).all()]
         used_vlans = [v.id for v in self.db.query(Vlan).all()]
-
         cluster_db = self.db.query(Cluster).get(cluster_id)
 
-        for network in cluster_db.release.networks_metadata:
-            free_vlans = sorted(list(set(range(int(
-                settings.VLANS_RANGE_START),
-                int(settings.VLANS_RANGE_END))) -
-                set(used_vlans)))
-            if not free_vlans:
-                raise errors.OutOfVLANs()
-            vlan_start = free_vlans[0]
-            logger.debug("Found free vlan: %s", vlan_start)
+        networks_metadata = cluster_db.release.networks_metadata
 
-            pool = settings.NETWORK_POOLS[network['access']]
+        free_vlans = set(
+            range(
+                int(settings.VLANS_RANGE_START),
+                int(settings.VLANS_RANGE_END)
+            )
+        ) - set(used_vlans)
+
+        if not free_vlans or len(free_vlans) < len(networks_metadata):
+            raise errors.OutOfVLANs()
+
+        for network in networks_metadata:
+            vlan_start = sorted(list(free_vlans))[0]
+            logger.debug(u"Found free vlan: %s", vlan_start)
+            pool = settings.NETWORK_POOLS.get(network['access'])
+            if not pool:
+                raise errors.InvalidNetworkAccess(
+                    u"Invalid access '{0}' for network '{1}'".format(
+                        network['access'],
+                        network['name']
+                    )
+                )
             nets_free_set = IPSet(pool) -\
                 IPSet(settings.NET_EXCLUDE) -\
                 IPSet(
@@ -90,10 +119,17 @@ class NetworkManager(object):
             self.db.commit()
             self.create_networks(nw_group)
 
-            used_vlans.append(vlan_start)
+            free_vlans = free_vlans - set([vlan_start])
             used_nets.append(str(new_net))
 
     def create_networks(self, nw_group):
+        '''
+        Method for creation of networks for network group.
+
+        :param nw_group: NetworkGroup object.
+        :type  nw_group: NetworkGroup
+        :returns: None
+        '''
         fixnet = IPNetwork(nw_group.cidr)
         subnet_bits = int(math.ceil(math.log(nw_group.network_size, 2)))
         logger.debug("Specified network size requires %s bits", subnet_bits)
@@ -139,6 +175,15 @@ class NetworkManager(object):
         self.db.commit()
 
     def assign_admin_ips(self, node_id, num=1):
+        '''
+        Method for assigning admin IP addresses to nodes.
+
+        :param node_id: Node database ID.
+        :type  node_id: int
+        :param num: Number of IP addresses for node.
+        :type  num: int
+        :returns: None
+        '''
         admin_net_id = self.get_admin_network_id()
         node_admin_ips = self.db.query(IPAddr).filter_by(
             node=node_id,
@@ -176,6 +221,13 @@ class NetworkManager(object):
         If node already has IP address from this network,
         it remains unchanged. If one of the nodes is the
         node from other cluster, this func will fail.
+
+        :param node_ids: List of nodes IDs in database.
+        :type  node_ids: list
+        :param network_name: Network name
+        :type  network_name: str
+        :returns: None
+        :raises: Exception, errors.AssignIPError
         """
 
         cluster_id = self.db.query(Node).get(nodes_ids[0]).cluster_id
@@ -240,6 +292,13 @@ class NetworkManager(object):
         IP address from this network, it remains unchanged.
         If one of the nodes is the node from other cluster,
         this func will fail.
+
+        :param cluster_id: Cluster database ID.
+        :type  cluster_id: int
+        :param network_name: Network name
+        :type  network_name: str
+        :returns: None
+        :raises: Exception
         """
 
         cluster = self.db.query(Cluster).get(cluster_id)
@@ -284,6 +343,9 @@ class NetworkManager(object):
         return vip
 
     def clear_vlans(self):
+        """
+        Removes from DB all Vlans without Networks assigned to them.
+        """
         map(
             self.db.delete,
             self.db.query(Vlan).filter_by(network=None)
@@ -298,6 +360,13 @@ class NetworkManager(object):
         iter instance slice in infinite loop. Iter slice starts
         from the last used position and finishes on the position
         which is offset with chunksize from the last used position.
+
+        :param iterable: Iterable object.
+        :type  iterable: iterable
+        :param chunksize: Size of chunk to iterate through.
+        :type  chunksize: int
+        :yields: iterator
+        :raises: StopIteration
         """
         it = iter(iterable)
         while True:
@@ -310,6 +379,16 @@ class NetworkManager(object):
             yield chain([s.next()], s)
 
     def _get_free_ips_from_range(self, iterable, num=1):
+        """
+        Method for receiving free IP addresses from range.
+
+        :param iterable: Iterable object with IP addresses.
+        :type  iterable: iterable
+        :param num: Number of IP addresses to return.
+        :type  num: int
+        :returns: List of free IP addresses from given range.
+        :raises: errors.OutOfIPs
+        """
         free_ips = []
         for chunk in self._chunked_range(iterable):
             from_range = set(chunk)
@@ -327,6 +406,16 @@ class NetworkManager(object):
         raise errors.OutOfIPs()
 
     def _get_ips_except_admin(self, node_id=None, network_id=None):
+        """
+        Method for receiving IP addresses for node or network
+        excluding Admin Network IP address.
+
+        :param node_id: Node database ID.
+        :type  node_id: int
+        :param network_id: Network database ID.
+        :type  network_id: int
+        :returns: List of free IP addresses as SQLAlchemy objects.
+        """
         node_db = self.db.query(Node).get(node_id)
         ips = self.db.query(IPAddr).order_by(IPAddr.id)
         if node_id:
@@ -344,7 +433,11 @@ class NetworkManager(object):
 
     def get_node_networks(self, node_id):
         """
-        Get dictionary with all networks of specified node
+        Method for receiving network data for a given node.
+
+        :param node_id: Node database ID.
+        :type  node_id: int
+        :returns: List of network info for node.
         """
         node_db = self.db.query(Node).get(node_id)
         cluster_db = node_db.cluster

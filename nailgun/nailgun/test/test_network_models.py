@@ -18,6 +18,7 @@ class TestNetworkModels(BaseHandlers):
         cluster = self.env.create_cluster(api=False)
         kw = {'release': cluster.release_id,
               'cidr': '10.0.0.0/24',
+              'netmask': '255.255.255.0',
               'network_size': 256,
               'name': 'fixed',
               'access': 'private',
@@ -71,6 +72,7 @@ class TestNetworkModels(BaseHandlers):
         cluster = self.env.create_cluster(api=False)
         kw = {'release': cluster.release_id,
               'cidr': '10.0.0.0/8',
+              'netmask': '255.0.0.0',
               'network_size': 256,
               'name': 'fixed',
               'access': 'private',
@@ -97,6 +99,7 @@ class TestNetworkModels(BaseHandlers):
         cluster = self.env.create_cluster(api=False)
         kw = {'release': cluster.release_id,
               'cidr': '10.0.0.0/8',
+              'netmask': '255.0.0.0',
               'network_size': 128,
               'name': 'fixed',
               'access': 'private',
@@ -120,6 +123,7 @@ class TestNetworkModels(BaseHandlers):
         cluster = self.env.create_cluster(api=False)
         kw = {'release': cluster.release_id,
               'cidr': '172.0.0.0/24',
+              'netmask': '255.255.255.0',
               'network_size': 64,
               'name': 'fixed',
               'access': 'private',
@@ -137,6 +141,7 @@ class TestNetworkModels(BaseHandlers):
         cluster = self.env.create_cluster(api=False)
         kw = {'release': cluster.release_id,
               'cidr': '172.0.0.0/8',
+              'netmask': '255.0.0.0',
               'network_size': 256,
               'name': 'public',
               'access': 'public',
@@ -154,6 +159,7 @@ class TestNetworkModels(BaseHandlers):
         cluster = self.env.create_cluster(api=False)
         kw = {'release': cluster.release_id,
               'cidr': '10.0.0.0/8',
+              'netmask': '255.0.0.0',
               'network_size': 128,
               'name': 'fixed',
               'access': 'private',
