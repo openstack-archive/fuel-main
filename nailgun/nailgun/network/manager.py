@@ -389,6 +389,8 @@ class NetworkManager(object):
                 'vlan': net.vlan_id,
                 'dev': interface.name})
 
+        network_data.append(self._get_admin_network(node_db))
+
         return network_data
 
     def update_interfaces_info(self, node):
@@ -408,6 +410,20 @@ class NetworkManager(object):
             self.db.commit()
             node.interfaces.append(nicInterface)
 
+    def _get_admin_network(self, node):
+        """
+        Node contain mac address which sent ohai,
+        when node was loaded. By this mac address
+        we can identify interface name for admin network.
+        """
+        for interface in node.meta.get('interfaces', []):
+            if interface['mac'] == node.mac:
+                return {
+                    'name': u'admin',
+                    'dev': interface['name']}
+
+        raise errors.CanNotFindInterface()
+
     def _get_interface_by_network_name(self, node, network_name):
         """
         Return network device which has appointed
@@ -417,3 +433,5 @@ class NetworkManager(object):
             for network in interface.assigned_networks:
                 if network.name == network_name:
                     return interface
+
+        raise errors.CanNotFindInterface()
