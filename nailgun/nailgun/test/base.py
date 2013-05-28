@@ -195,19 +195,20 @@ class Environment(object):
             node = Node()
             node.timestamp = datetime.now()
             if not node_data.get('meta'):
-                node_data['meta'] = self.default_metadata()
+                node_data['meta'] = default_metadata
             else:
-                node_data['meta'].update(self.default_metadata())
+                node_data['meta'].update(default_metadata)
             for key, value in node_data.iteritems():
                 setattr(node, key, value)
             node.attributes = self.create_attributes()
             node.attributes.volumes = node.volume_manager.gen_volumes_info()
             self.db.add(node)
             self.db.commit()
-            self.nodes.append(node)
             self._set_interfaces_if_not_set_in_meta(
                 node,
                 kwargs.get('meta', None))
+
+            self.nodes.append(node)
 
         return node
 

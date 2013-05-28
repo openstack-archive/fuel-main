@@ -27,9 +27,5 @@ class NoSuitableCIDR(Exception):
 
 class CanNotFindInterface(Exception):
 
-    def __init__(self, message, *args, **kwargs):
-        if not message:
-            message = u"Cannot find interface"
-        super(
-            CanNotFindAdminNetworkInterface,
-            self).__init__(message, *args, **kwargs)
+    def __init__(self, message=u"Cannot find interface", *args, **kwargs):
+        super(CanNotFindInterface, self).__init__(message, *args, **kwargs)
