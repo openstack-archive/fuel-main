@@ -30,8 +30,9 @@ function(utils, models, commonViews, dialogViews, notificationsListTemplate) {
                 }, this));
         },
         showNodeInfo: function(e) {
-            if ($(e.target).data('node')) {
-                var node = this.nodes.get($(e.target).data('node'));
+            var nodeId = $(e.currentTarget).data('node');
+            if (nodeId) {
+                var node = this.nodes.get(nodeId);
                 var dialog = new dialogViews.ShowNodeInfoDialog({node: node});
                 this.registerSubView(dialog);
                 dialog.render();
