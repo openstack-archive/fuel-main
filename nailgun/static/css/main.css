@@ -3393,7 +3393,6 @@ hr.slim {
   margin-top: 10px;
   margin-left: 10px;
   text-align: center;
-  padding-top: 16px;
   text-shadow: 0 1px 0 rgba(255,255,255,.4);
   -webkit-box-shadow: inset 0 0 0 1px #fff;
   -moz-box-shadow: inset 0 0 0 1px #fff;
@@ -3421,6 +3420,16 @@ hr.slim {
   background-image: -ms-linear-gradient(bottom, #a7a6a6, #cdcccc);
   background-image: linear-gradient(to top, #a7a6a6, #cdcccc);
   cursor: hand;cursor:pointer;
+}
+
+.logical-network-item > .name {
+  margin-top: 10px;
+  font-size: 15px;
+}
+
+.logical-network-item > .id {
+  color: #444444;
+  font-size: 10px;
 }
 
 .network-help-message {
