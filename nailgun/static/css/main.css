@@ -1380,7 +1380,7 @@ h6.page-title {
 }
 
 .networks-table .range-row-header > div:first-child {
-  margin-left: 153px;
+  margin-left: 178px;
 }
 
 .networks-table .range-row-header {
@@ -3275,7 +3275,7 @@ legend.openstack-sub-title {
 }
 
 .networks-sub-title {
-  width: 150px;
+  width: 175px;
 }
 
 .deploy-task-name {

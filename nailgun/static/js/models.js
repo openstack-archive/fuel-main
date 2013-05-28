@@ -322,7 +322,7 @@ define(function() {
                 'public': ['ip_ranges', 'vlan_start', 'mask', 'gateway'],
                 'management': ['cidr', 'vlan_start'],
                 'storage': ['cidr', 'vlan_start'],
-                'fixed': ['cidr', 'amount', 'vlan_start']
+                'fixed': ['cidr', 'amount', 'network_size', 'vlan_start']
             };
             return attributes[this.get('name')] || ['vlan_start'];
         },
