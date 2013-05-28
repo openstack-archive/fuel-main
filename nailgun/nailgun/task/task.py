@@ -135,9 +135,6 @@ class DeploymentTask(object):
 
         cluster_attrs['network_manager'] = task.cluster.net_manager
         if task.cluster.net_manager == "VlanManager":
-
-            # FIXME: hardcoded eth0 in cluster_attrs
-            cluster_attrs['vlan_interface'] = 'eth0'
             cluster_attrs['network_size'] = fixed_net.network_size
             cluster_attrs['num_networks'] = fixed_net.amount
             cluster_attrs['vlan_start'] = fixed_net.vlan_start

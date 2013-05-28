@@ -6,11 +6,7 @@ $controller_hostnames = keys($controller_internal_addresses)
 $galera_nodes = values($controller_internal_addresses)
 
 $create_networks = true
-if $network_manager == 'VlanManager' {
-  $private_interface = $vlan_interface
-}else{
-  $private_interface = $fixed_interface
-}
+
 $network_config = {
   'vlan_start'     => $vlan_start,
 }
@@ -83,7 +79,7 @@ class compact_controller {
     internal_address              => $internal_address,
     public_interface              => $public_interface,
     internal_interface            => $management_interface,
-    private_interface             => $private_interface,
+    private_interface             => $fixed_interface,
     internal_virtual_ip           => $management_vip,
     public_virtual_ip             => $public_vip,
     primary_controller            => $primary_controller,
@@ -198,7 +194,7 @@ class compact_controller {
 
       class { 'openstack::compute':
         public_interface       => $public_interface,
-        private_interface      => $private_interface,
+        private_interface      => $fixed_interface,
         internal_address       => $internal_address,
         libvirt_type           => $libvirt_type,
         fixed_range            => $fixed_network_range,

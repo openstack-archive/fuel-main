@@ -1,10 +1,5 @@
 class osnailyfacter::cluster_simple {
 
-if $network_manager == 'VlanManager' {
-  $private_interface = $vlan_interface
-}else{
-  $private_interface = $fixed_interface
-}
 $network_config = {
   'vlan_start'     => $vlan_start,
 }
@@ -61,7 +56,7 @@ Exec { logoutput => true }
         admin_address           => $controller_node_address,
         public_address          => $controller_node_public,
         public_interface        => $public_interface,
-        private_interface       => $private_interface,
+        private_interface       => $fixed_interface,
         internal_address        => $controller_node_address,
         floating_range          => $floating_network_range,
         fixed_range             => $fixed_network_range,
@@ -128,7 +123,7 @@ Exec { logoutput => true }
 
       class { 'openstack::compute':
         public_interface       => $public_interface,
-        private_interface      => $private_interface,
+        private_interface      => $fixed_interface,
         internal_address       => $internal_address,
         libvirt_type           => $libvirt_type,
         fixed_range            => $fixed_network_range,
