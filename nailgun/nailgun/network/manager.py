@@ -302,14 +302,14 @@ class NetworkManager(object):
 
         cluster = self.db.query(Cluster).get(cluster_id)
         if not cluster:
-            raise Exception("Cluster id='%s' not found" % cluster_id)
+            raise Exception(u"Cluster id='%s' not found" % cluster_id)
 
         network = self.db.query(Network).join(NetworkGroup).\
             filter(NetworkGroup.cluster_id == cluster_id).\
             filter_by(name=network_name).first()
 
         if not network:
-            raise Exception("Network '%s' for cluster_id=%s not found." %
+            raise Exception(u"Network '%s' for cluster_id=%s not found." %
                             (network_name, cluster_id))
 
         admin_net_id = self.get_admin_network_id()
@@ -320,22 +320,17 @@ class NetworkManager(object):
             not_(IPAddr.network == admin_net_id)
         ).all()]
         # check if any of used_ips in required cidr: network.cidr
-        ips_belongs_to_net = IPSet(IPNetwork(network.cidr))\
-            .intersection(IPSet(cluster_ips))
+        ips_belongs_to_net = False
+        for ip in cluster_ips:
+            if self.check_ip_belongs_to_net(ip, network):
+                ips_belongs_to_net = True
+                break
 
         if ips_belongs_to_net:
             vip = cluster_ips[0]
         else:
             # IP address has not been assigned, let's do it
-            from_range = ifilter(
-                lambda x: x not in (network.gateway,),
-                imap(
-                    str,
-                    IPNetwork(network.cidr).iter_hosts()
-                )
-            )
-            free_ips = self._get_free_ips_from_range(from_range)
-            vip = free_ips[0]
+            vip = self.get_free_ips(network.network_group.id)[0]
             ne_db = IPAddr(network=network.id, ip_addr=vip)
             self.db.add(ne_db)
             self.db.commit()
