@@ -18,7 +18,7 @@ class TestHandlers(BaseHandlers):
 
     def test_get_handler_with_incompleted_data(self):
         meta = self.env.default_metadata()
-        del meta["interfaces"]
+        meta["interfaces"] = []
         node = self.env.create_node(api=True, meta=meta)
         meta_list = [
             {'interfaces': None},
@@ -60,7 +60,7 @@ class TestHandlers(BaseHandlers):
 
     def test_get_handler_without_NICs(self):
         meta = self.env.default_metadata()
-        del meta["interfaces"]
+        meta["interfaces"] = []
         node = self.env.create_node(api=True, meta=meta)
         resp = self.app.get(
             reverse('NodeNICsHandler', kwargs={'node_id': node['id']}),

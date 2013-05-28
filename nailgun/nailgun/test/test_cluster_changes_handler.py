@@ -122,7 +122,7 @@ class TestHandlers(BaseHandlers):
                                            {'vlan': 101,
                                             'name': 'fixed',
                                             'dev': 'eth0'},
-                                           {'name': 'admin',
+                                           {'name': u'admin',
                                             'dev': 'eth0'}]})
 
             pnd = {

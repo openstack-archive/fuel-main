@@ -104,7 +104,7 @@ class TestNetworkManager(BaseHandlers):
             self.env.nodes[0].id
         )
 
-        self.assertEquals(len(network_data), 4)
+        self.assertEquals(len(network_data), 5)
         fixed_nets = filter(lambda net: net['name'] == 'fixed', network_data)
         self.assertEquals(fixed_nets, [])
 
@@ -247,6 +247,7 @@ class TestNetworkManager(BaseHandlers):
             nodes_kwargs=[
                 {
                     "pending_addition": True,
+                    "mac": "00:00:00:00:00:00",
                     "meta": {
                         "interfaces": [
                             {
@@ -262,6 +263,7 @@ class TestNetworkManager(BaseHandlers):
                 },
                 {
                     "pending_addition": True,
+                    "mac": "00:00:00:00:00:02",
                     "meta": {
                         "interfaces": [
                             {

@@ -40,8 +40,7 @@ class TestClusterChanges(BaseHandlers):
         cluster = self.env.create_cluster(api=True)
         node = self.env.create_node(
             api=True,
-            cluster_id=cluster["id"],
-            meta=self.env.default_metadata()
+            cluster_id=cluster["id"]
         )
         node_db = self.env.nodes[0]
         node_disks_changes = self.db.query(ClusterChanges).filter_by(
@@ -65,8 +64,7 @@ class TestClusterChanges(BaseHandlers):
         cluster = self.env.create_cluster(api=True)
         node = self.env.create_node(
             api=True,
-            cluster_id=cluster["id"],
-            meta=self.env.default_metadata()
+            cluster_id=cluster["id"]
         )
         node_db = self.env.nodes[0]
         node_disks_changes = self.db.query(ClusterChanges).filter_by(

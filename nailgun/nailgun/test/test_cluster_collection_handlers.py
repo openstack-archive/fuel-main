@@ -43,7 +43,6 @@ class TestHandlers(BaseHandlers):
             {"name": "fixed", "access": "private10"},
             {"name": "storage", "access": "private192"},
             {"name": "management", "access": "private172"},
-            {"name": "other_172", "access": "private172"},
         ]
         release.attributes_metadata = {
             "editable": {
@@ -113,14 +112,6 @@ class TestHandlers(BaseHandlers):
                 'vlan_id': 103,
                 'cidr': '172.16.0.0/24',
                 'gateway': '172.16.0.1'
-            },
-            {
-                'release': release.id,
-                'name': u'other_172',
-                'access': 'private172',
-                'vlan_id': 104,
-                'cidr': '172.16.1.0/24',
-                'gateway': '172.16.1.1'
             },
         ]
         self.assertItemsEqual(expected, obtained)

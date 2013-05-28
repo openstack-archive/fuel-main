@@ -291,11 +291,11 @@ class Environment(object):
         ).first()
         start_id = 0 if not start_id else start_id[-1] + 1
         net_names = (
-            "floating_test",
-            "public_test",
-            "management_test",
-            "storage_test",
-            "fixed_test"
+            "floating",
+            "public",
+            "management",
+            "storage",
+            "fixed"
         )
         net_cidrs = (
             "240.0.0.0/24",
