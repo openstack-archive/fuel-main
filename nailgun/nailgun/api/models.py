@@ -291,12 +291,14 @@ class NetworkGroup(Base):
         # Node networks
         'fuelweb_admin',
         'storage',
-        'management', #  internal in terms of fuel
+        # internal in terms of fuel
+        'management',
         'public',
 
         # VM networks
         'floating',
-        'fixed' # private in terms of fuel
+        # private in terms of fuel
+        'fixed'
     )
 
     id = Column(Integer, primary_key=True)
