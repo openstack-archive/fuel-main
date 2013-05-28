@@ -120,8 +120,9 @@ class TestNetworkConfigurationHandler(BaseHandlers):
             'vlan_start': 500}]}
 
         resp = self.put(self.cluster.id, new_nets, expect_errors=True)
-        self.assertEquals(400, resp.status)
+        self.assertEquals(202, resp.status)
         task = json.loads(resp.body)
+        self.assertEquals(task['status'], 'error')
         self.assertEquals(
             task['message'],
             'Invalid network ID: 500'

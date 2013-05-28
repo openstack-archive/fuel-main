@@ -137,7 +137,10 @@ class TestHandlers(BaseHandlers):
             headers=self.default_headers,
             expect_errors=True
         )
-        self.assertEquals(400, resp.status)
+        self.assertEquals(202, resp.status)
+        task = json.loads(resp.body)
+        self.assertEquals(task['status'], 'error')
+
 
     @patch('nailgun.rpc.cast')
     def test_verify_networks(self, mocked_rpc):
@@ -148,4 +151,6 @@ class TestHandlers(BaseHandlers):
             json.dumps(self.env.generate_ui_networks(cluster["id"])),
             headers=self.default_headers
         )
-        self.assertEquals(resp.status, 202)
+        self.assertEquals(202, resp.status)
+        task = json.loads(resp.body)
+        self.assertEquals(task['status'], 'ready')

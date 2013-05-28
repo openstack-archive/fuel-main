@@ -80,7 +80,6 @@ class NetworkConfigurationHandler(JSONHandler):
         data = build_json_response(TaskHandler.render(task))
         if task.status == 'error':
             self.db.rollback()
-            raise web.badrequest(message=data)
-
-        self.db.commit()
+        else:
+            self.db.commit()
         raise web.accepted(data=data)

@@ -55,7 +55,7 @@ class TestHandlers(BaseHandlers):
             headers=self.default_headers,
             expect_errors=True
         )
-        self.assertEquals(resp.status, 400)
+        self.assertEquals(resp.status, 202)
         task = json.loads(resp.body)
         self.assertEquals(task['status'], 'error')
         self.assertEquals(task['progress'], 100)
@@ -89,7 +89,7 @@ class TestHandlers(BaseHandlers):
             headers=self.default_headers,
             expect_errors=True
         )
-        self.assertEquals(resp.status, 400)
+        self.assertEquals(resp.status, 202)
         task = json.loads(resp.body)
         self.assertEquals(task['status'], 'error')
         self.assertEquals(task['progress'], 100)
