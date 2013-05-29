@@ -6,16 +6,16 @@ Installing Fuel Web
 Instructions
 ------------
 
-Fuel Web is being distributed as an ISO image, which contains an installer for an admin node. 
+Fuel Web is being distributed as an ISO and IMG images, which contain an installer for an admin node. ISO image is used for CD media devices, iLO or similar remote access systems. IMG file is ised for USB memory drives.
 
-Once installed, Fuel Web can be used to deploy and manage OpenStack clusters. It will assign IP addresses to the nodes, perform PXE boot and initial configuration, and provision OpenStack nodes according to their roles in the cluster.
+Once installed, FuelWeb can be used to deploy and manage OpenStack clusters. It will assign IP addresses to the nodes, perform PXE boot and initial configuration, and provision of OpenStack nodes according to their roles in the cluster.
 
 On Physical Hardware
 --------------------
 
-If you are going to install Fuel Web on physical hardware, you have to burn the provided ISO to a CD/DVD or USB stick and start the installation process by booting from this media, very much like any other OS.
+If you are going to install FuelWeb on physical hardware, you have to burn the provided ISO to a CD/DVD or IMG file to USB stick and start the installation process by booting from the media, very much like any other OS.
 
-Linux users can prepare installation USB stick with dd command. For example, if your flash is /dev/sdb, you can use following command line: ``dd if=fuelweb.img of=/dev/sdb``. Actual device name you can find in output of ``dmesg`` command.
+Linux and Mac users can prepare installation USB stick with dd command. For example, if your flash is /dev/sdb, you can use following command line: ``dd if=fuelweb.img of=/dev/sdb``. Actual device name you can find in output of ``dmesg`` command.
 
 On Windows you can write installation image with `Win32 Disk Imager <http://sourceforge.net/projects/win32diskimager/>`_.
 
@@ -29,14 +29,14 @@ If you are going to evaluate Fuel Web on VirtualBox, there is a very convenient 
 The requirements are:
 
 * physical machine with Linux or Mac OS, and VirtualBox installed
-  * the scripts have been tested on Mac OS 10.7.5, Ubuntu 12.04 (the scripts do NOT support Windows-based platforms)
-  * the scripts have been tested using VirtualBox 4.2.8
+  * the scripts have been tested on Mac OS 10.7.5, Mac OS 10.8.3, Ubuntu 12.04 (the scripts do NOT support Windows-based platforms)
+  * the scripts have been tested using VirtualBox 4.2.12
 
-* Virtualbox must be installed with extension pack. It can be downloaded from the www.virtualbox.org.
+* Virtualbox must be installed with an extension pack. It can be downloaded from the www.virtualbox.org.
 
 * 8 GB+ of RAM
 
-  * to handle 3 VMs for non-HA OpenStack installation (1 admin node, 1 controller node, 1 compute node) 
+  * to handle 4 VMs for non-HA OpenStack installation (1 admin node, 1 controller node, 1 compute node, 1 cinder node) 
   * to handle 5 VMs for HA OpenStack installation (1 admin node, 3 controller nodes, 1 compute node) 
 
 Automatic mode
@@ -46,8 +46,7 @@ When you unpack the scripts, there will be the following important files:
 
 * iso
 
-  * this directory will initially be empty. if it does not exist, it has to be created
-  * it needs to contain a single ISO image for Fuel Web. once you download ISO from the portal, put it into this directory
+  * it needs to contain a single ISO image for Fuel Web. Once you download ISO from the portal, put it into this directory
 
 * config.sh
 
@@ -113,7 +112,7 @@ Changing network parameters
 
 This is an optional step. If you are going to use a different network, you can change the default network settings (10.20.0.2/24 gw 10.20.0.1).
 
-In order to do so, press <TAB> аt the very first installation screen which says "Welcome to Fuel Web CentOS 6.3" and update kernel options. For example, to use 192.168.1.10/24 network with 192.168.1.1 as gateway and DNS server you should change the parameters to:
+In order to do so, press <TAB> аt the very first installation screen which says "Welcome to FuelWeb Installer!" and update kernel options. For example, to use 192.168.1.10/24 network with 192.168.1.1 as gateway and DNS server you should change the parameters to:
 
 * vmlinuz initrd=initrd.img ks=cdrom:/ks.cfg ip=192.168.1.10 gw=192.168.1.1 dns1=192.168.1.1 netmask=255.255.255.0
 
