@@ -6,7 +6,7 @@ casper.then(function() {
     this.test.comment('Testing cluster networks: layout rendered');
     this.test.assertEvalEquals(function() {return $('.net-manager input[type=radio]').length}, 2, 'Network manager options are presented');
     this.test.assertExists('.net-manager input[value=FlatDHCPManager]:checked', 'Flat DHCP manager is chosen');
-    this.test.assertEvalEquals(function() {return $('.networks-table .row').length}, 7, 'All networks are presented');
+    this.test.assertEvalEquals(function() {return $('legend.networks').length}, 5, 'All networks are presented');
     this.test.assertDoesntExist('.verify-networks-btn:disabled', 'Verify networks button is enabled');
     this.test.assertExists('.apply-btn:disabled', 'Save networks button is disabled');
 });
@@ -14,16 +14,16 @@ casper.then(function() {
 casper.then(function() {
     this.test.comment('Testing cluster networks: Save button interractions');
     var initialValue = this.evaluate(function(initialValue) {
-            return __utils__.getFieldValue('public-cidr');
+            return __utils__.getFieldValue('management-cidr');
         });
-    this.fill('.networks-table', {'public-cidr': '240.0.1.0/25'});
+    this.fill('.networks-table', {'management-cidr': '240.0.1.0/25'});
     this.evaluate(function() {
-        $('input[name=public-cidr]').keyup();
+        $('input[name=management-cidr]').keyup();
     });
     this.test.assertExist('.apply-btn:not(:disabled)', 'Save networks button is enabled if there are changes');
-    this.fill('.networks-table', {'public-cidr': initialValue});
+    this.fill('.networks-table', {'management-cidr': initialValue});
     this.evaluate(function() {
-        $('input[name=public-cidr]').keyup();
+        $('input[name=management-cidr]').keyup();
     });
     this.test.assertExists('.apply-btn:disabled', 'Save networks button is disabled again if there are no changes');
 });
@@ -42,19 +42,19 @@ casper.then(function() {
 casper.then(function() {
     this.test.comment('Testing cluster networks: data validation');
     var initialValue = this.evaluate(function(initialValue) {
-            return __utils__.getFieldValue('public-cidr');
+            return __utils__.getFieldValue('management-cidr');
         });
-    this.fill('.networks-table', {'public-cidr': '240.0.1.0/245'});
+    this.fill('.networks-table', {'management-cidr': '240.0.1.0/245'});
     this.evaluate(function() {
-        $('input[name=public-cidr]').keyup();
+        $('input[name=management-cidr]').keyup();
     });
-    this.test.assertExists('.control-group.error', 'Field validation has worked');
+    this.test.assertExists('input[name=management-cidr].error', 'Field validation has worked');
     this.test.assertExists('.apply-btn:disabled', 'Save networks button is disabled if there is validation error');
-    this.fill('.networks-table', {'public-cidr': initialValue});
+    this.fill('.networks-table', {'management-cidr': initialValue});
     this.evaluate(function() {
-        $('input[name=public-cidr]').keyup();
+        $('input[name=management-cidr]').keyup();
     });
-    this.test.assertDoesntExist('.control-group.error', 'Field validation works properly');
+    this.test.assertDoesntExist('input[name=management-cidr].error', 'Field validation works properly');
 });
 
 casper.then(function() {
@@ -65,7 +65,7 @@ casper.then(function() {
         return __utils__.getFieldValue('fixed-amount');
     });
     var initialVlanIDValue = this.evaluate(function(initialValue) {
-        return __utils__.getFieldValue('fixed-vlan_start');
+        return __utils__.getFieldValue('fixed-vlan_range-start');
     });
 
     var fixtures = [
@@ -119,36 +119,36 @@ casper.then(function() {
         self.then(function() {
             this.fill('.networks-table', {'fixed-amount': fixture.amount});
             if (fixture.vlanStart != '') {
-                this.fill('.networks-table', {'fixed-vlan_start': fixture.vlanStart});
+                this.fill('.networks-table', {'fixed-vlan_range-start': fixture.vlanStart});
             }
             this.evaluate(function() {
                 $('input[name=fixed-amount]').keyup();
             });
             if (fixture.vlanEnd == '') {
-                this.test.assertExists('.control-group.error', 'Field validation has worked ' + fixture.validationMessage);
+                this.test.assertExists('input[name=fixed-amount].error', 'Field validation has worked ' + fixture.validationMessage);
                 this.test.assertExists('.apply-btn:disabled', 'Apply button is disabled if there is validation error');
             } else {
-                this.test.assertEvalEquals(function() {return $('input[name=fixed-vlan-end]').val()}, fixture.vlanEnd, 'End value is correct');
-                this.test.assertDoesntExist('.control-group.error', 'Field validation works properly with correct value');}
+                this.test.assertEvalEquals(function() {return $('input[name=fixed-vlan_range-end]').val()}, fixture.vlanEnd, 'End value is correct');
+                this.test.assertDoesntExist('input[name=fixed-amount].error', 'Field validation works properly with correct value');}
         });
     });
 
     casper.then(function() {
 	this.fill('.networks-table', {
             'fixed-amount': '1',
-            'fixed-vlan_start': '4094'
+            'fixed-vlan_range-start': '4094'
         });
         this.evaluate(function() {
             $('input[name=fixed-amount]').keyup();
         });
-        this.test.assertDoesntExist('.control-group.error', 'Field validation works properly');
+        this.test.assertDoesntExist('input[name=fixed-amount].error', 'Field validation works properly');
         this.test.assertDoesntExist('.networks-table.fixed-vlan-end', 'Field end vlan value works properly');
     });
 
     casper.then(function() {
         this.fill('.networks-table', {
             'fixed-amount': initialAmountValue,
-            'fixed-vlan_start': initialVlanIDValue
+            'fixed-vlan_range-start': initialVlanIDValue
         });
         this.click('.net-manager input[type=radio]:not(:checked)');
     });
@@ -158,7 +158,7 @@ casper.then(function() {
 casper.then(function() {
     this.test.comment('Check CIDR field validation');
     var initialCIDRValue = this.evaluate(function(initialValue) {
-        return __utils__.getFieldValue('public-cidr');
+        return __utils__.getFieldValue('management-cidr');
     });
 
     var fixtures = [
@@ -212,27 +212,27 @@ casper.then(function() {
 
     this.each(fixtures, function(self, fixture) {
         self.then(function() {
-            this.fill('.networks-table', {'public-cidr': fixture.cidr});
+            this.fill('.networks-table', {'management-cidr': fixture.cidr});
             this.evaluate(function() {
-                $('input[name=public-cidr]').keyup();
+                $('input[name=management-cidr]').keyup();
             });
-            this.test.assertExists('.control-group.error', 'Field validation has worked properly in case of ' + fixture.validationMessage);
+            this.test.assertExists('input[name=management-cidr].error', 'Field validation has worked properly in case of ' + fixture.validationMessage);
         });
     });
 
 
     casper.then(function() {
-	this.fill('.networks-table', {'public-cidr': '0.10.100.255/15'});
+	this.fill('.networks-table', {'management-cidr': '0.10.100.255/15'});
         this.evaluate(function() {
-            $('input[name=public-cidr]').keyup();
+            $('input[name=management-cidr]').keyup();
         });
-        this.test.assertDoesntExist('.control-group.error', 'Validation error description disappears if there are no errors');
+        this.test.assertDoesntExist('input[name=management-cidr].error', 'Validation error description disappears if there are no errors');
     });
 
     casper.then(function() {
-	this.fill('.networks-table', {'public-cidr': initialCIDRValue});
+	this.fill('.networks-table', {'management-cidr': initialCIDRValue});
         this.evaluate(function() {
-            $('input[name=public-cidr]').keyup();
+            $('input[name=management-cidr]').keyup();
         });
     });
 
@@ -241,20 +241,20 @@ casper.then(function() {
 casper.then(function() {
     this.test.comment('Check CIDR prefix');
     var initialCIDRValue = this.evaluate(function(initialValue) {
-        return __utils__.getFieldValue('public-cidr');
+        return __utils__.getFieldValue('management-cidr');
     });
 
     function testCIDRprefix (fixtures, negativeTests) {
         casper.each(fixtures, function(self, fixture) {
             self.then(function() {
-                this.fill('.networks-table', {'public-cidr': '240.0.1.0/' + fixture});
+                this.fill('.networks-table', {'management-cidr': '240.0.1.0/' + fixture});
                 this.evaluate(function() {
-                    $('input[name=public-cidr]').keyup();
+                    $('input[name=management-cidr]').keyup();
                 });
                 if (negativeTests) {
-                    this.test.assertExists('.control-group.error', 'Field validation has worked properly in case of prefix ' + fixture);
+                    this.test.assertExists('input[name=management-cidr].error', 'Field validation has worked properly in case of prefix ' + fixture);
                 } else {
-                    this.test.assertDoesntExist('.control-group.error', 'Field validation works properly in case of no errors (prefix ' + fixture +')');
+                    this.test.assertDoesntExist('input[name=management-cidr].error', 'Field validation works properly in case of no errors (prefix ' + fixture +')');
                 }
             });
         });
@@ -263,9 +263,9 @@ casper.then(function() {
     testCIDRprefix (['2', '30', '15'], false);
 
     casper.then(function() {
-	this.fill('.networks-table', {'public-cidr': initialCIDRValue});
+	this.fill('.networks-table', {'management-cidr': initialCIDRValue});
         this.evaluate(function() {
-            $('input[name=public-cidr]').keyup();
+            $('input[name=management-cidr]').keyup();
         });
     });
 });
@@ -284,9 +284,9 @@ casper.then(function() {
                     $('input[name=public-vlan_start]').keyup();
                 });
                 if (negativeTests) {
-                    this.test.assertExists('.control-group.error', 'Field validation has worked properly in case of ' + fixture + ' value');
+                    this.test.assertExists('input[name=public-vlan_start].error', 'Field validation has worked properly in case of ' + fixture + ' value');
                 } else {
-                    this.test.assertDoesntExist('.control-group.error', 'No validation errors in case of ' + fixture + ' value');
+                    this.test.assertDoesntExist('input[name=public-vlan_start].error', 'No validation errors in case of ' + fixture + ' value');
                 }
             });
         });
@@ -304,9 +304,9 @@ casper.then(function() {
 
 casper.then(function() {
     this.test.comment('Testing cluster networks: save changes');
-    this.fill('.networks-table', {'public-cidr': '240.0.1.0/23'});
+    this.fill('.networks-table', {'management-cidr': '240.0.1.0/23'});
     this.evaluate(function() {
-        $('input[name=public-cidr]').keyup();
+        $('input[name=management-cidr]').keyup();
     });
     this.click('.apply-btn:not(:disabled)');
     this.waitForSelector('input:not(:disabled)');
@@ -333,9 +333,9 @@ casper.then(function() {
 
 casper.then(function() {
     this.test.comment('Testing cluster networks: verification task deletion');
-    this.fill('.networks-table', {'public-cidr': '240.0.1.0/22'});
+    this.fill('.networks-table', {'management-cidr': '240.0.1.0/22'});
     this.evaluate(function() {
-        $('input[name=public-cidr]').keyup();
+        $('input[name=management-cidr]').keyup();
     });
     this.test.assertDoesntExist('.page-control-error-placeholder', 'Verification task was removed after settings has been changed');
 });
