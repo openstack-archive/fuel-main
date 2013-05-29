@@ -16,7 +16,7 @@ source functions/network.sh
 
 # Check for expect
 echo -n "Checking for 'expect'... "
-expect -v >/dev/null 2>&1 || { echo >&2 "'expect' is not available in the path, but it's required. Aborting."; exit 1; }
+expect -v >/dev/null 2>&1 || { echo >&2 "'expect' is not available in the path, but it's required. Please install 'expect' package. Aborting."; exit 1; }
 echo "OK"
 
 # Check for VirtualBox
