@@ -1416,7 +1416,7 @@ h6.page-title {
 }
 
 .networks-table .range-row {
-  margin-left: 150px;
+  margin-left: 175px;
   width: 780px;
 }
 
@@ -1426,7 +1426,7 @@ h6.page-title {
 
 .networks-table div.error {
   float: right;
-  width: 264px;
+  width: 239px;
 }
 
 .networks-table .error .help-inline {

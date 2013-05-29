@@ -244,7 +244,8 @@ function(utils, models, commonViews, dialogViews, networkTabTemplate, networkTem
             if (add) {
                 this.network.get('ip_ranges').splice(index + 1, 0, ['', '']);
                 var newRow = row.clone();
-                newRow.find('input').val('');
+                newRow.find('input').removeClass('error').val('');
+                newRow.find('.help-inline').text('');
                 row.after(newRow);
                 row.parent().find('.ip-ranges-control').removeClass('hide');
             } else {
