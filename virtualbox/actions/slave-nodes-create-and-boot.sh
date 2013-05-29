@@ -17,7 +17,7 @@ for idx in $(seq 1 $cluster_size); do
     vm_ram=${vm_slave_memory_mb[$idx]}
     [ -z $vm_ram ] && vm_ram=$vm_slave_memory_default
     echo
-    create_vm $name ${host_nic_name[0]} $vm_slave_cpu_cores $vm_ram $vm_slave_disk_mb
+    create_vm $name ${host_nic_name[0]} $vm_slave_cpu_cores $vm_ram $vm_slave_first_disk_mb
 
     # Add additional NICs to VM
     echo
@@ -26,8 +26,8 @@ for idx in $(seq 1 $cluster_size); do
 
     # Add additional disks to VM
     echo
-    add_disk_to_vm $name 1 $vm_slave_disk2_mb
-    add_disk_to_vm $name 2 $vm_slave_disk3_mb
+    add_disk_to_vm $name 1 $vm_slave_second_disk_mb
+    add_disk_to_vm $name 2 $vm_slave_third_disk_mb
 
     enable_network_boot_for_vm $name 
     start_vm $name

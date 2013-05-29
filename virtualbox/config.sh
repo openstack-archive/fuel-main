@@ -43,6 +43,6 @@ vm_slave_memory_mb[3]=768   # for a dedicated Cinder node 768 MB should be suffi
 
 # This section allows you to define HDD size in MB for all the slaves nodes.
 # All the slaves will have identical disk configuration. Each slave will have three disks of the following sizes.
-vm_slave_disk_mb=16384
-vm_slave_disk2_mb=512000
-vm_slave_disk3_mb=2300000
+vm_slave_first_disk_mb=16384
+vm_slave_second_disk_mb=512000
+vm_slave_third_disk_mb=2300000
