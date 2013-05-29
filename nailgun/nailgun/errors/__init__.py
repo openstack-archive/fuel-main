@@ -13,6 +13,7 @@ default_messages = {
     "NodeOffline": "Node is offline",
     # network errors
     "AdminNetworkNotFound": "Admin network info not found",
+    "InvalidNetworkAccess": "Invalid network access",
     "AssignIPError": "Failed to assign IP to node",
     "NetworkCheckError": "Network checking failed",
     "OutOfVLANs": "Not enough available VLAN IDs",

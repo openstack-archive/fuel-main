@@ -165,7 +165,7 @@ class TestNetworkModels(BaseHandlers):
               'access': 'private',
               'vlan_start': 200,
               'amount': 2,
-              'gateway_ip_index': 5,
+              'gateway': "10.0.0.5",
               'cluster_id': cluster.id}
         ng = NetworkGroup(**kw)
         self.db.add(ng)
@@ -176,4 +176,4 @@ class TestNetworkModels(BaseHandlers):
         ).all()
         self.assertEquals(len(nets_db), kw['amount'])
         self.assertEquals(nets_db[0].gateway, "10.0.0.5")
-        self.assertEquals(nets_db[1].gateway, "10.0.0.133")
+        self.assertEquals(nets_db[1].gateway, "10.0.0.5")

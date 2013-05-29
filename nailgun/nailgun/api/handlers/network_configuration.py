@@ -41,7 +41,7 @@ class NetworkConfigurationVerifyHandler(JSONHandler):
 
 class NetworkConfigurationHandler(JSONHandler):
     fields = ('id', 'cluster_id', 'name', 'cidr', 'netmask',
-              'vlan_start', 'network_size', 'amount')
+              'gateway', 'vlan_start', 'network_size', 'amount')
 
     @classmethod
     def render(cls, instance, fields=None):
@@ -49,6 +49,8 @@ class NetworkConfigurationHandler(JSONHandler):
         json_data["ip_ranges"] = [
             [ir.first, ir.last] for ir in instance.ip_ranges
         ]
+        json_data.setdefault("netmask", "")
+        json_data.setdefault("gateway", "")
         return json_data
 
     validator = NetworkConfigurationValidator
@@ -59,7 +61,6 @@ class NetworkConfigurationHandler(JSONHandler):
         result = {}
         result['net_manager'] = cluster.net_manager
         result['networks'] = map(self.render, cluster.network_groups)
-
         return result
 
     def PUT(self, cluster_id):

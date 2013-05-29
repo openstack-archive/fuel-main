@@ -108,7 +108,7 @@ class NetworkManager(object):
                 access=network['access'],
                 cidr=str(new_net),
                 netmask=str(new_net.netmask),
-                gateway_ip_index=1,
+                gateway=str(new_net[1]),
                 cluster_id=cluster_id,
                 vlan_start=vlan_start,
                 amount=1
@@ -161,8 +161,8 @@ class NetworkManager(object):
                 self.db.add(vlan_db)
             logger.debug("Created VLAN object, vlan_id=%s", vlan_db.id)
             gateway = None
-            if nw_group.gateway_ip_index:
-                gateway = str(subnets[n][nw_group.gateway_ip_index])
+            if nw_group.gateway:
+                gateway = nw_group.gateway
             net_db = Network(
                 release=nw_group.release,
                 name=nw_group.name,
@@ -391,7 +391,7 @@ class NetworkManager(object):
         for ip_addr in ifilter(
             lambda ip: self.db.query(IPAddr).filter_by(
                 ip_addr=str(ip)
-            ).first() is None,
+            ).first() is None and not ip == network_group.gateway,
             chain(*[
                 IPRange(ir.first, ir.last)
                 for ir in network_group.ip_ranges

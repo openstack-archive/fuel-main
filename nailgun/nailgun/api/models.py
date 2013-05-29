@@ -312,7 +312,7 @@ class NetworkGroup(Base):
     network_size = Column(Integer, default=256)
     amount = Column(Integer, default=1)
     vlan_start = Column(Integer, default=1)
-    gateway_ip_index = Column(Integer)
+    gateway = Column(String(25))
     networks = relationship("Network", cascade="delete",
                             backref="network_group")
     ip_ranges = relationship(
