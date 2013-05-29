@@ -15,8 +15,10 @@
 } %>
 
 <div data-network-id="<%- network.id %>" class="<%- networkName %>">
-  <% _.each(_.keys(network.attributes), function(attribute) { %>
-    <% var hidden = _.contains(network.getAttributes(), attribute) ? '' : 'hide' %>
+  <% var shownAttributes = network.getAttributes() %>
+  <% var attributes = _.sortBy(_.keys(network.attributes), function(attribute) {return _.indexOf(shownAttributes, attribute)}) %>
+  <% _.each(attributes, function(attribute) { %>
+    <% var hidden = _.contains(shownAttributes, attribute) ? '' : 'hide' %>
     <% if (attribute == 'ip_ranges') { %>
       <div class="range-row-header <%= hidden %>">
         <div>Start</div><div>End</div>
