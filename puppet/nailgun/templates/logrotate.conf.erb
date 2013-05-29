@@ -1,0 +1,12 @@
+/var/log/nailgun/api.log
+/var/log/nailgun/app.log
+/var/log/nailgun/nailgun.log
+{
+  copytruncate
+  daily
+  rotate 180
+  compress
+  delaycompress
+  missingok
+  notifempty
+}

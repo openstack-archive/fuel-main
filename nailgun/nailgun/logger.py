@@ -6,11 +6,13 @@ from StringIO import StringIO
 from cgitb import html
 from logging.handlers import HTTPHandler, SysLogHandler
 from logging.handlers import TimedRotatingFileHandler, SMTPHandler
+from logging.handlers import WatchedFileHandler
 
 from nailgun.settings import settings
 
 logger = logging.getLogger("nailgun")
 http_logger = logging.getLogger("http")
+api_logger = logging.getLogger("nailgun-api")
 
 CATCHID = 'wsgi.catch'
 LOGGERID = 'wsgi.errors'
@@ -53,6 +55,13 @@ class WriteLogger(logging.Logger, object):
 class HTTPLoggerMiddleware(object):
     def __init__(self, application, **kw):
         self.application = application
+        filelogger = WatchedFileHandler(kw.get('file', settings.API_LOG))
+        format = logging.Formatter(kw.get('logformat', LOGFORMAT))
+        filelogger.setFormatter(format)
+        api_logger.setLevel(
+            kw.get('loglevel', logging.DEBUG)
+        )
+        api_logger.addHandler(filelogger)
 
     def __call__(self, env, start_response):
         self.__logging_request(env)
@@ -73,9 +82,9 @@ class HTTPLoggerMiddleware(object):
         )
 
         if response_code == '500 Internal Server Error':
-            logger.error(response_info)
+            api_logger.error(response_info)
         else:
-            logger.debug(response_info)
+            api_logger.debug(response_info)
 
     def __logging_request(self, env):
         length = int(env.get('CONTENT_LENGTH', 0))
@@ -93,7 +102,7 @@ class HTTPLoggerMiddleware(object):
             body
         )
 
-        logger.debug(request_info)
+        api_logger.debug(request_info)
 
     def __get_remote_ip(self, env):
         if 'HTTP_X_REAL_IP' in env:
