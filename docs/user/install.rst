@@ -98,7 +98,7 @@ Create VMs with the following parameters:
 * OS Type: Linux, Version: Red Hat (64bit)
 * RAM: 768 MB
 * HDD: 16 GB, with dynamic disk expansion
-* Network 1: host-only interface vboxnet0
+* Network 1: host-only interface vboxnet0, PCnet-FAST III device
 
 You should set priority for the network boot:
 
