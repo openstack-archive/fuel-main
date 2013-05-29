@@ -40,17 +40,17 @@ create_vm() {
     VBoxManage modifyvm $name --rtcuseutc on --memory $memory_mb --cpus $cpu_cores
 
     # Configure main network interface
-    add_nic $name 1 $nic
+    add_nic_to_vm $name 1 $nic
 
     # Configure storage controllers
     VBoxManage storagectl $name --name 'IDE' --add ide
     VBoxManage storagectl $name --name 'SATA' --add sata
 
     # Create and attach the main hard drive
-    add_disk $name 0 $disk_mb
+    add_disk_to_vm $name 0 $disk_mb
 }
 
-add_nic() {
+add_nic_to_vm() {
     name=$1
     id=$2
     nic=$3
@@ -62,7 +62,7 @@ add_nic() {
     VBoxManage controlvm $name setlinkstate${id} on
 }
 
-add_disk() {
+add_disk_to_vm() {
     vm_name=$1
     port=$2
     disk_mb=$3

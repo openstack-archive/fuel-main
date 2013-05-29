@@ -32,10 +32,17 @@ vm_master_prompt='root@fuelweb ~]#'
 
 # Slave node settings
 vm_slave_cpu_cores=1
-vm_slave_memory_mb[1]=768   # PXE boot might not work with lower values
-vm_slave_memory_mb[2]=1024  # VM in OpenStack may not not boot with lower values, use this for Compute
-vm_slave_memory_mb[3]=768   # If not specified, 768Mb is default
+
+# This section allows you to define RAM size in MB for each slave node.
+# Keep in mind that PXE boot might not work correctly with values lower than 768.
+# You can specify memory size for the specific slaves, other will get default vm_slave_memory_default
+vm_slave_memory_default=768
+vm_slave_memory_mb[1]=768   # for controller node 768 MB should be sufficient
+vm_slave_memory_mb[2]=1024  # for compute node 1GB is recommended, otherwise VM instances in OpenStack may not boot
+vm_slave_memory_mb[3]=768   # for a dedicated Cinder node 768 MB should be sufficient
+
+# This section allows you to define HDD size in MB for all the slaves nodes.
+# All the slaves will have identical disk configuration. Each slave will have three disks of the following sizes.
 vm_slave_disk_mb=16384
 vm_slave_disk2_mb=512000
 vm_slave_disk3_mb=2300000
-
