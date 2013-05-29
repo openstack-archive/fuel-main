@@ -220,29 +220,63 @@ Switch
 ^^^^^^
 
 FuelWeb can configure hosts, however switches configuration is still manual work.
-All nodes has to be connected to a switch
-ports where "**FuelWeb**" vlan frames untagged (without vlan tags) and all other frames tagged (with vlan
-tags). Vlans 101-104 must not be filtered on those ports. It is crucial to isolate all used vlans
-from the rest of your network on L2 because in other case DHCP server on master node can send
-invalid DHCP offers to DHCP clients inside your network and vise versa slave nodes can get invalid
-DHCP offers from DHCP servers outside scheme. Also you need to configure each of the switch's ports connected
+Unfortunately the configuration steps and even the terminology used is different for different vendors,
+so we will try to provide vendor-agnostic information on how should traffic flow and leave the
+vendor-specific details on your own. We will still provide an example for Cisco switch.
+
+First of all, it is required to configure access ports to allow non-tagged PXE booting connections
+from all slave nodes to FuelWeb node. We refer this network as "admin" network, or "fuelweb".
+FuelWeb master node uses eth0 interface to serve PXE requests by default in this network.
+So, if unchanged, it is required to set the switch port for eth0 of FuelWeb in access mode.
+We recommend to use eth0 interfaces of all other nodes for PXE booting as well, and corresponding ports
+must be in access mode top.
+Taking into account that this is the network for PXE booting, it is strictly required to not mix this
+L2 segment with any other company's infrastructure. FuelWeb runs DHCP server and in case if there is
+another company's DHCP on the same L2, both company's infrastructure and FuelWeb's will be messed up.
+Also you need to configure each of the switch's ports connected
 to nodes as an "STP Edge port" (or a "spanning-tree portfast trunk" according to Cisco terminology).
-If you don't do that, some DHCP timeout issues can occur. Once master node is installed and slave nodes are
-booted in bootstrap mode you are able to use "Network Verification" feature in order to check
-validity of vlan configuration on L2 switch.
+If you don't do that, DHCP timeout issues may occur.
+
+When "admin" network is configured, it is enough for FuelWeb to operate. Other networks are required
+for OpenStack environments, and currently all of these networks lives in VLANs over the one or multiple
+physical interfaces on node. It means that switch should pass tagged traffic, and untagging is done
+on Linux hosts. *For the sake of simplicity, all the VLANs specified on networks tab of FuelWeb UI
+should be configured on switch ports, pointing to slave nodes, as tagged.* Of course, it is
+possible to specify as tagged only certain ports for a certain nodes. For example, there is no
+need to pass public network to Cinder hosts.
+
+It is enough to deploy the OpenStack environment. However it will not be really usable because
+there is no connection to other corporate networks yet. To make it, uplink port(s) should be
+configured. One of the VLANs may carry office network. To provide the access to FuelWeb WebUI
+from office network, any other free physical network interface on FuelWeb master node can be used
+and configured according to the office network rules (static IP or DHCP). The same corporate
+network segment can be used for public and floating ranges. In this case, it will be required
+to provide in UI corresponding VLAN ID and IP ranges. One public IP per node will be used to SNAT
+traffic out of the VMs network, and one or more floating addresses per VM instance to get
+access to the VM from corporate network or even global Internet. To have a VM visible from
+Internet is similar to have it visible from corporate network - corresponding IP ranges and VLAN IDs
+must be specified for floating and public networks. Current limitation of FuelWeb is that the user
+can use only the same L2 segment for both public and floating networks.
+
+Example configuration for one of the ports on Cisco switch:
+interface GigabitEthernet0/6               # switch port
+description s0_eth0 jv                     # description
+switchport trunk encapsulation dot1q       # enables VLANs
+switchport trunk native vlan 262           # access port, untags VLAN 262
+switchport trunk allowed vlan 100,102,104  # 100,102,104 VLANs are passed with tags
+switchport mode trunk                      # specifies the special mode to allow tagged traffic
+spanning­tree portfast trunk               # specifies this port as STP Edge port (to prevent DHCP timeout issues)
 
 Router
 ^^^^^^
 
-To make virtual machines able to get access to the outside of OpenStack cluster it is needed to configure
-address 240.0.1.1 on the "**Public**" (vlan 101) router interface. Cluster nodes will use this address as
-default gateway. In turn, to get access from the outside of cluster to virtual machine via, for example,
-ssh you need to use "**Floating**" IP address which could be assigned to given virtual machine via OpenStack
-dashboard. You also need to configure corresponding IP address 240.0.0.1 on the "**Floating**" (vlan 101)
-router interface. Besides, to get access from the outside to http://10.20.0.2:8000 you also need to
-configure gateway address 10.20.0.1 on "**FuelWeb**" vlan interface (untagged on the scheme). Private
-OpenStack networks (vlans 102, 103, 104) should not be configured on router as they used completely
-inside cluster.
+To make VMs accessing outside world it is required to have an IP address set on router in public network.
+In examples provided, it is 240.0.1.1 in VLAN 101. FuelWeb has a special field on networking tab for
+gateway address. As soon as deployment of OpenStack is started, network on nodes is reconfigured
+to use this gateway IP as the default gateway.
+If floating addresses are from other L3 network, then it is required to set IP (or even multiple
+IPs if floating addresses are from more than one L3 network) for them on router as well.
+Otherwise floating IPs on nodes will be inaccessible.
 
 
 Admin Node
