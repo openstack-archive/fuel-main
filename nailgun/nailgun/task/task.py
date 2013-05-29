@@ -129,15 +129,16 @@ class DeploymentTask(object):
         for net in ng_db:
             cluster_attrs[net.name + '_network_range'] = net.cidr
 
-        fixed_net = orm().query(NetworkGroup).filter_by(
-            cluster_id=cluster_id).filter_by(
-                name='fixed').first()
-
         cluster_attrs['network_manager'] = task.cluster.net_manager
-        if task.cluster.net_manager == "VlanManager":
+
+        if cluster_attrs['network_manager'] == 'VlanManager':
+            fixed_net = orm().query(NetworkGroup).filter_by(
+                cluster_id=cluster_id).filter_by(name='fixed').first()
+
             cluster_attrs['network_size'] = fixed_net.network_size
             cluster_attrs['num_networks'] = fixed_net.amount
             cluster_attrs['vlan_start'] = fixed_net.vlan_start
+            cls.__add_vlan_interfaces(nodes_with_attrs)
 
         if task.cluster.mode == 'ha':
             logger.info("HA mode chosen, creating VIP addresses for it..")
@@ -158,6 +159,7 @@ class DeploymentTask(object):
                 'attributes': cluster_attrs
             }
         }
+
         return message
 
     @classmethod
@@ -179,6 +181,23 @@ class DeploymentTask(object):
             'network_data': netmanager.get_node_networks(n.id),
             'online': n.online
         }
+
+    @classmethod
+    def __add_vlan_interfaces(cls, nodes):
+        """
+        We shouldn't pass to orchetrator fixed network
+        when network manager is VlanManager, but we should specify
+        fixed_interface (private_interface in terms of fuel) as result
+        we just pass vlan_interface as node attribute.
+        """
+        netmanager = NetworkManager()
+        for node in nodes:
+            node_db = orm().query(Node).get(node['id'])
+
+            fixed_interface = netmanager._get_interface_by_network_name(
+                node_db, 'fixed')
+
+            node['vlan_interface'] = fixed_interface.name
 
     @classmethod
     def __controller_nodes(cls, cluster_id):

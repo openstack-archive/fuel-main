@@ -152,7 +152,6 @@ class Environment(object):
             exclude=None, expect_http=201,
             expect_message=None,
             **kwargs):
-
         default_metadata = self.default_metadata()
         mac = self._generate_random_mac()
         default_metadata['interfaces'][0]['mac'] = mac

@@ -16,6 +16,7 @@ from nailgun.test.base import reverse
 from nailgun.api.models import Cluster, Attributes, IPAddr, Task
 from nailgun.api.models import Network, NetworkGroup
 from nailgun.network.manager import NetworkManager
+from nailgun.task import task as tasks
 
 
 class TestHandlers(BaseHandlers):
@@ -212,6 +213,59 @@ class TestHandlers(BaseHandlers):
 
         nailgun.task.manager.rpc.cast.assert_called_once_with(
             'naily', [provision_msg, msg])
+
+    @fake_tasks(fake_rpc=False, mock_rpc=False)
+    @patch('nailgun.rpc.cast')
+    def test_deploy_cast_with_vlan_manager(self, mocked_rpc):
+        self.env.create(
+            cluster_kwargs={
+                'net_manager': 'VlanManager',
+            },
+            nodes_kwargs=[
+                {"role": "controller", "pending_addition": True},
+                {"role": "controller", "pending_addition": True},
+            ]
+        )
+
+        deployment_task = self.env.launch_deployment()
+
+        class VlanMatcher:
+            def __init__(self):
+                self.result = True
+
+            def __eq__(self, *args, **kwargs):
+                # Deploy message
+                message = args[0][1]
+                self.is_eql(
+                    message['args']['attributes']['network_manager'],
+                    'VlanManager')
+                self.is_eql(
+                    message['args']['attributes']['network_size'], 256)
+                self.is_eql(
+                    message['args']['attributes']['num_networks'], 1)
+                self.is_eql(
+                    message['args']['attributes']['vlan_start'], 101)
+
+                for node in message['args']['nodes']:
+                    # Set vlan interface
+                    self.is_eql(
+                        node['vlan_interface'],
+                        'eth0')
+
+                    # Don't set fixed network
+                    fix_networks = filter(
+                        lambda net: net['name'] == 'fixed',
+                        node['network_data'])
+                    self.is_eql(fix_networks, [])
+
+                return self.result
+
+            def is_eql(self, first, second):
+                if first != second:
+                    self.result = False
+
+        nailgun.task.manager.rpc.cast.assert_called_with(
+            'naily', VlanMatcher())
 
     @fake_tasks(fake_rpc=False, mock_rpc=False)
     @patch('nailgun.rpc.cast')
