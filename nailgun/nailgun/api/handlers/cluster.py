@@ -17,9 +17,6 @@ from nailgun.api.models import Task
 from nailgun.api.validators import ClusterValidator
 from nailgun.api.validators import AttributesValidator
 from nailgun.network.manager import NetworkManager
-from nailgun.network.errors import OutOfVLANs
-from nailgun.network.errors import OutOfIPs
-from nailgun.network.errors import NoSuitableCIDR
 from nailgun.api.handlers.base import JSONHandler, content_json
 from nailgun.api.handlers.node import NodeHandler
 from nailgun.api.handlers.tasks import TaskHandler

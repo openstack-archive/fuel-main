@@ -13,7 +13,6 @@ from nailgun.logger import logger
 from nailgun.settings import settings
 from nailgun.api.models import Node, NodeNICInterface, IPAddr, Cluster, Vlan
 from nailgun.api.models import Network, NetworkGroup, IPAddrRange
-from nailgun.network.errors import CanNotFindInterface
 
 
 class NetworkManager(object):
@@ -423,7 +422,7 @@ class NetworkManager(object):
                     'name': u'admin',
                     'dev': interface['name']}
 
-        raise CanNotFindInterface()
+        raise errors.CanNotFindInterface()
 
     def _get_interface_by_network_name(self, node, network_name):
         """
@@ -435,4 +434,4 @@ class NetworkManager(object):
                 if network.name == network_name:
                     return interface
 
-        raise CanNotFindInterface()
+        raise errors.CanNotFindInterface()

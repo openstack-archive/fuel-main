@@ -18,6 +18,7 @@ default_messages = {
     "OutOfVLANs": "Not enough available VLAN IDs",
     "OutOfIPs": "Not enough free IP addresses in pool",
     "NoSuitableCIDR": "Cannot find suitable CIDR",
+    "CanNotFindInterface": "Cannot find interface",
     # unknown
     "UnknownError": "Unknown error"
 }
