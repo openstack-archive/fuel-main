@@ -34,6 +34,11 @@ casper.createCluster = function(options) {
 }
 
 casper.createNode = function(options) {
+    var mac = '52:54:00:96:81:6E';
+    if('mac' in options) {
+        mac = options['mac'];
+    }
+
     options.meta = {
         "disks": [
             {
@@ -51,7 +56,7 @@ casper.createNode = function(options) {
         ],
         "interfaces": [
             {
-              "mac": "52:54:00:96:81:6E",
+              "mac": mac,
               "name": "eth0",
               "max_speed": 1000,
               "current_speed": 100
