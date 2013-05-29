@@ -6,7 +6,7 @@
 <% var labels = {
   'ip_ranges': 'IP Range',
   'vlan_start': 'VLAN ID',
-  'mask': 'Netmask',
+  'netmask': 'Netmask',
   'gateway': 'Gateway',
   'cidr': 'CIDR',
   'amount': 'Amount of Networks',
@@ -43,7 +43,7 @@
           <div class="error"><span class="help-inline"></span></div>
         </div>
       <% }) %>
-    <% } else if (_.contains(['vlan_start', 'mask', 'gateway', 'cidr', 'amount'], attribute)) { %>
+    <% } else if (_.contains(['vlan_start', 'netmask', 'gateway', 'cidr', 'amount'], attribute)) { %>
       <% if (networkName == 'fixed' && attribute == 'vlan_start' && !vlanManager) { %>
         <div class="range-row-header mini <%= hidden %>">
           <div>Start</div><div>End</div>

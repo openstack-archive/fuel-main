@@ -227,7 +227,7 @@ function(utils, models, commonViews, dialogViews, networkTabTemplate, networkTem
                 ip_ranges: ip_ranges,
                 cidr: $('.cidr input', block).val(),
                 vlan_start: Number($('.vlan_start input', block).val()),
-                mask: $('.mask input', block).val(),
+                netmask: $('.netmask input', block).val(),
                 gateway: $('.gateway input', block).val(),
                 amount: this.manager == 'FlatDHCPManager' || block.attr('class') != 'fixed' ? 1: parseInt(this.$('input[name=fixed-amount]').val(), 10),
                 network_size: target.parent().hasClass('cidr') && target.attr('name') != 'fixed-cidr' ? utils.calculateNetworkSize($('.cidr input', block).val()) : parseInt($('.network_size select', block).val(), 10)

@@ -319,7 +319,7 @@ define(function() {
         getAttributes: function() {
             var attributes = {
                 'floating': ['ip_ranges', 'vlan_start'],
-                'public': ['ip_ranges', 'vlan_start', 'mask', 'gateway'],
+                'public': ['ip_ranges', 'vlan_start', 'netmask', 'gateway'],
                 'management': ['cidr', 'vlan_start'],
                 'storage': ['cidr', 'vlan_start'],
                 'fixed': ['cidr', 'amount', 'network_size', 'vlan_start']
@@ -379,8 +379,8 @@ define(function() {
                     if (_.isNaN(attrs.vlan_start) || !_.isNumber(attrs.vlan_start) || attrs.vlan_start < 1 || attrs.vlan_start > 4094) {
                         errors.vlan_start = 'Invalid VLAN ID';
                     }
-                } else if (attribute == 'mask' && this.validateIP(attrs.mask)) {
-                    errors.mask = 'Invalid netmask';
+                } else if (attribute == 'netmask' && this.validateIP(attrs.netmask)) {
+                    errors.netmask = 'Invalid netmask';
                 } else if (attribute == 'gateway' && this.validateIP(attrs.gateway)) {
                     errors.gateway = 'Invalid gateway';
                 } else if (attribute == 'amount') {
