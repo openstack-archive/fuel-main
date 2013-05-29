@@ -114,7 +114,9 @@ class VolumeManager(object):
 
         def _calc_swap_size():
             mem = self.node.meta["memory"]["total"] / float(1024 ** 3)
-            # See https://access.redhat.com/site/documentation/en-US/Red_Hat_Enterprise_Linux/6/html/Installation_Guide/s2-diskpartrecommend-ppc.html#id4394007
+            # See https://access.redhat.com/site/documentation/en-US/
+            #             Red_Hat_Enterprise_Linux/6/html/Installation_Guide/
+            #             s2-diskpartrecommend-ppc.html#id4394007
             if mem <= 2:
                 return 2 * mem * 1024 ** 3
             elif mem > 2 and mem <= 8:
