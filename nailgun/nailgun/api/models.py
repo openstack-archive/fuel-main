@@ -359,10 +359,8 @@ class NetworkConfiguration(object):
     @classmethod
     def __set_ip_ranges(cls, network_group_id, ip_ranges):
         # deleting old ip ranges
-        map(
-            orm().delete,
-            orm().query(IPAddrRange).filter_by(
-                network_group_id=network_group_id))
+        orm().query(IPAddrRange).filter_by(
+            network_group_id=network_group_id).delete()
 
         for r in ip_ranges:
             new_ip_range = IPAddrRange(
