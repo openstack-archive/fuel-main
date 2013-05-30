@@ -49,24 +49,30 @@ class NetworkManager(object):
         '''
         used_nets = [n.cidr for n in self.db.query(Network).all()]
         used_vlans = [v.id for v in self.db.query(Vlan).all()]
+
         cluster_db = self.db.query(Cluster).get(cluster_id)
 
         networks_metadata = cluster_db.release.networks_metadata
-
-        free_vlans = set(
+        def _free_vlans():
+            free_vlans = set(
             range(
                 int(settings.VLANS_RANGE_START),
                 int(settings.VLANS_RANGE_END)
-            )
-        ) - set(used_vlans)
-
-        if not free_vlans or len(free_vlans) < len(networks_metadata):
-            raise errors.OutOfVLANs()
-
+                )
+            ) - set(used_vlans)
+            if not free_vlans or len(free_vlans) < len(networks_metadata):
+                raise errors.OutOfVLANs()
+            return free_vlans
+        
+        public_vlan = _free_vlans()[0]
+        used_vlans.append(public_vlan)
         for network in networks_metadata:
-            vlan_start = sorted(list(free_vlans))[0]
-            logger.debug(u"Found free vlan: %s", vlan_start)
-            pool = settings.NETWORK_POOLS.get(network['access'])
+            free_vlans = _free_vlans()
+            vlan_start = public_vlan if network['access'] == 'public' \
+                else free_vlans[0]
+
+            logger.debug("Found free vlan: %s", vlan_start)
+            pool = settings.NETWORK_POOLS[network['access']]
             if not pool:
                 raise errors.InvalidNetworkAccess(
                     u"Invalid access '{0}' for network '{1}'".format(
@@ -119,7 +125,7 @@ class NetworkManager(object):
             self.db.commit()
             self.create_networks(nw_group)
 
-            free_vlans = free_vlans - set([vlan_start])
+            used_vlans.append(vlan_start)
             used_nets.append(str(new_net))
 
     def create_networks(self, nw_group):
