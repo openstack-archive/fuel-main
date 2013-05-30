@@ -7,7 +7,7 @@ node default {
    {
    "id" => "nailgun",
    "name" => "Nailgun",
-   "url"  => "http://${ipaddress}:8080/centos/6.3/nailgun/x86_64"
+   "url"  => "http://${ipaddress}:8080/centos/fuelweb/x86_64"
    },
    ]
 

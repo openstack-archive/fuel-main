@@ -82,10 +82,10 @@ class nailgun::cobbler(
     require => Class["cobbler::server"],
   }
 
-  # THIS VARIABLE IS NEEDED FOR TEMPLATING centos63-x86_64.ks
+  # THIS VARIABLE IS NEEDED FOR TEMPLATING centos-x86_64.ks
   $ks_repo = $centos_repos
 
-  file { "/var/lib/cobbler/kickstarts/centos63-x86_64.ks":
+  file { "/var/lib/cobbler/kickstarts/centos-x86_64.ks":
     content => template("nailgun/cobbler/centos.ks.erb"),
     owner => root,
     group => root,
@@ -93,23 +93,23 @@ class nailgun::cobbler(
     require => Class["cobbler::server"],
   } ->
 
-  cobbler_distro { "centos63-x86_64":
-    kernel => "${repo_root}/centos/6.3/nailgun/x86_64/isolinux/vmlinuz",
-    initrd => "${repo_root}/centos/6.3/nailgun/x86_64/isolinux/initrd.img",
+  cobbler_distro { "centos-x86_64":
+    kernel => "${repo_root}/centos/fuelweb/x86_64/isolinux/vmlinuz",
+    initrd => "${repo_root}/centos/fuelweb/x86_64/isolinux/initrd.img",
     arch => "x86_64",
     breed => "redhat",
     osversion => "rhel6",
-    ksmeta => "tree=http://@@server@@:8080/centos/6.3/nailgun/x86_64",
+    ksmeta => "tree=http://@@server@@:8080/centos/fuelweb/x86_64/",
     require => Class["cobbler::server"],
   }
 
-  cobbler_profile { "centos63-x86_64":
-    kickstart => "/var/lib/cobbler/kickstarts/centos63-x86_64.ks",
+  cobbler_profile { "centos-x86_64":
+    kickstart => "/var/lib/cobbler/kickstarts/centos-x86_64.ks",
     kopts => "",
-    distro => "centos63-x86_64",
+    distro => "centos-x86_64",
     ksmeta => "",
     menu => true,
-    require => Cobbler_distro["centos63-x86_64"],
+    require => Cobbler_distro["centos-x86_64"],
   }
 
   cobbler_distro { "bootstrap":
