@@ -654,11 +654,10 @@ class TestNode(Base):
             releases = json.loads(
                 self.client.get("/api/releases/").read()
             )
-            for r in releases:
-                logging.debug("Found release name: %s" % r["name"])
-                if r["name"] == "Folsom":
-                    logging.debug("Sample release id: %s" % r["id"])
-                    return r["id"]
+            logging.debug("Found releases: %s" % releases)
+            logging.debug("Using last release, name: %s" %
+                          releases[-1]["name"])
+            return releases[-1]["id"]
 
         release_id = _get_release_id()
         if not release_id:
