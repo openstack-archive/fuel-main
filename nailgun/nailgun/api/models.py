@@ -307,14 +307,15 @@ class NetworkGroup(Base):
     release = Column(Integer, ForeignKey('releases.id'))
     # can be nullable only for fuelweb admin net
     cluster_id = Column(Integer, ForeignKey('clusters.id'))
-    cidr = Column(String(25), nullable=False)
-    netmask = Column(String(25), nullable=False)
     network_size = Column(Integer, default=256)
     amount = Column(Integer, default=1)
     vlan_start = Column(Integer, default=1)
-    gateway = Column(String(25))
     networks = relationship("Network", cascade="delete",
                             backref="network_group")
+    cidr = Column(String(25))
+    gateway = Column(String(25))
+
+    netmask = Column(String(25), nullable=False)
     ip_ranges = relationship(
         "IPAddrRange",
         backref="network_group"
