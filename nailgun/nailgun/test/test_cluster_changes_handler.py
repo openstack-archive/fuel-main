@@ -105,7 +105,7 @@ class TestHandlers(BaseHandlers):
                                             'name': 'management'},
                                            {'brd': '240.0.1.255',
                                             'ip': node_ip_public,
-                                            'vlan': 104,
+                                            'vlan': 100,
                                             'gateway': '240.0.1.1',
                                             'netmask': '255.255.255.0',
                                             'dev': 'eth0',
