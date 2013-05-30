@@ -1,5 +1,5 @@
-Understanding and configuring network
 =====================================
+Understanding and configuring network
 
 .. contents:: :local:
 
@@ -18,53 +18,53 @@ OpenStack basics
 ^^^^^^^^^^^^^^^^
 The main idea behind the flat network manager is to configure bridge (i.e. **br100**) on every compute
 node and have one of the machine's host interfaces connected to it. Once virtual machine is launched 
-its virtual interface is getting connected to that bridge as well. The only one bridge is used for all VMs
-of all OpenStack projects, and it means that there is no L2 isolation between
-virtual hosts even if they are owned by separated projects. For this reason it is called *flat* manager.
+its virtual interface is getting connected to that bridge as well.
+The same L2 segment is used for all OpenStack projects, and it means that there is no L2 isolation between
+virtual hosts even if they are owned by separated projects. For this reason it is called *Flat* manager.
 
-The simplest case here is as shown on the following diagram. Here **eth0** interface is used to
-give network access to virtual machines while **eth1** interface is the management network interface.
+The simplest case here is as shown on the following diagram. Here **eth1** interface is used to
+give network access to virtual machines while **eth0** interface is the management network interface.
 
  .. uml::
     node "Compute1" {
-        [eth0\nVM] as compute1_eth0
-        [eth1\nManagement] as compute1_eth1
+        [eth1\nVM] as compute1_eth1
+        [eth0\nManagement] as compute1_eth0
         [vm0] as compute1_vm0
         [vm1] as compute1_vm1
         [br100] as compute1_br100
-        compute1_br100 -up- compute1_eth0
+        compute1_br100 -up- compute1_eth1
         compute1_vm0 -up- compute1_br100
         compute1_vm1 -up- compute1_br100
     }
 
     node "Compute2" {
-        [eth0\nVM] as compute2_eth0
-        [eth1\nManagement] as compute2_eth1
+        [eth1\nVM] as compute2_eth1
+        [eth0\nManagement] as compute2_eth0
         [vm0] as compute2_vm0
         [vm1] as compute2_vm1
         [br100] as compute2_br100
-        compute2_br100 -up- compute2_eth0
+        compute2_br100 -up- compute2_eth1
         compute2_vm0 -up- compute2_br100
         compute2_vm1 -up- compute2_br100
     }
 
     node "Compute3" {
-        [eth0\nVM] as compute3_eth0
-        [eth1\nManagement] as compute3_eth1
+        [eth1\nVM] as compute3_eth1
+        [eth0\nManagement] as compute3_eth0
         [vm0] as compute3_vm0
         [vm1] as compute3_vm1
         [br100] as compute3_br100
-        compute3_br100 -up- compute3_eth0
+        compute3_br100 -up- compute3_eth1
         compute3_vm0 -up- compute3_br100
         compute3_vm1 -up- compute3_br100
     }
 
-    compute1_eth0 -up- [L2 switch]
-    compute2_eth0 -up- [L2 switch]
-    compute3_eth0 -up- [L2 switch]
-    compute1_eth1 .up. [L2 switch]
-    compute2_eth1 .up. [L2 switch]
-    compute3_eth1 .up. [L2 switch]
+    compute1_eth1 -up- [L2 switch]
+    compute2_eth1 -up- [L2 switch]
+    compute3_eth1 -up- [L2 switch]
+    compute1_eth0 .up. [L2 switch]
+    compute2_eth0 .up. [L2 switch]
+    compute3_eth0 .up. [L2 switch]
 
 
 FuelWeb deployment schema
@@ -134,7 +134,7 @@ OpenStack basics
 ^^^^^^^^^^^^^^^^
 
 Vlan manager mode is more suitable for large scale clouds. The idea behind this mode is to separate
-groups of virtual machines, owned by different projects, on L2 layer. It VLAN Manager it is done by
+groups of virtual machines, owned by different projects, on L2 layer. In VLAN Manager it is done by
 tagging IP frames, or simply speaking, by VLANs. It allows virtual machines inside the given project
 to communicate with each other and not to see any traffic from VMs of other projects.
 Switch ports must be configured as tagged (trunk) ports to allow this scheme to work.
@@ -258,14 +258,16 @@ Internet is similar to have it visible from corporate network - corresponding IP
 must be specified for floating and public networks. Current limitation of FuelWeb is that the user
 can use only the same L2 segment for both public and floating networks.
 
-Example configuration for one of the ports on Cisco switch:
-interface GigabitEthernet0/6               # switch port
-description s0_eth0 jv                     # description
-switchport trunk encapsulation dot1q       # enables VLANs
-switchport trunk native vlan 262           # access port, untags VLAN 262
-switchport trunk allowed vlan 100,102,104  # 100,102,104 VLANs are passed with tags
-switchport mode trunk                      # specifies the special mode to allow tagged traffic
-spanning­tree portfast trunk               # specifies this port as STP Edge port (to prevent DHCP timeout issues)
+Example configuration for one of the ports on Cisco switch html:
+
+| interface GigabitEthernet0/6               # switch port
+| description s0_eth0 jv                     # description
+| switchport trunk encapsulation dot1q       # enables VLANs
+| switchport trunk native vlan 262           # access port, untags VLAN 262
+| switchport trunk allowed vlan 100,102,104  # 100,102,104 VLANs are passed with tags
+| switchport mode trunk                      # To allow more than 1 VLAN on the port
+| spanning­tree portfast trunk               # STP Edge port to skip network loop checks (to prevent DHCP timeout issues).
+| vlan 262,100,102,104                       # Might be needed for enabling VLANs
 
 Router
 ^^^^^^
