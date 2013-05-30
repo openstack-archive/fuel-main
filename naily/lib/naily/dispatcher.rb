@@ -128,7 +128,15 @@ module Naily
       end
       reporter.report({'nodes' => nodes_progress})
 
-      result = @orchestrator.deploy(reporter, data['args']['task_uuid'], nodes, data['args']['attributes'])
+      begin
+        result = @orchestrator.deploy(reporter, data['args']['task_uuid'], nodes, data['args']['attributes'])
+      rescue Timeout::Error
+        msg = "Timeout of deployment is exceeded."
+        Naily.logger.error msg
+        reporter.report({'status' => 'error', 'error' => msg})
+        return
+      end
+
       report_result(result, reporter)
     end
 
