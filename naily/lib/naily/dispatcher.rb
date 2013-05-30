@@ -34,9 +34,9 @@ module Naily
       begin
         data['args']['nodes'].each do |node|
           begin
-          Naily.logger.info("Adding #{node['name']} into cobbler")
-          engine.item_from_hash('system', node['name'], node,
-                           :item_preremove => true)
+            Naily.logger.info("Adding #{node['name']} into cobbler")
+            engine.item_from_hash('system', node['name'], node,
+                             :item_preremove => true)
           rescue RuntimeError => e
             Naily.logger.error("Error occured while adding system #{node['name']} to cobbler")
             raise e
