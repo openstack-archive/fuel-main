@@ -16,87 +16,87 @@
             "volumes_metadata": {
                 "controller": [
                     {
-                        "type": "vg", 
-                        "id": "os", 
+                        "type": "vg",
+                        "id": "os",
                         "volumes": [
                             {
-                                "mount": "/", 
-                                "type": "lv", 
-                                "name": "root", 
+                                "mount": "/",
+                                "type": "lv",
+                                "name": "root",
                                 "size": {"generator": "calc_root_size"}
-                            }, 
+                            },
                             {
-                                "mount": "swap", 
-                                "type": "lv", 
-                                "name": "swap", 
+                                "mount": "swap",
+                                "type": "lv",
+                                "name": "swap",
                                 "size": {"generator": "calc_swap_size"}
                             }
                         ]
-                    }, 
+                    },
                     {
-                        "type": "vg", 
-                        "id": "cinder", 
+                        "type": "vg",
+                        "id": "cinder",
                         "volumes": []
                     }
                 ],
                 "compute": [
                     {
-                        "type": "vg", 
-                        "id": "os", 
+                        "type": "vg",
+                        "id": "os",
                         "volumes": [
                             {
-                                "mount": "/", 
-                                "type": "lv", 
-                                "name": "root", 
+                                "mount": "/",
+                                "type": "lv",
+                                "name": "root",
                                 "size": {"generator": "calc_root_size"}
-                            }, 
+                            },
                             {
-                                "mount": "swap", 
-                                "type": "lv", 
-                                "name": "swap", 
+                                "mount": "swap",
+                                "type": "lv",
+                                "name": "swap",
                                 "size": {"generator": "calc_swap_size"}
                             }
                         ]
                     },
                     {
-                        "type": "vg", 
-                        "id": "vm", 
+                        "type": "vg",
+                        "id": "vm",
                         "volumes": [
                             {
-                                "mount": "/var/lib/libvirt", 
-                                "type": "lv", 
-                                "name": "vm", 
+                                "mount": "/var/lib/libvirt",
+                                "type": "lv",
+                                "name": "vm",
                                 "size": {"generator": "calc_all_free"}
                             }
                         ]
                     },
                     {
-                        "type": "vg", 
-                        "id": "cinder", 
+                        "type": "vg",
+                        "id": "cinder",
                         "volumes": []
                     }
                 ],
                 "cinder": [
                     {
-                        "type": "vg", 
-                        "id": "os", 
+                        "type": "vg",
+                        "id": "os",
                         "volumes": [
                             {
-                                "mount": "/", 
-                                "type": "lv", 
-                                "name": "root", 
+                                "mount": "/",
+                                "type": "lv",
+                                "name": "root",
                                 "size": {"generator": "calc_root_size"}
-                            }, 
+                            },
                             {
-                                "mount": "swap", 
-                                "type": "lv", 
-                                "name": "swap", 
+                                "mount": "swap",
+                                "type": "lv",
+                                "name": "swap",
                                 "size": {"generator": "calc_swap_size"}
                             }
                         ]
                     },
                     {
-                        "type": "vg", 
+                        "type": "vg",
                         "id": "cinder",
                         "volumes": []
                     }
@@ -109,13 +109,13 @@
                             "value": "admin",
                             "label": "username",
                             "description": "Username for Administrator",
-                            "weight": 20
+                            "weight": 10
                         },
                         "email": {
                             "value": "admin@example.org",
                             "label": "email",
                             "description": "Email address for Administrator",
-                            "weight": 10
+                            "weight": 40
                         },
                         "tenant": {
                             "value": "admin",
@@ -127,7 +127,7 @@
                             "value": "admin",
                             "label": "password",
                             "description": "Password for Administrator",
-                            "weight": 40
+                            "weight": 20
                         }
                     },
                     "common": {
