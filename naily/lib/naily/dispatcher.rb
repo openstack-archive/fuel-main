@@ -33,17 +33,24 @@ module Naily
 
       begin
         data['args']['nodes'].each do |node|
+          begin
           Naily.logger.info("Adding #{node['name']} into cobbler")
           engine.item_from_hash('system', node['name'], node,
                            :item_preremove => true)
+          rescue RuntimeError => e
+            Naily.logger.error("Error occured while adding system #{node['name']} to cobbler")
+            raise e
+          end
           engine.power_reboot(node['name'])
         end
       rescue
+        Naily.logger.error("Error occured while provisioning")
         reporter.report({
                           'status' => 'error',
                           'error' => 'Cobbler error',
                           'progress' => 100
                         })
+        engine.sync
         return
       end
       engine.sync

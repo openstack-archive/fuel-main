@@ -99,6 +99,7 @@ class TaskHelper(object):
 
     @classmethod
     def update_task_status(cls, uuid, status, progress, msg="", result=None):
+        logger.debug("Updating task: %s", uuid)
         db = orm()
         task = db.query(Task).filter_by(uuid=uuid).first()
         if not task:
@@ -121,8 +122,12 @@ class TaskHelper(object):
         db.add(task)
         db.commit()
         if previous_status != status:
+            logger.debug("Updating cluster status: "
+                         "cluster_id: %s status: %s",
+                         task.cluster_id, status)
             cls.update_cluster_status(uuid)
         if task.parent:
+            logger.debug("Updating parent task: %s", task.parent.uuid)
             cls.update_parent_task(task.parent.uuid)
 
     @classmethod
@@ -177,8 +182,9 @@ class TaskHelper(object):
         task = db.query(Task).filter_by(uuid=uuid).first()
         # FIXME: should be moved to task/manager "finish" method after
         # web.ctx.orm issue is addressed
+        cluster = task.cluster
         if task.name == 'deploy':
-            cluster = task.cluster
+            logger.debug("Task %s name: deploy", task.uuid)
             if task.status == 'ready':
                 # FIXME: we should also calculate deployment "validity"
                 # (check if all of the required nodes of required roles are
@@ -188,9 +194,17 @@ class TaskHelper(object):
                 cluster.status = 'operational'
                 cluster.clear_pending_changes()
             elif task.status == 'error':
+                logger.debug("Updating cluster status to error: "
+                             "cluster_id: %s", task.cluster_id)
                 cluster.status = 'error'
-            db.add(cluster)
-            db.commit()
+        elif task.name == 'provision':
+            logger.debug("Task %s name: provision", task.uuid)
+            if task.status == 'error':
+                logger.debug("Updating cluster status to error: "
+                             "cluster_id: %s", task.cluster_id)
+                cluster.status = 'error'
+        db.add(cluster)
+        db.commit()
 
     @classmethod
     def nodes_to_delete(cls, cluster):
