@@ -118,7 +118,7 @@ class VolumeManager(object):
             # root = 10Gb
             "calc_root_size": lambda: 1024 ** 3 * 10,
             "calc_boot_size": lambda: 1024 ** 2 * 200,
-            # let's think that size of mbr is 1Mb
+            # let's think that size of mbr is 10Mb
             "calc_mbr_size": lambda: 10 * 1024 ** 2,
             "calc_lvm_meta_size": lambda: 1024 ** 2 * 64
         }
