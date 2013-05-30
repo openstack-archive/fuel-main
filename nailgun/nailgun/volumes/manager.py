@@ -119,7 +119,7 @@ class VolumeManager(object):
             "calc_root_size": lambda: 1024 ** 3 * 10,
             "calc_boot_size": lambda: 1024 ** 2 * 200,
             # let's think that size of mbr is 1Mb
-            "calc_mbr_size": lambda: 1024 ** 2,
+            "calc_mbr_size": lambda: 10 * 1024 ** 2,
             "calc_lvm_meta_size": lambda: 1024 ** 2 * 64
         }
         generators["calc_os_size"] = lambda: sum([
