@@ -162,6 +162,62 @@ class TestNode(Base):
         self._update_nodes_in_cluster(cluster_id, nodes)
 
     @snapshot_errors
+    def test_add_compute_node_in_cluster(self):
+        self._revert_nodes()
+        self._bootstrap_nodes(['slave1', 'slave2', 'slave3'])
+        cluster_id = self._create_cluster(name='empty')
+
+        # fetch nodes list
+        nodes = self.client.get('/api/nodes')
+        # build nodes list for initial deployment.
+        # One controller and one compute
+        nodes_put_data = [{'id': nodes[0]['id'], 'cluster_id': cluster_id,
+                          'role': 'controller', 'pending_addition': 'true',
+                          'pending_deletion': 'false'},
+                          {'id': nodes[1]['id'], 'cluster_id': cluster_id,
+                          'role': 'compute', 'pending_addition': 'true',
+                          'pending_deletion': 'false'}]
+        # build nodes for second deployment. One additional compute node
+        nodes_put_compute_data = [{'id': nodes[2]['id'],
+                                  'cluster_id': cluster_id,
+                                  'role': 'compute',
+                                  'pending_addition': 'true',
+                                  'pending_deletion': 'false'}]
+        # Put initial nodes and apply changes
+        self.client.put("/api/nodes", nodes_put_data)
+        response = self.client.put("/api/clusters/%s/changes"
+                                   % cluster_id, {})
+        task = json.loads(response.read())
+        # wait for the task completion
+        for x in range(0, 100):
+            response = self.client.get("/api/tasks/%s" % task['id'])
+            task = json.loads(response.read())
+            if task['progress'] >= 100:
+                break
+            sleep(20)
+        # Deploy second compute node
+        self.client.put("/api/nodes", nodes_put_compute_data)
+        self.client.put("/api/clusters/%s/changes" % cluster_id, {})
+        sleep(30)
+        # retrieve cluster info
+        response = self.client.get("/api/nodes?cluster_id=%s" % cluster_id)
+        cluster_info = json.loads(response.read())
+
+        # assert nodes progress
+        for i, n in enumerate(cluster_info):
+            if n['id'] == nodes[0]['id']:
+                self.assertEquals(n['progress'], 100, 'Progress value of controller node is 100')
+                self.assertEquals(n['status'], 'ready', 'Status value of controller node is "ready"')
+            if n['id'] == nodes[1]['id']:
+                self.assertEquals(n['progress'], 100, 'Progress value of first compute node is 100')
+                self.assertEquals(n['status'], 'ready', 'Status value of first compute node is "ready"')
+            if n['id'] == nodes[2]['id']:
+                self.assertNotEqual(n['progress'], 100, 'Progress value of first compute node is 100')
+                self.assertEquals(n['status'], 'provisioning', 'Status value of first compute node is "provisioning"')
+
+
+
+    @snapshot_errors
     def test_one_node_provisioning(self):
         self._revert_nodes()
         self._clean_clusters()
