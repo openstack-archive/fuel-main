@@ -52,7 +52,7 @@ echo > /tmp/partition.ks
             ##
             ## Writing bootloader to MBR
             #if $space_type == "disk" and $volume_type == "mbr"
-echo "bootloader --location=mbr --driveorder=$space_id --append=' crashkernel=auto'" > /tmp/bootloader.ks
+echo "bootloader --location=mbr --driveorder=\$(basename `readlink -f /dev/$space_id`) --append=' crashkernel=auto'" > /tmp/bootloader.ks
             #end if
             ##
             ## Parsing logical volumes
