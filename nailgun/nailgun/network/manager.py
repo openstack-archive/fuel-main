@@ -53,17 +53,18 @@ class NetworkManager(object):
         cluster_db = self.db.query(Cluster).get(cluster_id)
 
         networks_metadata = cluster_db.release.networks_metadata
+
         def _free_vlans():
             free_vlans = set(
-            range(
-                int(settings.VLANS_RANGE_START),
-                int(settings.VLANS_RANGE_END)
+                range(
+                    int(settings.VLANS_RANGE_START),
+                    int(settings.VLANS_RANGE_END)
                 )
             ) - set(used_vlans)
             if not free_vlans or len(free_vlans) < len(networks_metadata):
                 raise errors.OutOfVLANs()
-            return free_vlans
-        
+            return sorted(list(free_vlans))
+
         public_vlan = _free_vlans()[0]
         used_vlans.append(public_vlan)
         for network in networks_metadata:
