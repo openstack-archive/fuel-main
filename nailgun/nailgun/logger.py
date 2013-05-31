@@ -72,7 +72,10 @@ class HTTPLoggerMiddleware(object):
             env['REMOTE_PORT'],
         )
 
-        logger.debug(response_info)
+        if response_code == '500 Internal Server Error':
+            logger.error(response_info)
+        else:
+            logger.debug(response_info)
 
     def __logging_request(self, env):
         length = int(env.get('CONTENT_LENGTH', 0))
