@@ -83,7 +83,7 @@ REQUIRED_SRCS:=$(shell grep -v ^\\s*\# $(SOURCE_DIR)/requirements-src.txt)
 # The actual name will be constracted wich prepending "yum_repo_" prefix.
 # Example: YUM_REPOS?=official epel => yum_repo_official and yum_repo_epel
 # will be used.
-YUM_REPOS?=official fuel_folsom_2_1 puppetlabs
+YUM_REPOS?=official fuel
 
 # Mirror of source packages. Bareword 'internet' is used to download packages
 # directly from the internet

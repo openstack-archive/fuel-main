@@ -66,18 +66,12 @@ enabled=1
 priority=20
 endef
 
-define yum_repo_fuel_folsom_2_1
-[openstack-epel-fuel-2.1]
+define yum_repo_fuel
+[epel-fuel-grizzly]
 name=Mirantis OpenStack Custom Packages
-#mirrorlist=http://download.mirantis.com/epel-fuel-folsom-2.1/mirror.internal.list
-baseurl=http://srv08-srt.srt.mirantis.net/centos-repo/epel-fuel-folsom-2.1/
-gpgkey=https://fedoraproject.org/static/0608B895.txt
-  http://download.mirantis.com/epel-fuel-folsom-2.1/centos.key
-  http://download.mirantis.com/epel-fuel-folsom-2.1/epel.key
-  http://download.mirantis.com/epel-fuel-folsom-2.1/mirantis.key
-  http://download.mirantis.com/epel-fuel-folsom-2.1/mysql.key
-  http://download.mirantis.com/epel-fuel-folsom-2.1/rabbit.key
-gpgcheck=1
+#mirrorlist=http://download.mirantis.com/epel-fuel-grizzly/mirror.internal.list
+baseurl=http://srv08-srt.srt.mirantis.net/centos-repo/epel-fuel-grizzly/
+gpgcheck=0
 enabled=1
 priority=1
 endef
