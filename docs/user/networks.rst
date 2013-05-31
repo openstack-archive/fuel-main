@@ -1,89 +1,84 @@
-Understanding and configuring network
-=====================================
+=========================================
+Understanding and configuring the network
 
 .. contents:: :local:
 
-There are two basic types of network managers used in OpenStack clusters. The first one is so called
-flat manager and the second one is vlan manager. For more information about how they work one can read
-the following blog posts.
+OpenStack clusters use several types of network managers: FlatDHCP, VlanManager and Quantum.
+The current version of FuelWeb supports only the first two (FlatDHCP and VlanManager), but the FUEL library supports all three of them.
+For more information about how the first two network managers work, you can read these two resources:
 
 * `OpenStack Networking – FlatManager and FlatDHCPManager <http://www.mirantis.com/blog/openstack-networking-flatmanager-and-flatdhcpmanager/>`_
 * `Openstack Networking for Scalability and Multi-tenancy with VlanManager <http://www.mirantis.com/blog/openstack-networking-vlanmanager/>`_
 
-Available Options
------------------
 
-Flat Manager (multi-interface scheme)
-^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+FlatDHCP Manager (multi-host scheme)
+------------------------------------
 
-The main idea behind flat network manager is to configure bridge (let say **br100**) on every compute
-node and to connect it to some interface. Once virtual machine is launched its virtual interface is
-connected to that bridge. So there is no L2 isolation between virtual hosts even if they in different
-tenants. That is why it is called *flat* manager. Therefore only one flat IP pool defined throughout
-the whole cluster.
+OpenStack basics
+^^^^^^^^^^^^^^^^
+The main idea behind the flat network manager is to configure a bridge (i.e. **br100**) on every compute
+node and have one of the machine's host interfaces connect to it. Once the virtual machine is launched 
+its virtual interface will connect to that bridge as well.
+The same L2 segment is used for all OpenStack projects, and it means that there is no L2 isolation between
+virtual hosts, even if they are owned by separated projects. For this reason it is called *Flat* manager.
 
-The most simple case here is as shown on the following diagram. Here **eth0** interface is used to
-give network access to virtual machines while **eth1** interface is the management network interface.
+The simplest case here is as shown on the following diagram. Here the **eth1** interface is used to
+give network access to virtual machines, while **eth0** interface is the management network interface.
 
  .. uml::
     node "Compute1" {
-        [eth0\nVM] as compute1_eth0
-        [eth1\nManagement] as compute1_eth1
+        [eth1\nVM] as compute1_eth1
+        [eth0\nManagement] as compute1_eth0
         [vm0] as compute1_vm0
         [vm1] as compute1_vm1
         [br100] as compute1_br100
-        compute1_br100 -up- compute1_eth0
+        compute1_br100 -up- compute1_eth1
         compute1_vm0 -up- compute1_br100
         compute1_vm1 -up- compute1_br100
     }
 
     node "Compute2" {
-        [eth0\nVM] as compute2_eth0
-        [eth1\nManagement] as compute2_eth1
+        [eth1\nVM] as compute2_eth1
+        [eth0\nManagement] as compute2_eth0
         [vm0] as compute2_vm0
         [vm1] as compute2_vm1
         [br100] as compute2_br100
-        compute2_br100 -up- compute2_eth0
+        compute2_br100 -up- compute2_eth1
         compute2_vm0 -up- compute2_br100
         compute2_vm1 -up- compute2_br100
     }
 
     node "Compute3" {
-        [eth0\nVM] as compute3_eth0
-        [eth1\nManagement] as compute3_eth1
+        [eth1\nVM] as compute3_eth1
+        [eth0\nManagement] as compute3_eth0
         [vm0] as compute3_vm0
         [vm1] as compute3_vm1
         [br100] as compute3_br100
-        compute3_br100 -up- compute3_eth0
+        compute3_br100 -up- compute3_eth1
         compute3_vm0 -up- compute3_br100
         compute3_vm1 -up- compute3_br100
     }
 
-    compute1_eth0 -up- [L2 switch]
-    compute2_eth0 -up- [L2 switch]
-    compute3_eth0 -up- [L2 switch]
-    compute1_eth1 .up. [L2 switch]
-    compute2_eth1 .up. [L2 switch]
-    compute3_eth1 .up. [L2 switch]
+    compute1_eth1 -up- [L2 switch]
+    compute2_eth1 -up- [L2 switch]
+    compute3_eth1 -up- [L2 switch]
+    compute1_eth0 .up. [L2 switch]
+    compute2_eth0 .up. [L2 switch]
+    compute3_eth0 .up. [L2 switch]
 
-Flat management mode in turn can be configured both with single nova-network instance typically
-installed on controller node and with multiple nova-network instances one for every compute node.
-In the first case there is no assigned IP on **br100** bridge and it works as fully L2 device. In
-the last case you install nova-network on every compute node and assign IP on **br100** so it will
-be used as default gateway on virtual machines. Besides it is crucial that the **eth0** interfaces
-on all compute nodes have promiscuous mode enabled. Promiscuous mode allows the interface to receive
-packets not targeted to this interface’s MAC address but to vm's MAC address.
 
-Flat Manager (single-interface scheme)
-^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+FuelWeb deployment schema
+^^^^^^^^^^^^^^^^^^^^^^^^^
 
-However we use a bit different scheme for flat manager mode. It is supposed that all compute nodes are
-connected to the network with only one physical interface **eth0**. In order to split virtual machines
-traffic from other types of traffic (for example management traffic) we use vlans on **eth0**. User can
-consider them as several different physical interfaces. We install nova-network on all compute nodes and
-it creates **br100** bridge and connect it to VM vlan interface **eth0.102**. Then it assigns IP address
-on **br100** bridge and use it as default gateway for virtual machines. IP address for **br100** will be
-choosen automatically from the user defined range.
+FuelWeb deploys OpenStack in FlatDHCP mode with the so called **multi-host** feature enabled.
+Without this feature enabled, network traffic from each VM would go through the single
+gateway host, which basically becomes a single point of failure. In enabled mode, each compute node becomes a
+gateway for all the VMs running on the host, providing a balanced networking solution.
+In this case, if one of the computes goes down, the rest of the environment remains operational.
+
+The current version of FuelWeb uses VLANs, even for the FlatDHCP network manager.
+On the Linux host, it is implemented in such a way that it is not the physical network interfaces that is
+connected to the bridge, but the VLAN interface (i.e. **eth0.102**).
 
  .. uml::
     node "Compute1 Node" {
@@ -126,19 +121,23 @@ choosen automatically from the user defined range.
     compute2_eth0 -up- [L2 switch]
 
 Therefore all switch ports where compute nodes are connected must be configured as tagged (trunk) ports
-with vlans 101 and 102 allowed (enabled). Virtual machines will communicate with each other on L2 even
-if they on different compute nodes. However if virtual machine sends IP packets outside flat VM network
-they will be routed on the host machine.
+with required vlans allowed (enabled, tagged). Virtual machines will communicate with each other on L2 even
+if they are on different compute nodes. If the virtual machine sends IP packets to a different network, 
+they will be routed on the host machine according to the routing table. The default route will point to the
+gateway specified on the networks tab in the UI as the gateway for the public network.
 
 
-VLAN manager
+VLAN Manager
 ^^^^^^^^^^^^
 
-Vlan manager mode is more suitable for large scale clouds. The idea behind this mode is to define vlan
-range and assign those vlans to given tenants. So virtual machines inside given tenant communicate with
-each other on L2 while all other IP packets are routed on compute nodes where nova-network instances
-are running. In this case all switch ports where compute nodes are connected also must be configured
-as tagged (trunk) ports.
+OpenStack basics
+^^^^^^^^^^^^^^^^
+
+Vlan manager mode is more suitable for large scale clouds. The idea behind this mode is to separate
+groups of virtual machines, owned by different projects, on L2 layer. In VLAN Manager it is done by
+tagging IP frames, or simply speaking, by VLANs. It allows virtual machines inside the given project
+to communicate with each other and not to see any traffic from VMs of other projects.
+Switch ports must be configured as tagged (trunk) ports to allow this scheme to work.
 
 .. uml::
     node "Compute1 Node" {
@@ -188,68 +187,115 @@ as tagged (trunk) ports.
     compute1_eth0 -up- [L2 switch]
     compute2_eth0 -up- [L2 switch]
 
+FuelWeb deployment schema
+^^^^^^^^^^^^^^^^^^^^^^^^^
 
-Making Configuration
---------------------
+One of the physical interfaces on each host has to be chosen to carry VM-to-VM traffic (fixed network),
+and switch ports must be configured to allow tagged traffic to pass through. OpenStack Computes will
+untag the IP packets and send them to the appropriate VMs.
+Simplifying the configuration of VLAN Manager, there is no known limitation which FuelWeb could add
+in this particular networking mode.
+
+Configuring the network
+-----------------------
 
 Scheme
 ^^^^^^
 
-Once you figure out the network scheme for your future cloud, you need to configure your equipment according to this scheme. Note that the IP addresses in your case will differ from those shown in the diagrams.
+Once the networking mode is chosen (FlatDHCP/Vlan), you must configure equipment according
+to this scheme. The diagram below shows an example configuration.
 
 .. image:: _static/flat.png
 
-By default we use several predefined networks:
+By default several predefined networks can be used:
 
-* **FuelWeb** network is used for internal FuelWeb communications only (untagged on the scheme);
-* **Public** network used to get access from virtual machines to outside OpenStack cluster (vlan 101 on the scheme);
-* **Floating** network is used to get access to virtual machines from outside OpenStack cluster (shared L2-interface with **Public** network, in this case it's vlan 101);
+* **FuelWeb** network is used for internal FuelWeb communications only and PXE booting (untagged on the scheme);
+* **Public** network is used to get access from virtual machines to outside, Internet or office network (vlan 101 on the scheme);
+* **Floating** network is used to get access to virtual machines from outside (shared L2-interface with **Public** network; in this case it's vlan 101);
 * **Management** network is used for internal OpenStack communications (vlan 102 on the scheme);
 * **Storage** network is used for storage traffic (vlan 103 on the scheme);
-* One (for flat mode) or more (for vlan mode) virtual machine network(s). (vlan 104 on the scheme).
+* **Fixed** - one (for flat mode) or more (for vlan mode) virtual machines network(s) (vlan 104 on the scheme).
 
 Switch
 ^^^^^^
 
-Now is the point where you need to configure L2 switch so that all nodes are connected to switch
-ports where "**FuelWeb**" vlan frames untagged (without vlan tags) and all other frames tagged (with vlan
-tags). Vlans 101-104 must not be filtered on those ports. It is crucial to isolate all used vlans
-from the rest of your network on L2 because in other case DHCP server on master node can send
-invalid DHCP offers to DHCP clients inside your network and vise versa slave nodes can get invalid
-DHCP offers from DHCP servers outside scheme. Also you need to configure each of the switch's ports connected
-to nodes as an "STP Edge port" (or a "spanning-tree portfast trunk" according to Cisco terminology).
-If you don't do that, some DHCP timeout issues can occur. Once master node is installed and slave nodes are
-booted in bootstrap mode you are able to use "Network Verification" feature in order to check
-validity of vlan configuration on L2 switch.
+FuelWeb can configure hosts, however switch configuration is still manual work.
+Unfortunately the set of configuration steps, and even the terminology used, is different for different vendors,
+so we will try to provide vendor-agnostic information on how traffic should flow and leave the
+vendor-specific details to you. We will provide an example for a Cisco switch.
+
+First of all, you must configure access ports to allow non-tagged PXE booting connections
+from all slave nodes to the FuelWeb node. We refer this network as the "admin" network, or "fuelweb".
+By default, the FuelWeb master node uses the ``eth0`` interface to serve PXE requests in this network.
+So if that's left unchanged, you must set the switch port for eth0 of FuelWeb to access mode.
+We recommend that you use the eth0 interfaces of all other nodes for PXE booting as well.  Corresponding ports
+must be in access mode as well.
+
+Taking into account that this is the network for PXE booting, you must not mix this
+L2 segment with any other company infrastructure. FuelWeb runs a DHCP server, and if there is
+another company DHCP on the same L2, both the company's infrastructure and FuelWeb's will be unable to function properly.
+You also need to configure each of the switch's ports connected
+to nodes as an "STP Edge port" (or a "spanning-tree portfast trunk", according to Cisco terminology).
+If you don't do that, DHCP timeout issues may occur.
+
+As long as the "admin" network is configured, FuelWeb can operate. Other networks are required
+for OpenStack environments, and currently all of these networks live in VLANs over the one or multiple
+physical interfaces on a node. This means that the switch should pass tagged traffic, and untagging is done
+on the Linux hosts. *For the sake of simplicity, all the VLANs specified on the networks tab of the FuelWeb UI
+should be configured on switch ports, pointing to slave nodes, as tagged.* Of course, it is
+possible to specify as tagged only certain ports for a certain nodes. For example, there is no
+need to pass the public network to Cinder hosts.
+
+This is enough to deploy the OpenStack environment. However it will not really be usable because
+there is no connection to other corporate networks yet. To make that possible, you must configure uplink port(s). 
+One of the VLANs may carry the office network. To provide access to the FuelWeb WebUI
+from the office network, any other free physical network interface on the FuelWeb master node can be used
+and configured according to the office network rules (static IP or DHCP). The same corporate
+network segment can be used for public and floating ranges. In this case, you must
+provide the corresponding VLAN ID and IP ranges in the UI. One public IP per node will be used to SNAT
+traffic out of the VMs network, and one or more floating addresses per VM instance will be used to get
+access to the VM from the corporate network, or even the global Internet. To have a VM visible from the 
+Internet is similar to having it visible from corporate network - corresponding IP ranges and VLAN IDs
+must be specified for the floating and public networks. One current limitation of FuelWeb is that the user
+must use the same L2 segment for both public and floating networks.
+
+Example configuration for one of the ports on a Cisco switch html:
+
+| interface GigabitEthernet0/6               # switch port
+| description s0_eth0 jv                     # description
+| switchport trunk encapsulation dot1q       # enables VLANs
+| switchport trunk native vlan 262           # access port, untags VLAN 262
+| switchport trunk allowed vlan 100,102,104  # 100,102,104 VLANs are passed with tags
+| switchport mode trunk                      # To allow more than 1 VLAN on the port
+| spanning­tree portfast trunk               # STP Edge port to skip network loop checks (to prevent DHCP timeout issues).
+| vlan 262,100,102,104                       # Might be needed for enabling VLANs
 
 Router
 ^^^^^^
 
-To make virtual machines able to get access to the outside of OpenStack cluster it is needed to configure
-address 240.0.1.1 on the "**Public**" (vlan 101) router interface. Cluster nodes will use this address as
-default gateway. In turn, to get access from the outside of cluster to virtual machine via, for example,
-ssh you need to use "**Floating**" IP address which could be assigned to given virtual machine via OpenStack
-dashboard. You also need to configure corresponding IP address 240.0.0.1 on the "**Floating**" (vlan 101)
-router interface. Besides, to get access from the outside to http://10.20.0.2:8000 you also need to
-configure gateway address 10.20.0.1 on "**FuelWeb**" vlan interface (untagged on the scheme). Private
-OpenStack networks (vlans 102, 103, 104) should not be configured on router as they used completely
-inside cluster.
+To make it possible for VMs to access the outside world, you must have an IP address set on a router in the public network.
+In the examples provided, that IP is 240.0.1.1 in VLAN 101. FuelWeb has a special field on the networking tab for the
+gateway address. As soon as deployment of OpenStack is started, the network on nodes is reconfigured
+to use this gateway IP as the default gateway.
+If floating addresses are from another other L3 network, then you must set the IP (or even multiple
+IPs if floating addresses are from more than one L3 network) for them on the router as well.
+Otherwise, floating IPs on nodes will be inaccessible.
 
 
 Admin Node
 ^^^^^^^^^^
 
-During master node installation it is assumed that there is a recursive DNS service on 10.20.0.1.
+During master node installation, it is assumed that there is a recursive DNS service on 10.20.0.1.
 
-If you want to make slave nodes able to resolve public names you need to change this default value to
-point on actual DNS service. This value can be changed via text based dialog provided by anaconda.
-It is implemented in anaconda kickstart in post install section. Slave nodes use DNS service running
-on master node and provided by cobbler and it relays requests to the actual DNS service if it does
-not have information about requested name.
+If you want to make it possible for slave nodes to be able to resolve public names, you need to change this 
+default value to point to an actual DNS service. You can change this value via text-based dialog provided by anaconda.
+It is implemented in the anaconda kickstart in the post-install section. Slave nodes use the DNS service running
+on the master node and provided by cobbler.  That node relays requests to the actual DNS service if it does
+not have information about the requested host or domain name.
 
-Once master node is installed you have to power on all other nodes and go to the url http://10.20.0.2:8000.
+Once the master node is installed, power on all other nodes and go to the url http://10.20.0.2:8000.
 Slave nodes will be booted in bootstrap mode via PXE and you will see notifications on user interface
-about discovered nodes. Here is the point where you can configure your cluster. It is supposed that
+about discovered nodes. That is the point where you can configure your cluster, assuming assumed that
 on the network tab you choose configuration shown on the following figure.
 
 .. image:: _static/web_network_tab.png
