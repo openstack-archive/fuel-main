@@ -257,6 +257,7 @@ class NodeCollectionHandler(JSONHandler, NICUtils):
                         db_nics.remove(db_nic)
                     map(self.db.delete, db_nics)
             nodes_updated.append(node)
+            self.db.add(node)
             self.db.commit()
             if 'cluster_id' in nd and nd['cluster_id'] != old_cluster_id:
                 if old_cluster_id:
