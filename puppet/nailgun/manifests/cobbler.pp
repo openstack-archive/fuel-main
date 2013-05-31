@@ -145,13 +145,13 @@ class nailgun::cobbler(
     require => Cobbler_profile["bootstrap"],
   }
 
-  exec { "cobbler_sync":
+  exec { "nailgun_cobbler_sync":
     command => "cobbler sync",
     refreshonly => true,
   }
 
-  Exec["cobbler_system_add_default"] ~> Exec["cobbler_sync"]
-  Exec["cobbler_system_edit_default"] ~> Exec["cobbler_sync"]
+  Exec["cobbler_system_add_default"] ~> Exec["nailgun_cobbler_sync"]
+  Exec["cobbler_system_edit_default"] ~> Exec["nailgun_cobbler_sync"]
 
   file { "/etc/cobbler/power/fence_ssh.template":
     content => template("nailgun/cobbler/fence_ssh.template.erb"),
