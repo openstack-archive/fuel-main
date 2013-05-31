@@ -525,6 +525,8 @@ class NetworkManager(object):
         if not "interfaces" in node.meta:
             raise Exception("No interfaces metadata specified for node")
 
+        self.__delete_all_interfaces(node)
+
         for interface in node.meta["interfaces"]:
             nicInterface = NodeNICInterface()
             nicInterface.node_id = node.id
@@ -537,6 +539,9 @@ class NetworkManager(object):
             self.db.add(nicInterface)
             self.db.commit()
             node.interfaces.append(nicInterface)
+
+    def __delete_all_interfaces(self, node):
+        self.db.query(NodeNICInterface).filter_by(node_id=node.id).delete()
 
     def _get_admin_network(self, node):
         """

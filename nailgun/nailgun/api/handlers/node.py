@@ -138,9 +138,8 @@ class NodeCollectionHandler(JSONHandler, NICUtils):
 
         # Add interfaces for node from 'meta'.
         if node.meta and node.meta.get('interfaces'):
-            nics = self.get_nics_from_meta(node)
-            map(self.db.add, nics)
-            self.db.commit()
+            network_manager = NetworkManager()
+            network_manager.update_interfaces_info(node)
 
         if node.cluster_id:
             self.allow_network_assignment_to_all_interfaces(node)
@@ -246,18 +245,9 @@ class NodeCollectionHandler(JSONHandler, NICUtils):
 
                 # Update node's NICs.
                 if node.meta and 'interfaces' in node.meta:
-                    db_nics = list(node.interfaces)
-                    nics = self.get_nics_from_meta(node)
-                    for nic in nics:
-                        db_nic = filter(lambda i: i.mac == nic.mac, db_nics)
-                        if not db_nic:
-                            self.db.add(nic)
-                            continue
-                        db_nic = db_nic[0]
-                        for key in ('name', 'current_speed', 'max_speed'):
-                            setattr(db_nic, key, getattr(nic, key))
-                        db_nics.remove(db_nic)
-                    map(self.db.delete, db_nics)
+                    network_manager = NetworkManager()
+                    network_manager.update_interfaces_info(node)
+
             nodes_updated.append(node)
             self.db.commit()
             if 'cluster_id' in nd and nd['cluster_id'] != old_cluster_id:

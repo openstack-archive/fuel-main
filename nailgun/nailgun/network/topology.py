@@ -40,27 +40,6 @@ class TopoChecker(object):
 
 
 class NICUtils(object):
-    def get_nics_from_meta(self, node):
-        nics = []
-        if node.meta and node.meta.get('interfaces'):
-            for i in node.meta['interfaces']:
-                if 'name' not in i or 'mac' not in i:
-                    logger.debug('Some node NIC interface in "meta" doesn\'t'
-                                 ' have name or mac')
-                    continue
-                nic = NodeNICInterface()
-                nic.node_id = node.id
-                for key in ('name', 'mac', 'current_speed', 'max_speed'):
-                    if key in i:
-                        setattr(nic, key, i[key])
-                # Skip duplicated interfaces.
-                if filter(lambda k: k.mac == nic.mac, nics):
-                    logger.debug('Duplicated interface with MAC %r for node %r'
-                                 ' (id: %s)',
-                                 nic.mac, node.name, node.id)
-                    continue
-                nics.append(nic)
-        return nics
 
     def _update_attrs(self, node):
         db_node = self.db.query(Node).filter_by(id=node['id']).first()
