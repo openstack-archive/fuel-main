@@ -525,23 +525,46 @@ class NetworkManager(object):
         if not "interfaces" in node.meta:
             raise Exception("No interfaces metadata specified for node")
 
-        self.__delete_all_interfaces(node)
-
         for interface in node.meta["interfaces"]:
-            nicInterface = NodeNICInterface()
-            nicInterface.node_id = node.id
-            nicInterface.name = interface["name"]
-            nicInterface.mac = interface["mac"]
-            if "max_speed" in interface:
-                nicInterface.max_speed = interface["max_speed"]
-            if "current_speed" in interface:
-                nicInterface.current_speed = interface["current_speed"]
-            self.db.add(nicInterface)
-            self.db.commit()
-            node.interfaces.append(nicInterface)
+            interface_db = self.db.query(NodeNICInterface).filter(
+                mac=interface['mac']).first()
+            if interface_db:
+                self.__update_existing_interface(interface_db.id, interface)
+            else:
+                self.__add_new_interface(node, interface)
 
-    def __delete_all_interfaces(self, node):
-        self.db.query(NodeNICInterface).filter_by(node_id=node.id).delete()
+        self.__delete_not_found_interfaces(node, node.meta["interfaces"])
+
+    def __add_new_interface(self, node, interface_attrs):
+        interface = NodeNICInterface()
+        interface.node_id = node.id
+        self.__set_interface_attributes(interface, interface_attrs)
+        self.db.add(interface)
+        self.db.commit()
+        node.interfaces.append(interface)
+
+    def __update_existing_interface(self, interface_id, interface_attrs):
+        interface = self.db.query(NodeNICInterface).get(interface_id)
+        self.__set_interface_attributes(interface, interface_attrs)
+        self.db.commit()
+
+    def __set_interface_attributes(self, interface, interface_attrs):
+        interface.name = interface_attrs["name"]
+        interface.mac = interface_attrs["mac"]
+
+        if "max_speed" in interface:
+            interface.max_speed = interface_attrs["max_speed"]
+        if "current_speed" in interface:
+            interface.current_speed = interface_attrs["current_speed"]
+
+    def __delete_not_found_interfaces(self, node, interfaces):
+        interfaces_mac_addresses = map(
+            lambda interface: interface['mac'], interfaces)
+
+        self.db.query(NodeNICInterface).filter(
+            node_id=node.id).filter(
+            not_(NodeNICInterface.mac.in_(
+                interfaces_mac_addresses))).delete()
 
     def _get_admin_network(self, node):
         """
