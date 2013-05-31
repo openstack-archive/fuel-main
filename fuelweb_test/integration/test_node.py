@@ -189,12 +189,7 @@ class TestNode(Base):
                                    % cluster_id, {})
         task = json.loads(response.read())
         # wait for the task completion
-        for x in range(0, 100):
-            response = self.client.get("/api/tasks/%s" % task['id'])
-            task = json.loads(response.read())
-            if task['progress'] >= 100:
-                break
-            sleep(20)
+        self._task_wait(task, 'Initial deployment', 60 * 10)
         # Deploy second compute node
         self.client.put("/api/nodes", nodes_put_compute_data)
         self.client.put("/api/clusters/%s/changes" % cluster_id, {})
