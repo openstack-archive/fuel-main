@@ -447,15 +447,28 @@ class NailgunReceiver(object):
                 if not error_msg:
                     error_msg = 'Please add more nodes to the environment ' \
                                 'before performing network verification.'
+            elif len(nodes) != len(task.cache['args']['nodes']):
+                node_uids = map(lambda n: str(n['uid']), nodes)
+                absent_nodes = map(
+                    lambda x: x['uid'],
+                    filter(
+                        lambda n: str(n['uid']) not in node_uids,
+                        task.cache['args']['nodes']
+                    )
+                )
+                error_msg = 'Nodes {0} didn\'t return data.'.format(
+                    ', '.join(absent_nodes)
+                )
+                status = 'error'
             else:
                 error_nodes = []
                 for node in nodes:
-                    sent_nodes_filtered = filter(
+                    cached_nodes_filtered = filter(
                         lambda n: str(n['uid']) == str(node['uid']),
                         task.cache['args']['nodes']
                     )
 
-                    if not sent_nodes_filtered:
+                    if not cached_nodes_filtered:
                         logger.warning(
                             "verify_networks_resp: arguments contain data "
                             "which is not in task cache uid=%s",
@@ -463,35 +476,38 @@ class NailgunReceiver(object):
                         )
                         continue
 
-                    sent_node = sent_nodes_filtered[0]
+                    cached_node = cached_nodes_filtered[0]
 
-                    for network in node['networks']:
-                        sent_networks_filtered = filter(
-                            lambda n: n['iface'] == network['iface'],
-                            sent_node.get('networks', [])
+                    for cached_network in cached_node['networks']:
+                        received_networks_filtered = filter(
+                            lambda n: n['iface'] == cached_network['iface'],
+                            node.get('networks', [])
                         )
 
-                        if not sent_networks_filtered:
-                            logger.warning(
-                                "verify_networks_resp: arguments contain data "
-                                "which is not in task cache uid=%s iface=%s",
-                                node['uid'], network['iface']
+                        if received_networks_filtered:
+                            received_network = received_networks_filtered[0]
+                            absent_vlans = list(
+                                set(cached_network['vlans']) -
+                                set(received_network['vlans'])
                             )
-                            continue
+                        else:
+                            logger.warning(
+                                "verify_networks_resp: arguments don't contain"
+                                " data for interface: uid=%s iface=%s",
+                                node['uid'], cached_network['iface']
+                            )
+                            absent_vlans = cached_network['vlans']
 
-                        sent_network = sent_networks_filtered[0]
-
-                        absent_vlans = list(
-                            set(sent_network['vlans']) - set(network['vlans']))
                         if absent_vlans:
                             data = {'uid': node['uid'],
-                                    'interface': network['iface'],
+                                    'interface': cached_network['iface'],
                                     'absent_vlans': absent_vlans}
                             node_db = cls.db.query(Node).get(node['uid'])
                             if node_db:
                                 data.update({'name': node_db.name,
                                              'mac': node_db.mac})
                             error_nodes.append(data)
+
                 if error_nodes:
                     result = error_nodes
                     status = 'error'
