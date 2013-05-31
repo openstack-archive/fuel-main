@@ -198,7 +198,7 @@ class TestNetworkManager(BaseHandlers):
     def test_vlan_set_null(self):
         cluster = self.env.create_cluster(api=True)
         cluster_db = self.env.clusters[0]
-        same_vlan = None
+        same_vlan = 100
         resp = self.app.get(
             reverse(
                 'NetworkConfigurationHandler',
@@ -206,16 +206,12 @@ class TestNetworkManager(BaseHandlers):
             headers=self.default_headers
         )
         networks_data = json.loads(resp.body)
-        vlan_changed = False
-        for index, network_data in enumerate(networks_data['networks']):
-            if network_data['name'] == [u'public', u'floating']:
-                network_data["vlan_start"] = same_vlan
-                vlan_changed = True
-            else:
-                if not same_vlan:
-                    same_vlan = network_data["vlan_start"]
-            if vlan_changed and same_vlan:
-                break
+        same_vlan_nets = filter(
+            lambda n: n['vlan_start'] == same_vlan, networks_data['networks'])
+        different_vlan_nets = filter(
+            lambda n: n['vlan_start'] != same_vlan, networks_data['networks'])
+        different_vlan_nets[0]['vlan_start'] = same_vlan
+        same_vlan_nets_count_expect = len(same_vlan_nets) + 1
         resp = self.app.put(
             reverse(
                 'NetworkConfigurationHandler',
@@ -234,14 +230,13 @@ class TestNetworkManager(BaseHandlers):
         same_vlan_nets = [
             net for net in networks_data if net["vlan_start"] == same_vlan
         ]
-        self.assertEquals(len(same_vlan_nets), 2)
+        self.assertEquals(len(same_vlan_nets), same_vlan_nets_count_expect)
 
         vlan_db = self.db.query(Vlan).get(same_vlan)
-        self.assertEquals(len(vlan_db.network), 2)
+        self.assertEquals(len(vlan_db.network), same_vlan_nets_count_expect)
 
-        net1, net2 = vlan_db.network
-        self.db.delete(net1)
-        self.db.delete(net2)
+        for net in vlan_db.network:
+            self.db.delete(net)
         self.db.commit()
         self.db.refresh(vlan_db)
         self.assertEquals(vlan_db.network, [])
