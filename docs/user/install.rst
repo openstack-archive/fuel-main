@@ -84,7 +84,7 @@ First, create the admin node.
 
   * IP address: 10.20.0.1
   * Interface mask: 255.255.255.0
-  * DHCP diaabled
+  * DHCP disabled
 
 2. Create a VM for the admin node with the following parameters:
 
