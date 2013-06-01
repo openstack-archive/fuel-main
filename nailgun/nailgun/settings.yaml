@@ -18,9 +18,10 @@ DATABASE:
   user: "nailgun"
   passwd: "nailgun"
 
+# Check timeouts for offline-online nodes detection
 KEEPALIVE:
-  interval: 30
-  timeout: 180
+  interval: 30  # How often to check if node went offline. If node powered on, it is immediately switched to online state.
+  timeout: 180  # Node will be switched to offline if there are no updates from agent for this period of time
 
 STATIC_DIR: "/var/tmp/nailgun_static"
 TEMPLATE_DIR: "/var/tmp/nailgun_static"

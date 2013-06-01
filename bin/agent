@@ -123,9 +123,9 @@ class NodeAgent
 
   def htclient
     client = HTTPClient.new
-    client.connect_timeout = 3
-    client.send_timeout    = 1
-    client.receive_timeout = 1
+    client.connect_timeout = 10
+    client.send_timeout    = 10
+    client.receive_timeout = 10  # (mihgen): Nailgun may hang for a while, but 10sec should be enough for him to respond
     client
   end
 
