@@ -559,12 +559,20 @@ class NetworkManager(object):
         interfaces_mac_addresses = map(
             lambda interface: interface['mac'], interfaces)
 
-        nodes_to_delete = self.db.query(NodeNICInterface).filter(
+        interfaces_to_delete = self.db.query(NodeNICInterface).filter(
             NodeNICInterface.node_id == node.id).filter(
                 not_(NodeNICInterface.mac.in_(
-                    interfaces_mac_addresses)))
+                    interfaces_mac_addresses))).all()
 
-        map(self.db.delete, nodes_to_delete)
+        if interfaces_to_delete:
+            mac_addresses = ' '.join(
+                map(lambda i: i.mac, interfaces_to_delete))
+
+            node_name = node.name or node.mac
+            logger.info("Interfaces %s removed from node %s" % (
+                mac_addresses, node_name))
+
+            map(self.db.delete, interfaces_to_delete)
 
     def _get_admin_network(self, node):
         """
