@@ -168,7 +168,8 @@ class VolumeManager(object):
                 for subv in v["volumes"]:
                     if (subv.get("type"), subv.get("vg")) == ("pv", vg):
                         vg_space += (subv.get("size", 0) -
-                             self.field_generator("calc_lvm_meta_size"))
+                                     self.field_generator(
+                                         "calc_lvm_meta_size"))
         return vg_space
 
     def field_generator(self, generator, *args):
@@ -273,7 +274,6 @@ class VolumeManager(object):
                              "Allocating volume group 'vm'")
                 self._allocate_vg("vm")
 
-
             elif self.node.role == "cinder":
                 logger.debug("Node role is cinder. "
                              "Allocating volume group 'cinder'")
@@ -284,7 +284,7 @@ class VolumeManager(object):
 
     def gen_default_volumes_info(self):
         logger.debug(
-            u"Generating default volumes info for node '{0}' (role:{1})".format(
+            u"Default volumes info for node '{0}' (role:{1})".format(
                 self.node.name or self.node.mac or self.node.id,
                 self.node.role
             )
