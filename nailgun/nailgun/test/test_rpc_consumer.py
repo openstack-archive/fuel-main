@@ -223,6 +223,116 @@ class TestVerifyNetworks(BaseHandlers):
         self.assertEqual(task.status, "error")
         self.assertEqual(task.message, error_msg)
 
+    def test_verify_networks_resp_extra_nodes_error(self):
+        self.env.create(
+            cluster_kwargs={},
+            nodes_kwargs=[
+                {"api": False},
+                {"api": False}
+            ]
+        )
+        cluster_db = self.env.clusters[0]
+        node1, node2 = self.env.nodes
+        nets_sent = [{'iface': 'eth0', 'vlans': range(100, 105)}]
+
+        task = Task(
+            name="super",
+            cluster_id=cluster_db.id
+        )
+        task.cache = {
+            "args": {
+                'nodes': [{'uid': node1.id, 'networks': nets_sent},
+                          {'uid': node2.id, 'networks': nets_sent}]
+            }
+        }
+        self.db.add(task)
+        self.db.commit()
+
+        kwargs = {'task_uuid': task.uuid,
+                  'status': 'ready',
+                  'nodes': [{'uid': node1.id, 'networks': nets_sent},
+                            {'uid': node2.id, 'networks': nets_sent},
+                            {'uid': node2.id, 'networks': nets_sent}]}
+        self.receiver.verify_networks_resp(**kwargs)
+        self.db.refresh(task)
+        self.assertEqual(task.status, "error")
+        self.assertNotIn(task.message, (None, ""))
+        self.assertEqual(task.result, [])
+
+    def test_verify_networks_resp_forgotten_node_error(self):
+        self.env.create(
+            cluster_kwargs={},
+            nodes_kwargs=[
+                {"api": False, 'name': 'node1'},
+                {"api": False, 'name': 'node2'}
+            ]
+        )
+        cluster_db = self.env.clusters[0]
+        node1, node2 = self.env.nodes
+        nets_sent = [{'iface': 'eth0', 'vlans': range(100, 105)}]
+
+        task = Task(
+            name="super",
+            cluster_id=cluster_db.id
+        )
+        task.cache = {
+            "args": {
+                'nodes': [{'uid': node1.id, 'networks': nets_sent},
+                          {'uid': node2.id, 'networks': nets_sent}]
+            }
+        }
+        self.db.add(task)
+        self.db.commit()
+
+        kwargs = {'task_uuid': task.uuid,
+                  'status': 'ready',
+                  'nodes': [{'uid': node1.id, 'networks': nets_sent},
+                            {'uid': node1.id, 'networks': nets_sent}]}
+        self.receiver.verify_networks_resp(**kwargs)
+        self.db.refresh(task)
+        self.assertEqual(task.status, "error")
+        self.assertRegexpMatches(task.message, node2.name)
+        self.assertEqual(task.result, [])
+
+    def test_verify_networks_resp_incomplete_network_data_error(self):
+        self.env.create(
+            cluster_kwargs={},
+            nodes_kwargs=[
+                {"api": False},
+                {"api": False}
+            ]
+        )
+        cluster_db = self.env.clusters[0]
+        node1, node2 = self.env.nodes
+        nets_sent = [{'iface': 'eth0', 'vlans': range(100, 105)}]
+
+        task = Task(
+            name="super",
+            cluster_id=cluster_db.id
+        )
+        task.cache = {
+            "args": {
+                'nodes': [{'uid': node1.id, 'networks': nets_sent},
+                          {'uid': node2.id, 'networks': nets_sent}]
+            }
+        }
+        self.db.add(task)
+        self.db.commit()
+
+        kwargs = {'task_uuid': task.uuid,
+                  'status': 'ready',
+                  'nodes': [{'uid': node1.id, 'networks': nets_sent},
+                            {'uid': node2.id, 'networks': []}]}
+        self.receiver.verify_networks_resp(**kwargs)
+        self.db.refresh(task)
+        self.assertEqual(task.status, "error")
+        self.assertEqual(task.message, None)
+        error_nodes = [{'uid': node2.id, 'interface': 'eth0',
+                        'name': node2.name, 'mac': node2.mac,
+                        'absent_vlans': nets_sent[0]['vlans'],
+                        }]
+        self.assertEqual(task.result, error_nodes)
+
 
 class TestConsumer(BaseHandlers):
 

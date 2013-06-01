@@ -442,17 +442,31 @@ class NailgunReceiver(object):
             # If no nodes in kwargs then we update progress or status only.
             pass
         elif isinstance(nodes, list):
+            cached_nodes = task.cache['args']['nodes']
+            node_uids = [str(n['uid']) for n in nodes]
+            cached_node_uids = [str(n['uid']) for n in cached_nodes]
+            forgotten_uids = set(cached_node_uids) - set(node_uids)
+
             if len(nodes) < 2:
                 status = 'error'
                 if not error_msg:
                     error_msg = 'Please add more nodes to the environment ' \
                                 'before performing network verification.'
-            elif len(nodes) != len(task.cache['args']['nodes']):
-                node_uids = map(lambda n: str(n['uid']), nodes)
-                absent_nodes = [n['name'] for n in task.cache['args']['nodes']
-                                if str(n['uid']) not in node_uids]
-                error_msg = 'Nodes {0} didn\'t return data.'.format(
-                    ', '.join(absent_nodes)
+            elif len(node_uids) != len(cached_node_uids):
+                error_msg = 'Too many node\'s data received.'
+                status = 'error'
+            elif forgotten_uids:
+                absent_nodes = cls.db.query(Node).filter(
+                    Node.id.in_(forgotten_uids)
+                ).all()
+                absent_node_names = []
+                for n in absent_nodes:
+                    if n.name:
+                        absent_node_names.append(n.name)
+                    else:
+                        absent_node_names.append('id: %s' % n.id)
+                error_msg = 'Node(s) {0} didn\'t return data.'.format(
+                    ', '.join(absent_node_names)
                 )
                 status = 'error'
             else:
@@ -460,7 +474,7 @@ class NailgunReceiver(object):
                 for node in nodes:
                     cached_nodes_filtered = filter(
                         lambda n: str(n['uid']) == str(node['uid']),
-                        task.cache['args']['nodes']
+                        cached_nodes
                     )
 
                     if not cached_nodes_filtered:
