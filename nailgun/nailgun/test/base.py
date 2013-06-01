@@ -421,7 +421,7 @@ class Environment(object):
                 "admin_tenant": {
                     "value": "admin",
                     "label": "Admin tenant",
-                    "description": "Tenant(project) name for Administrator"
+                    "description": "Tenant (project) name for Administrator"
                 },
                 "common": {
                     "auto_assign_floating_ip": {

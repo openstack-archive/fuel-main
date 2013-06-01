@@ -361,8 +361,8 @@ class NailgunReceiver(object):
                     horizon_ip = public_net[0]['ip'].split('/')[0]
                     message = (
                         u"Deployment of environment '{0}' is done. "
-                        "Access WebUI of OpenStack at http://{1}/ or via "
-                        "internal network at http://{2}/"
+                        "Access the OpenStack dashboard (Horizon) at "
+                        "http://{1}/ or via internal network at http://{2}/"
                     ).format(
                         task.cluster.name,
                         horizon_ip,
@@ -392,7 +392,7 @@ class NailgunReceiver(object):
                 vip = args['attributes']['public_vip']
                 message = (
                     u"Deployment of environment '{0}' is done. "
-                    "Access WebUI of OpenStack at http://{1}/"
+                    "Access the OpenStack dashboard (Horizon) at http://{1}/"
                 ).format(
                     task.cluster.name,
                     vip

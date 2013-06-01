@@ -8,7 +8,7 @@
     <% if (cluster.get('tasks').where({status: 'running'}).length) { %>
       There are incompleted actions. Removing of the environment may fail and lead to inconsistent state.
     <% } else { %>
-      With environment removal all nodes will be cleaned up and returned to the pool of unallocated nodes.
+      Each node will be cleaned up and returned to the pool of unallocated nodes.
     <% } %>
   </div>
 </div>

@@ -46,7 +46,7 @@ class TestHorizonURL(BaseHandlers):
 
         self.assertEquals(supertask.message, (
             u"Deployment of environment '{0}' is done. "
-            "Access WebUI of OpenStack at http://{1}/"
+            "Access the OpenStack dashboard (Horizon) at http://{1}/"
         ).format(
             self.env.clusters[0].name,
             lost_ips[0].ip_addr

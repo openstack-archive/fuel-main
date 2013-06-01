@@ -5,7 +5,7 @@
         "fields": {
             "name": "Grizzly",
             "version": "2013.1.1",
-            "description": "This option will install OpenStack Grizzly packages using CentOS as a base operating system. With high availability features built in, you are getting a robust, enterprise-grade OpenStack deployment.",
+            "description": "This option will install the OpenStack Grizzly packages using CentOS as a base operating system. With high availability features built in, you are getting a robust, enterprise-grade OpenStack deployment.",
             "networks_metadata": [
                 {"name": "floating", "access": "public"},
                 {"name": "public", "access": "public"},
@@ -120,7 +120,7 @@
                         "tenant": {
                             "value": "admin",
                             "label": "tenant",
-                            "description": "Tenant(project) name for Administrator",
+                            "description": "Tenant (project) name for Administrator",
                             "weight": 30
                         },
                         "password": {
@@ -134,7 +134,7 @@
                         "auto_assign_floating_ip": {
                             "value": false,
                             "label": "Auto assign floating IP",
-                            "description": "If true, it will automatically associate public IP address with the instance",
+                            "description": "If true, OpenStack will automatically assign a floating IP to a new instance",
                             "weight": 40
                         },
                         "libvirt_type": {
@@ -148,7 +148,7 @@
                                 {
                                     "data": "qemu",
                                     "display_name": "QEMU",
-                                    "description": "Choose this type of hypervisor if you run OpenStack on hosts with no virtualization support"
+                                    "description": "Choose this type of hypervisor if you run OpenStack on virtual hosts."
                                 }
                             ],
                             "label": "Hypervisor type",
@@ -172,7 +172,7 @@
                                 {
                                     "data": "nova.scheduler.filter_scheduler.FilterScheduler",
                                     "display_name": "Filter scheduler",
-                                    "description": "Currently it is the most advanced scheduler. Check OpenStack documentation for details."
+                                    "description": "Currently the most advanced OpenStack scheduler. See the OpenStack documentation for details."
                                 },
                                 {
                                     "data": "nova.scheduler.simple.SimpleScheduler",
