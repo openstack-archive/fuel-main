@@ -56,8 +56,8 @@ class HTTPLoggerMiddleware(object):
     def __init__(self, application, **kw):
         self.application = application
         filelogger = WatchedFileHandler(kw.get('file', settings.API_LOG))
-        format = logging.Formatter(kw.get('logformat', LOGFORMAT))
-        filelogger.setFormatter(format)
+        log_format = logging.Formatter(kw.get('logformat', LOGFORMAT))
+        filelogger.setFormatter(log_format)
         api_logger.setLevel(
             kw.get('loglevel', logging.DEBUG)
         )
@@ -125,7 +125,7 @@ class FileLoggerMiddleware(object):
             logger.setLevel(
                 kw.get('loglevel', logging.DEBUG)
             )
-            format = logging.Formatter(
+            log_format = logging.Formatter(
                 kw.get('logformat', LOGFORMAT),
                 kw.get('datefmt', DATEFORMAT)
             )
@@ -134,7 +134,7 @@ class FileLoggerMiddleware(object):
                 kw.get('interval', 'h'),
                 kw.get('backups', 1)
             )
-            filelogger.setFormatter(format)
+            filelogger.setFormatter(log_format)
             logger.addHandler(filelogger)
             self.logger = WriteLogger(logger)
             self.nailgun_logger = logging.getLogger("nailgun")
