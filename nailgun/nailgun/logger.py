@@ -4,8 +4,6 @@ import sys
 import logging
 from StringIO import StringIO
 from cgitb import html
-from logging.handlers import HTTPHandler, SysLogHandler
-from logging.handlers import TimedRotatingFileHandler, SMTPHandler
 from logging.handlers import WatchedFileHandler
 
 from nailgun.settings import settings
@@ -55,13 +53,13 @@ class WriteLogger(logging.Logger, object):
 class HTTPLoggerMiddleware(object):
     def __init__(self, application, **kw):
         self.application = application
-        filelogger = WatchedFileHandler(kw.get('file', settings.API_LOG))
-        log_format = logging.Formatter(kw.get('logformat', LOGFORMAT))
-        filelogger.setFormatter(log_format)
-        api_logger.setLevel(
-            kw.get('loglevel', logging.DEBUG)
-        )
-        api_logger.addHandler(filelogger)
+        log_file = WatchedFileHandler(kw.get('file', settings.API_LOG))
+        log_format = logging.Formatter(
+            kw.get('logformat', LOGFORMAT),
+            kw.get('datefmt', DATEFORMAT))
+        log_file.setFormatter(log_format)
+        api_logger.setLevel(kw.get('loglevel', logging.DEBUG))
+        api_logger.addHandler(log_file)
 
     def __call__(self, env, start_response):
         self.__logging_request(env)
@@ -122,18 +120,11 @@ class FileLoggerMiddleware(object):
         if self.log:
             self.message = kw.get('logmessage', ERRORMSG)
             logger = http_logger
-            logger.setLevel(
-                kw.get('loglevel', logging.DEBUG)
-            )
+            logger.setLevel(kw.get('loglevel', logging.DEBUG))
             log_format = logging.Formatter(
                 kw.get('logformat', LOGFORMAT),
-                kw.get('datefmt', DATEFORMAT)
-            )
-            filelogger = TimedRotatingFileHandler(
-                kw.get('file', settings.ACCESS_LOG),
-                kw.get('interval', 'h'),
-                kw.get('backups', 1)
-            )
+                kw.get('datefmt', DATEFORMAT))
+            filelogger = WatchedFileHandler(kw.get('file', settings.ACCESS_LOG))
             filelogger.setFormatter(log_format)
             logger.addHandler(filelogger)
             self.logger = WriteLogger(logger)
