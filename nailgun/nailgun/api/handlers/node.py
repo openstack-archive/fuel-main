@@ -396,13 +396,21 @@ class NodeAttributesByNameHandler(JSONHandler):
                         continue
                     attr.append(a)
 
+                if attr_name == "volumes":
+                    vm = node.volume_manager
+                    setattr(node_attrs, attr_name, vm.validate())
+
                 attr = filter(
                     lambda a: a["type"] == attr_params.type,
                     getattr(node_attrs, attr_name)
                 )
         else:
             setattr(node_attrs, attr_name, data)
+            if attr_name == "volumes":
+                vm = node.volume_manager
+                setattr(node_attrs, attr_name, vm.validate())
             attr = getattr(node_attrs, attr_name)
+
         return attr
 
 

@@ -62,7 +62,7 @@
                                 "type": "lv",
                                 "name": "libvirt",
                                 "size": {
-                                    "generator": "calc_all_free_vg",
+                                    "generator": "calc_total_vg",
                                     "generator_args": ["vm"]
                                 }
                             }

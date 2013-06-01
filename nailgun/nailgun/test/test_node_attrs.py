@@ -96,7 +96,7 @@ class TestHandlers(BaseHandlers):
     def test_reset_attrs_to_default(self):
         node = self.env.create_node(api=True)
         node_db = self.env.nodes[0]
-        test_data = {"volumes": "test"}
+        test_data = {"volumes": []}
         resp = self.app.put(
             reverse('NodeAttributesHandler', kwargs={'node_id': node_db.id}),
             json.dumps(test_data),

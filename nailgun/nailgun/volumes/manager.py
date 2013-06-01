@@ -81,19 +81,37 @@ class Disk(object):
 
 class VolumeManager(object):
 
-    def __init__(self, node):
+    def __init__(self, node, volumes=None):
         self.db = orm()
         self.node = node
         if not self.node:
             raise Exception(
                 "Invalid node - can't generate volumes info"
             )
-        self.volumes = []
+        if not volumes:
+            self.volumes = self.node.attributes.volumes or []
+            logger.debug("Volume manager initialized with volumes: %s",
+                         self.volumes)
         self.disks = []
         if not "disks" in self.node.meta:
             raise Exception("No disk metadata specified for node")
         for disk in sorted(self.node.meta["disks"], key=lambda i: i["name"]):
-            self.disks.append(Disk(self, disk["disk"], disk["size"]))
+            disk_obj = Disk(self, disk["disk"], disk["size"])
+            for v in self.volumes:
+                if v.get("type") == "disk" and v.get("id") == disk_obj.id:
+                    disk_obj.volumes = v.get("volumes", [])
+            self.disks.append(disk_obj)
+
+    def validate(self):
+        logger.debug("Validating volumes: %s", self.volumes)
+        for i, vg in enumerate(self.volumes):
+            if vg.get("type") == "vg" and vg.get("id") == "vm":
+                for j, lv in enumerate(vg.get("volumes", [])):
+                    if lv.get("type") == "lv" and lv.get("name") == "libvirt":
+                        self.volumes[i]["volumes"][j]["size"] = \
+                            self.field_generator("calc_total_vg", "vm")
+        logger.debug("Validated volumes: %s", self.volumes)
+        return self.volumes
 
     def _traverse(self, cdict):
         new_dict = {}
@@ -108,7 +126,7 @@ class VolumeManager(object):
                                      val.get("generator_args", []))
                         genval = self.field_generator(
                             val["generator"],
-                            val.get("generator_args", [])
+                            *(val.get("generator_args", []))
                         )
                         logger.debug("Generated value: %s", str(genval))
                         new_dict[i] = genval
@@ -142,20 +160,18 @@ class VolumeManager(object):
         logger.debug("_calc_all_free")
         return sum([d.free_space for d in self.disks])
 
-    def _calc_all_free_vg(self, vg):
-        logger.debug("_calc_all_free_vg")
+    def _calc_total_vg(self, vg):
+        logger.debug("_calc_total_vg")
         vg_space = 0
-        for i, disk in enumerate(self.disks):
-            for j, volume in enumerate(disk.volumes):
-                if (volume.get("type"), volume.get("vg")) == ("pv", vg):
-                    vg_space += (volume.get("size", 0) -
-                                 self.field_generator("calc_lvm_meta_size"))
+        for v in self.volumes:
+            if v.get("type") == "disk" and v.get("volumes"):
+                for subv in v["volumes"]:
+                    if (subv.get("type"), subv.get("vg")) == ("pv", vg):
+                        vg_space += (subv.get("size", 0) -
+                             self.field_generator("calc_lvm_meta_size"))
         return vg_space
 
-    def field_generator(self, generator, args=None):
-        if not args:
-            args = []
-
+    def field_generator(self, generator, *args):
         generators = {
             # Calculate swap space based on total RAM
             "calc_swap_size": self._calc_swap_size,
@@ -166,7 +182,7 @@ class VolumeManager(object):
             "calc_mbr_size": lambda: 10 * 1024 ** 2,
             "calc_lvm_meta_size": lambda: 1024 ** 2 * 64,
             "calc_all_free": self._calc_all_free,
-            "calc_all_free_vg": self._calc_all_free_vg
+            "calc_total_vg": self._calc_total_vg
         }
         generators["calc_os_size"] = lambda: sum([
             generators["calc_root_size"](),
@@ -273,6 +289,9 @@ class VolumeManager(object):
                 self.node.role
             )
         )
+        logger.debug("Purging volumes info for all node disks")
+        map(lambda d: d.clear(), self.disks)
+
         self._allocate_os()
         self.volumes = [d.render() for d in self.disks]
         logger.debug("Appending default OS volume group")
