@@ -87,7 +87,7 @@ function(utils, models, simpleMessageTemplate, createClusterDialogTemplate, chan
                 deferred
                     .done(_.bind(function() {
                         this.$el.modal('hide');
-                        this.collection.fetch();
+                        this.collection.add(cluster);
                     }, this))
                     .fail(_.bind(function(response) {
                         if (response.status == 409) {

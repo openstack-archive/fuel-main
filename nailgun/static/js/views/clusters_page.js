@@ -37,7 +37,7 @@ function(models, commonViews, dialogViews, clustersPageTemplate, clusterTemplate
             createClusterDialogView.render();
         },
         initialize: function() {
-            this.collection.on('sync', this.render, this);
+            this.collection.on('sync add', this.render, this);
         },
         render: function() {
             this.tearDownRegisteredSubViews();
