@@ -438,7 +438,6 @@ begin
   mc_config.replace_identity(new_id)
   write_data_to_file(logger, '/etc/nailgun_uid', new_id.to_s)
 rescue => ex
-  logger.warn ex.message
-  sleep 1
-  retry
+  # NOTE(mihgen): There is no need to retry - cron will do it for us
+  logger.error "#{ex.message}\n#{ex.backtrace}"
 end
