@@ -20,19 +20,24 @@ class Disk(object):
         self.free_space = self.size
 
     def create_pv(self, vg, size=None):
+        logger.debug("Creating PV: vg=%s, size=%s", vg, str(size))
         if size:
             size = size + self.vm.field_generator(
                 "calc_lvm_meta_size"
             )
         elif size is None:
+            logger.debug("Size is not defined. "
+                         "Will use all free space on this disk.")
             size = self.free_space
+        logger.debug("Allocating %s for PV", str(size))
         self.free_space = self.free_space - size
 
         for i, volume in enumerate(self.volumes):
             if (volume.get("type"), volume.get("vg")) == ("pv", vg):
+                logger.debug("PV already exist. Setting its size to: %s", size)
                 self.volumes[i]["size"] = size
                 return
-
+        logger.debug("Appending PV to node volumes.")
         self.volumes.append({
             "type": "pv",
             "vg": vg,
@@ -50,10 +55,12 @@ class Disk(object):
     def create_mbr(self, boot=False):
         if boot:
             self.volumes.append({"type": "mbr"})
+        logger.debug("Allocating MBR")
         self.free_space = self.free_space - \
             self.vm.field_generator("calc_mbr_size")
 
     def make_bootable(self):
+        logger.debug("Allocating /boot partition")
         self.create_partition(
             "/boot",
             self.vm.field_generator("calc_boot_size")
@@ -83,6 +90,10 @@ class VolumeManager(object):
             )
         self.volumes = []
         self.disks = []
+        if not "disks" in self.node.meta:
+            raise Exception("No disk metadata specified for node")
+        for disk in sorted(self.node.meta["disks"], key=lambda i: i["name"]):
+            self.disks.append(Disk(self, disk["disk"], disk["size"]))
 
     def _traverse(self, cdict):
         new_dict = {}
@@ -92,10 +103,15 @@ class VolumeManager(object):
                     new_dict[i] = val
                 elif isinstance(val, dict):
                     if "generator" in val:
-                        new_dict[i] = self.field_generator(
+                        logger.debug("Generating value: generator: %s "
+                                     "generator_args: %s", val["generator"],
+                                     val.get("generator_args", []))
+                        genval = self.field_generator(
                             val["generator"],
                             val.get("generator_args", [])
                         )
+                        logger.debug("Generated value: %s", str(genval))
+                        new_dict[i] = genval
                     else:
                         new_dict[i] = self._traverse(val)
                 elif isinstance(val, list):
@@ -122,6 +138,20 @@ class VolumeManager(object):
         else:
             return int(4 * 1024 ** 3)
 
+    def _calc_all_free(self):
+        logger.debug("_calc_all_free")
+        return sum([d.free_space for d in self.disks])
+
+    def _calc_all_free_vg(self, vg):
+        logger.debug("_calc_all_free_vg")
+        vg_space = 0
+        for i, disk in enumerate(self.disks):
+            for j, volume in enumerate(disk.volumes):
+                if (volume.get("type"), volume.get("vg")) == ("pv", vg):
+                    vg_space += (volume.get("size", 0) -
+                                 self.field_generator("calc_lvm_meta_size"))
+        return vg_space
+
     def field_generator(self, generator, args=None):
         if not args:
             args = []
@@ -134,7 +164,9 @@ class VolumeManager(object):
             "calc_boot_size": lambda: 1024 ** 2 * 200,
             # let's think that size of mbr is 10Mb
             "calc_mbr_size": lambda: 10 * 1024 ** 2,
-            "calc_lvm_meta_size": lambda: 1024 ** 2 * 64
+            "calc_lvm_meta_size": lambda: 1024 ** 2 * 64,
+            "calc_all_free": self._calc_all_free,
+            "calc_all_free_vg": self._calc_all_free_vg
         }
         generators["calc_os_size"] = lambda: sum([
             generators["calc_root_size"](),
@@ -143,17 +175,25 @@ class VolumeManager(object):
         return generators.get(generator, lambda: None)(*args)
 
     def _allocate_vg(self, name, size=None, use_existing_space=True):
+        logger.debug("_allocate_vg: name: %s, size: %s", name, str(size))
         free_space = sum([d.free_space for d in self.disks])
+        logger.debug("Available free space on all node disks: %s",
+                     str(free_space))
 
         if not size:
             for disk in self.disks:
+                logger.debug("disk: %s", disk.id)
+                logger.debug("create_pv(%s, 0)", name)
                 disk.create_pv(name, 0)
         if use_existing_space:
             for i, disk in enumerate(self.disks):
                 if disk.free_space > 0:
+                    logger.debug("disk: %s", disk.id)
+                    logger.debug("create_pv(%s)", name)
                     disk.create_pv(name)
 
     def _allocate_os(self):
+        logger.debug("_allocate_os")
         os_size = self.field_generator("calc_os_size")
         boot_size = self.field_generator("calc_boot_size")
         mbr_size = self.field_generator("calc_mbr_size")
@@ -166,7 +206,9 @@ class VolumeManager(object):
 
         ready = False
         os_vg_size_left = os_size
+        logger.debug("Iterating over node disks.")
         for i, disk in enumerate(self.disks):
+            logger.debug("Found disk: %s", disk.id)
             if i == 0:
                 disk.make_bootable()
             else:
@@ -188,18 +230,21 @@ class VolumeManager(object):
                 disk.create_pv("os")
 
     def gen_volumes_info(self):
-        if not "disks" in self.node.meta:
-            raise Exception("No disk metadata specified for node")
         logger.debug(
             u"Generating volumes info for node '{0}' (role:{1})".format(
                 self.node.name or self.node.mac or self.node.id,
                 self.node.role
             )
         )
-        self.volumes = self.gen_default_volumes_info()
-        if self.node.cluster:
+        logger.debug("Purging volumes info for all node disks")
+        map(lambda d: d.clear(), self.disks)
+
+        if not self.node.cluster:
+            logger.debug("Node is not bound to cluster.")
+            return self.gen_default_volumes_info()
+        else:
             volumes_metadata = self.node.cluster.release.volumes_metadata
-            map(lambda d: d.clear(), self.disks)
+
             self._allocate_os()
             self.volumes = [d.render() for d in self.disks]
             self.volumes.extend(
@@ -208,21 +253,29 @@ class VolumeManager(object):
             # UGLY HACK HERE
             # generate volume groups for node by role
             if self.node.role == "compute":
+                logger.debug("Node role is compute. "
+                             "Allocating volume group 'vm'")
                 self._allocate_vg("vm")
+
+
             elif self.node.role == "cinder":
+                logger.debug("Node role is cinder. "
+                             "Allocating volume group 'cinder'")
                 self._allocate_vg("cinder")
-            self.volumes = self._traverse(self.volumes)
-        return self.volumes
+
+        logger.debug("Generating values for volumes")
+        return self._traverse(self.volumes)
 
     def gen_default_volumes_info(self):
-        if not "disks" in self.node.meta:
-            raise Exception("No disk metadata specified for node")
-        for disk in sorted(self.node.meta["disks"], key=lambda i: i["name"]):
-            self.disks.append(Disk(self, disk["disk"], disk["size"]))
-
+        logger.debug(
+            u"Generating default volumes info for node '{0}' (role:{1})".format(
+                self.node.name or self.node.mac or self.node.id,
+                self.node.role
+            )
+        )
         self._allocate_os()
         self.volumes = [d.render() for d in self.disks]
-        # creating volume groups
+        logger.debug("Appending default OS volume group")
         self.volumes.extend([
             {
                 "id": "os",
@@ -231,25 +284,17 @@ class VolumeManager(object):
                     {
                         "mount": "/",
                         "size": {"generator": "calc_root_size"},
-                        "name": "root",
+                        "name": "os_root",
                         "type": "lv"
                     },
                     {
                         "mount": "swap",
                         "size": {"generator": "calc_swap_size"},
-                        "name": "swap",
+                        "name": "os_swap",
                         "type": "lv"
                     }
                 ]
-            },
-            {
-                "id": "vm",
-                "type": "vg",
-                "volumes": [
-                    {"mount": "/var/lib/libvirt", "size": 0,
-                     "name": "vm", "type": "lv"}
-                ]
             }
         ])
-
+        logger.debug("Generating values for volumes")
         return self._traverse(self.volumes)

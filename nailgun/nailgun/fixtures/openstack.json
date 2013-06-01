@@ -22,21 +22,16 @@
                             {
                                 "mount": "/",
                                 "type": "lv",
-                                "name": "root",
+                                "name": "os_root",
                                 "size": {"generator": "calc_root_size"}
                             },
                             {
                                 "mount": "swap",
                                 "type": "lv",
-                                "name": "swap",
+                                "name": "os_swap",
                                 "size": {"generator": "calc_swap_size"}
                             }
                         ]
-                    },
-                    {
-                        "type": "vg",
-                        "id": "cinder",
-                        "volumes": []
                     }
                 ],
                 "compute": [
@@ -47,13 +42,13 @@
                             {
                                 "mount": "/",
                                 "type": "lv",
-                                "name": "root",
+                                "name": "os_root",
                                 "size": {"generator": "calc_root_size"}
                             },
                             {
                                 "mount": "swap",
                                 "type": "lv",
-                                "name": "swap",
+                                "name": "os_swap",
                                 "size": {"generator": "calc_swap_size"}
                             }
                         ]
@@ -65,15 +60,13 @@
                             {
                                 "mount": "/var/lib/libvirt",
                                 "type": "lv",
-                                "name": "vm",
-                                "size": {"generator": "calc_all_free"}
+                                "name": "vm_libvirt",
+                                "size": {
+                                    "generator": "calc_all_free_vg",
+                                    "generator_args": ["vm"]
+                                }
                             }
                         ]
-                    },
-                    {
-                        "type": "vg",
-                        "id": "cinder",
-                        "volumes": []
                     }
                 ],
                 "cinder": [
@@ -84,13 +77,13 @@
                             {
                                 "mount": "/",
                                 "type": "lv",
-                                "name": "root",
+                                "name": "os_root",
                                 "size": {"generator": "calc_root_size"}
                             },
                             {
                                 "mount": "swap",
                                 "type": "lv",
-                                "name": "swap",
+                                "name": "os_swap",
                                 "size": {"generator": "calc_swap_size"}
                             }
                         ]

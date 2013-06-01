@@ -278,10 +278,10 @@ class TestHandlers(BaseHandlers):
         )
         self.assertEquals(200, resp.status)
         response = json.loads(resp.body)
-        self.assertEquals(len(response), 2)
+        self.assertEquals(len(response), 1)
         self.assertEquals(
             len(filter(lambda v: (v["type"] == "vg"), response)),
-            2
+            1
         )
 
     def test_attrs_update_by_name(self):
