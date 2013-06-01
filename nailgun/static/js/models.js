@@ -393,7 +393,7 @@ define(function() {
                         errors.amount = 'Invalid amount of networks';
                     }
                     if (attrs.amount && attrs.amount > 4095 - attrs.vlan_start) {
-                        errors.amount = 'Unable to fit requested amount of networks to available VLANs. Lower VLAN start range or amount of networks.';
+                        errors.amount = 'Number of networks needs more VLAN IDs than available. Check VLAN ID Range field.';
                     }
                 }
             }, this));
