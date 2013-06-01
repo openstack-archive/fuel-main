@@ -552,10 +552,8 @@ class NetworkManager(object):
         interface.name = interface_attrs["name"]
         interface.mac = interface_attrs["mac"]
 
-        if "max_speed" in interface_attrs:
-            interface.max_speed = interface_attrs["max_speed"]
-        if "current_speed" in interface_attrs:
-            interface.current_speed = interface_attrs["current_speed"]
+        interface.max_speed = interface_attrs.get("max_speed")
+        interface.current_speed = interface_attrs.get("current_speed")
 
     def __delete_not_found_interfaces(self, node, interfaces):
         interfaces_mac_addresses = map(
