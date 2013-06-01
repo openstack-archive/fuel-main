@@ -829,17 +829,31 @@ function(utils, models, commonViews, dialogViews, nodesTabSummaryTemplate, editN
             _.defaults(this, options);
             this.node = this.model.get('nodes').get(this.screenOptions[0]);
             if (this.configurationAllowed()) {
+                var networkConfiguration = new models.NetworkConfiguration();
                 this.interfaces = new models.Interfaces();
-                this.networkConfiguration = new models.NetworkConfiguration();
-                $.when(this.interfaces.fetch({url: _.result(this.node, 'url') + '/interfaces', reset: true}), this.networkConfiguration.fetch({url: _.result(this.model, 'url') + '/network_configuration'})).done(_.bind(function() {
-                        this.initialData = this.interfaces.toJSON();
-                        this.checkForChanges();
-                        this.networks = this.networkConfiguration.get('networks');
-                        this.interfaces.on('reset', this.renderInterfaces, this);
-                        this.interfaces.on('reset', this.checkForChanges, this);
-                        this.renderInterfaces();
-                    }, this))
-                    .fail(_.bind(this.goToNodeList, this));
+                $.when(
+                   this.interfaces.fetch({url: _.result(this.node, 'url') + '/interfaces', reset: true}),
+                   networkConfiguration.fetch({url: _.result(this.model, 'url') + '/network_configuration'})
+                ).done(_.bind(function() {
+                    // FIXME(vk): modifying models prototypes to use vlan data from NetworkConfiguration
+                    // this mean that these models cannot be used safely in places other than this view
+                    // helper function for template to get vlan_start NetworkConfiguration
+                    models.InterfaceNetwork.prototype.vlanStart = function() {
+                        return networkConfiguration.get('networks').findWhere({name: this.get('name')}).get('vlan_start');
+                    };
+
+                    this.interfaces.each(function(ifc) {
+                        ifc.get('assigned_networks').models.sort(function(interfaceNetwork) {
+                            return interfaceNetwork.vlanStart() + interfaceNetwork.get('name');
+                        });
+                    }, this);
+                    this.initialData = this.interfaces.toJSON();
+                    this.interfaces.on('reset', this.renderInterfaces, this);
+                    this.interfaces.on('reset', this.checkForChanges, this);
+                    this.checkForChanges();
+                    this.renderInterfaces();
+                }, this))
+                .fail(_.bind(this.goToNodeList, this));
             } else {
                 this.goToNodeList();
             }
@@ -848,7 +862,7 @@ function(utils, models, commonViews, dialogViews, nodesTabSummaryTemplate, editN
             this.tearDownRegisteredSubViews();
             this.$('.node-networks').html('');
             this.interfaces.each(_.bind(function(ifc) {
-                var nodeInterface = new NodeInterface({model: ifc, screen: this, networks: this.networks});
+                var nodeInterface = new NodeInterface({model: ifc, screen: this});
                 this.registerSubView(nodeInterface);
                 this.$('.node-networks').append(nodeInterface.render().el);
             }, this));
@@ -871,17 +885,18 @@ function(utils, models, commonViews, dialogViews, nodesTabSummaryTemplate, editN
             'sortstop .logical-network-box': 'dragStop'
         },
         dragStart: function(event, ui) {
-            var network = this.model.get('assigned_networks').findWhere({name: $(ui.item).data('name')});
-            this.model.get('assigned_networks').remove(network);
-            this.screen.draggedNetwork = network;
+            var networkNames = $(ui.item).find('.logical-network-item').map(function(index, el) {return $(el).data('name');}).get();
+            var networks = this.model.get('assigned_networks').filter(function(network) {return _.contains(networkNames, network.get('name'));});
+            this.model.get('assigned_networks').remove(networks);
+            this.screen.draggedNetworks = networks;
         },
         dragStop: function(event, ui) {
-            var network = this.screen.draggedNetwork;
+            var networks = this.screen.draggedNetworks;
             if (event.type == 'sortreceive') {
-                this.model.get('assigned_networks').add(network);
+                this.model.get('assigned_networks').add(networks);
             }
             this.render();
-            this.screen.draggedNetwork = null;
+            this.screen.draggedNetworks = null;
         },
         checkIfEmpty: function() {
             this.$('.network-help-message').toggleClass('hide', !!this.model.get('assigned_networks').length);
@@ -892,13 +907,12 @@ function(utils, models, commonViews, dialogViews, nodesTabSummaryTemplate, editN
             this.model.get('assigned_networks').on('add remove', this.screen.checkForChanges, this.screen);
         },
         render: function() {
-            this.$el.html(this.template(_.extend({ifc: this.model, networks: this.networks}, this.templateHelpers)));
+            this.$el.html(this.template(_.extend({ifc: this.model}, this.templateHelpers)));
             this.checkIfEmpty();
             this.$('.logical-network-box').sortable({
                 connectWith: '.logical-network-box',
-                items: '.logical-network-item',
-                containment: this.screen.$('.node-networks'),
-                cursor: 'move'
+                items: '.logical-network-group',
+                containment: this.screen.$('.node-networks')
             }).disableSelection();
             return this;
         }

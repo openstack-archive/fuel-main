@@ -294,10 +294,7 @@ define(function() {
 
     models.InterfaceNetworks = Backbone.Collection.extend({
         constructorName: 'InterfaceNetworks',
-        model: models.InterfaceNetwork,
-        comparator: function(network) {
-            return network.get('name');
-        }
+        model: models.InterfaceNetwork
     });
 
     models.NodeInterfaceConfiguration = Backbone.Model.extend({

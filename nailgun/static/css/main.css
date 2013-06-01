@@ -3404,6 +3404,11 @@ hr.slim {
   content: "";
 }
 
+.logical-network-group {
+  display: block;
+  float: left;
+}
+
 .logical-network-item {
   display: block;
   float: left;
@@ -3438,7 +3443,7 @@ hr.slim {
   background-image: -o-linear-gradient(bottom, #a7a6a6, #cdcccc);
   background-image: -ms-linear-gradient(bottom, #a7a6a6, #cdcccc);
   background-image: linear-gradient(to top, #a7a6a6, #cdcccc);
-  cursor: hand;cursor:pointer;
+  cursor: move;
 }
 
 .logical-network-item > .name {
