@@ -295,7 +295,7 @@ not have information about the requested host or domain name.
 
 Once the master node is installed, power on all other nodes and go to the url http://10.20.0.2:8000.
 Slave nodes will be booted in bootstrap mode via PXE and you will see notifications on user interface
-about discovered nodes. That is the point where you can configure your cluster, assuming assumed that
+about discovered nodes. That is the point where you can configure your cluster, assuming that
 on the network tab you choose configuration shown on the following figure.
 
 .. image:: _static/web_network_tab.png
