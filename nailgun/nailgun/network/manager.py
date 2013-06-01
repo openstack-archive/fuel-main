@@ -563,8 +563,8 @@ class NetworkManager(object):
 
         nodes_to_delete = self.db.query(NodeNICInterface).filter(
             NodeNICInterface.node_id == node.id).filter(
-            not_(NodeNICInterface.mac.in_(
-                interfaces_mac_addresses)))
+                not_(NodeNICInterface.mac.in_(
+                    interfaces_mac_addresses)))
 
         map(self.db.delete, nodes_to_delete)
 
