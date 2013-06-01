@@ -449,13 +449,8 @@ class NailgunReceiver(object):
                                 'before performing network verification.'
             elif len(nodes) != len(task.cache['args']['nodes']):
                 node_uids = map(lambda n: str(n['uid']), nodes)
-                absent_nodes = map(
-                    lambda x: x['uid'],
-                    filter(
-                        lambda n: str(n['uid']) not in node_uids,
-                        task.cache['args']['nodes']
-                    )
-                )
+                absent_nodes = [n['name'] for n in task.cache['args']['nodes']
+                                if str(n['uid']) not in node_uids]
                 error_msg = 'Nodes {0} didn\'t return data.'.format(
                     ', '.join(absent_nodes)
                 )

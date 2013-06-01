@@ -172,7 +172,7 @@ class Actor(object):
                 "link", "set",
                 "dev", set_iface,
                 "down"])
-            self.iface_down_after.get[set_iface] = False
+            self.iface_down_after[set_iface] = False
 
     def _try_viface_create(self, iface, vid):
         """
