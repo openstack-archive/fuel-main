@@ -224,7 +224,7 @@ function(utils, models, commonViews, dialogViews, networkTabTemplate, networkTem
         },
         updateNetworkFromForm: function() {
             var ip_ranges = [];
-            this.$('.range-row').each(function(index, rangeRow) {
+            this.$('.ip-range-row').each(function(index, rangeRow) {
                 var range = [$(rangeRow).find('input:first').val(), $(rangeRow).find('input:last').val()];
                 if (!_.isEqual(range, ['', ''])) {
                     ip_ranges.push(range);
@@ -245,8 +245,7 @@ function(utils, models, commonViews, dialogViews, networkTabTemplate, networkTem
             this.$(e.currentTarget).next().find('input:first').focus();
         },
         editIPRange: function(e, add) {
-            var row = this.$(e.currentTarget).parents('.range-row');
-            var index = this.$('.range-row').index(row);
+            var row = this.$(e.currentTarget).parents('.ip-range-row');
             if (add) {
                 var newRow = row.clone();
                 newRow.find('input').removeClass('error').val('');
@@ -254,7 +253,7 @@ function(utils, models, commonViews, dialogViews, networkTabTemplate, networkTem
                 row.after(newRow);
                 row.parent().find('.ip-ranges-control').removeClass('hide');
             } else {
-                row.parent().find('.ip-ranges-delete').parent().toggleClass('hide', row.siblings('.range-row').length == 1);
+                row.parent().find('.ip-ranges-delete').parent().toggleClass('hide', row.siblings('.ip-range-row').length == 1);
                 row.remove();
             }
             this.updateNetworkFromForm();
@@ -277,7 +276,7 @@ function(utils, models, commonViews, dialogViews, networkTabTemplate, networkTem
                 }, this));
                 if (errors.ip_ranges) {
                     _.each(errors.ip_ranges, _.bind(function(range) {
-                        var row = this.$('.range-row:eq(' + range.index + ')');
+                        var row = this.$('.ip-range-row:eq(' + range.index + ')');
                         row.find('input:first').toggleClass('error', !!range.start);
                         row.find('input:last').toggleClass('error', !!range.end);
                         row.find('.help-inline').text(range.start || range.end);

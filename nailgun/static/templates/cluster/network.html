@@ -25,7 +25,7 @@
       </div>
       <div class="networks-sub-title parameter-name range-name <%= hidden %>"><%= labels[attribute] %></div>
       <% _.each(network.get(attribute), function(ip_range) { %>
-        <div class="range-row clearfix <%= hidden %>">
+        <div class="range-row ip-range-row clearfix <%= hidden %>">
           <label class="parameter-box clearfix setting">
             <div class="parameter-control <%- attribute %>">
               <input type="text" name="<%- attribute %>-start" placeholder="127.0.0.1" value="<%- _.first(ip_range) %>" <%= disabled %> />
