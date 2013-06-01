@@ -284,13 +284,13 @@ class VolumeManager(object):
                     {
                         "mount": "/",
                         "size": {"generator": "calc_root_size"},
-                        "name": "os_root",
+                        "name": "root",
                         "type": "lv"
                     },
                     {
                         "mount": "swap",
                         "size": {"generator": "calc_swap_size"},
-                        "name": "os_swap",
+                        "name": "swap",
                         "type": "lv"
                     }
                 ]

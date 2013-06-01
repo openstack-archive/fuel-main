@@ -22,13 +22,13 @@
                             {
                                 "mount": "/",
                                 "type": "lv",
-                                "name": "os_root",
+                                "name": "root",
                                 "size": {"generator": "calc_root_size"}
                             },
                             {
                                 "mount": "swap",
                                 "type": "lv",
-                                "name": "os_swap",
+                                "name": "swap",
                                 "size": {"generator": "calc_swap_size"}
                             }
                         ]
@@ -42,13 +42,13 @@
                             {
                                 "mount": "/",
                                 "type": "lv",
-                                "name": "os_root",
+                                "name": "root",
                                 "size": {"generator": "calc_root_size"}
                             },
                             {
                                 "mount": "swap",
                                 "type": "lv",
-                                "name": "os_swap",
+                                "name": "swap",
                                 "size": {"generator": "calc_swap_size"}
                             }
                         ]
@@ -60,7 +60,7 @@
                             {
                                 "mount": "/var/lib/libvirt",
                                 "type": "lv",
-                                "name": "vm_libvirt",
+                                "name": "libvirt",
                                 "size": {
                                     "generator": "calc_all_free_vg",
                                     "generator_args": ["vm"]
@@ -77,13 +77,13 @@
                             {
                                 "mount": "/",
                                 "type": "lv",
-                                "name": "os_root",
+                                "name": "root",
                                 "size": {"generator": "calc_root_size"}
                             },
                             {
                                 "mount": "swap",
                                 "type": "lv",
-                                "name": "os_swap",
+                                "name": "swap",
                                 "size": {"generator": "calc_swap_size"}
                             }
                         ]
