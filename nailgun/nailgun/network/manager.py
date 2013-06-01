@@ -526,7 +526,7 @@ class NetworkManager(object):
             raise Exception("No interfaces metadata specified for node")
 
         for interface in node.meta["interfaces"]:
-            interface_db = self.db.query(NodeNICInterface).filter(
+            interface_db = self.db.query(NodeNICInterface).filter_by(
                 mac=interface['mac']).first()
             if interface_db:
                 self.__update_existing_interface(interface_db.id, interface)
@@ -552,19 +552,21 @@ class NetworkManager(object):
         interface.name = interface_attrs["name"]
         interface.mac = interface_attrs["mac"]
 
-        if "max_speed" in interface:
+        if "max_speed" in interface_attrs:
             interface.max_speed = interface_attrs["max_speed"]
-        if "current_speed" in interface:
+        if "current_speed" in interface_attrs:
             interface.current_speed = interface_attrs["current_speed"]
 
     def __delete_not_found_interfaces(self, node, interfaces):
         interfaces_mac_addresses = map(
             lambda interface: interface['mac'], interfaces)
 
-        self.db.query(NodeNICInterface).filter(
-            node_id=node.id).filter(
+        nodes_to_delete = self.db.query(NodeNICInterface).filter(
+            NodeNICInterface.node_id == node.id).filter(
             not_(NodeNICInterface.mac.in_(
-                interfaces_mac_addresses))).delete()
+                interfaces_mac_addresses)))
+
+        map(self.db.delete, nodes_to_delete)
 
     def _get_admin_network(self, node):
         """
