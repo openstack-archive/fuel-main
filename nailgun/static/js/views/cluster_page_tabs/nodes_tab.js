@@ -583,15 +583,18 @@ function(utils, models, commonViews, dialogViews, nodesTabSummaryTemplate, editN
         initialize: function(options) {
             _.defaults(this, options);
             this.node = this.model.get('nodes').get(this.screenOptions[0]);
+            this.disks = new models.Disks();
             if (this.configurationAllowed()) {
-                this.disks = new models.Disks();
-                $.when(this.node.fetch(), this.disks.fetch({url: _.result(this.node, 'url') + '/attributes/volumes'}))
+                this.loading = $.when(
+                    this.node.fetch(),
+                    this.disks.fetch({url: _.result(this.node, 'url') + '/attributes/volumes'})
+                )
                 .done(_.bind(function() {
-                        this.setRoundedValues();
-                        this.setMinimalSizes();
-                        this.initialData = _.cloneDeep(this.disks.toJSON());
-                        this.render();
-                    }, this))
+                    this.setRoundedValues();
+                    this.setMinimalSizes();
+                    this.initialData = _.cloneDeep(this.disks.toJSON());
+                    this.render();
+                }, this))
                 .fail(_.bind(this.goToNodeList, this));
             } else {
                 this.goToNodeList();
@@ -619,7 +622,9 @@ function(utils, models, commonViews, dialogViews, nodesTabSummaryTemplate, editN
         },
         render: function() {
             this.$el.html(this.template({node: this.node}));
-            this.renderDisks();
+            if (this.loading && this.loading.state() != 'pending') {
+                this.renderDisks();
+            }
             return this;
         }
     });
@@ -831,7 +836,7 @@ function(utils, models, commonViews, dialogViews, nodesTabSummaryTemplate, editN
             if (this.configurationAllowed()) {
                 var networkConfiguration = new models.NetworkConfiguration();
                 this.interfaces = new models.Interfaces();
-                $.when(
+                this.loading = $.when(
                    this.interfaces.fetch({url: _.result(this.node, 'url') + '/interfaces', reset: true}),
                    networkConfiguration.fetch({url: _.result(this.model, 'url') + '/network_configuration'})
                 ).done(_.bind(function() {
@@ -869,7 +874,9 @@ function(utils, models, commonViews, dialogViews, nodesTabSummaryTemplate, editN
         },
         render: function() {
             this.$el.html(this.template({node: this.node}));
-            this.renderInterfaces();
+            if (this.loading && this.loading.state() != 'pending') {
+                this.renderInterfaces();
+            }
             return this;
         }
     });
