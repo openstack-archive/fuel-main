@@ -59,7 +59,9 @@
   </div>
 </div>
 <div class="modal-footer">
-  <button class="btn btn-edit-networks" data-dismiss="modal" <%= configurationPossible ? '' : 'disabled' %>>Configure Networks</button>
-  <button class="btn btn-edit-disks" data-dismiss="modal" <%= configurationPossible ? '' : 'disabled' %>>Configure Disks</button>
+  <% if (configurationPossible) { %>
+    <button class="btn btn-edit-networks" data-dismiss="modal">Networks Configuration</button>
+    <button class="btn btn-edit-disks" data-dismiss="modal">Disks Configuration</button>
+  <% } %>
   <button class="btn node-modal-close" data-dismiss="modal">Close</button>
 </div>

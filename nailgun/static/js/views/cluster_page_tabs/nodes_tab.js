@@ -466,10 +466,10 @@ function(utils, models, commonViews, dialogViews, nodesTabSummaryTemplate, editN
         constructorName: 'EditNodeScreen',
         keepScrollPosition: false,
         disableControls: function(disable) {
-            this.$('.btn, input').attr('disabled', disable);
+            this.$('.btn, input').attr('disabled', disable || this.isLocked());
         },
-        configurationAllowed: function () {
-            return this.node && this.node.get('role') && this.node.get('pending_addition') && !this.model.task('deploy', 'running');
+        isLocked: function() {
+            return this.model.get('status') != 'new' || !this.node.get('pending_addition') || !!this.model.task('deploy', 'running');
         }
     });
 
@@ -585,7 +585,8 @@ function(utils, models, commonViews, dialogViews, nodesTabSummaryTemplate, editN
             _.defaults(this, options);
             this.node = this.model.get('nodes').get(this.screenOptions[0]);
             this.disks = new models.Disks();
-            if (this.configurationAllowed()) {
+            if (this.node && this.node.get('role')) {
+                this.model.on('change:status', this.revertChanges, this);
                 this.loading = $.when(
                     this.node.fetch(),
                     this.disks.fetch({url: _.result(this.node, 'url') + '/attributes/volumes'})
@@ -622,7 +623,10 @@ function(utils, models, commonViews, dialogViews, nodesTabSummaryTemplate, editN
             }, this));
         },
         render: function() {
-            this.$el.html(this.template({node: this.node}));
+            this.$el.html(this.template({
+                node: this.node,
+                locked: this.isLocked()
+            }));
             if (this.loading && this.loading.state() != 'pending') {
                 this.renderDisks();
             }
@@ -653,6 +657,7 @@ function(utils, models, commonViews, dialogViews, nodesTabSummaryTemplate, editN
             return this.screen.formatFloat(value);
         },
         toggleEditDiskForm: function(e) {
+            if (this.screen.isLocked()) {return;}
             this.$('.disk-edit-volume-group-form').collapse('toggle').toggleClass('hidden');
             _.each(this.volumesToDisplay(), _.bind(function(group) {
                 this.checkForAvailableDeletion(group.vg);
@@ -797,7 +802,7 @@ function(utils, models, commonViews, dialogViews, nodesTabSummaryTemplate, editN
             'click .btn-return:not(:disabled)': 'goToNodeList'
         },
         checkForChanges: function() {
-            this.$('.btn-apply, .btn-revert-changes').attr('disabled', _.isEqual(this.interfaces.toJSON(), this.initialData));
+            this.$('.btn-apply, .btn-revert-changes').attr('disabled', this.isLocked() || _.isEqual(this.interfaces.toJSON(), this.initialData));
         },
         loadDefaults: function() {
             this.disableControls(true);
@@ -834,7 +839,11 @@ function(utils, models, commonViews, dialogViews, nodesTabSummaryTemplate, editN
         initialize: function(options) {
             _.defaults(this, options);
             this.node = this.model.get('nodes').get(this.screenOptions[0]);
-            if (this.configurationAllowed()) {
+            if (this.node && this.node.get('role')) {
+                this.model.on('change:status', function() {
+                    this.revertChanges();
+                    this.render();
+                }, this);
                 var networkConfiguration = new models.NetworkConfiguration();
                 this.interfaces = new models.Interfaces();
                 this.loading = $.when(
@@ -874,7 +883,10 @@ function(utils, models, commonViews, dialogViews, nodesTabSummaryTemplate, editN
             }, this));
         },
         render: function() {
-            this.$el.html(this.template({node: this.node}));
+            this.$el.html(this.template({
+                node: this.node,
+                locked: this.isLocked()
+            }));
             if (this.loading && this.loading.state() != 'pending') {
                 this.renderInterfaces();
             }
@@ -920,7 +932,8 @@ function(utils, models, commonViews, dialogViews, nodesTabSummaryTemplate, editN
             this.$('.logical-network-box').sortable({
                 connectWith: '.logical-network-box',
                 items: '.logical-network-group',
-                containment: this.screen.$('.node-networks')
+                containment: this.screen.$('.node-networks'),
+                disabled: this.screen.isLocked()
             }).disableSelection();
             return this;
         }

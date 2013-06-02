@@ -3456,6 +3456,10 @@ hr.slim {
   font-size: 10px;
 }
 
+.changes-locked .logical-network-item {
+  cursor: not-allowed;
+}
+
 .network-help-message {
   font-size: 16px;
   color: #555555;
@@ -3521,6 +3525,10 @@ hr.slim {
   cursor: pointer;
   border-color: #777777;
 }
+.changes-locked .disk-map-short {
+  cursor: not-allowed;
+}
+
 .disk-map-full {
   clear: both;
   display: block;

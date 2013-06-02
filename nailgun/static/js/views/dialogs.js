@@ -323,7 +323,7 @@ function(utils, models, simpleMessageTemplate, createClusterDialogTemplate, chan
             app.navigate('#cluster/' + this.clusterId + '/nodes/interfaces/' + this.node.id, {trigger: true});
         },
         render: function() {
-            var configurationPossible = this.node.get('role') && this.node.get('pending_addition') && !this.deployment && this.clusterId;
+            var configurationPossible = !!this.clusterId;
             this.constructor.__super__.render.call(this, _.extend({
                 node: this.node,
                 configurationPossible: configurationPossible
