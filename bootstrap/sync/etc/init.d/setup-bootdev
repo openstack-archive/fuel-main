@@ -42,9 +42,20 @@ get_alldevs() {
     ip link|grep -oE 'eth[0-9]+'|sort|uniq
 }
 
+set_interfaces_up_when_booted() {
+    devs=$(get_alldevs)
+    for name in $devs; do
+        content="DEVICE=$name\nBOOTPROTO=none\nONBOOT=yes"
+        echo -e "$content" > "./ifcfg-$name"
+    done
+}
+
 # See how we were called.
 case "$1" in
   start)
+    echo -n "Configure all interfaces as active..."
+    set_interfaces_up_when_booted
+    echo "ok."
     echo -n "Obtain boot interface name..."
     dev=$(get_bootdev)
     rc=$?
