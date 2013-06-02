@@ -109,18 +109,18 @@ class VolumeManager(object):
         return new_dict
 
     def _calc_swap_size(self):
-        mem = int(self.node.meta["memory"]["total"]) / 1024 ** 3
+        mem = float(self.node.meta["memory"]["total"]) / 1024 ** 3
         # See https://access.redhat.com/site/documentation/en-US/
         #             Red_Hat_Enterprise_Linux/6/html/Installation_Guide/
         #             s2-diskpartrecommend-ppc.html#id4394007
         if mem <= 2:
-            return 2 * mem * 1024 ** 3
+            return int(2 * mem * 1024 ** 3)
         elif mem > 2 and mem <= 8:
-            return mem * 1024 ** 3
+            return int(mem * 1024 ** 3)
         elif mem > 8 and mem <= 64:
-            return .5 * mem * 1024 ** 3
+            return int(.5 * mem * 1024 ** 3)
         else:
-            return 4 * 1024 ** 3
+            return int(4 * 1024 ** 3)
 
     def field_generator(self, generator, args=None):
         if not args:
