@@ -172,7 +172,7 @@ class Actor(object):
                 "link", "set",
                 "dev", set_iface,
                 "down"])
-            self.iface_down_after[set_iface] = False
+            self.iface_down_after.pop(set_iface)
 
     def _try_viface_create(self, iface, vid):
         """
@@ -225,15 +225,16 @@ class Actor(object):
                 )
 
     def _ensure_viface_remove(self, iface, vid):
-        if self.viface_remove_after.get(
-            self._viface_by_iface_vid(iface, vid), False):
+        viface = self._viface_by_iface_vid(iface, vid)
+        if self.viface_remove_after.get(viface, False):
             # if viface have been marked to be removed after probing
             # we try to remove it
             self.logger.debug("Removing vlan %s on interface %s", str(vid), iface)
             self._execute([
                 "ip",
                 "link", "del",
-                "dev", self._viface_by_iface_vid(iface, vid)])
+                "dev", viface])
+            self.viface_remove_after.pop(viface)
 
     def _parse_vlan_list(self, vlan_string):
         self.logger.debug("Parsing vlan list: %s", vlan_string)
