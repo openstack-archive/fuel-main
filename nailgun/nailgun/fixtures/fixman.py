@@ -24,9 +24,16 @@ def capitalize_model_name(model_name):
     return ''.join(map(lambda s: s.capitalize(), model_name.split('_')))
 
 
+def template_fixture(fileobj, config=None):
+    if not config:
+        config = settings
+    t = jinja2.Template(fileobj.read())
+    return StringIO.StringIO(t.render(settings=config))
+
+
 def upload_fixture(fileobj):
     db.expunge_all()
-    fixture = json.load(fileobj)
+    fixture = json.load(template_fixture(fileobj))
 
     queue = Queue.Queue()
     keys = {}
@@ -141,13 +148,6 @@ def upload_fixture(fileobj):
             db.commit()
 
 
-def template_fixture(fileobj, config=None):
-    if not config:
-        config = settings
-    t = jinja2.Template(fileobj.read())
-    return StringIO.StringIO(t.render(settings=config))
-
-
 def upload_fixtures():
     fns = []
     for path in settings.FIXTURES_TO_UPLOAD:
@@ -158,7 +158,7 @@ def upload_fixtures():
 
     for fn in fns:
         with open(fn, "r") as fileobj:
-            upload_fixture(template_fixture(fileobj))
+            upload_fixture(fileobj)
         logger.info("Fixture has been uploaded from file: %s" % fn)
 
 
