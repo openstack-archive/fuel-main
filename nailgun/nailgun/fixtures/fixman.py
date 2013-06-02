@@ -6,6 +6,8 @@ import Queue
 import os.path
 import itertools
 from datetime import datetime
+import jinja2
+import StringIO
 
 import sqlalchemy.types
 from nailgun.settings import settings
@@ -139,6 +141,13 @@ def upload_fixture(fileobj):
             db.commit()
 
 
+def template_fixture(fileobj, config=None):
+    if not config:
+        config = settings
+    t = jinja2.Template(fileobj.read())
+    return StringIO.StringIO(t.render(settings=config))
+
+
 def upload_fixtures():
     fns = []
     for path in settings.FIXTURES_TO_UPLOAD:
@@ -149,7 +158,7 @@ def upload_fixtures():
 
     for fn in fns:
         with open(fn, "r") as fileobj:
-            upload_fixture(fileobj)
+            upload_fixture(template_fixture(fileobj))
         logger.info("Fixture has been uploaded from file: %s" % fn)
 
 

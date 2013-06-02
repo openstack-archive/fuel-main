@@ -26,9 +26,11 @@ NET_EXCLUDE:
   - "<%= @exclude_network %>/<%= @exclude_cidr %>"
 
 ADMIN_NETWORK:
+  cidr: "<%= @admin_network %>/<%= @admin_network_cidr %>"
+  netmask: "<%= @admin_network_netmask %>"
+  size: "<%= @admin_network_size %>"
   first: "<%= @admin_network_first %>"
   last: "<%= @admin_network_last %>"
-  netmask: "<%= @admin_network_netmask %>"
 
 VLANS_RANGE_START: "100"
 VLANS_RANGE_END: "1000"

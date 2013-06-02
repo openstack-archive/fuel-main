@@ -5,9 +5,9 @@
         "fields": {
             "name": "fuelweb_admin",
             "access": "admin",
-            "cidr": "10.20.0.0/24",
-            "netmask": "255.255.255.0",
-            "network_size": "256",
+            "cidr": "{{settings.ADMIN_NETWORK['cidr']}}",
+            "netmask": "{{settings.ADMIN_NETWORK['netmask']}}",
+            "network_size": "{{settings.ADMIN_NETWORK['size']}}",
             "vlan_start": "1"
         }
     },
@@ -25,7 +25,7 @@
             "name": "fuelweb_admin",
             "access": "admin",
             "network_group": 1,
-            "cidr": "10.20.0.0/24",
+            "cidr": "{{settings.ADMIN_NETWORK['cidr']}}",
             "vlan_id": 1
         }
     },
@@ -34,8 +34,8 @@
         "model": "nailgun.i_p_addr_range",
         "fields": {
             "network_group": 1,
-            "first": "10.20.0.128",
-            "last": "10.20.0.254"
+            "first": "{{settings.ADMIN_NETWORK['first']}}",
+            "last": "{{settings.ADMIN_NETWORK['last']}}"
         }
     }
 ]

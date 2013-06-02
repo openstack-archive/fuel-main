@@ -39,9 +39,11 @@ NET_EXCLUDE:
   - "10.20.0.0/24"
 
 ADMIN_NETWORK:
-  first: "10.20.0.128"
-  last: "10.20.0.254"
+  cidr: "10.20.0.0/24"
   netmask: "255.255.255.0"
+  size: "256"
+  first: "10.20.0.129"
+  last: "10.20.0.254"
 
 VLANS_RANGE_START: "100"
 VLANS_RANGE_END: "1000"

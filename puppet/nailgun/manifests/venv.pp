@@ -66,6 +66,9 @@ class nailgun::venv(
   $exclude_network = ipcalc_network_by_address_netmask($ipaddress, $netmask)
   $exclude_cidr = ipcalc_network_cidr_by_netmask($netmask)
 
+  $admin_network = ipcalc_network_by_address_netmask($ipaddress, $netmask)
+  $admin_network_cidr = ipcalc_network_cidr_by_netmask($netmask)
+  $admin_network_size = ipcalc_network_count_addresses($ipaddress, $netmask)
   $first_in_second_half = ipcalc_network_count_addresses($ipaddress, $netmask) / 2 + 1
   $admin_network_first = ipcalc_network_nth_address($ipaddress, $netmask, $first_in_second_half)
   $admin_network_last = ipcalc_network_nth_address($ipaddress, $netmask, "last")
