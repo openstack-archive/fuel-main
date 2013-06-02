@@ -251,10 +251,10 @@ define(function() {
             var volume = _.find(attrs.volumes, {vg: options.group});
             if (_.isNaN(volume.size) || volume.size < 0) {
                 errors[volume.vg] = 'Invalid size';
-            } else if (volume.size > options.unallocated ) {
-                errors[volume.vg] = 'Too large';
+            } else if (volume.size > options.unallocated) {
+                errors[volume.vg] = 'Too large (max ' + options.unallocated + ' GB)';
             } else if (volume.size < options.min) {
-                errors[volume.vg] = 'Too small';
+                errors[volume.vg] = 'Too small (min ' + options.min + ') GB';
             }
             return _.isEmpty(errors) ? null : errors;
         }
