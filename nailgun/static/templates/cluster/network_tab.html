@@ -1,7 +1,6 @@
 <div class="network-settings wrapper <%= locked ? 'changes-locked' : '' %>">
   <h3>Network Settings</h3>
 
-  <% var disabled = locked ? 'disabled' : '' %>
   <% if (net_manager) { %>
     <% var managers = {'FlatDHCPManager': 'FlatDHCP Manager', 'VlanManager': 'VLAN Manager'} %>
     <div class="radio-checkbox-group net-manager">
@@ -10,7 +9,7 @@
           <label class="parameter-box clearfix">
             <div class="parameter-control">
               <div class="custom-tumbler">
-                <input type="radio" value="<%= manager %>" name="net-manager" <%= net_manager == manager ? 'checked' : '' %> <%= disabled %>>
+                <input type="radio" value="<%= manager %>" name="net-manager" <%= net_manager == manager ? 'checked' : '' %> <%= locked ? 'disabled' : '' %>>
                 <!--[if !IE |(gte IE 9)]>--><span>&nbsp;</span><!--<![endif]-->
               </div>
             </div>
@@ -40,9 +39,9 @@
   <div class="row">
     <div class="page-control-box">
       <div class="page-control-button-placeholder">
-        <button class="btn verify-networks-btn" <%= disabled %>>Verify Networks</button>
-        <button class="btn btn-revert-changes" <%= disabled || !hasChanges? 'disabled' : '' %>>Cancel Changes</button>
-        <button class="btn btn-success apply-btn" <%= disabled || !hasChanges ? 'disabled' : '' %>>Save Settings</button>
+        <button class="btn verify-networks-btn" <%= verificationLocked ? 'disabled' : '' %>>Verify Networks</button>
+        <button class="btn btn-revert-changes" <%= locked || !hasChanges? 'disabled' : '' %>>Cancel Changes</button>
+        <button class="btn btn-success apply-btn" <%= locked || !hasChanges ? 'disabled' : '' %>>Save Settings</button>
       </div>
     </div>
   </div>

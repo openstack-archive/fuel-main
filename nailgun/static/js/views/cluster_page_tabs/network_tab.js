@@ -32,6 +32,9 @@ function(utils, models, commonViews, dialogViews, networkTabTemplate, networkTem
         isLocked: function() {
             return this.model.get('status') != 'new' || !!this.model.task('deploy', 'running') || !!this.model.task('verify_networks', 'running');
         },
+        isVerificationLocked: function() {
+            return !!this.model.task('deploy', 'running') || !!this.model.task('verify_networks', 'running');
+        },
         checkForChanges: function() {
             var noChanges = _.isEqual(this.model.get('networkConfiguration').toJSON(), this.networkConfiguration.toJSON());
             this.hasChanges = !noChanges;
@@ -182,7 +185,8 @@ function(utils, models, commonViews, dialogViews, networkTabTemplate, networkTem
             this.$el.html(this.template({
                 net_manager: this.networkConfiguration.get('net_manager'),
                 hasChanges: this.hasChanges,
-                locked: this.isLocked()
+                locked: this.isLocked(),
+                verificationLocked: this.isVerificationLocked()
             }));
             this.renderNetworks();
             this.renderVerificationControl();
