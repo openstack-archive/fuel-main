@@ -193,9 +193,9 @@ $SNIPPET('nailgun_repo')
 # FROM /etc/ssh/sshd_config
 $SNIPPET('ssh_disable_gssapi')
 
-# COBBLER EMBEDDED SNIPPET: 'ssh_disable_dns'
-# ADDS 'UseDNS no' TO /etc/ssh/sshd_config
-$SNIPPET('ssh_disable_dns')
+# Let's not wait forewer when ssh'ing:
+sed -i --follow-symlinks -e '/UseDNS/d' /etc/ssh/sshd_config
+echo 'UseDNS no' >> /etc/ssh/sshd_config
 
 # COBBLER EMBEDDED SNIPPET: 'sshd_auth_pubkey_only'
 # DISABLE PASSWORD AUTH. ALLOW PUBKEY AUTH ONLY IN /etc/ssh/sshd_config
