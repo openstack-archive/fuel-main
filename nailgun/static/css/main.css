@@ -3477,6 +3477,10 @@ hr.slim {
   min-width: 10px;
 }
 
+.changes-locked label {
+  cursor: default !important;
+}
+
 
 /* Disk Utility Start*/
 .disk-box {

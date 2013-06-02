@@ -26,6 +26,9 @@ function(utils, models, commonViews, dialogViews, settingsTabTemplate, settingsG
         disableControls: function() {
             this.$('.btn, input, select').attr('disabled', true);
         },
+        isLocked: function() {
+            return this.model.get('status') != 'new' || !!this.model.task('deploy', 'running');
+        },
         collectData: function() {
             var data = {};
             _.each(this.$('legend.openstack-settings'), function(legend) {
@@ -92,7 +95,7 @@ function(utils, models, commonViews, dialogViews, settingsTabTemplate, settingsG
             this.tearDownRegisteredSubViews();
             this.$('.settings').html('');
             _.each(_.keys(settings), function(setting) {
-                var settingsGroupView = new SettingsGroup({legend: setting, settings: settings[setting], model: this.model, tab: this});
+                var settingsGroupView = new SettingsGroup({legend: setting, settings: settings[setting], tab: this});
                 this.registerSubView(settingsGroupView);
                 this.$('.settings').append(settingsGroupView.render().el);
             }, this);
@@ -111,7 +114,7 @@ function(utils, models, commonViews, dialogViews, settingsTabTemplate, settingsG
             }, this));
         },
         render: function() {
-            this.$el.html(this.template({cluster: this.model}));
+            this.$el.html(this.template({cluster: this.model, locked: this.isLocked()}));
             if (this.model.get('settings').deferred.state() != 'pending') {
                 this.parseSettings(this.model.get('settings').get('editable'));
                 this.hasChanges = false;
@@ -125,6 +128,7 @@ function(utils, models, commonViews, dialogViews, settingsTabTemplate, settingsG
             return this.bindTaskEvents(task) && this.render();
         },
         initialize: function(options) {
+            this.model.on('change:status', this.render, this);
             this.model.get('tasks').each(this.bindTaskEvents, this);
             this.model.get('tasks').on('add', this.onNewTask, this);
             if (!this.model.get('settings')) {
@@ -149,7 +153,11 @@ function(utils, models, commonViews, dialogViews, settingsTabTemplate, settingsG
             _.defaults(this, options);
         },
         render: function() {
-            this.$el.html(this.template({settings: this.settings, legend: this.legend, cluster: this.model}));
+            this.$el.html(this.template({
+                settings: this.settings,
+                legend: this.legend,
+                locked: this.tab.isLocked()
+            }));
             return this;
         }
     });

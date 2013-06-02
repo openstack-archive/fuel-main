@@ -1,8 +1,7 @@
-<div class="wrapper">
+<div class="network-settings wrapper <%= locked ? 'changes-locked' : '' %>">
   <h3>Network Settings</h3>
 
-  <% var disabled = task ? 'disabled' : '' %>
-
+  <% var disabled = locked ? 'disabled' : '' %>
   <% if (net_manager) { %>
     <% var managers = {'FlatDHCPManager': 'FlatDHCP Manager', 'VlanManager': 'VLAN Manager'} %>
     <div class="radio-checkbox-group net-manager">

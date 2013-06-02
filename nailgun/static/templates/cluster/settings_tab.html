@@ -1,4 +1,4 @@
-<div class="opstck-settings wrapper">
+<div class="openstack-settings wrapper <%= locked ? 'changes-locked' : '' %>">
 
   <h3>OpenStack Settings</h3>
 
@@ -19,7 +19,7 @@
   <div class="row">
     <div class="page-control-box">
       <div class="page-control-button-placeholder">
-        <button class="btn btn-load-defaults"<%= cluster.task('deploy', 'running') || cluster.get('settings').deferred.state() == 'pending' ? ' disabled' : '' %>>Load Defaults</button>
+        <button class="btn btn-load-defaults"<%= locked || cluster.get('settings').deferred.state() == 'pending' ? ' disabled' : '' %>>Load Defaults</button>
         <button class="btn btn-revert-changes" disabled>Cancel Changes</button>
         <button class="btn btn-success btn-apply-changes" disabled>Save Settings</button>
       </div>

@@ -29,6 +29,9 @@ function(utils, models, commonViews, dialogViews, networkTabTemplate, networkTem
         disableControls: function() {
             this.$('.btn, input, select').attr('disabled', true);
         },
+        isLocked: function() {
+            return this.model.get('status') != 'new' || !!this.model.task('deploy', 'running') || !!this.model.task('verify_networks', 'running');
+        },
         checkForChanges: function() {
             var noChanges = _.isEqual(this.model.get('networkConfiguration').toJSON(), this.networkConfiguration.toJSON());
             this.hasChanges = !noChanges;
@@ -130,6 +133,7 @@ function(utils, models, commonViews, dialogViews, networkTabTemplate, networkTem
         initialize: function(options) {
             _.defaults(this, options);
             this.networkConfiguration = new models.NetworkConfiguration();
+            this.model.on('change:status', this.render, this);
             this.model.get('tasks').each(this.bindTaskEvents, this);
             this.model.get('tasks').on('add', this.onNewTask, this);
             this.model.get('tasks').on('remove', this.renderVerificationControl, this);
@@ -168,22 +172,17 @@ function(utils, models, commonViews, dialogViews, networkTabTemplate, networkTem
                 this.tearDownRegisteredSubViews();
                 this.$('.networks-table').html('');
                 this.networkConfiguration.get('networks').each(function(network) {
-                    var networkView = new Network({
-                        tab: this,
-                        networkId: network.id,
-                        task: this.task
-                    });
+                    var networkView = new Network({network: network, tab: this});
                     this.registerSubView(networkView);
                     this.$('.networks-table').append(networkView.render().el);
                 }, this);
             }
         },
         render: function() {
-            this.task = this.model.task('deploy', 'running') || this.model.task('verify_networks', 'running');
             this.$el.html(this.template({
                 net_manager: this.networkConfiguration.get('net_manager'),
                 hasChanges: this.hasChanges,
-                task: this.task
+                locked: this.isLocked()
             }));
             this.renderNetworks();
             this.renderVerificationControl();
@@ -245,6 +244,9 @@ function(utils, models, commonViews, dialogViews, networkTabTemplate, networkTem
             this.$(e.currentTarget).next().find('input:first').focus();
         },
         editIPRange: function(e, add) {
+            if (this.tab.isLocked()) {
+                return;
+            }
             var row = this.$(e.currentTarget).parents('.ip-range-row');
             if (add) {
                 var newRow = row.clone();
@@ -268,7 +270,6 @@ function(utils, models, commonViews, dialogViews, networkTabTemplate, networkTem
         },
         initialize: function(options) {
             _.defaults(this, options);
-            this.network = this.tab.networkConfiguration.get('networks').get(this.networkId);
             this.network.on('invalid', function(model, errors) {
                 _.each(_.without(_.keys(errors), 'ip_ranges'), _.bind(function(field) {
                     this.$('.' + field).children().addClass('error');
@@ -289,7 +290,7 @@ function(utils, models, commonViews, dialogViews, networkTabTemplate, networkTem
                 publicVlan: this.tab.networkConfiguration.get('networks').findWhere({name: 'public'}).get('vlan_start'),
                 network: this.network,
                 net_manager: this.tab.networkConfiguration.get('net_manager'),
-                task: this.task
+                locked: this.tab.isLocked()
             }));
             return this;
         }

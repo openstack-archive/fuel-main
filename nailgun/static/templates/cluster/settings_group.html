@@ -1,4 +1,4 @@
-<% var disabled = cluster.task('deploy', 'running') ? 'disabled' : '' %>
+<% var disabled = locked ? 'disabled' : '' %>
 
 <legend class="openstack-settings"><%- legend %></legend>
 <div>

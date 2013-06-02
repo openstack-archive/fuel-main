@@ -1,7 +1,7 @@
 <% var networkName = network.get('name') %>
 <legend class="networks"><%- networkName != 'fixed' ? networkName : 'VM Networks (Fixed)' %></legend>
 
-<% var disabled = task ? 'disabled' : '' %>
+<% var disabled = locked ? 'disabled' : '' %>
 <% var vlanManager = net_manager == 'VlanManager' ? '' : 'hide' %>
 <% var labels = {
   'ip_ranges': 'IP Range',
