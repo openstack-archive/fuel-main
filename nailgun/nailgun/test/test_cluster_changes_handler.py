@@ -14,7 +14,7 @@ from nailgun.test.base import BaseHandlers
 from nailgun.test.base import fake_tasks
 from nailgun.test.base import reverse
 from nailgun.api.models import Cluster, Attributes, IPAddr, Task
-from nailgun.api.models import Network, NetworkGroup
+from nailgun.api.models import Network, NetworkGroup, IPAddrRange
 from nailgun.network.manager import NetworkManager
 from nailgun.task import task as tasks
 
@@ -35,8 +35,30 @@ class TestHandlers(BaseHandlers):
             ]
         )
         cluster_db = self.env.clusters[0]
-
         cluster_depl_mode = 'ha'
+
+        # Set ip ranges for floating ips
+        ranges = [['240.0.0.2', '240.0.0.4'],
+                  ['240.0.0.3', '240.0.0.5'],
+                  ['240.0.0.10', '240.0.0.11']]
+
+        floating_network_group = self.db.query(NetworkGroup).filter(
+            NetworkGroup.name == 'floating').filter(
+            NetworkGroup.cluster_id == cluster_db.id).first()
+
+        # Remove floating ip addr ranges
+        self.db.query(IPAddrRange).filter(
+            IPAddrRange.network_group_id == floating_network_group.id).delete()
+
+        # Add new ranges
+        for ip_range in ranges:
+            new_ip_range = IPAddrRange(
+                first=ip_range[0],
+                last=ip_range[1],
+                network_group_id=floating_network_group.id)
+
+            self.db.add(new_ip_range)
+        self.db.commit()
 
         supertask = self.env.launch_deployment()
         deploy_task_uuid = [x.uuid for x in supertask.subtasks
@@ -49,8 +71,19 @@ class TestHandlers(BaseHandlers):
 
         nets_db = self.db.query(Network).join(NetworkGroup).\
             filter(NetworkGroup.cluster_id == cluster_db.id).all()
+
         for net in nets_db:
-            cluster_attrs[net.name + '_network_range'] = net.cidr
+            if net.name != 'public':
+                cluster_attrs[net.name + '_network_range'] = net.cidr
+
+        cluster_attrs['floating_network_range'] = [
+            '240.0.0.10',
+            '240.0.0.11',
+
+            '240.0.0.2',
+            '240.0.0.3',
+            '240.0.0.4',
+            '240.0.0.5']
 
         management_vip = self.env.network_manager.assign_vip(
             cluster_db.id,
@@ -83,13 +116,14 @@ class TestHandlers(BaseHandlers):
 
             """
             Here we want to get node IP addresses which belong
-            to management and public networks respectively
+            to storage and management networks respectively
             """
-            node_ip_management, node_ip_public, node_ip_storage = map(
+            node_ip_management, node_ip_storage = map(
                 lambda x: q.filter_by(name=x).first().ip_addr
                 + "/" + cluster_attrs[x + '_network_range'].split('/')[1],
-                ('management', 'public', 'storage')
+                ('management', 'storage')
             )
+            node_ip_public = q.filter_by(name='public').first().ip_addr + '/24'
 
             nodes.append({'uid': n.id, 'status': n.status, 'ip': n.ip,
                           'error_type': n.error_type, 'mac': n.mac,

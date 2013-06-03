@@ -127,7 +127,15 @@ class DeploymentTask(object):
         ng_db = orm().query(NetworkGroup).filter_by(
             cluster_id=cluster_id).all()
         for net in ng_db:
-            cluster_attrs[net.name + '_network_range'] = net.cidr
+            net_name = net.name + '_network_range'
+            if net.name == 'floating':
+                cluster_attrs[net_name] = \
+                    cls.__get_ip_addresses_in_ranges(net)
+            elif net.name == 'public':
+                # We shouldn't pass public_network_range attribute
+                continue
+            else:
+                cluster_attrs[net_name] = net.cidr
 
         cluster_attrs['network_manager'] = task.cluster.net_manager
 
@@ -207,6 +215,19 @@ class DeploymentTask(object):
             pending_deletion=False).order_by(Node.id)
 
         return map(cls.__format_node_for_naily, nodes)
+
+    @classmethod
+    def __get_ip_addresses_in_ranges(cls, network_group):
+        """
+        Get array of all possibale ip addresses in all ranges
+        """
+        ranges = []
+        for ip_range in network_group.ip_ranges:
+            ranges += map(lambda ip: str(ip),
+                          list(netaddr.IPRange(ip_range.first, ip_range.last)))
+
+        # Return only uniq ip addresses
+        return sorted(list(set(ranges)))
 
 
 class ProvisionTask(object):
