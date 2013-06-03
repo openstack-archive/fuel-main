@@ -25,6 +25,11 @@ done
 vm_master_cpu_cores=1
 vm_master_memory_mb=1024
 vm_master_disk_mb=16384
+
+# These settings will be used to check if master node has installed or not.
+# If you modify networking params for master node during the boot time
+#   (i.e. if you pressed Tab in a boot loader and modified params),
+#   make sure that these values reflect that change.
 vm_master_ip=10.20.0.2
 vm_master_username=root
 vm_master_password=r00tme
