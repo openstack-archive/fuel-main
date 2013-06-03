@@ -194,8 +194,10 @@ class TestNode(Base):
         response = self.client.put("/api/clusters/%s/changes"
                                    % cluster_id, {})
         task = json.loads(response.read())
+        logging.info('Task: ')
+        logging.info(json.dumps(task))
         # wait for the task completion
-        self._task_wait(task, 'Initial deployment', 60 * 10)
+        self._task_wait(task, 'Initial deployment', 60 * 20)
         # Deploy second compute node
         self.client.put("/api/nodes", nodes_put_compute_data)
         self.client.put("/api/clusters/%s/changes" % cluster_id, {})
