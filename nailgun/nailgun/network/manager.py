@@ -20,6 +20,22 @@ class NetworkManager(object):
     def __init__(self, db=None):
         self.db = db or orm()
 
+    def update_ranges_from_cidr(self, network_group, cidr):
+        """
+        Update network ranges for cidr
+        """
+        orm().query(IPAddrRange).filter_by(
+            network_group_id=network_group.id).delete()
+
+        new_cidr = IPNetwork(cidr)
+        ip_range = IPAddrRange(
+            network_group_id=network_group.id,
+            first=str(new_cidr[0]),
+            last=str(new_cidr[-1]))
+
+        self.db.add(ip_range)
+        self.db.commit()
+
     def get_admin_network_id(self, fail_if_not_found=True):
         '''
         Method for receiving Admin Network ID.

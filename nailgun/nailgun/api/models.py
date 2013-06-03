@@ -351,6 +351,10 @@ class NetworkConfiguration(object):
                     if key == "ip_ranges":
                         cls.__set_ip_ranges(ng['id'], value)
                     else:
+                        if key == 'cidr':
+                            network_manager.update_ranges_from_cidr(
+                                ng_db, value)
+
                         setattr(ng_db, key, value)
 
                 network_manager.create_networks(ng_db)
@@ -368,7 +372,7 @@ class NetworkConfiguration(object):
                 last=r[1],
                 network_group_id=network_group_id)
             orm().add(new_ip_range)
-            orm().commit()
+        orm().commit()
 
 
 class AttributesGenerators(object):
