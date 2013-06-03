@@ -8,7 +8,7 @@
           <input type="text" class="input-medium" value="<%- node.get('name') || '' %>" />
         </div>
       <% } else { %>
-        <div <%= renameable ? 'class="node-renameable"  title="Edit Name"' : '' %>><%- node.get('name') || node.get('mac') %></div>
+        <div class="node-renameable"  title="Edit Name"><%- node.get('name') || node.get('mac') %></div>
       <% } %>
       </div>
     </div>

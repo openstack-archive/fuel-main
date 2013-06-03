@@ -335,7 +335,7 @@ function(utils, models, commonViews, dialogViews, nodesTabSummaryTemplate, editN
             if (this.collection.length || placeholders) {
                 var container = this.$('.node-list-container');
                 this.collection.each(function(node) {
-                    var nodeView = new Node({model: node, renameable: !this.collection.cluster.task('deploy', 'running')});
+                    var nodeView = new Node({model: node});
                     this.registerSubView(nodeView);
                     container.append(nodeView.render().el);
                 }, this);
@@ -359,7 +359,7 @@ function(utils, models, commonViews, dialogViews, nodesTabSummaryTemplate, editN
             'click .node-hardware': 'showNodeInfo'
         },
         startNodeRenaming: function() {
-            if (!this.renameable || this.renaming || this.model.collection.cluster.task('deploy', 'running')) {return;}
+            if (this.renaming) {return;}
             $('html').off(this.eventNamespace);
             $('html').on(this.eventNamespace, _.after(2, _.bind(function(e) {
                 if (!$(e.target).closest(this.$('.node-renameable input')).length) {
@@ -453,7 +453,6 @@ function(utils, models, commonViews, dialogViews, nodesTabSummaryTemplate, editN
             this.$el.html(this.template({
                 node: this.model,
                 renaming: this.renaming,
-                renameable: this.renameable,
                 selectableForAddition: this.selectableForAddition,
                 selectableForDeletion: this.selectableForDeletion
             }));
