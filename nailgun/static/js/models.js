@@ -252,9 +252,9 @@ define(function() {
             if (_.isNaN(volume.size) || volume.size < 0) {
                 errors[volume.vg] = 'Invalid size';
             } else if (volume.size > options.unallocated) {
-                errors[volume.vg] = 'Too large (max ' + options.unallocated + ' GB)';
+                errors[volume.vg] = 'Maximal size is ' + options.unallocated + ' GB';
             } else if (volume.size < options.min) {
-                errors[volume.vg] = 'Too small (min ' + options.min + ') GB';
+                errors[volume.vg] = 'Minimal size is ' + options.min + ' GB';
             }
             return _.isEmpty(errors) ? null : errors;
         }

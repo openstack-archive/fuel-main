@@ -3848,7 +3848,7 @@ hr.slim {
   display: block;
   width: 180px;
   overflow: hidden;
-  text-align: center;
+  text-align: right;
   font-size: 12px;
   margin-top: -10px;
   margin-bottom: 10px;
