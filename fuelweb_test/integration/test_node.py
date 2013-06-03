@@ -163,12 +163,18 @@ class TestNode(Base):
 
     @snapshot_errors
     def test_add_compute_node_in_cluster(self):
+        logging.info("Testing adding additional compute node.")
+
         self._revert_nodes()
         self._bootstrap_nodes(['slave1', 'slave2', 'slave3'])
         cluster_id = self._create_cluster(name='empty')
 
         # fetch nodes list
-        nodes = self.client.get('/api/nodes')
+        response = self.client.get('/api/nodes')
+        nodes = json.loads(response.read())
+
+        logging.info('Available nodes')
+        logging.info(json.dumps(nodes))
         # build nodes list for initial deployment.
         # One controller and one compute
         nodes_put_data = [{'id': nodes[0]['id'], 'cluster_id': cluster_id,
