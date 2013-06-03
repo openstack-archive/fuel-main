@@ -100,7 +100,7 @@ class TestVerifyNetworks(BaseHandlers):
         for node in self.env.nodes:
             error_nodes.append({'uid': node.id, 'interface': 'eth0',
                                 'name': node.name, 'absent_vlans': [104],
-                                'mac': node.mac})
+                                'mac': node.interfaces[0].mac})
         self.assertEqual(task.message, None)
         self.assertEqual(task.result, error_nodes)
 
@@ -147,7 +147,7 @@ class TestVerifyNetworks(BaseHandlers):
         self.assertEqual(task['status'], "error")
         error_nodes = [{'uid': node1.id, 'interface': 'eth0',
                         'name': node1.name, 'absent_vlans': [104],
-                        'mac': node1.mac},
+                        'mac': node1.interfaces[0].mac},
                        {'uid': node2.id, 'interface': 'eth0',
                         'absent_vlans': [104]}]
         self.assertEqual(task.get('message'), None)
@@ -184,8 +184,8 @@ class TestVerifyNetworks(BaseHandlers):
         self.receiver.verify_networks_resp(**kwargs)
         self.db.refresh(task)
         self.assertEqual(task.status, "error")
-        error_msg = 'Please add more nodes to the environment ' \
-                    'before performing network verification.'
+        error_msg = 'At least two nodes are required to be in ' \
+                    'the environment for network verification.'
         self.assertEqual(task.message, error_msg)
 
     def test_verify_networks_resp_empty_nodes_custom_error(self):
@@ -233,6 +233,7 @@ class TestVerifyNetworks(BaseHandlers):
         )
         cluster_db = self.env.clusters[0]
         node1, node2 = self.env.nodes
+        node3 = self.env.create_node(api=False)
         nets_sent = [{'iface': 'eth0', 'vlans': range(100, 105)}]
 
         task = Task(
@@ -250,25 +251,25 @@ class TestVerifyNetworks(BaseHandlers):
 
         kwargs = {'task_uuid': task.uuid,
                   'status': 'ready',
-                  'nodes': [{'uid': node1.id, 'networks': nets_sent},
+                  'nodes': [{'uid': node3.id, 'networks': nets_sent},
                             {'uid': node2.id, 'networks': nets_sent},
-                            {'uid': node2.id, 'networks': nets_sent}]}
+                            {'uid': node1.id, 'networks': nets_sent}]}
         self.receiver.verify_networks_resp(**kwargs)
         self.db.refresh(task)
-        self.assertEqual(task.status, "error")
-        self.assertNotIn(task.message, (None, ""))
-        self.assertEqual(task.result, [])
+        self.assertEquals(task.status, "ready")
+        self.assertEquals(task.message, None)
 
     def test_verify_networks_resp_forgotten_node_error(self):
         self.env.create(
             cluster_kwargs={},
             nodes_kwargs=[
                 {"api": False, 'name': 'node1'},
-                {"api": False, 'name': 'node2'}
+                {"api": False, 'name': 'node2'},
+                {"api": False, 'name': 'node3'}
             ]
         )
         cluster_db = self.env.clusters[0]
-        node1, node2 = self.env.nodes
+        node1, node2, node3 = self.env.nodes
         nets_sent = [{'iface': 'eth0', 'vlans': range(100, 105)}]
 
         task = Task(
@@ -278,7 +279,8 @@ class TestVerifyNetworks(BaseHandlers):
         task.cache = {
             "args": {
                 'nodes': [{'uid': node1.id, 'networks': nets_sent},
-                          {'uid': node2.id, 'networks': nets_sent}]
+                          {'uid': node2.id, 'networks': nets_sent},
+                          {'uid': node3.id, 'networks': nets_sent}]
             }
         }
         self.db.add(task)
@@ -287,11 +289,11 @@ class TestVerifyNetworks(BaseHandlers):
         kwargs = {'task_uuid': task.uuid,
                   'status': 'ready',
                   'nodes': [{'uid': node1.id, 'networks': nets_sent},
-                            {'uid': node1.id, 'networks': nets_sent}]}
+                            {'uid': node2.id, 'networks': nets_sent}]}
         self.receiver.verify_networks_resp(**kwargs)
         self.db.refresh(task)
         self.assertEqual(task.status, "error")
-        self.assertRegexpMatches(task.message, node2.name)
+        self.assertRegexpMatches(task.message, node3.name)
         self.assertEqual(task.result, [])
 
     def test_verify_networks_resp_incomplete_network_data_error(self):
@@ -328,7 +330,7 @@ class TestVerifyNetworks(BaseHandlers):
         self.assertEqual(task.status, "error")
         self.assertEqual(task.message, None)
         error_nodes = [{'uid': node2.id, 'interface': 'eth0',
-                        'name': node2.name, 'mac': node2.mac,
+                        'name': node2.name, 'mac': node2.interfaces[0].mac,
                         'absent_vlans': nets_sent[0]['vlans'],
                         }]
         self.assertEqual(task.result, error_nodes)

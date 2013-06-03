@@ -447,15 +447,7 @@ class NailgunReceiver(object):
             cached_node_uids = [str(n['uid']) for n in cached_nodes]
             forgotten_uids = set(cached_node_uids) - set(node_uids)
 
-            if len(nodes) < 2:
-                status = 'error'
-                if not error_msg:
-                    error_msg = 'Please add more nodes to the environment ' \
-                                'before performing network verification.'
-            elif len(node_uids) != len(cached_node_uids):
-                error_msg = 'Too many node\'s data received.'
-                status = 'error'
-            elif forgotten_uids:
+            if forgotten_uids:
                 absent_nodes = cls.db.query(Node).filter(
                     Node.id.in_(forgotten_uids)
                 ).all()
@@ -469,6 +461,11 @@ class NailgunReceiver(object):
                     ', '.join(absent_node_names)
                 )
                 status = 'error'
+            elif len(nodes) < 2:
+                status = 'error'
+                if not error_msg:
+                    error_msg = 'At least two nodes are required to be in '\
+                                'the environment for network verification.'
             else:
                 error_nodes = []
                 for node in nodes:
@@ -479,9 +476,9 @@ class NailgunReceiver(object):
 
                     if not cached_nodes_filtered:
                         logger.warning(
-                            "verify_networks_resp: arguments contain data "
-                            "which is not in task cache uid=%s",
-                            node['uid']
+                            "verify_networks_resp: arguments contain node "
+                            "data which is not in the task cache: %r",
+                            node
                         )
                         continue
 
@@ -509,12 +506,32 @@ class NailgunReceiver(object):
 
                         if absent_vlans:
                             data = {'uid': node['uid'],
-                                    'interface': cached_network['iface'],
+                                    'interface': received_network['iface'],
                                     'absent_vlans': absent_vlans}
                             node_db = cls.db.query(Node).get(node['uid'])
                             if node_db:
-                                data.update({'name': node_db.name,
-                                             'mac': node_db.mac})
+                                data['name'] = node_db.name
+                                db_nics = filter(
+                                    lambda i:
+                                    i.name == received_network['iface'],
+                                    node_db.interfaces
+                                )
+                                if db_nics:
+                                    data['mac'] = db_nics[0].mac
+                                else:
+                                    logger.warning(
+                                        "verify_networks_resp: can't find "
+                                        "interface %r for node %r in DB",
+                                        received_network['iface'], node_db.id
+                                    )
+                                    data['mac'] = 'unknown'
+                            else:
+                                logger.warning(
+                                    "verify_networks_resp: can't find node "
+                                    "%r in DB",
+                                    node['uid']
+                                )
+
                             error_nodes.append(data)
 
                 if error_nodes:
