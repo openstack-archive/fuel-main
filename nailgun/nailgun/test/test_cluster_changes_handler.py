@@ -40,7 +40,7 @@ class TestHandlers(BaseHandlers):
         # Set ip ranges for floating ips
         ranges = [['240.0.0.2', '240.0.0.4'],
                   ['240.0.0.3', '240.0.0.5'],
-                  ['240.0.0.10', '240.0.0.11']]
+                  ['240.0.0.10', '240.0.0.12']]
 
         floating_network_group = self.db.query(NetworkGroup).filter(
             NetworkGroup.name == 'floating').filter(
@@ -79,6 +79,7 @@ class TestHandlers(BaseHandlers):
         cluster_attrs['floating_network_range'] = [
             '240.0.0.10',
             '240.0.0.11',
+            '240.0.0.12',
 
             '240.0.0.2',
             '240.0.0.3',
