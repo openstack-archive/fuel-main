@@ -19,7 +19,7 @@ Linux and Mac users can prepare an installation USB stick with the ``dd`` comman
     
 	dd if=fuelweb.img of=/dev/sdb
 
-You can find the actual device name in the output of the ``dmesg`` command.
+You can find the actual device name in the output of the ``dmesg`` command for Linux or ``diskutil list`` for MacOS.
 
 On Windows, you can write the installation image with `Win32 Disk Imager <http://sourceforge.net/projects/win32diskimager/>`_.
 
@@ -36,7 +36,7 @@ The requirements for running Fuel Web on VirtualBox are:
 
   * The scripts have been tested on Mac OS 10.7.5, Mac OS 10.8.3, and Ubuntu 12.04.
 
-* VirtualBox must be installed with the extension pack. Both can be downloaded from <http://www.virtualbox.org/>`_.
+* VirtualBox must be installed with the extension pack. Both can be downloaded from `<http://www.virtualbox.org/>`_.
 
   * The scripts have been tested using VirtualBox 4.2.12
 
@@ -121,11 +121,47 @@ Next, create nodes on which to install OpenStack.
 Changing network parameters
 ---------------------------
 
-This is an optional step. If you are going to use a different network, you can change the default network settings (10.20.0.2/24 gw 10.20.0.1).
+You can change network settings for admin (PXE booting) network, which is 10.20.0.2/24 gw 10.20.0.1 by default.
 
-In order to do so, press the <TAB> key аt the very first installation screen which says "Welcome to FuelWeb Installer!" and update the kernel options. For example, to use 192.168.1.10/24 network with 192.168.1.1 as gateway and DNS server you should change the parameters to::
+In order to do so, press the <TAB> key аt the very first installation screen which says
+"Welcome to FuelWeb Installer!" and update the kernel options. For example, to use 192.168.1.10/24
+IP address for the master node with 192.168.1.1 as gateway and DNS server you should change the parameters to the shown on picture:
 
-   vmlinuz initrd=initrd.img ks=cdrom:/ks.cfg ip=192.168.1.10 gw=192.168.1.1 dns1=192.168.1.1 netmask=255.255.255.0
+.. image:: _static/network-at-boot.png
 
 When you're finished making changes, press the Enter key and wait for the installation to complete.
 
+Changing network parameters after booting
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+Once IP settings are set at the boot time for FuelWeb master node, it **must not be changed during the whole lifecycle of FuelWeb.**
+It is still possible to configure other interfaces, or add 802.1Q subinterfaces to the FuelWeb to be able to access it from office network
+if required.
+It is easy to do via standard network configuration scripts for CentOS. When the installation is complete,
+you can modify /etc/sysconfig/network-scripts/ifcfg-eth* scripts. For example, if *eth1* interface is on the L2 network which is planned
+for PXE booting, and *eth2* is the interface connected to office network switch, *eth0* is not in use, then settings can be the following:
+
+/etc/sysconfig/network-scripts/ifcfg-eth0:
+| DEVICE=eth0
+| ONBOOT=no
+
+/etc/sysconfig/network-scripts/ifcfg-eth1:
+| DEVICE=eth1
+| ONBOOT=yes
+| HWADDR=<your MAC>
+| ..... (other settings in your config) .....
+| PEERDNS=no
+| BOOTPROTO=static
+| IPADDR=192.168.1.10
+| NETMASK=255.255.255.0
+
+/etc/sysconfig/network-scripts/ifcfg-eth2:
+| DEVICE=eth2
+| ONBOOT=yes
+| HWADDR=<your MAC>
+| ..... (other settings in your config) .....
+| PEERDNS=no
+| IPADDR=172.18.0.5
+| NETMASK=255.255.255.0
+
+Now you should be able to connect to the FuelWeb from office network via `<http://172.18.0.5:8000/>`_
