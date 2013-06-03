@@ -6,6 +6,7 @@ import types
 import web
 
 from nailgun.db import orm
+from nailgun.logger import logger
 from nailgun.settings import settings
 from nailgun.api.models import Release
 from nailgun.api.models import Cluster
@@ -15,6 +16,7 @@ from nailgun.api.models import Node
 from nailgun.api.models import NetworkGroup
 from nailgun.api.models import Network
 from nailgun.api.models import Notification
+from nailgun.volumes.manager import VolumeManager
 
 
 class BasicValidator(object):
@@ -249,6 +251,17 @@ class NodeValidator(BasicValidator):
 
 class NodeAttributesValidator(BasicValidator):
     pass
+
+
+class NodeVolumesValidator(BasicValidator):
+    @classmethod
+    def validate(cls, data):
+        # Here we instantiate VolumeManager with data
+        # and during initialization it validates volumes.
+        # So we can get validated volumes just after
+        # VolumeManager initialization
+        vm = VolumeManager(data=data)
+        return vm.volumes
 
 
 class NotificationValidator(BasicValidator):

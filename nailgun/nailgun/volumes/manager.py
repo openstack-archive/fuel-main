@@ -76,41 +76,65 @@ class Disk(object):
         }
 
     def __repr__(self):
+        return json.dumps(self.render())
+
+    def __str__(self):
         return json.dumps(self.render(), indent=4)
 
 
 class VolumeManager(object):
-
-    def __init__(self, node, volumes=None):
-        self.db = orm()
-        self.node = node
-        if not self.node:
-            raise Exception(
-                "Invalid node - can't generate volumes info"
-            )
-        if not volumes:
-            self.volumes = self.node.attributes.volumes or []
-            logger.debug("Volume manager initialized with volumes: %s",
-                         self.volumes)
+    def __init__(self, node=None, data=None):
+        """
+        VolumeManager can be initialized with node
+        and with data. Being initialized with node
+        disks and volumes will be set according to node
+        attributes. In later case disk and volumes will
+        be set according to init data.
+        """
+        self.db = None
+        self.node = None
         self.disks = []
-        if not "disks" in self.node.meta:
-            raise Exception("No disk metadata specified for node")
-        for disk in sorted(self.node.meta["disks"], key=lambda i: i["name"]):
-            disk_obj = Disk(self, disk["disk"], disk["size"])
-            for v in self.volumes:
-                if v.get("type") == "disk" and v.get("id") == disk_obj.id:
-                    disk_obj.volumes = v.get("volumes", [])
-            self.disks.append(disk_obj)
+        self.volumes = []
+        if node:
+            logger.debug("VolumeManager initialized with node: %s", node.id)
+            self.db = orm()
+            self.node = node
+            self.volumes = self.node.attributes.volumes or []
+
+            if not "disks" in self.node.meta:
+                raise Exception("No disk metadata specified for node")
+            for d in sorted(self.node.meta["disks"],
+                               key=lambda i: i["name"]):
+                disk = Disk(self, d["disk"], d["size"])
+                for v in self.volumes:
+                    if v.get("type") == "disk" and v.get("id") == disk.id:
+                        disk.volumes = v.get("volumes", [])
+                self.disks.append(disk)
+        elif data:
+            logger.debug("VolumeManager initialized with data: %s", data)
+            for v in data:
+                if v.get("type") == "disk" and v.get("id") and v.get("size"):
+                    disk = Disk(self, v["id"], v["size"])
+                    disk.volumes = v.get("volumes", [])
+                    self.disks.append(disk)
+                self.volumes.append(v)
+
+        else:
+            raise Exception("VolumeManager can't be initialized."
+                            "Both node and data are None.")
+
+        logger.debug("VolumeManager: volumes: %s", self.volumes)
+        logger.debug("VolumeManager: disks: %s", self.disks)
+        self.validate()
 
     def validate(self):
-        logger.debug("Validating volumes: %s", self.volumes)
+        logger.debug("Validating volumes")
         for i, vg in enumerate(self.volumes):
             if vg.get("type") == "vg" and vg.get("id") == "vm":
                 for j, lv in enumerate(vg.get("volumes", [])):
                     if lv.get("type") == "lv" and lv.get("name") == "libvirt":
                         self.volumes[i]["volumes"][j]["size"] = \
                             self.field_generator("calc_total_vg", "vm")
-        logger.debug("Validated volumes: %s", self.volumes)
         return self.volumes
 
     def _traverse(self, cdict):
@@ -247,12 +271,16 @@ class VolumeManager(object):
                 disk.create_pv("os")
 
     def gen_volumes_info(self):
+        if not self.node:
+            raise Exception("Node is not defined")
+
         logger.debug(
             u"Generating volumes info for node '{0}' (role:{1})".format(
                 self.node.name or self.node.mac or self.node.id,
                 self.node.role
             )
         )
+
         logger.debug("Purging volumes info for all node disks")
         map(lambda d: d.clear(), self.disks)
 
@@ -283,13 +311,9 @@ class VolumeManager(object):
         return self._traverse(self.volumes)
 
     def gen_default_volumes_info(self):
-        logger.debug(
-            u"Default volumes info for node '{0}' (role:{1})".format(
-                self.node.name or self.node.mac or self.node.id,
-                self.node.role
-            )
-        )
-        logger.debug("Purging volumes info for all node disks")
+        logger.debug("Generating default volumes info")
+
+        logger.debug("Purging volumes info for all disks")
         map(lambda d: d.clear(), self.disks)
 
         self._allocate_os()

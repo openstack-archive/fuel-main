@@ -16,6 +16,7 @@ from nailgun.api.models import NetworkGroup
 from nailgun.network.topology import TopoChecker, NICUtils
 from nailgun.api.validators import NodeValidator, NetAssignmentValidator
 from nailgun.api.validators import NodeAttributesValidator
+from nailgun.api.validators import NodeVolumesValidator
 from nailgun.network.manager import NetworkManager
 from nailgun.volumes.manager import VolumeManager
 from nailgun.api.models import Node, NodeAttributes
@@ -368,6 +369,8 @@ class NodeAttributesByNameHandler(JSONHandler):
         node = self.get_object_or_404(Node, node_id)
         # NO serious data validation yet
         data = NodeAttributesValidator.validate_json(web.data())
+        if attr_name == "volumes":
+            data = NodeVolumesValidator.validate(data)
         attr_params = web.input()
         node_attrs = node.attributes
         if not node_attrs or not hasattr(node_attrs, attr_name):
@@ -394,11 +397,15 @@ class NodeAttributesByNameHandler(JSONHandler):
                 for a in data:
                     if a in attr:
                         continue
-                    attr.append(a)
-
-                if attr_name == "volumes":
-                    vm = node.volume_manager
-                    setattr(node_attrs, attr_name, vm.validate())
+                    updated = False
+                    for i, e in enumerate(attr):
+                        if ((a.get("type"), a.get("id")) ==
+                            (e.get("type"), e.get("id"))):
+                            attr[i] = a
+                            updated = True
+                            break
+                    if not updated:
+                        attr.append(a)
 
                 attr = filter(
                     lambda a: a["type"] == attr_params.type,
@@ -406,11 +413,7 @@ class NodeAttributesByNameHandler(JSONHandler):
                 )
         else:
             setattr(node_attrs, attr_name, data)
-            if attr_name == "volumes":
-                vm = node.volume_manager
-                setattr(node_attrs, attr_name, vm.validate())
             attr = getattr(node_attrs, attr_name)
-
         return attr
 
 
