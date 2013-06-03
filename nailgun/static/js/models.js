@@ -66,28 +66,6 @@ define(function() {
             var nodes = this.get('nodes');
             return !(nodes.currentNodes().length || nodes.where({role: 'controller'}).length > 1 || (newMode && newMode == 'singlenode' && (nodes.length > 1 || (nodes.length == 1 && !nodes.where({role: 'controller'}).length))));
         },
-        canChangeType: function(newType) {
-            // FIXME: algorithmic complexity is very high
-            var canChange;
-            var nodes = this.get('nodes');
-            if (!newType) {
-                canChange = false;
-                _.each(this.availableTypes(), function(type) {
-                    if (type == this.get('type')) {return;}
-                    canChange = canChange || this.canChangeType(type);
-                }, this);
-            } else {
-                canChange = true;
-                var clusterTypesToNodesRoles = {'both': [], 'compute': ['cinder'], 'cinder': ['compute']};
-                _.each(clusterTypesToNodesRoles[newType], function(nodeRole) {
-                    if (nodes.where({role: nodeRole}).length) {
-                        canChange = false;
-                    }
-                }, this);
-                canChange = canChange && !nodes.currentNodes().length;
-            }
-            return canChange;
-        },
         canAddNodes: function(role) {
             // forbid adding when tasks are running
             if (this.task('deploy', 'running') || this.task('verify_networks', 'running')) {
@@ -112,9 +90,6 @@ define(function() {
         },
         availableModes: function() {
             return ['multinode', 'ha'];
-        },
-        availableTypes: function() {
-            return ['compute', 'both'];
         },
         availableRoles: function() {
             var roles = ['controller'];

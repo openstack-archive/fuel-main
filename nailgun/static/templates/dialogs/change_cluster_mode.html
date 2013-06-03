@@ -33,34 +33,6 @@
           </p>
         </div>
       </div>
-       <h4 class="simple-type-title">Deployment Type:</h4>
-       <div class="row-fluid control-group type-control-group">
-        <div class="span5">
-          <% var types = {'compute': 'Compute only', 'cinder': 'Storage only', 'both': 'Compute with Cinder'} %>
-          <% _.each(cluster.availableTypes(), function(type) { %>
-            <label class="parameter-box clearfix setting" >
-              <div class="parameter-control">
-                <div class="custom-tumbler">
-                  <input type="radio" name="type" value="<%= type %>" <%= cluster.get('type') == type ? 'checked' : '' %> <%= cluster.canChangeType(type) ? '' : 'disabled' %> />
-                  <!--[if !IE |(gte IE 9)]>--><span>&nbsp;</span><!--<![endif]-->
-                </div>
-              </div>
-              <div class="openstack-sub-title parameter-name"><%= types[type] || type %></div>
-            </label>
-          <% }) %>
-        </div>
-        <div class="span7">
-          <p class="help-block hide type-description help-type-compute">
-            In this deployment type your environment will have only computes to run VMs on them. There will be no Cinder nodes.
-          </p>
-          <p class="help-block hide type-description help-type-cinder">
-            Choose this deployment type if you don't need to run virtual machines and need only cinder nodes.
-          </p>
-          <p class="help-block hide type-description help-type-both">
-            In this deployment type your environment will have compute nodes and separate nodes for cinder.
-          </p>
-        </div>
-      </div>
     </fieldset>
   </form>
 </div>

@@ -3,7 +3,7 @@
      <ul class="nav">
       <% var modes = {'singlenode': 'Single-node', 'multinode': 'Multi-node', 'ha': 'Multi-node with HA'} %>
       <% var types = {'both': 'Compute and Cinder', 'compute': 'Compute only', 'cinder': 'Cinder only'} %>
-      <% var configurable = !cluster.task('deploy', 'running') && (cluster.canChangeMode() || cluster.canChangeType()) %>
+      <% var configurable = !cluster.task('deploy', 'running') && cluster.canChangeMode()  %>
       <li class="btn btn-link summary-settings-btn change-cluster-mode-btn <%= configurable ? '' : 'disabled' %>">
         <b>Deployment Mode: </b><%- modes[cluster.get('mode')] %> <%- false && cluster.get('mode') != 'singlenode' ? '(' + types[cluster.get('type')] + ')' : '' %>
       </li>

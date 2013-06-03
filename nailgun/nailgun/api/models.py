@@ -67,7 +67,7 @@ class Cluster(Base):
     type = Column(
         Enum(*TYPES, name='cluster_type'),
         nullable=False,
-        default='compute'
+        default='both'
     )
     mode = Column(
         Enum(*MODES, name='cluster_mode'),
