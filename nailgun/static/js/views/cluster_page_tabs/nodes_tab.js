@@ -21,6 +21,9 @@ function(utils, models, commonViews, dialogViews, nodesTabSummaryTemplate, editN
     NodesTab = commonViews.Tab.extend({
         screen: null,
         scrollPositions: {},
+        hasChanges: function() {
+            return this.screen && _.result(this.screen, 'hasChanges');
+        },
         changeScreen: function(NewScreenView, screenOptions) {
             var options = _.extend({model: this.model, tab: this, screenOptions: screenOptions || []});
             var newScreen = new NewScreenView(options);
@@ -46,6 +49,11 @@ function(utils, models, commonViews, dialogViews, nodesTabSummaryTemplate, editN
         },
         initialize: function(options) {
             _.defaults(this, options);
+            _.each(['revertChanges', 'applyChanges'], function(method) {
+                this[method] = _.bind(function() {
+                    return this.screen[method]();
+                }, this);
+            }, this);
         },
         routeScreen: function(options) {
             var screens = {
@@ -465,6 +473,9 @@ function(utils, models, commonViews, dialogViews, nodesTabSummaryTemplate, editN
     EditNodeScreen = Screen.extend({
         constructorName: 'EditNodeScreen',
         keepScrollPosition: false,
+        hasChanges: function() {
+            return _.result(this, 'hasChanges') && !_.result(this, 'hasValidationErrors');
+        },
         disableControls: function(disable) {
             this.$('.btn, input').attr('disabled', disable || this.isLocked());
         },
@@ -487,9 +498,15 @@ function(utils, models, commonViews, dialogViews, nodesTabSummaryTemplate, editN
         formatFloat: function(value) {
             return parseFloat((value / this.pow).toFixed(2));
         },
+        hasChanges: function() {
+            return !_.isEqual(_.where(this.disks.toJSON(), {'type': 'disk'}), _.where(this.initialData, {'type': 'disk'}));
+        },
+        hasValidationErrors: function() {
+            return _.some(this.disks.models, 'validationError');
+        },
         checkForChanges: function() {
-            var noChanges = _.isEqual(_.where(this.disks.toJSON(), {'type': 'disk'}), _.where(this.initialData, {'type': 'disk'}));
-            var validationErrors = _.some(this.disks.models, 'validationError');
+            var noChanges = !this.hasChanges();
+            var validationErrors = this.hasValidationErrors();
             this.$('.btn-apply').attr('disabled', noChanges || validationErrors);
             this.$('.btn-revert-changes').attr('disabled', noChanges && !validationErrors);
         },
@@ -524,7 +541,7 @@ function(utils, models, commonViews, dialogViews, nodesTabSummaryTemplate, editN
                     group.size = Math.round((group.size + this.remainders[disk.id][group.vg]) * this.pow);
                 }, this));
             }, this));
-            Backbone.sync('update', this.disks, {url: _.result(this.node, 'url') + '/attributes/volumes?type=disk'})
+            return Backbone.sync('update', this.disks, {url: _.result(this.node, 'url') + '/attributes/volumes?type=disk'})
                 .done(_.bind(function() {
                     this.model.fetch();
                     this.setRoundedValues();
@@ -801,8 +818,11 @@ function(utils, models, commonViews, dialogViews, nodesTabSummaryTemplate, editN
             'click .btn-apply:not(:disabled)': 'applyChanges',
             'click .btn-return:not(:disabled)': 'goToNodeList'
         },
+        hasChanges: function() {
+            return !_.isEqual(this.interfaces.toJSON(), this.initialData);
+        },
         checkForChanges: function() {
-            this.$('.btn-apply, .btn-revert-changes').attr('disabled', this.isLocked() || _.isEqual(this.interfaces.toJSON(), this.initialData));
+            this.$('.btn-apply, .btn-revert-changes').attr('disabled', this.isLocked() || !this.hasChanges());
         },
         loadDefaults: function() {
             this.disableControls(true);
@@ -822,7 +842,7 @@ function(utils, models, commonViews, dialogViews, nodesTabSummaryTemplate, editN
         applyChanges: function() {
             this.disableControls(true);
             var configuration = new models.NodeInterfaceConfiguration({id: this.node.id, interfaces: this.interfaces});
-            Backbone.sync('update', new models.NodeInterfaceConfigurations(configuration))
+            return Backbone.sync('update', new models.NodeInterfaceConfigurations(configuration))
                 .done(_.bind(function() {
                     this.initialData = this.interfaces.toJSON();
                 }, this))
