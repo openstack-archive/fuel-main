@@ -15,7 +15,7 @@ casper.then(function() {
     this.test.assertDoesntExist('.node-list .btn-add-nodes.disabled', 'All Add Node buttons are enabled');
     this.test.assertDoesntExist('.node-list .btn-delete-nodes:not(.disabled)', 'All Delete Node buttons are disabled');
     this.test.assertExists('.node-list-controller .nodebox.nodeplaceholder', 'Placeholder for controller node presents');
-    this.test.assertEvalEquals(function() {return $('.node-list').length}, 2, 'Number of available roles is correct');
+    this.test.assertEvalEquals(function() {return $('.node-list').length}, 3, 'Number of available roles is correct');
 });
 
 casper.then(function() {
@@ -31,12 +31,12 @@ casper.then(function() {
         //this.click('.modal input[type=radio][name=type][value=both]');
         //this.test.assertExists('.modal input[type=radio][name=type][value=both]:checked', 'Compute and Storage cluster type has been chosen successfully');
         //this.click('.modal input[type=radio][name=type][value=compute]');
-        this.test.assertExists('.modal input[type=radio][name=type][value=compute]:checked', 'Compute cluster type has been chosen successfully');
+        // this.test.assertExists('.modal input[type=radio][name=type][value=compute]:checked', 'Compute cluster type has been chosen successfully');
         this.click('.modal .apply-btn');
     });
     this.test.assertSelectorDisappears('.modal', 'Cluster deployment mode dialog closes after setting deployment mode to Multi-node with HA');
     this.then(function() {
-        this.test.assertEvalEquals(function() {return $('.node-list').length}, 2, 'Number of available roles after mode change is correct');
+        this.test.assertEvalEquals(function() {return $('.node-list').length}, 3, 'Number of available roles after mode change is correct');
     });
     this.then(function() {
         this.click('.summary .change-cluster-mode-btn');
