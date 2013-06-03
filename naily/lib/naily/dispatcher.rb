@@ -30,8 +30,10 @@ module Naily
                           'progress' => 100
                         })
       end
-
+      
+      failed_nodes = []
       begin
+        reboot_events = {}
         data['args']['nodes'].each do |node|
           begin
             Naily.logger.info("Adding #{node['name']} into cobbler")
@@ -41,10 +43,35 @@ module Naily
             Naily.logger.error("Error occured while adding system #{node['name']} to cobbler")
             raise e
           end
-          engine.power_reboot(node['name'])
+          Naily.logger.debug("Trying to reboot node: #{node['name']}")
+          reboot_events[node['name']] = engine.power_reboot(node['name'])
         end
-      rescue
-        Naily.logger.error("Error occured while provisioning")
+        begin
+          Naily.logger.debug("Waiting for reboot to be complete: nodes: #{reboot_events.keys}")
+          failed_nodes = []
+          Timeout::timeout(120) do
+            while not reboot_events.empty?
+              reboot_events.each do |node_name, event_id|
+                event_status = engine.event_status(event_id)
+                Naily.logger.debug("Reboot task status: node: #{node_name} status: #{event_status}")
+                if event_status[2] =~ /^failed$/
+                  Naily.logger.error("Error occured while trying to reboot: #{node_name}")
+                  reboot_events.delete(node_name)
+                  failed_nodes << node_name
+                elsif event_status[2] =~ /^complete$/
+                  Naily.logger.debug("Successfully rebooted: #{node_name}")
+                  reboot_events.delete(node_name)
+                end
+              end
+              sleep(5)
+            end
+          end
+        rescue Timeout::Error => e
+          Naily.logger.debug("Reboot timeout: reboot tasks not completed for nodes #{reboot_events.keys}")
+          raise e
+        end
+      rescue RuntimeError => e
+        Naily.logger.error("Error occured while provisioning: #{e.inspect}")
         reporter.report({
                           'status' => 'error',
                           'error' => 'Cobbler error',
@@ -54,7 +81,15 @@ module Naily
         return
       end
       engine.sync
-      report_result({}, reporter)
+      if failed_nodes.empty?
+        report_result({}, reporter)
+      else
+        reporter.report({
+                          'status' => 'error',
+                          'error' => "Nodes failed to reboot: #{failed_nodes.inspect}",
+                          'progress' => 100
+                        })
+      end
     end
 
     def deploy(data)

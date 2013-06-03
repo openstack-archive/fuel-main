@@ -4,11 +4,11 @@ import sys, re, pexpect, exceptions
 sys.path.append("/usr/share/fence")
 from fencing import *
 
-#BEGIN_VERSION_GENERATION
-RELEASE_VERSION="0.1.0"
-BUILD_DATE="(built Wed Oct 31 11:20:18 UTC 2012)"
-MIRANTIS_COPYRIGHT="Copyright (C) Mirantis, Inc. 2012 All rights reserved."
-#END_VERSION_GENERATION
+# BEGIN_VERSION_GENERATION
+RELEASE_VERSION = "0.1.0"
+BUILD_DATE = "(built Wed Oct 31 11:20:18 UTC 2012)"
+MIRANTIS_COPYRIGHT = "Copyright (C) Mirantis, Inc. 2012 All rights reserved."
+# END_VERSION_GENERATION
 
 
 def get_power_status(conn, options):
@@ -53,7 +53,7 @@ def main():
     options["-c"] = "\[EXPECT\]#\ "
 
     # this string will be appended to the end of ssh command
-    options["ssh_options"]="-t -o 'StrictHostKeyChecking=no' '/bin/bash -c \"PS1=%s  /bin/bash --noprofile --norc\"'" % options["-c"]
+    options["ssh_options"] = "-t -o 'StrictHostKeyChecking=no' '/bin/bash -c \"PS1=%s  /bin/bash --noprofile --norc\"'" % options["-c"]
 
     docs = { }
     docs["shortdesc"] = "Fence agent that can just reboot node via ssh"
@@ -61,7 +61,7 @@ def main():
 which can be used to reboot nodes via ssh."
     show_docs(options, docs)
 
-    ## Operate the fencing device
+    # Operate the fencing device
 
     # this method will actually launch ssh command
     conn = fence_login(options)
