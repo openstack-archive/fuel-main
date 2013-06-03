@@ -7,11 +7,9 @@
   <!-- Nodes changes -->
   <% var warnings = {
     'controller': 'Environment will not contain the necessary number of controllers after deployment. Thus, it will not be usable.',
-    'compute': 'Compute nodes are recommended for deployment.',
-    'cinder': 'Cinder nodes are recommended for deployment.',
-    'compute-cinder': 'Compute and cinder nodes are recommended for deployment.',
+    'compute': 'Compute nodes are recommended for deployment.'
   } %>
-  <% var warning = null, notification = null, canDeploy = true, roles = cluster.availableRoles() %>
+  <% var warning = null, canDeploy = true, roles = cluster.availableRoles() %>
 
   <% var nodesToAdd = cluster.get('nodes').where({pending_addition: true}) %>
   <% if (nodesToAdd.length) { %>
@@ -71,16 +69,14 @@
     } else {
       _.each(roles, function(role) {
         if (warning != 'controller' && !_.filter(cluster.get('nodes').nodesAfterDeployment(), function(node) {return node.get('role') == role}).length) {
-          role == 'controller' ? warning = 'controller' : role == 'compute' ? warning = 'compute' : warning == 'compute' ? notification = 'compute-cinder' : notification = 'cinder';
+          if (role == 'controller') { warning = 'controller' }
+          if (role == 'compute') { warning = 'compute' }
         }
       })
     }
   %>
   <% if (warning) { %>
     <div class="alert alert-error"><%- warnings[warning] %></div>
-  <% } %>
-  <% if (notification) { %>
-    <div class="alert alert-warning"><%- warnings[notification] %></div>
   <% } %>
 
 </div>
