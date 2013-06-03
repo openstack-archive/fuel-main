@@ -399,8 +399,8 @@ class NodeAttributesByNameHandler(JSONHandler):
                         continue
                     updated = False
                     for i, e in enumerate(attr):
-                        if ((a.get("type"), a.get("id")) ==
-                            (e.get("type"), e.get("id"))):
+                        if (a.get("type") == e.get("type") and
+                                a.get("id") == e.get("id")):
                             attr[i] = a
                             updated = True
                             break

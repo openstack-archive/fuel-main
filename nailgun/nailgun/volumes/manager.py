@@ -104,7 +104,7 @@ class VolumeManager(object):
             if not "disks" in self.node.meta:
                 raise Exception("No disk metadata specified for node")
             for d in sorted(self.node.meta["disks"],
-                               key=lambda i: i["name"]):
+                            key=lambda i: i["name"]):
                 disk = Disk(self, d["disk"], d["size"])
                 for v in self.volumes:
                     if v.get("type") == "disk" and v.get("id") == disk.id:
