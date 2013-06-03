@@ -205,6 +205,8 @@ class TestNode(Base):
         # retrieve cluster info
         response = self.client.get("/api/nodes?cluster_id=%s" % cluster_id)
         cluster_info = json.loads(response.read())
+        logging.info('Cluster info: ')
+        logging.info(json.dumps(cluster_info))
 
         # assert nodes progress
         for i, n in enumerate(cluster_info):
