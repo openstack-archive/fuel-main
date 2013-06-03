@@ -189,7 +189,8 @@ function(utils, models, commonViews, dialogViews, nodesTabSummaryTemplate, editN
             this.modifyNodes(nodes);
             nodes.sync('update', nodes).done(_.bind(function() {
                 app.navigate('#cluster/' + this.model.id + '/nodes', {trigger: true});
-                this.model.get('nodes').fetch({data: {cluster_id: this.model.id}});
+                this.model.fetch();
+                this.model.fetchRelated('nodes');
                 app.navbar.refresh();
                 app.page.removeVerificationTask();
             }, this))
