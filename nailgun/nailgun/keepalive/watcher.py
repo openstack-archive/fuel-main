@@ -56,7 +56,7 @@ class KeepAliveThread(threading.Thread):
     def update_status_nodes(self):
         for node_db in self.db.query(Node).filter(
             # nodes may become unresponsive while provisioning
-            not_(Node.status == 'provisioning')):
+                not_(Node.status == 'provisioning')):
             timedelta = (datetime.now() - node_db.timestamp).seconds
             if timedelta > self.timeout:
                 logger.warning(
