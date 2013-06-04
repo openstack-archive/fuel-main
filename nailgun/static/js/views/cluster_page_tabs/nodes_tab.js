@@ -172,7 +172,7 @@ function(utils, models, commonViews, dialogViews, nodesTabSummaryTemplate, editN
         },
         selectAll: function(e) {
             var checked = $(e.currentTarget).is(':checked');
-            this.$('.nodebox').toggleClass('node-to-' + this.action + '-checked', checked).toggleClass('node-to-' + this.action + '-unchecked', !checked);
+            this.$('.nodebox').not('.node-not-checkable').toggleClass('node-to-' + this.action + '-checked', checked).toggleClass('node-to-' + this.action + '-unchecked', !checked);
             this.calculateApplyButtonAvailability();
             utils.forceWebkitRedraw(this.$('.nodebox'));
         },
