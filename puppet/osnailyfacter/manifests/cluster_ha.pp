@@ -27,6 +27,7 @@ $keystone_hash = parsejson($keystone)
 $swift_hash    = parsejson($swift)
 $cinder_hash   = parsejson($cinder)
 $access_hash   = parsejson($access)
+$floating_hash = parsejson($floating_range)
 
 if $::hostname == $master_hostname {
   $primary_proxy = true
@@ -83,7 +84,7 @@ class compact_controller {
     internal_virtual_ip           => $management_vip,
     public_virtual_ip             => $public_vip,
     primary_controller            => $primary_controller,
-    floating_range                => $floating_network_range,
+    floating_range                => false,
     fixed_range                   => $fixed_network_range,
     multi_host                    => $multi_host,
     network_manager               => $network_manager,
@@ -178,6 +179,7 @@ class compact_controller {
           os_auth_url => "http://${management_vip}:5000/v2.0/",
           img_name    => "TestVM",
         }
+        nova::manage::floating{$floating_hash:}
         Class[glance::api]                    -> Class[openstack::img::cirros]
         Class[openstack::swift::storage_node] -> Class[openstack::img::cirros]
         Class[openstack::swift::proxy]        -> Class[openstack::img::cirros]
