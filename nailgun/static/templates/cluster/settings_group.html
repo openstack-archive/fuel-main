@@ -10,7 +10,7 @@
         <div class="parameter-control">
           <div class="custom-tumbler">
             <input type="checkbox" name="checkbox" <%= settingDetails.value ? 'checked' : '' %> <%= disabled %> />
-            <!--[if !IE |(gte IE 9)]>--><span>&nbsp;</span><!--<![endif]-->
+            <!-- [if !IE |(gte IE 9)]> --><span>&nbsp;</span><!-- <![endif] -->
           </div>
         </div>
         <div class="openstack-sub-title parameter-name"><%- settingDetails.label %></div>
@@ -25,7 +25,7 @@
           <div class="parameter-control">
             <div class="custom-tumbler">
               <input type="radio" name="<%- setting %>" value="<%- option['data'] %>" <%= option['data'] == settingDetails.value ? 'checked' : '' %> <%= disabled %> />
-              <!--[if !IE |(gte IE 9)]>--><span>&nbsp;</span><!--<![endif]-->
+              <!-- [if !IE |(gte IE 9)]> --><span>&nbsp;</span><!-- <![endif] -->
             </div>
           </div>
           <div class="parameter-name"><%- option['display_name'] %></div>

@@ -14,7 +14,7 @@
               <div class="parameter-control">
                 <div class="custom-tumbler">
                   <input type="radio" name="mode" value="<%= mode %>" <%= cluster.get('mode') == mode ? 'checked' : '' %> <%= cluster.canChangeMode(mode) ? '' : 'disabled' %> />
-                  <!--[if !IE |(gte IE 9)]>--><span>&nbsp;</span><!--<![endif]-->
+                  <!-- [if !IE |(gte IE 9)]> --><span>&nbsp;</span><!-- <![endif] -->
                 </div>
               </div>
               <div class="openstack-sub-title parameter-name"><%= modes[mode] || mode %></div>
