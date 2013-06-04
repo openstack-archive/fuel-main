@@ -72,7 +72,7 @@ casper.then(function() {
         this.test.assertExists('.btn-revert-changes:not(:disabled)', 'Cancel button is enabled');
         this.test.assertExists('.btn-apply:not(:disabled)', 'Apply button is enabled');
 
-        this.click(sdaDiskVM + ' .use-all-unallocated a');
+        this.click(sdaDiskVM + ' .use-all-unallocated');
         this.test.assertExists('.btn-defaults:not(:disabled)', 'Load Defaults button is enabled');
         this.test.assertExists('.btn-revert-changes:disabled', 'Cancel button is disabled');
         this.test.assertExists('.btn-apply:disabled', 'Apply button is disabled');
@@ -108,7 +108,7 @@ casper.then(function() {
         this.test.assertEquals(this.getElementBounds(sdaDisk + ' .disk-visual .vm').width, 0, 'VM group was removed successfully');
         this.test.assertEval(function(sdaDisk) {return $(sdaDisk + ' .disk-visual .unallocated').width() > 0}, 'There is unallocated space after Virtual Storage VG removal',{sdaDisk:sdaDisk});
         this.test.assertEvalEquals(function(sdaDiskVM) {return $(sdaDiskVM + ' input').val()},'0.00', 'Volume group input control contains correct value',{sdaDiskVM:sdaDiskVM});
-        this.click(sdaDiskVM + ' .use-all-unallocated a');
+        this.click(sdaDiskVM + ' .use-all-unallocated');
         this.test.assertEquals(this.getElementBounds(sdaDisk + ' .disk-visual .unallocated').width, 0, 'Use all unallocated area for VM');
         this.fill(sdaDiskVM + '', {'vm': '0'});
         this.evaluate(function(sdaDiskVM) {
@@ -122,7 +122,7 @@ casper.then(function() {
 
     this.then(function() {
         this.test.comment('Testing use all unallocated link');
-        this.click(sdaDiskOS + ' .use-all-unallocated a');
+        this.click(sdaDiskOS + ' .use-all-unallocated');
         this.test.assertEquals(this.getElementBounds(sdaDisk + ' .disk-visual .unallocated').width, 0, 'Use all unallocated link works correctly');
     });
 
