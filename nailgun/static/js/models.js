@@ -330,7 +330,9 @@ define(function() {
                         }, this));
                     } else {
                         var rangeErrors = {index: 0};
-                        rangeErrors.start = 'Please, specify at least one IP range';
+                        var emptyRaneError = 'Please, specify at least one IP range';
+                        rangeErrors.start = emptyRaneError;
+                        rangeErrors.end = emptyRaneError;
                         errors.ip_ranges = _.compact(_.union([rangeErrors], errors.ip_ranges));
                     }
                 } else if (attribute == 'cidr') {
