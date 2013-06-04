@@ -29,6 +29,7 @@ module Naily
                           'error' => 'Cobbler can not be initialized',
                           'progress' => 100
                         })
+        return
       end
       
       failed_nodes = []
@@ -90,6 +91,7 @@ module Naily
                           'progress' => 100
                         })
       end
+      return
     end
 
     def deploy(data)
