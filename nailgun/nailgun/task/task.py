@@ -390,6 +390,7 @@ class DeletionTask(object):
         task_uuid = task.uuid
         logger.debug("Nodes deletion task is running")
         nodes_to_delete = []
+        nodes_to_delete_constant = []
         nodes_to_restore = []
 
         USE_FAKE = settings.FAKE_TASKS or settings.FAKE_TASKS_AMQP
@@ -436,69 +437,71 @@ class DeletionTask(object):
                     nodes_to_restore.append(new_node)
                     # /only fake tasks
 
-        # Deletion offline nodes from db
-        if nodes_to_delete:
-            for node in list(nodes_to_delete):
-                node_db = orm().query(Node).get(node['id'])
+        # this variable is used to iterate over it
+        # and be able to delete node from nodes_to_delete safely
+        nodes_to_delete_constant = list(nodes_to_delete)
 
-                if not node_db.online:
-                    slave_name = TaskHelper.make_slave_name(
-                        node['id'], node['role']
-                    )
-                    logger.info(
-                        "Node %s is offline, removing node from db" %
-                        slave_name)
-                    orm().delete(node_db)
-                    orm().commit()
+        for node in nodes_to_delete_constant:
+            node_db = orm().query(Node).get(node['id'])
 
-                    nodes_to_delete.remove(node)
+            slave_name = TaskHelper.make_slave_name(
+                node['id'], node['role']
+            )
+            logger.debug("Removing node from database and pending it "
+                         "to clean its MBR: %s", slave_name)
+            if not node_db.online:
+                logger.info(
+                    "Node is offline, can't MBR clean: %s", slave_name)
+                orm().delete(node_db)
+                orm().commit()
+
+                nodes_to_delete.remove(node)
 
         # only real tasks
         engine_nodes = []
         if not USE_FAKE:
-            if nodes_to_delete:
-                logger.debug("There are nodes to delete")
-                for node in nodes_to_delete:
-                    slave_name = TaskHelper.make_slave_name(
-                        node['id'], node['role']
+            for node in nodes_to_delete_constant:
+                slave_name = TaskHelper.make_slave_name(
+                    node['id'], node['role']
+                )
+                logger.debug("Pending node to be removed from cobbler %s",
+                             slave_name)
+                engine_nodes.append(slave_name)
+                try:
+                    node_db = orm().query(Node).get(node['id'])
+                    if node_db and node_db.fqdn:
+                        node_hostname = node_db.fqdn
+                    else:
+                        node_hostname = TaskHelper.make_slave_fqdn(
+                            node['id'], node['role'])
+                    logger.info("Removing node cert from puppet: %s",
+                                node_hostname)
+                    cmd = "puppet cert clean {0}".format(node_hostname)
+                    proc = subprocess.Popen(
+                        shlex.split(cmd),
+                        shell=False,
+                        stdout=subprocess.PIPE,
+                        stderr=subprocess.PIPE
                     )
-                    engine_nodes.append(slave_name)
-                    try:
-                        logger.info("Deleting old certs from puppet..")
-                        node_db = orm().query(Node).get(node['id'])
-                        if node_db and node_db.fqdn:
-                            node_hostname = node_db.fqdn
-                        else:
-                            node_hostname = '.'.join([
-                                slave_name, settings.DNS_DOMAIN])
-                        cmd = "puppet cert clean {0}".format(node_hostname)
-                        proc = subprocess.Popen(
-                            shlex.split(cmd),
-                            shell=False,
-                            stdout=subprocess.PIPE,
-                            stderr=subprocess.PIPE
+                    p_stdout, p_stderr = proc.communicate()
+                    logger.info(
+                        "'{0}' executed, STDOUT: '{1}',"
+                        " STDERR: '{2}'".format(
+                            cmd,
+                            p_stdout,
+                            p_stderr
                         )
-                        p_stdout, p_stderr = proc.communicate()
-                        logger.info(
-                            "'{0}' executed, STDOUT: '{1}',"
-                            " STDERR: '{2}'".format(
-                                cmd,
-                                p_stdout,
-                                p_stderr
-                            )
+                    )
+                except OSError:
+                    logger.warning(
+                        "'{0}' returned non-zero exit code".format(
+                            cmd
                         )
-                    except OSError:
-                        logger.warning(
-                            "'{0}' returned non-zero exit code".format(
-                                cmd
-                            )
-                        )
-                    except Exception as e:
-                        logger.warning("Exception occurred while trying to \
-                                remove the system from Cobbler: '{0}'".format(
-                            e.message))
-
-        # /only real tasks
+                    )
+                except Exception as e:
+                    logger.warning("Exception occurred while trying to \
+                            remove the system from Cobbler: '{0}'".format(
+                        e.message))
 
         msg_delete = {
             'method': 'remove_nodes',

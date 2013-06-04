@@ -192,8 +192,16 @@ module Naily
         if provision_engine.system_exists(name)
           Naily.logger.info("Removing system from cobbler: #{name}")
           provision_engine.remove_system(name)
+          if not provision_engine.system_exists(name)
+            Naily.logger.info("System has been successfully removed from cobbler: #{name}")
+          else
+            Naily.logger.error("Cannot remove node from cobbler: #{name}")
+          end
+        else
+          Naily.logger.info("System is not in cobbler: #{name}")
         end
       end
+      Naily.logger.debug("Cobbler syncing")
       provision_engine.sync
       result = @orchestrator.remove_nodes(reporter, data['args']['task_uuid'], nodes)
       report_result(result, reporter)
