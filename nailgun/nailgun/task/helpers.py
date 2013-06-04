@@ -26,10 +26,12 @@ class TaskHelper(object):
     @classmethod
     def update_slave_nodes_fqdn(cls, nodes):
         for n in nodes:
-            n.fqdn = cls.slave_fqdn_by_id(n.id, n.role)
-            logger.debug("Updating node fqdn: %s %s", n.id, n.fqdn)
-            orm().add(n)
-            orm().commit()
+            fqdn = cls.slave_fqdn_by_id(n.id, n.role)
+            if n.fqdn != fqdn:
+                n.fqdn = fqdn
+                logger.debug("Updating node fqdn: %s %s", n.id, n.fqdn)
+                orm().add(n)
+                orm().commit()
 
     @classmethod
     def prepare_syslog_dir(cls, node, prefix=None):
@@ -223,6 +225,16 @@ class TaskHelper(object):
                 n.pending_addition,
                 n.needs_reprovision,
                 n.needs_redeploy
+            ]),
+            cluster.nodes
+        ), key=lambda n: n.id)
+
+    @classmethod
+    def nodes_to_provision(cls, cluster):
+        return sorted(filter(
+            lambda n: any([
+                n.pending_addition,
+                n.needs_reprovision
             ]),
             cluster.nodes
         ), key=lambda n: n.id)

@@ -142,7 +142,6 @@ class DeploymentTask(object):
         if cluster_attrs['network_manager'] == 'VlanManager':
             fixed_net = orm().query(NetworkGroup).filter_by(
                 cluster_id=cluster_id).filter_by(name='fixed').first()
-
             cluster_attrs['network_size'] = fixed_net.network_size
             cluster_attrs['num_networks'] = fixed_net.amount
             cluster_attrs['vlan_start'] = fixed_net.vlan_start
@@ -234,22 +233,16 @@ class ProvisionTask(object):
     @classmethod
     def message(cls, task):
         logger.debug("ProvisionTask.message(task=%s)" % task.uuid)
-        task_uuid = task.uuid
-        cluster_id = task.cluster.id
+        # this variable is used to set 'auth_key' in cobbler ks_meta
         cluster_attrs = task.cluster.attributes.merged_attrs_values()
-
+        nodes = TaskHelper.nodes_to_provision(task.cluster)
         netmanager = NetworkManager()
-        nodes = orm().query(Node).filter_by(
-            cluster_id=task.cluster.id,
-            pending_deletion=False).order_by(Node.id)
 
         USE_FAKE = settings.FAKE_TASKS or settings.FAKE_TASKS_AMQP
-
-        nodes_to_provision = []
-
-        # FIXME: why can't we use needs_reprovision and pending_addition
-        # attributes of node to constract valid list of nodes which need
-        # to be provisioned and instead use this ugly loop?
+        # TODO: For now we send nodes data to orchestrator
+        # which is cobbler oriented. But for future we
+        # need to use more abstract data structure.
+        nodes_data = []
         for node in nodes:
             if not node.online:
                 if not USE_FAKE:
@@ -264,16 +257,7 @@ class ProvisionTask(object):
                         " Remove it from environment and try again." %
                         (node.name, node.id)
                     )
-            if node.status in ('discover', 'provisioning') or \
-                    (node.status == 'error' and
-                     node.error_type == 'provision'):
-                nodes_to_provision.append(node)
 
-        # TODO: For now we send nodes data to orchestrator
-        # which are cobbler oriented. But for future we
-        # need to use more abstract data structure.
-        nodes_data = []
-        for node in nodes_to_provision:
             node_data = {
                 'profile': settings.COBBLER_PROFILE,
                 'power_type': 'ssh',

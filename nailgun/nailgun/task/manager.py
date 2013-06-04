@@ -68,8 +68,9 @@ class DeploymentTaskManager(TaskManager):
 
         nodes_to_delete = TaskHelper.nodes_to_delete(self.cluster)
         nodes_to_deploy = TaskHelper.nodes_to_deploy(self.cluster)
+        nodes_to_provision = TaskHelper.nodes_to_provision(self.cluster)
 
-        if not any([nodes_to_deploy, nodes_to_delete]):
+        if not any([nodes_to_provision, nodes_to_deploy, nodes_to_delete]):
             raise errors.WrongNodeStatus("No changes to deploy")
 
         self.cluster.status = 'deployment'
@@ -86,17 +87,20 @@ class DeploymentTaskManager(TaskManager):
 
         if nodes_to_delete:
             task_deletion = supertask.create_subtask("node_deletion")
+            logger.debug("Launching deletion task: %s", task_deletion.uuid)
             self._call_silently(
                 task_deletion,
                 tasks.DeletionTask
             )
 
-        if nodes_to_deploy:
-            TaskHelper.update_slave_nodes_fqdn(nodes_to_deploy)
-
+        task_messages = []
+        if nodes_to_provision:
+            TaskHelper.update_slave_nodes_fqdn(nodes_to_provision)
+            logger.debug("There are nodes to provision: %s",
+                         " ".join([n.fqdn for n in nodes_to_provision]))
             task_provision = supertask.create_subtask("provision")
             # we assume here that task_provision just adds system to
-            # cobbler and reboots systems, so it has extreamly small weight
+            # cobbler and reboots it, so it has extremely small weight
             task_provision.weight = 0.05
             provision_message = self._call_silently(
                 task_provision,
@@ -106,7 +110,12 @@ class DeploymentTaskManager(TaskManager):
             task_provision.cache = provision_message
             orm().add(task_provision)
             orm().commit()
+            task_messages.append(provision_message)
 
+        if nodes_to_deploy:
+            TaskHelper.update_slave_nodes_fqdn(nodes_to_deploy)
+            logger.debug("There are nodes to deploy: %s",
+                         " ".join([n.fqdn for n in nodes_to_deploy]))
             task_deployment = supertask.create_subtask("deployment")
             deployment_message = self._call_silently(
                 task_deployment,
@@ -116,8 +125,10 @@ class DeploymentTaskManager(TaskManager):
             task_deployment.cache = deployment_message
             orm().add(task_deployment)
             orm().commit()
+            task_messages.append(deployment_message)
 
-            rpc.cast('naily', [provision_message, deployment_message])
+        if task_messages:
+            rpc.cast('naily', task_messages)
 
         logger.debug(
             u"Deployment: task to deploy cluster '{0}' is {1}".format(
