@@ -307,26 +307,32 @@ define(function() {
             var match;
             _.each(this.getAttributes(), _.bind(function(attribute) {
                 if (attribute == 'ip_ranges') {
-                    _.each(attrs.ip_ranges, _.bind(function(range, index) {
-                        if (_.first(range) || _.last(range)) {
-                            var rangeErrors = {index: index};
-                            if (_.first(range) && this.validateIP(_.first(range))) {
-                                rangeErrors.start = 'Invalid IP';
+                    if (!_.isEqual(attrs.ip_ranges, [])){
+                        _.each(attrs.ip_ranges, _.bind(function(range, index) {
+                            if (_.first(range) || _.last(range)) {
+                                var rangeErrors = {index: index};
+                                if (_.first(range) && this.validateIP(_.first(range))) {
+                                    rangeErrors.start = 'Invalid IP';
+                                }
+                                if (_.last(range) && this.validateIP(_.last(range))) {
+                                    rangeErrors.end = 'Invalid IP';
+                                }
+                                if (_.first(range) == '') {
+                                    rangeErrors.start = 'Empty range';
+                                }
+                                if (_.last(range) == '') {
+                                    rangeErrors.end = 'Empty range';
+                                }
+                                if (rangeErrors.start || rangeErrors.end) {
+                                    errors.ip_ranges = _.compact(_.union([rangeErrors], errors.ip_ranges));
+                                }
                             }
-                            if (_.last(range) && this.validateIP(_.last(range))) {
-                                rangeErrors.end = 'Invalid IP';
-                            }
-                            if (_.first(range) == '') {
-                                rangeErrors.start = 'Empty range';
-                            }
-                            if (_.last(range) == '') {
-                                rangeErrors.end = 'Empty range';
-                            }
-                            if (rangeErrors.start || rangeErrors.end) {
-                                errors.ip_ranges = _.compact(_.union([rangeErrors], errors.ip_ranges));
-                            }
-                        }
-                    }, this));
+                        }, this));
+                    } else {
+                        var rangeErrors = {index: 0};
+                        rangeErrors.start = 'Please, specify at least one IP range';
+                        errors.ip_ranges = _.compact(_.union([rangeErrors], errors.ip_ranges));
+                    }
                 } else if (attribute == 'cidr') {
                     var cidrRegexp = /^(?:(?:[0-9]|[1-9][0-9]|1[0-9]{2}|2[0-4][0-9]|25[0-5])\.){3}(?:[0-9]|[1-9][0-9]|1[0-9]{2}|2[0-4][0-9]|25[0-5])\/([1-9]|[1-2]\d|3[0-2])$/;
                     if (_.isString(attrs.cidr)) {
