@@ -3624,6 +3624,16 @@ hr.slim {
   float: left;
 }
 
+.disk-box .use-all-unallocated {
+  color: #0088CC;
+}
+
+.disk-box .use-all-unallocated:hover {
+  color: #005580;
+  text-decoration: underline;
+  cursor: pointer;
+}
+
 .disk-visual > .volume-group {
   display: inline-block;
   float: left;

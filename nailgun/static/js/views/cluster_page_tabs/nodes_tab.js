@@ -747,7 +747,6 @@ function(utils, models, commonViews, dialogViews, nodesTabSummaryTemplate, editN
             return allocatedSpace;
         },
         useAllUnallocatedSpace: function(e) {
-            e.preventDefault();
             this.makeChanges(e, (this.diskSize - this.countAllocatedSpace()).toFixed(2), true);
         },
         switchBootableDisk: function(e) {
