@@ -316,6 +316,12 @@ define(function() {
                             if (_.last(range) && this.validateIP(_.last(range))) {
                                 rangeErrors.end = 'Invalid IP';
                             }
+                            if (_.first(range) == '') {
+                                rangeErrors.start = 'Empty range';
+                            }
+                            if (_.last(range) == '') {
+                                rangeErrors.end = 'Empty range';
+                            }
                             if (rangeErrors.start || rangeErrors.end) {
                                 errors.ip_ranges = _.compact(_.union([rangeErrors], errors.ip_ranges));
                             }
