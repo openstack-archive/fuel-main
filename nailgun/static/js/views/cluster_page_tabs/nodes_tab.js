@@ -22,7 +22,7 @@ function(utils, models, commonViews, dialogViews, nodesTabSummaryTemplate, editN
         screen: null,
         scrollPositions: {},
         hasChanges: function() {
-            return this.screen && _.result(this.screen, 'hasChanges');
+            return this.screen && _.result(this.screen, 'hasChanges') && !_.result(this.screen, 'hasValidationErrors');
         },
         changeScreen: function(NewScreenView, screenOptions) {
             var options = _.extend({model: this.model, tab: this, screenOptions: screenOptions || []});
@@ -473,14 +473,11 @@ function(utils, models, commonViews, dialogViews, nodesTabSummaryTemplate, editN
     EditNodeScreen = Screen.extend({
         constructorName: 'EditNodeScreen',
         keepScrollPosition: false,
-        hasChanges: function() {
-            return _.result(this, 'hasChanges') && !_.result(this, 'hasValidationErrors');
-        },
         disableControls: function(disable) {
             this.$('.btn, input').attr('disabled', disable || this.isLocked());
         },
         returnToNodeList: function() {
-            if (this.hasChanges()) {
+            if (this.tab.hasChanges()) {
                 this.tab.page.discardSettingsChanges({cb: _.bind(this.goToNodeList, this)});
             } else {
                 this.goToNodeList();
