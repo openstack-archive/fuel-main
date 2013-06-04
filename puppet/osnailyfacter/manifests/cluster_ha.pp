@@ -27,7 +27,7 @@ $keystone_hash = parsejson($keystone)
 $swift_hash    = parsejson($swift)
 $cinder_hash   = parsejson($cinder)
 $access_hash   = parsejson($access)
-$floating_hash = parsejson($floating_range)
+$floating_hash = parsejson($floating_network_range)
 
 if $::hostname == $master_hostname {
   $primary_proxy = true

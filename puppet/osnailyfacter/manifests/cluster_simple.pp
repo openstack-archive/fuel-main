@@ -18,7 +18,7 @@ $swift_hash    = parsejson($swift)
 $cinder_hash   = parsejson($cinder)
 $access_hash   = parsejson($access)
 $extra_rsyslog_hash = parsejson($syslog)
-$floating_hash = parsejson($floating_range)
+$floating_hash = parsejson($floating_network_range)
 
 $base_syslog_hash  = parsejson($base_syslog)
 $base_syslog_rserver  = {
