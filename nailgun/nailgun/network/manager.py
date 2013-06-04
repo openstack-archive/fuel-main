@@ -30,8 +30,8 @@ class NetworkManager(object):
         new_cidr = IPNetwork(cidr)
         ip_range = IPAddrRange(
             network_group_id=network_group.id,
-            first=str(new_cidr[0]),
-            last=str(new_cidr[-1]))
+            first=str(new_cidr[2]),
+            last=str(new_cidr[-2]))
 
         self.db.add(ip_range)
         self.db.commit()
