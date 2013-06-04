@@ -235,6 +235,10 @@ class Node(Base):
     def needs_redeletion(self):
         return self.status == 'error' and self.error_type == 'deletion'
 
+    @property
+    def human_readable_name(self):
+        return self.name or self.mac
+
 
 class NodeAttributes(Base):
     __tablename__ = 'node_attributes'

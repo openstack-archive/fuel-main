@@ -176,6 +176,15 @@ class NodeCollectionHandler(JSONHandler, NICUtils):
                     or self.validator.validate_existent_node_mac(nd)
             else:
                 node = q.get(nd["id"])
+            if is_agent:
+                node.timestamp = datetime.now()
+                if not node.online:
+                    node.online = True
+                    msg = u"Node '{0}' is back online".format(
+                        node.human_readable_name)
+                    logger.info(msg)
+                    notifier.notify("discover", msg, node_id=node.id)
+                self.db.commit()
             if nd.get("cluster_id") is None and node.cluster:
                 node.cluster.clear_pending_changes(node_id=node.id)
             old_cluster_id = node.cluster_id
@@ -230,20 +239,6 @@ class NodeCollectionHandler(JSONHandler, NICUtils):
 
                 self.db.commit()
             if is_agent:
-                node.timestamp = datetime.now()
-                if not node.online:
-                    node.online = True
-                    msg = u"Node '{0}' is back online".format(
-                        node.name or node.mac
-                    )
-                    logger.info(msg)
-                    notifier.notify(
-                        "discover",
-                        msg,
-                        node_id=node.id
-                    )
-                self.db.commit()
-
                 # Update node's NICs.
                 if node.meta and 'interfaces' in node.meta:
                     network_manager = NetworkManager()

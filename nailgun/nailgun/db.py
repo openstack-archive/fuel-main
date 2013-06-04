@@ -36,14 +36,16 @@ class NoCacheQuery(Query):
         super(NoCacheQuery, self).__init__(*args, **kwargs)
 
 
+def make_session():
+    return scoped_session(
+        sessionmaker(bind=engine, query_cls=NoCacheQuery))
+
+
 def orm():
-    if hasattr(web.ctx, "orm"):
-        return web.ctx.orm
-    else:
-        web.ctx.orm = scoped_session(
-            sessionmaker(bind=engine, query_cls=NoCacheQuery)
-        )
-        return web.ctx.orm
+    if not hasattr(web.ctx, "orm"):
+        web.ctx.orm = make_session()
+
+    return web.ctx.orm
 
 
 def load_db_driver(handler):
