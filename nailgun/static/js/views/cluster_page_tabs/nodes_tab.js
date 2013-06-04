@@ -160,6 +160,10 @@ function(utils, models, commonViews, dialogViews, nodesTabSummaryTemplate, editN
             if (this.limit !== null && $(e.currentTarget).is('.node-to-' + this.action + '-unchecked') && this.$('.node-to-' + this.action + '-checked').length >= this.limit) {
                 return;
             }
+            var currentNode = this.nodes.find({id: $(e.currentTarget).data('node-id')});
+            if (!currentNode.get('online')){
+                return;
+            }
             $(e.currentTarget).toggleClass('node-to-' + this.action + '-checked').toggleClass('node-to-' + this.action + '-unchecked');
             this.calculateSelectAllTumblerState();
             this.calculateNotChosenNodesAvailability();
