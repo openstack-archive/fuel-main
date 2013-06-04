@@ -19,7 +19,8 @@ HTTPMSG = '500 Internal Error'
 ERRORMSG = 'Server got itself in trouble'
 # Default log formats
 DATEFORMAT = '%d-%m-%Y %H:%M:%S'
-LOGFORMAT = '%(message)s'
+LOGFORMAT = '%(asctime)s %(levelname)s (%(module)s) %(message)s'
+HTTP_LOGFORMAT = '%(message)s'
 
 
 def _errapp(environ, start_response):
@@ -122,7 +123,7 @@ class FileLoggerMiddleware(object):
             logger = http_logger
             logger.setLevel(kw.get('loglevel', logging.DEBUG))
             log_format = logging.Formatter(
-                kw.get('logformat', LOGFORMAT),
+                kw.get('logformat', HTTP_LOGFORMAT),
                 kw.get('datefmt', DATEFORMAT))
             filelogger = WatchedFileHandler(kw.get('file',
                                             settings.ACCESS_LOG))
