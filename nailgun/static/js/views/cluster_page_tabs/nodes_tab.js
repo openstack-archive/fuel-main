@@ -479,6 +479,13 @@ function(utils, models, commonViews, dialogViews, nodesTabSummaryTemplate, editN
         disableControls: function(disable) {
             this.$('.btn, input').attr('disabled', disable || this.isLocked());
         },
+        returnToNodeList: function() {
+            if (this.hasChanges()) {
+                this.tab.page.discardSettingsChanges({cb: _.bind(this.goToNodeList, this)});
+            } else {
+                this.goToNodeList();
+            }
+        },
         isLocked: function() {
             return this.model.get('status') != 'new' || !this.node.get('pending_addition') || !!this.model.task('deploy', 'running');
         }
@@ -493,7 +500,7 @@ function(utils, models, commonViews, dialogViews, nodesTabSummaryTemplate, editN
             'click .btn-defaults': 'loadDefaults',
             'click .btn-revert-changes': 'revertChanges',
             'click .btn-apply:not(:disabled)': 'applyChanges',
-            'click .btn-return:not(:disabled)': 'goToNodeList'
+            'click .btn-return:not(:disabled)': 'returnToNodeList'
         },
         formatFloat: function(value) {
             return parseFloat((value / this.pow).toFixed(2));
@@ -816,7 +823,7 @@ function(utils, models, commonViews, dialogViews, nodesTabSummaryTemplate, editN
             'click .btn-defaults': 'loadDefaults',
             'click .btn-revert-changes': 'revertChanges',
             'click .btn-apply:not(:disabled)': 'applyChanges',
-            'click .btn-return:not(:disabled)': 'goToNodeList'
+            'click .btn-return:not(:disabled)': 'returnToNodeList'
         },
         hasChanges: function() {
             return !_.isEqual(this.interfaces.toJSON(), this.initialData);
