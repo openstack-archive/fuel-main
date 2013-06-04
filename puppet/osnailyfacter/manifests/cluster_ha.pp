@@ -178,6 +178,7 @@ class compact_controller {
           os_tenant_name => $access_hash[tenant],
           os_auth_url => "http://${management_vip}:5000/v2.0/",
           img_name    => "TestVM",
+          stage          => 'glance-image',
         }
         nova::manage::floating{$floating_hash:}
         Class[glance::api]                    -> Class[openstack::img::cirros]

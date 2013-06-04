@@ -113,6 +113,7 @@ Exec { logoutput => true }
         os_password               => $access_hash[password],
         os_tenant_name            => $access_hash[tenant],
         img_name                  => "TestVM",
+        stage                     => 'glance-image',
       }
       nova::manage::floating{$floating_hash:}
       Class[osnailyfacter::network_setup] -> Class[openstack::controller]
