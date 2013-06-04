@@ -29,7 +29,7 @@ module Naily
                           'error' => 'Cobbler can not be initialized',
                           'progress' => 100
                         })
-        return
+        raise StopIteration
       end
       
       failed_nodes = []
@@ -79,7 +79,7 @@ module Naily
                           'progress' => 100
                         })
         engine.sync
-        return
+        raise StopIteration
       end
       engine.sync
       if failed_nodes.empty?

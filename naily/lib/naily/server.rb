@@ -44,58 +44,54 @@ module Naily
       Naily.logger.debug "Got message with payload #{payload.inspect}"
 
       begin
-        data = JSON.load(payload)
-      rescue Exception => e
-        Naily.logger.error "Error deserializing payload: #{e.message}, trace: #{e.backtrace.inspect}"
+        messages = JSON.load(payload)
+      rescue => ex
+        Naily.logger.error "Error deserializing payload: #{ex.message}, trace: #{ex.backtrace.inspect}"
         # TODO: send RPC error response
         return
       end
 
-      if Naily.config.empty_dispatch_message
-        m = "empty_dispatch_message"
-      else
-        m = "dispatch_message"
-      end
-
-      if data.kind_of?(Array)
-        Naily.logger.debug "Message seems to be an array"
-        data.each do |message|
-          Naily.logger.debug "Dispatching message: #{message.inspect}"
-          self.send(m, message)
+      (messages.is_a?(Array) ? messages : [messages]).each do |message|
+        begin
+          dispatch_message message
+        rescue StopIteration
+          Naily.logger.debug "Dispatching aborted by #{message['method']}"
+          break
+        rescue => ex
+          Naily.logger.error "Error running RPC method #{message['method']}: #{ex.message}, trace: #{ex.backtrace.inspect}"
+          return_results message, {
+            'status' => 'error',
+            'error'  => "Error occurred while running method '#{message['method']}'. See logs of Orchestrator for details."
+          }
         end
-      else
-        Naily.logger.debug "Message seems to be plain message"
-        Naily.logger.debug "Dispatching message: #{data.inspect}"
-        self.send(m, data)
       end
-    end
-
-    def empty_dispatch_message(data)
-      Naily.logger.debug "empty_dispatch_message called: #{data.inspect}"
     end
 
     def dispatch_message(data)
+      Naily.logger.debug "Dispatching message: #{data.inspect}"
 
-      Naily.logger.debug "dispatch_message called: #{data.inspect}"
-      unless @delegate.respond_to?(data['method'])
-        Naily.logger.error "Unsupported RPC call #{data['method']}"
-        if data['respond_to']
-          reporter = Naily::Reporter.new(@producer, data['respond_to'], data['args']['task_uuid'])
-          reporter.report({'status' => 'error', 'error' => "Unsupported method '#{data['method']}' called."})
-        end
+      if Naily.config.fake_dispatch
+        Naily.logger.debug "Fake dispatch"
         return
       end
 
-      Naily.logger.info "Processing RPC call #{data['method']}"
+      unless @delegate.respond_to?(data['method'])
+        Naily.logger.error "Unsupported RPC call '#{data['method']}'"
+        return_results data, {
+          'status' => 'error',
+          'error'  => "Unsupported method '#{data['method']}' called."
+        }
+        return
+      end
 
-      begin
-        @delegate.send(data['method'], data)
-      rescue Exception => e
-        Naily.logger.error "Error running RPC method #{data['method']}: #{e.message}, trace: #{e.backtrace.inspect}"
-        if data['respond_to']
-          reporter = Naily::Reporter.new(@producer, data['respond_to'], data['args']['task_uuid'])
-          reporter.report({'status' => 'error', 'error' => "Error occurred while running method '#{data['method']}'. See logs of Orchestrator for details."})
-        end
+      Naily.logger.info "Processing RPC call '#{data['method']}'"
+      @delegate.send(data['method'], data)
+    end
+
+    def return_results(message, results)
+      if results.is_a?(Hash) && message['respond_to']
+        reporter = Naily::Reporter.new(@producer, message['respond_to'], message['args']['task_uuid'])
+        reporter.report results
       end
     end
   end
