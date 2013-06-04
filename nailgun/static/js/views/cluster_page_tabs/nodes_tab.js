@@ -242,6 +242,9 @@ function(utils, models, commonViews, dialogViews, nodesTabSummaryTemplate, editN
                     if (node.get(this.flag)) {
                         nodeView.$('.nodebox[data-node-id=' + node.id + ']').addClass('node-to-' + this.action + '-checked').removeClass('node-to-' + this.action + '-unchecked');
                     }
+                    if (!node.get('online')) {
+                        nodeView.$('.nodebox').toggleClass('node-not-checkable');
+                    }
                 }, this);
             } else {
                 nodesContainer.html('<div class="span12">No nodes available</div>');
