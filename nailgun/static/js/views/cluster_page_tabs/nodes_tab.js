@@ -22,7 +22,7 @@ function(utils, models, commonViews, dialogViews, nodesTabSummaryTemplate, editN
         screen: null,
         scrollPositions: {},
         hasChanges: function() {
-            return this.screen && _.result(this.screen, 'hasChanges') && !_.result(this.screen, 'hasValidationErrors');
+            return this.screen && _.result(this.screen, 'hasChanges');
         },
         changeScreen: function(NewScreenView, screenOptions) {
             var options = _.extend({model: this.model, tab: this, screenOptions: screenOptions || []});
@@ -477,7 +477,7 @@ function(utils, models, commonViews, dialogViews, nodesTabSummaryTemplate, editN
             this.$('.btn, input').attr('disabled', disable || this.isLocked());
         },
         returnToNodeList: function() {
-            if (this.tab.hasChanges()) {
+            if (this.hasChanges()) {
                 this.tab.page.discardSettingsChanges({cb: _.bind(this.goToNodeList, this)});
             } else {
                 this.goToNodeList();
@@ -538,6 +538,9 @@ function(utils, models, commonViews, dialogViews, nodesTabSummaryTemplate, editN
             this.render();
         },
         applyChanges: function() {
+            if (this.hasValidationErrors()) {
+                return (new $.Deferred()).reject();
+            }
             this.disableControls(true);
             // revert sizes to bytes
             _.each(this.getDisks(), _.bind(function(disk) {
