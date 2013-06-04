@@ -408,6 +408,7 @@ function(utils, models, commonViews, dialogViews, nodesTabSummaryTemplate, editN
             var dialog = new dialogViews.ShowNodeInfoDialog({
                 node: this.model,
                 clusterId: clusterId,
+                configurationPossible: clusterId && !this.selectableForAddition && !this.selectableForDeletion,
                 deployment: deployment
             });
             app.page.tab.registerSubView(dialog);
@@ -484,7 +485,7 @@ function(utils, models, commonViews, dialogViews, nodesTabSummaryTemplate, editN
             }
         },
         isLocked: function() {
-            return this.model.get('status') != 'new' || !this.node.get('pending_addition') || !!this.model.task('deploy', 'running');
+            return !this.node.get('pending_addition') || !!this.model.task('deploy', 'running');
         }
     });
 

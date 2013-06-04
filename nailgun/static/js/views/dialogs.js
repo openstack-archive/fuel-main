@@ -323,10 +323,9 @@ function(utils, models, simpleMessageTemplate, createClusterDialogTemplate, chan
             app.navigate('#cluster/' + this.clusterId + '/nodes/interfaces/' + this.node.id, {trigger: true});
         },
         render: function() {
-            var configurationPossible = !!this.clusterId;
             this.constructor.__super__.render.call(this, _.extend({
                 node: this.node,
-                configurationPossible: configurationPossible
+                configurationPossible: this.configurationPossible
             }, this.templateHelpers));
             this.$('.accordion-body').collapse({
                 parent: this.$('.accordion'),
