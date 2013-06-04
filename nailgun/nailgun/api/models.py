@@ -351,7 +351,8 @@ class NetworkConfiguration(object):
                     if key == "ip_ranges":
                         cls.__set_ip_ranges(ng['id'], value)
                     else:
-                        if key == 'cidr':
+                        if key == 'cidr' and \
+                                not ng['name'] in ('public', 'floating'):
                             network_manager.update_ranges_from_cidr(
                                 ng_db, value)
 
