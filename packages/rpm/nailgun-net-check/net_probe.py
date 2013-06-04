@@ -15,6 +15,7 @@ import logging
 import argparse
 import functools
 import threading
+import traceback
 from subprocess import Popen, PIPE
 
 
@@ -287,6 +288,13 @@ class Sender(Actor):
         self.logger.info("=== Starting Sender ===")
 
     def run(self):
+        try:
+            self._run()
+        except Exception as e:
+            self.logger.error("An internal error occured: %s\n%s", str(e),
+                              traceback.format_exc())
+
+    def _run(self):
         for iface, vlan in self._iface_vlan_iterator():
             self._ensure_iface_up(iface)
             data = str(''.join((self.config['cookie'], iface, ' ', self.config['uid'])))
@@ -316,6 +324,7 @@ class Sender(Actor):
 
         for iface in self._iface_iterator():
             self._ensure_iface_down(iface)
+        self.logger.info("=== Sender Finished ===")
 
 
 class Listener(Actor):
@@ -337,6 +346,13 @@ class Listener(Actor):
         return pidfile
 
     def run(self):
+        try:
+            self._run()
+        except Exception as e:
+            self.logger.error("An internal error occured: %s\n%s", str(e),
+                              traceback.format_exc())
+
+    def _run(self):
         sniffers = {}
 
         for iface, vlan in self._iface_vlan_iterator():
@@ -393,6 +409,7 @@ class Listener(Actor):
         with open(self.config['dump_file'], 'w') as fo:
             fo.write(json.dumps(self.neighbours))
         os.unlink(self.pidfile)
+        self.logger.info("=== Listener Finished ===")
 
     def fprn(self, p, iface):
 
@@ -401,11 +418,12 @@ class Listener(Actor):
         else:
             vlan = 0
 
-        self.logger.debug("Catched packet: vlan=%s "
-                "payload=%s", str(vlan), p[scapy.UDP].payload)
+        self.logger.debug("Catched packet: vlan=%s len=%s payload=%s",
+                          str(vlan), p[scapy.UDP].len, p[scapy.UDP].payload)
 
-        rmsg = str(p[scapy.UDP].payload)[len(self.config["cookie"]):]
-        riface, uid = rmsg.split(' ', 1)
+        received_msg = str(p[scapy.UDP].payload)[:p[scapy.UDP].len]
+        decoded_msg = received_msg.decode()
+        riface, uid = decoded_msg[len(self.config["cookie"]):].split(' ', 1)
         uid = uid.strip('\x00\n')
 
         self.neighbours[iface].setdefault(vlan, {})
@@ -419,8 +437,12 @@ class Listener(Actor):
 
         def fltr(p):
             try:
-                return scapy.UDP in p and \
-                    str(p[scapy.UDP].payload).startswith(self.config["cookie"])
+                if scapy.UDP not in p or\
+                        p[scapy.UDP].dport != self.config['dport']:
+                    return False
+                received_msg = str(p[scapy.UDP].payload)[:p[scapy.UDP].len]
+                decoded_msg = received_msg.decode()
+                return decoded_msg.startswith(self.config["cookie"])
             except Exception as e:
                 self.logger.debug("Error while filtering packet: %s", str(e))
                 return False
