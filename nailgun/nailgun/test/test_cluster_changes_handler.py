@@ -44,7 +44,7 @@ class TestHandlers(BaseHandlers):
 
         floating_network_group = self.db.query(NetworkGroup).filter(
             NetworkGroup.name == 'floating').filter(
-            NetworkGroup.cluster_id == cluster_db.id).first()
+                NetworkGroup.cluster_id == cluster_db.id).first()
 
         # Remove floating ip addr ranges
         self.db.query(IPAddrRange).filter(
