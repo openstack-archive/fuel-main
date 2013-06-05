@@ -171,8 +171,7 @@ class TestVerifyNetworks(BaseHandlers):
         )
         task.cache = {
             "args": {
-                'nodes': [{'uid': node1.id, 'networks': nets_sent},
-                          {'uid': node2.id, 'networks': nets_sent}]
+                'nodes': []
             }
         }
         self.db.add(task)
