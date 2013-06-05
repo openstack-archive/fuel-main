@@ -133,8 +133,8 @@ function(utils, models, simpleMessageTemplate, createClusterDialogTemplate, chan
         apply: function() {
             var cluster = this.model;
             var mode = this.$('input[name=mode]:checked').val();
-            var type = this.$('input[name=type]:checked').val();
-            if (cluster.get('mode') == mode && cluster.get('type') == type) {
+            var type = cluster.get('type');
+            if (cluster.get('mode') == mode) {
                 this.$el.modal('hide');
             } else {
                 this.$('.apply-btn').addClass('disabled');
