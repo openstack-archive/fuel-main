@@ -60,6 +60,13 @@ class TestHandlers(BaseHandlers):
             self.db.add(new_ip_range)
         self.db.commit()
 
+        # Update netmask for public network
+        public_network_group = self.db.query(NetworkGroup).filter(
+            NetworkGroup.name == 'public').filter(
+                NetworkGroup.cluster_id == cluster_db.id).first()
+        public_network_group.netmask = '255.255.255.128'
+        self.db.commit()
+
         supertask = self.env.launch_deployment()
         deploy_task_uuid = [x.uuid for x in supertask.subtasks
                             if x.name == 'deployment'][0]
@@ -125,7 +132,7 @@ class TestHandlers(BaseHandlers):
                 + "/" + cluster_attrs[x + '_network_range'].split('/')[1],
                 ('management', 'storage')
             )
-            node_ip_public = q.filter_by(name='public').first().ip_addr + '/24'
+            node_ip_public = q.filter_by(name='public').first().ip_addr + '/25'
 
             nodes.append({'uid': n.id, 'status': n.status, 'ip': n.ip,
                           'error_type': n.error_type, 'mac': n.mac,
@@ -143,7 +150,7 @@ class TestHandlers(BaseHandlers):
                                             'ip': node_ip_public,
                                             'vlan': 100,
                                             'gateway': '240.0.1.1',
-                                            'netmask': '255.255.255.0',
+                                            'netmask': '255.255.255.128',
                                             'dev': 'eth0',
                                             'name': u'public'},
                                            {'name': u'storage',

@@ -510,11 +510,25 @@ class NetworkManager(object):
             net = self.db.query(Network).get(i.network)
             interface = self._get_interface_by_network_name(node_db, net.name)
 
+            # Get prefix from netmask instead of cidr
+            # for public network
+            if net.name == 'public':
+                network_group = self.db.query(NetworkGroup).get(
+                    net.network_group_id)
+
+                # Convert netmask to prefix
+                prefix = str(IPNetwork(
+                    '0.0.0.0/' + network_group.netmask).prefixlen)
+                netmask = network_group.netmask
+            else:
+                prefix = str(IPNetwork(net.cidr).prefixlen)
+                netmask = str(IPNetwork(net.cidr).netmask)
+
             network_data.append({
                 'name': net.name,
                 'vlan': net.vlan_id,
-                'ip': i.ip_addr + '/' + str(IPNetwork(net.cidr).prefixlen),
-                'netmask': str(IPNetwork(net.cidr).netmask),
+                'ip': i.ip_addr + '/' + prefix,
+                'netmask': netmask,
                 'brd': str(IPNetwork(net.cidr).broadcast),
                 'gateway': net.gateway,
                 'dev': interface.name})
