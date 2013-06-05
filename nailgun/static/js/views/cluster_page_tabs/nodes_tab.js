@@ -49,10 +49,8 @@ function(utils, models, commonViews, dialogViews, nodesTabSummaryTemplate, editN
         },
         initialize: function(options) {
             _.defaults(this, options);
-            _.each(['revertChanges', 'applyChanges'], function(method) {
-                this[method] = _.bind(function() {
-                    return this.screen[method]();
-                }, this);
+            this.revertChanges = _.bind(function() {
+                return this.screen && this.screen.revertChanges();
             }, this);
         },
         routeScreen: function(options) {
