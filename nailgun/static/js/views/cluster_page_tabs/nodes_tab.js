@@ -769,6 +769,10 @@ function(utils, models, commonViews, dialogViews, nodesTabSummaryTemplate, editN
             if (this.partition) {
                 allocatedSpace += this.formatFloat(this.partitionSize);
             }
+            // FIXME: ugly hack for validation until we rewrite all this stuff to operate with bytes
+            if (volumes.length > 1) {
+                allocatedSpace -= 0.01;
+            }
             return allocatedSpace;
         },
         useAllUnallocatedSpace: function(e) {
@@ -815,7 +819,9 @@ function(utils, models, commonViews, dialogViews, nodesTabSummaryTemplate, editN
             _.each(this.volumesToDisplay(), _.bind(function(volume) {
                 var width = 0, size = 0;
                 if (volume) {
-                    width = (volume.size / diskSize * 100).toFixed(2);
+                    width = parseFloat((volume.size / diskSize * 100).toFixed(2));
+                    // fix for possible overflow
+                    width -= 0.01;
                     size = volume.size;
                 }
                 unallocatedWidth -= width; unallocatedSize -= size;
