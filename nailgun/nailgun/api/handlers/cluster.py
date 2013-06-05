@@ -142,7 +142,7 @@ class ClusterCollectionHandler(JSONHandler, NICUtils):
         netmanager = NetworkManager(self.db)
         try:
             netmanager.create_network_groups(cluster.id)
-            
+
             cluster.add_pending_changes("attributes")
             cluster.add_pending_changes("networks")
 
@@ -170,6 +170,7 @@ class ClusterCollectionHandler(JSONHandler, NICUtils):
             raise web.webapi.HTTPError(
                 status="202 Accepted",
                 data=e.message)
+
 
 class ClusterChangesHandler(JSONHandler):
     fields = (
