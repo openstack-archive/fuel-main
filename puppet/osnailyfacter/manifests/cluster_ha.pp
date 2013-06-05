@@ -150,6 +150,7 @@ class compact_controller {
       class { compact_controller: }
       class { 'openstack::swift::storage_node':
         storage_type          => 'loopback',
+        loopback_size         => '5243780',
         swift_zone            => $uid,
         swift_local_net_ip    => $storage_address,
         master_swift_proxy_ip => $controller_storage_addresses[$master_hostname],

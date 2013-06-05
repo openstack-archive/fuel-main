@@ -166,6 +166,13 @@ class VolumeManager(object):
                 new_dict.append(self._traverse(d))
         return new_dict
 
+    def _calc_root_size(self):
+        role = self.node.role
+        if role == 'controller':
+            return 1024 ** 3 * 25
+        else:
+            return 1024 ** 3 * 10
+
     def _calc_swap_size(self):
         mem = float(self.node.meta["memory"]["total"]) / 1024 ** 3
         # See https://access.redhat.com/site/documentation/en-US/
@@ -201,7 +208,7 @@ class VolumeManager(object):
             # Calculate swap space based on total RAM
             "calc_swap_size": self._calc_swap_size,
             # root = 10Gb
-            "calc_root_size": lambda: 1024 ** 3 * 10,
+            "calc_root_size": self._calc_root_size,
             "calc_boot_size": lambda: 1024 ** 2 * 200,
             # let's think that size of mbr is 10Mb
             "calc_mbr_size": lambda: 10 * 1024 ** 2,
