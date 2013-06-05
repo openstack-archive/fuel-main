@@ -4,7 +4,7 @@ $controller_internal_addresses = parsejson($ctrl_management_addresses)
 $controller_public_addresses = parsejson($ctrl_public_addresses)
 $controller_storage_addresses = parsejson($ctrl_storage_addresses)
 $controller_hostnames = keys($controller_internal_addresses)
-$galera_nodes = values($controller_internal_addresses)
+$controller_nodes = values($controller_internal_addresses)
 
 $create_networks = true
 
@@ -106,8 +106,8 @@ class compact_controller {
     nova_user_password            => $nova_hash[user_password],
     rabbit_password               => $rabbit_hash[password],
     rabbit_user                   => $rabbit_user,
-    rabbit_nodes                  => $controller_hostnames,
-    memcached_servers             => $controller_hostnames,
+    rabbit_nodes                  => $controller_nodes,
+    memcached_servers             => $controller_nodes,
     export_resources              => false,
     glance_backend                => $glance_backend,
     swift_proxies                 => $controller_internal_addresses,
@@ -123,7 +123,7 @@ class compact_controller {
     cinder_iscsi_bind_addr        => $internal_address,
     cinder_db_password            => $cinder_hash[db_password],
     manage_volumes                => false,
-    galera_nodes                  => $galera_nodes,
+    galera_nodes                  => $controller_nodes,
     mysql_skip_name_resolve       => true,
     use_syslog                    => true,
   }
@@ -153,7 +153,7 @@ class compact_controller {
         loopback_size         => '5243780',
         swift_zone            => $uid,
         swift_local_net_ip    => $storage_address,
-        master_swift_proxy_ip => $controller_storage_addresses[$master_hostname],
+        master_swift_proxy_ip => $controller_internal_addresses[$master_hostname],
         sync_rings            => ! $primary_proxy
       }
       if $primary_proxy {
@@ -164,10 +164,10 @@ class compact_controller {
       class { 'openstack::swift::proxy':
         swift_user_password     => $swift_hash[user_password],
         swift_proxies           => $controller_internal_addresses,
-        primary_proxy                  => $primary_proxy,
+        primary_proxy           => $primary_proxy,
         controller_node_address => $management_vip,
         swift_local_net_ip      => $internal_address,
-        master_swift_proxy_ip => $controller_internal_addresses[$master_hostname],
+        master_swift_proxy_ip   => $controller_internal_addresses[$master_hostname],
       }
       nova_config { 'DEFAULT/start_guests_on_host_boot': value => $start_guests_on_host_boot }
       nova_config { 'DEFAULT/use_cow_images': value => $use_cow_images }
@@ -204,7 +204,7 @@ class compact_controller {
         network_config         => $network_config,
         multi_host             => $multi_host,
         sql_connection         => "mysql://nova:${nova_hash[db_password]}@${management_vip}/nova",
-        rabbit_nodes           => $controller_hostnames,
+        rabbit_nodes           => $controller_nodes,
         rabbit_password        => $rabbit_hash[password],
         rabbit_user            => $rabbit_user,
         rabbit_ha_virtual_ip   => $management_vip,
@@ -214,7 +214,7 @@ class compact_controller {
         vnc_enabled            => true,
         manage_volumes         => false,
         nova_user_password     => $nova_hash[user_password],
-        cache_server_ip        => $controller_hostnames,
+        cache_server_ip        => $controller_nodes,
         service_endpoint       => $management_vip,
         cinder                 => $use_cinder,
         cinder_iscsi_bind_addr => $internal_address,
@@ -251,11 +251,11 @@ class compact_controller {
         sql_connection       => "mysql://cinder:${cinder_hash[db_password]}@${management_vip}/cinder?charset=utf8",
         rabbit_password      => $rabbit_hash[password],
         rabbit_host          => false,
-        rabbit_nodes         => $controller_hostnames,
+        rabbit_nodes         => $management_vip,
         volume_group         => 'cinder',
         manage_volumes       => true,
         enabled              => true,
-        auth_host            => $service_endpoint,
+        auth_host            => $management_vip,
         iscsi_bind_host      => $storage_address,
         cinder_user_password => $cinder_hash[user_password],
         use_syslog           => true,
