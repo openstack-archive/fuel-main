@@ -20,8 +20,6 @@ from nailgun.volumes.manager import VolumeManager
 
 
 class BasicValidator(object):
-    db = orm()
-
     @classmethod
     def validate_json(cls, data):
         if data:
@@ -90,7 +88,7 @@ class ReleaseValidator(BasicValidator):
             raise web.webapi.badrequest(
                 message="No release version specified"
             )
-        if cls.db.query(Release).filter_by(
+        if orm().query(Release).filter_by(
             name=d["name"],
             version=d["version"]
         ).first():
@@ -124,14 +122,14 @@ class ClusterValidator(BasicValidator):
     def validate(cls, data):
         d = cls.validate_json(data)
         if d.get("name"):
-            if cls.db.query(Cluster).filter_by(
+            if orm().query(Cluster).filter_by(
                 name=d["name"]
             ).first():
                 c = web.webapi.conflict
                 c.message = "Environment with this name already exists"
                 raise c()
         if d.get("release"):
-            release = cls.db.query(Release).get(d.get("release"))
+            release = orm().query(Release).get(d.get("release"))
             if not release:
                 raise web.webapi.badrequest(message="Invalid release id")
         return d
@@ -177,7 +175,7 @@ class NodeValidator(BasicValidator):
                 message="No mac address specified"
             )
         else:
-            q = cls.db.query(Node)
+            q = orm().query(Node)
             if q.filter(Node.mac == d["mac"]).first():
                 raise web.webapi.conflict()
             if cls.validate_existent_node_mac(d):
@@ -195,7 +193,7 @@ class NodeValidator(BasicValidator):
         if 'meta' in data:
             MetaValidator.validate(data['meta'])
             if 'interfaces' in data['meta']:
-                existent_node = cls.db.query(Node).filter(Node.mac.in_(
+                existent_node = orm().query(Node).filter(Node.mac.in_(
                     [n['mac'] for n in data['meta']['interfaces']])).first()
                 return existent_node
 
@@ -226,7 +224,7 @@ class NodeValidator(BasicValidator):
                 "Invalid json list"
             )
 
-        q = cls.db.query(Node)
+        q = orm().query(Node)
         for nd in d:
             if not "mac" in nd and not "id" in nd:
                 raise web.badrequest(
@@ -287,7 +285,7 @@ class NotificationValidator(BasicValidator):
                 "Invalid json list"
             )
 
-        q = cls.db.query(Notification)
+        q = orm().query(Notification)
         valid_d = []
         for nd in d:
             valid_nd = {}
@@ -401,7 +399,7 @@ class NetAssignmentValidator(BasicValidator):
 
     @classmethod
     def verify_data_correctness(cls, node):
-        db_node = cls.db.query(Node).filter_by(id=node['id']).first()
+        db_node = orm().query(Node).filter_by(id=node['id']).first()
         if not db_node:
             raise web.webapi.badrequest(
                 message="There is no node with ID '%d' in DB" % node['id']
@@ -415,7 +413,7 @@ class NetAssignmentValidator(BasicValidator):
             )
         # FIXIT: we should use not all networks but appropriate for this
         # node only.
-        db_network_groups = cls.db.query(NetworkGroup).filter_by(
+        db_network_groups = orm().query(NetworkGroup).filter_by(
             cluster_id=db_node.cluster_id
         ).all()
         if not db_network_groups:
