@@ -19,7 +19,7 @@
           <% previousVlan = currentVlan %>
           <div class="logical-network-item" data-name="<%- network.get('name') %>">
             <div class="name"><%- network.get('name') %></div>
-            <div class="id">VLAN ID: <%- currentVlan %></div>
+            <div class="id">VLAN ID<%- network.amount() == 1 ? '' : 's'%>: <%- network.vlanLabel() %></div>
           </div>
         <% }) %>
       </div>
