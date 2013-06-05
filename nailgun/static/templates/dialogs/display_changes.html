@@ -38,7 +38,7 @@
     <% var settingsChangesDescriptions = {
       'attributes': 'OpenStack settings',
       'networks': 'Network settings',
-      'disks': 'Volume groups were reconfigured on the following nodes:'
+      'disks': 'Disk configuration has been changed on following nodes:'
     } %>
     <% var nodes = [] %>
     <% _.each(cluster.get('changes'), function(change) { %>
