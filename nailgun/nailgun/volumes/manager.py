@@ -20,24 +20,32 @@ class Disk(object):
         self.free_space = self.size
 
     def create_pv(self, vg, size=None):
-        logger.debug("Creating PV: vg=%s, size=%s", vg, str(size))
+        logger.debug("Creating or updating PV: disk=%s vg=%s, size=%s",
+                     self.id, vg, str(size))
+        # if required size in not equal to zero
+        # we need to not forget to allocate lvm metadata space
         if size:
             size = size + self.vm.field_generator(
                 "calc_lvm_meta_size"
             )
+            logger.debug("Size + lvm_meta_size: %s", size)
+        # if size is not defined we should
+        # to allocate all available space
         elif size is None:
             logger.debug("Size is not defined. "
                          "Will use all free space on this disk.")
             size = self.free_space
-        logger.debug("Allocating %s for PV", str(size))
+
         self.free_space = self.free_space - size
+        logger.debug("Left free space: disk: %s free space: %s",
+                     self.id, self.free_space)
 
         for i, volume in enumerate(self.volumes):
             if (volume.get("type"), volume.get("vg")) == ("pv", vg):
                 logger.debug("PV already exist. Setting its size to: %s", size)
                 self.volumes[i]["size"] = size
                 return
-        logger.debug("Appending PV to node volumes.")
+        logger.debug("Appending PV to volumes.")
         self.volumes.append({
             "type": "pv",
             "vg": vg,
@@ -223,21 +231,32 @@ class VolumeManager(object):
         return generators.get(generator, lambda: None)(*args)
 
     def _allocate_vg(self, name, size=None, use_existing_space=True):
-        logger.debug("_allocate_vg: name: %s, size: %s", name, str(size))
+        logger.debug("_allocate_vg: vg: %s, size: %s", name, str(size))
         free_space = sum([d.free_space for d in self.disks])
-        logger.debug("Available free space on all node disks: %s",
-                     str(free_space))
+        logger.debug("Available free space on all disks: %s", str(free_space))
 
+        # Is size is not defined or zero we just add
+        # zero size PVs on all disks. We just need to have
+        # all volume groups PVs on all disks despite their size.
+        # Zero size PVs are needed
+        # for UI to display disks correctly. When zero size
+        # PV is passed to cobbler ks_meta, partition snippet will
+        # ignore it.
         if not size:
             for disk in self.disks:
-                logger.debug("disk: %s", disk.id)
-                logger.debug("create_pv(%s, 0)", name)
+                logger.debug("Creating zero size PV: disk: %s, vg: %s",
+                             disk.id, name)
                 disk.create_pv(name, 0)
+        # If we want to allocate all available size for volume group
+        # we need to call create_pv method without setting
+        # explicit size and we need to do this for every disk.
+        # Keep in mind that when you call create_pv(name, size)
+        # this method will actually try to create PV with size + lvm_meta_size
         if use_existing_space:
             for i, disk in enumerate(self.disks):
                 if disk.free_space > 0:
-                    logger.debug("disk: %s", disk.id)
-                    logger.debug("create_pv(%s)", name)
+                    logger.debug("Allocating all available space for PV: "
+                                 "disk: %s vg: %s", disk.id, name)
                     disk.create_pv(name)
 
     def _allocate_os(self):
