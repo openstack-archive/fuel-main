@@ -30,9 +30,9 @@ define(['require'], function(require) {
         showErrorDialog: function(options, parentView) {
             parentView = parentView || app.page;
             var dialogViews = require('views/dialogs'); // avoid circular dependencies
-            var dialog = new dialogViews.SimpleMessage(_.extend({error: true}, options));
+            var dialog = new dialogViews.Dialog();
             parentView.registerSubView(dialog);
-            dialog.render();
+            dialog.displayInfoMessage(_.extend({error: true}, options));
         },
         showBandwidth: function(bandwidth) {
             bandwidth = parseInt(bandwidth, 10);

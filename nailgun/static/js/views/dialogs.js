@@ -56,17 +56,6 @@ function(utils, models, simpleMessageTemplate, createClusterDialogTemplate, chan
         }
     });
 
-    views.SimpleMessage = views.Dialog.extend({
-        template: _.template(simpleMessageTemplate),
-        render: function() {
-            this.constructor.__super__.render.call(this, {title: this.title, message: this.message});
-            if (this.error) {
-                this.displayErrorMessage();
-            }
-            return this;
-        }
-    });
-
     views.CreateClusterDialog = views.Dialog.extend({
         template: _.template(createClusterDialogTemplate),
         events: {

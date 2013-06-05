@@ -882,9 +882,9 @@ function(utils, models, commonViews, dialogViews, nodesTabSummaryTemplate, editN
                     this.initialData = this.interfaces.toJSON();
                 }, this))
                 .fail(_.bind(function() {
-                    var dialog = new dialogViews.SimpleMessage({error: true, title: 'Node network interfaces configuration error'});
+                    var dialog = new dialogViews.Dialog();
                     app.page.registerSubView(dialog);
-                    dialog.render();
+                    dialog.displayInfoMessage({error: true, title: 'Node network interfaces configuration error'});
                 }, this))
                 .always(_.bind(function() {
                     this.disableControls(false);
