@@ -164,4 +164,49 @@ for PXE booting, and *eth2* is the interface connected to office network switch,
 | IPADDR=172.18.0.5
 | NETMASK=255.255.255.0
 
-Now you should be able to connect to the FuelWeb from office network via `<http://172.18.0.5:8000/>`_
+After modification of network configuration files, it is required to apply the new configuration:
+
+service network restart
+
+Now you should be able to connect to the FuelWeb from office network
+via `<http://172.18.0.5:8000/>`_
+
+Name resolution (DNS)
+^^^^^^^^^^^^^^^^^^^^^
+
+During master node installation, it is assumed that there is a recursive DNS service on 10.20.0.1.
+
+If you want to make it possible for slave nodes to be able to resolve public names,
+you need to change this default value to point to an actual DNS service.
+To make the change, run the following command on FuelWeb node (replace IP to your actual DNS):
+
+echo "nameserver 172.0.0.1" > /etc/dnsmasq.upstream
+
+PXE booting settings
+^^^^^^^^^^^^^^^^^^^^
+
+By default, eth0 on FuelWeb master node serves PXE requests. If you are planning to use
+another interface, then it is required to modify dnsmasq settings (which acts as DHCP
+server). Edit the file /etc/dnsmasq.conf, find the line "interface=eth0" and replace
+the interface name with the one you want to use. Restart dnsmasq service afterwards:
+
+service dnsmasq restart
+
+If you try to use virtual machines to launch **FuelWeb** then you have to be sure
+that dnsmasq on master node is configured to support that PXE client you use on your
+virtual machines. We enabled *dhcp-no-override* option because without it enabled
+dnsmasq tries to move out PXE filename and PXE servername special fields into DHCP options.
+Not all PXE implementations can understand those options and therefore they will not be
+able to boot. For example, Centos 6.3 uses gPXE implementation instead of more advanced
+iPXE by default.
+
+When configuration is done
+^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+Once the master node is installed, power on all other nodes and open the FuelWeb UI on
+the configured network.
+Slave nodes will be booted in bootstrap mode (tiny Linux in memory) via PXE and you will
+see notifications on the user interface about discovered nodes. This is the point
+when you can create an environment, add nodes into it, and start configuration.
+Networking configuration is most complicated part, so please read the networking section
+of documentation carefully.
