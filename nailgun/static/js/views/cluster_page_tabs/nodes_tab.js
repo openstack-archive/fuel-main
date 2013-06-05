@@ -724,7 +724,12 @@ function(utils, models, commonViews, dialogViews, nodesTabSummaryTemplate, editN
             this.$('input[name=' + group + ']').removeClass('error').parents('.volume-group').next().text('');
             var volumes = _.cloneDeep(this.volumes);
             var volume = _.find(volumes, {vg: group});
-            var unallocated = (this.diskSize - this.countAllocatedSpace() + volume.size).toFixed(2);
+            var allocated = this.countAllocatedSpace();
+            // FIXME: ugly hack for validation until we rewrite all this stuff to operate with bytes
+            if (volumes.length > 1) {
+                allocated -= 0.01;
+            }
+            var unallocated = (this.diskSize - allocated + volume.size).toFixed(2);
             volume.size = allUnallocated ? volume.size + Number(size) : Number(size);
             var min = this.minimalSizes[group] - this.screen.getGroupAllocatedSpace(group) + _.find(this.disk.get('volumes'), {vg: group}).size;
             if (size !== 0) {
@@ -768,10 +773,6 @@ function(utils, models, commonViews, dialogViews, nodesTabSummaryTemplate, editN
             var allocatedSpace = _.reduce(volumes, _.bind(function(sum, volume) {return sum + volume.size;}, this), 0);
             if (this.partition) {
                 allocatedSpace += this.formatFloat(this.partitionSize);
-            }
-            // FIXME: ugly hack for validation until we rewrite all this stuff to operate with bytes
-            if (volumes.length > 1) {
-                allocatedSpace -= 0.01;
             }
             return allocatedSpace;
         },

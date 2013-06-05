@@ -72,12 +72,10 @@ casper.then(function() {
         this.test.assertExists('.btn-revert-changes:not(:disabled)', 'Cancel button is enabled');
         this.test.assertExists('.btn-apply:not(:disabled)', 'Apply button is enabled');
 
-        // these assertions should pass but they don't because of rounding issues
-        // uncomment it after it is fixed
-        //this.click(sdaDiskVM + ' .use-all-unallocated');
-        //this.test.assertExists('.btn-defaults:not(:disabled)', 'Load Defaults button is enabled');
-        //this.test.assertExists('.btn-revert-changes:disabled', 'Cancel button is disabled');
-        //this.test.assertExists('.btn-apply:disabled', 'Apply button is disabled');
+        this.click(sdaDiskVM + ' .use-all-unallocated');
+        this.test.assertExists('.btn-defaults:not(:disabled)', 'Load Defaults button is enabled');
+        this.test.assertExists('.btn-revert-changes:disabled', 'Cancel button is disabled');
+        this.test.assertExists('.btn-apply:disabled', 'Apply button is disabled');
     });
 
     this.then(function() {
