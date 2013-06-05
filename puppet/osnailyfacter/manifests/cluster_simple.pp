@@ -108,15 +108,26 @@ Exec { logoutput => true }
         controller_node      => $controller_node_address,
       }
 
+      # glance_image is currently broken in fuel
+
+      # glance_image {'testvm':
+      #   ensure           => present,
+      #   name             => "Cirros testvm",
+      #   is_public        => 'yes',
+      #   container_format => 'ovf',
+      #   disk_format      => 'raw',
+      #   source           => '/opt/vm/cirros-0.3.0-x86_64-disk.img',
+      #   require          => Class[glance::api],
+      # }
+
       class { 'openstack::img::cirros':
-        os_username               => $access_hash[user],
-        os_password               => $access_hash[password],
-        os_tenant_name            => $access_hash[tenant],
+        os_username               => shellescape($access_hash[user]),
+        os_password               => shellescape($access_hash[password]),
+        os_tenant_name            => shellescape($access_hash[tenant]),
         img_name                  => "TestVM",
         stage                     => 'glance-image',
       }
       nova::manage::floating{$floating_hash:}
-      Class[osnailyfacter::network_setup] -> Class[openstack::controller]
       Class[glance::api]        -> Class[openstack::img::cirros]
     }
 
@@ -166,8 +177,6 @@ Exec { logoutput => true }
       nova_config { 'DEFAULT/start_guests_on_host_boot': value => $start_guests_on_host_boot }
       nova_config { 'DEFAULT/use_cow_images': value => $use_cow_images }
       nova_config { 'DEFAULT/compute_scheduler_driver': value => $compute_scheduler_driver }
-
-      Class[osnailyfacter::network_setup] -> Class[openstack::compute]
     }
 
     "cinder" : {
@@ -184,7 +193,7 @@ Exec { logoutput => true }
         manage_volumes       => true,
         enabled              => true,
         auth_host            => $service_endpoint,
-        iscsi_bind_host      => $internal_address,
+        iscsi_bind_host      => $storage_address,
         cinder_user_password => $cinder_hash[user_password],
         use_syslog           => true,
       }

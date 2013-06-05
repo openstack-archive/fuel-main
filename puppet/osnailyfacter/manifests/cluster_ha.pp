@@ -70,7 +70,6 @@ $quantum_host            = $management_vip # Quantum is turned off
 
 $mirror_type = 'external'
 $quantum_sql_connection  = "mysql://${quantum_db_user}:${quantum_db_password}@${quantum_host}/${quantum_db_dbname}" # Quantum is turned off
-$controller_node_public  = $management_vip
 $verbose = true
 Exec { logoutput => true }
 
@@ -174,9 +173,9 @@ class compact_controller {
       nova_config { 'DEFAULT/compute_scheduler_driver': value => $compute_scheduler_driver }
       if $hostname == $master_hostname {
         class { 'openstack::img::cirros':
-          os_username => $access_hash[user],
-          os_password => $access_hash[password],
-          os_tenant_name => $access_hash[tenant],
+          os_username => shellescape($access_hash[user]),
+          os_password => shellescape($access_hash[password]),
+          os_tenant_name => shellescape($access_hash[tenant]),
           os_auth_url => "http://${management_vip}:5000/v2.0/",
           img_name    => "TestVM",
           stage          => 'glance-image',
@@ -187,10 +186,6 @@ class compact_controller {
         Class[openstack::swift::proxy]        -> Class[openstack::img::cirros]
         Service[swift-proxy]                  -> Class[openstack::img::cirros]
       }
-
-      Class[osnailyfacter::network_setup]   -> Class[openstack::controller_ha]
-      Class[osnailyfacter::network_setup]   -> Class[openstack::swift::storage_node]
-      Class[osnailyfacter::network_setup]   -> Class[openstack::swift::proxy]
     }
 
     "compute" : {
@@ -241,8 +236,6 @@ class compact_controller {
       nova_config { 'DEFAULT/start_guests_on_host_boot': value => $start_guests_on_host_boot }
       nova_config { 'DEFAULT/use_cow_images': value => $use_cow_images }
       nova_config { 'DEFAULT/compute_scheduler_driver': value => $compute_scheduler_driver }
-
-      Class[osnailyfacter::network_setup] -> Class[openstack::compute]
     }
 
     "cinder" : {
@@ -259,7 +252,7 @@ class compact_controller {
         manage_volumes       => true,
         enabled              => true,
         auth_host            => $service_endpoint,
-        iscsi_bind_host      => $internal_address,
+        iscsi_bind_host      => $storage_address,
         cinder_user_password => $cinder_hash[user_password],
         use_syslog           => true,
       }
