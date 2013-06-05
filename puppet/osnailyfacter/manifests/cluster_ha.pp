@@ -2,6 +2,7 @@ class osnailyfacter::cluster_ha {
 
 $controller_internal_addresses = parsejson($ctrl_management_addresses)
 $controller_public_addresses = parsejson($ctrl_public_addresses)
+$controller_storage_addresses = parsejson($ctrl_storage_addresses)
 $controller_hostnames = keys($controller_internal_addresses)
 $galera_nodes = values($controller_internal_addresses)
 
@@ -151,8 +152,8 @@ class compact_controller {
       class { 'openstack::swift::storage_node':
         storage_type          => 'loopback',
         swift_zone            => $uid,
-        swift_local_net_ip    => $internal_address,
-        master_swift_proxy_ip => $controller_internal_addresses[$master_hostname],
+        swift_local_net_ip    => $storage_address,
+        master_swift_proxy_ip => $controller_storage_addresses[$master_hostname],
         sync_rings            => ! $primary_proxy
       }
       if $primary_proxy {
