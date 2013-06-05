@@ -3,7 +3,7 @@ LISTEN_PORT: "8000"
 DEVELOPMENT: 1
 
 COMMIT_SHA: "Unknown build"
-PRODUCT_VERSION: "0.1-beta"
+PRODUCT_VERSION: "3.0"
 
 FIXTURES_TO_UPLOAD:
   - "openstack.json"
