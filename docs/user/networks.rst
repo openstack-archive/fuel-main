@@ -1,5 +1,5 @@
-=========================================
 Understanding and configuring the network
+=========================================
 
 .. contents:: :local:
 

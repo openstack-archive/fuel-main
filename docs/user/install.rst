@@ -121,11 +121,12 @@ Next, create nodes on which to install OpenStack.
 Changing network parameters
 ---------------------------
 
-You can change network settings for admin (PXE booting) network, which is 10.20.0.2/24 gw 10.20.0.1 by default.
+You can change the network settings for the admin (PXE booting) network, which is 10.20.0.2/24 gw 10.20.0.1 by default.
 
 In order to do so, press the <TAB> key аt the very first installation screen which says
 "Welcome to FuelWeb Installer!" and update the kernel options. For example, to use 192.168.1.10/24
-IP address for the master node with 192.168.1.1 as gateway and DNS server you should change the parameters to the shown on picture:
+IP address for the master node and 192.168.1.1 as the gateway and DNS server you should change the parameters
+to those shown in the image below:
 
 .. image:: _static/network-at-boot.png
 
@@ -168,7 +169,7 @@ After modification of network configuration files, it is required to apply the n
 
 service network restart
 
-Now you should be able to connect to the FuelWeb from office network
+Now you should be able to connect to FuelWeb from the office network
 via `<http://172.18.0.5:8000/>`_
 
 Name resolution (DNS)
