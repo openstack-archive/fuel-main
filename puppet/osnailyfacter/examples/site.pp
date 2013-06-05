@@ -18,6 +18,10 @@ stage {'openstack-firewall':
   require => Stage['netconfig'],
 }
 
+stage {'glance-image':
+  require => Stage['main'],
+}
+
 node default {
   case $deployment_mode {
     "singlenode": { include osnailyfacter::cluster_simple }

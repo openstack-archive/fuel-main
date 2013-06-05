@@ -18,7 +18,7 @@ $swift_hash    = parsejson($swift)
 $cinder_hash   = parsejson($cinder)
 $access_hash   = parsejson($access)
 $extra_rsyslog_hash = parsejson($syslog)
-$floating_hash = parsejson($floating_range)
+$floating_hash = parsejson($floating_network_range)
 
 $base_syslog_hash  = parsejson($base_syslog)
 $base_syslog_rserver  = {
@@ -113,6 +113,7 @@ Exec { logoutput => true }
         os_password               => $access_hash[password],
         os_tenant_name            => $access_hash[tenant],
         img_name                  => "TestVM",
+        stage                     => 'glance-image',
       }
       nova::manage::floating{$floating_hash:}
       Class[osnailyfacter::network_setup] -> Class[openstack::controller]
