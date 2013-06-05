@@ -593,7 +593,7 @@ h6.page-title {
   display: block;
   background-color: rgba(121, 0, 0, 0.25);
 }
-.node-not-checkable:hover {
+.unassigned.node-not-checkable:hover {
   background-color: rgba(130, 130, 130, 0.25);
   cursor: not-allowed !important;
 }
@@ -643,6 +643,10 @@ h6.page-title {
   padding-right: 14px;
   text-align: center;
   font-size: 13px;
+}
+
+.unassigned.node-not-checkable .node-status {
+  cursor: not-allowed !important;
 }
 
 .node-status > .msg-offline,

@@ -147,6 +147,7 @@ function(utils, models, commonViews, dialogViews, nodesTabSummaryTemplate, editN
     EditNodesScreen = Screen.extend({
         className: 'edit-nodes-screen',
         constructorName: 'EditNodesScreen',
+        nodeSelector: '.nodebox',
         keepScrollPosition: false,
         template: _.template(editNodesScreenTemplate),
         events: {
@@ -160,29 +161,25 @@ function(utils, models, commonViews, dialogViews, nodesTabSummaryTemplate, editN
             if (this.limit !== null && $(e.currentTarget).is('.node-to-' + this.action + '-unchecked') && this.$('.node-to-' + this.action + '-checked').length >= this.limit) {
                 return;
             }
-            var currentNode = this.nodes.find({id: $(e.currentTarget).data('node-id')});
-            if (!currentNode.get('online')){
-                return;
-            }
             $(e.currentTarget).toggleClass('node-to-' + this.action + '-checked').toggleClass('node-to-' + this.action + '-unchecked');
             this.calculateSelectAllTumblerState();
             this.calculateNotChosenNodesAvailability();
             this.calculateApplyButtonAvailability();
-            utils.forceWebkitRedraw(this.$('.nodebox'));
+            utils.forceWebkitRedraw(this.$(this.nodeSelector));
         },
         selectAll: function(e) {
             var checked = $(e.currentTarget).is(':checked');
-            this.$('.nodebox').not('.node-not-checkable').toggleClass('node-to-' + this.action + '-checked', checked).toggleClass('node-to-' + this.action + '-unchecked', !checked);
+            this.$(this.nodeSelector).toggleClass('node-to-' + this.action + '-checked', checked).toggleClass('node-to-' + this.action + '-unchecked', !checked);
             this.calculateApplyButtonAvailability();
-            utils.forceWebkitRedraw(this.$('.nodebox'));
+            utils.forceWebkitRedraw(this.$(this.nodeSelector));
         },
         calculateSelectAllTumblerState: function() {
-            this.$('.select-all-tumbler').attr('checked', this.nodes.length == this.$('.node-to-' + this.action + '-checked').length);
+            this.$('.select-all-tumbler').prop('checked', this.$(this.nodeSelector).length == this.$('.node-to-' + this.action + '-checked').length);
         },
         calculateNotChosenNodesAvailability: function() {
             if (this.limit !== null) {
                 var chosenNodesCount = this.$('.node-to-' + this.action + '-checked').length;
-                var notChosenNodes = this.$('.nodebox:not(.node-to-' + this.action + '-checked)');
+                var notChosenNodes = this.$(this.nodeSelector + ':not(.node-to-' + this.action + '-checked)');
                 notChosenNodes.toggleClass('node-not-checkable', chosenNodesCount >= this.limit);
             }
         },
@@ -240,10 +237,10 @@ function(utils, models, commonViews, dialogViews, nodesTabSummaryTemplate, editN
                     this.registerSubView(nodeView);
                     nodesContainer.append(nodeView.render().el);
                     if (node.get(this.flag)) {
-                        nodeView.$('.nodebox[data-node-id=' + node.id + ']').addClass('node-to-' + this.action + '-checked').removeClass('node-to-' + this.action + '-unchecked');
+                        nodeView.$('.nodebox').addClass('node-to-' + this.action + '-checked').removeClass('node-to-' + this.action + '-unchecked');
                     }
-                    if (!node.get('online')) {
-                        nodeView.$('.nodebox').toggleClass('node-not-checkable');
+                    if (this.action == 'add' && !node.get('online')) {
+                        nodeView.$('.nodebox').addClass('node-not-checkable');
                     }
                 }, this);
             } else {
@@ -264,6 +261,7 @@ function(utils, models, commonViews, dialogViews, nodesTabSummaryTemplate, editN
         constructorName: 'AddNodesScreen',
         action: 'add',
         flag: 'pending_addition',
+        nodeSelector: '.nodebox:not(.node-offline)',
         initialize: function(options) {
             this.constructor.__super__.initialize.apply(this, arguments);
             this.limit = null;
@@ -275,6 +273,23 @@ function(utils, models, commonViews, dialogViews, nodesTabSummaryTemplate, editN
                 this.nodes.add(this.model.get('nodes').where({role: this.role, pending_deletion: true}), {at: 0});
                 this.render();
             }, this));
+            this.nodes.on('change:online', this.onNodeStateChange, this);
+        },
+        onNodeStateChange: function(node) {
+            var el = this.$('.nodebox[data-node-id=' + node.id + ']');
+            if (!node.get('online')) {
+                el.toggleClass('node-to-' + this.action + '-checked', false).toggleClass('node-to-' + this.action + '-unchecked', true);
+            }
+            el.toggleClass('node-not-checkable', !node.get('online'));
+            this.calculateSelectAllTumblerState();
+            this.calculateNotChosenNodesAvailability();
+            this.calculateApplyButtonAvailability();
+            utils.forceWebkitRedraw(this.$(this.nodeSelector));
+        },
+        toggleNode: function(e) {
+            var currentNode = this.nodes.find({id: $(e.currentTarget).data('node-id')});
+            if (!currentNode.get('online')) {return;}
+            this.constructor.__super__.toggleNode.apply(this, arguments);
         },
         modifyNodes: function(nodes) {
             nodes.each(function(node) {
@@ -430,6 +445,7 @@ function(utils, models, commonViews, dialogViews, nodesTabSummaryTemplate, editN
                 node: this.model,
                 logsLink: this.getLogsLink()
             }));
+            this.$('.nodebox').toggleClass('node-offline', !this.model.get('online'));
             this.updateProgress();
         },
         getLogsLink: function() {
