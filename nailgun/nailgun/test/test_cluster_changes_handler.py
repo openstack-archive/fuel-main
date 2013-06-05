@@ -100,6 +100,7 @@ class TestHandlers(BaseHandlers):
         cluster_attrs['deployment_mode'] = cluster_depl_mode
         cluster_attrs['deployment_id'] = cluster_db.id
         cluster_attrs['network_manager'] = "FlatDHCPManager"
+        cluster_attrs['network_size'] = 256
 
         msg['args']['attributes'] = cluster_attrs
         msg['args']['task_uuid'] = deploy_task_uuid
