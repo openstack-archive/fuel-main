@@ -207,6 +207,9 @@ cp -f /etc/skel/.bash* /root/
 # Rsyslogd should send all messages to master node
 $SNIPPET('target_logs_to_master')
 
+# Dhclient should ignore option 'routers' on all interfaces.
+$SNIPPET('dhclient_ignore_routers_opt')
+
 # COBBLER EMBEDDED SNIPPET: 'kickstart_done'
 # DISABLES PXE BOOTING
 $SNIPPET('kickstart_done')

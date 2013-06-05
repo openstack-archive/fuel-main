@@ -82,6 +82,14 @@ class nailgun::cobbler(
     require => Class["cobbler::server"],
   }
 
+file {"/var/lib/cobbler/snippets/dhclient_ignore_routers_opt":
+    content => template("nailgun/cobbler/dhclient_ignore_routers_opt.snippet.erb"),
+    owner => root,
+    group => root,
+    mode => 0644,
+    require => Class["cobbler::server"],
+  }
+
   # THIS VARIABLE IS NEEDED FOR TEMPLATING centos-x86_64.ks
   $ks_repo = $centos_repos
 
