@@ -15,7 +15,8 @@ On Physical Hardware
 
 To install FuelWeb on physical hardware, you need to burn the provided ISO to a CD/DVD, or IMG file to a USB stick, and start the installation process by booting from that media, very much like any other OS.
 
-Linux and Mac users can prepare an installation USB stick with the ``dd`` command. For example, if your flash drive is ``/dev/sdb``, you can use following command line::
+Linux and Mac users can prepare an installation USB stick with the ``dd`` command. For example,
+if your flash drive is ``/dev/sdb``, you can use following command line::
     
 	dd if=fuelweb.img of=/dev/sdb
 
@@ -133,7 +134,7 @@ to those shown in the image below:
 When you're finished making changes, press the Enter key and wait for the installation to complete.
 
 Changing network parameters after booting
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
 Once IP settings are set at the boot time for FuelWeb master node, it **must not be changed during the whole lifecycle of FuelWeb.**
 It is still possible to configure other interfaces, or add 802.1Q subinterfaces to the FuelWeb to be able to access it from office network
@@ -142,32 +143,35 @@ It is easy to do via standard network configuration scripts for CentOS. When the
 you can modify /etc/sysconfig/network-scripts/ifcfg-eth* scripts. For example, if *eth1* interface is on the L2 network which is planned
 for PXE booting, and *eth2* is the interface connected to office network switch, *eth0* is not in use, then settings can be the following:
 
-/etc/sysconfig/network-scripts/ifcfg-eth0:
-| DEVICE=eth0
-| ONBOOT=no
+/etc/sysconfig/network-scripts/ifcfg-eth0::
 
-/etc/sysconfig/network-scripts/ifcfg-eth1:
-| DEVICE=eth1
-| ONBOOT=yes
-| HWADDR=<your MAC>
-| ..... (other settings in your config) .....
-| PEERDNS=no
-| BOOTPROTO=static
-| IPADDR=192.168.1.10
-| NETMASK=255.255.255.0
+  DEVICE=eth0
+  ONBOOT=no
 
-/etc/sysconfig/network-scripts/ifcfg-eth2:
-| DEVICE=eth2
-| ONBOOT=yes
-| HWADDR=<your MAC>
-| ..... (other settings in your config) .....
-| PEERDNS=no
-| IPADDR=172.18.0.5
-| NETMASK=255.255.255.0
+/etc/sysconfig/network-scripts/ifcfg-eth1::
 
-After modification of network configuration files, it is required to apply the new configuration:
+  DEVICE=eth1
+  ONBOOT=yes
+  HWADDR=<your MAC>
+  ..... (other settings in your config) .....
+  PEERDNS=no
+  BOOTPROTO=static
+  IPADDR=192.168.1.10
+  NETMASK=255.255.255.0
 
-service network restart
+/etc/sysconfig/network-scripts/ifcfg-eth2::
+
+  DEVICE=eth2
+  ONBOOT=yes
+  HWADDR=<your MAC>
+  ..... (other settings in your config) .....
+  PEERDNS=no
+  IPADDR=172.18.0.5
+  NETMASK=255.255.255.0
+
+After modification of network configuration files, it is required to apply the new configuration::
+
+  service network restart
 
 Now you should be able to connect to FuelWeb from the office network
 via `<http://172.18.0.5:8000/>`_
@@ -179,9 +183,9 @@ During master node installation, it is assumed that there is a recursive DNS ser
 
 If you want to make it possible for slave nodes to be able to resolve public names,
 you need to change this default value to point to an actual DNS service.
-To make the change, run the following command on FuelWeb node (replace IP to your actual DNS):
+To make the change, run the following command on FuelWeb node (replace IP to your actual DNS)::
 
-echo "nameserver 172.0.0.1" > /etc/dnsmasq.upstream
+  echo "nameserver 172.0.0.1" > /etc/dnsmasq.upstream
 
 PXE booting settings
 ^^^^^^^^^^^^^^^^^^^^
@@ -189,9 +193,9 @@ PXE booting settings
 By default, eth0 on FuelWeb master node serves PXE requests. If you are planning to use
 another interface, then it is required to modify dnsmasq settings (which acts as DHCP
 server). Edit the file /etc/dnsmasq.conf, find the line "interface=eth0" and replace
-the interface name with the one you want to use. Restart dnsmasq service afterwards:
+the interface name with the one you want to use. Restart dnsmasq service afterwards::
 
-service dnsmasq restart
+  service dnsmasq restart
 
 If you try to use virtual machines to launch **FuelWeb** then you have to be sure
 that dnsmasq on master node is configured to support that PXE client you use on your

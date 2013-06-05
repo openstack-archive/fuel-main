@@ -224,7 +224,7 @@ When node is added to the environment, click at the bottom line of node icon.
 In the opened window with detailed information, click "Network Configuration" button to open
 physical interfaces configuration screen.
 
-.. image:: _static/physical_interfaces.png
+.. image:: _static/doc_network-settings-help.png
 
 On this screen you can drag-and-drop logical networks to physical interfaces according
 to your network setup. 
@@ -280,16 +280,16 @@ Internet is similar to having it visible from corporate network - corresponding 
 must be specified for the floating and public networks. One current limitation of FuelWeb is that the user
 must use the same L2 segment for both public and floating networks.
 
-Example configuration for one of the ports on a Cisco switch html:
+Example configuration for one of the ports on a Cisco switch html::
 
-| interface GigabitEthernet0/6               # switch port
-| description s0_eth0 jv                     # description
-| switchport trunk encapsulation dot1q       # enables VLANs
-| switchport trunk native vlan 262           # access port, untags VLAN 262
-| switchport trunk allowed vlan 100,102,104  # 100,102,104 VLANs are passed with tags
-| switchport mode trunk                      # To allow more than 1 VLAN on the port
-| spanning­tree portfast trunk               # STP Edge port to skip network loop checks (to prevent DHCP timeout issues).
-| vlan 262,100,102,104                       # Might be needed for enabling VLANs
+  interface GigabitEthernet0/6               # switch port
+  description s0_eth0 jv                     # description
+  switchport trunk encapsulation dot1q       # enables VLANs
+  switchport trunk native vlan 262           # access port, untags VLAN 262
+  switchport trunk allowed vlan 100,102,104  # 100,102,104 VLANs are passed with tags
+  switchport mode trunk                      # To allow more than 1 VLAN on the port
+  spanning-tree portfast trunk               # STP Edge port to skip network loop checks (to prevent DHCP timeout issues)
+  vlan 262,100,102,104                       # Might be needed for enabling VLANs
 
 Router
 ^^^^^^
