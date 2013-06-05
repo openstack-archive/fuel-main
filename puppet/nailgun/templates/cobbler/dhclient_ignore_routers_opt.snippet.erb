@@ -1,0 +1,4 @@
+# Force dhclient to ingnore 'routers' option on all interfaces.
+mkdir -p /etc/dhcp
+echo "supersede routers 0;" > /etc/dhcp/dhclient.conf
+grep DHCLIENTARGS /etc/sysconfig/network || echo 'DHCLIENTARGS="-cf /etc/dhcp/dhclient.conf"' >>/etc/sysconfig/network
