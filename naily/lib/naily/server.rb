@@ -51,17 +51,18 @@ module Naily
         return
       end
 
-      (messages.is_a?(Array) ? messages : [messages]).each do |message|
+      (messages.is_a?(Array) ? messages : [messages]).each_with_index do |message, i|
         begin
           dispatch_message message
         rescue StopIteration
           Naily.logger.debug "Dispatching aborted by #{message['method']}"
+          abort_messages messages[(i + 1)..-1]
           break
         rescue => ex
           Naily.logger.error "Error running RPC method #{message['method']}: #{ex.message}, trace: #{ex.backtrace.inspect}"
           return_results message, {
             'status' => 'error',
-            'error'  => "Error occurred while running method '#{message['method']}'. See logs of Orchestrator for details."
+            'error'  => "Error occurred while running method '#{message['method']}'. Inspect Orchestrator logs for the details."
           }
         end
       end
@@ -92,6 +93,25 @@ module Naily
       if results.is_a?(Hash) && message['respond_to']
         reporter = Naily::Reporter.new(@producer, message['respond_to'], message['args']['task_uuid'])
         reporter.report results
+      end
+    end
+
+    def abort_messages(messages)
+      return unless messages && messages.size > 0
+      messages.each do |message|
+        begin
+          Naily.logger.debug "Aborting '#{message['method']}'"
+          return_results message, {
+            'status' => 'error',
+            'error' => 'Task aborted',
+            'progress' => 0,
+            'nodes' => message['args']['nodes'].map{ |node|
+              {'uid' => node['uid'], 'status' => 'error', 'error_type' => 'provision', 'progress' => 0}
+            }
+          }
+        rescue => ex
+          Naily.logger.debug "Failed to abort '#{message['method']}': #{ex.inspect}"
+        end
       end
     end
   end
