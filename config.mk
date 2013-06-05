@@ -15,6 +15,7 @@ LOCAL_MIRROR:=$(abspath $(LOCAL_MIRROR))
 
 COMMIT_SHA:=$(shell git rev-parse --verify HEAD)
 PRODUCT_VERSION:=3.0
+FUEL_COMMIT_SHA:=$(shell cd fuel && git rev-parse --verify HEAD)
 
 CENTOS_MAJOR:=6
 CENTOS_MINOR:=4

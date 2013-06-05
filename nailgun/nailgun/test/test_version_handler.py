@@ -23,5 +23,5 @@ class TestVersionHandler(BaseHandlers):
         self.assertEqual(200, resp.status)
         self.assertEqual(
             json.loads(resp.body),
-            {"release": "0.1b", "sha": "12345"}
+            {"release": "0.1b", "sha": "12345", "fuel_sha": "Unknown build"}
         )

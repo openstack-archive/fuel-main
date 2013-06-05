@@ -14,5 +14,6 @@ class VersionHandler(JSONHandler):
     def GET(self):
         return {
             "sha": str(settings.COMMIT_SHA),
-            "release": str(settings.PRODUCT_VERSION)
+            "release": str(settings.PRODUCT_VERSION),
+            "fuel_sha": str(settings.FUEL_COMMIT_SHA)
         }

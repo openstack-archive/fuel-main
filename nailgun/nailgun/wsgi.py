@@ -64,7 +64,8 @@ def build_middleware(app):
 def appstart(keepalive=False):
     logger.info("Fuel-Web {0} ({1})".format(
         settings.PRODUCT_VERSION,
-        settings.COMMIT_SHA
+        settings.COMMIT_SHA,
+        settings.FUEL_COMMIT_SHA
     ))
     if not engine.dialect.has_table(engine.connect(), "nodes"):
         logger.error(
