@@ -176,7 +176,7 @@ class TestNode(Base):
         cluster_id = self._basic_provisioning(cluster_name, nodes)
         slave = ci.environment.node['slave1']
         node = self._get_slave_node_by_devops_node(slave)
-        wait(lambda: self._check_cluster_status(node['ip'], 5), timeout=300)
+        wait(lambda: self._check_cluster_status(node['ip'], 6), timeout=300)
 
         logging.info("Verifying networks for simple flat installation.")
         vlans = self._get_cluster_vlans(cluster_id)
@@ -201,7 +201,7 @@ class TestNode(Base):
         cluster_id = self._basic_provisioning(cluster_name, nodes)
         slave = ci.environment.node['slave1']
         node = self._get_slave_node_by_devops_node(slave)
-        wait(lambda: self._check_cluster_status(node['ip'], 5, 8), timeout=300)
+        wait(lambda: self._check_cluster_status(node['ip'], 6, 8), timeout=300)
 
         logging.info("Verifying networks for simple vlan installation.")
         vlans = self._get_cluster_vlans(cluster_id)
@@ -229,7 +229,7 @@ class TestNode(Base):
         logging.info("Checking cluster status on slave1")
         slave = ci.environment.node['slave1']
         node = self._get_slave_node_by_devops_node(slave)
-        wait(lambda: self._check_cluster_status(node['ip'], 13), timeout=300)
+        wait(lambda: self._check_cluster_status(node['ip'], 16), timeout=300)
 
         logging.info("Verifying networks for ha flat installation.")
         vlans = self._get_cluster_vlans(cluster_id)
@@ -261,7 +261,7 @@ class TestNode(Base):
         slave = ci.environment.node['slave1']
         node = self._get_slave_node_by_devops_node(slave)
         wait(
-            lambda: self._check_cluster_status(node['ip'], 13, 8),
+            lambda: self._check_cluster_status(node['ip'], 16, 8),
             timeout=300
         )
 
