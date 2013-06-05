@@ -15,11 +15,12 @@ On Physical Hardware
 
 To install FuelWeb on physical hardware, you need to burn the provided ISO to a CD/DVD, or IMG file to a USB stick, and start the installation process by booting from that media, very much like any other OS.
 
-Linux and Mac users can prepare an installation USB stick with the ``dd`` command. For example, if your flash drive is ``/dev/sdb``, you can use following command line::
+Linux and Mac users can prepare an installation USB stick with the ``dd`` command. For example,
+if your flash drive is ``/dev/sdb``, you can use following command line::
     
 	dd if=fuelweb.img of=/dev/sdb
 
-You can find the actual device name in the output of the ``dmesg`` command.
+You can find the actual device name in the output of the ``dmesg`` command for Linux or ``diskutil list`` for MacOS.
 
 On Windows, you can write the installation image with `Win32 Disk Imager <http://sourceforge.net/projects/win32diskimager/>`_.
 
@@ -36,7 +37,7 @@ The requirements for running Fuel Web on VirtualBox are:
 
   * The scripts have been tested on Mac OS 10.7.5, Mac OS 10.8.3, and Ubuntu 12.04.
 
-* VirtualBox must be installed with the extension pack. Both can be downloaded from <http://www.virtualbox.org/>`_.
+* VirtualBox must be installed with the extension pack. Both can be downloaded from `<http://www.virtualbox.org/>`_.
 
   * The scripts have been tested using VirtualBox 4.2.12
 
@@ -121,11 +122,96 @@ Next, create nodes on which to install OpenStack.
 Changing network parameters
 ---------------------------
 
-This is an optional step. If you are going to use a different network, you can change the default network settings (10.20.0.2/24 gw 10.20.0.1).
+You can change the network settings for the admin (PXE booting) network, which is 10.20.0.2/24 gw 10.20.0.1 by default.
 
-In order to do so, press the <TAB> key аt the very first installation screen which says "Welcome to FuelWeb Installer!" and update the kernel options. For example, to use 192.168.1.10/24 network with 192.168.1.1 as gateway and DNS server you should change the parameters to::
+In order to do so, press the <TAB> key аt the very first installation screen which says
+"Welcome to FuelWeb Installer!" and update the kernel options. For example, to use 192.168.1.10/24
+IP address for the master node and 192.168.1.1 as the gateway and DNS server you should change the parameters
+to those shown in the image below:
 
-   vmlinuz initrd=initrd.img ks=cdrom:/ks.cfg ip=192.168.1.10 gw=192.168.1.1 dns1=192.168.1.1 netmask=255.255.255.0
+.. image:: _static/network-at-boot.png
 
 When you're finished making changes, press the Enter key and wait for the installation to complete.
 
+Changing network parameters after booting
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+Once IP settings are set at the boot time for FuelWeb master node, it **must not be changed during the whole lifecycle of FuelWeb.**
+It is still possible to configure other interfaces, or add 802.1Q subinterfaces to the FuelWeb to be able to access it from office network
+if required.
+It is easy to do via standard network configuration scripts for CentOS. When the installation is complete,
+you can modify /etc/sysconfig/network-scripts/ifcfg-eth* scripts. For example, if *eth1* interface is on the L2 network which is planned
+for PXE booting, and *eth2* is the interface connected to office network switch, *eth0* is not in use, then settings can be the following:
+
+/etc/sysconfig/network-scripts/ifcfg-eth0::
+
+  DEVICE=eth0
+  ONBOOT=no
+
+/etc/sysconfig/network-scripts/ifcfg-eth1::
+
+  DEVICE=eth1
+  ONBOOT=yes
+  HWADDR=<your MAC>
+  ..... (other settings in your config) .....
+  PEERDNS=no
+  BOOTPROTO=static
+  IPADDR=192.168.1.10
+  NETMASK=255.255.255.0
+
+/etc/sysconfig/network-scripts/ifcfg-eth2::
+
+  DEVICE=eth2
+  ONBOOT=yes
+  HWADDR=<your MAC>
+  ..... (other settings in your config) .....
+  PEERDNS=no
+  IPADDR=172.18.0.5
+  NETMASK=255.255.255.0
+
+After modification of network configuration files, it is required to apply the new configuration::
+
+  service network restart
+
+Now you should be able to connect to FuelWeb from the office network
+via `<http://172.18.0.5:8000/>`_
+
+Name resolution (DNS)
+^^^^^^^^^^^^^^^^^^^^^
+
+During master node installation, it is assumed that there is a recursive DNS service on 10.20.0.1.
+
+If you want to make it possible for slave nodes to be able to resolve public names,
+you need to change this default value to point to an actual DNS service.
+To make the change, run the following command on FuelWeb node (replace IP to your actual DNS)::
+
+  echo "nameserver 172.0.0.1" > /etc/dnsmasq.upstream
+
+PXE booting settings
+^^^^^^^^^^^^^^^^^^^^
+
+By default, eth0 on FuelWeb master node serves PXE requests. If you are planning to use
+another interface, then it is required to modify dnsmasq settings (which acts as DHCP
+server). Edit the file /etc/dnsmasq.conf, find the line "interface=eth0" and replace
+the interface name with the one you want to use. Restart dnsmasq service afterwards::
+
+  service dnsmasq restart
+
+If you try to use virtual machines to launch **FuelWeb** then you have to be sure
+that dnsmasq on master node is configured to support that PXE client you use on your
+virtual machines. We enabled *dhcp-no-override* option because without it enabled
+dnsmasq tries to move out PXE filename and PXE servername special fields into DHCP options.
+Not all PXE implementations can understand those options and therefore they will not be
+able to boot. For example, Centos 6.3 uses gPXE implementation instead of more advanced
+iPXE by default.
+
+When configuration is done
+^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+Once the master node is installed, power on all other nodes and open the FuelWeb UI on
+the configured network.
+Slave nodes will be booted in bootstrap mode (tiny Linux in memory) via PXE and you will
+see notifications on the user interface about discovered nodes. This is the point
+when you can create an environment, add nodes into it, and start configuration.
+Networking configuration is most complicated part, so please read the networking section
+of documentation carefully.

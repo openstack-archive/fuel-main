@@ -1,5 +1,5 @@
-=========================================
 Understanding and configuring the network
+=========================================
 
 .. contents:: :local:
 
@@ -207,7 +207,7 @@ to this scheme. The diagram below shows an example configuration.
 
 .. image:: _static/flat.png
 
-By default several predefined networks can be used:
+FuelWeb operates with following logical networks:
 
 * **FuelWeb** network is used for internal FuelWeb communications only and PXE booting (untagged on the scheme);
 * **Public** network is used to get access from virtual machines to outside, Internet or office network (vlan 101 on the scheme);
@@ -215,6 +215,27 @@ By default several predefined networks can be used:
 * **Management** network is used for internal OpenStack communications (vlan 102 on the scheme);
 * **Storage** network is used for storage traffic (vlan 103 on the scheme);
 * **Fixed** - one (for flat mode) or more (for vlan mode) virtual machines network(s) (vlan 104 on the scheme).
+
+Mapping logical networks to physical interfaces on servers
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+FuelWeb allows to use different physical interfaces to run different types of traffic.
+When node is added to the environment, click at the bottom line of node icon.
+In the opened window with detailed information, click "Network Configuration" button to open
+physical interfaces configuration screen.
+
+.. image:: _static/doc_network-settings-help.png
+
+On this screen you can drag-and-drop logical networks to physical interfaces according
+to your network setup. 
+
+All networks are presented on the screen, except **FuelWeb**.
+It runs on the physical interface from which node was initially PXE booted,
+and in the current version it is not possible to map it on any other physical interface.
+Another limitation is that once network is configured and OpenStack is deployed,
+it is not possible to modify network settings, even to move any logical network
+to the other physical interface or VLAN number.
+
 
 Switch
 ^^^^^^
@@ -259,16 +280,16 @@ Internet is similar to having it visible from corporate network - corresponding 
 must be specified for the floating and public networks. One current limitation of FuelWeb is that the user
 must use the same L2 segment for both public and floating networks.
 
-Example configuration for one of the ports on a Cisco switch html:
+Example configuration for one of the ports on a Cisco switch html::
 
-| interface GigabitEthernet0/6               # switch port
-| description s0_eth0 jv                     # description
-| switchport trunk encapsulation dot1q       # enables VLANs
-| switchport trunk native vlan 262           # access port, untags VLAN 262
-| switchport trunk allowed vlan 100,102,104  # 100,102,104 VLANs are passed with tags
-| switchport mode trunk                      # To allow more than 1 VLAN on the port
-| spanning­tree portfast trunk               # STP Edge port to skip network loop checks (to prevent DHCP timeout issues).
-| vlan 262,100,102,104                       # Might be needed for enabling VLANs
+  interface GigabitEthernet0/6               # switch port
+  description s0_eth0 jv                     # description
+  switchport trunk encapsulation dot1q       # enables VLANs
+  switchport trunk native vlan 262           # access port, untags VLAN 262
+  switchport trunk allowed vlan 100,102,104  # 100,102,104 VLANs are passed with tags
+  switchport mode trunk                      # To allow more than 1 VLAN on the port
+  spanning-tree portfast trunk               # STP Edge port to skip network loop checks (to prevent DHCP timeout issues)
+  vlan 262,100,102,104                       # Might be needed for enabling VLANs
 
 Router
 ^^^^^^
@@ -280,24 +301,3 @@ to use this gateway IP as the default gateway.
 If floating addresses are from another other L3 network, then you must set the IP (or even multiple
 IPs if floating addresses are from more than one L3 network) for them on the router as well.
 Otherwise, floating IPs on nodes will be inaccessible.
-
-
-Admin Node
-^^^^^^^^^^
-
-During master node installation, it is assumed that there is a recursive DNS service on 10.20.0.1.
-
-If you want to make it possible for slave nodes to be able to resolve public names, you need to change this 
-default value to point to an actual DNS service. You can change this value via text-based dialog provided by anaconda.
-It is implemented in the anaconda kickstart in the post-install section. Slave nodes use the DNS service running
-on the master node and provided by cobbler.  That node relays requests to the actual DNS service if it does
-not have information about the requested host or domain name.
-
-Once the master node is installed, power on all other nodes and go to the url http://10.20.0.2:8000.
-Slave nodes will be booted in bootstrap mode via PXE and you will see notifications on user interface
-about discovered nodes. That is the point where you can configure your cluster, assuming that
-on the network tab you choose configuration shown on the following figure.
-
-.. image:: _static/web_network_tab.png
-
-
