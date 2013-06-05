@@ -311,17 +311,22 @@ define(function() {
                         _.each(attrs.ip_ranges, _.bind(function(range, index) {
                             if (_.first(range) || _.last(range)) {
                                 var rangeErrors = {index: index};
-                                if (_.first(range) && this.validateIP(_.first(range))) {
-                                    rangeErrors.start = 'Invalid IP';
+                                var start = _.first(range);
+                                var end = _.last(range);
+                                if (start && this.validateIP(start)) {
+                                    rangeErrors.start = 'Invalid IP range start';
                                 }
-                                if (_.last(range) && this.validateIP(_.last(range))) {
-                                    rangeErrors.end = 'Invalid IP';
+                                if (end && this.validateIP(end)) {
+                                    rangeErrors.end = 'Invalid IP range end';
                                 }
-                                if (_.first(range) == '') {
-                                    rangeErrors.start = 'Empty range';
+                                if (start == '') {
+                                    rangeErrors.start = 'Empty IP range start';
                                 }
-                                if (_.last(range) == '') {
-                                    rangeErrors.end = 'Empty range';
+                                if (end == '') {
+                                    rangeErrors.end = 'Empty IP range end';
+                                }
+                                if (start == '' && end == '') {
+                                    rangeErrors.start = rangeErrors.end = 'Empty IP range';
                                 }
                                 if (rangeErrors.start || rangeErrors.end) {
                                     errors.ip_ranges = _.compact(_.union([rangeErrors], errors.ip_ranges));
@@ -330,9 +335,8 @@ define(function() {
                         }, this));
                     } else {
                         var rangeErrors = {index: 0};
-                        var emptyRaneError = 'Please, specify at least one IP range';
-                        rangeErrors.start = emptyRaneError;
-                        rangeErrors.end = emptyRaneError;
+                        var emptyRangeError = 'Please specify at least one IP range';
+                        rangeErrors.start = rangeErrors.end = emptyRangeError;
                         errors.ip_ranges = _.compact(_.union([rangeErrors], errors.ip_ranges));
                     }
                 } else if (attribute == 'cidr') {
