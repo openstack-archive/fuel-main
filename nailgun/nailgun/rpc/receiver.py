@@ -457,9 +457,10 @@ class NailgunReceiver(object):
                         absent_node_names.append(n.name)
                     else:
                         absent_node_names.append('id: %s' % n.id)
-                error_msg = 'Node(s) {0} didn\'t return data.'.format(
-                    ', '.join(absent_node_names)
-                )
+                if not error_msg:
+                    error_msg = 'Node(s) {0} didn\'t return data.'.format(
+                        ', '.join(absent_node_names)
+                    )
                 status = 'error'
             elif len(nodes) < 2:
                 status = 'error'
