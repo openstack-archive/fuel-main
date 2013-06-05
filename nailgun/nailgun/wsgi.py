@@ -62,7 +62,7 @@ def build_middleware(app):
 
 
 def appstart(keepalive=False):
-    logger.info("Fuel-Web {0} ({1})".format(
+    logger.info("Fuel-Web {0} ({1}/{2})".format(
         settings.PRODUCT_VERSION,
         settings.COMMIT_SHA,
         settings.FUEL_COMMIT_SHA
