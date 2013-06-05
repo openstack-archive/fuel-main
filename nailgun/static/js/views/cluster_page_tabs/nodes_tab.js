@@ -917,9 +917,8 @@ function(utils, models, commonViews, dialogViews, nodesTabSummaryTemplate, editN
                     models.InterfaceNetwork.prototype.vlanLabel = function() {
                         if (this.amount() == 1) {
                             return this.vlanStart();
-                        } else {
-                            return this.vlanStart() + '-' + (this.vlanStart() + this.amount() - 1);
-                        }
+                        } 
+                        return this.vlanStart() + '-' + (this.vlanStart() + this.amount() - 1);
                     };
 
                     this.interfaces.each(function(ifc) {
