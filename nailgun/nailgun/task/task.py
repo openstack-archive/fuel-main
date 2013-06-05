@@ -139,10 +139,12 @@ class DeploymentTask(object):
 
         cluster_attrs['network_manager'] = task.cluster.net_manager
 
+        fixed_net = orm().query(NetworkGroup).filter_by(
+            cluster_id=cluster_id).filter_by(name='fixed').first()
+        # network_size is required for all managers, otherwise
+        #  puppet will use default (255)
+        cluster_attrs['network_size'] = fixed_net.network_size
         if cluster_attrs['network_manager'] == 'VlanManager':
-            fixed_net = orm().query(NetworkGroup).filter_by(
-                cluster_id=cluster_id).filter_by(name='fixed').first()
-            cluster_attrs['network_size'] = fixed_net.network_size
             cluster_attrs['num_networks'] = fixed_net.amount
             cluster_attrs['vlan_start'] = fixed_net.vlan_start
             cls.__add_vlan_interfaces(nodes_with_attrs)
