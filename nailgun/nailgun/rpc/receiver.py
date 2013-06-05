@@ -447,7 +447,12 @@ class NailgunReceiver(object):
             cached_node_uids = [str(n['uid']) for n in cached_nodes]
             forgotten_uids = set(cached_node_uids) - set(node_uids)
 
-            if forgotten_uids:
+            if len(nodes) < 2:
+                status = 'error'
+                if not error_msg:
+                    error_msg = 'At least two nodes are required to be in '\
+                                'the environment for network verification.'
+            elif forgotten_uids:
                 absent_nodes = cls.db.query(Node).filter(
                     Node.id.in_(forgotten_uids)
                 ).all()
@@ -462,11 +467,6 @@ class NailgunReceiver(object):
                         ', '.join(absent_node_names)
                     )
                 status = 'error'
-            elif len(nodes) < 2:
-                status = 'error'
-                if not error_msg:
-                    error_msg = 'At least two nodes are required to be in '\
-                                'the environment for network verification.'
             else:
                 error_nodes = []
                 for node in nodes:
