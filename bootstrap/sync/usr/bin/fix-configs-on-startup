@@ -22,9 +22,16 @@ cat > /etc/send2syslog.conf <<EOF
 EOF
 /usr/bin/send2syslog.py -i < /etc/send2syslog.conf
 #
+# Set up NTP
+#
+# Disable panic about huge clock offset
+#
+sed -i '/^ *tinker/ d' /etc/ntp.conf
+sed -i '1 i tinker panic 0' /etc/ntp.conf
+
 # Sync clock with master node
 #
-sed -i "/^server\b/ d" /etc/ntp.conf
+sed -i "/^ *server\b/ d" /etc/ntp.conf
 echo "server $masternode_ip" >> /etc/ntp.conf
 # Add some additional logs in ntpdate init script.
 sed -i '46 a logger -t ntpdate-log -- `echo /usr/sbin/ntpdate $OPTIONS $tickers` || true\
