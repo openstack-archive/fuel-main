@@ -328,7 +328,7 @@ class NetworkConfigurationValidator(BasicValidator):
             if 'name' in i and i['name'] == 'public':
                 try:
                     IPNetwork('0.0.0.0/' + i['netmask'])
-                except AddrFormatError:
+                except (AddrFormatError, KeyError):
                     raise web.webapi.badrequest(
                         message="Invalid netmask for public network")
         return d
