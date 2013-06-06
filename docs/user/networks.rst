@@ -205,7 +205,7 @@ Scheme
 Once the networking mode is chosen (FlatDHCP/Vlan), you must configure equipment according
 to this scheme. The diagram below shows an example configuration.
 
-.. image:: _static/flat.png
+.. image:: _static/physical_sample.png
 
 FuelWeb operates with following logical networks:
 
