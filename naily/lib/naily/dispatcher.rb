@@ -90,6 +90,7 @@ module Naily
                           'error' => "Nodes failed to reboot: #{failed_nodes.inspect}",
                           'progress' => 100
                         })
+        raise StopIteration
       end
       return
     end
