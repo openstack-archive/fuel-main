@@ -5,7 +5,7 @@ from itertools import imap, ifilter, islice, chain, tee
 
 import web
 from sqlalchemy.sql import not_
-from netaddr import IPSet, IPNetwork, IPRange, IPAddress, AddrFormatError
+from netaddr import IPSet, IPNetwork, IPRange, IPAddress
 
 from nailgun.db import orm
 from nailgun.errors import errors
