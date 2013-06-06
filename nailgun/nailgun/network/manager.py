@@ -517,18 +517,9 @@ class NetworkManager(object):
                     net.network_group_id)
 
                 # Convert netmask to prefix
-                try:
-                    prefix = str(IPNetwork(
-                        '0.0.0.0/' + network_group.netmask).prefixlen)
-                    netmask = network_group.netmask
-                except:
-                    prefix = str(IPNetwork(net.cidr).prefixlen)
-                    netmask = str(IPNetwork(net.cidr).netmask)
-                    logger.debug(
-                        "Invalid netmask {0}. Using default CIDR prefix"
-                        " of /{1} and netmask {2}".format(
-                            network_group.netmask, prefix, netmask))
-
+                prefix = str(IPNetwork(
+                    '0.0.0.0/' + network_group.netmask).prefixlen)
+                netmask = network_group.netmask
             else:
                 prefix = str(IPNetwork(net.cidr).prefixlen)
                 netmask = str(IPNetwork(net.cidr).netmask)

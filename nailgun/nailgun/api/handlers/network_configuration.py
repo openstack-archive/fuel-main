@@ -43,6 +43,8 @@ class NetworkConfigurationHandler(JSONHandler):
     fields = ('id', 'cluster_id', 'name', 'cidr', 'netmask',
               'gateway', 'vlan_start', 'network_size', 'amount')
 
+    validator = NetworkConfigurationValidator
+
     @classmethod
     def render(cls, instance, fields=None):
         json_data = JSONHandler.render(instance, fields=cls.fields)
@@ -52,8 +54,6 @@ class NetworkConfigurationHandler(JSONHandler):
         json_data.setdefault("netmask", "")
         json_data.setdefault("gateway", "")
         return json_data
-
-    validator = NetworkConfigurationValidator
 
     @content_json
     def GET(self, cluster_id):

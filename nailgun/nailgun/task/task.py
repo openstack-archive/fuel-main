@@ -627,19 +627,6 @@ class CheckNetworksTask(object):
                             ng.get('name') or ng_db.name or ng_db.id
                         )
                     )
-                try:
-                    valid_net = netaddr.IPNetwork(
-                        '0.0.0.0/%s' % ng.get('netmask', ng_db.netmask))
-                except netaddr.AddrFormatError:
-                    net_errors.append("netmask")
-                    err_msgs.append(
-                        "Invalid Netmask {0} for {1} network".format(
-                            #ng.get('netmask'),
-                            ng.get('netmask', ng_db.netmask),
-                            ng.get('name') or ng_db.name or ng_db.id
-                        )
-                    )
-
             if net_errors:
                 result.append({
                     "id": int(ng["id"]),
