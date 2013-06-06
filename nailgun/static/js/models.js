@@ -303,7 +303,6 @@ define(function() {
             return _.isString(value) && !value.match(ipRegexp);
         },
         validateNetmask: function(value) {
-            return false;
             var valid_values = {0:1, 128:1, 192:1, 224:1, 240:1, 248:1, 252:1, 254:1, 255:1};
             var m = value.split('.');
             var i;
