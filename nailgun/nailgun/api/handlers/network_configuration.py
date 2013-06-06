@@ -73,9 +73,8 @@ class NetworkConfigurationHandler(JSONHandler):
         if task.status != 'error':
             try:
                 if 'networks' in data:
-                    network_configuration = \
-                        self.validator.validate_networks_update(
-                        json.dumps(data))
+                    network_configuration = self.validator.\
+                        validate_networks_update(json.dumps(data))
 
                 NetworkConfiguration.update(cluster, data)
             except web.webapi.badrequest as exc:
