@@ -313,6 +313,12 @@ class Environment(object):
             "cidr": nd[1],
             "id": start_id + i
         } for i, nd in enumerate(zip(net_names, net_cidrs))]}
+
+        public = filter(
+            lambda net: net['name'] == 'public',
+            nets['networks'])[0]
+        public['netmask'] = '255.255.255.0'
+
         return nets
 
     def get_default_volumes_metadata(self):
