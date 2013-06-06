@@ -8,3 +8,4 @@ User Guide
 
    user/install
    user/networks
+   user/network_issues
