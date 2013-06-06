@@ -71,11 +71,22 @@ class NetworkConfigurationHandler(JSONHandler):
         task = task_manager.execute(data)
 
         if task.status != 'error':
-            if 'networks' in data:
-                network_configuration = self.validator.\
-                    validate_networks_update(json.dumps(data))
             try:
+                if 'networks' in data:
+                    network_configuration = \
+                        self.validator.validate_networks_update(
+                        json.dumps(data))
+
                 NetworkConfiguration.update(cluster, data)
+            except web.webapi.badrequest as exc:
+                err = str(exc.data)
+                TaskHelper.update_task_status(
+                    task.uuid,
+                    status="error",
+                    progress=100,
+                    msg=err
+                )
+                logger.error(traceback.format_exc())
             except Exception as exc:
                 err = str(exc)
                 TaskHelper.update_task_status(
