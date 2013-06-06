@@ -70,25 +70,12 @@ gateway host, which basically becomes a single point of failure. In enabled mode
 gateway for all the VMs running on the host, providing a balanced networking solution.
 In this case, if one of the computes goes down, the rest of the environment remains operational.
 
-To accomplish this, you would install nova-network on each compute
-node, and assign an IP to the **br100** bridge.  In addition, make
-sure that promiscuous mode is enabled for the **eth0** interface.
+The current version of FuelWeb uses VLANs, even for the FlatDHCP network manager.
+On the Linux host, it is implemented in such a way that it is not the physical network interfaces that are
+connected to the bridge, but the VLAN interface (i.e. **eth0.102**).
 
 FlatDHCP Manager (single-interface scheme)
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-
-However, Fuel Web uses a slightly different scheme for FlatDHCPManager mode. 
-It assumes that all compute nodes are connected to the network with only 
-one physical interface, **eth0**. In order to split virtual machine traffic 
-from other types of traffic (for example,
-management traffic) we use vlans on **eth0**. The user can consider them as 
-several different physical interfaces, such as **eth0.102**. Nova-network is 
-installed on all compute nodes and
-Fuel Web creates the **br100** bridge and connects it to **eth0.102**. 
-It then assigns an IP address
-on the **br100** bridge and uses it as default gateway for the 
-virtual machines.  The IP address for **br100** will be
-choosen automatically from the user defined range.
 
  .. uml::
     node "Compute1 Node" {
@@ -209,15 +196,13 @@ in this particular networking mode.
 Configuring the network
 -----------------------
 
-
-
 Once you choose a networking mode (FlatDHCP/Vlan), 
 you must configure equipment accordingly. The 
 diagram below shows an example configuration.
 
 .. image:: _static/flat.png
 
-FuelWeb operates with following logical networks by default:
+FuelWeb operates with following logical networks:
 
 * **FuelWeb** network is used for internal FuelWeb communications only and PXE booting (untagged on the scheme);
 * **Public** network is used to get access from virtual machines to outside, Internet or office network (vlan 101 on the scheme);
@@ -298,8 +283,11 @@ specified on the networks tab of the FuelWeb UI
 should be configured on switch ports, pointing to slave nodes, as 
 tagged.* Of course, it is
 possible to specify as tagged only certain ports for a certain 
-nodes. For example, there is no
-need to pass the public network to Cinder hosts.
+nodes. However, in the current version, all existing networks
+are automatically allocated for each node, with any role.
+And network check will also check if tagged traffic pass,
+even if some node does not require it (for example, cinder nodes
+do not need fixed network traffic).
 
 This is enough to deploy the OpenStack environment. However, from a practical
 standpoint, it's still not really be usable because
@@ -341,7 +329,7 @@ Router
 
 To make it possible for VMs to access the outside world, you must 
 have an IP address set on a router in the public network.
-In the examples provided, that IP is 240.0.1.1 in VLAN 101.
+In the examples provided, that IP is 12.0.0.1 in VLAN 101.
 FuelWeb has a special field on the networking tab for the
 gateway address. As soon as deployment of OpenStack is started, 
 the network on nodes is reconfigured
