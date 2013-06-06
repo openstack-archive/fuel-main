@@ -17,14 +17,14 @@ To install FuelWeb on physical hardware, you need to burn the provided ISO to a 
 
 Linux and Mac users can prepare an installation USB stick with the ``dd`` command. For example,
 if your flash drive is ``/dev/sdb``, you can use following command line::
-    
+
 	dd if=fuelweb.img of=/dev/sdb
 
 You can find the actual device name in the output of the ``dmesg`` command for Linux or ``diskutil list`` for MacOS.
 
 On Windows, you can write the installation image with `Win32 Disk Imager <http://sourceforge.net/projects/win32diskimager/>`_.
 
-After the installation is complete, you will need to allocate physical nodes for your OpenStack cluster, put them on the same L2 network as the admin node, and PXE boot. The UI will discover them and make them available for installing OpenStack. 
+After the installation is complete, you will need to allocate physical nodes for your OpenStack cluster, put them on the same L2 network as the admin node, and PXE boot. The UI will discover them and make them available for installing OpenStack.
 
 On VirtualBox
 -------------
@@ -43,8 +43,8 @@ The requirements for running Fuel Web on VirtualBox are:
 
 * 8 GB+ of RAM
 
-  * to handle 4 VMs for non-HA OpenStack installation (1 admin node, 1 controller node, 1 compute node, 1 cinder node) 
-  * to handle 5 VMs for HA OpenStack installation (1 admin node, 3 controller nodes, 1 compute node) 
+  * to handle 4 VMs for non-HA OpenStack installation (1 admin node, 1 controller node, 1 compute node, 1 cinder node)
+  * to handle 5 VMs for HA OpenStack installation (1 admin node, 3 controller nodes, 1 compute node)
 
 Automatic mode
 ^^^^^^^^^^^^^^
@@ -192,10 +192,14 @@ PXE booting settings
 
 By default, eth0 on FuelWeb master node serves PXE requests. If you are planning to use
 another interface, then it is required to modify dnsmasq settings (which acts as DHCP
-server). Edit the file /etc/dnsmasq.conf, find the line "interface=eth0" and replace
-the interface name with the one you want to use. Restart dnsmasq service afterwards::
+server). Edit the file /etc/cobbler/dnsmasq.template, find the line "interface=eth0" and replace
+the interface name with the one you want to use. Launch command to synchronize cobbler service afterwards::
 
-  service dnsmasq restart
+  cobbler sync
+
+During synchronization cobbler builds actual dnsmasq configuration file /etc/dnsmasq.conf from template
+/etc/cobbler/dnsmasq.template. That is why you should not edit /etc/dnsmasq.conf.
+Cobbler rewrites it each time when it is synchronized.
 
 If you try to use virtual machines to launch **FuelWeb** then you have to be sure
 that dnsmasq on master node is configured to support that PXE client you use on your
@@ -210,7 +214,7 @@ When configuration is done
 
 Once the master node is installed, power on all other nodes and open the FuelWeb UI on
 the configured network.
-Slave nodes will be booted in bootstrap mode (tiny Linux in memory) via PXE and you will
+Slave nodes will be booted in bootstrap mode (Centos based Linux in memory) via PXE and you will
 see notifications on the user interface about discovered nodes. This is the point
 when you can create an environment, add nodes into it, and start configuration.
 Networking configuration is most complicated part, so please read the networking section
