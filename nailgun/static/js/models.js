@@ -302,6 +302,19 @@ define(function() {
             var ipRegexp = /^(([0-9]|[1-9][0-9]|1[0-9]{2}|2[0-4][0-9]|25[0-5])\.){3}([0-9]|[1-9][0-9]|1[0-9]{2}|2[0-4][0-9]|25[0-5])$/;
             return _.isString(value) && !value.match(ipRegexp);
         },
+        validateNetmask: function(value) {
+            return false;
+            var valid_values = {0:1, 128:1, 192:1, 224:1, 240:1, 248:1, 252:1, 254:1, 255:1};
+            var m = value.split('.');
+            var i;
+
+            for (i = 0; i <= 3; i += 1) {
+                if (!(valid_values.hasOwnProperty(m[i]))) {
+                    return true;
+                }
+            }
+            return false;
+        },
         validate: function(attrs) {
             var errors = {};
             var match;
@@ -369,7 +382,7 @@ define(function() {
                     if (_.isNaN(attrs.vlan_start) || !_.isNumber(attrs.vlan_start) || attrs.vlan_start < 1 || attrs.vlan_start > 4094) {
                         errors.vlan_start = 'Invalid VLAN ID';
                     }
-                } else if (attribute == 'netmask' && this.validateIP(attrs.netmask)) {
+                } else if (attribute == 'netmask' && this.validateNetmask(attrs.netmask)) {
                     errors.netmask = 'Invalid netmask';
                 } else if (attribute == 'gateway' && this.validateIP(attrs.gateway)) {
                     errors.gateway = 'Invalid gateway';
