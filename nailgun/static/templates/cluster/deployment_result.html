@@ -1,6 +1,6 @@
-<% var task = cluster.task('deploy') %>
+<% var task = cluster.deployTask() %>
 <% var taskStatus = task ? task.get('status') : null %>
-<% if (taskStatus == 'ready') { %>
+<% if (taskStatus == 'ready' && task.get('name') != 'check_before_deployment') { %>
   <div class="alert alert-block global-success alert-success task-result">
     <button type="button" class="close">×</button>
     <h4>Success</h4>

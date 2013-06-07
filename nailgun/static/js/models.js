@@ -56,6 +56,13 @@ define(function() {
                 return result;
             });
         },
+        deployTask: function(status) {
+            var task = this.task('check_before_deployment', status);
+            if (task) {
+                return task;
+            }
+            return this.task('deploy', status);
+        },
         hasChanges: function() {
             return this.get('nodes').hasChanges() || (this.get('changes').length && this.get('nodes').currentNodes().length);
         },
