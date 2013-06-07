@@ -13,6 +13,7 @@ help:
 	@echo '  MIRROR_SRC:       $(MIRROR_SRC)'
 	@echo '  ISO_DIR/ISO_NAME: $(ISO_PATH)'
 	@echo '  ENV_NAME:         $(ENV_NAME)'
+	@echo '  KSYAML:           $(KSYAML)'
 	@echo
 	@echo 'Available targets:'
 	@echo '  all  - build product'

@@ -92,3 +92,7 @@ MIRROR_SRC?=internet
 
 # INTEGRATION TEST CONFIG
 NOFORWARD:=1
+
+# Path to yaml configuration file to build ISO ks.cfg
+KSYAML?=$(SOURCE_DIR)/iso/ks.yaml
+

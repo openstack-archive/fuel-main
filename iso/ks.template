@@ -1,7 +1,7 @@
 install
 text
 %include /tmp/source.ks
-reboot --eject
+{{reboot}}
 lang en_US.UTF-8
 keyboard us
 rootpw r00tme
