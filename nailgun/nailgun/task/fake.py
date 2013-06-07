@@ -6,10 +6,9 @@ from itertools import repeat
 from random import randrange, shuffle
 
 from kombu import Connection, Exchange, Queue
-from sqlalchemy.orm import object_mapper, ColumnProperty, \
-    scoped_session, sessionmaker
+from sqlalchemy.orm import object_mapper, ColumnProperty
 
-from nailgun.db import NoCacheQuery, orm, engine
+from nailgun.db import make_session
 from nailgun.settings import settings
 from nailgun.logger import logger
 from nailgun.errors import errors
@@ -225,9 +224,7 @@ class FakeProvisionThread(FakeThread):
         tick_interval = int(settings.FAKE_TASKS_TICK_INTERVAL) or 3
         resp_method = getattr(receiver, self.respond_to)
         resp_method(**kwargs)
-        orm = scoped_session(
-            sessionmaker(bind=engine, query_cls=NoCacheQuery)
-        )
+        orm = make_session()
         receiver.stop()
 
 
@@ -245,9 +242,7 @@ class FakeDeletionThread(FakeThread):
         tick_interval = int(settings.FAKE_TASKS_TICK_INTERVAL) or 3
         resp_method = getattr(receiver, self.respond_to)
         resp_method(**kwargs)
-        orm = scoped_session(
-            sessionmaker(bind=engine, query_cls=NoCacheQuery)
-        )
+        orm = make_session()
 
         for node_data in nodes_to_restore:
             node = Node(**node_data)

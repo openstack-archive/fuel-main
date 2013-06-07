@@ -49,9 +49,7 @@ def orm():
 
 
 def load_db_driver(handler):
-    web.ctx.orm = scoped_session(
-        sessionmaker(bind=engine, query_cls=NoCacheQuery)
-    )
+    web.ctx.orm = make_session()
     try:
         return handler()
     except web.HTTPError:

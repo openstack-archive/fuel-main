@@ -9,7 +9,6 @@ from kombu.mixins import ConsumerMixin
 
 import nailgun.rpc as rpc
 from nailgun.settings import settings
-from nailgun.db import NoCacheQuery, engine
 from nailgun.logger import logger
 from nailgun.rpc.receiver import NailgunReceiver
 

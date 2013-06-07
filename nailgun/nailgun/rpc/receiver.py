@@ -9,12 +9,11 @@ import itertools
 import greenlet
 import eventlet
 from web.utils import ThreadedDict
-from sqlalchemy.orm import scoped_session, sessionmaker
 from sqlalchemy import or_
 
 import nailgun.rpc as rpc
 from nailgun.logger import logger
-from nailgun.db import engine, NoCacheQuery
+from nailgun.db import make_session
 from nailgun.network.manager import NetworkManager
 from nailgun.settings import settings
 from nailgun.task.helpers import TaskHelper
@@ -34,9 +33,7 @@ class NailgunReceiver(object):
 
     @classmethod
     def initialize(cls, db=None):
-        cls.db = db or scoped_session(
-            sessionmaker(bind=engine, query_cls=NoCacheQuery)
-        )
+        cls.db = db or make_session()
         cls.network_manager = NetworkManager()
 
     @classmethod
