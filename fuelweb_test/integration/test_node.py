@@ -319,7 +319,10 @@ class TestNode(Base):
                         )
                         ifaces_fail = True
                 except KeyError:
-                    if iface_data.find("inet ") != -1:
+                    # floating uses same vlan as public but the info does not
+                    # contain ip, netmask etc. values
+                    if iface_data.find("inet ") != -1 and \
+                            iface['name'] != 'floating':
                         logging.error(
                             "Interface %s does have ip.  And it should not" %
                             ifname_short
