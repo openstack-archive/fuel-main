@@ -12,7 +12,7 @@ logger = logging.getLogger("nailgun")
 api_logger = logging.getLogger("nailgun-api")
 
 SERVER_ERROR_MSG = '500 Internal Server Error'
-DATEFORMAT = '%d-%m-%Y %H:%M:%S'
+DATEFORMAT = '%Y-%m-%d %H:%M:%S'
 LOGFORMAT = '%(asctime)s %(levelname)s (%(module)s) %(message)s'
 
 
