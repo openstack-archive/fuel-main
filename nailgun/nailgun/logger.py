@@ -28,14 +28,12 @@ class WriteLogger(logging.Logger, object):
 
 
 class HTTPLoggerMiddleware(object):
-    def __init__(self, application, **kw):
+    def __init__(self, application):
         self.application = application
-        log_file = WatchedFileHandler(kw.get('file', settings.API_LOG))
-        log_format = logging.Formatter(
-            kw.get('logformat', LOGFORMAT),
-            kw.get('datefmt', DATEFORMAT))
+        log_file = WatchedFileHandler(settings.API_LOG)
+        log_format = logging.Formatter(LOGFORMAT, DATEFORMAT)
         log_file.setFormatter(log_format)
-        api_logger.setLevel(kw.get('loglevel', logging.DEBUG))
+        api_logger.setLevel(logging.DEBUG)
         api_logger.addHandler(log_file)
 
     def __call__(self, env, start_response):
