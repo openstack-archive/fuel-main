@@ -40,14 +40,7 @@ class NailgunSettings(object):
                 logger.debug("Error while reading config file %s: %s" %
                              (sf, str(e)))
 
-        if not int(self.config.get("DEVELOPMENT")):
-            logger.removeHandler(handler)
-            handler = logging.handlers.WatchedFileHandler(
-                self.config.get("CUSTOM_LOG")
-            )
-            handler.setFormatter(formatter)
-            logger.addHandler(handler)
-        else:
+        if int(self.config.get("DEVELOPMENT")):
             logger.info("DEVELOPMENT MODE ON:")
             here = os.path.abspath(
                 os.path.join(os.path.dirname(__file__), '..')
