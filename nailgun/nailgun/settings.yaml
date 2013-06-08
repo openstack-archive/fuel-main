@@ -53,9 +53,8 @@ RABBITMQ:
   fake: "0"
   hostname: "127.0.0.1"
 
-CUSTOM_LOG: &nailgun_log "/var/log/nailgun/nailgun.log"
-ACCESS_LOG: "/var/log/nailgun/access.log"
-API_LOG: "/var/log/nailgun/api.log"
+APP_LOG: &nailgun_log "/var/log/nailgun/app.log"
+API_LOG: &api_log "/var/log/nailgun/api.log"
 SYSLOG_DIR: &remote_syslog_dir "/var/log/remote/"
 
 PATH_TO_SSH_KEY: = "/root/.ssh/id_rsa"
@@ -123,11 +122,16 @@ LOG_GROUPS:
 
 LOGS:
 # Master node logs.
-  - id: nailgun
+  - id: app
     name: "FuelWeb"
     <<: *local_log_type
     <<: *python_log_format
     path: *nailgun_log
+  - id: api
+    name: "FuelWeb API"
+    <<: *local_log_type
+    <<: *python_log_format
+    path: *api_log
   - id: naily
     name: "Orchestrator"
     <<: *local_log_type
