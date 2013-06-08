@@ -1,6 +1,7 @@
 import os
 import sys
 import web
+from web.httpserver import server, WSGIServer, StaticMiddleware
 
 curdir = os.path.dirname(__file__)
 sys.path.insert(0, curdir)
@@ -10,35 +11,7 @@ from nailgun.api.handlers import check_client_content_type
 from nailgun.api.handlers import forbid_client_caching
 from nailgun.db import load_db_driver, engine
 from nailgun.urls import urls
-from nailgun.logger import logger, FileLoggerMiddleware, HTTPLoggerMiddleware
-
-
-class FlushingLogger(object):
-    def __init__(self):
-        self.opened = False
-        self.fd = None
-
-    @property
-    def _fd(self):
-        if not self.opened:
-            self.fd = open(settings.ACCESS_LOG, "a+")
-            self.opened = True
-        return self.fd
-
-    def __enter__(self):
-        return self._fd
-
-    def __exit__(self, type, value, traceback):
-        self._fd.close()
-        self.opened = False
-
-    def write(self, data):
-        self._fd.write(data)
-        self._fd.flush()
-
-    def close(self):
-        self._fd.close()
-        self.opened = False
+from nailgun.logger import logger, HTTPLoggerMiddleware
 
 
 def build_app():
@@ -52,13 +25,28 @@ def build_middleware(app):
     middleware_list = [
         HTTPLoggerMiddleware,
     ]
-    if not int(settings.DEVELOPMENT):
-        middleware_list.append(FileLoggerMiddleware)
 
     logger.debug('Initialize middleware: %s' %
                  (map(lambda x: x.__name__, middleware_list)))
 
     return app(*middleware_list)
+
+
+def run_server(func, server_address=('0.0.0.0', 8080)):
+    """
+    This function same as runsimple from web/httpserver
+    except removed LogMiddleware because we use
+    HTTPLoggerMiddleware instead
+    """
+    global server
+    func = StaticMiddleware(func)
+    server = WSGIServer(server_address, func)
+    print 'https://%s:%d/' % server_address
+
+    try:
+        server.start()
+    except (KeyboardInterrupt, SystemExit):
+        server.stop()
 
 
 def appstart(keepalive=False):
@@ -91,13 +79,9 @@ def appstart(keepalive=False):
 
     wsgifunc = build_middleware(app.wsgifunc)
 
-    web.httpserver.runsimple(
-        wsgifunc,
-        (
-            settings.LISTEN_ADDRESS,
-            int(settings.LISTEN_PORT)
-        )
-    )
+    run_server(wsgifunc,
+        (settings.LISTEN_ADDRESS, int(settings.LISTEN_PORT)))
+
     logger.info("Stopping WSGI app...")
     if keep_alive.is_alive():
         logger.info("Stopping KeepAlive watcher...")

@@ -9,46 +9,22 @@ from logging.handlers import WatchedFileHandler
 from nailgun.settings import settings
 
 logger = logging.getLogger("nailgun")
-http_logger = logging.getLogger("http")
 api_logger = logging.getLogger("nailgun-api")
 
-CATCHID = 'wsgi.catch'
-LOGGERID = 'wsgi.errors'
-# HTTP error messages
-HTTPMSG = '500 Internal Error'
-ERRORMSG = 'Server got itself in trouble'
-# Default log formats
+SERVER_ERROR_MSG = '500 Internal Server Error'
 DATEFORMAT = '%d-%m-%Y %H:%M:%S'
 LOGFORMAT = '%(asctime)s %(levelname)s (%(module)s) %(message)s'
-HTTP_LOGFORMAT = '%(message)s'
-
-
-def _errapp(environ, start_response):
-    '''Default error handling WSGI application.'''
-    start_response(HTTPMSG, [('Content-type', 'text/plain')], sys.exc_info())
-    return [ERRORMSG]
 
 
 class WriteLogger(logging.Logger, object):
 
     def __init__(self, logger, level=logging.DEBUG):
-        # Set logger level
-        logger.propagate = False
         super(WriteLogger, self).__init__(logger)
-        if level == logging.DEBUG:
-            self.logger = logger.debug
-        elif level == logging.CRITICAL:
-            self.logger = logger.critical
-        elif level == logging.ERROR:
-            self.logger = logger.warning
-        elif level == logging.WARNING:
-            self.logger = logger.warning
-        elif level == logging.INFO:
-            self.logger = logger.info
+        self.logger = logger
 
-    def write(self, info):
-        if info.lstrip().rstrip() != '':
-            self.logger(info)
+    def write(self, message):
+        if message.strip() != '':
+            self.logger(message)
 
 
 class HTTPLoggerMiddleware(object):
@@ -63,6 +39,7 @@ class HTTPLoggerMiddleware(object):
         api_logger.addHandler(log_file)
 
     def __call__(self, env, start_response):
+        env['wsgi.errors'] = WriteLogger(api_logger.error)
         self.__logging_request(env)
 
         def start_response_with_logging(status, headers, *args):
@@ -80,7 +57,14 @@ class HTTPLoggerMiddleware(object):
             env['REMOTE_PORT'],
         )
 
-        if response_code == '500 Internal Server Error':
+        length = int(env.get('CONTENT_LENGTH', 0))
+        body = ''
+
+        if length != 0:
+            body = env['wsgi.input'].read(length)
+            env['wsgi.input'] = StringIO(body)
+
+        if response_code == SERVER_ERROR_MSG:
             api_logger.error(response_info)
         else:
             api_logger.debug(response_info)
@@ -110,44 +94,3 @@ class HTTPLoggerMiddleware(object):
             return env['REMOTE_ADDR']
         else:
             return 'can not determine ip'
-
-
-class FileLoggerMiddleware(object):
-
-    def __init__(self, application, **kw):
-        self.application = application
-        self._errapp = kw.get('errapp', _errapp)
-        self.log = kw.get('log', True)
-        if self.log:
-            self.message = kw.get('logmessage', ERRORMSG)
-            logger = http_logger
-            logger.setLevel(kw.get('loglevel', logging.DEBUG))
-            log_format = logging.Formatter(
-                kw.get('logformat', HTTP_LOGFORMAT),
-                kw.get('datefmt', DATEFORMAT))
-            filelogger = WatchedFileHandler(kw.get('file',
-                                            settings.ACCESS_LOG))
-            filelogger.setFormatter(log_format)
-            logger.addHandler(filelogger)
-            self.logger = WriteLogger(logger)
-            self.nailgun_logger = logging.getLogger("nailgun")
-
-    def __call__(self, env, start_response):
-        if self.log:
-            env[LOGGERID] = self.logger
-        env[CATCHID] = self.catch
-        try:
-            return self.application(env, start_response)
-        except:
-            return self.catch(env, start_response)
-
-    def catch(self, env, start_response):
-        '''
-        Exception catcher.
-        All exceptions should be in nailgun log
-        '''
-        # Log exception
-        if self.log:
-            self.nailgun_logger.exception(self.message)
-        # Return error handler
-        return self._errapp(env, start_response)
