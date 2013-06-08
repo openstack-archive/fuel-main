@@ -55,13 +55,6 @@ class HTTPLoggerMiddleware(object):
             env['REMOTE_PORT'],
         )
 
-        length = int(env.get('CONTENT_LENGTH', 0))
-        body = ''
-
-        if length != 0:
-            body = env['wsgi.input'].read(length)
-            env['wsgi.input'] = StringIO(body)
-
         if response_code == SERVER_ERROR_MSG:
             api_logger.error(response_info)
         else:
