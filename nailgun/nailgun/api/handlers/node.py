@@ -33,11 +33,13 @@ class NodeHandler(JSONHandler, NICUtils):
 
     @classmethod
     def render(cls, instance, fields=None):
-        json_data = JSONHandler.render(instance, fields=cls.fields)
-        network_manager = NetworkManager()
-        json_data['network_data'] = network_manager.get_node_networks(
-            instance.id
-        )
+        try:
+            json_data = JSONHandler.render(instance, fields=cls.fields)
+            network_manager = NetworkManager()
+            json_data['network_data'] = network_manager.get_node_networks(
+                instance.id)
+        except:
+            logger.error(traceback.format_exc())
         return json_data
 
     @content_json
