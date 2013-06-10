@@ -18,9 +18,10 @@ clearpart --all --initlabel
 
 # hard drives
 drives=""
-for drv in `ls -1 /sys/block | grep "sd\|hd"`; do
+for drv in `ls -1 /sys/block | grep "sd\|hd\|vd\|cciss"`; do
     if (grep -q 0 /sys/block/${drv}/removable); then
-        drives="${drives} ${drv}"
+        d=`echo ${drv} | sed -e 's/!/\//'`
+        drives="${drives} ${d}"
     fi
 done
 
