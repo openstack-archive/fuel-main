@@ -162,7 +162,7 @@ class TestNode(Base):
         self._update_nodes_in_cluster(cluster_id, nodes)
 
     @snapshot_errors
-    def test_add_compute_node_in_cluster(self):
+    def test_add_node(self):
         logging.info("Testing adding additional compute node.")
 
         self._revert_nodes()
