@@ -213,10 +213,10 @@ class TestNode(Base):
         for i, n in enumerate(cluster_nodes):
             if n['id'] == nodes[0]['id']:
                 self.assertNotEqual(n['progress'], 100, 'Progress value of first compute node is 100')
-                self.assertEquals(n['status'], 'provisioned', 'Status value of controller node is "provisioned"')
+                self.assertEquals(n['status'], 'ready', 'Status value of controller node is "provisioned"')
             if n['id'] == nodes[1]['id']:
                 self.assertNotEqual(n['progress'], 100, 'Progress value of first compute node is 100')
-                self.assertEquals(n['status'], 'provisioned', 'Status value of first compute node is "provisioned"')
+                self.assertEquals(n['status'], 'ready', 'Status value of first compute node is "provisioned"')
             if n['id'] == nodes[2]['id']:
                 self.assertNotEqual(n['progress'], 0, 'Progress value of first compute node is 0')
                 self.assertEquals(n['status'], 'provisioning', 'Status value of first compute node is "provisioning"')
