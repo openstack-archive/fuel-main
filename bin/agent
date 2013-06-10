@@ -205,17 +205,18 @@ class NodeAgent
 
     begin
       (@os[:block_device] or {} rescue {}).each do |bname, binfo|
-        if bname =~ /^(sd|hd|vd)./ and binfo
+        if /^(?<cciss>(cciss!))?(?<dname>(sd.|vd.|hd.|c\d+d\d+))$/ =~ bname and binfo
           # 512 bytes is the size of one sector by default
           block_size = 512
           fn = "/sys/block/#{bname}/queue/logical_block_size"
           block_size = File.read(fn).to_i if File.exist? fn
           block_size = 512 if block_size == 0
+          dname = "cciss/#{dname}" if cciss
           detailed_meta[:disks] << {
             :name => bname,
             :model => binfo[:model],
             :size => (binfo[:size].to_i * block_size),
-            :disk => _disk_path_by_name(bname) || bname
+            :disk => _disk_path_by_name(dname) || dname
           }
         end
       end
