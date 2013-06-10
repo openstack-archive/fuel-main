@@ -1,9 +1,9 @@
 # Disable panic about huge clock offset
-sed -i '/^ *tinker/ d' /etc/ntp.conf
+sed -i '/^\s*tinker/ d' /etc/ntp.conf
 sed -i '1 i tinker panic 0' /etc/ntp.conf
 
 # Point installed ntpd to Master node
-sed -i '/^ *server/ d' /etc/ntp.conf
+sed -i '/^\s*server/ d' /etc/ntp.conf
 echo "server $server" >> /etc/ntp.conf
 sed -i 's/SYNC_HWCLOCK\s*=\s*no/SYNC_HWCLOCK=yes/' /etc/sysconfig/ntpdate
 chkconfig ntpd on
