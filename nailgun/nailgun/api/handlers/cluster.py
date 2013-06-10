@@ -32,7 +32,6 @@ class ClusterHandler(JSONHandler, NICUtils):
     fields = (
         "id",
         "name",
-        "type",
         "mode",
         "status",
         ("release", "*")
@@ -128,7 +127,7 @@ class ClusterCollectionHandler(JSONHandler, NICUtils):
         cluster = Cluster()
         cluster.release = self.db.query(Release).get(data["release"])
         # TODO: use fields
-        for field in ('name', 'type', 'mode', 'net_manager'):
+        for field in ('name', 'mode', 'net_manager'):
             if data.get(field):
                 setattr(cluster, field, data.get(field))
         self.db.add(cluster)

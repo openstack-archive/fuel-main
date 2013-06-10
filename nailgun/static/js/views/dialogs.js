@@ -127,33 +127,25 @@ function(utils, models, simpleMessageTemplate, createClusterDialogTemplate, chan
         template: _.template(changeClusterModeDialogTemplate),
         events: {
             'change input[name=mode]': 'toggleTypes',
-            'change input[name=type]': 'toggleTypeDescription',
             'click .apply-btn:not(.disabled)': 'apply'
         },
         apply: function() {
             var cluster = this.model;
             var mode = this.$('input[name=mode]:checked').val();
-            var type = cluster.get('type');
             if (cluster.get('mode') == mode) {
                 this.$el.modal('hide');
             } else {
                 this.$('.apply-btn').addClass('disabled');
-                cluster.save({mode: mode, type: type}, {patch: true, wait: true}).fail(_.bind(this.displayErrorMessage, this));
+                cluster.save({mode: mode}, {patch: true, wait: true}).fail(_.bind(this.displayErrorMessage, this));
             }
         },
         toggleTypes: function() {
-            this.$('.type-control-group, .simple-type-title, .label-info').toggleClass('hide', this.$('input[name=mode]:checked').val() == 'singlenode');
             this.$('.mode-description').addClass('hide');
             this.$('.help-mode-' + this.$('input[name=mode]:checked').val()).removeClass('hide');
-        },
-        toggleTypeDescription: function() {
-            this.$('.type-description').addClass('hide');
-            this.$('.help-type-' + this.$('input[name=type]:checked').val()).removeClass('hide');
         },
         render: function() {
             this.constructor.__super__.render.call(this, {cluster: this.model});
             this.toggleTypes();
-            this.toggleTypeDescription();
             return this;
         }
     });

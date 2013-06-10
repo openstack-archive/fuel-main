@@ -59,16 +59,10 @@ class ClusterChanges(Base):
 
 class Cluster(Base):
     __tablename__ = 'clusters'
-    TYPES = ('compute', 'storage', 'both')
     MODES = ('singlenode', 'multinode', 'ha')
     STATUSES = ('new', 'deployment', 'operational', 'error', 'remove')
     NET_MANAGERS = ('FlatDHCPManager', 'VlanManager')
     id = Column(Integer, primary_key=True)
-    type = Column(
-        Enum(*TYPES, name='cluster_type'),
-        nullable=False,
-        default='both'
-    )
     mode = Column(
         Enum(*MODES, name='cluster_mode'),
         nullable=False,

@@ -101,11 +101,7 @@ define(function() {
         availableRoles: function() {
             var roles = ['controller'];
             if (this.get('mode') != 'singlenode') {
-                if (this.get('type') == 'both') {
-                    roles.push('compute', 'cinder');
-                } else {
-                    roles.push(this.get('type'));
-                }
+                roles.push('compute', 'cinder');
             }
             return roles;
         },
