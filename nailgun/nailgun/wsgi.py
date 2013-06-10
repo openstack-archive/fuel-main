@@ -50,7 +50,7 @@ def run_server(func, server_address=('0.0.0.0', 8080)):
 
 
 def appstart(keepalive=False):
-    logger.info("Fuel-Web {0} ({1}/{2})".format(
+    logger.info("Fuel-Web {0} SHA: {1}\nFuel SHA: {2}".format(
         settings.PRODUCT_VERSION,
         settings.COMMIT_SHA,
         settings.FUEL_COMMIT_SHA
