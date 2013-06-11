@@ -9,6 +9,7 @@ from nailgun.api.validators import NetworkConfigurationValidator
 from nailgun.api.models import Cluster
 from nailgun.api.models import NetworkGroup
 from nailgun.api.models import NetworkConfiguration
+from nailgun.api.models import Task
 from nailgun.api.handlers.tasks import TaskHandler
 from nailgun.task.helpers import TaskHelper
 from nailgun.network.manager import NetworkManager
@@ -25,14 +26,24 @@ class NetworkConfigurationVerifyHandler(JSONHandler):
     @content_json
     def PUT(self, cluster_id):
         cluster = self.get_object_or_404(Cluster, cluster_id)
-        data = self.validator.validate_networks_update(web.data())
-        vlan_ids = [
-            {
-                'name': n['name'],
-                'vlans': NetworkGroup.generate_vlan_ids_list(n)
-            }
-            for n in data['networks']
-        ]
+
+        try:
+            data = self.validator.validate_networks_update(web.data())
+        except web.webapi.badrequest as exc:
+            task = Task(name='check_networks', cluster=cluster)
+            self.db.add(task)
+            self.db.commit()
+            TaskHelper.set_error(task.uuid, exc.data)
+            logger.error(traceback.format_exc())
+
+            json_task = build_json_response(TaskHandler.render(task))
+            raise web.accepted(data=json_task)
+
+        vlan_ids = [{
+            'name': n['name'],
+            'vlans': NetworkGroup.generate_vlan_ids_list(n)
+        } for n in data['networks']]
+
         task_manager = VerifyNetworksTaskManager(cluster_id=cluster.id)
         task = task_manager.execute(data, vlan_ids)
 
@@ -78,22 +89,10 @@ class NetworkConfigurationHandler(JSONHandler):
 
                 NetworkConfiguration.update(cluster, data)
             except web.webapi.badrequest as exc:
-                err = str(exc.data)
-                TaskHelper.update_task_status(
-                    task.uuid,
-                    status="error",
-                    progress=100,
-                    msg=err
-                )
+                TaskHelper.set_error(task.uuid, exc.data)
                 logger.error(traceback.format_exc())
             except Exception as exc:
-                err = str(exc)
-                TaskHelper.update_task_status(
-                    task.uuid,
-                    status="error",
-                    progress=100,
-                    msg=err
-                )
+                TaskHelper.set_error(task.uuid, exc)
                 logger.error(traceback.format_exc())
 
         data = build_json_response(TaskHandler.render(task))

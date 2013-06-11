@@ -237,3 +237,11 @@ class TaskHelper(object):
             ]),
             cluster.nodes
         ), key=lambda n: n.id)
+
+    @classmethod
+    def set_error(cls, task_uuid, message):
+        cls.update_task_status(
+            task_uuid,
+            status="error",
+            progress=100,
+            msg=str(message))
