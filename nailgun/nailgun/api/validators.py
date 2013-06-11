@@ -325,7 +325,7 @@ class NetworkConfigurationValidator(BasicValidator):
                     message="No 'id' param for '{0}'".format(i)
                 )
 
-            if 'name' in i and i['name'] == 'public':
+            if i.get('name') == 'public':
                 try:
                     IPNetwork('0.0.0.0/' + i['netmask'])
                 except (AddrFormatError, KeyError):
