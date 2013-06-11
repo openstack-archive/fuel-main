@@ -574,8 +574,6 @@ class CheckNetworksTask(object):
 
     @classmethod
     def execute(self, task, data):
-        task_uuid = task.uuid
-
         # If not set in data then fetch from db
         if 'net_manager' in data:
             netmanager = data['net_manager']
@@ -634,3 +632,47 @@ class CheckNetworksTask(object):
             orm().commit()
             full_err_msg = "\n".join(err_msgs)
             raise errors.NetworkCheckError(full_err_msg)
+
+
+class CheckBeforeDeploymentTask(object):
+    @classmethod
+    def execute(cls, task):
+        netmanager = NetworkManager()
+        nodes_count = task.cluster.nodes.count()
+
+        public_network = task.cluster.network_groups.filter_by(
+            name == 'public').first()
+        floating_network = task.cluster.network_groups.filter_by(
+            name == 'floating').first()
+
+        public_network_size = cls.__network_size(public_network)
+        floating_network_size = cls.__network_size(floating_network)
+
+        error_messages = []
+        if public_network_size < nodes_count:
+            error_messages.append(
+                cls.__format_error(
+                    'public', public_network_size, nodes_count))
+
+        if floating_network_size < nodes_count:
+            error_messages.append(
+                cls.__format_error(
+                    'floating', floating_network_size, nodes_count))
+
+        if error_messages:
+            raise errors.NetworkCheckError("\n".join(error_messages))
+
+    @classmethod
+    def __network_size(cls, network):
+        size = 0
+        for ip_range in network.ip_ranges:
+            size += len(netaddr.IPRange(ip_range.first, ip_range.last))
+        return size
+
+    @classmethod
+    def __format_error(cls, network_name, network_size, nodes_count):
+        return ' '.join(
+            ['Not enough ip addresses.',
+             'In the {0} network there are {1} addresses, but'.\
+             format(network_name, network_size),
+             'the cluster has {0} nodes'.format(nodes_count)])

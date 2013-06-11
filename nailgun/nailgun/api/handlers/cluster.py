@@ -188,8 +188,13 @@ class ClusterChangesHandler(JSONHandler):
             )
         )
 
-        task_manager = DeploymentTaskManager(cluster_id=cluster.id)
+        check_task_manager = CheckBeforeDeploymentTaskManager(cluster_id=cluster.id)
+        check_task = check_task_manager.execute()
+        if check_task.status == 'error':
+            return TaskHandler.render(task)
+
         try:
+            task_manager = DeploymentTaskManager(cluster_id=cluster.id)
             task = task_manager.execute()
         except Exception as exc:
             logger.warn(u'ClusterChangesHandler: error while execution'

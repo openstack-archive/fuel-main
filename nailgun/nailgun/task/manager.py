@@ -139,6 +139,24 @@ class DeploymentTaskManager(TaskManager):
         return supertask
 
 
+class CheckBeforeDeploymentTaskManager(TaskManager):
+
+    def execute(self):
+        task = Task(
+            name='check_before_deployment',
+            cluster=self.cluster
+        )
+        orm().add(task)
+        orm().commit()
+        self._call_silently(task, tasks.CheckBeforeDeploymentTask, data)
+        orm().refresh(task)
+        if task.status == 'running':
+            TaskHelper.update_task_status(
+                task.uuid, status="ready", progress=100)
+
+        return task
+
+
 class CheckNetworksTaskManager(TaskManager):
 
     def execute(self, data):
