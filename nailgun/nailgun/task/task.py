@@ -638,12 +638,14 @@ class CheckBeforeDeploymentTask(object):
     @classmethod
     def execute(cls, task):
         netmanager = NetworkManager()
-        nodes_count = task.cluster.nodes.count()
+        nodes_count = len(task.cluster.nodes)
 
-        public_network = task.cluster.network_groups.filter_by(
-            name == 'public').first()
-        floating_network = task.cluster.network_groups.filter_by(
-            name == 'floating').first()
+        public_network = filter(
+            lambda ng: ng.name == 'public',
+            task.cluster.network_groups)[0]
+        floating_network = filter(
+            lambda ng: ng.name == 'floating',
+            task.cluster.network_groups)[0]
 
         public_network_size = cls.__network_size(public_network)
         floating_network_size = cls.__network_size(floating_network)
@@ -673,6 +675,6 @@ class CheckBeforeDeploymentTask(object):
     def __format_error(cls, network_name, network_size, nodes_count):
         return ' '.join(
             ['Not enough ip addresses.',
-             'In the {0} network there are {1} addresses, but'.\
+             'In {0} network there are {1} addresses, but'.
              format(network_name, network_size),
-             'the cluster has {0} nodes'.format(nodes_count)])
+             'cluster has {0} nodes.'.format(nodes_count)])

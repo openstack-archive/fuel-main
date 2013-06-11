@@ -23,6 +23,7 @@ from nailgun.api.handlers.tasks import TaskHandler
 from nailgun.task.helpers import TaskHelper
 from nailgun.task.manager import DeploymentTaskManager
 from nailgun.task.manager import ClusterDeletionManager
+from nailgun.task.manager import CheckBeforeDeploymentTaskManager
 
 from nailgun.network.topology import NICUtils
 
@@ -184,14 +185,13 @@ class ClusterChangesHandler(JSONHandler):
             log_404=(
                 "warning",
                 "Error: there is no cluster "
-                "with id '{0}' in DB.".format(cluster_id)
-            )
-        )
+                "with id '{0}' in DB.".format(cluster_id)))
 
-        check_task_manager = CheckBeforeDeploymentTaskManager(cluster_id=cluster.id)
+        check_task_manager = CheckBeforeDeploymentTaskManager(
+            cluster_id=cluster.id)
         check_task = check_task_manager.execute()
         if check_task.status == 'error':
-            return TaskHandler.render(task)
+            return TaskHandler.render(check_task)
 
         try:
             task_manager = DeploymentTaskManager(cluster_id=cluster.id)

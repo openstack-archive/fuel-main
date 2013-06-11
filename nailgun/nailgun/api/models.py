@@ -472,6 +472,7 @@ class Task(Base):
         'super',
         'deploy',
         'deployment',
+        'check_before_deployment',
         'provision',
         'node_deletion',
         'cluster_deletion',

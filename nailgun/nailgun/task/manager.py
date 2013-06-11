@@ -148,7 +148,7 @@ class CheckBeforeDeploymentTaskManager(TaskManager):
         )
         orm().add(task)
         orm().commit()
-        self._call_silently(task, tasks.CheckBeforeDeploymentTask, data)
+        self._call_silently(task, tasks.CheckBeforeDeploymentTask)
         orm().refresh(task)
         if task.status == 'running':
             TaskHelper.update_task_status(

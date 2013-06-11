@@ -389,3 +389,45 @@ class TestHandlers(BaseHandlers):
         self.assertEqual(nodes[0].needs_redeploy, True)
 
         self.env.launch_deployment()
+
+    def test_occurs_error_not_enough_ip_addresses(self):
+        self.env.create(
+            cluster_kwargs={},
+            nodes_kwargs=[
+                {'pending_addition': True},
+                {'pending_addition': True},
+                {'pending_addition': True}])
+
+        cluster = self.env.clusters[0]
+
+        public_network = self.db.query(
+            NetworkGroup).filter_by(name='public').first()
+        floating_network = self.db.query(
+            NetworkGroup).filter_by(name='floating').first()
+
+        net_data = {
+            "networks": [{
+                'id': public_network.id,
+                'ip_ranges': [[
+                    '240.0.1.2',
+                    '240.0.1.3']]}, {
+                'id': floating_network.id,
+                'ip_ranges': [[
+                    '240.0.0.2',
+                    '240.0.0.2']]}]}
+
+        resp = self.app.put(
+            reverse(
+                'NetworkConfigurationHandler',
+                kwargs={'cluster_id': cluster.id}),
+            json.dumps(net_data),
+            headers=self.default_headers)
+
+        task = self.env.launch_deployment()
+
+        self.assertEquals(task.status, 'error')
+        self.assertEquals(task.message,
+                          'Not enough ip addresses. In public network there '
+                          "are 2 addresses, but cluster has 3 nodes.\n"
+                          'Not enough ip addresses. In floating network there '
+                          'are 1 addresses, but cluster has 3 nodes.')
