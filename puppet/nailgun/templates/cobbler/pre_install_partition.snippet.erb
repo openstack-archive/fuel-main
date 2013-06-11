@@ -1,8 +1,9 @@
 # hard drives
 tgtdrive="undefined"
-for drv in `ls -1 /sys/block | grep "sd\|hd\|vd"`; do
+for drv in `ls -1 /sys/block | grep "sd\|hd\|vd\|cciss"`; do
     if (grep -q 0 /sys/block/${drv}/removable); then
-        tgtdrive="${drv}"
+        d=`echo ${drv} | sed -e 's/!/\//'`
+        tgtdrive="${d}"
         break
     fi
 done
