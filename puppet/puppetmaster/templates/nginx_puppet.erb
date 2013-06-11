@@ -1,5 +1,8 @@
-upstream puppet-production {
+upstream puppet-ca {
     server 127.0.0.1:18140;
+}
+
+upstream puppet-production {
     server 127.0.0.1:18141;
     server 127.0.0.1:18142;
     server 127.0.0.1:18143;
@@ -9,9 +12,16 @@ server {
     listen 8140;
     server_name <%= puppet_master_hostname %> localhost;
 
+    log_format puppet '$remote_addr - $remote_user [$time_local] "$request" '
+                      '$upstream_addr $status $body_bytes_sent "$http_referer" '
+                      '"$http_user_agent" "$http_x_forwarded_for"';
+
+    access_log /var/log/nginx/access_puppet.log puppet;
+    error_log /var/log/nginx/error_puppet.log debug;
+
     # PREVENTING 413 Request Entity Too Large errors
     client_max_body_size 20M;
-    
+
     ssl                     on;
     ssl_session_timeout     20m;
     ssl_certificate         <%= puppet_master_crt %>;
@@ -21,21 +31,25 @@ server {
 
     ssl_ciphers             SSLv2:-LOW:-EXPORT:RC4+RSA;
     ssl_session_cache       shared:SSL:8m;
-    
+
     ssl_verify_client       optional;
 
     root                    /tmp;
 
+    proxy_redirect      off;
+    proxy_set_header    Host             $host;
+    proxy_set_header    X-Client-Verify  $ssl_client_verify;
+    proxy_set_header    X-Client-DN      $ssl_client_s_dn;
+    proxy_set_header    X-SSL-Subject    $ssl_client_s_dn;
+    proxy_set_header    X-SSL-Issuer     $ssl_client_i_dn;
+    proxy_read_timeout  2000;
+
+    location ~ /.*?/certificate.*$ {
+        proxy_pass          http://puppet-ca;
+    }
 
     location / {
         proxy_pass          http://puppet-production;
-        proxy_redirect      off;
-        proxy_set_header    Host             $host;
-        proxy_set_header    X-Client-Verify  $ssl_client_verify;
-        proxy_set_header    X-Client-DN      $ssl_client_s_dn;
-        proxy_set_header    X-SSL-Subject    $ssl_client_s_dn;
-        proxy_set_header    X-SSL-Issuer     $ssl_client_i_dn;
-        proxy_read_timeout  2000;
     }
-    
+
 }
