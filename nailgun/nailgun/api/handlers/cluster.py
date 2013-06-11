@@ -167,9 +167,7 @@ class ClusterCollectionHandler(JSONHandler, NICUtils):
             # TODO: investigate transactions
             self.db.delete(cluster)
 
-            raise web.webapi.HTTPError(
-                status="202 Accepted",
-                data=e.message)
+            raise web.badrequest(e.message)
 
 
 class ClusterChangesHandler(JSONHandler):

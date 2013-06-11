@@ -86,7 +86,7 @@ function(utils, models, simpleMessageTemplate, createClusterDialogTemplate, chan
                         if (response.status == 409) {
                             cluster.trigger('invalid', cluster, {name: response.responseText});
                             this.$('.create-cluster-btn').removeClass('disabled');
-                        } else if (response.status == 202) {
+                        } else if (response.status == 400) {
                             this.displayInfoMessage({error: false, title: 'Create a new OpenStack environment error', message: response.responseText});
                         } else {
                             this.displayErrorMessage();
