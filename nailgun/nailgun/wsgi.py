@@ -69,7 +69,8 @@ def appstart(keepalive=False):
         keep_alive.start()
 
     if not settings.FAKE_TASKS:
-        if not keep_alive.is_alive():
+        if not keep_alive.is_alive() \
+                and not settings.FAKE_TASKS_AMQP:
             logger.info("Running KeepAlive watcher...")
             keep_alive.start()
         rpc_process = threaded.RPCKombuThread()

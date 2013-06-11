@@ -1,9 +1,9 @@
 # -*- coding: utf-8 -*-
 
-from nailgun.api.urls import api_app
-from nailgun.webui.urls import webui_app
+from nailgun.api import urls as api_urls
+from nailgun.webui import urls as webui_urls
 
 urls = (
-    "/api", api_app,
-    "", webui_app
+    "/api", api_urls.app,
+    "", webui_urls.app
 )

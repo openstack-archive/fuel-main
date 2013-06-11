@@ -15,7 +15,6 @@
         "pk": 1,
         "model": "nailgun.vlan",
         "fields": {
-            "id": 1
         }
     },
     {
@@ -26,7 +25,7 @@
             "access": "admin",
             "network_group": 1,
             "cidr": "{{settings.ADMIN_NETWORK['cidr']}}",
-            "vlan_id": 1
+            "vlan": 1
         }
     },
     {

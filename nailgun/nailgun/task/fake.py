@@ -14,7 +14,8 @@ from nailgun.settings import settings
 from nailgun.logger import logger
 from nailgun.errors import errors
 from nailgun.notifier import notifier
-from nailgun.api.models import Network, Node
+from nailgun.api.models import Network, Node, NodeAttributes
+from nailgun.network.manager import NetworkManager
 from nailgun.rpc.receiver import NailgunReceiver
 
 
@@ -248,7 +249,9 @@ class FakeDeletionThread(FakeThread):
             sessionmaker(bind=engine, query_cls=NoCacheQuery)
         )
 
-        for node in nodes_to_restore:
+        for node_data in nodes_to_restore:
+            node = Node(**node_data)
+
             # Offline node just deleted from db
             # and could not recreated with status
             # discover
@@ -258,6 +261,12 @@ class FakeDeletionThread(FakeThread):
             node.status = 'discover'
             orm.add(node)
             orm.commit()
+            node.attributes = NodeAttributes(node_id=node.id)
+            node.attributes.volumes = node.volume_manager.gen_volumes_info()
+            network_manager = NetworkManager(db=orm)
+            network_manager.update_interfaces_info(node)
+            orm.commit()
+
             ram = round(node.meta.get('ram') or 0, 1)
             cores = node.meta.get('cores') or 'unknown'
             notifier.notify("discover",

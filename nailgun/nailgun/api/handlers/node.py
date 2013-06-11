@@ -57,7 +57,7 @@ class NodeHandler(JSONHandler, NICUtils):
         for key, value in data.iteritems():
             setattr(node, key, value)
             if key == 'cluster_id':
-                if key:
+                if value:
                     self.allow_network_assignment_to_all_interfaces(node)
                     self.assign_networks_to_main_interface(node)
                 else:

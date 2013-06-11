@@ -269,7 +269,6 @@
             "progress": 0,
             "pending_deletion": false,
             "os_platform": "ubuntu",
-            "id": 1,
             "manufacturer": "Supermicro"
         }
     },
@@ -380,7 +379,6 @@
             "progress": 0,
             "pending_deletion": false,
             "os_platform": "ubuntu",
-            "id": 2,
             "manufacturer": "80AD"
         }
     },
@@ -504,7 +502,6 @@
             "progress": 0,
             "pending_deletion": false,
             "os_platform": "ubuntu",
-            "id": 3,
             "manufacturer": "Supermicro"
         }
     },
@@ -628,7 +625,6 @@
             "progress": 0,
             "pending_deletion": false,
             "os_platform": "ubuntu",
-            "id": 4,
             "manufacturer": "Supermicro"
         }
     },
@@ -753,7 +749,6 @@
             "progress": 0,
             "pending_deletion": false,
             "os_platform": "ubuntu",
-            "id": 5,
             "manufacturer": "Supermicro"
         }
     },
@@ -811,7 +806,6 @@
             "progress": 0,
             "pending_deletion": false,
             "os_platform": "centos",
-            "id": 6,
             "manufacturer": "VirtualBox"
         }
     },
@@ -874,7 +868,6 @@
             "progress": 0,
             "pending_deletion": false,
             "os_platform": "centos",
-            "id": 7,
             "manufacturer": "KVM"
         }
     },
@@ -1147,7 +1140,6 @@
             "progress": 0,
             "pending_deletion": false,
             "os_platform": "ubuntu",
-            "id": 8,
             "manufacturer": "Supermicro"
         }
     }

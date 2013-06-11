@@ -71,13 +71,15 @@ def syncdb():
 
 
 def dropdb():
-    tables = [name for (name,) in engine.execute(
+    db = make_session()
+
+    tables = [name for (name,) in db.execute(
         "SELECT tablename FROM pg_tables WHERE schemaname = 'public'")]
     for table in tables:
-        engine.execute("DROP TABLE IF EXISTS %s CASCADE" % table)
+        db.execute("DROP TABLE IF EXISTS %s CASCADE" % table)
 
     # sql query to list all types, equivalent to psql's \dT+
-    types = [name for (name,) in engine.execute("""
+    types = [name for (name,) in db.execute("""
         SELECT t.typname as type FROM pg_type t
         LEFT JOIN pg_catalog.pg_namespace n ON n.oid = t.typnamespace
         WHERE (t.typrelid = 0 OR (
@@ -91,7 +93,8 @@ def dropdb():
         AND n.nspname = 'public'
         """)]
     for type_ in types:
-        engine.execute("DROP TYPE IF EXISTS %s CASCADE" % type_)
+        db.execute("DROP TYPE IF EXISTS %s CASCADE" % type_)
+    db.commit()
 
 
 def flush():

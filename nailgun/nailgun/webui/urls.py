@@ -9,4 +9,4 @@ urls = (
     r"/", 'IndexHandler',
 )
 
-webui_app = web.application(urls, locals())
+app = web.application(urls, locals())

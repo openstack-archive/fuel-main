@@ -419,7 +419,7 @@ class DeletionTask(object):
 
                 if USE_FAKE:
                     # only fake tasks
-                    new_node = Node()
+                    new_node = {}
                     keep_attrs = (
                         'id',
                         'cluster_id',
@@ -427,15 +427,11 @@ class DeletionTask(object):
                         'pending_deletion',
                         'pending_addition'
                     )
-                    for prop in object_mapper(new_node).iterate_properties:
+                    for prop in object_mapper(node).iterate_properties:
                         if isinstance(
                             prop, ColumnProperty
                         ) and prop.key not in keep_attrs:
-                            setattr(
-                                new_node,
-                                prop.key,
-                                getattr(node, prop.key)
-                            )
+                            new_node[prop.key] = getattr(node, prop.key)
                     nodes_to_restore.append(new_node)
                     # /only fake tasks
 

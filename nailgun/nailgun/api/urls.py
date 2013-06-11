@@ -1,5 +1,7 @@
 # -*- coding: utf-8 -*-
 
+import re
+
 import web
 
 from nailgun.api.handlers.cluster import ClusterHandler
@@ -102,4 +104,4 @@ urls = (
     'VersionHandler'
 )
 
-api_app = web.application(urls, locals())
+app = web.application(urls, locals())
