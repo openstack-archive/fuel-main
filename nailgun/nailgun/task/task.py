@@ -643,26 +643,11 @@ class CheckBeforeDeploymentTask(object):
         public_network = filter(
             lambda ng: ng.name == 'public',
             task.cluster.network_groups)[0]
-        floating_network = filter(
-            lambda ng: ng.name == 'floating',
-            task.cluster.network_groups)[0]
-
         public_network_size = cls.__network_size(public_network)
-        floating_network_size = cls.__network_size(floating_network)
 
-        error_messages = []
         if public_network_size < nodes_count:
-            error_messages.append(
-                cls.__format_error(
-                    'public', public_network_size, nodes_count))
-
-        if floating_network_size < nodes_count:
-            error_messages.append(
-                cls.__format_error(
-                    'floating', floating_network_size, nodes_count))
-
-        if error_messages:
-            raise errors.NetworkCheckError("\n".join(error_messages))
+            error_message = cls.__format_error(nodes_count)
+            raise errors.NetworkCheckError(error_message)
 
     @classmethod
     def __network_size(cls, network):
@@ -672,9 +657,7 @@ class CheckBeforeDeploymentTask(object):
         return size
 
     @classmethod
-    def __format_error(cls, network_name, network_size, nodes_count):
-        return ' '.join(
-            ['Not enough ip addresses.',
-             'In {0} network there are {1} addresses, but'.
-             format(network_name, network_size),
-             'cluster has {0} nodes.'.format(nodes_count)])
+    def __format_error(cls, nodes_count):
+        return 'Not enough IP addresses. Public network must have at least '\
+            '{nodes_count} IP addresses for '.format(nodes_count=nodes_count) +\
+            'the current environment.'
