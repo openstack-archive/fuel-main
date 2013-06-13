@@ -33,6 +33,7 @@ class NodeHandler(JSONHandler, NICUtils):
 
     @classmethod
     def render(cls, instance, fields=None):
+        json_data = None
         try:
             json_data = JSONHandler.render(instance, fields=cls.fields)
             network_manager = NetworkManager()
