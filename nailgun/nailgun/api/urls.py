@@ -1,7 +1,5 @@
 # -*- coding: utf-8 -*-
 
-import re
-
 import web
 
 from nailgun.api.handlers.cluster import ClusterHandler
