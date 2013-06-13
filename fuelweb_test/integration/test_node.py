@@ -167,7 +167,7 @@ class TestNode(Base):
 
         self._revert_nodes()
         self._bootstrap_nodes(['slave1', 'slave2', 'slave3'])
-        cluster_id = self._create_cluster(name='empty')
+        cluster_id = self._create_cluster(name='Adding node test')
 
         # fetch nodes list
         response = self.client.get('/api/nodes')
