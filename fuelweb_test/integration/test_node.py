@@ -623,18 +623,8 @@ class TestNode(Base):
         except KeyError:
             pass
 
-        nodes = self._bootstrap_nodes(node_names)
-
-        for role in nodes_dict:
-            for n in nodes_dict[role]:
-                slave = ci.environment.node[n]
-                node = self._get_slave_node_by_devops_node(slave)
-                self.client.put(
-                    "/api/nodes/%s/" % node['id'],
-                    {"role": role, "pending_addition": True}
-                )
-
-        self._update_nodes_in_cluster(cluster_id, nodes)
+        self._bootstrap_nodes(node_names)
+        self._add_nodes(cluster_id, nodes_dict)
         task = self._launch_provisioning(cluster_id)
 
         self._task_wait(task, 'Installation', task_timeout)
@@ -671,6 +661,22 @@ class TestNode(Base):
                 self.assertNotEqual(ip, None, "Unable to fing a valid IP"
                                               " for node %s" % n)
         return cluster_id
+
+    def _add_nodes(self, cluster_id, nodes_dict):
+        logging.info("Nodes roles", nodes_dict)
+        nodes_put_data = []
+        for role in nodes_dict:
+            for n in nodes_dict[role]:
+                slave = ci.environment.node[n]
+                node = self._get_slave_node_by_devops_node(slave)
+                nodes_put_data.append(
+                    {'id': node['id'], 'cluster_id': cluster_id,
+                     'role': role, 'pending_addition': 'true'})
+
+        res = self.client.put("/api/nodes/", nodes_put_data)
+        self.assertEquals(200, res.getcode(),
+                          "Add nodes to cluster %d" % cluster_id)
+        return json.loads(res.read())
 
     def _launch_provisioning(self, cluster_id):
         """Return hash with task description."""
