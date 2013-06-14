@@ -141,7 +141,7 @@ $(BUILD_DIR)/iso/iso.done: $(BUILD_DIR)/iso/isoroot.done
 # installation images directory size (~165M) and syslinux directory size (~35M)
 # plus a bit of free space for ext2 filesystem data
 # +300M seems reasonable
-IMGSIZE = $(shell echo "$(shell ls -s $(ISO_PATH) | awk '{print $$1}') / 1024 + 300" | bc)
+IMGSIZE = $(shell echo "$(shell ls -s $(ISO_PATH) | awk '{print $$1}') * 1.3 / 1024" | bc)
 
 $(BUILD_DIR)/iso/img.done: $(BUILD_DIR)/iso/iso.done
 	rm -f $(BUILD_DIR)/iso/img_loop_device
@@ -174,7 +174,7 @@ $(BUILD_DIR)/iso/img.done: $(BUILD_DIR)/iso/iso.done
 	sudo rm $(BUILD_DIR)/iso/imgroot/syslinux/isolinux.cfg
 	sudo cp $(SOURCE_DIR)/iso/syslinux/syslinux.cfg $(BUILD_DIR)/iso/imgroot/syslinux  # NOTE(mihgen): Is it used for IMG file? Comments needed!
 	sudo sed -i -e "s/will_be_substituted_with_actual_uuid/`cat $(BUILD_DIR)/iso/img_loop_uuid`/g" $(BUILD_DIR)/iso/imgroot/syslinux/syslinux.cfg
-	sudo cp $(SOURCE_DIR)/iso/ks.cfg $(BUILD_DIR)/iso/imgroot/ks.cfg
+	sudo cp $(BUILD_DIR)/iso/isoroot/ks.cfg $(BUILD_DIR)/iso/imgroot/ks.cfg
 	sudo sed -i -e "s/will_be_substituted_with_actual_uuid/`cat $(BUILD_DIR)/iso/img_loop_uuid`/g" $(BUILD_DIR)/iso/imgroot/ks.cfg
 	sudo cp $(ISO_PATH) $(BUILD_DIR)/iso/imgroot/nailgun.iso
 	sudo sync
