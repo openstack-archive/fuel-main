@@ -6,7 +6,7 @@ $(BUILD_DIR)/mirror/centos/etc/yum.conf: $(call depv,yum_conf)
 $(BUILD_DIR)/mirror/centos/etc/yum.conf: export contents:=$(yum_conf)
 $(BUILD_DIR)/mirror/centos/etc/yum.conf:
 	mkdir -p $(@D)
-	echo "$${contents}" > $@
+	/bin/echo -e "$${contents}" > $@
 
 $(BUILD_DIR)/mirror/centos/etc/yum-plugins/priorities.py: \
 		$(SOURCE_DIR)/mirror/centos/yum-priorities-plugin.py
@@ -15,14 +15,14 @@ $(BUILD_DIR)/mirror/centos/etc/yum-plugins/priorities.py: \
 
 $(BUILD_DIR)/mirror/centos/etc/yum/pluginconf.d/priorities.conf:
 	mkdir -p $(@D)
-	echo "[main]\nenabled=1\ncheck_obsoletes=1\nfull_match=1" > $@
+	/bin/echo -e "[main]\nenabled=1\ncheck_obsoletes=1\nfull_match=1" > $@
 
 $(BUILD_DIR)/mirror/centos/etc/yum.repos.d/base.repo: $(call depv,YUM_REPOS)
 $(BUILD_DIR)/mirror/centos/etc/yum.repos.d/base.repo: \
 		export contents:=$(foreach repo,$(YUM_REPOS),\n$(yum_repo_$(repo))\n)
 $(BUILD_DIR)/mirror/centos/etc/yum.repos.d/base.repo:
 	@mkdir -p $(@D)
-	echo "$${contents}" > $@
+	/bin/echo -e "$${contents}" > $@
 
 $(BUILD_DIR)/mirror/centos/yum-config.done: \
 		$(BUILD_DIR)/mirror/centos/etc/yum.conf \
