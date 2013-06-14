@@ -5,6 +5,12 @@ logfile = /var/log/mcollective.log
 loglevel = info
 direct_addressing = 1
 
+# Set huge value of ttl to avoid cases with unsyncronized time between nodes
+# bash$ date -d '2033-5-18 3:33:20 UTC' +%s
+# 2000000000
+# It means that ttl equals 63 years and a half.
+ttl = 2000000000
+
 # Plugins
 securityprovider = psk
 plugin.psk = <%= pskey %>
