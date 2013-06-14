@@ -76,7 +76,21 @@ class ClusterHandler(JSONHandler, NICUtils):
     @content_json
     def PUT(self, cluster_id):
         cluster = self.get_object_or_404(Cluster, cluster_id)
-        data = self.validator.validate(web.data())
+
+        try:
+            data = self.validator.validate(web.data())
+        except (
+            errors.AlreadyExists
+        ) as exc:
+            err = web.conflict()
+            err.message = exc.message
+            raise err
+        except (
+            errors.InvalidData,
+            Exception
+        ) as exc:
+            raise web.badrequest(message=str(exc))
+
         for key, value in data.iteritems():
             if key == "nodes":
                 # Todo: sepatate nodes for deletion and addition by set().
@@ -136,7 +150,19 @@ class ClusterCollectionHandler(JSONHandler, NICUtils):
     @content_json
     def POST(self):
         # It's used for cluster creating only.
-        data = self.validator.validate(web.data())
+        try:
+            data = self.validator.validate(web.data())
+        except (
+            errors.AlreadyExists
+        ) as exc:
+            err = web.conflict()
+            err.message = exc.message
+            raise err
+        except (
+            errors.InvalidData,
+            Exception
+        ) as exc:
+            raise web.badrequest(message=str(exc))
 
         cluster = Cluster()
         cluster.release = self.db.query(Release).get(data["release"])
@@ -244,7 +270,19 @@ class ClusterAttributesHandler(JSONHandler):
         if not cluster.attributes:
             raise web.internalerror("No attributes found!")
 
-        data = self.validator.validate(web.data())
+        try:
+            data = self.validator.validate(web.data())
+        except (
+            errors.AlreadyExists
+        ) as exc:
+            err = web.conflict()
+            err.message = exc.message
+            raise err
+        except (
+            errors.InvalidData,
+            Exception
+        ) as exc:
+            raise web.badrequest(message=str(exc))
 
         for key, value in data.iteritems():
             setattr(cluster.attributes, key, value)

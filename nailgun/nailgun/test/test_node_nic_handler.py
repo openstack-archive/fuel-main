@@ -41,19 +41,7 @@ class TestHandlers(BaseHandlers):
             {'interfaces': [{'name': '', 'mac': '00:00:00'}]},
             {'interfaces': [{'name': 'eth0', 'mac': ''}]},
             {'interfaces': [{'mac': '00:00:00'}]},
-            {'interfaces': [{'name': 'eth0'}]},
-            {'interfaces': [{'name': 'eth0', 'mac': '00:00:00',
-                             'max_speed': -100}]},
-            {'interfaces': [{'name': 'eth0', 'mac': '00:00:00',
-                             'max_speed': 10.0}]},
-            {'interfaces': [{'name': 'eth0', 'mac': '00:00:00',
-                             'max_speed': '100'}]},
-            {'interfaces': [{'name': 'eth0', 'mac': '00:00:00',
-                             'current_speed': 10.0}]},
-            {'interfaces': [{'name': 'eth0', 'mac': '00:00:00',
-                             'current_speed': -100}]},
-            {'interfaces': [{'name': 'eth0', 'mac': '00:00:00',
-                             'current_speed': '100'}]},
+            {'interfaces': [{'name': 'eth0'}]}
         ]
         for nic_meta in meta_list:
             meta = self.env.default_metadata()
@@ -64,7 +52,8 @@ class TestHandlers(BaseHandlers):
                 reverse('NodeCollectionHandler'),
                 json.dumps([node_data]),
                 expect_errors=True,
-                headers=self.default_headers)
+                headers=self.default_headers
+            )
             self.assertEquals(resp.status, 400)
             resp = self.app.get(
                 reverse('NodeNICsHandler', kwargs={'node_id': node['id']}),
@@ -72,6 +61,36 @@ class TestHandlers(BaseHandlers):
             self.assertEquals(resp.status, 200)
             response = json.loads(resp.body)
             self.assertEquals(response, [])
+
+        meta_clean_list = [
+            {'interfaces': [{'name': 'eth0', 'mac': '00:00:00',
+                             'max_speed': -100}]},
+            {'interfaces': [{'name': 'eth0', 'mac': '00:00:00',
+                             'current_speed': -100}]},
+            {'interfaces': [{'name': 'eth0', 'mac': '00:00:00',
+                             'current_speed': '100'}]},
+            {'interfaces': [{'name': 'eth0', 'mac': '00:00:00',
+                             'max_speed': 10.0}]},
+            {'interfaces': [{'name': 'eth0', 'mac': '00:00:00',
+                             'max_speed': '100'}]},
+            {'interfaces': [{'name': 'eth0', 'mac': '00:00:00',
+                             'current_speed': 10.0}]}
+        ]
+
+        for nic_meta in meta_clean_list:
+            meta = self.env.default_metadata()
+            meta.update(nic_meta)
+            node_data = {'mac': node['mac'], 'is_agent': True,
+                         'meta': meta}
+            resp = self.app.put(
+                reverse('NodeCollectionHandler'),
+                json.dumps([node_data]),
+                expect_errors=True,
+                headers=self.default_headers
+            )
+            self.assertEquals(resp.status, 200)
+            ifaces = json.loads(resp.body)[0]["meta"]["interfaces"]
+            self.assertEquals(ifaces, [{'mac': '00:00:00', 'name': 'eth0'}])
 
     def test_get_handler_without_NICs(self):
         meta = self.env.default_metadata()

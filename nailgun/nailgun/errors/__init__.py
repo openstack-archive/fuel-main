@@ -19,6 +19,12 @@ from nailgun.errors.base import NailgunException
 
 
 default_messages = {
+    # common errors
+    "InvalidData": "Invalid data received",
+    "AlreadyExists": "Object already exists",
+    # node discovering errors
+    "InvalidInterfacesInfo": "Invalid interfaces info",
+    "InvalidMetadata": "Invalid metadata specified for node",
     # deployment errors
     "DeploymentAlreadyStarted": "Deployment already started",
     "DeletionAlreadyStarted": "Environment removal already started",

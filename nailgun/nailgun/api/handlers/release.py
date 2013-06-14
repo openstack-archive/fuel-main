@@ -18,6 +18,7 @@ import json
 
 import web
 
+from nailgun.errors import errors
 from nailgun.api.models import Release
 from nailgun.api.validators import ReleaseValidator
 from nailgun.api.handlers.base import JSONHandler, content_json
@@ -41,7 +42,21 @@ class ReleaseHandler(JSONHandler):
     @content_json
     def PUT(self, release_id):
         release = self.get_object_or_404(Release, release_id)
-        data = self.validator.validate_json(web.data())
+
+        try:
+            data = self.validator.validate(web.data())
+        except (
+            errors.AlreadyExists
+        ) as exc:
+            err = web.conflict()
+            err.message = exc.message
+            raise err
+        except (
+            errors.InvalidData,
+            Exception
+        ) as exc:
+            raise web.badrequest(message=str(exc))
+
         for key, value in data.iteritems():
             setattr(release, key, value)
         self.db.commit()
@@ -70,7 +85,20 @@ class ReleaseCollectionHandler(JSONHandler):
 
     @content_json
     def POST(self):
-        data = self.validator.validate(web.data())
+        try:
+            data = self.validator.validate(web.data())
+        except (
+            errors.AlreadyExists
+        ) as exc:
+            err = web.conflict()
+            err.message = exc.message
+            raise err
+        except (
+            errors.InvalidData,
+            Exception
+        ) as exc:
+            raise web.badrequest(message=str(exc))
+
         release = Release()
         for key, value in data.iteritems():
             setattr(release, key, value)

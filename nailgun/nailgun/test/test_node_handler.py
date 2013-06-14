@@ -55,7 +55,8 @@ class TestHandlers(BaseHandlers):
             json.dumps({'id': node_id, 'mac': 'ASDFAAASDFAA'}),
             headers=self.default_headers,
             expect_errors=True)
-        self.assertEquals(400, resp.status)
+        # we now just ignore 'id' if present
+        self.assertEquals(201, resp.status)
 
     def test_node_deletion(self):
         node = self.env.create_node(api=False)

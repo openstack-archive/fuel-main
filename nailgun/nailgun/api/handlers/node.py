@@ -22,6 +22,7 @@ import web
 
 from nailgun.notifier import notifier
 from nailgun.logger import logger
+from nailgun.errors import errors
 from nailgun.api.models import Node
 from nailgun.api.models import Network
 from nailgun.api.models import NetworkAssignment
@@ -67,7 +68,27 @@ class NodeHandler(JSONHandler, NICUtils):
         node = self.get_object_or_404(Node, node_id)
         if not node.attributes:
             node.attributes = NodeAttributes(node_id=node.id)
-        data = self.validator.validate_update(web.data())
+
+        try:
+            data = self.validator.validate_update(web.data())
+        except (
+            errors.InvalidInterfacesInfo,
+            errors.InvalidMetadata
+        ) as exc:
+            notifier.notify("error", str(exc))
+            raise web.badrequest(message=str(exc))
+        except (
+            errors.AlreadyExists
+        ) as exc:
+            err = web.conflict()
+            err.message = exc.message
+            raise err
+        except (
+            errors.InvalidData,
+            Exception
+        ) as exc:
+            raise web.badrequest(message=str(exc))
+
         for key, value in data.iteritems():
             setattr(node, key, value)
             if key == 'cluster_id':
@@ -124,7 +145,26 @@ class NodeCollectionHandler(JSONHandler, NICUtils):
 
     @content_json
     def POST(self):
-        data = self.validator.validate(web.data())
+        try:
+            data = self.validator.validate(web.data())
+        except (
+            errors.InvalidInterfacesInfo,
+            errors.InvalidMetadata
+        ) as exc:
+            notifier.notify("error", str(exc))
+            raise web.badrequest(message=str(exc))
+        except (
+            errors.AlreadyExists
+        ) as exc:
+            err = web.conflict()
+            err.message = exc.message
+            raise err
+        except (
+            errors.InvalidData,
+            Exception
+        ) as exc:
+            raise web.badrequest(message=str(exc))
+
         node = Node()
         for key, value in data.iteritems():
             setattr(node, key, value)
@@ -182,7 +222,26 @@ class NodeCollectionHandler(JSONHandler, NICUtils):
 
     @content_json
     def PUT(self):
-        data = self.validator.validate_collection_update(web.data())
+        try:
+            data = self.validator.validate_collection_update(web.data())
+        except (
+            errors.InvalidInterfacesInfo,
+            errors.InvalidMetadata
+        ) as exc:
+            notifier.notify("error", str(exc))
+            raise web.badrequest(message=str(exc))
+        except (
+            errors.AlreadyExists
+        ) as exc:
+            err = web.conflict()
+            err.message = exc.message
+            raise err
+        except (
+            errors.InvalidData,
+            Exception
+        ) as exc:
+            raise web.badrequest(message=str(exc))
+
         q = self.db.query(Node)
         nodes_updated = []
         for nd in data:
@@ -190,7 +249,7 @@ class NodeCollectionHandler(JSONHandler, NICUtils):
             node = None
             if "mac" in nd:
                 node = q.filter_by(mac=nd["mac"]).first() \
-                    or self.validator.validate_existent_node_mac(nd)
+                    or self.validator.validate_existent_node_mac_put(nd)
             else:
                 node = q.get(nd["id"])
             if is_agent:
