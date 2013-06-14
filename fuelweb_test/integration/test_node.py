@@ -663,7 +663,7 @@ class TestNode(Base):
         return cluster_id
 
     def _add_nodes(self, cluster_id, nodes_dict):
-        logging.info("Nodes roles", nodes_dict)
+        logging.debug("Nodes roles: %s", json.dumps(nodes_dict, indent=4))
         nodes_put_data = []
         for role in nodes_dict:
             for n in nodes_dict[role]:
