@@ -9,7 +9,7 @@ for drv in `ls -1 /sys/block | grep "sd\|hd\|vd\|cciss"`; do
 done
 
 # bootloader
-echo "bootloader --location=mbr --driveorder=${tgtdrive} --append=' crashkernel=auto'" > /tmp/bootloader.ks
+echo "bootloader --location=mbr --driveorder=${tgtdrive} --append=' biosdevname=0 crashkernel=auto'" > /tmp/bootloader.ks
 
 # partition
 /usr/sbin/parted -s /dev/${tgtdrive} mklabel gpt
