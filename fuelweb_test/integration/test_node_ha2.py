@@ -25,7 +25,7 @@ class TestNode(BaseNodeTestCase):
         }
         cluster_id = self._basic_provisioning(cluster_name, nodes)
         self.assertClusterReady(
-            'slave-01', smiles_count=13, networks_count=1, timeout=300)
+            'slave-01', smiles_count=16, networks_count=1, timeout=300)
         self.get_ebtables(cluster_id, self.nodes().slaves[:5]).restore_vlans()
         task = self._run_network_verify(cluster_id)
         self.assertTaskSuccess(task, 60 * 2)

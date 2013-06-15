@@ -61,7 +61,7 @@ class TestNode(BaseNodeTestCase):
         nodes = {'controller': ['slave-01'], 'compute': ['slave-02']}
         cluster_id = self._basic_provisioning(cluster_name, nodes)
         self.assertClusterReady(
-            'slave-01', smiles_count=5, networks_count=1, timeout=300)
+            'slave-01', smiles_count=6, networks_count=1, timeout=300)
         self.get_ebtables(cluster_id, self.nodes().slaves[:2]).restore_vlans()
         task = self._run_network_verify(cluster_id)
         self.assertTaskSuccess(task, 60 * 2)
@@ -75,7 +75,7 @@ class TestNode(BaseNodeTestCase):
         self.create_cluster(name=cluster_name, net_manager="VlanManager")
         cluster_id = self._basic_provisioning(cluster_name, nodes)
         self.assertClusterReady(
-            'slave-01', smiles_count=5, networks_count=8, timeout=300)
+            'slave-01', smiles_count=6, networks_count=8, timeout=300)
         self.get_ebtables(cluster_id, self.nodes().slaves[:2]).restore_vlans()
         task = self._run_network_verify(cluster_id)
         self.assertTaskSuccess(task, 60 * 2)
