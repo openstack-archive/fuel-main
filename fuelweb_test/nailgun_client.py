@@ -141,8 +141,8 @@ class NailgunClient(object):
     @logwrap
     def _get_cluster_vlans(self, cluster_id):
         cluster_vlans = []
-        for network in self.get_networks(cluster_id):
-            amount = network['network'].get('amount', 1)
-            cluster_vlans.extend(range(network['network']['vlan_start'],
-                                       network['network']['vlan_start'] + amount))
+        for network in self.get_networks(cluster_id)['networks']:
+            amount = network.get('amount', 1)
+            cluster_vlans.extend(range(network['vlan_start'],
+                                       network['vlan_start'] + amount))
         return cluster_vlans
