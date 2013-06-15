@@ -39,6 +39,8 @@ class BaseNodeTestCase(BaseTestCase):
             interface_description = self.get_interface_description(
                 remote, interface_short_name)
             self.assertIn(interface_name, interface_description)
+            if interface.get('name') == 'floating':
+                continue
             if interface.get('ip'):
                 self.assertIn("inet %s" % interface.get('ip'),
                               interface_description)
