@@ -43,12 +43,16 @@ def snapshot_errors(func):
         try:
             return func(*args, **kwagrs)
         except:
-            name = 'error-%s' % time.time()
+            name = 'error-%s' % func.__name__
             description = "Failed in method '%s'" % func.__name__
             logging.debug("Snapshot %s %s" % (name, description))
             if args[0].ci() is not None:
                 args[0].ci().environment().suspend(verbose=False)
-                args[0].ci().environment().snapshot(name, description)
+                args[0].ci().environment().snapshot(
+                    name=name[-50:],
+                    description=description,
+                    force=True,
+                )
             raise
     return wrapper
 
