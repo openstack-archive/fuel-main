@@ -637,6 +637,9 @@ class CheckNetworksTask(object):
 class CheckBeforeDeploymentTask(object):
     @classmethod
     def execute(cls, task):
+        for node in task.cluster.nodes:
+            node.volume_manager.check_free_space()
+
         netmanager = NetworkManager()
         nodes_count = len(task.cluster.nodes)
 

@@ -200,6 +200,7 @@ class ClusterChangesHandler(JSONHandler):
             logger.warn(u'ClusterChangesHandler: error while execution'
                         ' deploy task: {0}'.format(exc.message))
             raise web.badrequest(exc.message)
+
         return TaskHandler.render(task)
 
 

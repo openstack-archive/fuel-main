@@ -4,6 +4,7 @@ import json
 
 from nailgun.db import orm
 from nailgun.logger import logger
+from nailgun.errors import errors
 
 
 class Disk(object):
@@ -261,18 +262,10 @@ class VolumeManager(object):
 
     def _allocate_os(self):
         logger.debug("_allocate_os")
-        os_size = self.field_generator("calc_os_size")
-        boot_size = self.field_generator("calc_boot_size")
-        mbr_size = self.field_generator("calc_mbr_size")
+        os_vg_size_left = self.field_generator("calc_os_size")
         lvm_meta_size = self.field_generator("calc_lvm_meta_size")
 
-        free_space = sum([d.size - mbr_size for d in self.disks])
-
-        if free_space < (os_size + boot_size):
-            raise Exception("Insufficient disk space for OS")
-
         ready = False
-        os_vg_size_left = os_size
         logger.debug("Iterating over node disks.")
         for i, disk in enumerate(self.disks):
             logger.debug("Found disk: %s", disk.id)
@@ -367,3 +360,19 @@ class VolumeManager(object):
         ])
         logger.debug("Generating values for volumes")
         return self._traverse(self.volumes)
+
+    def check_free_space(self):
+        """
+        Check disks free space for OS installation
+
+        :raises: errors.NotEnoughFreeSpace
+        """
+        os_size = self.field_generator("calc_os_size")
+        boot_size = self.field_generator("calc_boot_size")
+        mbr_size = self.field_generator("calc_mbr_size")
+        free_space = sum([d.size - mbr_size for d in self.disks])
+
+        if free_space < (os_size + boot_size):
+            raise errors.NotEnoughFreeSpace(
+                "Node '%s' has insufficient disk space for OS" %
+                self.node.human_readable_name)
