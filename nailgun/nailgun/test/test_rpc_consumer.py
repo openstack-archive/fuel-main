@@ -38,6 +38,18 @@ from nailgun.api.models import Vlan
 
 class TestVerifyNetworks(BaseHandlers):
 
+    def _gen_vlans_data(self, start, end):
+        retval = []
+        for i in xrange(start, end):
+            retval.append({'name': 'vlan_%s' % i, 'vlans': [i]})
+        return retval
+
+    def _gen_vlan_data(self, start, end):
+        retval = []
+        for i in xrange(start, end):
+            retval.append({'name': 'vlan_%s' % i, 'vlan_id': i})
+        return retval
+
     def setUp(self):
         super(TestVerifyNetworks, self).setUp()
         self.receiver = rcvr.NailgunReceiver()
@@ -52,7 +64,7 @@ class TestVerifyNetworks(BaseHandlers):
         )
         cluster_db = self.env.clusters[0]
         node1, node2 = self.env.nodes
-        nets = [{'iface': 'eth0', 'vlans': range(100, 105)}]
+        nets = [{'iface': 'eth0', 'vlans': self._gen_vlans_data(100, 105)}]
 
         task = Task(
             name="verify_networks",
@@ -86,8 +98,10 @@ class TestVerifyNetworks(BaseHandlers):
         )
         cluster_db = self.env.clusters[0]
         node1, node2 = self.env.nodes
-        nets_sent = [{'iface': 'eth0', 'vlans': range(100, 105)}]
-        nets_resp = [{'iface': 'eth0', 'vlans': range(100, 104)}]
+        nets_sent = [{'iface': 'eth0',
+                      'vlans': self._gen_vlans_data(100, 105)}]
+        nets_resp = [{'iface': 'eth0',
+                      'vlans': self._gen_vlans_data(100, 104)}]
 
         task = Task(
             name="super",
@@ -112,7 +126,9 @@ class TestVerifyNetworks(BaseHandlers):
         error_nodes = []
         for node in self.env.nodes:
             error_nodes.append({'uid': node.id, 'interface': 'eth0',
-                                'name': node.name, 'absent_vlans': [104],
+                                'name': node.name,
+                                'absent_vlans': [{'name': 'vlan_104',
+                                                  'vlan_id': 104}],
                                 'mac': node.interfaces[0].mac})
         self.assertEqual(task.message, None)
         self.assertEqual(task.result, error_nodes)
@@ -128,8 +144,10 @@ class TestVerifyNetworks(BaseHandlers):
 
         cluster_db = self.env.clusters[0]
         node1, node2 = self.env.nodes
-        nets_sent = [{'iface': 'eth0', 'vlans': range(100, 105)}]
-        nets_resp = [{'iface': 'eth0', 'vlans': range(100, 104)}]
+        nets_sent = [{'iface': 'eth0',
+                      'vlans': self._gen_vlans_data(100, 105)}]
+        nets_resp = [{'iface': 'eth0',
+                      'vlans': self._gen_vlans_data(100, 104)}]
 
         task = Task(
             name="super",
@@ -159,10 +177,13 @@ class TestVerifyNetworks(BaseHandlers):
         task = json.loads(resp.body)
         self.assertEqual(task['status'], "error")
         error_nodes = [{'uid': node1.id, 'interface': 'eth0',
-                        'name': node1.name, 'absent_vlans': [104],
+                        'name': node1.name,
+                        'absent_vlans': [{'name': 'vlan_104',
+                                          'vlan_id': 104}],
                         'mac': node1.interfaces[0].mac},
                        {'uid': node2.id, 'interface': 'eth0',
-                        'absent_vlans': [104]}]
+                        'absent_vlans': [{'name': 'vlan_104',
+                                          'vlan_id': 104}]}]
         self.assertEqual(task.get('message'), None)
         self.assertEqual(task['result'], error_nodes)
 
@@ -246,7 +267,8 @@ class TestVerifyNetworks(BaseHandlers):
         cluster_db = self.env.clusters[0]
         node1, node2 = self.env.nodes
         node3 = self.env.create_node(api=False)
-        nets_sent = [{'iface': 'eth0', 'vlans': range(100, 105)}]
+        nets_sent = [{'iface': 'eth0',
+                      'vlans': self._gen_vlans_data(100, 105)}]
 
         task = Task(
             name="super",
@@ -308,6 +330,18 @@ class TestVerifyNetworks(BaseHandlers):
         self.assertRegexpMatches(task.message, node3.name)
         self.assertEqual(task.result, [])
 
+#    def _gen_vlans_data(self):
+#        retval = []
+#        for i in xrange(100,105):
+#            retval.append({'name': 'vlan_%s' % i, 'vlans': [i]})
+#        return retval
+#
+#    def _gen_vlan_data(self):
+#        retval = []
+#        for i in xrange(100,105):
+#            retval.append({'name': 'vlan_%s' % i, 'vlan_id': i})
+#        return retval
+
     def test_verify_networks_resp_incomplete_network_data_error(self):
         self.env.create(
             cluster_kwargs={},
@@ -318,7 +352,8 @@ class TestVerifyNetworks(BaseHandlers):
         )
         cluster_db = self.env.clusters[0]
         node1, node2 = self.env.nodes
-        nets_sent = [{'iface': 'eth0', 'vlans': range(100, 105)}]
+        nets_sent = [{'iface': 'eth0',
+                      'vlans': self._gen_vlans_data(100, 105)}]
 
         task = Task(
             name="super",
@@ -343,7 +378,7 @@ class TestVerifyNetworks(BaseHandlers):
         self.assertEqual(task.message, None)
         error_nodes = [{'uid': node2.id, 'interface': 'eth0',
                         'name': node2.name, 'mac': node2.interfaces[0].mac,
-                        'absent_vlans': nets_sent[0]['vlans'],
+                        'absent_vlans': self._gen_vlan_data(100, 105),
                         }]
         self.assertEqual(task.result, error_nodes)
 
