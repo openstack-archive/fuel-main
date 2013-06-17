@@ -659,5 +659,5 @@ class CheckBeforeDeploymentTask(object):
     @classmethod
     def __format_error(cls, nodes_count):
         return 'Not enough IP addresses. Public network must have at least '\
-            '{nodes_count} IP addresses for '.format(nodes_count=nodes_count) +\
-            'the current environment.'
+            '{nodes_count} IP addresses '.format(nodes_count=nodes_count) +\
+            'for the current environment.'
