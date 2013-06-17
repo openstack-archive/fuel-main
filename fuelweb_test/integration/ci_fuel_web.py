@@ -5,7 +5,7 @@ from devops.helpers.helpers import wait
 from ipaddr import IPNetwork
 from fuelweb_test.integration.ci_base import CiBase
 from fuelweb_test.node_roles import NodeRoles
-from fuelweb_test.settings import INTERFACE_ORDER, POOLS, EMPTY_SNAPSHOT, ISO,\
+from fuelweb_test.settings import INTERFACE_ORDER, POOLS, EMPTY_SNAPSHOT, ISO_PATH,\
     FORWARDING, DHCP
 
 logger = logging.getLogger('integration')
@@ -81,7 +81,7 @@ class CiFuelWeb(CiBase):
 
     def setup_environment(self):
         admin = self.nodes().admin
-        admin.disk_devices.get(device='cdrom').volume.upload(ISO)
+        admin.disk_devices.get(device='cdrom').volume.upload(ISO_PATH)
         self.environment().start(self.nodes().admins)
         time.sleep(20)
         admin.send_keys(self.get_keys(admin))

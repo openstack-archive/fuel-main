@@ -3,7 +3,7 @@ from devops.helpers.helpers import _get_file_size
 from devops.manager import Manager
 from ipaddr import IPNetwork
 from fuelweb_test.node_roles import Nodes
-from fuelweb_test.settings import EMPTY_SNAPSHOT, ISO
+from fuelweb_test.settings import EMPTY_SNAPSHOT, ISO_PATH
 
 
 class CiBase(object):
@@ -86,7 +86,7 @@ class CiBase(object):
         self.create_interfaces(networks, node)
         self.add_empty_volume(node, name + '-system')
         self.add_empty_volume(
-            node, name + '-iso', capacity=_get_file_size(ISO),
+            node, name + '-iso', capacity=_get_file_size(ISO_PATH),
             format='raw', device='cdrom', bus='ide')
         return node
 

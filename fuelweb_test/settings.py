@@ -1,6 +1,6 @@
 import os
 
-ISO = os.environ.get('ISO')
+ISO_PATH = os.environ.get('ISO_PATH')
 EMPTY_SNAPSHOT = os.environ.get('EMPTY_SNAPSHOT', 'empty')
 
 INTERFACE_ORDER = ('internal', 'public', 'private')
