@@ -38,7 +38,6 @@ from nailgun.api.models import NetworkGroup
 from nailgun.api.models import Node
 from nailgun.api.models import Cluster
 from nailgun.api.models import IPAddr
-from nailgun.api.validators import BasicValidator
 from nailgun.task.fake import FAKE_THREADS
 from nailgun.errors import errors
 from nailgun.task.helpers import TaskHelper

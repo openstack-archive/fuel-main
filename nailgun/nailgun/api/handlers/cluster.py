@@ -28,8 +28,8 @@ from nailgun.api.models import Network, NetworkGroup, Vlan
 from nailgun.api.models import Release
 from nailgun.api.models import Attributes
 from nailgun.api.models import Task
-from nailgun.api.validators import ClusterValidator
-from nailgun.api.validators import AttributesValidator
+from nailgun.api.validators.cluster import ClusterValidator
+from nailgun.api.validators.cluster import AttributesValidator
 from nailgun.network.manager import NetworkManager
 from nailgun.api.handlers.base import JSONHandler, content_json
 from nailgun.api.handlers.node import NodeHandler

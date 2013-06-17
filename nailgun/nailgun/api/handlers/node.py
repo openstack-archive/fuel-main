@@ -29,9 +29,10 @@ from nailgun.api.models import NetworkAssignment
 from nailgun.api.models import NodeNICInterface
 from nailgun.api.models import NetworkGroup
 from nailgun.network.topology import TopoChecker, NICUtils
-from nailgun.api.validators import NodeValidator, NetAssignmentValidator
-from nailgun.api.validators import NodeAttributesValidator
-from nailgun.api.validators import NodeVolumesValidator
+from nailgun.api.validators.node import NodeValidator
+from nailgun.api.validators.node import NodeAttributesValidator
+from nailgun.api.validators.node import NodeVolumesValidator
+from nailgun.api.validators.network import NetAssignmentValidator
 from nailgun.network.manager import NetworkManager
 from nailgun.volumes.manager import VolumeManager
 from nailgun.api.models import Node, NodeAttributes

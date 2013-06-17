@@ -20,7 +20,7 @@ import web
 
 from nailgun.errors import errors
 from nailgun.api.models import Release
-from nailgun.api.validators import ReleaseValidator
+from nailgun.api.validators.release import ReleaseValidator
 from nailgun.api.handlers.base import JSONHandler, content_json
 
 
