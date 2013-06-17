@@ -11,6 +11,8 @@ default_messages = {
     "FailedProvisioning": "Failed to start provisioning",
     "WrongNodeStatus": "Wrong node status",
     "NodeOffline": "Node is offline",
+    # disk errors
+    "NotEnoughFreeSpace": "Not enough free space",
     # network errors
     "AdminNetworkNotFound": "Admin network info not found",
     "InvalidNetworkAccess": "Invalid network access",
