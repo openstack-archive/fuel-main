@@ -97,7 +97,7 @@ $(BUILD_DIR)/bootstrap/etc/yum.conf: export contents:=$(bootstrap_yum_conf)
 $(BUILD_DIR)/bootstrap/etc/yum.repos.d/base.repo: export contents:=$(yum_local_repo)
 $(BUILD_DIR)/bootstrap/etc/yum.conf $(BUILD_DIR)/bootstrap/etc/yum.repos.d/base.repo:
 	mkdir -p $(@D)
-	echo "$${contents}" > $@
+	/bin/echo -e "$${contents}" > $@
 
 $(BUILD_DIR)/bootstrap/customize-initram-root.done: $(call depv,BOOTSTRAP_RPMS_CUSTOM)
 $(BUILD_DIR)/bootstrap/customize-initram-root.done: \
