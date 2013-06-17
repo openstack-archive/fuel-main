@@ -50,7 +50,7 @@ module Naily
         begin
           Naily.logger.debug("Waiting for reboot to be complete: nodes: #{reboot_events.keys}")
           failed_nodes = []
-          Timeout::timeout(120) do
+          Timeout::timeout(Naily.config.reboot_timeout) do
             while not reboot_events.empty?
               reboot_events.each do |node_name, event_id|
                 event_status = engine.event_status(event_id)
@@ -114,7 +114,7 @@ module Naily
       time = 10 + time - Time::now.to_f
       sleep (time) if time > 0 # Wait while nodes going to reboot. Sleep not greater than 10 sec.
       begin
-        Timeout::timeout(45 * 60) do  # 45 min for booting target OS
+        Timeout::timeout(Naily.config.provisioning_timeout) do  # Timeout for booting target OS
           while true
             time = Time::now.to_f
             types = @orchestrator.node_type(reporter, data['args']['task_uuid'], nodes, 2)

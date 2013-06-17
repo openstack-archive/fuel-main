@@ -5,3 +5,5 @@ broker_password: '<%= rabbitmq_naily_password %>'
 broker_queue: 'naily'
 broker_publisher_queue: 'nailgun'
 broker_exchange: 'nailgun'
+reboot_timeout: 120              # Wait for reboot request
+provisioning_timeout: 90 * 60    # Timeout for target nodes to install OS
