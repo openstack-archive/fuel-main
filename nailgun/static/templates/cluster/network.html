@@ -70,6 +70,30 @@
           </div>
           <div class="error"><span class="help-inline"></span></div>
         </label>
+
+        <!-- New VLAN code start -->
+        <div class="networks-sub-title parameter-name range-name ">VLAN ID</div>
+        <div class="range-row ip-range-row clearfix ">
+          <label class="parameter-box clearfix setting">
+            <div class="parameter-control ip_ranges" style="width: 106px;">
+              <div class="custom-tumbler">
+                <input type="checkbox" value="Yes">
+                <!-- [if !IE |(gte IE 9)]> --><span>&nbsp;</span><!-- <![endif] -->
+              </div>
+              <!--
+              <input type="text" value="240.0.1.2" placeholder="127.0.0.1" name="ip_ranges-start">
+              -->
+            </div>
+          </label>
+          <label class="parameter-box clearfix setting">
+          <div class="parameter-control ip_ranges">
+            <input type="text" value="100" placeholder="100" name="ip_ranges-end" class="input-small">
+          </div>
+          </label>
+          <div class="error"><span class="help-inline"></span></div>
+        </div>
+      <!-- New VLAN code end -->
+
       <% } %>
     <% } else if (attribute == 'network_size') { %>
       <label class="parameter-box clearfix setting <%= hidden %> <%= vlanManager %>">
