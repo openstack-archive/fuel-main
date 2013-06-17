@@ -106,7 +106,12 @@ class MetaValidator(BasicValidator):
 class NodeValidator(BasicValidator):
     @classmethod
     def validate(cls, data):
-        d = cls.validate_json(data, dict)
+        d = cls.validate_json(data)
+        if not isinstance(d, dict):
+            raise errors.InvalidData(
+                "Node data must be dict",
+                log_message=True
+            )
         if not "mac" in d:
             raise errors.InvalidData(
                 "No mac address specified",
