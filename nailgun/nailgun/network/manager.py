@@ -25,6 +25,7 @@ from nailgun.db import orm
 from nailgun.errors import errors
 from nailgun.logger import logger
 from nailgun.settings import settings
+from nailgun.api.models import NetworkAssignment
 from nailgun.api.models import Node, NodeNICInterface, IPAddr, Cluster, Vlan
 from nailgun.api.models import Network, NetworkGroup, IPAddrRange
 
@@ -503,6 +504,71 @@ class NetworkManager(object):
 
         return ips.all()
 
+    def get_main_nic(self, node_id):
+        node_db = self.db.query(Node).get(node_id)
+        for nic in node_db.interfaces:
+            if node_db.mac == nic.mac:
+                return nic.id
+        if node_db.interfaces:
+            return node_db.interfaces[0].id
+
+    def clear_all_allowed_networks(self, node_id):
+        node_db = self.db.query(Node).get(node_id)
+        for nic in node_db.interfaces:
+            while nic.allowed_networks:
+                nic.allowed_networks.pop()
+        self.db.commit()
+
+    def clear_assigned_networks(self, node_id):
+        node_db = self.db.query(Node).get(node_id)
+        for nic in node_db.interfaces:
+            while nic.assigned_networks:
+                nic.assigned_networks.pop()
+        self.db.commit()
+
+    def get_cluster_networkgroups_by_node(self, node_id):
+        """
+        Method for receiving cluster network groups by node.
+
+        :param node: Node object.
+        :type  node: Node
+        :returns: List of network groups for cluster node belongs to.
+        """
+        node_db = self.db.query(Node).get(node_id)
+        if node_db.cluster:
+            return [ng.id for ng in node_db.cluster.network_groups]
+        return []
+
+    def allow_network_assignment_to_all_interfaces(self, node_id):
+        """
+        Method adds all network groups from cluster
+        to allowed_networks list for all interfaces
+        of specified node.
+
+        :param node: Node object.
+        :type  node: Node
+        """
+        node_db = self.db.query(Node).get(node_id)
+        for nic in node_db.interfaces:
+            for net_group_id in self.get_cluster_networkgroups_by_node(
+                node_id
+            ):
+                ng_db = self.db.query(NetworkGroup).get(net_group_id)
+                nic.allowed_networks.append(ng_db)
+        self.db.commit()
+
+    def assign_networks_to_main_interface(self, node_id):
+        self.clear_assigned_networks(node_id)
+        main_nic_id = self.get_main_nic(node_id)
+        if main_nic_id:
+            main_nic = self.db.query(NodeNICInterface).get(main_nic_id)
+            for net_group_id in self.get_cluster_networkgroups_by_node(
+                node_id
+            ):
+                ng_db = self.db.query(NetworkGroup).get(net_group_id)
+                main_nic.assigned_networks.append(ng_db)
+            self.db.commit()
+
     def get_node_networks(self, node_id):
         """
         Method for receiving network data for a given node.
@@ -572,7 +638,30 @@ class NetworkManager(object):
 
         return network_data
 
-    def update_interfaces_info(self, node):
+    def _update_attrs(self, node_data):
+        node_db = self.db.query(Node).get(node_data['id'])
+        interfaces = node_data['interfaces']
+        interfaces_db = node_db.interfaces
+        for iface in interfaces:
+            current_iface = filter(
+                lambda i: i.id == iface['id'],
+                interfaces_db
+            )[0]
+            # Remove all old network's assignment for this interface.
+            old_assignment = self.db.query(NetworkAssignment).filter_by(
+                interface_id=current_iface.id,
+            ).all()
+            map(self.db.delete, old_assignment)
+            for net in iface['assigned_networks']:
+                net_assignment = NetworkAssignment()
+                net_assignment.network_id = net['id']
+                net_assignment.interface_id = current_iface.id
+                self.db.add(net_assignment)
+        self.db.commit()
+        return node_db.id
+
+    def update_interfaces_info(self, node_id):
+        node = self.db.query(Node).get(node_id)
         if not "interfaces" in node.meta:
             raise Exception("No interfaces metadata specified for node")
 
@@ -603,8 +692,8 @@ class NetworkManager(object):
         interface.name = interface_attrs["name"]
         interface.mac = interface_attrs["mac"]
 
-        interface.max_speed = interface_attrs.get("max_speed")
         interface.current_speed = interface_attrs.get("current_speed")
+        interface.max_speed = interface_attrs.get("max_speed")
 
     def __delete_not_found_interfaces(self, node, interfaces):
         interfaces_mac_addresses = map(
@@ -624,6 +713,20 @@ class NetworkManager(object):
                 mac_addresses, node_name))
 
             map(self.db.delete, interfaces_to_delete)
+
+    def get_default_nic_networkgroups(self, node_id, nic_id):
+        main_nic_id = self.get_main_nic(node_id)
+        return self.get_all_cluster_networkgroups(node.id) \
+            if nic_id == main_nic_id else []
+
+    def get_all_cluster_networkgroups(self, node_id):
+        node_db = self.db.query(Node).get(node_id)
+        if node_db.cluster:
+            return [ng.id for ng in node_db.cluster.network_groups]
+        return []
+
+    def get_allowed_nic_networkgroups(self, node_id, nic_id):
+        return self.get_all_cluster_networkgroups(node_id)
 
     def _get_admin_network(self, node):
         """

@@ -144,7 +144,8 @@ class TestHandlers(BaseHandlers):
                 {'mac': node_db.mac, 'is_agent': True,
                  'status': 'discover', 'manufacturer': 'new'}
             ]),
-            headers=self.default_headers)
+            headers=self.default_headers
+        )
         self.assertEquals(resp.status, 200)
         resp = self.app.get(
             reverse('NodeCollectionHandler'),

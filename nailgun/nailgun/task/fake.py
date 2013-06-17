@@ -275,7 +275,7 @@ class FakeDeletionThread(FakeThread):
             node.attributes = NodeAttributes(node_id=node.id)
             node.attributes.volumes = node.volume_manager.gen_volumes_info()
             network_manager = NetworkManager(db=orm)
-            network_manager.update_interfaces_info(node)
+            network_manager.update_interfaces_info(node.id)
             orm.commit()
 
             ram = round(node.meta.get('ram') or 0, 1)

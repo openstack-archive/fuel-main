@@ -247,6 +247,46 @@ class Node(Base):
     def human_readable_name(self):
         return self.name or self.mac
 
+    def _clean_iface(self, iface):
+        for param in ["max_speed", "current_speed"]:
+            val = iface.get(param)
+            if (val and isinstance(val, int) and val >= 0) or \
+                    (param in iface and iface[param] is None):
+                iface[param] = val
+            elif param in iface:
+                del iface[param]
+        return iface
+
+    def update_meta(self, data):
+        # helper for basic checking meta before updation
+        result = []
+        for iface in data["interfaces"]:
+            if "name" not in iface or not iface["name"] \
+                    or "mac" not in iface or not iface["mac"]:
+                logger.warning(
+                    "Invalid interface data: {0}. "
+                    "Interfaces are not updated.".format(iface)
+                )
+                data["interfaces"] = self.meta.get("interfaces")
+                self.meta = data
+                return
+            result.append(self._clean_iface(iface))
+
+        data["interfaces"] = result
+        self.meta = data
+
+    def create_meta(self, data):
+        # helper for basic checking meta before creation
+        result = []
+        for iface in data["interfaces"]:
+            if "name" not in iface or not iface["name"] \
+                    or "mac" not in iface or not iface["mac"]:
+                continue
+            result.append(self._clean_iface(iface))
+
+        data["interfaces"] = result
+        self.meta = data
+
 
 class NodeAttributes(Base):
     __tablename__ = 'node_attributes'

@@ -29,14 +29,6 @@ class MetaInterfacesValidator(BasicValidator):
                 log_message=True
             )
 
-        for nic in interfaces:
-            for key in ("current_speed", "max_speed"):
-                if key in nic:
-                    val = nic[key]
-                    if not val:
-                        continue
-                    elif not isinstance(val, int) or nic[key] < 0:
-                        del nic[key]
         return interfaces
 
     @classmethod
@@ -57,14 +49,11 @@ class MetaInterfacesValidator(BasicValidator):
         interfaces = cls._validate_data(interfaces)
 
         for nic in interfaces:
-            for key in ('mac', 'name'):
-                if not key in nic or not isinstance(nic[key], basestring)\
-                        or not nic[key]:
-                    raise errors.InvalidInterfacesInfo(
-                        "Interface in meta.interfaces should have"
-                        " key %r with nonempty string value" % key,
-                        log_message=True
-                    )
+            if not isinstance(nic, dict):
+                raise errors.InvalidInterfacesInfo(
+                    "Interface in meta.interfaces must be dict",
+                    log_message=True
+                )
 
         return interfaces
 

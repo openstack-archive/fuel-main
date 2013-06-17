@@ -31,17 +31,13 @@ class TestHandlers(BaseHandlers):
             headers=self.default_headers)
         self.assertEquals(resp.status, 404)
 
-    def test_get_handler_with_incompleted_data(self):
+    def test_get_handler_with_invalid_data(self):
         meta = self.env.default_metadata()
         meta["interfaces"] = []
         node = self.env.create_node(api=True, meta=meta)
         meta_list = [
             {'interfaces': None},
-            {'interfaces': {}},
-            {'interfaces': [{'name': '', 'mac': '00:00:00'}]},
-            {'interfaces': [{'name': 'eth0', 'mac': ''}]},
-            {'interfaces': [{'mac': '00:00:00'}]},
-            {'interfaces': [{'name': 'eth0'}]}
+            {'interfaces': {}}
         ]
         for nic_meta in meta_list:
             meta = self.env.default_metadata()
@@ -57,24 +53,21 @@ class TestHandlers(BaseHandlers):
             self.assertEquals(resp.status, 400)
             resp = self.app.get(
                 reverse('NodeNICsHandler', kwargs={'node_id': node['id']}),
-                headers=self.default_headers)
+                headers=self.default_headers
+            )
             self.assertEquals(resp.status, 200)
             response = json.loads(resp.body)
             self.assertEquals(response, [])
 
+    def test_get_handler_with_incompleted_iface_data(self):
+        meta = self.env.default_metadata()
+        meta["interfaces"] = []
+        node = self.env.create_node(api=True, meta=meta)
         meta_clean_list = [
-            {'interfaces': [{'name': 'eth0', 'mac': '00:00:00',
-                             'max_speed': -100}]},
-            {'interfaces': [{'name': 'eth0', 'mac': '00:00:00',
-                             'current_speed': -100}]},
-            {'interfaces': [{'name': 'eth0', 'mac': '00:00:00',
-                             'current_speed': '100'}]},
-            {'interfaces': [{'name': 'eth0', 'mac': '00:00:00',
-                             'max_speed': 10.0}]},
-            {'interfaces': [{'name': 'eth0', 'mac': '00:00:00',
-                             'max_speed': '100'}]},
-            {'interfaces': [{'name': 'eth0', 'mac': '00:00:00',
-                             'current_speed': 10.0}]}
+            {'interfaces': [{'name': '', 'mac': '00:00:00'}]},
+            {'interfaces': [{'name': 'eth0', 'mac': ''}]},
+            {'interfaces': [{'mac': '00:00:00'}]},
+            {'interfaces': [{'name': 'eth0'}]}
         ]
 
         for nic_meta in meta_clean_list:
@@ -90,7 +83,41 @@ class TestHandlers(BaseHandlers):
             )
             self.assertEquals(resp.status, 200)
             ifaces = json.loads(resp.body)[0]["meta"]["interfaces"]
-            self.assertEquals(ifaces, [{'mac': '00:00:00', 'name': 'eth0'}])
+            self.assertEquals(ifaces, [])
+
+    def test_get_handler_with_invalid_speed_data(self):
+        meta = self.env.default_metadata()
+        meta["interfaces"] = []
+        node = self.env.create_node(api=True, meta=meta)
+
+        meta_clean_list = [
+            {'interfaces': [{'name': 'eth0', 'mac': '00:00:00',
+                             'max_speed': -100}]},
+            {'interfaces': [{'name': 'eth0', 'mac': '00:00:00',
+                             'current_speed': -100}]},
+            {'interfaces': [{'name': 'eth0', 'mac': '00:00:00',
+                             'current_speed': '100'}]},
+            {'interfaces': [{'name': 'eth0', 'mac': '00:00:00',
+                             'max_speed': 10.0}]},
+            {'interfaces': [{'name': 'eth0', 'mac': '00:00:00',
+                             'max_speed': '100'}]},
+            {'interfaces': [{'name': 'eth0', 'mac': '00:00:00',
+                             'current_speed': 10.0}]}
+        ]
+        for nic_meta in meta_clean_list:
+            meta = self.env.default_metadata()
+            meta.update(nic_meta)
+            node_data = {'mac': node['mac'], 'is_agent': True,
+                         'meta': meta}
+            resp = self.app.put(
+                reverse('NodeCollectionHandler'),
+                json.dumps([node_data]),
+                expect_errors=True,
+                headers=self.default_headers
+            )
+            self.assertEquals(resp.status, 200)
+            ifaces = json.loads(resp.body)[0]["meta"]["interfaces"]
+            self.assertEquals(ifaces, [{'name': 'eth0', 'mac': '00:00:00'}])
 
     def test_get_handler_without_NICs(self):
         meta = self.env.default_metadata()

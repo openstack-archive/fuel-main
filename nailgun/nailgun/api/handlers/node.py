@@ -39,7 +39,7 @@ from nailgun.api.models import Node, NodeAttributes
 from nailgun.api.handlers.base import JSONHandler, content_json
 
 
-class NodeHandler(JSONHandler, NICUtils):
+class NodeHandler(JSONHandler):
     fields = ('id', 'name', 'meta', 'role', 'progress',
               'status', 'mac', 'fqdn', 'ip', 'manufacturer', 'platform_name',
               'pending_addition', 'pending_deletion', 'os_platform',
@@ -90,15 +90,19 @@ class NodeHandler(JSONHandler, NICUtils):
         ) as exc:
             raise web.badrequest(message=str(exc))
 
+        network_manager = NetworkManager()
+
         for key, value in data.iteritems():
             setattr(node, key, value)
             if key == 'cluster_id':
                 if value:
-                    self.allow_network_assignment_to_all_interfaces(node)
-                    self.assign_networks_to_main_interface(node)
+                    network_manager.allow_network_assignment_to_all_interfaces(
+                        node.id
+                    )
+                    network_manager.assign_networks_to_main_interface(node.id)
                 else:
-                    self.clear_assigned_networks(node)
-                    self.clear_all_allowed_networks(node)
+                    network_manager.clear_assigned_networks(node.id)
+                    network_manager.clear_all_allowed_networks(node.id)
         if not node.status in ('provisioning', 'deploying') \
                 and "role" in data or "cluster_id" in data:
             try:
@@ -127,7 +131,7 @@ class NodeHandler(JSONHandler, NICUtils):
         )
 
 
-class NodeCollectionHandler(JSONHandler, NICUtils):
+class NodeCollectionHandler(JSONHandler):
 
     validator = NodeValidator
 
@@ -168,7 +172,10 @@ class NodeCollectionHandler(JSONHandler, NICUtils):
 
         node = Node()
         for key, value in data.iteritems():
-            setattr(node, key, value)
+            if key == "meta":
+                node.create_meta(value)
+            else:
+                setattr(node, key, value)
         node.name = "Untitled (%s)" % data['mac'][-5:]
         node.timestamp = datetime.now()
         self.db.add(node)
@@ -195,15 +202,14 @@ class NodeCollectionHandler(JSONHandler, NICUtils):
         self.db.add(node)
         self.db.commit()
 
+        network_manager = NetworkManager()
         # Add interfaces for node from 'meta'.
         if node.meta and node.meta.get('interfaces'):
-            network_manager = NetworkManager()
-            network_manager.update_interfaces_info(node)
+            network_manager.update_interfaces_info(node.id)
 
         if node.cluster_id:
-            self.allow_network_assignment_to_all_interfaces(node)
-            self.assign_networks_to_main_interface(node)
-            self.db.commit()
+            network_manager.allow_network_assignment_to_all_interfaces(node.id)
+            network_manager.assign_networks_to_main_interface(node.id)
 
         try:
             ram = str(round(float(
@@ -243,6 +249,7 @@ class NodeCollectionHandler(JSONHandler, NICUtils):
         ) as exc:
             raise web.badrequest(message=str(exc))
 
+        network_manager = NetworkManager()
         q = self.db.query(Node)
         nodes_updated = []
         for nd in data:
@@ -274,7 +281,11 @@ class NodeCollectionHandler(JSONHandler, NICUtils):
                         "status not updated by agent"
                     )
                     continue
-                setattr(node, key, value)
+                if key == "meta":
+                    node.update_meta(value)
+                else:
+                    setattr(node, key, value)
+            self.db.commit()
             if not node.attributes:
                 node.attributes = NodeAttributes()
                 self.db.commit()
@@ -318,19 +329,20 @@ class NodeCollectionHandler(JSONHandler, NICUtils):
             if is_agent:
                 # Update node's NICs.
                 if node.meta and 'interfaces' in node.meta:
-                    network_manager = NetworkManager()
-                    network_manager.update_interfaces_info(node)
+                    # we won't update interfaces if data is invalid
+                    network_manager.update_interfaces_info(node.id)
 
             nodes_updated.append(node)
             self.db.commit()
             if 'cluster_id' in nd and nd['cluster_id'] != old_cluster_id:
                 if old_cluster_id:
-                    self.clear_assigned_networks(node)
-                    self.clear_all_allowed_networks(node)
+                    network_manager.clear_assigned_networks(node.id)
+                    network_manager.clear_all_allowed_networks(node.id)
                 if nd['cluster_id']:
-                    self.allow_network_assignment_to_all_interfaces(node)
-                    self.assign_networks_to_main_interface(node)
-                self.db.commit()
+                    network_manager.allow_network_assignment_to_all_interfaces(
+                        node.id
+                    )
+                    network_manager.assign_networks_to_main_interface(node.id)
         return map(NodeHandler.render, nodes_updated)
 
 
@@ -489,7 +501,7 @@ class NodeAttributesByNameHandler(JSONHandler):
         return attr
 
 
-class NodeNICsHandler(JSONHandler, NICUtils):
+class NodeNICsHandler(JSONHandler):
     fields = (
         'id', (
             'interfaces',
@@ -519,10 +531,11 @@ class NodeNICsHandler(JSONHandler, NICUtils):
     #     self.update_attributes(node)
 
 
-class NodeCollectionNICsHandler(NodeNICsHandler):
+class NodeCollectionNICsHandler(JSONHandler):
 
     model = NetworkGroup
     validator = NetAssignmentValidator
+    fields = NodeNICsHandler.fields
 
         # @content_json
         # def GET(self):
@@ -540,11 +553,19 @@ class NodeCollectionNICsHandler(NodeNICsHandler):
     @content_json
     def PUT(self):
         data = self.validator.validate_collection_structure(web.data())
-        nodes = self.update_collection_attributes(data)
-        return map(self.render, nodes)
+        network_manager = NetworkManager()
+        updated_nodes_ids = []
+        for node_data in data:
+            self.validator.verify_data_correctness(node_data)
+            node_id = network_manager._update_attrs(node_data)
+            updated_nodes_ids.append(node_id)
+        updated_nodes = self.db.query(Node).filter(
+            Node.id.in_(updated_nodes_ids)
+        ).all()
+        return map(self.render, updated_nodes)
 
 
-class NodeNICsDefaultHandler(JSONHandler, NICUtils):
+class NodeNICsDefaultHandler(JSONHandler):
 
     @content_json
     def GET(self, node_id):
@@ -552,32 +573,37 @@ class NodeNICsDefaultHandler(JSONHandler, NICUtils):
         default_nets = self.get_default(node)
         return default_nets
 
-    def _get_nic_dict(self, nic):
-        nic_dict = {
-            "id": nic.id,
-            "name": nic.name,
-            "mac": nic.mac,
-            "max_speed": nic.max_speed,
-            "current_speed": nic.current_speed
-        }
-        return nic_dict
-
-    def _get_networkgroups_list(self, networkgroups):
-        retval = []
-        for networkgroup in networkgroups:
-            retval.append({"id": networkgroup.id, "name": networkgroup.name})
-        return retval
-
     def get_default(self, node):
         nics = []
+        network_manager = NetworkManager()
         for nic in node.interfaces:
-            nic_dict = self._get_nic_dict(nic)
-            assigned_ng = self.get_default_nic_networkgroups(node, nic)
-            nic_dict["assigned_networks"] = \
-                self._get_networkgroups_list(assigned_ng)
-            allowed_ng = self.get_allowed_nic_networkgroups(node, nic)
-            nic_dict["allowed_networks"] = \
-                self._get_networkgroups_list(allowed_ng)
+            nic_dict = {
+                "id": nic.id,
+                "name": nic.name,
+                "mac": nic.mac,
+                "max_speed": nic.max_speed,
+                "current_speed": nic.current_speed
+            }
+
+            assigned_ng_ids = network_manager.get_default_nic_networkgroups(
+                node.id,
+                nic.id
+            )
+            for ng_id in assigned_ng_ids:
+                ng = self.db.query(NetworkGroup).get(ng_id)
+                nic_dict.setdefault("assigned_networks", []).append(
+                    {"id": ng_id, "name": ng.name}
+                )
+
+            allowed_ng_ids = network_manager.get_allowed_nic_networkgroups(
+                node.id,
+                nic.id
+            )
+            for ng_id in allowed_ng_ids:
+                ng = self.db.query(NetworkGroup).get(ng_id)
+                nic_dict.setdefault("allowed_networks", []).append(
+                    {"id": ng_id, "name": ng.name}
+                )
 
             nics.append(nic_dict)
         return nics
@@ -611,7 +637,7 @@ class NodeCollectionNICsDefaultHandler(NodeNICsDefaultHandler):
     #     self.update_collection_attributes(data)
 
 
-class NodeNICsVerifyHandler(JSONHandler, NICUtils):
+class NodeNICsVerifyHandler(JSONHandler):
     fields = (
         'id', (
             'interfaces',
