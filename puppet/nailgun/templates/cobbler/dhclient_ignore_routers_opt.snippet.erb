@@ -6,7 +6,8 @@ if (grep -q "^\s*DHCLIENTARGS" /etc/sysconfig/network); then
 else
     echo 'DHCLIENTARGS="-cf /etc/dhcp/dhclient.conf"' >> /etc/sysconfig/network
 fi
+
 # Anaconda leave behind dhclient settings for particular interfaces which conflicts
 # with our global settings we create in /etc/dhcp/dhclient.conf.
-# To delete these artefacts it's easy way to handle this.
+# The easy way to handle this is to delete Anaconda artifacts:
 rm -f /etc/dhcp/dhclient-eth*.conf
