@@ -89,6 +89,16 @@ vim-enhanced
 wget
 yum
 
+
+# Mount installation media in chroot
+%post --nochroot
+#!/bin/sh
+
+if [ -d /mnt/source ] ; then
+    mkdir -p /mnt/sysimage/tmp/source
+    mount -o bind /mnt/source /mnt/sysimage/tmp/source
+fi
+
 %post --log=/root/anaconda-post.log
 #!/bin/sh
 
@@ -213,8 +223,6 @@ mkdir -p ${FS}
 if test -e /dev/disk/by-uuid/will_be_substituted_with_actual_uuid; then
     mount /dev/disk/by-uuid/will_be_substituted_with_actual_uuid ${FS}
     mount -o loop ${FS}/nailgun.iso ${SOURCE}
-else
-    mount /dev/cdrom ${SOURCE}
 fi
 
 # Copying Repo to the nailgun /var/www directory
