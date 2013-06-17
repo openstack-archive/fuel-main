@@ -424,3 +424,22 @@ class TestHandlers(BaseHandlers):
             task.message,
             'Not enough IP addresses. Public network must have at least '
             '3 IP addresses for the current environment.')
+
+    def test_occurs_error_not_enough_free_space(self):
+        meta = self.env.default_metadata()
+        meta['disks'] = [{
+            "model": "TOSHIBA MK1002TS",
+            "name": "sda",
+            "disk": "sda",
+            # 8GB
+            "size": 8000000}]
+
+        node = self.env.create_node(meta=meta)
+        cluster = self.env.create_cluster(nodes=[node.id])
+        task = self.env.launch_deployment()
+
+        self.assertEquals(task.status, 'error')
+        self.assertEquals(
+            task.message,
+            "Node '%s' has insufficient disk space for OS" %
+            node.human_readable_name)

@@ -150,9 +150,14 @@ class Environment(object):
             exclude=None, expect_http=201,
             expect_message=None,
             **kwargs):
+        metadata = kwargs.get('meta')
         default_metadata = self.default_metadata()
+        if metadata:
+            default_metadata.update(metadata)
+
         mac = self._generate_random_mac()
-        default_metadata['interfaces'][0]['mac'] = mac
+        if default_metadata['interfaces']:
+            default_metadata['interfaces'][0]['mac'] = kwargs.get('mac', mac)
 
         node_data = {
             'mac': mac,
@@ -161,7 +166,10 @@ class Environment(object):
             'meta': default_metadata
         }
         if kwargs:
+            meta = kwargs.pop('meta', None)
             node_data.update(kwargs)
+            if meta:
+                kwargs['meta'] = meta
 
         if exclude and isinstance(exclude, list):
             for ex in exclude:
@@ -191,10 +199,6 @@ class Environment(object):
         else:
             node = Node()
             node.timestamp = datetime.now()
-            if not node_data.get('meta'):
-                node_data['meta'] = default_metadata
-            else:
-                node_data['meta'].update(default_metadata)
             for key, value in node_data.iteritems():
                 setattr(node, key, value)
             node.attributes = self.create_attributes()
@@ -518,8 +522,7 @@ class Environment(object):
                 reverse(
                     'ClusterChangesHandler',
                     kwargs={'cluster_id': self.clusters[0].id}),
-                headers=self.default_headers
-            )
+                headers=self.default_headers)
             self.tester.assertEquals(200, resp.status)
             response = json.loads(resp.body)
             return self.db.query(Task).filter_by(
