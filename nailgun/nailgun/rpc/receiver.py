@@ -47,6 +47,7 @@ class NailgunReceiver(object):
         task_uuid = kwargs.get('task_uuid')
         nodes = kwargs.get('nodes') or []
         error_nodes = kwargs.get('error_nodes') or []
+        inaccessible_nodes = kwargs.get('inaccessible_nodes') or []
         error_msg = kwargs.get('error')
         status = kwargs.get('status')
         progress = kwargs.get('progress')
@@ -60,6 +61,14 @@ class NailgunReceiver(object):
                 )
                 break
             cls.db.delete(node_db)
+
+        for node in inaccessible_nodes:
+            # Nodes which not answered by rpc just removed from db
+            node_db = cls.db.query(Node).get(node['uid'])
+            if node_db:
+                logger.warn(
+                    u'Node %s not answered by RPC, removing from db', str(node))
+                cls.db.delete(node_db)
 
         for node in error_nodes:
             node_db = cls.db.query(Node).get(node['uid'])
