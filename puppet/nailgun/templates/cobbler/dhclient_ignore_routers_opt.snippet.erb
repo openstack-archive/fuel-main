@@ -6,3 +6,4 @@ if (grep -q "^\s*DHCLIENTARGS" /etc/sysconfig/network); then
 else
     echo 'DHCLIENTARGS="-cf /etc/dhcp/dhclient.conf"' >> /etc/sysconfig/network
 fi
+rm -f /etc/dhcp/dhclient-eth*.conf
