@@ -637,9 +637,16 @@ class CheckNetworksTask(object):
 class CheckBeforeDeploymentTask(object):
     @classmethod
     def execute(cls, task):
+        cls.__check_disks(task)
+        cls.__check_network(task)
+
+    @classmethod
+    def __check_disks(cls, task):
         for node in task.cluster.nodes:
             node.volume_manager.check_free_space()
 
+    @classmethod
+    def __check_network(cls, task):
         netmanager = NetworkManager()
         nodes_count = len(task.cluster.nodes)
 
@@ -649,7 +656,7 @@ class CheckBeforeDeploymentTask(object):
         public_network_size = cls.__network_size(public_network)
 
         if public_network_size < nodes_count:
-            error_message = cls.__format_error(nodes_count)
+            error_message = cls.__format_network_error(nodes_count)
             raise errors.NetworkCheckError(error_message)
 
     @classmethod
@@ -660,7 +667,7 @@ class CheckBeforeDeploymentTask(object):
         return size
 
     @classmethod
-    def __format_error(cls, nodes_count):
+    def __format_network_error(cls, nodes_count):
         return 'Not enough IP addresses. Public network must have at least '\
             '{nodes_count} IP addresses '.format(nodes_count=nodes_count) +\
             'for the current environment.'
