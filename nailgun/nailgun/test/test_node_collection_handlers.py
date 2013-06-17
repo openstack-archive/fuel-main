@@ -230,8 +230,6 @@ class TestHandlers(BaseHandlers):
         response = json.loads(resp.body)
         # Here we are checking if node mac is successfully updated
         self.assertEqual(node1_json["mac"], response[0]["mac"])
-        print json.dumps(meta, indent=4)
-        print json.dumps(response[0]["meta"], indent=4)
         self.assertEqual(meta, response[0]["meta"])
 
     def test_duplicated_node_create_fails(self):

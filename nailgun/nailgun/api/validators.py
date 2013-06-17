@@ -37,7 +37,7 @@ from netaddr import IPNetwork, AddrFormatError
 
 class BasicValidator(object):
     @classmethod
-    def validate_json(cls, data, desired_type=None, client=None):
+    def validate_json(cls, data, desired_type=None):
         if data:
             try:
                 res = json.loads(data)
