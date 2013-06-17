@@ -1,5 +1,5 @@
 import logging
-from devops.helpers.helpers import SSHClient, wait
+from devops.helpers.helpers import SSHClient, wait, _wait
 from paramiko import RSAKey
 from fuelweb_test.helpers import Ebtables
 from fuelweb_test.integration.base_test_case import BaseTestCase
@@ -182,16 +182,16 @@ class BaseNodeTestCase(BaseTestCase):
     def create_cluster(self, name='default',
                        release_id=None, net_manager="FlatDHCPManager"):
         cluster_id = self.get_or_create_cluster(name, release_id)
-        self.client.update_cluster(
+        self.client.update_network(
             cluster_id,
-            {'net_manager': net_manager})
+            net_manager=net_manager)
         if net_manager == "VlanManager":
             flat_net = filter(
                 lambda network: network['name'] == 'fixed',
                 self.client.get_networks(cluster_id)['networks'])
             flat_net[0]['amount'] = 8
             flat_net[0]['network_size'] = 16
-            self.client.update_network(cluster_id, flat_net)
+            self.client.update_network(cluster_id, flat_net=flat_net)
         return cluster_id
 
     @logwrap
@@ -234,28 +234,26 @@ class BaseNodeTestCase(BaseTestCase):
         return self.nailgun_nodes(devops_nodes)
 
     @logwrap
-    def check_service_list(self, remote, smiles_count):
-        ret = remote.execute('/usr/bin/nova-manage service list')
-        return ret['exit_code'] == 0 \
-            and ''.join(ret['stdout']).count(":-)") == smiles_count \
-            and ''.join(ret['stdout']).count("XXX") == 0
+    def assert_service_list(self, remote, smiles_count):
+        ret = remote.check_call('/usr/bin/nova-manage service list')
+        self.assertEqual(
+            smiles_count, ''.join(ret['stdout']).count(":-)"), "Smiles count")
+        self.assertEqual(0, ''.join(ret['stdout']).count("XXX"), "Broken services count")
 
     @logwrap
-    def check_glance_index(self, ctrl_ssh):
-        ret = ctrl_ssh.execute('. /root/openrc; glance index')
-        return ret['exit_code'] == 0 \
-            and ''.join(ret['stdout']).count("TestVM") == 1
+    def assert_glance_index(self, ctrl_ssh):
+        ret = ctrl_ssh.check_call('. /root/openrc; glance index')
+        self.assertEqual(1, ''.join(ret['stdout']).count("TestVM"))
 
     @logwrap
-    def check_network_list(self, networks_count, remote):
-        ret = remote.execute('/usr/bin/nova-manage network list')
-        return ret['exit_code'] == 0 and len(
-            ret['stdout']) == networks_count + 1
+    def assert_network_list(self, networks_count, remote):
+        ret = remote.check_call('/usr/bin/nova-manage network list')
+        self.assertEqual(networks_count + 1, len(ret['stdout']))
 
     @logwrap
     def assertClusterReady(self, node_name, smiles_count,
                            networks_count=1, timeout=300):
-        wait(
+        _wait(
             lambda: self.get_cluster_status(
                 self.get_node_by_devops_node(
                     self.ci().environment().node_by_name(node_name))['ip'],
@@ -267,9 +265,9 @@ class BaseNodeTestCase(BaseTestCase):
     def get_cluster_status(self, ip, smiles_count, networks_count=1):
         remote = SSHClient(ip, username='root', password='r00tme',
                            private_keys=self.get_private_keys())
-        return self.check_service_list(remote, smiles_count)\
-            and self.check_glance_index(remote)\
-            and self.check_network_list(networks_count, remote)
+        self.assert_service_list(remote, smiles_count)
+        self.assert_glance_index(remote)
+        self.assert_network_list(networks_count, remote)
 
     @logwrap
     def get_private_keys(self):
