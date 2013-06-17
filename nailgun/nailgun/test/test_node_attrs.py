@@ -196,23 +196,6 @@ class TestHandlers(BaseHandlers):
             )
             self.assertEquals(len(check_vgs), len(vgs))
 
-    def test_node_insufficient_disk_space(self):
-        meta = self.env.default_metadata()
-        for d in meta["disks"]:
-            d["size"] = 1000
-        node = self.env.create_node(
-            api=True,
-            meta=meta
-        )
-        node_db = self.env.nodes[0]
-        notif = self.db.query(Notification).filter_by(
-            message="Failed to generate volumes info for node '{0}': "
-            "'Insufficient disk space for OS'".format(
-                node_db.name
-            )
-        ).first()
-        self.assertIsNotNone(notif)
-
     def test_node_os_many_disks(self):
         meta = self.env.default_metadata()
         meta["memory"]["total"] = 4294967296
