@@ -307,6 +307,8 @@ umount -f ${FS} || true
 rm -rf ${FS}
 
 # Enabling/configuring NTPD and ntpdate services
+echo "server 127.127.1.0"            >> /etc/ntp.conf
+echo "fudge  127.127.1.0 stratum 10" >> /etc/ntp.conf
 echo "tos    orphan 7"               >> /etc/ntp.conf
 
 chkconfig ntpd on
