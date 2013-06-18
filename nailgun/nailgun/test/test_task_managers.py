@@ -149,7 +149,8 @@ class TestTaskManagers(BaseHandlers):
             reverse(
                 'ClusterAttributesHandler',
                 kwargs={'cluster_id': cluster_db.id}),
-            headers=self.default_headers
+            headers=self.default_headers,
+            params=json.dumps({'cluster_type': 'both'})
         )
 
         self.assertEquals(resp.status, 200)
