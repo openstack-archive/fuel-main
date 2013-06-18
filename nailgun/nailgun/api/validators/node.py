@@ -114,7 +114,7 @@ class NodeValidator(BasicValidator):
                     "exists - doing nothing".format(d["mac"]),
                     log_level="info"
                 )
-            if cls.validate_existent_node_mac_post(d):
+            if cls.validate_existent_node_mac_create(d):
                 raise errors.AlreadyExists(
                     "Node with mac {0} already "
                     "exists - doing nothing".format(d["mac"]),
@@ -128,7 +128,7 @@ class NodeValidator(BasicValidator):
 
     # TODO: fix this using DRY
     @classmethod
-    def validate_existent_node_mac_post(cls, data):
+    def validate_existent_node_mac_create(cls, data):
         if 'meta' in data:
             data['meta'] = MetaValidator.validate_create(data['meta'])
             if 'interfaces' in data['meta']:
@@ -137,7 +137,7 @@ class NodeValidator(BasicValidator):
                 return existent_node
 
     @classmethod
-    def validate_existent_node_mac_put(cls, data):
+    def validate_existent_node_mac_update(cls, data):
         if 'meta' in data:
             data['meta'] = MetaValidator.validate_update(data['meta'])
             if 'interfaces' in data['meta']:
@@ -178,7 +178,7 @@ class NodeValidator(BasicValidator):
             else:
                 if "mac" in nd:
                     existent_node = q.filter_by(mac=nd["mac"]).first() \
-                        or cls.validate_existent_node_mac_put(nd)
+                        or cls.validate_existent_node_mac_update(nd)
                     if not existent_node:
                         raise errors.InvalidData(
                             "Invalid MAC specified",

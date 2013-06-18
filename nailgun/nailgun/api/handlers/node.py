@@ -28,7 +28,7 @@ from nailgun.api.models import Network
 from nailgun.api.models import NetworkAssignment
 from nailgun.api.models import NodeNICInterface
 from nailgun.api.models import NetworkGroup
-from nailgun.network.topology import TopoChecker, NICUtils
+from nailgun.network.topology import TopoChecker
 from nailgun.api.validators.node import NodeValidator
 from nailgun.api.validators.node import NodeAttributesValidator
 from nailgun.api.validators.node import NodeVolumesValidator
@@ -205,7 +205,7 @@ class NodeCollectionHandler(JSONHandler):
             node = None
             if "mac" in nd:
                 node = q.filter_by(mac=nd["mac"]).first() \
-                    or self.validator.validate_existent_node_mac_put(nd)
+                    or self.validator.validate_existent_node_mac_update(nd)
             else:
                 node = q.get(nd["id"])
             if is_agent:

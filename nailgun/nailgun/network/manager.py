@@ -588,7 +588,10 @@ class NetworkManager(object):
         network_ids = []
         for i in ips:
             net = self.db.query(Network).get(i.network)
-            interface = self._get_interface_by_network_name(node_db, net.name)
+            interface = self._get_interface_by_network_name(
+                node_db.id,
+                net.name
+            )
 
             # Get prefix from netmask instead of cidr
             # for public network
@@ -625,7 +628,10 @@ class NetworkManager(object):
         # However it will end up with errors if we precreate vlans in VLAN mode
         #   in fixed network. We are skipping fixed nets in Vlan mode.
         for net in nets.order_by(Network.id).all():
-            interface = self._get_interface_by_network_name(node_db, net.name)
+            interface = self._get_interface_by_network_name(
+                node_db.id,
+                net.name
+            )
 
             if net.name == 'fixed' and cluster_db.net_manager == 'VlanManager':
                 continue
@@ -648,10 +654,9 @@ class NetworkManager(object):
                 interfaces_db
             )[0]
             # Remove all old network's assignment for this interface.
-            old_assignment = self.db.query(NetworkAssignment).filter_by(
-                interface_id=current_iface.id,
-            ).all()
-            map(self.db.delete, old_assignment)
+            self.db.query(NetworkAssignment).filter_by(
+                interface_id=current_iface.id
+            ).delete()
             for net in iface['assigned_networks']:
                 net_assignment = NetworkAssignment()
                 net_assignment.network_id = net['id']
@@ -742,12 +747,13 @@ class NetworkManager(object):
 
         raise errors.CanNotFindInterface()
 
-    def _get_interface_by_network_name(self, node, network_name):
+    def _get_interface_by_network_name(self, node_id, network_name):
         """
         Return network device which has appointed
         network with specified network name
         """
-        for interface in node.interfaces:
+        node_db = self.db.query(Node).get(node_id)
+        for interface in node_db.interfaces:
             for network in interface.assigned_networks:
                 if network.name == network_name:
                     return interface

@@ -51,7 +51,7 @@ from nailgun.wsgi import build_app
 from nailgun.db import make_session, dropdb, syncdb, flush, orm
 from nailgun.fixtures.fixman import upload_fixture
 from nailgun.network.manager import NetworkManager
-from nailgun.network.topology import TopoChecker, NICUtils
+from nailgun.network.topology import TopoChecker
 
 
 class TimeoutError(Exception):
@@ -207,7 +207,7 @@ class Environment(object):
             node = json.loads(resp.body)
             node_db = self.db.query(Node).get(node['id'])
             self._set_interfaces_if_not_set_in_meta(
-                node_db,
+                node_db.id,
                 kwargs.get('meta', None))
             self.nodes.append(node_db)
         else:
@@ -220,7 +220,7 @@ class Environment(object):
             self.db.add(node)
             self.db.commit()
             self._set_interfaces_if_not_set_in_meta(
-                node,
+                node.id,
                 kwargs.get('meta', None))
 
             self.nodes.append(node)
@@ -270,18 +270,21 @@ class Environment(object):
             )
         return {'interfaces': nics}
 
-    def _set_interfaces_if_not_set_in_meta(self, node, meta):
+    def _set_interfaces_if_not_set_in_meta(self, node_id, meta):
         if not meta or not 'interfaces' in meta:
-            self._add_interfaces_to_node(node)
+            self._add_interfaces_to_node(node_id)
 
-    def _add_interfaces_to_node(self, node, count=1):
+    def _add_interfaces_to_node(self, node_id, count=1):
         interfaces = []
-        nic_utils = NICUtils()
-        allowed_networks = nic_utils.get_all_cluster_networkgroups(node)
+        allowed_networks = list(self.db.query(NetworkGroup).filter(
+            NetworkGroup.id.in_(
+                self.network_manager.get_all_cluster_networkgroups(node_id)
+            )
+        ))
 
         for i in xrange(count):
             nic_dict = {
-                'node_id': node.id,
+                'node_id': node_id,
                 'name': 'eth{0}'.format(i),
                 'mac': self._generate_random_mac(),
                 'current_speed': 100,

@@ -39,10 +39,8 @@ from nailgun.task.manager import DeploymentTaskManager
 from nailgun.task.manager import ClusterDeletionManager
 from nailgun.task.manager import CheckBeforeDeploymentTaskManager
 
-from nailgun.network.topology import NICUtils
 
-
-class ClusterHandler(JSONHandler, NICUtils):
+class ClusterHandler(JSONHandler):
     fields = (
         "id",
         "name",
@@ -77,6 +75,7 @@ class ClusterHandler(JSONHandler, NICUtils):
     def PUT(self, cluster_id):
         cluster = self.get_object_or_404(Cluster, cluster_id)
         data = self.checked_data()
+        network_manager = NetworkManager()
 
         for key, value in data.iteritems():
             if key == "nodes":
@@ -95,11 +94,13 @@ class ClusterHandler(JSONHandler, NICUtils):
                 map(cluster.nodes.remove, nodes_to_remove)
                 map(cluster.nodes.append, nodes_to_add)
                 for node in nodes_to_remove:
-                    self.clear_assigned_networks(node)
-                    self.clear_all_allowed_networks(node)
+                    network_manager.clear_assigned_networks(node.id)
+                    network_manager.clear_all_allowed_networks(node.id)
                 for node in nodes_to_add:
-                    self.allow_network_assignment_to_all_interfaces(node)
-                    self.assign_networks_to_main_interface(node)
+                    network_manager.allow_network_assignment_to_all_interfaces(
+                        node.id
+                    )
+                    network_manager.assign_networks_to_main_interface(node.id)
             else:
                 setattr(cluster, key, value)
         self.db.commit()
@@ -123,7 +124,7 @@ class ClusterHandler(JSONHandler, NICUtils):
         )
 
 
-class ClusterCollectionHandler(JSONHandler, NICUtils):
+class ClusterCollectionHandler(JSONHandler):
 
     validator = ClusterValidator
 
@@ -166,10 +167,12 @@ class ClusterCollectionHandler(JSONHandler, NICUtils):
                     Node.id.in_(data['nodes'])
                 ).all()
                 map(cluster.nodes.append, nodes)
-                for node in nodes:
-                    self.allow_network_assignment_to_all_interfaces(node)
-                    self.assign_networks_to_main_interface(node)
                 self.db.commit()
+                for node in nodes:
+                    netmanager.allow_network_assignment_to_all_interfaces(
+                        node.id
+                    )
+                    netmanager.assign_networks_to_main_interface(node.id)
 
             raise web.webapi.created(json.dumps(
                 ClusterHandler.render(cluster),

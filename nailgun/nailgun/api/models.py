@@ -247,6 +247,9 @@ class Node(Base):
     def human_readable_name(self):
         return self.name or self.mac
 
+    def _check_interface_has_required_params(self, iface):
+        return bool(iface.get('name') and iface.get('mac'))
+
     def _clean_iface(self, iface):
         for param in ["max_speed", "current_speed"]:
             val = iface.get(param)
@@ -261,8 +264,7 @@ class Node(Base):
         # helper for basic checking meta before updation
         result = []
         for iface in data["interfaces"]:
-            if "name" not in iface or not iface["name"] \
-                    or "mac" not in iface or not iface["mac"]:
+            if not self._check_interface_has_required_params(iface):
                 logger.warning(
                     "Invalid interface data: {0}. "
                     "Interfaces are not updated.".format(iface)
@@ -279,8 +281,7 @@ class Node(Base):
         # helper for basic checking meta before creation
         result = []
         for iface in data["interfaces"]:
-            if "name" not in iface or not iface["name"] \
-                    or "mac" not in iface or not iface["mac"]:
+            if not self._check_interface_has_required_params(iface):
                 continue
             result.append(self._clean_iface(iface))
 

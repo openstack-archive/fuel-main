@@ -329,15 +329,16 @@ class TestHandlers(BaseHandlers):
     @fake_tasks(fake_rpc=False, mock_rpc=False)
     @patch('nailgun.rpc.cast')
     def test_deploy_and_remove_correct_nodes_and_statuses(self, mocked_rpc):
-        cluster = self.env.create_cluster()
-        map(
-            lambda x: self.env.create_node(
-                api=True,
-                cluster_id=cluster['id'],
-                **x),
-            [
-                {"pending_addition": True},
-                {"pending_deletion": True, "status": "error"},
+        self.env.create(
+            cluster_kwargs={},
+            nodes_kwargs=[
+                {
+                    "pending_addition": True,
+                },
+                {
+                    "status": "error",
+                    "pending_deletion": True
+                }
             ]
         )
         self.env.launch_deployment()

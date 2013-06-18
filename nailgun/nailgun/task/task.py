@@ -217,7 +217,7 @@ class DeploymentTask(object):
             node_db = orm().query(Node).get(node['id'])
 
             fixed_interface = netmanager._get_interface_by_network_name(
-                node_db, 'fixed')
+                node_db.id, 'fixed')
 
             node['vlan_interface'] = fixed_interface.name
 
