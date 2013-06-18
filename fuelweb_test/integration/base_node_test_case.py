@@ -31,7 +31,7 @@ class BaseNodeTestCase(BaseTestCase):
                            private_keys=self.get_private_keys())
         for interface in node['network_data']:
             if interface.get('vlan') is None:
-                continue #todo excess check fix interface json format
+                continue  # todo excess check fix interface json format
             interface_name = "%s.%s@%s" % (
                 interface['dev'], interface['vlan'], interface['dev'])
             interface_short_name = "%s.%s" % (
@@ -81,7 +81,8 @@ class BaseNodeTestCase(BaseTestCase):
     def _get_common_vlan(self, cluster_id):
         """Find vlan that must be at all two nodes.
         """
-        return self.client.get_networks(cluster_id)['networks'][0]['vlan_start']
+        return self.client.get_networks(
+            cluster_id)['networks'][0]['vlan_start']
 
     @logwrap
     def _run_network_verify(self, cluster_id):
@@ -198,8 +199,11 @@ class BaseNodeTestCase(BaseTestCase):
     def update_nodes_in_cluster(self, cluster_id, nodes):
         node_ids = [str(node['id']) for node in nodes]
         self.client.update_cluster(cluster_id, {"nodes": node_ids})
-        self.assertEquals(sorted(node_ids),sorted(
-            map(lambda node: str(node['id']), self.client.list_cluster_nodes(cluster_id))))
+        self.assertEquals(
+            sorted(node_ids),
+            sorted(map(
+                lambda node: str(node['id']),
+                self.client.list_cluster_nodes(cluster_id))))
 
     @logwrap
     def get_node_by_devops_node(self, devops_node):
@@ -238,7 +242,8 @@ class BaseNodeTestCase(BaseTestCase):
         ret = remote.check_call('/usr/bin/nova-manage service list')
         self.assertEqual(
             smiles_count, ''.join(ret['stdout']).count(":-)"), "Smiles count")
-        self.assertEqual(0, ''.join(ret['stdout']).count("XXX"), "Broken services count")
+        self.assertEqual(
+            0, ''.join(ret['stdout']).count("XXX"), "Broken services count")
 
     @logwrap
     def assert_glance_index(self, ctrl_ssh):
