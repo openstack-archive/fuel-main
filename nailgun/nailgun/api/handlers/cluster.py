@@ -160,7 +160,11 @@ class ClusterCollectionHandler(JSONHandler, NICUtils):
                 ClusterHandler.render(cluster),
                 indent=4
             ))
-        except errors.OutOfVLANs as e:
+        except (
+            errors.OutOfVLANs,
+            errors.OutOfIPs,
+            errors.NoSuitableCIDR
+        ) as e:
             # Cluster was created in this request,
             # so we no need to use ClusterDeletionManager.
             # All relations wiil be cascade deleted automaticly.
