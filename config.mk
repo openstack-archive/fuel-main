@@ -14,7 +14,7 @@ LOCAL_MIRROR?=$(TOP_DIR)/local_mirror
 LOCAL_MIRROR:=$(abspath $(LOCAL_MIRROR))
 
 COMMIT_SHA:=$(shell git rev-parse --verify HEAD)
-PRODUCT_VERSION:=3.0
+PRODUCT_VERSION:=3.0.1
 FUEL_COMMIT_SHA:=$(shell cd fuel && git rev-parse --verify HEAD)
 
 CENTOS_MAJOR:=6
@@ -42,10 +42,10 @@ BUILD_MIRROR_GEMS:=$(BUILD_DIR)/packages/gems
 # Use srv08 mirrors by default. Other possible default is 'msk'.
 # Setting any other value or removing of this variable will cause
 # download of all the packages directly from internet
-USE_MIRROR?=srv08
-ifeq ($(USE_MIRROR),srv08)
+USE_MIRROR?=srt
+ifeq ($(USE_MIRROR),srt)
 YUM_REPOS?=proprietary
-MIRROR_BASE?=http://srv08-srt.srt.mirantis.net/fwm/3.0
+MIRROR_BASE?=http://srv08-srt.srt.mirantis.net/fwm/$(PRODUCT_VERSION)
 MIRROR_CENTOS?=$(MIRROR_BASE)/centos
 MIRROR_EGGS?=$(MIRROR_BASE)/eggs
 MIRROR_GEMS?=$(MIRROR_BASE)/gems
@@ -53,15 +53,7 @@ MIRROR_SRC?=$(MIRROR_BASE)/src
 endif
 ifeq ($(USE_MIRROR),msk)
 YUM_REPOS?=proprietary
-MIRROR_BASE?=http://172.18.8.209/fwm/3.0
-MIRROR_CENTOS?=$(MIRROR_BASE)/centos
-MIRROR_EGGS?=$(MIRROR_BASE)/eggs
-MIRROR_GEMS?=$(MIRROR_BASE)/gems
-MIRROR_SRC?=$(MIRROR_BASE)/src
-endif
-ifeq ($(USE_MIRROR),msk2)
-YUM_REPOS?=proprietary
-MIRROR_BASE?=http://172.18.8.207/fwm/3.0
+MIRROR_BASE?=http://srv11-msk.msk.mirantis.net/fwm/$(PRODUCT_VERSION)
 MIRROR_CENTOS?=$(MIRROR_BASE)/centos
 MIRROR_EGGS?=$(MIRROR_BASE)/eggs
 MIRROR_GEMS?=$(MIRROR_BASE)/gems
