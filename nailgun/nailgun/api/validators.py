@@ -59,7 +59,7 @@ class MetaInterfacesValidator(BasicValidator):
                 )
             for key in ('max_speed', 'current_speed'):
                 if key not in nic or isinstance(nic[key], types.NoneType) or\
-                        (isinstance(nic[key], int) and nic[key] > 0):
+                        (isinstance(nic[key], int) and nic[key] >= 0):
                     continue
                 raise web.webapi.badrequest(
                     message="Interface in meta.interfaces should have key %r"
