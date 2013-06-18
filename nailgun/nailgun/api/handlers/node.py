@@ -70,25 +70,7 @@ class NodeHandler(JSONHandler):
         if not node.attributes:
             node.attributes = NodeAttributes(node_id=node.id)
 
-        try:
-            data = self.validator.validate_update(web.data())
-        except (
-            errors.InvalidInterfacesInfo,
-            errors.InvalidMetadata
-        ) as exc:
-            notifier.notify("error", str(exc))
-            raise web.badrequest(message=str(exc))
-        except (
-            errors.AlreadyExists
-        ) as exc:
-            err = web.conflict()
-            err.message = exc.message
-            raise err
-        except (
-            errors.InvalidData,
-            Exception
-        ) as exc:
-            raise web.badrequest(message=str(exc))
+        data = self.checked_data(self.validator.validate_update)
 
         network_manager = NetworkManager()
 
@@ -150,25 +132,7 @@ class NodeCollectionHandler(JSONHandler):
 
     @content_json
     def POST(self):
-        try:
-            data = self.validator.validate(web.data())
-        except (
-            errors.InvalidInterfacesInfo,
-            errors.InvalidMetadata
-        ) as exc:
-            notifier.notify("error", str(exc))
-            raise web.badrequest(message=str(exc))
-        except (
-            errors.AlreadyExists
-        ) as exc:
-            err = web.conflict()
-            err.message = exc.message
-            raise err
-        except (
-            errors.InvalidData,
-            Exception
-        ) as exc:
-            raise web.badrequest(message=str(exc))
+        data = self.checked_data()
 
         node = Node()
         for key, value in data.iteritems():
@@ -229,25 +193,9 @@ class NodeCollectionHandler(JSONHandler):
 
     @content_json
     def PUT(self):
-        try:
-            data = self.validator.validate_collection_update(web.data())
-        except (
-            errors.InvalidInterfacesInfo,
-            errors.InvalidMetadata
-        ) as exc:
-            notifier.notify("error", str(exc))
-            raise web.badrequest(message=str(exc))
-        except (
-            errors.AlreadyExists
-        ) as exc:
-            err = web.conflict()
-            err.message = exc.message
-            raise err
-        except (
-            errors.InvalidData,
-            Exception
-        ) as exc:
-            raise web.badrequest(message=str(exc))
+        data = self.checked_data(
+            self.validator.validate_collection_update
+        )
 
         network_manager = NetworkManager()
         q = self.db.query(Node)

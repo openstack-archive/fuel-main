@@ -24,7 +24,9 @@ import netaddr
 
 import nailgun.rpc as rpc
 from nailgun.db import orm
+from nailgun.notifier import notifier
 from nailgun.settings import settings
+from nailgun.errors import errors
 from nailgun.logger import logger
 from nailgun.api.models import Release
 from nailgun.api.models import Cluster
@@ -32,6 +34,7 @@ from nailgun.api.models import Node
 from nailgun.api.models import Network
 from nailgun.api.models import Vlan
 from nailgun.api.models import Task
+from nailgun.api.validators.base import BasicValidator
 
 
 def check_client_content_type(handler):
@@ -86,12 +89,38 @@ class HandlerRegistrator(type):
 
 class JSONHandler(object):
     __metaclass__ = HandlerRegistrator
+    validator = BasicValidator
 
     fields = []
 
     def __init__(self, *args, **kwargs):
         super(JSONHandler, self).__init__(*args, **kwargs)
         self.db = orm()
+
+    def checked_data(self, validate_method=None):
+        try:
+            if validate_method:
+                data = validate_method(web.data())
+            else:
+                data = self.validator.validate(web.data())
+        except (
+            errors.InvalidInterfacesInfo,
+            errors.InvalidMetadata
+        ) as exc:
+            notifier.notify("error", str(exc))
+            raise web.badrequest(message=str(exc))
+        except (
+            errors.AlreadyExists
+        ) as exc:
+            err = web.conflict()
+            err.message = exc.message
+            raise err
+        except (
+            errors.InvalidData,
+            Exception
+        ) as exc:
+            raise web.badrequest(message=str(exc))
+        return data
 
     def get_object_or_404(self, model, *args, **kwargs):
         # should be in ('warning', 'Log message') format

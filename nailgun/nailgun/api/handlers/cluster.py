@@ -76,20 +76,7 @@ class ClusterHandler(JSONHandler, NICUtils):
     @content_json
     def PUT(self, cluster_id):
         cluster = self.get_object_or_404(Cluster, cluster_id)
-
-        try:
-            data = self.validator.validate(web.data())
-        except (
-            errors.AlreadyExists
-        ) as exc:
-            err = web.conflict()
-            err.message = exc.message
-            raise err
-        except (
-            errors.InvalidData,
-            Exception
-        ) as exc:
-            raise web.badrequest(message=str(exc))
+        data = self.checked_data()
 
         for key, value in data.iteritems():
             if key == "nodes":
@@ -150,19 +137,7 @@ class ClusterCollectionHandler(JSONHandler, NICUtils):
     @content_json
     def POST(self):
         # It's used for cluster creating only.
-        try:
-            data = self.validator.validate(web.data())
-        except (
-            errors.AlreadyExists
-        ) as exc:
-            err = web.conflict()
-            err.message = exc.message
-            raise err
-        except (
-            errors.InvalidData,
-            Exception
-        ) as exc:
-            raise web.badrequest(message=str(exc))
+        data = self.checked_data()
 
         cluster = Cluster()
         cluster.release = self.db.query(Release).get(data["release"])
@@ -270,19 +245,7 @@ class ClusterAttributesHandler(JSONHandler):
         if not cluster.attributes:
             raise web.internalerror("No attributes found!")
 
-        try:
-            data = self.validator.validate(web.data())
-        except (
-            errors.AlreadyExists
-        ) as exc:
-            err = web.conflict()
-            err.message = exc.message
-            raise err
-        except (
-            errors.InvalidData,
-            Exception
-        ) as exc:
-            raise web.badrequest(message=str(exc))
+        data = self.checked_data()
 
         for key, value in data.iteritems():
             setattr(cluster.attributes, key, value)

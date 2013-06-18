@@ -43,19 +43,7 @@ class ReleaseHandler(JSONHandler):
     def PUT(self, release_id):
         release = self.get_object_or_404(Release, release_id)
 
-        try:
-            data = self.validator.validate(web.data())
-        except (
-            errors.AlreadyExists
-        ) as exc:
-            err = web.conflict()
-            err.message = exc.message
-            raise err
-        except (
-            errors.InvalidData,
-            Exception
-        ) as exc:
-            raise web.badrequest(message=str(exc))
+        data = self.checked_data()
 
         for key, value in data.iteritems():
             setattr(release, key, value)
@@ -85,19 +73,7 @@ class ReleaseCollectionHandler(JSONHandler):
 
     @content_json
     def POST(self):
-        try:
-            data = self.validator.validate(web.data())
-        except (
-            errors.AlreadyExists
-        ) as exc:
-            err = web.conflict()
-            err.message = exc.message
-            raise err
-        except (
-            errors.InvalidData,
-            Exception
-        ) as exc:
-            raise web.badrequest(message=str(exc))
+        data = self.checked_data()
 
         release = Release()
         for key, value in data.iteritems():
