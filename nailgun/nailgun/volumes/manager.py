@@ -144,6 +144,12 @@ class VolumeManager(object):
                     if lv.get("type") == "lv" and lv.get("name") == "libvirt":
                         self.volumes[i]["volumes"][j]["size"] = \
                             self.field_generator("calc_total_vg", "vm")
+            if vg.get("type") == "vg" and vg.get("id") == "os":
+                for j, lv in enumerate(vg.get("volumes", [])):
+                    if lv.get("type") == "lv" and lv.get("name") == "root":
+                        self.volumes[i]["volumes"][j]["size"] += \
+                            self.field_generator(
+                                "calc_total_unallocated_vg", "os")
         return self.volumes
 
     def _traverse(self, cdict):
@@ -212,6 +218,15 @@ class VolumeManager(object):
                                          "calc_lvm_meta_size"))
         return vg_space
 
+    def _calc_total_unallocated_vg(self, vg):
+        logger.debug("_calc_total_unallocated_vg")
+        vg_space = self._calc_total_vg(vg)
+        for v in self.volumes:
+            if v.get("type") == "vg" and v.get("id") == vg:
+                for subv in v.get("volumes", []):
+                    vg_space -= subv.get("size", 0)
+        return vg_space
+
     def field_generator(self, generator, *args):
         generators = {
             # Calculate swap space based on total RAM
@@ -223,7 +238,8 @@ class VolumeManager(object):
             "calc_mbr_size": lambda: 10 * 1024 ** 2,
             "calc_lvm_meta_size": lambda: 1024 ** 2 * 64,
             "calc_all_free": self._calc_all_free,
-            "calc_total_vg": self._calc_total_vg
+            "calc_total_vg": self._calc_total_vg,
+            "calc_total_unallocated_vg": self._calc_total_unallocated_vg
         }
         generators["calc_os_size"] = lambda: sum([
             generators["calc_root_size"](),
