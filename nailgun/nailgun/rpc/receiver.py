@@ -68,7 +68,7 @@ class NailgunReceiver(object):
             if node_db:
                 logger.warn(
                     u'Node %s not answered by RPC, removing from db',
-                    str(node))
+                    node_db.human_readable_name)
                 cls.db.delete(node_db)
 
         for node in error_nodes:
