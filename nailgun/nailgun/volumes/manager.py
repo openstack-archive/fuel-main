@@ -151,20 +151,44 @@ class VolumeManager(object):
         logger.debug("VolumeManager: disks: %s", self.disks)
         self.validate()
 
+    def _find_lv_idx(self, vgname, lvname):
+        for i, vg in enumerate(self.volumes):
+            if vg.get("type") == "vg" and vg.get("id") == vgname:
+                for j, lv in enumerate(vg.get("volumes", [])):
+                    if lv.get("type") == "lv" and lv.get("name") == lvname:
+                        return (i, j)
+
+    def _get_lv_size(self, vgname, lvname):
+        idx = self._find_lv_idx(vgname, lvname)
+        if idx:
+            return self.volumes[idx[0]]["volumes"][idx[1]]["size"]
+        logger.error("Cannot find vg: %s lv: %s", vgname, lvname)
+        return 0
+
+    def _set_lv_size(self, vgname, lvname, size):
+        idx = self._find_lv_idx(vgname, lvname)
+        if idx:
+            self.volumes[idx[0]]["volumes"][idx[1]]["size"] = size
+        else:
+            logger.error("Cannot find vg: %s lv: %s", vgname, lvname)
+
     def validate(self):
         logger.debug("Validating volumes")
-        for i, vg in enumerate(self.volumes):
-            if vg.get("type") == "vg" and vg.get("id") == "vm":
-                for j, lv in enumerate(vg.get("volumes", [])):
-                    if lv.get("type") == "lv" and lv.get("name") == "libvirt":
-                        self.volumes[i]["volumes"][j]["size"] = \
-                            self.field_generator("calc_total_vg", "vm")
-            if vg.get("type") == "vg" and vg.get("id") == "os":
-                for j, lv in enumerate(vg.get("volumes", [])):
-                    if lv.get("type") == "lv" and lv.get("name") == "root":
-                        self.volumes[i]["volumes"][j]["size"] += \
-                            self.field_generator(
-                                "calc_total_unallocated_vg", "os")
+        """
+        Here we validate 'libvirt' logical volume to make its size
+        exactly equal to total available size in volume group 'vm'
+        """
+        size = self.field_generator("calc_total_vg", "vm")
+        logger.debug("Setting 'libvirt' size to: %s", size)
+        self._set_lv_size("vm", "libvirt", size)
+        """
+        Here we set 'root' logical volume size equal to all unallocated
+        space on volume group 'os'
+        """
+        size = self._get_lv_size("os", "root") + \
+            self.field_generator("calc_unallocated_vg", "os")
+        logger.debug("Setting 'root' size to: %s", size)
+        self._set_lv_size("os", "root", size)
         return self.volumes
 
     def _traverse(self, cdict):
@@ -228,8 +252,8 @@ class VolumeManager(object):
                                          "calc_lvm_meta_size"))
         return vg_space
 
-    def _calc_total_unallocated_vg(self, vg):
-        logger.debug("_calc_total_unallocated_vg")
+    def _calc_unallocated_vg(self, vg):
+        logger.debug("_calc_unallocated_vg")
         vg_space = self._calc_total_vg(vg)
         for v in self.volumes:
             if v.get("type") == "vg" and v.get("id") == vg:
@@ -249,7 +273,7 @@ class VolumeManager(object):
             "calc_lvm_meta_size": lambda: 1024 ** 2 * 64,
             "calc_os_vg_size": self._calc_os_vg_size,
             "calc_total_vg": self._calc_total_vg,
-            "calc_total_unallocated_vg": self._calc_total_unallocated_vg,
+            "calc_unallocated_vg": self._calc_unallocated_vg
         }
         generators["calc_os_size"] = lambda: sum([
             generators["calc_root_size"](),
