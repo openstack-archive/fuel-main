@@ -616,7 +616,7 @@ function(utils, models, commonViews, dialogViews, nodesTabSummaryTemplate, editN
         setMinimalSizes: function() {
             var osGroupGigabytes = this.node.get('role') == 'controller' ? 25 : 10;
             this.minimalSizes = {
-                os: this.formatFloat(osGroupGigabytes * Math.pow(1024, 3) + _.find(this.disks.findWhere({type: 'vg', id: 'os'}).get('volumes'), {name: 'swap'}).size),
+                os: this.formatFloat(osGroupGigabytes * this.pow + _.find(this.disks.findWhere({type: 'vg', id: 'os'}).get('volumes'), {name: 'swap'}).size),
                 vm: 5,
                 cinder: 0
             };
