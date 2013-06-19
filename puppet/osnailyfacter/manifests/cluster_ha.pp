@@ -249,6 +249,7 @@ class compact_controller {
       }
       class { 'openstack::cinder':
         sql_connection       => "mysql://cinder:${cinder_hash[db_password]}@${management_vip}/cinder?charset=utf8",
+        glance_api_servers   => "${management_vip}:9292",
         rabbit_password      => $rabbit_hash[password],
         rabbit_host          => false,
         rabbit_nodes         => $management_vip,

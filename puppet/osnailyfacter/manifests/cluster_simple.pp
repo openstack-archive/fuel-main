@@ -188,6 +188,7 @@ Exec { logoutput => true }
       }
       class { 'openstack::cinder':
         sql_connection       => "mysql://cinder:${cinder_hash[db_password]}@${controller_node_address}/cinder?charset=utf8",
+        glance_api_servers   => "${management_vip}:9292",
         rabbit_password      => $rabbit_hash[password],
         rabbit_host          => false,
         rabbit_nodes         => [$controller_node_address],
