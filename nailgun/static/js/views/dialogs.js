@@ -102,10 +102,33 @@ function(utils, models, simpleMessageTemplate, createClusterDialogTemplate, chan
             }
         },
         renderReleases: function(e) {
+            this.renderOS();
+            this.renderDistribution();
             var input = this.$('select[name=release]');
             input.html('');
+
             this.releases.each(function(release) {
-                input.append($('<option/>').attr('value', release.id).text(release.get('name')));
+                if (_.contains(release.get('operation_system'), this.$('select[name=operation_system]').val())){
+                    input.append($('<option/>').attr('value', release.id).text(release.get('name')));
+                }
+            }, this);
+        },
+        renderOS: function() {
+            var input = this.$('select[name=operation_system]');
+            input.html('');
+            this.releases.each(function(release) {
+                input.append($('<option/>').attr('value', release.get('operation_system')).text(release.get('operation_system')));
+            }, this);
+        },
+        renderDistribution: function() {
+            var input = this.$('select[name=distribution]');
+            input.html('');
+            this.releases.each(function(release) {
+                if (_.contains(release.get('operation_system'), this.$('select[name=operation_system]').val())){
+                    _(release.get('distribution')).forEach(function(distribution){
+                        input.append($('<option/>').attr('value', distribution).text(distribution));
+                    });
+                }
             }, this);
             this.updateReleaseDescription();
         },
@@ -120,6 +143,41 @@ function(utils, models, simpleMessageTemplate, createClusterDialogTemplate, chan
             this.releases = new models.Releases();
             this.releases.fetch();
             this.releases.on('sync', this.renderReleases, this);
+        }
+    });
+
+    views.RhelLicenseDialog = views.Dialog.extend({
+        template: _.template(rhelLicenseTemplate),
+        events: {
+            'click .btn-success': 'saveSettings',
+            'change input[name=license-type]': 'toggleTypes',
+            'change input[type=text]': 'validate'
+        },
+        saveSettings: function() {
+            this.account.license_type = this.$('input[name=license-type]:checked').val();
+            if (this.account.license_type == 'rhsm') {
+                this.account.username = this.$('input[name=username').val();
+                this.account.password = this.$('input[name=password').val();
+            }
+            else {
+                this.account.hostname = this.$('input[name=hostname').val();
+                this.account.activation_key = this.$('input[name=activation_key').val();
+            }
+
+            this.model.save({}, {url: _.result(this.model, 'url'), type: 'POST'})
+                .done(_.bind(function() {
+                    this.$el.modal('hide');
+                    app.page.downloadStarted();
+                }, this))
+                .fail(_.bind(this.displayErrorMessage, this));
+            app.page.downloadStarted();
+        },
+        toggleTypes: function() {
+            this.account.license_type = this.$('input[name=license-type]:checked').val();
+            this.$('.control-group').toggleClass('hide');
+        },
+        validate: function(e) {
+            var a = 2;
         }
     });
 
