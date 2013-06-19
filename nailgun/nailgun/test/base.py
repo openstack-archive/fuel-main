@@ -374,7 +374,7 @@ class Environment(object):
                     "id": "vm",
                     "volumes": [
                         {
-                            "mount": "/var/lib/libvirt",
+                            "mount": "/var/lib/nova",
                             "type": "lv",
                             "name": "vm",
                             "size": {"generator": "calc_all_free"}
