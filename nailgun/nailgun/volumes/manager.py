@@ -62,11 +62,12 @@ class Disk(object):
         self.free_space = self.free_space - size
 
     def create_mbr(self, boot=False):
-        if boot:
-            self.volumes.append({"type": "mbr"})
-        logger.debug("Allocating MBR")
-        self.free_space = self.free_space - \
-            self.vm.field_generator("calc_mbr_size")
+        if self.free_space >= self.vm.field_generator("calc_mbr_size"):
+            if boot:
+                self.volumes.append({"type": "mbr"})
+            logger.debug("Allocating MBR")
+            self.free_space = self.free_space - \
+                self.vm.field_generator("calc_mbr_size")
 
     def make_bootable(self):
         logger.debug("Allocating /boot partition")
@@ -182,18 +183,10 @@ class VolumeManager(object):
         return new_dict
 
     def _calc_root_size(self):
-        role = self.node.role
-        if role == 'controller':
-            return 1024 ** 3 * 25
-        else:
-            return 1024 ** 3 * 10
+        return 1024 ** 3 * 10
 
     def _calc_os_vg_size(self):
-        role = self.node.role
-        if role == 'controller':
-            return self.field_generator('calc_all_free')
-        else:
-            return self.field_generator('calc_os_size')
+        return self.field_generator('calc_os_size')
 
     def _calc_swap_size(self):
         mem = float(self.node.meta["memory"]["total"]) / 1024 ** 3
@@ -208,10 +201,6 @@ class VolumeManager(object):
             return int(.5 * mem * 1024 ** 3)
         else:
             return int(4 * 1024 ** 3)
-
-    def _calc_all_free(self):
-        logger.debug("_calc_all_free")
-        return sum([d.free_space for d in self.disks])
 
     def _calc_total_vg(self, vg):
         logger.debug("_calc_total_vg")
@@ -244,7 +233,6 @@ class VolumeManager(object):
             # let's think that size of mbr is 10Mb
             "calc_mbr_size": lambda: 10 * 1024 ** 2,
             "calc_lvm_meta_size": lambda: 1024 ** 2 * 64,
-            "calc_all_free": self._calc_all_free,
             "calc_os_vg_size": self._calc_os_vg_size,
             "calc_total_vg": self._calc_total_vg,
             "calc_total_unallocated_vg": self._calc_total_unallocated_vg,
@@ -297,6 +285,10 @@ class VolumeManager(object):
                 disk.make_bootable()
             else:
                 disk.create_mbr()
+
+            if self.node.role == 'controller':
+                disk.create_pv("os")
+                continue
 
             if os_vg_size_left == 0:
                 disk.create_pv("os", 0)
@@ -351,7 +343,8 @@ class VolumeManager(object):
                 self._allocate_vg("cinder")
 
         logger.debug("Generating values for volumes")
-        return self._traverse(self.volumes)
+        self.volumes = self._traverse(self.volumes)
+        return self.validate()
 
     def gen_default_volumes_info(self):
         logger.debug("Generating default volumes info")

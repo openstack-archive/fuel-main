@@ -23,10 +23,7 @@
                                 "mount": "/",
                                 "type": "lv",
                                 "name": "root",
-                                "size": {
-                                    "generator": "calc_total_vg",
-                                    "generator_args": ["os"]
-                                }
+                                "size": {"generator": "calc_root_size"}
                             },
                             {
                                 "mount": "swap",
