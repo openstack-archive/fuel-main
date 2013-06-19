@@ -418,8 +418,8 @@ class Environment(object):
         return [
             {"name": "floating", "access": "public"},
             {"name": "fixed", "access": "private10"},
-            {"name": "storage", "access": "private192"},
-            {"name": "management", "access": "private172"},
+            {"name": "storage", "access": "private172"},
+            {"name": "management", "access": "private192"},
             {"name": "public", "access": "public"}
         ]
 

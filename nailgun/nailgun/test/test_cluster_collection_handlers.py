@@ -6,7 +6,9 @@ from paste.fixture import TestApp
 from mock import patch
 from sqlalchemy.sql import not_
 
-from nailgun.api.models import Release, Network
+from nailgun.api.models import Cluster, Release
+from nailgun.api.models import Network, NetworkGroup
+from nailgun.api.models import Network, NetworkGroup, NetworkConfiguration
 from nailgun.test.base import BaseHandlers
 from nailgun.test.base import reverse
 
@@ -32,6 +34,46 @@ class TestHandlers(BaseHandlers):
             headers=self.default_headers
         )
         self.assertEquals(201, resp.status)
+
+    def test_cluster_create_no_ip_addresses(self):
+        cluster = self.env.create_cluster(api=True)
+        cluster_db = self.db.query(Cluster).get(cluster["id"])
+        management_net = self.db.query(NetworkGroup).filter_by(
+            name="management",
+            cluster_id=cluster["id"]
+        ).first()
+        NetworkConfiguration.update(
+            cluster_db,
+            {
+                "networks": [
+                    {
+                        "network_size" 65536,
+                        "name": "management",
+                        "ip_ranges": [
+                            ["192.168.0.2", "192.168.255.254"]
+                        ],
+                        "amount": 1,
+                        "id": management_net.id,
+                        "netmask": "255.255.255.0",
+                        "cluster_id": cluster["id"],
+                        "vlan_start": 101,
+                        "cidr": "192.168.0.0/16",
+                        "gateway": "192.168.0.1"
+                    }
+                ]
+            }
+        )
+
+        resp = self.app.post(
+            reverse('ClusterCollectionHandler'),
+            json.dumps({
+                'name': 'cluster-name',
+                'release': cluster_db.release.id,
+            }),
+            headers=self.default_headers,
+            expect_errors=True
+        )
+        self.assertEquals(400, resp.status)
 
     def test_if_cluster_creates_correct_networks(self):
         release = Release()
