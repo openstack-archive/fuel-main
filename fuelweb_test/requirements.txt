@@ -1,4 +1,4 @@
 nose==1.2.1
-git+ssh://git@github.com/Mirantis/devops.git@01c60842ac81208244d38995709ccdd30b4a15fd
+git+ssh://git@github.com/Mirantis/devops.git@fcaf0931dc850e9742b4b6a28681e6cdef7c0f83
 anyjson==0.3.1
 paramiko==1.10.1
