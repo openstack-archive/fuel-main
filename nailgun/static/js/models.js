@@ -236,7 +236,7 @@ define(function() {
             } else if (volume.size > options.unallocated) {
                 errors[volume.vg] = 'Maximal size is ' + options.unallocated + ' GB';
             } else if (volume.size < options.min) {
-                errors[volume.vg] = 'Minimal size is ' + options.min + ' GB';
+                errors[volume.vg] = 'Minimal size is ' + options.min.toFixed(2) + ' GB';
             }
             return _.isEmpty(errors) ? null : errors;
         }

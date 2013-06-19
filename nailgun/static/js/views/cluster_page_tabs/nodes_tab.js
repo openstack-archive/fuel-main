@@ -614,15 +614,12 @@ function(utils, models, commonViews, dialogViews, nodesTabSummaryTemplate, editN
             }, this));
         },
         setMinimalSizes: function() {
-            this.minimalSizes = {};
-            _.each(this.disks.where({'type': 'vg'}), _.bind(function(group) {
-                var minimalSize = 0;
-                try {
-                    minimalSize += _.find(group.get('volumes'), {name: 'root'}).size;
-                    minimalSize += _.find(group.get('volumes'), {name: 'swap'}).size;
-                } catch(e) {}
-                this.minimalSizes[group.id] = this.formatFloat(minimalSize);
-            }, this));
+            var osGroupGigabytes = this.node.get('role') == 'controller' ? 25 : 10;
+            this.minimalSizes = {
+                os: this.formatFloat(osGroupGigabytes * Math.pow(1024, 3) + _.find(this.disks.findWhere({type: 'vg', id: 'os'}).get('volumes'), {name: 'swap'}).size),
+                vm: 5,
+                cinder: 0
+            };
         },
         getDisks: function() {
             return this.disks.where({'type': 'disk'});
@@ -917,7 +914,7 @@ function(utils, models, commonViews, dialogViews, nodesTabSummaryTemplate, editN
                     models.InterfaceNetwork.prototype.vlanLabel = function() {
                         if (this.amount() == 1) {
                             return this.vlanStart();
-                        } 
+                        }
                         return this.vlanStart() + '-' + (this.vlanStart() + this.amount() - 1);
                     };
 
