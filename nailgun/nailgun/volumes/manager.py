@@ -188,6 +188,13 @@ class VolumeManager(object):
         else:
             return 1024 ** 3 * 10
 
+    def _calc_os_vg_size(self):
+        role = self.node.role
+        if role == 'controller':
+            return self.field_generator('calc_all_free') 
+        else:
+            return self.field_generator('calc_os_size')
+
     def _calc_swap_size(self):
         mem = float(self.node.meta["memory"]["total"]) / 1024 ** 3
         # See https://access.redhat.com/site/documentation/en-US/
@@ -238,8 +245,9 @@ class VolumeManager(object):
             "calc_mbr_size": lambda: 10 * 1024 ** 2,
             "calc_lvm_meta_size": lambda: 1024 ** 2 * 64,
             "calc_all_free": self._calc_all_free,
+            "calc_os_vg_size": self._calc_os_vg_size,
             "calc_total_vg": self._calc_total_vg,
-            "calc_total_unallocated_vg": self._calc_total_unallocated_vg
+            "calc_total_unallocated_vg": self._calc_total_unallocated_vg,
         }
         generators["calc_os_size"] = lambda: sum([
             generators["calc_root_size"](),
@@ -278,7 +286,7 @@ class VolumeManager(object):
 
     def _allocate_os(self):
         logger.debug("_allocate_os")
-        os_vg_size_left = self.field_generator("calc_os_size")
+        os_vg_size_left = self.field_generator("calc_os_vg_size")
         lvm_meta_size = self.field_generator("calc_lvm_meta_size")
 
         ready = False
