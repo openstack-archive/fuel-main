@@ -135,20 +135,20 @@ casper.then(function() {
         this.test.assertExists(sdaDiskOS + ' input.error', 'Field validation has worked');
         this.test.assertEval(function(sdaDisk) {return $(sdaDisk + ' .disk-visual .os').width() > 0}, 'VG size was not changed',{sdaDisk:sdaDisk});
         this.click(vdaDisk + ' .toggle-volume');
-        /*
         this.test.assertExists(vdaDiskVM + '', 'Virtual Storage group form is presented');
-        this.click(vdaDisk + ' .disk-visual .vm .close-btn');
+        this.fill(vdaDisk + ' .volume-group-box[data-group=vm]', {'vm': '10'});
+        this.evaluate(function(vdaDisk) {
+            $(vdaDisk + ' .volume-group-box[data-group=vm] input').keyup();
+        },{vdaDisk:vdaDisk});
         this.fill(vdaDisk + ' .volume-group-box[data-group=os]', {'os': '20'});
         this.evaluate(function(vdaDisk) {
             $(vdaDisk + ' .volume-group-box[data-group=os] input').keyup();
         },{vdaDisk:vdaDisk});
         this.test.assertDoesntExist(sdaDiskOS + ' input.error', 'Field validation has worked');
-        */
     });
 
     this.then(function() {
         this.test.comment('Testing work of Make Bootable button');
-        /*
         this.test.assertExists(vdaDisk + ' .btn-bootable:enabled', 'Button Make Bottable is enabled for VDA disk');
         this.click(vdaDisk + ' .btn-bootable');
         this.test.assertEvalEquals(function(vdaDisk) {return $(vdaDisk + ' .bootable-marker:visible').length}, 1, 'VDA disk is bootable', {vdaDisk:vdaDisk});
@@ -158,7 +158,6 @@ casper.then(function() {
             $(sdaDiskVM + ' input').keyup();
         },{sdaDiskVM:sdaDiskVM});
         this.test.assertExists(sdaDisk + ' .btn-bootable:disabled', 'Button Make Bottable is disabled for SDA disk because there is no enough free space');
-        */
     });
 
 
