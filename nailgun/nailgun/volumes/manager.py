@@ -191,7 +191,7 @@ class VolumeManager(object):
     def _calc_os_vg_size(self):
         role = self.node.role
         if role == 'controller':
-            return self.field_generator('calc_all_free') 
+            return self.field_generator('calc_all_free')
         else:
             return self.field_generator('calc_os_size')
 
