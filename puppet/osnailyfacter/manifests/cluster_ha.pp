@@ -6,6 +6,18 @@ $controller_storage_addresses = parsejson($ctrl_storage_addresses)
 $controller_hostnames = keys($controller_internal_addresses)
 $controller_nodes = values($controller_internal_addresses)
 
+if $use_cinder == 'true' {
+  $bool_use_cinder = true
+} else {
+  $bool_use_cinder = false
+}
+
+if $auto_assign_floating_ip == 'true' {
+  $bool_auto_assign_floating_ip = true
+} else {
+  $bool_auto_assign_floating_ip = false
+}
+
 $create_networks = true
 
 $network_config = {
@@ -92,7 +104,7 @@ class compact_controller {
     network_size                  => $network_size,
     network_config                => $network_config,
     verbose                       => $verbose,
-    auto_assign_floating_ip       => $auto_assign_floating_ip,
+    auto_assign_floating_ip       => $bool_auto_assign_floating_ip,
     mysql_root_password           => $mysql_hash[root_password],
     admin_email                   => $access_hash[email],
     admin_user                    => $access_hash[user],
@@ -118,7 +130,7 @@ class compact_controller {
     quantum_db_dbname             => $quantum_db_dbname,
     tenant_network_type           => $tenant_network_type,
     segment_range                 => $segment_range,
-    cinder                        => $use_cinder,
+    cinder                        => $bool_use_cinder,
     cinder_user_password          => $cinder_hash[user_password],
     cinder_iscsi_bind_addr        => $internal_address,
     cinder_db_password            => $cinder_hash[db_password],
@@ -208,7 +220,7 @@ class compact_controller {
         rabbit_password        => $rabbit_hash[password],
         rabbit_user            => $rabbit_user,
         rabbit_ha_virtual_ip   => $management_vip,
-        auto_assign_floating_ip => $auto_assign_floating_ip,
+        auto_assign_floating_ip => $bool_auto_assign_floating_ip,
         glance_api_servers     => "${management_vip}:9292",
         vncproxy_host          => $public_vip,
         verbose                => $verbose,
@@ -217,7 +229,7 @@ class compact_controller {
         nova_user_password     => $nova_hash[user_password],
         cache_server_ip        => $controller_nodes,
         service_endpoint       => $management_vip,
-        cinder                 => $use_cinder,
+        cinder                 => $bool_use_cinder,
         cinder_iscsi_bind_addr => $internal_address,
         cinder_user_password   => $cinder_hash[user_password],
         cinder_db_password     => $cinder_hash[db_password],

@@ -20,6 +20,18 @@ $access_hash   = parsejson($access)
 $extra_rsyslog_hash = parsejson($syslog)
 $floating_hash = parsejson($floating_network_range)
 
+if $use_cinder == 'true' {
+  $bool_use_cinder = true
+} else {
+  $bool_use_cinder = false
+}
+
+if $auto_assign_floating_ip == 'true' {
+  $bool_auto_assign_floating_ip = true
+} else {
+  $bool_auto_assign_floating_ip = false
+}
+
 $base_syslog_hash  = parsejson($base_syslog)
 $base_syslog_rserver  = {
   'remote_type' => 'udp',
@@ -67,7 +79,7 @@ Exec { logoutput => true }
         network_size            => $network_size,
         network_config          => $network_config,
         verbose                 => $verbose,
-        auto_assign_floating_ip => $auto_assign_floating_ip,
+        auto_assign_floating_ip => $bool_auto_assign_floating_ip,
         mysql_root_password     => $mysql_hash[root_password],
         admin_email             => $access_hash[email],
         admin_user              => $access_hash[user],
@@ -83,7 +95,7 @@ Exec { logoutput => true }
         rabbit_user             => $rabbit_user,
         export_resources        => false,
         quantum                 => $quantum,
-        cinder                  => $use_cinder,
+        cinder                  => $bool_use_cinder,
         cinder_user_password    => $cinder_hash[user_password],
         cinder_db_password      => $cinder_hash[db_password],
         manage_volumes          => false,
@@ -149,7 +161,7 @@ Exec { logoutput => true }
         rabbit_nodes           => [$controller_node_address],
         rabbit_password        => $rabbit_hash[password],
         rabbit_user            => $rabbit_user,
-        auto_assign_floating_ip => $auto_assign_floating_ip,
+        auto_assign_floating_ip => $bool_auto_assign_floating_ip,
         glance_api_servers     => "${controller_node_address}:9292",
         vncproxy_host          => $controller_node_public,
         vnc_enabled            => true,
@@ -161,7 +173,7 @@ Exec { logoutput => true }
         #quantum_user_password  => $quantum_user_password,
         #tenant_network_type    => $tenant_network_type,
         service_endpoint       => $controller_node_address,
-        cinder                 => $use_cinder,
+        cinder                 => $bool_use_cinder,
         cinder_user_password   => $cinder_hash[user_password],
         cinder_db_password     => $cinder_hash[db_password],
         manage_volumes         => false,
