@@ -208,6 +208,7 @@ class compact_controller {
         rabbit_password        => $rabbit_hash[password],
         rabbit_user            => $rabbit_user,
         rabbit_ha_virtual_ip   => $management_vip,
+        auto_assign_floating_ip => $auto_assign_floating_ip,
         glance_api_servers     => "${management_vip}:9292",
         vncproxy_host          => $public_vip,
         verbose                => $verbose,

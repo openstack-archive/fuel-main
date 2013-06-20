@@ -149,6 +149,7 @@ Exec { logoutput => true }
         rabbit_nodes           => [$controller_node_address],
         rabbit_password        => $rabbit_hash[password],
         rabbit_user            => $rabbit_user,
+        auto_assign_floating_ip => $auto_assign_floating_ip,
         glance_api_servers     => "${controller_node_address}:9292",
         vncproxy_host          => $controller_node_public,
         vnc_enabled            => true,
@@ -188,7 +189,7 @@ Exec { logoutput => true }
       }
       class { 'openstack::cinder':
         sql_connection       => "mysql://cinder:${cinder_hash[db_password]}@${controller_node_address}/cinder?charset=utf8",
-        glance_api_servers   => "${management_vip}:9292",
+        glance_api_servers   => "${controller_node_address}:9292",
         rabbit_password      => $rabbit_hash[password],
         rabbit_host          => false,
         rabbit_nodes         => [$controller_node_address],
