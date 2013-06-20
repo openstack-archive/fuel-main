@@ -458,3 +458,32 @@ class TestHandlers(BaseHandlers):
             task.message,
             "Node '%s' has insufficient disk space for OS" %
             node.human_readable_name)
+
+    def test_occurs_error_not_enough_controllers_for_multinode(self):
+        self.env.create(
+            cluster_kwargs={
+                'mode': 'multinode'},
+            nodes_kwargs=[
+                {'role': 'compute', 'pending_addition': True}])
+
+        task = self.env.launch_deployment()
+
+        self.assertEquals(task.status, 'error')
+        self.assertEquals(
+            task.message,
+            "Not enough controllers, multinode mode requires at least 1 "
+            "controller")
+
+    def test_occurs_error_not_enough_controllers_for_ha(self):
+        self.env.create(
+            cluster_kwargs={
+                'mode': 'ha'},
+            nodes_kwargs=[
+                {'role': 'compute', 'pending_addition': True}])
+
+        task = self.env.launch_deployment()
+
+        self.assertEquals(task.status, 'error')
+        self.assertEquals(
+            task.message,
+            "Not enough controllers, ha mode requires at least 1 controller")

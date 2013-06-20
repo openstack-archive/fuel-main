@@ -651,8 +651,23 @@ class CheckNetworksTask(object):
 class CheckBeforeDeploymentTask(object):
     @classmethod
     def execute(cls, task):
+        cls.__check_controllers_count(task)
         cls.__check_disks(task)
         cls.__check_network(task)
+
+    @classmethod
+    def __check_controllers_count(cls, task):
+        controllers_count = len(
+            filter(lambda node: node.role == 'controller', task.cluster.nodes))
+        cluster_mode = task.cluster.mode
+        min_controllers_count = 1
+
+        if controllers_count < min_controllers_count:
+            raise errors.NotEnoughControllers(
+                "Not enough controllers, %s mode requires at least %s "
+                "controller" % (
+                    cluster_mode,
+                    min_controllers_count))
 
     @classmethod
     def __check_disks(cls, task):
