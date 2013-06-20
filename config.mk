@@ -59,6 +59,14 @@ MIRROR_EGGS?=$(MIRROR_BASE)/eggs
 MIRROR_GEMS?=$(MIRROR_BASE)/gems
 MIRROR_SRC?=$(MIRROR_BASE)/src
 endif
+ifeq ($(USE_MIRROR),usa)
+YUM_REPOS?=proprietary
+MIRROR_BASE?=http://product-vm.vm.mirantis.net/fwm/$(PRODUCT_VERSION)
+MIRROR_CENTOS?=$(MIRROR_BASE)/centos
+MIRROR_EGGS?=$(MIRROR_BASE)/eggs
+MIRROR_GEMS?=$(MIRROR_BASE)/gems
+MIRROR_SRC?=$(MIRROR_BASE)/src
+endif
 
 MIRROR_CENTOS?=http://mirror.yandex.ru/centos/$(CENTOS_RELEASE)
 MIRROR_CENTOS_OS_BASEURL:=$(MIRROR_CENTOS)/os/$(CENTOS_ARCH)
