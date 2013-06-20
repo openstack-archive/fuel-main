@@ -51,7 +51,7 @@ openstack-cinder-2013.1.1.fuel3.0-mira.2
 openstack-dashboard-2013.1.0.1-mira.3
 openstack-glance-2013.1.fuel3.0-mira.3
 openstack-keystone-2013.1.1.fuel3.0-mira.2
-openstack-nova-2013.1.1.fuel3.0.2.gee73ed7-mira.2
+openstack-nova-2013.1.1.fuel3.0-mira.2
 openstack-nova-novncproxy-0.4-8.el6
 openstack-swift-1.8.0.fuel3.0-mira.2
 openstack-swift-account-1.8.0.fuel3.0-mira.2
