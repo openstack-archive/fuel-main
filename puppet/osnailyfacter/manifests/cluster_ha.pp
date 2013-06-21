@@ -6,12 +6,6 @@ $controller_storage_addresses = parsejson($ctrl_storage_addresses)
 $controller_hostnames = keys($controller_internal_addresses)
 $controller_nodes = values($controller_internal_addresses)
 
-if $use_cinder == 'true' {
-  $bool_use_cinder = true
-} else {
-  $bool_use_cinder = false
-}
-
 if $auto_assign_floating_ip == 'true' {
   $bool_auto_assign_floating_ip = true
 } else {
@@ -130,7 +124,7 @@ class compact_controller {
     quantum_db_dbname             => $quantum_db_dbname,
     tenant_network_type           => $tenant_network_type,
     segment_range                 => $segment_range,
-    cinder                        => $bool_use_cinder,
+    cinder                        => true,
     cinder_user_password          => $cinder_hash[user_password],
     cinder_iscsi_bind_addr        => $internal_address,
     cinder_db_password            => $cinder_hash[db_password],
@@ -229,7 +223,7 @@ class compact_controller {
         nova_user_password     => $nova_hash[user_password],
         cache_server_ip        => $controller_nodes,
         service_endpoint       => $management_vip,
-        cinder                 => $bool_use_cinder,
+        cinder                 => true,
         cinder_iscsi_bind_addr => $internal_address,
         cinder_user_password   => $cinder_hash[user_password],
         cinder_db_password     => $cinder_hash[db_password],
