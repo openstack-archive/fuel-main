@@ -20,12 +20,6 @@ $access_hash   = parsejson($access)
 $extra_rsyslog_hash = parsejson($syslog)
 $floating_hash = parsejson($floating_network_range)
 
-if $use_cinder == 'true' {
-  $bool_use_cinder = true
-} else {
-  $bool_use_cinder = false
-}
-
 if $auto_assign_floating_ip == 'true' {
   $bool_auto_assign_floating_ip = true
 } else {
@@ -95,7 +89,7 @@ Exec { logoutput => true }
         rabbit_user             => $rabbit_user,
         export_resources        => false,
         quantum                 => $quantum,
-        cinder                  => $bool_use_cinder,
+        cinder                  => true,
         cinder_user_password    => $cinder_hash[user_password],
         cinder_db_password      => $cinder_hash[db_password],
         manage_volumes          => false,
@@ -173,7 +167,7 @@ Exec { logoutput => true }
         #quantum_user_password  => $quantum_user_password,
         #tenant_network_type    => $tenant_network_type,
         service_endpoint       => $controller_node_address,
-        cinder                 => $bool_use_cinder,
+        cinder                 => true,
         cinder_user_password   => $cinder_hash[user_password],
         cinder_db_password     => $cinder_hash[db_password],
         manage_volumes         => false,
