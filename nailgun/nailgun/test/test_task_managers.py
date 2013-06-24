@@ -619,7 +619,7 @@ class TestTaskManagers(BaseHandlers):
     def test_download_release(self):
         release = self.env.create_release()
         self.assertEquals(release.state, 'not_available')
-        task = self.env.download_release(release.id, True)
+        task = self.env.download_release(release.id)
         release = self.db.query(Release).get(release.id)
         self.assertEquals(release.state, 'downloading')
         self.env.wait_ready(task, timeout=5)
