@@ -27,7 +27,7 @@ casper.then(function() {
     });
     this.test.assertSelectorDisappears('.modal', 'RHEL credentials popup was closed');
     this.then(function() {
-        this.test.assertEvalEquals(function() {return $('.progress:visible').length}, 1, 'RHEL downloading started');
+        this.test.assertSelectorAppears('.progress', 'RHEL downloading started');
         this.waitWhileSelector('.progress');
     });
     this.then(function() {
