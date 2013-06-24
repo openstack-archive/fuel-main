@@ -1,4 +1,6 @@
-#    Copyright 2013 Mirantis, Inc.
+#!/bin/zsh
+
+copyright='#    Copyright 2013 Mirantis, Inc.
 #
 #    Licensed under the Apache License, Version 2.0 (the "License"); you may
 #    not use this file except in compliance with the License. You may obtain
@@ -12,5 +14,13 @@
 #    License for the specific language governing permissions and limitations
 #    under the License.
 
-from nailgun.api.handlers.base import check_client_content_type
-from nailgun.api.handlers.base import forbid_client_caching
+'
+
+for i in **/*.(py|rb); do
+    if ! grep -q Copyright $i; then
+        cp $i $i.bak
+        echo "$copyright" > $i.new
+        cat $i.new $i.bak > $i
+        rm -f $i.new $i.bak
+    fi
+done
