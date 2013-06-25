@@ -697,3 +697,14 @@ class NodeNICInterface(Base):
         "NetworkGroup",
         secondary=NetworkAssignment.__table__,
     )
+
+
+class Plugin(Base):
+    __tablename__ = 'plugins'
+    TYPES = ('nailgun', 'fuel')
+
+    id = Column(Integer, primary_key=True)
+    type = Column(Enum(*TYPES, name='plugin_type'), nullable=False)
+    name = Column(String(128), nullable=False, unique=True)
+    state_name = Column(String(128), nullable=False, default='registered')
+    version = Column(String(128), nullable=False)
