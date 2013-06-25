@@ -1,4 +1,4 @@
-<% var task = cluster.task('deploy', 'running') %>
+<% var task = cluster.task('deploy', 'running') || app.navbar.getDownloadTasks('running', cluster.get('release').id)[0] %>
 <% if (task) { %>
   <li class="pull-right deployment-progress-box">
     <div class="deployment-control-item-box"><div class="deploying-progress-text-box percentage">0%</div></div>

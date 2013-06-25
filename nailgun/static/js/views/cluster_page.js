@@ -91,7 +91,8 @@ function(utils, models, commonViews, dialogViews, NodesTab, NetworkTab, Settings
             }
         },
         scheduleUpdate: function() {
-            if (!this.pollingAborted && (this.model.deployTask('running') || this.model.task('verify_networks', 'running'))) {
+            var task = this.model.deployTask('running') || this.model.task('verify_networks', 'running') || app.navbar.getDownloadTasks('running', this.model.get('release').id)[0];
+            if (!this.pollingAborted && task) {
                 this.registerDeferred($.timeout(this.updateInterval).done(_.bind(this.update, this)));
             }
         },
@@ -112,6 +113,10 @@ function(utils, models, commonViews, dialogViews, NodesTab, NetworkTab, Settings
             var verificationTask = this.model.task('verify_networks', 'running');
             if (verificationTask) {
                 this.registerDeferred(verificationTask.fetch().always(_.bind(this.scheduleUpdate, this)));
+            }
+            var downloadTask = app.navbar.getDownloadTasks('running', this.model.get('release').id)[0];
+            if (downloadTask) {
+                this.registerDeferred(app.navbar.fetchTasks().always(_.bind(this.scheduleUpdate, this)));
             }
         },
         deploymentStarted: function() {
@@ -228,9 +233,10 @@ function(utils, models, commonViews, dialogViews, NodesTab, NetworkTab, Settings
             this.model.get('nodes').each(this.bindNodeEvents, this);
             this.model.get('nodes').on('resize', this.render, this);
             this.model.get('nodes').on('add', this.onNewNode, this);
+            _.each(app.navbar.getDownloadTasks('running', this.model.get('release').id), this.bindTaskEvents , this);
         },
         bindTaskEvents: function(task) {
-            if (task.get('name') == 'deploy') {
+            if (task.get('name') == 'deploy' || task.get('name') == 'download') {
                 task.on('change:status', this.render, this);
                 task.on('change:progress', this.updateProgress, this);
                 return task;
@@ -247,7 +253,7 @@ function(utils, models, commonViews, dialogViews, NodesTab, NetworkTab, Settings
             return this.bindNodeEvents(node) && this.render();
         },
         updateProgress: function() {
-            var task = this.model.deployTask('running');
+            var task = this.model.deployTask('running') || app.navbar.getDownloadTasks('running', this.model.get('release').id)[0];
             if (task) {
                 var progress = task.get('progress') || 0;
                 this.$('.bar').css('width', (progress > 3 ? progress : 3) + '%');

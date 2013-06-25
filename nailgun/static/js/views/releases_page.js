@@ -23,7 +23,7 @@ function(commonViews, dialogViews, releasesListTemplate, releaseTemplate) {
         },
         update: function() {
             if (app.navbar.getDownloadTasks('running').length) {
-                this.registerDeferred(app.navbar.tasks.fetch().always(_.bind(this.scheduleUpdate, this)));
+                this.registerDeferred(app.navbar.fetchTasks().always(_.bind(this.scheduleUpdate, this)));
             }
         },
         initialize: function() {
