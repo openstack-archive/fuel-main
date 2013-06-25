@@ -18,6 +18,7 @@
   <% var shownAttributes = network.getAttributes() %>
   <% var attributes = _.sortBy(_.keys(network.attributes), function(attribute) {return _.indexOf(shownAttributes, attribute)}) %>
   <% _.each(attributes, function(attribute) { %>
+    <div class="network-attribute">
     <% var hidden = _.contains(shownAttributes, attribute) ? '' : 'hide' %>
     <% if (attribute == 'ip_ranges') { %>
       <div class="range-row-header <%= hidden %>">
@@ -45,8 +46,16 @@
           <div class="error"><span class="help-inline"></span></div>
         </div>
       <% }) %>
-    <% } else if (_.contains(['vlan_start', 'netmask', 'gateway', 'cidr', 'amount'], attribute)) { %>
-      <% if (networkName == 'fixed' && attribute == 'vlan_start' && !vlanManager) { %>
+    <% } else if (_.contains(['netmask', 'gateway', 'cidr', 'amount'], attribute)) { %>
+        <label class="parameter-box clearfix setting <%= hidden %> <%= vlanManager && attribute == 'amount' ? 'hide' : '' %>">
+          <div class="networks-sub-title parameter-name"><%= labels[attribute] %></div>
+          <div class="parameter-control <%- attribute %>">
+            <input type="text" class="<%= !vlanManager && attribute == 'amount' ? 'range' : '' %>" name="<%- networkName %>-<%- attribute %>" value="<%- network.get(attribute) %>" <%= disabled || networkName == 'floating' ? 'disabled' : '' %> />
+          </div>
+          <div class="error"><span class="help-inline"></span></div>
+        </label>
+    <% } else if (attribute == 'vlan_start') { %>
+      <% if (networkName == 'fixed' && !vlanManager) { %>
         <div class="range-row-header mini <%= hidden %>">
           <div>Start</div><div>End</div>
         </div>
@@ -63,37 +72,24 @@
           </div>
         </label>
       <% } else { %>
-        <label class="parameter-box clearfix setting <%= hidden %> <%= vlanManager && attribute == 'amount' ? 'hide' : '' %>">
-          <div class="networks-sub-title parameter-name"><%= labels[attribute] %></div>
-          <div class="parameter-control <%- attribute %>">
-            <input type="text" class="<%= !vlanManager && attribute == 'amount' ? 'range' : '' %>" name="<%- networkName %>-<%- attribute %>" value="<%- networkName == 'floating' && attribute == 'vlan_start' ? publicVlan : network.get(attribute) %>" <%= disabled || networkName == 'floating' ? 'disabled' : '' %> />
-          </div>
-          <div class="error"><span class="help-inline"></span></div>
-        </label>
-
-        <!-- New VLAN code start -->
-        <div class="networks-sub-title parameter-name range-name ">Use VLAN Tagging</div>
-        <div class="range-row ip-range-row clearfix ">
+        <% var vlan = networkName == 'floating' ? publicVlan : network.get(attribute) %>
+        <div class="networks-sub-title parameter-name">Use VLAN Tagging</div>
+        <div class="range-row clearfix" style="height: 40px">
           <label class="parameter-box clearfix setting">
-            <div class="parameter-control ip_ranges" style="width: 106px;">
+            <div class="parameter-control" style="width: 106px">
               <div class="custom-tumbler">
-                <input type="checkbox" value="Yes">
+                <input type="checkbox" class="use-vlan-tagging" <%= _.isNull(vlan) ? '' : 'checked' %>>
                 <!-- [if !IE |(gte IE 9)]> --><span>&nbsp;</span><!-- <![endif] -->
               </div>
-              <!--
-              <input type="text" value="240.0.1.2" placeholder="127.0.0.1" name="ip_ranges-start">
-              -->
             </div>
           </label>
           <label class="parameter-box clearfix setting">
-          <div class="parameter-control ip_ranges">
-            <input type="text" value="100" placeholder="100" name="ip_ranges-end" class="input-small">
-          </div>
+            <div class="parameter-control <%- attribute %> <%= _.isNull(vlan) ? 'hide' : '' %>">
+              <input type="text" value="<%- _.isNull(vlan) ? '' : vlan %>" name="<%- networkName %>-<%- attribute %>" class="input-small">
+            </div>
           </label>
           <div class="error"><span class="help-inline"></span></div>
         </div>
-      <!-- New VLAN code end -->
-
       <% } %>
     <% } else if (attribute == 'network_size') { %>
       <label class="parameter-box clearfix setting <%= hidden %> <%= vlanManager %>">
@@ -108,5 +104,6 @@
         <div class="error"><span class="help-inline"></span></div>
       </label>
     <% } %>
+    </div>
   <% }) %>
 </div>

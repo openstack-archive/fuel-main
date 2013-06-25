@@ -199,6 +199,7 @@ function(utils, models, commonViews, dialogViews, networkTabTemplate, networkTem
         events: {
             'keyup input[type=text]': 'changeNetwork',
             'change select': 'changeNetwork',
+            'change .use-vlan-tagging': 'changeNetwork',
             'click .range-name': 'setIPRangeFocus',
             'click .ip-ranges-add': 'addIPRange',
             'click .ip-ranges-delete': 'deleteIPRange'
@@ -214,6 +215,8 @@ function(utils, models, commonViews, dialogViews, networkTabTemplate, networkTem
                 this.tab.$('div.floating').find('.help-inline').text('');
                 this.tab.$('input[name=floating-vlan_start]').val(target.val());
                 this.tab.networkConfiguration.get('networks').findWhere({name: 'floating'}).set({vlan_start: parseInt(target.val(), 10)});
+            } else if (target.hasClass('use-vlan-tagging')) {
+                target.parents('.network-attribute').find('input[type=text]').toggle(target.is(':checked'));
             }
             if (target.hasClass('range')) {
                 var amount = parseInt(this.$('input[name=fixed-amount]').val(), 10) || 1;
@@ -237,7 +240,7 @@ function(utils, models, commonViews, dialogViews, networkTabTemplate, networkTem
             this.network.set({
                 ip_ranges: ip_ranges,
                 cidr: this.$('.cidr input').val(),
-                vlan_start: Number(this.$('.vlan_start input').val()),
+                vlan_start: fixedNetworkOnVlanManager || this.$('.use-vlan-tagging:checked').length ? Number(this.$('.vlan_start input').val()) : null,
                 netmask: this.$('.netmask input').val(),
                 gateway: this.$('.gateway input').val(),
                 amount: fixedNetworkOnVlanManager ? parseInt(this.$('input[name=fixed-amount]').val(), 10) : 1,
@@ -277,7 +280,7 @@ function(utils, models, commonViews, dialogViews, networkTabTemplate, networkTem
             this.network.on('invalid', function(model, errors) {
                 _.each(_.without(_.keys(errors), 'ip_ranges'), _.bind(function(field) {
                     this.$('.' + field).children().addClass('error');
-                    this.$('.' + field).siblings('.error').find('.help-inline').text(errors[field]);
+                    this.$('.' + field).parents('.network-attribute').find('.error .help-inline').text(errors[field]);
                 }, this));
                 if (errors.ip_ranges) {
                     _.each(errors.ip_ranges, _.bind(function(range) {

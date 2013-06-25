@@ -381,16 +381,18 @@ define(function() {
                         errors.cidr = 'Invalid CIDR';
                     }
                 } else if (attribute == 'vlan_start') {
-                    if (_.isString(attrs.vlan_start)) {
-                        match = attrs.vlan_start.match(/^[0-9]+$/);
-                        if (match) {
-                            attrs.vlan_start = parseInt(match[0], 10);
-                        } else {
+                    if (!_.isNull(attrs.vlan_start)) {
+                        if (_.isString(attrs.vlan_start)) {
+                            match = attrs.vlan_start.match(/^[0-9]+$/);
+                            if (match) {
+                                attrs.vlan_start = parseInt(match[0], 10);
+                            } else {
+                                errors.vlan_start = 'Invalid VLAN ID';
+                            }
+                        }
+                        if (_.isNaN(attrs.vlan_start) || !_.isNumber(attrs.vlan_start) || attrs.vlan_start < 1 || attrs.vlan_start > 4094) {
                             errors.vlan_start = 'Invalid VLAN ID';
                         }
-                    }
-                    if (_.isNaN(attrs.vlan_start) || !_.isNumber(attrs.vlan_start) || attrs.vlan_start < 1 || attrs.vlan_start > 4094) {
-                        errors.vlan_start = 'Invalid VLAN ID';
                     }
                 } else if (attribute == 'netmask' && this.validateNetmask(attrs.netmask)) {
                     errors.netmask = 'Invalid netmask';
