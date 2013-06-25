@@ -41,6 +41,5 @@ function ruby_checks {
     sudo bundle install --gemfile /tmp/product-gemfile
 
     cd $WORKSPACE/local_repo/astute
-    # FIXME: we don't run rspec here anymore as we moved astute to the other repo
-    #rspec -c -fd spec/unit/
+    rspec -c -fd spec/unit/
 }

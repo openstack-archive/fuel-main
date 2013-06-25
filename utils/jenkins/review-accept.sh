@@ -12,8 +12,7 @@ pep8 fuelweb_test
 
 nailgun_checks
 
-# FIXME: we don't run rspec here anymore as we moved astute to the other repo
-# ruby_checks
+ruby_checks
 
-# Create pull request
-$WORKSPACE/review.py --repo $repo --branch $branch -t "$pull_title" -b "$pull_body" --add
+# Push the branch into master
+$WORKSPACE/review.py --repo $repo --branch $branch -p
