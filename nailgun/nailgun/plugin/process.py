@@ -9,7 +9,6 @@ from nailgun.api.models import Task
 from nailgun.task.helpers import TaskHelper
 from nailgun.logger import logger
 from nailgun.db import make_session
-import nailgun.plugin.manager
 
 PLUGIN_PROCESSING_QUEUE = None
 
@@ -30,8 +29,10 @@ class PluginProcessor(Process):
     def __init__(self):
         Process.__init__(self)
         self.db = make_session()
-        self.plugin_manager = nailgun.plugin.manager.PluginManager(self.db)
         self.queue = get_queue()
+
+        from nailgun.plugin.manager import PluginManager
+        self.plugin_manager = PluginManager(self.db)
 
     def run(self):
         while True:

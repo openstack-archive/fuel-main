@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 
-import nailgun.plugin.process
-import nailgun.plugin.fsm
+from nailgun.plugin.process import get_queue
+from nailgun.plugin.fsm import PluginFSM
 
 from nailgun.errors import errors
 from nailgun.logger import logger
@@ -13,7 +13,7 @@ class PluginManager(object):
 
     def __init__(self, db=None):
         self.db = db or orm()
-        self.queue = nailgun.plugin.process.get_queue()
+        self.queue = get_queue()
 
     def add_install_plugin_task(self, plugin_data):
         # TODO: check if plugin already installed
@@ -40,9 +40,7 @@ class PluginManager(object):
 
     def install_plugin(self, plugin_id):
         plugin_db = self.db.query(Plugin).get(plugin_id)
-        plugin = nailgun.plugin.fsm.PluginFSM(
-            plugin_db.id,
-            plugin_db.state_name, self.db)
+        plugin = PluginFSM(plugin_db.id, plugin_db.state, self.db)
 
         plugin.install()
         if plugin.is_error:

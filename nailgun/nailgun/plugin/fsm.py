@@ -104,7 +104,7 @@ class PluginFSM(Fysom):
             'Plugin: %s src: %s dst: %s' %
             (self.plugin.name, event.src, event.dst))
 
-        self.plugin.state_name = event.dst
+        self.plugin.state = event.dst
         self.db.commit()
 
     def install(self, event):
