@@ -52,3 +52,7 @@ class PluginProcessor(Process):
             'progress': 100,
             'message': str(msg)})
         self.db.commit()
+
+    def terminate(self):
+        self.db.close()
+        super(PluginProcessor, self).terminate()
