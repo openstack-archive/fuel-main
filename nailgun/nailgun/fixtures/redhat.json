@@ -1,11 +1,11 @@
 [
     {
-        "pk": 1,
+        "pk": 2,
         "model": "nailgun.release",
         "fields": {
-            "name": "OpenStack Grizzly",
+            "name": "OpenStack RHOS 3.0",
             "version": "2013.1.2",
-            "description": "This option will install the OpenStack Grizzly packages using CentOS as a base operating system. With high availability features built in, you are getting a robust, enterprise-grade OpenStack deployment.",
+            "description": "his option will install the Red Hat OpenStack Grizzly packages using RHEL as a base operating system. With high availability features built in, you are getting a robust, enterprise-grade OpenStack deployment.",
             "networks_metadata": [
                 {"name": "floating", "access": "public"},
                 {"name": "public", "access": "public"},
