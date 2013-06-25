@@ -282,6 +282,10 @@ class Node(Base):
         result = []
         for iface in data["interfaces"]:
             if not self._check_interface_has_required_params(iface):
+                logger.warning(
+                    "Invalid interface data: {0}. "
+                    "Skipping interface.".format(iface)
+                )
                 continue
             result.append(self._clean_iface(iface))
 
