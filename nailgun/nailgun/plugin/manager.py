@@ -23,7 +23,7 @@ class PluginManager(object):
             type=plugin_data['type'])
         self.db.add(plugin)
         self.db.commit()
-        
+
         task = Task(name='install_plugin', cache={'plugin_id': plugin.id})
         self.db.add(task)
         self.db.commit()

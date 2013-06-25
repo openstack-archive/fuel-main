@@ -1,5 +1,6 @@
 # -*- coding: utf-8 -*-
 
+
 class StateList:
     def __init__(self, *state_list):
         self.state_list = state_list

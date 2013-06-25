@@ -13,6 +13,7 @@ import nailgun.plugin.manager
 
 PLUGIN_PROCESSING_QUEUE = None
 
+
 def get_queue():
     global PLUGIN_PROCESSING_QUEUE
     if not PLUGIN_PROCESSING_QUEUE:
@@ -20,16 +21,17 @@ def get_queue():
 
     return PLUGIN_PROCESSING_QUEUE
 
+
 class PluginProcessor(Process):
     """
     Separate process. When plugin added in the queue
     process started to processing plugin
     """
     def __init__(self):
-    	Process.__init__(self)
+        Process.__init__(self)
         self.db = make_session()
         self.plugin_manager = nailgun.plugin.manager.PluginManager(self.db)
-    	self.queue = get_queue()
+        self.queue = get_queue()
 
     def run(self):
         while True:
