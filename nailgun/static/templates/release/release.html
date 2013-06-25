@@ -1,0 +1,17 @@
+<td><%- release.get('name') %></td>
+<td><%- release.get('version') %></td>
+<td><%- release.get('operating_system') %></td>
+<td class="release-status">
+  <span class="<%= release.get('available') ? 'available"> Available' : 'not-available"> Not available' %></span>
+</td>
+<td>
+  <% if (!release.get('available')) { %>
+    <span class="btn-link btn-rhel-setup">Setup</span>
+    <div id="download_progress" class="hide">
+      <div class="progress progress-success progress-striped active">
+        <div class="bar" style="width: 0%;"></div>
+      </div>
+      <div class="bar-title">Downloading RHEL</div>
+    </div>
+  <% } %>
+</td>

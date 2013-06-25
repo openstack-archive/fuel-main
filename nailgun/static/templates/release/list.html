@@ -1,32 +1,28 @@
 <div class="row-fluid">
   <div class="span12">
-    <h3 class="page-title">OpenStack Releases</h3>
+    <h3 class="page-title">Releases</h3>
   </div>
 </div>
 
 <div class="table-releases-box">
 
 <% if (releases.length) { %>
-  <section>
-    <table class="table table-bordered table-releases">
-      <thead>
-        <tr>
-          <th>Name</th>
-          <th>Description</th>
-        </tr>
-      </thead>
-      <tbody>
-        <% releases.each(function(release) { %>
-        <tr>
-          <td><%- release.get('name') %> <%- release.get('version') %></td>
-          <td><%- release.get('description') %></td>
-        </tr>
-        <% }) %>
-      </tbody>
-    </table>
-  </section>
+
+  <table class="table table-bordered table-striped releases-table">
+    <thead>
+      <tr>
+        <th>OpenStack Release</th>
+        <th>Version</th>
+        <th>Operating System</th>
+        <th>Status</th>
+        <th></th>
+      </tr>
+    </thead>
+    <tbody></tbody>
+  </table>
+
 <% } else { %>
-  <div class="alert">There are no OpenStack releases available.</div>
+  <div class="alert">There are no releases available.</div>
 <% } %>
 
 </div>

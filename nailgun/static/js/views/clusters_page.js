@@ -13,8 +13,8 @@ function(models, commonViews, dialogViews, clustersPageTemplate, clusterTemplate
 
     ClustersPage = commonViews.Page.extend({
         navbarActiveElement: 'clusters',
-        breadcrumbsPath: [['Home', '#'], 'OpenStack Environments'],
-        title: 'OpenStack Environments',
+        breadcrumbsPath: [['Home', '#'], 'Environments'],
+        title: 'Environments',
         template: _.template(clustersPageTemplate),
         render: function() {
             this.$el.html(this.template({clusters: this.collection}));

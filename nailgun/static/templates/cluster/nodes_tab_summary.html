@@ -8,7 +8,9 @@
         <b>Deployment Mode: </b><%- modes[cluster.get('mode')] %> <%- false && cluster.get('mode') != 'singlenode' ? '(' + types[cluster.get('type')] + ')' : '' %>
       </li>
       <li class="btn btn-link summary-settings-btn disabled">
-        <b>Version: </b><%- cluster.get('release').get('name') %> <%- cluster.get('release').get('version') %>
+        <b>OpenStack Release: </b>
+        <% release = cluster.get('release') %>
+        <%- release.get('name') %> on <%- release.get('operating_system') %> (<%- release.get('version') %>)
       </li>
       <li class="btn btn-link summary-settings-btn disabled">
         <% var statuses = {'new': 'New', 'deployment': 'Deploying', 'operational': 'Operational', 'error': 'Error', 'remove': 'Removing'} %>

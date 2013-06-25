@@ -2,8 +2,8 @@
   <button type="button" class="close" data-dismiss="modal">×</button>
   <h3>Create a new OpenStack environment</h3>
 </div>
-<div class="modal-body">
-  <form class="form-horizontal" onsubmit="return false">
+<div class="modal-body create-cluster-form">
+  <form class="form-horizontal create-cluster-form" onsubmit="return false">
     <fieldset>
       <div class="control-group">
         <label class="control-label">Name</label>
@@ -13,15 +13,20 @@
         </div>
       </div>
       <div class="control-group">
-        <label class="control-label">Version</label>
+        <label class="control-label">OpenStack Release</label>
         <div class="controls">
           <select class="input-large" name="release"></select>
-          <span class="help-inline"></span>
-          <span class="help-block"></span>
         </div>
       </div>
+      <div class="release-description help-block"></div>
     </fieldset>
   </form>
+
+  <div class="alert alert-info rhel-license hide">
+    To deploy Red Hat OpenStack, you must first download both RHOS and RHEL to be cached on the Fuel master node.  You can do this from the Releases page or just choose your subscription type and enter your credentials below.  RHEL and RHOS will be automatically downloaded and cached after you create the environment.
+  </div>
+  <div class="credentials rhel-license hide"></div>
+
 </div>
 <div class="modal-footer">
   <button class="btn" data-dismiss="modal">Cancel</button>

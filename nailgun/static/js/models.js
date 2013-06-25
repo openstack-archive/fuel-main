@@ -40,21 +40,7 @@ define(function() {
             return _.isEmpty(errors) ? null : errors;
         },
         task: function(taskName, status) {
-            return this.get('tasks') && this.get('tasks').find(function(task) {
-                var result = false;
-                if (task.get('name') == taskName) {
-                    if (status) {
-                        if (_.isArray(status)) {
-                            result = _.contains(status, task.get('status'));
-                        } else {
-                            result = status == task.get('status');
-                        }
-                    } else {
-                        result = true;
-                    }
-                }
-                return result;
-            });
+            return this.get('tasks') && this.get('tasks').filterTasks(taskName, status)[0];
         },
         deployTask: function(status) {
             var task = this.task('check_before_deployment', status);
@@ -196,6 +182,29 @@ define(function() {
         },
         comparator: function(task) {
             return task.id;
+        },
+        filterTasks: function(taskName, status, release) {
+            return _.filter(this.models, function(task) {
+                var result = false;
+                if (task.get('name') == taskName) {
+                    if (status || release) {
+                        if (status) {
+                            if (_.isArray(status)) {
+                                result = _.contains(status, task.get('status'));
+                            } else {
+                                result = status == task.get('status');
+                            }
+                        }
+                        if (release) {
+                            //result = release == task.get('release');
+                            result = release == 2;
+                        }
+                    } else {
+                        result = true;
+                    }
+                }
+                return result;
+            });
         }
     });
 
@@ -444,6 +453,24 @@ define(function() {
         constructorName: 'LogSources',
         model: models.LogSource,
         url: '/api/logs/sources'
+    });
+
+    models.RedHatAccount = Backbone.Model.extend({
+        constructorName: 'RedHatAccount',
+        urlRoot: '/api/redhat/account',
+        validate: function(attrs) {
+            var errors = {};
+            var fields = ['username', 'password'];
+            if (attrs.license_type == 'rhn') {
+                fields = _.union(fields, ['hostname', 'activation_key']);
+            }
+            _.each(fields, function(attr) {
+                if ($.trim(attrs[attr]) == '') {
+                    errors[attr] = 'Invalid value';
+                }
+            });
+            return _.isEmpty(errors) ? null : errors;
+        }
     });
 
     return models;

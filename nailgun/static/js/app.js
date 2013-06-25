@@ -25,7 +25,8 @@ function(models, commonViews, ClusterPage, NodesTab, ClustersPage, ReleasesPage,
         initialize: function() {
             this.content = $('#content');
             this.navbar = new commonViews.Navbar({elements: [
-                ['OpenStack Environments', '#clusters'],
+                ['Environments', '#clusters'],
+                ['Releases', '#releases'],
                 ['Support', '#support']
             ]});
             this.content.before(this.navbar.render().el);
@@ -77,7 +78,7 @@ function(models, commonViews, ClusterPage, NodesTab, ClustersPage, ReleasesPage,
                 render.call(this);
             } else {
                 cluster = new models.Cluster({id: id});
-                $.when(cluster.fetch(), cluster.fetchRelated('nodes'), cluster.fetchRelated('tasks'))
+                $.when(cluster.fetch(), cluster.fetchRelated('nodes'), cluster.fetchRelated('tasks'), app.navbar.fetchTasks())
                     .done(_.bind(render, this))
                     .fail(_.bind(this.listClusters, this));
             }
@@ -97,7 +98,7 @@ function(models, commonViews, ClusterPage, NodesTab, ClustersPage, ReleasesPage,
         },
         listReleases: function() {
             var releases = new models.Releases();
-            releases.fetch().done(_.bind(function() {
+            $.when(releases.fetch(), app.navbar.fetchTasks()).done(_.bind(function() {
                 this.setPage(ReleasesPage, {collection: releases});
             }, this));
         },

@@ -8,9 +8,10 @@ define(
     'text!templates/common/notifications.html',
     'text!templates/common/notifications_popover.html',
     'text!templates/common/breadcrumb.html',
-    'text!templates/common/footer.html'
+    'text!templates/common/footer.html',
+    'text!templates/dialogs/rhel_credentials.html'
 ],
-function(utils, models, dialogViews, navbarTemplate, nodesStatsTemplate, notificationsTemplate, notificationsPopoverTemplate, breadcrumbsTemplate, footerTemplate) {
+function(utils, models, dialogViews, navbarTemplate, nodesStatsTemplate, notificationsTemplate, notificationsPopoverTemplate, breadcrumbsTemplate, footerTemplate, rhelCredentialsTemplate) {
     'use strict';
 
     var views = {};
@@ -47,6 +48,12 @@ function(utils, models, dialogViews, navbarTemplate, nodesStatsTemplate, notific
             this.$('a.active').removeClass('active');
             this.$('a[href="#' + element + '"]').addClass('active');
         },
+        fetchTasks: function() {
+            return this.tasks.fetch({data: {cluster_id: ''}});
+        },
+        getDownloadTasks: function(status, release) {
+            return this.tasks && this.tasks.filterTasks('download', status, release);
+        },
         scheduleUpdate: function() {
             this.registerDeferred($.timeout(this.updateInterval).done(_.bind(this.update, this)));
         },
@@ -58,6 +65,7 @@ function(utils, models, dialogViews, navbarTemplate, nodesStatsTemplate, notific
         },
         initialize: function(options) {
             this.elements = _.isArray(options.elements) ? options.elements : [];
+            this.tasks = new models.Tasks();
             this.nodes = new models.Nodes();
             this.notifications = new models.Notifications();
             $.when(this.nodes.deferred = this.nodes.fetch(), this.notifications.deferred = this.notifications.fetch()).done(_.bind(this.scheduleUpdate, this));
@@ -217,6 +225,56 @@ function(utils, models, dialogViews, navbarTemplate, nodesStatsTemplate, notific
         },
         render: function() {
             this.$el.html(this.template({version: this.version}));
+            return this;
+        }
+    });
+
+    views.RhelCredentialsForm = Backbone.View.extend({
+        template: _.template(rhelCredentialsTemplate),
+        events: {
+            'change input[name=license-type]': 'toggleRedHatCredentials',
+            'keydown input': 'onInputKeydown'
+        },
+        toggleRedHatCredentials: function() {
+            this.$('.control-group.error').removeClass('error').find('.help-inline').html('');
+            this.$('.control-group.rhn').toggleClass('hide');
+            this.$('.alert').hide().html('');
+        },
+        onInputKeydown: function(e) {
+            this.$(e.currentTarget).parents('.control-group').removeClass('error').find('.help-inline').html('');
+            this.$('.alert').hide().html('');
+        },
+        applyCredentials: function() {
+            var options = {
+                license_type: this.$('input[name=license-type]:checked').val(),
+                username: this.$('input[name=username]').val(),
+                password: this.$('input[name=password]').val(),
+                hostname: this.$('input[name=hostname]').val(),
+                activation_key: this.$('input[name=activation_key]').val()
+            };
+            var deferred = this.redHatAccount.save(options);
+            if (deferred) {
+                deferred.fail(_.bind(function(response) {
+                    if (response.status == 409) {
+                        this.$('.alert').html(response.responseText).show();
+                    } else {
+                        this.dialog.displayErrorMessage();
+                    }
+                }, this));
+            }
+            return deferred;
+        },
+        initialize: function(options) {
+            _.defaults(this, options);
+            this.redHatAccount = new models.RedHatAccount();
+            this.redHatAccount.on('invalid', function(model, error) {
+                _.each(error, function(message, field) {
+                    this.$('*[name=' + field + ']').closest('.control-group').addClass('error').find('.help-inline').text(message);
+                }, this);
+            }, this);
+        },
+        render: function() {
+            this.$el.html(this.template());
             return this;
         }
     });

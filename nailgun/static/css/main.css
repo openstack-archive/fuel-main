@@ -4000,3 +4000,59 @@ hr.slim {
   font-weight: 600;
   color: #666666;
 }
+
+form.rhel-license {
+  padding-left: 10px;
+}
+
+form.rhel-license fieldset {
+  margin-top: 20px;
+}
+
+form.create-cluster-form .input-large {
+  width: 300px;
+}
+
+div.create-cluster-form {
+  max-height: 545px;
+}
+
+div.create-cluster-form .control-group, form.create-cluster-form {
+  margin-bottom: 10px;
+}
+
+div.create-cluster-form .radio-checkbox-group label {
+  margin-right: 20px;
+}
+
+.releases-table .not-available {
+  color: #ee0000;
+}
+
+.rhel-license label {
+  text-align: left;
+}
+
+.credentials .radio-checkbox-group {
+  margin-left: 180px;
+}
+
+.release-description {
+  text-align: justify;
+}
+
+.summary-settings-btn {
+  font-size: 13px;
+}
+
+.releases-table {
+  cursor: default;
+}
+
+.bar-title {
+  display: block;
+  width: 100%;
+  margin-top: -41px;
+  font-size: 11px;
+  text-align: center;
+}
