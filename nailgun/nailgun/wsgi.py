@@ -80,6 +80,11 @@ def appstart(keepalive=False):
     from nailgun.keepalive import keep_alive
     app = build_app()
 
+    from nailgun.plugin.process import PluginProcessor
+    plugin_processor = PluginProcessor()
+    logger.info("Running plugin process...")
+    plugin_processor.start()
+
     if keepalive:
         logger.info("Running KeepAlive watcher...")
         keep_alive.start()
@@ -100,6 +105,9 @@ def appstart(keepalive=False):
                (settings.LISTEN_ADDRESS, int(settings.LISTEN_PORT)))
 
     logger.info("Stopping WSGI app...")
+    if plugin_processor.is_alive():
+        logger.info("Stopping plugin process...")
+        plugin_processor.terminate()
     if keep_alive.is_alive():
         logger.info("Stopping KeepAlive watcher...")
         keep_alive.join()
