@@ -55,6 +55,9 @@ from nailgun.api.handlers.logs import LogSourceByNodeCollectionHandler
 
 from nailgun.api.handlers.version import VersionHandler
 
+from nailgun.api.handlers.plugin import PluginCollectionHandler
+from nailgun.api.handlers.plugin import PluginHandler
+
 urls = (
     r'/releases/?$',
     'ReleaseCollectionHandler',
@@ -113,7 +116,11 @@ urls = (
     r'/logs/sources/nodes/(?P<node_id>\d+)/?$',
     'LogSourceByNodeCollectionHandler',
     r'/version/?$',
-    'VersionHandler'
+    'VersionHandler',
+    r'/plugins/?$',
+    'PluginCollectionHandler',
+    r'/plugins/(?P<plugin_id>\d+)/?$',
+    'PluginHandler',
 )
 
 app = web.application(urls, locals())
