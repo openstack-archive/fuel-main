@@ -35,7 +35,12 @@ else:
         **settings.DATABASE
     )
 
-engine = create_engine(db_str, client_encoding='utf8')
+
+def make_engine():
+    return create_engine(db_str, client_encoding='utf8')
+
+
+engine = make_engine()
 
 
 class NoCacheQuery(Query):
@@ -51,8 +56,9 @@ class NoCacheQuery(Query):
 
 
 def make_session():
-    return scoped_session(
-        sessionmaker(bind=engine, query_cls=NoCacheQuery))
+    session = scoped_session(
+        sessionmaker(bind=make_engine(), query_cls=NoCacheQuery))
+    return session
 
 
 def orm():
