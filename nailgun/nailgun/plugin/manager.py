@@ -5,7 +5,7 @@ import nailgun.plugin.process
 import socket
 from nailgun.db import orm
 from nailgun.api.models import Task, Plugin
-import nailgun.state_machines.plugin
+import nailgun.plugin.fsm
 
 
 class PluginManager(object):
@@ -38,7 +38,7 @@ class PluginManager(object):
 
     def install_plugin(self, plugin_id, task_uuid):
         plugin_db = self.db.query(Plugin).get(plugin_id)
-        plugin = nailgun.state_machines.plugin.PluginFSM(
+        plugin = nailgun.plugin.fsm.PluginFSM(
             plugin_db.id,
             plugin_db.state_name, self.db)
 

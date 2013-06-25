@@ -4,18 +4,9 @@ from fysom import Fysom
 from nailgun.api.models import Plugin
 from nailgun.db import orm
 from nailgun.logger import logger
+from nailgun.fsm.state_list import StateList
 import re
 
-
-class StateList:
-    def __init__(self, *state_list):
-        self.state_list = state_list
-        self.__dict__.update(dict(zip(state_list, state_list)))
-
-    def all_exclude(self, excluded_states):
-        return filter(
-            lambda state: not state in excluded_states,
-            self.state_list)
 
 # All possible states
 state = StateList(
