@@ -40,12 +40,6 @@ function(require, utils, models, simpleMessageTemplate, createClusterDialogTempl
             this.template = _.template(simpleMessageTemplate);
             this.render(options);
         },
-        displayRhelCredentialsForm: function() {
-            var commonViews = require('views/common'); // avoid circular dependencies
-            this.RhelCredentialsForm = new commonViews.RhelCredentialsForm();
-            this.registerSubView(this.RhelCredentialsForm);
-            this.$('.credentials').append(this.RhelCredentialsForm.render().el);
-        },
         initialize: function(options) {
             _.defaults(this, options);
         },
@@ -76,34 +70,17 @@ function(require, utils, models, simpleMessageTemplate, createClusterDialogTempl
     views.CreateClusterDialog = views.DialogWithRhelCredentials.extend({
         template: _.template(createClusterDialogTemplate),
         events: {
-            'click .create-cluster-btn:not(.disabled)': 'applyRhelLicenseCredentials',
+            'click .create-cluster-btn:not(.disabled)': 'applyRhelCredentials',
             'keydown input': 'onInputKeydown',
             'change select[name=release]': 'updateReleaseParameters'
         },
-        applyRhelLicenseCredentials: function() {
+        applyRhelCredentials: function() {
             var releaseId = parseInt(this.$('select[name=release]').val(), 10);
             if (!this.releases.get(releaseId).get('available')) {
-                var options = {
-                    license_type: this.credentials.$('input[name=license-type]:checked').val(),
-                    username: this.credentials.$('input[name=username]').val(),
-                    password: this.credentials.$('input[name=password]').val(),
-                    hostname: this.credentials.$('input[name=hostname]').val(),
-                    activation_key: this.credentials.$('input[name=activation_key]').val()
-                };
-                var deferred = this.redHatAccount.save(options);
+                var deferred = this.RhelCredentialsForm.applyCredentials();
                 if (deferred) {
-                    deferred
-                        .done(_.bind(function() {
-                            this.createCluster();
-                        }, this))
-                        .fail(_.bind(function(response) {
-                            if (response.status == 409) {
-                                this.redHatAccount.trigger('invalid', this.redHatAccount, response.responseText);
-                                this.$('.btn-os-download').removeClass('disabled');
-                            } else {
-                                this.displayErrorMessage();
-                            }
-                        }, this));
+                    this.$('.create-cluster-btn').addClass('disabled');
+                    deferred.done(_.bind(this.createCluster, this));
                 }
             } else {
                 this.createCluster();
@@ -148,10 +125,12 @@ function(require, utils, models, simpleMessageTemplate, createClusterDialogTempl
             }
         },
         updateReleaseParameters: function() {
-            var releaseId = parseInt(this.$('select[name=release]').val(), 10);
-            var release = this.releases.get(releaseId);
-            this.$('.rhel-license').toggle(!release.get('available'));
-            this.$('.release-description').text(release.get('description'));
+            if (this.releases.length) {
+                var releaseId = parseInt(this.$('select[name=release]').val(), 10);
+                var release = this.releases.get(releaseId);
+                this.$('.rhel-license').toggle(!release.get('available'));
+                this.$('.release-description').text(release.get('description'));
+            }
         },
         renderReleases: function(e) {
             var input = this.$('select[name=release]');
@@ -179,9 +158,9 @@ function(require, utils, models, simpleMessageTemplate, createClusterDialogTempl
             'click .btn-os-download': 'applyRhelCredentials'
         },
         applyRhelCredentials: function() {
-            this.$('.btn-os-download').addClass('disabled');
             var deferred = this.RhelCredentialsForm.applyCredentials();
             if (deferred) {
+                this.$('.btn-os-download').addClass('disabled');
                 deferred.done(_.bind(function() {
                     app.navbar.fetchTasks().done(_.bind(function() {
                         this.$el.modal('hide');

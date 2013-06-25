@@ -70,7 +70,6 @@ function(commonViews, dialogViews, releasesListTemplate, releaseTemplate) {
         },
         bindTaskEvents: function() {
             var task = app.navbar.getDownloadTasks('running', this.release.id)[0];
-            console.log(task);
             if (task) {
                 task.on('change:status', this.downloadFinished, this);
                 task.on('change:progress', this.updateProgress, this);
