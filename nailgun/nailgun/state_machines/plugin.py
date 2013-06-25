@@ -35,51 +35,52 @@ state = StateList(
 )
 
 # All possible transactions between events
+s = state
 events = [
     {'name': 'install',
-     'src': state.registered,
-     'dst': state.downloading},
+     'src': s.registered,
+     'dst': s.downloading},
     {'name': 'downloading_error',
-     'src': state.downloading,
-     'dst': state.downloading_error},
+     'src': s.downloading,
+     'dst': s.downloading_error},
     {'name': 'redownload',
-     'src': state.downloading_error,
-     'dst': state.downloading},
+     'src': s.downloading_error,
+     'dst': s.downloading},
     {'name': 'delete',
-     'src': state.downloading_error,
-     'dst': state.deleted},
+     'src': s.downloading_error,
+     'dst': s.deleted},
     {'name': 'downloaded',
-     'src': state.downloading,
-     'dst': state.downloaded},
+     'src': s.downloading,
+     'dst': s.downloaded},
 
     {'name': 'initialize',
-     'src': state.downloaded,
-     'dst': state.initializing},
+     'src': s.downloaded,
+     'dst': s.initializing},
     {'name': 'initialized',
-     'src': state.initializing,
-     'dst': state.initialized},
+     'src': s.initializing,
+     'dst': s.initialized},
     {'name': 'initializing_error',
-     'src': state.initializing,
-     'dst': state.initializing_error},
+     'src': s.initializing,
+     'dst': s.initializing_error},
     {'name': 'reinitialize',
-     'src': state.initializing_error,
-     'dst': state.initializing},
+     'src': s.initializing_error,
+     'dst': s.initializing},
     {'name': 'delete',
-     'src': state.initializing_error,
-     'dst': state.deleted},
+     'src': s.initializing_error,
+     'dst': s.deleted},
     {'name': 'run',
-     'src': state.initialized,
-     'dst': state.running},
+     'src': s.initialized,
+     'dst': s.running},
 
     {'name': 'stop',
-     'src': state.running,
-     'dst': state.stopped},
+     'src': s.running,
+     'dst': s.stopped},
     {'name': 'delete',
-     'src': state.stopped,
-     'dst': state.deleted},
+     'src': s.stopped,
+     'dst': s.deleted},
     {'name': 'run',
-     'src': state.stopped,
-     'dst': state.running},
+     'src': s.stopped,
+     'dst': s.running},
 ]
 
 
@@ -89,7 +90,7 @@ class PluginFSM(Fysom):
             'initial': current_state,
             'events': events,
             'callbacks': {
-                'oninstall': self.download,
+                'oninstall': self.install,
                 'oninitialize': self.initialize
             }
         })
@@ -115,10 +116,10 @@ class PluginFSM(Fysom):
         self.plugin.state_name = event.dst
         self.db.commit()
 
-    def download(self, event):
-        logger.error('*' * 30)
+    def install(self, event):
+        # Downloading
         self.downloaded()
 
     def initialize(self, event):
-        logger.error('*' * 30)
+        # Initializing
         self.initialized()
