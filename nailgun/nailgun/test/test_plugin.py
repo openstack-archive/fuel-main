@@ -3,6 +3,7 @@ from nailgun.test.base import BaseHandlers
 from nailgun.plugin.process import get_queue, PluginProcessor
 from nailgun.api.models import Task
 
+
 class TestPluginProcess(BaseHandlers):
     def setUp(self):
         super(TestPluginProcess, self).setUp()
