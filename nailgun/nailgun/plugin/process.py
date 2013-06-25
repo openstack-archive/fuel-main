@@ -21,6 +21,10 @@ def get_queue():
     return PLUGIN_PROCESSING_QUEUE
 
 class PluginProcessor(Process):
+    """
+    Separate process. When plugin added in the queue
+    process started to processing plugin
+    """
     def __init__(self):
     	Process.__init__(self)
         self.db = make_session()
@@ -37,10 +41,11 @@ class PluginProcessor(Process):
                 if task_uuid:
                     self.set_error(task_uuid, exc)
                 logger.error(traceback.format_exc())
-                time.sleep(2)
+                time.sleep(1)
 
     def set_error(self, task_uuid, msg):
         self.db.query(Task).filter_by(uuid=task_uuid).update({
             'status': 'error',
             'progress': 100,
-            'msg': str(msg)})
+            'message': str(msg)})
+        self.db.commit()

@@ -43,6 +43,9 @@ default_messages = {
     "OutOfIPs": "Not enough free IP addresses in pool",
     "NoSuitableCIDR": "Cannot find suitable CIDR",
     "CanNotFindInterface": "Cannot find interface",
+    # plugin errors
+    "PluginDownloading": "Cannot install plugin",
+    "PluginInitialization": "Cannot initialize plugin",
     # unknown
     "UnknownError": "Unknown error"
 }
