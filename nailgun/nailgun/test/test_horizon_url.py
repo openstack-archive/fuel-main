@@ -44,6 +44,8 @@ class TestHorizonURL(BaseHandlers):
             cluster_kwargs={"mode": "ha"},
             nodes_kwargs=[
                 {"pending_addition": True},
+                {"pending_addition": True},
+                {"pending_addition": True},
             ]
         )
 

@@ -660,14 +660,15 @@ class CheckBeforeDeploymentTask(object):
         controllers_count = len(
             filter(lambda node: node.role == 'controller', task.cluster.nodes))
         cluster_mode = task.cluster.mode
-        min_controllers_count = 1
 
-        if controllers_count < min_controllers_count:
+        if cluster_mode == 'multinode' and controllers_count < 1:
             raise errors.NotEnoughControllers(
-                "Not enough controllers, %s mode requires at least %s "
-                "controller" % (
-                    cluster_mode,
-                    min_controllers_count))
+                "Not enough controllers, %s mode requires at least 1 "
+                "controller" % (cluster_mode))
+        elif cluster_mode == 'ha' and controllers_count < 3:
+            raise errors.NotEnoughControllers(
+                "Not enough controllers, %s mode requires at least 3 "
+                "controllers" % (cluster_mode))
 
     @classmethod
     def __check_disks(cls, task):

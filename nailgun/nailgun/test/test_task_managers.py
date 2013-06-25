@@ -96,8 +96,8 @@ class TestTaskManagers(BaseHandlers):
 
     @fake_tasks()
     def test_redeploy_nodes_in_ready_status_if_cluster_network_was_changed(
-        self
-    ):
+            self):
+
         self.env.create(
             nodes_kwargs=[
                 {"status": "ready"},
@@ -215,6 +215,8 @@ class TestTaskManagers(BaseHandlers):
             cluster_kwargs={"mode": "ha"},
             nodes_kwargs=[
                 {"pending_addition": True},
+                {"pending_addition": True},
+                {"pending_addition": True},
                 {"role": "compute", "pending_addition": True}
             ]
         )
@@ -246,6 +248,8 @@ class TestTaskManagers(BaseHandlers):
                     "error_type": "provision",
                     "error_msg": "Test Error"
                 },
+                {"pending_addition": True},
+                {"pending_addition": True},
                 {"role": "compute", "pending_addition": True}
             ]
         )
