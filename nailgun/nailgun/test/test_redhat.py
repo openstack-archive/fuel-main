@@ -35,5 +35,6 @@ class TestHandlers(BaseHandlers):
             reverse('RedHatAccountHandler'),
             json.dumps({'username': 'user',
                         'password': 'password'}),
-            headers=self.default_headers)
+            headers=self.default_headers,
+            expect_errors=True)
         self.assertEquals(resp.status, 400)
