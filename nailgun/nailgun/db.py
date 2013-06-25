@@ -55,9 +55,9 @@ class NoCacheQuery(Query):
         super(NoCacheQuery, self).__init__(*args, **kwargs)
 
 
-def make_session():
+def make_session(custom_engine=None):
     session = scoped_session(
-        sessionmaker(bind=make_engine(), query_cls=NoCacheQuery))
+        sessionmaker(bind=(custom_engine or engine), query_cls=NoCacheQuery))
     return session
 
 

@@ -8,7 +8,7 @@ from sqlalchemy import update
 from nailgun.api.models import Task
 from nailgun.task.helpers import TaskHelper
 from nailgun.logger import logger
-from nailgun.db import make_session
+from nailgun.db import make_session, make_engine
 
 PLUGIN_PROCESSING_QUEUE = None
 
@@ -28,7 +28,7 @@ class PluginProcessor(Process):
     """
     def __init__(self):
         Process.__init__(self)
-        self.db = make_session()
+        self.db = make_session(make_engine())
         self.queue = get_queue()
 
         from nailgun.plugin.manager import PluginManager
