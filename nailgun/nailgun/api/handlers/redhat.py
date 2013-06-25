@@ -15,7 +15,10 @@
 import web
 
 from nailgun.api.handlers.base import JSONHandler, content_json
+from nailgun.api.handlers.tasks import TaskHandler
 from nailgun.api.validators import RedHatAcountValidator
+from nailgun.task.helpers import TaskHelper
+from nailgun.task.manager import DownloadReleaseTaskManager
 
 
 class RedHatAccountHandler(JSONHandler):
@@ -27,3 +30,21 @@ class RedHatAccountHandler(JSONHandler):
         data = self.validator.validate(web.data())
         # TODO: activate and save status
         raise web.accepted(data=data)
+
+
+class DownloadReleaseHandler(JSONHandler):
+    fields = (
+        "id",
+        "name",
+    )
+
+    @content_json
+    def PUT(self, release_id, version):
+        task_manager = DownloadReleaseTaskManager(cluster_id=cluster.id)
+        try:
+            task = task_manager.execute()
+        except Exception as exc:
+            logger.warn(u'DownloadReleaseHandler: error while execution'
+                        ' deploy task: {0}'.format(exc.message))
+            raise web.badrequest(exc.message)
+        return TaskHandler.render(task)

@@ -35,8 +35,9 @@ from nailgun.task import task as tasks
 
 class TaskManager(object):
 
-    def __init__(self, cluster_id):
-        self.cluster = orm().query(Cluster).get(cluster_id)
+    def __init__(self, cluster_id=None):
+        if cluster_id:
+            self.cluster = orm().query(Cluster).get(cluster_id)
 
     def _call_silently(self, task, instance, *args, **kwargs):
         method = getattr(instance, kwargs.pop('method_name', 'execute'))
@@ -272,5 +273,20 @@ class ClusterDeletionManager(TaskManager):
         self._call_silently(
             task,
             tasks.ClusterDeletionTask
+        )
+        return task
+
+
+class DownloadReleaseTaskManager(TaskManager):
+
+    def execute(self):
+        logger.debug("Creating release dowload task")
+        task = Task(name="download_release")
+        orm().add(task)
+        orm().commit()
+        self._call_silently(
+            task,
+            tasks.DownloadReleaseTask,
+            {}
         )
         return task

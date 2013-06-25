@@ -333,9 +333,77 @@ class FakeVerificationThread(FakeThread):
         receiver.stop()
 
 
+class DownloadReleaseThread(FakeThread):
+    def message_gen(self):
+        # TEST: we can fail at any stage:
+        # "provisioning" or "deployment"
+        error = self.params.get("error")
+        # TEST: error message from "orchestrator"
+        error_msg = self.params.get("error_msg", "")
+        # TEST: we can set node offline at any stage:
+        # "provisioning" or "deployment"
+        offline = self.params.get("offline")
+        # TEST: we can set task to ready no matter what
+        # True or False
+        task_ready = self.params.get("task_ready")
+
+        kwargs = {
+            'task_uuid': self.task_uuid,
+            'status': 'running',
+            'progress': 0
+        }
+
+        ready = False
+        while not ready and not self.stoprequest.isSet():
+            kwargs['progress'] += randrange(
+                self.low_tick_count,
+                self.tick_count
+            )
+            if kwargs['progress'] >= 100:
+                kwargs['progress'] = 100
+                kwargs['status'] = 'ready'
+                ready = True
+
+            yield kwargs
+            self.sleep(self.tick_interval)
+
+    def run(self):
+        super(DownloadReleaseThread, self).run()
+        if settings.FAKE_TASKS_AMQP:
+            nailgun_exchange = Exchange(
+                'nailgun',
+                'topic',
+                durable=True
+            )
+            nailgun_queue = Queue(
+                'nailgun',
+                exchange=nailgun_exchange,
+                routing_key='nailgun'
+            )
+            with Connection('amqp://guest:guest@localhost//') as conn:
+                with conn.Producer(serializer='json') as producer:
+                    for msg in self.message_gen():
+                        producer.publish(
+                            {
+                                "method": self.respond_to,
+                                "args": msg
+                            },
+                            exchange=nailgun_exchange,
+                            routing_key='nailgun',
+                            declare=[nailgun_queue]
+                        )
+        else:
+            receiver = NailgunReceiver
+            receiver.initialize()
+            resp_method = getattr(receiver, self.respond_to)
+            for msg in self.message_gen():
+                resp_method(**msg)
+            receiver.stop()
+
 FAKE_THREADS = {
     'provision': FakeProvisionThread,
     'deploy': FakeDeploymentThread,
     'remove_nodes': FakeDeletionThread,
-    'verify_networks': FakeVerificationThread
+    'verify_networks': FakeVerificationThread,
+    'download_release': DownloadReleaseThread
 }

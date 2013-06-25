@@ -136,8 +136,10 @@ class TaskHelper(object):
                 )
         db.add(task)
         db.commit()
-
         if previous_status != status and task.cluster_id:
+            logger.debug("Updating cluster status: "
+                         "cluster_id: %s status: %s",
+                         task.cluster_id, status)
             cls.update_cluster_status(uuid)
         if task.parent:
             logger.debug("Updating parent task: %s", task.parent.uuid)

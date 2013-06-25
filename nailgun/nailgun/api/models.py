@@ -542,10 +542,13 @@ class Task(Base):
         # plugin
         'install_plugin',
         'update_plugin',
-        'delete_plugin'
+        'delete_plugin',
+
+        # releases
+        'download_release'
     )
     id = Column(Integer, primary_key=True)
-    cluster_id = Column(Integer, ForeignKey('clusters.id'))
+    cluster_id = Column(Integer, ForeignKey('clusters.id'), nullable=True)
     uuid = Column(String(36), nullable=False,
                   default=lambda: str(uuid.uuid4()))
     name = Column(

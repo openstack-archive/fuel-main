@@ -700,3 +700,25 @@ class CheckBeforeDeploymentTask(object):
         return 'Not enough IP addresses. Public network must have at least '\
             '{nodes_count} IP addresses '.format(nodes_count=nodes_count) +\
             'for the current environment.'
+
+
+class DownloadReleaseTask(object):
+
+    @classmethod
+    def execute(cls, task, data):
+        logger.debug("Download release task is running")
+
+        message = {
+            'method': 'download_release',
+            'respond_to': 'download_release_resp',
+            'args': {
+                'task_uuid': task.uuid,
+                'release_info': {
+                }
+            }
+        }
+
+        task.cache = data
+        orm().add(task)
+        orm().commit()
+        rpc.cast('naily', message)
