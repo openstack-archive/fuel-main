@@ -1,4 +1,5 @@
 #!/usr/bin/env python
+# -*- coding: utf-8 -*-
 
 #    Copyright 2013 Mirantis, Inc.
 #
@@ -14,7 +15,6 @@
 #    License for the specific language governing permissions and limitations
 #    under the License.
 
-# -*- coding: utf-8 -*-
 import os
 import sys
 import argparse

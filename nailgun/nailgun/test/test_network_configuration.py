@@ -1,3 +1,5 @@
+# -*- coding: utf-8 -*-
+
 #    Copyright 2013 Mirantis, Inc.
 #
 #    Licensed under the Apache License, Version 2.0 (the "License"); you may
@@ -12,8 +14,6 @@
 #    License for the specific language governing permissions and limitations
 #    under the License.
 
-
-# -*- coding: utf-8 -*-
 import json
 
 from sqlalchemy.sql import not_
