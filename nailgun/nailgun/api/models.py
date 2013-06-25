@@ -526,14 +526,23 @@ class Task(Base):
     )
     TASK_NAMES = (
         'super',
+
+        # cluster
         'deploy',
         'deployment',
-        'check_before_deployment',
         'provision',
         'node_deletion',
         'cluster_deletion',
+        'check_before_deployment',
+
+        # network
         'check_networks',
-        'verify_networks'
+        'verify_networks',
+
+        # plugin
+        'install_plugin',
+        'update_plugin',
+        'delete_plugin'
     )
     id = Column(Integer, primary_key=True)
     cluster_id = Column(Integer, ForeignKey('clusters.id'))
