@@ -251,13 +251,12 @@ class Node(Base):
         return bool(iface.get('name') and iface.get('mac'))
 
     def _clean_iface(self, iface):
+        # cleaning up unnecessary fields - set to None if bad
         for param in ["max_speed", "current_speed"]:
             val = iface.get(param)
-            if (val and isinstance(val, int) and val >= 0) or \
-                    (param in iface and iface[param] is None):
-                iface[param] = val
-            elif param in iface:
-                del iface[param]
+            if not (isinstance(val, int) and val >= 0):
+                val = None
+            iface[param] = val
         return iface
 
     def update_meta(self, data):

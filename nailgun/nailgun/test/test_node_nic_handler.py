@@ -117,7 +117,13 @@ class TestHandlers(BaseHandlers):
             )
             self.assertEquals(resp.status, 200)
             ifaces = json.loads(resp.body)[0]["meta"]["interfaces"]
-            self.assertEquals(ifaces, [{'name': 'eth0', 'mac': '00:00:00'}])
+            self.assertEquals(
+                ifaces,
+                [
+                    {'name': 'eth0', 'mac': '00:00:00',
+                     'max_speed': None, 'current_speed': None}
+                ]
+            )
 
     def test_get_handler_without_NICs(self):
         meta = self.env.default_metadata()
