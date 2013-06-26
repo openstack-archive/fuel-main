@@ -236,7 +236,7 @@ function(utils, models, commonViews, dialogViews, NodesTab, NetworkTab, Settings
             this.bindTaskEvents(app.navbar.getDownloadTasks(this.model.get('release').id));
         },
         bindTaskEvents: function(task) {
-            if (task && (task.get('name') == 'deploy' || (task.get('name') == 'download_release' && task.getRelease() == this.model.get('release').id))) {
+            if (task && (task.get('name') == 'deploy' || task.get('name') == 'download_release')) {
                 task.on('change:status', this.render, this);
                 task.on('change:progress', this.updateProgress, this);
                 return task;

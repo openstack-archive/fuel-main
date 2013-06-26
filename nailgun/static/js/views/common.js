@@ -233,10 +233,10 @@ function(utils, models, dialogViews, navbarTemplate, nodesStatsTemplate, notific
     views.RhelCredentialsForm = Backbone.View.extend({
         template: _.template(rhelCredentialsTemplate),
         events: {
-            'change input[name=license-type]': 'toggleRedHatCredentials',
+            'change input[name=license-type]': 'toggle',
             'keydown input': 'onInputKeydown'
         },
-        toggleRedHatCredentials: function() {
+        toggle: function() {
             this.$('.control-group.error').removeClass('error').find('.help-inline').html('');
             this.$('.control-group.rhn').toggleClass('hide');
             this.$('.alert').hide().html('');
@@ -274,7 +274,7 @@ function(utils, models, dialogViews, navbarTemplate, nodesStatsTemplate, notific
                 _.each(error, function(field) {
                     this.$('*[name=' + field + ']').closest('.control-group').addClass('error');
                 }, this);
-                this.$('.alert').text('All fields required for filling').show();
+                this.$('.alert').text('All fields are obligatory for filling').show();
             }, this);
         },
         render: function() {

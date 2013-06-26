@@ -26,14 +26,6 @@ function(commonViews, dialogViews, releasesListTemplate, releaseTemplate) {
                 this.registerDeferred(app.navbar.fetchTasks().always(_.bind(this.scheduleUpdate, this)));
             }
         },
-        downloadStarted: function() {
-            var tasks = app.navbar.getDownloadTasks();
-            _.each(function(task) {
-                task.off('change:status', this.deploymentResult.render, this.deploymentResult);
-                task.off('change:status', this.deploymentControl.render, this.deploymentControl);
-            }, this);
-            this.scheduleUpdate();
-        },
         initialize: function() {
             this.scheduleUpdate();
         },

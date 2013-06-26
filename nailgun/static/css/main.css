@@ -4003,6 +4003,7 @@ hr.slim {
 
 form.rhel-license {
   padding-left: 10px;
+  margin-bottom: 0;
 }
 
 form.rhel-license fieldset {
@@ -4038,7 +4039,11 @@ div.create-cluster-form .radio-checkbox-group label {
 }
 
 .release-description {
+  font-size: 12px !important;
+  line-height: 15px;
+  margin-left: 185px;
   text-align: justify;
+  width: 290px;
 }
 
 .summary-settings-btn {
@@ -4067,4 +4072,17 @@ div.create-cluster-form .radio-checkbox-group label {
   font-size: 10px;
   top: 9px;
   left: 29px;
+  text-shadow: 0 1px 0 rgba(0, 0, 0, 0.35);
+}
+
+.releases-table th.name {
+  width: 60%;
+}
+
+.releases-table th.version, .releases-table th.status {
+  width: 12%;
+}
+
+.releases-table th.actions {
+  width: 16%;
 }

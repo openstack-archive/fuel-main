@@ -149,7 +149,8 @@ function(require, utils, models, simpleMessageTemplate, createClusterDialogTempl
         },
         initialize: function() {
             this.releases = new models.Releases();
-            this.releases.fetch().done(_.bind(this.renderReleases, this));
+            this.releases.fetch();
+            this.releases.on('sync', this.renderReleases, this);
         },
         render: function() {
             this.tearDownRegisteredSubViews();
