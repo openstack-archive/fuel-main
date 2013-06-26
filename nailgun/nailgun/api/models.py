@@ -549,7 +549,7 @@ class Task(Base):
         'download_release'
     )
     id = Column(Integer, primary_key=True)
-    cluster_id = Column(Integer, ForeignKey('clusters.id'), nullable=True)
+    cluster_id = Column(Integer, ForeignKey('clusters.id')
     uuid = Column(String(36), nullable=False,
                   default=lambda: str(uuid.uuid4()))
     name = Column(

@@ -572,7 +572,7 @@ class NailgunReceiver(object):
 
     @classmethod
     def download_release_resp(cls, **kwargs):
-        logger.info("RPC method verify_networks_resp received: %s" % kwargs)
+        logger.info("RPC method download_release_resp received: %s" % kwargs)
         task_uuid = kwargs.get('task_uuid')
         nodes = kwargs.get('nodes')
         error_msg = kwargs.get('error')

@@ -706,7 +706,7 @@ class DownloadReleaseTask(object):
 
     @classmethod
     def execute(cls, task, data):
-        logger.debug("Download release task is running")
+        logger.debug("Download release task(uuid=%s) is running" % task.uuid)
 
         message = {
             'method': 'download_release',
