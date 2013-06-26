@@ -10,7 +10,7 @@
       <li class="btn btn-link summary-settings-btn disabled">
         <b>OpenStack Release: </b>
         <% release = cluster.get('release') %>
-        <%- release.get('name') %> on <%- release.get('operating_system') %> (<%- release.get('version') %>)
+        <%- release.get('name') %> (<%- release.get('version') %>)
       </li>
       <li class="btn btn-link summary-settings-btn disabled">
         <% var statuses = {'new': 'New', 'deployment': 'Deploying', 'operational': 'Operational', 'error': 'Error', 'remove': 'Removing'} %>

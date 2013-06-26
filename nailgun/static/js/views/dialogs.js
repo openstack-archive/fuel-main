@@ -80,7 +80,13 @@ function(require, utils, models, simpleMessageTemplate, createClusterDialogTempl
                 var deferred = this.RhelCredentialsForm.applyCredentials();
                 if (deferred) {
                     this.$('.create-cluster-btn').addClass('disabled');
-                    deferred.done(_.bind(this.createCluster, this));
+                    deferred
+                        .done(_.bind(this.createCluster, this))
+                        .fail(_.bind(function(response) {
+                            if (response.status == 400) {
+                                this.$('.create-cluster-btn').removeClass('disabled');
+                            }
+                        }, this));
                 }
             } else {
                 this.createCluster();
@@ -93,6 +99,7 @@ function(require, utils, models, simpleMessageTemplate, createClusterDialogTempl
                 _.each(error, function(message, field) {
                     this.$('*[name=' + field + ']').closest('.control-group').addClass('error').find('.help-inline').text(message);
                 }, this);
+                this.$('.create-cluster-btn').removeClass('disabled');
             }, this);
             var deferred = cluster.save({
                 name: $.trim(this.$('input[name=name]').val()),
@@ -126,8 +133,8 @@ function(require, utils, models, simpleMessageTemplate, createClusterDialogTempl
         },
         updateReleaseParameters: function() {
             if (this.releases.length) {
-                var releaseId = parseInt(this.$('select[name=release]').val(), 10);
-                var release = this.releases.get(releaseId);
+                this.releaseId = parseInt(this.$('select[name=release]').val(), 10);
+                var release = this.releases.get(this.releaseId);
                 this.$('.rhel-license').toggle(!release.get('available'));
                 this.$('.release-description').text(release.get('description'));
             }
@@ -136,7 +143,7 @@ function(require, utils, models, simpleMessageTemplate, createClusterDialogTempl
             var input = this.$('select[name=release]');
             input.html('');
             this.releases.each(function(release) {
-                input.append($('<option/>').attr('value', release.id).text(release.get('name') + ' on ' + release.get('operating_system') + ' (' + release.get('version') + ')'));
+                input.append($('<option/>').attr('value', release.id).text(release.get('name') + ' (' + release.get('version') + ')'));
             });
             this.updateReleaseParameters();
         },
@@ -161,12 +168,18 @@ function(require, utils, models, simpleMessageTemplate, createClusterDialogTempl
             var deferred = this.RhelCredentialsForm.applyCredentials();
             if (deferred) {
                 this.$('.btn-os-download').addClass('disabled');
-                deferred.done(_.bind(function() {
-                    app.navbar.fetchTasks().done(_.bind(function() {
-                        this.$el.modal('hide');
-                        app.page.scheduleUpdate();
+                deferred
+                    .done(_.bind(function() {
+                        app.navbar.fetchTasks().done(_.bind(function() {
+                            this.$el.modal('hide');
+                            app.page.scheduleUpdate();
+                        }, this));
+                    }, this))
+                    .fail(_.bind(function(response) {
+                        if (response.status == 400) {
+                            this.$('.btn-os-download').removeClass('disabled');
+                        }
                     }, this));
-                }, this));
             } else {
                 this.$('.btn-os-download').removeClass('disabled');
             }

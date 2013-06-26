@@ -1,9 +1,11 @@
-<% var task = cluster.task('deploy', 'running') || app.navbar.getDownloadTasks('running', cluster.get('release').id)[0] %>
+<% var task = cluster.task('deploy', 'running') || app.navbar.getDownloadTasks(cluster.get('release').id) %>
+<% var descriptions = {'deploy': '', 'download_release': 'Downloading RHEL'} %>
 <% if (task) { %>
-  <li class="pull-right deployment-progress-box">
+  <li class="pull-right deployment-progress-box progress-bar-container">
     <div class="deployment-control-item-box"><div class="deploying-progress-text-box percentage">0%</div></div>
     <div class="deployment-control-item-box"><div class="progress progress-success progress-striped progress-deploy active"><div class="bar"></div></div></div>
     <div class="deployment-control-item-box"><div class="deploying-progress-text-box"></div></div>
+    <div class="progress-bar-description"><%= descriptions[task.get('name')] %></div>
   </li>
 <% } else { %>
   <li class="pull-right deployment-control-box">

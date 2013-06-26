@@ -9,7 +9,7 @@ define(
     'text!templates/common/notifications_popover.html',
     'text!templates/common/breadcrumb.html',
     'text!templates/common/footer.html',
-    'text!templates/dialogs/rhel_credentials.html'
+    'text!templates/common/rhel_credentials.html'
 ],
 function(utils, models, dialogViews, navbarTemplate, nodesStatsTemplate, notificationsTemplate, notificationsPopoverTemplate, breadcrumbsTemplate, footerTemplate, rhelCredentialsTemplate) {
     'use strict';
@@ -51,8 +51,9 @@ function(utils, models, dialogViews, navbarTemplate, nodesStatsTemplate, notific
         fetchTasks: function() {
             return this.tasks.fetch({data: {cluster_id: ''}});
         },
-        getDownloadTasks: function(status, release) {
-            return this.tasks && this.tasks.filterTasks('download', status, release);
+        getDownloadTasks: function(release) {
+            var tasks = this.tasks.filterTasks('download_release', 'running', release);
+            return release ? tasks[0] : tasks;
         },
         scheduleUpdate: function() {
             this.registerDeferred($.timeout(this.updateInterval).done(_.bind(this.update, this)));
@@ -246,6 +247,7 @@ function(utils, models, dialogViews, navbarTemplate, nodesStatsTemplate, notific
         },
         applyCredentials: function() {
             var options = {
+                release_id: this.dialog.releaseId,
                 license_type: this.$('input[name=license-type]:checked').val(),
                 username: this.$('input[name=username]').val(),
                 password: this.$('input[name=password]').val(),
@@ -255,8 +257,9 @@ function(utils, models, dialogViews, navbarTemplate, nodesStatsTemplate, notific
             var deferred = this.redHatAccount.save(options);
             if (deferred) {
                 deferred.fail(_.bind(function(response) {
-                    if (response.status == 409) {
-                        this.$('.alert').html(response.responseText).show();
+                    if (response.status == 400) {
+                        this.$('*[name=username], *[name=password]').closest('.control-group').addClass('error');
+                        this.$('.alert').text(response.responseText).show();
                     } else {
                         this.dialog.displayErrorMessage();
                     }
@@ -268,9 +271,10 @@ function(utils, models, dialogViews, navbarTemplate, nodesStatsTemplate, notific
             _.defaults(this, options);
             this.redHatAccount = new models.RedHatAccount();
             this.redHatAccount.on('invalid', function(model, error) {
-                _.each(error, function(message, field) {
-                    this.$('*[name=' + field + ']').closest('.control-group').addClass('error').find('.help-inline').text(message);
+                _.each(error, function(field) {
+                    this.$('*[name=' + field + ']').closest('.control-group').addClass('error');
                 }, this);
+                this.$('.alert').text('All fields required for filling').show();
             }, this);
         },
         render: function() {

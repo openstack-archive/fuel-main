@@ -17,14 +17,22 @@ function(commonViews, dialogViews, releasesListTemplate, releaseTemplate) {
         updateInterval: 3000,
         template: _.template(releasesListTemplate),
         scheduleUpdate: function() {
-            if (app.navbar.getDownloadTasks('running').length) {
+            if (app.navbar.getDownloadTasks().length) {
                 this.registerDeferred($.timeout(this.updateInterval).done(_.bind(this.update, this)));
             }
         },
         update: function() {
-            if (app.navbar.getDownloadTasks('running').length) {
+            if (app.navbar.getDownloadTasks().length) {
                 this.registerDeferred(app.navbar.fetchTasks().always(_.bind(this.scheduleUpdate, this)));
             }
+        },
+        downloadStarted: function() {
+            var tasks = app.navbar.getDownloadTasks();
+            _.each(function(task) {
+                task.off('change:status', this.deploymentResult.render, this.deploymentResult);
+                task.off('change:status', this.deploymentControl.render, this.deploymentControl);
+            }, this);
+            this.scheduleUpdate();
         },
         initialize: function() {
             this.scheduleUpdate();
@@ -48,16 +56,16 @@ function(commonViews, dialogViews, releasesListTemplate, releaseTemplate) {
             'click .btn-rhel-setup': 'showRhelLicenseCredentials'
         },
         showRhelLicenseCredentials: function() {
-            var dialog = new dialogViews.RhelCredentialsDialog({model: this.model});
+            var dialog = new dialogViews.RhelCredentialsDialog({releaseId: this.release.id});
             this.registerSubView(dialog);
             dialog.render();
         },
         downloadFinished: function() {
             this.$('.release-status').removeClass('not-available').html('Available');
-            this.$('.btn-rhel-setup, #download_progress').hide();
+            this.$('.btn-rhel-setup, #download_progress').html('');
         },
         updateProgress: function(){
-            var task = app.navbar.getDownloadTasks('running', this.release.id)[0];
+            var task = app.navbar.getDownloadTasks(this.release.id);
             if (task) {
                 this.$('.btn-rhel-setup').hide();
                 this.$('#download_progress').show();
@@ -66,15 +74,18 @@ function(commonViews, dialogViews, releasesListTemplate, releaseTemplate) {
         },
         initialize: function(options) {
             _.defaults(this, options);
-            this.bindTaskEvents();
+            app.navbar.tasks.on('add', this.onNewTask, this);
+            this.bindTaskEvents(app.navbar.getDownloadTasks(this.release.id));
         },
-        bindTaskEvents: function() {
-            var task = app.navbar.getDownloadTasks('running', this.release.id)[0];
-            if (task) {
+        bindTaskEvents: function(task) {
+            if (task && task.get('name') == 'download_release' && task.getRelease() == this.release.id) {
                 task.on('change:status', this.downloadFinished, this);
                 task.on('change:progress', this.updateProgress, this);
             }
             return task;
+        },
+        onNewTask: function(task) {
+            return this.bindTaskEvents(task) && this.updateProgress();
         },
         render: function() {
             this.tearDownRegisteredSubViews();

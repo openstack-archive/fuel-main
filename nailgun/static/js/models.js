@@ -170,7 +170,10 @@ define(function() {
 
     models.Task = Backbone.Model.extend({
         constructorName: 'Task',
-        urlRoot: '/api/tasks'
+        urlRoot: '/api/tasks',
+        getRelease: function() {
+            return this.get('result').release_info.release_id;
+        }
     });
 
     models.Tasks = Backbone.Collection.extend({
@@ -187,20 +190,16 @@ define(function() {
             return _.filter(this.models, function(task) {
                 var result = false;
                 if (task.get('name') == taskName) {
-                    if (status || release) {
-                        if (status) {
-                            if (_.isArray(status)) {
-                                result = _.contains(status, task.get('status'));
-                            } else {
-                                result = status == task.get('status');
-                            }
+                    result = true;
+                    if (status) {
+                        if (_.isArray(status)) {
+                            result = _.contains(status, task.get('status'));
+                        } else {
+                            result = status == task.get('status');
                         }
-                        if (release) {
-                            //result = release == task.get('release');
-                            result = release == 2;
-                        }
-                    } else {
-                        result = true;
+                    }
+                    if (release) {
+                        result = result && release == task.getRelease();
                     }
                 }
                 return result;
@@ -459,17 +458,17 @@ define(function() {
         constructorName: 'RedHatAccount',
         urlRoot: '/api/redhat/account',
         validate: function(attrs) {
-            var errors = {};
+            var errors = [];
             var fields = ['username', 'password'];
             if (attrs.license_type == 'rhn') {
                 fields = _.union(fields, ['hostname', 'activation_key']);
             }
             _.each(fields, function(attr) {
                 if ($.trim(attrs[attr]) == '') {
-                    errors[attr] = 'Invalid value';
+                    errors.push(attr);
                 }
             });
-            return _.isEmpty(errors) ? null : errors;
+            return errors.length ? errors : null;
         }
     });
 

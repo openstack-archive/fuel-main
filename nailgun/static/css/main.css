@@ -4056,3 +4056,15 @@ div.create-cluster-form .radio-checkbox-group label {
   font-size: 11px;
   text-align: center;
 }
+
+.progress-bar-container {
+  position: relative;
+}
+
+.progress-bar-description {
+  position: absolute;
+  color: #fff;
+  font-size: 10px;
+  top: 9px;
+  left: 29px;
+}
