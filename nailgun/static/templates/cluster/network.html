@@ -50,7 +50,7 @@
         <label class="parameter-box clearfix setting <%= hidden %> <%= vlanManager && attribute == 'amount' ? 'hide' : '' %>">
           <div class="networks-sub-title parameter-name"><%= labels[attribute] %></div>
           <div class="parameter-control <%- attribute %>">
-            <input type="text" class="<%= !vlanManager && attribute == 'amount' ? 'range' : '' %>" name="<%- networkName %>-<%- attribute %>" value="<%- network.get(attribute) %>" <%= disabled || networkName == 'floating' ? 'disabled' : '' %> />
+            <input type="text" class="<%= !vlanManager && attribute == 'amount' ? 'range' : '' %>" name="<%- networkName %>-<%- attribute %>" value="<%- network.get(attribute) %>" <%= disabled %> />
           </div>
           <div class="error"><span class="help-inline"></span></div>
         </label>
@@ -72,20 +72,21 @@
           </div>
         </label>
       <% } else { %>
-        <% var vlan = networkName == 'floating' ? publicVlan : network.get(attribute) %>
+        <% var vlan = network.get(attribute) %>
+        <% var isFloating = networkName == 'floating' ? 'disabled' : '' %>
         <div class="networks-sub-title parameter-name">Use VLAN Tagging</div>
         <div class="range-row clearfix" style="height: 40px">
           <label class="parameter-box clearfix setting">
             <div class="parameter-control" style="width: 106px">
               <div class="custom-tumbler">
-                <input type="checkbox" class="use-vlan-tagging" <%= _.isNull(vlan) ? '' : 'checked' %>>
+                <input type="checkbox" class="use-vlan-tagging" <%= _.isNull(vlan) ? '' : 'checked' %> <%= isFloating || disabled %>>
                 <!-- [if !IE |(gte IE 9)]> --><span>&nbsp;</span><!-- <![endif] -->
               </div>
             </div>
           </label>
           <label class="parameter-box clearfix setting">
-            <div class="parameter-control <%- attribute %> <%= _.isNull(vlan) ? 'hide' : '' %>">
-              <input type="text" value="<%- _.isNull(vlan) ? '' : vlan %>" name="<%- networkName %>-<%- attribute %>" class="input-small">
+            <div class="parameter-control <%- attribute %>" <%= _.isNull(vlan) ? 'style="display:none"' : '' %>>
+              <input type="text" value="<%- _.isNull(vlan) ? '' : vlan %>" name="<%- networkName %>-<%- attribute %>" class="input-small" <%= isFloating || disabled %>>
             </div>
           </label>
           <div class="error"><span class="help-inline"></span></div>

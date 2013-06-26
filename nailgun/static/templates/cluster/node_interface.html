@@ -13,13 +13,22 @@
         <% var previousVlan %>
         <% ifc.get('assigned_networks').each(function(network) { %>
           <% var currentVlan = network.vlanStart() %>
-          <% if (previousVlan && previousVlan != currentVlan) { %>
+          <% if (previousVlan && previousVlan != currentVlan || _.isNull(previousVlan)) { %>
             </div><div class="logical-network-group">
           <% } %>
           <% previousVlan = currentVlan %>
           <div class="logical-network-item" data-name="<%- network.get('name') %>">
             <div class="name"><%- network.get('name') %></div>
-            <div class="id">VLAN ID<%- network.amount() == 1 ? '' : 's'%>: <%- network.vlanLabel() %></div>
+            <div class="id">
+            <% var vlanStart = network.vlanStart() %>
+            <% if (vlanStart) { %>
+              <% if (network.amount() == 1) { %>
+                VLAN ID: <%- vlanStart %>
+              <% } else { %>
+                VLAN IDs: <%- vlanStart %>-<%- vlanStart + network.amount() - 1 %>
+              <% } %>
+            <% } %>
+            </div>
           </div>
         <% }) %>
       </div>

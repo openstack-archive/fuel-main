@@ -911,18 +911,6 @@ function(utils, models, commonViews, dialogViews, nodesTabSummaryTemplate, editN
                     models.InterfaceNetwork.prototype.amount = function() {
                         return networkConfiguration.get('networks').findWhere({name: this.get('name')}).get('amount');
                     };
-                    models.InterfaceNetwork.prototype.vlanLabel = function() {
-                        if (this.amount() == 1) {
-                            return this.vlanStart();
-                        }
-                        return this.vlanStart() + '-' + (this.vlanStart() + this.amount() - 1);
-                    };
-
-                    this.interfaces.each(function(ifc) {
-                        ifc.get('assigned_networks').models.sort(function(interfaceNetwork) {
-                            return interfaceNetwork.vlanStart() + interfaceNetwork.get('name');
-                        });
-                    }, this);
                     this.initialData = this.interfaces.toJSON();
                     this.interfaces.on('reset', this.renderInterfaces, this);
                     this.interfaces.on('reset', this.checkForChanges, this);

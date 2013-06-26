@@ -48,6 +48,10 @@ function(utils, models, commonViews, dialogViews, networkTabTemplate, networkTem
             this.checkForChanges();
             this.page.removeVerificationTask();
         },
+        updateFloatingVlanFromPublic: function() {
+            var networks = this.networkConfiguration.get('networks');
+            networks.findWhere({name: 'floating'}).set({vlan_start: networks.findWhere({name: 'public'}).get('vlan_start')});
+        },
         startVerification: function() {
             var task = new models.Task();
             var options = {
@@ -205,26 +209,36 @@ function(utils, models, commonViews, dialogViews, networkTabTemplate, networkTem
             'click .ip-ranges-delete': 'deleteIPRange'
         },
         changeNetwork: function(e) {
+            // FIXME(vk): very complex and confusing logic, needs to be rewritten
             var target = $(e.currentTarget);
             target.removeClass('error');
             this.$('.help-inline').text('');
-            if (target.attr('name') == 'fixed-amount') {
-                this.tab.fixedAmount = parseInt(target.val(), 10) || this.tab.fixedAmount;
-            } else if (target.attr('name') == 'public-vlan_start') {
-                this.tab.$('div.floating').find('input.error').removeClass('error');
-                this.tab.$('div.floating').find('.help-inline').text('');
-                this.tab.$('input[name=floating-vlan_start]').val(target.val());
-                this.tab.networkConfiguration.get('networks').findWhere({name: 'floating'}).set({vlan_start: parseInt(target.val(), 10)});
-            } else if (target.hasClass('use-vlan-tagging')) {
-                target.parents('.network-attribute').find('input[type=text]').toggle(target.is(':checked'));
+
+            if (target.hasClass('use-vlan-tagging')) {
+                // toggle VLAN ID input field on checkbox
+                this.$('.vlan_start').toggle(target.is(':checked'));
             }
-            if (target.hasClass('range')) {
+            if (this.network.get('name') == 'fixed' && target.hasClass('range')) {
+                // manipulating fixed networks
                 var amount = parseInt(this.$('input[name=fixed-amount]').val(), 10) || 1;
                 var vlanEnd = (parseInt(this.$('input[name=fixed-vlan_range-start]').val(), 10) + amount - 1) || 1;
                 vlanEnd = vlanEnd > 4094 ? 4094 : vlanEnd;
                 this.$('input[name=fixed-vlan_range-end]').val(vlanEnd);
+            } else if (this.network.get('name') == 'public') {
+                this.tab.$('div.floating').find('input.error').removeClass('error');
+                this.tab.$('div.floating').find('.help-inline').text('');
+                this.tab.$('input[name=floating-vlan_start]').val(this.$('input[name=public-vlan_start]').val());
+                if (target.hasClass('use-vlan-tagging')) {
+                    this.tab.$('div.floating').find('.use-vlan-tagging').prop('checked', target.is(':checked'));
+                    this.tab.$('div.floating').find('.vlan_start').toggle(target.is(':checked'));
+                }
+            }
+            if (target.attr('name') == 'fixed-amount') {
+                // storing fixedAmount
+                this.tab.fixedAmount = parseInt(target.val(), 10) || this.tab.fixedAmount;
             }
             this.updateNetworkFromForm();
+            this.tab.updateFloatingVlanFromPublic();
             this.tab.checkForChanges();
             this.tab.page.removeVerificationTask();
         },
@@ -294,7 +308,6 @@ function(utils, models, commonViews, dialogViews, networkTabTemplate, networkTem
         },
         render: function() {
             this.$el.html(this.template({
-                publicVlan: this.tab.networkConfiguration.get('networks').findWhere({name: 'public'}).get('vlan_start'),
                 network: this.network,
                 net_manager: this.tab.networkConfiguration.get('net_manager'),
                 locked: this.tab.isLocked()
