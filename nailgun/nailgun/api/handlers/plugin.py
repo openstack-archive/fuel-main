@@ -46,9 +46,9 @@ class PluginHandler(JSONHandler):
         pass
 
     @content_json
-    def DELETE(self):
+    def DELETE(self, plugin_id):
         pass
 
     @content_json
-    def PUT(self):
+    def PUT(self, plugin_id):
         pass

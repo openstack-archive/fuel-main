@@ -14,7 +14,7 @@
 #    License for the specific language governing permissions and limitations
 #    under the License.
 
-from nailgun.plugin.process import get_queue
+from nailgun.plugin.thread import get_queue
 from nailgun.plugin.fsm import PluginFSM
 
 from nailgun.errors import errors

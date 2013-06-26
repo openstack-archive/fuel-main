@@ -78,24 +78,16 @@ def appstart(keepalive=False):
             "Database tables not created. Try './manage.py syncdb' first"
         )
         sys.exit(1)
-    from nailgun.rpc import threaded
-    from nailgun.keepalive import keep_alive
+
     app = build_app()
 
-    from nailgun.plugin.process import PluginProcessor
-    plugin_processor = PluginProcessor()
-    logger.info("Running plugin process...")
-    plugin_processor.start()
+    from nailgun.rpc import threaded
+    from nailgun.keepalive import keep_alive
+    from nailgun.plugin.thread import PluginThread
 
-    def cleanup():
-        """
-        kill child process on exit
-        """
-        plugin_processor.terminate()
-
-    # make sure our atexit handler are called even on signals
-    signal(SIGTERM, lambda signum, stack_frame: exit(1))
-    atexit.register(cleanup)
+    plugin_thread = PluginThread()
+    logger.info("Running plugin processing thread...")
+    plugin_thread.start()
 
     if keepalive:
         logger.info("Running KeepAlive watcher...")
@@ -117,9 +109,9 @@ def appstart(keepalive=False):
                (settings.LISTEN_ADDRESS, int(settings.LISTEN_PORT)))
 
     logger.info("Stopping WSGI app...")
-    if plugin_processor.is_alive():
-        logger.info("Stopping plugin process...")
-        plugin_processor.terminate()
+    if plugin_thread.is_alive():
+        logger.info("Stopping PluginThread...")
+        plugin_thread.soft_stop()
     if keep_alive.is_alive():
         logger.info("Stopping KeepAlive watcher...")
         keep_alive.join()

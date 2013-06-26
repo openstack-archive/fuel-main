@@ -15,19 +15,19 @@
 #    under the License.
 
 from nailgun.test.base import BaseHandlers
-from nailgun.plugin.process import get_queue, PluginProcessor
+from nailgun.plugin.thread import get_queue, PluginThread
 from nailgun.api.models import Task
 
 
 class TestPluginProcess(BaseHandlers):
     def setUp(self):
         super(TestPluginProcess, self).setUp()
-        self.plugin_processor = PluginProcessor()
-        self.plugin_processor.start()
+        self.plugin_thread = PluginThread()
+        self.plugin_thread.start()
 
     def tearDown(self):
         super(TestPluginProcess, self).tearDown()
-        self.plugin_processor.terminate()
+        self.plugin_thread.soft_stop()
 
     def test_task_set_to_error_when_exception_raised(self):
         queue = get_queue()
