@@ -1,15 +1,10 @@
 class nailgun::cobbler(
   $cobbler_user = "cobbler",
   $cobbler_password = "cobbler",
-
-  $centos_repos,
   $gem_source,
-
   $ks_system_timezone         = "Etc/UTC",
-
   # default password is 'r00tme'
   $ks_encrypted_root_password = "\$6\$tCD3X7ji\$1urw6qEMDkVxOkD33b4TpQAjRiCeDZx0jmgMhDYhfB9KuGfqO9OcMaKyUxnGGWslEDQ4HxTw7vcAMP85NxQe61",
-
   ){
 
   anchor { "nailgun-cobbler-begin": }

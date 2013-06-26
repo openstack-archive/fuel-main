@@ -4,11 +4,6 @@ install
 # INSTALLATION SOURCE (centos repository)
 url --url=$tree
 
-# ALTERNATIVE REPOSITORIES
-<% ks_repo.each do |repo| %>
-repo --name=<%= repo['name'] %> --baseurl=<%= repo['url'] %>
-<% end %>
-
 # KEYBOARD AND LANGUAGE CUSTOMIZATION
 lang en_US.UTF-8
 keyboard us
@@ -120,6 +115,9 @@ ruby-devel
 system-config-firewall-base
 wget
 yum
+#if $getVar("profile_name","") == "rhel-x86_64"
+subscription-manager
+#end if
 
 # COBBLER EMBEDDED SNIPPET: 'puppet_install_if_enabled'
 # LISTS puppet PACKAGE IF puppet_auto_setup VARIABLE IS SET TO 1
@@ -209,6 +207,10 @@ $SNIPPET('target_logs_to_master')
 
 # Dhclient should ignore option 'routers' on all interfaces.
 $SNIPPET('dhclient_ignore_routers_opt')
+
+# COBBLER EMBEDDED SNIPPETS AROUND RHEL REGISTRATION
+$SNIPPET('redhat_register')
+$SNIPPET('rhn_certificate_based_register')
 
 # COBBLER EMBEDDED SNIPPET: 'kickstart_done'
 # DISABLES PXE BOOTING

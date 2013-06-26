@@ -98,6 +98,33 @@
             },
             "attributes_metadata": {
                 "editable": {
+                    "os": {
+                        "distro": {
+                            "value": "centos",
+                            "values": [
+                                {
+                                    "data": "centos",
+                                    "display_name": "CentOS",
+                                    "description": "CentOS"
+                                },
+                                {
+                                    "data": "rhel",
+                                    "display_name": "RHEL",
+                                    "description": "RHEL"
+                                }
+                            ],
+                            "label": "Operation System",
+                            "weight": 10
+                        },
+                        "rh_username": {
+                            "label": "Red Hat user",
+                            "weight": 20
+                        },
+                        "rh_password": {
+                            "label": "Red Hat password",
+                            "weight": 30
+                        }
+                    },
                     "access": {
                         "user": {
                             "value": "admin",

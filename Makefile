@@ -8,6 +8,7 @@ help:
 	@echo '  LOCAL_MIRROR:     $(LOCAL_MIRROR)'
 	@echo '  YUM_REPOS:        $(YUM_REPOS)'
 	@echo '  MIRROR_CENTOS:    $(MIRROR_CENTOS)'
+	@echo '  MIRROR_RHEL:      $(MIRROR_RHEL)'
 	@echo '  MIRROR_EGGS:      $(MIRROR_EGGS)'
 	@echo '  MIRROR_GEMS:      $(MIRROR_GEMS)'
 	@echo '  MIRROR_SRC:       $(MIRROR_SRC)'

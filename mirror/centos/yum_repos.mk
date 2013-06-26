@@ -136,6 +136,14 @@ enabled = 1
 priority=95
 endef
 
+define yum_repo_subscr_manager
+[rh-subscr-manager]
+name = RedHat subscription manager
+baseurl=http://repos.fedorapeople.org/repos/candlepin/subscription-manager/epel-6Server/x86_64/
+gpgcheck=0
+enabled=1
+endef
+
 define yum_repo_proprietary
 [proprietary]
 name = RHEL $(CENTOS_RELEASE) - Proprietary

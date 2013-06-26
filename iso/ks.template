@@ -233,6 +233,7 @@ cp -r ${SOURCE}/isolinux ${repodir}/centos/fuelweb/x86_64
 cp -r ${SOURCE}/repodata ${repodir}/centos/fuelweb/x86_64
 cp -r ${SOURCE}/Packages ${repodir}/centos/fuelweb/x86_64
 cp ${SOURCE}/.treeinfo ${repodir}/centos/fuelweb/x86_64
+cp -r ${SOURCE}/rhel ${repodir}
 
 # Copying eggs/gems to the nailgun directory
 cp -r ${SOURCE}/eggs ${repodir}

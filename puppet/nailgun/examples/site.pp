@@ -10,6 +10,14 @@ node default {
    "url"  => "http://${ipaddress}:8080/centos/fuelweb/x86_64"
    },
    ]
+  $rhel_repos =
+  [
+   {
+   "id" => "nailgun",
+   "name" => "Nailgun",
+   "url"  => "http://${ipaddress}:8080/rhel"
+   },
+  ]
 
   $cobbler_user = "cobbler"
   $cobbler_password = "cobbler"

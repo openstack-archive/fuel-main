@@ -11,9 +11,20 @@ $(BUILD_DIR)/iso/isoroot-centos.done: \
 		$(BUILD_DIR)/packages/build.done \
 		$(BUILD_DIR)/iso/isoroot-dotfiles.done
 	mkdir -p $(ISOROOT)
-	rsync -rp $(LOCAL_MIRROR_CENTOS_OS_BASEURL)/	$(ISOROOT)
-	createrepo -g $(ISOROOT)/repodata/comps.xml \
+	rsync -rp $(LOCAL_MIRROR_CENTOS_OS_BASEURL)/ $(ISOROOT)
+	createrepo -g $(ISOROOT)/repodata/comps.xml -x 'rhel/*' \
 		-u media://`head -1 $(ISOROOT)/.discinfo` $(ISOROOT)
+	$(ACTION.TOUCH)
+
+$(BUILD_DIR)/iso/isoroot-rhel.done: $(call depv,CACHE_RHEL)
+$(BUILD_DIR)/iso/isoroot-rhel.done: \
+		$(BUILD_DIR)/mirror/build.done \
+		$(BUILD_DIR)/packages/build.done \
+		$(BUILD_DIR)/iso/isoroot-dotfiles.done
+ifeq ($(CACHE_RHEL),1)
+	mkdir -p $(ISOROOT)/rhel
+	rsync -rp $(LOCAL_MIRROR_RHEL)/ $(ISOROOT)/rhel
+endif
 	$(ACTION.TOUCH)
 
 $(BUILD_DIR)/iso/isoroot-eggs.done: \
@@ -110,6 +121,7 @@ $(BUILD_DIR)/iso/isoroot.done: \
 		$(BUILD_DIR)/mirror/build.done \
 		$(BUILD_DIR)/packages/build.done \
 		$(BUILD_DIR)/iso/isoroot-centos.done \
+		$(BUILD_DIR)/iso/isoroot-rhel.done \
 		$(BUILD_DIR)/iso/isoroot-eggs.done \
 		$(BUILD_DIR)/iso/isoroot-gems.done \
 		$(BUILD_DIR)/iso/isoroot-files.done \
