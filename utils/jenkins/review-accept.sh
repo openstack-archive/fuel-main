@@ -1,10 +1,6 @@
 #!/bin/bash
 . $(dirname `readlink -f $0`)/review-common.sh
 
-# Build checks
-[ -z "$pull_title" ] && { echo "ERROR: Specify title for pull request"; exit 1; }
-[ -z "$pull_body" ] && { echo "ERROR: Specify body for pull request (how did you test your code??)"; exit 1; }
-
 license_check
 
 # pep8 check for tests. If you need more than this, please create function in review-common.sh
