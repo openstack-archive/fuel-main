@@ -13,9 +13,12 @@ function license_check {
     rm -f $tmpfile
 }
 
-function nailgun_fakeui_restart {
+function nailgun_checks {
     cd $WORKSPACE/local_repo/nailgun
-    sudo service nailgun stop || :
+    sudo service nailgun stop || :  # FIXME: let's remove fake UI completely from Jenkins master node
+
+    # ***** Running Python unit tests, includes pep8 check of nailgun *****
+    ./run_tests.sh --with-xunit  # --no-ui-tests
 
     # Cleaning database
     /usr/bin/psql -U postgres -c "drop database nailgun;"
@@ -27,13 +30,6 @@ function nailgun_fakeui_restart {
     ./manage.py loaddata nailgun/fixtures/sample_environment.json
 
     sudo service nailgun start || :
-}
-
-function nailgun_checks {
-    cd $WORKSPACE/local_repo/nailgun
-
-    # ***** Running Python unit tests, includes pep8 check of nailgun *****
-    ./run_tests.sh --with-xunit  # --no-ui-tests
 }
 
 function ruby_checks {
