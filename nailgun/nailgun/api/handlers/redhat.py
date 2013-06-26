@@ -39,8 +39,8 @@ class DownloadReleaseHandler(JSONHandler):
     )
 
     @content_json
-    def PUT(self, release_id, version):
-        task_manager = DownloadReleaseTaskManager(cluster_id=cluster.id)
+    def PUT(self, release_id):
+        task_manager = DownloadReleaseTaskManager(release_id=release_id)
         try:
             task = task_manager.execute()
         except Exception as exc:

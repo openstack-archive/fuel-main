@@ -713,12 +713,12 @@ class DownloadReleaseTask(object):
             'respond_to': 'download_release_resp',
             'args': {
                 'task_uuid': task.uuid,
-                'release_info': {
-                }
+                'release_info': data
             }
         }
 
-        task.cache = data
+        task.cache = message
+        task.result = {'release_info': data}
         orm().add(task)
         orm().commit()
         rpc.cast('naily', message)
