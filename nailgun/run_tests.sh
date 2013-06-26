@@ -140,6 +140,7 @@ function run_ui_tests {
         ./manage.py dropdb > /dev/null
         ./manage.py syncdb > /dev/null
         ./manage.py loaddata nailgun/fixtures/openstack.json > /dev/null
+        ./manage.py loaddata nailgun/fixtures/redhat.json > /dev/null
         ./manage.py loaddata nailgun/fixtures/admin_network.json > /dev/null
         $test_server_cmd >> $test_server_log_file 2>&1 &
         server_pid=$!

@@ -2,8 +2,8 @@ casper.start().loadPage('#releases');
 
 casper.then(function() {
     this.test.comment('Testing releases page');
-    this.test.assertSelectorAppears('.table-releases', 'Release list appeared');
-    this.test.assertSelectorAppears('.table-releases tbody tr', 'Release list has at least one item');
+    this.test.assertEvalEquals(function() {return $('.releases-table tbody tr').length}, 2, 'There are two releases presented');
+    this.test.assertSelectorAppears('.releases-table .not-available', 'There is unavailable release');
 });
 
 casper.run(function() {
