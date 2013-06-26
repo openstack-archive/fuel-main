@@ -49,6 +49,7 @@ class Release(Base):
     name = Column(Unicode(100), nullable=False)
     version = Column(String(30), nullable=False)
     description = Column(Unicode)
+    available = Column(Boolean, default=False)
     networks_metadata = Column(JSON, default=[])
     attributes_metadata = Column(JSON, default={})
     volumes_metadata = Column(JSON, default={})

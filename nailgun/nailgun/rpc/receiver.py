@@ -577,5 +577,10 @@ class NailgunReceiver(object):
         error_msg = kwargs.get('error')
         status = kwargs.get('status')
         progress = kwargs.get('progress')
+        if progress == 100:
+            release_info = kwargs.get('release_info')
+            release = self.db.query(Release).get(release_info['release_id'])
+            release.available = True
+            self.db.commit()
         TaskHelper.update_task_status(task_uuid, status,
                                       progress, error_msg)
