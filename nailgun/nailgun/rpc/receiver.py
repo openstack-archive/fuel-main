@@ -33,6 +33,7 @@ from nailgun.settings import settings
 from nailgun.task.helpers import TaskHelper
 from nailgun.api.models import Node, Network, NetworkGroup
 from nailgun.api.models import IPAddr, Task
+from nailgun.api.models import Release
 from nailgun.notifier import notifier
 
 
@@ -579,8 +580,8 @@ class NailgunReceiver(object):
         progress = kwargs.get('progress')
         if progress == 100:
             release_info = kwargs.get('release_info')
-            release = self.db.query(Release).get(release_info['release_id'])
+            release = cls.db.query(Release).get(release_info['release_id'])
             release.available = True
-            self.db.commit()
+            cls.db.commit()
         TaskHelper.update_task_status(task_uuid, status,
                                       progress, error_msg)

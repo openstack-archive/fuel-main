@@ -350,7 +350,8 @@ class DownloadReleaseThread(FakeThread):
         kwargs = {
             'task_uuid': self.task_uuid,
             'status': 'running',
-            'progress': 0
+            'progress': 0,
+            'release_info': self.data['args']['release_info']
         }
 
         ready = False
