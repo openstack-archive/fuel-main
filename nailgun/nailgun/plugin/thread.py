@@ -56,7 +56,7 @@ class PluginThread(threading.Thread):
     @property
     def stopped(self):
         return self._stop.isSet()
-        
+
     def run(self):
         while not self.stopped:
             task_uuid = None
