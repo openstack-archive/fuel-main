@@ -26,9 +26,10 @@ class TestHandlers(BaseHandlers):
             reverse('RedHatAccountHandler'),
             json.dumps({'license_type': 'rhsm',
                         'username': 'user',
-                        'password': 'password'}),
+                        'password': 'password',
+                        'release_id': 1}),
             headers=self.default_headers)
-        self.assertEquals(resp.status, 202)
+        self.assertEquals(resp.status, 200)
 
     def test_redhat_account_invalid_data_handler(self):
         resp = self.app.post(

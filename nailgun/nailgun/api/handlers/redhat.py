@@ -22,6 +22,10 @@ from nailgun.task.manager import DownloadReleaseTaskManager
 
 
 class RedHatAccountHandler(JSONHandler):
+    fields = (
+        "id",
+        "name",
+    )
 
     validator = RedHatAcountValidator
 
@@ -29,18 +33,7 @@ class RedHatAccountHandler(JSONHandler):
     def POST(self):
         data = self.validator.validate(web.data())
         # TODO: activate and save status
-        raise web.accepted(data=data)
-
-
-class DownloadReleaseHandler(JSONHandler):
-    fields = (
-        "id",
-        "name",
-    )
-
-    @content_json
-    def PUT(self, release_id):
-        task_manager = DownloadReleaseTaskManager(release_id=release_id)
+        task_manager = DownloadReleaseTaskManager(data['release_id'])
         try:
             task = task_manager.execute()
         except Exception as exc:
