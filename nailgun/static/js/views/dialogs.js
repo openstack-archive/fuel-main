@@ -61,30 +61,29 @@ function(require, utils, models, simpleMessageTemplate, createClusterDialogTempl
     views.DialogWithRhelCredentials = views.Dialog.extend({
         displayRhelCredentialsForm: function() {
             var commonViews = require('views/common'); // avoid circular dependencies
-            this.RhelCredentialsForm = new commonViews.RhelCredentialsForm({dialog: this});
-            this.registerSubView(this.RhelCredentialsForm);
-            this.$('.credentials').append(this.RhelCredentialsForm.render().el);
+            this.rhelCredentialsForm = new commonViews.RhelCredentialsForm({dialog: this});
+            this.registerSubView(this.rhelCredentialsForm);
+            this.$('.credentials').append(this.rhelCredentialsForm.render().el);
         }
     });
 
     views.CreateClusterDialog = views.DialogWithRhelCredentials.extend({
         template: _.template(createClusterDialogTemplate),
         events: {
-            'click .create-cluster-btn:not(.disabled)': 'applyRhelCredentials',
+            'click .create-cluster-btn:not(:disabled)': 'applyRhelCredentials',
             'keydown input': 'onInputKeydown',
             'change select[name=release]': 'updateReleaseParameters'
         },
         applyRhelCredentials: function() {
-            var releaseId = parseInt(this.$('select[name=release]').val(), 10);
-            if (!this.releases.get(releaseId).get('available')) {
-                var deferred = this.RhelCredentialsForm.applyCredentials();
+            if (!this.releases.get(this.releaseId).get('available')) {
+                var deferred = this.rhelCredentialsForm.applyCredentials();
                 if (deferred) {
-                    this.$('.create-cluster-btn').addClass('disabled');
+                    this.$('.create-cluster-btn').attr('disabled', true);
                     deferred
                         .done(_.bind(this.createCluster, this))
                         .fail(_.bind(function(response) {
                             if (response.status == 400) {
-                                this.$('.create-cluster-btn').removeClass('disabled');
+                                this.$('.create-cluster-btn').attr('disabled', false);
                             }
                         }, this));
                 }
@@ -99,14 +98,14 @@ function(require, utils, models, simpleMessageTemplate, createClusterDialogTempl
                 _.each(error, function(message, field) {
                     this.$('*[name=' + field + ']').closest('.control-group').addClass('error').find('.help-inline').text(message);
                 }, this);
-                this.$('.create-cluster-btn').removeClass('disabled');
+                this.$('.create-cluster-btn').attr('disabled', false);
             }, this);
             var deferred = cluster.save({
                 name: $.trim(this.$('input[name=name]').val()),
                 release: parseInt(this.$('select[name=release]').val(), 10)
             });
             if (deferred) {
-                this.$('.create-cluster-btn').addClass('disabled');
+                this.$('.create-cluster-btn').attr('disabled', true);
                 deferred
                     .done(_.bind(function() {
                         this.$el.modal('hide');
@@ -115,7 +114,7 @@ function(require, utils, models, simpleMessageTemplate, createClusterDialogTempl
                     .fail(_.bind(function(response) {
                         if (response.status == 409) {
                             cluster.trigger('invalid', cluster, {name: response.responseText});
-                            this.$('.create-cluster-btn').removeClass('disabled');
+                            this.$('.create-cluster-btn').attr('disabled', false);
                         } else if (response.status == 400) {
                             this.displayInfoMessage({error: false, title: 'Create a new OpenStack environment error', message: response.responseText});
                         } else {
@@ -166,12 +165,12 @@ function(require, utils, models, simpleMessageTemplate, createClusterDialogTempl
             'click .btn-os-download': 'applyRhelCredentials'
         },
         applyRhelCredentials: function() {
-            var deferred = this.RhelCredentialsForm.applyCredentials();
+            var deferred = this.rhelCredentialsForm.applyCredentials();
             if (deferred) {
                 this.$('.btn-os-download').addClass('disabled');
                 deferred
                     .done(_.bind(function() {
-                        app.navbar.fetchTasks().done(_.bind(function() {
+                        app.page.tasks.fetch().done(_.bind(function() {
                             this.$el.modal('hide');
                             app.page.scheduleUpdate();
                         }, this));

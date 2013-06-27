@@ -40,7 +40,7 @@ define(function() {
             return _.isEmpty(errors) ? null : errors;
         },
         task: function(taskName, status) {
-            return this.get('tasks') && this.get('tasks').filterTasks(taskName, status)[0];
+            return this.get('tasks') && this.get('tasks').filterTasks({name: taskName, status: status})[0];
         },
         deployTask: function(status) {
             var task = this.task('check_before_deployment', status);
@@ -170,10 +170,7 @@ define(function() {
 
     models.Task = Backbone.Model.extend({
         constructorName: 'Task',
-        urlRoot: '/api/tasks',
-        getRelease: function() {
-            return this.get('result').release_info.release_id;
-        }
+        urlRoot: '/api/tasks'
     });
 
     models.Tasks = Backbone.Collection.extend({
@@ -186,20 +183,23 @@ define(function() {
         comparator: function(task) {
             return task.id;
         },
-        filterTasks: function(taskName, status, release) {
+        getDownloadTask: function(release) {
+            return this.filterTasks({name: 'download_release', status: 'running', release: release})[0];
+        },
+        filterTasks: function(filters) {
             return _.filter(this.models, function(task) {
                 var result = false;
-                if (task.get('name') == taskName) {
+                if (task.get('name') == filters.name) {
                     result = true;
-                    if (status) {
-                        if (_.isArray(status)) {
-                            result = _.contains(status, task.get('status'));
+                    if (filters.status) {
+                        if (_.isArray(filters.status)) {
+                            result = _.contains(filters.status, task.get('status'));
                         } else {
-                            result = status == task.get('status');
+                            result = filters.status == task.get('status');
                         }
                     }
-                    if (release) {
-                        result = result && release == task.getRelease();
+                    if (filters.release) {
+                        result = result && filters.release == task.get('result').release_info.release_id;
                     }
                 }
                 return result;

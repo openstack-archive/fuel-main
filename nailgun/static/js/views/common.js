@@ -48,13 +48,6 @@ function(utils, models, dialogViews, navbarTemplate, nodesStatsTemplate, notific
             this.$('a.active').removeClass('active');
             this.$('a[href="#' + element + '"]').addClass('active');
         },
-        fetchTasks: function() {
-            return this.tasks.fetch({data: {cluster_id: ''}});
-        },
-        getDownloadTasks: function(release) {
-            var tasks = this.tasks.filterTasks('download_release', 'running', release);
-            return release ? tasks[0] : tasks;
-        },
         scheduleUpdate: function() {
             this.registerDeferred($.timeout(this.updateInterval).done(_.bind(this.update, this)));
         },
@@ -66,7 +59,6 @@ function(utils, models, dialogViews, navbarTemplate, nodesStatsTemplate, notific
         },
         initialize: function(options) {
             this.elements = _.isArray(options.elements) ? options.elements : [];
-            this.tasks = new models.Tasks();
             this.nodes = new models.Nodes();
             this.notifications = new models.Notifications();
             $.when(this.nodes.deferred = this.nodes.fetch(), this.notifications.deferred = this.notifications.fetch()).done(_.bind(this.scheduleUpdate, this));
@@ -274,7 +266,7 @@ function(utils, models, dialogViews, navbarTemplate, nodesStatsTemplate, notific
                 _.each(error, function(field) {
                     this.$('*[name=' + field + ']').closest('.control-group').addClass('error');
                 }, this);
-                this.$('.alert').text('All fields are obligatory for filling').show();
+                this.$('.alert').text('All fields are required').show();
             }, this);
         },
         render: function() {

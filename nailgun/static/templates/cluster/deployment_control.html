@@ -1,4 +1,4 @@
-<% var task = cluster.task('deploy', 'running') || app.navbar.getDownloadTasks(cluster.get('release').id) %>
+<% var task = cluster.task('deploy', 'running') || app.page.tasks.getDownloadTask(cluster.get('release').id) %>
 <% var descriptions = {'deploy': '', 'download_release': 'Downloading RHEL'} %>
 <% if (task) { %>
   <li class="pull-right deployment-progress-box progress-bar-container">

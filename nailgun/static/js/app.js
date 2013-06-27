@@ -67,9 +67,14 @@ function(models, commonViews, ClusterPage, NodesTab, ClustersPage, ReleasesPage,
                 } catch(e) {}
             }
 
-            var cluster;
+            var cluster, tasks;
             var render = function() {
-                this.setPage(ClusterPage, {model: cluster, activeTab: activeTab, tabOptions: tabOptions});
+                this.setPage(ClusterPage, {
+                    model: cluster,
+                    activeTab: activeTab,
+                    tabOptions: tabOptions,
+                    tasks: tasks
+                });
             };
 
             if (app.page && app.page.constructor == ClusterPage && app.page.model.id == id) {
@@ -78,7 +83,11 @@ function(models, commonViews, ClusterPage, NodesTab, ClustersPage, ReleasesPage,
                 render.call(this);
             } else {
                 cluster = new models.Cluster({id: id});
-                $.when(cluster.fetch(), cluster.fetchRelated('nodes'), cluster.fetchRelated('tasks'), app.navbar.fetchTasks())
+                tasks = new models.Tasks();
+                tasks.fetch = function(options) {
+                    return this.constructor.__super__.fetch.call(this, _.extend({data: {cluster_id: ''}}, options));
+                };
+                $.when(cluster.fetch(), cluster.fetchRelated('nodes'), cluster.fetchRelated('tasks'), tasks.fetch())
                     .done(_.bind(render, this))
                     .fail(_.bind(this.listClusters, this));
             }
@@ -98,8 +107,15 @@ function(models, commonViews, ClusterPage, NodesTab, ClustersPage, ReleasesPage,
         },
         listReleases: function() {
             var releases = new models.Releases();
-            $.when(releases.fetch(), app.navbar.fetchTasks()).done(_.bind(function() {
-                this.setPage(ReleasesPage, {collection: releases});
+            var tasks = new models.Tasks();
+            tasks.fetch = function(options) {
+                return this.constructor.__super__.fetch.call(this, _.extend({data: {cluster_id: ''}}, options));
+            };
+            $.when(releases.fetch(), tasks.fetch()).done(_.bind(function() {
+                this.setPage(ReleasesPage, {
+                    collection: releases,
+                    tasks: tasks
+                });
             }, this));
         },
         showNotifications: function() {
