@@ -137,9 +137,6 @@ class TaskHelper(object):
         db.add(task)
         db.commit()
         if previous_status != status:
-            logger.debug("Updating cluster status: "
-                         "cluster_id: %s status: %s",
-                         task.cluster_id, status)
             cls.update_cluster_status(uuid)
         if task.parent:
             logger.debug("Updating parent task: %s", task.parent.uuid)
@@ -199,27 +196,27 @@ class TaskHelper(object):
         # web.ctx.orm issue is addressed
         cluster = task.cluster
         if task.name == 'deploy':
-            logger.debug("Task %s name: deploy", task.uuid)
             if task.status == 'ready':
                 # FIXME: we should also calculate deployment "validity"
                 # (check if all of the required nodes of required roles are
                 # present). If cluster is not "valid", we should also set
                 # its status to "error" even if it is deployed successfully.
                 # This method is also would be affected by web.ctx.orm issue.
-                cluster.status = 'operational'
+                cls.__set_cluster_status(cluster, 'operational')
                 cluster.clear_pending_changes()
             elif task.status == 'error':
-                logger.debug("Updating cluster status to error: "
-                             "cluster_id: %s", task.cluster_id)
-                cluster.status = 'error'
+                cls.__set_cluster_status(cluster, 'error')
         elif task.name == 'provision':
-            logger.debug("Task %s name: provision", task.uuid)
             if task.status == 'error':
-                logger.debug("Updating cluster status to error: "
-                             "cluster_id: %s", task.cluster_id)
-                cluster.status = 'error'
-        db.add(cluster)
+                cls.__set_cluster_status(cluster, 'error')
         db.commit()
+
+    @classmethod
+    def __set_cluster_status(cls, cluster, new_state):
+        logger.debug(
+            "Updating cluster (%s) status: from %s to %s",
+            cluster.full_name, cluster.status, new_state)
+        cluster.status = new_state
 
     @classmethod
     def nodes_to_delete(cls, cluster):

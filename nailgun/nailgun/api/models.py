@@ -110,6 +110,10 @@ class Cluster(Base):
     network_groups = relationship("NetworkGroup", backref="cluster",
                                   cascade="delete")
 
+    @property
+    def full_name(self):
+        return '%s %s' % (self.id, self.name)
+
     @classmethod
     def validate(cls, data):
         d = cls.validate_json(data)
