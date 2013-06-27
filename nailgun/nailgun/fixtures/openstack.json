@@ -117,10 +117,12 @@
                             "weight": 10
                         },
                         "rh_username": {
+                            "value": "",
                             "label": "Red Hat user",
                             "weight": 20
                         },
                         "rh_password": {
+                            "value": "",
                             "label": "Red Hat password",
                             "weight": 30
                         }
