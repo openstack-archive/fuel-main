@@ -51,6 +51,18 @@ $use_satellite = false, $sat_hostname = false, $activation_key = false)  {
     mode => 0644,
     require => File['/etc/nailgun/']
   } ->
+  file { '/usr/local/bin':
+    ensure => directory,
+  } ->
+
+  file { '/etc/local/bin/repotrack':
+    ensure => present,
+    source => 'puppet:///modules/rpmcache/repotrack',
+    owner => 'root',
+    group => 'root',
+    mode => 0755,
+  } ->
+
   file { '/usr/sbin/build_rpm_cache':
     content => template('rpmcache/build_rpm_cache.erb'),
     owner => 'root',

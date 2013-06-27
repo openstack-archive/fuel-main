@@ -51,7 +51,21 @@ if [ $? -ne 0 ];then
   echo "Registration failed. Aborting."
   exit 1
 fi
-
+#Ensure channels are enabled:
+errors=0
+for channel in <%= sat_base_channels %> <%= sat_openstack_channel %>; do
+  if rhn-channel | grep -q "$channel"; then
+    echo "Found $channel."
+  else
+    echo "ERROR: $channel not found. Fix this in RHN Satellite manually or run the following command:"
+    echo "rhn-channel -a $channel"
+    ((errors++))
+  fi
+done
+if [ $errors -gt 0 ]; then
+  echo "There were problems enabling channels. Please check puppet manifests and your RHN Satellite channel configuration to ensure the necessary channels are enabled."
+  exit 1
+fi
 
 <% end %>
 
@@ -61,12 +75,25 @@ mkdir -p <%= pkgdir %>/repodata <%= pkgdir %>/Packages
 
 yum-config-manager --disable 'nailgun' &> /dev/null
 yum-config-manager --disable 'centos' &> /dev/null
+yum-config-manager --disable 'base' &> /dev/null
 echo 6Server > /etc/yum/vars/releasever
 yum --releasever=<%= releasever %> makecache
-repotrack -a x86_64 -p "<%= pkgdir %>/Packages" $(cat /etc/nailgun/required-rpms.txt | xargs echo -en)
+
+for tries in $(seq 1 <%= numtries %>);do
+  /usr/local/bin/repotrack -a x86_64 -p "<%= pkgdir %>/Packages" $(cat /etc/nailgun/required-rpms.txt | xargs echo -en)
+  status=$?
+  #Purge any corrupt downloaded RPMs
+  env LANG=C rpm --checksig <%= pkgdir %>/Packages/* | grep 'md5 NOT OK' | cut -d':' | xargs rm -f)
+done
+if [ $status -ne 0 ];
+  echo "ERROR: Repotrack did not exit cleanly after <%= numtries %> tries."
+  exit 1
+fi
+
 rm -f /etc/yum/vars/releasever
 yum-config-manager --enable 'nailgun' &> /dev/null
 yum-config-manager --enable 'centos' &> /dev/null
+yum-config-manager --enable 'base' &> /dev/null
 
 #Run again just for good measure
 #yumdownloader --releasever=<%= releasever %> --disablerepo='*' --enablerepo='rhel*' --resolve --destdir "<%= pkgdir %>/Packages" $(cat /etc/nailgun/required-rpms.txt | xargs echo -en)

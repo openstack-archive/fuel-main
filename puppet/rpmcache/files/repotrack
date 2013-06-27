@@ -1,0 +1,257 @@
+#!/usr/bin/python -tt
+# This program is free software; you can redistribute it and/or modify
+# it under the terms of the GNU General Public License as published by
+# the Free Software Foundation; either version 2 of the License, or
+# (at your option) any later version.
+#
+# This program is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+# GNU Library General Public License for more details.
+#
+# You should have received a copy of the GNU General Public License
+# along with this program; if not, write to the Free Software
+# Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
+# (c) 2005 seth vidal skvidal at phy.duke.edu
+
+
+# helps partially track a repo. Let's you download a package + all of its
+# deps from any set of repos.
+# use: so you can keep current on any given pkg + its deps from another
+#      repo w/o enabling that repo in your yum configuration by default
+#      also for making partial mirrors that traverse dependencies.
+
+import os
+import sys
+import shutil
+from optparse import OptionParser
+from urlparse import urljoin
+import logging
+
+
+import yum
+import yum.Errors
+import rpmUtils
+
+from yum.misc import getCacheDir
+from yum.constants import *
+from yum.packages import parsePackages
+from yum.packageSack import ListPackageSack
+
+# for yum 2.4.X compat
+def sortPkgObj(pkg1 ,pkg2):
+    """sorts a list of yum package objects by name"""
+    if pkg1.name > pkg2.name:
+        return 1
+    elif pkg1.name == pkg2.name:
+        return 0
+    else:
+        return -1
+        
+class RepoTrack(yum.YumBase):
+    def __init__(self, opts):
+        yum.YumBase.__init__(self)
+        self.logger = logging.getLogger("yum.verbose.repotrack")
+        self.opts = opts
+           
+    def findDeps(self, po):
+        """Return the dependencies for a given package, as well
+           possible solutions for those dependencies.
+           
+           Returns the deps as a dict  of:
+            dict[reqs] = [list of satisfying pkgs]"""
+        
+   
+        reqs = po.returnPrco('requires')
+        reqs.sort()
+        pkgresults = {}
+        
+        for req in reqs:
+            (r,f,v) = req
+            if r.startswith('rpmlib('):
+                continue
+            
+            pkgresults[req] = list(self.whatProvides(r, f, v))
+
+        return pkgresults
+    
+
+def more_to_check(unprocessed_pkgs):
+    for pkg in unprocessed_pkgs.keys():
+        if unprocessed_pkgs[pkg] is not None:
+            return True
+    
+    return False
+
+def parseArgs():
+    usage = """
+    Repotrack: keep current on any given pkg and its deps. It will download the package(s) you 
+               want to track and all of their dependencies
+    
+    %s [options] package1 [package2] [package..]    """ % sys.argv[0]
+    
+    parser = OptionParser(usage=usage)
+    parser.add_option("-c", "--config", default='/etc/yum.conf',
+        help='config file to use (defaults to /etc/yum.conf)')
+    parser.add_option("-a", "--arch", default=None,
+        help='check as if running the specified arch (default: current arch)')
+    parser.add_option("-r", "--repoid", default=[], action='append',
+        help="specify repo ids to query, can be specified multiple times (default is all enabled)")
+    parser.add_option("-t", "--tempcache", default=False, action="store_true", 
+        help="Use a temp dir for storing/accessing yum-cache")
+    parser.add_option("-p", "--download_path", dest='destdir', 
+        default=os.getcwd(), help="Path to download packages to")
+    parser.add_option("-u", "--urls", default=False, action="store_true", 
+        help="Just list urls of what would be downloaded, don't download")
+    parser.add_option("-n", "--newest", default=True, action="store_false", 
+        help="Toggle downloading only the newest packages(defaults to newest-only)")
+    parser.add_option("-q", "--quiet", default=False, action="store_true", 
+        help="Output as little as possible")
+                          
+    (opts, args) = parser.parse_args()
+    return (opts, args)
+
+
+def main():
+# TODO/FIXME
+# gpg/sha checksum them
+
+    (opts, user_pkg_list) = parseArgs()
+    
+    if len(user_pkg_list) == 0:
+        print >> sys.stderr, "Error: no packages specified to parse"
+        sys.exit(1)
+        
+    if not os.path.exists(opts.destdir) and not opts.urls:
+        try:
+            os.makedirs(opts.destdir)
+        except OSError, e:
+            print >> sys.stderr, "Error: Cannot create destination dir %s" % opts.destdir
+            sys.exit(1)
+    
+    if not os.access(opts.destdir, os.W_OK) and not opts.urls:
+        print >> sys.stderr, "Error: Cannot write to  destination dir %s" % opts.destdir
+        sys.exit(1)
+        
+    my = RepoTrack(opts=opts)
+    my.doConfigSetup(fn=opts.config,init_plugins=True) # init yum, WITH plugins
+    
+    if opts.arch:
+        archlist = []
+        archlist.extend(rpmUtils.arch.getArchList(opts.arch))
+    else:
+        archlist = rpmUtils.arch.getArchList()
+        
+    # do the happy tmpdir thing if we're not root
+    if os.geteuid() != 0 or opts.tempcache:
+        cachedir = getCacheDir()
+        if cachedir is None:
+            print >> sys.stderr, "Error: Could not make cachedir, exiting"
+            sys.exit(50)
+            
+        my.repos.setCacheDir(cachedir)
+
+    if len(opts.repoid) > 0:
+        myrepos = []
+        
+        # find the ones we want
+        for glob in opts.repoid:
+            myrepos.extend(my.repos.findRepos(glob))
+        
+        # disable them all
+        for repo in my.repos.repos.values():
+            repo.disable()
+        
+        # enable the ones we like
+        for repo in myrepos:
+            repo.enable()
+            my._getSacks(archlist=archlist, thisrepo=repo.id)
+
+    my.doRepoSetup()    
+    my._getSacks(archlist=archlist)
+    
+    unprocessed_pkgs = {}
+    final_pkgs = {}
+    pkg_list = []
+    
+    avail = my.pkgSack.returnPackages()
+    for item in user_pkg_list:
+        exactmatch, matched, unmatched = parsePackages(avail, [item])
+        pkg_list.extend(exactmatch)
+        pkg_list.extend(matched)
+        if opts.newest:
+            this_sack = ListPackageSack()
+            this_sack.addList(pkg_list)
+            pkg_list = this_sack.returnNewestByNameArch()
+            del this_sack
+    
+    if len(pkg_list) == 0:
+        print >> sys.stderr, "Nothing found to download matching packages specified"
+        sys.exit(1)
+        
+    for po in pkg_list:
+        unprocessed_pkgs[po.pkgtup] = po
+    
+
+    while more_to_check(unprocessed_pkgs):
+    
+        for pkgtup in unprocessed_pkgs.keys():
+            if unprocessed_pkgs[pkgtup] is None:
+                continue
+
+            po = unprocessed_pkgs[pkgtup]
+            final_pkgs[po.pkgtup] = po
+            
+            deps_dict = my.findDeps(po)
+            unprocessed_pkgs[po.pkgtup] = None
+            for req in deps_dict.keys():
+                pkg_list = deps_dict[req]
+                if opts.newest:
+                    this_sack = ListPackageSack()
+                    this_sack.addList(pkg_list)
+                    pkg_list = this_sack.returnNewestByNameArch()
+                    del this_sack
+
+                for res in pkg_list:
+                    if res is not None and res.pkgtup not in unprocessed_pkgs:
+                        unprocessed_pkgs[res.pkgtup] = res
+    
+    
+    
+    download_list = final_pkgs.values()
+    if opts.newest:
+        this_sack = ListPackageSack()
+        this_sack.addList(download_list)
+        download_list = this_sack.returnNewestByNameArch()
+        
+    download_list.sort(sortPkgObj)
+    for pkg in download_list:
+        repo = my.repos.getRepo(pkg.repoid)
+        remote = pkg.returnSimple('relativepath')
+        local = os.path.basename(remote)
+        local = os.path.join(opts.destdir, local)
+        if (os.path.exists(local) and 
+            os.path.getsize(local) == int(pkg.returnSimple('packagesize'))):
+            
+            if not opts.quiet:
+                my.logger.info("%s already exists and appears to be complete" % local)
+            continue
+
+        if opts.urls:
+            url = urljoin(repo.urls[0],remote)
+            print '%s' % url
+            continue
+
+        # Disable cache otherwise things won't download
+        repo.cache = 0
+        if not opts.quiet:        
+            my.logger.info('Downloading %s' % os.path.basename(remote))
+        pkg.localpath = local # Hack: to set the localpath to what we want.
+        path = repo.getPackage(pkg)
+
+        if not os.path.exists(local) or not os.path.samefile(path, local):
+            shutil.copy2(path, local)
+
+if __name__ == "__main__":
+    main()
+
