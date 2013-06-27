@@ -59,7 +59,7 @@ class TaskCollectionHandler(JSONHandler):
     @content_json
     def GET(self):
         user_data = web.input(cluster_id=None)
-        if not user_data.cluster_id:
+        if user_data.cluster_id == '':
             tasks = self.db.query(Task).filter_by(
                 cluster_id=None).all()
         elif user_data.cluster_id:
