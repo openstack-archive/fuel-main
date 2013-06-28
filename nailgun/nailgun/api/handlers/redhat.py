@@ -19,6 +19,7 @@ from nailgun.api.handlers.tasks import TaskHandler
 from nailgun.api.validators.redhat import RedHatAcountValidator
 from nailgun.task.helpers import TaskHelper
 from nailgun.task.manager import DownloadReleaseTaskManager
+from nailgun.logger import logger
 
 
 class RedHatAccountHandler(JSONHandler):
