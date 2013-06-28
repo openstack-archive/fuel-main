@@ -73,7 +73,7 @@ def appstart(keepalive=False):
         settings.COMMIT_SHA,
         settings.FUEL_COMMIT_SHA
     ))
-    if not get_engine.dialect.has_table(get_engine.connect(), "nodes"):
+    if not get_engine().dialect.has_table(get_engine().connect(), "nodes"):
         logger.error(
             "Database tables not created. Try './manage.py syncdb' first"
         )
