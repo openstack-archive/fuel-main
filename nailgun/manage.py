@@ -154,7 +154,7 @@ if __name__ == "__main__":
         from nailgun.wsgi import appstart
         appstart(keepalive=params.keepalive)
     elif params.action == "shell":
-        from nailgun.db import orm
+        from nailgun.db import db
         if params.config_file:
             settings.update_from_file(params.config_file)
         try:
@@ -162,6 +162,6 @@ if __name__ == "__main__":
             embed()
         except ImportError:
             code.interact(local={'orm': orm, 'settings': settings})
-        orm().commit()
+        db().commit()
     else:
         parser.print_help()

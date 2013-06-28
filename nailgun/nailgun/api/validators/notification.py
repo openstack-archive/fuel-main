@@ -13,7 +13,7 @@
 #    License for the specific language governing permissions and limitations
 #    under the License.
 
-from nailgun.db import orm
+from nailgun.db import db
 from nailgun.errors import errors
 from nailgun.api.models import Notification
 from nailgun.api.validators.base import BasicValidator
@@ -46,7 +46,7 @@ class NotificationValidator(BasicValidator):
                 log_message=True
             )
 
-        q = orm().query(Notification)
+        q = db().query(Notification)
         valid_d = []
         for nd in d:
             valid_nd = {}

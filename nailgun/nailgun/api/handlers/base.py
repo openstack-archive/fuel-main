@@ -23,7 +23,7 @@ import web
 import netaddr
 
 import nailgun.rpc as rpc
-from nailgun.db import orm
+from nailgun.db import db
 from nailgun.notifier import notifier
 from nailgun.settings import settings
 from nailgun.errors import errors
@@ -95,7 +95,7 @@ class JSONHandler(object):
 
     def __init__(self, *args, **kwargs):
         super(JSONHandler, self).__init__(*args, **kwargs)
-        self.db = orm()
+        self.db = db()
 
     def checked_data(self, validate_method=None):
         try:

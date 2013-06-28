@@ -22,7 +22,7 @@ from itertools import repeat
 from sqlalchemy.sql import not_
 
 from nailgun.notifier import notifier
-from nailgun.db import make_session
+from nailgun.db import db
 from nailgun.settings import settings
 from nailgun.api.models import Node
 from nailgun.logger import logger
@@ -35,7 +35,7 @@ class KeepAliveThread(threading.Thread):
         self.stop_status_checking = threading.Event()
         self.interval = interval or settings.KEEPALIVE['interval']
         self.timeout = timeout or settings.KEEPALIVE['timeout']
-        self.db = make_session()
+        self.db = db()
 
     def reset_nodes_timestamp(self):
         self.db.query(Node).update({'timestamp': datetime.now()})

@@ -13,7 +13,7 @@
 #    License for the specific language governing permissions and limitations
 #    under the License.
 
-from nailgun.db import orm
+from nailgun.db import db
 from nailgun.errors import errors
 from nailgun.api.models import Cluster, Release
 from nailgun.api.validators.base import BasicValidator
@@ -24,7 +24,7 @@ class ClusterValidator(BasicValidator):
     def validate(cls, data):
         d = cls.validate_json(data)
         if d.get("name"):
-            if orm().query(Cluster).filter_by(
+            if db().query(Cluster).filter_by(
                 name=d["name"]
             ).first():
                 raise errors.AlreadyExists(
@@ -32,7 +32,7 @@ class ClusterValidator(BasicValidator):
                     log_message=True
                 )
         if d.get("release"):
-            release = orm().query(Release).get(d.get("release"))
+            release = db().query(Release).get(d.get("release"))
             if not release:
                 raise errors.InvalidData(
                     "Invalid release id",

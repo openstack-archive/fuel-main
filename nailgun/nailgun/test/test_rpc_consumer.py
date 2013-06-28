@@ -41,7 +41,6 @@ class TestVerifyNetworks(BaseHandlers):
     def setUp(self):
         super(TestVerifyNetworks, self).setUp()
         self.receiver = rcvr.NailgunReceiver()
-        self.receiver.initialize(self.db)
 
     def test_verify_networks_resp(self):
         self.env.create(
@@ -354,7 +353,6 @@ class TestConsumer(BaseHandlers):
     def setUp(self):
         super(TestConsumer, self).setUp()
         self.receiver = rcvr.NailgunReceiver()
-        self.receiver.initialize(self.db)
 
     def test_node_deploy_resp(self):
         node = self.env.create_node(api=False)

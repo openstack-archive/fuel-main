@@ -20,13 +20,13 @@ from nailgun.plugin.fsm import PluginFSM
 from nailgun.errors import errors
 from nailgun.logger import logger
 from nailgun.api.models import Task, Plugin
-from nailgun.db import orm
+from nailgun.db import db
 
 
 class PluginManager(object):
 
-    def __init__(self, db=None):
-        self.db = db or orm()
+    def __init__(self):
+        self.db = db()
         self.queue = get_queue()
 
     def add_install_plugin_task(self, plugin_data):

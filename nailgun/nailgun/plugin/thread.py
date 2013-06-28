@@ -23,7 +23,7 @@ from Queue import Queue
 from nailgun.api.models import Task
 from nailgun.task.helpers import TaskHelper
 from nailgun.logger import logger
-from nailgun.db import make_session, make_engine
+from nailgun.db import db
 
 PLUGIN_PROCESSING_QUEUE = None
 
@@ -44,11 +44,11 @@ class PluginThread(threading.Thread):
     def __init__(self):
         threading.Thread.__init__(self)
         self._stop = threading.Event()
-        self.db = make_session(make_engine())
+        self.db = db()
         self.queue = get_queue()
 
         from nailgun.plugin.manager import PluginManager
-        self.plugin_manager = PluginManager(self.db)
+        self.plugin_manager = PluginManager()
 
     def soft_stop(self):
         self._stop.set()

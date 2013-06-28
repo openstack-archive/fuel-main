@@ -21,7 +21,7 @@ import web
 from sqlalchemy.sql import not_
 from netaddr import IPSet, IPNetwork, IPRange, IPAddress
 
-from nailgun.db import orm
+from nailgun.db import db
 from nailgun.errors import errors
 from nailgun.logger import logger
 from nailgun.settings import settings
@@ -32,14 +32,11 @@ from nailgun.api.models import Network, NetworkGroup, IPAddrRange
 
 class NetworkManager(object):
 
-    def __init__(self, db=None):
-        self.db = db or orm()
-
     def update_ranges_from_cidr(self, network_group, cidr):
         """
         Update network ranges for cidr
         """
-        orm().query(IPAddrRange).filter_by(
+        db().query(IPAddrRange).filter_by(
             network_group_id=network_group.id).delete()
 
         new_cidr = IPNetwork(cidr)
@@ -48,8 +45,8 @@ class NetworkManager(object):
             first=str(new_cidr[2]),
             last=str(new_cidr[-2]))
 
-        self.db.add(ip_range)
-        self.db.commit()
+        db().add(ip_range)
+        db().commit()
 
     def get_admin_network_id(self, fail_if_not_found=True):
         '''
@@ -61,7 +58,7 @@ class NetworkManager(object):
         :returns: Admin Network ID or None.
         :raises: errors.AdminNetworkNotFound
         '''
-        admin_net = self.db.query(Network).filter_by(
+        admin_net = db().query(Network).filter_by(
             name="fuelweb_admin"
         ).first()
         if not admin_net and fail_if_not_found:
@@ -78,10 +75,10 @@ class NetworkManager(object):
         :raises: errors.OutOfVLANs, errors.OutOfIPs,
         errors.NoSuitableCIDR
         '''
-        used_nets = [n.cidr for n in self.db.query(Network).all()]
-        used_vlans = [v.id for v in self.db.query(Vlan).all()]
+        used_nets = [n.cidr for n in db().query(Network).all()]
+        used_vlans = [v.id for v in db().query(Vlan).all()]
 
-        cluster_db = self.db.query(Cluster).get(cluster_id)
+        cluster_db = db().query(Cluster).get(cluster_id)
 
         networks_metadata = cluster_db.release.networks_metadata
 
@@ -151,10 +148,10 @@ class NetworkManager(object):
                 vlan_start=vlan_start,
                 amount=1
             )
-            self.db.add(nw_group)
-            self.db.commit()
+            db().add(nw_group)
+            db().commit()
             nw_group.ip_ranges.append(new_ip_range)
-            self.db.commit()
+            db().commit()
             self.create_networks(nw_group)
 
             used_vlans.append(vlan_start)
@@ -178,25 +175,25 @@ class NetworkManager(object):
         for net in nw_group.networks:
             logger.debug("Deleting old network with id=%s, cidr=%s",
                          net.id, net.cidr)
-            ips = self.db.query(IPAddr).filter(
+            ips = db().query(IPAddr).filter(
                 IPAddr.network == net.id
             ).all()
-            map(self.db.delete, ips)
-            self.db.delete(net)
-            self.db.commit()
+            map(db().delete, ips)
+            db().delete(net)
+            db().commit()
         # Dmitry's hack for clearing VLANs without networks
         self.clear_vlans()
-        self.db.commit()
+        db().commit()
         nw_group.networks = []
 
         for n in xrange(nw_group.amount):
-            vlan_db = self.db.query(Vlan).get(nw_group.vlan_start + n)
+            vlan_db = db().query(Vlan).get(nw_group.vlan_start + n)
             if vlan_db:
                 logger.warning("Intersection with existing vlan_id: %s",
                                vlan_db.id)
             else:
                 vlan_db = Vlan(id=nw_group.vlan_start + n)
-                self.db.add(vlan_db)
+                db().add(vlan_db)
             logger.debug("Created VLAN object, vlan_id=%s", vlan_db.id)
             gateway = None
             if nw_group.gateway:
@@ -209,8 +206,8 @@ class NetworkManager(object):
                 vlan_id=vlan_db.id,
                 gateway=gateway,
                 network_group_id=nw_group.id)
-            self.db.add(net_db)
-        self.db.commit()
+            db().add(net_db)
+        db().commit()
 
     def assign_admin_ips(self, node_id, num=1):
         '''
@@ -223,13 +220,13 @@ class NetworkManager(object):
         :returns: None
         '''
         admin_net_id = self.get_admin_network_id()
-        node_admin_ips = self.db.query(IPAddr).filter_by(
+        node_admin_ips = db().query(IPAddr).filter_by(
             node=node_id,
             network=admin_net_id
         ).all()
 
         if not node_admin_ips or len(node_admin_ips) < num:
-            admin_net = self.db.query(Network).get(admin_net_id)
+            admin_net = db().query(Network).get(admin_net_id)
             logger.debug(
                 u"Trying to assign admin ips: node=%s count=%s",
                 node_id,
@@ -246,8 +243,8 @@ class NetworkManager(object):
                     ip_addr=ip,
                     network=admin_net_id
                 )
-                self.db.add(ip_db)
-            self.db.commit()
+                db().add(ip_db)
+            db().commit()
 
     def assign_ips(self, nodes_ids, network_name):
         """
@@ -267,9 +264,9 @@ class NetworkManager(object):
         :raises: Exception, errors.AssignIPError
         """
 
-        cluster_id = self.db.query(Node).get(nodes_ids[0]).cluster_id
+        cluster_id = db().query(Node).get(nodes_ids[0]).cluster_id
         for node_id in nodes_ids:
-            node = self.db.query(Node).get(node_id)
+            node = db().query(Node).get(node_id)
             if node.cluster_id != cluster_id:
                 raise Exception(
                     u"Node id='{0}' doesn't belong to cluster_id='{1}'".format(
@@ -278,7 +275,7 @@ class NetworkManager(object):
                     )
                 )
 
-        network = self.db.query(Network).join(NetworkGroup).\
+        network = db().query(Network).join(NetworkGroup).\
             filter(NetworkGroup.cluster_id == cluster_id).\
             filter_by(name=network_name).first()
 
@@ -315,8 +312,8 @@ class NetworkManager(object):
                 node=node_id,
                 ip_addr=free_ip
             )
-            self.db.add(ip_db)
-            self.db.commit()
+            db().add(ip_db)
+            db().commit()
 
     def assign_vip(self, cluster_id, network_name):
         """
@@ -338,11 +335,11 @@ class NetworkManager(object):
         :raises: Exception
         """
 
-        cluster = self.db.query(Cluster).get(cluster_id)
+        cluster = db().query(Cluster).get(cluster_id)
         if not cluster:
             raise Exception(u"Cluster id='%s' not found" % cluster_id)
 
-        network = self.db.query(Network).join(NetworkGroup).\
+        network = db().query(Network).join(NetworkGroup).\
             filter(NetworkGroup.cluster_id == cluster_id).\
             filter_by(name=network_name).first()
 
@@ -351,7 +348,7 @@ class NetworkManager(object):
                             (network_name, cluster_id))
 
         admin_net_id = self.get_admin_network_id()
-        cluster_ips = [ne.ip_addr for ne in self.db.query(IPAddr).filter_by(
+        cluster_ips = [ne.ip_addr for ne in db().query(IPAddr).filter_by(
             network=network.id,
             node=None
         ).filter(
@@ -370,8 +367,8 @@ class NetworkManager(object):
             # IP address has not been assigned, let's do it
             vip = self.get_free_ips(network.network_group.id)[0]
             ne_db = IPAddr(network=network.id, ip_addr=vip)
-            self.db.add(ne_db)
-            self.db.commit()
+            db().add(ne_db)
+            db().commit()
         return vip
 
     def clear_vlans(self):
@@ -379,10 +376,10 @@ class NetworkManager(object):
         Removes from DB all Vlans without Networks assigned to them.
         """
         map(
-            self.db.delete,
-            self.db.query(Vlan).filter_by(network=None)
+            db().delete,
+            db().query(Vlan).filter_by(network=None)
         )
-        self.db.commit()
+        db().commit()
 
     @classmethod
     def _chunked_range(cls, iterable, chunksize=64):
@@ -427,7 +424,7 @@ class NetworkManager(object):
         in all ranges for given Network Group
         """
         for ip_addr in ifilter(
-            lambda ip: self.db.query(IPAddr).filter_by(
+            lambda ip: db().query(IPAddr).filter_by(
                 ip_addr=str(ip)
             ).first() is None and not ip == network_group.gateway,
             chain(*[
@@ -441,7 +438,7 @@ class NetworkManager(object):
         """
         Returns list of free IP addresses for given Network Group
         """
-        ng = self.db.query(NetworkGroup).get(network_group_id)
+        ng = db().query(NetworkGroup).get(network_group_id)
         free_ips = []
         for ip in self._iter_free_ips(ng):
             free_ips.append(str(ip))
@@ -466,7 +463,7 @@ class NetworkManager(object):
         for chunk in self._chunked_range(iterable):
             from_range = set(chunk)
             diff = from_range - set(
-                [i.ip_addr for i in self.db.query(IPAddr).
+                [i.ip_addr for i in db().query(IPAddr).
                  filter(IPAddr.ip_addr.in_(from_range))]
             )
             while len(free_ips) < num:
@@ -489,8 +486,8 @@ class NetworkManager(object):
         :type  network_id: int
         :returns: List of free IP addresses as SQLAlchemy objects.
         """
-        node_db = self.db.query(Node).get(node_id)
-        ips = self.db.query(IPAddr).order_by(IPAddr.id)
+        node_db = db().query(Node).get(node_id)
+        ips = db().query(IPAddr).order_by(IPAddr.id)
         if node_id:
             ips = ips.filter_by(node=node_id)
         if network_id:
@@ -505,7 +502,7 @@ class NetworkManager(object):
         return ips.all()
 
     def get_main_nic(self, node_id):
-        node_db = self.db.query(Node).get(node_id)
+        node_db = db().query(Node).get(node_id)
         for nic in node_db.interfaces:
             if node_db.mac == nic.mac:
                 return nic.id
@@ -513,18 +510,18 @@ class NetworkManager(object):
             return node_db.interfaces[0].id
 
     def clear_all_allowed_networks(self, node_id):
-        node_db = self.db.query(Node).get(node_id)
+        node_db = db().query(Node).get(node_id)
         for nic in node_db.interfaces:
             while nic.allowed_networks:
                 nic.allowed_networks.pop()
-        self.db.commit()
+        db().commit()
 
     def clear_assigned_networks(self, node_id):
-        node_db = self.db.query(Node).get(node_id)
+        node_db = db().query(Node).get(node_id)
         for nic in node_db.interfaces:
             while nic.assigned_networks:
                 nic.assigned_networks.pop()
-        self.db.commit()
+        db().commit()
 
     def get_cluster_networkgroups_by_node(self, node_id):
         """
@@ -534,7 +531,7 @@ class NetworkManager(object):
         :type  node: Node
         :returns: List of network groups for cluster node belongs to.
         """
-        node_db = self.db.query(Node).get(node_id)
+        node_db = db().query(Node).get(node_id)
         if node_db.cluster:
             return [ng.id for ng in node_db.cluster.network_groups]
         return []
@@ -548,26 +545,26 @@ class NetworkManager(object):
         :param node: Node object.
         :type  node: Node
         """
-        node_db = self.db.query(Node).get(node_id)
+        node_db = db().query(Node).get(node_id)
         for nic in node_db.interfaces:
             for net_group_id in self.get_cluster_networkgroups_by_node(
                 node_id
             ):
-                ng_db = self.db.query(NetworkGroup).get(net_group_id)
+                ng_db = db().query(NetworkGroup).get(net_group_id)
                 nic.allowed_networks.append(ng_db)
-        self.db.commit()
+        db().commit()
 
     def assign_networks_to_main_interface(self, node_id):
         self.clear_assigned_networks(node_id)
         main_nic_id = self.get_main_nic(node_id)
         if main_nic_id:
-            main_nic = self.db.query(NodeNICInterface).get(main_nic_id)
+            main_nic = db().query(NodeNICInterface).get(main_nic_id)
             for net_group_id in self.get_cluster_networkgroups_by_node(
                 node_id
             ):
-                ng_db = self.db.query(NetworkGroup).get(net_group_id)
+                ng_db = db().query(NetworkGroup).get(net_group_id)
                 main_nic.assigned_networks.append(ng_db)
-            self.db.commit()
+            db().commit()
 
     def get_node_networks(self, node_id):
         """
@@ -577,7 +574,7 @@ class NetworkManager(object):
         :type  node_id: int
         :returns: List of network info for node.
         """
-        node_db = self.db.query(Node).get(node_id)
+        node_db = db().query(Node).get(node_id)
         cluster_db = node_db.cluster
         if cluster_db is None:
             # Node doesn't belong to any cluster, so it should not have nets
@@ -587,7 +584,7 @@ class NetworkManager(object):
         network_data = []
         network_ids = []
         for i in ips:
-            net = self.db.query(Network).get(i.network)
+            net = db().query(Network).get(i.network)
             interface = self._get_interface_by_network_name(
                 node_db.id,
                 net.name
@@ -596,7 +593,7 @@ class NetworkManager(object):
             # Get prefix from netmask instead of cidr
             # for public network
             if net.name == 'public':
-                network_group = self.db.query(NetworkGroup).get(
+                network_group = db().query(NetworkGroup).get(
                     net.network_group_id)
 
                 # Convert netmask to prefix
@@ -618,7 +615,7 @@ class NetworkManager(object):
             network_ids.append(net.id)
 
         # And now let's add networks w/o IP addresses
-        nets = self.db.query(Network).join(NetworkGroup).\
+        nets = db().query(Network).join(NetworkGroup).\
             filter(NetworkGroup.cluster_id == cluster_db.id)
         if network_ids:
             nets = nets.filter(not_(Network.id.in_(network_ids)))
@@ -645,7 +642,7 @@ class NetworkManager(object):
         return network_data
 
     def _update_attrs(self, node_data):
-        node_db = self.db.query(Node).get(node_data['id'])
+        node_db = db().query(Node).get(node_data['id'])
         interfaces = node_data['interfaces']
         interfaces_db = node_db.interfaces
         for iface in interfaces:
@@ -654,24 +651,24 @@ class NetworkManager(object):
                 interfaces_db
             )[0]
             # Remove all old network's assignment for this interface.
-            self.db.query(NetworkAssignment).filter_by(
+            db().query(NetworkAssignment).filter_by(
                 interface_id=current_iface.id
             ).delete()
             for net in iface['assigned_networks']:
                 net_assignment = NetworkAssignment()
                 net_assignment.network_id = net['id']
                 net_assignment.interface_id = current_iface.id
-                self.db.add(net_assignment)
-        self.db.commit()
+                db().add(net_assignment)
+        db().commit()
         return node_db.id
 
     def update_interfaces_info(self, node_id):
-        node = self.db.query(Node).get(node_id)
+        node = db().query(Node).get(node_id)
         if not "interfaces" in node.meta:
             raise Exception("No interfaces metadata specified for node")
 
         for interface in node.meta["interfaces"]:
-            interface_db = self.db.query(NodeNICInterface).filter_by(
+            interface_db = db().query(NodeNICInterface).filter_by(
                 mac=interface['mac']).first()
             if interface_db:
                 self.__update_existing_interface(interface_db.id, interface)
@@ -684,14 +681,14 @@ class NetworkManager(object):
         interface = NodeNICInterface()
         interface.node_id = node.id
         self.__set_interface_attributes(interface, interface_attrs)
-        self.db.add(interface)
-        self.db.commit()
+        db().add(interface)
+        db().commit()
         node.interfaces.append(interface)
 
     def __update_existing_interface(self, interface_id, interface_attrs):
-        interface = self.db.query(NodeNICInterface).get(interface_id)
+        interface = db().query(NodeNICInterface).get(interface_id)
         self.__set_interface_attributes(interface, interface_attrs)
-        self.db.commit()
+        db().commit()
 
     def __set_interface_attributes(self, interface, interface_attrs):
         interface.name = interface_attrs["name"]
@@ -704,7 +701,7 @@ class NetworkManager(object):
         interfaces_mac_addresses = map(
             lambda interface: interface['mac'], interfaces)
 
-        interfaces_to_delete = self.db.query(NodeNICInterface).filter(
+        interfaces_to_delete = db().query(NodeNICInterface).filter(
             NodeNICInterface.node_id == node.id).filter(
                 not_(NodeNICInterface.mac.in_(
                     interfaces_mac_addresses))).all()
@@ -717,7 +714,7 @@ class NetworkManager(object):
             logger.info("Interfaces %s removed from node %s" % (
                 mac_addresses, node_name))
 
-            map(self.db.delete, interfaces_to_delete)
+            map(db().delete, interfaces_to_delete)
 
     def get_default_nic_networkgroups(self, node_id, nic_id):
         main_nic_id = self.get_main_nic(node_id)
@@ -725,7 +722,7 @@ class NetworkManager(object):
             if nic_id == main_nic_id else []
 
     def get_all_cluster_networkgroups(self, node_id):
-        node_db = self.db.query(Node).get(node_id)
+        node_db = db().query(Node).get(node_id)
         if node_db.cluster:
             return [ng.id for ng in node_db.cluster.network_groups]
         return []
@@ -752,7 +749,7 @@ class NetworkManager(object):
         Return network device which has appointed
         network with specified network name
         """
-        node_db = self.db.query(Node).get(node_id)
+        node_db = db().query(Node).get(node_id)
         for interface in node_db.interfaces:
             for network in interface.assigned_networks:
                 if network.name == network_name:

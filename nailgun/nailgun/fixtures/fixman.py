@@ -27,7 +27,7 @@ import sqlalchemy.types
 from nailgun.settings import settings
 from nailgun.api import models
 from sqlalchemy import orm
-from nailgun.db import orm as ormgen
+from nailgun.db import db as ormgen
 from nailgun.logger import logger
 from nailgun.network.manager import NetworkManager
 
@@ -157,7 +157,7 @@ def upload_fixture(fileobj):
             db.commit()
             new_obj.attributes.volumes = \
                 new_obj.volume_manager.gen_default_volumes_info()
-            network_manager = NetworkManager(db)
+            network_manager = NetworkManager()
             network_manager.update_interfaces_info(new_obj.id)
             db.commit()
 

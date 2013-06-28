@@ -18,7 +18,7 @@ import os
 import shutil
 import logging
 
-from nailgun.db import orm
+from nailgun.db import db
 from nailgun.logger import logger
 from nailgun.api.models import Task
 from nailgun.api.models import IPAddr
@@ -44,7 +44,7 @@ class TaskHelper(object):
             if n.fqdn != fqdn:
                 n.fqdn = fqdn
                 logger.debug("Updating node fqdn: %s %s", n.id, n.fqdn)
-                orm().commit()
+                db().commit()
 
     @classmethod
     def prepare_syslog_dir(cls, node, prefix=None):
@@ -61,7 +61,7 @@ class TaskHelper(object):
         admin_net_id = netmanager.get_admin_network_id()
         links = map(
             lambda i: os.path.join(prefix, i.ip_addr),
-            orm().query(IPAddr.ip_addr).
+            db().query(IPAddr.ip_addr).
             filter_by(node=node.id).
             filter_by(network=admin_net_id).all()
         )
@@ -115,8 +115,7 @@ class TaskHelper(object):
     @classmethod
     def update_task_status(cls, uuid, status, progress, msg="", result=None):
         logger.debug("Updating task: %s", uuid)
-        db = orm()
-        task = db.query(Task).filter_by(uuid=uuid).first()
+        task = db().query(Task).filter_by(uuid=uuid).first()
         if not task:
             logger.error("Can't set status='%s', message='%s':no task \
                     with UUID %s found!", status, msg, uuid)
@@ -134,8 +133,9 @@ class TaskHelper(object):
                         value
                     )
                 )
-        db.add(task)
-        db.commit()
+        db().add(task)
+        db().commit()
+
         if previous_status != status and task.cluster_id:
             logger.debug("Updating cluster status: "
                          "cluster_id: %s status: %s",
@@ -147,8 +147,7 @@ class TaskHelper(object):
 
     @classmethod
     def update_parent_task(cls, uuid):
-        db = orm()
-        task = db.query(Task).filter_by(uuid=uuid).first()
+        task = db().query(Task).filter_by(uuid=uuid).first()
         subtasks = task.subtasks
         if len(subtasks):
             if all(map(lambda s: s.status == 'ready', subtasks)):
@@ -157,8 +156,8 @@ class TaskHelper(object):
                 task.message = '; '.join(map(
                     lambda s: s.message, filter(
                         lambda s: s.message is not None, subtasks)))
-                db.add(task)
-                db.commit()
+                db().add(task)
+                db().commit()
                 cls.update_cluster_status(uuid)
             elif all(map(lambda s: s.status in ('ready', 'error'), subtasks)):
                 task.status = 'error'
@@ -166,8 +165,8 @@ class TaskHelper(object):
                 task.message = '; '.join(map(
                     lambda s: s.message, filter(
                         lambda s: s.status == 'error', subtasks)))
-                db.add(task)
-                db.commit()
+                db().add(task)
+                db().commit()
                 cls.update_cluster_status(uuid)
             else:
                 subtasks_with_progress = filter(
@@ -188,13 +187,12 @@ class TaskHelper(object):
                     )
                 else:
                     task.progress = 0
-                db.add(task)
-                db.commit()
+                db().add(task)
+                db().commit()
 
     @classmethod
     def update_cluster_status(cls, uuid):
-        db = orm()
-        task = db.query(Task).filter_by(uuid=uuid).first()
+        task = db().query(Task).filter_by(uuid=uuid).first()
         # FIXME: should be moved to task/manager "finish" method after
         # web.ctx.orm issue is addressed
         cluster = task.cluster
@@ -212,7 +210,7 @@ class TaskHelper(object):
         elif task.name == 'provision':
             if task.status == 'error':
                 cls.__set_cluster_status(cluster, 'error')
-        db.commit()
+        db().commit()
 
     @classmethod
     def __set_cluster_status(cls, cluster, new_state):

@@ -24,7 +24,6 @@ from random import randrange, shuffle
 from kombu import Connection, Exchange, Queue
 from sqlalchemy.orm import object_mapper, ColumnProperty
 
-from nailgun.db import make_session
 from nailgun.settings import settings
 from nailgun.logger import logger
 from nailgun.errors import errors
@@ -32,6 +31,7 @@ from nailgun.notifier import notifier
 from nailgun.api.models import Network, Node, NodeAttributes
 from nailgun.network.manager import NetworkManager
 from nailgun.rpc.receiver import NailgunReceiver
+from nailgun.db import db
 
 
 class FakeThread(threading.Thread):
@@ -229,7 +229,6 @@ class FakeProvisionThread(FakeThread):
     def run(self):
         super(FakeProvisionThread, self).run()
         receiver = NailgunReceiver
-        receiver.initialize()
 
         # Since we just add systems to cobbler and reboot nodes
         # We think this task is always successful if it is launched.
@@ -242,15 +241,12 @@ class FakeProvisionThread(FakeThread):
         tick_interval = int(settings.FAKE_TASKS_TICK_INTERVAL) or 3
         resp_method = getattr(receiver, self.respond_to)
         resp_method(**kwargs)
-        orm = make_session()
-        receiver.stop()
 
 
 class FakeDeletionThread(FakeThread):
     def run(self):
         super(FakeDeletionThread, self).run()
         receiver = NailgunReceiver
-        receiver.initialize()
         kwargs = {
             'task_uuid': self.task_uuid,
             'nodes': self.data['args']['nodes'],
@@ -260,7 +256,6 @@ class FakeDeletionThread(FakeThread):
         tick_interval = int(settings.FAKE_TASKS_TICK_INTERVAL) or 3
         resp_method = getattr(receiver, self.respond_to)
         resp_method(**kwargs)
-        orm = make_session()
 
         for node_data in nodes_to_restore:
             node = Node(**node_data)
@@ -272,13 +267,13 @@ class FakeDeletionThread(FakeThread):
                 continue
 
             node.status = 'discover'
-            orm.add(node)
-            orm.commit()
+            db().add(node)
+            db().commit()
             node.attributes = NodeAttributes(node_id=node.id)
             node.attributes.volumes = node.volume_manager.gen_volumes_info()
-            network_manager = NetworkManager(db=orm)
+            network_manager = NetworkManager()
             network_manager.update_interfaces_info(node.id)
-            orm.commit()
+            db().commit()
 
             ram = round(node.meta.get('ram') or 0, 1)
             cores = node.meta.get('cores') or 'unknown'
@@ -286,14 +281,12 @@ class FakeDeletionThread(FakeThread):
                             "New node with %s CPU core(s) "
                             "and %s GB memory is discovered" %
                             (cores, ram), node_id=node.id)
-        receiver.stop()
 
 
 class FakeVerificationThread(FakeThread):
     def run(self):
         super(FakeVerificationThread, self).run()
         receiver = NailgunReceiver
-        receiver.initialize()
         kwargs = {
             'task_uuid': self.task_uuid,
             'progress': 0
@@ -332,7 +325,6 @@ class FakeVerificationThread(FakeThread):
             if time.time() - timer > timeout:
                 raise Exception("Timeout exceed")
             self.sleep(tick_interval)
-        receiver.stop()
 
 
 class DownloadReleaseThread(FakeAmpqThread):

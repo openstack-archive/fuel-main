@@ -27,7 +27,7 @@ from sqlalchemy.orm import object_mapper, ColumnProperty
 from sqlalchemy import or_
 
 import nailgun.rpc as rpc
-from nailgun.db import orm
+from nailgun.db import db
 from nailgun.logger import logger
 from nailgun.settings import settings
 from nailgun.notifier import notifier
@@ -127,17 +127,17 @@ class DeploymentTask(object):
             if n.status in ('ready', 'deploying'):
                 n.status = 'provisioned'
             n.progress = 0
-            orm().add(n)
-            orm().commit()
+            db().add(n)
+            db().commit()
             nodes_with_attrs.append(cls.__format_node_for_naily(n))
 
         cluster_attrs = task.cluster.attributes.merged_attrs_values()
         cluster_attrs['controller_nodes'] = cls.__controller_nodes(cluster_id)
 
-        nets_db = orm().query(Network).join(NetworkGroup).\
+        nets_db = db().query(Network).join(NetworkGroup).\
             filter(NetworkGroup.cluster_id == cluster_id).all()
 
-        ng_db = orm().query(NetworkGroup).filter_by(
+        ng_db = db().query(NetworkGroup).filter_by(
             cluster_id=cluster_id).all()
         for net in ng_db:
             net_name = net.name + '_network_range'
@@ -152,7 +152,7 @@ class DeploymentTask(object):
 
         cluster_attrs['network_manager'] = task.cluster.net_manager
 
-        fixed_net = orm().query(NetworkGroup).filter_by(
+        fixed_net = db().query(NetworkGroup).filter_by(
             cluster_id=cluster_id).filter_by(name='fixed').first()
         # network_size is required for all managers, otherwise
         #  puppet will use default (255)
@@ -189,8 +189,8 @@ class DeploymentTask(object):
         logger.debug("DeploymentTask.execute(task=%s)" % task.uuid)
         message = cls.message(task)
         task.cache = message
-        orm().add(task)
-        orm().commit()
+        db().add(task)
+        db().commit()
         rpc.cast('naily', message)
 
     @classmethod
@@ -214,7 +214,7 @@ class DeploymentTask(object):
         """
         netmanager = NetworkManager()
         for node in nodes:
-            node_db = orm().query(Node).get(node['id'])
+            node_db = db().query(Node).get(node['id'])
 
             fixed_interface = netmanager._get_interface_by_network_name(
                 node_db.id, 'fixed')
@@ -223,7 +223,7 @@ class DeploymentTask(object):
 
     @classmethod
     def __controller_nodes(cls, cluster_id):
-        nodes = orm().query(Node).filter_by(
+        nodes = db().query(Node).filter_by(
             cluster_id=cluster_id,
             role='controller',
             pending_deletion=False).order_by(Node.id)
@@ -322,8 +322,8 @@ class ProvisionTask(object):
             # FIXME: move this code (updating) into receiver.provision_resp
             if not USE_FAKE:
                 node.status = "provisioning"
-                orm().add(node)
-                orm().commit()
+                db().add(node)
+                db().commit()
 
             # here we assign admin network IPs for node
             # one IP for every node interface
@@ -332,7 +332,7 @@ class ProvisionTask(object):
                 len(node.meta.get('interfaces', []))
             )
             admin_net_id = netmanager.get_admin_network_id()
-            admin_ips = set([i.ip_addr for i in orm().query(IPAddr).
+            admin_ips = set([i.ip_addr for i in db().query(IPAddr).
                             filter_by(node=node.id).
                             filter_by(network=admin_net_id)])
             for i in node.meta.get('interfaces', []):
@@ -392,8 +392,8 @@ class ProvisionTask(object):
         logger.debug("ProvisionTask.execute(task=%s)" % task.uuid)
         message = cls.message(task)
         task.cache = message
-        orm().add(task)
-        orm().commit()
+        db().add(task)
+        db().commit()
         rpc.cast('naily', message)
 
 
@@ -414,7 +414,6 @@ class DeletionTask(object):
         if respond_to == 'remove_cluster_resp' and \
                 not list(task.cluster.nodes):
             rcvr = rpc.receiver.NailgunReceiver()
-            rcvr.initialize()
             rcvr.remove_cluster_resp(
                 task_uuid=task_uuid,
                 status='ready',
@@ -453,7 +452,7 @@ class DeletionTask(object):
         nodes_to_delete_constant = list(nodes_to_delete)
 
         for node in nodes_to_delete_constant:
-            node_db = orm().query(Node).get(node['id'])
+            node_db = db().query(Node).get(node['id'])
 
             slave_name = TaskHelper.make_slave_name(
                 node['id'], node['role']
@@ -463,8 +462,8 @@ class DeletionTask(object):
             if not node_db.online:
                 logger.info(
                     "Node is offline, can't MBR clean: %s", slave_name)
-                orm().delete(node_db)
-                orm().commit()
+                db().delete(node_db)
+                db().commit()
 
                 nodes_to_delete.remove(node)
 
@@ -479,7 +478,7 @@ class DeletionTask(object):
                              slave_name)
                 engine_nodes.append(slave_name)
                 try:
-                    node_db = orm().query(Node).get(node['id'])
+                    node_db = db().query(Node).get(node['id'])
                     if node_db and node_db.fqdn:
                         node_hostname = node_db.fqdn
                     else:
@@ -578,8 +577,8 @@ class VerifyNetworksTask(object):
         logger.debug("Network verification is called with: %s", message)
 
         task.cache = message
-        orm().add(task)
-        orm().commit()
+        db().add(task)
+        db().commit()
         rpc.cast('naily', message)
 
 
@@ -602,7 +601,7 @@ class CheckNetworksTask(object):
         err_msgs = []
         for ng in networks:
             net_errors = []
-            ng_db = orm().query(NetworkGroup).get(ng['id'])
+            ng_db = db().query(NetworkGroup).get(ng['id'])
             if not ng_db:
                 net_errors.append("id")
                 err_msgs.append("Invalid network ID: {0}".format(ng['id']))
@@ -641,8 +640,8 @@ class CheckNetworksTask(object):
                 })
         if err_msgs:
             task.result = result
-            orm().add(task)
-            orm().commit()
+            db().add(task)
+            db().commit()
             full_err_msg = "\n".join(err_msgs)
             raise errors.NetworkCheckError(full_err_msg)
 

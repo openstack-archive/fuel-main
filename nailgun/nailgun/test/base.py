@@ -48,7 +48,7 @@ from nailgun.api.models import Vlan
 from nailgun.logger import logger
 from nailgun.api.urls import urls
 from nailgun.wsgi import build_app
-from nailgun.db import make_session, dropdb, syncdb, flush, orm
+from nailgun.db import dropdb, syncdb, flush, db
 from nailgun.fixtures.fixman import upload_fixture
 from nailgun.network.manager import NetworkManager
 from nailgun.network.topology import TopoChecker
@@ -60,8 +60,8 @@ class TimeoutError(Exception):
 
 class Environment(object):
 
-    def __init__(self, app, db):
-        self.db = db
+    def __init__(self, app):
+        self.db = db()
         self.app = app
         self.tester = TestCase
         self.tester.runTest = lambda a: None
@@ -74,7 +74,7 @@ class Environment(object):
         self.releases = []
         self.clusters = []
         self.nodes = []
-        self.network_manager = NetworkManager(db=self.db)
+        self.network_manager = NetworkManager()
 
     def create(self, **kwargs):
         cluster = self.create_cluster(
@@ -679,7 +679,7 @@ class BaseHandlers(TestCase):
 
     @classmethod
     def setUpClass(cls):
-        cls.db = make_session()
+        cls.db = db()
         cls.app = TestApp(build_app().wsgifunc())
         nailgun.task.task.DeploymentTask._prepare_syslog_dir = mock.Mock()
         # dropdb()
@@ -695,7 +695,7 @@ class BaseHandlers(TestCase):
             "Content-Type": "application/json"
         }
         flush()
-        self.env = Environment(app=self.app, db=self.db)
+        self.env = Environment(app=self.app)
         self.env.upload_fixtures(self.fixtures)
 
     def tearDown(self):

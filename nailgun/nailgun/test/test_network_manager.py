@@ -23,7 +23,6 @@ from netaddr import IPNetwork, IPAddress, IPRange
 import nailgun
 from nailgun.test.base import BaseHandlers
 from nailgun.test.base import reverse
-from nailgun.db import engine
 from nailgun.errors import errors
 from nailgun.api.models import Node, IPAddr, Vlan, IPAddrRange
 from nailgun.api.models import Network, NetworkGroup

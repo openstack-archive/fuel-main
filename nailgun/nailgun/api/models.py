@@ -32,7 +32,7 @@ from sqlalchemy.orm import relationship, backref
 from sqlalchemy.ext.declarative import declarative_base
 
 from nailgun.logger import logger
-from nailgun.db import orm
+from nailgun.db import db
 from nailgun.volumes.manager import VolumeManager
 from nailgun.api.fields import JSON
 from nailgun.settings import settings
@@ -119,20 +119,20 @@ class Cluster(Base):
     def validate(cls, data):
         d = cls.validate_json(data)
         if d.get("name"):
-            if orm().query(Cluster).filter_by(
+            if db().query(Cluster).filter_by(
                 name=d["name"]
             ).first():
                 c = web.webapi.conflict
                 c.message = "Environment with this name already exists"
                 raise c()
         if d.get("release"):
-            release = orm().query(Release).get(d.get("release"))
+            release = db().query(Release).get(d.get("release"))
             if not release:
                 raise web.webapi.badrequest(message="Invalid release id")
         return d
 
     def add_pending_changes(self, changes_type, node_id=None):
-        ex_chs = orm().query(ClusterChanges).filter_by(
+        ex_chs = db().query(ClusterChanges).filter_by(
             cluster=self,
             name=changes_type
         )
@@ -149,17 +149,17 @@ class Cluster(Base):
         )
         if node_id:
             ch.node_id = node_id
-        orm().add(ch)
-        orm().commit()
+        db().add(ch)
+        db().commit()
 
     def clear_pending_changes(self, node_id=None):
-        chs = orm().query(ClusterChanges).filter_by(
+        chs = db().query(ClusterChanges).filter_by(
             cluster_id=self.id
         )
         if node_id:
             chs = chs.filter_by(node_id=node_id)
-        map(orm().delete, chs.all())
-        orm().commit()
+        map(db().delete, chs.all())
+        db().commit()
 
 
 class Node(Base):
@@ -406,7 +406,7 @@ class NetworkConfiguration(object):
 
         if 'networks' in network_configuration:
             for ng in network_configuration['networks']:
-                ng_db = orm().query(NetworkGroup).get(ng['id'])
+                ng_db = db().query(NetworkGroup).get(ng['id'])
 
                 for key, value in ng.iteritems():
                     if key == "ip_ranges":
@@ -425,7 +425,7 @@ class NetworkConfiguration(object):
     @classmethod
     def __set_ip_ranges(cls, network_group_id, ip_ranges):
         # deleting old ip ranges
-        orm().query(IPAddrRange).filter_by(
+        db().query(IPAddrRange).filter_by(
             network_group_id=network_group_id).delete()
 
         for r in ip_ranges:
@@ -433,8 +433,8 @@ class NetworkConfiguration(object):
                 first=r[0],
                 last=r[1],
                 network_group_id=network_group_id)
-            orm().add(new_ip_range)
-        orm().commit()
+            db().add(new_ip_range)
+        db().commit()
 
 
 class AttributesGenerators(object):
@@ -467,8 +467,8 @@ class Attributes(Base):
 
     def generate_fields(self):
         self.generated = self.traverse(self.generated)
-        orm().add(self)
-        orm().commit()
+        db().add(self)
+        db().commit()
 
     @classmethod
     def traverse(cls, cdict):
@@ -595,7 +595,7 @@ class Task(Base):
         task = Task(name=name, cluster=self.cluster)
 
         self.subtasks.append(task)
-        orm().commit()
+        db().commit()
         return task
 
 

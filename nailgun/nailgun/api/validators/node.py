@@ -13,7 +13,7 @@
 #    License for the specific language governing permissions and limitations
 #    under the License.
 
-from nailgun.db import orm
+from nailgun.db import db
 from nailgun.errors import errors
 from nailgun.api.models import Node
 from nailgun.volumes.manager import VolumeManager
@@ -107,7 +107,7 @@ class NodeValidator(BasicValidator):
                 log_message=True
             )
         else:
-            q = orm().query(Node)
+            q = db().query(Node)
             if q.filter(Node.mac == d["mac"]).first():
                 raise errors.AlreadyExists(
                     "Node with mac {0} already "
@@ -132,7 +132,7 @@ class NodeValidator(BasicValidator):
         if 'meta' in data:
             data['meta'] = MetaValidator.validate_create(data['meta'])
             if 'interfaces' in data['meta']:
-                existent_node = orm().query(Node).filter(Node.mac.in_(
+                existent_node = db().query(Node).filter(Node.mac.in_(
                     [n['mac'] for n in data['meta']['interfaces']])).first()
                 return existent_node
 
@@ -141,7 +141,7 @@ class NodeValidator(BasicValidator):
         if 'meta' in data:
             data['meta'] = MetaValidator.validate_update(data['meta'])
             if 'interfaces' in data['meta']:
-                existent_node = orm().query(Node).filter(Node.mac.in_(
+                existent_node = db().query(Node).filter(Node.mac.in_(
                     [n['mac'] for n in data['meta']['interfaces']])).first()
                 return existent_node
 
@@ -168,7 +168,7 @@ class NodeValidator(BasicValidator):
                 log_message=True
             )
 
-        q = orm().query(Node)
+        q = db().query(Node)
         for nd in d:
             if not "mac" in nd and not "id" in nd:
                 raise errors.InvalidData(

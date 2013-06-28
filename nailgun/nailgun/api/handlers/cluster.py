@@ -155,7 +155,7 @@ class ClusterCollectionHandler(JSONHandler):
         )
         attributes.generate_fields()
 
-        netmanager = NetworkManager(self.db)
+        netmanager = NetworkManager()
         try:
             netmanager.create_network_groups(cluster.id)
 

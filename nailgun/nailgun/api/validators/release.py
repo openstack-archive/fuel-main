@@ -13,7 +13,7 @@
 #    License for the specific language governing permissions and limitations
 #    under the License.
 
-from nailgun.db import orm
+from nailgun.db import db
 from nailgun.errors import errors
 from nailgun.settings import settings
 from nailgun.api.models import Release, Attributes
@@ -35,7 +35,7 @@ class ReleaseValidator(BasicValidator):
                 "No release version specified",
                 log_message=True
             )
-        if orm().query(Release).filter_by(
+        if db().query(Release).filter_by(
             name=d["name"],
             version=d["version"]
         ).first():

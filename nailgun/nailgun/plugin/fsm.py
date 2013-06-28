@@ -16,7 +16,7 @@
 
 from fysom import Fysom
 from nailgun.api.models import Plugin
-from nailgun.db import orm
+from nailgun.db import db
 from nailgun.logger import logger
 from nailgun.fsm.state_list import StateList
 import re
@@ -100,7 +100,7 @@ class PluginFSM(Fysom):
             }
         })
 
-        self.db = db or orm()
+        self.db = db()
         self.plugin_id = plugin_id
         self.current_state = current_state
         self.onchangestate = self._onchangestate
