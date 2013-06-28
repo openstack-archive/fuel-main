@@ -100,7 +100,6 @@ class FakeAmpqThread(FakeThread):
             resp_method = getattr(receiver, self.respond_to)
             for msg in self.message_gen():
                 resp_method(**msg)
-            receiver.stop()
 
 
 class FakeDeploymentThread(FakeAmpqThread):
