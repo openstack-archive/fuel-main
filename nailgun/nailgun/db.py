@@ -29,30 +29,47 @@ from nailgun.settings import settings
 db_str = "{engine}://{user}:{passwd}@{host}:{port}/{name}".format(
     **settings.DATABASE)
 
+
+def make_engine():
+    return create_engine(db_str, client_encoding='utf8')
+
+
 thread_local_storage = threading.local()
+webpy_db_engine = make_engine()
 
 
 def db():
     """
-    Global db session per thread
+    Db session object per thread
     """
     if not hasattr(thread_local_storage, 'db'):
         thread_local_storage.db = make_session(get_engine())
+
     return thread_local_storage.db
 
 
 def get_engine():
     """
-    Global engine per thread
+    Return one instance of the engine per thread.
+    For reducing db connection overhead returns
+    one instance of the engine for all webpy threads.
     """
+    if is_webpy_thread():
+        return webpy_db_engine
+
     if not hasattr(thread_local_storage, 'db_engine'):
         thread_local_storage.db_engine = make_engine()
 
     return thread_local_storage.db_engine
 
 
-def make_engine():
-    return create_engine(db_str, client_encoding='utf8')
+def is_webpy_thread():
+    """
+    web.ctx is 'threading local' object
+    if it has 'env' attribute, then it's a thread for
+    api request processing
+    """
+    return hasattr(web.ctx, 'env')
 
 
 def make_session(custom_engine=None):
