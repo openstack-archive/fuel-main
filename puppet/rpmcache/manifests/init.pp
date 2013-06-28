@@ -55,7 +55,7 @@ $use_satellite = false, $sat_hostname = false, $activation_key = false)  {
     ensure => directory,
   } ->
 
-  file { '/etc/local/bin/repotrack':
+  file { '/usr/local/bin/repotrack':
     ensure => present,
     source => 'puppet:///modules/rpmcache/repotrack',
     owner => 'root',

@@ -3,7 +3,7 @@
 subscription-manager register "--username=<%= rh_username %>" "--password=<%= rh_password %>" --autosubscribe --force
 
 #Attach to RHOS product
-poolid="$(subscription-manager list --available | grep -A2 "Red Hat OpenStack" | tail -1 | cut -c15-)"
+poolid="$(subscription-manager list --available | grep -A2 "Red Hat OpenStack" | tail -1 | cut -c15- | tr -d ' ')"
 subscription-manager attach "--pool=$poolid"
 
 #Enable channels
@@ -19,7 +19,7 @@ yum --releasever=<%= releasever %> repolist || :
 <% if use_satellite %>
 #Save centos-release RPM so it can be reinstalled later
 mkdir -p /root/centos-release
-yumdownloader --destdir /root/centos-release --disablerepo='*rhel*' /root/centos-release/
+yumdownloader --destdir /root/centos-release --disablerepo='*rhel*' centos-release
 if ! [ -f /root/centos-release/centos-release*.rpm ];then
   echo "Unable to download centos-release RPM. Aborting."
   exit 1
@@ -35,7 +35,7 @@ rpm -ivh --force /root/rhnpackages/*.rpm
 #Download RHN Satellite GPG key
 mkdir -p /etc/sysconfig/rhn
 wget "<%= sat_hostname %>/pub/RHN-ORG-TRUSTED-SSL-CERT" -O /etc/sysconfig/rhn/RHNS-CA-CERT
-if [ "$(file -b /etc/sysconfig/rhn/RHNS-CA-CERT)" != "PGP public key block" ];then
+if [ "$(file -b /etc/sysconfig/rhn/RHNS-CA-CERT)" != "ASCII text" ];then
   echo "GPG Key download failed. Looking for URL <%= sat_hostname %>/pub/RHN-ORG-TRUSTED-SSL-CERT. Cannot proceed"
   exit 1
 fi
@@ -54,7 +54,7 @@ fi
 #Ensure channels are enabled:
 errors=0
 for channel in <%= sat_base_channels %> <%= sat_openstack_channel %>; do
-  if rhn-channel | grep -q "$channel"; then
+  if rhn-channel -l | grep -q "$channel"; then
     echo "Found $channel."
   else
     echo "ERROR: $channel not found. Fix this in RHN Satellite manually or run the following command:"
