@@ -25,15 +25,8 @@ from sqlalchemy import create_engine
 from nailgun.logger import logger
 from nailgun.settings import settings
 
-if settings.DATABASE['engine'] == 'sqlite':
-    db_str = "{engine}://{path}".format(
-        engine='sqlite',
-        path="/" + settings.DATABASE['name']
-    )
-else:
-    db_str = "{engine}://{user}:{passwd}@{host}:{port}/{name}".format(
-        **settings.DATABASE
-    )
+db_str = "{engine}://{user}:{passwd}@{host}:{port}/{name}".format(
+    **settings.DATABASE)
 
 
 def make_engine():
