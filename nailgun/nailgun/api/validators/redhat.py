@@ -23,25 +23,29 @@ class RedHatAcountValidator(BasicValidator):
         d = cls.validate_json(data)
         if not "license_type" in d:
             raise errors.InvalidData(
-                message="No License Type specified"
+                "No License Type specified",
+                #log_message=True
             )
         if d["license_type"] not in ["rhsm", "rhn"]:
             raise errors.InvalidData(
-                message="Invalid License Type"
+                "Invalid License Type",
+                #log_message=True
             )
         if d["license_type"] == "rhsm":
             if "username" not in d or "password" not in d:
                 raise errors.InvalidData(
-                    message="Username or password not specified"
+                    "Username or password not specified",
+                    #log_message=True
                 )
         else:
             if "hostname" not in d or "activation_key" not in d:
                 raise errors.InvalidData(
-                    message="Satellite hostname or activation key "
-                            "not specified"
+                    "Satellite hostname or activation key not specified",
+                    #log_message=True
                 )
-        if settings.FAKE_TASKS:
-            pass
-        else:
-            # TODO: check Red Hat Account credentials
-            pass
+        #if settings.FAKE_TASKS:
+        #    pass
+        #else:
+        #    # TODO: check Red Hat Account credentials
+        #    pass
+        return d

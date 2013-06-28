@@ -69,9 +69,9 @@ class FakeThread(threading.Thread):
         )
 
 
-class FakeAmpqThread(FakeAmpqThread):
+class FakeAmpqThread(FakeThread):
     def run(self):
-        super(DownloadReleaseThread, self).run()
+        super(FakeAmpqThread, self).run()
         if settings.FAKE_TASKS_AMQP:
             nailgun_exchange = Exchange(
                 'nailgun',

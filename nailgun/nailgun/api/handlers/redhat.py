@@ -31,7 +31,7 @@ class RedHatAccountHandler(JSONHandler):
 
     @content_json
     def POST(self):
-        data = self.validator.validate(web.data())
+        data = self.checked_data()
         # TODO: activate and save status
         task_manager = DownloadReleaseTaskManager(data['release_id'])
         try:
