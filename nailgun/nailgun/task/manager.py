@@ -285,8 +285,8 @@ class DownloadReleaseTaskManager(TaskManager):
     def execute(self):
         logger.debug("Creating release dowload task")
         task = Task(name="download_release")
-        orm().add(task)
-        orm().commit()
+        db().add(task)
+        db().commit()
         self._call_silently(
             task,
             tasks.DownloadReleaseTask,

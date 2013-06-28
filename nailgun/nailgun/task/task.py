@@ -718,6 +718,6 @@ class DownloadReleaseTask(object):
 
         task.cache = message
         task.result = {'release_info': data}
-        orm().add(task)
-        orm().commit()
+        db().add(task)
+        db().commit()
         rpc.cast('naily', message)
