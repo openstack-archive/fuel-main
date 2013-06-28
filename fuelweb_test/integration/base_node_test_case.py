@@ -110,7 +110,8 @@ class BaseNodeTestCase(BaseTestCase):
             remote = SSHClient(
                 node['ip'], username='root', password='r00tme',
                 private_keys=self.get_private_keys())
-            self.assertTrue(remote.isfile('/tmp/%s-file' % role))
+            if role != "cinder":
+                self.assertTrue(remote.isfile('/tmp/%s-file' % role))
 
     @logwrap
     def _basic_provisioning(self, cluster_name, nodes_dict, port=5514):
