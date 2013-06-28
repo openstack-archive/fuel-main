@@ -1,5 +1,5 @@
 #!/bin/bash
-. $(dirname `readlink -f $0`)/review-common.sh
+. $(dirname `readlink -f $0`)/common.sh
 
 license_check
 

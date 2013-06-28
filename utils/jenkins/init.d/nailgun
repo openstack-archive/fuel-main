@@ -1,0 +1,87 @@
+#!/bin/sh
+#
+# nailgun - this script starts and stops the nailgun daemon
+#
+# chkconfig:   - 84 15
+# description:  Nailgun service
+# processname: nailgun
+# pidfile:     /var/run/nailgun.pid
+
+# Source function library.
+. /etc/rc.d/init.d/functions
+
+prog="nailgun"
+
+sysconfig="/etc/sysconfig/$prog"
+pidfile="/var/run/${prog}.pid"
+
+[ -f $sysconfig ] && . $sysconfig
+
+[ -z $WORKSPACE ] && { echo "ERROR: WORKSPACE var is not set. Please set WORKSPACE var pointing to the root of repository"; exit 1; } 
+
+start() {
+    echo -n $"Starting $prog: "
+    su -l jenkins --shell=/bin/bash -c "cd $WORKSPACE/nailgun && nohup python manage.py run -p 8001 --fake-tasks 2>&1 | grep --line-buffered -v -e HTTP -e '^$' >> /var/log/nailgun.log &"
+    retval=$?
+    echo
+    return $retval
+}
+
+stop() {
+    echo -n $"Stopping $prog: "
+    for i in `ps aux|grep 'manage.py run'|grep -v grep|awk '{print $2}'`; do
+         kill -9 $i
+    done
+    retval=$?
+    echo
+    return $retval
+}
+
+restart() {
+    stop
+    start
+}
+
+reload() {
+    echo -n $"Reloading $prog: "
+    killproc -p $pidfile $prog -HUP
+    echo
+}
+
+rh_status() {
+    status $prog
+}
+
+rh_status_q() {
+    rh_status >/dev/null 2>&1
+}
+
+case "$1" in
+    start)
+        $1
+        ;;
+    stop)
+        $1
+        ;;
+    restart|configtest|reopen_logs)
+        $1
+        ;;
+    force-reload|upgrade) 
+        rh_status_q || exit 7
+        upgrade
+        ;;
+    reload)
+        rh_status_q || exit 7
+        $1
+        ;;
+    status|status_q)
+        rh_$1
+        ;;
+    condrestart|try-restart)
+        rh_status_q || exit 7
+        restart
+	    ;;
+    *)
+        echo $"Usage: $0 {start|stop|reload|configtest|status|force-reload|upgrade|restart|reopen_logs}"
+        exit 2
+esac
