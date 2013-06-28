@@ -103,25 +103,29 @@
                             "value": "admin",
                             "label": "username",
                             "description": "Username for Administrator",
-                            "weight": 10
+                            "weight": 10,
+                            "type": "text"
                         },
                         "email": {
                             "value": "admin@example.org",
                             "label": "email",
                             "description": "Email address for Administrator",
-                            "weight": 40
+                            "weight": 40,
+                            "type": "text"
                         },
                         "tenant": {
                             "value": "admin",
                             "label": "tenant",
                             "description": "Tenant (project) name for Administrator",
-                            "weight": 30
+                            "weight": 30,
+                            "type": "text"
                         },
                         "password": {
                             "value": "admin",
                             "label": "password",
                             "description": "Password for Administrator",
-                            "weight": 20
+                            "weight": 20,
+                            "type": "password"
                         }
                     },
                     "common": {
@@ -129,7 +133,8 @@
                             "value": false,
                             "label": "Auto assign floating IP",
                             "description": "If true, OpenStack will automatically assign a floating IP to a new instance",
-                            "weight": 40
+                            "weight": 40,
+                            "type": "checkbox"
                         },
                         "libvirt_type": {
                             "value": "qemu",
@@ -146,19 +151,22 @@
                                 }
                             ],
                             "label": "Hypervisor type",
-                            "weight": 10
+                            "weight": 10,
+                            "type": "radio"
                         },
                         "start_guests_on_host_boot": {
                             "value": true,
                             "label": "Start guests on host boot",
                             "description": "Whether to (re-)start guests when the host reboots. If enabled, this option causes guests assigned to the host to be unconditionally restarted when nova-compute starts. If the guest is found to be stopped, it starts. If it is found to be running, it reboots.",
-                            "weight": 50
+                            "weight": 50,
+                            "type": "checkbox"
                         },
                         "use_cow_images": {
                             "value": true,
                             "label": "Use qcow format for images",
                             "description": "For most cases you will want qcow format. If it's set to false, raw image format will be used to run VMs. OpenStack with raw format currently does not support snapshotting.",
-                            "weight": 30
+                            "weight": 30,
+                            "type": "checkbox"
                         },
                         "compute_scheduler_driver": {
                             "value": "nova.scheduler.filter_scheduler.FilterScheduler",
@@ -175,13 +183,15 @@
                                 }
                             ],
                             "label": "Scheduler driver",
-                            "weight": 20
+                            "weight": 20,
+                            "type": "radio"
                         },
                         "auth_key": {
                             "value": "",
                             "label": "Public Key",
                             "description": "Public key(s) to include in authorized_keys on deployed nodes",
-                            "weight": 60
+                            "weight": 60,
+                            "type": "text"
                         }
                     },
                     "syslog": {
@@ -200,19 +210,22 @@
                                 }
                             ],
                             "label": "Syslog transport protocol",
-                            "weight": 30
+                            "weight": 30,
+                            "type": "radio"
                         },
                         "syslog_server": {
                             "value": "",
                             "label": "Hostname",
                             "description": "Remote syslog hostname",
-                            "weight": 10
+                            "weight": 10,
+                            "type": "text"
                         },
                         "syslog_port": {
                             "value": "514",
                             "label": "Port",
                             "description": "Remote syslog port",
-                            "weight": 20
+                            "weight": 20,
+                            "type": "text"
                         }
                     }
                 },

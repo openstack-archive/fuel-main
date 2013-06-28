@@ -29,95 +29,53 @@ function(utils, models, commonViews, dialogViews, settingsTabTemplate, settingsG
         isLocked: function() {
             return this.model.get('status') != 'new' || !!this.model.task('deploy', 'running');
         },
-        collectData: function() {
-            var data = {};
-            _.each(this.$('legend.openstack-settings'), function(legend) {
-                var param = $(legend).text();
-                data[param] = {};
-                _.each($(legend).next().find('.setting'), function(settingDom) {
-                    var setting = $(settingDom).data('setting');
-                    data[param][setting] = {};
-                    if ($(settingDom).hasClass('openstack-sub-title')) {
-                        data[param][setting].label = $(settingDom).text();
-                        data[param][setting].value = $(settingDom).next().find('input[type=radio]:checked').val();
-                        data[param][setting].weight = $(settingDom).next().find('.weight > input').val();
-                        data[param][setting].values = [];
-                        _.each($(settingDom).next().find('input[type=radio]'), function(input) {
-                            var option = {};
-                            option.data = $(input).val();
-                            option.display_name = $(input).parents('.parameter-control').siblings('.parameter-name').text();
-                            option.description = $(input).parents('.parameter-box').next('.description').text();
-                            data[param][setting].values.push(option);
-                        });
-                    } else {
-                        data[param][setting].label = $(settingDom).find('.openstack-sub-title').text();
-                        data[param][setting].description = $(settingDom).find('.description').text() || $(settingDom).next('.description').text();
-                        data[param][setting].value = $(settingDom).find('input[type=text]').val();
-                        data[param][setting].weight = $(settingDom).find('.weight > input').val();
-                        if ($(settingDom).find('input[type=checkbox]').length) {
-                            data[param][setting].value = !!$(settingDom).find('input[type=checkbox]:checked').length;
-                        }
-                    }
-                });
-            });
-            return data;
-        },
         checkForChanges: function() {
-            var equal = true, data = this.collectData();
-            var previousSettings = this.model.get('settings').get('editable');
-            _.each(_.keys(previousSettings), function(settings) {
-                _.each(_.keys(previousSettings[settings]), function(setting) {
-                    if (previousSettings[settings][setting].value != data[settings][setting].value) {
-                        equal = false;
-                    }
-                });
-            });
+            var equal = _.isEqual(this.settings, this.previousSettings);
             this.defaultButtonsState(equal);
             this.hasChanges = !equal;
         },
         applyChanges: function() {
-            var data = this.collectData();
             this.disableControls();
-            return this.model.get('settings').save({editable: data}, {patch: true, wait: true, url: _.result(this.model, 'url') + '/attributes'})
+            return this.model.get('settings').save({editable: this.settings}, {patch: true, wait: true, url: _.result(this.model, 'url') + '/attributes'})
                 .always(_.bind(function() {
                     this.render();
                     this.model.fetch();
                 }, this))
-                .done(_.bind(function() {
-                    this.hasChanges = false;
-                }, this))
+                .done(_.bind(this.setInitialData, this))
                 .fail(_.bind(function() {
                     this.defaultButtonsState(false);
                     utils.showErrorDialog({title: 'OpenStack Settings'});
                 }, this));
         },
-        parseSettings: function(settings) {
-            this.tearDownRegisteredSubViews();
-            this.$('.settings').html('');
-            _.each(_.keys(settings), function(setting) {
-                var settingsGroupView = new SettingsGroup({legend: setting, settings: settings[setting], tab: this});
-                this.registerSubView(settingsGroupView);
-                this.$('.settings').append(settingsGroupView.render().el);
-            }, this);
-        },
         revertChanges: function() {
-            this.parseSettings(this.model.get('settings').get('editable'));
+            this.settings = _.cloneDeep(this.previousSettings);
             this.hasChanges = false;
-            this.defaultButtonsState(true);
+            this.render();
         },
         loadDefaults: function() {
             var defaults = new models.Settings();
             this.disableControls();
             defaults.fetch({url: _.result(this.model, 'url') + '/attributes/defaults'}).always(_.bind(function() {
-                this.parseSettings(defaults.get('editable'));
+                this.settings = defaults.get('editable');
+                this.render();
                 this.checkForChanges();
             }, this));
         },
+        setInitialData: function() {
+            this.settings = _.cloneDeep(this.model.get('settings').get('editable'));
+            this.previousSettings = _.cloneDeep(this.settings);
+            this.hasChanges = false;
+        },
         render: function() {
+            this.tearDownRegisteredSubViews();
             this.$el.html(this.template({cluster: this.model, locked: this.isLocked()}));
             if (this.model.get('settings').deferred.state() != 'pending') {
-                this.parseSettings(this.model.get('settings').get('editable'));
-                this.hasChanges = false;
+                this.$('.settings').html('');
+                _.each(_.keys(this.settings), function(setting) {
+                    var settingsGroupView = new SettingsGroup({legend: setting, settings: this.settings[setting], tab: this});
+                    this.registerSubView(settingsGroupView);
+                    this.$('.settings').append(settingsGroupView.render().el);
+                }, this);
             }
             return this;
         },
@@ -134,7 +92,13 @@ function(utils, models, commonViews, dialogViews, settingsTabTemplate, settingsG
             if (!this.model.get('settings')) {
                 this.model.set({'settings': new models.Settings()}, {silent: true});
                 this.model.get('settings').deferred = this.model.get('settings').fetch({url: _.result(this.model, 'url') + '/attributes'});
-                this.model.get('settings').deferred.done(_.bind(this.render, this));
+                this.model.get('settings').deferred
+                    .done(_.bind(function() {
+                        this.setInitialData();
+                        this.render();
+                    }, this));
+            } else {
+                this.setInitialData();
             }
         }
     });
@@ -143,10 +107,13 @@ function(utils, models, commonViews, dialogViews, settingsTabTemplate, settingsG
         template: _.template(settingsGroupTemplate),
         className: 'fieldset-group wrapper',
         events: {
-            'keyup input[type=text]': 'checkForChanges',
-            'change input[type=checkbox], input[type=radio]': 'checkForChanges'
+            'keyup input[type=text], input[type=password]': 'makeChanges',
+            'change input[type=checkbox], input[type=radio]': 'makeChanges'
         },
-        checkForChanges: function() {
+        makeChanges: function(e) {
+            var target = $(e.currentTarget);
+            var setting = this.tab.settings[target.parents('.settings-group').data('settings-group')][target.attr('name')];
+            setting.value = setting.type == 'checkbox' ? target.is(':checked') : target.val();
             this.tab.checkForChanges();
         },
         initialize: function(options) {
