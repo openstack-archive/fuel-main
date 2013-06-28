@@ -157,5 +157,20 @@ class TestNode(BaseNodeTestCase):
             for mac in mac_addresses:
                 Ebtables.restore_mac(mac)
 
+    @snapshot_errors
+    @logwrap
+    @fetch_logs
+    def test_simple_cluster_with_cinder(self):
+        cluster_name = 'simple_with_cinder'
+        nodes = {
+            'controller': ['slave-01'],
+            'compute': ['slave-02'],
+            'cinder': ['slave-03']
+        }
+        cluster_id = self._basic_provisioning(cluster_name, nodes)
+        self.assertClusterReady(
+            'slave-01', smiles_count=6, networks_count=1, timeout=300)
+
+
 if __name__ == '__main__':
     unittest.main()
