@@ -59,7 +59,7 @@ def run_server(func, server_address=('0.0.0.0', 8080)):
     global server
     func = StaticMiddleware(func)
     server = WSGIServer(server_address, func)
-    print 'https://%s:%d/' % server_address
+    print 'http://%s:%d/' % server_address
 
     try:
         server.start()
