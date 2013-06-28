@@ -80,6 +80,7 @@ function(models, commonViews, ClusterPage, NodesTab, ClustersPage, ReleasesPage,
             if (app.page && app.page.constructor == ClusterPage && app.page.model.id == id) {
                 // just another tab has been chosen, do not load cluster again
                 cluster = app.page.model;
+                tasks = app.page.tasks;
                 render.call(this);
             } else {
                 cluster = new models.Cluster({id: id});
