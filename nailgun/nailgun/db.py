@@ -17,6 +17,7 @@
 import traceback
 
 import web
+import threading
 from sqlalchemy.orm import scoped_session, sessionmaker
 from sqlalchemy.orm.query import Query
 from sqlalchemy.exc import ProgrammingError
@@ -28,12 +29,37 @@ from nailgun.settings import settings
 db_str = "{engine}://{user}:{passwd}@{host}:{port}/{name}".format(
     **settings.DATABASE)
 
+thread_local_storage = threading.local()
+
+
+def db():
+    """
+    Global db session per thread
+    """
+    if not hasattr(thread_local_storage, 'db'):
+        thread_local_storage.db = make_session(get_engine())
+    return thread_local_storage.db
+
+
+def get_engine():
+    """
+    Global engine per thread
+    """
+    if not hasattr(thread_local_storage, 'db_engine'):
+        thread_local_storage.db_engine = make_engine()
+
+    return thread_local_storage.db_engine
+
 
 def make_engine():
     return create_engine(db_str, client_encoding='utf8')
 
 
-engine = make_engine()
+def make_session(custom_engine=None):
+    session = scoped_session(
+        sessionmaker(
+            bind=(custom_engine or get_engine()), query_cls=NoCacheQuery))
+    return session
 
 
 class NoCacheQuery(Query):
@@ -48,37 +74,23 @@ class NoCacheQuery(Query):
         super(NoCacheQuery, self).__init__(*args, **kwargs)
 
 
-def make_session(custom_engine=None):
-    session = scoped_session(
-        sessionmaker(bind=(custom_engine or engine), query_cls=NoCacheQuery))
-    return session
-
-
-def orm():
-    if not hasattr(web.ctx, "orm"):
-        web.ctx.orm = make_session()
-
-    return web.ctx.orm
-
-
 def load_db_driver(handler):
-    web.ctx.orm = make_session()
     try:
         return handler()
     except web.HTTPError:
-        web.ctx.orm.commit()
+        db().commit()
         raise
     except:
-        web.ctx.orm.rollback()
+        db().rollback()
         raise
     finally:
-        web.ctx.orm.commit()
-        web.ctx.orm.expire_all()
+        db().commit()
+        db().expire_all()
 
 
 def syncdb():
     from nailgun.api.models import Base
-    Base.metadata.create_all(engine)
+    Base.metadata.create_all(get_engine())
 
 
 def dropdb():
@@ -111,7 +123,7 @@ def dropdb():
 def flush():
     import nailgun.api.models as models
     import sqlalchemy.ext.declarative as dec
-    session = scoped_session(sessionmaker(bind=engine))
+    session = scoped_session(sessionmaker(bind=get_engine()))
     for attr in dir(models):
         attr_impl = getattr(models, attr)
         if isinstance(attr_impl, dec.DeclarativeMeta) \
