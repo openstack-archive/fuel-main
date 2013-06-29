@@ -93,10 +93,6 @@ class JSONHandler(object):
 
     fields = []
 
-    def __init__(self, *args, **kwargs):
-        super(JSONHandler, self).__init__(*args, **kwargs)
-        self.db = db()
-
     def checked_data(self, validate_method=None):
         try:
             if validate_method:
@@ -128,11 +124,11 @@ class JSONHandler(object):
         log_404 = kwargs.pop("log_404") if "log_404" in kwargs else None
         log_get = kwargs.pop("log_get") if "log_get" in kwargs else None
         if "id" in kwargs:
-            obj = self.db.query(model).get(kwargs["id"])
+            obj = db().query(model).get(kwargs["id"])
         elif len(args) > 0:
-            obj = self.db.query(model).get(args[0])
+            obj = db().query(model).get(args[0])
         else:
-            obj = self.db.query(model).filter(**kwargs).all()
+            obj = db().query(model).filter(**kwargs).all()
         if not obj:
             if log_404:
                 getattr(logger, log_404[0])(log_404[1])

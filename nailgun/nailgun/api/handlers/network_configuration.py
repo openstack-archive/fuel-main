@@ -18,6 +18,7 @@ import json
 import traceback
 import web
 
+from nailgun.db import db
 from nailgun.logger import logger
 from nailgun.api.validators.network import NetworkConfigurationValidator
 from nailgun.api.models import Cluster
@@ -45,8 +46,8 @@ class NetworkConfigurationVerifyHandler(JSONHandler):
             data = self.validator.validate_networks_update(web.data())
         except web.webapi.badrequest as exc:
             task = Task(name='check_networks', cluster=cluster)
-            self.db.add(task)
-            self.db.commit()
+            db().add(task)
+            db().commit()
             TaskHelper.set_error(task.uuid, exc.data)
             logger.error(traceback.format_exc())
 
@@ -111,7 +112,7 @@ class NetworkConfigurationHandler(JSONHandler):
 
         data = build_json_response(TaskHandler.render(task))
         if task.status == 'error':
-            self.db.rollback()
+            db().rollback()
         else:
-            self.db.commit()
+            db().commit()
         raise web.accepted(data=data)

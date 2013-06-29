@@ -20,6 +20,7 @@ from datetime import datetime
 
 import web
 
+from nailgun.db import db
 from nailgun.notifier import notifier
 from nailgun.logger import logger
 from nailgun.errors import errors
@@ -100,13 +101,13 @@ class NodeHandler(JSONHandler):
                 )
                 logger.warning(traceback.format_exc())
                 notifier.notify("error", msg, node_id=node.id)
-        self.db.commit()
+        db().commit()
         return self.render(node)
 
     def DELETE(self, node_id):
         node = self.get_object_or_404(Node, node_id)
-        self.db.delete(node)
-        self.db.commit()
+        db().delete(node)
+        db().commit()
         raise web.webapi.HTTPError(
             status="204 No Content",
             data=""
@@ -121,13 +122,13 @@ class NodeCollectionHandler(JSONHandler):
     def GET(self):
         user_data = web.input(cluster_id=None)
         if user_data.cluster_id == '':
-            nodes = self.db.query(Node).filter_by(
+            nodes = db().query(Node).filter_by(
                 cluster_id=None).all()
         elif user_data.cluster_id:
-            nodes = self.db.query(Node).filter_by(
+            nodes = db().query(Node).filter_by(
                 cluster_id=user_data.cluster_id).all()
         else:
-            nodes = self.db.query(Node).all()
+            nodes = db().query(Node).all()
         return map(NodeHandler.render, nodes)
 
     @content_json
@@ -142,8 +143,8 @@ class NodeCollectionHandler(JSONHandler):
                 setattr(node, key, value)
         node.name = "Untitled (%s)" % data['mac'][-5:]
         node.timestamp = datetime.now()
-        self.db.add(node)
-        self.db.commit()
+        db().add(node)
+        db().commit()
         node.attributes = NodeAttributes()
 
         try:
@@ -163,8 +164,8 @@ class NodeCollectionHandler(JSONHandler):
             )
             logger.warning(traceback.format_exc())
             notifier.notify("error", msg, node_id=node.id)
-        self.db.add(node)
-        self.db.commit()
+        db().add(node)
+        db().commit()
 
         network_manager = NetworkManager()
         # Add interfaces for node from 'meta'.
@@ -198,7 +199,7 @@ class NodeCollectionHandler(JSONHandler):
         )
 
         network_manager = NetworkManager()
-        q = self.db.query(Node)
+        q = db().query(Node)
         nodes_updated = []
         for nd in data:
             is_agent = nd.pop("is_agent") if "is_agent" in nd else False
@@ -216,7 +217,7 @@ class NodeCollectionHandler(JSONHandler):
                         node.human_readable_name)
                     logger.info(msg)
                     notifier.notify("discover", msg, node_id=node.id)
-                self.db.commit()
+                db().commit()
             if nd.get("cluster_id") is None and node.cluster:
                 node.cluster.clear_pending_changes(node_id=node.id)
             old_cluster_id = node.cluster_id
@@ -233,14 +234,14 @@ class NodeCollectionHandler(JSONHandler):
                     node.update_meta(value)
                 else:
                     setattr(node, key, value)
-            self.db.commit()
+            db().commit()
             if not node.attributes:
                 node.attributes = NodeAttributes()
-                self.db.commit()
+                db().commit()
             if not node.attributes.volumes:
                 node.attributes.volumes = \
                     node.volume_manager.gen_volumes_info()
-                self.db.commit()
+                db().commit()
             if not node.status in ('provisioning', 'deploying'):
                 variants = (
                     "disks" in node.meta and
@@ -273,7 +274,7 @@ class NodeCollectionHandler(JSONHandler):
                         logger.warning(traceback.format_exc())
                         notifier.notify("error", msg, node_id=node.id)
 
-                self.db.commit()
+                db().commit()
             if is_agent:
                 # Update node's NICs.
                 if node.meta and 'interfaces' in node.meta:
@@ -281,7 +282,7 @@ class NodeCollectionHandler(JSONHandler):
                     network_manager.update_interfaces_info(node.id)
 
             nodes_updated.append(node)
-            self.db.commit()
+            db().commit()
             if 'cluster_id' in nd and nd['cluster_id'] != old_cluster_id:
                 if old_cluster_id:
                     network_manager.clear_assigned_networks(node.id)
@@ -323,7 +324,7 @@ class NodeAttributesHandler(JSONHandler):
             return web.notfound()
         for key, value in data.iteritems():
             setattr(node_attrs, key, value)
-        self.db.commit()
+        db().commit()
         return self.render(node_attrs)
 
 
@@ -361,7 +362,7 @@ class NodeAttributesDefaultsHandler(JSONHandler):
                 "disks",
                 node_id=node.id
             )
-        self.db.commit()
+        db().commit()
         return self.render(node.attributes)
 
 
@@ -471,32 +472,12 @@ class NodeNICsHandler(JSONHandler):
         node = self.get_object_or_404(Node, node_id)
         return self.render(node)['interfaces']
 
-    # @content_json
-    # def PUT(self, node_id):
-    #     data = self.validator.validate_json(web.data())
-    #     node = {'id': node_id, 'interfaces': data}
-    #     data = self.validator.validate(node)
-    #     self.update_attributes(node)
-
 
 class NodeCollectionNICsHandler(JSONHandler):
 
     model = NetworkGroup
     validator = NetAssignmentValidator
     fields = NodeNICsHandler.fields
-
-        # @content_json
-        # def GET(self):
-        #     user_data = web.input(cluster_id=None)
-        #     if user_data.cluster_id == '':
-        #         nodes = self.db.query(Node).filter_by(
-        #             cluster_id=None).all()
-        #     elif user_data.cluster_id:
-        #         nodes = self.db.query(Node).filter_by(
-        #             cluster_id=user_data.cluster_id).all()
-        #     else:
-        #         nodes = self.db.query(Node).all()
-        #     return map(self.render, nodes)
 
     @content_json
     def PUT(self):
@@ -507,7 +488,7 @@ class NodeCollectionNICsHandler(JSONHandler):
             self.validator.verify_data_correctness(node_data)
             node_id = network_manager._update_attrs(node_data)
             updated_nodes_ids.append(node_id)
-        updated_nodes = self.db.query(Node).filter(
+        updated_nodes = db().query(Node).filter(
             Node.id.in_(updated_nodes_ids)
         ).all()
         return map(self.render, updated_nodes)
@@ -538,7 +519,7 @@ class NodeNICsDefaultHandler(JSONHandler):
                 nic.id
             )
             for ng_id in assigned_ng_ids:
-                ng = self.db.query(NetworkGroup).get(ng_id)
+                ng = db().query(NetworkGroup).get(ng_id)
                 nic_dict.setdefault("assigned_networks", []).append(
                     {"id": ng_id, "name": ng.name}
                 )
@@ -548,7 +529,7 @@ class NodeNICsDefaultHandler(JSONHandler):
                 nic.id
             )
             for ng_id in allowed_ng_ids:
-                ng = self.db.query(NetworkGroup).get(ng_id)
+                ng = db().query(NetworkGroup).get(ng_id)
                 nic_dict.setdefault("allowed_networks", []).append(
                     {"id": ng_id, "name": ng.name}
                 )
@@ -578,11 +559,6 @@ class NodeCollectionNICsDefaultHandler(NodeNICsDefaultHandler):
             rendered_node = self.get_default(self.render(node))
             def_net_nodes.append(rendered_node)
         return map(self.render, nodes)
-
-    # @content_json
-    # def PUT(self):
-    #     data = self.validator.validate_collection_structure(web.data())
-    #     self.update_collection_attributes(data)
 
 
 class NodeNICsVerifyHandler(JSONHandler):

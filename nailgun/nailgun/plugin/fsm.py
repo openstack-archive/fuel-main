@@ -90,7 +90,7 @@ events = [
 
 
 class PluginFSM(Fysom):
-    def __init__(self, plugin_id, current_state, db=None):
+    def __init__(self, plugin_id, current_state):
         Fysom.__init__(self, {
             'initial': current_state,
             'events': events,
@@ -100,7 +100,6 @@ class PluginFSM(Fysom):
             }
         })
 
-        self.db = db()
         self.plugin_id = plugin_id
         self.current_state = current_state
         self.onchangestate = self._onchangestate
@@ -111,7 +110,7 @@ class PluginFSM(Fysom):
 
     @property
     def plugin(self):
-        return self.db.query(Plugin).get(self.plugin_id)
+        return db().query(Plugin).get(self.plugin_id)
 
     def _onchangestate(self, event):
         logger.debug(
@@ -119,7 +118,7 @@ class PluginFSM(Fysom):
             (self.plugin.name, event.src, event.dst))
 
         self.plugin.state = event.dst
-        self.db.commit()
+        db().commit()
 
     def install(self, event):
         # Downloading

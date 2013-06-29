@@ -19,6 +19,7 @@ import traceback
 import web
 import netaddr
 
+from nailgun.db import db
 from nailgun.settings import settings
 from nailgun.logger import logger
 from nailgun.errors import errors
@@ -80,7 +81,7 @@ class ClusterHandler(JSONHandler):
         for key, value in data.iteritems():
             if key == "nodes":
                 # Todo: sepatate nodes for deletion and addition by set().
-                new_nodes = self.db.query(Node).filter(
+                new_nodes = db().query(Node).filter(
                     Node.id.in_(value)
                 )
                 nodes_to_remove = [n for n in cluster.nodes
@@ -103,7 +104,7 @@ class ClusterHandler(JSONHandler):
                     network_manager.assign_networks_to_main_interface(node.id)
             else:
                 setattr(cluster, key, value)
-        self.db.commit()
+        db().commit()
         return self.render(cluster)
 
     @content_json
@@ -132,7 +133,7 @@ class ClusterCollectionHandler(JSONHandler):
     def GET(self):
         return map(
             ClusterHandler.render,
-            self.db.query(Cluster).all()
+            db().query(Cluster).all()
         )
 
     @content_json
@@ -141,13 +142,13 @@ class ClusterCollectionHandler(JSONHandler):
         data = self.checked_data()
 
         cluster = Cluster()
-        cluster.release = self.db.query(Release).get(data["release"])
+        cluster.release = db().query(Release).get(data["release"])
         # TODO: use fields
         for field in ('name', 'mode', 'net_manager'):
             if data.get(field):
                 setattr(cluster, field, data.get(field))
-        self.db.add(cluster)
-        self.db.commit()
+        db().add(cluster)
+        db().commit()
         attributes = Attributes(
             editable=cluster.release.attributes_metadata.get("editable"),
             generated=cluster.release.attributes_metadata.get("generated"),
@@ -163,11 +164,11 @@ class ClusterCollectionHandler(JSONHandler):
             cluster.add_pending_changes("networks")
 
             if 'nodes' in data and data['nodes']:
-                nodes = self.db.query(Node).filter(
+                nodes = db().query(Node).filter(
                     Node.id.in_(data['nodes'])
                 ).all()
                 map(cluster.nodes.append, nodes)
-                self.db.commit()
+                db().commit()
                 for node in nodes:
                     netmanager.allow_network_assignment_to_all_interfaces(
                         node.id
@@ -187,7 +188,7 @@ class ClusterCollectionHandler(JSONHandler):
             # so we no need to use ClusterDeletionManager.
             # All relations wiil be cascade deleted automaticly.
             # TODO: investigate transactions
-            self.db.delete(cluster)
+            db().delete(cluster)
 
             raise web.badrequest(e.message)
 
@@ -254,7 +255,7 @@ class ClusterAttributesHandler(JSONHandler):
             setattr(cluster.attributes, key, value)
         cluster.add_pending_changes("attributes")
 
-        self.db.commit()
+        db().commit()
         return {"editable": cluster.attributes.editable}
 
 
@@ -291,7 +292,7 @@ class ClusterAttributesDefaultsHandler(JSONHandler):
         cluster.attributes.editable = cluster.release.attributes_metadata.get(
             "editable"
         )
-        self.db.commit()
+        db().commit()
         cluster.add_pending_changes("attributes")
 
         logger.debug('ClusterAttributesDefaultsHandler:'

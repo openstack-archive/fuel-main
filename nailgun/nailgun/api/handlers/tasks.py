@@ -18,6 +18,7 @@ import json
 
 import web
 
+from nailgun.db import db
 from nailgun.api.models import Task
 from nailgun.api.handlers.base import JSONHandler, content_json
 
@@ -45,9 +46,9 @@ class TaskHandler(JSONHandler):
         if task.status not in ("ready", "error"):
             raise web.badrequest("You cannot delete running task manually")
         for subtask in task.subtasks:
-            self.db.delete(subtask)
-        self.db.delete(task)
-        self.db.commit()
+            db().delete(subtask)
+        db().delete(task)
+        db().commit()
         raise web.webapi.HTTPError(
             status="204 No Content",
             data=""
@@ -60,13 +61,13 @@ class TaskCollectionHandler(JSONHandler):
     def GET(self):
         user_data = web.input(cluster_id=None)
         if user_data.cluster_id == '':
-            tasks = self.db.query(Task).filter_by(
+            tasks = db().query(Task).filter_by(
                 cluster_id=None).all()
         elif user_data.cluster_id:
-            tasks = self.db.query(Task).filter_by(
+            tasks = db().query(Task).filter_by(
                 cluster_id=user_data.cluster_id).all()
         else:
-            tasks = self.db.query(Task).all()
+            tasks = db().query(Task).all()
         return map(
             TaskHandler.render,
             tasks

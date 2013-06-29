@@ -19,6 +19,7 @@ import logging
 
 import web
 
+from nailgun.db import db
 from nailgun.api.models import Notification
 from nailgun.api.validators.notification import NotificationValidator
 from nailgun.api.handlers.base import JSONHandler, content_json
@@ -63,8 +64,8 @@ class NotificationHandler(JSONHandler):
         data = self.validator.validate_update(web.data())
         for key, value in data.iteritems():
             setattr(notification, key, value)
-        self.db.add(notification)
-        self.db.commit()
+        db().add(notification)
+        db().commit()
         return self.render(notification)
 
 
@@ -75,7 +76,7 @@ class NotificationCollectionHandler(JSONHandler):
     @content_json
     def GET(self):
         user_data = web.input(cluster_id=None)
-        query = self.db.query(Notification)
+        query = db().query(Notification)
         if user_data.cluster_id:
             query = query.filter_by(cluster_id=user_data.cluster_id)
         # Temporarly limit notifications number to prevent bloating UI by
@@ -92,15 +93,15 @@ class NotificationCollectionHandler(JSONHandler):
     @content_json
     def PUT(self):
         data = self.validator.validate_collection_update(web.data())
-        q = self.db.query(Notification)
+        q = db().query(Notification)
         notifications_updated = []
         for nd in data:
             notification = q.get(nd["id"])
             for key, value in nd.iteritems():
                 setattr(notification, key, value)
             notifications_updated.append(notification)
-            self.db.add(notification)
-        self.db.commit()
+            db().add(notification)
+        db().commit()
         return map(
             NotificationHandler.render,
             notifications_updated

@@ -44,7 +44,6 @@ class PluginThread(threading.Thread):
     def __init__(self):
         threading.Thread.__init__(self)
         self._stop = threading.Event()
-        self.db = db()
         self.queue = get_queue()
 
         from nailgun.plugin.manager import PluginManager
@@ -73,8 +72,8 @@ class PluginThread(threading.Thread):
                 time.sleep(1)
 
     def set_error(self, task_uuid, msg):
-        self.db.query(Task).filter_by(uuid=task_uuid).update({
+        db().query(Task).filter_by(uuid=task_uuid).update({
             'status': 'error',
             'progress': 100,
             'message': str(msg)})
-        self.db.commit()
+        db().commit()
