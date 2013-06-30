@@ -23,6 +23,7 @@ from nailgun.api.models import NodeNICInterface
 from nailgun.logger import logger
 from nailgun.db import db
 
+
 class TopoChecker(object):
     @classmethod
     def _is_assignment_allowed_for_node(cls, node):
