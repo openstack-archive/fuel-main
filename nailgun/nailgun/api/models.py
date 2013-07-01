@@ -46,7 +46,7 @@ class Release(Base):
         UniqueConstraint('name', 'version'),
     )
     STATES = (
-        'not available',
+        'not_available',
         'downloading',
         'available'
     )
@@ -56,7 +56,7 @@ class Release(Base):
     description = Column(Unicode)
     state = Column(Enum(*STATES, name='release_state'),
                    nullable=False,
-                   default='not available')
+                   default='not_available')
     networks_metadata = Column(JSON, default=[])
     attributes_metadata = Column(JSON, default={})
     volumes_metadata = Column(JSON, default={})

@@ -722,10 +722,11 @@ class DownloadReleaseTask(object):
         task.result = {'release_info': data}
         db().add(task)
         db().commit()
+        cls.__update_release_status(data['release_id'])
         rpc.cast('naily', message)
 
     @classmethod
-    def __update_reloase_status():
+    def __update_release_status(cls, release_id):
         release = db().query(Release).get(release_id)
         release.status = 'downloading'
         db().commit()
