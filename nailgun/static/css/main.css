@@ -914,6 +914,14 @@ h6.page-title {
 .tab-logs-good   {background: url(../img/tab_icons.png) no-repeat -30px -120px;}
 .tab-logs-bad    {background: url(../img/tab_icons.png) no-repeat -60px -120px;}
 
+.tab-redhat-normal {background: url(../img/tab_icons.png) no-repeat   0px -150px;}
+.tab-redhat-good   {background: url(../img/tab_icons.png) no-repeat -30px -150px;}
+.tab-redhat-bad    {background: url(../img/tab_icons.png) no-repeat -60px -150px;}
+
+.tab-healthcheck-normal {background: url(../img/tab_icons.png) no-repeat   0px -180px;}
+.tab-healthcheck-good   {background: url(../img/tab_icons.png) no-repeat -30px -180px;}
+.tab-healthcheck-bad    {background: url(../img/tab_icons.png) no-repeat -60px -180px;}
+
 .nav-tabs li a:hover {
   border-color: #404c5c #404c5c #404c5c;
   background-image: -webkit-linear-gradient(bottom, #b8b8b8, #e8e8e8 30%);
