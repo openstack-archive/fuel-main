@@ -21,7 +21,7 @@ from datetime import datetime
 import web
 
 from nailgun.db import db
-from nailgun.notifier import notifier
+from nailgun import notifier
 from nailgun.logger import logger
 from nailgun.errors import errors
 from nailgun.api.models import Node

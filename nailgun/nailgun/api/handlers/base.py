@@ -24,7 +24,7 @@ import netaddr
 
 import nailgun.rpc as rpc
 from nailgun.db import db
-from nailgun.notifier import notifier
+from nailgun import notifier
 from nailgun.settings import settings
 from nailgun.errors import errors
 from nailgun.logger import logger

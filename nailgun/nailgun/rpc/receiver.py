@@ -34,7 +34,7 @@ from nailgun.task.helpers import TaskHelper
 from nailgun.api.models import Node, Network, NetworkGroup
 from nailgun.api.models import IPAddr, Task
 from nailgun.api.models import Release
-from nailgun.notifier import notifier
+from nailgun import notifier
 
 
 class TaskNotFound(Exception):

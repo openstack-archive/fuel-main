@@ -22,7 +22,7 @@ from nailgun.rpc import receiver as rcvr
 from nailgun.test.base import BaseHandlers
 from nailgun.api.models import Node, Task, Notification
 from nailgun.test.base import reverse
-from nailgun.notifier import notifier
+from nailgun import notifier
 
 
 class TestNotification(BaseHandlers):

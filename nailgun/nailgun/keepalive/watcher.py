@@ -21,7 +21,7 @@ from datetime import datetime
 from itertools import repeat
 from sqlalchemy.sql import not_
 
-from nailgun.notifier import notifier
+from nailgun import notifier
 from nailgun.db import db
 from nailgun.settings import settings
 from nailgun.api.models import Node

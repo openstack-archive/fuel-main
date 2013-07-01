@@ -27,7 +27,7 @@ from sqlalchemy.orm import object_mapper, ColumnProperty
 from nailgun.settings import settings
 from nailgun.logger import logger
 from nailgun.errors import errors
-from nailgun.notifier import notifier
+from nailgun import notifier
 from nailgun.api.models import Network, Node, NodeAttributes
 from nailgun.network.manager import NetworkManager
 from nailgun.rpc.receiver import NailgunReceiver
