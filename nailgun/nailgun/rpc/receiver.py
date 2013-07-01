@@ -537,7 +537,7 @@ class NailgunReceiver(object):
                             data = {'uid': node['uid'],
                                     'interface': received_network['iface'],
                                     'absent_vlans': vlans_data}
-                            node_db = cls.db.query(Node).get(node['uid'])
+                            node_db = db().query(Node).get(node['uid'])
                             if node_db:
                                 data['name'] = node_db.name
                                 db_nics = filter(
