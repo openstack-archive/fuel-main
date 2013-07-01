@@ -21,9 +21,6 @@ from setuptools import setup
 from setuptools import find_packages
 
 
-# here = os.path.abspath(os.path.dirname(__file__))
-# README = open(os.path.join(here, 'README.txt')).read()
-
 requires = [
     'Jinja2==2.7',
     'Paste==1.7.5.1',
@@ -43,7 +40,8 @@ requires = [
     'web.py==0.37',
     'wsgilog==0.3',
     'wsgiref==0.1.2',
-    # 'cobbler',
+    'fysom==1.0.11',
+    'jsonschema==2.0.0',
 ]
 
 major_version = '0.1'
