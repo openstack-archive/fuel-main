@@ -15,21 +15,9 @@ function license_check {
 
 function nailgun_checks {
     cd $WORKSPACE/local_repo/nailgun
-    sudo service nailgun stop || :  # FIXME: let's remove fake UI completely from Jenkins master node
 
     # ***** Running Python unit tests, includes pep8 check of nailgun *****
     ./run_tests.sh --with-xunit  # --no-ui-tests
-
-    # Cleaning database
-    /usr/bin/psql -U postgres -c "drop database nailgun;"
-    /usr/bin/psql -U postgres -c "create database nailgun owner nailgun;"
-
-    # Loading data
-    ./manage.py syncdb --noinput
-    ./manage.py loaddefault
-    ./manage.py loaddata nailgun/fixtures/sample_environment.json
-
-    sudo service nailgun start || :
 }
 
 function ruby_checks {
