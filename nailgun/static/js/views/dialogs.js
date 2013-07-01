@@ -75,7 +75,7 @@ function(require, utils, models, simpleMessageTemplate, createClusterDialogTempl
             'change select[name=release]': 'updateReleaseParameters'
         },
         applyRhelCredentials: function() {
-            if (!this.releases.get(this.releaseId).get('available')) {
+            if (this.releases.get(this.releaseId).get('state') !== 'available') {
                 var deferred = this.rhelCredentialsForm.applyCredentials();
                 if (deferred) {
                     this.$('.create-cluster-btn').attr('disabled', true);

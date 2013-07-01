@@ -45,11 +45,18 @@ class Release(Base):
     __table_args__ = (
         UniqueConstraint('name', 'version'),
     )
+    STATES = (
+        'not available',
+        'downloading',
+        'available'
+    )
     id = Column(Integer, primary_key=True)
     name = Column(Unicode(100), nullable=False)
     version = Column(String(30), nullable=False)
     description = Column(Unicode)
-    available = Column(Boolean, default=False)
+    state = Column(Enum(*STATES, name='release_state'),
+                   nullable=False,
+                   default='not available')
     networks_metadata = Column(JSON, default=[])
     attributes_metadata = Column(JSON, default={})
     volumes_metadata = Column(JSON, default={})

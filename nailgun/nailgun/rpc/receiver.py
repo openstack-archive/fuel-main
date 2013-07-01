@@ -563,14 +563,17 @@ class NailgunReceiver(object):
     def download_release_resp(cls, **kwargs):
         logger.info("RPC method download_release_resp received: %s" % kwargs)
         task_uuid = kwargs.get('task_uuid')
-        nodes = kwargs.get('nodes')
         error_msg = kwargs.get('error')
         status = kwargs.get('status')
         progress = kwargs.get('progress')
+        release_info = kwargs.get('release_info')
         if progress == 100:
-            release_info = kwargs.get('release_info')
-            release = db().query(Release).get(release_info['release_id'])
-            release.available = True
-            db().commit()
+            cls._download_release_completed(release_info['release_id'])
         TaskHelper.update_task_status(task_uuid, status,
                                       progress, error_msg)
+
+    @classmethod
+    def _download_release_completed(cls, release_id):
+        release = db().query(Release).get(release_id)
+        release.status = 'available'
+        db().commit()

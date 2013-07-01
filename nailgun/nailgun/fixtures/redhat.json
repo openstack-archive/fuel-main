@@ -6,7 +6,7 @@
             "name": "OpenStack RHOS 3.0 on RHEL 6.4",
             "version": "2013.1.2",
             "description": "This option will install the Red Hat OpenStack distribution using RHEL as a base operating system. With high availability features built in, you are getting a robust, enterprise-grade OpenStack deployment.",
-            "available": false,
+            "state": "not available",
             "networks_metadata": [
                 {"name": "floating", "access": "public"},
                 {"name": "public", "access": "public"},
