@@ -24,11 +24,12 @@ define(
     'views/cluster_page_tabs/settings_tab',
     'views/cluster_page_tabs/logs_tab',
     'views/cluster_page_tabs/actions_tab',
+    'views/cluster_page_tabs/healthcheck_tab',
     'text!templates/cluster/page.html',
     'text!templates/cluster/deployment_result.html',
     'text!templates/cluster/deployment_control.html'
 ],
-function(utils, models, commonViews, dialogViews, NodesTab, NetworkTab, SettingsTab, LogsTab, ActionsTab, clusterPageTemplate, deploymentResultTemplate, deploymentControlTemplate) {
+function(utils, models, commonViews, dialogViews, NodesTab, NetworkTab, SettingsTab, LogsTab, ActionsTab, HealthCheckTab, clusterPageTemplate, deploymentResultTemplate, deploymentControlTemplate) {
     'use strict';
     var ClusterPage, DeploymentResult, DeploymentControl;
 
@@ -40,7 +41,7 @@ function(utils, models, commonViews, dialogViews, NodesTab, NetworkTab, Settings
         title: function() {
             return this.model.get('name');
         },
-        tabs: ['nodes', 'network', 'settings', 'logs', 'actions'],
+        tabs: ['nodes', 'network', 'settings', 'logs', 'actions', 'healthcheck'],
         updateInterval: 5000,
         template: _.template(clusterPageTemplate),
         events: {
@@ -208,7 +209,8 @@ function(utils, models, commonViews, dialogViews, NodesTab, NetworkTab, Settings
                 'network': NetworkTab,
                 'settings': SettingsTab,
                 'actions': ActionsTab,
-                'logs': LogsTab
+                'logs': LogsTab,
+                'healthcheck': HealthCheckTab
             };
             if (_.has(tabs, this.activeTab)) {
                 this.tab = new tabs[this.activeTab]({model: this.model, tabOptions: this.tabOptions, page: this});
