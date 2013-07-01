@@ -134,7 +134,7 @@ function(require, utils, models, simpleMessageTemplate, createClusterDialogTempl
             if (this.releases.length) {
                 this.releaseId = parseInt(this.$('select[name=release]').val(), 10);
                 var release = this.releases.get(this.releaseId);
-                this.$('.rhel-license').toggle(!release.get('available'));
+                this.$('.rhel-license').toggle(release.get('state') !== 'available');
                 this.$('.release-description').text(release.get('description'));
             }
         },
