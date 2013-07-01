@@ -21,6 +21,10 @@ class RedHatAcountValidator(BasicValidator):
     @classmethod
     def validate(cls, data):
         d = cls.validate_json(data)
+        if not "release_id" in d:
+            raise errors.InvalidData(
+                "No Release ID specified",
+            )
         if not "license_type" in d:
             raise errors.InvalidData(
                 "No License Type specified",
