@@ -30,6 +30,7 @@ from nailgun.test.base import BaseHandlers
 from nailgun.test.base import reverse
 from nailgun.test.base import fake_tasks
 from nailgun.api.models import Cluster, Attributes, Task, Notification, Node
+from nailgun.api.models import Release
 
 
 class TestTaskManagers(BaseHandlers):
@@ -613,3 +614,14 @@ class TestTaskManagers(BaseHandlers):
         supertask = self.env.launch_deployment()
         self.env.wait_ready(supertask, timeout=5)
         self.assertEquals(self.env.db.query(Node).count(), 0)
+
+    @fake_tasks()
+    def test_download_release(self):
+        release = self.env.create_release()
+        self.assertEquals(release.state, 'not_available')
+        task = self.env.download_release(release.id, True)
+        release = self.db.query(Release).get(release.id)
+        self.assertEquals(release.state, 'downloading')
+        self.env.wait_ready(task, timeout=5)
+        release = self.db.query(Release).get(release.id)
+        self.assertEquals(release.state, 'available')

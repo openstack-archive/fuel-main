@@ -38,6 +38,7 @@ from nailgun.api.models import NetworkGroup
 from nailgun.api.models import Node
 from nailgun.api.models import Cluster
 from nailgun.api.models import IPAddr
+from nailgun.api.models import Release
 from nailgun.task.fake import FAKE_THREADS
 from nailgun.errors import errors
 from nailgun.task.helpers import TaskHelper
@@ -722,11 +723,11 @@ class DownloadReleaseTask(object):
         task.result = {'release_info': data}
         db().add(task)
         db().commit()
-        cls.__update_release_status(data['release_id'])
+        cls.__update_release_state(data['release_id'])
         rpc.cast('naily', message)
 
     @classmethod
-    def __update_release_status(cls, release_id):
+    def __update_release_state(cls, release_id):
         release = db().query(Release).get(release_id)
-        release.status = 'downloading'
+        release.state = 'downloading'
         db().commit()

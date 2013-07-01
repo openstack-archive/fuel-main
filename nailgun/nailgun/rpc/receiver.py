@@ -575,7 +575,7 @@ class NailgunReceiver(object):
     @classmethod
     def _download_release_completed(cls, release_id):
         release = db().query(Release).get(release_id)
-        release.status = 'available'
+        release.state = 'available'
         db().commit()
         success_msg = u"Successfully downloaded {0}".format(
             release.name
