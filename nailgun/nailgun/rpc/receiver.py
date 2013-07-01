@@ -577,3 +577,7 @@ class NailgunReceiver(object):
         release = db().query(Release).get(release_id)
         release.status = 'available'
         db().commit()
+        success_msg = u"Successfully downloaded {0}".format(
+            release.name
+        )
+        notifier.notify("done", success_msg)
