@@ -58,10 +58,15 @@ echo "bootloader --location=mbr --driveorder=\$(basename `readlink -f /dev/$spac
             ## Parsing logical volumes
             #if $space_type == "vg" and $volume_type == "lv"
                 #set $volume_mount = $volume.get("mount")
+                ## getting volume size in MB
                 #set $volume_size = $int($volume.get("size") or 0) / 1024 ** 2
                 #set $volume_name = $volume.get("name")
-                #if $volume_size > 0
+                ## volume_size is less than 12TB
+                #if $volume_size > 0 and $volume_size <= 12582912
                     $logical_volumes.append("logvol %s --vgname=%s --size=%s --name=%s" % ($volume_mount, $space_id, $volume_size, $volume_name))
+                ## volume_size is more than 12TB, using xfs file system
+                #else
+                    $logical_volumes.append("logvol %s --vgname=%s --size=%s --name=%s --fstype=xfs" % ($volume_mount, $space_id, $volume_size, $volume_name))
                 #end if
             #end if
             ##
