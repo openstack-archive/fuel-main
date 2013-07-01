@@ -14,6 +14,8 @@ function license_check {
 }
 
 function nailgun_checks {
+    # Installing nailgun dependencies
+    pip install -r $WORKSPACE/local_repo/requirements-eggs.txt
     cd $WORKSPACE/local_repo/nailgun
 
     # ***** Running Python unit tests, includes pep8 check of nailgun *****
