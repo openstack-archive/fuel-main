@@ -325,7 +325,7 @@ define(function() {
             }
             return false;
         },
-        validate: function(attrs) {
+        validate: function(attrs, options) {
             var errors = {};
             var match;
             _.each(this.getAttributes(), _.bind(function(attribute) {
@@ -381,15 +381,7 @@ define(function() {
                         errors.cidr = 'Invalid CIDR';
                     }
                 } else if (attribute == 'vlan_start') {
-                    if (!_.isNull(attrs.vlan_start)) {
-                        if (_.isString(attrs.vlan_start)) {
-                            match = attrs.vlan_start.match(/^[0-9]+$/);
-                            if (match) {
-                                attrs.vlan_start = parseInt(match[0], 10);
-                            } else {
-                                errors.vlan_start = 'Invalid VLAN ID';
-                            }
-                        }
+                    if (!_.isNull(attrs.vlan_start) || (attrs.name == 'fixed' && options.net_manager == 'VlanManager')) {
                         if (_.isNaN(attrs.vlan_start) || !_.isNumber(attrs.vlan_start) || attrs.vlan_start < 1 || attrs.vlan_start > 4094) {
                             errors.vlan_start = 'Invalid VLAN ID';
                         }
@@ -399,18 +391,9 @@ define(function() {
                 } else if (attribute == 'gateway' && this.validateIP(attrs.gateway)) {
                     errors.gateway = 'Invalid gateway';
                 } else if (attribute == 'amount') {
-                    if (_.isString(attrs.amount)) {
-                        match = attrs.amount.match(/^[0-9]+$/);
-                        if (match) {
-                            attrs.amount = parseInt(match[0], 10);
-                        } else {
-                            errors.amount = 'Invalid amount of networks';
-                        }
-                    }
                     if (!attrs.amount || (attrs.amount && (!_.isNumber(attrs.amount) || attrs.amount < 1))) {
                         errors.amount = 'Invalid amount of networks';
-                    }
-                    if (attrs.amount && attrs.amount > 4095 - attrs.vlan_start) {
+                    } else if (attrs.amount && attrs.amount > 4095 - attrs.vlan_start) {
                         errors.amount = 'Number of networks needs more VLAN IDs than available. Check VLAN ID Range field.';
                     }
                 }

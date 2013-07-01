@@ -17,7 +17,7 @@ function(utils, models, commonViews, dialogViews, networkTabTemplate, networkTem
         updateInterval: 3000,
         hasChanges: false,
         events: {
-            'click .net-manager input:not([checked])': 'changeManager',
+            'change .net-manager input': 'changeManager',
             'click .verify-networks-btn:not([disabled])': 'verifyNetworks',
             'click .btn-revert-changes:not([disabled])': 'revertChanges',
             'click .apply-btn:not([disabled])': 'applyChanges'
@@ -46,6 +46,7 @@ function(utils, models, commonViews, dialogViews, networkTabTemplate, networkTem
             this.networkConfiguration.get('networks').findWhere({name: 'fixed'}).set({amount: this.$(e.currentTarget).val() == 'VlanManager' ? this.fixedAmount : 1});
             this.renderNetworks();
             this.checkForChanges();
+            this.networkConfiguration.get('networks').invoke('set', {}, {validate: true, net_manager: this.networkConfiguration.get('net_manager')}); // trigger validation check
             this.page.removeVerificationTask();
         },
         updateFloatingVlanFromPublic: function() {
@@ -257,9 +258,12 @@ function(utils, models, commonViews, dialogViews, networkTabTemplate, networkTem
                 vlan_start: fixedNetworkOnVlanManager || this.$('.use-vlan-tagging:checked').length ? Number(this.$('.vlan_start input').val()) : null,
                 netmask: this.$('.netmask input').val(),
                 gateway: this.$('.gateway input').val(),
-                amount: fixedNetworkOnVlanManager ? parseInt(this.$('input[name=fixed-amount]').val(), 10) : 1,
-                network_size: fixedNetworkOnVlanManager ? parseInt(this.$('.network_size select').val(), 10) : utils.calculateNetworkSize(this.$('.cidr input').val())
-            }, {validate: true});
+                amount: fixedNetworkOnVlanManager ? Number(this.$('input[name=fixed-amount]').val()) : 1,
+                network_size: fixedNetworkOnVlanManager ? Number(this.$('.network_size select').val()) : utils.calculateNetworkSize(this.$('.cidr input').val())
+            }, {
+                validate: true,
+                net_manager: this.tab.networkConfiguration.get('net_manager')
+            });
         },
         setIPRangeFocus: function(e) {
             this.$(e.currentTarget).next().find('input:first').focus();
