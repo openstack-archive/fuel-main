@@ -81,6 +81,10 @@ h6.page-title {
   display: inline-block;
 }
 
+.page-sub-title {margin-top: 10px; margin-bottom: 19px;}
+.page-sub-title .select-all {margin-top: 12px;}
+.page-sub-title .action-btn {margin-top: 7px;}
+
 .container,
 #footer,
 .navbar-static-top .container,
@@ -4118,3 +4122,14 @@ label.show-password {
   margin-left: 120px;
   margin-bottom: 30px;
 }
+
+/* OpenStack Health Check */
+.healthcheck-table {margin: 0px 0px 30px 0px; }
+.healthcheck-name {font-size: 15px; margin: 2px 0px 8px 0px;}
+.healthcheck-status {font-size: 14px; font-weight: 600; margin-top: 3px;}
+.healthcheck-msg {font-size: 13px; line-height: 15px;}
+.healthcheck-progress {height: 12px; margin-bottom: 0px; margin-top: 8px;}
+.healthcheck-table > tbody > tr > td > .not-started {color: #999999;}
+.healthcheck-table > tbody > tr > td > .wait {color: #999999;}
+.healthcheck-table > tbody > tr > td > .success {color: #2e8701;}
+.healthcheck-table > tbody > tr > td > .fail {color: #890000;}
