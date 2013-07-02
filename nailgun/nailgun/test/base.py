@@ -486,6 +486,12 @@ class Environment(object):
                     "token": {
                         "generator": "password"
                     }
+                },
+                "cobbler": {
+                    "profile": {
+                        "generator": "identical",
+                        "generator_args": "cobbler_profile"
+                    }
                 }
             }
         }
