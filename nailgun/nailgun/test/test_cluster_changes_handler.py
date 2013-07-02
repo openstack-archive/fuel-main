@@ -186,7 +186,7 @@ class TestHandlers(BaseHandlers):
                                             'dev': 'eth0'}]})
 
             pnd = {
-                'profile': settings.COBBLER_CENTOS_PROFILE,
+                'profile': cluster_attrs['cobbler']['profile'],
                 'power_type': 'ssh',
                 'power_user': 'root',
                 'power_address': n.ip,
