@@ -175,6 +175,14 @@ class nailgun(
 
   class { "nailgun::nginx-service": }
 
+  file { "/var/www/html/index.html":
+    content => "<html><head>
+<meta http-equiv='refresh' content='1;url=http://$ipaddress:8000'>
+<script type='text/javascript'>window.location.href='http://$ipaddress:8000'</script>
+</head><body><a href='http://$ipaddress:8000'>http://$ipaddress:8000</a>
+</body></html>",
+  }
+
   class { "nailgun::logrotate": }
 
   nailgun::sshkeygen { "/root/.ssh/id_rsa":
