@@ -4011,7 +4011,20 @@ form.rhel-license fieldset {
 }
 
 form.create-cluster-form .input-large {
-  width: 300px;
+  width: 330px;
+}
+
+form.create-cluster-form select {
+  width: 340px;
+}
+
+
+form.create-cluster-form .control-label  {
+  width: 140px;
+}
+
+form.create-cluster-form .controls {
+  margin-left: 160px;
 }
 
 div.create-cluster-form {
@@ -4041,9 +4054,9 @@ div.create-cluster-form .radio-checkbox-group label {
 .release-description {
   font-size: 12px !important;
   line-height: 15px;
-  margin-left: 185px;
+  margin-left: 160px;
   text-align: justify;
-  width: 290px;
+  width: 335px;
 }
 
 .summary-settings-btn {
