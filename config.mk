@@ -48,7 +48,7 @@ BUILD_MIRROR_GEMS:=$(BUILD_DIR)/packages/gems
 # download of all the packages directly from internet
 USE_MIRROR?=srt
 ifeq ($(USE_MIRROR),srt)
-YUM_REPOS?=proprietary subscr_manager
+YUM_REPOS?=proprietary
 MIRROR_BASE?=http://srv08-srt.srt.mirantis.net/fwm/$(PRODUCT_VERSION)
 MIRROR_CENTOS?=$(MIRROR_BASE)/centos
 MIRROR_EGGS?=$(MIRROR_BASE)/eggs
@@ -56,7 +56,7 @@ MIRROR_GEMS?=$(MIRROR_BASE)/gems
 MIRROR_SRC?=$(MIRROR_BASE)/src
 endif
 ifeq ($(USE_MIRROR),msk)
-YUM_REPOS?=proprietary subscr_manager
+YUM_REPOS?=proprietary
 MIRROR_BASE?=http://srv11-msk.msk.mirantis.net/fwm/$(PRODUCT_VERSION)
 MIRROR_CENTOS?=$(MIRROR_BASE)/centos
 MIRROR_EGGS?=$(MIRROR_BASE)/eggs
@@ -64,7 +64,7 @@ MIRROR_GEMS?=$(MIRROR_BASE)/gems
 MIRROR_SRC?=$(MIRROR_BASE)/src
 endif
 ifeq ($(USE_MIRROR),usa)
-YUM_REPOS?=proprietary subscr_manager
+YUM_REPOS?=proprietary
 MIRROR_BASE?=http://product-vm.vm.mirantis.net/fwm/$(PRODUCT_VERSION)
 MIRROR_CENTOS?=$(MIRROR_BASE)/centos
 MIRROR_EGGS?=$(MIRROR_BASE)/eggs
