@@ -123,7 +123,7 @@ class Environment(object):
             self.releases.append(release)
         return release
 
-    def download_release(self, release_id, api=False):
+    def download_release(self, release_id):
         release_data = {
             'license_type': 'rhsm',
             'username': 'user',
@@ -131,15 +131,14 @@ class Environment(object):
             'release_id': release_id
         }
 
-        if api:
-            resp = self.app.post(
-                reverse('RedHatAccountHandler'),
-                params=json.dumps(release_data),
-                headers=self.default_headers
-            )
-            self.tester.assertEquals(resp.status, 200)
-            download_task = json.loads(resp.body)
-            return self.db.query(Task).get(download_task['id'])
+        resp = self.app.post(
+            reverse('RedHatAccountHandler'),
+            params=json.dumps(release_data),
+            headers=self.default_headers
+        )
+        self.tester.assertEquals(resp.status, 200)
+        download_task = json.loads(resp.body)
+        return self.db.query(Task).get(download_task['id'])
 
     def create_cluster(self, api=True, exclude=None, **kwargs):
         cluster_data = {
