@@ -15,6 +15,7 @@
 
 from nailgun.api.validators.base import BasicValidator
 from nailgun.errors import errors
+from nailgun.settings import settings
 
 
 class RedHatAcountValidator(BasicValidator):
@@ -43,9 +44,10 @@ class RedHatAcountValidator(BasicValidator):
                 raise errors.InvalidData(
                     "Satellite hostname or activation key not specified",
                 )
-        #if settings.FAKE_TASKS:
-        #    pass
-        #else:
-        #    # TODO: check Red Hat Account credentials
-        #    pass
+        if settings.FAKE_TASKS:
+            if d["username"] != "rheltest":
+                raise errors.InvalidData("Invalid username or password")
+        else:
+           # TODO: check Red Hat Account credentials
+            pass
         return d
