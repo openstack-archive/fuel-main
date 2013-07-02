@@ -65,8 +65,6 @@ MASTER_IP: "127.0.0.1"
 COBBLER_URL: "http://localhost/cobbler_api"
 COBBLER_USER: "cobbler"
 COBBLER_PASSWORD: "cobbler"
-COBBLER_CENTOS_PROFILE: "centos-x86_64"
-COBBLER_RHEL_PROFILE: "rhel-x86_64"
 
 TRUNCATE_LOG_ENTRIES: 100
 UI_LOG_DATE_FORMAT: '%Y-%m-%d %H:%M:%S'
