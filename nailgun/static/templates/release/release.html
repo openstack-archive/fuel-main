@@ -1,10 +1,10 @@
 <td><%- release.get('name') %></td>
 <td><%- release.get('version') %></td>
 <td class="release-status">
-  <span class="<%= release.get('state')=='available' ? 'available"> Available' : 'not-available"> Not available' %></span>
+  <span class="<%= release.get('state') == 'available' ? 'available"> Available' : 'not_available"> Not available' %></span>
 </td>
 <td>
-  <% if (release.get('state') !== 'available') { %>
+  <% if (release.get('state') != 'available') { %>
     <span class="btn-link btn-rhel-setup">Setup</span>
     <div class="download_progress hide">
       <div class="progress progress-success progress-striped active">

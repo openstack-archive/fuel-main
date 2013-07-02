@@ -49,7 +49,7 @@ function(commonViews, dialogViews, releasesListTemplate, releaseTemplate) {
             'click .btn-rhel-setup': 'showRhelLicenseCredentials'
         },
         showRhelLicenseCredentials: function() {
-            var dialog = new dialogViews.RhelCredentialsDialog({releaseId: this.release.id});
+            var dialog = new dialogViews.RhelCredentialsDialog({release: this.release});
             this.registerSubView(dialog);
             dialog.render();
         },

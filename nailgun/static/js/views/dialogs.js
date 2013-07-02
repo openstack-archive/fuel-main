@@ -60,10 +60,13 @@ function(require, utils, models, simpleMessageTemplate, createClusterDialogTempl
 
     views.DialogWithRhelCredentials = views.Dialog.extend({
         displayRhelCredentialsForm: function() {
-            var commonViews = require('views/common'); // avoid circular dependencies
-            this.rhelCredentialsForm = new commonViews.RhelCredentialsForm({dialog: this});
-            this.registerSubView(this.rhelCredentialsForm);
-            this.$('.credentials').append(this.rhelCredentialsForm.render().el);
+            this.$('.credentials').html('');
+            if (this.release.get('state') == 'not available') {
+                var commonViews = require('views/common'); // avoid circular dependencies
+                this.rhelCredentialsForm = new commonViews.RhelCredentialsForm({dialog: this});
+                this.registerSubView(this.rhelCredentialsForm);
+                this.$('.credentials').append(this.rhelCredentialsForm.render().el);
+            }
         }
     });
 
@@ -75,12 +78,18 @@ function(require, utils, models, simpleMessageTemplate, createClusterDialogTempl
             'change select[name=release]': 'updateReleaseParameters'
         },
         applyRhelCredentials: function() {
-            if (this.releases.get(this.releaseId).get('state') !== 'available') {
+            if (this.release.get('state') == 'not_available') {
                 var deferred = this.rhelCredentialsForm.applyCredentials();
                 if (deferred) {
                     this.$('.create-cluster-btn').attr('disabled', true);
                     deferred
-                        .done(_.bind(this.createCluster, this))
+                        .done(_.bind(function(response) {
+                            this.release.fetch()
+                                .always(_.bind(function() {
+                                    this.displayRhelCredentialsForm();
+                                    this.createCluster();
+                                }, this));
+                        }, this))
                         .fail(_.bind(function(response) {
                             if (response.status == 400) {
                                 this.$('.create-cluster-btn').attr('disabled', false);
@@ -132,10 +141,11 @@ function(require, utils, models, simpleMessageTemplate, createClusterDialogTempl
         },
         updateReleaseParameters: function() {
             if (this.releases.length) {
-                this.releaseId = parseInt(this.$('select[name=release]').val(), 10);
-                var release = this.releases.get(this.releaseId);
-                this.$('.rhel-license').toggle(release.get('state') !== 'available');
-                this.$('.release-description').text(release.get('description'));
+                var releaseId = parseInt(this.$('select[name=release]').val(), 10);
+                this.release = this.releases.get(releaseId);
+                this.$('.rhel-license').toggle(this.release.get('state') == 'not available');
+                this.$('.release-description').text(this.release.get('description'));
+                this.displayRhelCredentialsForm();
             }
         },
         renderReleases: function(e) {
@@ -148,13 +158,11 @@ function(require, utils, models, simpleMessageTemplate, createClusterDialogTempl
         },
         initialize: function() {
             this.releases = new models.Releases();
-            this.releases.fetch();
-            this.releases.on('sync', this.renderReleases, this);
+            this.releases.fetch().done(_.bind(this.renderReleases, this));
         },
         render: function() {
             this.tearDownRegisteredSubViews();
             this.constructor.__super__.render.call(this);
-            this.displayRhelCredentialsForm();
             return this;
         }
     });

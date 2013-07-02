@@ -239,7 +239,7 @@ function(utils, models, dialogViews, navbarTemplate, nodesStatsTemplate, notific
         },
         applyCredentials: function() {
             var options = {
-                release_id: this.dialog.releaseId,
+                release_id: this.dialog.release.id,
                 license_type: this.$('input[name=license-type]:checked').val(),
                 username: this.$('input[name=username]').val(),
                 password: this.$('input[name=password]').val(),
