@@ -1,3 +1,4 @@
+
 # WHAT TO DO (install fresh system rather than upgrade)
 install
 
@@ -126,6 +127,9 @@ $SNIPPET('puppet_install_if_enabled')
 # COBBLER EMBEDDED SNIPPET: 'mcollective_install_if_enabled'
 # LISTS mcollective PACKAGE IF mco_auto_setup VARIABLE IS SET TO 1
 $SNIPPET('mcollective_install_if_enabled')
+
+# Create partitions which cannot be created with anaconda functionality
+%include /tmp/post_partition.ks
 
 # POSTINSTALL SECTION
 # HERE ARE COMMANDS THAT WILL BE LAUNCHED JUST AFTER
