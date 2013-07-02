@@ -127,14 +127,6 @@ define(function() {
     models.Node = Backbone.Model.extend({
         constructorName: 'Node',
         urlRoot: '/api/nodes',
-        volumeGroupsByRoles: function(role) {
-            var volumeGroups =  {
-                controller: ['os'],
-                compute: ['os', 'vm'],
-                cinder: ['os', 'cinder']
-            };
-            return volumeGroups[role];
-        },
         resource: function(resourceName) {
             var resource = 0;
             try {
@@ -254,13 +246,13 @@ define(function() {
         urlRoot: '/api/nodes/',
         validate: function(attrs, options) {
             var errors = {};
-            var volume = _.find(attrs.volumes, {vg: options.group});
+            var volume = _.find(attrs.volumes, {name: options.group});
             if (_.isNaN(volume.size) || volume.size < 0) {
-                errors[volume.vg] = 'Invalid size';
-            } else if (volume.size > options.unallocated) {
-                errors[volume.vg] = 'Maximal size is ' + options.unallocated + ' GB';
+                errors[volume.name] = 'Invalid size';
+            } else if (volume.size > options.max) {
+                errors[volume.name] = 'Maximal size is ' + options.unallocated + ' MB';
             } else if (volume.size < options.min) {
-                errors[volume.vg] = 'Minimal size is ' + options.min.toFixed(2) + ' GB';
+                errors[volume.name] = 'Minimal size is ' + options.min + ' MB';
             }
             return _.isEmpty(errors) ? null : errors;
         }

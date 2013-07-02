@@ -1,17 +1,17 @@
+<% var volumeGroupsLabels = {os: 'Base System', vm: 'Virtual Storage', cinder: 'Cinder', glance: 'Glance'} %>
+
 <div class="disk-box disk" data-disk="<%- disk.name %>">
 
-  <div class="disk-box-name pull-left"><%- disk.name %><span class="bootable-marker <%= partition ? '' : 'hide' %>">[Bootable]</span></div>
-  <% var diskSize = disk.size / Math.pow(1000, 3) %>
-  <div class="disk-box-size pull-right">Total Space: <%= diskSize < 100 ? diskSize.toFixed(2) + ' GB' : (diskSize / 1000).toFixed(2) + ' TB' %></div>
+  <div class="disk-box-name pull-left"><%- disk.name %></div>
+  <div class="disk-box-size pull-right">Total Space: <%= showDiskSize(disk.size) %></div>
 
   <div class="disk-map-short disk-map-full">
     <div class="disk-map-image disk-visual">
-      <% var volumeGroupsLabels = {os: 'Base System', vm: 'Virtual Storage', cinder: 'Cinder'} %>
       <% _.each(volumes, function(volume) { %>
-        <div class="volume-group <%= volume.vg %>" data-group="<%= volume.vg %>" style="width:0">
+        <div class="volume-group <%= volume.name %>" data-group="<%= volume.name %>" style="width:0;">
           <div class="toggle-volume">
-            <div class="volume-group-name"><%= volumeGroupsLabels[volume.vg] %></div>
-            <div class="volume-group-size">0 GB</div>
+            <div class="volume-group-name"><%= volumeGroupsLabels[volume.name] %></div>
+            <div class="volume-group-size"><%= showDiskSize(0) %></div>
           </div>
           <div class="close-btn hide"></div>
         </div>
@@ -19,13 +19,13 @@
       <div class="volume-group unallocated" style="width: 100%">
         <div class="toggle-volume">
           <div class="volume-group-name">Unallocated</div>
-          <div class="volume-group-size"><%= Math.round(diskSize) %> GB</div>
+          <div class="volume-group-size"><%= showDiskSize(disk.size) %></div>
         </div>
       </div>
     </div>
   </div>
 
-  <div class="disk-map-details disk-edit-volume-group-form collapse">
+  <div class="disk-map-details disk-form collapse">
     <div class="disk-info-box">
       <div class="disk-box-title">Disk Information</div>
       <% _.each(sortEntryProperties(disk), function(propertyName) { %>
@@ -34,21 +34,18 @@
           <div class="disk-map-details-parameter"><%- propertyName == 'size' ? showDiskSize(disk[propertyName]) : disk[propertyName] %></div>
         </div>
       <% }) %>
-      <div class="disk-map-details-item">
-        <button class="btn btn-danger btn-bootable" <%= partition ? 'disabled' : '' %>>Make Bootable</button>
-      </div>
     </div>
 
     <div class="disk-utility-box">
       <div class="disk-box-title">Volume Groups</div>
       <% _.each(volumes, function(volume) { %>
-        <div class="volume-group-box volume-group" data-group="<%= volume.vg %>">
-          <div class="volume-group-box-flag-<%= volume.vg %>"></div>
-          <div class="volume-group-box-name"><%= volumeGroupsLabels[volume.vg] %></div>
+        <div class="volume-group-box volume-group" data-group="<%= volume.name %>">
+          <div class="volume-group-box-flag-<%= volume.name %>"></div>
+          <div class="volume-group-box-name"><%= volumeGroupsLabels[volume.name] %></div>
           <div class="pull-right">
             <div class="volume-group-box-edit"><span class="use-all-unallocated">Use All Unallocated Space</span></div>
-            <div class="volume-group-box-input"><input class="input-mini" type="text" name="<%= volume.vg %>" value="<%= volume.size.toFixed(2) %>" /></div>
-            <div class="volume-group-box-sizetype">GB</div>
+            <div class="volume-group-box-input"><input class="input-mini" type="text" name="<%= volume.name %>" value="<%= volume.size %>" /></div>
+            <div class="volume-group-box-sizetype">MB</div>
           </div>
         </div>
         <div class="volume-group-error-message"></div>
