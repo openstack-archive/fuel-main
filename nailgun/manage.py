@@ -161,7 +161,7 @@ if __name__ == "__main__":
             from IPython import embed
             embed()
         except ImportError:
-            code.interact(local={'orm': orm, 'settings': settings})
+            code.interact(local={'db': db, 'settings': settings})
         db().commit()
     else:
         parser.print_help()
