@@ -32,7 +32,6 @@ class RPCConsumer(ConsumerMixin):
     def __init__(self, connection, receiver):
         self.connection = connection
         self.receiver = receiver
-        self.receiver.initialize()
 
     def get_consumers(self, Consumer, channel):
         return [Consumer(queues=[rpc.nailgun_queue],
