@@ -43,9 +43,11 @@
           <div class="volume-group-box-flag-<%= volume.name %>"></div>
           <div class="volume-group-box-name"><%= volumeGroupsLabels[volume.name] %></div>
           <div class="pull-right">
+            <div>
+              <div class="volume-group-box-input"><input id="<%- disk.name + '-' + volume.name %>" class="input-medium auto" type="text" alt="p0s3p0S" name="<%= volume.name %>" value="<%= volume.size %>" /></div>
+              <div class="volume-group-box-sizetype">MB</div>
+            </div>
             <div class="volume-group-box-edit"><span class="use-all-unallocated">Use All Unallocated Space</span></div>
-            <div class="volume-group-box-input"><input class="input-mini" type="text" name="<%= volume.name %>" value="<%= volume.size %>" /></div>
-            <div class="volume-group-box-sizetype">MB</div>
           </div>
         </div>
         <div class="volume-group-error-message"></div>

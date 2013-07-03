@@ -246,11 +246,11 @@ define(function() {
         urlRoot: '/api/nodes/',
         validate: function(attrs, options) {
             var errors = {};
-            var volume = _.find(attrs.volumes, {name: options.group});
-            if (_.isNaN(volume.size) || volume.size < 0) {
+            var volume= _.find(attrs.volumes, {name: options.group});
+            if (_.isNaN(volume.size) || volume.size < 0 || volume.size % 1 != 0) {
                 errors[volume.name] = 'Invalid size';
             } else if (volume.size > options.max) {
-                errors[volume.name] = 'Maximal size is ' + options.unallocated + ' MB';
+                errors[volume.name] = 'Maximal size is ' + options.max + ' MB';
             } else if (volume.size < options.min) {
                 errors[volume.name] = 'Minimal size is ' + options.min + ' MB';
             }

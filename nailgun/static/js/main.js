@@ -22,6 +22,7 @@ requirejs.config({
         'jquery-checkbox': 'js/libs/jquery.checkbox',
         'jquery-timeout': 'js/libs/jquery.timeout',
         'jquery-ui': 'js/libs/jquery-ui-1.10.2.custom',
+        'jquery-autoNumeric': 'js/libs/autoNumeric-1.4.5',
         utils: 'js/utils',
         lodash: 'js/libs/lodash',
         backbone: 'js/libs/backbone',
@@ -56,8 +57,11 @@ requirejs.config({
         'jquery-ui': {
             deps: ['jquery']
         },
+        'jquery-autoNumeric': {
+            deps: ['jquery']
+        },
         app: {
-            deps: ['jquery', 'lodash', 'backbone', 'coccyx', 'bootstrap', 'jquery-checkbox', 'jquery-timeout', 'jquery-ui']
+            deps: ['jquery', 'lodash', 'backbone', 'coccyx', 'bootstrap', 'jquery-checkbox', 'jquery-timeout', 'jquery-ui', 'jquery-autoNumeric']
         }
     }
 });
