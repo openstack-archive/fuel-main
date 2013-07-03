@@ -22,6 +22,7 @@ from nailgun.settings import settings
 from nailgun.api.handlers.redhat import RedHatAccountHandler
 from nailgun.api.models import RedHatAccount
 from nailgun.test.base import BaseHandlers
+from nailgun.test.base import fake_tasks
 from nailgun.test.base import reverse
 
 
@@ -45,6 +46,7 @@ class TestHandlers(BaseHandlers):
             expect_errors=True)
         self.assertEquals(resp.status, 400)
 
+    @fake_tasks()
     def test_redhat_account_validation_success(self):
         resp = self.app.post(
             reverse('RedHatAccountHandler'),
@@ -55,6 +57,7 @@ class TestHandlers(BaseHandlers):
             headers=self.default_headers)
         self.assertEquals(resp.status, 200)
 
+    @fake_tasks()
     def test_redhat_account_validation_failure(self):
         resp = self.app.post(
             reverse('RedHatAccountHandler'),
