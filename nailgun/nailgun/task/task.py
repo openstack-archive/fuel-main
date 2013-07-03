@@ -604,6 +604,7 @@ class CheckNetworksTask(object):
         err_msgs = []
         for ng in networks:
             net_errors = []
+            sub_ranges = []
             ng_db = db().query(NetworkGroup).get(ng['id'])
             if not ng_db:
                 net_errors.append("id")
@@ -628,6 +629,23 @@ class CheckNetworksTask(object):
                                 ng.get('name') or ng_db.name or ng_db.id
                             )
                         )
+                # Check for intersection with Admin network
+                if 'ip_ranges' in ng:
+                    for k, v in enumerate(ng['ip_ranges']):
+                        ip_range = netaddr.IPSet(netaddr.IPRange(v[0], v[1]))
+                        admin = netaddr.IPSet(settings.NET_EXCLUDE)
+                        if ip_range & admin:
+                            net_errors.append("cidr")
+                            err_msgs.append(
+                                "IP range {0} - {1} in {2} intersects with "
+                                "admin range of {3}".format(
+                                    v[0], v[1],
+                                    ng.get('name') or ng_db.name or ng_db.id,
+                                    settings.NET_EXCLUDE
+                                )
+                            )
+                            sub_ranges.append(k)
+
                 if ng.get('amount') > 1 and netmanager == 'FlatDHCPManager':
                     net_errors.append("amount")
                     err_msgs.append(
@@ -639,6 +657,7 @@ class CheckNetworksTask(object):
             if net_errors:
                 result.append({
                     "id": int(ng["id"]),
+                    "ranges": sub_ranges,
                     "errors": net_errors
                 })
         if err_msgs:

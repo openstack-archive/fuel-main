@@ -161,6 +161,9 @@ function(utils, models, commonViews, dialogViews, networkTabTemplate, networkTem
             if (task && task.get('result').length) {
                 _.each(task.get('result'), function(failedNetwork) {
                     _.each(failedNetwork.errors, function(field) {
+                       _.each(failedNetwork.ranges, function (idx) {
+                            this.$('div[data-network-id=' + failedNetwork.id + ']').find('.ip-range-row:eq('+idx+') input').addClass('error');
+                        }, this);
                         this.$('div[data-network-id=' + failedNetwork.id + ']').find('.' + field).children().addClass('error');
                     }, this);
                 }, this);

@@ -15,6 +15,7 @@
 #    under the License.
 
 import json
+from netaddr import IPNetwork
 
 from nailgun.api.models import Network, NetworkGroup
 from nailgun.test.base import BaseHandlers
@@ -75,6 +76,38 @@ class TestHandlers(BaseHandlers):
             task['message'],
             "Intersection with admin "
             "network(s) '{0}' found".format(
+                settings.NET_EXCLUDE
+            )
+        )
+
+    def test_network_checking_fails_if_admin_intersection_ip_range(self):
+        self.env.create(
+            cluster_kwargs={},
+            nodes_kwargs=[
+                {"pending_addition": True},
+            ]
+        )
+        cluster = self.env.clusters[0]
+        nets = self.env.generate_ui_networks(cluster.id)
+        base = IPNetwork(settings.NET_EXCLUDE[0])
+        base.prefixlen += 1
+        start_range = str(base[0])
+        end_range = str(base[-1])
+        nets['networks'][1]['ip_ranges'] = [
+            [start_range, end_range]
+        ]
+        resp = self.update_networks(cluster.id, nets, expect_errors=True)
+        self.assertEquals(resp.status, 202)
+        task = json.loads(resp.body)
+        self.assertEquals(task['status'], 'error')
+        self.assertEquals(task['progress'], 100)
+        self.assertEquals(task['name'], 'check_networks')
+        self.assertEquals(
+            task['message'],
+            "IP range {0} - {1} in {2} intersects with admin "
+            "range of {3}".format(
+                start_range, end_range,
+                nets['networks'][1]['name'],
                 settings.NET_EXCLUDE
             )
         )
