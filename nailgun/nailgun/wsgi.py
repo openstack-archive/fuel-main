@@ -18,7 +18,6 @@ import os
 import sys
 import web
 from signal import signal, SIGTERM
-import atexit
 from web.httpserver import server, WSGIServer, StaticMiddleware
 
 curdir = os.path.dirname(__file__)
@@ -83,11 +82,6 @@ def appstart(keepalive=False):
 
     from nailgun.rpc import threaded
     from nailgun.keepalive import keep_alive
-    from nailgun.plugin.thread import PluginThread
-
-    plugin_thread = PluginThread()
-    logger.info("Running plugin processing thread...")
-    plugin_thread.start()
 
     if keepalive:
         logger.info("Running KeepAlive watcher...")
@@ -109,9 +103,6 @@ def appstart(keepalive=False):
                (settings.LISTEN_ADDRESS, int(settings.LISTEN_PORT)))
 
     logger.info("Stopping WSGI app...")
-    if plugin_thread.is_alive():
-        logger.info("Stopping PluginThread...")
-        plugin_thread.soft_stop()
     if keep_alive.is_alive():
         logger.info("Stopping KeepAlive watcher...")
         keep_alive.join()
