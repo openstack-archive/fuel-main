@@ -61,7 +61,7 @@ function(require, utils, models, simpleMessageTemplate, createClusterDialogTempl
     views.DialogWithRhelCredentials = views.Dialog.extend({
         displayRhelCredentialsForm: function() {
             this.$('.credentials').html('');
-            if (this.release.get('state') == 'not available') {
+            if (this.release.get('state') == 'not_available') {
                 var commonViews = require('views/common'); // avoid circular dependencies
                 this.rhelCredentialsForm = new commonViews.RhelCredentialsForm({dialog: this});
                 this.registerSubView(this.rhelCredentialsForm);
@@ -143,7 +143,7 @@ function(require, utils, models, simpleMessageTemplate, createClusterDialogTempl
             if (this.releases.length) {
                 var releaseId = parseInt(this.$('select[name=release]').val(), 10);
                 this.release = this.releases.get(releaseId);
-                this.$('.rhel-license').toggle(this.release.get('state') == 'not available');
+                this.$('.rhel-license').toggle(this.release.get('state') == 'not_available');
                 this.$('.release-description').text(this.release.get('description'));
                 this.displayRhelCredentialsForm();
             }

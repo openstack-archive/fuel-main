@@ -3,7 +3,7 @@ casper.start().loadPage('#releases');
 casper.then(function() {
     this.test.comment('Testing releases page layout');
     this.test.assertEvalEquals(function() {return $('.releases-table tbody tr').length}, 2, 'There are two releases presented');
-    this.test.assertSelectorAppears('.releases-table .not-available', 'There is unavailable release');
+    this.test.assertSelectorAppears('.releases-table .not_available', 'There is unavailable release');
 });
 
 casper.then(function() {
@@ -31,7 +31,7 @@ casper.then(function() {
         this.waitWhileSelector('.progress');
     });
     this.then(function() {
-        this.test.assertDoesntExist('.releases-table .not-available', 'RHEL downloading was finished');
+        this.test.assertDoesntExist('.releases-table .not_available', 'RHEL downloading was finished');
     });
 });
 
