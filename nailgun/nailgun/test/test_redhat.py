@@ -13,6 +13,11 @@
 #    under the License.
 
 import json
+from paste.fixture import TestApp
+
+from nailgun.api.models import Release
+from nailgun.settings import settings
+
 
 from nailgun.api.handlers.redhat import RedHatAccountHandler
 from nailgun.api.models import RedHatAccount
@@ -36,6 +41,27 @@ class TestHandlers(BaseHandlers):
             reverse('RedHatAccountHandler'),
             json.dumps({'username': 'user',
                         'password': 'password'}),
+            headers=self.default_headers,
+            expect_errors=True)
+        self.assertEquals(resp.status, 400)
+
+    def test_redhat_account_validation_success(self):
+        resp = self.app.post(
+            reverse('RedHatAccountHandler'),
+            json.dumps({'license_type': 'rhsm',
+                        'username': 'rheltest',
+                        'password': 'password',
+                        'release_id': 1}),
+            headers=self.default_headers)
+        self.assertEquals(resp.status, 200)
+
+    def test_redhat_account_validation_failure(self):
+        resp = self.app.post(
+            reverse('RedHatAccountHandler'),
+            json.dumps({'license_type': 'rhsm',
+                        'username': 'some_user',
+                        'password': 'password',
+                        'release_id': 1}),
             headers=self.default_headers,
             expect_errors=True)
         self.assertEquals(resp.status, 400)
