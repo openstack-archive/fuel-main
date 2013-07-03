@@ -44,7 +44,7 @@ def fetch_logs(func):
                     os.makedirs(LOGS_DIR)
                 save_logs(
                     args[0].get_admin_node_ip(),
-                    os.path.join(LOGS_DIR, '{%s}-{%s}' % (
+                    os.path.join(LOGS_DIR, '%s-%d.tar.gz' % (
                         func.__name__,
                         time.time())))
     return wrapper
