@@ -45,7 +45,7 @@ subscription-manager unregister
 rm -rf /etc/yum.repos.d/redhat.repo
 
 #Run registration
-rhnreg_ks "--serverUrl=http://<%= sat_hostname %>/XMLRPC" --profilename=fuelweb "--activation-key=<%= activation_key %>" --sslCACert=/etc/sysconfig/rhn/RHNS-CA-CERT --nopackages --nohardware --novirtinfo --norhnsd --force
+rhnreg_ks "--serverUrl=http://<%= sat_hostname %>/XMLRPC" --profilename=fuelweb "--activationkey=<%= activation_key %>" --sslCACert=/etc/sysconfig/rhn/RHNS-CA-CERT --nopackages --nohardware --novirtinfo --norhnsd --force
 
 if [ $? -ne 0 ];then
   echo "Registration failed. Aborting."
@@ -73,6 +73,7 @@ fi
 mkdir -p <%= pkgdir %>/repodata <%= pkgdir %>/Packages
 #yumdownloader --releasever=<%= releasever %> --disablerepo='*' --enablerepo='rhel*' --resolve --destdir "<%= pkgdir %>/Packages" $(cat /etc/nailgun/required-rpms.txt | xargs echo -en)
 
+rm -f /etc/yum/vars/releasever
 yum-config-manager --disable 'nailgun' &> /dev/null
 yum-config-manager --disable 'centos' &> /dev/null
 yum-config-manager --disable 'base' &> /dev/null
@@ -83,7 +84,7 @@ for tries in $(seq 1 <%= numtries %>);do
   /usr/local/bin/repotrack -a x86_64 -p "<%= pkgdir %>/Packages" $(cat /etc/nailgun/required-rpms.txt | xargs echo -en)
   status=$?
   #Purge any corrupt downloaded RPMs
-  env LANG=C rpm --checksig <%= pkgdir %>/Packages/* | grep 'md5 NOT OK' | cut -d':' | xargs rm -f)
+  env LANG=C rpm --checksig <%= pkgdir %>/Packages/* | grep 'md5 NOT OK' | cut -d':' | xargs rm -f
 done
 if [ $status -ne 0 ];
   echo "ERROR: Repotrack did not exit cleanly after <%= numtries %> tries."

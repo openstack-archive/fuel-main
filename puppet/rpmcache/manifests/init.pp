@@ -1,6 +1,6 @@
-class rpmcache ( $releasever, $pkgdir,
+class rpmcache ( $releasever, $pkgdir, $numtries,
 $rh_username, $rh_password, $rh_base_channels, $rh_openstack_channel,
-$use_satellite = false, $sat_hostname = false, $activation_key = false)  {
+$use_satellite = false, $sat_hostname = false, $activation_key = false, $sat_base_channels, $sat_openstack_channel)  {
 
   Exec  {path => '/usr/bin:/bin:/usr/sbin:/sbin'}
   package { "yum-utils":
