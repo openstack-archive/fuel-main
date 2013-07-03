@@ -62,14 +62,18 @@ echo "bootloader --location=mbr --driveorder=\$(basename `readlink -f /dev/$spac
                 ## getting volume size in MB
                 #set $volume_size = $int($volume.get("size") or 0) / 1024 ** 2
                 #set $volume_name = $volume.get("name")
-                ## volume_size is less than 16TB
-                ## anaconda has hard coded limitation 16TB for ext3/4 and xfs filesystems
-                #if $volume_size > 0 and ($volume_size <= 16777216 or $volume_mount == "/")
-                    #if $volume_size > 16777216 and $volume_mount == "/"
-                        #set $volume_size = 16777216
-                    #end if
+                ##
+                ## Anaconda has hard coded limitation of 16TB for ext3/4 and xfs filesystems (the only filesystems we are supposed to use).
+                ## Besides there is no stable 64-bit ext4 implementation at the moment, so the limitation of 16TB is not only anaconda limitation.
+                ## Root partition can not be located on xfs filesystem therefore we check if root filesystem is larger
+                ## than 16TB and set it size into 16TB if it is. It is necessary to note that to format 16TB volume on ext4 it is needed about 1G memory.
+                #if $volume_size > 16777216 and $volume_mount == "/"
+                    #set $volume_size = 16777216
+                #end if
+                ## volume_size is less than or equal to 16TB
+                #if $volume_size > 0 and $volume_size <= 16777216
                     $logical_volumes.append("logvol %s --vgname=%s --size=%s --name=%s" % ($volume_mount, $space_id, $volume_size, $volume_name))
-                ## volume_size is more than 16TB, using xfs file system
+                ## volume_size is more than 16TB, use xfs file system
                 #else
                     $post_logical_volumes.append("lvcreate --size %s --name %s %s" % ($volume_size, $volume_name, $space_id))
                     $post_logical_volumes.append("mkfs.xfs /dev/mapper/%s-%s" % ($space_id, $volume_name))
