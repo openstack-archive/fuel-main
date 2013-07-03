@@ -509,6 +509,8 @@ class NetworkManager(object):
         for nic in node_db.interfaces:
             if node_db.mac == nic.mac:
                 return nic.id
+        # we need at least one interface here - so let's
+        # take the first one
         if node_db.interfaces:
             return node_db.interfaces[0].id
 
@@ -731,6 +733,10 @@ class NetworkManager(object):
         return []
 
     def get_allowed_nic_networkgroups(self, node_id, nic_id):
+        """
+        nic_id is not used now, but this logic will be improved
+        in the future, so let it be
+        """
         return self.get_all_cluster_networkgroups(node_id)
 
     def _get_admin_network(self, node):

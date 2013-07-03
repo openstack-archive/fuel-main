@@ -79,7 +79,10 @@ class NetAssignmentValidator(BasicValidator):
         for iface in node['interfaces']:
             if not isinstance(iface, dict):
                 raise errors.InvalidData(
-                    "Node '%d': each interface should be dict" % node['id'],
+                    "Node '%d': each interface should be dict (got '%s')" % (
+                        node['id'],
+                        str(iface)
+                    ),
                     log_message=True
                 )
             if 'id' not in iface:
@@ -194,6 +197,6 @@ class NetAssignmentValidator(BasicValidator):
         # Check if there are unassigned networks for this node.
         if network_group_ids:
             raise errors.InvalidData(
-                "Too few neworks to assign to node '%d'" % node['id'],
+                "Too few networks to assign to node '%d'" % node['id'],
                 log_message=True
             )

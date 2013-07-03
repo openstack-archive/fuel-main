@@ -76,6 +76,9 @@ class NodeHandler(JSONHandler):
         network_manager = NetworkManager()
 
         for key, value in data.iteritems():
+            # we don't allow to update id explicitly
+            if key == "id":
+                continue
             setattr(node, key, value)
             if key == 'cluster_id':
                 if value:
@@ -137,7 +140,9 @@ class NodeCollectionHandler(JSONHandler):
 
         node = Node()
         for key, value in data.iteritems():
-            if key == "meta":
+            if key == "id":
+                continue
+            elif key == "meta":
                 node.create_meta(value)
             else:
                 setattr(node, key, value)

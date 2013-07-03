@@ -120,8 +120,6 @@ class NodeValidator(BasicValidator):
                     "exists - doing nothing".format(d["mac"]),
                     log_level="info"
                 )
-        if "id" in d:
-            del d["id"]
         if 'meta' in d:
             MetaValidator.validate_create(d['meta'])
         return d
@@ -153,8 +151,6 @@ class NodeValidator(BasicValidator):
                 "Invalid status for node",
                 log_message=True
             )
-        if "id" in d:
-            del d["id"]
         if 'meta' in d:
             d['meta'] = MetaValidator.validate_update(d['meta'])
         return d
