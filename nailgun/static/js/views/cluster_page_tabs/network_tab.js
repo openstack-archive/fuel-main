@@ -77,10 +77,16 @@ function(utils, models, commonViews, dialogViews, networkTabTemplate, networkTem
             this.setInitialData();
             this.page.removeVerificationTask().done(_.bind(this.render, this));
         },
+        filterEmptyIpRanges: function() {
+            this.networkConfiguration.get('networks').each(function(network) {
+                network.set({ip_ranges: _.filter(network.get('ip_ranges'), function(range) {return !_.isEqual(range, ['', '']);})});
+            }, this);
+        },
         applyChanges: function() {
             var deferred;
             if (!_.some(this.networkConfiguration.get('networks').models, 'validationError')) {
                 this.disableControls();
+                this.filterEmptyIpRanges();
                 deferred = Backbone.sync('update', this.networkConfiguration, {url: _.result(this.model, 'url') + '/network_configuration'})
                     .always(_.bind(function() {
                         this.model.fetch();
@@ -250,9 +256,7 @@ function(utils, models, commonViews, dialogViews, networkTabTemplate, networkTem
             var ip_ranges = [];
             this.$('.ip-range-row').each(function(index, rangeRow) {
                 var range = [$(rangeRow).find('input:first').val(), $(rangeRow).find('input:last').val()];
-                if (!_.isEqual(range, ['', ''])) {
-                    ip_ranges.push(range);
-                }
+                ip_ranges.push(range);
             });
             var fixedNetworkOnVlanManager = this.tab.networkConfiguration.get('net_manager') == 'VlanManager' && this.network.get('name') == 'fixed';
             this.network.set({
