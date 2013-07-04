@@ -459,60 +459,8 @@ class Environment(object):
         ]
 
     def get_default_attributes_metadata(self):
-        return {
-            "editable": {
-                "admin_tenant": {
-                    "value": "admin",
-                    "label": "Admin tenant",
-                    "description": "Tenant (project) name for Administrator"
-                },
-                "common": {
-                    "auto_assign_floating_ip": {
-                        "value": False,
-                        "label": "Auto assign floating IP",
-                        "description": "Description"
-                    },
-                    "libvirt_type": {
-                        "value": "kvm",
-                        "values": [
-                            {
-                                "data": "kvm",
-                                "display_name": "KVM",
-                                "description": "Choose this type..."
-                            },
-                            {
-                                "data": "qemu",
-                                "display_name": "QEMU",
-                                "description": "Choose this type..."
-                            }
-                        ],
-                        "label": "Hypervisor type"
-                    },
-                }
-            },
-            "generated": {
-                "mysql": {
-                    "root_password": {
-                        "generator": "password"
-                    },
-                    "predefined": {
-                        "generator": "identical",
-                        "generator_args": "i am value"
-                    }
-                },
-                "keystone": {
-                    "token": {
-                        "generator": "password"
-                    }
-                },
-                "cobbler": {
-                    "profile": {
-                        "generator": "identical",
-                        "generator_args": "cobbler_profile"
-                    }
-                }
-            }
-        }
+        return self.read_fixtures(
+            ['openstack'])[0]['fields']['attributes_metadata']
 
     def upload_fixtures(self, fxtr_names):
         for fxtr_path in self.fxtr_paths_by_names(fxtr_names):
@@ -675,7 +623,7 @@ class Environment(object):
 
 class BaseHandlers(TestCase):
 
-    fixtures = ["admin_network"]
+    fixtures = ['admin_network']
 
     def __init__(self, *args, **kwargs):
         super(BaseHandlers, self).__init__(*args, **kwargs)
