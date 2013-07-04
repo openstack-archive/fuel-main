@@ -122,7 +122,7 @@ class Cluster(Base):
 
     @property
     def full_name(self):
-        return '%s %s' % (self.id, self.name)
+        return '%s (id=%s, mode=%s)' % (self.name, self.id, self.mode)
 
     @classmethod
     def validate(cls, data):
