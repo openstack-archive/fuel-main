@@ -9,10 +9,12 @@ for drv in `ls -1 /sys/block | grep "sd\|hd\|vd\|cciss"`; do
 done
 
 # bootloader
-echo "bootloader --location=mbr --driveorder=${tgtdrive} --append=' biosdevname=0 crashkernel=auto'" > /tmp/bootloader.ks
+echo "bootloader --location=mbr --driveorder=${tgtdrive} --append=' biosdevname=0 crashkernel=none'" > /tmp/bootloader.ks
 
 # partition
 /usr/sbin/parted -s /dev/${tgtdrive} mklabel gpt
-echo "partition /boot --fstype=ext4 --ondisk=${tgtdrive} --size=300 --asprimary" > /tmp/partition.ks
-echo "partition / --fstype=ext4 --ondisk=${tgtdrive} --size=1 --grow --asprimary" >> /tmp/partition.ks
+/usr/sbin/parted -s /dev/${tgtdrive} mkpart primary 0 24M
+/usr/sbin/parted -s /dev/${tgtdrive} set 1 bios_grub on
+/usr/sbin/parted -s /dev/${tgtdrive} mkpart primary 24M 128M
+echo "partition / --fstype=ext4 --ondisk=${tgtdrive} --size=1 --grow --asprimary" > /tmp/partition.ks
 echo "partition swap --recommended --ondisk=${tgtdrive}" >> /tmp/partition.ks
