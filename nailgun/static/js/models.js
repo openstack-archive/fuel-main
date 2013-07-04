@@ -447,7 +447,7 @@ define(function() {
             var errors = [];
             var fields = ['username', 'password'];
             if (attrs.license_type == 'rhn') {
-                fields = _.union(fields, ['hostname', 'activation_key']);
+                fields = _.union(fields, ['satellite', 'activation_key']);
             }
             _.each(fields, function(attr) {
                 if ($.trim(attrs[attr]) == '') {

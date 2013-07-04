@@ -17,8 +17,10 @@ import web
 from nailgun.api.handlers.base import JSONHandler, content_json
 from nailgun.api.handlers.tasks import TaskHandler
 from nailgun.api.validators.redhat import RedHatAcountValidator
+from nailgun.db import db
 from nailgun.task.helpers import TaskHelper
 from nailgun.task.manager import DownloadReleaseTaskManager
+from nailgun.api.models import RedHatAccount
 from nailgun.logger import logger
 
 
@@ -33,7 +35,13 @@ class RedHatAccountHandler(JSONHandler):
     @content_json
     def POST(self):
         data = self.checked_data()
-        # TODO: activate and save status
+        account = RedHatAccount()
+
+        for key, value in data.iteritems():
+            setattr(account, key, value)
+        db().add(account)
+        db().commit()
+
         task_manager = DownloadReleaseTaskManager(data['release_id'])
         try:
             task = task_manager.execute()

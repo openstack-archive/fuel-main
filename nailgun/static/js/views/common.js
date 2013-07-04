@@ -243,7 +243,7 @@ function(utils, models, dialogViews, navbarTemplate, nodesStatsTemplate, notific
                 license_type: this.$('input[name=license-type]:checked').val(),
                 username: this.$('input[name=username]').val(),
                 password: this.$('input[name=password]').val(),
-                hostname: this.$('input[name=hostname]').val(),
+                satellite: this.$('input[name=satellite]').val(),
                 activation_key: this.$('input[name=activation_key]').val()
             };
             var deferred = this.redHatAccount.save(options);

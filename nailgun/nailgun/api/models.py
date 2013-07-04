@@ -730,3 +730,16 @@ class Plugin(Base):
     name = Column(String(128), nullable=False, unique=True)
     state = Column(String(128), nullable=False, default='registered')
     version = Column(String(128), nullable=False)
+
+
+class RedHatAccount(Base):
+    __tablename__ = 'red_hat_accounts'
+    LICENSE_TYPES = ('rhsm', 'rhn')
+
+    id = Column(Integer, primary_key=True)
+    username = Column(String(100), nullable=False)
+    password = Column(String(100), nullable=False)
+    license_type = Column(Enum(*LICENSE_TYPES, name='license_type'),
+                          nullable=False)
+    satellite = Column(String(250))
+    activation_key = Column(String(300))

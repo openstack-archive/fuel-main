@@ -35,14 +35,14 @@ class RedHatAcountValidator(BasicValidator):
                 "Invalid License Type",
                 #log_message=True
             )
-        if d["license_type"] == "rhsm":
-            if "username" not in d or "password" not in d:
-                raise errors.InvalidData(
-                    "Username or password not specified",
-                    #log_message=True
-                )
-        else:
-            if "hostname" not in d or "activation_key" not in d:
+        if "username" not in d or "password" not in d:
+            raise errors.InvalidData(
+                "Username or password not specified",
+                #log_message=True
+            )
+
+        if d["license_type"] == "rhn":
+            if "satellite" not in d or "activation_key" not in d:
                 raise errors.InvalidData(
                     "Satellite hostname or activation key not specified",
                     #log_message=True
