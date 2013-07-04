@@ -765,3 +765,34 @@ class NetworkManager(object):
                     return interface
 
         raise errors.CanNotFindInterface()
+
+    def get_end_point_ip(self, cluster_id):
+        cluster_db = db().query(Cluster).get(cluster_id)
+        ip = None
+        if cluster_db.mode == 'ha':
+            ip = self.assign_vip(cluster_db.id, "public")
+        elif cluster_db.mode in ('singlenode', 'multinode'):
+            controller = db().query(Node).filter_by(
+                cluster_id=cluster_id, role='controller').first()
+
+            public_net = filter(
+                lambda network: network['name'] == 'public',
+                controller.network_data)[0]
+
+            logger.error(controller.network_data)
+
+            if public_net.get('ip'):
+                ip = public_net['ip'].split('/')[0]
+
+        if not ip:
+            raise errors.CanNotDetermineEndPointIP(
+                'Can not determine end point IP for cluster %s' %
+                cluster_db.full_name)
+
+        return ip
+
+    def get_horizon_url(self, cluster_id):
+        return 'http://%s/' % self.get_end_point_ip(cluster_id)
+
+    def get_keystone_url(self, cluster_id):
+        return 'http://%s:5000/' % self.get_end_point_ip(cluster_id)
