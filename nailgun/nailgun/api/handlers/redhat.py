@@ -35,16 +35,13 @@ class RedHatAccountHandler(JSONHandler):
     @content_json
     def POST(self):
         data = self.checked_data()
-        account = RedHatAccount()
-
-        for key, value in data.iteritems():
-            setattr(account, key, value)
-        db().add(account)
-        db().commit()
-
         release_data = {'release_id': data['release_id']}
         data.pop('release_id')
         release_data['redhat'] = data
+
+        account = RedHatAccount(**data)
+        db().add(account)
+        db().commit()
 
         task_manager = DownloadReleaseTaskManager(release_data)
         try:
