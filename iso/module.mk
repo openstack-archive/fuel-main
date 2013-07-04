@@ -56,6 +56,7 @@ $(BUILD_DIR)/iso/isoroot-dotfiles.done: \
 $(BUILD_DIR)/iso/isoroot-files.done: \
 		$(BUILD_DIR)/iso/isoroot-dotfiles.done \
 		$(ISOROOT)/isolinux/isolinux.cfg \
+		$(ISOROOT)/isolinux/splash.jpg \
 		$(ISOROOT)/ks.cfg \
 		$(ISOROOT)/bootstrap_admin_node.sh \
 		$(ISOROOT)/bootstrap_admin_node.conf \
@@ -67,6 +68,7 @@ $(BUILD_DIR)/iso/isoroot-files.done: \
 $(ISOROOT)/.discinfo: $(SOURCE_DIR)/iso/.discinfo ; $(ACTION.COPY)
 $(ISOROOT)/.treeinfo: $(SOURCE_DIR)/iso/.treeinfo ; $(ACTION.COPY)
 $(ISOROOT)/isolinux/isolinux.cfg: $(SOURCE_DIR)/iso/isolinux/isolinux.cfg ; $(ACTION.COPY)
+$(ISOROOT)/isolinux/splash.jpg: $(SOURCE_DIR)/iso/isolinux/splash.jpg ; $(ACTION.COPY)
 $(ISOROOT)/ks.cfg: $(call depv,KSYAML)
 $(ISOROOT)/ks.cfg: $(SOURCE_DIR)/iso/ks.template $(SOURCE_DIR)/iso/ks.py $(KSYAML)
 	python $(SOURCE_DIR)/iso/ks.py -t $(SOURCE_DIR)/iso/ks.template -c $(KSYAML) -o $@
