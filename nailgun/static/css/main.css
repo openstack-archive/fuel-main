@@ -4129,7 +4129,8 @@ label.show-password {
 .healthcheck-status {font-size: 14px; font-weight: 600; margin-top: 3px;}
 .healthcheck-msg {font-size: 13px; line-height: 15px;}
 .healthcheck-progress {height: 12px; margin-bottom: 0px; margin-top: 8px;}
-.healthcheck-table > tbody > tr > td > .not-started {color: #999999;}
-.healthcheck-table > tbody > tr > td > .wait {color: #999999;}
-.healthcheck-table > tbody > tr > td > .success {color: #2e8701;}
-.healthcheck-table > tbody > tr > td > .fail {color: #890000;}
+.healthcheck-status-stopped, .healthcheck-status-unknown {color: #999999;}
+.healthcheck-status-success {color: #2e8701;}
+.healthcheck-status-failure, .healthcheck-status-error {color: #890000;}
+.healthcheck-table .healthcheck-col-select {width: 30px;}
+.healthcheck-table .healthcheck-col-status {width: 100px;}

@@ -41,7 +41,7 @@ function(utils, models, commonViews, dialogViews, NodesTab, NetworkTab, Settings
         title: function() {
             return this.model.get('name');
         },
-        tabs: ['nodes', 'network', 'settings', 'logs', 'actions', 'healthcheck'],
+        tabs: ['nodes', 'network', 'settings', 'logs', 'healthcheck', 'actions'],
         updateInterval: 5000,
         template: _.template(clusterPageTemplate),
         events: {

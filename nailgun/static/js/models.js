@@ -478,5 +478,38 @@ define(function() {
         }
     });
 
+    models.TestSet = Backbone.Model.extend({
+        constructorName: 'TestSet',
+        urlRoot: '/ostf/testsets',
+    });
+
+    models.TestSets = Backbone.Collection.extend({
+        constructorName: 'TestSets',
+        model: models.TestSet,
+        url: '/ostf/testsets'
+    });
+
+    models.Test = Backbone.Model.extend({
+        constructorName: 'Test',
+        urlRoot: '/ostf/tests',
+    });
+
+    models.Tests = Backbone.Collection.extend({
+        constructorName: 'Tests',
+        model: models.Test,
+        url: '/ostf/tests'
+    });
+
+    models.TestRun = Backbone.Model.extend({
+        constructorName: 'TestRun',
+        urlRoot: '/ostf/testruns',
+    });
+
+    models.TestRuns = Backbone.Collection.extend({
+        constructorName: 'TestRuns',
+        model: models.TestRun,
+        url: '/ostf/testruns'
+    });
+
     return models;
 });

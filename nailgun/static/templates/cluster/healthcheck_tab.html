@@ -1,88 +1,24 @@
 <div class="wrapper">
+  <div class="row-fluid page-sub-title">
+    <h3 class="span8">OpenStack Health Check</h3>
+    <div class="span2">
+      <label class="checkbox pull-right select-all">
+        <input type="checkbox" class="select-all-tumbler">Select All
+      </label>
+    </div>
+    <div class="span2">
+      <button class="btn btn-success pull-right action-btn" disabled>Run Tests</button>
+    </div>
+  </div>
 
-	<div class="row-fluid page-sub-title">
-		<h3 class="span8">OpenStack Health Check</h3>
-		<div class="span2">
-			<label class="checkbox pull-right select-all">
-        		<input type="checkbox" class="select-all-tumbler">Select All
-      		</label>
-		</div>
-		<div class="span2">
-			<button class="btn btn-success pull-right action-btn">Run Test(s)</button>
-		</div>
-	</div>
-  
-  	<div class="row-fluid">
-
-		<table class="table table-bordered healthcheck-table">
-    		<thead>
-      			<tr>
-        			<th></th>
-        			<th>Test Name</th>
-        			<th>Status</th>
-      			</tr>
-    		</thead>
-    		<tbody>
-    			<tr>
-					<td>
-						<div class="custom-tumbler">
-                		<input type="checkbox" value="Test" name="healthcheck_test" 'checked'>
-                		<!-- [if !IE |(gte IE 9)]> --><span>&nbsp;</span><!-- <![endif] -->
-              			</div>
-					</td>
-					<td><div class="healthcheck-name">Auth as admin trough identity</div></td>
-					<td><div class="healthcheck-status success">Success</div></td>
-				</tr>
-				<tr>
-					<td>
-						<div class="custom-tumbler">
-                		<input type="checkbox" value="Test" name="healthcheck_test" 'checked'>
-                		<!-- [if !IE |(gte IE 9)]> --><span>&nbsp;</span><!-- <![endif] -->
-              			</div>
-					</td>
-					<td>
-						<div class="healthcheck-name">Request service list from identity</div>
-						<div class="healthcheck-msg fail">Error Message: Lorem ipsum dolor sit amet, consectetur adipiscing elit. Sed vitae nunc laoreet, facilisis diam in, convallis nibh. Suspendisse molestie, nisi at tristique consectetur, nisl est porta ante, vel suscipit lectus magna sit amet mauris.</div>
-					</td>
-					<td><div class="healthcheck-status fail">Fail</div></td>
-				</tr>
-				<tr>
-					<td>
-						<div class="custom-tumbler">
-                		<input type="checkbox" value="Test" name="healthcheck_test" 'checked'>
-                		<!-- [if !IE |(gte IE 9)]> --><span>&nbsp;</span><!-- <![endif] -->
-              			</div>
-					</td>
-					<td><div class="healthcheck-name">Request users list</div></td>
-					<td>
-						<div class="progress progress-success progress-striped healthcheck-progress">
-							<div class="bar" style="width: 20%"></div>
-						</div>
-					</td>
-				</tr>
-				<tr>
-					<td>
-						<div class="custom-tumbler">
-                		<input type="checkbox" value="Test" name="healthcheck_test" 'checked'>
-                		<!-- [if !IE |(gte IE 9)]> --><span>&nbsp;</span><!-- <![endif] -->
-              			</div>
-					</td>
-					<td><div class="healthcheck-name wait">Request instance list</div></td>
-					<td><div class="healthcheck-status wait">Wait</div></td>
-				</tr>
-				<tr>
-					<td>
-						<div class="custom-tumbler">
-                		<input type="checkbox" value="Test" name="healthcheck_test" 'checked'>
-                		<!-- [if !IE |(gte IE 9)]> --><span>&nbsp;</span><!-- <![endif] -->
-              			</div>
-					</td>
-					<td><div class="healthcheck-name not-started">Request networks list</div></td>
-					<td><div class="healthcheck-status not-started">Not&nbsp;Started</div></td>
-				</tr>
-			</tbody>
-  		</table>
-
-  	</div>  
-
+  <div class="testsets">
+    <div class="row row-fluid">
+      <div class="span4"></div>
+      <div class="span4">
+        <div class="progress progress-striped progress-success active">
+          <div class="bar" style="width: 100%"></div>
+        </div>
+      </div>
+    </div>
+  </div>
 </div>
