@@ -262,7 +262,7 @@ class ProvisionTask(object):
         for node in nodes:
             if not node.online:
                 if not USE_FAKE:
-                    raise Exception(
+                    raise errors.NodeOffline(
                         u"Node '%s' (id=%s) is offline."
                         " Remove it from environment and try again." %
                         (node.name, node.id)
