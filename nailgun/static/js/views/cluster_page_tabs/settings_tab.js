@@ -108,13 +108,20 @@ function(utils, models, commonViews, dialogViews, settingsTabTemplate, settingsG
         className: 'fieldset-group wrapper',
         events: {
             'keyup input[type=text], input[type=password]': 'makeChanges',
-            'change input[type=checkbox], input[type=radio]': 'makeChanges'
+            'change input[type=checkbox]:not(.show-password), input[type=radio]': 'makeChanges',
+            'change input.show-password': 'showPassword'
         },
         makeChanges: function(e) {
             var target = $(e.currentTarget);
             var setting = this.tab.settings[target.parents('.settings-group').data('settings-group')][target.attr('name')];
             setting.value = setting.type == 'checkbox' ? target.is(':checked') : target.val();
             this.tab.checkForChanges();
+        },
+        showPassword: function(e) {
+            var target = $(e.currentTarget);
+            this.$('input[name=' + target.data('setting') + ']').attr('type', function() {
+                return target.is(':checked') ? 'text' : 'password';
+            });
         },
         initialize: function(options) {
             _.defaults(this, options);

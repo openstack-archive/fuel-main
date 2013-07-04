@@ -11,15 +11,15 @@ casper.then(function() {
 
 casper.then(function() {
     this.test.comment('Testing cluster OpenStack settings: Save button interractions');
-    this.click('input[type=checkbox]');
+    this.click('input[type=checkbox]:not(.show-password)');
     this.test.assertExists('.btn-apply-changes:not(:disabled)', 'Save settings button is enabled if there are changes');
-    this.click('input[type=checkbox]');
+    this.click('input[type=checkbox]:not(.show-password)');
     this.test.assertExists('.btn-apply-changes:disabled', 'Save settings button is disabled again if there are no changes');
 });
 
 casper.then(function() {
     this.test.comment('Testing cluster OpenStack settings: cancel changes operation');
-    this.click('input[type=checkbox]');
+    this.click('input[type=checkbox]:not(.show-password)');
     this.click('.nav-tabs li.active + li a');
     this.waitForSelector('.dismiss-settings-dialog');
     this.then(function() {
@@ -35,7 +35,7 @@ casper.then(function() {
 
 casper.then(function() {
     this.test.comment('Testing OpenStack settings: save changes');
-    this.click('input[type=checkbox]');
+    this.click('input[type=checkbox]:not(.show-password)');
     this.click('.btn-apply-changes');
     this.waitForSelector('.btn-load-defaults:not(:disabled)');
     this.test.assertExists('.btn-revert-changes:disabled', 'Cancel changes button is disabled after changes were saved successfully');

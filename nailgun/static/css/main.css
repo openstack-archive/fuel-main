@@ -3310,6 +3310,10 @@ input.error:focus {
   cursor: default;
 }
 
+.show-password .parameter-name {
+  font-weight: normal;
+}
+
 .parameter-name.hide {
   display: none;
 }
@@ -4098,4 +4102,10 @@ div.create-cluster-form .radio-checkbox-group label {
 
 .releases-table th.actions {
   width: 16%;
+}
+
+label.show-password {
+  clear: both;
+  margin-left: 120px;
+  margin-bottom: 30px;
 }

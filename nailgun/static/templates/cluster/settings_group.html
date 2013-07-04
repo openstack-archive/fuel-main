@@ -40,6 +40,17 @@
           <input type="<%= setting.type %>"  name="<%- settingName %>" value="<%- setting.value %>" <%= disabled %> />
         </div>
         <div class="parameter-description description"><%- setting.description %></div>
+        <% if (setting.type == 'password') { %>
+          <label class="show-password">
+            <div class="parameter-control">
+              <div class="custom-tumbler">
+                <input type="checkbox" class="show-password" data-setting="<%- settingName %>" <%= disabled %> />
+                <!-- [if !IE |(gte IE 9)]> --><span>&nbsp;</span><!-- <![endif] -->
+              </div>
+            </div>
+            <div class="openstack-sub-title parameter-name">Show password</div>
+          </label>
+        <% } %>
       </label>
     <% } %>
   <% }) %>
