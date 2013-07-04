@@ -657,25 +657,25 @@ function(utils, models, commonViews, dialogViews, nodesTabSummaryTemplate, editN
         events: {
             'click .toggle-volume': 'toggleEditDiskForm',
             'click .close-btn': 'deleteVolumeGroup',
-            'keyup input': 'editVolumeGroups',
+            'keyup input': 'makeChanges',
             'click .use-all-unallocated': 'useAllUnallocatedSpace'
         },
         toggleEditDiskForm: function(e) {
             if (this.screen.isLocked()) {return;}
             this.$('.disk-form').collapse('toggle');
-            _.each(this.disk.get('volumes'), this.checkForAvailableDeletion, this);
+            _.each(this.disk.get('volumes'), this.checkForDeletionAvailability, this);
         },
-        getMinimum: function(groupName) {
+        getMinimalSize: function(groupName) {
             var space = 0;
             _.each(_.reject(this.screen.disks.models, {id: this.disk.id}), function(disk) {
-                space += _.find(disk.get('volumes'), {name: groupName}).size;
+                space += disk.group(groupName).size;
             });
-            return _.find(this.disk.get('volumes'), {name: groupName}).minimum - space;
+            return this.disk.group(groupName).minimum - space;
         },
-        checkForAvailableDeletion: function(group) {
-            this.$('.disk-visual .' + group.name + ' .close-btn').toggle(this.getMinimum(group.name) <= 0 && this.$('.disk-form').hasClass('in'));
+        checkForDeletionAvailability: function(group) {
+            this.$('.disk-visual .' + group.name + ' .close-btn').toggle(this.getMinimalSize(group.name) <= 0 && this.$('.disk-form').hasClass('in'));
         },
-        setSize: function(groupName, size, auto) { console.log('setSize'); console.log(groupName);
+        setSize: function(groupName, size, auto) {
             var groupControl = this.$('input[name=' + groupName + ']');
             groupControl.removeClass('error').parents('.volume-group').next().text('');
             if (_.isUndefined(size)) { // for invoked subviews
@@ -687,16 +687,15 @@ function(utils, models, commonViews, dialogViews, nodesTabSummaryTemplate, editN
             this.disk.set({volumes: volumes}, {
                 validate: true,
                 group: groupName,
-                min: this.getMinimum(groupName),
-                max: this.countUnallocatedSpace(groupName)
+                min: this.getMinimalSize(groupName),
+                max: this.getUnallocatedSpace(groupName)
             });
-            var resultGroup = _.find(this.disk.get('volumes'), {name: groupName});
             // render result
             if (auto) {
-                groupControl.val(resultGroup.size);
+                groupControl.val(this.disk.group(groupName).size).trigger('keyup');
             }
             this.renderVisualGraph();
-            this.checkForAvailableDeletion(resultGroup);
+            this.checkForDeletionAvailability(this.disk.group(groupName));
             this.screen.checkForChanges();
         },
         makeChanges: function(e, value, auto) {
@@ -709,15 +708,12 @@ function(utils, models, commonViews, dialogViews, nodesTabSummaryTemplate, editN
         deleteVolumeGroup: function(e) {
             this.makeChanges(e, 0, true);
         },
-        editVolumeGroups: function(e) {
-            this.makeChanges(e, this.$(e.currentTarget).val());
-        },
-        countUnallocatedSpace: function(groupName) {
+        getUnallocatedSpace: function(groupName) {
             var allocatedSpace = _.reduce(this.disk.get('volumes'), function(sum, group) {return group.name == groupName ? sum : sum + group.size;}, 0);
             return this.disk.get('size') - allocatedSpace;
         },
         useAllUnallocatedSpace: function(e) {
-            this.makeChanges(e, this.countUnallocatedSpace(this.$(e.currentTarget).parents('.volume-group').data('group')), true);
+            this.makeChanges(e, this.getUnallocatedSpace(this.$(e.currentTarget).parents('.volume-group').data('group')), true);
         },
         initialize: function(options) {
             _.defaults(this, options);
@@ -734,16 +730,13 @@ function(utils, models, commonViews, dialogViews, nodesTabSummaryTemplate, editN
                 .find('.volume-group-size').text(utils.showDiskSize(size));
         },
         renderVisualGraph: function() {
-            var unallocatedWidth = 100,
-                unallocatedSize = this.disk.get('size');
+            var unallocatedWidth = 100;
             _.each(this.disk.get('volumes'), _.bind(function(volume) {
-                var width = parseFloat((volume.size / this.disk.get('size') * 100).toFixed(2));
-                var size = volume.size;
+                var width = volume.size / this.disk.get('size') * 100;
                 unallocatedWidth -= width;
-                unallocatedSize -= size;
-                this.renderGroup(volume.name, width, size);
+                this.renderGroup(volume.name, width, volume.size);
             }, this));
-            this.renderGroup('unallocated', unallocatedWidth, unallocatedSize);
+            this.renderGroup('unallocated', unallocatedWidth, this.getUnallocatedSpace());
         },
         render: function() {
             this.$el.html(this.template(_.extend({
@@ -753,7 +746,7 @@ function(utils, models, commonViews, dialogViews, nodesTabSummaryTemplate, editN
             this.$('.disk-form').collapse({toggle: false});
             this.renderVisualGraph();
             this.$('input.auto').autoNumeric();
-            //this.$('input.auto').trigger('keypress');
+            this.$('input.auto').trigger('keyup');
             return this;
         }
     });

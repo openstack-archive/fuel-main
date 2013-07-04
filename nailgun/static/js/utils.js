@@ -87,6 +87,11 @@ define(['require'], function(require) {
         },
         calculateNetworkSize: function(cidr) {
             return Math.pow(2, 32 - parseInt(_.last(cidr.split('/')), 10));
+        },
+        formatNumber: function(n) {
+            return String(n).replace(/\d/g, function(c, i, a) {
+                return i > 0 && c !== "." && (a.length - i) % 3 === 0 ? " " + c : c;
+            });
         }
     };
 
