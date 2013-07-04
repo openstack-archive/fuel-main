@@ -172,5 +172,26 @@ class TestNode(BaseNodeTestCase):
             'slave-01', smiles_count=6, networks_count=1, timeout=300)
 
 
+    @snapshot_errors
+    @logwrap
+    @fetch_logs
+    def test_add_compute_node(self):
+        cluster_name = 'node_addition'
+        nodes_dict = {'controller': self.nodes().slaves[:1],
+                      'compute': self.nodes().slaves[1:2]}
+        additional_nodes_dict = {'compute': self.nodes().slaves[2:3]}
+
+        cluster_id = self._basic_provisioning(
+            cluster_name=cluster_name, nodes_dict=nodes_dict)
+
+        nodes = self.bootstrap_nodes(
+            self.devops_nodes_by_names(self.nodes().slaves[2:3]))
+        self.add_node(additional_nodes_dict)
+        self.update_nodes_in_cluster(cluster_id, nodes)
+
+        self.assertEqual(3, len(self.client.list_cluster_nodes(cluster_id)))
+        task = self.client.update_cluster_changes(cluster_id)
+        self.assertTaskSuccess(task)
+
 if __name__ == '__main__':
     unittest.main()
