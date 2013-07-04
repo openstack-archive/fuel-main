@@ -779,8 +779,6 @@ class NetworkManager(object):
                 lambda network: network['name'] == 'public',
                 controller.network_data)[0]
 
-            logger.error(controller.network_data)
-
             if public_net.get('ip'):
                 ip = public_net['ip'].split('/')[0]
 
