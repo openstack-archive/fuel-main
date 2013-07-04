@@ -98,28 +98,6 @@
             },
             "attributes_metadata": {
                 "editable": {
-                    "os": {
-                        "rh_username": {
-                            "value": "",
-                            "label": "Red Hat username",
-                            "weight": 10
-                        },
-                        "rh_password": {
-                            "value": "",
-                            "label": "Red Hat password",
-                            "weight": 20
-                        },
-                        "rhn_sat_hostname": {
-                            "value": "",
-                            "label": "Red Hat Network Satellite hostname",
-                            "weight": 30
-                        },
-                        "rhn_act_key": {
-                            "value": "",
-                            "label": "Red Hat Network Activation key",
-                            "weight": 40
-                        }
-                    },
                     "access": {
                         "user": {
                             "value": "admin",
