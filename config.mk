@@ -14,7 +14,7 @@ LOCAL_MIRROR?=$(TOP_DIR)/local_mirror
 LOCAL_MIRROR:=$(abspath $(LOCAL_MIRROR))
 
 COMMIT_SHA:=$(shell git rev-parse --verify HEAD)
-PRODUCT_VERSION:=3.0.1
+PRODUCT_VERSION:=3.1
 FUEL_COMMIT_SHA:=$(shell cd fuel && git rev-parse --verify HEAD)
 
 CENTOS_MAJOR:=6
