@@ -727,6 +727,24 @@ class DownloadReleaseTask(object):
 
     @classmethod
     def execute(cls, task, data):
+        """ Executes DownloadReleaseTask and passed it to the orchestrator
+
+        Keyword arguments:
+        taks -- task isinstance
+        data -- taks data dictionary:
+            'method' -- task name
+            'respond_to' -- method to recieve RPC message
+            'args' -- dictionary with tasks UUID and release data:
+                'task_uuid' -- task UUID
+                'release_info' -- release data:
+                    'release_id' -- release ID
+                    'redhat' -- Red Hat account data
+                        'license_type' -- "rhn" or "rhsm"
+                        'username' -- username
+                        'password' -- password
+                        'satellite' -- satellite host (only for RHN license)
+                        'activation_key': activation key (only for RHN license)
+        """
         logger.debug("Download release task(uuid=%s) is running" % task.uuid)
 
         message = {
