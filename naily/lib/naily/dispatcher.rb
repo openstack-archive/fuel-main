@@ -28,6 +28,36 @@ module Naily
       args
     end
 
+    def download_release(data)
+#       message = {
+#             'method': 'download_release',
+#             'respond_to': 'download_release_resp',
+#             'args': {
+#                 'task_uuid': task.uuid,
+#                 'release_info': {
+#                     'release_id': 1,
+#                     'redhat':{
+#                         'license_type': 'rhsm', #'license_type' in ["rhsm", "rhn"]
+#                         'username':'',
+#                         'password':''
+#                     }
+#                 }
+#             }
+#         }
+      Naily.logger.info("'download_release' method called with data: #{data.inspect}")
+      reporter = Naily::Reporter.new(@producer, data['respond_to'], data['args']['task_uuid'])
+      nodes = data['args']['nodes']
+      begin
+        result = @orchestrator.download_release(reporter, data['args']['task_uuid'], nodes, data['args']['attributes'])
+      rescue Timeout::Error
+        msg = "Timeout of release download is exceeded."
+        Naily.logger.error msg
+        reporter.report({'status' => 'error', 'error' => msg})
+        return
+      end
+      report_result(result, reporter)
+    end
+
     def provision(data)
       Naily.logger.info("'provision' method called with data: #{data.inspect}")
 
