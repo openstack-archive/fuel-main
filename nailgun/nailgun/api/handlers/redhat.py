@@ -12,6 +12,8 @@
 #    License for the specific language governing permissions and limitations
 #    under the License.
 
+import traceback
+
 import web
 
 from nailgun.api.handlers.base import JSONHandler, content_json
@@ -47,7 +49,8 @@ class RedHatAccountHandler(JSONHandler):
         try:
             task = task_manager.execute()
         except Exception as exc:
-            logger.warn(u'DownloadReleaseHandler: error while execution'
-                        ' deploy task: {0}'.format(str(exc)))
+            logger.error(u'DownloadReleaseHandler: error while execution'
+                         ' deploy task: {0}'.format(str(exc)))
+            logger.error(traceback.format_exc())
             raise web.badrequest(str(exc))
         return TaskHandler.render(task)
