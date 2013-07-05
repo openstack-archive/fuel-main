@@ -348,7 +348,7 @@ class TestTaskManagers(BaseHandlers):
         self.assertEquals(200, resp.status)
         nets = json.loads(resp.body)
 
-        nets['networks'][-1]['cidr'] = settings.NET_EXCLUDE[0]
+        nets['networks'][-1]['cidr'] = settings.ADMIN_NETWORK['cidr']
 
         task = self.env.launch_verify_networks(nets)
         self.env.wait_error(task, 30)
@@ -356,7 +356,7 @@ class TestTaskManagers(BaseHandlers):
             task.message,
             "Intersection with admin "
             "network(s) '{0}' found".format(
-                settings.NET_EXCLUDE
+                settings.ADMIN_NETWORK['cidr']
             )
         )
         self.assertEquals(mocked_rpc.called, False)

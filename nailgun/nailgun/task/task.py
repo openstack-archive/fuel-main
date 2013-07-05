@@ -602,6 +602,7 @@ class CheckNetworksTask(object):
 
         result = []
         err_msgs = []
+        admin_range = netaddr.IPSet([settings.ADMIN_NETWORK['cidr']])
         for ng in networks:
             net_errors = []
             sub_ranges = []
@@ -613,12 +614,12 @@ class CheckNetworksTask(object):
                 if 'cidr' in ng:
                     fnet = netaddr.IPSet([ng['cidr']])
 
-                    if fnet & netaddr.IPSet(settings.NET_EXCLUDE):
+                    if fnet & admin_range:
                         net_errors.append("cidr")
                         err_msgs.append(
                             "Intersection with admin "
                             "network(s) '{0}' found".format(
-                                settings.NET_EXCLUDE
+                                settings.ADMIN_NETWORK['cidr']
                             )
                         )
                     if fnet.size < ng['network_size'] * ng['amount']:
@@ -633,15 +634,14 @@ class CheckNetworksTask(object):
                 if 'ip_ranges' in ng:
                     for k, v in enumerate(ng['ip_ranges']):
                         ip_range = netaddr.IPSet(netaddr.IPRange(v[0], v[1]))
-                        admin = netaddr.IPSet(settings.NET_EXCLUDE)
-                        if ip_range & admin:
+                        if ip_range & admin_range:
                             net_errors.append("cidr")
                             err_msgs.append(
-                                "IP range {0} - {1} in {2} intersects with "
-                                "admin range of {3}".format(
+                                "IP range {0} - {1} in {2} network intersects "
+                                "with admin range of {3}".format(
                                     v[0], v[1],
                                     ng.get('name') or ng_db.name or ng_db.id,
-                                    settings.NET_EXCLUDE
+                                    settings.ADMIN_NETWORK['cidr']
                                 )
                             )
                             sub_ranges.append(k)
@@ -657,7 +657,7 @@ class CheckNetworksTask(object):
             if net_errors:
                 result.append({
                     "id": int(ng["id"]),
-                    "ranges": sub_ranges,
+                    "range_errors": sub_ranges,
                     "errors": net_errors
                 })
         if err_msgs:

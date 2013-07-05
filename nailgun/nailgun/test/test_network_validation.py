@@ -65,7 +65,7 @@ class TestHandlers(BaseHandlers):
         )
         cluster = self.env.clusters[0]
         nets = self.env.generate_ui_networks(cluster.id)
-        nets['networks'][-1]["cidr"] = settings.NET_EXCLUDE[0]
+        nets['networks'][-1]["cidr"] = settings.ADMIN_NETWORK['cidr']
         resp = self.update_networks(cluster.id, nets, expect_errors=True)
         self.assertEquals(resp.status, 202)
         task = json.loads(resp.body)
@@ -76,7 +76,7 @@ class TestHandlers(BaseHandlers):
             task['message'],
             "Intersection with admin "
             "network(s) '{0}' found".format(
-                settings.NET_EXCLUDE
+                settings.ADMIN_NETWORK['cidr']
             )
         )
 
@@ -89,7 +89,7 @@ class TestHandlers(BaseHandlers):
         )
         cluster = self.env.clusters[0]
         nets = self.env.generate_ui_networks(cluster.id)
-        base = IPNetwork(settings.NET_EXCLUDE[0])
+        base = IPNetwork(settings.ADMIN_NETWORK['cidr'])
         base.prefixlen += 1
         start_range = str(base[0])
         end_range = str(base[-1])
@@ -104,11 +104,11 @@ class TestHandlers(BaseHandlers):
         self.assertEquals(task['name'], 'check_networks')
         self.assertEquals(
             task['message'],
-            "IP range {0} - {1} in {2} intersects with admin "
+            "IP range {0} - {1} in {2} network intersects with admin "
             "range of {3}".format(
                 start_range, end_range,
                 nets['networks'][1]['name'],
-                settings.NET_EXCLUDE
+                settings.ADMIN_NETWORK['cidr']
             )
         )
 
