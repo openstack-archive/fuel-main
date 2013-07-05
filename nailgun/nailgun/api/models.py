@@ -1,3 +1,4 @@
+
 # -*- coding: utf-8 -*-
 
 #    Copyright 2013 Mirantis, Inc.
@@ -54,6 +55,7 @@ class Release(Base):
     name = Column(Unicode(100), nullable=False)
     version = Column(String(30), nullable=False)
     description = Column(Unicode)
+    operating_system = Column(String(50), nullable=False)
     state = Column(Enum(*STATES, name='release_state'),
                    nullable=False,
                    default='not_available')

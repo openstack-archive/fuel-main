@@ -37,7 +37,8 @@ class TestHandlers(BaseHandlers):
             reverse('ReleaseCollectionHandler'),
             params=json.dumps({
                 'name': 'Another test release',
-                'version': '1.0'
+                'version': '1.0',
+                'operating_system': 'CentOS'
             }),
             headers=self.default_headers
         )
@@ -53,6 +54,7 @@ class TestHandlers(BaseHandlers):
                 'name': release_name,
                 'version': release_version,
                 'description': release_description,
+                'operating_system': 'CentOS',
                 'networks_metadata': [
                     {"name": "floating", "access": "public"},
                     {"name": "fixed", "access": "private10"},
@@ -69,6 +71,7 @@ class TestHandlers(BaseHandlers):
                 'name': release_name,
                 'version': release_version,
                 'description': release_description,
+                'operating_system': 'CentOS',
                 'networks_metadata': [
                     {"name": "fixed", "access": "private10"}
                 ]
@@ -95,6 +98,7 @@ class TestHandlers(BaseHandlers):
                 'name': release_name,
                 'version': release_version,
                 'description': release_description,
+                'operating_system': 'CentOS',
                 'networks_metadata': [
                     {"name": "floating", "access": "public"},
                     {"name": "fixed", "access": "private10"},
@@ -111,6 +115,7 @@ class TestHandlers(BaseHandlers):
                 'name': release_name,
                 'version': release_version,
                 'description': release_description,
+                'operating_system': 'CentOS',
                 'networks_metadata': [
                     {"name": "fixed", "access": "private10"}
                 ]

@@ -95,6 +95,7 @@ class TestHandlers(BaseHandlers):
         release.version = "1.1.1"
         release.name = u"release_name_" + str(release.version)
         release.description = u"release_desc" + str(release.version)
+        release.operating_system = "CentOS"
         release.networks_metadata = [
             {"name": "floating", "access": "public"},
             {"name": "fixed", "access": "private10"},

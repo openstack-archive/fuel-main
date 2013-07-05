@@ -97,6 +97,7 @@ class Environment(object):
             'name': u"release_name_" + version,
             'version': version,
             'description': u"release_desc" + version,
+            'operating_system': 'CensOS',
             'networks_metadata': self.get_default_networks_metadata(),
             'attributes_metadata': self.get_default_attributes_metadata(),
             'volumes_metadata': self.get_default_volumes_metadata()
