@@ -22,13 +22,7 @@ stage {'glance-image':
   require => Stage['main'],
 }
 
-node default {
-  case $deployment_mode {
-    "singlenode": { include osnailyfacter::cluster_simple }
-    "multinode": { include osnailyfacter::cluster_simple }
-    "ha": { include osnailyfacter::cluster_ha }
-  }
-
+class os_common {
   class {'osnailyfacter::network_setup': stage => 'netconfig'}
   class {'openstack::firewall': stage => 'openstack-firewall'}
 
@@ -39,4 +33,22 @@ node default {
     action  => 'accept',
     require => Class['openstack::firewall'],
   }
+}
+node default {
+  case $deployment_mode {
+    "singlenode": { 
+      include osnailyfacter::cluster_simple 
+      class {'os_common':}
+      }
+    "multinode": { 
+      include osnailyfacter::cluster_simple
+      class {'os_common':}
+      }
+    "ha": { 
+      include osnailyfacter::cluster_ha
+      class {'os_common':}
+      }
+    "rpmcache": { include osnailyfacter::rpmcache }
+  }
+
 }
