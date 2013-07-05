@@ -60,7 +60,7 @@ else
 fi
 
 # bootloader
-echo "bootloader --location=mbr --driveorder=${tgtdrive}" > /tmp/bootloader.ks
+echo "bootloader --location=mbr --driveorder=${tgtdrive} --append=' biosdevname=0'" > /tmp/bootloader.ks
 
 # partition
 echo "partition / --fstype=ext4 --ondisk=${tgtdrive} --size=1 --grow --asprimary" > /tmp/partition.ks
