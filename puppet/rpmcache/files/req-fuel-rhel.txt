@@ -7,8 +7,6 @@ MySQL-server-wsrep-5.5.28_wsrep_23.7-12.x86_64.rpm
 MySQL-shared-5.5.28-6.x86_64.rpm
 MySQL-shared-wsrep-5.5.28_wsrep_23.7-12.x86_64.rpm
 cirros-testvm-0.3.0-3.x86_64.rpm
-cobbler-2.2.3-2.el6.noarch.rpm
-cobbler-web-2.2.3-2.el6.noarch.rpm
 crmsh-1.2.5-55.2.x86_64.rpm
 erlang-R14B-04.8.el6.x86_64.rpm
 erlang-appmon-R14B-04.8.el6.x86_64.rpm
@@ -69,10 +67,7 @@ erlang-webtool-R14B-04.8.el6.x86_64.rpm
 erlang-wx-R14B-04.8.el6.x86_64.rpm
 erlang-xmerl-R14B-04.8.el6.x86_64.rpm
 euca2ools-2.1.1-2.el6.noarch.rpm
-fence-agents-3.1.5-25.el6_4.2.x86_64.rpm
-fence-virt-0.2.3-13.el6.x86_64.rpm
 galera-23.2.2-1.rhel5.x86_64.rpm
-keepalived-1.2.7-3.el6.x86_64.rpm
 mcollective-2.3.1-2.el6.noarch.rpm
 mcollective-2.3.1-2.el6.src.rpm
 mcollective-client-2.3.1-2.el6.noarch.rpm
@@ -83,9 +78,6 @@ nailgun-net-check-0.0.2-1.x86_64.rpm
 nginx-1.0.15-4.el6.x86_64.rpm
 pssh-2.3.1-15.2.x86_64.rpm
 puppet-2.7.19-1.el6.noarch.rpm
-puppet-server-2.7.19-1.el6.noarch.rpm
-puppetdb-1.2.0-1.el6.noarch.rpm
-puppetdb-terminus-1.2.0-1.el6.noarch.rpm
 python-amqp-1.2.0-6.el6.noarch.rpm
 python-amqplib-1.0.2-1.el6.noarch.rpm
 python-anyjson-0.3.3-2.el6.noarch.rpm
@@ -110,5 +102,5 @@ supervisor-3.0a12-0.12.el6.noarch.rpm
 wxBase-2.8.12-2.el6.x86_64.rpm
 wxGTK-2.8.12-2.el6.x86_64.rpm
 wxGTK-gl-2.8.12-2.el6.x86_64.rpm
-xfsprogs-3.1.1-10.el6.i686.rpm
 xfsprogs-3.1.1-10.el6.x86_64.rpm
+xinetd-2.3.14-38.el6.x86_64.rpm

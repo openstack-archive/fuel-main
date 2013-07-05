@@ -1,6 +1,7 @@
 class rpmcache ( $releasever, $pkgdir, $numtries,
 $rh_username, $rh_password, $rh_base_channels, $rh_openstack_channel,
-$use_satellite = false, $sat_hostname = false, $activation_key = false, $sat_base_channels, $sat_openstack_channel)  {
+$use_satellite = false, $sat_hostname = false, $activation_key = false,
+$sat_base_channels, $sat_openstack_channel, $numtries = 3)  {
 
   Exec  {path => '/usr/bin:/bin:/usr/sbin:/sbin'}
   package { "yum-utils":
@@ -35,6 +36,12 @@ $use_satellite = false, $sat_hostname = false, $activation_key = false, $sat_bas
     owner => 'root',
     group => 'root',
     mode => 0644,
+  } ->
+
+  exec { 'rpm-import-rh-gpg-key':
+    command => 'rpm --import /etc/pki/rpm-gpg/RPM-GPG-KEY-redhat-release',
+    require File['/etc/pki/rpm-gpg/RPM-GPG-KEY-redhat-release'],
+    logoutput => true
   } ->
 
   file { '/etc/nailgun/':
@@ -100,26 +107,6 @@ $use_satellite = false, $sat_hostname = false, $activation_key = false, $sat_bas
     logoutput => true,
     returns   => 1,
   }
-  $hack_packages = [
-    'xinetd-2.3.14-38.el6.x86_64.rpm',
-    'xfsprogs-3.1.1-10.el6.x86_64.rpm',
-    'qpid-cpp-server-cluster-0.14-22.el6_3.x86_64.rpm',
-    'qpid-cpp-server-store-0.14-22.el6_3.x86_64.rpm',
-    'qpid-tests-0.14-1.el6_2.noarch.rpm',
-    'qpid-tools-0.14-6.el6_3.noarch.rpm',
-    'qpid-cpp-server-ssl-0.14-22.el6_3.x86_64.rpm',
-  ]
-  define get_hack_package (
-    $base_url="http://mirror.yandex.ru/centos/6.4/os/x86_64/Packages/",
-    $pkgdir=$pkgdir,
-  ) {
-    exec {"Download_${name}":
-      command   => "/bin/mkdir -p ${pkgdir}/fuel/Packages; /usr/bin/wget -c -P ${pkgdir}/fuel/Packages ${base_url}/${name}",
-      logoutput => true,
-      before    => Exec['rebuild-fuel-repo'],
-    }
-  }
-  get_hack_package{$hack_packages:}
 
   file { '/etc/nailgun/req-fuel-rhel.txt':
     ensure => present,

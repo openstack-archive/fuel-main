@@ -121,7 +121,10 @@ python-webob1.0
 python-webob1.2
 qpid-cpp-client
 qpid-cpp-server
-qpid-cpp-server-cluster
+qpid-cpp-server-ssl
+qpid-cpp-server-store
+qpid-tests
+qpid-tools
 redhat-release-server
 redhat-rpm-config
 resource-agents

@@ -1,6 +1,6 @@
 #!/bin/bash -x
 #Register
-subscription-manager register "--username=<%= rh_username %>" "--password=<%= rh_password %>" --autosubscribe --force
+subscription-manager register "--username=<%= rh_username %>" "--password=<%= rh_password %>" --autosubscribe --force 
 
 #Attach to RHOS product
 poolid="$(subscription-manager list --available | grep -A2 "Red Hat OpenStack" | tail -1 | cut -c15- | tr -d ' ')"
@@ -20,7 +20,7 @@ yum --releasever=<%= releasever %> repolist || :
 #Save centos-release RPM so it can be reinstalled later
 mkdir -p /root/centos-release
 yumdownloader --destdir /root/centos-release --disablerepo='*rhel*' centos-release
-if ! [ -f /root/centos-release/centos-release*.rpm ];then
+if ! [ -f /root/centos-release/centos-release*.rpm ]; then
   echo "Unable to download centos-release RPM. Aborting."
   exit 1
 fi
@@ -35,7 +35,7 @@ rpm -ivh --force /root/rhnpackages/*.rpm
 #Download RHN Satellite GPG key
 mkdir -p /etc/sysconfig/rhn
 wget "<%= sat_hostname %>/pub/RHN-ORG-TRUSTED-SSL-CERT" -O /etc/sysconfig/rhn/RHNS-CA-CERT
-if [ "$(file -b /etc/sysconfig/rhn/RHNS-CA-CERT)" != "ASCII text" ];then
+if [ "$(file -b /etc/sysconfig/rhn/RHNS-CA-CERT)" != "ASCII text" ]; then
   echo "GPG Key download failed. Looking for URL <%= sat_hostname %>/pub/RHN-ORG-TRUSTED-SSL-CERT. Cannot proceed"
   exit 1
 fi
@@ -47,7 +47,7 @@ rm -rf /etc/yum.repos.d/redhat.repo
 #Run registration
 rhnreg_ks "--serverUrl=http://<%= sat_hostname %>/XMLRPC" --profilename=fuelweb "--activationkey=<%= activation_key %>" --sslCACert=/etc/sysconfig/rhn/RHNS-CA-CERT --nopackages --nohardware --novirtinfo --norhnsd --force
 
-if [ $? -ne 0 ];then
+if [ $? -ne 0 ]; then
   echo "Registration failed. Aborting."
   exit 1
 fi
@@ -80,13 +80,13 @@ yum-config-manager --disable 'base' &> /dev/null
 echo 6Server > /etc/yum/vars/releasever
 yum --releasever=<%= releasever %> makecache
 
-for tries in $(seq 1 <%= numtries %>);do
+for tries in $(seq 1 <%= numtries %>); do
   /usr/local/bin/repotrack -a x86_64 -p "<%= pkgdir %>/Packages" $(cat /etc/nailgun/required-rpms.txt | xargs echo -en)
   status=$?
   #Purge any corrupt downloaded RPMs
-  env LANG=C rpm --checksig <%= pkgdir %>/Packages/* | grep 'md5 NOT OK' | cut -d':' | xargs rm -f
+  env LANG=C rpm --checksig <%= pkgdir %>/Packages/* | grep 'md5 NOT OK' | cut -d':' -f1| xargs rm -f
 done
-if [ $status -ne 0 ];
+if [ $status -ne 0 ]; then
   echo "ERROR: Repotrack did not exit cleanly after <%= numtries %> tries."
   exit 1
 fi
