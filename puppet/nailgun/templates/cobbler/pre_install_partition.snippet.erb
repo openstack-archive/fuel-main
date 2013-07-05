@@ -12,9 +12,20 @@ done
 echo "bootloader --location=mbr --driveorder=${tgtdrive} --append=' biosdevname=0 crashkernel=none'" > /tmp/bootloader.ks
 
 # partition
+
+# Do the label itself
 /usr/sbin/parted -s /dev/${tgtdrive} mklabel gpt
+# Create and mark Bios Boot partition to which grub will
+# embed its code later, useable for legacy boot.
+# May be way smaller, but be aware that the parted may
+# shrink 1M partition to zero at some disks and versions.
 /usr/sbin/parted -s /dev/${tgtdrive} mkpart primary 0 24M
 /usr/sbin/parted -s /dev/${tgtdrive} set 1 bios_grub on
+# Create partition for the EFI boot, minimum size is 100M,
+# recommended is 200M, with fat32 and future mountpoint in 
+# the /boot/efi
+# There is also '/usr/sbin/parted -s /dev/${tgtdrive} set 2 boot on'
+# which is strictly needed for EFI boot itself.
 /usr/sbin/parted -s /dev/${tgtdrive} mkpart primary 24M 128M
 echo "partition / --fstype=ext4 --ondisk=${tgtdrive} --size=1 --grow --asprimary" > /tmp/partition.ks
 echo "partition swap --recommended --ondisk=${tgtdrive}" >> /tmp/partition.ks
