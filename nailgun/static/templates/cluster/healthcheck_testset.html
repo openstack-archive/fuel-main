@@ -2,27 +2,32 @@
   <table class="table table-bordered healthcheck-table">
     <thead>
       <tr>
-        <th colspan="3"><%- testset.get('name') %></th>
+        <th colspan="2">
+          <label class="parameter-box clearfix">
+            <div class="parameter-control">
+              <div class="custom-tumbler">
+                <input type="checkbox" name="<%- testset.id %>" />
+                <!-- [if !IE |(gte IE 9)]> --><span>&nbsp;</span><!-- <![endif] -->
+              </div>
+            </div>
+            <div class="parameter-name" style="cursor: pointer"><%- testset.get('name') %></div>
+          </label>
+        </th>
       </tr>
     </thead>
     <tbody>
       <% tests.each(function(test) { %>
+        <% var result = _.find(testrun.get('tests'), {id: test.id}) %>
+        <% var status = result && result.status || 'unknown' %>
         <tr>
-          <td class="healthcheck-col-select">
-            <div class="custom-tumbler">
-              <label>
-                <input type="checkbox" value="Test" name="healthcheck_test">
-                <!-- [if !IE |(gte IE 9)]> --><span>&nbsp;</span><!-- <![endif] -->
-              </label>
-            </div>
-          </td>
-          <td class="healthcheck-col-test">
+          <td>
             <div class="healthcheck-name"><%- test.get('name') %></div>
-            <!--<div class="healthcheck-msg healthcheck-status-failure">Error Message: Test failed!</div>-->
+            <% if (status == 'failure' || status == 'error') { %>
+              <div class="healthcheck-msg healthcheck-status-failure"><%- result.message %></div>
+            <% } %>
           </td>
           <td class="healthcheck-col-status">
-            <div class="healthcheck-status healthcheck-status-success">Success</div>
-            <!--<div class="progress progress-success progress-striped healthcheck-progress"><div class="bar" style="width:100%"></div></div>-->
+            <div class="healthcheck-status healthcheck-status-<%- status %>"><%- status %></div>
           </td>
         </tr>
       <% }) %>
