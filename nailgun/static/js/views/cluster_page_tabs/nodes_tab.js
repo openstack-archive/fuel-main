@@ -363,7 +363,7 @@ function(utils, models, commonViews, dialogViews, nodesTabSummaryTemplate, editN
             this.$el.addClass('node-list-' + this.role);
             if (this.collection.length || placeholders) {
                 var container = this.$('.node-list-container');
-                var operating_system = this.collection.cluster.get('release').get('operating_system')
+                var operating_system = this.collection.cluster.get('release').get('operating_system');
                 this.collection.each(function(node) {
                     var nodeView = new Node({model: node, renameable: true, operating_system: operating_system});
                     this.registerSubView(nodeView);

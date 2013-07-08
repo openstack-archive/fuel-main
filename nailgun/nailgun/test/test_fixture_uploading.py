@@ -40,6 +40,7 @@ class TestFixture(BaseHandlers):
                 "name": "CustomFixtureRelease",
                 "version": "0.0.1",
                 "description": "Sample release for testing",
+                "operating_system": "CentOS",
                 "networks_metadata": [
                   {"name": "floating", "access": "public"},
                   {"name": "fixed", "access": "private10"},
