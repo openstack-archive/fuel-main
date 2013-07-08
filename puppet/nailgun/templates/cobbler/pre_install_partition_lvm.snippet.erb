@@ -77,6 +77,7 @@ echo "bootloader --location=mbr --driveorder=\$(basename `readlink -f /dev/$spac
                 #else
                     $post_logical_volumes.append("lvcreate --size %s --name %s %s" % ($volume_size, $volume_name, $space_id))
                     $post_logical_volumes.append("mkfs.xfs /dev/mapper/%s-%s" % ($space_id, $volume_name))
+                    $post_logical_volumes.append("mkdir -p /mnt/sysimage%s" % $volume_mount)
                     $post_logical_volumes.append("echo '/dev/mapper/%s-%s %s xfs defaults 0 0' >> /mnt/sysimage/etc/fstab" % ($space_id, $volume_name, $volume_mount))
                 #end if
             #end if
