@@ -17,11 +17,11 @@
   </div>
 <% } else if (status == 'provisioning') { %>
   <div class="progress">
-    <div class="bar"><p>Installing CentOS</p></div>
+    <div class="bar"><p>Installing <%- operating_system %></p></div>
   </div>
 <% } else if (status == 'provisioned') { %>
   <div class="msg-provisioned">
-    <i class="icon-install"></i>CentOS is installed
+    <i class="icon-install"></i><%- operating_system %> is installed
   </div>
 <% } else if (status == 'deploying') { %>
   <div class="progress progress-success">

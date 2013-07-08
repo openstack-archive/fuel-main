@@ -357,13 +357,15 @@ function(utils, models, commonViews, dialogViews, nodesTabSummaryTemplate, editN
                 cluster: this.collection.cluster,
                 nodes: this.collection,
                 role: this.role,
+                operating_system: this.collection.cluster.get('release').get('operating_system'),
                 placeholders: placeholders
             }));
             this.$el.addClass('node-list-' + this.role);
             if (this.collection.length || placeholders) {
                 var container = this.$('.node-list-container');
+                var operating_system = this.collection.cluster.get('release').get('operating_system')
                 this.collection.each(function(node) {
-                    var nodeView = new Node({model: node, renameable: true});
+                    var nodeView = new Node({model: node, renameable: true, operating_system: operating_system});
                     this.registerSubView(nodeView);
                     container.append(nodeView.render().el);
                 }, this);
@@ -443,7 +445,8 @@ function(utils, models, commonViews, dialogViews, nodesTabSummaryTemplate, editN
         updateStatus: function() {
             this.$('.node-status').html(this.nodeStatusTemplate({
                 node: this.model,
-                logsLink: this.getLogsLink()
+                logsLink: this.getLogsLink(),
+                operating_system: this.operating_system
             }));
             this.$('.nodebox').toggleClass('node-offline', !this.model.get('online'));
             this.updateProgress();
@@ -485,7 +488,8 @@ function(utils, models, commonViews, dialogViews, nodesTabSummaryTemplate, editN
                 renaming: this.renaming,
                 renameable: this.renameable,
                 selectableForAddition: this.selectableForAddition,
-                selectableForDeletion: this.selectableForDeletion
+                selectableForDeletion: this.selectableForDeletion,
+                operating_system: this.operating_system
             }));
             this.updateStatus();
             return this;
