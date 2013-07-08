@@ -13,12 +13,13 @@ function(models, commonViews, dialogViews, healthcheckTabTemplate, healthcheckTe
 
     HealthCheckTab = commonViews.Tab.extend({
         template: _.template(healthcheckTabTemplate),
+        updateInterval: 10000,
         events: {
             'change input[type=checkbox]': 'calculateRunTestsButtonState',
             'click .run-tests-btn:not(:disabled)': 'runTests'
         },
         isLocked: function() {
-            return this.model.get('status') == 'new' || !!this.model.task('deploy', 'running');
+            return this.model.get('status') == 'new' || this.hasRunningTests() || !!this.model.task('deploy', 'running');
         },
         disableControls: function(disable) {
             this.$('.btn, input').attr('disabled', disable || this.isLocked());
@@ -26,7 +27,28 @@ function(models, commonViews, dialogViews, healthcheckTabTemplate, healthcheckTe
         calculateRunTestsButtonState: function() {
             this.$('.run-tests-btn').attr('disabled', !this.$('input[type=checkbox]:checked').length);
         },
+        hasRunningTests: function() {
+            return _.contains(_.pluck(_.flatten(this.testruns.pluck('tests'), true), 'status'), 'running');
+        },
+        scheduleUpdate: function() {
+            if (this.hasRunningTests()) {
+                this.registerDeferred($.timeout(this.updateInterval).done(_.bind(this.update, this)));
+            }
+        },
+        update: function() {
+            this.registerDeferred(this.testruns.fetch({url: _.result(this.testruns, 'url') + '/last/' + this.model.id}).always(_.bind(this.scheduleUpdate, this)));
+        },
         runTests: function() {
+        },
+        updateTestRuns: function() {
+            _.each(this.subViews, function(subView) {
+                if (subView instanceof TestSet) {
+                    var testrun = this.testruns.findWhere({testset: subView.testset.id});
+                    if (testrun) {
+                        subView.testrun.set(testrun.attributes);
+                    }
+                }
+            }, this);
         },
         bindTaskEvents: function(task) {
             return task.get('name') == 'deploy' ? task.on('change:status', this.render, this) : null;
@@ -50,9 +72,14 @@ function(models, commonViews, dialogViews, healthcheckTabTemplate, healthcheckTe
                     this.testsets.deferred = this.testsets.fetch(),
                     this.tests.fetch(),
                     this.testruns.fetch({url: _.result(this.testruns, 'url') + '/last/' + this.model.id})
-                ).done(_.bind(this.render, this));
+                ).done(_.bind(function() {
+                    this.render();
+                    this.testruns.on('sync', this.updateTestRuns, this);
+                    this.scheduleUpdate();
+                }, this));
             } else {
                 _.extend(this, this.model.get('ostf'));
+                this.scheduleUpdate();
             }
         },
         render: function() {
@@ -63,7 +90,7 @@ function(models, commonViews, dialogViews, healthcheckTabTemplate, healthcheckTe
                 this.testsets.each(function(testset) {
                     var testsetView = new TestSet({
                         testset: testset,
-                        testrun: this.testruns.findWhere({testset: testset.id}),
+                        testrun: this.testruns.findWhere({testset: testset.id}) || new models.TestRun(),
                         tests: new models.Tests(this.tests.where({test_set: testset.id})),
                         tab: this
                     });
@@ -81,6 +108,7 @@ function(models, commonViews, dialogViews, healthcheckTabTemplate, healthcheckTe
         template: _.template(healthcheckTestSetTemplate),
         initialize: function(options) {
             _.defaults(this, options);
+            this.testrun.on('change', this.render, this);
         },
         render: function() {
             this.tearDownRegisteredSubViews();
