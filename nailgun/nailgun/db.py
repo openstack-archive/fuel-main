@@ -17,6 +17,7 @@
 import traceback
 
 import web
+import contextlib
 import threading
 from sqlalchemy.orm import scoped_session, sessionmaker
 from sqlalchemy.orm.query import Query
@@ -26,57 +27,12 @@ from sqlalchemy import create_engine
 from nailgun.logger import logger
 from nailgun.settings import settings
 
+
 db_str = "{engine}://{user}:{passwd}@{host}:{port}/{name}".format(
     **settings.DATABASE)
 
 
-def make_engine():
-    return create_engine(db_str, client_encoding='utf8')
-
-
-thread_local_storage = threading.local()
-webpy_db_engine = make_engine()
-
-
-def db():
-    """
-    Db session object per thread
-    """
-    if not hasattr(thread_local_storage, 'db'):
-        thread_local_storage.db = make_session(get_engine())
-
-    return thread_local_storage.db
-
-
-def get_engine():
-    """
-    Return one instance of the engine per thread.
-    For reducing db connection overhead returns
-    one instance of the engine for all webpy threads.
-    """
-    if is_webpy_thread():
-        return webpy_db_engine
-
-    if not hasattr(thread_local_storage, 'db_engine'):
-        thread_local_storage.db_engine = make_engine()
-
-    return thread_local_storage.db_engine
-
-
-def is_webpy_thread():
-    """
-    web.ctx is 'threading local' object
-    if it has 'env' attribute, then it's a thread for
-    api request processing
-    """
-    return hasattr(web.ctx, 'env')
-
-
-def make_session(custom_engine=None):
-    session = scoped_session(
-        sessionmaker(
-            bind=(custom_engine or get_engine()), query_cls=NoCacheQuery))
-    return session
+engine = create_engine(db_str, client_encoding='utf8')
 
 
 class NoCacheQuery(Query):
@@ -89,6 +45,16 @@ class NoCacheQuery(Query):
     def __init__(self, *args, **kwargs):
         self._populate_existing = True
         super(NoCacheQuery, self).__init__(*args, **kwargs)
+
+
+db = scoped_session(
+    sessionmaker(
+        autoflush=True,
+        autocommit=False,
+        bind=engine,
+        query_cls=NoCacheQuery
+    )
+)
 
 
 def load_db_driver(handler):
@@ -107,19 +73,17 @@ def load_db_driver(handler):
 
 def syncdb():
     from nailgun.api.models import Base
-    Base.metadata.create_all(get_engine())
+    Base.metadata.create_all(engine)
 
 
 def dropdb():
-    db = make_session()
-
-    tables = [name for (name,) in db.execute(
+    tables = [name for (name,) in db().execute(
         "SELECT tablename FROM pg_tables WHERE schemaname = 'public'")]
     for table in tables:
-        db.execute("DROP TABLE IF EXISTS %s CASCADE" % table)
+        db().execute("DROP TABLE IF EXISTS %s CASCADE" % table)
 
     # sql query to list all types, equivalent to psql's \dT+
-    types = [name for (name,) in db.execute("""
+    types = [name for (name,) in db().execute("""
         SELECT t.typname as type FROM pg_type t
         LEFT JOIN pg_catalog.pg_namespace n ON n.oid = t.typnamespace
         WHERE (t.typrelid = 0 OR (
@@ -133,19 +97,14 @@ def dropdb():
         AND n.nspname = 'public'
         """)]
     for type_ in types:
-        db.execute("DROP TYPE IF EXISTS %s CASCADE" % type_)
-    db.commit()
+        db().execute("DROP TYPE IF EXISTS %s CASCADE" % type_)
+    db().commit()
 
 
 def flush():
-    import nailgun.api.models as models
-    import sqlalchemy.ext.declarative as dec
-    session = scoped_session(sessionmaker(bind=get_engine()))
-    for attr in dir(models):
-        attr_impl = getattr(models, attr)
-        if isinstance(attr_impl, dec.DeclarativeMeta) \
-                and not attr_impl is models.Base:
-            map(session.delete, session.query(attr_impl).all())
-    # for table in reversed(models.Base.metadata.sorted_tables):
-    #     session.execute(table.delete())
-    session.commit()
+    from nailgun.api.models import Base
+    with contextlib.closing(engine.connect()) as con:
+        trans = con.begin()
+        for table in reversed(Base.metadata.sorted_tables):
+            con.execute(table.delete())
+        trans.commit()

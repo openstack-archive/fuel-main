@@ -35,11 +35,10 @@ class KeepAliveThread(threading.Thread):
         self.stop_status_checking = threading.Event()
         self.interval = interval or settings.KEEPALIVE['interval']
         self.timeout = timeout or settings.KEEPALIVE['timeout']
-        self.db = db()
 
     def reset_nodes_timestamp(self):
-        self.db.query(Node).update({'timestamp': datetime.now()})
-        self.db.commit()
+        db().query(Node).update({'timestamp': datetime.now()})
+        db().commit()
 
     def join(self, timeout=None):
         self.stop_status_checking.set()
@@ -55,7 +54,6 @@ class KeepAliveThread(threading.Thread):
         while True:
             try:
                 self.reset_nodes_timestamp()
-
                 while not self.stop_status_checking.isSet():
                     self.update_status_nodes()
                     self.sleep()
@@ -68,7 +66,7 @@ class KeepAliveThread(threading.Thread):
                 break
 
     def update_status_nodes(self):
-        for node_db in self.db.query(Node).filter(
+        for node_db in db().query(Node).filter(
             # nodes may become unresponsive while provisioning
                 not_(Node.status == 'provisioning')):
             timedelta = (datetime.now() - node_db.timestamp).seconds
@@ -80,9 +78,9 @@ class KeepAliveThread(threading.Thread):
                         timedelta))
                 if node_db.online:
                     node_db.online = False
-                    self.db.commit()
                     notifier.notify(
                         "error",
                         u"Node '{0}' has gone away".format(
                             node_db.human_readable_name),
                         node_id=node_db.id)
+        db.commit()

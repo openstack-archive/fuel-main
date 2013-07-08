@@ -26,7 +26,7 @@ sys.path.insert(0, curdir)
 from nailgun.settings import settings
 from nailgun.api.handlers import check_client_content_type
 from nailgun.api.handlers import forbid_client_caching
-from nailgun.db import load_db_driver, get_engine
+from nailgun.db import load_db_driver, engine
 from nailgun.urls import urls
 from nailgun.logger import logger, HTTPLoggerMiddleware
 
@@ -40,7 +40,7 @@ def build_app():
 
 def build_middleware(app):
     middleware_list = [
-        HTTPLoggerMiddleware,
+        HTTPLoggerMiddleware
     ]
 
     logger.debug('Initialize middleware: %s' %
@@ -72,7 +72,7 @@ def appstart(keepalive=False):
         settings.COMMIT_SHA,
         settings.FUEL_COMMIT_SHA
     ))
-    if not get_engine().dialect.has_table(get_engine().connect(), "nodes"):
+    if not engine.dialect.has_table(engine.connect(), "nodes"):
         logger.error(
             "Database tables not created. Try './manage.py syncdb' first"
         )

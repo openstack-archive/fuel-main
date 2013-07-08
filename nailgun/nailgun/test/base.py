@@ -660,7 +660,6 @@ class BaseHandlers(TestCase):
     @classmethod
     def tearDownClass(cls):
         cls.db.commit()
-        cls.db.remove()
 
     def setUp(self):
         self.default_headers = {
@@ -672,7 +671,6 @@ class BaseHandlers(TestCase):
 
     def tearDown(self):
         self.db.expunge_all()
-        self.db.close()
 
 
 def fake_tasks(fake_rpc=True,
