@@ -1,4 +1,10 @@
-<% var status = node.get('status') %>
+<% var status = node.get('status');
+   var operatingSystem;
+   try {
+     operatingSystem = node.collection.cluster.get('release').get('operating_system');
+   } catch(e){}
+   operatingSystem = operatingSystem || 'OS';
+%>
 <% if (!node.get('online')) { %>
   <div class="msg-offline">
     <i class="icon-block"></i>Offline
@@ -17,11 +23,11 @@
   </div>
 <% } else if (status == 'provisioning') { %>
   <div class="progress">
-    <div class="bar"><p>Installing <%- operating_system %></p></div>
+    <div class="bar"><p>Installing <%- operatingSystem %></p></div>
   </div>
 <% } else if (status == 'provisioned') { %>
   <div class="msg-provisioned">
-    <i class="icon-install"></i><%- operating_system %> is installed
+    <i class="icon-install"></i><%- operatingSystem %> is installed
   </div>
 <% } else if (status == 'deploying') { %>
   <div class="progress progress-success">
