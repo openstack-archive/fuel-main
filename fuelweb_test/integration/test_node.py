@@ -193,5 +193,15 @@ class TestNode(BaseNodeTestCase):
         task = self.client.update_cluster_changes(cluster_id)
         self.assertTaskSuccess(task)
 
+        self.assertClusterReady(
+            self.nodes().slaves[1:2],
+            smiles_count=6, networks_count=1, timeout=300)
+        self.assertClusterReady(
+            self.nodes().slaves[1:2],
+            smiles_count=6, networks_count=1, timeout=300)
+        self.assertClusterReady(
+            self.nodes().slaves[2:3],
+            smiles_count=6, networks_count=1, timeout=300)
+
 if __name__ == '__main__':
     unittest.main()
