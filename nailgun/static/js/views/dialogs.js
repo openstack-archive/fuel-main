@@ -136,7 +136,7 @@ function(require, utils, models, simpleMessageTemplate, createClusterDialogTempl
             this.$('.control-group.error').removeClass('error');
             this.$('.help-inline').html('');
             if (e.which == 13) {
-                this.createCluster();
+                this.applyRhelCredentials();
             }
         },
         updateReleaseParameters: function() {
