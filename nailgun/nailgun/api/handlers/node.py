@@ -187,11 +187,17 @@ class NodeCollectionHandler(JSONHandler):
         except (KeyError, TypeError, ValueError):
             ram = "unknown"
 
+        try:
+            hd_size = str(round(float(
+                sum([d["size"] for d in node.meta["disks"]]) / 1073741824), 1))
+        except KeyError:
+            hd_size = "unknown"
+
         cores = str(node.meta.get('cpu', {}).get('total', "unknown"))
         notifier.notify("discover",
-                        "New node with %s CPU core(s) "
+                        "New node with %s CPU core(s), %s GB HDD "
                         "and %s GB memory is discovered" %
-                        (cores, ram), node_id=node.id)
+                        (cores, hd_size, ram), node_id=node.id)
         raise web.webapi.created(json.dumps(
             NodeHandler.render(node),
             indent=4
