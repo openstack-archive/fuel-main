@@ -506,7 +506,7 @@ function(utils, models, commonViews, dialogViews, nodesTabSummaryTemplate, editN
             }
         },
         isLocked: function() {
-            return !this.node.get('pending_addition') || !!this.model.task('deploy', 'running');
+            return !(this.node.get('pending_addition') || (this.node.get('status') == 'error' && this.node.get('error_type') == 'provision')) || !!this.model.task('deploy', 'running');
         }
     });
 
