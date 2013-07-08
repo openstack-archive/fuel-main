@@ -1,0 +1,39 @@
+main_collective = mcollective
+collectives = mcollective
+libdir = /usr/libexec/mcollective
+logfile = /var/log/mcollective.log
+loglevel = debug
+direct_addressing = 1
+daemonize = 1
+identity = master
+
+# Set huge value of ttl to avoid cases with unsyncronized time between nodes
+# bash$ date -d '2033-5-18 3:33:20 UTC' +%s
+# 2000000000
+# It means that ttl equals 63 years and a half.
+ttl = 2000000000
+
+# Plugins
+securityprovider = psk
+plugin.psk = <%= pskey %>
+
+<% if scope.lookupvar('mcollective::client::stomp') -%>
+connector = stomp
+plugin.stomp.host = <%= scope.lookupvar('mcollective::client::host') %>
+plugin.stomp.port = <%= scope.lookupvar('mcollective::client::stompport') %>
+plugin.stomp.user = <%= scope.lookupvar('mcollective::client::user') %>
+plugin.stomp.password = <%= scope.lookupvar('mcollective::client::password') %>
+<% else -%>
+connector = rabbitmq
+plugin.rabbitmq.vhost = <%= scope.lookupvar('mcollective::client::vhost') %>
+plugin.rabbitmq.pool.size = 1
+plugin.rabbitmq.pool.1.host = <%= scope.lookupvar('mcollective::client::host') %>
+plugin.rabbitmq.pool.1.port = <%= scope.lookupvar('mcollective::client::stompport') %>
+plugin.rabbitmq.pool.1.user = <%= scope.lookupvar('mcollective::client::user') %>
+plugin.rabbitmq.pool.1.password = <%= scope.lookupvar('mcollective::client::password') %>
+<% end -%>
+
+# Facts
+factsource = yaml
+plugin.yaml = /etc/mcollective/facts.yaml
+

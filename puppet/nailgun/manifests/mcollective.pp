@@ -20,4 +20,13 @@ class nailgun::mcollective(
     stomp => false,
   }
 
+  class { "mcollective::server":
+    pskey => $mco_pskey,
+    vhost => $mco_vhost,
+    user => $mco_user,
+    password => $mco_password,
+    host => $ipaddress,
+    stomp => false,
+  }
+
 }
