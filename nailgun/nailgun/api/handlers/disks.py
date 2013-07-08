@@ -58,7 +58,6 @@ class NodeDisksHandler(JSONHandler):
 
 
 class NodeDefaultsDisksHandler(JSONHandler):
-    fields = ('node_id', 'volumes')
 
     @content_json
     def GET(self, node_id):
@@ -71,6 +70,20 @@ class NodeDefaultsDisksHandler(JSONHandler):
                 node_id=node.id,
                 volumes=node.volume_manager.gen_volumes_info()))
 
-        return filter(
-            lambda attr: attr['type'] == 'disk',
-            node_attrs)
+        return filter(lambda attr: attr['type'] == 'disk', node_attrs)
+
+
+class NodeVolumesInformationHandler(JSONHandler):
+
+    @content_json
+    def GET(self, node_id):
+        node = self.get_object_or_404(Node, node_id)
+        if not node.attributes:
+            return web.notfound()
+
+        node_attrs = NodeDisksHandler.render(
+            NodeAttributes(
+                node_id=node.id,
+                volumes=node.volume_manager.gen_volumes_info()))
+
+        return filter(lambda attr: attr['type'] == 'vg', node_attrs)
