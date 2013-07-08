@@ -3,7 +3,7 @@
         "pk": 2,
         "model": "nailgun.release",
         "fields": {
-            "name": "OpenStack Grizzly on CentOS 6.4",
+            "name": "Grizzly on CentOS 6.4",
             "version": "2013.1.2",
             "operating_system": "CentOS",
             "description": "This option will install the OpenStack Grizzly packages using CentOS as a base operating system. With high availability features built in, you are getting a robust, enterprise-grade OpenStack deployment.",
