@@ -1,3 +1,4 @@
+#!/usr/bin/python
 #    Copyright 2013 Mirantis, Inc.
 #
 #    Licensed under the Apache License, Version 2.0 (the "License"); you may
@@ -12,8 +13,6 @@
 #    License for the specific language governing permissions and limitations
 #    under the License.
 
-
-#!/usr/bin/python
 #
 # Generate and send Ethernet packets to specified interfaces.
 # Collect data from interfaces.
