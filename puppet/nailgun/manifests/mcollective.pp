@@ -27,6 +27,7 @@ class nailgun::mcollective(
     password => $mco_password,
     host => $ipaddress,
     stomp => false,
+    require => Class["mcollective::client"]
   }
 
 }

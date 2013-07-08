@@ -22,16 +22,13 @@ class mcollective::server(
   }
 
   package { $mcollective_package : }
-  package { 'nailgun-mcagents':
-    require => Package[$mcollective_package]
-  }
 
   file {"/etc/mcollective/server.cfg" :
     content => template("mcollective/server.cfg.erb"),
     owner => root,
     group => root,
     mode => 0600,
-    require => Package['nailgun-mcagents'],
+    require => Package[$mcollective_package],
   }
 
   service { "mcollective":
