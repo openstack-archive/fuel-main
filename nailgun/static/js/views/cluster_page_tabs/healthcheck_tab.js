@@ -18,7 +18,7 @@ function(models, commonViews, dialogViews, healthcheckTabTemplate, healthcheckTe
             'click .run-tests-btn:not(:disabled)': 'runTests'
         },
         isLocked: function() {
-            return false;//this.model.get('status') == 'new' || !!this.model.task('deploy', 'running');
+            return this.model.get('status') == 'new' || !!this.model.task('deploy', 'running');
         },
         disableControls: function(disable) {
             this.$('.btn, input').attr('disabled', disable || this.isLocked());
@@ -39,42 +39,38 @@ function(models, commonViews, dialogViews, healthcheckTabTemplate, healthcheckTe
             this.model.on('change:status', this.render, this);
             this.model.get('tasks').each(this.bindTaskEvents, this);
             this.model.get('tasks').on('add', this.onNewTask, this);
-            this.testsets = new models.TestSets([
-                {id: 'testset-nova', name: 'Nova Tests'},
-                {id: 'testset-glance', name: 'Glance Tests'}
-            ]);
-            this.tests = new models.Tests([
-                {id: 'test-nova-1', testset: 'testset-nova', name: 'Nova Test #1'},
-                {id: 'test-nova-2', testset: 'testset-nova', name: 'Nova Test #2'},
-                {id: 'test-nova-3', testset: 'testset-nova', name: 'Nova Test #3'},
-                {id: 'test-glance-1', testset: 'testset-glance', name: 'Glance Test #1'},
-                {id: 'test-glance-2', testset: 'testset-glance', name: 'Glance Test #2'},
-            ]);
-            this.testruns = new models.TestRuns([
-                {id: 1, testset: 'testset-nova', tests: [
-                    {id: 'test-nova-1', status: 'success'},
-                    {id: 'test-nova-3', status: 'error', message: 'Error occured!'}
-                ]},
-                {id: 2, testset: 'testset-glance', tests: [
-                    {id: 'test-glance-1', status: 'running'},
-                    {id: 'test-glance-2', status: 'failure', message: 'Test failed!'}
-                ]},
-            ]);
+            if (!this.model.get('ostf')) {
+                var ostf = {};
+                ostf.testsets = new models.TestSets();
+                ostf.tests = new models.Tests();
+                ostf.testruns = new models.TestRuns();
+                this.model.set({'ostf': ostf}, {silent: true});
+                _.extend(this, ostf);
+                $.when(
+                    this.testsets.deferred = this.testsets.fetch(),
+                    this.tests.fetch(),
+                    this.testruns.fetch({url: _.result(this.testruns, 'url') + '/last/' + this.model.id})
+                ).done(_.bind(this.render, this));
+            } else {
+                _.extend(this, this.model.get('ostf'));
+            }
         },
         render: function() {
             this.tearDownRegisteredSubViews();
             this.$el.html(this.template({cluster: this.model}));
-            this.$('.testsets').html('');
-            this.testsets.each(function(testset) {
-                var testsetView = new TestSet({
-                    testset: testset,
-                    testrun: this.testruns.findWhere({testset: testset.id}),
-                    tests: new models.Tests(this.tests.where({testset: testset.id})),
-                    tab: this
-                });
-                this.registerSubView(testsetView);
-                this.$('.testsets').append(testsetView.render().el);
-            }, this);
+            if (this.testsets.deferred.state() != 'pending') {
+                this.$('.testsets').html('');
+                this.testsets.each(function(testset) {
+                    var testsetView = new TestSet({
+                        testset: testset,
+                        testrun: this.testruns.findWhere({testset: testset.id}),
+                        tests: new models.Tests(this.tests.where({test_set: testset.id})),
+                        tab: this
+                    });
+                    this.registerSubView(testsetView);
+                    this.$('.testsets').append(testsetView.render().el);
+                }, this);
+            }
             this.disableControls(false);
             this.calculateRunTestsButtonState();
             return this;

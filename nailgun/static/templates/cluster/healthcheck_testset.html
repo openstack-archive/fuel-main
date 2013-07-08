@@ -1,5 +1,5 @@
 <div class="row-fluid">
-  <table class="table table-bordered healthcheck-table">
+  <table class="table table-bordered healthcheck-table enable-selection">
     <thead>
       <tr>
         <th colspan="2">
@@ -17,7 +17,7 @@
     </thead>
     <tbody>
       <% tests.each(function(test) { %>
-        <% var result = _.find(testrun.get('tests'), {id: test.id}) %>
+        <% var result = testrun && _.find(testrun.get('tests'), {id: test.id}) %>
         <% var status = result && result.status || 'unknown' %>
         <tr>
           <td>
