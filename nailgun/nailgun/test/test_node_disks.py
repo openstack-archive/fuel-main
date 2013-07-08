@@ -180,3 +180,39 @@ class TestNodeDefaultsDisksHandler(BaseHandlers):
         self.assertItemsEqual(
             resp,
             filter(lambda volume: volume['type'] == 'disk', default_volumes))
+
+
+class TestNodeVolumesInformationHandler(BaseHandlers):
+
+    def get(self, node_id):
+        resp = self.app.get(
+            reverse('NodeVolumesInformationHandler', kwargs={'node_id': node_id}),
+            headers=self.default_headers)
+
+        self.assertEquals(200, resp.status)
+        return json.loads(resp.body)
+
+    def create_node(self, role):
+        self.env.create(
+            cluster_kwargs={},
+            nodes_kwargs=[{'role': role, 'pending_addition': True}])
+
+        return self.env.nodes[0]
+
+    def test_volumes_information_for_cinder_role(self):
+        node_db = self.create_node('cinder')
+        response = self.get(node_db.id)
+
+        # Need to implement
+
+    def test_volumes_information_for_compute_role(self):
+        node_db = self.create_node('compute')
+        response = self.get(node_db.id)
+
+        # Need to implement
+
+    def test_volumes_information_for_controller_role(self):
+        node_db = self.create_node('controller')
+        response = self.get(node_db.id)
+
+        # Need to implement
