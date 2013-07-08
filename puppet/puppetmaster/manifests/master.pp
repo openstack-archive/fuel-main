@@ -3,7 +3,16 @@ class puppetmaster::master (
   $puppet_master_ports = "18140 18141 18142 18143",
   $puppet_master_log = "syslog",
   $puppet_master_extra_opts = "",
-  ){
+  ) inherits puppetmaster::params {
+
+  package { $puppetmaster::params::puppet_master_packages :
+    ensure => $puppet_master_version,
+  }
+  package { $puppetmaster::params::mongrel_packages :
+    ensure => present,
+  }
+
+
 
   file { "/etc/sysconfig/puppetmaster":
     content => template("puppetmaster/sysconfig_puppetmaster.erb"),
@@ -40,7 +49,8 @@ class puppetmaster::master (
     require => Package["puppet-server"],
     notify => Service["puppetmaster"],
   }
-
+ 
+ package {"puppetdb-terminus": ensure => present }
 
   service { "puppetmaster":
     enable => true,

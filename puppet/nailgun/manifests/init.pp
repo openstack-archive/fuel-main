@@ -142,7 +142,6 @@ class nailgun(
 
   class { "nailgun::pm":
     puppet_master_hostname => $puppet_master_hostname,
-    gem_source => $gem_source,
   }
 
   class { "nailgun::mcollective":

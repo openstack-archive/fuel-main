@@ -1,8 +1,0 @@
-RABBITMQ_NODE_PORT=<%= port %>
-<% if node_ip_address != 'UNSET' -%>
-RABBITMQ_NODE_IP_ADDRESS=<%= node_ip_address %>
-<% end -%>
-RABBITMQ_SERVER_ERL_ARGS="+K true +A30 +P 1048576 \
--kernel inet_default_connect_options [{nodelay,true}] \
--kernel inet_dist_listen_min <%= inet_dist_listen_min %> \
--kernel inet_dist_listen_max <%= inet_dist_listen_max %>"
