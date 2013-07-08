@@ -12,9 +12,10 @@
 #    License for the specific language governing permissions and limitations
 #    under the License.
 
-import traceback
-
 import web
+import subprocess
+import shlex
+import traceback
 
 from nailgun.api.handlers.base import JSONHandler, content_json
 from nailgun.api.handlers.tasks import TaskHandler
@@ -38,6 +39,38 @@ class RedHatAccountHandler(JSONHandler):
     model = RedHatAccount
 
     validator = RedHatAcountValidator
+
+    def check_credentials(self, data):
+        try:
+                logger.info("Testing RH credentials with user %s",
+                            data.username)
+                cmd = "subscription-manager orgs --username \"%s\" \
+                       --password \"%s\"" % (data.get("username"), data.get("password"))
+                proc = subprocess.Popen(
+                    shlex.split(cmd),
+                    shell=False,
+                    stdout=subprocess.PIPE,
+                    stderr=subprocess.PIPE)
+                p_stdout, p_stderr = proc.communicate()
+                logger.info(
+                    "'{0}' executed, STDOUT: '{1}',"
+                    " STDERR: '{2}'".format(
+                        cmd,
+                        p_stdout,
+                        p_stderr
+                    )
+                )
+
+        except OSError:
+            logger.warning(
+            "'{0}' returned non-zero exit code".format(
+                cmd
+                )
+            )
+            raise web.badrequest(str(p_stderr))
+        return True
+
+
 
     @content_json
     def GET(self):
