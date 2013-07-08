@@ -40,7 +40,7 @@ $sat_base_channels, $sat_openstack_channel, $numtries = 3)  {
 
   exec { 'rpm-import-rh-gpg-key':
     command => 'rpm --import /etc/pki/rpm-gpg/RPM-GPG-KEY-redhat-release',
-    require File['/etc/pki/rpm-gpg/RPM-GPG-KEY-redhat-release'],
+    require => File['/etc/pki/rpm-gpg/RPM-GPG-KEY-redhat-release'],
     logoutput => true
   } ->
 
