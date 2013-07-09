@@ -88,9 +88,8 @@ $(ISOROOT)/puppet-nailgun.tgz: \
 	(cd $(SOURCE_DIR)/puppet && tar chzf $@ *)
 $(ISOROOT)/puppet-slave.tgz: \
 		$(call find-files,$(SOURCE_DIR)/puppet/nailytest) \
-		$(call find-files,$(SOURCE_DIR)/puppet/osnailyfacter) \
 		$(call find-files,$(SOURCE_DIR)/fuel/deployment/puppet)
-	(cd $(SOURCE_DIR)/puppet && tar cf $(ISOROOT)/puppet-slave.tar nailytest osnailyfacter rpmcache)
+	(cd $(SOURCE_DIR)/puppet && tar cf $(ISOROOT)/puppet-slave.tar nailytest)
 	(cd $(SOURCE_DIR)/fuel/deployment/puppet && tar rf $(ISOROOT)/puppet-slave.tar ./*)
 	gzip -c -9 $(ISOROOT)/puppet-slave.tar > $@ && \
 		rm $(ISOROOT)/puppet-slave.tar

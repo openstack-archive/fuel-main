@@ -256,7 +256,7 @@ tar zxf ${SOURCE}/puppet-nailgun.tgz -C /opt/nailgun_puppet
 tar zxf ${SOURCE}/puppet-slave.tgz -C /etc/puppet/modules
 mkdir -p /etc/puppet/manifests/
 cp /etc/puppet/modules/osnailyfacter/examples/site.pp /etc/puppet/manifests/site.pp
-ln -s /etc/puppet/modules/puppetdb/ /etc/puppet/modules/postgresql/ /etc/puppet/modules/inifile/ /etc/puppet/modules/sysctl/ /opt/nailgun_puppet/
+ln -s /etc/puppet/modules/mcollective /etc/puppet/modules/nailgun /etc/puppet/modules/osnailyfacter  /etc/puppet/modules/stdlib /etc/puppet/modules/rabbitmq /etc/puppet/modules/puppetdb/ /etc/puppet/modules/postgresql/ /etc/puppet/modules/inifile/ /etc/puppet/modules/sysctl/ /opt/nailgun_puppet/
 
 # Prepare local repository specification
 rm /etc/yum.repos.d/CentOS*.repo
