@@ -32,7 +32,6 @@ casper.then(function() {
         this.test.assertExists('.modal input[value=rhn]:checked', 'RHN license type is chosen');
         this.test.assertEvalEquals(function() {return $('.modal fieldset input').length}, 4, 'RHN license type credentials fields are presented');
         this.click('.modal .btn-os-download');
-        this.test.assertEvalEquals(function() {return $('.modal .control-group.error').length}, 4, 'Empty fields validation has worked');
         this.click('.modal input[type=radio]:not(:checked)');
         this.fill('.modal form.rhel-license', {'username': 'rheltest', 'password': 'password'});
         this.click('.modal .btn-os-download');
