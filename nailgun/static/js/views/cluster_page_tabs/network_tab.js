@@ -303,6 +303,7 @@ function(utils, models, commonViews, dialogViews, networkTabTemplate, networkTem
         initialize: function(options) {
             _.defaults(this, options);
             this.network.on('invalid', function(model, errors) {
+                this.$('input.error').removeClass('error').find('.help-inline').text('');
                 _.each(_.without(_.keys(errors), 'ip_ranges'), _.bind(function(field) {
                     this.$('.' + field).children().addClass('error');
                     this.$('.' + field).parents('.network-attribute').find('.error .help-inline').text(errors[field]);

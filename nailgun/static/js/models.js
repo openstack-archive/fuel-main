@@ -330,7 +330,7 @@ define(function() {
             var match;
             _.each(this.getAttributes(), _.bind(function(attribute) {
                 if (attribute == 'ip_ranges') {
-                    if (!_.isEqual(attrs.ip_ranges, [])){
+                    if (_.filter(attrs.ip_ranges, function(range) {return !_.isEqual(range, ['', '']);}).length){
                         _.each(attrs.ip_ranges, _.bind(function(range, index) {
                             if (_.first(range) || _.last(range)) {
                                 var rangeErrors = {index: index};
