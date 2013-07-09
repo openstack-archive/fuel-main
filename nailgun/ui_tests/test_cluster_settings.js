@@ -21,12 +21,11 @@ casper.then(function() {
     this.test.comment('Testing cluster OpenStack settings: cancel changes operation');
     this.click('input[type=checkbox]:not(.show-password)');
     this.click('.nav-tabs li.active + li a');
-    this.waitForSelector('.dismiss-settings-dialog');
+    this.test.assertSelectorAppears('.dismiss-settings-dialog', 'Dismiss changes dialog appears if there are changes and user is going to leave the tab');
     this.then(function() {
-        this.test.assertExists('.dismiss-settings-dialog', 'Dismiss changes dialog appears if there are changes and user is going to leave the tab');
         this.click('.btn-return');
     });
-    this.waitWhileSelector('.dismiss-settings-dialog');
+    this.test.assertSelectorDisappears('.dismiss-settings-dialog', 'Dismiss changes dialog was closed');
     this.then(function() {
         this.click('.btn-revert-changes');
         this.test.assertExists('.btn-apply-changes:disabled', 'Save settings button is disabled again after changes were cancelled');
@@ -37,15 +36,18 @@ casper.then(function() {
     this.test.comment('Testing OpenStack settings: save changes');
     this.click('input[type=checkbox]:not(.show-password)');
     this.click('.btn-apply-changes');
-    this.waitForSelector('.btn-load-defaults:not(:disabled)');
-    this.test.assertExists('.btn-revert-changes:disabled', 'Cancel changes button is disabled after changes were saved successfully');
+    this.waitWhileSelector('.btn-load-defaults:disabled');
+    this.then(function() {
+        this.test.assertExists('.btn-revert-changes:disabled', 'Cancel changes button is disabled after changes were saved successfully');
+    });
 });
 
 casper.then(function() {
     this.test.comment('Testing OpenStack settings: load defaults');
     this.click('.btn-load-defaults');
-    this.test.assertSelectorAppears('.btn-revert-changes:not(:disabled)', 'Cancel changes button is enabled after defaults were loaded', 2000);
+    this.waitWhileSelector('.btn-load-defaults:disabled');
     this.then(function() {
+        this.test.assertExists('.btn-revert-changes:not(:disabled)', 'Cancel changes button is enabled after defaults were loaded');
         this.test.assertExists('.btn-apply-changes:not(:disabled)', 'Save settings button is enabled after defaults were loaded');
     });
 });

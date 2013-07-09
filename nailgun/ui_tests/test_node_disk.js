@@ -14,23 +14,30 @@ casper.loadPage('#cluster/1/nodes').waitForSelector('#tab-nodes > *');
 casper.then(function() {
     this.test.comment('Testing nodes disks');
 
+    var sdaDisk = '.disk-box[data-disk=sda]';
+    var sdaDiskVM = sdaDisk + ' .volume-group-box[data-group=vm]';
+    var sdaDiskOS = sdaDisk + '  .volume-group-box[data-group=os]';
+    var vdaDisk = '.disk-box[data-disk=vda]';
+    var vdaDiskVM = vdaDisk + ' .volume-group-box[data-group=vm]';
+    var vdaDiskOS = vdaDisk + '  .volume-group-box[data-group=os]';
+
     this.then(function() {
         this.click('.node-list-compute .btn-add-nodes');
-        this.waitForSelector('.add-nodes-screen');
-        this.waitWhileSelector('.add-nodes-screen .available-nodes .progress');
+        this.test.assertSelectorAppears('.add-nodes-screen', 'Add compute nodes screen appears');
+        this.test.assertSelectorDisappears('.add-nodes-screen .available-nodes .progress', 'Available for addition computes are loaded');
         this.then(function() {
             this.click('.add-nodes-screen .nodebox');
             this.click('.add-nodes-screen .btn-apply');
-            this.waitForSelector('.nodes-by-roles-screen');
         });
+        this.test.assertSelectorAppears('.nodes-by-roles-screen', 'Return to nodes tab');
         this.then(function() {
             this.click('.node-hardware');
-            this.waitForSelector('.modal');
-            this.then(function() {
-                this.click('.btn-edit-disks');
-                this.waitForSelector('.nodes-by-roles-screen');
-            });
         });
+        this.test.assertSelectorAppears('.modal', 'Node details popup was opened');
+        this.then(function() {
+            this.click('.btn-edit-disks');
+        });
+        this.test.assertSelectorAppears('.edit-node-disks', 'Node disks configuration screen appears');
     });
 
     this.then(function() {
@@ -41,13 +48,6 @@ casper.then(function() {
         this.test.assertExists('.btn-revert-changes:disabled', 'Cancel button is disabled');
         this.test.assertExists('.btn-apply:disabled', 'Apply button is disabled');
     });
-
-    var sdaDisk = '.disk-box[data-disk=sda]';
-    var sdaDiskVM = sdaDisk + ' .volume-group-box[data-group=vm]';
-    var sdaDiskOS = sdaDisk + '  .volume-group-box[data-group=os]';
-    var vdaDisk = '.disk-box[data-disk=vda]';
-    var vdaDiskVM = vdaDisk + ' .volume-group-box[data-group=vm]';
-    var vdaDiskOS = vdaDisk + '  .volume-group-box[data-group=os]';
 
     this.then(function() {
         this.test.comment('Testing nodes disk block');
@@ -71,7 +71,6 @@ casper.then(function() {
         this.test.assertExists('.btn-defaults:not(:disabled)', 'Load Defaults button is enabled');
         this.test.assertExists('.btn-revert-changes:not(:disabled)', 'Cancel button is enabled');
         this.test.assertExists('.btn-apply:not(:disabled)', 'Apply button is enabled');
-
         this.click(sdaDiskVM + ' .use-all-unallocated');
         this.test.assertExists('.btn-defaults:not(:disabled)', 'Load Defaults button is enabled');
         this.test.assertExists('.btn-revert-changes:disabled', 'Cancel button is disabled');
@@ -82,7 +81,7 @@ casper.then(function() {
         this.test.comment('Testing button Load Defaults');
         this.test.assertExists('.btn-defaults:not(:disabled)', 'Load Defaults button is enabled');
         this.click('.btn-defaults');
-        this.waitForSelector('.btn-defaults:not(:disabled)');
+        this.test.assertSelectorAppears('.btn-defaults:not(:disabled)', 'Defaults were loaded');
         this.then(function() {
             this.test.assertEvalEquals(function(sdaDiskVM) {return $(sdaDiskVM + ' input').val()}, vmSDA, 'Volume group input control VM contains default value', {sdaDiskVM:sdaDiskVM});
             this.test.assertEvalEquals(function(sdaDiskOS) {return $(sdaDiskOS + ' input').val()}, osSDA, 'Volume group input control OS contains default value', {sdaDiskOS:sdaDiskOS});
@@ -95,7 +94,6 @@ casper.then(function() {
         this.evaluate(function(sdaDiskVM) {
             $(sdaDiskVM + ' input').keyup();
         },{sdaDiskVM: sdaDiskVM});
-
         this.test.assertEvalEquals(function(sdaDiskVM) {return $(sdaDiskVM + ' input').val()}, '50', 'Volume group input control VM contains correct value', {sdaDiskVM:sdaDiskVM});
         this.test.assertExists('.btn-revert-changes:not(:disabled)', 'Cancel button is enabled');
         this.click('.btn-revert-changes');

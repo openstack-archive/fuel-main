@@ -19,19 +19,14 @@ casper.then(function() {
         this.click('.modal .btn-os-download');
         this.test.assertEvalEquals(function() {return $('.modal .control-group.error').length}, 4, 'Empty fields validation has worked');
         this.click('.modal input[type=radio]:not(:checked)');
-        this.fill('.modal form.rhel-license', {'username': 'rheltest', 'password': 'password'});
-        this.click('.modal .btn-os-download');
-        this.test.assertExists('.modal .alert', 'Credentials validation works');
         this.fill('.modal form.rhel-license', {'username': 'username', 'password': 'password'});
         this.click('.modal .btn-os-download');
     });
     this.test.assertSelectorDisappears('.modal', 'RHEL credentials popup was closed');
+    this.test.assertSelectorAppears('.progress', 'RHEL downloading started');
+    this.test.assertSelectorDisappears('.progress', 'RHEL downloading finished');
     this.then(function() {
-        this.test.assertSelectorAppears('.progress', 'RHEL downloading started');
-        this.waitWhileSelector('.progress');
-    });
-    this.then(function() {
-        this.test.assertDoesntExist('.releases-table .not_available', 'RHEL downloading was finished');
+        this.test.assertDoesntExist('.releases-table .not_available', 'All releases are available');
     });
 });
 

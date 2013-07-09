@@ -24,28 +24,18 @@ casper.then(function() {
     this.test.assertSelectorAppears('.modal', 'Cluster deployment mode dialog opens');
     this.then(function() {
         this.test.assertExists('.modal input[type=radio][name=mode][value=multinode]:checked', 'Multinode deployment mode chosen');
-        //this.test.assertNotVisible('.modal .type-control-group', 'Cluster types radio group is not visible if deployment mode is Singlenode');
         this.click('.modal input[type=radio][name=mode][value=ha]');
-        //this.test.assertVisible('.modal .type-control-group', 'Cluster types radio group is visible if deployment mode is Multi-node with HA');
-        //this.test.assertDoesntExist('.modal input[type=radio][name=type][disabled]', 'All cluster type radio buttons are enabled');
-        //this.click('.modal input[type=radio][name=type][value=both]');
-        //this.test.assertExists('.modal input[type=radio][name=type][value=both]:checked', 'Compute and Storage cluster type has been chosen successfully');
-        //this.click('.modal input[type=radio][name=type][value=compute]');
-        // this.test.assertExists('.modal input[type=radio][name=type][value=compute]:checked', 'Compute cluster type has been chosen successfully');
         this.click('.modal .apply-btn');
     });
     this.test.assertSelectorDisappears('.modal', 'Cluster deployment mode dialog closes after setting deployment mode to Multi-node with HA');
     this.then(function() {
         this.test.assertEvalEquals(function() {return $('.node-list').length}, 3, 'Number of available roles after mode change is correct');
-    });
-    this.then(function() {
         this.click('.summary .change-cluster-mode-btn');
     });
     this.test.assertSelectorAppears('.modal', 'Cluster deployment mode dialog opens again');
     this.then(function() {
         this.test.assertExists('.modal input[type=radio][name=mode][value=ha]:checked', 'Multi-node with HA deployment mode chosen');
         this.click('.modal input[type=radio][name=mode][value=multinode]');
-        //this.test.assertVisible('.modal .type-control-group', 'Cluster types radio group is visible if deployment mode is Multi-node');
         this.click('.modal .apply-btn');
     });
     this.test.assertSelectorDisappears('.modal', 'Cluster deployment mode dialog closes after setting deployment mode to Multi-node');
@@ -54,8 +44,8 @@ casper.then(function() {
 casper.then(function() {
     this.test.comment('Testing node addition to controller role');
     this.click('.node-list-controller .btn-add-nodes');
-    this.waitForSelector('.add-nodes-screen');
-    this.waitWhileSelector('.add-nodes-screen .available-nodes .progress');
+    this.test.assertSelectorAppears('.add-nodes-screen', 'Add controller nodes screen appears');
+    this.test.assertSelectorDisappears('.add-nodes-screen .available-nodes .progress', 'Available for addition controllers are loaded');
     this.then(function() {
         this.test.assertEvalEquals(function() {return $('.add-nodes-screen .nodebox').length}, nodes.length, 'Number of unallocated nodes is correct');
         this.evaluate(function() {
@@ -64,14 +54,8 @@ casper.then(function() {
         this.test.assertEvalEquals(function() {return $('.add-nodes-screen .nodebox.node-to-add-checked').length}, 1, 'Only one node is checkable for controller role in Simple deployment mode');
         this.click('.add-nodes-screen .btn-apply');
     });
-    this.waitForSelector('.nodes-by-roles-screen');
-    this.waitFor(function() {
-        return this.evaluate(function() {
-            return $('.node-list-controller .nodebox:not(.nodeplaceholder)').length == 1;
-        });
-    }, function() {
-        this.test.pass('Scheduled for addition controller appears in node list');
-    });
+    this.test.assertSelectorAppears('.nodes-by-roles-screen', 'Return to nodes tab');
+    this.test.assertSelectorAppears('.node-list-controller .nodebox:not(.nodeplaceholder)', 'Scheduled for addition controller appears in node list');
     this.then(function() {
         this.test.assertDoesntExist('.node-list-controller .nodebox.nodeplaceholder', 'Placeholder for controller node disappears');
     });
@@ -80,8 +64,8 @@ casper.then(function() {
 casper.then(function() {
     this.test.comment('Testing node addition to compute role');
     this.click('.node-list-compute .btn-add-nodes');
-    this.waitForSelector('.add-nodes-screen');
-    this.waitWhileSelector('.add-nodes-screen .available-nodes .progress');
+    this.test.assertSelectorAppears('.add-nodes-screen', 'Add compute nodes screen appears');
+    this.test.assertSelectorDisappears('.add-nodes-screen .available-nodes .progress', 'Available for addition computes are loaded');
     this.then(function() {
         this.evaluate(function() {
             $('.add-nodes-screen .nodebox').click();
@@ -89,27 +73,19 @@ casper.then(function() {
         this.test.assertEvalEquals(function() {return $('.add-nodes-screen .nodebox.node-to-add-checked').length}, nodes.length - 1, 'All nodes are checkable for compute role');
         this.click('.add-nodes-screen .btn-apply');
     });
-    this.waitForSelector('.nodes-by-roles-screen');
-    this.waitFor(function() {
-        return (nodes.length - 1) == this.evaluate(function() {
-            return $('.node-list-compute .nodebox').length;
-        });
-    }, function() {
-        this.test.pass('Scheduled for addition computes appear in node list');
-    });
+    this.test.assertSelectorAppears('.nodes-by-roles-screen', 'Return to nodes tab');
+    this.test.assertSelectorAppears('.node-list-compute .nodebox', 'Scheduled for addition computes appear in node list');
 });
 
 casper.then(function() {
     this.test.comment('Testing deletion of compute node, scheduled for addition');
     this.click('.node-list-compute .btn-delete-nodes');
-    this.waitForSelector('.delete-nodes-screen');
+    this.test.assertSelectorAppears('.delete-nodes-screen', 'Delete compute nodes screen appears');
     this.then(function() {
-        this.evaluate(function() {
-            $('.delete-nodes-screen .nodebox:first').click();
-        });
+        this.click('.delete-nodes-screen .nodebox');
         this.click('.delete-nodes-screen .btn-apply');
     });
-    this.waitForSelector('.nodes-by-roles-screen');
+    this.test.assertSelectorAppears('.nodes-by-roles-screen', 'Return to nodes tab');
     this.waitFor(function() {
         return (nodes.length - 2) == this.evaluate(function() {
             return $('.node-list-compute .nodebox').length;
