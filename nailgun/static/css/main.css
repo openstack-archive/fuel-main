@@ -3243,7 +3243,7 @@ input.error:focus {
 }
 
 .support {
-  min-height: 220px;
+  min-height: 240px;
 }
 
 .support .span12 {
@@ -3251,7 +3251,7 @@ input.error:focus {
 }
 
 .support p:nth-child(even) {
-  padding-bottom: 30px;
+  padding-bottom: 10px;
 }
 
 .rename-cluster-form .control-group {
