@@ -117,7 +117,7 @@ function(models, commonViews, dialogViews, healthcheckTabTemplate, healthcheckTe
                     var testsetView = new TestSet({
                         testset: testset,
                         testrun: this.testruns.findWhere({testset: testset.id}) || new models.TestRun(),
-                        tests: new models.Tests(this.tests.where({test_set: testset.id})),
+                        tests: new models.Tests(this.tests.where({testset: testset.id})),
                         tab: this
                     });
                     this.registerSubView(testsetView);
