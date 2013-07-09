@@ -21,10 +21,12 @@ from nailgun.api.handlers.base import JSONHandler, content_json
 from nailgun.api.handlers.tasks import TaskHandler
 from nailgun.api.validators.redhat import RedHatAcountValidator
 from nailgun.db import db
+from nailgun.errors import errors
 from nailgun.task.helpers import TaskHelper
 from nailgun.task.manager import DownloadReleaseTaskManager
 from nailgun.api.models import RedHatAccount
 from nailgun.logger import logger
+from nailgun.settings import settings
 
 
 class RedHatAccountHandler(JSONHandler):
@@ -41,36 +43,38 @@ class RedHatAccountHandler(JSONHandler):
     validator = RedHatAcountValidator
 
     def check_credentials(self, data):
-        try:
+        if settings.FAKE_TASKS:
+            if data["username"] != "rheltest":
+                raise errors.InvalidData("Invalid username or password")
+        else:
+            try:
                 logger.info("Testing RH credentials with user %s",
                             data.username)
-                cmd = "subscription-manager orgs --username \"%s\" \
-                       --password \"%s\"" % (data.get("username"), data.get("password"))
+
+                cmd = 'subscription-manager orgs --username ' + \
+                      '"%s" --password "%s"' % \
+                      (data.get("username"), data.get("password"))
+
                 proc = subprocess.Popen(
                     shlex.split(cmd),
                     shell=False,
                     stdout=subprocess.PIPE,
                     stderr=subprocess.PIPE)
+
                 p_stdout, p_stderr = proc.communicate()
                 logger.info(
                     "'{0}' executed, STDOUT: '{1}',"
-                    " STDERR: '{2}'".format(
-                        cmd,
-                        p_stdout,
-                        p_stderr
-                    )
-                )
+                    " STDERR: '{2}'".format(cmd, p_stdout, p_stderr))
 
-        except OSError:
-            logger.warning(
-            "'{0}' returned non-zero exit code".format(
-                cmd
-                )
-            )
-            raise web.badrequest(str(p_stderr))
-        return True
+            except OSError:
+                logger.warning(
+                    "'{0}' returned non-zero exit code".format(cmd))
 
-
+                raise web.badrequest(str(p_stderr))
+            except ValueError:
+                error_msg = "Not valid parameters: '{0}'".format(cmd)
+                logger.warning(error_msg)
+                raise web.badrequest(error_msg)
 
     @content_json
     def GET(self):

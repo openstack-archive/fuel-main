@@ -27,20 +27,27 @@ from nailgun.test.base import reverse
 
 
 class TestHandlers(BaseHandlers):
+    def setUp(self):
+        super(TestHandlers, self).setUp()
+        self.release = self.env.create_release(api=False)
+
+    @fake_tasks()
     def test_redhat_account_handler(self):
+        release = self.env.create_release(api=False)
         resp = self.app.post(
             reverse('RedHatAccountHandler'),
             json.dumps({'license_type': 'rhsm',
-                        'username': 'user',
+                        'username': 'rheltest',
                         'password': 'password',
-                        'release_id': 1}),
+                        'release_id': release.id}),
             headers=self.default_headers)
         self.assertEquals(resp.status, 200)
 
+    @fake_tasks()
     def test_redhat_account_invalid_data_handler(self):
         resp = self.app.post(
             reverse('RedHatAccountHandler'),
-            json.dumps({'username': 'user',
+            json.dumps({'username': 'rheltest',
                         'password': 'password'}),
             headers=self.default_headers,
             expect_errors=True)
@@ -53,7 +60,7 @@ class TestHandlers(BaseHandlers):
             json.dumps({'license_type': 'rhsm',
                         'username': 'rheltest',
                         'password': 'password',
-                        'release_id': 1}),
+                        'release_id': self.release.id}),
             headers=self.default_headers)
         self.assertEquals(resp.status, 200)
 
@@ -64,7 +71,7 @@ class TestHandlers(BaseHandlers):
             json.dumps({'license_type': 'rhsm',
                         'username': 'some_user',
                         'password': 'password',
-                        'release_id': 1}),
+                        'release_id': self.release.id}),
             headers=self.default_headers,
             expect_errors=True)
         self.assertEquals(resp.status, 400)
