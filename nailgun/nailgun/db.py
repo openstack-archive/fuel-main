@@ -102,6 +102,9 @@ def dropdb():
 
 
 def flush():
+    """
+    Delete all data from all tables within nailgun metadata
+    """
     from nailgun.api.models import Base
     with contextlib.closing(engine.connect()) as con:
         trans = con.begin()
