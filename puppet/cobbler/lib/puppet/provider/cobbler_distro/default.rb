@@ -1,4 +1,5 @@
 require 'puppet'
+require 'open3'
 Puppet::Type.type(:cobbler_distro).provide(:default) do
   defaultfor :operatingsystem => [:centos, :redhat, :debian, :ubuntu]
   
@@ -34,24 +35,36 @@ Puppet::Type.type(:cobbler_distro).provide(:default) do
   end
 
   def find_distro_full
-    distro = `cobbler distro find --name=#{@resource[:name]} --kernel=#{@resource[:kernel]} --initrd=#{@resource[:initrd]} --arch=#{@resource[:arch]} --breed=#{@resource[:breed]} --os-version=#{@resource[:osversion]} #{ksmeta}`
-    distro.chomp
-    return distro.size != 0
+    distro, stderr = Open3.popen3("cobbler distro find --name=#{@resource[:name]} --kernel=#{@resource[:kernel]} --initrd=#{@resource[:initrd]} --arch=#{@resource[:arch]} --breed=#{@resource[:breed]} --os-version=#{@resource[:osversion]} #{ksmeta}")[1,2]
+    if err = stderr.gets
+      raise Puppet::Error, err
+    else
+      distro.read.chomp.size != 0
+    end
   end
 
   def find_distro_name
-    distro = `cobbler distro find --name=#{@resource[:name]}`
-    distro.chomp
-    return distro.size != 0
+    distro, stderr = Open3.popen3("cobbler distro find --name=#{@resource[:name]}")[1,2]
+    if err = stderr.gets
+      raise Puppet::Error, err
+    else
+      return distro.read.chomp.size != 0
+    end
   end
 
   def update_distro
     subcommand = find_distro_name ? 'edit' : 'add'
-    system("cobbler distro #{subcommand} --name=#{@resource[:name]} --kernel=#{@resource[:kernel]} --initrd=#{@resource[:initrd]} --arch=#{@resource[:arch]} --breed=#{@resource[:breed]} --os-version=#{@resource[:osversion]} #{ksmeta}")
+    stderr = Open3.popen3("cobbler distro #{subcommand} --name=#{@resource[:name]} --kernel=#{@resource[:kernel]} --initrd=#{@resource[:initrd]} --arch=#{@resource[:arch]} --breed=#{@resource[:breed]} --os-version=#{@resource[:osversion]} #{ksmeta}")[2]
+    if err = stderr.gets
+      raise Puppet::Error, err
+    end
   end
 
   def remove_distro
-    system("cobbler distro remove --name=#{@resource[:name]}")
+    stderr = Open3.popen3("cobbler distro remove --name=#{@resource[:name]}")[2]
+    if err = stderr.gets
+      raise Puppet::Error, err
+    end
   end
 
 end

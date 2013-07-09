@@ -1,0 +1,6 @@
+#!/bin/sh
+/sbin/iptables-save -c > /etc/iptables.rules
+if [ -f /etc/iptables.downrules ]; then
+   /sbin/iptables-restore < /etc/iptables.downrules
+fi
+exit 0

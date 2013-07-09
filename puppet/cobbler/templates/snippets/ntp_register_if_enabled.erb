@@ -1,0 +1,11 @@
+#if $str($getVar('ntp_enable', '')) == "1"
+## run one-time synchronization and turn ntp service on after reboot
+    #if $breed == "redhat"
+/etc/init.d/ntpdate start
+/sbin/chkconfig ntpd on
+    #elif $breed == "debian" or $breed == "ubuntu"
+## we read list of ntp servers from config and sync with them untill first success
+awk '$1=="peer"||$1=="server"{ res=system("ntpdate " $2); if(res==0) exit; }' /etc/ntp.conf
+/usr/sbin/update-rc.d ntp defaults
+    #end if
+#end if

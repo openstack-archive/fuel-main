@@ -6,7 +6,7 @@ collectives = mcollective
 libdir = /usr/libexec/mcollective
 logfile = /var/log/mcollective.log
 loglevel = debug
-daemonize = 1
+daemonize = 0
 direct_addressing = 1
 
 # Set huge value of ttl to avoid cases with unsyncronized time between nodes
@@ -43,7 +43,9 @@ EOCONF
 #end if
 
 #if $str($getVar('mco_enable', '')) == "1"
-# turn on mcollective service after reboot and set priority to 81
-sed -i /etc/rc.d/init.d/mcollective -e 's/\(# chkconfig:\s\+[-0-6]\+\) [0-9]\+ \([0-9]\+\)/\1 81 \2/'
-/sbin/chkconfig mcollective on
+## turn on mcollective service after reboot
+## /sbin/chkconfig mcollective on
+## service mcollective restart
+/sbin/chkconfig mcollective off
+/sbin/chkconfig supervisord on
 #end if

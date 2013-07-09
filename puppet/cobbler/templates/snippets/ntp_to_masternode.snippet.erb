@@ -1,0 +1,13 @@
+# Disable panic about huge clock offset
+sed -i '/^\s*tinker panic/ d' /etc/ntp.conf
+sed -i '1 i tinker panic 0' /etc/ntp.conf
+
+echo 0 > /var/lib/ntp/drift
+chown ntp: /var/lib/ntp/drift
+
+# Point installed ntpd to Master node
+sed -i '/^\s*server/ d' /etc/ntp.conf
+echo "server $server burst iburst" >> /etc/ntp.conf
+sed -i 's/SYNC_HWCLOCK\s*=\s*no/SYNC_HWCLOCK=yes/' /etc/sysconfig/ntpdate
+chkconfig ntpd on
+chkconfig ntpdate on

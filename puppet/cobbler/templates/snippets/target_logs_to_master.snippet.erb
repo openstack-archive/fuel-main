@@ -1,0 +1,7 @@
+#raw
+cat >/etc/rsyslog.d/10-log2master.conf <<EOF
+# Log all messages to master node
+\$template LogToMaster, "<%%PRI%>1 %\$NOW%T%TIMESTAMP:8:\$%Z %HOSTNAME% %APP-NAME% %PROCID% %MSGID% -%msg%\n"
+#end raw
+*.* @$server;LogToMaster
+EOF

@@ -1,0 +1,24 @@
+#if $str($getVar('install_log_2_syslog','')) == "1"
+wget -O /tmp/send2syslog.py "http://$server/cobbler/aux/send2syslog.py"
+#if $getVar('hostname', '') != ''
+#set $config_hostname = '"hostname": "%s",' % $hostname
+#end if
+echo '{$config_hostname
+    "watchlist": [
+        {"servers": [ {"host": "$server"} ],
+            "watchfiles": [
+                {"tag": "install/anaconda", "log_type": "anaconda",
+                    "files": ["/tmp/anaconda.log",
+                        "/mnt/sysimage/root/install.log"]},
+                {"tag": "install/ks-pre", "files": ["/tmp/ks-pre.log"]},
+                {"tag": "install/ks-post", "files": ["/mnt/sysimage/root/ks-post.log"]},
+                {"tag": "install/syslog", "log_type": "anaconda",
+                    "files": ["/tmp/syslog"]},
+                {"tag": "install/storage", "log_type": "anaconda",
+                    "files": ["/tmp/storage.log"]}
+            ]
+        }
+    ]
+}' > /tmp/send2syslog.conf
+python /tmp/send2syslog.py -c /tmp/send2syslog.conf
+#end if

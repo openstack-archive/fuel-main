@@ -1,0 +1,6 @@
+## add proxy to initial installation process if it defined in cobbler
+#if $getVar("proxy","") != ""
+url --proxy $proxy --url=$tree
+#else
+url --url=$tree
+#end if

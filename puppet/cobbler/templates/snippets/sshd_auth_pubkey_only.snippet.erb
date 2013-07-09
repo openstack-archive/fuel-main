@@ -1,0 +1,4 @@
+# Allow ssh auth PubKey only.
+sed --follow-symlinks -i 's/^\s*PubkeyAuthentication\s+no/PubkeyAuthentication yes/' /etc/ssh/sshd_config
+sed --follow-symlinks -i '/^\s*PasswordAuthentication/d' /etc/ssh/sshd_config
+echo 'PasswordAuthentication no' >> /etc/ssh/sshd_config

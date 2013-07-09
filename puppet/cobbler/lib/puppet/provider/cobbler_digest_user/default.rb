@@ -54,7 +54,7 @@ Puppet::Type.type(:cobbler_digest_user).provide(:default) do
   end
 
   def rm_user
-    system("/usr/bin/htpasswd -D /etc/cobbler/users.digest #{@resource[:name]} || true")
+    system("/usr/bin/htpasswd -D /etc/cobbler/users.digest #{@resource[:name]} 2>&1 || true")
   end
 
   def create_user

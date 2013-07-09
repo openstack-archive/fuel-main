@@ -50,24 +50,36 @@ Puppet::Type.type(:cobbler_profile).provide(:default) do
   end
 
   def find_profile_full
-    profile = `cobbler profile find --name=#{@resource[:name]} --distro=#{@resource[:distro]} --enable-menu=#{enable_menu} --kopts=\"#{@resource[:kopts]}\" #{kickstart} #{ksmeta}`
-    profile.chomp
-    return profile.size != 0
+    profile, stderr = Open3.popen3("cobbler profile find --name=#{@resource[:name]} --distro=#{@resource[:distro]} --enable-menu=#{enable_menu} --kopts=\"#{@resource[:kopts]}\" #{kickstart} #{ksmeta}")[1,2]
+    if err = stderr.gets
+      raise Pupppet::Error, err
+    else
+      profile.read.chomp.size != 0
+    end
   end
 
   def find_profile_name
-    profile = `cobbler profile find --name=#{@resource[:name]}`
-    profile.chomp
-    return profile.size != 0
+    profile, stderr = Open3.popen3("cobbler profile find --name=#{@resource[:name]}")[1,2]
+    if err = stderr.gets
+      raise Pupppet::Error, err
+    else
+      profile.read.chomp.size != 0
+    end
   end
 
   def update_profile
     subcommand = find_profile_name ? 'edit' : 'add'
-    system("cobbler profile #{subcommand} --name=#{@resource[:name]} --distro=#{@resource[:distro]} --enable-menu=#{enable_menu} --kopts=\"#{@resource[:kopts]}\" #{kickstart} #{ksmeta}")
+    stderr = Open3.popen3("cobbler profile #{subcommand} --name=#{@resource[:name]} --distro=#{@resource[:distro]} --enable-menu=#{enable_menu} --kopts=\"#{@resource[:kopts]}\" #{kickstart} #{ksmeta}")[2]
+    if err = stderr.gets
+      raise Pupppet::Error, err
+    end
   end
 
   def remove_profile
-    system("cobbler profile remove --name=#{@resource[:name]}")
+    stderr = Open3.popen3("cobbler profile remove --name=#{@resource[:name]}")[2]
+    if err = stderr.gets
+      raise Pupppet::Error, err
+    end
   end
 
 end

@@ -1,0 +1,99 @@
+echo > /tmp/partition.ks
+#import json
+#if $getVar("ks_spaces","{}") != "{}"
+    ##
+    #set $j = $getVar("ks_spaces","[]")
+    #set $spaces = $json.loads($j)
+    #set $clearpart_drives = $set([])
+    #set $physical_volumes = []
+    #set $partitions = []
+    #set $volume_groups = {}
+    #set $logical_volumes = []
+    #set $pvnum = 0
+    ##
+    #for $space in $spaces
+        #set $space_id = $space.get("id")
+        #set $space_type = $space.get("type")
+        #set $space_volumes = $space.get("volumes")
+        ##
+        ## Adding disk to clearpart list of drives
+        #if $space_type == "disk"
+            $clearpart_drives.add($space_id)
+        #end if
+        ##
+        #for $volume in $space_volumes
+            #set $volume_id = $volume.get("id")
+            #set $volume_type = $volume.get("type")
+            ##
+            ## Parsing volume groups and physical volumes
+            #if $space_type == "disk" and $volume_type == "pv"
+                #set $volume_vg = $volume.get("vg")
+                #set $volume_size = $int($volume.get("size") or 0) / 1024 ** 2
+                #set $volume_name = "pv.%03d" % $pvnum
+                #if $volume_size > 0
+                    $physical_volumes.append("partition %s --size=%s --ondisk=%s" % ($volume_name, $volume_size, $space_id))
+                    #if not $volume_groups.get($volume_vg)
+                        #set $volume_groups[$volume_vg] = [$volume_name]
+                    #else
+                        $volume_groups[$volume_vg].append($volume_name)
+                    #end if
+                    #set $pvnum += 1
+                #end if
+            #end if
+            ##
+            ## Parsing bare partitions
+            #if $space_type == "disk" and $volume_type == "partition"
+                #set $volume_mount = $volume.get("mount")
+                #set $volume_size = $int($volume.get("size") or 0) / 1024 ** 2
+                #if $volume_size > 0
+                    $partitions.append("partition %s --size=%s --ondisk=%s" % ($volume_mount, $volume_size, $space_id))
+                #end if
+            #end if
+            ##
+            ## Writing bootloader to MBR
+            #if $space_type == "disk" and $volume_type == "mbr"
+echo "bootloader --location=mbr --driveorder=\$(basename `readlink -f /dev/$space_id`) --append=' biosdevname=0 crashkernel=auto'" > /tmp/bootloader.ks
+            #end if
+            ##
+            ## Parsing logical volumes
+            #if $space_type == "vg" and $volume_type == "lv"
+                #set $volume_mount = $volume.get("mount")
+                #set $volume_size = $int($volume.get("size") or 0) / 1024 ** 2
+                #set $volume_name = $volume.get("name")
+                #if $volume_size > 0
+                    $logical_volumes.append("logvol %s --vgname=%s --size=%s --name=%s" % ($volume_mount, $space_id, $volume_size, $volume_name))
+                #end if
+            #end if
+            ##
+        #end for
+    #end for
+    ##
+    ## Cleaning disks
+    #if $clearpart_drives
+        #set $clearpart_drives_string = ','.join(list($clearpart_drives))
+echo "clearpart --initlabel --all --drives=$clearpart_drives_string" >> /tmp/partition.ks
+    #end if
+    ##
+    ## Creating bare partitions
+    #for $partition in $partitions
+echo "$partition" >> /tmp/partition.ks
+    #end for
+    ##
+    ## Creating physical volumes
+    #for $pv in $physical_volumes
+echo "$pv" >> /tmp/partition.ks
+    #end for
+    ##
+    ## Creating volume groups
+    #for $volgroup in $volume_groups.keys()
+        #set $ks_pvs = " ".join($volume_groups.get($volgroup))
+echo "volgroup $volgroup $ks_pvs" >> /tmp/partition.ks
+    #end for
+    ##
+    ## Creating logical volumes
+    #for $lv in $logical_volumes
+echo "$lv" >> /tmp/partition.ks
+    #end for
+    ##
+    ##
+#end if

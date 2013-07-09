@@ -1,0 +1,9 @@
+rm /etc/yum.repos.d/*.repo
+cat > /etc/yum.repos.d/nailgun.repo << EOF
+<% ks_repo.each do |repo| %>
+[<%= repo['id'] %>]
+name=<%= repo['name'] %>
+baseurl=<%= repo['url'] %>
+gpgcheck=0
+<% end %>
+EOF
