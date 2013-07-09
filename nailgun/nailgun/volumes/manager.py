@@ -40,9 +40,7 @@ class Disk(object):
         # if required size in not equal to zero
         # we need to not forget to allocate lvm metadata space
         if size:
-            size = size + self.vm.field_generator(
-                "calc_lvm_meta_size"
-            )
+            size = size + self.vm.field_generator('calc_lvm_meta_size')
             logger.debug("Size + lvm_meta_size: %s", size)
         # if size is not defined we should
         # to allocate all available space
@@ -51,7 +49,7 @@ class Disk(object):
                          "Will use all free space on this disk.")
             size = self.free_space
 
-        self.free_space = self.free_space - size
+        self.free_space -= size
         logger.debug("Left free space: disk: %s free space: %s",
                      self.id, self.free_space)
 
@@ -73,15 +71,14 @@ class Disk(object):
             "mount": mount,
             "size": size
         })
-        self.free_space = self.free_space - size
+        self.free_space -= size
 
     def create_mbr(self, boot=False):
         if self.free_space >= self.vm.field_generator("calc_mbr_size"):
             if boot:
                 self.volumes.append({"type": "mbr"})
             logger.debug("Allocating MBR")
-            self.free_space = self.free_space - \
-                self.vm.field_generator("calc_mbr_size")
+            self.free_space -= self.vm.field_generator("calc_mbr_size")
 
     def make_bootable(self):
         logger.debug("Allocating /boot partition")
@@ -332,15 +329,12 @@ class VolumeManager(object):
                 disk.create_pv("os", 0)
                 continue
 
-            if disk.free_space > (
-                os_vg_size_left + lvm_meta_size
-            ):
+            if disk.free_space > (os_vg_size_left + lvm_meta_size):
                 disk.create_pv("os", os_vg_size_left)
                 os_vg_size_left = 0
             else:
                 os_vg_size_left = os_vg_size_left - (
-                    disk.free_space - lvm_meta_size
-                )
+                    disk.free_space - lvm_meta_size)
                 disk.create_pv("os")
 
     def gen_volumes_info(self):
