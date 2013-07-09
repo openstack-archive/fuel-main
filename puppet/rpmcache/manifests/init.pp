@@ -1,4 +1,4 @@
-class rpmcache ( $releasever, $pkgdir, $numtries,
+class rpmcache::rpmcache ( $releasever, $pkgdir, $numtries,
 $rh_username, $rh_password, $rh_base_channels, $rh_openstack_channel,
 $use_satellite = false, $sat_hostname = false, $activation_key = false,
 $sat_base_channels, $sat_openstack_channel, $numtries = 3)  {
@@ -117,7 +117,7 @@ $sat_base_channels, $sat_openstack_channel, $numtries = 3)  {
     require => File['/etc/nailgun/']
   } ->
   exec {'fuel-rpms':
-    command => "/bin/mkdir -p ${pkgdir}/fuel/Packages; /bin/cat /etc/nailgun/req-fuel-rhel.txt | /usr/bin/xargs -n 1 -I xxx /bin/cp /var/www/nailgun/centos/fuelweb/x86_64/Packages/xxx /var/www/nailgun/rhel/fuel/Packages/",
+    command => "/bin/mkdir -p ${pkgdir}/fuel/Packages; /bin/cat /etc/nailgun/req-fuel-rhel.txt | /usr/bin/xargs -n 1 -I xxx /bin/cp /var/www/nailgun/centos/fuelweb/x86_64/Packages/xxx ${pkgdir}/fuel/Packages/",
     logoutput => true,
     before    => Exec['rebuild-fuel-repo'],
   }

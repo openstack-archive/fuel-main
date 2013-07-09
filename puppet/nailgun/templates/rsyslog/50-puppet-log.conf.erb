@@ -1,0 +1,4 @@
+# Collect Puppet logs
+$template PuppetLog, "%$NOW%T%TIMESTAMP:8:$% %syslogseverity-text%: %msg%\n"
+$template PuppetLogFile, "/var/log/puppet/%APP-NAME%.log"
+:APP-NAME, regex, "puppet" ?PuppetLogFile;PuppetLog
