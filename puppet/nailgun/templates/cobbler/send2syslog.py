@@ -1,1 +1,0 @@
-../../../../bin/send2syslog.py
