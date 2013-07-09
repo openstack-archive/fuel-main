@@ -1,0 +1,15 @@
+<% tests.each(function(test) { %>
+  <% var result = testrun && _.find(testrun.get('tests'), {id: test.id}) %>
+  <% var status = result && result.status || 'unknown' %>
+  <tr>
+    <td>
+      <div class="healthcheck-name"><%- test.get('name') %></div>
+      <% if (status == 'failure' || status == 'error') { %>
+        <div class="healthcheck-msg healthcheck-status-failure"><%- result.message %></div>
+      <% } %>
+    </td>
+    <td class="healthcheck-col-status">
+      <div class="healthcheck-status healthcheck-status-<%- status %>"><%- status %></div>
+    </td>
+  </tr>
+<% }) %>

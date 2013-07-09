@@ -4133,4 +4133,4 @@ label.show-password {
 .healthcheck-status-stopped, .healthcheck-status-unknown {color: #999999;}
 .healthcheck-status-success {color: #2e8701;}
 .healthcheck-status-failure, .healthcheck-status-error {color: #890000;}
-.healthcheck-table .healthcheck-col-status {width: 100px;}
+.healthcheck-table .healthcheck-col-status {width: 120px;}
