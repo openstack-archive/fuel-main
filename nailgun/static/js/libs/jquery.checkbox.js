@@ -1,3 +1,15 @@
+/**
+ * jQuery custom checkboxes
+ *
+ * Copyright (c) 2008 Khavilo Dmitry (http://widowmaker.kiev.ua/checkbox/)
+ * Licensed under the MIT License:
+ * http://www.opensource.org/licenses/mit-license.php
+ *
+ * @version 1.3.0 Beta 1
+ * @author Khavilo Dmitry
+ * @mailto wm.morgun@gmail.com
+**/
+
 (function($){
 	var CB = function(e)
 	{
@@ -11,23 +23,23 @@
 			var checked = object.checked;
 			var disabled = object.disabled;
 			var $object = $(object);
-			
+
 			if ( object.stateInterval )
 				clearInterval(object.stateInterval);
-			
+
 			object.stateInterval = setInterval(
-				function() 
+				function()
 				{
 					if ( object.disabled != disabled )
 						$object.trigger( (disabled = !!object.disabled) ? 'disable' : 'enable');
 					if ( object.checked != checked )
 						$object.trigger( (checked = !!object.checked) ? 'check' : 'uncheck');
-				}, 
+				},
 				10
 			);
 			return $object;
 		};
-		return this.each(function() 
+		return this.each(function()
 		{
 			var ch = this;
 			var $ch = addEvents(ch);
