@@ -25,7 +25,9 @@ from nailgun.api.models import Network
 
 
 class SubnetMatcher:
-
+    '''
+    Custom matcher. Returns True if ip address in network
+    '''
     def __init__(self, subnet):
         self.subnet = subnet
 
