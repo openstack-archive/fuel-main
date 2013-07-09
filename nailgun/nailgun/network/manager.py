@@ -784,7 +784,7 @@ class NetworkManager(object):
 
         if not ip:
             raise errors.CanNotDetermineEndPointIP(
-                'Can not determine end point IP for cluster %s' %
+                u'Can not determine end point IP for cluster %s' %
                 cluster_db.full_name)
 
         return ip
