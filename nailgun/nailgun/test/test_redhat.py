@@ -15,6 +15,9 @@
 import json
 from paste.fixture import TestApp
 
+import mock
+
+import nailgun
 from nailgun.api.models import Release
 from nailgun.settings import settings
 
@@ -30,6 +33,7 @@ class TestHandlers(BaseHandlers):
     def setUp(self):
         super(TestHandlers, self).setUp()
         self.release = self.env.create_release(api=False)
+        nailgun.task.task.DownloadReleaseTask.execute = mock.Mock()
 
     @fake_tasks()
     def test_redhat_account_handler(self):
