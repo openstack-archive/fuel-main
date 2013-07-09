@@ -190,16 +190,9 @@ class NodeValidator(BasicValidator):
         return d
 
 
-class NodeAttributesValidator(BasicValidator):
-    pass
-
-
 class NodeVolumesValidator(BasicValidator):
     @classmethod
     def validate(cls, data):
-        # Here we instantiate VolumeManager with data
-        # and during initialization it validates volumes.
-        # So we can get validated volumes just after
-        # VolumeManager initialization
-        vm = VolumeManager(data=data)
-        return vm.volumes
+        dict_data = cls.validate_json(data)
+        VolumeManager.validate(dict_data)
+        return dict_data

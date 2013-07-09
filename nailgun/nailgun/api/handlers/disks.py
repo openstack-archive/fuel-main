@@ -18,7 +18,7 @@ import web
 
 from nailgun.db import db
 from nailgun.api.models import Node
-from nailgun.api.validators.node import NodeAttributesValidator
+from nailgun.api.validators.node import NodeVolumesValidator
 from nailgun.volumes.manager import VolumeManager
 from nailgun.api.models import Node, NodeAttributes
 from nailgun.api.handlers.base import JSONHandler, content_json
@@ -27,7 +27,7 @@ from nailgun.api.handlers.base import JSONHandler, content_json
 class NodeDisksHandler(JSONHandler):
     fields = ('node_id', 'volumes')
 
-    validator = NodeAttributesValidator
+    validator = NodeVolumesValidator
 
     @classmethod
     def render(cls, instance, fields=None):
@@ -45,7 +45,7 @@ class NodeDisksHandler(JSONHandler):
     @content_json
     def PUT(self, node_id):
         node = self.get_object_or_404(Node, node_id)
-        data = self.validator.validate_json(web.data())
+        data = self.validator.validate(web.data())
         if node.cluster:
             node.cluster.add_pending_changes('disks', node_id=node.id)
 
