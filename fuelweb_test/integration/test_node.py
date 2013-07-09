@@ -177,11 +177,12 @@ class TestNode(BaseNodeTestCase):
     @fetch_logs
     def test_add_compute_node(self):
         cluster_name = 'node_addition'
-        nodes_dict = {'controller': [n["name"]
+        nodes_dict = {'controller': [n.name
                                      for n in self.nodes().slaves[:1]],
-                      'compute': [n["name"]
+                      'compute': [n.name
                                   for n in self.nodes().slaves[1:2]]}
-        additional_nodes_dict = {'compute': self.nodes().slaves[2:3]}
+        additional_nodes_dict = \
+            {'compute': [n.name for n in self.nodes().slaves[2:3]]}
 
         cluster_id = self._basic_provisioning(
             cluster_name=cluster_name, nodes_dict=nodes_dict)
