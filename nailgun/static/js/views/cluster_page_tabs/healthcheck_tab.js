@@ -16,7 +16,8 @@ function(models, commonViews, dialogViews, healthcheckTabTemplate, healthcheckTe
         template: _.template(healthcheckTabTemplate),
         updateInterval: 5000,
         events: {
-            'change input[type=checkbox]': 'calculateRunTestsButtonState',
+            'change input.testset-select': 'testSetSelected',
+            'change input.select-all-tumbler': 'allTestSetsSelected',
             'click .run-tests-btn:not(:disabled)': 'runTests',
             'click .stop-tests-btn:not(:disabled)': 'stopTests'
         },
@@ -27,7 +28,19 @@ function(models, commonViews, dialogViews, healthcheckTabTemplate, healthcheckTe
             this.$('.btn, input').prop('disabled', disable || this.isLocked());
         },
         calculateRunTestsButtonState: function() {
-            this.$('.run-tests-btn').prop('disabled', !this.$('input[type=checkbox]:checked').length || this.hasRunningTests());
+            this.$('.run-tests-btn').prop('disabled', !this.$('input.testset-select:checked').length || this.hasRunningTests());
+        },
+        calculateSelectAllTumblerState: function() {
+            this.$('.select-all-tumbler').prop('checked', this.$('input.testset-select:checked').length == this.$('input.testset-select').length);
+        },
+        allTestSetsSelected: function(e) {
+            var checked = $(e.currentTarget).is(':checked');
+            this.$('input.testset-select').prop('checked', checked);
+            this.calculateRunTestsButtonState();
+        },
+        testSetSelected: function() {
+            this.calculateSelectAllTumblerState();
+            this.calculateRunTestsButtonState();
         },
         hasRunningTests: function() {
             return !!_.intersection(_.pluck(_.flatten(this.testruns.pluck('tests'), true), 'status'), ['running', 'wait_running']).length;
@@ -53,7 +66,7 @@ function(models, commonViews, dialogViews, healthcheckTabTemplate, healthcheckTe
         runTests: function() {
             var testruns = new models.TestRuns();
             _.each(this.subViews, function(subView) {
-                if (subView instanceof TestSet && subView.$('input[type=checkbox]:checked').length) {
+                if (subView instanceof TestSet && subView.$('input.testset-select:checked').length) {
                     var testrun = new models.TestRun({
                         testset: subView.testset.id,
                         metadata: {
