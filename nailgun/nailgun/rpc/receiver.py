@@ -574,7 +574,6 @@ class NailgunReceiver(object):
             cls._download_release_error(release_id, error_msg)
         elif progress == 100:
             cls._download_release_error(release_id, 'error_msg')
-#            cls._download_release_completed(release_info['release_id'])
         TaskHelper.update_task_status(task_uuid, status,
                                       progress, error_msg)
 
@@ -593,7 +592,7 @@ class NailgunReceiver(object):
         release = db().query(Release).get(release_id)
         release.state = 'error'
         db().commit()
-        error_msg = u"{0}' downloading error: {1}".format(
+        error_msg = u"{0}' downloading error: {0}".format(
             release.name, error_message
         )
         notifier.notify('error', error_msg)

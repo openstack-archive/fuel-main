@@ -49,6 +49,7 @@ class Release(Base):
     STATES = (
         'not_available',
         'downloading',
+        'error',
         'available'
     )
     id = Column(Integer, primary_key=True)

@@ -1,7 +1,16 @@
 <td><%- release.get('name') %></td>
 <td><%- release.get('version') %></td>
 <td class="release-status">
-  <span class="<%= release.get('state') == 'available' ? 'available"> Available' : 'not_available"> Not available' %></span>
+  <% var state = '';
+     if (release.get('state') == 'available') {
+       state = 'Available'; 
+     } else if (release.get('state') == 'error') {
+       state = 'Error';
+     } else {
+       state = 'Not available';
+     }
+  %>
+  <span class="<%= state == 'available' ? available : not_available%>"> <%- state %></span>
 </td>
 <td>
   <% if (release.get('state') != 'available') { %>
