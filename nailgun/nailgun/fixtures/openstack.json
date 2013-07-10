@@ -22,6 +22,7 @@
             },
             "volumes_metadata": {
                 "os": {
+                    "type": "vg",
                     "min_size": {"generator": "calc_min_os_size"},
                     "label": "Base System",
                     "volumes": [
@@ -40,6 +41,7 @@
                     ]
                 },
                 "vm": {
+                    "type": "vg",
                     "min_size": {"generator": "calc_min_vm_size"},
                     "label": "Virtual Storage",
                     "volumes": [
@@ -55,6 +57,7 @@
                     ]
                 },
                 "cinder": {
+                    "type": "vg",
                     "label": "Cinder",
                     "min_size": {"generator": "calc_min_cinder_size"},
                     "volumes": []
