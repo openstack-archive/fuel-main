@@ -110,7 +110,7 @@ class NailgunClient(object):
     @logwrap
     def get_grizzly_release_id(self):
         for release in self.get_releases():
-            if release["name"] == "OpenStack Grizzly on CentOS 6.4":
+            if release["name"].find("Grizzly") != -1:
                 return release["id"]
 
     @logwrap
