@@ -70,20 +70,20 @@ function(utils, models, dialogViews, navbarTemplate, nodesStatsTemplate, notific
             this.refresh().always(_.bind(this.scheduleUpdate, this));
         },
         refresh: function() {
-            return $.when(this.nodes.fetch(), this.notifications.fetch());
+            return $.when(this.statistic.fetch(), this.notifications.fetch());
         },
         initialize: function(options) {
             this.elements = _.isArray(options.elements) ? options.elements : [];
-            this.nodes = new models.Nodes();
+            this.statistic = new models.NodesStatistic();
             this.notifications = new models.Notifications();
-            $.when(this.nodes.deferred = this.nodes.fetch(), this.notifications.deferred = this.notifications.fetch()).done(_.bind(this.scheduleUpdate, this));
+            $.when(this.statistic.deferred = this.statistic.fetch(), this.notifications.deferred = this.notifications.fetch()).done(_.bind(this.scheduleUpdate, this));
         },
         render: function() {
             this.tearDownRegisteredSubViews();
             if (!this.$('.navigation-bar-ul a').length) {
                 this.$el.html(this.template({elements: this.elements}));
             }
-            this.stats = new views.NodesStats({collection: this.nodes, navbar: this});
+            this.stats = new views.NodesStats({statistic: this.statistic, navbar: this});
             this.registerSubView(this.stats);
             this.$('.nodes-summary-container').html(this.stats.render().el);
             this.notificationsButton = new views.Notifications({collection: this.notifications, navbar: this});
@@ -98,19 +98,13 @@ function(utils, models, dialogViews, navbarTemplate, nodesStatsTemplate, notific
 
     views.NodesStats = Backbone.View.extend({
         template: _.template(nodesStatsTemplate),
-        stats: {},
         initialize: function(options) {
             _.defaults(this, options);
-            this.collection.on('sync', this.render, this);
-        },
-        calculateStats: function() {
-            this.stats.total = this.collection.length;
-            this.stats.unallocated = this.collection.filter(function(node) {return !node.get('role');}).length;
+            this.statistic.on('sync', this.render, this);
         },
         render: function() {
-            if (this.collection.deferred.state() == 'resolved') {
-                this.calculateStats();
-                this.$el.html(this.template({stats: this.stats}));
+            if (this.statistic.deferred.state() == 'resolved') {
+                this.$el.html(this.template({stats: this.statistic}));
             }
             return this;
         }

@@ -183,6 +183,11 @@ define(function() {
         }
     });
 
+    models.NodesStatistic = Backbone.Model.extend({
+        constructorName: 'NodesStatistic',
+        urlRoot: '/api/statistic'
+    });
+
     models.Task = Backbone.Model.extend({
         constructorName: 'Task',
         urlRoot: '/api/tasks'

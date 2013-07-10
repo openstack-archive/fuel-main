@@ -1,14 +1,14 @@
 <div class="statistic">
   <div class="stat-count">
-    <%= stats.total %>
+    <%= stats.get('total') %>
   </div>
   <div class="stat-title">
-    total<br/>node<%= stats.total == 1 ? '' : 's' %>
+    total<br/>node<%= stats.get('total') == 1 ? '' : 's' %>
   </div>
   <div class="stat-count">
-    <%= stats.unallocated %>
+    <%= stats.get('unallocated') %>
   </div>
   <div class="stat-title">
-    unallocated<br/>node<%= stats.unallocated == 1 ? '' : 's' %>
+    unallocated<br/>node<%= stats.get('unallocated') == 1 ? '' : 's' %>
   </div>
 </div>
