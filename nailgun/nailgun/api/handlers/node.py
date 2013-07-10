@@ -183,22 +183,28 @@ class NodeCollectionHandler(JSONHandler):
 
         try:
             ram = str(round(float(
-                node.meta['memory']['total']) / 1073741824, 1))
-        except (KeyError, TypeError, ValueError):
+                node.meta['memory']['total']) / 1073741824, 1)) + " GB RAM"
+        except Exception as exc:
             logger.warning(traceback.format_exc())
-            ram = "unknown"
+            ram = "unknown RAM"
 
         try:
-            hd_size = str(round(float(
-                sum([d["size"] for d in node.meta["disks"]]) / 1073741824), 1))
-        except (KeyError, TypeError, ValueError):
+            # 1000000000 because Vova said so
+            hd_size = round(float(
+                sum([d["size"] for d in node.meta["disks"]]) / 1000000000), 1)
+            # if HDD > 100 GB we show it's size in TB
+            if hd_size > 100:
+                hd_size = str(hd_size / 1000) + " TB HDD"
+            else:
+                hd_size = str(hd_size) + " GB HDD"
+        except Exception as exc:
             logger.warning(traceback.format_exc())
-            hd_size = "unknown"
+            hd_size = "unknown HDD"
 
         cores = str(node.meta.get('cpu', {}).get('total', "unknown"))
         notifier.notify(
             "discover",
-            "New node is discovered: %s CPUs / %s GB RAM / %s GB HDD" %
+            "New node is discovered: %s CPUs / %s / %s " %
             (cores, ram, hd_size),
             node_id=node.id
         )
