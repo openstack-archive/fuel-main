@@ -31,6 +31,7 @@ from nailgun.api.handlers.redhat import RedHatAccountHandler
 from nailgun.api.handlers.release import ReleaseHandler
 from nailgun.api.handlers.release import ReleaseCollectionHandler
 
+from nailgun.api.handlers.node import NodeAllocationStatsHandler
 from nailgun.api.handlers.node import NodeHandler
 from nailgun.api.handlers.node import NodeCollectionHandler
 from nailgun.api.handlers.node import NodeAttributesHandler
@@ -102,6 +103,8 @@ urls = (
     'NodeNICsDefaultHandler',
     r'/nodes/interfaces_verify/?$',
     'NodeNICsVerifyHandler',
+    r'/nodes/allocation/stats/?$',
+    'NodesAllocationStatsHandler',
     r'/tasks/?$',
     'TaskCollectionHandler',
     r'/tasks/(?P<task_id>\d+)/?$',

@@ -38,6 +38,7 @@ from nailgun.network.manager import NetworkManager
 from nailgun.volumes.manager import VolumeManager
 from nailgun.api.models import Node, NodeAttributes
 from nailgun.api.handlers.base import JSONHandler, content_json
+from nailgun.api.handlers.base import HandlerRegistrator
 
 
 class NodeHandler(JSONHandler):
@@ -606,3 +607,13 @@ class NodeNICsVerifyHandler(JSONHandler):
         topo = TopoChecker.resolve_topo_conflicts(data)
         ret = map(self.render, topo, fields=fields_with_conflicts)
         return map(self.render, topo, fields=fields_with_conflicts)
+
+
+class NodesAllocationStatsHandler(object):
+    @content_json
+    def GET(self):
+        unallocated_nodes = db().query(Node).filter_by(cluster_id=None).count()
+        total_nodes = \
+            db().query(Node).count()
+        return {'total': total_nodes,
+                'unallocated': unallocated_nodes}
