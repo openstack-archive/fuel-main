@@ -10,7 +10,7 @@
        state = 'Not available';
      }
   %>
-  <span class="<%= state == 'available' ? available : not_available%>"> <%- state %></span>
+  <span class="<%= release.get('state') == 'available' ? 'available' : 'not_available'%>"> <%- state %></span>
 </td>
 <td>
   <% if (release.get('state') != 'available') { %>
