@@ -201,5 +201,42 @@ class TestNode(BaseNodeTestCase):
         self.assert_node_service_list(self.nodes().slaves[1].name, 8)
         self.assert_node_service_list(self.nodes().slaves[2].name, 8)
 
+    @snapshot_errors
+    @logwrap
+    @fetch_logs
+    def test_floating_ips(self):
+        cluster_name = 'floating_ips'
+        nodes = {
+            'controller': ['slave-01'],
+            'compute': ['slave-02']
+        }
+        nodes = self.bootstrap_nodes(self.devops_nodes_by_names(
+            nodes['controller'] + nodes['compute']))
+
+        cluster_id = self.create_cluster(name=cluster_name)
+
+        networks = self.client.get_networks(cluster_id)
+        networks[1]['ip_ranges'] = [
+            ['240.0.0.2', '240.0.0.10'],
+            ['240.0.0.20', '240.0.0.25'],
+            ['240.0.0.30', '240.0.0.35']]
+
+        self.client.update_network(cluster_id, net_manager='FlatDHCPManager',
+                                   flat_net=networks)
+
+        # adding nodes in cluster
+        self.update_nodes_in_cluster(cluster_id, nodes)
+        task = self._launch_provisioning(cluster_id)
+        self.assertTaskSuccess(task)
+
+        # assert ips
+        expected_ips = [
+            ['240.0.0.%s' % i for i in range(2, 11, 1)],
+            ['240.0.0.%s' % i for i in range(20, 26, 1)],
+            ['240.0.0.%s' % i for i in range(30, 36, 1)]]
+        self.assert_cluster_floating_list(
+            self.ci().environment().node_by_name(nodes['compute'][0])['ip'],
+            expected_ips)
+
 if __name__ == '__main__':
     unittest.main()

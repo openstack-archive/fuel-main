@@ -16,6 +16,7 @@
 import logging
 from devops.helpers.helpers import SSHClient, wait, _wait
 from paramiko import RSAKey
+import re
 from fuelweb_test.helpers import Ebtables
 from fuelweb_test.integration.base_test_case import BaseTestCase
 from fuelweb_test.integration.decorators import debug
@@ -297,6 +298,31 @@ class BaseNodeTestCase(BaseTestCase):
         self.assert_service_list(remote, smiles_count)
         self.assert_glance_index(remote)
         self.assert_network_list(networks_count, remote)
+
+    @logwrap
+    def get_cluster_floating_list(self, ip):
+        remote = SSHClient(ip, username='root', password='r00tme',
+                           private_keys=self.get_private_keys())
+        ret = remote.check_call('/usr/bin/nova-manage floating list')
+        ret_str = ''.join(ret['stdout'])
+        return re.findall('(\d{1,3}\.\d{1,3}\.\d{1,3}\.\d{1,3})', ret_str)
+
+    @logwrap
+    def assert_cluster_floating_list(self, ip, expected_ips):
+        current_ips = self.get_cluster_floating_list(ip)
+        self.assertEqual(len(current_ips), len(expected_ips),
+                         "Floating ips amount. Cluster ip: %s" % ip)
+
+        absent_ips = []
+        for ip in expected_ips:
+            try:
+                current_ips.index(ip)
+                current_ips.remove(ip)
+            except ValueError:
+                absent_ips.append(ip)
+
+        self.assertTrue(len(absent_ips) == 0 and len(current_ips) == 0,
+                        'Floating ip list')
 
     @logwrap
     def get_private_keys(self):
