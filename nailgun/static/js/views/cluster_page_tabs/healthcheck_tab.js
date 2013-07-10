@@ -17,7 +17,8 @@ function(models, commonViews, dialogViews, healthcheckTabTemplate, healthcheckTe
         updateInterval: 5000,
         events: {
             'change input[type=checkbox]': 'calculateRunTestsButtonState',
-            'click .run-tests-btn:not(:disabled)': 'runTests'
+            'click .run-tests-btn:not(:disabled)': 'runTests',
+            'click .stop-tests-btn:not(:disabled)': 'stopTests'
         },
         isLocked: function() {
             return this.model.get('status') == 'new' || this.hasRunningTests() || !!this.model.task('deploy', 'running');
@@ -56,7 +57,7 @@ function(models, commonViews, dialogViews, healthcheckTabTemplate, healthcheckTe
                     var testrun = new models.TestRun({
                         testset: subView.testset.id,
                         metadata: {
-                            config: {},
+                            config: this.metadata.toJSON(),
                             cluster_id: this.model.id
                         }
                     });
@@ -65,6 +66,9 @@ function(models, commonViews, dialogViews, healthcheckTabTemplate, healthcheckTe
             }, this);
             this.disableControls(true);
             Backbone.sync('create', testruns).done(_.bind(this.update, this));
+        },
+        stopTests: function() {
+
         },
         updateTestRuns: function() {
             _.each(this.subViews, function(subView) {
@@ -92,12 +96,14 @@ function(models, commonViews, dialogViews, healthcheckTabTemplate, healthcheckTe
                 ostf.testsets = new models.TestSets();
                 ostf.tests = new models.Tests();
                 ostf.testruns = new models.TestRuns();
+                ostf.metadata = new models.OSTFClusterMetadata();
                 this.model.set({'ostf': ostf}, {silent: true});
                 _.extend(this, ostf);
                 $.when(
                     this.testsets.deferred = this.testsets.fetch(),
                     this.tests.fetch(),
-                    this.testruns.fetch({url: _.result(this.testruns, 'url') + '/last/' + this.model.id})
+                    this.testruns.fetch({url: _.result(this.testruns, 'url') + '/last/' + this.model.id}),
+                    this.metadata.fetch({url: _.result(this.metadata, 'url') + '/' + this.model.id})
                 ).done(_.bind(function() {
                     this.render();
                     this.testruns.on('sync', this.updateTestRuns, this);

@@ -5,7 +5,7 @@ html {
   background-color: #39444F;
   background-image: url(../img/bg-main.png);
   background-repeat: repeat;
-  font-family: 'Helvetica Neue', 'Segoe UI', Oswald, Verdana, Tahoma, Arial, san-serif;
+  font-family: 'Segoe UI', Helvetica, Oswald, Verdana, Tahoma, Arial, san-serif;
   height: 100%;
 }
 
@@ -17,7 +17,7 @@ body {
   background: -o-radial-gradient(center top, rgba(128, 134, 143, 0.3) 0%, rgba(128, 134, 143, 0.3) 30%, rgba(128, 134, 143, 0.0) 55%);
   background: -ms-radial-gradient(center top, rgba(128, 134, 143, 0.3) 0%, rgba(128, 134, 143, 0.3) 30%, rgba(128, 134, 143, 0.0) 55%);
   background: radial-gradient(center top, rgba(128, 134, 143, 0.3) 0%, rgba(128, 134, 143, 0.3) 30%, rgba(128, 134, 143, 0.0) 55%);
-  font-family: 'Helvetica Neue', 'Segoe UI', Oswald, Verdana, Tahoma, Arial, san-serif;
+  font-family: 'Segoe UI', Helvetica, Oswald, Verdana, Tahoma, Arial, san-serif;
   -webkit-font-smoothing: antialiased;
   height: 100%;
 }
@@ -66,7 +66,7 @@ h3,
 h4,
 h5,
 h6 {
-  font-family: 'Segoe UI Light', Helvetica, Georgia, Tahoma, Arial;
+  font-family: "Segoe UI Light", "Segoe UI", Helvetica, Georgia, Tahoma, Arial;
   font-weight: 100;
 }
 
@@ -148,7 +148,7 @@ h6.page-title {
   overflow: hidden;
   height: 40px;
   font-size: 14px;
-  font-weight: 600;
+  font-weight: 400;
   float: left;
   border-left: 1px solid #7789a0;
   border-right: 1px solid #3c3c3c;
@@ -4125,12 +4125,95 @@ label.show-password {
 
 /* OpenStack Health Check */
 .healthcheck-table {margin: 0px 0px 30px 0px; }
-.healthcheck-name {font-size: 15px; margin: 2px 0px 8px 0px;}
-.healthcheck-status {font-size: 14px; font-weight: 600; margin-top: 3px; text-transform: capitalize;}
+.healthcheck-name {font-size: 15px; margin: 5px 0px 5px 0px;}
+.healthcheck-status {font-size: 20px; margin-top: 3px; text-align: center;}
 .healthcheck-msg {font-size: 13px; line-height: 15px;}
 .healthcheck-progress {height: 12px; margin-bottom: 0px; margin-top: 8px;}
-.healthcheck-status-success {color: #2e8701;}
-.healthcheck-status-stopped, .healthcheck-status-unknown {color: #999999;}
+.healthcheck-status-stopped, .healthcheck-status-unknown, .healthcheck-status-wait_running {color: #999999;}
 .healthcheck-status-success {color: #2e8701;}
 .healthcheck-status-failure, .healthcheck-status-error {color: #890000;}
-.healthcheck-table .healthcheck-col-status {width: 120px;}
+.healthcheck-table .healthcheck-col-status {width: 50px;}
+
+.animate-spin {
+  -moz-animation: spin 2s infinite linear;
+  -o-animation: spin 2s infinite linear;
+  -webkit-animation: spin 2s infinite linear;
+  animation: spin 2s infinite linear;
+  display: inline-block;
+}
+@-moz-keyframes spin {
+  0% {
+    -moz-transform: rotate(0deg);
+    -o-transform: rotate(0deg);
+    -webkit-transform: rotate(0deg);
+    transform: rotate(0deg);
+  }
+
+  100% {
+    -moz-transform: rotate(359deg);
+    -o-transform: rotate(359deg);
+    -webkit-transform: rotate(359deg);
+    transform: rotate(359deg);
+  }
+}
+@-webkit-keyframes spin {
+  0% {
+    -moz-transform: rotate(0deg);
+    -o-transform: rotate(0deg);
+    -webkit-transform: rotate(0deg);
+    transform: rotate(0deg);
+  }
+
+  100% {
+    -moz-transform: rotate(359deg);
+    -o-transform: rotate(359deg);
+    -webkit-transform: rotate(359deg);
+    transform: rotate(359deg);
+  }
+}
+@-o-keyframes spin {
+  0% {
+    -moz-transform: rotate(0deg);
+    -o-transform: rotate(0deg);
+    -webkit-transform: rotate(0deg);
+    transform: rotate(0deg);
+  }
+
+  100% {
+    -moz-transform: rotate(359deg);
+    -o-transform: rotate(359deg);
+    -webkit-transform: rotate(359deg);
+    transform: rotate(359deg);
+  }
+}
+@-ms-keyframes spin {
+  0% {
+    -moz-transform: rotate(0deg);
+    -o-transform: rotate(0deg);
+    -webkit-transform: rotate(0deg);
+    transform: rotate(0deg);
+  }
+
+  100% {
+    -moz-transform: rotate(359deg);
+    -o-transform: rotate(359deg);
+    -webkit-transform: rotate(359deg);
+    transform: rotate(359deg);
+  }
+}
+@keyframes spin {
+  0% {
+    -moz-transform: rotate(0deg);
+    -o-transform: rotate(0deg);
+    -webkit-transform: rotate(0deg);
+    transform: rotate(0deg);
+  }
+
+  100% {
+    -moz-transform: rotate(359deg);
+    -o-transform: rotate(359deg);
+    -webkit-transform: rotate(359deg);
+    transform: rotate(359deg);
+  }
+}
+

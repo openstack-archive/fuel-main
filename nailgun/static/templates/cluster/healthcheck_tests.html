@@ -9,7 +9,21 @@
       <% } %>
     </td>
     <td class="healthcheck-col-status">
-      <div class="healthcheck-status healthcheck-status-<%- status %>"><%- status %></div>
+      <div class="healthcheck-status healthcheck-status-<%- status %>">
+        <% if (status == 'success') { %>
+          <i class="icon-passed"></i>
+        <% } else if (status == 'failure' || status == 'error') { %>
+          <i class="icon-failed"></i>
+        <% } else if (status == 'running') { %>
+          <i class="icon-process animate-spin"></i>
+        <% } else if (status == 'wait_running') { %>
+          <i class="icon-clock"></i>
+        <% } else if (status == 'unknown') { %>
+          &mdash;
+        <% } else { %>
+          <%- status %>
+        <% } %>
+      </div>
     </td>
   </tr>
 <% }) %>

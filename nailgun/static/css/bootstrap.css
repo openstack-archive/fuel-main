@@ -3110,6 +3110,7 @@ table th[class*="span"],
   position: relative;
   height: 0;
   overflow: hidden;
+  visibility: hidden;
   -webkit-transition: height 0.35s ease;
      -moz-transition: height 0.35s ease;
        -o-transition: height 0.35s ease;
@@ -3118,6 +3119,7 @@ table th[class*="span"],
 
 .collapse.in {
   height: auto;
+  visibility: visible;
 }
 
 .close {

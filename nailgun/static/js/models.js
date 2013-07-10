@@ -511,5 +511,10 @@ define(function() {
         url: '/ostf/testruns'
     });
 
+    models.OSTFClusterMetadata = Backbone.Model.extend({
+        constructorName: 'TestRun',
+        urlRoot: '/api/ostf',
+    });
+
     return models;
 });
