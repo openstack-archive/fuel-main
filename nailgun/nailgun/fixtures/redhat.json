@@ -15,52 +15,54 @@
                 {"name": "storage", "access": "private172"},
                 {"name": "fixed", "access": "private10"}
             ],
-            "volumes_for_roles": {
-                "controller": ["os"],
-                "compute": ["os", "vm"],
-                "cinder": ["os", "cinder"]
-            },
             "volumes_metadata": {
-                "os": {
-                    "type": "vg",
-                    "min_size": {"generator": "calc_min_os_size"},
-                    "label": "Base System",
-                    "volumes": [
-                        {
-                            "mount": "/",
-                            "type": "lv",
-                            "name": "root",
-                            "size": {"generator": "calc_root_size"}
-                        },
-                        {
-                            "mount": "swap",
-                            "type": "lv",
-                            "name": "swap",
-                            "size": {"generator": "calc_swap_size"}
-                        }
-                    ]
+                "volumes_roles_mapping": {
+                    "controller": ["os"],
+                    "compute": ["os", "vm"],
+                    "cinder": ["os", "cinder"]
                 },
-                "vm": {
-                    "type": "vg",
-                    "min_size": {"generator": "calc_min_vm_size"},
-                    "label": "Virtual Storage",
-                    "volumes": [
-                        {
-                            "mount": "/var/lib/nova",
-                            "type": "lv",
-                            "name": "libvirt",
-                            "size": {
-                                "generator": "calc_total_vg",
-                                "generator_args": ["vm"]
+                "volumes": {
+                    "os": {
+                        "type": "vg",
+                        "min_size": {"generator": "calc_min_os_size"},
+                        "label": "Base System",
+                        "volumes": [
+                            {
+                                "mount": "/",
+                                "type": "lv",
+                                "name": "root",
+                                "size": {"generator": "calc_root_size"}
+                            },
+                            {
+                                "mount": "swap",
+                                "type": "lv",
+                                "name": "swap",
+                                "size": {"generator": "calc_swap_size"}
                             }
-                        }
-                    ]
-                },
-                "cinder": {
-                    "type": "vg",
-                    "label": "Cinder",
-                    "min_size": {"generator": "calc_min_cinder_size"},
-                    "volumes": []
+                        ]
+                    },
+                    "vm": {
+                        "type": "vg",
+                        "min_size": {"generator": "calc_min_vm_size"},
+                        "label": "Virtual Storage",
+                        "volumes": [
+                            {
+                                "mount": "/var/lib/nova",
+                                "type": "lv",
+                                "name": "libvirt",
+                                "size": {
+                                    "generator": "calc_total_vg",
+                                    "generator_args": ["vm"]
+                                }
+                            }
+                        ]
+                    },
+                    "cinder": {
+                        "type": "vg",
+                        "label": "Cinder",
+                        "min_size": {"generator": "calc_min_cinder_size"},
+                        "volumes": []
+                    }
                 }
             },
             "attributes_metadata": {
