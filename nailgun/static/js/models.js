@@ -244,20 +244,15 @@ define(['utils'], function(utils) {
     models.Disk = Backbone.Model.extend({
         constructorName: 'Disk',
         urlRoot: '/api/nodes/',
-        group: function (groupName) {
-            return _.find(this.get('volumes'), {name: groupName});
+        getVolume: function (name) {
+            return this.get('volumes').findWhere({name: name});
         },
-        validate: function(attrs, options) {
-            var errors = {};
-            var volume = _.find(attrs.volumes, {name: options.group});
-            if (_.isNaN(volume.size) || volume.size < 0) {
-                errors[volume.name] = 'Invalid size';
-            } else if (volume.size > options.max) {
-                errors[volume.name] = 'Maximal size is ' + utils.formatNumber(options.max) + ' MB';
-            } else if (volume.size < options.min) {
-                errors[volume.name] = 'Minimal size is ' + utils.formatNumber(options.min) + ' MB';
-            }
-            return _.isEmpty(errors) ? null : errors;
+        parse: function(response) {
+            response.volumes = new models.Volumes(response.volumes);
+            return response;
+        },
+        toJSON: function(options) {
+            return _.extend(this.constructor.__super__.toJSON.call(this, options), {volumes: this.get('volumes').toJSON()});
         }
     });
 
@@ -268,6 +263,28 @@ define(['utils'], function(utils) {
         comparator: function(disk) {
             return disk.id;
         }
+    });
+
+    models.Volume = Backbone.Model.extend({
+        constructorName: 'Volume',
+        urlRoot: '/api/volumes/',
+        validate: function(attrs, options) {
+            var errors = {};
+            if (_.isNaN(attrs.size) || attrs.size < 0) {
+                errors[attrs.name] = 'Invalid size';
+            } else if (attrs.size > options.max) {
+                errors[attrs.name] = 'Maximal size is ' + utils.formatNumber(options.max) + ' MB';
+            } else if (attrs.size < options.min) {
+                errors[attrs.name] = 'Minimal size is ' + utils.formatNumber(options.min) + ' MB';
+            }
+            return _.isEmpty(errors) ? null : errors;
+        }
+    });
+
+    models.Volumes = Backbone.Collection.extend({
+        constructorName: 'Volumes',
+        model: models.Volume,
+        url: '/api/volumes/'
     });
 
     models.Interface = Backbone.Model.extend({
