@@ -7,12 +7,12 @@ log-dhcp
 log-queries
 log-facility=LOCAL0
 addn-hosts = /var/lib/cobbler/cobbler_hosts
-domain=<%= domain_name %>
+domain=<%= @domain_name %>
 dhcp-lease-max=1000
-server=/<%= domain_name %>/
+server=/<%= @domain_name %>/
 resolv-file=/etc/dnsmasq.upstream
 dhcp-match=gpxe,175
-interface=<%= dhcp_interface %>
+interface=<%= @dhcp_interface %>
 
 # This is one of the key options. dnsmasq tries to move out servername
 # and PXE filename from special fields into DHCP options.
@@ -21,11 +21,11 @@ interface=<%= dhcp_interface %>
 # For example gPXE will not work while iPXE works fine.
 dhcp-no-override
 
-dhcp-option=6,<%= name_server %>
+dhcp-option=6,<%= @name_server %>
 
-dhcp-range=internal,<%= dhcp_start_address %>,<%= dhcp_end_address %>,<%= dhcp_netmask %>
-dhcp-option=net:internal,option:router,<%= dhcp_gateway %>
-pxe-service=net:#gpxe,x86PC,"Install",pxelinux,<%= next_server %>
-dhcp-boot=net:internal,pxelinux.0,boothost,<%= next_server %>
+dhcp-range=internal,<%= @dhcp_start_address %>,<%= @dhcp_end_address %>,<%= @dhcp_netmask %>
+dhcp-option=net:internal,option:router,<%= @dhcp_gateway %>
+pxe-service=net:#gpxe,x86PC,"Install",pxelinux,<%= @next_server %>
+dhcp-boot=net:internal,pxelinux.0,boothost,<%= @next_server %>
 
 $insert_cobbler_system_definitions

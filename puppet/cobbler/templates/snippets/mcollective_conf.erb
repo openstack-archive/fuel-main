@@ -42,6 +42,13 @@ plugin.yaml = /etc/mcollective/facts.yaml
 EOCONF
 #end if
 
+cat <<EOCONF >> /etc/supervisord.conf
+[program:mcollective]
+command=/usr/sbin/mcollectived --config=/etc/mcollective/server.cfg
+autostart=true
+EOCONF
+
+
 #if $str($getVar('mco_enable', '')) == "1"
 ## turn on mcollective service after reboot
 ## /sbin/chkconfig mcollective on

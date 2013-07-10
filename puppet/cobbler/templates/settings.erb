@@ -216,7 +216,7 @@ manage_reverse_zones: []
 # if using cobbler with manage_dhcp, put the IP address
 # of the cobbler server here so that PXE booting guests can find it
 # if you do not set this correctly, this will be manifested in TFTP open timeouts.
-next_server: <%= next_server %>
+next_server: <%= @next_server %>
 
 # settings for power management features.  optional.
 # see https://fedorahosted.org/cobbler/wiki/PowerManagement to learn more
@@ -328,7 +328,7 @@ scm_track_mode: "git"
 # if you have a server that appears differently to different subnets
 # (dual homed, etc), you need to read the --server-override section
 # of the manpage for how that works.
-server: <%= server %>
+server: <%= @server %>
 
 # this is a directory of files that cobbler uses to make
 # templating easier.  See the Wiki for more information.  Changing

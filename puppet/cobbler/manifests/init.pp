@@ -48,18 +48,18 @@ class cobbler(
   anchor { "cobbler-end": }
 
   Anchor<| title == "cobbler-begin" |> ->
-  Class["cobbler::packages"] ->
-  Class["cobbler::selinux"] ->
-  Class["cobbler::iptables"] ->
-  Class["cobbler::snippets"] ->
-  Class["cobbler::server"] ->
+  Class["::cobbler::packages"] ->
+  Class["::cobbler::selinux"] ->
+  Class["::cobbler::iptables"] ->
+  Class["::cobbler::snippets"] ->
+  Class["::cobbler::server"] ->
   Anchor<| title == "cobbler-end" |>
 
-  class { cobbler::packages : }
-  class { cobbler::selinux : }
-  class { cobbler::iptables : }
-  class { cobbler::snippets : }
-  class { cobbler::server : }
+  class { ::cobbler::packages : }
+  class { ::cobbler::selinux : }
+  class { ::cobbler::iptables : }
+  class { ::cobbler::snippets : }
+  class { ::cobbler::server : }
 
   cobbler_digest_user {$cobbler_user:
     password => $cobbler_password,

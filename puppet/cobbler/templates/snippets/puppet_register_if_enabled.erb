@@ -1,0 +1,14 @@
+#if $str($getVar('puppet_auto_setup','')) == "1"
+## generate puppet certificates and trigger a signing request, but
+## don't wait for signing to complete
+/usr/sbin/puppet agent --test --waitforcert 0
+#end if
+#if $str($getVar('puppet_enable', '')) == "1"
+## turn puppet service on after reboot
+    #if $breed == "redhat"
+/sbin/chkconfig puppet on
+    #elif $breed == "debian" or $breed == "ubuntu"
+/usr/sbin/update-rc.d puppet defaults
+sed -i -e "s/^START=no/START=yes/" /etc/default/puppet
+    #end if
+#end if
