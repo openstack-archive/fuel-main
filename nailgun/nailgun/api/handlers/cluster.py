@@ -61,7 +61,7 @@ class ClusterHandler(JSONHandler):
                     json_data.setdefault("changes", []).append(i.name)
                 else:
                     json_data.setdefault("changes", []).append(
-                        [i.name, i.node_id, i.node.name]
+                        [i.name, i.node_id]
                     )
         else:
             json_data["changes"] = []

@@ -107,6 +107,10 @@ function(utils, models, commonViews, dialogViews, nodesTabSummaryTemplate, editN
     Screen = Backbone.View.extend({
         constructorName: 'Screen',
         keepScrollPosition: false,
+        updateInterval: 20000,
+        scheduleUpdate: function() {
+            this.registerDeferred($.timeout(this.updateInterval).done(_.bind(this.update, this)));
+        },
         goToNodeList: function() {
             app.navigate('#cluster/' + this.model.id + '/nodes', {trigger: true});
         }
@@ -116,12 +120,16 @@ function(utils, models, commonViews, dialogViews, nodesTabSummaryTemplate, editN
         className: 'nodes-by-roles-screen',
         constructorName: 'NodesByRolesScreen',
         keepScrollPosition: true,
+        update: function() {
+            this.model.get('nodes').fetch({data: {cluster_id: this.model.id}}).always(_.bind(this.scheduleUpdate, this));
+        },
         initialize: function(options) {
             this.tab = options.tab;
             this.model.on('change:mode change:type change:status', this.render, this);
             this.model.get('nodes').on('resize', this.render, this);
             this.model.get('tasks').each(this.bindTaskEvents, this);
             this.model.get('tasks').on('add', this.onNewTask, this);
+            this.scheduleUpdate();
         },
         bindTaskEvents: function(task) {
             return (task.get('name') == 'deploy' || task.get('name') == 'verify_networks') ? task.on('change:status', this.render, this) : null;
@@ -272,6 +280,11 @@ function(utils, models, commonViews, dialogViews, nodesTabSummaryTemplate, editN
         action: 'add',
         flag: 'pending_addition',
         nodeSelector: '.nodebox:not(.node-offline)',
+        update: function() {
+            this.nodes.fetch({data: {cluster_id: ''}}).always(_.bind(function() {
+                this.scheduleUpdate();
+            }, this));
+        },
         initialize: function(options) {
             this.constructor.__super__.initialize.apply(this, arguments);
             this.limit = null;
@@ -284,6 +297,7 @@ function(utils, models, commonViews, dialogViews, nodesTabSummaryTemplate, editN
                 this.render();
             }, this));
             this.nodes.on('change:online', this.onNodeStateChange, this);
+            this.scheduleUpdate();
         },
         onNodeStateChange: function(node) {
             var el = this.$('.nodebox[data-node-id=' + node.id + ']');
@@ -326,13 +340,23 @@ function(utils, models, commonViews, dialogViews, nodesTabSummaryTemplate, editN
         constructorName: 'DeleteNodesScreen',
         action: 'delete',
         flag: 'pending_deletion',
+        update: function() {
+            this.nodes.fetch().always(_.bind(function() {
+                this.filterNodes(this.nodes);
+                this.scheduleUpdate();
+            }, this));
+        },
+        filterNodes: function(nodes) {
+            this.nodes = new models.Nodes(nodes.filter(_.bind(function(node) {
+                return node.get('role') == this.role && (node.get('pending_addition') || !node.get('pending_deletion'));
+            }, this)));
+        },
         initialize: function(options) {
             _.defaults(this, options);
             this.limit = null;
             this.constructor.__super__.initialize.apply(this, arguments);
-            this.nodes = new models.Nodes(this.model.get('nodes').filter(_.bind(function(node) {
-                return node.get('role') == this.role && (node.get('pending_addition') || !node.get('pending_deletion'));
-            }, this)));
+            this.filterNodes(this.model.get('nodes'));
+            this.scheduleUpdate();
         },
         modifyNodes: function(nodes) {
             nodes.each(function(node) {
@@ -474,20 +498,13 @@ function(utils, models, commonViews, dialogViews, nodesTabSummaryTemplate, editN
         beforeTearDown: function() {
             $('html').off(this.eventNamespace);
         },
-        checkForOfflineEvent: function() {
-            var updatedNode = app.navbar.nodes.get(this.model.id);
-            if (updatedNode && updatedNode.get('online') != this.model.get('online')) {
-                this.model.set({online: updatedNode.get('online')});
-            }
-        },
         initialize: function(options) {
             _.defaults(this, options);
             this.renaming = false;
             this.eventNamespace = 'click.editnodename' + this.model.id;
-            this.model.on('change:name change:pending_addition change:pending_deletion', this.render, this);
+            this.model.on('change:name change:pending_addition change:pending_deletion change:online', this.render, this);
             this.model.on('change:status change:online', this.updateStatus, this);
             this.model.on('change:progress', this.updateProgress, this);
-            //app.navbar.nodes.on('sync', this.checkForOfflineEvent, this);
         },
         render: function() {
             this.$el.html(this.template({

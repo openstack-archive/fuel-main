@@ -70,20 +70,20 @@ function(utils, models, dialogViews, navbarTemplate, nodesStatsTemplate, notific
             this.refresh().always(_.bind(this.scheduleUpdate, this));
         },
         refresh: function() {
-            return $.when(this.statistic.fetch(), this.notifications.fetch());
+            return $.when(this.statistics.fetch(), this.notifications.fetch());
         },
         initialize: function(options) {
             this.elements = _.isArray(options.elements) ? options.elements : [];
-            this.statistic = new models.NodesStatistic();
+            this.statistics = new models.NodesStatistics();
             this.notifications = new models.Notifications();
-            $.when(this.statistic.deferred = this.statistic.fetch(), this.notifications.deferred = this.notifications.fetch()).done(_.bind(this.scheduleUpdate, this));
+            $.when(this.statistics.deferred = this.statistics.fetch(), this.notifications.deferred = this.notifications.fetch()).done(_.bind(this.scheduleUpdate, this));
         },
         render: function() {
             this.tearDownRegisteredSubViews();
             if (!this.$('.navigation-bar-ul a').length) {
                 this.$el.html(this.template({elements: this.elements}));
             }
-            this.stats = new views.NodesStats({statistic: this.statistic, navbar: this});
+            this.stats = new views.NodesStats({statistics: this.statistics, navbar: this});
             this.registerSubView(this.stats);
             this.$('.nodes-summary-container').html(this.stats.render().el);
             this.notificationsButton = new views.Notifications({collection: this.notifications, navbar: this});
@@ -100,11 +100,11 @@ function(utils, models, dialogViews, navbarTemplate, nodesStatsTemplate, notific
         template: _.template(nodesStatsTemplate),
         initialize: function(options) {
             _.defaults(this, options);
-            this.statistic.on('sync', this.render, this);
+            this.statistics.on('sync', this.render, this);
         },
         render: function() {
-            if (this.statistic.deferred.state() == 'resolved') {
-                this.$el.html(this.template({stats: this.statistic}));
+            if (this.statistics.deferred.state() == 'resolved') {
+                this.$el.html(this.template({stats: this.statistics}));
             }
             return this;
         }
