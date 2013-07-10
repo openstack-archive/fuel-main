@@ -95,11 +95,6 @@ function(utils, models, commonViews, dialogViews, nodesTabSummaryTemplate, editN
             this.registerSubView(dialog);
             dialog.render();
         },
-        changeClusterType: function() {
-            var dialog = new dialogViews.ChangeClusterTypeDialog({model: this.model});
-            this.registerSubView(dialog);
-            dialog.render();
-        },
         initialize: function(options) {
             this.model.on('change:status', this.render, this);
         },
@@ -492,7 +487,7 @@ function(utils, models, commonViews, dialogViews, nodesTabSummaryTemplate, editN
             this.model.on('change:name change:pending_addition change:pending_deletion', this.render, this);
             this.model.on('change:status change:online', this.updateStatus, this);
             this.model.on('change:progress', this.updateProgress, this);
-            app.navbar.nodes.on('sync', this.checkForOfflineEvent, this);
+            //app.navbar.nodes.on('sync', this.checkForOfflineEvent, this);
         },
         render: function() {
             this.$el.html(this.template({

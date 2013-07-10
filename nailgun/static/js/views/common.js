@@ -89,7 +89,7 @@ function(utils, models, dialogViews, navbarTemplate, nodesStatsTemplate, notific
             this.notificationsButton = new views.Notifications({collection: this.notifications, navbar: this});
             this.registerSubView(this.notificationsButton);
             this.$('.notifications').html(this.notificationsButton.render().el);
-            this.popover = new views.NotificationsPopover({nodes: this.nodes, collection: this.notifications, navbar: this});
+            this.popover = new views.NotificationsPopover({collection: this.notifications, navbar: this});
             this.registerSubView(this.popover);
             this.$('.notification-wrapper').html(this.popover.render().el);
             return this;
@@ -140,10 +140,12 @@ function(utils, models, dialogViews, navbarTemplate, nodesStatsTemplate, notific
             var nodeId = $(e.currentTarget).data('node');
             if (nodeId) {
                 this.toggle();
-                var node = this.nodes.get(nodeId);
-                var dialog = new dialogViews.ShowNodeInfoDialog({node: node});
-                this.registerSubView(dialog);
-                dialog.render();
+                var node = new models.Node({id: nodeId});
+                node.fetch().done(_.bind(function() {
+                    var dialog = new dialogViews.ShowNodeInfoDialog({node: node});
+                    this.registerSubView(dialog);
+                    dialog.render();
+                }, this));
             }
         },
         toggle: function() {
