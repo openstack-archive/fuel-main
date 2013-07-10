@@ -429,6 +429,17 @@ class NailgunReceiver(object):
         TaskHelper.update_task_status(task.uuid, status, progress, message)
 
     @classmethod
+    def serialize_vlan(cls, vlan_id, vlans_data):
+        for vlans in vlans_data:
+            vlan = filter(
+                lambda v: vlan_id in v['vlans'],
+                vlans)
+            if vlan:
+                return {'name': vlan[0]['name'],
+                        'vlan_id': vlan_id}
+        return {'name': '', 'vlan_id': vlan_id}
+
+    @classmethod
     def verify_networks_resp(cls, **kwargs):
         logger.info("RPC method verify_networks_resp received: %s" % kwargs)
         task_uuid = kwargs.get('task_uuid')
@@ -522,18 +533,11 @@ class NailgunReceiver(object):
                         if absent_vlans:
                             vlans_data = []
 
-                            def find_vlan(vlan_id):
-                                for vlans in (cached_network['vlans'],
-                                              received_network['vlans']):
-                                    vlan = filter(
-                                        lambda v: vlan_id in v['vlans'],
-                                        vlans)
-                                    if vlan:
-                                        return {'name': vlan[0]['name'],
-                                                'vlan_id': vlan_id}
-                                return {'name': '', 'vlan_id': vlan_id}
                             for vlan_id in absent_vlans:
-                                vlans_data.append(find_vlan(vlan_id))
+                                vlans_data.append(cls.serialize_vlan(
+                                                  vlan_id,
+                                                  [cached_network['vlans'],
+                                                   received_network['vlans']]))
                             data = {'uid': node['uid'],
                                     'interface': received_network['iface'],
                                     'absent_vlans': vlans_data}
