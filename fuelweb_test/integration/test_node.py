@@ -206,12 +206,12 @@ class TestNode(BaseNodeTestCase):
     @fetch_logs
     def test_floating_ips(self):
         cluster_name = 'floating_ips'
-        nodes = {
+        nodes_dict = {
             'controller': ['slave-01'],
             'compute': ['slave-02']
         }
         nodes = self.bootstrap_nodes(self.devops_nodes_by_names(
-            nodes['controller'] + nodes['compute']))
+            nodes_dict['controller'] + nodes_dict['compute']))
 
         cluster_id = self.create_cluster(name=cluster_name)
 
@@ -225,7 +225,7 @@ class TestNode(BaseNodeTestCase):
                                    flat_net=networks)
 
         # adding nodes in cluster
-        for node, role in self.get_nailgun_node_roles(nodes):
+        for node, role in self.get_nailgun_node_roles(nodes_dict):
             self.client.update_node(
                 node['id'], {"role": role, "pending_addition": True})
 
@@ -238,8 +238,8 @@ class TestNode(BaseNodeTestCase):
                        ['240.0.0.%s' % i for i in range(20, 26, 1)] + \
                        ['240.0.0.%s' % i for i in range(30, 36, 1)]
         self.assert_cluster_floating_list(
-            self.ci().environment().node_by_name(nodes['compute'][0])['ip'],
-            expected_ips)
+            self.ci().environment().node_by_name(
+                nodes_dict['compute'][0])['ip'], expected_ips)
 
 if __name__ == '__main__':
     unittest.main()
