@@ -26,6 +26,7 @@ import socket
 import time
 import re
 import logging
+import logging.handlers
 import argparse
 import functools
 import threading
@@ -74,14 +75,31 @@ class Actor(object):
         self.iface_down_after = {}
         self.viface_remove_after = {}
 
-    def _define_logger(self, filename, level=logging.DEBUG):
-        f = logging.Formatter('%(asctime)s %(name)-12s %(levelname)-8s %(message)s')
-        l = logging.getLogger()
-        h = logging.FileHandler(filename)
-        h.setFormatter(f)
-        l.addHandler(h)
-        l.setLevel(level)
-        return l
+    def _define_logger(self, filename='/var/log/netprobe.log',
+                       appname='netprobe', level=logging.DEBUG):
+        logger = logging.getLogger()
+        logger.setLevel(level)
+
+        syslog_format = '{appname}: {msg}'
+        # Create log formatter.
+        format_dict = {'appname': appname,
+                       'msg': '%(message)s'
+                       }
+        log_format = syslog_format.format(**format_dict)
+        syslog_formatter = logging.Formatter(log_format)
+        syslog_handler = logging.handlers.SysLogHandler('/dev/log')
+        syslog_handler.setFormatter(syslog_formatter)
+        logger.addHandler(syslog_handler)
+
+        if filename:
+            file_formatter = logging.Formatter(
+                '%(asctime)s %(name)-12s %(levelname)-8s %(message)s'
+            )
+            file_handler = logging.FileHandler(filename)
+            file_handler.setFormatter(file_formatter)
+            logger.addHandler(file_handler)
+
+        return logger
 
     def _execute(self, command, expected_exit_codes=(0,)):
         self.logger.debug("Running command: %s" % " ".join(command))
@@ -287,8 +305,8 @@ class Actor(object):
 
     def _iface_vlan_iterator(self):
         for iface, vlan_list in self.config['interfaces'].iteritems():
-            for vlan in self._parse_vlan_list(vlan_list):
-                yield (iface, vlan)
+            for vlan in self._parse_vlan_list(str(vlan_list)):
+                yield (str(iface), vlan)
 
     def _iface_iterator(self):
         for iface in self.config['interfaces']:
@@ -297,7 +315,8 @@ class Actor(object):
 class Sender(Actor):
 
     def __init__(self, config=None):
-        self.logger = self._define_logger('/root/netprobe_sender.log')
+        self.logger = self._define_logger('/root/netprobe_sender.log',
+                                          'netprobe_sender')
         super(Sender, self).__init__(config)
         self.logger.info("=== Starting Sender ===")
 
@@ -343,7 +362,8 @@ class Sender(Actor):
 
 class Listener(Actor):
     def __init__(self, config=None):
-        self.logger = self._define_logger('/root/netprobe_listener.log')
+        self.logger = self._define_logger('/root/netprobe_listener.log',
+                                          'netprobe_listener')
         super(Listener, self).__init__(config)
         self.logger.info("=== Starting Listener ===")
         self.pidfile = self.addpid('/var/run/net_probe')
