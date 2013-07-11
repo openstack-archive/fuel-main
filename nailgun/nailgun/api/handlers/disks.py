@@ -65,10 +65,10 @@ class NodeDefaultsDisksHandler(JSONHandler):
         if not node.attributes:
             return web.notfound()
 
-        node_attrs = DisksFormatConvertor.format_disks_to_simple(
-            VolumeManager.get_defaults_info(node))
+        volumes = DisksFormatConvertor.format_disks_to_simple(
+            node.volume_manager.gen_default_volumes_info())
 
-        return filter(lambda attr: attr['type'] == 'disk', node_attrs)
+        return volumes
 
 
 class NodeVolumesInformationHandler(JSONHandler):

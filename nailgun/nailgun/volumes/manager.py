@@ -251,10 +251,10 @@ class Disk(object):
 
 class VolumeManager(object):
     def __init__(self, node):
-        """
+        '''
         Disks and volumes will be set according to node
         attributes.
-        """
+        '''
         self.disks = []
         self.volumes = []
 
