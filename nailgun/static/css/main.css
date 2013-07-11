@@ -3715,6 +3715,15 @@ hr.slim {
   background-color: #f0f0f0;
 }
 
+.disk-map-details.collapse {
+  visibility: hidden;
+}
+
+.disk-map-details.collapse.in {
+  visibility: visible;
+}
+
+
 .disk-map-details-item {
   display: block;
   clear: both;
