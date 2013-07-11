@@ -55,30 +55,33 @@ function(models, commonViews, dialogViews, healthcheckTabTemplate, healthcheckTe
                 this.testruns.fetch({url: _.result(this.testruns, 'url') + '/last/' + this.model.id})
                     .done(_.bind(function() {
                         if (!this.hasRunningTests()) {
+                            this.$('input[type=checkbox]').prop('checked', false);
                             this.disableControls(false);
                             this.calculateRunTestsButtonState();
-                            this.$('input[type=checkbox]').prop('checked', false);
                         }
                     }, this))
                     .always(_.bind(this.scheduleUpdate, this))
             );
         },
         runTests: function() {
-            var testruns = new models.TestRuns();
-            _.each(this.subViews, function(subView) {
-                if (subView instanceof TestSet && subView.$('input.testset-select:checked').length) {
-                    var testrun = new models.TestRun({
-                        testset: subView.testset.id,
-                        metadata: {
-                            config: this.metadata.toJSON(),
-                            cluster_id: this.model.id
-                        }
-                    });
-                    testruns.add(testrun);
-                }
-            }, this);
             this.disableControls(true);
-            Backbone.sync('create', testruns).done(_.bind(this.update, this));
+            var metadata = new models.OSTFClusterMetadata();
+            metadata.fetch({url: _.result(metadata, 'url') + '/' + this.model.id}).always(_.bind(function() {
+                var testruns = new models.TestRuns();
+                _.each(this.subViews, function(subView) {
+                    if (subView instanceof TestSet && subView.$('input.testset-select:checked').length) {
+                        var testrun = new models.TestRun({
+                            testset: subView.testset.id,
+                            metadata: {
+                                config: {}, //metadata.toJSON(),
+                                cluster_id: this.model.id
+                            }
+                        });
+                        testruns.add(testrun);
+                    }
+                }, this);
+                Backbone.sync('create', testruns).done(_.bind(this.update, this));
+            }, this));
         },
         stopTests: function() {
 
@@ -109,14 +112,12 @@ function(models, commonViews, dialogViews, healthcheckTabTemplate, healthcheckTe
                 ostf.testsets = new models.TestSets();
                 ostf.tests = new models.Tests();
                 ostf.testruns = new models.TestRuns();
-                ostf.metadata = new models.OSTFClusterMetadata();
                 this.model.set({'ostf': ostf}, {silent: true});
                 _.extend(this, ostf);
                 $.when(
                     this.testsets.deferred = this.testsets.fetch(),
                     this.tests.fetch(),
-                    this.testruns.fetch({url: _.result(this.testruns, 'url') + '/last/' + this.model.id}),
-                    this.metadata.fetch({url: _.result(this.metadata, 'url') + '/' + this.model.id})
+                    this.testruns.fetch({url: _.result(this.testruns, 'url') + '/last/' + this.model.id})
                 ).done(_.bind(function() {
                     this.render();
                     this.testruns.on('sync', this.updateTestRuns, this);
