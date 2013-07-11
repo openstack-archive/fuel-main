@@ -76,7 +76,7 @@ function(require, utils, models, simpleMessageTemplate, createClusterDialogTempl
     views.DialogWithRhelCredentials = views.Dialog.extend({
         displayRhelCredentialsForm: function() {
             this.$('.credentials').html('');
-            if (this.release.get('state') == 'not_available') {
+            if (this.release.get('state') == 'not_available' || this.release.get('state') == 'error') {
                 var commonViews = require('views/common'); // avoid circular dependencies
                 this.rhelCredentialsForm = new commonViews.RhelCredentialsForm({dialog: this});
                 this.registerSubView(this.rhelCredentialsForm);
