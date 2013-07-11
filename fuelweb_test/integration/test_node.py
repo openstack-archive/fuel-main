@@ -230,10 +230,9 @@ class TestNode(BaseNodeTestCase):
         self.assertTaskSuccess(task)
 
         # assert ips
-        expected_ips = [
-            ['240.0.0.%s' % i for i in range(2, 11, 1)],
-            ['240.0.0.%s' % i for i in range(20, 26, 1)],
-            ['240.0.0.%s' % i for i in range(30, 36, 1)]]
+        expected_ips = ['240.0.0.%s' % i for i in range(2, 11, 1)] + \
+                       ['240.0.0.%s' % i for i in range(20, 26, 1)] + \
+                       ['240.0.0.%s' % i for i in range(30, 36, 1)]
         self.assert_cluster_floating_list(
             self.ci().environment().node_by_name(nodes['compute'][0])['ip'],
             expected_ips)
