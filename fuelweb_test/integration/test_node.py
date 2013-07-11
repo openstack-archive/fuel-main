@@ -225,6 +225,10 @@ class TestNode(BaseNodeTestCase):
                                    flat_net=networks)
 
         # adding nodes in cluster
+        for node, role in self.get_nailgun_node_roles(nodes):
+            self.client.update_node(
+                node['id'], {"role": role, "pending_addition": True})
+
         self.update_nodes_in_cluster(cluster_id, nodes)
         task = self._launch_provisioning(cluster_id)
         self.assertTaskSuccess(task)
