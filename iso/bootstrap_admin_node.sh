@@ -1,3 +1,3 @@
 #!/bin/bash
 
-puppet apply --modulepath=/opt/nailgun_puppet /opt/nailgun_puppet/nailgun/examples/site.pp
+puppet apply  /etc/puppet/modules/nailgun/examples/site.pp

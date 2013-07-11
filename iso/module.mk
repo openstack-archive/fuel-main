@@ -61,7 +61,6 @@ $(BUILD_DIR)/iso/isoroot-files.done: \
 		$(ISOROOT)/bootstrap_admin_node.sh \
 		$(ISOROOT)/bootstrap_admin_node.conf \
 		$(ISOROOT)/version.yaml \
-		$(ISOROOT)/puppet-nailgun.tgz \
 		$(ISOROOT)/puppet-slave.tgz
 	$(ACTION.TOUCH)
 
@@ -82,14 +81,8 @@ $(ISOROOT)/version.yaml:
 	echo "PRODUCT_VERSION: $(PRODUCT_VERSION)" >> $@
 	echo "FUEL_COMMIT_SHA: $(FUEL_COMMIT_SHA)" >> $@
 
-$(ISOROOT)/puppet-nailgun.tgz: \
-		$(call find-files,$(SOURCE_DIR)/puppet) \
-		$(SOURCE_DIR)/bin/send2syslog.py
-	(cd $(SOURCE_DIR)/puppet && tar chzf $@ *)
 $(ISOROOT)/puppet-slave.tgz: \
-		$(call find-files,$(SOURCE_DIR)/puppet/nailytest) \
 		$(call find-files,$(SOURCE_DIR)/fuel/deployment/puppet)
-	(cd $(SOURCE_DIR)/puppet && tar cf $(ISOROOT)/puppet-slave.tar nailytest)
 	(cd $(SOURCE_DIR)/fuel/deployment/puppet && tar rf $(ISOROOT)/puppet-slave.tar ./*)
 	gzip -c -9 $(ISOROOT)/puppet-slave.tar > $@ && \
 		rm $(ISOROOT)/puppet-slave.tar
