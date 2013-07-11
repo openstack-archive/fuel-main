@@ -46,7 +46,7 @@
         <% if (task.get('name') == 'verify_networks' && task.get('result').length) { %>
           <div class="verification-result-table">
             <table class="table table-condensed enable-selection">
-              <thead><tr><th>Node Name</th><th>Node MAC address</th><th>Node Interface</th><th>Expected VLAN ID (not received)</th></tr></thead>
+              <thead><tr><th>Node Name</th><th>Node MAC address</th><th>Node Interface</th><th>Expected VLAN (not received)</th></tr></thead>
               <tbody>
                 <% _.each(task.get('result'), function(node) { %>
                   <tr>
