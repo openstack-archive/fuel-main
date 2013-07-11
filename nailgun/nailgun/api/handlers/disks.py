@@ -66,7 +66,7 @@ class NodeDefaultsDisksHandler(JSONHandler):
             return web.notfound()
 
         volumes = DisksFormatConvertor.format_disks_to_simple(
-            node.volume_manager.gen_default_volumes_info())
+            node.volume_manager.gen_volumes_info())
 
         return volumes
 

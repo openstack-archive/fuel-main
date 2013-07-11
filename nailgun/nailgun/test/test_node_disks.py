@@ -154,22 +154,23 @@ class TestNodeDefaultsDisksHandler(BaseHandlers):
         self.assertEquals(len(response), 7)
 
         # check all groups on all disks
-        vgs = ["os", "vm"]
+        vgs = ['os', 'vm']
         for disk in response:
             check_vgs = filter(
-                lambda v: v.get("vg") in vgs,
+                lambda v: v['name'] in vgs,
                 disk['volumes'])
-            self.assertEquals(len(check_vgs), len(vgs))
+
+            self.assertEquals(len(disk['volumes']), len(vgs))
 
     def test_get_default_attrs(self):
         node = self.env.create_node(api=True)
         node_db = self.env.nodes[0]
-        resp = self.get(node_db.id)
+        volumes_from_api = self.get(node_db.id)
 
         default_volumes = node_db.volume_manager.gen_default_volumes_info()
-        self.assertItemsEqual(
-            resp,
-            filter(lambda volume: volume['type'] == 'disk', default_volumes))
+        disks = filter(lambda volume: volume['type'] == 'disk', default_volumes)
+
+        self.assertEquals(len(disks), len(volumes_from_api))
 
 
 class TestNodeVolumesInformationHandler(BaseHandlers):
