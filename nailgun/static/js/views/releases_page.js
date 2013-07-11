@@ -69,8 +69,14 @@ function(commonViews, dialogViews, releasesListTemplate, releaseTemplate) {
             dialog.render();
         },
         downloadFinished: function() {
-            this.$('.release-status').removeClass('not-available').html('Available');
-            this.$('.btn-rhel-setup, .download_progress').html('');
+            this.$('.download_progress').html('');
+            var task = app.page.tasks.filterTasks({name: 'download_release', release: this.release.id})[0];
+            if (task.get('status') == 'error'){
+                this.$('.release-status span').html('Error');
+                this.$('.btn-rhel-setup').show();
+            } else {
+                this.$('.release-status').removeClass('not-available').html('Available');
+            }
         },
         updateProgress: function(){
             var task = app.page.tasks.getDownloadTask(this.release.id);
