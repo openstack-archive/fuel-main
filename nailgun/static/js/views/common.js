@@ -272,7 +272,8 @@ function(utils, models, dialogViews, navbarTemplate, nodesStatsTemplate, notific
         initialize: function(options) {
             _.defaults(this, options);
             this.redHatAccount = new models.RedHatAccount();
-            $.when(this.redHatAccount.deffered = this.redHatAccount.fetch()).done(_.bind(this.render, this));
+            this.redHatAccount.on('sync', this.render, this);
+            this.redHatAccount.deffered = this.redHatAccount.fetch();
             this.redHatAccount.on('invalid', function(model, error) {
                 _.each(error, function(field) {
                     this.$('*[name=' + field + ']').closest('.control-group').addClass('error');
