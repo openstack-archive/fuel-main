@@ -55,8 +55,7 @@ class RedHatAccountHandler(JSONHandler):
 
         account = db().query(RedHatAccount).first()
         if account:
-            for key, value in data.iteritems():
-                setattr(account, key, value)
+            db().query(RedHatAccount).update(data)
         else:
             account = RedHatAccount(**data)
             db().add(account)
