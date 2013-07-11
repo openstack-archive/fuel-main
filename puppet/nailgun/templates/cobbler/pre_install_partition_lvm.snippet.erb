@@ -1,35 +1,84 @@
 echo > /tmp/partition.ks
 #import json
 #if $getVar("ks_spaces","{}") != "{}"
-    ##
+    #######################################
+    ## Initializing variables
+    #######################################
     #set $j = $getVar("ks_spaces","[]")
     #set $spaces = $json.loads($j)
-    #set $clearpart_drives = $set([])
+    #set $clearpart_drives = []
     #set $physical_volumes = []
+    #set $grub_drives = []
+    #set $raid_volumes = []
     #set $partitions = []
     #set $volume_groups = {}
+    #set $raid_groups = {}
     #set $logical_volumes = []
     #set $post_logical_volumes = []
+    #set $parted_commands = []
     #set $pvnum = 0
-    ##
+    #set $raidnum = 0
+    #set $mdnum = 0
     #for $space in $spaces
         #set $space_id = $space.get("id")
         #set $space_type = $space.get("type")
         #set $space_volumes = $space.get("volumes")
-        ##
-        ## Adding disk to clearpart list of drives
+        #######################################
+        ## Cleaning drives
+        #######################################
         #if $space_type == "disk"
-            $clearpart_drives.add($space_id)
+            $clearpart_drives.append($space_id)
         #end if
-        ##
+        #######################################
+        ## Labeling gpt
+        #######################################
+        #if $space_type == "disk"
+            $parted_commands.append("parted -s %s mklabel gpt" % $space_id)
+        #end if
+        #######################################
+        ## Configuring space volumes
+        #######################################
         #for $volume in $space_volumes
             #set $volume_id = $volume.get("id")
             #set $volume_type = $volume.get("type")
-            ##
-            ## Parsing volume groups and physical volumes
+            #######################################
+            ## Configuring not boot partitions
+            #######################################
+            #if #space_type == "disk" and $volume_type == "boot"
+                ## Create and mark Bios Boot partition to which grub will
+                ## embed its code later, useable for legacy boot.
+                ## May be way smaller, but be aware that the parted may
+                ## shrink 1M partition to zero at some disks and versions.
+                $parted_commands.append("parted -a minimal -s /dev/%s unit MB mkpart primary 0 24M" % $space_id)
+                $parted_commands.append("parted -s /dev/%s set 1 bios_grub on" % $space_id)
+                ## Create partition for the EFI boot, minimum size is 100M,
+                ## recommended is 200M, with fat32 and future mountpoint in
+                ## the /boot/efi
+                ## There is also '/usr/sbin/parted -s /dev/sda set 2 boot on'
+                ## which is strictly needed for EFI boot itself.
+                $parted_commands.append("parted -a minimal -s /dev/%s unit MB mkpart primary fat32 24M 300M" % $space_id)
+                $parted_commands.append("parted -s /dev/%s set 2 boot on" % $space_id)
+                #######################################
+                ## Installing bootloader
+                #######################################
+                $grub_drives.append("\$(basename `readlink -f /dev/%s`)" % $space_id)
+            #end if
+            #######################################
+            ## Configuring plain partitions
+            #######################################
+            #if $space_type == "disk" and $volume_type == "partition"
+                #set $volume_mount = $volume.get("mount")
+                #set $volume_size = $int($volume.get("size") or 0)
+                #if $volume_size > 0
+                    $partitions.append("partition %s --size=%s --ondisk=%s" % ($volume_mount, $volume_size, $space_id))
+                #end if
+            #end if
+            #######################################
+            ## Configuring physical volumes
+            #######################################
             #if $space_type == "disk" and $volume_type == "pv"
                 #set $volume_vg = $volume.get("vg")
-                #set $volume_size = $int($volume.get("size") or 0) / 1024 ** 2
+                #set $volume_size = $int($volume.get("size") or 0)
                 #set $volume_name = "pv.%03d" % $pvnum
                 #if $volume_size > 0
                     $physical_volumes.append("partition %s --size=%s --ondisk=%s" % ($volume_name, $volume_size, $space_id))
@@ -41,26 +90,30 @@ echo > /tmp/partition.ks
                     #set $pvnum += 1
                 #end if
             #end if
-            ##
-            ## Parsing bare partitions
-            #if $space_type == "disk" and $volume_type == "partition"
+            #######################################
+            ## Configuring raid partitions
+            #######################################
+            #if $space_type == "disk" and $volume_type == "raid"
                 #set $volume_mount = $volume.get("mount")
-                #set $volume_size = $int($volume.get("size") or 0) / 1024 ** 2
+                #set $volume_size = $int($volume.get("size") or 0)
+                #set $volume_name = "raid.%03d" % $raidnum
                 #if $volume_size > 0
-                    $partitions.append("partition %s --size=%s --ondisk=%s" % ($volume_mount, $volume_size, $space_id))
+                    $raid_volumes.append("partition %s --size=%s --ondisk=%s" % ($volume_name, $volume_size, $space_id))
+                    #if not $raid_groups.get($volume_mount)
+                        #set $raid_groups[$volume_mount] = [$volume_name]
+                    #else
+                        $raid_groups[$volume_mount].append($volume_name)
+                    #end if
+                    #set $raidnum += 1
                 #end if
             #end if
-            ##
-            ## Writing bootloader to MBR
-            #if $space_type == "disk" and $volume_type == "mbr"
-echo "bootloader --location=mbr --driveorder=\$(basename `readlink -f /dev/$space_id`) --append=' biosdevname=0 crashkernel=auto'" > /tmp/bootloader.ks
-            #end if
-            ##
-            ## Parsing logical volumes
+            #######################################
+            ## Configuring logical volumes
+            #######################################
             #if $space_type == "vg" and $volume_type == "lv"
                 #set $volume_mount = $volume.get("mount")
                 ## getting volume size in MB
-                #set $volume_size = $int($volume.get("size") or 0) / 1024 ** 2
+                #set $volume_size = $int($volume.get("size") or 0)
                 #set $volume_name = $volume.get("name")
                 ##
                 ## Anaconda has hard coded limitation of 16TB for ext3/4 and xfs filesystems (the only filesystems we are supposed to use).
@@ -81,45 +134,71 @@ echo "bootloader --location=mbr --driveorder=\$(basename `readlink -f /dev/$spac
                     $post_logical_volumes.append("echo '/dev/mapper/%s-%s %s xfs defaults 0 0' >> /mnt/sysimage/etc/fstab" % ($space_id, $volume_name, $volume_mount))
                 #end if
             #end if
-            ##
+            #######################################
         #end for
     #end for
     ##
-    ## Cleaning disks
-    #if $clearpart_drives
-        #set $clearpart_drives_string = ','.join(list($clearpart_drives))
-echo "clearpart --initlabel --all --drives=$clearpart_drives_string" >> /tmp/partition.ks
-        #for $d in list($clearpart_drives)
-/usr/sbin/parted -s "/dev/$d" mklabel gpt
-        #end for
-    #end if
     ##
-    ## Creating bare partitions
+    #######################################
+    ## Actual cleaning drives
+    #######################################
+    #for $d in $clearpart_drives
+dd if=/dev/zero of=/dev/$d bs=1M count=10
+    #end for
+    #######################################
+    ## Actual configuring boot partitions
+    #######################################
+    #for $parted in $parted_commands
+$parted
+    #end for
+    #######################################
+    ## Actual creating plain partitions
+    #######################################
     #for $partition in $partitions
 echo "$partition" >> /tmp/partition.ks
     #end for
-    ##
-    ## Creating physical volumes
+    #######################################
+    ## Actual creating physical volumes
+    #######################################
     #for $pv in $physical_volumes
 echo "$pv" >> /tmp/partition.ks
     #end for
-    ##
-    ## Creating volume groups
+    #######################################
+    ## Actual creating volume groups
+    #######################################
     #for $volgroup in $volume_groups.keys()
         #set $ks_pvs = " ".join($volume_groups.get($volgroup))
 echo "volgroup $volgroup $ks_pvs" >> /tmp/partition.ks
     #end for
-    ##
-    ## Creating logical volumes
+    #######################################
+    ## Actual creating raid volumes
+    #######################################
+    #for $raid in $raid_volumes
+echo "$raidgroup" >> /tmp/partition.ks
+    #end for
+    #for $raidmount in $raid_groups.keys()
+        #set $ks_raids = " ".join($raid_groups.get($raidmount))
+        #set $md_name = "md%d" % $mdnum
+echo "raid $raidmount --device $md_name --fstype ext3 --level=RAID1 $ks_raids" >> /tmp/partition.ks
+        #set $mdnum += 1
+    #end for
+    #######################################
+    ## Actual creating logical volumes
+    #######################################
     #for $lv in $logical_volumes
 echo "$lv" >> /tmp/partition.ks
     #end for
-    ##
-    ## Creating logical volumes in %post section
+    #######################################
+    ## Actual creating logical volumes in %post section
+    #######################################
 echo "%post --nochroot" > /tmp/post_partition.ks
     #for $lv in $post_logical_volumes
 echo "$lv" >> /tmp/post_partition.ks
     #end for
-    ##
+    #######################################
+    ## Actual bootloader installing
+    #######################################
+    #set $drives = ",".join($grub_drives)
+echo "bootloader --location=mbr --driveorder=$drives --append=' biosdevname=0 crashkernel=none'" > /tmp/bootloader.ks
     ##
 #end if
