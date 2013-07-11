@@ -50,9 +50,8 @@ class TestNodeDisksHandlers(BaseHandlers):
 
         self.assertGreater(len(disks), 0)
         for disk in disks:
-            if disk['type'] == 'disks':
-                self.assertGreaterEqual(disk['size'], 0)
-
+            self.assertTrue(type(disk['size']) in (float, int))
+            self.assertGreaterEqual(disk['size'], 0)
             self.assertGreater(len(disk['volumes']), 0)
 
     def test_disks_recreation_after_node_agent_request(self):
@@ -74,15 +73,6 @@ class TestNodeDisksHandlers(BaseHandlers):
 
         response = self.get(node_db.id)
         self.assertNotEquals(response, [])
-
-    def test_disks_updating(self):
-        node = self.env.create_node(api=True)
-        node_db = self.env.nodes[0]
-        new_data = [{'id': 'sda', 'size': 999, 'volumes': []}]
-        response = self.put(node_db.id, new_data)
-        db().refresh(node_db)
-        self.assertEquals(response, node_db.attributes.volumes)
-        self.assertEquals(response, new_data)
 
     def test_node_os_many_disks(self):
         meta = self.env.default_metadata()
@@ -115,7 +105,7 @@ class TestNodeDisksHandlers(BaseHandlers):
                 lambda v: 'vg' in v and v['vg'] == 'os',
                 disk['volumes']
             )[0]['size']
-            os_pv_sum -= node_db.volume_manager.field_generator(
+            os_pv_sum -= node_db.volume_manager.call_generator(
                 'calc_lvm_meta_size')
 
         os_vg = filter(lambda v: v['id'] == 'os', volumes)[0]
@@ -199,20 +189,30 @@ class TestNodeVolumesInformationHandler(BaseHandlers):
 
         return self.env.nodes[0]
 
+    def check_volumes(self, volumes, volumes_ids):
+        self.assertEquals(len(volumes), len(volumes_ids))
+        for volume_id in volumes_ids:
+            # Volume has name
+            volume = filter(
+                lambda volume: volume['name'] == volume_id, volumes)[0]
+            # min_size
+            self.assertTrue(type(volume['min_size']) in (float, int))
+            self.assertGreaterEqual(volume['min_size'], 0)
+            # and label
+            self.assertTrue(type(volume['label']) in (str, unicode))
+            self.assertGreater(volume['label'], 0)
+
     def test_volumes_information_for_cinder_role(self):
         node_db = self.create_node('cinder')
         response = self.get(node_db.id)
-
-        # Need to implement
+        self.check_volumes(response, ['os', 'cinder'])
 
     def test_volumes_information_for_compute_role(self):
         node_db = self.create_node('compute')
         response = self.get(node_db.id)
-
-        # Need to implement
+        self.check_volumes(response, ['os', 'vm'])
 
     def test_volumes_information_for_controller_role(self):
         node_db = self.create_node('controller')
         response = self.get(node_db.id)
-
-        # Need to implement
+        self.check_volumes(response, ['os'])
