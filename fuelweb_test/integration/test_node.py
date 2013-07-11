@@ -216,7 +216,7 @@ class TestNode(BaseNodeTestCase):
         cluster_id = self.create_cluster(name=cluster_name)
 
         networks = self.client.get_networks(cluster_id)
-        networks[1]['ip_ranges'] = [
+        networks['networks'][1]['ip_ranges'] = [
             ['240.0.0.2', '240.0.0.10'],
             ['240.0.0.20', '240.0.0.25'],
             ['240.0.0.30', '240.0.0.35']]
