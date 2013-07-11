@@ -63,16 +63,28 @@ module Naily
 
       reporter = Naily::Reporter.new(@producer, data['respond_to'], data['args']['task_uuid'])
 
-      @orchestrator.provision(reporter, data['args']['engine'], data['args']['nodes'])
+      @orchestrator.fast_provision(reporter, data['args']['engine'], data['args']['nodes'])
       Naily.logger.info("'Orchestrator.provision' method end")
       return
     end
 
     def deploy(data)
-      Naily.logger.info("'Orchestrator.deploy' method called with data: #{data.inspect}")
+      Naily.logger.info("'deploy' method called with data: #{data.inspect}")
 
       reporter = Naily::Reporter.new(@producer, data['respond_to'], data['args']['task_uuid'])
-      @orchestrator.naily_deploy(reporter, data['args']['task_uuid'],  data['args']['nodes'], data['args']['attributes'])
+      
+      @orchestrator.provision(reporter, data['args']['task_uuid'], data['args']['nodes'])
+      
+      begin
+        result = @orchestrator.deploy(reporter, data['args']['task_uuid'], data['args']['nodes'], data['args']['attributes'])
+      rescue Timeout::Error
+        msg = "Timeout of deployment is exceeded."
+        Naily.logger.error msg
+        reporter.report({'status' => 'error', 'error' => msg})
+        return
+      end
+      
+     report_result(result, reporter)
     end
 
     def verify_networks(data)
