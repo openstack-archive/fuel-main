@@ -611,7 +611,7 @@ function(utils, models, commonViews, dialogViews, nodesTabSummaryTemplate, editN
                         this.disks.fetch({url: _.result(this.node, 'url') + '/disks'})
                     )
                     .fail(_.bind(function() {
-                        var volumesFake = [{"name": "os", "label": "Base System", "minimum": 100002}, {"name": "vm", "label": "Virtual Storage", "minimum": 0}];
+                        var volumesFake = [{"name": "os", "label": "Base System", "min_size": 100002}, {"name": "vm", "label": "Virtual Storage", "min_size": 0}];
                         var disksFake = [{"id": "sda", "size": 10002049}, {"id": "sdb", "size": 10002049}];
                         var diskVolumesFake = [{"name": "os", "size": 2097169}, {"name": "vm", "size": 0}];
                         this.volumes = new models.Volumes(volumesFake);
@@ -680,7 +680,7 @@ function(utils, models, commonViews, dialogViews, nodesTabSummaryTemplate, editN
             _.each(_.reject(this.screen.disks.models, {id: this.disk.id}), function(disk) {
                 space += disk.getVolume(volumeName).get('size');
             });
-            return this.screen.volumes.findWhere({name: volumeName}).get('minimum') - space;
+            return this.screen.volumes.findWhere({name: volumeName}).get('min_size') - space;
         },
         checkForDeletionAvailability: function(volume) {
             this.$('.disk-visual .' + volume.get('name') + ' .close-btn').toggle(this.getMinimalSize(volume.get('name')) <= 0 && this.$('.disk-form').hasClass('in'));

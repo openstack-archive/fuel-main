@@ -272,9 +272,9 @@ define(['utils'], function(utils) {
             var errors = {};
             if (_.isNaN(attrs.size) || attrs.size < 0) {
                 errors[attrs.name] = 'Invalid size';
-            } else if (attrs.size > options.max) {
+            } else if (options.max && attrs.size > options.max) {
                 errors[attrs.name] = 'Maximal size is ' + utils.formatNumber(options.max) + ' MB';
-            } else if (attrs.size < options.min) {
+            } else if (options.min && attrs.size < options.min) {
                 errors[attrs.name] = 'Minimal size is ' + utils.formatNumber(options.min) + ' MB';
             }
             return _.isEmpty(errors) ? null : errors;
