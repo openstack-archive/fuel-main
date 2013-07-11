@@ -31,7 +31,7 @@ define(
 ],
 function(utils, models, commonViews, dialogViews, nodesTabSummaryTemplate, editNodesScreenTemplate, nodeListTemplate, nodeTemplate, nodeStatusTemplate, editNodeDisksScreenTemplate, nodeDisksTemplate, editNodeInterfacesScreenTemplate, nodeInterfaceTemplate) {
     'use strict';
-    var NodesTab, Screen, NodesByRolesScreen, EditNodesScreen, AddNodesScreen, DeleteNodesScreen, NodeList, Node, EditNodeScreen, EditNodeDisksScreen, NodeDisk, EditNodeInterfacesScreen, NodeInterface;
+    var NodesTab, Screen, ScreenWithNodesPolling, NodesByRolesScreen, EditNodesScreen, AddNodesScreen, DeleteNodesScreen, NodeList, Node, EditNodeScreen, EditNodeDisksScreen, NodeDisk, EditNodeInterfacesScreen, NodeInterface;
 
     NodesTab = commonViews.Tab.extend({
         screen: null,
@@ -107,16 +107,20 @@ function(utils, models, commonViews, dialogViews, nodesTabSummaryTemplate, editN
     Screen = Backbone.View.extend({
         constructorName: 'Screen',
         keepScrollPosition: false,
-        updateInterval: 20000,
-        scheduleUpdate: function() {
-            this.registerDeferred($.timeout(this.updateInterval).done(_.bind(this.update, this)));
-        },
         goToNodeList: function() {
             app.navigate('#cluster/' + this.model.id + '/nodes', {trigger: true});
         }
     });
 
-    NodesByRolesScreen = Screen.extend({
+    ScreenWithNodesPolling = Screen.extend({
+        constructorName: 'ScreenWithNodesPolling',
+        updateInterval: 20000,
+        scheduleUpdate: function() {
+            this.registerDeferred($.timeout(this.updateInterval).done(_.bind(this.update, this)));
+        }
+    });
+
+    NodesByRolesScreen = ScreenWithNodesPolling.extend({
         className: 'nodes-by-roles-screen',
         constructorName: 'NodesByRolesScreen',
         keepScrollPosition: true,
@@ -162,7 +166,7 @@ function(utils, models, commonViews, dialogViews, nodesTabSummaryTemplate, editN
         }
     });
 
-    EditNodesScreen = Screen.extend({
+    EditNodesScreen = ScreenWithNodesPolling.extend({
         className: 'edit-nodes-screen',
         constructorName: 'EditNodesScreen',
         nodeSelector: '.nodebox',
@@ -281,9 +285,7 @@ function(utils, models, commonViews, dialogViews, nodesTabSummaryTemplate, editN
         flag: 'pending_addition',
         nodeSelector: '.nodebox:not(.node-offline)',
         update: function() {
-            this.nodes.fetch({data: {cluster_id: ''}}).always(_.bind(function() {
-                this.scheduleUpdate();
-            }, this));
+            this.nodes.fetch({data: {cluster_id: ''}}).always(_.bind(this.scheduleUpdate, this));
         },
         initialize: function(options) {
             this.constructor.__super__.initialize.apply(this, arguments);

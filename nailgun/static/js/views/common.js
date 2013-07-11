@@ -100,7 +100,7 @@ function(utils, models, dialogViews, navbarTemplate, nodesStatsTemplate, notific
         template: _.template(nodesStatsTemplate),
         initialize: function(options) {
             _.defaults(this, options);
-            this.statistics.on('sync', this.render, this);
+            this.statistics.on('change', this.render, this);
         },
         render: function() {
             if (this.statistics.deferred.state() == 'resolved') {
