@@ -150,6 +150,7 @@ function(models, commonViews, dialogViews, healthcheckTabTemplate, healthcheckTe
                 this.$('.testsets').html('');
                 this.testsets.each(function(testset) {
                     var testsetView = new TestSet({
+                        cluster: this.model,
                         testset: testset,
                         testrun: this.testruns.findWhere({testset: testset.id}) || new models.TestRun(),
                         tests: new models.Tests(this.tests.where({testset: testset.id})),

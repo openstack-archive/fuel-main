@@ -10,6 +10,13 @@
       <button class="btn btn-success pull-right action-btn run-tests-btn" disabled>Run Tests</button>
     </div>
   </div>
+  <% if (cluster.get('status') == 'new') { %>
+    <div class="row-fluid">
+      <div class="span12">
+        <div class="alert">Deploy the cluster first to run the tests.</div>
+      </div>
+    </div>
+  <% } %>
 
   <div class="testsets">
     <div class="row row-fluid">
