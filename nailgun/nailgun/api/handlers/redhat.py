@@ -41,8 +41,13 @@ class RedHatAccountHandler(JSONHandler):
         data.pop('release_id')
         release_data['redhat'] = data
 
-        account = RedHatAccount(**data)
-        db().add(account)
+        account = db().query(RedHatAccount).first()
+        if account:
+            for key, value in data.iteritems():
+                setattr(account, key, value)
+        else:
+            account = RedHatAccount(**data)
+            db().add(account)
         db().commit()
 
         task_manager = DownloadReleaseTaskManager(release_data)

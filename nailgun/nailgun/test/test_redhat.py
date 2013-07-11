@@ -13,9 +13,8 @@
 #    under the License.
 
 import json
-from paste.fixture import TestApp
 
-from nailgun.api.models import Release
+from nailgun.api.models import RedHatAccount
 from nailgun.test.base import BaseHandlers
 from nailgun.test.base import reverse
 
@@ -39,3 +38,18 @@ class TestHandlers(BaseHandlers):
             headers=self.default_headers,
             expect_errors=True)
         self.assertEquals(resp.status, 400)
+
+    def test_redhat_account_update(self):
+        for i in xrange(2):
+            username = 'user{0}'.format(i)
+            resp = self.app.post(
+                reverse('RedHatAccountHandler'),
+                json.dumps({'license_type': 'rhsm',
+                            'username': username,
+                            'password': 'password',
+                            'release_id': 1}),
+                headers=self.default_headers)
+            self.assertEquals(resp.status, 200)
+            query = self.env.db.query(RedHatAccount)
+            self.assertEquals(query.count(), 1)
+            self.assertEquals(query.filter_by(username=username).count(), 1)
