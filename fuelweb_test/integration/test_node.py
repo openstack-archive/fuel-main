@@ -215,11 +215,15 @@ class TestNode(BaseNodeTestCase):
 
         cluster_id = self.create_cluster(name=cluster_name)
 
+        # set ip ranges for floating network
         networks = self.client.get_networks(cluster_id)
-        networks['networks'][1]['ip_ranges'] = [
-            ['240.0.0.2', '240.0.0.10'],
-            ['240.0.0.20', '240.0.0.25'],
-            ['240.0.0.30', '240.0.0.35']]
+        for i, n in enumerate(networks['networks']):
+            if n['name'] == 'floating':
+                networks['networks'][i]['ip_ranges'] = [
+                    ['240.0.0.2', '240.0.0.10'],
+                    ['240.0.0.20', '240.0.0.25'],
+                    ['240.0.0.30', '240.0.0.35']]
+                break
 
         self.client.update_network(cluster_id,
                                    net_manager=networks['net_manager'],
