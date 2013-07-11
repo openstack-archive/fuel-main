@@ -480,7 +480,7 @@ define(function() {
 
     models.TestSet = Backbone.Model.extend({
         constructorName: 'TestSet',
-        urlRoot: '/ostf/testsets',
+        urlRoot: '/ostf/testsets'
     });
 
     models.TestSets = Backbone.Collection.extend({
@@ -491,7 +491,7 @@ define(function() {
 
     models.Test = Backbone.Model.extend({
         constructorName: 'Test',
-        urlRoot: '/ostf/tests',
+        urlRoot: '/ostf/tests'
     });
 
     models.Tests = Backbone.Collection.extend({
@@ -502,7 +502,7 @@ define(function() {
 
     models.TestRun = Backbone.Model.extend({
         constructorName: 'TestRun',
-        urlRoot: '/ostf/testruns',
+        urlRoot: '/ostf/testruns'
     });
 
     models.TestRuns = Backbone.Collection.extend({
@@ -513,7 +513,7 @@ define(function() {
 
     models.OSTFClusterMetadata = Backbone.Model.extend({
         constructorName: 'TestRun',
-        urlRoot: '/api/ostf',
+        urlRoot: '/api/ostf'
     });
 
     return models;
