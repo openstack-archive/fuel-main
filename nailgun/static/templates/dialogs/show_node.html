@@ -73,6 +73,9 @@
   <% } %>
 </div>
 <div class="modal-footer">
+  <% if (node.get('ip') !== null) { %>
+      <a href="http://<%= window.location.hostname %>:2443/?ssh=ssh://root@<%= node.get('ip') %>&location=<%= node.get('ip').replace(/\./g,'') %>" target="_blank" class="btn btn-node-console">SSH Console</a>
+  <% } %>
   <% if (configurationPossible) { %>
     <button class="btn btn-edit-networks" data-dismiss="modal">Network Configuration</button>
     <button class="btn btn-edit-disks" data-dismiss="modal">Disk Configuration</button>
