@@ -568,12 +568,12 @@ class NailgunReceiver(object):
         progress = kwargs.get('progress')
         release_info = kwargs.get('release_info')
         release_id = release_info['release_id']
-        
+
         if error_msg:
             status = 'error'
             cls._download_release_error(release_id, error_msg)
         elif progress == 100:
-            cls._download_release_error(release_id, 'error_msg')
+            cls._download_release_completed(release_id)
         TaskHelper.update_task_status(task_uuid, status,
                                       progress, error_msg)
 
