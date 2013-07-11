@@ -29,26 +29,27 @@ module Naily
     end
 
     def download_release(data)
-#       message = {
-#             'method': 'download_release',
-#             'respond_to': 'download_release_resp',
-#             'args': {
-#                 'task_uuid': task.uuid,
-#                 'release_info': {
-#                     'release_id': 1,
-#                     'redhat':{
-#                         'license_type': 'rhsm', #'license_type' in ["rhsm", "rhn"]
-#                         'username':'',
-#                         'password':''
-#                     }
-#                 }
-#             }
-#         }
-      Naily.logger.info("'download_release' method called with data: #{data.inspect}")
+      # Example of message = {
+            # {'method': 'download_release',
+            # 'respond_to': 'download_release_resp',
+            # 'args':{
+            #     'task_uuid': 'task UUID',
+            #     'release_info':{
+            #         'release_id': 'release ID',
+            #         'redhat':{
+            #             'license_type' :"rhn" or "rhsm",
+            #             'username': 'username',
+            #             'password': 'password',
+            #             'satellite': 'satellite host (for RHN license)'
+            #             'activation_key': 'activation key (for RHN license)'
+            #         }
+            #     }
+            # }}
+     Naily.logger.info("'download_release' method called with data: #{data.inspect}")
       reporter = Naily::Reporter.new(@producer, data['respond_to'], data['args']['task_uuid'])
-      nodes = data['args']['nodes']
+      release_info = data['args']['release_info']['redhat']
       begin
-        result = @orchestrator.download_release(reporter, data['args']['task_uuid'], nodes, data['args']['attributes'])
+        result = @orchestrator.download_release(reporter, data['args']['task_uuid'], release_info)
       rescue Timeout::Error
         msg = "Timeout of release download is exceeded."
         Naily.logger.error msg
