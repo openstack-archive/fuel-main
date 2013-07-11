@@ -221,8 +221,9 @@ class TestNode(BaseNodeTestCase):
             ['240.0.0.20', '240.0.0.25'],
             ['240.0.0.30', '240.0.0.35']]
 
-        self.client.update_network(cluster_id, net_manager='FlatDHCPManager',
-                                   flat_net=networks)
+        self.client.update_network(cluster_id,
+                                   net_manager=networks['net_manager'],
+                                   flat_net=networks['networks'])
 
         # adding nodes in cluster
         for node, role in self.get_nailgun_node_roles(nodes_dict):
