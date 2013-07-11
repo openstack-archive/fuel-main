@@ -76,7 +76,7 @@ class Actor(object):
         self.iface_down_after = {}
         self.viface_remove_after = {}
 
-    def _define_logger(self, filename='/var/log/netprobe.log',
+    def _define_logger(self, filename=None,
                        appname='netprobe', level=logging.DEBUG):
         logger = logging.getLogger()
         logger.setLevel(level)
@@ -92,6 +92,9 @@ class Actor(object):
         syslog_handler.setFormatter(syslog_formatter)
         logger.addHandler(syslog_handler)
 
+        # A syslog handler should be always. But a file handler is the option.
+        # If you don't want it you can keep 'filename' variable as None to skip
+        # this handler.
         if filename:
             file_formatter = logging.Formatter(
                 '%(asctime)s %(name)-12s %(levelname)-8s %(message)s'
