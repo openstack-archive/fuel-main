@@ -14,6 +14,7 @@
 
 import json
 
+from nailgun.api.handlers.redhat import RedHatAccountHandler
 from nailgun.api.models import RedHatAccount
 from nailgun.test.base import BaseHandlers
 from nailgun.test.base import reverse
@@ -38,6 +39,31 @@ class TestHandlers(BaseHandlers):
             headers=self.default_headers,
             expect_errors=True)
         self.assertEquals(resp.status, 400)
+
+    def test_redhat_account_get(self):
+        resp = self.app.get(
+            reverse('RedHatAccountHandler'),
+            expect_errors=True)
+        self.assertEquals(resp.status, 404)
+
+        resp = self.app.post(
+            reverse('RedHatAccountHandler'),
+            json.dumps({'license_type': 'rhsm',
+                        'username': 'user',
+                        'password': 'password',
+                        'release_id': 1}),
+            headers=self.default_headers)
+        self.assertEquals(resp.status, 200)
+
+        resp = self.app.get(
+            reverse('RedHatAccountHandler'),
+            expect_errors=True)
+        self.assertEquals(resp.status, 200)
+
+        response = json.loads(resp.body)
+
+        self.assertTrue(
+            all(k in response for k in RedHatAccountHandler.fields))
 
     def test_redhat_account_update(self):
         for i in xrange(2):

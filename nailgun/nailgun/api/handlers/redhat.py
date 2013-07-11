@@ -28,11 +28,23 @@ from nailgun.logger import logger
 
 class RedHatAccountHandler(JSONHandler):
     fields = (
-        "id",
-        "name",
+        'username',
+        'password',
+        'license_type',
+        'satellite',
+        'activation_key'
     )
 
+    model = RedHatAccount
+
     validator = RedHatAcountValidator
+
+    @content_json
+    def GET(self):
+        account = db().query(RedHatAccount).first()
+        if not account:
+            raise web.notfound()
+        return self.render(account)
 
     @content_json
     def POST(self):
