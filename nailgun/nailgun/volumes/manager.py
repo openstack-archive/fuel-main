@@ -14,6 +14,11 @@
 #    License for the specific language governing permissions and limitations
 #    under the License.
 
+'''
+Classes for working with disks and volumes.
+All sizes in megabytes.
+'''
+
 import json
 from math import floor
 
@@ -95,9 +100,14 @@ class DisksFormatConvertor:
         disks_full_format = filter(lambda disk: disk['type'] == 'disk', full)
 
         for disk in disks_full_format:
+            reserve_size = cls.calculate_service_partitions_size(disk['volumes'])
+            size = 0
+            if disk['size'] >= reserve_size:
+                size = disk['size'] - reserve_size
+
             disk_simple = {
                 'id': disk['id'],
-                'size': cls.byte_to_megabyte(disk['size']),
+                'size': cls.byte_to_megabyte(size),
                 'volumes': cls.format_volumes_to_simple(disk['volumes'])}
 
             disks_in_simple_format.append(disk_simple)
@@ -105,13 +115,18 @@ class DisksFormatConvertor:
         return disks_in_simple_format
 
     @classmethod
-    def format_volumes_to_simple(cls, full):
+    def calculate_service_partitions_size(self, volumes):
+        not_vg_partitions = filter(
+            lambda vg: vg.get('type') != 'pv', volumes)
+        return sum([partition.get('size', 0) for partition in not_vg_partitions])
+
+    @classmethod
+    def format_volumes_to_simple(cls, all_partitions):
         '''
         convert volumes from full format to simple format
         '''
-        # retrieve only physical volumes
-        # i.e. not phisical partitions or mbr
-        pv_full_format = filter(lambda vg: vg.get('type') == 'pv', full)
+        pv_full_format = filter(lambda vg: vg.get('type') == 'pv', all_partitions)
+
         volumes_simple_format = []
         for volume in pv_full_format:
             volume_simple = {
@@ -214,24 +229,23 @@ class Disk(object):
 
     def make_bootable(self):
         logger.debug("Allocating /boot partition")
-        self.create_partition(
-            "/boot",
-            self.vm.call_generator("calc_boot_size"))
-        self.create_mbr(True)
+        self.create_raid(
+            '/boot',
+            self.vm.call_generator('calc_boot_size'))
+        self.create_mbr()
 
-    def create_partition(self, mount, size):
+    def create_raid(self, mount, size):
         self.volumes.append({
-            "type": "partition",
-            "mount": mount,
-            "size": size})
+            'type': 'raid',
+            'mount': mount,
+            'size': size})
 
         self.free_space -= size
 
-    def create_mbr(self, boot=False):
-        if self.free_space >= self.vm.call_generator("calc_mbr_size"):
-            if boot:
-                self.volumes.append({"type": "mbr"})
-            logger.debug("Allocating MBR")
+    def create_mbr(self):
+        mbr_size = self.vm.call_generator("calc_mbr_size")
+        if self.free_space >= mbr_size:
+            self.volumes.append({'type': 'mbr', 'size': mbr_size})
             self.free_space -= self.vm.call_generator("calc_mbr_size")
 
     def render(self):
@@ -434,10 +448,8 @@ class VolumeManager(object):
         logger.debug("Iterating over node disks.")
         for i, disk in enumerate(self.disks):
             logger.debug("Found disk: %s", disk.id)
-            if i == 0:
+            if disk.size > 0:
                 disk.make_bootable()
-            else:
-                disk.create_mbr()
 
             if self.node.role == 'controller':
                 disk.create_pv("os")
@@ -488,7 +500,7 @@ class VolumeManager(object):
 
         logger.debug("Generating values for volumes")
         self.volumes = self.expand_generators(self.volumes)
-        return self.set_lv_sizes()
+        return self.volumes
 
     def get_volumes_groups_for_role(self, role):
         volume_metadata = self.node.cluster.release.volumes_metadata
