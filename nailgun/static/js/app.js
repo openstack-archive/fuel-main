@@ -135,7 +135,7 @@ function(models, commonViews, ClusterPage, NodesTab, ClustersPage, ReleasesPage,
             }, this));
         },
         showNotifications: function() {
-            this.setPage(NotificationsPage, {notifications: app.navbar.notifications, nodes: app.navbar.nodes});
+            this.setPage(NotificationsPage, {notifications: app.navbar.notifications});
         },
         showSupportPage: function() {
             this.setPage(SupportPage);

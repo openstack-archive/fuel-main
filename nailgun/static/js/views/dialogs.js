@@ -401,6 +401,10 @@ function(require, utils, models, simpleMessageTemplate, createClusterDialogTempl
         goToInterfacesConfiguration: function() {
             app.navigate('#cluster/' + this.clusterId + '/nodes/interfaces/' + this.node.id, {trigger: true});
         },
+        initialize: function(options) {
+            _.defaults(this, options);
+            this.node.on('sync', this.render, this);
+        },
         render: function() {
             this.constructor.__super__.render.call(this, _.extend({
                 node: this.node,

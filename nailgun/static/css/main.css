@@ -1319,6 +1319,7 @@ h6.page-title {
   font-size: 26px;
   margin: 0;
   line-height: 40px;
+  height: 40px;
 }
 
 .table-releases-box {

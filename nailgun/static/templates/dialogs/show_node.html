@@ -1,62 +1,73 @@
 <div class="modal-header">
   <button type="button" class="close" data-dismiss="modal">&times;</button>
-  <h3><%- node.get('name') %></h3>
+    <h3><%- node.get('name') || '' %></h3>
 </div>
 <div class="modal-body node-popup enable-selection">
-  <div class="row-fluid">
-    <div class="span5"><div class="node-image-outline"></div></div>
-    <div class="span7">
-      <div><strong>Manufacturer: </strong><%- node.get('manufacturer') ? node.get('manufacturer') : 'N/A' %></div>
-      <div><strong>MAC Address: </strong><%- node.get('mac') ? node.get('mac') : 'N/A' %></div>
-      <div><strong>FQDN: </strong><%- (node.get('meta').system || {}).fqdn || node.get('fqdn') || 'N/A' %></div>
+  <% if (!node.deferred || node.deferred.state() != 'pending') { %>
+    <div class="row-fluid">
+      <div class="span5"><div class="node-image-outline"></div></div>
+      <div class="span7">
+        <div><strong>Manufacturer: </strong><%- node.get('manufacturer') ? node.get('manufacturer') : 'N/A' %></div>
+        <div><strong>MAC Address: </strong><%- node.get('mac') ? node.get('mac') : 'N/A' %></div>
+        <div><strong>FQDN: </strong><%- (node.get('meta').system || {}).fqdn || node.get('fqdn') || 'N/A' %></div>
+      </div>
     </div>
-  </div>
-  <div class="accordion" id="nodeDetailsAccordion">
-    <% var meta = node.get('meta') %>
-    <% _.each(meta, function(groupEntries, group) { %>
-      <div class="accordion-group">
-        <div class="accordion-heading">
-          <div class="accordion-toggle" data-group="<%- group %>">
-            <%- group %>
-            <span><%- showSummary(meta, group) %></span>
-            <i class="icon-expand pull-right"></i>
+    <div class="accordion" id="nodeDetailsAccordion">
+      <% var meta = node.get('meta') %>
+      <% _.each(meta, function(groupEntries, group) { %>
+        <div class="accordion-group">
+          <div class="accordion-heading">
+            <div class="accordion-toggle" data-group="<%- group %>">
+              <%- group %>
+              <span><%- showSummary(meta, group) %></span>
+              <i class="icon-expand pull-right"></i>
+            </div>
           </div>
-        </div>
-        <div class="accordion-body collapse">
-          <div class="accordion-inner">
-            <% if (_.isArray(groupEntries)) { %>
-              <% if (group == 'interfaces' || group == 'disks') groupEntries = _.sortBy(groupEntries, 'name') %>
-              <% _.each(groupEntries, function(entry) { %>
-                <div class="nested-object">
-                  <% _.each(sortEntryProperties(entry), function(propertyName) { %>
-                    <div><label><%- showPropertyName(propertyName) %></label><%- showPropertyValue(group, propertyName, entry[propertyName]) %></div>
-                  <% }) %>
-                </div>
-              <% }) %>
-            <% } else if (_.isObject(groupEntries)) { %>
-              <% var subentries = _.find(_.values(groupEntries), _.isArray) %>
-              <% _.each(groupEntries, function(propertyValue, propertyName) { %>
-                <% if (!_.isArray(propertyValue)) { %>
-                  <div><label><%- showPropertyName(propertyName) %></label><%- showPropertyValue(group, propertyName, propertyValue) %></div>
-                <% } %>
-              <% }) %>
-              <% if (_.isArray(subentries)) { %>
-                <% _.each(subentries, function(subentry) { %>
+          <div class="accordion-body collapse">
+            <div class="accordion-inner">
+              <% if (_.isArray(groupEntries)) { %>
+                <% if (group == 'interfaces' || group == 'disks') groupEntries = _.sortBy(groupEntries, 'name') %>
+                <% _.each(groupEntries, function(entry) { %>
                   <div class="nested-object">
-                    <% _.each(sortEntryProperties(subentry), function(propertyName) { %>
-                      <div><label><%- showPropertyName(propertyName) %></label><%- showPropertyValue(group, propertyName, subentry[propertyName]) %></div>
+                    <% _.each(sortEntryProperties(entry), function(propertyName) { %>
+                      <div><label><%- showPropertyName(propertyName) %></label><%- showPropertyValue(group, propertyName, entry[propertyName]) %></div>
                     <% }) %>
                   </div>
                 <% }) %>
+              <% } else if (_.isObject(groupEntries)) { %>
+                <% var subentries = _.find(_.values(groupEntries), _.isArray) %>
+                <% _.each(groupEntries, function(propertyValue, propertyName) { %>
+                  <% if (!_.isArray(propertyValue)) { %>
+                    <div><label><%- showPropertyName(propertyName) %></label><%- showPropertyValue(group, propertyName, propertyValue) %></div>
+                  <% } %>
+                <% }) %>
+                <% if (_.isArray(subentries)) { %>
+                  <% _.each(subentries, function(subentry) { %>
+                    <div class="nested-object">
+                      <% _.each(sortEntryProperties(subentry), function(propertyName) { %>
+                        <div><label><%- showPropertyName(propertyName) %></label><%- showPropertyValue(group, propertyName, subentry[propertyName]) %></div>
+                      <% }) %>
+                    </div>
+                  <% }) %>
+                <% } %>
+              <% } else { %>
+                <div><%- groupEntries %></div>
               <% } %>
-            <% } else { %>
-              <div><%- groupEntries %></div>
-            <% } %>
+            </div>
           </div>
         </div>
+      <% }) %>
+    </div>
+  <% } else { %>
+    <div class="row row-fluid">
+      <div class="span4"></div>
+      <div class="span4">
+        <div class="progress progress-striped progress-success active">
+          <div class="bar" style="width: 100%"></div>
+        </div>
       </div>
-    <% }) %>
-  </div>
+    </div>
+  <% } %>
 </div>
 <div class="modal-footer">
   <% if (configurationPossible) { %>

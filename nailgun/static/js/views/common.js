@@ -141,11 +141,10 @@ function(utils, models, dialogViews, navbarTemplate, nodesStatsTemplate, notific
             if (nodeId) {
                 this.toggle();
                 var node = new models.Node({id: nodeId});
-                node.fetch().done(_.bind(function() {
-                    var dialog = new dialogViews.ShowNodeInfoDialog({node: node});
-                    this.registerSubView(dialog);
-                    dialog.render();
-                }, this));
+                node.deferred = node.fetch();
+                var dialog = new dialogViews.ShowNodeInfoDialog({node: node});
+                this.registerSubView(dialog);
+                dialog.render();
             }
         },
         toggle: function() {

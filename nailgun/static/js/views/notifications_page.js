@@ -47,7 +47,8 @@ function(utils, models, commonViews, dialogViews, notificationsListTemplate) {
         showNodeInfo: function(e) {
             var nodeId = $(e.currentTarget).data('node');
             if (nodeId) {
-                var node = this.nodes.get(nodeId);
+                var node = new models.Node({id: nodeId});
+                node.deferred = node.fetch();
                 var dialog = new dialogViews.ShowNodeInfoDialog({node: node});
                 this.registerSubView(dialog);
                 dialog.render();
