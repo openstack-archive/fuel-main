@@ -308,7 +308,9 @@ class BaseNodeTestCase(BaseTestCase):
         return re.findall('(\d{1,3}\.\d{1,3}\.\d{1,3}\.\d{1,3})', ret_str)
 
     @logwrap
-    def assert_cluster_floating_list(self, ip, expected_ips):
+    def assert_cluster_floating_list(self, node_name, expected_ips):
+        ip = self.get_node_by_devops_node(
+            self.ci().environment().node_by_name(node_name))['ip']
         current_ips = self.get_cluster_floating_list(ip)
         self.assertEqual(len(current_ips), len(expected_ips),
                          "Floating ips amount. Cluster ip: %s" % ip)

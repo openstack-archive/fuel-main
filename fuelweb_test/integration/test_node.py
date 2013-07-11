@@ -238,8 +238,7 @@ class TestNode(BaseNodeTestCase):
                        ['240.0.0.%s' % i for i in range(20, 26, 1)] + \
                        ['240.0.0.%s' % i for i in range(30, 36, 1)]
         self.assert_cluster_floating_list(
-            self.ci().environment().node_by_name(
-                nodes_dict['compute'][0])['ip'], expected_ips)
+            nodes_dict['compute'][0], expected_ips)
 
 if __name__ == '__main__':
     unittest.main()
