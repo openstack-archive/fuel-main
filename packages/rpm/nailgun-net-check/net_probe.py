@@ -313,6 +313,13 @@ class Actor(object):
 
     def _iface_vlan_iterator(self):
         for iface, vlan_list in self.config['interfaces'].iteritems():
+            # Variables iface and vlan_list are getted from decoded JSON
+            # and json.dump convert all string data to Python unicode string.
+            # We use these variables in logging messages later.
+            # CentOS 6.4 uses Python 2.6 and logging module 0.5.0.5 which has
+            # a bug with converting unicode strings to message in
+            # SysLogHandler. So we need to convert all unicode to plain
+            # strings to avoid syslog message corruption.
             for vlan in self._parse_vlan_list(str(vlan_list)):
                 yield (str(iface), vlan)
 
