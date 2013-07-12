@@ -363,8 +363,11 @@ class VolumeManager(object):
             'calc_boot_size': lambda: 200,
             # let's think that size of mbr is 10MB
             'calc_mbr_size': lambda: 10,
-            # lvm_mets = 64MB
-            'calc_lvm_meta_size': lambda: 64,
+            # lvm meta = 64MB for one volume group
+            # we assume that such groups will be
+            # no more than 10 i.e. we should reserve
+            # for each disk lvm meta = 640MB
+            'calc_lvm_meta_size': lambda: 640,
             'calc_total_vg': self._calc_total_vg,
             'calc_unallocated_vg': self._calc_unallocated_vg,
             # virtual storage = 5GB
