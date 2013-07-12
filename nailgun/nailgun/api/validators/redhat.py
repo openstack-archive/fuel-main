@@ -44,10 +44,4 @@ class RedHatAcountValidator(BasicValidator):
                 raise errors.InvalidData(
                     "Satellite hostname or activation key not specified",
                 )
-        if settings.FAKE_TASKS:
-            if d["username"] != "rheltest":
-                raise errors.InvalidData("Invalid username or password")
-        else:
-           # TODO: check Red Hat Account credentials
-            pass
         return d
