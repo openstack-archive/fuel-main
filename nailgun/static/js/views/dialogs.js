@@ -54,6 +54,9 @@ function(require, utils, models, simpleMessageTemplate, createClusterDialogTempl
         displayInfoMessage: function(options) {
             this.template = _.template(simpleMessageTemplate);
             this.render(options);
+            if (options.error) {
+                this.displayErrorMessage();
+            }
         },
         initialize: function(options) {
             _.defaults(this, options);

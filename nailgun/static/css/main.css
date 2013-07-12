@@ -3981,13 +3981,11 @@ hr.slim {
 
 .volume-group-error-message {
   display: block;
-  width: 180px;
   overflow: hidden;
   text-align: right;
   font-size: 12px;
   margin-top: -10px;
   margin-bottom: 10px;
-  margin-left: 290px;
   color: #B94A48;
 }
 

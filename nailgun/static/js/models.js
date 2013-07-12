@@ -273,9 +273,9 @@ define(['utils'], function(utils) {
             if (_.isNaN(attrs.size) || attrs.size < 0) {
                 errors[attrs.name] = 'Invalid size';
             } else if (options.max && attrs.size > options.max) {
-                errors[attrs.name] = 'Maximal size is ' + utils.formatNumber(options.max) + ' MB';
+                errors[attrs.name] = 'The value is too large. It exceeds the total available space of ' + utils.formatNumber(options.max) + ' MB. You can reduce one of the other volume groups in size';
             } else if (options.min && attrs.size < options.min) {
-                errors[attrs.name] = 'Minimal size is ' + utils.formatNumber(options.min) + ' MB';
+                errors[attrs.name] = 'The value is too low. You must allocate at least ' + utils.formatNumber(options.min) + ' MB';
             }
             return _.isEmpty(errors) ? null : errors;
         }
