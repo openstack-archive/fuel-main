@@ -197,13 +197,13 @@ class TestNode(BaseNodeTestCase):
         self.assertEqual(3, len(self.client.list_cluster_nodes(cluster_id)))
 
         self.assertClusterReady(
-            self.nodes().slaves[0:1].name,
+            self.nodes().slaves[0].name,
             smiles_count=6, networks_count=1, timeout=300)
         self.assertClusterReady(
-            self.nodes().slaves[1:2].name,
+            self.nodes().slaves[1].name,
             smiles_count=6, networks_count=1, timeout=300)
         self.assertClusterReady(
-            self.nodes().slaves[2:3].name,
+            self.nodes().slaves[2].name,
             smiles_count=6, networks_count=1, timeout=300)
 
 if __name__ == '__main__':
