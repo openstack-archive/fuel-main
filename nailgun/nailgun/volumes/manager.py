@@ -20,10 +20,16 @@ All sizes in megabytes.
 '''
 
 import json
-from math import floor
 
 from nailgun.logger import logger
 from nailgun.errors import errors
+
+def gb_to_mb(gb):
+    return gb * 1024
+
+
+def byte_to_megabyte(byte):
+    return byte / 1024 ** 2
 
 
 class DisksFormatConvertor:
@@ -48,7 +54,8 @@ class DisksFormatConvertor:
                         "size": 209715200
                     },
                     {
-                        "type": "mbr"
+                        "type": "gpt",
+                        "size": "100"
                     },
                     {
                         "vg": "os",
@@ -83,9 +90,7 @@ class DisksFormatConvertor:
         for disk in disks:
             for volume in disks['volumes']:
                 full_format = node.volume_manager.set_volume_size(
-                    disk['id'],
-                    volume['name'],
-                    megabyte_to_byte(volume['size']))
+                    disk['id'], volume['name'], volume['size'])
 
         return full_format
 
@@ -107,7 +112,7 @@ class DisksFormatConvertor:
 
             disk_simple = {
                 'id': disk['id'],
-                'size': cls.byte_to_megabyte(size),
+                'size': size,
                 'volumes': cls.format_volumes_to_simple(disk['volumes'])}
 
             disks_in_simple_format.append(disk_simple)
@@ -131,7 +136,7 @@ class DisksFormatConvertor:
         for volume in pv_full_format:
             volume_simple = {
                 'name': volume['vg'],
-                'size': cls.byte_to_megabyte(volume['size'])}
+                'size': volume['size']}
 
             volumes_simple_format.append(volume_simple)
 
@@ -168,17 +173,9 @@ class DisksFormatConvertor:
             volumes_info.append({
                 'name': volume_id,
                 'label': volume['label'],
-                'min_size': cls.byte_to_megabyte(min_size)})
+                'min_size': min_size})
 
         return volumes_info
-
-    @classmethod
-    def byte_to_megabyte(cls, byte):
-        return int(floor(byte / 1024.0 ** 2))
-
-    @classmethod
-    def megabyte_to_byte(cls, mb):
-        return int(floor(1024 ** 2 * mb))
 
 
 class Disk(object):
@@ -236,8 +233,8 @@ class Disk(object):
 
     def create_raid(self, mount, size):
         self.volumes.append({
-            'type': 'raid',
-            'mount': mount,
+            'type': 'boot',
+            'mount': self.vm.call_generator('calc_boot_size'),
             'size': size})
 
         self.free_space -= size
@@ -280,7 +277,7 @@ class VolumeManager(object):
             raise Exception("No disk metadata specified for node")
 
         for d in sorted(self.node.meta["disks"], key=lambda i: i["name"]):
-            disk = Disk(self, d["disk"], d["size"])
+            disk = Disk(self, d["disk"], byte_to_megabyte(d["size"]))
             for v in self.volumes:
                 if v.get("type") == "disk" and v.get("id") == disk.id:
                     disk.volumes = v.get("volumes", [])
@@ -353,17 +350,17 @@ class VolumeManager(object):
             # Calculate swap space based on total RAM
             'calc_swap_size': self._calc_swap_size,
             # root = 10GB
-            'calc_root_size': lambda: 1024 ** 3 * 10,
+            'calc_root_size': lambda: gb_to_mb(10),
             # boot = 200MB
-            'calc_boot_size': lambda: 1024 ** 2 * 200,
+            'calc_boot_size': lambda: 200,
             # let's think that size of mbr is 10MB
-            'calc_mbr_size': lambda: 10 * 1024 ** 2,
+            'calc_mbr_size': lambda: 10,
             # lvm_mets = 64MB
-            'calc_lvm_meta_size': lambda: 1024 ** 2 * 64,
+            'calc_lvm_meta_size': lambda: 64,
             'calc_total_vg': self._calc_total_vg,
             'calc_unallocated_vg': self._calc_unallocated_vg,
             # virtual storage = 5GB
-            'calc_min_vm_size': lambda: 1024 ** 3 * 5,
+            'calc_min_vm_size': lambda: gb_to_mb(5),
             'calc_min_cinder_size': lambda: 0}
 
         generators['calc_os_size'] = \

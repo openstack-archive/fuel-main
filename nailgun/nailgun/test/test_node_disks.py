@@ -50,7 +50,7 @@ class TestNodeDisksHandlers(BaseHandlers):
 
         self.assertGreater(len(disks), 0)
         for disk in disks:
-            self.assertTrue(type(disk['size']) in (float, int))
+            self.assertTrue(type(disk['size']) == int)
             self.assertGreaterEqual(disk['size'], 0)
             self.assertGreater(len(disk['volumes']), 0)
 
@@ -197,7 +197,7 @@ class TestNodeVolumesInformationHandler(BaseHandlers):
             volume = filter(
                 lambda volume: volume['name'] == volume_id, volumes)[0]
             # min_size
-            self.assertTrue(type(volume['min_size']) in (float, int))
+            self.assertTrue(type(volume['min_size']) == int)
             self.assertGreaterEqual(volume['min_size'], 0)
             # and label
             self.assertTrue(type(volume['label']) in (str, unicode))
