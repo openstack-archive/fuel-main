@@ -20,7 +20,6 @@ import traceback
 from datetime import datetime, timedelta
 from itertools import repeat
 from sqlalchemy.sql import not_
-from sqlalchemy import extract
 
 from nailgun import notifier
 from nailgun.db import db
