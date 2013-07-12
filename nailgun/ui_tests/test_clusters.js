@@ -29,7 +29,7 @@ casper.then(function() {
     this.test.assertSelectorAppears('.modal form select[name=release] option', 'Release select box updates with releases');
     this.then(function() {
         this.fill('form.create-cluster-form', {name: name});
-        this.fill('form.rhel-license', {username: 'username', password: 'password'});
+        this.fill('form.rhel-license', {username: 'rheltest', password: 'password'});
         this.click('.create-cluster-btn');
     });
     this.test.assertSelectorDisappears('.modal', 'Cluster creation dialog closes after from submission');

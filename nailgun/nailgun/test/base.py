@@ -127,7 +127,7 @@ class Environment(object):
     def download_release(self, release_id):
         release_data = {
             'license_type': 'rhsm',
-            'username': 'user',
+            'username': 'rheltest',
             'password': 'password',
             'release_id': release_id
         }

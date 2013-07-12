@@ -88,7 +88,6 @@ class RedHatAccountHandler(JSONHandler):
         data = self.checked_data()
         self.check_credentials(data)
 
-        task_manager = DownloadReleaseTaskManager(data['release_id'])
         release_data = {'release_id': data['release_id']}
         data.pop('release_id')
         release_data['redhat'] = data

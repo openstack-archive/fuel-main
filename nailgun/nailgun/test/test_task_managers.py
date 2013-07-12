@@ -614,14 +614,3 @@ class TestTaskManagers(BaseHandlers):
         supertask = self.env.launch_deployment()
         self.env.wait_ready(supertask, timeout=5)
         self.assertEquals(self.env.db.query(Node).count(), 0)
-
-    @fake_tasks()
-    def test_download_release(self):
-        release = self.env.create_release()
-        self.assertEquals(release.state, 'not_available')
-        task = self.env.download_release(release.id)
-        release = self.db.query(Release).get(release.id)
-        self.assertEquals(release.state, 'downloading')
-        self.env.wait_ready(task, timeout=5)
-        release = self.db.query(Release).get(release.id)
-        self.assertEquals(release.state, 'available')
