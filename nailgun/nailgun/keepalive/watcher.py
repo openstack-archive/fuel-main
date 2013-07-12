@@ -73,7 +73,7 @@ class KeepAliveThread(threading.Thread):
         ).filter_by(
             online=True
         )
-        for node_db in to_update.all():
+        for node_db in to_update:
             notifier.notify(
                 "error",
                 u"Node '{0}' has gone away".format(
