@@ -94,7 +94,7 @@ class DisksFormatConvertor:
         '''
         full_format = []
         for disk in disks:
-            for volume in disks['volumes']:
+            for volume in disk['volumes']:
                 full_format = node.volume_manager.set_volume_size(
                     disk['id'], volume['name'], volume['size'])
 
@@ -322,7 +322,9 @@ class VolumeManager(object):
 
             self.volumes)[0]
 
-        volume = filter(lambda d: volume_name == d['vg'], disk['volumes'])[0]
+        volume = filter(
+            lambda volume: volume_name == volume.get('vg'),
+            disk['volumes'])[0]
         volume['size'] = size
 
         return self.volumes

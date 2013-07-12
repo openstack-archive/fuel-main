@@ -45,12 +45,9 @@ class NodeDisksHandler(JSONHandler):
         if node.cluster:
             node.cluster.add_pending_changes('disks', node_id=node.id)
 
-        if not node.attributes:
-            return web.notfound()
-
-        node.attributes.volumes = \
-            DisksFormatConvertor.format_disks_to_full(node, data)
-
+        volumes_data = DisksFormatConvertor.format_disks_to_full(node, data)
+        db().query(NodeAttributes).filter_by(node_id=node_id).update(
+            {'volumes': volumes_data})
         db().commit()
 
         return DisksFormatConvertor.format_disks_to_simple(

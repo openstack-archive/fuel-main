@@ -108,6 +108,20 @@ class TestNodeDisksHandlers(BaseHandlers):
         os_lv_sum += sum([v['size'] for v in os_vg['volumes']])
         self.assertEquals(os_pv_sum, os_lv_sum)
 
+    def test_disks_volumes_size_update(self):
+        node = self.env.create_node(api=True)
+        node_db = self.env.nodes[0]
+        disks = self.get(node_db.id)
+        for disk in disks:
+            for volume in disk['volumes']:
+                volume['size'] = 4200
+
+        response = self.put(node_db.id, disks)
+        self.assertEquals(response, disks)
+
+        response = self.get(node_db.id)
+        self.assertEquals(response, disks)
+
 
 class TestNodeDefaultsDisksHandler(BaseHandlers):
 
