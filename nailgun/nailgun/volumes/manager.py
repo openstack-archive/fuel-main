@@ -25,10 +25,16 @@ from nailgun.logger import logger
 from nailgun.errors import errors
 
 def gb_to_mb(gb):
+    '''
+    Convert gigabytes to megabytes
+    '''
     return gb * 1024
 
 
 def byte_to_megabyte(byte):
+    '''
+    Convert bytes to megabytes
+    '''
     return byte / 1024 ** 2
 
 
