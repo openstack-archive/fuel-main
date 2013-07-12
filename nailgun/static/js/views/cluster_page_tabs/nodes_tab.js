@@ -568,9 +568,7 @@ function(utils, models, commonViews, dialogViews, nodesTabSummaryTemplate, editN
             var defaultDisks = new models.Disks();
             defaultDisks.fetch({url: _.result(this.node, 'url') + '/disks/defaults/'})
                 .done(_.bind(function() {
-                    this.disks = defaultDisks;
-                    this.render();
-                    this.checkForChanges();
+                    this.disks.reset(_.cloneDeep(defaultDisks.toJSON()), {parse: true});
                 }, this))
                 .fail(_.bind(function() {
                     this.disableControls(false);
@@ -611,10 +609,7 @@ function(utils, models, commonViews, dialogViews, nodesTabSummaryTemplate, editN
                     )
                     .done(_.bind(function() {
                         this.initialData = _.cloneDeep(this.disks.toJSON());
-                        this.disks.on('reset', _.bind(function() {
-                            this.renderDisks();
-                            this.checkForChanges();
-                        }, this));
+                        this.disks.on('reset', this.render, this);
                         this.render();
                     }, this))
                     .fail(_.bind(this.goToNodeList, this));
