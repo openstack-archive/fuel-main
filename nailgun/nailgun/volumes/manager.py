@@ -28,7 +28,7 @@ def gb_to_mb(gb):
     '''
     Convert gigabytes to megabytes
     '''
-    return gb * 1024
+    return int(gb * 1024)
 
 
 def byte_to_megabyte(byte):
@@ -369,7 +369,7 @@ class VolumeManager(object):
             'calc_unallocated_vg': self._calc_unallocated_vg,
             # virtual storage = 5GB
             'calc_min_vm_size': lambda: gb_to_mb(5),
-            'calc_min_cinder_size': lambda: 0}
+            'calc_min_cinder_size': lambda: gb_to_mb(1.5)}
 
         generators['calc_os_size'] = \
             lambda: generators['calc_root_size']() + generators['calc_swap_size']()
