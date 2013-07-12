@@ -59,20 +59,16 @@ module Naily
     end
 
     def provision(data)
-      Naily.logger.info("'Orchestrator.provision' method called with data: #{data.inspect}")
-
+      Naily.logger.info("'provision' method called with data: #{data.inspect}")
+      
       reporter = Naily::Reporter.new(@producer, data['respond_to'], data['args']['task_uuid'])
-
       @orchestrator.fast_provision(reporter, data['args']['engine'], data['args']['nodes'])
-      Naily.logger.info("'Orchestrator.provision' method end")
-      return
     end
 
     def deploy(data)
       Naily.logger.info("'deploy' method called with data: #{data.inspect}")
 
-      reporter = Naily::Reporter.new(@producer, data['respond_to'], data['args']['task_uuid'])
-      
+      reporter = Naily::Reporter.new(@producer, data['respond_to'], data['args']['task_uuid']) 
       @orchestrator.provision(reporter, data['args']['task_uuid'], data['args']['nodes'])
       
       begin
@@ -84,7 +80,7 @@ module Naily
         return
       end
       
-     report_result(result, reporter)
+      report_result(result, reporter)
     end
 
     def verify_networks(data)

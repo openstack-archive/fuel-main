@@ -62,8 +62,6 @@ module Naily
     conf[:broker_queue] = 'naily'
     conf[:broker_publisher_queue] = 'nailgun'
     conf[:broker_exchange] = 'nailgun'
-    conf[:reboot_timeout] = 120
-    conf[:provisioning_timeout] = 90 * 60
     return conf
   end
 end
