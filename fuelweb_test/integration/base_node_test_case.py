@@ -315,16 +315,8 @@ class BaseNodeTestCase(BaseTestCase):
         self.assertEqual(len(current_ips), len(expected_ips),
                          "Floating ips amount. Cluster ip: %s" % ip)
 
-        absent_ips = []
-        for ip in expected_ips:
-            try:
-                current_ips.index(ip)
-                current_ips.remove(ip)
-            except ValueError:
-                absent_ips.append(ip)
-
-        self.assertTrue(len(absent_ips) == 0 and len(current_ips) == 0,
-                        'Floating ip list')
+        self.assertTrue(
+            all(ip in expected_ips for ip in current_ips), 'Floating IP list')
 
     @logwrap
     def get_private_keys(self):
