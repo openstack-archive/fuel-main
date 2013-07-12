@@ -46,7 +46,7 @@ class RedHatAccountHandler(JSONHandler):
         if settings.FAKE_TASKS:
             if data["username"] != "rheltest":
                 raise web.badrequest("Invalid username or password")
-
+            return
         try:
             logger.info("Testing RH credentials with user %s",
                         data.username)
