@@ -17,9 +17,10 @@
 import time
 import threading
 import traceback
-from datetime import datetime
+from datetime import datetime, timedelta
 from itertools import repeat
 from sqlalchemy.sql import not_
+from sqlalchemy import extract
 
 from nailgun import notifier
 from nailgun.db import db
@@ -66,23 +67,19 @@ class KeepAliveThread(threading.Thread):
                 break
 
     def update_status_nodes(self):
-        for node_db in db().query(Node).filter(
-            # nodes may become unresponsive while provisioning
-                not_(Node.status == 'provisioning')):
-            timedelta = (datetime.now() - node_db.timestamp).seconds
-            if timedelta > self.timeout:
-                logger.warning(
-                    u"Node '{0}' seems to be offline "
-                    "for {1} seconds...".format(
-                        node_db.name,
-                        timedelta))
-                if node_db.online:
-                    node_db.online = False
-                    db().flush()
-                    notifier.notify(
-                        "error",
-                        u"Node '{0}' has gone away".format(
-                            node_db.human_readable_name),
-                        node_id=node_db.id
-                    )
+        to_update = db().query(Node).filter(
+            not_(Node.status == 'provisioning')
+        ).filter(
+            datetime.now() > (Node.timestamp + timedelta(seconds=self.timeout))
+        ).filter_by(
+            online=True
+        )
+        for node_db in to_update.all():
+            notifier.notify(
+                "error",
+                u"Node '{0}' has gone away".format(
+                    node_db.human_readable_name),
+                node_id=node_db.id
+            )
+        to_update.update({"online": False})
         db().commit()
