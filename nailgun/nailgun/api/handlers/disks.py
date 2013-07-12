@@ -46,6 +46,11 @@ class NodeDisksHandler(JSONHandler):
             node.cluster.add_pending_changes('disks', node_id=node.id)
 
         volumes_data = DisksFormatConvertor.format_disks_to_full(node, data)
+        # For some reasons if we update node attributes like
+        #   node.attributes.volumes = volumes_data
+        # after
+        #   db().commit()
+        # it resets to previous state
         db().query(NodeAttributes).filter_by(node_id=node_id).update(
             {'volumes': volumes_data})
         db().commit()
