@@ -183,6 +183,8 @@ class NodeCollectionHandler(JSONHandler):
             network_manager.assign_networks_to_main_interface(node.id)
 
         try:
+            # we use power of 1024 because there are no problems here
+            # with unfair size calculation
             ram = str(round(float(
                 node.meta['memory']['total']) / 1073741824, 1)) + " GB RAM"
         except Exception as exc:
@@ -190,7 +192,9 @@ class NodeCollectionHandler(JSONHandler):
             ram = "unknown RAM"
 
         try:
-            # 1000000000 because Vova said so
+            # we use power of 1000 because of dishonesty of disk vendors
+            # (they specify HDD size in powers of 1000) to avoid possible
+            # questions and misunderstandings
             hd_size = round(float(
                 sum([d["size"] for d in node.meta["disks"]]) / 1000000000), 1)
             # if HDD > 100 GB we show it's size in TB
