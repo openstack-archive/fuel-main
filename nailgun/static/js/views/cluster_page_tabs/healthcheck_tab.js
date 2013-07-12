@@ -127,16 +127,20 @@ function(models, commonViews, dialogViews, healthcheckTabTemplate, healthcheckTe
                 ostf.testsets = new models.TestSets();
                 ostf.tests = new models.Tests();
                 ostf.testruns = new models.TestRuns();
-                this.model.set({'ostf': ostf}, {silent: true});
                 _.extend(this, ostf);
                 $.when(
                     this.testsets.deferred = this.testsets.fetch(),
                     this.tests.fetch(),
                     this.testruns.fetch({url: _.result(this.testruns, 'url') + '/last/' + this.model.id})
                 ).done(_.bind(function() {
+                    this.model.set({'ostf': ostf}, {silent: true});
                     this.render();
                     this.testruns.on('sync', this.updateTestRuns, this);
                     this.scheduleUpdate();
+                }, this)
+                ).fail(_.bind(function() {
+                    this.$('.testsets > .row').hide();
+                    this.$('.testsets > .error-message').show();
                 }, this));
             } else {
                 _.extend(this, this.model.get('ostf'));

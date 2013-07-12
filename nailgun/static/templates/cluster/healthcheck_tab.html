@@ -13,7 +13,7 @@
   <% if (cluster.get('status') == 'new') { %>
     <div class="row-fluid">
       <div class="span12">
-        <div class="alert">Deploy the cluster first to run the tests.</div>
+        <div class="alert">You must deploy your new OpenStack environment before running tests against it.</div>
       </div>
     </div>
   <% } %>
@@ -27,5 +27,6 @@
         </div>
       </div>
     </div>
+    <div class="alert hide error-message alert-error">OSTF server is not available.</div>
   </div>
 </div>
