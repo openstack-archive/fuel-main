@@ -199,12 +199,8 @@ class TestNode(BaseNodeTestCase):
         self.assertClusterReady(
             self.nodes().slaves[0].name,
             smiles_count=8, networks_count=1, timeout=300)
-        self.assertClusterReady(
-            self.nodes().slaves[1].name,
-            smiles_count=8, networks_count=1, timeout=300)
-        self.assertClusterReady(
-            self.nodes().slaves[2].name,
-            smiles_count=8, networks_count=1, timeout=300)
+        self.assert_node_service_list(self.nodes().slaves[1].name, 8)
+        self.assert_node_service_list(self.nodes().slaves[2].name, 8)
 
 if __name__ == '__main__':
     unittest.main()

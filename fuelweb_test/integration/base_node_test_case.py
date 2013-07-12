@@ -262,6 +262,13 @@ class BaseNodeTestCase(BaseTestCase):
             0, ''.join(ret['stdout']).count("XXX"), "Broken services count")
 
     @logwrap
+    def assert_node_service_list(self, node_name, smiles_count):
+        ip = self.ci().environment().node_by_name(node_name)['ip']
+        remote = SSHClient(ip, username='root', password='r00tme',
+                           private_keys=self.get_private_keys())
+        return self.assert_service_list(remote, smiles_count)
+
+    @logwrap
     def assert_glance_index(self, ctrl_ssh):
         ret = ctrl_ssh.check_call('. /root/openrc; glance index')
         self.assertEqual(1, ''.join(ret['stdout']).count("TestVM"))
