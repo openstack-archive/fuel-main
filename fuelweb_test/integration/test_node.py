@@ -188,11 +188,13 @@ class TestNode(BaseNodeTestCase):
         nodes = self.bootstrap_nodes(self.nodes().slaves[2:3])
         self.client.update_node(
             nodes[0]['id'], {"role": 'compute', "pending_addition": True})
+
+        nodes += self.nailgun_nodes(self.nodes().slaves[:2])
         self.update_nodes_in_cluster(cluster_id, nodes)
 
-        self.assertEqual(3, len(self.client.list_cluster_nodes(cluster_id)))
         task = self.client.update_cluster_changes(cluster_id)
         self.assertTaskSuccess(task)
+        self.assertEqual(3, len(self.client.list_cluster_nodes(cluster_id)))
 
         self.assertClusterReady(
             self.nodes().slaves[1:2],
