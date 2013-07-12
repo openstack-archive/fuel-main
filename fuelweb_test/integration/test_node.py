@@ -181,14 +181,13 @@ class TestNode(BaseNodeTestCase):
                                      for n in self.nodes().slaves[:1]],
                       'compute': [n.name
                                   for n in self.nodes().slaves[1:2]]}
-        additional_nodes_dict = \
-            {'compute': [n.name for n in self.nodes().slaves[2:3]]}
 
         cluster_id = self._basic_provisioning(
             cluster_name=cluster_name, nodes_dict=nodes_dict)
 
         nodes = self.bootstrap_nodes(self.nodes().slaves[2:3])
-        self.add_node(additional_nodes_dict)
+        self.client.update_node(
+            nodes[0]['id'], {"role": 'compute', "pending_addition": True})
         self.update_nodes_in_cluster(cluster_id, nodes)
 
         self.assertEqual(3, len(self.client.list_cluster_nodes(cluster_id)))
