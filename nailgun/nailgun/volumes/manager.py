@@ -381,13 +381,13 @@ class VolumeManager(object):
         #             Red_Hat_Enterprise_Linux/6/html/Installation_Guide/
         #             s2-diskpartrecommend-ppc.html#id4394007
         if mem <= 2:
-            return int(2 * mem * 1024 ** 3)
+            return gb_to_mb(int(2 * mem))
         elif mem > 2 and mem <= 8:
-            return int(mem * 1024 ** 3)
+            return gb_to_mb(mem)
         elif mem > 8 and mem <= 64:
-            return int(.5 * mem * 1024 ** 3)
+            return gb_to_mb(int(.5 * mem))
         else:
-            return int(4 * 1024 ** 3)
+            return gb_to_mb(4)
 
     def _calc_total_vg(self, vg):
         logger.debug("_calc_total_vg")
