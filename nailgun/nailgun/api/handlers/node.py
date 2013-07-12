@@ -183,7 +183,7 @@ class NodeCollectionHandler(JSONHandler):
             network_manager.assign_networks_to_main_interface(node.id)
 
         try:
-            # we use power of 1024 because there are no problems here
+            # we use multiplier of 1024 because there are no problems here
             # with unfair size calculation
             ram = str(round(float(
                 node.meta['memory']['total']) / 1073741824, 1)) + " GB RAM"
@@ -192,9 +192,10 @@ class NodeCollectionHandler(JSONHandler):
             ram = "unknown RAM"
 
         try:
-            # we use power of 1000 because of dishonesty of disk vendors
-            # (they specify HDD size in powers of 1000) to avoid possible
-            # questions and misunderstandings
+            # we use multiplier of 1000 because disk vendors specify HDD size
+            # in terms of decimal capacity. Sources:
+            # http://knowledge.seagate.com/articles/en_US/FAQ/172191en
+            # http://physics.nist.gov/cuu/Units/binary.html
             hd_size = round(float(
                 sum([d["size"] for d in node.meta["disks"]]) / 1000000000), 1)
             # if HDD > 100 GB we show it's size in TB
