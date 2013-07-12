@@ -14,14 +14,10 @@
 #    License for the specific language governing permissions and limitations
 #    under the License.
 
-import unittest
 import json
-from paste.fixture import TestApp
 
-from nailgun.api.models import Node, Notification
-from nailgun.test.base import BaseHandlers
-from nailgun.test.base import reverse
-from nailgun.db import db
+from nailgun.test.base import BaseHandlers, reverse
+from nailgun.volumes.manager import DisksFormatConvertor
 
 
 class TestNodeDisksHandlers(BaseHandlers):
@@ -217,3 +213,87 @@ class TestNodeVolumesInformationHandler(BaseHandlers):
         node_db = self.create_node('controller')
         response = self.get(node_db.id)
         self.check_volumes(response, ['os'])
+
+
+class TestVolumeManager(BaseHandlers):
+
+    def create_node(self, role):
+        self.env.create(
+            cluster_kwargs={},
+            nodes_kwargs=[{
+                'role': role,
+                'pending_addition': True,
+                'api': True}])
+
+        return self.env.nodes[0]
+
+    def non_zero_size(self, size):
+        self.assertTrue(type(size) == int)
+        self.assertGreater(size, 0)
+
+    def os_size(self, disks):
+        os_sum_size = 0
+        for disk in self.only_disks(disks):
+            os_volume = filter(
+                lambda volume: volume.get('vg') == 'os', disk['volumes'])[0]
+
+            os_sum_size += os_volume['size']
+
+        self.non_zero_size(os_sum_size)
+        return os_sum_size
+
+    def reserved_size(self, spaces):
+        reserved_size = 0
+        for disk in self.only_disks(spaces):
+            reserved_size += DisksFormatConvertor.\
+                calculate_service_partitions_size(disk['volumes'])
+
+        return reserved_size
+
+    def only_disks(self, disks):
+        return filter(lambda disk: disk['type'] == 'disk', disks)
+
+    def should_contain_os_with_minimal_size(self, volume_manager):
+        os_size = self.os_size(volume_manager.volumes)
+        lvm_meta_size = volume_manager.call_generator('calc_lvm_meta_size')
+        # TODO When we will save all metadata in volumes
+        # lvm should be include in reserved size and
+        # we should not subtract it explicitly
+        self.assertEquals(
+            os_size - lvm_meta_size,
+            volume_manager.call_generator('calc_min_os_size'))
+
+    def all_free_space_except_os_for_volume(self, spaces, volume_name):
+        os_size = self.os_size(spaces)
+        reserved_size = self.reserved_size(spaces)
+        vg_size = 0
+        disk_sum_size = sum([disk['size'] for disk in self.only_disks(spaces)])
+        for disk in self.only_disks(spaces):
+            for volume in disk['volumes']:
+                if volume.get('vg') == volume_name:
+                    vg_size += volume['size']
+
+        self.assertEquals(
+            vg_size,
+            disk_sum_size - os_size - reserved_size)
+
+    def test_allocates_all_free_space_for_os_for_controller_role(self):
+        node = self.create_node('controller')
+        disks = self.only_disks(node.volume_manager.volumes)
+        disks_size_sum = sum([disk['size'] for disk in disks])
+        os_sum_size = self.os_size(disks)
+        reserved_size = self.reserved_size(disks)
+
+        self.assertEquals(disks_size_sum - reserved_size, os_sum_size)
+
+    def test_allocates_all_free_space_for_vm_for_compute_role(self):
+        node = self.create_node('compute')
+        self.should_contain_os_with_minimal_size(node.volume_manager)
+        self.all_free_space_except_os_for_volume(
+            node.volume_manager.volumes, 'vm')
+
+    def test_allocates_all_free_space_for_vm_for_cinder_role(self):
+        node = self.create_node('cinder')
+        self.should_contain_os_with_minimal_size(node.volume_manager)
+        self.all_free_space_except_os_for_volume(
+            node.volume_manager.volumes, 'cinder')
