@@ -186,40 +186,64 @@ class DisksFormatConvertor:
 
 class Disk(object):
 
-    def __init__(self, generator, disk_id, size):
-        self.call_generator = generator
+    def __init__(self, generator_method, disk_id, size):
+        self.call_generator = generator_method
         self.id = disk_id
         self.size = size
         self.free_space = size
         self.volumes = []
 
-    def clear(self):
-        self.volumes = []
-        self.free_space = self.size
+        # For each disk we need to create
+        # service partitions and reserve space
+        self.create_service_partitions()
 
-    def create_pv(self, vg_name, size=None):
-        logger.debug("Creating or updating PV: disk=%s vg=%s, size=%s",
-                     self.id, vg_name, str(size))
-        # if required size in not equal to zero
-        # we need to not forget to allocate lvm metadata space
-        if size:
-            size = size + self.call_generator('calc_lvm_meta_size')
-            logger.debug("Size + lvm_meta_size: %s", size)
-        # if size is not defined we should
-        # to allocate all available space
-        elif size is None:
+    def create_service_partitions(self):
+        self.create_boot_records()
+        self.create_boot_partition()
+        self.create_lvm_meta()
+
+    def create_boot_partition(self):
+        size = self.call_generator('calc_boot_size')
+        self.volumes.append({
+                'type': 'raid',
+                'mount': '/boot',
+                'size': size})
+        self.free_space -= size
+
+    def create_boot_records(self):
+        '''
+        Reserve space for efi, gpt, bios
+        '''
+        size = self.call_generator('calc_boot_records_size')
+        self.volumes.append({'type': 'boot', 'size': size})
+        self.free_space -= size
+
+    def create_lvm_meta(self):
+        size = self.call_generator('calc_lvm_meta_size')
+        self.volumes.append({'type': 'lvm_meta', 'size': size})
+        self.free_space -= size
+
+    def create_pv(self, name, size=None):
+        '''
+        Allocates all available space if
+        size is None
+        '''
+        logger.debug('Creating or updating PV: disk=%s vg=%s, size=%s',
+                     self.id, name, str(size))
+
+        if size is None:
             logger.debug(
-                "Size is not defined. Will use all free space on this disk.")
-
+                'Size is not defined. Will use all free space on this disk.')
             size = self.free_space
 
         self.free_space -= size
-        logger.debug("Left free space: disk: %s free space: %s",
+
+        logger.debug('Left free space: disk: %s free space: %s',
                      self.id, self.free_space)
 
         for i, volume in enumerate(self.volumes):
-            if (volume.get("type"), volume.get("vg")) == ("pv", vg_name):
-                logger.debug("PV already exist. Setting its size to: %s", size)
+            if (volume.get('type'), volume.get('vg')) == ('pv', name):
+                logger.debug('PV already exist. Setting its size to: %s', size)
                 self.volumes[i]["size"] = size
 
                 return
@@ -227,29 +251,12 @@ class Disk(object):
         logger.debug("Appending PV to volumes.")
         self.volumes.append({
             "type": "pv",
-            "vg": vg_name,
+            "vg": name,
             "size": size})
 
-    def make_bootable(self):
-        logger.debug("Allocating /boot partition")
-        self.create_raid(
-            '/boot',
-            self.call_generator('calc_boot_size'))
-        self.create_mbr()
-
-    def create_raid(self, mount, size):
-        self.volumes.append({
-            'type': 'boot',
-            'mount': self.call_generator('calc_boot_size'),
-            'size': size})
-
-        self.free_space -= size
-
-    def create_mbr(self):
-        mbr_size = self.call_generator("calc_mbr_size")
-        if self.free_space >= mbr_size:
-            self.volumes.append({'type': 'mbr', 'size': mbr_size})
-            self.free_space -= self.call_generator("calc_mbr_size")
+    def clear(self):
+        self.volumes = []
+        self.free_space = self.size
 
     def render(self):
         return {
@@ -361,6 +368,8 @@ class VolumeManager(object):
             'calc_root_size': lambda: gb_to_mb(10),
             # boot = 200MB
             'calc_boot_size': lambda: 200,
+            # boot records size = 200MB
+            'calc_boot_records_size': lambda: 200,
             # let's think that size of mbr is 10MB
             'calc_mbr_size': lambda: 10,
             # lvm meta = 64MB for one volume group
@@ -456,8 +465,6 @@ class VolumeManager(object):
         logger.debug("Iterating over node disks.")
         for i, disk in enumerate(self.disks):
             logger.debug("Found disk: %s", disk.id)
-            if disk.size > 0:
-                disk.make_bootable()
 
             if self.node.role == 'controller':
                 disk.create_pv("os")

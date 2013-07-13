@@ -268,13 +268,8 @@ class TestVolumeManager(BaseHandlers):
         return filter(lambda disk: disk['type'] == 'disk', disks)
 
     def should_contain_os_with_minimal_size(self, volume_manager):
-        os_size = self.os_size(volume_manager.volumes)
-        lvm_meta_size = volume_manager.call_generator('calc_lvm_meta_size')
-        # TODO When we will save all metadata in volumes
-        # lvm should be include in reserved size and
-        # we should not subtract it explicitly
         self.assertEquals(
-            os_size - lvm_meta_size,
+            self.os_size(volume_manager.volumes),
             volume_manager.call_generator('calc_min_os_size'))
 
     def all_free_space_except_os_for_volume(self, spaces, volume_name):
