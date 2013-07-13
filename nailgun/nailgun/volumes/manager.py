@@ -197,9 +197,9 @@ class Disk(object):
         self.volumes = []
         self.free_space = self.size
 
-    def create_pv(self, vg, size=None):
+    def create_pv(self, vg_name, size=None):
         logger.debug("Creating or updating PV: disk=%s vg=%s, size=%s",
-                     self.id, vg, str(size))
+                     self.id, vg_name, str(size))
         # if required size in not equal to zero
         # we need to not forget to allocate lvm metadata space
         if size:
@@ -218,7 +218,7 @@ class Disk(object):
                      self.id, self.free_space)
 
         for i, volume in enumerate(self.volumes):
-            if (volume.get("type"), volume.get("vg")) == ("pv", vg):
+            if (volume.get("type"), volume.get("vg")) == ("pv", vg_name):
                 logger.debug("PV already exist. Setting its size to: %s", size)
                 self.volumes[i]["size"] = size
 
@@ -227,7 +227,7 @@ class Disk(object):
         logger.debug("Appending PV to volumes.")
         self.volumes.append({
             "type": "pv",
-            "vg": vg,
+            "vg": vg_name,
             "size": size})
 
     def make_bootable(self):
