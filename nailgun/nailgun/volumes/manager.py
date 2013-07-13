@@ -482,9 +482,7 @@ class VolumeManager(object):
 
     def gen_volumes_info(self):
         logger.debug(
-            u"Generating volumes info for node '{0}' (role:{1})".format(
-                self.node.name or self.node.mac or self.node.id,
-                self.node.role))
+            u'Generating volumes info for node %s'.format(self.node.full_name))
 
         logger.debug("Purging volumes info for all node disks")
         map(lambda d: d.clear(), self.disks)
