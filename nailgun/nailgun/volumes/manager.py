@@ -236,23 +236,22 @@ class Disk(object):
                 'Size is not defined. Will use all free space on this disk.')
             size = self.free_space
 
+        self.create_or_update_pv('pv', name, size)
+
+    def create_or_update_pv(self, type, name, size):
         self.free_space -= size
-
-        logger.debug('Left free space: disk: %s free space: %s',
-                     self.id, self.free_space)
-
-        for i, volume in enumerate(self.volumes):
-            if (volume.get('type'), volume.get('vg')) == ('pv', name):
+        for volume in self.volumes:
+            if volume.get('type') == 'pv' and volume.get('vg') == name:
                 logger.debug('PV already exist. Setting its size to: %s', size)
-                self.volumes[i]["size"] = size
+                volume['size'] = size
 
                 return
 
-        logger.debug("Appending PV to volumes.")
+        logger.debug('Appending PV to volumes.')
         self.volumes.append({
-            "type": "pv",
-            "vg": name,
-            "size": size})
+            'type': 'pv',
+            'vg': name,
+            'size': size})
 
     def clear(self):
         self.volumes = []
