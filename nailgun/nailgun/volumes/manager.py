@@ -186,8 +186,8 @@ class DisksFormatConvertor:
 
 class Disk(object):
 
-    def __init__(self, vm, disk_id, size):
-        self.vm = vm
+    def __init__(self, generator, disk_id, size):
+        self.call_generator = generator
         self.id = disk_id
         self.size = size
         self.free_space = size
@@ -203,7 +203,7 @@ class Disk(object):
         # if required size in not equal to zero
         # we need to not forget to allocate lvm metadata space
         if size:
-            size = size + self.vm.call_generator('calc_lvm_meta_size')
+            size = size + self.call_generator('calc_lvm_meta_size')
             logger.debug("Size + lvm_meta_size: %s", size)
         # if size is not defined we should
         # to allocate all available space
@@ -234,22 +234,22 @@ class Disk(object):
         logger.debug("Allocating /boot partition")
         self.create_raid(
             '/boot',
-            self.vm.call_generator('calc_boot_size'))
+            self.call_generator('calc_boot_size'))
         self.create_mbr()
 
     def create_raid(self, mount, size):
         self.volumes.append({
             'type': 'boot',
-            'mount': self.vm.call_generator('calc_boot_size'),
+            'mount': self.call_generator('calc_boot_size'),
             'size': size})
 
         self.free_space -= size
 
     def create_mbr(self):
-        mbr_size = self.vm.call_generator("calc_mbr_size")
+        mbr_size = self.call_generator("calc_mbr_size")
         if self.free_space >= mbr_size:
             self.volumes.append({'type': 'mbr', 'size': mbr_size})
-            self.free_space -= self.vm.call_generator("calc_mbr_size")
+            self.free_space -= self.call_generator("calc_mbr_size")
 
     def render(self):
         return {
@@ -283,7 +283,7 @@ class VolumeManager(object):
             raise Exception("No disk metadata specified for node")
 
         for d in sorted(self.node.meta["disks"], key=lambda i: i["name"]):
-            disk = Disk(self, d["disk"], byte_to_megabyte(d["size"]))
+            disk = Disk(self.call_generator, d["disk"], byte_to_megabyte(d["size"]))
             for v in self.volumes:
                 if v.get("type") == "disk" and v.get("id") == disk.id:
                     disk.volumes = v.get("volumes", [])
