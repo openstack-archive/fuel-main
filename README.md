@@ -1,4 +1,6 @@
-NAILGUN
-=======
+FUEL
+====
 
-See development documentation at https://mirantis.jira.com/wiki/display/PRD/Development
+ISO, other materials: http://fuel.mirantis.com/
+
+User guide, development docs: http://fuel-docs.mirantis.com/
