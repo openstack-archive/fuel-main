@@ -5,4 +5,5 @@ Nailgun
 
 .. toctree::
 
-   develop/nailgun/reliability
+   nailgun/development
+   nailgun/reliability

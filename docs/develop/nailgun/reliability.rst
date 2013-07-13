@@ -27,9 +27,11 @@ GET request on that node would return 500 Internal Server Error.
 Looks like it should affect the only one node, and logically we could remove such
 failing node from the environment to get it discovered again.
 However, UI + API handlers were written in the following way:
-- UI calls /api/nodes to fetch info about all nodes to just show how many nodes are
-  allocated, and how many are not
-- NodesCollectionHandler would return 500 if any of nodes raise an exception
+
+* UI calls /api/nodes to fetch info about all nodes to just show how many nodes are allocated, and how many are not
+
+* NodesCollectionHandler would return 500 if any of nodes raise an exception
+
 It is simple to guess, that the whole UI was completely destroyed by just one
 failed node. It was impossible to do any action on UI.
 
@@ -37,11 +39,14 @@ These two examples give us the starting point to rethink on how to avoid
 Nailgun crash just if one of the meta attr is wrong.
 
 First, we must devide the meta attributes discovered by agent on two categories:
-- absolutely required for node discovering (i.e. MAC address)
-- non-required for discovering
-  - required for deployment (i.e. disks)
-  - non-required for deployment (i.e. current_speed)
-    (additional division?)
+
+* absolutely required for node discovering (i.e. MAC address)
+
+* non-required for discovering
+
+  * required for deployment (i.e. disks)
+
+  * non-required for deployment (i.e. current_speed)
 
 Second, we must have UI refactored to fetch only the information required,
 not the whole DB to just show two numbers. To be more specific,
