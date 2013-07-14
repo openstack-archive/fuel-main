@@ -203,7 +203,8 @@ class Disk(object):
         self.create_lvm_meta()
 
     def create_boot_partition(self):
-        size = self.call_generator('calc_boot_size')
+        boot_size = self.call_generator('calc_boot_size')
+        size = boot_size if self.free_space >= boot_size else 0
         self.volumes.append({
                 'type': 'raid',
                 'mount': '/boot',
@@ -214,12 +215,14 @@ class Disk(object):
         '''
         Reserve space for efi, gpt, bios
         '''
-        size = self.call_generator('calc_boot_records_size')
+        boot_records_size = self.call_generator('calc_boot_records_size')
+        size = boot_records_size if self.free_space >= boot_records_size else 0
         self.volumes.append({'type': 'boot', 'size': size})
         self.free_space -= size
 
     def create_lvm_meta(self):
-        size = self.call_generator('calc_lvm_meta_size')
+        lvm_meta_size = self.call_generator('calc_lvm_meta_size')
+        size = lvm_meta_size if self.free_space >= lvm_meta_size else 0
         self.volumes.append({'type': 'lvm_meta', 'size': size})
         self.free_space -= size
 
@@ -256,6 +259,12 @@ class Disk(object):
     def clear(self):
         self.volumes = []
         self.free_space = self.size
+        self.create_service_partitions()
+
+    def reset(self):
+        self.volumes = []
+        self.free_space = self.size
+        self.create_service_partitions()
 
     def render(self):
         return {
@@ -427,90 +436,69 @@ class VolumeManager(object):
                     vg_space -= subv.get("size", 0)
         return vg_space
 
-    def _allocate_vg(self, name, size=None, use_existing_space=True):
-        logger.debug("_allocate_vg: vg: %s, size: %s", name, str(size))
-        free_space = sum([d.free_space for d in self.disks])
-        logger.debug("Available free space on all disks: %s", str(free_space))
+    def _allocate_vg(self, name, size=None):
+        '''
+        Allocate volume group. If size is None,
+        then allocate all existing space on all disks.
+        '''
+        logger.debug('_allocate_vg: vg: %s, size: %s', name, str(size))
 
-        # If size is not defined or zero we just add
-        # zero size PVs on all disks. We just need to have
-        # all volume groups PVs on all disks despite their size.
-        # Zero size PVs are needed
-        # for UI to display disks correctly. When zero size
-        # PV is passed to cobbler ks_meta, partition snippet will
-        # ignore it.
-        if not size:
+        if size is None:
             for disk in self.disks:
-                logger.debug("Creating zero size PV: disk: %s, vg: %s",
-                             disk.id, name)
-                disk.create_pv(name, 0)
-        # If we want to allocate all available size for volume group
-        # we need to call create_pv method without setting
-        # explicit size and we need to do this for every disk.
-        # Keep in mind that when you call create_pv(name, size)
-        # this method will actually try to create PV with size + lvm_meta_size
-        if use_existing_space:
-            for i, disk in enumerate(self.disks):
                 if disk.free_space > 0:
-                    logger.debug("Allocating all available space for PV: "
-                                 "disk: %s vg: %s", disk.id, name)
+                    logger.debug('Allocating all available space for PV: '
+                                 'disk: %s vg: %s', disk.id, name)
                     disk.create_pv(name)
+                else:
+                    disk.create_pv(name, 0)
+        else:
+            not_allocated_size = size
+            for disk in self.disks:
+                logger.debug('Creating PV: disk: %s, vg: %s', disk.id, name)
 
-    def _allocate_os(self):
-        logger.debug("_allocate_os")
-        os_vg_size_left = self.call_generator("calc_os_vg_size")
-        lvm_meta_size = self.call_generator("calc_lvm_meta_size")
+                if disk.free_space >= not_allocated_size:
+                    # if we can allocate all required size
+                    # on one disk, then just allocate it
+                    size_to_allocation = not_allocated_size
+                elif disk.free_space > 0:
+                    # if disk has free space, then allocate it
+                    size_to_allocation = disk.free_space
+                else:
+                    # else just allocate pv with size 0
+                    size_to_allocation = 0
 
-        logger.debug("Iterating over node disks.")
-        for i, disk in enumerate(self.disks):
-            logger.debug("Found disk: %s", disk.id)
+                disk.create_pv(name, size_to_allocation)
+                not_allocated_size -= size_to_allocation
 
-            if self.node.role == 'controller':
-                disk.create_pv("os")
-                continue
-
-            if os_vg_size_left == 0:
-                disk.create_pv("os", 0)
-                continue
-
-            if disk.free_space > (os_vg_size_left + lvm_meta_size):
-                disk.create_pv("os", os_vg_size_left)
-                os_vg_size_left = 0
-            else:
-                os_vg_size_left -= disk.free_space - lvm_meta_size
-                disk.create_pv("os")
-
+    # TODO
+    # s/gen_volumes_info/generate_spaces_info/
     def gen_volumes_info(self):
-        logger.debug(
-            u'Generating volumes info for node %s'.format(self.node.full_name))
+        logger.debug(u'Generating volumes info for node %s' % self.node.full_name)
 
-        logger.debug("Purging volumes info for all node disks")
-        map(lambda d: d.clear(), self.disks)
+        logger.debug('Purging volumes info for all node disks')
+        map(lambda d: d.reset(), self.disks)
 
         if not self.node.cluster:
             logger.debug("Node is not bound to cluster.")
             return self.gen_default_volumes_info()
-        else:
-            volumes_metadata = self.node.cluster.release.volumes_metadata
 
-            self._allocate_os()
-            self.volumes = [d.render() for d in self.disks]
-            self.volumes.extend(
-                self.get_volumes_groups_for_role(self.node.role))
+        volumes_metadata = self.node.cluster.release.volumes_metadata
 
-            # UGLY HACK HERE
-            # generate volume groups for node by role
-            if self.node.role == "compute":
-                logger.debug("Node role is compute. "
-                             "Allocating volume group 'vm'")
-                self._allocate_vg("vm")
+        self.volumes = [d.render() for d in self.disks]
+        self.volumes.extend(self.get_volumes_groups_for_role(self.node.role))
 
-            elif self.node.role == "cinder":
-                logger.debug("Node role is cinder. "
-                             "Allocating volume group 'cinder'")
-                self._allocate_vg("cinder")
+        vg_names_for_role = volumes_metadata['volumes_roles_mapping'][self.node.role]
+        for vg_name in vg_names_for_role:
+            # For last volume group in 'volumes_roles_mapping' list
+            # we allocates all free space
+            if len(vg_names_for_role) == 1 or vg_name == vg_names_for_role[-1]:
+                self._allocate_vg(vg_name)
+            else:
+                min_size = self.expand_generators(
+                    volumes_metadata['volumes'][vg_name])['min_size']
 
-        logger.debug("Generating values for volumes")
+                self._allocate_vg(vg_name, min_size)
+
         self.volumes = self.expand_generators(self.volumes)
         return self.volumes
 
@@ -557,7 +545,7 @@ class VolumeManager(object):
         logger.debug("Purging volumes info for all disks")
         map(lambda d: d.clear(), self.disks)
 
-        self._allocate_os()
+        self._allocate_vg('os')
         self.volumes = [d.render() for d in self.disks]
         logger.debug("Appending default OS volume group")
         self.volumes.extend([

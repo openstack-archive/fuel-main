@@ -283,8 +283,7 @@ class TestVolumeManager(BaseHandlers):
                     vg_size += volume['size']
 
         self.assertEquals(
-            vg_size,
-            disk_sum_size - os_size - reserved_size)
+            vg_size, disk_sum_size - os_size - reserved_size)
 
     def test_allocates_all_free_space_for_os_for_controller_role(self):
         node = self.create_node('controller')
