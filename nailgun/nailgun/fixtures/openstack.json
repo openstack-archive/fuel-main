@@ -21,8 +21,9 @@
                     "compute": ["os", "vm"],
                     "cinder": ["os", "cinder"]
                 },
-                "volumes": {
-                    "os": {
+                "volumes": [
+                    {
+                        "id": "os",
                         "type": "vg",
                         "min_size": {"generator": "calc_min_os_size"},
                         "label": "Base System",
@@ -31,7 +32,7 @@
                                 "mount": "/",
                                 "type": "lv",
                                 "name": "root",
-                                "size": {"generator": "calc_root_size"}
+                                "size": {"generator": "calc_total_root_vg"}
                             },
                             {
                                 "mount": "swap",
@@ -41,7 +42,8 @@
                             }
                         ]
                     },
-                    "vm": {
+                    {
+                        "id": "vm",
                         "type": "vg",
                         "min_size": {"generator": "calc_min_vm_size"},
                         "label": "Virtual Storage",
@@ -57,13 +59,14 @@
                             }
                         ]
                     },
-                    "cinder": {
+                    {
+                        "id": "cinder",
                         "type": "vg",
                         "label": "Cinder",
                         "min_size": {"generator": "calc_min_cinder_size"},
                         "volumes": []
                     }
-                }
+                ]
             },
             "attributes_metadata": {
                 "editable": {

@@ -24,6 +24,7 @@ import json
 from nailgun.logger import logger
 from nailgun.errors import errors
 
+
 def gb_to_mb(gb):
     '''
     Convert gigabytes to megabytes
@@ -169,8 +170,9 @@ class DisksFormatConvertor:
 
         volumes_info = []
         for volume_id in volumes_ids:
-            volume = node.cluster.release.volumes_metadata[
-                'volumes'][volume_id]
+            volume = filter(
+                lambda volume: volume.get('id') == volume_id,
+                node.cluster.release.volumes_metadata['volumes'])[0]
 
             # Here we calculate min_size of nodes
             min_size = node.volume_manager.expand_generators(
@@ -259,11 +261,9 @@ class Disk(object):
     def clear(self):
         self.volumes = []
         self.free_space = self.size
-        self.create_service_partitions()
 
     def reset(self):
-        self.volumes = []
-        self.free_space = self.size
+        self.clear()
         self.create_service_partitions()
 
     def render(self):
@@ -287,10 +287,9 @@ class VolumeManager(object):
         Disks and volumes will be set according to node
         attributes.
         '''
+        logger.debug("VolumeManager initialized with node: %s", node.id)
         self.disks = []
         self.volumes = []
-
-        logger.debug("VolumeManager initialized with node: %s", node.id)
         self.node = node
         self.volumes = self.node.attributes.volumes or []
 
@@ -389,7 +388,8 @@ class VolumeManager(object):
             'calc_unallocated_vg': self._calc_unallocated_vg,
             # virtual storage = 5GB
             'calc_min_vm_size': lambda: gb_to_mb(5),
-            'calc_min_cinder_size': lambda: gb_to_mb(1.5)}
+            'calc_min_cinder_size': lambda: gb_to_mb(1.5),
+            'calc_total_root_vg': self._calc_total_root_vg}
 
         generators['calc_os_size'] = \
             lambda: generators['calc_root_size']() + generators['calc_swap_size']()
@@ -402,6 +402,9 @@ class VolumeManager(object):
                 u'Cannot find generator %s' % generator)
 
         return generators[generator](*args)
+
+    def _calc_total_root_vg(self):
+        return self._calc_total_vg('os') - self.call_generator('calc_swap_size')
 
     def _calc_swap_size(self):
         mem = float(self.node.meta['memory']['total']) / 1024 ** 3
@@ -424,7 +427,7 @@ class VolumeManager(object):
             if v.get("type") == "disk" and v.get("volumes"):
                 for subv in v["volumes"]:
                     if (subv.get("type"), subv.get("vg")) == ("pv", vg):
-                        vg_space += (subv.get("size", 0) - self.call_generator("calc_lvm_meta_size"))
+                        vg_space += subv.get("size", 0) - self.call_generator('calc_lvm_meta_size')
         return vg_space
 
     def _calc_unallocated_vg(self, vg):
@@ -477,25 +480,26 @@ class VolumeManager(object):
 
         logger.debug('Purging volumes info for all node disks')
         map(lambda d: d.reset(), self.disks)
+        self.volumes = [d.render() for d in self.disks]
 
+        role = self.node.role
         if not self.node.cluster:
-            logger.debug("Node is not bound to cluster.")
-            return self.gen_default_volumes_info()
+            return self.volumes
+
+        self.volumes.extend(self.get_volumes_groups_for_role(role))
 
         volumes_metadata = self.node.cluster.release.volumes_metadata
-
-        self.volumes = [d.render() for d in self.disks]
-        self.volumes.extend(self.get_volumes_groups_for_role(self.node.role))
-
-        vg_names_for_role = volumes_metadata['volumes_roles_mapping'][self.node.role]
+        vg_names_for_role = volumes_metadata['volumes_roles_mapping'][role]
         for vg_name in vg_names_for_role:
             # For last volume group in 'volumes_roles_mapping' list
             # we allocates all free space
             if len(vg_names_for_role) == 1 or vg_name == vg_names_for_role[-1]:
                 self._allocate_vg(vg_name)
             else:
-                min_size = self.expand_generators(
-                    volumes_metadata['volumes'][vg_name])['min_size']
+                volume_meta = filter(
+                    lambda volume: volume.get('id') == vg_name,
+                    volumes_metadata['volumes'])[0]
+                min_size = self.expand_generators(volume_meta)['min_size']
 
                 self._allocate_vg(vg_name, min_size)
 
@@ -503,12 +507,12 @@ class VolumeManager(object):
         return self.volumes
 
     def get_volumes_groups_for_role(self, role):
-        volume_metadata = self.node.cluster.release.volumes_metadata
-        volume_groups_for_role = volume_metadata['volumes_roles_mapping'][role]
+        volumes_metadata = self.node.cluster.release.volumes_metadata
+        volume_groups_for_role = volumes_metadata['volumes_roles_mapping'][role]
 
-        return map(
-            lambda vg: volume_metadata['volumes'][vg],
-            volume_groups_for_role)
+        return filter(
+            lambda vg: vg.get('id') in volume_groups_for_role,
+            volumes_metadata['volumes'])
 
     def expand_generators(self, cdict):
         new_dict = {}
@@ -538,38 +542,6 @@ class VolumeManager(object):
             for d in cdict:
                 new_dict.append(self.expand_generators(d))
         return new_dict
-
-    def gen_default_volumes_info(self):
-        logger.debug("Generating default volumes info")
-
-        logger.debug("Purging volumes info for all disks")
-        map(lambda d: d.clear(), self.disks)
-
-        self._allocate_vg('os')
-        self.volumes = [d.render() for d in self.disks]
-        logger.debug("Appending default OS volume group")
-        self.volumes.extend([
-            {
-                "id": "os",
-                "type": "vg",
-                "volumes": [
-                    {
-                        "mount": "/",
-                        "size": {"generator": "calc_root_size"},
-                        "name": "root",
-                        "type": "lv"
-                    },
-                    {
-                        "mount": "swap",
-                        "size": {"generator": "calc_swap_size"},
-                        "name": "swap",
-                        "type": "lv"
-                    }
-                ]
-            }
-        ])
-        logger.debug("Generating values for volumes")
-        return self.expand_generators(self.volumes)
 
     def check_free_space(self):
         """

@@ -22,6 +22,17 @@ from nailgun.volumes.manager import DisksFormatConvertor
 
 class TestNodeDisksHandlers(BaseHandlers):
 
+    def create_node(self, role='controller'):
+        self.env.create(
+            cluster_kwargs={},
+            nodes_kwargs=[{
+                'role': role,
+                'pending_addition': True,
+                'api': True}])
+
+        return self.env.nodes[0]
+
+
     def get(self, node_id):
         resp = self.app.get(
             reverse('NodeDisksHandler', kwargs={'node_id': node_id}),
@@ -48,7 +59,7 @@ class TestNodeDisksHandlers(BaseHandlers):
         for disk in disks:
             self.assertTrue(type(disk['size']) == int)
             self.assertGreaterEqual(disk['size'], 0)
-            self.assertGreater(len(disk['volumes']), 0)
+            self.assertEqual(len(disk['volumes']), 0)
 
     def test_disks_recreation_after_node_agent_request(self):
         node = self.env.create_node(api=True)
@@ -70,47 +81,30 @@ class TestNodeDisksHandlers(BaseHandlers):
         response = self.get(node_db.id)
         self.assertNotEquals(response, [])
 
-    def test_node_os_many_disks(self):
-        meta = self.env.default_metadata()
-        meta['memory']['total'] = 4294967296
-        meta['disks'] = [
-            {
-                'size': 7483648000,
-                'model': 'HITACHI LOL404',
-                'name': 'sda8',
-                'disk': 'blablabla2'
-            },
-            {
-                'model': 'SEAGATE B00B135',
-                'name': 'vda',
-                'size': 2147483648000,
-                'disk': 'blablabla3'
-            }
-        ]
-        node = self.env.create_node(
-            api=True,
-            meta=meta)
+    def test_recalculation_if_disk_added_and_node_not_provisioned(self):
+        pass
 
-        node_db = self.env.nodes[0]
+    def test_not_recalculate_if_disk_added_and_node_provisioned(self):
+        pass
+
+    def test_volume_groups_size_calculation(self):
+        node_db = self.create_node()
         volumes = node_db.attributes.volumes
-        os_pv_sum = 0
-        os_lv_sum = 0
 
+        os_pv_sum = 0
         for disk in filter(lambda v: v['type'] == 'disk', volumes):
             os_pv_sum += filter(
-                lambda v: 'vg' in v and v['vg'] == 'os',
-                disk['volumes']
-            )[0]['size']
+                lambda v: v.get('vg') == 'os',
+                disk['volumes'])[0]['size']
             os_pv_sum -= node_db.volume_manager.call_generator(
                 'calc_lvm_meta_size')
 
-        os_vg = filter(lambda v: v['id'] == 'os', volumes)[0]
-        os_lv_sum += sum([v['size'] for v in os_vg['volumes']])
+        os_vg = filter(lambda v: v.get('id') == 'os', volumes)[0]
+        os_lv_sum = sum([v['size'] for v in os_vg['volumes']])
         self.assertEquals(os_pv_sum, os_lv_sum)
 
     def test_disks_volumes_size_update(self):
-        node = self.env.create_node(api=True)
-        node_db = self.env.nodes[0]
+        node_db = self.create_node()
         disks = self.get(node_db.id)
         for disk in disks:
             for volume in disk['volumes']:
@@ -194,9 +188,7 @@ class TestNodeVolumesInformationHandler(BaseHandlers):
         return json.loads(resp.body)
 
     def create_node(self, role):
-        self.env.create(
-            cluster_kwargs={},
-            nodes_kwargs=[{'role': role, 'pending_addition': True}])
+        self.env.create(nodes_kwargs=[{'role': role, 'pending_addition': True}])
 
         return self.env.nodes[0]
 
