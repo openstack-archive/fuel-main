@@ -177,7 +177,7 @@ class TestNodeDefaultsDisksHandler(BaseHandlers):
         node_db = self.env.nodes[0]
         volumes_from_api = self.get(node_db.id)
 
-        default_volumes = node_db.volume_manager.gen_default_volumes_info()
+        default_volumes = node_db.volume_manager.gen_volumes_info()
         disks = filter(lambda volume: volume['type'] == 'disk', default_volumes)
 
         self.assertEquals(len(disks), len(volumes_from_api))

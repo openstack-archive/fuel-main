@@ -156,7 +156,7 @@ def upload_fixture(fileobj):
             new_obj.attributes = models.NodeAttributes()
             db.commit()
             new_obj.attributes.volumes = \
-                new_obj.volume_manager.gen_default_volumes_info()
+                new_obj.volume_manager.gen_volumes_info()
             network_manager = NetworkManager()
             network_manager.update_interfaces_info(new_obj.id)
             db.commit()
