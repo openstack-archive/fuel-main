@@ -32,7 +32,6 @@ class TestNodeDisksHandlers(BaseHandlers):
 
         return self.env.nodes[0]
 
-
     def get(self, node_id):
         resp = self.app.get(
             reverse('NodeDisksHandler', kwargs={'node_id': node_id}),
@@ -70,8 +69,6 @@ class TestNodeDisksHandlers(BaseHandlers):
         response = self.get(node_db.id)
         self.assertEquals(response, [])
 
-        # FIXME: check, should we regenerate all info about disks
-        # if some disk removed/updated/changed ?
         resp = self.app.put(
             reverse('NodeCollectionHandler'),
             json.dumps([{"mac": node_db.mac, "is_agent": True}]),
@@ -80,28 +77,6 @@ class TestNodeDisksHandlers(BaseHandlers):
 
         response = self.get(node_db.id)
         self.assertNotEquals(response, [])
-
-    def test_recalculation_if_disk_added_and_node_not_provisioned(self):
-        pass
-
-    def test_not_recalculate_if_disk_added_and_node_provisioned(self):
-        pass
-
-    def test_volume_groups_size_calculation(self):
-        node_db = self.create_node()
-        volumes = node_db.attributes.volumes
-
-        os_pv_sum = 0
-        for disk in filter(lambda v: v['type'] == 'disk', volumes):
-            os_pv_sum += filter(
-                lambda v: v.get('vg') == 'os',
-                disk['volumes'])[0]['size']
-            os_pv_sum -= node_db.volume_manager.call_generator(
-                'calc_lvm_meta_size')
-
-        os_vg = filter(lambda v: v.get('id') == 'os', volumes)[0]
-        os_lv_sum = sum([v['size'] for v in os_vg['volumes']])
-        self.assertEquals(os_pv_sum, os_lv_sum)
 
     def test_disks_volumes_size_update(self):
         node_db = self.create_node()
@@ -256,8 +231,14 @@ class TestVolumeManager(BaseHandlers):
 
         return reserved_size
 
-    def only_disks(self, disks):
-        return filter(lambda disk: disk['type'] == 'disk', disks)
+    def filter_spaces_by_type(self, spaces, type):
+        return filter(lambda space: space['type'] == type, spaces)
+
+    def only_disks(self, spaces):
+        return self.filter_spaces_by_type(spaces, 'disk')
+
+    def only_vg(self, spaces):
+        return self.filter_spaces_by_type(spaces, 'vg')
 
     def should_contain_os_with_minimal_size(self, volume_manager):
         self.assertEquals(
@@ -277,6 +258,41 @@ class TestVolumeManager(BaseHandlers):
         self.assertEquals(
             vg_size, disk_sum_size - os_size - reserved_size)
 
+    def logical_volume_sizes_should_equal_all_phisical_volumes(self, spaces):
+        vg_sizes = {}
+        for vg in self.only_vg(spaces):
+            for volume in vg['volumes']:
+                vg_name = vg['id']
+                if not vg_sizes.get(vg_name):
+                    vg_sizes[vg_name] = 0
+                vg_sizes[vg_name] += volume['size']
+
+        pv_sizes = {}
+        test = 0
+        for disk in self.only_disks(spaces):
+            for volume in disk['volumes']:
+                if volume['type'] == 'pv':
+                    vg_name = volume['vg']
+                    if not pv_sizes.get(vg_name):
+                        pv_sizes[vg_name] = 0
+
+                    pv_sizes[vg_name] += volume['size']
+                elif volume['type'] == 'lvm_meta':
+                    vg_name = volume['name']
+                    if not pv_sizes.get(vg_name):
+                        pv_sizes[vg_name] = 0
+
+                    pv_sizes[vg_name] -= volume['size']
+
+        self.assertEquals(vg_sizes, pv_sizes)
+
+    def check_disk_size_equal_sum_of_all_volumes(self, spaces):
+        for disk in self.only_disks(spaces):
+            volumes_size = sum(
+                [volume.get('size', 0) for volume in disk['volumes']])
+
+            self.assertEquals(volumes_size, disk['size'])
+
     def test_allocates_all_free_space_for_os_for_controller_role(self):
         node = self.create_node('controller')
         disks = self.only_disks(node.volume_manager.volumes)
@@ -285,15 +301,22 @@ class TestVolumeManager(BaseHandlers):
         reserved_size = self.reserved_size(disks)
 
         self.assertEquals(disks_size_sum - reserved_size, os_sum_size)
+        self.logical_volume_sizes_should_equal_all_phisical_volumes(
+            node.attributes.volumes)
+        self.check_disk_size_equal_sum_of_all_volumes(node.attributes.volumes)
 
     def test_allocates_all_free_space_for_vm_for_compute_role(self):
         node = self.create_node('compute')
         self.should_contain_os_with_minimal_size(node.volume_manager)
         self.all_free_space_except_os_for_volume(
             node.volume_manager.volumes, 'vm')
+        self.logical_volume_sizes_should_equal_all_phisical_volumes(
+            node.attributes.volumes)
+        self.check_disk_size_equal_sum_of_all_volumes(node.attributes.volumes)
 
     def test_allocates_all_free_space_for_vm_for_cinder_role(self):
         node = self.create_node('cinder')
         self.should_contain_os_with_minimal_size(node.volume_manager)
         self.all_free_space_except_os_for_volume(
             node.volume_manager.volumes, 'cinder')
+        self.check_disk_size_equal_sum_of_all_volumes(node.attributes.volumes)
