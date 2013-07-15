@@ -75,15 +75,13 @@ class NotificationCollectionHandler(JSONHandler):
 
     @content_json
     def GET(self):
-        user_data = web.input(cluster_id=None)
+        user_data = web.input(cluster_id=None, limit=None)
+        limit = user_data.limit
         query = db().query(Notification)
         if user_data.cluster_id:
             query = query.filter_by(cluster_id=user_data.cluster_id)
-        # Temporarly limit notifications number to prevent bloating UI by
-        # lots of old notifications. Normally, this should be done by querying
-        # separately unread notifications for notifier and use pagination for
-        # list of all notifications
-        query = query.limit(1000)
+        if limit:
+            query = query.limit(limit)
         notifications = query.all()
         return map(
             NotificationHandler.render,
