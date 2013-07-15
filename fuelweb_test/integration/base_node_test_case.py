@@ -263,7 +263,8 @@ class BaseNodeTestCase(BaseTestCase):
 
     @logwrap
     def assert_node_service_list(self, node_name, smiles_count):
-        ip = self.ci().environment().node_by_name(node_name)['ip']
+        ip = self.get_node_by_devops_node(
+            self.ci().environment().node_by_name(node_name))['ip']
         remote = SSHClient(ip, username='root', password='r00tme',
                            private_keys=self.get_private_keys())
         return self.assert_service_list(remote, smiles_count)
