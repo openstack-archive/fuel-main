@@ -75,11 +75,9 @@ class NotificationCollectionHandler(JSONHandler):
 
     @content_json
     def GET(self):
-        user_data = web.input(cluster_id=None, limit=None)
+        user_data = web.input(limit=None)
         limit = user_data.limit
         query = db().query(Notification)
-        if user_data.cluster_id:
-            query = query.filter_by(cluster_id=user_data.cluster_id)
         if limit:
             query = query.limit(limit)
         notifications = query.all()
