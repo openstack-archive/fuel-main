@@ -68,7 +68,7 @@ function(utils, models, commonViews, dialogViews, healthcheckTabTemplate, health
         },
         update: function() {
             this.registerDeferred(
-                this.testruns.fetch({url: _.result(this.testruns, 'url') + '/last/' + this.model.id})
+                this.testruns.fetch()
                     .done(_.bind(function() {
                         if (!this.hasRunningTests()) {
                             this.$('input[type=checkbox]').prop('checked', false);
@@ -128,11 +128,12 @@ function(utils, models, commonViews, dialogViews, healthcheckTabTemplate, health
                 ostf.testsets = new models.TestSets();
                 ostf.tests = new models.Tests();
                 ostf.testruns = new models.TestRuns();
+                ostf.testruns.url = _.result(ostf.testruns, 'url') + '/last/' + this.model.id;
                 _.extend(this, ostf);
                 $.when(
                     this.testsets.deferred = this.testsets.fetch(),
                     this.tests.fetch(),
-                    this.testruns.fetch({url: _.result(this.testruns, 'url') + '/last/' + this.model.id})
+                    this.testruns.fetch()
                 ).done(_.bind(function() {
                     this.model.set({'ostf': ostf}, {silent: true});
                     this.render();
