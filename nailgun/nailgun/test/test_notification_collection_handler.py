@@ -18,6 +18,8 @@ import unittest
 import json
 from paste.fixture import TestApp
 
+from nailgun.api.models import Notification
+
 from nailgun.test.base import BaseHandlers
 from nailgun.test.base import reverse
 
@@ -64,7 +66,8 @@ class TestHandlers(BaseHandlers):
         )
         self.assertEquals(200, resp.status)
         response = json.loads(resp.body)
-        self.assertEquals(len(response), 3)
+        notifications_count = self.db.query(Notification).count()
+        self.assertEquals(notifications_count, 3)
 
         resp = self.app.get(
             reverse('NotificationCollectionHandler'),
