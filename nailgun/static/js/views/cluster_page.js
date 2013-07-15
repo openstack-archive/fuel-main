@@ -224,7 +224,7 @@ function(utils, models, commonViews, dialogViews, NodesTab, NetworkTab, Settings
 
     DeploymentResult = Backbone.View.extend({
         template: _.template(deploymentResultTemplate),
-        templateHelpers: _.pick(utils, 'urlify'),
+        templateHelpers: _.pick(utils, 'urlify', 'linebreaks'),
         initialize: function(options) {
             this.model.get('tasks').each(this.bindTaskEvents, this);
             this.model.get('tasks').on('add', this.onNewTask, this);

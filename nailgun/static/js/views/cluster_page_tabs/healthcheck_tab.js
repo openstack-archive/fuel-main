@@ -15,6 +15,7 @@
 **/
 define(
 [
+    'utils',
     'models',
     'views/common',
     'views/dialogs',
@@ -22,7 +23,7 @@ define(
     'text!templates/cluster/healthcheck_testset.html',
     'text!templates/cluster/healthcheck_tests.html'
 ],
-function(models, commonViews, dialogViews, healthcheckTabTemplate, healthcheckTestSetTemplate, healthcheckTestsTemplate) {
+function(utils, models, commonViews, dialogViews, healthcheckTabTemplate, healthcheckTestSetTemplate, healthcheckTestsTemplate) {
     'use strict';
 
     var HealthCheckTab, TestSet;
@@ -173,12 +174,13 @@ function(models, commonViews, dialogViews, healthcheckTabTemplate, healthcheckTe
     TestSet = Backbone.View.extend({
         template: _.template(healthcheckTestSetTemplate),
         testsTemplate: _.template(healthcheckTestsTemplate),
+        templateHelpers: _.pick(utils, 'linebreaks'),
         initialize: function(options) {
             _.defaults(this, options);
             this.testrun.on('change', this.renderTests, this);
         },
         renderTests: function() {
-            this.$('tbody').html(this.testsTemplate({testrun: this.testrun, tests: this.tests}));
+            this.$('tbody').html(this.testsTemplate(_.extend({testrun: this.testrun, tests: this.tests}, this.templateHelpers)));
         },
         render: function() {
             this.$el.html(this.template({testset: this.testset}));

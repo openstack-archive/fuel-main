@@ -27,9 +27,12 @@ define(['require'], function(require) {
                 return option.split(':');
             }));
         },
+        linebreaks: function(text) {
+            return text.replace(/\n/g, '<br/>');
+        },
         urlify: function (text) {
             var urlRegexp = /http:\/\/(?:(?:[0-9]|[1-9][0-9]|1[0-9]{2}|2[0-4][0-9]|25[0-5])\.){3}(?:[0-9]|[1-9][0-9]|1[0-9]{2}|2[0-4][0-9]|25[0-5])\//g;
-            return text.replace(/\n/g, '<br/>').replace(urlRegexp, function(url) {
+            return utils.linebreaks(text).replace(urlRegexp, function(url) {
                 return '<a target="_blank" href="' + url + '">' + url + '</a>';
             });
         },
