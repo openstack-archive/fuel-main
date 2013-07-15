@@ -638,8 +638,8 @@ h6.page-title {
   margin: 0px;
   padding: 0px;
   height: 25px;
+  margin-top: 16px;
   cursor: pointer;
-  height: 25px;
   overflow: hidden;
   margin-left: 13px;
   color: #666666;

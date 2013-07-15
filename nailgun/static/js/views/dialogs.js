@@ -410,7 +410,10 @@ function(require, utils, models, simpleMessageTemplate, createClusterDialogTempl
             this.node.on('sync', this.render, this);
         },
         goToSSHConsole: function () {
-            this.$el.modal('hide');
+            window.open('http://' + window.location.hostname + ':2443/?' + $.param({
+                ssh: 'ssh://root@' + this.node.get('ip'),
+                location: this.node.get('ip').replace(/\./g, '')
+            }), '_blank');
         },
         render: function() {
             this.constructor.__super__.render.call(this, _.extend({
