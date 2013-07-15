@@ -20,8 +20,6 @@ import types
 import traceback
 import itertools
 
-import greenlet
-import eventlet
 from web.utils import ThreadedDict
 from sqlalchemy import or_
 
