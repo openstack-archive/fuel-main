@@ -306,7 +306,6 @@ class VolumeManager(object):
 
         logger.debug("VolumeManager: volumes: %s", self.volumes)
         logger.debug("VolumeManager: disks: %s", self.disks)
-        self.set_lv_sizes()
 
     @classmethod
     def validate(cls, data):
@@ -314,20 +313,6 @@ class VolumeManager(object):
             if v.get('type') == 'disk' and v.get('id') and v.get('size'):
                 disk = Disk(self, v['id'], v['size'])
                 disk.volumes = v.get('volumes', [])
-
-    def _find_lv_idx(self, vgname, lvname):
-        for i, vg in enumerate(self.volumes):
-            if vg.get("type") == "vg" and vg.get("id") == vgname:
-                for j, lv in enumerate(vg.get("volumes", [])):
-                    if lv.get("type") == "lv" and lv.get("name") == lvname:
-                        return (i, j)
-
-    def _get_lv_size(self, vgname, lvname):
-        idx = self._find_lv_idx(vgname, lvname)
-        if idx:
-            return self.volumes[idx[0]]["volumes"][idx[1]]["size"]
-        logger.error("Cannot find vg: %s lv: %s", vgname, lvname)
-        return 0
 
     def set_volume_size(self, disk_id, volume_name, size):
         disk = filter(
@@ -341,30 +326,6 @@ class VolumeManager(object):
             disk['volumes'])[0]
         volume['size'] = size
 
-        return self.volumes
-
-    def _set_lv_size(self, vgname, lvname, size):
-        idx = self._find_lv_idx(vgname, lvname)
-        if idx:
-            self.volumes[idx[0]]["volumes"][idx[1]]["size"] = size
-        else:
-            logger.error("Cannot find vg: %s lv: %s", vgname, lvname)
-
-    def set_lv_sizes(self):
-        logger.debug("Validating volumes")
-
-        # Here we validate 'libvirt' logical volume to make its size
-        # exactly equal to total available size in volume group 'vm'
-        size = self.call_generator("calc_total_vg", "vm")
-        logger.debug("Setting 'libvirt' size to: %s", size)
-        self._set_lv_size("vm", "libvirt", size)
-
-        # Here we set 'root' logical volume size equal to all unallocated
-        # space on volume group 'os'
-        size = self._get_lv_size("os", "root") + \
-            self.call_generator("calc_unallocated_vg", "os")
-        logger.debug("Setting 'root' size to: %s", size)
-        self._set_lv_size("os", "root", size)
         return self.volumes
 
     def call_generator(self, generator, *args):
@@ -385,7 +346,6 @@ class VolumeManager(object):
             # for each disk lvm meta = 640MB
             'calc_lvm_meta_size': lambda: 640,
             'calc_total_vg': self._calc_total_vg,
-            'calc_unallocated_vg': self._calc_unallocated_vg,
             # virtual storage = 5GB
             'calc_min_vm_size': lambda: gb_to_mb(5),
             'calc_min_cinder_size': lambda: gb_to_mb(1.5),
@@ -428,15 +388,6 @@ class VolumeManager(object):
                 for subv in v["volumes"]:
                     if (subv.get("type"), subv.get("vg")) == ("pv", vg):
                         vg_space += subv.get("size", 0) - self.call_generator('calc_lvm_meta_size')
-        return vg_space
-
-    def _calc_unallocated_vg(self, vg):
-        logger.debug("_calc_unallocated_vg")
-        vg_space = self._calc_total_vg(vg)
-        for v in self.volumes:
-            if v.get("type") == "vg" and v.get("id") == vg:
-                for subv in v.get("volumes", []):
-                    vg_space -= subv.get("size", 0)
         return vg_space
 
     def _allocate_vg(self, name, size=None):
