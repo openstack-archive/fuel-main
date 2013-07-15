@@ -415,8 +415,6 @@ class VolumeManager(object):
                 disk.create_pv(name, size_to_allocation)
                 not_allocated_size -= size_to_allocation
 
-    # TODO
-    # s/gen_volumes_info/generate_spaces_info/
     def gen_volumes_info(self):
         logger.debug(u'Generating volumes info for node %s' % self.node.full_name)
 
