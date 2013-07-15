@@ -336,8 +336,8 @@ class VolumeManager(object):
             'calc_root_size': lambda: gb_to_mb(10),
             # boot = 200MB
             'calc_boot_size': lambda: 200,
-            # boot records size = 200MB
-            'calc_boot_records_size': lambda: 200,
+            # boot records size = 300MB
+            'calc_boot_records_size': lambda: 300,
             # let's think that size of mbr is 10MB
             'calc_mbr_size': lambda: 10,
             # lvm meta = 64MB for one volume group
