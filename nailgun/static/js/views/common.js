@@ -273,7 +273,7 @@ function(utils, models, dialogViews, navbarTemplate, nodesStatsTemplate, notific
             _.defaults(this, options);
             this.redHatAccount = new models.RedHatAccount();
             this.redHatAccount.on('sync', this.render, this);
-            this.redHatAccount.deffered = this.redHatAccount.fetch();
+            this.redHatAccount.deferred = this.redHatAccount.fetch();
             this.redHatAccount.on('invalid', function(model, error) {
                 _.each(error, function(field) {
                     this.$('*[name=' + field + ']').closest('.control-group').addClass('error');
