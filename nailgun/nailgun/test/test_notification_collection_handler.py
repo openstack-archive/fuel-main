@@ -53,6 +53,28 @@ class TestHandlers(BaseHandlers):
         self.assertEquals(rn1['cluster'], n1.cluster_id)
         self.assertIsNone(rn0.get('cluster', None))
 
+    def test_get_limit(self):
+        c = self.env.create_cluster(api=False)
+        for i in xrange(3):
+            self.env.create_notification()
+
+        resp = self.app.get(
+            reverse('NotificationCollectionHandler'),
+            headers=self.default_headers
+        )
+        self.assertEquals(200, resp.status)
+        response = json.loads(resp.body)
+        self.assertEquals(len(response), 3)
+
+        resp = self.app.get(
+            reverse('NotificationCollectionHandler'),
+            params={'limit': 2},
+            headers=self.default_headers
+        )
+        self.assertEquals(200, resp.status)
+        response = json.loads(resp.body)
+        self.assertEquals(len(response), 2)
+
     def test_update(self):
         c = self.env.create_cluster(api=False)
         n0 = self.env.create_notification()
