@@ -107,7 +107,8 @@ class DisksFormatConvertor:
         disks_full_format = filter(lambda disk: disk['type'] == 'disk', full)
 
         for disk in disks_full_format:
-            reserve_size = cls.calculate_service_partitions_size(disk['volumes'])
+            reserve_size = cls.calculate_service_partitions_size(
+                disk['volumes'])
             size = 0
             if disk['size'] >= reserve_size:
                 size = disk['size'] - reserve_size
@@ -124,14 +125,16 @@ class DisksFormatConvertor:
     @classmethod
     def calculate_service_partitions_size(self, volumes):
         not_vg_partitions = filter(lambda vg: vg.get('type') != 'pv', volumes)
-        return sum([partition.get('size', 0) for partition in not_vg_partitions])
+        return sum(
+            [partition.get('size', 0) for partition in not_vg_partitions])
 
     @classmethod
     def format_volumes_to_simple(cls, all_partitions):
         '''
         convert volumes from full format to simple format
         '''
-        pv_full_format = filter(lambda vg: vg.get('type') == 'pv', all_partitions)
+        pv_full_format = filter(
+            lambda vg: vg.get('type') == 'pv', all_partitions)
 
         volumes_simple_format = []
         for volume in pv_full_format:
@@ -151,7 +154,7 @@ class DisksFormatConvertor:
         :returns: [
                 {
                     "name": "os",
-                    "label": "Base System", 
+                    "label": "Base System",
                     "minimum": 100002
                 }
             ]
@@ -201,9 +204,9 @@ class Disk(object):
         boot_size = self.call_generator('calc_boot_size')
         size = boot_size if self.free_space >= boot_size else 0
         self.volumes.append({
-                'type': 'raid',
-                'mount': '/boot',
-                'size': size})
+            'type': 'raid',
+            'mount': '/boot',
+            'size': size})
         self.free_space -= size
 
     def create_boot_records(self):
@@ -283,7 +286,8 @@ class VolumeManager(object):
             raise Exception("No disk metadata specified for node")
 
         for d in sorted(self.node.meta["disks"], key=lambda i: i["name"]):
-            disk = Disk(self.call_generator, d["disk"], byte_to_megabyte(d["size"]))
+            disk = Disk(
+                self.call_generator, d["disk"], byte_to_megabyte(d["size"]))
             for v in self.volumes:
                 if v.get("type") == "disk" and v.get("id") == disk.id:
                     disk.volumes = v.get("volumes", [])
@@ -303,8 +307,7 @@ class VolumeManager(object):
     def set_volume_size(self, disk_id, volume_name, size):
         disk = filter(
             lambda volume:
-                volume['type'] == 'disk' and volume['id'] == disk_id,
-
+            volume['type'] == 'disk' and volume['id'] == disk_id,
             self.volumes)[0]
 
         volume = filter(
@@ -335,7 +338,8 @@ class VolumeManager(object):
             'calc_total_root_vg': self._calc_total_root_vg}
 
         generators['calc_os_size'] = \
-            lambda: generators['calc_root_size']() + generators['calc_swap_size']()
+            lambda: generators['calc_root_size']() + \
+            generators['calc_swap_size']()
 
         generators['calc_os_vg_size'] = generators['calc_os_size']
         generators['calc_min_os_size'] = generators['calc_os_size']
@@ -347,17 +351,19 @@ class VolumeManager(object):
         return generators[generator](*args)
 
     def _calc_total_root_vg(self):
-        return self._calc_total_vg('os') - self.call_generator('calc_swap_size')
+        return self._calc_total_vg('os') - \
+            self.call_generator('calc_swap_size')
 
     def _calc_total_vg(self, vg):
-        logger.debug("_calc_total_vg")
+        logger.debug('_calc_total_vg')
         vg_space = 0
         for v in self.volumes:
-            if v.get("type") == "disk" and v.get("volumes"):
-                for subv in v["volumes"]:
-                    if (subv.get("type"), subv.get("vg")) == ("pv", vg):
+            if v.get('type') == 'disk' and v.get('volumes'):
+                for subv in v['volumes']:
+                    if subv.get('type') == 'pv' and subv.get('vg') == vg:
                         vg_space += subv.get('size', 0)
-                    elif subv.get('type') == 'lvm_meta' and subv.get('name') == vg:
+                    elif (subv.get('type') == 'lvm_meta' and
+                          subv.get('name') == vg):
                         vg_space -= subv['size']
 
         return vg_space
@@ -411,7 +417,8 @@ class VolumeManager(object):
                 not_allocated_size -= size_to_allocation
 
     def gen_volumes_info(self):
-        logger.debug(u'Generating volumes info for node %s' % self.node.full_name)
+        logger.debug(
+            u'Generating volumes info for node %s' % self.node.full_name)
 
         logger.debug('Purging volumes info for all node disks')
         map(lambda d: d.reset(), self.disks)
@@ -443,7 +450,8 @@ class VolumeManager(object):
 
     def get_volumes_groups_for_role(self, role):
         volumes_metadata = self.node.cluster.release.volumes_metadata
-        volume_groups_for_role = volumes_metadata['volumes_roles_mapping'][role]
+        volume_groups_for_role = volumes_metadata[
+            'volumes_roles_mapping'][role]
 
         return filter(
             lambda vg: vg.get('id') in volume_groups_for_role,

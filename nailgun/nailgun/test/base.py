@@ -359,7 +359,8 @@ class Environment(object):
         return nets
 
     def get_default_volumes_metadata(self):
-        return self.read_fixtures(('openstack',))[0]['fields']['volumes_metadata']
+        return self.read_fixtures(
+            ('openstack',))[0]['fields']['volumes_metadata']
 
     def get_default_networks_metadata(self):
         return [

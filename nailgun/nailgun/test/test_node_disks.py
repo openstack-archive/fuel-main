@@ -147,7 +147,8 @@ class TestNodeDefaultsDisksHandler(BaseHandlers):
         volumes_from_api = self.get(node_db.id)
 
         default_volumes = node_db.volume_manager.gen_volumes_info()
-        disks = filter(lambda volume: volume['type'] == 'disk', default_volumes)
+        disks = filter(
+            lambda volume: volume['type'] == 'disk', default_volumes)
 
         self.assertEquals(len(disks), len(volumes_from_api))
 
@@ -156,14 +157,16 @@ class TestNodeVolumesInformationHandler(BaseHandlers):
 
     def get(self, node_id):
         resp = self.app.get(
-            reverse('NodeVolumesInformationHandler', kwargs={'node_id': node_id}),
+            reverse('NodeVolumesInformationHandler',
+                    kwargs={'node_id': node_id}),
             headers=self.default_headers)
 
         self.assertEquals(200, resp.status)
         return json.loads(resp.body)
 
     def create_node(self, role):
-        self.env.create(nodes_kwargs=[{'role': role, 'pending_addition': True}])
+        self.env.create(
+            nodes_kwargs=[{'role': role, 'pending_addition': True}])
 
         return self.env.nodes[0]
 
