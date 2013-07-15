@@ -56,7 +56,6 @@ module Naily
         reporter.report({'status' => 'error', 'error' => msg})
         return
       end
-      report_result(result, reporter)
     end
 
     def provision(data)
