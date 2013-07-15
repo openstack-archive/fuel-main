@@ -75,8 +75,8 @@ class NetworkManager(object):
         :raises: errors.OutOfVLANs, errors.OutOfIPs,
         errors.NoSuitableCIDR
         '''
-        used_nets = [n.cidr for n in db().query(Network).all()]
-        used_vlans = [v.id for v in db().query(Vlan).all()]
+        used_nets = []
+        used_vlans = []
 
         cluster_db = db().query(Cluster).get(cluster_id)
 

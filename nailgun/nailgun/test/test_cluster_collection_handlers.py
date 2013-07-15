@@ -88,7 +88,9 @@ class TestHandlers(BaseHandlers):
             headers=self.default_headers,
             expect_errors=True
         )
-        self.assertEquals(400, resp.status)
+        # we now allow to create environments with the same
+        # ip ranges and cidrs
+        self.assertEquals(201, resp.status)
 
     def test_if_cluster_creates_correct_networks(self):
         release = Release()
