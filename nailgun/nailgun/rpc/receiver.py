@@ -569,7 +569,7 @@ class NailgunReceiver(object):
 
         task = db().query(Task).filter_by(uuid=task_uuid).first()
         if not task:
-            logger.error("verify_networks_resp: task \
+            logger.error("download_release_resp: task \
                     with UUID %s not found", task_uuid)
             return
 
@@ -577,7 +577,7 @@ class NailgunReceiver(object):
         release_id = release_info['release_id']
         release = db().query(Release).get(release_id)
         if not release:
-            logger.error("verify_networks_resp: Release \
+            logger.error("download_release_resp: Release \
                     with ID %s not found", release_id)
             return
 
