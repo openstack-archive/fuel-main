@@ -81,13 +81,9 @@ class Actor(object):
         logger = logging.getLogger()
         logger.setLevel(level)
 
-        syslog_format = '{appname}: {msg}'
-        # Create log formatter.
-        format_dict = {'appname': appname,
-                       'msg': '%(message)s'
-                       }
-        log_format = syslog_format.format(**format_dict)
-        syslog_formatter = logging.Formatter(log_format)
+        syslog_formatter = logging.Formatter(
+            '{appname}: %(message)s'.format(appname=appname)
+        )
         syslog_handler = logging.handlers.SysLogHandler('/dev/log')
         syslog_handler.setFormatter(syslog_formatter)
         logger.addHandler(syslog_handler)
