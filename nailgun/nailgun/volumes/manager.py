@@ -45,29 +45,24 @@ class DisksFormatConvertor:
     communicate with UI to `full` in which we store
     data about disks\volumes in database, send to
     orchestrator and vice versa.
-    Also here we convert sizes from Bytes to MBytes
-    (for UI) and vice versa.
 
     Full disk format example:
         [
             {
                 "type": "disk",
                 "id": "sda",
-                "size": 1000204886016,
+                "size": 953869,
                 "volumes": [
                     {
                         "mount": "/boot",
-                        "type": "partition",
-                        "size": 209715200
+                        "type": "raid",
+                        "size": 200
                     },
+                    .....
                     {
-                        "type": "gpt",
-                        "size": "100"
-                    },
-                    {
-                        "vg": "os",
+                        "size": 938905,
                         "type": "pv",
-                        "size": 15099494400
+                        "vg": "os"
                     }
                 ]
             }
@@ -81,7 +76,7 @@ class DisksFormatConvertor:
                 "volumes": [
                     {
                         "name": "os",
-                        "size": 14400,
+                        "size": 938905,
                     }
                 ]
             }
