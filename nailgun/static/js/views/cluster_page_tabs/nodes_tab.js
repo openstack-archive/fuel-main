@@ -693,6 +693,7 @@ function(utils, models, commonViews, dialogViews, nodesTabSummaryTemplate, editN
             }, this);
         },
         setSize: function() {
+            this.$('.disk-visual').removeClass('invalid');
             this.$('input').removeClass('error').parents('.volume-group').next().text('');
             this.$('.volume-group-error-message.common').text('');
             var volumes = new models.Volumes(this.disk.get('volumes').toJSON());
@@ -725,6 +726,7 @@ function(utils, models, commonViews, dialogViews, nodesTabSummaryTemplate, editN
         initialize: function(options) {
             _.defaults(this, options);
             this.disk.on('invalid', _.bind(function(model, errors) {
+                this.$('.disk-visual').addClass('invalid');
                 _.each(_.keys(errors), _.bind(function(error) {
                     if (error == 'max') {
                         this.$('input').addClass('error');
