@@ -282,9 +282,6 @@ class VolumeManager(object):
         self.node = node
         self.volumes = self.node.attributes.volumes or []
 
-        if not "disks" in self.node.meta:
-            raise Exception("No disk metadata specified for node")
-
         for d in sorted(self.node.meta["disks"], key=lambda i: i["name"]):
             disk = Disk(
                 self.call_generator, d["disk"], byte_to_megabyte(d["size"]))
@@ -495,15 +492,17 @@ class VolumeManager(object):
         return new_dict
 
     def check_free_space(self):
-        """
-        Check disks free space for OS installation
+        '''
+        Check disks free space for minimal installation
 
         :raises: errors.NotEnoughFreeSpace
-        """
+        '''
+        free_space = sum([d.size - mbr_size for d in self.disks])
+
         os_size = self.call_generator('calc_os_size')
         boot_size = self.call_generator('calc_boot_size')
         mbr_size = self.call_generator('calc_mbr_size')
-        free_space = sum([d.size - mbr_size for d in self.disks])
+
 
         if free_space < (os_size + boot_size):
             raise errors.NotEnoughFreeSpace(
