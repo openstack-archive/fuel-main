@@ -41,14 +41,18 @@ class TestNodeDisksHandlers(BaseHandlers):
         self.assertEquals(200, resp.status)
         return json.loads(resp.body)
 
-    def put(self, node_id, data):
+    def put(self, node_id, data, expect_errors=False):
         resp = self.app.put(
             reverse('NodeDisksHandler', kwargs={'node_id': node_id}),
             json.dumps(data),
-            headers=self.default_headers)
+            headers=self.default_headers,
+            expect_errors=expect_errors)
 
-        self.assertEquals(200, resp.status)
-        return json.loads(resp.body)
+        if not expect_errors:
+            self.assertEquals(200, resp.status)
+            return json.loads(resp.body)
+        else:
+            return resp
 
     def test_default_attrs_after_creation(self):
         node = self.env.create_node(api=True)
@@ -125,6 +129,33 @@ class TestNodeDisksHandlers(BaseHandlers):
                 volume.get('size', 0) for volume in vg_after['volumes']])
 
             self.assertNotEquals(size_volumes_before, size_volumes_after)
+
+    def test_validator_not_enough_size_for_volumes(self):
+        node = self.create_node()
+        disks = self.get(node.id)
+
+        for disk in disks:
+            if disk['size'] > 0:
+                for volume in disk['volumes']:
+                    volume['size'] = disk['size'] + 1
+
+        response = self.put(node.id, disks, True)
+        self.assertEquals(response.status, 400)
+        self.assertRegexpMatches(
+            response.body, '^Not enough free space on disk: .+')
+
+    def test_validator_invalid_data(self):
+        node = self.create_node()
+        disks = self.get(node.id)
+
+        for disk in disks:
+            for volume in disk['volumes']:
+                del volume['size']
+
+        response = self.put(node.id, disks, True)
+        self.assertEquals(response.status, 400)
+        self.assertRegexpMatches(
+            response.body, "'size' is a required property")
 
 
 class TestNodeDefaultsDisksHandler(BaseHandlers):
