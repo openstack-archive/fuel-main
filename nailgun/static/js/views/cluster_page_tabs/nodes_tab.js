@@ -725,13 +725,13 @@ function(utils, models, commonViews, dialogViews, nodesTabSummaryTemplate, editN
         renderGroup: function(volumeName, width, size) {
             this.$('.disk-visual .' + volumeName)
                 .toggleClass('hidden-titles', width < 6)
-                .css('width', width.toFixed(2) + '%')
+                .css('width', width + '%')
                 .find('.volume-group-size').text(utils.showDiskSize(size, 2));
         },
         renderVisualGraph: function() {
             var unallocatedWidth = 100;
             this.disk.get('volumes').each(function(volume) {
-                var width = volume.get('size') / this.disk.get('size') * 100;
+                var width = parseFloat((volume.get('size') / this.disk.get('size') * 100).toFixed(2));
                 unallocatedWidth -= width;
                 this.renderGroup(volume.get('name'), width, volume.get('size'));
             }, this);

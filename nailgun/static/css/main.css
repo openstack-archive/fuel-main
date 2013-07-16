@@ -3755,6 +3755,11 @@ hr.slim {
   cursor: pointer;
 }
 
+.disk-visual {
+  overflow: hidden;
+  height: 60px;
+}
+
 .disk-visual > .volume-group {
   display: inline-block;
   float: left;
