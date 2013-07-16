@@ -45,7 +45,7 @@ module Naily
             #         }
             #     }
             # }}
-     Naily.logger.info("'download_release' method called with data: #{data.inspect}")
+      Naily.logger.info("'download_release' method called with data: #{data.inspect}")
       reporter = Naily::Reporter.new(@producer, data['respond_to'], data['args']['task_uuid'])
       release_info = data['args']['release_info']['redhat']
       begin
