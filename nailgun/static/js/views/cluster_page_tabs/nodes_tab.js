@@ -604,6 +604,28 @@ function(utils, models, commonViews, dialogViews, nodesTabSummaryTemplate, editN
                 this.model.on('change:status', this.revertChanges, this);
                 this.loading = $.when(this.node.fetch(), this.volumes.fetch(), this.disks.fetch())
                     .done(_.bind(function() {
+
+                        // FIXME: just fakes; need to be removed
+                        var volumesFake = [
+                            {"name": "os", "label": "Base System", "min_size": 100002}
+                            ,{"name": "vm", "label": "Virtual Storage", "min_size": 0}
+                            ,{"name": "cinder", "label": "Cinder", "min_size": 0}
+                        ];
+                        var disksFake = [
+                            {"id": "sda", "size": 10002049},
+                            {"id": "sdb", "size": 10002049}
+                        ];
+                        var diskVolumesFake = [
+                            {"name": "os", "size": 2097169}
+                            ,{"name": "vm", "size": 7904880}
+                            ,{"name": "cinder", "size": 0}
+                        ];
+                        this.volumes = new models.Volumes(volumesFake);
+                        this.disks = new models.Disks(disksFake);
+                        this.disks.each(function(disk){
+                            disk.set({volumes: new models.Volumes(diskVolumesFake)});
+                        });
+
                         this.initialData = _.cloneDeep(this.disks.toJSON());
                         this.disks.on('reset', this.render, this);
                         this.render();
@@ -671,55 +693,45 @@ function(utils, models, commonViews, dialogViews, nodesTabSummaryTemplate, editN
         checkForDeletionAvailability: function(volume) {
             this.$('.disk-visual .' + volume.get('name') + ' .close-btn').toggle(this.getMinimalSize(volume.get('name')) <= 0 && this.$('.disk-form').hasClass('in'));
         },
-        setSize: function(volumeName, size, auto) {
-            var volumeControl = this.$('input[name=' + volumeName + ']');
-            volumeControl.removeClass('error').parents('.volume-group').next().text('');
-            if (_.isUndefined(size)) { // for invoked subviews
-                size = volumeControl.val();
-            }
-            // validation
-            this.disk.getVolume(volumeName).set({size: Number(String(size).replace(/ /g, ''))}, {
-                validate: true,
-                min: this.getMinimalSize(volumeName),
-                max: this.getUnallocatedSpace(volumeName)
-            });
-            // render result
-            if (auto) {
-                volumeControl.val(this.disk.getVolume(volumeName).get('size')).trigger('keyup');
-            }
+        setSize: function(group) {
+            this.$('input').removeClass('error').parents('.volume-group').next().text('');
+            this.$('.volume-group-error-message.common').text('');
+            var volumes = new models.Volumes(this.disk.get('volumes').toJSON());
+            volumes.each(function(volume) {
+                volume.set({size: Number((this.$('input[name=' + volume.get('name') + ']').val()).replace(/ /g, ''))});
+            }, this);
+            this.disk.set({volumes: volumes}, {validate: true});
             this.renderVisualGraph();
-            this.checkForDeletionAvailability(this.disk.getVolume(volumeName));
+        },
+        makeChanges: function() {
+            _.invoke(this.screen.subViews, 'setSize');
             this.screen.checkForChanges();
         },
-        makeChanges: function(e, value, auto) {
-            var volumeName = this.$(e.currentTarget).parents('.volume-group').data('volume');
-            this.setSize(volumeName, value, auto);
-            this.disk.get('volumes').each(function(volume) {
-                _.invoke(this.screen.subViews, 'setSize', volume.get('name'));
-            }, this);
-        },
         deleteVolumeGroup: function(e) {
-            this.makeChanges(e, 0, true);
-        },
-        getUnallocatedSpace: function(volumeName) {
-            var allocatedSpace = this.disk.get('volumes').reduce(function(sum, volume) {return volume.get('name') == volumeName ? sum : sum + volume.get('size');}, 0);
-            return this.disk.get('size') - allocatedSpace;
+            var volumeName = this.$(e.currentTarget).parents('.volume-group').data('volume');
+            this.$('input[name=' + volumeName + ']').val(0).trigger('keyup');
+            this.makeChanges();
         },
         useAllUnallocatedSpace: function(e) {
-            this.makeChanges(e, this.getUnallocatedSpace(this.$(e.currentTarget).parents('.volume-group').data('volume')), true);
+            var volumeName = this.$(e.currentTarget).parents('.volume-group').data('volume');
+            this.$('input[name=' + volumeName + ']').val(this.disk.getUnallocatedSpace(volumeName)).trigger('keyup');
+            this.makeChanges();
         },
         initialize: function(options) {
             _.defaults(this, options);
-            this.disk.get('volumes').each(function(volume) {
-                volume.on('invalid', _.bind(function(model, errors) {
-                    _.each(_.keys(errors), _.bind(function(volumeName) {
-                        this.$('input[name=' + volumeName + ']').addClass('error').parents('.volume-group').next().text(errors[volumeName]);
-                    }, this));
+            this.disk.on('invalid', _.bind(function(model, errors) { console.log(errors.max);
+                _.each(_.keys(errors), _.bind(function(error) {
+                    if (error == 'max') {
+                        this.$('input').addClass('error');
+                        this.$('.volume-group-error-message.common').text(errors[error]);
+                    } else {
+                        this.$('input[name=' + error + ']').addClass('error').parents('.volume-group').next().text(errors[error]);
+                    }
                 }, this));
-            }, this);
+            }, this));
         },
-        renderGroup: function(volumeName, width, size) {
-            this.$('.disk-visual .' + volumeName)
+        renderGroup: function(name, width, size) {
+            this.$('.disk-visual .' + name)
                 .toggleClass('hidden-titles', width < 6)
                 .css('width', width + '%')
                 .find('.volume-group-size').text(utils.showDiskSize(size, 2));
@@ -730,8 +742,9 @@ function(utils, models, commonViews, dialogViews, nodesTabSummaryTemplate, editN
                 var width = utils.floor(volume.get('size') / this.disk.get('size') * 100, 2);
                 unallocatedWidth -= width;
                 this.renderGroup(volume.get('name'), width, volume.get('size'));
+                this.checkForDeletionAvailability(volume);
             }, this);
-            this.renderGroup('unallocated', unallocatedWidth, this.getUnallocatedSpace());
+            this.renderGroup('unallocated', unallocatedWidth, this.disk.getUnallocatedSpace());
         },
         render: function() {
             this.$el.html(this.template(_.extend({

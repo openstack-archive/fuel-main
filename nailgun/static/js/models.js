@@ -244,15 +244,37 @@ define(['utils'], function(utils) {
     models.Disk = Backbone.Model.extend({
         constructorName: 'Disk',
         urlRoot: '/api/nodes/',
-        getVolume: function (name) {
-            return this.get('volumes').findWhere({name: name});
-        },
         parse: function(response) {
             response.volumes = new models.Volumes(response.volumes);
             return response;
         },
         toJSON: function(options) {
             return _.extend(this.constructor.__super__.toJSON.call(this, options), {volumes: this.get('volumes').toJSON()});
+        },
+        getVolume: function (name) {
+            return this.get('volumes').findWhere({name: name});
+        },
+        getAllocatedSpace: function(volumes) {
+            return _.reduce(volumes.models, function(sum, volume) {return sum + volume.get('size');}, 0);
+        },
+        getUnallocatedSpace: function(name) {
+            var volumeSize = name ? this.getVolume(name).get('size') : 0;
+            return this.get('size') - this.getAllocatedSpace(this.get('volumes')) + volumeSize;
+        },
+        validate: function(attrs, options) {
+            var errors = {};
+            var unallocatedSpace = this.get('size') - this.getAllocatedSpace(attrs.volumes);
+            if (unallocatedSpace < 0) {
+                errors.max = 'Volume groups total size exceeds available space of ' + utils.formatNumber(unallocatedSpace * -1) + ' MB';
+            }
+            attrs.volumes.each(function(volume) {
+                if (_.isNaN(volume.get('size'))) {
+                    errors[volume.get('name')] = 'Invalid size';
+                } else if (!_.isUndefined(options.min) && volume.get('size') < options.min) {
+                    errors[volume.get('name')] = 'The value is too low. You must allocate at least ' + utils.formatNumber(options.min) + ' MB';
+                }
+            }, this);
+            return _.isEmpty(errors) ? null : errors;
         }
     });
 
@@ -267,18 +289,7 @@ define(['utils'], function(utils) {
 
     models.Volume = Backbone.Model.extend({
         constructorName: 'Volume',
-        urlRoot: '/api/volumes/',
-        validate: function(attrs, options) {
-            var errors = {};
-            if (_.isNaN(attrs.size) || attrs.size < 0) {
-                errors[attrs.name] = 'Invalid size';
-            } else if (options.max && attrs.size > options.max) {
-                errors[attrs.name] = 'The value is too large. It exceeds the total available space of ' + utils.formatNumber(options.max) + ' MB. You can reduce one of the other volume groups in size';
-            } else if (options.min && attrs.size < options.min) {
-                errors[attrs.name] = 'The value is too low. You must allocate at least ' + utils.formatNumber(options.min) + ' MB';
-            }
-            return _.isEmpty(errors) ? null : errors;
-        }
+        urlRoot: '/api/volumes/'
     });
 
     models.Volumes = Backbone.Collection.extend({
