@@ -316,7 +316,8 @@ class BaseNodeTestCase(BaseTestCase):
                          "Floating ips amount. Cluster ip: %s" % ip)
 
         self.assertTrue(
-            all(ip in expected_ips for ip in current_ips), 'Floating IP list')
+            all([ip in expected_ips for ip in current_ips]),
+            'Floating IP list')
 
     @logwrap
     def get_private_keys(self):
