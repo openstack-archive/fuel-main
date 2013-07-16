@@ -19,6 +19,7 @@ from copy import deepcopy
 
 from nailgun.test.base import BaseHandlers, reverse
 from nailgun.volumes.manager import DisksFormatConvertor
+from nailgun.errors import errors
 
 
 class TestNodeDisksHandlers(BaseHandlers):
@@ -275,7 +276,7 @@ class TestVolumeManager(BaseHandlers):
                 'pending_addition': True,
                 'api': True}])
 
-        return self.env.nodes[0]
+        return self.env.nodes[-1]
 
     def non_zero_size(self, size):
         self.assertTrue(type(size) == int)
@@ -389,3 +390,53 @@ class TestVolumeManager(BaseHandlers):
         self.all_free_space_except_os_for_volume(
             node.volume_manager.volumes, 'cinder')
         self.check_disk_size_equal_sum_of_all_volumes(node.attributes.volumes)
+
+    def create_node_and_calculate_min_size(self, role, vg_names, volumes_metadata):
+        node = self.create_node(role)
+        volume_manager = node.volume_manager
+        volumes = volume_manager.expand_generators(
+            volumes_metadata['volumes'])
+
+        min_installation_size = sum([
+            volume ['min_size'] for volume in
+            filter(lambda volume: volume['id'] in vg_names, volumes)])
+
+        boot_data_size = volume_manager.call_generator('calc_boot_size') +\
+            volume_manager.call_generator('calc_boot_records_size')
+
+        min_installation_size += boot_data_size
+
+        return node, min_installation_size
+
+    def update_node_with_single_disk(self, node, size):
+        new_meta = node.meta.copy()
+        new_meta['disks'] = [{
+            # convert mbytes to bytes
+            'size': size * (1024 ** 2),
+            'model': 'SAMSUNG B00B135',
+            'name': 'sda',
+            'disk': 'disk/id/b00b135'}]
+
+        self.app.put(
+            reverse('NodeCollectionHandler'),
+            json.dumps([{
+                'mac': node.mac,
+                'meta': new_meta,
+                'is_agent': True}]),
+            headers=self.default_headers)
+
+    def test_check_disk_space_for_deployment(self):
+        volumes_metadata = self.env.get_default_volumes_metadata()
+        volumes_roles_mapping = volumes_metadata['volumes_roles_mapping']
+
+        for role, vg_names in volumes_roles_mapping.iteritems():
+            node, min_installation_size = self.\
+                create_node_and_calculate_min_size(role, vg_names, volumes_metadata)
+
+            self.update_node_with_single_disk(node, min_installation_size)
+            node.volume_manager.check_disk_space_for_deployment()
+
+            self.update_node_with_single_disk(node, min_installation_size - 1)
+            self.assertRaises(
+                errors.NotEnoughFreeSpace,
+                node.volume_manager.check_disk_space_for_deployment)

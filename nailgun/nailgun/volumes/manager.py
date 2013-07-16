@@ -200,6 +200,10 @@ class Disk(object):
         self.create_boot_records()
         self.create_boot_partition()
 
+    def service_partitions_size(self):
+        return self.call_generator('calc_boot_size') + \
+            self.call_generator('calc_boot_records_size')
+
     def create_boot_partition(self):
         boot_size = self.call_generator('calc_boot_size')
         size = boot_size if self.free_space >= boot_size else 0
@@ -491,20 +495,39 @@ class VolumeManager(object):
                 new_dict.append(self.expand_generators(d))
         return new_dict
 
-    def check_free_space(self):
+    def check_disk_space_for_deployment(self):
         '''
-        Check disks free space for minimal installation
+        Check disks space for minimal installation.
+        This method calls in before deployment task.
 
         :raises: errors.NotEnoughFreeSpace
         '''
-        free_space = sum([d.size - mbr_size for d in self.disks])
+        disks_space = sum([d.size for d in self.disks])
+        minimal_installation_size = self.__calc_minimal_installation_size()
 
-        os_size = self.call_generator('calc_os_size')
-        boot_size = self.call_generator('calc_boot_size')
-        mbr_size = self.call_generator('calc_mbr_size')
-
-
-        if free_space < (os_size + boot_size):
+        if disks_space < minimal_installation_size:
             raise errors.NotEnoughFreeSpace(
-                u"Node '%s' has insufficient disk space for OS" %
+                u"Node '%s' has insufficient disk space" %
                 self.node.human_readable_name)
+
+    def __calc_minimal_installation_size(self):
+        '''
+        Calc minimal installation size depend on node role
+        '''
+        role = self.node.role
+        volumes_metadata = self.node.cluster.release.volumes_metadata
+        vg_names_for_role = volumes_metadata['volumes_roles_mapping'][role]
+
+        disks_count = len(filter(lambda disk: disk.size > 0, self.disks))
+        boot_size = self.call_generator('calc_boot_size') + \
+            self.call_generator('calc_boot_records_size')
+
+        min_installation_size = disks_count * boot_size
+        for vg_name in vg_names_for_role:
+            volume_meta = filter(
+                lambda volume: volume.get('id') == vg_name,
+                volumes_metadata['volumes'])[0]
+            min_size = self.expand_generators(volume_meta)['min_size']
+            min_installation_size += min_size
+
+        return min_installation_size
