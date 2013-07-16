@@ -598,15 +598,11 @@ function(utils, models, commonViews, dialogViews, nodesTabSummaryTemplate, editN
         initialize: function(options) {
             _.defaults(this, options);
             this.node = this.model.get('nodes').get(this.screenOptions[0]);
-            this.volumes = new models.Volumes();
-            this.disks = new models.Disks();
+            this.volumes = new models.Volumes([], {url: _.result(this.node, 'url') + '/volumes'});
+            this.disks = new models.Disks([], {url: _.result(this.node, 'url') + '/disks'});
             if (this.node && this.node.get('role')) {
                 this.model.on('change:status', this.revertChanges, this);
-                this.loading = $.when(
-                        this.node.fetch(),
-                        this.volumes.fetch({url: _.result(this.node, 'url') + '/volumes'}),
-                        this.disks.fetch({url: _.result(this.node, 'url') + '/disks'})
-                    )
+                this.loading = $.when(this.node.fetch(), this.volumes.fetch(), this.disks.fetch())
                     .done(_.bind(function() {
                         this.initialData = _.cloneDeep(this.disks.toJSON());
                         this.disks.on('reset', this.render, this);
@@ -667,7 +663,7 @@ function(utils, models, commonViews, dialogViews, nodesTabSummaryTemplate, editN
         },
         getMinimalSize: function(volumeName) {
             var space = 0;
-            _.each(_.reject(this.screen.disks.models, {id: this.disk.id}), function(disk) {
+            _.each(this.screen.disks.reject({id: this.disk.id}), function(disk) {
                 space += disk.getVolume(volumeName).get('size');
             });
             return this.screen.volumes.findWhere({name: volumeName}).get('min_size') - space;
@@ -706,7 +702,7 @@ function(utils, models, commonViews, dialogViews, nodesTabSummaryTemplate, editN
             this.makeChanges(e, 0, true);
         },
         getUnallocatedSpace: function(volumeName) {
-            var allocatedSpace = _.reduce(this.disk.get('volumes').models, function(sum, volume) {return volume.get('name') == volumeName ? sum : sum + volume.get('size');}, 0);
+            var allocatedSpace = this.disk.get('volumes').reduce(function(sum, volume) {return volume.get('name') == volumeName ? sum : sum + volume.get('size');}, 0);
             return this.disk.get('size') - allocatedSpace;
         },
         useAllUnallocatedSpace: function(e) {
