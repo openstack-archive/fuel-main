@@ -165,8 +165,13 @@ echo "$raid" >> /tmp/partition.ks
     #end for
     #for $raidmount in $raid_groups.keys()
         #set $ks_raids = " ".join($raid_groups.get($raidmount))
+        #set $num_spares = $len($raid_groups.get($raidmount)) - 2
         #set $md_name = "md%d" % $mdnum
+        #if $num_spares > 0
+echo "raid $raidmount --device $md_name --spares=$num_spares --fstype ext3 --level=RAID1 $ks_raids" >> /tmp/partition.ks
+        #else
 echo "raid $raidmount --device $md_name --fstype ext3 --level=RAID1 $ks_raids" >> /tmp/partition.ks
+        #end if
         #set $mdnum += 1
     #end for
     #######################################
