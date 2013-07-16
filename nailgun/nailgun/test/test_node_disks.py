@@ -391,14 +391,15 @@ class TestVolumeManager(BaseHandlers):
             node.volume_manager.volumes, 'cinder')
         self.check_disk_size_equal_sum_of_all_volumes(node.attributes.volumes)
 
-    def create_node_and_calculate_min_size(self, role, vg_names, volumes_metadata):
+    def create_node_and_calculate_min_size(
+            self, role, vg_names, volumes_metadata):
         node = self.create_node(role)
         volume_manager = node.volume_manager
         volumes = volume_manager.expand_generators(
             volumes_metadata['volumes'])
 
         min_installation_size = sum([
-            volume ['min_size'] for volume in
+            volume['min_size'] for volume in
             filter(lambda volume: volume['id'] in vg_names, volumes)])
 
         boot_data_size = volume_manager.call_generator('calc_boot_size') +\
@@ -431,7 +432,8 @@ class TestVolumeManager(BaseHandlers):
 
         for role, vg_names in volumes_roles_mapping.iteritems():
             node, min_installation_size = self.\
-                create_node_and_calculate_min_size(role, vg_names, volumes_metadata)
+                create_node_and_calculate_min_size(
+                    role, vg_names, volumes_metadata)
 
             self.update_node_with_single_disk(node, min_installation_size)
             node.volume_manager.check_disk_space_for_deployment()
