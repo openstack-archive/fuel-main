@@ -33,7 +33,7 @@ import threading
 import traceback
 from subprocess import Popen, PIPE
 
-
+import pcap
 import scapy.config as scapy
 scapy.conf.logLevel = 40
 scapy.conf.use_pcap = True
@@ -431,6 +431,8 @@ class Listener(Actor):
         except socket.error as e:
             self.logger.error("Socket error: %s", e)
         else:
+            self.logger.debug("Listener threads have been launched. "
+                              "Reporting READY.")
             msg = "READY"
             total_sent = 0
             while total_sent < len(msg):
@@ -488,12 +490,15 @@ class Listener(Actor):
     def get_probe_frames(self, iface):
         if not iface in self.neighbours:
             self.neighbours[iface] = {}
-
+        """
+        We do not use scapy filtering because it is slow. Instead we use
+        python binding to extreamely fast libpcap library to filter out
+        probing packages.
+        """
+        pc = pcap.pcap(iface)
+        pc.setfilter('udp and dst port {0}'.format(self.config['dport']))
         def fltr(p):
             try:
-                if scapy.UDP not in p or\
-                        p[scapy.UDP].dport != self.config['dport']:
-                    return False
                 received_msg = str(p[scapy.UDP].payload)[:p[scapy.UDP].len]
                 decoded_msg = received_msg.decode()
                 return decoded_msg.startswith(self.config["cookie"])
@@ -502,8 +507,14 @@ class Listener(Actor):
                 return False
 
         pprn = functools.partial(self.fprn, iface=iface)
-        packets = scapy.sniff(iface=iface, lfilter=fltr, prn=pprn)
-
+        try:
+            while True:
+                ts, pkt = pc.next()
+                p = scapy.Ether(pkt)
+                if fltr(p):
+                    pprn(p)
+        except (KeyboardInterrupt, SystemExit):
+            pass
 
 # -------------- main ---------------
 
