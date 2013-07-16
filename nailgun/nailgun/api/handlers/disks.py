@@ -19,7 +19,7 @@ import traceback
 
 from nailgun.db import db
 from nailgun.api.models import Node
-from nailgun.api.validators.node import NodeVolumesValidator
+from nailgun.api.validators.node import NodeDisksValidator
 from nailgun.volumes.manager import VolumeManager
 from nailgun.volumes.manager import DisksFormatConvertor
 from nailgun.api.models import Node, NodeAttributes
@@ -30,7 +30,7 @@ from nailgun.logger import logger
 
 class NodeDisksHandler(JSONHandler):
 
-    validator = NodeVolumesValidator
+    validator = NodeDisksValidator
 
     @content_json
     def GET(self, node_id):
@@ -41,7 +41,8 @@ class NodeDisksHandler(JSONHandler):
     @content_json
     def PUT(self, node_id):
         node = self.get_object_or_404(Node, node_id)
-        data = self.validator.validate(web.data())
+        data = self.checked_data()
+
         if node.cluster:
             node.cluster.add_pending_changes('disks', node_id=node.id)
 

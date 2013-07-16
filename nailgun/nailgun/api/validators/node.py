@@ -18,6 +18,9 @@ from nailgun.errors import errors
 from nailgun.api.models import Node
 from nailgun.volumes.manager import VolumeManager
 from nailgun.api.validators.base import BasicValidator
+from nailgun.api.validators.json_schemes.utils import validate_scheme
+from nailgun.api.validators.json_schemes.disks \
+    import disks_simple_format_schema
 
 
 class MetaInterfacesValidator(BasicValidator):
@@ -190,9 +193,19 @@ class NodeValidator(BasicValidator):
         return d
 
 
-class NodeVolumesValidator(BasicValidator):
+class NodeDisksValidator(BasicValidator):
     @classmethod
     def validate(cls, data):
         dict_data = cls.validate_json(data)
-        VolumeManager.validate(dict_data)
+        validate_scheme(dict_data, disks_simple_format_schema)
+        cls.sum_of_volumes_not_greater_than_disk_size(dict_data)
         return dict_data
+
+    @classmethod
+    def sum_of_volumes_not_greater_than_disk_size(cls, data):
+        for disk in data:
+            volumes_size = sum([volume['size'] for volume in disk['volumes']])
+
+            if volumes_size > disk['size']:
+                raise errors.InvalidData(
+                    u'Not enough free space on disk: %s' % disk)

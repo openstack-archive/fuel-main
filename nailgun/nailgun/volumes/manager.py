@@ -297,13 +297,6 @@ class VolumeManager(object):
         logger.debug("VolumeManager: volumes: %s", self.volumes)
         logger.debug("VolumeManager: disks: %s", self.disks)
 
-    @classmethod
-    def validate(cls, data):
-        for v in data:
-            if v.get('type') == 'disk' and v.get('id') and v.get('size'):
-                disk = Disk(self, v['id'], v['size'])
-                disk.volumes = v.get('volumes', [])
-
     def set_volume_size(self, disk_id, volume_name, size):
         disk = filter(
             lambda volume:
