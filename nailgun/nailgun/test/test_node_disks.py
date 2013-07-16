@@ -83,8 +83,9 @@ class TestNodeDisksHandlers(BaseHandlers):
         node_db = self.create_node()
         disks = self.get(node_db.id)
         for disk in disks:
-            for volume in disk['volumes']:
-                volume['size'] = 4200
+            if disk['size'] > 0:
+                for volume in disk['volumes']:
+                    volume['size'] = 4200
 
         response = self.put(node_db.id, disks)
 
