@@ -92,6 +92,27 @@ class TestHandlers(BaseHandlers):
         # ip ranges and cidrs
         self.assertEquals(201, resp.status)
 
+    def test_cluster_creation_same_networks(self):
+        cluster1_id = self.env.create_cluster(api=True)["id"]
+        cluster2_id = self.env.create_cluster(api=True)["id"]
+        cluster1_nets = json.loads(self.app.get(
+            reverse('NetworkConfigurationHandler',
+                    {"cluster_id": cluster1_id}),
+            headers=self.default_headers,
+        ).body)["networks"]
+        cluster2_nets = json.loads(self.app.get(
+            reverse('NetworkConfigurationHandler',
+                    {"cluster_id": cluster2_id}),
+            headers=self.default_headers,
+        ).body)["networks"]
+
+        for net1, net2 in zip(cluster1_nets, cluster2_nets):
+            for f in ('cluster_id', 'id'):
+                del net1[f]
+                del net2[f]
+
+        self.assertEquals(cluster1_nets, cluster2_nets)
+
     def test_if_cluster_creates_correct_networks(self):
         release = Release()
         release.version = "1.1.1"
