@@ -42,6 +42,23 @@ class RedHatAccountHandler(JSONHandler):
 
     validator = RedHatAcountValidator
 
+    def timeout_command(command, timeout=5):
+        """call shell-command and either return its output or kill it
+        if it doesn't normally exit within timeout seconds and return None"""
+
+        start = datetime.datetime.now()
+        process = subprocess.Popen(command,
+                                   stdout=subprocess.PIPE,
+                                   stderr=subprocess.PIPE)
+        while process.poll() is None:
+            time.sleep(0.1)
+            now = datetime.datetime.now()
+            if (now - start).seconds > timeout:
+                os.kill(process.pid, signal.SIGKILL)
+                os.waitpid(-1, os.WNOHANG)
+                return None
+        return process.stdout.read(), process.stderr.read()
+
     def check_credentials(self, data):
         if settings.FAKE_TASKS:
             if data["username"] != "rheltest":
@@ -55,26 +72,23 @@ class RedHatAccountHandler(JSONHandler):
                   '"%s" --password "%s"' % \
                   (data.get("username"), data.get("password"))
 
-            proc = subprocess.Popen(
-                shlex.split(cmd),
-                shell=False,
-                stdout=subprocess.PIPE,
-                stderr=subprocess.PIPE)
+            output = timeout_command(shlex.split(cmd))
+            if not output:
+                raise web.badrequest('Timed out. Please, try again.')
 
-            p_stdout, p_stderr = proc.communicate()
             logger.info(
                 "'{0}' executed, STDOUT: '{1}',"
-                " STDERR: '{2}'".format(cmd, p_stdout, p_stderr))
+                " STDERR: '{2}'".format(cmd, output[0], output[1]))
 
         except OSError:
             logger.warning(
                 "'{0}' returned non-zero exit code".format(cmd))
-
-            raise web.badrequest(str(p_stderr))
+            logger.warning(str(output[1]))
+            raise web.badrequest('Invalid credentials')
         except ValueError:
             error_msg = "Not valid parameters: '{0}'".format(cmd)
             logger.warning(error_msg)
-            raise web.badrequest(error_msg)
+            raise web.badrequest('Invalid credentials')
 
     @content_json
     def GET(self):
