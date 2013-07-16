@@ -255,7 +255,7 @@ define(['utils'], function(utils) {
             return this.get('volumes').findWhere({name: name});
         },
         getAllocatedSpace: function(volumes) {
-            return _.reduce(volumes.models, function(sum, volume) {return sum + volume.get('size');}, 0);
+            return volumes.reduce(function(sum, volume) {return sum + volume.get('size');}, 0);
         },
         getUnallocatedSpace: function(name) {
             var volumeSize = name ? this.getVolume(name).get('size') : 0;
@@ -268,10 +268,11 @@ define(['utils'], function(utils) {
                 errors.max = 'Volume groups total size exceeds available space of ' + utils.formatNumber(unallocatedSpace * -1) + ' MB';
             }
             attrs.volumes.each(function(volume) {
+                var min = volume.getMinimalSize(options);
                 if (_.isNaN(volume.get('size'))) {
                     errors[volume.get('name')] = 'Invalid size';
-                } else if (!_.isUndefined(options.min) && volume.get('size') < options.min) {
-                    errors[volume.get('name')] = 'The value is too low. You must allocate at least ' + utils.formatNumber(options.min) + ' MB';
+                } else if (volume.get('size') < min) {
+                    errors[volume.get('name')] = 'The value is too low. You must allocate at least ' + utils.formatNumber(min) + ' MB';
                 }
             }, this);
             return _.isEmpty(errors) ? null : errors;
@@ -289,7 +290,12 @@ define(['utils'], function(utils) {
 
     models.Volume = Backbone.Model.extend({
         constructorName: 'Volume',
-        urlRoot: '/api/volumes/'
+        urlRoot: '/api/volumes/',
+        getMinimalSize: function(options) {
+            var name = this.get('name');
+            var groupAllocatedSpace = _.reduce(options.disks, function(sum, disk) {return sum + disk.getVolume(name).get('size');}, 0);
+            return options.volumes.findWhere({name: name}).get('min_size') - groupAllocatedSpace;
+        }
     });
 
     models.Volumes = Backbone.Collection.extend({
