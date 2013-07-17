@@ -171,7 +171,6 @@ class TestNode(BaseNodeTestCase):
         self.assertClusterReady(
             'slave-01', smiles_count=6, networks_count=1, timeout=300)
 
-
     @snapshot_errors
     @logwrap
     @fetch_logs
