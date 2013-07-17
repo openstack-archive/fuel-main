@@ -303,9 +303,9 @@ class VolumeManager(object):
         for d in sorted(self.node.meta["disks"], key=lambda i: i["name"]):
             disk = Disk(
                 self.call_generator, d["disk"], byte_to_megabyte(d["size"]))
-            for v in self.volumes:
-                if v.get("type") == "disk" and v.get("id") == disk.id:
-                    disk.volumes = v.get("volumes", [])
+            for v in only_disks(self.volumes):
+                if v.get('id') == disk.id:
+                    disk.volumes = v.get('volumes', [])
 
             self.disks.append(disk)
 
@@ -379,14 +379,13 @@ class VolumeManager(object):
     def _calc_total_vg(self, vg):
         logger.debug('_calc_total_vg')
         vg_space = 0
-        for v in self.volumes:
-            if v.get('type') == 'disk' and v.get('volumes'):
-                for subv in v['volumes']:
-                    if subv.get('type') == 'pv' and subv.get('vg') == vg:
-                        vg_space += subv.get('size', 0)
-                    elif (subv.get('type') == 'lvm_meta' and
-                          subv.get('name') == vg):
-                        vg_space -= subv['size']
+        for v in only_disks(self.volumes):
+            for subv in v['volumes']:
+                if subv.get('type') == 'pv' and subv.get('vg') == vg:
+                    vg_space += subv.get('size', 0)
+                elif (subv.get('type') == 'lvm_meta' and
+                      subv.get('name') == vg):
+                    vg_space -= subv['size']
 
         return vg_space
 
