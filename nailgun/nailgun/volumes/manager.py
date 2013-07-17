@@ -163,7 +163,7 @@ class DisksFormatConvertor:
     @classmethod
     def get_volumes_info(cls, node):
         '''
-        Return volumes info for role
+        Return volumes info for node
 
         :returns: [
                 {
@@ -390,10 +390,21 @@ class VolumeManager(object):
         return vg_space
 
     def _calc_swap_size(self):
+        '''
+        Calc swap size according to RAM
+
+        | RAM          | Recommended swap space      |
+        |--------------+-----------------------------|
+        | <= 2GB       | 2 times the amount of RAM   |
+        | > 2GB – 8GB  | Equal to the amount of RAM  |
+        | > 8GB – 64GB | 0.5 times the amount of RAM |
+        | > 64GB       | 4GB of swap space           |
+
+        Source https://access.redhat.com/site/documentation/en-US/
+                       Red_Hat_Enterprise_Linux/6/html/Installation_Guide/
+                       s2-diskpartrecommend-ppc.html#id4394007
+        '''
         mem = float(self.node.meta['memory']['total']) / 1024 ** 3
-        # See https://access.redhat.com/site/documentation/en-US/
-        #             Red_Hat_Enterprise_Linux/6/html/Installation_Guide/
-        #             s2-diskpartrecommend-ppc.html#id4394007
         if mem <= 2:
             return gb_to_mb(int(2 * mem))
         elif mem > 2 and mem <= 8:
