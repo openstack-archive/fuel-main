@@ -326,6 +326,10 @@ class Actor(object):
         for iface in self.config['interfaces']:
             yield iface
 
+    def _log_ifaces(self, prefix="Current interfaces"):
+        self.logger.debug("%s: \n%s", prefix,
+                          self._execute(['ip', 'address']).read())
+
 
 class Sender(Actor):
 
@@ -334,6 +338,7 @@ class Sender(Actor):
                                           'netprobe_sender')
         super(Sender, self).__init__(config)
         self.logger.info("=== Starting Sender ===")
+        self._log_ifaces("Interfaces just before sending probing packages")
 
     def run(self):
         try:
@@ -375,8 +380,10 @@ class Sender(Actor):
                 self.logger.debug("Ensure down: %s, %s", iface, str(vlan))
                 self._ensure_viface_down_and_remove(iface, vlan)
 
+        self._log_ifaces("Interfaces just after sending probing packages")
         for iface in self._iface_iterator():
             self._ensure_iface_down(iface)
+        self._log_ifaces("Interfaces just after ensuring them down in sender")
         self.logger.info("=== Sender Finished ===")
 
 
@@ -386,6 +393,9 @@ class Listener(Actor):
                                           'netprobe_listener')
         super(Listener, self).__init__(config)
         self.logger.info("=== Starting Listener ===")
+        self._log_ifaces("Interfaces just before starting listerning "
+                         "for probing packages")
+
         self.pidfile = self.addpid('/var/run/net_probe')
 
         self.neighbours = {}
@@ -454,6 +464,8 @@ class Listener(Actor):
         except SystemExit:
             self.logger.debug("TERM signal catched")
 
+        self._log_ifaces("Interfaces just before ensuring interfaces down")
+
         for iface, vlan in self._iface_vlan_iterator():
             if vlan > 0:
                 self.logger.debug("Ensure down: %s, %s", iface, str(vlan))
@@ -461,6 +473,7 @@ class Listener(Actor):
 
         for iface in self._iface_iterator():
             self._ensure_iface_down(iface)
+        self._log_ifaces("Interfaces just after ensuring them down in listener")
 
         with open(self.config['dump_file'], 'w') as fo:
             fo.write(json.dumps(self.neighbours))
