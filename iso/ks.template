@@ -256,6 +256,7 @@ cp ${SOURCE}/puppet-slave.tgz ${repodir}/
 tar zxf ${SOURCE}/puppet-slave.tgz -C /etc/puppet/modules
 mkdir -p /etc/puppet/manifests/
 cp /etc/puppet/modules/osnailyfacter/examples/site.pp /etc/puppet/manifests/site.pp
+cp ${SOURCE}/send2syslog.py /bin/send2syslog.py
 #ln -s /etc/puppet/modules/mcollective /etc/puppet/modules/nailgun /etc/puppet/modules/osnailyfacter  /etc/puppet/modules/stdlib /etc/puppet/modules/rabbitmq /etc/puppet/modules/puppetdb/ /etc/puppet/modules/postgresql/ /etc/puppet/modules/inifile/ /etc/puppet/modules/sysctl/ /opt/nailgun_puppet/
 
 # Prepare local repository specification

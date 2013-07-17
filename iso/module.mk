@@ -60,6 +60,7 @@ $(BUILD_DIR)/iso/isoroot-files.done: \
 		$(ISOROOT)/ks.cfg \
 		$(ISOROOT)/bootstrap_admin_node.sh \
 		$(ISOROOT)/bootstrap_admin_node.conf \
+		$(ISOROOT)/send2syslog.py \
 		$(ISOROOT)/version.yaml \
 		$(ISOROOT)/puppet-slave.tgz
 	$(ACTION.TOUCH)
@@ -73,6 +74,7 @@ $(ISOROOT)/ks.cfg: $(SOURCE_DIR)/iso/ks.template $(SOURCE_DIR)/iso/ks.py $(KSYAM
 	python $(SOURCE_DIR)/iso/ks.py -t $(SOURCE_DIR)/iso/ks.template -c $(KSYAML) -o $@
 $(ISOROOT)/bootstrap_admin_node.sh: $(SOURCE_DIR)/iso/bootstrap_admin_node.sh ; $(ACTION.COPY)
 $(ISOROOT)/bootstrap_admin_node.conf: $(SOURCE_DIR)/iso/bootstrap_admin_node.conf ; $(ACTION.COPY)
+$(ISOROOT)/send2syslog.py: $(SOURCE_DIR)/bin/send2syslog.py ; $(ACTION.COPY)
 $(ISOROOT)/version.yaml: $(call depv,COMMIT_SHA)
 $(ISOROOT)/version.yaml: $(call depv,PRODUCT_VERSION)
 $(ISOROOT)/version.yaml: $(call depv,FUEL_COMMIT_SHA)
@@ -80,6 +82,7 @@ $(ISOROOT)/version.yaml:
 	echo "COMMIT_SHA: $(COMMIT_SHA)" > $@
 	echo "PRODUCT_VERSION: $(PRODUCT_VERSION)" >> $@
 	echo "FUEL_COMMIT_SHA: $(FUEL_COMMIT_SHA)" >> $@
+
 
 $(ISOROOT)/puppet-slave.tgz: \
 		$(call find-files,$(SOURCE_DIR)/fuel/deployment/puppet)
