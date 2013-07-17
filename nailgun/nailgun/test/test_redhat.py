@@ -14,10 +14,13 @@
 
 import json
 from paste.fixture import TestApp
+import shlex
 
 import mock
+from mock import patch
 
 import nailgun
+from nailgun.api.handlers.redhat import RedHatAccountHandler
 from nailgun.api.models import Release
 from nailgun.settings import settings
 
@@ -119,3 +122,24 @@ class TestHandlers(BaseHandlers):
             query = self.env.db.query(RedHatAccount)
             self.assertEquals(query.count(), 1)
             self.assertEquals(query.filter_by(username=username).count(), 1)
+
+    @patch('time.sleep')
+    @patch('os.kill')
+    @patch('os.waitpid')
+    def test_timeout_command(self, mock_sleep, mock_kill, mock_waitpid):
+        command = 'ls -al'
+        with patch('subprocess.Popen') as popen:
+            instance = popen.return_value
+            instance.poll.return_value = None
+            handler = RedHatAccountHandler()
+            retval = handler.timeout_command(shlex.split(command), 0)
+            self.assertEquals(retval, None)
+
+        with patch('subprocess.Popen') as popen:
+            instance = popen.return_value
+            instance.stdout.read.return_value = 'stdout'
+            instance.stderr.read.return_value = 'stderr'
+            #instance.poll.return_value = None
+            handler = RedHatAccountHandler()
+            retval = handler.timeout_command(shlex.split(command), 0)
+            self.assertEquals(retval, ('stdout', 'stderr'))
