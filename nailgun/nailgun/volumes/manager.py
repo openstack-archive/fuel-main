@@ -25,6 +25,20 @@ from nailgun.logger import logger
 from nailgun.errors import errors
 
 
+def only_disks(spaces):
+    '''
+    Helper for retrieving only disks from spaces
+    '''
+    return filter(lambda space: space['type'] == 'disk', spaces)
+
+
+def only_vg(spaces):
+    '''
+    Helper for retrieving only volumes groups from spaces
+    '''
+    return filter(lambda space: space['type'] == 'vg', spaces)
+
+
 def gb_to_mb(gb):
     '''
     Convert gigabytes to megabytes
@@ -104,7 +118,7 @@ class DisksFormatConvertor:
         disks_in_simple_format = []
 
         # retrieve only phisical disks
-        disks_full_format = filter(lambda disk: disk['type'] == 'disk', full)
+        disks_full_format = only_disks(full)
 
         for disk in disks_full_format:
             reserve_size = cls.calculate_service_partitions_size(
@@ -300,9 +314,8 @@ class VolumeManager(object):
 
     def set_volume_size(self, disk_id, volume_name, size):
         disk = filter(
-            lambda volume:
-            volume['type'] == 'disk' and volume['id'] == disk_id,
-            self.volumes)[0]
+            lambda volume: volume['id'] == disk_id,
+            only_disks(self.volumes))[0]
 
         volume = filter(
             lambda volume: volume_name == volume.get('vg'),

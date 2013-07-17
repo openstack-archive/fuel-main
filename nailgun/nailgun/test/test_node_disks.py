@@ -19,6 +19,7 @@ from copy import deepcopy
 
 from nailgun.test.base import BaseHandlers, reverse
 from nailgun.volumes.manager import DisksFormatConvertor
+from nailgun.volumes.manager import only_disks, only_vg
 from nailgun.errors import errors
 
 
@@ -214,8 +215,7 @@ class TestNodeDefaultsDisksHandler(BaseHandlers):
         volumes_from_api = self.get(node_db.id)
 
         default_volumes = node_db.volume_manager.gen_volumes_info()
-        disks = filter(
-            lambda volume: volume['type'] == 'disk', default_volumes)
+        disks = only_disks(default_volumes)
 
         self.assertEquals(len(disks), len(volumes_from_api))
 
@@ -284,7 +284,7 @@ class TestVolumeManager(BaseHandlers):
 
     def os_size(self, disks):
         os_sum_size = 0
-        for disk in self.only_disks(disks):
+        for disk in only_disks(disks):
             os_volume = filter(
                 lambda volume: volume.get('vg') == 'os', disk['volumes'])[0]
 
@@ -295,20 +295,11 @@ class TestVolumeManager(BaseHandlers):
 
     def reserved_size(self, spaces):
         reserved_size = 0
-        for disk in self.only_disks(spaces):
+        for disk in only_disks(spaces):
             reserved_size += DisksFormatConvertor.\
                 calculate_service_partitions_size(disk['volumes'])
 
         return reserved_size
-
-    def filter_spaces_by_type(self, spaces, type):
-        return filter(lambda space: space['type'] == type, spaces)
-
-    def only_disks(self, spaces):
-        return self.filter_spaces_by_type(spaces, 'disk')
-
-    def only_vg(self, spaces):
-        return self.filter_spaces_by_type(spaces, 'vg')
 
     def should_contain_os_with_minimal_size(self, volume_manager):
         self.assertEquals(
@@ -319,8 +310,8 @@ class TestVolumeManager(BaseHandlers):
         os_size = self.os_size(spaces)
         reserved_size = self.reserved_size(spaces)
         vg_size = 0
-        disk_sum_size = sum([disk['size'] for disk in self.only_disks(spaces)])
-        for disk in self.only_disks(spaces):
+        disk_sum_size = sum([disk['size'] for disk in only_disks(spaces)])
+        for disk in only_disks(spaces):
             for volume in disk['volumes']:
                 if volume.get('vg') == volume_name:
                     vg_size += volume['size']
@@ -330,7 +321,7 @@ class TestVolumeManager(BaseHandlers):
 
     def logical_volume_sizes_should_equal_all_phisical_volumes(self, spaces):
         vg_sizes = {}
-        for vg in self.only_vg(spaces):
+        for vg in only_vg(spaces):
             for volume in vg['volumes']:
                 vg_name = vg['id']
                 if not vg_sizes.get(vg_name):
@@ -339,7 +330,7 @@ class TestVolumeManager(BaseHandlers):
 
         pv_sizes = {}
         test = 0
-        for disk in self.only_disks(spaces):
+        for disk in only_disks(spaces):
             for volume in disk['volumes']:
                 if volume['type'] == 'pv':
                     vg_name = volume['vg']
@@ -357,7 +348,7 @@ class TestVolumeManager(BaseHandlers):
         self.assertEquals(vg_sizes, pv_sizes)
 
     def check_disk_size_equal_sum_of_all_volumes(self, spaces):
-        for disk in self.only_disks(spaces):
+        for disk in only_disks(spaces):
             volumes_size = sum(
                 [volume.get('size', 0) for volume in disk['volumes']])
 
@@ -365,7 +356,7 @@ class TestVolumeManager(BaseHandlers):
 
     def test_allocates_all_free_space_for_os_for_controller_role(self):
         node = self.create_node('controller')
-        disks = self.only_disks(node.volume_manager.volumes)
+        disks = only_disks(node.volume_manager.volumes)
         disks_size_sum = sum([disk['size'] for disk in disks])
         os_sum_size = self.os_size(disks)
         reserved_size = self.reserved_size(disks)
