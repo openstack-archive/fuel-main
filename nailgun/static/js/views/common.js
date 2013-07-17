@@ -273,7 +273,7 @@ function(utils, models, dialogViews, navbarTemplate, nodesStatsTemplate, notific
             _.defaults(this, options);
             this.redHatAccount = new models.RedHatAccount();
             this.redHatAccount.on('sync', this.render, this);
-            this.redHatAccount.deferred = this.redHatAccount.fetch().error(_.bind(function(response){
+            this.redHatAccount.deferred = this.redHatAccount.fetch().fail(_.bind(function(response){
                 if (response.status == 404){
                     this.render();
                 } else {
