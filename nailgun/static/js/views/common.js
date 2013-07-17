@@ -273,15 +273,13 @@ function(utils, models, dialogViews, navbarTemplate, nodesStatsTemplate, notific
             _.defaults(this, options);
             this.redHatAccount = new models.RedHatAccount();
             this.redHatAccount.on('sync', this.render, this);
-            this.redHatAccount.on('error', function(model, response){
-                // No exist accaunt found
+            this.redHatAccount.deferred = this.redHatAccount.fetch().error(_.bind(function(response){
                 if (response.status == 404){
                     this.render();
                 } else {
                     this.dialog.displayErrorMessage();
                 }
-            }, this);
-            this.redHatAccount.deferred = this.redHatAccount.fetch();
+            }, this));
             this.redHatAccount.on('invalid', function(model, error) {
                 _.each(error, function(field) {
                     this.$('*[name=' + field + ']').closest('.control-group').addClass('error');
