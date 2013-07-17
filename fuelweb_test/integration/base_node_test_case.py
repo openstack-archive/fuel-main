@@ -312,8 +312,7 @@ class BaseNodeTestCase(BaseTestCase):
         ip = self.get_node_by_devops_node(
             self.ci().environment().node_by_name(node_name))['ip']
         current_ips = self.get_cluster_floating_list(ip)
-        self.assertEqual(
-            set(expected_ips), set(current_ips), 'Floating IP list')
+        self.assertEqual(set(expected_ips), set(current_ips))
 
     @logwrap
     def get_private_keys(self):
