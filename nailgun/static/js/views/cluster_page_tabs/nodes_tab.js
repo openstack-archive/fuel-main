@@ -727,7 +727,7 @@ function(utils, models, commonViews, dialogViews, nodesTabSummaryTemplate, editN
         renderVisualGraph: function() {
             var unallocatedWidth = 100;
             this.disk.get('volumes').each(function(volume) {
-                var width = parseFloat((volume.get('size') / this.disk.get('size') * 100).toFixed(2));
+                var width = utils.floor(volume.get('size') / this.disk.get('size') * 100, 2);
                 unallocatedWidth -= width;
                 this.renderGroup(volume.get('name'), width, volume.get('size'));
             }, this);

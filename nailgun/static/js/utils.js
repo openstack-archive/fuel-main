@@ -93,6 +93,9 @@ define(['require'], function(require) {
             return String(n).replace(/\d/g, function(c, i, a) {
                 return i > 0 && c !== "." && (a.length - i) % 3 === 0 ? " " + c : c;
             });
+        },
+        floor: function(n, decimals) {
+            return Math.floor(n * Math.pow(10, decimals)) / Math.pow(10, decimals);
         }
     };
 
