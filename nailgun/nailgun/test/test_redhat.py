@@ -139,7 +139,6 @@ class TestHandlers(BaseHandlers):
             instance = popen.return_value
             instance.stdout.read.return_value = 'stdout'
             instance.stderr.read.return_value = 'stderr'
-            #instance.poll.return_value = None
             handler = RedHatAccountHandler()
             retval = handler.timeout_command(shlex.split(command), 0)
             self.assertEquals(retval, ('stdout', 'stderr'))
