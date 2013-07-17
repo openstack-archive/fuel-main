@@ -217,9 +217,9 @@ class TestNode(BaseNodeTestCase):
 
         # set ip ranges for floating network
         networks = self.client.get_networks(cluster_id)
-        for i, n in enumerate(networks['networks']):
-            if n['name'] == 'floating':
-                networks['networks'][i]['ip_ranges'] = [
+        for interface, network in enumerate(networks['networks']):
+            if network['name'] == 'floating':
+                networks['networks'][interface]['ip_ranges'] = [
                     ['240.0.0.2', '240.0.0.10'],
                     ['240.0.0.20', '240.0.0.25'],
                     ['240.0.0.30', '240.0.0.35']]
