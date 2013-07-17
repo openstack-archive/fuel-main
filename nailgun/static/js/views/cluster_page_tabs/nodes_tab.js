@@ -676,7 +676,7 @@ function(utils, models, commonViews, dialogViews, nodesTabSummaryTemplate, editN
             'click .toggle-volume': 'toggleEditDiskForm',
             'click .close-btn': 'deleteVolumeGroup',
             'keyup input': 'makeChanges',
-            'click .use-all-unallocated': 'useAllUnallocatedSpace'
+            'click .use-all-allowed': 'useAllAllowedSpace'
         },
         toggleEditDiskForm: function(e) {
             if (this.screen.isLocked()) {return;}
@@ -692,15 +692,18 @@ function(utils, models, commonViews, dialogViews, nodesTabSummaryTemplate, editN
                 this.$('.disk-visual .' + volume.get('name') + ' .close-btn').toggle(min <= 0 && this.$('.disk-form').hasClass('in'));
             }, this);
         },
-        setSize: function() {
-            this.$('.disk-visual').removeClass('invalid');
-            this.$('input').removeClass('error').parents('.volume-group').next().text('');
-            this.$('.volume-group-error-message.common').text('');
+        setVolumes: function() {
             var volumes = new models.Volumes(this.disk.get('volumes').toJSON());
             volumes.each(function(volume) {
                 volume.set({size: Number((this.$('input[name=' + volume.get('name') + ']').val()).replace(/ /g, ''))});
             }, this);
-            this.disk.set({volumes: volumes}, {
+            return volumes;
+        },
+        setSize: function() {
+            this.$('.disk-visual').removeClass('invalid');
+            this.$('input').removeClass('error').parents('.volume-group').next().text('');
+            this.$('.volume-group-error-message.common').text('');
+            this.disk.set({volumes: this.setVolumes()}, {
                 validate: true,
                 disks: this.screen.disks.reject({id: this.disk.id}),
                 volumes: this.screen.volumes
@@ -718,9 +721,9 @@ function(utils, models, commonViews, dialogViews, nodesTabSummaryTemplate, editN
             this.$('input[name=' + volumeName + ']').val(0);
             this.makeChanges();
         },
-        useAllUnallocatedSpace: function(e) {
+        useAllAllowedSpace: function(e) {
             var volumeName = this.$(e.currentTarget).parents('.volume-group').data('volume');
-            this.$('input[name=' + volumeName + ']').val(this.disk.getUnallocatedSpace(volumeName)).trigger('keyup');
+            this.$('input[name=' + volumeName + ']').val(this.disk.getUnallocatedSpace(volumeName, this.setVolumes())).trigger('keyup');
             this.makeChanges();
         },
         initialize: function(options) {

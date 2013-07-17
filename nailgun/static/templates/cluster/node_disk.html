@@ -41,12 +41,11 @@
           <div class="volume-group-box-flag-<%- volume.get('name') %>"></div>
           <div class="volume-group-box-name"><%- volume.get('label') %></div>
           <div class="pull-right">
-            <div>
-              <div class="volume-group-box-input">
-                <input id="<%- disk.name + '-' + volume.get('name') %>" class="input-medium auto" type="text" name="<%- volume.get('name') %>" value="<%- diskVolumes.findWhere({name: volume.get('name')}).get('size') || 0 %>" /></div>
-              <div class="volume-group-box-sizetype">MB</div>
+            <div class="volume-group-box-edit"><span class="use-all-allowed">Use All Allowed Space</span></div>
+            <div class="volume-group-box-input">
+              <input id="<%- disk.name + '-' + volume.get('name') %>" class="input-medium auto" type="text" name="<%- volume.get('name') %>" value="<%- diskVolumes.findWhere({name: volume.get('name')}).get('size') || 0 %>" />
             </div>
-            <div class="volume-group-box-edit"><span class="use-all-unallocated">Use All Unallocated Space</span></div>
+            <div class="volume-group-box-sizetype">MB</div>
           </div>
         </div>
         <div class="volume-group-error-message"></div>

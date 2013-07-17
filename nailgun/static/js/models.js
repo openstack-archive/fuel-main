@@ -257,9 +257,10 @@ define(['utils'], function(utils) {
         getAllocatedSpace: function(volumes) {
             return volumes.reduce(function(sum, volume) {return sum + volume.get('size');}, 0);
         },
-        getUnallocatedSpace: function(name) {
-            var volumeSize = name ? this.getVolume(name).get('size') : 0;
-            return this.get('size') - this.getAllocatedSpace(this.get('volumes')) + volumeSize;
+        getUnallocatedSpace: function(name, volumes) {
+            volumes = volumes || this.get('volumes');
+            var volumeSize = name ? volumes.findWhere({name: name}).get('size') : 0;
+            return _.max([0, this.get('size') - this.getAllocatedSpace(volumes) + volumeSize]);
         },
         validate: function(attrs, options) {
             var errors = {};
