@@ -604,28 +604,6 @@ function(utils, models, commonViews, dialogViews, nodesTabSummaryTemplate, editN
                 this.model.on('change:status', this.revertChanges, this);
                 this.loading = $.when(this.node.fetch(), this.volumes.fetch(), this.disks.fetch())
                     .done(_.bind(function() {
-
-                        // FIXME: just fakes; need to be removed
-                        var volumesFake = [
-                            {"name": "os", "label": "Base System", "min_size": 100002}
-                            ,{"name": "vm", "label": "Virtual Storage", "min_size": 0}
-                            ,{"name": "cinder", "label": "Cinder", "min_size": 0}
-                        ];
-                        var disksFake = [
-                            {"id": "sda", "size": 10002049},
-                            {"id": "sdb", "size": 10002049}
-                        ];
-                        var diskVolumesFake = [
-                            {"name": "os", "size": 2097169}
-                            ,{"name": "vm", "size": 7904880}
-                            ,{"name": "cinder", "size": 0}
-                        ];
-                        this.volumes = new models.Volumes(volumesFake);
-                        this.disks = new models.Disks(disksFake);
-                        this.disks.each(function(disk){
-                            disk.set({volumes: new models.Volumes(diskVolumesFake)});
-                        });
-
                         this.initialData = _.cloneDeep(this.disks.toJSON());
                         this.disks.on('reset', this.render, this);
                         this.render();
