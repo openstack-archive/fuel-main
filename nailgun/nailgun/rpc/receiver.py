@@ -571,7 +571,7 @@ class NailgunReceiver(object):
                          " with UUID %s not found", task_uuid)
             return
 
-        release_info = task.cache['release_info']
+        release_info = task.cache['args']['release_info']
         release_id = release_info['release_id']
         release = db().query(Release).get(release_id)
         if not release:
