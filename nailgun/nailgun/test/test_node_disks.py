@@ -15,6 +15,7 @@
 #    under the License.
 
 import json
+from copy import deepcopy
 
 from nailgun.test.base import BaseHandlers, reverse
 from nailgun.volumes.manager import DisksFormatConvertor
@@ -86,10 +87,43 @@ class TestNodeDisksHandlers(BaseHandlers):
                 volume['size'] = 4200
 
         response = self.put(node_db.id, disks)
-        self.assertEquals(response, disks)
+
+        expect_disks = deepcopy(disks)
+        for disk in expect_disks:
+            for volume in disk['volumes']:
+                if disk['size'] == 0:
+                    volume['size'] = 0
+
+        self.assertEquals(response, expect_disks)
 
         response = self.get(node_db.id)
-        self.assertEquals(response, disks)
+        self.assertEquals(response, expect_disks)
+
+    def test_recalculates_vg_sizes_when_disks_volumes_size_update(self):
+        node_db = self.create_node()
+        disks = self.get(node_db.id)
+
+        vgs_before_update = filter(
+            lambda volume: volume.get('type') == 'vg',
+            node_db.attributes.volumes)
+
+        for disk in disks:
+            for volume in disk['volumes']:
+                volume['size'] = 4200
+
+        self.put(node_db.id, disks)
+
+        vgs_after_update = filter(
+            lambda volume: volume.get('type') == 'vg',
+            node_db.attributes.volumes)
+
+        for vg_before, vg_after in zip(vgs_before_update, vgs_after_update):
+            size_volumes_before = sum([
+                volume.get('size', 0) for volume in vg_before['volumes']])
+            size_volumes_after = sum([
+                volume.get('size', 0) for volume in vg_after['volumes']])
+
+            self.assertNotEquals(size_volumes_before, size_volumes_after)
 
 
 class TestNodeDefaultsDisksHandler(BaseHandlers):

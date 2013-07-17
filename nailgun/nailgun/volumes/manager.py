@@ -313,7 +313,21 @@ class VolumeManager(object):
         volume = filter(
             lambda volume: volume_name == volume.get('vg'),
             disk['volumes'])[0]
-        volume['size'] = size
+        if disk['size'] >= size:
+            volume['size'] = size
+
+        # Recalculate sizes of volume groups
+        volumes_metadata = self.node.cluster.release.volumes_metadata['volumes']
+        for index, volume in enumerate(self.volumes):
+            if volume.get('type') != 'vg':
+                continue
+
+            vg_id = volume.get('id')
+            vg_template = filter(
+                lambda volume: volume.get('id') == vg_id,
+                volumes_metadata)[0]
+
+            self.volumes[index] = self.expand_generators(vg_template)
 
         return self.volumes
 
