@@ -1,11 +1,11 @@
 @Base
 @Core
-MySQL-client-5.5.28-6
+MySQL-client-5.5.28-7
 MySQL-client-wsrep-5.5.28_wsrep_23.7-12
 MySQL-python-1.2.3-0.3.c1.2.el6
-MySQL-server-5.5.28-6
+MySQL-server-5.5.28-7
 MySQL-server-wsrep-5.5.28_wsrep_23.7-12
-MySQL-shared-5.5.28-6
+MySQL-shared-5.5.28-7
 MySQL-shared-wsrep-5.5.28_wsrep_23.7-12
 authconfig-6.1.12-13.el6
 autoconf-2.63-5.1.el6
@@ -35,7 +35,12 @@ galera-23.2.2-1.rhel5
 gcc-4.4.7-3.el6
 gcc-c++-4.4.7-3.el6
 haproxy-1.4.22-3.el6
+iproute-2.6.32-23.el6.netns.2
 keepalived-1.2.7-3.el6
+kernel-2.6.32-358.112.1.openstack.el6
+kernel-firmware-2.6.32-358.112.1.openstack.el6
+kernel-headers-2.6.32-358.112.1.openstack.el6
+kmod-openvswitch-1.10.0-2.el6
 librelp-0.1.1-4.1.el6
 libuser-0.56.13-5.el6
 make-3.81-20.el6
@@ -62,6 +67,7 @@ openstack-swift-container-1.8.0.fuel3.0-mira.2
 openstack-swift-object-1.8.0.fuel3.0-mira.2
 openstack-swift-proxy-1.8.0.fuel3.0-mira.2
 openstack-utils-2013.1-1.el6
+openvswitch-1.10.0-2.el6
 pacemaker-1.1.8-7.el6
 passwd-0.77-4.el6_2.2
 patch-2.6-6.el6
