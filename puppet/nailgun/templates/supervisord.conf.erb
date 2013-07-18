@@ -1,18 +1,18 @@
+[rpcinterface:supervisor]
+; required for supervisorctl
+supervisor.rpcinterface_factory = supervisor.rpcinterface:make_main_rpcinterface
+
+[unix_http_server]
+file=/var/run/supervisor.sock
+
 [supervisord]
-http_port=/var/run/supervisor.sock
 logfile=/var/log/supervisor/supervisord.log
-logfile_maxbytes=50MB
-logfile_backups=10
 loglevel=debug
 pidfile=/var/run/supervisord.pid
-nodaemon=false
-minfds=1024
-minprocs=200
 childlogdir=/var/log/supervisor
 
 [supervisorctl]
 serverurl=unix:///var/run/supervisor.sock
-
 
 [program:nailgun]
 command=<%= venv %>/bin/nailgund
