@@ -73,7 +73,7 @@ class TestNetworkModels(BaseHandlers):
         )
 
         for n in test_nets['networks'][:2]:
-            n["cidr"] = "240.0.0.0/24"
+            n["cidr"] = "172.16.0.0/24"
 
         resp = self.app.put(
             reverse(

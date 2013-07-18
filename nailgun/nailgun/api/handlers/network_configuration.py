@@ -94,7 +94,6 @@ class NetworkConfigurationHandler(JSONHandler):
                 cluster_id, 'management')
             result['public_vip'] = net_manager.assign_vip(
                 cluster_id, 'public')
-
         return result
 
     def PUT(self, cluster_id):

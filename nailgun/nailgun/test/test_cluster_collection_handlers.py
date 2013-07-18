@@ -51,46 +51,64 @@ class TestHandlers(BaseHandlers):
         self.assertEquals(201, resp.status)
 
     def test_cluster_create_no_ip_addresses(self):
+        """
+        In this test we check that no error is occured
+        if two clusters will have same networks updated to use
+        full CIDR
+        """
         cluster = self.env.create_cluster(api=True)
         cluster_db = self.db.query(Cluster).get(cluster["id"])
-        management_net = self.db.query(NetworkGroup).filter_by(
-            name="management",
-            cluster_id=cluster["id"]
-        ).first()
-        NetworkConfiguration.update(
-            cluster_db,
-            {
-                "networks": [
-                    {
-                        "network_size": 65536,
-                        "name": "management",
-                        "ip_ranges": [
-                            ["192.168.0.2", "192.168.255.254"]
-                        ],
-                        "amount": 1,
-                        "id": management_net.id,
-                        "netmask": "255.255.255.0",
-                        "cluster_id": cluster["id"],
-                        "vlan_start": 101,
-                        "cidr": "192.168.0.0/16",
-                        "gateway": "192.168.0.1"
-                    }
-                ]
-            }
-        )
+        cluster2 = self.env.create_cluster(api=True,
+                                           release=cluster_db.release.id)
+        cluster2_db = self.db.query(Cluster).get(cluster2["id"])
 
-        resp = self.app.post(
-            reverse('ClusterCollectionHandler'),
-            json.dumps({
-                'name': 'cluster-name',
-                'release': cluster_db.release.id,
-            }),
+        for clstr in (cluster_db, cluster2_db):
+            management_net = self.db.query(NetworkGroup).filter_by(
+                name="management",
+                cluster_id=clstr.id
+            ).first()
+            NetworkConfiguration.update(
+                clstr,
+                {
+                    "networks": [
+                        {
+                            "network_size": 65536,
+                            "name": "management",
+                            "ip_ranges": [
+                                ["192.168.0.2", "192.168.255.254"]
+                            ],
+                            "amount": 1,
+                            "id": management_net.id,
+                            "netmask": "255.255.255.0",
+                            "cluster_id": clstr.id,
+                            "vlan_start": 101,
+                            "cidr": "192.168.0.0/16",
+                            "gateway": "192.168.0.1"
+                        }
+                    ]
+                }
+            )
+
+        cluster1_nets = json.loads(self.app.get(
+            reverse('NetworkConfigurationHandler',
+                    {"cluster_id": cluster["id"]}),
             headers=self.default_headers,
-            expect_errors=True
-        )
-        # we now allow to create environments with the same
-        # ip ranges and cidrs
-        self.assertEquals(201, resp.status)
+        ).body)["networks"]
+        cluster2_nets = json.loads(self.app.get(
+            reverse('NetworkConfigurationHandler',
+                    {"cluster_id": cluster2["id"]}),
+            headers=self.default_headers,
+        ).body)["networks"]
+
+        for net1, net2 in zip(cluster1_nets, cluster2_nets):
+            for f in ('cluster_id', 'id'):
+                del net1[f]
+                del net2[f]
+
+        cluster1_nets = sorted(cluster1_nets, key=lambda n: n['vlan_start'])
+        cluster2_nets = sorted(cluster2_nets, key=lambda n: n['vlan_start'])
+
+        self.assertEquals(cluster1_nets, cluster2_nets)
 
     def test_cluster_creation_same_networks(self):
         cluster1_id = self.env.create_cluster(api=True)["id"]
