@@ -302,7 +302,7 @@ class NetworkManager(object):
                     logger.info(
                         u"Node id='{0}' already has an IP address "
                         "inside '{1}' network.".format(
-                            node.id,
+                            node_id,
                             network.name
                         )
                     )
@@ -723,7 +723,7 @@ class NetworkManager(object):
 
     def get_default_nic_networkgroups(self, node_id, nic_id):
         main_nic_id = self.get_main_nic(node_id)
-        return self.get_all_cluster_networkgroups(node.id) \
+        return self.get_all_cluster_networkgroups(node_id) \
             if nic_id == main_nic_id else []
 
     def get_all_cluster_networkgroups(self, node_id):
