@@ -47,7 +47,7 @@ class RedHatAccountHandler(JSONHandler):
 
     validator = RedHatAcountValidator
 
-    def timeout_command(self, command, timeout=5):
+    def timeout_command(self, command):
         """call shell-command and either return its output or kill it
         if it doesn't normally exit within timeout seconds and return None"""
 
@@ -58,7 +58,7 @@ class RedHatAccountHandler(JSONHandler):
         while process.poll() is None:
             time.sleep(0.1)
             now = datetime.datetime.now()
-            if (now - start).seconds > timeout:
+            if (now - start).seconds > settings.PROCESS_TIMEOUT:
                 os.kill(process.pid, signal.SIGKILL)
                 os.waitpid(-1, os.WNOHANG)
                 return None

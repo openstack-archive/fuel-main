@@ -128,11 +128,12 @@ class TestHandlers(BaseHandlers):
     @patch('os.waitpid')
     def test_timeout_command(self, mock_sleep, mock_kill, mock_waitpid):
         command = 'ls -al'
+        settings.PROCESS_TIMEOUT = 0
         with patch('subprocess.Popen') as popen:
             instance = popen.return_value
             instance.poll.return_value = None
             handler = RedHatAccountHandler()
-            retval = handler.timeout_command(shlex.split(command), 0)
+            retval = handler.timeout_command(shlex.split(command))
             self.assertEquals(retval, None)
 
         with patch('subprocess.Popen') as popen:
@@ -140,5 +141,5 @@ class TestHandlers(BaseHandlers):
             instance.stdout.read.return_value = 'stdout'
             instance.stderr.read.return_value = 'stderr'
             handler = RedHatAccountHandler()
-            retval = handler.timeout_command(shlex.split(command), 0)
+            retval = handler.timeout_command(shlex.split(command))
             self.assertEquals(retval, ('stdout', 'stderr'))
