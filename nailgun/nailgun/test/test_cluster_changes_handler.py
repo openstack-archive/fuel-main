@@ -54,9 +54,9 @@ class TestHandlers(BaseHandlers):
         cluster_depl_mode = 'ha'
 
         # Set ip ranges for floating ips
-        ranges = [['240.0.0.2', '240.0.0.4'],
-                  ['240.0.0.3', '240.0.0.5'],
-                  ['240.0.0.10', '240.0.0.12']]
+        ranges = [['172.16.0.2', '172.16.0.4'],
+                  ['172.16.0.3', '172.16.0.5'],
+                  ['172.16.0.10', '172.16.0.12']]
 
         floating_network_group = self.db.query(NetworkGroup).filter(
             NetworkGroup.name == 'floating').filter(
@@ -100,14 +100,14 @@ class TestHandlers(BaseHandlers):
                 cluster_attrs[net.name + '_network_range'] = net.cidr
 
         cluster_attrs['floating_network_range'] = [
-            '240.0.0.10',
-            '240.0.0.11',
-            '240.0.0.12',
+            '172.16.0.10',
+            '172.16.0.11',
+            '172.16.0.12',
 
-            '240.0.0.2',
-            '240.0.0.3',
-            '240.0.0.4',
-            '240.0.0.5']
+            '172.16.0.2',
+            '172.16.0.3',
+            '172.16.0.4',
+            '172.16.0.5']
 
         management_vip = self.env.network_manager.assign_vip(
             cluster_db.id,
@@ -157,15 +157,15 @@ class TestHandlers(BaseHandlers):
                           'progress': 0, 'meta': n.meta, 'online': True,
                           'network_data': [{'brd': '192.168.0.255',
                                             'ip': node_ip_management,
-                                            'vlan': 103,
+                                            'vlan': 101,
                                             'gateway': '192.168.0.1',
                                             'netmask': '255.255.255.0',
                                             'dev': 'eth0',
                                             'name': 'management'},
-                                           {'brd': '240.0.1.255',
+                                           {'brd': '172.16.1.255',
                                             'ip': node_ip_public,
                                             'vlan': 100,
-                                            'gateway': '240.0.1.1',
+                                            'gateway': '172.16.1.1',
                                             'netmask': '255.255.255.128',
                                             'dev': 'eth0',
                                             'name': u'public'},
@@ -174,12 +174,12 @@ class TestHandlers(BaseHandlers):
                                             'vlan': 102,
                                             'dev': 'eth0',
                                             'netmask': '255.255.255.0',
-                                            'brd': '172.16.0.255',
-                                            'gateway': u'172.16.0.1'},
+                                            'brd': '192.168.1.255',
+                                            'gateway': u'192.168.1.1'},
                                            {'vlan': 100,
                                             'name': 'floating',
                                             'dev': 'eth0'},
-                                           {'vlan': 101,
+                                           {'vlan': 103,
                                             'name': 'fixed',
                                             'dev': 'eth0'},
                                            {'name': u'admin',
@@ -288,43 +288,31 @@ class TestHandlers(BaseHandlers):
 
         deployment_task = self.env.launch_deployment()
 
-        class VlanMatcher:
-            def __init__(self):
-                self.result = True
-
-            def __eq__(self, *args, **kwargs):
-                # Deploy message
-                message = args[0][1]
-                self.is_eql(
-                    message['args']['attributes']['network_manager'],
-                    'VlanManager')
-                self.is_eql(
-                    message['args']['attributes']['network_size'], 256)
-                self.is_eql(
-                    message['args']['attributes']['num_networks'], 1)
-                self.is_eql(
-                    message['args']['attributes']['vlan_start'], 101)
-
-                for node in message['args']['nodes']:
-                    # Set vlan interface
-                    self.is_eql(
-                        node['vlan_interface'],
-                        'eth0')
-
-                    # Don't set fixed network
-                    fix_networks = filter(
-                        lambda net: net['name'] == 'fixed',
-                        node['network_data'])
-                    self.is_eql(fix_networks, [])
-
-                return self.result
-
-            def is_eql(self, first, second):
-                if first != second:
-                    self.result = False
-
-        nailgun.task.manager.rpc.cast.assert_called_with(
-            'naily', VlanMatcher())
+        args, kwargs = nailgun.task.manager.rpc.cast.call_args
+        message = args[1][1]
+        self.assertEquals(
+            message['args']['attributes']['network_manager'],
+            'VlanManager'
+        )
+        self.assertEquals(
+            message['args']['attributes']['network_size'],
+            256
+        )
+        self.assertEquals(
+            message['args']['attributes']['num_networks'],
+            1
+        )
+        self.assertEquals(
+            message['args']['attributes']['vlan_start'],
+            103
+        )
+        for node in message['args']['nodes']:
+            self.assertEquals(node['vlan_interface'], 'eth0')
+            fix_networks = filter(
+                lambda net: net['name'] == 'fixed',
+                node['network_data']
+            )
+            self.assertEquals(fix_networks, [])
 
     @fake_tasks(fake_rpc=False, mock_rpc=False)
     @patch('nailgun.rpc.cast')

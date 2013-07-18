@@ -42,10 +42,10 @@ class TestFixture(BaseHandlers):
                 "description": "Sample release for testing",
                 "operating_system": "CentOS",
                 "networks_metadata": [
-                  {"name": "floating", "access": "public"},
-                  {"name": "fixed", "access": "private10"},
-                  {"name": "management", "access": "private172"},
-                  {"name": "storage", "access": "private192"}
+                    {"name": "floating", "access": "public"},
+                    {"name": "management", "access": "private192"},
+                    {"name": "storage", "access": "private192"},
+                    {"name": "fixed", "access": "private10"}
                 ]
             }
         }]'''

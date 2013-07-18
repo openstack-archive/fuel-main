@@ -121,9 +121,9 @@ class TestHandlers(BaseHandlers):
         release.operating_system = "CentOS"
         release.networks_metadata = [
             {"name": "floating", "access": "public"},
-            {"name": "fixed", "access": "private10"},
+            {"name": "management", "access": "private192"},
             {"name": "storage", "access": "private192"},
-            {"name": "management", "access": "private172"},
+            {"name": "fixed", "access": "private10"}
         ]
         release.attributes_metadata = {
             "editable": {
@@ -167,14 +167,14 @@ class TestHandlers(BaseHandlers):
                 'name': u'floating',
                 'access': 'public',
                 'vlan_id': 100,
-                'cidr': '240.0.0.0/24',
-                'gateway': '240.0.0.1'
+                'cidr': '172.16.0.0/24',
+                'gateway': '172.16.0.1'
             },
             {
                 'release': release.id,
                 'name': u'fixed',
                 'access': 'private10',
-                'vlan_id': 101,
+                'vlan_id': 103,
                 'cidr': '10.0.0.0/24',
                 'gateway': '10.0.0.1'
             },
@@ -183,16 +183,16 @@ class TestHandlers(BaseHandlers):
                 'name': u'storage',
                 'access': 'private192',
                 'vlan_id': 102,
-                'cidr': '192.168.0.0/24',
-                'gateway': '192.168.0.1'
+                'cidr': '192.168.1.0/24',
+                'gateway': '192.168.1.1'
             },
             {
                 'release': release.id,
                 'name': u'management',
-                'access': 'private172',
-                'vlan_id': 103,
-                'cidr': '172.16.0.0/24',
-                'gateway': '172.16.0.1'
+                'access': 'private192',
+                'vlan_id': 101,
+                'cidr': '192.168.0.0/24',
+                'gateway': '192.168.0.1'
             },
         ]
         self.assertItemsEqual(expected, obtained)
