@@ -23,6 +23,7 @@ from nailgun.db import db
 from nailgun.api.models import Notification
 from nailgun.api.validators.notification import NotificationValidator
 from nailgun.api.handlers.base import JSONHandler, content_json
+from nailgun.settings import settings
 
 
 class NotificationHandler(JSONHandler):
@@ -75,11 +76,9 @@ class NotificationCollectionHandler(JSONHandler):
 
     @content_json
     def GET(self):
-        user_data = web.input(limit=None)
+        user_data = web.input(limit=settings.MAX_ITEMS_PER_PAGE)
         limit = user_data.limit
-        query = db().query(Notification)
-        if limit:
-            query = query.limit(limit)
+        query = db().query(Notification).limit(limit)
         notifications = query.all()
         return map(
             NotificationHandler.render,
