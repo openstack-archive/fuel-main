@@ -327,8 +327,9 @@ class Actor(object):
             yield iface
 
     def _log_ifaces(self, prefix="Current interfaces"):
-        self.logger.debug("%s: \n%s", prefix,
-                          self._execute(['ip', 'address']).read())
+        self.logger.debug(prefix)
+        for line in self._execute(['ip', 'address']):
+            self.logger.debug(line.rstrip())
 
 
 class Sender(Actor):
