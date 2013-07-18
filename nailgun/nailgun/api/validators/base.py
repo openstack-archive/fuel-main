@@ -14,11 +14,13 @@
 #    under the License.
 
 import json
+from jsonschema import validate
 
 from nailgun.errors import errors
 
 
 class BasicValidator(object):
+
     @classmethod
     def validate_json(cls, data):
         if data:
@@ -39,3 +41,10 @@ class BasicValidator(object):
     @classmethod
     def validate(cls, data):
         return cls.validate_json(data)
+
+    @classmethod
+    def validate_scheme(cls, data, schema):
+        try:
+            validate(data, schema)
+        except Exception as exc:
+            raise errors.InvalidData(exc.message)
