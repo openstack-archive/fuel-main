@@ -26,6 +26,7 @@ from nailgun.test.base import reverse
 from nailgun.errors import errors
 from nailgun.api.models import Node, IPAddr, Vlan, IPAddrRange
 from nailgun.api.models import Network, NetworkGroup
+from nailgun.api.models import NodeNICInterface
 from nailgun.settings import settings
 from nailgun.test.base import fake_tasks
 
@@ -83,6 +84,25 @@ class TestNetworkManager(BaseHandlers):
         self.assertEquals(False, net_ip in assigned_ips)
         self.assertEquals(False, gateway in assigned_ips)
         self.assertEquals(False, broadcast in assigned_ips)
+
+    def test_get_default_nic_networkgroups(self):
+        self.env.create(
+            cluster_kwargs={},
+            nodes_kwargs=[
+                {"pending_addition": True, "api": True},
+                {"pending_addition": True, "api": True}
+            ]
+        )
+        node_db = self.env.nodes[0]
+        nic_id = self.env.network_manager.get_main_nic(node_db.id)
+        ngs = self.env.network_manager.get_default_nic_networkgroups(
+            node_db.id,
+            nic_id
+        )
+        self.assertEquals(
+            ngs,
+            [ng.id for ng in node_db.cluster.network_groups]
+        )
 
     def test_assign_vip(self):
         cluster = self.env.create_cluster(api=True)
