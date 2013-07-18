@@ -58,7 +58,7 @@ class RedHatAccountHandler(JSONHandler):
         while process.poll() is None:
             time.sleep(0.1)
             now = datetime.datetime.now()
-            if (now - start).seconds > settings.PROCESS_TIMEOUT:
+            if (now - start).seconds > settings.RHEL_VALIDATION_TIMEOUT:
                 os.kill(process.pid, signal.SIGKILL)
                 os.waitpid(-1, os.WNOHANG)
                 return None

@@ -128,7 +128,7 @@ class TestHandlers(BaseHandlers):
     @patch('os.waitpid')
     def test_timeout_command(self, mock_sleep, mock_kill, mock_waitpid):
         command = 'ls -al'
-        settings.PROCESS_TIMEOUT = 0
+        settings.RHEL_VALIDATION_TIMEOUT = 0
         with patch('subprocess.Popen') as popen:
             instance = popen.return_value
             instance.poll.return_value = None
