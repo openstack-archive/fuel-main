@@ -317,7 +317,8 @@ class VolumeManager(object):
             volume['size'] = size
 
         # Recalculate sizes of volume groups
-        volumes_metadata = self.node.cluster.release.volumes_metadata['volumes']
+        volumes_metadata = self.node.cluster.release.volumes_metadata[
+            'volumes']
         for index, volume in enumerate(self.volumes):
             if volume.get('type') != 'vg':
                 continue
