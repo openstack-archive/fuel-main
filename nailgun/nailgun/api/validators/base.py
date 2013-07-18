@@ -43,7 +43,7 @@ class BasicValidator(object):
         return cls.validate_json(data)
 
     @classmethod
-    def validate_scheme(cls, data, schema):
+    def validate_schema(cls, data, schema):
         try:
             validate(data, schema)
         except Exception as exc:

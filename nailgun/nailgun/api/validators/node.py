@@ -18,7 +18,7 @@ from nailgun.errors import errors
 from nailgun.api.models import Node
 from nailgun.volumes.manager import VolumeManager
 from nailgun.api.validators.base import BasicValidator
-from nailgun.api.validators.json_schemes.disks \
+from nailgun.api.validators.json_schema.disks \
     import disks_simple_format_schema
 
 
@@ -196,7 +196,7 @@ class NodeDisksValidator(BasicValidator):
     @classmethod
     def validate(cls, data):
         dict_data = cls.validate_json(data)
-        cls.validate_scheme(dict_data, disks_simple_format_schema)
+        cls.validate_schema(dict_data, disks_simple_format_schema)
         cls.sum_of_volumes_not_greater_than_disk_size(dict_data)
         return dict_data
 
