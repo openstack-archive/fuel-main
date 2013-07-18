@@ -60,12 +60,18 @@ function(utils, models, commonViews, dialogViews, healthcheckTabTemplate, health
             this.calculateSelectAllTumblerState();
             this.calculateTestControlButtonsState();
         },
+        getActiveTestRuns: function() {
+            return this.testruns.filter(function(testrun) {
+                var statuses = _.pluck(testrun.get('tests'), 'status');
+                return _.intersection(statuses, ['running', 'wait_running']).length;
+            }, this);
+        },
         hasRunningTests: function() {
-            return !!_.intersection(_.pluck(_.flatten(this.testruns.pluck('tests'), true), 'status'), ['running', 'wait_running']).length;
+            return !!this.getActiveTestRuns().length;
         },
         scheduleUpdate: function() {
             if (this.hasRunningTests()) {
-                this.registerDeferred($.timeout(this.updateInterval).done(_.bind(this.update, this)));
+                this.registerDeferred(this.timeout = $.timeout(this.updateInterval).done(_.bind(this.update, this)));
             }
         },
         update: function() {
@@ -102,7 +108,20 @@ function(utils, models, commonViews, dialogViews, healthcheckTabTemplate, health
             }, this));
         },
         stopTests: function() {
-
+            var testruns = new models.TestRuns(this.getActiveTestRuns());
+            if (testruns.length) {
+                this.disableControls(true);
+                testruns.invoke('set', {status: 'stopped'});
+                testruns.toJSON = function() {
+                    return this.map(function(testrun) {
+                        return _.pick(testrun.attributes, 'id', 'status');
+                    });
+                };
+                Backbone.sync('update', testruns).done(_.bind(function() {
+                    this.timeout && this.timeout.clear();
+                    this.update();
+                }, this));
+            }
         },
         updateTestRuns: function() {
             _.each(this.subViews, function(subView) {
