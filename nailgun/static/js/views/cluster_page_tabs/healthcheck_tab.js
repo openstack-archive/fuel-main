@@ -43,8 +43,10 @@ function(utils, models, commonViews, dialogViews, healthcheckTabTemplate, health
         disableControls: function(disable) {
             this.$('.btn, input').prop('disabled', disable || this.isLocked());
         },
-        calculateRunTestsButtonState: function() {
-            this.$('.run-tests-btn').prop('disabled', !this.$('input.testset-select:checked').length || this.hasRunningTests());
+        calculateTestControlButtonsState: function() {
+            var hasRunningTests = this.hasRunningTests();
+            this.$('.run-tests-btn').prop('disabled', !this.$('input.testset-select:checked').length || hasRunningTests).toggle(!hasRunningTests);
+            this.$('.stop-tests-btn').prop('disabled', !hasRunningTests).toggle(hasRunningTests);
         },
         calculateSelectAllTumblerState: function() {
             this.$('.select-all-tumbler').prop('checked', this.$('input.testset-select:checked').length == this.$('input.testset-select').length);
@@ -52,11 +54,11 @@ function(utils, models, commonViews, dialogViews, healthcheckTabTemplate, health
         allTestSetsSelected: function(e) {
             var checked = $(e.currentTarget).is(':checked');
             this.$('input.testset-select').prop('checked', checked);
-            this.calculateRunTestsButtonState();
+            this.calculateTestControlButtonsState();
         },
         testSetSelected: function() {
             this.calculateSelectAllTumblerState();
-            this.calculateRunTestsButtonState();
+            this.calculateTestControlButtonsState();
         },
         hasRunningTests: function() {
             return !!_.intersection(_.pluck(_.flatten(this.testruns.pluck('tests'), true), 'status'), ['running', 'wait_running']).length;
@@ -73,8 +75,8 @@ function(utils, models, commonViews, dialogViews, healthcheckTabTemplate, health
                         if (!this.hasRunningTests()) {
                             this.$('input[type=checkbox]').prop('checked', false);
                             this.disableControls(false);
-                            this.calculateRunTestsButtonState();
                         }
+                        this.calculateTestControlButtonsState();
                     }, this))
                     .always(_.bind(this.scheduleUpdate, this))
             );
@@ -167,7 +169,7 @@ function(utils, models, commonViews, dialogViews, healthcheckTabTemplate, health
                 }, this);
             }
             this.disableControls(false);
-            this.calculateRunTestsButtonState();
+            this.calculateTestControlButtonsState();
             return this;
         }
     });
