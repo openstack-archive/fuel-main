@@ -14,7 +14,10 @@
     </div>
     <div class="accordion" id="nodeDetailsAccordion">
       <% var meta = node.get('meta') %>
-      <% _.each(meta, function(groupEntries, group) { %>
+      <% var groupOrder = ['system', 'cpu', 'memory', 'disks', 'interfaces'] %>
+      <% var groups = _.sortBy(_.keys(meta), function(group) {return _.indexOf(groupOrder, group)}) %>
+      <% _.each(groups, function(group) { %>
+        <% var groupEntries = meta[group] %>
         <div class="accordion-group">
           <div class="accordion-heading">
             <div class="accordion-toggle" data-group="<%- group %>">
