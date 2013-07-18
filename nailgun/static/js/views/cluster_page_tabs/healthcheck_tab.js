@@ -118,7 +118,9 @@ function(utils, models, commonViews, dialogViews, healthcheckTabTemplate, health
                     });
                 };
                 Backbone.sync('update', testruns).done(_.bind(function() {
-                    this.timeout && this.timeout.clear();
+                    if (this.timeout) {
+                        this.timeout.clear();
+                    }
                     this.update();
                 }, this));
             }
