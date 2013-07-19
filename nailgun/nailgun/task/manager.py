@@ -293,3 +293,27 @@ class DownloadReleaseTaskManager(TaskManager):
             self.release_data
         )
         return task
+
+
+class RedHatAccountValidationTaskManager(TaskManager):
+    def __init__(self, data):
+        self.data = data
+
+    def execute(self):
+        logger.debug("Creating validate_redhat_account task")
+        task = Task(name="validate_redhat_account")
+        db().add(task)
+        db().commit()
+        self._call_silently(
+            task,
+            tasks.ValidateRedHatAccountTask,
+            self.data)
+        db().refresh(task)
+        if task.status != 'error':
+            download_task = task.create_subtask('download_release')
+            self._call_silently(
+                download_task,
+                tasks.DownloadReleaseTask,
+                self.data
+            )
+        return task

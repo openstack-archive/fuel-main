@@ -14,9 +14,13 @@
 #    License for the specific language governing permissions and limitations
 #    under the License.
 
+import datetime
 import uuid
 import itertools
+import os
+import time
 import traceback
+import signal
 import subprocess
 import shlex
 import json
@@ -775,4 +779,66 @@ class DownloadReleaseTask(object):
     def __update_release_state(cls, release_id):
         release = db().query(Release).get(release_id)
         release.state = 'downloading'
+        db().commit()
+
+
+class ValidateRedHatAccountTask(object):
+    @classmethod
+    def timeout_command(cls, command):
+        """call shell-command and either return its output or kill it
+        if it doesn't normally exit within timeout seconds and return None"""
+
+        start = datetime.datetime.now()
+        process = subprocess.Popen(command,
+                                   stdout=subprocess.PIPE,
+                                   stderr=subprocess.PIPE)
+        while process.poll() is None:
+            time.sleep(0.1)
+            now = datetime.datetime.now()
+            if (now - start).seconds > settings.RHEL_VALIDATION_TIMEOUT:
+                os.kill(process.pid, signal.SIGKILL)
+                os.waitpid(-1, os.WNOHANG)
+                return None
+        return process.stdout.read(), process.stderr.read()
+
+    @classmethod
+    def execute(cls, task, data):
+        account_data = data['redhat']
+        task.status = 'ready'
+        if settings.FAKE_TASKS:
+            if account_data["username"] != "rheltest":
+                task.message = "Invalid username or password"
+                task.status = 'error'
+        else:
+            try:
+                logger.info("Testing RH credentials with user %s",
+                            account_data.get('username'))
+
+                cmd = 'subscription-manager orgs --username ' + \
+                      '"%s" --password "%s"' % \
+                      (account_data.get("username"),
+                       account_data.get("password"))
+
+                output = cls.timeout_command(shlex.split(cmd))
+                if not output:
+                    logger.error('Time out during executing command: %s' % cmd)
+                    task.message = 'Timed out. Please, try again.'
+                    task.status = 'error'
+
+                logger.info(
+                    "'{0}' executed, STDOUT: '{1}',"
+                    " STDERR: '{2}'".format(cmd, output[0], output[1]))
+
+            except OSError:
+                logger.warning(
+                    "'{0}' returned non-zero exit code".format(cmd))
+                task.message = 'Invalid credentials'
+                task.status = 'error'
+            except ValueError:
+                error_msg = "Not valid parameters: '{0}'".format(cmd)
+                logger.warning(error_msg)
+                task.message = 'Invalid credentials'
+                ask.status = 'error'
+
+        db().add(task)
         db().commit()

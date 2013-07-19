@@ -20,12 +20,10 @@ import mock
 from mock import patch
 
 import nailgun
-from nailgun.api.handlers.redhat import RedHatAccountHandler
 from nailgun.api.models import Release
 from nailgun.settings import settings
-
-
 from nailgun.api.handlers.redhat import RedHatAccountHandler
+from nailgun.task.task import ValidateRedHatAccountTask
 from nailgun.api.models import RedHatAccount
 from nailgun.test.base import BaseHandlers
 from nailgun.test.base import fake_tasks
@@ -83,6 +81,7 @@ class TestHandlers(BaseHandlers):
             expect_errors=True)
         self.assertEquals(resp.status, 400)
 
+    @fake_tasks()
     def test_redhat_account_get(self):
         resp = self.app.get(
             reverse('RedHatAccountHandler'),
@@ -92,7 +91,7 @@ class TestHandlers(BaseHandlers):
         resp = self.app.post(
             reverse('RedHatAccountHandler'),
             json.dumps({'license_type': 'rhsm',
-                        'username': 'user',
+                        'username': 'rheltest',
                         'password': 'password',
                         'release_id': 1}),
             headers=self.default_headers)
@@ -108,20 +107,21 @@ class TestHandlers(BaseHandlers):
         self.assertTrue(
             all(k in response for k in RedHatAccountHandler.fields))
 
+    @fake_tasks()
     def test_redhat_account_update(self):
         for i in xrange(2):
-            username = 'user{0}'.format(i)
+            password = 'password{0}'.format(i)
             resp = self.app.post(
                 reverse('RedHatAccountHandler'),
                 json.dumps({'license_type': 'rhsm',
-                            'username': username,
+                            'username': 'rheltest',
                             'password': 'password',
                             'release_id': 1}),
                 headers=self.default_headers)
             self.assertEquals(resp.status, 200)
             query = self.env.db.query(RedHatAccount)
             self.assertEquals(query.count(), 1)
-            self.assertEquals(query.filter_by(username=username).count(), 1)
+        self.assertEquals(query.filter_by(username='rheltest').count(), 1)
 
     @patch('time.sleep')
     @patch('os.kill')
@@ -132,14 +132,14 @@ class TestHandlers(BaseHandlers):
         with patch('subprocess.Popen') as popen:
             instance = popen.return_value
             instance.poll.return_value = None
-            handler = RedHatAccountHandler()
-            retval = handler.timeout_command(shlex.split(command))
+            retval = \
+                ValidateRedHatAccountTask.timeout_command(shlex.split(command))
             self.assertEquals(retval, None)
 
         with patch('subprocess.Popen') as popen:
             instance = popen.return_value
             instance.stdout.read.return_value = 'stdout'
             instance.stderr.read.return_value = 'stderr'
-            handler = RedHatAccountHandler()
-            retval = handler.timeout_command(shlex.split(command))
+            retval = \
+                ValidateRedHatAccountTask.timeout_command(shlex.split(command))
             self.assertEquals(retval, ('stdout', 'stderr'))
