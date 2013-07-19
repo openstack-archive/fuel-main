@@ -444,18 +444,8 @@ class TestDisks(BaseHandlers):
             lambda volume: volume.get('mount') == '/boot',
             volumes)[0]
 
-    def create_disk(self,
-                    generator_method=None,
-                    disk_id='sda',
-                    size=10000,
-                    boot_is_raid=False):
-
-        if generator_method is None:
-            generator = lambda name: 100
-        else:
-            generator = generator_method
-
-        return Disk(generator, disk_id, size, boot_is_raid)
+    def create_disk(self, boot_is_raid=False):
+        return Disk(lambda name: 100, 'sda', 10000, boot_is_raid)
 
     def test_create_mbr_as_raid_if_disks_count_greater_than_zero(self):
         disk = self.create_disk(boot_is_raid=True)
