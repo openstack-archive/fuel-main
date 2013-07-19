@@ -458,7 +458,7 @@ class TestHandlers(BaseHandlers):
         self.assertEquals(task.status, 'error')
         self.assertEquals(
             task.message,
-            "Node '%s' has insufficient disk space for OS" %
+            "Node '%s' has insufficient disk space" %
             node.human_readable_name)
 
     def test_occurs_error_not_enough_controllers_for_multinode(self):
