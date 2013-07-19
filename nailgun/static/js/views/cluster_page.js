@@ -275,6 +275,9 @@ function(utils, models, commonViews, dialogViews, NodesTab, NetworkTab, Settings
                 var progress = task.get('progress') || 0;
                 this.$('.bar').css('width', (progress > 3 ? progress : 3) + '%');
                 this.$('.percentage').text(progress + '%');
+                if (task.get('name') == 'download_release' && (task.get('status')=='error'|| progress ==100)) {
+                    task.destroy();
+                }
             }
         },
         render: function() {

@@ -77,6 +77,7 @@ function(commonViews, dialogViews, releasesListTemplate, releaseTemplate) {
             } else {
                 this.$('.release-status').removeClass('not-available').html('Available');
             }
+            task.destroy();
         },
         updateProgress: function(){
             var task = app.page.tasks.getDownloadTask(this.release.id);
