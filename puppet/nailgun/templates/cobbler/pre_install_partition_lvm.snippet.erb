@@ -175,7 +175,7 @@ echo "partition $p['name'] --size=$p['size'] --ondisk=$p['ondisk']" >> /tmp/part
             #if $num_spares > 0
 echo "raid $raid_mount --device $md_name --spares=$num_spares --fstype ext3 --level=RAID1 $ks_raids" >> /tmp/partition.ks
             #else
-echo "raid $raidmount --device $md_name --fstype ext3 --level=RAID1 $ks_raids" >> /tmp/partition.ks
+echo "raid $raid_mount --device $md_name --fstype ext3 --level=RAID1 $ks_raids" >> /tmp/partition.ks
             #end if
         #end if
         #set $mdnum += 1
