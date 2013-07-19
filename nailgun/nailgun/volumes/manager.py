@@ -53,7 +53,7 @@ def byte_to_megabyte(byte):
     return byte / 1024 ** 2
 
 
-class DisksFormatConvertor:
+class DisksFormatConvertor(object):
     '''
     Class converts format from `simple` in which we
     communicate with UI to `full` in which we store
