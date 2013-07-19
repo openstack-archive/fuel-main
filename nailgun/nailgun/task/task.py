@@ -819,7 +819,7 @@ class ValidateRedHatAccountTask(object):
                       (account_data.get("username"),
                        account_data.get("password"))
 
-                output = cls.timeout_command(shlex.split(cmd))
+                output = cls.timeout_command(shlex.split(cmd.encode('utf-8')))
                 if not output:
                     logger.error('Time out during executing command: %s' % cmd)
                     task.message = 'Timed out. Please, try again.'
