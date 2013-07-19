@@ -2,7 +2,7 @@
   <table class="table table-bordered healthcheck-table enable-selection">
     <thead>
       <tr>
-        <th colspan="3">
+        <th>
           <label class="parameter-box clearfix">
             <div class="parameter-control">
               <div class="custom-tumbler">
@@ -13,6 +13,9 @@
             <div class="parameter-name" style="cursor: pointer"><%- testset.get('name') %></div>
           </label>
         </th>
+        <th class="healthcheck-col-duration">Expected Duration</th>
+        <th class="healthcheck-col-duration">Actual Duration</th>
+        <th class="healthcheck-col-status">Status</th>
       </tr>
     </thead>
     <tbody></tbody>
