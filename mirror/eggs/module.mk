@@ -50,5 +50,8 @@ $(BUILD_DIR)/mirror/eggs/build.done: \
 	# # Copying downloaded eggs into eggs mirror
 	rsync -a $(SANDBOX)/tmp/$(notdir $(LOCAL_MIRROR_EGGS))/ $(LOCAL_MIRROR_EGGS)
 
+	# This is an ugly hack to get gateone egg
+	wget -P $(LOCAL_MIRROR_EGGS) "https://dl.dropboxusercontent.com/u/815425/gateone-1.2.0.tar.gz"
+
 	sudo sh -c "$${SANDBOX_DOWN}"
 	$(ACTION.TOUCH)

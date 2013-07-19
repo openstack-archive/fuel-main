@@ -7,7 +7,6 @@ anyjson==0.3.1
 argparse==1.2.1
 distribute==0.6.30
 eventlet==0.9.17
-gateone==1.2.0
 greenlet==0.4.0
 kombu==2.1.8
 netaddr==0.7.10
