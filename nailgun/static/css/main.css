@@ -4143,7 +4143,7 @@ input.input-append {
 
 /* OpenStack Health Check */
 .healthcheck-table {margin: 0px 0px 30px 0px; }
-.healthcheck-name {font-size: 15px; margin: 5px 0px 5px 0px;}
+.healthcheck-name, .healthcheck-duration {font-size: 15px; margin: 5px 0px 5px 0px;}
 .healthcheck-status {font-size: 20px; margin-top: 3px; text-align: center;}
 .healthcheck-msg {font-size: 13px; line-height: 15px;}
 .healthcheck-progress {height: 12px; margin-bottom: 0px; margin-top: 8px;}
@@ -4151,6 +4151,7 @@ input.input-append {
 .healthcheck-status-success {color: #2e8701;}
 .healthcheck-status-failure, .healthcheck-status-error {color: #890000;}
 .healthcheck-table .healthcheck-col-status {width: 50px;}
+.healthcheck-table .healthcheck-col-duration {width: 100px; text-align: center; color: #777777}
 
 .animate-spin {
   -moz-animation: spin 2s infinite linear;

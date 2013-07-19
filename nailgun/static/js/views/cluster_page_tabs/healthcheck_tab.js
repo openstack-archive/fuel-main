@@ -30,7 +30,7 @@ function(utils, models, commonViews, dialogViews, healthcheckTabTemplate, health
 
     HealthCheckTab = commonViews.Tab.extend({
         template: _.template(healthcheckTabTemplate),
-        updateInterval: 5000,
+        updateInterval: 3000,
         events: {
             'change input.testset-select': 'testSetSelected',
             'change input.select-all-tumbler': 'allTestSetsSelected',
@@ -89,23 +89,20 @@ function(utils, models, commonViews, dialogViews, healthcheckTabTemplate, health
         },
         runTests: function() {
             this.disableControls(true);
-            var metadata = new models.OSTFClusterMetadata();
-            metadata.fetch({url: _.result(metadata, 'url') + '/' + this.model.id}).always(_.bind(function() {
-                var testruns = new models.TestRuns();
-                _.each(this.subViews, function(subView) {
-                    if (subView instanceof TestSet && subView.$('input.testset-select:checked').length) {
-                        var testrun = new models.TestRun({
-                            testset: subView.testset.id,
-                            metadata: {
-                                config: {}, //metadata.toJSON(),
-                                cluster_id: this.model.id
-                            }
-                        });
-                        testruns.add(testrun);
-                    }
-                }, this);
-                Backbone.sync('create', testruns).done(_.bind(this.update, this));
-            }, this));
+            var testruns = new models.TestRuns();
+            _.each(this.subViews, function(subView) {
+                if (subView instanceof TestSet && subView.$('input.testset-select:checked').length) {
+                    var testrun = new models.TestRun({
+                        testset: subView.testset.id,
+                        metadata: {
+                            config: {},
+                            cluster_id: this.model.id
+                        }
+                    });
+                    testruns.add(testrun);
+                }
+            }, this);
+            Backbone.sync('create', testruns).done(_.bind(this.update, this));
         },
         stopTests: function() {
             var testruns = new models.TestRuns(this.getActiveTestRuns());

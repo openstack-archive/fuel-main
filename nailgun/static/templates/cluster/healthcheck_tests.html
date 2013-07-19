@@ -13,6 +13,9 @@
         </div>
       <% } %>
     </td>
+    <td class="healthcheck-col-duration">
+      <div class="healthcheck-duration"><%- test.get('duration') || '' %></div>
+    </td>
     <td class="healthcheck-col-status">
       <div class="healthcheck-status healthcheck-status-<%- status %>">
         <% if (status == 'success') { %>
