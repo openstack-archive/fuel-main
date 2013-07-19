@@ -9,10 +9,9 @@ echo > /tmp/partition.ks
     #set $clearpart_drives = []
     #set $physical_volumes = []
     #set $grub_drives = []
-    #set $raid_volumes = []
     #set $partitions = []
     #set $volume_groups = {}
-    #set $raid_groups = {}
+    #set $raid_volumes = {}
     #set $logical_volumes = []
     #set $post_logical_volumes = []
     #set $parted_commands = []
@@ -81,11 +80,10 @@ echo > /tmp/partition.ks
                 #set $volume_size = $int($volume.get("size") or 0)
                 #set $volume_name = "raid.%03d" % $raidnum
                 #if $volume_size > 0
-                    $raid_volumes.append("partition %s --size=%s --ondisk=%s" % ($volume_name, $volume_size, $space_id))
-                    #if not $raid_groups.get($volume_mount)
-                        #set $raid_groups[$volume_mount] = [$volume_name]
+                    #if not $raid_volumes.get($volume_mount)
+                        #set $raid_volumes[$volume_mount] = [{'size': $volume_size, 'name': $volume_name, 'ondisk': $space_id}]
                     #else
-                        $raid_groups[$volume_mount].append($volume_name)
+                        $raid_volumes[$volume_mount].append({'size': $volume_size, 'name': $volume_name, 'ondisk': $space_id})
                     #end if
                     #set $raidnum += 1
                 #end if
@@ -143,7 +141,7 @@ echo > /tmp/partition.ks
     ## Actual cleaning drives
     #######################################
     #for $d in $clearpart_drives
-dd if=/dev/zero of=/dev/$d bs=1M count=10
+test -e $d && dd if=/dev/zero of=/dev/$d bs=1M count=10
     #end for
     #######################################
     ## Actual configuring boot partitions
@@ -160,17 +158,25 @@ echo "$partition" >> /tmp/partition.ks
     #######################################
     ## Actual creating raid volumes
     #######################################
-    #for $raid in $raid_volumes
-echo "$raid" >> /tmp/partition.ks
-    #end for
-    #for $raidmount in $raid_groups.keys()
-        #set $ks_raids = " ".join($raid_groups.get($raidmount))
-        #set $num_spares = $len($raid_groups.get($raidmount)) - 2
-        #set $md_name = "md%d" % $mdnum
-        #if $num_spares > 0
-echo "raid $raidmount --device $md_name --spares=$num_spares --fstype ext3 --level=RAID1 $ks_raids" >> /tmp/partition.ks
+    #for $raid_mount in $raid_volumes.keys()
+        #if $len($raid_volumes[$raid_mount]) < 2
+            #set $size = $raid_volumes[$raid_mount][0]['size']
+            #set $ondisk = $raid_volumes[$raid_mount][0]['ondisk']
+echo "partition $raid_mount --size=$size --ondisk=$ondisk" >> /tmp/partition.ks
+            #continue
         #else
+            #set $ks_raids = ""
+            #for $p in $raid_volumes[$raid_mount]
+echo "partition $p['name'] --size=$p['size'] --ondisk=$p['ondisk']" >> /tmp/partition.ks
+                #set $ks_raids = "%s %s" % ($ks_raids, $p['name'])
+            #end for
+            #set $num_spares = $len($raid_volumes[$raid_mount]) - 2
+            #set $md_name = "md%d" % $mdnum
+            #if $num_spares > 0
+echo "raid $raid_mount --device $md_name --spares=$num_spares --fstype ext3 --level=RAID1 $ks_raids" >> /tmp/partition.ks
+            #else
 echo "raid $raidmount --device $md_name --fstype ext3 --level=RAID1 $ks_raids" >> /tmp/partition.ks
+            #end if
         #end if
         #set $mdnum += 1
     #end for
