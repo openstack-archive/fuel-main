@@ -83,7 +83,7 @@ casper.then(function() {
         this.test.assertExists('.btn-defaults:not(:disabled)', 'Load Defaults button is enabled');
         this.test.assertExists('.btn-revert-changes:not(:disabled)', 'Cancel button is enabled');
         this.test.assertExists('.btn-apply:not(:disabled)', 'Apply button is enabled');
-        this.click(sdaDiskVM + ' .use-all-unallocated');
+        this.click(sdaDiskVM + ' .use-all-allowed');
         this.test.assertExists('.btn-defaults:not(:disabled)', 'Load Defaults button is enabled');
         this.test.assertExists('.btn-revert-changes:disabled', 'Cancel button is disabled');
         this.test.assertExists('.btn-apply:disabled', 'Apply button is disabled');
@@ -109,7 +109,7 @@ casper.then(function() {
         this.click(sdaDisk + ' .disk-visual .vm .close-btn');
         this.test.assertEval(function(sdaDisk) {return $(sdaDisk + ' .disk-visual .unallocated').width() > 0}, 'There is unallocated space after Virtual Storage VG removal',{sdaDisk:sdaDisk});
         this.test.assertEvalEquals(function(sdaDiskVM) {return $(sdaDiskVM + ' input').val()}, '0', 'Volume group input control contains correct value',{sdaDiskVM:sdaDiskVM});
-        this.click(sdaDiskVM + ' .use-all-unallocated');
+        this.click(sdaDiskVM + ' .use-all-allowed');
         this.test.assertEquals(this.getElementBounds(sdaDisk + ' .disk-visual .unallocated').width, 0, 'Use all unallocated area for VM');
         this.fill(sdaDiskVM, {'vm': '0'});
         this.evaluate(function(sdaDiskVM) {
@@ -122,9 +122,9 @@ casper.then(function() {
 
 
     this.then(function() {
-        this.test.comment('Testing use all unallocated link');
-        this.click(sdaDiskOS + ' .use-all-unallocated');
-        this.test.assertEquals(this.getElementBounds(sdaDisk + ' .disk-visual .unallocated').width, 0, 'Use all unallocated link works correctly');
+        this.test.comment('Testing use all allowed link');
+        this.click(sdaDiskOS + ' .use-all-allowed');
+        this.test.assertEquals(this.getElementBounds(sdaDisk + ' .disk-visual .unallocated').width, 0, 'Use all allowed link works correctly');
     });
 
     this.then(function() {
@@ -145,12 +145,12 @@ casper.then(function() {
         this.evaluate(function(vdaDisk) {
             $(vdaDisk + ' .volume-group-box[data-volume=os] input').keyup();
         },{vdaDisk:vdaDisk});
-        this.test.assertDoesntExist(sdaDiskOS + ' input.error', 'Field validation has worked');
-        this.fill(sdaDiskVM, {'vm': '200000'});
-        this.evaluate(function(sdaDiskVM) {
-            $(sdaDiskVM + ' input').keyup();
-        },{sdaDiskVM:sdaDiskVM});
-        this.test.assertExists(sdaDiskVM + ' input.error', 'Field validation has worked in case of number that bigger than available space on disk');
+        this.test.assertDoesntExist(vdaDisk + ' .disk-visual.invalid', 'Field validation has worked');
+        this.fill(vdaDisk + ' .volume-group-box[data-volume=vm]', {'vm': '200000'});
+        this.evaluate(function(vdaDisk) {
+            $(vdaDisk + ' .volume-group-box[data-volume=vm] input').keyup();
+        },{vdaDisk:vdaDisk});
+        this.test.assertExists(vdaDisk + ' .disk-visual.invalid', 'Field validation has worked in case of number that bigger than available space on disk');
     });
 
 });

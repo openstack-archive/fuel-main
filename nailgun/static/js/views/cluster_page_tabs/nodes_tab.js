@@ -652,7 +652,7 @@ function(utils, models, commonViews, dialogViews, nodesTabSummaryTemplate, editN
         },
         events: {
             'click .toggle-volume': 'toggleEditDiskForm',
-            'click .close-btn': 'deleteVolumeGroup',
+            'click .close-btn': 'deleteVolume',
             'keyup input': 'makeChanges',
             'click .use-all-allowed': 'useAllAllowedSpace'
         },
@@ -665,73 +665,69 @@ function(utils, models, commonViews, dialogViews, nodesTabSummaryTemplate, editN
             this.disk.get('volumes').each(function(volume) {
                 var min = volume.getMinimalSize({
                     disks: this.screen.disks.reject({id: this.disk.id}),
-                    volumes: this.screen.volumes
+                    minimum: this.screen.volumes.findWhere({name: volume.get('name')}).get('min_size')
                 });
                 this.$('.disk-visual .' + volume.get('name') + ' .close-btn').toggle(min <= 0 && this.$('.disk-form').hasClass('in'));
             }, this);
         },
-        setVolumes: function() {
-            var volumes = new models.Volumes(this.disk.get('volumes').toJSON());
-            volumes.each(function(volume) {
-                volume.set({size: Number((this.$('input[name=' + volume.get('name') + ']').val()).replace(/ /g, ''))});
-            }, this);
-            return volumes;
+        validateVolume: function (volume) {
+            volume.set({size: Number((this.$('input[name=' + volume.get('name') + ']').val()).replace(/,/g, ''))}, {
+                validate: true,
+                disks: this.screen.disks.reject({id: this.disk.id}),
+                minimum: this.screen.volumes.findWhere({name: volume.get('name')}).get('min_size')
+            });
         },
-        setSize: function() {
+        setChanges: function() {
             this.$('.disk-visual').removeClass('invalid');
             this.$('input').removeClass('error').parents('.volume-group').next().text('');
             this.$('.volume-group-error-message.common').text('');
-            this.disk.set({volumes: this.setVolumes()}, {
-                validate: true,
-                disks: this.screen.disks.reject({id: this.disk.id}),
-                volumes: this.screen.volumes
-            });
+            this.disk.get('volumes').each(this.validateVolume, this); // volumes validation (minimum)
+            this.disk.set({volumes: this.disk.get('volumes')}, {validate: true}); // disk validation (maximum)
             this.renderVisualGraph();
             this.checkForGroupsDeletionAvailability();
         },
-        makeChanges: function() {
-            this.setSize();
-            _.invoke(_.omit(this.screen.subViews, this.cid), 'setSize');
+        makeChanges: function(e) {
+            this.setChanges();
+            _.invoke(_.omit(this.screen.subViews, this.cid), 'setChanges', this);
             this.screen.checkForChanges();
         },
-        deleteVolumeGroup: function(e) {
-            var volumeName = this.$(e.currentTarget).parents('.volume-group').data('volume');
-            this.$('input[name=' + volumeName + ']').val(0);
-            this.makeChanges();
+        deleteVolume: function(e) {
+            this.$('input[name=' + this.$(e.currentTarget).parents('.volume-group').data('volume') + ']').val(0).trigger('keyup');
         },
         useAllAllowedSpace: function(e) {
             var volumeName = this.$(e.currentTarget).parents('.volume-group').data('volume');
-            this.$('input[name=' + volumeName + ']').val(this.disk.getUnallocatedSpace(volumeName, this.setVolumes())).trigger('keyup');
-            this.makeChanges();
+            this.$('input[name=' + volumeName + ']').val(_.max([0, this.disk.getUnallocatedSpace({name: volumeName})])).trigger('keyup');
         },
         initialize: function(options) {
             _.defaults(this, options);
-            this.disk.on('invalid', _.bind(function(model, errors) {
+            this.disk.on('invalid', function(model, error) {
                 this.$('.disk-visual').addClass('invalid');
-                _.each(_.keys(errors), _.bind(function(error) {
-                    if (error == 'max') {
-                        this.$('input').addClass('error');
-                        this.$('.volume-group-error-message.common').text(errors[error]);
-                    } else {
-                        this.$('input[name=' + error + ']').addClass('error').parents('.volume-group').next().text(errors[error]);
-                    }
-                }, this));
-            }, this));
+                this.$('input').addClass('error');
+                this.$('.volume-group-error-message.common').text(error);
+            }, this);
+            this.disk.get('volumes').each(function(volume) {
+                volume.on('invalid', function(model, error) {
+                    this.$('.disk-visual').addClass('invalid');
+                    this.$('input[name=' + volume.get('name') + ']').addClass('error').parents('.volume-group').next().text(error);
+                }, this);
+            }, this);
         },
-        renderGroup: function(name, width, size) {
+        renderVolume: function(name, width, size) {
             this.$('.disk-visual .' + name)
                 .toggleClass('hidden-titles', width < 6)
                 .css('width', width + '%')
                 .find('.volume-group-size').text(utils.showDiskSize(size, 2));
         },
         renderVisualGraph: function() {
-            var unallocatedWidth = 100;
-            this.disk.get('volumes').each(function(volume) {
-                var width = utils.floor(volume.get('size') / this.disk.get('size') * 100, 2);
-                unallocatedWidth -= width;
-                this.renderGroup(volume.get('name'), width, volume.get('size'));
-            }, this);
-            this.renderGroup('unallocated', unallocatedWidth, this.disk.getUnallocatedSpace());
+            if (!this.disk.get('volumes').some('validationError') && !this.disk.validationError) {
+                var unallocatedWidth = 100;
+                this.disk.get('volumes').each(function(volume) {
+                    var width = utils.floor(volume.get('size') / this.disk.get('size') * 100, 2);
+                    unallocatedWidth -= width;
+                    this.renderVolume(volume.get('name'), width, volume.get('size'));
+                }, this);
+                this.renderVolume('unallocated', unallocatedWidth, this.disk.getUnallocatedSpace({}));
+            }
         },
         render: function() {
             this.$el.html(this.template(_.extend({

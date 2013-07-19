@@ -251,32 +251,18 @@ define(['utils'], function(utils) {
         toJSON: function(options) {
             return _.extend(this.constructor.__super__.toJSON.call(this, options), {volumes: this.get('volumes').toJSON()});
         },
-        getVolume: function (name) {
-            return this.get('volumes').findWhere({name: name});
+        getUnallocatedSpace: function(options) {
+            var volumes = options.volumes || this.get('volumes');
+            var allocatedSpace = volumes.reduce(function(sum, volume) {return volume.get('name') == options.name ? sum : sum + volume.get('size');}, 0);
+            return this.get('size') - allocatedSpace;
         },
-        getAllocatedSpace: function(volumes) {
-            return volumes.reduce(function(sum, volume) {return sum + volume.get('size');}, 0);
-        },
-        getUnallocatedSpace: function(name, volumes) {
-            volumes = volumes || this.get('volumes');
-            var volumeSize = name ? volumes.findWhere({name: name}).get('size') : 0;
-            return _.max([0, this.get('size') - this.getAllocatedSpace(volumes) + volumeSize]);
-        },
-        validate: function(attrs, options) {
-            var errors = {};
-            var unallocatedSpace = this.get('size') - this.getAllocatedSpace(attrs.volumes);
+        validate: function(attrs) {
+            var error;
+            var unallocatedSpace = this.getUnallocatedSpace({volumes: attrs.volumes});
             if (unallocatedSpace < 0) {
-                errors.max = 'Volume groups total size exceeds available space of ' + utils.formatNumber(unallocatedSpace * -1) + ' MB';
+                error = 'Volume groups total size exceeds available space of ' + utils.formatNumber(unallocatedSpace * -1) + ' MB';
             }
-            attrs.volumes.each(function(volume) {
-                var min = volume.getMinimalSize(options);
-                if (_.isNaN(volume.get('size'))) {
-                    errors[volume.get('name')] = 'Invalid size';
-                } else if (volume.get('size') < min) {
-                    errors[volume.get('name')] = 'The value is too low. You must allocate at least ' + utils.formatNumber(min) + ' MB';
-                }
-            }, this);
-            return _.isEmpty(errors) ? null : errors;
+            return error;
         }
     });
 
@@ -293,9 +279,18 @@ define(['utils'], function(utils) {
         constructorName: 'Volume',
         urlRoot: '/api/volumes/',
         getMinimalSize: function(options) {
-            var name = this.get('name');
-            var groupAllocatedSpace = _.reduce(options.disks, function(sum, disk) {return sum + disk.getVolume(name).get('size');}, 0);
-            return options.volumes.findWhere({name: name}).get('min_size') - groupAllocatedSpace;
+            var groupAllocatedSpace = _.reduce(options.disks, _.bind(function(sum, disk) {return sum + disk.get('volumes').findWhere({name: this.get('name')}).get('size');}, this), 0);
+            return options.minimum - groupAllocatedSpace;
+        },
+        validate: function(attrs, options) {
+            var error;
+            var min = this.getMinimalSize(options);
+            if (_.isNaN(attrs.size)) {
+                error = 'Invalid size';
+            } else if (attrs.size < min) {
+                error = 'The value is too low. You must allocate at least ' + utils.formatNumber(min) + ' MB';
+            }
+            return error;
         }
     });
 

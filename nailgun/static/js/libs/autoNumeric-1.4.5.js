@@ -213,7 +213,7 @@
 	$.fn.autoNumeric.defaults = {
 		aNum: '0123456789', //allowed  numeric values
 		aSign: '', // allowed negative sign / character
-		aSep: ' ', // allowed housand separator character
+		aSep: ',', // allowed housand separator character
 		aDec: '.', // allowed decimal separator character
 		mNum: 15, // max number of numerical characters to the left of the decimal
 		mDec: 0, // max number of decimal places
