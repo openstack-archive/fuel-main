@@ -252,8 +252,9 @@ define(['utils'], function(utils) {
             return _.extend(this.constructor.__super__.toJSON.call(this, options), {volumes: this.get('volumes').toJSON()});
         },
         getUnallocatedSpace: function(options) {
+            options = options || {};
             var volumes = options.volumes || this.get('volumes');
-            var allocatedSpace = volumes.reduce(function(sum, volume) {return volume.get('name') == options.name ? sum : sum + volume.get('size');}, 0);
+            var allocatedSpace = volumes.reduce(function(sum, volume) {return volume.get('name') == options.skip ? sum : sum + volume.get('size');}, 0);
             return this.get('size') - allocatedSpace;
         },
         validate: function(attrs) {
@@ -279,7 +280,7 @@ define(['utils'], function(utils) {
         constructorName: 'Volume',
         urlRoot: '/api/volumes/',
         getMinimalSize: function(options) {
-            var groupAllocatedSpace = _.reduce(options.disks, _.bind(function(sum, disk) {return sum + disk.get('volumes').findWhere({name: this.get('name')}).get('size');}, this), 0);
+            var groupAllocatedSpace = _.reduce(options.disks, function(sum, disk) {return sum + disk.get('volumes').findWhere({name: this.get('name')}).get('size');}, 0, this);
             return options.minimum - groupAllocatedSpace;
         },
         validate: function(attrs, options) {

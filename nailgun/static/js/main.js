@@ -22,7 +22,7 @@ requirejs.config({
         'jquery-checkbox': 'js/libs/jquery.checkbox',
         'jquery-timeout': 'js/libs/jquery.timeout',
         'jquery-ui': 'js/libs/jquery-ui-1.10.2.custom',
-        'jquery-autoNumeric': 'js/libs/autoNumeric-1.4.5',
+        'jquery-autoNumeric': 'js/libs/autoNumeric',
         utils: 'js/utils',
         lodash: 'js/libs/lodash',
         backbone: 'js/libs/backbone',

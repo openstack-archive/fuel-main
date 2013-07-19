@@ -653,7 +653,7 @@ function(utils, models, commonViews, dialogViews, nodesTabSummaryTemplate, editN
         events: {
             'click .toggle-volume': 'toggleEditDiskForm',
             'click .close-btn': 'deleteVolume',
-            'keyup input': 'makeChanges',
+            'keyup input': 'updateDisks',
             'click .use-all-allowed': 'useAllAllowedSpace'
         },
         toggleEditDiskForm: function(e) {
@@ -677,7 +677,7 @@ function(utils, models, commonViews, dialogViews, nodesTabSummaryTemplate, editN
                 minimum: this.screen.volumes.findWhere({name: volume.get('name')}).get('min_size')
             });
         },
-        setChanges: function() {
+        updateDisk: function() {
             this.$('.disk-visual').removeClass('invalid');
             this.$('input').removeClass('error').parents('.volume-group').next().text('');
             this.$('.volume-group-error-message.common').text('');
@@ -686,9 +686,9 @@ function(utils, models, commonViews, dialogViews, nodesTabSummaryTemplate, editN
             this.renderVisualGraph();
             this.checkForGroupsDeletionAvailability();
         },
-        makeChanges: function(e) {
-            this.setChanges();
-            _.invoke(_.omit(this.screen.subViews, this.cid), 'setChanges', this);
+        updateDisks: function(e) {
+            this.updateDisk();
+            _.invoke(_.omit(this.screen.subViews, this.cid), 'updateDisk', this);
             this.screen.checkForChanges();
         },
         deleteVolume: function(e) {
@@ -696,7 +696,7 @@ function(utils, models, commonViews, dialogViews, nodesTabSummaryTemplate, editN
         },
         useAllAllowedSpace: function(e) {
             var volumeName = this.$(e.currentTarget).parents('.volume-group').data('volume');
-            this.$('input[name=' + volumeName + ']').val(_.max([0, this.disk.getUnallocatedSpace({name: volumeName})])).trigger('keyup');
+            this.$('input[name=' + volumeName + ']').val(_.max([0, this.disk.getUnallocatedSpace({skip: volumeName})])).trigger('keyup');
         },
         initialize: function(options) {
             _.defaults(this, options);
@@ -726,7 +726,7 @@ function(utils, models, commonViews, dialogViews, nodesTabSummaryTemplate, editN
                     unallocatedWidth -= width;
                     this.renderVolume(volume.get('name'), width, volume.get('size'));
                 }, this);
-                this.renderVolume('unallocated', unallocatedWidth, this.disk.getUnallocatedSpace({}));
+                this.renderVolume('unallocated', unallocatedWidth, this.disk.getUnallocatedSpace());
             }
         },
         render: function() {
@@ -738,8 +738,7 @@ function(utils, models, commonViews, dialogViews, nodesTabSummaryTemplate, editN
             }, this.templateHelpers)));
             this.$('.disk-form').collapse({toggle: false});
             this.renderVisualGraph();
-            this.$('input.auto').autoNumeric();
-            this.$('input.auto').trigger('keyup');
+            this.$('input').autoNumeric('init', {mDec: 0});
             return this;
         }
     });

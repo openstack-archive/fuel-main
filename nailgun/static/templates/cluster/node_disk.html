@@ -43,7 +43,7 @@
           <div class="pull-right">
             <div class="volume-group-box-edit"><span class="use-all-allowed">Use All Allowed Space</span></div>
             <div class="volume-group-box-input">
-              <input id="<%- disk.name + '-' + volume.get('name') %>" class="input-medium auto" type="text" name="<%- volume.get('name') %>" value="<%- diskVolumes.findWhere({name: volume.get('name')}).get('size') || 0 %>" />
+              <input id="<%- disk.name + '-' + volume.get('name') %>" class="input-medium" type="text" name="<%- volume.get('name') %>" value="<%- diskVolumes.findWhere({name: volume.get('name')}).get('size') || 0 %>" />
             </div>
             <div class="volume-group-box-sizetype">MB</div>
           </div>
