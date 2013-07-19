@@ -1,0 +1,14 @@
+// This is Gate One's Terminal application settings file.
+{
+    // "*" means "apply to all users" or "default"
+    "*": {
+        "terminal": { // These settings apply to the "terminal" application
+            "commands": {"SSH": "<% venv %>/gateone/applications/terminal/plugins/ssh/scripts/ssh_connect.py -S '%SESSION_DIR%/%SESSION%/%SHORT_SOCKET%' --sshfp -a '-oUserKnownHostsFile=\\\"%USERDIR%/%USER%/.ssh/known_hosts\\\"'"},
+            "default_command": "SSH",
+            "dtach": false,
+            "session_logging": true,
+            "session_logs_max_age": "30d",
+            "syslog_session_logging": false
+        }
+    }
+}

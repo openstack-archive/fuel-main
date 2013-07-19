@@ -52,6 +52,16 @@ class nailgun::gateone (
     ],
   }
 
+  file { "${venv}/gateone/settings/50terminal.conf":
+    content => template("nailgun/gateone/50terminal.conf.erb"),
+    owner => 'root',
+    group => 'root',
+    mode => 0644,
+    require => [
+        Nailgun::Venv::Pip['gateone'],
+    ],
+  }
+
   file { "${venv}/gateone/applications/terminal/plugins/ssh/scripts/ssh_connect.py":
     mode => 755,
     require => [
