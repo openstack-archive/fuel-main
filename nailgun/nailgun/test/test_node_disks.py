@@ -19,6 +19,7 @@ from copy import deepcopy
 
 from nailgun.test.base import BaseHandlers, reverse
 from nailgun.volumes.manager import DisksFormatConvertor
+from nailgun.volumes.manager import Disk
 from nailgun.volumes.manager import only_disks, only_vg
 from nailgun.errors import errors
 
@@ -434,3 +435,34 @@ class TestVolumeManager(BaseHandlers):
             self.assertRaises(
                 errors.NotEnoughFreeSpace,
                 node.volume_manager.check_disk_space_for_deployment)
+
+
+class TestDisks(BaseHandlers):
+
+    def get_boot(self, volumes):
+        return filter(
+            lambda volume: volume.get('mount') == '/boot',
+            volumes)[0]
+
+    def create_disk(self,
+                    generator_method=None,
+                    disk_id='sda',
+                    size=10000,
+                    is_boot_raid=False):
+
+        if generator_method is None:
+            generator = lambda name: 100
+        else:
+            generator = generator_method
+
+        return Disk(generator, disk_id, size, is_boot_raid)
+
+    def test_create_mbr_as_raid_if_disks_count_greater_than_zero(self):
+        disk = self.create_disk(is_boot_raid=True)
+        boot_partition = self.get_boot(disk.volumes)
+        self.assertEquals(boot_partition['type'], 'raid')
+
+    def test_create_mbr_as_partition_if_disks_count_less_than_zero(self):
+        disk = self.create_disk()
+        boot_partition = self.get_boot(disk.volumes)
+        self.assertEquals(boot_partition['type'], 'partition')
