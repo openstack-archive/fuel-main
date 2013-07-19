@@ -419,6 +419,14 @@ class Listener(Actor):
 
     def _run(self):
         sniffers = {}
+        def run_listener_thread(iface, vlan=False):
+            t = threading.Thread(
+                target=self.get_probe_frames,
+                args=(iface, vlan)
+            )
+            t.daemon = True
+            t.start()
+            return t
 
         for iface, vlan in self._iface_vlan_iterator():
             self._ensure_iface_up(iface)
@@ -427,13 +435,8 @@ class Listener(Actor):
                 self._ensure_viface_create_and_up(iface, vlan)
                 viface = self._viface_by_iface_vid(iface, vlan)
             if not iface in sniffers:
-                t = threading.Thread(
-                    target=self.get_probe_frames,
-                    args=(iface,)
-                )
-                t.daemon = True
-                t.start()
-                sniffers[iface] = t
+                run_listener_thread(iface)
+                run_listener_thread(iface, vlan=True)
 
         try:
             s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
@@ -501,7 +504,7 @@ class Listener(Actor):
         if riface not in self.neighbours[iface][vlan].setdefault(uid, []):
             self.neighbours[iface][vlan][uid].append(riface)
 
-    def get_probe_frames(self, iface):
+    def get_probe_frames(self, iface, vlan=False):
         if not iface in self.neighbours:
             self.neighbours[iface] = {}
         """
@@ -510,7 +513,11 @@ class Listener(Actor):
         probing packages.
         """
         pc = pcap.pcap(iface)
-        pc.setfilter('udp and dst port {0}'.format(self.config['dport']))
+        filter_string = 'udp and dst port {0}'.format(self.config['dport'])
+        if vlan:
+            filter_string = 'vlan and {0}'.format(filter_string)
+        pc.setfilter(filter_string)
+
         def fltr(p):
             try:
                 received_msg = str(p[scapy.UDP].payload)[:p[scapy.UDP].len]
