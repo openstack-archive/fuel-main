@@ -199,7 +199,7 @@ class DisksFormatConvertor(object):
 
 class Disk(object):
 
-    def __init__(self, generator_method, disk_id, size, is_boot_raid=True):
+    def __init__(self, generator_method, disk_id, size, boot_is_raid=True):
         self.call_generator = generator_method
         self.id = disk_id
         self.size = size
@@ -207,7 +207,7 @@ class Disk(object):
         self.volumes = []
 
         # For determination type of boot
-        self.is_boot_raid = is_boot_raid
+        self.boot_is_raid = boot_is_raid
 
         # For each disk we need to create
         # service partitions and reserve space
@@ -226,7 +226,7 @@ class Disk(object):
         size = boot_size if self.free_space >= boot_size else 0
 
         partition_type = 'partition'
-        if self.is_boot_raid:
+        if self.boot_is_raid:
             partition_type = 'raid'
 
         self.volumes.append({
@@ -310,12 +310,12 @@ class VolumeManager(object):
 
         for d in sorted(self.node.meta["disks"], key=lambda i: i["name"]):
             disks_count = len(self.node.meta["disks"])
-            is_boot_raid = True if disks_count > 1 else False
+            boot_is_raid = True if disks_count > 1 else False
 
             disk = Disk(
                 self.call_generator, d["disk"],
                 byte_to_megabyte(d["size"]),
-                is_boot_raid=is_boot_raid)
+                boot_is_raid=boot_is_raid)
 
             for v in only_disks(self.volumes):
                 if v.get('id') == disk.id:
