@@ -87,6 +87,7 @@ python-cinder-2013.1.1.fuel3.0-mira.2
 python-devel-2.6.6-37.el6_4
 python-dmidecode-3.10.13-3.el6_4
 python-ethtool-0.6-3.el6
+python-ipaddr-2.1.9-1.el6
 python-keystone-2013.1.1.fuel3.0-mira.2
 python-novaclient-2.13.0.fuel3.0-mira.2
 python-pip-0.8-1.el6
