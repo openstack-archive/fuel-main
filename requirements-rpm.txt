@@ -107,6 +107,7 @@ rsyslog-relp-5.8.10-6.el6
 ruby-1.8.7.352-10.el6_4
 ruby-augeas-0.4.1-1.el6
 ruby-devel-1.8.7.352-10.el6_4
+ruby-libs-1.8.7.352-10.el6_4
 ruby-rdoc-1.8.7.352-10.el6_4
 ruby-ri-1.8.7.352-10.el6_4
 ruby-shadow-1.4.1-13.el6
