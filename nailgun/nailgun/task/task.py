@@ -838,7 +838,7 @@ class ValidateRedHatAccountTask(object):
                 error_msg = "Not valid parameters: '{0}'".format(cmd)
                 logger.warning(error_msg)
                 task.message = 'Invalid credentials'
-                ask.status = 'error'
+                task.status = 'error'
 
         db().add(task)
         db().commit()
