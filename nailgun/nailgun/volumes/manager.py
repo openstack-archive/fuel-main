@@ -470,7 +470,8 @@ class VolumeManager(object):
         else:
             not_allocated_size = size
             for disk in self.disks:
-                self.__logger('Creating PV: disk: %s, vg: %s' % (disk.id, name))
+                self.__logger('Creating PV: disk: %s, vg: %s' %
+                              (disk.id, name))
 
                 if disk.free_space >= not_allocated_size:
                     # if we can allocate all required size
