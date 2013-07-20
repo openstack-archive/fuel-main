@@ -23,6 +23,7 @@ import json
 
 from nailgun.logger import logger
 from nailgun.errors import errors
+from copy import deepcopy
 
 
 def only_disks(spaces):
@@ -103,9 +104,10 @@ class DisksFormatConvertor(object):
         convert disks from simple format to full format
         '''
         full_format = []
+        volume_manager = node.volume_manager
         for disk in disks:
             for volume in disk['volumes']:
-                full_format = node.volume_manager.set_volume_size(
+                full_format = volume_manager.set_volume_size(
                     disk['id'], volume['name'], volume['size'])
 
         return full_format
@@ -299,17 +301,37 @@ class Disk(object):
 class VolumeManager(object):
     def __init__(self, node):
         '''
-        Disks and volumes will be set according to node
-        attributes.
+        Disks and volumes will be set according to node attributes.
+        VolumeManager should not make any updates in database.
         '''
         logger.debug("VolumeManager initialized with node: %s", node.id)
-        self.disks = []
-        self.volumes = []
-        self.node = node
-        self.volumes = self.node.attributes.volumes or []
+        # Make sure that we don't change volumes directly from manager
+        self.volumes = deepcopy(node.attributes.volumes) or []
+        # For swap calculation
+        self.ram = node.meta['memory']['total']
+        # For logging
+        self.id = node.full_name
+        self.role = None
+        self.allowed_vgs = []
 
-        for d in sorted(self.node.meta["disks"], key=lambda i: i["name"]):
-            disks_count = len(self.node.meta["disks"])
+        # If node bound to the cluster than it has a role
+        # and volume groups which we should to allocate
+        if node.cluster:
+            self.role = node.role
+            volumes_metadata = node.cluster.release.volumes_metadata
+            volume_groups_for_role = volumes_metadata[
+                'volumes_roles_mapping'][self.role]
+
+            # Adding volume groups in same order
+            # as they represent in volumes_roles_mapping list
+            for vg_name in volume_groups_for_role:
+                vg = filter(lambda vg: vg.get('id') == vg_name,
+                            volumes_metadata['volumes'])[0]
+                self.allowed_vgs.append(vg)
+
+        self.disks = []
+        for d in sorted(node.meta['disks'], key=lambda i: i['name']):
+            disks_count = len(node.meta["disks"])
             boot_is_raid = True if disks_count > 1 else False
 
             disk = Disk(
@@ -338,18 +360,14 @@ class VolumeManager(object):
             volume['size'] = size
 
         # Recalculate sizes of volume groups
-        volumes_metadata = self.node.cluster.release.volumes_metadata[
-            'volumes']
         for index, volume in enumerate(self.volumes):
-            if volume.get('type') != 'vg':
-                continue
+            if volume.get('type') == 'vg':
+                vg_id = volume.get('id')
+                vg_template = filter(
+                    lambda volume: volume.get('id') == vg_id,
+                    self.allowed_vgs)[0]
 
-            vg_id = volume.get('id')
-            vg_template = filter(
-                lambda volume: volume.get('id') == vg_id,
-                volumes_metadata)[0]
-
-            self.volumes[index] = self.expand_generators(vg_template)
+                self.volumes[index] = self.expand_generators(vg_template)
 
         return self.volumes
 
@@ -418,7 +436,7 @@ class VolumeManager(object):
                        Red_Hat_Enterprise_Linux/6/html/Installation_Guide/
                        s2-diskpartrecommend-ppc.html#id4394007
         '''
-        mem = float(self.node.meta['memory']['total']) / 1024 ** 3
+        mem = float(self.ram) / 1024 ** 3
         if mem <= 2:
             return gb_to_mb(int(2 * mem))
         elif mem > 2 and mem <= 8:
@@ -464,44 +482,28 @@ class VolumeManager(object):
 
     def gen_volumes_info(self):
         logger.debug(
-            u'Generating volumes info for node %s' % self.node.full_name)
+            u'Generating volumes info for node %s' % self.id)
 
         logger.debug('Purging volumes info for all node disks')
         map(lambda d: d.reset(), self.disks)
         self.volumes = [d.render() for d in self.disks]
 
-        role = self.node.role
-        if not self.node.cluster:
+        if not self.role:
             return self.volumes
 
-        self.volumes.extend(self.get_volumes_groups_for_role(role))
+        self.volumes.extend(self.allowed_vgs)
 
-        volumes_metadata = self.node.cluster.release.volumes_metadata
-        vg_names_for_role = volumes_metadata['volumes_roles_mapping'][role]
-        for vg_name in vg_names_for_role:
-            # For last volume group in 'volumes_roles_mapping' list
+        for vg in self.allowed_vgs:
+            # For last volume group in allowed_vgs list
             # we allocates all free space
-            if len(vg_names_for_role) == 1 or vg_name == vg_names_for_role[-1]:
-                self._allocate_vg(vg_name)
+            if len(self.allowed_vgs) == 1 or vg == self.allowed_vgs[-1]:
+                self._allocate_vg(vg['id'])
             else:
-                volume_meta = filter(
-                    lambda volume: volume.get('id') == vg_name,
-                    volumes_metadata['volumes'])[0]
-                min_size = self.expand_generators(volume_meta)['min_size']
-
-                self._allocate_vg(vg_name, min_size)
+                min_size = self.expand_generators(vg)['min_size']
+                self._allocate_vg(vg['id'], min_size)
 
         self.volumes = self.expand_generators(self.volumes)
         return self.volumes
-
-    def get_volumes_groups_for_role(self, role):
-        volumes_metadata = self.node.cluster.release.volumes_metadata
-        volume_groups_for_role = volumes_metadata[
-            'volumes_roles_mapping'][role]
-
-        return filter(
-            lambda vg: vg.get('id') in volume_groups_for_role,
-            volumes_metadata['volumes'])
 
     def expand_generators(self, cdict):
         new_dict = {}
@@ -544,27 +546,19 @@ class VolumeManager(object):
 
         if disks_space < minimal_installation_size:
             raise errors.NotEnoughFreeSpace(
-                u"Node '%s' has insufficient disk space" %
-                self.node.human_readable_name)
+                u"Node '%s' has insufficient disk space" % self.id)
 
     def __calc_minimal_installation_size(self):
         '''
         Calc minimal installation size depend on node role
         '''
-        role = self.node.role
-        volumes_metadata = self.node.cluster.release.volumes_metadata
-        vg_names_for_role = volumes_metadata['volumes_roles_mapping'][role]
-
         disks_count = len(filter(lambda disk: disk.size > 0, self.disks))
         boot_size = self.call_generator('calc_boot_size') + \
             self.call_generator('calc_boot_records_size')
 
         min_installation_size = disks_count * boot_size
-        for vg_name in vg_names_for_role:
-            volume_meta = filter(
-                lambda volume: volume.get('id') == vg_name,
-                volumes_metadata['volumes'])[0]
-            min_size = self.expand_generators(volume_meta)['min_size']
+        for vg in self.allowed_vgs:
+            min_size = self.expand_generators(vg)['min_size']
             min_installation_size += min_size
 
         return min_installation_size
