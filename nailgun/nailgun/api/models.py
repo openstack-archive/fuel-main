@@ -264,7 +264,7 @@ class Node(Base):
     @property
     def full_name(self):
         return u'%s (id=%s, mac=%s, role=%s)' % (
-            self.name, self.mac, self.id, self.role)
+            self.name, self.id, self.mac, self.role)
 
     def _check_interface_has_required_params(self, iface):
         return bool(iface.get('name') and iface.get('mac'))
