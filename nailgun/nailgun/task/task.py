@@ -692,8 +692,13 @@ class CheckBeforeDeploymentTask(object):
 
     @classmethod
     def __check_disks(cls, task):
-        for node in task.cluster.nodes:
-            node.volume_manager.check_disk_space_for_deployment()
+        try:
+            for node in task.cluster.nodes:
+                node.volume_manager.check_disk_space_for_deployment()
+        except errors.NotEnoughFreeSpace:
+            raise errors.NotEnoughFreeSpace(
+                u"Node '%s' has insufficient disk space" %
+                node.human_readable_name)
 
     @classmethod
     def __check_network(cls, task):

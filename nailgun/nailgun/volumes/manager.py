@@ -247,7 +247,7 @@ class Disk(object):
         self.free_space -= size
 
     def create_lvm_meta(self, name):
-        logger.debug('Appending lvm meta to volumee.')
+        logger.debug('Appending lvm meta for volume.')
         lvm_meta_size = self.call_generator('calc_lvm_meta_size')
         size = lvm_meta_size if self.free_space >= lvm_meta_size else 0
         self.volumes.append({'type': 'lvm_meta', 'size': size, 'name': name})
@@ -304,13 +304,10 @@ class VolumeManager(object):
         Disks and volumes will be set according to node attributes.
         VolumeManager should not make any updates in database.
         '''
-        logger.debug("VolumeManager initialized with node: %s", node.id)
         # Make sure that we don't change volumes directly from manager
         self.volumes = deepcopy(node.attributes.volumes) or []
         # For swap calculation
         self.ram = node.meta['memory']['total']
-        # For logging
-        self.id = node.full_name
         self.role = None
         self.allowed_vgs = []
 
@@ -345,10 +342,14 @@ class VolumeManager(object):
 
             self.disks.append(disk)
 
-        logger.debug("VolumeManager: volumes: %s", self.volumes)
-        logger.debug("VolumeManager: disks: %s", self.disks)
+        self.__logger('Initialized with node: %s' % node.full_name)
+        self.__logger('Initialized with volumes: %s' % self.volumes)
+        self.__logger('Initialized with disks: %s' % self.disks)
 
     def set_volume_size(self, disk_id, volume_name, size):
+        self.__logger('Update volume size for disk=%s volume_name=%s size=%s' %
+                      (disk_id, volume_name, size))
+
         disk = filter(
             lambda volume: volume['id'] == disk_id,
             only_disks(self.volumes))[0]
@@ -369,6 +370,7 @@ class VolumeManager(object):
 
                 self.volumes[index] = self.expand_generators(vg_template)
 
+        self.__logger('Updated volume size' % self.volumes)
         return self.volumes
 
     def call_generator(self, generator, *args):
@@ -402,14 +404,16 @@ class VolumeManager(object):
             raise errors.CannotFindGenerator(
                 u'Cannot find generator %s' % generator)
 
-        return generators[generator](*args)
+        result = generators[generator](*args)
+        self.__logger('Generator %s with args %s returned result: %s' %
+                      (generator, args, result))
+        return result
 
     def _calc_total_root_vg(self):
         return self._calc_total_vg('os') - \
             self.call_generator('calc_swap_size')
 
     def _calc_total_vg(self, vg):
-        logger.debug('_calc_total_vg')
         vg_space = 0
         for v in only_disks(self.volumes):
             for subv in v['volumes']:
@@ -451,20 +455,22 @@ class VolumeManager(object):
         Allocate volume group. If size is None,
         then allocate all existing space on all disks.
         '''
-        logger.debug('_allocate_vg: vg: %s, size: %s', name, str(size))
+        self.__logger('Allocate volume group %s with size %s' % (name, size))
 
         if size is None:
             for disk in self.disks:
                 if disk.free_space > 0:
-                    logger.debug('Allocating all available space for PV: '
-                                 'disk: %s vg: %s', disk.id, name)
+                    self.__logger('Allocating all available space for PV: '
+                                  'disk: %s vg: %s' % (disk.id, name))
                     disk.create_pv(name)
                 else:
+                    self.__logger('Not enough free space for PV allocation: '
+                                  'disk: %s vg: %s' % (disk.id, name))
                     disk.create_pv(name, 0)
         else:
             not_allocated_size = size
             for disk in self.disks:
-                logger.debug('Creating PV: disk: %s, vg: %s', disk.id, name)
+                self.__logger('Creating PV: disk: %s, vg: %s' % (disk.id, name))
 
                 if disk.free_space >= not_allocated_size:
                     # if we can allocate all required size
@@ -481,14 +487,14 @@ class VolumeManager(object):
                 not_allocated_size -= size_to_allocation
 
     def gen_volumes_info(self):
-        logger.debug(
-            u'Generating volumes info for node %s' % self.id)
+        self.__logger('Generating volumes info for node')
+        self.__logger('Purging volumes info for all node disks')
 
-        logger.debug('Purging volumes info for all node disks')
         map(lambda d: d.reset(), self.disks)
         self.volumes = [d.render() for d in self.disks]
 
         if not self.role:
+            self.__logger('Role is None return volumes: %s' % self.volumes)
             return self.volumes
 
         self.volumes.extend(self.allowed_vgs)
@@ -503,6 +509,7 @@ class VolumeManager(object):
                 self._allocate_vg(vg['id'], min_size)
 
         self.volumes = self.expand_generators(self.volumes)
+        self.__logger('Generated volumes: %s' % self.volumes)
         return self.volumes
 
     def expand_generators(self, cdict):
@@ -513,14 +520,16 @@ class VolumeManager(object):
                     new_dict[i] = val
                 elif isinstance(val, dict):
                     if "generator" in val:
-                        logger.debug("Generating value: generator: %s "
-                                     "generator_args: %s", val["generator"],
-                                     val.get("generator_args", []))
                         genval = self.call_generator(
                             val["generator"],
                             *(val.get("generator_args", []))
                         )
-                        logger.debug("Generated value: %s", str(genval))
+                        self.__logger(
+                            'Generator %s with args %s expanded to: %s' %
+                            (val['generator'],
+                             val.get('generator_args', []),
+                             genval))
+
                         new_dict[i] = genval
                     else:
                         new_dict[i] = self.expand_generators(val)
@@ -544,9 +553,11 @@ class VolumeManager(object):
         disks_space = sum([d.size for d in self.disks])
         minimal_installation_size = self.__calc_minimal_installation_size()
 
+        self.__logger('Checking disks space: disks space %s, minimal size %s' %
+                      (disks_space, minimal_installation_size))
+
         if disks_space < minimal_installation_size:
-            raise errors.NotEnoughFreeSpace(
-                u"Node '%s' has insufficient disk space" % self.id)
+            raise errors.NotEnoughFreeSpace()
 
     def __calc_minimal_installation_size(self):
         '''
@@ -562,3 +573,6 @@ class VolumeManager(object):
             min_installation_size += min_size
 
         return min_installation_size
+
+    def __logger(self, message):
+        logger.debug('VolumeManager %s: %s', id(self), message)
