@@ -137,7 +137,9 @@ class TestNodeDisksHandlers(BaseHandlers):
 
             self.assertNotEquals(size_volumes_before, size_volumes_after)
 
-            lvm_meta = updated_disks_count * 64
+            lvm_meta = updated_disks_count * \
+                node_db.volume_manager.call_generator('calc_lvm_meta_size')
+
             volume_group_size = (
                 new_volume_size * updated_disks_count) - lvm_meta
             self.assertEquals(size_volumes_after, volume_group_size)
