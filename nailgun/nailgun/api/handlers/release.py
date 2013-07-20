@@ -49,8 +49,8 @@ class ReleaseHandler(JSONHandler):
     def GET(self, release_id):
         '''
         :returns: JSONized Release object.
-        :http: 200 (OK)\n
-               404 (release not found in db)
+        :http: * 200 (OK)
+               * 404 (release not found in db)
         '''
         release = self.get_object_or_404(Release, release_id)
         return self.render(release)
@@ -59,10 +59,10 @@ class ReleaseHandler(JSONHandler):
     def PUT(self, release_id):
         '''
         :returns: JSONized Release object.
-        :http: 200 (OK)\n
-               400 (invalid release data specified)\n
-               404 (release not found in db)\n
-               409 (release with such parameters already exists)
+        :http: * 200 (OK)
+               * 400 (invalid release data specified)
+               * 404 (release not found in db)
+               * 409 (release with such parameters already exists)
         '''
         release = self.get_object_or_404(Release, release_id)
 
@@ -76,8 +76,8 @@ class ReleaseHandler(JSONHandler):
     def DELETE(self, release_id):
         '''
         :returns: JSONized Release object.
-        :http: 204 (release successfully deleted)\n
-               404 (release not found in db)
+        :http: * 204 (release successfully deleted)
+               * 404 (release not found in db)
         '''
         release = self.get_object_or_404(Release, release_id)
         db().delete(release)
@@ -99,7 +99,7 @@ class ReleaseCollectionHandler(JSONHandler):
     def GET(self):
         '''
         :returns: Collection of JSONized Release objects.
-        :http: 200 (OK)
+        :http: * 200 (OK)
         '''
         return map(
             ReleaseHandler.render,
@@ -110,9 +110,9 @@ class ReleaseCollectionHandler(JSONHandler):
     def POST(self):
         '''
         :returns: JSONized Release object.
-        :http: 201 (cluster successfully created)\n
-               400 (invalid cluster data specified)\n
-               409 (release with such parameters already exists)
+        :http: * 201 (cluster successfully created)
+               * 400 (invalid cluster data specified)
+               * 409 (release with such parameters already exists)
         '''
         data = self.checked_data()
 

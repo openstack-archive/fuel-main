@@ -82,8 +82,8 @@ class ClusterHandler(JSONHandler):
     def GET(self, cluster_id):
         '''
         :returns: JSONized Cluster object.
-        :http: 200 (OK)\n
-               404 (cluster not found in db)
+        :http: * 200 (OK)
+               * 404 (cluster not found in db)
         '''
         cluster = self.get_object_or_404(Cluster, cluster_id)
         return self.render(cluster)
@@ -92,9 +92,9 @@ class ClusterHandler(JSONHandler):
     def PUT(self, cluster_id):
         '''
         :returns: JSONized Cluster object.
-        :http: 200 (OK)\n
-               400 (invalid cluster data specified)\n
-               404 (cluster not found in db)
+        :http: * 200 (OK)
+               * 400 (invalid cluster data specified)
+               * 404 (cluster not found in db)
         '''
         cluster = self.get_object_or_404(Cluster, cluster_id)
         data = self.checked_data()
@@ -133,9 +133,9 @@ class ClusterHandler(JSONHandler):
     def DELETE(self, cluster_id):
         '''
         :returns: {}
-        :http: 202 (cluster deletion process launched)\n
-               400 (failed to execute cluster deletion process)\n
-               404 (cluster not found in db)
+        :http: * 202 (cluster deletion process launched)
+               * 400 (failed to execute cluster deletion process)
+               * 404 (cluster not found in db)
         '''
         cluster = self.get_object_or_404(Cluster, cluster_id)
         task_manager = ClusterDeletionManager(cluster_id=cluster.id)
@@ -164,7 +164,7 @@ class ClusterCollectionHandler(JSONHandler):
     def GET(self):
         '''
         :returns: Collection of JSONized Cluster objects.
-        :http: 200 (OK)
+        :http: * 200 (OK)
         '''
         return map(
             ClusterHandler.render,
@@ -175,9 +175,9 @@ class ClusterCollectionHandler(JSONHandler):
     def POST(self):
         '''
         :returns: JSONized Cluster object.
-        :http: 201 (cluster successfully created)\n
-               400 (invalid cluster data specified)\n
-               409 (cluster with such parameters already exists)
+        :http: * 201 (cluster successfully created)
+               * 400 (invalid cluster data specified)
+               * 409 (cluster with such parameters already exists)
         '''
         # It's used for cluster creating only.
         data = self.checked_data()
@@ -248,8 +248,9 @@ class ClusterChangesHandler(JSONHandler):
     def PUT(self, cluster_id):
         '''
         :returns: JSONized Task object.
-        :http: 404 (cluster not found in db)\n
-               400 (failed to execute task)
+        :http: * 200 (task successfully executed)
+               * 404 (cluster not found in db)
+               * 400 (failed to execute task)
         '''
         cluster = self.get_object_or_404(
             Cluster,
@@ -296,9 +297,9 @@ class ClusterAttributesHandler(JSONHandler):
     def GET(self, cluster_id):
         '''
         :returns: JSONized Cluster attributes.
-        :http: 200 (OK)\n
-               404 (cluster not found in db)\n
-               500 (cluster has no attributes)
+        :http: * 200 (OK)
+               * 404 (cluster not found in db)
+               * 500 (cluster has no attributes)
         '''
         cluster = self.get_object_or_404(Cluster, cluster_id)
         if not cluster.attributes:
@@ -312,10 +313,10 @@ class ClusterAttributesHandler(JSONHandler):
     def PUT(self, cluster_id):
         '''
         :returns: JSONized Cluster attributes.
-        :http: 200 (OK)\n
-               400 (wrong attributes data specified)\n
-               404 (cluster not found in db)\n
-               500 (cluster has no attributes)
+        :http: * 200 (OK)
+               * 400 (wrong attributes data specified)
+               * 404 (cluster not found in db)
+               * 500 (cluster has no attributes)
         '''
         cluster = self.get_object_or_404(Cluster, cluster_id)
         if not cluster.attributes:
@@ -344,9 +345,9 @@ class ClusterAttributesDefaultsHandler(JSONHandler):
     def GET(self, cluster_id):
         '''
         :returns: JSONized default Cluster attributes.
-        :http: 200 (OK)\n
-               404 (cluster not found in db)\n
-               500 (cluster has no attributes)
+        :http: * 200 (OK)
+               * 404 (cluster not found in db)
+               * 500 (cluster has no attributes)
         '''
         cluster = self.get_object_or_404(Cluster, cluster_id)
         attrs = cluster.release.attributes_metadata.get("editable")
@@ -358,10 +359,10 @@ class ClusterAttributesDefaultsHandler(JSONHandler):
     def PUT(self, cluster_id):
         '''
         :returns: JSONized Cluster attributes.
-        :http: 200 (OK)\n
-               400 (wrong attributes data specified)\n
-               404 (cluster not found in db)\n
-               500 (cluster has no attributes)
+        :http: * 200 (OK)
+               * 400 (wrong attributes data specified)
+               * 404 (cluster not found in db)
+               * 500 (cluster has no attributes)
         '''
         cluster = self.get_object_or_404(
             Cluster,
