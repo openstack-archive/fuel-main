@@ -18,6 +18,7 @@ import json
 import uuid
 from wsgiref.handlers import format_date_time
 from datetime import datetime
+from decorator import decorator
 
 import web
 import netaddr
@@ -59,12 +60,11 @@ def forbid_client_caching(handler):
     return handler()
 
 
-def content_json(func):
-    def json_header(*args, **kwargs):
-        web.header('Content-Type', 'application/json')
-        data = func(*args, **kwargs)
-        return build_json_response(data)
-    return json_header
+@decorator
+def content_json(func, *args, **kwargs):
+    web.header('Content-Type', 'application/json')
+    data = func(*args, **kwargs)
+    return build_json_response(data)
 
 
 def build_json_response(data):
