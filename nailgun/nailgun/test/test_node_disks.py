@@ -115,10 +115,13 @@ class TestNodeDisksHandlers(BaseHandlers):
             lambda volume: volume.get('type') == 'vg',
             node_db.attributes.volumes)
 
+        new_volume_size = 4200
+        updated_disks_count = 0
         for disk in disks:
             if disk['size'] > 0:
                 for volume in disk['volumes']:
-                    volume['size'] = 4200
+                    volume['size'] = new_volume_size
+                    updated_disks_count += 1
 
         self.put(node_db.id, disks)
 
@@ -133,6 +136,11 @@ class TestNodeDisksHandlers(BaseHandlers):
                 volume.get('size', 0) for volume in vg_after['volumes']])
 
             self.assertNotEquals(size_volumes_before, size_volumes_after)
+
+            lvm_meta = updated_disks_count * 64
+            volume_group_size = (
+                new_volume_size * updated_disks_count) - lvm_meta
+            self.assertEquals(size_volumes_after, volume_group_size)
 
     def test_validator_not_enough_size_for_volumes(self):
         node = self.create_node()
