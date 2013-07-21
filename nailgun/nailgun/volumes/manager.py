@@ -308,16 +308,14 @@ class VolumeManager(object):
         self.volumes = deepcopy(node.attributes.volumes) or []
         # For swap calculation
         self.ram = node.meta['memory']['total']
-        self.role = None
         self.allowed_vgs = []
 
         # If node bound to the cluster than it has a role
         # and volume groups which we should to allocate
         if node.cluster:
-            self.role = node.role
             volumes_metadata = node.cluster.release.volumes_metadata
             volume_groups_for_role = volumes_metadata[
-                'volumes_roles_mapping'][self.role]
+                'volumes_roles_mapping'][node.role]
 
             # Adding volume groups in same order
             # as they represent in volumes_roles_mapping list
@@ -494,7 +492,7 @@ class VolumeManager(object):
         map(lambda d: d.reset(), self.disks)
         self.volumes = [d.render() for d in self.disks]
 
-        if not self.role:
+        if not self.allowed_vgs:
             self.__logger('Role is None return volumes: %s' % self.volumes)
             return self.volumes
 
