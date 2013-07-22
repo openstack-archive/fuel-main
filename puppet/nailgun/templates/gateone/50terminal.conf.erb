@@ -3,7 +3,7 @@
     // "*" means "apply to all users" or "default"
     "*": {
         "terminal": { // These settings apply to the "terminal" application
-            "commands": {"SSH": "<% venv %>/gateone/applications/terminal/plugins/ssh/scripts/ssh_connect.py -S '%SESSION_DIR%/%SESSION%/%SHORT_SOCKET%' --sshfp -a '-oUserKnownHostsFile=\\\"%USERDIR%/%USER%/.ssh/known_hosts\\\"'"},
+            "commands": {"SSH": "<%= venv %>/gateone/applications/terminal/plugins/ssh/scripts/ssh_connect.py -S '%SESSION_DIR%/%SESSION%/%SHORT_SOCKET%' --sshfp -a '-oUserKnownHostsFile=\\\"%USERDIR%/%USER%/.ssh/known_hosts\\\"'"},
             "default_command": "SSH",
             "dtach": false,
             "session_logging": true,
