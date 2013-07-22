@@ -83,6 +83,7 @@ openssh-clients
 policycoreutils
 puppet-2.7.19
 selinux-policy-targeted
+subscription-manager
 system-config-firewall-base
 tcpdump
 vim-enhanced
