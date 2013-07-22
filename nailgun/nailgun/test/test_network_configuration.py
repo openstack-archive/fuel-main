@@ -160,8 +160,8 @@ class TestNetworkConfigurationHandlerHAMode(BaseHandlers):
 
         self.assertEquals(
             resp['management_vip'],
-            self.net_manager.assign_vip(cluster_id, 'management'))
+            self.net_manager.assign_vip(self.cluster.id, 'management'))
 
         self.assertEquals(
             resp['public_vip'],
-            self.net_manager.assign_vip(cluster_id, 'public'))
+            self.net_manager.assign_vip(self.cluster.id, 'public'))
