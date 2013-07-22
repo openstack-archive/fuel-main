@@ -249,8 +249,6 @@ function(utils, models, commonViews, dialogViews, networkTabTemplate, networkTem
                 this.$('.vlan_start').toggle(target.is(':checked'));
             }
             if (this.network.get('name') == 'public') {
-                this.tab.$('div.floating').find('input.error').removeClass('error');
-                this.tab.$('div.floating').find('.help-inline').text('');
                 this.tab.$('input[name=floating-vlan_start]').val(this.$('input[name=public-vlan_start]').val());
                 if (target.hasClass('use-vlan-tagging')) {
                     this.tab.$('div.floating').find('.use-vlan-tagging').prop('checked', target.is(':checked'));
