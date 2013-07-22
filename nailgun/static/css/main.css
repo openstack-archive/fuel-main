@@ -28,11 +28,16 @@ body {
       -ms-user-select: none;
           user-select: none;
 }
+
 .enable-selection {
   -webkit-user-select: text;
      -moz-user-select: text;
       -ms-user-select: text;
           user-select: text;
+}
+
+.center {
+  text-align: center !important;
 }
 
 /*
@@ -4128,7 +4133,7 @@ div.create-cluster-form .radio-checkbox-group label {
 }
 
 .releases-table th.actions {
-  width: 16%;
+  width: 12%;
 }
 
 label.show-password {
