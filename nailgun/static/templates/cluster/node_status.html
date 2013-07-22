@@ -4,6 +4,9 @@
      operatingSystem = node.collection.cluster.get('release').get('operating_system');
    } catch(e){}
    operatingSystem = operatingSystem || 'OS';
+   if (operatingSystem == 'RHEL') {
+     operatingSystem = '';
+   }
 %>
 <% if (!node.get('online')) { %>
   <div class="msg-offline">
