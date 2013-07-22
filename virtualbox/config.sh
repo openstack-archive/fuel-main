@@ -14,7 +14,7 @@ vm_name_prefix=fuel-web-
 
 # Host interfaces to bridge VMs interfaces with
 idx=0
-for ip in 10.20.0.1 240.0.1.1 172.16.0.1; do
+for ip in 10.20.0.1 172.16.1.1 172.16.0.1; do
   host_nic_name[$idx]=vboxnet$idx
   host_nic_ip[$idx]=$ip
   host_nic_mask[$idx]=255.255.255.0
