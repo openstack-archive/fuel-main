@@ -43,10 +43,19 @@ LOCAL_MIRROR_RHEL:=$(LOCAL_MIRROR)/rhel
 
 BUILD_MIRROR_GEMS:=$(BUILD_DIR)/packages/gems
 
-# Use srv08 mirrors by default. Other possible default is 'msk'.
+# Use download.mirantis.com mirror by default. Other possible values are
+# 'msk', 'srt', 'usa'.
 # Setting any other value or removing of this variable will cause
 # download of all the packages directly from internet
-USE_MIRROR?=srt
+USE_MIRROR?=ext
+ifeq ($(USE_MIRROR),ext)
+YUM_REPOS?=proprietary
+MIRROR_BASE?=http://download.mirantis.com/fuelweb-repo/$(PRODUCT_VERSION)
+MIRROR_CENTOS?=$(MIRROR_BASE)/centos
+MIRROR_EGGS?=$(MIRROR_BASE)/eggs
+MIRROR_GEMS?=$(MIRROR_BASE)/gems
+MIRROR_SRC?=$(MIRROR_BASE)/src
+endif
 ifeq ($(USE_MIRROR),srt)
 YUM_REPOS?=proprietary
 MIRROR_BASE?=http://srv08-srt.srt.mirantis.net/fwm/$(PRODUCT_VERSION)
