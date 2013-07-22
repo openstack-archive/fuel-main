@@ -4136,6 +4136,10 @@ div.create-cluster-form .radio-checkbox-group label {
   width: 12%;
 }
 
+.releases-table td {
+  vertical-align: middle;
+}
+
 label.show-password {
   clear: both;
   margin-left: 120px;
