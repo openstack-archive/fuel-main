@@ -17,7 +17,7 @@
             ],
             "volumes_metadata": {
                 "volumes_roles_mapping": {
-                    "controller": ["os"],
+                    "controller": ["os", "image"],
                     "compute": ["os", "vm"],
                     "cinder": ["os", "cinder"]
                 },
@@ -55,6 +55,23 @@
                                 "size": {
                                     "generator": "calc_total_vg",
                                     "generator_args": ["vm"]
+                                }
+                            }
+                        ]
+                    },
+                    {
+                        "id": "image",
+                        "type": "vg",
+                        "min_size": {"generator": "calc_min_glance_size"},
+                        "label": "Image Storage",
+                        "volumes": [
+                            {
+                                "mount": "/var/lib/glance",
+                                "type": "lv",
+                                "name": "glance",
+                                "size": {
+                                    "generator": "calc_total_vg",
+                                    "generator_args": ["image"]
                                 }
                             }
                         ]
