@@ -418,7 +418,7 @@ class Listener(Actor):
                               traceback.format_exc())
 
     def _run(self):
-        sniffers = {}
+        sniffers = set()
         def run_listener_thread(iface, vlan=False):
             t = threading.Thread(
                 target=self.get_probe_frames,
@@ -437,7 +437,7 @@ class Listener(Actor):
             if not iface in sniffers:
                 run_listener_thread(iface)
                 run_listener_thread(iface, vlan=True)
-                sniffers[iface] = 1
+                sniffers.add(iface)
 
         try:
             s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
