@@ -4137,6 +4137,10 @@ label.show-password {
   margin-bottom: 30px;
 }
 
+input.input-append {
+  width: 175px;
+}
+
 /* OpenStack Health Check */
 .healthcheck-table {margin: 0px 0px 30px 0px; }
 .healthcheck-name {font-size: 15px; margin: 5px 0px 5px 0px;}
@@ -4230,4 +4234,3 @@ label.show-password {
     transform: rotate(359deg);
   }
 }
-

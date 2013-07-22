@@ -124,7 +124,7 @@ function(utils, models, commonViews, dialogViews, settingsTabTemplate, settingsG
         events: {
             'keyup input[type=text], input[type=password]': 'makeChanges',
             'change input[type=checkbox]:not(.show-password), input[type=radio]': 'makeChanges',
-            'change input.show-password': 'showPassword'
+            'click span.add-on': 'showPassword'
         },
         makeChanges: function(e) {
             var target = $(e.currentTarget);
@@ -133,10 +133,9 @@ function(utils, models, commonViews, dialogViews, settingsTabTemplate, settingsG
             this.tab.checkForChanges();
         },
         showPassword: function(e) {
-            var target = $(e.currentTarget);
-            this.$('input[name=' + target.data('setting') + ']').attr('type', function() {
-                return target.is(':checked') ? 'text' : 'password';
-            });
+            var input = this.$(e.currentTarget).prev();
+            input.attr('type', input.attr('type') == 'text' ? 'password' : 'text');
+            this.$(e.currentTarget).find('i').toggle();
         },
         initialize: function(options) {
             _.defaults(this, options);

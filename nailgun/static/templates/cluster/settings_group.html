@@ -36,21 +36,13 @@
     <% } else { %>
       <label class="parameter-box clearfix">
         <div class="openstack-sub-title parameter-name"><%- setting.label %></div>
-        <div class="parameter-control">
-          <input type="<%= setting.type %>"  name="<%- settingName %>" value="<%- setting.value %>" <%= disabled %> />
+        <div class="parameter-control <%= setting.type == 'password' ? 'input-append' : '' %>">
+          <input type="<%= setting.type %>" class="<%= setting.type == 'password' ? 'input-append' : '' %>" name="<%- settingName %>" value="<%- setting.value %>" <%= disabled %> />
+          <% if (setting.type == 'password') { %>
+            <span class="add-on"><i class="icon-eye"></i><i class="icon-eye-off hide"></i></span>
+          <% } %>
         </div>
         <div class="parameter-description description"><%- setting.description %></div>
-        <% if (setting.type == 'password') { %>
-          <label class="show-password">
-            <div class="parameter-control">
-              <div class="custom-tumbler">
-                <input type="checkbox" class="show-password" data-setting="<%- settingName %>" <%= disabled %> />
-                <!-- [if !IE |(gte IE 9)]> --><span>&nbsp;</span><!-- <![endif] -->
-              </div>
-            </div>
-            <div class="openstack-sub-title parameter-name">Show password</div>
-          </label>
-        <% } %>
       </label>
     <% } %>
   <% }) %>
