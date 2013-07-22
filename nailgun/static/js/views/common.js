@@ -259,13 +259,17 @@ function(utils, models, dialogViews, navbarTemplate, nodesStatsTemplate, notific
             };
             var deferred = this.redHatAccount.save(options);
             if (deferred) {
-                deferred.fail(_.bind(function(response) {
-                    if (response.status == 400) {
-                        this.$('*[name=username], *[name=password]').closest('.control-group').addClass('error');
-                        this.$('.alert').text(response.responseText).show();
-                    } else {
+                deferred
+                    .success(_.bind(function(response) {
+                        var task = new models.Task(response);
+                        task.destroy({wait: true});
+                        if (task.get('status') == 'error') {
+                            this.$('*[name=username], *[name=password]').closest('.control-group').addClass('error');
+                            this.$('.alert').text(task.get('message')).show();
+                        }
+                    }, this))
+                    .fail(_.bind(function(response) {                    
                         this.dialog.displayErrorMessage();
-                    }
                 }, this));
             }
             return deferred;

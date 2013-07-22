@@ -22,7 +22,8 @@ import time
 
 import web
 
-from nailgun.api.handlers.base import JSONHandler, content_json
+from nailgun.api.handlers.base \
+    import JSONHandler, content_json, build_json_response
 from nailgun.api.handlers.tasks import TaskHandler
 from nailgun.api.validators.redhat import RedHatAcountValidator
 from nailgun.db import db
@@ -73,11 +74,12 @@ class RedHatAccountHandler(JSONHandler):
         task_manager = RedHatAccountValidationTaskManager(release_data)
         try:
             task = task_manager.execute()
-            if task.status == 'error':
-                raise web.badrequest(message=task.message)
         except Exception as exc:
             logger.error(u'DownloadReleaseHandler: error while execution'
                          ' deploy task: {0}'.format(str(exc)))
             logger.error(traceback.format_exc())
             raise web.badrequest(str(exc))
-        return TaskHandler.render(task)
+
+        data = build_json_response(TaskHandler.render(task))
+        raise web.accepted(data=data)
+

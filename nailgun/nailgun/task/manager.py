@@ -310,7 +310,9 @@ class RedHatAccountValidationTaskManager(TaskManager):
             self.data)
         db().refresh(task)
         if task.status != 'error':
-            download_task = task.create_subtask('download_release')
+            download_task = Task(name='download_release')
+            db().add(download_task)
+            db().commit()
             self._call_silently(
                 download_task,
                 tasks.DownloadReleaseTask,

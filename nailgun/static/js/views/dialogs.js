@@ -102,15 +102,14 @@ function(require, utils, models, simpleMessageTemplate, createClusterDialogTempl
                     this.$('.create-cluster-btn').attr('disabled', true);
                     deferred
                         .done(_.bind(function(response) {
-                            this.release.fetch()
-                                .always(_.bind(function() {
-                                    this.displayRhelCredentialsForm();
-                                    this.createCluster();
-                                }, this));
-                        }, this))
-                        .fail(_.bind(function(response) {
-                            if (response.status == 400) {
+                            if (response.status == "error") {
                                 this.$('.create-cluster-btn').attr('disabled', false);
+                            } else {
+                                this.release.fetch()
+                                    .always(_.bind(function() {
+                                        this.displayRhelCredentialsForm();
+                                        this.createCluster();
+                                    }, this));
                             }
                         }, this));
                 }
@@ -191,21 +190,21 @@ function(require, utils, models, simpleMessageTemplate, createClusterDialogTempl
             'click .btn-os-download': 'applyRhelCredentials'
         },
         applyRhelCredentials: function() {
-            var deferred = this.rhelCredentialsForm.applyCredentials();
+             var deferred = this.rhelCredentialsForm.applyCredentials();
+             this.$('.btn-os-download').addClass('disabled');
             if (deferred) {
-                this.$('.btn-os-download').addClass('disabled');
                 deferred
-                    .done(_.bind(function() {
-                        app.page.tasks.fetch().done(_.bind(function() {
-                            this.$el.modal('hide');
-                            app.page.scheduleUpdate();
-                        }, this));
-                    }, this))
-                    .fail(_.bind(function(response) {
-                        if (response.status == 400) {
+                    .done(_.bind(function(response) {
+                        if (response.status == "ready"){
+                            app.page.tasks.fetch().done(_.bind(function() {
+                                this.$el.modal('hide');
+                                app.page.scheduleUpdate();
+                            }, this));
+                        }else {
                             this.$('.btn-os-download').removeClass('disabled');
-                        }
-                    }, this));
+                        
+                        } }
+                    , this))
             } else {
                 this.$('.btn-os-download').removeClass('disabled');
             }
