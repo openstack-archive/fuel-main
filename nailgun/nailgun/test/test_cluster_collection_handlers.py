@@ -29,6 +29,14 @@ from nailgun.test.base import reverse
 
 
 class TestHandlers(BaseHandlers):
+
+    def _get_cluster_networks(self, cluster_id):
+        return json.loads(self.app.get(
+            reverse('NetworkConfigurationHandler',
+                    {"cluster_id": cluster_id}),
+            headers=self.default_headers,
+        ).body)["networks"]
+
     def test_cluster_list_empty(self):
         resp = self.app.get(
             reverse('ClusterCollectionHandler'),
@@ -89,16 +97,8 @@ class TestHandlers(BaseHandlers):
                 }
             )
 
-        cluster1_nets = json.loads(self.app.get(
-            reverse('NetworkConfigurationHandler',
-                    {"cluster_id": cluster["id"]}),
-            headers=self.default_headers,
-        ).body)["networks"]
-        cluster2_nets = json.loads(self.app.get(
-            reverse('NetworkConfigurationHandler',
-                    {"cluster_id": cluster2["id"]}),
-            headers=self.default_headers,
-        ).body)["networks"]
+        cluster1_nets = self._get_cluster_networks(cluster["id"])
+        cluster2_nets = self._get_cluster_networks(cluster2["id"])
 
         for net1, net2 in zip(cluster1_nets, cluster2_nets):
             for f in ('cluster_id', 'id'):
@@ -113,16 +113,8 @@ class TestHandlers(BaseHandlers):
     def test_cluster_creation_same_networks(self):
         cluster1_id = self.env.create_cluster(api=True)["id"]
         cluster2_id = self.env.create_cluster(api=True)["id"]
-        cluster1_nets = json.loads(self.app.get(
-            reverse('NetworkConfigurationHandler',
-                    {"cluster_id": cluster1_id}),
-            headers=self.default_headers,
-        ).body)["networks"]
-        cluster2_nets = json.loads(self.app.get(
-            reverse('NetworkConfigurationHandler',
-                    {"cluster_id": cluster2_id}),
-            headers=self.default_headers,
-        ).body)["networks"]
+        cluster1_nets = self._get_cluster_networks(cluster1_id)
+        cluster2_nets = self._get_cluster_networks(cluster2_id)
 
         for net1, net2 in zip(cluster1_nets, cluster2_nets):
             for f in ('cluster_id', 'id'):
