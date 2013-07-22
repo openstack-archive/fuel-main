@@ -47,23 +47,23 @@ class ReleaseHandler(JSONHandler):
 
     @content_json
     def GET(self, release_id):
-        '''
+        """
         :returns: JSONized Release object.
         :http: * 200 (OK)
                * 404 (release not found in db)
-        '''
+        """
         release = self.get_object_or_404(Release, release_id)
         return self.render(release)
 
     @content_json
     def PUT(self, release_id):
-        '''
+        """
         :returns: JSONized Release object.
         :http: * 200 (OK)
                * 400 (invalid release data specified)
                * 404 (release not found in db)
                * 409 (release with such parameters already exists)
-        '''
+        """
         release = self.get_object_or_404(Release, release_id)
 
         data = self.checked_data()
@@ -74,11 +74,11 @@ class ReleaseHandler(JSONHandler):
         return self.render(release)
 
     def DELETE(self, release_id):
-        '''
+        """
         :returns: JSONized Release object.
         :http: * 204 (release successfully deleted)
                * 404 (release not found in db)
-        '''
+        """
         release = self.get_object_or_404(Release, release_id)
         db().delete(release)
         db().commit()
@@ -97,10 +97,10 @@ class ReleaseCollectionHandler(JSONHandler):
 
     @content_json
     def GET(self):
-        '''
+        """
         :returns: Collection of JSONized Release objects.
         :http: * 200 (OK)
-        '''
+        """
         return map(
             ReleaseHandler.render,
             db().query(Release).all()
@@ -108,12 +108,12 @@ class ReleaseCollectionHandler(JSONHandler):
 
     @content_json
     def POST(self):
-        '''
+        """
         :returns: JSONized Release object.
         :http: * 201 (cluster successfully created)
                * 400 (invalid cluster data specified)
                * 409 (release with such parameters already exists)
-        '''
+        """
         data = self.checked_data()
 
         release = Release()
