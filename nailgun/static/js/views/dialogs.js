@@ -190,8 +190,8 @@ function(require, utils, models, simpleMessageTemplate, createClusterDialogTempl
             'click .btn-os-download': 'applyRhelCredentials'
         },
         applyRhelCredentials: function() {
-             var deferred = this.rhelCredentialsForm.applyCredentials();
-             this.$('.btn-os-download').addClass('disabled');
+            var deferred = this.rhelCredentialsForm.applyCredentials();
+            this.$('.btn-os-download').addClass('disabled');
             if (deferred) {
                 deferred
                     .done(_.bind(function(response) {
@@ -200,11 +200,11 @@ function(require, utils, models, simpleMessageTemplate, createClusterDialogTempl
                                 this.$el.modal('hide');
                                 app.page.scheduleUpdate();
                             }, this));
-                        }else {
+                        } else {
                             this.$('.btn-os-download').removeClass('disabled');
                         
-                        } }
-                    , this))
+                        }
+                    }, this))
             } else {
                 this.$('.btn-os-download').removeClass('disabled');
             }
