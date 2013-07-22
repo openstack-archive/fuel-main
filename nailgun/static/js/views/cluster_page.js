@@ -270,12 +270,12 @@ function(utils, models, commonViews, dialogViews, NodesTab, NetworkTab, Settings
             return this.bindNodeEvents(node) && this.render();
         },
         updateProgress: function() {
-            var task = this.model.deployTask('running') || app.page.tasks.getDownloadTask(this.model.get('release').id);
+            var task = this.model.deployTask('running') || app.page.tasks.filterTasks({name: 'download_release', release: this.model.get('release').id})[0];
             if (task) {
                 var progress = task.get('progress') || 0;
                 this.$('.bar').css('width', (progress > 3 ? progress : 3) + '%');
                 this.$('.percentage').text(progress + '%');
-                if (task.get('name') == 'download_release' && (task.get('status')=='error'|| progress ==100)) {
+                if (task.get('name') == 'download_release' && (task.get('status') == 'error'|| task.get('status') == 'ready')) {
                     task.destroy();
                 }
             }
