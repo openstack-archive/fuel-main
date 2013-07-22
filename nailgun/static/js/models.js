@@ -246,6 +246,7 @@ define(['utils'], function(utils) {
         urlRoot: '/api/nodes/',
         parse: function(response) {
             response.volumes = new models.Volumes(response.volumes);
+            response.volumes.disk = this;
             return response;
         },
         toJSON: function(options) {
@@ -279,13 +280,14 @@ define(['utils'], function(utils) {
     models.Volume = Backbone.Model.extend({
         constructorName: 'Volume',
         urlRoot: '/api/volumes/',
-        getMinimalSize: function(options) {
-            var groupAllocatedSpace = _.reduce(options.disks, function(sum, disk) {return sum + disk.get('volumes').findWhere({name: this.get('name')}).get('size');}, 0, this);
-            return options.minimum - groupAllocatedSpace;
+        getMinimalSize: function(minimum) {
+            var currentDisk = this.collection.disk;
+            var groupAllocatedSpace = currentDisk.collection.reduce(function(sum, disk) {return disk.id == currentDisk.id ? sum : sum + disk.get('volumes').findWhere({name: this.get('name')}).get('size');}, 0, this);
+            return minimum - groupAllocatedSpace;
         },
         validate: function(attrs, options) {
             var error;
-            var min = this.getMinimalSize(options);
+            var min = this.getMinimalSize(options.minimum);
             if (_.isNaN(attrs.size)) {
                 error = 'Invalid size';
             } else if (attrs.size < min) {

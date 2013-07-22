@@ -661,21 +661,18 @@ function(utils, models, commonViews, dialogViews, nodesTabSummaryTemplate, editN
             this.$('.disk-form').collapse('toggle');
             this.checkForGroupsDeletionAvailability();
         },
+        getVolumeMinimum: function(name) {
+            return this.screen.volumes.findWhere({name: name}).get('min_size');
+        },
         checkForGroupsDeletionAvailability: function() {
             this.disk.get('volumes').each(function(volume) {
-                var min = volume.getMinimalSize({
-                    disks: this.screen.disks.reject({id: this.disk.id}),
-                    minimum: this.screen.volumes.findWhere({name: volume.get('name')}).get('min_size')
-                });
-                this.$('.disk-visual .' + volume.get('name') + ' .close-btn').toggle(min <= 0 && this.$('.disk-form').hasClass('in'));
+                var name = volume.get('name');
+                this.$('.disk-visual .' + name + ' .close-btn').toggle(volume.getMinimalSize(this.getVolumeMinimum(name)) <= 0 && this.$('.disk-form').hasClass('in'));
             }, this);
         },
         validateVolume: function (volume) {
-            volume.set({size: Number((this.$('input[name=' + volume.get('name') + ']').val()).replace(/,/g, ''))}, {
-                validate: true,
-                disks: this.screen.disks.reject({id: this.disk.id}),
-                minimum: this.screen.volumes.findWhere({name: volume.get('name')}).get('min_size')
-            });
+            var name = volume.get('name');
+            volume.set({size: Number((this.$('input[name=' + name + ']').val()).replace(/,/g, ''))}, {validate: true, minimum: this.getVolumeMinimum(name)});
         },
         updateDisk: function() {
             this.$('.disk-visual').removeClass('invalid');
