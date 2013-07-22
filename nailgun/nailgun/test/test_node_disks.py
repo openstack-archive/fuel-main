@@ -121,7 +121,7 @@ class TestNodeDisksHandlers(BaseHandlers):
             if disk['size'] > 0:
                 for volume in disk['volumes']:
                     volume['size'] = new_volume_size
-                    updated_disks_count += 1
+                updated_disks_count += 1
 
         self.put(node_db.id, disks)
 
