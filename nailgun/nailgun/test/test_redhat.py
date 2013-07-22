@@ -46,7 +46,7 @@ class TestHandlers(BaseHandlers):
                         'password': 'password',
                         'release_id': release.id}),
             headers=self.default_headers)
-        self.assertEquals(resp.status, 200)
+        self.assertEquals(resp.status, 202)
 
     @fake_tasks()
     def test_redhat_account_invalid_data_handler(self):
@@ -67,7 +67,7 @@ class TestHandlers(BaseHandlers):
                         'password': 'password',
                         'release_id': self.release.id}),
             headers=self.default_headers)
-        self.assertEquals(resp.status, 200)
+        self.assertEquals(resp.status, 202)
 
     @fake_tasks()
     def test_redhat_account_validation_failure(self):
@@ -79,7 +79,9 @@ class TestHandlers(BaseHandlers):
                         'release_id': self.release.id}),
             headers=self.default_headers,
             expect_errors=True)
-        self.assertEquals(resp.status, 400)
+        self.assertEquals(resp.status, 202)
+        response = json.loads(resp.body)
+        self.assertEquals(response['status'], 'error')
 
     @fake_tasks()
     def test_redhat_account_get(self):
@@ -95,7 +97,7 @@ class TestHandlers(BaseHandlers):
                         'password': 'password',
                         'release_id': 1}),
             headers=self.default_headers)
-        self.assertEquals(resp.status, 200)
+        self.assertEquals(resp.status, 202)
 
         resp = self.app.get(
             reverse('RedHatAccountHandler'),
@@ -118,7 +120,7 @@ class TestHandlers(BaseHandlers):
                             'password': 'password',
                             'release_id': 1}),
                 headers=self.default_headers)
-            self.assertEquals(resp.status, 200)
+            self.assertEquals(resp.status, 202)
             query = self.env.db.query(RedHatAccount)
             self.assertEquals(query.count(), 1)
         self.assertEquals(query.filter_by(username='rheltest').count(), 1)
