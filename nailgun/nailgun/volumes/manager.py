@@ -388,8 +388,10 @@ class VolumeManager(object):
             'calc_total_vg': self._calc_total_vg,
             # virtual storage = 5GB
             'calc_min_vm_size': lambda: gb_to_mb(5),
+            'calc_min_glance_size': lambda: gb_to_mb(5),
             'calc_min_cinder_size': lambda: gb_to_mb(1.5),
-            'calc_total_root_vg': self._calc_total_root_vg}
+            'calc_total_root_vg': self._calc_total_root_vg
+        }
 
         generators['calc_os_size'] = \
             lambda: generators['calc_root_size']() + \
