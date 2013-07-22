@@ -437,6 +437,7 @@ class Listener(Actor):
             if not iface in sniffers:
                 run_listener_thread(iface)
                 run_listener_thread(iface, vlan=True)
+                sniffers[iface] = 1
 
         try:
             s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
