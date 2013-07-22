@@ -1,19 +1,21 @@
-<% var nodes = cluster.get('nodes') %>
 <div class="cluster-name"><%- cluster.get('name') %></div>
+<% var nodes = cluster.get('nodes') %>
 <div class="cluster-hardware">
-  <div class="row-fluid">
-    <div class="span6">Nodes:</div>
-    <div class="span4"><%= nodes.length %></div>
-    <% if (nodes.length) { %>
-      <div class="span6">CPU (cores):</div>
-      <div class="span4"><%= nodes.resources('cores') %></div>
-      <div class="span6">RAM (GB):</div>
-      <div class="span4"><%= nodes.resources('ram').toFixed(1) %></div>
-      <% var hdd = nodes.resources('hdd')/Math.pow(1000, 3) %>
-      <div class="span6">HDD (<%= hdd < 100 ? 'GB' : 'TB' %>):</div>
-      <div class="span4"><%= hdd < 100 ? hdd.toFixed(1) : (hdd/1000).toFixed(1) %></div>
-    <% } %>
-  </div>
+  <% if (!nodes.deferred || nodes.deferred.state() == 'resolved') { %>
+    <div class="row-fluid">
+      <div class="span6">Nodes:</div>
+      <div class="span4"><%= nodes.length %></div>
+      <% if (nodes.length) { %>
+        <div class="span6">CPU (cores):</div>
+        <div class="span4"><%= nodes.resources('cores') %></div>
+        <div class="span6">RAM (GB):</div>
+        <div class="span4"><%= nodes.resources('ram').toFixed(1) %></div>
+        <% var hdd = nodes.resources('hdd')/Math.pow(1000, 3) %>
+        <div class="span6">HDD (<%= hdd < 100 ? 'GB' : 'TB' %>):</div>
+        <div class="span4"><%= hdd < 100 ? hdd.toFixed(1) : (hdd/1000).toFixed(1) %></div>
+      <% } %>
+    </div>
+  <% } %>
 </div>
 <div class="cluster-status">
   <% if (cluster.task('cluster_deletion', 'running')) { %>

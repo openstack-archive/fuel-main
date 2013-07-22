@@ -113,9 +113,10 @@ function(models, commonViews, ClusterPage, NodesTab, ClustersPage, ReleasesPage,
             var clusters = new models.Clusters();
             var nodes = new models.Nodes();
             var tasks = new models.Tasks();
-            $.when(clusters.fetch(), nodes.fetch(), tasks.fetch()).done(_.bind(function() {
+            $.when(clusters.fetch(), nodes.deferred = nodes.fetch(), tasks.fetch()).always(_.bind(function() {
                 clusters.each(function(cluster) {
                     cluster.set('nodes', new models.Nodes(nodes.where({cluster: cluster.id})));
+                    cluster.get('nodes').deferred = nodes.deferred;
                     cluster.set('tasks', new models.Tasks(tasks.where({cluster: cluster.id})));
                 }, this);
                 this.setPage(ClustersPage, {collection: clusters});
