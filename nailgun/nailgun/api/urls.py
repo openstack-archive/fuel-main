@@ -61,8 +61,6 @@ from nailgun.api.handlers.version import VersionHandler
 from nailgun.api.handlers.plugin import PluginCollectionHandler
 from nailgun.api.handlers.plugin import PluginHandler
 
-from nailgun.api.handlers.ostf import OSTFHandler
-
 urls = (
     r'/releases/?$',
     'ReleaseCollectionHandler',
@@ -134,9 +132,6 @@ urls = (
     'PluginHandler',
     r'/redhat/account/?$',
     'RedHatAccountHandler',
-    # Handlers for openstack testing framework
-    r'/ostf/(?P<cluster_id>\d+)/?$',
-    'OSTFHandler',
 )
 
 app = web.application(urls, locals())
