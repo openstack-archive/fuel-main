@@ -34,6 +34,8 @@ class SampleGenerator(object):
             if cls._ishandler(obj):
                 lines.insert(0, cls.generate_handler_url_doc(obj))
                 lines.insert(1, "")
+            # TODO: this code will render sample json for handlers
+            # in the future
             # elif cls._ishandlermethod(obj):
             #     lines.extend(
             #         cls.gen_handler_method_data(obj)
