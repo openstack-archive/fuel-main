@@ -1466,7 +1466,7 @@ h6.page-title {
 
 .networks-table .range-row {
   margin-left: 175px;
-  width: 780px;
+  width: 759px;
 }
 
 .networks-table .ip-ranges {
@@ -1475,13 +1475,13 @@ h6.page-title {
 
 .networks-table div.error {
   float: right;
-  width: 239px;
+  width: 250px;
 }
 
 .networks-table .error .help-inline {
   display: block;
   padding-top: 2px;
-  width: 239px;
+  width: 250px;
   color: #B94A48;
 }
 

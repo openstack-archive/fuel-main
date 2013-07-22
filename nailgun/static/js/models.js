@@ -345,6 +345,16 @@ define(['utils'], function(utils) {
             var ipRegexp = /^(([0-9]|[1-9][0-9]|1[0-9]{2}|2[0-4][0-9]|25[0-5])\.){3}([0-9]|[1-9][0-9]|1[0-9]{2}|2[0-4][0-9]|25[0-5])$/;
             return _.isString(value) && !value.match(ipRegexp);
         },
+        validateIPrange: function(startIP, endIP) {
+            var start = startIP.split('.'), end = endIP.split('.');
+            var valid = true;
+            _.each(start, function(el, index) {
+                if (parseInt(el, 10) > parseInt(end[index], 10)) {
+                    valid = false;
+                }
+            });
+            return valid;
+        },
         validateNetmask: function(value) {
             var valid_values = {0:1, 128:1, 192:1, 224:1, 240:1, 248:1, 252:1, 254:1, 255:1};
             var m = value.split('.');
@@ -368,20 +378,18 @@ define(['utils'], function(utils) {
                                 var rangeErrors = {index: index};
                                 var start = _.first(range);
                                 var end = _.last(range);
-                                if (start && this.validateIP(start)) {
-                                    rangeErrors.start = 'Invalid IP range start';
-                                }
-                                if (end && this.validateIP(end)) {
-                                    rangeErrors.end = 'Invalid IP range end';
-                                }
                                 if (start == '') {
                                     rangeErrors.start = 'Empty IP range start';
+                                } else if (this.validateIP(start)) {
+                                    rangeErrors.start = 'Invalid IP range start';
                                 }
                                 if (end == '') {
                                     rangeErrors.end = 'Empty IP range end';
+                                } else if (this.validateIP(end)) {
+                                    rangeErrors.end = 'Invalid IP range end';
                                 }
-                                if (start == '' && end == '') {
-                                    rangeErrors.start = rangeErrors.end = 'Empty IP range';
+                                if (start != '' && end != '' && !this.validateIPrange(start, end)) {
+                                    rangeErrors.start = rangeErrors.end = 'Lower IP range bound is greater than upper bound';
                                 }
                                 if (rangeErrors.start || rangeErrors.end) {
                                     errors.ip_ranges = _.compact(_.union([rangeErrors], errors.ip_ranges));

@@ -241,7 +241,7 @@ function(utils, models, commonViews, dialogViews, networkTabTemplate, networkTem
         changeNetwork: function(e) {
             // FIXME(vk): very complex and confusing logic, needs to be rewritten
             var target = $(e.currentTarget);
-            target.removeClass('error');
+            this.$('input[type=text]').removeClass('error');
             this.$('.help-inline').text('');
 
             if (target.hasClass('use-vlan-tagging')) {
