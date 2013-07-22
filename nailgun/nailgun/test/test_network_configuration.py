@@ -23,11 +23,12 @@ from nailgun.test.base import BaseHandlers
 from nailgun.test.base import reverse
 from nailgun.settings import settings
 from nailgun.api.models import Cluster
+from nailgun.network.manager import NetworkManager
 
 
-class TestNetworkConfigurationHandler(BaseHandlers):
+class TestNetworkConfigurationHandlerMultinodeMode(BaseHandlers):
     def setUp(self):
-        super(TestNetworkConfigurationHandler, self).setUp()
+        super(TestNetworkConfigurationHandlerMultinodeMode, self).setUp()
         cluster = self.env.create_cluster(api=True)
         self.cluster = self.db.query(Cluster).get(cluster['id'])
 
@@ -142,3 +143,25 @@ class TestNetworkConfigurationHandler(BaseHandlers):
             task['message'],
             'Invalid network ID: 500'
         )
+
+
+class TestNetworkConfigurationHandlerHAMode(BaseHandlers):
+    def setUp(self):
+        super(TestNetworkConfigurationHandlerHAMode, self).setUp()
+        cluster = self.env.create_cluster(api=True, mode='ha')
+        self.cluster = self.db.query(Cluster).get(cluster['id'])
+        self.net_manager = NetworkManager()
+
+    def test_returns_management_vip_and_public_vip(self):
+        url = reverse('NetworkConfigurationHandler',
+                      kwargs={'cluster_id': self.cluster.id})
+
+        resp = json.loads(self.app.get(url, headers=self.default_headers).body)
+
+        self.assertEquals(
+            resp['management_vip'],
+            self.net_manager.assign_vip(cluster_id, 'management'))
+
+        self.assertEquals(
+            resp['public_vip'],
+            self.net_manager.assign_vip(cluster_id, 'public'))

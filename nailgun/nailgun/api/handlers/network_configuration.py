@@ -87,6 +87,14 @@ class NetworkConfigurationHandler(JSONHandler):
         result = {}
         result['net_manager'] = cluster.net_manager
         result['networks'] = map(self.render, cluster.network_groups)
+
+        if cluster.mode == 'ha':
+            net_manager = NetworkManager()
+            result['management_vip'] = net_manager.assign_vip(
+                cluster_id, 'management')
+            result['public_vip'] = net_manager.assign_vip(
+                cluster_id, 'public')
+
         return result
 
     def PUT(self, cluster_id):
