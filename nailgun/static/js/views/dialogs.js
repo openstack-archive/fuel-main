@@ -204,7 +204,7 @@ function(require, utils, models, simpleMessageTemplate, createClusterDialogTempl
                                 this.$('.btn-os-download').removeClass('disabled');
                             
                             }
-                        }, this))
+                        }, this));
             } else {
                 this.$('.btn-os-download').removeClass('disabled');
             }
