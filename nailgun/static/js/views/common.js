@@ -249,7 +249,7 @@ function(utils, models, dialogViews, navbarTemplate, nodesStatsTemplate, notific
             this.$('.alert').hide().html('');
         },
         applyCredentials: function() {
-            var options = {
+            var accountData = {
                 release_id: this.dialog.release.id,
                 license_type: this.$('input[name=license-type]:checked').val(),
                 username: this.$('input[name=username]').val(),
@@ -257,21 +257,27 @@ function(utils, models, dialogViews, navbarTemplate, nodesStatsTemplate, notific
                 satellite: this.$('input[name=satellite]').val(),
                 activation_key: this.$('input[name=activation_key]').val()
             };
-            var deferred = this.redHatAccount.save(options);
-            if (deferred) {
-                deferred
-                    .success(_.bind(function(response) {
-                        var task = new models.Task(response);
-                        task.destroy({wait: true});
-                        if (task.get('status') == 'error') {
-                            this.$('*[name=username], *[name=password]').closest('.control-group').addClass('error');
-                            this.$('.alert').text(task.get('message')).show();
-                        }
-                    }, this))
-                    .fail(_.bind(function(response) {                    
-                        this.dialog.displayErrorMessage();
-                }, this));
+            var task = models.Task();
+            var options = {
+                method: 'POST',
+                url: _.result(this.model, 'url') + '/redhat/account/',
+                data: JSON.stringify(accountData)
+            };
+            var deferred = task.save({}, options);
+            if (deferred){
+                deferred.success(_.bind(function(response) {
+                            var task = new models.Task(response);
+                            task.destroy({wait: true});
+                            if (task.get('status') == 'error') {
+                                this.$('*[name=username], *[name=password]').closest('.control-group').addClass('error');
+                                this.$('.alert').text(task.get('message')).show();
+                            }
+                        }, this))
+                        .fail(_.bind(function(response) {                    
+                            this.dialog.displayErrorMessage();
+                    }, this));
             }
+
             return deferred;
         },
         initialize: function(options) {

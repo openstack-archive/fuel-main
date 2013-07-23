@@ -82,4 +82,3 @@ class RedHatAccountHandler(JSONHandler):
 
         data = build_json_response(TaskHandler.render(task))
         raise web.accepted(data=data)
-
