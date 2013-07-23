@@ -120,6 +120,7 @@ class TestHandlers(BaseHandlers):
 
         cluster_attrs['management_vip'] = management_vip
         cluster_attrs['public_vip'] = public_vip
+        cluster_attrs['master_ip'] = '127.0.0.1'
         cluster_attrs['deployment_mode'] = cluster_depl_mode
         cluster_attrs['deployment_id'] = cluster_db.id
         cluster_attrs['network_manager'] = "FlatDHCPManager"

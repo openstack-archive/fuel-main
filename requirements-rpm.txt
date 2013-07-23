@@ -41,6 +41,7 @@ kernel-2.6.32-358.112.1.openstack.el6
 kernel-firmware-2.6.32-358.112.1.openstack.el6
 kernel-headers-2.6.32-358.112.1.openstack.el6
 kmod-openvswitch-1.10.0-2.el6
+libevent-devel-1.4.13-4.el6
 librelp-0.1.1-4.1.el6
 libuser-0.56.13-5.el6
 make-3.81-20.el6
@@ -127,6 +128,7 @@ syslinux-4.02-8.el6
 system-config-firewall-base-1.2.27-5.el6
 tcpdump-4.0.0-3.20090921gitdf3cb4.2.el6
 tftp-server-0.49-7.el6
+tinyproxy-1.8.2-1.el6
 unzip-6.0-1.el6
 usermode-1.102-3.el6
 vim-enhanced-7.2.411-1.8.el6

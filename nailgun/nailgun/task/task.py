@@ -133,6 +133,7 @@ class DeploymentTask(object):
             nodes_with_attrs.append(cls.__format_node_for_naily(n))
 
         cluster_attrs = task.cluster.attributes.merged_attrs_values()
+        cluster_attrs['master_ip'] = settings.MASTER_IP
         cluster_attrs['controller_nodes'] = cls.__controller_nodes(cluster_id)
 
         nets_db = db().query(Network).join(NetworkGroup).\

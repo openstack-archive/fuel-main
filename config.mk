@@ -92,6 +92,7 @@ MIRROR_GEMS?=http://rubygems.org
 
 REQUIRED_RPMS:=$(shell grep -v "^\\s*\#" $(SOURCE_DIR)/requirements-rpm.txt)
 REQUIRED_EGGS:=$(shell grep -v "^\\s*\#" $(SOURCE_DIR)/requirements-eggs.txt)
+OSTF_EGGS:=$(shell grep -v "^\\s*\#" $(SOURCE_DIR)/fuel/deployment/puppet/nailgun/files/venv-ostf.txt)
 REQUIRED_SRCS:=$(shell grep -v ^\\s*\# $(SOURCE_DIR)/requirements-src.txt)
 REQ_RHEL_RPMS:=$(shell grep -v "^\\s*\#" $(SOURCE_DIR)/fuel/deployment/puppet/rpmcache/files/required-rpms.txt)
 REQ_FUEL_RHEL_RPMS:=$(shell grep -v "^\\s*\#" $(SOURCE_DIR)/fuel/deployment/puppet/rpmcache/files/req-fuel-rhel.txt)
