@@ -260,7 +260,7 @@ function(utils, models, dialogViews, navbarTemplate, nodesStatsTemplate, notific
             var task = models.Task();
             var options = {
                 method: 'POST',
-                url: _.result(this.model, 'url') + '/redhat/account/',
+                url: _.result(this.redHatAccount, 'url'),
                 data: JSON.stringify(accountData)
             };
             var deferred = task.save({}, options);
