@@ -97,12 +97,12 @@ function(require, utils, models, simpleMessageTemplate, createClusterDialogTempl
         },
         applyRhelCredentials: function() {
             if (this.release.get('state') == 'not_available') {
-                var deferred = this.rhelCredentialsForm.applyCredentials();
-                if (deferred) {
+                var task = this.rhelCredentialsForm.applyCredentials();
+                if (task.deferred) {
                     this.$('.create-cluster-btn').attr('disabled', true);
-                    deferred
-                        .done(_.bind(function(response) {
-                            if (response.status == "error") {
+                    task.deferred
+                        .done(_.bind(function() {
+                            if (task.get('status') == "error") {
                                 this.$('.create-cluster-btn').attr('disabled', false);
                             } else {
                                 this.release.fetch()
@@ -190,21 +190,25 @@ function(require, utils, models, simpleMessageTemplate, createClusterDialogTempl
             'click .btn-os-download': 'applyRhelCredentials'
         },
         applyRhelCredentials: function() {
-            var deferred = this.rhelCredentialsForm.applyCredentials();
+            var task = this.rhelCredentialsForm.applyCredentials();
             this.$('.btn-os-download').addClass('disabled');
-            if (deferred) {
-                deferred
-                    .done(_.bind(function(response) {
-                        if (response.status == "ready"){
-                            app.page.tasks.fetch().done(_.bind(function() {
-                                this.$el.modal('hide');
-                                app.page.scheduleUpdate();
-                            }, this));
-                        } else {
-                            this.$('.btn-os-download').removeClass('disabled');
-                        
+            if (task.deferred) {
+                task.deferred
+                    .done(
+                        function(){
+                            _.bind(function(response) {
+                                if (task.get('status') == 'ready'){
+                                    app.page.tasks.fetch().done(_.bind(function() {
+                                        this.$el.modal('hide');
+                                        app.page.scheduleUpdate();
+                                    }, this));
+                                } else {
+                                    this.$('.btn-os-download').removeClass('disabled');
+                                
+                                }
+                            }, this)
                         }
-                    }, this))
+                    )
             } else {
                 this.$('.btn-os-download').removeClass('disabled');
             }

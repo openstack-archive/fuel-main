@@ -257,28 +257,28 @@ function(utils, models, dialogViews, navbarTemplate, nodesStatsTemplate, notific
                 satellite: this.$('input[name=satellite]').val(),
                 activation_key: this.$('input[name=activation_key]').val()
             };
-            var task = models.Task();
+            var task = new models.Task();
             var options = {
                 method: 'POST',
                 url: _.result(this.redHatAccount, 'url'),
                 data: JSON.stringify(accountData)
             };
-            var deferred = task.save({}, options);
-            if (deferred){
-                deferred
-                    .success(_.bind(function(response) {
+            task.deferred = task.save({}, options);
+            if (task.deferred){
+                task.deferred
+                    .success(_.bind(function() {
                         task.destroy({wait: true});
                         if (task.get('status') == 'error') {
                             this.$('*[name=username], *[name=password]').closest('.control-group').addClass('error');
                             this.$('.alert').text(task.get('message')).show();
                         }
                     }, this))
-                    .fail(_.bind(function(response) {                    
+                    .fail(_.bind(function() {                    
                         this.dialog.displayErrorMessage();
                     }, this));
             }
 
-            return deferred;
+            return task;
         },
         initialize: function(options) {
             _.defaults(this, options);
