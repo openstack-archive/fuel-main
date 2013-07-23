@@ -38,7 +38,7 @@
       <div class="disk-box-title">Volume Groups</div>
       <% volumes.each(function(volume) { %>
         <div class="volume-group-box volume-group" data-volume="<%- volume.get('name') %>">
-          <div class="volume-group-box-flag-<%- volume.get('name') %>"></div>
+          <div class="volume-group-box-flag <%- volume.get('name') %>"></div>
           <div class="volume-group-box-name"><%- volume.get('label') %></div>
           <div class="pull-right">
             <div class="volume-group-box-edit"><span class="use-all-allowed">Use All Allowed Space</span></div>

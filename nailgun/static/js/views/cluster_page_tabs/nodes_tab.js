@@ -26,10 +26,11 @@ define(
     'text!templates/cluster/node_status.html',
     'text!templates/cluster/edit_node_disks.html',
     'text!templates/cluster/node_disk.html',
+    'text!templates/cluster/volume_style.html',
     'text!templates/cluster/edit_node_interfaces.html',
     'text!templates/cluster/node_interface.html'
 ],
-function(utils, models, commonViews, dialogViews, nodesTabSummaryTemplate, editNodesScreenTemplate, nodeListTemplate, nodeTemplate, nodeStatusTemplate, editNodeDisksScreenTemplate, nodeDisksTemplate, editNodeInterfacesScreenTemplate, nodeInterfaceTemplate) {
+function(utils, models, commonViews, dialogViews, nodesTabSummaryTemplate, editNodesScreenTemplate, nodeListTemplate, nodeTemplate, nodeStatusTemplate, editNodeDisksScreenTemplate, nodeDisksTemplate, volumeStylesTemplate, editNodeInterfacesScreenTemplate, nodeInterfaceTemplate) {
     'use strict';
     var NodesTab, Screen, ScreenWithNodesPolling, NodesByRolesScreen, EditNodesScreen, AddNodesScreen, DeleteNodesScreen, NodeList, Node, EditNodeScreen, EditNodeDisksScreen, NodeDisk, EditNodeInterfacesScreen, NodeInterface;
 
@@ -595,6 +596,23 @@ function(utils, models, commonViews, dialogViews, nodesTabSummaryTemplate, editN
                     utils.showErrorDialog({title: 'Node disks configuration'});
                 }, this));
         },
+        mapVolumesColors: function() {
+            this.volumesColors = {};
+            var colors = [
+                ['#23a85e', '#1d8a4d'],
+                ['#3582ce', '#2b6ba9'],
+                ['#eea616', '#c38812'],
+                ['#1cbbb4', '#189f99'],
+                ['#9e0b0f', '#870a0d'],
+                ['#8f50ca', '#7a44ac'],
+                ['#1fa0e3', '#1b88c1'],
+                ['#85c329', '#71a623'],
+                ['#7d4900', '#6b3e00']
+            ];
+            this.volumes.each(function(volume, index) {
+                this.volumesColors[volume.get('name')] = colors[index];
+            }, this);
+        },
         initialize: function(options) {
             _.defaults(this, options);
             this.node = this.model.get('nodes').get(this.screenOptions[0]);
@@ -605,6 +623,7 @@ function(utils, models, commonViews, dialogViews, nodesTabSummaryTemplate, editN
                 this.loading = $.when(this.node.fetch(), this.volumes.fetch(), this.disks.fetch())
                     .done(_.bind(function() {
                         this.initialData = _.cloneDeep(this.disks.toJSON());
+                        this.mapVolumesColors();
                         this.disks.on('reset', this.render, this);
                         this.render();
                     }, this))
@@ -640,6 +659,7 @@ function(utils, models, commonViews, dialogViews, nodesTabSummaryTemplate, editN
 
     NodeDisk = Backbone.View.extend({
         template: _.template(nodeDisksTemplate),
+        volumeStylesTemplate: _.template(volumeStylesTemplate),
         templateHelpers: {
             sortEntryProperties: function(entry) {
                 var properties = _.keys(entry);
@@ -719,12 +739,19 @@ function(utils, models, commonViews, dialogViews, nodesTabSummaryTemplate, editN
             if (!this.disk.get('volumes').some('validationError') && !this.disk.validationError) {
                 var unallocatedWidth = 100;
                 this.disk.get('volumes').each(function(volume) {
-                    var width = utils.floor(volume.get('size') / this.disk.get('size') * 100, 2);
+                    var width = this.disk.get('size') ? utils.floor(volume.get('size') / this.disk.get('size') * 100, 2) : 0;
                     unallocatedWidth -= width;
                     this.renderVolume(volume.get('name'), width, volume.get('size'));
                 }, this);
                 this.renderVolume('unallocated', unallocatedWidth, this.disk.getUnallocatedSpace());
             }
+        },
+        applyColors: function() {
+            this.disk.get('volumes').each(function(volume) {
+                var name = volume.get('name');
+                var colors = this.screen.volumesColors[name];
+                this.$('.disk-visual .' + name + ', .volume-group-box-flag.' + name).attr('style', this.volumeStylesTemplate({startColor: _.first(colors), endColor: _.last(colors)}));
+            }, this);
         },
         render: function() {
             this.$el.html(this.template(_.extend({
@@ -734,6 +761,7 @@ function(utils, models, commonViews, dialogViews, nodesTabSummaryTemplate, editN
                 volumes: this.screen.volumes
             }, this.templateHelpers)));
             this.$('.disk-form').collapse({toggle: false});
+            this.applyColors();
             this.renderVisualGraph();
             this.$('input').autoNumeric('init', {mDec: 0});
             return this;

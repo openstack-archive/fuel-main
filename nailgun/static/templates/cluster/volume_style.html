@@ -1,0 +1,8 @@
+background: <%= startColor %>;
+background: -moz-linear-gradient(top,  <%= startColor %> 0%, <%= endColor %> 100%);
+background: -webkit-gradient(linear, left top, left bottom, color-stop(0%,<%= startColor %>), color-stop(100%,<%= endColor %>));
+background: -webkit-linear-gradient(top, <%= startColor %> 0%, <%= endColor %> 100%);
+background: -o-linear-gradient(top, <%= startColor %> 0%, <%= endColor %> 100%);
+background: -ms-linear-gradient(top, <%= startColor %> 0%, <%= endColor %> 100%);
+background: linear-gradient(to bottom, <%= startColor %> 0%, <%= endColor %> 100%);
+filter: progid:DXImageTransform.Microsoft.gradient(startColorstr="<%= startColor %>", endColorstr="<%= endColor %>", GradientType=0);
