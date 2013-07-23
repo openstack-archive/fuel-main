@@ -249,13 +249,6 @@ class Disk(object):
         self.volumes.append({'type': 'boot', 'size': size})
         self.free_space -= size
 
-    def create_lvm_meta(self, name):
-        logger.debug('Appending lvm meta for volume.')
-        lvm_meta_size = self.call_generator('calc_lvm_meta_size')
-        size = lvm_meta_size if self.free_space >= lvm_meta_size else 0
-        self.volumes.append({'type': 'lvm_meta', 'size': size, 'name': name})
-        self.free_space -= size
-
     def create_pv(self, name, size=None):
         '''
         Allocates all available space if
@@ -263,8 +256,6 @@ class Disk(object):
         '''
         logger.debug('Creating or updating PV: disk=%s vg=%s, size=%s',
                      self.id, name, str(size))
-
-        self.create_lvm_meta(name)
 
         if size is None:
             logger.debug(
@@ -424,10 +415,11 @@ class VolumeManager(object):
         for v in only_disks(self.volumes):
             for subv in v['volumes']:
                 if subv.get('type') == 'pv' and subv.get('vg') == vg:
-                    vg_space += subv.get('size', 0)
-                elif (subv.get('type') == 'lvm_meta' and
-                      subv.get('name') == vg):
-                    vg_space -= subv['size']
+                    size = subv.get('size', 0)
+                    if size > 0:
+                        # Reserve space for lvm meta
+                        vg_space += size - \
+                            self.call_generator('calc_lvm_meta_size')
 
         return vg_space
 
