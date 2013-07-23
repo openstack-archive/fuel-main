@@ -868,7 +868,7 @@ function(utils, models, commonViews, dialogViews, nodesTabSummaryTemplate, editN
             this.screen.draggedNetworks = null;
         },
         checkIfEmpty: function() {
-            this.$('.network-help-message').toggleClass('hide', !!this.model.get('assigned_networks').length);
+            this.$('.network-help-message').toggle(!this.model.get('assigned_networks').length && !this.screen.isLocked());
         },
         initialize: function(options) {
             _.defaults(this, options);
