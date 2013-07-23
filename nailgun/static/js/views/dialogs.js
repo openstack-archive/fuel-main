@@ -194,21 +194,17 @@ function(require, utils, models, simpleMessageTemplate, createClusterDialogTempl
             this.$('.btn-os-download').addClass('disabled');
             if (task.deferred) {
                 task.deferred
-                    .done(
-                        function(){
-                            _.bind(function(response) {
-                                if (task.get('status') == 'ready'){
-                                    app.page.tasks.fetch().done(_.bind(function() {
-                                        this.$el.modal('hide');
-                                        app.page.scheduleUpdate();
-                                    }, this));
-                                } else {
-                                    this.$('.btn-os-download').removeClass('disabled');
-                                
-                                }
-                            }, this)
-                        }
-                    )
+                    .done(_.bind(function(response) {
+                            if (task.get('status') == 'ready'){
+                                app.page.tasks.fetch().done(_.bind(function() {
+                                    this.$el.modal('hide');
+                                    app.page.scheduleUpdate();
+                                }, this));
+                            } else {
+                                this.$('.btn-os-download').removeClass('disabled');
+                            
+                            }
+                        }, this))
             } else {
                 this.$('.btn-os-download').removeClass('disabled');
             }
