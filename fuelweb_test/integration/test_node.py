@@ -58,8 +58,9 @@ class TestNode(BaseNodeTestCase):
     @fetch_logs
     def test_updating_nodes_in_cluster(self):
         cluster_id = self.create_cluster(name='empty')
-        nodes = self.bootstrap_nodes(self.devops_nodes_by_names(['slave-01']))
-        self.update_nodes_in_cluster(cluster_id, nodes)
+        nodes = {'controller': ['slave-01']}
+        self.bootstrap_nodes(self.devops_nodes_by_names(nodes['controller']))
+        self.update_nodes(cluster_id, nodes)
 
     @snapshot_errors
     @logwrap
@@ -111,12 +112,13 @@ class TestNode(BaseNodeTestCase):
     @fetch_logs
     def test_node_deletion(self):
         cluster_name = 'node_deletion'
-        slave = self.nodes().slaves[0]
-        nodes_dict = {'controller': [slave.name]}
+        nodes_dict = {'controller': ['slave-01']}
         cluster_id = self._basic_provisioning(
             cluster_name=cluster_name, nodes_dict=nodes_dict)
-        nailgun_node = self.delete_node(cluster_id, slave)
-        wait(lambda: self.is_node_discovered(nailgun_node), timeout=3 * 60)
+        nailgun_nodes = self.update_nodes(cluster_id, nodes_dict, False, True)
+        task = self._launch_provisioning(cluster_id)
+        self.assertTaskSuccess(task)
+        wait(lambda: self.is_node_discovered(nailgun_nodes[0]), timeout=3 * 60)
 
     @snapshot_errors
     @logwrap
@@ -124,11 +126,15 @@ class TestNode(BaseNodeTestCase):
     def test_network_verify_with_blocked_vlan(self):
         cluster_name = 'net_verify'
         cluster_id = self.create_cluster(name=cluster_name)
-        devops_nodes = self.devops_nodes_by_names(['slave-01', 'slave-02'])
-        nailgun_slave_nodes = self.bootstrap_nodes(devops_nodes)
+
+        nodes_dict = {'controller': ['slave-01', 'slave-02']}
+
+        devops_nodes = self.devops_nodes_by_names(nodes_dict['controller'])
+        self.bootstrap_nodes(devops_nodes)
+
         ebtables = self.get_ebtables(cluster_id, devops_nodes)
         ebtables.restore_vlans()
-        self.update_nodes_in_cluster(cluster_id, nailgun_slave_nodes)
+        self.update_nodes(cluster_id, nodes_dict)
         try:
             ebtables.block_first_vlan()
             task = self._run_network_verify(cluster_id)
@@ -184,12 +190,9 @@ class TestNode(BaseNodeTestCase):
         cluster_id = self._basic_provisioning(
             cluster_name=cluster_name, nodes_dict=nodes_dict)
 
-        nodes = self.bootstrap_nodes(self.nodes().slaves[2:3])
-        self.client.update_node(
-            nodes[0]['id'], {"role": 'compute', "pending_addition": True})
-
-        nodes += self.nailgun_nodes(self.nodes().slaves[:2])
-        self.update_nodes_in_cluster(cluster_id, nodes)
+        self.bootstrap_nodes(self.nodes().slaves[2:3])
+        self.update_nodes(cluster_id, {'compute': [
+            n.name for n in self.nodes().slaves[2:3]]}, True, False)
 
         task = self.client.update_cluster_changes(cluster_id)
         self.assertTaskSuccess(task)
@@ -210,7 +213,7 @@ class TestNode(BaseNodeTestCase):
             'controller': ['slave-01'],
             'compute': ['slave-02']
         }
-        nodes = self.bootstrap_nodes(self.devops_nodes_by_names(
+        self.bootstrap_nodes(self.devops_nodes_by_names(
             nodes_dict['controller'] + nodes_dict['compute']))
 
         cluster_id = self.create_cluster(name=cluster_name)
@@ -230,11 +233,7 @@ class TestNode(BaseNodeTestCase):
                                    flat_net=networks['networks'])
 
         # adding nodes in cluster
-        for node, role in self.get_nailgun_node_roles(nodes_dict):
-            self.client.update_node(
-                node['id'], {"role": role, "pending_addition": True})
-
-        self.update_nodes_in_cluster(cluster_id, nodes)
+        self.update_nodes(cluster_id, nodes_dict, True, False)
         task = self._launch_provisioning(cluster_id)
         self.assertTaskSuccess(task)
 

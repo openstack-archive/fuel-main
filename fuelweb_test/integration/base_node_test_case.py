@@ -73,14 +73,6 @@ class BaseNodeTestCase(BaseTestCase):
                 and node['status'] == 'discover', self.client.list_nodes()))
 
     @logwrap
-    def delete_node(self, cluster_id, devops_node):
-        nailgun_node = self.get_node_by_devops_node(devops_node)
-        self.client.update_node(nailgun_node['id'], {'pending_deletion': True})
-        task = self._launch_provisioning(cluster_id)
-        self.assertTaskSuccess(task)
-        return nailgun_node
-
-    @logwrap
     def get_target_devs(self, devops_nodes):
         return [
             interface.target_dev for interface in [
@@ -120,6 +112,8 @@ class BaseNodeTestCase(BaseTestCase):
         cluster_id = self.create_cluster(name=cluster_name)
         self.client.add_syslog_server(
             cluster_id, self.ci().get_host_node_ip(), port)
+
+        # update cluster deployment mode
         node_names = []
         for role in nodes_dict:
             node_names += nodes_dict[role]
@@ -132,13 +126,11 @@ class BaseNodeTestCase(BaseTestCase):
             if controller_amount > 1:
                 self.client.update_cluster(cluster_id, {"mode": "ha"})
 
-        nodes = self.bootstrap_nodes(self.devops_nodes_by_names(node_names))
+        self.bootstrap_nodes(self.devops_nodes_by_names(node_names))
 
-        for node, role in self.get_nailgun_node_roles(nodes_dict):
-            self.client.update_node(
-                node['id'], {"role": role, "pending_addition": True})
+        # update nodes in cluster
+        self.update_nodes(cluster_id, nodes_dict, True, False)
 
-        self.update_nodes_in_cluster(cluster_id, nodes)
         task = self._launch_provisioning(cluster_id)
         self.assertTaskSuccess(task)
         self.check_role_file(nodes_dict)
@@ -213,14 +205,30 @@ class BaseNodeTestCase(BaseTestCase):
         return cluster_id
 
     @logwrap
-    def update_nodes_in_cluster(self, cluster_id, nodes):
-        node_ids = [str(node['id']) for node in nodes]
-        self.client.update_cluster(cluster_id, {"nodes": node_ids})
+    def update_nodes(self, cluster_id, nodes_dict,
+                     pending_addition=True, pending_deletion=False):
+        # update nodes in cluster
+        nodes_data = []
+        for role in nodes_dict:
+            for node_name in nodes_dict[role]:
+                slave = self.ci().environment().node_by_name(node_name)
+                node = self.get_node_by_devops_node(slave)
+                node_data = {'cluster_id': cluster_id, 'id': node['id'],
+                             'pending_addition': pending_addition,
+                             'pending_deletion': pending_deletion,
+                             'role': role}
+                nodes_data.append(node_data)
+
+        # assume nodes are going to be updated for one cluster only
+        cluster_id = nodes_data[-1]['cluster_id']
+        node_ids = [str(node_info['id']) for node_info in nodes_data]
+        nailgun_nodes = self.client.update_nodes(nodes_data)
         self.assertEquals(
             sorted(node_ids),
             sorted(map(
                 lambda node: str(node['id']),
                 self.client.list_cluster_nodes(cluster_id))))
+        return nailgun_nodes
 
     @logwrap
     def get_node_by_devops_node(self, devops_node):

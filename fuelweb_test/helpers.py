@@ -55,6 +55,11 @@ class HTTPClient(object):
         req.get_method = lambda: 'PUT'
         return self._open(req)
 
+    def delete(self, endpoint):
+        req = urllib2.Request(self.url + endpoint)
+        req.get_method = lambda: 'DELETE'
+        return self._open(req)
+
     def _open(self, req):
         return self.opener.open(req)
 
