@@ -265,16 +265,17 @@ function(utils, models, dialogViews, navbarTemplate, nodesStatsTemplate, notific
             };
             var deferred = task.save({}, options);
             if (deferred){
-                deferred.success(_.bind(function(response) {
-                            var task = new models.Task(response);
-                            task.destroy({wait: true});
-                            if (task.get('status') == 'error') {
-                                this.$('*[name=username], *[name=password]').closest('.control-group').addClass('error');
-                                this.$('.alert').text(task.get('message')).show();
-                            }
-                        }, this))
-                        .fail(_.bind(function(response) {                    
-                            this.dialog.displayErrorMessage();
+                deferred
+                    .success(_.bind(function(response) {
+                        var task = new models.Task(response);
+                        task.destroy({wait: true});
+                        if (task.get('status') == 'error') {
+                            this.$('*[name=username], *[name=password]').closest('.control-group').addClass('error');
+                            this.$('.alert').text(task.get('message')).show();
+                        }
+                    }, this))
+                    .fail(_.bind(function(response) {                    
+                        this.dialog.displayErrorMessage();
                     }, this));
             }
 
