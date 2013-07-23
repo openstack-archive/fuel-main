@@ -267,7 +267,6 @@ function(utils, models, dialogViews, navbarTemplate, nodesStatsTemplate, notific
             if (deferred){
                 deferred
                     .success(_.bind(function(response) {
-                        var task = new models.Task(response);
                         task.destroy({wait: true});
                         if (task.get('status') == 'error') {
                             this.$('*[name=username], *[name=password]').closest('.control-group').addClass('error');
