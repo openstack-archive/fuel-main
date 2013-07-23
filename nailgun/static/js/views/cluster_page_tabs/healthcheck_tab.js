@@ -195,7 +195,16 @@ function(utils, models, commonViews, dialogViews, healthcheckTabTemplate, health
     TestSet = Backbone.View.extend({
         template: _.template(healthcheckTestSetTemplate),
         testsTemplate: _.template(healthcheckTestsTemplate),
-        templateHelpers: _.pick(utils, 'linebreaks'),
+        templateHelpers: _.extend(_.pick(utils, 'linebreaks'), {highlightStep: function(text, step) {
+            var lines = text.split('\n');
+            var rx = new RegExp('^\\s*' + step + '\\.');
+            _.each(lines, function(line, index) {
+                if (line.match(rx)) {
+                    lines[index] = '<b><u>' + line + '</u></b>';
+                }
+            });
+            return lines.join('\n');
+        }}),
         initialize: function(options) {
             _.defaults(this, options);
             this.testrun.on('change', this.renderTests, this);

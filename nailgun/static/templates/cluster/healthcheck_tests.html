@@ -7,9 +7,13 @@
       <% if (status == 'failure' || status == 'error') { %>
         <div class="healthcheck-msg healthcheck-status-failure">
           <% if (result && result.message) { %>
-            <i><%- result.message %><br></i>
+            <b><%- result.message %></b><br><br>
           <% } %>
-          <%= linebreaks(test.escape('description')) %>
+          <% if (result && _.isNumber(result.step)) { %>
+            <%= linebreaks(highlightStep(test.escape('description'), result.step)) %>
+          <% } else { %>
+            <%= linebreaks(test.escape('description')) %>
+          <% } %>
         </div>
       <% } %>
     </td>
@@ -17,8 +21,7 @@
       <div class="healthcheck-duration"><%- test.get('duration') || '' %></div>
     </td>
     <td class="healthcheck-col-duration">
-      <% if (status == 'running') { %>
-      <% } else if (result && _.isNumber(result.taken)) { %>
+      <% if (status != 'running' && result && _.isNumber(result.taken)) { %>
         <div class="healthcheck-duration"><%= result.taken.toFixed(1) %> s.</div>
       <% } else { %>
         <div class="healthcheck-status healthcheck-status-unknown">&mdash;</div>
