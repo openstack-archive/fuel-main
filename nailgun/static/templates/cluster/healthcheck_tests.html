@@ -17,14 +17,12 @@
       <div class="healthcheck-duration"><%- test.get('duration') || '' %></div>
     </td>
     <td class="healthcheck-col-duration">
-      <div class="healthcheck-duration">
-        <% if (status == 'running') { %>
-        <% } else if (result && _.isNumber(result.taken)) { %>
-          <%= result.taken.toFixed(1) %>s
-        <% } else { %>
-          &mdash;
-        <% } %>
-      </div>
+      <% if (status == 'running') { %>
+      <% } else if (result && _.isNumber(result.taken)) { %>
+        <div class="healthcheck-duration"><%= result.taken.toFixed(1) %> s.</div>
+      <% } else { %>
+        <div class="healthcheck-status healthcheck-status-unknown">&mdash;</div>
+      <% } %>
     </td>
     <td class="healthcheck-col-status">
       <div class="healthcheck-status healthcheck-status-<%- status %>">
