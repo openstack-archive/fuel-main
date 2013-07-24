@@ -55,5 +55,10 @@ POOLS = {
                                DEFAULT_POOLS.get('internal')).split(':')
 }
 
+NETWORK_MANAGERS = {
+    'flat': 'FlatDHCPManager',
+    'vlan': 'VlanManager'
+}
+
 CLEAN = os.environ.get('CLEAN', 'true') == 'true'
 LOGS_DIR = os.environ.get('LOGS_DIR')

@@ -21,7 +21,7 @@ from fuelweb_test.helpers import Ebtables
 from fuelweb_test.integration.base_test_case import BaseTestCase
 from fuelweb_test.integration.decorators import debug
 from fuelweb_test.nailgun_client import NailgunClient
-from fuelweb_test.settings import CLEAN
+from fuelweb_test.settings import CLEAN, NETWORK_MANAGERS
 
 logger = logging.getLogger(__name__)
 logwrap = debug(logger)
@@ -189,20 +189,13 @@ class BaseNodeTestCase(BaseTestCase):
         return cluster_id
 
     @logwrap
-    def create_cluster(self, name='default',
-                       release_id=None, net_manager="FlatDHCPManager"):
-        cluster_id = self.get_or_create_cluster(name, release_id)
-        self.client.update_network(
-            cluster_id,
-            net_manager=net_manager)
-        if net_manager == "VlanManager":
-            flat_net = filter(
-                lambda network: network['name'] == 'fixed',
-                self.client.get_networks(cluster_id)['networks'])
-            flat_net[0]['amount'] = 8
-            flat_net[0]['network_size'] = 16
-            self.client.update_network(cluster_id, flat_net=flat_net)
-        return cluster_id
+    def create_cluster(self, name='default', release_id=None):
+        """
+        :param name:
+        :param release_id:
+        :return: cluster_id
+        """
+        return self.get_or_create_cluster(name, release_id)
 
     @logwrap
     def update_nodes(self, cluster_id, nodes_dict,
@@ -329,3 +322,17 @@ class BaseNodeTestCase(BaseTestCase):
             with self.remote().open(key_string) as f:
                 keys.append(RSAKey.from_private_key(f))
         return keys
+
+    @logwrap
+    def update_vlan_network_fixed(
+            self, cluster_id, amount=1, network_size=256):
+        network_list = self.client.get_networks(cluster_id)['networks']
+        for network in network_list:
+            if network["name"] == 'fixed':
+                network['amount'] = amount
+                network['network_size'] = network_size
+
+        self.client.update_network(
+            cluster_id,
+            networks=network_list,
+            net_manager=NETWORK_MANAGERS['vlan'])

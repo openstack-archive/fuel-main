@@ -88,8 +88,9 @@ class TestNode(BaseNodeTestCase):
     def test_simple_cluster_vlan(self):
         cluster_name = 'simple_vlan'
         nodes = {'controller': ['slave-01'], 'compute': ['slave-02']}
-        self.create_cluster(name=cluster_name, net_manager="VlanManager")
-        cluster_id = self._basic_provisioning(cluster_name, nodes)
+        cluster_id = self.create_cluster(name=cluster_name)
+        self.update_vlan_network_fixed(cluster_id, amount=8, network_size=32)
+        self._basic_provisioning(cluster_name, nodes)
         self.assertClusterReady(
             'slave-01', smiles_count=6, networks_count=8, timeout=300)
         self.get_ebtables(cluster_id, self.nodes().slaves[:2]).restore_vlans()
@@ -230,7 +231,7 @@ class TestNode(BaseNodeTestCase):
 
         self.client.update_network(cluster_id,
                                    net_manager=networks['net_manager'],
-                                   flat_net=networks['networks'])
+                                   networks=networks['networks'])
 
         # adding nodes in cluster
         self.update_nodes(cluster_id, nodes_dict, True, False)
