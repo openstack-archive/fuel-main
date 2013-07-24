@@ -309,6 +309,8 @@ class RedHatAccountValidationTaskManager(TaskManager):
             tasks.ValidateRedHatAccountTask,
             self.data)
         db().refresh(task)
+
+        # Run background download task if accaount validation was successful
         if task.status != 'error':
             download_task = Task(name='download_release')
             db().add(download_task)

@@ -69,8 +69,8 @@ class RedHatAccountHandler(JSONHandler):
         try:
             task = task_manager.execute()
         except Exception as exc:
-            logger.error(u'DownloadReleaseHandler: error while execution'
-                         ' deploy task: {0}'.format(str(exc)))
+            logger.error(u'RedHatAccountHandler: error while execution'
+                         ' Red Hat validation task: {0}'.format(str(exc)))
             logger.error(traceback.format_exc())
             raise web.badrequest(str(exc))
 
