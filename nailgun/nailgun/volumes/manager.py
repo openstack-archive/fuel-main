@@ -107,7 +107,7 @@ class DisksFormatConvertor(object):
         volume_manager = node.volume_manager
         for disk in disks:
             for volume in disk['volumes']:
-                full_format = volume_manager.set_volume_size(
+                full_format = volume_manager.set_pv_size(
                     disk['id'], volume['name'], volume['size'])
 
         return full_format
@@ -133,7 +133,7 @@ class DisksFormatConvertor(object):
                 'id': disk['id'],
                 'name': disk['name'],
                 'size': size,
-                'volumes': cls.format_volumes_to_simple(disk['volumes'])}
+                'volumes': cls.get_serialized_pvs(disk['volumes'])}
 
             disks_in_simple_format.append(disk_simple)
 
@@ -146,18 +146,19 @@ class DisksFormatConvertor(object):
             [partition.get('size', 0) for partition in not_vg_partitions])
 
     @classmethod
-    def format_volumes_to_simple(cls, all_partitions):
+    def get_serialized_pvs(cls, all_partitions):
         '''
-        convert volumes from full format to simple format
+        Convert volumes from full format to simple format
         '''
         pv_full_format = filter(
             lambda vg: vg.get('type') == 'pv', all_partitions)
 
         volumes_simple_format = []
         for volume in pv_full_format:
+            size = volume['size'] - call_generator('calc_lvm_meta_size')
             volume_simple = {
                 'name': volume['vg'],
-                'size': volume['size']}
+                'size': size}
 
             volumes_simple_format.append(volume_simple)
 
@@ -251,8 +252,8 @@ class Disk(object):
 
     def create_pv(self, name, size=None):
         '''
-        Allocates all available space if
-        size is None
+        Allocates all available space if size is None
+        Size in parameter should include size of lvm meta
         '''
         logger.debug('Creating or updating PV: disk=%s vg=%s, size=%s',
                      self.id, name, str(size))
@@ -263,18 +264,16 @@ class Disk(object):
             size = self.free_space
 
         self.free_space -= size
+
         logger.debug('Appending PV to volumes.')
         self.volumes.append({
             'type': 'pv',
             'vg': name,
             'size': size})
 
-    def clear(self):
+    def reset(self):
         self.volumes = []
         self.free_space = self.size
-
-    def reset(self):
-        self.clear()
         self.create_service_partitions()
 
     def render(self):
@@ -341,8 +340,8 @@ class VolumeManager(object):
         self.__logger('Initialized with volumes: %s' % self.volumes)
         self.__logger('Initialized with disks: %s' % self.disks)
 
-    def set_volume_size(self, disk_id, volume_name, size):
-        self.__logger('Update volume size for disk=%s volume_name=%s size=%s' %
+    def set_pv_size(self, disk_id, volume_name, size):
+        self.__logger('Update PV size for disk=%s volume_name=%s size=%s' %
                       (disk_id, volume_name, size))
 
         disk = filter(
@@ -352,8 +351,12 @@ class VolumeManager(object):
         volume = filter(
             lambda volume: volume_name == volume.get('vg'),
             disk['volumes'])[0]
-        if disk['size'] >= size:
-            volume['size'] = size
+
+        size_with_lvm_meta = size + self.call_generator('calc_lvm_meta_size')
+        if disk['size'] >= size_with_lvm_meta:
+            self.__logger('Update volume size (with lvm meta) of PV to %s' %
+                          size_with_lvm_meta)
+            volume['size'] = size_with_lvm_meta
 
         # Recalculate sizes of volume groups
         for index, volume in enumerate(self.volumes):
@@ -415,11 +418,8 @@ class VolumeManager(object):
         for v in only_disks(self.volumes):
             for subv in v['volumes']:
                 if subv.get('type') == 'pv' and subv.get('vg') == vg:
-                    size = subv.get('size', 0)
-                    if size > 0:
-                        # Reserve space for lvm meta
-                        vg_space += size - \
-                            self.call_generator('calc_lvm_meta_size')
+                    vg_space += subv.get('size', 0) - \
+                        self.call_generator('calc_lvm_meta_size')
 
         return vg_space
 
