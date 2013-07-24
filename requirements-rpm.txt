@@ -134,6 +134,7 @@ usermode-1.102-3.el6
 vim-enhanced-7.2.411-1.8.el6
 virt-what-1.11-1.2.el6
 wget-1.12-1.8.el6
+wireshark-1.2.15-2.el6_2.1
 xfsprogs-3.1.1-10.el6
 xinetd-2.3.14-38.el6
 yum-3.2.29-40.el6.centos
