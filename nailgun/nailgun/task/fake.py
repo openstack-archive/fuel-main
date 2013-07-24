@@ -306,9 +306,8 @@ class FakeVerificationThread(FakeThread):
         # verification will fail if you specified 404 as VLAN id in any net
         for n in self.data['args']['nodes']:
             for iface in n['networks']:
-                for vlan in iface['vlans']:
-                    if 404 in vlan['vlans']:
-                        vlan['vlans'] = list(set(vlan['vlans']) ^ set([404]))
+                if 404 in iface['vlans']:
+                    iface['vlans'] = list(set(iface['vlans']) ^ set([404]))
 
         while not ready and not self.stoprequest.isSet():
             kwargs['progress'] += randrange(

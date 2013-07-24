@@ -493,23 +493,18 @@ class NailgunReceiver(object):
                         continue
 
                     cached_node = cached_nodes_filtered[0]
+
                     for cached_network in cached_node['networks']:
                         received_networks_filtered = filter(
                             lambda n: n['iface'] == cached_network['iface'],
                             node.get('networks', [])
                         )
 
-                        def get_vlans_ids(vlans):
-                            ids = []
-                            for vlan in vlans:
-                                ids.extend(vlan['vlans'])
-                            return ids
-
                         if received_networks_filtered:
                             received_network = received_networks_filtered[0]
                             absent_vlans = list(
-                                set(get_vlans_ids(cached_network['vlans'])) -
-                                set(get_vlans_ids(received_network['vlans']))
+                                set(cached_network['vlans']) -
+                                set(received_network['vlans'])
                             )
                         else:
                             logger.warning(
@@ -517,28 +512,13 @@ class NailgunReceiver(object):
                                 " data for interface: uid=%s iface=%s",
                                 node['uid'], cached_network['iface']
                             )
-                            absent_vlans = \
-                                get_vlans_ids(cached_network['vlans'])
+                            absent_vlans = cached_network['vlans']
 
                         if absent_vlans:
-                            vlans_data = []
-
-                            def find_vlan(vlan_id):
-                                for vlans in (cached_network['vlans'],
-                                              received_network['vlans']):
-                                    vlan = filter(
-                                        lambda v: vlan_id in v['vlans'],
-                                        vlans)
-                                    if vlan:
-                                        return {'name': vlan[0]['name'],
-                                                'vlan_id': vlan_id}
-                                return {'name': '', 'vlan_id': vlan_id}
-                            for vlan_id in absent_vlans:
-                                vlans_data.append(find_vlan(vlan_id))
                             data = {'uid': node['uid'],
                                     'interface': received_network['iface'],
-                                    'absent_vlans': vlans_data}
-                            node_db = cls.db.query(Node).get(node['uid'])
+                                    'absent_vlans': absent_vlans}
+                            node_db = db().query(Node).get(node['uid'])
                             if node_db:
                                 data['name'] = node_db.name
                                 db_nics = filter(

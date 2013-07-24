@@ -553,7 +553,6 @@ class VerifyNetworksTask(object):
     def execute(self, task, data):
         task_uuid = task.uuid
         nodes = []
-        print '====================', data
         for n in task.cluster.nodes:
             node_json = {'uid': n.id, 'networks': []}
             for nic in n.interfaces:
@@ -567,8 +566,7 @@ class VerifyNetworksTask(object):
                         lambda i: i['name'] == ng.name,
                         data
                     )[0]
-                    print '-!!!_!_!!!_!!!', vlans
-                    vlans.append(data_ng)
+                    vlans.extend(data_ng['vlans'])
                 if not vlans:
                     continue
                 node_json['networks'].append(
