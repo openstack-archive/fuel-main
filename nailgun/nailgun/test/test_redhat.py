@@ -37,18 +37,6 @@ class TestHandlers(BaseHandlers):
         nailgun.task.task.DownloadReleaseTask.execute = mock.Mock()
 
     @fake_tasks()
-    def test_redhat_account_handler(self):
-        release = self.env.create_release(api=False)
-        resp = self.app.post(
-            reverse('RedHatAccountHandler'),
-            json.dumps({'license_type': 'rhsm',
-                        'username': 'rheltest',
-                        'password': 'password',
-                        'release_id': release.id}),
-            headers=self.default_headers)
-        self.assertEquals(resp.status, 202)
-
-    @fake_tasks()
     def test_redhat_account_invalid_data_handler(self):
         resp = self.app.post(
             reverse('RedHatAccountHandler'),
