@@ -500,9 +500,10 @@ class NailgunReceiver(object):
                         )
 
                         def get_vlans_ids(vlans):
-                            return itertools.chain(
-                                *[vlan['vlans'] for vlan in vlans]
-                            )
+                            ids = []
+                            for vlan in vlans:
+                                ids.extend(vlan['vlans'])
+                            return ids
 
                         if received_networks_filtered:
                             received_network = received_networks_filtered[0]

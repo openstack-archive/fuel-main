@@ -330,6 +330,18 @@ class TestVerifyNetworks(BaseHandlers):
         self.assertRegexpMatches(task.message, node3.name)
         self.assertEqual(task.result, [])
 
+#    def _gen_vlans_data(self):
+#        retval = []
+#        for i in xrange(100,105):
+#            retval.append({'name': 'vlan_%s' % i, 'vlans': [i]})
+#        return retval
+#
+#    def _gen_vlan_data(self):
+#        retval = []
+#        for i in xrange(100,105):
+#            retval.append({'name': 'vlan_%s' % i, 'vlan_id': i})
+#        return retval
+
     def test_verify_networks_resp_incomplete_network_data_error(self):
         self.env.create(
             cluster_kwargs={},
