@@ -491,7 +491,9 @@ class Attributes(Base):
         new_dict = {}
         if cdict:
             for i, val in cdict.iteritems():
-                if isinstance(val, dict) and "generator" in val:
+                if isinstance(val, (str, unicode, int, float)):
+                    new_dict[i] = val
+                elif isinstance(val, dict) and "generator" in val:
                     try:
                         generator = getattr(
                             AttributesGenerators,

@@ -65,6 +65,8 @@ COBBLER_URL: "http://localhost/cobbler_api"
 COBBLER_USER: "cobbler"
 COBBLER_PASSWORD: "cobbler"
 
+NOVA_STATE_PATH: "/var/lib/nova"
+
 TRUNCATE_LOG_ENTRIES: 100
 UI_LOG_DATE_FORMAT: '%Y-%m-%d %H:%M:%S'
 LOG_FORMATS:
