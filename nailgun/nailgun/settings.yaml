@@ -121,12 +121,12 @@ LOG_GROUPS:
 LOGS:
 # Master node logs.
   - id: app
-    name: "FuelWeb"
+    name: "Web backend"
     <<: *local_log_type
     <<: *python_log_format
     path: *nailgun_log
   - id: api
-    name: "FuelWeb API"
+    name: "REST API"
     <<: *local_log_type
     <<: *python_log_format
     path: *api_log

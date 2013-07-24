@@ -33,7 +33,7 @@ vm_master_disk_mb=16384
 vm_master_ip=10.20.0.2
 vm_master_username=root
 vm_master_password=r00tme
-vm_master_prompt='root@fuelweb ~]#'
+vm_master_prompt='root@fuel ~]#'
 
 # Slave node settings
 vm_slave_cpu_cores=1

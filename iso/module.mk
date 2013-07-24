@@ -138,7 +138,7 @@ $(BUILD_DIR)/iso/iso.done: $(BUILD_DIR)/iso/isoroot.done
 	rm -f $(ISO_PATH)
 	mkdir -p $(BUILD_DIR)/iso/isoroot-mkisofs
 	rsync -a --delete $(ISOROOT)/ $(BUILD_DIR)/iso/isoroot-mkisofs
-	mkisofs -r -V "Mirantis FuelWeb" -p "Mirantis Inc." \
+	mkisofs -r -V "Mirantis Fuel" -p "Mirantis Inc." \
 		-J -T -R -b isolinux/isolinux.bin \
 		-no-emul-boot \
 		-boot-load-size 4 -boot-info-table \
