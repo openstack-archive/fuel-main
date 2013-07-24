@@ -38,7 +38,7 @@ from nailgun.api.models import Vlan
 
 class TestVerifyNetworks(BaseHandlers):
 
-    def _gen_vlans_request_data(self, start, end):
+    def _gen_vlans_data(self, start, end):
         retval = []
         for i in xrange(start, end):
             retval.append({'name': 'vlan_%s' % i, 'vlans': [i]})
@@ -64,8 +64,7 @@ class TestVerifyNetworks(BaseHandlers):
         )
         cluster_db = self.env.clusters[0]
         node1, node2 = self.env.nodes
-        nets = [{'iface': 'eth0',
-                 'vlans': self._gen_vlans_request_data(100, 105)}]
+        nets = [{'iface': 'eth0', 'vlans': self._gen_vlans_data(100, 105)}]
 
         task = Task(
             name="verify_networks",
@@ -100,9 +99,9 @@ class TestVerifyNetworks(BaseHandlers):
         cluster_db = self.env.clusters[0]
         node1, node2 = self.env.nodes
         nets_sent = [{'iface': 'eth0',
-                      'vlans': self._gen_vlans_request_data(100, 105)}]
+                      'vlans': self._gen_vlans_data(100, 105)}]
         nets_resp = [{'iface': 'eth0',
-                      'vlans': self._gen_vlans_request_data(100, 104)}]
+                      'vlans': self._gen_vlans_data(100, 104)}]
 
         task = Task(
             name="super",
@@ -146,9 +145,9 @@ class TestVerifyNetworks(BaseHandlers):
         cluster_db = self.env.clusters[0]
         node1, node2 = self.env.nodes
         nets_sent = [{'iface': 'eth0',
-                      'vlans': self._gen_vlans_request_data(100, 105)}]
+                      'vlans': self._gen_vlans_data(100, 105)}]
         nets_resp = [{'iface': 'eth0',
-                      'vlans': self._gen_vlans_request_data(100, 104)}]
+                      'vlans': self._gen_vlans_data(100, 104)}]
 
         task = Task(
             name="super",
@@ -269,7 +268,7 @@ class TestVerifyNetworks(BaseHandlers):
         node1, node2 = self.env.nodes
         node3 = self.env.create_node(api=False)
         nets_sent = [{'iface': 'eth0',
-                      'vlans': self._gen_vlans_request_data(100, 105)}]
+                      'vlans': self._gen_vlans_data(100, 105)}]
 
         task = Task(
             name="super",
@@ -342,7 +341,7 @@ class TestVerifyNetworks(BaseHandlers):
         cluster_db = self.env.clusters[0]
         node1, node2 = self.env.nodes
         nets_sent = [{'iface': 'eth0',
-                      'vlans': self._gen_vlans_request_data(100, 105)}]
+                      'vlans': self._gen_vlans_data(100, 105)}]
 
         task = Task(
             name="super",
