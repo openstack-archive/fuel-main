@@ -222,12 +222,12 @@ class BaseNodeTestCase(BaseTestCase):
         # assume nodes are going to be updated for one cluster only
         cluster_id = nodes_data[-1]['cluster_id']
         node_ids = [str(node_info['id']) for node_info in nodes_data]
-        nailgun_nodes = self.client.update_nodes(nodes_data)
-        self.assertEquals(
-            sorted(node_ids),
-            sorted(map(
-                lambda node: str(node['id']),
-                self.client.list_cluster_nodes(cluster_id))))
+        self.client.update_nodes(nodes_data)
+
+        nailgun_nodes = self.client.list_cluster_nodes(cluster_id)
+        cluster_node_ids = map(lambda node: str(node['id']), nailgun_nodes)
+        self.assertTrue(
+            all([node_id in cluster_node_ids for node_id in node_ids]))
         return nailgun_nodes
 
     @logwrap
