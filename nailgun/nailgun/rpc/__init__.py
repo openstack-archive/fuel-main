@@ -14,9 +14,12 @@
 #    License for the specific language governing permissions and limitations
 #    under the License.
 
+import json
+
 from kombu import Connection, Exchange, Queue
 
 from nailgun.settings import settings
+from nailgun.logger import logger
 
 creds = (
     ("userid", "guest"),
@@ -55,6 +58,11 @@ nailgun_queue = Queue(
 
 
 def cast(name, message):
+    logger.debug(
+        "RPC cast to orchestrator:\n{0}".format(
+            json.dumps(message, indent=4)
+        )
+    )
     with Connection(conn_str) as conn:
         with conn.Producer(serializer='json') as producer:
             producer.publish(message,

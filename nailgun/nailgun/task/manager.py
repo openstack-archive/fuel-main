@@ -68,6 +68,7 @@ class DeploymentTaskManager(TaskManager):
                 self.cluster.name or self.cluster.id,
             )
         )
+
         current_tasks = db().query(Task).filter_by(
             cluster_id=self.cluster.id,
             name="deploy"

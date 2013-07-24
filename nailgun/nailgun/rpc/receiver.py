@@ -15,6 +15,7 @@
 #    under the License.
 
 import time
+import json
 import Queue
 import types
 import traceback
@@ -43,7 +44,10 @@ class NailgunReceiver(object):
 
     @classmethod
     def remove_nodes_resp(cls, **kwargs):
-        logger.info("RPC method remove_nodes_resp received: %s" % kwargs)
+        logger.info(
+            "RPC method remove_nodes_resp received: %s" %
+            json.dumps(kwargs)
+        )
         task_uuid = kwargs.get('task_uuid')
         nodes = kwargs.get('nodes') or []
         error_nodes = kwargs.get('error_nodes') or []
@@ -108,7 +112,10 @@ class NailgunReceiver(object):
     @classmethod
     def remove_cluster_resp(cls, **kwargs):
         network_manager = NetworkManager()
-        logger.info("RPC method remove_cluster_resp received: %s" % kwargs)
+        logger.info(
+            "RPC method remove_cluster_resp received: %s" %
+            json.dumps(kwargs)
+        )
         task_uuid = kwargs.get('task_uuid')
 
         cls.remove_nodes_resp(**kwargs)
@@ -161,7 +168,10 @@ class NailgunReceiver(object):
 
     @classmethod
     def deploy_resp(cls, **kwargs):
-        logger.info("RPC method deploy_resp received: %s" % kwargs)
+        logger.info(
+            "RPC method deploy_resp received: %s" %
+            json.dumps(kwargs)
+        )
         task_uuid = kwargs.get('task_uuid')
         nodes = kwargs.get('nodes') or []
         message = kwargs.get('error')
@@ -273,7 +283,10 @@ class NailgunReceiver(object):
         # For now provision task is nothing more than just adding
         # system into cobbler and rebooting node. Then we think task
         # is ready. We don't wait for end of node provisioning.
-        logger.info("RPC method provision_resp received: %s" % kwargs)
+        logger.info(
+            "RPC method provision_resp received: %s" %
+            json.dumps(kwargs)
+        )
         task_uuid = kwargs.get('task_uuid')
         nodes = kwargs.get('nodes') or []
         message = kwargs.get('error')
@@ -430,7 +443,10 @@ class NailgunReceiver(object):
 
     @classmethod
     def verify_networks_resp(cls, **kwargs):
-        logger.info("RPC method verify_networks_resp received: %s" % kwargs)
+        logger.info(
+            "RPC method verify_networks_resp received: %s" %
+            json.dumps(kwargs)
+        )
         task_uuid = kwargs.get('task_uuid')
         nodes = kwargs.get('nodes')
         error_msg = kwargs.get('error')
@@ -559,7 +575,10 @@ class NailgunReceiver(object):
 
     @classmethod
     def download_release_resp(cls, **kwargs):
-        logger.info("RPC method download_release_resp received: %s" % kwargs)
+        logger.info(
+            "RPC method download_release_resp received: %s" %
+            json.dumps(kwargs)
+        )
         task_uuid = kwargs.get('task_uuid')
         error_msg = kwargs.get('error')
         status = kwargs.get('status')
