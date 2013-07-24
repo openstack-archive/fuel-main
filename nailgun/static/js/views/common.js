@@ -43,7 +43,7 @@ function(utils, models, dialogViews, navbarTemplate, nodesStatsTemplate, notific
             app.breadcrumbs.setPath(_.result(this, 'breadcrumbsPath'));
         },
         updateTitle: function() {
-            var defaultTitle = 'FuelWeb Dashboard';
+            var defaultTitle = 'Fuel Dashboard';
             var title = _.result(this, 'title');
             document.title = title ? defaultTitle + ' - ' + title : defaultTitle;
         }

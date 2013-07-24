@@ -286,12 +286,12 @@ cp ${SOURCE}/version.yaml /etc/nailgun/version.yaml
 
 # Prepare custom /etc/issue logon banner and script for changing IP in it
 cat > /etc/issue << EOF
-############################################
-#       Welcome to the FuelWeb server      #
-############################################
+#########################################
+#       Welcome to the Fuel server      #
+#########################################
 Server is running on \m platform
 
-FuelWeb UI is available on: http://:8000
+Fuel Web UI is available on: http://:8000
 
 Default administrator login:    root
 Default administrator password: r00tme
