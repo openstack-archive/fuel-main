@@ -32,6 +32,8 @@ from nailgun.task.manager import CheckNetworksTaskManager
 from nailgun.task.manager import VerifyNetworksTaskManager
 from nailgun.api.handlers.base \
     import JSONHandler, content_json, build_json_response
+from nailgun.api.serializers.network_configuration \
+    import NetworkConfigurationSerializer
 
 
 class NetworkConfigurationVerifyHandler(JSONHandler):
@@ -66,35 +68,14 @@ class NetworkConfigurationVerifyHandler(JSONHandler):
 
 
 class NetworkConfigurationHandler(JSONHandler):
-    fields = ('id', 'cluster_id', 'name', 'cidr', 'netmask',
-              'gateway', 'vlan_start', 'network_size', 'amount')
 
     validator = NetworkConfigurationValidator
-
-    @classmethod
-    def render(cls, instance, fields=None):
-        json_data = JSONHandler.render(instance, fields=cls.fields)
-        json_data["ip_ranges"] = [
-            [ir.first, ir.last] for ir in instance.ip_ranges
-        ]
-        json_data.setdefault("netmask", "")
-        json_data.setdefault("gateway", "")
-        return json_data
+    serializer = NetworkConfigurationSerializer
 
     @content_json
     def GET(self, cluster_id):
         cluster = self.get_object_or_404(Cluster, cluster_id)
-        result = {}
-        result['net_manager'] = cluster.net_manager
-        result['networks'] = map(self.render, cluster.network_groups)
-
-        if cluster.mode == 'ha':
-            net_manager = NetworkManager()
-            result['management_vip'] = net_manager.assign_vip(
-                cluster_id, 'management')
-            result['public_vip'] = net_manager.assign_vip(
-                cluster_id, 'public')
-        return result
+        return self.serializer.serialize_for_cluster(cluster)
 
     def PUT(self, cluster_id):
         data = json.loads(web.data())

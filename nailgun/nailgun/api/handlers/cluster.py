@@ -33,10 +33,11 @@ from nailgun.api.validators.cluster import ClusterValidator
 from nailgun.api.validators.cluster import AttributesValidator
 from nailgun.network.manager import NetworkManager
 from nailgun.api.handlers.base import JSONHandler, content_json
+from nailgun.api.handlers.base import handlers
 from nailgun.api.handlers.node import NodeHandler
 from nailgun.api.handlers.tasks import TaskHandler
-from nailgun.api.handlers.network_configuration \
-    import NetworkConfigurationHandler
+from nailgun.api.serializers.network_configuration \
+    import NetworkConfigurationSerializer
 from nailgun.task.helpers import TaskHelper
 from nailgun.task.manager import DeploymentTaskManager
 from nailgun.task.manager import ClusterDeletionManager
@@ -218,18 +219,10 @@ class ClusterChangesHandler(JSONHandler):
             return TaskHandler.render(check_task)
 
         try:
-            net_manager = NetworkManager()
-            network_info = {}
-            network_info['net_manager'] = cluster.net_manager
-            network_info['networks'] = map(
-                NetworkConfigurationHandler.render,
-                cluster.network_groups
-            )
-            if cluster.mode == 'ha':
-                network_info['management_vip'] = net_manager.assign_vip(
-                    cluster_id, 'management')
-                network_info['public_vip'] = net_manager.assign_vip(
-                    cluster_id, 'public')
+            network_info = \
+                NetworkConfigurationSerializer.serialize_for_cluster(
+                    cluster
+                )
             logger.info(
                 u"Network info:\n{0}".format(
                     json.dumps(network_info, indent=4)
