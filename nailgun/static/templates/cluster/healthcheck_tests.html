@@ -9,11 +9,13 @@
           <% if (result && result.message) { %>
             <b><%- result.message %></b><br><br>
           <% } %>
-          <% if (result && _.isNumber(result.step)) { %>
-            <%= linebreaks(highlightStep(test.escape('description'), result.step)) %>
-          <% } else { %>
-            <%= linebreaks(test.escape('description')) %>
-          <% } %>
+          <div class="well">
+            <% if (result && _.isNumber(result.step)) { %>
+              <%= linebreaks(highlightStep(test.escape('description'), result.step)) %>
+            <% } else { %>
+              <%= linebreaks(test.escape('description')) %>
+            <% } %>
+          </div>
         </div>
       <% } %>
     </td>

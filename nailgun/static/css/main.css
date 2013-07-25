@@ -3951,6 +3951,8 @@ input.input-append {
 .healthcheck-duration {font-size: 15px; margin: 5px 0px 5px 0px; text-align: center; color: #777777}
 .healthcheck-status {font-size: 20px; margin-top: 3px; text-align: center;}
 .healthcheck-msg {font-size: 13px; line-height: 15px;}
+.healthcheck-msg .well {color: #555555; margin: 0;}
+.healthcheck-msg .well b {color: #890000;}
 .healthcheck-progress {height: 12px; margin-bottom: 0px; margin-top: 8px;}
 .healthcheck-status-stopped, .healthcheck-status-unknown, .healthcheck-status-wait_running {color: #999999;}
 .healthcheck-status-success {color: #2e8701;}
