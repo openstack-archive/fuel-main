@@ -563,17 +563,12 @@ function(utils, models, commonViews, dialogViews, nodesTabSummaryTemplate, editN
             var hasValidationErrors = this.hasValidationErrors();
             this.$('.btn-apply').attr('disabled', !hasChanges || hasValidationErrors);
             this.$('.btn-revert-changes').attr('disabled', !hasChanges && !hasValidationErrors);
+            this.$('.btn-defaults').attr('disabled', false);
         },
         loadDefaults: function() {
             this.disableControls(true);
-            var defaultDisks = new models.Disks();
-            defaultDisks.fetch({url: _.result(this.node, 'url') + '/disks/defaults/'})
-                .done(_.bind(function() {
-                    this.disks.reset(_.cloneDeep(defaultDisks.toJSON()), {parse: true});
-                }, this))
+            this.disks.fetch({url: _.result(this.node, 'url') + '/disks/defaults/'})
                 .fail(_.bind(function() {
-                    this.disableControls(false);
-                    this.checkForChanges();
                     utils.showErrorDialog({title: 'Node disks configuration'});
                 }, this));
         },
@@ -592,7 +587,7 @@ function(utils, models, commonViews, dialogViews, nodesTabSummaryTemplate, editN
                     this.render();
                 }, this))
                 .fail(_.bind(function() {
-                    this.disableControls(false);
+                    this.checkForChanges();
                     utils.showErrorDialog({title: 'Node disks configuration'});
                 }, this));
         },
@@ -616,16 +611,18 @@ function(utils, models, commonViews, dialogViews, nodesTabSummaryTemplate, editN
         initialize: function(options) {
             _.defaults(this, options);
             this.node = this.model.get('nodes').get(this.screenOptions[0]);
-            this.volumes = new models.Volumes([], {url: _.result(this.node, 'url') + '/volumes'});
-            this.disks = new models.Disks([], {url: _.result(this.node, 'url') + '/disks'});
             if (this.node && this.node.get('role')) {
                 this.model.on('change:status', this.revertChanges, this);
+                this.volumes = new models.Volumes([], {url: _.result(this.node, 'url') + '/volumes'});
+                this.disks = new models.Disks([], {url: _.result(this.node, 'url') + '/disks'});
+                this.disks.on('reset', this.render, this);
+                this.disks.on('error', this.checkForChanges, this);
                 this.loading = $.when(this.node.fetch(), this.volumes.fetch(), this.disks.fetch())
                     .done(_.bind(function() {
                         this.initialData = _.cloneDeep(this.disks.toJSON());
                         this.mapVolumesColors();
-                        this.disks.on('reset', this.render, this);
                         this.render();
+                        this.disks.on('sync', this.render, this);
                     }, this))
                     .fail(_.bind(this.goToNodeList, this));
             } else {
@@ -652,6 +649,7 @@ function(utils, models, commonViews, dialogViews, nodesTabSummaryTemplate, editN
             }));
             if (this.loading && this.loading.state() != 'pending') {
                 this.renderDisks();
+                this.checkForChanges();
             }
             return this;
         }
