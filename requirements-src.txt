@@ -7,5 +7,3 @@ https://github.com/sstephenson/ruby-build/archive/1fb955eead087646f4d73ac3678643
 http://pyyaml.org/download/libyaml/yaml-0.1.4.tar.gz
 http://ftp.ruby-lang.org/pub/ruby/1.9/ruby-1.9.3-p392.tar.gz
 https://github.com/liftoff/GateOne/archive/bb003114b4e84e9425fd02fd1ee615d4dd2113e7.zip
-https://github.com/Mirantis/fuel-ostf-tests/archive/ad8dfa0f97786b8ba8686bada9bdf74bc5d7eea2.zip
-https://github.com/Mirantis/fuel-ostf-plugin/archive/29baaccbcb1ab63f70f324ceb780739ea112ac2e.zip

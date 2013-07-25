@@ -57,21 +57,13 @@ priority=10
 endef
 
 define yum_repo_fuel
-[epel-fuel-grizzly-3.1]
+[fuel]
 name=Mirantis OpenStack Custom Packages
 #mirrorlist=http://download.mirantis.com/epel-fuel-grizzly-3.1/mirror.internal.list
-baseurl=http://download.mirantis.com/epel-fuel-grizzly-3.1/
+baseurl=$(MIRROR_FUEL)
 gpgcheck=0
 enabled=1
 priority=1
-endef
-
-define yum_repo_subscr_manager
-[rh-subscr-manager]
-name = RedHat subscription manager
-baseurl=http://repos.fedorapeople.org/repos/candlepin/subscription-manager/epel-6Server/x86_64/
-gpgcheck=0
-enabled=1
 endef
 
 define yum_repo_proprietary

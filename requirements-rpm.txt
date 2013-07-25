@@ -122,7 +122,7 @@ screen-4.0.3-16.el6
 selinux-policy-3.7.19-195.el6_4.12
 selinux-policy-targeted-3.7.19-195.el6_4.12
 socat-1.7.2.1-1.el6
-subscription-manager-1.8.9-1.el6
+subscription-manager-1.1.23.1-1.el6
 supervisor-3.0a12-0.12.el6
 syslinux-4.02-8.el6
 system-config-firewall-base-1.2.27-5.el6
