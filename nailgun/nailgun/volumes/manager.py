@@ -119,21 +119,21 @@ class DisksFormatConvertor(object):
         '''
         disks_in_simple_format = []
 
-        # retrieve only phisical disks
+        # retrieve only physical disks
         disks_full_format = only_disks(full)
 
         for disk in disks_full_format:
-            reserve_size = cls.calculate_service_partitions_size(
+            reserved_size = cls.calculate_service_partitions_size(
                 disk['volumes'])
             size = 0
-            if disk['size'] >= reserve_size:
-                size = disk['size'] - reserve_size
+            if disk['size'] >= reserved_size:
+                size = disk['size'] - reserved_size
 
             disk_simple = {
                 'id': disk['id'],
                 'name': disk['name'],
                 'size': size,
-                'volumes': cls.get_serialized_pvs(disk['volumes'])}
+                'volumes': cls.serialize_pvs(disk['volumes'])}
 
             disks_in_simple_format.append(disk_simple)
 
@@ -146,7 +146,7 @@ class DisksFormatConvertor(object):
             [partition.get('size', 0) for partition in not_vg_partitions])
 
     @classmethod
-    def get_serialized_pvs(cls, all_partitions):
+    def serialize_pvs(cls, all_partitions):
         '''
         Convert volumes from full format to simple format
         '''
@@ -155,7 +155,9 @@ class DisksFormatConvertor(object):
 
         volumes_simple_format = []
         for volume in pv_full_format:
-            size = volume['size'] - call_generator('calc_lvm_meta_size')
+            calculated_size = volume['size'] - call_generator('calc_lvm_meta_size')
+            size = calculated_size if calculated_size > 0 else 0
+
             volume_simple = {
                 'name': volume['vg'],
                 'size': size}
@@ -204,13 +206,15 @@ class DisksFormatConvertor(object):
 class Disk(object):
 
     def __init__(self, generator_method, disk_id, name,
-                 size, boot_is_raid=True):
+                 size, boot_is_raid=True, possible_pvs_count=0):
         self.call_generator = generator_method
         self.id = disk_id
         self.name = name
         self.size = size
         self.free_space = size
-        self.volumes = []
+        self.lvm_meta_size = call_generator('lvm_meta_size')
+        self.lvm_meta_pool_size = self.lvm_meta_size * possible_pvs_count
+        self.volumes = volumes
 
         # For determination type of boot
         self.boot_is_raid = boot_is_raid
@@ -222,10 +226,7 @@ class Disk(object):
     def create_service_partitions(self):
         self.create_boot_records()
         self.create_boot_partition()
-
-    def service_partitions_size(self):
-        return self.call_generator('calc_boot_size') + \
-            self.call_generator('calc_boot_records_size')
+        self.create_lvm_meta_pool(self.lvm_meta_pool_size)
 
     def create_boot_partition(self):
         boot_size = self.call_generator('calc_boot_size')
@@ -241,6 +242,14 @@ class Disk(object):
             'size': size})
         self.free_space -= size
 
+    def create_or_update_volume(self, new_volume):
+        for idx, volume in enumerate(self.volumes):
+            if :
+                self.volumes[idx] = volume
+                return
+
+        self.volumes.append(new_volume)
+
     def create_boot_records(self):
         '''
         Reserve space for efi, gpt, bios
@@ -249,6 +258,23 @@ class Disk(object):
         size = boot_records_size if self.free_space >= boot_records_size else 0
         self.volumes.append({'type': 'boot', 'size': size})
         self.free_space -= size
+
+    def create_lvm_meta_pool(self, size):
+        """
+        Create lvm pool.
+        When new PV will be created, from this pool
+        deducated size of single lvm meta for each
+        PV on disk.
+        """
+        self.free_space -= size
+        self.volumes.append({'type': 'lvm_meta_pool', 'size': size})
+
+    def get_lvm_meta_from_pool(self):
+        lvm_meta_pool = filter(
+            lambda volume: volume['type'] == 'lvm_meta_pool', self.volumes)[0]
+
+        lvm_meta_pool[size] -= self.lvm_meta_size
+        return self.lvm_meta_size
 
     def create_pv(self, name, size=None):
         '''
@@ -264,12 +290,14 @@ class Disk(object):
             size = self.free_space
 
         self.free_space -= size
+        lvm_meta_size = self.get_lvm_meta_from_pool()
 
         logger.debug('Appending PV to volumes.')
         self.volumes.append({
             'type': 'pv',
             'vg': name,
-            'size': size})
+            'size': size + lvm_meta_size,
+            'lvm_meta_size': lvm_meta_size})
 
     def reset(self):
         self.volumes = []
@@ -322,17 +350,19 @@ class VolumeManager(object):
         for d in sorted(node.meta['disks'], key=lambda i: i['name']):
             disks_count = len(node.meta["disks"])
             boot_is_raid = True if disks_count > 1 else False
+            disk_volumes = filter(
+                lambda disk: v.get('id') == disk.id ,
+                only_disks(self.volumes))[0].get('volumes', [])
 
             disk = Disk(
+                disk_volumes,
                 self.call_generator,
                 d["disk"],
                 d["name"],
                 byte_to_megabyte(d["size"]),
-                boot_is_raid=boot_is_raid)
-
-            for v in only_disks(self.volumes):
-                if v.get('id') == disk.id:
-                    disk.volumes = v.get('volumes', [])
+                boot_is_raid=boot_is_raid,
+                # Count of possible PVs equal to count of allowed VGs
+                possible_pvs_count=len(self.allowed_vgs))
 
             self.disks.append(disk)
 
@@ -344,6 +374,30 @@ class VolumeManager(object):
         self.__logger('Update PV size for disk=%s volume_name=%s size=%s' %
                       (disk_id, volume_name, size))
 
+        disk = filter(lambda disk: disk.id == disk_id, self.disks)[0]
+        disk.set_pv_size(volume_name, size)
+
+        for idx, volume in enumerate(self.volumes):
+            if volume.get('id') == disk.id:
+                self.volumes[idx] = disk.render()
+
+        # Recalculate sizes of volume groups
+        for idx, volume in enumerate(self.volumes):
+            if volume.get('type') == 'vg':
+                vg_id = volume.get('id')
+                vg_template = filter(
+                    lambda volume: volume.get('id') == vg_id,
+                    self.allowed_vgs)[0]
+
+                self.volumes[idx] = self.expand_generators(vg_template)
+
+        self.__logger('Updated volume size' % self.volumes)
+        return self.volumes
+
+    def get_pv_size(self, disk_id, volume_name):
+        '''
+        Get PV size without lvm meta
+        '''
         disk = filter(
             lambda volume: volume['id'] == disk_id,
             only_disks(self.volumes))[0]
@@ -352,24 +406,10 @@ class VolumeManager(object):
             lambda volume: volume_name == volume.get('vg'),
             disk['volumes'])[0]
 
-        size_with_lvm_meta = size + self.call_generator('calc_lvm_meta_size')
-        if disk['size'] >= size_with_lvm_meta:
-            self.__logger('Update volume size (with lvm meta) of PV to %s' %
-                          size_with_lvm_meta)
-            volume['size'] = size_with_lvm_meta
+        size_without_lvm_meta = volume['size'] - \
+            self.call_generator('calc_lvm_meta_size')
 
-        # Recalculate sizes of volume groups
-        for index, volume in enumerate(self.volumes):
-            if volume.get('type') == 'vg':
-                vg_id = volume.get('id')
-                vg_template = filter(
-                    lambda volume: volume.get('id') == vg_id,
-                    self.allowed_vgs)[0]
-
-                self.volumes[index] = self.expand_generators(vg_template)
-
-        self.__logger('Updated volume size' % self.volumes)
-        return self.volumes
+        return size_without_lvm_meta
 
     def call_generator(self, generator, *args):
         generators = {
