@@ -106,7 +106,7 @@ class NailgunClient(object):
 
     @logwrap
     @json_parse
-    def update_cluster_changes(self, cluster_id):
+    def deploy_cluster_changes(self, cluster_id):
         return self.client.put(
             "/api/clusters/%d/changes/" % cluster_id
         )

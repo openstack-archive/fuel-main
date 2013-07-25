@@ -66,8 +66,12 @@ class TestNode(BaseNodeTestCase):
     @logwrap
     @fetch_logs
     def test_one_node_provisioning(self):
-        self.client.clean_clusters()
-        self._basic_provisioning('provision', {'controller': ['slave-01']})
+        self.clean_clusters()
+        cluster_id = self.create_cluster(name="provision")
+        self._basic_provisioning(
+            cluster_id=cluster_id,
+            nodes_dict={'controller': ['slave-01']}
+        )
 
     @snapshot_errors
     @logwrap
@@ -75,7 +79,9 @@ class TestNode(BaseNodeTestCase):
     def test_simple_cluster_flat(self):
         cluster_name = 'simple_flat'
         nodes = {'controller': ['slave-01'], 'compute': ['slave-02']}
-        cluster_id = self._basic_provisioning(cluster_name, nodes)
+        self.clean_clusters()
+        cluster_id = self.create_cluster(name=cluster_name)
+        self._basic_provisioning(cluster_id, nodes)
         self.assertClusterReady(
             'slave-01', smiles_count=6, networks_count=1, timeout=300)
         self.get_ebtables(cluster_id, self.nodes().slaves[:2]).restore_vlans()
@@ -88,9 +94,10 @@ class TestNode(BaseNodeTestCase):
     def test_simple_cluster_vlan(self):
         cluster_name = 'simple_vlan'
         nodes = {'controller': ['slave-01'], 'compute': ['slave-02']}
+        self.clean_clusters()
         cluster_id = self.create_cluster(name=cluster_name)
         self.update_vlan_network_fixed(cluster_id, amount=8, network_size=32)
-        self._basic_provisioning(cluster_name, nodes)
+        self._basic_provisioning(cluster_id, nodes)
         self.assertClusterReady(
             'slave-01', smiles_count=6, networks_count=8, timeout=300)
         self.get_ebtables(cluster_id, self.nodes().slaves[:2]).restore_vlans()
@@ -101,9 +108,12 @@ class TestNode(BaseNodeTestCase):
     @logwrap
     @fetch_logs
     def test_network_config(self):
-        self.client.clean_clusters()
+        self.clean_clusters()
+        cluster_id = self.create_cluster(name="network_config")
         self._basic_provisioning(
-            'network_config', {'controller': ['slave-01']})
+            cluster_id=cluster_id,
+            nodes_dict={'controller': ['slave-01']}
+        )
         slave = self.nodes().slaves[0]
         node = self.get_node_by_devops_node(slave)
         self.assertNetworkConfiguration(node)
@@ -114,10 +124,14 @@ class TestNode(BaseNodeTestCase):
     def test_node_deletion(self):
         cluster_name = 'node_deletion'
         nodes_dict = {'controller': ['slave-01']}
-        cluster_id = self._basic_provisioning(
-            cluster_name=cluster_name, nodes_dict=nodes_dict)
+        self.clean_clusters()
+        cluster_id = self.create_cluster(name=cluster_name)
+        self._basic_provisioning(
+            cluster_id=cluster_id,
+            nodes_dict=nodes_dict
+        )
         nailgun_nodes = self.update_nodes(cluster_id, nodes_dict, False, True)
-        task = self._launch_provisioning(cluster_id)
+        task = self.deploy_cluster(cluster_id)
         self.assertTaskSuccess(task)
         wait(lambda: self.is_node_discovered(nailgun_nodes[0]), timeout=3 * 60)
 
@@ -174,7 +188,9 @@ class TestNode(BaseNodeTestCase):
             'compute': ['slave-02'],
             'cinder': ['slave-03']
         }
-        cluster_id = self._basic_provisioning(cluster_name, nodes)
+        self.clean_clusters()
+        cluster_id = self.create_cluster(name=cluster_name)
+        self._basic_provisioning(cluster_id, nodes)
         self.assertClusterReady(
             'slave-01', smiles_count=6, networks_count=1, timeout=300)
 
@@ -188,14 +204,17 @@ class TestNode(BaseNodeTestCase):
                       'compute': [n.name
                                   for n in self.nodes().slaves[1:2]]}
 
-        cluster_id = self._basic_provisioning(
-            cluster_name=cluster_name, nodes_dict=nodes_dict)
-
+        self.clean_clusters()
+        cluster_id = self.create_cluster(name=cluster_name)
+        self._basic_provisioning(
+            cluster_id=cluster_id,
+            nodes_dict=nodes_dict
+        )
         self.bootstrap_nodes(self.nodes().slaves[2:3])
         self.update_nodes(cluster_id, {'compute': [
             n.name for n in self.nodes().slaves[2:3]]}, True, False)
 
-        task = self.client.update_cluster_changes(cluster_id)
+        task = self.client.deploy_cluster_changes(cluster_id)
         self.assertTaskSuccess(task)
         self.assertEqual(3, len(self.client.list_cluster_nodes(cluster_id)))
 
@@ -235,7 +254,7 @@ class TestNode(BaseNodeTestCase):
 
         # adding nodes in cluster
         self.update_nodes(cluster_id, nodes_dict, True, False)
-        task = self._launch_provisioning(cluster_id)
+        task = self.deploy_cluster(cluster_id)
         self.assertTaskSuccess(task)
 
         # assert ips

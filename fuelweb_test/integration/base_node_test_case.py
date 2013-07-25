@@ -107,9 +107,11 @@ class BaseNodeTestCase(BaseTestCase):
                 self.assertTrue(remote.isfile('/tmp/%s-file' % role))
 
     @logwrap
-    def _basic_provisioning(self, cluster_name, nodes_dict, port=5514):
+    def clean_clusters(self):
         self.client.clean_clusters()
-        cluster_id = self.create_cluster(name=cluster_name)
+
+    @logwrap
+    def _basic_provisioning(self, cluster_id, nodes_dict, port=5514):
         self.client.add_syslog_server(
             cluster_id, self.ci().get_host_node_ip(), port)
 
@@ -131,7 +133,7 @@ class BaseNodeTestCase(BaseTestCase):
         # update nodes in cluster
         self.update_nodes(cluster_id, nodes_dict, True, False)
 
-        task = self._launch_provisioning(cluster_id)
+        task = self.deploy_cluster(cluster_id)
         self.assertTaskSuccess(task)
         self.check_role_file(nodes_dict)
         return cluster_id
@@ -147,9 +149,9 @@ class BaseNodeTestCase(BaseTestCase):
         return nailgun_node_roles
 
     @logwrap
-    def _launch_provisioning(self, cluster_id):
+    def deploy_cluster(self, cluster_id):
         """Return hash with task description."""
-        return self.client.update_cluster_changes(cluster_id)
+        return self.client.deploy_cluster_changes(cluster_id)
 
     @logwrap
     def assertTaskSuccess(self, task, timeout=90 * 60):
