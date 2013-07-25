@@ -192,7 +192,7 @@ class LogEntryCollectionHandler(JSONHandler):
                     continue
                 if 'skip_regexp' in log_config and \
                         re.match(log_config['skip_regexp'], entry):
-                        continue
+                    continue
                 m = regexp.match(entry)
                 if m is None:
                     if log_config.get('multiline'):
