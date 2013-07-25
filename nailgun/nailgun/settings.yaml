@@ -54,6 +54,7 @@ RABBITMQ:
 
 APP_LOG: &nailgun_log "/var/log/nailgun/app.log"
 API_LOG: &api_log "/var/log/nailgun/api.log"
+PUPPET_LOG: &puppet_log "/var/log/puppet/puppet-agent.log"
 SYSLOG_DIR: &remote_syslog_dir "/var/log/remote/"
 
 PATH_TO_SSH_KEY: = "/root/.ssh/id_rsa"
@@ -100,6 +101,18 @@ LOG_FORMATS:
       - WARNING
       - ERROR
       - CRITICAL
+  - &puppet_log_format
+    regexp: '^(?P<date>\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2})\s(?P<level>[a-z]+):\s+(?P<text>.*)$'
+    date_format: '%Y-%m-%dT%H:%M:%S'
+    levels:
+      - DEBUG
+      - INFO
+      - NOTICE
+      - WARNING
+      - ERR
+      - CRIT
+      - ALERT
+      - EMERG
 
 LOG_TYPES:
   - &local_log_type
@@ -135,6 +148,11 @@ LOGS:
     <<: *local_log_type
     <<: *remote_syslog_log_format
     path: '/var/log/naily/naily.log'
+  - id: puppet
+    name: "Puppet agent"
+    <<: *local_log_type
+    <<: *puppet_log_format
+    path: *puppet_log
 # Fake target logs.
   - id: 'fake-target-mcollective'
     name: "mcollective"
