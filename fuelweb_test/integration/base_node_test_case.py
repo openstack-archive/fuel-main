@@ -420,6 +420,19 @@ class BaseNodeTestCase(BaseTestCase):
         return keys
 
     @logwrap
+    def update_node_networks(self, node_id, interfaces_dict):
+        interfaces = self.client.get_node_interfaces(node_id)
+        for interface in interfaces:
+            interface_name = interface['name']
+            for allowed_network in interface['allowed_networks']:
+                if allowed_network['name'] in interfaces_dict[interface_name]:
+                    interface['allowed_networks'].remove(allowed_network)
+                    interface['assigned_networks'].append(allowed_network)
+
+        self.client.put_node_interfaces(
+            [{'id': node_id, 'interfaces': interfaces}])
+
+    @logwrap
     def update_vlan_network_fixed(
             self, cluster_id, amount=1, network_size=256):
         network_list = self.client.get_networks(cluster_id)['networks']
