@@ -121,7 +121,7 @@ REQ_FUEL_RHEL_RPMS:=$(shell grep -v "^\\s*\#" $(SOURCE_DIR)/fuel/deployment/pupp
 
 OSTF_PLUGIN_SHA?=f35c42b0e4387d416c7387a5a5a1fa8aa22181af
 OSTF_PLUGIN_VER?=0.2
-OSTF_TESTS_SHA?=8db39deaff2a10b27c7264dfd0a5255c9d3c7367
+OSTF_TESTS_SHA?=810d54d6aede55940b92aef3b67be18697ee500a
 OSTF_TESTS_VER?=0.1
 
 # Which repositories to use for making local centos mirror.
