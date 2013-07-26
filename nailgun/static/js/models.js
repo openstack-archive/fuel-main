@@ -126,18 +126,12 @@ define(['utils'], function(utils) {
                 if (resourceName == 'cores') {
                     resource = this.get('meta').cpu.total;
                 } else if (resourceName == 'hdd') {
-                    var hdd = 0;
-                    _.each(this.get('meta').disks, function(disk) {
-                        if (_.isNumber(disk.size)) {
-                            hdd += disk.size;
-                        }
-                    });
-                    resource = hdd;
+                    resource = _.reduce(this.get('meta').disks, function(hdd, disk) {return _.isNumber(disk.size) ?  hdd + disk.size : hdd;}, 0);
                 } else if (resourceName == 'ram') {
-                    resource = this.get('meta').memory.total / Math.pow(1024, 3);
+                    resource = this.get('meta').memory.total;
                 }
             } catch (e) {}
-            if (_.isNaN(resource)) {
+            if (_.isNaN(resource) || !_.isNumber(resource)) {
                 resource = 0;
             }
             return resource;

@@ -8,11 +8,10 @@
       <% if (nodes.length) { %>
         <div class="span6">CPU (cores):</div>
         <div class="span4"><%= nodes.resources('cores') %></div>
-        <div class="span6">RAM (GB):</div>
-        <div class="span4"><%= nodes.resources('ram').toFixed(1) %></div>
-        <% var hdd = nodes.resources('hdd')/Math.pow(1000, 3) %>
-        <div class="span6">HDD (<%= hdd < 100 ? 'GB' : 'TB' %>):</div>
-        <div class="span4"><%= hdd < 100 ? hdd.toFixed(1) : (hdd/1000).toFixed(1) %></div>
+        <div class="span6">HDD:</div>
+        <div class="span4"><%= nodes.resources('hdd') ? showDiskSize(nodes.resources('hdd')) : '?GB' %></div>
+        <div class="span6">RAM:</div>
+        <div class="span4"><%= nodes.resources('ram') ? showMemorySize(nodes.resources('ram')) : '?GB' %></div>
       <% } %>
     </div>
   <% } %>

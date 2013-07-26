@@ -418,6 +418,7 @@ function(utils, models, commonViews, dialogViews, nodesTabSummaryTemplate, editN
     Node = Backbone.View.extend({
         template: _.template(nodeTemplate),
         nodeStatusTemplate: _.template(nodeStatusTemplate),
+        templateHelpers: _.pick(utils, 'showDiskSize', 'showMemorySize'),
         events: {
             'click .node-name': 'startNodeRenaming',
             'keydown .node-renameable': 'onNodeNameInputKeydown',
@@ -510,13 +511,13 @@ function(utils, models, commonViews, dialogViews, nodesTabSummaryTemplate, editN
             this.model.on('change:progress', this.updateProgress, this);
         },
         render: function() {
-            this.$el.html(this.template({
+            this.$el.html(this.template(_.extend({
                 node: this.model,
                 renaming: this.renaming,
                 renameable: this.renameable,
                 selectableForAddition: this.selectableForAddition,
                 selectableForDeletion: this.selectableForDeletion
-            }));
+            }, this.templateHelpers)));
             this.updateStatus();
             return this;
         }
@@ -876,9 +877,7 @@ function(utils, models, commonViews, dialogViews, nodesTabSummaryTemplate, editN
 
     NodeInterface = Backbone.View.extend({
         template: _.template(nodeInterfaceTemplate),
-        templateHelpers: {
-            showBandwidth: utils.showBandwidth
-        },
+        templateHelpers: _.pick(utils, 'showBandwidth'),
         events: {
             'sortremove .logical-network-box': 'dragStart',
             'sortreceive .logical-network-box': 'dragStop',

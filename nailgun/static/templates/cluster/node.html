@@ -14,10 +14,9 @@
     </div>
     <div class="node-status"></div>
     <div class="node-hardware">
-      <span>CPU: <%= node.resource('cores') && _.isNumber(node.resource('cores')) ? node.resource('cores') : '?' %></span>
-      <% if (node.resource('hdd')) var hdd = node.resource('hdd')/Math.pow(1000, 3) %>
-      <span>HDD: <%= hdd ? hdd < 100 ? hdd.toFixed(1) + 'GB' : (hdd/1000).toFixed(1) + 'TB' : '?TB' %></span>
-      <span>RAM: <%= node.resource('ram') && _.isNumber(node.resource('ram')) ? node.resource('ram').toFixed(1) : '?' %>GB</span>
+      <span>CPU: <%= node.resource('cores') || '?' %></span>
+      <span>HDD: <%= node.resource('hdd') ? showDiskSize(node.resource('hdd')) : '?GB' %></span>
+      <span>RAM: <%= node.resource('ram') ? showMemorySize(node.resource('ram')) : '?GB' %></span>
     </div>
 
     <% if (!selectableForAddition && !selectableForDeletion) { %>
