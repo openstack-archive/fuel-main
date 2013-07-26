@@ -135,12 +135,12 @@ class NailgunClient(object):
     @logwrap
     @json_parse
     def get_node_interfaces(self, node_id):
-        return self.client.get("api/nodes/%s/interfaces" % node_id)
+        return self.client.get("/api/nodes/%s/interfaces" % node_id)
 
     @logwrap
     @json_parse
     def put_node_interfaces(self, data):
-        return self.client.put("api/nodes/interfaces", data)
+        return self.client.put("/api/nodes/interfaces", data)
 
     @logwrap
     @json_parse
