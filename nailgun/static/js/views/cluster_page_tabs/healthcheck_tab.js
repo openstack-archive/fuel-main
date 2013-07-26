@@ -61,10 +61,7 @@ function(utils, models, commonViews, dialogViews, healthcheckTabTemplate, health
             this.calculateTestControlButtonsState();
         },
         getActiveTestRuns: function() {
-            return this.testruns.filter(function(testrun) {
-                var statuses = _.pluck(testrun.get('tests'), 'status');
-                return _.intersection(statuses, ['running', 'wait_running']).length;
-            }, this);
+            return this.testruns.where({status: 'running'});
         },
         hasRunningTests: function() {
             return !!this.getActiveTestRuns().length;
