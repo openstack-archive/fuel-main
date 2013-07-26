@@ -57,13 +57,6 @@ define(['utils'], function(utils) {
         task: function(taskName, status) {
             return this.get('tasks') && this.get('tasks').filterTasks({name: taskName, status: status})[0];
         },
-        deployTask: function(status) {
-            var task = this.task('check_before_deployment', status);
-            if (task) {
-                return task;
-            }
-            return this.task('deploy', status);
-        },
         hasChanges: function() {
             return this.get('nodes').hasChanges() || (this.get('changes').length && this.get('nodes').currentNodes().length);
         },

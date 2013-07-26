@@ -62,7 +62,7 @@ function(utils, models, commonViews, dialogViews, networkTabTemplate, networkTem
             this.renderNetworks();
             this.checkForChanges();
             this.networkConfiguration.get('networks').invoke('set', {}, {validate: true, net_manager: this.networkConfiguration.get('net_manager')}); // trigger validation check
-            this.page.removeVerificationTask();
+            this.page.removeFinishedTasks();
         },
         updateFloatingVlanFromPublic: function() {
             var networks = this.networkConfiguration.get('networks');
@@ -85,12 +85,12 @@ function(utils, models, commonViews, dialogViews, networkTabTemplate, networkTem
         },
         verifyNetworks: function() {
             if (!_.some(this.networkConfiguration.get('networks').models, 'validationError')) {
-                this.page.removeVerificationTask().done(_.bind(this.startVerification, this));
+                this.page.removeFinishedTasks().always(_.bind(this.startVerification, this));
             }
         },
         revertChanges: function() {
             this.setInitialData();
-            this.page.removeVerificationTask().done(_.bind(this.render, this));
+            this.page.removeFinishedTasks().always(_.bind(this.render, this));
         },
         filterEmptyIpRanges: function() {
             this.networkConfiguration.get('networks').each(function(network) {
@@ -265,7 +265,7 @@ function(utils, models, commonViews, dialogViews, networkTabTemplate, networkTem
             }
             this.tab.updateFloatingVlanFromPublic();
             this.tab.checkForChanges();
-            this.tab.page.removeVerificationTask();
+            this.tab.page.removeFinishedTasks();
         },
         updateNetworkFromForm: function() {
             var ip_ranges = [];
@@ -307,7 +307,7 @@ function(utils, models, commonViews, dialogViews, networkTabTemplate, networkTem
             }
             this.updateNetworkFromForm();
             this.tab.checkForChanges();
-            this.tab.page.removeVerificationTask();
+            this.tab.page.removeFinishedTasks();
         },
         addIPRange: function(e) {
             this.editIPRange(e, true);

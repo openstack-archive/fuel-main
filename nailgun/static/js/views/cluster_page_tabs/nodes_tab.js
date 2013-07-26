@@ -222,7 +222,7 @@ function(utils, models, commonViews, dialogViews, nodesTabSummaryTemplate, editN
                 this.model.fetch();
                 this.model.fetchRelated('nodes');
                 app.navbar.refresh();
-                app.page.removeVerificationTask();
+                app.page.removeFinishedTasks();
             }, this))
             .fail(_.bind(function() {
                 this.$('.btn-apply').attr('disabled', false);

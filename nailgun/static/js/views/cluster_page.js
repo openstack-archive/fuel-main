@@ -49,21 +49,28 @@ function(utils, models, commonViews, dialogViews, NodesTab, NetworkTab, Settings
             'click .rollback': 'discardChanges',
             'click .deploy-btn:not(.disabled)': 'onDeployRequest'
         },
-        removeVerificationTask: function() {
-            var deferred;
-            var task = this.model.task('verify_networks') || this.model.task('check_networks') || this.model.task('check_before_deployment');
-            if (task && task.get('status') != 'running') {
-                this.model.get('tasks').remove(task);
-                deferred = task.destroy({silent: true});
-            } else {
-                deferred = new $.Deferred();
-                deferred.resolve();
+        removeFinishedTasks: function(tasks) {
+            if (!tasks) {
+                var names = ['verify_networks', 'check_networks'];
+                tasks = this.model.get('tasks').filter(function(task) {
+                    return _.contains(names, task.get('name'));
+                });
             }
-            return deferred;
+            var requests = [];
+            _.each(tasks, function(task) {
+                if (task.get('status') != 'running') {
+                    this.model.get('tasks').remove(task);
+                    requests.push(task.destroy({silent: true}));
+                }
+            }, this);
+            return $.when.apply($, requests);
         },
         dismissTaskResult: function() {
             this.$('.task-result').remove();
-            this.model.deployTask().destroy();
+            var task = this.model.task('check_before_deployment', 'error') || this.model.task('deploy');
+            if (task) {
+                task.destroy();
+            }
         },
         discardChanges: function() {
             var dialog = new dialogViews.DiscardChangesDialog({model: this.model});
@@ -107,7 +114,7 @@ function(utils, models, commonViews, dialogViews, NodesTab, NetworkTab, Settings
             }
         },
         scheduleUpdate: function() {
-            var task = this.model.deployTask('running') || this.model.task('verify_networks', 'running') || this.tasks.getDownloadTask(this.model.get('release').id);
+            var task = this.model.task('deploy', 'running') || this.model.task('verify_networks', 'running') || this.tasks.getDownloadTask(this.model.get('release').id);
             if (!this.pollingAborted && task) {
                 this.registerDeferred($.timeout(this.updateInterval).done(_.bind(this.update, this)));
             }
@@ -117,7 +124,7 @@ function(utils, models, commonViews, dialogViews, NodesTab, NetworkTab, Settings
                 return;
             }
             var complete = _.after(2, _.bind(this.scheduleUpdate, this));
-            var deploymentTask = this.model.deployTask('running');
+            var deploymentTask = this.model.task('deploy', 'running');
             if (deploymentTask) {
                 this.registerDeferred(deploymentTask.fetch().done(_.bind(function() {
                     if (deploymentTask.get('status') != 'running') {
@@ -137,8 +144,15 @@ function(utils, models, commonViews, dialogViews, NodesTab, NetworkTab, Settings
         },
         deploymentStarted: function() {
             $.when(this.model.fetch(), this.model.fetchRelated('nodes'), this.model.fetchRelated('tasks')).done(_.bind(function() {
-                this.unbindEventsWhileDeploying();
-                this.scheduleUpdate();
+                var failedDeployTask = this.model.task('check_before_deployment', 'error') || this.model.task('deploy', 'error');
+                if (!failedDeployTask) {
+                    this.unbindEventsWhileDeploying();
+                    this.scheduleUpdate();
+                }
+                var checkTask = this.model.task('check_before_deployment', 'ready');
+                if (checkTask) {
+                    checkTask.destroy();
+                }
             }, this));
         },
         deploymentFinished: function() {
@@ -149,23 +163,15 @@ function(utils, models, commonViews, dialogViews, NodesTab, NetworkTab, Settings
         },
         unbindEventsWhileDeploying: function() {
             // unbind some events while deploying to make progress bar movement smooth and prevent showing wrong cluster status for a moment.
-            var task = this.model.task('deploy','running');
+            var task = this.model.task('deploy', 'running');
             if (task) {
                 task.off('change:status', this.deploymentResult.render, this.deploymentResult);
                 task.off('change:status', this.deploymentControl.render, this.deploymentControl);
             }
-            task = this.model.task('check_before_deployment');
-            if (task) {
-                if (task.get('status') == 'error') {
-                    this.renderdeploymentResult();
-                } else {
-                    task.destroy();
-                }
-            }
         },
         rebindEventsAfterDeployment: function() {
             // rebind temporarily unbound events
-            _([this.deploymentResult, this.deploymentControl]).invoke('onNewTask', this.model.deployTask());
+            _([this.deploymentResult, this.deploymentControl]).invoke('onNewTask', this.model.task('deploy'));
         },
         beforeTearDown: function() {
             this.pollingAborted = true;
@@ -185,11 +191,6 @@ function(utils, models, commonViews, dialogViews, NodesTab, NetworkTab, Settings
             $(window).on('beforeunload.' + this.eventNamespace, _.bind(this.onBeforeunloadEvent, this));
             $('body').on('click.' + this.eventNamespace, 'a[href^=#]', _.bind(this.onTabLeave, this));
         },
-        renderdeploymentResult: function() {
-            this.deploymentResult = new DeploymentResult({model: this.model, page: this});
-            this.registerSubView(this.deploymentResult);
-            this.$('.deployment-result').html(this.deploymentResult.render().el);
-        },
         render: function() {
             this.tearDownRegisteredSubViews();
             this.$el.html(this.template({
@@ -199,10 +200,13 @@ function(utils, models, commonViews, dialogViews, NodesTab, NetworkTab, Settings
                 renaming: this.renaming
             }));
 
-            this.renderdeploymentResult();
+            this.deploymentResult = new DeploymentResult({model: this.model, page: this});
+            this.registerSubView(this.deploymentResult);
+            this.$('.deployment-result').html(this.deploymentResult.render().el);
             this.deploymentControl = new DeploymentControl({model: this.model, page: this});
             this.registerSubView(this.deploymentControl);
             this.$('.deployment-control').html(this.deploymentControl.render().el);
+            this.unbindEventsWhileDeploying();
 
             var tabs = {
                 'nodes': NodesTab,
@@ -226,11 +230,12 @@ function(utils, models, commonViews, dialogViews, NodesTab, NetworkTab, Settings
         template: _.template(deploymentResultTemplate),
         templateHelpers: _.pick(utils, 'urlify', 'linebreaks'),
         initialize: function(options) {
+            _.defaults(this, options);
             this.model.get('tasks').each(this.bindTaskEvents, this);
             this.model.get('tasks').on('add', this.onNewTask, this);
         },
         bindTaskEvents: function(task) {
-            return task.get('name') == 'deploy' ? task.on('change:status', this.render, this) : null;
+            return (task.get('name') == 'deploy' || task.get('name') == 'check_before_deployment') ? task.on('change:status', this.render, this) : null;
         },
         onNewTask: function(task) {
             return this.bindTaskEvents(task) && this.render();
@@ -244,18 +249,28 @@ function(utils, models, commonViews, dialogViews, NodesTab, NetworkTab, Settings
     DeploymentControl = Backbone.View.extend({
         template: _.template(deploymentControlTemplate),
         initialize: function(options) {
+            _.defaults(this, options);
             this.model.on('change:changes', this.render, this);
             this.model.get('tasks').each(this.bindTaskEvents, this);
             this.model.get('tasks').on('add', this.onNewTask, this);
             this.model.get('nodes').each(this.bindNodeEvents, this);
             this.model.get('nodes').on('resize', this.render, this);
             this.model.get('nodes').on('add', this.onNewNode, this);
-            this.bindTaskEvents(app.page.tasks.getDownloadTask(this.model.get('release').id));
+            var releaseDownloadTask = this.page.tasks.filterTasks({name: 'download_release', release: this.model.get('release').id})[0];
+            if (releaseDownloadTask) {
+                this.bindTaskEvents(releaseDownloadTask);
+                this.page.removeFinishedTasks([releaseDownloadTask]);
+            }
         },
         bindTaskEvents: function(task) {
-            if (task && (task.get('name') == 'deploy' || task.get('name') == 'download_release')) {
+            if (task.get('name') == 'deploy' || task.get('name') == 'download_release') {
                 task.on('change:status', this.render, this);
                 task.on('change:progress', this.updateProgress, this);
+                if (task.get('name') == 'download_release') {
+                    task.on('change:status', function(model) {
+                        this.page.removeFinishedTasks([model]);
+                    }, this);
+                }
                 return task;
             }
             return null;
@@ -270,14 +285,11 @@ function(utils, models, commonViews, dialogViews, NodesTab, NetworkTab, Settings
             return this.bindNodeEvents(node) && this.render();
         },
         updateProgress: function() {
-            var task = this.model.deployTask('running') || app.page.tasks.filterTasks({name: 'download_release', release: this.model.get('release').id})[0];
+            var task = this.model.task('deploy', 'running') || app.page.tasks.filterTasks({name: 'download_release', release: this.model.get('release').id})[0];
             if (task) {
                 var progress = task.get('progress') || 0;
                 this.$('.bar').css('width', (progress > 3 ? progress : 3) + '%');
                 this.$('.percentage').text(progress + '%');
-                if (task.get('name') == 'download_release' && (task.get('status') == 'error'|| task.get('status') == 'ready')) {
-                    task.destroy();
-                }
             }
         },
         render: function() {

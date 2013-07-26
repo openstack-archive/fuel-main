@@ -441,7 +441,7 @@ function(require, utils, models, simpleMessageTemplate, createClusterDialogTempl
         },
         proceed: function() {
             this.$el.modal('hide');
-            app.page.removeVerificationTask().always(_.bind(this.cb, this));
+            app.page.removeFinishedTasks().always(_.bind(this.cb, this));
         },
         render: function() {
             if (this.verification) {
