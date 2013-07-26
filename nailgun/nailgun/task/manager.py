@@ -123,6 +123,13 @@ class DeploymentTaskManager(TaskManager):
                 tasks.ProvisionTask,
                 method_name='message'
             )
+            db().refresh(task_provision)
+
+            # if failed to generate task message for orchestrator
+            # then task is already set to error
+            if task_provision.status == 'error':
+                return supertask
+
             task_provision.cache = provision_message
             db().add(task_provision)
             db().commit()
@@ -138,6 +145,12 @@ class DeploymentTaskManager(TaskManager):
                 tasks.DeploymentTask,
                 method_name='message'
             )
+
+            # if failed to generate task message for orchestrator
+            # then task is already set to error
+            if task_deployment.status == 'error':
+                return supertask
+
             task_deployment.cache = deployment_message
             db().add(task_deployment)
             db().commit()
