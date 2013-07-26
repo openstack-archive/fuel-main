@@ -424,6 +424,7 @@ class BaseNodeTestCase(BaseTestCase):
         interfaces = self.client.get_node_interfaces(node_id)
         for interface in interfaces:
             interface_name = interface['name']
+            interface['assigned_networks'] = []
             for allowed_network in interface['allowed_networks']:
                 key_exists = interface_name in interfaces_dict
                 if key_exists and \
