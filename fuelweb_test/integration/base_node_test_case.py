@@ -426,10 +426,9 @@ class BaseNodeTestCase(BaseTestCase):
             interface_name = interface['name']
             for allowed_network in interface['allowed_networks']:
                 key_exists = interface_name in interfaces_dict
-                change_setting = \
-                    allowed_network['name'] in interfaces_dict[interface_name]
-                
-                if key_exists and change_setting:
+                if key_exists and \
+                        allowed_network['name'] \
+                        in interfaces_dict[interface_name]:
                     interface['allowed_networks'].remove(allowed_network)
                     interface['assigned_networks'].append(allowed_network)
 
