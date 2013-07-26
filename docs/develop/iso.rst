@@ -4,7 +4,7 @@ ISO Build Instructions
 Prepare environment
 -------------------
 
-All our development is commonly done on Ubuntu 12.10. Follow the steps to prepare an environment::
+All our development is commonly done on Ubuntu 12.10. Follow the steps to prepare an environment (use nodejs package if you run on Ubuntu 12.04)::
 
     sudo apt-get install ruby python-setuptools yum yum-utils libmysqlclient-dev isomd5sum
     sudo apt-get install python-nose libvirt-bin python-ipaddr python-paramiko python-yaml
@@ -14,9 +14,9 @@ All our development is commonly done on Ubuntu 12.10. Follow the steps to prepar
     sudo pip install xmlbuilder jinja2
     sudo npm install -g requirejs
 
-Build requires sudo permissions, so run visudo and add "<your_username> ALL=(ALL) NOPASSWD: ALL": line in order to run commands from root without password::
+Build requires sudo permissions, allow yourself to run commands as root user without request for a password::
 
-    sudo visudo
+    echo "`whoami` ALL=(ALL) NOPASSWD: ALL" >> /etc/sudoers
 
 Clone repo from github::
 

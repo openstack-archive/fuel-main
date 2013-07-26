@@ -15,7 +15,7 @@
 
 /build
 /local_mirror
-/virtualbox/iso
+/virtualbox/iso/*.iso
 nosetests.xml
 nailgun.log
 lock

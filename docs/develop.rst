@@ -10,3 +10,4 @@ Development Documentation
    develop/sequence
    develop/nailgun
    develop/iso
+   develop/alternatives

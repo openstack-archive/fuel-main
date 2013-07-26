@@ -1,8 +1,8 @@
 Logical Architecture Diagram
 ============================
 
-Metadata via Facter Extension
------------------------------
+Current architecture uses so-called Metadata via Facter Extension approach.
+
  .. uml::
     package "Master Node" {
         [JavaScript UI]
@@ -11,10 +11,10 @@ Metadata via Facter Extension
                 [SQL DB]
             }
             [SQL DB] --> [Data Model]
-            [Data Model] <-- [REST API(web.py)]
+            [Data Model] <-- [REST API]
             [Receiver] --> [SQL DB]
         }
-        [Provisioner(cobbler)] --> [DHCP, DNS, TFTP]
+        [Provisioner] --> [DHCP, DNS, TFTP]
         [Data Model] --> [Async RPC consumer(Naily)] : AMQP
         [Async RPC consumer(Naily)] --> [Receiver] : AMQP
         [Async RPC consumer(Naily)] --> [Orchestrator]
@@ -28,36 +28,12 @@ Metadata via Facter Extension
     Web_User --> [JavaScript UI]
     CLI_User --> [Orchestrator]
 
-    [JavaScript UI] --> [REST API(web.py)]
+    [JavaScript UI] --> [REST API]
 
-    [Data Model] --> [Provisioner(cobbler)] : xmlrpc API
+    [Orchestrator] --> [Provisioner] : xmlrpc API
 
     [MCollective] --> [MCollective Agent]
     [Puppet] --> [Puppet Master]
 
 ..    CLI_User --> [Provisioner(cobbler)]
 
-
-Metadata via Puppet ENC (part of architecture)
-----------------------------------------------
-
-This is alternative possible architecture.
-See corresponding sequence diagram for details: :ref:`deploy_via_enc_sequence`.
-
- .. uml::
-    package "Master Node" {
-        [Async RPC consumer(Naily)] --> [Orchestrator]
-        [Orchestrator] --> [MCollective]
-        [Orchestrator] <-- [YAML data source]
-        [Puppet Master] --> [ENC Script]
-        [ENC Script] --> [YAML data source]
-    }
-    package "Target Node" {
-        [MCollective Agent] --> [Puppet]
-    }
-    actor CLI_User
-    CLI_User --> [YAML data source]
-    CLI_User --> [Orchestrator]
-
-    [MCollective] --> [MCollective Agent]
-    [Puppet] --> [Puppet Master]
