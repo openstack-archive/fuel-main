@@ -56,8 +56,8 @@ add_nic_to_vm() {
     nic=$3
     echo "Adding NIC to $name and bridging with host NIC $nic..."
 
-    # Configure network interfaces
-    VBoxManage modifyvm $name --nic${id} hostonly --hostonlyadapter${id} $nic --nictype${id} Am79C973 \
+    # Add Intel PRO/1000 MT Desktop (82540EM) card to VM. The card is 1Gbps.
+    VBoxManage modifyvm $name --nic${id} hostonly --hostonlyadapter${id} $nic --nictype${id} 82540EM \
                         --cableconnected${id} on --macaddress${id} auto
     VBoxManage controlvm $name setlinkstate${id} on
 }

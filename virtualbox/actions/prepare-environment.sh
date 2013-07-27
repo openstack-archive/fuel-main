@@ -24,6 +24,14 @@ echo -n "Checking for 'VBoxManage'... "
 VBoxManage -v >/dev/null 2>&1 || { echo >&2 "'VBoxManage' is not available in the path, but it's required. Likely, VirtualBox is not installed. Aborting."; exit 1; }
 echo "OK"
 
+# Check for VirtualBox Extension Pack
+echo -n "Checking for VirtualBox Extension Pack... "
+extpacks=`VBoxManage list extpacks | grep 'Usable' | grep 'true' | wc -l`
+if [ "$extpacks" -le 0 ]; then
+    echo >&2 "VirtualBox Extension Pack is not installed. Please, download and install it from the official VirtualBox web site. Aborting."; exit 1;
+fi
+echo "OK"
+
 # Check for ISO image to be available
 echo -n "Checking for Fuel Web ISO image... "
 if [ -z $iso_path ]; then
