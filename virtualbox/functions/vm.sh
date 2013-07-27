@@ -37,7 +37,9 @@ create_vm() {
     VBoxManage createvm --name $name --ostype RedHat_64 --register
 
     # Set the real-time clock (RTC) operate in UTC time
-    VBoxManage modifyvm $name --rtcuseutc on --memory $memory_mb --cpus $cpu_cores
+    # Set memory and CPU parameters
+    # Set video memory to 16MB, so VirtualBox does not complain about "non-optimal" settings in the UI
+    VBoxManage modifyvm $name --rtcuseutc on --memory $memory_mb --cpus $cpu_cores --vram 16
 
     # Configure main network interface
     add_nic_to_vm $name 1 $nic
