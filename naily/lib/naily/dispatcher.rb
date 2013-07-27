@@ -30,21 +30,21 @@ module Naily
 
     def download_release(data)
       # Example of message = {
-            # {'method': 'download_release',
-            # 'respond_to': 'download_release_resp',
-            # 'args':{
-            #     'task_uuid': 'task UUID',
-            #     'release_info':{
-            #         'release_id': 'release ID',
-            #         'redhat':{
-            #             'license_type' :"rhn" or "rhsm",
-            #             'username': 'username',
-            #             'password': 'password',
-            #             'satellite': 'satellite host (for RHN license)'
-            #             'activation_key': 'activation key (for RHN license)'
-            #         }
-            #     }
-            # }}
+      # {'method': 'download_release',
+      # 'respond_to': 'download_release_resp',
+      # 'args':{
+      #     'task_uuid': 'task UUID',
+      #     'release_info':{
+      #         'release_id': 'release ID',
+      #         'redhat':{
+      #             'license_type' :"rhn" or "rhsm",
+      #             'username': 'username',
+      #             'password': 'password',
+      #             'satellite': 'satellite host (for RHN license)'
+      #             'activation_key': 'activation key (for RHN license)'
+      #         }
+      #     }
+      # }}
       Naily.logger.info("'download_release' method called with data: #{data.inspect}")
       reporter = Naily::Reporter.new(@producer, data['respond_to'], data['args']['task_uuid'])
       release_info = data['args']['release_info']['redhat']
@@ -60,7 +60,7 @@ module Naily
 
     def provision(data)
       Naily.logger.info("'provision' method called with data: #{data.inspect}")
-      
+
       reporter = Naily::Reporter.new(@producer, data['respond_to'], data['args']['task_uuid'])
       @orchestrator.fast_provision(reporter, data['args']['engine'], data['args']['nodes'])
     end
@@ -68,18 +68,19 @@ module Naily
     def deploy(data)
       Naily.logger.info("'deploy' method called with data: #{data.inspect}")
 
-      reporter = Naily::Reporter.new(@producer, data['respond_to'], data['args']['task_uuid']) 
+      reporter = Naily::Reporter.new(@producer, data['respond_to'], data['args']['task_uuid'])
       @orchestrator.provision(reporter, data['args']['task_uuid'], data['args']['nodes'])
-      
+
       begin
-        result = @orchestrator.deploy(reporter, data['args']['task_uuid'], data['args']['nodes'], data['args']['attributes'])
+        result = @orchestrator.deploy(
+          reporter, data['args']['task_uuid'], data['args']['nodes'], data['args']['attributes'])
       rescue Timeout::Error
         msg = "Timeout of deployment is exceeded."
         Naily.logger.error msg
         reporter.report({'status' => 'error', 'error' => msg})
         return
       end
-      
+
       report_result(result, reporter)
     end
 
