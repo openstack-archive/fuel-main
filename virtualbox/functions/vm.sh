@@ -45,8 +45,8 @@ create_vm() {
     add_nic_to_vm $name 1 $nic
 
     # Configure storage controllers
-    VBoxManage storagectl $name --name 'IDE' --add ide
-    VBoxManage storagectl $name --name 'SATA' --add sata
+    VBoxManage storagectl $name --name 'IDE' --add ide --hostiocache on
+    VBoxManage storagectl $name --name 'SATA' --add sata --hostiocache on
 
     # Create and attach the main hard drive
     add_disk_to_vm $name 0 $disk_mb
