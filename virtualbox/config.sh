@@ -26,6 +26,10 @@ vm_master_cpu_cores=1
 vm_master_memory_mb=1024
 vm_master_disk_mb=16384
 
+# Master node access to the internet through the host system, using VirtualBox NAT adapter
+vm_master_nat_network=192.168.200/24
+vm_master_nat_gateway=192.168.200.2
+
 # These settings will be used to check if master node has installed or not.
 # If you modify networking params for master node during the boot time
 #   (i.e. if you pressed Tab in a boot loader and modified params),
