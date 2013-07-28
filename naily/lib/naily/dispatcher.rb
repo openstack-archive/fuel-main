@@ -60,7 +60,6 @@ module Naily
 
     def check_redhat_credentials(data)
       credentials = data['args']['release_info']['redhat']
-      nodes = data['args']['release_info']
       task_id = data['args']['task_uuid']
       reporter = Naily::Reporter.new(@producer, data['respond_to'], task_id)
       @orchestrator.check_redhat_credentials(reporter, task_id, credentials)
