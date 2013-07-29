@@ -23,8 +23,8 @@ Optional requirements
 Deployment types
 ^^^^^^^^^^^^^^^^
 
-* `Red Hat Subscription Management <https://access.redhat.com/site/articles/143253>` (default)
-* `Red Hat RHN Satellite <http://www.redhat.com/products/enterprise-linux/rhn-satellite/>`
+* `Red Hat Subscription Management <https://access.redhat.com/site/articles/143253>`_ (default)
+* `Red Hat RHN Satellite <http://www.redhat.com/products/enterprise-linux/rhn-satellite/>`_
 
 
 
@@ -93,8 +93,8 @@ Troubleshooting
 
 Issues downloading from Red Hat Subscription Manager
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-If you receive an error from Fuel Web regarding Red Hat OpenStack download issues, ensure that you have a valid subscription to the Red Hat OpenStack 3.0 product. This product is separate from standard Red Hat Enterprise Linux. You can check by going to https://access.redhat.com and checking Active Subscriptions. Contact your `Red Hat sales representative <https://access.redhat.com/site/solutions/368643>` to get the proper subscriptions associated with your account. If you are still encountering issues, contact Mirantis Support.
+If you receive an error from Fuel Web regarding Red Hat OpenStack download issues, ensure that you have a valid subscription to the Red Hat OpenStack 3.0 product. This product is separate from standard Red Hat Enterprise Linux. You can check by going to https://access.redhat.com and checking Active Subscriptions. Contact your `Red Hat sales representative <https://access.redhat.com/site/solutions/368643>`_ to get the proper subscriptions associated with your account. If you are still encountering issues, contact Mirantis Support.
 
 Issues downloading from Red Hat Subscription Manager
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-If you receive an error from Fuel Web regarding Red Hat OpenStack download issues, ensure that you have all the necessary channels available on your RHN Satellite Server. The correct lis is <here>. If you are missing these channels, please contact your Red Hat sales representative to get the proper subscriptions associated with your account: https://access.redhat.com/site/solutions/368643.
+If you receive an error from Fuel Web regarding Red Hat OpenStack download issues, ensure that you have all the necessary channels available on your RHN Satellite Server. The correct lis is <here>. If you are missing these channels, please contact your `Red Hat sales representative <https://access.redhat.com/site/solutions/368643>`_ to get the proper subscriptions associated with your account
