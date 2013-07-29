@@ -59,7 +59,7 @@ Benefits
 Considerations
 ^^^^^^^^^^^^^^
 * Red Hat RHN Satellite is a separate offering from Red Hat and requires dedicated hardware
-* Still requires Red Hat Subscription Manager to download registration packages (just for master node)
+* Still requires Red Hat Subscription Manager and Internet access to download registration packages (just for Fuel Master host)
 
 What you need
 ^^^^^^^^^^^^^
@@ -78,6 +78,7 @@ Your RHN Satellite activation key must be configured the following channels
 * RHN Tools for RHEL
 * Red Hat OpenStack 3.0
 
+.. _rhn_sat_channels:
 
 Fuel looks for the following RHN Satellite channels. (Note: If you create cloned channels, leave these channel strings in tact.)
 
@@ -95,6 +96,6 @@ Issues downloading from Red Hat Subscription Manager
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 If you receive an error from Fuel Web regarding Red Hat OpenStack download issues, ensure that you have a valid subscription to the Red Hat OpenStack 3.0 product. This product is separate from standard Red Hat Enterprise Linux. You can check by going to https://access.redhat.com and checking Active Subscriptions. Contact your `Red Hat sales representative <https://access.redhat.com/site/solutions/368643>`_ to get the proper subscriptions associated with your account. If you are still encountering issues, contact Mirantis Support.
 
-Issues downloading from Red Hat Subscription Manager
+Issues downloading from Red Hat RHN Satellite
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-If you receive an error from Fuel Web regarding Red Hat OpenStack download issues, ensure that you have all the necessary channels available on your RHN Satellite Server. The correct lis is <here>. If you are missing these channels, please contact your `Red Hat sales representative <https://access.redhat.com/site/solutions/368643>`_ to get the proper subscriptions associated with your account
+If you receive an error from Fuel Web regarding Red Hat OpenStack download issues, ensure that you have all the necessary channels available on your RHN Satellite Server. The correct list is :ref:`here <rhn_sat_channels>`. If you are missing these channels, please contact your `Red Hat sales representative <https://access.redhat.com/site/solutions/368643>`_ to get the proper subscriptions associated with your account
