@@ -119,9 +119,9 @@ REQUIRED_SRCS:=$(shell grep -v ^\\s*\# $(SOURCE_DIR)/requirements-src.txt)
 REQ_RHEL_RPMS:=$(shell grep -v "^\\s*\#" $(SOURCE_DIR)/fuel/deployment/puppet/rpmcache/files/required-rpms.txt)
 REQ_FUEL_RHEL_RPMS:=$(shell grep -v "^\\s*\#" $(SOURCE_DIR)/fuel/deployment/puppet/rpmcache/files/req-fuel-rhel.txt)
 
-OSTF_PLUGIN_SHA?=f35c42b0e4387d416c7387a5a5a1fa8aa22181af
+OSTF_PLUGIN_SHA?=de371c7ba9c1fda1e8a407a3ace9ec8ef67a2c40
 OSTF_PLUGIN_VER?=0.2
-OSTF_TESTS_SHA?=810d54d6aede55940b92aef3b67be18697ee500a
+OSTF_TESTS_SHA?=8db72df76128a3ee70d060d155ca621fa7e63b57
 OSTF_TESTS_VER?=0.1
 
 # Which repositories to use for making local centos mirror.
