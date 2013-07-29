@@ -58,13 +58,13 @@ casper.createNode = function(options) {
         "disks": [
             {
                 "model": "TOSHIBA MK3259GS",
-                "disk": "blablabla1",
+                "disk": "sda",
                 "name": "sda",
                 "size": 100010485760
             },
             {
                 "model": "TOSHIBA",
-                "disk": "blablabla2",
+                "disk": "vda",
                 "name": "vda",
                 "size": 80010485760
             }

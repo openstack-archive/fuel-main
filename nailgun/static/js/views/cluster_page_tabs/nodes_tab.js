@@ -615,14 +615,14 @@ function(utils, models, commonViews, dialogViews, nodesTabSummaryTemplate, editN
                 this.model.on('change:status', this.revertChanges, this);
                 this.volumes = new models.Volumes([], {url: _.result(this.node, 'url') + '/volumes'});
                 this.disks = new models.Disks([], {url: _.result(this.node, 'url') + '/disks'});
-                this.disks.on('reset', this.render, this);
-                this.disks.on('error', this.checkForChanges, this);
                 this.loading = $.when(this.node.fetch(), this.volumes.fetch(), this.disks.fetch())
                     .done(_.bind(function() {
                         this.initialData = _.cloneDeep(this.disks.toJSON());
                         this.mapVolumesColors();
                         this.render();
                         this.disks.on('sync', this.render, this);
+                        this.disks.on('reset', this.render, this);
+                        this.disks.on('error', this.checkForChanges, this);
                     }, this))
                     .fail(_.bind(this.goToNodeList, this));
             } else {
@@ -753,9 +753,8 @@ function(utils, models, commonViews, dialogViews, nodesTabSummaryTemplate, editN
         },
         render: function() {
             this.$el.html(this.template(_.extend({
-                disk: this.diskMetaData,
-                diskSize: this.disk.get('size'),
-                diskVolumes: this.disk.get('volumes'),
+                diskMetaData: this.diskMetaData,
+                disk: this.disk,
                 volumes: this.screen.volumes
             }, this.templateHelpers)));
             this.$('.disk-form').collapse({toggle: false});

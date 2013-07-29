@@ -1,7 +1,7 @@
-<div class="disk-box disk" data-disk="<%- disk.name %>">
+<div class="disk-box disk" data-disk="<%- disk.id %>">
 
-  <div class="disk-box-name pull-left"><%- disk.name %></div>
-  <div class="disk-box-size pull-right">Total Space: <%= showDiskSize(diskSize, 2) %></div>
+  <div class="disk-box-name pull-left"><%- disk.id %></div>
+  <div class="disk-box-size pull-right">Total Space: <%= showDiskSize(disk.get('size'), 2) %></div>
 
   <div class="disk-map-short disk-map-full">
     <div class="disk-map-image disk-visual">
@@ -17,7 +17,7 @@
       <div class="volume-group unallocated" style="width: 100%">
         <div class="toggle-volume">
           <div class="volume-group-name">Unallocated</div>
-          <div class="volume-group-size"><%= showDiskSize(diskSize, 2) %></div>
+          <div class="volume-group-size"><%= showDiskSize(disk.get('size'), 2) %></div>
         </div>
       </div>
     </div>
@@ -25,13 +25,15 @@
 
   <div class="disk-map-details disk-form collapse">
     <div class="disk-info-box">
-      <div class="disk-box-title">Disk Information</div>
-      <% _.each(sortEntryProperties(disk), function(propertyName) { %>
-        <div class="disk-map-details-item">
-          <div class="disk-map-details-name"><%- propertyName.replace(/_/g, ' ') %></div>
-          <div class="disk-map-details-parameter"><%- propertyName == 'size' ? showDiskSize(disk[propertyName]) : disk[propertyName] %></div>
-        </div>
-      <% }) %>
+      <% if (diskMetaData) { %>
+        <div class="disk-box-title">Disk Information</div>
+        <% _.each(sortEntryProperties(diskMetaData), function(propertyName) { %>
+          <div class="disk-map-details-item">
+            <div class="disk-map-details-name"><%- propertyName.replace(/_/g, ' ') %></div>
+            <div class="disk-map-details-parameter"><%- propertyName == 'size' ? showDiskSize(diskMetaData[propertyName]) : diskMetaData[propertyName] %></div>
+          </div>
+        <% }) %>
+      <% } %>
     </div>
 
     <div class="disk-utility-box">
@@ -43,7 +45,7 @@
           <div class="pull-right">
             <div class="volume-group-box-edit"><span class="use-all-allowed">Use All Allowed Space</span></div>
             <div class="volume-group-box-input">
-              <input id="<%- disk.name + '-' + volume.get('name') %>" class="input-medium" type="text" name="<%- volume.get('name') %>" value="<%- diskVolumes.findWhere({name: volume.get('name')}).get('size') || 0 %>" />
+              <input id="<%- disk.id + '-' + volume.get('name') %>" class="input-medium" type="text" name="<%- volume.get('name') %>" value="<%- disk.get('volumes').findWhere({name: volume.get('name')}).get('size') || 0 %>" />
             </div>
             <div class="volume-group-box-sizetype">MB</div>
           </div>
