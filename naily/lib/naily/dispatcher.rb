@@ -73,6 +73,13 @@ module Naily
       @orchestrator.check_redhat_licenses(reporter, task_id, credentials, nodes)
     end
 
+    def redhat_has_at_least_one_license(data)
+      credentials = data['args']['release_info']['redhat']
+      task_id = data['args']['task_uuid']
+      reporter = Naily::Reporter.new(@producer, data['respond_to'], task_id)
+      @orchestrator.redhat_has_at_least_one_license(reporter, task_id, credentials)
+    end
+
     def provision(data)
       Naily.logger.info("'provision' method called with data: #{data.inspect}")
 
