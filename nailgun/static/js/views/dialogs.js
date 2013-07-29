@@ -188,7 +188,8 @@ function(require, utils, models, simpleMessageTemplate, createClusterDialogTempl
     views.RhelCredentialsDialog = views.DialogWithRhelCredentials.extend({
         template: _.template(rhelCredentialsDialogTemplate),
         events: {
-            'click .btn-os-download': 'applyRhelCredentials'
+            'click .btn-os-download': 'applyRhelCredentials',
+            'keydown input': 'onInputKeydown'
         },
         applyRhelCredentials: function() {
             var task = this.rhelCredentialsForm.applyCredentials();
@@ -207,6 +208,11 @@ function(require, utils, models, simpleMessageTemplate, createClusterDialogTempl
                     }, this));
             } else {
                 this.$('.btn-os-download').removeClass('disabled');
+            }
+        },
+        onInputKeydown: function(e) {
+            if (e.which == 13) {
+                this.applyRhelCredentials();
             }
         },
         render: function() {
