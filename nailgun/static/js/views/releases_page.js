@@ -49,7 +49,7 @@ function(commonViews, dialogViews, releasesListTemplate, releaseTemplate) {
             this.tearDownRegisteredSubViews();
             this.$el.html(this.template({releases: this.collection}));
             this.collection.each(function(release) {
-                var releaseView = new Release({release: release});
+                var releaseView = new Release({release: release, page: this});
                 this.registerSubView(releaseView);
                 this.$('.releases-table tbody').append(releaseView.render().el);
             }, this);
@@ -77,7 +77,7 @@ function(commonViews, dialogViews, releasesListTemplate, releaseTemplate) {
             app.navbar.refresh();
         },
         updateProgress: function(){
-            var task = this.tasks.findTask({name: 'setup_redhat', status: 'running', release: this.release.id});
+            var task = this.page.tasks.findTask({name: 'setup_redhat', status: 'running', release: this.release.id});
             if (task) {
                 this.$('.bar').css('width', task.get('progress') + '%');
                 this.$('.bar-title span').text(task.get('progress') + '%');
@@ -85,12 +85,12 @@ function(commonViews, dialogViews, releasesListTemplate, releaseTemplate) {
         },
         initialize: function(options) {
             _.defaults(this, options);
-            this.tasks.each(this.bindTaskEvents, this);
-            this.tasks.on('add', this.onNewTask, this);
+            this.page.tasks.each(this.bindTaskEvents, this);
+            this.page.tasks.on('add', this.onNewTask, this);
             this.release.on('change', this.render, this);
         },
         bindTaskEvents: function(task) {
-            if (task.get('name') == 'setup_redhat' && task.get('result').release_info.release_id == this.release.id) {
+            if (task.get('name') == 'setup_redhat' && task.releaseId() == this.release.id) {
                 task.on('change:status', this.setupFinished, this);
                 task.on('change:progress', this.updateProgress, this);
                 return task;

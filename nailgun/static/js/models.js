@@ -175,7 +175,14 @@ define(['utils'], function(utils) {
 
     models.Task = Backbone.Model.extend({
         constructorName: 'Task',
-        urlRoot: '/api/tasks'
+        urlRoot: '/api/tasks',
+        releaseId: function() {
+            var id;
+            try {
+                id = this.get('result').release_info.release_id;
+            } catch(e) {}
+            return id;
+        }
     });
 
     models.Tasks = Backbone.Collection.extend({
@@ -201,7 +208,7 @@ define(['utils'], function(utils) {
                         }
                     }
                     if (filters.release) {
-                        result = result && filters.release == task.get('result').release_info.release_id;
+                        result = result && filters.release == task.releaseId();
                     }
                 }
                 return result;
