@@ -195,7 +195,7 @@ class DeploymentTaskManager(TaskManager):
                     supertask,
                     # provision only?
                     [
-                        {"id": n.id, "platform_name": n.platform_name}
+                        {"uid": n.id, "platform_name": n.platform_name}
                         for n in nodes_to_provision
                     ]
                 )
