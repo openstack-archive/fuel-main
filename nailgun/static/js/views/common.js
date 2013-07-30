@@ -270,8 +270,8 @@ function(utils, models, dialogViews, navbarTemplate, nodesStatsTemplate, notific
             if (!_.isEmpty(this.redHatAccount.changed)) {
                 var options = {
                     method: 'POST',
-                    url: _.result(this.redHatAccount, 'url'),
-                    data: JSON.stringify(_.extend(this.redHatAccount.attributes, {release_id: this.dialog.release.id}))
+                    url: '/api/redhat/setup',
+                    data: JSON.stringify(_.extend({release_id: this.dialog.release.id}, this.redHatAccount.attributes))
                 };
                 task.deferred = task.save({}, options);
             }
