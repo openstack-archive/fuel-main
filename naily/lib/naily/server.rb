@@ -115,14 +115,21 @@ module Naily
       messages.each do |message|
         begin
           Naily.logger.debug "Aborting '#{message['method']}'"
-          return_results message, {
+          err_msg = {
             'status' => 'error',
             'error' => 'Task aborted',
             'progress' => 0,
-            'nodes' => message['args']['nodes'].map{ |node|
-              {'uid' => node['uid'], 'status' => 'error', 'error_type' => 'provision', 'progress' => 0}
-            }
           }
+
+          if message['args']['nodes'].instance_of?(Array)
+            err_nodes = message['args']['nodes'].map do |node|
+              {'uid' => node['uid'], 'status' => 'error', 'error_type' => 'provision', 'progress' => 0}
+            end
+
+            err_msg.merge!('nodes' => err_nodes)
+          end
+
+          return_results(message, err_msg)
         rescue => ex
           Naily.logger.debug "Failed to abort '#{message['method']}': #{ex.inspect}"
         end
