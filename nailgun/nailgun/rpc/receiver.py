@@ -603,7 +603,11 @@ class NailgunReceiver(object):
         if error_msg:
             status = 'error'
 
-        result = task.cache['args']
+        result = {
+            "release_info": {
+                "release_id": release_id
+            }
+        }
 
         TaskHelper.update_task_status(
             task_uuid,
@@ -642,7 +646,11 @@ class NailgunReceiver(object):
         if error_msg:
             status = 'error'
 
-        result = task.cache['args']
+        result = {
+            "release_info": {
+                "release_id": release_id
+            }
+        }
 
         TaskHelper.update_task_status(
             task_uuid,
@@ -680,7 +688,11 @@ class NailgunReceiver(object):
         if error_msg:
             status = 'error'
 
-        result = task.cache['args']
+        result = {
+            "release_info": {
+                "release_id": release_id
+            }
+        }
 
         TaskHelper.update_task_status(
             task_uuid,
@@ -720,8 +732,20 @@ class NailgunReceiver(object):
             cls._download_release_error(release_id, error_msg)
         elif progress == 100:
             cls._download_release_completed(release_id)
-        TaskHelper.update_task_status(task_uuid, status,
-                                      progress, error_msg)
+
+        result = {
+            "release_info": {
+                "release_id": release_id
+            }
+        }
+
+        TaskHelper.update_task_status(
+            task_uuid,
+            status,
+            progress,
+            error_msg,
+            result
+        )
 
     @classmethod
     def _download_release_completed(cls, release_id):
