@@ -242,7 +242,7 @@ function(utils, models, dialogViews, navbarTemplate, nodesStatsTemplate, notific
         },
         toggle: function() {
             this.$('.control-group.error').removeClass('error').find('.help-inline').html('');
-            this.$('.control-group.rhn').toggleClass('hide');
+            this.$('.control-group.rhn').toggle();
             this.$('.alert').hide().html('');
         },
         onInputKeydown: function(e) {
@@ -291,6 +291,7 @@ function(utils, models, dialogViews, navbarTemplate, nodesStatsTemplate, notific
         },
         render: function() {
             this.$el.html(_.result(this, 'visible') ? this.template({account: this.redHatAccount}) : '');
+            this.$('.control-group.rhn').toggle(this.redHatAccount.get('license_type') == 'rhn');
             return this;
         }
     });
