@@ -67,7 +67,7 @@ function(utils, models, commonViews, dialogViews, NodesTab, NetworkTab, Settings
         },
         dismissTaskResult: function() {
             this.$('.task-result').remove();
-            var task = this.tasks.findTask({name: 'setup_redhat', status: 'error'}) || this.model.task('deploy');
+            var task = this.tasks.findTask({name: 'redhat_setup', status: 'error'}) || this.model.task('deploy');
             if (task) {
                 task.destroy();
             }
@@ -114,7 +114,7 @@ function(utils, models, commonViews, dialogViews, NodesTab, NetworkTab, Settings
             }
         },
         scheduleUpdate: function() {
-            var task = this.model.task('deploy', 'running') || this.model.task('verify_networks', 'running') || this.tasks.findTask({name: 'setup_redhat', status: 'running', release: this.model.get('release').id});
+            var task = this.model.task('deploy', 'running') || this.model.task('verify_networks', 'running') || this.tasks.findTask({name: 'redhat_setup', status: 'running', release: this.model.get('release').id});
             if (!this.pollingAborted && task) {
                 this.registerDeferred($.timeout(this.updateInterval).done(_.bind(this.update, this)));
             }
@@ -137,7 +137,7 @@ function(utils, models, commonViews, dialogViews, NodesTab, NetworkTab, Settings
             if (verificationTask) {
                 this.registerDeferred(verificationTask.fetch().always(_.bind(this.scheduleUpdate, this)));
             }
-            var setupTask = this.tasks.findTask({name: 'setup_redhat', status: 'running', release: this.model.get('release').id});
+            var setupTask = this.tasks.findTask({name: 'redhat_setup', status: 'running', release: this.model.get('release').id});
             if (setupTask) {
                 this.registerDeferred(this.tasks.fetch().always(_.bind(this.scheduleUpdate, this)));
             }
@@ -230,13 +230,13 @@ function(utils, models, commonViews, dialogViews, NodesTab, NetworkTab, Settings
             this.page.tasks.on('add', this.onNewTask, this);
         },
         bindTaskEvents: function(task) {
-            return (task.get('name') == 'deploy' || task.get('name') == 'setup_redhat') ? task.on('change:status', this.render, this) : null;
+            return (task.get('name') == 'deploy' || task.get('name') == 'redhat_setup') ? task.on('change:status', this.render, this) : null;
         },
         onNewTask: function(task) {
             return this.bindTaskEvents(task) && this.render();
         },
         render: function() {
-            var task = this.page.tasks.findTask({name: 'setup_redhat', status: 'error'}) || this.model.task('deploy');
+            var task = this.page.tasks.findTask({name: 'redhat_setup', status: 'error'}) || this.model.task('deploy');
             this.$el.html(this.template(_.extend({task: task}, this.templateHelpers)));
             return this;
         }
@@ -256,7 +256,7 @@ function(utils, models, commonViews, dialogViews, NodesTab, NetworkTab, Settings
             this.page.tasks.on('add', this.onNewTask, this);
         },
         bindTaskEvents: function(task) {
-            if (task.get('name') == 'deploy' || task.get('name') == 'setup_redhat') {
+            if (task.get('name') == 'deploy' || task.get('name') == 'redhat_setup') {
                 task.on('change:status', this.render, this);
                 task.on('change:progress', this.updateProgress, this);
                 return task;
@@ -273,7 +273,7 @@ function(utils, models, commonViews, dialogViews, NodesTab, NetworkTab, Settings
             return this.bindNodeEvents(node) && this.render();
         },
         updateProgress: function() {
-            var task = this.model.task('deploy', 'running') || this.page.tasks.findTask({name: 'setup_redhat', release: this.model.get('release').id});
+            var task = this.model.task('deploy', 'running') || this.page.tasks.findTask({name: 'redhat_setup', release: this.model.get('release').id});
             if (task) {
                 var progress = task.get('progress') || 0;
                 this.$('.bar').css('width', (progress > 3 ? progress : 3) + '%');
@@ -281,7 +281,7 @@ function(utils, models, commonViews, dialogViews, NodesTab, NetworkTab, Settings
             }
         },
         render: function() {
-            var task = this.page.tasks.findTask({name: 'setup_redhat', status: 'error'}) || this.model.task('deploy');
+            var task = this.page.tasks.findTask({name: 'redhat_setup', status: 'error'}) || this.model.task('deploy');
             this.$el.html(this.template({cluster: this.model, task: task}));
             this.updateProgress();
             return this;

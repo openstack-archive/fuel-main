@@ -32,12 +32,12 @@ function(commonViews, dialogViews, releasesListTemplate, releaseTemplate) {
         updateInterval: 3000,
         template: _.template(releasesListTemplate),
         scheduleUpdate: function() {
-            if (this.tasks.filterTasks({name: 'setup_redhat'}).length) {
+            if (this.tasks.filterTasks({name: 'redhat_setup'}).length) {
                 this.registerDeferred($.timeout(this.updateInterval).done(_.bind(this.update, this)));
             }
         },
         update: function() {
-            if (this.tasks.filterTasks({name: 'setup_redhat'}).length) {
+            if (this.tasks.filterTasks({name: 'redhat_setup'}).length) {
                 this.registerDeferred(this.tasks.fetch().always(_.bind(this.scheduleUpdate, this)));
             }
         },
@@ -69,7 +69,7 @@ function(commonViews, dialogViews, releasesListTemplate, releaseTemplate) {
             dialog.render();
         },
         setupFinished: function() {
-            var setupTask = this.tasks.findTask({name: 'setup_redhat', status: 'ready', release: this.release.id});
+            var setupTask = this.tasks.findTask({name: 'redhat_setup', status: 'ready', release: this.release.id});
             if (setupTask) {
                 setupTask.destroy();
             }
@@ -77,7 +77,7 @@ function(commonViews, dialogViews, releasesListTemplate, releaseTemplate) {
             app.navbar.refresh();
         },
         updateProgress: function(){
-            var task = this.page.tasks.findTask({name: 'setup_redhat', status: 'running', release: this.release.id});
+            var task = this.page.tasks.findTask({name: 'redhat_setup', status: 'running', release: this.release.id});
             if (task) {
                 this.$('.bar').css('width', task.get('progress') + '%');
                 this.$('.bar-title span').text(task.get('progress') + '%');
@@ -90,7 +90,7 @@ function(commonViews, dialogViews, releasesListTemplate, releaseTemplate) {
             this.release.on('change', this.render, this);
         },
         bindTaskEvents: function(task) {
-            if (task.get('name') == 'setup_redhat' && task.releaseId() == this.release.id) {
+            if (task.get('name') == 'redhat_setup' && task.releaseId() == this.release.id) {
                 task.on('change:status', this.setupFinished, this);
                 task.on('change:progress', this.updateProgress, this);
                 return task;
