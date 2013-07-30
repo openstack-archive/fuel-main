@@ -69,41 +69,35 @@ function(commonViews, dialogViews, releasesListTemplate, releaseTemplate) {
             dialog.render();
         },
         downloadFinished: function() {
-            this.$('.download_progress').html('');
-            var task = app.page.tasks.filterTasks({name: 'download_release', release: this.release.id})[0];
-            if (task.get('status') == 'error'){
-                this.$('.release-status span').html('Error');
-                this.$('.btn-rhel-setup').show();
-            } else {
-                this.$('.release-status').removeClass('not-available').html('Available');
-            }
-            task.destroy();
+            app.page.tasks.filterTasks({name: 'download_release', release: this.release.id})[0].destroy();
+            this.release.fetch();
         },
         updateProgress: function(){
             var task = app.page.tasks.getDownloadTask(this.release.id);
-            if (task) {
-                this.$('.btn-rhel-setup').hide();
-                this.$('.download_progress').show();
+            if (task && task.get('status') == 'running') {
                 this.$('.bar').css('width', task.get('progress')+'%');
-                if (task.get('status') == 'running') {
-                    this.$('.release-status span').html('Downloading');
-                }
+                this.$('.bar-title span').text(task.get('progress')+'%');
             }
         },
         initialize: function(options) {
             _.defaults(this, options);
             app.page.tasks.on('add', this.onNewTask, this);
             this.bindTaskEvents(app.page.tasks.getDownloadTask(this.release.id));
+            this.release.on('change', this.render, this);
         },
         bindTaskEvents: function(task) {
-            if (task && task.get('name') == 'download_release' && task.get('result').release_info.release_id == this.release.id) {
+            if (task) {
                 task.on('change:status', this.downloadFinished, this);
                 task.on('change:progress', this.updateProgress, this);
             }
             return task;
         },
         onNewTask: function(task) {
-            return this.bindTaskEvents(task) && this.updateProgress();
+            if (task.get('name') == 'download_release' && task.get('result').release_info.release_id == this.release.id)  {
+                this.release.fetch();
+                this.bindTaskEvents(task);
+                this.updateProgress();
+            }
         },
         render: function() {
             this.tearDownRegisteredSubViews();
