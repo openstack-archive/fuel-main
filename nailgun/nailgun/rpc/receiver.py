@@ -573,6 +573,29 @@ class NailgunReceiver(object):
         TaskHelper.update_task_status(task_uuid, status,
                                       progress, error_msg, result)
 
+    # Red Hat related callbacks
+
+    @classmethod
+    def check_redhat_credentials_resp(cls, **kwargs):
+        logger.info(
+            "RPC method check_redhat_credentials_resp received: %s" %
+            json.dumps(kwargs)
+        )
+
+    @classmethod
+    def redhat_has_at_least_one_license_resp(cls, **kwargs):
+        logger.info(
+            "RPC method redhat_has_at_least_one_license received: %s" %
+            json.dumps(kwargs)
+        )
+
+    @classmethod
+    def redhat_update_cobbler_profile_resp(cls, **kwargs):
+        logger.info(
+            "RPC method redhat_update_cobbler_profile_resp received: %s" %
+            json.dumps(kwargs)
+        )
+
     @classmethod
     def download_release_resp(cls, **kwargs):
         logger.info(

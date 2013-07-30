@@ -19,17 +19,17 @@ import web
 from nailgun.api.handlers.base \
     import JSONHandler, content_json, build_json_response
 from nailgun.api.handlers.tasks import TaskHandler
-from nailgun.api.validators.redhat import RedHatAcountValidator
+from nailgun.api.validators.redhat import RedHatAccountValidator
 from nailgun.db import db
 from nailgun.errors import errors
 from nailgun.task.helpers import TaskHelper
-from nailgun.task.manager import RedHatAccountValidationTaskManager
+from nailgun.task.manager import RedHatSetupTaskManager
 from nailgun.api.models import RedHatAccount
 from nailgun.logger import logger
 from nailgun.settings import settings
 
 
-class RedHatAccountHandler(JSONHandler):
+class RedHatSetupHandler(JSONHandler):
     fields = (
         'username',
         'password',
@@ -39,8 +39,7 @@ class RedHatAccountHandler(JSONHandler):
     )
 
     model = RedHatAccount
-
-    validator = RedHatAcountValidator
+    validator = RedHatAccountValidator
 
     @content_json
     def GET(self):
@@ -65,7 +64,7 @@ class RedHatAccountHandler(JSONHandler):
             db().add(account)
         db().commit()
 
-        task_manager = RedHatAccountValidationTaskManager(release_data)
+        task_manager = RedHatSetupTaskManager(release_data)
         try:
             task = task_manager.execute()
         except Exception as exc:

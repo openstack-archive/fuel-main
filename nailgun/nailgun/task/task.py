@@ -733,33 +733,33 @@ class CheckBeforeDeploymentTask(object):
             'for the current environment.'
 
 
-class DownloadReleaseTask(object):
+# Red Hat related tasks
+
+class RedHatTask(object):
+
+    @classmethod
+    def message(cls, task, data):
+        raise NotImplementedError()
 
     @classmethod
     def execute(cls, task, data):
-        """ Executes DownloadReleaseTask and passed it to the orchestrator
+        logger.debug(
+            "%s(uuid=%s) is running" %
+            (cls.__name__, task.uuid)
+        )
+        message = cls.message(task, data)
+        task.cache = message
+        task.result = {'release_info': data}
+        db().add(task)
+        db().commit()
+        rpc.cast('naily', message)
 
-        :param taks: task isinstance
-        :parap data -- taks data dictionary like this
-            {'method': 'task name',
-            'respond_to': 'method to recieve RPC message',
-            'args':{
-                'task_uuid': 'task UUID',
-                'release_info':{
-                    'release_id': 'release ID',
-                    'redhat':{
-                        'license_type' :"rhn" or "rhsm",
-                        'username': 'username',
-                        'password': 'password',
-                        'satellite': 'satellite host (for RHN license)'
-                        'activation_key': 'activation key (for RHN license)'
-                    }
-                }
-            }}
-        """
-        logger.debug("Download release task(uuid=%s) is running" % task.uuid)
 
-        message = {
+class RedHatDownloadReleaseTask(RedHatTask):
+
+    @classmethod
+    def message(cls, task, data):
+        return {
             'method': 'download_release',
             'respond_to': 'download_release_resp',
             'args': {
@@ -768,13 +768,6 @@ class DownloadReleaseTask(object):
             }
         }
 
-        task.cache = message
-        task.result = {'release_info': data}
-        db().add(task)
-        db().commit()
-        cls.__update_release_state(data['release_id'])
-        rpc.cast('naily', message)
-
     @classmethod
     def __update_release_state(cls, release_id):
         release = db().query(Release).get(release_id)
@@ -782,63 +775,46 @@ class DownloadReleaseTask(object):
         db().commit()
 
 
-class ValidateRedHatAccountTask(object):
-    @classmethod
-    def timeout_command(cls, command):
-        """call shell-command and either return its output or kill it
-        if it doesn't normally exit within timeout seconds and return None"""
-
-        start = datetime.datetime.now()
-        process = subprocess.Popen(command,
-                                   stdout=subprocess.PIPE,
-                                   stderr=subprocess.PIPE)
-        while process.poll() is None:
-            time.sleep(0.1)
-            now = datetime.datetime.now()
-            if (now - start).seconds > settings.RHEL_VALIDATION_TIMEOUT:
-                os.kill(process.pid, signal.SIGKILL)
-                os.waitpid(-1, os.WNOHANG)
-                return None
-        return process.stdout.read(), process.stderr.read()
+class RedHatCheckCredentialsTask(RedHatTask):
 
     @classmethod
-    def execute(cls, task, data):
-        account_data = data['redhat']
-        task.status = 'ready'
-        if settings.FAKE_TASKS:
-            if account_data["username"] != "rheltest":
-                task.message = "Invalid username or password"
-                task.status = 'error'
-        else:
-            try:
-                logger.info("Testing RH credentials with user %s",
-                            account_data.get('username'))
+    def message(cls, task, data):
+        if data['redhat']['username'] != 'rheltest':
+            raise Exception("Wrong Red Hat credentials")
 
-                cmd = 'subscription-manager orgs --username ' + \
-                      '"%s" --password "%s"' % \
-                      (account_data.get("username"),
-                       account_data.get("password"))
+        return {
+            "method": "check_redhat_credentials",
+            "respond_to": "check_redhat_credentials_resp",
+            "args": {
+                "task_uuid": task.uuid,
+                "release_info": data
+            }
+        }
 
-                output = cls.timeout_command(shlex.split(cmd.encode('utf-8')))
-                if not output:
-                    logger.error('Time out during executing command: %s' % cmd)
-                    task.message = 'Timed out. Please, try again.'
-                    task.status = 'error'
 
-                logger.info(
-                    "'{0}' executed, STDOUT: '{1}',"
-                    " STDERR: '{2}'".format(cmd, output[0], output[1]))
+class RedHatAtLeastOneLicenseTask(RedHatTask):
 
-            except OSError:
-                logger.warning(
-                    "'{0}' returned non-zero exit code".format(cmd))
-                task.message = 'Invalid credentials'
-                task.status = 'error'
-            except ValueError:
-                error_msg = "Not valid parameters: '{0}'".format(cmd)
-                logger.warning(error_msg)
-                task.message = 'Invalid credentials'
-                task.status = 'error'
+    @classmethod
+    def message(cls, task, data):
+        return {
+            'method': 'redhat_has_at_least_one_license',
+            'respond_to': 'redhat_has_at_least_one_license_resp',
+            'args': {
+                'task_uuid': task.uuid,
+                'release_info': data
+            }
+        }
 
-        db().add(task)
-        db().commit()
+
+class RedHatUpdateCobblerTask(RedHatTask):
+
+    @classmethod
+    def message(cls, task, data):
+        return {
+            'method': 'redhat_update_cobbler_profile',
+            'respond_to': 'redhat_update_cobbler_profile_resp',
+            'args': {
+                'task_uuid': task.uuid,
+                'release_info': data
+            }
+        }

@@ -22,8 +22,8 @@ from mock import patch
 import nailgun
 from nailgun.api.models import Release
 from nailgun.settings import settings
-from nailgun.api.handlers.redhat import RedHatAccountHandler
-from nailgun.task.task import ValidateRedHatAccountTask
+from nailgun.api.handlers.redhat import RedHatSetupHandler
+from nailgun.task.manager import RedHatSetupTaskManager
 from nailgun.api.models import RedHatAccount
 from nailgun.test.base import BaseHandlers
 from nailgun.test.base import fake_tasks
@@ -34,12 +34,40 @@ class TestHandlers(BaseHandlers):
     def setUp(self):
         super(TestHandlers, self).setUp()
         self.release = self.env.create_release(api=False)
-        nailgun.task.task.DownloadReleaseTask.execute = mock.Mock()
+
+    @fake_tasks(fake_rpc=False, mock_rpc=False)
+    @patch('nailgun.rpc.cast')
+    def test_redhat_setup_task_manager(self, mocked_rpc):
+        test_release_data = {
+            'redhat': {
+                'license_type': 'rhsm',
+                'username': 'rheltest',
+                'password': 'password',
+                'release_id': self.release.id
+            }
+        }
+        rhm = RedHatSetupTaskManager(test_release_data)
+        rhm.execute()
+
+        args, kwargs = nailgun.task.manager.rpc.cast.call_args
+        rpc_message = args[1]
+
+        for i, name in enumerate((
+            'check_redhat_credentials',
+            'redhat_has_at_least_one_license',
+            'download_release',
+            'redhat_update_cobbler_profile'
+        )):
+            self.assertEquals(rpc_message[i]['method'], name)
+            self.assertEquals(
+                rpc_message[i]['args']['release_info'],
+                test_release_data
+            )
 
     @fake_tasks()
     def test_redhat_account_invalid_data_handler(self):
         resp = self.app.post(
-            reverse('RedHatAccountHandler'),
+            reverse('RedHatSetupHandler'),
             json.dumps({'username': 'rheltest',
                         'password': 'password'}),
             headers=self.default_headers,
@@ -49,7 +77,7 @@ class TestHandlers(BaseHandlers):
     @fake_tasks()
     def test_redhat_account_validation_success(self):
         resp = self.app.post(
-            reverse('RedHatAccountHandler'),
+            reverse('RedHatSetupHandler'),
             json.dumps({'license_type': 'rhsm',
                         'username': 'rheltest',
                         'password': 'password',
@@ -60,7 +88,7 @@ class TestHandlers(BaseHandlers):
     @fake_tasks()
     def test_redhat_account_validation_failure(self):
         resp = self.app.post(
-            reverse('RedHatAccountHandler'),
+            reverse('RedHatSetupHandler'),
             json.dumps({'license_type': 'rhsm',
                         'username': 'some_user',
                         'password': 'password',
@@ -74,12 +102,12 @@ class TestHandlers(BaseHandlers):
     @fake_tasks()
     def test_redhat_account_get(self):
         resp = self.app.get(
-            reverse('RedHatAccountHandler'),
+            reverse('RedHatSetupHandler'),
             expect_errors=True)
         self.assertEquals(resp.status, 404)
 
         resp = self.app.post(
-            reverse('RedHatAccountHandler'),
+            reverse('RedHatSetupHandler'),
             json.dumps({'license_type': 'rhsm',
                         'username': 'rheltest',
                         'password': 'password',
@@ -88,21 +116,21 @@ class TestHandlers(BaseHandlers):
         self.assertEquals(resp.status, 202)
 
         resp = self.app.get(
-            reverse('RedHatAccountHandler'),
+            reverse('RedHatSetupHandler'),
             expect_errors=True)
         self.assertEquals(resp.status, 200)
 
         response = json.loads(resp.body)
 
         self.assertTrue(
-            all(k in response for k in RedHatAccountHandler.fields))
+            all(k in response for k in RedHatSetupHandler.fields))
 
     @fake_tasks()
     def test_redhat_account_update(self):
         for i in xrange(2):
             password = 'password{0}'.format(i)
             resp = self.app.post(
-                reverse('RedHatAccountHandler'),
+                reverse('RedHatSetupHandler'),
                 json.dumps({'license_type': 'rhsm',
                             'username': 'rheltest',
                             'password': 'password',
@@ -112,24 +140,3 @@ class TestHandlers(BaseHandlers):
             query = self.env.db.query(RedHatAccount)
             self.assertEquals(query.count(), 1)
         self.assertEquals(query.filter_by(username='rheltest').count(), 1)
-
-    @patch('time.sleep')
-    @patch('os.kill')
-    @patch('os.waitpid')
-    def test_timeout_command(self, mock_sleep, mock_kill, mock_waitpid):
-        command = 'ls -al'
-        settings.RHEL_VALIDATION_TIMEOUT = 0
-        with patch('subprocess.Popen') as popen:
-            instance = popen.return_value
-            instance.poll.return_value = None
-            retval = \
-                ValidateRedHatAccountTask.timeout_command(shlex.split(command))
-            self.assertEquals(retval, None)
-
-        with patch('subprocess.Popen') as popen:
-            instance = popen.return_value
-            instance.stdout.read.return_value = 'stdout'
-            instance.stderr.read.return_value = 'stderr'
-            retval = \
-                ValidateRedHatAccountTask.timeout_command(shlex.split(command))
-            self.assertEquals(retval, ('stdout', 'stderr'))

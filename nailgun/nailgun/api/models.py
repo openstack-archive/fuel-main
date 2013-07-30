@@ -563,9 +563,12 @@ class Task(Base):
         'update_plugin',
         'delete_plugin',
 
-        # releases
-        'download_release',
-        'validate_redhat_account'
+        # red hat
+        'redhat_setup',
+        'redhat_check_credentials',
+        'redhat_has_at_least_one_license',
+        'redhat_download_release',
+        'redhat_update_cobbler_profile'
     )
     id = Column(Integer, primary_key=True)
     cluster_id = Column(Integer, ForeignKey('clusters.id'))

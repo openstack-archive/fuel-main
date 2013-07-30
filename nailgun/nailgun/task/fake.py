@@ -325,6 +325,45 @@ class FakeVerificationThread(FakeThread):
             self.sleep(tick_interval)
 
 
+class FakeRedHatCredentials(FakeAmpqThread):
+    def message_gen(self):
+        self.sleep(self.tick_interval)
+        yield {
+            "method": "check_redhat_credentials_resp",
+            "respond_to": "check_redhat_credentials",
+            "args": {
+                "task_uuid": self.task_uuid,
+                "release_info": self.data['args']['release_info']
+            }
+        }
+
+
+class FakeRedHatOneLicense(FakeAmpqThread):
+    def message_gen(self):
+        self.sleep(self.tick_interval)
+        yield {
+            "method": "redhat_has_at_least_one_license_resp",
+            "respond_to": "redhat_has_at_least_one_license",
+            "args": {
+                "task_uuid": self.task_uuid,
+                "release_info": self.data['args']['release_info']
+            }
+        }
+
+
+class FakeRedHatUpdateCobbler(FakeAmpqThread):
+    def message_gen(self):
+        self.sleep(self.tick_interval)
+        yield {
+            "method": "redhat_update_cobbler_profile_resp",
+            "respond_to": "redhat_update_cobbler_profile",
+            "args": {
+                "task_uuid": self.task_uuid,
+                "release_info": self.data['args']['release_info']
+            }
+        }
+
+
 class DownloadReleaseThread(FakeAmpqThread):
     def message_gen(self):
         # TEST: we can fail at any stage:
@@ -366,5 +405,8 @@ FAKE_THREADS = {
     'deploy': FakeDeploymentThread,
     'remove_nodes': FakeDeletionThread,
     'verify_networks': FakeVerificationThread,
-    'download_release': DownloadReleaseThread
+    'download_release': DownloadReleaseThread,
+    'check_redhat_credentials': FakeRedHatCredentials,
+    'redhat_has_at_least_one_license': FakeRedHatOneLicense,
+    'redhat_update_cobbler_profile': FakeRedHatUpdateCobbler
 }

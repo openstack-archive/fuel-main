@@ -27,7 +27,7 @@ from nailgun.api.handlers.network_configuration \
 from nailgun.api.handlers.network_configuration \
     import NetworkConfigurationVerifyHandler
 
-from nailgun.api.handlers.redhat import RedHatAccountHandler
+from nailgun.api.handlers.redhat import RedHatSetupHandler
 from nailgun.api.handlers.release import ReleaseHandler
 from nailgun.api.handlers.release import ReleaseCollectionHandler
 
@@ -130,8 +130,8 @@ urls = (
     'PluginCollectionHandler',
     r'/plugins/(?P<plugin_id>\d+)/?$',
     'PluginHandler',
-    r'/redhat/account/?$',
-    'RedHatAccountHandler',
+    r'/redhat/setup/?$',
+    'RedHatSetupHandler',
 )
 
 app = web.application(urls, locals())

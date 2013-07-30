@@ -313,29 +313,54 @@ class DownloadReleaseTaskManager(TaskManager):
         return task
 
 
-class RedHatAccountValidationTaskManager(TaskManager):
+class RedHatSetupTaskManager(TaskManager):
     def __init__(self, data):
         self.data = data
 
     def execute(self):
-        logger.debug("Creating validate_redhat_account task")
-        task = Task(name="validate_redhat_account")
-        db().add(task)
+        logger.debug("Creating redhat_setup task")
+        supertask = Task(name="redhat_setup")
+        db().add(supertask)
         db().commit()
-        self._call_silently(
-            task,
-            tasks.ValidateRedHatAccountTask,
-            self.data)
-        db().refresh(task)
 
-        # Run background download task if accaount validation was successful
-        if task.status != 'error':
-            download_task = Task(name='download_release')
-            db().add(download_task)
-            db().commit()
-            self._call_silently(
-                download_task,
-                tasks.DownloadReleaseTask,
-                self.data
+        subtasks_to_create = [
+            (
+                'redhat_check_credentials',
+                tasks.RedHatCheckCredentialsTask
+            ),
+            (
+                'redhat_has_at_least_one_license',
+                tasks.RedHatAtLeastOneLicenseTask
+            ),
+            (
+                'redhat_download_release',
+                tasks.RedHatDownloadReleaseTask
+            ),
+            (
+                'redhat_update_cobbler_profile',
+                tasks.RedHatUpdateCobblerTask
             )
-        return task
+        ]
+
+        messages = []
+        for task_name, task_class in subtasks_to_create:
+            task = supertask.create_subtask(task_name)
+            msg = self._call_silently(
+                task,
+                task_class,
+                self.data,
+                method_name='message'
+            )
+            task.cache = msg
+            db().add(task)
+            db().commit()
+            messages.append(msg)
+
+        db().refresh(supertask)
+
+        if supertask.status == 'error':
+            return supertask
+
+        rpc.cast('naily', messages)
+
+        return supertask
