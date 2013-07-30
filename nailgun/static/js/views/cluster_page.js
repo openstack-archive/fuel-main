@@ -67,7 +67,7 @@ function(utils, models, commonViews, dialogViews, NodesTab, NetworkTab, Settings
         },
         dismissTaskResult: function() {
             this.$('.task-result').remove();
-            var task = this.tasks.findTask({name: 'redhat_setup', status: 'error'}) || this.model.task('deploy');
+            var task = this.tasks.findTask({name: 'redhat_setup', release: this.model.get('release').id, status: 'error'}) || this.model.task('deploy');
             if (task) {
                 task.destroy();
             }
@@ -230,13 +230,13 @@ function(utils, models, commonViews, dialogViews, NodesTab, NetworkTab, Settings
             this.page.tasks.on('add', this.onNewTask, this);
         },
         bindTaskEvents: function(task) {
-            return (task.get('name') == 'deploy' || task.get('name') == 'redhat_setup') ? task.on('change:status', this.render, this) : null;
+            return (task.get('name') == 'deploy' || (task.get('name') == 'redhat_setup' && task.releaseId() == this.model.get('release').id)) ? task.on('change:status', this.render, this) : null;
         },
         onNewTask: function(task) {
             return this.bindTaskEvents(task) && this.render();
         },
         render: function() {
-            var task = this.page.tasks.findTask({name: 'redhat_setup', status: 'error'}) || this.model.task('deploy');
+            var task = this.page.tasks.findTask({name: 'redhat_setup', release: this.model.get('release').id, status: 'error'}) || this.model.task('deploy');
             this.$el.html(this.template(_.extend({task: task}, this.templateHelpers)));
             return this;
         }
@@ -256,7 +256,7 @@ function(utils, models, commonViews, dialogViews, NodesTab, NetworkTab, Settings
             this.page.tasks.on('add', this.onNewTask, this);
         },
         bindTaskEvents: function(task) {
-            if (task.get('name') == 'deploy' || task.get('name') == 'redhat_setup') {
+            if (task.get('name') == 'deploy' || (task.get('name') == 'redhat_setup' && task.releaseId() == this.model.get('release').id)) {
                 task.on('change:status', this.render, this);
                 task.on('change:progress', this.updateProgress, this);
                 return task;
@@ -281,7 +281,7 @@ function(utils, models, commonViews, dialogViews, NodesTab, NetworkTab, Settings
             }
         },
         render: function() {
-            var task = this.page.tasks.findTask({name: 'redhat_setup', status: 'error'}) || this.model.task('deploy');
+            var task = this.page.tasks.findTask({name: 'redhat_setup', release: this.model.get('release').id, status: 'error'}) || this.model.task('deploy');
             this.$el.html(this.template({cluster: this.model, task: task}));
             this.updateProgress();
             return this;
