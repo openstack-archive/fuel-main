@@ -496,17 +496,17 @@ define(['utils'], function(utils) {
         validate: function(attrs) {
             var errors = [];
             var regex = {
-                username: /^[A-z0-9._%+\-@]+$/g,
-                password: /^[\x00-\x7F]+$/g,
-                satellite: /^(([a-zA-Z0-9]|[a-zA-Z0-9][a-zA-Z0-9\-]*[a-zA-Z0-9])\.)*([A-Za-z0-9]|[A-Za-z0-9][A-Za-z0-9\-]*[A-Za-z0-9])$/g,
-                activation_key: /^[A-z0-9*.+\-]+$/g
+                username: /^[A-z0-9._%+\-@]+$/,
+                password: /^[\x00-\x7F]+$/,
+                satellite: /^(([a-zA-Z0-9]|[a-zA-Z0-9][a-zA-Z0-9\-]*[a-zA-Z0-9])\.)*([A-Za-z0-9]|[A-Za-z0-9][A-Za-z0-9\-]*[A-Za-z0-9])$/,
+                activation_key: /^[A-z0-9*.+\-]+$/
             };
             var fields = ['username', 'password'];
             if (attrs.license_type == 'rhn') {
                 fields = _.union(fields, ['satellite', 'activation_key']);
             }
             _.each(fields, function(attr) {
-                if (!$.trim(attrs[attr]).match(regex[attr])) {
+                if (!regex[attr].test($.trim(attrs[attr]))) {
                     errors.push(attr);
                 }
             });

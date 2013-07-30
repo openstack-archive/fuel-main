@@ -257,7 +257,6 @@ function(utils, models, dialogViews, navbarTemplate, nodesStatsTemplate, notific
         },
         setCredentials: function() {
             var accountData = {
-                release_id: this.dialog.release.id,
                 license_type: this.$('input[name=license-type]:checked').val(),
                 username: this.$('input[name=username]').val(),
                 password: this.$('input[name=password]').val(),
@@ -268,11 +267,11 @@ function(utils, models, dialogViews, navbarTemplate, nodesStatsTemplate, notific
         },
         saveCredentials: function() {
             var task = new models.Task();
-            if (!_.isEmpty(_.omit(this.redHatAccount.changedAttributes(), 'release_id'))) {
+            if (!_.isEmpty(this.redHatAccount.changed)) {
                 var options = {
                     method: 'POST',
                     url: _.result(this.redHatAccount, 'url'),
-                    data: JSON.stringify(this.redHatAccount.attributes)
+                    data: JSON.stringify(_.extend(this.redHatAccount.attributes, {release_id: this.dialog.release.id}))
                 };
                 task.deferred = task.save({}, options);
             }
