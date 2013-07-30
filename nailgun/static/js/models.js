@@ -188,9 +188,6 @@ define(['utils'], function(utils) {
         comparator: function(task) {
             return task.id;
         },
-        getDownloadTask: function(release) {
-            return this.filterTasks({name: 'download_release', status: 'running', release: release})[0];
-        },
         filterTasks: function(filters) {
             return _.filter(this.models, function(task) {
                 var result = false;

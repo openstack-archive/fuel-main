@@ -32,12 +32,12 @@ function(commonViews, dialogViews, releasesListTemplate, releaseTemplate) {
         updateInterval: 3000,
         template: _.template(releasesListTemplate),
         scheduleUpdate: function() {
-            if (this.tasks.filterTasks({name: 'download_release'}).length) {
+            if (this.tasks.filterTasks({name: 'setup_redhat'}).length) {
                 this.registerDeferred($.timeout(this.updateInterval).done(_.bind(this.update, this)));
             }
         },
         update: function() {
-            if (this.tasks.filterTasks({name: 'download_release'}).length) {
+            if (this.tasks.filterTasks({name: 'setup_redhat'}).length) {
                 this.registerDeferred(this.tasks.fetch().always(_.bind(this.scheduleUpdate, this)));
             }
         },
@@ -68,35 +68,38 @@ function(commonViews, dialogViews, releasesListTemplate, releaseTemplate) {
             this.registerSubView(dialog);
             dialog.render();
         },
-        downloadFinished: function() {
-            app.page.tasks.filterTasks({name: 'download_release', release: this.release.id})[0].destroy();
+        setupFinished: function() {
+            var setupTask = this.tasks.filterTasks({name: 'setup_redhat', status: 'ready', release: this.release.id})[0];
+            if (setupTask) {
+                setupTask.destroy();
+            }
             this.release.fetch();
             app.navbar.refresh();
         },
         updateProgress: function(){
-            var task = app.page.tasks.getDownloadTask(this.release.id);
-            if (task && task.get('status') == 'running') {
-                this.$('.bar').css('width', task.get('progress')+'%');
-                this.$('.bar-title span').text(task.get('progress')+'%');
+            var task = this.tasks.filterTasks({name: 'setup_redhat', status: 'running', release: this.release.id})[0];
+            if (task) {
+                this.$('.bar').css('width', task.get('progress') + '%');
+                this.$('.bar-title span').text(task.get('progress') + '%');
             }
         },
         initialize: function(options) {
             _.defaults(this, options);
-            app.page.tasks.on('add', this.onNewTask, this);
-            this.bindTaskEvents(app.page.tasks.getDownloadTask(this.release.id));
+            this.tasks.each(this.bindTaskEvents, this);
+            this.tasks.on('add', this.onNewTask, this);
             this.release.on('change', this.render, this);
         },
         bindTaskEvents: function(task) {
-            if (task) {
-                task.on('change:status', this.downloadFinished, this);
+            if (task.get('name') == 'setup_redhat' && task.get('result').release_info.release_id == this.release.id) {
+                task.on('change:status', this.setupFinished, this);
                 task.on('change:progress', this.updateProgress, this);
+                return task;
             }
-            return task;
+            return null;
         },
         onNewTask: function(task) {
-            if (task.get('name') == 'download_release' && task.get('result').release_info.release_id == this.release.id)  {
+            if (this.bindTaskEvents(task)) {
                 this.release.fetch();
-                this.bindTaskEvents(task);
                 this.updateProgress();
             }
         },
