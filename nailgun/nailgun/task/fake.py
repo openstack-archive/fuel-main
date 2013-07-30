@@ -328,40 +328,62 @@ class FakeVerificationThread(FakeThread):
 class FakeRedHatCredentials(FakeAmpqThread):
     def message_gen(self):
         self.sleep(self.tick_interval)
-        yield {
-            "method": "check_redhat_credentials_resp",
-            "respond_to": "check_redhat_credentials",
-            "args": {
-                "task_uuid": self.task_uuid,
-                "release_info": self.data['args']['release_info']
+
+        error = self.params.get("error")
+
+        if error:
+            yield {
+                'task_uuid': self.task_uuid,
+                'status': 'error',
+                'progress': 100,
+                'error_msg': error
             }
-        }
+        else:
+            yield {
+                'task_uuid': self.task_uuid,
+                'status': 'ready',
+                'progress': 100
+            }
 
 
-class FakeRedHatOneLicense(FakeAmpqThread):
+class FakeRedHatLicenses(FakeAmpqThread):
     def message_gen(self):
         self.sleep(self.tick_interval)
-        yield {
-            "method": "redhat_has_at_least_one_license_resp",
-            "respond_to": "redhat_has_at_least_one_license",
-            "args": {
-                "task_uuid": self.task_uuid,
-                "release_info": self.data['args']['release_info']
+        error = self.params.get("error")
+
+        if error:
+            yield {
+                'task_uuid': self.task_uuid,
+                'status': 'error',
+                'progress': 100,
+                'error_msg': error
             }
-        }
+        else:
+            yield {
+                'task_uuid': self.task_uuid,
+                'status': 'ready',
+                'progress': 100
+            }
 
 
 class FakeRedHatUpdateCobbler(FakeAmpqThread):
     def message_gen(self):
         self.sleep(self.tick_interval)
-        yield {
-            "method": "redhat_update_cobbler_profile_resp",
-            "respond_to": "redhat_update_cobbler_profile",
-            "args": {
-                "task_uuid": self.task_uuid,
-                "release_info": self.data['args']['release_info']
+        error = self.params.get("error")
+
+        if error:
+            yield {
+                'task_uuid': self.task_uuid,
+                'status': 'error',
+                'progress': 100,
+                'error_msg': error
             }
-        }
+        else:
+            yield {
+                'task_uuid': self.task_uuid,
+                'status': 'ready',
+                'progress': 100
+            }
 
 
 class DownloadReleaseThread(FakeAmpqThread):
@@ -407,6 +429,6 @@ FAKE_THREADS = {
     'verify_networks': FakeVerificationThread,
     'download_release': DownloadReleaseThread,
     'check_redhat_credentials': FakeRedHatCredentials,
-    'redhat_has_at_least_one_license': FakeRedHatOneLicense,
+    'check_redhat_licenses': FakeRedHatLicenses,
     'redhat_update_cobbler_profile': FakeRedHatUpdateCobbler
 }

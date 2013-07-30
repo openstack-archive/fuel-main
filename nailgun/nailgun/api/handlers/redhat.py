@@ -29,7 +29,8 @@ from nailgun.logger import logger
 from nailgun.settings import settings
 
 
-class RedHatSetupHandler(JSONHandler):
+class RedHatAccountHandler(JSONHandler):
+
     fields = (
         'username',
         'password',
@@ -37,9 +38,7 @@ class RedHatSetupHandler(JSONHandler):
         'satellite',
         'activation_key'
     )
-
     model = RedHatAccount
-    validator = RedHatAccountValidator
 
     @content_json
     def GET(self):
@@ -47,6 +46,24 @@ class RedHatSetupHandler(JSONHandler):
         if not account:
             raise web.notfound()
         return self.render(account)
+
+    @content_json
+    def POST(self):
+        data = self.checked_data()
+        data.pop('release_id')
+        account = db().query(RedHatAccount).first()
+        if account:
+            db().query(RedHatAccount).update(data)
+        else:
+            account = RedHatAccount(**data)
+            db().add(account)
+        db().commit()
+        return self.render(account)
+
+
+class RedHatSetupHandler(JSONHandler):
+
+    validator = RedHatAccountValidator
 
     @content_json
     def POST(self):

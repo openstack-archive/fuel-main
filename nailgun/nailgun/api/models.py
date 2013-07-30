@@ -566,7 +566,7 @@ class Task(Base):
         # red hat
         'redhat_setup',
         'redhat_check_credentials',
-        'redhat_has_at_least_one_license',
+        'redhat_check_licenses',
         'redhat_download_release',
         'redhat_update_cobbler_profile'
     )

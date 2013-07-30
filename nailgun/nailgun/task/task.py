@@ -792,18 +792,21 @@ class RedHatCheckCredentialsTask(RedHatTask):
         }
 
 
-class RedHatAtLeastOneLicenseTask(RedHatTask):
+class RedHatCheckLicensesTask(RedHatTask):
 
     @classmethod
-    def message(cls, task, data):
-        return {
-            'method': 'redhat_has_at_least_one_license',
-            'respond_to': 'redhat_has_at_least_one_license_resp',
+    def message(cls, task, data, nodes=None):
+        msg = {
+            'method': 'check_redhat_licenses',
+            'respond_to': 'redhat_check_licenses_resp',
             'args': {
                 'task_uuid': task.uuid,
                 'release_info': data
             }
         }
+        if nodes:
+            msg['args']['nodes'] = nodes
+        return msg
 
 
 class RedHatUpdateCobblerTask(RedHatTask):

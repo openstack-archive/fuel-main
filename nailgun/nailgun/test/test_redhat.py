@@ -23,6 +23,7 @@ import nailgun
 from nailgun.api.models import Release
 from nailgun.settings import settings
 from nailgun.api.handlers.redhat import RedHatSetupHandler
+from nailgun.api.handlers.redhat import RedHatAccountHandler
 from nailgun.task.manager import RedHatSetupTaskManager
 from nailgun.api.models import RedHatAccount
 from nailgun.test.base import BaseHandlers
@@ -54,7 +55,7 @@ class TestHandlers(BaseHandlers):
 
         for i, name in enumerate((
             'check_redhat_credentials',
-            'redhat_has_at_least_one_license',
+            'check_redhat_licenses',
             'download_release',
             'redhat_update_cobbler_profile'
         )):
@@ -102,21 +103,21 @@ class TestHandlers(BaseHandlers):
     @fake_tasks()
     def test_redhat_account_get(self):
         resp = self.app.get(
-            reverse('RedHatSetupHandler'),
+            reverse('RedHatAccountHandler'),
             expect_errors=True)
         self.assertEquals(resp.status, 404)
 
         resp = self.app.post(
-            reverse('RedHatSetupHandler'),
+            reverse('RedHatAccountHandler'),
             json.dumps({'license_type': 'rhsm',
                         'username': 'rheltest',
                         'password': 'password',
                         'release_id': 1}),
             headers=self.default_headers)
-        self.assertEquals(resp.status, 202)
+        self.assertEquals(resp.status, 200)
 
         resp = self.app.get(
-            reverse('RedHatSetupHandler'),
+            reverse('RedHatAccountHandler'),
             expect_errors=True)
         self.assertEquals(resp.status, 200)
 
@@ -130,13 +131,13 @@ class TestHandlers(BaseHandlers):
         for i in xrange(2):
             password = 'password{0}'.format(i)
             resp = self.app.post(
-                reverse('RedHatSetupHandler'),
+                reverse('RedHatAccountHandler'),
                 json.dumps({'license_type': 'rhsm',
                             'username': 'rheltest',
                             'password': 'password',
                             'release_id': 1}),
                 headers=self.default_headers)
-            self.assertEquals(resp.status, 202)
+            self.assertEquals(resp.status, 200)
             query = self.env.db.query(RedHatAccount)
             self.assertEquals(query.count(), 1)
         self.assertEquals(query.filter_by(username='rheltest').count(), 1)

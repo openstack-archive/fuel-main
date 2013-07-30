@@ -329,8 +329,8 @@ class RedHatSetupTaskManager(TaskManager):
                 tasks.RedHatCheckCredentialsTask
             ),
             (
-                'redhat_has_at_least_one_license',
-                tasks.RedHatAtLeastOneLicenseTask
+                'redhat_check_licenses',
+                tasks.RedHatCheckLicensesTask
             ),
             (
                 'redhat_download_release',

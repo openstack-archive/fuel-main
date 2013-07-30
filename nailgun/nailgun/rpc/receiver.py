@@ -581,12 +581,75 @@ class NailgunReceiver(object):
             "RPC method check_redhat_credentials_resp received: %s" %
             json.dumps(kwargs)
         )
+        task_uuid = kwargs.get('task_uuid')
+        error_msg = kwargs.get('error')
+        status = kwargs.get('status')
+        progress = kwargs.get('progress')
+
+        task = db().query(Task).filter_by(uuid=task_uuid).first()
+        if not task:
+            logger.error("check_redhat_credentials_resp: task \
+                    with UUID %s not found!", task_uuid)
+            return
+
+        release_info = task.cache['args']['release_info']
+        release_id = release_info['release_id']
+        release = db().query(Release).get(release_id)
+        if not release:
+            logger.error("download_release_resp: Release"
+                         " with ID %s not found", release_id)
+            return
+
+        if error_msg:
+            status = 'error'
+
+        result = task.cache['args']
+
+        TaskHelper.update_task_status(
+            task_uuid,
+            status,
+            progress,
+            error_msg,
+            result
+        )
 
     @classmethod
-    def redhat_has_at_least_one_license_resp(cls, **kwargs):
+    def redhat_check_licenses_resp(cls, **kwargs):
         logger.info(
-            "RPC method redhat_has_at_least_one_license received: %s" %
+            "RPC method redhat_check_licenses_resp received: %s" %
             json.dumps(kwargs)
+        )
+        task_uuid = kwargs.get('task_uuid')
+        error_msg = kwargs.get('error')
+        nodes = kwargs.get('nodes')
+        status = kwargs.get('status')
+        progress = kwargs.get('progress')
+
+        task = db().query(Task).filter_by(uuid=task_uuid).first()
+        if not task:
+            logger.error("redhat_check_licenses_resp: task \
+                    with UUID %s not found!", task_uuid)
+            return
+
+        release_info = task.cache['args']['release_info']
+        release_id = release_info['release_id']
+        release = db().query(Release).get(release_id)
+        if not release:
+            logger.error("download_release_resp: Release"
+                         " with ID %s not found", release_id)
+            return
+
+        if error_msg:
+            status = 'error'
+
+        result = task.cache['args']
+
+        TaskHelper.update_task_status(
+            task_uuid,
+            status,
+            progress,
+            error_msg,
+            result
         )
 
     @classmethod
@@ -594,6 +657,37 @@ class NailgunReceiver(object):
         logger.info(
             "RPC method redhat_update_cobbler_profile_resp received: %s" %
             json.dumps(kwargs)
+        )
+        task_uuid = kwargs.get('task_uuid')
+        error_msg = kwargs.get('error')
+        status = kwargs.get('status')
+        progress = kwargs.get('progress')
+
+        task = db().query(Task).filter_by(uuid=task_uuid).first()
+        if not task:
+            logger.error("redhat_update_cobbler_profile_resp: task \
+                    with UUID %s not found!", task_uuid)
+            return
+
+        release_info = task.cache['args']['release_info']
+        release_id = release_info['release_id']
+        release = db().query(Release).get(release_id)
+        if not release:
+            logger.error("download_release_resp: Release"
+                         " with ID %s not found", release_id)
+            return
+
+        if error_msg:
+            status = 'error'
+
+        result = task.cache['args']
+
+        TaskHelper.update_task_status(
+            task_uuid,
+            status,
+            progress,
+            error_msg,
+            result
         )
 
     @classmethod
