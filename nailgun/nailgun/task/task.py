@@ -149,7 +149,7 @@ class DeploymentTask(object):
             net_name = net.name + '_network_range'
             if net.name == 'floating':
                 cluster_attrs[net_name] = \
-                    cls.__get_ip_addresses_in_ranges(net)
+                    cls.__get_ip_ranges_first_last(net)
             elif net.name == 'public':
                 # We shouldn't pass public_network_range attribute
                 continue
@@ -235,6 +235,16 @@ class DeploymentTask(object):
             pending_deletion=False).order_by(Node.id)
 
         return map(cls.__format_node_for_naily, nodes)
+
+    @classmethod
+    def __get_ip_ranges_first_last(cls, network_group):
+        """
+        Get all ip ranges in "10.0.0.0-10.0.0.255" format
+        """
+        return [
+            "{0}-{1}".format(ip_range.first, ip_range.last)
+            for ip_range in network_group.ip_ranges
+        ]
 
     @classmethod
     def __get_ip_addresses_in_ranges(cls, network_group):

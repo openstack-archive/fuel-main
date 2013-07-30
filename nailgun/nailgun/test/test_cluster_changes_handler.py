@@ -100,14 +100,10 @@ class TestHandlers(BaseHandlers):
                 cluster_attrs[net.name + '_network_range'] = net.cidr
 
         cluster_attrs['floating_network_range'] = [
-            '172.16.0.10',
-            '172.16.0.11',
-            '172.16.0.12',
-
-            '172.16.0.2',
-            '172.16.0.3',
-            '172.16.0.4',
-            '172.16.0.5']
+            '172.16.0.2-172.16.0.4',
+            '172.16.0.3-172.16.0.5',
+            '172.16.0.10-172.16.0.12'
+        ]
 
         management_vip = self.env.network_manager.assign_vip(
             cluster_db.id,
@@ -271,8 +267,12 @@ class TestHandlers(BaseHandlers):
             }
         }
 
-        nailgun.task.manager.rpc.cast.assert_called_once_with(
-            'naily', [provision_msg, msg])
+        args, kwargs = nailgun.task.manager.rpc.cast.call_args
+        self.assertEquals(len(args), 2)
+        self.assertEquals(len(args[1]), 2)
+
+        self.datadiff(args[1][0], provision_msg)
+        self.datadiff(args[1][1], msg)
 
     @fake_tasks(fake_rpc=False, mock_rpc=False)
     @patch('nailgun.rpc.cast')
