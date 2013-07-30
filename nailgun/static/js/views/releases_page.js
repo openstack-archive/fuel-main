@@ -69,7 +69,7 @@ function(commonViews, dialogViews, releasesListTemplate, releaseTemplate) {
             dialog.render();
         },
         setupFinished: function() {
-            var setupTask = this.tasks.filterTasks({name: 'setup_redhat', status: 'ready', release: this.release.id})[0];
+            var setupTask = this.tasks.findTask({name: 'setup_redhat', status: 'ready', release: this.release.id});
             if (setupTask) {
                 setupTask.destroy();
             }
@@ -77,7 +77,7 @@ function(commonViews, dialogViews, releasesListTemplate, releaseTemplate) {
             app.navbar.refresh();
         },
         updateProgress: function(){
-            var task = this.tasks.filterTasks({name: 'setup_redhat', status: 'running', release: this.release.id})[0];
+            var task = this.tasks.findTask({name: 'setup_redhat', status: 'running', release: this.release.id});
             if (task) {
                 this.$('.bar').css('width', task.get('progress') + '%');
                 this.$('.bar-title span').text(task.get('progress') + '%');

@@ -67,7 +67,7 @@ function(utils, models, commonViews, dialogViews, NodesTab, NetworkTab, Settings
         },
         dismissTaskResult: function() {
             this.$('.task-result').remove();
-            var task = this.tasks.filterTasks({name: 'setup_redhat', status: 'error'})[0] || this.model.task('deploy');
+            var task = this.tasks.findTask({name: 'setup_redhat', status: 'error'}) || this.model.task('deploy');
             if (task) {
                 task.destroy();
             }
@@ -114,7 +114,7 @@ function(utils, models, commonViews, dialogViews, NodesTab, NetworkTab, Settings
             }
         },
         scheduleUpdate: function() {
-            var task = this.model.task('deploy', 'running') || this.model.task('verify_networks', 'running') || this.tasks.filterTasks({name: 'setup_redhat', status: 'running', release: this.model.get('release').id})[0];
+            var task = this.model.task('deploy', 'running') || this.model.task('verify_networks', 'running') || this.tasks.findTask({name: 'setup_redhat', status: 'running', release: this.model.get('release').id});
             if (!this.pollingAborted && task) {
                 this.registerDeferred($.timeout(this.updateInterval).done(_.bind(this.update, this)));
             }
@@ -137,7 +137,7 @@ function(utils, models, commonViews, dialogViews, NodesTab, NetworkTab, Settings
             if (verificationTask) {
                 this.registerDeferred(verificationTask.fetch().always(_.bind(this.scheduleUpdate, this)));
             }
-            var setupTask = this.tasks.filterTasks({name: 'setup_redhat', status: 'running', release: this.model.get('release').id})[0];
+            var setupTask = this.tasks.findTask({name: 'setup_redhat', status: 'running', release: this.model.get('release').id});
             if (setupTask) {
                 this.registerDeferred(this.tasks.fetch().always(_.bind(this.scheduleUpdate, this)));
             }
@@ -236,7 +236,7 @@ function(utils, models, commonViews, dialogViews, NodesTab, NetworkTab, Settings
             return this.bindTaskEvents(task) && this.render();
         },
         render: function() {
-            var task = this.page.tasks.filterTasks({name: 'setup_redhat', status: 'error'})[0] || this.model.task('deploy');
+            var task = this.page.tasks.findTask({name: 'setup_redhat', status: 'error'}) || this.model.task('deploy');
             this.$el.html(this.template(_.extend({task: task}, this.templateHelpers)));
             return this;
         }
@@ -273,7 +273,7 @@ function(utils, models, commonViews, dialogViews, NodesTab, NetworkTab, Settings
             return this.bindNodeEvents(node) && this.render();
         },
         updateProgress: function() {
-            var task = this.model.task('deploy', 'running') || this.page.tasks.filterTasks({name: 'setup_redhat', release: this.model.get('release').id})[0];
+            var task = this.model.task('deploy', 'running') || this.page.tasks.findTask({name: 'setup_redhat', release: this.model.get('release').id});
             if (task) {
                 var progress = task.get('progress') || 0;
                 this.$('.bar').css('width', (progress > 3 ? progress : 3) + '%');
@@ -281,7 +281,7 @@ function(utils, models, commonViews, dialogViews, NodesTab, NetworkTab, Settings
             }
         },
         render: function() {
-            var task = this.page.tasks.filterTasks({name: 'setup_redhat', status: 'error'})[0] || this.model.task('deploy');
+            var task = this.page.tasks.findTask({name: 'setup_redhat', status: 'error'}) || this.model.task('deploy');
             this.$el.html(this.template({cluster: this.model, task: task}));
             this.updateProgress();
             return this;

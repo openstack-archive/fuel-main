@@ -55,7 +55,7 @@ define(['utils'], function(utils) {
             return _.isEmpty(errors) ? null : errors;
         },
         task: function(taskName, status) {
-            return this.get('tasks') && this.get('tasks').filterTasks({name: taskName, status: status})[0];
+            return this.get('tasks') && this.get('tasks').findTask({name: taskName, status: status});
         },
         hasChanges: function() {
             return this.get('nodes').hasChanges() || (this.get('changes').length && this.get('nodes').currentNodes().length);
@@ -206,6 +206,9 @@ define(['utils'], function(utils) {
                 }
                 return result;
             });
+        },
+        findTask: function(filters) {
+            return this.filterTasks(filters)[0];
         }
     });
 
