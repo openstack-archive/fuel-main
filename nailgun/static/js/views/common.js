@@ -268,28 +268,13 @@ function(utils, models, dialogViews, navbarTemplate, nodesStatsTemplate, notific
         },
         saveCredentials: function() {
             var task = new models.Task();
-            var options = {
-                method: 'POST',
-                url: _.result(this.redHatAccount, 'url'),
-                data: JSON.stringify(this.redHatAccount.attributes)
-            };
-            task.deferred = task.save({}, options);
-            return task;
-        },
-        applyCredentials: function() {
-            if (this.setCredentials()) {
-                var task = this.saveCredentials();
-                if (task.deferred) {
-                    task.deferred
-                        .success(_.bind(function() {
-                            if (task.get('status') == 'error') {
-                                this.showValidationError(task.get('message'), ['username', 'password']);
-                            }
-                        }, this))
-                        .fail(_.bind(function() {
-                            this.dialog.displayErrorMessage();
-                        }, this));
-                }
+            if (!_.isEmpty(_.omit(this.redHatAccount.changedAttributes(), 'release_id'))) {
+                var options = {
+                    method: 'POST',
+                    url: _.result(this.redHatAccount, 'url'),
+                    data: JSON.stringify(this.redHatAccount.attributes)
+                };
+                task.deferred = task.save({}, options);
             }
             return task;
         },

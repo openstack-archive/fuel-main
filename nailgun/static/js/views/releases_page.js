@@ -71,6 +71,7 @@ function(commonViews, dialogViews, releasesListTemplate, releaseTemplate) {
         downloadFinished: function() {
             app.page.tasks.filterTasks({name: 'download_release', release: this.release.id})[0].destroy();
             this.release.fetch();
+            app.navbar.refresh();
         },
         updateProgress: function(){
             var task = app.page.tasks.getDownloadTask(this.release.id);

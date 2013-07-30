@@ -192,26 +192,25 @@ function(require, utils, models, simpleMessageTemplate, createClusterDialogTempl
     views.RhelCredentialsDialog = views.DialogWithRhelCredentials.extend({
         template: _.template(rhelCredentialsDialogTemplate),
         events: {
-            'click .btn-os-download': 'applyRhelCredentials',
+            'click .btn-os-download': 'submitForm',
             'keydown input': 'onInputKeydown'
         },
-        applyRhelCredentials: function() {
-            var task = this.rhelCredentialsForm.applyCredentials();
-            this.$('.btn-os-download').addClass('disabled');
-            if (task.deferred) {
-                task.deferred
-                    .done(_.bind(function(response) {
-                        if (task.get('status') == 'ready') {
-                            app.page.tasks.fetch().done(_.bind(function() {
+        submitForm: function() {
+            if (this.rhelCredentialsForm.setCredentials()) {
+                this.$('.btn-os-download').attr('disabled', true);
+                var task = this.rhelCredentialsForm.saveCredentials();
+                if (task.deferred) {
+                    task.deferred
+                        .done(_.bind(function(response) {
                                 this.$el.modal('hide');
-                                app.page.scheduleUpdate();
-                            }, this));
-                        } else {
-                            this.$('.btn-os-download').removeClass('disabled');
-                        }
-                    }, this));
-            } else {
-                this.$('.btn-os-download').removeClass('disabled');
+                                app.page.tasks.fetch().done(_.bind(function() {
+                                    app.page.scheduleUpdate();
+                                }, this));
+                        }, this))
+                        .fail(_.bind(this.displayErrorMessage, this));
+                } else {
+                    this.$el.modal('hide');
+                }
             }
         },
         onInputKeydown: function(e) {
@@ -219,10 +218,16 @@ function(require, utils, models, simpleMessageTemplate, createClusterDialogTempl
                 this.applyRhelCredentials();
             }
         },
+        initialize: function(options) {
+            _.defaults(this, options);
+            this.redHatAccount = new models.RedHatAccount();
+            this.redHatAccount.deferred = this.redHatAccount.fetch();
+            this.redHatAccount.deferred.always(_.bind(this.render, this));
+        },
         render: function() {
             this.tearDownRegisteredSubViews();
             this.constructor.__super__.render.call(this);
-            this.renderRhelCredentialsForm();
+            this.renderRhelCredentialsForm({redHatAccount: this.redHatAccount});
             return this;
         }
     });
