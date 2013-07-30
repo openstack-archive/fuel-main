@@ -69,13 +69,15 @@ function(commonViews, dialogViews, releasesListTemplate, releaseTemplate) {
             this.registerSubView(dialog);
             dialog.render();
         },
-        setupFinished: function() {
-            var setupTask = this.page.tasks.findTask({name: 'redhat_setup', status: 'ready', release: this.release.id});
+        checkForSetupCompletion: function() {
+            var setupTask = this.page.tasks.findTask({name: 'redhat_setup', status: ['ready', 'error'], release: this.release.id});
             if (setupTask) {
-                setupTask.destroy();
+                if (setupTask.get('status') == 'ready') {
+                    setupTask.destroy();
+                }
+                this.release.fetch();
+                app.navbar.refresh();
             }
-            this.release.fetch();
-            app.navbar.refresh();
         },
         updateProgress: function() {
             var task = this.page.tasks.findTask({name: 'redhat_setup', status: 'running', release: this.release.id});
@@ -91,8 +93,8 @@ function(commonViews, dialogViews, releasesListTemplate, releaseTemplate) {
             this.release.on('change', this.render, this);
         },
         bindTaskEvents: function(task) {
-            if (task.get('name') == 'redhat_setup' && task.get('status') == 'running' && task.releaseId() == this.release.id) {
-                task.on('change:status', this.setupFinished, this);
+            if (task.get('name') == 'redhat_setup' && task.releaseId() == this.release.id) {
+                task.on('change:status', this.checkForSetupCompletion, this);
                 task.on('change:progress', this.updateProgress, this);
                 return task;
             }
@@ -100,7 +102,7 @@ function(commonViews, dialogViews, releasesListTemplate, releaseTemplate) {
         },
         onNewTask: function(task) {
             if (this.bindTaskEvents(task)) {
-                this.release.fetch();
+                this.checkForSetupCompletion();
                 this.updateProgress();
             }
         },
