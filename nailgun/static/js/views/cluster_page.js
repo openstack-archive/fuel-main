@@ -236,7 +236,7 @@ function(utils, models, commonViews, dialogViews, NodesTab, NetworkTab, Settings
             return this.bindTaskEvents(task) && this.render();
         },
         render: function() {
-            var task = this.page.tasks.findTask({name: 'redhat_setup', release: this.model.get('release').id, status: 'error'}) || this.model.task('deploy');
+            var task = this.page.tasks.findTask({name: 'redhat_setup', status: 'error', release: this.model.get('release').id}) || this.model.task('deploy');
             this.$el.html(this.template(_.extend({task: task}, this.templateHelpers)));
             return this;
         }
@@ -272,8 +272,11 @@ function(utils, models, commonViews, dialogViews, NodesTab, NetworkTab, Settings
         onNewNode: function(node) {
             return this.bindNodeEvents(node) && this.render();
         },
+        getTask: function() {
+            return this.page.tasks.findTask({name: 'redhat_setup', status: 'running', release: this.model.get('release').id}) || this.model.task('deploy', 'running');
+        },
         updateProgress: function() {
-            var task = this.model.task('deploy', 'running') || this.page.tasks.findTask({name: 'redhat_setup', release: this.model.get('release').id});
+            var task = this.getTask();
             if (task) {
                 var progress = task.get('progress') || 0;
                 this.$('.bar').css('width', (progress > 3 ? progress : 3) + '%');
@@ -281,7 +284,7 @@ function(utils, models, commonViews, dialogViews, NodesTab, NetworkTab, Settings
             }
         },
         render: function() {
-            var task = this.page.tasks.findTask({name: 'redhat_setup', release: this.model.get('release').id, status: 'error'}) || this.model.task('deploy');
+            var task = this.getTask();
             this.$el.html(this.template({cluster: this.model, task: task}));
             this.updateProgress();
             return this;

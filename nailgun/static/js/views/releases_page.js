@@ -91,7 +91,7 @@ function(commonViews, dialogViews, releasesListTemplate, releaseTemplate) {
             this.release.on('change', this.render, this);
         },
         bindTaskEvents: function(task) {
-            if (task.get('name') == 'redhat_setup' && task.releaseId() == this.release.id) {
+            if (task.get('name') == 'redhat_setup' && task.get('status') == 'running' && task.releaseId() == this.release.id) {
                 task.on('change:status', this.setupFinished, this);
                 task.on('change:progress', this.updateProgress, this);
                 return task;
