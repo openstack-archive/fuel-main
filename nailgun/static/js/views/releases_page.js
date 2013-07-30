@@ -29,17 +29,18 @@ function(commonViews, dialogViews, releasesListTemplate, releaseTemplate) {
         navbarActiveElement: 'releases',
         breadcrumbsPath: [['Home', '#'], 'Releases'],
         title: 'Releases',
-        updateInterval: 3000,
+        updateInterval: 5000,
         template: _.template(releasesListTemplate),
         scheduleUpdate: function() {
-            if (this.tasks.filterTasks({name: 'redhat_setup'}).length) {
-                this.registerDeferred($.timeout(this.updateInterval).done(_.bind(this.update, this)));
+            if (this.tasks.filterTasks({name: 'redhat_setup', status: 'running'}).length) {
+                if (this.timeout) {
+                    this.timeout.clear();
+                }
+                this.registerDeferred(this.timeout = $.timeout(this.updateInterval).done(_.bind(this.update, this)));
             }
         },
         update: function() {
-            if (this.tasks.filterTasks({name: 'redhat_setup'}).length) {
-                this.registerDeferred(this.tasks.fetch().always(_.bind(this.scheduleUpdate, this)));
-            }
+            this.registerDeferred(this.tasks.fetch().always(_.bind(this.scheduleUpdate, this)));
         },
         initialize: function(options) {
             _.defaults(this, options);

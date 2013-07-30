@@ -203,9 +203,7 @@ function(require, utils, models, simpleMessageTemplate, createClusterDialogTempl
                     task.deferred
                         .done(_.bind(function(response) {
                             this.$el.modal('hide');
-                            app.page.tasks.fetch().done(_.bind(function() {
-                                app.page.scheduleUpdate();
-                            }, this));
+                            app.page.update();
                         }, this))
                         .fail(_.bind(this.displayErrorMessage, this));
                 } else {
