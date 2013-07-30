@@ -267,14 +267,12 @@ function(utils, models, dialogViews, navbarTemplate, nodesStatsTemplate, notific
         },
         saveCredentials: function() {
             var task = new models.Task();
-            if (!_.isEmpty(this.redHatAccount.changed)) {
-                var options = {
-                    method: 'POST',
-                    url: '/api/redhat/setup',
-                    data: JSON.stringify(_.extend({release_id: this.dialog.release.id}, this.redHatAccount.attributes))
-                };
-                task.deferred = task.save({}, options);
-            }
+            var options = {
+                method: 'POST',
+                url: '/api/redhat/setup',
+                data: JSON.stringify(_.extend({release_id: this.dialog.release.id}, this.redHatAccount.attributes))
+            };
+            task.deferred = task.save({}, options);
             return task;
         },
         initialize: function(options) {
