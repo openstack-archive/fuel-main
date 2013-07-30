@@ -70,14 +70,14 @@ function(commonViews, dialogViews, releasesListTemplate, releaseTemplate) {
             dialog.render();
         },
         setupFinished: function() {
-            var setupTask = this.tasks.findTask({name: 'redhat_setup', status: 'ready', release: this.release.id});
+            var setupTask = this.page.tasks.findTask({name: 'redhat_setup', status: 'ready', release: this.release.id});
             if (setupTask) {
                 setupTask.destroy();
             }
             this.release.fetch();
             app.navbar.refresh();
         },
-        updateProgress: function(){
+        updateProgress: function() {
             var task = this.page.tasks.findTask({name: 'redhat_setup', status: 'running', release: this.release.id});
             if (task) {
                 this.$('.bar').css('width', task.get('progress') + '%');
