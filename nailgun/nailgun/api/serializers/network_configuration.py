@@ -15,7 +15,6 @@
 #    under the License.
 
 from nailgun.network.manager import NetworkManager
-from nailgun.api.models import NetworkGroup
 from nailgun.api.serializers.base import BasicSerializer
 
 
