@@ -215,7 +215,7 @@ function(require, utils, models, simpleMessageTemplate, createClusterDialogTempl
         },
         onInputKeydown: function(e) {
             if (e.which == 13) {
-                this.applyRhelCredentials();
+                this.submitForm();
             }
         },
         initialize: function(options) {
