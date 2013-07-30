@@ -286,7 +286,7 @@ function(utils, models, dialogViews, navbarTemplate, nodesStatsTemplate, notific
             }
             this.redHatAccount.on('sync', this.render, this);
             this.redHatAccount.on('invalid', function(model, error) {
-                this.showValidationError('All fields are required', error);
+                this.showValidationError('Invalid data', error);
             }, this);
         },
         render: function() {
