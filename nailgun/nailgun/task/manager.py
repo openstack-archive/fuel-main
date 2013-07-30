@@ -408,6 +408,11 @@ class RedHatSetupTaskManager(TaskManager):
     def execute(self):
         logger.debug("Creating redhat_setup task")
         supertask = Task(name="redhat_setup")
+        supertask.result = {
+            "release_info": {
+                "release_id": self.data["release_id"]
+            }
+        }
         db().add(supertask)
         db().commit()
 
