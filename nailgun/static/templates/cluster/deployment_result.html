@@ -1,4 +1,3 @@
-<% var task = cluster.task('check_before_deployment', 'error') || cluster.task('deploy') %>
 <% if (task) { %>
   <% if (task.get('status') == 'ready') { %>
     <div class="alert alert-block global-success alert-success task-result">

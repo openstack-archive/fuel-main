@@ -67,7 +67,7 @@ function(utils, models, commonViews, dialogViews, NodesTab, NetworkTab, Settings
         },
         dismissTaskResult: function() {
             this.$('.task-result').remove();
-            var task = this.model.task('check_before_deployment', 'error') || this.model.task('deploy');
+            var task = this.tasks.filterTasks({name: 'setup_redhat', status: 'error'})[0] || this.model.task('deploy');
             if (task) {
                 task.destroy();
             }
@@ -144,15 +144,8 @@ function(utils, models, commonViews, dialogViews, NodesTab, NetworkTab, Settings
         },
         deploymentStarted: function() {
             $.when(this.model.fetch(), this.model.fetchRelated('nodes'), this.model.fetchRelated('tasks')).done(_.bind(function() {
-                var failedDeployTask = this.model.task('check_before_deployment', 'error') || this.model.task('deploy', 'error');
-                if (!failedDeployTask) {
-                    this.unbindEventsWhileDeploying();
-                    this.scheduleUpdate();
-                }
-                var checkTask = this.model.task('check_before_deployment', 'ready');
-                if (checkTask) {
-                    checkTask.destroy();
-                }
+                this.unbindEventsWhileDeploying();
+                this.scheduleUpdate();
             }, this));
         },
         deploymentFinished: function() {
@@ -233,15 +226,18 @@ function(utils, models, commonViews, dialogViews, NodesTab, NetworkTab, Settings
             _.defaults(this, options);
             this.model.get('tasks').each(this.bindTaskEvents, this);
             this.model.get('tasks').on('add', this.onNewTask, this);
+            this.page.tasks.each(this.bindTaskEvents, this);
+            this.page.tasks.on('add', this.onNewTask, this);
         },
         bindTaskEvents: function(task) {
-            return (task.get('name') == 'deploy' || task.get('name') == 'check_before_deployment') ? task.on('change:status', this.render, this) : null;
+            return (task.get('name') == 'deploy' || task.get('name') == 'setup_redhat') ? task.on('change:status', this.render, this) : null;
         },
         onNewTask: function(task) {
             return this.bindTaskEvents(task) && this.render();
         },
         render: function() {
-            this.$el.html(this.template(_.extend({cluster: this.model}, this.templateHelpers)));
+            var task = this.page.tasks.filterTasks({name: 'setup_redhat', status: 'error'})[0] || this.model.task('deploy');
+            this.$el.html(this.template(_.extend({task: task}, this.templateHelpers)));
             return this;
         }
     });
