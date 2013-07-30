@@ -40,11 +40,11 @@ class TestHandlers(BaseHandlers):
     @patch('nailgun.rpc.cast')
     def test_redhat_setup_task_manager(self, mocked_rpc):
         test_release_data = {
+            'release_id': self.release.id,
             'redhat': {
                 'license_type': 'rhsm',
                 'username': 'rheltest',
-                'password': 'password',
-                'release_id': self.release.id
+                'password': 'password'
             }
         }
         rhm = RedHatSetupTaskManager(test_release_data)

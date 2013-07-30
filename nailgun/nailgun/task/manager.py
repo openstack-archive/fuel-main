@@ -439,6 +439,15 @@ class RedHatSetupTaskManager(TaskManager):
                 self.data,
                 method_name='message'
             )
+            db().refresh(task)
+            if task.status == 'error':
+                TaskHelper.update_task_status(
+                    supertask.uuid,
+                    status="error",
+                    progress=100,
+                    msg=task.message
+                )
+                return supertask
             task.cache = msg
             db().add(task)
             db().commit()
