@@ -164,19 +164,23 @@ function(require, utils, models, simpleMessageTemplate, createClusterDialogTempl
         },
         initialize: function() {
             this.releases = new models.Releases();
-            this.releases.fetch().done(_.bind(this.renderReleases, this));
+            this.releases.fetch();
+            this.releases.on('sync', this.renderReleases, this);
             this.redHatAccount = new models.RedHatAccount();
             this.redHatAccount.absent = false;
             this.redHatAccount.deferred = this.redHatAccount.fetch();
-            this.redHatAccount.deferred.fail(_.bind(function(response) {
-                if (response.status == 404) {
-                    this.redHatAccount.absent = true;
-                }
-            }, this));
+            this.redHatAccount.deferred
+                .fail(_.bind(function(response) {
+                    if (response.status == 404) {
+                        this.redHatAccount.absent = true;
+                    }
+                }, this))
+                .always(_.bind(this.render, this));
         },
         render: function() {
             this.tearDownRegisteredSubViews();
             this.constructor.__super__.render.call(this);
+            this.renderReleases();
             this.renderRhelCredentialsForm({
                 redHatAccount: this.redHatAccount,
                 visible: _.bind(this.rhelCredentialsFormVisible, this)
