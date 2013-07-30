@@ -602,6 +602,7 @@ class NailgunReceiver(object):
 
         if error_msg:
             status = 'error'
+            cls._update_release_state(release_id, 'error')
 
         result = {
             "release_info": {
@@ -645,6 +646,7 @@ class NailgunReceiver(object):
 
         if error_msg:
             status = 'error'
+            cls._update_release_state(release_id, 'error')
 
         result = {
             "release_info": {
@@ -746,6 +748,13 @@ class NailgunReceiver(object):
             error_msg,
             result
         )
+
+    @classmethod
+    def _update_release_state(cls, release_id, state):
+        release = db().query(Release).get(release_id)
+        release.state = state
+        db.add(release)
+        db.commit()
 
     @classmethod
     def _download_release_completed(cls, release_id):
