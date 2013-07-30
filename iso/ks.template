@@ -87,6 +87,8 @@ subscription-manager
 system-config-firewall-base
 tcpdump
 vim-enhanced
+rubygem-netaddr
+rubygem-openstack
 wget
 yum
 
