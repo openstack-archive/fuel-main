@@ -176,6 +176,12 @@ define(['utils'], function(utils) {
     models.Task = Backbone.Model.extend({
         constructorName: 'Task',
         urlRoot: '/api/tasks',
+        parse: function(response) {
+            if (response.name == 'redhat_setup') {
+                response.result.release_info = {release_id: 1};
+            }
+            return response;
+        },
         releaseId: function() {
             var id;
             try {
