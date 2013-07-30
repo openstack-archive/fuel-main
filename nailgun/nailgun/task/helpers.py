@@ -113,7 +113,8 @@ class TaskHelper(object):
         os.system("/usr/bin/pkill -HUP rsyslog")
 
     @classmethod
-    def update_task_status(cls, uuid, status, progress, msg="", result=None):
+    def update_task_status(cls, uuid, status, progress, msg="",
+                           result=None):
         logger.debug("Updating task: %s", uuid)
         task = db().query(Task).filter_by(uuid=uuid).first()
         if not task:

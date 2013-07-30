@@ -99,6 +99,28 @@ class DeploymentTaskManager(TaskManager):
         )
         db().add(supertask)
         db().commit()
+
+        # checking prerequisites
+        check_before = supertask.create_subtask('check_before_deployment')
+        logger.debug("Checking prerequisites task: %s", check_before.uuid)
+        self._call_silently(
+            check_before,
+            tasks.CheckBeforeDeploymentTask
+        )
+        db().refresh(check_before)
+        # if failed to check prerequisites
+        # then task is already set to error
+        if check_before.status == 'error':
+            logger.debug(
+                "Checking prerequisites failed: %s", check_before.message
+            )
+            return supertask
+        logger.debug(
+            "Checking prerequisites is successful, starting deployment..."
+        )
+        db().delete(check_before)
+        db().commit()
+
         task_deletion, task_provision, task_deployment = None, None, None
 
         if nodes_to_delete:
@@ -166,24 +188,6 @@ class DeploymentTaskManager(TaskManager):
             )
         )
         return supertask
-
-
-class CheckBeforeDeploymentTaskManager(TaskManager):
-
-    def execute(self):
-        task = Task(
-            name='check_before_deployment',
-            cluster=self.cluster
-        )
-        db().add(task)
-        db().commit()
-        self._call_silently(task, tasks.CheckBeforeDeploymentTask)
-        db().refresh(task)
-        if task.status == 'running':
-            TaskHelper.update_task_status(
-                task.uuid, status="ready", progress=100)
-
-        return task
 
 
 class CheckNetworksTaskManager(TaskManager):
