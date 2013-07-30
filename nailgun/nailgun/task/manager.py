@@ -28,6 +28,7 @@ from nailgun.errors import errors
 from nailgun.api.models import Cluster
 from nailgun.api.models import Task
 from nailgun.api.models import Network
+from nailgun.api.models import RedHatAccount
 from nailgun.task.task import TaskHelper
 
 from nailgun.task import task as tasks
@@ -62,6 +63,70 @@ class TaskManager(object):
 
 class DeploymentTaskManager(TaskManager):
 
+    def _redhat_messages(self, supertask, nodes_info):
+        account = db().query(RedHatAccount).first()
+        if not account:
+            TaskHelper.update_task_status(
+                supertask.uuid,
+                status="error",
+                progress=100,
+                msg="RHEL account is not found"
+            )
+            return supertask
+
+        rhel_data = {
+            'release_id': supertask.cluster.release.id,
+            'redhat': {
+                'license_type': account.license_type,
+                'username': account.username,
+                'password': account.password,
+                'satellite': account.satellite,
+                'activation_key': account.activation_key
+            }
+        }
+
+        subtasks = [
+            supertask.create_subtask('redhat_check_credentials'),
+            supertask.create_subtask('redhat_check_licenses'),
+            supertask.create_subtask('redhat_update_cobbler_profile')
+        ]
+
+        subtask_messages = [
+            self._call_silently(
+                subtasks[0],
+                tasks.RedHatCheckCredentialsTask,
+                rhel_data,
+                method_name='message'
+            ),
+            self._call_silently(
+                subtasks[1],
+                tasks.RedHatCheckLicensesTask,
+                rhel_data,
+                nodes_info,
+                method_name='message'
+            ),
+            self._call_silently(
+                subtasks[2],
+                tasks.RedHatUpdateCobblerTask,
+                rhel_data,
+                method_name='message'
+            ),
+        ]
+
+        for task, message in zip(subtasks, subtask_messages):
+            task.cache = message
+        db().commit()
+
+        map(db().refresh, subtasks)
+
+        for task in subtasks:
+            if task.status == 'error':
+                raise errors.RedHatSetupError(
+                    task.message
+                )
+
+        return subtask_messages
+
     def execute(self):
         logger.info(
             u"Trying to start deployment at cluster '{0}'".format(
@@ -81,6 +146,8 @@ class DeploymentTaskManager(TaskManager):
                     db().delete(subtask)
                 db().delete(task)
                 db().commit()
+
+        task_messages = []
 
         nodes_to_delete = TaskHelper.nodes_to_delete(self.cluster)
         nodes_to_deploy = TaskHelper.nodes_to_deploy(self.cluster)
@@ -121,6 +188,28 @@ class DeploymentTaskManager(TaskManager):
         db().delete(check_before)
         db().commit()
 
+        # in case of Red Hat
+        if self.cluster.release.operating_system == "RHEL":
+            try:
+                redhat_messages = self._redhat_messages(
+                    supertask,
+                    # provision only?
+                    [
+                        {"id": n.id, "platform_name": n.platform_name}
+                        for n in nodes_to_provision
+                    ]
+                )
+            except Exception as exc:
+                TaskHelper.update_task_status(
+                    supertask.uuid,
+                    status='error',
+                    progress=100,
+                    msg=str(exc)
+                )
+                return supertask
+            task_messages.extend(redhat_messages)
+        # /in case of Red Hat
+
         task_deletion, task_provision, task_deployment = None, None, None
 
         if nodes_to_delete:
@@ -131,7 +220,6 @@ class DeploymentTaskManager(TaskManager):
                 tasks.DeletionTask
             )
 
-        task_messages = []
         if nodes_to_provision:
             TaskHelper.update_slave_nodes_fqdn(nodes_to_provision)
             logger.debug("There are nodes to provision: %s",

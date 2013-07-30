@@ -759,6 +759,8 @@ class RedHatDownloadReleaseTask(RedHatTask):
 
     @classmethod
     def message(cls, task, data):
+        # TODO: fix this ugly code
+        cls.__update_release_state(data["release_id"])
         return {
             'method': 'download_release',
             'respond_to': 'download_release_resp',
