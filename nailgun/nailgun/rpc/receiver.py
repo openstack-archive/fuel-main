@@ -674,54 +674,6 @@ class NailgunReceiver(object):
         )
 
     @classmethod
-    def redhat_update_cobbler_profile_resp(cls, **kwargs):
-        logger.info(
-            "RPC method redhat_update_cobbler_profile_resp received: %s" %
-            json.dumps(kwargs)
-        )
-        task_uuid = kwargs.get('task_uuid')
-        error_msg = kwargs.get('error')
-        status = kwargs.get('status')
-        progress = kwargs.get('progress')
-
-        task = db().query(Task).filter_by(uuid=task_uuid).first()
-        if not task:
-            logger.error("redhat_update_cobbler_profile_resp: task \
-                    with UUID %s not found!", task_uuid)
-            return
-
-        release_info = task.cache['args']['release_info']
-        release_id = release_info['release_id']
-        release = db().query(Release).get(release_id)
-        if not release:
-            logger.error("download_release_resp: Release"
-                         " with ID %s not found", release_id)
-            return
-
-        if error_msg:
-            status = 'error'
-            # TODO: remove this ugly checks
-            if 'Unknown error' in error_msg:
-                error_msg = 'Failed to activate Red Hat' \
-                            'distribution - see logs'
-            if error_msg != 'Task aborted':
-                notifier.notify('error', error_msg)
-
-        result = {
-            "release_info": {
-                "release_id": release_id
-            }
-        }
-
-        TaskHelper.update_task_status(
-            task_uuid,
-            status,
-            progress,
-            error_msg,
-            result
-        )
-
-    @classmethod
     def download_release_resp(cls, **kwargs):
         logger.info(
             "RPC method download_release_resp received: %s" %

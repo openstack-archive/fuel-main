@@ -808,17 +808,3 @@ class RedHatCheckLicensesTask(RedHatTask):
         if nodes:
             msg['args']['nodes'] = nodes
         return msg
-
-
-class RedHatUpdateCobblerTask(RedHatTask):
-
-    @classmethod
-    def message(cls, task, data):
-        return {
-            'method': 'redhat_update_cobbler_profile',
-            'respond_to': 'redhat_update_cobbler_profile_resp',
-            'args': {
-                'task_uuid': task.uuid,
-                'release_info': data
-            }
-        }

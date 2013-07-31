@@ -88,8 +88,7 @@ class DeploymentTaskManager(TaskManager):
 
         subtasks = [
             supertask.create_subtask('redhat_check_credentials'),
-            supertask.create_subtask('redhat_check_licenses'),
-            supertask.create_subtask('redhat_update_cobbler_profile')
+            supertask.create_subtask('redhat_check_licenses')
         ]
 
         subtask_messages = [
@@ -105,13 +104,7 @@ class DeploymentTaskManager(TaskManager):
                 rhel_data,
                 nodes_info,
                 method_name='message'
-            ),
-            self._call_silently(
-                subtasks[2],
-                tasks.RedHatUpdateCobblerTask,
-                rhel_data,
-                method_name='message'
-            ),
+            )
         ]
 
         for task, message in zip(subtasks, subtask_messages):
@@ -439,10 +432,6 @@ class RedHatSetupTaskManager(TaskManager):
             (
                 'redhat_download_release',
                 tasks.RedHatDownloadReleaseTask
-            ),
-            (
-                'redhat_update_cobbler_profile',
-                tasks.RedHatUpdateCobblerTask
             )
         ]
 

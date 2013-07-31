@@ -56,8 +56,7 @@ class TestHandlers(BaseHandlers):
         for i, name in enumerate((
             'check_redhat_credentials',
             'check_redhat_licenses',
-            'download_release',
-            'redhat_update_cobbler_profile'
+            'download_release'
         )):
             self.assertEquals(rpc_message[i]['method'], name)
             self.assertEquals(
