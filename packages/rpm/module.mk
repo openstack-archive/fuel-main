@@ -84,10 +84,21 @@ $(BUILD_DIR)/packages/rpm/rpm-mcollective.done: \
 	sudo sh -c "$${SANDBOX_DOWN}"
 	$(ACTION.TOUCH)
 
+$(BUILD_DIR)/packages/rpm/rpm-nailgun-redhat-license.done: \
+		$(BUILD_DIR)/packages/rpm/prep.done \
+		$(SOURCE_DIR)/packages/rpm/specs/nailgun-redhat-license.spec \
+		$(SOURCE_DIR)/packages/rpm/nailgun-redhat-license/get_redhat_licenses.py
+	mkdir -p $(RPM_SOURCES)/nailgun-redhat-license
+	cp -f $(SOURCE_DIR)/packages/rpm/nailgun-redhat-license/* $(RPM_SOURCES)/nailgun-redhat-license
+	rpmbuild -vv --define "_topdir $(BUILD_DIR)/packages/rpm" -ba \
+		$(SOURCE_DIR)/packages/rpm/specs/nailgun-redhat-license.spec
+	$(ACTION.TOUCH)
+
 $(BUILD_DIR)/packages/rpm/repo.done: \
 		$(BUILD_DIR)/packages/rpm/rpm-nailgun-agent.done \
 		$(BUILD_DIR)/packages/rpm/rpm-nailgun-mcagents.done \
 		$(BUILD_DIR)/packages/rpm/rpm-nailgun-net-check.done \
+		$(BUILD_DIR)/packages/rpm/rpm-nailgun-redhat-license.done \
 		$(BUILD_DIR)/packages/rpm/rpm-rbenv-ruby.done \
 		$(BUILD_DIR)/packages/rpm/rpm-mcollective.done
 	find $(BUILD_DIR)/packages/rpm/RPMS -name '*.rpm' -exec cp -u {} $(LOCAL_MIRROR_CENTOS_OS_BASEURL)/Packages \;
