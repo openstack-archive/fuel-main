@@ -603,10 +603,7 @@ class NailgunReceiver(object):
         if error_msg:
             status = 'error'
             cls._update_release_state(release_id, 'error')
-            err = u"Failed to check Red Hat credentials: {0}".format(
-                error_msg
-            )
-            notifier.notify('error', err)
+            notifier.notify('error', error_msg)
 
         result = {
             "release_info": {
@@ -651,10 +648,7 @@ class NailgunReceiver(object):
         if error_msg:
             status = 'error'
             cls._update_release_state(release_id, 'error')
-            err = u"Failed to check Red Hat licenses: {0}".format(
-                error_msg
-            )
-            notifier.notify('error', err)
+            notifier.notify('error', error_msg)
 
         result = {
             "release_info": {
@@ -697,10 +691,7 @@ class NailgunReceiver(object):
 
         if error_msg:
             status = 'error'
-            err = u"Failed to download Red Hat distribution: {0}".format(
-                error_msg
-            )
-            notifier.notify('error', err)
+            notifier.notify('error', error_msg)
 
         result = {
             "release_info": {

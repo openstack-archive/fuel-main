@@ -579,7 +579,7 @@ class Task(Base):
         nullable=False,
         default='super'
     )
-    message = Column(Text)
+    message = Column(Text, default='')
     status = Column(
         Enum(*TASK_STATUSES, name='task_status'),
         nullable=False,

@@ -58,7 +58,6 @@ class FakeThread(threading.Thread):
         self.error = None
 
     def run(self):
-        logger.warning(self)
         if self.join_to:
             self.join_to.join()
             if self.join_to.error:
