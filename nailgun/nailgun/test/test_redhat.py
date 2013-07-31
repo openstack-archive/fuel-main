@@ -20,7 +20,7 @@ import mock
 from mock import patch
 
 import nailgun
-from nailgun.api.models import Release
+from nailgun.api.models import Release, Task
 from nailgun.settings import settings
 from nailgun.api.handlers.redhat import RedHatSetupHandler
 from nailgun.api.handlers.redhat import RedHatAccountHandler
@@ -97,8 +97,11 @@ class TestHandlers(BaseHandlers):
             headers=self.default_headers,
             expect_errors=True)
         self.assertEquals(resp.status, 202)
-        response = json.loads(resp.body)
-        self.assertEquals(response['status'], 'error')
+
+        supertask = self.db.query(Task).filter_by(
+            name="redhat_check_credentials"
+        ).first()
+        self.env.wait_error(supertask)
 
     @fake_tasks()
     def test_redhat_account_get(self):
@@ -112,7 +115,7 @@ class TestHandlers(BaseHandlers):
             json.dumps({'license_type': 'rhsm',
                         'username': 'rheltest',
                         'password': 'password',
-                        'release_id': 1}),
+                        'release_id': self.release.id}),
             headers=self.default_headers)
         self.assertEquals(resp.status, 200)
 
@@ -135,7 +138,7 @@ class TestHandlers(BaseHandlers):
                 json.dumps({'license_type': 'rhsm',
                             'username': 'rheltest',
                             'password': 'password',
-                            'release_id': 1}),
+                            'release_id': self.release.id}),
                 headers=self.default_headers)
             self.assertEquals(resp.status, 200)
             query = self.env.db.query(RedHatAccount)

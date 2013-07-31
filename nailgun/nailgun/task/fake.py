@@ -29,6 +29,7 @@ from nailgun.logger import logger
 from nailgun.errors import errors
 from nailgun import notifier
 from nailgun.api.models import Network, Node, NodeAttributes
+from nailgun.api.models import Task
 from nailgun.network.manager import NetworkManager
 from nailgun.rpc.receiver import NailgunReceiver
 from nailgun.db import db
@@ -39,6 +40,7 @@ class FakeThread(threading.Thread):
                  name=None, verbose=None, join_to=None):
         threading.Thread.__init__(self, group=group, target=target, name=name,
                                   verbose=verbose)
+
         self.data = data
         self.params = params
         self.join_to = join_to
@@ -53,10 +55,23 @@ class FakeThread(threading.Thread):
         )
         self.respond_to = data['respond_to']
         self.stoprequest = threading.Event()
+        self.error = None
 
     def run(self):
+        logger.warning(self)
         if self.join_to:
             self.join_to.join()
+            if self.join_to.error:
+                self.error = self.join_to.error
+                self.message_gen = self.error_message_gen
+
+    def error_message_gen(self):
+        return [{
+            'task_uuid': self.task_uuid,
+            'status': 'error',
+            'progress': 100,
+            'error': self.error
+        }]
 
     def rude_join(self, timeout=None):
         self.stoprequest.set()
@@ -70,6 +85,7 @@ class FakeThread(threading.Thread):
 
 
 class FakeAmpqThread(FakeThread):
+
     def run(self):
         super(FakeAmpqThread, self).run()
         if settings.FAKE_TASKS_AMQP:
@@ -148,6 +164,7 @@ class FakeDeploymentThread(FakeAmpqThread):
                         n['progress'] = 100
                         n['status'] = next_st[n['status']]
             if error == "provisioning":
+                self.error = error
                 shuffle(kwargs['nodes'])
                 kwargs['nodes'][0]['status'] = "error"
                 kwargs['nodes'][0]['error_type'] = "provision"
@@ -174,6 +191,7 @@ class FakeDeploymentThread(FakeAmpqThread):
             kwargs['nodes']
         )
         if error_nodes or offline_nodes:
+            self.error = "offline nodes"
             kwargs['status'] = 'error'
             # TEST: set task to ready no matter what
             if task_ready:
@@ -199,6 +217,7 @@ class FakeDeploymentThread(FakeAmpqThread):
                         n['progress'] = 100
                         n['status'] = next_st[n['status']]
             if error == "deployment":
+                self.error = "offline nodes"
                 shuffle(kwargs['nodes'])
                 kwargs['nodes'][0]['status'] = "error"
                 kwargs['nodes'][0]['error_type'] = "deploy"
@@ -331,19 +350,30 @@ class FakeRedHatCredentials(FakeAmpqThread):
 
         error = self.params.get("error")
 
-        if error:
-            yield {
+        redhat_info = self.data['args']['release_info']['redhat']
+        if redhat_info['username'] != 'rheltest':
+            self.error = "Invalid Red Hat credentials"
+            return [{
                 'task_uuid': self.task_uuid,
                 'status': 'error',
                 'progress': 100,
-                'error_msg': error
-            }
+                'error': self.error
+            }]
+
+        if error:
+            self.error = error
+            return [{
+                'task_uuid': self.task_uuid,
+                'status': 'error',
+                'progress': 100,
+                'error': self.error
+            }]
         else:
-            yield {
+            return [{
                 'task_uuid': self.task_uuid,
                 'status': 'ready',
                 'progress': 100
-            }
+            }]
 
 
 class FakeRedHatLicenses(FakeAmpqThread):
@@ -352,18 +382,19 @@ class FakeRedHatLicenses(FakeAmpqThread):
         error = self.params.get("error")
 
         if error:
-            yield {
+            self.error = error
+            return [{
                 'task_uuid': self.task_uuid,
                 'status': 'error',
                 'progress': 100,
-                'error_msg': error
-            }
+                'error': self.error
+            }]
         else:
-            yield {
+            return [{
                 'task_uuid': self.task_uuid,
                 'status': 'ready',
                 'progress': 100
-            }
+            }]
 
 
 class FakeRedHatUpdateCobbler(FakeAmpqThread):
@@ -372,18 +403,19 @@ class FakeRedHatUpdateCobbler(FakeAmpqThread):
         error = self.params.get("error")
 
         if error:
-            yield {
+            self.error = error
+            return [{
                 'task_uuid': self.task_uuid,
                 'status': 'error',
                 'progress': 100,
-                'error_msg': error
-            }
+                'error': self.error
+            }]
         else:
-            yield {
+            return [{
                 'task_uuid': self.task_uuid,
                 'status': 'ready',
                 'progress': 100
-            }
+            }]
 
 
 class DownloadReleaseThread(FakeAmpqThread):

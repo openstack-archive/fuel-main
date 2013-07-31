@@ -783,9 +783,6 @@ class RedHatCheckCredentialsTask(RedHatTask):
 
     @classmethod
     def message(cls, task, data):
-        if data['redhat']['username'] != 'rheltest':
-            raise Exception("Wrong Red Hat credentials")
-
         return {
             "method": "check_redhat_credentials",
             "respond_to": "check_redhat_credentials_resp",

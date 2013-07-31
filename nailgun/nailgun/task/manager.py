@@ -407,6 +407,16 @@ class RedHatSetupTaskManager(TaskManager):
 
     def execute(self):
         logger.debug("Creating redhat_setup task")
+
+        current_tasks = db().query(Task).filter_by(
+            name="redhat_setup"
+        )
+        for task in current_tasks:
+            for subtask in task.subtasks:
+                db().delete(subtask)
+            db().delete(task)
+            db().commit()
+
         supertask = Task(name="redhat_setup")
         supertask.result = {
             "release_info": {
