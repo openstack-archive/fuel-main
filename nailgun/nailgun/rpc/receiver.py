@@ -603,7 +603,9 @@ class NailgunReceiver(object):
         if error_msg:
             status = 'error'
             cls._update_release_state(release_id, 'error')
-            notifier.notify('error', error_msg)
+            # TODO: remove this ugly check
+            if error_msg != 'Task aborted':
+                notifier.notify('error', error_msg)
 
         result = {
             "release_info": {
@@ -648,7 +650,9 @@ class NailgunReceiver(object):
         if error_msg:
             status = 'error'
             cls._update_release_state(release_id, 'error')
-            notifier.notify('error', error_msg)
+            # TODO: remove this ugly check
+            if error_msg != 'Task aborted':
+                notifier.notify('error', error_msg)
 
         result = {
             "release_info": {
@@ -691,7 +695,9 @@ class NailgunReceiver(object):
 
         if error_msg:
             status = 'error'
-            notifier.notify('error', error_msg)
+            # TODO: remove this ugly check
+            if error_msg != 'Task aborted':
+                notifier.notify('error', error_msg)
 
         result = {
             "release_info": {
@@ -777,4 +783,6 @@ class NailgunReceiver(object):
         error_msg = u"{0}' downloading error: {0}".format(
             release.name, error_message
         )
-        notifier.notify('error', error_msg)
+        # TODO: remove this ugly check
+        if error_msg != 'Task aborted':
+            notifier.notify('error', error_msg)

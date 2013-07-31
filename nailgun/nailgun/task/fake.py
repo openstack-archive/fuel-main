@@ -61,7 +61,7 @@ class FakeThread(threading.Thread):
         if self.join_to:
             self.join_to.join()
             if self.join_to.error:
-                self.error = self.join_to.error
+                self.error = "Task aborted"
                 self.message_gen = self.error_message_gen
 
     def error_message_gen(self):
