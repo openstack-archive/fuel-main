@@ -139,7 +139,14 @@ function(utils, models, commonViews, dialogViews, NodesTab, NetworkTab, Settings
             }
             var setupTask = this.tasks.findTask({name: 'redhat_setup', status: 'running', release: this.model.get('release').id});
             if (setupTask) {
-                this.registerDeferred(this.tasks.fetch().always(_.bind(this.scheduleUpdate, this)));
+                this.registerDeferred(this.tasks.fetch()
+                    .always(_.bind(this.scheduleUpdate, this))
+                    .done(_.bind(function() {
+                        if (setupTask.get('status') != 'running') {
+                            app.navbar.refresh();
+                        }
+                    }, this))
+                );
             }
         },
         deploymentStarted: function() {
