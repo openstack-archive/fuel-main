@@ -76,6 +76,7 @@ class DeploymentTaskManager(TaskManager):
 
         rhel_data = {
             'release_id': supertask.cluster.release.id,
+            'release_name': supertask.cluster.release.name,
             'redhat': {
                 'license_type': account.license_type,
                 'username': account.username,

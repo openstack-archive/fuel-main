@@ -84,6 +84,7 @@ class RedHatSetupHandler(JSONHandler):
                 "No release with ID={0} found".format(release_id)
             )
         release_data['redhat'] = data
+        release_data['release_name'] = release_db.name
 
         account = db().query(RedHatAccount).first()
         if account:
