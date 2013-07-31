@@ -603,7 +603,10 @@ class NailgunReceiver(object):
         if error_msg:
             status = 'error'
             cls._update_release_state(release_id, 'error')
-            # TODO: remove this ugly check
+            # TODO: remove this ugly checks
+            if 'Unknown error' in error_msg:
+                error_msg = 'Failed to check Red Hat ' \
+                            'credentials - see logs'
             if error_msg != 'Task aborted':
                 notifier.notify('error', error_msg)
 
@@ -650,7 +653,9 @@ class NailgunReceiver(object):
         if error_msg:
             status = 'error'
             cls._update_release_state(release_id, 'error')
-            # TODO: remove this ugly check
+            # TODO: remove this ugly checks
+            if 'Unknown error' in error_msg:
+                error_msg = 'Failed to check Red Hat licenses - see logs'
             if error_msg != 'Task aborted':
                 notifier.notify('error', error_msg)
 
@@ -695,7 +700,10 @@ class NailgunReceiver(object):
 
         if error_msg:
             status = 'error'
-            # TODO: remove this ugly check
+            # TODO: remove this ugly checks
+            if 'Unknown error' in error_msg:
+                error_msg = 'Failed to activate Red Hat' \
+                            'distribution - see logs'
             if error_msg != 'Task aborted':
                 notifier.notify('error', error_msg)
 
@@ -780,6 +788,9 @@ class NailgunReceiver(object):
         release = db().query(Release).get(release_id)
         release.state = 'error'
         db().commit()
-        # TODO: remove this ugly check
+        # TODO: remove this ugly checks
+        if 'Unknown error' in error_message:
+            error_message = 'Failed to download ' \
+                            'Red Hat distribution - see logs'
         if error_message != 'Task aborted':
             notifier.notify('error', error_message)
