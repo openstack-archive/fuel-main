@@ -235,7 +235,7 @@ function(utils, models, commonViews, dialogViews, NodesTab, NetworkTab, Settings
 
     DeploymentResult = Backbone.View.extend({
         template: _.template(deploymentResultTemplate),
-        templateHelpers: _.pick(utils, 'urlify', 'linebreaks'),
+        templateHelpers: _.pick(utils, 'urlify', 'linebreaks', 'serializeTabOptions'),
         initialize: function(options) {
             _.defaults(this, options);
             this.model.get('tasks').each(this.bindTaskEvents, this);
@@ -251,7 +251,7 @@ function(utils, models, commonViews, dialogViews, NodesTab, NetworkTab, Settings
         },
         render: function() {
             var task = this.page.tasks.findTask({name: 'redhat_setup', status: 'error', release: this.model.get('release').id}) || this.model.task('deploy');
-            this.$el.html(this.template(_.extend({task: task}, this.templateHelpers)));
+            this.$el.html(this.template(_.extend({cluster: this.model, task: task}, this.templateHelpers)));
             return this;
         }
     });
