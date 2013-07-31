@@ -166,7 +166,11 @@ class TaskHelper(object):
                 task.progress = 100
                 task.message = '; '.join(list(set(map(
                     lambda s: (s.message or ""), filter(
-                        lambda s: s.status == 'error', subtasks)))))
+                        lambda s: (
+                            s.status == 'error' and not
+                            # TODO: make this check less ugly
+                            s.message == 'Task aborted'
+                        ), subtasks)))))
                 db().add(task)
                 db().commit()
                 cls.update_cluster_status(uuid)
