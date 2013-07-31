@@ -143,7 +143,7 @@ function(utils, models, commonViews, dialogViews, NodesTab, NetworkTab, Settings
                     .always(_.bind(this.scheduleUpdate, this))
                     .done(_.bind(function() {
                         if (setupTask.get('status') != 'running') {
-                            app.navbar.refresh();
+                            this.setupFinished(setupTask);
                         }
                     }, this))
                 );
@@ -160,6 +160,13 @@ function(utils, models, commonViews, dialogViews, NodesTab, NetworkTab, Settings
                 this.rebindEventsAfterDeployment();
                 app.navbar.refresh();
             }, this));
+        },
+        setupFinished: function(task) {
+            app.navbar.refresh();
+            this.model.get('release').fetch();
+            if (task.get('status') == 'ready') {
+                task.destroy();
+            }
         },
         unbindEventsWhileDeploying: function() {
             // unbind some events while deploying to make progress bar movement smooth and prevent showing wrong cluster status for a moment.
@@ -254,6 +261,7 @@ function(utils, models, commonViews, dialogViews, NodesTab, NetworkTab, Settings
         initialize: function(options) {
             _.defaults(this, options);
             this.model.on('change:changes', this.render, this);
+            this.model.get('release').on('change:state', this.render, this);
             this.model.get('tasks').each(this.bindTaskEvents, this);
             this.model.get('tasks').on('add', this.onNewTask, this);
             this.model.get('nodes').each(this.bindNodeEvents, this);
