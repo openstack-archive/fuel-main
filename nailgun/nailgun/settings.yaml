@@ -130,7 +130,7 @@ LOGS:
     name: "Puppet agent"
     <<: *local_log_type
     <<: *remote_syslog_log_format
-    path: "/var/log/puppet/puppet-agent.log"
+    path: "/var/log/puppet/agent.log"
 # Fake target logs.
   - id: 'fake-target-mcollective'
     name: "mcollective"
