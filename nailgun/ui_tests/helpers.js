@@ -40,7 +40,7 @@ casper.test.assertSelectorDisappears = function(selector, message, timeout) {
 }
 
 casper.createCluster = function(options) {
-    options.release = 2; // centos
+    options.release = 1; // centos
     return this.thenOpen(baseUrl + 'api/clusters', {
         method: 'post',
         headers: {'Content-Type': 'application/json'},
