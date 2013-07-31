@@ -3896,6 +3896,10 @@ div.create-cluster-form .radio-checkbox-group label {
   width: 335px;
 }
 
+.releases-table td {
+  height: 30px;
+}
+
 .releases-table .release-name {
   min-width: 200px;
 }
@@ -3908,8 +3912,8 @@ div.create-cluster-form .radio-checkbox-group label {
   min-width: 200px;
 }
 
-.releases-table button {
-  width: 90px;
+.releases-table .release-actions {
+  min-width: 120px;
 }
 
 .summary-settings-btn {
