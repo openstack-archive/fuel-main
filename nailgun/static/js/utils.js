@@ -34,9 +34,8 @@ define(['require'], function(require) {
             return '<a target="_blank" href="' + url + '">' + url + '</a>';
         },
         urlify: function (text) {
-            var ipRegexp = /http:\/\/(?:(?:[0-9]|[1-9][0-9]|1[0-9]{2}|2[0-4][0-9]|25[0-5])\.){3}(?:[0-9]|[1-9][0-9]|1[0-9]{2}|2[0-4][0-9]|25[0-5])\//g;
-            var urlRegexp = /^(https?:\/\/)?([\da-z\.\-]+)\.([a-z\.]{2,6})([\/\w \.\-]*)*\/?$/g;
-            return utils.linebreaks(text).replace(ipRegexp, utils.composeLink).replace(urlRegexp, utils.composeLink);
+            var urlRegexp = /(?:https?:\/\/([-\w\.]+)+(:\d+)?(\/([\w\/_\.]*(\?\S+)?)?)?)/g;
+            return utils.linebreaks(text).replace(urlRegexp, utils.composeLink);
         },
         forceWebkitRedraw: function(el) {
             if (window.isWebkit) {
