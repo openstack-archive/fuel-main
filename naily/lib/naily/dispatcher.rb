@@ -73,6 +73,14 @@ module Naily
       @orchestrator.check_redhat_licenses(reporter, task_id, release, nodes)
     end
 
+    # TODO Need to implement
+    def redhat_update_cobbler_profile(data)
+      Naily.logger.error("!!! Need to implement handler redhat_update_cobbler_profile")
+      task_id = data['args']['task_uuid']
+      reporter = Naily::Reporter.new(@producer, data['respond_to'], task_id)
+      reporter.report({'status' => 'ready', 'progress' => 100})
+    end
+
     def provision(data)
       Naily.logger.info("'provision' method called with data: #{data.inspect}")
 
