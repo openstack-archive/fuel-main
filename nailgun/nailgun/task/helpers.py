@@ -165,7 +165,7 @@ class TaskHelper(object):
                 task.status = 'error'
                 task.progress = 100
                 task.message = '; '.join(list(set(map(
-                    lambda s: s.message, filter(
+                    lambda s: (s.message or ""), filter(
                         lambda s: s.status == 'error', subtasks)))))
                 db().add(task)
                 db().commit()
