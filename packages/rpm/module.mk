@@ -87,7 +87,7 @@ $(BUILD_DIR)/packages/rpm/rpm-mcollective.done: \
 $(BUILD_DIR)/packages/rpm/rpm-nailgun-redhat-license.done: \
 		$(BUILD_DIR)/packages/rpm/prep.done \
 		$(SOURCE_DIR)/packages/rpm/specs/nailgun-redhat-license.spec \
-		$(SOURCE_DIR)/packages/rpm/nailgun-redhat-license/get_redhat_licenses.py
+		$(SOURCE_DIR)/packages/rpm/nailgun-redhat-license/get_redhat_licenses
 	mkdir -p $(RPM_SOURCES)/nailgun-redhat-license
 	cp -f $(SOURCE_DIR)/packages/rpm/nailgun-redhat-license/* $(RPM_SOURCES)/nailgun-redhat-license
 	rpmbuild -vv --define "_topdir $(BUILD_DIR)/packages/rpm" -ba \

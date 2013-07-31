@@ -16,11 +16,11 @@ mkdir %{name}-%{version}
 
 %install
 mkdir -p %{buildroot}/usr/bin
-cp %{_sourcedir}/nailgun-redhat-license/get_redhat_licenses.py %{buildroot}/usr/bin
+cp %{_sourcedir}/nailgun-redhat-license/get_redhat_licenses %{buildroot}/usr/bin
 
 %files
 %defattr(0755,root,root,-)
-/usr/bin/get_redhat_licenses.py
+/usr/bin/get_redhat_licenses
 
 %clean
 rm -rf %{buildroot}
