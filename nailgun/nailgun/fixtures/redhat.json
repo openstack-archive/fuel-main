@@ -1,6 +1,6 @@
 [
     {
-        "pk": 1,
+        "pk": 2,
         "model": "nailgun.release",
         "fields": {
             "name": "RHOS 3.0 for RHEL 6.4",

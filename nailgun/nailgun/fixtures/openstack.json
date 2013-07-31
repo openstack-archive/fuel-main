@@ -1,6 +1,6 @@
 [
     {
-        "pk": 2,
+        "pk": 1,
         "model": "nailgun.release",
         "fields": {
             "name": "Grizzly on CentOS 6.4",

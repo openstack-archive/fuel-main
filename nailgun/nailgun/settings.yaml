@@ -7,8 +7,8 @@ FUEL_COMMIT_SHA: "Unknown build"
 PRODUCT_VERSION: "3.0"
 
 FIXTURES_TO_UPLOAD:
-  - "redhat.json"
   - "openstack.json"
+  - "redhat.json"
   - "start_notification.json"
   - "admin_network.json"
 
