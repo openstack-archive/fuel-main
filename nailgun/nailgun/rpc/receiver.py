@@ -780,9 +780,6 @@ class NailgunReceiver(object):
         release = db().query(Release).get(release_id)
         release.state = 'error'
         db().commit()
-        error_msg = u"{0}' downloading error: {0}".format(
-            release.name, error_message
-        )
         # TODO: remove this ugly check
-        if error_msg != 'Task aborted':
-            notifier.notify('error', error_msg)
+        if error_message != 'Task aborted':
+            notifier.notify('error', error_message)
