@@ -94,8 +94,10 @@ function(commonViews, dialogViews, releasesListTemplate, releaseTemplate) {
         },
         bindTaskEvents: function(task) {
             if (task.get('name') == 'redhat_setup' && task.releaseId() == this.release.id) {
-                task.on('change:status', this.checkForSetupCompletion, this);
-                task.on('change:progress', this.updateProgress, this);
+                if (task.get('status') == 'running') {
+                    task.on('change:status', this.checkForSetupCompletion, this);
+                    task.on('change:progress', this.updateProgress, this);
+                }
                 return task;
             }
             return null;
