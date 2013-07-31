@@ -202,8 +202,9 @@ function(require, utils, models, simpleMessageTemplate, createClusterDialogTempl
                 if (task.deferred) {
                     task.deferred
                         .done(_.bind(function(response) {
-                            this.$el.modal('hide');
+                            this.release.fetch();
                             app.page.update();
+                            this.$el.modal('hide');
                         }, this))
                         .fail(_.bind(this.displayErrorMessage, this));
                 } else {
