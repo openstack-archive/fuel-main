@@ -65,13 +65,6 @@ class RedHatAccountHandler(JSONHandler):
             account = RedHatAccount(**data)
             db().add(account)
         db().commit()
-        notifier.notify(
-            "done",
-            u"Account information for {0} "
-            "has been successfully modified.".format(
-                release_db.name
-            )
-        )
         return self.render(account)
 
 
@@ -99,13 +92,6 @@ class RedHatSetupHandler(JSONHandler):
             account = RedHatAccount(**data)
             db().add(account)
         db().commit()
-        notifier.notify(
-            "done",
-            u"Account information for {0} "
-            "has been successfully modified.".format(
-                release_db.name
-            )
-        )
 
         task_manager = RedHatSetupTaskManager(release_data)
         try:
