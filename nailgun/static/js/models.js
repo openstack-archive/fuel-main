@@ -503,10 +503,10 @@ define(['utils'], function(utils) {
         validate: function(attrs) {
             var errors = [];
             var regex = {
-                username: /^[A-z0-9._%+\-@]+$/,
-                password: /^[\x00-\x7F]+$/,
-                satellite: /^(([a-zA-Z0-9]|[a-zA-Z0-9][a-zA-Z0-9\-]*[a-zA-Z0-9])\.)*([A-Za-z0-9]|[A-Za-z0-9][A-Za-z0-9\-]*[A-Za-z0-9])$/,
-                activation_key: /^[A-z0-9*.+\-]+$/
+                username: /^[A-z0-9\._%\+\-@]+$/,
+                password: /^[\x21-\x7E]+$/,
+                satellite: /(^(?:(?!\d+\.)[a-zA-Z0-9_\-]{1,63}\.?)+(?:[a-zA-Z]{2,})$)/,
+                activation_key: /^[A-z0-9\*\.\+\-]+$/
             };
             var fields = ['username', 'password'];
             if (attrs.license_type == 'rhn') {
