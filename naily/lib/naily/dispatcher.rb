@@ -59,18 +59,18 @@ module Naily
     end
 
     def check_redhat_credentials(data)
-      credentials = data['args']['release_info']['redhat']
+      release = data['args']['release_info']
       task_id = data['args']['task_uuid']
       reporter = Naily::Reporter.new(@producer, data['respond_to'], task_id)
-      @orchestrator.check_redhat_credentials(reporter, task_id, credentials)
+      @orchestrator.check_redhat_credentials(reporter, task_id, release)
     end
 
     def check_redhat_licenses(data)
-      credentials = data['args']['release_info']['redhat']
+      release = data['args']['release_info']
       nodes = data['args']['nodes']
       task_id = data['args']['task_uuid']
       reporter = Naily::Reporter.new(@producer, data['respond_to'], task_id)
-      @orchestrator.check_redhat_licenses(reporter, task_id, credentials, nodes)
+      @orchestrator.check_redhat_licenses(reporter, task_id, release, nodes)
     end
 
     def provision(data)
