@@ -91,6 +91,12 @@ class DeploymentTaskManager(TaskManager):
             supertask.create_subtask('redhat_check_licenses')
         ]
 
+        map(
+            lambda t: setattr(t, "weight", 0.01),
+            subtasks
+        )
+        db().commit()
+
         subtask_messages = [
             self._call_silently(
                 subtasks[0],

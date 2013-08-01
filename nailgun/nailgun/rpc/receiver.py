@@ -635,6 +635,7 @@ class NailgunReceiver(object):
         nodes = kwargs.get('nodes')
         status = kwargs.get('status')
         progress = kwargs.get('progress')
+        notify = kwargs.get('msg')
 
         task = db().query(Task).filter_by(uuid=task_uuid).first()
         if not task:
@@ -658,6 +659,9 @@ class NailgunReceiver(object):
                 error_msg = 'Failed to check Red Hat licenses '
             if error_msg != 'Task aborted':
                 notifier.notify('error', error_msg)
+
+        if notify:
+            notifier.notify('error', error_msg)
 
         result = {
             "release_info": {
