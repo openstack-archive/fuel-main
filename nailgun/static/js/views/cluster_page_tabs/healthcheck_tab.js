@@ -154,7 +154,6 @@ function(utils, models, commonViews, dialogViews, healthcheckTabTemplate, health
                 ).done(_.bind(function() {
                     this.model.set({'ostf': ostf}, {silent: true});
                     this.render();
-                    this.testruns.on('sync', this.updateTestRuns, this);
                     this.scheduleUpdate();
                 }, this)
                 ).fail(_.bind(function() {
@@ -163,8 +162,11 @@ function(utils, models, commonViews, dialogViews, healthcheckTabTemplate, health
                 }, this));
             } else {
                 _.extend(this, this.model.get('ostf'));
-                this.scheduleUpdate();
+                if (this.hasRunningTests()) {
+                    this.update();
+                }
             }
+            this.testruns.on('sync', this.updateTestRuns, this);
         },
         render: function() {
             this.tearDownRegisteredSubViews();
