@@ -366,7 +366,7 @@ rst2pdf-0.16-1.el6
 rsync-3.0.6-9.el6
 rsyslog-5.8.10-6.el6
 rsyslog-relp-5.8.10-6.el6
-ruby-1.9.3-p392-0.0.1-1
+ruby-1.8.7.352-10.el6_4
 ruby-augeas-0.4.1-1.el6
 ruby-devel-1.8.7.352-10.el6_4
 ruby-extlib-0.9.13-5.el6
