@@ -28,6 +28,7 @@ import web
 from nailgun.db import db
 from nailgun.settings import settings
 from nailgun.api.models import Node
+from nailgun.api.models import RedHatAccount
 from nailgun.api.handlers.base import JSONHandler, content_json
 
 logger = logging.getLogger(__name__)
@@ -65,6 +66,15 @@ def read_backwards(file, bufsize=4096):
 
 
 class LogEntryCollectionHandler(JSONHandler):
+
+    def filter_out_sensitive(self, text):
+        result_text = text
+        accs = db().query(RedHatAccount).all()
+        for field in ("username", "password"):
+            result_text = re.compile(
+                r"|".join([getattr(i, field) for i in accs])
+            ).sub(field, result_text)
+        return result_text
 
     @content_json
     def GET(self):
@@ -222,7 +232,7 @@ class LogEntryCollectionHandler(JSONHandler):
                 entries.append([
                     time.strftime(settings.UI_LOG_DATE_FORMAT, entry_date),
                     entry_level,
-                    entry_text
+                    self.filter_out_sensitive(entry_text)
                 ])
                 if truncate_log and len(entries) >= max_entries:
                     has_more = True
