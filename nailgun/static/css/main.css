@@ -1033,10 +1033,13 @@ h6.page-title {
 }
 
 .globalalert > p > a,
-.global-error > p > a,
 .global-success > p > a,
 .global-info > p > a {
   color: #00aeef;
+}
+
+.global-error > p > a, .global-error > p > a:hover {
+  color: #0088cc;
 }
 
 .clusterbox {
