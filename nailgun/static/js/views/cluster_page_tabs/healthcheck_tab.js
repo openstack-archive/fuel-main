@@ -175,7 +175,7 @@ function(utils, models, commonViews, dialogViews, healthcheckTabTemplate, health
                     var testsetView = new TestSet({
                         cluster: this.model,
                         testset: testset,
-                        testrun: this.testruns.findWhere({testset: testset.id}) || new models.TestRun(),
+                        testrun: this.testruns.findWhere({testset: testset.id}) || new models.TestRun({testset: testset.id}),
                         tests: new models.Tests(this.tests.where({testset: testset.id})),
                         tab: this
                     });
