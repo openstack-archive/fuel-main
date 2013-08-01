@@ -288,7 +288,7 @@ function(utils, models, commonViews, dialogViews, NodesTab, NetworkTab, Settings
             return this.bindNodeEvents(node) && this.render();
         },
         getTask: function() {
-            return this.page.tasks.findTask({name: 'redhat_setup', status: 'running', release: this.model.get('release').id}) || this.model.task('deploy', 'running');
+            return this.model.task('deploy', 'running') || this.page.tasks.findTask({name: 'redhat_setup', status: 'running', release: this.model.get('release').id});
         },
         updateProgress: function() {
             var task = this.getTask();
