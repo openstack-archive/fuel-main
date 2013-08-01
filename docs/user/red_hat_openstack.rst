@@ -97,5 +97,10 @@ Issues downloading from Red Hat Subscription Manager
 If you receive an error from Fuel Web regarding Red Hat OpenStack download issues, ensure that you have a valid subscription to the Red Hat OpenStack 3.0 product. This product is separate from standard Red Hat Enterprise Linux. You can check by going to https://access.redhat.com and checking Active Subscriptions. Contact your `Red Hat sales representative <https://access.redhat.com/site/solutions/368643>`_ to get the proper subscriptions associated with your account. If you are still encountering issues, contact Mirantis Support.
 
 Issues downloading from Red Hat RHN Satellite
-^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-If you receive an error from Fuel Web regarding Red Hat OpenStack download issues, ensure that you have all the necessary channels available on your RHN Satellite Server. The correct list is :ref:`here <rhn_sat_channels>`. If you are missing these channels, please contact your `Red Hat sales representative <https://access.redhat.com/site/solutions/368643>`_ to get the proper subscriptions associated with your account
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+If you receive an error from Fuel Web regarding Red Hat OpenStack download issues, ensure that you have all the necessary channels available on your RHN Satellite Server. The correct list is :ref:`here <rhn_sat_channels>`. If you are missing these channels, please contact your `Red Hat sales representative <https://access.redhat.com/site/solutions/368643>`_ to get the proper subscriptions associated with your account.
+
+
+RHN Satellite error: "rhel-x86_64-server-rs-6 not found"
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+This means your Red Hat Satellite Server has run out of available entitlements or your licenses have expired. Check your RHN Satellite to ensure there is at least one available entitlement for each of the required channels. If any of these channels are missing or you need to make changes your account, please `Red Hat sales representative <https://access.redhat.com/site/solutions/368643>`_ to get the proper subscriptions associated with your account.
