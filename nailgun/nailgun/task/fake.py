@@ -392,7 +392,9 @@ class FakeRedHatLicenses(FakeAmpqThread):
             return [{
                 'task_uuid': self.task_uuid,
                 'status': 'ready',
-                'progress': 100
+                'progress': 100,
+                # for case of user warning
+                #'msg': ''
             }]
 
 

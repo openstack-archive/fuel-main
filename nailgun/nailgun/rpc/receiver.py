@@ -661,7 +661,7 @@ class NailgunReceiver(object):
                 notifier.notify('error', error_msg)
 
         if notify:
-            notifier.notify('error', error_msg)
+            notifier.notify('error', notify)
 
         result = {
             "release_info": {
