@@ -705,7 +705,7 @@ class NailgunReceiver(object):
         if error_msg:
             status = 'error'
             cls._download_release_error(release_id, error_msg)
-        elif progress == 100:
+        elif progress == 100 and status == 'ready':
             cls._download_release_completed(release_id)
 
         result = {
