@@ -704,7 +704,12 @@ class NailgunReceiver(object):
 
         if error_msg:
             status = 'error'
-            cls._download_release_error(release_id, error_msg)
+            error_msg = "{0} download and preparation " \
+                        "has failed.".format(release.name)
+            cls._download_release_error(
+                release_id,
+                error_msg
+            )
         elif progress == 100 and status == 'ready':
             cls._download_release_completed(release_id)
 
@@ -740,13 +745,14 @@ class NailgunReceiver(object):
         notifier.notify("done", success_msg)
 
     @classmethod
-    def _download_release_error(cls, release_id, error_message):
+    def _download_release_error(
+        cls,
+        release_id,
+        error_message
+    ):
         release = db().query(Release).get(release_id)
         release.state = 'error'
         db().commit()
         # TODO: remove this ugly checks
-        if 'Unknown error' in error_message:
-            error_message = 'Failed to download ' \
-                            'Red Hat distribution'
         if error_message != 'Task aborted':
             notifier.notify('error', error_message)
