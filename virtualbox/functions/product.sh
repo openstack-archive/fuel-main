@@ -102,7 +102,7 @@ enable_outbound_network_for_product_vm() {
         echo "OK"
       fi
     else
-      echo "Could not find /etc/resolv.conf. Using 8.8.8 for DNS"
+      echo "Could not find /etc/resolv.conf. Using 8.8.8.8 for DNS"
       nameserver="nameserver 8.8.8.8"
     fi
 
