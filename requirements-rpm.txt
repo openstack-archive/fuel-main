@@ -3,12 +3,12 @@
 Django-1.3.4-1.el6
 Django14-1.4.5-1.el6
 GeoIP-1.4.8-1.el6
-MySQL-client-5.5.28-6
+MySQL-client-5.5.28-7
 MySQL-client-wsrep-5.5.28_wsrep_23.7-12
 MySQL-python-1.2.3-0.3.c1.2.el6
-MySQL-server-5.5.28-6
+MySQL-server-5.5.28-7
 MySQL-server-wsrep-5.5.28_wsrep_23.7-12
-MySQL-shared-5.5.28-6
+MySQL-shared-5.5.28-7
 MySQL-shared-wsrep-5.5.28_wsrep_23.7-12
 PyYAML-3.10-3.el6
 apr-1.3.9-5.el6
