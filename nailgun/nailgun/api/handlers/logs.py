@@ -21,6 +21,8 @@ import json
 import logging
 import tarfile
 import tempfile
+import subprocess
+import shlex
 from itertools import dropwhile
 
 import web
@@ -65,16 +67,8 @@ def read_backwards(file, bufsize=4096):
             return
 
 
-class LogEntryCollectionHandler(JSONHandler):
 
-    def filter_out_sensitive(self, text):
-        result_text = text
-        accs = db().query(RedHatAccount).all()
-        for field in ("username", "password"):
-            result_text = re.compile(
-                r"|".join([getattr(i, field) for i in accs])
-            ).sub(field, result_text)
-        return result_text
+class LogEntryCollectionHandler(JSONHandler):
 
     @content_json
     def GET(self):
@@ -185,6 +179,13 @@ class LogEntryCollectionHandler(JSONHandler):
             logger.debug("Invalid 'max_entries' value: %d", max_entries)
             raise web.badrequest("Invalid 'max_entries' value")
 
+
+        accs = db().query(RedHatAccount).all()
+        regs = (
+            (re.compile(r"|".join([a.username for a in accs])), "username"),
+            (re.compile(r"|".join([a.password for a in accs])), "password")
+        )
+
         has_more = False
         with open(log_file, 'r') as f:
             f.seek(0, 2)
@@ -229,10 +230,14 @@ class LogEntryCollectionHandler(JSONHandler):
                                  log_config['date_format'],
                                  m.group('date'))
                     continue
+
+                for regex, replace in regs:
+                    entry_text = regex.sub(replace, entry_text)
+
                 entries.append([
                     time.strftime(settings.UI_LOG_DATE_FORMAT, entry_date),
                     entry_level,
-                    self.filter_out_sensitive(entry_text)
+                    entry_text
                 ])
                 if truncate_log and len(entries) >= max_entries:
                     has_more = True
@@ -247,15 +252,57 @@ class LogEntryCollectionHandler(JSONHandler):
 
 class LogPackageHandler(object):
 
+    def sed(self, from_filename, to_filename, gz=False):
+        accounts = db().query(RedHatAccount).all()
+        tf = tempfile.NamedTemporaryFile()
+        for fieldname in ("username", "password"):
+            for fieldvalue in [getattr(acc, fieldname) for acc in accounts]:
+                tf.write("s/%s/%s/g\n" % (fieldvalue, fieldname))
+
+        commands = filter(lambda x: x != "", [
+            "cat %s" % from_filename,
+            "gunzip -c" if gz else "",
+            "sed -f %s" % tf.name,
+            "gzip -c" if gz else "",
+        ])
+        to_file = open(to_filename, 'wb')
+
+        env = os.environ
+        env["PATH"] = "/bin:/usr/bin:/sbin:/usr/sbin"
+        process = []
+        for command in commands:
+            process.append(subprocess.Popen(
+                shlex.split(command),
+                env=env,
+                stdin=(process[-1].stdout if process else None),
+                stdout=(to_file
+                        if (len(process) == len(commands) - 1)
+                        else subprocess.PIPE)
+            ))
+            if len(process) >= 2:
+                process[-2].stdout.close()
+        process[-1].wait()
+        to_file.close()
+        tf.close()
+
     def GET(self):
         f = tempfile.TemporaryFile(mode='r+b')
         tf = tarfile.open(fileobj=f, mode='w:gz')
         for arcname, path in settings.LOGS_TO_PACK_FOR_SUPPORT.items():
-            tf.add(path, arcname)
+            for root, dirs, files in os.walk(path):
+                for filename in files:
+                    if not re.search(r".+\.bz2", filename):
+                        lf = tempfile.NamedTemporaryFile()
+                        self.sed(
+                            os.path.join(root, filename),
+                            os.path.join(lf.name),
+                            (True if re.search(r".+\.gz", filename) else False)
+                        )
+                        tf.add(lf.name, os.path.join(arcname, root, filename))
+                        lf.close()
         tf.close()
-
         filename = 'fuelweb-logs-%s.tar.gz' % (
-            time.strftime('%Y-%m-%d_%H:%M:%S', time.localtime()))
+            time.strftime('%Y-%m-%d_%H-%M-%S', time.localtime()))
         web.header('Content-Type', 'application/octet-stream')
         web.header('Content-Disposition', 'attachment; filename="%s"' % (
             filename))
