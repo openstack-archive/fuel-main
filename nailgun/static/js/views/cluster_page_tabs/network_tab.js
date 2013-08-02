@@ -38,8 +38,9 @@ function(utils, models, commonViews, dialogViews, networkTabTemplate, networkTem
             'click .apply-btn:not([disabled])': 'applyChanges'
         },
         defaultButtonsState: function(validationErrors) {
-            this.$('.btn:not(.ip-ranges)').attr('disabled', !this.hasChanges || validationErrors);
             this.$('.btn.verify-networks-btn').attr('disabled', validationErrors);
+            this.$('.btn.btn-revert-changes').attr('disabled', !this.hasChanges);
+            this.$('.btn.apply-btn').attr('disabled', !this.hasChanges || validationErrors);
         },
         disableControls: function() {
             this.$('.btn, input, select').attr('disabled', true);
@@ -51,8 +52,7 @@ function(utils, models, commonViews, dialogViews, networkTabTemplate, networkTem
             return !!this.model.task('deploy', 'running') || !!this.model.task('verify_networks', 'running');
         },
         checkForChanges: function() {
-            var noChanges = _.isEqual(this.model.get('networkConfiguration').toJSON(), this.networkConfiguration.toJSON());
-            this.hasChanges = !noChanges;
+            this.hasChanges = !_.isEqual(this.model.get('networkConfiguration').toJSON(), this.networkConfiguration.toJSON());
             this.defaultButtonsState(_.some(this.networkConfiguration.get('networks').models, 'validationError'));
         },
         changeManager: function(e) {
