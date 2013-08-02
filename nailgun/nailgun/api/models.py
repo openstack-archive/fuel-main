@@ -633,6 +633,7 @@ class Notification(Base):
         'discover',
         'done',
         'error',
+        'warning',
     )
 
     id = Column(Integer, primary_key=True)

@@ -1663,6 +1663,10 @@ h6.page-title {
   color: #db4242;
 }
 
+.message-list-popover > .warning {
+  color: #FF9300;
+}
+
 /* Notifications Page */
 .page-wrapper {
   background-color: #FFFFFF;
