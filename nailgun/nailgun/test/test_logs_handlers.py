@@ -32,6 +32,7 @@ from nailgun.settings import settings
 from nailgun.api.handlers.logs import read_backwards
 from nailgun.api.models import RedHatAccount
 
+
 class TestLogs(BaseHandlers):
 
     def setUp(self):
