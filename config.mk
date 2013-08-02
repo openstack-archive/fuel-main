@@ -119,7 +119,7 @@ REQUIRED_SRCS:=$(shell grep -v ^\\s*\# $(SOURCE_DIR)/requirements-src.txt)
 REQ_RHEL_RPMS:=$(shell grep -v "^\\s*\#" $(SOURCE_DIR)/fuel/deployment/puppet/rpmcache/files/required-rpms.txt)
 REQ_FUEL_RHEL_RPMS:=$(shell grep -v "^\\s*\#" $(SOURCE_DIR)/fuel/deployment/puppet/rpmcache/files/req-fuel-rhel.txt)
 
-OSTF_PLUGIN_SHA?=8d5f4caa4f92fec99703db26559e3008c453dabc
+OSTF_PLUGIN_SHA?=6624d5b1392479feb5e78250a4bb6f9670174194
 OSTF_PLUGIN_VER?=0.2
 OSTF_TESTS_SHA?=2f19e847541950adb5339190bcbeae214dbffff3
 OSTF_TESTS_VER?=0.1

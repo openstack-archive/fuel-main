@@ -128,8 +128,9 @@ class TaskHelper(object):
             if value is not None:
                 setattr(task, key, value)
                 logger.info(
-                    u"Task {0} {1} is set to {2}".format(
+                    u"Task {0} ({1}) {2} is set to {3}".format(
                         task.uuid,
+                        task.name,
                         key,
                         value
                     )
@@ -163,9 +164,13 @@ class TaskHelper(object):
             elif all(map(lambda s: s.status in ('ready', 'error'), subtasks)):
                 task.status = 'error'
                 task.progress = 100
-                task.message = '; '.join(map(
-                    lambda s: s.message, filter(
-                        lambda s: s.status == 'error', subtasks)))
+                task.message = '; '.join(list(set(map(
+                    lambda s: (s.message or ""), filter(
+                        lambda s: (
+                            s.status == 'error' and not
+                            # TODO: make this check less ugly
+                            s.message == 'Task aborted'
+                        ), subtasks)))))
                 db().add(task)
                 db().commit()
                 cls.update_cluster_status(uuid)

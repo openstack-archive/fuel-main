@@ -17,7 +17,7 @@ from nailgun.api.validators.base import BasicValidator
 from nailgun.errors import errors
 
 
-class RedHatAcountValidator(BasicValidator):
+class RedHatAccountValidator(BasicValidator):
     @classmethod
     def validate(cls, data):
         d = cls.validate_json(data)

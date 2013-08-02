@@ -32,6 +32,7 @@ corosync-1.4.3-26.2
 corosynclib-1.4.3-26.2
 crmsh-1.2.5-55.2
 cronie-1.4.4-7.el6
+cronie-anacron-1.4.4-7.el6
 cronie-noanacron-1.4.4-7.el6
 crontabs-1.10-33.el6
 curl-7.19.7-36.el6_4

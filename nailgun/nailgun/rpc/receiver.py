@@ -573,6 +573,110 @@ class NailgunReceiver(object):
         TaskHelper.update_task_status(task_uuid, status,
                                       progress, error_msg, result)
 
+    # Red Hat related callbacks
+
+    @classmethod
+    def check_redhat_credentials_resp(cls, **kwargs):
+        logger.info(
+            "RPC method check_redhat_credentials_resp received: %s" %
+            json.dumps(kwargs)
+        )
+        task_uuid = kwargs.get('task_uuid')
+        error_msg = kwargs.get('error')
+        status = kwargs.get('status')
+        progress = kwargs.get('progress')
+
+        task = db().query(Task).filter_by(uuid=task_uuid).first()
+        if not task:
+            logger.error("check_redhat_credentials_resp: task \
+                    with UUID %s not found!", task_uuid)
+            return
+
+        release_info = task.cache['args']['release_info']
+        release_id = release_info['release_id']
+        release = db().query(Release).get(release_id)
+        if not release:
+            logger.error("download_release_resp: Release"
+                         " with ID %s not found", release_id)
+            return
+
+        if error_msg:
+            status = 'error'
+            cls._update_release_state(release_id, 'error')
+            # TODO: remove this ugly checks
+            if 'Unknown error' in error_msg:
+                error_msg = 'Failed to check Red Hat ' \
+                            'credentials'
+            if error_msg != 'Task aborted':
+                notifier.notify('error', error_msg)
+
+        result = {
+            "release_info": {
+                "release_id": release_id
+            }
+        }
+
+        TaskHelper.update_task_status(
+            task_uuid,
+            status,
+            progress,
+            error_msg,
+            result
+        )
+
+    @classmethod
+    def redhat_check_licenses_resp(cls, **kwargs):
+        logger.info(
+            "RPC method redhat_check_licenses_resp received: %s" %
+            json.dumps(kwargs)
+        )
+        task_uuid = kwargs.get('task_uuid')
+        error_msg = kwargs.get('error')
+        nodes = kwargs.get('nodes')
+        status = kwargs.get('status')
+        progress = kwargs.get('progress')
+        notify = kwargs.get('msg')
+
+        task = db().query(Task).filter_by(uuid=task_uuid).first()
+        if not task:
+            logger.error("redhat_check_licenses_resp: task \
+                    with UUID %s not found!", task_uuid)
+            return
+
+        release_info = task.cache['args']['release_info']
+        release_id = release_info['release_id']
+        release = db().query(Release).get(release_id)
+        if not release:
+            logger.error("download_release_resp: Release"
+                         " with ID %s not found", release_id)
+            return
+
+        if error_msg:
+            status = 'error'
+            cls._update_release_state(release_id, 'error')
+            # TODO: remove this ugly checks
+            if 'Unknown error' in error_msg:
+                error_msg = 'Failed to check Red Hat licenses '
+            if error_msg != 'Task aborted':
+                notifier.notify('error', error_msg)
+
+        if notify:
+            notifier.notify('error', notify)
+
+        result = {
+            "release_info": {
+                "release_id": release_id
+            }
+        }
+
+        TaskHelper.update_task_status(
+            task_uuid,
+            status,
+            progress,
+            error_msg,
+            result
+        )
+
     @classmethod
     def download_release_resp(cls, **kwargs):
         logger.info(
@@ -600,11 +704,35 @@ class NailgunReceiver(object):
 
         if error_msg:
             status = 'error'
-            cls._download_release_error(release_id, error_msg)
-        elif progress == 100:
+            error_msg = "{0} download and preparation " \
+                        "has failed.".format(release.name)
+            cls._download_release_error(
+                release_id,
+                error_msg
+            )
+        elif progress == 100 and status == 'ready':
             cls._download_release_completed(release_id)
-        TaskHelper.update_task_status(task_uuid, status,
-                                      progress, error_msg)
+
+        result = {
+            "release_info": {
+                "release_id": release_id
+            }
+        }
+
+        TaskHelper.update_task_status(
+            task_uuid,
+            status,
+            progress,
+            error_msg,
+            result
+        )
+
+    @classmethod
+    def _update_release_state(cls, release_id, state):
+        release = db().query(Release).get(release_id)
+        release.state = state
+        db.add(release)
+        db.commit()
 
     @classmethod
     def _download_release_completed(cls, release_id):
@@ -617,11 +745,14 @@ class NailgunReceiver(object):
         notifier.notify("done", success_msg)
 
     @classmethod
-    def _download_release_error(cls, release_id, error_message):
+    def _download_release_error(
+        cls,
+        release_id,
+        error_message
+    ):
         release = db().query(Release).get(release_id)
         release.state = 'error'
         db().commit()
-        error_msg = u"{0}' downloading error: {0}".format(
-            release.name, error_message
-        )
-        notifier.notify('error', error_msg)
+        # TODO: remove this ugly checks
+        if error_message != 'Task aborted':
+            notifier.notify('error', error_message)

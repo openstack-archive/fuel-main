@@ -55,7 +55,7 @@ define(['utils'], function(utils) {
             return _.isEmpty(errors) ? null : errors;
         },
         task: function(taskName, status) {
-            return this.get('tasks') && this.get('tasks').filterTasks({name: taskName, status: status})[0];
+            return this.get('tasks') && this.get('tasks').findTask({name: taskName, status: status});
         },
         hasChanges: function() {
             return this.get('nodes').hasChanges() || (this.get('changes').length && this.get('nodes').currentNodes().length);
@@ -175,7 +175,14 @@ define(['utils'], function(utils) {
 
     models.Task = Backbone.Model.extend({
         constructorName: 'Task',
-        urlRoot: '/api/tasks'
+        urlRoot: '/api/tasks',
+        releaseId: function() {
+            var id;
+            try {
+                id = this.get('result').release_info.release_id;
+            } catch(e) {}
+            return id;
+        }
     });
 
     models.Tasks = Backbone.Collection.extend({
@@ -187,9 +194,6 @@ define(['utils'], function(utils) {
         },
         comparator: function(task) {
             return task.id;
-        },
-        getDownloadTask: function(release) {
-            return this.filterTasks({name: 'download_release', status: 'running', release: release})[0];
         },
         filterTasks: function(filters) {
             return _.filter(this.models, function(task) {
@@ -204,11 +208,14 @@ define(['utils'], function(utils) {
                         }
                     }
                     if (filters.release) {
-                        result = result && filters.release == task.get('result').release_info.release_id;
+                        result = result && filters.release == task.releaseId();
                     }
                 }
                 return result;
             });
+        },
+        findTask: function(filters) {
+            return this.filterTasks(filters)[0];
         }
     });
 
@@ -495,12 +502,18 @@ define(['utils'], function(utils) {
         urlRoot: '/api/redhat/account',
         validate: function(attrs) {
             var errors = [];
+            var regex = {
+                username: /^[A-z0-9\._%\+\-@]+$/,
+                password: /^[\x21-\x7E]+$/,
+                satellite: /(^(?:(?!\d+\.)[a-zA-Z0-9_\-]{1,63}\.?)+(?:[a-zA-Z]{2,})$)/,
+                activation_key: /^[A-z0-9\*\.\+\-]+$/
+            };
             var fields = ['username', 'password'];
             if (attrs.license_type == 'rhn') {
                 fields = _.union(fields, ['satellite', 'activation_key']);
             }
             _.each(fields, function(attr) {
-                if ($.trim(attrs[attr]) == '') {
+                if (!regex[attr].test($.trim(attrs[attr]))) {
                     errors.push(attr);
                 }
             });
