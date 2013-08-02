@@ -424,8 +424,8 @@ rubygem-raemon-0.3.0-1.el6
 rubygem-rake-0.8.7-2.el6
 rubygem-rdoc-3.12.2-1.el6
 rubygem-rest-client-1.6.1-2.el6
-rubygem-stomp-1.2.2-1.el6
-rubygem-stomp-doc-1.2.2-1.el6
+rubygem-stomp-1.2.8-1.el6
+rubygem-stomp-doc-1.2.8-1.el6
 rubygem-symboltable-1.0.2-1
 rubygem-systemu-2.5.2-1.el6
 rubygem-thin-1.2.8-4.el6
