@@ -429,21 +429,27 @@ class RedHatSetupTaskManager(TaskManager):
         subtasks_to_create = [
             (
                 'redhat_check_credentials',
-                tasks.RedHatCheckCredentialsTask
+                tasks.RedHatCheckCredentialsTask,
+                0.01
             ),
             (
                 'redhat_check_licenses',
-                tasks.RedHatCheckLicensesTask
+                tasks.RedHatCheckLicensesTask,
+                0.01
             ),
             (
                 'redhat_download_release',
-                tasks.RedHatDownloadReleaseTask
+                tasks.RedHatDownloadReleaseTask,
+                1
             )
         ]
 
         messages = []
-        for task_name, task_class in subtasks_to_create:
+        for task_name, task_class, weight in subtasks_to_create:
             task = supertask.create_subtask(task_name)
+            task.weight = weight
+            db().add(task)
+            db().commit()
             msg = self._call_silently(
                 task,
                 task_class,
