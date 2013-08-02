@@ -67,7 +67,6 @@ def read_backwards(file, bufsize=4096):
             return
 
 
-
 class LogEntryCollectionHandler(JSONHandler):
 
     @content_json
@@ -179,12 +178,19 @@ class LogEntryCollectionHandler(JSONHandler):
             logger.debug("Invalid 'max_entries' value: %d", max_entries)
             raise web.badrequest("Invalid 'max_entries' value")
 
-
         accs = db().query(RedHatAccount).all()
-        regs = (
-            (re.compile(r"|".join([a.username for a in accs])), "username"),
-            (re.compile(r"|".join([a.password for a in accs])), "password")
-        )
+        regs = []
+        if len(accs) > 0:
+            regs = [
+                (
+                    re.compile(r"|".join([a.username for a in accs])),
+                    "username"
+                ),
+                (
+                    re.compile(r"|".join([a.password for a in accs])),
+                    "password"
+                )
+            ]
 
         has_more = False
         with open(log_file, 'r') as f:
@@ -288,17 +294,25 @@ class LogPackageHandler(object):
     def GET(self):
         f = tempfile.TemporaryFile(mode='r+b')
         tf = tarfile.open(fileobj=f, mode='w:gz')
+
         for arcname, path in settings.LOGS_TO_PACK_FOR_SUPPORT.items():
-            for root, dirs, files in os.walk(path):
+            walk = os.walk(path)
+            if not os.path.isdir(path):
+                walk = (("/", [], [path]),)
+            for root, _, files in walk:
                 for filename in files:
+                    absfilename = os.path.join(root, filename)
+                    relfilename = os.path.relpath(absfilename, path)
                     if not re.search(r".+\.bz2", filename):
                         lf = tempfile.NamedTemporaryFile()
-                        self.sed(
-                            os.path.join(root, filename),
-                            os.path.join(lf.name),
-                            (True if re.search(r".+\.gz", filename) else False)
+                        self.sed(absfilename, lf.name,
+                                 (True
+                                  if re.search(r".+\.gz", filename)
+                                  else False))
+                        target = os.path.normpath(
+                            os.path.join(arcname, relfilename)
                         )
-                        tf.add(lf.name, os.path.join(arcname, root, filename))
+                        tf.add(lf.name, target)
                         lf.close()
         tf.close()
         filename = 'fuelweb-logs-%s.tar.gz' % (
