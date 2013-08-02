@@ -16,7 +16,7 @@ All our development is commonly done on Ubuntu 12.10. Follow the steps to prepar
 
 Build requires sudo permissions, allow yourself to run commands as root user without request for a password::
 
-    echo "`whoami` ALL=(ALL) NOPASSWD: ALL" >> /etc/sudoers
+    echo "`whoami` ALL=(ALL) NOPASSWD: ALL" | sudo tee -a /etc/sudoers
 
 Clone repo from github::
 
