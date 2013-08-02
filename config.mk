@@ -13,6 +13,11 @@ BUILD_DIR:=$(abspath $(BUILD_DIR))
 LOCAL_MIRROR?=$(TOP_DIR)/local_mirror
 LOCAL_MIRROR:=$(abspath $(LOCAL_MIRROR))
 
+MASTER_IP?=10.20.0.2
+MASTER_DNS?=10.20.0.1
+MASTER_NETMASK?=255.255.255.0
+MASTER_GW?=10.20.0.1
+
 COMMIT_SHA:=$(shell git rev-parse --verify HEAD)
 PRODUCT_VERSION:=3.1
 FUEL_COMMIT_SHA:=$(shell cd fuel && git rev-parse --verify HEAD)
