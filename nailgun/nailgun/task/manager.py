@@ -30,6 +30,8 @@ from nailgun.api.models import Task
 from nailgun.api.models import Network
 from nailgun.api.models import RedHatAccount
 from nailgun.task.task import TaskHelper
+from nailgun.api.serializers.network_configuration \
+    import NetworkConfigurationSerializer
 
 from nailgun.task import task as tasks
 
@@ -167,6 +169,23 @@ class DeploymentTaskManager(TaskManager):
         db().add(supertask)
         db().commit()
 
+        # checking admin intersection with untagged
+        network_info = NetworkConfigurationSerializer.serialize_for_cluster(
+            self.cluster
+        )
+        check_networks = supertask.create_subtask('check_networks')
+        self._call_silently(
+            check_networks,
+            tasks.CheckNetworksTask,
+            data=network_info,
+            check_admin_untagged=True
+        )
+        db().refresh(check_networks)
+        if check_networks.status == 'error':
+            return supertask
+        db().delete(check_networks)
+        db().commit()
+
         # checking prerequisites
         check_before = supertask.create_subtask('check_before_deployment')
         logger.debug("Checking prerequisites task: %s", check_before.uuid)
@@ -280,7 +299,7 @@ class DeploymentTaskManager(TaskManager):
 
 class CheckNetworksTaskManager(TaskManager):
 
-    def execute(self, data):
+    def execute(self, data, check_admin_untagged=False):
         task = Task(
             name="check_networks",
             cluster=self.cluster
@@ -290,7 +309,8 @@ class CheckNetworksTaskManager(TaskManager):
         self._call_silently(
             task,
             tasks.CheckNetworksTask,
-            data
+            data,
+            check_admin_untagged
         )
         db().refresh(task)
         if task.status == 'running':

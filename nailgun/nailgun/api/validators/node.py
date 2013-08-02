@@ -15,6 +15,7 @@
 
 from nailgun.db import db
 from nailgun.errors import errors
+from nailgun.logger import logger
 from nailgun.api.models import Node
 from nailgun.volumes.manager import VolumeManager
 from nailgun.api.validators.base import BasicValidator

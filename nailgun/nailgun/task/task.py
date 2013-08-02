@@ -40,6 +40,7 @@ from nailgun.api.models import Base
 from nailgun.api.models import Network
 from nailgun.api.models import NetworkGroup
 from nailgun.api.models import Node
+from nailgun.api.models import NodeNICInterface
 from nailgun.api.models import Cluster
 from nailgun.api.models import IPAddr
 from nailgun.api.models import Release
@@ -603,7 +604,7 @@ class VerifyNetworksTask(object):
 class CheckNetworksTask(object):
 
     @classmethod
-    def execute(self, task, data):
+    def execute(self, task, data, check_admin_untagged=False):
         # If not set in data then fetch from db
         if 'net_manager' in data:
             netmanager = data['net_manager']
@@ -617,6 +618,61 @@ class CheckNetworksTask(object):
 
         result = []
         err_msgs = []
+
+        if check_admin_untagged:
+            # checking if there are untagged networks on the same interface
+            # (main) as admin network
+            untagged_nets = set(
+                n["id"] for n in filter(
+                    lambda n: (n["vlan_start"] is None),
+                    networks
+                )
+            )
+            if untagged_nets:
+                logger.info(
+                    "Untagged networks found, "
+                    "checking admin network intersection..."
+                )
+                main_ifaces = (
+                    db().query(NodeNICInterface).get(
+                        NetworkManager().get_main_nic(n.id)
+                    )
+                    for n in task.cluster.nodes
+                )
+
+                found_intersection = []
+
+                for iface in main_ifaces:
+                    nets = dict(
+                        (n.id, n.name)
+                        for n in iface.assigned_networks
+                    )
+                    err_nets = set(nets.keys()) & untagged_nets
+                    if err_nets:
+                        err_net_names = [
+                            '"{0}"'.format(nets[i]) for i in err_nets
+                        ]
+                        found_intersection.append(
+                            [iface.node.name, err_net_names]
+                        )
+
+                if found_intersection:
+                    nodes_with_errors = [
+                        u'Node "{0}": {1}'.format(
+                            name,
+                            ", ".join(networks)
+                        ) for name, networks in found_intersection
+                    ]
+                    err_msg = u"Some untagged networks are " \
+                              "assigned to the same physical interface as " \
+                              "admin (PXE) network. You can whether turn " \
+                              "on tagging for these OpenStack " \
+                              "networks or move them to another physical " \
+                              "interface:\n{0}".format("\n".join(
+                                  nodes_with_errors
+                              ))
+                    raise errors.NetworkCheckError(err_msg, add_client=False)
+
         admin_range = netaddr.IPSet([settings.ADMIN_NETWORK['cidr']])
         for ng in networks:
             net_errors = []

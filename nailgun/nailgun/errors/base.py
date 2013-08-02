@@ -25,6 +25,7 @@ class NailgunException(Exception):
                  log_traceback=False,
                  log_message=False,
                  log_level='warning',
+                 add_client=True,
                  notify_user=False):
         self.log_traceback = log_traceback
         self.log_message = log_message
@@ -32,9 +33,12 @@ class NailgunException(Exception):
         if message:
             self.message = message
 
-            client = self._get_client()
-            if client:
-                self.message = "[{0}] ".format(client) + self.message
+            if add_client:
+                client = self._get_client()
+                if client:
+                    self.message = "[{0}] ".format(
+                        client
+                    ) + self.message
 
             if self.log_message:
                 getattr(logger, log_level)(self.message)

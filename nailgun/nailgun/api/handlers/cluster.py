@@ -221,7 +221,9 @@ class ClusterChangesHandler(JSONHandler):
                     json.dumps(network_info, indent=4)
                 )
             )
-            task_manager = DeploymentTaskManager(cluster_id=cluster.id)
+            task_manager = DeploymentTaskManager(
+                cluster_id=cluster.id
+            )
             task = task_manager.execute()
         except Exception as exc:
             logger.warn(u'ClusterChangesHandler: error while execution'
