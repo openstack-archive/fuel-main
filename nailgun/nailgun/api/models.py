@@ -491,7 +491,9 @@ class Attributes(Base):
         new_dict = {}
         if cdict:
             for i, val in cdict.iteritems():
-                if isinstance(val, dict) and "generator" in val:
+                if isinstance(val, (str, unicode, int, float)):
+                    new_dict[i] = val
+                elif isinstance(val, dict) and "generator" in val:
                     try:
                         generator = getattr(
                             AttributesGenerators,
@@ -561,9 +563,12 @@ class Task(Base):
         'update_plugin',
         'delete_plugin',
 
-        # releases
-        'download_release',
-        'validate_redhat_account'
+        # red hat
+        'redhat_setup',
+        'redhat_check_credentials',
+        'redhat_check_licenses',
+        'redhat_download_release',
+        'redhat_update_cobbler_profile'
     )
     id = Column(Integer, primary_key=True)
     cluster_id = Column(Integer, ForeignKey('clusters.id'))

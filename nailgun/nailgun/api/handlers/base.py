@@ -34,6 +34,7 @@ from nailgun.api.models import Node
 from nailgun.api.models import Network
 from nailgun.api.models import Vlan
 from nailgun.api.models import Task
+from nailgun.api.serializers.base import BasicSerializer
 from nailgun.api.validators.base import BasicValidator
 
 
@@ -90,8 +91,19 @@ class HandlerRegistrator(type):
 class JSONHandler(object):
     __metaclass__ = HandlerRegistrator
     validator = BasicValidator
+    serializer = BasicSerializer
 
     fields = []
+
+    def __init__(self):
+        self.serializer.load_handlers(handlers)
+
+    @classmethod
+    def render(cls, instance, fields=None):
+        return cls.serializer.serialize(
+            instance,
+            fields=fields or cls.fields
+        )
 
     def checked_data(self, validate_method=None):
         try:
@@ -137,52 +149,3 @@ class JSONHandler(object):
             if log_get:
                 getattr(logger, log_get[0])(log_get[1])
         return obj
-
-    @classmethod
-    def render(cls, instance, fields=None):
-        json_data = {}
-        use_fields = fields if fields else cls.fields
-        if not use_fields:
-            raise ValueError("No fields for serialize")
-        for field in use_fields:
-            if isinstance(field, (tuple,)):
-                if field[1] == '*':
-                    subfields = None
-                else:
-                    subfields = field[1:]
-
-                value = getattr(instance, field[0])
-                rel = getattr(
-                    instance.__class__, field[0]).impl.__class__.__name__
-                if value is None:
-                    pass
-                elif rel == 'ScalarObjectAttributeImpl':
-                    handler = handlers[value.__class__.__name__]
-                    json_data[field[0]] = handler.render(
-                        value, fields=subfields
-                    )
-                elif rel == 'CollectionAttributeImpl':
-                    if not value:
-                        json_data[field[0]] = []
-                    else:
-                        handler = handlers[value[0].__class__.__name__]
-                        json_data[field[0]] = [
-                            handler.render(v, fields=subfields) for v in value
-                        ]
-            else:
-                value = getattr(instance, field)
-                if value is None:
-                    json_data[field] = value
-                else:
-                    f = getattr(instance.__class__, field)
-                    if hasattr(f, "impl"):
-                        rel = f.impl.__class__.__name__
-                        if rel == 'ScalarObjectAttributeImpl':
-                            json_data[field] = value.id
-                        elif rel == 'CollectionAttributeImpl':
-                            json_data[field] = [v.id for v in value]
-                        else:
-                            json_data[field] = value
-                    else:
-                        json_data[field] = value
-        return json_data

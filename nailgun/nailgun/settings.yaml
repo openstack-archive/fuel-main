@@ -7,8 +7,8 @@ FUEL_COMMIT_SHA: "Unknown build"
 PRODUCT_VERSION: "3.0"
 
 FIXTURES_TO_UPLOAD:
-  - "redhat.json"
   - "openstack.json"
+  - "redhat.json"
   - "start_notification.json"
   - "admin_network.json"
 
@@ -65,23 +65,14 @@ COBBLER_URL: "http://localhost/cobbler_api"
 COBBLER_USER: "cobbler"
 COBBLER_PASSWORD: "cobbler"
 
+NOVA_STATE_PATH: "/var/lib/nova"
+
 TRUNCATE_LOG_ENTRIES: 100
 UI_LOG_DATE_FORMAT: '%Y-%m-%d %H:%M:%S'
 LOG_FORMATS:
   - &remote_syslog_log_format
-    regexp: '^(?P<date>\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2})\s(?P<level>[a-z]{3,7}):\s(?P<text>.*)$'
+    regexp: '^(?P<date>\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2})(?P<secfrac>\.\d{1,})?(?P<timezone>(Z|[+-]\d{2}:\d{2}))?\s(?P<level>[a-z]{3,7}):\s(?P<text>.*)$'
     date_format: '%Y-%m-%dT%H:%M:%S'
-    levels:
-      - DEBUG
-      - INFO
-      - NOTICE
-      - WARNING
-      - ERR
-      - CRIT
-      - ALERT
-      - EMERG
-  - &syslog_log_format
-    regexp: '^(?P<ip>\d+\.\d+\.\d+\.\d+)\s+(?P<date>\w{3}\s+\d+\s+\d+:\d+:\d+)\s+(?P<fqdn>[\w\.\-]+)\s+(?P<component>[\w\.\-/]+):\s+(?:[\d:,]+\s+(?P<level>[A-Z]+)\s+)?(?:\s*:\s*)?(?P<text>.*)$'
     levels:
       - DEBUG
       - INFO
@@ -139,7 +130,7 @@ LOGS:
     name: "Puppet agent"
     <<: *local_log_type
     <<: *remote_syslog_log_format
-    path: "/var/log/puppet/puppet-agent.log"
+    path: "/var/log/puppet/agent.log"
 # Fake target logs.
   - id: 'fake-target-mcollective'
     name: "mcollective"

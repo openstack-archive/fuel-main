@@ -303,6 +303,7 @@ class TestNetworkManager(BaseHandlers):
             cluster_kwargs={},
             nodes_kwargs=[
                 {
+                    "api": True,
                     "pending_addition": True,
                     "mac": "00:00:00:00:00:00",
                     "meta": {
@@ -319,6 +320,7 @@ class TestNetworkManager(BaseHandlers):
                     }
                 },
                 {
+                    "api": True,
                     "pending_addition": True,
                     "mac": "00:00:00:00:00:02",
                     "meta": {
@@ -337,7 +339,7 @@ class TestNetworkManager(BaseHandlers):
             ]
         )
 
-        self.env.launch_deployment()
+        supertask = self.env.launch_deployment()
         rpc_nodes_provision = nailgun.task.manager.rpc.cast. \
             call_args_list[0][0][1][0]['args']['nodes']
 

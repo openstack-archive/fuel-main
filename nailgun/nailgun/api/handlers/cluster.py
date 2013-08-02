@@ -33,12 +33,14 @@ from nailgun.api.validators.cluster import ClusterValidator
 from nailgun.api.validators.cluster import AttributesValidator
 from nailgun.network.manager import NetworkManager
 from nailgun.api.handlers.base import JSONHandler, content_json
+from nailgun.api.handlers.base import handlers
 from nailgun.api.handlers.node import NodeHandler
 from nailgun.api.handlers.tasks import TaskHandler
+from nailgun.api.serializers.network_configuration \
+    import NetworkConfigurationSerializer
 from nailgun.task.helpers import TaskHelper
 from nailgun.task.manager import DeploymentTaskManager
 from nailgun.task.manager import ClusterDeletionManager
-from nailgun.task.manager import CheckBeforeDeploymentTaskManager
 
 
 class ClusterHandler(JSONHandler):
@@ -209,13 +211,16 @@ class ClusterChangesHandler(JSONHandler):
                 "Error: there is no cluster "
                 "with id '{0}' in DB.".format(cluster_id)))
 
-        check_task_manager = CheckBeforeDeploymentTaskManager(
-            cluster_id=cluster.id)
-        check_task = check_task_manager.execute()
-        if check_task.status == 'error':
-            return TaskHandler.render(check_task)
-
         try:
+            network_info = \
+                NetworkConfigurationSerializer.serialize_for_cluster(
+                    cluster
+                )
+            logger.info(
+                u"Network info:\n{0}".format(
+                    json.dumps(network_info, indent=4)
+                )
+            )
             task_manager = DeploymentTaskManager(cluster_id=cluster.id)
             task = task_manager.execute()
         except Exception as exc:

@@ -61,10 +61,7 @@ function(utils, models, commonViews, dialogViews, healthcheckTabTemplate, health
             this.calculateTestControlButtonsState();
         },
         getActiveTestRuns: function() {
-            return this.testruns.filter(function(testrun) {
-                var statuses = _.pluck(testrun.get('tests'), 'status');
-                return _.intersection(statuses, ['running', 'wait_running']).length;
-            }, this);
+            return this.testruns.where({status: 'running'});
         },
         hasRunningTests: function() {
             return !!this.getActiveTestRuns().length;
@@ -157,7 +154,6 @@ function(utils, models, commonViews, dialogViews, healthcheckTabTemplate, health
                 ).done(_.bind(function() {
                     this.model.set({'ostf': ostf}, {silent: true});
                     this.render();
-                    this.testruns.on('sync', this.updateTestRuns, this);
                     this.scheduleUpdate();
                 }, this)
                 ).fail(_.bind(function() {
@@ -166,8 +162,11 @@ function(utils, models, commonViews, dialogViews, healthcheckTabTemplate, health
                 }, this));
             } else {
                 _.extend(this, this.model.get('ostf'));
-                this.scheduleUpdate();
+                if (this.hasRunningTests()) {
+                    this.update();
+                }
             }
+            this.testruns.on('sync', this.updateTestRuns, this);
         },
         render: function() {
             this.tearDownRegisteredSubViews();
@@ -178,7 +177,7 @@ function(utils, models, commonViews, dialogViews, healthcheckTabTemplate, health
                     var testsetView = new TestSet({
                         cluster: this.model,
                         testset: testset,
-                        testrun: this.testruns.findWhere({testset: testset.id}) || new models.TestRun(),
+                        testrun: this.testruns.findWhere({testset: testset.id}) || new models.TestRun({testset: testset.id}),
                         tests: new models.Tests(this.tests.where({testset: testset.id})),
                         tab: this
                     });

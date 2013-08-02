@@ -1033,10 +1033,13 @@ h6.page-title {
 }
 
 .globalalert > p > a,
-.global-error > p > a,
 .global-success > p > a,
 .global-info > p > a {
   color: #00aeef;
+}
+
+.global-error > p > a, .global-error > p > a:hover {
+  color: #0088cc;
 }
 
 .clusterbox {
@@ -3674,16 +3677,16 @@ hr.slim {
 
 .disk-visual.invalid > div {
   outline: 1px solid #fff;
-  background: #afafaf; /* Old browsers */
+  background: #afafaf !important; /* Old browsers */
   /* IE9 SVG, needs conditional override of 'filter' to 'none' */
-  background: url(data:image/svg+xml;base64,PD94bWwgdmVyc2lvbj0iMS4wIiA/Pgo8c3ZnIHhtbG5zPSJodHRwOi8vd3d3LnczLm9yZy8yMDAwL3N2ZyIgd2lkdGg9IjEwMCUiIGhlaWdodD0iMTAwJSIgdmlld0JveD0iMCAwIDEgMSIgcHJlc2VydmVBc3BlY3RSYXRpbz0ibm9uZSI+CiAgPGxpbmVhckdyYWRpZW50IGlkPSJncmFkLXVjZ2ctZ2VuZXJhdGVkIiBncmFkaWVudFVuaXRzPSJ1c2VyU3BhY2VPblVzZSIgeDE9IjAlIiB5MT0iMCUiIHgyPSIwJSIgeTI9IjEwMCUiPgogICAgPHN0b3Agb2Zmc2V0PSIwJSIgc3RvcC1jb2xvcj0iI2FmYWZhZiIgc3RvcC1vcGFjaXR5PSIxIi8+CiAgICA8c3RvcCBvZmZzZXQ9IjEwMCUiIHN0b3AtY29sb3I9IiNkNWQ1ZDUiIHN0b3Atb3BhY2l0eT0iMSIvPgogIDwvbGluZWFyR3JhZGllbnQ+CiAgPHJlY3QgeD0iMCIgeT0iMCIgd2lkdGg9IjEiIGhlaWdodD0iMSIgZmlsbD0idXJsKCNncmFkLXVjZ2ctZ2VuZXJhdGVkKSIgLz4KPC9zdmc+);
-  background: -moz-linear-gradient(top,  #b0b0b0 0%, #a0a0a0 100%); /* FF3.6+ */
-  background: -webkit-gradient(linear, left top, left bottom, color-stop(0%,#b0b0b0), color-stop(100%,#a0a0a0)); /* Chrome,Safari4+ */
-  background: -webkit-linear-gradient(top,  #b0b0b0 0%,#a0a0a0 100%); /* Chrome10+,Safari5.1+ */
-  background: -o-linear-gradient(top,  #b0b0b0 0%,#a0a0a0 100%); /* Opera 11.10+ */
-  background: -ms-linear-gradient(top,  #b0b0b0 0%,#a0a0a0 100%); /* IE10+ */
-  background: linear-gradient(to bottom,  #b0b0b0 0%,#a0a0a0 100%); /* W3C */
-  filter: progid:DXImageTransform.Microsoft.gradient( startColorstr='#b0b0b0', endColorstr='#a0a0a0',GradientType=0 ); /* IE6-8 */
+  background: url(data:image/svg+xml;base64,PD94bWwgdmVyc2lvbj0iMS4wIiA/Pgo8c3ZnIHhtbG5zPSJodHRwOi8vd3d3LnczLm9yZy8yMDAwL3N2ZyIgd2lkdGg9IjEwMCUiIGhlaWdodD0iMTAwJSIgdmlld0JveD0iMCAwIDEgMSIgcHJlc2VydmVBc3BlY3RSYXRpbz0ibm9uZSI+CiAgPGxpbmVhckdyYWRpZW50IGlkPSJncmFkLXVjZ2ctZ2VuZXJhdGVkIiBncmFkaWVudFVuaXRzPSJ1c2VyU3BhY2VPblVzZSIgeDE9IjAlIiB5MT0iMCUiIHgyPSIwJSIgeTI9IjEwMCUiPgogICAgPHN0b3Agb2Zmc2V0PSIwJSIgc3RvcC1jb2xvcj0iI2FmYWZhZiIgc3RvcC1vcGFjaXR5PSIxIi8+CiAgICA8c3RvcCBvZmZzZXQ9IjEwMCUiIHN0b3AtY29sb3I9IiNkNWQ1ZDUiIHN0b3Atb3BhY2l0eT0iMSIvPgogIDwvbGluZWFyR3JhZGllbnQ+CiAgPHJlY3QgeD0iMCIgeT0iMCIgd2lkdGg9IjEiIGhlaWdodD0iMSIgZmlsbD0idXJsKCNncmFkLXVjZ2ctZ2VuZXJhdGVkKSIgLz4KPC9zdmc+) !important;
+  background: -moz-linear-gradient(top,  #b0b0b0 0%, #a0a0a0 100%) !important; /* FF3.6+ */
+  background: -webkit-gradient(linear, left top, left bottom, color-stop(0%,#b0b0b0), color-stop(100%,#a0a0a0)) !important; /* Chrome,Safari4+ */
+  background: -webkit-linear-gradient(top,  #b0b0b0 0%,#a0a0a0 100%) !important; /* Chrome10+,Safari5.1+ */
+  background: -o-linear-gradient(top,  #b0b0b0 0%,#a0a0a0 100%) !important; /* Opera 11.10+ */
+  background: -ms-linear-gradient(top,  #b0b0b0 0%,#a0a0a0 100%) !important; /* IE10+ */
+  background: linear-gradient(to bottom,  #b0b0b0 0%,#a0a0a0 100%) !important; /* W3C */
+  filter: progid:DXImageTransform.Microsoft.gradient( startColorstr='#b0b0b0', endColorstr='#a0a0a0',GradientType=0 ) !important; /* IE6-8 */
 }
 
 .unallocated > .toggle-volume {
@@ -3868,12 +3871,20 @@ div.create-cluster-form .radio-checkbox-group label {
   margin-right: 20px;
 }
 
-.releases-table .not_available {
+.releases-table .error {
   color: #ee0000;
+}
+
+.rhel-license-dialog {
+  max-height: 430px;
 }
 
 .rhel-license label {
   text-align: left;
+}
+
+.download_progress .progress {
+  background-image: linear-gradient(to bottom, #435267, #aaaaaa);
 }
 
 .credentials .radio-checkbox-group {
@@ -3888,6 +3899,26 @@ div.create-cluster-form .radio-checkbox-group label {
   width: 335px;
 }
 
+.releases-table td {
+  height: 30px;
+}
+
+.releases-table .release-name {
+  min-width: 200px;
+}
+
+.releases-table .release-version {
+  width: 100px;
+}
+
+.releases-table .release-status {
+  min-width: 200px;
+}
+
+.releases-table .release-actions {
+  min-width: 120px;
+}
+
 .summary-settings-btn {
   font-size: 13px;
 }
@@ -3899,9 +3930,10 @@ div.create-cluster-form .radio-checkbox-group label {
 .bar-title {
   display: block;
   width: 100%;
-  margin-top: -41px;
+  margin-top: -40px;
   font-size: 11px;
   text-align: center;
+  color: white;
 }
 
 .progress-bar-container {

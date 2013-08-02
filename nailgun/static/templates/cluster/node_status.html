@@ -1,12 +1,10 @@
-<% var status = node.get('status');
-   var operatingSystem;
-   try {
-     operatingSystem = node.collection.cluster.get('release').get('operating_system');
-   } catch(e){}
-   operatingSystem = operatingSystem || 'OS';
-   if (operatingSystem == 'RHEL') {
-     operatingSystem = '';
-   }
+<%
+  var status = node.get('status');
+  var operatingSystem;
+  try {
+    operatingSystem = node.collection.cluster.get('release').get('operating_system');
+  } catch(e){}
+  operatingSystem = operatingSystem || 'OS';
 %>
 <% if (!node.get('online')) { %>
   <div class="msg-offline">

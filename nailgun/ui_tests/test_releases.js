@@ -38,7 +38,7 @@ casper.then(function() {
     });
     this.test.assertSelectorDisappears('.modal', 'RHEL credentials popup was closed');
     this.test.assertSelectorAppears('.progress', 'RHEL downloading started');
-    this.test.assertSelectorDisappears('.progress', 'RHEL downloading finished');
+    this.test.assertSelectorDisappears('.progress', 'RHEL downloading finished', 20000);
     this.then(function() {
         this.test.assertDoesntExist('.releases-table .not_available', 'All releases are available');
     });

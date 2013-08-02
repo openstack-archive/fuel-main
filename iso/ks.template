@@ -87,6 +87,8 @@ subscription-manager
 system-config-firewall-base
 tcpdump
 vim-enhanced
+rubygem-netaddr
+rubygem-openstack
 wget
 yum
 
@@ -104,43 +106,6 @@ fi
 #!/bin/sh
 
 set -x
-
-function setconf {
-    echo
-    echo -n "Enter hostname (FQDN): "; read hostname
-    echo -n "Enter device name: "; read device
-    echo -n "Enter ip: "; read ip
-    echo -n "Enter netmask: "; read netmask
-    echo -n "Enter default gw: "; read gw
-    echo -n "Enter Primary DNS server: "; read dns1
-    echo -n "Enter Secondary DNS server: "; read dns2
-    hwaddr=`ifconfig $device | grep -i hwaddr | sed -e 's#^.*hwaddr[[:space:]]*##I'`
-    echo
-    echo You entered:
-    show
-    echo
-    echo -n "Do you want to keep this settings (y/N):"
-    read -n 1 answer
-    if [[ $answer == "y" || $answer == "Y" ]]; then
-        save_cfg
-    fi
-    echo
-    echo -n "Do you want to configure another adapter (y/N):"
-    read -n 1 answer
-    if [[ $answer == "n" || $answer == "N" || $answer == "" ]]; then
-        endconf=1
-    fi
-    }
-
-function show {
-    echo "Device: $device, MAC address $hwaddr"
-    echo "Hostname: $hostname"
-    [ -z $ip ] && echo "IP address: will be obtained via DHCP"
-    [ ! -z $ip ] && echo "IP address: $ip Netmask: $netmask"
-    echo "Gateway: $gw"
-    echo "DNS Server 1: $dns1"
-    echo "DNS Server 2: $dns2"
-    }
 
 function save_cfg {
     scrFile="/etc/sysconfig/network-scripts/ifcfg-$device"
@@ -177,41 +142,7 @@ gw=$gw
 device="eth0"
 hwaddr=`ifconfig $device | grep -i hwaddr | sed -e 's#^.*hwaddr[[:space:]]*##I'`
 
-# Saving stdin, stdout and stderr file descriptors
-exec 3<&0
-exec 4>&1
-exec 5>&2
-
-curTTY=`tty`
-set +x
-exec <$curTTY >$curTTY 2>&1
-clear
-
-endconf=0
-show
-echo -n "Press any key to make changes in network configuration"
-read -n 1 -t 10 answer
-if [ $? -gt 128 ]; then
-    save_cfg
-else
-    while [ $endconf -eq 0 ]; do
-        echo
-        echo -n "Do you want to configure settings manually (y/N):"
-        read -n 1 answer
-        if [[ $answer == "y" || $answer == "Y" ]]; then
-            setconf
-        else
-            endconf=1
-        fi
-    done
-fi
-
-chvt 1
-# Restoring stdin, stdout and stderr file descriptors
-exec 0<&3 3<&-
-exec 1>&4 4>&-
-exec 2>&5 5>&-
-set -x
+save_cfg
 
 # Mounting installation source
 SOURCE=/tmp/source

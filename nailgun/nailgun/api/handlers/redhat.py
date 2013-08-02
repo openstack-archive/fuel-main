@@ -19,17 +19,20 @@ import web
 from nailgun.api.handlers.base \
     import JSONHandler, content_json, build_json_response
 from nailgun.api.handlers.tasks import TaskHandler
-from nailgun.api.validators.redhat import RedHatAcountValidator
+from nailgun.api.validators.redhat import RedHatAccountValidator
 from nailgun.db import db
+from nailgun import notifier
 from nailgun.errors import errors
 from nailgun.task.helpers import TaskHelper
-from nailgun.task.manager import RedHatAccountValidationTaskManager
+from nailgun.task.manager import RedHatSetupTaskManager
 from nailgun.api.models import RedHatAccount
+from nailgun.api.models import Release
 from nailgun.logger import logger
 from nailgun.settings import settings
 
 
 class RedHatAccountHandler(JSONHandler):
+
     fields = (
         'username',
         'password',
@@ -37,10 +40,7 @@ class RedHatAccountHandler(JSONHandler):
         'satellite',
         'activation_key'
     )
-
     model = RedHatAccount
-
-    validator = RedHatAcountValidator
 
     @content_json
     def GET(self):
@@ -52,10 +52,39 @@ class RedHatAccountHandler(JSONHandler):
     @content_json
     def POST(self):
         data = self.checked_data()
+        release_id = data.pop('release_id')
+        release_db = db().query(Release).get(release_id)
+        if not release_db:
+            raise web.notfound(
+                "No release with ID={0} found".format(release_id)
+            )
+        account = db().query(RedHatAccount).first()
+        if account:
+            db().query(RedHatAccount).update(data)
+        else:
+            account = RedHatAccount(**data)
+            db().add(account)
+        db().commit()
+        return self.render(account)
+
+
+class RedHatSetupHandler(JSONHandler):
+
+    validator = RedHatAccountValidator
+
+    @content_json
+    def POST(self):
+        data = self.checked_data()
 
         release_data = {'release_id': data['release_id']}
-        data.pop('release_id')
+        release_id = data.pop('release_id')
+        release_db = db().query(Release).get(release_id)
+        if not release_db:
+            raise web.notfound(
+                "No release with ID={0} found".format(release_id)
+            )
         release_data['redhat'] = data
+        release_data['release_name'] = release_db.name
 
         account = db().query(RedHatAccount).first()
         if account:
@@ -65,7 +94,7 @@ class RedHatAccountHandler(JSONHandler):
             db().add(account)
         db().commit()
 
-        task_manager = RedHatAccountValidationTaskManager(release_data)
+        task_manager = RedHatSetupTaskManager(release_data)
         try:
             task = task_manager.execute()
         except Exception as exc:

@@ -29,17 +29,18 @@ function(commonViews, dialogViews, releasesListTemplate, releaseTemplate) {
         navbarActiveElement: 'releases',
         breadcrumbsPath: [['Home', '#'], 'Releases'],
         title: 'Releases',
-        updateInterval: 3000,
+        updateInterval: 5000,
         template: _.template(releasesListTemplate),
         scheduleUpdate: function() {
-            if (this.tasks.filterTasks({name: 'download_release'}).length) {
-                this.registerDeferred($.timeout(this.updateInterval).done(_.bind(this.update, this)));
+            if (this.tasks.filterTasks({name: 'redhat_setup', status: 'running'}).length) {
+                if (this.timeout) {
+                    this.timeout.clear();
+                }
+                this.registerDeferred(this.timeout = $.timeout(this.updateInterval).done(_.bind(this.update, this)));
             }
         },
         update: function() {
-            if (this.tasks.filterTasks({name: 'download_release'}).length) {
-                this.registerDeferred(this.tasks.fetch().always(_.bind(this.scheduleUpdate, this)));
-            }
+            this.registerDeferred(this.tasks.fetch().always(_.bind(this.scheduleUpdate, this)));
         },
         initialize: function(options) {
             _.defaults(this, options);
@@ -49,7 +50,7 @@ function(commonViews, dialogViews, releasesListTemplate, releaseTemplate) {
             this.tearDownRegisteredSubViews();
             this.$el.html(this.template({releases: this.collection}));
             this.collection.each(function(release) {
-                var releaseView = new Release({release: release});
+                var releaseView = new Release({release: release, page: this});
                 this.registerSubView(releaseView);
                 this.$('.releases-table tbody').append(releaseView.render().el);
             }, this);
@@ -68,42 +69,44 @@ function(commonViews, dialogViews, releasesListTemplate, releaseTemplate) {
             this.registerSubView(dialog);
             dialog.render();
         },
-        downloadFinished: function() {
-            this.$('.download_progress').html('');
-            var task = app.page.tasks.filterTasks({name: 'download_release', release: this.release.id})[0];
-            if (task.get('status') == 'error'){
-                this.$('.release-status span').html('Error');
-                this.$('.btn-rhel-setup').show();
-            } else {
-                this.$('.release-status').removeClass('not-available').html('Available');
-            }
-            task.destroy();
-        },
-        updateProgress: function(){
-            var task = app.page.tasks.getDownloadTask(this.release.id);
-            if (task) {
-                this.$('.btn-rhel-setup').hide();
-                this.$('.download_progress').show();
-                this.$('.bar').css('width', task.get('progress')+'%');
-                if (task.get('status') == 'running') {
-                    this.$('.release-status span').html('Downloading');
+        checkForSetupCompletion: function() {
+            var setupTask = this.page.tasks.findTask({name: 'redhat_setup', status: ['ready', 'error'], release: this.release.id});
+            if (setupTask) {
+                if (setupTask.get('status') == 'ready') {
+                    setupTask.destroy();
                 }
+                this.release.fetch();
+                app.navbar.refresh();
+            }
+        },
+        updateProgress: function() {
+            var task = this.page.tasks.findTask({name: 'redhat_setup', status: 'running', release: this.release.id});
+            if (task) {
+                this.$('.bar').css('width', task.get('progress') + '%');
+                this.$('.bar-title span').text(task.get('progress') + '%');
             }
         },
         initialize: function(options) {
             _.defaults(this, options);
-            app.page.tasks.on('add', this.onNewTask, this);
-            this.bindTaskEvents(app.page.tasks.getDownloadTask(this.release.id));
+            this.page.tasks.each(this.bindTaskEvents, this);
+            this.page.tasks.on('add', this.onNewTask, this);
+            this.release.on('change', this.render, this);
         },
         bindTaskEvents: function(task) {
-            if (task && task.get('name') == 'download_release' && task.get('result').release_info.release_id == this.release.id) {
-                task.on('change:status', this.downloadFinished, this);
-                task.on('change:progress', this.updateProgress, this);
+            if (task.get('name') == 'redhat_setup' && task.releaseId() == this.release.id) {
+                if (task.get('status') == 'running') {
+                    task.on('change:status', this.checkForSetupCompletion, this);
+                    task.on('change:progress', this.updateProgress, this);
+                }
+                return task;
             }
-            return task;
+            return null;
         },
         onNewTask: function(task) {
-            return this.bindTaskEvents(task) && this.updateProgress();
+            if (this.bindTaskEvents(task)) {
+                this.checkForSetupCompletion();
+                this.updateProgress();
+            }
         },
         render: function() {
             this.tearDownRegisteredSubViews();

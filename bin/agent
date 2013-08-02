@@ -170,6 +170,7 @@ class NodeAgent
         next if int =~ /^lo[:]?/
         next if int =~ /^vir/
         next if int =~ /^vnet/
+        next if int =~ /^br/
         next if int =~ /\d+\.\d+$/
         int_meta = {:name => int}
         (intinfo[:addresses] or {} rescue {}).each do |addr, addrinfo|
@@ -179,7 +180,7 @@ class NodeAgent
               int_info = Rethtool::InterfaceSettings.new(int)
               int_meta[:max_speed] = int_info.best_mode.speed
               if int_info.current_mode.speed == :unknown
-                int_meta[:current_speed] = nil 
+                int_meta[:current_speed] = nil
               else
                 int_meta[:current_speed] = int_info.current_mode.speed
               end

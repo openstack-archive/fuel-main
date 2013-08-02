@@ -121,6 +121,9 @@ class TestHandlers(BaseHandlers):
                 del net1[f]
                 del net2[f]
 
+        cluster1_nets = sorted(cluster1_nets, key=lambda n: n['vlan_start'])
+        cluster2_nets = sorted(cluster2_nets, key=lambda n: n['vlan_start'])
+
         self.assertEquals(cluster1_nets, cluster2_nets)
 
     def test_if_cluster_creates_correct_networks(self):

@@ -1,15 +1,15 @@
-<% var task = cluster.task('deploy', 'running') || app.page.tasks.getDownloadTask(cluster.get('release').id) %>
-<% var descriptions = {'deploy': '', 'download_release': 'Downloading RHEL'} %>
+<% var descriptions = {redhat_setup: 'Downloading'} %>
 <% if (task) { %>
   <li class="pull-right deployment-progress-box progress-bar-container">
     <div class="deployment-control-item-box"><div class="deploying-progress-text-box percentage">0%</div></div>
     <div class="deployment-control-item-box"><div class="progress progress-success progress-striped progress-deploy active"><div class="bar"></div></div></div>
     <div class="deployment-control-item-box"><div class="deploying-progress-text-box"></div></div>
-    <div class="progress-bar-description"><%= descriptions[task.get('name')] %></div>
+    <div class="progress-bar-description"><%= descriptions[task.get('name')] || '' %></div>
   </li>
 <% } else { %>
   <li class="pull-right deployment-control-box">
-    <div class="deployment-control-item-box"><button class="deploy-btn <%= cluster.hasChanges() || cluster.needsRedeployment() ? '' : 'disabled' %>"><i class="icon-upload-cloud"></i> Deploy Changes</button></div>
+    <% var releaseAvailable = cluster.get('release').get('state') == 'available' %>
+    <div class="deployment-control-item-box"><button class="deploy-btn <%= releaseAvailable && (cluster.hasChanges() || cluster.needsRedeployment()) ? '' : 'disabled' %>"><i class="icon-upload-cloud"></i> Deploy Changes</button></div>
     <div class="deployment-control-item-box">
       <% var nodesToAdd = cluster.get('nodes').where({pending_addition: true}) %>
       <% var nodesToDelete = cluster.get('nodes').where({pending_deletion: true}) %>

@@ -30,11 +30,12 @@ define(['require'], function(require) {
         linebreaks: function(text) {
             return text.replace(/\n/g, '<br/>');
         },
+        composeLink: function(url) {
+            return '<a target="_blank" href="' + url + '">' + url + '</a>';
+        },
         urlify: function (text) {
-            var urlRegexp = /http:\/\/(?:(?:[0-9]|[1-9][0-9]|1[0-9]{2}|2[0-4][0-9]|25[0-5])\.){3}(?:[0-9]|[1-9][0-9]|1[0-9]{2}|2[0-4][0-9]|25[0-5])\//g;
-            return utils.linebreaks(text).replace(urlRegexp, function(url) {
-                return '<a target="_blank" href="' + url + '">' + url + '</a>';
-            });
+            var urlRegexp = /(?:https?:\/\/([\-\w\.]+)+(:\d+)?(\/([\w\/_\.]*(\?\S+)?)?)?)/g;
+            return utils.linebreaks(text).replace(urlRegexp, utils.composeLink);
         },
         forceWebkitRedraw: function(el) {
             if (window.isWebkit) {

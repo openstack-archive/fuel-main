@@ -1,6 +1,6 @@
 [
     {
-        "pk": 2,
+        "pk": 1,
         "model": "nailgun.release",
         "fields": {
             "name": "Grizzly on CentOS 6.4",
@@ -49,9 +49,9 @@
                         "label": "Virtual Storage",
                         "volumes": [
                             {
-                                "mount": "/var/lib/nova",
+                                "mount": "{{settings.NOVA_STATE_PATH}}",
                                 "type": "lv",
-                                "name": "libvirt",
+                                "name": "nova",
                                 "size": {
                                     "generator": "calc_total_vg",
                                     "generator_args": ["vm"]
@@ -246,7 +246,8 @@
                         },
                         "user_password": {
                             "generator": "password"
-                        }
+                        },
+                        "state_path": "{{settings.NOVA_STATE_PATH}}"
                     },
                     "rabbit": {
                         "password": {
