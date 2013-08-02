@@ -94,7 +94,7 @@ enable_outbound_network_for_product_vm() {
     # Check host nameserver configuration
     echo -n "Checking local DNS configuration... "
     if [ -f /etc/resolv.conf ]; then
-      nameserver="$(egrep '^nameserver ' /etc/resolv.conf | grep -P -v 'nameserver[ \t]+127.' | head -3)"
+      nameserver="$(egrep '^nameserver' /etc/resolv.conf | grep -P -v 'nameserver[ \t]+127.' | head -3)"
       if [ -z "$nameserver" ]; then
         echo "/etc/resolv.conf does not contain a nameserver. Using 8.8.8.8 for DNS."
         nameserver="nameserver 8.8.8.8"
@@ -128,7 +128,7 @@ enable_outbound_network_for_product_vm() {
         expect "$prompt"
         send "sed \"s/GATEWAY=.*/GATEWAY=\"$gateway_ip\"/g\" -i /etc/sysconfig/network\r"
         expect "$prompt"
-        send "echo \"$nameserver\" > /etc/dnsmasq.upstream\r"
+        send "echo -e \"$nameserver\\nnameserver 8.8.8.8\" > /etc/dnsmasq.upstream\r"
         expect "$prompt"
         send "service network restart >/dev/null 2>&1\r"
         expect "$prompt"
