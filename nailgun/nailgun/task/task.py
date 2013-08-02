@@ -156,16 +156,17 @@ class DeploymentTask(object):
             else:
                 cluster_attrs[net_name] = net.cidr
 
-        cluster_attrs['network_manager'] = task.cluster.net_manager
+        cluster_attrs['novanetwork_parameters'] = dict()
+        cluster_attrs['novanetwork_parameters']['network_manager'] = task.cluster.net_manager
 
         fixed_net = db().query(NetworkGroup).filter_by(
             cluster_id=cluster_id).filter_by(name='fixed').first()
         # network_size is required for all managers, otherwise
         #  puppet will use default (255)
-        cluster_attrs['network_size'] = fixed_net.network_size
-        if cluster_attrs['network_manager'] == 'VlanManager':
-            cluster_attrs['num_networks'] = fixed_net.amount
-            cluster_attrs['vlan_start'] = fixed_net.vlan_start
+        cluster_attrs['novanetwork_parameters']['network_size'] = fixed_net.network_size
+        if cluster_attrs['novanetwork_parameters']['network_manager'] == 'VlanManager':
+            cluster_attrs['novanetwork_parameters']['num_networks'] = fixed_net.amount
+            cluster_attrs['novanetwork_parameters']['vlan_start'] = fixed_net.vlan_start
             cls.__add_vlan_interfaces(nodes_with_attrs)
 
         if task.cluster.mode == 'ha':
