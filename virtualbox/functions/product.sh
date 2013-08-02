@@ -95,7 +95,6 @@ enable_outbound_network_for_product_vm() {
     echo -n "Checking local DNS configuration... "
     if [ -f /etc/resolv.conf ]; then
       nameserver="$(egrep '^nameserver ' /etc/resolv.conf | head -3)"
-
       if [ -z "$nameserver" ]; then
         echo "/etc/resolv.conf does not contain a nameserver. Using 8.8.8.8 for DNS."
         nameserver="nameserver 8.8.8.8"
