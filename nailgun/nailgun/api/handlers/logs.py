@@ -264,6 +264,7 @@ class LogPackageHandler(object):
         for fieldname in ("username", "password"):
             for fieldvalue in [getattr(acc, fieldname) for acc in accounts]:
                 tf.write("s/%s/%s/g\n" % (fieldvalue, fieldname))
+                tf.flush()
 
         commands = filter(lambda x: x != "", [
             "cat %s" % from_filename,
