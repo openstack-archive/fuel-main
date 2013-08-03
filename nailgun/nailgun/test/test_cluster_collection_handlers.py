@@ -31,11 +31,12 @@ from nailgun.test.base import reverse
 class TestHandlers(BaseHandlers):
 
     def _get_cluster_networks(self, cluster_id):
-        return json.loads(self.app.get(
+        nets = json.loads(self.app.get(
             reverse('NetworkConfigurationHandler',
                     {"cluster_id": cluster_id}),
             headers=self.default_headers,
         ).body)["networks"]
+        return sorted(nets, key=lambda n: n['vlan_start'])
 
     def test_cluster_list_empty(self):
         resp = self.app.get(
@@ -104,9 +105,6 @@ class TestHandlers(BaseHandlers):
             for f in ('cluster_id', 'id'):
                 del net1[f]
                 del net2[f]
-
-        cluster1_nets = sorted(cluster1_nets, key=lambda n: n['vlan_start'])
-        cluster2_nets = sorted(cluster2_nets, key=lambda n: n['vlan_start'])
 
         self.assertEquals(cluster1_nets, cluster2_nets)
 

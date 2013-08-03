@@ -144,6 +144,7 @@ class NodeCollectionHandler(JSONHandler):
                 node.create_meta(value)
             else:
                 setattr(node, key, value)
+
         node.name = "Untitled (%s)" % data['mac'][-5:]
         node.timestamp = datetime.now()
         db().add(node)

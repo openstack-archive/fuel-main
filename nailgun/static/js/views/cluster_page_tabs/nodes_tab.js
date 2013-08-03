@@ -536,7 +536,7 @@ function(utils, models, commonViews, dialogViews, nodesTabSummaryTemplate, editN
             }
         },
         isLocked: function() {
-            return !(this.node.get('pending_addition') || (this.node.get('status') == 'error' && this.node.get('error_type') == 'provision')) || !!this.model.task('deploy', 'running');
+            return !!this.model.task('deploy', 'running');
         }
     });
 
@@ -557,6 +557,9 @@ function(utils, models, commonViews, dialogViews, nodesTabSummaryTemplate, editN
             var result = false;
             this.disks.each(function(disk) {result = result || _.some(disk.get('volumes').models, 'validationError');}, this);
             return result;
+        },
+        isLocked: function() {
+            return !(this.node.get('pending_addition') || (this.node.get('status') == 'error' && this.node.get('error_type') == 'provision')) || this.constructor.__super__.isLocked.apply(this);
         },
         checkForChanges: function() {
             var hasChanges = this.hasChanges();
@@ -777,6 +780,9 @@ function(utils, models, commonViews, dialogViews, nodesTabSummaryTemplate, editN
         },
         hasChanges: function() {
             return !_.isEqual(this.interfaces.toJSON(), this.initialData);
+        },
+        isLocked: function() {
+            return !(this.node.get('pending_addition') || this.model.get('status') == 'error') || this.constructor.__super__.isLocked.apply(this);
         },
         checkForChanges: function() {
             this.$('.btn-apply, .btn-revert-changes').attr('disabled', this.isLocked() || !this.hasChanges());

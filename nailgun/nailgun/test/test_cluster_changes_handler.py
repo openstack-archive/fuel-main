@@ -30,6 +30,7 @@ from nailgun.test.base import fake_tasks
 from nailgun.test.base import reverse
 from nailgun.api.models import Cluster, Attributes, IPAddr, Task
 from nailgun.api.models import Network, NetworkGroup, IPAddrRange
+from nailgun.api.models import NodeNICInterface
 from nailgun.network.manager import NetworkManager
 from nailgun.task import task as tasks
 
@@ -100,14 +101,10 @@ class TestHandlers(BaseHandlers):
                 cluster_attrs[net.name + '_network_range'] = net.cidr
 
         cluster_attrs['floating_network_range'] = [
-            '172.16.0.10',
-            '172.16.0.11',
-            '172.16.0.12',
-
-            '172.16.0.2',
-            '172.16.0.3',
-            '172.16.0.4',
-            '172.16.0.5']
+            '172.16.0.2-172.16.0.4',
+            '172.16.0.3-172.16.0.5',
+            '172.16.0.10-172.16.0.12'
+        ]
 
         management_vip = self.env.network_manager.assign_vip(
             cluster_db.id,
@@ -271,8 +268,12 @@ class TestHandlers(BaseHandlers):
             }
         }
 
-        nailgun.task.manager.rpc.cast.assert_called_once_with(
-            'naily', [provision_msg, msg])
+        args, kwargs = nailgun.task.manager.rpc.cast.call_args
+        self.assertEquals(len(args), 2)
+        self.assertEquals(len(args[1]), 2)
+
+        self.datadiff(args[1][0], provision_msg)
+        self.datadiff(args[1][1], msg)
 
     @fake_tasks(fake_rpc=False, mock_rpc=False)
     @patch('nailgun.rpc.cast')
@@ -478,3 +479,98 @@ class TestHandlers(BaseHandlers):
         self.assertEquals(
             task.message,
             "Not enough controllers, ha mode requires at least 3 controllers")
+
+    @fake_tasks()
+    def test_admin_untagged_intersection(self):
+        meta = self.env.default_metadata()
+        meta["interfaces"] = [{
+            "mac": "00:00:00:00:00:66",
+            "max_speed": 1000,
+            "name": "eth0",
+            "current_speed": 1000
+        }, {
+            "mac": "00:00:00:00:00:77",
+            "max_speed": 1000,
+            "name": "eth1",
+            "current_speed": None
+        }]
+
+        self.env.create(
+            nodes_kwargs=[
+                {
+                    'api': True,
+                    'role': 'controller',
+                    'pending_addition': True,
+                    'meta': meta,
+                    'mac': "00:00:00:00:00:66"
+                }
+            ]
+        )
+
+        cluster_id = self.env.clusters[0].id
+        node_db = self.env.nodes[0]
+
+        nets = self.env.generate_ui_networks(cluster_id)
+        for net in nets["networks"]:
+            if net["name"] in ["public", "floating"]:
+                net["vlan_start"] = None
+
+        resp = self.app.put(
+            reverse('NetworkConfigurationHandler', kwargs={
+                'cluster_id': cluster_id
+            }),
+            json.dumps(nets),
+            headers=self.default_headers
+        )
+
+        main_iface_id = self.env.network_manager.get_main_nic(
+            node_db.id
+        )
+        main_iface_db = self.db.query(NodeNICInterface).get(
+            main_iface_id
+        )
+
+        assigned_net_names = [
+            n.name
+            for n in main_iface_db.assigned_networks
+        ]
+        self.assertIn("public", assigned_net_names)
+        self.assertIn("floating", assigned_net_names)
+
+        supertask = self.env.launch_deployment()
+        self.env.wait_error(supertask)
+
+        resp = self.app.get(
+            reverse('NodeNICsHandler', kwargs={
+                'node_id': node_db.id
+            }),
+            headers=self.default_headers
+        )
+
+        ifaces = json.loads(resp.body)
+
+        wrong_nets = filter(
+            lambda nic: (nic["name"] in ["public", "floating"]),
+            ifaces[0]["assigned_networks"]
+        )
+
+        map(
+            ifaces[0]["assigned_networks"].remove,
+            wrong_nets
+        )
+
+        map(
+            ifaces[1]["assigned_networks"].append,
+            wrong_nets
+        )
+
+        resp = self.app.put(
+            reverse('NodeCollectionNICsHandler', kwargs={
+                'node_id': node_db.id
+            }),
+            json.dumps([{"interfaces": ifaces, "id": node_db.id}]),
+            headers=self.default_headers
+        )
+
+        supertask = self.env.launch_deployment()
+        self.env.wait_ready(supertask)

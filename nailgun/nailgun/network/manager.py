@@ -297,6 +297,9 @@ class NetworkManager(object):
                 )
             )
             # check if any of node_ips in required ranges
+
+            ip_already_assigned = False
+
             for ip in node_ips:
                 if self.check_ip_belongs_to_net(ip, network):
                     logger.info(
@@ -306,7 +309,11 @@ class NetworkManager(object):
                             network.name
                         )
                     )
-                    continue
+                    ip_already_assigned = True
+                    break
+
+            if ip_already_assigned:
+                continue
 
             # IP address has not been assigned, let's do it
             free_ip = self.get_free_ips(network.network_group.id)[0]

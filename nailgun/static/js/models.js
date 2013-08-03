@@ -501,23 +501,29 @@ define(['utils'], function(utils) {
         constructorName: 'RedHatAccount',
         urlRoot: '/api/redhat/account',
         validate: function(attrs) {
-            var errors = [];
-            var regex = {
+            var errors = {};
+            var regexes = {
                 username: /^[A-z0-9\._%\+\-@]+$/,
                 password: /^[\x21-\x7E]+$/,
                 satellite: /(^(?:(?!\d+\.)[a-zA-Z0-9_\-]{1,63}\.?)+(?:[a-zA-Z]{2,})$)/,
                 activation_key: /^[A-z0-9\*\.\+\-]+$/
+            };
+            var messages = {
+                username: 'Invalid username',
+                password: 'Invalid password',
+                satellite: 'Only valid fully qualified domain name is allowed for the hostname field',
+                activation_key: 'Invalid activation key'
             };
             var fields = ['username', 'password'];
             if (attrs.license_type == 'rhn') {
                 fields = _.union(fields, ['satellite', 'activation_key']);
             }
             _.each(fields, function(attr) {
-                if (!regex[attr].test($.trim(attrs[attr]))) {
-                    errors.push(attr);
+                if (!regexes[attr].test(attrs[attr])) {
+                    errors[attr] = messages[attr];
                 }
             });
-            return errors.length ? errors : null;
+            return _.isEmpty(errors) ? null : errors;
         }
     });
 

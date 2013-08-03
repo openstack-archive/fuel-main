@@ -21,6 +21,8 @@ import json
 import logging
 import tarfile
 import tempfile
+import subprocess
+import shlex
 from itertools import dropwhile
 
 import web
@@ -28,6 +30,7 @@ import web
 from nailgun.db import db
 from nailgun.settings import settings
 from nailgun.api.models import Node
+from nailgun.api.models import RedHatAccount
 from nailgun.api.handlers.base import JSONHandler, content_json
 
 logger = logging.getLogger(__name__)
@@ -175,6 +178,20 @@ class LogEntryCollectionHandler(JSONHandler):
             logger.debug("Invalid 'max_entries' value: %d", max_entries)
             raise web.badrequest("Invalid 'max_entries' value")
 
+        accs = db().query(RedHatAccount).all()
+        regs = []
+        if len(accs) > 0:
+            regs = [
+                (
+                    re.compile(r"|".join([a.username for a in accs])),
+                    "username"
+                ),
+                (
+                    re.compile(r"|".join([a.password for a in accs])),
+                    "password"
+                )
+            ]
+
         has_more = False
         with open(log_file, 'r') as f:
             f.seek(0, 2)
@@ -219,6 +236,10 @@ class LogEntryCollectionHandler(JSONHandler):
                                  log_config['date_format'],
                                  m.group('date'))
                     continue
+
+                for regex, replace in regs:
+                    entry_text = regex.sub(replace, entry_text)
+
                 entries.append([
                     time.strftime(settings.UI_LOG_DATE_FORMAT, entry_date),
                     entry_level,
@@ -237,15 +258,66 @@ class LogEntryCollectionHandler(JSONHandler):
 
 class LogPackageHandler(object):
 
+    def sed(self, from_filename, to_filename, gz=False):
+        accounts = db().query(RedHatAccount).all()
+        tf = tempfile.NamedTemporaryFile()
+        for fieldname in ("username", "password"):
+            for fieldvalue in [getattr(acc, fieldname) for acc in accounts]:
+                tf.write("s/%s/%s/g\n" % (fieldvalue, fieldname))
+                tf.flush()
+
+        commands = filter(lambda x: x != "", [
+            "cat %s" % from_filename,
+            "gunzip -c" if gz else "",
+            "sed -f %s" % tf.name,
+            "gzip -c" if gz else "",
+        ])
+        to_file = open(to_filename, 'wb')
+
+        env = os.environ
+        env["PATH"] = "/bin:/usr/bin:/sbin:/usr/sbin"
+        process = []
+        for command in commands:
+            process.append(subprocess.Popen(
+                shlex.split(command),
+                env=env,
+                stdin=(process[-1].stdout if process else None),
+                stdout=(to_file
+                        if (len(process) == len(commands) - 1)
+                        else subprocess.PIPE)
+            ))
+            if len(process) >= 2:
+                process[-2].stdout.close()
+        process[-1].wait()
+        to_file.close()
+        tf.close()
+
     def GET(self):
         f = tempfile.TemporaryFile(mode='r+b')
         tf = tarfile.open(fileobj=f, mode='w:gz')
-        for arcname, path in settings.LOGS_TO_PACK_FOR_SUPPORT.items():
-            tf.add(path, arcname)
-        tf.close()
 
+        for arcname, path in settings.LOGS_TO_PACK_FOR_SUPPORT.items():
+            walk = os.walk(path)
+            if not os.path.isdir(path):
+                walk = (("/", [], [path]),)
+            for root, _, files in walk:
+                for filename in files:
+                    absfilename = os.path.join(root, filename)
+                    relfilename = os.path.relpath(absfilename, path)
+                    if not re.search(r".+\.bz2", filename):
+                        lf = tempfile.NamedTemporaryFile()
+                        self.sed(absfilename, lf.name,
+                                 (True
+                                  if re.search(r".+\.gz", filename)
+                                  else False))
+                        target = os.path.normpath(
+                            os.path.join(arcname, relfilename)
+                        )
+                        tf.add(lf.name, target)
+                        lf.close()
+        tf.close()
         filename = 'fuelweb-logs-%s.tar.gz' % (
-            time.strftime('%Y-%m-%d_%H:%M:%S', time.localtime()))
+            time.strftime('%Y-%m-%d_%H-%M-%S', time.localtime()))
         web.header('Content-Type', 'application/octet-stream')
         web.header('Content-Disposition', 'attachment; filename="%s"' % (
             filename))

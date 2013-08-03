@@ -21,6 +21,7 @@ import time
 import json
 import os
 import tarfile
+import gzip
 from StringIO import StringIO
 
 from nailgun.test.base import BaseHandlers
@@ -29,6 +30,7 @@ from nailgun.test.base import reverse
 from nailgun.settings import settings
 
 from nailgun.api.handlers.logs import read_backwards
+from nailgun.api.models import RedHatAccount
 
 
 class TestLogs(BaseHandlers):
@@ -38,7 +40,7 @@ class TestLogs(BaseHandlers):
         self.log_dir = tempfile.mkdtemp()
         self.local_log_file = os.path.join(self.log_dir, 'nailgun.log')
         regexp = (r'^(?P<date>\d{4}-\d{2}-\d{2}\s\d{2}:\d{2}:\d{2}):'
-                  '(?P<level>\w+):(?P<text>\w+)$')
+                  '(?P<level>\w+):(?P<text>.+)$')
         settings.update({
             'LOGS': [
                 {
@@ -226,6 +228,7 @@ class TestLogs(BaseHandlers):
         with open(log_file, 'w') as f:
             for log_entry in log_entries:
                 f.write(':'.join(log_entry) + '\n')
+                f.flush()
 
     def test_log_package_handler(self):
         f = tempfile.NamedTemporaryFile(mode='r+b')
@@ -239,3 +242,83 @@ class TestLogs(BaseHandlers):
         self.assertEquals(m.read(), 'testcontent')
         f.close()
         m.close()
+
+    def test_log_package_handler_sensitive(self):
+        account = RedHatAccount()
+        account.username = "REDHATUSERNAME"
+        account.password = "REDHATPASSWORD"
+        account.license_type = "rhsm"
+        self.db.add(account)
+        self.db.commit()
+
+        f = tempfile.NamedTemporaryFile(mode='r+b')
+        f.write('begin\nREDHATUSERNAME\nREDHATPASSWORD\nend')
+        f.flush()
+        settings.LOGS_TO_PACK_FOR_SUPPORT = {'test': f.name}
+        resp = self.app.get(reverse('LogPackageHandler'))
+        self.assertEquals(200, resp.status)
+        tf = tarfile.open(fileobj=StringIO(resp.body), mode='r:gz')
+        m = tf.extractfile('test')
+        self.assertEquals(m.read(), 'begin\nusername\npassword\nend')
+        f.close()
+        m.close()
+
+    def test_log_package_handler_sensitive_gz(self):
+        account = RedHatAccount()
+        account.username = "REDHATUSERNAME"
+        account.password = "REDHATPASSWORD"
+        account.license_type = "rhsm"
+        self.db.add(account)
+        self.db.commit()
+
+        f = tempfile.NamedTemporaryFile(mode='r+b', suffix='.gz')
+        fgz = gzip.GzipFile(mode='w+b', fileobj=f)
+        fgz.write('begin\nREDHATUSERNAME\nREDHATPASSWORD\nend')
+        fgz.flush()
+        fgz.close()
+
+        settings.LOGS_TO_PACK_FOR_SUPPORT = {'test.gz': f.name}
+        resp = self.app.get(reverse('LogPackageHandler'))
+        self.assertEquals(200, resp.status)
+        tf = tarfile.open(fileobj=StringIO(resp.body), mode='r:gz')
+
+        m = tf.extractfile('test.gz')
+        mgz = gzip.GzipFile(mode='r+b', fileobj=m)
+        self.assertEquals(mgz.read(), 'begin\nusername\npassword\nend')
+        mgz.close()
+
+        f.close()
+        m.close()
+
+    def test_log_entry_collection_handler_sensitive(self):
+        account = RedHatAccount()
+        account.username = "REDHATUSERNAME"
+        account.password = "REDHATPASSWORD"
+        account.license_type = "rhsm"
+        self.db.add(account)
+        self.db.commit()
+
+        log_entries = [
+            [
+                time.strftime(settings.UI_LOG_DATE_FORMAT),
+                'LEVEL111',
+                'begin REDHATUSERNAME REDHATPASSWORD end',
+            ],
+        ]
+        response_log_entries = [
+            [
+                time.strftime(settings.UI_LOG_DATE_FORMAT),
+                'LEVEL111',
+                'begin username password end',
+            ],
+        ]
+        self._create_logfile_for_node(settings.LOGS[0], log_entries)
+        resp = self.app.get(
+            reverse('LogEntryCollectionHandler'),
+            params={'source': settings.LOGS[0]['id']},
+            headers=self.default_headers
+        )
+        self.assertEquals(200, resp.status)
+        response = json.loads(resp.body)
+        response['entries'].reverse()
+        self.assertEquals(response['entries'], response_log_entries)

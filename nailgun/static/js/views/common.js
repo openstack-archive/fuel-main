@@ -243,17 +243,14 @@ function(utils, models, dialogViews, navbarTemplate, nodesStatsTemplate, notific
         toggle: function() {
             this.$('.control-group.error').removeClass('error').find('.help-inline').html('');
             this.$('.control-group.rhn').toggle();
-            this.$('.alert').hide().html('');
         },
         onInputKeydown: function(e) {
             this.$(e.currentTarget).parents('.control-group').removeClass('error').find('.help-inline').html('');
-            this.$('.alert').hide().html('');
         },
-        showValidationError: function(message, fields) {
-            _.each(fields, function(field) {
-                this.$('*[name=' + field + ']').closest('.control-group').addClass('error');
+        showValidationError: function(errors) {
+            _.each(errors, function(message, field) {
+                this.$('*[name=' + field + ']').closest('.control-group').addClass('error').find('.help-inline').text(message);
             }, this);
-            this.$('.alert').text(message).show();
         },
         setCredentials: function() {
             var accountData = {
@@ -282,8 +279,8 @@ function(utils, models, dialogViews, navbarTemplate, nodesStatsTemplate, notific
                 this.redHatAccount.deferred = this.redHatAccount.fetch();
             }
             this.redHatAccount.on('sync', this.render, this);
-            this.redHatAccount.on('invalid', function(model, error) {
-                this.showValidationError('Invalid data', error);
+            this.redHatAccount.on('invalid', function(model, errors) {
+                this.showValidationError(errors);
             }, this);
         },
         render: function() {
