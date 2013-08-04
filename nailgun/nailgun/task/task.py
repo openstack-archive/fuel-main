@@ -128,13 +128,16 @@ class DeploymentTask(object):
             netmanager.assign_ips(nodes_ids, "storage")
 
         nodes_with_attrs = []
-        for n in nodes:
-            n.pending_addition = False
-            if n.status in ('ready', 'deploying'):
-                n.status = 'provisioned'
-            n.progress = 0
-            db().add(n)
-            db().commit()
+        # FIXME(mihgen): We need to pass all other nodes, so astute
+        #  can know about all the env, not only about added nodes.
+        for n in task.cluster.nodes:
+            if n.id in nodes_ids:  # It's node which we need to redeploy
+                n.pending_addition = False
+                if n.status in ('ready', 'deploying'):
+                    n.status = 'provisioned'
+                n.progress = 0
+                db().add(n)
+                db().commit()
             nodes_with_attrs.append(cls.__format_node_for_naily(n))
 
         cluster_attrs = task.cluster.attributes.merged_attrs_values()
