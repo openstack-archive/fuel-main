@@ -133,11 +133,14 @@ class DeploymentTask(object):
         for n in task.cluster.nodes:
             if n.id in nodes_ids:  # It's node which we need to redeploy
                 n.pending_addition = False
-                if n.status in ('ready', 'deploying'):
+                if n.status in ('deploying'):
                     n.status = 'provisioned'
                 n.progress = 0
                 db().add(n)
                 db().commit()
+            # Hovewer, we must not pass nodes which are set to be deleted.
+            if n.pending_deletion:
+                continue
             nodes_with_attrs.append(cls.__format_node_for_naily(n))
 
         cluster_attrs = task.cluster.attributes.merged_attrs_values()

@@ -235,23 +235,12 @@ class Node(Base):
 
     @property
     def needs_reprovision(self):
-        return self.status == 'error' and self.error_type == 'provision'
+        return self.status == 'error' and self.error_type == 'provision' and \
+            not self.pending_deletion
 
     @property
     def needs_redeploy(self):
-        changes = []
-        if self.cluster is not None:
-            def check_change(change):
-                return change.name != 'disks' or change.node_id == self.id
-            changes = filter(check_change, self.cluster.changes)
-        cases = [
-            self.status == 'error' and self.error_type == 'deploy',
-            changes != []
-        ]
-        and_cases = [
-            not self.pending_deletion
-        ]
-        return any(cases) and all(and_cases)
+        return self.status == 'error' and not self.pending_deletion
 
     @property
     def needs_redeletion(self):
