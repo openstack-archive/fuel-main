@@ -1,6 +1,6 @@
 <div class="disk-box disk" data-disk="<%- disk.id %>">
 
-  <div class="disk-box-name pull-left"><%- disk.id %></div>
+  <div class="disk-box-name pull-left"><%- disk.get('(name') %> (<%- disk.id %>)</div>
   <div class="disk-box-size pull-right">Total Space: <%= showDiskSize(disk.get('size'), 2) %></div>
 
   <div class="disk-map-short disk-map-full">
