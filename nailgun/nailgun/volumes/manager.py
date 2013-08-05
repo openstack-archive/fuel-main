@@ -131,6 +131,7 @@ class DisksFormatConvertor(object):
 
             disk_simple = {
                 'id': disk['id'],
+                'name': disk['name'],
                 'size': size,
                 'volumes': cls.format_volumes_to_simple(disk['volumes'])}
 
@@ -201,9 +202,11 @@ class DisksFormatConvertor(object):
 
 class Disk(object):
 
-    def __init__(self, generator_method, disk_id, size, boot_is_raid=True):
+    def __init__(self, generator_method, disk_id, name,
+                 size, boot_is_raid=True):
         self.call_generator = generator_method
         self.id = disk_id
+        self.name = name
         self.size = size
         self.free_space = size
         self.volumes = []
@@ -286,6 +289,7 @@ class Disk(object):
     def render(self):
         return {
             "id": self.id,
+            "name": self.name,
             "type": "disk",
             "size": self.size,
             "volumes": self.volumes
@@ -330,7 +334,9 @@ class VolumeManager(object):
             boot_is_raid = True if disks_count > 1 else False
 
             disk = Disk(
-                self.call_generator, d["disk"],
+                self.call_generator,
+                d["disk"],
+                d["name"],
                 byte_to_megabyte(d["size"]),
                 boot_is_raid=boot_is_raid)
 
