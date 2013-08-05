@@ -127,7 +127,7 @@ LOGS:
     <<: *remote_syslog_log_format
     path: '/var/log/naily/naily.log'
   - id: puppet
-    name: "Puppet agent"
+    name: "Releases"
     <<: *local_log_type
     <<: *remote_syslog_log_format
     path: "/var/log/puppet/agent.log"
