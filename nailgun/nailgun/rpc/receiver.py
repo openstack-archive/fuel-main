@@ -403,7 +403,7 @@ class NailgunReceiver(object):
                     u"Deployment of environment"
                     " '{0}' is done"
                 ).format(task.cluster.name)
-                logger.warning("Controller node not found in '{0}'".format(
+                logger.warning(u"Controller node not found in '{0}'".format(
                     task.cluster.name
                 ))
         elif task.cluster.mode == 'ha':

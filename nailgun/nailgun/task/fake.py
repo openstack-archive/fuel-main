@@ -154,7 +154,9 @@ class FakeDeploymentThread(FakeAmpqThread):
                 elif n['status'] == 'discover':
                     n['status'] = next_st[n['status']]
                     n['progress'] = 0
-                elif n['status'] != 'provisioned':
+                elif n['status'] == 'ready':
+                    n['progress'] = 100
+                elif n['status'] not in ('provisioned',):
                     n['progress'] += randrange(
                         self.low_tick_count,
                         self.tick_count
@@ -173,7 +175,8 @@ class FakeDeploymentThread(FakeAmpqThread):
             if all(map(
                 lambda n: n['status'] in (
                     'provisioned',
-                    'error'
+                    'error',
+                    'ready'
                 ) or not n['online'],
                 kwargs['nodes']
             )):

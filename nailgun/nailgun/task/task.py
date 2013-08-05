@@ -130,7 +130,12 @@ class DeploymentTask(object):
         nodes_with_attrs = []
         # FIXME(mihgen): We need to pass all other nodes, so astute
         #  can know about all the env, not only about added nodes.
-        for n in task.cluster.nodes:
+        for n in db().query(Node).filter_by(
+            cluster=task.cluster
+        ).order_by(Node.id):
+            # However, we must not pass nodes which are set to be deleted.
+            if n.pending_deletion:
+                continue
             if n.id in nodes_ids:  # It's node which we need to redeploy
                 n.pending_addition = False
                 if n.status in ('deploying'):
@@ -138,9 +143,6 @@ class DeploymentTask(object):
                 n.progress = 0
                 db().add(n)
                 db().commit()
-            # Hovewer, we must not pass nodes which are set to be deleted.
-            if n.pending_deletion:
-                continue
             nodes_with_attrs.append(cls.__format_node_for_naily(n))
 
         cluster_attrs = task.cluster.attributes.merged_attrs_values()
@@ -163,18 +165,20 @@ class DeploymentTask(object):
             else:
                 cluster_attrs[net_name] = net.cidr
 
-        cluster_attrs['novanetwork_parameters'] = dict()
-        cluster_attrs['novanetwork_parameters']['network_manager'] = task.cluster.net_manager
+        net_params = {}
+        net_params['network_manager'] = task.cluster.net_manager
 
         fixed_net = db().query(NetworkGroup).filter_by(
             cluster_id=cluster_id).filter_by(name='fixed').first()
         # network_size is required for all managers, otherwise
         #  puppet will use default (255)
-        cluster_attrs['novanetwork_parameters']['network_size'] = fixed_net.network_size
-        if cluster_attrs['novanetwork_parameters']['network_manager'] == 'VlanManager':
-            cluster_attrs['novanetwork_parameters']['num_networks'] = fixed_net.amount
-            cluster_attrs['novanetwork_parameters']['vlan_start'] = fixed_net.vlan_start
+        net_params['network_size'] = fixed_net.network_size
+        if net_params['network_manager'] == 'VlanManager':
+            net_params['num_networks'] = fixed_net.amount
+            net_params['vlan_start'] = fixed_net.vlan_start
             cls.__add_vlan_interfaces(nodes_with_attrs)
+
+        cluster_attrs['novanetwork_parameters'] = net_params
 
         if task.cluster.mode == 'ha':
             logger.info("HA mode chosen, creating VIP addresses for it..")

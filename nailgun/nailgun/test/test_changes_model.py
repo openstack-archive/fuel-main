@@ -167,11 +167,16 @@ class TestClusterChanges(BaseHandlers):
 
     @fake_tasks()
     def test_successful_deployment_drops_all_changes(self):
-        cluster = self.env.create_cluster(api=True)
-        node = self.env.create_node(cluster_id=cluster["id"])
+        self.env.create(
+            nodes_kwargs=[
+                {"api": True, "pending_addition": True}
+            ]
+        )
         supertask = self.env.launch_deployment()
         self.env.wait_ready(supertask, 60)
-        cluster_db = self.db.query(Cluster).get(cluster["id"])
+        cluster_db = self.db.query(Cluster).get(
+            self.env.clusters[0].id
+        )
         self.assertEquals(list(cluster_db.changes), [])
 
     @fake_tasks()
