@@ -43,3 +43,53 @@ All our development is commonly done on Ubuntu 12. Follow the steps to prepare a
 
     python manage.py run -p 8000 --fake-tasks-amqp | grep --line-buffered -v -e HTTP -e '^$' >> /var/log/nailgun.log 2>&1 &
 
+How to add new volume on node
+-----------------------------
+
+1. Add new volume into release metadata (nailgun/fixtures/openstack.json):
+
+Volume format is as follows::
+
+    {
+        "id": "VOLUME_GROUP_NAME",
+        "type": "vg",
+        "min_size": {"generator": "calc_min_VOLUME_NAME_size"},
+        "label": "Label how it will be shown on UI",
+        "volumes": [
+            {
+                "mount": "/path/to/mount/point",
+                "type": "lv",
+                "name": "VOLUME_NAME",
+                "size": {
+                    "generator": "calc_total_vg",
+                    "generator_args": ["VOLUME_GROUP_NAME"]
+                }
+            }
+        ]
+    }
+
+Do not forget to map new volume into the node roles::
+
+    {
+        "volumes_roles_mapping": {
+            "controller": ["os", "image"],
+            "compute": ["os", "vm", "VOLUME_GROUP_NAME"],
+            "cinder": ["os", "cinder"]
+        }
+    }
+
+
+2. Add generators into nailgun/volumes/manager.py
+
+There is the method in the VolumeManager class where volume calculators are defined. New volume generator 'calc_min_VOLUME_NAME_size' needs to be added in the generators dictionary.
+
+.. code-block:: python
+
+    def call_generator(self, generator, *args):
+        generators = {
+            ...
+            'calc_min_VOLUME_NAME_size': lambda: gb_to_mb(10),
+            ...
+        }
+
+3. That is it. Nailgun will add new volume for a given role in the its GET responses to /api/nodes/<id>/volumes. It also will add new volume in ks_spaces variable which is used by cobbler to create kickstart partition commands.
