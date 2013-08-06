@@ -19,6 +19,7 @@ Current architecture uses so-called Metadata via Facter Extension approach.
         [Async RPC consumer(Naily)] --> [Receiver] : AMQP
         [Async RPC consumer(Naily)] --> [Orchestrator]
         [Orchestrator] --> [MCollective]
+        [Puppet Master]
     }
     package "Target Node" {
         [MCollective Agent] --> [Puppet]

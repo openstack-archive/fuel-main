@@ -35,11 +35,11 @@ The requirements for running Fuel Web on VirtualBox are:
 
 * A physical machine with Linux or Mac OS.
 
-  * The scripts have been tested on Mac OS 10.7.5, Mac OS 10.8.3, and Ubuntu 12.04.
+  * The scripts have been tested on Mac OS 10.7.5, Mac OS 10.8.3, Ubuntu 12.04, Ubuntu 12.10.
 
 * VirtualBox must be installed with the extension pack. Both can be downloaded from `<http://www.virtualbox.org/>`_.
 
-  * The scripts have been tested using VirtualBox 4.2.12
+  * The scripts have been tested using VirtualBox 4.2.12, 4.2.16
 
 * 8 GB+ of RAM
 
