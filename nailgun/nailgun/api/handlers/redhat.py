@@ -52,6 +52,12 @@ class RedHatAccountHandler(JSONHandler):
     @content_json
     def POST(self):
         data = self.checked_data()
+
+        license_type = data.get("license_type")
+        if license_type == 'rhsm':
+            data["satellite"] = ""
+            data["activation_key"] = ""
+
         release_id = data.pop('release_id')
         release_db = db().query(Release).get(release_id)
         if not release_db:
@@ -75,6 +81,11 @@ class RedHatSetupHandler(JSONHandler):
     @content_json
     def POST(self):
         data = self.checked_data()
+
+        license_type = data.get("license_type")
+        if license_type == 'rhsm':
+            data["satellite"] = ""
+            data["activation_key"] = ""
 
         release_data = {'release_id': data['release_id']}
         release_id = data.pop('release_id')
