@@ -258,8 +258,12 @@ class Disk(object):
         deducated size of single lvm meta for each
         PV on disk.
         """
-        self.free_space -= size
-        self.volumes.append({'type': 'lvm_meta_pool', 'size': size})
+        existent_lvm_pool = filter(
+            lambda volume: volume['type'] == 'lvm_meta_pool', self.volumes)
+
+        if not existent_lvm_pool:
+            self.free_space -= size
+            self.volumes.append({'type': 'lvm_meta_pool', 'size': size})
 
     def get_lvm_meta_from_pool(self):
         lvm_meta_pool = filter(
