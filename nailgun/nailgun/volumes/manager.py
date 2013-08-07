@@ -205,14 +205,14 @@ class DisksFormatConvertor(object):
 
 class Disk(object):
 
-    def __init__(self, generator_method, disk_id, name,
+    def __init__(self, volumes, generator_method, disk_id, name,
                  size, boot_is_raid=True, possible_pvs_count=0):
         self.call_generator = generator_method
         self.id = disk_id
         self.name = name
         self.size = size
         self.free_space = size
-        self.lvm_meta_size = call_generator('lvm_meta_size')
+        self.lvm_meta_size = generator_method('calc_lvm_meta_size')
         self.lvm_meta_pool_size = self.lvm_meta_size * possible_pvs_count
         self.volumes = volumes
 
@@ -242,14 +242,6 @@ class Disk(object):
             'size': size})
         self.free_space -= size
 
-    def create_or_update_volume(self, new_volume):
-        for idx, volume in enumerate(self.volumes):
-            if :
-                self.volumes[idx] = volume
-                return
-
-        self.volumes.append(new_volume)
-
     def create_boot_records(self):
         '''
         Reserve space for efi, gpt, bios
@@ -273,7 +265,7 @@ class Disk(object):
         lvm_meta_pool = filter(
             lambda volume: volume['type'] == 'lvm_meta_pool', self.volumes)[0]
 
-        lvm_meta_pool[size] -= self.lvm_meta_size
+        lvm_meta_pool['size'] -= self.lvm_meta_size
         return self.lvm_meta_size
 
     def create_pv(self, name, size=None):
@@ -350,9 +342,12 @@ class VolumeManager(object):
         for d in sorted(node.meta['disks'], key=lambda i: i['name']):
             disks_count = len(node.meta["disks"])
             boot_is_raid = True if disks_count > 1 else False
-            disk_volumes = filter(
-                lambda disk: v.get('id') == disk.id ,
-                only_disks(self.volumes))[0].get('volumes', [])
+
+            exist_disk = filter(
+                lambda disk: d['disk'] == disk['id'],
+                only_disks(self.volumes))
+
+            disk_volumes = exist_disk[0].get('volumes', []) if exist_disk else []
 
             disk = Disk(
                 disk_volumes,
