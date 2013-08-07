@@ -253,12 +253,13 @@ function(utils, models, dialogViews, navbarTemplate, nodesStatsTemplate, notific
             }, this);
         },
         setCredentials: function() {
+            var licenseType = this.$('input[name=license-type]:checked').val();
             var accountData = {
-                license_type: this.$('input[name=license-type]:checked').val(),
+                license_type: licenseType,
                 username: this.$('input[name=username]').val(),
                 password: this.$('input[name=password]').val(),
-                satellite: this.$('input[name=satellite]').val(),
-                activation_key: this.$('input[name=activation_key]').val()
+                satellite: licenseType == 'rhn' ? this.$('input[name=satellite]').val() : '',
+                activation_key: licenseType == 'rhn' ? this.$('input[name=activation_key]').val() : ''
             };
             return this.redHatAccount.set(accountData, {validate: true});
         },

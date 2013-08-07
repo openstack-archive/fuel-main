@@ -3880,11 +3880,21 @@ div.create-cluster-form .radio-checkbox-group label {
 }
 
 .rhel-license-dialog {
-  max-height: 430px;
+  max-height: 520px;
 }
 
 .rhel-license label {
   text-align: left;
+}
+
+.rhel-license span.help-inline {
+  padding-left: 30px;
+  position: relative;
+  left: -26px;
+}
+
+.rhel-license label.control-label {
+  width: 170px;
 }
 
 .download_progress .progress {
