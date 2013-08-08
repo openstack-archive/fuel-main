@@ -93,15 +93,9 @@ class TestNodeDisksHandlers(BaseHandlers):
             if disk['size'] > 0:
                 for volume in disk['volumes']:
                     volume['size'] = 4200
+        expect_disks = deepcopy(disks)
 
         response = self.put(node_db.id, disks)
-
-        expect_disks = deepcopy(disks)
-        for disk in expect_disks:
-            for volume in disk['volumes']:
-                if disk['size'] == 0:
-                    volume['size'] = 0
-
         self.assertEquals(response, expect_disks)
 
         response = self.get(node_db.id)
@@ -140,8 +134,7 @@ class TestNodeDisksHandlers(BaseHandlers):
             lvm_meta = updated_disks_count * \
                 node_db.volume_manager.call_generator('calc_lvm_meta_size')
 
-            volume_group_size = (
-                new_volume_size * updated_disks_count) - lvm_meta
+            volume_group_size = new_volume_size * updated_disks_count
             self.assertEquals(size_volumes_after, volume_group_size)
 
     def test_validator_not_enough_size_for_volumes(self):
@@ -294,13 +287,15 @@ class TestVolumeManager(BaseHandlers):
         self.assertTrue(type(size) == int)
         self.assertGreater(size, 0)
 
-    def os_size(self, disks):
+    def os_size(self, disks, with_lvm_meta=False):
         os_sum_size = 0
         for disk in only_disks(disks):
             os_volume = filter(
                 lambda volume: volume.get('vg') == 'os', disk['volumes'])[0]
 
             os_sum_size += os_volume['size']
+            if not with_lvm_meta:
+                os_sum_size -= os_volume['lvm_meta_size']
 
         self.non_zero_size(os_sum_size)
         return os_sum_size
@@ -330,17 +325,20 @@ class TestVolumeManager(BaseHandlers):
             volume_manager.call_generator('calc_min_os_size'))
 
     def all_free_space_except_os_for_volume(self, spaces, volume_name):
-        os_size = self.os_size(spaces)
+        os_size = self.os_size(spaces, with_lvm_meta=True)
         reserved_size = self.reserved_size(spaces)
-        vg_size = 0
         disk_sum_size = sum([disk['size'] for disk in only_disks(spaces)])
+        vg_size = 0
+        sum_lvm_meta = 0
         for disk in only_disks(spaces):
             for volume in disk['volumes']:
                 if volume.get('vg') == volume_name:
                     vg_size += volume['size']
+                    vg_size -= volume['lvm_meta_size']
+                    sum_lvm_meta += volume['lvm_meta_size']
 
         self.assertEquals(
-            vg_size, disk_sum_size - os_size - reserved_size)
+            vg_size, disk_sum_size - os_size - reserved_size - sum_lvm_meta)
 
     def logical_volume_sizes_should_equal_all_phisical_volumes(self, spaces):
         vg_sizes = {}
@@ -352,7 +350,6 @@ class TestVolumeManager(BaseHandlers):
                 vg_sizes[vg_name] += volume['size']
 
         pv_sizes = {}
-        test = 0
         for disk in only_disks(spaces):
             for volume in disk['volumes']:
                 if volume['type'] == 'pv':
@@ -361,12 +358,7 @@ class TestVolumeManager(BaseHandlers):
                         pv_sizes[vg_name] = 0
 
                     pv_sizes[vg_name] += volume['size']
-                elif volume['type'] == 'lvm_meta':
-                    vg_name = volume['name']
-                    if not pv_sizes.get(vg_name):
-                        pv_sizes[vg_name] = 0
-
-                    pv_sizes[vg_name] -= volume['size']
+                    pv_sizes[vg_name] -= volume['lvm_meta_size']
 
         self.assertEquals(vg_sizes, pv_sizes)
 
@@ -381,7 +373,7 @@ class TestVolumeManager(BaseHandlers):
         node = self.create_node('controller')
         disks = only_disks(node.volume_manager.volumes)
         disks_size_sum = sum([disk['size'] for disk in disks])
-        os_sum_size = self.os_size(disks)
+        os_sum_size = self.os_size(disks, with_lvm_meta=True)
         glance_sum_size = self.glance_size(disks)
         reserved_size = self.reserved_size(disks)
 
@@ -467,8 +459,10 @@ class TestDisks(BaseHandlers):
             lambda volume: volume.get('mount') == '/boot',
             volumes)[0]
 
-    def create_disk(self, boot_is_raid=False):
-        return Disk(lambda name: 100, 'sda', 'sda', 10000, boot_is_raid)
+    def create_disk(self, boot_is_raid=False, possible_pvs_count=0):
+        return Disk(
+            [], lambda name: 100, 'sda', 'sda', 10000,
+            boot_is_raid=boot_is_raid, possible_pvs_count=possible_pvs_count)
 
     def test_create_mbr_as_raid_if_disks_count_greater_than_zero(self):
         disk = self.create_disk(boot_is_raid=True)
@@ -479,3 +473,11 @@ class TestDisks(BaseHandlers):
         disk = self.create_disk()
         boot_partition = self.get_boot(disk.volumes)
         self.assertEquals(boot_partition['type'], 'partition')
+
+    def test_remove_pv(self):
+        disk = self.create_disk(possible_pvs_count=1)
+        disk_without_pv = deepcopy(disk)
+        disk.create_pv('pv_name', 100)
+        disk.remove_pv('pv_name')
+
+        self.assertEquals(disk_without_pv.render(), disk.render())
