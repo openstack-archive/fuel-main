@@ -21,7 +21,7 @@
 cluster_size=3
 
 # Get the first available ISO from the directory 'iso'
-iso_path=`ls -1 iso/*.iso 2>/dev/null | head -1`
+iso_path=`ls -1t iso/*.iso 2>/dev/null | head -1`
 
 # Every Fuel Web machine name will start from this prefix  
 vm_name_prefix=fuel-web-
