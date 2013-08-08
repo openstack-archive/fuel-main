@@ -125,9 +125,12 @@ class DisksFormatConvertor(object):
         for disk in disks_full_format:
             reserved_size = cls.calculate_service_partitions_size(
                 disk['volumes'])
+
+            lvm_pvs_size = sum([
+                volume.get('lvm_meta_size', 0) for volume in disk['volumes']])
             size = 0
             if disk['size'] >= reserved_size:
-                size = disk['size'] - reserved_size
+                size = disk['size'] - reserved_size - lvm_pvs_size
 
             disk_simple = {
                 'id': disk['id'],
@@ -419,7 +422,7 @@ class VolumeManager(object):
             self.disks.append(disk)
 
         self.__logger('Initialized with node: %s' % node.full_name)
-        self.__logger('Initialized with volumes: %s' % json.dumps(self.volumes, indent=4))
+        self.__logger('Initialized with volumes: %s' % self.volumes)
         self.__logger('Initialized with disks: %s' % self.disks)
 
     def set_pv_size(self, disk_id, volume_name, size):
