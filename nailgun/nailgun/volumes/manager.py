@@ -282,7 +282,8 @@ class Disk(object):
             lambda volume: volume.get('type') == 'boot', self.volumes)
 
         if not existing_boot:
-            self.volumes.append({'type': 'boot', 'size': self.get_size(boot_records_size)})
+            self.volumes.append(
+                {'type': 'boot', 'size': self.get_size(boot_records_size)})
 
     def get_size(self, size):
         """
@@ -304,7 +305,8 @@ class Disk(object):
             lambda volume: volume['type'] == 'lvm_meta_pool', self.volumes)
 
         if not existing_lvm_pool:
-            self.volumes.append({'type': 'lvm_meta_pool', 'size': self.get_size(size)})
+            self.volumes.append(
+                {'type': 'lvm_meta_pool', 'size': self.get_size(size)})
 
     def get_lvm_meta_from_pool(self):
         """
@@ -439,7 +441,8 @@ class VolumeManager(object):
                 lambda disk: d['disk'] == disk['id'],
                 only_disks(self.volumes))
 
-            disk_volumes = existing_disk[0].get('volumes', []) if existing_disk else []
+            disk_volumes = existing_disk[0].get(
+                'volumes', []) if existing_disk else []
 
             disk = Disk(
                 disk_volumes,
