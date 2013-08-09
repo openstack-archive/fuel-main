@@ -287,7 +287,7 @@ class TestVolumeManager(BaseHandlers):
         self.assertTrue(type(size) == int)
         self.assertGreater(size, 0)
 
-    def os_size(self, disks, with_lvm_meta=False):
+    def os_size(self, disks, with_lvm_meta=True):
         os_sum_size = 0
         for disk in only_disks(disks):
             os_volume = filter(
@@ -321,11 +321,11 @@ class TestVolumeManager(BaseHandlers):
 
     def should_contain_os_with_minimal_size(self, volume_manager):
         self.assertEquals(
-            self.os_size(volume_manager.volumes),
+            self.os_size(volume_manager.volumes, with_lvm_meta=False),
             volume_manager.call_generator('calc_min_os_size'))
 
     def all_free_space_except_os_for_volume(self, spaces, volume_name):
-        os_size = self.os_size(spaces, with_lvm_meta=True)
+        os_size = self.os_size(spaces)
         reserved_size = self.reserved_size(spaces)
         disk_sum_size = sum([disk['size'] for disk in only_disks(spaces)])
         vg_size = 0
@@ -373,7 +373,7 @@ class TestVolumeManager(BaseHandlers):
         node = self.create_node('controller')
         disks = only_disks(node.volume_manager.volumes)
         disks_size_sum = sum([disk['size'] for disk in disks])
-        os_sum_size = self.os_size(disks, with_lvm_meta=True)
+        os_sum_size = self.os_size(disks)
         glance_sum_size = self.glance_size(disks)
         reserved_size = self.reserved_size(disks)
 
