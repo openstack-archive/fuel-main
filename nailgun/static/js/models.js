@@ -403,7 +403,7 @@ define(['utils'], function(utils) {
                                     rangeErrors.end = 'Invalid IP range end';
                                 }
                                 if (start != '' && end != '' && !this.validateIPrange(start, end)) {
-                                    rangeErrors.start = rangeErrors.end = 'Lower IP range bound is greater than upper bound';
+                                    rangeErrors.start = rangeErrors.end = 'IP range start is greater than IP range end';
                                 }
                                 if (rangeErrors.start || rangeErrors.end) {
                                     errors.ip_ranges = _.compact(_.union([rangeErrors], errors.ip_ranges));

@@ -1482,14 +1482,13 @@ h6.page-title {
 }
 
 .networks-table div.error {
-  float: right;
-  width: 250px;
+  float: left;
 }
 
 .networks-table .error .help-inline {
   display: block;
-  padding-top: 2px;
-  width: 250px;
+  padding-top: 5px;
+  max-width: 520px;
   color: #B94A48;
 }
 
