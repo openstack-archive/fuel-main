@@ -37,7 +37,7 @@ Setup for Nailgun Unit Tests
 #. Install and configure PostgreSQL database::
 
     sudo apt-get install postgresql postgresql-server-dev-9.1
-    sudo -u postgres createuser -DSP nailgun (enter password nailgun)
+    sudo -u postgres createuser -SDRP nailgun (enter password nailgun)
     sudo -u postgres createdb nailgun
 
 #. Create required folder for log files::
@@ -113,18 +113,6 @@ Astute and Naily
     cd astute
     ruby -I. spec/integration/mcollective_spec.rb
 
-Installing Cobbler
-------------------
-
-Install Cobbler from GitHub (it can't be installed from PyPi, and deb
-package in Ubuntu is outdated)::
-
-    cd ~
-    git clone git://github.com/cobbler/cobbler.git
-    cd cobbler
-    git checkout release24
-    sudo make install
-
 Building the Fuel ISO
 ---------------------
 
@@ -142,13 +130,82 @@ Building the Fuel ISO
 
     make iso
 
+Running the FuelWeb Integration Test
+------------------------------------
+
+#. Install libvirt and Devops library dependencies::
+
+    sudo apt-get install libvirt-bin python-libvirt python-ipaddr python-paramiko
+    sudo pip install xmlbuilder django==1.4.3
+
+#. Configure permissions for libvirt and relogin or restart your X for
+   the group changes to take effect (consult /etc/libvirt/libvirtd.conf
+   for the group name)::
+
+    GROUP=`grep unix_sock_group /etc/libvirt/libvirtd.conf|cut -d'"' -f2`
+    sudo useradd `whoami` kvm
+    sudo useradd `whoami` $GROUP
+    chgrp $GROUP /var/lib/libvirt/images
+    chmod g+w /var/lib/libvirt/images
+
+#. Clone the Mirantis Devops virtual environment manipulation library
+   from GitHub and install it where FuelWeb Integration Test can find
+   it::
+
+    git clone git@github.com:Mirantis/devops.git
+    cd devops
+    python setup.py build
+    sudo python setup.py install
+
+#. Configure and populate the Devops DB::
+
+    SETTINGS=/usr/local/lib/python2.7/dist-packages/devops-2.0-py2.7.egg/devops/settings.py
+    sed -i "s/'postgres'/'devops'/" $SETTINGS
+    echo "SECRET_KEY = 'secret'" >> $SETTINGS
+    sudo -u postgres createdb devops
+    sudo -u postgres createuser -SDR devops
+    django-admin.py syncdb --settings=devops.settings
+
+#. Run the integration test::
+
+    cd fuelweb
+    make test-integration
+
+Running Fuel Puppet Modules Unit Tests
+--------------------------------------
+
+#. Install PuppetLabs RSpec Helper::
+
+    cd ~
+    gem2deb puppetlabs_spec_helper
+    sudo dpkg -i ruby-puppetlabs-spec-helper_0.4.1-1_all.deb
+    gem2deb rspec-puppet
+    sudo dpkg -i ruby-rspec-puppet_0.1.6-1_all.deb
+
+#. Run unit tests for a Puppet module::
+
+    cd fuel/deployment/puppet/module
+    rake spec
+
+Installing Cobbler
+------------------
+
+Install Cobbler from GitHub (it can't be installed from PyPi, and deb
+package in Ubuntu is outdated)::
+
+    cd ~
+    git clone git://github.com/cobbler/cobbler.git
+    cd cobbler
+    git checkout release24
+    sudo make install
+
 Building Documentation
 ----------------------
 
 #. You will need the following software to build documentation::
 
-    sudo apt-get install rst2pdf python-sphinx python-sphinxcontrib.blockdiag
-    pip install sphinxcontrib-plantuml
+    sudo apt-get install librsvg2-bin rst2pdf python-sphinx python-sphinxcontrib.blockdiag
+    sudo pip install sphinxcontrib-plantuml
 
 #. Look at the list of available formats and generate the one you need::
 
