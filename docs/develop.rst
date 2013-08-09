@@ -8,6 +8,6 @@ Development Documentation
 
    develop/logical_arch
    develop/sequence
+   develop/env
    develop/nailgun
-   develop/iso
    develop/alternatives
