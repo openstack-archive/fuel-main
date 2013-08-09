@@ -287,8 +287,7 @@ define(['utils'], function(utils) {
         },
         validate: function(attrs, options) {
             var error;
-            var minimumOnDisk = attrs.size ? 65 : 0; // FIXME: revert it
-            var min = _.max([minimumOnDisk, this.getMinimalSize(options.minimum)]);
+            var min = this.getMinimalSize(options.minimum);
             if (_.isNaN(attrs.size)) {
                 error = 'Invalid size';
             } else if (attrs.size < min) {
