@@ -1,5 +1,5 @@
-Sequence Diagram
-================
+Sequence Diagrams
+=================
 
 OS Provisioning
 ---------------
@@ -96,7 +96,7 @@ Details on Cluster Provisioning & Deployment (via Facter extension)
     Astute --> Naily: deploy is done
     Naily --> Nailgun: deploy is done
     Nailgun --> WebUser: deploy is done
-    
+
 Once deploy and provisioning messages are accepted by Naily, provisioining method is called in Astute.
 Provisioning part creates system in Cobbler and calls reboot over Cobbler. Then
 Astute uses `MCollective direct addressing mode <http://www.devco.net/archives/2012/06/19/mcollective-direct-addressing-mode.php>`_
@@ -112,11 +112,6 @@ reads facts from /etc/naily.fact placed by mcollective, and extends Facter data 
 easily used in Puppet modules. Case structure in running class chooses appropriate class to import, based on $role
 variable, received from /etc/naily.fact. It loads and starts to execute. All variables from file are available
 like ordinary facts from Facter.
-
-The idea is inspired by blog posts `self-classifying puppet nodes <http://nuknad.com/2011/02/11/self-classifying-puppet-nodes/>`_,
-`pulling a list of hosts from mcollective for puppet <http://nuknad.com/2011/01/07/pulling-a-list-of-hosts-from-mcollective-for-puppet/>`_,
-`A Simple Puppet Function to Retrieve Information From the Stored Config DB <http://blog.thesilentpenguin.com/blog/2012/02/22/a-simple-puppet-function-to-retrieve-information-from-the-stored-config-db/>`_,
-`nodeless-puppet example <https://github.com/jordansissel/puppet-examples/tree/master/nodeless-puppet>`_.
 
 It is possible to use the system without Nailgun and Naily: user creates a YAML file with all required
 data, and calls Astute binary script. Script loads data from YAML and instantiates Astute instance
