@@ -328,7 +328,11 @@ define(['utils'], function(utils) {
 
     models.InterfaceNetworks = Backbone.Collection.extend({
         constructorName: 'InterfaceNetworks',
-        model: models.InterfaceNetwork
+        model: models.InterfaceNetwork,
+        preferredOrder: ['public', 'floating', 'storage', 'management', 'fixed'],
+        comparator: function(network) {
+            return _.indexOf(this.preferredOrder, network.get('name'));
+        }
     });
 
     models.NodeInterfaceConfiguration = Backbone.Model.extend({
