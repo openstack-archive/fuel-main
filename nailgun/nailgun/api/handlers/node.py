@@ -64,11 +64,22 @@ class NodeHandler(JSONHandler):
 
     @content_json
     def GET(self, node_id):
+        """
+        :returns: JSONized Node object.
+        :http: * 200 (OK)
+               * 404 (node not found in db)
+        """
         node = self.get_object_or_404(Node, node_id)
         return self.render(node)
 
     @content_json
     def PUT(self, node_id):
+        """
+        :returns: JSONized Node object.
+        :http: * 200 (OK)
+               * 400 (invalid node data specified)
+               * 404 (node not found in db)
+        """
         node = self.get_object_or_404(Node, node_id)
         if not node.attributes:
             node.attributes = NodeAttributes(node_id=node.id)
@@ -110,6 +121,11 @@ class NodeHandler(JSONHandler):
         return self.render(node)
 
     def DELETE(self, node_id):
+        """
+        :returns: Empty string
+        :http: * 204 (node successfully deleted)
+               * 404 (cluster not found in db)
+        """
         node = self.get_object_or_404(Node, node_id)
         db().delete(node)
         db().commit()
@@ -120,11 +136,21 @@ class NodeHandler(JSONHandler):
 
 
 class NodeCollectionHandler(JSONHandler):
+    """
+    Node collection handler
+    """
 
     validator = NodeValidator
 
     @content_json
     def GET(self):
+        """
+        May receive cluster_id parameter to filter list
+        of nodes
+
+        :returns: Collection of JSONized Node objects.
+        :http: * 200 (OK)
+        """
         user_data = web.input(cluster_id=None)
         if user_data.cluster_id == '':
             nodes = db().query(Node).filter_by(
@@ -138,6 +164,12 @@ class NodeCollectionHandler(JSONHandler):
 
     @content_json
     def POST(self):
+        """
+        :returns: JSONized Node object.
+        :http: * 201 (cluster successfully created)
+               * 400 (invalid node data specified)
+               * 409 (node with such parameters already exists)
+        """
         data = self.checked_data()
 
         node = Node()
@@ -223,6 +255,11 @@ class NodeCollectionHandler(JSONHandler):
 
     @content_json
     def PUT(self):
+        """
+        :returns: Collection of JSONized Node objects.
+        :http: * 200 (nodes are successfully updated)
+               * 400 (invalid nodes data specified)
+        """
         data = self.checked_data(
             self.validator.validate_collection_update
         )
@@ -325,6 +362,10 @@ class NodeCollectionHandler(JSONHandler):
 
 
 class NodeNICsHandler(JSONHandler):
+    """
+    Node network interfaces handler
+    """
+
     fields = (
         'id', (
             'interfaces',
@@ -343,11 +384,19 @@ class NodeNICsHandler(JSONHandler):
 
     @content_json
     def GET(self, node_id):
+        """
+        :returns: Collection of JSONized Node interfaces.
+        :http: * 200 (OK)
+               * 404 (node not found in db)
+        """
         node = self.get_object_or_404(Node, node_id)
         return self.render(node)['interfaces']
 
 
 class NodeCollectionNICsHandler(JSONHandler):
+    """
+    Node collection network interfaces handler
+    """
 
     model = NetworkGroup
     validator = NetAssignmentValidator
@@ -355,6 +404,11 @@ class NodeCollectionNICsHandler(JSONHandler):
 
     @content_json
     def PUT(self):
+        """
+        :returns: Collection of JSONized Node objects.
+        :http: * 200 (nodes are successfully updated)
+               * 400 (invalid nodes data specified)
+        """
         data = self.validator.validate_collection_structure(web.data())
         network_manager = NetworkManager()
         updated_nodes_ids = []
@@ -369,9 +423,17 @@ class NodeCollectionNICsHandler(JSONHandler):
 
 
 class NodeNICsDefaultHandler(JSONHandler):
+    """
+    Node default network interfaces handler
+    """
 
     @content_json
     def GET(self, node_id):
+        """
+        :returns: Collection of default JSONized interfaces for node.
+        :http: * 200 (OK)
+               * 404 (node not found in db)
+        """
         node = self.get_object_or_404(Node, node_id)
         default_nets = self.get_default(node)
         return default_nets
@@ -413,11 +475,22 @@ class NodeNICsDefaultHandler(JSONHandler):
 
 
 class NodeCollectionNICsDefaultHandler(NodeNICsDefaultHandler):
+    """
+    Node collection default network interfaces handler
+    """
 
     validator = NetAssignmentValidator
 
     @content_json
     def GET(self):
+        """
+        May receive cluster_id parameter to filter list
+        of nodes
+
+        :returns: Collection of JSONized Nodes interfaces.
+        :http: * 200 (OK)
+               * 404 (node not found in db)
+        """
         user_data = web.input(cluster_id=None)
         if user_data.cluster_id == '':
             nodes = self.get_object_or_404(Node, cluster_id=None)
@@ -436,6 +509,10 @@ class NodeCollectionNICsDefaultHandler(NodeNICsDefaultHandler):
 
 
 class NodeNICsVerifyHandler(JSONHandler):
+    """
+    Node NICs verify handler
+    """
+
     fields = (
         'id', (
             'interfaces',
@@ -451,19 +528,30 @@ class NodeNICsVerifyHandler(JSONHandler):
 
     @content_json
     def POST(self):
+        """
+        :returns: Collection of JSONized Nodes interfaces.
+        :http: * 200 (OK)
+        """
         data = self.validator.validate_structure(web.data())
         for node in data:
             self.validator.verify_data_correctness(node)
         if TopoChecker.is_assignment_allowed(data):
             return map(self.render, nodes)
         topo = TopoChecker.resolve_topo_conflicts(data)
-        ret = map(self.render, topo, fields=fields_with_conflicts)
         return map(self.render, topo, fields=fields_with_conflicts)
 
 
 class NodesAllocationStatsHandler(object):
+    """
+    Node allocation stats handler
+    """
+
     @content_json
     def GET(self):
+        """
+        :returns: Total and unallocated nodes count.
+        :http: * 200 (OK)
+        """
         unallocated_nodes = db().query(Node).filter_by(cluster_id=None).count()
         total_nodes = \
             db().query(Node).count()

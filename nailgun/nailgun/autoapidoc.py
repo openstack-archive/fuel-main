@@ -20,13 +20,11 @@ from functools import wraps
 
 from decorator import decorator
 
-from nailgun.test.base import Environment, reverse
+from nailgun.test.base import reverse
 from nailgun.api.handlers.base import JSONHandler
 
 
 class SampleGenerator(object):
-
-    #env = Environment(app=None, nocommit=True)
 
     @classmethod
     def gen_sample_data(cls):
@@ -34,12 +32,6 @@ class SampleGenerator(object):
             if cls._ishandler(obj):
                 lines.insert(0, cls.generate_handler_url_doc(obj))
                 lines.insert(1, "")
-            # TODO: this code will render sample json for handlers
-            # in the future
-            # elif cls._ishandlermethod(obj):
-            #     lines.extend(
-            #         cls.gen_handler_method_data(obj)
-            #     )
 
             if lines and lines[-1]:
                 lines.append("")
@@ -57,9 +49,10 @@ class SampleGenerator(object):
     def generate_handler_url_doc(cls, handler):
         http_methods = ["GET", "POST", "PUT", "DELETE"]
         sample_method = None
-        for field in dir(handler):
-            if field in http_methods:
+        for field in http_methods:
+            if hasattr(handler, field):
                 sample_method = getattr(handler, field)
+                break
         args = inspect.getargspec(sample_method).args[1:]
         test_url_data = dict([
             (arg, "%{0}%".format(arg)) for arg in args
@@ -67,62 +60,6 @@ class SampleGenerator(object):
         return "URL: **{0}**".format(
             reverse(handler.__name__, test_url_data)
         )
-
-    @classmethod
-    def gen_handler_method_data(cls, method):
-        data = "\n*Sample data:*\n{0}"
-
-        renderer = method.im_class
-
-        if method.__name__ == "DELETE":
-            return data.format(cls.gen_json_block({})).split("\n")
-
-        if hasattr(method.im_class, "model"):
-            instance = cls.env.create_by_model(
-                method.im_class.model,
-                api=False
-            )
-
-            data = data.format(
-                cls.gen_json_block(
-                    renderer.render(instance)
-                )
-            )
-
-        elif hasattr(method.im_class, "single_render"):
-            renderer = renderer.single_render
-            instances = [
-                cls.env.create_by_model(
-                    renderer.model,
-                    api=False
-                ) for _ in xrange(2)
-            ]
-            blocks = [
-                cls.gen_json_block([]),
-                cls.gen_json_block(
-                    method.im_class.render_list(
-                        instances,
-                        renderer
-                    )
-                )
-            ]
-            data = data.format("\n".join(blocks))
-        elif hasattr(method.im_class, "renderer"):
-            renderer = renderer.renderer
-            instance = cls.env.create_by_model(
-                renderer.model,
-                api=False
-            )
-
-            data = data.format(
-                cls.gen_json_block(
-                    renderer.render(instance)
-                )
-            )
-        else:
-            data = ""
-
-        return data.split("\n")
 
     @classmethod
     def gen_json_block(cls, data):
