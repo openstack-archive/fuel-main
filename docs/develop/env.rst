@@ -5,15 +5,22 @@ Basic OS for Fuel development is Ubuntu Linux. Setup instructions below
 assume Ubuntu 13.04, most of them should be applicable to other Ubuntu
 and Debian versions, too.
 
+Each subsequent section below assumes that you have followed the steps
+described in all preceding sections. By the end of this document, you
+should be able to run and test all key components of Fuel, build Fuel
+master node installation ISO, and generate documentation.
+
 Getting the Source Code
 -----------------------
 
-#. Clone the Mirantis FuelWeb repository from GitHub::
+Clone the Mirantis FuelWeb repository from GitHub::
 
     git clone git@github.com:Mirantis/fuelweb.git
     cd fuelweb
     git submodule init
     git submodule update
+
+All sections below assume you start in your clone of this repository.
 
 Setup for Nailgun Unit Tests
 ----------------------------
@@ -109,9 +116,10 @@ Astute and Naily
 Installing Cobbler
 ------------------
 
-#. Install Cobbler from GitHub (it can't be installed from PyPi, and deb
-   package in Ubuntu is outdated)::
+Install Cobbler from GitHub (it can't be installed from PyPi, and deb
+package in Ubuntu is outdated)::
 
+    cd ~
     git clone git://github.com/cobbler/cobbler.git
     cd cobbler
     git checkout release24
@@ -144,6 +152,7 @@ Building Documentation
 
 #. Look at the list of available formats and generate the one you need::
 
+    cd docs
     make help
     make html
 
