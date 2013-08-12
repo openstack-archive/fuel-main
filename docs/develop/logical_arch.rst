@@ -6,19 +6,19 @@ Current architecture uses so-called Metadata via Facter Extension approach.
  .. uml::
     package "Master Node" {
         [JavaScript UI]
-        package "Nailgun backend" {
-            package "Database" <<Database>> {
-                [SQL DB]
+        package "Nailgun Backend" {
+            package "SQL Database" <<Database>> {
+                [Nailgun DB]
             }
-            [SQL DB] --> [Data Model]
+            [Nailgun DB] --> [Data Model]
             [Data Model] <-- [REST API]
-            [Receiver] --> [SQL DB]
+            [RPC Receiver] --> [Nailgun DB]
         }
-        [Provisioner] --> [DHCP, DNS, TFTP]
-        [Data Model] --> [Async RPC consumer(Naily)] : AMQP
-        [Async RPC consumer(Naily)] --> [Receiver] : AMQP
-        [Async RPC consumer(Naily)] --> [Orchestrator]
-        [Orchestrator] --> [MCollective]
+        [Provisioner (Cobbler)] --> [DHCP, DNS, TFTP]
+        [Data Model] --> [RPC Consumer (Naily)] : AMQP
+        [RPC Consumer (Naily)] --> [RPC Receiver] : AMQP
+        [RPC Consumer (Naily)] --> [Orchestrator (Astute)]
+        [Orchestrator (Astute)] --> [MCollective]
         [Puppet Master]
     }
     package "Target Node" {
@@ -27,14 +27,14 @@ Current architecture uses so-called Metadata via Facter Extension approach.
     actor Web_User
     actor CLI_User
     Web_User --> [JavaScript UI]
-    CLI_User --> [Orchestrator]
+    CLI_User --> [Orchestrator (Astute)]
 
     [JavaScript UI] --> [REST API]
 
-    [Orchestrator] --> [Provisioner] : xmlrpc API
+    [Orchestrator (Astute)] --> [Provisioner (Cobbler)] : xmlrpc API
 
     [MCollective] --> [MCollective Agent]
     [Puppet] --> [Puppet Master]
 
-..    CLI_User --> [Provisioner(cobbler)]
+..    CLI User --> [Provisioner(cobbler)]
 
