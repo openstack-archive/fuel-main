@@ -430,7 +430,6 @@ class BaseNodeTestCase(BaseTestCase):
                 if key_exists and \
                         allowed_network['name'] \
                         in interfaces_dict[interface_name]:
-                    interface['allowed_networks'].remove(allowed_network)
                     interface['assigned_networks'].append(allowed_network)
 
         self.client.put_node_interfaces(

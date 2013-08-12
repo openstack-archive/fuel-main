@@ -347,7 +347,9 @@ class TestNode(BaseNodeTestCase):
         task = self.deploy_cluster(cluster_id)
         self.assertTaskSuccess(task)
 
-        self.assertNetworkConfiguration(node)
+        for node in nailgun_nodes:
+            self.assertNetworkConfiguration(node)
+
         task = self._run_network_verify(cluster_id)
         self.assertTaskSuccess(task, 60 * 2)
 
