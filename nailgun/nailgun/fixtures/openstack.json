@@ -183,6 +183,14 @@
                             "type": "text"
                         }
                     },
+                    "glance": {
+                        "image_cache_max_size": {
+                            "value": "10737418240",
+                            "label": "Glance image cache maximum size (in bytes) ",
+                            "weight": 70,
+                            "type": "text"
+                        }
+                    },
                     "syslog": {
                         "syslog_transport": {
                             "value": "udp",
