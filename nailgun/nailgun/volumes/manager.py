@@ -481,7 +481,7 @@ class VolumeManager(object):
 
                 self.volumes[idx] = self.expand_generators(vg_template)
 
-        self.__logger('Updated volume size' % self.volumes)
+        self.__logger('Updated volume size %s' % self.volumes)
         return self.volumes
 
     def get_pv_size(self, disk_id, volume_name):
