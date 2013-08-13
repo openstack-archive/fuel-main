@@ -52,12 +52,6 @@ Logs API
 .. automodule:: nailgun.api.handlers.logs
 
 
-OSTF API
------------------
-
-.. automodule:: nailgun.api.handlers.ostf
-
-
 Plugin API
 ----------
 

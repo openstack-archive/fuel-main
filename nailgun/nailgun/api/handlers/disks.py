@@ -14,6 +14,10 @@
 #    License for the specific language governing permissions and limitations
 #    under the License.
 
+"""
+Handlers dealing with disks
+"""
+
 import web
 import traceback
 
@@ -29,17 +33,31 @@ from nailgun.logger import logger
 
 
 class NodeDisksHandler(JSONHandler):
+    """
+    Node disks handler
+    """
 
     validator = NodeDisksValidator
 
     @content_json
     def GET(self, node_id):
+        """
+        :returns: JSONized node disks.
+        :http: * 200 (OK)
+               * 404 (node not found in db)
+        """
         node = self.get_object_or_404(Node, node_id)
         node_volumes = node.attributes.volumes
         return DisksFormatConvertor.format_disks_to_simple(node_volumes)
 
     @content_json
     def PUT(self, node_id):
+        """
+        :returns: JSONized node disks.
+        :http: * 200 (OK)
+               * 400 (invalid disks data specified)
+               * 404 (node not found in db)
+        """
         node = self.get_object_or_404(Node, node_id)
         data = self.checked_data()
 
@@ -61,9 +79,17 @@ class NodeDisksHandler(JSONHandler):
 
 
 class NodeDefaultsDisksHandler(JSONHandler):
+    """
+    Node default disks handler
+    """
 
     @content_json
     def GET(self, node_id):
+        """
+        :returns: JSONized node disks.
+        :http: * 200 (OK)
+               * 404 (node or its attributes not found in db)
+        """
         node = self.get_object_or_404(Node, node_id)
         if not node.attributes:
             return web.notfound()
@@ -75,9 +101,17 @@ class NodeDefaultsDisksHandler(JSONHandler):
 
 
 class NodeVolumesInformationHandler(JSONHandler):
+    """
+    Node volumes information handler
+    """
 
     @content_json
     def GET(self, node_id):
+        """
+        :returns: JSONized volumes info for node.
+        :http: * 200 (OK)
+               * 404 (node not found in db)
+        """
         node = self.get_object_or_404(Node, node_id)
 
         volumes_info = []

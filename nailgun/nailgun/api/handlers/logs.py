@@ -14,6 +14,10 @@
 #    License for the specific language governing permissions and limitations
 #    under the License.
 
+"""
+Handlers dealing with logs
+"""
+
 import re
 import os
 import time
@@ -68,9 +72,39 @@ def read_backwards(file, bufsize=4096):
 
 
 class LogEntryCollectionHandler(JSONHandler):
+    """
+    Log entry collection handler
+    """
 
     @content_json
     def GET(self):
+        """
+        Receives following parameters:
+
+        - *date_before* - get logs before this date
+        - *date_after* - get logs after this date
+        - *source* - source of logs
+        - *node* - node id (for getting node logs)
+        - *level* - log level (all levels showed by default)
+        - *to* - number of entries
+        - *max_entries* - max number of entries to load
+
+        :returns: Collection of log entries, log file size
+        and if there are new entries.
+        :http: * 200 (OK)
+               * 400 (invalid *date_before* value)
+               * 400 (invalid *date_after* value)
+               * 400 (invalid *source* value)
+               * 400 (invalid *node* value)
+               * 400 (invalid *level* value)
+               * 400 (invalid *to* value)
+               * 400 (invalid *max_entries* value)
+               * 404 (log file not found)
+               * 404 (log files dir not found)
+               * 404 (node not found)
+               * 500 (node has no assigned ip)
+               * 500 (invalid regular expression in config)
+        """
         user_data = web.input()
         date_before = user_data.get('date_before')
         if date_before:
@@ -257,6 +291,9 @@ class LogEntryCollectionHandler(JSONHandler):
 
 
 class LogPackageHandler(object):
+    """
+    Log package handler
+    """
 
     def sed(self, from_filename, to_filename, gz=False):
         accounts = db().query(RedHatAccount).all()
@@ -293,6 +330,10 @@ class LogPackageHandler(object):
         tf.close()
 
     def GET(self):
+        """
+        :returns: logs packed into TAR.GZ archive.
+        :http: * 200 (OK)
+        """
         f = tempfile.TemporaryFile(mode='r+b')
         tf = tarfile.open(fileobj=f, mode='w:gz')
 
@@ -327,16 +368,31 @@ class LogPackageHandler(object):
 
 
 class LogSourceCollectionHandler(JSONHandler):
+    """
+    Log source collection handler
+    """
 
     @content_json
     def GET(self):
+        """
+        :returns: Collection of log sources (from settings)
+        :http: * 200 (OK)
+        """
         return settings.LOGS
 
 
 class LogSourceByNodeCollectionHandler(JSONHandler):
+    """
+    Log source by node collection handler
+    """
 
     @content_json
     def GET(self, node_id):
+        """
+        :returns: Collection of log sources by node (from settings)
+        :http: * 200 (OK)
+               * 404 (node not found in db)
+        """
         node = self.get_object_or_404(Node, node_id)
 
         def getpath(x):

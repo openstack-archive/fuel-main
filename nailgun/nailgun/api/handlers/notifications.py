@@ -14,6 +14,10 @@
 #    License for the specific language governing permissions and limitations
 #    under the License.
 
+"""
+Handlers dealing with notifications
+"""
+
 import json
 import logging
 
@@ -27,6 +31,10 @@ from nailgun.settings import settings
 
 
 class NotificationHandler(JSONHandler):
+    """
+    Notification single handler
+    """
+
     fields = (
         "id",
         "cluster",
@@ -56,11 +64,22 @@ class NotificationHandler(JSONHandler):
 
     @content_json
     def GET(self, notification_id):
+        """
+        :returns: JSONized Notification object.
+        :http: * 200 (OK)
+               * 404 (notification not found in db)
+        """
         notification = self.get_object_or_404(Notification, notification_id)
         return self.render(notification)
 
     @content_json
     def PUT(self, notification_id):
+        """
+        :returns: JSONized Notification object.
+        :http: * 200 (OK)
+               * 400 (invalid notification data specified)
+               * 404 (notification not found in db)
+        """
         notification = self.get_object_or_404(Notification, notification_id)
         data = self.validator.validate_update(web.data())
         for key, value in data.iteritems():
@@ -76,6 +95,10 @@ class NotificationCollectionHandler(JSONHandler):
 
     @content_json
     def GET(self):
+        """
+        :returns: Collection of JSONized Notification objects.
+        :http: * 200 (OK)
+        """
         user_data = web.input(limit=settings.MAX_ITEMS_PER_PAGE)
         limit = user_data.limit
         query = db().query(Notification).limit(limit)
@@ -87,6 +110,11 @@ class NotificationCollectionHandler(JSONHandler):
 
     @content_json
     def PUT(self):
+        """
+        :returns: Collection of JSONized Notification objects.
+        :http: * 200 (OK)
+               * 400 (invalid data specified for collection update)
+        """
         data = self.validator.validate_collection_update(web.data())
         q = db().query(Notification)
         notifications_updated = []

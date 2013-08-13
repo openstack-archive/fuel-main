@@ -12,6 +12,10 @@
 #    License for the specific language governing permissions and limitations
 #    under the License.
 
+"""
+Handlers dealing with exclusive Red Hat tasks
+"""
+
 import traceback
 
 import web
@@ -32,6 +36,9 @@ from nailgun.settings import settings
 
 
 class RedHatAccountHandler(JSONHandler):
+    """
+    Red Hat account handler
+    """
 
     fields = (
         'username',
@@ -44,6 +51,11 @@ class RedHatAccountHandler(JSONHandler):
 
     @content_json
     def GET(self):
+        """
+        :returns: JSONized RedHatAccount object.
+        :http: * 200 (OK)
+               * 404 (account not found in db)
+        """
         account = db().query(RedHatAccount).first()
         if not account:
             raise web.notfound()
@@ -51,6 +63,12 @@ class RedHatAccountHandler(JSONHandler):
 
     @content_json
     def POST(self):
+        """
+        :returns: JSONized RedHatAccount object.
+        :http: * 200 (OK)
+               * 400 (invalid account data specified)
+               * 404 (account not found in db)
+        """
         data = self.checked_data()
 
         license_type = data.get("license_type")
@@ -75,11 +93,22 @@ class RedHatAccountHandler(JSONHandler):
 
 
 class RedHatSetupHandler(JSONHandler):
+    """
+    Red Hat setup handler
+    """
 
     validator = RedHatAccountValidator
 
     @content_json
     def POST(self):
+        """
+        Starts Red Hat setup and download process
+
+        :returns: JSONized Task object.
+        :http: * 202 (setup task created and started)
+               * 400 (invalid account data specified)
+               * 404 (release not found in db)
+        """
         data = self.checked_data()
 
         license_type = data.get("license_type")

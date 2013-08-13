@@ -14,6 +14,10 @@
 #    License for the specific language governing permissions and limitations
 #    under the License.
 
+"""
+Handlers dealing with network configurations
+"""
+
 import json
 import traceback
 import web
@@ -37,11 +41,22 @@ from nailgun.api.serializers.network_configuration \
 
 
 class NetworkConfigurationVerifyHandler(JSONHandler):
+    """
+    Network configuration verify handler
+    """
 
     validator = NetworkConfigurationValidator
 
     @content_json
     def PUT(self, cluster_id):
+        """
+        :IMPORTANT: this method should be rewritten to be more RESTful
+
+        :returns: JSONized Task object.
+        :http: * 202 (network checking task failed)
+               * 200 (network verification task started)
+               * 404 (cluster not found in db)
+        """
         cluster = self.get_object_or_404(Cluster, cluster_id)
 
         try:
@@ -68,16 +83,29 @@ class NetworkConfigurationVerifyHandler(JSONHandler):
 
 
 class NetworkConfigurationHandler(JSONHandler):
+    """
+    Network configuration handler
+    """
 
     validator = NetworkConfigurationValidator
     serializer = NetworkConfigurationSerializer
 
     @content_json
     def GET(self, cluster_id):
+        """
+        :returns: JSONized network configuration for cluster.
+        :http: * 200 (OK)
+               * 404 (cluster not found in db)
+        """
         cluster = self.get_object_or_404(Cluster, cluster_id)
         return self.serializer.serialize_for_cluster(cluster)
 
     def PUT(self, cluster_id):
+        """
+        :returns: JSONized Task object.
+        :http: * 202 (network checking task created)
+               * 404 (cluster not found in db)
+        """
         data = json.loads(web.data())
         cluster = self.get_object_or_404(Cluster, cluster_id)
 

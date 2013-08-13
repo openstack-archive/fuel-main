@@ -14,6 +14,10 @@
 #    License for the specific language governing permissions and limitations
 #    under the License.
 
+"""
+Product info handlers
+"""
+
 import os
 import web
 import json
@@ -23,9 +27,16 @@ from nailgun.api.handlers.base import JSONHandler, content_json
 
 
 class VersionHandler(JSONHandler):
+    """
+    Version info handler
+    """
 
     @content_json
     def GET(self):
+        """
+        :returns: FUEL/FUELWeb commit SHA, release version.
+        :http: * 200 (OK)
+        """
         return {
             "sha": str(settings.COMMIT_SHA),
             "release": str(settings.PRODUCT_VERSION),
