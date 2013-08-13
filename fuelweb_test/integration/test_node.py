@@ -347,11 +347,13 @@ class TestNode(BaseNodeTestCase):
         task = self.deploy_cluster(cluster_id)
         self.assertTaskSuccess(task)
 
+        nailgun_nodes = self.client.list_cluster_nodes(cluster_id)
         for node in nailgun_nodes:
             self.assertNetworkConfiguration(node)
 
         task = self._run_network_verify(cluster_id)
         self.assertTaskSuccess(task, 60 * 2)
+
 
 if __name__ == '__main__':
     unittest.main()
