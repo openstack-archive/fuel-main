@@ -200,6 +200,10 @@ baseurl=file:/var/www/nailgun/centos/fuelweb/x86_64
 gpgcheck=0
 EOF
 
+# Disable subscription-manager plugins
+sed -i 's/^enabled.*/enabled=0/' /etc/yum/pluginconf.d/product-id.conf || :
+sed -i 's/^enabled.*/enabled=0/' /etc/yum/pluginconf.d/subscription-manager.conf || :
+
 # Disable GSSAPI in ssh server config
 sed -i -e "/^\s*GSSAPICleanupCredentials yes/d" -e "/^\s*GSSAPIAuthentication yes/d" /etc/ssh/sshd_config
 
