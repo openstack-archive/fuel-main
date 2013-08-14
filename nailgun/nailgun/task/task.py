@@ -739,8 +739,8 @@ class CheckBeforeDeploymentTask(object):
 
     @classmethod
     def __check_controllers_count(cls, task):
-        controllers_count = len(
-            filter(lambda node: node.role == 'controller', task.cluster.nodes))
+        controllers_count = len(filter(
+            lambda node: node.has_role('controller'), task.cluster.nodes))
         cluster_mode = task.cluster.mode
 
         if cluster_mode == 'multinode' and controllers_count < 1:

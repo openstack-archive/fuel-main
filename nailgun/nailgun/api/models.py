@@ -182,11 +182,6 @@ class Node(Base):
         'deploying',
         'error'
     )
-    NODE_ROLES = (
-        'controller',
-        'compute',
-        'cinder',
-    )
     NODE_ERRORS = (
         'deploy',
         'provision',
@@ -208,7 +203,6 @@ class Node(Base):
     platform_name = Column(String(150))
     progress = Column(Integer, default=0)
     os_platform = Column(String(150))
-    role = Column(Enum(*NODE_ROLES, name='node_role'))
     pending_addition = Column(Boolean, default=False)
     pending_deletion = Column(Boolean, default=False)
     changes = relationship("ClusterChanges", backref="node")
@@ -216,6 +210,7 @@ class Node(Base):
     error_msg = Column(String(255))
     timestamp = Column(DateTime, nullable=False)
     online = Column(Boolean, default=True)
+    roles = relationship("NodeRole", backref="node")
     attributes = relationship("NodeAttributes",
                               backref=backref("node"),
                               uselist=False)
@@ -253,8 +248,10 @@ class Node(Base):
 
     @property
     def full_name(self):
-        return u'%s (id=%s, mac=%s, role=%s)' % (
-            self.name, self.id, self.mac, self.role)
+        return u'%s (id=%s, mac=%s)' % (self.name, self.id, self.mac)
+
+    def has_role(self, role_name):
+        return bool(filter(lambda r: r.name == role_name, self.roles))
 
     def _check_interface_has_required_params(self, iface):
         return bool(iface.get('name') and iface.get('mac'))
@@ -299,6 +296,13 @@ class Node(Base):
 
         data["interfaces"] = result
         self.meta = data
+
+
+class NodeRole(Base):
+    __tablename__ = 'node_roles'
+    id = Column(Integer, primary_key=True)
+    node_id = Column(Integer, ForeignKey('nodes.id', ondelete='CASCADE'))
+    name = Column(String(50), nullable=False)
 
 
 class NodeAttributes(Base):

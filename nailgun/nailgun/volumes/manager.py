@@ -50,6 +50,23 @@ def byte_to_megabyte(byte):
     return byte / 1024 ** 2
 
 
+def get_node_volumes(node):
+    '''
+    Helper for retrieving node volumes in correct order
+    '''
+    node_volumes = []
+    try:
+        role_volumes = node.cluster.release.volumes_metadata[
+            'volumes_roles_mapping']
+        for role in node.roles:
+            for volume in role_volumes[role.name]:
+                if volume not in node_volumes:
+                    node_volumes.append(volume)
+    except KeyError:
+        raise errors.CannotFindVolumesInfoForRole()
+    return node_volumes
+
+
 class DisksFormatConvertor(object):
     '''Class converts format from `simple` in which we
     communicate with UI to `full` in which we store
@@ -173,14 +190,8 @@ class DisksFormatConvertor(object):
                 }
             ]
         '''
-        try:
-            volumes_ids = node.cluster.release.volumes_metadata[
-                'volumes_roles_mapping'][node.role]
-        except KeyError:
-            raise errors.CannotFindVolumesInfoForRole()
-
         volumes_info = []
-        for volume_id in volumes_ids:
+        for volume_id in get_node_volumes(node):
             volume = filter(
                 lambda volume: volume.get('id') == volume_id,
                 node.cluster.release.volumes_metadata['volumes'])[0]
@@ -400,12 +411,9 @@ class VolumeManager(object):
         # and volume groups which we should to allocate
         if node.cluster:
             volumes_metadata = node.cluster.release.volumes_metadata
-            volume_groups_for_role = volumes_metadata[
-                'volumes_roles_mapping'][node.role]
-
             # Adding volume groups in same order
             # as they represent in volumes_roles_mapping list
-            for vg_name in volume_groups_for_role:
+            for vg_name in get_node_volumes(node):
                 vg = filter(lambda vg: vg.get('id') == vg_name,
                             volumes_metadata['volumes'])[0]
                 self.allowed_vgs.append(vg)
