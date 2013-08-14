@@ -612,7 +612,6 @@ class BaseHandlers(TestCase):
         cls.db = db()
         cls.app = TestApp(build_app().wsgifunc())
         nailgun.task.task.DeploymentTask._prepare_syslog_dir = mock.Mock()
-        # dropdb()
         syncdb()
 
     @classmethod
