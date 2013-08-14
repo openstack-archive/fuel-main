@@ -280,6 +280,7 @@ class Disk(object):
         if not existing_boot:
             self.volumes.append({
                 'type': partition_type,
+                'file_system': 'ext2',
                 'mount': '/boot',
                 'size': self.get_size(boot_size)})
 

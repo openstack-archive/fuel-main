@@ -476,3 +476,29 @@ class TestDisks(BaseHandlers):
         disk.remove_pv('pv_name')
 
         self.assertEquals(disk_without_pv.render(), disk.render())
+
+    def test_boot_partition_has_file_system(self):
+        disk = self.create_disk(possible_pvs_count=1)
+        boot_record = filter(
+            lambda volume: volume.get('mount') == '/boot', disk.volumes)[0]
+        self.assertEquals(boot_record['file_system'], 'ext2')
+
+
+class TestFixtures(BaseHandlers):
+
+    @property
+    def get_vgs_for_releases(self):
+        openstack = self.env.read_fixtures(
+            ('openstack',))[0]['fields']['volumes_metadata']['volumes']
+        redhat = self.env.read_fixtures(
+            ('redhat',))[0]['fields']['volumes_metadata']['volumes']
+
+        return [openstack, redhat]
+
+    def test_each_logical_volume_has_file_system(self):
+        for release_vgs in self.get_vgs_for_releases:
+            for vg in release_vgs:
+                for volume in vg['volumes']:
+                    self.assertIn(
+                        volume['file_system'],
+                        ('ext2', 'ext4', 'swap', 'xfs'))

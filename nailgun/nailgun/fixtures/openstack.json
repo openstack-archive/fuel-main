@@ -50,13 +50,15 @@
                                 "mount": "/",
                                 "type": "lv",
                                 "name": "root",
-                                "size": {"generator": "calc_total_root_vg"}
+                                "size": {"generator": "calc_total_root_vg"},
+                                "file_system": "ext4"
                             },
                             {
                                 "mount": "swap",
                                 "type": "lv",
                                 "name": "swap",
-                                "size": {"generator": "calc_swap_size"}
+                                "size": {"generator": "calc_swap_size"},
+                                "file_system": "swap"
                             }
                         ]
                     },
@@ -73,7 +75,8 @@
                                 "size": {
                                     "generator": "calc_total_vg",
                                     "generator_args": ["vm"]
-                                }
+                                },
+                                "file_system": "xfs"
                             }
                         ]
                     },
@@ -90,7 +93,8 @@
                                 "size": {
                                     "generator": "calc_total_vg",
                                     "generator_args": ["image"]
-                                }
+                                },
+                                "file_system": "xfs"
                             }
                         ]
                     },
