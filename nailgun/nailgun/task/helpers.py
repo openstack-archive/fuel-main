@@ -28,17 +28,17 @@ from nailgun.settings import settings
 class TaskHelper(object):
 
     @classmethod
-    def make_slave_name(cls, nid, role):
-        return u"%s-%s" % (role, str(nid))
+    def make_slave_name(cls, nid):
+        return u"node-%s" % str(nid)
 
     @classmethod
-    def make_slave_fqdn(cls, nid, role):
-        return u"%s.%s" % (cls.make_slave_name(nid, role), settings.DNS_DOMAIN)
+    def make_slave_fqdn(cls, nid):
+        return u"%s.%s" % (cls.make_slave_name(nid), settings.DNS_DOMAIN)
 
     @classmethod
     def update_slave_nodes_fqdn(cls, nodes):
         for n in nodes:
-            fqdn = cls.make_slave_fqdn(n.id, n.role)
+            fqdn = cls.make_slave_fqdn(n.id)
             if n.fqdn != fqdn:
                 n.fqdn = fqdn
                 logger.debug("Updating node fqdn: %s %s", n.id, n.fqdn)

@@ -37,7 +37,7 @@ default_messages = {
 
     # disk errors
     "NotEnoughFreeSpace": "Not enough free space",
-    "CannotFindVolumesInfoForRole": "Cannot fund volumes info for role",
+    "CannotFindVolumesInfoForRole": "Cannot find volumes info for role",
 
     # network errors
     "AdminNetworkNotFound": "Admin network info not found",

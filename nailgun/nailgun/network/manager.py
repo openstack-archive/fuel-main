@@ -771,7 +771,8 @@ class NetworkManager(object):
             ip = self.assign_vip(cluster_db.id, "public")
         elif cluster_db.mode in ('singlenode', 'multinode'):
             controller = db().query(Node).filter_by(
-                cluster_id=cluster_id, role='controller').first()
+                cluster_id=cluster_id
+            ).filter(Node.role_list.any(name='controller')).first()
 
             public_net = filter(
                 lambda network: network['name'] == 'public',

@@ -533,7 +533,7 @@ class TestTaskManagers(BaseHandlers):
         self.env.launch_deployment()
         self.env.refresh_nodes()
         for node in self.env.nodes:
-            fqdn = "%s-%s.%s" % (node.role, node.id, settings.DNS_DOMAIN)
+            fqdn = "node-%s.%s" % (node.id, settings.DNS_DOMAIN)
             self.assertEquals(fqdn, node.fqdn)
 
     @fake_tasks()

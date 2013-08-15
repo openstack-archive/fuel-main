@@ -59,7 +59,7 @@ def get_node_volumes(node):
         role_volumes = node.cluster.release.volumes_metadata[
             'volumes_roles_mapping']
         for role in node.roles:
-            for volume in role_volumes[role.name]:
+            for volume in role_volumes[role]:
                 if volume not in node_volumes:
                     node_volumes.append(volume)
     except KeyError:

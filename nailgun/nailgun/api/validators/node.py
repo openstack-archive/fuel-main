@@ -145,6 +145,28 @@ class NodeValidator(BasicValidator):
                 return existent_node
 
     @classmethod
+    def validate_roles(cls, data, node):
+        if 'roles' in data:
+            if not isinstance(data['roles'], list) or \
+                    any(not isinstance(role, str) for role in data['roles']):
+                raise errors.InvalidData(
+                    "Role list must be list of strings",
+                    log_message=True
+                )
+            if not node.cluster:
+                raise errors.InvalidData(
+                    "Roles cannot be assigned to node without environment",
+                    log_message=True
+                )
+            for role in data['roles']:
+                if role not in node.cluster.release.volumes_metadata[
+                        'volumes_roles_mapping']:
+                    raise errors.InvalidData(
+                        "Invalid role '{0}'".format(role),
+                        log_message=True
+                    )
+
+    @classmethod
     def validate_update(cls, data):
         d = cls.validate_json(data)
         if "status" in d and d["status"] not in Node.NODE_STATUSES:
@@ -152,6 +174,9 @@ class NodeValidator(BasicValidator):
                 "Invalid status for node",
                 log_message=True
             )
+        if 'roles' in d and 'id' in d:
+            node = db().query(Node).get(d['id'])
+            cls.validate_roles(d, node)
         if 'meta' in d:
             d['meta'] = MetaValidator.validate_update(d['meta'])
         return d
@@ -181,11 +206,15 @@ class NodeValidator(BasicValidator):
                             "Invalid MAC specified",
                             log_message=True
                         )
-                if "id" in nd and not q.get(nd["id"]):
-                    raise errors.InvalidData(
-                        "Invalid ID specified",
-                        log_message=True
-                    )
+                if "id" in nd:
+                    existent_node = q.get(nd["id"])
+                    if not existent_node:
+                        raise errors.InvalidData(
+                            "Invalid ID specified",
+                            log_message=True
+                        )
+                if 'roles' in nd:
+                    cls.validate_roles(nd, existent_node)
             if 'meta' in nd:
                 nd['meta'] = MetaValidator.validate_update(nd['meta'])
         return d

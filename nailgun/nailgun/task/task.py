@@ -200,7 +200,7 @@ class DeploymentTask(object):
         netmanager = NetworkManager()
         return {
             'id': n.id, 'status': n.status, 'error_type': n.error_type,
-            'uid': n.id, 'ip': n.ip, 'mac': n.mac, 'role': n.role,
+            'uid': n.id, 'ip': n.ip, 'mac': n.mac, 'roles': n.roles,
             'fqdn': n.fqdn, 'progress': n.progress, 'meta': n.meta,
             'network_data': netmanager.get_node_networks(n.id),
             'online': n.online
@@ -226,8 +226,8 @@ class DeploymentTask(object):
     def __controller_nodes(cls, cluster_id):
         nodes = db().query(Node).filter_by(
             cluster_id=cluster_id,
-            role='controller',
-            pending_deletion=False).order_by(Node.id)
+            pending_deletion=False
+        ).filter(Node.role_list.any(name='controller')).order_by(Node.id)
 
         return map(cls.__format_node_for_naily, nodes)
 
@@ -289,7 +289,7 @@ class ProvisionTask(object):
                 'power_type': 'ssh',
                 'power_user': 'root',
                 'power_address': node.ip,
-                'name': TaskHelper.make_slave_name(node.id, node.role),
+                'name': TaskHelper.make_slave_name(node.id),
                 'hostname': node.fqdn,
                 'name_servers': '\"%s\"' % settings.DNS_SERVERS,
                 'name_servers_search': '\"%s\"' % settings.DNS_SEARCH,
@@ -437,7 +437,7 @@ class DeletionTask(object):
                 nodes_to_delete.append({
                     'id': node.id,
                     'uid': node.id,
-                    'role': node.role
+                    'roles': node.roles
                 })
 
                 if USE_FAKE:
@@ -446,7 +446,7 @@ class DeletionTask(object):
                     keep_attrs = (
                         'id',
                         'cluster_id',
-                        'role',
+                        'roles',
                         'pending_deletion',
                         'pending_addition'
                     )
@@ -465,9 +465,7 @@ class DeletionTask(object):
         for node in nodes_to_delete_constant:
             node_db = db().query(Node).get(node['id'])
 
-            slave_name = TaskHelper.make_slave_name(
-                node['id'], node['role']
-            )
+            slave_name = TaskHelper.make_slave_name(node['id'])
             logger.debug("Removing node from database and pending it "
                          "to clean its MBR: %s", slave_name)
             if not node_db.online:
@@ -482,9 +480,7 @@ class DeletionTask(object):
         engine_nodes = []
         if not USE_FAKE:
             for node in nodes_to_delete_constant:
-                slave_name = TaskHelper.make_slave_name(
-                    node['id'], node['role']
-                )
+                slave_name = TaskHelper.make_slave_name(node['id'])
                 logger.debug("Pending node to be removed from cobbler %s",
                              slave_name)
                 engine_nodes.append(slave_name)
@@ -493,8 +489,7 @@ class DeletionTask(object):
                     if node_db and node_db.fqdn:
                         node_hostname = node_db.fqdn
                     else:
-                        node_hostname = TaskHelper.make_slave_fqdn(
-                            node['id'], node['role'])
+                        node_hostname = TaskHelper.make_slave_fqdn(node['id'])
                     logger.info("Removing node cert from puppet: %s",
                                 node_hostname)
                     cmd = "puppet cert clean {0}".format(node_hostname)
@@ -740,7 +735,7 @@ class CheckBeforeDeploymentTask(object):
     @classmethod
     def __check_controllers_count(cls, task):
         controllers_count = len(filter(
-            lambda node: node.has_role('controller'), task.cluster.nodes))
+            lambda node: 'controller' in node.roles, task.cluster.nodes))
         cluster_mode = task.cluster.mode
 
         if cluster_mode == 'multinode' and controllers_count < 1:

@@ -35,7 +35,7 @@ class TestErrors(BaseHandlers):
                 {"name": "First",
                  "pending_addition": True},
                 {"name": "Second",
-                 "role": "compute",
+                 "roles": ["compute"],
                  "pending_addition": True}
             ]
         )
@@ -66,10 +66,10 @@ class TestErrors(BaseHandlers):
                 {"name": "First",
                  "pending_addition": True},
                 {"name": "Second",
-                 "role": "compute",
+                 "roles": ["compute"],
                  "pending_addition": True},
                 {"name": "Third",
-                 "role": "compute",
+                 "roles": ["compute"],
                  "status": "error",
                  "error_type": "provision",
                  "error_msg": "I forgot about teapot!"}
@@ -104,7 +104,7 @@ class TestErrors(BaseHandlers):
                 {"name": "First",
                  "pending_addition": True},
                 {"name": "Second",
-                 "role": "compute",
+                 "roles": ["compute"],
                  "pending_addition": True}
             ]
         )
@@ -129,7 +129,7 @@ class TestErrors(BaseHandlers):
                 {"name": "First",
                  "pending_addition": True},
                 {"name": "Second",
-                 "role": "compute",
+                 "roles": ["compute"],
                  "pending_addition": True}
             ]
         )
