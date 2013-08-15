@@ -11,6 +11,7 @@ httpclient	2.2.5
 ipaddress	0.8.0
 json	1.6.1
 json_pure	1.7.5
+kwalify		0.7.2
 mime-types	1.19
 mixlib-authentication	1.1.4
 mixlib-cli	1.2.2
