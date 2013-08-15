@@ -801,3 +801,65 @@ class NetworkManager(object):
 
     def get_keystone_url(self, cluster_id):
         return 'http://%s:5000/' % self.get_end_point_ip(cluster_id)
+
+    def is_range_in_cidr(self, ip_network, ip_range):
+        """
+        is_range_in_cidr(arg1, arg2) - takes two objects that represent IP
+        address range and checks if those ranges are intersecting.
+
+        :arg* IPNetwork, IPRange: - valid object with IP range
+        :return bool: - is networks intersecting
+        :raises ValueError: if arg* niether IPNetwork or IPRange
+        """
+        if not all(
+            map(
+                lambda x: isinstance(x, IPNetwork) or isinstance(x, IPRange),
+                (ip_network, ip_range)
+            )
+        ):
+            raise ValueError(
+                "Input arguments must belong to IPNetwork or IPRange class!"
+            )
+        l_range_addr, r_range_addr = self.get_min_max_addr(ip_range)
+        l_network_addr, r_network_addr = self.get_min_max_addr(ip_network)
+        if l_network_addr != l_range_addr:
+            if l_network_addr < l_range_addr:
+                return r_network_addr > l_range_addr
+            else:
+                return r_range_addr > l_network_addr
+        else:
+            return True
+
+    def get_min_max_addr(self, range_object):
+        """
+        get_min_max_addr(range_object) - takes object which discribes IP range
+         and returns min and max address as tuple of two elements
+
+        :range_object IPNetwork, IPRange: - object with ip range
+        :return (str, str):
+        """
+        if isinstance(range_object, IPRange):
+            return str(range_object).split('-')
+        else:
+            prefix_length = range_object.prefixlen
+            bin_addr = range_object.ip.bits().replace('.', '')
+            min_max_bin_addr = [bin_addr[0:prefix_length] + x * (32 - prefix_length) for x in ('0', '1')]
+            return map(
+                self.bin_to_ip_addr,
+                min_max_bin_addr
+            )
+
+    def bin_to_ip_addr(self, bin):
+        """
+        bin_to_ip_addr(bin) - converts string of 32 digits to IP address
+
+        :bin str: is binary representation of IP address is 32 character string
+        with ones and zeros  ( '00101100110011000011001100110011' )
+        :return str: string with IP address ( '127.0.0.1' )
+        """
+        return IPAddress('.'.join(
+            map(
+                lambda x: str(int(''.join(x), 2)),
+                zip(*[iter(bin)] * 8)
+            )
+        ))

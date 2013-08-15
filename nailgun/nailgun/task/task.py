@@ -684,7 +684,7 @@ class CheckNetworksTask(object):
                               ))
                     raise errors.NetworkCheckError(err_msg, add_client=False)
 
-        admin_range = netaddr.IPSet([settings.ADMIN_NETWORK['cidr']])
+        admin_range = netaddr.IPNetwork(settings.ADMIN_NETWORK['cidr'])
         for ng in networks:
             net_errors = []
             sub_ranges = []
@@ -694,9 +694,8 @@ class CheckNetworksTask(object):
                 err_msgs.append("Invalid network ID: {0}".format(ng['id']))
             else:
                 if 'cidr' in ng:
-                    fnet = netaddr.IPSet([ng['cidr']])
-
-                    if fnet & admin_range:
+                    fnet = netaddr.IPNetwork(ng['cidr'])
+                    if NetworkManager().is_range_in_cidr(fnet, admin_range):
                         net_errors.append("cidr")
                         err_msgs.append(
                             "Intersection with admin "
@@ -715,8 +714,8 @@ class CheckNetworksTask(object):
                 # Check for intersection with Admin network
                 if 'ip_ranges' in ng:
                     for k, v in enumerate(ng['ip_ranges']):
-                        ip_range = netaddr.IPSet(netaddr.IPRange(v[0], v[1]))
-                        if ip_range & admin_range:
+                        ip_range = netaddr.IPRange(v[0], v[1])
+                        if NetworkManager().is_range_in_cidr(admin_range, ip_range):
                             net_errors.append("cidr")
                             err_msgs.append(
                                 "IP range {0} - {1} in {2} network intersects "
