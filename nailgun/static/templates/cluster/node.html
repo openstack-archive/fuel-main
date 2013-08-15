@@ -1,36 +1,50 @@
-<div class="span2 nodebox <%= selectableForAddition ? 'unassigned node-to-add-unchecked' : selectableForDeletion ? 'unassigned node-to-delete-unchecked' : 'assigned' %>" data-node-id="<%= node.id %>">
-  <div class="nodebox-gradient">
-    <div class="node-header">
-      <div class="node-logo <%- node.get('manufacturer') ? 'manufacturer-' + node.get('manufacturer').toLowerCase() : '' %>"></div>
-      <div class="node-name">
-      <% if (renaming) { %>
-        <div class="node-renameable">
-          <input type="text" class="input-medium" value="<%- node.get('name') || '' %>" />
-        </div>
-      <% } else { %>
-        <div <%= renameable ? 'class="node-renameable"  title="Edit Name"' : '' %>><%- node.get('name') || node.get('mac') %></div>
-      <% } %>
+<%
+  var nodeClass = '';
+  if (node.get('pending_deletion')) {
+    nodeClass = 'node-delete';
+  } else if (node.get('pending_addition')) {
+    nodeClass = 'node-new';
+  } else if (!node.get('online')) {
+    nodeClass = 'node-offline';
+  }
+%>
+<div class="node-box <%= nodeClass %>">
+  <div class="node-content">
+    <div class="node-checkbox">
+      <div class="custom-tumbler">
+        <input type="checkbox" value="<%- node.id %>" <%= selected ? 'checked' : '' %> />
+        <!-- [if !IE |(gte IE 9)]> --><span>&nbsp;</span><!-- <![endif] -->
       </div>
     </div>
-    <div class="node-status"></div>
+    <div class="node-logo <%- node.get('manufacturer') ? 'manufacturer-' + node.get('manufacturer').toLowerCase() : '' %>"></div>
+    <div class="node-settings"></div>
     <div class="node-hardware">
-      <span>CPU: <%= node.resource('cores') || '?' %></span>
-      <span>HDD: <%= node.resource('hdd') ? showDiskSize(node.resource('hdd')) : '?GB' %></span>
-      <span>RAM: <%= node.resource('ram') ? showMemorySize(node.resource('ram')) : '?GB' %></span>
+      <ul>
+      <li>CPU: <%= node.resource('cores') || '?' %></li>
+      <li>HDD: <%= node.resource('hdd') ? showDiskSize(node.resource('hdd')) : '?GB' %></li>
+      <li>RAM: <%= node.resource('ram') ? showMemorySize(node.resource('ram')) : '?GB' %></li>
+      </ul>
     </div>
-
-    <% if (!selectableForAddition && !selectableForDeletion) { %>
-      <% if (node.get('pending_addition')) { %>
-        <div class="pending-addition-flag"></div>
-      <% } else if (node.get('pending_deletion')) { %>
-        <div class="pending-deletion-flag"></div>
-      <% } %>
-    <% } %>
-
-    <% if (selectableForAddition) { %>
-      <div class="node-select"><i class="icon-ok"></i></div>
-    <% } else if (selectableForDeletion) { %>
-      <div class="node-select"><i class="icon-cancel"></i></div>
-    <% } %>
-  </div>
-</div>
+    <div class="node-status"></div>
+    <div class="node-name">
+      <div class="name">
+        <% if (renaming) { %>
+          <input type="text" class="input-medium" value="<%- node.get('name') || '' %>" />
+        <% } else { %>
+          <p <%= renameable ? 'class="node-renameable"  title="Edit Name"' : '' %>><%- node.get('name') || node.get('mac') %></p>
+        <% } %>
+      </div>
+      <div class="roles">
+        <ul>
+          <% if (!node.get('cluster_id')) { %>
+            <li>unallocated</li>
+          <% } else { %>
+            <% _.each(node.get('roles'), function(role) { %>
+              <li><%= role %></li>
+            <% }) %>
+          <% } %>
+        </ul>
+      </div>
+     </div>
+   </div>
+ </div>

@@ -21,7 +21,11 @@ define(['utils'], function(utils) {
 
     models.Release = Backbone.Model.extend({
         constructorName: 'Release',
-        urlRoot: '/api/releases'
+        urlRoot: '/api/releases',
+        parse: function(response) {
+            response.available_roles = ['controller', 'compute', 'cinder'];
+            return response;
+        }
     });
 
     models.Releases = Backbone.Collection.extend({
@@ -92,13 +96,6 @@ define(['utils'], function(utils) {
         availableModes: function() {
             return ['multinode', 'ha'];
         },
-        availableRoles: function() {
-            var roles = ['controller'];
-            if (this.get('mode') != 'singlenode') {
-                roles.push('compute', 'cinder');
-            }
-            return roles;
-        },
         parse: function(response) {
             response.release = new models.Release(response.release);
             return response;
@@ -143,7 +140,7 @@ define(['utils'], function(utils) {
         model: models.Node,
         url: '/api/nodes',
         comparator: function(node) {
-            return node.id;
+            return node.get('status');
         },
         hasChanges: function() {
             return !!this.filter(function(node) {
@@ -159,6 +156,30 @@ define(['utils'], function(utils) {
         resources: function(resourceName) {
             var resources = this.map(function(node) {return node.resource(resourceName);});
             return _.reduce(resources, function(sum, n) {return sum + n;}, 0);
+        },
+        filters: function() {
+            return [
+                {
+                    type: 'attributes',
+                    label: 'Sort by node',
+                    values: ['status', 'pending_addition']
+                },
+                {
+                    type: 'roles',
+                    label: 'Show',
+                    values: this.assignedRoles()
+                }
+            ];
+        },
+        assignedRoles: function() {
+            var roles = ['all'];
+            this.each(function(node) {
+                var role = _.union(roles, node.get('roles'));
+            });
+            return _.uniq(roles);
+        },
+        filterByRoles: function(role) {
+            return this.filter(function(node) {return _.contains(node.get('roles'), role);});
         }
     });
 

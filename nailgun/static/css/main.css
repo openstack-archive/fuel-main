@@ -422,7 +422,6 @@ h6.page-title {
 .node {
   display: block;
   width: auto;
-  height: 56px;
   background-color: #ffffff;
   padding: 2px;
   box-sizing: border-box;
@@ -477,7 +476,7 @@ h6.page-title {
   background: linear-gradient(to bottom, #e5e6e8 0%, #d1d5d8 100%); /* W3C */
  filter: progid:DXImageTransform.Microsoft.gradient( startColorstr='#e5e6e8', endColorstr='#d1d5d8', GradientType=0 ); /* IE6-8 */
 }
-.unallocated {
+.unallocated .node-content {
   background: #ffffff !important;
 }
 .node-checkbox {
@@ -615,6 +614,12 @@ h6.page-title {
   height: 22px;
   margin: 3px 0px 0px 0px;
 }
+
+.node-name > .name input {
+  font-size: 12px;
+  height: 11px;
+}
+
 /*.node-name > .name:hover {border-bottom: 1px dotted #0178b3; cursor: pointer; color: #0178b3;} */
 .node-name > .name > p {
   display: inline;
@@ -648,7 +653,7 @@ h6.page-title {
 .node-delete > .node-content > .node-settings {
   visibility: hidden;
 }
-.unallocated > .node-settings {
+.unallocated .node-content .node-settings {
   visibility: hidden;
 }
 
@@ -3840,7 +3845,7 @@ hr.slim {
   float: left;
 }
 
-.disk-visual .unallocated {
+.disk-visual .unallocated .node-content {
   background: #afafaf; /* Old browsers */
   background: -moz-linear-gradient(top,  #afafaf 0%, #d5d5d5 100%); /* FF3.6+ */
   background: -webkit-gradient(linear, left top, left bottom, color-stop(0%,#afafaf), color-stop(100%,#d5d5d5)); /* Chrome,Safari4+ */
@@ -3866,7 +3871,7 @@ hr.slim {
   filter: progid:DXImageTransform.Microsoft.gradient( startColorstr='#b0b0b0', endColorstr='#a0a0a0',GradientType=0 ) !important; /* IE6-8 */
 }
 
-.unallocated > .toggle-volume {
+.unallocated .node-content .toggle-volume {
   color: #555555;
   text-shadow: 1px 0 0 rgba(255,255,255,.3);
 
@@ -3886,7 +3891,7 @@ hr.slim {
   text-shadow: 0 0 2px rgba(0,0,0,.5);
   white-space: nowrap;
 }
-.unallocated .volume-group-name, .unallocated .volume-group-size {
+.unallocated .node-content .volume-group-name, .unallocated .node-content .volume-group-size {
   text-shadow: 1px 0 0 rgba(255,255,255,.3);
   /*margin-top: 16px;*/
 }

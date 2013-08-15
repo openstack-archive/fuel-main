@@ -1,0 +1,8 @@
+<%= filter.label %>
+<select data-type="<%= filter.type %>">
+  <% var nodeAttributesLabels = {status: 'Status', pending_addition: 'Pending addition flag'} %>
+  <% var nodeRolesLabels = {all: 'All roles', controller: 'Controller', compute: 'Compute', cinder: 'Cinder'} %>
+  <% _.each(filter.values, function(value) { %>
+    <option value="<%= value %>"><%= filter.type == 'attributes' ? nodeAttributesLabels[value] || value : nodeRolesLabels[value] || value %></option>
+  <% }) %>
+</select>
