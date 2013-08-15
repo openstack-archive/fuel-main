@@ -19,7 +19,7 @@ MASTER_NETMASK?=255.255.255.0
 MASTER_GW?=10.20.0.1
 
 COMMIT_SHA:=$(shell git rev-parse --verify HEAD)
-PRODUCT_VERSION:=3.1
+PRODUCT_VERSION:=3.2
 FUEL_COMMIT_SHA:=$(shell cd fuel && git rev-parse --verify HEAD)
 
 CENTOS_MAJOR:=6
