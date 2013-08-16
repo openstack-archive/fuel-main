@@ -836,10 +836,13 @@ class NetworkManager(object):
          and returns min and max address as tuple of two elements
 
         :range_object IPNetwork, IPRange: - object with ip range
-        :return (str, str):
+        :return (IPAddress, IPAddress):
         """
         if isinstance(range_object, IPRange):
-            return str(range_object).split('-')
+            return map(
+                IPAddress,
+                str(range_object).split('-')
+            )
         else:
             prefix_length = range_object.prefixlen
             bin_addr = range_object.ip.bits().replace('.', '')
