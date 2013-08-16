@@ -715,7 +715,8 @@ class CheckNetworksTask(object):
                 if 'ip_ranges' in ng:
                     for k, v in enumerate(ng['ip_ranges']):
                         ip_range = netaddr.IPRange(v[0], v[1])
-                        if NetworkManager().is_range_in_cidr(admin_range, ip_range):
+                        if NetworkManager().is_range_in_cidr(admin_range,
+                                                             ip_range):
                             net_errors.append("cidr")
                             err_msgs.append(
                                 "IP range {0} - {1} in {2} network intersects "
