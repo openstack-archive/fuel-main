@@ -846,7 +846,8 @@ class NetworkManager(object):
         else:
             prefix_length = range_object.prefixlen
             bin_addr = range_object.ip.bits().replace('.', '')
-            min_max_bin_addr = [bin_addr[0:prefix_length] + x * (32 - prefix_length) for x in ('0', '1')]
+            min_max_bin_addr = [bin_addr[0:prefix_length] +
+                                x * (32 - prefix_length) for x in ('0', '1')]
             return map(
                 self.bin_to_ip_addr,
                 min_max_bin_addr
@@ -865,4 +866,5 @@ class NetworkManager(object):
                 lambda x: str(int(''.join(x), 2)),
                 zip(*[iter(bin)] * 8)
             )
-        ))
+        )
+        )
