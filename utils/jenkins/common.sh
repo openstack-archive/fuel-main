@@ -17,7 +17,7 @@ function nailgun_deps {
     # Installing nailgun dependencies
     
     if [ -z $1 ]; then
-        dependencies='$WORKSPACE/local_repo/requirements-eggs.txt'
+        dependencies=$WORKSPACE/local_repo/requirements-eggs.txt
     else
         dependencies=$1
     fi
