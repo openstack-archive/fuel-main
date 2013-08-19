@@ -44,7 +44,7 @@ class TestClusterValidator(BaseTestCase):
 
     def test_release_exists_validation(self):
         with patch('nailgun.api.validators.cluster.db', Mock()) as db:
-            db.return_value.query.return_value.gey.\
+            db.return_value.query.return_value.get.\
                 return_value = None
             self.assertRaises(errors.InvalidData,
                               ClusterValidator.validate, self.release_data)
@@ -52,7 +52,7 @@ class TestClusterValidator(BaseTestCase):
     def test_release_non_exists_validation(self):
         with patch('nailgun.api.validators.cluster.db', Mock()) as db:
             try:
-                db.return_value.query.return_value.gey.\
+                db.return_value.query.return_value.get.\
                     return_value = 'release'
                 ClusterValidator.validate(self.release_data)
             except errors.InvalidData as e:
