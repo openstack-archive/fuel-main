@@ -565,6 +565,12 @@ class BaseTestCase(TestCase):
     def tearDown(self):
         self.db.expunge_all()
 
+    def assertNotRaises(self, exception, method, *args, **kwargs):
+        try:
+            method(*args, **kwargs)
+        except exception:
+            self.fail('Exception "{0}" raised.'.format(exception))
+
 
 class BaseIntegrationTest(BaseTestCase):
     @classmethod
