@@ -26,12 +26,12 @@ from nailgun.api.models import Task
 from nailgun.errors import errors
 import nailgun.rpc as rpc
 from nailgun.task.manager import DeploymentTaskManager
-from nailgun.test.base import BaseHandlers
+from nailgun.test.base import BaseIntegrationTest
 from nailgun.test.base import fake_tasks
 from nailgun.test.base import reverse
 
 
-class TestTaskManagers(BaseHandlers):
+class TestTaskManagers(BaseIntegrationTest):
 
     def tearDown(self):
         self._wait_for_threads()

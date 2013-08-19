@@ -18,11 +18,11 @@
 from nailgun.api.models import IPAddr
 from nailgun.api.models import Network
 from nailgun.api.models import NetworkGroup
-from nailgun.test.base import BaseHandlers
+from nailgun.test.base import BaseIntegrationTest
 from nailgun.test.base import fake_tasks
 
 
-class TestHorizonURL(BaseHandlers):
+class TestHorizonURL(BaseIntegrationTest):
 
     def tearDown(self):
         self._wait_for_threads()

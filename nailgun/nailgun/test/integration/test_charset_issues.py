@@ -18,12 +18,12 @@ import time
 
 from nailgun.api.models import Cluster
 from nailgun.api.models import Task
-from nailgun.test.base import BaseHandlers
+from nailgun.test.base import BaseIntegrationTest
 from nailgun.test.base import fake_tasks
 from nailgun.test.base import reverse
 
 
-class TestCharsetIssues(BaseHandlers):
+class TestCharsetIssues(BaseIntegrationTest):
 
     def tearDown(self):
         self._wait_for_threads()

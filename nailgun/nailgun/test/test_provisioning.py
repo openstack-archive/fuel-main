@@ -14,6 +14,7 @@
 #    License for the specific language governing permissions and limitations
 #    under the License.
 
+import mock
 from mock import patch
 
 from nailgun.test.base import BaseHandlers
@@ -40,7 +41,7 @@ class TestProvisioning(BaseHandlers):
 
         self.assertEqual(len(cluster_db.nodes), 2)
 
-        self.env.network_manager.assign_ips = self.mock.MagicMock()
+        self.env.network_manager.assign_ips = mock.MagicMock()
 
         self.env.launch_deployment()
 
@@ -65,7 +66,7 @@ class TestProvisioning(BaseHandlers):
         cluster = self.env.clusters[0]
         cluster.clear_pending_changes()
 
-        self.env.network_manager.assign_ips = self.mock.MagicMock()
+        self.env.network_manager.assign_ips = mock.MagicMock()
         self.env.launch_deployment()
 
         self.env.refresh_nodes()

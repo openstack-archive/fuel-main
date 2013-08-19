@@ -21,12 +21,12 @@ from sqlalchemy.sql import not_
 from nailgun.api.models import Network
 from nailgun.api.models import NetworkGroup
 from nailgun.api.models import Vlan
-from nailgun.test.base import BaseHandlers
+from nailgun.test.base import BaseIntegrationTest
 from nailgun.test.base import fake_tasks
 from nailgun.test.base import reverse
 
 
-class TestNetworkModels(BaseHandlers):
+class TestNetworkModels(BaseIntegrationTest):
 
     def tearDown(self):
         self._wait_for_threads()

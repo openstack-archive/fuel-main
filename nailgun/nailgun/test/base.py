@@ -544,16 +544,33 @@ class Environment(object):
             time.sleep(0.1)
 
 
-class BaseHandlers(TestCase):
-
+class BaseTestCase(TestCase):
     fixtures = ['admin_network']
 
-    def __init__(self, *args, **kwargs):
-        super(BaseHandlers, self).__init__(*args, **kwargs)
-        self.mock = mock
-        self.default_headers = {
-            "Content-Type": "application/json"
-        }
+    @classmethod
+    def setUpClass(cls):
+        cls.db = db()
+        cls.app = TestApp(build_app().wsgifunc())
+        syncdb()
+
+    @classmethod
+    def tearDownClass(cls):
+        cls.db.commit()
+
+    def setUp(self):
+        flush()
+        self.env = Environment(app=self.app)
+        self.env.upload_fixtures(self.fixtures)
+
+    def tearDown(self):
+        self.db.expunge_all()
+
+
+class BaseIntegrationTest(BaseTestCase):
+    @classmethod
+    def setUpClass(cls):
+        nailgun.task.task.DeploymentTask._prepare_syslog_dir = mock.Mock()
+        cls.setUpClass()
 
     def _wait_for_threads(self):
         # wait for fake task thread termination
@@ -572,62 +589,13 @@ class BaseHandlers(TestCase):
                             )
                         )
 
-    def datadiff(self, node1, node2, path=None):
-        if path is None:
-            path = []
+class BaseHandlers(BaseTestCase):
 
-        print("Path: {0}".format("->".join(path)))
-
-        if not isinstance(node1, dict) or not isinstance(node2, dict):
-            if isinstance(node1, list):
-                newpath = path[:]
-                for i, keys in enumerate(izip(node1, node2)):
-                    newpath.append(str(i))
-                    self.datadiff(keys[0], keys[1], newpath)
-                    newpath.pop()
-            elif node1 != node2:
-                err = "Values differ: {0} != {1}".format(
-                    str(node1),
-                    str(node2)
-                )
-                raise Exception(err)
-        else:
-            newpath = path[:]
-            for key1, key2 in zip(
-                sorted(node1.keys()),
-                sorted(node2.keys())
-            ):
-                if key1 != key2:
-                    err = "Keys differ: {0} != {1}".format(
-                        str(key1),
-                        str(key2)
-                    )
-                    raise Exception(err)
-                newpath.append(key1)
-                self.datadiff(node1[key1], node2[key2], newpath)
-                newpath.pop()
-
-    @classmethod
-    def setUpClass(cls):
-        cls.db = db()
-        cls.app = TestApp(build_app().wsgifunc())
-        nailgun.task.task.DeploymentTask._prepare_syslog_dir = mock.Mock()
-        syncdb()
-
-    @classmethod
-    def tearDownClass(cls):
-        cls.db.commit()
-
-    def setUp(self):
+    def __init__(self, *args, **kwargs):
+        super(BaseHandlers, self).__init__(*args, **kwargs)
         self.default_headers = {
             "Content-Type": "application/json"
         }
-        flush()
-        self.env = Environment(app=self.app)
-        self.env.upload_fixtures(self.fixtures)
-
-    def tearDown(self):
-        self.db.expunge_all()
 
 
 def fake_tasks(fake_rpc=True,
@@ -672,7 +640,7 @@ def reverse(name, kwargs=None):
     url = urldict[name]
     urlregex = re.compile(url)
     for kwarg in urlregex.groupindex:
-        if kwarg not in kwargs:
+        if not kwarg in kwargs:
             raise KeyError("Invalid argument specified")
         url = re.sub(
             r"\(\?P<{0}>[^)]+\)".format(kwarg),
@@ -698,7 +666,7 @@ def datadiff(data1, data2, branch, p=True):
     if data1 != data2:
         try:
             it = iterator(data1, data2)
-        except Exception:
+        except:
             return [(branch, data1, data2)]
 
         for k in it:
@@ -712,14 +680,14 @@ def datadiff(data1, data2, branch, p=True):
                     v1 = data1[k]
                 except (KeyError, IndexError):
                     if p:
-                        print("data1 seems does not have key = %s" % k)
+                        print "data1 seems does not have key = %s" % k
                     diff.append((newbranch, None, data2[k]))
                     continue
                 try:
                     v2 = data2[k]
                 except (KeyError, IndexError):
                     if p:
-                        print("data2 seems does not have key = %s" % k)
+                        print "data2 seems does not have key = %s" % k
                     diff.append((newbranch, data1[k], None))
                     continue
 

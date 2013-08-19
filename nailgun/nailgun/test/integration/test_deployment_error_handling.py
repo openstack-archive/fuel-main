@@ -17,11 +17,11 @@
 import re
 
 from nailgun.api.models import Notification
-from nailgun.test.base import BaseHandlers
+from nailgun.test.base import BaseIntegrationTest
 from nailgun.test.base import fake_tasks
 
 
-class TestErrors(BaseHandlers):
+class TestErrors(BaseIntegrationTest):
 
     def tearDown(self):
         self._wait_for_threads()
