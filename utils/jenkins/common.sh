@@ -15,7 +15,7 @@ function license_check {
 
 function nailgun_deps {
     # Installing nailgun dependencies
-    sudo pip install -r $WORKSPACE/requirements-eggs.txt
+    sudo pip install -r $WORKSPACE/local_repo/requirements-eggs.txt
 }
 
 function nailgun_checks {
