@@ -2,11 +2,12 @@
 
 masternode_ip=`sed -rn 's/^.*url=http:\/\/(([0-9]{1,3}\.){3}[0-9]{1,3}).*$/\1/ p' /proc/cmdline`
 
-# Send logs to master node.
+# Send logs to master node (rsyslog and logstash as well).
+# Assume ryslog port is 514, logstash port is 55514, proto tcp or udp for both
 cat > /etc/send2syslog.conf <<EOF
 {
 "watchlist": [
-    {"servers": [ {"host": "$masternode_ip"} ],
+    {"servers": [ {"host": "$masternode_ip"}, {"host": "$masternode_ip", "port": 55514} ],
         "watchfiles": [
             {"tag": "bootstrap/dmesg", "files": ["/var/log/dmesg"]},
             {"tag": "bootstrap/secure", "files": ["/var/log/secure"]},
