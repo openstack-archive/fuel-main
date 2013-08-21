@@ -17,11 +17,12 @@ import logging
 from devops.helpers.helpers import SSHClient, wait, _wait
 from paramiko import RSAKey
 import re
+import hashlib
 from fuelweb_test.helpers import Ebtables
 from fuelweb_test.integration.base_test_case import BaseTestCase
 from fuelweb_test.integration.decorators import debug
 from fuelweb_test.nailgun_client import NailgunClient
-from fuelweb_test.settings import CLEAN, NETWORK_MANAGERS
+from fuelweb_test.settings import CLEAN, NETWORK_MANAGERS, EMPTY_SNAPSHOT
 
 logger = logging.getLogger(__name__)
 logwrap = debug(logger)
@@ -29,9 +30,9 @@ logwrap = debug(logger)
 
 class BaseNodeTestCase(BaseTestCase):
 
+    environment_states = {}
+
     def setUp(self):
-        if CLEAN:
-            self.ci().get_empty_state()
         self.client = NailgunClient(self.get_admin_node_ip())
 
     @logwrap
@@ -137,6 +138,43 @@ class BaseNodeTestCase(BaseTestCase):
         self.assertTaskSuccess(task)
         self.check_role_file(nodes_dict)
         return cluster_id
+
+    @logwrap
+    def prepare_environment(self, name='cluster_name', settings={}):
+        state_hash = hashlib.md5(str(settings)).hexdigest()
+        empty_state_hash = hashlib.md5(str({})).hexdigest()
+        if state_hash == empty_state_hash:
+            # revert to empty state
+            self.ci().get_empty_state()
+        elif state_hash in self.environment_states:
+            # revert virtual machines
+            state = self.environment_states[state_hash]
+            self.ci().get_state(state['snapshot_name'])
+        else:
+            # create cluster
+            self.ci().get_empty_state()
+            cluster_id = self.create_cluster(name=name)
+            self._basic_provisioning(cluster_id, settings)
+
+            # make a snapshot
+            snapshot_name = '%s_%s' % \
+                            (name.replace(' ', '_')[:17], state_hash)
+            self.ci().environment().snapshot(
+                name=snapshot_name,
+                description=name,
+                force=True,
+            )
+            self.environment_states[state_hash] = {
+                'snapshot_name': snapshot_name,
+                'cluster_name': name,
+                'settings': settings
+            }
+
+        # return id of last created cluster
+        clusters = self.client.list_clusters()
+        if len(clusters) > 0:
+            return clusters.pop()['id']
+        return None
 
     @logwrap
     def get_nailgun_node_roles(self, nodes_dict):
