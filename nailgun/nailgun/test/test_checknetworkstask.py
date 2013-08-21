@@ -13,9 +13,10 @@
 #    WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the
 #    License for the specific language governing permissions and limitations
 #    under the License.
+
+from netaddr import IPRange, IPNetwork
 from nailgun.test.base import BaseHandlers
 from nailgun.network.manager import NetworkManager
-from netaddr import IPRange, IPNetwork
 
 
 class TestHandlers(BaseHandlers):
