@@ -27,9 +27,10 @@ define(
     'text!templates/dialogs/remove_cluster.html',
     'text!templates/dialogs/error_message.html',
     'text!templates/dialogs/show_node.html',
-    'text!templates/dialogs/dismiss_settings.html'
+    'text!templates/dialogs/dismiss_settings.html',
+    'text!templates/dialogs/delete_nodes.html'
 ],
-function(require, utils, models, simpleMessageTemplate, createClusterDialogTemplate, rhelCredentialsDialogTemplate, changeClusterModeDialogTemplate, discardChangesDialogTemplate, displayChangesDialogTemplate, removeClusterDialogTemplate, errorMessageTemplate, showNodeInfoTemplate, discardSettingsChangesTemplate) {
+function(require, utils, models, simpleMessageTemplate, createClusterDialogTemplate, rhelCredentialsDialogTemplate, changeClusterModeDialogTemplate, discardChangesDialogTemplate, displayChangesDialogTemplate, removeClusterDialogTemplate, errorMessageTemplate, showNodeInfoTemplate, discardSettingsChangesTemplate, deleteNodesTemplate) {
     'use strict';
 
     var views = {};
@@ -465,6 +466,48 @@ function(require, utils, models, simpleMessageTemplate, createClusterDialogTempl
             this.constructor.__super__.render.call(this, {
                 message: this.message || this.defaultMessage,
                 verification: this.verification || false
+            });
+            return this;
+        }
+    });
+
+    views.DeleteNodesDialog = views.Dialog.extend({
+        template: _.template(deleteNodesTemplate),
+        events: {
+            'click .btn-delete': 'deleteNodes'
+        },
+        deleteNodes: function() {
+            this.$('.btn-delete').prop('disabled', true);
+            this.nodes.each(function(node) {
+                if (node.get('pending_addition')) {
+                    node.set({
+                        cluster_id: null,
+                        roles: [],
+                        pending_addition: false
+                    });
+                } else {
+                    node.set({pending_deletion: true});
+                }
+            });
+            this.nodes.toJSON = function(options) {
+                return this.map(function(node) {
+                    return _.pick(node.attributes, 'id', 'cluster_id', 'roles', 'pending_addition', 'pending_deletion');
+                });
+            };
+            var deferred = this.nodes.sync('update', this.nodes)
+                .done(_.bind(function() {
+                    this.$el.modal('hide');
+                    app.page.tab.model.fetch();
+                    app.page.tab.screen.nodes.fetch({data: {cluster_id: app.page.tab.model.id}});
+                    app.navbar.refresh();
+                    app.page.removeFinishedTasks();
+                }, this))
+                .fail(_.bind(this.displayErrorMessage, this));
+        },
+        render: function() {
+            this.constructor.__super__.render.call(this, {
+                nodes: this.nodes,
+                deleteFromFuel: this.deleteFromFuel
             });
             return this;
         }

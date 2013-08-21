@@ -21,11 +21,7 @@ define(['utils'], function(utils) {
 
     models.Release = Backbone.Model.extend({
         constructorName: 'Release',
-        urlRoot: '/api/releases',
-        parse: function(response) {
-            response.available_roles = ['controller', 'compute', 'cinder'];
-            return response;
-        }
+        urlRoot: '/api/releases'
     });
 
     models.Releases = Backbone.Collection.extend({
@@ -156,20 +152,6 @@ define(['utils'], function(utils) {
         resources: function(resourceName) {
             var resources = this.map(function(node) {return node.resource(resourceName);});
             return _.reduce(resources, function(sum, n) {return sum + n;}, 0);
-        },
-        filters: function() {
-            return [
-                {
-                    type: 'attributes',
-                    label: 'Sort by node',
-                    values: ['status', 'pending_addition']
-                },
-                {
-                    type: 'roles',
-                    label: 'Show',
-                    values: this.assignedRoles()
-                }
-            ];
         },
         assignedRoles: function() {
             var roles = ['all'];

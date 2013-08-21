@@ -1,9 +1,0 @@
-<span class="title">Delete Node<%= nodes.length > 1 ? 's' : '' %></span>
-<ul>
-<% _.each(nodes, function(node) { %>
-  <li><%= node.get('name') %></li>
-<% }) %>
-</ul>
-<hr/>
-<button class="btn btn-close">Cancel</button>
-<button class="btn btn-danger btn-delete" disabled>Delete</button>

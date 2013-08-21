@@ -620,6 +620,98 @@ h6.page-title {
   height: 11px;
 }
 
+.nodes-management-panel > div {
+  float: left;
+}
+
+.nodes-management-panel > .cluster-actions {
+  width: 100px;
+}
+
+.nodes-management-panel > .nodes-filter {
+  width: 300px;
+}
+
+.nodes-management-panel > .nodes-filter select {
+  margin: 0;
+}
+
+.nodes-management-panel > .batch-actions-buttons {
+  text-align: right;
+  width: 583px;
+  float: right;
+}
+
+.nodes-management-panel .assign-roles-panel {
+  clear: both;
+  float: none;
+}
+
+#tab-nodes .cluster-name {
+  margin-top: 10px !important;
+}
+
+.btn-go-to-cluster {
+  position: absolute;
+}
+
+.cluster-info {
+  clear: both;
+  float: none;
+  margin-bottom: 15px;
+}
+
+.cluster-info span {
+  padding-right: 20px;
+  color: #888;
+}
+
+.cluster-list .cluster-name {
+  height: 34px;
+  overflow: hidden;
+  margin: 20px 20px 0px 20px;
+  font-size: 16px;
+  font-weight: 500;
+  line-height: 16px;
+  color: #333333;
+  word-break: break-all;
+}
+
+.node-list-header a, .node-list-header label {
+  margin-top: 10px;
+  padding-top: 13px;
+  padding-right: 0;
+  text-align: right;
+}
+
+.node-group-header {
+  margin-top: 15px;
+}
+
+.node-group-header label {
+  text-align: right;
+}
+
+.node-list-header label input, .node-group-header label input {
+  margin-top: 0;
+  margin-right: 3px;
+  position: relative;
+  top: -2px;
+}
+
+.node-group-header h4 {
+  margin: 0;
+  height: 25px;
+  min-height: 25px !important;
+  text-transform: capitalize;
+}
+
+.roles-panel {
+  padding: 10px;
+  background: #ccc;
+  border: 1px solid #444;
+}
+
 /*.node-name > .name:hover {border-bottom: 1px dotted #0178b3; cursor: pointer; color: #0178b3;} */
 .node-name > .name > p {
   display: inline;
@@ -1299,18 +1391,7 @@ h6.page-title {
     -o-transition: all 0.7s ease;
     -ms-transition: all 0.7s ease;
 }
-.cluster-name {
-  height: 34px;
-  overflow: hidden;
-  /* padding: 13px 10px 0px 54px; */
-  /* margin-bottom: 13px; */
-  margin: 20px 20px 0px 20px;
-  font-size: 16px;
-  font-weight: 500;
-  line-height: 16px;
-  color: #333333;
-  word-break: break-all;
-}
+
 .cluster-hardware {
   /* background-color: #dadada; */
   margin-top: 1px;

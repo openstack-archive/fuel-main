@@ -8,7 +8,7 @@
     nodeClass = 'node-offline';
   }
 %>
-<div class="node-box <%= nodeClass %>">
+<div class="node-box <%= nodeClass %>" data-node-id="<%- node.id %>">
   <div class="node-content">
     <div class="node-checkbox">
       <div class="custom-tumbler">
@@ -17,7 +17,6 @@
       </div>
     </div>
     <div class="node-logo <%- node.get('manufacturer') ? 'manufacturer-' + node.get('manufacturer').toLowerCase() : '' %>"></div>
-    <div class="node-settings"></div>
     <div class="node-hardware">
       <ul>
       <li>CPU: <%= node.resource('cores') || '?' %></li>
@@ -36,7 +35,7 @@
       </div>
       <div class="roles">
         <ul>
-          <% if (!node.get('cluster_id')) { %>
+          <% if (!node.get('cluster')) { %>
             <li>unallocated</li>
           <% } else { %>
             <% _.each(node.get('roles'), function(role) { %>

@@ -1,0 +1,11 @@
+<div class="modal-header">
+  <button type="button" class="close" data-dismiss="modal">&times;</button>
+  <h3>Delete Node<%= nodes.length > 1 ? 's' : '' %></h3>
+</div>
+<div class="modal-body">
+  <div class="delete-nodes-notice"><i class="icon-attention"></i> Are you sure you want to delete selected nodes<%= deleteFromFuel ? ' from FUEL' : '' %>?</div>
+</div>
+<div class="modal-footer">
+  <button class="btn" data-dismiss="modal">Cancel</button>
+  <button class="btn btn-danger btn-delete" data-dismiss="modal">Delete</button>
+</div>

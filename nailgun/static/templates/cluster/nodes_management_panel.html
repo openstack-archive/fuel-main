@@ -1,5 +1,24 @@
-<button class="btn btn-cluster-actions">Cluster Actions</button>
-<div id="nodes-filters"></div>
-<button class="btn btn-delete-nodes" disabled>Delete Nodes</button>
-<button class="btn btn-success btn-assign-roles" disabled>Assign Roles</button>
+<% if (nodes.cluster) { %>
+  <div class="cluster-actions">
+    <button class="btn btn-cluster-actions">Actions</button>
+  </div>
+  <div class="nodes-filter">
+    <label>
+      Group by
+      <select name="grouping" <%= nodes.length ? '' : 'disabled' %>>
+        <option value="roles">Roles</option>
+        <option value="harware">Harware Info</option>
+        <option value="both">Roles and hardware info</option>
+      </select>
+    </label>
+  </div>
+<% } %>
+<div class="batch-actions-buttons">
+  <button class="btn btn-danger btn-delete-nodes<%= nodes.cluster ? '' : '-from-fuel' %>" disabled>Delete Nodes <%= nodes.cluster ? '' : 'from FUEL' %></button>
+  <button class="btn btn-assign-roles" disabled>Assign Roles</button>
+  <% if (nodes.cluster) { %>
+    <button class="btn btn-congigure-disks" disabled>Configure Disks</button>
+    <button class="btn btn-congigure-interfaces" disabled>Configure Interfaces</button>
+  <% } %>
+</div>
 <div class="assign-roles-panel"></div>
