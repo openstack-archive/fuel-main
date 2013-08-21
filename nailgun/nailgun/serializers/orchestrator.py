@@ -42,7 +42,10 @@ class OrchestratorSerializer(object):
     @classmethod
     def serialize_node(cls, node):
         network_data = node.network_data
-        return {
+        interfaces = cls.configure_interfaces(network_data)
+        cls.__add_hw_interfaces(interfaces, node.meta['interfaces'])
+        node_attrs = {
+            'uid': node.id,
             'fqdn': node.fqdn,
             'name': TaskHelper.make_slave_name(node.id, node.role),
             'role': node.role,
@@ -61,8 +64,11 @@ class OrchestratorSerializer(object):
 
             # quantum
             # 'public_br': n['public_br'],
-            'network_data': cls.configure_interfaces(network_data)
+            'network_data': interfaces
         }
+        node_attrs.update(cls.interfaces_list(network_data))
+
+        return node_attrs
 
     @classmethod
     def get_addr(cls, network_data, name):
@@ -75,22 +81,61 @@ class OrchestratorSerializer(object):
         }
 
     @classmethod
+    def interfaces_list(cls, network_data):
+        interfaces = {}
+        for network in network_data:
+            interfaces['%s_interface' % network['name']] = \
+                cls.__make_interface_name(
+                    network.get('dev'),
+                    network.get('vlan'))
+
+        return interfaces
+
+    @classmethod
     def configure_interfaces(cls, network_data):
         interfaces = {}
         for network in network_data:
-            # Set interface name
-            if net.get('dev') and net.get('vlan'):
-                name = '.'.join(net['dev'], net['vlan'])
-            else:
-                name = net['dev']
+            network_name = network['name']
 
-            
+            # floating and public are on the same interface
+            # so, just skip floating
+            if network_name == 'floating':
+                continue
 
-        if net['vlan'] && net['vlan'] != 0
-          name = [net['dev'], net['vlan']].join('.')
-        else
-          name = net['dev']
+            name = cls.__make_interface_name(network.get('dev'), network.get('vlan'))
+            interfaces[name] = {'interface': name, 'ipaddr': [], '_name': network_name}
+            interface = interfaces[name]
 
+            if network_name == 'admin':
+                interface['ipaddr'] = 'dhcp'
+            elif network.get('ip'):
+                interface['ipaddr'].append(network.get('ip'))
+
+            # Add gateway for public
+            if network_name == 'public' and network.get('gateway'):
+                interface['gateway'] = network['gateway']
+
+            if len(interface['ipaddr']) == 0:
+                interface['ipaddr'] = 'none'
+
+        interfaces['lo'] = {'interface': 'lo', 'ipaddr': ['127.0.0.1/8']}
+
+        return interfaces
+
+    @classmethod
+    def __make_interface_name(cls, name, vlan):
+        if name and vlan:
+            return '.'.join([name, str(vlan)])
+        return name
+
+    @classmethod
+    def __add_hw_interfaces(cls, interfaces, hw_interfaces):
+        for hw_interface in hw_interfaces:
+            if not hw_interface['name'] in interfaces:
+                interfaces[hw_interface['name']] = {
+                    'interface': hw_interface['name'],
+                    'ipaddr': []
+                }
 
 
 class OrchestratorMultinodeSerializer(OrchestratorSerializer):
