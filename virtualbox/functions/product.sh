@@ -18,6 +18,8 @@
 # and Fuel became operational, and also enabling outbound network/internet access for this VM through the
 # host system
 
+ssh_options='-oConnectTimeout=5 -oStrictHostKeyChecking=no -oCheckHostIP=no -oUserKnownHostsFile=/dev/null -oRSAAuthentication=no'
+
 is_product_vm_operational() {
     ip=$1
     username=$2
@@ -28,7 +30,7 @@ is_product_vm_operational() {
     # Looks a bit ugly, but 'end of expect' has to be in the very beginning of the line 
     result=$(
         expect << ENDOFEXPECT
-        spawn ssh -oConnectTimeout=5 -oStrictHostKeyChecking=no -oCheckHostIP=no -oUserKnownHostsFile=/dev/null $username@$ip
+        spawn ssh $ssh_options $username@$ip
         expect "connect to host" exit
         expect "*?assword:*"
         send "$password\r"
@@ -116,7 +118,7 @@ enable_outbound_network_for_product_vm() {
     # Looks a bit ugly, but 'end of expect' has to be in the very beginning of the line 
     result=$(
         expect << ENDOFEXPECT
-        spawn ssh -oConnectTimeout=5 -oStrictHostKeyChecking=no -oCheckHostIP=no -oUserKnownHostsFile=/dev/null $username@$ip
+        spawn ssh $ssh_options $username@$ip
         expect "connect to host" exit
         expect "*?assword:*"
         send "$password\r"
