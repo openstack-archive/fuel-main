@@ -18,6 +18,12 @@ Serializers for orchestrator
 
 from netaddr import IPSet, IPNetwork, IPRange, IPAddress
 from nailgun.task.helpers import TaskHelper
+from sqlalchemy import and_
+from nailgun.db import db
+from nailgun.api.models import Node
+from nailgun.api.models import Cluster
+from nailgun.settings import settings
+from nailgun.api.models import NetworkGroup
 
 
 class OrchestratorSerializer(object):
@@ -28,12 +34,103 @@ class OrchestratorSerializer(object):
     @classmethod
     def serialize(cls, cluster):
         attrs = cls.serialize_cluster_attrs(cluster)
-        attrs['nodes'] = cls.serialize_nodes(cluster.nodes)
+        attrs['nodes'] = cls.serialize_nodes(
+            cls.get_nodes_to_serialization(cluster))
+
+        if cluster.net_manager == 'VlanManager':
+            cls.add_vlan_interfaces(attrs['nodes'], cluster)
+
         return attrs
 
     @classmethod
-    def serialize_cluster_attrs(cls, cluster_id):
-        return {}
+    def get_nodes_to_serialization(cls, cluster):
+        return db().query(Node).filter(
+            and_(Node.cluster == cluster,
+                 Node.pending_deletion == False)).order_by(Node.id)
+
+    @classmethod
+    def serialize_cluster_attrs(cls, cluster):
+        attrs = cluster.attributes.merged_attrs_values()
+        attrs['deployment_mode'] = cluster.mode
+        attrs['deployment_id'] = cluster.id
+
+        attrs['master_ip'] = settings.MASTER_IP
+        attrs['controller_nodes'] = cls.controller_nodes(cluster.id)
+
+        attrs.update(cls.network_ranges(cluster))
+        attrs['novanetwork_attrs'] = cls.novanetwork_attrs(cluster)
+
+        return attrs
+
+    @classmethod
+    def novanetwork_attrs(cls, cluster):
+        attrs = {}
+        attrs['network_manager'] = cluster.net_manager
+
+        fixed_net = db().query(NetworkGroup).filter_by(
+            cluster_id=cluster.id).filter_by(name='fixed').first()
+
+        # network_size is required for all managers, otherwise
+        # puppet will use default (255)
+        attrs['network_size'] = fixed_net.network_size
+        if attrs['network_manager'] == 'VlanManager':
+            attrs['num_networks'] = fixed_net.amount
+            attrs['vlan_start'] = fixed_net.vlan_start
+
+        return attrs
+
+    @classmethod
+    def add_vlan_interfaces(cls, nodes):
+        """
+        We shouldn't pass to orchetrator fixed network
+        when network manager is VlanManager, but we should specify
+        fixed_interface (private_interface in terms of fuel) as result
+        we just pass vlan_interface as node attribute.
+        """
+        netmanager = NetworkManager()
+        for node in nodes:
+            node_db = db().query(Node).get(node['id'])
+
+            fixed_interface = netmanager._get_interface_by_network_name(
+                node_db.id, 'fixed')
+
+            node['vlan_interface'] = fixed_interface.name
+
+    @classmethod
+    def network_ranges(cls, cluster):
+        ng_db = db().query(NetworkGroup).filter_by(cluster_id=cluster.id).all()
+        attrs = {}
+        for net in ng_db:
+            net_name = net.name + '_network_range'
+
+            if net.name == 'floating':
+                attrs[net_name] = cls.get_ip_ranges_first_last(net)
+            elif net.name == 'public':
+                # We shouldn't pass public_network_range attribute
+                continue
+            else:
+                attrs[net_name] = net.cidr
+
+        return attrs
+
+    @classmethod
+    def get_ip_ranges_first_last(cls, network_group):
+        """
+        Get all ip ranges in "10.0.0.0-10.0.0.255" format
+        """
+        return [
+            "{0}-{1}".format(ip_range.first, ip_range.last)
+            for ip_range in network_group.ip_ranges
+        ]
+
+    @classmethod
+    def controller_nodes(cls, cluster_id):
+        nodes = db().query(Node).filter_by(
+            cluster_id=cluster_id,
+            role='controller',
+            pending_deletion=False).order_by(Node.id)
+
+        return cls.serialize_nodes(nodes)
 
     @classmethod
     def serialize_nodes(cls, nodes):
@@ -155,6 +252,13 @@ class OrchestratorHACompactSerializer(OrchestratorSerializer):
     Not implemented yet
     """
     pass
+
+    # if task.cluster.mode == 'ha':
+    # logger.info("HA mode chosen, creating VIP addresses for it..")
+    # cluster_attrs['management_vip'] = netmanager.assign_vip(
+    #     cluster_id, "management")
+    # cluster_attrs['public_vip'] = netmanager.assign_vip(
+    #     cluster_id, "public")
 
 
 class OrchestratorHAFullSerializer(OrchestratorSerializer):
