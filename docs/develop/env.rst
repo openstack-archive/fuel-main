@@ -116,7 +116,22 @@ Astute and Naily
 Building the Fuel ISO
 ---------------------
 
-#. Follow these steps to prepare an environment for building::
+#. Following software is required to build the Fuel ISO images on Ubuntu
+   12.10 or newer (on Ubuntu 12.04, use nodejs package instead of
+   nodejs-legacy)::
+
+    sudo apt-get install build-essential make git ruby ruby-dev rubygems
+    sudo apt-get install python-setuptools yum yum-utils libmysqlclient-dev isomd5sum
+    sudo apt-get install python-nose libvirt-bin python-ipaddr python-paramiko python-yaml
+    sudo apt-get install python-pip kpartx extlinux npm nodejs-legacy unzip genisoimage
+    sudo gem install bundler -v 1.2.1
+    sudo gem install builder
+    sudo pip install xmlbuilder jinja2
+    sudo npm install -g requirejs
+
+#. (alternative) If you have completed the instructions in the previous
+   sections of Fuel development environment setup guide, the list of
+   additional packages required to build the ISO becomes shorter::
 
     sudo apt-get install ruby-dev ruby-builder bundler libmysqlclient-dev
     sudo apt-get install yum-utils kpartx extlinux genisoimage isomd5sum
@@ -125,6 +140,13 @@ Building the Fuel ISO
    commands as root user without request for a password::
 
     echo "`whoami` ALL=(ALL) NOPASSWD: ALL" | sudo tee -a /etc/sudoers
+
+#. If you haven't already done so, get the source code::
+
+    git clone https://github.com/Mirantis/fuelweb.git
+    cd fuelweb
+    git submodule init
+    git submodule update
 
 #. Now you can build the Fuel ISO image::
 
@@ -170,6 +192,26 @@ Running the FuelWeb Integration Test
 
     cd fuelweb
     make test-integration
+
+#. To save time, you can execute individual test cases from the
+   integration test suite like this::
+
+    cd fuelweb
+    export ENV_NAME=fuelweb
+    export PUBLIC_FORWARD=nat
+    export ISO_PATH=`pwd`/build/iso/fuelweb-centos-6.4-x86_64.iso
+    nosetests -w fuelweb_test -s -l DEBUG --with-xunit fuelweb_test.integration.test_admin_node:TestAdminNode.test_cobbler_alive
+
+#. The test harness creates a snapshot of all nodes called 'empty'
+   before starting the tests, and creates a new snapshot if a test
+   fails. You can revert to a specific snapshot with this command::
+
+    dos.py revert <snapshot_name>
+
+#. To fully reset your test environment, tell the Devops toolkit to erase it::
+
+    dos.py list
+    dos.py erase <env_name>
 
 Running Fuel Puppet Modules Unit Tests
 --------------------------------------
