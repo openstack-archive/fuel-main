@@ -2,7 +2,7 @@
 topdir=$(dirname `readlink -f $0`)
 . $topdir/common.sh
 
-nailgun_deps
+nailgun_deps $WORKSPACE/requirements-eggs.txt
 
 cd docs
 make clean
