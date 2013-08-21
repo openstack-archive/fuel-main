@@ -804,22 +804,13 @@ class NetworkManager(object):
 
     def is_range_in_cidr(self, ip_network, ip_range):
         """
-        is_range_in_cidr(arg1, arg2) - takes two objects that represent IP
-        address range and checks if those ranges are intersecting.
+        Takes two objects that represent IP address range
+        and checks if those ranges are intersecting.
 
         :arg* IPNetwork, IPRange: - valid object with IP range
-        :return bool: - is networks intersecting
-        :raises ValueError: if arg* niether IPNetwork or IPRange
+        :returns bool: - is networks intersecting
+        :raises ValueError: if arg* neither IPNetwork or IPRange
         """
-        if not all(
-            map(
-                lambda x: isinstance(x, IPNetwork) or isinstance(x, IPRange),
-                (ip_network, ip_range)
-            )
-        ):
-            raise ValueError(
-                "Input arguments must belong to IPNetwork or IPRange class!"
-            )
         l_range_addr, r_range_addr = self.get_min_max_addr(ip_range)
         l_network_addr, r_network_addr = self.get_min_max_addr(ip_network)
         if l_network_addr != l_range_addr:
@@ -832,8 +823,8 @@ class NetworkManager(object):
 
     def get_min_max_addr(self, range_object):
         """
-        get_min_max_addr(range_object) - takes object which discribes IP range
-         and returns min and max address as tuple of two elements
+        takes object which implicitly has IP range
+         and returns min and max address as tuple of two IPAddress elements
 
         :range_object IPNetwork, IPRange: - object with ip range
         :return (IPAddress, IPAddress):
@@ -855,11 +846,11 @@ class NetworkManager(object):
 
     def bin_to_ip_addr(self, bin):
         """
-        bin_to_ip_addr(bin) - converts string of 32 digits to IP address
+        converts string of 32 digits to IP address
 
-        :bin str: is binary representation of IP address is 32 character string
-        with ones and zeros  ( '00101100110011000011001100110011' )
-        :return str: string with IP address ( '127.0.0.1' )
+        :bin str: is binary representation of IP address, must be 32 character
+        long with ones and zeros  (ex: '00101100110011000011001100110011' )
+        :returns IPAddress: returns object of IPAddress class
         """
         return IPAddress('.'.join(
             map(
