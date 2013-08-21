@@ -243,18 +243,6 @@ class DeploymentTask(object):
             for ip_range in network_group.ip_ranges
         ]
 
-    @classmethod
-    def __get_ip_addresses_in_ranges(cls, network_group):
-        """Get array of all possibale ip addresses in all ranges
-        """
-        ranges = []
-        for ip_range in network_group.ip_ranges:
-            ranges += map(lambda ip: str(ip),
-                          list(netaddr.IPRange(ip_range.first, ip_range.last)))
-
-        # Return only uniq ip addresses
-        return sorted(list(set(ranges)))
-
 
 class ProvisionTask(object):
     @classmethod
