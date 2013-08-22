@@ -333,26 +333,39 @@ class BaseNodeTestCase(BaseTestCase):
             timeout=timeout)
 
     @logwrap
+    def _get_remote(self, ip):
+        return SSHClient(ip, username='root', password='r00tme',
+                         private_keys=self.get_private_keys())
+
+    @logwrap
+    def _get_remote_for_node(self, node_name):
+        ip = self.get_node_by_devops_node(
+            self.ci().environment().node_by_name(node_name))['ip']
+        return self._get_remote(ip)
+
+    @logwrap
     def get_cluster_status(self, ip, smiles_count, networks_count=1):
-        remote = SSHClient(ip, username='root', password='r00tme',
-                           private_keys=self.get_private_keys())
+        remote = self._get_remote(ip)
         self.assert_service_list(remote, smiles_count)
         self.assert_glance_index(remote)
         self.assert_network_list(networks_count, remote)
 
     @logwrap
-    def get_cluster_floating_list(self, ip):
-        remote = SSHClient(ip, username='root', password='r00tme',
-                           private_keys=self.get_private_keys())
+    def get_cluster_floating_list(self, node_name):
+        remote = self._get_remote_for_node(node_name)
         ret = remote.check_call('/usr/bin/nova-manage floating list')
         ret_str = ''.join(ret['stdout'])
         return re.findall('(\d{1,3}\.\d{1,3}\.\d{1,3}\.\d{1,3})', ret_str)
 
     @logwrap
+    def get_cluster_block_devices(self, node_name):
+        remote = self._get_remote_for_node(node_name)
+        ret = remote.check_call('/bin/lsblk')
+        return ''.join(ret['stdout'])
+
+    @logwrap
     def assert_cluster_floating_list(self, node_name, expected_ips):
-        ip = self.get_node_by_devops_node(
-            self.ci().environment().node_by_name(node_name))['ip']
-        current_ips = self.get_cluster_floating_list(ip)
+        current_ips = self.get_cluster_floating_list(node_name)
         self.assertEqual(set(expected_ips), set(current_ips))
 
     @logwrap
