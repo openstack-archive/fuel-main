@@ -200,12 +200,43 @@ class BaseNodeTestCase(BaseTestCase):
         self.assertEquals('error', self._task_wait(task, timeout)['status'])
 
     @logwrap
+    def assertOSTFRunSuccess(self, cluster_id, should_fail=0, should_pass=0, timeout=10 * 60):
+        set_result_list = self._ostf_test_wait(cluster_id, timeout)
+
+        passed = 0
+        failed = 0
+        for set_result in set_result_list:
+            passed += len(filter(lambda test: test['status'] == 'success',
+                                 set_result['tests']))
+            failed += len(filter(lambda test: test['status'] == 'failure',
+                                 set_result['tests']))
+        self.assertEqual(passed, should_pass, 'Passed tests')
+        self.assertEqual(failed, should_fail, 'Failed tests')
+
+    @logwrap
+    def run_OSTF(self, cluster_id, test_sets=[], should_fail=0, should_pass=0):
+        test_sets = test_sets or ['fuel_smoke', 'fuel_sanity']
+
+        self.client.ostf_run_tests(cluster_id, test_sets)
+        self.assertOSTFRunSuccess(cluster_id, should_fail=should_fail,
+                                  should_pass=should_pass)
+
+    @logwrap
     def _task_wait(self, task, timeout):
         wait(
             lambda: self.client.get_task(
                 task['id'])['status'] != 'running',
             timeout=timeout)
         return self.client.get_task(task['id'])
+
+    @logwrap
+    def _ostf_test_wait(self, cluster_id, timeout):
+        wait(
+            lambda: all([run['status'] == 'finished'
+                         for run in
+                         self.client.get_ostf_test_run(cluster_id)]),
+            timeout=timeout)
+        return self.client.get_ostf_test_run(cluster_id)
 
     @logwrap
     def _upload_sample_release(self):
