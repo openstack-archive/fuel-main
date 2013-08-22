@@ -50,6 +50,7 @@ class ClusterHandler(JSONHandler):
         "name",
         "mode",
         "status",
+        "grouping",
         ("release", "*")
     )
 

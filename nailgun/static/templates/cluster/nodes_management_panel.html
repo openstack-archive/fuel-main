@@ -1,4 +1,4 @@
-<% if (nodes.cluster) { %>
+<% if (cluster) { %>
   <div class="cluster-actions">
     <button class="btn btn-cluster-actions">Actions</button>
   </div>
@@ -6,17 +6,18 @@
     <label>
       Group by
       <select name="grouping" <%= nodes.length ? '' : 'disabled' %>>
-        <option value="roles">Roles</option>
-        <option value="harware">Harware Info</option>
-        <option value="both">Roles and hardware info</option>
+        <% var groupings = cluster.groupings() %>
+        <% _.each(_.keys(groupings), function(grouping) { %>
+          <option value="<%= grouping %>" <%= grouping == cluster.get('grouping') ? 'selected' : '' %>><%= groupings[grouping] %></option>
+        <% })%>
       </select>
     </label>
   </div>
 <% } %>
 <div class="batch-actions-buttons">
-  <button class="btn btn-danger btn-delete-nodes<%= nodes.cluster ? '' : '-from-fuel' %>" disabled>Delete Nodes <%= nodes.cluster ? '' : 'from FUEL' %></button>
+  <button class="btn btn-danger btn-delete-nodes<%= cluster ? '' : '-from-fuel' %>" disabled>Delete Nodes <%= cluster ? '' : 'from FUEL' %></button>
   <button class="btn btn-assign-roles" disabled>Assign Roles</button>
-  <% if (nodes.cluster) { %>
+  <% if (cluster) { %>
     <button class="btn btn-congigure-disks" disabled>Configure Disks</button>
     <button class="btn btn-congigure-interfaces" disabled>Configure Interfaces</button>
   <% } %>

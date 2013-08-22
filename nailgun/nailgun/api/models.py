@@ -87,6 +87,7 @@ class Cluster(Base):
     MODES = ('singlenode', 'multinode', 'ha')
     STATUSES = ('new', 'deployment', 'operational', 'error', 'remove')
     NET_MANAGERS = ('FlatDHCPManager', 'VlanManager')
+    GROUPING = ('roles', 'hardware', 'both')
     id = Column(Integer, primary_key=True)
     mode = Column(
         Enum(*MODES, name='cluster_mode'),
@@ -102,6 +103,11 @@ class Cluster(Base):
         Enum(*NET_MANAGERS, name='cluster_net_manager'),
         nullable=False,
         default='FlatDHCPManager'
+    )
+    grouping = Column(
+        Enum(*GROUPING, name='cluster_grouping'),
+        nullable=False,
+        default='roles'
     )
     name = Column(Unicode(50), unique=True, nullable=False)
     release_id = Column(Integer, ForeignKey('releases.id'), nullable=False)

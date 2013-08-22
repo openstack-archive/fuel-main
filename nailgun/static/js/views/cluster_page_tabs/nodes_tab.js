@@ -202,9 +202,12 @@ function(utils, models, commonViews, dialogViews, addNodesScreenTemplate, nodesM
         },
         initialize: function(options) {
             _.defaults(this, options);
+            this.cluster = this.screen.nodes.cluster;
         },
         groupNodes: function(e) {
-            this.screen.list.groupNodes(this.$(e.currentTarget).val());
+            var grouping = this.$(e.currentTarget).val();
+            this.cluster.save({grouping: grouping}, {patch: true, wait: true});
+            this.screen.list.groupNodes(grouping);
         },
         chosenNodes: function() {
             var chosenNodesIds = this.screen.$('.node-checkbox input:checked').map(function() {return parseInt($(this).val(), 10);}).get();
@@ -238,7 +241,10 @@ function(utils, models, commonViews, dialogViews, addNodesScreenTemplate, nodesM
         },
         render: function() {
             this.tearDownRegisteredSubViews();
-            this.$el.html(this.template({nodes: this.screen.nodes}));
+            this.$el.html(this.template({
+                nodes: this.screen.nodes,
+                cluster: this.cluster
+            }));
             return this;
         }
     });
@@ -313,7 +319,7 @@ function(utils, models, commonViews, dialogViews, addNodesScreenTemplate, nodesM
         },
         groupNodes: function(attribute) {
             if (_.isUndefined(attribute)) {
-                attribute = this.nodes.cluster ? 'roles' : 'hardware';
+                attribute = this.nodes.cluster ? this.nodes.cluster.get('grouping') : 'hardware';
             }
             if (attribute == 'roles') {
                 this.nodeGroups = this.nodes.groupBy(function(node) {return node.get('roles').join('+');});

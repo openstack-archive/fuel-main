@@ -54,6 +54,9 @@ define(['utils'], function(utils) {
             }
             return _.isEmpty(errors) ? null : errors;
         },
+        groupings: function() {
+            return {roles: 'Roles', hardware: 'Hardware Info', both: 'Roles and hardware info'};
+        },
         task: function(taskName, status) {
             return this.get('tasks') && this.get('tasks').findTask({name: taskName, status: status});
         },
