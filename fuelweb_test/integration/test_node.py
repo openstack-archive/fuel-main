@@ -77,6 +77,7 @@ class TestNode(BaseNodeTestCase):
             cluster_id=cluster_id,
             nodes_dict={'controller': ['slave-01']}
         )
+        self.assertOSTFRunSuccess(cluster_id, 12, 12)
 
     @snapshot_errors
     @logwrap
@@ -91,6 +92,7 @@ class TestNode(BaseNodeTestCase):
         self.get_ebtables(cluster_id, self.nodes().slaves[:2]).restore_vlans()
         task = self._run_network_verify(cluster_id)
         self.assertTaskSuccess(task, 60 * 2)
+        self.assertOSTFRunSuccess(cluster_id, 6, 18)
 
     @snapshot_errors
     @logwrap
@@ -107,18 +109,20 @@ class TestNode(BaseNodeTestCase):
         self.get_ebtables(cluster_id, self.nodes().slaves[:2]).restore_vlans()
         task = self._run_network_verify(cluster_id)
         self.assertTaskSuccess(task, 60 * 2)
+        self.assertOSTFRunSuccess(cluster_id, 6, 18)
 
     @snapshot_errors
     @logwrap
     @fetch_logs
     def test_network_config(self):
-        self.prepare_environment(settings={
+        cluster_id = self.prepare_environment(settings={
             'controller': ['slave-01'],
             'compute': ['slave-02']
         })
         slave = self.nodes().slaves[0]
         node = self.get_node_by_devops_node(slave)
         self.assertNetworkConfiguration(node)
+        self.assertOSTFRunSuccess(cluster_id, 6, 18)
 
     @snapshot_errors
     @logwrap
@@ -133,6 +137,7 @@ class TestNode(BaseNodeTestCase):
         task = self.deploy_cluster(cluster_id)
         self.assertTaskSuccess(task)
         wait(lambda: self.is_node_discovered(nailgun_nodes[0]), timeout=3 * 60)
+        self.assertOSTFRunSuccess(cluster_id, 12, 12)
 
     @snapshot_errors
     @logwrap
@@ -156,6 +161,7 @@ class TestNode(BaseNodeTestCase):
             self.assertTaskFailed(task, 60 * 2)
         finally:
             ebtables.restore_first_vlan()
+        self.assertOSTFRunSuccess(cluster_id, 12, 12)
 
     @snapshot_errors
     @logwrap
@@ -183,13 +189,14 @@ class TestNode(BaseNodeTestCase):
     @logwrap
     @fetch_logs
     def test_simple_cluster_with_cinder(self):
-        self.prepare_environment(settings={
+        cluster_id = self.prepare_environment(settings={
             'controller': ['slave-01'],
             'compute': ['slave-02'],
             'cinder': ['slave-03']
         })
         self.assertClusterReady(
             'slave-01', smiles_count=6, networks_count=1, timeout=300)
+        self.assertOSTFRunSuccess(cluster_id, 5, 19)
 
     @snapshot_errors
     @logwrap
@@ -212,6 +219,7 @@ class TestNode(BaseNodeTestCase):
             smiles_count=8, networks_count=1, timeout=300)
         self.assert_node_service_list(self.nodes().slaves[1].name, 8)
         self.assert_node_service_list(self.nodes().slaves[2].name, 8)
+        self.assertOSTFRunSuccess(cluster_id, 6, 18)
 
     @snapshot_errors
     @logwrap
@@ -253,6 +261,7 @@ class TestNode(BaseNodeTestCase):
                        ['240.0.0.%s' % i for i in range(30, 36, 1)]
         self.assert_cluster_floating_list(
             nodes_dict['compute'][0], expected_ips)
+        self.assertOSTFRunSuccess(cluster_id, 6, 18)
 
     @snapshot_errors
     @logwrap
