@@ -58,7 +58,11 @@ class OrchestratorSerializer(object):
         attrs['controller_nodes'] = cls.controller_nodes(cluster.id)
 
         attrs.update(cls.network_ranges(cluster))
-        attrs['novanetwork_attrs'] = cls.novanetwork_attrs(cluster)
+        attrs['novanetwork_parameters'] = cls.novanetwork_attrs(cluster)
+
+        # TODO!!!!!
+        # need to set flag use_cinder in case
+        # attrs['use_cinder'] ||= nodes.any?{|n| n['role'] == 'cinder'}
 
         return attrs
 
@@ -142,7 +146,9 @@ class OrchestratorSerializer(object):
         interfaces = cls.configure_interfaces(network_data)
         cls.__add_hw_interfaces(interfaces, node.meta['interfaces'])
         node_attrs = {
-            'uid': node.id,
+            # Yes, uid is really should be a string
+            'uid': str(node.id),
+            'status': node.status,
             'fqdn': node.fqdn,
             'name': TaskHelper.make_slave_name(node.id, node.role),
             'role': node.role,
@@ -231,7 +237,7 @@ class OrchestratorSerializer(object):
             if not hw_interface['name'] in interfaces:
                 interfaces[hw_interface['name']] = {
                     'interface': hw_interface['name'],
-                    'ipaddr': []
+                    'ipaddr': "none"
                 }
 
 
