@@ -122,6 +122,11 @@ class NailgunClient(object):
         return self.client.get("/api/releases/")
 
     @logwrap
+    @json_parse
+    def get_node_disks(self, disk_id):
+        return self.client.get("/api/nodes/%s/disks" % disk_id)
+
+    @logwrap
     def get_grizzly_release_id(self):
         for release in self.get_releases():
             if release["name"].find("Grizzly") != -1:
@@ -180,3 +185,8 @@ class NailgunClient(object):
             cluster_vlans.extend(range(network['vlan_start'],
                                        network['vlan_start'] + amount))
         return cluster_vlans
+
+    @logwrap
+    @json_parse
+    def get_notifications(self):
+        return self.client.get("/api/notifications")
