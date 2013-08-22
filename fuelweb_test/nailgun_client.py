@@ -147,6 +147,31 @@ class NailgunClient(object):
 
     @logwrap
     @json_parse
+    def get_ostf_test_sets(self):
+        return self.client.get("/ostf/testsets")
+
+    @logwrap
+    @json_parse
+    def get_ostf_tests(self):
+        return self.client.get("/ostf/tests")
+
+    @logwrap
+    @json_parse
+    def get_ostf_test_run(self, cluster_id):
+        return self.client.get("/ostf/testruns/last/%s" % cluster_id)
+
+    @logwrap
+    @json_parse
+    def ostf_run_tests(self, cluster_id, test_sets_list):
+        data = []
+        for test_set in test_sets_list:
+            data.append({'metadata':
+                             {'cluster_id': cluster_id, 'config': {}},
+                         'testset': test_set})
+        return self.client.post("/ostf/testruns", data)
+
+    @logwrap
+    @json_parse
     def update_network(self, cluster_id, networks=None, net_manager=None):
         data = {}
         if networks is not None:
