@@ -153,18 +153,6 @@ class NodeValidator(BasicValidator):
                     "Role list must be list of strings",
                     log_message=True
                 )
-            #if not node.cluster:
-            #    raise errors.InvalidData(
-            #        "Roles cannot be assigned to node without environment",
-            #        log_message=True
-            #    )
-            #for role in data['roles']:
-            #    if role not in node.cluster.release.volumes_metadata[
-            #            'volumes_roles_mapping']:
-            #        raise errors.InvalidData(
-            #            "Invalid role '{0}'".format(role),
-            #            log_message=True
-            #        )
 
     @classmethod
     def validate_update(cls, data):

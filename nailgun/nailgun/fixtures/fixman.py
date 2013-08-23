@@ -90,13 +90,16 @@ def upload_fixture(fileobj):
         fk_fields = {}
         for field, value in obj["fields"].iteritems():
             f = getattr(obj['model'], field)
-            impl = f.impl
+            impl = getattr(f, 'impl', None)
             fk_model = None
-            if hasattr(f.comparator.prop, "argument"):
-                if hasattr(f.comparator.prop.argument, "__call__"):
-                    fk_model = f.comparator.prop.argument()
-                else:
-                    fk_model = f.comparator.prop.argument.class_
+            try:
+                if hasattr(f.comparator.prop, "argument"):
+                    if hasattr(f.comparator.prop.argument, "__call__"):
+                        fk_model = f.comparator.prop.argument()
+                    else:
+                        fk_model = f.comparator.prop.argument.class_
+            except AttributeError:
+                pass
 
             if fk_model:
                 if value not in keys[fk_model.__tablename__]:
@@ -122,7 +125,7 @@ def upload_fixture(fileobj):
             elif isinstance(impl, orm.attributes.CollectionAttributeImpl):
                 if value:
                     fk_fields[field] = (value, fk_model)
-            elif isinstance(
+            elif hasattr(f, 'property') and isinstance(
                 f.property.columns[0].type, sqlalchemy.types.DateTime
             ):
                 if value:

@@ -95,6 +95,9 @@ define(['utils'], function(utils) {
         availableModes: function() {
             return ['multinode', 'ha'];
         },
+        availableRoles: function() {
+            return this.get('release').get('roles');
+        },
         parse: function(response) {
             response.release = new models.Release(response.release);
             return response;

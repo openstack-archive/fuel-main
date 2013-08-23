@@ -41,6 +41,22 @@ from nailgun.volumes.manager import VolumeManager
 Base = declarative_base()
 
 
+class NodeRoles(Base):
+    __tablename__ = 'node_roles'
+    id = Column(Integer, primary_key=True)
+    role = Column(Integer, ForeignKey('roles.id', ondelete="CASCADE"))
+    node = Column(Integer, ForeignKey('nodes.id'))
+
+
+class Role(Base):
+    __tablename__ = 'roles'
+    id = Column(Integer, primary_key=True)
+    release_id = Column(Integer, ForeignKey('releases.id', ondelete='CASCADE'),
+                        nullable=False)
+    nodes = relationship("Node", secondary=NodeRoles.__table__, backref="role_list")
+    name = Column(String(50), nullable=False)
+
+
 class Release(Base):
     __tablename__ = 'releases'
     __table_args__ = (
@@ -63,7 +79,20 @@ class Release(Base):
     networks_metadata = Column(JSON, default=[])
     attributes_metadata = Column(JSON, default={})
     volumes_metadata = Column(JSON, default={})
+    roles_metadata = Column(JSON, default={})
+    role_list = relationship("Role", backref="release")
     clusters = relationship("Cluster", backref="release")
+
+    @property
+    def roles(self):
+        return [role.name for role in self.role_list]
+
+    @roles.setter
+    def roles(self, roles):
+        for role in roles:
+            if not role in self.roles:
+                self.role_list.append(Role(name=role, release=self))
+        db().commit()
 
 
 class ClusterChanges(Base):
@@ -178,14 +207,6 @@ class Cluster(Base):
         db().commit()
 
 
-class NodeRole(Base):
-    __tablename__ = 'node_roles'
-    id = Column(Integer, primary_key=True)
-    node_id = Column(Integer, ForeignKey('nodes.id', ondelete='CASCADE'))
-    name = Column(String(50), nullable=False)
-    pending = Column(Boolean, default=False)
-
-
 class Node(Base):
     __tablename__ = 'nodes'
     NODE_STATUSES = (
@@ -224,7 +245,6 @@ class Node(Base):
     error_msg = Column(String(255))
     timestamp = Column(DateTime, nullable=False)
     online = Column(Boolean, default=True)
-    role_list = relationship("NodeRole", backref="node")
     attributes = relationship("NodeAttributes",
                               backref=backref("node"),
                               uselist=False)
@@ -274,11 +294,17 @@ class Node(Base):
 
     @roles.setter
     def roles(self, new_roles):
+        available_roles = []
+        try:
+            available_roles = self.cluster.release.role_list
+        except AttributeError:
+            pass
         old_roles = self.roles
         for role in new_roles:
             if not role in old_roles:
-                new_role = NodeRole(name=role, node=self)
-                self.role_list.append(new_role)
+                new_role = filter(lambda r: r.name == role, available_roles)
+                if new_role:
+                    self.role_list.append(new_role[0])
         db().commit()
 
     @pending_roles.setter

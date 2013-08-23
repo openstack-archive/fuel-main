@@ -8,6 +8,23 @@
             "operating_system": "CentOS",
             "description": "This option will install the OpenStack Grizzly packages using CentOS as a base operating system. With high availability features built in, you are getting a robust, enterprise-grade OpenStack deployment.",
             "state": "available",
+            "roles": ["controller", "compute", "cinder"],
+            "roles_metadata": {
+                "controller": {
+                    "name": "Controller",
+                    "description": "Controller description",
+                    "conflicts": ["compute"]
+                },
+                "compute": {
+                    "name": "Compute",
+                    "description": "Compute description",
+                    "conflicts": ["controller"]
+                },
+                "cinder": {
+                    "name": "Cinder",
+                    "description": ["Cinder"]
+                }
+            },
             "networks_metadata": [
                 {"name": "floating", "access": "public"},
                 {"name": "public", "access": "public"},
