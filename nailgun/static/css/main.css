@@ -476,7 +476,18 @@ h6.page-title {
   background: linear-gradient(to bottom, #e5e6e8 0%, #d1d5d8 100%); /* W3C */
  filter: progid:DXImageTransform.Microsoft.gradient( startColorstr='#e5e6e8', endColorstr='#d1d5d8', GradientType=0 ); /* IE6-8 */
 }
-.unallocated .node-content {
+
+/* chekbox animation
+.node-content:hover > .node-checkbox {
+  margin-left: 0px;
+  -webkit-transition: all 0.3s ease;
+  -moz-transition: all 0.3s ease;
+  -o-transition: all 0.3s ease;
+  -ms-transition: all 0.3s ease;
+}
+*/
+
+.unallocated {
   background: #ffffff !important;
 }
 .node-checkbox {
@@ -488,6 +499,11 @@ h6.page-title {
   box-sizing: border-box;
   -moz-box-sizing: border-box;
   -webkit-box-sizing: border-box;
+  /* margin-left: -49px; */
+  -webkit-transition: all 0.3s ease;
+  -moz-transition: all 0.3s ease;
+  -o-transition: all 0.3s ease;
+  -ms-transition: all 0.3s ease;
 }
 .node-logo {
   width: 64px;
@@ -601,12 +617,16 @@ h6.page-title {
   width: 22px;
   overflow: hidden;
   float: right;
-  background-image: url(/static/img/cogwheel_icon.png);
+  background: url(/static/img/icons.png) 0px 0px no-repeat;
   margin: 13px 13px 0px 14px;
   cursor: pointer;
 }
 .node-settings:hover {
-  background: url(/static/img/cogwheel_icon.png) 0px -22px no-repeat;
+  background: url(/static/img/icons.png) 0px -22px no-repeat;
+  -moz-animation: spin 2s infinite linear;
+  -o-animation: spin 2s infinite linear;
+  -webkit-animation: spin 2s infinite linear;
+  animation: spin 2s infinite linear;
 }
 .node-name > .name {
   display: block;
@@ -733,6 +753,26 @@ h6.page-title {
 .node-delete {
   border-color: #a46161;
 }
+.node-offline {
+  border-сolor: red;
+}
+.node-offline > .node-box,
+.node-offline > .node-box > .node-content,
+.node-offline > .node-box > .node-content > .node-checkbox,
+.node-offline > .node-box > .node-content > .node-checkbox > .node-settings,
+.node-offline > .node-box > .node-content > .node-checkbox > .node-hardware,
+.node-offline > .node-box > .node-content > .node-checkbox > .node-status {
+  opacity: 0.7;
+  cursor: default;
+}
+
+.node-offline > .node-box > .node-content > .node-name > .name,
+.node-offline > .node-box > .node-content > .node-name > .name:hover
+ {
+  opacity: 0.7;
+  cursor: default;
+}
+
 .node-delete > .node-content > .node-name > .name > p {
   text-decoration: line-through !important;
   cursor: default;
@@ -4278,6 +4318,85 @@ input.input-append {
 .healthcheck-table .healthcheck-col-status {width: 50px; text-align: center;}
 .healthcheck-table .healthcheck-col-duration {width: 120px; text-align: center;}
 .healthcheck-table th.healthcheck-col-duration, .healthcheck-table th.healthcheck-col-status {padding: 12px 0 12px 0;}
+
+/* Cluster toolbar */
+.cluster-toolbar {
+  display: block;
+  width: 100%;
+  padding: 19px 0px 19px 0px;
+  margin-bottom: 20px;
+  border-bottom: 2px solid #a0a0a0;
+  height: 73px;
+    -webkit-box-sizing: border-box;
+     -moz-box-sizing: border-box;
+          box-sizing: border-box;
+}
+
+.cluster-toolbar > .pull-right {
+  float: right;
+}
+
+.cluster-toolbar-item {
+  display: block;
+  float: left;
+  margin-left: 20px;
+}
+
+.cluster-toolbar-item:first-child {
+  margin-left: 0px;
+}
+
+.cluster-toolbar-item > label {
+  display: block;
+  height: 30px;
+  float: left;
+  margin: 0px;
+  padding: 0px;
+  line-height: 29px;
+  margin-right: 10px;
+}
+.node-groups {
+  display: block;
+  /* background-color: #f0f0f0; */
+  border: solid 1px #cccccc;
+  border-radius: 4px;
+  padding: 10px 20px 20px 20px;
+  margin-bottom: 20px;
+}
+
+.actions-dropdown-btn {
+  padding: 3px;
+}
+
+.actions-menu {
+  max-width: 260px;
+}
+
+.actions-item {
+  display: block;
+  color: #333333;
+  font-size: 13px;
+  margin: 11px 20px 20px 20px;
+}
+.actions-item > h4 {
+  margin: 0px;
+  padding: 0px;
+  font-size: 13px;
+}
+.actions-item > .parameter-box > .parameter-name {
+  font-size: 13px;
+  font-weight: 100;
+}
+
+.actions-btn {
+  display: block;
+  height: 22px;
+  width: 22px;
+  overflow: hidden;
+  float: right;
+  background: url(/static/img/icons.png) 0px -44px no-repeat;
+  cursor: pointer;
+}
 
 .animate-spin {
   -moz-animation: spin 2s infinite linear;
