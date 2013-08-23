@@ -3,7 +3,7 @@
   <h3>Delete Node<%= nodes.length > 1 ? 's' : '' %></h3>
 </div>
 <div class="modal-body">
-  <div class="delete-nodes-notice"><i class="icon-attention"></i> Are you sure you want to delete selected nodes<%= deleteFromFuel ? ' from FUEL' : '' %>?</div>
+  <div class="delete-nodes-notice"><i class="icon-attention"></i> Are you sure you want to delete selected nodes<%= nodes.cluster ? ' from FUEL' : '' %>?</div>
 </div>
 <div class="modal-footer">
   <button class="btn" data-dismiss="modal">Cancel</button>

@@ -790,21 +790,30 @@ h6.page-title {
   width: 92px;
   margin-top: 2px;
 }
-
-.assigned .node-status:hover > div:first-child {
-  display: none;
-}
 */
+
+.roles .pending {
+  color: #f00;
+}
+
+.node-status:hover .can-discard {
+  display: none !important;
+}
+
 .node-status i {
   font-size: 12px;
 }
 
-.logs-link {
+.node-status .logs-link, .node-status .btn-discard-node-changes {
   display: block;
     height: 25px;
-    color: #2c67a0;
-    font-size: 9.5px;
+    color: #2c67a0 !important;
+    font-size: 9.5px !important;
     text-transform: uppercase;
+}
+
+.node-status .btn-discard-node-changes {
+    padding: 0;
 }
 
 /*

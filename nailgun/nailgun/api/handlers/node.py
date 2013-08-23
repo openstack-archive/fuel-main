@@ -40,7 +40,7 @@ from nailgun import notifier
 
 
 class NodeHandler(JSONHandler):
-    fields = ('id', 'name', 'meta', 'progress', 'roles',
+    fields = ('id', 'name', 'meta', 'progress', 'roles', 'pending_roles',
               'status', 'mac', 'fqdn', 'ip', 'manufacturer', 'platform_name',
               'pending_addition', 'pending_deletion', 'os_platform',
               'error_type', 'online', 'cluster')

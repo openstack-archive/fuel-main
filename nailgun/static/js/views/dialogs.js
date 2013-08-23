@@ -477,38 +477,39 @@ function(require, utils, models, simpleMessageTemplate, createClusterDialogTempl
             'click .btn-delete': 'deleteNodes'
         },
         deleteNodes: function() {
-            this.$('.btn-delete').prop('disabled', true);
-            this.nodes.each(function(node) {
-                if (node.get('pending_addition')) {
-                    node.set({
-                        cluster_id: null,
-                        roles: [],
-                        pending_addition: false
+            if (this.nodes.cluster) {
+                this.$('.btn-delete').prop('disabled', true);
+                this.nodes.each(function(node) {
+                    if (!node.get('pending_deletion')) {
+                        if (node.get('pending_addition')) {
+                            node.set({
+                                cluster_id: null,
+                                pending_addition: false,
+                                pending_roles: []
+                            });
+                        } else{
+                            node.set({pending_deletion: true});
+                        }
+                    }
+                }, this);
+                this.nodes.toJSON = function(options) {
+                    return this.map(function(node) {
+                        return _.pick(node.attributes, 'id', 'cluster_id', 'pending_roles', 'pending_addition', 'pending_deletion');
                     });
-                } else {
-                    node.set({pending_deletion: true});
+                };
+                var deferred = this.nodes.sync('update', this.nodes)
+                    .done(_.bind(function() {
+                        this.$el.modal('hide');
+                        app.page.tab.model.fetch();
+                        app.page.tab.screen.nodes.fetch({data: {cluster_id: app.page.tab.model.id}});
+                        app.navbar.refresh();
+                        app.page.removeFinishedTasks();
+                    }, this))
+                    .fail(_.bind(this.displayErrorMessage, this));
                 }
-            });
-            this.nodes.toJSON = function(options) {
-                return this.map(function(node) {
-                    return _.pick(node.attributes, 'id', 'cluster_id', 'roles', 'pending_addition', 'pending_deletion');
-                });
-            };
-            var deferred = this.nodes.sync('update', this.nodes)
-                .done(_.bind(function() {
-                    this.$el.modal('hide');
-                    app.page.tab.model.fetch();
-                    app.page.tab.screen.nodes.fetch({data: {cluster_id: app.page.tab.model.id}});
-                    app.navbar.refresh();
-                    app.page.removeFinishedTasks();
-                }, this))
-                .fail(_.bind(this.displayErrorMessage, this));
         },
         render: function() {
-            this.constructor.__super__.render.call(this, {
-                nodes: this.nodes,
-                deleteFromFuel: this.deleteFromFuel
-            });
+            this.constructor.__super__.render.call(this, {nodes: this.nodes});
             return this;
         }
     });

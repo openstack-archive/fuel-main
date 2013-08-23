@@ -157,14 +157,14 @@ define(['utils'], function(utils) {
             return _.reduce(resources, function(sum, n) {return sum + n;}, 0);
         },
         assignedRoles: function() {
-            var roles = ['all'];
+            var roles = [];
             this.each(function(node) {
-                var role = _.union(roles, node.get('roles'));
+                var role = _.union(roles, node.get('roles'), node.get('pending_roles'));
             });
             return _.uniq(roles);
         },
         filterByRoles: function(role) {
-            return this.filter(function(node) {return _.contains(node.get('roles'), role);});
+            return this.filter(function(node) {return _.contains(_.union(node.get('roles'), node.get('pending_roles')), role);});
         }
     });
 

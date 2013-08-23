@@ -34,7 +34,7 @@ define(
 ],
 function(utils, models, commonViews, dialogViews, addNodesScreenTemplate, nodesManagementPanelTemplate, assignRolesPanelTemplate, nodeListTemplate, nodeGroupTemplate, nodeTemplate, nodeStatusTemplate, editNodeDisksScreenTemplate, nodeDisksTemplate, volumeStylesTemplate, editNodeInterfacesScreenTemplate, nodeInterfaceTemplate) {
     'use strict';
-    var NodesTab, Screen, NodeListScreen, ClusterNodesScreen, AddNodesScreen, NodesManagementPanel, AssignRolesPanel, DeleteNodesDialog, NodeList, NodeGroup, Node, EditNodeScreen, EditNodeDisksScreen, NodeDisk, EditNodeInterfacesScreen, NodeInterface;
+    var NodesTab, Screen, NodeListScreen, ClusterNodesScreen, AddNodesScreen, NodesManagementPanel, AssignRolesPanel, NodeList, NodeGroup, Node, EditNodeScreen, EditNodeDisksScreen, NodeDisk, EditNodeInterfacesScreen, NodeInterface;
 
     NodesTab = commonViews.Tab.extend({
         className: 'wrapper',
@@ -196,7 +196,6 @@ function(utils, models, commonViews, dialogViews, addNodesScreenTemplate, nodesM
             'change select[name=grouping]' : 'groupNodes',
             'click .btn-assign-roles:not(:disabled)' : 'showAssignRolesPanel',
             'click .btn-delete-nodes:not(:disabled)' : 'showDeleteNodesDialog',
-            'click .btn-delete-nodes-from-fuel:not(:disabled)' : 'showDeleteNodesFromFuelDialog',
             'click .btn-configure-disks:not(:disabled)' : 'goToConfigureDisksScreen',
             'click .btn-configure-interfaces:not(:disabled)' : 'goToConfigureInterfacesScreen'
         },
@@ -223,15 +222,9 @@ function(utils, models, commonViews, dialogViews, addNodesScreenTemplate, nodesM
             this.$('.roles-panel').show();
         },
         showDeleteNodesDialog: function() {
-            var dialog = new dialogViews.DeleteNodesDialog({nodes: new models.Nodes(this.chosenNodes())});
-            app.page.tab.registerSubView(dialog);
-            dialog.render();
-        },
-        showDeleteNodesFromFuelDialog: function() {
-            var dialog = new dialogViews.DeleteNodesDialog({
-                nodes: new models.Nodes(this.chosenNodes()),
-                deleteFromFuel: true
-            });
+            var nodes = new models.Nodes(this.chosenNodes());
+            nodes.cluster = this.screen.nodes.cluster;
+            var dialog = new dialogViews.DeleteNodesDialog({nodes: nodes});
             app.page.tab.registerSubView(dialog);
             dialog.render();
         },
@@ -265,18 +258,15 @@ function(utils, models, commonViews, dialogViews, addNodesScreenTemplate, nodesM
         },
         assignRoles: function() {
             this.$('.btn-assign').prop('disabled', true);
-            var roles = this.$('input[type=checkbox]:checked').map(function() {return $(this).val();}).get();
-            this.nodes.each(function(node) {
-                node.set({
-                    roles: roles,
-                    cluster_id: app.page.tab.model.id,
-                    pending_addition: true,
-                    pending_deletion: false
-                });
-            });
+            var data = {pending_roles: this.$('input[type=checkbox]:checked').map(function() {return $(this).val();}).get()};
+            if (!this.nodes.cluster) {
+                data.cluster_id = app.page.tab.model.id;
+                data.pending_addition = true;
+            }
+            this.nodes.each(function(node) {node.set(data);});
             this.nodes.toJSON = function(options) {
                 return this.map(function(node) {
-                    return _.pick(node.attributes, 'id', 'cluster_id', 'roles', 'pending_addition', 'pending_deletion');
+                    return _.pick(node.attributes, 'id', 'cluster_id', 'pending_roles', 'pending_addition');
                 });
             };
             var deferred = this.nodes.sync('update', this.nodes)
@@ -298,7 +288,7 @@ function(utils, models, commonViews, dialogViews, addNodesScreenTemplate, nodesM
             this.$el.html(this.template({
                 nodes: this.nodes,
                 roles: ['controller', 'compute', 'cinder'],
-                assignedRoles: []
+                    assignedRoles: []
             }));
             return this;
         }
@@ -322,11 +312,11 @@ function(utils, models, commonViews, dialogViews, addNodesScreenTemplate, nodesM
                 attribute = this.nodes.cluster ? this.nodes.cluster.get('grouping') : 'hardware';
             }
             if (attribute == 'roles') {
-                this.nodeGroups = this.nodes.groupBy(function(node) {return node.get('roles').join('+');});
+                this.nodeGroups = this.nodes.groupBy(function(node) {return _.union(node.get('roles'),node.get('pending_roles')).join('+');});
             } else if (attribute == 'hardware') {
                 this.nodeGroups = this.nodes.groupBy(function(node) {return 'HDD: ' + utils.showDiskSize(node.resource('hdd')) + ' RAM: ' + utils.showMemorySize(node.resource('ram'));});
             } else {
-                this.nodeGroups = this.nodes.groupBy(function(node) {return node.get('roles').join('+') + ' HDD: ' + utils.showDiskSize(node.resource('hdd')) + ' RAM: ' + utils.showMemorySize(node.resource('ram'));});
+                this.nodeGroups = this.nodes.groupBy(function(node) {return _.union(node.get('roles'),node.get('pending_roles')).join('+') + ' HDD: ' + utils.showDiskSize(node.resource('hdd')) + ' RAM: ' + utils.showMemorySize(node.resource('ram'));});
             }
             this.renderNodeGroups();
         },
@@ -368,9 +358,11 @@ function(utils, models, commonViews, dialogViews, addNodesScreenTemplate, nodesM
         selectAllNodes: function(e) {
             var checked = this.$(e.currentTarget).is(':checked');
             _.each(this.subViews, function(nodeView) {
-                nodeView.selected = checked;
-                nodeView.$el.toggleClass('checked', checked);
-                nodeView.render();
+                if (nodeView.node.get('online')) {
+                    nodeView.selected = checked;
+                    nodeView.$el.toggleClass('checked', checked);
+                    nodeView.render();
+                }
             });
             this.list.calculateSelectAllTumblerState();
             this.screen.calculateBatchActionsButtonsState();
@@ -421,7 +413,10 @@ function(utils, models, commonViews, dialogViews, addNodesScreenTemplate, nodesM
             'click .node-renameable': 'startNodeRenaming',
             'keydown .name input': 'onNodeNameInputKeydown',
             'click .node-hardware': 'showNodeDetails',
-            'click .roles': 'showRolesPanel'
+            'click .roles': 'showRolesPanel',
+            'click .btn-discard-role-changes': 'discardRoleChanges',
+            'click .btn-discard-addition': 'discardAddition',
+            'click .btn-discard-deletion': 'discardDeletion'
         },
         selectNode: function() {
             this.$el.toggleClass('checked');
@@ -481,6 +476,31 @@ function(utils, models, commonViews, dialogViews, addNodesScreenTemplate, nodesM
         showRolesPanel: function() {
             this.$('.roles-panel').toggle();
         },
+        updateNode: function(data) {
+            var screen = app.page.tab.screen;
+            this.node
+                .save(data, {patch: true, wait: true})
+                .always(screen.nodes.fetch({data: {cluster_id: screen.model.id}}));
+                //.fail(utils.showErrorDialog({title: "Can't discard node changes"}));
+        },
+        discardRoleChanges: function() {
+            var data = {pending_roles: []};
+            if (this.node.get('pending_addition')) {
+                data.cluster = null;
+                data.pending_addition = false;
+            }
+            this.updateNode(data);
+        },
+        discardAddition: function() {
+            this.updateNode({
+                cluster: null,
+                pending_addition: false,
+                pending_roles: []
+            });
+        },
+        discardDeletion: function() {
+            this.updateNode({pending_deletion: false});
+        },
         updateProgress: function() {
             if (this.node.get('status') == 'provisioning' || this.node.get('status') == 'deploying') {
                 var progress = this.node.get('progress') || 0;
@@ -516,7 +536,7 @@ function(utils, models, commonViews, dialogViews, addNodesScreenTemplate, nodesM
             this.renaming = false;
             this.selected = false;
             this.eventNamespace = 'click.editnodename' + this.node.id;
-            this.node.on('change:name change:pending_addition change:pending_deletion change:online', this.render, this);
+            this.node.on('change:name change:pending_addition change:pending_deletion change:online change:pending_roles', this.render, this);
             this.node.on('change:status change:online', this.updateStatus, this);
             this.node.on('change:progress', this.updateProgress, this);
         },

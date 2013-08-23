@@ -11,11 +11,11 @@
     <i class="icon-block"></i>Offline
   </div>
 <% } else if (node.get('pending_addition')) { %>
-  <div class="msg-warning">
+  <div class="msg-warning can-discard">
     <i class="icon-ok-circle-empty"></i>Pending Addition
   </div>
 <% } else if (node.get('pending_deletion')) { %>
-  <div class="msg-warning">
+  <div class="msg-warning can-discard">
     <i class="icon-cancel-circle"></i>Pending Deletion
   </div>
 <% } else if (status == 'ready') { %>
@@ -47,4 +47,10 @@
     <%= status %>
   </div>
 <% } %>
-<a href="<%- logsLink %>" class="logs-link"><i class="icon-logs"></i>View logs</a>
+<% var btnClass = node.get('pending_addition') ? 'addition' : node.get('pending_addition') ? 'deletion' : 'role-changes' %>
+<% var btnLabel = node.get('pending_addition') ? 'Addition' : node.get('pending_addition') ? 'Deletion' : 'Role Changes' %>
+<% if (node.get('pending_addition') || node.get('pending_deletion') || node.get('pending_roles').length) { %>
+  <button class="btn btn-link btn-discard-node-changes btn-discard-<%= btnClass %>"><i class="icon-attention"></i>Discard <%= btnLabel %></button>
+<% } else { %>
+  <a href="<%- logsLink %>" class="logs-link"><i class="icon-logs"></i>View logs</a>
+<% } %>
