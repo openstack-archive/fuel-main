@@ -472,7 +472,7 @@ class TestDisks(BaseHandlers):
     def test_remove_pv(self):
         disk = self.create_disk(possible_pvs_count=1)
         disk_without_pv = deepcopy(disk)
-        disk.create_pv('pv_name', 100)
+        disk.create_pv({'id': 'pv_name'}, 100)
         disk.remove_pv('pv_name')
 
         self.assertEquals(disk_without_pv.render(), disk.render())
@@ -493,7 +493,7 @@ class TestFixtures(BaseHandlers):
         redhat = self.env.read_fixtures(
             ('redhat',))[0]['fields']['volumes_metadata']['volumes']
 
-        return [openstack, redhat]
+        return [only_vg(openstack), only_vg(redhat)]
 
     def test_each_logical_volume_has_file_system(self):
         for release_vgs in self.get_vgs_for_releases:
@@ -501,4 +501,4 @@ class TestFixtures(BaseHandlers):
                 for volume in vg['volumes']:
                     self.assertIn(
                         volume['file_system'],
-                        ('ext2', 'ext4', 'swap', 'xfs'))
+                        ('ext2', 'ext4', 'swap', 'xfs', None))

@@ -668,9 +668,18 @@
                 "volumes_roles_mapping": {
                     "controller": ["os", "image"],
                     "compute": ["os", "vm"],
-                    "cinder": ["os", "cinder"]
+                    "cinder": ["os", "cinder"],
+                    "ceph": ["os", "ceph"]
                 },
                 "volumes": [
+                    {
+                        "id": "ceph",
+                        "type": "partition",
+                        "min_size": {"generator": "calc_min_ceph_size"},
+                        "label": "Ceph",
+                        "mount": null,
+                        "file_system": null
+                    },
                     {
                         "id": "os",
                         "type": "vg",
