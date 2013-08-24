@@ -396,10 +396,10 @@ class Environment(object):
             with open(fxtr_path, "r") as fxtr_file:
                 try:
                     data.extend(json.load(fxtr_file))
-                except Exception:
+                except Exception as exc:
                     logging.error(
-                        "Error occurred while loading "
-                        "fixture %s" % fxtr_path
+                        'Error "%s" occurred while loading '
+                        'fixture %s' % (exc, fxtr_path)
                     )
         return data
 
