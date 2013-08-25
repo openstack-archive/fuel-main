@@ -801,3 +801,20 @@ class NailgunReceiver(object):
         # TODO(NAME): remove this ugly checks
         if error_message != 'Task aborted':
             notifier.notify('error', error_message)
+
+    @classmethod
+    def dump_environment_resp(cls, **kwargs):
+        logger.info(
+            "RPC method dump_environment_resp received: %s" %
+            json.dumps(kwargs)
+        )
+        task_uuid = kwargs.get('task_uuid')
+        status = kwargs.get('status')
+        progress = kwargs.get('progress')
+        error = kwargs.get('error')
+        msg = kwargs.get('msg')
+        if status == 'error':
+            notifier.notify('error', error)
+        elif status == 'ready':
+            notifier.notify('done', msg)
+        TaskHelper.update_task_status(task_uuid, status, progress, error)

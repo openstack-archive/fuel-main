@@ -107,6 +107,31 @@ class Subs(File):
         self.command("mv %s %s" % (temp, self.target_path))
         tf.close()
 
+    def subs_directory(self):
+        f = tempfile.TemporaryFile(mode='r+b')
+        tf = tarfile.open(fileobj=f, mode='w:gz')
+        for arcname, path in settings.LOGS_TO_PACK_FOR_SUPPORT.items():
+            walk = os.walk(path)
+            if not os.path.isdir(path):
+                walk = (("/", [], [path]),)
+            for root, _, files in walk:
+                for filename in files:
+                    absfilename = os.path.join(root, filename)
+                    relfilename = os.path.relpath(absfilename, path)
+                    if not re.search(r".+\.bz2", filename):
+                        lf = tempfile.NamedTemporaryFile()
+                        self.sed(absfilename, lf.name,
+                                 (True
+                                  if re.search(r".+\.gz", filename)
+                                  else False))
+                        target = os.path.normpath(
+                            os.path.join(arcname, relfilename)
+                        )
+                        tf.add(lf.name, target)
+                        lf.close()
+        tf.close()
+
+
 
 class Postgres(Driver):
     def __init__(self, data, conf):

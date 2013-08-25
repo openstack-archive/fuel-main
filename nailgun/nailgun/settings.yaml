@@ -231,3 +231,59 @@ FAKE_TASKS_TICK_COUNT: "30"
 RHEL_VALIDATION_TIMEOUT: 10
 
 MAX_ITEMS_PER_PAGE: 500
+
+DUMP:
+  target: "/var/www/nailgun/dump/dump"
+  timestamp: True
+  dump_roles:
+    master:
+      - localhost
+    slave: []
+  dump_objects:
+    master:
+      - type: dir
+        path: /etc/nailgun
+      - type: dir
+        path: /etc/naily
+      - type: dir
+        path: /var/log/nailgun
+      - type: dir
+        path: /var/log/naily
+      - type: dir
+        path: /var/log/cobbler
+      - type: dir
+        path: /var/log/puppet
+      - type: dir
+        path: /var/log/remote
+      - type: command
+        command: df -h
+      - type: command
+        command: mount
+      - type: command
+        command: iptables -t nat -S
+      - type: command
+        command: iptables -t filter -S
+      - type: command
+        command: dmidecode
+      - type: command
+        command: uptime
+      - type: command
+        command: ps auxwwf
+    slave:
+      - type: file
+        path: /etc/naily.facts
+      - type: command
+        command: df -h
+      - type: command
+        command: mount
+      - type: command
+        command: iptables -t nat -S
+      - type: command
+        command: iptables -t filter -S
+      - type: command
+        command: dmidecode
+      - type: command
+        command: uptime
+      - type: command
+        command: ps auxwwf
+

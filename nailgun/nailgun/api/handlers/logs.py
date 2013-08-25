@@ -292,76 +292,21 @@ class LogEntryCollectionHandler(JSONHandler):
 class LogPackageHandler(object):
     """Log package handler
     """
-
-    def sed(self, from_filename, to_filename, gz=False):
-        accounts = db().query(RedHatAccount).all()
-        tf = tempfile.NamedTemporaryFile()
-        for fieldname in ("username", "password"):
-            for fieldvalue in [getattr(acc, fieldname) for acc in accounts]:
-                tf.write("s/%s/%s/g\n" % (fieldvalue, fieldname))
-                tf.flush()
-
-        commands = filter(lambda x: x != "", [
-            "cat %s" % from_filename,
-            "gunzip -c" if gz else "",
-            "sed -f %s" % tf.name,
-            "gzip -c" if gz else "",
-        ])
-        to_file = open(to_filename, 'wb')
-
-        env = os.environ
-        env["PATH"] = "/bin:/usr/bin:/sbin:/usr/sbin"
-        process = []
-        for command in commands:
-            process.append(subprocess.Popen(
-                shlex.split(command),
-                env=env,
-                stdin=(process[-1].stdout if process else None),
-                stdout=(to_file
-                        if (len(process) == len(commands) - 1)
-                        else subprocess.PIPE)
-            ))
-            if len(process) >= 2:
-                process[-2].stdout.close()
-        process[-1].wait()
-        to_file.close()
-        tf.close()
-
-    def GET(self):
-        """:returns: logs packed into TAR.GZ archive.
-        :http: * 200 (OK)
+    @content_json
+    def PUT(self):
         """
-        f = tempfile.TemporaryFile(mode='r+b')
-        tf = tarfile.open(fileobj=f, mode='w:gz')
-
-        for arcname, path in settings.LOGS_TO_PACK_FOR_SUPPORT.items():
-            walk = os.walk(path)
-            if not os.path.isdir(path):
-                walk = (("/", [], [path]),)
-            for root, _, files in walk:
-                for filename in files:
-                    absfilename = os.path.join(root, filename)
-                    relfilename = os.path.relpath(absfilename, path)
-                    if not re.search(r".+\.bz2", filename):
-                        lf = tempfile.NamedTemporaryFile()
-                        self.sed(absfilename, lf.name,
-                                 (True
-                                  if re.search(r".+\.gz", filename)
-                                  else False))
-                        target = os.path.normpath(
-                            os.path.join(arcname, relfilename)
-                        )
-                        tf.add(lf.name, target)
-                        lf.close()
-        tf.close()
-        filename = 'fuelweb-logs-%s.tar.gz' % (
-            time.strftime('%Y-%m-%d_%H-%M-%S', time.localtime()))
-        web.header('Content-Type', 'application/octet-stream')
-        web.header('Content-Disposition', 'attachment; filename="%s"' % (
-            filename))
-        web.header('Content-Length', f.tell())
-        f.seek(0)
-        return f
+        :returns: JSONized Task object.
+        :http: * 200 (task successfully executed)
+               * 400 (failed to execute task)
+        """
+        try:
+            task_manager = DumpTaskManager()
+            task = task_manager.execute()
+        except Exception as exc:
+            logger.warn(u'DumpTask: error while execution '
+                        'dump environment task: {0}'.format(str(exc)))
+            raise web.badrequest(str(exc))
+        return TaskHandler.render(task)
 
 
 class LogSourceCollectionHandler(JSONHandler):

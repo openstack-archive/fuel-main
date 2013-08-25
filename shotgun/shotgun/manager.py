@@ -19,5 +19,6 @@ class Manager(object):
                 "".format(self.conf.target,
                           os.path.dirname(self.conf.target),
                           os.path.basename(self.conf.target)))
+        return "%s.tgz" % self.conf.target
 
 
