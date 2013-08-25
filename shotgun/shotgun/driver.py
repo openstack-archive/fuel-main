@@ -1,6 +1,4 @@
 import os
-import subprocess
-import shlex
 import re
 import logging
 import tempfile
@@ -8,6 +6,7 @@ import tempfile
 import fabric.api
 
 from shotgun.utils import is_local
+from shotgun.utils import execute
 
 logger = logging.getLogger()
 
@@ -46,7 +45,7 @@ class Driver(object):
                 out.stderr = result.stderr
         else:
             logger.debug("Running local command: %s", command)
-            out.return_code, out.stdout, out.stderr = self._execute(command)
+            out.return_code, out.stdout, out.stderr = execute(command)
         return out
 
     def get(self, path, target_path):
@@ -56,33 +55,9 @@ class Driver(object):
                 return fabric.api.get(path, target_path)
         else:
             logger.debug("Getting local file: cp -r %s %s", path, target_path)
-            self._execute("mkdir -p %s" % os.path.dirname(target_path))
-            return self._execute("cp -r %s %s" % (path, target_path))
+            execute("mkdir -p %s" % os.path.dirname(target_path))
+            return execute("cp -r %s %s" % (path, target_path))
 
-    def _execute(self, command, to_filename=None):
-        commands = [c.strip() for c in re.split(ur'\|', command)]
-        env = os.environ
-        env["PATH"] = "/bin:/usr/bin:/sbin:/usr/sbin"
-
-        to_file = None
-        if to_filename:
-            to_file = open(to_filename, 'wb')
-
-        process = []
-        for c in commands:
-            process.append(subprocess.Popen(
-                shlex.split(c),
-                env=env,
-                stdin=(process[-1].stdout if process else None),
-                stdout=(to_file
-                        if (len(process) == len(commands) - 1) and to_file
-                        else subprocess.PIPE),
-                stderr=(subprocess.PIPE)
-            ))
-            if len(process) >= 2:
-                process[-2].stdout.close()
-        stdout, stderr = process[-1].communicate()
-        return (process[-1].returncode, stdout, stderr)
 
 class File(Driver):
     def __init__(self, data, conf):
@@ -128,7 +103,7 @@ class Subs(File):
             "sed -f %s" % tf.name,
             "gzip -c" if self.gz else ""
         ]))
-        self._execute(command, to_filename=temp)
+        execute(command, to_filename=temp)
         self.command("mv %s %s" % (temp, self.target_path))
         tf.close()
 
@@ -152,3 +127,6 @@ class Postgres(Driver):
         self.get(temp, os.path.join(
             self.conf.target, self.host, "postgres_dump_%s.sql" % self.dbname))
         self.command("rm -f %s" % temp)
+
+
+

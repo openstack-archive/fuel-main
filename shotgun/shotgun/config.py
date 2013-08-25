@@ -1,11 +1,10 @@
 import time
-import json
 
 from shotgun import settings
 
 class Config(object):
-    def __init__(self, json_data="{}"):
-        self.data = json.loads(json_data)
+    def __init__(self, data=None):
+        self.data = data
         self.time = time.localtime()
 
     def _timestamp(self, name):

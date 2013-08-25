@@ -1,5 +1,6 @@
 import sys
 import os
+import json
 
 sys.path[:0] = [os.path.abspath(os.path.join(os.path.dirname(__file__), ".."))]
 
@@ -7,7 +8,8 @@ from shotgun.driver import Driver
 from shotgun.config import Config
 
 with open("snapshot.json", "r") as fo:
-    config = Config(fo.read())
+    data = json.loads(fo.read())
+    config = Config(data)
 
 data = list(config.objects)[0]
 driver = Driver(data, config)

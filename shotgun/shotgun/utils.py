@@ -1,5 +1,12 @@
 import socket
 import re
+import os
+import shlex
+import subprocess
+import logging
+
+
+logger = logging.getLogger()
 
 
 def hostname():
@@ -20,3 +27,29 @@ def is_local(name):
     if name in ("localhost", hostname(), fqdn()):
         return True
     return False
+
+def execute(command, to_filename=None):
+    logger.debug("Trying to execute command: %s", command)
+    commands = [c.strip() for c in re.split(ur'\|', command)]
+    env = os.environ
+    env["PATH"] = "/bin:/usr/bin:/sbin:/usr/sbin"
+
+    to_file = None
+    if to_filename:
+        to_file = open(to_filename, 'wb')
+
+    process = []
+    for c in commands:
+        process.append(subprocess.Popen(
+            shlex.split(c),
+            env=env,
+            stdin=(process[-1].stdout if process else None),
+            stdout=(to_file
+                    if (len(process) == len(commands) - 1) and to_file
+                    else subprocess.PIPE),
+            stderr=(subprocess.PIPE)
+        ))
+        if len(process) >= 2:
+            process[-2].stdout.close()
+    stdout, stderr = process[-1].communicate()
+    return (process[-1].returncode, stdout, stderr)
