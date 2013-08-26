@@ -673,6 +673,7 @@ h6.page-title {
 
 .btn-go-to-cluster {
   position: absolute;
+  top: 192px;
 }
 
 .cluster-info {
@@ -697,33 +698,28 @@ h6.page-title {
   word-break: break-all;
 }
 
+.node-list-header {
+  margin-bottom: 15px;
+}
+
 .node-list-header a, .node-list-header label {
-  margin-top: 10px;
   padding-top: 13px;
   padding-right: 0;
   text-align: right;
 }
 
-.node-group-header {
-  margin-top: 15px;
-}
-
 .node-group-header label {
   text-align: right;
+  line-height: 20px;
+  margin: 0 !important;
+  padding: 10px 0 !important;
 }
 
-.node-list-header label input, .node-group-header label input {
+.node-group-header label input, .node-list-header label input {
   margin-top: 0;
   margin-right: 3px;
   position: relative;
   top: -2px;
-}
-
-.node-group-header h4 {
-  margin: 0;
-  height: 25px;
-  min-height: 25px !important;
-  text-transform: capitalize;
 }
 
 .roles-panel {
@@ -4326,7 +4322,6 @@ input.input-append {
   padding: 19px 0px 19px 0px;
   margin-bottom: 20px;
   border-bottom: 2px solid #a0a0a0;
-  height: 73px;
     -webkit-box-sizing: border-box;
      -moz-box-sizing: border-box;
           box-sizing: border-box;
@@ -4342,7 +4337,7 @@ input.input-append {
   margin-left: 20px;
 }
 
-.cluster-toolbar-item:first-child {
+.cluster-toolbar-item.cluster-actions {
   margin-left: 0px;
 }
 
@@ -4364,7 +4359,7 @@ input.input-append {
   margin-bottom: 20px;
 }
 
-.actions-dropdown-btn {
+.btn-cluster-actions {
   padding: 3px;
 }
 

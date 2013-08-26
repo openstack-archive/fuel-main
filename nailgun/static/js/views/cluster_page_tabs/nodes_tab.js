@@ -105,7 +105,7 @@ function(utils, models, commonViews, dialogViews, addNodesScreenTemplate, nodesM
             this.registerDeferred($.timeout(this.updateInterval).done(_.bind(this.update, this)));
         },
         calculateBatchActionsButtonsState: function() {
-            this.$('.batch-actions-buttons button').prop('disabled', !this.$('.node.checked').length);
+            this.$('.cluster-toolbar button').prop('disabled', !this.$('.node.checked').length);
         }
     });
 

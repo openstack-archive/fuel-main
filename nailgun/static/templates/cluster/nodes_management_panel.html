@@ -1,25 +1,33 @@
-<% if (cluster) { %>
-  <div class="cluster-actions">
-    <button class="btn btn-cluster-actions">Actions</button>
-  </div>
-  <div class="nodes-filter">
-    <label>
-      Group by
+<div class="cluster-toolbar">
+  <% if (cluster) { %>
+    <div class="cluster-toolbar-item cluster-actions">
+      <div class="dropdown">
+        <button class="btn btn-cluster-actions" data-toggle="dropdown"><div class="actions-btn"></div></button>
+      </div>
+    </div>
+    <div class="cluster-toolbar-item nodes-filter">
+      <label>Group By</label>
       <select name="grouping" <%= nodes.length ? '' : 'disabled' %>>
         <% var groupings = cluster.groupings() %>
         <% _.each(_.keys(groupings), function(grouping) { %>
           <option value="<%= grouping %>" <%= grouping == cluster.get('grouping') ? 'selected' : '' %>><%= groupings[grouping] %></option>
         <% })%>
       </select>
-    </label>
-  </div>
-<% } %>
-<div class="batch-actions-buttons">
-  <button class="btn btn-danger btn-delete-nodes" disabled>Delete Nodes <%= cluster ? '' : 'from FUEL' %></button>
-  <button class="btn btn-assign-roles" disabled>Assign Roles</button>
-  <% if (cluster) { %>
-    <button class="btn btn-congigure-disks" disabled>Configure Disks</button>
-    <button class="btn btn-congigure-interfaces" disabled>Configure Interfaces</button>
+    </div>
   <% } %>
+  <% if (cluster) { %>
+    <div class="cluster-toolbar-item pull-right">
+      <button class="btn btn-congigure-interfaces" disabled>Configure Interfaces</button>
+    </div>
+    <div class="cluster-toolbar-item pull-right">
+      <button class="btn btn-congigure-disks" disabled>Configure Disks</button>
+    </div>
+  <% } %>
+  <div class="cluster-toolbar-item pull-right">
+    <button class="btn btn-assign-roles" disabled>Assign Roles</button>
+  </div>
+  <div class="cluster-toolbar-item pull-right">
+    <button class="btn btn-danger btn-delete-nodes" disabled>Delete Nodes <%= cluster ? '' : 'from FUEL' %></button>
+  </div>
+  <div class="assign-roles-panel"></div>
 </div>
-<div class="assign-roles-panel"></div>
