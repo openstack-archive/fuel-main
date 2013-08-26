@@ -166,9 +166,12 @@ class DisksFormatConvertor(object):
 
     @classmethod
     def calculate_service_partitions_size(self, volumes):
-        not_vg_partitions = filter(lambda vg: vg.get('type') != 'pv', volumes)
+        service_partitions = filter(
+            lambda vg: vg.get('type') != 'pv' and vg.get('type') != 'partition',
+            volumes)
+
         return sum(
-            [partition.get('size', 0) for partition in not_vg_partitions])
+            [partition.get('size', 0) for partition in service_partitions])
 
     @classmethod
     def serialize_volumes(cls, all_partitions):
@@ -417,6 +420,17 @@ class Disk(object):
                 self.remove_pv(name)
                 self.create_pv({"id": name}, size)
 
+    def set_partition_size(self, name, size):
+        """
+        Set partition size
+        """
+        for volume in self.volumes:
+            if volume.get('type') == 'partition' and \
+               volume.get('name') == name:
+                self.free_space += volume['size']
+                volume['size'] = size
+                self.free_space -= size
+
     def reset(self):
         self.volumes = []
         self.free_space = self.size
@@ -441,9 +455,9 @@ class Disk(object):
 
 class VolumeManager(object):
     def __init__(self, node):
-        '''Disks and volumes will be set according to node attributes.
+        """Disks and volumes will be set according to node attributes.
         VolumeManager should not make any updates in database.
-        '''
+        """
         # Make sure that we don't change volumes directly from manager
         self.volumes = deepcopy(node.attributes.volumes) or []
         # For swap calculation
@@ -481,7 +495,7 @@ class VolumeManager(object):
                 byte_to_megabyte(d["size"]),
                 boot_is_raid=boot_is_raid,
                 # Count of possible PVs equal to count of allowed VGs
-                possible_pvs_count=len(self.allowed_volumes))
+                possible_pvs_count=len(only_vg(self.allowed_volumes)))
 
             self.disks.append(disk)
 
@@ -499,7 +513,7 @@ class VolumeManager(object):
         disk = filter(lambda disk: disk.id == disk_id, self.disks)[0]
 
         volume_type = self.get_space_type(volume_name)
-        if volume_type == 'partitions':
+        if volume_type == 'partition':
             disk.set_partition_size(volume_name, size)
         elif volume_type == 'vg':
             disk.set_pv_size(volume_name, size)
