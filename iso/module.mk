@@ -12,7 +12,7 @@ $(BUILD_DIR)/iso/isoroot-centos.done: \
 		$(BUILD_DIR)/iso/isoroot-dotfiles.done
 	mkdir -p $(ISOROOT)
 	rsync -rp $(LOCAL_MIRROR_CENTOS_OS_BASEURL)/ $(ISOROOT)
-	createrepo -g $(ISOROOT)/repodata/comps.xml -x 'rhel/*' \
+	createrepo -g $(ISOROOT)/comps.xml -x 'rhel/*' \
 		-u media://`head -1 $(ISOROOT)/.discinfo` $(ISOROOT)
 	$(ACTION.TOUCH)
 

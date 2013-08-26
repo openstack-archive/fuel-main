@@ -102,11 +102,11 @@ $(BUILD_DIR)/packages/rpm/repo.done: \
 		$(BUILD_DIR)/packages/rpm/rpm-rbenv-ruby.done \
 		$(BUILD_DIR)/packages/rpm/rpm-mcollective.done
 	find $(BUILD_DIR)/packages/rpm/RPMS -name '*.rpm' -exec cp -u {} $(LOCAL_MIRROR_CENTOS_OS_BASEURL)/Packages \;
-	createrepo -g $(LOCAL_MIRROR_CENTOS_OS_BASEURL)/repodata/comps.xml \
+	createrepo -g $(LOCAL_MIRROR_CENTOS_OS_BASEURL)/comps.xml \
 		-o $(LOCAL_MIRROR_CENTOS_OS_BASEURL) $(LOCAL_MIRROR_CENTOS_OS_BASEURL)
 ifeq ($(CACHE_RHEL),1)
 	find $(BUILD_DIR)/packages/rpm/RPMS -name '*.rpm' -exec cp -u {} $(LOCAL_MIRROR_RHEL)/Packages \;
-	createrepo -g $(LOCAL_MIRROR_RHEL)/repodata/comps.xml \
+	createrepo -g $(LOCAL_MIRROR_RHEL)/comps.xml \
 		-o $(LOCAL_MIRROR_RHEL) $(LOCAL_MIRROR_RHEL)
 endif
 	$(ACTION.TOUCH)

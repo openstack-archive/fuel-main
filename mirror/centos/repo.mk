@@ -52,9 +52,9 @@ show-yum-urls-centos: \
 		--destdir=$(LOCAL_MIRROR_CENTOS_OS_BASEURL)/Packages \
 		$(REQUIRED_RPMS)
 
-$(LOCAL_MIRROR_CENTOS_OS_BASEURL)/repodata/comps.xml: \
+$(LOCAL_MIRROR_CENTOS_OS_BASEURL)/comps.xml: \
 		export COMPSXML=$(shell wget -qO- $(MIRROR_CENTOS_OS_BASEURL)/repodata/repomd.xml | grep -m 1 '$(@F)' | awk -F'"' '{ print $$2 }')
-$(LOCAL_MIRROR_CENTOS_OS_BASEURL)/repodata/comps.xml:
+$(LOCAL_MIRROR_CENTOS_OS_BASEURL)/comps.xml:
 	@mkdir -p $(@D)
 	if ( echo $${COMPSXML} | grep -q '\.gz$$' ); then \
 		wget -O $@.gz $(MIRROR_CENTOS_OS_BASEURL)/$${COMPSXML}; \
@@ -65,7 +65,7 @@ $(LOCAL_MIRROR_CENTOS_OS_BASEURL)/repodata/comps.xml:
 
 $(BUILD_DIR)/mirror/centos/repo.done: \
 		$(BUILD_DIR)/mirror/centos/yum.done \
-		| $(LOCAL_MIRROR_CENTOS_OS_BASEURL)/repodata/comps.xml
-	createrepo -g $(LOCAL_MIRROR_CENTOS_OS_BASEURL)/repodata/comps.xml \
+		| $(LOCAL_MIRROR_CENTOS_OS_BASEURL)/comps.xml
+	createrepo -g $(LOCAL_MIRROR_CENTOS_OS_BASEURL)/comps.xml \
 		-o $(LOCAL_MIRROR_CENTOS_OS_BASEURL)/ $(LOCAL_MIRROR_CENTOS_OS_BASEURL)/
 	$(ACTION.TOUCH)

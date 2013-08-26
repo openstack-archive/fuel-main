@@ -52,9 +52,9 @@ show-yum-urls-rhel: \
 		--destdir=$(LOCAL_MIRROR_RHEL)/Packages \
 		`echo $(REQ_RHEL_RPMS) | /bin/sed 's/-[0-9][0-9\.a-zA-Z_-]\+//g'`
 
-$(LOCAL_MIRROR_RHEL)/repodata/comps.xml: \
+$(LOCAL_MIRROR_RHEL)/comps.xml: \
 		export COMPSXML=$(shell wget -qO- $(MIRROR_RHEL)/repodata/repomd.xml | grep -m 1 '$(@F)' | awk -F'"' '{ print $$2 }')
-$(LOCAL_MIRROR_RHEL)/repodata/comps.xml:
+$(LOCAL_MIRROR_RHEL)/comps.xml:
 	@mkdir -p $(@D)
 	if ( echo $${COMPSXML} | grep -q '\.gz$$' ); then \
 		wget -O $@.gz $(MIRROR_RHEL)/$${COMPSXML}; \
@@ -81,7 +81,7 @@ $(BUILD_DIR)/mirror/rhel/fuel.done:
 $(BUILD_DIR)/mirror/rhel/repo.done: \
 		$(BUILD_DIR)/mirror/rhel/yum.done \
 		$(BUILD_DIR)/mirror/rhel/fuel.done \
-		| $(LOCAL_MIRROR_RHEL)/repodata/comps.xml
-	createrepo -g $(LOCAL_MIRROR_RHEL)/repodata/comps.xml \
+		| $(LOCAL_MIRROR_RHEL)/comps.xml
+	createrepo -g $(LOCAL_MIRROR_RHEL)/comps.xml \
 		-o $(LOCAL_MIRROR_RHEL)/ $(LOCAL_MIRROR_RHEL)/
 	$(ACTION.TOUCH)
