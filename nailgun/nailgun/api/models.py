@@ -48,12 +48,18 @@ class NodeRoles(Base):
     node = Column(Integer, ForeignKey('nodes.id'))
 
 
+class PendingNodeRoles(Base):
+    __tablename__ = 'pending_node_roles'
+    id = Column(Integer, primary_key=True)
+    role = Column(Integer, ForeignKey('roles.id', ondelete="CASCADE"))
+    node = Column(Integer, ForeignKey('nodes.id'))
+
+
 class Role(Base):
     __tablename__ = 'roles'
     id = Column(Integer, primary_key=True)
     release_id = Column(Integer, ForeignKey('releases.id', ondelete='CASCADE'),
                         nullable=False)
-    nodes = relationship("Node", secondary=NodeRoles.__table__, backref="role_list")
     name = Column(String(50), nullable=False)
 
 
@@ -245,6 +251,9 @@ class Node(Base):
     error_msg = Column(String(255))
     timestamp = Column(DateTime, nullable=False)
     online = Column(Boolean, default=True)
+    role_list = relationship("Role", secondary=NodeRoles.__table__)
+    pending_role_list = relationship("Role",
+                                     secondary=PendingNodeRoles.__table__)
     attributes = relationship("NodeAttributes",
                               backref=backref("node"),
                               uselist=False)
@@ -286,11 +295,7 @@ class Node(Base):
 
     @property
     def roles(self):
-        return [role.name for role in self.role_list if not role.pending]
-
-    @property
-    def pending_roles(self):
-        return [role.name for role in self.role_list if role.pending]
+        return [role.name for role in self.role_list]
 
     @roles.setter
     def roles(self, new_roles):
@@ -307,13 +312,19 @@ class Node(Base):
                     self.role_list.append(new_role[0])
         db().commit()
 
+    @property
+    def pending_roles(self):
+        return [role.name for role in self.pending_role_list]
+
     @pending_roles.setter
     def pending_roles(self, new_roles):
-        old_roles = self.pending_roles
-        for role in new_roles:
-            if not role in old_roles:
-                new_role = NodeRole(name=role, node=self, pending=True)
-                self.role_list.append(new_role)
+        available_roles = []
+        try:
+            available_roles = self.cluster.release.role_list
+        except AttributeError:
+            pass
+        self.pending_role_list = filter(lambda r: r.name in new_roles,
+                                        available_roles)
         db().commit()
 
     def _check_interface_has_required_params(self, iface):
