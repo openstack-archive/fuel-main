@@ -84,22 +84,24 @@ class NodeHandler(JSONHandler):
 
         network_manager = NetworkManager()
 
-        if "cluster_id" in nd:
-            if nd.get("cluster_id") is None and node.cluster:
+        if "cluster_id" in data:
+            if data["cluster_id"] is None and node.cluster:
                 node.cluster.clear_pending_changes(node_id=node.id)
-                node.roles = []
-                node.pending_roles = []
-            node.cluster_id = nd.get("cluster_id")
-            if node.cluster_id:
-                network_manager.allow_network_assignment_to_all_interfaces(
-                    node.id
-                )
-                network_manager.assign_networks_to_main_interface(node.id)
-            else:
-                network_manager.clear_assigned_networks(node.id)
-                network_manager.clear_all_allowed_networks(node.id)
+                node.roles = node.pending_roles = []
+            old_cluster_id = node.cluster_id
+            node.cluster_id = data["cluster_id"]
+            if node.cluster_id != old_cluster_id:
+                if old_cluster_id:
+                    network_manager.clear_assigned_networks(node.id)
+                    network_manager.clear_all_allowed_networks(node.id)
+                if node.cluster_id:
+                    network_manager.allow_network_assignment_to_all_interfaces(
+                        node.id
+                    )
+                    network_manager.assign_networks_to_main_interface(node.id)
         for key, value in data.iteritems():
             # we don't allow to update id explicitly
+            # and updated cluster_id before all other fields
             if key in ("id", "cluster_id"):
                 continue
             setattr(node, key, value)
@@ -280,12 +282,8 @@ class NodeCollectionHandler(JSONHandler):
                     logger.info(msg)
                     notifier.notify("discover", msg, node_id=node.id)
                 db().commit()
-            if "cluster_id" in nd:
-                if nd.get("cluster_id") is None and node.cluster:
-                    node.cluster.clear_pending_changes(node_id=node.id)
-                    node.roles = []
-                    node.pending_roles = []
-                node.cluster_id = nd.get("cluster_id")
+            if nd.get("cluster_id") is None and node.cluster:
+                node.cluster.clear_pending_changes(node_id=node.id)
             old_cluster_id = node.cluster_id
             for key, value in nd.iteritems():
                 if is_agent and (key, value) == ("status", "discover") \
@@ -298,8 +296,6 @@ class NodeCollectionHandler(JSONHandler):
                     continue
                 if key == "meta":
                     node.update_meta(value)
-                elif key == "cluster_id":
-                    pass
                 else:
                     setattr(node, key, value)
             db().commit()
