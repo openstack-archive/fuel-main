@@ -165,9 +165,12 @@ class NailgunClient(object):
     def ostf_run_tests(self, cluster_id, test_sets_list):
         data = []
         for test_set in test_sets_list:
-            data.append({'metadata':
-                             {'cluster_id': cluster_id, 'config': {}},
-                         'testset': test_set})
+            data.append(
+                {
+                    'metadata': {'cluster_id': cluster_id, 'config': {}},
+                    'testset': test_set
+                }
+            )
         return self.client.post("/ostf/testruns", data)
 
     @logwrap

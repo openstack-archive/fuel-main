@@ -200,7 +200,8 @@ class BaseNodeTestCase(BaseTestCase):
         self.assertEquals('error', self._task_wait(task, timeout)['status'])
 
     @logwrap
-    def assertOSTFRunSuccess(self, cluster_id, should_fail=0, should_pass=0, timeout=10 * 60):
+    def assertOSTFRunSuccess(self, cluster_id, should_fail=0, should_pass=0,
+                             timeout=10 * 60):
         set_result_list = self._ostf_test_wait(cluster_id, timeout)
 
         passed = 0
