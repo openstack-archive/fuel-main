@@ -282,9 +282,12 @@ class NodeCollectionHandler(JSONHandler):
                     logger.info(msg)
                     notifier.notify("discover", msg, node_id=node.id)
                 db().commit()
-            if nd.get("cluster_id") is None and node.cluster:
-                node.cluster.clear_pending_changes(node_id=node.id)
             old_cluster_id = node.cluster_id
+            if "cluster_id" in nd:
+                if nd["cluster_id"] is None and node.cluster:
+                    node.cluster.clear_pending_changes(node_id=node.id)
+                    node.roles = node.pending_roles = []
+                node.cluster_id = nd["cluster_id"]
             for key, value in nd.iteritems():
                 if is_agent and (key, value) == ("status", "discover") \
                         and node.status == "provisioning":
