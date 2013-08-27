@@ -87,8 +87,7 @@ module Naily
       @orchestrator.provision(reporter, data['args']['task_uuid'], data['args']['nodes'])
 
       begin
-        result = @orchestrator.deploy(
-          reporter, data['args']['task_uuid'], data['args']['nodes'], data['args']['attributes'])
+        @orchestrator.deploy(reporter, data['args']['task_uuid'], data['args']['nodes'], data['args']['attributes'])
       rescue Timeout::Error
         msg = "Timeout of deployment is exceeded."
         Naily.logger.error msg
@@ -96,7 +95,7 @@ module Naily
         return
       end
 
-      report_result(result, reporter)
+      report_result(nil, reporter)
     end
 
     def verify_networks(data)
