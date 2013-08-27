@@ -136,7 +136,15 @@ class TestNode(BaseNodeTestCase):
         nailgun_nodes = self.update_nodes(cluster_id, nodes_dict, False, True)
         task = self.deploy_cluster(cluster_id)
         self.assertTaskSuccess(task)
-        wait(lambda: self.is_node_discovered(nailgun_nodes[0]), timeout=3 * 60)
+        nodes = filter(lambda x: x["pending_deletion"] is True, nailgun_nodes)
+        self.assertTrue(
+            len(nodes) == 1,
+            "Verify 1 node has pending deletion status"
+        )
+        wait(lambda: self.is_node_discovered(
+            nodes[0]),
+            timeout=3 * 60
+        )
         self.assertOSTFRunSuccess(cluster_id, 12, 12)
 
     @snapshot_errors
