@@ -215,8 +215,11 @@ class BaseNodeTestCase(BaseTestCase):
         self.assertEqual(failed, should_fail, 'Failed tests')
 
     @logwrap
-    def run_OSTF(self, cluster_id, test_sets=[], should_fail=0, should_pass=0):
-        test_sets = test_sets or ['fuel_smoke', 'fuel_sanity']
+    def run_OSTF(self, cluster_id, test_sets=None,
+                 should_fail=0, should_pass=0):
+        test_sets = test_sets \
+            if test_sets is not None \
+            else ['fuel_smoke', 'fuel_sanity']
 
         self.client.ostf_run_tests(cluster_id, test_sets)
         self.assertOSTFRunSuccess(cluster_id, should_fail=should_fail,
