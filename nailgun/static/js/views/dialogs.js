@@ -267,14 +267,14 @@ function(require, utils, models, simpleMessageTemplate, createClusterDialogTempl
         discardChanges: function() {
             this.$('.discard-btn').addClass('disabled');
             var pendingNodes = this.model.get('nodes').filter(function(node) {
-                return node.get('pending_addition') || node.get('pending_deletion');
+                return node.get('pending_addition') || node.get('pending_deletion') || node.get('pending_roles').length;
             });
             var nodes = new models.Nodes(pendingNodes);
             nodes.each(function(node) {
+                node.set({pending_roles: []}, {silent: true});
                 if (node.get('pending_addition')) {
                     node.set({
                         cluster_id: null,
-                        role: null,
                         pending_addition: false
                     }, {silent: true});
                 } else {
@@ -283,7 +283,7 @@ function(require, utils, models, simpleMessageTemplate, createClusterDialogTempl
             });
             nodes.toJSON = function() {
                 return this.map(function(node) {
-                    return _.pick(node.attributes, 'id', 'cluster_id', 'role', 'pending_addition', 'pending_deletion');
+                    return _.pick(node.attributes, 'id', 'cluster_id', 'pending_addition', 'pending_deletion', 'pending_roles');
                 });
             };
             Backbone.sync('update', nodes)
