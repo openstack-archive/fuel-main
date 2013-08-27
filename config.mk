@@ -97,7 +97,7 @@ endif
 #
 ifeq ($(USE_MIRROR),osci)
 YUM_REPOS?=proprietary fuel
-MIRROR_FUEL?=http://download.mirantis.com/epel-fuel-grizzly-3.1/
+MIRROR_FUEL?=http://download.mirantis.com/epel-fuel-grizzly-3.2/
 MIRROR_BASE?=http://srv08-srt.srt.mirantis.net/fwm/$(PRODUCT_VERSION)
 MIRROR_CENTOS?=$(MIRROR_BASE)/centos
 MIRROR_EGGS?=$(MIRROR_BASE)/eggs
@@ -111,7 +111,7 @@ MIRROR_RHEL?=http://srv11-msk.msk.mirantis.net/rhel6/rhel-6-server-rpms
 MIRROR_RHEL_BOOT?=http://srv11-msk.msk.mirantis.net/rhel6/rhel-server-6.4-x86_64
 # MIRROR_FUEL option is valid only for 'fuel' YUM_REPOS section
 # and ignored in other cases
-MIRROR_FUEL?=http://download.mirantis.com/epel-fuel-grizzly-3.1/
+MIRROR_FUEL?=http://download.mirantis.com/epel-fuel-grizzly-3.2/
 # It can be any a list of links (--find-links) or a pip index (--index-url).
 MIRROR_EGGS?=http://pypi.python.org/simple
 # NOTE(mihgen): removed gemcutter - it redirects to rubygems.org and has issues w/certificate now
