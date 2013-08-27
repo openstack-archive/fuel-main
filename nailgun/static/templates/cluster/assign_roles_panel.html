@@ -1,9 +1,10 @@
 <span class="title">Assign Roles to <%= nodes.length > 1 ? 'Selected Nodes' : 'Node' %></span>
 <% _.each(roles, function(role) { %>
   <label>
-    <input type="checkbox" value="<%= role %>" <%= _.contains(assignedRoles, role) ? 'checked' : '' %> />
-    <%= role %>
+    <input type="checkbox" value="<%= role %>" />
+    <%= rolesData[role].name %>
   </label>
+  <span class="role-description"><%= rolesData[role].description %></span>
 <% }) %>
 <hr/>
 <button class="btn btn-close">Cancel</button>

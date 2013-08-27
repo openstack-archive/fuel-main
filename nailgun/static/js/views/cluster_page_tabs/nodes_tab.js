@@ -246,24 +246,74 @@ function(utils, models, commonViews, dialogViews, addNodesScreenTemplate, nodesM
         template: _.template(assignRolesPanelTemplate),
         className: 'roles-panel hide',
         events: {
-            'change input[type=checkbox]' : 'calculateAssignButtonState',
+            'change input[type=checkbox]' : 'handleInput',
             'click .btn-close' : 'hide',
             'click .btn-assign:not(:disabled)' : 'assignRoles'
         },
+        handleInput: function(e) {
+            this.checkForConflicts();
+            this.calculateInputState(e);
+            this.calculateAssignButtonState();
+        },
+        setInputState: function(input, nodesAmount) {
+            var prop = nodesAmount ? nodesAmount == this.nodes.length ? 'checked' : 'indeterminate' : '';
+            input.prop(prop, true);
+            return prop;
+        },
+        calculateInputState: function(e) {
+            var input = this.$(e.currentTarget);
+            if (!input.is(':checked')) {
+                this.setInputState(input, this.nodes.filter(function(node) {return !node.get('pending_addition') && _.contains(node.get('pending_roles'), input.val());}).length);
+            }
+        },
+        getListOfForbiddenRoles: function(roles) {
+            var forbiddenRoles = [];
+            var release = this.screen.model.get('release');
+            _.each(roles, function(role) {
+                forbiddenRoles = _.union(forbiddenRoles, release.get('roles_metadata')[role].conflicts);
+            });
+            return _.uniq(forbiddenRoles);
+        },
+        checkForConflicts: function(e) {
+            this.$('input[type=checkbox]').prop('disabled', false);
+            var selectedRoles = _.filter(this.$('input[type=checkbox]'), function(input) {return $(input).prop('indeterminate') || $(input).prop('checked');});
+            _.each(this.getListOfForbiddenRoles(selectedRoles.map(function(input) {return $(input).val();})), function(role) {
+                this.$('input[value=' + role + ']').prop('disabled', true);
+            }, this);
+        },
+        setInitialData: function() {
+            this.initialData = {};
+            _.each(this.screen.model.availableRoles(), function(role) {
+                this.initialData[role] = this.setInputState(this.$('input[value=' + role + ']'), this.nodes.filter(function(node) {return _.contains(node.get('pending_roles'), role);}).length);
+            }, this);
+        },
         calculateAssignButtonState: function() {
-            this.$('.btn-assign').prop('disabled', !this.$('input[type=checkbox]:checked').length);
+            var inputStates = {};
+            _.each(this.screen.model.availableRoles(), function(role) {
+                var input = this.$('input[value=' + role + ']');
+                inputStates[role] = input.is(':checked') ? 'checked' : input.prop('indeterminate') ? 'indeterminate' : '';
+            }, this);
+            this.$('.btn-assign').prop('disabled', _.isEqual(this.initialData, inputStates));
         },
         hide: function() {
             this.$el.hide();
         },
         assignRoles: function() {
             this.$('.btn-assign').prop('disabled', true);
-            var data = {pending_roles: this.$('input[type=checkbox]:checked').map(function() {return $(this).val();}).get()};
+            _.each(this.$('input[type=checkbox]'), function(input) {
+                var role = $(input).val();
+                if ($(input).is(':checked')) {
+                    this.nodes.each(function(node) {node.set({pending_roles: _.uniq(_.union(node.get('pending_roles'), role))});});
+                } else if (!$(input).prop('indeterminate')) {
+                    this.nodes.each(function(node) {node.set({pending_roles: _.difference(node.get('pending_roles'), role)});});
+                }
+            }, this);
             if (!this.nodes.cluster) {
-                data.cluster_id = app.page.tab.model.id;
-                data.pending_addition = true;
+                this.nodes.each(function(node) {node.set({
+                    cluster_id: app.page.tab.model.id,
+                    pending_addition: true
+                });});
             }
-            this.nodes.each(function(node) {node.set(data);});
             this.nodes.toJSON = function(options) {
                 return this.map(function(node) {
                     return _.pick(node.attributes, 'id', 'cluster_id', 'pending_roles', 'pending_addition');
@@ -287,9 +337,11 @@ function(utils, models, commonViews, dialogViews, addNodesScreenTemplate, nodesM
         render: function() {
             this.$el.html(this.template({
                 nodes: this.nodes,
-                roles: ['controller', 'compute', 'cinder'],
-                    assignedRoles: []
+                roles: this.screen.model.availableRoles(),
+                rolesData: this.screen.model.get('release').get('roles_metadata')
             }));
+            this.setInitialData();
+            this.checkForConflicts();
             return this;
         }
     });
@@ -548,7 +600,10 @@ function(utils, models, commonViews, dialogViews, addNodesScreenTemplate, nodesM
                 renameable: this.renameable,
                 selected: this.selected
             }, this.templateHelpers)));
-            var rolesPanel = new AssignRolesPanel({nodes: new models.Nodes(this.node)});
+            var rolesPanel = new AssignRolesPanel({
+                nodes: new models.Nodes(this.node),
+                screen: this.list.screen
+            });
             this.registerSubView(rolesPanel);
             this.$el.append(rolesPanel.render().el);
             this.updateStatus();
