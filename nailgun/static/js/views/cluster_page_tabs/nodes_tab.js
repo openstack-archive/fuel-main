@@ -357,7 +357,7 @@ function(utils, models, commonViews, dialogViews, addNodesScreenTemplate, nodesM
             this.screen.calculateBatchActionsButtonsState();
         },
         calculateSelectAllTumblerState: function() {
-            this.$('input[name=select-nodes-common]').prop('checked', this.$('.node-checkbox input:checked').length == this.$('.node-checkbox').length);
+            this.$('input[name=select-nodes-common]').prop('checked', this.$('.node-checkbox input:checked').length == this.$('.node-box:not(.node-offline) .node-checkbox').length);
         },
         groupNodes: function(attribute) {
             if (_.isUndefined(attribute)) {
