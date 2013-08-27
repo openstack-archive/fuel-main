@@ -59,6 +59,7 @@ fi
 
 hdparm -z /dev/${tgtdrive}
 dd if=/dev/zero of=/dev/${tgtdrive} bs=1M count=10
+sleep 5
 hdparm -z /dev/${tgtdrive}
 parted -s /dev/${tgtdrive} mklabel gpt
 parted -a none -s /dev/${tgtdrive} unit MiB mkpart primary 0 24
@@ -66,16 +67,20 @@ parted -s /dev/${tgtdrive} set 1 bios_grub on
 parted -a none -s /dev/${tgtdrive} unit MiB mkpart primary fat32 24 224
 parted -s /dev/${tgtdrive} set 2 boot on
 parted -a none -s /dev/${tgtdrive} unit MiB mkpart primary 224 424
+sleep 10
 hdparm -z /dev/${tgtdrive}
+
+# partition
+echo > /tmp/partition.ks
+echo "partition /boot --onpart=/dev/${tgtdrive}3" >> /tmp/partition.ks
+echo "partition pv.001 --ondisk=${tgtdrive} --size=1 --grow" >> /tmp/partition.ks
+echo "volgroup os pv.001" >> /tmp/partition.ks
+echo "logvol swap --vgname=os --recommended --name=swap" >> /tmp/partition.ks
+echo "logvol / --vgname=os --size=10000 --name=root --fstype=ext4" >> /tmp/partition.ks
+echo "logvol /var --vgname=os --size=1 --grow --name=var --fstype=xfs" >> /tmp/partition.ks
 
 # bootloader
 echo "bootloader --location=mbr --driveorder=${tgtdrive} --append=' biosdevname=0 crashkernel=none'" > /tmp/bootloader.ks
-
-# partition
-echo "partition /boot --fstype=ext3 --onpart=/dev/${tgtdrive}3" > /tmp/partition.ks
-echo "partition / --fstype=ext4 --ondisk=${tgtdrive} --size=1 --grow --asprimary" >> /tmp/partition.ks
-echo "partition swap --recommended --ondisk=${tgtdrive}" >> /tmp/partition.ks
-
 
 %end
 
