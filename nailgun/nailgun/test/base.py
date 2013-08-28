@@ -95,6 +95,7 @@ class Environment(object):
             'version': version,
             'description': u"release_desc" + version,
             'operating_system': 'CensOS',
+            'roles': self.get_default_roles(),
             'networks_metadata': self.get_default_networks_metadata(),
             'attributes_metadata': self.get_default_attributes_metadata(),
             'volumes_metadata': self.get_default_volumes_metadata()
@@ -228,6 +229,14 @@ class Environment(object):
         else:
             node = Node()
             node.timestamp = datetime.now()
+            if 'cluster_id' in node_data:
+                cluster_id = node_data.pop('cluster_id')
+                for cluster in self.clusters:
+                    if cluster.id == cluster_id:
+                        node.cluster = cluster
+                        break
+                else:
+                    node.cluster_id = cluster_id
             for key, value in node_data.iteritems():
                 setattr(node, key, value)
             node.attributes = self.create_attributes()
@@ -354,6 +363,9 @@ class Environment(object):
         public['netmask'] = '255.255.255.0'
 
         return nets
+
+    def get_default_roles(self):
+        return ['controller', 'compute', 'cinder']
 
     def get_default_volumes_metadata(self):
         return self.read_fixtures(
