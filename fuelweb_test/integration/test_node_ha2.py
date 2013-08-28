@@ -33,14 +33,13 @@ class TestNode(BaseNodeTestCase):
     @logwrap
     @fetch_logs
     def test_ha_cluster_flat(self):
-        cluster_name = 'ha_flat'
-        nodes = {
-            'controller': ['slave-01', 'slave-02', 'slave-03'],
-            'compute': ['slave-04', 'slave-05']
-        }
-        self.clean_clusters()
-        cluster_id = self.create_cluster(name=cluster_name)
-        self._basic_provisioning(cluster_id, nodes)
+        cluster_id = self.prepare_environment(
+            name="ha_flat",
+            settings={
+                'controller': ['slave-01', 'slave-02', 'slave-03'],
+                'compute': ['slave-04', 'slave-05']
+            }
+        )
         self.assertClusterReady(
             'slave-01', smiles_count=16, networks_count=1, timeout=300)
         self.get_ebtables(cluster_id, self.nodes().slaves[:5]).restore_vlans()

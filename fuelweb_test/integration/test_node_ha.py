@@ -33,12 +33,12 @@ class TestNode(BaseNodeTestCase):
     @logwrap
     @fetch_logs
     def test_ha_cluster_vlan(self):
+        self.prepare_environment()
         cluster_name = 'ha_vlan'
         nodes = {
             'controller': ['slave-01', 'slave-02', 'slave-03'],
             'compute': ['slave-04', 'slave-05']
         }
-        self.clean_clusters()
         cluster_id = self.create_cluster(name=cluster_name)
         self.update_vlan_network_fixed(cluster_id, amount=8, network_size=32)
         self._basic_provisioning(cluster_id, nodes)
