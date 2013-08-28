@@ -16,9 +16,10 @@
 define(
 [
     'views/common',
+    'models',    
     'text!templates/support/page.html'
 ],
-function(commonViews, supportPageTemplate) {
+function(commonViews, models, supportPageTemplate) {
     'use strict';
 
     var SupportPage = commonViews.Page.extend({
@@ -32,6 +33,12 @@ function(commonViews, supportPageTemplate) {
         downloadLogs: function() {
             this.$('.download-logs').addClass('disabled');
             window.location = '/api/logs/package';
+        },
+        initialize: function(options) {
+            _.defaults(this, options);
+            this.model = new models.FuelKey();
+            this.model.fetch();
+            this.model.on('change', this.render, this);
         },
         render: function() {
             this.$el.html(this.template());

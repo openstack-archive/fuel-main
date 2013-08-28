@@ -46,4 +46,4 @@ class FuelKeyHandler(JSONHandler):
         }
         signature = base64.b64encode(json.dumps(key_data))
         key_data["signature"] = signature
-        returns {"key": base64.b64encode(json.dumps(key_data))}
+        return {"key": base64.b64encode(json.dumps(key_data))}
