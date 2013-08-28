@@ -57,6 +57,8 @@ from nailgun.api.handlers.logs import LogPackageHandler
 from nailgun.api.handlers.logs import LogSourceCollectionHandler
 from nailgun.api.handlers.logs import LogSourceByNodeCollectionHandler
 
+from nailgun.api.handlers.registration import FuelKeyHandler
+
 from nailgun.api.handlers.version import VersionHandler
 
 from nailgun.api.handlers.plugin import PluginCollectionHandler
@@ -123,6 +125,9 @@ urls = (
     'LogSourceCollectionHandler',
     r'/logs/sources/nodes/(?P<node_id>\d+)/?$',
     'LogSourceByNodeCollectionHandler',
+
+    r'/registration/key/?$',
+    'FuelKeyHandler',
 
     r'/version/?$',
     'VersionHandler',

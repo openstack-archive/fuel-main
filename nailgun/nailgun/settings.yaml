@@ -5,6 +5,7 @@ DEVELOPMENT: 1
 COMMIT_SHA: "Unknown build"
 FUEL_COMMIT_SHA: "Unknown build"
 PRODUCT_VERSION: "3.0"
+FUEL_KEY: "Unknown"
 
 FIXTURES_TO_UPLOAD:
   - "openstack.json"
