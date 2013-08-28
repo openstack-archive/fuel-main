@@ -12,9 +12,7 @@
 #    License for the specific language governing permissions and limitations
 #    under the License.
 
-"""
-Serializers for orchestrator
-"""
+"""Serializers for orchestrator"""
 
 from netaddr import IPSet, IPNetwork, IPRange, IPAddress
 from nailgun.task.helpers import TaskHelper
@@ -24,6 +22,7 @@ from nailgun.api.models import Node
 from nailgun.api.models import Cluster
 from nailgun.settings import settings
 from nailgun.api.models import NetworkGroup
+from nailgun.network.manager import NetworkManager
 
 
 class OrchestratorSerializer(object):
@@ -37,8 +36,6 @@ class OrchestratorSerializer(object):
     "create_networks": "true",
     "quantum": "true",
     "master_hostname": "controller-01",
-    "management_vip": "10.107.2.254",
-    "public_vip": "172.18.94.46",
     "deployment_source": "cli",
     "deployment_engine": "nailyfact",
     """
@@ -288,36 +285,49 @@ class OrchestratorSerializer(object):
                 }
 
 
-class OrchestratorMultinodeSerializer(OrchestratorSerializer):
-    """
-    Serialize cluster for multinode mode
-    """
-    def __init__(self, cluster_id):
-        cluster_id
-        mode
+class OrchestratorHASerializer(OrchestratorSerializer):
 
-    def serialize(self):
-        pass
+    @classmethod
+    def nodes_list(cls, cluster):
+        nodes_list = OrchestratorSerializer.get_common_attrs(cluster)
+
+        for node in nodes_list:
+            node['mountpoints'] = '1 1\\n2 2\\n'
+
+        return nodes_list
+
+    @classmethod
+    def get_common_attrs(cls, cluster):
+        commont_attrs = OrchestratorSerializer.get_common_attrs(cluster)
+
+        netmanager = NetworkManager()
+        commont_attrs['management_vip'] = netmanager.assign_vip(
+            cluster.id, 'management')
+        commont_attrs['public_vip'] = netmanager.assign_vip(
+            cluster.id, "public")
+
+        print '*' * 30
+        print commont_attrs['controller_nodes']
+        commont_attrs['last_controller'] = sorted(
+            commont_attrs['controller_nodes'],
+            key=lambda node: node['uid'])[-1]['name']
+
+        first_controller = filter(
+            lambda node: 'controller' in node['role'],
+            commont_attrs['nodes'])[0]
+
+        # FIXME (eli): when multiroles will become
+        # we will need to rework this logic
+        first_controller['role'] = 'primary-controller'
+
+        return commont_attrs
 
 
-class OrchestratorHACompactSerializer(OrchestratorSerializer):
-    """
-    Not implemented yet
-    """
-    pass
+def serialize(cluster):
+    if cluster.mode == 'multinode':
+        serializer = OrchestratorSerializer
+    elif cluster.mode[:2] == 'ha':
+        # Same serializer for all ha
+        serializer = OrchestratorHASerializer
 
-    # if task.cluster.mode == 'ha':
-    # logger.info("HA mode chosen, creating VIP addresses for it..")
-    # cluster_attrs['management_vip'] = netmanager.assign_vip(
-    #     cluster_id, "management")
-    # cluster_attrs['public_vip'] = netmanager.assign_vip(
-    #     cluster_id, "public")
-
-    # last_controller
-
-
-class OrchestratorHAFullSerializer(OrchestratorSerializer):
-    """
-    Not implemented yet
-    """
-    pass
+    return serializer.serialize(cluster)
