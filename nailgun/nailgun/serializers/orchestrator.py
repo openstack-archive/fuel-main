@@ -27,18 +27,62 @@ from nailgun.api.models import NetworkGroup
 
 
 class OrchestratorSerializer(object):
-    """
-    Base class for orchestrator searilizatos
+    """Base class for orchestrator searilization
+
+    TODO
+
+    "dns_nameservers": "172.18.94.34",
+    "verbose": "true",
+    "debug": "true",
+    "create_networks": "true",
+    "quantum": "true",
+    "master_hostname": "controller-01",
+    "management_vip": "10.107.2.254",
+    "public_vip": "172.18.94.46",
+    "deployment_source": "cli",
+    "deployment_engine": "nailyfact",
     """
 
     @classmethod
     def serialize(cls, cluster):
-        attrs = cls.serialize_cluster_attrs(cluster)
-        attrs['nodes'] = cls.serialize_nodes(
-            cls.get_nodes_to_serialization(cluster))
+        """Method generates facts which
+        through an orchestrator passes to puppet
+        """
+        common_attrs = cls.get_common_attrs(cluster)
+        nodes = cls.serialize_nodes(cls.get_nodes_to_serialization(cluster))
 
         if cluster.net_manager == 'VlanManager':
-            cls.add_vlan_interfaces(attrs['nodes'], cluster)
+            cls.add_vlan_interfaces(nodes, cluster)
+
+        # Merge attributes of nodes with common attributes
+        def merge(dict1, dict2):
+            return dict(dict1.items() + dict2.items())
+
+        return map(
+            lambda node: merge(node, common_attrs),
+            nodes)
+
+    @classmethod
+    def get_common_attrs(cls, cluster):
+        attrs = cls.serialize_cluster_attrs(cluster)
+
+        attrs['controller_nodes'] = cls.controller_nodes(cluster.id)
+        attrs['nodes'] = cls.nodes_list(cls.get_nodes_to_serialization(cluster))
+
+        return attrs
+
+    @classmethod
+    def serialize_cluster_attrs(cls, cluster):
+        attrs = cluster.attributes.merged_attrs_values()
+        attrs['deployment_mode'] = cluster.mode
+        attrs['deployment_id'] = cluster.id
+        attrs['master_ip'] = settings.MASTER_IP
+        attrs['novanetwork_parameters'] = cls.novanetwork_attrs(cluster)
+        attrs.update(cls.network_ranges(cluster))
+
+        # TODO!!!!!
+        # need to set flag use_cinder in case
+        # attrs['use_cinder'] ||= nodes.any?{|n| n['role'] == 'cinder'}
 
         return attrs
 
@@ -48,23 +92,6 @@ class OrchestratorSerializer(object):
             and_(Node.cluster == cluster,
                  Node.pending_deletion == False)).order_by(Node.id)
 
-    @classmethod
-    def serialize_cluster_attrs(cls, cluster):
-        attrs = cluster.attributes.merged_attrs_values()
-        attrs['deployment_mode'] = cluster.mode
-        attrs['deployment_id'] = cluster.id
-
-        attrs['master_ip'] = settings.MASTER_IP
-        attrs['controller_nodes'] = cls.controller_nodes(cluster.id)
-
-        attrs.update(cls.network_ranges(cluster))
-        attrs['novanetwork_parameters'] = cls.novanetwork_attrs(cluster)
-
-        # TODO!!!!!
-        # need to set flag use_cinder in case
-        # attrs['use_cinder'] ||= nodes.any?{|n| n['role'] == 'cinder'}
-
-        return attrs
 
     @classmethod
     def novanetwork_attrs(cls, cluster):
@@ -134,7 +161,7 @@ class OrchestratorSerializer(object):
             role='controller',
             pending_deletion=False).order_by(Node.id)
 
-        return cls.serialize_nodes(nodes)
+        return cls.nodes_list(nodes)
 
     @classmethod
     def serialize_nodes(cls, nodes):
@@ -148,30 +175,50 @@ class OrchestratorSerializer(object):
         node_attrs = {
             # Yes, uid is really should be a string
             'uid': str(node.id),
-            'status': node.status,
             'fqdn': node.fqdn,
-            'name': TaskHelper.make_slave_name(node.id, node.role),
+            'status': node.status,
             'role': node.role,
-            'internal_address':  cls.get_addr(network_data, 'management')['ip'],
-            'internal_netmask': cls.get_addr(network_data, 'management')['netmask'],
-            'storage_address': cls.get_addr(network_data, 'storage')['ip'],
-            'storage_netmask': cls.get_addr(network_data, 'storage')['netmask'],
-            'public_address': cls.get_addr(network_data, 'public')['ip'],
-            'public_netmask': cls.get_addr(network_data, 'public')['netmask'],
 
-            # quantum?
-            # 'default_gateway': n['default_gateway']
-
-            # quantum
-            # 'internal_br': n['internal_br'],
-
-            # quantum
-            # 'public_br': n['public_br'],
-            'network_data': interfaces
+            # Interfaces assingment
+            'network_data': interfaces,
         }
         node_attrs.update(cls.interfaces_list(network_data))
 
         return node_attrs
+
+    @classmethod
+    def nodes_list(cls, nodes):
+        """Generate nodes list. Represents
+        as "nodes" parameter in facts.
+        """
+        def make_node(node):
+            network_data = node.network_data
+            return {
+                # Yes, uid is really should be a string
+                'uid': str(node.id),
+                'fqdn': node.fqdn,
+                'name': TaskHelper.make_slave_name(node.id, node.role),
+                'role': node.role,
+
+                # Addresses
+                'internal_address': cls.get_addr(network_data, 'management')['ip'],
+                'internal_netmask': cls.get_addr(network_data, 'management')['netmask'],
+                'storage_address': cls.get_addr(network_data, 'storage')['ip'],
+                'storage_netmask': cls.get_addr(network_data, 'storage')['netmask'],
+                'public_address': cls.get_addr(network_data, 'public')['ip'],
+                'public_netmask': cls.get_addr(network_data, 'public')['netmask'],
+
+                # quantum?
+                # 'default_gateway': n['default_gateway']
+
+                # quantum
+                # 'internal_br': n['internal_br'],
+
+                # quantum
+                # 'public_br': n['public_br'],
+            }
+
+        return map(make_node, nodes)
 
     @classmethod
     def get_addr(cls, network_data, name):
@@ -265,6 +312,8 @@ class OrchestratorHACompactSerializer(OrchestratorSerializer):
     #     cluster_id, "management")
     # cluster_attrs['public_vip'] = netmanager.assign_vip(
     #     cluster_id, "public")
+
+    # last_controller
 
 
 class OrchestratorHAFullSerializer(OrchestratorSerializer):
