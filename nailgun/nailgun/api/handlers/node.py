@@ -27,6 +27,7 @@ import web
 from nailgun.api.handlers.base import content_json
 from nailgun.api.handlers.base import JSONHandler
 from nailgun.api.models import NetworkGroup
+from nailgun.api.models import Cluster
 from nailgun.api.models import Node
 from nailgun.api.models import NodeAttributes
 from nailgun.api.models import NodeNICInterface
@@ -172,6 +173,14 @@ class NodeCollectionHandler(JSONHandler):
         data = self.checked_data()
 
         node = Node()
+        if "cluster_id" in data:
+            # FIXME(vk): this part is needed only for tests. Normally,
+            # nodes are created only by agent and POST requests don't contain
+            # cluster_id, but our integration and unit tests widely use it.
+            # We need to assign cluster first
+            cluster_id = data.pop("cluster_id")
+            if cluster_id:
+                node.cluster = db.query(Cluster).get(cluster_id)
         for key, value in data.iteritems():
             if key == "id":
                 continue
