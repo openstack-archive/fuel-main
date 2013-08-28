@@ -30,13 +30,13 @@ from nailgun.api.handlers.base import JSONHandler, content_json
 
 class FuelKeyHandler(JSONHandler):
     """
-    Version info handler
+    Fuel key handler
     """
 
     @content_json
     def GET(self):
         """
-        :returns: FUEL/FUELWeb commit SHA, release version.
+        :returns: base64 of FUEL commit SHA, release version and Fuel UUID.
         :http: * 200 (OK)
         """
         key_data = {
