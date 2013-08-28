@@ -19,7 +19,6 @@ define(
     'models',
     'views/common',
     'views/dialogs',
-    'text!templates/cluster/add_nodes_screen.html',
     'text!templates/cluster/nodes_management_panel.html',
     'text!templates/cluster/assign_roles_panel.html',
     'text!templates/cluster/node_list.html',
@@ -32,7 +31,7 @@ define(
     'text!templates/cluster/edit_node_interfaces.html',
     'text!templates/cluster/node_interface.html'
 ],
-function(utils, models, commonViews, dialogViews, addNodesScreenTemplate, nodesManagementPanelTemplate, assignRolesPanelTemplate, nodeListTemplate, nodeGroupTemplate, nodeTemplate, nodeStatusTemplate, editNodeDisksScreenTemplate, nodeDisksTemplate, volumeStylesTemplate, editNodeInterfacesScreenTemplate, nodeInterfaceTemplate) {
+function(utils, models, commonViews, dialogViews, nodesManagementPanelTemplate, assignRolesPanelTemplate, nodeListTemplate, nodeGroupTemplate, nodeTemplate, nodeStatusTemplate, editNodeDisksScreenTemplate, nodeDisksTemplate, volumeStylesTemplate, editNodeInterfacesScreenTemplate, nodeInterfaceTemplate) {
     'use strict';
     var NodesTab, Screen, NodeListScreen, ClusterNodesScreen, AddNodesScreen, NodesManagementPanel, AssignRolesPanel, NodeList, NodeGroup, Node, EditNodeScreen, EditNodeDisksScreen, NodeDisk, EditNodeInterfacesScreen, NodeInterface;
 
@@ -106,6 +105,17 @@ function(utils, models, commonViews, dialogViews, addNodesScreenTemplate, nodesM
         },
         calculateBatchActionsButtonsState: function() {
             this.$('.cluster-toolbar button').prop('disabled', !this.$('.node.checked').length);
+        },
+        render: function() {
+            this.tearDownRegisteredSubViews();
+            this.$el.html('');
+            this.managementPanel = new NodesManagementPanel({screen: this});
+            this.registerSubView(this.managementPanel);
+            this.$el.append(this.managementPanel.render().el);
+            this.list = new NodeList({nodes: this.nodes, screen: this});
+            this.registerSubView(this.list);
+            this.$el.append(this.list.render().el);
+            return this;
         }
     });
 
@@ -135,17 +145,6 @@ function(utils, models, commonViews, dialogViews, addNodesScreenTemplate, nodesM
         },
         onNewTask: function(task) {
             return this.bindTaskEvents(task) && this.render();
-        },
-        render: function() {
-            this.tearDownRegisteredSubViews();
-            this.$el.html('');
-            this.managementPanel = new NodesManagementPanel({screen: this});
-            this.registerSubView(this.managementPanel);
-            this.$el.append(this.managementPanel.render().el);
-            this.list = new NodeList({nodes: this.nodes, screen: this});
-            this.registerSubView(this.list);
-            this.$el.append(this.list.render().el);
-            return this;
         }
     });
 
@@ -153,7 +152,6 @@ function(utils, models, commonViews, dialogViews, addNodesScreenTemplate, nodesM
         className: 'add-nodes-screen',
         constructorName: 'AddNodesScreen',
         keepScrollPosition: false,
-        template: _.template(addNodesScreenTemplate),
         events: {
             'click .btn-go-to-cluster': 'goToEnvironment'
         },
@@ -175,17 +173,6 @@ function(utils, models, commonViews, dialogViews, addNodesScreenTemplate, nodesM
             }, this));
             this.nodes.on('resize', this.render, this);
             this.scheduleUpdate();
-        },
-        render: function() {
-            this.tearDownRegisteredSubViews();
-            this.$el.html(this.template());
-            this.managementPanel = new NodesManagementPanel({screen: this});
-            this.registerSubView(this.managementPanel);
-            this.$('.management-panel').html(this.managementPanel.render().el);
-            this.list = new NodeList({nodes: this.nodes, screen: this});
-            this.registerSubView(this.list);
-            this.$('.node-list').html(this.list.render().el);
-            return this;
         }
     });
 
@@ -213,13 +200,13 @@ function(utils, models, commonViews, dialogViews, addNodesScreenTemplate, nodesM
             return this.screen.nodes.filter(function(node) {return _.contains(chosenNodesIds, node.id);});
         },
         showAssignRolesPanel: function() {
+            this.$('.cluster-toolbar').hide();
             var assignRolesPanel = new AssignRolesPanel({
                 nodes: new models.Nodes(this.chosenNodes()),
                 screen: this.screen
             });
             this.registerSubView(assignRolesPanel);
             this.$('.assign-roles-panel').html(assignRolesPanel.render().el);
-            this.$('.roles-panel').show();
         },
         showDeleteNodesDialog: function() {
             var nodes = new models.Nodes(this.chosenNodes());
@@ -244,7 +231,7 @@ function(utils, models, commonViews, dialogViews, addNodesScreenTemplate, nodesM
 
     AssignRolesPanel = Backbone.View.extend({
         template: _.template(assignRolesPanelTemplate),
-        className: 'roles-panel hide',
+        className: 'roles-panel',
         events: {
             'change input[type=checkbox]' : 'handleInput',
             'click .btn-close' : 'hide',
@@ -255,15 +242,16 @@ function(utils, models, commonViews, dialogViews, addNodesScreenTemplate, nodesM
             this.calculateInputState(e);
             this.calculateAssignButtonState();
         },
-        setInputState: function(input, nodesAmount) {
+        setInputState: function(role, nodesAmount) {
             var prop = nodesAmount ? nodesAmount == this.nodes.length ? 'checked' : 'indeterminate' : '';
-            input.prop(prop, true);
+            this.$('input[value=' + role + ']').prop(prop, true);
             return prop;
         },
         calculateInputState: function(e) {
             var input = this.$(e.currentTarget);
+            var role = input.val();
             if (!input.is(':checked')) {
-                this.setInputState(input, this.nodes.filter(function(node) {return !node.get('pending_addition') && _.contains(node.get('pending_roles'), input.val());}).length);
+                this.setInputState(role, this.nodes.filter(function(node) {return !node.get('pending_addition') && _.contains(node.get('pending_roles'), role);}).length);
             }
         },
         getListOfForbiddenRoles: function(roles) {
@@ -276,15 +264,23 @@ function(utils, models, commonViews, dialogViews, addNodesScreenTemplate, nodesM
         },
         checkForConflicts: function(e) {
             this.$('input[type=checkbox]').prop('disabled', false);
+            this.$('.role-conflict').text('');
+            // check uncompatible roles
             var selectedRoles = _.filter(this.$('input[type=checkbox]'), function(input) {return $(input).prop('indeterminate') || $(input).prop('checked');});
             _.each(this.getListOfForbiddenRoles(selectedRoles.map(function(input) {return $(input).val();})), function(role) {
                 this.$('input[value=' + role + ']').prop('disabled', true);
+                this.$('.role-conflict.' + role).text('This role can not be assigned together with selected roles.');
             }, this);
+            // non-ha deployment mode restriction: environment can not have more than one controller node
+            if (this.nodes.length > 1 && this.screen.model.get('mode') != 'ha') {
+                this.$('input[value=controller]').prop('disabled', true);
+                this.$('.role-conflict.controller').text('This role can not be assigned to more than one node in Multinode deployment mode.');
+            }
         },
         setInitialData: function() {
             this.initialData = {};
             _.each(this.screen.model.availableRoles(), function(role) {
-                this.initialData[role] = this.setInputState(this.$('input[value=' + role + ']'), this.nodes.filter(function(node) {return _.contains(node.get('pending_roles'), role);}).length);
+                this.initialData[role] = this.setInputState(role, this.nodes.filter(function(node) {return _.contains(node.get('pending_roles'), role);}).length);
             }, this);
         },
         calculateAssignButtonState: function() {
@@ -297,6 +293,7 @@ function(utils, models, commonViews, dialogViews, addNodesScreenTemplate, nodesM
         },
         hide: function() {
             this.$el.hide();
+            this.screen.$('.cluster-toolbar').show();
         },
         assignRoles: function() {
             this.$('.btn-assign').prop('disabled', true);
@@ -465,7 +462,7 @@ function(utils, models, commonViews, dialogViews, addNodesScreenTemplate, nodesM
             'click .node-renameable': 'startNodeRenaming',
             'keydown .name input': 'onNodeNameInputKeydown',
             'click .node-hardware': 'showNodeDetails',
-            'click .roles': 'showRolesPanel',
+            'click .roles': 'showAssignRolesPanel',
             'click .btn-discard-role-changes': 'discardRoleChanges',
             'click .btn-discard-addition': 'discardAddition',
             'click .btn-discard-deletion': 'discardDeletion'
@@ -525,8 +522,13 @@ function(utils, models, commonViews, dialogViews, addNodesScreenTemplate, nodesM
             app.page.tab.registerSubView(dialog);
             dialog.render();
         },
-        showRolesPanel: function() {
-            this.$('.roles-panel').toggle();
+        showAssignRolesPanel: function() {
+            var assignRolesPanel = new AssignRolesPanel({
+                nodes: new models.Nodes(this.node),
+                screen: this.list.screen
+            });
+            this.registerSubView(assignRolesPanel);
+            this.$('.assign-roles-panel').html(assignRolesPanel.render().el);
         },
         updateNode: function(data) {
             var screen = app.page.tab.screen;
@@ -600,12 +602,6 @@ function(utils, models, commonViews, dialogViews, addNodesScreenTemplate, nodesM
                 renameable: this.renameable,
                 selected: this.selected
             }, this.templateHelpers)));
-            var rolesPanel = new AssignRolesPanel({
-                nodes: new models.Nodes(this.node),
-                screen: this.list.screen
-            });
-            this.registerSubView(rolesPanel);
-            this.$el.append(rolesPanel.render().el);
             this.updateStatus();
             return this;
         }

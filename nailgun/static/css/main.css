@@ -4337,7 +4337,7 @@ input.input-append {
   margin-left: 20px;
 }
 
-.cluster-toolbar-item.cluster-actions {
+.cluster-toolbar-item:first-child {
   margin-left: 0px;
 }
 
@@ -4474,4 +4474,25 @@ input.input-append {
     -webkit-transform: rotate(359deg);
     transform: rotate(359deg);
   }
+}
+
+.roles-panel label {
+  display: block;
+  float: left;
+  max-width: 200px;
+  padding-right: 20px;
+}
+
+.roles-panel input[type=checkbox] {
+  position: relative;
+  top: -3px;
+}
+
+.role-conflict {
+  color: #B94A48;
+}
+
+.role-description {
+  float: none;
+  clear: both;
 }
