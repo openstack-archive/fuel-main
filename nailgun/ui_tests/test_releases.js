@@ -17,7 +17,7 @@ casper.start().loadPage('#releases');
 
 casper.then(function() {
     this.test.comment('Testing releases page layout');
-    this.test.assertEvalEquals(function() {return $('.releases-table tbody tr').length}, 2, 'There are two releases presented');
+    this.test.assertEvalEquals(function() {return $('.releases-table tbody tr').length}, 3, 'There are three releases presented');
     this.test.assertSelectorAppears('.releases-table .not_available', 'There is unavailable release');
 });
 
