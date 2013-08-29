@@ -511,8 +511,8 @@ function(utils, models, commonViews, dialogViews, nodesManagementPanelTemplate, 
             var screen = app.page.tab.screen;
             this.node
                 .save(data, {patch: true, wait: true})
-                .done(screen.nodes.fetch())
-                .fail(utils.showErrorDialog({title: "Can't discard node changes"}));
+                .done(function() {screen.nodes.fetch();})
+                .fail(function() {utils.showErrorDialog({title: "Can't discard node changes"});});
         },
         discardRoleChanges: function() {
             var data = {pending_roles: []};
