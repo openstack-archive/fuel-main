@@ -10,19 +10,21 @@ $(BUILD_DIR)/mirror/gems/gems-bundle/naily/Gemfile: $(call depv,MIRROR_GEMS)
 $(BUILD_DIR)/mirror/gems/gems-bundle/naily/Gemfile: \
 		$(BUILD_DIR)/mirror/gems/gems-bundle/naily/Gemfile.lock \
 		$(BUILD_DIR)/packages/gems/build.done \
-		$(BUILD_DIR)/packages/rpm/build.done
+		$(BUILD_DIR)/packages/rpm/build.done \
+		$(BUILD_DIR)/repos/nailgun.done
 	echo -n > $@
 	for i in $(MIRROR_GEMS); do \
 		echo "source \"$$i\"" >> $@; \
 	done
 	echo "source \"file://$(BUILD_MIRROR_GEMS)\"" >> $@
-	echo "gemspec :path => \"$(SOURCE_DIR)/naily\"" >> $@
+	echo "gemspec :path => \"$(BUILD_DIR)/repos/nailgun/naily\"" >> $@
 	$(ACTION.TOUCH)
 
 $(BUILD_DIR)/mirror/gems/gems-bundle/naily/Gemfile.lock: \
-		$(SOURCE_DIR)/naily/Gemfile.lock
+		$(BUILD_DIR)/repos/nailgun.done \
+		$(call find-files,$(BUILD_DIR)/repos/nailgun/naily/Gemfile.lock)
 	mkdir -p $(@D)
-	cp $(SOURCE_DIR)/naily/Gemfile.lock $@
+	cp $(BUILD_DIR)/repos/nailgun/naily/Gemfile.lock $@
 
 $(BUILD_DIR)/mirror/gems/gems-bundle-gemfile.done: \
 		$(SOURCE_DIR)/requirements-gems.txt \
