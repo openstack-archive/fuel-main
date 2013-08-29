@@ -1,10 +1,12 @@
 #!/bin/bash
-topdir=$(dirname `readlink -f $0`)
-. $topdir/common.sh
 
-nailgun_deps $WORKSPACE/requirements-eggs.txt
+$WORKSPACE/utils/jenkins/common.sh
 
-cd docs
+$WORKSPACE/utils/git-helper/review.py --master-repo $master_repo --master-branch $master_branch --repo $repo --branch $branch --check
+
+nailgun_deps
+
+cd $WORKSPACE/local_repo/docs
 make clean
 make html
 rsync -avz -e ssh --delete _build/html/ fjenkins@fuel-docs.vm.mirantis.net:/home/fjenkins/workspace/fuel-docs.mirantis.com/docs/_build/html/

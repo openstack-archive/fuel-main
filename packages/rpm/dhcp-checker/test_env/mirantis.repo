@@ -1,4 +1,0 @@
-[mirantis-repo]
-name=Mirantis Repos
-baseurl=http://download.mirantis.com/epel-fuel-grizzly-3.1/
-enabled=1

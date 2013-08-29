@@ -17,8 +17,9 @@ $(BUILD_DIR)/packages/rpm/prep.done: $(BUILD_DIR)/mirror/src/build.done
 $(BUILD_DIR)/packages/rpm/rpm-nailgun-agent.done: \
 		$(BUILD_DIR)/packages/rpm/prep.done \
 		$(SOURCE_DIR)/packages/rpm/specs/nailgun-agent.spec \
-		$(call find-files,$(SOURCE_DIR)/bin)
-	cp -f $(SOURCE_DIR)/bin/agent $(SOURCE_DIR)/bin/nailgun-agent.cron $(RPM_SOURCES)
+		$(BUILD_DIR)/repos/nailgun.done \
+		$(call find-files,$(BUILD_DIR)/repos/nailgun/bin)
+	cp -f $(BUILD_DIR)/repos/nailgun/bin/agent $(BUILD_DIR)/repos/nailgun/bin/nailgun-agent.cron $(RPM_SOURCES)
 	rpmbuild -vv --define "_topdir $(BUILD_DIR)/packages/rpm" -ba \
 		$(SOURCE_DIR)/packages/rpm/specs/nailgun-agent.spec
 	$(ACTION.TOUCH)
@@ -26,9 +27,10 @@ $(BUILD_DIR)/packages/rpm/rpm-nailgun-agent.done: \
 $(BUILD_DIR)/packages/rpm/rpm-nailgun-mcagents.done: \
 		$(BUILD_DIR)/packages/rpm/prep.done \
 		$(SOURCE_DIR)/packages/rpm/specs/nailgun-mcagents.spec \
-		$(call find-files,$(SOURCE_DIR)/astute/mcagents)
+		$(BUILD_DIR)/repos/astute.done \
+		$(call find-files,$(BUILD_DIR)/astute/mcagents)
 	mkdir -p $(BUILD_DIR)/packages/rpm/SOURCES/nailgun-mcagents
-	cp -f $(SOURCE_DIR)/astute/mcagents/* $(RPM_SOURCES)/nailgun-mcagents
+	cp -f $(BUILD_DIR)/repos/astute/mcagents/* $(RPM_SOURCES)/nailgun-mcagents
 	rpmbuild -vv --define "_topdir $(BUILD_DIR)/packages/rpm" -ba \
 		$(SOURCE_DIR)/packages/rpm/specs/nailgun-mcagents.spec
 	$(ACTION.TOUCH)
@@ -54,14 +56,15 @@ $(BUILD_DIR)/packages/rpm/rpm-nailgun-net-check.done: \
 $(BUILD_DIR)/packages/rpm/rpm-dhcp-checker.done: SANDBOX:=$(BUILD_DIR)/packages/rpm/SANDBOX
 $(BUILD_DIR)/packages/rpm/rpm-dhcp-checker.done: export SANDBOX_UP:=$(SANDBOX_UP)
 $(BUILD_DIR)/packages/rpm/rpm-dhcp-checker.done: export SANDBOX_DOWN:=$(SANDBOX_DOWN)
+$(BUILD_DIR)/packages/rpm/rpm-dhcp-checker.done: $(BUILD_DIR)/repos/nailgun.done
 $(BUILD_DIR)/packages/rpm/rpm-dhcp-checker.done: \
 		$(BUILD_DIR)/packages/rpm/prep.done \
 		$(SOURCE_DIR)/packages/rpm/specs/dhcp-checker.spec \
-		$(call find-files,$(SOURCE_DIR)/packages/rpm/dhcp-checker)
+		$(call find-files,$(BUILD_DIR)/repos/nailgun/dhcp-checker)
 	sudo sh -c "$${SANDBOX_UP}"
 	sudo mkdir -p $(SANDBOX)/tmp/SOURCES
 	sudo cp $(LOCAL_MIRROR_SRC)/* $(SANDBOX)/tmp/SOURCES
-	sudo cp -r $(SOURCE_DIR)/packages/rpm/dhcp-checker/* $(SANDBOX)/tmp/SOURCES/
+	sudo cp -r $(BUILD_DIR)/repos/nailgun/dhcp-checker/* $(SANDBOX)/tmp/SOURCES/
 	sudo cp $(SOURCE_DIR)/packages/rpm/specs/dhcp-checker.spec $(SANDBOX)/tmp
 	sudo chroot $(SANDBOX) rpmbuild -vv --define "_topdir /tmp" -ba /tmp/dhcp-checker.spec
 	cp $(SANDBOX)/tmp/RPMS/noarch/dhcp_checker-*.rpm $(BUILD_DIR)/packages/rpm/RPMS/x86_64/

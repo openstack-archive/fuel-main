@@ -82,19 +82,19 @@ $(ISOROOT)/ks.cfg: $(SOURCE_DIR)/iso/ks.template $(SOURCE_DIR)/iso/ks.py $(KSYAM
 	python $(SOURCE_DIR)/iso/ks.py -t $(SOURCE_DIR)/iso/ks.template -c $(KSYAML) -o $@
 $(ISOROOT)/bootstrap_admin_node.sh: $(SOURCE_DIR)/iso/bootstrap_admin_node.sh ; $(ACTION.COPY)
 $(ISOROOT)/bootstrap_admin_node.conf: $(SOURCE_DIR)/iso/bootstrap_admin_node.conf ; $(ACTION.COPY)
-$(ISOROOT)/send2syslog.py: $(SOURCE_DIR)/bin/send2syslog.py ; $(ACTION.COPY)
-$(ISOROOT)/version.yaml: $(call depv,COMMIT_SHA)
+$(ISOROOT)/send2syslog.py: $(BUILD_DIR)/repos/nailgun/bin/send2syslog.py ; $(ACTION.COPY)
+$(BUILD_DIR)/repos/nailgun/bin/send2syslog.py: $(BUILD_DIR)/repos/nailgun.done
 $(ISOROOT)/version.yaml: $(call depv,PRODUCT_VERSION)
-$(ISOROOT)/version.yaml: $(call depv,FUEL_COMMIT_SHA)
-$(ISOROOT)/version.yaml:
-	echo "COMMIT_SHA: $(COMMIT_SHA)" > $@
-	echo "PRODUCT_VERSION: $(PRODUCT_VERSION)" >> $@
-	echo "FUEL_COMMIT_SHA: $(FUEL_COMMIT_SHA)" >> $@
+$(ISOROOT)/version.yaml: $(BUILD_DIR)/repos/repos.done
+	echo "VERSION:" > $@
+	echo "  release: $(PRODUCT_VERSION)" >> $@
+	cat $(BUILD_DIR)/repos/version.yaml >> $@
 
 
 $(ISOROOT)/puppet-slave.tgz: \
-		$(call find-files,$(SOURCE_DIR)/fuel/deployment/puppet)
-	(cd $(SOURCE_DIR)/fuel/deployment/puppet && tar rf $(ISOROOT)/puppet-slave.tar ./*)
+		$(BUILD_DIR)/repos/fuellib.done \
+		$(call find-files,$(BUILD_DIR)/repos/fuellib/deployment/puppet)
+	(cd $(BUILD_DIR)/repos/fuellib/deployment/puppet && tar rf $(ISOROOT)/puppet-slave.tar ./*)
 	gzip -c -9 $(ISOROOT)/puppet-slave.tar > $@ && \
 		rm $(ISOROOT)/puppet-slave.tar
 

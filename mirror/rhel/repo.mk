@@ -31,26 +31,28 @@ $(BUILD_DIR)/mirror/rhel/yum-config.done: \
 		$(BUILD_DIR)/mirror/rhel/etc/yum/pluginconf.d/priorities.conf
 	$(ACTION.TOUCH)
 
-$(BUILD_DIR)/mirror/rhel/yum.done: $(call depv,REQ_RHEL_RPMS)
 $(BUILD_DIR)/mirror/rhel/yum.done: \
+		$(BUILD_DIR)/repos/fuellib.done \
+		$(call find-files,$(BUILD_DIR)/repos/fuellib/deployment/puppet/rpmcache/files/required-rpms.txt \
 		$(BUILD_DIR)/mirror/rhel/yum-config.done
 	yum -c $(BUILD_DIR)/mirror/rhel/etc/yum.conf clean all
 	rm -rf /var/tmp/yum-$$USER-*/
+	grep -v "^\\s*\#" $(BUILD_DIR)/repos/fuellib/deployment/puppet/rpmcache/files/required-rpms.txt | /bin/sed 's/-[0-9][0-9\.a-zA-Z_-]\+//g' | xargs \
 	yumdownloader -q --resolve --archlist=$(CENTOS_ARCH) \
 		-c $(BUILD_DIR)/mirror/rhel/etc/yum.conf \
-		--destdir=$(LOCAL_MIRROR_RHEL)/Packages \
-		`echo $(REQ_RHEL_RPMS) | /bin/sed 's/-[0-9][0-9\.a-zA-Z_-]\+//g'`
+		--destdir=$(LOCAL_MIRROR_RHEL)/Packages
 	$(ACTION.TOUCH)
 
-show-yum-urls-rhel: $(call depv,REQ_RHEL_RPMS)
 show-yum-urls-rhel: \
+		$(BUILD_DIR)/repos/fuellib.done \
+		$(call find-files,$(BUILD_DIR)/repos/fuellib/deployment/puppet/rpmcache/files/required-rpms.txt \
 		$(BUILD_DIR)/mirror/rhel/yum-config.done
 	yum -c $(BUILD_DIR)/mirror/rhel/etc/yum.conf clean all
 	rm -rf /var/tmp/yum-$$USER-*/
+	grep -v "^\\s*\#" $(BUILD_DIR)/repos/fuellib/deployment/puppet/rpmcache/files/required-rpms.txt | /bin/sed 's/-[0-9][0-9\.a-zA-Z_-]\+//g' | xargs \
 	yumdownloader --urls -q --resolve --archlist=$(CENTOS_ARCH) \
 		-c $(BUILD_DIR)/mirror/rhel/etc/yum.conf \
-		--destdir=$(LOCAL_MIRROR_RHEL)/Packages \
-		`echo $(REQ_RHEL_RPMS) | /bin/sed 's/-[0-9][0-9\.a-zA-Z_-]\+//g'`
+		--destdir=$(LOCAL_MIRROR_RHEL)/Packages
 
 $(LOCAL_MIRROR_RHEL)/comps.xml: \
 		export COMPSXML=$(shell wget -qO- $(MIRROR_RHEL)/repodata/repomd.xml | grep -m 1 '$(@F)' | awk -F'"' '{ print $$2 }')

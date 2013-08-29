@@ -15,13 +15,7 @@ function license_check {
 
 function nailgun_deps {
     # Installing nailgun dependencies
-    
-    if [ -z $1 ]; then
-        dependencies=$WORKSPACE/local_repo/requirements-eggs.txt
-    else
-        dependencies=$1
-    fi
-    sudo pip install -r $dependencies
+    sudo pip install -r $WORKSPACE/local_repo/requirements-eggs.txt
 }
 
 function nailgun_checks {

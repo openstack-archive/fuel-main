@@ -1,0 +1,6 @@
+; Copy this configuration file to ~/review.conf and edit
+; Create token manually on https://github.com/settings/applications
+
+[github]
+user: user
+token: token

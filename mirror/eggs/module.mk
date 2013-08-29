@@ -11,7 +11,8 @@ clean-mirror-eggs:
 
 $(BUILD_DIR)/mirror/eggs/build.done: $(call depv,LOCAL_MIRROR_EGGS)
 $(BUILD_DIR)/mirror/eggs/build.done: $(call depv,REQUIRED_EGGS)
-$(BUILD_DIR)/mirror/eggs/build.done: $(call depv,OSTF_EGGS)
+$(BUILD_DIR)/mirror/eggs/build.done: $(BUILD_DIR)/repos/fuellib.done
+$(BUILD_DIR)/mirror/eggs/build.done: $(call find-files,$(BUILD_DIR)/repos/fuellib/deployment/puppet/nailgun/files/venv-ostf.txt)
 $(BUILD_DIR)/mirror/eggs/build.done: $(call depv,SANDBOX_PACKAGES)
 $(BUILD_DIR)/mirror/eggs/build.done: SANDBOX:=$(BUILD_DIR)/mirror/eggs/SANDBOX
 $(BUILD_DIR)/mirror/eggs/build.done: export SANDBOX_UP:=$(SANDBOX_UP)
@@ -47,12 +48,12 @@ $(BUILD_DIR)/mirror/eggs/build.done: \
 		--find-links $(MIRROR_EGGS) \
 		--download /tmp/$(notdir $(LOCAL_MIRROR_EGGS)) \
 		$(REQUIRED_EGGS)
+	grep -v "^\\s*\#" $(BUILD_DIR)/repos/fuellib/deployment/puppet/nailgun/files/venv-ostf.txt | xargs \
 	sudo chroot $(SANDBOX) pip install \
 		--exists-action=i \
 		--index-url $(MIRROR_EGGS) \
 		--find-links $(MIRROR_EGGS) \
-		--download /tmp/$(notdir $(LOCAL_MIRROR_EGGS)) \
-		$(OSTF_EGGS)
+		--download /tmp/$(notdir $(LOCAL_MIRROR_EGGS))
 
 	# # Copying downloaded eggs into eggs mirror
 	rsync -a $(SANDBOX)/tmp/$(notdir $(LOCAL_MIRROR_EGGS))/ $(LOCAL_MIRROR_EGGS)

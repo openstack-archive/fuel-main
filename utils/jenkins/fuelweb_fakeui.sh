@@ -1,14 +1,16 @@
 #!/bin/bash
-topdir=$(dirname `readlink -f $0`)
-. $topdir/common.sh
+
+$WORKSPACE/utils/jenkins/common.sh
+
+$WORKSPACE/utils/git-helper/review.py --master-repo $master_repo --master-branch $master_branch --repo $repo --branch $branch --check
 
 sudo ln -sf $topdir/init.d/nailgun /etc/init.d/nailgun
 sudo WORKSPACE=$WORKSPACE /etc/init.d/nailgun stop
 
 # Installing nailgun dependencies
-nailgun_deps $WORKSPACE/requirements-eggs.txt
+nailgun_deps
 
-cd $WORKSPACE/nailgun
+cd $WORKSPACE/local_repo/nailgun
 # Cleaning database
 ./manage.py dropdb
 
