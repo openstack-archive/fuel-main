@@ -148,7 +148,8 @@ class NodeValidator(BasicValidator):
     def validate_roles(cls, data, node):
         if 'roles' in data:
             if not isinstance(data['roles'], list) or \
-                    any(not isinstance(role, (str, unicode)) for role in data['roles']):
+                    any(not isinstance(role, (
+                        str, unicode)) for role in data['roles']):
                 raise errors.InvalidData(
                     "Role list must be list of strings",
                     log_message=True
