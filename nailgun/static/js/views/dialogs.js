@@ -501,7 +501,7 @@ function(require, utils, models, simpleMessageTemplate, createClusterDialogTempl
                     .done(_.bind(function() {
                         this.$el.modal('hide');
                         app.page.tab.model.fetch();
-                        app.page.tab.screen.nodes.fetch({data: {cluster_id: app.page.tab.model.id}});
+                        app.page.tab.screen.nodes.fetch();
                         app.navbar.refresh();
                         app.page.removeFinishedTasks();
                     }, this))

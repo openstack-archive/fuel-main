@@ -142,7 +142,7 @@ define(['utils'], function(utils) {
         model: models.Node,
         url: '/api/nodes',
         comparator: function(node) {
-            return node.get('status');
+            return node.id;
         },
         hasChanges: function() {
             return !!this.filter(function(node) {
@@ -158,16 +158,6 @@ define(['utils'], function(utils) {
         resources: function(resourceName) {
             var resources = this.map(function(node) {return node.resource(resourceName);});
             return _.reduce(resources, function(sum, n) {return sum + n;}, 0);
-        },
-        assignedRoles: function() {
-            var roles = [];
-            this.each(function(node) {
-                var role = _.union(roles, node.get('roles'), node.get('pending_roles'));
-            });
-            return _.uniq(roles);
-        },
-        filterByRoles: function(role) {
-            return this.filter(function(node) {return _.contains(_.union(node.get('roles'), node.get('pending_roles')), role);});
         }
     });
 
