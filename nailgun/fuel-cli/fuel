@@ -17,7 +17,15 @@ import argparse
 import json
 import urllib2
 
-API_ROOT = "http://127.0.0.1:8000/api/"
+API_ROOT = "http://127.0.0.1:8001/api/"
+
+class SetAction(argparse.Action):
+        """argparse.Action subclass to store distinct values"""
+        def __call__(self, parser, namespace, values, option_string=None):
+            try:
+                getattr(namespace,self.dest).update( values )
+            except AttributeError:
+                setattr(namespace,self.dest,set(values))
 
 
 def format_table(data, **kwargs):
@@ -54,9 +62,18 @@ def json_api_get_request(api):
     return json.loads(request.read())
 
 
+def json_api_post_request(api, data):
+    # print "POST request to address {0} with data: {1}".format(API_ROOT + api,data)
+    request = urllib2.urlopen(url=API_ROOT + api,data=data).read()
+
+
 def release(params):
-    if params.list:
+    param_list = {k: v for k,v in params.__dict__.iteritems()
+     if k != "action"}.values()
+    if not any(param_list) or params.list:
         data = json_api_get_request("releases/")
+        for release in data:
+            del release['description']
         print(format_table(data))
     if params.rid:
         try:
@@ -64,7 +81,7 @@ def release(params):
             print(format_table([data]))
         except urllib2.HTTPError:
             print("Error. No release with such rid!")
-    print(params)
+    # print(params)
 
 
 def environment(params):
@@ -74,10 +91,30 @@ def environment(params):
         data = json_api_get_request("clusters/")
         print(data)
         # print format_table(data)
+    if params.create:
+        if params.ename and params.rid:
+            data = {"nodes":[],"tasks":[],"name": params.ename,"release": int(params.rid)}
+            data = json.dumps(data)
+            json_api_post_request("clusters/",data)
+            print "Environment {0} was created successfully.".format(params.ename)
+        else:
+            print "You need to specify --ename and --rid!"
 
 
 def node(params):
-    print(params)
+    param_list = {k: v for k,v in params.__dict__.iteritems()
+    if k != "action"}.values()
+    if not any(param_list) or params.list:
+        acceptable_keys = ["status", "name",
+        "cluster", "mac", "role", "online", "id"]
+        data = json_api_get_request("nodes/")
+        new_data = map(
+            lambda node: {k: v for k, v in node.iteritems() 
+                if k in acceptable_keys},
+                data
+            )
+        print format_table(new_data)
+    # print(params)
 
 
 def network(params):
@@ -149,15 +186,15 @@ actions = {
                 "default": False
             }
         }, {
-            "args": ["--create"],
+            "args": ["-c","--env-create" , "--create"],
             "params": {
                 "dest": "create",
                 "action": "store_true",
-                "help": "Create a new environment with specific eid and name.",
+                "help": "Create a new environment with specific release id and name.",
                 "default": False
             }
         }, {
-            "args": ["--eid", "--environment-id"],
+            "args": ["--eid", "--env-id"],
             "params": {
                 "dest": "eid",
                 "action": "store",
@@ -166,7 +203,7 @@ actions = {
                 "default": None
             }
         }, {
-            "args": ["--ename", "--environment-name"],
+            "args": ["--ename", "--env-name"],
             "params": {
                 "dest": "ename",
                 "action": "store",
@@ -175,7 +212,7 @@ actions = {
                 "default": None
             }
         }, {
-            "args": ["--rename", "--environment-rename"],
+            "args": ["--rename", "--env-rename"],
             "params": {
                 "dest": "rename",
                 "action": "store_true",
@@ -183,7 +220,7 @@ actions = {
                 "default": False
             }
         }, {
-            "args": ["-d", "--delete", "--environment-delete"],
+            "args": ["-d", "--delete", "--env-delete"],
             "params": {
                 "dest": "delete",
                 "action": "store_true",
@@ -197,6 +234,15 @@ actions = {
                 "action": "store",
                 "type": str,
                 "help": "New name for environment with specific eid or ename",
+                "default": None
+            }
+        }, {
+            "args": ["--rid"],
+            "params": {
+                "dest": "rid",
+                "action": "store",
+                "type": str,
+                "help": "Release id",
                 "default": None
             }
         }]
@@ -240,8 +286,10 @@ actions = {
             "args": ["-r", "--role"],
             "params": {
                 "dest": "role",
-                "action": "store",
-                "type": str,
+                "type": lambda v: v.split(','),
+                "action": SetAction,
+                # "action": "store",
+                # "type": str,
                 "help": "Role to assign for node with nid.",
                 "default": None
             }
