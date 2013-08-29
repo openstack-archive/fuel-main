@@ -48,6 +48,8 @@ class OrchestratorSerializer(object):
         common_attrs = cls.get_common_attrs(cluster)
         nodes = cls.serialize_nodes(cls.get_nodes_to_serialization(cluster))
 
+        cls.node_list(cls.get_nodes_to_serialization(cluster))
+
         if cluster.net_manager == 'VlanManager':
             cls.add_vlan_interfaces(nodes, cluster)
 
@@ -64,7 +66,7 @@ class OrchestratorSerializer(object):
         attrs = cls.serialize_cluster_attrs(cluster)
 
         attrs['controller_nodes'] = cls.controller_nodes(cluster.id)
-        attrs['nodes'] = cls.nodes_list(cls.get_nodes_to_serialization(cluster))
+        attrs['nodes'] = cls.node_list(cls.get_nodes_to_serialization(cluster))
 
         return attrs
 
@@ -158,7 +160,7 @@ class OrchestratorSerializer(object):
             role='controller',
             pending_deletion=False).order_by(Node.id)
 
-        return cls.nodes_list(nodes)
+        return cls.node_list(nodes)
 
     @classmethod
     def serialize_nodes(cls, nodes):
@@ -184,7 +186,7 @@ class OrchestratorSerializer(object):
         return node_attrs
 
     @classmethod
-    def nodes_list(cls, nodes):
+    def node_list(cls, nodes):
         """Generate nodes list. Represents
         as "nodes" parameter in facts.
         """
@@ -288,17 +290,18 @@ class OrchestratorSerializer(object):
 class OrchestratorHASerializer(OrchestratorSerializer):
 
     @classmethod
-    def nodes_list(cls, cluster):
-        nodes_list = OrchestratorSerializer.get_common_attrs(cluster)
+    def node_list(cls, nodes):
+        node_list = super(OrchestratorHASerializer, cls).node_list(nodes)
 
-        for node in nodes_list:
+        for node in node_list:
             node['mountpoints'] = '1 1\\n2 2\\n'
+            node['swift_zone'] = node['uid']
 
-        return nodes_list
+        return node_list
 
     @classmethod
     def get_common_attrs(cls, cluster):
-        commont_attrs = OrchestratorSerializer.get_common_attrs(cluster)
+        commont_attrs = super(OrchestratorHASerializer, cls).get_common_attrs(cluster)
 
         netmanager = NetworkManager()
         commont_attrs['management_vip'] = netmanager.assign_vip(
@@ -306,8 +309,6 @@ class OrchestratorHASerializer(OrchestratorSerializer):
         commont_attrs['public_vip'] = netmanager.assign_vip(
             cluster.id, "public")
 
-        print '*' * 30
-        print commont_attrs['controller_nodes']
         commont_attrs['last_controller'] = sorted(
             commont_attrs['controller_nodes'],
             key=lambda node: node['uid'])[-1]['name']
