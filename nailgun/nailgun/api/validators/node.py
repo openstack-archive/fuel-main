@@ -13,14 +13,12 @@
 #    License for the specific language governing permissions and limitations
 #    under the License.
 
-from nailgun.db import db
-from nailgun.errors import errors
-from nailgun.logger import logger
 from nailgun.api.models import Node
-from nailgun.volumes.manager import VolumeManager
 from nailgun.api.validators.base import BasicValidator
 from nailgun.api.validators.json_schema.disks \
     import disks_simple_format_schema
+from nailgun.db import db
+from nailgun.errors import errors
 
 
 class MetaInterfacesValidator(BasicValidator):
@@ -104,7 +102,7 @@ class NodeValidator(BasicValidator):
                 "Node data must be dict",
                 log_message=True
             )
-        if not "mac" in d:
+        if "mac" not in d:
             raise errors.InvalidData(
                 "No mac address specified",
                 log_message=True
@@ -127,7 +125,7 @@ class NodeValidator(BasicValidator):
             MetaValidator.validate_create(d['meta'])
         return d
 
-    # TODO: fix this using DRY
+    # TODO(NAME): fix this using DRY
     @classmethod
     def validate_existent_node_mac_create(cls, data):
         if 'meta' in data:

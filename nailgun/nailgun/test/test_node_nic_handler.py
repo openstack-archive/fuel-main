@@ -14,10 +14,8 @@
 #    License for the specific language governing permissions and limitations
 #    under the License.
 
-import unittest
 import json
 
-from nailgun.api.models import Node
 from nailgun.test.base import BaseHandlers
 from nailgun.test.base import reverse
 
@@ -142,7 +140,7 @@ class TestHandlers(BaseHandlers):
             {'name': 'eth0', 'mac': '123', 'current_speed': 1, 'max_speed': 1},
             {'name': 'eth1', 'mac': '678', 'current_speed': 1, 'max_speed': 1},
         ]})
-        node = self.env.create_node(api=True, meta=meta)
+        self.env.create_node(api=True, meta=meta)
         node_db = self.env.nodes[0]
         resp = self.app.get(
             reverse('NodeNICsHandler', kwargs={'node_id': node_db.id}),

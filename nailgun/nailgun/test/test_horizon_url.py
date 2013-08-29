@@ -14,22 +14,12 @@
 #    License for the specific language governing permissions and limitations
 #    under the License.
 
-import json
-import time
 
-from mock import patch
-
-from nailgun.settings import settings
-
-import nailgun
-import nailgun.rpc as rpc
-from nailgun.task.manager import DeploymentTaskManager
-from nailgun.task.fake import FAKE_THREADS
+from nailgun.api.models import IPAddr
+from nailgun.api.models import Network
+from nailgun.api.models import NetworkGroup
 from nailgun.test.base import BaseHandlers
-from nailgun.test.base import reverse
 from nailgun.test.base import fake_tasks
-from nailgun.api.models import Cluster, Attributes, Task, Notification, Node
-from nailgun.api.models import IPAddr, NetworkGroup, Network
 
 
 class TestHorizonURL(BaseHandlers):

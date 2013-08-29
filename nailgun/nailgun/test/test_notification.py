@@ -14,15 +14,16 @@
 #    License for the specific language governing permissions and limitations
 #    under the License.
 
-import time
-import uuid
 import json
+import uuid
 
+from nailgun.api.models import Notification
+from nailgun.api.models import Task
+from nailgun.errors import errors
+from nailgun import notifier
 from nailgun.rpc import receiver as rcvr
 from nailgun.test.base import BaseHandlers
-from nailgun.api.models import Node, Task, Notification
 from nailgun.test.base import reverse
-from nailgun import notifier
 
 
 class TestNotification(BaseHandlers):
@@ -55,9 +56,10 @@ class TestNotification(BaseHandlers):
 
     def test_notification_discover_no_node_fails(self):
         self.assertRaises(
-            Exception,
+            errors.CannotFindNodeIDForDiscovering,
             notifier.notify,
-            ("discover"))
+            "discover",
+            "discover message")
 
     def test_notification_deploy_error(self):
         cluster = self.env.create_cluster(api=False)

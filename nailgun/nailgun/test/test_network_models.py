@@ -18,10 +18,12 @@ import json
 
 from sqlalchemy.sql import not_
 
-from nailgun.test.base import reverse
-from nailgun.test.base import fake_tasks
+from nailgun.api.models import Network
+from nailgun.api.models import NetworkGroup
+from nailgun.api.models import Vlan
 from nailgun.test.base import BaseHandlers
-from nailgun.api.models import Vlan, Network, NetworkGroup
+from nailgun.test.base import fake_tasks
+from nailgun.test.base import reverse
 
 
 class TestNetworkModels(BaseHandlers):

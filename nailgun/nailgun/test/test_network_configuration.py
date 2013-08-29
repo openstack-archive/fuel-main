@@ -18,12 +18,11 @@ import json
 
 from sqlalchemy.sql import not_
 
-from nailgun.api.models import Network, NetworkGroup
+from nailgun.api.models import Cluster
+from nailgun.api.models import NetworkGroup
+from nailgun.network.manager import NetworkManager
 from nailgun.test.base import BaseHandlers
 from nailgun.test.base import reverse
-from nailgun.settings import settings
-from nailgun.api.models import Cluster
-from nailgun.network.manager import NetworkManager
 
 
 class TestNetworkConfigurationHandlerMultinodeMode(BaseHandlers):
@@ -78,7 +77,7 @@ class TestNetworkConfigurationHandlerMultinodeMode(BaseHandlers):
 
     def test_change_net_manager(self):
         new_net_manager = {'net_manager': 'VlanManager'}
-        resp = self.put(self.cluster.id, new_net_manager)
+        self.put(self.cluster.id, new_net_manager)
 
         self.db.refresh(self.cluster)
         self.assertEquals(
@@ -86,12 +85,12 @@ class TestNetworkConfigurationHandlerMultinodeMode(BaseHandlers):
             new_net_manager['net_manager'])
 
     def test_do_not_update_net_manager_if_validation_is_failed(self):
-        network = self.db.query(NetworkGroup).filter(
+        self.db.query(NetworkGroup).filter(
             not_(NetworkGroup.name == "fuelweb_admin")
         ).first()
         new_net_manager = {'net_manager': 'VlanManager',
                            'networks': [{'id': 500, 'vlan_start': 500}]}
-        resp = self.put(self.cluster.id, new_net_manager, expect_errors=True)
+        self.put(self.cluster.id, new_net_manager, expect_errors=True)
 
         self.db.refresh(self.cluster)
         self.assertNotEquals(
@@ -121,7 +120,7 @@ class TestNetworkConfigurationHandlerMultinodeMode(BaseHandlers):
         new_vlan_id = 500  # non-used vlan id
         new_net = {'net_manager': 'VlanManager',
                    'networks': [{'id': network.id, 'vlan_start': new_vlan_id}]}
-        resp = self.put(self.cluster.id, new_net)
+        self.put(self.cluster.id, new_net)
 
         self.db.refresh(self.cluster)
         self.db.refresh(network)

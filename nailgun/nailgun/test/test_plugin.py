@@ -14,9 +14,11 @@
 #    License for the specific language governing permissions and limitations
 #    under the License.
 
-from nailgun.test.base import BaseHandlers
-from nailgun.plugin.thread import get_queue, PluginThread
+
 from nailgun.api.models import Task
+from nailgun.plugin.thread import get_queue
+from nailgun.plugin.thread import PluginThread
+from nailgun.test.base import BaseHandlers
 
 
 class TestPluginProcess(BaseHandlers):

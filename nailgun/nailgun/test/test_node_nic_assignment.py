@@ -14,12 +14,13 @@
 #    License for the specific language governing permissions and limitations
 #    under the License.
 
-import unittest
 import json
 
+from nailgun.api.models import AllowedNetworks
+from nailgun.api.models import Cluster
+from nailgun.api.models import NetworkAssignment
 from nailgun.test.base import BaseHandlers
 from nailgun.test.base import reverse
-from nailgun.api.models import NetworkAssignment, AllowedNetworks, Cluster
 
 
 class TestClusterHandlers(BaseHandlers):
@@ -32,7 +33,7 @@ class TestClusterHandlers(BaseHandlers):
             {'name': 'eth1', 'mac': '654'}]
 
         node = self.env.create_node(api=True, meta=meta, mac=mac)
-        cluster = self.env.create_cluster(api=True, nodes=[node['id']])
+        self.env.create_cluster(api=True, nodes=[node['id']])
 
         resp = self.app.get(
             reverse('NodeNICsHandler', kwargs={'node_id': node['id']}),
@@ -56,7 +57,7 @@ class TestClusterHandlers(BaseHandlers):
             {'name': 'eth1', 'mac': 'abc'},
         ]
         node = self.env.create_node(api=True, meta=meta, mac=mac)
-        cluster = self.env.create_cluster(api=True, nodes=[node['id']])
+        self.env.create_cluster(api=True, nodes=[node['id']])
 
         resp = self.app.get(
             reverse('NodeNICsHandler', kwargs={'node_id': node['id']}),

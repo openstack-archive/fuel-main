@@ -14,26 +14,19 @@
 #    License for the specific language governing permissions and limitations
 #    under the License.
 
-import uuid
-import logging
-import itertools
 import traceback
 
-import web
-
-from nailgun.db import db
-import nailgun.rpc as rpc
-from nailgun.logger import logger
-from nailgun.errors import errors
 from nailgun.api.models import Cluster
-from nailgun.api.models import Task
-from nailgun.api.models import Network
 from nailgun.api.models import RedHatAccount
-from nailgun.task.task import TaskHelper
+from nailgun.api.models import Task
 from nailgun.api.serializers.network_configuration \
     import NetworkConfigurationSerializer
-
+from nailgun.db import db
+from nailgun.errors import errors
+from nailgun.logger import logger
+import nailgun.rpc as rpc
 from nailgun.task import task as tasks
+from nailgun.task.task import TaskHelper
 
 
 class TaskManager(object):

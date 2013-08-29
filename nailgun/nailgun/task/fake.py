@@ -14,25 +14,23 @@
 #    License for the specific language governing permissions and limitations
 #    under the License.
 
-import web
-import time
-import logging
-import threading
 from itertools import repeat
-from random import randrange, shuffle
+from random import randrange
+from random import shuffle
+import threading
+import time
 
-from kombu import Connection, Exchange, Queue
-from sqlalchemy.orm import object_mapper, ColumnProperty
+from kombu import Connection
+from kombu import Exchange
+from kombu import Queue
 
-from nailgun.settings import settings
-from nailgun.logger import logger
-from nailgun.errors import errors
-from nailgun import notifier
-from nailgun.api.models import Network, Node, NodeAttributes
-from nailgun.api.models import Task
-from nailgun.network.manager import NetworkManager
-from nailgun.rpc.receiver import NailgunReceiver
+from nailgun.api.models import Node
+from nailgun.api.models import NodeAttributes
 from nailgun.db import db
+from nailgun.network.manager import NetworkManager
+from nailgun import notifier
+from nailgun.rpc.receiver import NailgunReceiver
+from nailgun.settings import settings
 
 
 class FakeThread(threading.Thread):
@@ -124,9 +122,6 @@ class FakeDeploymentThread(FakeAmpqThread):
         error = self.params.get("error")
         # TEST: error message from "orchestrator"
         error_msg = self.params.get("error_msg", "")
-        # TEST: we can set node offline at any stage:
-        # "provisioning" or "deployment"
-        offline = self.params.get("offline")
         # TEST: we can set task to ready no matter what
         # True or False
         task_ready = self.params.get("task_ready")
@@ -257,7 +252,6 @@ class FakeProvisionThread(FakeThread):
             'progress': 100
         }
 
-        tick_interval = int(settings.FAKE_TASKS_TICK_INTERVAL) or 3
         resp_method = getattr(receiver, self.respond_to)
         resp_method(**kwargs)
 
@@ -272,7 +266,6 @@ class FakeDeletionThread(FakeThread):
             'status': 'ready'
         }
         nodes_to_restore = self.data['args'].get('nodes_to_restore', [])
-        tick_interval = int(settings.FAKE_TASKS_TICK_INTERVAL) or 3
         resp_method = getattr(receiver, self.respond_to)
         resp_method(**kwargs)
 
@@ -424,18 +417,6 @@ class FakeRedHatUpdateCobbler(FakeAmpqThread):
 
 class DownloadReleaseThread(FakeAmpqThread):
     def message_gen(self):
-        # TEST: we can fail at any stage:
-        # "provisioning" or "deployment"
-        error = self.params.get("error")
-        # TEST: error message from "orchestrator"
-        error_msg = self.params.get("error_msg", "")
-        # TEST: we can set node offline at any stage:
-        # "provisioning" or "deployment"
-        offline = self.params.get("offline")
-        # TEST: we can set task to ready no matter what
-        # True or False
-        task_ready = self.params.get("task_ready")
-
         kwargs = {
             'task_uuid': self.task_uuid,
             'status': 'running',

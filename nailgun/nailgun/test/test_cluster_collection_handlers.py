@@ -15,15 +15,15 @@
 #    under the License.
 
 import json
-import unittest
-from paste.fixture import TestApp
 
 from mock import patch
 from sqlalchemy.sql import not_
 
-from nailgun.api.models import Cluster, Release
-from nailgun.api.models import Network, NetworkGroup
-from nailgun.api.models import Network, NetworkGroup, NetworkConfiguration
+from nailgun.api.models import Cluster
+from nailgun.api.models import Network
+from nailgun.api.models import NetworkConfiguration
+from nailgun.api.models import NetworkGroup
+from nailgun.api.models import Release
 from nailgun.test.base import BaseHandlers
 from nailgun.test.base import reverse
 
@@ -60,8 +60,7 @@ class TestHandlers(BaseHandlers):
         self.assertEquals(201, resp.status)
 
     def test_cluster_create_no_ip_addresses(self):
-        """
-        In this test we check that no error is occured
+        """In this test we check that no error is occured
         if two clusters will have same networks updated to use
         full CIDR
         """

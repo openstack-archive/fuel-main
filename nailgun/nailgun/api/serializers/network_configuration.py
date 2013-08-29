@@ -14,8 +14,8 @@
 #    License for the specific language governing permissions and limitations
 #    under the License.
 
-from nailgun.network.manager import NetworkManager
 from nailgun.api.serializers.base import BasicSerializer
+from nailgun.network.manager import NetworkManager
 
 
 class NetworkConfigurationSerializer(BasicSerializer):

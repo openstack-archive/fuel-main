@@ -15,14 +15,10 @@
 #    under the License.
 
 import json
-import logging
-import unittest
 from mock import patch
 
-from nailgun.settings import settings
 from nailgun.test.base import BaseHandlers
 from nailgun.test.base import reverse
-from nailgun.api.models import Cluster
 
 
 class TestVersionHandler(BaseHandlers):

@@ -45,8 +45,7 @@ class NailgunException(Exception):
         super(NailgunException, self).__init__()
 
     def _get_client(self):
-        """
-        web.ctx.env is a thread-local object,
+        """web.ctx.env is a thread-local object,
         this hack is for getting client IP to add it
         inside error message
         """

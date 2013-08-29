@@ -14,29 +14,18 @@
 #    License for the specific language governing permissions and limitations
 #    under the License.
 
-import json
-import uuid
-from wsgiref.handlers import format_date_time
 from datetime import datetime
 from decorator import decorator
+import json
 
 import web
-import netaddr
 
-import nailgun.rpc as rpc
-from nailgun.db import db
-from nailgun import notifier
-from nailgun.settings import settings
-from nailgun.errors import errors
-from nailgun.logger import logger
-from nailgun.api.models import Release
-from nailgun.api.models import Cluster
-from nailgun.api.models import Node
-from nailgun.api.models import Network
-from nailgun.api.models import Vlan
-from nailgun.api.models import Task
 from nailgun.api.serializers.base import BasicSerializer
 from nailgun.api.validators.base import BasicValidator
+from nailgun.db import db
+from nailgun.errors import errors
+from nailgun.logger import logger
+from nailgun import notifier
 
 
 def check_client_content_type(handler):

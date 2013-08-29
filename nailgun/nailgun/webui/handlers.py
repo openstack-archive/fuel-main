@@ -14,12 +14,11 @@
 #    License for the specific language governing permissions and limitations
 #    under the License.
 
-import web
 import mimetypes
 import posixpath
+import web
 
 from nailgun.settings import settings
-from nailgun.logger import logger
 
 render = web.template.render(settings.TEMPLATE_DIR)
 
@@ -38,5 +37,5 @@ class StaticHandler(object):
         try:
             f = open(fl_path, 'r')
             return f.read()
-        except:
+        except Exception:
             raise web.notfound()

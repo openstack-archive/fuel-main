@@ -14,11 +14,9 @@
 #    License for the specific language governing permissions and limitations
 #    under the License.
 
-import sys
 import logging
-from StringIO import StringIO
-from cgitb import html
 from logging.handlers import WatchedFileHandler
+from StringIO import StringIO
 
 from nailgun.settings import settings
 

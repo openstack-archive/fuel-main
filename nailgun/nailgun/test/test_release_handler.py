@@ -15,7 +15,6 @@
 #    under the License.
 
 import json
-from paste.fixture import TestApp
 
 from nailgun.api.models import Release
 from nailgun.test.base import BaseHandlers

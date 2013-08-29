@@ -15,7 +15,6 @@
 #    under the License.
 
 from datetime import datetime
-
 from unittest import TestCase
 
 from paste.fixture import TestApp
@@ -23,7 +22,8 @@ from sqlalchemy.orm.events import orm
 
 from nailgun.api.models import Node
 from nailgun.db import engine
-from nailgun.db import dropdb, syncdb, flush, NoCacheQuery
+from nailgun.db import flush
+from nailgun.db import NoCacheQuery
 from nailgun.wsgi import build_app
 
 
@@ -55,7 +55,7 @@ class TestDBRefresh(TestCase):
         node2.mac = u"12345678"
         self.db2.add(node2)
         self.db2.commit()
-        node1 = self.db.query(Node).filter(
+        self.db.query(Node).filter(
             Node.id == node.id
         ).first()
         self.assertEquals(node.mac, u"12345678")

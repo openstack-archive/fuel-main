@@ -14,17 +14,12 @@
 #    License for the specific language governing permissions and limitations
 #    under the License.
 
-import traceback
-
-import web
 import contextlib
-import threading
+import web
 from sqlalchemy.orm import scoped_session, sessionmaker
-from sqlalchemy.orm.query import Query
-from sqlalchemy.exc import ProgrammingError
 from sqlalchemy import create_engine
+from sqlalchemy.orm.query import Query
 
-from nailgun.logger import logger
 from nailgun.settings import settings
 
 
@@ -36,8 +31,7 @@ engine = create_engine(db_str, client_encoding='utf8')
 
 
 class NoCacheQuery(Query):
-    """
-    Override for common Query class.
+    """Override for common Query class.
     Needed for automatic refreshing objects
     from database during every query for evading
     problems with multiple sessions
@@ -63,7 +57,7 @@ def load_db_driver(handler):
     except web.HTTPError:
         db().commit()
         raise
-    except:
+    except Exception:
         db().rollback()
         raise
     finally:
@@ -102,8 +96,7 @@ def dropdb():
 
 
 def flush():
-    """
-    Delete all data from all tables within nailgun metadata
+    """Delete all data from all tables within nailgun metadata
     """
     from nailgun.api.models import Base
     with contextlib.closing(engine.connect()) as con:

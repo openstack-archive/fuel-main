@@ -14,9 +14,7 @@
 #    License for the specific language governing permissions and limitations
 #    under the License.
 
-import unittest
 import json
-from paste.fixture import TestApp
 
 from nailgun.api.models import Node
 from nailgun.test.base import BaseHandlers

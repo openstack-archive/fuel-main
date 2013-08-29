@@ -18,31 +18,29 @@
 Handlers dealing with disks
 """
 
-import web
 import traceback
+import web
 
-from nailgun.db import db
+from nailgun.api.handlers.base import content_json
+from nailgun.api.handlers.base import JSONHandler
 from nailgun.api.models import Node
+from nailgun.api.models import NodeAttributes
 from nailgun.api.validators.node import NodeDisksValidator
-from nailgun.volumes.manager import VolumeManager
-from nailgun.volumes.manager import DisksFormatConvertor
-from nailgun.api.models import Node, NodeAttributes
-from nailgun.api.handlers.base import JSONHandler, content_json
+from nailgun.db import db
 from nailgun.errors import errors
 from nailgun.logger import logger
+from nailgun.volumes.manager import DisksFormatConvertor
 
 
 class NodeDisksHandler(JSONHandler):
-    """
-    Node disks handler
+    """Node disks handler
     """
 
     validator = NodeDisksValidator
 
     @content_json
     def GET(self, node_id):
-        """
-        :returns: JSONized node disks.
+        """:returns: JSONized node disks.
         :http: * 200 (OK)
                * 404 (node not found in db)
         """
@@ -52,8 +50,7 @@ class NodeDisksHandler(JSONHandler):
 
     @content_json
     def PUT(self, node_id):
-        """
-        :returns: JSONized node disks.
+        """:returns: JSONized node disks.
         :http: * 200 (OK)
                * 400 (invalid disks data specified)
                * 404 (node not found in db)
@@ -79,14 +76,12 @@ class NodeDisksHandler(JSONHandler):
 
 
 class NodeDefaultsDisksHandler(JSONHandler):
-    """
-    Node default disks handler
+    """Node default disks handler
     """
 
     @content_json
     def GET(self, node_id):
-        """
-        :returns: JSONized node disks.
+        """:returns: JSONized node disks.
         :http: * 200 (OK)
                * 404 (node or its attributes not found in db)
         """
@@ -101,14 +96,12 @@ class NodeDefaultsDisksHandler(JSONHandler):
 
 
 class NodeVolumesInformationHandler(JSONHandler):
-    """
-    Node volumes information handler
+    """Node volumes information handler
     """
 
     @content_json
     def GET(self, node_id):
-        """
-        :returns: JSONized volumes info for node.
+        """:returns: JSONized volumes info for node.
         :http: * 200 (OK)
                * 404 (node not found in db)
         """
@@ -117,7 +110,7 @@ class NodeVolumesInformationHandler(JSONHandler):
         volumes_info = []
         try:
             volumes_info = DisksFormatConvertor.get_volumes_info(node)
-        except errors.CannotFindVolumesInfoForRole as exc:
+        except errors.CannotFindVolumesInfoForRole:
             logger.error(traceback.format_exc())
             raise web.notfound(
                 message='Cannot calculate volumes info. '

@@ -16,15 +16,13 @@
 
 import os
 import shutil
-import logging
 
+from nailgun.api.models import IPAddr
+from nailgun.api.models import Task
 from nailgun.db import db
 from nailgun.logger import logger
-from nailgun.api.models import Task
-from nailgun.api.models import IPAddr
-from nailgun.api.models import Node
-from nailgun.settings import settings
 from nailgun.network.manager import NetworkManager
+from nailgun.settings import settings
 
 
 class TaskHelper(object):

@@ -14,18 +14,19 @@
 #    License for the specific language governing permissions and limitations
 #    under the License.
 
-import time
-import threading
-import traceback
-from datetime import datetime, timedelta
+from datetime import datetime
+from datetime import timedelta
 from itertools import repeat
 from sqlalchemy.sql import not_
+import threading
+import time
+import traceback
 
-from nailgun import notifier
-from nailgun.db import db
-from nailgun.settings import settings
 from nailgun.api.models import Node
+from nailgun.db import db
 from nailgun.logger import logger
+from nailgun import notifier
+from nailgun.settings import settings
 
 
 class KeepAliveThread(threading.Thread):
@@ -57,8 +58,7 @@ class KeepAliveThread(threading.Thread):
                 while not self.stop_status_checking.isSet():
                     self.update_status_nodes()
                     self.sleep()
-            except Exception as exc:
-                err = str(exc)
+            except Exception:
                 logger.error(traceback.format_exc())
                 time.sleep(1)
 

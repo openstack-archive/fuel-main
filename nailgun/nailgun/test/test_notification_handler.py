@@ -14,9 +14,7 @@
 #    License for the specific language governing permissions and limitations
 #    under the License.
 
-import unittest
 import json
-from paste.fixture import TestApp
 
 from nailgun.test.base import BaseHandlers
 from nailgun.test.base import reverse
@@ -43,7 +41,7 @@ class TestHandlers(BaseHandlers):
         self.assertEquals(notification.message, response['message'])
 
     def test_notification_datetime(self):
-        node = self.env.create_node(
+        self.env.create_node(
             api=True,
             meta=self.env.default_metadata()
         )

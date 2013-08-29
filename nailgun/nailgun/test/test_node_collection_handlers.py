@@ -16,11 +16,10 @@
 
 import json
 
-from paste.fixture import TestApp
-
+from nailgun.api.models import Node
+from nailgun.api.models import Notification
 from nailgun.test.base import BaseHandlers
 from nailgun.test.base import reverse
-from nailgun.api.models import Node, Notification
 
 
 class TestHandlers(BaseHandlers):
@@ -113,7 +112,7 @@ class TestHandlers(BaseHandlers):
                         'meta': self.env.default_metadata()}),
             headers=self.default_headers)
         self.assertEquals(resp.status, 201)
-        node = self.db.query(Node).filter(Node.mac == 'ASDFAAASDFAA').one()
+        # node = self.db.query(Node).filter(Node.mac == 'ASDFAAASDFAA').one()
         response = json.loads(resp.body)
         self.assertEquals('discover', response['status'])
 
@@ -132,7 +131,7 @@ class TestHandlers(BaseHandlers):
         self.assertEquals('new', node.manufacturer)
 
     def test_node_update_agent_discover(self):
-        node = self.env.create_node(
+        self.env.create_node(
             api=True,
             status='provisioning',
             meta=self.env.default_metadata()

@@ -14,13 +14,12 @@
 #    License for the specific language governing permissions and limitations
 #    under the License.
 
-import json
-
 import web
 
-from nailgun.db import db
+from nailgun.api.handlers.base import content_json
+from nailgun.api.handlers.base import JSONHandler
 from nailgun.api.models import Task
-from nailgun.api.handlers.base import JSONHandler, content_json
+from nailgun.db import db
 
 """
 Handlers dealing with tasks
@@ -28,8 +27,7 @@ Handlers dealing with tasks
 
 
 class TaskHandler(JSONHandler):
-    """
-    Task single handler
+    """Task single handler
     """
 
     fields = (
@@ -46,8 +44,7 @@ class TaskHandler(JSONHandler):
 
     @content_json
     def GET(self, task_id):
-        """
-        :returns: JSONized Task object.
+        """:returns: JSONized Task object.
         :http: * 200 (OK)
                * 404 (task not found in db)
         """
@@ -55,8 +52,7 @@ class TaskHandler(JSONHandler):
         return self.render(task)
 
     def DELETE(self, task_id):
-        """
-        :returns: JSONized Cluster object.
+        """:returns: JSONized Cluster object.
         :http: * 204 (task successfully deleted)
                * 400 (can't delete running task manually)
                * 404 (task not found in db)
@@ -75,14 +71,12 @@ class TaskHandler(JSONHandler):
 
 
 class TaskCollectionHandler(JSONHandler):
-    """
-    Task collection handler
+    """Task collection handler
     """
 
     @content_json
     def GET(self):
-        """
-        May receive cluster_id parameter to filter list
+        """May receive cluster_id parameter to filter list
         of tasks
 
         :returns: Collection of JSONized Task objects.

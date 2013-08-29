@@ -20,24 +20,20 @@ import traceback
 
 import web
 
-from nailgun.api.handlers.base \
-    import JSONHandler, content_json, build_json_response
+from nailgun.api.handlers.base import build_json_response
+from nailgun.api.handlers.base import content_json
+from nailgun.api.handlers.base import JSONHandler
 from nailgun.api.handlers.tasks import TaskHandler
-from nailgun.api.validators.redhat import RedHatAccountValidator
-from nailgun.db import db
-from nailgun import notifier
-from nailgun.errors import errors
-from nailgun.task.helpers import TaskHelper
-from nailgun.task.manager import RedHatSetupTaskManager
 from nailgun.api.models import RedHatAccount
 from nailgun.api.models import Release
+from nailgun.api.validators.redhat import RedHatAccountValidator
+from nailgun.db import db
 from nailgun.logger import logger
-from nailgun.settings import settings
+from nailgun.task.manager import RedHatSetupTaskManager
 
 
 class RedHatAccountHandler(JSONHandler):
-    """
-    Red Hat account handler
+    """Red Hat account handler
     """
 
     fields = (
@@ -51,8 +47,7 @@ class RedHatAccountHandler(JSONHandler):
 
     @content_json
     def GET(self):
-        """
-        :returns: JSONized RedHatAccount object.
+        """:returns: JSONized RedHatAccount object.
         :http: * 200 (OK)
                * 404 (account not found in db)
         """
@@ -63,8 +58,7 @@ class RedHatAccountHandler(JSONHandler):
 
     @content_json
     def POST(self):
-        """
-        :returns: JSONized RedHatAccount object.
+        """:returns: JSONized RedHatAccount object.
         :http: * 200 (OK)
                * 400 (invalid account data specified)
                * 404 (account not found in db)
@@ -93,16 +87,14 @@ class RedHatAccountHandler(JSONHandler):
 
 
 class RedHatSetupHandler(JSONHandler):
-    """
-    Red Hat setup handler
+    """Red Hat setup handler
     """
 
     validator = RedHatAccountValidator
 
     @content_json
     def POST(self):
-        """
-        Starts Red Hat setup and download process
+        """Starts Red Hat setup and download process
 
         :returns: JSONized Task object.
         :http: * 202 (setup task created and started)

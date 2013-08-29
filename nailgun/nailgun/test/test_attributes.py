@@ -15,12 +15,10 @@
 #    under the License.
 
 import json
-from paste.fixture import TestApp
-from nailgun.api.models import Cluster
-from nailgun.api.models import Node
-from nailgun.api.models import Release
-from nailgun.api.models import Attributes
 
+from nailgun.api.models import Attributes
+from nailgun.api.models import Cluster
+from nailgun.api.models import Release
 from nailgun.test.base import BaseHandlers
 from nailgun.test.base import reverse
 
@@ -43,7 +41,6 @@ class TestAttributes(BaseHandlers):
             json.loads(resp.body)['editable'],
             release.attributes_metadata['editable']
         )
-        response = json.loads(resp.body)
         attrs = self.db.query(Attributes).filter(
             Attributes.cluster_id == cluster['id']
         ).first()

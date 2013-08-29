@@ -16,8 +16,6 @@
 
 import web
 
-from nailgun.webui.handlers import IndexHandler, StaticHandler
-
 urls = (
     r"/static/(.*)", 'StaticHandler',
     r"/", 'IndexHandler',

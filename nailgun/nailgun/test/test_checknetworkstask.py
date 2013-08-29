@@ -14,9 +14,11 @@
 #    License for the specific language governing permissions and limitations
 #    under the License.
 
-from netaddr import IPRange, IPNetwork
-from nailgun.test.base import BaseHandlers
+from netaddr import IPNetwork
+from netaddr import IPRange
+
 from nailgun.network.manager import NetworkManager
+from nailgun.test.base import BaseHandlers
 
 
 class TestHandlers(BaseHandlers):

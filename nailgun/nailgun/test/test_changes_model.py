@@ -15,21 +15,12 @@
 #    under the License.
 
 import json
-import time
 
-from mock import patch
-
-from nailgun.settings import settings
-
-import nailgun
-import nailgun.rpc as rpc
-from nailgun.errors import errors
-from nailgun.task.manager import DeploymentTaskManager
-from nailgun.task.fake import FAKE_THREADS
+from nailgun.api.models import Cluster
+from nailgun.api.models import ClusterChanges
 from nailgun.test.base import BaseHandlers
-from nailgun.test.base import reverse
 from nailgun.test.base import fake_tasks
-from nailgun.api.models import Cluster, Task, ClusterChanges
+from nailgun.test.base import reverse
 
 
 class TestClusterChanges(BaseHandlers):
@@ -39,7 +30,7 @@ class TestClusterChanges(BaseHandlers):
         super(TestClusterChanges, self).tearDown()
 
     def test_cluster_creation_adds_pending_changes(self):
-        cluster = self.env.create_cluster(api=True)
+        self.env.create_cluster(api=True)
         attributes_changes = self.db.query(ClusterChanges).filter_by(
             name="attributes"
         ).all()
@@ -53,7 +44,7 @@ class TestClusterChanges(BaseHandlers):
 
     def test_node_volumes_modification_adds_pending_changes(self):
         cluster = self.env.create_cluster(api=True)
-        node = self.env.create_node(
+        self.env.create_node(
             api=True,
             cluster_id=cluster["id"]
         )
@@ -77,7 +68,7 @@ class TestClusterChanges(BaseHandlers):
 
     def test_node_volumes_clears_after_deletion_from_cluster(self):
         cluster = self.env.create_cluster(api=True)
-        node = self.env.create_node(
+        self.env.create_node(
             api=True,
             cluster_id=cluster["id"]
         )
@@ -105,7 +96,7 @@ class TestClusterChanges(BaseHandlers):
         cluster_db.clear_pending_changes()
         all_changes = self.db.query(ClusterChanges).all()
         self.assertEquals(len(all_changes), 0)
-        resp = self.app.put(
+        self.app.put(
             reverse(
                 'ClusterAttributesHandler',
                 kwargs={'cluster_id': cluster['id']}),
@@ -127,7 +118,7 @@ class TestClusterChanges(BaseHandlers):
         cluster_db.clear_pending_changes()
         all_changes = self.db.query(ClusterChanges).all()
         self.assertEquals(len(all_changes), 0)
-        resp = self.app.put(
+        self.app.put(
             reverse(
                 'ClusterAttributesDefaultsHandler',
                 kwargs={'cluster_id': cluster['id']}),
@@ -182,7 +173,7 @@ class TestClusterChanges(BaseHandlers):
     @fake_tasks()
     def test_failed_deployment_does_nothing_with_changes(self):
         cluster = self.env.create_cluster(api=True)
-        node = self.env.create_node(
+        self.env.create_node(
             cluster_id=cluster["id"],
             status="error",
             error_type="provision"

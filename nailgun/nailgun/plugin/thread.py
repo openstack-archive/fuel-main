@@ -14,16 +14,14 @@
 #    License for the specific language governing permissions and limitations
 #    under the License.
 
-import traceback
-import time
-from sqlalchemy import update
-import threading
 from Queue import Queue
+import threading
+import time
+import traceback
 
 from nailgun.api.models import Task
-from nailgun.task.helpers import TaskHelper
-from nailgun.logger import logger
 from nailgun.db import db
+from nailgun.logger import logger
 
 PLUGIN_PROCESSING_QUEUE = None
 
@@ -37,8 +35,7 @@ def get_queue():
 
 
 class PluginThread(threading.Thread):
-    """
-    Separate thread. When plugin added in the queue
+    """Separate thread. When plugin added in the queue
     thread started to processing plugin
     """
     def __init__(self):

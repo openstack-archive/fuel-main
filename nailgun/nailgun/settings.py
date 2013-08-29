@@ -14,15 +14,12 @@
 #    License for the specific language governing permissions and limitations
 #    under the License.
 
-import sys
-import cStringIO
-import os.path
 import logging
 import logging.config
+import os.path
+import sys
 
 import yaml
-
-from pkg_resources import resource_filename
 
 
 class NailgunSettings(object):

@@ -17,10 +17,10 @@
 import json
 from netaddr import IPNetwork
 
-from nailgun.api.models import Network, NetworkGroup
+from nailgun.api.models import NetworkGroup
+from nailgun.settings import settings
 from nailgun.test.base import BaseHandlers
 from nailgun.test.base import reverse
-from nailgun.settings import settings
 
 
 class TestHandlers(BaseHandlers):

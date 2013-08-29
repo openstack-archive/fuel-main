@@ -18,24 +18,25 @@
 Handlers dealing with logs
 """
 
-import re
-import os
-import time
+from itertools import dropwhile
 import json
 import logging
+import os
+import re
+import shlex
+import subprocess
 import tarfile
 import tempfile
-import subprocess
-import shlex
-from itertools import dropwhile
+import time
 
 import web
 
-from nailgun.db import db
-from nailgun.settings import settings
+from nailgun.api.handlers.base import content_json
+from nailgun.api.handlers.base import JSONHandler
 from nailgun.api.models import Node
 from nailgun.api.models import RedHatAccount
-from nailgun.api.handlers.base import JSONHandler, content_json
+from nailgun.db import db
+from nailgun.settings import settings
 
 logger = logging.getLogger(__name__)
 
@@ -72,14 +73,12 @@ def read_backwards(file, bufsize=4096):
 
 
 class LogEntryCollectionHandler(JSONHandler):
-    """
-    Log entry collection handler
+    """Log entry collection handler
     """
 
     @content_json
     def GET(self):
-        """
-        Receives following parameters:
+        """Receives following parameters:
 
         - *date_before* - get logs before this date
         - *date_after* - get logs after this date
@@ -184,7 +183,7 @@ class LogEntryCollectionHandler(JSONHandler):
                                                    log_config['levels'])]
         try:
             regexp = re.compile(log_config['regexp'])
-        except re.error, e:
+        except re.error as e:
             logger.error('Invalid regular expression for file %r: %s',
                          log_config['id'], e)
             raise web.internalerror("Invalid regular expression in config")
@@ -291,8 +290,7 @@ class LogEntryCollectionHandler(JSONHandler):
 
 
 class LogPackageHandler(object):
-    """
-    Log package handler
+    """Log package handler
     """
 
     def sed(self, from_filename, to_filename, gz=False):
@@ -330,8 +328,7 @@ class LogPackageHandler(object):
         tf.close()
 
     def GET(self):
-        """
-        :returns: logs packed into TAR.GZ archive.
+        """:returns: logs packed into TAR.GZ archive.
         :http: * 200 (OK)
         """
         f = tempfile.TemporaryFile(mode='r+b')
@@ -368,28 +365,24 @@ class LogPackageHandler(object):
 
 
 class LogSourceCollectionHandler(JSONHandler):
-    """
-    Log source collection handler
+    """Log source collection handler
     """
 
     @content_json
     def GET(self):
-        """
-        :returns: Collection of log sources (from settings)
+        """:returns: Collection of log sources (from settings)
         :http: * 200 (OK)
         """
         return settings.LOGS
 
 
 class LogSourceByNodeCollectionHandler(JSONHandler):
-    """
-    Log source by node collection handler
+    """Log source by node collection handler
     """
 
     @content_json
     def GET(self, node_id):
-        """
-        :returns: Collection of log sources by node (from settings)
+        """:returns: Collection of log sources by node (from settings)
         :http: * 200 (OK)
                * 404 (node not found in db)
         """

@@ -14,19 +14,20 @@
 #    License for the specific language governing permissions and limitations
 #    under the License.
 
-import json
-import web
 from datetime import datetime
 
+from nailgun.api.models import Notification
+from nailgun.api.models import Task
 from nailgun.db import db
+from nailgun.errors import errors
 from nailgun.logger import logger
-from nailgun.api.models import Notification, Task
 
 
 def notify(topic, message,
            cluster_id=None, node_id=None, task_uuid=None):
     if topic == 'discover' and node_id is None:
-        raise Exception("No node id in discover notification")
+        raise errors.CannotFindNodeIDForDiscovering(
+            "No node id in discover notification")
     task = None
     if task_uuid:
         task = db().query(Task).filter_by(uuid=task_uuid).first()

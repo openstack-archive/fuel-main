@@ -14,38 +14,26 @@
 #    License for the specific language governing permissions and limitations
 #    under the License.
 
-import datetime
-import uuid
-import itertools
-import os
-import time
-import traceback
-import signal
-import subprocess
-import shlex
 import json
+import shlex
+import subprocess
 
-import web
 import netaddr
-from sqlalchemy.orm import object_mapper, ColumnProperty
-from sqlalchemy import or_
+from sqlalchemy.orm import ColumnProperty
+from sqlalchemy.orm import object_mapper
 
-import nailgun.rpc as rpc
-from nailgun.db import db
-from nailgun.logger import logger
-from nailgun.settings import settings
-from nailgun import notifier
-from nailgun.network.manager import NetworkManager
-from nailgun.api.models import Base
-from nailgun.api.models import Network
+from nailgun.api.models import IPAddr
 from nailgun.api.models import NetworkGroup
 from nailgun.api.models import Node
 from nailgun.api.models import NodeNICInterface
-from nailgun.api.models import Cluster
-from nailgun.api.models import IPAddr
 from nailgun.api.models import Release
-from nailgun.task.fake import FAKE_THREADS
+from nailgun.db import db
 from nailgun.errors import errors
+from nailgun.logger import logger
+from nailgun.network.manager import NetworkManager
+import nailgun.rpc as rpc
+from nailgun.settings import settings
+from nailgun.task.fake import FAKE_THREADS
 from nailgun.task.helpers import TaskHelper
 
 
@@ -111,7 +99,6 @@ class DeploymentTask(object):
     @classmethod
     def message(cls, task):
         logger.debug("DeploymentTask.message(task=%s)" % task.uuid)
-        task_uuid = task.uuid
         cluster_id = task.cluster.id
         netmanager = NetworkManager()
 
@@ -148,9 +135,6 @@ class DeploymentTask(object):
         cluster_attrs = task.cluster.attributes.merged_attrs_values()
         cluster_attrs['master_ip'] = settings.MASTER_IP
         cluster_attrs['controller_nodes'] = cls.__controller_nodes(cluster_id)
-
-        nets_db = db().query(Network).join(NetworkGroup).\
-            filter(NetworkGroup.cluster_id == cluster_id).all()
 
         ng_db = db().query(NetworkGroup).filter_by(
             cluster_id=cluster_id).all()
@@ -224,8 +208,7 @@ class DeploymentTask(object):
 
     @classmethod
     def __add_vlan_interfaces(cls, nodes):
-        """
-        We shouldn't pass to orchetrator fixed network
+        """We shouldn't pass to orchetrator fixed network
         when network manager is VlanManager, but we should specify
         fixed_interface (private_interface in terms of fuel) as result
         we just pass vlan_interface as node attribute.
@@ -250,8 +233,7 @@ class DeploymentTask(object):
 
     @classmethod
     def __get_ip_ranges_first_last(cls, network_group):
-        """
-        Get all ip ranges in "10.0.0.0-10.0.0.255" format
+        """Get all ip ranges in "10.0.0.0-10.0.0.255" format
         """
         return [
             "{0}-{1}".format(ip_range.first, ip_range.last)
@@ -260,8 +242,7 @@ class DeploymentTask(object):
 
     @classmethod
     def __get_ip_addresses_in_ranges(cls, network_group):
-        """
-        Get array of all possibale ip addresses in all ranges
+        """Get array of all possibale ip addresses in all ranges
         """
         ranges = []
         for ip_range in network_group.ip_ranges:
@@ -282,7 +263,7 @@ class ProvisionTask(object):
         netmanager = NetworkManager()
 
         USE_FAKE = settings.FAKE_TASKS or settings.FAKE_TASKS_AMQP
-        # TODO: For now we send nodes data to orchestrator
+        # TODO(NAME): For now we send nodes data to orchestrator
         # which is cobbler oriented. But for future we
         # need to use more abstract data structure.
         nodes_data = []
@@ -342,7 +323,7 @@ class ProvisionTask(object):
             else:
                 # If it's not in discover, we expect it to be booted
                 #   in target system.
-                # TODO: Get rid of expectations!
+                # TODO(NAME): Get rid of expectations!
                 logger.info(
                     "Node %s seems booted with real system",
                     node.id
@@ -577,7 +558,6 @@ class VerifyNetworksTask(object):
 
     @classmethod
     def execute(self, task, data):
-        task_uuid = task.uuid
         nodes = []
         for n in task.cluster.nodes:
             node_json = {'uid': n.id, 'networks': []}
@@ -671,8 +651,8 @@ class CheckNetworksTask(object):
                     nodes_with_errors = [
                         u'Node "{0}": {1}'.format(
                             name,
-                            ", ".join(networks)
-                        ) for name, networks in found_intersection
+                            ", ".join(_networks)
+                        ) for name, _networks in found_intersection
                     ]
                     err_msg = u"Some untagged networks are " \
                               "assigned to the same physical interface as " \
@@ -784,7 +764,6 @@ class CheckBeforeDeploymentTask(object):
 
     @classmethod
     def __check_network(cls, task):
-        netmanager = NetworkManager()
         nodes_count = len(task.cluster.nodes)
 
         public_network = filter(
@@ -836,7 +815,7 @@ class RedHatDownloadReleaseTask(RedHatTask):
 
     @classmethod
     def message(cls, task, data):
-        # TODO: fix this ugly code
+        # TODO(NAME): fix this ugly code
         cls.__update_release_state(
             data["release_id"]
         )

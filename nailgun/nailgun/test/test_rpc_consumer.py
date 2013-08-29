@@ -15,25 +15,20 @@
 #    under the License.
 
 import json
-import time
 import uuid
 
-from mock import patch
-
-import nailgun.rpc as rpc
-from nailgun.rpc import receiver as rcvr
-from nailgun.task.task import VerifyNetworksTask
-from nailgun.test.base import BaseHandlers
-from nailgun.test.base import reverse
-from nailgun.api.models import Node
-from nailgun.api.models import Task
-from nailgun.api.models import Cluster
-from nailgun.api.models import Notification
 from nailgun.api.models import Attributes
+from nailgun.api.models import Cluster
+from nailgun.api.models import IPAddr
 from nailgun.api.models import Network
 from nailgun.api.models import NetworkGroup
-from nailgun.api.models import IPAddr
+from nailgun.api.models import Node
+from nailgun.api.models import Notification
+from nailgun.api.models import Task
 from nailgun.api.models import Vlan
+from nailgun.rpc import receiver as rcvr
+from nailgun.test.base import BaseHandlers
+from nailgun.test.base import reverse
 
 
 class TestVerifyNetworks(BaseHandlers):
@@ -176,7 +171,7 @@ class TestVerifyNetworks(BaseHandlers):
         )
         cluster_db = self.env.clusters[0]
         node1, node2 = self.env.nodes
-        nets_sent = [{'iface': 'eth0', 'vlans': range(100, 105)}]
+        # nets_sent = [{'iface': 'eth0', 'vlans': range(100, 105)}]
 
         task = Task(
             name="super",
@@ -498,7 +493,7 @@ class TestConsumer(BaseHandlers):
         cluster_id = self.env.clusters[0].id
         node1, node2 = self.env.nodes
         node1_id, node2_id = [n.id for n in self.env.nodes]
-        notification = self.env.create_notification(
+        self.env.create_notification(
             cluster_id=cluster_id
         )
         networks = self.db.query(Network)\
@@ -569,7 +564,7 @@ class TestConsumer(BaseHandlers):
         )
         cluster_db = self.env.clusters[0]
         node1, node2 = self.env.nodes
-        notification = self.env.create_notification(
+        self.env.create_notification(
             cluster_id=cluster_db.id
         )
 

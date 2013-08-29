@@ -16,10 +16,12 @@
 
 import json
 
-from kombu import Connection, Exchange, Queue
+from kombu import Connection
+from kombu import Exchange
+from kombu import Queue
 
-from nailgun.settings import settings
 from nailgun.logger import logger
+from nailgun.settings import settings
 
 creds = (
     ("userid", "guest"),

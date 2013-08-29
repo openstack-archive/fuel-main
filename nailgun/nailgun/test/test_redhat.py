@@ -13,19 +13,14 @@
 #    under the License.
 
 import json
-from paste.fixture import TestApp
-import shlex
 
-import mock
 from mock import patch
 
 import nailgun
-from nailgun.api.models import Release, Task
-from nailgun.settings import settings
 from nailgun.api.handlers.redhat import RedHatSetupHandler
-from nailgun.api.handlers.redhat import RedHatAccountHandler
-from nailgun.task.manager import RedHatSetupTaskManager
 from nailgun.api.models import RedHatAccount
+from nailgun.api.models import Task
+from nailgun.task.manager import RedHatSetupTaskManager
 from nailgun.test.base import BaseHandlers
 from nailgun.test.base import fake_tasks
 from nailgun.test.base import reverse
@@ -131,7 +126,7 @@ class TestHandlers(BaseHandlers):
     @fake_tasks()
     def test_redhat_account_update(self):
         for i in xrange(2):
-            password = 'password{0}'.format(i)
+            # password = 'password{0}'.format(i)
             resp = self.app.post(
                 reverse('RedHatAccountHandler'),
                 json.dumps({'license_type': 'rhsm',

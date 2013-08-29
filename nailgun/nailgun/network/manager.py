@@ -14,27 +14,37 @@
 #    License for the specific language governing permissions and limitations
 #    under the License.
 
+from itertools import chain
+from itertools import ifilter
+from itertools import imap
+from itertools import islice
 import math
-from itertools import imap, ifilter, islice, chain, tee
 
-import web
+from netaddr import IPAddress
+from netaddr import IPNetwork
+from netaddr import IPRange
+from netaddr import IPSet
 from sqlalchemy.sql import not_
-from netaddr import IPSet, IPNetwork, IPRange, IPAddress
 
+from nailgun.api.models import Cluster
+from nailgun.api.models import IPAddr
+from nailgun.api.models import IPAddrRange
+from nailgun.api.models import Network
+from nailgun.api.models import NetworkAssignment
+from nailgun.api.models import NetworkGroup
+from nailgun.api.models import Node
+from nailgun.api.models import NodeNICInterface
+from nailgun.api.models import Vlan
 from nailgun.db import db
 from nailgun.errors import errors
 from nailgun.logger import logger
 from nailgun.settings import settings
-from nailgun.api.models import NetworkAssignment
-from nailgun.api.models import Node, NodeNICInterface, IPAddr, Cluster, Vlan
-from nailgun.api.models import Network, NetworkGroup, IPAddrRange
 
 
 class NetworkManager(object):
 
     def update_ranges_from_cidr(self, network_group, cidr):
-        """
-        Update network ranges for cidr
+        """Update network ranges for cidr
         """
         db().query(IPAddrRange).filter_by(
             network_group_id=network_group.id).delete()
@@ -49,8 +59,7 @@ class NetworkManager(object):
         db().commit()
 
     def get_admin_network_id(self, fail_if_not_found=True):
-        '''
-        Method for receiving Admin Network ID.
+        '''Method for receiving Admin Network ID.
 
         :param fail_if_not_found: Raise an error
         if admin network is not found in database.
@@ -66,8 +75,7 @@ class NetworkManager(object):
         return admin_net.id
 
     def create_network_groups(self, cluster_id):
-        '''
-        Method for creation of network groups for cluster.
+        '''Method for creation of network groups for cluster.
 
         :param cluster_id: Cluster database ID.
         :type  cluster_id: int
@@ -158,8 +166,7 @@ class NetworkManager(object):
             used_nets.append(str(new_net))
 
     def create_networks(self, nw_group):
-        '''
-        Method for creation of networks for network group.
+        '''Method for creation of networks for network group.
 
         :param nw_group: NetworkGroup object.
         :type  nw_group: NetworkGroup
@@ -213,8 +220,7 @@ class NetworkManager(object):
         db().commit()
 
     def assign_admin_ips(self, node_id, num=1):
-        '''
-        Method for assigning admin IP addresses to nodes.
+        '''Method for assigning admin IP addresses to nodes.
 
         :param node_id: Node database ID.
         :type  node_id: int
@@ -250,8 +256,7 @@ class NetworkManager(object):
             db().commit()
 
     def assign_ips(self, nodes_ids, network_name):
-        """
-        Idempotent assignment IP addresses to nodes.
+        """Idempotent assignment IP addresses to nodes.
 
         All nodes passed as first argument get IP address
         from network, referred by network_name.
@@ -326,8 +331,7 @@ class NetworkManager(object):
             db().commit()
 
     def assign_vip(self, cluster_id, network_name):
-        """
-        Idempotent assignment VirtualIP addresses to cluster.
+        """Idempotent assignment VirtualIP addresses to cluster.
         Returns VIP for given cluster and network.
 
         It's required for HA deployment to have IP address
@@ -382,8 +386,7 @@ class NetworkManager(object):
         return vip
 
     def clear_vlans(self):
-        """
-        Removes from DB all Vlans without Networks assigned to them.
+        """Removes from DB all Vlans without Networks assigned to them.
         """
         map(
             db().delete,
@@ -393,8 +396,7 @@ class NetworkManager(object):
 
     @classmethod
     def _chunked_range(cls, iterable, chunksize=64):
-        """
-        We want to be able to iterate over iterable chunk by chunk.
+        """We want to be able to iterate over iterable chunk by chunk.
         We instantiate iter object from itarable. We then yield
         iter instance slice in infinite loop. Iter slice starts
         from the last used position and finishes on the position
@@ -429,8 +431,7 @@ class NetworkManager(object):
         return False
 
     def _iter_free_ips(self, network_group):
-        """
-        Represents iterator over free IP addresses
+        """Represents iterator over free IP addresses
         in all ranges for given Network Group
         """
         for ip_addr in ifilter(
@@ -445,8 +446,7 @@ class NetworkManager(object):
             yield ip_addr
 
     def get_free_ips(self, network_group_id, num=1):
-        """
-        Returns list of free IP addresses for given Network Group
+        """Returns list of free IP addresses for given Network Group
         """
         ng = db().query(NetworkGroup).get(network_group_id)
         free_ips = []
@@ -459,8 +459,7 @@ class NetworkManager(object):
         return free_ips
 
     def _get_free_ips_from_range(self, iterable, num=1):
-        """
-        Method for receiving free IP addresses from range.
+        """Method for receiving free IP addresses from range.
 
         :param iterable: Iterable object with IP addresses.
         :type  iterable: iterable
@@ -486,8 +485,7 @@ class NetworkManager(object):
         raise errors.OutOfIPs()
 
     def _get_ips_except_admin(self, node_id=None, network_id=None):
-        """
-        Method for receiving IP addresses for node or network
+        """Method for receiving IP addresses for node or network
         excluding Admin Network IP address.
 
         :param node_id: Node database ID.
@@ -496,7 +494,7 @@ class NetworkManager(object):
         :type  network_id: int
         :returns: List of free IP addresses as SQLAlchemy objects.
         """
-        node_db = db().query(Node).get(node_id)
+        # node_db = db().query(Node).get(node_id)
         ips = db().query(IPAddr).order_by(IPAddr.id)
         if node_id:
             ips = ips.filter_by(node=node_id)
@@ -536,8 +534,7 @@ class NetworkManager(object):
         db().commit()
 
     def get_cluster_networkgroups_by_node(self, node_id):
-        """
-        Method for receiving cluster network groups by node.
+        """Method for receiving cluster network groups by node.
 
         :param node: Node object.
         :type  node: Node
@@ -549,8 +546,7 @@ class NetworkManager(object):
         return []
 
     def allow_network_assignment_to_all_interfaces(self, node_id):
-        """
-        Method adds all network groups from cluster
+        """Method adds all network groups from cluster
         to allowed_networks list for all interfaces
         of specified node.
 
@@ -579,8 +575,7 @@ class NetworkManager(object):
             db().commit()
 
     def get_node_networks(self, node_id):
-        """
-        Method for receiving network data for a given node.
+        """Method for receiving network data for a given node.
 
         :param node_id: Node database ID.
         :type  node_id: int
@@ -676,7 +671,7 @@ class NetworkManager(object):
 
     def update_interfaces_info(self, node_id):
         node = db().query(Node).get(node_id)
-        if not "interfaces" in node.meta:
+        if "interfaces" not in node.meta:
             raise Exception("No interfaces metadata specified for node")
 
         for interface in node.meta["interfaces"]:
@@ -740,15 +735,13 @@ class NetworkManager(object):
         return []
 
     def get_allowed_nic_networkgroups(self, node_id, nic_id):
-        """
-        nic_id is not used now, but this logic will be improved
+        """nic_id is not used now, but this logic will be improved
         in the future, so let it be
         """
         return self.get_all_cluster_networkgroups(node_id)
 
     def _get_admin_network(self, node):
-        """
-        Node contain mac address which sent ohai,
+        """Node contain mac address which sent ohai,
         when node was loaded. By this mac address
         we can identify interface name for admin network.
         """
@@ -761,8 +754,7 @@ class NetworkManager(object):
         raise errors.CanNotFindInterface()
 
     def _get_interface_by_network_name(self, node_id, network_name):
-        """
-        Return network device which has appointed
+        """Return network device which has appointed
         network with specified network name
         """
         node_db = db().query(Node).get(node_id)
@@ -803,8 +795,7 @@ class NetworkManager(object):
         return 'http://%s:5000/' % self.get_end_point_ip(cluster_id)
 
     def is_range_in_cidr(self, ip_network, ip_range):
-        """
-        Takes two objects that represent IP address range
+        """Takes two objects that represent IP address range
         and checks if those ranges are intersecting.
 
         :arg* IPNetwork, IPRange: - valid object with IP range
@@ -822,8 +813,7 @@ class NetworkManager(object):
             return True
 
     def get_min_max_addr(self, range_object):
-        """
-        takes object which implicitly has IP range
+        """takes object which implicitly has IP range
          and returns min and max address as tuple of two IPAddress elements
 
         :range_object IPNetwork, IPRange: - object with ip range
@@ -845,8 +835,7 @@ class NetworkManager(object):
             )
 
     def bin_to_ip_addr(self, bin):
-        """
-        converts string of 32 digits to IP address
+        """converts string of 32 digits to IP address
 
         :bin str: is binary representation of IP address, must be 32 character
         long with ones and zeros  (ex: '00101100110011000011001100110011' )

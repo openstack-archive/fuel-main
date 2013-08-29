@@ -13,11 +13,12 @@
 #    License for the specific language governing permissions and limitations
 #    under the License.
 
+from nailgun.api.models import Attributes
+from nailgun.api.models import Release
+from nailgun.api.validators.base import BasicValidator
 from nailgun.db import db
 from nailgun.errors import errors
 from nailgun.settings import settings
-from nailgun.api.models import Release, Attributes
-from nailgun.api.validators.base import BasicValidator
 
 
 class ReleaseValidator(BasicValidator):
@@ -25,12 +26,12 @@ class ReleaseValidator(BasicValidator):
     @classmethod
     def validate(cls, data):
         d = cls.validate_json(data)
-        if not "name" in d:
+        if "name" not in d:
             raise errors.InvalidData(
                 "No release name specified",
                 log_message=True
             )
-        if not "version" in d:
+        if "version" not in d:
             raise errors.InvalidData(
                 "No release version specified",
                 log_message=True
@@ -58,12 +59,12 @@ class ReleaseValidator(BasicValidator):
                     )
         else:
             d["networks_metadata"] = []
-        if not "attributes_metadata" in d:
+        if "attributes_metadata" not in d:
             d["attributes_metadata"] = {}
         else:
             try:
                 Attributes.validate_fixture(d["attributes_metadata"])
-            except:
+            except Exception:
                 raise errors.InvalidData(
                     "Invalid logical structure of attributes metadata",
                     log_message=True

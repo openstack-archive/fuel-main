@@ -21,35 +21,28 @@ Handlers dealing with clusters
 import json
 import traceback
 import web
-import netaddr
 
-from nailgun.db import db
-from nailgun.settings import settings
-from nailgun.logger import logger
-from nailgun.errors import errors
+from nailgun.api.handlers.base import content_json
+from nailgun.api.handlers.base import JSONHandler
+from nailgun.api.handlers.tasks import TaskHandler
+from nailgun.api.models import Attributes
 from nailgun.api.models import Cluster
 from nailgun.api.models import Node
-from nailgun.api.models import Network, NetworkGroup, Vlan
 from nailgun.api.models import Release
-from nailgun.api.models import Attributes
-from nailgun.api.models import Task
-from nailgun.api.validators.cluster import ClusterValidator
-from nailgun.api.validators.cluster import AttributesValidator
-from nailgun.network.manager import NetworkManager
-from nailgun.api.handlers.base import JSONHandler, content_json
-from nailgun.api.handlers.base import handlers
-from nailgun.api.handlers.node import NodeHandler
-from nailgun.api.handlers.tasks import TaskHandler
 from nailgun.api.serializers.network_configuration \
     import NetworkConfigurationSerializer
-from nailgun.task.helpers import TaskHelper
-from nailgun.task.manager import DeploymentTaskManager
+from nailgun.api.validators.cluster import AttributesValidator
+from nailgun.api.validators.cluster import ClusterValidator
+from nailgun.db import db
+from nailgun.errors import errors
+from nailgun.logger import logger
+from nailgun.network.manager import NetworkManager
 from nailgun.task.manager import ClusterDeletionManager
+from nailgun.task.manager import DeploymentTaskManager
 
 
 class ClusterHandler(JSONHandler):
-    """
-    Cluster single handler
+    """Cluster single handler
     """
 
     fields = (
@@ -80,8 +73,7 @@ class ClusterHandler(JSONHandler):
 
     @content_json
     def GET(self, cluster_id):
-        """
-        :returns: JSONized Cluster object.
+        """:returns: JSONized Cluster object.
         :http: * 200 (OK)
                * 404 (cluster not found in db)
         """
@@ -90,8 +82,7 @@ class ClusterHandler(JSONHandler):
 
     @content_json
     def PUT(self, cluster_id):
-        """
-        :returns: JSONized Cluster object.
+        """:returns: JSONized Cluster object.
         :http: * 200 (OK)
                * 400 (invalid cluster data specified)
                * 404 (cluster not found in db)
@@ -102,7 +93,8 @@ class ClusterHandler(JSONHandler):
 
         for key, value in data.iteritems():
             if key == "nodes":
-                # Todo: sepatate nodes for deletion and addition by set().
+                # TODO(NAME): sepatate nodes
+                #for deletion and addition by set().
                 new_nodes = db().query(Node).filter(
                     Node.id.in_(value)
                 )
@@ -131,8 +123,7 @@ class ClusterHandler(JSONHandler):
 
     @content_json
     def DELETE(self, cluster_id):
-        """
-        :returns: {}
+        """:returns: {}
         :http: * 202 (cluster deletion process launched)
                * 400 (failed to execute cluster deletion process)
                * 404 (cluster not found in db)
@@ -141,7 +132,7 @@ class ClusterHandler(JSONHandler):
         task_manager = ClusterDeletionManager(cluster_id=cluster.id)
         try:
             logger.debug('Trying to execute cluster deletion task')
-            task = task_manager.execute()
+            task_manager.execute()
         except Exception as e:
             logger.warn('Error while execution '
                         'cluster deletion task: %s' % str(e))
@@ -154,16 +145,14 @@ class ClusterHandler(JSONHandler):
 
 
 class ClusterCollectionHandler(JSONHandler):
-    """
-    Cluster collection handler
+    """Cluster collection handler
     """
 
     validator = ClusterValidator
 
     @content_json
     def GET(self):
-        """
-        :returns: Collection of JSONized Cluster objects.
+        """:returns: Collection of JSONized Cluster objects.
         :http: * 200 (OK)
         """
         return map(
@@ -173,8 +162,7 @@ class ClusterCollectionHandler(JSONHandler):
 
     @content_json
     def POST(self):
-        """
-        :returns: JSONized Cluster object.
+        """:returns: JSONized Cluster object.
         :http: * 201 (cluster successfully created)
                * 400 (invalid cluster data specified)
                * 409 (cluster with such parameters already exists)
@@ -184,7 +172,7 @@ class ClusterCollectionHandler(JSONHandler):
 
         cluster = Cluster()
         cluster.release = db().query(Release).get(data["release"])
-        # TODO: use fields
+        # TODO(NAME): use fields
         for field in ('name', 'mode', 'net_manager'):
             if data.get(field):
                 setattr(cluster, field, data.get(field))
@@ -228,15 +216,14 @@ class ClusterCollectionHandler(JSONHandler):
             # Cluster was created in this request,
             # so we no need to use ClusterDeletionManager.
             # All relations wiil be cascade deleted automaticly.
-            # TODO: investigate transactions
+            # TODO(NAME): investigate transactions
             db().delete(cluster)
 
             raise web.badrequest(e.message)
 
 
 class ClusterChangesHandler(JSONHandler):
-    """
-    Cluster changes handler
+    """Cluster changes handler
     """
 
     fields = (
@@ -246,8 +233,7 @@ class ClusterChangesHandler(JSONHandler):
 
     @content_json
     def PUT(self, cluster_id):
-        """
-        :returns: JSONized Task object.
+        """:returns: JSONized Task object.
         :http: * 200 (task successfully executed)
                * 404 (cluster not found in db)
                * 400 (failed to execute task)
@@ -283,8 +269,7 @@ class ClusterChangesHandler(JSONHandler):
 
 
 class ClusterAttributesHandler(JSONHandler):
-    """
-    Cluster attributes handler
+    """Cluster attributes handler
     """
 
     fields = (
@@ -295,8 +280,7 @@ class ClusterAttributesHandler(JSONHandler):
 
     @content_json
     def GET(self, cluster_id):
-        """
-        :returns: JSONized Cluster attributes.
+        """:returns: JSONized Cluster attributes.
         :http: * 200 (OK)
                * 404 (cluster not found in db)
                * 500 (cluster has no attributes)
@@ -311,8 +295,7 @@ class ClusterAttributesHandler(JSONHandler):
 
     @content_json
     def PUT(self, cluster_id):
-        """
-        :returns: JSONized Cluster attributes.
+        """:returns: JSONized Cluster attributes.
         :http: * 200 (OK)
                * 400 (wrong attributes data specified)
                * 404 (cluster not found in db)
@@ -333,8 +316,7 @@ class ClusterAttributesHandler(JSONHandler):
 
 
 class ClusterAttributesDefaultsHandler(JSONHandler):
-    """
-    Cluster default attributes handler
+    """Cluster default attributes handler
     """
 
     fields = (
@@ -343,8 +325,7 @@ class ClusterAttributesDefaultsHandler(JSONHandler):
 
     @content_json
     def GET(self, cluster_id):
-        """
-        :returns: JSONized default Cluster attributes.
+        """:returns: JSONized default Cluster attributes.
         :http: * 200 (OK)
                * 404 (cluster not found in db)
                * 500 (cluster has no attributes)
@@ -357,8 +338,7 @@ class ClusterAttributesDefaultsHandler(JSONHandler):
 
     @content_json
     def PUT(self, cluster_id):
-        """
-        :returns: JSONized Cluster attributes.
+        """:returns: JSONized Cluster attributes.
         :http: * 200 (OK)
                * 400 (wrong attributes data specified)
                * 404 (cluster not found in db)

@@ -14,14 +14,12 @@
 #    License for the specific language governing permissions and limitations
 #    under the License.
 
-import json
-import logging
-import unittest
 import cStringIO
 
-from nailgun.test.base import BaseHandlers
+from nailgun.api.models import Node
+from nailgun.api.models import Release
 from nailgun.fixtures.fixman import upload_fixture
-from nailgun.api.models import Release, Node
+from nailgun.test.base import BaseHandlers
 
 
 class TestFixture(BaseHandlers):

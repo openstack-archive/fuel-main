@@ -14,22 +14,23 @@
 #    License for the specific language governing permissions and limitations
 #    under the License.
 
-import sys
-import json
-import Queue
-import os.path
-import itertools
 from datetime import datetime
+import itertools
 import jinja2
+import json
+import os.path
+import Queue
 import StringIO
+import sys
 
-import sqlalchemy.types
-from nailgun.settings import settings
-from nailgun.api import models
 from sqlalchemy import orm
+import sqlalchemy.types
+
+from nailgun.api import models
 from nailgun.db import db as ormgen
 from nailgun.logger import logger
 from nailgun.network.manager import NetworkManager
+from nailgun.settings import settings
 
 db = ormgen()
 
@@ -57,7 +58,7 @@ def upload_fixture(fileobj):
         model_name = obj["model"].split(".")[1]
 
         try:
-            model = itertools.dropwhile(
+            itertools.dropwhile(
                 lambda m: not hasattr(models, m),
                 [model_name.capitalize(),
                  "".join(map(lambda n: n.capitalize(), model_name.split("_")))]
@@ -81,7 +82,7 @@ def upload_fixture(fileobj):
     while True:
         try:
             obj = queue.get_nowait()
-        except:
+        except Exception:
             break
 
         new_obj = obj['model']()

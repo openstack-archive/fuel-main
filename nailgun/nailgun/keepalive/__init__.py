@@ -14,6 +14,5 @@
 
 
 from watcher import KeepAliveThread
-from nailgun.api.models import Node
 
 keep_alive = KeepAliveThread()

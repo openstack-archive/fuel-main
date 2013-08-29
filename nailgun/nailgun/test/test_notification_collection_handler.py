@@ -14,12 +14,9 @@
 #    License for the specific language governing permissions and limitations
 #    under the License.
 
-import unittest
 import json
-from paste.fixture import TestApp
 
 from nailgun.api.models import Notification
-
 from nailgun.test.base import BaseHandlers
 from nailgun.test.base import reverse
 
@@ -56,7 +53,7 @@ class TestHandlers(BaseHandlers):
         self.assertIsNone(rn0.get('cluster', None))
 
     def test_get_limit(self):
-        c = self.env.create_cluster(api=False)
+        self.env.create_cluster(api=False)
         for i in xrange(3):
             self.env.create_notification()
 

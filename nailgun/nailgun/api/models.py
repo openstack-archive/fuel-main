@@ -14,28 +14,29 @@
 #    License for the specific language governing permissions and limitations
 #    under the License.
 
-import re
-import uuid
-import string
-import math
-from datetime import datetime
-from random import choice
 from copy import deepcopy
+from random import choice
+import string
+import uuid
 
-import web
-from netaddr import IPNetwork
-from sqlalchemy import Column, UniqueConstraint, Table
-from sqlalchemy import Integer, String, Unicode, Text, Boolean, Float
+from sqlalchemy import Boolean
+from sqlalchemy import Column
+from sqlalchemy import Float
+from sqlalchemy import Integer
+from sqlalchemy import String
+from sqlalchemy import Text
+from sqlalchemy import Unicode
+from sqlalchemy import UniqueConstraint
 from sqlalchemy import ForeignKey, Enum, DateTime
-from sqlalchemy import create_engine
 from sqlalchemy.orm import relationship, backref
 from sqlalchemy.ext.declarative import declarative_base
+import web
 
-from nailgun.logger import logger
-from nailgun.db import db
-from nailgun.volumes.manager import VolumeManager
 from nailgun.api.fields import JSON
+from nailgun.db import db
+from nailgun.logger import logger
 from nailgun.settings import settings
+from nailgun.volumes.manager import VolumeManager
 
 Base = declarative_base()
 
@@ -447,7 +448,7 @@ class AttributesGenerators(object):
     def password(cls, arg=None):
         try:
             length = int(arg)
-        except:
+        except Exception:
             length = 8
         chars = string.letters + string.digits
         return u''.join([choice(chars) for _ in xrange(length)])
@@ -513,7 +514,8 @@ class Attributes(Base):
     def _dict_merge(self, a, b):
         '''recursively merges dict's. not just simple a['key'] = b['key'], if
         both a and bhave a key who's value is a dict then dict_merge is called
-        on both values and the result stored in the returned dictionary.'''
+        on both values and the result stored in the returned dictionary.
+        '''
         if not isinstance(b, dict):
             return b
         result = deepcopy(a)

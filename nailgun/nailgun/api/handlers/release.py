@@ -22,16 +22,15 @@ import json
 
 import web
 
-from nailgun.db import db
-from nailgun.errors import errors
+from nailgun.api.handlers.base import content_json
+from nailgun.api.handlers.base import JSONHandler
 from nailgun.api.models import Release
 from nailgun.api.validators.release import ReleaseValidator
-from nailgun.api.handlers.base import JSONHandler, content_json
+from nailgun.db import db
 
 
 class ReleaseHandler(JSONHandler):
-    """
-    Release single handler
+    """Release single handler
     """
 
     fields = (
@@ -47,8 +46,7 @@ class ReleaseHandler(JSONHandler):
 
     @content_json
     def GET(self, release_id):
-        """
-        :returns: JSONized Release object.
+        """:returns: JSONized Release object.
         :http: * 200 (OK)
                * 404 (release not found in db)
         """
@@ -57,8 +55,7 @@ class ReleaseHandler(JSONHandler):
 
     @content_json
     def PUT(self, release_id):
-        """
-        :returns: JSONized Release object.
+        """:returns: JSONized Release object.
         :http: * 200 (OK)
                * 400 (invalid release data specified)
                * 404 (release not found in db)
@@ -74,8 +71,7 @@ class ReleaseHandler(JSONHandler):
         return self.render(release)
 
     def DELETE(self, release_id):
-        """
-        :returns: JSONized Release object.
+        """:returns: JSONized Release object.
         :http: * 204 (release successfully deleted)
                * 404 (release not found in db)
         """
@@ -89,16 +85,14 @@ class ReleaseHandler(JSONHandler):
 
 
 class ReleaseCollectionHandler(JSONHandler):
-    """
-    Release collection handler
+    """Release collection handler
     """
 
     validator = ReleaseValidator
 
     @content_json
     def GET(self):
-        """
-        :returns: Collection of JSONized Release objects.
+        """:returns: Collection of JSONized Release objects.
         :http: * 200 (OK)
         """
         return map(
@@ -108,8 +102,7 @@ class ReleaseCollectionHandler(JSONHandler):
 
     @content_json
     def POST(self):
-        """
-        :returns: JSONized Release object.
+        """:returns: JSONized Release object.
         :http: * 201 (cluster successfully created)
                * 400 (invalid cluster data specified)
                * 409 (release with such parameters already exists)

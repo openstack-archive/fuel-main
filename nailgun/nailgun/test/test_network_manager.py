@@ -14,22 +14,27 @@
 #    License for the specific language governing permissions and limitations
 #    under the License.
 
-import json
 import itertools
+import json
 
-from mock import Mock, patch
-from netaddr import IPNetwork, IPAddress, IPRange
+from mock import Mock
+from mock import patch
+from netaddr import IPAddress
+from netaddr import IPNetwork
+from netaddr import IPRange
 from sqlalchemy import not_
 
 import nailgun
-from nailgun.test.base import BaseHandlers
-from nailgun.test.base import reverse
-from nailgun.errors import errors
-from nailgun.api.models import Node, IPAddr, Vlan, IPAddrRange
-from nailgun.api.models import Network, NetworkGroup
+from nailgun.api.models import IPAddr
+from nailgun.api.models import IPAddrRange
+from nailgun.api.models import Network
+from nailgun.api.models import NetworkGroup
 from nailgun.api.models import NodeNICInterface
+from nailgun.api.models import Vlan
 from nailgun.settings import settings
+from nailgun.test.base import BaseHandlers
 from nailgun.test.base import fake_tasks
+from nailgun.test.base import reverse
 
 
 class TestNetworkManager(BaseHandlers):
@@ -137,7 +142,7 @@ class TestNetworkManager(BaseHandlers):
             not_(NodeNICInterface.mac == node_db.mac)
         ).first()
 
-        resp = self.app.put(
+        self.app.put(
             reverse('NodeCollectionHandler'),
             json.dumps([{
                 'mac': other_iface.mac,
@@ -165,11 +170,11 @@ class TestNetworkManager(BaseHandlers):
 
     def test_assign_vip(self):
         cluster = self.env.create_cluster(api=True)
-        vip = self.env.network_manager.assign_vip(cluster['id'], "management")
-        management_net = self.db.query(Network).join(NetworkGroup).\
-            filter(NetworkGroup.cluster_id == cluster['id']).filter_by(
-                name='management').first()
-        ip_db = IPNetwork(management_net.cidr)[2]
+        self.env.network_manager.assign_vip(cluster['id'], "management")
+        # management_net = self.db.query(Network).join(NetworkGroup).\
+        #     filter(NetworkGroup.cluster_id == cluster['id']).filter_by(
+        #         name='management').first()
+        # ip_db = IPNetwork(management_net.cidr)[2]
         # TODO(mihgen): we should check DB for correct data!
         #  can't do it now because of issues with orm
 
@@ -290,7 +295,7 @@ class TestNetworkManager(BaseHandlers):
         self.assertEquals(admin_ips[0].ip_addr, '10.0.0.1')
 
     def test_vlan_set_null(self):
-        cluster = self.env.create_cluster(api=True)
+        self.env.create_cluster(api=True)
         cluster_db = self.env.clusters[0]
         same_vlan = 100
         resp = self.app.get(
@@ -378,7 +383,7 @@ class TestNetworkManager(BaseHandlers):
             ]
         )
 
-        supertask = self.env.launch_deployment()
+        self.env.launch_deployment()
         rpc_nodes_provision = nailgun.task.manager.rpc.cast. \
             call_args_list[0][0][1][0]['args']['nodes']
 

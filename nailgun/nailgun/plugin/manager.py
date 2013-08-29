@@ -14,13 +14,12 @@
 #    License for the specific language governing permissions and limitations
 #    under the License.
 
-from nailgun.plugin.thread import get_queue
-from nailgun.plugin.fsm import PluginFSM
-
-from nailgun.errors import errors
-from nailgun.logger import logger
-from nailgun.api.models import Task, Plugin
+from nailgun.api.models import Plugin
+from nailgun.api.models import Task
 from nailgun.db import db
+from nailgun.errors import errors
+from nailgun.plugin.fsm import PluginFSM
+from nailgun.plugin.thread import get_queue
 
 
 class PluginManager(object):
@@ -29,7 +28,7 @@ class PluginManager(object):
         self.queue = get_queue()
 
     def add_install_plugin_task(self, plugin_data):
-        # TODO: check if plugin already installed
+        # TODO(NAME): check if plugin already installed
         plugin = Plugin(
             version=plugin_data['version'],
             name=plugin_data['name'],

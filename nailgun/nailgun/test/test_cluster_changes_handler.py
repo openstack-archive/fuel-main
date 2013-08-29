@@ -17,23 +17,21 @@
 import json
 import unittest
 
-from paste.fixture import TestApp
-from mock import Mock, patch
-from netaddr import IPNetwork, IPAddress
+from mock import patch
 from sqlalchemy.sql import not_
 
 import nailgun
-from nailgun.logger import logger
-from nailgun.task.helpers import TaskHelper
+from nailgun.api.models import IPAddr
+from nailgun.api.models import IPAddrRange
+from nailgun.api.models import Network
+from nailgun.api.models import NetworkGroup
+from nailgun.api.models import NodeNICInterface
+from nailgun.network.manager import NetworkManager
 from nailgun.settings import settings
+from nailgun.task.helpers import TaskHelper
 from nailgun.test.base import BaseHandlers
 from nailgun.test.base import fake_tasks
 from nailgun.test.base import reverse
-from nailgun.api.models import Cluster, Attributes, IPAddr, Task
-from nailgun.api.models import Network, NetworkGroup, IPAddrRange
-from nailgun.api.models import NodeNICInterface
-from nailgun.network.manager import NetworkManager
-from nailgun.task import task as tasks
 
 
 class TestHandlers(BaseHandlers):
@@ -293,7 +291,7 @@ class TestHandlers(BaseHandlers):
             ]
         )
 
-        deployment_task = self.env.launch_deployment()
+        self.env.launch_deployment()
 
         args, kwargs = nailgun.task.manager.rpc.cast.call_args
         message = args[1][1]
@@ -424,7 +422,7 @@ class TestHandlers(BaseHandlers):
                     '240.0.1.2',
                     '240.0.1.3']]}]}
 
-        resp = self.app.put(
+        self.app.put(
             reverse(
                 'NetworkConfigurationHandler',
                 kwargs={'cluster_id': cluster.id}),

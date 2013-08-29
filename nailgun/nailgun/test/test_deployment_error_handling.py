@@ -15,23 +15,10 @@
 #    under the License.
 
 import re
-import json
-import time
-from functools import partial
 
-from mock import patch
-
-from nailgun.settings import settings
-
-import nailgun
-import nailgun.rpc as rpc
-from nailgun.logger import logger
-from nailgun.task.manager import DeploymentTaskManager
-from nailgun.task.fake import FAKE_THREADS
+from nailgun.api.models import Notification
 from nailgun.test.base import BaseHandlers
-from nailgun.test.base import reverse
 from nailgun.test.base import fake_tasks
-from nailgun.api.models import Cluster, Attributes, Task, Notification, Node
 
 
 class TestErrors(BaseHandlers):

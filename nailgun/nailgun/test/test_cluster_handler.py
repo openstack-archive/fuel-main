@@ -15,10 +15,13 @@
 #    under the License.
 
 import json
-from nailgun.api.models import Cluster, Node, NetworkGroup
+
+from nailgun.api.models import Cluster
+from nailgun.api.models import NetworkGroup
+from nailgun.api.models import Node
 from nailgun.test.base import BaseHandlers
-from nailgun.test.base import reverse
 from nailgun.test.base import fake_tasks
+from nailgun.test.base import reverse
 
 
 class TestHandlers(BaseHandlers):

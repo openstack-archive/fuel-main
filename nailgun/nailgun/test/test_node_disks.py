@@ -14,14 +14,16 @@
 #    License for the specific language governing permissions and limitations
 #    under the License.
 
-import json
 from copy import deepcopy
+import json
 
-from nailgun.test.base import BaseHandlers, reverse
-from nailgun.volumes.manager import DisksFormatConvertor
-from nailgun.volumes.manager import Disk
-from nailgun.volumes.manager import only_disks, only_vg
 from nailgun.errors import errors
+from nailgun.test.base import BaseHandlers
+from nailgun.test.base import reverse
+from nailgun.volumes.manager import Disk
+from nailgun.volumes.manager import DisksFormatConvertor
+from nailgun.volumes.manager import only_disks
+from nailgun.volumes.manager import only_vg
 
 
 class TestNodeDisksHandlers(BaseHandlers):
@@ -58,7 +60,7 @@ class TestNodeDisksHandlers(BaseHandlers):
             return resp
 
     def test_default_attrs_after_creation(self):
-        node = self.env.create_node(api=True)
+        self.env.create_node(api=True)
         node_db = self.env.nodes[0]
         disks = self.get(node_db.id)
 
@@ -69,7 +71,7 @@ class TestNodeDisksHandlers(BaseHandlers):
             self.assertEqual(len(disk['volumes']), 0)
 
     def test_disks_recreation_after_node_agent_request(self):
-        node = self.env.create_node(api=True)
+        self.env.create_node(api=True)
         node_db = self.env.nodes[0]
         response = self.put(node_db.id, [])
         self.assertEquals(response, [])
@@ -131,8 +133,8 @@ class TestNodeDisksHandlers(BaseHandlers):
 
             self.assertNotEquals(size_volumes_before, size_volumes_after)
 
-            lvm_meta = updated_disks_count * \
-                node_db.volume_manager.call_generator('calc_lvm_meta_size')
+            # lvm_meta = updated_disks_count * \
+            #     node_db.volume_manager.call_generator('calc_lvm_meta_size')
 
             volume_group_size = new_volume_size * updated_disks_count
             self.assertEquals(size_volumes_after, volume_group_size)
@@ -177,7 +179,7 @@ class TestNodeDefaultsDisksHandler(BaseHandlers):
 
     def test_node_disk_amount_regenerates_volumes_info_if_new_disk_added(self):
         cluster = self.env.create_cluster(api=False)
-        node = self.env.create_node(
+        self.env.create_node(
             api=True,
             role='compute',  # vgs: os, vm
             cluster_id=cluster.id)
@@ -192,7 +194,7 @@ class TestNodeDefaultsDisksHandler(BaseHandlers):
             'name': 'sda',
             'disk': 'disk/id/b00b135'})
 
-        resp = self.app.put(
+        self.app.put(
             reverse('NodeCollectionHandler'),
             json.dumps([{
                 "mac": node_db.mac,
@@ -208,14 +210,14 @@ class TestNodeDefaultsDisksHandler(BaseHandlers):
         # check all groups on all disks
         vgs = ['os', 'vm']
         for disk in response:
-            check_vgs = filter(
-                lambda v: v['name'] in vgs,
-                disk['volumes'])
+            # check_vgs = filter(
+            #     lambda v: v['name'] in vgs,
+            #     disk['volumes'])
 
             self.assertEquals(len(disk['volumes']), len(vgs))
 
     def test_get_default_attrs(self):
-        node = self.env.create_node(api=True)
+        self.env.create_node(api=True)
         node_db = self.env.nodes[0]
         volumes_from_api = self.get(node_db.id)
 

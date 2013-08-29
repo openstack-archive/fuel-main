@@ -16,14 +16,15 @@
 
 import logging
 
-from mock import Mock, patch
+from mock import patch
 
-import nailgun
+from nailgun.api.models import IPAddr
+from nailgun.api.models import Network
+from nailgun.api.models import NetworkGroup
+from nailgun.api.models import Node
 from nailgun.test.base import BaseHandlers
-from nailgun.test.base import reverse
-from nailgun.api.models import Node, IPAddr
-from nailgun.api.models import Network, NetworkGroup
 from nailgun.test.base import fake_tasks
+from nailgun.test.base import reverse
 
 logger = logging.getLogger(__name__)
 

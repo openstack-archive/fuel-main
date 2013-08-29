@@ -14,15 +14,14 @@
 #    License for the specific language governing permissions and limitations
 #    under the License.
 
-import unittest
-import tempfile
-import shutil
-import time
+import gzip
 import json
 import os
-import tarfile
-import gzip
+import shutil
 from StringIO import StringIO
+import tarfile
+import tempfile
+import time
 
 from nailgun.test.base import BaseHandlers
 from nailgun.test.base import reverse
@@ -159,7 +158,7 @@ class TestLogs(BaseHandlers):
                 'text3',
             ],
         ]
-        cluster = self.env.create_cluster(api=False)
+        self.env.create_cluster(api=False)
         self._create_logfile_for_node(settings.LOGS[0], log_entries)
 
         resp = self.app.get(

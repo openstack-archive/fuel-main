@@ -14,13 +14,8 @@
 #    License for the specific language governing permissions and limitations
 #    under the License.
 
-import web
 
 from nailgun.api.models import Node
-from nailgun.api.models import NetworkAssignment
-from nailgun.api.models import NodeNICInterface
-
-from nailgun.logger import logger
 from nailgun.db import db
 
 

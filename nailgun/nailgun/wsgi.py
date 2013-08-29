@@ -17,18 +17,19 @@
 import os
 import sys
 import web
-from signal import signal, SIGTERM
-from web.httpserver import server, WSGIServer, StaticMiddleware
+from web.httpserver import StaticMiddleware
+from web.httpserver import WSGIServer
 
 curdir = os.path.dirname(__file__)
 sys.path.insert(0, curdir)
 
-from nailgun.settings import settings
-from nailgun.api.handlers import check_client_content_type
 from nailgun.api.handlers import forbid_client_caching
-from nailgun.db import load_db_driver, engine
+from nailgun.db import engine
+from nailgun.db import load_db_driver
+from nailgun.logger import HTTPLoggerMiddleware
+from nailgun.logger import logger
+from nailgun.settings import settings
 from nailgun.urls import urls
-from nailgun.logger import logger, HTTPLoggerMiddleware
 
 
 def build_app():
@@ -50,15 +51,14 @@ def build_middleware(app):
 
 
 def run_server(func, server_address=('0.0.0.0', 8080)):
-    """
-    This function same as runsimple from web/httpserver
+    """This function same as runsimple from web/httpserver
     except removed LogMiddleware because we use
     HTTPLoggerMiddleware instead
     """
     global server
     func = StaticMiddleware(func)
     server = WSGIServer(server_address, func)
-    print 'http://%s:%d/' % server_address
+    print('http://%s:%d/' % server_address)
 
     try:
         server.start()
@@ -80,8 +80,8 @@ def appstart(keepalive=False):
 
     app = build_app()
 
-    from nailgun.rpc import threaded
     from nailgun.keepalive import keep_alive
+    from nailgun.rpc import threaded
 
     if keepalive:
         logger.info("Running KeepAlive watcher...")

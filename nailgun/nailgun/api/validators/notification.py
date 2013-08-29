@@ -13,10 +13,10 @@
 #    License for the specific language governing permissions and limitations
 #    under the License.
 
-from nailgun.db import db
-from nailgun.errors import errors
 from nailgun.api.models import Notification
 from nailgun.api.validators.base import BasicValidator
+from nailgun.db import db
+from nailgun.errors import errors
 
 
 class NotificationValidator(BasicValidator):

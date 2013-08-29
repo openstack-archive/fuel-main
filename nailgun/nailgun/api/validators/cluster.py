@@ -13,10 +13,11 @@
 #    License for the specific language governing permissions and limitations
 #    under the License.
 
+from nailgun.api.models import Cluster
+from nailgun.api.models import Release
+from nailgun.api.validators.base import BasicValidator
 from nailgun.db import db
 from nailgun.errors import errors
-from nailgun.api.models import Cluster, Release
-from nailgun.api.validators.base import BasicValidator
 
 
 class ClusterValidator(BasicValidator):
@@ -59,8 +60,7 @@ class AttributesValidator(BasicValidator):
 
     @classmethod
     def validate_fixture(cls, data):
-        """
-        Here we just want to be sure that data is logically valid.
+        """Here we just want to be sure that data is logically valid.
         We try to generate "generated" parameters. If there will not
         be any error during generating then we assume data is
         logically valid.

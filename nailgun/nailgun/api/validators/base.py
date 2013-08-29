@@ -26,7 +26,7 @@ class BasicValidator(object):
         if data:
             try:
                 res = json.loads(data)
-            except:
+            except Exception:
                 raise errors.InvalidData(
                     "Invalid json received",
                     log_message=True

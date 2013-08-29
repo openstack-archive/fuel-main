@@ -13,12 +13,14 @@
 #    License for the specific language governing permissions and limitations
 #    under the License.
 
-from netaddr import IPNetwork, AddrFormatError
+from netaddr import AddrFormatError
+from netaddr import IPNetwork
 
+from nailgun.api.models import NetworkGroup
+from nailgun.api.models import Node
+from nailgun.api.validators.base import BasicValidator
 from nailgun.db import db
 from nailgun.errors import errors
-from nailgun.api.models import Node, NetworkGroup
-from nailgun.api.validators.base import BasicValidator
 
 
 class NetworkConfigurationValidator(BasicValidator):
@@ -38,7 +40,7 @@ class NetworkConfigurationValidator(BasicValidator):
                 log_message=True
             )
         for i in networks:
-            if not 'id' in i:
+            if 'id' not in i:
                 raise errors.InvalidData(
                     "No 'id' param for '{0}'".format(i),
                     log_message=True

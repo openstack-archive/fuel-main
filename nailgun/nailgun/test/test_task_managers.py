@@ -18,20 +18,18 @@ import json
 import time
 import unittest
 
-from mock import patch
-
 from nailgun.settings import settings
 
-import nailgun
+from nailgun.api.models import Cluster
+from nailgun.api.models import Node
+from nailgun.api.models import Notification
+from nailgun.api.models import Task
+from nailgun.errors import errors
 import nailgun.rpc as rpc
 from nailgun.task.manager import DeploymentTaskManager
-from nailgun.task.fake import FAKE_THREADS
-from nailgun.errors import errors
 from nailgun.test.base import BaseHandlers
-from nailgun.test.base import reverse
 from nailgun.test.base import fake_tasks
-from nailgun.api.models import Cluster, Attributes, Task, Notification, Node
-from nailgun.api.models import Release
+from nailgun.test.base import reverse
 
 
 class TestTaskManagers(BaseHandlers):
@@ -192,17 +190,17 @@ class TestTaskManagers(BaseHandlers):
     @fake_tasks()
     def test_deployment_fails_if_node_offline(self):
         cluster = self.env.create_cluster(api=True)
-        node1 = self.env.create_node(cluster_id=cluster['id'],
-                                     role="controller",
-                                     pending_addition=True)
-        node2 = self.env.create_node(cluster_id=cluster['id'],
-                                     role="compute",
-                                     online=False,
-                                     name="Offline node",
-                                     pending_addition=True)
-        node3 = self.env.create_node(cluster_id=cluster['id'],
-                                     role="compute",
-                                     pending_addition=True)
+        self.env.create_node(cluster_id=cluster['id'],
+                             role="controller",
+                             pending_addition=True)
+        self.env.create_node(cluster_id=cluster['id'],
+                             role="compute",
+                             online=False,
+                             name="Offline node",
+                             pending_addition=True)
+        self.env.create_node(cluster_id=cluster['id'],
+                             role="compute",
+                             pending_addition=True)
         supertask = self.env.launch_deployment()
         self.env.wait_error(
             supertask,
@@ -226,7 +224,7 @@ class TestTaskManagers(BaseHandlers):
         self.env.wait_ready(supertask, 60)
         self.env.refresh_nodes()
 
-        node3 = self.env.create_node(
+        self.env.create_node(
             cluster_id=self.env.clusters[0].id,
             role="controller",
             pending_addition=True
@@ -379,7 +377,7 @@ class TestTaskManagers(BaseHandlers):
             time.sleep(1)
             try:
                 self.db.refresh(clstr)
-            except:
+            except Exception:
                 break
             if time.time() - timer > timeout:
                 raise Exception("Cluster deletion seems to be hanged")
@@ -405,7 +403,6 @@ class TestTaskManagers(BaseHandlers):
         )
         cluster_id = self.env.clusters[0].id
         cluster_name = self.env.clusters[0].name
-        nodes_ids = [n.id for n in self.env.nodes]
         resp = self.app.delete(
             reverse(
                 'ClusterHandler',
@@ -421,7 +418,7 @@ class TestTaskManagers(BaseHandlers):
             time.sleep(1)
             try:
                 self.db.refresh(clstr)
-            except:
+            except Exception:
                 break
             if time.time() - timer > timeout:
                 raise Exception("Cluster deletion seems to be hanged")
@@ -440,7 +437,7 @@ class TestTaskManagers(BaseHandlers):
         self.env.create(
             cluster_kwargs={},
             nodes_kwargs=[
-                {"status": "ready",  "pending_addition": True},
+                {"status": "ready", "pending_addition": True},
             ]
         )
         cluster_id = self.env.clusters[0].id
@@ -495,7 +492,6 @@ class TestTaskManagers(BaseHandlers):
         supertask = self.env.launch_deployment()
         self.env.wait_ready(supertask)
 
-        nodes_ids = [n.id for n in self.env.nodes]
         resp = self.app.delete(
             reverse(
                 'ClusterHandler',
@@ -511,7 +507,7 @@ class TestTaskManagers(BaseHandlers):
             time.sleep(1)
             try:
                 self.db.refresh(clstr)
-            except:
+            except Exception:
                 break
             if time.time() - timer > timeout:
                 raise Exception("Cluster deletion seems to be hanged")

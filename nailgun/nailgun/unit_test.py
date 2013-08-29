@@ -16,8 +16,8 @@
 
 import nose
 import nose.config
-from nose.plugins.xunit import Xunit
 from nose.plugins.manager import PluginManager
+from nose.plugins.xunit import Xunit
 
 import nailgun.test as test
 

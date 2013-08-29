@@ -14,14 +14,11 @@
 #    License for the specific language governing permissions and limitations
 #    under the License.
 
-import json
 import inspect
-from functools import wraps
+import json
 
-from decorator import decorator
-
-from nailgun.test.base import reverse
 from nailgun.api.handlers.base import JSONHandler
+from nailgun.test.base import reverse
 
 
 class SampleGenerator(object):
