@@ -180,6 +180,10 @@ class OrchestratorSerializer(object):
 
             # Interfaces assingment
             'network_data': interfaces,
+
+            # TODO (eli): need to remove, requried
+            # for fucking fake thread only
+            'online': node.online,
         }
         node_attrs.update(cls.interfaces_list(network_data))
 
@@ -327,7 +331,7 @@ class OrchestratorHASerializer(OrchestratorSerializer):
 def serialize(cluster):
     if cluster.mode == 'multinode':
         serializer = OrchestratorSerializer
-    elif cluster.mode[:2] == 'ha':
+    elif cluster.is_ha_mode:
         # Same serializer for all ha
         serializer = OrchestratorHASerializer
 

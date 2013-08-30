@@ -767,7 +767,7 @@ class NetworkManager(object):
     def get_end_point_ip(self, cluster_id):
         cluster_db = db().query(Cluster).get(cluster_id)
         ip = None
-        if cluster_db.mode == 'ha':
+        if cluster_db.is_ha_mode:
             ip = self.assign_vip(cluster_db.id, "public")
         elif cluster_db.mode in ('singlenode', 'multinode'):
             controller = db().query(Node).filter_by(

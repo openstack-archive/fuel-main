@@ -119,7 +119,7 @@ class ClusterChanges(Base):
 
 class Cluster(Base):
     __tablename__ = 'clusters'
-    MODES = ('singlenode', 'multinode', 'ha')
+    MODES = ('multinode', 'ha_full', 'ha_compact')
     STATUSES = ('new', 'deployment', 'operational', 'error', 'remove')
     NET_MANAGERS = ('FlatDHCPManager', 'VlanManager')
     GROUPING = ('roles', 'hardware', 'both')
@@ -161,6 +161,10 @@ class Cluster(Base):
     notifications = relationship("Notification", backref="cluster")
     network_groups = relationship("NetworkGroup", backref="cluster",
                                   cascade="delete")
+
+    @property
+    def is_ha_mode(self):
+        return self.mode in ('ha_full', 'ha_compact')
 
     @property
     def full_name(self):

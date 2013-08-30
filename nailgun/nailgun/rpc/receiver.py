@@ -399,18 +399,18 @@ class NailgunReceiver(object):
                 logger.warning(u"Controller node not found in '{0}'".format(
                     task.cluster.name
                 ))
-        elif task.cluster.mode == 'ha':
+        elif task.cluster.is_ha_mode:
             # determining horizon url in HA mode - it's vip
             # from a public network saved in task cache
             args = task.cache.get('args')
             try:
-                vip = args['attributes']['public_vip']
+                netmanager = NetworkManager()
                 message = (
                     u"Deployment of environment '{0}' is done. "
-                    "Access the OpenStack dashboard (Horizon) at http://{1}/"
+                    "Access the OpenStack dashboard (Horizon) at {1}"
                 ).format(
                     task.cluster.name,
-                    vip
+                    netmanager.get_horizon_url(task.cluster.id)
                 )
             except Exception as exc:
                 logger.error(": ".join([

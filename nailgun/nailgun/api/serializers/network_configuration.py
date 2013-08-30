@@ -42,7 +42,7 @@ class NetworkConfigurationSerializer(BasicSerializer):
             cluster.network_groups
         )
 
-        if cluster.mode == 'ha':
+        if cluster.is_ha_mode:
             net_manager = NetworkManager()
             result['management_vip'] = net_manager.assign_vip(
                 cluster.id, 'management')

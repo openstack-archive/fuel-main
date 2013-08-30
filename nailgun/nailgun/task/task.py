@@ -35,7 +35,7 @@ import nailgun.rpc as rpc
 from nailgun.settings import settings
 from nailgun.task.fake import FAKE_THREADS
 from nailgun.task.helpers import TaskHelper
-from nailgun.serializers.orchestrator import OrchestratorSerializer
+from nailgun.serializers.orchestrator import serialize
 
 
 def fake_cast(queue, messages, **kwargs):
@@ -115,9 +115,6 @@ class DeploymentTask(object):
             netmanager.assign_ips(nodes_ids, "public")
             netmanager.assign_ips(nodes_ids, "storage")
 
-        # nodes_with_attrs = []
-        # FIXME(mihgen): We need to pass all other nodes, so astute
-        #  can know about all the env, not only about added nodes.
         for n in db().query(Node).filter_by(
                 cluster=task.cluster).order_by(Node.id):
             # However, we must not pass nodes which are set to be deleted.
@@ -139,7 +136,7 @@ class DeploymentTask(object):
             'respond_to': 'deploy_resp',
             'args': {
                 'task_uuid': task.uuid,
-                'deployment_info': OrchestratorSerializer.serialize(task.cluster),
+                'deployment_info': serialize(task.cluster)
             }
         }
 
@@ -646,7 +643,7 @@ class CheckBeforeDeploymentTask(object):
             raise errors.NotEnoughControllers(
                 "Not enough controllers, %s mode requires at least 1 "
                 "controller" % (cluster_mode))
-        elif cluster_mode == 'ha' and controllers_count < 3:
+        elif cluster_mode == 'ha_compact' and controllers_count < 3:
             raise errors.NotEnoughControllers(
                 "Not enough controllers, %s mode requires at least 3 "
                 "controllers" % (cluster_mode))
