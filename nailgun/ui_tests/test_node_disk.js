@@ -16,7 +16,7 @@
 casper.start();
 casper.createCluster({name: 'Test Cluster'});
 var nodes = [
-    {status: 'discover', manufacturer: 'Dell', mac: 'C0:8D:DF:52:76:F1'}
+    {status: 'discover', manufacturer: 'Dell', mac: 'C0:8D:DF:52:76:F1', cluster_id: 1, roles: ['compute']}
 ];
 nodes.forEach(function(node) {
     casper.createNode(node);
@@ -37,14 +37,6 @@ casper.then(function() {
     var vdaDiskOS = vdaDisk + '  .volume-group-box[data-volume=os]';
 
     this.then(function() {
-        this.click('.node-list-compute .btn-add-nodes');
-        this.test.assertSelectorAppears('.add-nodes-screen', 'Add compute nodes screen appears');
-        this.test.assertSelectorDisappears('.add-nodes-screen .available-nodes .progress', 'Available for addition computes are loaded');
-        this.then(function() {
-            this.click('.add-nodes-screen .nodebox');
-            this.click('.add-nodes-screen .btn-apply');
-        });
-        this.test.assertSelectorAppears('.nodes-by-roles-screen', 'Return to nodes tab');
         this.then(function() {
             this.click('.node-hardware');
         });
