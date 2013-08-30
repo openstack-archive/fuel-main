@@ -32,7 +32,7 @@ Setup for Nailgun Unit Tests
     sudo apt-get install python-dev python-pip python-psycopg2 python-jinja2
     sudo apt-get install python-paste python-yaml python-sqlalchemy python-kombu
     sudo apt-get install python-crypto python-simplejson python-webpy python-nose
-    sudo pip install fysom jsonschema
+    sudo pip install fysom jsonschema hacking==0.7
 
 #. Install and configure PostgreSQL database::
 
