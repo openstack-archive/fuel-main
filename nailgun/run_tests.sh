@@ -81,7 +81,7 @@ if [ $fail_first -eq 1 ]; then
 fi
 
 function run_flake8 {
-  flake8 --exclude=urls.py,__init__.py --ignore=H302,H802 --show-source --show-flake8 --count . || return 1
+  flake8 --exclude=urls.py,__init__.py --ignore=H302,H802 --show-source --show-pep8 --count . || return 1
   echo "Flake8 check passed successfully."
 }
 
