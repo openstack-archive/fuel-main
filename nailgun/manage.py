@@ -156,7 +156,6 @@ if __name__ == "__main__":
         if params.config_file:
             settings.update_from_file(params.config_file)
         try:
-            raise ImportError("tRY ME!")
             from IPython import embed
             embed()
         except ImportError:
