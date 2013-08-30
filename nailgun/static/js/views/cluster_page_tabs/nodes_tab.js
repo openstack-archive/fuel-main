@@ -150,10 +150,7 @@ function(utils, models, commonViews, dialogViews, nodesManagementPanelTemplate, 
         className: 'add-nodes-screen',
         constructorName: 'AddNodesScreen',
         events: {
-            'click .btn-go-to-cluster': 'goToClusterNodesScreen'
-        },
-        goToClusterNodesScreen: function() {
-            app.navigate('#cluster/' + this.model.id + '/nodes', {trigger: true});
+            'click .btn-go-to-cluster': 'goToNodeList'
         },
         initialize: function(options) {
             _.defaults(this, options);
@@ -488,17 +485,7 @@ function(utils, models, commonViews, dialogViews, nodesManagementPanelTemplate, 
             }
         },
         showNodeDetails: function() {
-            var clusterId, deployment = false;
-            try {
-                clusterId = app.page.tab.model.id;
-                deployment = !!app.page.tab.model.task('deploy', 'running');
-            } catch(e) {}
-            var dialog = new dialogViews.ShowNodeInfoDialog({
-                node: this.node,
-                clusterId: clusterId,
-                configurationPossible: clusterId && !this.selectableForAddition && !this.selectableForDeletion,
-                deployment: deployment
-            });
+            var dialog = new dialogViews.ShowNodeInfoDialog({node: this.node});
             app.page.tab.registerSubView(dialog);
             dialog.render();
         },
@@ -676,7 +663,7 @@ function(utils, models, commonViews, dialogViews, nodesManagementPanelTemplate, 
         initialize: function(options) {
             _.defaults(this, options);
             this.node = this.model.get('nodes').get(this.screenOptions[0]);
-            if (this.node && this.node.get('role')) {
+            if (this.node) {
                 this.model.on('change:status', this.revertChanges, this);
                 this.volumes = new models.Volumes([], {url: _.result(this.node, 'url') + '/volumes'});
                 this.disks = new models.Disks([], {url: _.result(this.node, 'url') + '/disks'});
@@ -884,7 +871,7 @@ function(utils, models, commonViews, dialogViews, nodesManagementPanelTemplate, 
         initialize: function(options) {
             _.defaults(this, options);
             this.node = this.model.get('nodes').get(this.screenOptions[0]);
-            if (this.node && this.node.get('role')) {
+            if (this.node) {
                 this.model.on('change:status', function() {
                     this.revertChanges();
                     this.render();

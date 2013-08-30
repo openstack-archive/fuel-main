@@ -17,7 +17,7 @@
     </div>
   <% } else { %>
     <div class="cluster-toolbar-item">
-      <button class="btn btn-go-to-cluster">Go to Environment</button>
+      <button class="btn btn-go-to-cluster">Back to Environment Node List</button>
     </div>
   <% } %>
   <% if (cluster) { %>
@@ -29,7 +29,7 @@
     </div>
   <% } %>
   <div class="cluster-toolbar-item pull-right">
-    <button class="btn btn-assign-roles batch-action-btn" disabled>Assign Roles</button>
+    <button class="btn btn-success btn-assign-roles batch-action-btn" disabled>Assign Roles</button>
   </div>
   <div class="cluster-toolbar-item pull-right">
     <button class="btn btn-danger btn-delete-nodes batch-action-btn" disabled>Delete Nodes <%= cluster ? '' : 'from FUEL' %></button>

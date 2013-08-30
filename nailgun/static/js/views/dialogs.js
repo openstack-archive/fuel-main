@@ -414,10 +414,10 @@ function(require, utils, models, simpleMessageTemplate, createClusterDialogTempl
             $(e.currentTarget).siblings('.accordion-body').collapse('toggle');
         },
         goToDisksConfiguration: function() {
-            app.navigate('#cluster/' + this.clusterId + '/nodes/disks/' + this.node.id, {trigger: true});
+            app.navigate('#cluster/' + this.node.get('cluster') + '/nodes/disks/' + this.node.id, {trigger: true});
         },
         goToInterfacesConfiguration: function() {
-            app.navigate('#cluster/' + this.clusterId + '/nodes/interfaces/' + this.node.id, {trigger: true});
+            app.navigate('#cluster/' + this.node.get('cluster') + '/nodes/interfaces/' + this.node.id, {trigger: true});
         },
         initialize: function(options) {
             _.defaults(this, options);
@@ -432,7 +432,7 @@ function(require, utils, models, simpleMessageTemplate, createClusterDialogTempl
         render: function() {
             this.constructor.__super__.render.call(this, _.extend({
                 node: this.node,
-                configurationPossible: this.configurationPossible
+                deployment: app.page.tab.model.task('deploy', 'running')
             }, this.templateHelpers));
             this.$('.accordion-body').collapse({
                 parent: this.$('.accordion'),

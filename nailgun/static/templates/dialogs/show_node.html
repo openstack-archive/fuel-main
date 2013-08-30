@@ -76,7 +76,7 @@
   <% if (false && node.get('ip')) { %>
     <button class="btn btn-node-console">SSH Console</button>
   <% } %>
-  <% if (configurationPossible) { %>
+  <% if (node.get('cluster') && !deployment) { %>
     <button class="btn btn-edit-networks" data-dismiss="modal">Network Configuration</button>
     <button class="btn btn-edit-disks" data-dismiss="modal">Disk Configuration</button>
   <% } %>
