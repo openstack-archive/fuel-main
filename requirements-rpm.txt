@@ -21,9 +21,9 @@ automake-1.11.1-4.el6
 avahi-0.6.25-12.el6
 bc-1.06.95-1.el6
 bind-utils-9.8.2-0.17.rc1.el6_4.4
+boost-program-options-1.41.0-17.el6_4
 boost-system-1.41.0-17.el6_4
 boost-thread-1.41.0-17.el6_4
-boost-program-options-1.41.0-17.el6_4
 byacc-1.9.20070509-7.el6
 c-ares19-1.9.1-4.el6.3
 ceilometer-2013.1-4
@@ -44,7 +44,7 @@ cronie-1.4.4-7.el6
 cronie-anacron-1.4.4-7.el6
 cronie-noanacron-1.4.4-7.el6
 crontabs-1.10-33.el6
-curl-7.19.7-36.el6_4
+curl-7.19.7-37.el6_4
 db4-cxx-4.7.25-17.el6
 db4-utils-4.7.25-17.el6
 dbus-python-0.83.0-6.1.el6
