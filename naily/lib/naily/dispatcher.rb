@@ -83,10 +83,10 @@ module Naily
       Naily.logger.info("'deploy' method called with data: #{data.inspect}")
 
       reporter = Naily::Reporter.new(@producer, data['respond_to'], data['args']['task_uuid'])
-      @orchestrator.provision(reporter, data['args']['task_uuid'], data['args']['nodes'])
+      @orchestrator.provision(reporter, data['args']['task_uuid'], data['args']['deployment_info'])
 
       begin
-        @orchestrator.deploy(reporter, data['args']['task_uuid'], data['args']['nodes'], data['args']['attributes'])
+        @orchestrator.deploy(reporter, data['args']['task_uuid'], data['args']['deployment_info'])
         reporter.report('status' => 'ready', 'progress' => 100)
       rescue Timeout::Error
         msg = "Timeout of deployment is exceeded."
