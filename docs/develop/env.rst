@@ -50,6 +50,11 @@ Setup for Nailgun Unit Tests
     cd nailgun
     ./run_tests.sh --no-jslint --no-ui-tests
 
+#. Run the Nailgun flake8 test::
+
+    cd nailgun
+    ./run_tests.sh --flake8
+
 Setup for Web UI Tests
 ----------------------
 
