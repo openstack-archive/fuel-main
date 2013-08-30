@@ -38,6 +38,7 @@ from nailgun.logger import logger
 from nailgun.settings import settings
 from nailgun.volumes.manager import VolumeManager
 
+
 Base = declarative_base()
 
 
@@ -215,6 +216,20 @@ class Cluster(Base):
             chs = chs.filter_by(node_id=node_id)
         map(db().delete, chs.all())
         db().commit()
+
+    def prepare_for_deployment(self):
+        from nailgun.task.helpers import TaskHelper
+        from nailgun.network.manager import NetworkManager
+
+        nodes = TaskHelper.nodes_to_deploy(self)
+        TaskHelper.update_slave_nodes_fqdn(nodes)
+
+        nodes_ids = [n.id for n in nodes]
+        if nodes_ids:
+            netmanager = NetworkManager()
+            netmanager.assign_ips(nodes_ids, 'management')
+            netmanager.assign_ips(nodes_ids, 'public')
+            netmanager.assign_ips(nodes_ids, 'storage')
 
 
 class Node(Base):
