@@ -81,8 +81,8 @@ if [ $fail_first -eq 1 ]; then
 fi
 
 function run_pep8 {
-  pep8 --show-source --show-pep8 --count . || return 1
-  echo "PEP8 check passed successfully."
+  flake8 --exclude=urls.py,__init__.py --ignore=H302,H802 --show-source --show-pep8 --count . || return 1
+  echo "Flake8 check passed successfully."
 }
 
 if [ $just_pep8 -eq 1 ]; then
