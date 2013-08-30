@@ -8,6 +8,7 @@ rootpw r00tme
 timezone --utc Etc/UTC
 firewall --disabled
 selinux --disabled
+zerombr
 %include /tmp/bootloader.ks
 %include /tmp/partition.ks
 
@@ -64,7 +65,7 @@ hdparm -z /dev/${tgtdrive}
 parted -s /dev/${tgtdrive} mklabel gpt
 parted -a none -s /dev/${tgtdrive} unit MiB mkpart primary 0 24
 parted -s /dev/${tgtdrive} set 1 bios_grub on
-parted -a none -s /dev/${tgtdrive} unit MiB mkpart primary fat32 24 224
+parted -a none -s /dev/${tgtdrive} unit MiB mkpart primary fat16 24 224
 parted -s /dev/${tgtdrive} set 2 boot on
 parted -a none -s /dev/${tgtdrive} unit MiB mkpart primary 224 424
 sleep 10
