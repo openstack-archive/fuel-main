@@ -50,7 +50,9 @@ class TestHandlers(BaseHandlers):
         node_id = '080000000003'
         resp = self.app.post(
             reverse('NodeCollectionHandler'),
-            json.dumps({'id': node_id, 'mac': 'ASDFAAASDFAA'}),
+            json.dumps({'id': node_id,
+                        'mac': 'ASDFAAASDFAA',
+                        'status': 'discover'}),
             headers=self.default_headers,
             expect_errors=True)
         # we now just ignore 'id' if present

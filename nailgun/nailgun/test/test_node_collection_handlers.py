@@ -109,7 +109,8 @@ class TestHandlers(BaseHandlers):
         resp = self.app.post(
             reverse('NodeCollectionHandler'),
             json.dumps({'mac': 'ASDFAAASDFAA',
-                        'meta': self.env.default_metadata()}),
+                        'meta': self.env.default_metadata(),
+                        'status': 'discover'}),
             headers=self.default_headers)
         self.assertEquals(resp.status, 201)
         response = json.loads(resp.body)

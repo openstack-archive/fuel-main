@@ -171,6 +171,12 @@ class NodeCollectionHandler(JSONHandler):
         """
         data = self.checked_data()
 
+        if 'status' not in data:
+            error = web.forbidden()
+            error.message = "Only bootstarp nodes are " \
+                            "allowed to be registered."
+            raise error
+
         node = Node()
         if "cluster_id" in data:
             # FIXME(vk): this part is needed only for tests. Normally,
