@@ -4,29 +4,29 @@ function usage {
   echo "Usage: $0 [OPTION]..."
   echo "Run tests"
   echo ""
-  echo "  -p, --pep8               Just run PEP8 and HACKING compliance check"
+  echo "  -p, --flake8               Just run flake8 and HACKING compliance check"
   echo "  -f, --fail-first         Nosetests will stop on first error"
   echo "  -j, --jslint             Just run JSLint"
   echo "  -u, --ui-tests           Just run UI tests"
   echo "  -x, --xunit              Generate reports (useful in Jenkins environment)"
-  echo "  -P, --no-pep8            Don't run static code checks"
+  echo "  -P, --no-flake8            Don't run static code checks"
   echo "  -J, --no-jslint          Don't run JSLint"
   echo "  -U, --no-ui-tests        Don't run UI tests"
   echo "  -c, --clean              Only clean *.log, *.json, *.pyc, *.pid files, doesn't run tests"
   echo "  -h, --help               Print this usage message"
   echo ""
-  echo "By default it runs tests and pep8 check."
+  echo "By default it runs tests and flake8 check."
   exit
 }
 
 function process_option {
   case "$1" in
     -h|--help) usage;;
-    -p|--pep8) just_pep8=1;;
+    -p|--flake8) just_flake8=1;;
     -f|--fail-first) fail_first=1;;
     -j|--jslint) just_jslint=1;;
     -u|--ui-tests) just_ui_tests=1;;
-    -P|--no-pep8) no_pep8=1;;
+    -P|--no-flake8) no_flake8=1;;
     -J|--no-jslint) no_jslint=1;;
     -U|--no-ui-tests) no_ui_tests=1;;
     -x|--xunit) xunit=1;;
@@ -37,8 +37,8 @@ function process_option {
   esac
 }
 
-just_pep8=0
-no_pep8=0
+just_flake8=0
+no_flake8=0
 fail_first=0
 just_jslint=0
 no_jslint=0
@@ -80,13 +80,13 @@ if [ $fail_first -eq 1 ]; then
     noseopts=${noseopts}" --stop"
 fi
 
-function run_pep8 {
-  flake8 --exclude=urls.py,__init__.py --ignore=H302,H802 --show-source --show-pep8 --count . || return 1
+function run_flake8 {
+  flake8 --exclude=urls.py,__init__.py --ignore=H302,H802 --show-source --show-flake8 --count . || return 1
   echo "Flake8 check passed successfully."
 }
 
-if [ $just_pep8 -eq 1 ]; then
-    run_pep8 || exit 1
+if [ $just_flake8 -eq 1 ]; then
+    run_flake8 || exit 1
     exit
 fi
 
@@ -200,8 +200,8 @@ function drop_db {
 run_tests || errors+=' unittests'
 
 if [ -z "$noseargs" ]; then
-  if [ $no_pep8 -eq 0 ]; then
-    run_pep8 || errors+=' pep8'
+  if [ $no_flake8 -eq 0 ]; then
+    run_flake8 || errors+=' flake8'
   fi
   if [ $no_jslint -eq 0 ]; then
     run_jslint || errors+=' jslint'
