@@ -155,6 +155,9 @@ define(['utils'], function(utils) {
         nodesAfterDeployment: function() {
             return this.filter(function(node) {return node.get('pending_addition') || !node.get('pending_deletion');});
         },
+        nodesAfterDeploymentWithRole: function(role) {
+            return _.filter(this.nodesAfterDeployment(), function(node) {return _.contains(_.union(node.get('roles'), node.get('pending_roles')), role);}).length;
+        },
         resources: function(resourceName) {
             var resources = this.map(function(node) {return node.resource(resourceName);});
             return _.reduce(resources, function(sum, n) {return sum + n;}, 0);

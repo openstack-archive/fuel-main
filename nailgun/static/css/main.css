@@ -1839,10 +1839,6 @@ h6.page-title {
   margin-left: 35px;
 }
 
-.display-changes-dialog > ul > li {
-  margin-top: 10px;
-}
-
 .pending-deletion-flag {
   display: block;
   position: relative;
@@ -3585,8 +3581,10 @@ legend.openstack-sub-title {
 
 .deploy-task-name {
   font-size: 13px;
-  font-weight: bold;
   padding: 8px 10px 1px 10px;
+}
+.deploy-task-name.header {
+  font-weight: bold;
 }
 
 .deploy-task-item {
