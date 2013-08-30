@@ -147,7 +147,7 @@ class TestNetworkConfigurationHandlerMultinodeMode(BaseHandlers):
 class TestNetworkConfigurationHandlerHAMode(BaseHandlers):
     def setUp(self):
         super(TestNetworkConfigurationHandlerHAMode, self).setUp()
-        cluster = self.env.create_cluster(api=True, mode='ha')
+        cluster = self.env.create_cluster(api=True, mode='ha_compact')
         self.cluster = self.db.query(Cluster).get(cluster['id'])
         self.net_manager = NetworkManager()
 

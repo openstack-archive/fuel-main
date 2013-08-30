@@ -59,7 +59,7 @@ class TestNetworkModels(BaseHandlers):
     def test_network_recreating_on_env(self):
         self.env.create(
             cluster_kwargs={
-                "mode": "ha"
+                "mode": "ha_compact"
             },
             nodes_kwargs=[
                 {"pending_addition": True},

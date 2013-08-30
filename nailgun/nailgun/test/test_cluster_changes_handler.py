@@ -41,7 +41,7 @@ class TestHandlers(BaseHandlers):
     def test_deploy_cast_with_right_args(self, mocked_rpc):
         self.env.create(
             cluster_kwargs={
-                "mode": "ha",
+                "mode": "ha_compact",
                 "type": "compute"
             },
             nodes_kwargs=[
@@ -51,7 +51,7 @@ class TestHandlers(BaseHandlers):
             ]
         )
         cluster_db = self.env.clusters[0]
-        cluster_depl_mode = 'ha'
+        cluster_depl_mode = 'ha_compact'
 
         # Set ip ranges for floating ips
         ranges = [['172.16.0.2', '172.16.0.4'],
@@ -478,7 +478,7 @@ class TestHandlers(BaseHandlers):
     def test_occurs_error_not_enough_controllers_for_ha(self):
         self.env.create(
             cluster_kwargs={
-                'mode': 'ha'},
+                'mode': 'ha_compact'},
             nodes_kwargs=[
                 {'roles': ['compute'], 'pending_addition': True}])
 

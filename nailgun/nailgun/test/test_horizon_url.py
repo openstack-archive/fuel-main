@@ -31,7 +31,7 @@ class TestHorizonURL(BaseHandlers):
     @fake_tasks()
     def test_horizon_url_ha_mode(self):
         self.env.create(
-            cluster_kwargs={"mode": "ha"},
+            cluster_kwargs={"mode": "ha_compact"},
             nodes_kwargs=[
                 {"pending_addition": True},
                 {"pending_addition": True},

@@ -212,7 +212,7 @@ class TestTaskManagers(BaseHandlers):
     @fake_tasks()
     def test_redeployment_works(self):
         self.env.create(
-            cluster_kwargs={"mode": "ha"},
+            cluster_kwargs={"mode": "ha_compact"},
             nodes_kwargs=[
                 {"pending_addition": True},
                 {"pending_addition": True},
@@ -240,7 +240,7 @@ class TestTaskManagers(BaseHandlers):
     @fake_tasks()
     def test_redeployment_error_nodes(self):
         self.env.create(
-            cluster_kwargs={"mode": "ha"},
+            cluster_kwargs={"mode": "ha_compact"},
             nodes_kwargs=[
                 {
                     "pending_addition": True,
@@ -480,7 +480,7 @@ class TestTaskManagers(BaseHandlers):
         self.env.create(
             cluster_kwargs={
                 "api": True,
-                "mode": "ha"
+                "mode": "ha_compact"
             },
             nodes_kwargs=[
                 {"roles": ["controller"], "pending_addition": True},

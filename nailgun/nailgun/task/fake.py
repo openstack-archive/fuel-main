@@ -128,7 +128,7 @@ class FakeDeploymentThread(FakeAmpqThread):
 
         kwargs = {
             'task_uuid': self.task_uuid,
-            'nodes': self.data['args']['nodes'],
+            'nodes': self.data['args']['deployment_info'],
             'status': 'running'
         }
 
