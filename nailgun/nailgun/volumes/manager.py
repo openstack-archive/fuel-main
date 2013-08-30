@@ -51,10 +51,14 @@ def byte_to_megabyte(byte):
 
 
 def get_node_volumes(node):
-    '''Helper for retrieving node volumes in correct order
-    '''
+    """Helper for retrieving node volumes in correct order
+    """
     node_volumes = []
     try:
+        # role = node.role if node.role else 'other'
+        # volume_groups_for_role = volumes_metadata[
+        #     'volumes_roles_mapping'][role]
+
         role_volumes = node.cluster.release.volumes_metadata[
             'volumes_roles_mapping']
         for role in (node.roles + node.pending_roles):
