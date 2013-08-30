@@ -68,6 +68,10 @@ class OrchestratorSerializer(object):
         attrs['controller_nodes'] = cls.controller_nodes(cluster.id)
         attrs['nodes'] = cls.node_list(cls.get_nodes_to_serialization(cluster))
 
+        for node in attrs['nodes']:
+            if node['role'] in 'cinder':
+                attrs['use_cinder'] = True
+
         return attrs
 
     @classmethod
@@ -78,10 +82,6 @@ class OrchestratorSerializer(object):
         attrs['master_ip'] = settings.MASTER_IP
         attrs['novanetwork_parameters'] = cls.novanetwork_attrs(cluster)
         attrs.update(cls.network_ranges(cluster))
-
-        # TODO!!!!!
-        # need to set flag use_cinder in case
-        # attrs['use_cinder'] ||= nodes.any?{|n| n['role'] == 'cinder'}
 
         return attrs
 
