@@ -168,16 +168,6 @@ class TestNetworkManager(BaseHandlers):
             []
         )
 
-    def test_assign_vip(self):
-        cluster = self.env.create_cluster(api=True)
-        self.env.network_manager.assign_vip(cluster['id'], "management")
-        # management_net = self.db.query(Network).join(NetworkGroup).\
-        #     filter(NetworkGroup.cluster_id == cluster['id']).filter_by(
-        #         name='management').first()
-        # ip_db = IPNetwork(management_net.cidr)[2]
-        # TODO(mihgen): we should check DB for correct data!
-        #  can't do it now because of issues with orm
-
     def test_assign_vip_is_idempotent(self):
         cluster = self.env.create_cluster(api=True)
         vip = self.env.network_manager.assign_vip(

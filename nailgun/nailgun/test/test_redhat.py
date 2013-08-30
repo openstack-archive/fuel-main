@@ -126,7 +126,6 @@ class TestHandlers(BaseHandlers):
     @fake_tasks()
     def test_redhat_account_update(self):
         for i in xrange(2):
-            # password = 'password{0}'.format(i)
             resp = self.app.post(
                 reverse('RedHatAccountHandler'),
                 json.dumps({'license_type': 'rhsm',

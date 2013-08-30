@@ -171,7 +171,6 @@ class TestVerifyNetworks(BaseHandlers):
         )
         cluster_db = self.env.clusters[0]
         node1, node2 = self.env.nodes
-        # nets_sent = [{'iface': 'eth0', 'vlans': range(100, 105)}]
 
         task = Task(
             name="super",

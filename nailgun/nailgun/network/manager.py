@@ -494,7 +494,6 @@ class NetworkManager(object):
         :type  network_id: int
         :returns: List of free IP addresses as SQLAlchemy objects.
         """
-        # node_db = db().query(Node).get(node_id)
         ips = db().query(IPAddr).order_by(IPAddr.id)
         if node_id:
             ips = ips.filter_by(node=node_id)

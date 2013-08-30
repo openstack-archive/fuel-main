@@ -133,9 +133,6 @@ class TestNodeDisksHandlers(BaseHandlers):
 
             self.assertNotEquals(size_volumes_before, size_volumes_after)
 
-            # lvm_meta = updated_disks_count * \
-            #     node_db.volume_manager.call_generator('calc_lvm_meta_size')
-
             volume_group_size = new_volume_size * updated_disks_count
             self.assertEquals(size_volumes_after, volume_group_size)
 
@@ -210,10 +207,6 @@ class TestNodeDefaultsDisksHandler(BaseHandlers):
         # check all groups on all disks
         vgs = ['os', 'vm']
         for disk in response:
-            # check_vgs = filter(
-            #     lambda v: v['name'] in vgs,
-            #     disk['volumes'])
-
             self.assertEquals(len(disk['volumes']), len(vgs))
 
     def test_get_default_attrs(self):

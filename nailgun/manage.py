@@ -16,6 +16,7 @@
 #    under the License.
 
 import argparse
+import code
 import sys
 
 if __name__ == "__main__":
@@ -151,12 +152,14 @@ if __name__ == "__main__":
         from nailgun.wsgi import appstart
         appstart(keepalive=params.keepalive)
     elif params.action == "shell":
+        from nailgun.db import db
         if params.config_file:
             settings.update_from_file(params.config_file)
-        # try:
-        #     from IPython import embed
-        #     embed()
-        # except ImportError:
-        #     code.interact(local={'db': db, 'settings': settings})
+        try:
+            raise ImportError("tRY ME!")
+            from IPython import embed
+            embed()
+        except ImportError:
+            code.interact(local={'db': db, 'settings': settings})
     else:
         parser.print_help()

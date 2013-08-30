@@ -112,7 +112,6 @@ class TestHandlers(BaseHandlers):
                         'meta': self.env.default_metadata()}),
             headers=self.default_headers)
         self.assertEquals(resp.status, 201)
-        # node = self.db.query(Node).filter(Node.mac == 'ASDFAAASDFAA').one()
         response = json.loads(resp.body)
         self.assertEquals('discover', response['status'])
 
