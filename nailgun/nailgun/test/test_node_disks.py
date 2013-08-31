@@ -15,7 +15,6 @@
 #    under the License.
 
 import json
-import unittest
 from copy import deepcopy
 
 from nailgun.errors import errors
