@@ -236,8 +236,13 @@ function(utils, models, commonViews, dialogViews, networkTabTemplate, networkTem
             'click .ip-ranges-delete': 'deleteIPRange'
         },
         setupVlanEnd: function() {
-            var vlanEnd = (this.network.get('vlan_start') + this.network.get('amount') - 1);
-            vlanEnd = vlanEnd > 4094 ? 4094 : vlanEnd;
+            var vlanEnd = '';
+            // calculate vlan end if there are no amount or vlan start validation errors
+            var errors = this.network.validationError;
+            if (!errors || !(errors.amount || errors.vlan_start)) {
+                vlanEnd = (this.network.get('vlan_start') + this.network.get('amount') - 1);
+                vlanEnd = vlanEnd > 4094 ? 4094 : vlanEnd;
+            }
             this.$('input[name=fixed-vlan_range-end]').val(vlanEnd);
         },
         changeNetwork: function(e) {
