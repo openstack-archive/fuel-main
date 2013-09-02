@@ -16,22 +16,40 @@
 import argparse
 import json
 import urllib2
+import sys
 
-API_ROOT = "http://127.0.0.1:8001/api/"
+API_ROOT = "http://127.0.0.1:8000/api/"
+
 
 class SetAction(argparse.Action):
         """argparse.Action subclass to store distinct values"""
         def __call__(self, parser, namespace, values, option_string=None):
             try:
-                getattr(namespace,self.dest).update( values )
+                getattr(namespace, self.dest).update(values)
             except AttributeError:
-                setattr(namespace,self.dest,set(values))
+                setattr(namespace, self.dest, set(values))
 
 
-def format_table(data, **kwargs):
-    rows = [tuple(x.values()) for x in data]
+def recur_get(multi_level_dict, key_chain):
+    if not isinstance(multi_level_dict[key_chain[0]], dict):
+        return multi_level_dict[key_chain[0]]
+    else:
+        return recur_get(multi_level_dict[key_chain[0]], key_chain[1:])
 
-    header = tuple(data[0].keys())
+
+def format_table(data, acceptable_keys=None, subdict_keys=None):
+    """
+    """
+    if subdict_keys:
+        for key_chain in subdict_keys:
+            for data_dict in data:
+                data_dict[key_chain[0]] = recur_get(data_dict, key_chain)
+    if acceptable_keys:
+        rows = [tuple([value[key] for key in acceptable_keys]) for value in data]
+        header = tuple(acceptable_keys)
+    else:
+        rows = [tuple(x.values()) for x in data]
+        header = tuple(data[0].keys())
     number_of_columns = len(header)
     column_widths = dict(
         zip(
@@ -57,6 +75,15 @@ def format_table(data, **kwargs):
     )
 
 
+def json_api_put_request(api, data):
+    print("POST request to address {0} with data: {1}".format(API_ROOT + api, data))
+    opener = urllib2.build_opener(urllib2.HTTPHandler)
+    request = urllib2.Request(API_ROOT + api, data=data)
+    request.add_header('Content-Type', ' application/json')
+    request.get_method = lambda: 'PUT'
+    opener.open(request)
+
+
 def json_api_get_request(api):
     request = urllib2.urlopen(API_ROOT + api)
     return json.loads(request.read())
@@ -64,12 +91,12 @@ def json_api_get_request(api):
 
 def json_api_post_request(api, data):
     # print "POST request to address {0} with data: {1}".format(API_ROOT + api,data)
-    request = urllib2.urlopen(url=API_ROOT + api,data=data).read()
+    urllib2.urlopen(url=API_ROOT + api, data=data).read()
 
 
 def release(params):
-    param_list = {k: v for k,v in params.__dict__.iteritems()
-     if k != "action"}.values()
+    param_list = {k: v for k, v in params.__dict__.iteritems()
+                  if k != "action"}.values()
     if not any(param_list) or params.list:
         data = json_api_get_request("releases/")
         for release in data:
@@ -88,33 +115,47 @@ def environment(params):
     param_values = params.__dict__.values()
     param_values.remove("environment")
     if not any(param_values) or params.list:
+        acceptable_keys = ["id", "status", "name", "mode", "release", "changes"]
         data = json_api_get_request("clusters/")
-        print(data)
-        # print format_table(data)
+        print(format_table(data, acceptable_keys=acceptable_keys, subdict_keys=[("release", u"id")]))
     if params.create:
         if params.ename and params.rid:
-            data = {"nodes":[],"tasks":[],"name": params.ename,"release": int(params.rid)}
+            data = {"nodes": [],
+                    "tasks": [],
+                    "name": params.ename,
+                    "release": int(params.rid)}
             data = json.dumps(data)
-            json_api_post_request("clusters/",data)
+            json_api_post_request("clusters/", data)
             print "Environment {0} was created successfully.".format(params.ename)
         else:
             print "You need to specify --ename and --rid!"
 
 
 def node(params):
-    param_list = {k: v for k,v in params.__dict__.iteritems()
-    if k != "action"}.values()
+    """
+    Namespace(action='node', alloc=False, list=False, nid=None, remove=False, role=None, set=False)
+    """
+    param_list = {k: v for k, v in params.__dict__.iteritems()
+                  if k != "action"}.values()
     if not any(param_list) or params.list:
-        acceptable_keys = ["status", "name",
-        "cluster", "mac", "role", "online", "id"]
+        acceptable_keys = ["id", "status", "name", "cluster", "mac", "role", "online"]
         data = json_api_get_request("nodes/")
-        new_data = map(
-            lambda node: {k: v for k, v in node.iteritems() 
-                if k in acceptable_keys},
-                data
-            )
-        print format_table(new_data)
-    # print(params)
+        print format_table(data, acceptable_keys=acceptable_keys)
+    if params.set:
+        if params.nid and params.role and params.eid:
+            data = [
+                {
+                        "id": int(params.nid),
+                        "cluster_id": int(params.eid),
+                        "role": params.role.pop().lower(),
+                        "pending_addition": True,
+                        "pending_deletion": False
+                }]
+            data = json.dumps(data)
+            json_api_put_request("nodes/", data)
+        else:
+            print "Adjust arguments!"
+    print(params)
 
 
 def network(params):
@@ -186,7 +227,7 @@ actions = {
                 "default": False
             }
         }, {
-            "args": ["-c","--env-create" , "--create"],
+            "args": ["-c", "--env-create", "--create"],
             "params": {
                 "dest": "create",
                 "action": "store_true",
@@ -460,10 +501,27 @@ actions = {
     }
 }
 
-import sys
+
+substitutions = {
+    "list": "--list",
+    "set": "--set",
+    "env": "environment",
+    "net": "network"
+}
 
 if __name__ == '__main__':
+    sys.argv = map(
+        lambda x: substitutions.get(x, x),
+        sys.argv
+    )
     parser = argparse.ArgumentParser()
+    parser.add_argument(*["--eid", "--env-id"], **{
+                "dest": "eid",
+                "action": "store",
+                "type": str,
+                "help": "environment id",
+                "default": None
+    })
     subparsers = parser.add_subparsers(
         dest="action", help='actions'
     )
