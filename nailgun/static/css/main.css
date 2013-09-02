@@ -4329,6 +4329,10 @@ input.input-append {
   float: right;
 }
 
+.cluster-toolbar select {
+  margin-bottom: 0;
+}
+
 .cluster-toolbar-item {
   display: block;
   float: left;

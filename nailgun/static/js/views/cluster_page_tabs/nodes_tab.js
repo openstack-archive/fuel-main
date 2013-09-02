@@ -170,6 +170,7 @@ function(utils, models, commonViews, dialogViews, nodesManagementPanelTemplate, 
         template: _.template(nodesManagementPanelTemplate),
         events: {
             'change select[name=grouping]' : 'groupNodes',
+            'click .btn-cluster-actions': 'changeClusterMode',
             'click .btn-assign-roles:not(:disabled)' : 'showAssignRolesPanel',
             'click .btn-delete-nodes:not(:disabled)' : 'showDeleteNodesDialog',
             'click .btn-configure-disks:not(:disabled)' : 'goToConfigureDisksScreen',
@@ -187,6 +188,11 @@ function(utils, models, commonViews, dialogViews, nodesManagementPanelTemplate, 
         chosenNodes: function() {
             var chosenNodesIds = this.screen.$('.node-checkbox input:checked').map(function() {return parseInt($(this).val(), 10);}).get();
             return this.screen.nodes.filter(function(node) {return _.contains(chosenNodesIds, node.id);});
+        },
+        changeClusterMode: function() {
+            var dialog = new dialogViews.ChangeClusterModeDialog({model: this.cluster});
+            this.registerSubView(dialog);
+            dialog.render();
         },
         showAssignRolesPanel: function() {
             this.$('.cluster-toolbar').hide();
@@ -440,7 +446,7 @@ function(utils, models, commonViews, dialogViews, nodesManagementPanelTemplate, 
             'click .node-renameable': 'startNodeRenaming',
             'keydown .name input': 'onNodeNameInputKeydown',
             'click .node-hardware': 'showNodeDetails',
-            'click .roles': 'showAssignRolesPanel',
+            'click .roles li': 'showAssignRolesPanel',
             'click .btn-discard-role-changes': 'discardRoleChanges',
             'click .btn-discard-addition': 'discardAddition',
             'click .btn-discard-deletion': 'discardDeletion'

@@ -14,7 +14,7 @@
   <% if (deletedNodes) { %>
     <div class="deploy-task-name">Deleted <%= deletedNodes %> node<%= deletedNodes != 1 ? 's' : '' %> </div>
   <% } %>
-  <% var reconfiguredNodes = cluster.get('nodes').filter(function(node) {return !node.get('pending_deletion') && !node.get('pending_deletion') && !_.isEmpty(node.get('pending_roles'));}).length %>
+  <% var reconfiguredNodes = cluster.get('nodes').filter(function(node) {return !node.get('pending_addition') && !node.get('pending_deletion') && !_.isEmpty(node.get('pending_roles'));}).length %>
   <% if (reconfiguredNodes) { %>
     <div class="deploy-task-name">Reconfigured roles of <%= reconfiguredNodes %> node<%= reconfiguredNodes != 1 ? 's' : '' %> </div>
   <% } %>
@@ -46,7 +46,7 @@
   <!-- Warnings -->
   <%
     var warnings = {
-     'controller': 'Environment does not contain the necessary number of controllers.',
+     'controller': 'Environment should have ' + size + ' controller node' + (size == 1 ? '' : 's') + '.',
       'compute': 'Compute nodes are recommended for deployment.'
     };
     var warning = null, canDeploy = true;

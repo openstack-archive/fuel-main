@@ -20,19 +20,13 @@
       <button class="btn btn-go-to-cluster">Back to Environment Node List</button>
     </div>
   <% } %>
+  <div class="cluster-toolbar-item pull-right">
+    <button class="btn btn-success btn-assign-roles batch-action-btn" disabled><%= cluster ? 'Reassign' : 'Assign' %> Roles</button>
+  </div>
   <% if (cluster) { %>
     <div class="cluster-toolbar-item pull-right">
-      <button class="btn btn-congigure-interfaces batch-action-btn" disabled>Configure Interfaces</button>
-    </div>
-    <div class="cluster-toolbar-item pull-right">
-      <button class="btn btn-congigure-disks batch-action-btn" disabled>Configure Disks</button>
+      <button class="btn btn-danger btn-delete-nodes batch-action-btn" disabled>Delete Nodes</button>
     </div>
   <% } %>
-  <div class="cluster-toolbar-item pull-right">
-    <button class="btn btn-success btn-assign-roles batch-action-btn" disabled>Assign Roles</button>
-  </div>
-  <div class="cluster-toolbar-item pull-right">
-    <button class="btn btn-danger btn-delete-nodes batch-action-btn" disabled>Delete Nodes <%= cluster ? '' : 'from FUEL' %></button>
-  </div>
 </div>
 <div class="assign-roles-panel"></div>

@@ -1,11 +1,13 @@
 <% var cluster = nodes.cluster %>
 <div class="row-fluid node-list-header">
   <div class="span8">
-    <h3><%= cluster ? cluster.get('name') : 'Unallocated Nodes' %> (<%= nodes.length %>)</h3>
+    <h3><%= cluster ? cluster.get('name') : 'Unallocated Nodes' %> (<%= nodes.length %> node<%= nodes.length == 1 ? '' : 's' %>)</h3>
     <% if (cluster) { %>
       <p><strong>OpenStack Release:</strong> <%- cluster.get('release').get('name') %></p>
       <% var statuses = {'new': 'New', 'deployment': 'Deploying', 'operational': 'Operational', 'error': 'Error', 'remove': 'Removing'} %>
       <p><strong>Environment Status:</strong> <%- statuses[cluster.get('status')] %></p>
+      <% var modes = {'multinode': 'Multi-node', 'ha': 'Multi-node HA'} %>
+      <p><strong>Environment Deployment Mode:</strong> <%- modes[cluster.get('mode')] %></p>
     <% } %>
   </div>
   <% if (cluster) { %>
@@ -16,7 +18,7 @@
 <div class="row-fluid">
   <% if (!nodes.deferred || nodes.deferred.state() != 'pending') { %>
     <% if (!nodes.length) { %>
-      <div class="alert alert-warning"><%= cluster ? 'Current deployment mode restrictions' : 'How to add nodes in Fuel description' %></div>
+      <div class="alert alert-warning"><%= cluster ? 'How to add nodes in environment description' : 'How to add nodes in Fuel description' %></div>
     <% } %>
     <div class="nodes"></div>
   <% } else { %>
