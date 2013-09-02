@@ -150,6 +150,7 @@ class BaseNodeTestCase(BaseTestCase):
             # revert virtual machines
             state = self.environment_states[state_hash]
             self.ci().get_state(state['snapshot_name'])
+            self.ci().environment().resume()
         else:
             # create cluster
             self.ci().get_empty_state()
@@ -159,11 +160,13 @@ class BaseNodeTestCase(BaseTestCase):
             # make a snapshot
             snapshot_name = '%s_%s' % \
                             (name.replace(' ', '_')[:17], state_hash)
+            self.ci().environment().suspend()
             self.ci().environment().snapshot(
                 name=snapshot_name,
                 description=name,
                 force=True,
             )
+            self.ci().environment().resume()
             self.environment_states[state_hash] = {
                 'snapshot_name': snapshot_name,
                 'cluster_name': name,
@@ -209,8 +212,13 @@ class BaseNodeTestCase(BaseTestCase):
         for set_result in set_result_list:
             passed += len(filter(lambda test: test['status'] == 'success',
                                  set_result['tests']))
-            failed += len(filter(lambda test: test['status'] == 'failure',
-                                 set_result['tests']))
+            failed += len(
+                filter(
+                    lambda test: test['status'] == 'failure' or
+                    test['status'] == 'error',
+                    set_result['tests']
+                )
+            )
         self.assertEqual(passed, should_pass, 'Passed tests')
         self.assertEqual(failed, should_fail, 'Failed tests')
 

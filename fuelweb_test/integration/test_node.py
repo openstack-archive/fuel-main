@@ -145,7 +145,7 @@ class TestNode(BaseNodeTestCase):
             nodes[0]),
             timeout=3 * 60
         )
-        self.run_OSTF(cluster_id=cluster_id, should_fail=12, should_pass=12)
+        self.run_OSTF(cluster_id=cluster_id, should_fail=24, should_pass=0)
 
     @snapshot_errors
     @logwrap
@@ -169,7 +169,6 @@ class TestNode(BaseNodeTestCase):
             self.assertTaskFailed(task, 60 * 2)
         finally:
             ebtables.restore_first_vlan()
-        self.run_OSTF(cluster_id=cluster_id, should_fail=12, should_pass=12)
 
     @snapshot_errors
     @logwrap
