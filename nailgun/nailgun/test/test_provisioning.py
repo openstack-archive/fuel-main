@@ -50,7 +50,7 @@ class TestProvisioning(BaseHandlers):
         cluster = self.env.create_cluster()
         map(
             lambda x: self.env.create_node(
-                api=True,
+                api=False,
                 cluster_id=cluster['id'],
                 **x),
             [

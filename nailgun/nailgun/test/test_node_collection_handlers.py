@@ -132,7 +132,7 @@ class TestHandlers(BaseHandlers):
 
     def test_node_update_agent_discover(self):
         self.env.create_node(
-            api=True,
+            api=False,
             status='provisioning',
             meta=self.env.default_metadata()
         )

@@ -100,7 +100,7 @@ class TestNetworkManager(BaseHandlers):
                 {
                     "pending_addition": True,
                     "api": True,
-                    "status": "error"
+                    "status": "discover"
                 }
             ]
         )
