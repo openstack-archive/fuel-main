@@ -56,7 +56,6 @@ class NodeHandler(JSONHandler):
             network_manager = NetworkManager()
             json_data['network_data'] = network_manager.get_node_networks(
                 instance.id)
-            json_data['roles'] = [r.name for r in instance.roles]
         except Exception:
             logger.error(traceback.format_exc())
         return json_data
