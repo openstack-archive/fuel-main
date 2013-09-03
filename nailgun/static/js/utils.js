@@ -97,6 +97,9 @@ define(['require'], function(require) {
         },
         floor: function(n, decimals) {
             return Math.floor(n * Math.pow(10, decimals)) / Math.pow(10, decimals);
+        },
+        isInteger: function(n) {
+            return n % 1 === 0;
         }
     };
 

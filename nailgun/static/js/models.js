@@ -436,7 +436,7 @@ define(['utils'], function(utils) {
                     }
                 } else if (attribute == 'vlan_start') {
                     if (!_.isNull(attrs.vlan_start) || (attrs.name == 'fixed' && options.net_manager == 'VlanManager')) {
-                        if (_.isNaN(attrs.vlan_start) || !_.isNumber(attrs.vlan_start) || attrs.vlan_start < 1 || attrs.vlan_start > 4094) {
+                        if (_.isNaN(attrs.vlan_start) || !utils.isInteger(attrs.vlan_start) || attrs.vlan_start < 1 || attrs.vlan_start > 4094) {
                             errors.vlan_start = 'Invalid VLAN ID';
                         }
                     }
@@ -445,7 +445,7 @@ define(['utils'], function(utils) {
                 } else if (attribute == 'gateway' && this.validateIP(attrs.gateway)) {
                     errors.gateway = 'Invalid gateway';
                 } else if (attribute == 'amount') {
-                    if (!attrs.amount || (attrs.amount && (!_.isNumber(attrs.amount) || attrs.amount < 1))) {
+                    if (!attrs.amount || (attrs.amount && (!utils.isInteger(attrs.amount) || attrs.amount < 1))) {
                         errors.amount = 'Invalid amount of networks';
                     } else if (attrs.amount && attrs.amount > 4095 - attrs.vlan_start) {
                         errors.amount = 'Number of networks needs more VLAN IDs than available. Check VLAN ID Range field.';
