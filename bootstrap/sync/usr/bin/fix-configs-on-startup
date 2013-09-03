@@ -14,7 +14,7 @@ cat > /etc/send2syslog.conf <<EOF
             {"tag": "bootstrap/mcollective", "log_type": "ruby",
                 "files": ["/var/log/mcollective.log"]},
             {"tag": "bootstrap/agent", "log_type": "ruby",
-                "files": ["/var/log/agent.log"]}
+                "files": ["/var/log/nailgun-agent.log"]}
         ]
     }
 ]
