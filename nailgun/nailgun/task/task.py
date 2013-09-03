@@ -101,11 +101,14 @@ class DeploymentTask(object):
     def message(cls, task):
         logger.debug("DeploymentTask.message(task=%s)" % task.uuid)
 
+        nodes = TaskHelper.nodes_to_deploy(task.cluster)
+        nodes_ids = [n.id for n in nodes]
         for n in db().query(Node).filter_by(
                 cluster=task.cluster).order_by(Node.id):
             # However, we must not pass nodes which are set to be deleted.
             if n.pending_deletion:
                 continue
+
             if n.id in nodes_ids:  # It's node which we need to redeploy
                 n.pending_addition = False
                 if n.pending_roles:
