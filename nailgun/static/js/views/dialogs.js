@@ -93,6 +93,8 @@ function(require, utils, models, simpleMessageTemplate, createClusterWizardTempl
         }
     };
 
+    var clusterWizardPanes = {};
+
     views.CreateClusterWizard = views.Dialog.extend({
         template: _.template(createClusterWizardTemplate),
         events: {
@@ -104,81 +106,37 @@ function(require, utils, models, simpleMessageTemplate, createClusterWizardTempl
             _.defaults(this, options);
             this.activePane = null;
             this.panes = [];
-            _.each(this.panesToAdd, function(Pane) {
+            _.each(this.panesConstructors, function(Pane) {
                 var pane = new Pane({wizard: this});
                 this.registerSubView(pane);
                 this.panes.push(pane);
                 pane.render();
             }, this);
         },
+        findPane: function(PaneConstructor) {
+            return _.find(this.panes, function(pane) {
+                return pane instanceof PaneConstructor;
+            });
+        },
         nextPane: function() {
-            this.activePane += 1;
-            this.render();
+            this.panes[this.activePane].processPaneData().done(_.bind(function() {
+                this.activePane += 1;
+                this.render();
+            }, this));
         },
         prevPane: function() {
             this.activePane -= 1;
             this.render();
         },
-        render: function() {
-            if (_.isNull(this.activePane)) {
-                this.activePane = 0;
-            } else {
-                this.panes[this.activePane].$el.detach();
-            }
-            var pane = this.panes[this.activePane];
-            var currentStep = this.activePane + 1;
-            var totalSteps = this.panes.length;
-            this.constructor.__super__.render.call(this, {
-                currentStep: currentStep,
-                totalSteps: totalSteps
-            });
-            this.$('.pane-title').text(pane.title || '');
-            this.$('.pane-content').append(pane.el);
-            this.$('.prev-pane-btn').prop('disabled', !this.activePane);
-            this.$('.next-pane-btn').toggle(currentStep != totalSteps);
-            this.$('.finish-btn').toggle(currentStep == totalSteps);
-            return this;
-        }
-    }, {
-        panes: {}
-    });
-
-    views.WizardPane = Backbone.View.extend({
-        render: function() {
-            this.$el.html(this.template());
-            return this;
-        }
-    });
-
-    views.CreateClusterWizard.panes.ClusterNameAndReleasePane = views.WizardPane.extend(_.extend({
-        template: _.template(clusterNameAndReleasePaneTemplate),
-        events: {
-            'keydown input': 'onInputKeydown',
-            'change select[name=release]': 'updateReleaseParameters'
-        },
-        submitForm: function() {
-            if (this.rhelCredentialsFormVisible()) {
-                if (this.rhelCredentialsForm.setCredentials()) {
-                    this.rhelCredentialsForm.saveCredentials();
-                    this.createCluster();
-                }
-            } else {
-                this.createCluster();
-            }
+        finish: function() {
+            this.$('.wizard-footer button').prop('disabled', true);
+            this.createCluster().always(_.bind(function() {
+                this.$el.modal('hide');
+            }, this));
         },
         createCluster: function() {
-            this.$('.control-group').removeClass('error').find('.help-inline').text('');
-            var cluster = new models.Cluster();
-            cluster.on('invalid', function(model, error) {
-                _.each(error, function(message, field) {
-                    this.$('*[name=' + field + ']').closest('.control-group').addClass('error').find('.help-inline').text(message);
-                }, this);
-                this.$('.create-cluster-btn').attr('disabled', false);
-            }, this);
-            var deferred = cluster.save({
-                name: $.trim(this.$('input[name=name]').val()),
-                release: parseInt(this.$('select[name=release]').val(), 10)
-            });
+            var cluster = this.findPane(clusterWizardPanes.ClusterNameAndReleasePane).cluster;
+            var deferred = cluster.save();
             if (deferred) {
                 this.$('.create-cluster-btn').attr('disabled', true);
                 deferred
@@ -199,11 +157,80 @@ function(require, utils, models, simpleMessageTemplate, createClusterWizardTempl
             }
             return deferred;
         },
+        render: function() {
+            if (_.isNull(this.activePane)) {
+                this.activePane = 0;
+            } else {
+                this.panes[this.activePane].$el.detach();
+            }
+            var pane = this.panes[this.activePane];
+            var currentStep = this.activePane + 1;
+            var totalSteps = this.panes.length;
+            this.constructor.__super__.render.call(this, {
+                currentStep: currentStep,
+                totalSteps: totalSteps
+            });
+            this.$('.pane-title').text(pane.title || '');
+            this.$('.pane-content').append(pane.el);
+            this.$('.prev-pane-btn').prop('disabled', !this.activePane);
+            this.$('.next-pane-btn').toggle(currentStep != totalSteps);
+            this.$('.finish-btn').toggle(currentStep == totalSteps);
+            this.$('.wizard-footer .btn-success:visible').focus();
+            return this;
+        }
+    });
+
+    views.WizardPane = Backbone.View.extend({
+        initialize: function(options) {
+            _.defaults(this, options);
+        },
+        processPaneData: function() {
+            return (new $.Deferred()).resolve();
+        },
+        render: function() {
+            this.$el.html(this.template());
+            return this;
+        }
+    });
+
+    clusterWizardPanes.ClusterNameAndReleasePane = views.WizardPane.extend(_.extend({
+        template: _.template(clusterNameAndReleasePaneTemplate),
+        events: {
+            'keydown input': 'onInputKeydown',
+            'change select[name=release]': 'updateReleaseParameters'
+        },
+        processPaneData: function() {
+            var success = true;
+            if (this.rhelCredentialsFormVisible()) {
+                success = this.rhelCredentialsForm.setCredentials();
+                if (this.rhelCredentialsForm.setCredentials()) {
+                    this.rhelCredentialsForm.saveCredentials();
+                    success = this.createCluster();
+                }
+            } else {
+                success = this.createCluster();
+            }
+            return (new $.Deferred())[success ? 'resolve' : 'reject']();
+        },
+        createCluster: function() {
+            this.$('.control-group').removeClass('error').find('.help-inline').text('');
+            this.cluster = new models.Cluster();
+            this.cluster.on('invalid', function(model, error) {
+                _.each(error, function(message, field) {
+                    this.$('*[name=' + field + ']').closest('.control-group').addClass('error').find('.help-inline').text(message);
+                }, this);
+                this.$('.create-cluster-btn').attr('disabled', false);
+            }, this);
+            return this.cluster.set({
+                name: $.trim(this.$('input[name=name]').val()),
+                release: parseInt(this.$('select[name=release]').val(), 10)
+            }, {validate: true});
+        },
         onInputKeydown: function(e) {
             this.$('.control-group.error').removeClass('error');
             this.$('.help-inline').html('');
             if (e.which == 13) {
-                this.submitForm();
+                this.wizard.nextPane();
             }
         },
         updateReleaseParameters: function() {
@@ -226,7 +253,8 @@ function(require, utils, models, simpleMessageTemplate, createClusterWizardTempl
         rhelCredentialsFormVisible: function() {
             return this.redHatAccount.absent && this.release.get('state') == 'not_available';
         },
-        initialize: function() {
+        initialize: function(options) {
+            _.defaults(this, options);
             this.releases = new models.Releases();
             this.releases.fetch();
             this.releases.on('sync', this.renderReleases, this);
@@ -253,44 +281,44 @@ function(require, utils, models, simpleMessageTemplate, createClusterWizardTempl
         }
     }, rhelCredentialsMixin));
 
-    views.CreateClusterWizard.panes.ClusterModePane = views.WizardPane.extend({
+    clusterWizardPanes.ClusterModePane = views.WizardPane.extend({
         title: 'Mode',
         template: _.template(clusterModePaneTemplate)
     });
 
-    views.CreateClusterWizard.panes.ClusterComputePane = views.WizardPane.extend({
+    clusterWizardPanes.ClusterComputePane = views.WizardPane.extend({
         title: 'Compute',
         template: _.template(clusterComputePaneTemplate)
     });
 
-    views.CreateClusterWizard.panes.ClusterNetworkPane = views.WizardPane.extend({
+    clusterWizardPanes.ClusterNetworkPane = views.WizardPane.extend({
         title: 'Network',
         template: _.template(clusterNetworkPaneTemplate)
     });
 
-    views.CreateClusterWizard.panes.ClusterStoragePane = views.WizardPane.extend({
+    clusterWizardPanes.ClusterStoragePane = views.WizardPane.extend({
         title: 'Storage',
         template: _.template(clusterStoragePaneTemplate)
     });
 
-    views.CreateClusterWizard.panes.ClusterAdditionalServicesPane = views.WizardPane.extend({
+    clusterWizardPanes.ClusterAdditionalServicesPane = views.WizardPane.extend({
         title: 'Addition Services',
         template: _.template(clusterAdditionalServicesPaneTemplate)
     });
 
-    views.CreateClusterWizard.panes.ClusterReadyPane = views.WizardPane.extend({
+    clusterWizardPanes.ClusterReadyPane = views.WizardPane.extend({
         title: 'Ready',
         template: _.template(clusterReadyPaneTemplate)
     });
 
-    views.CreateClusterWizard.prototype.panesToAdd = [
-        views.CreateClusterWizard.panes.ClusterNameAndReleasePane,
-        views.CreateClusterWizard.panes.ClusterModePane,
-        views.CreateClusterWizard.panes.ClusterComputePane,
-        views.CreateClusterWizard.panes.ClusterNetworkPane,
-        views.CreateClusterWizard.panes.ClusterStoragePane,
-        views.CreateClusterWizard.panes.ClusterAdditionalServicesPane,
-        views.CreateClusterWizard.panes.ClusterReadyPane
+    views.CreateClusterWizard.prototype.panesConstructors = [
+        clusterWizardPanes.ClusterNameAndReleasePane,
+        clusterWizardPanes.ClusterModePane,
+        clusterWizardPanes.ClusterComputePane,
+        clusterWizardPanes.ClusterNetworkPane,
+        clusterWizardPanes.ClusterStoragePane,
+        clusterWizardPanes.ClusterAdditionalServicesPane,
+        clusterWizardPanes.ClusterReadyPane
     ];
 
     views.RhelCredentialsDialog = views.Dialog.extend(_.extend({
