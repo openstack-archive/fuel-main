@@ -96,7 +96,7 @@ class Release(Base):
     @roles.setter
     def roles(self, roles):
         for role in roles:
-            if not role in self.roles:
+            if role not in self.roles:
                 self.role_list.append(Role(name=role, release=self))
         db().commit()
 
@@ -306,7 +306,7 @@ class Node(Base):
             pass
         old_roles = self.roles
         for role in new_roles:
-            if not role in old_roles:
+            if role not in old_roles:
                 new_role = filter(lambda r: r.name == role, available_roles)
                 if new_role:
                     self.role_list.append(new_role[0])

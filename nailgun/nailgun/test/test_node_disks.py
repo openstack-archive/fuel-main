@@ -14,8 +14,8 @@
 #    License for the specific language governing permissions and limitations
 #    under the License.
 
-import json
 from copy import deepcopy
+import json
 
 from nailgun.errors import errors
 from nailgun.test.base import BaseHandlers

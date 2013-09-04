@@ -51,8 +51,7 @@ def byte_to_megabyte(byte):
 
 
 def get_node_volumes(node):
-    '''
-    Helper for retrieving node volumes in correct order
+    '''Helper for retrieving node volumes in correct order
     '''
     node_volumes = []
     try:

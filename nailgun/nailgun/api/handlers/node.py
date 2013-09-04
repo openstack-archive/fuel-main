@@ -26,8 +26,8 @@ import web
 
 from nailgun.api.handlers.base import content_json
 from nailgun.api.handlers.base import JSONHandler
-from nailgun.api.models import NetworkGroup
 from nailgun.api.models import Cluster
+from nailgun.api.models import NetworkGroup
 from nailgun.api.models import Node
 from nailgun.api.models import NodeAttributes
 from nailgun.api.models import NodeNICInterface
