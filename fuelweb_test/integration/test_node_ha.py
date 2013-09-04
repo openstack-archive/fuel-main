@@ -55,7 +55,7 @@ class TestNode(BaseNodeTestCase):
     @snapshot_errors
     @logwrap
     @fetch_logs
-    def test_ha_cluster_vlan(self):
+    def test_ha_add_compute(self):
         nodes_dict = {
             'controller': ['slave-01', 'slave-02', 'slave-03'],
             'compute': ['slave-04', 'slave-05']
