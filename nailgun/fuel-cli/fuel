@@ -310,7 +310,8 @@ facts = """
     "auth_key": "",
     "last_controller": "controller-3",
     "fqdn": "controller-1.mirantis.com",
-    "compute_scheduler_driver": "nova.scheduler.filter_scheduler.FilterScheduler",
+    "compute_scheduler_driver":
+    "nova.scheduler.filter_scheduler.FilterScheduler",
     "fixed_interface": "eth0.103",
     "admin_interface": "eth0",
     "cinder": {
@@ -605,7 +606,8 @@ facts = """
     "auth_key": "",
     "last_controller": "controller-3",
     "fqdn": "controller-2.mirantis.com",
-    "compute_scheduler_driver": "nova.scheduler.filter_scheduler.FilterScheduler",
+    "compute_scheduler_driver":
+    "nova.scheduler.filter_scheduler.FilterScheduler",
     "fixed_interface": "eth0.103",
     "admin_interface": "eth0",
     "cinder": {
@@ -900,7 +902,8 @@ facts = """
     "auth_key": "",
     "last_controller": "controller-3",
     "fqdn": "controller-3.mirantis.com",
-    "compute_scheduler_driver": "nova.scheduler.filter_scheduler.FilterScheduler",
+    "compute_scheduler_driver":
+    "nova.scheduler.filter_scheduler.FilterScheduler",
     "fixed_interface": "eth0.103",
     "admin_interface": "eth0",
     "cinder": {
@@ -1195,7 +1198,8 @@ facts = """
     "auth_key": "",
     "last_controller": "controller-3",
     "fqdn": "storage-4.mirantis.com",
-    "compute_scheduler_driver": "nova.scheduler.filter_scheduler.FilterScheduler",
+    "compute_scheduler_driver":
+    "nova.scheduler.filter_scheduler.FilterScheduler",
     "fixed_interface": "eth0.103",
     "admin_interface": "eth0",
     "cinder": {
@@ -1490,7 +1494,8 @@ facts = """
     "auth_key": "",
     "last_controller": "controller-3",
     "fqdn": "cinder-5.mirantis.com",
-    "compute_scheduler_driver": "nova.scheduler.filter_scheduler.FilterScheduler",
+    "compute_scheduler_driver":
+    "nova.scheduler.filter_scheduler.FilterScheduler",
     "fixed_interface": "eth0.103",
     "admin_interface": "eth0",
     "cinder": {
@@ -1785,7 +1790,8 @@ facts = """
     "auth_key": "",
     "last_controller": "controller-3",
     "fqdn": "compute-6.mirantis.com",
-    "compute_scheduler_driver": "nova.scheduler.filter_scheduler.FilterScheduler",
+    "compute_scheduler_driver":
+    "nova.scheduler.filter_scheduler.FilterScheduler",
     "fixed_interface": "eth0.103",
     "admin_interface": "eth0",
     "cinder": {
@@ -2080,7 +2086,8 @@ facts = """
     "auth_key": "",
     "last_controller": "controller-3",
     "fqdn": "primary-swift-proxy-7.mirantis.com",
-    "compute_scheduler_driver": "nova.scheduler.filter_scheduler.FilterScheduler",
+    "compute_scheduler_driver":
+    "nova.scheduler.filter_scheduler.FilterScheduler",
     "fixed_interface": "eth0.103",
     "admin_interface": "eth0",
     "cinder": {
@@ -2375,7 +2382,8 @@ facts = """
     "auth_key": "",
     "last_controller": "controller-3",
     "fqdn": "swift-proxy-8.mirantis.com",
-    "compute_scheduler_driver": "nova.scheduler.filter_scheduler.FilterScheduler",
+    "compute_scheduler_driver":
+    "nova.scheduler.filter_scheduler.FilterScheduler",
     "fixed_interface": "eth0.103",
     "admin_interface": "eth0",
     "cinder": {
