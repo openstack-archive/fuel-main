@@ -98,8 +98,8 @@ define(['require'], function(require) {
         floor: function(n, decimals) {
             return Math.floor(n * Math.pow(10, decimals)) / Math.pow(10, decimals);
         },
-        isInteger: function(n) {
-            return n % 1 === 0;
+        isNaturalNumber: function(n) {
+            return !_.isNaN(n) && n > 0 && n % 1 === 0;
         }
     };
 
