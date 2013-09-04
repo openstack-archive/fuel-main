@@ -300,34 +300,39 @@ class OrchestratorHASerializer(OrchestratorSerializer):
         node_list = super(OrchestratorHASerializer, cls).node_list(nodes)
 
         for node in node_list:
-            node['mountpoints'] = '1 1\\n2 2\\n'
             node['swift_zone'] = node['uid']
 
         return node_list
 
     @classmethod
     def get_common_attrs(cls, cluster):
-        commont_attrs = super(OrchestratorHASerializer, cls).get_common_attrs(cluster)
+        common_attrs = super(OrchestratorHASerializer, cls).get_common_attrs(cluster)
 
         netmanager = NetworkManager()
-        commont_attrs['management_vip'] = netmanager.assign_vip(
+        common_attrs['management_vip'] = netmanager.assign_vip(
             cluster.id, 'management')
-        commont_attrs['public_vip'] = netmanager.assign_vip(
+        common_attrs['public_vip'] = netmanager.assign_vip(
             cluster.id, "public")
 
-        commont_attrs['last_controller'] = sorted(
-            commont_attrs['controller_nodes'],
+        common_attrs['last_controller'] = sorted(
+            common_attrs['controller_nodes'],
             key=lambda node: node['uid'])[-1]['name']
 
         first_controller = filter(
             lambda node: 'controller' in node['role'],
-            commont_attrs['nodes'])[0]
+            common_attrs['nodes'])[0]
 
         # FIXME (eli): when multiroles will become
         # we will need to rework this logic
         first_controller['role'] = 'primary-controller'
 
-        return commont_attrs
+        common_attrs['mp'] = [
+            {'point': '1', 'weight': '1'},
+            {'point': '2','weight': '2'}]
+
+        common_attrs['mountpoints'] = '1 1\\n2 2\\n'
+
+        return common_attrs
 
 
 def serialize(cluster):
