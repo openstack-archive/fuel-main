@@ -151,6 +151,7 @@ class DeploymentTaskManager(TaskManager):
         if not any([nodes_to_provision, nodes_to_deploy, nodes_to_delete]):
             raise errors.WrongNodeStatus("No changes to deploy")
 
+        self.cluster.prepare_for_deployment()
         self.cluster.status = 'deployment'
         db().add(self.cluster)
         db().commit()
