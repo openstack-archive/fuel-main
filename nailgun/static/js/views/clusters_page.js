@@ -48,9 +48,9 @@ function(models, utils, commonViews, dialogViews, clustersPageTemplate, clusterT
             'click .create-cluster': 'createCluster'
         },
         createCluster: function() {
-            var createClusterDialogView = new dialogViews.CreateClusterDialog({collection: this.collection});
-            app.page.registerSubView(createClusterDialogView);
-            createClusterDialogView.render();
+            var createClusterWizardView = new dialogViews.CreateClusterWizard({collection: this.collection});
+            app.page.registerSubView(createClusterWizardView);
+            createClusterWizardView.render();
         },
         initialize: function() {
             this.collection.on('sync add', this.render, this);

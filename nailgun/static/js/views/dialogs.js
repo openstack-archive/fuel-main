@@ -19,7 +19,14 @@ define(
     'utils',
     'models',
     'text!templates/dialogs/simple_message.html',
-    'text!templates/dialogs/create_cluster.html',
+    'text!templates/dialogs/create_cluster_wizard.html',
+    'text!templates/dialogs/create_cluster_wizard/name_and_release.html',
+    'text!templates/dialogs/create_cluster_wizard/mode.html',
+    'text!templates/dialogs/create_cluster_wizard/compute.html',
+    'text!templates/dialogs/create_cluster_wizard/network.html',
+    'text!templates/dialogs/create_cluster_wizard/storage.html',
+    'text!templates/dialogs/create_cluster_wizard/additional.html',
+    'text!templates/dialogs/create_cluster_wizard/ready.html',
     'text!templates/dialogs/rhel_license.html',
     'text!templates/dialogs/change_cluster_mode.html',
     'text!templates/dialogs/discard_changes.html',
@@ -30,7 +37,7 @@ define(
     'text!templates/dialogs/dismiss_settings.html',
     'text!templates/dialogs/delete_nodes.html'
 ],
-function(require, utils, models, simpleMessageTemplate, createClusterDialogTemplate, rhelCredentialsDialogTemplate, changeClusterModeDialogTemplate, discardChangesDialogTemplate, displayChangesDialogTemplate, removeClusterDialogTemplate, errorMessageTemplate, showNodeInfoTemplate, discardSettingsChangesTemplate, deleteNodesTemplate) {
+function(require, utils, models, simpleMessageTemplate, createClusterWizardTemplate, clusterNameAndReleasePaneTemplate, clusterModePaneTemplate, clusterComputePaneTemplate, clusterNetworkPaneTemplate, clusterStoragePaneTemplate, clusterAdditionalServicesPaneTemplate, clusterReadyPaneTemplate, rhelCredentialsDialogTemplate, changeClusterModeDialogTemplate, discardChangesDialogTemplate, displayChangesDialogTemplate, removeClusterDialogTemplate, errorMessageTemplate, showNodeInfoTemplate, discardSettingsChangesTemplate, deleteNodesTemplate) {
     'use strict';
 
     var views = {};
@@ -77,19 +84,75 @@ function(require, utils, models, simpleMessageTemplate, createClusterDialogTempl
         }
     });
 
-    views.DialogWithRhelCredentials = views.Dialog.extend({
+    var rhelCredentialsMixin = {
         renderRhelCredentialsForm: function(options) {
             var commonViews = require('views/common'); // avoid circular dependencies
             this.rhelCredentialsForm = new commonViews.RhelCredentialsForm(_.extend({dialog: this}, options));
             this.registerSubView(this.rhelCredentialsForm);
             this.$('.credentials').html('').append(this.rhelCredentialsForm.render().el);
         }
+    };
+
+    views.CreateClusterWizard = views.Dialog.extend({
+        template: _.template(createClusterWizardTemplate),
+        events: {
+            'click .next-pane-btn': 'nextPane',
+            'click .prev-pane-btn': 'prevPane',
+            'click .finish-btn': 'finish'
+        },
+        initialize: function(options) {
+            _.defaults(this, options);
+            this.activePane = null;
+            this.panes = [];
+            _.each(this.panesToAdd, function(Pane) {
+                var pane = new Pane({wizard: this});
+                this.registerSubView(pane);
+                this.panes.push(pane);
+                pane.render();
+            }, this);
+        },
+        nextPane: function() {
+            this.activePane += 1;
+            this.render();
+        },
+        prevPane: function() {
+            this.activePane -= 1;
+            this.render();
+        },
+        render: function() {
+            if (_.isNull(this.activePane)) {
+                this.activePane = 0;
+            } else {
+                this.panes[this.activePane].$el.detach();
+            }
+            var pane = this.panes[this.activePane];
+            var currentStep = this.activePane + 1;
+            var totalSteps = this.panes.length;
+            this.constructor.__super__.render.call(this, {
+                currentStep: currentStep,
+                totalSteps: totalSteps
+            });
+            this.$('.pane-title').text(pane.title || '');
+            this.$('.pane-content').append(pane.el);
+            this.$('.prev-pane-btn').prop('disabled', !this.activePane);
+            this.$('.next-pane-btn').toggle(currentStep != totalSteps);
+            this.$('.finish-btn').toggle(currentStep == totalSteps);
+            return this;
+        }
+    }, {
+        panes: {}
     });
 
-    views.CreateClusterDialog = views.DialogWithRhelCredentials.extend({
-        template: _.template(createClusterDialogTemplate),
+    views.WizardPane = Backbone.View.extend({
+        render: function() {
+            this.$el.html(this.template());
+            return this;
+        }
+    });
+
+    views.CreateClusterWizard.panes.ClusterNameAndReleasePane = views.WizardPane.extend(_.extend({
+        template: _.template(clusterNameAndReleasePaneTemplate),
         events: {
-            'click .create-cluster-btn:not(:disabled)': 'submitForm',
             'keydown input': 'onInputKeydown',
             'change select[name=release]': 'updateReleaseParameters'
         },
@@ -180,7 +243,7 @@ function(require, utils, models, simpleMessageTemplate, createClusterDialogTempl
         },
         render: function() {
             this.tearDownRegisteredSubViews();
-            this.constructor.__super__.render.call(this);
+            this.$el.html(this.template());
             this.renderReleases();
             this.renderRhelCredentialsForm({
                 redHatAccount: this.redHatAccount,
@@ -188,9 +251,49 @@ function(require, utils, models, simpleMessageTemplate, createClusterDialogTempl
             });
             return this;
         }
+    }, rhelCredentialsMixin));
+
+    views.CreateClusterWizard.panes.ClusterModePane = views.WizardPane.extend({
+        title: 'Mode',
+        template: _.template(clusterModePaneTemplate)
     });
 
-    views.RhelCredentialsDialog = views.DialogWithRhelCredentials.extend({
+    views.CreateClusterWizard.panes.ClusterComputePane = views.WizardPane.extend({
+        title: 'Compute',
+        template: _.template(clusterComputePaneTemplate)
+    });
+
+    views.CreateClusterWizard.panes.ClusterNetworkPane = views.WizardPane.extend({
+        title: 'Network',
+        template: _.template(clusterNetworkPaneTemplate)
+    });
+
+    views.CreateClusterWizard.panes.ClusterStoragePane = views.WizardPane.extend({
+        title: 'Storage',
+        template: _.template(clusterStoragePaneTemplate)
+    });
+
+    views.CreateClusterWizard.panes.ClusterAdditionalServicesPane = views.WizardPane.extend({
+        title: 'Addition Services',
+        template: _.template(clusterAdditionalServicesPaneTemplate)
+    });
+
+    views.CreateClusterWizard.panes.ClusterReadyPane = views.WizardPane.extend({
+        title: 'Ready',
+        template: _.template(clusterReadyPaneTemplate)
+    });
+
+    views.CreateClusterWizard.prototype.panesToAdd = [
+        views.CreateClusterWizard.panes.ClusterNameAndReleasePane,
+        views.CreateClusterWizard.panes.ClusterModePane,
+        views.CreateClusterWizard.panes.ClusterComputePane,
+        views.CreateClusterWizard.panes.ClusterNetworkPane,
+        views.CreateClusterWizard.panes.ClusterStoragePane,
+        views.CreateClusterWizard.panes.ClusterAdditionalServicesPane,
+        views.CreateClusterWizard.panes.ClusterReadyPane
+    ];
+
+    views.RhelCredentialsDialog = views.Dialog.extend(_.extend({
         template: _.template(rhelCredentialsDialogTemplate),
         events: {
             'click .btn-os-download': 'submitForm',
@@ -230,7 +333,7 @@ function(require, utils, models, simpleMessageTemplate, createClusterDialogTempl
             this.renderRhelCredentialsForm({redHatAccount: this.redHatAccount});
             return this;
         }
-    });
+    }, rhelCredentialsMixin));
 
     views.ChangeClusterModeDialog = views.Dialog.extend({
         template: _.template(changeClusterModeDialogTemplate),
