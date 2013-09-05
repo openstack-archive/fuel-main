@@ -117,11 +117,11 @@ class BaseNodeTestCase(BaseTestCase):
             cluster_id, self.ci().get_host_node_ip(), port)
 
         # update cluster deployment mode
-        node_names = []
-        for role in nodes_dict:
-            node_names += nodes_dict[role]
+        node_names = [node_name for node_name in nodes_dict]
+        controller_names = filter(
+            lambda x: 'controller' in nodes_dict[x], nodes_dict)
         if len(node_names) > 1:
-            controller_amount = len(nodes_dict.get('controller', []))
+            controller_amount = len(controller_names)
             if controller_amount == 1:
                 self.client.update_cluster(
                     cluster_id,
@@ -155,7 +155,7 @@ class BaseNodeTestCase(BaseTestCase):
             # create cluster
             self.ci().get_empty_state()
             cluster_id = self.create_cluster(name=name)
-            self._basic_provisioning(cluster_id, settings)
+            self._basic_provisioning(cluster_id, settings['nodes'])
 
             # make a snapshot
             snapshot_name = '%s_%s' % \
@@ -285,15 +285,14 @@ class BaseNodeTestCase(BaseTestCase):
                      pending_addition=True, pending_deletion=False):
         # update nodes in cluster
         nodes_data = []
-        for role in nodes_dict:
-            for node_name in nodes_dict[role]:
-                slave = self.ci().environment().node_by_name(node_name)
-                node = self.get_node_by_devops_node(slave)
-                node_data = {'cluster_id': cluster_id, 'id': node['id'],
-                             'pending_addition': pending_addition,
-                             'pending_deletion': pending_deletion,
-                             'role': role}
-                nodes_data.append(node_data)
+        for node_name in nodes_dict:
+            devops_node = self.ci().environment().node_by_name(node_name)
+            node = self.get_node_by_devops_node(devops_node)
+            node_data = {'cluster_id': cluster_id, 'id': node['id'],
+                         'pending_addition': pending_addition,
+                         'pending_deletion': pending_deletion,
+                         'pending_roles': nodes_dict[node_name]}
+            nodes_data.append(node_data)
 
         # assume nodes are going to be updated for one cluster only
         cluster_id = nodes_data[-1]['cluster_id']

@@ -84,8 +84,10 @@ class TestNode(BaseNodeTestCase):
     @fetch_logs
     def test_simple_cluster_flat(self):
         cluster_id = self.prepare_environment(settings={
-            'controller': ['slave-01'],
-            'compute': ['slave-02']
+            'nodes': {
+                'slave-01': ['controller'],
+                'slave-02': ['compute']
+            }
         })
         self.assertClusterReady(
             'slave-01', smiles_count=6, networks_count=1, timeout=300)
