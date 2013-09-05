@@ -60,8 +60,7 @@ function(require, utils, models, simpleMessageTemplate, createClusterWizardTempl
             this.$('.modal-body').html(this.errorMessageTemplate({logsLink: logsLink}));
         },
         displayInfoMessage: function(options) {
-            this.template = _.template(simpleMessageTemplate);
-            this.render(options);
+            this.$el.html(_.template(simpleMessageTemplate)(options));
             if (options.error) {
                 this.displayErrorMessage();
             }
@@ -143,10 +142,18 @@ function(require, utils, models, simpleMessageTemplate, createClusterWizardTempl
                 deferred
                     .done(_.bind(function() {
                         this.collection.add(cluster);
-                        this.$el.modal('hide');
+                        $.when.apply($, _.invoke(this.panes, 'afterClusterCreation', cluster))
+                            .done(_.bind(function() {
+                                this.$el.modal('hide');
+                            }, this))
+                            .fail(_.bind(function() {
+                                this.displayInfoMessage({
+                                    title: 'Environment Configuration Error',
+                                    message: 'Your OpenStack environment has been created, but confiugration failed. You can configure it manually.'
+                                });
+                            }, this));
                     }, this))
                     .fail(_.bind(function(response) {
-                        console.log(response)
                         if (response.status == 409) {
                             this.$('.wizard-footer button').prop('disabled', false);
                             this.goToPane(0);
@@ -299,7 +306,6 @@ function(require, utils, models, simpleMessageTemplate, createClusterWizardTempl
             this.$('.help-mode-' + this.$('input[name=mode]:checked').val()).removeClass('hide');
         },
         beforeClusterCreation: function(cluster) {
-            console.log('beforeClusterCreation', cluster)
             cluster.set({mode: this.$('input[name=mode]:checked').val()})
             return (new $.Deferred()).resolve();
         },
@@ -314,6 +320,9 @@ function(require, utils, models, simpleMessageTemplate, createClusterWizardTempl
     clusterWizardPanes.ClusterComputePane = views.WizardPane.extend({
         title: 'Compute',
         template: _.template(clusterComputePaneTemplate),
+        afterClusterCreation: function(cluster) {
+            return (new $.Deferred()).resolve();
+        },
         render: function() {
             this.$el.html(this.template());
             this.$('input[name=hypervisor][value=qemu]').prop('checked', true);
