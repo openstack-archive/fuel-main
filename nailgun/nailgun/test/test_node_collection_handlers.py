@@ -241,14 +241,7 @@ class TestHandlers(BaseHandlers):
             expect_errors=True)
         self.assertEquals(409, resp.status)
 
-    def test_node_update_with_discover(self):
-        resp = self.app.post(
-            reverse('NodeCollectionHandler'),
-            json.dumps({'mac': 'ASDFAAASDF11',
-                        'meta': self.env.default_metadata(),
-                        'status': 'discover'}),
-            headers=self.default_headers)
-        self.assertEquals(resp.status, 201)
+    def test_node_creation_fail(self):
         resp = self.app.post(
             reverse('NodeCollectionHandler'),
             json.dumps({'mac': 'ASDFAAASDF22',

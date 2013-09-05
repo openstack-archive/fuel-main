@@ -167,14 +167,18 @@ class NodeCollectionHandler(JSONHandler):
         """:returns: JSONized Node object.
         :http: * 201 (cluster successfully created)
                * 400 (invalid node data specified)
+               * 403 (node has incorrect status)
                * 409 (node with such parameters already exists)
         """
         data = self.checked_data()
 
         if data.get("status", "") != "discover":
             error = web.forbidden()
-            error.message = "Only bootstarp nodes are " \
-                            "allowed to be registered."
+            error.data = "Only bootstrap nodes are allowed to be registered."
+            msg = u"Node with mac '{0}' was not created, " \
+                  u"because request status is '{1}'."\
+                .format(data[u'mac'], data[u'status'])
+            logger.info(msg)
             raise error
 
         node = Node()
