@@ -22,18 +22,24 @@ import urllib2
 
 API_ROOT = "http://127.0.0.1:8000/api/"
 
+passive_arguments = ["eid", "ename", "action"]
+
 
 class SetAction(argparse.Action):
-        """argparse.Action subclass to store distinct values
-        """
-        def __call__(self, parser, namespace, values, option_string=None):
-            try:
-                getattr(namespace, self.dest).update(values)
-            except AttributeError:
-                setattr(namespace, self.dest, set(values))
+    """Custom argparse.Action subclass to store distinct values
+    :returns: Set of arguments
+    """
+    def __call__(self, parser, namespace, values, option_string=None):
+        try:
+            getattr(namespace, self.dest).update(values)
+        except AttributeError:
+            setattr(namespace, self.dest, set(values))
 
 
 def recur_get(multi_level_dict, key_chain):
+    """Method accesses some field in nested dictionaries
+    returns a value for last key in key_chain in last dictionary
+    """
     if not isinstance(multi_level_dict[key_chain[0]], dict):
         return multi_level_dict[key_chain[0]]
     else:
@@ -41,7 +47,13 @@ def recur_get(multi_level_dict, key_chain):
 
 
 def format_table(data, acceptable_keys=None, subdict_keys=None):
-    """Format list of dicts to string with ascii table
+    """Format list of dicts to ascii table
+
+    :acceptable_keys list(str): list of keys for which to create table
+    also specifies their order
+
+    :subdict_keys list(tuple(str)): list of key chains (tuples of key strings)
+    which are applied to dictionaries to extract values
     """
     if subdict_keys:
         for key_chain in subdict_keys:
@@ -80,70 +92,87 @@ def format_table(data, acceptable_keys=None, subdict_keys=None):
 
 
 def json_api_put_request(api, data):
-    # print(
-    #     "PUT request to address {0} with data: {1}"
-    #     .format(API_ROOT + api, data)
-    # )
+    """Make PUT request to specific API with some data
+    """
     opener = urllib2.build_opener(urllib2.HTTPHandler)
     request = urllib2.Request(API_ROOT + api, data=data)
     request.add_header('Content-Type', ' application/json')
     request.get_method = lambda: 'PUT'
-    return json.loads(
-        opener.open(request).read()
-    )
+    try:
+        return json.loads(
+            opener.open(request).read()
+        )
+    except urllib2.HTTPError as e:
+            print_error(str(e) + "\n")
 
 
 def json_api_get_request(api):
-    request = urllib2.urlopen(API_ROOT + api)
+    """Make GET request to specific API
+    """
+    try:
+        request = urllib2.urlopen(API_ROOT + api)
+    except urllib2.HTTPError as e:
+        print_error(str(e) + "\n")
     return json.loads(
         request.read()
     )
 
 
 def json_api_post_request(api, data):
-    # print(
-    #     "POST request to address {0} with data: {1}"
-    #     .format(API_ROOT + api,data)
-    # )
-    return json.loads(
-        urllib2.urlopen(
-            url=API_ROOT + api,
-            data=data
-        ).read()
-    )
+    """Make POST request to specific API with some data
+    """
+    try:
+        return json.loads(
+            urllib2.urlopen(
+                url=API_ROOT + api,
+                data=data
+            ).read()
+        )
+    except urllib2.HTTPError as e:
+            print_error(str(e) + "\n")
+
+
+def has_arguments(params):
+    current_arguments = [v for k, v in params.__dict__.iteritems()
+                         if k not in passive_arguments]
+    return any(current_arguments)
+
+
+def print_error(message):
+    sys.stderr.write(message)
+    exit(1)
 
 
 def release(params):
+    """List and modify currently available releases
+    """
     acceptable_keys = ["id", "name", "state", "operating_system", "version"]
-    if not any(params.__dict__.values()) or params.list:
+    if not has_arguments(params) or params.list:
         data = json_api_get_request("releases/")
-        for release in data:
-            del release['description']
         print(format_table(data, acceptable_keys=acceptable_keys))
     if params.rid:
-        try:
-            data = json_api_get_request("releases/" + params.rid + "/")
-            print(format_table([data], acceptable_keys=acceptable_keys))
-        except urllib2.HTTPError:
-            print("Error. No release with such rid!")
-    # print(params)
+        data = json_api_get_request(
+            "releases/{0}/"
+            .format(params.rid)
+        )
+        print(format_table([data], acceptable_keys=acceptable_keys))
 
 
 def environment(params):
-    eid = getattr(params, "eid")
-    delattr(params, "eid")
-    if not any(params.__dict__.values()) or params.list:
+    """Create, list and modify currently existing environments(clusters)
+    """
+    if not has_arguments(params) or params.list:
         acceptable_keys = ["id", "status", "name", "mode",
                            "release", "changes"]
         data = json_api_get_request("clusters/")
-        if eid:
+        if params.eid:
             data = filter(
-                lambda x: x[u"id"] == int(eid),
+                lambda x: x[u"id"] == int(params.eid),
                 data
             )
         print(format_table(data, acceptable_keys=acceptable_keys,
                            subdict_keys=[("release", u"id")]))
-    if params.create:
+    elif params.create:
         if params.ename and params.rid:
             data = {"nodes": [],
                     "tasks": [],
@@ -151,10 +180,7 @@ def environment(params):
                     "release": int(params.rid)}
             data = json.dumps(data)
             post_response = json_api_post_request("clusters/", data)
-            print(
-                "Environment {0} was created successfully."
-                .format(params.ename)
-            )
+            pprint(post_response)
             if params.mode:
                 data = {"mode": params.mode}
                 data = json.dumps(data)
@@ -162,13 +188,11 @@ def environment(params):
                     "clusters/{0}".format(post_response[u"id"]),
                     data
                 )
-                pprint(json.dumps(put_response))
+                pprint(put_response)
         else:
-            print(
-                "You need to specify --ename and --rid!"
-            )
+            print_error("You need to specify --ename and --rid!")
     if params.set and (params.mode or params.ename):
-        if eid:
+        if params.eid:
             data = {}
             if params.mode:
                 data["mode"] = params.mode
@@ -176,38 +200,37 @@ def environment(params):
                 data["name"] = params.ename
             data = json.dumps(data)
             put_response = json_api_put_request(
-                "clusters/{0}".format(eid),
+                "clusters/{0}".format(params.eid),
                 data
             )
-            pprint(json.dumps(put_response))
+            pprint(put_response)
         else:
-            print("Environment id [--eid] is required!")
+            print_error("Environment id [--eid] is required!")
 
 
 def node(params):
-    eid = getattr(params, "eid")
-    delattr(params, "eid")
-    if not any(params.__dict__.values()) or params.list:
+    """List and assign available nodes to environments
+    """
+    if not has_arguments(params) or params.list:
         acceptable_keys = ["id", "status", "name", "cluster",
-                           "mac", "role", "online"]
+                           "mac", "roles", "online"]
         data = json_api_get_request("nodes/")
-        if eid:
+        if params.eid:
             data = filter(
-                lambda x: x[u"cluster"] == int(eid),
+                lambda x: x[u"cluster"] == int(params.eid),
                 data
             )
         print(
             format_table(data, acceptable_keys=acceptable_keys)
         )
-    if params.set:
-        if params.nid and params.role and eid:
+    elif params.set:
+        if params.nid and params.role and params.eid:
             node_ids = list(chain(*params.nid))
             role = params.role.pop().lower()
-            env_id = eid
             data = map(
                 lambda node_id: {
                     "id": node_id,
-                    "cluster_id": env_id,
+                    "cluster_id": params.eid,
                     "role": role,
                     "pending_addition": True,
                     "pending_deletion": False
@@ -215,48 +238,64 @@ def node(params):
                 node_ids
             )
             put_response = json_api_put_request("nodes/", json.dumps(data))
-            pprint(json.dumps(put_response))
+            pprint(put_response)
         else:
-            print("Adjust arguments!")
-    # print(params)
+            print_error("To set node to specific environment "
+                        "[--eid], [--nid] and [--role] are required!\n")
 
 
 def network(params):
+    """Show or modify network settings of specific environments
+    """
     print(params)
 
 
 def settings(params):
+    """Show or modify environment settings
+    """
     print(params)
 
 
 def logs(params):
+    """Show logs for specific environment
+    """
     print(params)
 
 
 def task(params):
+    """Show tasks
+    """
     print(params)
 
 
 def notifications(params):
+    """Show notifications
+    """
     print(params)
 
 
 def health(params):
+    """Perform health check for environments
+    """
     print(params)
 
 
 def deploy(params):
+    """Deploy changes to environments
+    """
     if params.eid:
         put_response = json_api_put_request(
             "clusters/{0}/changes".format(params.eid),
             "{}"
         )
-        pprint(json.dumps(put_response))
+        pprint(put_response)
     else:
-        print("Environment id [--eid] is required!")
+        print_error("Environment id [--eid] is required!")
 
 
 def fact(params):
+    """Show computed facts for orchestrator
+    """
     if params.eid:
         facts = json_api_get_request(
             "clusters/{0}/orchestrator/defaults"
@@ -264,10 +303,13 @@ def fact(params):
         )
         print(facts)
     else:
-        print("Environment id [--eid] is required!")
+        print_error("Environment id [--eid] is required!")
 
 
-def test_fun(x):
+def parse_node_ids(x):
+    """Parse arguments with commas and spaces,
+     and return list of lists with numbers
+    """
     filtered = [y for y in x.split(",") if y.strip() != '']
     if len(filtered) > 1:
         return map(int, filtered)
@@ -413,7 +455,7 @@ actions = {
                 "dest": "nid",
                 "action": "store",
                 "nargs": '+',
-                "type": test_fun,
+                "type": parse_node_ids,
                 "help": "Node id.",
                 "default": None
             }
@@ -433,6 +475,15 @@ actions = {
                 "action": "store_true",
                 "help": "Remove node with specific nid.",
                 "default": False
+            }
+        }, {
+            "args": ["--eid", "--env-id"],
+            "params": {
+                "dest": "eid",
+                "action": "store",
+                "type": str,
+                "help": "environment id",
+                "default": None
             }
         }]
     },
@@ -478,6 +529,15 @@ actions = {
                 "help": "Save current changes in configuration.",
                 "default": False
             }
+        }, {
+            "args": ["--eid", "--env-id"],
+            "params": {
+                "dest": "eid",
+                "action": "store",
+                "type": str,
+                "help": "environment id",
+                "default": None
+            }
         }]
     },
     "settings": {
@@ -513,6 +573,15 @@ actions = {
                 "action": "store_true",
                 "help": "Save current changes in configuration.",
                 "default": False
+            }
+        }, {
+            "args": ["--eid", "--env-id"],
+            "params": {
+                "dest": "eid",
+                "action": "store",
+                "type": str,
+                "help": "environment id",
+                "default": None
             }
         }]
     },
@@ -573,6 +642,15 @@ actions = {
                 "help": "Log level. e.g DEBUG, INFO, WARNING",
                 "default": None
             }
+        }, {
+            "args": ["--eid", "--env-id"],
+            "params": {
+                "dest": "eid",
+                "action": "store",
+                "type": str,
+                "help": "environment id",
+                "default": None
+            }
         }]
     },
     "task": {
@@ -602,17 +680,26 @@ actions = {
     },
     "fact": {
         "action": fact,
-        "args": []
+        "args": [{
+            "args": ["--eid", "--env-id"],
+            "params": {
+                "dest": "eid",
+                "action": "store",
+                "type": str,
+                "help": "environment id",
+                "default": None
+            }
+        }]
     }
 }
 
 
 substitutions = {
-    "list": "--list",
-    "set": "--set",
     "env": "environment",
     "net": "network",
     "rel": "release",
+    "list": "--list",
+    "set": "--set",
     "delete": "--delete",
     "create": "--create"
 }
