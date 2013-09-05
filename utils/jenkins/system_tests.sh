@@ -97,7 +97,7 @@ MakeISO() {
     echo "Error! Copy ISO from ${ISO} to ${ISO_PATH}/${ISO_NAME} failed!"
     exit $ec
   fi
-
+  echo "Finished building ISO: ${ISO_PATH}/${ISO_NAME}"
   exit 0
 }
 
@@ -120,7 +120,7 @@ RunTest() {
   dos.py erase "${ENV_NAME}"
 
   # run python test set to create environments, deploy and test product
-  nosetests -w "${WORKSPACE}" -s -l DEBUG --with-xunit "${1}"
+  nosetests -w "fuelweb_test" -s -l DEBUG --with-xunit "${1}"
 
   # remove created environment
   dos.py destroy "${ENV_NAME}"
