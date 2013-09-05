@@ -321,7 +321,22 @@ function(require, utils, models, simpleMessageTemplate, createClusterWizardTempl
         title: 'Compute',
         template: _.template(clusterComputePaneTemplate),
         afterClusterCreation: function(cluster) {
-            return (new $.Deferred()).resolve();
+            var deferred = new $.Deferred();
+            var settings = new models.Settings({}, {url: _.result(cluster, 'url') + '/attributes'});
+            //FIXME: redo with deferred.pipe?
+            settings.fetch()
+                .done(_.bind(function() {
+                    try {
+                        settings.get('editable').common.libvirt_type.value = this.$('input[name=hypervisor]:checked').val();
+                    } catch(e) {
+                        deferred.reject();
+                    }
+                    settings.save()
+                        .done(function() {deferred.resolve();})
+                        .fail(function() {deferred.reject();});
+                }, this))
+                .fail(function() {deferred.reject();});
+            return deferred;
         },
         render: function() {
             this.$el.html(this.template());
