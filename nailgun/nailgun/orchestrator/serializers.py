@@ -42,7 +42,7 @@ class OrchestratorSerializer(object):
         cls.node_list(cls.get_nodes_to_serialization(cluster))
 
         if cluster.net_manager == 'VlanManager':
-            cls.add_vlan_interfaces(nodes, cluster)
+            cls.add_vlan_interfaces(nodes)
 
         # Merge attributes of nodes with common attributes
         def merge(dict1, dict2):
@@ -109,7 +109,7 @@ class OrchestratorSerializer(object):
         """
         netmanager = NetworkManager()
         for node in nodes:
-            node_db = db().query(Node).get(node['id'])
+            node_db = db().query(Node).get(node['uid'])
 
             fixed_interface = netmanager._get_interface_by_network_name(
                 node_db.id, 'fixed')
