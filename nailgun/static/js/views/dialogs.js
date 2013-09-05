@@ -315,12 +315,22 @@ function(require, utils, models, simpleMessageTemplate, createClusterWizardTempl
 
     clusterWizardPanes.ClusterNetworkPane = views.WizardPane.extend({
         title: 'Network',
-        template: _.template(clusterNetworkPaneTemplate)
+        template: _.template(clusterNetworkPaneTemplate),
+        render: function() {
+            this.$el.html(this.template());
+            this.$('input[name=manager]:first').prop('checked', true);
+            return this;
+        }
     });
 
     clusterWizardPanes.ClusterStoragePane = views.WizardPane.extend({
         title: 'Storage',
-        template: _.template(clusterStoragePaneTemplate)
+        template: _.template(clusterStoragePaneTemplate),
+        render: function() {
+            this.$el.html(this.template());
+            this.$('input[name=storage]:first').prop('checked', true);
+            return this;
+        }
     });
 
     clusterWizardPanes.ClusterAdditionalServicesPane = views.WizardPane.extend({

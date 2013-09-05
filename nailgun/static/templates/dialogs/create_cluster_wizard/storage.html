@@ -1,0 +1,23 @@
+<form class="form-horizontal" onsubmit="return false">
+  <fieldset>
+    <div class="control-group">
+      <% var storages = ['no', 'linux-volumes', 'ceph'] %>
+      <% var descriptions = {
+        no: 'No storage',
+        'linux-volumes': 'Linux volumes',
+        ceph: 'Ceph'
+      } %>
+      <% _.each(storages, function(storage) { %>
+        <label class="parameter-box clearfix">
+          <div class="parameter-control">
+            <div class="custom-tumbler">
+              <input type="radio" name="storage" value="<%= storage %>" />
+              <!-- [if !IE |(gte IE 9)]> --><span>&nbsp;</span><!-- <![endif] -->
+            </div>
+          </div>
+          <div class="parameter-name" style="text-transform: capitalize"><%- descriptions[storage] %></div>
+        </label>
+      <% }) %>
+    </div>
+  </fieldset>
+</form>
