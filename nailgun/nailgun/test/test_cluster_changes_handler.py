@@ -377,30 +377,6 @@ class TestHandlers(BaseHandlers):
         self.assertEquals(len(n_rpc_deploy), 1)
         self.assertEquals(n_rpc_deploy[0]['uid'], self.env.nodes[0].id)
 
-    @unittest.skip("this logic is not implemented for now")
-    def test_deploy_reruns_after_network_changes(self, mocked_rpc):
-        self.env.create(
-            cluster_kwargs={},
-            nodes_kwargs=[
-                {"status": "ready"},
-                {
-                    "pending_deletion": True,
-                    "status": "ready",
-                    "roles": ["compute"]
-                },
-            ]
-        )
-
-        # for clean experiment
-        cluster_db = self.env.clusters[0]
-        cluster_db.clear_pending_changes()
-        cluster_db.add_pending_changes('networks')
-
-        nodes = sorted(cluster_db.nodes, key=lambda n: n.id)
-        self.assertEqual(nodes[0].needs_redeploy, True)
-
-        self.env.launch_deployment()
-
     def test_occurs_error_not_enough_ip_addresses(self):
         self.env.create(
             cluster_kwargs={},
