@@ -123,11 +123,13 @@ function(require, utils, models, simpleMessageTemplate, createClusterWizardTempl
         },
         nextPane: function() {
             this.activePane().processPaneData().done(_.bind(function() {
+                this.activePane().$el.detach();
                 this.activePaneIndex += 1;
                 this.render();
             }, this));
         },
         prevPane: function() {
+            this.activePane().$el.detach();
             this.activePaneIndex -= 1;
             this.render();
         },
@@ -163,8 +165,6 @@ function(require, utils, models, simpleMessageTemplate, createClusterWizardTempl
         render: function() {
             if (_.isNull(this.activePaneIndex)) {
                 this.activePaneIndex = 0;
-            } else {
-                this.activePane().$el.detach();
             }
             var pane = this.activePane();
             var currentStep = this.activePaneIndex + 1;
