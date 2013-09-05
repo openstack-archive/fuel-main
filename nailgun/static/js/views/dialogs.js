@@ -121,17 +121,18 @@ function(require, utils, models, simpleMessageTemplate, createClusterWizardTempl
         activePane: function() {
             return this.panes[this.activePaneIndex];
         },
+        goToPane: function(index) {
+            this.activePane().$el.detach();
+            this.activePaneIndex = index;
+            this.render();
+        },
         nextPane: function() {
             this.activePane().processPaneData().done(_.bind(function() {
-                this.activePane().$el.detach();
-                this.activePaneIndex += 1;
-                this.render();
+                this.goToPane(this.activePaneIndex + 1);
             }, this));
         },
         prevPane: function() {
-            this.activePane().$el.detach();
-            this.activePaneIndex -= 1;
-            this.render();
+            this.goToPane(this.activePaneIndex - 1);
         },
         finish: function() {
             this.$('.wizard-footer button').prop('disabled', true);
