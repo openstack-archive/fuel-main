@@ -366,7 +366,7 @@ class Environment(object):
         return nets
 
     def get_default_roles(self):
-        return ['controller', 'compute', 'cinder']
+        return ['controller', 'compute', 'cinder', 'ceph-osd']
 
     def get_default_volumes_metadata(self):
         return self.read_fixtures(

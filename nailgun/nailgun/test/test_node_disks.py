@@ -284,7 +284,7 @@ class TestNodeVolumesInformationHandler(BaseHandlers):
         self.check_volumes(response, ['os', 'image'])
 
     def test_volumes_information_for_ceph_role(self):
-        node_db = self.create_node('ceph')
+        node_db = self.create_node('ceph-osd')
         response = self.get(node_db.id)
         self.check_volumes(response, ['os', 'ceph'])
 
@@ -419,7 +419,7 @@ class TestVolumeManager(BaseHandlers):
         self.check_disk_size_equal_sum_of_all_volumes(node.attributes.volumes)
 
     def test_allocates_all_free_space_for_ceph_for_ceph_role(self):
-        node = self.create_node('ceph')
+        node = self.create_node('ceph-osd')
         self.should_contain_os_with_minimal_size(node.volume_manager)
         self.all_free_space_except_os_for_volume(
             node.volume_manager.volumes, 'ceph')
