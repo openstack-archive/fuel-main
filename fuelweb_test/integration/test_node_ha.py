@@ -35,13 +35,16 @@ class TestNode(BaseNodeTestCase):
     def test_ha_cluster_vlan(self):
         self.prepare_environment()
         cluster_name = 'ha_vlan'
-        nodes = {
-            'controller': ['slave-01', 'slave-02', 'slave-03'],
-            'compute': ['slave-04', 'slave-05']
+        nodes_dict = {
+            'slave-01': ['controller'],
+            'slave-02': ['controller'],
+            'slave-03': ['controller'],
+            'slave-04': ['compute'],
+            'slave-05': ['compute']
         }
         cluster_id = self.create_cluster(name=cluster_name)
         self.update_vlan_network_fixed(cluster_id, amount=8, network_size=32)
-        self._basic_provisioning(cluster_id, nodes)
+        self._basic_provisioning(cluster_id, nodes_dict)
         self.assertClusterReady(
             'slave-01', smiles_count=16, networks_count=8, timeout=300)
         self.get_ebtables(cluster_id, self.nodes().slaves[:5]).restore_vlans()

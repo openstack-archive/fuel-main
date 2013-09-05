@@ -55,7 +55,7 @@ class TestNode(BaseNodeTestCase):
     @fetch_logs
     def test_node_deploy(self):
         self.prepare_environment()
-        self.bootstrap_nodes(self.devops_nodes_by_names(['slave-01']))
+        self.bootstrap_nodes(self.nodes().slaves[:1])
 
     @snapshot_errors
     @logwrap
@@ -63,8 +63,8 @@ class TestNode(BaseNodeTestCase):
     def test_updating_nodes_in_cluster(self):
         self.prepare_environment()
         cluster_id = self.create_cluster(name='empty')
-        nodes = {'controller': ['slave-01']}
-        self.bootstrap_nodes(self.devops_nodes_by_names(nodes['controller']))
+        nodes = {'slave-01': ['controller']}
+        self.bootstrap_nodes(self.nodes().slaves[:1])
         self.update_nodes(cluster_id, nodes)
 
     @snapshot_errors
@@ -102,7 +102,7 @@ class TestNode(BaseNodeTestCase):
     def test_simple_cluster_vlan(self):
         self.prepare_environment()
         cluster_name = 'simple_vlan'
-        nodes = {'controller': ['slave-01'], 'compute': ['slave-02']}
+        nodes = {'slave-01': ['controller'], 'slave-02': ['compute']}
         cluster_id = self.create_cluster(name=cluster_name)
         self.update_vlan_network_fixed(cluster_id, amount=8, network_size=32)
         self._basic_provisioning(cluster_id, nodes)
@@ -118,8 +118,10 @@ class TestNode(BaseNodeTestCase):
     @fetch_logs
     def test_network_config(self):
         cluster_id = self.prepare_environment(settings={
-            'controller': ['slave-01'],
-            'compute': ['slave-02']
+            'nodes': {
+                'slave-01': ['controller'],
+                'slave-02': ['compute']
+            }
         })
         slave = self.nodes().slaves[0]
         node = self.get_node_by_devops_node(slave)
@@ -131,11 +133,13 @@ class TestNode(BaseNodeTestCase):
     @fetch_logs
     def test_node_deletion(self):
         cluster_id = self.prepare_environment(settings={
-            'controller': ['slave-01'],
-            'compute': ['slave-02']
+            'nodes': {
+                'slave-01': ['controller'],
+                'slave-02': ['compute']
+            }
         })
-        nodes_dict = {'controller': ['slave-01']}
-        nailgun_nodes = self.update_nodes(cluster_id, nodes_dict, False, True)
+        nailgun_nodes = self.update_nodes(
+            cluster_id, {'slave-01': ['controller']}, False, True)
         task = self.deploy_cluster(cluster_id)
         self.assertTaskSuccess(task)
         nodes = filter(lambda x: x["pending_deletion"] is True, nailgun_nodes)
@@ -155,11 +159,10 @@ class TestNode(BaseNodeTestCase):
     def test_network_verify_with_blocked_vlan(self):
         self.prepare_environment()
         cluster_name = 'net_verify'
+        nodes_dict = {'slave-01': ['controller'], 'slave-02': ['compute']}
+
         cluster_id = self.create_cluster(name=cluster_name)
-
-        nodes_dict = {'controller': ['slave-01', 'slave-02']}
-
-        devops_nodes = self.devops_nodes_by_names(nodes_dict['controller'])
+        devops_nodes = self.nodes().slaves[:1]
         self.bootstrap_nodes(devops_nodes)
 
         ebtables = self.get_ebtables(cluster_id, devops_nodes)
@@ -199,9 +202,11 @@ class TestNode(BaseNodeTestCase):
     @fetch_logs
     def test_simple_cluster_with_cinder(self):
         cluster_id = self.prepare_environment(settings={
-            'controller': ['slave-01'],
-            'compute': ['slave-02'],
-            'cinder': ['slave-03']
+            'nodes': {
+                'slave-01': ['controller'],
+                'slave-02': ['compute'],
+                'slave-03': ['cinder']
+            }
         })
         self.assertClusterReady(
             'slave-01', smiles_count=6, networks_count=1, timeout=300)
@@ -211,13 +216,15 @@ class TestNode(BaseNodeTestCase):
     @logwrap
     @fetch_logs
     def test_add_compute_node(self):
-        cluster_id = self.prepare_environment(
-            name='add compute node',
-            settings={'controller': ['slave-01'], 'compute': ['slave-02']})
+        cluster_id = self.prepare_environment(settings={
+            'nodes': {
+                'slave-01': ['controller'],
+                'slave-02': ['compute']
+            }
+        })
 
         self.bootstrap_nodes(self.nodes().slaves[2:3])
-        self.update_nodes(cluster_id, {'compute': [
-            n.name for n in self.nodes().slaves[2:3]]}, True, False)
+        self.update_nodes(cluster_id, {'slave-03': ['compute']}, True, False)
 
         task = self.client.deploy_cluster_changes(cluster_id)
         self.assertTaskSuccess(task)
@@ -236,12 +243,8 @@ class TestNode(BaseNodeTestCase):
     def test_floating_ips(self):
         self.prepare_environment()
         cluster_name = 'floating_ips'
-        nodes_dict = {
-            'controller': ['slave-01'],
-            'compute': ['slave-02']
-        }
-        self.bootstrap_nodes(self.devops_nodes_by_names(
-            nodes_dict['controller'] + nodes_dict['compute']))
+        nodes_dict = {'slave-01': ['controller'], 'slave-02': ['compute']}
+        self.bootstrap_nodes(self.nodes().slaves[:2])
 
         cluster_id = self.create_cluster(name=cluster_name)
 
@@ -268,8 +271,7 @@ class TestNode(BaseNodeTestCase):
         expected_ips = ['240.0.0.%s' % i for i in range(2, 11, 1)] + \
                        ['240.0.0.%s' % i for i in range(20, 26, 1)] + \
                        ['240.0.0.%s' % i for i in range(30, 36, 1)]
-        self.assert_cluster_floating_list(
-            nodes_dict['compute'][0], expected_ips)
+        self.assert_cluster_floating_list('slave-02', expected_ips)
         self.run_OSTF(cluster_id=cluster_id, should_fail=6, should_pass=18)
 
     @snapshot_errors
@@ -278,9 +280,11 @@ class TestNode(BaseNodeTestCase):
     def test_node_disk_sizes(self):
         self.prepare_environment()
         # all nodes have 3 identical disks with same size
-        nodes_dict = {'controller': ['slave-01'],
-                      'compute': ['slave-02'],
-                      'cinder': ['slave-03']}
+        nodes_dict = {
+            'slave-01': ['controller'],
+            'slave-02': ['compute'],
+            'slave-03': ['cinder']
+        }
 
         self.bootstrap_nodes(self.nodes().slaves[:3])
 
@@ -303,24 +307,23 @@ class TestNode(BaseNodeTestCase):
                 self.assertEqual(disk['size'], 19980, 'Disk size')
 
         # deploy the cluster
-        self.prepare_environment(settings=nodes_dict)
+        self.prepare_environment(settings={'nodes': nodes_dict})
 
         # assert node disks after deployment
-        for role, nodes_names in nodes_dict.iteritems():
-            for node_name in nodes_names:
-                str_block_devices = self.get_cluster_block_devices(node_name)
-                self.assertRegexpMatches(
-                    str_block_devices,
-                    'vda\s+252:0\s+0\s+20G\s+0\s+disk'
-                )
-                self.assertRegexpMatches(
-                    str_block_devices,
-                    'vdb\s+252:16\s+0\s+20G\s+0\s+disk'
-                )
-                self.assertRegexpMatches(
-                    str_block_devices,
-                    'vdc\s+252:32\s+0\s+20G\s+0\s+disk'
-                )
+        for node_name in nodes_dict:
+            str_block_devices = self.get_cluster_block_devices(node_name)
+            self.assertRegexpMatches(
+                str_block_devices,
+                'vda\s+252:0\s+0\s+20G\s+0\s+disk'
+            )
+            self.assertRegexpMatches(
+                str_block_devices,
+                'vdb\s+252:16\s+0\s+20G\s+0\s+disk'
+            )
+            self.assertRegexpMatches(
+                str_block_devices,
+                'vdc\s+252:32\s+0\s+20G\s+0\s+disk'
+            )
 
     @snapshot_errors
     @logwrap
@@ -335,8 +338,8 @@ class TestNode(BaseNodeTestCase):
             'eth3': ['fixed']
         }
         nodes_dict = {
-            'controller': ['slave-01'],
-            'compute': ['slave-02']
+            'slave-01': ['controller'],
+            'slave-02': ['compute']
         }
         self.bootstrap_nodes(self.nodes().slaves[:2])
 

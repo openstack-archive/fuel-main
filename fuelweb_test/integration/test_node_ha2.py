@@ -36,8 +36,13 @@ class TestNode(BaseNodeTestCase):
         cluster_id = self.prepare_environment(
             name="ha_flat",
             settings={
-                'controller': ['slave-01', 'slave-02', 'slave-03'],
-                'compute': ['slave-04', 'slave-05']
+                'nodes': {
+                    'slave-01': ['controller'],
+                    'slave-02': ['controller'],
+                    'slave-03': ['controller'],
+                    'slave-04': ['compute'],
+                    'slave-05': ['compute']
+                }
             }
         )
         self.assertClusterReady(
