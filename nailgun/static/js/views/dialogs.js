@@ -136,6 +136,7 @@ function(require, utils, models, simpleMessageTemplate, createClusterWizardTempl
         },
         createCluster: function() {
             var cluster = this.findPane(clusterWizardPanes.ClusterNameAndReleasePane).cluster;
+            _.invoke(this.panes, 'beforeClusterCreation', cluster);
             var deferred = cluster.save();
             if (deferred) {
                 this.$('.wizard-footer button').prop('disabled', true);
@@ -186,7 +187,10 @@ function(require, utils, models, simpleMessageTemplate, createClusterWizardTempl
         processPaneData: function() {
             return (new $.Deferred()).resolve();
         },
-        processCreatedCluster: function(cluster) {
+        beforeClusterCreation: function(cluster) {
+            return (new $.Deferred()).resolve();
+        },
+        afterClusterCreation: function(cluster) {
             return (new $.Deferred()).resolve();
         },
         render: function() {
@@ -293,6 +297,11 @@ function(require, utils, models, simpleMessageTemplate, createClusterWizardTempl
         toggleTypes: function() {
             this.$('.mode-description').addClass('hide');
             this.$('.help-mode-' + this.$('input[name=mode]:checked').val()).removeClass('hide');
+        },
+        beforeClusterCreation: function(cluster) {
+            console.log('beforeClusterCreation', cluster)
+            cluster.set({mode: this.$('input[name=mode]:checked').val()})
+            return (new $.Deferred()).resolve();
         },
         render: function() {
             var availableModes = models.Cluster.prototype.availableModes();
