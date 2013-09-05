@@ -178,7 +178,7 @@ class NodeCollectionHandler(JSONHandler):
             msg = u"Node with mac '{0}' was not created, " \
                   u"because request status is '{1}'."\
                 .format(data[u'mac'], data[u'status'])
-            logger.info(msg)
+            logger.warning(msg)
             raise error
 
         node = Node()
