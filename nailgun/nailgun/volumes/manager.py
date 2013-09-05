@@ -167,8 +167,8 @@ class DisksFormatConvertor(object):
     @classmethod
     def calculate_service_partitions_size(self, volumes):
         service_partitions = filter(
-            lambda vg: vg.get('type') != 'pv' and vg.get('type') != 'partition',
-            volumes)
+            lambda vg: vg.get('type') != 'pv' and
+            vg.get('type') != 'partition', volumes)
 
         return sum(
             [partition.get('size', 0) for partition in service_partitions])
@@ -378,7 +378,7 @@ class Disk(object):
         """Create partitions according templates in partition_info
         """
         logger.debug('Creating or updating partition: disk=%s patition=%s',
-            self.id, partition_info)
+                     self.id, partition_info)
 
         if size is None:
             logger.debug(
@@ -650,11 +650,13 @@ class VolumeManager(object):
             for disk in self.disks:
                 if disk.free_space > 0:
                     self.__logger('Allocating all available space for volume: '
-                                  'disk: %s volume: %s' % (disk.id, volume_info))
+                                  'disk: %s volume: %s' %
+                                  (disk.id, volume_info))
                     self._get_allocator(disk, volume_info)(volume_info)
                 else:
-                    self.__logger('Not enough free space for volume allocation: '
-                                  'disk: %s volume: %s' % (disk.id, volume_info))
+                    self.__logger('Not enough free space for volume '
+                                  'allocation: disk: %s volume: %s' %
+                                  (disk.id, volume_info))
                     self._get_allocator(disk, volume_info)(volume_info, 0)
         else:
             not_allocated_size = size
@@ -673,7 +675,8 @@ class VolumeManager(object):
                     # else just allocate volume with size 0
                     size_to_allocation = 0
 
-                self._get_allocator(disk, volume_info)(volume_info, size_to_allocation)
+                self._get_allocator(disk, volume_info)(volume_info,
+                                                       size_to_allocation)
                 not_allocated_size -= size_to_allocation
 
     def _get_allocator(self, disk, volume_info):
@@ -700,7 +703,8 @@ class VolumeManager(object):
         for volume in self.allowed_volumes:
             # For last volume group in allowed_volumes list
             # we allocates all free space
-            if len(self.allowed_volumes) == 1 or volume == self.allowed_volumes[-1]:
+            if (len(self.allowed_volumes) == 1 or
+                    volume == self.allowed_volumes[-1]):
                 self._allocate_volumes(volume)
             else:
                 min_size = self.expand_generators(volume)['min_size']
