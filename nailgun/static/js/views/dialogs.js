@@ -104,7 +104,7 @@ function(require, utils, models, simpleMessageTemplate, createClusterWizardTempl
         },
         initialize: function(options) {
             _.defaults(this, options);
-            this.activePane = null;
+            this.activePaneIndex = null;
             this.panes = [];
             _.each(this.panesConstructors, function(Pane) {
                 var pane = new Pane({wizard: this});
@@ -118,14 +118,17 @@ function(require, utils, models, simpleMessageTemplate, createClusterWizardTempl
                 return pane instanceof PaneConstructor;
             });
         },
+        activePane: function() {
+            return this.panes[this.activePaneIndex];
+        },
         nextPane: function() {
-            this.panes[this.activePane].processPaneData().done(_.bind(function() {
-                this.activePane += 1;
+            this.activePane().processPaneData().done(_.bind(function() {
+                this.activePaneIndex += 1;
                 this.render();
             }, this));
         },
         prevPane: function() {
-            this.activePane -= 1;
+            this.activePaneIndex -= 1;
             this.render();
         },
         finish: function() {
@@ -158,13 +161,13 @@ function(require, utils, models, simpleMessageTemplate, createClusterWizardTempl
             return deferred;
         },
         render: function() {
-            if (_.isNull(this.activePane)) {
-                this.activePane = 0;
+            if (_.isNull(this.activePaneIndex)) {
+                this.activePaneIndex = 0;
             } else {
-                this.panes[this.activePane].$el.detach();
+                this.activePane().$el.detach();
             }
-            var pane = this.panes[this.activePane];
-            var currentStep = this.activePane + 1;
+            var pane = this.activePane();
+            var currentStep = this.activePaneIndex + 1;
             var totalSteps = this.panes.length;
             this.constructor.__super__.render.call(this, {
                 currentStep: currentStep,
@@ -172,7 +175,7 @@ function(require, utils, models, simpleMessageTemplate, createClusterWizardTempl
             });
             this.$('.pane-title').text(pane.title || '');
             this.$('.pane-content').append(pane.el);
-            this.$('.prev-pane-btn').prop('disabled', !this.activePane);
+            this.$('.prev-pane-btn').prop('disabled', !this.activePaneIndex);
             this.$('.next-pane-btn').toggle(currentStep != totalSteps);
             this.$('.finish-btn').toggle(currentStep == totalSteps);
             this.$('.wizard-footer .btn-success:visible').focus();
@@ -230,6 +233,7 @@ function(require, utils, models, simpleMessageTemplate, createClusterWizardTempl
             this.$('.control-group.error').removeClass('error');
             this.$('.help-inline').html('');
             if (e.which == 13) {
+                e.preventDefault();
                 this.wizard.nextPane();
             }
         },
@@ -282,13 +286,31 @@ function(require, utils, models, simpleMessageTemplate, createClusterWizardTempl
     }, rhelCredentialsMixin));
 
     clusterWizardPanes.ClusterModePane = views.WizardPane.extend({
-        title: 'Mode',
-        template: _.template(clusterModePaneTemplate)
+        title: 'Deployment Mode',
+        template: _.template(clusterModePaneTemplate),
+        events: {
+            'change input[name=mode]': 'toggleTypes'
+        },
+        toggleTypes: function() {
+            this.$('.mode-description').addClass('hide');
+            this.$('.help-mode-' + this.$('input[name=mode]:checked').val()).removeClass('hide');
+        },
+        render: function() {
+            var availableModes = models.Cluster.prototype.availableModes();
+            this.$el.html(this.template({availableModes: availableModes}));
+            this.$('input[name=mode]:first').prop('checked', true).trigger('change');
+            return this;
+        }
     });
 
     clusterWizardPanes.ClusterComputePane = views.WizardPane.extend({
         title: 'Compute',
-        template: _.template(clusterComputePaneTemplate)
+        template: _.template(clusterComputePaneTemplate),
+        render: function() {
+            this.$el.html(this.template());
+            this.$('input[name=hypervisor][value=qemu]').prop('checked', true);
+            return this;
+        }
     });
 
     clusterWizardPanes.ClusterNetworkPane = views.WizardPane.extend({

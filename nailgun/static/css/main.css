@@ -3523,6 +3523,10 @@ input.error:focus {
   font-weight: normal;
 }
 
+.modal .parameter-name {
+  cursor: pointer;
+}
+
 .parameter-name.hide {
   display: none;
 }
@@ -3548,6 +3552,11 @@ input.error:focus {
 
 .parameter-spacer {
   height: 8px;
+}
+
+.modal-parameter-description {
+  color: #999999;
+  margin: 0 0 8px 35px;
 }
 
 .global-description {

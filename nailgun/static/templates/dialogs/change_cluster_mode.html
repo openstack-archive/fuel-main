@@ -8,7 +8,7 @@
       <h4>Deployment Mode:</h4>
       <div class="row-fluid control-group mode-control-group">
         <div class="span5">
-           <% var modes = {'singlenode': 'Single-node', 'multinode': 'Multi-node', 'ha': 'Multi-node with HA'} %>
+           <% var modes = {'multinode': 'Multi-node', 'ha': 'Multi-node with HA'} %>
           <% _.each(cluster.availableModes(), function(mode) { %>
             <label class="parameter-box clearfix setting" >
               <div class="parameter-control">
@@ -22,11 +22,8 @@
           <% }) %>
         </div>
         <div class="span7">
-          <p class="help-block hide mode-description help-mode-singlenode">
-            This simple configuration is for you if you want to give OpenStack a test drive. You will get a fully functional private cloud, with all OpenStack components installed on one node. The node will also act as a compute node.
-          </p>
           <p class="help-block hide mode-description help-mode-multinode">
-              In this configuration the OpenStack controller is deployed separately from the compute and cinder nodes. This mode assumes the presence of 1 controller node and 1 or more compute/cinder nodes. You can add more nodes to scale your cloud later.
+            In this configuration the OpenStack controller is deployed separately from the compute and cinder nodes. This mode assumes the presence of 1 controller node and 1 or more compute/cinder nodes. You can add more nodes to scale your cloud later.
           </p>
           <p class="help-block hide mode-description help-mode-ha">
             This configuration requires multiple OpenStack controllers (3+) and provides high availability for all OpenStack components, including MySQL/Galera, RabbitMQ, and Cinder, as well as OpenStack API services. Select this configuration if you want to build a production-grade OpenStack cloud with 6 nodes or more.
