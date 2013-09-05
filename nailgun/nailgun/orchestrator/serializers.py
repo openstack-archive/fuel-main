@@ -29,17 +29,6 @@ from nailgun.network.manager import NetworkManager
 
 class OrchestratorSerializer(object):
     """Base class for orchestrator searilization
-
-    TODO
-
-    "dns_nameservers": "172.18.94.34",
-    "verbose": "true",
-    "debug": "true",
-    "create_networks": "true",
-    "quantum": "true",
-    "master_hostname": "controller-01",
-    "deployment_source": "cli",
-    "deployment_engine": "nailyfact",
     """
 
     @classmethod
@@ -113,8 +102,7 @@ class OrchestratorSerializer(object):
 
     @classmethod
     def add_vlan_interfaces(cls, nodes):
-        """
-        We shouldn't pass to orchetrator fixed network
+        """We shouldn't pass to orchetrator fixed network
         when network manager is VlanManager, but we should specify
         fixed_interface (private_interface in terms of fuel) as result
         we just pass vlan_interface as node attribute.
@@ -212,15 +200,6 @@ class OrchestratorSerializer(object):
                 'storage_netmask': cls.get_addr(network_data, 'storage')['netmask'],
                 'public_address': cls.get_addr(network_data, 'public')['ip'],
                 'public_netmask': cls.get_addr(network_data, 'public')['netmask'],
-
-                # quantum?
-                # 'default_gateway': n['default_gateway']
-
-                # quantum
-                # 'internal_br': n['internal_br'],
-
-                # quantum
-                # 'public_br': n['public_br'],
             }
 
         return map(make_node, nodes)
