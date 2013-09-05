@@ -255,6 +255,13 @@ class TaskHelper(object):
         ), key=lambda n: n.id)
 
     @classmethod
+    def nodes_in_provisioning(cls, cluster):
+        return sorted(filter(
+            lambda n: n.status == 'provisioning',
+            cluster.nodes
+        ), key=lambda n: n.id)
+
+    @classmethod
     def set_error(cls, task_uuid, message):
         cls.update_task_status(
             task_uuid,

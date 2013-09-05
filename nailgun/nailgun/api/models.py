@@ -221,7 +221,9 @@ class Cluster(Base):
         from nailgun.task.helpers import TaskHelper
         from nailgun.network.manager import NetworkManager
 
-        nodes = TaskHelper.nodes_to_deploy(self)
+        nodes = set(TaskHelper.nodes_to_deploy(self) +
+                    TaskHelper.nodes_in_provisioning(self))
+
         TaskHelper.update_slave_nodes_fqdn(nodes)
 
         nodes_ids = [n.id for n in nodes]
