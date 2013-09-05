@@ -101,6 +101,7 @@ class DeploymentTask(object):
     def message(cls, task):
         logger.debug("DeploymentTask.message(task=%s)" % task.uuid)
 
+        task.cluster.prepare_for_deployment()
         nodes = TaskHelper.nodes_to_deploy(task.cluster)
         nodes_ids = [n.id for n in nodes]
         for n in db().query(Node).filter_by(
