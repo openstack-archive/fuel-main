@@ -76,9 +76,16 @@ class TestTaskManagers(BaseHandlers):
     @fake_tasks()
     def test_do_not_redeploy_nodes_in_ready_status(self):
         self.env.create(nodes_kwargs=[
-            {"status": "ready"},
+            {"pending_addition": True},
             {"pending_addition": True}])
         cluster_db = self.env.clusters[0]
+        # Generate ips, fqdns
+        cluster_db.prepare_for_deployment()
+        # First node with status ready
+        # should not be readeployed
+        self.env.nodes[0].status = 'ready'
+        self.db.commit()
+
         cluster_db.clear_pending_changes()
 
         supertask = self.env.launch_deployment()
