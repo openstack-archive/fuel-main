@@ -100,7 +100,7 @@ function(require, utils, models, simpleMessageTemplate, createClusterWizardTempl
         events: {
             'click .next-pane-btn': 'nextPane',
             'click .prev-pane-btn': 'prevPane',
-            'click .finish-btn': 'finish'
+            'click .finish-btn': 'createCluster'
         },
         initialize: function(options) {
             _.defaults(this, options);
@@ -134,26 +134,22 @@ function(require, utils, models, simpleMessageTemplate, createClusterWizardTempl
         prevPane: function() {
             this.goToPane(this.activePaneIndex - 1);
         },
-        finish: function() {
-            this.$('.wizard-footer button').prop('disabled', true);
-            this.createCluster().always(_.bind(function() {
-                this.$el.modal('hide');
-            }, this));
-        },
         createCluster: function() {
             var cluster = this.findPane(clusterWizardPanes.ClusterNameAndReleasePane).cluster;
             var deferred = cluster.save();
             if (deferred) {
-                this.$('.create-cluster-btn').attr('disabled', true);
+                this.$('.wizard-footer button').prop('disabled', true);
                 deferred
                     .done(_.bind(function() {
-                        this.$el.modal('hide');
                         this.collection.add(cluster);
+                        this.$el.modal('hide');
                     }, this))
                     .fail(_.bind(function(response) {
+                        console.log(response)
                         if (response.status == 409) {
+                            this.$('.wizard-footer button').prop('disabled', false);
+                            this.goToPane(0);
                             cluster.trigger('invalid', cluster, {name: response.responseText});
-                            this.$('.create-cluster-btn').attr('disabled', false);
                         } else if (response.status == 400) {
                             this.displayInfoMessage({error: false, title: 'Create a new OpenStack environment error', message: response.responseText});
                         } else {
@@ -161,7 +157,6 @@ function(require, utils, models, simpleMessageTemplate, createClusterWizardTempl
                         }
                     }, this));
             }
-            return deferred;
         },
         render: function() {
             if (_.isNull(this.activePaneIndex)) {
@@ -189,6 +184,9 @@ function(require, utils, models, simpleMessageTemplate, createClusterWizardTempl
             _.defaults(this, options);
         },
         processPaneData: function() {
+            return (new $.Deferred()).resolve();
+        },
+        processCreatedCluster: function(cluster) {
             return (new $.Deferred()).resolve();
         },
         render: function() {
