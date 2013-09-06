@@ -184,25 +184,34 @@ class OrchestratorSerializer(object):
         """Generate nodes list. Represents
         as "nodes" parameter in facts.
         """
-        def make_node(node):
+        node_list = []
+
+        for node in nodes:
             network_data = node.network_data
-            return {
-                # Yes, uid is really should be a string
-                'uid': str(node.id),
-                'fqdn': node.fqdn,
-                'name': TaskHelper.make_slave_name(node.id, node.role),
-                'role': node.role,
 
-                # Addresses
-                'internal_address': cls.get_addr(network_data, 'management')['ip'],
-                'internal_netmask': cls.get_addr(network_data, 'management')['netmask'],
-                'storage_address': cls.get_addr(network_data, 'storage')['ip'],
-                'storage_netmask': cls.get_addr(network_data, 'storage')['netmask'],
-                'public_address': cls.get_addr(network_data, 'public')['ip'],
-                'public_netmask': cls.get_addr(network_data, 'public')['netmask'],
-            }
+            for role in node.roles:
+                node_list.append({
+                    # Yes, uid is really should be a string
+                    'uid': str(node.id),
+                    'fqdn': node.fqdn,
+                    'name': TaskHelper.make_slave_name(node.id),
+                    'role': role,
 
-        return map(make_node, nodes)
+                    # Addresses
+                    'internal_address': cls.get_addr(network_data,
+                                                     'management')['ip'],
+                    'internal_netmask': cls.get_addr(network_data,
+                                                     'management')['netmask'],
+                    'storage_address': cls.get_addr(network_data,
+                                                    'storage')['ip'],
+                    'storage_netmask': cls.get_addr(network_data,
+                                                    'storage')['netmask'],
+                    'public_address': cls.get_addr(network_data,
+                                                   'public')['ip'],
+                    'public_netmask': cls.get_addr(network_data,
+                                                   'public')['netmask']})
+
+        return node_list
 
     @classmethod
     def get_addr(cls, network_data, name):
