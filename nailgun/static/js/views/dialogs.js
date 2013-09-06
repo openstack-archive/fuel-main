@@ -216,8 +216,11 @@ function(require, utils, models, simpleMessageTemplate, createClusterWizardTempl
             var success = true;
             if (this.rhelCredentialsFormVisible()) {
                 success = this.rhelCredentialsForm.setCredentials();
-                if (this.rhelCredentialsForm.setCredentials()) {
+                if (success) {
                     this.rhelCredentialsForm.saveCredentials();
+                    this.rhelCredentialsForm.visible = false;
+                    this.redHatAccount.absent = false;
+                    this.updateReleaseParameters();
                     success = this.createCluster();
                 }
             } else {
