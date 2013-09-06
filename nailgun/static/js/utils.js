@@ -20,10 +20,10 @@ define(['require'], function(require) {
         serializeTabOptions: function(options) {
             return _.map(options, function(value, key) {
                 return key + ':' + value;
-            }).join(',');
+            }).join(';');
         },
         deserializeTabOptions: function(serializedOptions) {
-            return _.object(_.map(serializedOptions.split(','), function(option) {
+            return _.object(_.map(serializedOptions.split(';'), function(option) {
                 return option.split(':');
             }));
         },

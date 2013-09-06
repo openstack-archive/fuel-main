@@ -161,6 +161,9 @@ define(['utils'], function(utils) {
         resources: function(resourceName) {
             var resources = this.map(function(node) {return node.resource(resourceName);});
             return _.reduce(resources, function(sum, n) {return sum + n;}, 0);
+        },
+        getByIds: function(ids) {
+            return this.filter(function(node) {return _.contains(ids, node.id);});
         }
     });
 

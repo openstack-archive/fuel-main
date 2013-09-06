@@ -1,4 +1,4 @@
-<h4>Assign Roles to <%= nodes.length > 1 ? 'Selected Nodes' : 'Node' %></h4>
+<h4>Assign Roles</h4>
 <% _.each(roles, function(role) { %>
  <div class="role-container">
     <label>
@@ -9,6 +9,3 @@
     <div class="role-description"><%= rolesData[role].description %></div>
   </div>
 <% }) %>
-<hr/>
-<button class="btn btn-close">Cancel</button>
-<button class="btn btn-success btn-assign" disabled>Assign</button>
