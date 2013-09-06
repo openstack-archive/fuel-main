@@ -213,18 +213,15 @@ function(require, utils, models, simpleMessageTemplate, createClusterWizardTempl
             'change select[name=release]': 'updateReleaseParameters'
         },
         processPaneData: function() {
-            var success = true;
-            if (this.rhelCredentialsFormVisible()) {
+            var success = this.createCluster();
+            if (success && this.rhelCredentialsFormVisible()) {
                 success = this.rhelCredentialsForm.setCredentials();
                 if (success) {
                     this.rhelCredentialsForm.saveCredentials();
                     this.rhelCredentialsForm.visible = false;
                     this.redHatAccount.absent = false;
                     this.updateReleaseParameters();
-                    success = this.createCluster();
                 }
-            } else {
-                success = this.createCluster();
             }
             return (new $.Deferred())[success ? 'resolve' : 'reject']();
         },
