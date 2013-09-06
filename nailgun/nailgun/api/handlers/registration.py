@@ -20,17 +20,15 @@ Product registration handlers
 
 import base64
 import json
-import os
-import web
 
 
 from nailgun.settings import settings
-from nailgun.api.handlers.base import JSONHandler, content_json
+from nailgun.api.handlers.base import content_json
+from nailgun.api.handlers.base import JSONHandler
 
 
 class FuelKeyHandler(JSONHandler):
-    """
-    Fuel key handler
+    """ Fuel key handler
     """
 
     @content_json
