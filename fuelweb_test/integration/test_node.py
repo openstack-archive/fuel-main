@@ -75,7 +75,7 @@ class TestNode(BaseNodeTestCase):
         cluster_id = self.create_cluster(name="provision")
         self._basic_provisioning(
             cluster_id=cluster_id,
-            nodes_dict={'controller': ['slave-01']}
+            nodes_dict={'slave-01': ['controller']}
         )
         self.run_OSTF(cluster_id=cluster_id, should_fail=12, should_pass=12)
 
@@ -162,7 +162,7 @@ class TestNode(BaseNodeTestCase):
         nodes_dict = {'slave-01': ['controller'], 'slave-02': ['compute']}
 
         cluster_id = self.create_cluster(name=cluster_name)
-        devops_nodes = self.nodes().slaves[:1]
+        devops_nodes = self.nodes().slaves[:2]
         self.bootstrap_nodes(devops_nodes)
 
         ebtables = self.get_ebtables(cluster_id, devops_nodes)
