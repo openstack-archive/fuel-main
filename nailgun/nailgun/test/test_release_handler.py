@@ -18,11 +18,11 @@ import json
 import unittest
 
 from nailgun.api.models import Release
-from nailgun.test.base import BaseHandlers
+from nailgun.test.base import BaseIntegrationTest
 from nailgun.test.base import reverse
 
 
-class TestHandlers(BaseHandlers):
+class TestHandlers(BaseIntegrationTest):
     def test_release_put_change_name_and_version(self):
         release = self.env.create_release(api=False)
         resp = self.app.put(

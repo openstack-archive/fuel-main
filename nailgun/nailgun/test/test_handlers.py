@@ -15,11 +15,11 @@
 #    under the License.
 
 
-from nailgun.test.base import BaseHandlers
+from nailgun.test.base import BaseIntegrationTest
 from nailgun.test.base import reverse
 
 
-class TestHandlers(BaseHandlers):
+class TestHandlers(BaseIntegrationTest):
     def test_all_api_urls_404_or_405(self):
         urls = {
             'ClusterHandler': {'cluster_id': 1},

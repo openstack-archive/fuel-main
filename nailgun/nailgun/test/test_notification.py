@@ -22,11 +22,11 @@ from nailgun.api.models import Task
 from nailgun.errors import errors
 from nailgun import notifier
 from nailgun.rpc import receiver as rcvr
-from nailgun.test.base import BaseHandlers
+from nailgun.test.base import BaseIntegrationTest
 from nailgun.test.base import reverse
 
 
-class TestNotification(BaseHandlers):
+class TestNotification(BaseIntegrationTest):
 
     def test_notification_deploy_done(self):
         cluster = self.env.create_cluster(api=False)

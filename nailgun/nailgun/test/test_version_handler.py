@@ -17,11 +17,11 @@
 import json
 from mock import patch
 
-from nailgun.test.base import BaseHandlers
+from nailgun.test.base import BaseIntegrationTest
 from nailgun.test.base import reverse
 
 
-class TestVersionHandler(BaseHandlers):
+class TestVersionHandler(BaseIntegrationTest):
 
     @patch('nailgun.api.handlers.version.settings.PRODUCT_VERSION', '0.1b')
     @patch('nailgun.api.handlers.version.settings.COMMIT_SHA', '12345')

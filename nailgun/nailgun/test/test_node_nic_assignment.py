@@ -19,11 +19,11 @@ import json
 from nailgun.api.models import AllowedNetworks
 from nailgun.api.models import Cluster
 from nailgun.api.models import NetworkAssignment
-from nailgun.test.base import BaseHandlers
+from nailgun.test.base import BaseIntegrationTest
 from nailgun.test.base import reverse
 
 
-class TestClusterHandlers(BaseHandlers):
+class TestClusterHandlers(BaseIntegrationTest):
 
     def test_assigned_networks_when_node_added(self):
         mac = '123'
@@ -112,7 +112,7 @@ class TestClusterHandlers(BaseHandlers):
         self.assertEquals(len(allowed_nets), 0)
 
 
-class TestNodeHandlers(BaseHandlers):
+class TestNodeHandlers(BaseIntegrationTest):
 
     def test_network_assignment_when_node_created_and_added(self):
         cluster = self.env.create_cluster(api=True)

@@ -575,8 +575,14 @@ class BaseTestCase(TestCase):
 class BaseIntegrationTest(BaseTestCase):
     @classmethod
     def setUpClass(cls):
+        super(BaseIntegrationTest, cls).setUpClass()
         nailgun.task.task.DeploymentTask._prepare_syslog_dir = mock.Mock()
-        cls.setUpClass()
+
+    def __init__(self, *args, **kwargs):
+        super(BaseIntegrationTest, self).__init__(*args, **kwargs)
+        self.default_headers = {
+            "Content-Type": "application/json"
+        }
 
     def _wait_for_threads(self):
         # wait for fake task thread termination
@@ -595,13 +601,6 @@ class BaseIntegrationTest(BaseTestCase):
                             )
                         )
 
-class BaseHandlers(BaseTestCase):
-
-    def __init__(self, *args, **kwargs):
-        super(BaseHandlers, self).__init__(*args, **kwargs)
-        self.default_headers = {
-            "Content-Type": "application/json"
-        }
 
 
 def fake_tasks(fake_rpc=True,

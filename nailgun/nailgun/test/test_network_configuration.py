@@ -21,11 +21,11 @@ from sqlalchemy.sql import not_
 from nailgun.api.models import Cluster
 from nailgun.api.models import NetworkGroup
 from nailgun.network.manager import NetworkManager
-from nailgun.test.base import BaseHandlers
+from nailgun.test.base import BaseIntegrationTest
 from nailgun.test.base import reverse
 
 
-class TestNetworkConfigurationHandlerMultinodeMode(BaseHandlers):
+class TestNetworkConfigurationHandlerMultinodeMode(BaseIntegrationTest):
     def setUp(self):
         super(TestNetworkConfigurationHandlerMultinodeMode, self).setUp()
         cluster = self.env.create_cluster(api=True)
@@ -144,7 +144,7 @@ class TestNetworkConfigurationHandlerMultinodeMode(BaseHandlers):
         )
 
 
-class TestNetworkConfigurationHandlerHAMode(BaseHandlers):
+class TestNetworkConfigurationHandlerHAMode(BaseIntegrationTest):
     def setUp(self):
         super(TestNetworkConfigurationHandlerHAMode, self).setUp()
         cluster = self.env.create_cluster(api=True, mode='ha_compact')

@@ -26,12 +26,12 @@ from nailgun.api.models import NodeNICInterface
 from nailgun.network.manager import NetworkManager
 from nailgun.settings import settings
 from nailgun.task.helpers import TaskHelper
-from nailgun.test.base import BaseHandlers
+from nailgun.test.base import BaseIntegrationTest
 from nailgun.test.base import fake_tasks
 from nailgun.test.base import reverse
 
 
-class TestHandlers(BaseHandlers):
+class TestHandlers(BaseIntegrationTest):
 
     @fake_tasks(fake_rpc=False, mock_rpc=False)
     @patch('nailgun.rpc.cast')

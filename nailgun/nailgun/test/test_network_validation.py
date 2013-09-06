@@ -19,11 +19,11 @@ from netaddr import IPNetwork
 
 from nailgun.api.models import NetworkGroup
 from nailgun.settings import settings
-from nailgun.test.base import BaseHandlers
+from nailgun.test.base import BaseIntegrationTest
 from nailgun.test.base import reverse
 
 
-class TestHandlers(BaseHandlers):
+class TestHandlers(BaseIntegrationTest):
 
     def update_networks(self, cluster_id, networks, expect_errors=False):
         return self.app.put(

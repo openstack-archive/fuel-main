@@ -23,7 +23,7 @@ import tarfile
 import tempfile
 import time
 
-from nailgun.test.base import BaseHandlers
+from nailgun.test.base import BaseIntegrationTest
 from nailgun.test.base import reverse
 
 from nailgun.settings import settings
@@ -32,7 +32,7 @@ from nailgun.api.handlers.logs import read_backwards
 from nailgun.api.models import RedHatAccount
 
 
-class TestLogs(BaseHandlers):
+class TestLogs(BaseIntegrationTest):
 
     def setUp(self):
         super(TestLogs, self).setUp()

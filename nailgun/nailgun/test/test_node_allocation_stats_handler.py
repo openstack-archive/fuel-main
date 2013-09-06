@@ -16,11 +16,11 @@
 
 import json
 
-from nailgun.test.base import BaseHandlers
+from nailgun.test.base import BaseIntegrationTest
 from nailgun.test.base import reverse
 
 
-class TestHandlers(BaseHandlers):
+class TestHandlers(BaseIntegrationTest):
     def _get_allocation_stats(self):
         resp = self.app.get(
             reverse('NodesAllocationStatsHandler'))

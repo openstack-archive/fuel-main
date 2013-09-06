@@ -16,11 +16,11 @@
 
 import json
 
-from nailgun.test.base import BaseHandlers
+from nailgun.test.base import BaseIntegrationTest
 from nailgun.test.base import reverse
 
 
-class TestHandlers(BaseHandlers):
+class TestHandlers(BaseIntegrationTest):
 
     def test_put_handler_with_one_node(self):
         cluster = self.env.create_cluster(api=True)

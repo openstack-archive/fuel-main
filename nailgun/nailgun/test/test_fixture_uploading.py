@@ -19,10 +19,10 @@ import cStringIO
 from nailgun.api.models import Node
 from nailgun.api.models import Release
 from nailgun.fixtures.fixman import upload_fixture
-from nailgun.test.base import BaseHandlers
+from nailgun.test.base import BaseIntegrationTest
 
 
-class TestFixture(BaseHandlers):
+class TestFixture(BaseIntegrationTest):
 
     fixtures = ['sample_environment']
 

@@ -32,12 +32,12 @@ from nailgun.api.models import NetworkGroup
 from nailgun.api.models import NodeNICInterface
 from nailgun.api.models import Vlan
 from nailgun.settings import settings
-from nailgun.test.base import BaseHandlers
+from nailgun.test.base import BaseIntegrationTest
 from nailgun.test.base import fake_tasks
 from nailgun.test.base import reverse
 
 
-class TestNetworkManager(BaseHandlers):
+class TestNetworkManager(BaseIntegrationTest):
 
     @fake_tasks(fake_rpc=False, mock_rpc=False)
     @patch('nailgun.rpc.cast')

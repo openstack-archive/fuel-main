@@ -18,10 +18,10 @@
 from nailgun.api.models import Task
 from nailgun.plugin.thread import get_queue
 from nailgun.plugin.thread import PluginThread
-from nailgun.test.base import BaseHandlers
+from nailgun.test.base import BaseIntegrationTest
 
 
-class TestPluginProcess(BaseHandlers):
+class TestPluginProcess(BaseIntegrationTest):
     def setUp(self):
         super(TestPluginProcess, self).setUp()
         self.plugin_thread = PluginThread()

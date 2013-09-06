@@ -173,7 +173,7 @@ class TestClusterChanges(BaseIntegrationTest):
     @fake_tasks()
     def test_failed_deployment_does_nothing_with_changes(self):
         cluster = self.env.create_cluster(api=True)
-        self.env.create_node(
+        node = self.env.create_node(
             cluster_id=cluster["id"],
             status="error",
             error_type="provision"

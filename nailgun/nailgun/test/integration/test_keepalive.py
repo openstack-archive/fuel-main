@@ -17,10 +17,10 @@
 import time
 
 from nailgun.keepalive.watcher import KeepAliveThread
-from nailgun.test.base import BaseHandlers
+from nailgun.test.base import BaseIntegrationTest
 
 
-class TestKeepalive(BaseHandlers):
+class TestKeepalive(BaseIntegrationTest):
 
     def setUp(self):
         super(TestKeepalive, self).setUp()

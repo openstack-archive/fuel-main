@@ -16,11 +16,11 @@
 
 import json
 
-from nailgun.test.base import BaseHandlers
+from nailgun.test.base import BaseIntegrationTest
 from nailgun.test.base import reverse
 
 
-class TestHandlers(BaseHandlers):
+class TestHandlers(BaseIntegrationTest):
 
     def test_notification_get_without_cluster(self):
         notification = self.env.create_notification()

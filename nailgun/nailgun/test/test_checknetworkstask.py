@@ -18,10 +18,10 @@ from netaddr import IPNetwork
 from netaddr import IPRange
 
 from nailgun.network.manager import NetworkManager
-from nailgun.test.base import BaseHandlers
+from nailgun.test.base import BaseIntegrationTest
 
 
-class TestHandlers(BaseHandlers):
+class TestHandlers(BaseIntegrationTest):
     def test_ip_range_intersection(self):
         nm = NetworkManager()
         self.assertEqual(nm.is_range_in_cidr(

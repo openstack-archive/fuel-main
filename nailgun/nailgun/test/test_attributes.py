@@ -19,11 +19,11 @@ import json
 from nailgun.api.models import Attributes
 from nailgun.api.models import Cluster
 from nailgun.api.models import Release
-from nailgun.test.base import BaseHandlers
+from nailgun.test.base import BaseIntegrationTest
 from nailgun.test.base import reverse
 
 
-class TestAttributes(BaseHandlers):
+class TestAttributes(BaseIntegrationTest):
 
     def test_attributes_creation(self):
         cluster = self.env.create_cluster(api=True)

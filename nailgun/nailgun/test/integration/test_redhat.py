@@ -19,12 +19,12 @@ from nailgun.api.models import Task
 from nailgun.api.handlers.redhat import RedHatSetupHandler
 from nailgun.api.models import RedHatAccount
 from nailgun.api.models import Task
-from nailgun.test.base import BaseHandlers
+from nailgun.test.base import BaseIntegrationTest
 from nailgun.test.base import fake_tasks
 from nailgun.test.base import reverse
 
 
-class TestHandlers(BaseHandlers):
+class TestHandlers(BaseIntegrationTest):
     def setUp(self):
         super(TestHandlers, self).setUp()
         self.release = self.env.create_release(api=False)

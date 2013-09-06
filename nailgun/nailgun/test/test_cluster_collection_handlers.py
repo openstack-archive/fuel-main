@@ -24,11 +24,11 @@ from nailgun.api.models import Network
 from nailgun.api.models import NetworkConfiguration
 from nailgun.api.models import NetworkGroup
 from nailgun.api.models import Release
-from nailgun.test.base import BaseHandlers
+from nailgun.test.base import BaseIntegrationTest
 from nailgun.test.base import reverse
 
 
-class TestHandlers(BaseHandlers):
+class TestHandlers(BaseIntegrationTest):
 
     def _get_cluster_networks(self, cluster_id):
         nets = json.loads(self.app.get(

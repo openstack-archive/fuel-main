@@ -51,7 +51,7 @@ xunit=0
 clean=0
 ui_test_files=
 default_noseargs="--with-timer --timer-top-n=10 --exclude-dir=nailgun/test/integration"
-noseargs=$default_nose_args
+noseargs="$default_noseargs"
 noseopts=
 
 for arg in "$@"; do
@@ -221,7 +221,7 @@ function drop_db {
 run_tests || errors+=' unittests'
 
 if [ "$noseargs" == "$default_noseargs" ]; then
-  if [ $no_pep8 -eq 0 ]; then
+  if [ $no_flake8 -eq 0 ]; then
     run_flake8 || errors+=' flake8'
   fi
   if [ $no_jslint -eq 0 ]; then

@@ -22,14 +22,14 @@ from nailgun.api.models import IPAddr
 from nailgun.api.models import Network
 from nailgun.api.models import NetworkGroup
 from nailgun.api.models import Node
-from nailgun.test.base import BaseHandlers
+from nailgun.test.base import BaseIntegrationTest
 from nailgun.test.base import fake_tasks
 from nailgun.test.base import reverse
 
 logger = logging.getLogger(__name__)
 
 
-class TestNodeDeletion(BaseHandlers):
+class TestNodeDeletion(BaseIntegrationTest):
 
     @fake_tasks(fake_rpc=False, mock_rpc=False)
     @patch('nailgun.rpc.cast')

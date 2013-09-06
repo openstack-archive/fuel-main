@@ -17,11 +17,11 @@
 import json
 
 from nailgun.api.models import Node
-from nailgun.test.base import BaseHandlers
+from nailgun.test.base import BaseIntegrationTest
 from nailgun.test.base import reverse
 
 
-class TestHandlers(BaseHandlers):
+class TestHandlers(BaseIntegrationTest):
 
     def test_node_get(self):
         node = self.env.create_node(api=False)

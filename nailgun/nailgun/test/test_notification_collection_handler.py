@@ -17,11 +17,11 @@
 import json
 
 from nailgun.api.models import Notification
-from nailgun.test.base import BaseHandlers
+from nailgun.test.base import BaseIntegrationTest
 from nailgun.test.base import reverse
 
 
-class TestHandlers(BaseHandlers):
+class TestHandlers(BaseIntegrationTest):
 
     def test_empty(self):
         resp = self.app.get(

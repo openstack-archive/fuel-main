@@ -17,11 +17,11 @@
 import mock
 from mock import patch
 
-from nailgun.test.base import BaseHandlers
+from nailgun.test.base import BaseIntegrationTest
 from nailgun.test.base import fake_tasks
 
 
-class TestProvisioning(BaseHandlers):
+class TestProvisioning(BaseIntegrationTest):
 
     @fake_tasks(fake_rpc=False, mock_rpc=False)
     @patch('nailgun.rpc.cast')

@@ -27,11 +27,11 @@ from nailgun.api.models import Notification
 from nailgun.api.models import Task
 from nailgun.api.models import Vlan
 from nailgun.rpc import receiver as rcvr
-from nailgun.test.base import BaseHandlers
+from nailgun.test.base import BaseIntegrationTest
 from nailgun.test.base import reverse
 
 
-class TestVerifyNetworks(BaseHandlers):
+class TestVerifyNetworks(BaseIntegrationTest):
 
     def setUp(self):
         super(TestVerifyNetworks, self).setUp()
@@ -342,7 +342,7 @@ class TestVerifyNetworks(BaseHandlers):
         self.assertEqual(task.result, error_nodes)
 
 
-class TestConsumer(BaseHandlers):
+class TestConsumer(BaseIntegrationTest):
 
     def setUp(self):
         super(TestConsumer, self).setUp()
