@@ -33,13 +33,6 @@ function nailgun_checks {
 }
 
 function ruby_checks {
-    # Installing ruby dependencies
-    echo 'source "http://rubygems.org"' > /tmp/product-gemfile
-    cat requirements-gems.txt | while read gem ver; do \
-            echo "gem \"$gem\", \"$ver\"" >> /tmp/product-gemfile; \
-        done
-    sudo bundle install --gemfile /tmp/product-gemfile
-
     cd $WORKSPACE/local_repo/astute
-    rspec -c -fd spec/unit/
+    WORKSPACE=$WORKSPACE/local_repo/astute ./run_tests.sh
 }
