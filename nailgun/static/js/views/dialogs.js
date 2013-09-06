@@ -309,7 +309,7 @@ function(require, utils, models, simpleMessageTemplate, createClusterWizardTempl
             this.$('.help-mode-' + this.$('input[name=mode]:checked').val()).removeClass('hide');
         },
         beforeClusterCreation: function(cluster) {
-            cluster.set({mode: this.$('input[name=mode]:checked').val()})
+            cluster.set({mode: this.$('input[name=mode]:checked').val()});
             return (new $.Deferred()).resolve();
         },
         render: function() {

@@ -36,7 +36,10 @@ casper.then(function() {
     this.then(function() {
         this.fill('form.create-cluster-form', {name: name});
         this.fill('form.rhel-license', {username: 'rheltest', password: 'password'});
-        this.click('.create-cluster-btn');
+        for (var i = 0; i < 4; i++) {
+            this.click('.next-pane-btn');
+        }
+        this.click('.finish-btn');
     });
     this.test.assertSelectorDisappears('.modal', 'Cluster creation dialog closes after from submission');
     this.test.assertSelectorAppears('.cluster-list a.clusterbox', 'Created cluster appears in list');
