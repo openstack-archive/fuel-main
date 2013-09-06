@@ -1,10 +1,21 @@
 <div class="modal-header">
   <button type="button" class="close" data-dismiss="modal">×</button>
-  <h3>Create a new OpenStack environment (<%= currentStep %>/<%= totalSteps %>)</h3>
+  <h3>Create a new OpenStack environment</h3>
 </div>
 <div class="modal-body wizard-body">
-    <h4 class="pane-title"></h4>
-    <div class="pane-content"></div>
+  <div class="wizard-steps">
+    <% _(totalSteps).times(function(step) { %>
+      <% step++ %>
+      <div class="wizard-step <%= step != currentStep ? step <= maxAvailableStep ? 'available' : '' : 'current' %>"
+        style="width: <%= (100 / totalSteps).toFixed(2) %>%"
+        data-pane="<%= step - 1 %>"
+      >
+        Step <%= step %>
+      </div>
+    <% }) %>
+  </div>
+  <h4 class="pane-title"></h4>
+  <div class="pane-content"></div>
 </div>
 <div class="modal-footer wizard-footer">
   <button class="btn pull-left" data-dismiss="modal">Cancel</button>

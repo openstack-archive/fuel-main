@@ -1665,6 +1665,32 @@ h6.page-title {
 
 .modal .wizard-body {
   min-height: 180px;
+  padding-top: 0;
+}
+
+.modal .wizard-steps {
+  height: 30px;
+  padding-bottom: 10px;
+}
+
+.modal .wizard-step {
+  padding-top: 5px;
+  height: 25px;
+  float: left;
+  text-align: center;
+  background-color: #f8f8f8;
+  color: #cccccc;
+}
+
+.modal .wizard-step.current {
+  background-color: #ea8511;
+  color: #f8f8f8;
+}
+
+.modal .wizard-step.available {
+  background-color: #8cc63f;
+  color: #f8f8f8;
+  cursor: pointer;
 }
 
 .loading {

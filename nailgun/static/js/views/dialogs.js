@@ -99,11 +99,13 @@ function(require, utils, models, simpleMessageTemplate, createClusterWizardTempl
         events: {
             'click .next-pane-btn': 'nextPane',
             'click .prev-pane-btn': 'prevPane',
+            'click .wizard-step.available': 'onStepClick',
             'click .finish-btn': 'createCluster'
         },
         initialize: function(options) {
             _.defaults(this, options);
             this.activePaneIndex = null;
+            this.maxAvaialblePaneIndex = 0;
             this.panes = [];
             _.each(this.panesConstructors, function(Pane) {
                 var pane = new Pane({wizard: this});
@@ -111,6 +113,12 @@ function(require, utils, models, simpleMessageTemplate, createClusterWizardTempl
                 this.panes.push(pane);
                 pane.render();
             }, this);
+        },
+        onStepClick: function(e) {
+            var paneIndex = parseInt($(e.currentTarget).data('pane'));
+            this.activePane().processPaneData().done(_.bind(function() {
+                this.goToPane(paneIndex);
+            }, this));
         },
         findPane: function(PaneConstructor) {
             return _.find(this.panes, function(pane) {
@@ -122,6 +130,7 @@ function(require, utils, models, simpleMessageTemplate, createClusterWizardTempl
         },
         goToPane: function(index) {
             this.activePane().$el.detach();
+            this.maxAvaialblePaneIndex = _.max([this.maxAvaialblePaneIndex, this.activePaneIndex, index]);
             this.activePaneIndex = index;
             this.render();
         },
@@ -172,10 +181,12 @@ function(require, utils, models, simpleMessageTemplate, createClusterWizardTempl
             }
             var pane = this.activePane();
             var currentStep = this.activePaneIndex + 1;
+            var maxAvailableStep = this.maxAvaialblePaneIndex + 1;
             var totalSteps = this.panes.length;
             this.constructor.__super__.render.call(this, {
                 currentStep: currentStep,
-                totalSteps: totalSteps
+                totalSteps: totalSteps,
+                maxAvailableStep: maxAvailableStep
             });
             this.$('.pane-title').text(pane.title || '');
             this.$('.pane-content').append(pane.el);
