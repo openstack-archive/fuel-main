@@ -90,14 +90,14 @@ MakeISO() {
   mkdir -p "${ISO_DIR}"
 
   # copy ISO file to storage dir
-  cp "${ISO}" "${ISO_DIR}/${ISO_NAME}"
+  cp "${ISO}" "${ISO_PATH}"
   ec=$?
 
   if [ $ec -gt 0 ]; then
-    echo "Error! Copy ISO from ${ISO} to ${ISO_PATH}/${ISO_NAME} failed!"
+    echo "Error! Copy ISO from ${ISO} to ${ISO_PATH} failed!"
     exit $ec
   fi
-  echo "Finished building ISO: ${ISO_PATH}/${ISO_NAME}"
+  echo "Finished building ISO: ${ISO_PATH}"
   exit 0
 }
 
