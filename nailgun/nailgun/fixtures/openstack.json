@@ -40,8 +40,8 @@
                 "volumes_roles_mapping": {
                     "controller": ["os", "image"],
                     "compute": ["os", "vm"],
+                    "ceph-osd": ["os", "ceph-journal", "ceph"],
                     "cinder": ["os", "cinder"],
-                    "ceph-osd": ["os", "ceph"],
                     "other": ["os"]
                 },
                 "volumes": [
@@ -52,6 +52,16 @@
                         "label": "Ceph",
                         "mount": "none",
                         "disk_label": "cephosd",
+                        "file_system": "xfs"
+                    },
+                    {
+                        "id": "ceph-journal",
+                        "type": "raid",
+                        "min_size": 0,
+                        "name": "Ceph Journal",
+                        "label": "Ceph Journal",
+                        "mount": "/var/lib/ceph/journal",
+                        "disk_label": "ceph-journal",
                         "file_system": "xfs"
                     },
                     {
@@ -724,8 +734,9 @@
                 "volumes_roles_mapping": {
                     "controller": ["os", "image"],
                     "compute": ["os", "vm"],
-                    "ceph-osd": ["os", "ceph"],
-                    "cinder": ["os", "cinder"]
+                    "ceph-osd": ["os", "ceph-journal", "ceph"],
+                    "cinder": ["os", "cinder"],
+                    "other": ["os"]
                 },
                 "volumes": [
                     {
@@ -735,6 +746,16 @@
                         "label": "Ceph",
                         "mount": "none",
                         "disk_label": "ceph",
+                        "file_system": "xfs"
+                    },
+                    {
+                        "id": "ceph-journal",
+                        "type": "raid",
+                        "min_size": 0,
+                        "name": "Ceph Journal",
+                        "label": "Ceph Journal",
+                        "mount": "/var/lib/ceph/journal",
+                        "disk_label": "ceph-journal",
                         "file_system": "xfs"
                     },
                     {

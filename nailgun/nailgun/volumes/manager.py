@@ -24,6 +24,7 @@ import json
 from copy import deepcopy
 from nailgun.errors import errors
 from nailgun.logger import logger
+from functools import partial
 
 
 def only_disks(spaces):
@@ -183,6 +184,10 @@ class DisksFormatConvertor(object):
         partitions_full_format = filter(
             lambda vg: vg.get('type') == 'partition', all_partitions)
 
+        raid_full_format = filter(
+            lambda vg: vg.get('type') == 'raid' and vg.get('mount') != '/boot',
+            all_partitions)
+
         volumes_simple_format = []
         for volume in pv_full_format:
             calculated_size = volume['size'] - volume['lvm_meta_size']
@@ -198,6 +203,12 @@ class DisksFormatConvertor(object):
             volumes_simple_format.append({
                 'name': partition['name'],
                 'size': partition['size']
+            })
+
+        for raid in raid_full_format:
+            volumes_simple_format.append({
+                'name': raid['name'],
+                'size': raid['size']
             })
 
         return volumes_simple_format
@@ -374,7 +385,7 @@ class Disk(object):
             'size': size + lvm_meta_size,
             'lvm_meta_size': lvm_meta_size})
 
-    def create_partition(self, partition_info, size=None):
+    def create_partition(self, partition_info, size=None, ptype='partition'):
         """Create partitions according templates in partition_info
         """
         logger.debug('Creating or updating partition: disk=%s patition=%s',
@@ -389,7 +400,7 @@ class Disk(object):
 
         self.volumes.append({
             'size': size,
-            'type': 'partition',
+            'type': ptype,
             'name': partition_info['id'],
             'file_system': partition_info['file_system'],
             'disk_label': partition_info.get('disk_label'),
@@ -427,6 +438,17 @@ class Disk(object):
         for volume in self.volumes:
             if volume.get('type') == 'partition' and \
                volume.get('name') == name:
+                self.free_space += volume['size']
+                volume['size'] = size
+                self.free_space -= size
+
+    def set_raid_size(self, name, size):
+        """Set partition size
+        """
+        for volume in self.volumes:
+            if volume.get('type') == 'raid' and \
+               volume.get('name') == name and \
+               volume.get('mount') != 'boot':
                 self.free_space += volume['size']
                 volume['size'] = size
                 self.free_space -= size
@@ -516,6 +538,8 @@ class VolumeManager(object):
             disk.set_partition_size(volume_name, size)
         elif volume_type == 'vg':
             disk.set_pv_size(volume_name, size)
+        elif volume_type == 'raid':
+            disk.set_raid_size(volume_name, size)
 
         for idx, volume in enumerate(self.volumes):
             if volume.get('id') == disk.id:
@@ -578,8 +602,9 @@ class VolumeManager(object):
             'calc_min_glance_size': lambda: gb_to_mb(5),
             'calc_min_cinder_size': lambda: gb_to_mb(1.5),
             'calc_total_root_vg': self._calc_total_root_vg,
-            # equal to cinder
-            'calc_min_ceph_size': lambda: gb_to_mb(1.5),
+            # 2GB reuquired for journal, leave 1GB for data
+            'calc_min_ceph_size': lambda: gb_to_mb(3),
+            'calc_min_ceph_journal_size': lambda: 0,
         }
 
         generators['calc_os_size'] = \
@@ -683,6 +708,8 @@ class VolumeManager(object):
             return disk.create_pv
         elif volume_info['type'] == 'partition':
             return disk.create_partition
+        elif volume_info['type'] == 'raid':
+            return partial(disk.create_partition, ptype='raid')
 
     def gen_volumes_info(self):
         self.__logger('Generating volumes info for node')
