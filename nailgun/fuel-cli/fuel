@@ -22,11 +22,12 @@ import urllib2
 
 API_ROOT = "http://127.0.0.1:8000/api/"
 
-passive_arguments = ["eid", "ename", "action"]
+passive_arguments = ["eid", "action"]
 
 
 class SetAction(argparse.Action):
     """Custom argparse.Action subclass to store distinct values
+    
     :returns: Set of arguments
     """
     def __call__(self, parser, namespace, values, option_string=None):
@@ -38,7 +39,8 @@ class SetAction(argparse.Action):
 
 def recur_get(multi_level_dict, key_chain):
     """Method accesses some field in nested dictionaries
-    returns a value for last key in key_chain in last dictionary
+    
+    :returns: value for last key in key_chain in last dictionary
     """
     if not isinstance(multi_level_dict[key_chain[0]], dict):
         return multi_level_dict[key_chain[0]]
@@ -50,10 +52,10 @@ def format_table(data, acceptable_keys=None, subdict_keys=None):
     """Format list of dicts to ascii table
 
     :acceptable_keys list(str): list of keys for which to create table
-    also specifies their order
-
+                                also specifies their order
     :subdict_keys list(tuple(str)): list of key chains (tuples of key strings)
-    which are applied to dictionaries to extract values
+                                    which are applied to dictionaries 
+                                    to extract values
     """
     if subdict_keys:
         for key_chain in subdict_keys:
@@ -143,6 +145,14 @@ def print_error(message):
     exit(1)
 
 
+def check_for_attributes(params, attributes):
+    not_paseed_checks = [attribute for attribute in attributes 
+                         if not getattr(params, attribute)]
+    if len(not_paseed_checks):
+        msg = "{0} required!".format(", ".join(not_paseed_checks))
+        print_error(msg)
+
+
 def release(params):
     """List and modify currently available releases
     """
@@ -173,26 +183,25 @@ def environment(params):
         print(format_table(data, acceptable_keys=acceptable_keys,
                            subdict_keys=[("release", u"id")]))
     elif params.create:
-        if params.ename and params.rid:
-            data = {"nodes": [],
-                    "tasks": [],
-                    "name": params.ename,
-                    "release": int(params.rid)}
+        check_for_attributes(params, ["ename", "rid"])
+        data = {"nodes": [],
+                "tasks": [],
+                "name": params.ename,
+                "release": int(params.rid)}
+        data = json.dumps(data)
+        post_response = json_api_post_request("clusters/", data)
+        pprint(post_response)
+        if params.mode:
+            data = {"mode": params.mode}
             data = json.dumps(data)
-            post_response = json_api_post_request("clusters/", data)
-            pprint(post_response)
-            if params.mode:
-                data = {"mode": params.mode}
-                data = json.dumps(data)
-                put_response = json_api_put_request(
-                    "clusters/{0}".format(post_response[u"id"]),
-                    data
-                )
-                pprint(put_response)
-        else:
-            print_error("You need to specify --ename and --rid!")
-    if params.set and (params.mode or params.ename):
-        if params.eid:
+            put_response = json_api_put_request(
+                "clusters/{0}".format(post_response[u"id"]),
+                data
+            )
+            pprint(put_response)
+    elif params.set:        
+        check_for_attributes(params, ["eid"])
+        if params.mode or params.ename:
             data = {}
             if params.mode:
                 data["mode"] = params.mode
@@ -204,8 +213,6 @@ def environment(params):
                 data
             )
             pprint(put_response)
-        else:
-            print_error("Environment id [--eid] is required!")
 
 
 def node(params):
@@ -223,25 +230,22 @@ def node(params):
         print(
             format_table(data, acceptable_keys=acceptable_keys)
         )
-    elif params.set:
-        if params.nid and params.role and params.eid:
-            node_ids = list(chain(*params.nid))
-            role = params.role.pop().lower()
-            data = map(
-                lambda node_id: {
-                    "id": node_id,
-                    "cluster_id": params.eid,
-                    "role": role,
-                    "pending_addition": True,
-                    "pending_deletion": False
-                },
-                node_ids
-            )
-            put_response = json_api_put_request("nodes/", json.dumps(data))
-            pprint(put_response)
-        else:
-            print_error("To set node to specific environment "
-                        "[--eid], [--nid] and [--role] are required!\n")
+    elif params.set:        
+        check_for_attributes(params, ["nid", "role", "eid"])
+        node_ids = list(chain(*params.nid))
+        role = params.role.pop().lower()
+        data = map(
+            lambda node_id: {
+                "id": node_id,
+                "cluster_id": params.eid,
+                "role": role,
+                "pending_addition": True,
+                "pending_deletion": False
+            },
+            node_ids
+        )
+        put_response = json_api_put_request("nodes/", json.dumps(data))
+        pprint(put_response)
 
 
 def network(params):
@@ -283,32 +287,29 @@ def health(params):
 def deploy(params):
     """Deploy changes to environments
     """
-    if params.eid:
-        put_response = json_api_put_request(
-            "clusters/{0}/changes".format(params.eid),
-            "{}"
-        )
-        pprint(put_response)
-    else:
-        print_error("Environment id [--eid] is required!")
+    check_for_attributes(params, ["eid"])
+    put_response = json_api_put_request(
+        "clusters/{0}/changes".format(params.eid),
+        "{}"
+    )
+    pprint(put_response)    
 
 
 def fact(params):
     """Show computed facts for orchestrator
     """
-    if params.eid:
-        facts = json_api_get_request(
-            "clusters/{0}/orchestrator/defaults"
-            .format(params.eid)
-        )
-        print(facts)
-    else:
-        print_error("Environment id [--eid] is required!")
+    check_for_attributes(params, ["eid"])
+    facts = json_api_get_request(
+        "clusters/{0}/orchestrator/defaults"
+        .format(params.eid)
+    )
+    print(facts)
 
 
 def parse_node_ids(x):
-    """Parse arguments with commas and spaces,
-     and return list of lists with numbers
+    """Parse arguments with commas and spaces
+    
+    :returns: list of lists with numbers
     """
     filtered = [y for y in x.split(",") if y.strip() != '']
     if len(filtered) > 1:
