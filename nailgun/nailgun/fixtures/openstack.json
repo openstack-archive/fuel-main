@@ -260,6 +260,44 @@
                             "weight": 20,
                             "type": "text"
                         }
+                    },
+                    "storage": {
+                        "cinder": {
+                            "value": "lvm",
+                            "values": [
+                                {
+                                    "data": "ceph",
+                                    "display_name": "Ceph",
+                                    "description": ""
+                                },
+                                {
+                                    "data": "lvm",
+                                    "display_name": "LVM",
+                                    "description": ""
+                                }
+                            ],
+                            "label": "Storage backend for Cinder",
+                            "weight": 30,
+                            "type": "radio"
+                        },
+                        "glance": {
+                            "value": "swift",
+                            "values": [
+                                {
+                                    "data": "ceph",
+                                    "display_name": "Ceph",
+                                    "description": ""
+                                },
+                                {
+                                    "data": "swift",
+                                    "display_name": "Swift",
+                                    "description": ""
+                                }
+                            ],
+                            "label": "Storage backend for Glance",
+                            "weight": 40,
+                            "type": "radio"
+                        }
                     }
                 },
                 "generated": {
@@ -904,6 +942,44 @@
                             "description": "Remote syslog port",
                             "weight": 20,
                             "type": "text"
+                        }
+                    },
+                    "storage": {
+                        "cinder": {
+                            "value": "lvm",
+                            "values": [
+                                {
+                                    "data": "ceph",
+                                    "display_name": "Ceph",
+                                    "description": ""
+                                },
+                                {
+                                    "data": "lvm",
+                                    "display_name": "LVM",
+                                    "description": ""
+                                }
+                            ],
+                            "label": "Storage backend for Cinder",
+                            "weight": 30,
+                            "type": "radio"
+                        },
+                        "glance": {
+                            "value": "swift",
+                            "values": [
+                                {
+                                    "data": "ceph",
+                                    "display_name": "Ceph",
+                                    "description": ""
+                                },
+                                {
+                                    "data": "swift",
+                                    "display_name": "Swift",
+                                    "description": ""
+                                }
+                            ],
+                            "label": "Storage backend for Glance",
+                            "weight": 40,
+                            "type": "radio"
                         }
                     }
                 },
