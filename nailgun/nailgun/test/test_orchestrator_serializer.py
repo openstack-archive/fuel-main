@@ -39,22 +39,14 @@ class OrchestratorSerializerTestBase(BaseHandlers):
     def filter_by_uid(self, nodes, uid):
         return filter(lambda node: node['uid'] == uid, nodes)
 
-
-class TestOrchestratorSerializerAllModes(OrchestratorSerializerTestBase):
-
-    def test_nodes_list_two_roles(self):
-        cluster = self.create_env('multinode')
-        serialized_data = OrchestratorSerializer.serialize(cluster)
-
-    def test_nodes_list_one_role(self):
-        cluster = self.create_env('multinode')
-        serialized_data = OrchestratorSerializer.serialize(cluster)
+    def assert_nodes_with_role(self, nodes, role, count):
+        self.assertEquals(len(self.filter_by_role(nodes, role)), count)
 
 
-class TestOrchestratorSerializerMultinode(OrchestratorSerializerTestBase):
+class TestOrchestratorSerializer(OrchestratorSerializerTestBase):
 
     def setUp(self):
-        super(TestOrchestratorSerializerMultinode, self).setUp()
+        super(TestOrchestratorSerializer, self).setUp()
         self.cluster = self.create_env('multinode')
 
     def create_env(self, mode):
@@ -76,14 +68,49 @@ class TestOrchestratorSerializerMultinode(OrchestratorSerializerTestBase):
     def serializer(self):
         return OrchestratorSerializer
 
+    def assert_roles_flattened(self, nodes):
+        self.assertEquals(len(nodes), 6)
+        self.assert_nodes_with_role(nodes, 'controller', 1)
+        self.assert_nodes_with_role(nodes, 'compute', 2)
+        self.assert_nodes_with_role(nodes, 'cinder', 3)
+
+    def test_serialize(self):
+        serialized_cluster = self.serializer.serialize(self.cluster)
+
+    def test_serialize_nodes(self):
+        serialized_nodes = self.serializer.serialize_nodes(self.cluster.nodes)
+        self.assert_roles_flattened(serialized_nodes)
+
+        # Each not should be same as result of
+        # serialize_node function
+        for serialized_node in serialized_nodes:
+            node_db = self.db.query(Node).get(int(serialized_node['uid']))
+
+            expected_node = self.serializer.serialize_node(
+                node_db, serialized_node['role'])
+            self.assertEquals(serialized_node, expected_node)
+
+    def test_serialize_node(self):
+        node = self.env.create_node(
+            api=True, cluster_id=self.cluster.id, pending_addition=True)
+        self.cluster.prepare_for_deployment()
+
+        node_db = self.db.query(Node).get(node['id'])
+
+        serialized_data = self.serializer.serialize_node(node_db, 'controller')
+
+        self.assertEquals(serialized_data['role'], 'controller')
+        self.assertEquals(serialized_data['uid'], str(node_db.id))
+        self.assertEquals(serialized_data['status'], node_db.status)
+        self.assertEquals(serialized_data['online'], node_db.online)
+        self.assertEquals(serialized_data['fqdn'],
+                          'node-%d.%s' % (node_db.id, settings.DNS_DOMAIN))
+
     def test_node_list(self):
         node_list = self.serializer.node_list(self.cluster.nodes)
 
         # Check right nodes count with right roles
-        self.assertEquals(len(node_list), 6)
-        self.assertEquals(len(self.filter_by_role(node_list, 'controller')), 1)
-        self.assertEquals(len(self.filter_by_role(node_list, 'compute')), 2)
-        self.assertEquals(len(self.filter_by_role(node_list, 'cinder')), 3)
+        self.assert_roles_flattened(node_list)
 
         # Check common attrs
         for node in node_list:
@@ -118,16 +145,16 @@ class TestOrchestratorSerializerMultinode(OrchestratorSerializerTestBase):
                 'roles': ['compute'],
                 'attrs': {
                     'uid': node_uids[2],
-                    'internal_address': '192.168.0.5',
-                    'public_address': '172.16.1.5',
-                    'storage_address': '192.168.1.5'}},
+                    'internal_address': '192.168.0.4',
+                    'public_address': '172.16.1.4',
+                    'storage_address': '192.168.1.4'}},
             {
                 'roles': ['cinder'],
                 'attrs': {
                     'uid': node_uids[3],
-                    'internal_address': '192.168.0.4',
-                    'public_address': '172.16.1.4',
-                    'storage_address': '192.168.1.4'}}]
+                    'internal_address': '192.168.0.5',
+                    'public_address': '172.16.1.5',
+                    'storage_address': '192.168.1.5'}}]
 
         for expected in expected_list:
             attrs = expected['attrs']

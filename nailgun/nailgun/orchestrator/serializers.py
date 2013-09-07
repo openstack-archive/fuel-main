@@ -83,7 +83,6 @@ class OrchestratorSerializer(object):
             and_(Node.cluster == cluster,
                  Node.pending_deletion == False)).order_by(Node.id)
 
-
     @classmethod
     def novanetwork_attrs(cls, cluster):
         attrs = {}
@@ -136,8 +135,7 @@ class OrchestratorSerializer(object):
 
     @classmethod
     def get_ip_ranges_first_last(cls, network_group):
-        """
-        Get all ip ranges in "10.0.0.0-10.0.0.255" format
+        """Get all ip ranges in "10.0.0.0-10.0.0.255" format
         """
         return [
             "{0}-{1}".format(ip_range.first, ip_range.last)
@@ -146,6 +144,10 @@ class OrchestratorSerializer(object):
 
     @classmethod
     def controller_nodes(cls, cluster_id):
+        """Serialize nodes in same format
+        as cls.node_list do that but only
+        controller nodes.
+        """
         nodes = db().query(Node).\
             filter_by(cluster_id=cluster_id,
                       pending_deletion=False).\
@@ -163,10 +165,24 @@ class OrchestratorSerializer(object):
 
     @classmethod
     def serialize_nodes(cls, nodes):
-        return map(cls.serialize_node, nodes)
+        """Serialize node for each role.
+        For example if node has two roles then
+        in orchestrator will be passed two serialized
+        nodes.
+        """
+        serialized_nodes = []
+        for node in nodes:
+            for role in node.roles:
+                serialized_node = cls.serialize_node(node, role)
+                serialized_nodes.append(serialized_node)
+
+        return serialized_nodes
 
     @classmethod
-    def serialize_node(cls, node):
+    def serialize_node(cls, node, role):
+        """Serialize node, then it will be
+        merged with common attributes
+        """
         network_data = node.network_data
         interfaces = cls.configure_interfaces(network_data)
         cls.__add_hw_interfaces(interfaces, node.meta['interfaces'])
@@ -175,7 +191,7 @@ class OrchestratorSerializer(object):
             'uid': str(node.id),
             'fqdn': node.fqdn,
             'status': node.status,
-            'role': node.role,
+            'role': role,
 
             # Interfaces assingment
             'network_data': interfaces,
@@ -224,6 +240,8 @@ class OrchestratorSerializer(object):
 
     @classmethod
     def get_addr(cls, network_data, name):
+        """Get addr for network by name
+        """
         nets = filter(
             lambda net: net['name'] == name,
             network_data)
