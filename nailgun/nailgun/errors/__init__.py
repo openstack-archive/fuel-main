@@ -49,6 +49,7 @@ default_messages = {
     "NoSuitableCIDR": "Cannot find suitable CIDR",
     "CanNotFindInterface": "Cannot find interface",
     "CanNotDetermineEndPointIP": "Cannot determine end point IP",
+    "CanNotFindNetworkForNode": "Cannot find network for node",
 
     # plugin errors
     "PluginDownloading": "Cannot install plugin",

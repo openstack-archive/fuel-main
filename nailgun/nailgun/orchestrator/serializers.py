@@ -25,6 +25,7 @@ from nailgun.api.models import Cluster
 from nailgun.settings import settings
 from nailgun.api.models import NetworkGroup
 from nailgun.network.manager import NetworkManager
+from nailgun.errors import errors
 
 
 class OrchestratorSerializer(object):
@@ -215,9 +216,15 @@ class OrchestratorSerializer(object):
 
     @classmethod
     def get_addr(cls, network_data, name):
-        net = filter(
+        nets = filter(
             lambda net: net['name'] == name,
-            network_data)[0]['ip']
+            network_data)
+
+        if not nets or 'ip' not in nets[0]:
+            raise errors.CanNotFindNetworkForNode(
+                'Cannot find network with name: %s' % name)
+
+        net = nets[0]['ip']
         return {
             'ip': str(IPNetwork(net).ip),
             'netmask': str(IPNetwork(net).netmask)
