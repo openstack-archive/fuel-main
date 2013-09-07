@@ -87,6 +87,7 @@ class Environment(object):
             self.create_node(
                 **node_kwargs
             )
+        return cluster
 
     def create_release(self, api=False, **kwargs):
         version = str(randint(0, 100000000))
