@@ -146,12 +146,20 @@ class OrchestratorSerializer(object):
 
     @classmethod
     def controller_nodes(cls, cluster_id):
-        nodes = db().query(Node).filter_by(
-            cluster_id=cluster_id,
-            role='controller',
-            pending_deletion=False).order_by(Node.id)
+        nodes = db().query(Node).\
+            filter_by(cluster_id=cluster_id,
+                      pending_deletion=False).\
+            filter(Node.role_list.any(name='controller')).\
+            order_by(Node.id)
 
-        return cls.node_list(nodes)
+        # If role has more than one role
+        # then node_list return serialized node
+        # for each role
+        ctrl_nodes = filter(
+            lambda n: n['role'] == 'controller',
+            cls.node_list(nodes))
+
+        return ctrl_nodes
 
     @classmethod
     def serialize_nodes(cls, nodes):

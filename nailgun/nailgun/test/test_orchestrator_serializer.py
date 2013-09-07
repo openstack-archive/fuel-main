@@ -40,7 +40,6 @@ class OrchestratorSerializerTestBase(BaseHandlers):
         return filter(lambda node: node['uid'] == uid, nodes)
 
 
-
 class TestOrchestratorSerializerAllModes(OrchestratorSerializerTestBase):
 
     def test_nodes_list_two_roles(self):
@@ -50,7 +49,6 @@ class TestOrchestratorSerializerAllModes(OrchestratorSerializerTestBase):
     def test_nodes_list_one_role(self):
         cluster = self.create_env('multinode')
         serialized_data = OrchestratorSerializer.serialize(cluster)
-
 
 
 class TestOrchestratorSerializerMultinode(OrchestratorSerializerTestBase):
@@ -144,6 +142,18 @@ class TestOrchestratorSerializerMultinode(OrchestratorSerializerTestBase):
                                   node['public_address'])
                 self.assertEquals(attrs['storage_address'],
                                   node['storage_address'])
+
+    def test_controller_nodes(self):
+        ctrl_nodes = self.serializer.controller_nodes(self.cluster.id)
+        self.assertEquals(len(ctrl_nodes), 1)
+
+        # And should equal to nodes in nodes_list
+        all_nodes = self.serializer.node_list(self.cluster.nodes)
+        ctrl_nodes_from_nodes_list = filter(
+            lambda node: node['role'] == 'controller',
+            all_nodes)
+
+        self.assertEquals(ctrl_nodes, ctrl_nodes_from_nodes_list)
 
 
 class TestOrchestratorHASerializer(OrchestratorSerializer):
