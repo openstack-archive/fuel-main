@@ -357,7 +357,7 @@ class OrchestratorHASerializer(OrchestratorSerializer):
         common_attrs['management_vip'] = netmanager.assign_vip(
             cluster.id, 'management')
         common_attrs['public_vip'] = netmanager.assign_vip(
-            cluster.id, "public")
+            cluster.id, 'public')
 
         common_attrs['last_controller'] = sorted(
             common_attrs['controller_nodes'],
@@ -367,8 +367,6 @@ class OrchestratorHASerializer(OrchestratorSerializer):
             lambda node: 'controller' in node['role'],
             common_attrs['nodes'])[0]
 
-        # FIXME (eli): when multiroles will become
-        # we will need to rework this logic
         first_controller['role'] = 'primary-controller'
 
         common_attrs['mp'] = [

@@ -28,6 +28,7 @@ from mock import Mock, patch
 from nailgun.api.models import Cluster
 from nailgun.api.models import Node
 from nailgun.settings import settings
+from nailgun.api.models import Node
 
 
 class OrchestratorSerializerTestBase(BaseHandlers):
@@ -41,6 +42,13 @@ class OrchestratorSerializerTestBase(BaseHandlers):
 
     def assert_nodes_with_role(self, nodes, role, count):
         self.assertEquals(len(self.filter_by_role(nodes, role)), count)
+
+    def get_controllers(self, cluster_id):
+        return db().query(Node).\
+            filter_by(cluster_id=cluster_id,
+                      pending_deletion=False).\
+            filter(Node.role_list.any(name='controller')).\
+            order_by(Node.id)
 
 
 class TestOrchestratorSerializer(OrchestratorSerializerTestBase):
@@ -183,7 +191,67 @@ class TestOrchestratorSerializer(OrchestratorSerializerTestBase):
         self.assertEquals(ctrl_nodes, ctrl_nodes_from_nodes_list)
 
 
-class TestOrchestratorHASerializer(OrchestratorSerializer):
+class TestOrchestratorHASerializer(OrchestratorSerializerTestBase):
+
+    def setUp(self):
+        super(TestOrchestratorHASerializer, self).setUp()
+        self.cluster = self.create_env('ha_compact')
+
+    def create_env(self, mode):
+        cluster = self.env.create(
+            cluster_kwargs={
+                'mode': mode,
+            },
+            nodes_kwargs=[
+                {'roles': ['controller'], 'pending_addition': True},
+                {'roles': ['controller'], 'pending_addition': True},
+                {'roles': ['controller', 'cinder'], 'pending_addition': True},
+                {'roles': ['compute', 'cinder'], 'pending_addition': True},
+                {'roles': ['compute'], 'pending_addition': True},
+                {'roles': ['cinder'], 'pending_addition': True}])
+
+        cluster_db = self.db.query(Cluster).get(cluster['id'])
+        cluster_db.prepare_for_deployment()
+        return cluster_db
+
+    @property
+    def serializer(self):
+        return OrchestratorHASerializer
+
+    def test_node_list(self):
+        serialized_nodes = self.serializer.node_list(self.cluster.nodes)
+
+        for node in serialized_nodes:
+            # Each node has swift_zone
+            self.assertEquals(node['swift_zone'], node['uid'])
+
+    def test_get_common_attrs(self):
+        attrs = self.serializer.get_common_attrs(self.cluster)
+        # vips
+        self.assertEquals(attrs['management_vip'], '192.168.0.8')
+        self.assertEquals(attrs['public_vip'], '172.16.1.8')
+
+        # last_contrller
+        controllers = self.get_controllers(self.cluster.id)
+        self.assertEquals(attrs['last_controller'],
+                          'node-%d' % controllers[-1].id)
+
+        # primary_controller
+        controllers = self.filter_by_role(attrs['nodes'], 'primary-controller')
+        self.assertEquals(controllers[0]['role'], 'primary-controller')
+
+        # mountpoints and mp attrs
+        self.assertEquals(
+            attrs['mp'],
+            [{'point': '1', 'weight': '1'},
+             {'point': '2','weight': '2'}])
+
+        self.assertEquals(
+            attrs['mountpoints'],
+            '1 1\\n2 2\\n')
+
+
+class TestOrchestratorIntegration(OrchestratorSerializerTestBase):
 
     def test_multinode_serializer(self):
         self.env.create(
@@ -243,4 +311,3 @@ class TestOrchestratorHASerializer(OrchestratorSerializer):
         print json.dumps(serialize(cluster_db), indent=4)
 
         task = self.env.launch_deployment()
-
