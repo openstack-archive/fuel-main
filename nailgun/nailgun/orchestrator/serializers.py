@@ -55,6 +55,8 @@ class OrchestratorSerializer(object):
 
     @classmethod
     def get_common_attrs(cls, cluster):
+        """Common attributes for all facts
+        """
         attrs = cls.serialize_cluster_attrs(cluster)
 
         attrs['controller_nodes'] = cls.controller_nodes(cluster.id)
@@ -68,6 +70,8 @@ class OrchestratorSerializer(object):
 
     @classmethod
     def serialize_cluster_attrs(cls, cluster):
+        """Cluster attributes
+        """
         attrs = cluster.attributes.merged_attrs_values()
         attrs['deployment_mode'] = cluster.mode
         attrs['deployment_id'] = cluster.id
@@ -79,12 +83,16 @@ class OrchestratorSerializer(object):
 
     @classmethod
     def get_nodes_to_serialization(cls, cluster):
+        """Nodes which need to serialize
+        """
         return db().query(Node).filter(
             and_(Node.cluster == cluster,
                  Node.pending_deletion == False)).order_by(Node.id)
 
     @classmethod
     def novanetwork_attrs(cls, cluster):
+        """Network configuration
+        """
         attrs = {}
         attrs['network_manager'] = cluster.net_manager
 
@@ -118,6 +126,9 @@ class OrchestratorSerializer(object):
 
     @classmethod
     def network_ranges(cls, cluster):
+        """Returns ranges for network groups
+        except range for public network
+        """
         ng_db = db().query(NetworkGroup).filter_by(cluster_id=cluster.id).all()
         attrs = {}
         for net in ng_db:
@@ -258,6 +269,8 @@ class OrchestratorSerializer(object):
 
     @classmethod
     def interfaces_list(cls, network_data):
+        """Generate list of interfaces
+        """
         interfaces = {}
         for network in network_data:
             interfaces['%s_interface' % network['name']] = \
@@ -269,6 +282,8 @@ class OrchestratorSerializer(object):
 
     @classmethod
     def configure_interfaces(cls, network_data):
+        """Configre interfaces
+        """
         interfaces = {}
         for network in network_data:
             network_name = network['name']
@@ -300,12 +315,17 @@ class OrchestratorSerializer(object):
 
     @classmethod
     def __make_interface_name(cls, name, vlan):
+        """Make interface name
+        """
         if name and vlan:
             return '.'.join([name, str(vlan)])
         return name
 
     @classmethod
     def __add_hw_interfaces(cls, interfaces, hw_interfaces):
+        """Add interfaces which not represents in
+        interfaces list but they are represented on node
+        """
         for hw_interface in hw_interfaces:
             if not hw_interface['name'] in interfaces:
                 interfaces[hw_interface['name']] = {
@@ -318,6 +338,8 @@ class OrchestratorHASerializer(OrchestratorSerializer):
 
     @classmethod
     def node_list(cls, nodes):
+        """Node list
+        """
         node_list = super(OrchestratorHASerializer, cls).node_list(nodes)
 
         for node in node_list:
@@ -327,6 +349,8 @@ class OrchestratorHASerializer(OrchestratorSerializer):
 
     @classmethod
     def get_common_attrs(cls, cluster):
+        """Common attributes for all facts
+        """
         common_attrs = super(OrchestratorHASerializer, cls).get_common_attrs(cluster)
 
         netmanager = NetworkManager()
@@ -357,6 +381,8 @@ class OrchestratorHASerializer(OrchestratorSerializer):
 
 
 def serialize(cluster):
+    """Serialization depends on deployment mode
+    """
     cluster.prepare_for_deployment()
 
     if cluster.mode == 'multinode':
