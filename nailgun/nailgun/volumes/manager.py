@@ -51,26 +51,31 @@ def byte_to_megabyte(byte):
 
 
 def get_node_volumes(node):
-    """Helper for retrieving node volumes in correct order
+    """Helper for retrieving node volumes in correct order.
+    If spaces don't defained for role, will be used
+    partitioning for role `other`.
     """
     node_volumes = []
-    try:
-        # if node.role in volumes_metadata['volumes_roles_mapping']:
-        #     role = node.role
-        # else:
-        #     role = 'other'
 
-        # volume_groups_for_role = volumes_metadata[
-        #     'volumes_roles_mapping'][role]
+    role_volumes = node.cluster.release.volumes_metadata[
+        'volumes_roles_mapping']
+    roles = node.roles + node.pending_roles
 
-        role_volumes = node.cluster.release.volumes_metadata[
-            'volumes_roles_mapping']
-        for role in (node.roles + node.pending_roles):
-            for volume in role_volumes[role]:
-                if volume not in node_volumes:
-                    node_volumes.append(volume)
-    except KeyError:
-        raise errors.CannotFindVolumesInfoForRole()
+    for role in roles:
+        if not role_volumes.get(role):
+            continue
+
+        for volume in role_volumes[role]:
+            if volume not in node_volumes:
+                node_volumes.append(volume)
+
+    # Use role other
+    if not node_volumes:
+        logger.warn('Cannot find volumes for node: %s assigning default '
+                    'volumes' % (node.full_name))
+        for volume in role_volumes['other']:
+            node_volumes.append(volume)
+
     return node_volumes
 
 
