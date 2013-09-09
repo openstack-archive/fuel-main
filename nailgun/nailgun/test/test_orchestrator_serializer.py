@@ -57,10 +57,11 @@ class TestOrchestratorSerializer(OrchestratorSerializerTestBase):
         super(TestOrchestratorSerializer, self).setUp()
         self.cluster = self.create_env('multinode')
 
-    def create_env(self, mode):
+    def create_env(self, mode, network_manager='FlatDHCPManager'):
         cluster = self.env.create(
             cluster_kwargs={
                 'mode': mode,
+                'net_manager': network_manager
             },
             nodes_kwargs=[
                 {'roles': ['controller', 'cinder'], 'pending_addition': True},
@@ -189,6 +190,20 @@ class TestOrchestratorSerializer(OrchestratorSerializerTestBase):
             all_nodes)
 
         self.assertEquals(ctrl_nodes, ctrl_nodes_from_nodes_list)
+
+    def test_vlan_manager(self):
+        cluster = self.create_env('multinode', 'VlanManager')
+        facts = self.serializer.serialize(cluster)
+
+        for fact in facts:
+            self.assertEquals(fact['vlan_interface'], 'eth0')
+            self.assertEquals(
+                fact['novanetwork_parameters']['network_manager'],
+                'VlanManager')
+            self.assertEquals(
+                fact['novanetwork_parameters']['num_networks'], 1)
+            self.assertEquals(
+                fact['novanetwork_parameters']['vlan_start'], 103)
 
 
 class TestOrchestratorHASerializer(OrchestratorSerializerTestBase):
