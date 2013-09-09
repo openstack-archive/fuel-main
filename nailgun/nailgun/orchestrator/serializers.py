@@ -16,16 +16,15 @@
 
 """Serializers for orchestrator"""
 
-from netaddr import IPSet, IPNetwork, IPRange, IPAddress
-from nailgun.task.helpers import TaskHelper
-from sqlalchemy import and_
-from nailgun.db import db
-from nailgun.api.models import Node
-from nailgun.api.models import Cluster
-from nailgun.settings import settings
 from nailgun.api.models import NetworkGroup
-from nailgun.network.manager import NetworkManager
+from nailgun.api.models import Node
+from nailgun.db import db
 from nailgun.errors import errors
+from nailgun.network.manager import NetworkManager
+from nailgun.settings import settings
+from nailgun.task.helpers import TaskHelper
+from netaddr import IPNetwork
+from sqlalchemy import and_
 
 
 class OrchestratorSerializer(object):
@@ -87,7 +86,7 @@ class OrchestratorSerializer(object):
         """
         return db().query(Node).filter(
             and_(Node.cluster == cluster,
-                 Node.pending_deletion == False)).order_by(Node.id)
+                 False == Node.pending_deletion)).order_by(Node.id)
 
     @classmethod
     def novanetwork_attrs(cls, cluster):
@@ -293,8 +292,10 @@ class OrchestratorSerializer(object):
             if network_name == 'floating':
                 continue
 
-            name = cls.__make_interface_name(network.get('dev'), network.get('vlan'))
-            interfaces[name] = {'interface': name, 'ipaddr': [], '_name': network_name}
+            name = cls.__make_interface_name(network.get('dev'),
+                                             network.get('vlan'))
+            interfaces[name] = {'interface': name, 'ipaddr': [],
+                                '_name': network_name}
             interface = interfaces[name]
 
             if network_name == 'admin':
@@ -327,7 +328,7 @@ class OrchestratorSerializer(object):
         interfaces list but they are represented on node
         """
         for hw_interface in hw_interfaces:
-            if not hw_interface['name'] in interfaces:
+            if hw_interface['name'] not in interfaces:
                 interfaces[hw_interface['name']] = {
                     'interface': hw_interface['name'],
                     'ipaddr': "none"
@@ -351,7 +352,8 @@ class OrchestratorHASerializer(OrchestratorSerializer):
     def get_common_attrs(cls, cluster):
         """Common attributes for all facts
         """
-        common_attrs = super(OrchestratorHASerializer, cls).get_common_attrs(cluster)
+        common_attrs = super(OrchestratorHASerializer, cls).get_common_attrs(
+            cluster)
 
         netmanager = NetworkManager()
         common_attrs['management_vip'] = netmanager.assign_vip(
@@ -371,7 +373,7 @@ class OrchestratorHASerializer(OrchestratorSerializer):
 
         common_attrs['mp'] = [
             {'point': '1', 'weight': '1'},
-            {'point': '2','weight': '2'}]
+            {'point': '2', 'weight': '2'}]
 
         common_attrs['mountpoints'] = '1 1\\n2 2\\n'
 

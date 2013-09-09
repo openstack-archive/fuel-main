@@ -402,7 +402,6 @@ class NailgunReceiver(object):
         elif task.cluster.is_ha_mode:
             # determining horizon url in HA mode - it's vip
             # from a public network saved in task cache
-            args = task.cache.get('args')
             try:
                 netmanager = NetworkManager()
                 message = (

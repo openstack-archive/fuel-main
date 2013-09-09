@@ -15,26 +15,19 @@
 #    under the License.
 
 
-from nailgun.orchestrator.serializers import serialize
+from nailgun.api.models import Cluster
+from nailgun.api.models import IPAddrRange
+from nailgun.api.models import NetworkGroup
+from nailgun.api.models import Node
+from nailgun.db import db
 from nailgun.orchestrator.serializers import OrchestratorHASerializer
 from nailgun.orchestrator.serializers import OrchestratorSerializer
-
-from nailgun.test.base import BaseHandlers
-from nailgun.db import db
-from nailgun.network.manager import NetworkManager
-import json
-from nailgun.test.base import fake_tasks
-from mock import Mock, patch
-from nailgun.api.models import Cluster
-from nailgun.api.models import Node
-from nailgun.api.models import NetworkGroup
-from nailgun.api.models import IPAddrRange
 from nailgun.settings import settings
-from nailgun.api.models import Node
+from nailgun.test.base import BaseHandlers
 
 
 class OrchestratorSerializerTestBase(BaseHandlers):
-    """Class containts helpers"""
+    """Class containts helpers."""
 
     def filter_by_role(self, nodes, role):
         return filter(lambda node: node['role'] == role, nodes)
@@ -84,9 +77,6 @@ class TestOrchestratorSerializer(OrchestratorSerializerTestBase):
         self.assert_nodes_with_role(nodes, 'controller', 1)
         self.assert_nodes_with_role(nodes, 'compute', 2)
         self.assert_nodes_with_role(nodes, 'cinder', 3)
-
-    def test_serialize(self):
-        serialized_cluster = self.serializer.serialize(self.cluster)
 
     def test_serialize_nodes(self):
         serialized_nodes = self.serializer.serialize_nodes(self.cluster.nodes)
@@ -152,7 +142,6 @@ class TestOrchestratorSerializer(OrchestratorSerializerTestBase):
                     'public_address': '172.16.1.3',
                     'storage_address': '192.168.1.3'}},
             {
-                
                 'roles': ['compute'],
                 'attrs': {
                     'uid': node_uids[2],
@@ -295,7 +284,7 @@ class TestOrchestratorHASerializer(OrchestratorSerializerTestBase):
         self.assertEquals(
             attrs['mp'],
             [{'point': '1', 'weight': '1'},
-             {'point': '2','weight': '2'}])
+             {'point': '2', 'weight': '2'}])
 
         self.assertEquals(
             attrs['mountpoints'],

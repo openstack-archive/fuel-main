@@ -14,16 +14,13 @@
 #    License for the specific language governing permissions and limitations
 #    under the License.
 
+from copy import deepcopy
 import json
-import unittest
 
 from mock import patch
-from sqlalchemy.sql import not_
 
 import nailgun
 from nailgun.api.models import IPAddr
-from nailgun.api.models import IPAddrRange
-from nailgun.api.models import Network
 from nailgun.api.models import NetworkGroup
 from nailgun.api.models import NodeNICInterface
 from nailgun.network.manager import NetworkManager
@@ -32,7 +29,6 @@ from nailgun.task.helpers import TaskHelper
 from nailgun.test.base import BaseHandlers
 from nailgun.test.base import fake_tasks
 from nailgun.test.base import reverse
-from copy import deepcopy
 
 
 class TestHandlers(BaseHandlers):
@@ -75,7 +71,7 @@ class TestHandlers(BaseHandlers):
 
             'management_interface': 'eth0.101',
             'fixed_interface': 'eth0.103',
-            'admin_interface': 'eth0', 
+            'admin_interface': 'eth0',
             'storage_interface': 'eth0.102',
             'public_interface': 'eth0.100',
             'floating_interface': 'eth0.100',
@@ -89,13 +85,6 @@ class TestHandlers(BaseHandlers):
         common_attrs.update(cluster_attrs)
 
         # Common attrs calculation
-        env_roles = [['controller'],
-                     ['controller'],
-                     ['controller', 'cinder'],
-                     ['compute', 'cinder'],
-                     ['compute'],
-                     ['cinder']]
-
         nodes_list = []
         nodes_db = sorted(cluster_db.nodes, key=lambda n: n.id)
         assigned_ips = {}
@@ -186,7 +175,10 @@ class TestHandlers(BaseHandlers):
         deploy_task_uuid = [x.uuid for x in supertask.subtasks
                             if x.name == 'deployment'][0]
 
-        deployment_msg = {'method': 'deploy', 'respond_to': 'deploy_resp', 'args': {}}
+        deployment_msg = {'method': 'deploy',
+                          'respond_to': 'deploy_resp',
+                          'args': {}}
+
         deployment_msg['args']['task_uuid'] = deploy_task_uuid
         deployment_msg['args']['deployment_info'] = deployment_info
 

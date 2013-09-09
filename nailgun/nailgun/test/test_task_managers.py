@@ -16,7 +16,6 @@
 
 import json
 import time
-import unittest
 
 from nailgun.settings import settings
 

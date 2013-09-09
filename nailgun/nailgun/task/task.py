@@ -31,11 +31,11 @@ from nailgun.db import db
 from nailgun.errors import errors
 from nailgun.logger import logger
 from nailgun.network.manager import NetworkManager
+from nailgun.orchestrator.serializers import serialize
 import nailgun.rpc as rpc
 from nailgun.settings import settings
 from nailgun.task.fake import FAKE_THREADS
 from nailgun.task.helpers import TaskHelper
-from nailgun.orchestrator.serializers import serialize
 
 
 def fake_cast(queue, messages, **kwargs):

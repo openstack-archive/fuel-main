@@ -218,8 +218,8 @@ class Cluster(Base):
         db().commit()
 
     def prepare_for_deployment(self):
-        from nailgun.task.helpers import TaskHelper
         from nailgun.network.manager import NetworkManager
+        from nailgun.task.helpers import TaskHelper
 
         nodes = set(TaskHelper.nodes_to_deploy(self) +
                     TaskHelper.nodes_in_provisioning(self))
