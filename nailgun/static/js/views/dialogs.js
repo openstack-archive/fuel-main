@@ -234,7 +234,8 @@ function(require, utils, models, simpleMessageTemplate, createClusterWizardTempl
                     this.updateReleaseParameters();
                 }
             }
-            return (new $.Deferred())[success ? 'resolve' : 'reject']();
+            var deferred = new $.Deferred();
+            return deferred[success ? 'resolve' : 'reject']();
         },
         createCluster: function() {
             this.$('.control-group').removeClass('error').find('.help-inline').text('');
