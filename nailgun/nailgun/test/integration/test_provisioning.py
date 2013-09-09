@@ -41,10 +41,6 @@ class TestProvisioning(BaseIntegrationTest):
 
         self.assertEqual(len(cluster_db.nodes), 2)
 
-        self.env.network_manager.assign_ips = mock.MagicMock()
-
-        self.env.launch_deployment()
-
     @fake_tasks(fake_rpc=False, mock_rpc=False)
     @patch('nailgun.rpc.cast')
     def test_node_status_changes_to_provision(self, mocked_rpc=None):
