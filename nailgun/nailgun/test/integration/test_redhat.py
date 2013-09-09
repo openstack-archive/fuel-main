@@ -14,10 +14,6 @@
 
 import json
 
-import nailgun
-from nailgun.api.models import Task
-from nailgun.api.handlers.redhat import RedHatSetupHandler
-from nailgun.api.models import RedHatAccount
 from nailgun.api.models import Task
 from nailgun.test.base import BaseIntegrationTest
 from nailgun.test.base import fake_tasks

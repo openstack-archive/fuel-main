@@ -72,8 +72,9 @@ class TestHandlers(BaseIntegrationTest):
 
     @fake_tasks()
     def test_redhat_account_validation_success(self):
-        with patch('nailgun.api.handlers.redhat.db', Mock()) as db:
-            with patch('nailgun.api.handlers.redhat.RedHatSetupTaskManager', Mock()) as mng:
+        with patch('nailgun.api.handlers.redhat.db', Mock()):
+            manager = 'nailgun.api.handlers.redhat.RedHatSetupTaskManager'
+            with patch(manager, Mock()) as mng:
                 task = Task()
                 task.id = 0
                 mng.return_value.execute.return_value = task
