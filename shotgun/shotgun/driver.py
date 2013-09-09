@@ -1,17 +1,17 @@
 import os
 import re
-import logging
 import tempfile
 
 import fabric.api
 
+from shotgun.logger import logger
 from shotgun.utils import is_local
 from shotgun.utils import execute
 
-logger = logging.getLogger()
 
 class CommandOut(object):
     pass
+
 
 class Driver(object):
     @classmethod
@@ -22,10 +22,12 @@ class Driver(object):
             "dir": Dir,
             "subs": Subs,
             "postgres": Postgres,
+            "command": Command,
         }.get(driver_type, cls)(data, conf)
 
     def __init__(self, data, conf):
-        logger.debug("Initializing driver %s", self.__class__.__name__)
+        logger.debug("Initializing driver %s: host=%s",
+            self.__class__.__name__, data.get("host"))
         self.data = data
         self.host = self.data.get("host", "localhost")
         self.local = is_local(self.host)
@@ -35,14 +37,20 @@ class Driver(object):
         raise NotImplementedError
 
     def command(self, command):
+        """
+        This method is able to run only simple commands not series of them
+        cmd1 | cmd2 | cmd3 does not work in general. It works only for localhost
+        because locally command is launched with 'execute' util method.
+        """
         out = CommandOut()
         if not self.local:
             with fabric.api.settings(host_string=self.host):
                 logger.debug("Running remote command: "
                              "host: %s command: %s", self.host, command)
-                out.stdout = fabric.api.run(command, pty=True)
-                out.return_code = result.return_code
-                out.stderr = result.stderr
+                output = fabric.api.run(command, pty=True)
+                out.stdout = output
+                out.return_code = output.return_code
+                out.stderr = output.stderr
         else:
             logger.debug("Running local command: %s", command)
             out.return_code, out.stdout, out.stderr = execute(command)
@@ -63,8 +71,10 @@ class File(Driver):
     def __init__(self, data, conf):
         super(File, self).__init__(data, conf)
         self.path = self.data["path"]
+        logger.debug("File to get: %s", self.path)
         self.target_path = os.path.join(
-            self.conf.target, self.host, os.path.relpath(self.path, "/"))
+            self.conf.target, self.host, self.path.lstrip("/"))
+        logger.debug("File to save: %s", self.target_path)
 
     def snapshot(self):
         self.get(self.path, self.target_path)
@@ -132,7 +142,6 @@ class Subs(File):
         tf.close()
 
 
-
 class Postgres(Driver):
     def __init__(self, data, conf):
         super(Postgres, self).__init__(data, conf)
@@ -154,4 +163,22 @@ class Postgres(Driver):
         self.command("rm -f %s" % temp)
 
 
+class Command(Driver):
+    def __init__(self, data, conf):
+        super(Command, self).__init__(data, conf)
+        self.cmdname = self.data["command"]
+        self.to_file = self.data["to_file"]
+        self.target_path = os.path.join(
+            self.conf.target, self.host, "commands", self.to_file)
+
+    def snapshot(self):
+        out = self.command(self.cmdname)
+        execute("mkdir -p {0}".format(os.path.dirname(self.target_path)))
+        with open(self.target_path, "w") as f:
+            f.write("===== COMMAND =====: {0}\n".format(self.cmdname))
+            f.write("===== RETURN CODE =====: {0}\n".format(out.return_code))
+            f.write("===== STDOUT =====:\n")
+            f.write(out.stdout)
+            f.write("\n===== STDERR =====:\n")
+            f.write(out.stderr)
 

@@ -33,6 +33,24 @@
                     "password": "PASSWORD"
                }
             }
+        ],
+        "slave": [
+            {
+                "type": "command",
+                "command": "ps auxww"
+            },
+            {
+                "type": "command",
+                "command": "top"
+            },
+            {
+                "type": "command",
+                "command": "ip a"
+            },
+            {
+                "type": "file",
+                "path": "/etc/naily.facts"
+            }
         ]
     }
 }

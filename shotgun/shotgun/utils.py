@@ -3,10 +3,8 @@ import re
 import os
 import shlex
 import subprocess
-import logging
 
-
-logger = logging.getLogger()
+from shotgun.logger import logger
 
 
 def hostname():
@@ -28,7 +26,13 @@ def is_local(name):
         return True
     return False
 
+
 def execute(command, to_filename=None):
+    """
+    This method is used for running shell commands locally
+    and it is able to run series of commands with pipes
+    cmd1 | cmd2 | cmd3
+    """
     logger.debug("Trying to execute command: %s", command)
     commands = [c.strip() for c in re.split(ur'\|', command)]
     env = os.environ
@@ -40,15 +44,19 @@ def execute(command, to_filename=None):
 
     process = []
     for c in commands:
-        process.append(subprocess.Popen(
-            shlex.split(c),
-            env=env,
-            stdin=(process[-1].stdout if process else None),
-            stdout=(to_file
-                    if (len(process) == len(commands) - 1) and to_file
-                    else subprocess.PIPE),
-            stderr=(subprocess.PIPE)
-        ))
+        try:
+            process.append(subprocess.Popen(
+                shlex.split(c),
+                env=env,
+                stdin=(process[-1].stdout if process else None),
+                stdout=(to_file
+                        if (len(process) == len(commands) - 1) and to_file
+                        else subprocess.PIPE),
+                stderr=(subprocess.PIPE)
+            ))
+        except OSError as e:
+            return (1, "", "%s\n" % str(e))
+
         if len(process) >= 2:
             process[-2].stdout.close()
     stdout, stderr = process[-1].communicate()

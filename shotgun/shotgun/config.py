@@ -2,6 +2,7 @@ import time
 
 from shotgun import settings
 
+
 class Config(object):
     def __init__(self, data=None):
         self.data = data
@@ -17,6 +18,10 @@ class Config(object):
         if self.data.get("timestamp", settings.TIMESTAMP):
             target = self._timestamp(target)
         return target
+
+    @property
+    def lastdump(self):
+        return self.data.get("lastdump", settings.LASTDUMP)
 
     @property
     def objects(self):
