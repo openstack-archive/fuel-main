@@ -228,3 +228,29 @@ class NailgunClient(object):
     @json_parse
     def get_notifications(self):
         return self.client.get("/api/notifications")
+
+    @logwrap
+    @json_parse
+    def get_interfaces(self, node_id):
+        return self.client.get(
+            "/api/nodes/%s/interfaces" % node_id)
+
+    @logwrap
+    def assign_networks_to_interface(self, node_id, networks, name):
+        netws_to_add = []
+        for net in networks:
+            netws_to_add.append({'id': net['id'], 'name': net['name']})
+
+        all_interf = self.get_interfaces(node_id)
+        for i, interf in enumerate(all_interf):
+            if len(interf["assigned_networks"]) > 0:
+                all_interf[i]['assigned_networks'] = []
+
+        for num, interface in enumerate(all_interf):
+            if interface['name'] == name:
+                for net in netws_to_add:
+                    all_interf[num]["assigned_networks"].append(net)
+
+        data = [{'id': node_id, 'interfaces': all_interf}]
+        return self.client.put("/api/nodes/interfaces/", data)
+
