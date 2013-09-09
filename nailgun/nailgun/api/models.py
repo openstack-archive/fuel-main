@@ -124,6 +124,7 @@ class Cluster(Base):
     STATUSES = ('new', 'deployment', 'operational', 'error', 'remove')
     NET_MANAGERS = ('FlatDHCPManager', 'VlanManager')
     GROUPING = ('roles', 'hardware', 'both')
+    facts = Column(JSON, default={})
     id = Column(Integer, primary_key=True)
     mode = Column(
         Enum(*MODES, name='cluster_mode'),

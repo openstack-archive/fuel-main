@@ -386,3 +386,27 @@ class ClusterDefaultOrchestratorData(JSONHandler):
         """
         cluster = self.get_object_or_404(Cluster, cluster_id)
         return orchestrator.serializers.serialize(cluster)
+
+    @content_json
+    def PUT(self, cluster_id):
+        """:returns: JSONized data which will be passed to orchestrator
+        :http: * 200 (OK)
+               * 400 (wrong data specified)
+               * 404 (cluster not found in db)
+        """
+        cluster = self.get_object_or_404(
+            Cluster,
+            cluster_id,
+            log_404=(
+                "warning",
+                "Error: there is no cluster "
+                "with id '{0}' in DB.".format(cluster_id)
+            )
+        )
+        data = self.checked_data()
+        cluster.facts = data
+        db().commit()
+        logger.debug('ClusterDefaultOrchestratorData:'
+                     ' facts for cluster_id {0} were uploaded'
+                     .format(cluster_id))
+        return data
