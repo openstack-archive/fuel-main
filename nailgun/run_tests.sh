@@ -200,7 +200,6 @@ function run_tests {
 
 function run_integration_tests {
   noseargs="nailgun/test/integration" 
-  echo "$noseargs"
   run_tests
 }
 

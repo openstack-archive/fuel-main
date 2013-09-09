@@ -29,7 +29,7 @@ function nailgun_checks {
     cd $WORKSPACE/local_repo/nailgun
 
     # ***** Running Python unit tests, includes pep8 check of nailgun *****
-    ./run_tests.sh --with-xunit  # --no-ui-tests
+    ./run_tests.sh --with-xunit --integration # --no-ui-tests
 }
 
 function ruby_checks {
