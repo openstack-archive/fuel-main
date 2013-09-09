@@ -34,7 +34,7 @@ define(['require'], function(require) {
             return '<a target="_blank" href="' + url + '">' + url + '</a>';
         },
         urlify: function (text) {
-            var urlRegexp = /(?:https?:\/\/([\-\w\.]+)+(:\d+)?(\/([\w\/_\.]*(\?\S+)?)?)?)/g;
+            var urlRegexp = /(?:https?:\/\/([\-\w\.]+)+(:\d+)?(\/([\w\/_\-\.]*(\?\S+)?)?)?)/g;
             return utils.linebreaks(text).replace(urlRegexp, utils.composeLink);
         },
         forceWebkitRedraw: function(el) {
