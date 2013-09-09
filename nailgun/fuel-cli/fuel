@@ -27,7 +27,7 @@ passive_arguments = ["eid", "action"]
 
 class SetAction(argparse.Action):
     """Custom argparse.Action subclass to store distinct values
-    
+
     :returns: Set of arguments
     """
     def __call__(self, parser, namespace, values, option_string=None):
@@ -39,7 +39,7 @@ class SetAction(argparse.Action):
 
 def recur_get(multi_level_dict, key_chain):
     """Method accesses some field in nested dictionaries
-    
+
     :returns: value for last key in key_chain in last dictionary
     """
     if not isinstance(multi_level_dict[key_chain[0]], dict):
@@ -54,7 +54,7 @@ def format_table(data, acceptable_keys=None, subdict_keys=None):
     :acceptable_keys list(str): list of keys for which to create table
                                 also specifies their order
     :subdict_keys list(tuple(str)): list of key chains (tuples of key strings)
-                                    which are applied to dictionaries 
+                                    which are applied to dictionaries
                                     to extract values
     """
     if subdict_keys:
@@ -146,10 +146,10 @@ def print_error(message):
 
 
 def check_for_attributes(params, attributes):
-    not_paseed_checks = [attribute for attribute in attributes 
+    not_paseed_checks = [attribute for attribute in attributes
                          if not getattr(params, attribute)]
     if len(not_paseed_checks):
-        msg = "{0} required!".format(", ".join(not_paseed_checks))
+        msg = "{0} required!\n".format(", ".join(not_paseed_checks))
         print_error(msg)
 
 
@@ -199,7 +199,7 @@ def environment(params):
                 data
             )
             pprint(put_response)
-    elif params.set:        
+    elif params.set:
         check_for_attributes(params, ["eid"])
         if params.mode or params.ename:
             data = {}
@@ -230,7 +230,7 @@ def node(params):
         print(
             format_table(data, acceptable_keys=acceptable_keys)
         )
-    elif params.set:        
+    elif params.set:
         check_for_attributes(params, ["nid", "role", "eid"])
         node_ids = list(chain(*params.nid))
         role = params.role.pop().lower()
@@ -292,7 +292,7 @@ def deploy(params):
         "clusters/{0}/changes".format(params.eid),
         "{}"
     )
-    pprint(put_response)    
+    pprint(put_response)
 
 
 def fact(params):
@@ -308,7 +308,7 @@ def fact(params):
 
 def parse_node_ids(x):
     """Parse arguments with commas and spaces
-    
+
     :returns: list of lists with numbers
     """
     filtered = [y for y in x.split(",") if y.strip() != '']
