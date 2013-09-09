@@ -27,6 +27,8 @@ from nailgun.test.base import fake_tasks
 from mock import Mock, patch
 from nailgun.api.models import Cluster
 from nailgun.api.models import Node
+from nailgun.api.models import NetworkGroup
+from nailgun.api.models import IPAddrRange
 from nailgun.settings import settings
 from nailgun.api.models import Node
 
@@ -206,6 +208,38 @@ class TestOrchestratorSerializer(OrchestratorSerializerTestBase):
                 fact['novanetwork_parameters']['vlan_start'], 103)
             self.assertEquals(
                 fact['novanetwork_parameters']['network_size'], 256)
+
+    def test_floatin_ranges_generation(self):
+        # Set ip ranges for floating ips
+        ranges = [['172.16.0.2', '172.16.0.4'],
+                  ['172.16.0.3', '172.16.0.5'],
+                  ['172.16.0.10', '172.16.0.12']]
+
+        floating_network_group = self.db.query(NetworkGroup).filter(
+            NetworkGroup.name == 'floating').filter(
+                NetworkGroup.cluster_id == self.cluster.id).first()
+
+        # Remove floating ip addr ranges
+        self.db.query(IPAddrRange).filter(
+            IPAddrRange.network_group_id == floating_network_group.id).delete()
+
+        # Add new ranges
+        for ip_range in ranges:
+            new_ip_range = IPAddrRange(
+                first=ip_range[0],
+                last=ip_range[1],
+                network_group_id=floating_network_group.id)
+
+            self.db.add(new_ip_range)
+        self.db.commit()
+        facts = self.serializer.serialize(self.cluster)
+
+        for fact in facts:
+            self.assertEquals(
+                fact['floating_network_range'],
+                ['172.16.0.2-172.16.0.4',
+                 '172.16.0.3-172.16.0.5',
+                 '172.16.0.10-172.16.0.12'])
 
 
 class TestOrchestratorHASerializer(OrchestratorSerializerTestBase):
