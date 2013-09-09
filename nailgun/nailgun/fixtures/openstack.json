@@ -350,7 +350,8 @@
                 "volumes_roles_mapping": {
                     "controller": ["os", "image"],
                     "compute": ["os", "vm"],
-                    "cinder": ["os", "cinder"]
+                    "cinder": ["os", "cinder"],
+                    "other": ["os"]
                 },
                 "volumes": [
                     {
