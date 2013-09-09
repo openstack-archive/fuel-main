@@ -280,50 +280,6 @@ class TestHandlers(BaseHandlers):
 
     @fake_tasks(fake_rpc=False, mock_rpc=False)
     @patch('nailgun.rpc.cast')
-    def test_deploy_cast_with_vlan_manager(self, mocked_rpc):
-        self.env.create(
-            cluster_kwargs={
-                'net_manager': 'VlanManager',
-            },
-            nodes_kwargs=[
-                {"roles": ["controller"], "pending_addition": True},
-                {"roles": ["controller"], "pending_addition": True},
-            ]
-        )
-
-        self.env.launch_deployment()
-
-        args, kwargs = nailgun.task.manager.rpc.cast.call_args
-        message = args[1][1]
-
-        nova_attrs = message['args']['attributes']['novanetwork_parameters']
-
-        self.assertEquals(
-            nova_attrs['network_manager'],
-            'VlanManager'
-        )
-        self.assertEquals(
-            nova_attrs['network_size'],
-            256
-        )
-        self.assertEquals(
-            nova_attrs['num_networks'],
-            1
-        )
-        self.assertEquals(
-            nova_attrs['vlan_start'],
-            103
-        )
-        for node in message['args']['nodes']:
-            self.assertEquals(node['vlan_interface'], 'eth0')
-            fix_networks = filter(
-                lambda net: net['name'] == 'fixed',
-                node['network_data']
-            )
-            self.assertEquals(fix_networks, [])
-
-    @fake_tasks(fake_rpc=False, mock_rpc=False)
-    @patch('nailgun.rpc.cast')
     def test_deploy_and_remove_correct_nodes_and_statuses(self, mocked_rpc):
         self.env.create(
             cluster_kwargs={},
