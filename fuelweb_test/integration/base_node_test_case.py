@@ -100,12 +100,13 @@ class BaseNodeTestCase(BaseTestCase):
 
     @logwrap
     def check_role_file(self, nodes_dict):
-        for node, role in self.get_nailgun_node_roles(nodes_dict):
+        for node, roles in self.get_nailgun_node_roles(nodes_dict):
             remote = SSHClient(
                 node['ip'], username='root', password='r00tme',
                 private_keys=self.get_private_keys())
-            if role != "cinder":
-                self.assertTrue(remote.isfile('/tmp/%s-file' % role))
+            for role in roles:
+                if role != "cinder":
+                    self.assertTrue(remote.isfile('/tmp/%s-file' % role))
 
     @logwrap
     def clean_clusters(self):
@@ -160,13 +161,13 @@ class BaseNodeTestCase(BaseTestCase):
             # make a snapshot
             snapshot_name = '%s_%s' % \
                             (name.replace(' ', '_')[:17], state_hash)
-            self.ci().environment().suspend()
+            self.ci().environment().suspend(verbose=False)
             self.ci().environment().snapshot(
                 name=snapshot_name,
                 description=name,
                 force=True,
             )
-            self.ci().environment().resume()
+            self.ci().environment().resume(verbose=False)
             self.environment_states[state_hash] = {
                 'snapshot_name': snapshot_name,
                 'cluster_name': name,
@@ -182,11 +183,10 @@ class BaseNodeTestCase(BaseTestCase):
     @logwrap
     def get_nailgun_node_roles(self, nodes_dict):
         nailgun_node_roles = []
-        for role in nodes_dict:
-            for node_name in nodes_dict[role]:
-                slave = self.ci().environment().node_by_name(node_name)
-                node = self.get_node_by_devops_node(slave)
-                nailgun_node_roles.append((node, role))
+        for node_name in nodes_dict:
+            slave = self.ci().environment().node_by_name(node_name)
+            node = self.get_node_by_devops_node(slave)
+            nailgun_node_roles.append((node, nodes_dict[node_name]))
         return nailgun_node_roles
 
     @logwrap
