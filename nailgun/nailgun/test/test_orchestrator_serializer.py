@@ -204,6 +204,8 @@ class TestOrchestratorSerializer(OrchestratorSerializerTestBase):
                 fact['novanetwork_parameters']['num_networks'], 1)
             self.assertEquals(
                 fact['novanetwork_parameters']['vlan_start'], 103)
+            self.assertEquals(
+                fact['novanetwork_parameters']['network_size'], 256)
 
 
 class TestOrchestratorHASerializer(OrchestratorSerializerTestBase):
