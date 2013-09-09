@@ -32,6 +32,7 @@ from nailgun.task.helpers import TaskHelper
 from nailgun.test.base import BaseHandlers
 from nailgun.test.base import fake_tasks
 from nailgun.test.base import reverse
+from copy import deepcopy
 
 
 class TestHandlers(BaseHandlers):
@@ -41,151 +42,158 @@ class TestHandlers(BaseHandlers):
     def test_deploy_cast_with_right_args(self, mocked_rpc):
         self.env.create(
             cluster_kwargs={
-                "mode": "ha_compact",
-                "type": "compute"
+                'mode': 'ha_compact'
             },
             nodes_kwargs=[
-                {"roles": ["controller"], "pending_addition": True},
-                {"roles": ["controller"], "pending_addition": True},
-                {"roles": ["controller"], "pending_addition": True},
-            ]
-        )
+                {'roles': ['controller'], 'pending_addition': True},
+                {'roles': ['controller'], 'pending_addition': True},
+                {'roles': ['controller', 'cinder'], 'pending_addition': True},
+                {'roles': ['compute', 'cinder'], 'pending_addition': True},
+                {'roles': ['compute'], 'pending_addition': True},
+                {'roles': ['cinder'], 'pending_addition': True}])
+
         cluster_db = self.env.clusters[0]
-        cluster_depl_mode = 'ha_compact'
 
-        # Set ip ranges for floating ips
-        ranges = [['172.16.0.2', '172.16.0.4'],
-                  ['172.16.0.3', '172.16.0.5'],
-                  ['172.16.0.10', '172.16.0.12']]
+        common_attrs = {
+            'deployment_mode': 'ha_compact',
+            'mountpoints': '1 1\\n2 2\\n',
 
-        floating_network_group = self.db.query(NetworkGroup).filter(
-            NetworkGroup.name == 'floating').filter(
-                NetworkGroup.cluster_id == cluster_db.id).first()
+            'management_vip': '192.168.0.2',
+            'public_vip': '172.16.1.2',
 
-        # Remove floating ip addr ranges
-        self.db.query(IPAddrRange).filter(
-            IPAddrRange.network_group_id == floating_network_group.id).delete()
+            'fixed_network_range': '10.0.0.0/24',
+            'management_network_range': '192.168.0.0/24',
+            'floating_network_range': ['172.16.0.2-172.16.0.254'],
+            'storage_network_range': '192.168.1.0/24',
 
-        # Add new ranges
-        for ip_range in ranges:
-            new_ip_range = IPAddrRange(
-                first=ip_range[0],
-                last=ip_range[1],
-                network_group_id=floating_network_group.id)
+            'mp': [{'weight': '1', 'point': '1'},
+                   {'weight': '2', 'point': '2'}],
+            'novanetwork_parameters': {
+                'network_manager': 'FlatDHCPManager',
+                'network_size': 256
+            },
 
-            self.db.add(new_ip_range)
-        self.db.commit()
+            'management_interface': 'eth0.101',
+            'fixed_interface': 'eth0.103',
+            'admin_interface': 'eth0', 
+            'storage_interface': 'eth0.102',
+            'public_interface': 'eth0.100',
+            'floating_interface': 'eth0.100',
 
-        # Update netmask for public network
-        public_network_group = self.db.query(NetworkGroup).filter(
-            NetworkGroup.name == 'public').filter(
-                NetworkGroup.cluster_id == cluster_db.id).first()
-        public_network_group.netmask = '255.255.255.128'
-        self.db.commit()
+            'master_ip': '127.0.0.1',
+            'use_cinder': True,
+            'deployment_id': cluster_db.id
+        }
+
+        cluster_attrs = cluster_db.attributes.merged_attrs_values()
+        common_attrs.update(cluster_attrs)
+
+        # Common attrs calculation
+        env_roles = [['controller'],
+                     ['controller'],
+                     ['controller', 'cinder'],
+                     ['compute', 'cinder'],
+                     ['compute'],
+                     ['cinder']]
+
+        nodes_list = []
+        nodes_db = sorted(cluster_db.nodes, key=lambda n: n.id)
+        assigned_ips = {}
+        i = 0
+        for node in nodes_db:
+            node_id = node.id
+            for role in node.roles:
+                assigned_ips[node_id] = {}
+                assigned_ips[node_id]['internal'] = '192.168.0.%d' % (i + 3)
+                assigned_ips[node_id]['public'] = '172.16.1.%d' % (i + 3)
+                assigned_ips[node_id]['storage'] = '192.168.1.%d' % (i + 2)
+
+                nodes_list.append({
+                    'role': role,
+
+                    'internal_address': assigned_ips[node_id]['internal'],
+                    'public_address': assigned_ips[node_id]['public'],
+                    'storage_address': assigned_ips[node_id]['storage'],
+
+                    'internal_netmask': '255.255.255.0',
+                    'public_netmask': '255.255.255.0',
+                    'storage_netmask': '255.255.255.0',
+
+                    'uid': str(node_id),
+                    'swift_zone': str(node_id),
+
+                    'name': 'node-%d' % node_id,
+                    'fqdn': 'node-%d.%s' % (node_id, settings.DNS_DOMAIN)})
+            i += 1
+
+        common_attrs['controller_nodes'] = filter(
+            lambda node: node['role'] == 'controller',
+            deepcopy(nodes_list))
+
+        common_attrs['nodes'] = nodes_list
+        common_attrs['nodes'][0]['role'] = 'primary-controller'
+
+        common_attrs['last_controller'] = common_attrs[
+            'controller_nodes'][-1]['name']
+
+        # Individual attrs calculation and
+        # merging with common attrs
+        deployment_info = []
+
+        for node in nodes_db:
+            ips = assigned_ips[node.id]
+            for role in node.roles:
+                individual_atts = {
+                    'uid': str(node.id),
+                    'status': node.status,
+                    'role': role,
+                    'online': node.online,
+                    'fqdn': 'node-%d.%s' % (node.id, settings.DNS_DOMAIN),
+
+                    'network_data': {
+                        'eth0.100': {
+                            'interface': 'eth0.100',
+                            'ipaddr': ['%s/24' % ips['public']],
+                            'gateway': '172.16.1.1',
+                            '_name': 'public'},
+                        'eth0.101': {
+                            'interface': 'eth0.101',
+                            'ipaddr': ['%s/24' % ips['internal']],
+                            '_name': 'management'},
+                        'eth0.102': {
+                            'interface': 'eth0.102',
+                            'ipaddr': ['%s/24' % ips['storage']],
+                            '_name': 'storage'},
+                        'eth0.103': {
+                            'interface': 'eth0.103',
+                            'ipaddr': 'none',
+                            '_name': 'fixed'},
+                        'lo': {
+                            'interface': 'lo',
+                            'ipaddr': ['127.0.0.1/8']},
+                        'eth1': {
+                            'interface': 'eth1',
+                            'ipaddr': 'none'},
+                        'eth0': {
+                            'interface': 'eth0',
+                            'ipaddr': 'dhcp',
+                            '_name': 'admin'}}}
+
+                individual_atts.update(common_attrs)
+                deployment_info.append(individual_atts)
 
         supertask = self.env.launch_deployment()
         deploy_task_uuid = [x.uuid for x in supertask.subtasks
                             if x.name == 'deployment'][0]
 
-        msg = {'method': 'deploy', 'respond_to': 'deploy_resp',
-               'args': {}}
-        self.db.add(cluster_db)
-        cluster_attrs = cluster_db.attributes.merged_attrs_values()
+        deployment_msg = {'method': 'deploy', 'respond_to': 'deploy_resp', 'args': {}}
+        deployment_msg['args']['task_uuid'] = deploy_task_uuid
+        deployment_msg['args']['deployment_info'] = deployment_info
 
-        nets_db = self.db.query(Network).join(NetworkGroup).\
-            filter(NetworkGroup.cluster_id == cluster_db.id).all()
-
-        for net in nets_db:
-            if net.name != 'public':
-                cluster_attrs[net.name + '_network_range'] = net.cidr
-
-        cluster_attrs['floating_network_range'] = [
-            '172.16.0.2-172.16.0.4',
-            '172.16.0.3-172.16.0.5',
-            '172.16.0.10-172.16.0.12'
-        ]
-
-        management_vip = self.env.network_manager.assign_vip(
-            cluster_db.id,
-            'management'
-        )
-        public_vip = self.env.network_manager.assign_vip(
-            cluster_db.id,
-            'public'
-        )
-
-        net_params = {}
-        net_params['network_manager'] = "FlatDHCPManager"
-        net_params['network_size'] = 256
-
-        cluster_attrs['novanetwork_parameters'] = net_params
-
-        cluster_attrs['management_vip'] = management_vip
-        cluster_attrs['public_vip'] = public_vip
-        cluster_attrs['master_ip'] = '127.0.0.1'
-        cluster_attrs['deployment_mode'] = cluster_depl_mode
-        cluster_attrs['deployment_id'] = cluster_db.id
-
-        msg['args']['attributes'] = cluster_attrs
-        msg['args']['task_uuid'] = deploy_task_uuid
-        nodes = []
         provision_nodes = []
-
         admin_net_id = self.env.network_manager.get_admin_network_id()
 
         for n in sorted(self.env.nodes, key=lambda n: n.id):
-
-            q = self.db.query(IPAddr).join(Network).\
-                filter(IPAddr.node == n.id).filter(
-                    not_(IPAddr.network == admin_net_id)
-                )
-
-            """
-            Here we want to get node IP addresses which belong
-            to storage and management networks respectively
-            """
-            node_ip_management, node_ip_storage = map(
-                lambda x: q.filter_by(name=x).first().ip_addr
-                + "/" + cluster_attrs[x + '_network_range'].split('/')[1],
-                ('management', 'storage')
-            )
-            node_ip_public = q.filter_by(name='public').first().ip_addr + '/25'
-
-            nodes.append({'uid': n.id, 'status': n.status, 'ip': n.ip,
-                          'error_type': n.error_type, 'mac': n.mac,
-                          'roles': n.roles, 'id': n.id, 'fqdn':
-                          'node-%d.%s' % (n.id, settings.DNS_DOMAIN),
-                          'progress': 0, 'meta': n.meta, 'online': True,
-                          'network_data': [{'brd': '192.168.0.255',
-                                            'ip': node_ip_management,
-                                            'vlan': 101,
-                                            'gateway': '192.168.0.1',
-                                            'netmask': '255.255.255.0',
-                                            'dev': 'eth0',
-                                            'name': 'management'},
-                                           {'brd': '172.16.1.255',
-                                            'ip': node_ip_public,
-                                            'vlan': 100,
-                                            'gateway': '172.16.1.1',
-                                            'netmask': '255.255.255.128',
-                                            'dev': 'eth0',
-                                            'name': u'public'},
-                                           {'name': u'storage',
-                                            'ip': node_ip_storage,
-                                            'vlan': 102,
-                                            'dev': 'eth0',
-                                            'netmask': '255.255.255.0',
-                                            'brd': '192.168.1.255',
-                                            'gateway': u'192.168.1.1'},
-                                           {'vlan': 100,
-                                            'name': 'floating',
-                                            'dev': 'eth0'},
-                                           {'vlan': 103,
-                                            'name': 'fixed',
-                                            'dev': 'eth0'},
-                                           {'name': u'admin',
-                                            'dev': 'eth0'}]})
-
             pnd = {
                 'profile': cluster_attrs['cobbler']['profile'],
                 'power_type': 'ssh',
@@ -249,14 +257,10 @@ class TestHandlers(BaseHandlers):
 
             provision_nodes.append(pnd)
 
-        controller_nodes = filter(
-            lambda node: 'controller' in node['roles'],
-            nodes)
-        msg['args']['attributes']['controller_nodes'] = controller_nodes
-        msg['args']['nodes'] = nodes
+        provision_task_uuid = filter(
+            lambda t: t.name == 'provision',
+            supertask.subtasks)[0].uuid
 
-        provision_task_uuid = [x.uuid for x in supertask.subtasks
-                               if x.name == 'provision'][0]
         provision_msg = {
             'method': 'provision',
             'respond_to': 'provision_resp',
@@ -276,7 +280,7 @@ class TestHandlers(BaseHandlers):
         self.assertEquals(len(args[1]), 2)
 
         self.datadiff(args[1][0], provision_msg)
-        self.datadiff(args[1][1], msg)
+        self.datadiff(args[1][1], deployment_msg)
 
     @fake_tasks(fake_rpc=False, mock_rpc=False)
     @patch('nailgun.rpc.cast')
