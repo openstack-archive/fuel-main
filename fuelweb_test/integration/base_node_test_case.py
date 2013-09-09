@@ -115,7 +115,7 @@ class BaseNodeTestCase(BaseTestCase):
         self.client.clean_clusters()
 
     @logwrap
-    def _basic_provisioning(self, cluster_id, nodes_dict, port=5514):
+    def basic_provisioning(self, cluster_id, nodes_dict, port=5514):
         self.client.add_syslog_server(
             cluster_id, self.ci().get_host_node_ip(), port)
 
@@ -158,7 +158,7 @@ class BaseNodeTestCase(BaseTestCase):
             # create cluster
             self.get_empty_environment()
             cluster_id = self.create_cluster(name=name)
-            self._basic_provisioning(cluster_id, settings['nodes'])
+            self.basic_provisioning(cluster_id, settings['nodes'])
 
             # make a snapshot
             snapshot_name = '%s_%s' % \

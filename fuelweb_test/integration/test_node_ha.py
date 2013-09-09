@@ -46,7 +46,7 @@ class TestNode(BaseNodeTestCase):
         }
         cluster_id = self.create_cluster(name=cluster_name)
         self.update_vlan_network_fixed(cluster_id, amount=8, network_size=32)
-        self._basic_provisioning(cluster_id, nodes_dict)
+        self.basic_provisioning(cluster_id, nodes_dict)
         self.assertClusterReady(
             'slave-01', smiles_count=16, networks_count=8, timeout=300)
         self.get_ebtables(cluster_id, self.nodes().slaves[:5]).restore_vlans()
