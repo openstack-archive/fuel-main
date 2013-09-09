@@ -115,7 +115,7 @@ function(require, utils, models, simpleMessageTemplate, createClusterWizardTempl
             }, this);
         },
         onStepClick: function(e) {
-            var paneIndex = parseInt($(e.currentTarget).data('pane'));
+            var paneIndex = parseInt($(e.currentTarget).data('pane'), 10);
             this.activePane().processPaneData().done(_.bind(function() {
                 this.goToPane(paneIndex);
             }, this));
