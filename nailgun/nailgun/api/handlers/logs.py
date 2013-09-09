@@ -37,6 +37,9 @@ from nailgun.api.models import Node
 from nailgun.api.models import RedHatAccount
 from nailgun.db import db
 from nailgun.settings import settings
+from nailgun.api.handlers.tasks import TaskHandler
+from nailgun.task.manager import DumpTaskManager
+from nailgun.api.handlers.base import JSONHandler, content_json
 
 logger = logging.getLogger(__name__)
 

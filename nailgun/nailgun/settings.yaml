@@ -234,6 +234,7 @@ MAX_ITEMS_PER_PAGE: 500
 
 DUMP:
   target: "/var/www/nailgun/dump/dump"
+  lastdump: "/var/www/nailgun/dump/last"
   timestamp: True
   dump_roles:
     master:
@@ -241,6 +242,9 @@ DUMP:
     slave: []
   dump_objects:
     master:
+      - type: postgres
+        dbname: nailgun
+        username: postgres
       - type: dir
         path: /etc/nailgun
       - type: dir
@@ -257,33 +261,64 @@ DUMP:
         path: /var/log/remote
       - type: command
         command: df -h
+        to_file: df.txt
       - type: command
         command: mount
+        to_file: mount.txt
       - type: command
         command: iptables -t nat -S
+        to_file: iptables_nat.txt
       - type: command
         command: iptables -t filter -S
+        to_file: iptables_filter.txt
       - type: command
         command: dmidecode
+        to_file: dmidecode.txt
       - type: command
         command: uptime
+        to_file: uptime.txt
       - type: command
         command: ps auxwwf
+        to_file: ps.txt
+      - type: command
+        command: pvdisplay
+        to_file: lvm_pvdisplay.txt
+      - type: command
+        command: vgdisplay
+        to_file: lvm_vgdisplay.txt
+      - type: command
+        command: lvdisplay
+        to_file: lvm_lvdisplay.txt
     slave:
       - type: file
         path: /etc/naily.facts
       - type: command
         command: df -h
+        to_file: df.txt
       - type: command
         command: mount
+        to_file: mount.txt
       - type: command
         command: iptables -t nat -S
+        to_file: iptables_nat.txt
       - type: command
         command: iptables -t filter -S
+        to_file: iptables_filter.txt
       - type: command
         command: dmidecode
+        to_file: dmidecode.txt
       - type: command
         command: uptime
+        to_file: uptime.txt
       - type: command
         command: ps auxwwf
-
+        to_file: ps.txt
+      - type: command
+        command: pvdisplay
+        to_file: lvm_pvdisplay.txt
+      - type: command
+        command: vgdisplay
+        to_file: lvm_vgdisplay.txt
+      - type: command
+        command: lvdisplay
+        to_file: lvm_lvdisplay.txt
