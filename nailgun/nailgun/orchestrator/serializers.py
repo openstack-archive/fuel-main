@@ -202,7 +202,7 @@ class OrchestratorSerializer(object):
         """
         serialized_nodes = []
         for node in nodes:
-            for role in node.roles:
+            for role in set(node.pending_roles + node.roles):
                 serialized_node = cls.serialize_node(node, role)
                 serialized_nodes.append(serialized_node)
 
