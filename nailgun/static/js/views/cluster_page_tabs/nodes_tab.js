@@ -187,7 +187,10 @@ function(utils, models, commonViews, dialogViews, nodesManagementPanelTemplate, 
                    return _.omit(node, 'pending_roles');
                 });
             };
-            this.nodes.fetch().done(_.bind(this.render, this));
+            this.nodes.fetch().done(_.bind(function() {
+                this.nodes.each(function(node) {node.set({pending_roles: []}, {silence: true});});
+                this.render();
+            }, this));
             this.nodes.on('resize', this.render, this);
             this.scheduleUpdate();
         }
@@ -319,7 +322,7 @@ function(utils, models, commonViews, dialogViews, nodesManagementPanelTemplate, 
             var nodes = new models.Nodes(this.screen.nodes.getByIds(this.nodeIds));
             _.each(this.$('input'), function(input) {
                 var role = $(input).val();
-                if ($(input).is(':checked') || !$(input).prop('indeterminate')) {
+                if (!$(input).prop('indeterminate')) {
                     nodes.each(function(node) {
                         var pending_roles = $(input).is(':checked') ? _.uniq(_.union(node.get('pending_roles'), role)) : _.difference(node.get('pending_roles'), role);
                         node.set({pending_roles: pending_roles});
