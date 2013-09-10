@@ -200,19 +200,21 @@ Running the FuelWeb Integration Test
     make test-integration
 
 #. To save time, you can execute individual test cases from the
-   integration test suite like this::
+   integration test suite like this (nice thing about TestAdminNode
+   is that it takes you from nothing to a Fuel master with 9 blank nodes
+   connected to 3 virtual networks)::
 
     cd fuelweb
     export ENV_NAME=fuelweb
     export PUBLIC_FORWARD=nat
     export ISO_PATH=`pwd`/build/iso/fuelweb-centos-6.4-x86_64.iso
-    nosetests -w fuelweb_test -s -l DEBUG --with-xunit fuelweb_test.integration.test_admin_node:TestAdminNode.test_cobbler_alive
+    nosetests -w fuelweb_test -s fuelweb_test.integration.test_admin_node:TestAdminNode.test_cobbler_alive
 
 #. The test harness creates a snapshot of all nodes called 'empty'
    before starting the tests, and creates a new snapshot if a test
    fails. You can revert to a specific snapshot with this command::
 
-    dos.py revert <snapshot_name>
+    dos.py revert --snapshot-name <snapshot_name> <env_name>
 
 #. To fully reset your test environment, tell the Devops toolkit to erase it::
 
