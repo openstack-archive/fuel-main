@@ -101,7 +101,7 @@ function(utils, models, commonViews, dialogViews, nodesManagementPanelTemplate, 
         constructorName: 'NodeListScreen',
         updateInterval: 20000,
         hasChanges: function() {
-            return !_.isEqual(this.nodes.map(function(node) {return node.get('pending_roles') || [];}), this.initialRoles);
+            return this instanceof ClusterNodesScreen ? false : !_.isEqual(this.nodes.map(function(node) {return node.get('pending_roles') || [];}), this.initialRoles);
         },
         selectedNodes: function() {
             return this.$('.node-checkbox input:checked');
@@ -324,8 +324,10 @@ function(utils, models, commonViews, dialogViews, nodesManagementPanelTemplate, 
                 var role = $(input).val();
                 if (!$(input).prop('indeterminate')) {
                     nodes.each(function(node) {
-                        var pending_roles = $(input).is(':checked') ? _.uniq(_.union(node.get('pending_roles'), role)) : _.difference(node.get('pending_roles'), role);
-                        node.set({pending_roles: pending_roles});
+                        if (!_.contains(node.get('roles'), role)) {
+                            var pending_roles = $(input).is(':checked') ? _.uniq(_.union(node.get('pending_roles'), role)) : _.difference(node.get('pending_roles'), role);
+                            node.set({pending_roles: pending_roles});
+                        }
                     }, this);
                 }
             }, this);
