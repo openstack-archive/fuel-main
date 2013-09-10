@@ -434,7 +434,5 @@ class ClusterOrchestratorData(JSONHandler):
         """
         cluster = self.get_object_or_404(Cluster, cluster_id)
         cluster.facts = {}
-        raise web.webapi.HTTPError(
-            status="202 Accepted",
-            data="{}"
-        )
+        db().commit()
+        raise web.accepted(data="{}")

@@ -16,8 +16,8 @@
 
 from copy import deepcopy
 import json
-
 from mock import patch
+
 
 import nailgun
 from nailgun.api.models import IPAddr

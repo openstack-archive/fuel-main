@@ -15,7 +15,9 @@
 #    under the License.
 
 import json
+from mock import patch
 
+import nailgun
 from nailgun.api.models import Cluster
 from nailgun.api.models import NetworkGroup
 from nailgun.api.models import Node
@@ -184,8 +186,22 @@ class TestHandlers(BaseHandlers):
         ).all()
         self.assertEqual(ngs, [])
 
-    def test_cluster_orchestrator_data(self):
-        cluster = self.env.create_cluster(api=False)
+    @fake_tasks(fake_rpc=False, mock_rpc=False)
+    @patch('nailgun.rpc.cast')
+    def test_cluster_orchestrator_data(self, mocked_rpc):
+        self.env.create(
+            cluster_kwargs={
+                'mode': 'ha_compact'
+            },
+            nodes_kwargs=[
+                {'roles': ['controller'], 'pending_addition': True},
+                {'roles': ['controller'], 'pending_addition': True},
+                {'roles': ['controller', 'cinder'], 'pending_addition': True},
+                {'roles': ['compute', 'cinder'], 'pending_addition': True},
+                {'roles': ['compute'], 'pending_addition': True},
+                {'roles': ['cinder'], 'pending_addition': True}])
+
+        cluster = self.env.clusters[0]
         orchestrator_data = {"field": "test"}
         orchestrator_data_json = json.dumps(orchestrator_data)
         put_resp = self.app.put(
@@ -194,8 +210,11 @@ class TestHandlers(BaseHandlers):
             orchestrator_data_json,
             headers=self.default_headers
         )
-        self.db.refresh(cluster)
         self.assertEquals(put_resp.status, 200)
+        self.env.launch_deployment()
+        args, kwargs = nailgun.task.manager.rpc.cast.call_args
+        self.datadiff(orchestrator_data, args[1][1]["args"]["deployment_info"])
+
         get_resp = self.app.get(
             reverse('ClusterOrchestratorData',
                     kwargs={'cluster_id': cluster.id}),
@@ -203,3 +222,10 @@ class TestHandlers(BaseHandlers):
         )
         self.assertEquals(get_resp.status, 200)
         self.datadiff(orchestrator_data, json.loads(get_resp.body))
+        delete_resp = self.app.delete(
+            reverse('ClusterOrchestratorData',
+                    kwargs={'cluster_id': cluster.id}),
+            headers=self.default_headers
+        )
+        self.assertEquals(delete_resp.status, 202)
+        self.assertEqual(cluster.facts, {})
