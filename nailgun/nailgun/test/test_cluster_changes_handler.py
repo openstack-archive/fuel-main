@@ -127,17 +127,27 @@ class TestHandlers(BaseHandlers):
 
         # Individual attrs calculation and
         # merging with common attrs
-        deployment_info = []
+        priority_mapping = {
+            'controller': [600, 500, 400],
+            'cinder': 700,
+            'compute': 700
+        }
 
+        deployment_info = []
         for node in nodes_db:
             ips = assigned_ips[node.id]
             for role in node.roles:
+                priority = priority_mapping[role]
+                if isinstance(priority, list):
+                    priority = priority.pop()
+
                 individual_atts = {
                     'uid': str(node.id),
                     'status': node.status,
                     'role': role,
                     'online': node.online,
                     'fqdn': 'node-%d.%s' % (node.id, settings.DNS_DOMAIN),
+                    'priority': priority,
 
                     'network_data': {
                         'eth0.100': {

@@ -27,9 +27,29 @@ from netaddr import IPNetwork
 from sqlalchemy import and_
 
 
-class OrchestratorSerializer(object):
-    """Base class for orchestrator searilization
+class Priority(object):
+    """Node with priority 0 will be deployed first.
+    We have step equal 100 because we want to allow
+    user redefine deployment order and he can use free space
+    between prioriries.
     """
+
+    def __init__(self):
+        self.step = 100
+        self.priority = 0
+
+    @property
+    def next(self):
+        self.priority += self.step
+        return self.priority
+
+    @property
+    def current(self):
+        return self.priority
+
+
+class OrchestratorSerializer(object):
+    """Base class for orchestrator searilization."""
 
     @classmethod
     def serialize(cls, cluster):
@@ -39,10 +59,10 @@ class OrchestratorSerializer(object):
         common_attrs = cls.get_common_attrs(cluster)
         nodes = cls.serialize_nodes(cls.get_nodes_to_serialization(cluster))
 
-        cls.node_list(cls.get_nodes_to_serialization(cluster))
-
         if cluster.net_manager == 'VlanManager':
             cls.add_vlan_interfaces(nodes)
+
+        cls.set_deployment_priorities(nodes)
 
         # Merge attributes of nodes with common attributes
         def merge(dict1, dict2):
@@ -315,6 +335,26 @@ class OrchestratorSerializer(object):
         return interfaces
 
     @classmethod
+    def by_role(cls, nodes, role):
+        return filter(lambda node: node['role'] == role, nodes)
+
+    @classmethod
+    def not_roles(cls, nodes, roles):
+        return filter(lambda node: node['role'] not in roles, nodes)
+
+    @classmethod
+    def set_deployment_priorities(cls, nodes):
+        """Set priorities of deployment."""
+        prior = Priority()
+
+        for n in cls.by_role(nodes, 'controller'):
+            n['priority'] = prior.next
+
+        other_nodes_prior = prior.next
+        for n in cls.not_roles(nodes, 'controller'):
+            n['priority'] = other_nodes_prior
+
+    @classmethod
     def __make_interface_name(cls, name, vlan):
         """Make interface name
         """
@@ -378,6 +418,39 @@ class OrchestratorHASerializer(OrchestratorSerializer):
         common_attrs['mountpoints'] = '1 1\\n2 2\\n'
 
         return common_attrs
+
+    @classmethod
+    def set_deployment_priorities(cls, nodes):
+        """Set priorities of deployment for HA mode."""
+        prior = Priority()
+
+        primary_swift_proxy_piror = prior.next
+        for n in cls.by_role(nodes, 'primary-swift-proxy'):
+            n['priority'] = primary_swift_proxy_piror
+
+        swift_proxy_prior = prior.next
+        for n in cls.by_role(nodes, 'swift-proxy'):
+            n['priority'] = swift_proxy_prior
+
+        storage_prior = prior.next
+        for n in cls.not_roles(nodes, 'storage'):
+            n['priority'] = storage_prior
+
+        # Controllers deployed one by one
+        for n in cls.by_role(nodes, 'primary-controller'):
+            n['priority'] = prior.next
+
+        for n in cls.by_role(nodes, 'controller'):
+            n['priority'] = prior.next
+
+        other_nodes_prior = prior.next
+        for n in cls.not_roles(nodes, ['primary-swift-proxy',
+                                       'swift-proxy',
+                                       'storage',
+                                       'primary-controller',
+                                       'controller',
+                                       'quantum']):
+            n['priority'] = other_nodes_prior
 
 
 def serialize(cluster):
