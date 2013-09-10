@@ -28,11 +28,6 @@ def is_local(name):
 
 
 def execute(command, to_filename=None):
-    """
-    This method is used for running shell commands locally
-    and it is able to run series of commands with pipes
-    cmd1 | cmd2 | cmd3
-    """
     logger.debug("Trying to execute command: %s", command)
     commands = [c.strip() for c in re.split(ur'\|', command)]
     env = os.environ

@@ -1,6 +1,7 @@
 import os
 import re
 import tempfile
+import stat
 
 import fabric.api
 
@@ -37,11 +38,6 @@ class Driver(object):
         raise NotImplementedError
 
     def command(self, command):
-        """
-        This method is able to run only simple commands not series of them
-        cmd1 | cmd2 | cmd3 does not work in general. It works only for localhost
-        because locally command is launched with 'execute' util method.
-        """
         out = CommandOut()
         if not self.local:
             with fabric.api.settings(host_string=self.host):
@@ -145,19 +141,32 @@ class Subs(File):
 class Postgres(Driver):
     def __init__(self, data, conf):
         super(Postgres, self).__init__(data, conf)
+        self.dbhost = self.data.get("dbhost", "localhost")
         self.dbname = self.data["dbname"]
         self.username = self.data.get("username", "postgres")
         self.password = self.data.get("password")
 
     def snapshot(self):
-        password_opt = "-w"
         if self.password:
-            password_opt = "-W %s" % self.password
+            authline = "{host}:{port}:{dbname}:{username}:{password}".format(
+                host=self.host, port="5432", dbname=self.dbname,
+                username=self.username, password=self.password)
+            with open(os.path.expanduser("~/.pgpass"), "a+") as fo:
+                fo.seek(0)
+                auth = False
+                for line in fo:
+                    if re.search(ur"^%s$" % authline, line):
+                        auth = True
+                        break
+                if not auth:
+                    fo.seek(0, 2)
+                    fo.write("{0}\n".format(authline))
+            os.chmod(os.path.expanduser("~/.pgpass"), stat.S_IRUSR + stat.S_IWUSR)
         temp = self.command("mktemp").stdout.strip()
-        self.command("pg_dump -U {user} {password_opt} "
-                     "-f {file} {dbname}".format(user=self.username,
-                                                 password_opt=password_opt,
-                                                 file=temp, dbname=self.dbname))
+        self.command("pg_dump -h {dbhost} -U {username} -w "
+                     "-f {file} {dbname}".format(
+                        dbhost=self.dbhost, username=self.username,
+                        file=temp, dbname=self.dbname))
         self.get(temp, os.path.join(
             self.conf.target, self.host, "postgres_dump_%s.sql" % self.dbname))
         self.command("rm -f %s" % temp)

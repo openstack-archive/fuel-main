@@ -243,8 +243,10 @@ DUMP:
   dump_objects:
     master:
       - type: postgres
+        dbhost: localhost
         dbname: nailgun
-        username: postgres
+        username: nailgun
+        password: nailgun
       - type: dir
         path: /etc/nailgun
       - type: dir
