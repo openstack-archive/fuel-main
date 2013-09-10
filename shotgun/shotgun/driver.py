@@ -84,58 +84,47 @@ class Subs(File):
         super(Subs, self).__init__(data, conf)
         self.subs = self.data["subs"]
 
-    @property
-    def gz(self):
-        """
-        Here we need something more sophisticated than just
-        looking at file name.
-        """
-        if re.search(ur".+\.gz$", self.target_path):
-            return True
-        return False
+    def decompress(self, filename):
+        if re.search(ur".+\.gz$", filename):
+            return "gunzip -c"
+        elif re.search(ur".+\.bz2$", filename):
+            return "bunzip2 -c"
+        return ""
+
+    def compress(self, filename):
+        if re.search(ur".+\.gz$", filename):
+            return "gzip -c"
+        elif re.search(ur".+\.bz2$", filename):
+            return "bzip2 -c"
+        return ""
+
+    def sed(self, from_filename, to_filename, gz=False):
+        sedscript = tempfile.NamedTemporaryFile()
+        logger.debug("Sed script: %s", sedscript.name)
+        for orig, new in self.subs.iteritems():
+            logger.debug("Sed script: s/%s/%s/g", orig, new)
+            sedscript.write("s/%s/%s/g\n" % (orig, new))
+            sedscript.flush()
+        command = " | ".join(filter(lambda x: x != "", [
+            "cat %s" % from_filename,
+            self.decompress(from_filename),
+            "sed -f %s" % sedscript.name,
+            self.compress(from_filename),
+        ]))
+        execute(command, to_filename=to_filename)
+        sedscript.close()
 
     def snapshot(self):
         super(Subs, self).snapshot()
-        tf = tempfile.NamedTemporaryFile()
-        logger.debug("Sed script: %s", tf.name)
-        for orig, new in self.subs.iteritems():
-            logger.debug("Sed script: s/%s/%s/g", orig, new)
-            tf.write("s/%s/%s/g\n" % (orig, new))
-            tf.flush()
-        temp = self.command("mktemp").stdout.strip()
-        command = " | ".join(filter(lambda x: x != "", [
-            "cat %s" % self.target_path,
-            "gunzip -c" if self.gz else "",
-            "sed -f %s" % tf.name,
-            "gzip -c" if self.gz else ""
-        ]))
-        execute(command, to_filename=temp)
-        self.command("mv %s %s" % (temp, self.target_path))
-        tf.close()
-
-    def subs_directory(self):
-        f = tempfile.TemporaryFile(mode='r+b')
-        tf = tarfile.open(fileobj=f, mode='w:gz')
-        for arcname, path in settings.LOGS_TO_PACK_FOR_SUPPORT.items():
-            walk = os.walk(path)
-            if not os.path.isdir(path):
-                walk = (("/", [], [path]),)
-            for root, _, files in walk:
-                for filename in files:
-                    absfilename = os.path.join(root, filename)
-                    relfilename = os.path.relpath(absfilename, path)
-                    if not re.search(r".+\.bz2", filename):
-                        lf = tempfile.NamedTemporaryFile()
-                        self.sed(absfilename, lf.name,
-                                 (True
-                                  if re.search(r".+\.gz", filename)
-                                  else False))
-                        target = os.path.normpath(
-                            os.path.join(arcname, relfilename)
-                        )
-                        tf.add(lf.name, target)
-                        lf.close()
-        tf.close()
+        walk = os.walk(self.target_path)
+        if not os.path.isdir(self.target_path):
+            walk = (("/", [], [self.target_path]),)
+        for root, _, files in walk:
+            for filename in files:
+                fullfilename = os.path.join(root, filename)
+                tempfilename = self.command("mktemp").stdout.strip()
+                self.sed(fullfilename, tempfilename)
+                execute("mv %s %s" % (tempfilename, fullfilename))
 
 
 class Postgres(Driver):

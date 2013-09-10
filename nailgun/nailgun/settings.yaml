@@ -259,8 +259,9 @@ DUMP:
         path: /var/log/cobbler
       - type: dir
         path: /var/log/puppet
-      - type: dir
+      - type: subs
         path: /var/log/remote
+        subs: {}
       - type: command
         command: df -h
         to_file: df.txt

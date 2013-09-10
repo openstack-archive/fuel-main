@@ -29,6 +29,7 @@ from nailgun.api.models import Node
 from nailgun.api.models import NodeNICInterface
 from nailgun.api.models import Release
 from nailgun.db import db
+from nailgun.api.models import RedHatAccount
 from nailgun.errors import errors
 from nailgun.logger import logger
 from nailgun.network.manager import NetworkManager
@@ -665,7 +666,18 @@ class DumpTask(object):
 
         dump_conf = settings.DUMP
         dump_conf['dump_roles']['slave'] = [n.fqdn for n in nodes]
-        logger.debug("Slave nodes: %s", ", ".join(dump_conf['dump_roles']['slave']))
+        logger.debug("Dump slave nodes: %s", ", ".join(dump_conf['dump_roles']['slave']))
+
+        """
+        here we try to filter out sensitive data from logs
+        """
+        rh_accounts = db().query(RedHatAccount).all()
+        for num, obj in enumerate(dump_conf['dump_objects']['master']):
+            if obj['type'] == 'subs' and obj['path'] == '/var/log/remote':
+                for fieldname in ("username", "password"):
+                    for fieldvalue in [getattr(acc, fieldname) for acc in rh_accounts]:
+                        obj['subs'][fieldvalue] = 'substituted_{0}'.format(fieldname)
+        logger.debug("Dump conf: %s", str(dump_conf))
         return dump_conf
 
     @classmethod
