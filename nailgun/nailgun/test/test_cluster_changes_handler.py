@@ -136,7 +136,7 @@ class TestHandlers(BaseHandlers):
         deployment_info = []
         for node in nodes_db:
             ips = assigned_ips[node.id]
-            for role in node.roles:
+            for role in sorted(node.roles):
                 priority = priority_mapping[role]
                 if isinstance(priority, list):
                     priority = priority.pop()
