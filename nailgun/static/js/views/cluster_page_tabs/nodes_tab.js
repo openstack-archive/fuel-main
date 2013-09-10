@@ -101,7 +101,7 @@ function(utils, models, commonViews, dialogViews, nodesManagementPanelTemplate, 
         constructorName: 'NodeListScreen',
         updateInterval: 20000,
         hasChanges: function() {
-            return !_.isEqual(this.nodes.pluck('pending_roles'), this.initialRoles);
+            return !_.isEqual(this.nodes.map(function(node) {return node.get('pending_roles') || [];}), this.initialRoles);
         },
         selectedNodes: function() {
             return this.$('.node-checkbox input:checked');
@@ -210,6 +210,7 @@ function(utils, models, commonViews, dialogViews, nodesManagementPanelTemplate, 
         render: function() {
             this.constructor.__super__.render.apply(this, arguments);
             this.roles.render();
+            this.nodeList.calculateSelectAllTumblerState();
             this.scheduleUpdate();
             return this;
         }
@@ -409,7 +410,7 @@ function(utils, models, commonViews, dialogViews, nodesManagementPanelTemplate, 
         },
         initialize: function(options) {
             _.defaults(this, options);
-            this.screen.initialRoles = this.nodes.pluck('pending_roles');
+            this.screen.initialRoles = this.nodes.map(function(node) {return node.get('pending_roles') || [];});
         },
         renderNodeGroups: function() {
             this.$('.nodes').html('');
@@ -595,7 +596,7 @@ function(utils, models, commonViews, dialogViews, nodesManagementPanelTemplate, 
             return '#cluster/' + app.page.model.id + '/logs/' + utils.serializeTabOptions(options);
         },
         rolesChanged: function() {
-            var roles = this.node.get('pending_roles');
+            var roles = this.node.get('pending_roles') || [];
             var preferredOrder = ['controller', 'compute', 'cinder'];
             roles.sort(function(a, b) {
                 return _.indexOf(preferredOrder, a) - _.indexOf(preferredOrder, b);
