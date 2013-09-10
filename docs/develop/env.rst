@@ -60,7 +60,8 @@ Setup for Web UI Tests
 ----------------------
 
 #. Install NodeJS (on Debian, you may need to use 'apt-get install -t
-   experimental' to get the latest npm)::
+   experimental' to get the latest npm, on Ubuntu 12.04, use nodejs package 
+   instead of nodejs-legacy))::
 
     sudo apt-get install npm nodejs-legacy
     sudo npm install -g jslint requirejs
@@ -245,8 +246,10 @@ Building Documentation
 
 #. You will need the following software to build documentation::
 
-    sudo apt-get install librsvg2-bin rst2pdf python-sphinx python-sphinxcontrib.blockdiag
+    sudo apt-get install librsvg2-bin rst2pdf python-sphinx
     sudo pip install sphinxcontrib-plantuml
+    sudo apt-get install python-sphinxcontrib.blockdiag # on Ubuntu 12.10 or higher
+    sudo pip install sphinxcontrib-blockdiag # on Ubuntu 12.04
 
 #. Look at the list of available formats and generate the one you need::
 
