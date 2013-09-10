@@ -594,6 +594,15 @@ function(utils, models, commonViews, dialogViews, nodesManagementPanelTemplate, 
             }
             return '#cluster/' + app.page.model.id + '/logs/' + utils.serializeTabOptions(options);
         },
+        rolesChanged: function() {
+            var roles = this.node.get('pending_roles');
+            var preferredOrder = ['controller', 'compute', 'cinder'];
+            roles.sort(function(a, b) {
+                return _.indexOf(preferredOrder, a) - _.indexOf(preferredOrder, b);
+            });
+            this.node.set({pending_roles: roles}, {silent: true});
+            this.render();
+        },
         beforeTearDown: function() {
             $('html').off(this.eventNamespace);
         },
@@ -601,7 +610,8 @@ function(utils, models, commonViews, dialogViews, nodesManagementPanelTemplate, 
             _.defaults(this, options);
             this.screen = this.group.nodeList.screen;
             this.eventNamespace = 'click.editnodename' + this.node.id;
-            this.node.on('change:name change:online change:pending_roles', this.render, this);
+            this.node.on('change:name change:online', this.render, this);
+            this.node.on('change:pending_roles', this.rolesChanged, this);
             this.node.on('change:status change:pending_addition change:pending_deletion', this.updateStatus, this);
             this.node.on('change:progress', this.updateProgress, this);
             this.initialRoles = this.node.get('pending_roles');
