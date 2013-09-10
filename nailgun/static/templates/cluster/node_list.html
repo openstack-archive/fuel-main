@@ -6,7 +6,7 @@
       <p><strong>OpenStack Release:</strong> <%- cluster.get('release').get('name') %></p>
       <% var statuses = {'new': 'New', 'deployment': 'Deploying', 'operational': 'Operational', 'error': 'Error', 'remove': 'Removing'} %>
       <p><strong>Environment Status:</strong> <%- statuses[cluster.get('status')] %></p>
-      <% var modes = {'multinode': 'Multi-node', 'ha': 'Multi-node HA'} %>
+      <% var modes = {'multinode': 'Multi-node', 'ha_compact': 'Multi-node HA'} %>
       <p><strong>Environment Deployment Mode:</strong> <%- modes[cluster.get('mode')] %></p>
     <% } %>
   </div>

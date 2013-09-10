@@ -248,7 +248,7 @@ function(utils, models, commonViews, dialogViews, nodesManagementPanelTemplate, 
                 this.$('.role-conflict.' + role).text('This role can not be assigned together with selected roles.');
             }, this);
             // non-ha deployment mode restriction: environment can not have more than one controller node
-            if (this.nodes.length > 1 && this.cluster.get('mode') != 'ha') {
+            if (this.nodes.length > 1 && this.cluster.get('mode') != 'ha_compact') {
                 this.$('input[value=controller]').prop('disabled', true);
                 this.$('.role-conflict.controller').text('This role can not be assigned to more than one node in Multinode deployment mode.');
             }

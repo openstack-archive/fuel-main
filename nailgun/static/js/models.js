@@ -76,7 +76,7 @@ define(['utils'], function(utils) {
                 return false;
             }
             // forbid add more than 1 controller in simple mode
-            if (role == 'controller' && this.get('mode') != 'ha' && _.filter(this.get('nodes').nodesAfterDeployment(), function(node) {return node.get('role') == role;}).length >= 1) {
+            if (role == 'controller' && this.get('mode') != 'ha_compact' && _.filter(this.get('nodes').nodesAfterDeployment(), function(node) {return node.get('role') == role;}).length >= 1) {
                 return false;
             }
             return true;
@@ -93,7 +93,7 @@ define(['utils'], function(utils) {
             return true;
         },
         availableModes: function() {
-            return ['multinode', 'ha'];
+            return ['multinode', 'ha_compact'];
         },
         availableRoles: function() {
             return this.get('release').get('roles');
