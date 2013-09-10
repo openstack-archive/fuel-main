@@ -169,7 +169,9 @@ class DisksFormatConvertor(object):
     def calculate_service_partitions_size(self, volumes):
         service_partitions = filter(
             lambda vg: vg.get('type') != 'pv' and
-            vg.get('type') != 'partition', volumes)
+            vg.get('type') != 'partition' and
+            (vg.get('type') != 'raid' or vg.get('mount') == '/boot'),
+            volumes)
 
         return sum(
             [partition.get('size', 0) for partition in service_partitions])
