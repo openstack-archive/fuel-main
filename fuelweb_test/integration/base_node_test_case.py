@@ -146,7 +146,7 @@ class BaseNodeTestCase(BaseTestCase):
         empty_state_hash = hashlib.md5(str({})).hexdigest()
         if state_hash == empty_state_hash:
             # revert to empty state
-            self.ci().get_empty_state()
+            self.get_empty_environment()
         elif state_hash in self.environment_states:
             # revert virtual machines
             state = self.environment_states[state_hash]
@@ -154,7 +154,7 @@ class BaseNodeTestCase(BaseTestCase):
             self.ci().environment().resume()
         else:
             # create cluster
-            self.ci().get_empty_state()
+            self.get_empty_environment()
             cluster_id = self.create_cluster(name=name)
             self._basic_provisioning(cluster_id, settings['nodes'])
 
@@ -447,3 +447,10 @@ class BaseNodeTestCase(BaseTestCase):
             cluster_id,
             networks=network_list,
             net_manager=NETWORK_MANAGERS['vlan'])
+
+    @logwrap
+    def get_empty_environment(self):
+        if not(self.ci().get_empty_state()):
+            self.ci().setup_environment()
+            self.ci().environment().snapshot(EMPTY_SNAPSHOT)
+
