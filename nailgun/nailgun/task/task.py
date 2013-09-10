@@ -20,7 +20,6 @@ import subprocess
 import netaddr
 from sqlalchemy.orm import ColumnProperty
 from sqlalchemy.orm import object_mapper
-from sqlalchemy import or_
 from shotgun.manager import Manager as ShotgunManager
 from shotgun.config import Config as ShotgunConfig
 
@@ -666,7 +665,8 @@ class DumpTask(object):
 
         dump_conf = settings.DUMP
         dump_conf['dump_roles']['slave'] = [n.fqdn for n in nodes]
-        logger.debug("Dump slave nodes: %s", ", ".join(dump_conf['dump_roles']['slave']))
+        logger.debug("Dump slave nodes: %s",
+                     ", ".join(dump_conf['dump_roles']['slave']))
 
         """
         here we try to filter out sensitive data from logs
@@ -675,8 +675,10 @@ class DumpTask(object):
         for num, obj in enumerate(dump_conf['dump_objects']['master']):
             if obj['type'] == 'subs' and obj['path'] == '/var/log/remote':
                 for fieldname in ("username", "password"):
-                    for fieldvalue in [getattr(acc, fieldname) for acc in rh_accounts]:
-                        obj['subs'][fieldvalue] = 'substituted_{0}'.format(fieldname)
+                    for fieldvalue in [getattr(acc, fieldname)
+                                       for acc in rh_accounts]:
+                        obj['subs'][fieldvalue] = ('substituted_{0}'
+                                                   ''.format(fieldname))
         logger.debug("Dump conf: %s", str(dump_conf))
         return dump_conf
 

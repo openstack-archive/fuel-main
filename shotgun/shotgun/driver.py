@@ -179,4 +179,3 @@ class Command(Driver):
             f.write(out.stdout)
             f.write("\n===== STDERR =====:\n")
             f.write(out.stderr)
-

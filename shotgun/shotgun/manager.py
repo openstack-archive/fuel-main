@@ -26,5 +26,3 @@ class Manager(object):
         with open(self.conf.lastdump, "w") as fo:
             fo.write("%s.tgz" % self.conf.target)
         return "%s.tgz" % self.conf.target
-
-
