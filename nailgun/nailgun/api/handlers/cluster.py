@@ -387,6 +387,21 @@ class ClusterDefaultOrchestratorData(JSONHandler):
         cluster = self.get_object_or_404(Cluster, cluster_id)
         return orchestrator.serializers.serialize(cluster)
 
+
+class ClusterOrchestratorData(JSONHandler):
+    """Cluster data which will be passed
+    to orchestrator
+    """
+
+    @content_json
+    def GET(self, cluster_id):
+        """:returns: JSONized data which will be passed to orchestrator
+        :http: * 200 (OK)
+               * 404 (cluster not found in db)
+        """
+        cluster = self.get_object_or_404(Cluster, cluster_id)
+        return cluster.facts
+
     @content_json
     def PUT(self, cluster_id):
         """:returns: JSONized data which will be passed to orchestrator
@@ -410,3 +425,16 @@ class ClusterDefaultOrchestratorData(JSONHandler):
                      ' facts for cluster_id {0} were uploaded'
                      .format(cluster_id))
         return data
+
+    @content_json
+    def DELETE(self, cluster_id):
+        """:returns: {}
+        :http: * 202 (orchestrator data deletion process launched)
+               * 400 (failed to execute orchestrator data deletion process)
+        """
+        cluster = self.get_object_or_404(Cluster, cluster_id)
+        cluster.facts = {}
+        raise web.webapi.HTTPError(
+            status="202 Accepted",
+            data="{}"
+        )

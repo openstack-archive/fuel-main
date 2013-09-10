@@ -183,3 +183,23 @@ class TestHandlers(BaseHandlers):
             NetworkGroup.id.in_(ngroups)
         ).all()
         self.assertEqual(ngs, [])
+
+    def test_cluster_orchestrator_data(self):
+        cluster = self.env.create_cluster(api=False)
+        orchestrator_data = {"field": "test"}
+        orchestrator_data_json = json.dumps(orchestrator_data)
+        put_resp = self.app.put(
+            reverse('ClusterOrchestratorData',
+                    kwargs={'cluster_id': cluster.id}),
+            orchestrator_data_json,
+            headers=self.default_headers
+        )
+        self.db.refresh(cluster)
+        self.assertEquals(put_resp.status, 200)
+        get_resp = self.app.get(
+            reverse('ClusterOrchestratorData',
+                    kwargs={'cluster_id': cluster.id}),
+            headers=self.default_headers
+        )
+        self.assertEquals(get_resp.status, 200)
+        self.datadiff(orchestrator_data, json.loads(get_resp.body))
