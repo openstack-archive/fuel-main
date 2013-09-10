@@ -97,27 +97,20 @@ Astute and Naily
 
 #. Install Ruby dependencies::
 
-    sudo apt-get install gem2deb ruby-activesupport ruby-rspec ruby-mocha ruby-amqp ruby-json mcollective-client
-    cd ~
-    gem2deb symboltable
-    dpkg -i ruby-symboltable_1.0.2-1_all.deb
-    git clone git@github.com:nulayer/raemon.git
-    cd raemon
-    git checkout v0.3.0
-    gem build raemon.gemspec
-    gem2deb raemon-0.3.0.gem
-    dpkg -i ruby-raemon_0.3.0-1_all.deb
+    sudo apt-get install git curl
+    \curl -L https://get.rvm.io | bash -s stable
+    rvm install 1.9.3
 
 #. Run Astute unit tests::
 
     cd astute
-    find spec/unit/ -name '*_spec.rb'|xargs ruby -I.
+    ./run_tests.sh
 
 #. (optional) Run Astute MCollective integration test (you'll need to
    have MCollective server running for this to work)::
 
     cd astute
-    ruby -I. spec/integration/mcollective_spec.rb
+    bundle exec rspec spec/integration/mcollective_spec.rb
 
 Building the Fuel ISO
 ---------------------
