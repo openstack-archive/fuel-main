@@ -120,6 +120,11 @@ class CiBase(object):
         """
         pass
 
+    def get_empty_environment(self):
+        if not(self.get_state(EMPTY_SNAPSHOT)):
+            self.setup_environment()
+            self.environment().snapshot(EMPTY_SNAPSHOT)
+
     def internal_virtual_ip(self):
         return str(IPNetwork(
             self.environment().network_by_name('internal').ip_network)[-2])
