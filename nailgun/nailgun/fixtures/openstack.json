@@ -931,7 +931,7 @@
                     "cobbler": {
                         "profile": {
                             "generator": "identical",
-                            "generator_arg": "centos-x86_64"
+                            "generator_arg": "ubuntu_1204_x86_64"
                         }
                     }
                 }
