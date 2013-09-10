@@ -453,4 +453,3 @@ class BaseNodeTestCase(BaseTestCase):
         if not(self.ci().get_empty_state()):
             self.ci().setup_environment()
             self.ci().environment().snapshot(EMPTY_SNAPSHOT)
-
