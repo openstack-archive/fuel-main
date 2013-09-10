@@ -17,7 +17,6 @@ import logging
 from devops.helpers.helpers import SSHClient, wait, _wait
 from paramiko import RSAKey
 import re
-import hashlib
 from fuelweb_test.helpers import Ebtables
 from fuelweb_test.integration.base_test_case import BaseTestCase
 from fuelweb_test.integration.decorators import debug
@@ -31,8 +30,6 @@ logwrap = debug(logger)
 
 
 class BaseNodeTestCase(BaseTestCase):
-
-    environment_states = {}
 
     def setUp(self):
         self.client = NailgunClient(self.get_admin_node_ip())
@@ -148,37 +145,12 @@ class BaseNodeTestCase(BaseTestCase):
 
     @logwrap
     def prepare_environment(self, name='cluster_name', settings={}):
-        state_hash = hashlib.md5(str(settings)).hexdigest()
-        empty_state_hash = hashlib.md5(str({})).hexdigest()
-        if state_hash == empty_state_hash:
-            # revert to empty state
-            self.ci().get_empty_environment()
-        elif state_hash in self.environment_states:
-            # revert virtual machines
-            state = self.environment_states[state_hash]
-            self.ci().get_state(state['snapshot_name'])
-            self.ci().environment().resume()
-        else:
+        if not(self.ci().revert_to_state(settings)):
             # create cluster
             self.ci().get_empty_environment()
             cluster_id = self.create_cluster(name=name)
             self.basic_provisioning(cluster_id, settings['nodes'])
-
-            # make a snapshot
-            snapshot_name = '%s_%s' % \
-                            (name.replace(' ', '_')[:17], state_hash)
-            self.ci().environment().suspend(verbose=False)
-            self.ci().environment().snapshot(
-                name=snapshot_name,
-                description=name,
-                force=True,
-            )
-            self.ci().environment().resume(verbose=False)
-            self.environment_states[state_hash] = {
-                'snapshot_name': snapshot_name,
-                'cluster_name': name,
-                'settings': settings
-            }
+            self.ci().snapshot_state(name, settings)
 
         # return id of last created cluster
         clusters = self.client.list_clusters()
