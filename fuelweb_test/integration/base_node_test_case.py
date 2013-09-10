@@ -460,7 +460,7 @@ class BaseNodeTestCase(BaseTestCase):
 
     @logwrap
     def get_empty_environment(self):
-        if not(self.ci().get_empty_state()):
+        if not(self.ci().get_state(EMPTY_SNAPSHOT)):
             self.ci().setup_environment()
             self.ci().environment().snapshot(EMPTY_SNAPSHOT)
 

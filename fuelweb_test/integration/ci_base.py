@@ -34,9 +34,6 @@ class CiBase(object):
             self._environment.define()
             return self._environment
 
-    def get_empty_state(self):
-        return self.get_state(EMPTY_SNAPSHOT)
-
     def get_state(self, name):
         if self.environment().has_snapshot(name):
             self.environment().revert(name)
