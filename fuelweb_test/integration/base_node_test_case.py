@@ -115,15 +115,10 @@ class BaseNodeTestCase(BaseTestCase):
         self.client.clean_clusters()
 
     @logwrap
-    def basic_provisioning(self, cluster_id, nodes_dict, port=5514):
-        self.client.add_syslog_server(
-            cluster_id, self.ci().get_host_node_ip(), port)
-
-        # update cluster deployment mode
-        node_names = [node_name for node_name in nodes_dict]
+    def update_deployment_mode(self, cluster_id, nodes_dict):
         controller_names = filter(
             lambda x: 'controller' in nodes_dict[x], nodes_dict)
-        if len(node_names) > 1:
+        if len(nodes_dict) > 1:
             controller_amount = len(controller_names)
             if controller_amount == 1:
                 self.client.update_cluster(
@@ -132,10 +127,19 @@ class BaseNodeTestCase(BaseTestCase):
             if controller_amount > 1:
                 self.client.update_cluster(cluster_id, {"mode": "ha"})
 
-        self.bootstrap_nodes(self.devops_nodes_by_names(node_names))
-
-        # update nodes in cluster
+    @logwrap
+    def configure_cluster(self, cluster_id, nodes_dict):
+        self.update_deployment_mode(cluster_id, nodes_dict)
         self.update_nodes(cluster_id, nodes_dict, True, False)
+        # TODO: update network configuration
+
+    @logwrap
+    def basic_provisioning(self, cluster_id, nodes_dict, port=5514):
+        self.client.add_syslog_server(
+            cluster_id, self.ci().get_host_node_ip(), port)
+
+        self.bootstrap_nodes(self.devops_nodes_by_names(nodes_dict.keys()))
+        self.configure_cluster(cluster_id, nodes_dict)
 
         task = self.deploy_cluster(cluster_id)
         self.assertTaskSuccess(task)
