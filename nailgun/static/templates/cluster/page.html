@@ -2,13 +2,18 @@
 <div class="whitebox">
   <ul class="nav nav-tabs">
     <% _.each(tabs, function(tab) { %>
-      <li class="<%= activeTab == tab ? 'active' : '' %>"><a href="#cluster/<%= cluster.id %>/<%= tab %>"><b class="tab-<%= tab %>-normal"></b><div style="display: block; font-size: 11px; text-align: center;">I Love OpenStack</div></a></li>
+      <li class="<%= activeTab == tab.url ? 'active' : '' %>">
+        <a href="#cluster/<%= cluster.id %>/<%= tab.url %>">
+          <b class="tab-<%= tab.url %>-normal"></b>
+          <div class="tab-title"><%= tab.title %></div>
+        </a>
+      </li>
     <% }) %>
     <li class="pull-right deployment-control"></li>
   </ul>
   <div class="tab-content">
     <% _.each(tabs, function(tab) { %>
-      <div class="tab-pane <%= activeTab == tab ? 'active' : '' %>" id="tab-<%= tab %>"></div>
+      <div class="tab-pane <%= activeTab == tab.url ? 'active' : '' %>" id="tab-<%= tab.url %>"></div>
     <% }) %>
   </div>
 </div>
