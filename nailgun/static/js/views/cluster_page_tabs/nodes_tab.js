@@ -137,12 +137,12 @@ function(utils, models, commonViews, dialogViews, nodesManagementPanelTemplate, 
                 this.registerSubView(this.roles);
                 this.$el.append(this.roles.render().el);
             }
-            this.list = new NodeList({
+            this.nodeList = new NodeList({
                 nodes: this.nodes,
                 screen: this
             });
-            this.registerSubView(this.list);
-            this.$el.append(this.list.render().el);
+            this.registerSubView(this.nodeList);
+            this.$el.append(this.nodeList.render().el);
             return this;
         }
     });
@@ -182,6 +182,11 @@ function(utils, models, commonViews, dialogViews, nodesManagementPanelTemplate, 
             this.nodes.fetch = function(options) {
                 return this.constructor.__super__.fetch.call(this, _.extend({data: {cluster_id: ''}}, options));
             };
+            this.nodes.parse = function(response) {
+                return _.map(response, function(node) {
+                   return _.omit(node, 'pending_roles');
+                });
+            };
             this.nodes.fetch().done(_.bind(this.render, this));
             this.nodes.on('resize', this.render, this);
             this.scheduleUpdate();
@@ -196,10 +201,16 @@ function(utils, models, commonViews, dialogViews, nodesManagementPanelTemplate, 
             var nodeIds = utils.deserializeTabOptions(this.screenOptions[0]).nodes.split(',').map(function(id) {return parseInt(id, 10);});
             this.nodes = new models.Nodes(this.model.get('nodes').getByIds(nodeIds));
             this.nodes.cluster = this.model;
+            this.nodes.parse = function(response) {
+                return _.map(response, function(node) {
+                   return _.omit(node, 'pending_roles');
+                });
+            };
         },
         render: function() {
             this.constructor.__super__.render.apply(this, arguments);
             this.roles.render();
+            this.scheduleUpdate();
             return this;
         }
     });
@@ -215,13 +226,14 @@ function(utils, models, commonViews, dialogViews, nodesManagementPanelTemplate, 
         initialize: function(options) {
             _.defaults(this, options);
             this.nodes = this.screen.nodes;
+            this.cluster = this.screen.tab.model;
         },
         groupNodes: function(e) {
             var grouping = this.$(e.currentTarget).val();
             if (!(this.screen instanceof AddNodesScreen || this.screen instanceof EditNodesScreen)) {
-                app.page.tab.model.save({grouping: grouping}, {patch: true, wait: true});
+                this.cluster.save({grouping: grouping}, {patch: true, wait: true});
             }
-            this.screen.list.groupNodes(grouping);
+            this.screen.nodeList.groupNodes(grouping);
         },
         showDeleteNodesDialog: function() {
             var chosenNodesIds = this.screen.selectedNodes().map(function() {return parseInt($(this).val(), 10);}).get();
@@ -236,7 +248,7 @@ function(utils, models, commonViews, dialogViews, nodesManagementPanelTemplate, 
             var nodeIds = this.screen.roles.nodeIds;
             var nodes  = new models.Nodes(this.nodes.getByIds(nodeIds));
             if (!this.nodes.cluster) {
-                nodes.each(function(node) {node.set({cluster_id: app.page.tab.model.id, pending_addition: true});});
+                nodes.each(function(node) {node.set({cluster_id: this.cluster.id, pending_addition: true});}, this);
             }
             nodes.toJSON = function(options) {
                 return this.map(function(node) {
@@ -245,8 +257,8 @@ function(utils, models, commonViews, dialogViews, nodesManagementPanelTemplate, 
             };
             nodes.sync('update', nodes)
                 .done(_.bind(function() {
-                    app.page.tab.model.fetch();
-                    app.navigate('#cluster/' + app.page.tab.model.id + '/nodes', {trigger: true});
+                    this.cluster.fetch();
+                    app.navigate('#cluster/' + this.cluster.id + '/nodes', {trigger: true});
                     app.navbar.refresh();
                     app.page.removeFinishedTasks();
                 }, this))
@@ -259,7 +271,7 @@ function(utils, models, commonViews, dialogViews, nodesManagementPanelTemplate, 
             this.tearDownRegisteredSubViews();
             this.$el.html(this.template({
                 nodes: this.nodes,
-                cluster: app.page.tab.model,
+                cluster: this.cluster,
                 edit: this.screen instanceof EditNodesScreen
             }));
             return this;
@@ -328,12 +340,13 @@ function(utils, models, commonViews, dialogViews, nodesManagementPanelTemplate, 
             }, this);
             // non-ha deployment mode restriction: environment can not have more than one controller node
             if (this.cluster.get('mode') == 'multinode') {
+                var allocatedController = this.screen.tab.model.get('nodes').filter(function(node) {return _.contains(_.union(node.get('roles'), node.get('pending_roles')), 'controller');}).length;
                 var controllerSelected = this.$('input[value=controller]').is(':checked') || this.$('input[value=controller]').prop('indeterminate');
                 this.screen.$('.node-box:not(.node-offline):not(.node-error) input:not(:checked)').prop('disabled', controllerSelected);
-                if (this.nodeIds.length > 1) {
+                if (this.nodeIds.length > 1 || allocatedController) {
                     this.$('input[value=controller]').prop('disabled', true);
                 }
-                if (this.nodeIds.length > 1 || controllerSelected) {
+                if (this.nodeIds.length > 1 || controllerSelected || allocatedController) {
                     this.$('.role-conflict.controller').text('This role can not be assigned to more than one node in Multinode deployment mode.');
                 }
             }
@@ -351,7 +364,7 @@ function(utils, models, commonViews, dialogViews, nodesManagementPanelTemplate, 
         },
         initialize: function(options) {
             _.defaults(this, options);
-            this.cluster = app.page.tab.model;
+            this.cluster = this.screen.tab.model;
             this.roles = this.cluster.availableRoles();
         },
         render: function() {
@@ -373,17 +386,17 @@ function(utils, models, commonViews, dialogViews, nodesManagementPanelTemplate, 
             'change input[name=select-nodes-common]' : 'selectAllNodes'
         },
         availableNodes: function() {
-            return this.$('.node-box:not(.node-offline):not(.node-error)').length;
+            return this.$('.node-box:not(.node-offline):not(.node-error)');
         },
         selectAllNodes: function(e) {
             this.$('input[name=select-node-group]').prop('checked', this.$(e.currentTarget).is(':checked')).trigger('change');
         },
         calculateSelectAllTumblerState: function() {
-            this.$('input[name=select-nodes-common]').prop('checked', this.availableNodes() && this.$('.node-checkbox input:checked').length == this.availableNodes());
+            this.$('input[name=select-nodes-common]').prop('checked', this.availableNodes().length && this.$('.node-checkbox input:checked').length == this.availableNodes().length);
         },
         groupNodes: function(attribute) {
             if (_.isUndefined(attribute)) {
-                attribute = this.screen instanceof AddNodesScreen ? 'hardware' : app.page.tab.model.get('grouping');
+                attribute = this.screen instanceof AddNodesScreen ? 'hardware' : this.screen.tab.model.get('grouping');
             }
             if (attribute == 'roles') {
                 this.nodeGroups = this.nodes.groupBy(function(node) {return _.union(node.get('roles'), node.get('pending_roles')).join(' + ');});
@@ -404,7 +417,7 @@ function(utils, models, commonViews, dialogViews, nodesManagementPanelTemplate, 
                 var nodeGroupView = new NodeGroup({
                     groupLabel: groupLabel,
                     nodes: new models.Nodes(this.nodeGroups[groupLabel]),
-                    list: this
+                    nodeList: this
                 });
                 this.registerSubView(nodeGroupView);
                 this.$('.nodes').append(nodeGroupView.render().el);
@@ -435,7 +448,7 @@ function(utils, models, commonViews, dialogViews, nodesManagementPanelTemplate, 
         },
         calculateSelectAllTumblerState: function() {
             this.$('input[name=select-node-group]').prop('checked', this.availableNodes().length && this.$('.node-checkbox input:checked').length == this.availableNodes().length);
-            this.list.calculateSelectAllTumblerState();
+            this.nodeList.calculateSelectAllTumblerState();
         },
         initialize: function(options) {
             _.defaults(this, options);
@@ -454,7 +467,7 @@ function(utils, models, commonViews, dialogViews, nodesManagementPanelTemplate, 
             this.$el.html(this.template({
                 groupLabel: this.groupLabel,
                 nodes: this.nodes,
-                edit: this.list.screen instanceof EditNodesScreen
+                edit: this.nodeList.screen instanceof EditNodesScreen
             }));
             this.nodes.each(this.renderNode, this);
             this.calculateSelectAllTumblerState();
@@ -532,7 +545,7 @@ function(utils, models, commonViews, dialogViews, nodesManagementPanelTemplate, 
         },
         updateNode: function(data) {
             this.node.save(data, {patch: true, wait: true})
-                .done(function() {app.page.tab.model.get('nodes').fetch();})
+                .done(_.bind(function() {this.screen.tab.model.get('nodes').fetch();}, this))
                 .fail(function() {utils.showErrorDialog({title: "Can't discard node changes"});});
         },
         discardRoleChanges: function() {
@@ -562,7 +575,8 @@ function(utils, models, commonViews, dialogViews, nodesManagementPanelTemplate, 
         updateStatus: function() {
             this.$('.node-status').html(this.nodeStatusTemplate({
                 node: this.node,
-                logsLink: this.getLogsLink()
+                logsLink: this.getLogsLink(),
+                edit: this.screen instanceof EditNodesScreen
             }));
             this.$('.node-box').toggleClass('node-offline', !this.node.get('online'));
             this.updateProgress();
@@ -585,8 +599,7 @@ function(utils, models, commonViews, dialogViews, nodesManagementPanelTemplate, 
         },
         initialize: function(options) {
             _.defaults(this, options);
-            this.list = this.group.list;
-            this.screen = this.list.screen;
+            this.screen = this.group.nodeList.screen;
             this.eventNamespace = 'click.editnodename' + this.node.id;
             this.node.on('change:name change:online change:pending_roles', this.render, this);
             this.node.on('change:status change:pending_addition change:pending_deletion', this.updateStatus, this);
@@ -600,7 +613,8 @@ function(utils, models, commonViews, dialogViews, nodesManagementPanelTemplate, 
                 renaming: this.renaming,
                 renameable: this.renameable,
                 checked: this.checked,
-                edit: this.screen instanceof EditNodesScreen
+                edit: this.screen instanceof EditNodesScreen,
+                deployment: this.screen.tab.model.task('deploy', 'running')
             }, this.templateHelpers)));
             this.updateStatus();
             return this;

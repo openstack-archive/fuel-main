@@ -14,14 +14,15 @@
     </select>
   </div>
   <% if (clusterNodesScreen) { %>
+    <% var disabled = nodes.cluster.task('deploy', 'running') ? 'disabled' : '' %>
     <div class="cluster-toolbar-item pull-right">
       <button class="btn btn-danger btn-delete-nodes batch-action-btn" disabled>Delete Nodes</button>
     </div>
     <div class="cluster-toolbar-item pull-right">
-      <a class="btn btn-success btn-edit-nodes hide" href="#cluster/<%- cluster.id %>/nodes/edit">Edit Nodes</a>
+      <a class="btn btn-success btn-edit-nodes hide" href="#cluster/<%- cluster.id %>/nodes/edit" <%= disabled %>>Edit Nodes</a>
     </div>
     <div class="cluster-toolbar-item pull-right">
-      <a class="btn btn-success btn-add-nodes" href="#cluster/<%- cluster.id %>/nodes/add">Add Nodes</a>
+      <a class="btn btn-success btn-add-nodes" href="#cluster/<%- cluster.id %>/nodes/add" <%= disabled %>>Add Nodes</a>
     </div>
   <% } else { %>
     <div class="cluster-toolbar-item pull-right">
