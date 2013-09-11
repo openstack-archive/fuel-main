@@ -19,10 +19,20 @@ import json
 from pprint import pprint
 import sys
 import urllib2
+import os
 
 API_ROOT = "http://127.0.0.1:8000/api/"
 
 passive_arguments = ["eid", "action"]
+
+
+def debug(func):
+    def internal_func(*args, **kwargs):
+        if "orchestrator" in args[0]:
+            return json.loads(open("default.json", "r").read())
+        else:
+            return func(*args, **kwargs)
+    return internal_func
 
 
 class SetAction(argparse.Action):
@@ -315,16 +325,27 @@ def fact(params):
     """
     check_for_attributes(params, ["eid"])
 
+    cluster = json_api_get_request(
+        "clusters/{0}/"
+        .format(params.eid)
+    )
+    dir_name = os.path.join(
+        os.path.abspath(os.path.curdir
+                        if params.dir is None else params.dir),
+        "cluster_{id}".format(**cluster)
+    )
+
     if params.default:
         facts = json_api_get_request(
             "clusters/{0}/orchestrator/defaults"
             .format(params.eid)
         )
+        write_facts_to_dir(facts, dir_name)
     elif params.upload:
         json_api_put_request(
             "clusters/{0}/orchestrator/"
             .format(params.eid),
-            # parse_fact_files()
+            parse_fact_from_dir(dir_name)
         )
     elif params.delete:
         json_api_delete_request(
@@ -332,17 +353,44 @@ def fact(params):
             .format(params.eid),
         )
     else:
-        json_api_get_request(
+        facts = json_api_get_request(
             "clusters/{0}/orchestrator/"
             .format(params.eid),
         )
         if params.downloads:
-            pass
-            # write to directory
+            write_facts_to_dir(facts, dir_name)
         else:
-            pass
-            # write to stdout
-    print(facts)
+            pprint(facts)
+
+
+def parse_fact_from_dir(dir_name):
+    def read_json(path):
+        with open(path, "r") as json_file:
+            return [json.loads(json_file.read())]
+    return reduce(
+        list.__add__,
+        map(
+            read_json,
+            [os.path.join(dir_name, json_file)
+             for json_file in os.listdir(dir_name)
+             if json_file.endswith('.json')]
+        )
+    )
+
+
+def write_facts_to_dir(facts, dir_name):
+    if not os.path.exists(dir_name):
+        os.makedirs(dir_name)
+    for fact in facts:
+        fd = open(
+            os.path.join(
+                dir_name,
+                "{role}_{uid}.json".format(**fact)
+            ),
+            "w+"
+        )
+        fd.write(json.dumps(fact))
+        fd.close()
 
 
 def parse_node_ids(x):
@@ -760,6 +808,14 @@ actions = {
                 "action": "store_true",
                 "help": "Download default orchestrator data.",
                 "default": False
+            }
+        }, {
+            "args": ["-d", "--dir"],
+            "params": {
+                "dest": "dir",
+                "action": "store",
+                "help": "Directory with orchestrator data.",
+                "default": None
             }
         }]
     }
