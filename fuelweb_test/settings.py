@@ -17,8 +17,14 @@ import os
 
 ISO_PATH = os.environ.get('ISO_PATH')
 EMPTY_SNAPSHOT = os.environ.get('EMPTY_SNAPSHOT', 'empty')
+OPENSTACK_RELEASE = os.environ.get('OPENSTACK_RELEASE', 'Grizzly')
 
-INTERFACE_ORDER = ('internal', 'public', 'private')
+REDHAT_USERNAME = os.environ.get('REDHAT_USERNAME')
+REDHAT_PASSWORD = os.environ.get('REDHAT_PASSWORD')
+REDHAT_SATELLITE_HOST = os.environ.get('REDHAT_SATELLITE_HOST')
+REDHAT_ACTIVATION_KEY = os.environ.get('REDHAT_ACTIVATION_KEY')
+
+INTERFACE_ORDER = ('internal', 'public', 'private', 'nat')
 
 PUBLIC_FORWARD = os.environ.get('PUBLIC_FORWARD', None)
 
@@ -26,24 +32,28 @@ FORWARDING = {
     'public': PUBLIC_FORWARD,
     'internal': None,
     'private': None,
+    'nat': 'nat',
 }
 
 DHCP = {
     'public': False,
     'internal': False,
     'private': False,
+    'nat': True,
 }
 
 INTERFACES = {
     'internal': 'eth0',
     'public': 'eth1',
     'private': 'eth2',
+    'nat': 'eth3',
 }
 
 DEFAULT_POOLS = {
     'public': '10.108.0.0/16:24',
     'private': '10.108.0.0/16:24',
     'internal': '10.108.0.0/16:24',
+    'nat': '10.108.0.0/16:24',
 }
 
 POOLS = {
@@ -52,7 +62,9 @@ POOLS = {
     'private': os.environ.get('PRIVATE_POOL',
                               DEFAULT_POOLS.get('private')).split(':'),
     'internal': os.environ.get('INTERNAL_POOL',
-                               DEFAULT_POOLS.get('internal')).split(':')
+                               DEFAULT_POOLS.get('internal')).split(':'),
+    'nat': os.environ.get('NAT_POOL',
+                          DEFAULT_POOLS.get('nat')).split(':'),
 }
 
 NETWORK_MANAGERS = {

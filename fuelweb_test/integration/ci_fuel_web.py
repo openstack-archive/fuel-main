@@ -78,7 +78,7 @@ class CiFuelWeb(CiBase):
         params = {
             'ip': node.get_ip_address_by_network_name('internal'),
             'mask': self.internal_net_mask(),
-            'gw': self.internal_router(),
+            'gw': self.nat_router(),
             'hostname': '.'.join((self.hostname, self.domain))
         }
         keys = (
@@ -94,6 +94,36 @@ class CiFuelWeb(CiBase):
         ) % params
         return keys
 
+    def enable_nat_for_admin_node(self):
+        remote = self.nodes().admin.remote('internal', 'root', 'r00tme')
+
+        nat_interface_id = 5
+        file_name = \
+            '/etc/sysconfig/network-scripts/ifcfg-eth%s' % nat_interface_id
+        hwaddr = \
+            ''.join(remote.execute('grep HWADDR %s' % file_name)['stdout'])
+        uuid = ''.join(remote.execute('grep UUID %s' % file_name)['stdout'])
+        nameserver = os.popen(
+            "nmcli dev list | grep 'IP[46].DNS' | "
+            "sed -e 's/IP[46]\.DNS\[[0-9]\+\]:\s\+/nameserver /'| "
+            "grep -v 'nameserver\s\s*127.' | head -3").read()
+
+        remote.execute('echo -e "%s'
+                       '%s'
+                       'DEVICE=eth%s\\n'
+                       'TYPE=Ethernet\\n'
+                       'ONBOOT=yes\\n'
+                       'NM_CONTROLLED=no\\n'
+                       'BOOTPROTO=dhcp\\n'
+                       'PEERDNS=no" > %s'
+                       % (hwaddr, uuid, nat_interface_id, file_name))
+        remote.execute(
+            'sed "s/GATEWAY=.*/GATEWAY="%s"/g" -i /etc/sysconfig/network'
+            % self.nat_router())
+        remote.execute('echo -e "%s" > /etc/dnsmasq.upstream' % nameserver)
+        remote.execute('service network restart >/dev/null 2>&1')
+        remote.execute('service dnsmasq restart >/dev/null 2>&1')
+
     def setup_environment(self):
         # start admin node
         admin = self.nodes().admin
@@ -106,3 +136,5 @@ class CiFuelWeb(CiBase):
         admin.await('internal', timeout=10 * 60)
         self.wait_bootstrap()
         time.sleep(10)
+        self.enable_nat_for_admin_node()
+        self.environment().snapshot(EMPTY_SNAPSHOT)

@@ -133,9 +133,15 @@ class CiBase(object):
                 self.environment().network_by_name('public').ip_network)[1])
 
     def internal_router(self):
+        return self._router('internal')
+
+    def nat_router(self):
+        return self._router('nat')
+
+    def _router(self, router_name):
         return str(
             IPNetwork(
-                self.environment().network_by_name('internal').ip_network)[1])
+                self.environment().network_by_name(router_name).ip_network)[1])
 
     def get_host_node_ip(self):
         return self.internal_router()
