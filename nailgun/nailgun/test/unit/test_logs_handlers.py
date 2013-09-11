@@ -255,8 +255,7 @@ class TestLogs(BaseIntegrationTest):
                         ],
                         'slave': []
                     }
-                }
-    )
+                })
     def test_snapshot_conf(self):
         self.env.create_node(
             status='ready',
@@ -305,7 +304,6 @@ class TestLogs(BaseIntegrationTest):
         args, kwargs = nailgun.task.task.rpc.cast.call_args
         self.assertEquals(len(args), 2)
         self.datadiff(args[1], message)
-
 
     def test_snapshot_task_manager(self):
         tm = DumpTaskManager()
