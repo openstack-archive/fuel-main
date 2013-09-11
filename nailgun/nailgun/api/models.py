@@ -59,8 +59,7 @@ class PendingNodeRoles(Base):
 class Role(Base):
     __tablename__ = 'roles'
     id = Column(Integer, primary_key=True)
-    release_id = Column(Integer, ForeignKey('releases.id', ondelete='CASCADE'),
-                        nullable=False)
+    release_id = Column(Integer, ForeignKey('releases.id', ondelete='CASCADE'))
     name = Column(String(50), nullable=False)
 
 
@@ -322,17 +321,7 @@ class Node(Base):
 
     @roles.setter
     def roles(self, new_roles):
-        available_roles = []
-        try:
-            available_roles = self.cluster.release.role_list
-        except AttributeError:
-            pass
-        old_roles = self.roles
-        for role in new_roles:
-            if role not in old_roles:
-                new_role = filter(lambda r: r.name == role, available_roles)
-                if new_role:
-                    self.role_list.append(new_role[0])
+        self.role_list = map(lambda role: Role(name=role), new_roles)
         db().commit()
 
     @property
@@ -341,13 +330,9 @@ class Node(Base):
 
     @pending_roles.setter
     def pending_roles(self, new_roles):
-        available_roles = []
-        try:
-            available_roles = self.cluster.release.role_list
-        except AttributeError:
-            pass
-        self.pending_role_list = filter(lambda r: r.name in new_roles,
-                                        available_roles)
+        self.pending_role_list = map(
+            lambda role: Role(name=role), new_roles)
+
         db().commit()
 
     def _check_interface_has_required_params(self, iface):
