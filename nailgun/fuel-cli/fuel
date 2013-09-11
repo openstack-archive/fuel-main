@@ -20,6 +20,7 @@ from pprint import pprint
 import sys
 import urllib2
 import os
+import shutil
 
 API_ROOT = "http://127.0.0.1:8000/api/"
 
@@ -261,7 +262,7 @@ def node(params):
             lambda node_id: {
                 "id": node_id,
                 "cluster_id": params.eid,
-                "role": role,
+                "roles": [role],
                 "pending_addition": True,
                 "pending_deletion": False
             },
@@ -323,14 +324,10 @@ def fact(params):
     """
     check_for_attributes(params, ["eid"])
 
-    cluster = json_api_get_request(
-        "clusters/{0}/"
-        .format(params.eid)
-    )
     dir_name = os.path.join(
         os.path.abspath(os.path.curdir
                         if params.dir is None else params.dir),
-        "cluster_{id}".format(**cluster)
+        "cluster_{0}".format(params.eid)
     )
 
     if params.default:
@@ -340,11 +337,12 @@ def fact(params):
         )
         write_facts_to_dir(facts, dir_name)
     elif params.upload:
-        json_api_put_request(
+        put_response = json_api_put_request(
             "clusters/{0}/orchestrator/"
             .format(params.eid),
             parse_fact_from_dir(dir_name)
         )
+        pprint(put_response)
     elif params.delete:
         json_api_delete_request(
             "clusters/{0}/orchestrator/"
@@ -355,7 +353,13 @@ def fact(params):
             "clusters/{0}/orchestrator/"
             .format(params.eid),
         )
-        if params.downloads:
+        if not facts:
+            print(
+                "Environment with id={0} has no facts.\n"
+                .format(params.eid)
+            )
+            return
+        if params.download:
             write_facts_to_dir(facts, dir_name)
         else:
             pprint(facts)
@@ -377,9 +381,11 @@ def parse_fact_from_dir(dir_name):
 
 
 def write_facts_to_dir(facts, dir_name):
-    if not os.path.exists(dir_name):
-        print("directory {0} was created".format(dir_name))
-        os.makedirs(dir_name)
+    if os.path.exists(dir_name):
+        shutil.rmtree(dir_name)
+        print("old directory {0} was removed".format(dir_name))
+    os.makedirs(dir_name)
+    print("directory {0} was created".format(dir_name))
     for fact in facts:
         fd = open(
             os.path.join(
