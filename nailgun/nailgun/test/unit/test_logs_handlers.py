@@ -23,14 +23,23 @@ import tarfile
 import tempfile
 import time
 import unittest
+from mock import Mock
+from mock import patch
 
 from nailgun.test.base import BaseIntegrationTest
 from nailgun.test.base import reverse
 
 from nailgun.settings import settings
 
+import nailgun
 from nailgun.api.handlers.logs import read_backwards
 from nailgun.api.models import RedHatAccount
+from nailgun.errors import errors
+from nailgun.settings import settings
+from nailgun.task.manager import DumpTaskManager
+from nailgun.task.task import DumpTask
+from nailgun.test.base import fake_tasks
+from nailgun.test.base import reverse
 
 
 class TestLogs(BaseIntegrationTest):
@@ -231,22 +240,22 @@ class TestLogs(BaseIntegrationTest):
                 f.flush()
 
     @patch.dict('nailgun.task.task.settings.DUMP',
-        {
-            'dump_roles': {
-                'master': [],
-                'slave': []
-            },
-            'dump_objects': {
-                'master': [
-                    {
-                        'type': 'subs',
-                        'path': '/var/log/remote',
-                        'subs': {}
+                {
+                    'dump_roles': {
+                        'master': [],
+                        'slave': []
+                    },
+                    'dump_objects': {
+                        'master': [
+                            {
+                                'type': 'subs',
+                                'path': '/var/log/remote',
+                                'subs': {}
+                            }
+                        ],
+                        'slave': []
                     }
-                ],
-                'slave': []
-            }
-        }
+                }
     )
     def test_snapshot_conf(self):
         self.env.create_node(
@@ -338,8 +347,10 @@ class TestLogs(BaseIntegrationTest):
         tm_patcher = patch('nailgun.api.handlers.logs.DumpTaskManager')
         tm_mocked = tm_patcher.start()
         tm_instance = tm_mocked.return_value
+
         def raiser():
             raise Exception()
+
         tm_instance.execute.side_effect = raiser
         resp = self.app.put(
             reverse('LogPackageHandler'), "[]",

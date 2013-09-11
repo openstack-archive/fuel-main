@@ -24,9 +24,9 @@ from sqlalchemy.orm import object_mapper
 from nailgun.api.models import NetworkGroup
 from nailgun.api.models import Node
 from nailgun.api.models import NodeNICInterface
+from nailgun.api.models import RedHatAccount
 from nailgun.api.models import Release
 from nailgun.db import db
-from nailgun.api.models import RedHatAccount
 from nailgun.errors import errors
 from nailgun.logger import logger
 from nailgun.network.manager import NetworkManager
@@ -698,9 +698,9 @@ class DumpTask(object):
 
 
 def dump():
-    from shotgun.manager import Manager as ShotgunManager
     from shotgun.config import Config as ShotgunConfig
+    from shotgun.manager import Manager as ShotgunManager
     logger.debug("Starting snapshot procedure")
     conf = ShotgunConfig(DumpTask.conf())
     manager = ShotgunManager(conf)
-    print manager.snapshot()
+    print(manager.snapshot())

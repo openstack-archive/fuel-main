@@ -22,6 +22,8 @@ from mock import patch
 
 import nailgun
 from nailgun.api.models import IPAddr
+from nailgun.api.models import IPAddrRange
+from nailgun.api.models import Network
 from nailgun.api.models import NetworkGroup
 from nailgun.api.models import NodeNICInterface
 from nailgun.network.manager import NetworkManager
