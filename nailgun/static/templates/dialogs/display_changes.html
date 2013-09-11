@@ -5,26 +5,24 @@
 <div class="modal-body display-changes-dialog">
 
   <!-- Changes list -->
-  <div class="deploy-task-name header">Nodes changes</div>
   <% var addedNodes = cluster.get('nodes').where({pending_addition: true}).length %>
   <% if (addedNodes) { %>
-    <div class="deploy-task-name">Added <%= addedNodes %> node<%= addedNodes != 1 ? 's' : '' %> </div>
+    <div class="deploy-task-name">Added <%= addedNodes %> node<%= addedNodes != 1 ? 's' : '' %>. </div>
   <% } %>
   <% var deletedNodes = cluster.get('nodes').where({pending_deletion: true}).length %>
   <% if (deletedNodes) { %>
-    <div class="deploy-task-name">Deleted <%= deletedNodes %> node<%= deletedNodes != 1 ? 's' : '' %> </div>
+    <div class="deploy-task-name">Deleted <%= deletedNodes %> node<%= deletedNodes != 1 ? 's' : '' %>. </div>
   <% } %>
   <% var reconfiguredNodes = cluster.get('nodes').filter(function(node) {return !node.get('pending_addition') && !node.get('pending_deletion') && !_.isEmpty(node.get('pending_roles'));}).length %>
   <% if (reconfiguredNodes) { %>
-    <div class="deploy-task-name">Reconfigured roles of <%= reconfiguredNodes %> node<%= reconfiguredNodes != 1 ? 's' : '' %> </div>
+    <div class="deploy-task-name">Reconfigured roles of <%= reconfiguredNodes %> node<%= reconfiguredNodes != 1 ? 's' : '' %>. </div>
   <% } %>
 
-  <div class="deploy-task-name header">Settings changes</div>
   <%
     var settingsChangesDescriptions = {
       'attributes': 'OpenStack settings',
       'networks': 'Network settings',
-      'disks': 'Disk configuration was changed on the following nodes:'
+      'disks': 'Changed disk configuration of the following nodes:'
     }
   %>
   <% var nodes = [];
@@ -32,13 +30,15 @@
       if (_.isArray(change)) {
         nodes.push(_.last(change));
       } else { %>
-        <div class="deploy-task-name">Changed <%= settingsChangesDescriptions[change] %></div>
+        <div class="deploy-task-name">Changed <%= settingsChangesDescriptions[change] %>.</div>
   <% }}) %>
   <% if (nodes.length) { %>
     <div class="deploy-task-item"><%= settingsChangesDescriptions.disks %></div>
     <ul>
       <% _.each(nodes, function(node) { %>
-        <li><%= cluster.get('nodes').get(node).get('name') %></li>
+        <% if (cluster.get('nodes').get(node)) { %>
+          <li><%= cluster.get('nodes').get(node).get('name') %></li>
+        <% } %>
       <% }) %>
     </ul>
   <% } %>

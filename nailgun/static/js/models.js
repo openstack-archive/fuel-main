@@ -146,7 +146,7 @@ define(['utils'], function(utils) {
         },
         hasChanges: function() {
             return !!this.filter(function(node) {
-                return node.get('pending_addition') || node.get('pending_deletion');
+                return node.get('pending_addition') || node.get('pending_deletion') || node.get('pending_roles').length;
             }).length;
         },
         currentNodes: function() {

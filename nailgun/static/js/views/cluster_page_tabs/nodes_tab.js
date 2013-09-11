@@ -262,6 +262,7 @@ function(utils, models, commonViews, dialogViews, nodesManagementPanelTemplate, 
                     app.navigate('#cluster/' + this.cluster.id + '/nodes', {trigger: true});
                     app.navbar.refresh();
                     app.page.removeFinishedTasks();
+                    app.page.deploymentControl.render();
                 }, this))
                 .fail(_.bind(function() {
                     this.$('.btn-apply').prop('disabled', false);
@@ -561,7 +562,10 @@ function(utils, models, commonViews, dialogViews, nodesManagementPanelTemplate, 
         },
         updateNode: function(data) {
             this.node.save(data, {patch: true, wait: true})
-                .done(_.bind(function() {this.screen.tab.model.get('nodes').fetch();}, this))
+                .done(_.bind(function() {
+                    this.screen.tab.model.get('nodes').fetch();
+                    app.page.deploymentControl.render();
+                }, this))
                 .fail(function() {utils.showErrorDialog({title: "Can't discard node changes"});});
         },
         discardRoleChanges: function() {

@@ -11,8 +11,7 @@
     <% var releaseAvailable = cluster.get('release').get('state') == 'available' %>
     <div class="deployment-control-item-box"><button class="deploy-btn <%= releaseAvailable && (cluster.hasChanges() || cluster.needsRedeployment()) ? '' : 'disabled' %>"><i class="icon-upload-cloud"></i> Deploy Changes</button></div>
     <div class="deployment-control-item-box">
-      <% var changedNodes = cluster.get('nodes').filter(function(node) {return node.get('pending_addition') || node.get('pending_deletion') || node.get('pending_roles').length;}).length %>
-      <% if (changedNodes) { %>
+      <% if (cluster.get('nodes').hasChanges()) { %>
         <button class="btn rollback" role="button" title="Discard Changes"><i class="icon-back-in-time"></i></button>
       <% } %>
     </div>
