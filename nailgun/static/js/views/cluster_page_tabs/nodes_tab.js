@@ -564,6 +564,7 @@ function(utils, models, commonViews, dialogViews, nodesManagementPanelTemplate, 
             this.node.save(data, {patch: true, wait: true})
                 .done(_.bind(function() {
                     this.screen.tab.model.get('nodes').fetch();
+                    this.screen.nodeList.groupNodes();
                     app.page.deploymentControl.render();
                 }, this))
                 .fail(function() {utils.showErrorDialog({title: "Can't discard node changes"});});
