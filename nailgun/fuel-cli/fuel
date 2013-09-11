@@ -122,7 +122,7 @@ def json_api_put_request(api, data):
     """Make PUT request to specific API with some data
     """
     opener = urllib2.build_opener(urllib2.HTTPHandler)
-    request = urllib2.Request(API_ROOT + api, data=data)
+    request = urllib2.Request(API_ROOT + api, data=json.dumps(data))
     request.add_header('Content-Type', ' application/json')
     request.get_method = lambda: 'PUT'
     try:
@@ -218,7 +218,6 @@ def environment(params):
         pprint(post_response)
         if params.mode:
             data = {"mode": params.mode}
-            data = json.dumps(data)
             put_response = json_api_put_request(
                 "clusters/{0}".format(post_response[u"id"]),
                 data
@@ -232,7 +231,6 @@ def environment(params):
                 data["mode"] = params.mode
             if params.ename:
                 data["name"] = params.ename
-            data = json.dumps(data)
             put_response = json_api_put_request(
                 "clusters/{0}".format(params.eid),
                 data
@@ -269,7 +267,7 @@ def node(params):
             },
             node_ids
         )
-        put_response = json_api_put_request("nodes/", json.dumps(data))
+        put_response = json_api_put_request("nodes/", data)
         pprint(put_response)
 
 
@@ -315,7 +313,7 @@ def deploy(params):
     check_for_attributes(params, ["eid"])
     put_response = json_api_put_request(
         "clusters/{0}/changes".format(params.eid),
-        "{}"
+        {}
     )
     pprint(put_response)
 
