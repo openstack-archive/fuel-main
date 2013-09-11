@@ -20,8 +20,6 @@ import subprocess
 import netaddr
 from sqlalchemy.orm import ColumnProperty
 from sqlalchemy.orm import object_mapper
-from shotgun.manager import Manager as ShotgunManager
-from shotgun.config import Config as ShotgunConfig
 
 from nailgun.api.models import NetworkGroup
 from nailgun.api.models import Node
@@ -700,6 +698,8 @@ class DumpTask(object):
 
 
 def dump():
+    from shotgun.manager import Manager as ShotgunManager
+    from shotgun.config import Config as ShotgunConfig
     logger.debug("Starting snapshot procedure")
     conf = ShotgunConfig(DumpTask.conf())
     manager = ShotgunManager(conf)

@@ -41,6 +41,7 @@ from nailgun.api.models import NodeAttributes
 from nailgun.api.models import NodeNICInterface
 from nailgun.api.models import Notification
 from nailgun.api.models import Release
+from nailgun.api.models import RedHatAccount
 from nailgun.api.models import Task
 from nailgun.api.urls import urls
 from nailgun.db import db
@@ -251,6 +252,26 @@ class Environment(object):
             self.nodes.append(node)
 
         return node
+
+    def create_rh_account(self, **kwargs):
+        username = kwargs.pop("username", "rh_username")
+        password = kwargs.pop("password", "rh_password")
+        license_type = kwargs.pop("license_type", "rhsm")
+        rh_account = RedHatAccount(
+            username=username,
+            password=password,
+            license_type=license_type,
+            **kwargs
+        )
+        self.db.add(rh_account)
+        self.db.commit()
+        return rh_account
+
+    def create_task(self, **kwargs):
+        task = Task(**kwargs)
+        self.db.add(task)
+        self.db.commit()
+        return task
 
     def create_attributes(self):
         return NodeAttributes()

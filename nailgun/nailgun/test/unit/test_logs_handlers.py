@@ -230,8 +230,127 @@ class TestLogs(BaseIntegrationTest):
                 f.write(':'.join(log_entry) + '\n')
                 f.flush()
 
-    @unittest.skip("it's not right for now")
-    def test_log_package_handler(self):
+    @patch.dict('nailgun.task.task.settings.DUMP',
+        {
+            'dump_roles': {
+                'master': [],
+                'slave': []
+            },
+            'dump_objects': {
+                'master': [
+                    {
+                        'type': 'subs',
+                        'path': '/var/log/remote',
+                        'subs': {}
+                    }
+                ],
+                'slave': []
+            }
+        }
+    )
+    def test_snapshot_conf(self):
+        self.env.create_node(
+            status='ready',
+            name='node1',
+            fqdn='node1.domain.tld'
+        )
+        self.env.create_rh_account(
+            username='RHUSER',
+            password='RHPASS'
+        )
+        conf = {
+            'dump_roles': {
+                'master': [],
+                'slave': ['node1.domain.tld']
+            },
+            'dump_objects': {
+                'master': [
+                    {
+                        'type': 'subs',
+                        'path': '/var/log/remote',
+                        'subs': {
+                            'RHUSER': 'substituted_username',
+                            'RHPASS': 'substituted_password'
+                        }
+                    }
+                ],
+                'slave': []
+            }
+        }
+        self.datadiff(DumpTask.conf(), conf)
+
+    @patch.dict('nailgun.task.task.settings.DUMP', {'lastdump': 'LASTDUMP'})
+    @fake_tasks(fake_rpc=False, mock_rpc=False)
+    @patch('nailgun.rpc.cast')
+    def test_snapshot_cast(self, mocked_rpc):
+        task = self.env.create_task(name='dump')
+        DumpTask.execute(task)
+        message = {
+            'method': 'dump_environment',
+            'respond_to': 'dump_environment_resp',
+            'args': {
+                'task_uuid': task.uuid,
+                'lastdump': 'LASTDUMP'
+            }
+        }
+        args, kwargs = nailgun.task.task.rpc.cast.call_args
+        self.assertEquals(len(args), 2)
+        self.datadiff(args[1], message)
+
+
+    def test_snapshot_task_manager(self):
+        tm = DumpTaskManager()
+        mock = Mock(return_value=None)
+        tm._call_silently = mock
+        task = tm.execute()
+        mock.assert_called_once_with(task, DumpTask)
+
+    def test_snapshot_task_manager_already_running(self):
+        self.env.create_task(name="dump")
+        tm = DumpTaskManager()
+        self.assertRaises(errors.DumpRunning, tm.execute)
+
+    def test_log_package_handler_ok(self):
+        task = json.dumps({
+            "status": "running",
+            "name": "dump",
+            "progress": 0,
+            "message": None,
+            "id": 1,
+            "uuid": "00000000-0000-0000-0000-000000000000"
+        })
+        tm_patcher = patch('nailgun.api.handlers.logs.DumpTaskManager')
+        th_patcher = patch('nailgun.api.handlers.logs.TaskHandler')
+        tm_mocked = tm_patcher.start()
+        th_mocked = th_patcher.start()
+        tm_instance = tm_mocked.return_value
+        tm_instance.execute.return_value = task
+        th_mocked.render.side_effect = lambda x: x
+        resp = self.app.put(
+            reverse('LogPackageHandler'), "[]", headers=self.default_headers
+        )
+        tm_patcher.stop()
+        th_patcher.stop()
+        self.assertEquals(task, resp.body)
+        self.assertEquals(resp.status, 200)
+
+    def test_log_package_handler_failed(self):
+        tm_patcher = patch('nailgun.api.handlers.logs.DumpTaskManager')
+        tm_mocked = tm_patcher.start()
+        tm_instance = tm_mocked.return_value
+        def raiser():
+            raise Exception()
+        tm_instance.execute.side_effect = raiser
+        resp = self.app.put(
+            reverse('LogPackageHandler'), "[]",
+            headers=self.default_headers,
+            expect_errors=True
+        )
+        tm_patcher.stop()
+        self.assertEquals(resp.status, 400)
+
+    @unittest.skip("will be partly moved to shotgun")
+    def test_log_package_handler_old(self):
         f = tempfile.NamedTemporaryFile(mode='r+b')
         f.write('testcontent')
         f.flush()
@@ -244,7 +363,7 @@ class TestLogs(BaseIntegrationTest):
         f.close()
         m.close()
 
-    @unittest.skip("it's not right for now")
+    @unittest.skip("will be partly moved to shotgun")
     def test_log_package_handler_sensitive(self):
         account = RedHatAccount()
         account.username = "REDHATUSERNAME"
@@ -265,7 +384,7 @@ class TestLogs(BaseIntegrationTest):
         f.close()
         m.close()
 
-    @unittest.skip("it's not right for now")
+    @unittest.skip("will be partly moved to shotgun")
     def test_log_package_handler_sensitive_gz(self):
         account = RedHatAccount()
         account.username = "REDHATUSERNAME"
