@@ -415,7 +415,7 @@ function(utils, models, commonViews, dialogViews, nodesManagementPanelTemplate, 
                 attribute = this.screen instanceof AddNodesScreen ? 'hardware' : this.screen.tab.model.get('grouping');
             }
             if (attribute == 'roles') {
-                this.nodeGroups = this.nodes.groupBy(function(node) {return _.union(node.get('roles'), node.get('pending_roles')).join(' + ');});
+                this.nodeGroups = this.nodes.groupBy(function(node) {return node.sortRoles().join(' + ');});
             } else if (attribute == 'hardware') {
                 this.nodeGroups = this.nodes.groupBy(function(node) {return 'HDD: ' + utils.showDiskSize(node.resource('hdd')) + ' RAM: ' + utils.showMemorySize(node.resource('ram'));});
             } else {

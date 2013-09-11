@@ -134,6 +134,12 @@ define(['utils'], function(utils) {
                 resource = 0;
             }
             return resource;
+        },
+        sortRoles: function() {
+            var preferredOrder = ['controller', 'compute', 'cinder'];
+            return _.union(this.get('roles'), this.get('pending_roles')).sort(function(a, b) {
+                return _.indexOf(preferredOrder, a) - _.indexOf(preferredOrder, b);
+            });
         }
     });
 
