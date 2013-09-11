@@ -355,7 +355,7 @@ function(utils, models, commonViews, dialogViews, nodesManagementPanelTemplate, 
             }, this);
             // non-ha deployment mode restriction: environment can not have more than one controller node
             if (this.cluster.get('mode') == 'multinode') {
-                var allocatedController = this.screen.tab.model.get('nodes').filter(function(node) {return _.contains(_.union(node.get('roles'), node.get('pending_roles')), 'controller');}).length;
+                var allocatedController = this.screen.tab.model.get('nodes').filter(function(node) {return !node.get('pending_deletion') && _.contains(_.union(node.get('roles'), node.get('pending_roles')), 'controller');}).length;
                 var controllerSelected = this.$('input[value=controller]').is(':checked') || this.$('input[value=controller]').prop('indeterminate');
                 this.screen.$('.node-box:not(.node-offline):not(.node-error) input:not(:checked)').prop('disabled', controllerSelected);
                 if (this.nodeIds.length > 1 || allocatedController) {
