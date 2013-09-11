@@ -16,6 +16,7 @@
 import logging
 from fuelweb_test.helpers import HTTPClient
 from fuelweb_test.integration.decorators import debug, json_parse
+from fuelweb_test.settings import OPENSTACK_RELEASE
 
 
 logger = logging.getLogger(__name__)
@@ -118,6 +119,11 @@ class NailgunClient(object):
 
     @logwrap
     @json_parse
+    def get_tasks(self):
+        return self.client.get("/api/tasks")
+
+    @logwrap
+    @json_parse
     def get_releases(self):
         return self.client.get("/api/releases/")
 
@@ -127,9 +133,9 @@ class NailgunClient(object):
         return self.client.get("/api/nodes/%s/disks" % disk_id)
 
     @logwrap
-    def get_grizzly_release_id(self):
+    def get_release_id(self, release_name=OPENSTACK_RELEASE):
         for release in self.get_releases():
-            if release["name"].find("Grizzly") != -1:
+            if release["name"].find(release_name) != -1:
                 return release["id"]
 
     @logwrap
@@ -228,3 +234,8 @@ class NailgunClient(object):
     @json_parse
     def get_notifications(self):
         return self.client.get("/api/notifications")
+
+    @logwrap
+    @json_parse
+    def update_redhat_setup(self, data):
+        return self.client.post("/api/redhat/setup", data=data)
