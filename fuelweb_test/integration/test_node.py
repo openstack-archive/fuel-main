@@ -360,7 +360,6 @@ class TestNode(BaseNodeTestCase):
         task = self._run_network_verify(cluster_id)
         self.assertTaskSuccess(task, 60 * 2)
 
-
     @snapshot_errors
     @logwrap
     @fetch_logs
@@ -396,7 +395,6 @@ class TestNode(BaseNodeTestCase):
 
         # select networks that will be untagged:
         [net.update(vlan_turn_off) for net in nets]
-                    # if net["name"] in nets_to_be_checked:
 
         # stop using VLANs:
         self.client.update_network(cluster_id,
