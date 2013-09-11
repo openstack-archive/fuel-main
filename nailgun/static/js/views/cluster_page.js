@@ -45,9 +45,9 @@ function(utils, models, commonViews, dialogViews, NodesTab, NetworkTab, Settings
             {url: 'nodes', title: 'Nodes'},
             {url: 'network', title: 'Networks'},
             {url: 'settings', title: 'Settings'},
-            {url: 'actions', title: 'Actions'},
             {url: 'logs', title: 'Logs'},
-            {url: 'healthcheck', title: 'Health Check'}
+            {url: 'healthcheck', title: 'Health Check'},
+            {url: 'actions', title: 'Actions'}
         ],
         updateInterval: 5000,
         template: _.template(clusterPageTemplate),
