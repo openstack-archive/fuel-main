@@ -29,11 +29,19 @@ PATH="/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin"
 
 # functions
 
-GlobalPaths() {
+GlobalVars() {
+  # where built iso's should be placed
   ISO_DIR="${ISO_DIR:=/var/www/fuelweb-iso}"
+  # name of iso file
   export ISO_NAME="${JOB_NAME%.*}.iso"
+  # full path where iso file should be placed
   export ISO_PATH="${ISO_DIR}/${ISO_NAME}"
+  # what task should be ran
   TASK_NAME="${JOB_NAME##*.}"
+  # do we want to keep iso's for each build or just copy over single file
+  ROTATE_ISO="${ROTATE_ISO:=yes}"
+  # what mirror should be used during iso building process
+  export USE_MIRROR="${USE_MIRROR:=srt}"
 }
 
 CheckVariables() {
@@ -57,28 +65,25 @@ MakeISO() {
   # running this script
   # it's value will be used instead
 
-  USE_MIRROR="${USE_MIRROR:=srt}"
-  export USE_MIRROR
-
   # clean previous garbage
   make deep_clean
-  ec=$?
+  ec="${?}"
 
-  if [ $ec -gt 0 ]; then
+  if [ "${ec}" -gt "0" ]; then
     echo "Error! Deep clean failed!"
-    exit $ec
+    exit "${ec}"
   fi
 
   # create ISO file
   make iso
   ec=$?
 
-  if [ $ec -gt 0 ]; then
+  if [ "${ec}" -gt "0" ]; then
     echo "Error! Make ISO!"
-    exit $ec
+    exit "${ec}"
   fi
 
-  ISO=`ls ${WORKSPACE}/build/iso/*.iso | head -n 1`
+  ISO="`ls ${WORKSPACE}/build/iso/*.iso | head -n 1`"
 
   # check that ISO file exists
   if [ ! -f "${ISO}" ]; then
@@ -90,12 +95,42 @@ MakeISO() {
   mkdir -p "${ISO_DIR}"
 
   # copy ISO file to storage dir
-  cp "${ISO}" "${ISO_PATH}"
-  ec=$?
+  # if rotation is enabled and build number is aviable
+  # save iso to tagged file and symlink to the last build
+  # if rotation is not enabled just copy iso to iso_dir
 
-  if [ $ec -gt 0 ]; then
+  if [ "${ROTATE_ISO}" = "yes" -a "${BUILD_NUMBER}" != "" ]; then
+    # copy iso file to ISO_DIR with revision tagged name
+    NEW_BUILD_ISO_PATH="${ISO_PATH#.iso}_${BUILD_NUMBER}.iso"
+    cp "${ISO}" "${NEW_BUILD_ISO_PATH}"
+    ec=$?
+
+    if [ "${ec}" -gt "0" ]; then
+      echo "Error! Copy ${ISO} to ${NEW_BUILD_ISO_PATH} failed!"
+      exit "${ec}"
+    fi
+
+    # create symlink to the last built ISO file
+    ln -sf "${NEW_BUILD_ISO_PATH}" "${ISO_PATH}"
+    ec=$?
+
+    if [ "${ec}" -gt "0" ]; then
+      echo "Error! Create symlink from ${NEW_BUILD_ISO_PATH} to ${ISO_PATH} failed!"
+      exit "${ec}"
+    fi
+  else
+    cp "${ISO}" "${ISO_PATH}"
+    ec=$?
+
+    if [ "${ec}" -gt "0" ]; then
+      echo "Error! Copy ${ISO} to ${ISO_PATH} failed!"
+      exit "${ec}"
+    fi
+  fi
+
+  if [ "${ec}" -gt "0" ]; then
     echo "Error! Copy ISO from ${ISO} to ${ISO_PATH} failed!"
-    exit $ec
+    exit "${ec}"
   fi
   echo "Finished building ISO: ${ISO_PATH}"
   exit 0
@@ -103,6 +138,15 @@ MakeISO() {
 
 RunTest() {
   # Run test selected by task name
+
+  # first we chdir into our working directory
+  cd "${WORKSPACE}"
+  ec=$?
+
+  if [ "${ec}" -gt "0" ]; then
+    echo "Error! Cannot cd to WORKSPACE!"
+    exit "${ec}"
+  fi
 
   # check if iso file exists
   if [ ! -f "${ISO_PATH}" ]; then
@@ -121,11 +165,9 @@ RunTest() {
 
   # run python test set to create environments, deploy and test product
   nosetests -w "fuelweb_test" -s -l DEBUG --with-xunit "${1}"
+  ec=$?
 
-  # remove created environment
-  dos.py destroy "${ENV_NAME}"
-
-  exit 0
+  exit "${ec}"
 }
 
 RouteTasks() {
@@ -157,5 +199,5 @@ RouteTasks() {
 
 # MAIN
 CheckVariables
-GlobalPaths
+GlobalVars
 RouteTasks
