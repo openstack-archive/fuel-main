@@ -420,6 +420,8 @@ function(utils, models, commonViews, dialogViews, nodesManagementPanelTemplate, 
                 this.nodeGroups = this.nodes.groupBy(function(node) {return _.union(node.get('roles'), node.get('pending_roles')).join(' + ') + ' + HDD: ' + utils.showDiskSize(node.resource('hdd')) + ' RAM: ' + utils.showMemorySize(node.resource('ram'));});
             }
             this.renderNodeGroups();
+            this.screen.calculateBatchActionsButtonsState();
+            this.screen.showEditNodesButton();
         },
         initialize: function(options) {
             _.defaults(this, options);
