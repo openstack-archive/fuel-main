@@ -15,6 +15,7 @@
 
 import logging
 import unittest
+from nose.plugins.attrib import attr
 from fuelweb_test.integration.base_node_test_case import BaseNodeTestCase
 from fuelweb_test.integration.decorators import snapshot_errors, \
     debug, fetch_logs
@@ -32,6 +33,7 @@ class TestNode(BaseNodeTestCase):
     @snapshot_errors
     @logwrap
     @fetch_logs
+    @attr(releases=['centos'])
     def test_ha_cluster_flat(self):
         cluster_id = self.prepare_environment(
             name="ha_flat",
@@ -55,6 +57,7 @@ class TestNode(BaseNodeTestCase):
     @snapshot_errors
     @logwrap
     @fetch_logs
+    @attr(releases=['centos'])
     def test_ha_add_compute(self):
         cluster_id = self.prepare_environment(
             name="ha_flat",

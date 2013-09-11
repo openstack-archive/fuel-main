@@ -22,7 +22,7 @@ from fuelweb_test.helpers import Ebtables
 from fuelweb_test.integration.base_test_case import BaseTestCase
 from fuelweb_test.integration.decorators import debug
 from fuelweb_test.nailgun_client import NailgunClient
-from fuelweb_test.settings import CLEAN, NETWORK_MANAGERS, EMPTY_SNAPSHOT
+from fuelweb_test.settings import CLEAN, NETWORK_MANAGERS, EMPTY_SNAPSHOT, REDHAT_USERNAME, REDHAT_PASSWORD, REDHAT_SATELLITE_HOST, REDHAT_ACTIVATION_KEY
 
 logger = logging.getLogger(__name__)
 logwrap = debug(logger)
@@ -251,8 +251,12 @@ class BaseNodeTestCase(BaseTestCase):
         return self.client.get_ostf_test_run(cluster_id)
 
     @logwrap
+    def _tasks_wait(self, tasks, timeout):
+        return [self._task_wait(task, timeout) for task in tasks]
+
+    @logwrap
     def _upload_sample_release(self):
-        release_id = self.client.get_grizzly_release_id()
+        release_id = self.client.get_release_id()
         if not release_id:
             raise Exception("Not implemented uploading of release")
         return release_id
@@ -453,3 +457,33 @@ class BaseNodeTestCase(BaseTestCase):
         if not(self.ci().get_empty_state()):
             self.ci().setup_environment()
             self.ci().environment().snapshot(EMPTY_SNAPSHOT)
+
+    @logwrap
+    def update_redhat_credentials(
+            self, license_type,
+            username=REDHAT_USERNAME, password=REDHAT_PASSWORD,
+            satellite_host=REDHAT_SATELLITE_HOST,
+            activation_key=REDHAT_ACTIVATION_KEY):
+
+        # release name is in environment variable OPENSTACK_RELEASE
+        release_id = self.client.get_release_id('RHOS')
+        self.client.update_redhat_setup({
+            "release_id": release_id,
+            "username": username,
+            "license_type": license_type,
+            "satellite": satellite_host,
+            "password": password,
+            "activation_key": activation_key})
+        tasks = self.client.get_tasks()
+        # wait for 'redhat_setup' task only. Front-end works same way
+        for task in tasks:
+            if task['name'] == 'redhat_setup' \
+                    and task['result']['release_info']['release_id'] \
+                            == release_id:
+                return self._task_wait(task, 60 * 120)
+
+    def assert_release_state(self, release_name, state='available'):
+        for release in self.client.get_releases():
+            if release["name"].find(release_name) != -1:
+                self.assertEqual(release['state'], state)
+                return release["id"]
