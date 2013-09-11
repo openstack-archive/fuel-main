@@ -93,6 +93,21 @@ def format_table(data, acceptable_keys=None, subdict_keys=None):
     )
 
 
+def json_api_delete_request(api):
+    """Make DELETE request to specific API with some data
+    """
+    opener = urllib2.build_opener(urllib2.HTTPHandler)
+    request = urllib2.Request(API_ROOT + api)
+    request.add_header('Content-Type', ' application/json')
+    request.get_method = lambda: 'DELETE'
+    try:
+        return json.loads(
+            opener.open(request).read()
+        )
+    except urllib2.HTTPError as e:
+            print_error(str(e) + "\n")
+
+
 def json_api_put_request(api, data):
     """Make PUT request to specific API with some data
     """
@@ -299,10 +314,34 @@ def fact(params):
     """Show computed facts for orchestrator
     """
     check_for_attributes(params, ["eid"])
-    facts = json_api_get_request(
-        "clusters/{0}/orchestrator/defaults"
-        .format(params.eid)
-    )
+
+    if params.default:
+        facts = json_api_get_request(
+            "clusters/{0}/orchestrator/defaults"
+            .format(params.eid)
+        )
+    elif params.upload:
+        json_api_put_request(
+            "clusters/{0}/orchestrator/"
+            .format(params.eid),
+            # parse_fact_files()
+        )
+    elif params.delete:
+        json_api_delete_request(
+            "clusters/{0}/orchestrator/"
+            .format(params.eid),
+        )
+    else:
+        json_api_get_request(
+            "clusters/{0}/orchestrator/"
+            .format(params.eid),
+        )
+        if params.downloads:
+            pass
+            # write to directory
+        else:
+            pass
+            # write to stdout
     print(facts)
 
 
@@ -690,6 +729,38 @@ actions = {
                 "help": "environment id",
                 "default": None
             }
+        }, {
+            "args": ["--delete"],
+            "params": {
+                "dest": "delete",
+                "action": "store_true",
+                "help": "Delete current orchestrator data.",
+                "default": False
+            }
+        }, {
+            "args": ["--download"],
+            "params": {
+                "dest": "download",
+                "action": "store_true",
+                "help": "Download current orchestrator data.",
+                "default": False
+            }
+        }, {
+            "args": ["--upload"],
+            "params": {
+                "dest": "upload",
+                "action": "store_true",
+                "help": "Upload current orchestrator data.",
+                "default": False
+            }
+        }, {
+            "args": ["--default"],
+            "params": {
+                "dest": "default",
+                "action": "store_true",
+                "help": "Download default orchestrator data.",
+                "default": False
+            }
         }]
     }
 }
@@ -702,6 +773,9 @@ substitutions = {
     "list": "--list",
     "set": "--set",
     "delete": "--delete",
+    "download": "--download",
+    "upload": "--upload",
+    "default": "--default",
     "create": "--create"
 }
 
