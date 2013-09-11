@@ -1,3 +1,17 @@
+#    Copyright 2013 Mirantis, Inc.
+#
+#    Licensed under the Apache License, Version 2.0 (the "License"); you may
+#    not use this file except in compliance with the License. You may obtain
+#    a copy of the License at
+#
+#         http://www.apache.org/licenses/LICENSE-2.0
+#
+#    Unless required by applicable law or agreed to in writing, software
+#    distributed under the License is distributed on an "AS IS" BASIS, WITHOUT
+#    WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the
+#    License for the specific language governing permissions and limitations
+#    under the License.
+
 import os
 import re
 import tempfile
@@ -28,7 +42,7 @@ class Driver(object):
 
     def __init__(self, data, conf):
         logger.debug("Initializing driver %s: host=%s",
-            self.__class__.__name__, data.get("host"))
+                     self.__class__.__name__, data.get("host"))
         self.data = data
         self.host = self.data.get("host", "localhost")
         self.local = is_local(self.host)
@@ -150,12 +164,13 @@ class Postgres(Driver):
                 if not auth:
                     fo.seek(0, 2)
                     fo.write("{0}\n".format(authline))
-            os.chmod(os.path.expanduser("~/.pgpass"), stat.S_IRUSR + stat.S_IWUSR)
+            os.chmod(os.path.expanduser("~/.pgpass"),
+                     stat.S_IRUSR + stat.S_IWUSR)
         temp = self.command("mktemp").stdout.strip()
         self.command("pg_dump -h {dbhost} -U {username} -w "
                      "-f {file} {dbname}".format(
-                        dbhost=self.dbhost, username=self.username,
-                        file=temp, dbname=self.dbname))
+                         dbhost=self.dbhost, username=self.username,
+                         file=temp, dbname=self.dbname))
         self.get(temp, os.path.join(
             self.conf.target, self.host, "postgres_dump_%s.sql" % self.dbname))
         self.command("rm -f %s" % temp)
