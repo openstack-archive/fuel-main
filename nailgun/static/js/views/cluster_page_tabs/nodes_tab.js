@@ -444,7 +444,8 @@ function(utils, models, commonViews, dialogViews, nodesManagementPanelTemplate, 
             this.tearDownRegisteredSubViews();
             this.$el.html(this.template({
                 nodes: this.nodes,
-                edit: this.screen instanceof EditNodesScreen
+                edit: this.screen instanceof EditNodesScreen,
+                deployment: this.screen.tab.model.task('deploy', 'running')
             }));
             this.groupNodes();
             return this;
@@ -484,7 +485,8 @@ function(utils, models, commonViews, dialogViews, nodesManagementPanelTemplate, 
             this.$el.html(this.template({
                 groupLabel: this.groupLabel,
                 nodes: this.nodes,
-                edit: this.nodeList.screen instanceof EditNodesScreen
+                edit: this.nodeList.screen instanceof EditNodesScreen,
+                deployment: this.nodeList.screen.tab.model.task('deploy', 'running')
             }));
             this.nodes.each(this.renderNode, this);
             this.calculateSelectAllTumblerState();
