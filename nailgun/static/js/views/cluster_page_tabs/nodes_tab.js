@@ -357,7 +357,7 @@ function(utils, models, commonViews, dialogViews, nodesManagementPanelTemplate, 
             if (this.cluster.get('mode') == 'multinode') {
                 var allocatedController = this.screen.tab.model.get('nodes').filter(function(node) {return !node.get('pending_deletion') && _.contains(_.union(node.get('roles'), node.get('pending_roles')), 'controller');}).length;
                 var controllerSelected = this.$('input[value=controller]').is(':checked') || this.$('input[value=controller]').prop('indeterminate');
-                this.screen.$('.node-box:not(.node-offline):not(.node-error) input:not(:checked)').prop('disabled', controllerSelected);
+                this.screen.$('.node-box:not(.node-offline):not(.node-error):not(.node-delete) input:not(:checked)').prop('disabled', controllerSelected);
                 if (this.nodeIds.length > 1 || allocatedController) {
                     this.$('input[value=controller]').prop('disabled', true);
                 }
@@ -401,7 +401,7 @@ function(utils, models, commonViews, dialogViews, nodesManagementPanelTemplate, 
             'change input[name=select-nodes-common]' : 'selectAllNodes'
         },
         availableNodes: function() {
-            return this.$('.node-box:not(.node-offline):not(.node-error)');
+            return this.$('.node-box:not(.node-offline):not(.node-error):not(.node-delete)');
         },
         selectAllNodes: function(e) {
             this.$('input[name=select-node-group]').prop('checked', this.$(e.currentTarget).is(':checked')).trigger('change');
@@ -458,7 +458,7 @@ function(utils, models, commonViews, dialogViews, nodesManagementPanelTemplate, 
             'change input[name=select-node-group]' : 'selectAllNodes'
         },
         availableNodes: function() {
-            return this.$('.node-box:not(.node-offline):not(.node-error)');
+            return this.$('.node-box:not(.node-offline):not(.node-error):not(.node-delete)');
         },
         selectAllNodes: function(e) {
             this.availableNodes().find('input[type=checkbox]').prop('checked', this.$(e.currentTarget).is(':checked')).trigger('change');
@@ -624,6 +624,12 @@ function(utils, models, commonViews, dialogViews, nodesManagementPanelTemplate, 
             this.node.set({pending_roles: roles}, {silent: true});
             this.render();
         },
+        uncheckNode: function() {
+            if (this.node.get('pending_deletion')) {
+                this.checked = false;
+            }
+            this.group.render();
+        },
         beforeTearDown: function() {
             $('html').off(this.eventNamespace);
         },
@@ -631,7 +637,8 @@ function(utils, models, commonViews, dialogViews, nodesManagementPanelTemplate, 
             _.defaults(this, options);
             this.screen = this.group.nodeList.screen;
             this.eventNamespace = 'click.editnodename' + this.node.id;
-            this.node.on('change:name change:online change:pending_deletion', this.render, this);
+            this.node.on('change:pending_deletion', this.uncheckNode, this);
+            this.node.on('change:name change:online', this.render, this);
             this.node.on('change:pending_roles', this.rolesChanged, this);
             this.node.on('change:status change:pending_addition', this.updateStatus, this);
             this.node.on('change:progress', this.updateProgress, this);
