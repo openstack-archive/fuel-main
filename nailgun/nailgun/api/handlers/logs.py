@@ -29,11 +29,11 @@ import web
 
 from nailgun.api.handlers.base import content_json
 from nailgun.api.handlers.base import JSONHandler
+from nailgun.api.handlers.tasks import TaskHandler
 from nailgun.api.models import Node
 from nailgun.api.models import RedHatAccount
 from nailgun.db import db
 from nailgun.settings import settings
-from nailgun.api.handlers.tasks import TaskHandler
 from nailgun.task.manager import DumpTaskManager
 
 logger = logging.getLogger(__name__)
@@ -292,8 +292,7 @@ class LogPackageHandler(object):
     """
     @content_json
     def PUT(self):
-        """
-        :returns: JSONized Task object.
+        """:returns: JSONized Task object.
         :http: * 200 (task successfully executed)
                * 400 (failed to execute task)
         """

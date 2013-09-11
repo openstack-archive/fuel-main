@@ -709,7 +709,7 @@ class NetworkManager(object):
 
         interfaces_to_delete = db().query(NodeNICInterface).filter(
             NodeNICInterface.node_id == node.id).filter(
-            not_(NodeNICInterface.mac.in_(
+                not_(NodeNICInterface.mac.in_(
                 interfaces_mac_addresses))).all()
 
         if interfaces_to_delete:
