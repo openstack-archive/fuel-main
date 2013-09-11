@@ -724,10 +724,23 @@ h6.page-title {
 }
 
 .roles-panel {
-  padding: 10px;
-  background: #ccc;
-  border: 1px solid #444;
-  margin-bottom: 15px;
+  display: block;
+  padding: 20px;
+  background-color: #e0e0e0;
+  border: 1px solid #a0a0a0;
+  box-sizing: border-box;
+  -moz-box-sizing: border-box;
+  -webkit-box-sizing: border-box;
+}
+
+.roles-panel > h4 {
+  display: block;
+  margin: 0px;
+  padding: 0px;
+  font-size: 16px;
+  color: #666666;
+  text-shadow: 0 1px 0 rgba(255, 255, 255, 0.35);
+  margin-bottom: 10px;
 }
 
 .node-name > .name > p {
@@ -4151,6 +4164,10 @@ input.input-append {
   margin-bottom: 20px;
 }
 
+.node-groups:hover {
+  background-color: #f5f5f5;
+}
+
 .btn-cluster-actions {
   padding: 3px;
 }
@@ -4280,17 +4297,62 @@ input.input-append {
   top: -3px;
 }
 
-.role-conflict {
-  color: #B94A48;
+.roles-panel > hr {
+  margin: 20px 0;
+  border: 0;
+  border-top: 1px solid #a0a0a0;
+  border-bottom: 1px solid #ffffff;
+}
+
+.role-container {
+  display: block;
+  margin: 0px;
+  padding: 0px;
+  margin-bottom: 10px;
+}
+
+.role-container > label {
+  margin: 0px;
+  padding: 0px;
 }
 
 .role-description {
+  display: block;
   float: none;
   clear: both;
+  font-size: 12px;
+  font-style: italic;
+  margin-left: 17px;
+  margin-top: -8px;
   color: #666666;
 }
 
 .btn-edit-nodes {
   position: relative;
   top: 2px;
+}
+
+.role-conflict {
+  display: inline-block;
+  color: #B94A48;
+  font-size: 12px;
+  font-style: italic;
+  margin-left: 20px;
+}
+
+.environment-status {
+  font-size: 12px;
+  color: #888888;
+}
+
+.environment-status > p {
+  margin: 0px;
+  padding: 0px;
+  margin-top: -4px;
+  font-weight: 100;
+}
+
+.environment-status > p > strong {
+  font-weight: 200;
+  color: #666666;
 }

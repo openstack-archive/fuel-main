@@ -1,14 +1,16 @@
 <% var cluster = nodes.cluster %>
 
 <div class="row-fluid node-list-header">
-  <div class="span10">
-    <h3><%= cluster ? cluster.get('name') : 'Unallocated Nodes' %> (<%= nodes.length %> node<%= nodes.length == 1 ? '' : 's' %>)</h3>
+  <div class="span8">
+    <h3><%= cluster ? cluster.get('name') : 'Unallocated Nodes' %> <div style="display: inline-block; color: #666666; font-size: 16px;">(<%= nodes.length %> node<%= nodes.length == 1 ? '' : 's' %>)</div></h3>
     <% if (cluster && !edit) { %>
+    <div class="environment-status">
       <p><strong>OpenStack Release:</strong> <%- cluster.get('release').get('name') %></p>
       <% var statuses = {'new': 'New', 'deployment': 'Deploying', 'operational': 'Operational', 'error': 'Error', 'remove': 'Removing'} %>
       <p><strong>Environment Status:</strong> <%- statuses[cluster.get('status')] %></p>
       <% var modes = {'multinode': 'Multi-node', 'ha_compact': 'Multi-node HA'} %>
       <p><strong>Environment Deployment Mode:</strong> <%- modes[cluster.get('mode')] %></p>
+      </div>
     <% } %>
   </div>
   <label class="span2 pull-right"><input type="checkbox" name="select-nodes-common" value="" <%= !nodes.length || edit || deployment ? 'disabled' : '' %> />Select All</label>
