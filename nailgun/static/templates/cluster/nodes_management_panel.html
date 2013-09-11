@@ -22,7 +22,7 @@
       <a class="btn btn-success btn-edit-nodes hide" href="#cluster/<%- cluster.id %>/nodes/edit" <%= disabled %>>Edit Nodes</a>
     </div>
     <div class="cluster-toolbar-item pull-right">
-      <a class="btn btn-success btn-add-nodes" href="#cluster/<%- cluster.id %>/nodes/add" <%= disabled %>>Add Nodes</a>
+      <<%= deployment ? 'div' : 'a' %> class="btn btn-success btn-add-nodes" href="#cluster/<%- cluster.id %>/nodes/add" <%= disabled %>>Add Nodes</<%= deployment ? 'div' : 'a' %>>
     </div>
   <% } else { %>
     <div class="cluster-toolbar-item pull-right">

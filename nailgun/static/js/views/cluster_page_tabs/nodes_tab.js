@@ -274,7 +274,8 @@ function(utils, models, commonViews, dialogViews, nodesManagementPanelTemplate, 
             this.$el.html(this.template({
                 nodes: this.nodes,
                 cluster: this.cluster,
-                edit: this.screen instanceof EditNodesScreen
+                edit: this.screen instanceof EditNodesScreen,
+                deployment: this.cluster.task('deploy', 'running')
             }));
             return this;
         }
