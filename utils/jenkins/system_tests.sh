@@ -1,13 +1,13 @@
 #!/bin/sh
 # System Tests Script
 #
-# It can perform several actions depending on Jenkins JOB_NAME it is ran from
-# or it can take variables from arguments if you do need to override these values.
+# It can perform several actions depending on Jenkins JOB_NAME it's ran from
+# or it can take names from exported environment variables if you do need to override them.
 #
 # If task name is "iso" it will make iso file
-# Other defined test names will ran nose tests with made iso file
+# Other defined names will run Nose tests using previously built ISO file.
 #
-# Iso file name is taken from job name prefix
+# ISO file name is taken from job name prefix
 # Task name is taken from job name suffix
 # Separator is one dot '.'
 #
@@ -20,10 +20,18 @@
 # mytest.somestring.node
 # ISO name: mytest.iso
 # Task name: node
-# If ran with such JOB_NAME node tests will be ran using iso file mytest.iso
+# If script was run with this JOB_NAME node tests will be using ISO file mytest.iso.
 #
-# First you should ran mytest.somestring.iso to create mytest.iso
-# Then you can ran mytest.somestring.node to run tests using mytest.iso and other tests too.
+# First you should run mytest.somestring.iso job to create mytest.iso.
+# Then you can ran mytest.somestring.node job to start tests using mytest.iso and other tests too.
+#
+# You can override following variables using export VARNAME="value" before running this script
+# WORKSPACE  - path to directory where Fuelweb repository was chacked out by Jenkins or manually
+# JOB_NAME   - name of Jenkins job that determines which task should be done and ISO file name.
+# USE_MIRROR - what mirror should be user. Override to your local mirror if possible.
+# ROTATE_ISO - should iso files be rotated with build numbers and symlinked to the last one
+#              or just copied over single file. Can be 'yes' or 'no'.
+#              Uses BUILD_NUMBER variable to get tag number.
 
 PATH="/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin"
 
@@ -40,7 +48,8 @@ GlobalVars() {
   TASK_NAME="${JOB_NAME##*.}"
   # do we want to keep iso's for each build or just copy over single file
   ROTATE_ISO="${ROTATE_ISO:=yes}"
-  # what mirror should be used during iso building process
+  # choose mirror to build iso from. Default is 'srt' for Saratov's mirror
+  # you can change mirror by exporting USE_MIRROR variable before running this script
   export USE_MIRROR="${USE_MIRROR:=srt}"
 }
 
@@ -58,12 +67,6 @@ CheckVariables() {
 
 MakeISO() {
   # Create iso file to be used in tests
-
-  # choose mirror to build iso from
-  # default is 'srt' for Saratov mirror
-  # if you export USE_MIRROR variable before
-  # running this script
-  # it's value will be used instead
 
   # clean previous garbage
   make deep_clean
