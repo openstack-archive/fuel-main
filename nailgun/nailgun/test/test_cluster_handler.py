@@ -189,6 +189,7 @@ class TestHandlers(BaseHandlers):
     @fake_tasks(fake_rpc=False, mock_rpc=False)
     @patch('nailgun.rpc.cast')
     def test_cluster_orchestrator_data(self, mocked_rpc):
+        # creating cluster with nodes
         self.env.create(
             cluster_kwargs={
                 'mode': 'ha_compact'
@@ -200,8 +201,20 @@ class TestHandlers(BaseHandlers):
                 {'roles': ['compute', 'cinder'], 'pending_addition': True},
                 {'roles': ['compute'], 'pending_addition': True},
                 {'roles': ['cinder'], 'pending_addition': True}])
-
         cluster = self.env.clusters[0]
+        orchestrator_data = {"field": "test"}
+        # assigning facts to cluster
+        cluster.facts = orchestrator_data
+        self.db.commit()
+        self.env.launch_deployment()
+        # intercepting arguments with which rpc.cast was called
+        args, kwargs = nailgun.task.manager.rpc.cast.call_args
+        self.datadiff(orchestrator_data, args[1][1]["args"]["deployment_info"])
+
+    def test_cluster_orchestrator_data_handler(self):
+        # creating cluster, cluster.facts default value is {}
+        cluster = self.env.create_cluster(api=False)
+        # updating facts
         orchestrator_data = {"field": "test"}
         orchestrator_data_json = json.dumps(orchestrator_data)
         put_resp = self.app.put(
@@ -211,10 +224,8 @@ class TestHandlers(BaseHandlers):
             headers=self.default_headers
         )
         self.assertEquals(put_resp.status, 200)
-        self.env.launch_deployment()
-        args, kwargs = nailgun.task.manager.rpc.cast.call_args
-        self.datadiff(orchestrator_data, args[1][1]["args"]["deployment_info"])
-
+        self.assertEquals(cluster.facts, orchestrator_data)
+        # getting facts
         get_resp = self.app.get(
             reverse('ClusterOrchestratorData',
                     kwargs={'cluster_id': cluster.id}),
@@ -222,6 +233,7 @@ class TestHandlers(BaseHandlers):
         )
         self.assertEquals(get_resp.status, 200)
         self.datadiff(orchestrator_data, json.loads(get_resp.body))
+        # deleting facts
         delete_resp = self.app.delete(
             reverse('ClusterOrchestratorData',
                     kwargs={'cluster_id': cluster.id}),

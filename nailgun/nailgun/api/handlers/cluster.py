@@ -431,6 +431,7 @@ class ClusterOrchestratorData(JSONHandler):
         """:returns: {}
         :http: * 202 (orchestrator data deletion process launched)
                * 400 (failed to execute orchestrator data deletion process)
+               * 404 (cluster not found in db)
         """
         cluster = self.get_object_or_404(Cluster, cluster_id)
         cluster.facts = {}
