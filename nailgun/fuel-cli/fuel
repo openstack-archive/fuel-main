@@ -390,7 +390,7 @@ def write_facts_to_dir(facts, dir_name):
             ),
             "w+"
         )
-        fd.write(json.dumps(fact))
+        fd.write(json.dumps(fact, indent=4))
         print("Created {0}".format(fd.name))
         fd.close()
 
