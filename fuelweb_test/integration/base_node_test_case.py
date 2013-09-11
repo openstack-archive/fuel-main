@@ -22,7 +22,9 @@ from fuelweb_test.helpers import Ebtables
 from fuelweb_test.integration.base_test_case import BaseTestCase
 from fuelweb_test.integration.decorators import debug
 from fuelweb_test.nailgun_client import NailgunClient
-from fuelweb_test.settings import CLEAN, NETWORK_MANAGERS, EMPTY_SNAPSHOT, REDHAT_USERNAME, REDHAT_PASSWORD, REDHAT_SATELLITE_HOST, REDHAT_ACTIVATION_KEY
+from fuelweb_test.settings import CLEAN, NETWORK_MANAGERS, EMPTY_SNAPSHOT, \
+    REDHAT_USERNAME, REDHAT_PASSWORD, REDHAT_SATELLITE_HOST, \
+    REDHAT_ACTIVATION_KEY
 
 logger = logging.getLogger(__name__)
 logwrap = debug(logger)

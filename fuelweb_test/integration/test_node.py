@@ -430,7 +430,6 @@ class TestNode(BaseNodeTestCase):
         task = self._run_network_verify(cluster_id)
         self.assertTaskSuccess(task, 60 * 5)
 
-
     @logwrap
     @fetch_logs
     @attr(releases=['redhat'])
