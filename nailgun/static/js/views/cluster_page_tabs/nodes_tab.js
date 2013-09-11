@@ -103,9 +103,6 @@ function(utils, models, commonViews, dialogViews, nodesManagementPanelTemplate, 
         hasChanges: function() {
             return this instanceof ClusterNodesScreen ? false : !_.isEqual(this.nodes.map(function(node) {return node.get('pending_roles') || [];}), this.initialRoles);
         },
-        selectedNodes: function() {
-            return this.$('.node-checkbox input:checked');
-        },
         scheduleUpdate: function() {
             this.registerDeferred($.timeout(this.updateInterval).done(_.bind(this.update, this)));
         },
@@ -113,13 +110,13 @@ function(utils, models, commonViews, dialogViews, nodesManagementPanelTemplate, 
             this.nodes.fetch().always(_.bind(this.scheduleUpdate, this));
         },
         calculateBatchActionsButtonsState: function() {
-            this.$('.batch-action-btn').prop('disabled', !this.selectedNodes().length);
+            this.$('.btn-delete-nodes').prop('disabled', !this.$('.node-box:not(.node-delete) .node-checkbox input:checked').length);
         },
         calculateApplyButtonState: function() {
             this.$('.btn-apply').prop('disabled', !this.hasChanges());
         },
         showEditNodesButton: function() {
-            var selectedNodes = this.selectedNodes();
+            var selectedNodes = this.$('.node-checkbox input:checked');
             this.$('.btn-add-nodes').toggle(!selectedNodes.length);
             this.$('.btn-edit-nodes').toggle(!!selectedNodes.length);
             var selectedNodesIds = selectedNodes.map(function() {return parseInt($(this).val(), 10);}).get().join(',');
@@ -188,7 +185,7 @@ function(utils, models, commonViews, dialogViews, nodesManagementPanelTemplate, 
                 });
             };
             this.nodes.fetch().done(_.bind(function() {
-                this.nodes.each(function(node) {node.set({pending_roles: []}, {silence: true});});
+                this.nodes.each(function(node) {node.set({pending_roles: []}, {silent: true});});
                 this.render();
             }, this));
             this.nodes.on('resize', this.render, this);
@@ -240,7 +237,7 @@ function(utils, models, commonViews, dialogViews, nodesManagementPanelTemplate, 
             this.screen.nodeList.groupNodes(grouping);
         },
         showDeleteNodesDialog: function() {
-            var chosenNodesIds = this.screen.selectedNodes().map(function() {return parseInt($(this).val(), 10);}).get();
+            var chosenNodesIds = this.screen.$('.node-box:not(.node-delete) .node-checkbox input:checked').map(function() {return parseInt($(this).val(), 10);}).get();
             var nodes = new models.Nodes(this.nodes.getByIds(chosenNodesIds));
             nodes.cluster = this.nodes.cluster;
             var dialog = new dialogViews.DeleteNodesDialog({nodes: nodes});
@@ -616,9 +613,9 @@ function(utils, models, commonViews, dialogViews, nodesManagementPanelTemplate, 
             _.defaults(this, options);
             this.screen = this.group.nodeList.screen;
             this.eventNamespace = 'click.editnodename' + this.node.id;
-            this.node.on('change:name change:online', this.render, this);
+            this.node.on('change:name change:online change:pending_deletion', this.render, this);
             this.node.on('change:pending_roles', this.rolesChanged, this);
-            this.node.on('change:status change:pending_addition change:pending_deletion', this.updateStatus, this);
+            this.node.on('change:status change:pending_addition', this.updateStatus, this);
             this.node.on('change:progress', this.updateProgress, this);
             this.initialRoles = this.node.get('pending_roles');
         },

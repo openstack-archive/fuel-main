@@ -16,7 +16,7 @@
   <% if (clusterNodesScreen) { %>
     <% var disabled = nodes.cluster.task('deploy', 'running') ? 'disabled' : '' %>
     <div class="cluster-toolbar-item pull-right">
-      <button class="btn btn-danger btn-delete-nodes batch-action-btn" disabled>Delete Nodes</button>
+      <button class="btn btn-danger btn-delete-nodes" disabled>Delete Nodes</button>
     </div>
     <div class="cluster-toolbar-item pull-right">
       <a class="btn btn-success btn-edit-nodes hide" href="#cluster/<%- cluster.id %>/nodes/edit" <%= disabled %>>Edit Nodes</a>
