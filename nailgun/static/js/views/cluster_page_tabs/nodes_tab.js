@@ -324,6 +324,12 @@ function(utils, models, commonViews, dialogViews, nodesManagementPanelTemplate, 
                         if (!_.contains(node.get('roles'), role)) {
                             var pending_roles = $(input).is(':checked') ? _.uniq(_.union(node.get('pending_roles'), role)) : _.difference(node.get('pending_roles'), role);
                             node.set({pending_roles: pending_roles});
+                            if (!pending_roles.length && node.get('pending_addition')) {
+                                node.set({
+                                    cluster_id: null,
+                                    pending_addition: false
+                                });
+                            }
                         }
                     }, this);
                 }
@@ -335,6 +341,11 @@ function(utils, models, commonViews, dialogViews, nodesManagementPanelTemplate, 
             this.$('.role-conflict').text('');
             // check for nodes
             this.$('input').prop('disabled', !this.nodeIds.length);
+            // check for deployed nodes
+            _.each(this.$('input'), function(input) {
+                var deployedNodes = this.screen.nodes.filter(function(node) {return _.contains(node.get('roles'), $(input).val());});
+                $(input).prop('disabled', deployedNodes.length == this.nodeIds.length);
+            }, this);
             // check uncompatible roles
             var selectedRoles = _.filter(this.$('input'), function(input) {return $(input).prop('indeterminate') || $(input).prop('checked');}).map(function(input) {return $(input).val();});
             _.each(this.getListOfUncompatibleRoles(selectedRoles), function(role) {
