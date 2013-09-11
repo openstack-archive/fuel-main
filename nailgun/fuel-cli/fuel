@@ -380,6 +380,7 @@ def parse_fact_from_dir(dir_name):
 
 def write_facts_to_dir(facts, dir_name):
     if not os.path.exists(dir_name):
+        print("directory {0} was created".format(dir_name))
         os.makedirs(dir_name)
     for fact in facts:
         fd = open(
@@ -390,6 +391,7 @@ def write_facts_to_dir(facts, dir_name):
             "w+"
         )
         fd.write(json.dumps(fact))
+        print("Created {0}".format(fd.name))
         fd.close()
 
 
