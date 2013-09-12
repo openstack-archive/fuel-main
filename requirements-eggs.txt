@@ -10,6 +10,7 @@ distribute==0.7.3
 eventlet==0.9.17
 fysom==1.0.11
 greenlet==0.4.0
+hacking==0.7
 jsonschema==2.0.0
 kombu==2.1.8
 netaddr==0.7.10
@@ -24,4 +25,3 @@ tornado==3.0
 web.py==0.37
 wsgilog==0.3
 wsgiref==0.1.2
-hacking==0.7

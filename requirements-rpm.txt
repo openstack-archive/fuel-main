@@ -50,7 +50,7 @@ db4-utils-4.7.25-17.el6
 dbus-python-0.83.0-6.1.el6
 deltaiso-3.5-0.5.20090913git.el6
 deltarpm-3.5-0.5.20090913git.el6
-dhclient-4.1.1-34.P1.el6.centos
+dhclient-4.1.1-34.P1.el6_4.1.centos
 dmidecode-2.11-2.el6
 dnsmasq-2.65-5.el6
 dnsmasq-utils-2.65-5.el6
