@@ -107,7 +107,7 @@ def json_api_delete_request(api):
             opener.open(request).read()
         )
     except urllib2.HTTPError as e:
-            print_error(str(e) + "\n")
+        print_error(str(e) + "\n")
 
 
 def json_api_put_request(api, data):
@@ -368,15 +368,14 @@ def parse_fact_from_dir(dir_name):
         one_folder_up = path_to_folder[:-2] + path_to_folder[-2:-1]
         dir_name = os.sep.join(one_folder_up)
     try:
-        return reduce(
-            list.__add__,
-            map(
+        return list(chain(
+            *map(
                 read_json,
                 [os.path.join(dir_name, json_file)
                  for json_file in os.listdir(dir_name)
                  if json_file.endswith('.json')]
             )
-        )
+        ))
     except OSError:
         print(
             "Directory {0} doesn't exist."
