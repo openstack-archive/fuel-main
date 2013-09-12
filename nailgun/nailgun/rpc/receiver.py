@@ -820,7 +820,7 @@ class NailgunReceiver(object):
         elif status == 'ready':
             dumpfile = os.path.basename(msg)
             notifier.notify('done', 'Snapshot is ready. '
-                            'Visit support page to download')
+                            'Visit Support page to download')
             TaskHelper.update_task_status(
                 task_uuid, status, progress,
                 'http://{0}:8080/dump/{1}'.format(
