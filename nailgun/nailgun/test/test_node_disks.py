@@ -137,7 +137,7 @@ class TestNodeDisksHandlers(BaseHandlers):
             self.assertEquals(size_volumes_after, volume_group_size)
 
     def test_update_ceph_partition(self):
-        node = self.create_node(role='ceph')
+        node = self.create_node(role='ceph-osd')
         disks = self.get(node.id)
 
         new_volume_size = 4321
@@ -522,7 +522,7 @@ class TestFixtures(BaseHandlers):
         openstack = self.env.read_fixtures(
             ('openstack',))[0]['fields']['volumes_metadata']['volumes']
         redhat = self.env.read_fixtures(
-            ('redhat',))[0]['fields']['volumes_metadata']['volumes']
+            ('openstack',))[1]['fields']['volumes_metadata']['volumes']
 
         return [only_vg(openstack), only_vg(redhat)]
 
