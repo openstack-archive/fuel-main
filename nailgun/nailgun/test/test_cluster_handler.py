@@ -209,7 +209,7 @@ class TestHandlers(BaseHandlers):
         self.env.launch_deployment()
         # intercepting arguments with which rpc.cast was called
         args, kwargs = nailgun.task.manager.rpc.cast.call_args
-        self.datadiff(orchestrator_data, args[1][1]["args"]["deployment_info"])
+        self.datadiff(orchestrator_data, args[1][0]["args"]["deployment_info"])
 
     def test_cluster_orchestrator_data_handler(self):
         # creating cluster, cluster.facts default value is {}
