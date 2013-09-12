@@ -48,6 +48,7 @@ curl-7.19.7-37.el6_4
 db4-cxx-4.7.25-17.el6
 db4-utils-4.7.25-17.el6
 dbus-python-0.83.0-6.1.el6
+debootstrap-1.0.19-2.el6
 deltaiso-3.5-0.5.20090913git.el6
 deltarpm-3.5-0.5.20090913git.el6
 dhclient-4.1.1-34.P1.el6.centos

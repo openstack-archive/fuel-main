@@ -26,6 +26,7 @@ CENTOS_MAJOR:=6
 CENTOS_MINOR:=4
 CENTOS_RELEASE:=$(CENTOS_MAJOR).$(CENTOS_MINOR)
 CENTOS_ARCH:=x86_64
+UBUNTU_RELEASE:=precise
 
 ISO_NAME?=fuelweb-centos-$(CENTOS_RELEASE)-$(CENTOS_ARCH)
 ISO_DIR?=$(BUILD_DIR)/iso
@@ -44,6 +45,8 @@ LOCAL_MIRROR_EGGS:=$(LOCAL_MIRROR)/eggs
 LOCAL_MIRROR_GEMS:=$(LOCAL_MIRROR)/gems
 LOCAL_MIRROR_CENTOS:=$(LOCAL_MIRROR)/centos
 LOCAL_MIRROR_CENTOS_OS_BASEURL:=$(LOCAL_MIRROR_CENTOS)/os/$(CENTOS_ARCH)
+LOCAL_MIRROR_UBUNTU:=$(LOCAL_MIRROR)/ubuntu
+LOCAL_MIRROR_UBUNTU_OS_BASEURL:=$(LOCAL_MIRROR_UBUNTU)/main
 LOCAL_MIRROR_RHEL:=$(LOCAL_MIRROR)/rhel
 
 BUILD_MIRROR_GEMS:=$(BUILD_DIR)/packages/gems
@@ -57,6 +60,7 @@ ifeq ($(USE_MIRROR),ext)
 YUM_REPOS?=proprietary
 MIRROR_BASE?=http://download.mirantis.com/fuelweb-repo/$(PRODUCT_VERSION)
 MIRROR_CENTOS?=$(MIRROR_BASE)/centos
+MIRROR_UBUNTU?=$(MIRROR_BASE)/ubuntu
 MIRROR_EGGS?=$(MIRROR_BASE)/eggs
 MIRROR_GEMS?=$(MIRROR_BASE)/gems
 MIRROR_SRC?=$(MIRROR_BASE)/src
@@ -65,6 +69,7 @@ ifeq ($(USE_MIRROR),srt)
 YUM_REPOS?=proprietary
 MIRROR_BASE?=http://srv08-srt.srt.mirantis.net/fwm/$(PRODUCT_VERSION)
 MIRROR_CENTOS?=$(MIRROR_BASE)/centos
+MIRROR_UBUNTU?=$(MIRROR_BASE)/ubuntu
 MIRROR_EGGS?=$(MIRROR_BASE)/eggs
 MIRROR_GEMS?=$(MIRROR_BASE)/gems
 MIRROR_SRC?=$(MIRROR_BASE)/src
@@ -73,6 +78,7 @@ ifeq ($(USE_MIRROR),msk)
 YUM_REPOS?=proprietary
 MIRROR_BASE?=http://srv11-msk.msk.mirantis.net/fwm/$(PRODUCT_VERSION)
 MIRROR_CENTOS?=$(MIRROR_BASE)/centos
+MIRROR_UBUNTU?=$(MIRROR_BASE)/ubuntu
 MIRROR_EGGS?=$(MIRROR_BASE)/eggs
 MIRROR_GEMS?=$(MIRROR_BASE)/gems
 MIRROR_SRC?=$(MIRROR_BASE)/src
@@ -81,6 +87,7 @@ ifeq ($(USE_MIRROR),usa)
 YUM_REPOS?=proprietary
 MIRROR_BASE?=http://product-vm.vm.mirantis.net/fwm/$(PRODUCT_VERSION)
 MIRROR_CENTOS?=$(MIRROR_BASE)/centos
+MIRROR_UBUNTU?=$(MIRROR_BASE)/ubuntu
 MIRROR_EGGS?=$(MIRROR_BASE)/eggs
 MIRROR_GEMS?=$(MIRROR_BASE)/gems
 MIRROR_SRC?=$(MIRROR_BASE)/src
@@ -100,6 +107,7 @@ YUM_REPOS?=proprietary fuel
 MIRROR_FUEL?=http://download.mirantis.com/epel-fuel-grizzly-3.2/
 MIRROR_BASE?=http://srv08-srt.srt.mirantis.net/fwm/$(PRODUCT_VERSION)
 MIRROR_CENTOS?=$(MIRROR_BASE)/centos
+MIRROR_UBUNTU?=$(MIRROR_BASE)/ubuntu
 MIRROR_EGGS?=$(MIRROR_BASE)/eggs
 MIRROR_GEMS?=$(MIRROR_BASE)/gems
 MIRROR_SRC?=$(MIRROR_BASE)/src
@@ -107,6 +115,8 @@ endif
 
 MIRROR_CENTOS?=http://mirror.yandex.ru/centos/$(CENTOS_RELEASE)
 MIRROR_CENTOS_OS_BASEURL:=$(MIRROR_CENTOS)/os/$(CENTOS_ARCH)
+MIRROR_UBUNTU?=http://mirror.yandex.ru/ubuntu/dists/$(UBUNTU_RELEASE)
+MIRROR_UBUNTU_OS_BASEURL:=$(MIRROR_UBUNTU)/main
 MIRROR_RHEL?=http://srv11-msk.msk.mirantis.net/rhel6/rhel-6-server-rpms
 MIRROR_RHEL_BOOT?=http://srv11-msk.msk.mirantis.net/rhel6/rhel-server-6.4-x86_64
 # MIRROR_FUEL option is valid only for 'fuel' YUM_REPOS section
