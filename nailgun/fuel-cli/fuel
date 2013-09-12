@@ -16,24 +16,15 @@
 import argparse
 from itertools import chain
 import json
+import os
 from pprint import pprint
+import shutil
 import sys
 import urllib2
-import os
-import shutil
 
 API_ROOT = "http://127.0.0.1:8000/api/"
 
 passive_arguments = ["eid", "action"]
-
-
-def debug(func):
-    def internal_func(*args, **kwargs):
-        if "orchestrator" in args[0]:
-            return json.loads(open("default.json", "r").read())
-        else:
-            return func(*args, **kwargs)
-    return internal_func
 
 
 class SetAction(argparse.Action):
@@ -175,8 +166,9 @@ def check_for_attributes(params, attributes):
     not_paseed_checks = [attribute for attribute in attributes
                          if not getattr(params, attribute)]
     if len(not_paseed_checks):
-        msg = "{0} required!\n".format(", ".join(not_paseed_checks))
-        print_error(msg)
+        print_error(
+            "{0} required!\n".format(", ".join(not_paseed_checks))
+        )
 
 
 def release(params):
@@ -355,7 +347,7 @@ def fact(params):
         )
         if not facts:
             print(
-                "Environment with id={0} has no facts.\n"
+                "Environment with id={0} has no facts."
                 .format(params.eid)
             )
             return
@@ -365,19 +357,31 @@ def fact(params):
             pprint(facts)
 
 
-def parse_fact_from_dir(dir_name):
-    def read_json(path):
+def read_json(path):
         with open(path, "r") as json_file:
             return [json.loads(json_file.read())]
-    return reduce(
-        list.__add__,
-        map(
-            read_json,
-            [os.path.join(dir_name, json_file)
-             for json_file in os.listdir(dir_name)
-             if json_file.endswith('.json')]
+
+
+def parse_fact_from_dir(dir_name):
+    if not os.path.exists(dir_name):
+        path_to_folder = dir_name.split(os.sep)
+        one_folder_up = path_to_folder[:-2] + path_to_folder[-2:-1]
+        dir_name = os.sep.join(one_folder_up)
+    try:
+        return reduce(
+            list.__add__,
+            map(
+                read_json,
+                [os.path.join(dir_name, json_file)
+                 for json_file in os.listdir(dir_name)
+                 if json_file.endswith('.json')]
+            )
         )
-    )
+    except OSError:
+        print(
+            "Directory {0} doesn't exist."
+            .format(dir_name)
+        )
 
 
 def write_facts_to_dir(facts, dir_name):
