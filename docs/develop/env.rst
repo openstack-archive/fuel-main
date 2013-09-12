@@ -60,11 +60,16 @@ Setup for Web UI Tests
 ----------------------
 
 #. Install NodeJS (on Debian, you may need to use 'apt-get install -t
-   experimental' to get the latest npm, on Ubuntu 12.04, use nodejs package 
-   instead of nodejs-legacy))::
+   experimental' to get the latest npm, on Ubuntu 12.04, use nodejs package
+   instead of nodejs-legacy)) and CasperJS::
 
-    sudo apt-get install npm nodejs-legacy
+    sudo apt-get install npm nodejs-legacy phantomjs
     sudo npm install -g jslint requirejs
+    cd ~
+    git clone git://github.com/n1k0/casperjs.git
+    cd casperjs
+    git checkout tags/1.0.0-RC4
+    sudo ln -sf `pwd`/bin/casperjs /usr/local/bin/casperjs
 
 #. Run full Web UI test suite (this will wipe your Nailgun database in
    PostgreSQL)::
