@@ -41,9 +41,19 @@
                     "controller": ["os", "image"],
                     "compute": ["os", "vm"],
                     "cinder": ["os", "cinder"],
+                    "ceph-osd": ["os", "ceph"],
                     "other": ["os"]
                 },
                 "volumes": [
+                    {
+                        "id": "ceph",
+                        "type": "partition",
+                        "min_size": {"generator": "calc_min_ceph_size"},
+                        "label": "Ceph",
+                        "mount": "none",
+                        "disk_label": "cephosd",
+                        "file_system": "xfs"
+                    },
                     {
                         "id": "os",
                         "type": "vg",
