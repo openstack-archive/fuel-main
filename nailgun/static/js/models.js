@@ -142,7 +142,7 @@ define(['utils'], function(utils) {
             });
         },
         canDiscardDeletion: function() {
-            return this.get('pending_deletion') && _.contains(this.get('roles'), 'controller') && this.collection.cluster.get('mode') == 'multinode' && !this.collection.cluster.get('nodes').filter(function(node) {return _.contains(node.get('pending_roles'), 'controller');}).length;
+            return this.get('pending_deletion') && !(_.contains(this.get('roles'), 'controller') && this.collection.cluster.get('mode') == 'multinode' && this.collection.cluster.get('nodes').filter(function(node) {return _.contains(node.get('pending_roles'), 'controller');}).length);
         }
     });
 
