@@ -1,9 +1,9 @@
 .. _nailgun:
 
-Nailgun
-=======
+Nailgun Development Instructions
+================================
 
 .. toctree::
 
-   nailgun/development
+   nailgun/partitions
    nailgun/reliability
