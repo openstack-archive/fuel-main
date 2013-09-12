@@ -140,6 +140,9 @@ define(['utils'], function(utils) {
             return _.union(this.get('roles'), this.get('pending_roles')).sort(function(a, b) {
                 return _.indexOf(preferredOrder, a) - _.indexOf(preferredOrder, b);
             });
+        },
+        canDiscardDeletion: function() {
+            return this.get('pending_deletion') && _.contains(this.get('roles'), 'controller') && this.collection.cluster.get('mode') == 'multinode' && !this.collection.cluster.get('nodes').filter(function(node) {return _.contains(node.get('pending_roles'), 'controller');}).length;
         }
     });
 

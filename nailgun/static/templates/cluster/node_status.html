@@ -49,7 +49,7 @@
 <% } %>
 <% var btnClass = node.get('pending_addition') ? 'addition' : node.get('pending_deletion') ? 'deletion' : 'role-changes' %>
 <% var btnLabel = node.get('pending_addition') ? 'Addition' : node.get('pending_deletion') ? 'Deletion' : 'Role Changes' %>
-<% if (!edit && (node.get('pending_addition') || node.get('pending_deletion') || (node.get('pending_roles') && node.get('pending_roles').length))) { %>
+<% if (!edit && (node.get('pending_addition') || node.canDiscardDeletion() || (node.get('pending_roles') && node.get('pending_roles').length))) { %>
   <button class="btn btn-link btn-discard-node-changes btn-discard-<%= btnClass %>"><i class="icon-attention"></i>Discard <%= btnLabel %></button>
 <% } else { %>
   <a href="<%- logsLink %>" class="logs-link"><i class="icon-logs"></i>View logs</a>
