@@ -28,7 +28,7 @@ logwrap = debug(logger)
 class TestAdminNode(BaseTestCase):
     def setUp(self):
         if CLEAN:
-            self.ci().get_empty_state()
+            self.ci().get_empty_environment()
 
     @logwrap
     def test_puppetmaster_alive(self):

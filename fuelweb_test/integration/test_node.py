@@ -80,7 +80,7 @@ class TestNode(BaseNodeTestCase):
     def test_one_node_provisioning(self):
         self.prepare_environment()
         cluster_id = self.create_cluster(name="provision")
-        self._basic_provisioning(
+        self.basic_provisioning(
             cluster_id=cluster_id,
             nodes_dict={'slave-01': ['controller']}
         )
@@ -114,7 +114,7 @@ class TestNode(BaseNodeTestCase):
         nodes = {'slave-01': ['controller'], 'slave-02': ['compute']}
         cluster_id = self.create_cluster(name=cluster_name)
         self.update_vlan_network_fixed(cluster_id, amount=8, network_size=32)
-        self._basic_provisioning(cluster_id, nodes)
+        self.basic_provisioning(cluster_id, nodes)
         self.assertClusterReady(
             'slave-01', smiles_count=6, networks_count=8, timeout=300)
         self.get_ebtables(cluster_id, self.nodes().slaves[:2]).restore_vlans()

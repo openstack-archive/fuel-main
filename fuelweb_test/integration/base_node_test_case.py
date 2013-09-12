@@ -17,7 +17,6 @@ import logging
 from devops.helpers.helpers import SSHClient, wait, _wait
 from paramiko import RSAKey
 import re
-import hashlib
 from fuelweb_test.helpers import Ebtables
 from fuelweb_test.integration.base_test_case import BaseTestCase
 from fuelweb_test.integration.decorators import debug
@@ -31,8 +30,6 @@ logwrap = debug(logger)
 
 
 class BaseNodeTestCase(BaseTestCase):
-
-    environment_states = {}
 
     def setUp(self):
         self.client = NailgunClient(self.get_admin_node_ip())
@@ -115,15 +112,10 @@ class BaseNodeTestCase(BaseTestCase):
         self.client.clean_clusters()
 
     @logwrap
-    def _basic_provisioning(self, cluster_id, nodes_dict, port=5514):
-        self.client.add_syslog_server(
-            cluster_id, self.ci().get_host_node_ip(), port)
-
-        # update cluster deployment mode
-        node_names = [node_name for node_name in nodes_dict]
+    def update_deployment_mode(self, cluster_id, nodes_dict):
         controller_names = filter(
             lambda x: 'controller' in nodes_dict[x], nodes_dict)
-        if len(node_names) > 1:
+        if len(nodes_dict) > 1:
             controller_amount = len(controller_names)
             if controller_amount == 1:
                 self.client.update_cluster(
@@ -132,10 +124,19 @@ class BaseNodeTestCase(BaseTestCase):
             if controller_amount > 1:
                 self.client.update_cluster(cluster_id, {"mode": "ha"})
 
-        self.bootstrap_nodes(self.devops_nodes_by_names(node_names))
-
-        # update nodes in cluster
+    @logwrap
+    def configure_cluster(self, cluster_id, nodes_dict):
+        self.update_deployment_mode(cluster_id, nodes_dict)
         self.update_nodes(cluster_id, nodes_dict, True, False)
+        # TODO: update network configuration
+
+    @logwrap
+    def basic_provisioning(self, cluster_id, nodes_dict, port=5514):
+        self.client.add_syslog_server(
+            cluster_id, self.ci().get_host_node_ip(), port)
+
+        self.bootstrap_nodes(self.devops_nodes_by_names(nodes_dict.keys()))
+        self.configure_cluster(cluster_id, nodes_dict)
 
         task = self.deploy_cluster(cluster_id)
         self.assertTaskSuccess(task)
@@ -144,37 +145,12 @@ class BaseNodeTestCase(BaseTestCase):
 
     @logwrap
     def prepare_environment(self, name='cluster_name', settings={}):
-        state_hash = hashlib.md5(str(settings)).hexdigest()
-        empty_state_hash = hashlib.md5(str({})).hexdigest()
-        if state_hash == empty_state_hash:
-            # revert to empty state
-            self.get_empty_environment()
-        elif state_hash in self.environment_states:
-            # revert virtual machines
-            state = self.environment_states[state_hash]
-            self.ci().get_state(state['snapshot_name'])
-            self.ci().environment().resume()
-        else:
+        if not(self.ci().revert_to_state(settings)):
             # create cluster
-            self.get_empty_environment()
+            self.ci().get_empty_environment()
             cluster_id = self.create_cluster(name=name)
-            self._basic_provisioning(cluster_id, settings['nodes'])
-
-            # make a snapshot
-            snapshot_name = '%s_%s' % \
-                            (name.replace(' ', '_')[:17], state_hash)
-            self.ci().environment().suspend(verbose=False)
-            self.ci().environment().snapshot(
-                name=snapshot_name,
-                description=name,
-                force=True,
-            )
-            self.ci().environment().resume(verbose=False)
-            self.environment_states[state_hash] = {
-                'snapshot_name': snapshot_name,
-                'cluster_name': name,
-                'settings': settings
-            }
+            self.basic_provisioning(cluster_id, settings['nodes'])
+            self.ci().snapshot_state(name, settings)
 
         # return id of last created cluster
         clusters = self.client.list_clusters()
@@ -453,12 +429,6 @@ class BaseNodeTestCase(BaseTestCase):
             cluster_id,
             networks=network_list,
             net_manager=NETWORK_MANAGERS['vlan'])
-
-    @logwrap
-    def get_empty_environment(self):
-        if not(self.ci().get_empty_state()):
-            self.ci().setup_environment()
-            self.ci().environment().snapshot(EMPTY_SNAPSHOT)
 
     @logwrap
     def update_redhat_credentials(
