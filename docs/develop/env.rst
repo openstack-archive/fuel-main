@@ -60,7 +60,8 @@ Setup for Web UI Tests
 ----------------------
 
 #. Install NodeJS (on Debian, you may need to use 'apt-get install -t
-   experimental' to get the latest npm)::
+   experimental' to get the latest npm, on Ubuntu 12.04, use nodejs package 
+   instead of nodejs-legacy))::
 
     sudo apt-get install npm nodejs-legacy
     sudo npm install -g jslint requirejs
@@ -97,27 +98,20 @@ Astute and Naily
 
 #. Install Ruby dependencies::
 
-    sudo apt-get install gem2deb ruby-activesupport ruby-rspec ruby-mocha ruby-amqp ruby-json mcollective-client
-    cd ~
-    gem2deb symboltable
-    dpkg -i ruby-symboltable_1.0.2-1_all.deb
-    git clone git@github.com:nulayer/raemon.git
-    cd raemon
-    git checkout v0.3.0
-    gem build raemon.gemspec
-    gem2deb raemon-0.3.0.gem
-    dpkg -i ruby-raemon_0.3.0-1_all.deb
+    sudo apt-get install git curl
+    \curl -L https://get.rvm.io | bash -s stable
+    rvm install 1.9.3
 
-#. Run Astute unit tests::
+#. Install or update dependencies and run unit tests::
 
     cd astute
-    find spec/unit/ -name '*_spec.rb'|xargs ruby -I.
+    ./run_tests.sh
 
 #. (optional) Run Astute MCollective integration test (you'll need to
    have MCollective server running for this to work)::
 
     cd astute
-    ruby -I. spec/integration/mcollective_spec.rb
+    bundle exec rspec spec/integration/mcollective_spec.rb
 
 Building the Fuel ISO
 ---------------------
@@ -254,8 +248,10 @@ Building Documentation
 
 #. You will need the following software to build documentation::
 
-    sudo apt-get install librsvg2-bin rst2pdf python-sphinx python-sphinxcontrib.blockdiag
+    sudo apt-get install librsvg2-bin rst2pdf python-sphinx
     sudo pip install sphinxcontrib-plantuml
+    sudo apt-get install python-sphinxcontrib.blockdiag # on Ubuntu 12.10 or higher
+    sudo pip install sphinxcontrib-blockdiag # on Ubuntu 12.04
 
 #. Look at the list of available formats and generate the one you need::
 
