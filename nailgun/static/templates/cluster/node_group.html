@@ -1,7 +1,7 @@
 <div class="node-groups">
   <div class="row-fluid node-group-header">
     <div class="span10"><h4><%- groupLabel %> (<%= nodes.length %>)</h4></div>
-    <label class="span2 pull-right"><input type="checkbox" name="select-node-group" value="" />Select All</label>
+    <label class="span2 pull-right"><input type="checkbox" name="select-node-group" value="" <%= edit || deployment ? 'disabled' : '' %> />Select All</label>
   </div>
 <div class="row-fluid nodes-group"></div>
 </div>

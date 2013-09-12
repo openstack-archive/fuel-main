@@ -1,24 +1,24 @@
 <% var cluster = nodes.cluster %>
+
 <div class="row-fluid node-list-header">
   <div class="span8">
-    <h3><%= cluster ? cluster.get('name') : 'Unallocated Nodes' %> (<%= nodes.length %> node<%= nodes.length == 1 ? '' : 's' %>)</h3>
-    <% if (cluster) { %>
+    <h3><%= cluster ? cluster.get('name') : 'Unallocated Nodes' %> <div style="display: inline-block; color: #666666; font-size: 16px;">(<%= nodes.length %> node<%= nodes.length == 1 ? '' : 's' %>)</div></h3>
+    <% if (cluster && !edit) { %>
+    <div class="environment-status">
       <p><strong>OpenStack Release:</strong> <%- cluster.get('release').get('name') %></p>
       <% var statuses = {'new': 'New', 'deployment': 'Deploying', 'operational': 'Operational', 'error': 'Error', 'remove': 'Removing'} %>
       <p><strong>Environment Status:</strong> <%- statuses[cluster.get('status')] %></p>
       <% var modes = {'multinode': 'Multi-node', 'ha_compact': 'Multi-node HA'} %>
       <p><strong>Environment Deployment Mode:</strong> <%- modes[cluster.get('mode')] %></p>
+      </div>
     <% } %>
   </div>
-  <% if (cluster) { %>
-    <a class="span2 btn btn-link btn-add-nodes" href="#cluster/<%- cluster.id %>/nodes/add"><i class="icon-plus-circle"></i>Add Nodes</a>
-  <% } %>
-  <label for="select-nodes-common" class="span<%= cluster ? '2' : '4' %>"><input type="checkbox" name="select-nodes-common" value="" <%= nodes.length ? '' : 'disabled' %> />Select All</label>
+  <label class="span2 pull-right"><input type="checkbox" name="select-nodes-common" value="" <%= !nodes.length || edit || deployment ? 'disabled' : '' %> />Select All</label>
 </div>
 <div class="row-fluid">
   <% if (!nodes.deferred || nodes.deferred.state() != 'pending') { %>
     <% if (!nodes.length) { %>
-      <div class="alert alert-warning"><%= cluster ? 'How to add nodes in environment description' : 'How to add nodes in Fuel description' %></div>
+      <div class="alert alert-warning"><%= cluster ?  edit ? 'There are no selected nodes' : 'List of deployment mode requirements' : 'How to add nodes in Fuel' %></div>
     <% } %>
     <div class="nodes"></div>
   <% } else { %>
@@ -29,4 +29,3 @@
         </div>
       </div>
   <% } %>
-<div class="row-fluid">

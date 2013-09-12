@@ -20,13 +20,18 @@ body {
   font-family: 'Segoe UI', Arial, 'Helvetica Neue', Helvetica, Oswald, Verdana, Tahoma, Arial, san-serif;
   -webkit-font-smoothing: antialiased;
   height: 100%;
-}
-
-body {
   -webkit-user-select: none;
      -moz-user-select: -moz-none;
       -ms-user-select: none;
           user-select: none;
+}
+
+button {
+  font-family: 'Segoe UI', Arial, 'Helvetica Neue', Helvetica, Oswald, Verdana, Tahoma, Arial, san-serif;
+}
+
+.btn {
+  padding: 3px 12px 5px;
 }
 
 .enable-selection {
@@ -430,7 +435,7 @@ h6.page-title {
   margin-bottom: 6px;
   overflow: hidden;
 }
-.checked {
+.node.checked {
   background-color: #dedede;
 }
 .node-box {
@@ -524,7 +529,6 @@ h6.page-title {
 }
 .roles > ul {
   text-shadow: 0 1px 0 rgba(255, 255, 255, 0.25);
-  cursor: pointer;
   margin: 0px;
   padding: 0px;
   font-size: 10px;
@@ -548,9 +552,7 @@ h6.page-title {
   font-weight: 600;
   content: ' ';
 }
-.roles > ul:hover {
-  color: #0178b3;
-}
+
 .node-status {
   width: 145px;
   height: 20px;
@@ -640,10 +642,6 @@ h6.page-title {
   height: 11px;
 }
 
-.nodes-management-panel > div {
-  float: left;
-}
-
 .nodes-management-panel > .cluster-actions {
   width: 100px;
 }
@@ -669,11 +667,6 @@ h6.page-title {
 
 #tab-nodes .cluster-name {
   margin-top: 10px !important;
-}
-
-.btn-go-to-cluster {
-  position: absolute;
-  top: 192px;
 }
 
 .cluster-info {
@@ -702,6 +695,10 @@ h6.page-title {
   margin-bottom: 15px;
 }
 
+.node-list-header p {
+  margin-bottom: 0;
+}
+
 .node-list-header a, .node-list-header label {
   padding-top: 13px;
   padding-right: 0;
@@ -722,13 +719,30 @@ h6.page-title {
   top: -2px;
 }
 
-.roles-panel {
-  padding: 10px;
-  background: #ccc;
-  border: 1px solid #444;
+.node-group-header h4 {
+  text-transform: capitalize;
 }
 
-/*.node-name > .name:hover {border-bottom: 1px dotted #0178b3; cursor: pointer; color: #0178b3;} */
+.roles-panel {
+  display: block;
+  padding: 20px;
+  background-color: #e0e0e0;
+  border: 1px solid #a0a0a0;
+  box-sizing: border-box;
+  -moz-box-sizing: border-box;
+  -webkit-box-sizing: border-box;
+}
+
+.roles-panel > h4 {
+  display: block;
+  margin: 0px;
+  padding: 0px;
+  font-size: 16px;
+  color: #666666;
+  text-shadow: 0 1px 0 rgba(255, 255, 255, 0.35);
+  margin-bottom: 10px;
+}
+
 .node-name > .name > p {
   display: inline;
   text-shadow: 0 1px 0 rgba(255, 255, 255, 0.25);
@@ -810,29 +824,11 @@ h6.page-title {
   border-bottom: 1px dotted #b0b0b0;
 }
 
-/*
-.unassigned .node-name {
-  font-size: 12px;
-}
-
-
-.node-renameable:hover {
-  display: inline;
-  border-bottom: 1px dotted #337799;
-  color: #337799;
-}
-
-.node-renameable > input {
-  width: 92px;
-  margin-top: 2px;
-}
-*/
-
 .roles .pending {
   color: #f00;
 }
 
-.node-status:hover .can-discard {
+.node-status:hover > div {
   display: none !important;
 }
 
@@ -852,126 +848,10 @@ h6.page-title {
     padding: 0;
 }
 
-/*
-.nodeplaceholder {
-  height: 114px;
-  background: none;
-  border: 1.5pt dashed #dadada;
-}
-
-.node-select {
-  display: block;
-  width: 172px;
-  height: 73px;
-  float: left;
-  margin-left: -1px;
-  margin-top: -114px;
-  line-height: 52px;
-  font-size: 60px;
-  text-align: center;
-  padding: 17px 0px 0px;
-  color: rgba(255,255,255,0.85);
-  cursor: pointer;
-}
-.node-to-add-unchecked:hover {
-  background-color: rgba(0, 100, 38, 0.25);
-  box-shadow: 0 0px 6px rgba(0,0,0,.3),
-  inset 0px 0px 0px rgba(255,255,255,.0);
-  cursor: pointer;
-}
-.node-to-add-unchecked .node-select {
-  display: none;
-}
-.node-to-add-checked:hover {
-  background-color: rgba(0, 100, 38, 0.15);
-  box-shadow: 0 0px 6px rgba(0,0,0,.3),
-  inset 0px 0px 0px rgba(255,255,255,.0);
-  cursor: pointer;
-}
-.node-to-add-checked .node-select {
-  display: block;
-  background-color: rgba(0, 100, 38, 0.25);
-}
-
-.node-to-delete-unchecked:hover {
-  background-color: rgba(121, 0, 0, 0.25);
-  box-shadow: 0 0px 6px rgba(0,0,0,.3),
-  inset 0px 0px 0px rgba(255,255,255,.0);
-  cursor: pointer;
-}
-.node-to-delete-unchecked .node-select {
-  display: none;
-}
-.node-to-delete-checked:hover {
-  background-color: rgba(121, 0, 0, 0.25);
-  box-shadow: 0 0px 6px rgba(0,0,0,.3),
-  inset 0px 0px 0px rgba(255,255,255,.0);
-  cursor: pointer;
-}
-.node-to-delete-checked .node-select {
-  display: block;
-  background-color: rgba(121, 0, 0, 0.25);
-}
-.unassigned.node-not-checkable:hover {
-  background-color: rgba(130, 130, 130, 0.25);
-  cursor: not-allowed !important;
-}
-*/
-
 .breaker {
   margin: 0px 20px 20px 20px;
 }
 
-/*
-.node-name {
-  display: block;
-  width: 107px;
-  float: left;
-  padding: 0;
-  margin: 0;
-  padding-top: 4px;
-}
-
-.node-name div {
-  word-wrap: break-word;
-  font-size: 12px;
-}
-
-.node-name .input-medium {
-  margin: 0px;
-  margin-top: 6px;
-  padding: 0px;
-  height: 24px;
-  width: 100px;
-  font-size: 12px;
-}
-
-.node-name .node-renameable {
-  cursor: pointer;
-}
-*/
-/*
-.node-status {
-  display: block;
-  margin: 0px;
-  padding: 0px;
-  height: 25px;
-  margin-top: 16px;
-  cursor: pointer;
-  overflow: hidden;
-  margin-left: 13px;
-  color: #666666;
-  padding-right: 14px;
-  text-align: center;
-  font-size: 13px;
-}
-*/
-
-/*
-.unassigned.node-not-checkable .node-status {
-  cursor: not-allowed !important;
-}
-*/
 .node-status > .msg-offline,
 .node-status > .msg-discover {
     display: block;
@@ -998,26 +878,6 @@ h6.page-title {
 .node-status > .logs-link > i {
     font-size: 11px;
 }
-
-/*
-.node-status > .progress {
-  height: 13px;
-  background-color: #cacaca;
-  background-image: none;
-  border-radius: 3px 3px 3px 3px;
-  margin-top: 5px;
-}
-
-.node-status > .progress > .bar > p {
-  color: #FFFFFF;
-  font-size: 10px;
-  line-height: 20px;
-  letter-spacing: 1px;
-  margin: -4px 0 0 4px;
-  text-align: left;
-  text-shadow: none;
-}
-*/
 
 .checktoinstall {
   display: block;
@@ -1051,14 +911,6 @@ h6.page-title {
   margin: 0px 0px 0px 60px;
   color: rgba(255, 255, 255, 0.65);
 }
-/*
-.checktoinstall:hover {
-  background-color: rgba(0, 100, 38, 0.35);
-}
-.checktodelete:hover {
-  background-color: rgba(121, 0, 0, 0.35);
-}
-*/
 
 .node-status > .msg-ok {color: #17824b;}
 .node-status > .msg-info {color: #4794cf;}
@@ -1066,56 +918,6 @@ h6.page-title {
 .node-status > .msg-warning {color: #b44200;}
 .node-status > .msg-unimportant {color: #888888;}
 .node-status > .msg-provisioned {color: #0088cc;}
-
-/*
-.assigned {
-  height: 114px !important;
-  border: 1px solid #afafaf;
-}
-
-.unassigned {
-  height: 114px !important;
-  border: 1px solid #afafaf;
-}
-
-.unassigned > .nodestatus {
-  display: none;
-}
-*/
-/*
-.node-hardware {
-  height: 24px;
-  border-top: 1px dotted #afafaf;
-  font-size: 9px;
-  color: #255888;
-  text-shadow: 0 1px 0 rgba(255, 255, 255, 0.25);
-  cursor: pointer;
-  text-align: center;
-}
-
-.node-hardware:hover  {
-  background-color: rgba(0, 0, 0, 0.1);
-  color: #255888;
-  text-shadow: 0 1px 0 rgba(255, 255, 255, 0.1);
-}
-
-.node-hardware > span  {
-  display: inline-block;
-  padding: 0 3px;
-}
-
-.node-hardware > span:first-child  {
-  padding-left: 0;
-}
-
-.node-hardware > span:last-child  {
-  padding-right: 0;
-}
-
-.node-hardware:hover > span  {
-  color: #1e486f;
-}
-*/
 
 .manufacturer-hp {
   background: url(../img/node_manufacturer_logos.png) 0px 0px no-repeat;
@@ -1266,51 +1068,6 @@ h6.page-title {
   border-color: #404c5c #404c5c #404c5c;
   border-bottom-color: transparent;
 }
-
-/*
-.alert {
-  padding: 8px 35px 8px 14px;
-  margin-bottom: 20px;
-  color: #c09853;
-  text-shadow: 0 1px 0 rgba(0, 0, 0, 0.3);
-  background-color: rgba(252, 248, 227, 0.2);
-  border: 1px solid rgba(0, 0, 0, 0.5);
-  border: 1px solid rgba(252, 248, 227, 0.3);
-  -webkit-border-radius: 4px;
-     -moz-border-radius: 4px;
-          border-radius: 4px;
-}
-*/
-
-/*
-.globalalert {
-  background-color: rgba(138, 85, 9, 0.3);
-  border: none;
-  box-shadow: 0 1px 0 rgba(255, 255, 255, 0.2), 0 1px 1px rgba(0, 0, 0, 0.4) inset;
-  text-shadow: 0 1px 0 rgba(0, 0, 0, 0.3);
-}
-
-.global-error {
-  background-color: rgba(121, 0, 0, 0.3);
-  border: none;
-  box-shadow: 0 1px 0 rgba(255, 255, 255, 0.2), 0 1px 1px rgba(0, 0, 0, 0.4) inset;
-  text-shadow: 0 1px 0 rgba(0, 0, 0, 0.3);
-}
-
-.global-success {
-  background-color: rgba(19, 35, 15, 0.3);
-  border: none;
-  box-shadow: 0 1px 0 rgba(255, 255, 255, 0.2), 0 1px 1px rgba(0, 0, 0, 0.4) inset;
-  text-shadow: 0 1px 0 rgba(0, 0, 0, 0.3);
-}
-
-.global-info {
-  background-color: rgba(32, 54, 106, 0.3);
-  border: none;
-  box-shadow: 0 1px 0 rgba(255, 255, 255, 0.2), 0 1px 1px rgba(0, 0, 0, 0.4) inset;
-  text-shadow: 0 1px 0 rgba(0, 0, 0, 0.3);
-}
-*/
 
 .globalalert,
 .global-error,
@@ -3538,7 +3295,7 @@ input.error:focus {
     position:relative;
   }
 
-  .custom-tumbler input[type=checkbox]{width:24px;height:24px;overflow:hidden;position:absolute;filter:alpha(opacity=0);-moz-opacity:0;-khtml-opacity:0;opacity:0; cursor: pointer;}
+  .custom-tumbler input[type=checkbox]{width:24px;height:24px;margin:0;overflow:hidden;position:absolute;filter:alpha(opacity=0);-moz-opacity:0;-khtml-opacity:0;opacity:0; cursor: pointer;}
   .custom-tumbler input[type=checkbox] + span{display:block;width:24px;height:24px;overflow:hidden;font-size:1px;line-height:0;background:transparent url(../img/radio_checkbox.png) no-repeat scroll -24px 0px;}
   .custom-tumbler input[type=checkbox]:checked + span{background-position:0 0px;}
   .custom-tumbler input[disabled] + span{filter:alpha(opacity=50);-moz-opacity:0.5;-khtml-opacity:0.5;opacity:0.5;cursor: not-allowed;}
@@ -4392,6 +4149,7 @@ input.input-append {
 .cluster-toolbar {
   display: block;
   width: 100%;
+  height: 65px;
   padding: 19px 0px 19px 0px;
   margin-bottom: 20px;
   border-bottom: 2px solid #a0a0a0;
@@ -4434,6 +4192,10 @@ input.input-append {
   border-radius: 4px;
   padding: 10px 20px 20px 20px;
   margin-bottom: 20px;
+}
+
+.node-groups:hover {
+  background-color: #f5f5f5;
 }
 
 .btn-cluster-actions {
@@ -4565,11 +4327,62 @@ input.input-append {
   top: -3px;
 }
 
-.role-conflict {
-  color: #B94A48;
+.roles-panel > hr {
+  margin: 20px 0;
+  border: 0;
+  border-top: 1px solid #a0a0a0;
+  border-bottom: 1px solid #ffffff;
+}
+
+.role-container {
+  display: block;
+  margin: 0px;
+  padding: 0px;
+  margin-bottom: 10px;
+}
+
+.role-container > label {
+  margin: 0px;
+  padding: 0px;
 }
 
 .role-description {
+  display: block;
   float: none;
   clear: both;
+  font-size: 12px;
+  font-style: italic;
+  margin-left: 17px;
+  margin-top: -8px;
+  color: #666666;
+}
+
+.btn-edit-nodes {
+  position: relative;
+  top: 2px;
+}
+
+.role-conflict {
+  display: inline-block;
+  color: #B94A48;
+  font-size: 12px;
+  font-style: italic;
+  margin-left: 20px;
+}
+
+.environment-status {
+  font-size: 12px;
+  color: #888888;
+}
+
+.environment-status > p {
+  margin: 0px;
+  padding: 0px;
+  margin-top: -4px;
+  font-weight: 100;
+}
+
+.environment-status > p > strong {
+  font-weight: 200;
+  color: #666666;
 }

@@ -134,6 +134,15 @@ define(['utils'], function(utils) {
                 resource = 0;
             }
             return resource;
+        },
+        sortRoles: function() {
+            var preferredOrder = ['controller', 'compute', 'cinder'];
+            return _.union(this.get('roles'), this.get('pending_roles')).sort(function(a, b) {
+                return _.indexOf(preferredOrder, a) - _.indexOf(preferredOrder, b);
+            });
+        },
+        canDiscardDeletion: function() {
+            return this.get('pending_deletion') && !(_.contains(this.get('roles'), 'controller') && this.collection.cluster.get('mode') == 'multinode' && this.collection.cluster.get('nodes').filter(function(node) {return _.contains(node.get('pending_roles'), 'controller');}).length);
         }
     });
 
@@ -146,7 +155,7 @@ define(['utils'], function(utils) {
         },
         hasChanges: function() {
             return !!this.filter(function(node) {
-                return node.get('pending_addition') || node.get('pending_deletion');
+                return node.get('pending_addition') || node.get('pending_deletion') || node.get('pending_roles').length;
             }).length;
         },
         currentNodes: function() {
@@ -161,6 +170,9 @@ define(['utils'], function(utils) {
         resources: function(resourceName) {
             var resources = this.map(function(node) {return node.resource(resourceName);});
             return _.reduce(resources, function(sum, n) {return sum + n;}, 0);
+        },
+        getByIds: function(ids) {
+            return this.filter(function(node) {return _.contains(ids, node.id);});
         }
     });
 

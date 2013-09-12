@@ -1,18 +1,19 @@
 <%
   var nodeClass = '';
   if (node.get('pending_deletion')) {
-    nodeClass = 'node-delete';
+    nodeClass = 'delete';
   } else if (node.get('pending_addition')) {
-    nodeClass = 'node-new';
+    nodeClass = 'new';
   } else if (!node.get('online')) {
-    nodeClass = 'node-offline';
+    nodeClass = 'offline';
   }
 %>
-<div class="node-box <%= nodeClass %>" data-node-id="<%- node.id %>">
+<div class="node-box node-<%- nodeClass || node.get('status') %>">
   <div class="node-content">
     <div class="node-checkbox">
       <div class="custom-tumbler">
-        <input type="checkbox" value="<%- node.id %>" <%= checked ? 'checked' : '' %> <%= !node.get('online') && !node.get('cluster') ? 'disabled' : '' %> />
+        <% var disabledNode = ((!node.get('online') || node.get('status') == 'error') && !node.get('cluster')) || node.get('pending_deletion') || edit || deployment %>
+        <input type="checkbox" value="<%- node.id %>" <%= checked || edit ? 'checked' : '' %> <%= disabledNode ? 'disabled' : '' %> />
         <!-- [if !IE |(gte IE 9)]> --><span>&nbsp;</span><!-- <![endif] -->
       </div>
     </div>
@@ -35,19 +36,20 @@
       </div>
       <div class="roles">
         <ul>
-          <% if (!node.get('cluster')) { %>
-            <li>unallocated</li>
-          <% } else { %>
+          <% if (node.get('roles').length || (node.get('pending_roles') && node.get('pending_roles').length)) { %>
             <% _.each(node.get('roles'), function(role) { %>
               <li><%= role %></li>
             <% }) %>
-            <% _.each(node.get('pending_roles'), function(role) { %>
-              <li class="pending"><%= role %></li>
-            <% }) %>
+            <% if (node.get('pending_roles')) { %>
+              <% _.each(node.get('pending_roles'), function(role) { %>
+                <li class="pending"><%= role %></li>
+              <% }) %>
+            <% } %>
+          <% } else { %>
+            <li>unallocated</li>
           <% } %>
         </ul>
       </div>
      </div>
    </div>
  </div>
- <div class="assign-roles-panel"></div>
