@@ -136,6 +136,24 @@ class TestNodeDisksHandlers(BaseHandlers):
             volume_group_size = new_volume_size * updated_disks_count
             self.assertEquals(size_volumes_after, volume_group_size)
 
+    def test_update_ceph_partition(self):
+        node = self.create_node(role='ceph-osd')
+        disks = self.get(node.id)
+
+        new_volume_size = 4321
+        for disk in disks:
+            if disk['size'] > 0:
+                for volume in disk['volumes']:
+                    volume['size'] = new_volume_size
+
+        self.put(node.id, disks)
+        partitions_after_update = filter(
+            lambda volume: volume.get('type') == 'partition',
+            node.attributes.volumes)
+
+        for partition_after in partitions_after_update:
+            self.assertEquals(partition_after['size'], new_volume_size)
+
     def test_validator_not_enough_size_for_volumes(self):
         node = self.create_node()
         disks = self.get(node.id)
@@ -265,6 +283,11 @@ class TestNodeVolumesInformationHandler(BaseHandlers):
         response = self.get(node_db.id)
         self.check_volumes(response, ['os', 'image'])
 
+    def test_volumes_information_for_ceph_role(self):
+        node_db = self.create_node('ceph-osd')
+        response = self.get(node_db.id)
+        self.check_volumes(response, ['os', 'ceph'])
+
 
 class TestVolumeManager(BaseHandlers):
 
@@ -327,10 +350,11 @@ class TestVolumeManager(BaseHandlers):
         sum_lvm_meta = 0
         for disk in only_disks(spaces):
             for volume in disk['volumes']:
-                if volume.get('vg') == volume_name:
+                if volume.get('vg') == volume_name or \
+                   volume.get('name') == volume_name:
                     vg_size += volume['size']
-                    vg_size -= volume['lvm_meta_size']
-                    sum_lvm_meta += volume['lvm_meta_size']
+                    vg_size -= volume.get('lvm_meta_size', 0)
+                    sum_lvm_meta += volume.get('lvm_meta_size', 0)
 
         self.assertEquals(
             vg_size, disk_sum_size - os_size - reserved_size - sum_lvm_meta)
@@ -392,6 +416,13 @@ class TestVolumeManager(BaseHandlers):
         self.should_contain_os_with_minimal_size(node.volume_manager)
         self.all_free_space_except_os_for_volume(
             node.volume_manager.volumes, 'cinder')
+        self.check_disk_size_equal_sum_of_all_volumes(node.attributes.volumes)
+
+    def test_allocates_all_free_space_for_ceph_for_ceph_role(self):
+        node = self.create_node('ceph-osd')
+        self.should_contain_os_with_minimal_size(node.volume_manager)
+        self.all_free_space_except_os_for_volume(
+            node.volume_manager.volumes, 'ceph')
         self.check_disk_size_equal_sum_of_all_volumes(node.attributes.volumes)
 
     def create_node_and_calculate_min_size(
@@ -472,7 +503,33 @@ class TestDisks(BaseHandlers):
     def test_remove_pv(self):
         disk = self.create_disk(possible_pvs_count=1)
         disk_without_pv = deepcopy(disk)
-        disk.create_pv('pv_name', 100)
+        disk.create_pv({'id': 'pv_name'}, 100)
         disk.remove_pv('pv_name')
 
         self.assertEquals(disk_without_pv.render(), disk.render())
+
+    def test_boot_partition_has_file_system(self):
+        disk = self.create_disk(possible_pvs_count=1)
+        boot_record = filter(
+            lambda volume: volume.get('mount') == '/boot', disk.volumes)[0]
+        self.assertEquals(boot_record['file_system'], 'ext2')
+
+
+class TestFixtures(BaseHandlers):
+
+    @property
+    def get_vgs_for_releases(self):
+        openstack = self.env.read_fixtures(
+            ('openstack',))[0]['fields']['volumes_metadata']['volumes']
+        redhat = self.env.read_fixtures(
+            ('openstack',))[1]['fields']['volumes_metadata']['volumes']
+
+        return [only_vg(openstack), only_vg(redhat)]
+
+    def test_each_logical_volume_has_file_system(self):
+        for release_vgs in self.get_vgs_for_releases:
+            for vg in release_vgs:
+                for volume in vg['volumes']:
+                    self.assertIn(
+                        volume['file_system'],
+                        ('ext2', 'ext4', 'swap', 'xfs', None))

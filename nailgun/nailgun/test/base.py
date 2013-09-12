@@ -366,7 +366,7 @@ class Environment(object):
         return nets
 
     def get_default_roles(self):
-        return ['controller', 'compute', 'cinder']
+        return ['controller', 'compute', 'cinder', 'ceph-osd']
 
     def get_default_volumes_metadata(self):
         return self.read_fixtures(
@@ -396,10 +396,10 @@ class Environment(object):
             with open(fxtr_path, "r") as fxtr_file:
                 try:
                     data.extend(json.load(fxtr_file))
-                except Exception:
+                except Exception as exc:
                     logging.error(
-                        "Error occurred while loading "
-                        "fixture %s" % fxtr_path
+                        'Error "%s" occurred while loading '
+                        'fixture %s' % (exc, fxtr_path)
                     )
         return data
 

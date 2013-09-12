@@ -152,7 +152,7 @@ class CiBase(object):
     def snapshot_state(self, name, settings):
         state_hash = self.generate_state_hash(settings)
         snapshot_name = '{0}_{1}'.format(
-                name.replace(' ', '_')[:17], state_hash)
+            name.replace(' ', '_')[:17], state_hash)
         self.environment().suspend(verbose=False)
         self.environment().snapshot(
             name=snapshot_name,

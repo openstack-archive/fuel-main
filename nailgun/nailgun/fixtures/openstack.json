@@ -8,7 +8,7 @@
             "operating_system": "CentOS",
             "description": "This option will install the OpenStack Grizzly packages using CentOS as a base operating system. With high availability features built in, you are getting a robust, enterprise-grade OpenStack deployment.",
             "state": "available",
-            "roles": ["controller", "compute", "cinder"],
+            "roles": ["controller", "compute", "cinder", "ceph-osd"],
             "roles_metadata": {
                 "controller": {
                     "name": "Controller",
@@ -23,6 +23,10 @@
                 "cinder": {
                     "name": "Cinder",
                     "description": ["Cinder"]
+                },
+                "ceph-osd": {
+                    "name": "Ceph OSD",
+                    "description": ["Ceph Storage Node"]
                 }
             },
             "networks_metadata": [
@@ -37,9 +41,19 @@
                     "controller": ["os", "image"],
                     "compute": ["os", "vm"],
                     "cinder": ["os", "cinder"],
+                    "ceph-osd": ["os", "ceph"],
                     "other": ["os"]
                 },
                 "volumes": [
+                    {
+                        "id": "ceph",
+                        "type": "partition",
+                        "min_size": {"generator": "calc_min_ceph_size"},
+                        "label": "Ceph",
+                        "mount": "none",
+                        "disk_label": "cephosd",
+                        "file_system": "xfs"
+                    },
                     {
                         "id": "os",
                         "type": "vg",
@@ -50,13 +64,15 @@
                                 "mount": "/",
                                 "type": "lv",
                                 "name": "root",
-                                "size": {"generator": "calc_total_root_vg"}
+                                "size": {"generator": "calc_total_root_vg"},
+                                "file_system": "ext4"
                             },
                             {
                                 "mount": "swap",
                                 "type": "lv",
                                 "name": "swap",
-                                "size": {"generator": "calc_swap_size"}
+                                "size": {"generator": "calc_swap_size"},
+                                "file_system": "swap"
                             }
                         ]
                     },
@@ -73,7 +89,8 @@
                                 "size": {
                                     "generator": "calc_total_vg",
                                     "generator_args": ["vm"]
-                                }
+                                },
+                                "file_system": "xfs"
                             }
                         ]
                     },
@@ -90,7 +107,8 @@
                                 "size": {
                                     "generator": "calc_total_vg",
                                     "generator_args": ["image"]
-                                }
+                                },
+                                "file_system": "xfs"
                             }
                         ]
                     },
@@ -364,13 +382,15 @@
                                 "mount": "/",
                                 "type": "lv",
                                 "name": "root",
-                                "size": {"generator": "calc_total_root_vg"}
+                                "size": {"generator": "calc_total_root_vg"},
+                                "file_system": "ext4"
                             },
                             {
                                 "mount": "swap",
                                 "type": "lv",
                                 "name": "swap",
-                                "size": {"generator": "calc_swap_size"}
+                                "size": {"generator": "calc_swap_size"},
+                                "file_system": "swap"
                             }
                         ]
                     },
@@ -387,7 +407,8 @@
                                 "size": {
                                     "generator": "calc_total_vg",
                                     "generator_args": ["vm"]
-                                }
+                                },
+                                "file_system": "xfs"
                             }
                         ]
                     },
@@ -404,7 +425,8 @@
                                 "size": {
                                     "generator": "calc_total_vg",
                                     "generator_args": ["image"]
-                                }
+                                },
+                                "file_system": "xfs"
                             }
                         ]
                     },
@@ -664,9 +686,19 @@
                 "volumes_roles_mapping": {
                     "controller": ["os", "image"],
                     "compute": ["os", "vm"],
+                    "ceph-osd": ["os", "ceph"],
                     "cinder": ["os", "cinder"]
                 },
                 "volumes": [
+                    {
+                        "id": "ceph",
+                        "type": "partition",
+                        "min_size": {"generator": "calc_min_ceph_size"},
+                        "label": "Ceph",
+                        "mount": "none",
+                        "disk_label": "ceph",
+                        "file_system": "xfs"
+                    },
                     {
                         "id": "os",
                         "type": "vg",
@@ -677,13 +709,15 @@
                                 "mount": "/",
                                 "type": "lv",
                                 "name": "root",
-                                "size": {"generator": "calc_total_root_vg"}
+                                "size": {"generator": "calc_total_root_vg"},
+                                "file_system": "ext4"
                             },
                             {
                                 "mount": "swap",
                                 "type": "lv",
                                 "name": "swap",
-                                "size": {"generator": "calc_swap_size"}
+                                "size": {"generator": "calc_swap_size"},
+                                "file_system": "swap"
                             }
                         ]
                     },
@@ -700,7 +734,8 @@
                                 "size": {
                                     "generator": "calc_total_vg",
                                     "generator_args": ["vm"]
-                                }
+                                },
+                                "file_system": "xfs"
                             }
                         ]
                     },
@@ -717,7 +752,8 @@
                                 "size": {
                                     "generator": "calc_total_vg",
                                     "generator_args": ["image"]
-                                }
+                                },
+                                "file_system": "xfs"
                             }
                         ]
                     },
