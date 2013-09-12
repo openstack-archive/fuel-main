@@ -126,6 +126,8 @@ class DeploymentTask(object):
             'respond_to': 'deploy_resp',
             'args': {
                 'task_uuid': task.uuid,
+                # if task.cluster.facts not empty dict, it will be used
+                # instead of computing cluster facts through serialize
                 'deployment_info': task.cluster.facts
                 or serialize(task.cluster)
             }

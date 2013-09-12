@@ -143,16 +143,90 @@ class DeploymentTaskManager(TaskManager):
                 db().commit()
 
         task_messages = []
-        if self.cluster.facts:
-            self.cluster.status = 'deployment'
-            db().add(self.cluster)
-            db().commit()
-            supertask = Task(
-                name="deploy",
-                cluster=self.cluster
+
+        nodes_to_delete = TaskHelper.nodes_to_delete(self.cluster)
+        nodes_to_deploy = TaskHelper.nodes_to_deploy(self.cluster)
+        nodes_to_provision = TaskHelper.nodes_to_provision(self.cluster)
+
+        if not any([nodes_to_provision, nodes_to_deploy, nodes_to_delete]):
+            raise errors.WrongNodeStatus("No changes to deploy")
+
+        self.cluster.status = 'deployment'
+        db().add(self.cluster)
+        db().commit()
+
+        supertask = Task(
+            name="deploy",
+            cluster=self.cluster
+        )
+        db().add(supertask)
+        db().commit()
+        if not self.cluster.facts:
+            try:
+                supertask = self.check_before_deployment(supertask)
+            except errors.CheckBeforeDeploymentError as e:
+                return e.supertask
+        # in case of Red Hat
+        if self.cluster.release.operating_system == "RHEL":
+            try:
+                redhat_messages = self._redhat_messages(
+                    supertask,
+                    # provision only?
+                    [
+                        {"uid": n.id, "platform_name": n.platform_name}
+                        for n in nodes_to_provision
+                    ]
+                )
+            except Exception as exc:
+                TaskHelper.update_task_status(
+                    supertask.uuid,
+                    status='error',
+                    progress=100,
+                    msg=str(exc)
+                )
+                return supertask
+            task_messages.extend(redhat_messages)
+        # /in case of Red Hat
+
+        task_deletion, task_provision, task_deployment = None, None, None
+
+        if nodes_to_delete:
+            task_deletion = supertask.create_subtask("node_deletion")
+            logger.debug("Launching deletion task: %s", task_deletion.uuid)
+            self._call_silently(
+                task_deletion,
+                tasks.DeletionTask
             )
-            db().add(supertask)
+
+        if nodes_to_provision:
+            TaskHelper.update_slave_nodes_fqdn(nodes_to_provision)
+            logger.debug("There are nodes to provision: %s",
+                         " ".join([n.fqdn for n in nodes_to_provision]))
+            task_provision = supertask.create_subtask("provision")
+            # we assume here that task_provision just adds system to
+            # cobbler and reboots it, so it has extremely small weight
+            task_provision.weight = 0.05
+            provision_message = self._call_silently(
+                task_provision,
+                tasks.ProvisionTask,
+                method_name='message'
+            )
+            db().refresh(task_provision)
+
+            # if failed to generate task message for orchestrator
+            # then task is already set to error
+            if task_provision.status == 'error':
+                return supertask
+
+            task_provision.cache = provision_message
+            db().add(task_provision)
             db().commit()
+            task_messages.append(provision_message)
+
+        if nodes_to_deploy:
+            TaskHelper.update_slave_nodes_fqdn(nodes_to_deploy)
+            logger.debug("There are nodes to deploy: %s",
+                         " ".join([n.fqdn for n in nodes_to_deploy]))
             task_deployment = supertask.create_subtask("deployment")
             deployment_message = self._call_silently(
                 task_deployment,
@@ -169,141 +243,6 @@ class DeploymentTaskManager(TaskManager):
             db().add(task_deployment)
             db().commit()
             task_messages.append(deployment_message)
-        else:
-            nodes_to_delete = TaskHelper.nodes_to_delete(self.cluster)
-            nodes_to_deploy = TaskHelper.nodes_to_deploy(self.cluster)
-            nodes_to_provision = TaskHelper.nodes_to_provision(self.cluster)
-
-            if not any([nodes_to_provision, nodes_to_deploy, nodes_to_delete]):
-                raise errors.WrongNodeStatus("No changes to deploy")
-
-            self.cluster.status = 'deployment'
-            db().add(self.cluster)
-            db().commit()
-
-            supertask = Task(
-                name="deploy",
-                cluster=self.cluster
-            )
-            db().add(supertask)
-            db().commit()
-
-            # checking admin intersection with untagged
-            network_info = NetworkConfigurationSerializer\
-                .serialize_for_cluster(
-                    self.cluster
-                )
-            check_networks = supertask.create_subtask('check_networks')
-            self._call_silently(
-                check_networks,
-                tasks.CheckNetworksTask,
-                data=network_info,
-                check_admin_untagged=True
-            )
-            db().refresh(check_networks)
-            if check_networks.status == 'error':
-                return supertask
-            db().delete(check_networks)
-            db().commit()
-
-            # checking prerequisites
-            check_before = supertask.create_subtask('check_before_deployment')
-            logger.debug("Checking prerequisites task: %s", check_before.uuid)
-            self._call_silently(
-                check_before,
-                tasks.CheckBeforeDeploymentTask
-            )
-            db().refresh(check_before)
-            # if failed to check prerequisites
-            # then task is already set to error
-            if check_before.status == 'error':
-                logger.debug(
-                    "Checking prerequisites failed: %s", check_before.message
-                )
-                return supertask
-            logger.debug(
-                "Checking prerequisites is successful, starting deployment..."
-            )
-            db().delete(check_before)
-            db().commit()
-
-            # in case of Red Hat
-            if self.cluster.release.operating_system == "RHEL":
-                try:
-                    redhat_messages = self._redhat_messages(
-                        supertask,
-                        # provision only?
-                        [
-                            {"uid": n.id, "platform_name": n.platform_name}
-                            for n in nodes_to_provision
-                        ]
-                    )
-                except Exception as exc:
-                    TaskHelper.update_task_status(
-                        supertask.uuid,
-                        status='error',
-                        progress=100,
-                        msg=str(exc)
-                    )
-                    return supertask
-                task_messages.extend(redhat_messages)
-            # /in case of Red Hat
-
-            task_deletion, task_provision, task_deployment = None, None, None
-
-            if nodes_to_delete:
-                task_deletion = supertask.create_subtask("node_deletion")
-                logger.debug("Launching deletion task: %s", task_deletion.uuid)
-                self._call_silently(
-                    task_deletion,
-                    tasks.DeletionTask
-                )
-
-            if nodes_to_provision:
-                TaskHelper.update_slave_nodes_fqdn(nodes_to_provision)
-                logger.debug("There are nodes to provision: %s",
-                             " ".join([n.fqdn for n in nodes_to_provision]))
-                task_provision = supertask.create_subtask("provision")
-                # we assume here that task_provision just adds system to
-                # cobbler and reboots it, so it has extremely small weight
-                task_provision.weight = 0.05
-                provision_message = self._call_silently(
-                    task_provision,
-                    tasks.ProvisionTask,
-                    method_name='message'
-                )
-                db().refresh(task_provision)
-
-                # if failed to generate task message for orchestrator
-                # then task is already set to error
-                if task_provision.status == 'error':
-                    return supertask
-
-                task_provision.cache = provision_message
-                db().add(task_provision)
-                db().commit()
-                task_messages.append(provision_message)
-
-            if nodes_to_deploy:
-                TaskHelper.update_slave_nodes_fqdn(nodes_to_deploy)
-                logger.debug("There are nodes to deploy: %s",
-                             " ".join([n.fqdn for n in nodes_to_deploy]))
-                task_deployment = supertask.create_subtask("deployment")
-                deployment_message = self._call_silently(
-                    task_deployment,
-                    tasks.DeploymentTask,
-                    method_name='message'
-                )
-
-                # if failed to generate task message for orchestrator
-                # then task is already set to error
-                if task_deployment.status == 'error':
-                    return supertask
-
-                task_deployment.cache = deployment_message
-                db().add(task_deployment)
-                db().commit()
-                task_messages.append(deployment_message)
 
         if task_messages:
             rpc.cast('naily', task_messages)
@@ -314,6 +253,51 @@ class DeploymentTaskManager(TaskManager):
                 supertask.uuid
             )
         )
+        return supertask
+
+    def check_before_deployment(self, supertask):
+        # checking admin intersection with untagged
+        network_info = NetworkConfigurationSerializer\
+            .serialize_for_cluster(
+                self.cluster
+            )
+        check_networks = supertask.create_subtask('check_networks')
+        self._call_silently(
+            check_networks,
+            tasks.CheckNetworksTask,
+            data=network_info,
+            check_admin_untagged=True
+        )
+        db().refresh(check_networks)
+        if check_networks.status == 'error':
+            error = errors.CheckBeforeDeploymentError()
+            error.supertask = supertask
+            raise error
+        db().delete(check_networks)
+        db().commit()
+
+        # checking prerequisites
+        check_before = supertask.create_subtask('check_before_deployment')
+        logger.debug("Checking prerequisites task: %s", check_before.uuid)
+        self._call_silently(
+            check_before,
+            tasks.CheckBeforeDeploymentTask
+        )
+        db().refresh(check_before)
+        # if failed to check prerequisites
+        # then task is already set to error
+        if check_before.status == 'error':
+            logger.debug(
+                "Checking prerequisites failed: %s", check_before.message
+            )
+            error = errors.CheckBeforeDeploymentError()
+            error.supertask = supertask
+            raise error
+        logger.debug(
+            "Checking prerequisites is successful, starting deployment..."
+        )
+        db().delete(check_before)
+        db().commit()
         return supertask
 
 

@@ -27,6 +27,7 @@ default_messages = {
     "CannotFindNodeIDForDiscovering": "Cannot find node for discovering",
 
     # deployment errors
+    "CheckBeforeDeploymentError": "Pre-Deployment check wasn't successful",
     "DeploymentAlreadyStarted": "Deployment already started",
     "DeletionAlreadyStarted": "Environment removal already started",
     "FailedProvisioning": "Failed to start provisioning",
