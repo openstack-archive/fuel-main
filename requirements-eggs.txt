@@ -14,6 +14,7 @@ hacking==0.7
 jsonschema==2.0.0
 kombu==2.1.8
 netaddr==0.7.10
+netifaces==0.8
 nose2==0.4.1
 nose==1.1.2
 ordereddict==1.1
@@ -21,6 +22,7 @@ pip==1.2.1
 psycopg2==2.4.6
 pycrypto==2.6
 simplejson==2.6.2
+six==1.1.0
 tornado==3.0
 web.py==0.37
 wsgilog==0.3
