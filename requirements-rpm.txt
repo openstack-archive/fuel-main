@@ -392,7 +392,6 @@ qpid-tests-0.14-1.el6_2
 qpid-tools-0.14-6.el6_3
 rabbitmq-server-2.8.7-2.el6
 rbd-fuse-0.61.8-0.el6
-rbenv-ruby-1.9.3-p392-0.0.1-1
 redhat-lsb-core-4.0-7.el6.centos
 resource-agents-3.9.5-56.1
 rpm-build-4.8.0-32.el6
