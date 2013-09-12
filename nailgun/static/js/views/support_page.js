@@ -26,19 +26,47 @@ function(commonViews, models, supportPageTemplate) {
         navbarActiveElement: 'support',
         breadcrumbsPath: [['Home', '#'], 'Support'],
         title: 'Support',
+        updateInterval: 2000,
         template: _.template(supportPageTemplate),
         events: {
             'click .download-logs:not(.disabled)': 'downloadLogs'
         },
+        scheduleUpdate: function() {
+            var task = this.logsPackageTasks.filterTasks({name: 'dump'});
+            if (task.length) {
+                if (this.timeout) {
+                    this.timeout.clear();
+                }
+                if (_.isUndefined(task[0].get('progress')) || task[0].get('progress') < 100 ) {
+                    this.registerDeferred(this.timeout = $.timeout(this.updateInterval).done(_.bind(this.update, this)));
+                } else {
+                    this.$('.genereate-logs').toggleClass('hide');
+                    this.$('.donwload-logs-link').toggleClass('hide');
+                    this.$('.donwload-logs-link > a').attr('href', task[0].get('message'));
+                    this.$('.download-logs').toggleClass('disabled');
+                }
+            }
+        },
+        update: function() {
+            this.registerDeferred(this.logsPackageTasks.fetch().always(_.bind(this.scheduleUpdate, this)));
+        },
         downloadLogs: function() {
-            this.$('.download-logs').addClass('disabled');
-            window.location = '/api/logs/package';
+            var task = new models.LogsPackage()
+            task.save({}, {method: 'PUT'});
+            this.$('.download-logs').toggleClass('disabled');
+            this.$('.donwload-logs-link').toggleClass('hide');
+            this.$('.genereate-logs').toggleClass('hide');
+            this.scheduleUpdate();
         },
         initialize: function(options) {
             _.defaults(this, options);
             this.model = new models.FuelKey();
             this.model.fetch();
             this.model.on('change', this.render, this);
+            this.logsPackageTasks = new models.Tasks();
+            this.logsPackageTasks.fetch()
+            this.logsPackageTasks.on('change', this.scheduleUpdate());
+
         },
         render: function() {
             this.$el.html(this.template());

@@ -3267,6 +3267,13 @@ input.error:focus {
   min-height: 240px;
 }
 
+.support:after {
+  display: table;
+  line-height: 0;
+  content: "";
+  clear: both;
+}
+
 .support .span12 {
   margin-top: 10px;
 }
