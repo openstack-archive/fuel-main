@@ -248,9 +248,14 @@ function(utils, models, commonViews, dialogViews, nodesManagementPanelTemplate, 
             this.$('.btn-apply').prop('disabled', true);
             var nodeIds = this.screen.roles.nodeIds;
             var nodes  = new models.Nodes(this.nodes.getByIds(nodeIds));
-            if (!this.nodes.cluster) {
-                nodes.each(function(node) {node.set({cluster_id: this.cluster.id, pending_addition: true});}, this);
-            }
+            nodes.each(function(node) {
+                if (!this.nodes.cluster) {
+                    node.set({cluster_id: this.cluster.id, pending_addition: true});
+                }
+                if (!node.get('pending_roles').length && node.get('pending_addition')) {
+                    node.set({cluster_id: null, pending_addition: false});
+                }
+            }, this);
             nodes.toJSON = function(options) {
                 return this.map(function(node) {
                     return _.pick(node.attributes, 'id', 'cluster_id', 'pending_roles', 'pending_addition');
@@ -326,12 +331,6 @@ function(utils, models, commonViews, dialogViews, nodesManagementPanelTemplate, 
                         if (!_.contains(node.get('roles'), role)) {
                             var pending_roles = $(input).is(':checked') ? _.uniq(_.union(node.get('pending_roles'), role)) : _.difference(node.get('pending_roles'), role);
                             node.set({pending_roles: pending_roles});
-                            if (!pending_roles.length && node.get('pending_addition')) {
-                                node.set({
-                                    cluster_id: null,
-                                    pending_addition: false
-                                });
-                            }
                         }
                     }, this);
                 }
@@ -356,13 +355,14 @@ function(utils, models, commonViews, dialogViews, nodesManagementPanelTemplate, 
             }, this);
             // non-ha deployment mode restriction: environment can not have more than one controller node
             if (this.cluster.get('mode') == 'multinode') {
-                var allocatedController = this.screen.tab.model.get('nodes').filter(function(node) {return !node.get('pending_deletion') && _.contains(_.union(node.get('roles'), node.get('pending_roles')), 'controller');}).length;
+                var allocatedController = this.screen.tab.model.get('nodes').filter(function(node) {return !node.get('pending_deletion') && _.contains(_.union(node.get('roles'),node.get('pending_roles')), 'controller');})[0];
+                var cantAddController = allocatedController && !_.contains(this.nodeIds, allocatedController.id);
                 var controllerSelected = this.$('input[value=controller]').is(':checked') || this.$('input[value=controller]').prop('indeterminate');
                 this.screen.$('.node-box:not(.node-offline):not(.node-error):not(.node-delete) input:not(:checked)').prop('disabled', controllerSelected);
-                if (this.nodeIds.length > 1 || allocatedController) {
+                if (this.nodeIds.length > 1 || cantAddController) {
                     this.$('input[value=controller]').prop('disabled', true);
                 }
-                if (this.nodeIds.length > 1 || controllerSelected || allocatedController) {
+                if (this.nodeIds.length > 1 || controllerSelected || cantAddController) {
                     this.$('.role-conflict.controller').text('This role can not be assigned to more than one node in Multinode deployment mode.');
                 }
             }
