@@ -102,7 +102,7 @@ Astute and Naily
     \curl -L https://get.rvm.io | bash -s stable
     rvm install 1.9.3
 
-#. Run Astute unit tests::
+#. Install or update dependencies and run unit tests::
 
     cd astute
     ./run_tests.sh
